@@ -43,7 +43,6 @@
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
-#include "thirdparty/email/wxMailer.h"
 #include <wx/statbmp.h>
 #undef BOOL
 #ifdef UPDATEREVISION
@@ -71,7 +70,7 @@ string sc_rev;
 #ifdef DEBUG
 bool debug = true;
 #else
-bool debug = false;
+bool   debug = false;
 #endif
 
 int win_version_major = 0;
@@ -116,8 +115,8 @@ protected:
 	}
 
 public:
-	SLADELog()  = default;
-	~SLADELog() = default;
+	SLADELog()           = default;
+	~SLADELog() override = default;
 };
 
 
@@ -133,8 +132,8 @@ public:
 class SLADEStackTrace : public wxStackWalker
 {
 public:
-	SLADEStackTrace() { stack_trace_ = "Stack Trace:\n"; }
-	~SLADEStackTrace() = default;
+	SLADEStackTrace() : stack_trace_("Stack Trace:\n") {}
+	~SLADEStackTrace() override = default;
 
 	wxString traceString() const { return stack_trace_; }
 	wxString topLevel() const { return top_level_; }
@@ -169,18 +168,16 @@ private:
 // A simple dialog that displays a crash message and a scrollable,
 // multi-line textbox with a stack trace
 // -----------------------------------------------------------------------------
-class SLADECrashDialog : public wxDialog, public wxThreadHelper
+class SLADECrashDialog : public wxDialog
 {
 public:
-	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxGetApp().GetTopWindow(), -1, "SLADE Application Crash")
+	SLADECrashDialog() : wxDialog(wxGetApp().GetTopWindow(), -1, "SLADE Application Crash")
 	{
-		top_level_ = st.topLevel();
-
 		// Setup sizer
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		auto hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND);
 
 		// Add dead doomguy picture
@@ -191,32 +188,58 @@ public:
 		wxImage img;
 		img.LoadFile(app::path("STFDEAD0.png", app::Dir::Temp));
 		img.Rescale(img.GetWidth(), img.GetHeight(), wxIMAGE_QUALITY_NEAREST);
-		wxStaticBitmap* picture = new wxStaticBitmap(this, -1, wxBitmap(img));
-		hbox->Add(picture, 0, wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxTOP | wxBOTTOM, 10);
+		auto picture = new wxStaticBitmap(this, -1, wxBitmap(img));
+		hbox->Add(picture, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxTOP | wxBOTTOM, 10);
 
 		// Add general crash message
-#ifndef NOCURL
-		wxString message =
-			"SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
-			"please (optionally) enter a short description of what you were doing at the time "
-			"of the crash, and click the 'Send Crash Report' button.";
-#else
 		string message =
 			"SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
-			"please email a copy of the stack trace below to sirjuddington@gmail.com, along with a "
-			"description of what you were doing at the time of the crash.";
-#endif
-		wxStaticText* label = new wxStaticText(this, -1, message);
+			"please click 'Create GitHub Issue' below and copy+paste the stack trace into the "
+			"issue details, along with a description of what you were doing at the time of the "
+			"crash.";
+		auto label = new wxStaticText(this, -1, message);
 		hbox->Add(label, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 10);
 		label->Wrap(480 - 20 - picture->GetSize().x);
 
-#ifndef NOCURL
-		// Add description text area
-		text_description_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(-1, 100), wxTE_MULTILINE);
-		sizer->Add(new wxStaticText(this, -1, "Description:"), 0, wxLEFT | wxRIGHT, 10);
+		// Add stack trace text area
+		text_stack_ = new wxTextCtrl(
+			this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxHSCROLL);
+		// text_stack_->SetValue(trace_);
+		text_stack_->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+		sizer->Add(new wxStaticText(this, -1, "Crash Information:"), 0, wxLEFT | wxRIGHT, 10);
 		sizer->AddSpacer(2);
-		sizer->Add(text_description_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
-#endif
+		sizer->Add(text_stack_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+
+		// Add 'Copy Stack Trace' button
+		hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 6);
+		btn_copy_trace_ = new wxButton(this, -1, "Copy Stack Trace");
+		hbox->AddStretchSpacer();
+		hbox->Add(btn_copy_trace_, 0, wxLEFT | wxRIGHT | wxBOTTOM, 4);
+		btn_copy_trace_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnCopyTrace, this);
+
+		// Add 'Create GitHub Issue' button
+		btn_send_ = new wxButton(this, -1, "Create GitHub Issue");
+		hbox->Add(btn_send_, 0, wxLEFT | wxRIGHT | wxBOTTOM, 4);
+		btn_send_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnPostReport, this);
+
+		// Add 'Exit SLADE' button
+		btn_exit_ = new wxButton(this, -1, "Exit SLADE");
+		hbox->Add(btn_exit_, 0, wxLEFT | wxRIGHT | wxBOTTOM, 4);
+		btn_exit_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
+
+		// Setup layout
+		wxDialog::Layout();
+		SetInitialSize(wxSize(500, 600));
+		CenterOnParent();
+		Show(false);
+	}
+
+	~SLADECrashDialog() override = default;
+
+	void loadStackTrace(const SLADEStackTrace& st)
+	{
+		top_level_ = st.topLevel();
 
 		// SLADE info
 		if (global::sc_rev.empty())
@@ -250,14 +273,8 @@ public:
 		for (auto a = log.size() - 10; a < log.size(); a++)
 			trace_ += log[a].message + "\n";
 
-		// Add stack trace text area
-		text_stack_ = new wxTextCtrl(
-			this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxHSCROLL);
+		// Set stack trace text
 		text_stack_->SetValue(trace_);
-		text_stack_->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-		sizer->Add(new wxStaticText(this, -1, "Crash Information:"), 0, wxLEFT | wxRIGHT, 10);
-		sizer->AddSpacer(2);
-		sizer->Add(text_stack_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
 		// Dump stack trace to a file (just in case)
 		wxFile file(app::path("slade3_crash.log", app::Dir::User), wxFile::write);
@@ -266,70 +283,6 @@ public:
 
 		// Also dump stack trace to console
 		std::cerr << trace_;
-
-#ifndef NOCURL
-		// Add small privacy disclaimer
-		wxString privacy =
-			"Sending a crash report will only send the information displayed above, "
-			"along with a copy of the logs for this session.";
-		label = new wxStaticText(this, -1, privacy);
-		label->Wrap(480);
-		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT | wxBOTTOM, 10);
-#endif
-
-		// Add 'Copy Stack Trace' button
-		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 6);
-		btn_copy_trace_ = new wxButton(this, -1, "Copy Stack Trace");
-		hbox->AddStretchSpacer();
-		hbox->Add(btn_copy_trace_, 0, wxLEFT | wxRIGHT | wxBOTTOM, 4);
-		btn_copy_trace_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnCopyTrace, this);
-
-		// Add 'Exit SLADE' button
-		btn_exit_ = new wxButton(this, -1, "Exit SLADE");
-		hbox->Add(btn_exit_, 0, wxLEFT | wxRIGHT | wxBOTTOM, 4);
-		btn_exit_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
-
-#ifndef NOCURL
-		// Add 'Send Crash Report' button
-		btn_send_ = new wxButton(this, -1, "Send Crash Report");
-		hbox->Add(btn_send_, 0, wxLEFT | wxRIGHT | wxBOTTOM, 4);
-		btn_send_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnSend, this);
-#endif
-
-		Bind(wxEVT_THREAD, &SLADECrashDialog::onThreadUpdate, this);
-		Bind(wxEVT_CLOSE_WINDOW, &SLADECrashDialog::onClose, this);
-
-		// Setup layout
-		wxDialog::Layout();
-		SetInitialSize(wxSize(500, 600));
-		CenterOnParent();
-	}
-
-	~SLADECrashDialog() = default;
-
-	wxThread::ExitCode Entry() override
-	{
-		wxMailer mailer("slade.crashes@gmail.com", "qakljwqpasnmprhl", "smtp://smtp.gmail.com:587");
-
-		// Create message
-		wxEmailMessage msg;
-		msg.SetFrom("SLADE");
-		msg.SetTo("slade.crashes@gmail.com");
-		msg.SetSubject("[" + app::version().toString() + "] @ " + top_level_);
-		msg.SetMessage(wxString::Format("Description:\n%s\n\n%s", text_description_->GetValue(), trace_));
-		msg.AddAttachment(app::path("slade3.log", app::Dir::User));
-		msg.Finalize();
-
-		// Send email
-		bool sent = mailer.Send(msg);
-
-		// Send event
-		auto evt = new wxThreadEvent();
-		evt->SetInt(sent ? 1 : 0);
-		wxQueueEvent(GetEventHandler(), evt);
-
-		return (wxThread::ExitCode) nullptr;
 	}
 
 	void onBtnCopyTrace(wxCommandEvent& e)
@@ -348,53 +301,15 @@ public:
 				wxICON_EXCLAMATION);
 	}
 
-	void onBtnSend(wxCommandEvent& e)
+	void onBtnPostReport(wxCommandEvent& e)
 	{
-		btn_send_->SetLabel("Sending...");
-		btn_send_->Enable(false);
-		btn_exit_->Enable(false);
-
-		if (CreateThread(wxTHREAD_JOINABLE) != wxTHREAD_NO_ERROR)
-			EndModal(wxID_OK);
-
-		if (GetThread()->Run() != wxTHREAD_NO_ERROR)
-			EndModal(wxID_OK);
+		wxLaunchDefaultBrowser("https://github.com/sirjuddington/SLADE/issues/new");
 	}
 
 	void onBtnExit(wxCommandEvent& e) { EndModal(wxID_OK); }
 
-	void onThreadUpdate(wxThreadEvent& e)
-	{
-		if (e.GetInt() == 1)
-		{
-			// Report sent successfully, exit
-			wxMessageBox("The crash report was sent successfully, and SLADE will now close.", "Crash Report Sent");
-			EndModal(wxID_OK);
-		}
-		else
-		{
-			// Sending failed
-			btn_send_->SetLabel("Send Crash Report");
-			btn_send_->Enable();
-			btn_exit_->Enable();
-			wxMessageBox(
-				"The crash report failed to send. Please either try again or click 'Exit SLADE' "
-				"to exit without sending.",
-				"Failed to Send");
-		}
-	}
-
-	void onClose(wxCloseEvent& e)
-	{
-		if (GetThread() && GetThread()->IsRunning())
-			GetThread()->Wait();
-
-		Destroy();
-	}
-
 private:
 	wxTextCtrl* text_stack_;
-	wxTextCtrl* text_description_;
 	wxButton*   btn_copy_trace_;
 	wxButton*   btn_exit_;
 	wxButton*   btn_send_;
@@ -414,8 +329,8 @@ private:
 class MainAppFLConnection : public wxConnection
 {
 public:
-	MainAppFLConnection()  = default;
-	~MainAppFLConnection() = default;
+	MainAppFLConnection()           = default;
+	~MainAppFLConnection() override = default;
 
 	bool OnAdvise(const wxString& topic, const wxString& item, const void* data, size_t size, wxIPCFormat format)
 		override
@@ -433,8 +348,8 @@ public:
 class MainAppFileListener : public wxServer
 {
 public:
-	MainAppFileListener()  = default;
-	~MainAppFileListener() = default;
+	MainAppFileListener()           = default;
+	~MainAppFileListener() override = default;
 
 	wxConnectionBase* OnAcceptConnection(const wxString& topic) override { return new MainAppFLConnection(); }
 };
@@ -442,8 +357,8 @@ public:
 class MainAppFLClient : public wxClient
 {
 public:
-	MainAppFLClient()  = default;
-	~MainAppFLClient() = default;
+	MainAppFLClient()           = default;
+	~MainAppFLClient() override = default;
 
 	wxConnectionBase* OnMakeConnection() override { return new MainAppFLConnection(); }
 };
@@ -568,6 +483,14 @@ bool SLADEWxApp::OnInit()
 		throw;
 	}
 
+	// Init crash dialog
+	// Do it now rather than after a crash happens, since it may fail depending on the type of crash
+#if wxUSE_STACKWALKER
+#ifndef _DEBUG
+	crash_dialog_ = new SLADECrashDialog();
+#endif //_DEBUG
+#endif // wxUSE_STACKWALKER
+
 	// Check for updates
 #ifdef __WXMSW__
 	wxHTTP::Initialize();
@@ -605,8 +528,8 @@ void SLADEWxApp::OnFatalException()
 #ifndef _DEBUG
 	SLADEStackTrace st;
 	st.WalkFromException();
-	SLADECrashDialog sd(st);
-	sd.ShowModal();
+	crash_dialog_->loadStackTrace(st);
+	crash_dialog_->ShowModal();
 #endif //_DEBUG
 #endif // wxUSE_STACKWALKER
 }

@@ -1,8 +1,9 @@
 #pragma once
 
 class wxSingleInstanceChecker;
-
 class MainAppFileListener;
+class SLADECrashDialog;
+
 class SLADEWxApp : public wxApp
 {
 public:
@@ -27,6 +28,7 @@ public:
 private:
 	wxSingleInstanceChecker* single_instance_checker_ = nullptr;
 	MainAppFileListener*     file_listener_           = nullptr;
+	SLADECrashDialog*        crash_dialog_            = nullptr;
 };
 
 DECLARE_APP(SLADEWxApp)

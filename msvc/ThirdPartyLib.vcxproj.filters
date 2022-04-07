@@ -25,9 +25,6 @@
     <Filter Include="Lzma">
       <UniqueIdentifier>{fc74c1f5-c490-4931-8cfc-0f4da5eeed7e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="wxEmail">
-      <UniqueIdentifier>{9bd8ef62-16e8-4c8f-a9b2-5430cd08c98a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="LunaSVG">
       <UniqueIdentifier>{5698fb59-ee0b-4e25-9e5c-d6ebba29da8d}</UniqueIdentifier>
     </Filter>
@@ -185,15 +182,6 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\lzma\C\XzEnc.h">
       <Filter>Lzma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\email\wxEmailMessage.h">
-      <Filter>wxEmail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\email\wxEmailMessageID.h">
-      <Filter>wxEmail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\email\wxMailer.h">
-      <Filter>wxEmail</Filter>
     </ClInclude>
     <ClInclude Include="..\thirdparty\sol\config.hpp">
       <Filter>Sol</Filter>
@@ -685,15 +673,6 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\lzma\C\XzIn.c">
       <Filter>Lzma</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\email\wxEmailMessage.cpp">
-      <Filter>wxEmail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\email\wxEmailMessageID.cpp">
-      <Filter>wxEmail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\email\wxMailer.cpp">
-      <Filter>wxEmail</Filter>
     </ClCompile>
     <ClCompile Include="..\thirdparty\lunasvg\source\canvas.cpp">
       <Filter>LunaSVG\source</Filter>
