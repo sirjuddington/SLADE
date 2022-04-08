@@ -450,10 +450,10 @@ z_sndinfo {
 	function_link = "http://zdoom.org/wiki/SNDINFO";
 
 	keywords = {
-		$random, $alias, $limit, $pitchshift, $pitchshiftrange, $playerreserve, $playersound, $playersounddup,
-		$playeralias, $playercompat, $ambient, $ifdoom, $ifheretic, $ifhexen, $ifstrife, $map, $musicvolume,
-		$registered, $archivepath, point, surround, world, continuous, periodic, random,
-		$volume, $rolloff, $mididevice, $attenuation, $edfoverride, $musicalias, $singular, $endif
+		random, alias, limit, pitchshift, pitchshiftrange, playerreserve, playersound, playersounddup,
+		playeralias, playercompat, ambient, ifdoom, ifheretic, ifhexen, ifstrife, map, musicvolume,
+		registered, archivepath, point, surround, world, continuous, periodic, random,
+		volume, rolloff, mididevice, attenuation, edfoverride, musicalias, singular, endif
 	}
 
 	constants = {
