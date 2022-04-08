@@ -163,7 +163,7 @@ bool MapEntryPanel::createImage()
 	ArchiveEntry temp;
 
 	// Stupid OpenGL grumble grumble grumble
-	if (GLEW_ARB_framebuffer_object)
+	if (gl::fboSupport())
 		map_canvas_->createImage(temp, map_image_width, map_image_height);
 	else
 		map_canvas_->createImage(

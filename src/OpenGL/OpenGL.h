@@ -1,17 +1,15 @@
 #pragma once
 
 // OpenGL
-// glew.h needs to be #included before gl/glu headers
+// glad.h replaces gl.h, still need glu.h
 // clang-format off
 #ifdef __APPLE__
 // OSX GL headers
-#include <GL/glew.h>
-#include <OpenGL/gl.h>
+#include "thirdparty/glad/include/glad/glad.h"
 #include <OpenGL/glu.h>
 #else
 // Windows/Unix GL headers
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include "thirdparty/glad/include/glad/glad.h"
 #include <GL/glu.h>
 #endif
 // clang-format on
@@ -51,6 +49,7 @@ namespace gl
 	bool     np2TexSupport();
 	bool     pointSpriteSupport();
 	bool     vboSupport();
+	bool     fboSupport();
 	bool     validTexDimension(unsigned dim);
 	float    maxPointSize();
 	unsigned maxTextureSize();

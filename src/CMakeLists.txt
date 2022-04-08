@@ -104,7 +104,6 @@ find_package(FreeImage REQUIRED)
 find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(CURL REQUIRED)
 if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
 endif()
@@ -115,12 +114,12 @@ include_directories(
 	${FREETYPE_INCLUDE_DIRS}
 	${FTGL_INCLUDE_DIR}
 	${GLEW_INCLUDE_PATH}
-	${CURL_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
 	${MPG123_INCLUDE_DIR}
 	.
 	..
 	../thirdparty/dumb
+	../thirdparty/glad/include
 	./Application
 	)
 
@@ -203,7 +202,6 @@ target_link_libraries(slade
 	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${GLEW_LIBRARY}
-	${CURL_LIBRARIES}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
 )

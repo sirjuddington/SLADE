@@ -11,10 +11,10 @@ set(EXTERNAL_SOURCES
 )
 file(GLOB_RECURSE EXTERNAL_SOURCES
 	dumb/*.c
-	email/*.cpp
 	lzma/C/LzmaDec.c
 	mus2mid/mus2mid.cpp
 	zreaders/*.cpp
+	glad/src/*.c
 	${SLADE_HEADERS}
 	)
 

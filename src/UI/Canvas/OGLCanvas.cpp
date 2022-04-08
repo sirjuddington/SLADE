@@ -230,12 +230,10 @@ void OGLCanvas::drawCheckeredBackground() const
 // -----------------------------------------------------------------------------
 wxWindow* OGLCanvas::toPanel(wxWindow* parent)
 {
-#ifdef USE_SFML_RENDERWINDOW
 #ifdef __WXGTK__
 	// Reparenting the window causes a crash under gtk, so don't do it there
 	// (this was only to fix a bug in winxp anyway)
 	return this;
-#endif
 #endif
 
 	// Create panel

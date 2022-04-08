@@ -110,12 +110,17 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 // -----------------------------------------------------------------------------
 bool gl::init()
 {
-	GLenum ret;
-
 	if (initialised)
 		return true;
 
 	log::info(1, "Initialising OpenGL...");
+
+	// Initialise GLAD
+	if (!gladLoadGL())
+	{
+		log::error("GLAD initialization failed");
+		return false;
+	}
 
 	// Get OpenGL info
 	info.vendor     = (const char*)glGetString(GL_VENDOR);
@@ -134,24 +139,17 @@ bool gl::init()
 	max_tex_size = val;
 	log::info("Max Texture Size: {}x{}", max_tex_size, max_tex_size);
 
-	// Initialise GLEW
-	if ((ret = glewInit()) != GLEW_OK)
-	{
-		log::error("OpenGL initialization failed: {}", (char*)glewGetErrorString(ret));
-		return false;
-	}
-
 	// Test extensions
 	log::info("Checking extensions...");
-	if (GLEW_ARB_vertex_buffer_object)
+	if (GLAD_GL_ARB_vertex_buffer_object)
 		log::info("Vertex Buffer Objects supported");
 	else
 		log::info("Vertex Buffer Objects not supported");
-	if (GLEW_ARB_point_sprite)
+	if (GLAD_GL_ARB_point_sprite)
 		log::info("Point Sprites supported");
 	else
 		log::info("Point Sprites not supported");
-	if (GLEW_ARB_framebuffer_object)
+	if (GLAD_GL_ARB_framebuffer_object)
 		log::info("Framebuffer Objects supported");
 	else
 		log::info("Framebuffer Objects not supported");
@@ -166,7 +164,7 @@ bool gl::init()
 // -----------------------------------------------------------------------------
 bool gl::np2TexSupport()
 {
-	return GLEW_ARB_texture_non_power_of_two && gl_tex_enable_np2;
+	return GLAD_GL_ARB_texture_non_power_of_two && gl_tex_enable_np2;
 }
 
 // -----------------------------------------------------------------------------
@@ -175,7 +173,7 @@ bool gl::np2TexSupport()
 // -----------------------------------------------------------------------------
 bool gl::pointSpriteSupport()
 {
-	return GLEW_ARB_point_sprite && gl_point_sprite;
+	return GLAD_GL_ARB_point_sprite && gl_point_sprite;
 }
 
 // -----------------------------------------------------------------------------
@@ -184,7 +182,16 @@ bool gl::pointSpriteSupport()
 // -----------------------------------------------------------------------------
 bool gl::vboSupport()
 {
-	return GLEW_ARB_vertex_buffer_object && gl_vbo;
+	return GLAD_GL_ARB_vertex_buffer_object && gl_vbo;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the installed OpenGL version supports framebuffer objects,
+// false otherwise
+// -----------------------------------------------------------------------------
+bool gl::fboSupport()
+{
+	return GLAD_GL_ARB_framebuffer_object;
 }
 
 // -----------------------------------------------------------------------------

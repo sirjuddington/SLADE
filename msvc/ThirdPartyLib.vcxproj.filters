@@ -46,6 +46,15 @@
     <Filter Include="Fmt">
       <UniqueIdentifier>{a5ed77d4-9d54-470e-9962-f242c7224aef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GLAD">
+      <UniqueIdentifier>{52681102-4279-4e82-984b-ff308ba5214b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GLAD\glad">
+      <UniqueIdentifier>{f13c5fbc-30d4-4041-9e7c-812075b4b409}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GLAD\KHR">
+      <UniqueIdentifier>{0e4647fd-d90e-4525-af41-4acc15174c1d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\sol\forward.hpp">
@@ -305,6 +314,12 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\fmt\include\fmt\xchar.h">
       <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\glad\include\glad\glad.h">
+      <Filter>GLAD\glad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\glad\include\KHR\khrplatform.h">
+      <Filter>GLAD\KHR</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -766,6 +781,9 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\fmt\src\os.cc">
       <Filter>Fmt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\glad\src\glad.c">
+      <Filter>GLAD</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
