@@ -450,7 +450,7 @@ z_sndinfo {
 		random, alias, limit, pitchshift, pitchshiftrange, playerreserve, playersound, playersounddup,
 		playeralias, playercompat, ambient, ifdoom, ifheretic, ifhexen, ifstrife, map, musicvolume,
 		registered, archivepath, volume, rolloff, mididevice, attenuation, edfoverride, musicalias,
-		singular, endif
+		singular, endif, pitchset,
 
 		// ambient command related
 		point, surround, world, continuous, periodic //, random
