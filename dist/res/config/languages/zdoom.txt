@@ -446,14 +446,21 @@ z_sndinfo {
 	function_link = "http://zdoom.org/wiki/SNDINFO";
 
 	keywords = {
+		// Commands
 		random, alias, limit, pitchshift, pitchshiftrange, playerreserve, playersound, playersounddup,
 		playeralias, playercompat, ambient, ifdoom, ifheretic, ifhexen, ifstrife, map, musicvolume,
-		registered, archivepath, point, surround, world, continuous, periodic, random,
-		volume, rolloff, mididevice, attenuation, edfoverride, musicalias, singular, endif
+		registered, archivepath, volume, rolloff, mididevice, attenuation, edfoverride, musicalias,
+		singular, endif
+
+		// ambient command related
+		point, surround, world, continuous, periodic //, random
 	}
 
 	constants = {
+		// rolloff command types
 		custom, linear, log,
+
+		// playersound command genders
 		male, female, other
 	}
 }
