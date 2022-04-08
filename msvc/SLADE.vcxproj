@@ -148,7 +148,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;CURL_STATICLIB;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -178,7 +178,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;NO_FLUIDSYNTH;SFML_STATIC;CURL_STATICLIB;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;NO_FLUIDSYNTH;SFML_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -208,7 +208,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;NOLIBMODPLUG;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;NOLIBMODPLUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
       <StringPooling>true</StringPooling>
@@ -248,7 +248,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;NO_FLUIDSYNTH;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;NOLIBMODPLUG;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;NO_FLUIDSYNTH;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;NOLIBMODPLUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
       <StringPooling>true</StringPooling>

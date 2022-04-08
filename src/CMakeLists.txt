@@ -103,7 +103,6 @@ endif()
 find_package(FreeImage REQUIRED)
 find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
 if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
 endif()
@@ -113,7 +112,6 @@ include_directories(
 	${SFML_INCLUDE_DIR}
 	${FREETYPE_INCLUDE_DIRS}
 	${FTGL_INCLUDE_DIR}
-	${GLEW_INCLUDE_PATH}
 	${LUA_INCLUDE_DIR}
 	${MPG123_INCLUDE_DIR}
 	.
@@ -201,7 +199,6 @@ target_link_libraries(slade
 	${FREETYPE_LIBRARIES}
 	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
-	${GLEW_LIBRARY}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
 )
