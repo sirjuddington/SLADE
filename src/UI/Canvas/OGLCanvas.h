@@ -26,7 +26,6 @@ public:
 	virtual void     draw() = 0;
 	virtual void     update(long frametime) {}
 	void             drawCheckeredBackground() const;
-	wxWindow*        toPanel(wxWindow* parent);
 	bool             setActive();
 	void             setup2D() const;
 

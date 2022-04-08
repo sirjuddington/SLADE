@@ -225,34 +225,6 @@ void OGLCanvas::drawCheckeredBackground() const
 }
 
 // -----------------------------------------------------------------------------
-// Places the canvas on top of a new wxPanel and returns the panel.
-// This is sometimes needed to fix redraw problems in Windows XP
-// -----------------------------------------------------------------------------
-wxWindow* OGLCanvas::toPanel(wxWindow* parent)
-{
-#ifdef __WXGTK__
-	// Reparenting the window causes a crash under gtk, so don't do it there
-	// (this was only to fix a bug in winxp anyway)
-	return this;
-#endif
-
-	// Create panel
-	auto panel = new wxPanel(parent, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxBORDER_SIMPLE);
-
-	// Reparent
-	Reparent(panel);
-
-	// Create sizer
-	auto sizer = new wxBoxSizer(wxHORIZONTAL);
-	panel->SetSizer(sizer);
-
-	// Add to sizer
-	sizer->Add(this, 1, wxEXPAND);
-
-	return panel;
-}
-
-// -----------------------------------------------------------------------------
 // Activates the GL context for this canvas.
 // Returns false if setting the active context failed
 // -----------------------------------------------------------------------------

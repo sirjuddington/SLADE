@@ -273,7 +273,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 		// Add map preview
 		canvas_preview_ = new MapPreviewCanvas(this);
-		framesizer->Add(canvas_preview_->toPanel(this), 1, wxEXPAND | wxALL, ui::pad());
+		framesizer->Add(canvas_preview_, 1, wxEXPAND | wxALL, ui::pad());
 		int size = ui::scalePx(400);
 		canvas_preview_->SetInitialSize(wxSize(size, size));
 	}
