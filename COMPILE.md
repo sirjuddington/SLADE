@@ -4,11 +4,8 @@
 
 * C++17 compiler (e.g. g++ 8.x)
 * bzip2 library
-* cURL library
 * FreeImage
-* fmt 6.x
 * ftgl, an OpenGL font managing library
-* GLEW
 * GTK 2.x/3.x
 * mpg123 library
 * OpenGL
@@ -18,7 +15,8 @@
 
 ### Optional build-time requirements
 
-* Fluidsynth (deactivate with `cmake -DNO_FLUIDSYNTH=ON`)
+* Fluidsynth (deactivate with `-DNO_FLUIDSYNTH=ON`)
+* Lua (deactivate with `-DNO_LUA=ON`)
 
 ### Additional configure switches for cmake
 
@@ -32,10 +30,7 @@ SLADE can be built on Windows using [Visual Studio](https://visualstudio.microso
 
 ### Required vcpkg libraries
 
-* curl
-* fmt
 * freeimage
-* glew
 * lua
 * mpg123
 * opengl
