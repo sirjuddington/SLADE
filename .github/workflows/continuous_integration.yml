@@ -18,19 +18,23 @@ jobs:
         - {
             name: "Linux GCC",
             os: ubuntu-20.04,
-            deps_cmdline: "sudo apt update && sudo apt install \
+            deps_cmdline: "sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc && \
+						   sudo apt-add-repository 'deb https://repos.codelite.org/wx3.1.5/ubuntu/ focal universe' && \
+						   sudo apt update && sudo apt install \
                            libfluidsynth-dev libfreeimage-dev \
                            libftgl-dev libgtk-3-dev liblua5.3-dev libmpg123-dev libsfml-dev \
-                           libwxgtk3.0-gtk3-dev libwxgtk-webview3.0-gtk3-dev"
+                           libwxgtk3.1unofficial-dev libwxgtk-webview3.1unofficial-dev"
           }
         - {
             name: "Linux Clang",
             os: ubuntu-20.04,
             extra_options: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++",
-            deps_cmdline: "sudo apt update && sudo apt install \
+            deps_cmdline: "sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc && \
+						   sudo apt-add-repository 'deb https://repos.codelite.org/wx3.1.5/ubuntu/ focal universe' && \
+						   sudo apt update && sudo apt install \
                            libfluidsynth-dev libfreeimage-dev \
                            libftgl-dev libgtk-3-dev liblua5.3-dev libmpg123-dev libsfml-dev \
-                           libwxgtk3.0-gtk3-dev libwxgtk-webview3.0-gtk3-dev"
+                           libwxgtk3.1unofficial-dev libwxgtk-webview3.1unofficial-dev"
           }
 
     steps:
