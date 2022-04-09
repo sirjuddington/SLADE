@@ -134,11 +134,12 @@ namespace ui
 
 	private:
 		weak_ptr<Archive> archive_;
-		ArchiveViewModel* model_     = nullptr;
-		wxDataViewColumn* col_name_  = nullptr;
-		wxDataViewColumn* col_size_  = nullptr;
-		wxDataViewColumn* col_type_  = nullptr;
-		wxDataViewColumn* col_index_ = nullptr;
+		ArchiveViewModel* model_                   = nullptr;
+		wxDataViewColumn* col_name_                = nullptr;
+		wxDataViewColumn* col_size_                = nullptr;
+		wxDataViewColumn* col_type_                = nullptr;
+		wxDataViewColumn* col_index_               = nullptr;
+		int               multi_select_base_index_ = -1;
 
 		void setupColumns();
 		void saveColumnWidths() const;

@@ -3688,6 +3688,8 @@ void ArchivePanel::onEntryListSelectionChange(wxDataViewEvent& e)
 		return;
 
 	selectionChanged();
+
+	e.Skip();
 }
 
 // -----------------------------------------------------------------------------

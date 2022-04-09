@@ -1009,6 +1009,73 @@ ArchiveEntryTree::ArchiveEntryTree(
 			else
 				e.Skip();
 		});
+
+#ifdef __WXMSW__
+	// Keypress event
+	Bind(wxEVT_CHAR, [this](wxKeyEvent& e)
+	{
+		// Custom handling for shift+up/down
+		if (e.ShiftDown())
+		{
+			int from_row = multi_select_base_index_;
+
+			// Get row to select to
+			// TODO: Handle PgUp/PgDn as well?
+			int to_row;
+			switch (e.GetKeyCode())
+			{
+			case WXK_DOWN:
+				to_row = GetRowByItem(GetCurrentItem()) + 1;
+				break;
+			case WXK_UP:
+				to_row = GetRowByItem(GetCurrentItem()) - 1;
+				break;
+			default:
+				// Not up or down arrow, do default handling
+				e.Skip();
+				return;
+			}
+
+			// Get new item to focus
+			auto new_current_item = GetItemByRow(to_row);
+			if (!new_current_item.IsOk())
+			{
+				e.Skip();
+				return;
+			}
+
+			// Ensure valid range
+			if (from_row > to_row)
+				std::swap(from_row, to_row);
+
+			// Get items to select
+			wxDataViewItemArray items;
+			for (int i = from_row; i <= to_row; ++i)
+				items.Add(GetItemByRow(i));
+
+			// Set new selection
+			SetSelections(items);
+			SetCurrentItem(new_current_item);
+
+			// Trigger selection change event
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+			ProcessWindowEvent(de);
+
+			return;
+		}
+
+		e.Skip();
+	});
+#endif
+
+	Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, [this](wxDataViewEvent& e)
+	{
+		if (GetSelectedItemsCount() == 1)
+			multi_select_base_index_ = GetRowByItem(GetSelection());
+
+		e.Skip();
+	});
 }
 
 // -----------------------------------------------------------------------------
