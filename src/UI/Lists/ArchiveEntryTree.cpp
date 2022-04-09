@@ -1067,7 +1067,6 @@ ArchiveEntryTree::ArchiveEntryTree(
 
 		e.Skip();
 	});
-#endif
 
 	Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, [this](wxDataViewEvent& e)
 	{
@@ -1076,6 +1075,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 
 		e.Skip();
 	});
+#endif
 }
 
 // -----------------------------------------------------------------------------
