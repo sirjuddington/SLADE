@@ -204,7 +204,7 @@ target_link_libraries(slade
 )
 
 if(LINUX)
-	target_link_libraries(slade -lstdc++fs)
+	target_link_libraries(slade -lstdc++fs -ldl)
 endif()
 
 if (WX_GTK3)
