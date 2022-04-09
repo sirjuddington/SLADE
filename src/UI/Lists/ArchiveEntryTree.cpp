@@ -86,6 +86,8 @@ EXTERN_CVAR(Bool, elist_colsize_show)
 EXTERN_CVAR(Bool, elist_coltype_show)
 EXTERN_CVAR(Bool, elist_colindex_show)
 EXTERN_CVAR(Bool, list_font_monospace)
+EXTERN_CVAR(Bool, elist_type_bgcol)
+EXTERN_CVAR(Float, elist_type_bgcol_intensity)
 
 
 // -----------------------------------------------------------------------------
@@ -435,11 +437,11 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 
 	// Type column
 	else if (col == 2)
-		variant = entry->typeString();
+		variant = entry->type() == EntryType::folderType() ? " " : entry->typeString();
 
 	// Index column
 	else if (col == 3)
-		variant = entry->type() == EntryType::folderType() ? "" : fmt::format("{}", entry->index());
+		variant = entry->type() == EntryType::folderType() ? " " : fmt::format("{}", entry->index());
 
 	// Invalid
 	else
@@ -501,6 +503,27 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 			attr.SetColour(entry->state() == ArchiveEntry::State::New ? col_text_new : col_text_modified);
 
 		has_attr = true;
+	}
+
+	// Set background colour defined in entry type (if any)
+	if (col == 0 || view_type_ == ViewType::List)
+	{
+		auto etype_colour = entry->type()->colour();
+		if ((etype_colour.r != 255 || etype_colour.g != 255 || etype_colour.b != 255) && elist_type_bgcol)
+		{
+			ColRGBA bcol;
+			auto    col_bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
+
+			bcol.r = (etype_colour.r * elist_type_bgcol_intensity)
+					 + (col_bg.Red() * (1.0 - elist_type_bgcol_intensity));
+			bcol.g = (etype_colour.g * elist_type_bgcol_intensity)
+					 + (col_bg.Green() * (1.0 - elist_type_bgcol_intensity));
+			bcol.b = (etype_colour.b * elist_type_bgcol_intensity)
+					 + (col_bg.Blue() * (1.0 - elist_type_bgcol_intensity));
+
+			attr.SetBackgroundColour(bcol.toWx());
+			has_attr = true;
+		}
 	}
 
 	return has_attr;
@@ -657,12 +680,6 @@ unsigned int ArchiveViewModel::GetChildren(const wxDataViewItem& item, wxDataVie
 bool ArchiveViewModel::IsListModel() const
 {
 	return view_type_ == ViewType::List;
-
-	//// Show as a list (no spacing for expanders) if the archive doesn't support directories
-	// if (auto* archive = archive_.lock().get())
-	//	return !archive->formatDesc().supports_dirs;
-
-	// return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -1012,69 +1029,69 @@ ArchiveEntryTree::ArchiveEntryTree(
 
 #ifdef __WXMSW__
 	// Keypress event
-	Bind(wxEVT_CHAR, [this](wxKeyEvent& e)
-	{
-		// Custom handling for shift+up/down
-		if (e.ShiftDown())
+	Bind(
+		wxEVT_CHAR,
+		[this](wxKeyEvent& e)
 		{
-			int from_row = multi_select_base_index_;
-
-			// Get row to select to
-			// TODO: Handle PgUp/PgDn as well?
-			int to_row;
-			switch (e.GetKeyCode())
+			// Custom handling for shift+up/down
+			if (e.ShiftDown())
 			{
-			case WXK_DOWN:
-				to_row = GetRowByItem(GetCurrentItem()) + 1;
-				break;
-			case WXK_UP:
-				to_row = GetRowByItem(GetCurrentItem()) - 1;
-				break;
-			default:
-				// Not up or down arrow, do default handling
-				e.Skip();
+				int from_row = multi_select_base_index_;
+
+				// Get row to select to
+				// TODO: Handle PgUp/PgDn as well?
+				int to_row;
+				switch (e.GetKeyCode())
+				{
+				case WXK_DOWN: to_row = GetRowByItem(GetCurrentItem()) + 1; break;
+				case WXK_UP: to_row = GetRowByItem(GetCurrentItem()) - 1; break;
+				default:
+					// Not up or down arrow, do default handling
+					e.Skip();
+					return;
+				}
+
+				// Get new item to focus
+				auto new_current_item = GetItemByRow(to_row);
+				if (!new_current_item.IsOk())
+				{
+					e.Skip();
+					return;
+				}
+
+				// Ensure valid range
+				if (from_row > to_row)
+					std::swap(from_row, to_row);
+
+				// Get items to select
+				wxDataViewItemArray items;
+				for (int i = from_row; i <= to_row; ++i)
+					items.Add(GetItemByRow(i));
+
+				// Set new selection
+				SetSelections(items);
+				SetCurrentItem(new_current_item);
+
+				// Trigger selection change event
+				wxDataViewEvent de;
+				de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+				ProcessWindowEvent(de);
+
 				return;
 			}
 
-			// Get new item to focus
-			auto new_current_item = GetItemByRow(to_row);
-			if (!new_current_item.IsOk())
-			{
-				e.Skip();
-				return;
-			}
+			e.Skip();
+		});
 
-			// Ensure valid range
-			if (from_row > to_row)
-				std::swap(from_row, to_row);
+	Bind(
+		wxEVT_DATAVIEW_SELECTION_CHANGED,
+		[this](wxDataViewEvent& e)
+		{
+			if (GetSelectedItemsCount() == 1)
+				multi_select_base_index_ = GetRowByItem(GetSelection());
 
-			// Get items to select
-			wxDataViewItemArray items;
-			for (int i = from_row; i <= to_row; ++i)
-				items.Add(GetItemByRow(i));
-
-			// Set new selection
-			SetSelections(items);
-			SetCurrentItem(new_current_item);
-
-			// Trigger selection change event
-			wxDataViewEvent de;
-			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
-			ProcessWindowEvent(de);
-
-			return;
-		}
-
-		e.Skip();
-	});
-
-	Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, [this](wxDataViewEvent& e)
-	{
-		if (GetSelectedItemsCount() == 1)
-			multi_select_base_index_ = GetRowByItem(GetSelection());
-
-		e.Skip();
-	});
+			e.Skip();
+		});
 #endif
 }
 
