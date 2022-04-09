@@ -33,7 +33,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DefaultEntryPanel.h"
-#include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
 #include "General/UI.h"
@@ -94,10 +93,13 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	// Bind events
 	btn_gfx_convert_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { SActionHandler::doAction("arch_gfx_convert"); });
 	btn_gfx_modify_offsets_->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnGfxModifyOffsets, this);
-	btn_texture_edit_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
-		if (auto entry = entry_.lock())
-			maineditor::openTextureEditor(entry->parent(), entry.get());
-	});
+	btn_texture_edit_->Bind(
+		wxEVT_BUTTON,
+		[&](wxCommandEvent&)
+		{
+			if (auto entry = entry_.lock())
+				maineditor::openTextureEditor(entry->parent(), entry.get());
+		});
 
 	// Hide save/revert toolbar
 	toolbar_->deleteGroup("Entry");
@@ -156,7 +158,7 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 {
 	// Update labels
-	label_type_->SetLabel(wxString::Format("%llu selected entries", entries.size()));
+	label_type_->SetLabel(wxString::Format("%lu selected entries", static_cast<unsigned long>(entries.size())));
 	unsigned size = 0;
 	for (auto& entry : entries)
 		size += entry->size();
@@ -191,7 +193,8 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 
 		entries_.push_back(entry);
 	}
-	label_index_->SetLabel(wxString::Format("Entry Indices: from %lu to %lu", (unsigned long)min, (unsigned long)max));
+	label_index_->SetLabel(wxString::Format(
+		"Entry Indices: from %lu to %lu", static_cast<unsigned long>(min), static_cast<unsigned long>(max)));
 	if (gfx)
 	{
 		frame_actions_->Show(true);
