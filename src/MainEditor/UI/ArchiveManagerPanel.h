@@ -94,6 +94,7 @@ public:
 	void        updateRecentListItem(int index) const;
 	void        updateBookmarkListItem(int index) const;
 	void        updateArchiveTabTitle(int index) const;
+	void        updateEntryTabTitle(ArchiveEntry* entry) const;
 	bool        isArchiveTab(int tab_index) const;
 	bool        isEntryTab(int tab_index) const;
 	bool        isTextureEditorTab(int tab_index) const;

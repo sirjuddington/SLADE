@@ -34,7 +34,9 @@
 #include "EntryPanel.h"
 #include "Archive/Archive.h"
 #include "General/UI.h"
+#include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/ArchiveManagerPanel.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/SToolBar/SToolBar.h"
@@ -48,6 +50,10 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
+namespace
+{
+wxMenu* menu_entry = nullptr;
+}
 CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 
 
@@ -129,6 +135,7 @@ void EntryPanel::setModified(bool c)
 	{
 		toolbar_->enableGroup("Entry", modified_);
 		callRefresh();
+		maineditor::window()->archiveManagerPanel()->updateEntryTabTitle(entry.get());
 	}
 }
 
@@ -144,18 +151,6 @@ void EntryPanel::addBorderPadding()
 	GetSizer()->Add(sizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
 	Layout();
 	Thaw();
-}
-
-// -----------------------------------------------------------------------------
-// Shows/hides the 'save' button
-// -----------------------------------------------------------------------------
-void EntryPanel::showSaveButton(bool show) const
-{
-	if (auto* btn_save = toolbar_->findActionButton("arch_entry_save"))
-	{
-		btn_save->Show(show);
-		toolbar_->updateLayout();
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -335,10 +330,25 @@ void EntryPanel::updateStatus()
 }
 
 // -----------------------------------------------------------------------------
-// Adds this EntryPanel's custom menu to the main window menubar (if it exists)
+// Adds this EntryPanel's custom menu to the main window menubar (if it exists).
+// If [add_entry_menu] is true, adds an 'Entry' menu to the menubar with some
+// basic actions for a standalone entry tab
 // -----------------------------------------------------------------------------
-void EntryPanel::addCustomMenu()
+void EntryPanel::addCustomMenu(bool add_entry_menu) const
 {
+	if (add_entry_menu)
+	{
+		if (!menu_entry)
+		{
+			menu_entry = new wxMenu();
+			SAction::fromId("arch_entry_save")->addToMenu(menu_entry);
+			SAction::fromId("arch_entry_rename")->addToMenu(menu_entry);
+			SAction::fromId("arch_entry_export")->addToMenu(menu_entry);
+		}
+
+		theMainWindow->addCustomMenu(menu_entry, "&Entry");
+	}
+
 	if (menu_custom_)
 		theMainWindow->addCustomMenu(menu_custom_, custom_menu_name_);
 }
@@ -348,6 +358,9 @@ void EntryPanel::addCustomMenu()
 // -----------------------------------------------------------------------------
 void EntryPanel::removeCustomMenu() const
 {
+	if (menu_entry)
+		theMainWindow->removeCustomMenu(menu_entry);
+
 	theMainWindow->removeCustomMenu(menu_custom_);
 }
 
@@ -371,13 +384,59 @@ void EntryPanel::updateToolbar()
 	Layout();
 }
 
+// -----------------------------------------------------------------------------
+// Handles an action from the 'standalone' Entry menu (when this EntryPanel is
+// in its own tab)
+// -----------------------------------------------------------------------------
+bool EntryPanel::handleStandaloneAction(string_view id)
+{
+	// Save
+	if (id == "arch_entry_save")
+		saveEntry();
+
+	// Rename
+	else if (id == "arch_entry_rename")
+	{
+		// Get entry and parent archive
+		auto* entry = entry_.lock().get();
+		if (!entry)
+			return true;
+		auto* archive = entry->parent();
+		if (!archive)
+			return true;
+
+		// Do rename
+		entryoperations::rename({ entry }, archive, true);
+
+		// Update tab title
+		maineditor::window()->archiveManagerPanel()->updateEntryTabTitle(entry);
+	}
+
+	// Export
+	else if (id == "arch_entry_export")
+	{
+		// Get entry
+		auto* entry = entry_.lock().get();
+		if (!entry)
+			return true;
+
+		// Do export
+		entryoperations::exportEntry(entry);
+	}
+
+	// Not handled here
+	else
+		return false;
+
+	return true;
+}
+
 
 // -----------------------------------------------------------------------------
 //
 // EntryPanel Class Events
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Called when a button on the toolbar is clicked

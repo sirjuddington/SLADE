@@ -10,6 +10,11 @@ class ModifyOffsetsDialog;
 
 namespace entryoperations
 {
+	bool rename(const vector<ArchiveEntry*>& entries, Archive* archive, bool each);
+	bool renameDir(const vector<ArchiveDir*>& dirs, Archive* archive);
+	bool exportEntry(ArchiveEntry* entry);
+	bool exportEntries(const vector<ArchiveEntry*>& entries, const vector<ArchiveDir*>& dirs);
+
 	bool openMapDB2(ArchiveEntry* entry);
 	bool addToPatchTable(const vector<ArchiveEntry*>& entries);
 	bool createTexture(const vector<ArchiveEntry*>& entries);

@@ -559,7 +559,7 @@ void ArchiveManagerPanel::updateRecentListItem(int index) const
 }
 
 // -----------------------------------------------------------------------------
-// Updates the title of the tab for the archive at <index>
+// Updates the title of the tab for the archive at [index]
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 {
@@ -586,6 +586,29 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 				title = archive->filename(false);
 			stc_archives_->SetPageText(a, title);
 			return;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Updates the title of the tab for [entry]
+// -----------------------------------------------------------------------------
+void ArchiveManagerPanel::updateEntryTabTitle(ArchiveEntry* entry) const
+{
+	for (unsigned i = 0; i < stc_archives_->GetPageCount(); ++i)
+	{
+		auto* page = stc_archives_->GetPage(i);
+		if (!page->GetName().CmpNoCase("entry"))
+		{
+			auto* ep = dynamic_cast<EntryPanel*>(page);
+			if (ep->entry() == entry)
+			{
+				auto tab_name = wxString::Format("%s/%s", entry->parent()->filename(false), entry->name());
+				if (ep->isModified())
+					tab_name += " *";
+
+				stc_archives_->SetPageText(i, tab_name);
+			}
 		}
 	}
 }
@@ -1073,7 +1096,6 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 	// Create an EntryPanel for the entry
 	maineditor::window()->Freeze();
 	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_);
-	ep->showSaveButton(false);
 	ep->addBorderPadding();
 	ep->openEntry(entry);
 
@@ -1091,7 +1113,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 		stc_archives_->GetPageCount() - 1, icons::getIcon(icons::Entry, entry->type()->icon()));
 	ep->SetName("entry");
 	ep->Show(true);
-	ep->addCustomMenu();
+	ep->addCustomMenu(true);
 	maineditor::window()->Thaw();
 
 	// Select the new tab
@@ -2221,7 +2243,7 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	if (stc_archives_->GetPage(selection)->GetName() == "entry")
 	{
 		auto ep = dynamic_cast<EntryPanel*>(stc_archives_->GetPage(selection));
-		ep->addCustomMenu();
+		ep->addCustomMenu(true);
 	}
 
 	// TextureXEditor
