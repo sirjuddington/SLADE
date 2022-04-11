@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
-#include "General/ColourConfiguration.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
@@ -51,18 +50,16 @@ CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
 
 namespace slade::gl
 {
-#ifndef USE_SFML_RENDERWINDOW
-wxGLContext* context = NULL;
-#endif
-int      wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
-bool     initialised    = false;
-double   version        = 0;
-unsigned max_tex_size   = 128;
-unsigned pow_two[]      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
-uint8_t  n_pow_two      = 16;
-float    max_point_size = -1.0f;
-Blend    last_blend     = Blend::Normal;
-Info     info;
+wxGLContext* context        = nullptr;
+int          wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
+bool         initialised    = false;
+double       version        = 0;
+unsigned     max_tex_size   = 128;
+unsigned     pow_two[]      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
+uint8_t      n_pow_two      = 16;
+float        max_point_size = -1.0f;
+Blend        last_blend     = Blend::Normal;
+Info         info;
 } // namespace slade::gl
 
 
@@ -76,7 +73,6 @@ Info     info;
 // -----------------------------------------------------------------------------
 // Returns the global OpenGL context, and creates it if needed
 // -----------------------------------------------------------------------------
-#ifndef USE_SFML_RENDERWINDOW
 wxGLContext* gl::getContext(wxGLCanvas* canvas)
 {
 	if (!context)
@@ -103,7 +99,6 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 
 	return context;
 }
-#endif
 
 // -----------------------------------------------------------------------------
 // Initialises general OpenGL variables and settings

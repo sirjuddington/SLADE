@@ -759,15 +759,6 @@ bool app::useWebView()
 #endif
 }
 
-bool app::useSFMLRenderWindow()
-{
-#ifdef USE_SFML_RENDERWINDOW
-	return true;
-#else
-	return false;
-#endif
-}
-
 const string& app::iconFile()
 {
 	static string icon = "slade.ico";

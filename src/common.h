@@ -1,7 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-// wxWidgets
+// wxWidgets -------------------------------------------------------------------
+
 #include <wx/aboutdlg.h>
 #include <wx/app.h>
 #include <wx/arrstr.h>
@@ -106,7 +107,10 @@
 #include <wx/msw/registry.h>
 #endif
 
-// other libraries
+
+// Other Libraries -------------------------------------------------------------
+
+// Fluidsynth
 #ifndef NO_FLUIDSYNTH
 #include <fluidsynth.h>
 #endif
@@ -114,18 +118,11 @@
 // SFML
 #include <SFML/System.hpp>
 
-#ifdef USE_SFML_RENDERWINDOW
-#include <SFML/Graphics.hpp>
-#include <wx/control.h>
-#endif
-
 // Freeimage
 #define FREEIMAGE_LIB
 #include <FreeImage.h>
-
-// Undefine _WINDOWS_ that has been defined by FreeImage
 #ifndef _WIN32
-#undef _WINDOWS_
+#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
 #endif
 
 // fmt
@@ -134,7 +131,9 @@
 // Sigslot
 #include "thirdparty/sigslot/signal.hpp"
 
-// C++
+
+// C++ -------------------------------------------------------------------------
+
 #include <map>
 #include <vector>
 #include <functional>
@@ -146,4 +145,3 @@
 #include <unordered_map>
 
 #endif // COMMON_H
-
