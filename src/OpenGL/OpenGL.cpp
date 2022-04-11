@@ -83,7 +83,7 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 
 			// Setup desired context attributes
 			wxGLContextAttrs attr;
-			attr.PlatformDefaults().CompatibilityProfile().OGLVersion(3, 3).EndList();
+			attr.PlatformDefaults().CompatibilityProfile().OGLVersion(3, 1).EndList();
 
 			// Create context
 			context = new wxGLContext(canvas, nullptr, &attr);
@@ -140,7 +140,7 @@ bool gl::init()
 	info.vendor     = (const char*)glGetString(GL_VENDOR);
 	info.renderer   = (const char*)glGetString(GL_RENDERER);
 	info.version    = (const char*)glGetString(GL_VERSION);
-	info.extensions = (const char*)glGetString(GL_EXTENSIONS);
+	//info.extensions = (const char*)glGetString(GL_EXTENSIONS);
 
 	// Get OpenGL version
 	string_view temp{ info.version.data(), 3 };
