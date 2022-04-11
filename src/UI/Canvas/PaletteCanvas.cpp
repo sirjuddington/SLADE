@@ -71,6 +71,7 @@ void PaletteCanvas::draw()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
 
 	// Clear
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
