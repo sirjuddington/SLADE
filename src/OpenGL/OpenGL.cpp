@@ -80,16 +80,35 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 		if (canvas->IsShown())
 		{
 			log::info("Setting up the OpenGL context");
-			context = new wxGLContext(canvas);
+
+			// Setup desired context attributes
+			wxGLContextAttrs attr;
+			attr.PlatformDefaults().CompatibilityProfile().OGLVersion(3, 3).EndList();
+
+			// Create context
+			context = new wxGLContext(canvas, nullptr, &attr);
+			if (!context->IsOK())
+			{
+				log::error("Failed to setup the OpenGL context");
+				delete context;
+				context = nullptr;
+				return nullptr;
+			}
+
+			// Make current
 			if (!context->SetCurrent(*canvas))
 			{
 				log::error("Failed to setup the OpenGL context");
 				delete context;
+				context = nullptr;
 				return nullptr;
 			}
+
+			// Initialize OpenGL
 			if (!init())
 			{
 				delete context;
+				context = nullptr;
 				return nullptr;
 			}
 		}
@@ -255,12 +274,26 @@ bool gl::accuracyTweak()
 // -----------------------------------------------------------------------------
 // Returns the GL attributes array for use with wxGLCanvas
 // -----------------------------------------------------------------------------
-int* gl::getWxGLAttribs()
+wxGLAttributes gl::getWxGLAttribs()
 {
-	// Set specified depth buffer size
-	wx_gl_attrib[3] = gl_depth_buffer_size;
+	wxGLAttributes attr;
 
-	return wx_gl_attrib;
+	// Try 32bit depth buffer first
+	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(32).Stencil(8).EndList();
+	if (wxGLCanvas::IsDisplaySupported(attr))
+		return attr;
+
+	// Then 24 bit depth buffer if not supported
+	attr.Reset();
+	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(24).Stencil(8).EndList();
+	if (wxGLCanvas::IsDisplaySupported(attr))
+		return attr;
+
+	// Then 16bit depth buffer (if this isn't supported then it's something else)
+	attr.Reset();
+	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(16).Stencil(8).EndList();
+
+	return attr;
 }
 
 // -----------------------------------------------------------------------------

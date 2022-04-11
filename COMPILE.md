@@ -31,6 +31,7 @@ SLADE can be built on Windows using [Visual Studio](https://visualstudio.microso
 ### Required vcpkg libraries
 
 * freeimage
+* ftgl
 * lua
 * mpg123
 * opengl

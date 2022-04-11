@@ -42,22 +42,22 @@ namespace gl
 		Info() { vendor = renderer = version = extensions = "OpenGL not initialised"; }
 	};
 
-	wxGLContext* getContext(wxGLCanvas* canvas);
-	bool         init();
-	bool         np2TexSupport();
-	bool         pointSpriteSupport();
-	bool         vboSupport();
-	bool         fboSupport();
-	bool         validTexDimension(unsigned dim);
-	float        maxPointSize();
-	unsigned     maxTextureSize();
-	bool         isInitialised();
-	bool         accuracyTweak();
-	int*         getWxGLAttribs();
-	void         setColour(const ColRGBA& col, Blend blend = Blend::Ignore);
-	void         setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend blend = Blend::Ignore);
-	void         setBlend(Blend blend);
-	void         resetBlend();
-	Info         sysInfo();
+	wxGLContext*   getContext(wxGLCanvas* canvas);
+	bool           init();
+	bool           np2TexSupport();
+	bool           pointSpriteSupport();
+	bool           vboSupport();
+	bool           fboSupport();
+	bool           validTexDimension(unsigned dim);
+	float          maxPointSize();
+	unsigned       maxTextureSize();
+	bool           isInitialised();
+	bool           accuracyTweak();
+	wxGLAttributes getWxGLAttribs();
+	void           setColour(const ColRGBA& col, Blend blend = Blend::Ignore);
+	void           setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend blend = Blend::Ignore);
+	void           setBlend(Blend blend);
+	void           resetBlend();
+	Info           sysInfo();
 } // namespace gl
 } // namespace slade
