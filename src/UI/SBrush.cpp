@@ -1,163 +1,149 @@
 
-/*******************************************************************
-* SLADE - It's a Doom Editor
-* Copyright (C) 2008-2017 Simon Judd
-*
-* Email:       sirjuddington@gmail.com
-* Web:         http://slade.mancubus.net
-* Filename:    SBrush.cpp
-* Description: SBrush class. Handles pixel painting for GfxCanvas.
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2022 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SBrush.cpp
+// Description: SBrush class. Handles pixel painting for GfxCanvas.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
-* INCLUDES
-*******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SBrush.h"
-#include "General/SAction.h"
-#include "Graphics/SImage/SImage.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 
+using namespace slade;
 
-/*******************************************************************
-* CONSTANTS
-*******************************************************************/
-SBrushManager* SBrushManager::instance = nullptr;
 
-/*******************************************************************
-* VARIABLES
-*******************************************************************/
-
-/*******************************************************************
-* EXTERNAL VARIABLES
-*******************************************************************/
-
-/*******************************************************************
-* SBRUSH CLASS FUNCTIONS
-*******************************************************************/
-
-/* SBrush::SBrush
- * SBrush class constructor
- *******************************************************************/
-
-SBrush::SBrush(string name)
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
 {
+vector<unique_ptr<SBrush>> brushes;
+}
 
-	image = nullptr;
-	this->name = name;
-	icon = name.AfterFirst('_');
-	cx = 0;
-	cy = 0;
 
-	Archive* res = App::archiveManager().programResourceArchive();
+// -----------------------------------------------------------------------------
+//
+// SBrush Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// SBrush class constructor
+// -----------------------------------------------------------------------------
+SBrush::SBrush(const wxString& name) : name_{ name }, icon_{ name.AfterFirst('_') }
+{
+	const auto res = app::archiveManager().programResourceArchive();
 	if (res == nullptr)
 		return;
-	ArchiveEntry* file = res->entryAtPath(S_FMT("icons/general/%s.png", icon));
-	if (file == nullptr || file->getSize() == 0)
+	auto file = res->entryAtPath(fmt::format("icons/general/16/{}.png", icon_.ToStdString()));
+	if (file == nullptr || file->size() == 0)
 	{
-		LOG_MESSAGE(2, "error, no file at icons/general/%s.png", icon);
+		log::error(2, wxString::Format("error, no file at icons/general/16/%s.png", icon_));
 		return;
 	}
-	image = new SImage();
-	if (!image->open(file->getMCData(), 0, "png"))
+	image_ = std::make_unique<SImage>();
+	if (!image_->open(file->data(), 0, "png"))
 	{
-		LOG_MESSAGE(2, "couldn't load image data for icons/general/%s.png", icon);
+		log::error(2, wxString::Format("couldn't load image data for icons/general/16/%s.png", icon_));
 		return;
 	}
-	image->convertAlphaMap(SImage::ALPHA);
-	cx = image->getWidth() >> 1;
-	cy = image->getHeight() >> 1;
-
-	theBrushManager->add(this);
+	image_->convertAlphaMap(SImage::AlphaSource::Alpha);
+	center_.x = image_->width() >> 1;
+	center_.y = image_->height() >> 1;
 }
 
-SBrush::~SBrush()
+// -----------------------------------------------------------------------------
+// Returns intensity of how much this pixel is affected by the brush;
+// [0, 0] is the brush's center
+// -----------------------------------------------------------------------------
+uint8_t SBrush::pixel(int x, int y) const
 {
-	if (image)
-		delete image;
-}
-
-uint8_t SBrush::getPixel(int x, int y)
-{
-	x += cx;
-	y += cy;
-	if (image && x >= 0 && x < image->getWidth() && y >= 0 && y < image->getHeight())
-		return image->getPixelIndex((unsigned)x, (unsigned)y);
+	x += center_.x;
+	y += center_.y;
+	if (image_ && x >= 0 && x < image_->width() && y >= 0 && y < image_->height())
+		return image_->pixelIndexAt(static_cast<unsigned>(x), static_cast<unsigned>(y));
 	return 0;
 }
 
-SBrushManager::SBrushManager()
-{
-	brushes.clear();
-}
 
-SBrushManager::~SBrushManager()
-{
-	for (size_t i = brushes.size(); i > 0; --i)
-	{
-		delete brushes[i - 1];
-		brushes[i - 1] = nullptr;
-	}
-	brushes.clear();
-}
+// -----------------------------------------------------------------------------
+//
+// SBrush Class Static Functions
+//
+// -----------------------------------------------------------------------------
 
-SBrush * SBrushManager::get(string name)
+
+// -----------------------------------------------------------------------------
+// Get a brush from its name
+// -----------------------------------------------------------------------------
+SBrush* SBrush::get(const wxString& name)
 {
-	for (size_t i = 0; i < brushes.size(); ++i)
-		if (S_CMPNOCASE(name, brushes[i]->getName()))
-			return brushes[i];
+	for (auto& brush : brushes)
+		if (S_CMPNOCASE(name, brush->name()))
+			return brush.get();
 
 	return nullptr;
 }
 
-void SBrushManager::add(SBrush * brush)
+// -----------------------------------------------------------------------------
+// Init brushes
+// -----------------------------------------------------------------------------
+bool SBrush::initBrushes()
 {
-	brushes.push_back(brush);
-}
-
-bool SBrushManager::initBrushes()
-{
-	new SBrush("pgfx_brush_sq_1");
-	new SBrush("pgfx_brush_sq_3");
-	new SBrush("pgfx_brush_sq_5");
-	new SBrush("pgfx_brush_sq_7");
-	new SBrush("pgfx_brush_sq_9");
-	new SBrush("pgfx_brush_ci_5");
-	new SBrush("pgfx_brush_ci_7");
-	new SBrush("pgfx_brush_ci_9");
-	new SBrush("pgfx_brush_di_3");
-	new SBrush("pgfx_brush_di_5");
-	new SBrush("pgfx_brush_di_7");
-	new SBrush("pgfx_brush_di_9");
-	new SBrush("pgfx_brush_pa_a");
-	new SBrush("pgfx_brush_pa_b");
-	new SBrush("pgfx_brush_pa_c");
-	new SBrush("pgfx_brush_pa_d");
-	new SBrush("pgfx_brush_pa_e");
-	new SBrush("pgfx_brush_pa_f");
-	new SBrush("pgfx_brush_pa_g");
-	new SBrush("pgfx_brush_pa_h");
-	new SBrush("pgfx_brush_pa_i");
-	new SBrush("pgfx_brush_pa_j");
-	new SBrush("pgfx_brush_pa_k");
-	new SBrush("pgfx_brush_pa_l");
-	new SBrush("pgfx_brush_pa_m");
-	new SBrush("pgfx_brush_pa_n");
-	new SBrush("pgfx_brush_pa_o");
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_1"));
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_3"));
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_5"));
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_7"));
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_9"));
+	brushes.emplace_back(new SBrush("pgfx_brush_ci_5"));
+	brushes.emplace_back(new SBrush("pgfx_brush_ci_7"));
+	brushes.emplace_back(new SBrush("pgfx_brush_ci_9"));
+	brushes.emplace_back(new SBrush("pgfx_brush_di_3"));
+	brushes.emplace_back(new SBrush("pgfx_brush_di_5"));
+	brushes.emplace_back(new SBrush("pgfx_brush_di_7"));
+	brushes.emplace_back(new SBrush("pgfx_brush_di_9"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_a"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_b"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_c"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_d"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_e"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_f"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_g"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_h"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_i"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_j"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_k"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_l"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_m"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_n"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_o"));
 	return true;
 }

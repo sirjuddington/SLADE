@@ -1,28 +1,22 @@
+#pragma once
 
-#ifndef __NODE_BUILDERS_H__
-#define __NODE_BUILDERS_H__
-
-#include "common.h"
-
-namespace NodeBuilders
+namespace slade::nodebuilders
 {
-	struct builder_t
-	{
-		string			id;
-		string			name;
-		string			path;
-		string			command;
-		string			exe;
-		vector<string>	options;
-		vector<string>	option_desc;
-	};
+struct Builder
+{
+	string         id;
+	string         name;
+	string         path;
+	string         command;
+	string         exe;
+	vector<string> options;
+	vector<string> option_desc;
+};
 
-	void		init();
-	void		addBuilderPath(string builder, string path);
-	void		saveBuilderPaths(wxFile& file);
-	unsigned	nNodeBuilders();
-	builder_t&	getBuilder(string id);
-	builder_t&	getBuilder(unsigned index);
-}
-
-#endif//__NODE_BUILDERS_H__
+void     init();
+void     addBuilderPath(string_view builder, string_view path);
+void     saveBuilderPaths(wxFile& file);
+unsigned nNodeBuilders();
+Builder& builder(string_view id);
+Builder& builder(unsigned index);
+} // namespace slade::nodebuilders

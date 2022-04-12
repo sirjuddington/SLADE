@@ -1,32 +1,33 @@
-
-#ifndef __DOCS_PAGE_H__
-#define __DOCS_PAGE_H__
+#pragma once
 
 #include "common.h"
 
 class wxWebView;
+
+namespace slade
+{
 class SToolBar;
 class SToolBarButton;
+
 class DocsPage : public wxPanel
 {
-private:
-	wxWebView*		wv_browser;
-	SToolBar*		toolbar;
-	SToolBarButton*	tb_home;
-	SToolBarButton*	tb_back;
-	SToolBarButton*	tb_forward;
-
 public:
 	DocsPage(wxWindow* parent);
-	~DocsPage();
+	~DocsPage() = default;
 
-	void	updateNavButtons();
-	void	openPage(string page_name);
+	void updateNavButtons() const;
+	void openPage(const wxString& page_name) const;
+
+private:
+	wxWebView*      wv_browser_ = nullptr;
+	SToolBar*       toolbar_    = nullptr;
+	SToolBarButton* tb_home_    = nullptr;
+	SToolBarButton* tb_back_    = nullptr;
+	SToolBarButton* tb_forward_ = nullptr;
 
 	// Events
-	void	onToolbarButton(wxCommandEvent& e);
-	void	onHTMLLinkClicked(wxEvent& e);
-	void	onNavigationDone(wxEvent& e);
+	void onToolbarButton(wxCommandEvent& e);
+	void onHTMLLinkClicked(wxEvent& e);
+	void onNavigationDone(wxEvent& e);
 };
-
-#endif//__DOCS_PAGE_H__
+} // namespace slade

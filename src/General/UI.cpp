@@ -1,18 +1,53 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2022 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    UI.cpp
+// Description: Misc. UI-related stuff
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UI.h"
 #include "App.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "UI/SplashWindow.h"
+#include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
-
-
-
-namespace UI
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace slade::ui
 {
-std::unique_ptr<SplashWindow> splash_window;
-bool                          splash_enabled = true;
+unique_ptr<SplashWindow> splash_window;
+bool                     splash_enabled = true;
 
 // Pixel sizes/scale
 double scale = 1.;
@@ -22,32 +57,54 @@ int    px_pad_min;
 int    px_splitter;
 int    px_spin_width;
 
+} // namespace slade::ui
+
+
+// -----------------------------------------------------------------------------
+//
+// UI Namespace Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade::ui
+{
+// -----------------------------------------------------------------------------
+// Returns true when called from the main (UI) thread
+// -----------------------------------------------------------------------------
 bool isMainThread()
 {
-	return App::mainThreadId() == std::this_thread::get_id();
+	return app::mainThreadId() == std::this_thread::get_id();
 }
-} // namespace UI
+} // namespace slade::ui
 
-
-void UI::init(double scale)
+// -----------------------------------------------------------------------------
+// Initialises UI metric values based on [scale]
+// -----------------------------------------------------------------------------
+void ui::init(double scale)
 {
-	UI::scale     = scale;
-	px_pad_small  = 8 * scale;
-	px_pad        = 12 * scale;
-	px_pad_min    = 3 * scale;
-	px_splitter   = 10 * scale;
-	if (App::platform() == App::Platform::Linux)
+	ui::scale    = scale;
+	px_pad_small = 8 * scale;
+	px_pad       = 12 * scale;
+	px_pad_min   = 3 * scale;
+	px_splitter  = 10 * scale;
+	if (app::platform() == app::Platform::Linux)
 		px_spin_width = -1;
 	else
 		px_spin_width = 64 * scale;
 }
 
-void UI::enableSplash(bool enable)
+// -----------------------------------------------------------------------------
+// Enables or disables the splash window depending on [enable]
+// -----------------------------------------------------------------------------
+void ui::enableSplash(bool enable)
 {
 	splash_enabled = enable;
 }
 
-void UI::showSplash(string message, bool progress, wxWindow* parent)
+// -----------------------------------------------------------------------------
+// Shows the splash window with [message].
+// If [progress] is true, the progress bar is displayed
+// -----------------------------------------------------------------------------
+void ui::showSplash(string_view message, bool progress, wxWindow* parent)
 {
 	if (!splash_enabled || !isMainThread())
 		return;
@@ -58,10 +115,13 @@ void UI::showSplash(string message, bool progress, wxWindow* parent)
 		splash_window = std::make_unique<SplashWindow>();
 	}
 
-	splash_window->show(message, progress, parent);
+	splash_window->show(wxString{ message.data(), message.size() }, progress, parent);
 }
 
-void UI::hideSplash()
+// -----------------------------------------------------------------------------
+// Hides the splash window
+// -----------------------------------------------------------------------------
+void ui::hideSplash()
 {
 	if (splash_window && isMainThread())
 	{
@@ -70,36 +130,54 @@ void UI::hideSplash()
 	}
 }
 
-void UI::updateSplash()
+// -----------------------------------------------------------------------------
+// Redraws the splash window
+// -----------------------------------------------------------------------------
+void ui::updateSplash()
 {
 	if (splash_window && isMainThread())
 		splash_window->forceRedraw();
 }
 
-float UI::getSplashProgress()
+// -----------------------------------------------------------------------------
+// Returns the current splash window progress
+// -----------------------------------------------------------------------------
+float ui::getSplashProgress()
 {
-	return splash_window ? splash_window->getProgress() : 0.0f;
+	return splash_window ? splash_window->progress() : 0.0f;
 }
 
-void UI::setSplashMessage(string message)
+// -----------------------------------------------------------------------------
+// Sets the splash window [message]
+// -----------------------------------------------------------------------------
+void ui::setSplashMessage(string_view message)
 {
 	if (splash_window && isMainThread())
-		splash_window->setMessage(message);
+		splash_window->setMessage(wxString{ message.data(), message.size() });
 }
 
-void UI::setSplashProgressMessage(string message)
+// -----------------------------------------------------------------------------
+// Sets the splash window progress bar [message]
+// -----------------------------------------------------------------------------
+void ui::setSplashProgressMessage(string_view message)
 {
 	if (splash_window && isMainThread())
-		splash_window->setProgressMessage(message);
+		splash_window->setProgressMessage(wxString{ message.data(), message.size() });
 }
 
-void UI::setSplashProgress(float progress)
+// -----------------------------------------------------------------------------
+// Sets the splash window [progress]
+// -----------------------------------------------------------------------------
+void ui::setSplashProgress(float progress)
 {
 	if (splash_window && isMainThread())
 		splash_window->setProgress(progress);
 }
 
-void UI::setCursor(wxWindow* window, MouseCursor cursor)
+// -----------------------------------------------------------------------------
+// Sets the mouse cursor for [window]
+// -----------------------------------------------------------------------------
+void ui::setCursor(wxWindow* window, MouseCursor cursor)
 {
 	switch (cursor)
 	{
@@ -114,12 +192,20 @@ void UI::setCursor(wxWindow* window, MouseCursor cursor)
 	}
 }
 
-double UI::scaleFactor()
+// -----------------------------------------------------------------------------
+// Returns the UI scaling factor
+// -----------------------------------------------------------------------------
+double ui::scaleFactor()
 {
 	return scale;
 }
 
-int UI::px(Size size)
+// -----------------------------------------------------------------------------
+// Returns a UI metric size (eg. padding).
+// Use this for UI sizes like padding, spin control widths etc. to keep things
+// consistent
+// -----------------------------------------------------------------------------
+int ui::px(Size size)
 {
 	switch (size)
 	{
@@ -132,37 +218,63 @@ int UI::px(Size size)
 	}
 }
 
-int UI::scalePx(int px)
+// -----------------------------------------------------------------------------
+// Returns [px] scaled by the current scaling factor (in pixels).
+// Will use the lower bound when converting to int
+// -----------------------------------------------------------------------------
+int ui::scalePx(int px)
 {
 	return px * scale;
 }
 
-int UI::pad()
+// -----------------------------------------------------------------------------
+// Returns [px] scaled by the current scaling factor (in pixels)
+// Will use the upper bound when converting to int
+// -----------------------------------------------------------------------------
+int ui::scalePxU(int px)
+{
+	return static_cast<int>(std::ceil(static_cast<double>(px) * scale));
+}
+
+// -----------------------------------------------------------------------------
+// Returns the standard padding size in pixels
+// -----------------------------------------------------------------------------
+int ui::pad()
 {
 	return px_pad_small;
 }
 
-int UI::padLarge()
+// -----------------------------------------------------------------------------
+// Returns the standard large padding size in pixels
+// -----------------------------------------------------------------------------
+int ui::padLarge()
 {
 	return px_pad;
 }
 
 
-/* Console Command - "splash"
- * Shows the splash screen with the given message, or hides it if
- * no message is given
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Console Commands
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Shows the splash screen with the given message, or hides it if no message is
+// given
+// -----------------------------------------------------------------------------
 CONSOLE_COMMAND(splash, 0, false)
 {
-	if (args.size() == 0)
-		UI::hideSplash();
+	if (args.empty())
+		ui::hideSplash();
 	else if (args.size() == 1)
-		UI::showSplash(args[0]);
+		ui::showSplash(args[0]);
 	else
 	{
-		UI::showSplash(args[0], true);
-		float prog = atof(CHR(args[1]));
-		UI::setSplashProgress(prog);
-		UI::setSplashProgressMessage(S_FMT("Progress %s", args[1]));
+		ui::showSplash(args[0], true);
+		float prog = strutil::asFloat(args[1]);
+		ui::setSplashProgress(prog);
+		ui::setSplashProgressMessage(fmt::format("Progress {}", args[1]));
 	}
 }

@@ -1,53 +1,52 @@
+#pragma once
 
-#ifndef __LISTVIEW_H__
-#define __LISTVIEW_H__
+#include "Utility/Colour.h"
 
-#include "common.h"
-
-enum
+namespace slade
 {
-	LV_STATUS_NORMAL,
-	LV_STATUS_MODIFIED,
-	LV_STATUS_NEW,
-	LV_STATUS_LOCKED,
-	LV_STATUS_ERROR,
-	LV_STATUS_DISABLED,
-};
-
 class ListView : public wxListCtrl
 {
-private:
-	bool		icons;
-	bool		update_width;
-
 public:
+	enum class ItemStatus
+	{
+		Normal,
+		Modified,
+		New,
+		Locked,
+		Error,
+		Disabled
+	};
+
 	ListView(wxWindow* parent, int id, long style = wxLC_REPORT);
+	~ListView() = default;
 
-	~ListView();
-	bool	showIcons() { return icons; }
-	void	showIcons(bool show) { icons = show; }
-	bool	enableSizeUpdate() { return update_width; }
-	void	enableSizeUpdate(bool update) { update_width = update; }
+	bool showIcons() const { return icons_; }
+	void showIcons(bool show) { icons_ = show; }
+	bool enableSizeUpdate() const { return update_width_; }
+	void enableSizeUpdate(bool update) { update_width_ = update; }
 
-	bool	addItem(int index, string text);
-	bool	addItem(int index, wxArrayString text);
+	bool addItem(int index, const wxString& text);
+	bool addItem(int index, wxArrayString text);
 
-	bool	deleteItems(wxArrayInt items);
+	bool deleteItems(wxArrayInt items);
 
-	rgba_t	getDisabledColour();
-	bool	setItemStatus(int item, int status);
-	bool	setItemText(int item, int column, string text);
+	ColRGBA disabledColour() const;
+	bool    setItemStatus(int item, ItemStatus status);
+	bool    setItemText(int item, int column, const wxString& text);
 
-	void	clearSelection();
-	bool	selectItem(int item, bool focus = true);
-	bool	deSelectItem(int item);
+	void clearSelection();
+	bool selectItem(int item, bool focus = true);
+	bool deSelectItem(int item);
 
-	wxArrayInt	selectedItems();
+	wxArrayInt selectedItems() const;
 
-	bool	showItem(int item);
-	bool	swapItems(int item1, int item2);
+	bool showItem(int item);
+	bool swapItems(int item1, int item2);
 
-	bool	updateSize();
+	bool updateSize();
+
+private:
+	bool icons_        = true;
+	bool update_width_ = true;
 };
-
-#endif//__LISTVIEW_H__
+} // namespace slade

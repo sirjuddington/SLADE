@@ -1,50 +1,53 @@
+#pragma once
 
-#ifndef __OGLCANVAS_H__
-#define	__OGLCANVAS_H__
-
-#include "common.h"
-#include "OpenGL/OpenGL.h"
 #include "Graphics/Palette/Palette.h"
+#include "OpenGL/OpenGL.h"
 
 class wxWindow;
+
+namespace slade
+{
 #ifdef USE_SFML_RENDERWINDOW
-class OGLCanvas : public wxControl, public sf::RenderWindow
+class OGLCanvas : public wxGLCanvas, public sf::RenderWindow
 {
 #else
 class OGLCanvas : public wxGLCanvas
 {
 #endif
-protected:
-	bool		init_done;
-	Palette	palette;
-	wxTimer		timer;
-	long		last_time;
-	bool		recreate;
-
 public:
 	OGLCanvas(wxWindow* parent, int id, bool handle_timer = true, int timer_interval = 100);
-	~OGLCanvas();
+	~OGLCanvas() = default;
 
-	Palette*	getPalette() { return &palette; }
-	void			setPalette(Palette* pal) { palette.copyPalette(pal); }
-	bool			setContext();
-	void			createSFML();
-	void			init();
-	virtual void	draw() = 0;
-	virtual void	update(long frametime) {}
-	void			drawCheckeredBackground();
-	wxWindow*		toPanel(wxWindow* parent);
-	bool			setActive();
-	void			setup2D();
+	virtual Palette& palette() { return palette_; }
+	void             setPalette(Palette* pal) { palette_.copyPalette(pal); }
+	bool             setContext();
+	bool             createSFML();
+	void             init();
+	virtual void     draw() = 0;
+	virtual void     update(long frametime) {}
+	void             drawCheckeredBackground() const;
+	bool             setActive();
+	void             setup2D() const;
 
 #ifdef USE_SFML_RENDERWINDOW
-	void	SwapBuffers() { display(); }
+	bool SwapBuffers() override
+	{
+		display();
+		return true;
+	}
 #endif
 
-	void	onPaint(wxPaintEvent& e);
-	void	onEraseBackground(wxEraseEvent& e);
-	void	onTimer(wxTimerEvent& e);
-	void	onResize(wxSizeEvent& e);
-};
+protected:
+	bool    init_done_ = false;
+	Palette palette_;
+	wxTimer timer_;
+	long    last_time_ = 0;
+	bool    recreate_  = false;
 
-#endif //__OGLCANVAS_H__
+	// Events
+	void onPaint(wxPaintEvent& e);
+	void onEraseBackground(wxEraseEvent& e);
+	void onTimer(wxTimerEvent& e);
+	void onResize(wxSizeEvent& e);
+};
+} // namespace slade

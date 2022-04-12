@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,52 +15,53 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SpecialPresetDialog.h"
 #include "Game/Configuration.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
 
-// ----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 //
 // Helper Classes
 //
-// ----------------------------------------------------------------------------
-namespace
+// -----------------------------------------------------------------------------
+namespace slade
 {
-	class SpecialPresetData : public wxClientData
-	{
-	public:
-		SpecialPresetData(const Game::SpecialPreset& preset) : preset_{ preset } {}
+class SpecialPresetData : public wxClientData
+{
+public:
+	SpecialPresetData(const game::SpecialPreset& preset) : preset_{ preset } {}
 
-		const Game::SpecialPreset& preset() const { return preset_; }
+	const game::SpecialPreset& preset() const { return preset_; }
 
-	private:
-		Game::SpecialPreset const&	preset_;
-	};
-}
+private:
+	game::SpecialPreset const& preset_;
+};
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SpecialPresetTreeView Class
 //
 // A wxDataViewTreeCtrl specialisation showing the special presets and groups
 // in a tree structure
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class SpecialPresetTreeView : public wxDataViewTreeCtrl
 {
 public:
@@ -76,14 +77,13 @@ public:
 		wxSize textsize;
 
 		// Populate tree
-		addPresets(Game::customSpecialPresets(), textsize, dc);				// User custom presets
-		addPresets(Game::configuration().specialPresets(), textsize, dc);	// From game configuration
+		addPresets(game::customSpecialPresets(), textsize, dc);           // User custom presets
+		addPresets(game::configuration().specialPresets(), textsize, dc); // From game configuration
 		wxDataViewCtrl::Expand(root_);
 
 		// Bind events
 		Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, [&](wxDataViewEvent& e) { e.Veto(); });
-		Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [&](wxDataViewEvent& e)
-		{
+		Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [&](wxDataViewEvent& e) {
 			if (GetChildCount(e.GetItem()) > 0)
 			{
 				// Expand if group node
@@ -96,64 +96,62 @@ public:
 
 		// 64 is an arbitrary fudge factor -- should be at least the width of a
 		// scrollbar plus the expand icons plus any extra padding
-		int min_width = textsize.GetWidth() + GetIndent() + UI::scalePx(64);
-		wxWindowBase::SetMinSize(wxSize(min_width, UI::scalePx(200)));
+		int min_width = textsize.GetWidth() + GetIndent() + ui::scalePx(64);
+		wxWindowBase::SetMinSize(wxSize(min_width, ui::scalePx(200)));
 	}
 
-	Game::SpecialPreset selectedPreset() const
+	game::SpecialPreset selectedPreset() const
 	{
 		// Get data from selected item
-		auto sel_data = (SpecialPresetData*)GetItemData(GetSelection());
+		auto sel_data = dynamic_cast<SpecialPresetData*>(GetItemData(GetSelection()));
 		if (sel_data)
 			return sel_data->preset();
 
 		return {};
 	}
 
-	void setParentDialog(wxDialog* dlg)
-	{
-		parent_dialog_ = dlg;
-	}
+	void setParentDialog(wxDialog* dlg) { parent_dialog_ = dlg; }
 
 private:
-	wxDataViewItem	root_;
-	wxDialog*		parent_dialog_;
+	wxDataViewItem root_;
+	wxDialog*      parent_dialog_ = nullptr;
 
 	struct Group
 	{
-		string			name;
-		wxDataViewItem	item;
-		Group(wxDataViewItem item, string name) : name{ name }, item{ item } {}
+		wxString       name;
+		wxDataViewItem item;
+		Group(wxDataViewItem item, const wxString& name) : name{ name }, item{ item } {}
 	};
 	vector<Group> groups_;
 
-	wxDataViewItem getGroup(string group)
+	wxDataViewItem getGroup(const wxString& group)
 	{
 		// Check if group was already made
-		for (unsigned a = 0; a < groups_.size(); a++)
+		for (auto& g : groups_)
 		{
-			if (group == groups_[a].name)
-				return groups_[a].item;
+			if (group == g.name)
+				return g.item;
 		}
 
 		// Split group into subgroups
 		auto path = wxSplit(group, '/');
 
 		// Create group needed
-		auto current = root_;
-		string fullpath = "";
+		auto     current  = root_;
+		wxString fullpath = "";
 		for (unsigned p = 0; p < path.size(); p++)
 		{
-			if (p > 0) fullpath += "/";
+			if (p > 0)
+				fullpath += "/";
 			fullpath += path[p];
 
 			bool found = false;
-			for (unsigned a = 0; a < groups_.size(); a++)
+			for (auto& g : groups_)
 			{
-				if (groups_[a].name == fullpath)
+				if (g.name == fullpath)
 				{
-					current = groups_[a].item;
-					found = true;
+					current = g.item;
+					found   = true;
 					break;
 				}
 			}
@@ -161,14 +159,14 @@ private:
 			if (!found)
 			{
 				current = AppendContainer(current, path[p], -1, 1);
-				groups_.push_back({ current, fullpath });
+				groups_.emplace_back(current, fullpath);
 			}
 		}
 
 		return current;
 	}
 
-	void addPresets(const vector<Game::SpecialPreset>& presets, wxSize& textsize, wxClientDC& dc)
+	void addPresets(const vector<game::SpecialPreset>& presets, wxSize& textsize, wxClientDC& dc)
 	{
 		for (auto& preset : presets)
 		{
@@ -178,23 +176,20 @@ private:
 		}
 	}
 };
+} // namespace slade
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SpecialPresetDialog Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SpecialPresetDialog::SpecialPresetDialog
-//
+// -----------------------------------------------------------------------------
 // SpecialPresetDialog class constructor
-// ----------------------------------------------------------------------------
-SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) :
-	SDialog{ parent, "Special Presets", "special_presets" },
-	tree_presets_{ nullptr }
+// -----------------------------------------------------------------------------
+SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "Special Presets", "special_presets" }
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -202,14 +197,14 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) :
 	// Presets tree
 	tree_presets_ = new SpecialPresetTreeView(this);
 	tree_presets_->setParentDialog(this);
-	sizer->Add(tree_presets_, 1, wxALL | wxEXPAND, UI::padLarge());
+	sizer->Add(tree_presets_, 1, wxALL | wxEXPAND, ui::padLarge());
 
 	// OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 	hbox->AddStretchSpacer(1);
 	auto btn_ok = new wxButton(this, -1, "OK");
-	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad());
 	btn_ok->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_OK); });
 
 	// Cancel button
@@ -218,24 +213,10 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) :
 	btn_cancel->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_CANCEL); });
 }
 
-// ----------------------------------------------------------------------------
-// SpecialPresetDialog::selectedPreset
-//
+// -----------------------------------------------------------------------------
 // Returns the currently selected special preset
-// ----------------------------------------------------------------------------
-Game::SpecialPreset SpecialPresetDialog::selectedPreset() const
+// -----------------------------------------------------------------------------
+game::SpecialPreset SpecialPresetDialog::selectedPreset() const
 {
 	return tree_presets_->selectedPreset();
-}
-
-
-
-
-// Testing
-#include "General/Console/Console.h"
-
-CONSOLE_COMMAND(test_spresets, 0, false)
-{
-	SpecialPresetDialog dlg(nullptr);
-	dlg.ShowModal();
 }

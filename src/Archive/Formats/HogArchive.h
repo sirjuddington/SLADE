@@ -1,41 +1,38 @@
-
-#ifndef __HOGARCHIVE_H__
-#define __HOGARCHIVE_H__
+#pragma once
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class HogArchive : public TreelessArchive
 {
 public:
-	HogArchive();
-	~HogArchive();
+	HogArchive() : TreelessArchive("hog") {}
+	~HogArchive() = default;
 
 	// HOG specific
-	uint32_t	getEntryOffset(ArchiveEntry* entry);
-	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
+	uint32_t getEntryOffset(ArchiveEntry* entry);
+	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 
 	// Opening/writing
-	bool	open(MemChunk& mc) override;						// Open from MemChunk
-	bool	write(MemChunk& mc, bool update = true) override;	// Write to MemChunk
+	bool open(MemChunk& mc) override;                      // Open from MemChunk
+	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
 
 	// Misc
-	bool	loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry*	addEntry(
-						ArchiveEntry* entry,
-						unsigned position = 0xFFFFFFFF,
-						ArchiveTreeNode* dir = nullptr,
-						bool copy = false
-					) override;
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	shared_ptr<ArchiveEntry> addEntry(
+		shared_ptr<ArchiveEntry> entry,
+		unsigned                 position = 0xFFFFFFFF,
+		ArchiveDir*              dir      = nullptr) override;
+	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
 
 	// Entry modification
-	bool	renameEntry(ArchiveEntry* entry, string name) override;
+	bool renameEntry(ArchiveEntry* entry, string_view name) override;
 
 	// Static functions
 	static bool isHogArchive(MemChunk& mc);
-	static bool isHogArchive(string filename);
+	static bool isHogArchive(const string& filename);
 };
-
-#endif//__HOGARCHIVE_H__
+} // namespace slade

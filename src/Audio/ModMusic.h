@@ -1,34 +1,33 @@
-#ifndef __MOD_MUSIC_H__
-#define __MOD_MUSIC_H__
+#pragma once
 
 #include <SFML/Audio.hpp>
 
 struct DUH;
 struct DUH_SIGRENDERER;
 
+namespace slade::audio
+{
 class ModMusic : public sf::SoundStream
 {
-private:
-	void close();
-	bool onGetData(Chunk& data);
-	void onSeek(sf::Time timeOffset);
-
-	sf::Int16        samples[44100];
-	DUH*             dumb_module;
-	DUH_SIGRENDERER* dumb_player;
-
-	static bool init_done;
-
 public:
-	ModMusic();
+	ModMusic() = default;
 	~ModMusic();
 
-	bool openFromFile(const std::string& filename);
-	bool loadFromMemory(const uint8_t* data, const uint32_t size);
-	sf::Time getDuration() const;
+	bool     openFromFile(const string& filename);
+	bool     loadFromMemory(const uint8_t* data, const uint32_t size);
+	sf::Time duration() const;
 
 	static void initDumb();
+
+private:
+	void close();
+	bool onGetData(Chunk& data) override;
+	void onSeek(sf::Time timeOffset) override;
+
+	sf::Int16        samples_[44100]{};
+	DUH*             dumb_module_ = nullptr;
+	DUH_SIGRENDERER* dumb_player_ = nullptr;
+
+	static bool init_done_;
 };
-
-
-#endif//__MOD_MUSIC_H__
+} // namespace slade::audio

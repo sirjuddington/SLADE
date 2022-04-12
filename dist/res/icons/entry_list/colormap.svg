@@ -1,0 +1,66 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    width="16px"
+    height="16px"
+    style="-ms-transform:rotate(360deg);-webkit-transform:rotate(360deg)"
+    viewBox="0 0 24 24"
+    transform="rotate(360)">
+    <defs>
+        <linearGradient id="grad-green" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#35FF7F" />
+            <stop offset="100%" style="stop-color:#0B381B" />
+        </linearGradient>
+        <linearGradient id="grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#4FB8FF" />
+            <stop offset="100%" style="stop-color:#122D3D" />
+        </linearGradient>
+        <linearGradient id="grad-red" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#FF3535" />
+            <stop offset="100%" style="stop-color:#3D0C0C" />
+        </linearGradient>
+        <linearGradient id="grad-yellow" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#FFE032" />
+            <stop offset="100%" style="stop-color:#332C0A" />
+        </linearGradient>
+    </defs>
+    <rect
+        x="1"
+        y="1"
+        width="22"
+        height="22"
+        fill="#FFFFFF"
+        stroke="#000000"
+        stroke-width="1.5"
+        rx="5"
+        ry="12"
+    />
+    <rect
+        x="4.5"
+        y="4"
+        width="3"
+        height="16"
+        fill="url(#grad-green)"
+    />
+    <rect
+        x="8.5"
+        y="4"
+        width="3"
+        height="16"
+        fill="url(#grad-blue)"
+    />
+    <rect
+        x="12.5"
+        y="4"
+        width="3"
+        height="16"
+        fill="url(#grad-red)"
+    />
+    <rect
+        x="16.5"
+        y="4"
+        width="3"
+        height="16"
+        fill="url(#grad-yellow)"
+    />
+</svg>

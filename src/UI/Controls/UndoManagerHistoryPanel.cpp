@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -16,56 +16,53 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UndoManagerHistoryPanel.h"
 #include "General/UndoRedo.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
+
+using namespace slade;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // UndoListView Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// UndoListView::UndoListView
-//
+// -----------------------------------------------------------------------------
 // UndoListView class constructor
-// ----------------------------------------------------------------------------
-UndoListView::UndoListView(wxWindow* parent, UndoManager* manager) :
-	VirtualListView{ parent },
-	manager_{ manager }
+// -----------------------------------------------------------------------------
+UndoListView::UndoListView(wxWindow* parent, UndoManager* manager) : VirtualListView{ parent }, manager_{ manager }
 {
 	if (manager)
 	{
 		SetItemCount(manager->nUndoLevels());
-		listenTo(manager);
+		connectManagerSignals();
 	}
 }
 
-// ----------------------------------------------------------------------------
-// UndoListView::getItemText
-//
+// -----------------------------------------------------------------------------
 // Returns the list text for [item] at [column]
-// ----------------------------------------------------------------------------
-string UndoListView::getItemText(long item, long column, long index) const
+// -----------------------------------------------------------------------------
+wxString UndoListView::itemText(long item, long column, long index) const
 {
 	if (!manager_)
 		return "";
@@ -75,179 +72,170 @@ string UndoListView::getItemText(long item, long column, long index) const
 	{
 		if (column == 0)
 		{
-			string name = manager_->undoLevel((unsigned) item)->getName();
-			return S_FMT("%lu. %s", item + 1, name);
+			wxString name = manager_->undoLevel((unsigned)item)->name();
+			return wxString::Format("%lu. %s", item + 1, name);
 		}
 		else
 		{
-			return manager_->undoLevel((unsigned) item)->getTimeStamp(false, true);
+			return manager_->undoLevel((unsigned)item)->timeStamp(false, true);
 		}
 	}
 	else
 		return "Invalid Index";
 }
 
-// ----------------------------------------------------------------------------
-// UndoListView::getItemIcon
-//
+// -----------------------------------------------------------------------------
 // Returns the icon index for [item]
-// ----------------------------------------------------------------------------
-int UndoListView::getItemIcon(long item, long column, long index) const
+// -----------------------------------------------------------------------------
+int UndoListView::itemIcon(long item, long column, long index) const
 {
 	return -1;
 }
 
-// ----------------------------------------------------------------------------
-// UndoListView::updateItemAttr
-//
+// -----------------------------------------------------------------------------
 // Updates display attributes for [item]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void UndoListView::updateItemAttr(long item, long column, long index) const
 {
 	if (!manager_)
 		return;
 
-	item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
+	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 
-	if (item == manager_->getCurrentIndex())
-		item_attr->SetTextColour(WXCOL(rgba_t(0, 170, 0)));
-	else if (item > manager_->getCurrentIndex())
-		item_attr->SetTextColour(WXCOL(rgba_t(150, 150, 150)));
+	if (item == manager_->currentIndex())
+		item_attr_->SetTextColour(ColRGBA(0, 170, 0).toWx());
+	else if (item > manager_->currentIndex())
+		item_attr_->SetTextColour(ColRGBA(150, 150, 150).toWx());
 }
 
-// ----------------------------------------------------------------------------
-// UndoListView::setManager
-//
+// -----------------------------------------------------------------------------
 // Sets the undo [manager] to show in the list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void UndoListView::setManager(UndoManager* manager)
 {
-	if (this->manager_)
-		stopListening(this->manager_);
-
-	this->manager_ = manager;
-	listenTo(manager);
-
+	manager_ = manager;
+	connectManagerSignals();
 	updateFromManager();
 }
 
-// ----------------------------------------------------------------------------
-// UndoListView::onAnnouncement
-//
-// Called when an announcement is received from the undo manager
-// ----------------------------------------------------------------------------
-void UndoListView::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
-{
-	if (announcer != manager_)
-		return;
-
-	updateFromManager();
-}
-
-// ----------------------------------------------------------------------------
-// UndoListView::updateFromManager
-//
+// -----------------------------------------------------------------------------
 // Updates visual representation
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void UndoListView::updateFromManager()
 {
+	if (!manager_)
+	{
+		SetItemCount(0);
+		Refresh();
+		return;
+	}
+
 	SetItemCount(manager_->nUndoLevels());
 	Refresh();
 
-	int current_index = manager_->getCurrentIndex();
+	int current_index = manager_->currentIndex();
 	if (current_index >= 0)
 		EnsureVisible(current_index);
 }
 
+// -----------------------------------------------------------------------------
+// Connect to the current UndoManager's signals
+// -----------------------------------------------------------------------------
+void UndoListView::connectManagerSignals()
+{
+	if (manager_)
+	{
+		sc_recorded_ = manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
+		sc_undo_     = manager_->signals().undo.connect([this]() { updateFromManager(); });
+		sc_redo_     = manager_->signals().redo.connect([this]() { updateFromManager(); });
+	}
+	else
+	{
+		sc_recorded_.disconnect();
+		sc_undo_.disconnect();
+		sc_redo_.disconnect();
+	}
+}
 
-// ----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 //
 // UndoManagerHistoryPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// UndoManagerHistoryPanel::UndoManagerHistoryPanel
-//
+// -----------------------------------------------------------------------------
 // UndoManagerHistoryPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* manager) :
-	wxPanel{ parent, -1 },
-	manager_{ manager }
+	wxPanel{ parent, -1 }, manager_{ manager }
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add undo levels list
 	list_levels_ = new UndoListView(this, manager);
-	sizer->Add(list_levels_, 1, wxEXPAND|wxALL, UI::pad());
+	sizer->Add(list_levels_, 1, wxEXPAND | wxALL, ui::pad());
 
-	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, UI::scalePx(160));
+	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, ui::scalePx(160));
 	list_levels_->AppendColumn("Time", wxLIST_FORMAT_RIGHT);
 	list_levels_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
 	Bind(wxEVT_MENU, &UndoManagerHistoryPanel::onMenu, this);
 }
 
-// ----------------------------------------------------------------------------
-// UndoManagerHistoryPanel::setManager
-//
+// -----------------------------------------------------------------------------
 // Sets the undo [manager] to display
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void UndoManagerHistoryPanel::setManager(UndoManager* manager)
 {
-	this->manager_ = manager;
+	manager_ = manager;
 	list_levels_->setManager(manager);
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // UndoManagerHistoryPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// UndoManagerHistoryPanel::onItemRightClick
-//
+// -----------------------------------------------------------------------------
 // Called when a list item is right clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e)
 {
-	long index = list_levels_->getFocus();
-	//wxMessageBox(S_FMT("Item %d", index));
+	long index = list_levels_->focusedIndex();
 
 	wxMenu context;
-	if (index == manager_->getCurrentIndex())
+	if (index == manager_->currentIndex())
 		context.Append(0, "Undo");
-	else if (index < manager_->getCurrentIndex())
+	else if (index < manager_->currentIndex())
 		context.Append(1, "Undo To Here");
-	else if (index == manager_->getCurrentIndex() + 1)
+	else if (index == manager_->currentIndex() + 1)
 		context.Append(2, "Redo");
 	else
 		context.Append(3, "Redo To Here");
 	PopupMenu(&context);
 }
 
-// ----------------------------------------------------------------------------
-// UndoManagerHistoryPanel::onMenu
-//
+// -----------------------------------------------------------------------------
 // Called when a context menu item is selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void UndoManagerHistoryPanel::onMenu(wxCommandEvent& e)
 {
-	long index = list_levels_->getFocus();
+	long index = list_levels_->focusedIndex();
 
-	if (index <= manager_->getCurrentIndex())
+	if (index <= manager_->currentIndex())
 	{
-		while (index <= manager_->getCurrentIndex())
+		while (index <= manager_->currentIndex())
 			manager_->undo();
 	}
 	else
 	{
-		while (manager_->getCurrentIndex() < index)
+		while (manager_->currentIndex() < index)
 			manager_->redo();
 	}
 }

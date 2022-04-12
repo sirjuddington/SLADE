@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
@@ -13,19 +13,15 @@
 *.ipch
 *.pch
 *.user
+*.tmp
 /*.ncb
 /.vscode/*
 /release
-/build/msvc/Release*
-/build/msvc/Debug
-/build/msvc/.vs
-/build/CMakeFiles
-/build/CMakeTools
-/build/msvc/*.vspx
-/build/msvc/*.props
+/build
 /dist/*.log
 /dist/*.map
 /dist/portable
+/dist/res/.vscode/*
 /docs/build/
 /ipch
 /src/bzip2/Release
@@ -34,8 +30,12 @@
 /src/updaterevision
 /src/gitinfo.h
 /win_installer/Output
-cmake-build-debug/
-\.idea/
+/cmake-build-debug
+/.idea/
+/msvc/.vs
+/msvc/x64/
+/.vs
+/out/
 
 /dist/*
 !/dist/res

@@ -1,60 +1,69 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Executables.cpp
- * Description: Functions to handle game executable configurations
- *              for the 'Run Archive/Map' dialog
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2022 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Executables.cpp
+// Description: Functions to handle game executable configurations for the
+//              'Run Archive/Map' dialog and external edit system
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "Executables.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-namespace Executables
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace slade::executables
 {
-	vector<game_exe_t>		game_exes;
-	vector<key_value_t>		exe_paths;
-	vector<external_exe_t>	external_exes;
-}
+vector<GameExe>     game_exes;
+vector<StringPair>  exe_paths;
+vector<ExternalExe> external_exes;
+} // namespace slade::executables
 
 
-/*******************************************************************
- * EXECUTABLES NAMESPACE FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Executables Namespace Functions
+//
+// -----------------------------------------------------------------------------
 
-/* Executables::getGameExe
- * Returns the game executable definition for [id]
- *******************************************************************/
-Executables::game_exe_t* Executables::getGameExe(string id)
+
+// -----------------------------------------------------------------------------
+// Returns the game executable definition for [id]
+// -----------------------------------------------------------------------------
+executables::GameExe* executables::gameExe(string_view id)
 {
 	for (auto& exe : game_exes)
 		if (exe.id == id)
@@ -63,10 +72,10 @@ Executables::game_exe_t* Executables::getGameExe(string id)
 	return nullptr;
 }
 
-/* Executables::getGameExe
- * Returns the game executable definition at [index]
- *******************************************************************/
-Executables::game_exe_t* Executables::getGameExe(unsigned index)
+// -----------------------------------------------------------------------------
+// Returns the game executable definition at [index]
+// -----------------------------------------------------------------------------
+executables::GameExe* executables::gameExe(unsigned index)
 {
 	if (index < game_exes.size())
 		return &(game_exes[index]);
@@ -74,39 +83,39 @@ Executables::game_exe_t* Executables::getGameExe(unsigned index)
 		return nullptr;
 }
 
-/* Executables::nGameExes
- * Returns the number of game executables defined
- *******************************************************************/
-unsigned Executables::nGameExes()
+// -----------------------------------------------------------------------------
+// Returns the number of game executables defined
+// -----------------------------------------------------------------------------
+unsigned executables::nGameExes()
 {
 	return game_exes.size();
 }
 
-/* Executables::setGameExePath
- * Sets the path of game executable [id] to [path]
- *******************************************************************/
-void Executables::setGameExePath(string id, string path)
+// -----------------------------------------------------------------------------
+// Sets the path of game executable [id] to [path]
+// -----------------------------------------------------------------------------
+void executables::setGameExePath(string_view id, string_view path)
 {
-	exe_paths.push_back({ id, path });
+	exe_paths.emplace_back(id, path);
 }
 
-/* Executables::writePaths
- * Writes all game executable paths as a string (for slade3.cfg)
- *******************************************************************/
-string Executables::writePaths()
+// -----------------------------------------------------------------------------
+// Writes all game executable paths as a string (for slade3.cfg)
+// -----------------------------------------------------------------------------
+string executables::writePaths()
 {
 	string ret;
 
 	for (auto& exe : game_exes)
-		ret += S_FMT("\t%s \"%s\"\n", exe.id, StringUtils::escapedString(exe.path, true));
+		ret += fmt::format("\t{} \"{}\"\n", exe.id, strutil::toUTF8(strutil::escapedString(exe.path, true)));
 
 	return ret;
 }
 
-/* Executables::writeExecutables
- * Writes all executable definitions as text
- *******************************************************************/
-string Executables::writeExecutables()
+// -----------------------------------------------------------------------------
+// Writes all executable definitions as text
+// -----------------------------------------------------------------------------
+string executables::writeExecutables()
 {
 	string ret = "executables\n{\n";
 
@@ -114,30 +123,23 @@ string Executables::writeExecutables()
 	for (auto& exe : game_exes)
 	{
 		// ID
-		ret += S_FMT("\tgame_exe %s\n\t{\n", exe.id);
+		ret += fmt::format("\tgame_exe {}\n\t{{\n", exe.id);
 
 		// Name
-		ret += S_FMT("\t\tname = \"%s\";\n", exe.name);
+		ret += fmt::format("\t\tname = \"{}\";\n", exe.name);
 
 		// Exe name
-		ret += S_FMT("\t\texe_name = \"%s\";\n\n", exe.exe_name);
+		ret += fmt::format("\t\texe_name = \"{}\";\n\n", exe.exe_name);
 
-		// Run Configs
+		// Configs
 		for (auto& config : exe.run_configs)
-			ret += S_FMT(
-				"\t\tconfig \"%s\" = \"%s\";\n",
-				config.key,
-				StringUtils::escapedString(config.value)
-			);
+			ret += fmt::format("\t\tconfig \"{}\" = \"{}\";\n", config.first, strutil::escapedString(config.second));
 
 		// Map Run Configs
 		ret += "\n";
 		for (auto& config : exe.map_configs)
-			ret += S_FMT(
-				"\t\tmap_config \"%s\" = \"%s\";\n",
-				config.key,
-				StringUtils::escapedString(config.value)
-			);
+			ret += fmt::format(
+				"\t\tmap_config \"{}\" = \"{}\";\n", config.first, strutil::escapedString(config.second));
 
 		ret += "\t}\n\n";
 	}
@@ -146,15 +148,15 @@ string Executables::writeExecutables()
 	for (auto& exe : external_exes)
 	{
 		// Name
-		ret += S_FMT("\texternal_exe \"%s\"\n\t{\n", exe.name);
+		ret += fmt::format("\texternal_exe \"{}\"\n\t{{\n", exe.name);
 
 		// Entry Category
-		ret += S_FMT("\t\tcategory = \"%s\";\n", exe.category);
+		ret += fmt::format("\t\tcategory = \"{}\";\n", exe.category);
 
 		// Path
-		string path = exe.path;
-		path.Replace("\\", "/");
-		ret += S_FMT("\t\tpath = \"%s\";\n", path);
+		auto path = exe.path;
+		std::replace(path.begin(), path.end(), '\\', '/');
+		ret += fmt::format("\t\tpath = \"{}\";\n", strutil::toUTF8(path));
 
 		ret += "\t}\n\n";
 	}
@@ -164,48 +166,48 @@ string Executables::writeExecutables()
 	return ret;
 }
 
-/* Executables::init
- * Reads all executable definitions from the program resource
- * and user dir
- *******************************************************************/
-void Executables::init()
+// -----------------------------------------------------------------------------
+// Reads all executable definitions from the program resource and user dir
+// -----------------------------------------------------------------------------
+void executables::init()
 {
 	// Load from pk3
-	Archive* res_archive = App::archiveManager().programResourceArchive();
-	ArchiveEntry* entry = res_archive->entryAtPath("config/executables.cfg");
+	auto res_archive = app::archiveManager().programResourceArchive();
+	auto entry       = res_archive->entryAtPath("config/executables.cfg");
 	if (!entry)
 		return;
 
 	// Parse base executables config
 	Parser p;
-	p.parseText(entry->getMCData(), "slade.pk3 - executables.cfg");
+	p.parseText(entry->data(), "slade.pk3 - executables.cfg");
 	parse(&p, false);
 
 	// Parse user executables config
-	Parser p2;
+	Parser   p2;
 	MemChunk mc;
-	if (mc.importFile(App::path("executables.cfg", App::Dir::User)))
+	if (mc.importFile(app::path("executables.cfg", app::Dir::User)))
 	{
 		p2.parseText(mc, "user execuatbles.cfg");
 		parse(&p2, true);
 	}
 }
 
-/* Executables::parse
- * Parses an executables configuration from [p]
- *******************************************************************/
-void Executables::parse(Parser* p, bool custom)
+// -----------------------------------------------------------------------------
+// Parses an executables configuration from [p]
+// -----------------------------------------------------------------------------
+void executables::parse(Parser* p, bool custom)
 {
-	auto n = p->parseTreeRoot()->getChildPTN("executables");
-	if (!n) return;
+	auto n = p->parseTreeRoot()->childPTN("executables");
+	if (!n)
+		return;
 
 	for (unsigned a = 0; a < n->nChildren(); a++)
 	{
-		auto exe_node = n->getChildPTN(a);
-		string type = exe_node->type();
+		auto exe_node = n->childPTN(a);
+		auto type     = exe_node->type();
 
 		// Game Executable (if type is blank it's a game executable in old config format)
-		if (type == "game_exe" || type.IsEmpty())
+		if (type == "game_exe" || type.empty())
 			parseGameExe(exe_node, custom);
 
 		// External Executable
@@ -214,106 +216,104 @@ void Executables::parse(Parser* p, bool custom)
 	}
 }
 
-/* Executables::parseGameExe
- * Parses a game executable config from [node]
- *******************************************************************/
-void Executables::parseGameExe(ParseTreeNode* node, bool custom)
+// -----------------------------------------------------------------------------
+// Parses a game executable config from [node]
+// -----------------------------------------------------------------------------
+void executables::parseGameExe(ParseTreeNode* node, bool custom)
 {
-	// Get game_exe_t being parsed
-	game_exe_t* exe = getGameExe(node->getName().Lower());
+	// Get GameExe being parsed
+	auto exe = gameExe(strutil::lower(node->name()));
 	if (!exe)
 	{
 		// Create if new
-		game_exe_t nexe;
+		GameExe nexe;
 		nexe.custom = custom;
 		game_exes.push_back(nexe);
 		exe = &(game_exes.back());
 	}
 
-	exe->id = node->getName();
+	exe->id = node->name();
 	for (unsigned b = 0; b < node->nChildren(); b++)
 	{
-		auto prop = node->getChildPTN(b);
-		string prop_name = prop->getName().Lower();
+		auto prop = node->childPTN(b);
 
 		// Run Config
-		if (prop->type().Lower() == "config")
+		if (strutil::equalCI(prop->type(), "config"))
 		{
 			// Update if exists
 			bool found = false;
-			for (unsigned c = 0; c < exe->run_configs.size(); c++)
+			for (auto& config : exe->run_configs)
 			{
-				if (exe->run_configs[c].key == prop->getName())
+				if (config.first == prop->name())
 				{
-					exe->run_configs[c].value = prop->stringValue();
-					found = true;
+					config.second = prop->stringValue();
+					found         = true;
 				}
 			}
 
 			// Create if new
 			if (!found)
 			{
-				exe->run_configs.push_back(key_value_t(prop->getName(), prop->stringValue()));
+				exe->run_configs.emplace_back(prop->name(), prop->stringValue());
 				exe->run_configs_custom.push_back(custom);
 			}
 		}
 
 		// Map Run Config
-		if (prop->type().Lower() == "map_config")
+		if (strutil::equalCI(prop->type(), "map_config"))
 		{
 			// Update if exists
 			bool found = false;
-			for (unsigned c = 0; c < exe->map_configs.size(); c++)
+			for (auto& config : exe->map_configs)
 			{
-				if (exe->map_configs[c].key == prop->getName())
+				if (config.first == prop->name())
 				{
-					exe->map_configs[c].value = prop->stringValue();
-					found = true;
+					config.second = prop->stringValue();
+					found         = true;
 				}
 			}
 
 			// Create if new
 			if (!found)
 			{
-				exe->map_configs.push_back(key_value_t(prop->getName(), prop->stringValue()));
+				exe->map_configs.emplace_back(prop->name(), prop->stringValue());
 				exe->map_configs_custom.push_back(custom);
 			}
 		}
 
 		// Name
-		else if (prop_name == "name")
+		else if (prop->nameIsCI("name"))
 			exe->name = prop->stringValue();
 
 		// Executable name
-		else if (prop_name == "exe_name")
+		else if (prop->nameIsCI("exe_name"))
 			exe->exe_name = prop->stringValue();
 	}
 
 	// Set path if loaded
 	for (auto& path : exe_paths)
-		if (path.key == exe->id)
-			exe->path = path.value;
+		if (path.first == exe->id)
+			exe->path = path.second;
 }
 
-/* Executables::addGameExe
- * Adds a new game executable definition for game [name]
- *******************************************************************/
-void Executables::addGameExe(string name)
+// -----------------------------------------------------------------------------
+// Adds a new game executable definition for game [name]
+// -----------------------------------------------------------------------------
+void executables::addGameExe(string_view name)
 {
-	game_exe_t game;
+	GameExe game;
 	game.name = name;
-	
-	name.Replace(" ", "_");
-	name.MakeLower();
-	game.id = name;
+
+	game.id = strutil::lower(name);
+	std::replace(game.id.begin(), game.id.end(), ' ', '_');
 
 	game_exes.push_back(game);
 }
 
-/* Executables::removeGameExe
- * Removes the game executable definition at [index]
- *******************************************************************/
-bool Executables::removeGameExe(unsigned index)
+// -----------------------------------------------------------------------------
+// Removes the game executable definition at [index]
+// -----------------------------------------------------------------------------
+bool executables::removeGameExe(unsigned index)
 {
 	if (index < game_exes.size())
 	{
@@ -327,24 +327,28 @@ bool Executables::removeGameExe(unsigned index)
 	return false;
 }
 
-/* Executables::addGameExeConfig
- * Adds a run configuration for game executable at [exe_index]
- *******************************************************************/
-void Executables::addGameExeRunConfig(unsigned exe_index, string config_name, string config_params, bool custom)
+// -----------------------------------------------------------------------------
+// Adds a run configuration for game executable at [exe_index]
+// -----------------------------------------------------------------------------
+void executables::addGameExeRunConfig(
+	unsigned    exe_index,
+	string_view config_name,
+	string_view config_params,
+	bool        custom)
 {
 	// Check index
 	if (exe_index >= game_exes.size())
 		return;
 
-	game_exes[exe_index].run_configs.push_back(key_value_t(config_name, config_params));
+	game_exes[exe_index].run_configs.emplace_back(config_name, config_params);
 	game_exes[exe_index].run_configs_custom.push_back(custom);
 }
 
-/* Executables::removeGameExeConfig
- * Removes run configuration at [config_index] in game exe definition
- * at [exe_index]
- *******************************************************************/
-bool Executables::removeGameExeRunConfig(unsigned exe_index, unsigned config_index)
+// -----------------------------------------------------------------------------
+// Removes run configuration at [config_index] in game exe definition at
+// [exe_index]
+// -----------------------------------------------------------------------------
+bool executables::removeGameExeRunConfig(unsigned exe_index, unsigned config_index)
 {
 	// Check indices
 	if (exe_index >= game_exes.size())
@@ -364,24 +368,28 @@ bool Executables::removeGameExeRunConfig(unsigned exe_index, unsigned config_ind
 		return false;
 }
 
-/* Executables::addGameExeConfig
- * Adds a map run configuration for game executable at [exe_index]
- *******************************************************************/
-void Executables::addGameExeMapConfig(unsigned exe_index, string config_name, string config_params, bool custom)
+// -----------------------------------------------------------------------------
+// Adds a map run configuration for game executable at [exe_index]
+// -----------------------------------------------------------------------------
+void executables::addGameExeMapConfig(
+	unsigned    exe_index,
+	string_view config_name,
+	string_view config_params,
+	bool        custom)
 {
 	// Check index
 	if (exe_index >= game_exes.size())
 		return;
 
-	game_exes[exe_index].map_configs.push_back(key_value_t(config_name, config_params));
+	game_exes[exe_index].map_configs.emplace_back(config_name, config_params);
 	game_exes[exe_index].map_configs_custom.push_back(custom);
 }
 
-/* Executables::removeGameExeConfig
- * Removes map run configuration at [config_index] in game exe
- * definition at [exe_index]
- *******************************************************************/
-bool Executables::removeGameExeMapConfig(unsigned exe_index, unsigned config_index)
+// -----------------------------------------------------------------------------
+// Removes map run configuration at [config_index] in game exe definition at
+// [exe_index]
+// -----------------------------------------------------------------------------
+bool executables::removeGameExeMapConfig(unsigned exe_index, unsigned config_index)
 {
 	// Check indices
 	if (exe_index >= game_exes.size())
@@ -401,96 +409,95 @@ bool Executables::removeGameExeMapConfig(unsigned exe_index, unsigned config_ind
 		return false;
 }
 
-/* Executables::nExternalExes
- * Returns the number of external executables for [category], or
- * all if [category] is not specified
- *******************************************************************/
-int Executables::nExternalExes(string category)
+// -----------------------------------------------------------------------------
+// Returns the number of external executables for [category], or all if
+// [category] is not specified
+// -----------------------------------------------------------------------------
+int executables::nExternalExes(string_view category)
 {
 	int num = 0;
 	for (auto& exe : external_exes)
-		if (category.IsEmpty() || exe.category == category)
+		if (category.empty() || exe.category == category)
 			num++;
 
 	return num;
 }
 
-/* Executables::getExternalExe
- * Returns the external executable matching [name] and [category].
- * If [category] is empty, it is ignored
- *******************************************************************/
-Executables::external_exe_t Executables::getExternalExe(string name, string category)
+// -----------------------------------------------------------------------------
+// Returns the external executable matching [name] and [category].
+// If [category] is empty, it is ignored
+// -----------------------------------------------------------------------------
+executables::ExternalExe executables::externalExe(string_view name, string_view category)
 {
 	for (auto& exe : external_exes)
-		if (category.IsEmpty() || exe.category == category)
+		if (category.empty() || exe.category == category)
 			if (exe.name == name)
 				return exe;
 
-	return external_exe_t();
+	return ExternalExe();
 }
 
-/* Executables::getExternalExe
- * Returns a list of all external executables matching [category].
- * If [category] is empty, it is ignored
- *******************************************************************/
-vector<Executables::external_exe_t> Executables::getExternalExes(string category)
+// -----------------------------------------------------------------------------
+// Returns a list of all external executables matching [category].
+// If [category] is empty, it is ignored
+// -----------------------------------------------------------------------------
+vector<executables::ExternalExe> executables::externalExes(string_view category)
 {
-	vector<external_exe_t> ret;
+	vector<ExternalExe> ret;
 	for (auto& exe : external_exes)
-		if (category.IsEmpty() || exe.category == category)
+		if (category.empty() || exe.category == category)
 			ret.push_back(exe);
 
 	return ret;
 }
 
-/* Executables::parseExternalExe
- * Parses an external executable config from [node]
- *******************************************************************/
-void Executables::parseExternalExe(ParseTreeNode* node)
+// -----------------------------------------------------------------------------
+// Parses an external executable config from [node]
+// -----------------------------------------------------------------------------
+void executables::parseExternalExe(ParseTreeNode* node)
 {
-	external_exe_t exe;
-	exe.name = node->getName();
+	ExternalExe exe;
+	exe.name = node->name();
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto prop = node->getChildPTN(a);
-		string prop_name = prop->getName().Lower();
+		auto prop = node->childPTN(a);
 
 		// Entry category
-		if (prop_name == "category")
+		if (prop->nameIsCI("category"))
 			exe.category = prop->stringValue();
 
 		// Path
-		else if (prop_name == "path")
-			exe.path = prop->stringValue();
+		else if (prop->nameIsCI("path"))
+			exe.path = strutil::fromUTF8(prop->stringValue());
 	}
 
 	external_exes.push_back(exe);
 }
 
-/* Executables::addExternalExe
- * Adds a new external executable, if one matching [name] and
- * [category] doesn't already exist
- *******************************************************************/
-void Executables::addExternalExe(string name, string path, string category)
+// -----------------------------------------------------------------------------
+// Adds a new external executable, if one matching [name] and [category] doesn't
+// already exist
+// -----------------------------------------------------------------------------
+void executables::addExternalExe(string_view name, string_view path, string_view category)
 {
 	// Check it doesn't already exist
 	for (auto& exe : external_exes)
 		if (exe.name == name && exe.category == category)
 			return;
 
-	external_exe_t exe;
-	exe.name = name;
-	exe.path = path;
+	ExternalExe exe;
+	exe.name     = name;
+	exe.path     = path;
 	exe.category = category;
 	external_exes.push_back(exe);
 }
 
-/* Executables::setExternalExeName
- * Sets the name of the external executable matching [name_old] and
- * [category] to [name_new]
- *******************************************************************/
-void Executables::setExternalExeName(string name_old, string name_new, string category)
+// -----------------------------------------------------------------------------
+// Sets the name of the external executable matching [name_old] and [category]
+// to [name_new]
+// -----------------------------------------------------------------------------
+void executables::setExternalExeName(string_view name_old, string_view name_new, string_view category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name_old && exe.category == category)
@@ -500,11 +507,11 @@ void Executables::setExternalExeName(string name_old, string name_new, string ca
 		}
 }
 
-/* Executables::setExternalExePath
- * Sets the path of the external executable matching [name] and
- * [category] to [path]
- *******************************************************************/
-void Executables::setExternalExePath(string name, string path, string category)
+// -----------------------------------------------------------------------------
+// Sets the path of the external executable matching [name] and [category] to
+// [path]
+// -----------------------------------------------------------------------------
+void executables::setExternalExePath(string_view name, string_view path, string_view category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name && exe.category == category)
@@ -514,10 +521,10 @@ void Executables::setExternalExePath(string name, string path, string category)
 		}
 }
 
-/* Executables::removeExternalExe
- * Removes the external executable matching [name] and [category]
- *******************************************************************/
-void Executables::removeExternalExe(string name, string category)
+// -----------------------------------------------------------------------------
+// Removes the external executable matching [name] and [category]
+// -----------------------------------------------------------------------------
+void executables::removeExternalExe(string_view name, string_view category)
 {
 	for (unsigned a = 0; a < external_exes.size(); a++)
 		if (external_exes[a].name == name && external_exes[a].category == category)

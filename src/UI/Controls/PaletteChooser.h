@@ -1,28 +1,34 @@
+#pragma once
 
-#ifndef __PALETTECHOOSER_H__
-#define	__PALETTECHOOSER_H__
+#include "Graphics/Palette/Palette.h"
 
-#include "common.h"
-#include "General/ListenerAnnouncer.h"
-
+namespace slade
+{
 class Archive;
 class ArchiveEntry;
-class Palette;
-class PaletteChooser : public wxChoice, public Announcer
-{
-private:
-	Palette*	pal_global;
 
+class PaletteChooser : public wxChoice
+{
 public:
 	PaletteChooser(wxWindow* parent, int id);
-	~PaletteChooser();
+	~PaletteChooser() = default;
 
-	void			setGlobalFromArchive(Archive* archive, int lump = 0);
-	Palette*	getSelectedPalette(ArchiveEntry* entry = nullptr);
-	bool			globalSelected();
-	void			selectPalette(string name);
-	void			onPaletteChanged(wxCommandEvent& e);
-	void			addPalette(string name);
+	void     setGlobalFromArchive(Archive* archive, int lump = 0);
+	Palette* selectedPalette(ArchiveEntry* entry = nullptr);
+	bool     globalSelected() const;
+	void     selectPalette(wxString name);
+	void     onPaletteChanged(wxCommandEvent& e);
+	void     addPalette(wxString name);
+
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<> palette_changed;
+	};
+	Signals& signals() { return signals_; }
+
+private:
+	Palette pal_global_;
+	Signals signals_;
 };
-
-#endif//__PALETTECHOOSER_H__
+} // namespace slade

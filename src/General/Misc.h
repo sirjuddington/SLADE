@@ -1,66 +1,57 @@
+#pragma once
 
-#ifndef __MISC_H__
-#define	__MISC_H__
-
-enum
+namespace slade
 {
-	PAL_NOHACK = 0,
-	PAL_ALPHAHACK,
-	PAL_HERETICHACK,
-	PAL_SHADOWHACK,
-	PAL_ROTTNHACK,
-	PAL_ROTTDHACK,
-	PAL_ROTTFHACK,
-	PAL_ROTTAHACK,
-	PAL_SODIDHACK,
-	PAL_SODTITLEHACK,
-	PAL_SODENDHACK,
-};
-
 class SImage;
 class Archive;
 class ArchiveEntry;
 class Palette;
 class Tokenizer;
-namespace Misc
+
+namespace misc
 {
-	bool		loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index = 0);
-	int			detectPaletteHack(ArchiveEntry* entry);
-	bool		loadPaletteFromArchive(Palette* pal, Archive* archive, int lump = PAL_NOHACK);
-	string		sizeAsString(uint32_t size);
-	string		lumpNameToFileName(string lump);
-	string		fileNameToLumpName(string file);
-	uint32_t	crc(const uint8_t* buf, uint32_t len);
-	hsl_t		rgbToHsl(double r, double g, double b);
-	rgba_t		hslToRgb(double h, double s, double t);
-	lab_t		rgbToLab(double r, double g, double b);
-	hsl_t		rgbToHsl(rgba_t rgba);
-	rgba_t		hslToRgb(hsl_t hsl);
-	lab_t		rgbToLab(rgba_t);
-	point2_t	findJaguarTextureDimensions(ArchiveEntry* entry, string name);
+	bool loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index = 0);
+
+	// Palette detection
+	namespace palhack
+	{
+		static const int NONE      = 0;
+		static const int ALPHA     = 1;
+		static const int HERETIC   = 2;
+		static const int SHADOW    = 3;
+		static const int ROTT_N    = 4;
+		static const int ROTT_D    = 5;
+		static const int ROTT_F    = 6;
+		static const int ROTT_A    = 7;
+		static const int SOD_ID    = 8;
+		static const int SOD_TITLE = 9;
+		static const int SOD_END   = 10;
+	}; // namespace palhack
+	int  detectPaletteHack(ArchiveEntry* entry);
+	bool loadPaletteFromArchive(Palette* pal, Archive* archive, int lump = palhack::NONE);
+
+	string   sizeAsString(uint32_t size);
+	string   lumpNameToFileName(string_view lump);
+	string   fileNameToLumpName(string_view file);
+	uint32_t crc(const uint8_t* buf, uint32_t len);
+	Vec2i    findJaguarTextureDimensions(ArchiveEntry* entry, string_view name);
 
 	// Mass Rename
-	string	massRenameFilter(wxArrayString& names);
-	void	doMassRename(wxArrayString& names, string name_filter);
+	string massRenameFilter(vector<string>& names);
+	void   doMassRename(vector<string>& names, string_view name_filter);
 
 	// Dialog/Window sizes
-	struct winf_t
+	struct WindowInfo
 	{
 		string id;
-		int width, height, left, top;
-		winf_t(string id, int w, int h, int l, int t)
+		int    width, height, left, top;
+		WindowInfo(string_view id, int w, int h, int l, int t) : id{ id }, width{ w }, height{ h }, left{ l }, top{ t }
 		{
-			this->id = id;
-			width = w;
-			height = h;
-			left = l;
-			top = t;
 		}
 	};
-	winf_t	getWindowInfo(string id);
-	void	setWindowInfo(string id, int width, int height, int left, int top);
-	void	readWindowInfo(Tokenizer& tz);
-	void	writeWindowInfo(wxFile& file);
-}
-
-#endif //__MISC_H__
+	WindowInfo getWindowInfo(string_view id);
+	void       setWindowInfo(string_view id, int width, int height, int left, int top);
+	void       readWindowInfo(Tokenizer& tz);
+	void       writeWindowInfo(wxFile& file);
+} // namespace misc
+} // namespace slade

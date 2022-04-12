@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,76 +15,84 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ShapeDrawPanel.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
 
-// ----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, shapedraw_sides)
 EXTERN_CVAR(Int, shapedraw_shape)
 EXTERN_CVAR(Bool, shapedraw_centered)
 EXTERN_CVAR(Bool, shapedraw_lockratio)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ShapeDrawPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ShapeDrawPanel::ShapeDrawPanel
-//
+// -----------------------------------------------------------------------------
 // ShapeDrawPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Shape
-	string shapes[] = { "Rectangle", "Ellipse" };
-	choice_shape_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 2, shapes);
-	sizer_main_ = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(sizer_main_, 0, wxEXPAND|wxALL, UI::pad());
-	sizer_main_->Add(WxUtils::createLabelHBox(this, "Shape:", choice_shape_), 0, wxEXPAND | wxRIGHT, UI::padLarge());
+	wxString shapes[] = { "Rectangle", "Ellipse" };
+	choice_shape_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 2, shapes);
+	sizer_main_       = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(sizer_main_, 0, wxEXPAND | wxALL, ui::pad());
+	sizer_main_->Add(wxutil::createLabelHBox(this, "Shape:", choice_shape_), 0, wxEXPAND | wxRIGHT, ui::padLarge());
 
 	// Centered
 	cb_centered_ = new wxCheckBox(this, -1, "Centered");
-	sizer_main_->Add(cb_centered_, 0, wxEXPAND|wxRIGHT, UI::padLarge());
+	sizer_main_->Add(cb_centered_, 0, wxEXPAND | wxRIGHT, ui::padLarge());
 
 	// Lock ratio (1:1)
 	cb_lockratio_ = new wxCheckBox(this, -1, "1:1 Size");
-	sizer_main_->Add(cb_lockratio_, 0, wxEXPAND|wxRIGHT, UI::padLarge());
+	sizer_main_->Add(cb_lockratio_, 0, wxEXPAND | wxRIGHT, ui::padLarge());
 
 	// Sides
 	panel_sides_ = new wxPanel(this, -1);
-	wxBoxSizer* hbox2 = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox2   = new wxBoxSizer(wxHORIZONTAL);
 	panel_sides_->SetSizer(hbox2);
-	spin_sides_ = new wxSpinCtrl(panel_sides_, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_LEFT|wxTE_PROCESS_ENTER, 3, 1000);
-	hbox2->Add(WxUtils::createLabelHBox(panel_sides_, "Sides:", spin_sides_), 1, wxEXPAND);
+	spin_sides_ = new wxSpinCtrl(
+		panel_sides_,
+		-1,
+		wxEmptyString,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxSP_ARROW_KEYS | wxALIGN_LEFT | wxTE_PROCESS_ENTER,
+		3,
+		1000);
+	hbox2->Add(wxutil::createLabelHBox(panel_sides_, "Sides:", spin_sides_), 1, wxEXPAND);
 
 	// Set control values
 	choice_shape_->SetSelection(shapedraw_shape);
@@ -94,14 +102,13 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 
 	// Show shape controls with most options (to get minimum height)
 	showShapeOptions(1);
-	SetMinSize(GetBestSize());
+	wxWindowBase::SetMinSize(GetBestSize());
 
 	// Show controls for current shape
 	showShapeOptions(shapedraw_shape);
 
 	// Bind events
-	choice_shape_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&)
-	{
+	choice_shape_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
 		shapedraw_shape = choice_shape_->GetSelection();
 		showShapeOptions(shapedraw_shape);
 	});
@@ -111,11 +118,9 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 	spin_sides_->Bind(wxEVT_TEXT_ENTER, [&](wxCommandEvent&) { shapedraw_sides = spin_sides_->GetValue(); });
 }
 
-// ----------------------------------------------------------------------------
-// ShapeDrawPanel::showShapeOptions
-//
+// -----------------------------------------------------------------------------
 // Shows option controls for [shape]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ShapeDrawPanel::showShapeOptions(int shape)
 {
 	// Remove all extra options
@@ -126,7 +131,7 @@ void ShapeDrawPanel::showShapeOptions(int shape)
 	if (shape == 1)
 	{
 		// Sides
-		sizer_main_->Add(panel_sides_, 0, wxEXPAND|wxRIGHT, UI::padLarge());
+		sizer_main_->Add(panel_sides_, 0, wxEXPAND | wxRIGHT, ui::padLarge());
 		panel_sides_->Show(true);
 	}
 

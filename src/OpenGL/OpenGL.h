@@ -1,69 +1,65 @@
-
-#ifndef __OPENGL_H__
-#define __OPENGL_H__
+#pragma once
 
 // OpenGL
-#ifdef __WXMSW__
-// Windows GL headers
-#include "External/glew/glew.h"	// Use built-in GLEW so we don't need any extra dlls
-#include <gl/GL.h>
-#include <gl/GLU.h>
-#elif __APPLE__
+// glad.h replaces gl.h, still need glu.h
+// clang-format off
+#ifdef __APPLE__
 // OSX GL headers
-#include <GL/glew.h>
-#include <OpenGL/gl.h>
+#include "thirdparty/glad/include/glad/glad.h"
 #include <OpenGL/glu.h>
 #else
-// Unix GL headers
-#include <GL/glew.h>
-#include <GL/gl.h>
+// Windows/Unix GL headers
+#include "thirdparty/glad/include/glad/glad.h"
 #include <GL/glu.h>
 #endif
+// clang-format on
 
-#ifndef USE_SFML_RENDERWINDOW
 #include <wx/glcanvas.h>
 #undef None // Why does <X11/X.h> #define this? Idiotic
-#endif
 
-#define BLEND_NORMAL	0
-#define BLEND_ADDITIVE	1
-#define BLEND_IGNORE	-1
-
-namespace OpenGL
+namespace slade
 {
-	struct gl_info_t
-	{
-		string	vendor;
-		string	renderer;
-		string	version;
-		string	extensions;
+// Forward declarations
+struct ColRGBA;
 
-		gl_info_t()
-		{
-			vendor = renderer = version = extensions = "OpenGL not initialised";
-		}
+namespace gl
+{
+	enum class Blend
+	{
+		Normal,
+		Additive,
+
+		Ignore
+	};
+
+	struct Info
+	{
+		string vendor;
+		string renderer;
+		string version;
+		string extensions;
+
+		Info() { vendor = renderer = version = extensions = "OpenGL not initialised"; }
 	};
 
 #ifndef USE_SFML_RENDERWINDOW
-	wxGLContext*	getContext(wxGLCanvas* canvas);
+	wxGLContext* getContext(wxGLCanvas* canvas);
 #endif
-	bool			init();
-	bool			np2TexSupport();
-	bool			pointSpriteSupport();
-	bool			vboSupport();
-	bool			validTexDimension(unsigned dim);
-	float			maxPointSize();
-	unsigned		maxTextureSize();
-	bool			isInitialised();
-	bool			accuracyTweak();
-#ifndef USE_SFML_RENDERWINDOW
-	int*			getWxGLAttribs();
-#endif
-	void			setColour(rgba_t col, bool set_blend = true);
-	void			setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, int8_t blend = BLEND_IGNORE);
-	void			setBlend(int blend);
-	void			resetBlend();
-	gl_info_t		getInfo();
-}
-
-#endif//__OPENGL_H__
+	bool     init();
+	bool     np2TexSupport();
+	bool     pointSpriteSupport();
+	bool     vboSupport();
+	bool     fboSupport();
+	bool     validTexDimension(unsigned dim);
+	float    maxPointSize();
+	unsigned maxTextureSize();
+	bool     isInitialised();
+	bool     accuracyTweak();
+	int*     getWxGLAttribs();
+	void     setColour(const ColRGBA& col, Blend blend = Blend::Ignore);
+	void     setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend blend = Blend::Ignore);
+	void     setBlend(Blend blend);
+	void     resetBlend();
+	Info     sysInfo();
+} // namespace gl
+} // namespace slade

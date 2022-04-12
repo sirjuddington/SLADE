@@ -56,16 +56,7 @@ if (WX_GTK3)
 	set(wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
 endif (WX_GTK3)
 
-# Work around find_package(wxWidgets...) inability to detect absence of some
-# optional components (e.g., media)
-find_library(WX_MEDIA wx_gtk${GTK_VERSION}u_media-3.0)
-if (NOT WX_MEDIA)
-	message(STATUS "wx_gtk${GTK_VERSION}u_media-3.0 not found, building without MP3 playback support.")
-else (WX_MEDIA)
-	SET(WX_LIBS ${WX_LIBS} media)
-endif ()
-
-SET(WX_LIBS std aui gl stc richtext propgrid ${WX_LIBS})
+SET(WX_LIBS std aui gl stc richtext propgrid)
 if (NO_WEBVIEW)
 	SET(WX_LIBS ${WX_LIBS} html)
 else (NO_WEBVIEW)
@@ -81,6 +72,8 @@ set(SFML_FIND_COMPONENTS system audio window graphics network)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
 else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window network)
+find_package(Freetype REQUIRED)
+find_package(FTGL REQUIRED)
 endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
@@ -92,18 +85,14 @@ if (CMAKE_INSTALL_PREFIX)
 ADD_DEFINITIONS(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 endif(CMAKE_INSTALL_PREFIX)
 
-find_package (PkgConfig REQUIRED)
-if (APPLE)
-	# There is no need to have GTK2 installed on OS X
-	# Although, GLib is required by FluidSynth
-	pkg_check_modules (GLib REQUIRED glib-2.0)
-else (APPLE)
+if (NOT APPLE)
+	find_package (PkgConfig REQUIRED)
 if (WX_GTK3)
 	pkg_check_modules (GTK3 REQUIRED gtk+-3.0)
 else (WX_GTK3)
 	pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
 endif (WX_GTK3)
-endif (APPLE)
+endif (NOT APPLE)
 
 if(NOT NO_FLUIDSYNTH)
 	find_package(FluidSynth REQUIRED)
@@ -113,20 +102,22 @@ endif()
 
 find_package(FreeImage REQUIRED)
 find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
-find_package(FTGL REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(Freetype REQUIRED)
-find_package(CURL REQUIRED)
+if (NOT NO_LUA)
+	find_package(Lua REQUIRED)
+endif()
+find_package(MPG123 REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
 	${SFML_INCLUDE_DIR}
-	${FTGL_INCLUDE_DIR}
 	${FREETYPE_INCLUDE_DIRS}
-	${GLEW_INCLUDE_PATH}
-	${CURL_INCLUDE_DIR}
+	${FTGL_INCLUDE_DIR}
+	${LUA_INCLUDE_DIR}
+	${MPG123_INCLUDE_DIR}
 	.
-	./External/dumb
+	..
+	../thirdparty/dumb
+	../thirdparty/glad/include
 	./Application
 	)
 
@@ -142,6 +133,7 @@ endif()
 
 set(SLADE_SOURCES
 )
+set(SLADE_SCRIPTING_SOURCES)
 # Don't include external libraries here as they should be compiled separately
 file(GLOB_RECURSE SLADE_SOURCES
 	Application/*.cpp
@@ -154,11 +146,17 @@ file(GLOB_RECURSE SLADE_SOURCES
 	MainEditor/*.cpp
 	MapEditor/*.cpp
 	OpenGL/*.cpp
+	SLADEMap/*.cpp
+	TextEditor/*.cpp
 	UI/*.cpp
 	Utility/*.cpp
-	Scripting/*.cpp
-	TextEditor/*.cpp
 	)
+if (NOT NO_LUA)
+	file(GLOB_RECURSE SLADE_SCRIPTING_SOURCES Scripting/*.cpp)
+	set(SLADE_SOURCES ${SLADE_SOURCES} ${SLADE_SCRIPTING_SOURCES})
+else ()
+	ADD_DEFINITIONS(-DNO_LUA)
+endif ()
 set(SLADE_HEADERS
 )
 file(GLOB_RECURSE SLADE_HEADERS *.h *.hpp)
@@ -172,8 +170,11 @@ if(APPLE)
 	set_source_files_properties(${OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif(APPLE)
 
-# enable SSE instructions for dumb library
+# Enable SSE instructions for dumb library
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
+
+# Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
 if(USE_SANITIZER)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
@@ -181,7 +182,7 @@ if(USE_SANITIZER)
 endif(USE_SANITIZER)
 
 # External libraries are compiled separately to enable unity builds
-add_subdirectory(External)
+add_subdirectory(../thirdparty external)
 
 add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_SOURCES}
@@ -195,12 +196,16 @@ target_link_libraries(slade
 	${wxWidgets_LIBRARIES}
 	${FREEIMAGE_LIBRARIES}
 	${SFML_LIBRARY}
+	${FREETYPE_LIBRARIES}
 	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
-	${FREETYPE_LIBRARIES}
-	${GLEW_LIBRARY}
-	${CURL_LIBRARIES}
+	${LUA_LIBRARIES}
+	${MPG123_LIBRARIES}
 )
+
+if(LINUX)
+	target_link_libraries(slade -lstdc++fs -ldl)
+endif()
 
 if (WX_GTK3)
 	target_link_libraries(slade ${GTK3_LIBRARIES})

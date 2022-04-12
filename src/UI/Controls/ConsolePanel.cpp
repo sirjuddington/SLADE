@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -14,49 +14,43 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "ConsolePanel.h"
-#include "General/Console/Console.h"
-#include "General/Misc.h"
+#include "App.h"
+#include "General/Console.h"
 #include "TextEditor/TextStyle.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
 
-// ----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 //
 // ConsolePanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::ConsolePanel
-//
+// -----------------------------------------------------------------------------
 // ConsolePanel class constructor
-// ----------------------------------------------------------------------------
-ConsolePanel::ConsolePanel(wxWindow* parent, int id)
-	: wxPanel(parent, id)
+// -----------------------------------------------------------------------------
+ConsolePanel::ConsolePanel(wxWindow* parent, int id) : wxPanel(parent, id)
 {
-	// Init variables
-	cmd_log_index_ = 0;
-	next_message_index_ = 0;
-
 	// Setup layout
 	initLayout();
 
@@ -65,24 +59,13 @@ ConsolePanel::ConsolePanel(wxWindow* parent, int id)
 	text_command_->Bind(wxEVT_KEY_DOWN, &ConsolePanel::onCommandKeyDown, this);
 
 	// Start update timer
-	timer_update_.Bind(wxEVT_TIMER, [&](wxTimerEvent&){ update(); });
+	timer_update_.Bind(wxEVT_TIMER, [&](wxTimerEvent&) { update(); });
 	timer_update_.Start(100);
 }
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::~ConsolePanel
-//
-// ConsolePanel class destructor
-// ----------------------------------------------------------------------------
-ConsolePanel::~ConsolePanel()
-{
-}
-
-// ----------------------------------------------------------------------------
-// ConsolePanel::initLayout
-//
+// -----------------------------------------------------------------------------
 // Sets up the panel layout
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::initLayout()
 {
 	// Create and set the sizer for the panel
@@ -94,27 +77,25 @@ void ConsolePanel::initLayout()
 	text_log_->SetEditable(false);
 	text_log_->SetWrapMode(wxSTC_WRAP_WORD);
 	text_log_->SetSizeHints(wxSize(-1, 0));
-	vbox->Add(text_log_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::pad());
+	vbox->Add(text_log_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::pad());
 
 	// Create and add the command entry textbox
 	text_command_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	vbox->AddSpacer(UI::px(UI::Size::PadMinimum));
-	vbox->Add(text_command_, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, UI::pad());
+	vbox->AddSpacer(ui::px(ui::Size::PadMinimum));
+	vbox->Add(text_command_, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, ui::pad());
 
 	Layout();
 
 	// Set console font to default+monospace
-	auto font = WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+	auto font = wxutil::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 	text_command_->SetFont(font);
 
 	setupTextArea();
 }
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::setupTextArea
-//
+// -----------------------------------------------------------------------------
 // Sets up the log history text control
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::setupTextArea() const
 {
 	// Style
@@ -126,26 +107,26 @@ void ConsolePanel::setupTextArea() const
 	text_log_->SetMarginWidth(1, 8);
 
 	// Message type colours
-	auto hsl = Misc::rgbToHsl(StyleSet::currentSet()->getStyleForeground("default"));
-	if (hsl.l > 0.8) hsl.l = 0.8;
-	if (hsl.l < 0.2) hsl.l = 0.2;
-	text_log_->StyleSetForeground(200, WXCOL(Misc::hslToRgb(0.99, 1., hsl.l)));
-	text_log_->StyleSetForeground(201, WXCOL(Misc::hslToRgb(0.1, 1., hsl.l)));
-	text_log_->StyleSetForeground(202, WXCOL(Misc::hslToRgb(0.5, 0.8, hsl.l)));
-	text_log_->StyleSetForeground(203, WXCOL(Misc::hslToRgb(hsl.h, hsl.s, 0.5)));
+	auto hsl = StyleSet::currentSet()->styleForeground("default").asHSL();
+	if (hsl.l > 0.8)
+		hsl.l = 0.8;
+	if (hsl.l < 0.2)
+		hsl.l = 0.2;
+	text_log_->StyleSetForeground(200, ColHSL(0.99, 1., hsl.l).asRGB().toWx());
+	text_log_->StyleSetForeground(201, ColHSL(0.1, 1., hsl.l).asRGB().toWx());
+	text_log_->StyleSetForeground(202, ColHSL(0.5, 0.8, hsl.l).asRGB().toWx());
+	text_log_->StyleSetForeground(203, ColHSL(hsl.h, hsl.s, 0.5).asRGB().toWx());
 }
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::update
-//
+// -----------------------------------------------------------------------------
 // Update the log text with any new log messages
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::update()
 {
 	setupTextArea();
 
 	// Check if any new log messages were added since the last update
-	auto& log = Log::history();
+	auto& log = log::history();
 	if (log.size() <= next_message_index_)
 	{
 		// None added, check again in 500ms
@@ -155,6 +136,7 @@ void ConsolePanel::update()
 
 	// Add new log messages to log text area
 	text_log_->SetEditable(true);
+	int line_no = next_message_index_;
 	for (auto a = next_message_index_; a < log.size(); ++a)
 	{
 		if (a > 0)
@@ -162,27 +144,25 @@ void ConsolePanel::update()
 
 		// Add message line + timestamp margin
 		text_log_->AppendText(log[a].message);
-		text_log_->MarginSetText(a, wxDateTime(log[a].timestamp).FormatISOTime());
-		text_log_->MarginSetStyle(a, wxSTC_STYLE_LINENUMBER);
+		text_log_->MarginSetText(line_no, wxDateTime(log[a].timestamp).FormatISOTime());
+		text_log_->MarginSetStyle(line_no, wxSTC_STYLE_LINENUMBER);
 
 		// Set line colour depending on message type
-		text_log_->StartStyling(text_log_->GetLineEndPosition(a) - text_log_->GetLineLength(a), 0);
+		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no), 0);
 		switch (log[a].type)
 		{
-		case Log::MessageType::Error:
-			text_log_->SetStyling(text_log_->GetLineLength(a), 200); break;
-		case Log::MessageType::Warning:
-			text_log_->SetStyling(text_log_->GetLineLength(a), 201); break;
-		case Log::MessageType::Script:
-			text_log_->SetStyling(text_log_->GetLineLength(a), 202); break;
-		case Log::MessageType::Debug:
-			text_log_->SetStyling(text_log_->GetLineLength(a), 203); break;
+		case log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;
+		case log::MessageType::Warning: text_log_->SetStyling(text_log_->GetLineLength(line_no), 201); break;
+		case log::MessageType::Script: text_log_->SetStyling(text_log_->GetLineLength(line_no), 202); break;
+		case log::MessageType::Debug: text_log_->SetStyling(text_log_->GetLineLength(line_no), 203); break;
 		default: break;
 		}
+
+		++line_no;
 	}
 	text_log_->SetEditable(false);
 
-	next_message_index_ = Log::history().size();
+	next_message_index_ = log::history().size();
 	text_log_->ScrollToEnd();
 
 	// Check again in 100ms
@@ -190,44 +170,40 @@ void ConsolePanel::update()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ConsolePanel Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::onCommandEnter
-//
+// -----------------------------------------------------------------------------
 // Called when the enter key is pressed in the command text box
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::onCommandEnter(wxCommandEvent& e)
 {
-	App::console()->execute(e.GetString());
+	app::console()->execute(wxutil::strToView(e.GetString()));
 	update();
 	text_command_->Clear();
 	cmd_log_index_ = 0;
 }
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::onCommandKeyDown
-//
+// -----------------------------------------------------------------------------
 // Called when a key is pressed in the command text box
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::onCommandKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
 	{
-		text_command_->SetValue(App::console()->prevCommand(cmd_log_index_));
+		text_command_->SetValue(app::console()->prevCommand(cmd_log_index_));
 		text_command_->SetInsertionPointEnd();
-		if (cmd_log_index_ < App::console()->numPrevCommands()-1)
+		if (cmd_log_index_ < app::console()->numPrevCommands() - 1)
 			cmd_log_index_++;
 	}
 	else if (e.GetKeyCode() == WXK_DOWN)
 	{
 		cmd_log_index_--;
-		text_command_->SetValue(App::console()->prevCommand(cmd_log_index_));
+		text_command_->SetValue(app::console()->prevCommand(cmd_log_index_));
 		text_command_->SetInsertionPointEnd();
 		if (cmd_log_index_ < 0)
 			cmd_log_index_ = 0;

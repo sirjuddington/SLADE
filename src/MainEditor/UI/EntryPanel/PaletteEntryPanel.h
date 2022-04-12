@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EntryPanel.h"
+#include "Graphics/Palette/Palette.h"
 
 /* TODO:
  * - Improve and enrich palette edition functions
@@ -14,57 +15,62 @@
  *   the full complement of 34 including one unused (a legacy of the Doom
  *   beta version which used a green colormap for the light amp visors).
  */
+
+namespace slade
+{
 class PaletteCanvas;
-class Palette;
 class ArchiveEntry;
 
 class PaletteEntryPanel : public EntryPanel
 {
 public:
 	PaletteEntryPanel(wxWindow* parent);
-	~PaletteEntryPanel();
+	~PaletteEntryPanel() override = default;
 
-	bool	loadEntry(ArchiveEntry* entry) override;
-	bool	saveEntry() override;
-	string	statusString() override;
-	void	refreshPanel() override;
-	void	toolbarButtonClick(string action_id) override;
+	wxString statusString() override;
+	void     refreshPanel() override;
+	void     toolbarButtonClick(const wxString& action_id) override;
 
-	bool	showPalette(uint32_t index);
-	bool	addCustomPalette();
-	bool	exportAs();
-	bool	importFrom();
+	bool showPalette(uint32_t index);
+	bool addCustomPalette() const;
+	bool exportAs();
+	bool importFrom();
 
 	// Palette manipulation functions
-	bool	generateColormaps();
-	bool	generatePalettes();
-	bool	clearOne();
-	bool	clearOthers();
-	bool	duplicate();
-	bool	move(bool infront = false);
-	bool	tint();
-	bool	colourise();
-	bool	tweak();
-	bool	invert();
-	bool    gradient();
-	bool	testPalette();
+	bool generateColormaps() const;
+	bool generatePalettes();
+	bool clearOne();
+	bool clearOthers();
+	bool duplicate();
+	bool move(bool infront = false);
+	bool tint();
+	bool colourise();
+	bool tweak();
+	bool invert();
+	bool gradient();
+	bool testPalette() const;
 
 	// Temporary analysis tool to help reverse engineer stuff
-	void	analysePalettes();
+	void analysePalettes() const;
 
 	// SAction handler
-	bool	handleEntryPanelAction(const string& id) override;
-	bool	fillCustomMenu(wxMenu* custom) override;
+	bool handleEntryPanelAction(string_view id) override;
+	bool fillCustomMenu(wxMenu* custom) override;
+
+protected:
+	bool loadEntry(ArchiveEntry* entry) override;
+	bool writeEntry(ArchiveEntry& entry) override;
 
 private:
-	PaletteCanvas*		pal_canvas_		= nullptr;
-	vector<Palette*>	palettes_;
-	uint32_t			cur_palette_	= 1;
-	wxStaticText*		text_curpal_	= nullptr;
+	PaletteCanvas*              pal_canvas_ = nullptr;
+	vector<unique_ptr<Palette>> palettes_;
+	uint32_t                    cur_palette_ = 1;
+	wxStaticText*               text_curpal_ = nullptr;
 
 	// A helper for generatePalettes() which has no reason to be called outside
-	void	generatePalette(int r, int g, int b, int shift, int steps);
+	void generatePalette(int r, int g, int b, int shift, int steps);
 
 	// Events
-	void	onPalCanvasMouseEvent(wxMouseEvent& e);
+	void onPalCanvasMouseEvent(wxMouseEvent& e);
 };
+} // namespace slade

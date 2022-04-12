@@ -1,0 +1,24 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24">
+    <!-- <rect x="0" y="0" width="24" height="24"/> -->
+    <g transform="scale(1.1, 1.1)">
+        <path
+            d="M19 3H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m0 2v14H5V5h14z"
+            fill="#0000FF"
+            stroke="#0000FF"
+            stroke-width="0.5"
+            transform="translate(-1.2, -1.2)"
+        />
+    </g>
+    <g transform="scale(0.5, 0.5)">
+        <path 
+            d="M10.106 12.69a1.49 1.49 0 0 1-2.104 0L1.561 6.246c-.582-.581-.839-2.103 1-2.103h12.988c1.901 0 1.582 1.521 1 2.103l-6.443 6.444z"
+            fill="#0000FF"
+            transform="translate(15, 23)"
+        />
+    </g>
+</svg>

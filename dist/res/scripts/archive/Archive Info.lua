@@ -1,62 +1,62 @@
 
-function validFor(archive)
+function ValidFor(archive)
     return true
 end
 
 local info = {}
-local output = 'Detailed Info:\n\n'
+local output = "Detailed Info:\n\n"
 
-function countEntry(entry)
-	-- Increment total entry count
-    info.entry_count = info.entry_count + 1
-	
-	-- Increment count and size for category
-	local tbl = info.entry_categories[entry.type.category]
-	if tbl == nil then
-		info.entry_categories[entry.type.category] = { count=1, size=entry.size }
-	else
-		tbl.count = tbl.count + 1
-		tbl.size = tbl.size + entry.size
-	end
+function CountEntry(entry)
+   -- Increment total entry count
+   info.entryCount = info.entryCount + 1
+
+   -- Increment count and size for category
+   local tbl = info.entryCategories[entry.type.category]
+   if tbl == nil then
+      info.entryCategories[entry.type.category] = { count=1, size=entry.size }
+   else
+      tbl.count = tbl.count + 1
+      tbl.size = tbl.size + entry.size
+   end
 end
 
-function addOutputLine(line)
-	output = output .. line .. '\n'
+function AddOutputLine(line)
+   output = output .. line .. "\n"
 end
 
-function yesNo(boolean)
-	if boolean == true then
-		return 'Yes'
-	else
-		return 'No'
-	end
+function YesNo(boolean)
+   if boolean == true then
+      return "Yes"
+   else
+      return "No"
+   end
 end
 
-function execute(archive)
-	-- Archive format info
-	addOutputLine('Format: ' .. archive.format.name)
-	addOutputLine('Supports directories: ' .. yesNo(archive.format.supportsDirs))
-	addOutputLine('Entry names have extensions: ' .. yesNo(archive.format.hasExtensions))
-	if archive.format.maxNameLength > 0 then
-		addOutputLine('Max entry name length: ' .. archive.format.maxNameLength)
-	end
-	addOutputLine('')
+function Execute(archive)
+   -- Archive format info
+   AddOutputLine("Format: " .. archive.format.name)
+   AddOutputLine("Supports directories: " .. YesNo(archive.format.supportsDirs))
+   AddOutputLine("Entry names have extensions: " .. YesNo(archive.format.hasExtensions))
+   if archive.format.maxNameLength > 0 then
+      AddOutputLine("Max entry name length: " .. archive.format.maxNameLength)
+   end
+   AddOutputLine("")
 
-	-- Process entries
-	info.entry_count = 0
-	info.entry_categories = {}
-	for i,entry in ipairs(archive.entries) do
-        countEntry(entry)
-    end
+   -- Process entries
+   info.entryCount = 0
+   info.entryCategories = {}
+   for _,entry in ipairs(archive.entries) do
+      CountEntry(entry)
+   end
 
-	-- Write entry info
-	addOutputLine('Entry count: ' .. info.entry_count)
-	addOutputLine('')
-	addOutputLine('Entry count by category:')
-	for category,c_info in pairs(info.entry_categories) do
-		addOutputLine(string.format('%d %s (%d bytes)', c_info.count, category, c_info.size))
-	end
+   -- Write entry info
+   AddOutputLine("Entry count: " .. info.entryCount)
+   AddOutputLine("")
+   AddOutputLine("Entry count by category:")
+   for category,catInfo in pairs(info.entryCategories) do
+      AddOutputLine(string.format("%d %s (%d bytes)", catInfo.count, category, catInfo.size))
+   end
 
-	-- Display info output in message box
-    App.messageBoxExt('Archive Info', 'Information about ' .. archive.filename .. ':', output)
+   -- Display info output in message box
+   UI.MessageBoxExt("Archive Info", "Information about " .. archive.filename .. ":", output)
 end

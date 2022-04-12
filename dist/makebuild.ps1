@@ -1,4 +1,4 @@
-$version = "3.1.13"
+$version = "3.2.0_b4"
 $rev_short = Invoke-Expression "git.exe rev-parse --short HEAD"
 
 # Check for 7-zip install
@@ -37,8 +37,8 @@ if ($buildbinaries.ToLower() -eq "y")
 	}
 	else
 	{
-		& $devenvpath19 (resolve-path ..\build\msvc\SLADE.sln).Path /rebuild "Release - vcpkg, static|Win32" /project SLADE.vcxproj
-		& $devenvpath19 (resolve-path ..\build\msvc\SLADE.sln).Path /rebuild "Release - vcpkg, static|x64" /project SLADE.vcxproj
+		& $devenvpath19 (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|Win32" /project SLADE.vcxproj
+	    & $devenvpath19 (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|x64" /project SLADE.vcxproj
 	}
 }
 
@@ -46,13 +46,11 @@ if ($buildbinaries.ToLower() -eq "y")
 $releasedir = "$PSScriptRoot\$version"
 $releasedir32 = "$releasedir\win32"
 $releasedir64 = "$releasedir\x64"
-#$releasedirxp = "$releasedir\win32_xp"
 
 # Create release directory if needed
 Write-Host "`nCreate directory $releasedir" -foregroundcolor yellow
 New-Item -ItemType directory -Force -Path "$releasedir32" | out-null
 New-Item -ItemType directory -Force -Path "$releasedir64" | out-null
-#New-Item -ItemType directory -Force -Path "$releasedirxp" | out-null
 
 # Remove existing pk3 if it exists
 $pk3path = ".\slade.pk3"
@@ -83,11 +81,6 @@ Copy-Item (resolve-path ".\dll32\libfluidsynth.dll") "$releasedir32" -Force
 # x64
 Copy-Item (resolve-path ".\SLADE-x64.exe")       "$releasedir64\SLADE.exe" -Force
 Copy-Item (resolve-path ".\SLADE-x64.pdb")       "$releasedir64\SLADE.pdb" -Force
-# WinXP
-#Copy-Item (resolve-path ".\WinXP\SLADE.exe")         "$releasedirxp" -Force
-#Copy-Item (resolve-path ".\WinXP\SLADE.pdb")         "$releasedirxp" -Force
-#Copy-Item (resolve-path ".\dll32\FreeImage.dll")     "$releasedirxp" -Force
-#Copy-Item (resolve-path ".\dll32\libfluidsynth.dll") "$releasedirxp" -Force
 Write-Host "Done" -foregroundcolor green
 
 # Prompt to build binaries 7z
@@ -120,15 +113,6 @@ if ($buildbinaries.ToLower() -eq "y")
 	"$releasedir64\SLADE.pdb" `
 	"$releasedir\slade.pk3"
 	Write-Host "Done" -foregroundcolor green
-
-#	Write-Host "`nBuilding XP binary 7z..." -ForegroundColor Yellow
-#	& $7zpath a -t7z "$releasedir\slade_${version}_winxp${timestamp}.7z" `
-#	"$releasedirxp\FreeImage.dll" `
-#	"$releasedirxp\libfluidsynth.dll" `
-#	"$releasedirxp\SLADE.exe" `
-#	"$releasedirxp\SLADE.pdb" `
-#	"$releasedir\slade.pk3"
-	Write-Host "Done" -ForegroundColor Green
 }
 
 # Prompt to build installer

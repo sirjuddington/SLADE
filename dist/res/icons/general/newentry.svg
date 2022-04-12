@@ -1,0 +1,24 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24">
+    <defs>
+        <mask id="symbol">
+            <rect x="0" y="0" width="24" height="24" fill="#FFFFFF" />
+            <g transform="scale(1.2,1)">
+                <path
+                    transform="translate(-2,2.9)"
+                    d="M9 7v10h6v-2h-4v-2h4v-2h-4V9h4V7H9z"
+                    fill="#000000"
+                />
+            </g>
+        </mask>
+    </defs>
+    <path
+        d="M13 9V3.5L18.5 9M6 2c-1.11 0-2 .89-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6z"
+        fill="#209843"
+        mask="url(#symbol)"
+    />
+</svg>

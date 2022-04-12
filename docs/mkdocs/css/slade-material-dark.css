@@ -1,0 +1,337 @@
+
+/* ---- Fonts ---- */
+
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:300,300i,400,500,600,800');
+@import url('https://fonts.googleapis.com/css?family=Fira+Code:400,500');
+
+body, h1, h2, h3, h4, h5, h6 {
+	font-family: 'Fira Sans', 'Segoe UI', sans-serif;
+}
+
+type,
+arg,
+prop,
+prop.ro,
+prop.rw,
+code,
+function,
+.admonition code,
+.md-typeset code,
+fdef {
+	font-family: 'Fira Code', 'Consolas', monospace !important;
+}
+
+
+
+
+li,
+p,
+td {
+	font-size: 0.75rem;
+	line-height: 1.4em;
+	font-weight: 300;
+}
+
+strong {
+	font-weight: 600;
+}
+
+body,
+.md-nav {
+	background-color: hsl(220, 10%, 16%);
+}
+
+html .md-nav--primary .md-nav__title ~ .md-nav__list {
+	background: inherit;
+}
+
+html .md-nav--primary .md-nav__title {
+	color: hsl(220, 10%, 85%);
+}
+
+body, h1, h2, h3, h4, h5,h h6 {
+	color: hsl(220, 10%, 90%);
+}
+
+article {
+	font-size: 0.9em;
+}
+
+article a {
+    font-weight: 400;
+}
+
+
+
+article A:link,
+article A:visited,
+article code A:link,
+article code A:visited {
+	/* color: hsl(220, 90%, 40%); */
+	color: hsl(40, 100%, 70%);
+}
+
+article A:hover,
+article A:active,
+article code A:hover,
+article code A:active,
+.md-typeset a:active,
+.md-typeset a:hover {
+	color: hsl(40, 100%, 95%);
+}
+
+.md-nav__link[data-md-state="blur"] {
+	color: hsla(220, 25%, 40%, 1);
+}
+
+li.md-nav__item.md-nav__item--active > a {
+	color: hsl(220, 48%, 73%);
+	font-weight: 400;
+}
+
+.md-header {
+	background-color: hsla(220, 35%, 40%, 1);
+}
+
+article > header {
+	font-size: 2.3em;
+	font-weight: 600;
+	color: hsl(220, 48%, 73%);
+	display: block;
+	border-bottom: 0.05em solid hsl(220, 15%, 30%);
+    padding-bottom: 0;
+	margin-top: -0.7em;
+	margin-bottom: 0.6em;
+}
+
+subhead {
+	font-size: 0.9em;
+    color: hsl(220, 20%, 55%);
+	font-weight: 500 !important;
+	display: block;
+	margin-top: -1em;
+	text-transform: uppercase;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h3 code {
+	color: hsl(220, 48%, 73%) !important;
+}
+
+.md-typeset h1 {
+	font-weight: 600 !important;
+	display: none;
+}
+
+.md-typeset h2 {
+	font-weight: 500 !important;
+	font-size: 1.8em;
+}
+
+.md-typeset h3 {
+	font-size: 1.4em;
+	font-weight: 400 !important;
+}
+
+.md-typeset h4,
+.md-typeset h5 {
+	/* color: hsl(220, 48%, 73%) !important; */
+	color: hsl(220, 100%, 95%);
+	font-weight: 400 !important;
+	font-size: 1.0em;
+}
+
+.md-typeset h2,
+.md-typeset h1 {
+	border-bottom: 0.05em solid hsl(220, 15%, 30%);
+    padding-bottom: 0.2em;
+}
+
+.md-typeset hr {
+	border-top: 0.05em solid hsl(220, 15%, 30%);
+	border-bottom: none;
+}
+
+type,
+arg,
+prop,
+prop.ro,
+prop.rw,
+code,
+function,
+.admonition code,
+.md-typeset code {
+	font-size: 1.0em;
+	font-weight: 400;
+    background-color: inherit;
+    box-shadow: none;
+}
+
+code,
+.md-typeset code,
+.admonition code {
+	color: hsl(220, 68%, 83%);
+	border: none;
+	background-color: inherit;
+	padding: 0;
+	margin: 0;
+}
+
+/* code a {
+	font-weight: 500;
+} */
+
+type,
+type a {
+	color: hsl(130, 36%, 65%) !important;
+}
+
+type a,
+code a,
+fdef a {
+	text-decoration: underline;
+	font-weight: 400 !important;
+}
+
+type a:hover {
+	color: hsl(130, 86%, 85%) !important;
+}
+
+arg,
+prop,
+prop.ro,
+prop.rw {
+	color: hsl(293, 56%, 77%);
+}
+
+prop,
+prop.ro,
+prop.rw {
+	color: hsl(180, 83%, 70%);
+}
+
+prop.ro::before {
+	content: "\25CB";
+	color: hsl(10, 88%, 53%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
+}
+
+prop.rw::before {
+	content: "\25CF";
+	color: hsl(140, 68%, 33%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
+}
+
+pre code,
+.codehilite pre {
+	background: none repeat scroll 0 0 rgb(37, 37, 37) !important;
+	border: 1px solid hsl(220, 20%, 34%);
+	line-height: 1.5em !important;
+	font-size: 0.8em;
+}
+
+#__code_0 > code {
+	font-variant-ligatures: none;
+}
+
+.codehilite pre .n,
+.codehilite pre .p {
+	color: rgb(215, 215, 215);
+}
+
+.codehilite pre .kr,
+.codehilite pre .kd {
+	color: rgb(94, 142, 232);
+}
+
+.codehilite pre .c1 {
+	color: rgb(102, 124, 97);
+	font-style: italic;
+}
+
+.codehilite pre .nf,
+.codehilite pre .nb {
+	color: rgb(239, 222, 154);
+}
+
+.codehilite pre .o {
+	color: rgb(175, 205, 198);
+}
+
+.codehilite pre .mi {
+	color: rgb(188, 174, 225);
+}
+
+.codehilite pre .s1,
+.codehilite pre .se,
+.codehilite pre .s2 {
+	color: rgb(216, 101, 84);
+}
+
+.codehilite pre .kc {
+	color: rgb(188, 117, 198);
+}
+
+table thead {
+	background-color: hsla(220, 35%, 40%, 1);
+	color: hsl(222, 100%, 98%);
+	border-color: #64789F;
+	font-size: 1.1em;
+}
+
+table tbody {
+	background-color: hsla(220, 70%, 100%, 5%);
+}
+
+.md-typeset th {
+	background-color: inherit !important;
+	font-weight: 600;
+}
+
+.md-typeset table:not([class]) td {
+	padding: 0.6rem 1.2rem;
+}
+
+.md-typeset table:not([class]) th {
+	padding: 0.8rem 1.2rem;
+	color: hsl(222, 100%, 98%);
+}
+
+.md-typeset table:not([class]) {
+	font-size: 0.9em;
+}
+
+params,
+listhead {
+	font-weight: 700;
+	font-size: 0.98em;
+	display: block;
+	margin-bottom: -0.9em;
+}
+
+.md-typeset .admonition {
+	font-size: 0.97em;
+}
+
+.md-typeset blockquote {
+	padding-left: 1.2rem;
+	border-left: .4rem solid hsla(220, 35%, 40%, 1);
+	color: hsl(220, 10%, 75%);
+}
+
+fdef {
+	display: block;
+	color: hsl(220, 68%, 83%);
+	margin-bottom: 0.3em;
+	padding-left: 1.5rem;
+	text-indent: -1rem;
+}
+
+fdef > block {
+	display: inline-block;
+	vertical-align: text-top;
+}

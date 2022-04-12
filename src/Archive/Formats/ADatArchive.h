@@ -1,28 +1,30 @@
-
-#ifndef __ADAT_ARCHIVE_H__
-#define __ADAT_ARCHIVE_H__
+#pragma once
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class ADatArchive : public Archive
 {
 public:
-	ADatArchive();
-	~ADatArchive();
+	ADatArchive() : Archive("adat") {}
+	~ADatArchive() = default;
 
 	// Opening
-	bool	open(MemChunk& mc) override;	// Open from MemChunk
+	bool open(MemChunk& mc) override; // Open from MemChunk
 
 	// Writing/Saving
-	bool	write(MemChunk& mc, bool update = true) override;		// Write to MemChunk
-	bool	write(string filename, bool update = true) override;	// Write to File
+	bool write(MemChunk& mc, bool update = true) override;         // Write to MemChunk
+	bool write(string_view filename, bool update = true) override; // Write to File
 
 	// Misc
-	bool	loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Static functions
 	static bool isADatArchive(MemChunk& mc);
-	static bool isADatArchive(string filename);
-};
+	static bool isADatArchive(const string& filename);
 
-#endif//__ADAT_ARCHIVE_H__
+private:
+	static const int DIRENTRY = 144;
+};
+} // namespace slade

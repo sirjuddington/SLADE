@@ -3,110 +3,151 @@
 
 // CVar classes, a lot of ideas taken from the ZDoom source
 
-enum CVarType
+namespace slade
 {
-	CVAR_BOOLEAN,
-	CVAR_INTEGER,
-	CVAR_FLOAT,
-	CVAR_STRING,
+struct CVar
+{
+	enum class Type
+	{
+		Boolean,
+		Integer,
+		Float,
+		String,
+	};
+
+	union Value
+	{
+		int         Int;
+		bool        Bool;
+		double      Float;
+		const char* String;
+	};
+
+	enum Flag
+	{
+		Save   = 1, // set if cvar is saved to config file
+		Secret = 2, // set if cvar is not listed when cvarlist command called
+		Locked = 4, // set if cvar cannot be changed by the user during runtime
+	};
+
+	uint16_t flags = 0;
+	Type     type  = Type::Integer;
+	string   name;
+	CVar*    next = nullptr;
+
+	CVar() = default;
+	CVar(Type type, uint16_t flags, string_view name) : flags{ flags }, type{ type }, name{ name } {}
+	virtual ~CVar() = default;
+
+	virtual Value getValue()
+	{
+		Value val;
+		val.Int = 0;
+		return val;
+	}
+
+	// Static functions
+	static string writeAll();
+	static void   set(const string& cvar_name, const string& value);
+	static CVar*  get(const string& cvar_name);
+	static void   putList(vector<string>& list);
 };
 
-union CVarValue
+struct CIntCVar : CVar
 {
-	int Int;
-	bool Bool;
-	double Float;
-	const char* String;
-};
-
-enum CVarProperty
-{
-	CVAR_SAVE	= 1,	// set if cvar is saved to config file
-	CVAR_SECRET	= 2,	// set if cvar is not listed when cvarlist command called
-	CVAR_LOCKED = 4,	// set if cvar cannot be changed by the user during runtime
-};
-
-
-class CVar
-{
-public:
-	uint16_t	flags;
-	CVarType	type;
-	string		name;
-	CVar*		next;
-
-	CVar() { next = nullptr; }
-	virtual ~CVar() {}
-
-	virtual CVarValue GetValue() { CVarValue val; val.Int = 0; return val; }
-};
-
-class CIntCVar : public CVar
-{
-public:
 	int value;
 
-	CIntCVar(string NAME, int defval, uint16_t FLAGS);
-	~CIntCVar() {}
+	CIntCVar(string_view name, int defval, uint16_t flags);
+	~CIntCVar() override = default;
 
 	// Operators so the cvar name can be used like a normal variable
-	inline operator int () const { return value; }
-	inline int operator *() const { return value; }
-	inline int operator= (int val) { value = val; return val; }
+		operator int() const { return value; }
+	int operator*() const { return value; }
 
-	CVarValue GetValue() { CVarValue val; val.Int = value; return val; }
+	int operator=(int val)
+	{
+		value = val;
+		return val;
+	}
+
+	Value getValue() override
+	{
+		Value val;
+		val.Int = value;
+		return val;
+	}
 };
 
-class CBoolCVar : public CVar
+struct CBoolCVar : CVar
 {
-public:
 	bool value;
 
-	CBoolCVar(string NAME, bool defval, uint16_t FLAGS);
-	~CBoolCVar() {}
+	CBoolCVar(string_view name, bool defval, uint16_t flags);
+	~CBoolCVar() override = default;
 
-	inline operator bool () const { return value; }
-	inline bool operator *() const { return value; }
-	inline bool operator= (bool val) { value = val; return val; }
+		 operator bool() const { return value; }
+	bool operator*() const { return value; }
 
-	CVarValue GetValue() { CVarValue val; val.Bool = value; return val; }
+	bool operator=(bool val)
+	{
+		value = val;
+		return val;
+	}
+
+	Value getValue() override
+	{
+		Value val;
+		val.Bool = value;
+		return val;
+	}
 };
 
-class CFloatCVar : public CVar
+struct CFloatCVar : CVar
 {
-public:
 	double value;
 
-	CFloatCVar(string NAME, double defval, uint16_t FLAGS);
-	~CFloatCVar() {}
+	CFloatCVar(string_view name, double defval, uint16_t flags);
+	~CFloatCVar() override = default;
 
-	inline operator double () const { return value; }
-	inline double operator *() const { return value; }
-	inline double operator= (double val) { value = val; return val; }
+		   operator double() const { return value; }
+	double operator*() const { return value; }
 
-	CVarValue GetValue() { CVarValue val; val.Float = value; return val; }
+	double operator=(double val)
+	{
+		value = val;
+		return val;
+	}
+
+	Value getValue() override
+	{
+		Value val;
+		val.Float = value;
+		return val;
+	}
 };
 
-void dump_cvars();
-void save_cvars(wxFile& file);
-void read_cvar(string name, string value);
-CVar* get_cvar(string name);
-void get_cvar_list(vector<string>& list);
-
-class CStringCVar : public CVar
+struct CStringCVar : CVar
 {
-public:
 	string value;
 
-	CStringCVar(string NAME, string defval, uint16_t FLAGS);
-	~CStringCVar() {}
+	CStringCVar(string_view name, string_view defval, uint16_t flags);
+	~CStringCVar() override = default;
 
-	inline operator string () const { return value; }
-	inline string operator *() const { return value; }
-	inline string operator= (string val) { value = val; return val; }
+	bool empty() const { return value.empty(); }
+
+		   operator string() const { return value; }
+	string operator*() const { return value; }
+		   operator string_view() const { return value; }
+		   operator wxString() const { return value; }
+
+	CStringCVar& operator=(string_view val)
+	{
+		value = val;
+		return *this;
+	}
 };
+} // namespace slade
 
-#define CVAR(type, name, val, flags) \
-	C##type##CVar name (#name, val, flags);
+#define CVAR(type, name, val, flags) C##type##CVar name(#name, val, flags);
 
 #define EXTERN_CVAR(type, name) extern C##type##CVar name;

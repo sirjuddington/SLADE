@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -22,54 +22,70 @@
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZTextureEditorPanel.h"
-#include "Dialogs/TranslationEditorDialog.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
-#include "Utility/Tokenizer.h"
-#include "UI/WxUtils.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/WxUtils.h"
+#include "Utility/Tokenizer.h"
 
 
-// ----------------------------------------------------------------------------
+using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+CTextureCanvas::View view_types[] = { CTextureCanvas::View::Normal,
+									  CTextureCanvas::View::Sprite,
+									  CTextureCanvas::View::HUD };
+}
+
+
+// -----------------------------------------------------------------------------
 //
 // ZTextureEditorPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::createTextureControls
-//
+// -----------------------------------------------------------------------------
 // Creates/sets up a panel with controls to edit texture properties
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 {
-	wxScrolledWindow* panel = new wxScrolledWindow(parent, -1);
+	auto panel = new wxScrolledWindow(parent, -1);
 	panel->SetScrollRate(4, 0);
 
 	// Setup tex controls panel sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	panel->SetSizer(sizer);
 
 	// "Texture Properties" frame
-	wxStaticBox* frame = new wxStaticBox(panel, -1, "Texture Properties");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	auto frame      = new wxStaticBox(panel, -1, "Texture Properties");
+	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND);
 
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND|wxALL, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Name
 	text_tex_name_ = new wxTextCtrl(panel, -1);
@@ -78,9 +94,9 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Size
-	const auto spinsize = wxSize{ UI::px(UI::Size::SpinCtrlWidth), -1 };
+	const auto spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
 	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	spin_tex_width_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
+	spin_tex_width_  = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
 	spin_tex_height_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Size:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_width_, { 1, 1 }, { 1, 1 });
@@ -88,29 +104,9 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 
 	// Scale
 	spin_tex_scalex_ = new wxSpinCtrlDouble(
-		panel,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		spinsize,
-		spinflags,
-		0.1,
-		100,
-		1,
-		0.1
-	);
+		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
 	spin_tex_scaley_ = new wxSpinCtrlDouble(
-		panel,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		spinsize,
-		spinflags,
-		0.1,
-		100,
-		1,
-		0.1
-	);
+		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex_, { 2, 1 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_scaley_, { 2, 2 }, { 1, 1 });
@@ -120,8 +116,8 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(label_scaled_size_, { 3, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
 	// Type
-	string types[] = { "Texture", "Sprite", "Graphic", "WallTexture", "Flat" };
-	choice_type_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 5, types);
+	wxString types[] = { "Texture", "Sprite", "Graphic", "WallTexture", "Flat" };
+	choice_type_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 5, types);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Type:"), { 0, 3 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_type_, { 0, 4 }, { 1, 2 }, wxEXPAND);
 
@@ -133,10 +129,10 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(spin_tex_offsety_, { 1, 5 }, { 1, 1 });
 
 	// Flags
-	cb_optional_ = new wxCheckBox(panel, -1, "Optional");
+	cb_optional_     = new wxCheckBox(panel, -1, "Optional");
 	cb_worldpanning_ = new wxCheckBox(panel, -1, "World Panning");
-	cb_nodecals_ = new wxCheckBox(panel, -1, "No Decals");
-	cb_nulltexture_ = new wxCheckBox(panel, -1, "Null Texture");
+	cb_nodecals_     = new wxCheckBox(panel, -1, "No Decals");
+	cb_nulltexture_  = new wxCheckBox(panel, -1, "Null Texture");
 	gb_sizer->Add(cb_optional_, { 2, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(cb_worldpanning_, { 2, 5 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(cb_nodecals_, { 3, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -168,36 +164,34 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::updateTextureControls
-//
+// -----------------------------------------------------------------------------
 // Updates all texture editing controls with values from the texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::updateTextureControls()
 {
 	// Check texture is open
 	if (!tex_current_)
 		return;
 
-	text_tex_name_->SetValue(tex_current_->getName());
-	spin_tex_width_->SetValue(tex_current_->getWidth());
-	spin_tex_height_->SetValue(tex_current_->getHeight());
-	spin_tex_scalex_->SetValue(tex_current_->getScaleX());
-	spin_tex_scaley_->SetValue(tex_current_->getScaleY());
-	spin_tex_offsetx_->SetValue(tex_current_->getOffsetX());
-	spin_tex_offsety_->SetValue(tex_current_->getOffsetY());
+	text_tex_name_->SetValue(tex_current_->name());
+	spin_tex_width_->SetValue(tex_current_->width());
+	spin_tex_height_->SetValue(tex_current_->height());
+	spin_tex_scalex_->SetValue(tex_current_->scaleX());
+	spin_tex_scaley_->SetValue(tex_current_->scaleY());
+	spin_tex_offsetx_->SetValue(tex_current_->offsetX());
+	spin_tex_offsety_->SetValue(tex_current_->offsetY());
 	updateTextureScaleLabel();
 
 	// Update type
-	if (tex_current_->getType() == "Texture")
+	if (tex_current_->type() == "Texture")
 		choice_type_->SetSelection(0);
-	else if (tex_current_->getType() == "Sprite")
+	else if (tex_current_->type() == "Sprite")
 		choice_type_->SetSelection(1);
-	else if (tex_current_->getType() == "Graphic")
+	else if (tex_current_->type() == "Graphic")
 		choice_type_->SetSelection(2);
-	else if (tex_current_->getType() == "WallTexture")
+	else if (tex_current_->type() == "WallTexture")
 		choice_type_->SetSelection(3);
-	else if (tex_current_->getType() == "Flat")
+	else if (tex_current_->type() == "Flat")
 		choice_type_->SetSelection(4);
 	else
 		choice_type_->SetSelection(0);
@@ -209,73 +203,58 @@ void ZTextureEditorPanel::updateTextureControls()
 	cb_nulltexture_->SetValue(tex_current_->nullTexture());
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::createPatchControls
-//
+// -----------------------------------------------------------------------------
 // Creates/sets up a panel with controls to edit a texture's patches
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 {
-	wxScrolledWindow* panel = new wxScrolledWindow(parent, -1);
+	auto panel = new wxScrolledWindow(parent, -1);
 	panel->SetScrollRate(0, 4);
 
 	// Setup panel sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// -- Texture Patches frame --
-	wxStaticBox* frame = new wxStaticBox(panel, -1, "Patches");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
+	auto frame      = new wxStaticBox(panel, -1, "Patches");
+	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, 0, wxEXPAND);
 
-	// Add patches list
+	// Create patches list
 	list_patches_ = new ListView(panel, -1);
 	list_patches_->enableSizeUpdate(false);
-	list_patches_->SetInitialSize(WxUtils::scaledSize(100, -1));
-	framesizer->Add(list_patches_, 1, wxEXPAND|wxALL, UI::pad());
+	
+	// Create patches toolbar
+	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
+	tb_patches_->addActionGroup(
+		"_Patch",
+		{ "txed_patch_add",
+		  "txed_patch_remove",
+		  "txed_patch_back",
+		  "txed_patch_forward",
+		  "txed_patch_replace",
+		  "txed_patch_duplicate" });
+	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
+	tb_patches_->findActionButton("txed_patch_add")->Enable();
 
-	// Add patch buttons
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 0, wxEXPAND|wxTOP|wxRIGHT|wxBOTTOM, UI::pad());
-
-	// 'Add' button
-	btn_patch_add_ = new SIconButton(panel, "patch_add", "Add new patch to texture");
-	gb_sizer->Add(btn_patch_add_, { 0, 0 });
-
-	// 'Remove' button
-	btn_patch_remove_ = new SIconButton(panel, "patch_remove", "Remove selected patch(es) from texture");
-	gb_sizer->Add(btn_patch_remove_, { 0, 1 });
-
-	// 'Back' button
-	btn_patch_back_ = new SIconButton(panel, "patch_back", "Send selected patch(es) back");
-	gb_sizer->Add(btn_patch_back_, { 1, 0 });
-
-	// 'Forward' button
-	btn_patch_forward_ = new SIconButton(panel, "patch_forward", "Bring selected patch(es) forward");
-	gb_sizer->Add(btn_patch_forward_, { 1, 1 });
-
-	// 'Replace' button
-	btn_patch_replace_ = new SIconButton(panel, "patch_replace", "Replace selected patch(es)");
-	gb_sizer->Add(btn_patch_replace_, { 2, 0 });
-
-	// 'Duplicate' button
-	btn_patch_duplicate_ = new SIconButton(panel, "patch_duplicate", "Duplicate selected patch(es)");
-	gb_sizer->Add(btn_patch_duplicate_, { 2, 1 });
-
+	// Layout
+	list_patches_->SetInitialSize(wxutil::scaledSize(100, tb_patches_->group("_Patch")->GetBestSize().y));
+	framesizer->Add(list_patches_, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
+	framesizer->Add(tb_patches_, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
 
 
 	// -- Patch Properties frame --
-	frame = new wxStaticBox(panel, -1, "Patch Properties");
+	frame      = new wxStaticBox(panel, -1, "Patch Properties");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND|wxTOP, UI::pad());
+	sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
 
-	gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND|wxALL, UI::pad());
+	auto* gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// X Position
-	const auto spinsize = wxSize{ UI::px(UI::Size::SpinCtrlWidth), -1 };
+	const auto spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
 	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
+	spin_patch_left_     = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "X Position:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_patch_left_, { 0, 1 }, { 1, 1 }, wxEXPAND);
 
@@ -297,8 +276,8 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	gb_sizer->Add(cb_flipy_, { 3, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Rotation
-	string rotval[] = { "0", "90", "180", "270" };
-	choice_rotation_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, rotval);
+	wxString rotval[] = { "0", "90", "180", "270" };
+	choice_rotation_  = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, rotval);
 	choice_rotation_->SetSelection(0);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Rotation:"), { 4, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_rotation_, { 4, 1 }, { 1, 1 }, wxEXPAND);
@@ -309,20 +288,19 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	gb_sizer->Add(spin_alpha_, { 5, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Alpha Style
-	string styles[] = { "Copy", "Translucent", "Add", "Subtract", "ReverseSubtract", "Modulate", "CopyAlpha", "CopyNewAlpha", "Overlay" };
-	choice_style_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 9, styles);
+	wxString styles[] = { "Copy",     "Translucent", "Add",          "Subtract", "ReverseSubtract",
+						  "Modulate", "CopyAlpha",   "CopyNewAlpha", "Overlay" };
+	choice_style_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 9, styles);
 	choice_style_->SetSelection(0);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Alpha Style:"), { 6, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_style_, { 6, 1 }, { 1, 2 }, wxEXPAND);
 
-	frame = new wxStaticBox(panel, -1, "Patch Colour");
+	frame      = new wxStaticBox(panel, -1, "Patch Colour");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND|wxTOP, UI::pad());
+	sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
 
-	gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND|wxALL, UI::pad());
-	gb_sizer->AddGrowableCol(0, 1);
-	gb_sizer->AddGrowableCol(1, 1);
+	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// 'Normal' colour
 	rb_pc_normal_ = new wxRadioButton(panel, -1, "Normal", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
@@ -332,7 +310,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 
 	// Blend
 	rb_pc_blend_ = new wxRadioButton(panel, -1, "Blend");
-	rb_pc_tint_ = new wxRadioButton(panel, -1, "Tint");
+	rb_pc_tint_  = new wxRadioButton(panel, -1, "Tint");
 	gb_sizer->Add(rb_pc_blend_, { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(rb_pc_tint_, { 2, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
@@ -353,12 +331,12 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	rb_pc_translation_ = new wxRadioButton(panel, -1, "Translation");
 	gb_sizer->Add(rb_pc_translation_, { 6, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	gb_sizer->Add(hbox, { 7, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Translation text entry
 	text_translation_ = new wxTextCtrl(panel, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	hbox->Add(text_translation_, 1, wxEXPAND|wxRIGHT, UI::pad());
+	hbox->Add(text_translation_, 1, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Translation edit button
 	btn_edit_translation_ = new wxButton(panel, -1, "Edit", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
@@ -386,19 +364,17 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::updatePatchControls
-//
+// -----------------------------------------------------------------------------
 // Updates all patch editing controls with values from the currently selected
 // patch. Behaves differently depending on the number of patches selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::updatePatchControls()
 {
 	// Get selected patches
-	wxArrayInt selection = list_patches_->selectedItems();
+	auto selection = list_patches_->selectedItems();
 
 	// If nothing is selected, disable patch controls
-	if (selection.size() == 0)
+	if (selection.empty())
 	{
 		spin_patch_left_->Enable(false);
 		spin_patch_top_->Enable(false);
@@ -440,10 +416,10 @@ void ZTextureEditorPanel::updatePatchControls()
 		// If only 1 patch is selected, just set the controls to this patch
 		if (selection.size() == 1)
 		{
-			CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(selection[0]);
+			auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(selection[0]));
 			if (!patch)
 			{
-				LOG_MESSAGE(1, "Error: Selected patch does not exist in texture");
+				log::error("Selected patch does not exist in texture");
 				return;
 			}
 
@@ -452,13 +428,13 @@ void ZTextureEditorPanel::updatePatchControls()
 			cb_flipx_->SetValue(patch->flipX());
 			cb_flipy_->SetValue(patch->flipY());
 			cb_useofs_->SetValue(patch->useOffsets());
-			spin_alpha_->SetValue(patch->getAlpha());
-			choice_style_->SetStringSelection(patch->getStyle());
-			cb_blend_col_->setColour(patch->getColour());
-			spin_tint_amount_->SetValue((double)patch->getColour().a / 255.0);
-			text_translation_->SetValue(patch->getTranslation().asText());
+			spin_alpha_->SetValue(patch->alpha());
+			choice_style_->SetStringSelection(patch->style());
+			cb_blend_col_->setColour(patch->colour());
+			spin_tint_amount_->SetValue((double)patch->colour().a / 255.0);
+			text_translation_->SetValue(patch->translation().asText());
 
-			switch (patch->getRotation())
+			switch (patch->rotation())
 			{
 			case 0: choice_rotation_->SetSelection(0); break;
 			case 90: choice_rotation_->SetSelection(1); break;
@@ -468,19 +444,19 @@ void ZTextureEditorPanel::updatePatchControls()
 			};
 
 			// Update patch colour controls
-			switch (patch->getBlendType())
+			switch (patch->blendType())
 			{
-			case 1:
+			case CTPatchEx::BlendType::Translation:
 				rb_pc_translation_->SetValue(true);
 				enableTranslationControls(true);
 				enableBlendControls(false);
 				break;
-			case 2:
+			case CTPatchEx::BlendType::Blend:
 				rb_pc_blend_->SetValue(true);
 				enableBlendControls(true);
 				enableTranslationControls(false);
 				break;
-			case 3:
+			case CTPatchEx::BlendType::Tint:
 				rb_pc_tint_->SetValue(true);
 				enableBlendControls(true, true);
 				enableTranslationControls(false);
@@ -501,12 +477,10 @@ void ZTextureEditorPanel::updatePatchControls()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::addPatch
-//
+// -----------------------------------------------------------------------------
 // Prompts the user to select a patch from any open resources to be added to
 // the current texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::addPatch()
 {
 	// Do nothing if no texture is open
@@ -515,8 +489,8 @@ void ZTextureEditorPanel::addPatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(true);
-	string patch = tx_editor_->browsePatchEntry();
-	if (!patch.IsEmpty())
+	auto patch = tx_editor_->browsePatchEntry().ToStdString();
+	if (!patch.empty())
 	{
 		// Add new patch
 		tex_current_->addPatch(patch, 0, 0);
@@ -529,37 +503,35 @@ void ZTextureEditorPanel::addPatch()
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::replacePatch
-//
+// -----------------------------------------------------------------------------
 // Prompts the user to select a patch any open resource to replace selected
 // patch(es) with
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::replacePatch()
 {
 	// Get selection
-	wxArrayInt selection = list_patches_->selectedItems();
+	auto selection = list_patches_->selectedItems();
 
 	// Do nothing if no patches are selected
-	if (selection.size() == 0)
+	if (selection.empty())
 		return;
 
 	// Browse for patch
 	tx_editor_->setFullPath(true);
-	string patch = tx_editor_->browsePatchEntry();
-	if (!patch.IsEmpty())
+	auto patch = tx_editor_->browsePatchEntry().ToStdString();
+	if (!patch.empty())
 	{
 		// Go through selection and replace each patch
-		for (size_t a = 0; a < selection.size(); a++)
-			tex_current_->replacePatch(selection[a], patch);
+		for (int index : selection)
+			tex_current_->replacePatch(index, patch);
 	}
 
 	// Repopulate patch list
 	populatePatchList();
 
 	// Restore selection
-	for (size_t a = 0; a < selection.size(); a++)
-		list_patches_->selectItem(selection[a]);
+	for (int item : selection)
+		list_patches_->selectItem(item);
 
 	// Update UI
 	updatePatchControls();
@@ -567,67 +539,59 @@ void ZTextureEditorPanel::replacePatch()
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::enableTranslationControls
-//
+// -----------------------------------------------------------------------------
 // Enables or disables patch translation controls depending on [enable]
-// ----------------------------------------------------------------------------
-void ZTextureEditorPanel::enableTranslationControls(bool enable)
+// -----------------------------------------------------------------------------
+void ZTextureEditorPanel::enableTranslationControls(bool enable) const
 {
-	text_translation_->Enable(enable); btn_edit_translation_->Enable(enable);
+	text_translation_->Enable(enable);
+	btn_edit_translation_->Enable(enable);
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::enableBlendControls
-//
+// -----------------------------------------------------------------------------
 // Enables or disables patch colour blend controls depending on [enable]
-// ----------------------------------------------------------------------------
-void ZTextureEditorPanel::enableBlendControls(bool enable, bool tint)
+// -----------------------------------------------------------------------------
+void ZTextureEditorPanel::enableBlendControls(bool enable, bool tint) const
 {
-	cb_blend_col_->Enable(enable); spin_tint_amount_->Enable(enable && tint);
+	cb_blend_col_->Enable(enable);
+	spin_tint_amount_->Enable(enable && tint);
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ZTextureEditorPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onCBBlendRGBAChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Truecolour Preview' checkbox is (un)checked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onCBBlendRGBAChanged(wxCommandEvent& e)
 {
 	// Set rgba blending
-	tex_canvas_->blendRGBA(cb_blend_rgba_->GetValue());
+	tex_canvas_->setBlendRGBA(cb_blend_rgba_->GetValue());
 
 	// Update UI
 	tex_canvas_->redraw(true);
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onChoiceViewTypeSelected
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Offset Type' dropdown menu selection is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onChoiceViewTypeSelected(wxCommandEvent& e)
 {
 	// Set offset type
-	tex_canvas_->setViewType(choice_viewtype_->GetSelection());
+	tex_canvas_->setViewType(view_types[choice_viewtype_->GetSelection()]);
 
 	// Update UI
 	tex_canvas_->redraw(false);
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTexScaleXChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture x scale spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTexScaleXChanged(wxCommandEvent& e)
 {
 	// Set texture's x scale
@@ -641,11 +605,9 @@ void ZTextureEditorPanel::onTexScaleXChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTexScaleYChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture y scale spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTexScaleYChanged(wxCommandEvent& e)
 {
 	// Set texture's y scale
@@ -659,11 +621,9 @@ void ZTextureEditorPanel::onTexScaleYChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTexOffsetXChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture x offset spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTexOffsetXChanged(wxCommandEvent& e)
 {
 	// Set texture's x offset
@@ -676,11 +636,9 @@ void ZTextureEditorPanel::onTexOffsetXChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTexOffsetYChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture y offset spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTexOffsetYChanged(wxCommandEvent& e)
 {
 	// Set texture's y offset
@@ -693,77 +651,65 @@ void ZTextureEditorPanel::onTexOffsetYChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTexTypeChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture type dropdown menu selection is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTexTypeChanged(wxCommandEvent& e)
 {
 	// Set texture's type
 	if (tex_current_)
-		tex_current_->setType(choice_type_->GetStringSelection());
+		tex_current_->setType(wxutil::strToView(choice_type_->GetStringSelection()));
 
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTexOptionalChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Optional' checkbox is (un)checked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTexOptionalChanged(wxCommandEvent& e)
 {
 	if (tex_current_)
 		tex_current_->setOptional(cb_optional_->GetValue());
 
-	tex_modified_ =  true;
+	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTexWorldPanningChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'World Panning' checkbox is (un)checked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTexWorldPanningChanged(wxCommandEvent& e)
 {
 	if (tex_current_)
 		tex_current_->setWorldPanning(cb_worldpanning_->GetValue());
 
-	tex_modified_ =  true;
+	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTexNoDecalsChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'No Decals' checkbox is (un)checked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTexNoDecalsChanged(wxCommandEvent& e)
 {
 	if (tex_current_)
 		tex_current_->setNoDecals(cb_nodecals_->GetValue());
 
-	tex_modified_ =  true;
+	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTexNullTextureChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Null Texture' checkbox is (un)checked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTexNullTextureChanged(wxCommandEvent& e)
 {
 	if (tex_current_)
 		tex_current_->setNullTexture(cb_nulltexture_->GetValue());
 
-	tex_modified_ =  true;
+	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPatchFlipXChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Flip X' checkbox is (un)checked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPatchFlipXChanged(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -773,9 +719,9 @@ void ZTextureEditorPanel::onPatchFlipXChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->flipX(cb_flipx_->GetValue());
+			patch->setFlipX(cb_flipx_->GetValue());
 	}
 
 	// Update UI
@@ -784,11 +730,9 @@ void ZTextureEditorPanel::onPatchFlipXChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPatchFlipYChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Flip Y' checkbox is (un)checked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPatchFlipYChanged(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -798,9 +742,9 @@ void ZTextureEditorPanel::onPatchFlipYChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->flipY(cb_flipy_->GetValue());
+			patch->setFlipY(cb_flipy_->GetValue());
 	}
 
 	// Update UI
@@ -809,11 +753,9 @@ void ZTextureEditorPanel::onPatchFlipYChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPatchUseOfsChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'FUse Offsets' checkbox is (un)checked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPatchUseOfsChanged(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -823,9 +765,9 @@ void ZTextureEditorPanel::onPatchUseOfsChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->useOffsets(cb_useofs_->GetValue());
+			patch->setUseOffsets(cb_useofs_->GetValue());
 	}
 
 	// Update UI
@@ -834,11 +776,9 @@ void ZTextureEditorPanel::onPatchUseOfsChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPatchRotationChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the patch rotation dropdown menu selection is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPatchRotationChanged(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -858,7 +798,7 @@ void ZTextureEditorPanel::onPatchRotationChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
 			patch->setRotation(rot);
 	}
@@ -869,11 +809,9 @@ void ZTextureEditorPanel::onPatchRotationChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPatchAlphaChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the patch alpha spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPatchAlphaChanged(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -883,7 +821,7 @@ void ZTextureEditorPanel::onPatchAlphaChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
 			patch->setAlpha(spin_alpha_->GetValue());
 	}
@@ -894,11 +832,9 @@ void ZTextureEditorPanel::onPatchAlphaChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPatchAlphaStyleChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the patch transparency style dropdown menu selection is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPatchAlphaStyleChanged(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -908,9 +844,9 @@ void ZTextureEditorPanel::onPatchAlphaStyleChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setStyle(choice_style_->GetStringSelection());
+			patch->setStyle(wxutil::strToView(choice_style_->GetStringSelection()));
 	}
 
 	// Update UI
@@ -919,11 +855,9 @@ void ZTextureEditorPanel::onPatchAlphaStyleChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPCNormalSelected
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Normal' patch colour radio button is selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPCNormalSelected(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -933,9 +867,9 @@ void ZTextureEditorPanel::onPCNormalSelected(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setBlendType(0);
+			patch->setBlendType(CTPatchEx::BlendType::None);
 	}
 
 	// Update UI
@@ -946,11 +880,9 @@ void ZTextureEditorPanel::onPCNormalSelected(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPCBlendSelected
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Blend' patch colour radio button is selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPCBlendSelected(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -960,9 +892,9 @@ void ZTextureEditorPanel::onPCBlendSelected(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setBlendType(2);
+			patch->setBlendType(CTPatchEx::BlendType::Blend);
 	}
 
 	// Update UI
@@ -973,11 +905,9 @@ void ZTextureEditorPanel::onPCBlendSelected(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPCTintSelected
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Tint' patch colour radio button is selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPCTintSelected(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -987,9 +917,9 @@ void ZTextureEditorPanel::onPCTintSelected(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setBlendType(3);
+			patch->setBlendType(CTPatchEx::BlendType::Tint);
 	}
 
 	// Update UI
@@ -1000,11 +930,9 @@ void ZTextureEditorPanel::onPCTintSelected(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPCTranslationSelected
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Translation' patch colour radio button is selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPCTranslationSelected(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -1014,9 +942,9 @@ void ZTextureEditorPanel::onPCTranslationSelected(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setBlendType(1);
+			patch->setBlendType(CTPatchEx::BlendType::Translation);
 	}
 
 	// Update UI
@@ -1027,11 +955,9 @@ void ZTextureEditorPanel::onPCTranslationSelected(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPatchColourChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the patch colour picker is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPatchColourChanged(wxEvent& e)
 {
 	// Check texture is open
@@ -1041,11 +967,11 @@ void ZTextureEditorPanel::onPatchColourChanged(wxEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
 		{
-			rgba_t col = cb_blend_col_->colour();
-			patch->setColour(col.r, col.g, col.b, spin_tint_amount_->GetValue()*255);
+			ColRGBA col = cb_blend_col_->colour();
+			patch->setColour(col.r, col.g, col.b, spin_tint_amount_->GetValue() * 255);
 		}
 	}
 
@@ -1055,11 +981,9 @@ void ZTextureEditorPanel::onPatchColourChanged(wxEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onPatchTintAmountChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the patch tint amount spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onPatchTintAmountChanged(wxCommandEvent& e)
 {
 	// Check texture is open
@@ -1069,11 +993,11 @@ void ZTextureEditorPanel::onPatchTintAmountChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(list_patches_->selectedItems()[a]);
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
 		{
-			rgba_t col = cb_blend_col_->colour();
-			patch->setColour(col.r, col.g, col.b, spin_tint_amount_->GetValue()*255);
+			ColRGBA col = cb_blend_col_->colour();
+			patch->setColour(col.r, col.g, col.b, spin_tint_amount_->GetValue() * 255);
 		}
 	}
 
@@ -1083,43 +1007,41 @@ void ZTextureEditorPanel::onPatchTintAmountChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onBtnEditTranslation
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Edit' translation button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 {
 	// Get selected patches
-	wxArrayInt selection = list_patches_->selectedItems();
+	auto selection = list_patches_->selectedItems();
 
 	// Do nothing if no patches selected
-	if (selection.size() == 0)
+	if (selection.empty())
 		return;
 
 	// Get translation from first selected patch
 	Translation trans;
-	CTPatchEx* patch = (CTPatchEx*)tex_current_->getPatch(selection[0]);
-	trans.copy(patch->getTranslation());
+	auto        patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(selection[0]));
+	trans.copy(patch->translation());
 
 	// Add palette range if no translation ranges exist
 	if (trans.nRanges() == 0)
-		trans.addRange(TRANS_PALETTE, 0);
+		trans.addRange(TransRange::Type::Palette, 0);
 
 	// Create patch image
-	SImage image(PALMASK);
-	tex_canvas_->getTexture()->loadPatchImage(selection[0], image, tx_editor_->getArchive(), tex_canvas_->getPalette());
+	SImage image(SImage::Type::PalMask);
+	tex_canvas_->texture()->loadPatchImage(selection[0], image, tx_editor_->archive(), &tex_canvas_->palette());
 
 	// Open translation editor dialog
-	TranslationEditorDialog ted(MainEditor::windowWx(), tex_canvas_->getPalette(), "Edit Translation", &image);
+	TranslationEditorDialog ted(maineditor::windowWx(), tex_canvas_->palette(), "Edit Translation", &image);
 	ted.openTranslation(trans);
 	if (ted.ShowModal() == wxID_OK)
 	{
 		// Copy updated translation to all selected patches
-		for (unsigned a = 0; a < selection.size(); a++)
+		for (int index : selection)
 		{
-			CTPatchEx* patchx = (CTPatchEx*)tex_current_->getPatch(selection[a]);
-			patchx->getTranslation().copy(ted.getTranslation());
+			auto patchx = dynamic_cast<CTPatchEx*>(tex_current_->patch(index));
+			patchx->translation().copy(ted.getTranslation());
 		}
 
 		// Update UI
@@ -1130,20 +1052,18 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ZTextureEditorPanel::onTextTranslationEnter
-//
+// -----------------------------------------------------------------------------
 // Called when the enter key is pressed in the translation text box
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 {
 	// Parse translation text line
 	Tokenizer tz;
-	tz.openString(text_translation_->GetValue());
+	tz.openString(text_translation_->GetValue().ToStdString());
 	Translation trans;
 
-	string token = tz.getToken();
-	while (!token.IsEmpty())
+	auto token = tz.getToken();
+	while (!token.empty())
 	{
 		// Parse the translation component
 		trans.parse(token);
@@ -1166,11 +1086,11 @@ void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 	}
 
 	// Copy updated translation to all selected patches
-	wxArrayInt selection = list_patches_->selectedItems();
-	for (unsigned a = 0; a < selection.size(); a++)
+	auto selection = list_patches_->selectedItems();
+	for (int index : selection)
 	{
-		CTPatchEx* patchx = (CTPatchEx*)tex_current_->getPatch(selection[a]);
-		patchx->getTranslation().copy(trans);
+		auto patchx = dynamic_cast<CTPatchEx*>(tex_current_->patch(index));
+		patchx->translation().copy(trans);
 	}
 
 	// Update UI

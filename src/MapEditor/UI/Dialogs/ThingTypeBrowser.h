@@ -2,33 +2,42 @@
 
 #include "UI/Browser/BrowserWindow.h"
 
-namespace Game { class ThingType; }
+namespace slade
+{
+namespace game
+{
+	class ThingType;
+}
 
 class ThingBrowserItem : public BrowserItem
 {
 public:
-	ThingBrowserItem(string name, const Game::ThingType& type, unsigned index) :
-		BrowserItem{ name, index }, type_{ type } {}
-	~ThingBrowserItem() {}
+	ThingBrowserItem(const wxString& name, const game::ThingType& type, unsigned index) :
+		BrowserItem{ name, index },
+		type_{ type }
+	{
+	}
+	~ThingBrowserItem() = default;
 
-	bool	loadImage() override;
+	bool loadImage() override;
 
 private:
-	Game::ThingType const&	type_;
+	game::ThingType const& type_;
 };
 
 class ThingTypeBrowser : public BrowserWindow
 {
 public:
 	ThingTypeBrowser(wxWindow* parent, int type = -1);
-	~ThingTypeBrowser() {}
+	~ThingTypeBrowser() = default;
 
-	void	setupViewOptions();
-	int		getSelectedType();
+	void setupViewOptions();
+	int  selectedType() const;
 
 private:
-	wxCheckBox*	cb_view_tiles_;
+	wxCheckBox* cb_view_tiles_ = nullptr;
 
 	// Events
-	void	onViewTilesClicked(wxCommandEvent& e);
+	void onViewTilesClicked(wxCommandEvent& e);
 };
+} // namespace slade

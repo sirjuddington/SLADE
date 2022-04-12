@@ -1,32 +1,29 @@
-
-#ifndef __ANSICANVAS_H__
-#define	__ANSICANVAS_H__
+#pragma once
 
 #include "OGLCanvas.h"
-#include "General/ListenerAnnouncer.h"
 
-class GLTexture;
-class ANSICanvas : public OGLCanvas, Listener
+namespace slade
 {
-private:
-	size_t			width, height;
-	uint8_t*		picdata;
-	const uint8_t*	fontdata;
-	uint8_t*		ansidata;
-	GLTexture*		tex_image;
-	int				char_width;
-	int				char_height;
-
+class ANSICanvas : public OGLCanvas
+{
 public:
 	ANSICanvas(wxWindow* parent, int id);
 	~ANSICanvas();
 
-	void	draw();
-	void	drawImage();
-	void	writeRGBAData(uint8_t* dest);
-	void	loadData(uint8_t* data) { ansidata = data; }
-	void	drawCharacter(size_t index);
-	// Events
-};
+	void draw() override;
+	void drawImage();
+	void writeRGBAData(uint8_t* dest) const;
+	void loadData(uint8_t* data) { ansidata_ = data; }
+	void drawCharacter(size_t index) const;
 
-#endif //__ANSICANVAS_H__
+private:
+	size_t         width_       = 0;
+	size_t         height_      = 0;
+	uint8_t*       picdata_     = nullptr;
+	const uint8_t* fontdata_    = nullptr;
+	uint8_t*       ansidata_    = nullptr;
+	unsigned       tex_image_   = 0;
+	int            char_width_  = 8;
+	int            char_height_ = 8;
+};
+} // namespace slade

@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,55 +15,53 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Lexer.h"
 #include "UI/TextEditorCtrl.h"
+#include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
-CVAR(Bool, debug_lexer, false, CVAR_SECRET)
+// -----------------------------------------------------------------------------
+CVAR(Bool, debug_lexer, false, CVar::Flag::Secret)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Lexer Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Lexer::Lexer
-//
+// -----------------------------------------------------------------------------
 // Lexer class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 Lexer::Lexer() :
 	whitespace_chars_{ { ' ', '\n', '\r', '\t' } },
-	language_{ nullptr },
-	re_int1_{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT|wxRE_NOSUB },
-	re_int2_{ "^0[0-9]+$", wxRE_DEFAULT|wxRE_NOSUB },
-	re_int3_{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT|wxRE_NOSUB },
-	re_float_{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT|wxRE_NOSUB },
-	fold_comments_{ false },
-	fold_preprocessor_{ false }
+	re_int1_{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT | wxRE_NOSUB },
+	re_int2_{ "^0[0-9]+$", wxRE_DEFAULT | wxRE_NOSUB },
+	re_int3_{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT | wxRE_NOSUB },
+	re_float_{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE_NOSUB }
 {
 	// Default word characters
 	setWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
@@ -72,11 +70,9 @@ Lexer::Lexer() :
 	setOperatorChars("+-*/=><|~&!");
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::loadLanguage
-//
+// -----------------------------------------------------------------------------
 // Loads settings and word lists from [language]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Lexer::loadLanguage(TextLanguage* language)
 {
 	language_ = language;
@@ -87,25 +83,22 @@ void Lexer::loadLanguage(TextLanguage* language)
 		return;
 
 	// Load language words
-	for (auto word : language->wordListSorted(TextLanguage::WordType::Constant))
+	for (const auto& word : language->wordListSorted(TextLanguage::WordType::Constant))
 		addWord(word, Lexer::Style::Constant);
-	for (auto word : language->wordListSorted(TextLanguage::WordType::Property))
+	for (const auto& word : language->wordListSorted(TextLanguage::WordType::Property))
 		addWord(word, Lexer::Style::Property);
-	for (auto word : language->functionsSorted())
+	for (const auto& word : language->functionsSorted())
 		addWord(word, Lexer::Style::Function);
-	for (auto word : language->wordListSorted(TextLanguage::WordType::Type))
+	for (const auto& word : language->wordListSorted(TextLanguage::WordType::Type))
 		addWord(word, Lexer::Style::Type);
-	for (auto word : language->wordListSorted(TextLanguage::WordType::Keyword))
+	for (const auto& word : language->wordListSorted(TextLanguage::WordType::Keyword))
 		addWord(word, Lexer::Style::Keyword);
 
 	// Load language info
-	preprocessor_char_ = language->preprocessor().empty() ?
-						 (char) 0 : (char) language->preprocessor()[0];
+	preprocessor_char_ = language->preprocessor().empty() ? (char)0 : (char)language->preprocessor()[0];
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::doStyling
-//
+// -----------------------------------------------------------------------------
 // Performs text styling on [editor], for characters from [start] to [end].
 // Returns true if the next line needs to be styled (eg. for multi-line
 // comments)
@@ -115,18 +108,8 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 	if (start < 0)
 		start = 0;
 
-	int line = editor->LineFromPosition(start);
-	LexerState state
-	{
-		start,
-		end,
-		line,
-		State::Unknown,
-		0,
-		0,
-		false,
-		editor
-	};
+	int        line = editor->LineFromPosition(start);
+	LexerState state{ start, end, line, State::Unknown, 0, 0, false, editor };
 
 #if wxMAJOR_VERSION < 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION < 1) \
 	|| (wxMAJOR_VERSION == 3 && wxMINOR_VERSION == 1 && wxRELEASE_NUMBER == 0)
@@ -134,9 +117,9 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 #else
 	editor->StartStyling(start);
 #endif
-	
+
 	if (debug_lexer)
-		Log::debug(S_FMT("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
+		log::debug(wxString::Format("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
 
 	bool done = false;
 	while (!done)
@@ -146,31 +129,25 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 		{
 			editor->SetStyling(comment_blocks_[cb].end_pos - state.position, Style::Comment);
 			state.position = comment_blocks_[cb].end_pos;
-			state.line = editor->LineFromPosition(state.position);
-			state.state = State::Unknown;
+			state.line     = editor->LineFromPosition(state.position);
+			state.state    = State::Unknown;
 			continue;
 		}
-		
+
 		switch (state.state)
 		{
-		case State::Whitespace:
-			done = processWhitespace(state); break;
-		case State::String:
-			done = processString(state); break;
-		case State::Char:
-			done = processChar(state); break;
-		case State::Word:
-			done = processWord(state); break;
-		case State::Operator:
-			done = processOperator(state); break;
-		default:
-			done = processUnknown(state); break;
+		case State::Whitespace: done = processWhitespace(state); break;
+		case State::String: done = processString(state); break;
+		case State::Char: done = processChar(state); break;
+		case State::Word: done = processWord(state); break;
+		case State::Operator: done = processOperator(state); break;
+		default: done = processUnknown(state); break;
 		}
 	}
 
 	// Set current & next line's info
 	lines_[line].fold_increment = state.fold_increment;
-	lines_[line].has_word = state.has_word;
+	lines_[line].has_word       = state.has_word;
 }
 
 // ----------------------------------------------------------------------------
@@ -181,11 +158,11 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 {
 	if (!language_)
 		return;
-	
+
 	// Block comment handling
 	auto& block_begin = language_->commentBeginL();
-	auto& block_end = language_->commentEndL();
-	int token_index;
+	auto& block_end   = language_->commentEndL();
+	int   token_index;
 
 	// Extend start/end if either is within a comment
 	auto cb = isWithinComment(start);
@@ -202,10 +179,25 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 			comment_blocks_.erase(comment_blocks_.begin() + i);
 	}
 
+	// Do not look for comments if no language is loaded
+	if (!language_)
+		return;
+
 	// Scan text
 	auto pos = start;
 	while (pos < end)
 	{
+		// Skip quoted strings
+		if (editor->GetCharAt(pos) == '\"')
+		{
+			while (pos++ < end)
+				if (editor->GetCharAt(pos) == '\"')
+					break;
+
+			++pos;
+			continue;
+		}
+
 		// Line comment
 		if (checkToken(editor, pos, language_->lineCommentL()))
 		{
@@ -219,7 +211,7 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 		if (checkToken(editor, pos, block_begin, &token_index))
 		{
 			auto& end_token = block_end[token_index];
-			auto cb_start = pos;
+			auto  cb_start  = pos;
 			pos += block_begin[token_index].size();
 			while (pos < end)
 			{
@@ -239,83 +231,74 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::addWord
-//
+// -----------------------------------------------------------------------------
 // Sets the [style] for [word]
-// ----------------------------------------------------------------------------
-void Lexer::addWord(string word, int style)
+// -----------------------------------------------------------------------------
+void Lexer::addWord(string_view word, int style)
 {
-	word_list_[language_->caseSensitive() ? word : word.Lower()].style = (char) style;
+	word_list_[language_->caseSensitive() ? string{ word } : strutil::lower(word)].style = (char)style;
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::styleWord
-//
+// -----------------------------------------------------------------------------
 // Applies a style to [word] in [editor], depending on if it is in the word
 // list, a number or begins with the preprocessor character
-// ----------------------------------------------------------------------------
-void Lexer::styleWord(LexerState& state, string word)
+// -----------------------------------------------------------------------------
+void Lexer::styleWord(LexerState& state, string_view word)
 {
+	string word_str{ word };
 	if (!language_->caseSensitive())
-		word = word.Lower();
+		strutil::lowerIP(word_str);
 
-	if (word_list_[word].style > 0)
-		state.editor->SetStyling(word.length(), word_list_[word].style);
-	else if (word.StartsWith(language_->preprocessor()))
+	if (word_list_[word_str].style > 0)
+		state.editor->SetStyling(word.length(), word_list_[word_str].style);
+	else if (strutil::startsWith(word_str, language_->preprocessor()))
 		state.editor->SetStyling(word.length(), Style::Preprocessor);
 	else
 	{
 		// Check for number
-		if (re_int2_.Matches(word) || re_int1_.Matches(word) || re_float_.Matches(word) || re_int3_.Matches(word))
+		if (strutil::isInteger(word_str) || strutil::isFloat(word_str))
 			state.editor->SetStyling(word.length(), Style::Number);
 		else
 			state.editor->SetStyling(word.length(), Style::Default);
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::setWordChars
-//
+// -----------------------------------------------------------------------------
 // Sets the valid word characters to [chars]
-// ----------------------------------------------------------------------------
-void Lexer::setWordChars(string chars)
+// -----------------------------------------------------------------------------
+void Lexer::setWordChars(string_view chars)
 {
 	word_chars_.clear();
-	for (unsigned a = 0; a < chars.length(); a++)
-		word_chars_.push_back((unsigned char) chars[a]);
+	for (auto&& a : chars)
+		word_chars_.push_back((unsigned char)a);
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::setOperatorChars
-//
+// -----------------------------------------------------------------------------
 // Sets the valid operator characters to [chars]
-// ----------------------------------------------------------------------------
-void Lexer::setOperatorChars(string chars)
+// -----------------------------------------------------------------------------
+void Lexer::setOperatorChars(string_view chars)
 {
 	operator_chars_.clear();
-	for (unsigned a = 0; a < chars.length(); a++)
-		operator_chars_.push_back((unsigned char) chars[a]);
+	for (auto&& a : chars)
+		operator_chars_.push_back((unsigned char)a);
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::processUnknown
-//
+// -----------------------------------------------------------------------------
 // Process unknown characters, updating [state].
 // Returns true if the end of the current text range was reached
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Lexer::processUnknown(LexerState& state)
 {
-	int u_length = 0;
-	bool end = false;
-	bool pp = false;
+	int    u_length = 0;
+	bool   end      = false;
+	bool   pp       = false;
 	string block_begin;
 	string block_end;
 
 	if (language_)
 	{
-		block_begin 	= language_->blockBegin();
-		block_end 		= language_->blockEnd();
+		block_begin = language_->blockBegin();
+		block_end   = language_->blockEnd();
 	}
 
 	while (true)
@@ -326,7 +309,7 @@ bool Lexer::processUnknown(LexerState& state)
 			end = true;
 			break;
 		}
-		
+
 		int c = state.editor->GetCharAt(state.position);
 
 		// Start of string
@@ -334,7 +317,7 @@ bool Lexer::processUnknown(LexerState& state)
 		{
 			state.state = State::String;
 			state.position++;
-			state.length = 1;
+			state.length   = 1;
 			state.has_word = true;
 			break;
 		}
@@ -352,7 +335,7 @@ bool Lexer::processUnknown(LexerState& state)
 		{
 			state.state = State::Char;
 			state.position++;
-			state.length = 1;
+			state.length   = 1;
 			state.has_word = true;
 			break;
 		}
@@ -367,7 +350,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Preprocessor
-		else if (c == (unsigned char) language_->preprocessor()[0])
+		else if (c == (unsigned char)language_->preprocessor()[0])
 		{
 			pp = true;
 			u_length++;
@@ -379,8 +362,8 @@ bool Lexer::processUnknown(LexerState& state)
 		else if (VECTOR_EXISTS(operator_chars_, c))
 		{
 			state.position++;
-			state.state = State::Operator;
-			state.length = 1;
+			state.state    = State::Operator;
+			state.length   = 1;
 			state.has_word = true;
 			break;
 		}
@@ -395,8 +378,8 @@ bool Lexer::processUnknown(LexerState& state)
 				u_length--;
 			}
 
-			state.state = State::Word;
-			state.length = 0;
+			state.state    = State::Word;
+			state.length   = 0;
 			state.has_word = true;
 			break;
 		}
@@ -410,32 +393,30 @@ bool Lexer::processUnknown(LexerState& state)
 			state.fold_increment--;
 
 		// if (debug_lexer)
-		// 	Log::debug(S_FMT("unknown char '%c' (%d)", c, c));
+		// 	log::debug(wxString::Format("unknown char '%c' (%d)", c, c));
 		u_length++;
 		state.position++;
 		pp = false;
 	}
 
 	if (debug_lexer && u_length > 0)
-		Log::debug(S_FMT("unknown: %d", u_length));
+		log::debug(wxString::Format("unknown: %d", u_length));
 	state.editor->SetStyling(u_length, Style::Default);
 
 	return end;
 }
 
 // ----------------------------------------------------------------------------
-// Lexer::processWord
-//
 // Process word characters, updating [state].
 // Returns true if the end of the current text range was reached
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Lexer::processWord(LexerState& state)
 {
 	vector<char> word;
-	bool end = false;
+	bool         end = false;
 
 	// Add first letter
-	word.push_back((char) state.editor->GetCharAt(state.position++));
+	word.push_back((char)state.editor->GetCharAt(state.position++));
 
 	while (true)
 	{
@@ -446,7 +427,7 @@ bool Lexer::processWord(LexerState& state)
 			break;
 		}
 
-		char c = (char) state.editor->GetCharAt(state.position);
+		char c = (char)state.editor->GetCharAt(state.position);
 		if (VECTOR_EXISTS(word_chars_, c))
 		{
 			word.push_back(c);
@@ -460,12 +441,12 @@ bool Lexer::processWord(LexerState& state)
 	}
 
 	// Get word as string
-	string word_string = wxString::FromAscii(&word[0], word.size());
+	string word_string{ &word[0], word.size() };
+	auto   word_lower = strutil::lower(word_string);
 
 	// Check for preprocessor folding word
-	if (fold_preprocessor_ && word_string.StartsWith(preprocessor_char_))
+	if (fold_preprocessor_ && word[0] == preprocessor_char_)
 	{
-		string word_lower = word_string.Lower().After(preprocessor_char_);
 		if (VECTOR_EXISTS(language_->ppBlockBegin(), word_lower))
 			state.fold_increment++;
 		else if (VECTOR_EXISTS(language_->ppBlockEnd(), word_lower))
@@ -473,7 +454,6 @@ bool Lexer::processWord(LexerState& state)
 	}
 	else
 	{
-		string word_lower = word_string.Lower();
 		if (VECTOR_EXISTS(language_->wordBlockBegin(), word_lower))
 			state.fold_increment++;
 		else if (VECTOR_EXISTS(language_->wordBlockEnd(), word_lower))
@@ -481,19 +461,17 @@ bool Lexer::processWord(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("word: %s", word_string));
+		log::debug("word: {}", word_string);
 
 	styleWord(state, word_string);
 
 	return end;
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::processString
-//
+// -----------------------------------------------------------------------------
 // Process string characters, updating [state].
 // Returns true if the end of the current text range was reached
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Lexer::processString(LexerState& state)
 {
 	bool end = false;
@@ -508,8 +486,8 @@ bool Lexer::processString(LexerState& state)
 		}
 
 		// End of string
-		char c = (char) state.editor->GetCharAt(state.position);
-		if (c == '"')	
+		char c = (char)state.editor->GetCharAt(state.position);
+		if (c == '"')
 		{
 			state.length++;
 			state.position++;
@@ -522,19 +500,17 @@ bool Lexer::processString(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("string: %lu", state.length));
+		log::debug(wxString::Format("string: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::String);
 
 	return end;
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::processChar
-//
+// -----------------------------------------------------------------------------
 // Process char characters, updating [state].
 // Returns true if the end of the current text range was reached
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Lexer::processChar(LexerState& state)
 {
 	bool end = false;
@@ -549,7 +525,7 @@ bool Lexer::processChar(LexerState& state)
 		}
 
 		// End of string
-		char c = (char) state.editor->GetCharAt(state.position);
+		char c = (char)state.editor->GetCharAt(state.position);
 		if (c == '\'')
 		{
 			state.length++;
@@ -563,19 +539,17 @@ bool Lexer::processChar(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("char: %lu", state.length));
+		log::debug(wxString::Format("char: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Char);
 
 	return end;
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::processOperator
-//
+// -----------------------------------------------------------------------------
 // Process operator characters, updating [state].
 // Returns true if the end of the current text range was reached
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Lexer::processOperator(LexerState& state)
 {
 	bool end = false;
@@ -589,7 +563,7 @@ bool Lexer::processOperator(LexerState& state)
 			break;
 		}
 
-		char c = (char) state.editor->GetCharAt(state.position);
+		char c = (char)state.editor->GetCharAt(state.position);
 		if (VECTOR_EXISTS(operator_chars_, c))
 		{
 			state.length++;
@@ -603,19 +577,17 @@ bool Lexer::processOperator(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("operator: %lu", state.length));
+		log::debug(wxString::Format("operator: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Operator);
 
 	return end;
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::processWhitespace
-//
+// -----------------------------------------------------------------------------
 // Process whitespace characters, updating [state].
 // Returns true if the end of the current text range was reached
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Lexer::processWhitespace(LexerState& state)
 {
 	bool end = false;
@@ -629,7 +601,7 @@ bool Lexer::processWhitespace(LexerState& state)
 			break;
 		}
 
-		char c = (char) state.editor->GetCharAt(state.position);
+		char c = (char)state.editor->GetCharAt(state.position);
 		if (VECTOR_EXISTS(whitespace_chars_, c))
 		{
 			state.length++;
@@ -643,26 +615,24 @@ bool Lexer::processWhitespace(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("whitespace: %lu", state.length));
+		log::debug(wxString::Format("whitespace: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Default);
 
 	return end;
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::checkToken
-//
+// -----------------------------------------------------------------------------
 // Checks if the text in [editor] starting from [pos] matches [token]
 // ----------------------------------------------------------------------------
-bool Lexer::checkToken(TextEditorCtrl* editor, int pos, const string& token)
+bool Lexer::checkToken(TextEditorCtrl* editor, int pos, string_view token) const
 {
 	if (!token.empty())
 	{
 		unsigned long token_size = token.size();
 		for (unsigned i = 0; i < token_size; i++)
 		{
-			if (editor->GetCharAt(pos + i) != (int) token[i])
+			if (editor->GetCharAt(pos + i) != (int)token[i])
 				return false;
 		}
 		return true;
@@ -670,19 +640,17 @@ bool Lexer::checkToken(TextEditorCtrl* editor, int pos, const string& token)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::checkToken
-//
+// -----------------------------------------------------------------------------
 // Checks if the text in [editor] starting from [pos] is present in [tokens].
 // Writes the fitst index that matched to [found_index] if a valid pointer
 // is passed. Returns true if there's a match, false if not.
 // ----------------------------------------------------------------------------
-bool Lexer::checkToken(TextEditorCtrl* editor, int pos, const vector<string>& tokens, int *found_idx)
+bool Lexer::checkToken(TextEditorCtrl* editor, int pos, const vector<string>& tokens, int* found_idx) const
 {
 	if (!tokens.empty())
 	{
-		int idx = 0;
-		string token;
+		unsigned idx = 0;
+		string   token;
 		while (idx < tokens.size())
 		{
 			token = tokens[idx];
@@ -712,11 +680,9 @@ int Lexer::isWithinComment(int pos)
 	return -1;
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::updateFolding
-//
+// ---------------------------------------------------------------------------
 // Updates code folding levels in [editor], starting from line [line_start]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Lexer::updateFolding(TextEditorCtrl* editor, int line_start)
 {
 	int fold_level = editor->GetFoldLevel(line_start) & wxSTC_FOLDLEVELNUMBERMASK;
@@ -748,46 +714,42 @@ void Lexer::updateFolding(TextEditorCtrl* editor, int line_start)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Lexer::isFunction
-//
+// -----------------------------------------------------------------------------
 // Returns true if the word from [start_pos] to [end_pos] in [editor] is a
 // function
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 {
-	string word = editor->GetTextRange(start_pos, end_pos);
-	return word_list_[language_->caseSensitive() ? word : word.MakeLower()].style == (int)Style::Function;
+	auto word = editor->GetTextRange(start_pos, end_pos).ToStdString();
+	if (!language_->caseSensitive())
+		strutil::lowerIP(word);
+	return word_list_[word].style == (int)Style::Function;
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ZScriptLexer Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ZScriptLexer::addWord
-//
+// -----------------------------------------------------------------------------
 // Sets the [style] for [word], or adds it to the functions list if [style]
 // is Function
-// ----------------------------------------------------------------------------
-void ZScriptLexer::addWord(string word, int style)
+// -----------------------------------------------------------------------------
+void ZScriptLexer::addWord(string_view word, int style)
 {
 	if (style == Style::Function)
-		functions_.push_back(language_->caseSensitive() ? word : word.Lower());
+		functions_.push_back(language_->caseSensitive() ? string{ word } : strutil::lower(word));
 	else
 		Lexer::addWord(word, style);
 }
 
-// ----------------------------------------------------------------------------
-// ZScriptLexer::styleWord
-//
+// -----------------------------------------------------------------------------
 // ZScript version of Lexer::styleWord - functions require a following '('
-// ----------------------------------------------------------------------------
-void ZScriptLexer::styleWord(LexerState& state, string word)
+// -----------------------------------------------------------------------------
+void ZScriptLexer::styleWord(LexerState& state, string_view word)
 {
 	// Skip whitespace after word
 	auto index = state.position;
@@ -801,10 +763,11 @@ void ZScriptLexer::styleWord(LexerState& state, string word)
 	// Check for '(' (possible function)
 	if (state.editor->GetCharAt(index) == '(')
 	{
+		string word_str{ word };
 		if (!language_->caseSensitive())
-			word = word.Lower();
+			strutil::lowerIP(word_str);
 
-		if (VECTOR_EXISTS(functions_, word))
+		if (VECTOR_EXISTS(functions_, word_str))
 		{
 			state.editor->SetStyling(word.length(), Style::Function);
 			return;
@@ -814,30 +777,26 @@ void ZScriptLexer::styleWord(LexerState& state, string word)
 	Lexer::styleWord(state, word);
 }
 
-// ----------------------------------------------------------------------------
-// ZScriptLexer::clearWords
-//
+// -----------------------------------------------------------------------------
 // Clears out all defined words
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ZScriptLexer::clearWords()
 {
 	functions_.clear();
 	Lexer::clearWords();
 }
 
-// ----------------------------------------------------------------------------
-// ZScriptLexer::isFunction
-//
+// -----------------------------------------------------------------------------
 // Returns true if the word from [start_pos] to [end_pos] in [editor] is a
 // function
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool ZScriptLexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 {
 	// Check for '(' after word
 
 	// Skip whitespace
 	auto index = end_pos;
-	auto end = editor->GetTextLength();
+	auto end   = editor->GetTextLength();
 	while (index < end)
 	{
 		if (!(VECTOR_EXISTS(whitespace_chars_, editor->GetCharAt(index))))
@@ -848,6 +807,8 @@ bool ZScriptLexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos
 		return false;
 
 	// Check if word is a function name
-	string word = editor->GetTextRange(start_pos, end_pos);
-	return VECTOR_EXISTS(functions_, language_->caseSensitive() ? word : word.Lower());
+	auto word = editor->GetTextRange(start_pos, end_pos).ToStdString();
+	if (!language_->caseSensitive())
+		strutil::lowerIP(word);
+	return VECTOR_EXISTS(functions_, word);
 }

@@ -1,57 +1,71 @@
 #pragma once
 
-#include "common.h"
-
+namespace slade
+{
 class SAction;
+
 class SToolBarButton : public wxControl
 {
 public:
-	SToolBarButton(wxWindow* parent, string action, string icon = "", bool show_name = false);
+	SToolBarButton(wxWindow* parent, const wxString& action, const wxString& icon = "", bool show_name = false);
 	SToolBarButton(
-		wxWindow* parent,
-		const string& action_id,
-		const string& action_name,
-		const string& icon,
-		const string& help_text,
-		bool show_name = false
-	);
-	~SToolBarButton() {}
+		wxWindow*       parent,
+		const wxString& action_id,
+		const wxString& action_name,
+		const wxString& icon,
+		const wxString& help_text,
+		bool            show_name = false,
+		int             icon_size = -1);
+	~SToolBarButton() = default;
 
-	void setIcon(string icon);
+	SAction*        action() const { return action_; }
+	const wxString& actionId() const { return action_id_; }
+	bool            isChecked() const;
+	wxMenu*         menu() const { return menu_dropdown_; }
 
-	enum
-	{
-	    STATE_NORMAL,
-	    STATE_MOUSEOVER,
-	    STATE_MOUSEDOWN,
-	};
+	void setIcon(const wxString& icon);
+	void setChecked(bool checked);
+	void setMenu(wxMenu* menu, bool delete_existing = false);
+
+	bool updateState();
 
 	static int pixelHeight();
 
 private:
-	SAction*	action_		= nullptr;
-	wxBitmap	icon_;
-	int			state_		= STATE_NORMAL;
-	bool		show_name_	= false;
+	enum class State
+	{
+		Normal,
+		MouseOver,
+		MouseDown,
+	};
+
+	SAction* action_ = nullptr;
+	wxBitmap icon_;
+	State    state_         = State::Normal;
+	bool     show_name_     = false;
+	wxMenu*  menu_dropdown_ = nullptr;
 
 	// For non-SAction buttons
-	string	action_id_;
-	string	action_name_;
-	string	help_text_;
+	wxString action_id_;
+	wxString action_name_;
+	wxString help_text_;
+	bool     checked_ = false;
 
 	// Layout
-	int	pad_outer_	= 3;
-	int	pad_inner_	= 1;
-	int	icon_size_	= 16;
-	int	text_width_	= 0;
+	int pad_outer_  = 3;
+	int pad_inner_  = 1;
+	int icon_size_  = 16;
+	int text_width_ = 0;
 
-	void	sendClickedEvent();
+	void sendClickedEvent();
+	void updateSize();
 
 	// Events
-	void	onPaint(wxPaintEvent& e);
-	void	onMouseEvent(wxMouseEvent& e);
-	void	onFocus(wxFocusEvent& e);
-	void	onEraseBackground(wxEraseEvent& e);
+	void onPaint(wxPaintEvent& e);
+	void onMouseEvent(wxMouseEvent& e);
+	void onFocus(wxFocusEvent& e);
+	void onEraseBackground(wxEraseEvent& e);
 };
+} // namespace slade
 
 wxDECLARE_EVENT(wxEVT_STOOLBAR_BUTTON_CLICKED, wxCommandEvent);

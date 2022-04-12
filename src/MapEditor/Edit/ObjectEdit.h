@@ -2,6 +2,8 @@
 
 #include "Utility/Structs.h"
 
+namespace slade
+{
 class MapEditContext;
 class MapVertex;
 class MapLine;
@@ -12,12 +14,10 @@ class ObjectEditGroup
 public:
 	struct Vertex
 	{
-		fpoint2_t  position;
-		fpoint2_t  old_position;
+		Vec2d      position;
+		Vec2d      old_position;
 		MapVertex* map_vertex;
 		bool       ignored;
-
-		typedef std::unique_ptr<Vertex> UPtr;
 	};
 
 	struct Line
@@ -31,13 +31,13 @@ public:
 
 	struct Thing
 	{
-		fpoint2_t position;
-		fpoint2_t old_position;
+		Vec2d     position;
+		Vec2d     old_position;
 		MapThing* map_thing;
 		int       angle;
 	};
 
-	bbox_t bbox() const { return bbox_; }
+	BBox   bbox() const { return bbox_; }
 	double rotation() const { return rotation_; }
 
 	void    addVertex(MapVertex* vertex, bool ignored = false);
@@ -49,31 +49,31 @@ public:
 	void    filterObjects(bool filter);
 	void    resetPositions();
 	bool    empty() const { return vertices_.empty() && things_.empty(); }
-	bool    getNearestLine(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2);
-	void    getMapVertices(vector<MapVertex*>& list);
+	bool    nearestLineEndpoints(Vec2d pos, double min, Vec2d& v1, Vec2d& v2);
+	void    putMapVertices(vector<MapVertex*>& list);
 
 	// Drawing
-	void getVerticesToDraw(vector<fpoint2_t>& list);
-	void getLinesToDraw(vector<Line>& list);
-	void getThingsToDraw(vector<Thing>& list);
+	void putVerticesToDraw(vector<Vec2d>& list);
+	void putLinesToDraw(vector<Line>& list);
+	void putThingsToDraw(vector<Thing>& list);
 
 	// Modification
 	void doMove(double xoff, double yoff);
 	void doScale(double xoff, double yoff, bool left, bool top, bool right, bool bottom);
-	void doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45);
+	void doRotate(Vec2d p1, Vec2d p2, bool lock45);
 	void doAll(double xoff, double yoff, double xscale, double yscale, double rotation, bool mirror_x, bool mirror_y);
 	void applyEdit();
 
 private:
-	vector<Vertex::UPtr> vertices_;
-	vector<Line>    lines_;
-	vector<Thing>   things_;
-	bbox_t          bbox_;          // Current
-	bbox_t          old_bbox_;      // Before drag operation
-	bbox_t          original_bbox_; // From first init
-	fpoint2_t       offset_prev_ = { 0, 0 };
-	double          rotation_    = 0;
-	bool            mirrored_    = false;
+	vector<unique_ptr<Vertex>> vertices_;
+	vector<Line>               lines_;
+	vector<Thing>              things_;
+	BBox                       bbox_;          // Current
+	BBox                       old_bbox_;      // Before drag operation
+	BBox                       original_bbox_; // From first init
+	Vec2d                      offset_prev_ = { 0, 0 };
+	double                     rotation_    = 0;
+	bool                       mirrored_    = false;
 };
 
 #undef None
@@ -135,3 +135,4 @@ private:
 	State           state_    = State::None;
 	bool            rotating_ = false;
 };
+} // namespace slade

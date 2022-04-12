@@ -1,25 +1,29 @@
+#pragma once
 
-#ifndef __ICONS_H__
-#define	__ICONS_H__
-
-#include "common.h"
-
-class ArchiveTreeNode;
-
-namespace Icons
+namespace slade
 {
-	enum
+class ArchiveEntry;
+
+namespace icons
+{
+	enum Type
 	{
-		GENERAL,
-		ENTRY,
-		TEXT_EDITOR,
+		Any     = -1,
+		General = 0,
+		Entry,
+		TextEditor
 	};
 
-	bool			loadIcons();
-	wxBitmap		getIcon(int type, string name, bool large, bool log_missing = true);
-	wxBitmap		getIcon(int type, string name);
-	bool			exportIconPNG(int type, string name, string path);
-	vector<string>	getIconSets(int type);
-}
+	enum InterfaceTheme
+	{
+		System = -1, // Determine whether dark or light from system
+		Light  = 0,  // Light theme (black icons)
+		Dark   = 1   // Dark theme (white icons)
+	};
 
-#endif//__ICONS_H__
+	bool           loadIcons();
+	wxBitmap       getIcon(Type type, string_view name, int size = -1, Point2i padding = { 0, 0 });
+	wxBitmap       getInterfaceIcon(string_view name, int size = -1, InterfaceTheme theme = System);
+	vector<string> iconSets(Type type);
+} // namespace icons
+} // namespace slade

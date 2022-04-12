@@ -1,251 +1,242 @@
+#pragma once
 
-#ifndef __MAP_RENDERER_3D_H__
-#define __MAP_RENDERER_3D_H__
-
-#include "MapEditor/SLADEMap/SLADEMap.h"
-#include "General/ListenerAnnouncer.h"
 #include "MapEditor/Edit/Edit3D.h"
+#include "SLADEMap/SLADEMap.h"
 
+namespace slade
+{
 class ItemSelection;
-class GLTexture;
 class Polygon2D;
 
-namespace Game { class ThingType; }
+namespace game
+{
+	class ThingType;
+}
 
-class MapRenderer3D : public Listener
+class MapRenderer3D
 {
 public:
 	// Structs
 	enum
 	{
-	    // Common flags
-	    TRANSADD	= 2,
+		// Common flags
+		TRANSADD = 2,
 
-	    // Quad/flat flags
-	    SKY		= 4,
+		// Quad/flat flags
+		SKY = 4,
 
-	    // Quad flags
-	    BACK	= 8,
-	    UPPER	= 16,
-	    LOWER	= 32,
-	    MIDTEX	= 64,
+		// Quad flags
+		BACK   = 8,
+		UPPER  = 16,
+		LOWER  = 32,
+		MIDTEX = 64,
 
-	    // Flat flags
-	    CEIL	= 8,
+		// Flat flags
+		CEIL = 8,
 
-	    // Thing flags
-	    ICON	= 4,
-	    DRAWN	= 8,
-		ZETH	= 16,
+		// Thing flags
+		ICON  = 4,
+		DRAWN = 8,
+		ZETH  = 16,
 	};
-	struct gl_vertex_t
+	struct GLVertex
 	{
-		float x, y, z;
-		float tx, ty;
+		float x = 0.f, y = 0.f, z = 0.f;
+		float tx = 0.f, ty = 0.f;
 	};
-	struct quad_3d_t
+	struct Quad
 	{
-		gl_vertex_t	points[4];
-		rgba_t		colour;
-		rgba_t		fogcolour;
-		uint8_t		light;
-		GLTexture*	texture;
-		uint8_t		flags;
-		float		alpha;
+		GLVertex points[4] = { {}, {}, {}, {} };
+		ColRGBA  colour;
+		ColRGBA  fogcolour;
+		uint8_t  light   = 0;
+		unsigned texture = 0;
+		uint8_t  flags   = 0;
+		float    alpha   = 1.f;
 
-		quad_3d_t()
-		{
-			colour.set(255, 255, 255, 255, 0);
-			texture = nullptr;
-			flags = 0;
-		}
+		Quad() : colour{ 255, 255, 255, 255, 0 } {}
 	};
-	struct line_3d_t
+	struct Line
 	{
-		vector<quad_3d_t>	quads;
-		long				updated_time;
-		bool				visible;
-		MapLine*			line;
-
-		line_3d_t() { updated_time = 0; visible = true; }
+		vector<Quad> quads;
+		long         updated_time = 0;
+		bool         visible      = true;
+		MapLine*     line         = nullptr;
 	};
-	struct thing_3d_t
+	struct Thing
 	{
-		uint8_t					flags;
-		Game::ThingType const*	type;
-		MapSector*				sector;
-		float					z;
-		float					height;
-		GLTexture*				sprite;
-		long					updated_time;
-
-		thing_3d_t()
-		{
-			flags = 0;
-			type = nullptr;
-			sector = nullptr;
-			sprite = nullptr;
-			z = 0;
-			updated_time = 0;
-		}
+		uint8_t                flags        = 0;
+		game::ThingType const* type         = nullptr;
+		MapSector*             sector       = nullptr;
+		float                  z            = 0.f;
+		float                  height       = 0.f;
+		unsigned               sprite       = 0;
+		long                   updated_time = 0;
 	};
-	struct flat_3d_t
+	struct Flat
 	{
-		uint8_t		flags;
-		uint8_t		light;
-		rgba_t		colour;
-		rgba_t		fogcolour;
-		GLTexture*	texture;
-		plane_t		plane;
-		float		alpha;
-		MapSector*	sector;
-		long		updated_time;
-
-		flat_3d_t()
-		{
-			light = 255;
-			texture = nullptr;
-			updated_time = 0;
-			flags = 0;
-			alpha = 1.0f;
-			sector = nullptr;
-		}
+		uint8_t    flags = 0;
+		uint8_t    light = 255;
+		ColRGBA    colour;
+		ColRGBA    fogcolour;
+		unsigned   texture = 0;
+		Vec2d      scale;
+		Plane      plane;
+		float      alpha        = 1.f;
+		MapSector* sector       = nullptr;
+		long       updated_time = 0;
 	};
 
 	MapRenderer3D(SLADEMap* map = nullptr);
 	~MapRenderer3D();
 
-	bool	fullbrightEnabled() { return fullbright; }
-	bool	fogEnabled() { return fog; }
-	void	enableFullbright(bool enable = true) { fullbright = enable; }
-	void	enableFog(bool enable = true) { fog = enable; }
-	int		itemDistance() { return item_dist; }
-	void	enableHilight(bool render) { render_hilight = render; }
-	void	enableSelection(bool render) { render_selection = render; }
+	bool fullbrightEnabled() const { return fullbright_; }
+	bool fogEnabled() const { return fog_; }
+	void enableFullbright(bool enable = true) { fullbright_ = enable; }
+	void enableFog(bool enable = true) { fog_ = enable; }
+	int  itemDistance() const { return item_dist_; }
+	void enableHilight(bool render) { render_hilight_ = render; }
+	void enableSelection(bool render) { render_selection_ = render; }
 
-	bool	init();
-	void	refresh();
-	void	clearData();
-	void	buildSkyCircle();
+	bool init();
+	void refresh();
+	void refreshTextures();
+	void clearData();
+	void buildSkyCircle();
 
-	quad_3d_t*	getQuad(MapEditor::Item item);
-	flat_3d_t*	getFlat(MapEditor::Item item);
+	Quad* getQuad(mapeditor::Item item);
+	Flat* getFlat(mapeditor::Item item);
 
 	// Camera
-	void	cameraMove(double distance, bool z = true);
-	void	cameraTurn(double angle);
-	void	cameraMoveUp(double distance);
-	void	cameraStrafe(double distance);
-	void	cameraPitch(double amount);
-	void	cameraUpdateVectors();
-	void	cameraSet(fpoint3_t position, fpoint2_t direction);
-	void	cameraSetPosition(fpoint3_t position);
-	void	cameraApplyGravity(double mult);
-	void	cameraLook(double xrel, double yrel);
+	void cameraMove(double distance, bool z = true);
+	void cameraTurn(double angle);
+	void cameraMoveUp(double distance);
+	void cameraStrafe(double distance);
+	void cameraPitch(double amount);
+	void cameraUpdateVectors();
+	void cameraSet(Vec3d position, Vec2d direction);
+	void cameraSetPosition(Vec3d position);
+	void cameraApplyGravity(double mult);
+	void cameraLook(double xrel, double yrel);
 
-	double		camPitch() { return cam_pitch; }
-	fpoint3_t	camPosition() { return cam_position; }
-	fpoint2_t	camDirection() { return cam_direction; }
+	double camPitch() const { return cam_pitch_; }
+	Vec3d  camPosition() const { return cam_position_; }
+	Vec2d  camDirection() const { return cam_direction_; }
 
 	// -- Rendering --
-	void	setupView(int width, int height);
-	void	setLight(rgba_t& colour, uint8_t light, float alpha = 1.0f);
-	void	setFog(rgba_t &fogcol, uint8_t light);
-	void	renderMap();
-	void	renderSkySlice(float top, float bottom, float atop, float abottom, float size, float tx = 0.125f, float ty = 2.0f);
-	void	renderSky();
+	void setupView(int width, int height);
+	void setLight(ColRGBA& colour, uint8_t light, float alpha = 1.0f) const;
+	void setFog(ColRGBA& fogcol, uint8_t light);
+	void renderMap();
+	void renderSkySlice(
+		float top,
+		float bottom,
+		float atop,
+		float abottom,
+		float size,
+		float tx = 0.125f,
+		float ty = 2.0f) const;
+	void renderSky();
 
 	// Flats
-	void	updateFlatTexCoords(unsigned index, bool floor);
-	void	updateSector(unsigned index);
-	void	renderFlat(flat_3d_t* flat);
-	void	renderFlats();
-	void	renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f);
+	void updateFlatTexCoords(unsigned index, bool floor);
+	void updateSector(unsigned index);
+	void renderFlat(Flat* flat);
+	void renderFlats();
+	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f) const;
 
 	// Walls
-	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom);
-	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, plane_t top, plane_t bottom);
-	void	setupQuadTexCoords(quad_3d_t* quad, int length, double o_left, double o_top, double h_top, double h_bottom, bool pegbottom = false, double sx = 1, double sy = 1);
-	void	updateLine(unsigned index);
-	void	renderQuad(quad_3d_t* quad, float alpha = 1.0f);
-	void	renderWalls();
-	void	renderTransparentWalls();
-	void	renderWallSelection(const ItemSelection& selection, float alpha = 1.0f);
+	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, double top, double bottom) const;
+	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, Plane top, Plane bottom) const;
+	void setupQuadTexCoords(
+		Quad*  quad,
+		int    length,
+		double o_left,
+		double o_top,
+		double h_top,
+		double h_bottom,
+		bool   pegbottom = false,
+		double sx        = 1,
+		double sy        = 1) const;
+	void updateLine(unsigned index);
+	void renderQuad(Quad* quad, float alpha = 1.0f);
+	void renderWalls();
+	void renderTransparentWalls();
+	void renderWallSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// Things
-	void	updateThing(unsigned index, MapThing* thing);
-	void	renderThings();
-	void	renderThingSelection(const ItemSelection& selection, float alpha = 1.0f);
+	void updateThing(unsigned index, MapThing* thing);
+	void renderThings();
+	void renderThingSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// VBO stuff
-	void	updateFlatsVBO();
-	void	updateWallsVBO();
+	void updateFlatsVBO();
+	void updateWallsVBO() const;
 
 	// Visibility checking
-	void	quickVisDiscard();
-	float	calcDistFade(double distance, double max = -1);
-	void	checkVisibleQuads();
-	void	checkVisibleFlats();
+	void  quickVisDiscard();
+	float calcDistFade(double distance, double max = -1) const;
+	void  checkVisibleQuads();
+	void  checkVisibleFlats();
 
 	// Hilight
-	MapEditor::Item	determineHilight();
-	void				renderHilight(MapEditor::Item hilight, float alpha = 1.0f);
-
-	// Listener stuff
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	mapeditor::Item determineHilight();
+	void            renderHilight(mapeditor::Item hilight, float alpha = 1.0f);
 
 private:
-	SLADEMap*	map;
-	bool		fullbright;
-	bool		fog;
-	GLTexture*	tex_last;
-	unsigned	n_quads;
-	unsigned	n_flats;
-	int			flat_last;
-	bool		render_hilight;
-	bool		render_selection;
-	rgba_t		fog_colour_last;
-	float		fog_depth_last;
+	SLADEMap* map_;
+	bool      fullbright_       = false;
+	bool      fog_              = true;
+	unsigned  n_quads_          = 0;
+	unsigned  n_flats_          = 0;
+	int       flat_last_        = 0;
+	bool      render_hilight_   = true;
+	bool      render_selection_ = true;
+	ColRGBA   fog_colour_last_;
+	float     fog_depth_last_ = 0.f;
 
 	// Visibility
-	vector<float>	dist_sectors;
+	vector<float> dist_sectors_;
 
 	// Camera
-	fpoint3_t	cam_position;
-	fpoint2_t	cam_direction;
-	double		cam_pitch;
-	double		cam_angle;
-	fpoint3_t	cam_dir3d;
-	fpoint3_t	cam_strafe;
-	double		gravity;
-	int			item_dist;
+	Vec3d  cam_position_;
+	Vec2d  cam_direction_;
+	double cam_pitch_ = 0.;
+	double cam_angle_ = 0.;
+	Vec3d  cam_dir3d_;
+	Vec3d  cam_strafe_;
+	double gravity_   = 0.5;
+	int    item_dist_ = 0;
 
 	// Map Structures
-	vector<line_3d_t>	lines;
-	quad_3d_t**			quads;
-	vector<quad_3d_t*>	quads_transparent;
-	vector<thing_3d_t>	things;
-	vector<flat_3d_t>	floors;
-	vector<flat_3d_t>	ceilings;
-	flat_3d_t**			flats;
+	vector<Line>  lines_;
+	Quad**        quads_ = nullptr;
+	vector<Quad*> quads_transparent_;
+	vector<Thing> things_;
+	vector<Flat>  floors_;
+	vector<Flat>  ceilings_;
+	Flat**        flats_ = nullptr;
 
 	// VBOs
-	unsigned	vbo_floors;
-	unsigned	vbo_ceilings;
-	unsigned	vbo_walls;
+	unsigned vbo_floors_   = 0;
+	unsigned vbo_ceilings_ = 0;
+	unsigned vbo_walls_    = 0;
 
 	// Sky
-	struct gl_vertex_ex_t
+	struct GLVertexEx
 	{
-		float x, y, z;
-		float tx, ty;
-		float alpha;
+		float x = 0.f, y = 0.f, z = 0.f;
+		float tx = 0.f, ty = 0.f;
+		float alpha = 1.f;
 	};
-	string		skytex1;
-	string		skytex2;
-	rgba_t		skycol_top;
-	rgba_t		skycol_bottom;
-	fpoint2_t	sky_circle[32];
-};
+	string  skytex1_ = "SKY1";
+	string  skytex2_;
+	ColRGBA skycol_top_;
+	ColRGBA skycol_bottom_;
+	Vec2d   sky_circle_[32];
 
-#endif//__MAP_RENDERER_3D_H__
+	// Signal connections
+	sigslot::scoped_connection sc_resources_updated_;
+	sigslot::scoped_connection sc_palette_changed_;
+};
+} // namespace slade

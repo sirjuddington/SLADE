@@ -1,41 +1,28 @@
-
-#ifndef __GRPARCHIVE_H__
-#define __GRPARCHIVE_H__
+#pragma once
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class GrpArchive : public TreelessArchive
 {
 public:
-	GrpArchive();
-	~GrpArchive();
+	GrpArchive() : TreelessArchive("grp") {}
+	~GrpArchive() = default;
 
 	// GRP specific
-	uint32_t	getEntryOffset(ArchiveEntry* entry);
-	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
+	uint32_t getEntryOffset(ArchiveEntry* entry);
+	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 
 	// Opening/writing
-	bool	open(MemChunk& mc) override;						// Open from MemChunk
-	bool	write(MemChunk& mc, bool update = true) override;	// Write to MemChunk
+	bool open(MemChunk& mc) override;                      // Open from MemChunk
+	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
 
 	// Misc
-	bool	loadEntryData(ArchiveEntry* entry) override;
-
-	// Entry addition/removal
-	ArchiveEntry*	addEntry(
-						ArchiveEntry* entry,
-						unsigned position = 0xFFFFFFFF,
-						ArchiveTreeNode* dir = nullptr,
-						bool copy = false
-					) override;
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
-
-	// Entry modification
-	bool	renameEntry(ArchiveEntry* entry, string name) override;
+	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Static functions
 	static bool isGrpArchive(MemChunk& mc);
-	static bool isGrpArchive(string filename);
+	static bool isGrpArchive(const string& filename);
 };
-
-#endif//__GRPARCHIVE_H__
+} // namespace slade

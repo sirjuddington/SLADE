@@ -1,34 +1,38 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MapTextureManager.cpp
- * Description: Handles and keeps track of all OpenGL textures for
- *              the map editor - textures, thing sprites, etc.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2022 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MapTextureManager.cpp
+// Description: Handles and keeps track of all OpenGL textures for the map
+//              editor - textures, thing sprites, etc.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "MapTextureManager.h"
+#include "App.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
@@ -40,447 +44,443 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditContext.h"
 #include "MapEditor.h"
-#include "MapTextureManager.h"
 #include "OpenGL/OpenGL.h"
 #include "UI/Controls/PaletteChooser.h"
+#include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-CVAR(Int, map_tex_filter, 0, CVAR_SAVE)
-
-
-/*******************************************************************
- * MAPTEXTUREMANAGER CLASS FUNCTIONS
- *******************************************************************/
-
-/* MapTextureManager::MapTextureManager
- * MapTextureManager class constructor
- *******************************************************************/
-MapTextureManager::MapTextureManager(Archive* archive)
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
 {
-	// Init variables
-	this->archive = archive;
-	editor_images_loaded = false;
-	palette = new Palette();
+MapTextureManager::Texture tex_invalid;
 }
+CVAR(Int, map_tex_filter, 0, CVar::Flag::Save)
 
-/* MapTextureManager::~MapTextureManager
- * MapTextureManager class destructor
- *******************************************************************/
-MapTextureManager::~MapTextureManager()
-{
-}
 
-/* MapTextureManager::init
- * Initialises the texture manager
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// MapTextureManager Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// MapTextureManager class constructor
+// -----------------------------------------------------------------------------
+MapTextureManager::MapTextureManager(shared_ptr<Archive> archive) : archive_{ archive }, palette_{ new Palette() } {}
+
+// -----------------------------------------------------------------------------
+// Initialises the texture manager
+// -----------------------------------------------------------------------------
 void MapTextureManager::init()
 {
-	// Listen to the various managers
-	listenTo(theResourceManager);
-	listenTo(&App::archiveManager());
-	listenTo(theMainWindow->getPaletteChooser());
-	palette = getResourcePalette();
+	// Refresh when resources are updated or the main palette is changed
+	sc_resources_updated_ = app::resources().signals().resources_updated.connect([this]() { refreshResources(); });
+	sc_palette_changed_   = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+        [this]() { refreshResources(); });
+
+	// Load palette
+	if (auto pal = resourcePalette(); pal != palette_.get())
+		palette_->copyPalette(pal);
 }
 
-/* MapTextureManager::getResourcePalette
- * Returns the current resource palette (depending on open archives
- * and palette toolbar selection)
- *******************************************************************/
-Palette* MapTextureManager::getResourcePalette()
+// -----------------------------------------------------------------------------
+// Returns the current resource palette
+// (depending on open archives and palette toolbar selection)
+// -----------------------------------------------------------------------------
+Palette* MapTextureManager::resourcePalette() const
 {
-	if (theMainWindow->getPaletteChooser()->globalSelected())
+	if (theMainWindow->paletteChooser()->globalSelected())
 	{
-		ArchiveEntry* entry = theResourceManager->getPaletteEntry("PLAYPAL", archive);
+		auto entry = app::resources().getPaletteEntry("PLAYPAL", archive_.lock().get());
 
 		if (!entry)
-			return theMainWindow->getPaletteChooser()->getSelectedPalette();
+			return theMainWindow->paletteChooser()->selectedPalette();
 
-		palette->loadMem(entry->getMCData());
-		return palette;
+		palette_->loadMem(entry->data());
+		return palette_.get();
 	}
 	else
-		return theMainWindow->getPaletteChooser()->getSelectedPalette();
+		return theMainWindow->paletteChooser()->selectedPalette();
 }
 
-/* MapTextureManager::getTexture
- * Returns the texture matching [name]. Loads it from resources if
- * necessary. If [mixed] is true, flats are also searched if no
- * matching texture is found
- *******************************************************************/
-GLTexture* MapTextureManager::getTexture(string name, bool mixed)
+// -----------------------------------------------------------------------------
+// Returns the texture matching [name], loading it from resources if necessary.
+// If [mixed] is true, flats are also searched if no matching texture is found
+// -----------------------------------------------------------------------------
+const MapTextureManager::Texture& MapTextureManager::texture(string_view name, bool mixed)
 {
 	// Get texture matching name
-	map_tex_t& mtex = textures[name.Upper()];
+	auto& mtex = textures_[strutil::upper(name)];
 
 	// Get desired filter type
-	int filter = 1;
+	auto filter = gl::TexFilter::Linear;
 	if (map_tex_filter == 0)
-		filter = GLTexture::NEAREST_LINEAR_MIN;
+		filter = gl::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
-		filter = GLTexture::LINEAR;
+		filter = gl::TexFilter::Linear;
 	else if (map_tex_filter == 2)
-		filter = GLTexture::LINEAR_MIPMAP;
+		filter = gl::TexFilter::LinearMipmap;
 	else if (map_tex_filter == 3)
-		filter = GLTexture::NEAREST_MIPMAP;
+		filter = gl::TexFilter::NearestMipmap;
 
 	// If the texture is loaded
-	if (mtex.texture)
+	if (mtex.gl_id)
 	{
 		// If the texture filter matches the desired one, return it
-		if (mtex.texture->getFilter() == filter)
-			return mtex.texture;
-		else
-		{
-			// Otherwise, reload the texture
-			if (mtex.texture != &(GLTexture::missingTex())) delete mtex.texture;
-			mtex.texture = nullptr;
-		}
+		if (gl::Texture::info(mtex.gl_id).filter == filter)
+			return mtex;
+
+		// Otherwise, reload the texture
+		gl::Texture::clear(mtex.gl_id);
+		mtex.gl_id = 0;
 	}
 
 	// Texture not found or unloaded, look for it
-	//Palette8bit* pal = getResourcePalette();
 
-	// Look for stand-alone textures first
-	ArchiveEntry* etex = theResourceManager->getHiresEntry(name, archive);
-	int textypefound = TEXTYPE_HIRES;
-	if (etex)
+	// Look for composite textures first
+	auto  archive = archive_.lock().get();
+	auto* ctex    = app::resources().getTexture(name, "WallTexture", archive);
+	if (!ctex)
+		ctex = app::resources().getTexture(name, "", archive);
+	if (ctex)
 	{
 		SImage image;
-		// Get image format hint from type, if any
-		if (Misc::loadImageFromEntry(&image, etex))
+		if (ctex->toImage(image, archive, palette_.get(), true))
 		{
-			mtex.texture = new GLTexture(false);
-			mtex.texture->setFilter(filter);
-			mtex.texture->loadImage(&image, palette);
+			mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
 
-			// Handle hires texture scale
-			if (textypefound == TEXTYPE_HIRES)
+			double sx = ctex->scaleX();
+			if (sx == 0.0)
+				sx = 1.0;
+			double sy = ctex->scaleY();
+			if (sy == 0.0)
+				sy = 1.0;
+
+			mtex.world_panning = ctex->worldPanning();
+			mtex.scale         = { 1.0 / sx, 1.0 / sy };
+		}
+	}
+
+	// No composite match, look for stand-alone textures
+	else
+	{
+		// HIRES
+		if (auto* etex = app::resources().getHiresEntry(name, archive))
+		{
+			SImage image;
+			if (misc::loadImageFromEntry(&image, etex))
 			{
-				ArchiveEntry* ref = theResourceManager->getTextureEntry(name, "textures", archive);
-				if (ref)
+				mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
+
+				if (auto* ref = app::resources().getTextureEntry(name, "textures", archive))
 				{
 					SImage imgref;
-					if (Misc::loadImageFromEntry(&imgref, ref))
+					if (misc::loadImageFromEntry(&imgref, ref))
 					{
 						int w, h, sw, sh;
-						w = image.getWidth();
-						h = image.getHeight();
-						sw = imgref.getWidth();
-						sh = imgref.getHeight();
-						mtex.texture->setWorldPanning(true);
-						mtex.texture->setScale((double)sw/(double)w, (double)sh/(double)h);
+						w                  = image.width();
+						h                  = image.height();
+						sw                 = imgref.width();
+						sh                 = imgref.height();
+						mtex.world_panning = true;
+						mtex.scale         = { (double)sw / (double)w, (double)sh / (double)h };
 					}
 				}
 			}
 		}
-	}
-	else
-	{
-		etex = theResourceManager->getTextureEntry(name, "textures", archive);
-		textypefound = TEXTYPE_TEXTURE;
-		SImage image;
-		// Get image format hint from type, if any
-		if (Misc::loadImageFromEntry(&image, etex))
-		{
-			mtex.texture = new GLTexture(false);
-			mtex.texture->setFilter(filter);
-			mtex.texture->loadImage(&image, palette);
-		}
-	}
 
-	// Try composite textures then
-	CTexture* ctex = theResourceManager->getTexture(name, "", archive);
-	CTexture* wallctex = theResourceManager->getTexture(name, "WallTexture", archive);
-	if (wallctex) ctex = wallctex;
-	if (ctex) // Composite textures take precedence over the textures directory
-	{
-		textypefound = TEXTYPE_WALLTEXTURE;
-		SImage image;
-		if (ctex->toImage(image, archive, palette, true))
+		// TEXTURES
+		else
 		{
-			mtex.texture = new GLTexture(false);
-			mtex.texture->setFilter(filter);
-			mtex.texture->loadImage(&image, palette);
-			double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
-			double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
-			mtex.texture->setWorldPanning(ctex->worldPanning());
-			mtex.texture->setScale(1.0/sx, 1.0/sy);
+			SImage image;
+			etex = app::resources().getTextureEntry(name, "textures", archive);
+			if (misc::loadImageFromEntry(&image, etex))
+				mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
 		}
 	}
 
 	// Not found
-	if (!mtex.texture)
+	if (!mtex.gl_id)
 	{
 		// Try flats if mixed
 		if (mixed)
-			return getFlat(name, false);
+			return flat(name, false);
 
 		// Otherwise use missing texture
-		else
-			mtex.texture = &(GLTexture::missingTex());
+		mtex.gl_id = gl::Texture::missingTexture();
 	}
 
-	return mtex.texture;
+	return mtex;
 }
 
-/* MapTextureManager::getFlat
- * Returns the flat matching [name]. Loads it from resources if
- * necessary. If [mixed] is true, textures are also searched if no
- * matching flat is found
- *******************************************************************/
-GLTexture* MapTextureManager::getFlat(string name, bool mixed)
+// -----------------------------------------------------------------------------
+// Returns the flat matching [name], loading it from resources if necessary.
+// If [mixed] is true, textures are also searched if no matching flat is found
+// -----------------------------------------------------------------------------
+const MapTextureManager::Texture& MapTextureManager::flat(string_view name, bool mixed)
 {
 	// Get flat matching name
-	map_tex_t& mtex = flats[name.Upper()];
+	auto& mtex = flats_[strutil::upper(name)];
 
 	// Get desired filter type
-	int filter = 1;
+	auto filter = gl::TexFilter::Linear;
 	if (map_tex_filter == 0)
-		filter = GLTexture::NEAREST_LINEAR_MIN;
+		filter = gl::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
-		filter = GLTexture::LINEAR;
+		filter = gl::TexFilter::Linear;
 	else if (map_tex_filter == 2)
-		filter = GLTexture::LINEAR_MIPMAP;
+		filter = gl::TexFilter::LinearMipmap;
 	else if (map_tex_filter == 3)
-		filter = GLTexture::NEAREST_MIPMAP;
+		filter = gl::TexFilter::NearestMipmap;
 
 	// If the texture is loaded
-	if (mtex.texture)
+	if (mtex.gl_id)
 	{
 		// If the texture filter matches the desired one, return it
-		if (mtex.texture->getFilter() == filter)
-			return mtex.texture;
-		else
-		{
-			// Otherwise, reload the texture
-			if (mtex.texture != &(GLTexture::missingTex())) delete mtex.texture;
-			mtex.texture = nullptr;
-		}
+		if (gl::Texture::info(mtex.gl_id).filter == filter)
+			return mtex;
+		
+		// Otherwise, reload the texture
+		gl::Texture::clear(mtex.gl_id);
+		mtex.gl_id = 0;
 	}
 
 	// Prioritize standalone textures
-	if (mixed && theResourceManager->getTextureEntry(name, "textures", archive))
+	auto archive = archive_.lock().get();
+	if (mixed && app::resources().getTextureEntry(name, "textures", archive))
 	{
-		return getTexture(name, false);
+		return texture(name, false);
 	}
 
 	// Try composite flat texture
 	if (mixed)
 	{
-		CTexture* ctex = theResourceManager->getTexture(name, "Flat", archive);
-		if (ctex)
+		if (auto * ctex = app::resources().getTexture(name, "Flat", archive))
 		{
 			SImage image;
-			if (ctex->toImage(image, archive, palette, true))
+			if (ctex->toImage(image, archive, palette_.get(), true))
 			{
-				mtex.texture = new GLTexture(false);
-				mtex.texture->setFilter(filter);
-				mtex.texture->loadImage(&image, palette);
-				double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
-				double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
-				mtex.texture->setWorldPanning(ctex->worldPanning());
-				mtex.texture->setScale(1.0/sx, 1.0/sy);
-				return mtex.texture;
+				mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
+
+				double sx = ctex->scaleX();
+				if (sx == 0.0)
+					sx = 1.0;
+				double sy = ctex->scaleY();
+				if (sy == 0.0)
+					sy = 1.0;
+
+				mtex.world_panning = ctex->worldPanning();
+				mtex.scale         = { 1.0 / sx, 1.0 / sy };
+
+				return mtex;
 			}
 		}
 	}
 
 	// Try to search for an actual flat
-	if (!mtex.texture)
+	if (!mtex.gl_id)
 	{
-		ArchiveEntry* entry = theResourceManager->getFlatEntry(name, archive);
-		ArchiveEntry* hires_entry = theResourceManager->getHiresEntry(name, archive);
-		ArchiveEntry* image_entry = hires_entry;
-		ArchiveEntry* scale_entry = entry;
+		auto* entry = app::resources().getFlatEntry(name, archive);
+		auto* hires_entry = app::resources().getHiresEntry(name, archive);
+		auto* image_entry = hires_entry;
+		auto* scale_entry = entry;
+		
 		// No high-res texture found
 		if (!image_entry)
 		{
 			image_entry = entry;
 			scale_entry = nullptr;
 		}
+		
 		// Load the image
 		SImage image;
-		if (Misc::loadImageFromEntry(&image, image_entry))
-		{
-			mtex.texture = new GLTexture(false);
-			mtex.texture->setFilter(filter);
-			mtex.texture->loadImage(&image, palette);
-		}
+		if (misc::loadImageFromEntry(&image, image_entry))
+			mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
+		
 		// Get high-res texture scale
 		if (scale_entry)
 		{
 			SImage lores_image;
-			if (Misc::loadImageFromEntry(&lores_image, scale_entry))
+			if (misc::loadImageFromEntry(&lores_image, scale_entry))
 			{
-				double scaleX = (double)lores_image.getWidth() / (double)image.getWidth();
-				double scaleY = (double)lores_image.getHeight() / (double)image.getHeight();
-				mtex.texture->setWorldPanning(true);
-				mtex.texture->setScale(scaleX, scaleY);
+				double scale_x = static_cast<double>(lores_image.width()) / static_cast<double>(image.width());
+				double scale_y = static_cast<double>(lores_image.height()) / static_cast<double>(image.height());
+				mtex.world_panning = true;
+				mtex.scale = { scale_x, scale_y };
 			}
 		}
 	}
 
 	// Not found
-	if (!mtex.texture)
+	if (!mtex.gl_id)
 	{
 		// Try to search for a composite texture instead
 		if (mixed)
-		{
-			return getTexture(name, false);
-		}
+			return texture(name, false);
 
-		mtex.texture = &(GLTexture::missingTex());
+		// Otherwise use missing texture
+		mtex.gl_id = gl::Texture::missingTexture();
 	}
 
-	return mtex.texture;
+	return mtex;
 }
 
-/* MapTextureManager::getSprite
- * Returns the sprite matching [name]. Loads it from resources if
- * necessary. Sprite name also supports wildcards (?)
- *******************************************************************/
-GLTexture* MapTextureManager::getSprite(string name, string translation, string palette)
+// -----------------------------------------------------------------------------
+// Returns the sprite matching [name], loading it from resources if necessary.
+// Sprite name also supports wildcards (?)
+// -----------------------------------------------------------------------------
+const MapTextureManager::Texture& MapTextureManager::sprite(
+	string_view name,
+	string_view translation,
+	string_view palette)
 {
 	// Don't bother looking for nameless sprites
-	if (name.IsEmpty())
-		return nullptr;
+	if (name.empty())
+		return tex_invalid;
 
 	// Get sprite matching name
-	string hashname = name.Upper();
-	if (!translation.IsEmpty())
-		hashname += translation.Lower();
-	if (!palette.IsEmpty())
-		hashname += palette.Upper();
-	map_tex_t& mtex = sprites[hashname];
+	auto hashname = fmt::format("{}{}{}", name, translation, palette);
+	strutil::upperIP(hashname);
+	auto& mtex = sprites_[hashname];
 
 	// Get desired filter type
-	int filter = 1;
+	auto filter = gl::TexFilter::Linear;
 	if (map_tex_filter == 0)
-		filter = GLTexture::NEAREST_LINEAR_MIN;
+		filter = gl::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
-		filter = GLTexture::LINEAR;
+		filter = gl::TexFilter::Linear;
 	else if (map_tex_filter == 2)
-		filter = GLTexture::LINEAR;
+		filter = gl::TexFilter::Linear;
 	else if (map_tex_filter == 3)
-		filter = GLTexture::NEAREST_MIPMAP;
+		filter = gl::TexFilter::NearestMipmap;
 
 	// If the texture is loaded
-	if (mtex.texture)
+	if (mtex.gl_id)
 	{
 		// If the texture filter matches the desired one, return it
-		if (mtex.texture->getFilter() == filter)
-			return mtex.texture;
+		auto& tex_info = gl::Texture::info(mtex.gl_id);
+		if (tex_info.filter == filter)
+			return mtex;
 		else
 		{
 			// Otherwise, reload the texture
-			delete mtex.texture;
-			mtex.texture = nullptr;
+			gl::Texture::clear(mtex.gl_id);
+			mtex.gl_id = 0;
 		}
 	}
 
 	// Sprite not found, look for it
-	bool found = false;
-	bool mirror = false;
+	bool   found  = false;
+	bool   mirror = false;
 	SImage image;
-	//Palette8bit* pal = getResourcePalette();
-	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "sprites", archive);
-	if (!entry) entry = theResourceManager->getPatchEntry(name, "", archive);
+	auto   archive = archive_.lock().get();
+	auto   entry   = app::resources().getPatchEntry(name, "sprites", archive);
+	if (!entry)
+		entry = app::resources().getPatchEntry(name, "", archive);
 	if (!entry && name.length() == 8)
 	{
-		string newname = name;
-		newname[4] = name[6]; newname[5] = name[7]; newname[6] = name[4]; newname[7] = name[5];
-		entry = theResourceManager->getPatchEntry(newname, "sprites", archive);
-		if (entry) mirror = true;
+		string newname{ name };
+		newname[4] = name[6];
+		newname[5] = name[7];
+		newname[6] = name[4];
+		newname[7] = name[5];
+		entry      = app::resources().getPatchEntry(newname, "sprites", archive);
+		if (entry)
+			mirror = true;
 	}
 	if (entry)
 	{
 		found = true;
-		Misc::loadImageFromEntry(&image, entry);
+		misc::loadImageFromEntry(&image, entry);
 	}
-	else  	// Try composite textures then
+	else // Try composite textures then
 	{
-		CTexture* ctex = theResourceManager->getTexture(name, "", archive);
-		if (ctex && ctex->toImage(image, archive, this->palette, true))
+		auto ctex = app::resources().getTexture(name, "", archive);
+		if (ctex && ctex->toImage(image, archive, palette_.get(), true))
 			found = true;
 	}
 
 	// We have a valid image either from an entry or a composite texture.
 	if (found)
 	{
-		Palette* pal = this->palette;
+		auto pal = palette_.get();
+
 		// Apply translation
-		if (!translation.IsEmpty()) image.applyTranslation(translation, pal, true);
+		if (!translation.empty())
+			image.applyTranslation(translation, pal, true);
+
 		// Apply palette override
-		if (!palette.IsEmpty())
+		if (!palette.empty())
 		{
-			ArchiveEntry* newpal = theResourceManager->getPaletteEntry(palette, archive);
-			if (newpal && newpal->getSize() == 768)
+			auto newpal = app::resources().getPaletteEntry(palette, archive);
+			if (newpal && newpal->size() == 768)
 			{
-				// Why is this needed?
-				// Copying data in pal->loadMem shouldn't
-				// change it in the original entry...
-				// We shouldn't need to copy the data in a temporary place first.
-				pal = image.getPalette();
-				MemChunk mc;
-				mc.importMem(newpal->getData(), newpal->getSize());
-				pal->loadMem(mc);
+				pal = image.palette();
+				pal->loadMem(newpal->data());
 			}
 		}
+
 		// Apply mirroring
-		if (mirror) image.mirror(false);
+		if (mirror)
+			image.mirror(false);
+
 		// Turn into GL texture
-		mtex.texture = new GLTexture(false);
-		mtex.texture->setFilter(filter);
-		mtex.texture->setTiling(false);
-		mtex.texture->loadImage(&image, pal);
-		return mtex.texture;
+		mtex.gl_id = gl::Texture::createFromImage(image, pal, filter, false);
+		return mtex;
 	}
-	else if (name.EndsWith("?"))
+	else if (name.back() == '?')
 	{
-		name.RemoveLast(1);
-		GLTexture* sprite = getSprite(name + '0', translation, palette);
-		if (!sprite)
-			sprite = getSprite(name + '1', translation, palette);
-		if (sprite)
-			return sprite;
-		if (!sprite && name.length() == 5)
+		name.remove_suffix(1);
+		auto stex = &sprite(fmt::format("{}0", name), translation, palette);
+		if (!stex->gl_id)
+			stex = &sprite(fmt::format("{}1", name), translation, palette);
+		if (stex->gl_id)
+			return *stex;
+		if (!stex->gl_id && name.length() == 5)
 		{
 			for (char chr = 'A'; chr <= ']'; ++chr)
 			{
-				sprite = getSprite(name + '0' + chr + '0', translation, palette);
-				if (sprite) return sprite;
-				sprite = getSprite(name + '1' + chr + '1', translation, palette);
-				if (sprite) return sprite;
+				stex = &sprite(fmt::format("{}0{}0", name, chr), translation, palette);
+				if (stex->gl_id)
+					return *stex;
+				stex = &sprite(fmt::format("{}1{}1", name, chr), translation, palette);
+				if (stex->gl_id)
+					return *stex;
 			}
 		}
 	}
 
-	return nullptr;
+	return tex_invalid;
 }
 
-/* MapTextureManager::getVerticalOffset
- * Detects offset hacks such as that used by the wall torch thing in
- * Heretic (type 50). If the Y offset is noticeably larger than the
- * sprite height, that means the thing is supposed to be rendered
- * above its real position.
- *******************************************************************/
-int MapTextureManager::getVerticalOffset(string name)
+// -----------------------------------------------------------------------------
+// Detects offset hacks such as that used by the wall torch thing in Heretic.
+// If the Y offset is noticeably larger than the sprite height, that means the
+// thing is supposed to be rendered above its real position.
+// -----------------------------------------------------------------------------
+int MapTextureManager::verticalOffset(string_view name) const
 {
 	// Don't bother looking for nameless sprites
-	if (name.IsEmpty())
+	if (name.empty())
 		return 0;
 
 	// Get sprite matching name
-	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "sprites", archive);
-	if (!entry) entry = theResourceManager->getPatchEntry(name, "", archive);
+	auto archive = archive_.lock().get();
+	auto entry   = app::resources().getPatchEntry(name, "sprites", archive);
+	if (!entry)
+		entry = app::resources().getPatchEntry(name, "", archive);
 	if (entry)
 	{
 		SImage image;
-		Misc::loadImageFromEntry(&image, entry);
-		int h = image.getHeight();
+		misc::loadImageFromEntry(&image, entry);
+		int h = image.height();
 		int o = image.offset().y;
 		if (o > h)
 			return o - h;
@@ -491,192 +491,153 @@ int MapTextureManager::getVerticalOffset(string name)
 	return 0;
 }
 
-/* MapTextureManager::importEditorImages
- * Loads all editor images (thing icons, etc) from the program
- * resource archive
- *******************************************************************/
-void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path)
+// -----------------------------------------------------------------------------
+// Loads all editor images (thing icons, etc) from the program resource archive
+// -----------------------------------------------------------------------------
+void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveDir* dir, string_view path) const
 {
 	SImage image;
 
 	// Go through entries
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = dir->entryAt(a);
+		auto entry = dir->entryAt(a);
 
 		// Load entry to image
-		if (image.open(entry->getMCData()))
+		if (image.open(entry->data()))
 		{
 			// Create texture in hashmap
-			string name = path + entry->getName(true);
-			LOG_MESSAGE(4, "Loading editor texture %s", name);
-			map_tex_t& mtex = map[name];
-			mtex.texture = new GLTexture(false);
-			mtex.texture->setFilter(GLTexture::MIPMAP);
-			mtex.texture->loadImage(&image);
+			auto name = fmt::format("{}{}", path, entry->nameNoExt());
+			log::info(4, "Loading editor texture {}", name);
+			auto& mtex = map[name];
+			mtex.gl_id = gl::Texture::createFromImage(image, nullptr, gl::TexFilter::Mipmap);
 		}
 	}
 
 	// Go through subdirs
-	for (unsigned a = 0; a < dir->nChildren(); a++)
+	for (const auto& subdir : dir->subdirs())
 	{
-		ArchiveTreeNode* subdir = (ArchiveTreeNode*)dir->getChild(a);
-		importEditorImages(map, subdir, path + subdir->getName() + "/");
+		importEditorImages(map, subdir.get(), fmt::format("{}{}/", path, subdir->name()));
 	}
 }
 
-/* MapTextureManager::getEditorImage
- * Returns the editor image matching [name]
- *******************************************************************/
-GLTexture* MapTextureManager::getEditorImage(string name)
+// -----------------------------------------------------------------------------
+// Returns the editor image matching [name]
+// -----------------------------------------------------------------------------
+const MapTextureManager::Texture& MapTextureManager::editorImage(string_view name)
 {
-	if (!OpenGL::isInitialised())
-		return nullptr;
+	if (!gl::isInitialised())
+		return tex_invalid;
 
 	// Load thing image textures if they haven't already
-	if (!editor_images_loaded)
+	if (!editor_images_loaded_)
 	{
 		// Load all thing images to textures
-		Archive* slade_pk3 = App::archiveManager().programResourceArchive();
-		ArchiveTreeNode* dir = slade_pk3->getDir("images");
+		auto slade_pk3 = app::archiveManager().programResourceArchive();
+		auto dir       = slade_pk3->dirAtPath("images");
 		if (dir)
-			importEditorImages(editor_images, dir, "");
+			importEditorImages(editor_images_, dir, "");
 
-		editor_images_loaded = true;
+		editor_images_loaded_ = true;
 	}
 
-	return editor_images[name].texture;
+	return editor_images_[strutil::toString(name)];
 }
 
-/* MapTextureManager::refreshResources
- * Unloads all cached textures, flats and sprites
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Unloads all cached textures, flats and sprites
+// -----------------------------------------------------------------------------
 void MapTextureManager::refreshResources()
 {
 	// Just clear all cached textures
-	textures.clear();
-	flats.clear();
-	sprites.clear();
-	theMainWindow->getPaletteChooser()->setGlobalFromArchive(archive);
-	MapEditor::forceRefresh(true);
-	palette = getResourcePalette();
+	textures_.clear();
+	flats_.clear();
+	sprites_.clear();
+	theMainWindow->paletteChooser()->setGlobalFromArchive(archive_.lock().get());
+	mapeditor::forceRefresh(true);
+	palette_->copyPalette(resourcePalette());
 	buildTexInfoList();
-	//LOG_MESSAGE(1, "texture manager cleared");
 }
 
-/* MapTextureManager::buildTexInfoList
- * (Re)builds lists with information about all currently available
- * resource textures and flats
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// (Re)builds lists with information about all currently available resource
+// textures and flats
+// -----------------------------------------------------------------------------
 void MapTextureManager::buildTexInfoList()
 {
 	// Clear
-	tex_info.clear();
-	flat_info.clear();
+	tex_info_.clear();
+	flat_info_.clear();
 
 	// --- Textures ---
 
 	// Composite textures
 	vector<TextureResource::Texture*> textures;
-	theResourceManager->getAllTextures(textures, App::archiveManager().baseResourceArchive());
-	for (unsigned a = 0; a < textures.size(); a++)
+	app::resources().putAllTextures(textures, app::archiveManager().baseResourceArchive());
+	for (auto& texture : textures)
 	{
-		CTexture * tex = &textures[a]->tex;
-		Archive* parent = textures[a]->parent;
+		auto tex    = &texture->tex;
+		auto parent = texture->parent.lock().get();
+		if (!parent)
+			continue;
 
-		//string shortName = tex->getName().Truncate(8);
-		string longName = tex->getName();
-		string path = longName.BeforeLast('/');
+		auto long_name = tex->name();
+		auto path      = strutil::contains(long_name, '/') ? strutil::beforeLast(long_name, '/') : strutil::EMPTY;
 
 		if (tex->isExtended())
 		{
-			if (S_CMPNOCASE(tex->getType(), "texture") || S_CMPNOCASE(tex->getType(), "walltexture"))
-				tex_info.push_back(map_texinfo_t(longName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
-			else if (S_CMPNOCASE(tex->getType(), "define"))
-				tex_info.push_back(map_texinfo_t(longName, TC_HIRES, parent, path, tex->getIndex(), longName));
-			else if (S_CMPNOCASE(tex->getType(), "flat"))
-				flat_info.push_back(map_texinfo_t(longName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
+			if (strutil::equalCI(tex->type(), "texture") || strutil::equalCI(tex->type(), "walltexture"))
+				tex_info_.emplace_back(long_name, Category::ZDTextures, parent, path, tex->index(), long_name);
+			else if (strutil::equalCI(tex->type(), "define"))
+				tex_info_.emplace_back(long_name, Category::HiRes, parent, path, tex->index(), long_name);
+			else if (strutil::equalCI(tex->type(), "flat"))
+				flat_info_.emplace_back(long_name, Category::ZDTextures, parent, path, tex->index(), long_name);
 			// Ignore graphics, patches and sprites
 		}
 		else
-			tex_info.push_back(map_texinfo_t(longName, TC_TEXTUREX, parent, path, tex->getIndex() + 1, longName));
+			tex_info_.emplace_back(long_name, Category::TextureX, parent, path, tex->index() + 1, long_name);
 	}
 
 	// Texture namespace patches (TX_)
-	if (Game::configuration().featureSupported(Game::Feature::TxTextures))
+	if (game::configuration().featureSupported(game::Feature::TxTextures))
 	{
 		vector<ArchiveEntry*> patches;
-		theResourceManager->getAllPatchEntries(patches, nullptr, Game::configuration().featureSupported(Game::Feature::LongNames));
-		for (unsigned a = 0; a < patches.size(); a++)
+		app::resources().putAllPatchEntries(
+			patches, nullptr, game::configuration().featureSupported(game::Feature::LongNames));
+		for (auto& patch : patches)
 		{
-			if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
+			if (patch->isInNamespace("textures") || patch->isInNamespace("hires"))
 			{
 				// Determine texture path if it's in a pk3
-				string longName = patches[a]->getPath(true).Remove(0, 1);
-				string shortName = patches[a]->getName(true).Upper().Truncate(8);
-				string path = patches[a]->getPath(false);
+				auto long_name  = patch->path(true).erase(0, 1);
+				auto short_name = strutil::truncate(patch->upperNameNoExt(), 8);
+				auto path       = patch->path(false).erase(0, 1);
 
-				tex_info.push_back(map_texinfo_t(shortName, TC_TX, patches[a]->getParent(), path, 0, longName));
+				tex_info_.emplace_back(short_name, Category::Tx, patch->parent(), path, 0, long_name);
 			}
 		}
 	}
 
 	// Flats
 	vector<ArchiveEntry*> flats;
-	theResourceManager->getAllFlatEntries(flats, nullptr, Game::configuration().featureSupported(Game::Feature::LongNames));
-	for (unsigned a = 0; a < flats.size(); a++)
+	app::resources().putAllFlatEntries(
+		flats, nullptr, game::configuration().featureSupported(game::Feature::LongNames));
+	for (auto& flat : flats)
 	{
-		ArchiveEntry* entry = flats[a];
-
 		// Determine flat path if it's in a pk3
-		string longName = entry->getPath(true).Remove(0, 1);
-		string shortName = entry->getName(true).Upper().Truncate(8);
-		string path = entry->getPath(false);
+		auto long_name  = flat->path(true).erase(0, 1);
+		auto short_name = strutil::truncate(flat->upperNameNoExt(), 8);
+		auto path       = flat->path(false).erase(0, 1);
 
-		flat_info.push_back(map_texinfo_t(shortName, TC_NONE, flats[a]->getParent(), path, 0, longName));
+		flat_info_.emplace_back(short_name, Category::None, flat->parent(), path, 0, long_name);
 	}
 }
 
-/* MapTextureManager::setArchive
- * Sets the current archive to [archive], and refreshes all resources
- *******************************************************************/
-void MapTextureManager::setArchive(Archive* archive)
+// -----------------------------------------------------------------------------
+// Sets the current archive to [archive], and refreshes all resources
+// -----------------------------------------------------------------------------
+void MapTextureManager::setArchive(shared_ptr<Archive> archive)
 {
-	this->archive = archive;
+	archive_ = archive;
 	refreshResources();
-}
-
-/* MapTextureManager::onAnnouncement
- * Handles announcements from any announcers listened to
- *******************************************************************/
-void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
-{
-	// Only interested in the resource manager,
-	// archive manager and palette chooser.
-	if (announcer != theResourceManager
-	        && announcer != theMainWindow->getPaletteChooser()
-	        && announcer != &App::archiveManager())
-		return;
-
-	// If the map's archive is being closed,
-	// we need to close the map editor
-	if (event_name == "archive_closing")
-	{
-		event_data.seek(0, SEEK_SET);
-		int32_t ac_index;
-		event_data.read(&ac_index, 4);
-		if (App::archiveManager().getArchive(ac_index) == archive)
-		{
-			MapEditor::windowWx()->Hide();
-			MapEditor::editContext().clearMap();
-			archive = nullptr;
-		}
-	}
-
-	// If the resources have been updated
-	if (event_name == "resources_updated")
-		refreshResources();
-
-	if (event_name == "main_palette_changed")
-		refreshResources();
 }

@@ -1,0 +1,19 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="-1 -1 18 18">
+    <path
+        d="M7 2l2 2h7v11H0V2z"
+        fill="#D8B100"
+    />
+    <g transform="scale(1,0.75)">
+        <path
+            transform="translate(-4,0.7)"
+            d="M 11 7 a 2 2 0 0 0 -2 2 v 8 h 2 v -4 h 2 v 4 h 2 V 9 a 2 2 0 0 0 -2 -2 h -2 z m 0 2 h 2 v 2 h -2 V 9 z"
+            fill="#000000"
+            fill-opacity="0.7"
+        />
+    </g>
+</svg>

@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -14,98 +14,68 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "AudioEntryPanel.h"
+#include "App.h"
+#include "Audio/AudioTags.h"
 #include "Audio/MIDIPlayer.h"
 #include "Audio/ModMusic.h"
-#include "Audio/AudioTags.h"
+#include "Audio/Mp3Music.h"
 #include "MainEditor/Conversions.h"
-#include "UI/WxUtils.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
+
+using namespace slade;
 
 #undef Status
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
-CVAR(Int, snd_volume, 100, CVAR_SAVE)
-CVAR(Bool, snd_autoplay, false, CVAR_SAVE)
-#ifndef NO_FLUIDSYNTH
-EXTERN_CVAR(Bool, snd_midi_usetimidity)
-#define usetimidity snd_midi_usetimidity
-#else
-#define usetimidity true
-#endif
+// -----------------------------------------------------------------------------
+CVAR(Int, snd_volume, 100, CVar::Flag::Save)
+CVAR(Bool, snd_autoplay, false, CVar::Flag::Save)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // AudioEntryPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::AudioEntryPanel
-//
+// -----------------------------------------------------------------------------
 // AudioEntryPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	EntryPanel(parent, "audio"),
 	timer_seek_{ new wxTimer(this) },
 	sound_{ new sf::Sound() },
 	music_{ new sf::Music() },
-	mod_{ new ModMusic() }
+	mod_{ new audio::ModMusic() },
+	mp3_{ new audio::Mp3Music() }
 {
-#ifdef __WXMSW__
-	wxRegKey key(
-		wxRegKey::HKLM,
-		"Software\\Microsoft\\Active Setup\\Installed Components\\{6BF52A52-394A-11d3-B153-00C04F79FAA6}"
-	);
-	long value = 0;
-	key.QueryValue("IsInstalled", &value);
-	if (value == 0)
-	{
-		LOG_MESSAGE(1, "Windows Media Player not installed, mp3 playback disabled.");
-		media_ctrl_ = nullptr;
-	}
-	else
-	{
-		LOG_MESSAGE(3, "Windows Media Player installed, using wxMediaCtrl");
-		media_ctrl_ = new wxMediaCtrl(this, -1);
-	}
-#elif wxUSE_MEDIACTRL
-	// Create wxMediaCtrl
-	media_ctrl_ = new wxMediaCtrl(this, -1);
-#else
-	LOG_MESSAGE(1, "wxWidgets is built without media support, MP3 playback disabled.");
-#endif
-
 	// Setup sizer
-	wxGridBagSizer* sizer_gb = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto sizer_gb = new wxGridBagSizer(ui::pad(), ui::pad());
 	sizer_main_->AddStretchSpacer();
-#if wxUSE_MEDIACTRL && !defined(__WXOSX__)
-	if (media_ctrl_) sizer_main_->Add(media_ctrl_, 0);
-#endif
 	sizer_main_->Add(sizer_gb, 0, wxALIGN_CENTER);
 	sizer_main_->AddStretchSpacer();
 
@@ -114,19 +84,19 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	sizer_gb->Add(slider_seek_, wxGBPosition(0, 0), wxGBSpan(1, 9), wxEXPAND);
 
 	// Add play controls
-	btn_play_ = new SIconButton(this, "play");
+	btn_play_ = new SIconButton(this, "play", "", 24);
 	sizer_gb->Add(btn_play_, wxGBPosition(1, 0));
-	btn_pause_ = new SIconButton(this, "pause");
+	btn_pause_ = new SIconButton(this, "pause", "", 24);
 	sizer_gb->Add(btn_pause_, wxGBPosition(1, 1));
-	btn_stop_ = new SIconButton(this, "stop");
+	btn_stop_ = new SIconButton(this, "stop", "", 24);
 	sizer_gb->Add(btn_stop_, wxGBPosition(1, 2));
-	btn_prev_ = new SIconButton(this, "prev");
+	btn_prev_ = new SIconButton(this, "prev", "", 24);
 	sizer_gb->Add(btn_prev_, wxGBPosition(1, 3));
-	btn_next_ = new SIconButton(this, "next");
+	btn_next_ = new SIconButton(this, "next", "", 24);
 	sizer_gb->Add(btn_next_, wxGBPosition(1, 4));
 
 	// Separator
-	sizer_gb->Add(new wxStaticLine(this), { 2, 0 }, { 1, 9 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
+	sizer_gb->Add(new wxStaticLine(this), { 2, 0 }, { 1, 9 }, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
 
 	// Add title
 	txt_title_ = new wxStaticText(this, -1, wxEmptyString);
@@ -138,10 +108,9 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 		-1,
 		wxEmptyString,
 		wxDefaultPosition,
-		{ -1, UI::scalePx(200) },
-		wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP
-	);
-	sizer_gb->Add(txt_info_, wxGBPosition(4, 0), wxGBSpan(1, 9), wxEXPAND|wxHORIZONTAL);
+		{ -1, ui::scalePx(200) },
+		wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
+	sizer_gb->Add(txt_info_, wxGBPosition(4, 0), wxGBSpan(1, 9), wxEXPAND | wxHORIZONTAL);
 
 	// Add track number
 	txt_track_ = new wxStaticText(this, -1, "1/1");
@@ -152,30 +121,24 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL),
 		wxGBPosition(1, 6),
 		wxDefaultSpan,
-		wxEXPAND
-	);
+		wxEXPAND);
 
 	// Add volume slider
 	sizer_gb->Add(new wxStaticText(this, -1, "Volume:"), wxGBPosition(1, 7), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, wxSize(UI::scalePx(128), -1));
+	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, wxSize(ui::scalePx(128), -1));
 	slider_volume_->SetValue(snd_volume);
-	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8));
+	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8), { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Set volume
 	sound_->setVolume(snd_volume);
 	music_->setVolume(snd_volume);
-	theMIDIPlayer->setVolume(snd_volume);
-#if wxUSE_MEDIACTRL
-	if (media_ctrl_) media_ctrl_->SetVolume(snd_volume*0.01);
-#endif
+	audio::midiPlayer().setVolume(snd_volume);
 	mod_->setVolume(snd_volume);
-	//theGMEPlayer->setVolume(snd_volume);
-	//theOPLPlayer->setVolume(snd_volume);
+	mp3_->setVolume(snd_volume);
+	// theGMEPlayer->setVolume(snd_volume);
+	// theOPLPlayer->setVolume(snd_volume);
 
 	// Disable general entrypanel buttons
-#if wxUSE_MEDIACTRL
-	if (media_ctrl_) media_ctrl_->Show(false);
-#endif
 	toolbar_->Show(false);
 
 	// Bind events
@@ -188,14 +151,12 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	slider_volume_->Bind(wxEVT_SLIDER, &AudioEntryPanel::onSliderVolumeChanged, this);
 	Bind(wxEVT_TIMER, &AudioEntryPanel::onTimer, this);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::~AudioEntryPanel
-//
+// -----------------------------------------------------------------------------
 // AudioEntryPanel class destructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 AudioEntryPanel::~AudioEntryPanel()
 {
 	// Stop the timer to avoid crashes
@@ -203,18 +164,16 @@ AudioEntryPanel::~AudioEntryPanel()
 	resetStream();
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::loadEntry
-//
+// -----------------------------------------------------------------------------
 // Loads an entry into the audio entry panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Are we reopening the same entry? For example having looked at
 	// a text file or image or any other non-audio entry, then
-	// going back to the original audio entry? Then no need to do
+	// going back to the original audio entry? Then there is no need to
 	// abort the current song to restart it.
-	if (this->entry_ == entry)
+	if (entry_.lock().get() == entry)
 		return true;
 
 	// Stop anything currently playing
@@ -239,8 +198,8 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 		wxRemoveFile(prevfile_);
 
 	// Open new data
-	this->entry_ = entry;
-	open();
+	if (!open(entry))
+		return false;
 
 	// Autoplay if option is on
 	if (snd_autoplay)
@@ -253,40 +212,29 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::saveEntry
-//
-// Saves any changes to the entry (does nothing here)
-// ----------------------------------------------------------------------------
-bool AudioEntryPanel::saveEntry()
-{
-	return true;
-}
-
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::statusString
-//
+// -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
-// ----------------------------------------------------------------------------
-string AudioEntryPanel::statusString()
+// -----------------------------------------------------------------------------
+wxString AudioEntryPanel::statusString()
 {
 	int hours, minutes, seconds, milliseconds = song_length_ % 1000;
-	seconds = (song_length_ / 1000) % 60;
-	minutes = (song_length_ / 60000) % 60;
-	hours = (song_length_ / 3600000);
-	string ret = wxEmptyString;
-	if (hours) ret = S_FMT("%d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
-	else if (minutes) ret = S_FMT("%d:%02d.%03d", minutes, seconds, milliseconds);
-	else ret = S_FMT("%d.%03d", seconds, milliseconds);
+	seconds      = (song_length_ / 1000) % 60;
+	minutes      = (song_length_ / 60000) % 60;
+	hours        = (song_length_ / 3600000);
+	wxString ret = wxEmptyString;
+	if (hours)
+		ret = wxString::Format("%d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
+	else if (minutes)
+		ret = wxString::Format("%d:%02d.%03d", minutes, seconds, milliseconds);
+	else
+		ret = wxString::Format("%d.%03d", seconds, milliseconds);
 
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::setAudioDuration
-//
+// -----------------------------------------------------------------------------
 // Sets the seek slider control duration
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::setAudioDuration(int duration)
 {
 	if (duration == 0)
@@ -303,12 +251,10 @@ void AudioEntryPanel::setAudioDuration(int duration)
 	song_length_ = duration;
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::open
-//
+// -----------------------------------------------------------------------------
 // Opens the current entry and performs the appropriate conversions
-// ----------------------------------------------------------------------------
-bool AudioEntryPanel::open()
+// -----------------------------------------------------------------------------
+bool AudioEntryPanel::open(ArchiveEntry* entry)
 {
 	// Check if already opened
 	if (opened_)
@@ -317,64 +263,66 @@ bool AudioEntryPanel::open()
 	// Stop if sound currently playing
 	resetStream();
 
-	subsong_ = 0;
+	subsong_    = 0;
 	num_tracks_ = 1;
 
 	// Get entry data
-	MemChunk& mcdata = entry_->getMCData();
+	auto& mcdata = entry->data();
 
 	// Setup temp filename
-	wxFileName path(App::path(entry_->getName(), App::Dir::Temp));
+	wxFileName path(app::path(entry->name(), app::Dir::Temp));
 	// Add extension if missing
 	if (path.GetExt().IsEmpty())
-		path.SetExt(entry_->getType()->extension());
+		path.SetExt(entry->type()->extension());
 
 	// Convert if necessary, then write to file
 	data_.clear();
-	if (entry_->getType()->formatId() == "snd_doom" ||			// Doom Sound -> WAV
-	        entry_->getType()->formatId() == "snd_doom_mac")
-		Conversions::doomSndToWav(mcdata, data_);
-	else if (entry_->getType()->formatId() == "snd_speaker")	// Doom PC Speaker Sound -> WAV
-		Conversions::spkSndToWav(mcdata, data_);
-	else if (entry_->getType()->formatId() == "snd_audiot")		// AudioT PC Speaker Sound -> WAV
-		Conversions::spkSndToWav(mcdata, data_, true);
-	else if (entry_->getType()->formatId() == "snd_wolf")		// Wolfenstein 3D Sound -> WAV
-		Conversions::wolfSndToWav(mcdata, data_);
-	else if (entry_->getType()->formatId() == "snd_voc")		// Creative Voice File -> WAV
-		Conversions::vocToWav(mcdata, data_);
-	else if (entry_->getType()->formatId() == "snd_jaguar")		// Jaguar Doom Sound -> WAV
-		Conversions::jagSndToWav(mcdata, data_);
-	else if (entry_->getType()->formatId() == "snd_bloodsfx")	// Blood Sound -> WAV
-		Conversions::bloodToWav(entry_, data_);
-	else if (entry_->getType()->formatId() == "midi_mus")  			// MUS -> MIDI
+	if (entry->type()->formatId() == "snd_doom" || // Doom Sound -> WAV
+		entry->type()->formatId() == "snd_doom_mac")
+		conversion::doomSndToWav(mcdata, data_);
+	else if (entry->type()->formatId() == "snd_speaker") // Doom PC Speaker Sound -> WAV
+		conversion::spkSndToWav(mcdata, data_);
+	else if (entry->type()->formatId() == "snd_audiot") // AudioT PC Speaker Sound -> WAV
+		conversion::spkSndToWav(mcdata, data_, true);
+	else if (entry->type()->formatId() == "snd_wolf") // Wolfenstein 3D Sound -> WAV
+		conversion::wolfSndToWav(mcdata, data_);
+	else if (entry->type()->formatId() == "snd_voc") // Creative Voice File -> WAV
+		conversion::vocToWav(mcdata, data_);
+	else if (entry->type()->formatId() == "snd_jaguar") // Jaguar Doom Sound -> WAV
+		conversion::jagSndToWav(mcdata, data_);
+	else if (entry->type()->formatId() == "snd_bloodsfx") // Blood Sound -> WAV
+		conversion::bloodToWav(entry, data_);
+	else if (entry->type()->formatId() == "midi_mus") // MUS -> MIDI
 	{
-		Conversions::musToMidi(mcdata, data_);
+		conversion::musToMidi(mcdata, data_);
 		path.SetExt("mid");
 	}
-	else if (entry_->getType()->formatId() == "midi_xmi" ||  		// HMI/HMP/XMI -> MIDI
-			 entry_->getType()->formatId() == "midi_hmi" || entry_->getType()->formatId() == "midi_hmp")
+	else if (
+		entry->type()->formatId() == "midi_xmi" || // HMI/HMP/XMI -> MIDI
+		entry->type()->formatId() == "midi_hmi" || entry->type()->formatId() == "midi_hmp")
 	{
-		Conversions::zmusToMidi(mcdata, data_, 0, &num_tracks_);
+		conversion::zmusToMidi(mcdata, data_, 0, &num_tracks_);
 		path.SetExt("mid");
 	}
-	else if (entry_->getType()->formatId() == "midi_gmid")  		// GMID -> MIDI
+	else if (entry->type()->formatId() == "midi_gmid") // GMID -> MIDI
 	{
-		Conversions::gmidToMidi(mcdata, data_);
+		conversion::gmidToMidi(mcdata, data_);
 		path.SetExt("mid");
 	}
 	else
-		data_.importMem(mcdata.getData(), mcdata.getSize());
+		data_.importMem(mcdata.data(), mcdata.size());
 
 	// MIDI format
-	if (entry_->getType()->formatId().StartsWith("midi_"))
-	{
-		audio_type_ = MIDI;
+	if (strutil::startsWith(entry->type()->formatId(), "midi_"))
 		openMidi(data_, path.GetFullPath());
-	}
 
 	// MOD format
-	else if (entry_->getType()->formatId().StartsWith("mod_"))
+	else if (strutil::startsWith(entry->type()->formatId(), "mod_"))
 		openMod(data_);
+
+	// Mp3 format
+	else if (strutil::startsWith(entry->type()->formatId(), "snd_mp3"))
+		openMp3(data_);
 
 	// Other format
 	else
@@ -383,9 +331,9 @@ bool AudioEntryPanel::open()
 	// Keep filename so we can delete it later
 	prevfile_ = path.GetFullPath();
 
-	txt_title_->SetLabel(entry_->getPath(true));
-	txt_track_->SetLabel(S_FMT("%d/%d", subsong_+1, num_tracks_));
-	updateInfo();
+	txt_title_->SetLabel(entry->path(true));
+	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
+	updateInfo(*entry);
 
 	// Disable prev/next track buttons if only one track is available
 	if (num_tracks_ < 2)
@@ -398,24 +346,22 @@ bool AudioEntryPanel::open()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::openAudio
-//
+// -----------------------------------------------------------------------------
 // Opens an audio file for playback (SFML 2.x+)
-// ----------------------------------------------------------------------------
-bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
+// -----------------------------------------------------------------------------
+bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
 {
 	// Stop if sound currently playing
 	resetStream();
 
 	// (Re)create sound buffer
 	sound_buffer_ = std::make_unique<sf::SoundBuffer>();
-	audio_type_ = Invalid;
+	audio_type_   = Invalid;
 
 	// Load into buffer
-	if (sound_buffer_->loadFromMemory((const char*)audio.getData(), audio.getSize()))
+	if (sound_buffer_->loadFromMemory((const char*)audio.data(), audio.size()))
 	{
-		LOG_MESSAGE(3, "opened as sound");
+		log::info(3, "opened as sound");
 		// Bind to sound
 		sound_->setBuffer(*sound_buffer_);
 		audio_type_ = Sound;
@@ -423,7 +369,9 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 		// Enable play controls
 #if (SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR < 2)
 		// SFML before 2.2 has a bug where it reports an incorrect value for long sounds, so compute it ourselves then
-		setAudioDuration((sound_buffer->getSampleCount() / sound_buffer->getSampleRate())*(1000/sound_buffer->getChannelCount()));
+		setAudioDuration(
+			(sound_buffer->getSampleCount() / sound_buffer->getSampleRate())
+			* (1000 / sound_buffer->getChannelCount()));
 #else
 		setAudioDuration(sound_buffer_->getDuration().asMilliseconds());
 #endif
@@ -433,9 +381,9 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 
 		return true;
 	}
-	else if (music_->openFromMemory((const char*)audio.getData(), audio.getSize()))
+	else if (music_->openFromMemory((const char*)audio.data(), audio.size()))
 	{
-		LOG_MESSAGE(3, "opened as music");
+		log::info(3, "opened as music");
 		// Couldn't open the audio as a sf::SoundBuffer, try sf::Music instead
 		audio_type_ = Music;
 
@@ -445,17 +393,6 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 		btn_stop_->Enable();
 
 		return true;
-	}
-	else
-	{
-		// Couldn't open as sound or music, try the wxMediaCtrl
-		LOG_MESSAGE(3, "opened as media");
-
-		// Dump audio to temp file
-		audio.exportFile(filename);
-
-		if (openMedia(filename))
-			return true;
 	}
 
 	// Unable to open audio, disable play controls
@@ -467,20 +404,20 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::openMidi
-//
+// -----------------------------------------------------------------------------
 // Opens a MIDI file for playback
-// ----------------------------------------------------------------------------
-bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
+// -----------------------------------------------------------------------------
+bool AudioEntryPanel::openMidi(MemChunk& data, const wxString& filename)
 {
+	audio_type_ = MIDI;
+
 	// Enable volume control
 	slider_volume_->Enable(true);
 
 	// Attempt to open midi
-	if (theMIDIPlayer->isReady())
+	if (audio::midiPlayer().isReady())
 	{
-		if (theMIDIPlayer->openData(data))
+		if (audio::midiPlayer().openData(data))
 		{
 			// Enable play controls
 			btn_play_->Enable();
@@ -488,7 +425,7 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 			btn_stop_->Enable();
 
 			// Setup seekbar
-			setAudioDuration(theMIDIPlayer->getLength());
+			setAudioDuration(audio::midiLength(data));
 
 			return true;
 		}
@@ -497,15 +434,13 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::openMod
-//
+// -----------------------------------------------------------------------------
 // Opens a Module file for playback
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool AudioEntryPanel::openMod(MemChunk& data)
 {
 	// Attempt to load the mod
-	if (mod_->loadFromMemory(data.getData(), data.getSize()))
+	if (mod_->loadFromMemory(data.data(), data.size()))
 	{
 		audio_type_ = Mod;
 
@@ -514,7 +449,7 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 		btn_play_->Enable();
 		btn_pause_->Enable();
 		btn_stop_->Enable();
-		setAudioDuration(mod_->getDuration().asMilliseconds());
+		setAudioDuration(mod_->duration().asMilliseconds());
 
 		return true;
 	}
@@ -529,192 +464,163 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 
 		return false;
 	}
-	return false;
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::openMedia
-//
-// Opens audio file [filename] in the wxMediaCtrl
-// ----------------------------------------------------------------------------
-bool AudioEntryPanel::openMedia(string filename)
+// -----------------------------------------------------------------------------
+// Opens an mp3 file for playback
+// -----------------------------------------------------------------------------
+bool AudioEntryPanel::openMp3(MemChunk& data)
 {
-#if wxUSE_MEDIACTRL
-	// Attempt to open with wxMediaCtrl
-	if (media_ctrl_ && media_ctrl_->Load(filename))
+	// Attempt to load the mp3
+	if (mp3_->loadFromMemory(data.data(), data.size()))
 	{
-		// Loaded successfully
-		audio_type_ = Media;
+		audio_type_ = Mp3;
 
-		// Enable play controls
-		setAudioDuration(media_ctrl_->Length());
-		btn_play_->Enable(true);
-		btn_pause_->Enable(true);
-		btn_stop_->Enable(true);
+		// Enable playback controls
+		slider_volume_->Enable();
+		btn_play_->Enable();
+		btn_pause_->Enable();
+		btn_stop_->Enable();
+		setAudioDuration(mp3_->duration().asMilliseconds());
 
 		return true;
 	}
-#endif
-	
-	return false;
+	else
+	{
+		// Disable playback controls
+		slider_volume_->Enable();
+		btn_play_->Enable();
+		btn_pause_->Enable();
+		btn_stop_->Enable();
+		setAudioDuration(0);
+
+		return false;
+	}
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::startStream
-//
+// -----------------------------------------------------------------------------
 // Begins playback of the current audio or MIDI stream
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::startStream()
 {
-	if (!opened_)
-		open();
+	if (!opened_ && entry_.lock())
+		open(entry_.lock().get());
 
 	switch (audio_type_)
 	{
-	case Sound:
-		sound_->play(); break;
-	case Music:
-		music_->play(); break;
-	case Mod:
-		mod_->play(); break;
-	case MIDI:
-		theMIDIPlayer->play(); break;
-#if wxUSE_MEDIACTRL
-	case Media:
-		if (media_ctrl_) media_ctrl_->Play(); break;
-#endif
-	default:
-		break;
+	case Sound: sound_->play(); break;
+	case Music: music_->play(); break;
+	case Mod: mod_->play(); break;
+	case MIDI: audio::midiPlayer().play(); break;
+	case Mp3: mp3_->play(); break;
+	default: break;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::stopStream
-//
+// -----------------------------------------------------------------------------
 // Stops playback of the current audio or MIDI stream
-// ----------------------------------------------------------------------------
-void AudioEntryPanel::stopStream()
+// -----------------------------------------------------------------------------
+void AudioEntryPanel::stopStream() const
 {
 	switch (audio_type_)
 	{
-	case Sound:
-		sound_->pause(); break;
-	case Music:
-		music_->pause(); break;
-	case Mod:
-		mod_->pause(); break;
-	case MIDI:
-		theMIDIPlayer->pause();	break;
-#if wxUSE_MEDIACTRL
-	case Media:
-		if (media_ctrl_) media_ctrl_->Pause(); break;
-#endif
-	default:
-		break;
+	case Sound: sound_->pause(); break;
+	case Music: music_->pause(); break;
+	case Mod: mod_->pause(); break;
+	case MIDI: audio::midiPlayer().pause(); break;
+	case Mp3: mp3_->pause(); break;
+	default: break;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::resetStream
-//
+// -----------------------------------------------------------------------------
 // Resets the current audio or MIDI stream to the beginning
-// ----------------------------------------------------------------------------
-void AudioEntryPanel::resetStream()
+// -----------------------------------------------------------------------------
+void AudioEntryPanel::resetStream() const
 {
-
 	switch (audio_type_)
 	{
-	case Sound:
-		sound_->stop(); break;
-	case Music:
-		music_->stop(); break;
-	case Mod:
-		mod_->stop(); break;
-	case MIDI:
-		theMIDIPlayer->stop(); break;
-#if wxUSE_MEDIACTRL
-	case Media:
-		if (media_ctrl_) media_ctrl_->Stop(); break;
-#endif
-	default:
-		break;
+	case Sound: sound_->stop(); break;
+	case Music: music_->stop(); break;
+	case Mod: mod_->stop(); break;
+	case MIDI: audio::midiPlayer().stop(); break;
+	case Mp3: mp3_->stop(); break;
+	default: break;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::updateInfo
-//
+// -----------------------------------------------------------------------------
 // Used to update the info area, returns true if info is non-empty
-// ----------------------------------------------------------------------------
-bool AudioEntryPanel::updateInfo()
+// -----------------------------------------------------------------------------
+bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 {
 	txt_info_->Clear();
-	string info = entry_->getTypeString() + "\n";
-	MemChunk& mc = entry_->getMCData();
+
+	wxString info = entry.typeString() + "\n";
+	auto&    mc   = entry.data();
 	switch (audio_type_)
 	{
 	case Sound:
 	case Music:
-	case Media:
-		if (entry_->getType() == EntryType::fromId("snd_doom"))
+	case Mp3:
+		if (entry.type() == EntryType::fromId("snd_doom"))
 		{
-			size_t samplerate = READ_L16(mc, 2);
-			size_t samples = READ_L16(mc, 4);
-			info += S_FMT("%lu samples at %lu Hz", (unsigned long) samples, (unsigned long) samplerate);
+			size_t samplerate = mc.readL16(2);
+			size_t samples    = mc.readL16(4);
+			info += wxString::Format("%lu samples at %lu Hz", (unsigned long)samples, (unsigned long)samplerate);
 		}
-		else if (entry_->getType() == EntryType::fromId("snd_speaker"))
+		else if (entry.type() == EntryType::fromId("snd_speaker"))
 		{
-			size_t samples = READ_L16(mc, 2);
-			info += S_FMT("%lu samples", (unsigned long) samples);
+			size_t samples = mc.readL16(2);
+			info += wxString::Format("%lu samples", (unsigned long)samples);
 		}
-		else if (entry_->getType() == EntryType::fromId("snd_audiot"))
+		else if (entry.type() == EntryType::fromId("snd_audiot"))
 		{
-			size_t samples = READ_L16(mc, 0);
-			info += S_FMT("%lu samples", (unsigned long) samples);
+			size_t samples = mc.readL16(0);
+			info += wxString::Format("%lu samples", (unsigned long)samples);
 		}
-		else if (entry_->getType() == EntryType::fromId("snd_sun"))
-			info += Audio::getSunInfo(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_voc"))
-			info += Audio::getVocInfo(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_wav"))
-			info += Audio::getWavInfo(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_mp3"))
-			info += Audio::getID3Tag(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_ogg"))
-			info += Audio::getOggComments(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_flac"))
-			info += Audio::getFlacComments(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_aiff"))
-			info += Audio::getAiffInfo(mc);
+		else if (entry.type() == EntryType::fromId("snd_sun"))
+			info += audio::getSunInfo(mc);
+		else if (entry.type() == EntryType::fromId("snd_voc"))
+			info += audio::getVocInfo(mc);
+		else if (entry.type() == EntryType::fromId("snd_wav"))
+			info += audio::getWavInfo(mc);
+		else if (entry.type() == EntryType::fromId("snd_mp3"))
+			info += audio::getID3Tag(mc);
+		else if (entry.type() == EntryType::fromId("snd_ogg"))
+			info += audio::getOggComments(mc);
+		else if (entry.type() == EntryType::fromId("snd_flac"))
+			info += audio::getFlacComments(mc);
+		else if (entry.type() == EntryType::fromId("snd_aiff"))
+			info += audio::getAiffInfo(mc);
 		break;
 	case Mod:
-		if (entry_->getType() == EntryType::fromId("mod_it"))
-			info += Audio::getITComments(mc);
-		else if (entry_->getType() == EntryType::fromId("mod_mod"))
-			info += Audio::getModComments(mc);
-		else if (entry_->getType() == EntryType::fromId("mod_s3m"))
-			info += Audio::getS3MComments(mc);
-		else if (entry_->getType() == EntryType::fromId("mod_xm"))
-			info += Audio::getXMComments(mc);
+		if (entry.type() == EntryType::fromId("mod_it"))
+			info += audio::getITComments(mc);
+		else if (entry.type() == EntryType::fromId("mod_mod"))
+			info += audio::getModComments(mc);
+		else if (entry.type() == EntryType::fromId("mod_s3m"))
+			info += audio::getS3MComments(mc);
+		else if (entry.type() == EntryType::fromId("mod_xm"))
+			info += audio::getXMComments(mc);
 		break;
 	case MIDI:
-		info += theMIDIPlayer->getInfo();
-		if (entry_->getType() == EntryType::fromId("midi_rmid"))
-			info+= Audio::getRmidInfo(mc);
+		info += audio::midiInfo(mc);
+		if (entry.type() == EntryType::fromId("midi_rmid"))
+			info += audio::getRmidInfo(mc);
 		break;
 	/*case AUTYPE_EMU:
 		info += theGMEPlayer->getInfo(subsong);
 		break;
 	case AUTYPE_OPL:
-		if (entry->getType() == EntryType::getType("opl_audiot"))
+		if (entry.getType() == EntryType::getType("opl_audiot"))
 		{
 			size_t samples = READ_L32(mc, 0);
-			info += S_FMT("%zu samples", samples);
+			info += wxString::Format("%zu samples", samples);
 		}
 		info += theOPLPlayer->getInfo();
 		break;*/
-	default:
-		break;
+	default: break;
 	}
 	txt_info_->SetValue(info);
 	if (info.length())
@@ -723,29 +629,25 @@ bool AudioEntryPanel::updateInfo()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // AudioEntryPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::onBtnPlay
-//
+// -----------------------------------------------------------------------------
 // Called when the play button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::onBtnPlay(wxCommandEvent& e)
 {
 	startStream();
 	timer_seek_->Start(10);
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::onBtnPause
-//
+// -----------------------------------------------------------------------------
 // Called when the pause button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::onBtnPause(wxCommandEvent& e)
 {
 	// Stop playing (no reset)
@@ -753,11 +655,9 @@ void AudioEntryPanel::onBtnPause(wxCommandEvent& e)
 	timer_seek_->Stop();
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::onBtnStop
-//
+// -----------------------------------------------------------------------------
 // Called when the stop button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::onBtnStop(wxCommandEvent& e)
 {
 	// Stop playing
@@ -769,59 +669,55 @@ void AudioEntryPanel::onBtnStop(wxCommandEvent& e)
 	slider_seek_->SetValue(0);
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::onBtnPrev
-//
+// -----------------------------------------------------------------------------
 // Called when the previous track button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
 {
 	if (subsong_ > 0)
 		subsong_--;
-	else subsong_ = num_tracks_ - 1;
+	else
+		subsong_ = num_tracks_ - 1;
 
-	if (entry_->getType()->formatId() == "xmi")
+	if (auto entry = entry_.lock(); entry && entry->type()->formatId() == "xmi")
 	{
-		MemChunk& mcdata = entry_->getMCData();
 		MemChunk convdata;
-		if (Conversions::zmusToMidi(mcdata, convdata, subsong_))
+		if (conversion::zmusToMidi(entry->data(), convdata, subsong_))
 			openMidi(convdata, prevfile_);
+
+		updateInfo(*entry);
 	}
-	//else if (entry->getType()->getFormat().StartsWith("gme"))
+	// else if (entry->getType()->getFormat().StartsWith("gme"))
 	//	theGMEPlayer->play(subsong);
-	txt_track_->SetLabel(S_FMT("%d/%d", subsong_+1, num_tracks_));
-	updateInfo();
+
+	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::onBtnNext
-//
+// -----------------------------------------------------------------------------
 // Called when the next track button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
 {
 	int newsong = (subsong_ + 1) % num_tracks_;
-	if (entry_->getType()->formatId() == "xmi")
+	if (auto entry = entry_.lock(); entry && entry->type()->formatId() == "xmi")
 	{
-		MemChunk& mcdata = entry_->getMCData();
 		MemChunk convdata;
-		if (Conversions::zmusToMidi(mcdata, convdata, newsong) && openMidi(convdata, prevfile_))
+		if (conversion::zmusToMidi(entry->data(), convdata, newsong) && openMidi(convdata, prevfile_))
 			subsong_ = newsong;
+
+		updateInfo(*entry);
 	}
 	/*else if (entry->getType()->getFormat().StartsWith("gme"))
 	{
 		if (theGMEPlayer->play(newsong))
 			subsong = newsong;
 	}*/
-	txt_track_->SetLabel(S_FMT("%d/%d", subsong_+1, num_tracks_));
-	updateInfo();
+	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::onTimer
-//
+// -----------------------------------------------------------------------------
 // Called when the playback timer ticks
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::onTimer(wxTimerEvent& e)
 {
 	// Get current playback position
@@ -829,91 +725,59 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 
 	switch (audio_type_)
 	{
-	case Sound:
-		pos = sound_->getPlayingOffset().asMilliseconds(); break;
-	case Music:
-		pos = music_->getPlayingOffset().asMilliseconds(); break;
-	case Mod:
-		pos = mod_->getPlayingOffset().asMilliseconds(); break;
-	case MIDI:
-		pos = theMIDIPlayer->getPosition(); break;
-#if wxUSE_MEDIACTRL
-	case Media:
-		if (media_ctrl_) pos = media_ctrl_->Tell(); break;
-#endif
-	default:
-		break;
+	case Sound: pos = sound_->getPlayingOffset().asMilliseconds(); break;
+	case Music: pos = music_->getPlayingOffset().asMilliseconds(); break;
+	case Mod: pos = mod_->getPlayingOffset().asMilliseconds(); break;
+	case MIDI: pos = audio::midiPlayer().position(); break;
+	case Mp3: pos = mp3_->getPlayingOffset().asMilliseconds(); break;
+	default: break;
 	}
 
 	// Set slider
 	slider_seek_->SetValue(pos);
 
 	// Stop the timer if playback has reached the end
-	if (pos >= slider_seek_->GetMax() ||
-	        (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Stopped) ||
-	        (audio_type_ == Music && music_->getStatus() == sf::Sound::Stopped) ||
-			(audio_type_ == Mod && mod_->getStatus() == sf::Sound::Stopped) ||
-#if wxUSE_MEDIACTRL
-			(audio_type_ == Media && media_ctrl_ && media_ctrl_->GetState() == wxMEDIASTATE_STOPPED) ||
-#endif
-			(audio_type_ == MIDI && theMIDIPlayer && !theMIDIPlayer->isPlaying()))
+	if (pos >= slider_seek_->GetMax() || (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Stopped)
+		|| (audio_type_ == Music && music_->getStatus() == sf::Sound::Stopped)
+		|| (audio_type_ == Mod && mod_->getStatus() == sf::Sound::Stopped)
+		|| (audio_type_ == Mp3 && mp3_->getStatus() == sf::Sound::Stopped)
+		|| (audio_type_ == MIDI && !audio::midiPlayer().isPlaying()))
 	{
 		timer_seek_->Stop();
 		slider_seek_->SetValue(0);
 	}
-	
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::onSliderSeekChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the seek slider position is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 {
 	switch (audio_type_)
 	{
-	case Sound:
-		sound_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	case Music:
-		music_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	case Mod:
-		mod_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	case MIDI:
-		theMIDIPlayer->setPosition(slider_seek_->GetValue()); break;
-#if wxUSE_MEDIACTRL
-	case Media:
-		if (media_ctrl_) media_ctrl_->Seek(slider_seek_->GetValue()); break;
-#endif
-	default:
-		break;
+	case Sound: sound_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
+	case Music: music_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
+	case Mod: mod_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
+	case MIDI: audio::midiPlayer().setPosition(slider_seek_->GetValue()); break;
+	case Mp3: mp3_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
+	default: break;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// AudioEntryPanel::onSliderVolumeChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the volume slider position is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 {
 	snd_volume = slider_volume_->GetValue();
 
 	switch (audio_type_)
 	{
-	case Sound:
-		sound_->setVolume(snd_volume); break;
-	case Music:
-		music_->setVolume(snd_volume); break;
-	case MIDI:
-		theMIDIPlayer->setVolume(snd_volume); break;
-#if wxUSE_MEDIACTRL
-	case Media:
-		if (media_ctrl_) media_ctrl_->SetVolume(snd_volume*0.01); break;
-#endif
-	case Mod:
-		mod_->setVolume(snd_volume); break;
-	default:
-		break;
+	case Sound: sound_->setVolume(snd_volume); break;
+	case Music: music_->setVolume(snd_volume); break;
+	case MIDI: audio::midiPlayer().setVolume(snd_volume); break;
+	case Mp3: mp3_->setVolume(snd_volume); break;
+	case Mod: mod_->setVolume(snd_volume); break;
+	default: break;
 	}
 }

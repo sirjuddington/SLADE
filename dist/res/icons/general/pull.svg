@@ -1,0 +1,13 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24">
+    <path 
+        d="M20 9v6h-8v4.84L4.16 12L12 4.16V9h8z"
+        fill="#476DBD"
+        transform="translate(-4, 0)"
+    />
+    <rect x="18" y="4" width="4" height="16" rx="1" ry="1" fill="#476DBD" />
+</svg>

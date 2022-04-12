@@ -1,190 +1,219 @@
-
-#ifndef __CTEXTURE_H__
-#define __CTEXTURE_H__
+#pragma once
 
 #include "Archive/ArchiveEntry.h"
-#include "General/ListenerAnnouncer.h"
 #include "Graphics/Translation.h"
 
+namespace slade
+{
 class SImage;
 class Tokenizer;
 
 // Basic patch
 class CTPatch
 {
-protected:
-	string			name;
-	int16_t			offset_x;
-	int16_t			offset_y;
-
 public:
-	CTPatch();
-	CTPatch(string name, int16_t offset_x = 0, int16_t offset_y = 0);
-	CTPatch(CTPatch* copy);
-	virtual ~CTPatch();
+	CTPatch() = default;
+	CTPatch(string_view name, int16_t offset_x = 0, int16_t offset_y = 0);
+	virtual ~CTPatch() = default;
 
-	string			getName() { return name; }
-	int16_t			xOffset() { return offset_x; }
-	int16_t			yOffset() { return offset_y; }
+	const string& name() const { return name_; }
+	Vec2<int16_t> offset() const { return offset_; }
+	int16_t       xOffset() const { return offset_.x; }
+	int16_t       yOffset() const { return offset_.y; }
 
-	void	setName(string name) { this->name = name; }
-	void	setOffsetX(int16_t offset) { offset_x = offset; }
-	void	setOffsetY(int16_t offset) { offset_y = offset; }
+	void setName(string_view name) { name_ = name; }
+	void setOffset(const Vec2<int16_t>& offset) { offset_ = offset; }
+	void setOffsetX(int16_t offset) { offset_.x = offset; }
+	void setOffsetY(int16_t offset) { offset_.y = offset; }
 
-	virtual ArchiveEntry*	getPatchEntry(Archive* parent = nullptr);
+	virtual ArchiveEntry* patchEntry(Archive* parent = nullptr);
+
+protected:
+	string        name_;
+	Vec2<int16_t> offset_ = { 0, 0 };
 };
 
 // Extended patch (for TEXTURES)
-#define	PTYPE_PATCH		0
-#define PTYPE_GRAPHIC	1
 class CTPatchEx : public CTPatch
 {
-private:
-	uint8_t			type;			// 0=patch, 1=graphic
-	bool			flip_x;
-	bool			flip_y;
-	bool			use_offsets;
-	int16_t			rotation;
-	Translation		translation;
-	rgba_t			colour;
-	float			alpha;
-	string			style;
-	uint8_t			blendtype;		// 0=none, 1=translation, 2=blend, 3=tint
-
 public:
-	CTPatchEx();
-	CTPatchEx(string name, int16_t offset_x = 0, int16_t offset_y = 0, uint8_t type = 0);
-	CTPatchEx(CTPatch* copy);
-	CTPatchEx(CTPatchEx* copy);
-	~CTPatchEx();
+	enum class Type
+	{
+		Patch = 0,
+		Graphic
+	};
 
-	bool			flipX() { return flip_x; }
-	bool			flipY() { return flip_y; }
-	bool			useOffsets() { return use_offsets; }
-	int16_t			getRotation() { return rotation; }
-	rgba_t			getColour() { return colour; }
-	float			getAlpha() { return alpha; }
-	string			getStyle() { return style; }
-	uint8_t			getBlendType() { return blendtype; }
-	Translation&	getTranslation() { return translation; }
+	enum class BlendType
+	{
+		None = 0,
+		Translation,
+		Blend,
+		Tint
+	};
 
-	void	flipX(bool flip) { flip_x = flip; }
-	void	flipY(bool flip) { flip_y = flip; }
-	void	useOffsets(bool use) { use_offsets = use; }
-	void	setRotation(int16_t rot) { rotation = rot; }
-	void	setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { colour.set(r, g, b, a); }
-	void	setAlpha(float a) { alpha = a; }
-	void	setStyle(string s) { style = s; }
-	void	setBlendType(uint8_t type) { blendtype = type; }
+	CTPatchEx() = default;
+	CTPatchEx(string_view name, int16_t offset_x = 0, int16_t offset_y = 0, Type type = Type::Patch);
+	CTPatchEx(const CTPatch& copy) : CTPatch{ copy } {}
+	CTPatchEx(const CTPatchEx& copy);
+	~CTPatchEx() override = default;
 
-	ArchiveEntry*	getPatchEntry(Archive* parent = nullptr) override;
+	bool         flipX() const { return flip_x_; }
+	bool         flipY() const { return flip_y_; }
+	bool         useOffsets() const { return use_offsets_; }
+	int16_t      rotation() const { return rotation_; }
+	ColRGBA      colour() const { return colour_; }
+	float        alpha() const { return alpha_; }
+	string       style() const { return style_; }
+	BlendType    blendType() const { return blendtype_; }
+	Translation& translation() { return translation_; }
 
-	bool	parse(Tokenizer& tz, uint8_t type = 0);
-	string	asText();
+	void setFlipX(bool flip) { flip_x_ = flip; }
+	void setFlipY(bool flip) { flip_y_ = flip; }
+	void setUseOffsets(bool use) { use_offsets_ = use; }
+	void setRotation(int16_t rot) { rotation_ = rot; }
+	void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { colour_.set(r, g, b, a); }
+	void setAlpha(float a) { alpha_ = a; }
+	void setStyle(string_view style) { style_ = style; }
+	void setBlendType(BlendType type) { blendtype_ = type; }
+
+	ArchiveEntry* patchEntry(Archive* parent = nullptr) override;
+
+	bool   parse(Tokenizer& tz, Type type = Type::Patch);
+	string asText();
+
+private:
+	Type        type_        = Type::Patch;
+	bool        flip_x_      = false;
+	bool        flip_y_      = false;
+	bool        use_offsets_ = false;
+	int16_t     rotation_    = 0;
+	Translation translation_;
+	ColRGBA     colour_;
+	float       alpha_     = 1.f;
+	string      style_     = "Copy";
+	BlendType   blendtype_ = BlendType::None; // 0=none, 1=translation, 2=blend, 3=tint
 };
 
 class TextureXList;
 class SImage;
 class Palette;
 
-#define TEXTYPE_TEXTURE		0
-#define TEXTYPE_SPRITE		1
-#define TEXTYPE_GRAPHIC		2
-#define TEXTYPE_WALLTEXTURE	3
-#define TEXTYPE_FLAT		4
-#define TEXTYPE_HIRES		5
-
-class CTexture : public Announcer
+class CTexture
 {
 	friend class TextureXList;
-private:
-	// Basic info
-	string				name;
-	uint16_t			width;
-	uint16_t			height;
-	double				scale_x;
-	double				scale_y;
-	bool				world_panning;
-	vector<CTPatch*>	patches;
-	int					index;
-
-	// Extended (TEXTURES) info
-	string	type;
-	bool	extended;
-	bool	defined;
-	bool	optional;
-	bool	no_decals;
-	bool	null_texture;
-	int16_t	offset_x;
-	int16_t	offset_y;
-	int16_t	def_width;
-	int16_t	def_height;
-
-	// Editor info
-	uint8_t			state;
-	TextureXList*	in_list;
 
 public:
-	CTexture(bool extended = false);
-	~CTexture();
+	enum class Type
+	{
+		Texture = 0,
+		Sprite,
+		Graphic,
+		WallTexture,
+		Flat,
+		HiRes
+	};
 
-	void	copyTexture(CTexture* copy, bool keep_type = false);
+	CTexture(bool extended = false) : extended_{ extended } {}
+	CTexture(string_view name, bool extended = false) : name_{ name }, extended_{ extended } {}
+	~CTexture() = default;
 
-	string		getName() { return name; }
-	uint16_t	getWidth() { return width; }
-	uint16_t	getHeight() { return height; }
-	double		getScaleX() { return scale_x; }
-	double		getScaleY() { return scale_y; }
-	int16_t		getOffsetX() { return offset_x; }
-	int16_t		getOffsetY() { return offset_y; }
-	bool		worldPanning() { return world_panning; }
-	string		getType() { return type; }
-	bool		isExtended() { return extended; }
-	bool		isOptional() { return optional; }
-	bool		noDecals() { return no_decals; }
-	bool		nullTexture() { return null_texture; }
-	size_t		nPatches() { return patches.size(); }
-	CTPatch*	getPatch(size_t index);
-	uint8_t		getState() { return state; }
-	int			getIndex();
+	void copyTexture(const CTexture& tex, bool keep_type = false);
 
-	void	setName(string name) { this->name = name; }
-	void	setWidth(uint16_t width) { this->width = width; }
-	void	setHeight(uint16_t height) { this->height = height; }
-	void	setScaleX(double scale) { this->scale_x = scale; }
-	void	setScaleY(double scale) { this->scale_y = scale; }
-	void	setScale(double x, double y) { this->scale_x = x; this->scale_y = y; }
-	void	setOffsetX(int16_t offset) { this->offset_x = offset; }
-	void	setOffsetY(int16_t offset) { this->offset_y = offset; }
-	void	setWorldPanning(bool wp) { this->world_panning = wp; }
-	void	setType(string type) { this->type = type; }
-	void	setExtended(bool ext) { this->extended = ext; }
-	void	setOptional(bool opt) { this->optional = opt; }
-	void	setNoDecals(bool nd) { this->no_decals = nd; }
-	void	setNullTexture(bool nt) { this->null_texture = nt; }
-	void	setState(uint8_t state) { this->state = state; }
-	void	setList(TextureXList* list) { this->in_list = list; }
+	const vector<unique_ptr<CTPatch>>& patches() const { return patches_; }
 
-	void	clear();
+	const string&  name() const { return name_; }
+	Vec2<uint16_t> size() const { return size_; }
+	uint16_t       width() const { return size_.x; }
+	uint16_t       height() const { return size_.y; }
+	double         scaleX() const { return scale_.x; }
+	double         scaleY() const { return scale_.y; }
+	Vec2d          scale() const { return scale_; }
+	int16_t        offsetX() const { return offset_.x; }
+	int16_t        offsetY() const { return offset_.y; }
+	bool           worldPanning() const { return world_panning_; }
+	const string&  type() const { return type_; }
+	bool           isExtended() const { return extended_; }
+	bool           isOptional() const { return optional_; }
+	bool           noDecals() const { return no_decals_; }
+	bool           nullTexture() const { return null_texture_; }
+	size_t         nPatches() const { return patches_.size(); }
+	CTPatch*       patch(size_t index) const;
+	uint8_t        state() const { return state_; }
+	int            index() const;
 
-	bool	addPatch(string patch, int16_t offset_x = 0, int16_t offset_y = 0, int index = -1);
-	bool	removePatch(size_t index);
-	bool	removePatch(string patch);
-	bool	replacePatch(size_t index, string newpatch);
-	bool	duplicatePatch(size_t index, int16_t offset_x = 8, int16_t offset_y = 8);
-	bool	swapPatches(size_t p1, size_t p2);
+	void setName(string_view name) { name_ = name; }
+	void setSize(const Vec2<uint16_t>& size) { size_ = size; }
+	void setWidth(uint16_t width) { size_.x = width; }
+	void setHeight(uint16_t height) { size_.y = height; }
+	void setScaleX(double scale) { scale_.x = scale; }
+	void setScaleY(double scale) { scale_.y = scale; }
+	void setScale(const Vec2d& scale) { scale_ = scale; }
+	void setOffset(const Vec2<int16_t>& offset) { offset_ = offset; }
+	void setOffsetX(int16_t offset) { offset_.x = offset; }
+	void setOffsetY(int16_t offset) { offset_.y = offset; }
+	void setWorldPanning(bool wp) { world_panning_ = wp; }
+	void setType(string_view type) { type_ = type; }
+	void setExtended(bool ext) { extended_ = ext; }
+	void setOptional(bool opt) { optional_ = opt; }
+	void setNoDecals(bool nd) { no_decals_ = nd; }
+	void setNullTexture(bool nt) { null_texture_ = nt; }
+	void setState(uint8_t state) { state_ = state; }
+	void setList(TextureXList* list) { in_list_ = list; }
 
-	bool	parse(Tokenizer& tz, string type);
-	bool	parseDefine(Tokenizer& tz);
-	string	asText();
+	void clear();
 
-	bool	convertExtended();
-	bool	convertRegular();
-	bool	loadPatchImage(unsigned pindex, SImage& image, Archive* parent = nullptr, Palette* pal = nullptr);
-	bool	toImage(SImage& image, Archive* parent = nullptr, Palette* pal = nullptr, bool force_rgba = false);
+	bool addPatch(string_view patch, int16_t offset_x = 0, int16_t offset_y = 0, int index = -1);
+	bool removePatch(size_t index);
+	bool removePatch(string_view patch);
+	bool replacePatch(size_t index, string_view newpatch);
+	bool duplicatePatch(size_t index, int16_t offset_x = 8, int16_t offset_y = 8);
+	bool swapPatches(size_t p1, size_t p2);
 
-	typedef std::unique_ptr<CTexture>	UPtr;
-	typedef std::shared_ptr<CTexture>	SPtr;
+	bool   parse(Tokenizer& tz, string_view type);
+	bool   parseDefine(Tokenizer& tz);
+	string asText();
+
+	bool convertExtended();
+	bool convertRegular();
+	bool loadPatchImage(
+		unsigned pindex,
+		SImage&  image,
+		Archive* parent     = nullptr,
+		Palette* pal        = nullptr,
+		bool     force_rgba = false) const;
+	bool toImage(SImage& image, Archive* parent = nullptr, Palette* pal = nullptr, bool force_rgba = false);
+
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<CTexture&> patches_modified;
+	};
+	Signals& signals() { return signals_; }
+
+private:
+	// Basic info
+	string                      name_;
+	Vec2<uint16_t>              size_          = { 0, 0 };
+	Vec2d                       scale_         = { 1., 1. };
+	bool                        world_panning_ = false;
+	vector<unique_ptr<CTPatch>> patches_;
+	int                         index_ = -1;
+
+	// Extended (TEXTURES) info
+	string         type_         = "Texture";
+	bool           extended_     = false;
+	bool           defined_      = false;
+	bool           optional_     = false;
+	bool           no_decals_    = false;
+	bool           null_texture_ = false;
+	Vec2<int16_t>  offset_       = { 0, 0 };
+	Vec2<uint16_t> def_size_     = { 0, 0 };
+
+	// Editor info
+	uint8_t       state_   = 0;
+	TextureXList* in_list_ = nullptr;
+
+	// Signals
+	Signals signals_;
 };
-
-#endif//__CTEXTURE_H__
+} // namespace slade

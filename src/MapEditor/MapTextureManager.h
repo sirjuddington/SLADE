@@ -1,80 +1,94 @@
+#pragma once
 
-#ifndef __MAP_TEXTURE_MANAGER_H__
-#define __MAP_TEXTURE_MANAGER_H__
-
-#include "common.h"
 #include "OpenGL/GLTexture.h"
-#include "General/ListenerAnnouncer.h"
 
-struct map_tex_t
+namespace slade
 {
-	GLTexture*	texture;
-	map_tex_t() { texture = nullptr; }
-	~map_tex_t() { if (texture && texture != &(GLTexture::missingTex())) delete texture; }
-};
-
+class ArchiveDir;
 class Archive;
-struct map_texinfo_t
-{
-	string			shortName;
-	uint8_t			category;
-	Archive*		archive;
-	string			path;
-	unsigned		index;
-	string			longName;
-
-	map_texinfo_t(string shortName, uint8_t category, Archive* archive, string path, unsigned index = 0, string longName = "")
-	: shortName(shortName), category(category), archive(archive), path(path), index(index), longName(longName)
-	{
-	}
-};
-
-typedef std::map<string, map_tex_t> MapTexHashMap;
-
 class Palette;
-class MapTextureManager : public Listener
-{
-private:
-	Archive*				archive;
-	MapTexHashMap			textures;
-	MapTexHashMap			flats;
-	MapTexHashMap			sprites;
-	MapTexHashMap			editor_images;
-	bool					editor_images_loaded;
-	Palette*			palette;
-	vector<map_texinfo_t>	tex_info;
-	vector<map_texinfo_t>	flat_info;
 
+class MapTextureManager
+{
 public:
-	enum
+	enum class Category
 	{
 		// Texture categories
-		TC_NONE = 0,
-		TC_TEXTUREX,
-		TC_TX,
-		TC_TEXTURES,
-		TC_HIRES
+		None = 0,
+		TextureX,
+		Tx,
+		ZDTextures,
+		HiRes
 	};
 
-	MapTextureManager(Archive* archive = nullptr);
-	~MapTextureManager();
+	struct Texture
+	{
+		unsigned gl_id         = 0;
+		bool     world_panning = false;
+		Vec2d    scale         = { 1., 1. };
+		~Texture() { gl::Texture::clear(gl_id); }
+	};
+	typedef std::map<string, Texture> MapTexHashMap;
 
-	void	init();
-	void	setArchive(Archive* archive);
-	void	refreshResources();
-	void	buildTexInfoList();
+	struct TexInfo
+	{
+		string   short_name;
+		Category category;
+		Archive* archive;
+		string   path;
+		unsigned index;
+		string   long_name;
 
-	Palette*	getResourcePalette();
-	GLTexture*		getTexture(string name, bool mixed);
-	GLTexture*		getFlat(string name, bool mixed);
-	GLTexture*		getSprite(string name, string translation = "", string palette = "");
-	GLTexture*		getEditorImage(string name);
-	int				getVerticalOffset(string name);
+		TexInfo(
+			string_view short_name,
+			Category    category,
+			Archive*    archive,
+			string_view path,
+			unsigned    index     = 0,
+			string_view long_name = "") :
+			short_name(short_name),
+			category(category),
+			archive(archive),
+			path(path),
+			index(index),
+			long_name(long_name)
+		{
+		}
+	};
 
-	vector<map_texinfo_t>&	getAllTexturesInfo() { return tex_info; }
-	vector<map_texinfo_t>&	getAllFlatsInfo() { return flat_info; }
+	MapTextureManager(shared_ptr<Archive> archive = nullptr);
+	~MapTextureManager() = default;
 
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	void init();
+	void setArchive(shared_ptr<Archive> archive);
+	void refreshResources();
+	void buildTexInfoList();
+
+	Palette*       resourcePalette() const;
+	const Texture& texture(string_view name, bool mixed);
+	const Texture& flat(string_view name, bool mixed);
+	const Texture& sprite(string_view name, string_view translation = "", string_view palette = "");
+	const Texture& editorImage(string_view name);
+	int            verticalOffset(string_view name) const;
+
+	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
+	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
+
+private:
+	weak_ptr<Archive>   archive_;
+	MapTexHashMap       textures_;
+	MapTexHashMap       flats_;
+	MapTexHashMap       sprites_;
+	MapTexHashMap       editor_images_;
+	bool                editor_images_loaded_ = false;
+	unique_ptr<Palette> palette_;
+	vector<TexInfo>     tex_info_;
+	vector<TexInfo>     flat_info_;
+
+	// Signal connections
+	sigslot::scoped_connection sc_resources_updated_;
+	sigslot::scoped_connection sc_palette_changed_;
+
+	void importEditorImages(MapTexHashMap& map, ArchiveDir* dir, string_view path) const;
 };
-
-#endif//__MAP_TEXTURE_MANAGER_H__
+} // namespace slade

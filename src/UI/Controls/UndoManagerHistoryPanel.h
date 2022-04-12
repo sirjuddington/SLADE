@@ -1,29 +1,35 @@
 #pragma once
 
 #include "UI/Lists/VirtualListView.h"
-#include "General/ListenerAnnouncer.h"
 
+namespace slade
+{
 class UndoManager;
 
-class UndoListView : public VirtualListView, public Listener
+class UndoListView : public VirtualListView
 {
 public:
 	UndoListView(wxWindow* parent, UndoManager* manager);
 	~UndoListView() {}
 
-	void	setManager(UndoManager* manager);
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void setManager(UndoManager* manager);
 
 protected:
 	// Virtual wxListCtrl overrides
-	string	getItemText(long item, long column, long index) const override;
-	int		getItemIcon(long item, long column, long index) const override;
-	void	updateItemAttr(long item, long column, long index) const override;
+	wxString itemText(long item, long column, long index) const override;
+	int      itemIcon(long item, long column, long index) const override;
+	void     updateItemAttr(long item, long column, long index) const override;
 
 private:
-	UndoManager*	manager_;
+	UndoManager* manager_ = nullptr;
 
-	void	updateFromManager();
+	// Signal connections
+	sigslot::scoped_connection sc_recorded_;
+	sigslot::scoped_connection sc_undo_;
+	sigslot::scoped_connection sc_redo_;
+
+	void updateFromManager();
+	void connectManagerSignals();
 };
 
 class UndoManagerHistoryPanel : public wxPanel
@@ -32,13 +38,14 @@ public:
 	UndoManagerHistoryPanel(wxWindow* parent, UndoManager* manager);
 	~UndoManagerHistoryPanel() {}
 
-	void	setManager(UndoManager* manager);
+	void setManager(UndoManager* manager);
 
 private:
-	UndoManager*	manager_;
-	UndoListView*	list_levels_;
+	UndoManager*  manager_     = nullptr;
+	UndoListView* list_levels_ = nullptr;
 
 	// Events
-	void	onItemRightClick(wxCommandEvent& e);
-	void	onMenu(wxCommandEvent& e);
+	void onItemRightClick(wxCommandEvent& e);
+	void onMenu(wxCommandEvent& e);
 };
+} // namespace slade

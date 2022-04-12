@@ -1,0 +1,25 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    width="16px"
+    height="16px"
+    style="-ms-transform:rotate(360deg);-webkit-transform:rotate(360deg)"
+    viewBox="0 0 24 24"
+    transform="rotate(360)">
+    <ellipse
+        cx="12"
+        cy="12"
+        rx="11"
+        ry="11"
+        fill="#CC0000"
+    />
+    <g transform="translate(4, 20)">
+        <g transform="scale(0.3, -0.3)">
+            <path
+                fill="#000000"
+                fill-opacity="0.5"
+                d="M32.517 48.107L25.445 27H2.462L46.66 2.196z"
+            />
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,46 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    width="16px"
+    height="16px"
+    style="-ms-transform:rotate(360deg);-webkit-transform:rotate(360deg)"
+    viewBox="0 0 24 24"
+    transform="rotate(360)">
+    <!-- <rect x="0" y="0" width="24" height="24"/> -->
+    <rect
+        x="2"
+        y="2"
+        width="8"
+        height="8"
+        stroke="#476DBD"
+        stroke-width="1.5"
+        fill="none"
+    />
+    <rect
+        x="14"
+        y="2"
+        width="8"
+        height="8"
+        stroke="#476DBD"
+        stroke-width="1.5"
+        fill="none"
+    />
+    <rect
+        x="2"
+        y="14"
+        width="8"
+        height="8"
+        stroke="#476DBD"
+        stroke-width="1.5"
+        fill="none"
+    />
+    <rect
+        x="14"
+        y="14"
+        width="8"
+        height="8"
+        stroke="#476DBD"
+        stroke-width="1.5"
+        fill="none"
+    />
+</svg>

@@ -1,16 +1,16 @@
 #pragma once
 
-#include "common.h"
-
+namespace slade
+{
 class DockPanel : public wxPanel
 {
 public:
 	DockPanel(wxWindow* parent);
-	~DockPanel() {}
+	~DockPanel() = default;
 
-	virtual void	layoutNormal() {}
-	virtual void	layoutVertical() { layoutNormal(); }
-	virtual void	layoutHorizontal() { layoutNormal(); }
+	virtual void layoutNormal() {}
+	virtual void layoutVertical() { layoutNormal(); }
+	virtual void layoutHorizontal() { layoutNormal(); }
 
 protected:
 	enum class Orient
@@ -20,5 +20,6 @@ protected:
 		Vertical,
 		Uninitialised
 	};
-	Orient	current_layout_;
+	Orient current_layout_ = Orient::Uninitialised;
 };
+} // namespace slade

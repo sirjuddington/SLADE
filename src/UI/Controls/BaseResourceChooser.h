@@ -1,16 +1,19 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
+#include "General/Sigslot.h"
 
-class BaseResourceChooser : public wxChoice, public Listener
+namespace slade
+{
+class BaseResourceChooser : public wxChoice
 {
 public:
 	BaseResourceChooser(wxWindow* parent, bool load_change = true);
-	~BaseResourceChooser() {}
+	~BaseResourceChooser() = default;
 
-	void	populateChoices();
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void populateChoices();
 
 private:
-	bool	load_change_;
+	bool                 load_change_;
+	ScopedConnectionList signal_connections_;
 };
+} // namespace slade

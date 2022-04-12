@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -16,68 +16,66 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Archive/Archive.h"
 #include "Parser.h"
+#include "Archive/Archive.h"
+#include "StringUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
 
-// ----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 //
 // ParseTreeNode Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::ParseTreeNode
-//
+// -----------------------------------------------------------------------------
 // ParseTreeNode class constructor
-// ----------------------------------------------------------------------------
-ParseTreeNode::ParseTreeNode(
-	ParseTreeNode* parent,
-	Parser* parser,
-	ArchiveTreeNode* archive_dir,
-	string type
-) :
-	STreeNode{ parent },
-	type_{ type },
-	parser_{ parser },
-	archive_dir_{ archive_dir }
+// -----------------------------------------------------------------------------
+ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveDir* archive_dir, string_view type) :
+	STreeNode{ parent }, type_{ type }, parser_{ parser }, archive_dir_{ archive_dir }
 {
 	allowDup(true);
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::~ParseTreeNode
-//
-// ParseTreeNode class destructor
-// ----------------------------------------------------------------------------
-ParseTreeNode::~ParseTreeNode()
+// -----------------------------------------------------------------------------
+// Returns true if the node's name matches [name] (case-insensitive)
+// -----------------------------------------------------------------------------
+bool ParseTreeNode::nameIsCI(string_view name) const
 {
+	return strutil::equalCI(name_, name);
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::value
-//
-// Returns the node's value at [index] as a Property. If [index] is out of
-// range, returns a false boolean Property
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Returns true if the node's type matches [type] (case-insensitive)
+// -----------------------------------------------------------------------------
+bool ParseTreeNode::typeIsCI(string_view type) const
+{
+	return strutil::equalCI(type_, type);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the node's value at [index] as a Property.
+// If [index] is out of range, returns a false boolean Property
+// -----------------------------------------------------------------------------
 Property ParseTreeNode::value(unsigned index)
 {
 	// Check index
@@ -87,117 +85,94 @@ Property ParseTreeNode::value(unsigned index)
 	return values_[index];
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::stringValue
-//
-// Returns the node's value at [index] as a string. If [index] is out of range,
-// returns an empty string
-// ----------------------------------------------------------------------------
-string ParseTreeNode::stringValue(unsigned index)
+// -----------------------------------------------------------------------------
+// Returns the node's value at [index] as a string.
+// If [index] is out of range, returns an empty string
+// -----------------------------------------------------------------------------
+string ParseTreeNode::stringValue(unsigned index) const
 {
 	// Check index
 	if (index >= values_.size())
-		return wxEmptyString;
+		return {};
 
-	return values_[index].getStringValue();
+	return property::asString(values_[index]);
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::stringValues
-//
+// -----------------------------------------------------------------------------
 // Returns the node's values as a string vector.
-// ----------------------------------------------------------------------------
-vector<string> ParseTreeNode::stringValues()
+// -----------------------------------------------------------------------------
+vector<string> ParseTreeNode::stringValues() const
 {
 	vector<string> string_values;
-	for (unsigned idx = 0; idx < values_.size(); ++idx)
-	{
-		string_values.push_back(values_[idx].getStringValue());
-	}
+	for (const auto& value : values_)
+		string_values.push_back(property::asString(value));
 	return string_values;
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::intValue
-//
-// Returns the node's value at [index] as an integer. If [index] is out of
-// range, returns 0
-// ----------------------------------------------------------------------------
-int ParseTreeNode::intValue(unsigned index)
+// -----------------------------------------------------------------------------
+// Returns the node's value at [index] as an integer.
+// If [index] is out of range, returns 0
+// -----------------------------------------------------------------------------
+int ParseTreeNode::intValue(unsigned index) const
 {
 	// Check index
 	if (index >= values_.size())
 		return 0;
 
-	return (int)values_[index];
+	return property::asInt(values_[index]);
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::boolValue
-//
-// Returns the node's value at [index] as a boolean. If [index] is out of
-// range, returns false
-// ----------------------------------------------------------------------------
-bool ParseTreeNode::boolValue(unsigned index)
+// -----------------------------------------------------------------------------
+// Returns the node's value at [index] as a boolean.
+// If [index] is out of range, returns false
+// -----------------------------------------------------------------------------
+bool ParseTreeNode::boolValue(unsigned index) const
 {
 	// Check index
 	if (index >= values_.size())
 		return false;
 
-	return (bool)values_[index];
+	return property::asBool(values_[index]);
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::floatValue
-//
-// Returns the node's value at [index] as a float. If [index] is out of range,
-// returns 0.0f
-// ----------------------------------------------------------------------------
-double ParseTreeNode::floatValue(unsigned index)
+// -----------------------------------------------------------------------------
+// Returns the node's value at [index] as a float.
+// If [index] is out of range, returns 0.0f
+// -----------------------------------------------------------------------------
+double ParseTreeNode::floatValue(unsigned index) const
 {
 	// Check index
 	if (index >= values_.size())
 		return 0.0f;
 
-	return (double)values_[index];
+	return property::asFloat(values_[index]);
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::addChildPTN
-//
+// -----------------------------------------------------------------------------
 // Adds a child ParseTreeNode of [name] and [type]
-// ----------------------------------------------------------------------------
-ParseTreeNode* ParseTreeNode::addChildPTN(const string& name, const string& type)
+// -----------------------------------------------------------------------------
+ParseTreeNode* ParseTreeNode::addChildPTN(string_view name, string_view type)
 {
-	auto node = static_cast<ParseTreeNode*>(addChild(name));
+	auto* node  = dynamic_cast<ParseTreeNode*>(addChild(name));
 	node->type_ = type;
 	return node;
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::logError
-//
+// -----------------------------------------------------------------------------
 // Writes an error log message [error], showing the source and current line
 // from tokenizer [tz]
-// ----------------------------------------------------------------------------
-void ParseTreeNode::logError(const Tokenizer& tz, const string& error) const
+// -----------------------------------------------------------------------------
+void ParseTreeNode::logError(const Tokenizer& tz, string_view error) const
 {
-	Log::error(S_FMT(
-		"Parse Error in %s (Line %d): %s\n",
-		CHR(tz.source()),
-		tz.current().line_no,
-		CHR(error)
-	));
+	log::error("Parse Error in {} (Line {}): {}\n", tz.source(), tz.current().line_no, error);
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::parsePreprocessor
-//
+// -----------------------------------------------------------------------------
 // Parses a preprocessor directive at [tz]'s current token
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 {
-	//Log::debug(S_FMT("Preprocessor %s", CHR(tz.current().text)));
+	// log::debug(wxString::Format("Preprocessor %s", CHR(tz.current().text)));
 
 	// #define
 	if (tz.current() == "#define")
@@ -210,7 +185,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		bool test = true;
 		if (tz.current() == "#ifndef")
 			test = false;
-		string define = tz.next().text;
+		auto define = tz.next().text;
 		if (parser_->defined(define) == test)
 			return true;
 
@@ -218,7 +193,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		int skip = 0;
 		while (true)
 		{
-			auto& token = tz.next();
+			const auto& token = tz.next();
 			if (token == "#endif")
 				skip--;
 			else if (token == "#ifdef")
@@ -239,23 +214,24 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		if (archive_dir_)
 		{
 			// Get entry to include
-			auto inc_path = tz.next().text;
-			auto archive = archive_dir_->archive();
-			auto inc_entry = archive->entryAtPath(archive_dir_->getPath() + inc_path);
+			auto  inc_path  = tz.next().text;
+			auto* archive   = archive_dir_->archive();
+			auto* inc_entry = archive->entryAtPath(archive_dir_->path() + inc_path);
+			log::info("Looking for #include entry '{}' / '{}'", archive_dir_->path(), inc_path);
 			if (!inc_entry) // Try absolute path
 				inc_entry = archive->entryAtPath(inc_path);
 
-			//Log::debug(S_FMT("Include %s", CHR(inc_path)));
+			// log::debug(wxString::Format("Include %s", CHR(inc_path)));
 
 			if (inc_entry)
 			{
 				// Save the current dir and set it to the included entry's dir
-				auto orig_dir = archive_dir_;
-				archive_dir_ = inc_entry->getParentDir();
+				auto* orig_dir = archive_dir_;
+				archive_dir_   = inc_entry->parentDir();
 
 				// Parse text in the entry
 				Tokenizer inc_tz;
-				inc_tz.openMem(inc_entry->getMCData(), inc_entry->getName());
+				inc_tz.openMem(inc_entry->data(), inc_entry->name());
 				bool ok = parse(inc_tz);
 
 				// Reset dir and abort if parsing failed
@@ -264,10 +240,10 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 					return false;
 			}
 			else
-				logError(tz, S_FMT("Include entry %s not found", CHR(inc_path)));
+				logError(tz, fmt::format("Include entry {} not found", inc_path));
 		}
 		else
-			tz.adv();	// Skip include path
+			tz.adv(); // Skip include path
 	}
 
 	// #endif (ignore)
@@ -278,16 +254,14 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 
 	// Unrecognised
 	else
-		logError(tz, S_FMT("Unrecognised preprocessor directive \"%s\"", CHR(tz.current().text)));
+		logError(tz, fmt::format("Unrecognised preprocessor directive \"{}\"", tz.current().text));
 
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::parseAssignment
-//
+// -----------------------------------------------------------------------------
 // Parses an assignment operation at [tz]'s current token to [child]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 {
 	// Check type of assignment list
@@ -301,7 +275,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 	// Parse until ; or }
 	while (true)
 	{
-		auto& token = tz.current();
+		const auto& token = tz.current();
 
 		// Check for list end
 		if (token == list_end && !token.quoted_string)
@@ -311,31 +285,19 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 		Property value;
 
 		// Detect value type
-		if (token.quoted_string)	// Quoted string
+		if (token.quoted_string) // Quoted string
 			value = token.text;
-		else if (token == "true")	// Boolean (true)
+		else if (token == "true") // Boolean (true)
 			value = true;
-		else if (token == "false")	// Boolean (false)
+		else if (token == "false") // Boolean (false)
 			value = false;
-		else if (token.isInteger())	// Integer
-		{
-			long val;
-			token.text.ToLong(&val);
-			value = (int)val;
-		}
-		else if (token.isHex())  	// Hex (0xXXXXXX)
-		{
-			long val;
-			token.text.ToLong(&val, 0);
-			value = (int)val;
-		}
-		else if (token.isFloat())	// Floating point
-		{
-			double val;
-			token.text.ToDouble(&val);
-			value = val;
-		}
-		else						// Unknown, just treat as string
+		else if (token.isInteger()) // Integer
+			value = token.asInt();
+		else if (token.isHex()) // Hex (0xXXXXXX)
+			value = strutil::asInt({ token.text.data() + 2, token.text.size() - 2 }, 16);
+		else if (token.isFloat()) // Floating point
+			value = token.asFloat();
+		else // Unknown, just treat as string
 			value = token.text;
 
 		// Add value
@@ -343,13 +305,10 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 
 		// Check for ,
 		if (tz.peek() == ',')
-			tz.adv();	// Skip it
+			tz.adv(); // Skip it
 		else if (tz.peek() != list_end)
 		{
-			logError(
-				tz,
-				S_FMT("Expected \",\" or \"%c\", got \"%s\"", list_end, CHR(tz.peek().text))
-			);
+			logError(tz, fmt::format(R"(Expected "," or "{}", got "{}")", list_end, tz.peek().text));
 			return false;
 		}
 
@@ -359,9 +318,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::parse
-//
+// -----------------------------------------------------------------------------
 // Parses formatted text data. Current valid formatting is:
 // (type) child = value;
 // (type) child = value1, value2, ...;
@@ -371,7 +328,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 //
 // All values are read as strings, but can be retrieved as string, int, bool
 // or float.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool ParseTreeNode::parse(Tokenizer& tz)
 {
 	// Keep parsing until final } is reached (or end of file)
@@ -391,13 +348,13 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// If it's a special character (ie not a valid name), parsing fails
 		if (tz.isSpecialCharacter(tz.current().text[0]))
 		{
-			logError(tz, S_FMT("Unexpected special character '%s'", CHR(tz.current().text)));
+			logError(tz, fmt::format("Unexpected special character '{}'", tz.current().text));
 			return false;
 		}
 
 		// So we have either a node or property name
 		name = tz.current().text;
-		type.Empty();
+		type.clear();
 		if (name.empty())
 		{
 			logError(tz, "Unexpected empty string");
@@ -417,7 +374,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 		}
 
-		//Log::debug(S_FMT("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
+		// log::debug(wxString::Format("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
 
 		// Assignment
 		if (tz.advIfNext('=', 2))
@@ -449,7 +406,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			if (tz.checkNext('{'))
 			{
 				// Add child node
-				auto child = addChildPTN(name, type);
+				auto* child     = addChildPTN(name, type);
 				child->inherit_ = tz.current().text;
 
 				// Skip {
@@ -459,10 +416,10 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				if (!child->parse(tz))
 					return false;
 			}
-			else if (tz.checkNext(';'))	// Empty child node
+			else if (tz.checkNext(';')) // Empty child node
 			{
 				// Add child node
-				auto child = addChildPTN(name, type);
+				auto* child     = addChildPTN(name, type);
 				child->inherit_ = tz.current().text;
 
 				// Skip ;
@@ -472,7 +429,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 			else
 			{
-				logError(tz, S_FMT("Expecting \"{\" or \";\", got \"%s\"", CHR(tz.next().text)));
+				logError(tz, fmt::format(R"(Expecting "{{" or ";", got "{}")", tz.next().text));
 				return false;
 			}
 		}
@@ -480,7 +437,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// Unexpected token
 		else
 		{
-			logError(tz, S_FMT("Unexpected token \"%s\"", CHR(tz.next().text)));
+			logError(tz, fmt::format("Unexpected token \"{}\"", tz.next().text));
 			return false;
 		}
 
@@ -492,9 +449,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// ParseTreeNode::write
-//
+// -----------------------------------------------------------------------------
 // Writes this node and its children as text to [out], indented by [indent] tab
 // characters. See the Parser::parseText description below for an example of
 // the output.
@@ -504,9 +459,11 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 // String values:  always
 // Node types:     never
 // Node 'inherit': never
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ParseTreeNode::write(string& out, int indent) const
 {
+	using Type = property::ValueType;
+
 	// Indentation
 	string tabs;
 	for (int a = 0; a < indent; a++)
@@ -518,40 +475,43 @@ void ParseTreeNode::write(string& out, int indent) const
 		out += type_ + " ";
 
 	// Name
-	if (name_.Contains(" ") || name_.empty())
-		out += S_FMT("\"%s\"", CHR(name_));
+	if (strutil::contains(name_, ' ') || name_.empty())
+		out += fmt::format("\"{}\"", name_);
 	else
-		out += S_FMT("%s", CHR(name_));
+		out += fmt::format("{}", name_);
 
 	// Inherit
 	if (!inherit_.empty())
 		out += " : " + inherit_;
 
 	// Leaf node - write value(s)
-	if (children.size() == 0)
+	if (children_.empty())
 	{
 		out += " = ";
 
 		bool first = true;
-		for (auto& value : values_)
+		for (const auto& value : values_)
 		{
 			if (!first)
 				out += ", ";
 			first = false;
 
-			switch (value.getType())
+			/*switch (value.type())
 			{
-			case PROP_BOOL:
-			case PROP_FLAG:
-				out += value.getBoolValue() ? "true" : "false"; break;
-			case PROP_INT:
-				out += S_FMT("%d", value.getIntValue()); break;
-			case PROP_FLOAT:
-				out += S_FMT("%1.3f", value.getFloatValue()); break;
-			case PROP_UINT:
-				out += S_FMT("%u", value.getUnsignedValue()); break;
-			default:
-				out += S_FMT("\"%s\"", value.getStringValue()); break;
+			case Property::Type::Boolean:
+			case Property::Type::Flag: out += value.boolValue() ? "true" : "false"; break;
+			case Property::Type::Int: out += fmt::format("{}", value.intValue()); break;
+			case Property::Type::Float: out += fmt::format("{:1.3f}", value.floatValue()); break;
+			case Property::Type::UInt: out += fmt::format("{}", value.unsignedValue()); break;
+			default: out += fmt::format("\"{}\"", value.stringValue()); break;
+			}*/
+			switch (property::valueType(value))
+			{
+			case property::ValueType::Bool:
+			case property::ValueType::Int:
+			case property::ValueType::UInt: out += property::asString(value); break;
+			case property::ValueType::Float: out += fmt::format("{:1.3f}", std::get<double>(value)); break;
+			default: out += fmt::format("\"{}\"", property::asString(value)); break;
 			}
 		}
 
@@ -564,8 +524,8 @@ void ParseTreeNode::write(string& out, int indent) const
 		// Opening brace
 		out += "\n" + tabs + "{\n";
 
-		for (unsigned a = 0; a < children.size(); a++)
-			static_cast<ParseTreeNode*>(children[a])->write(out, indent + 1);
+		for (auto* node : children_)
+			dynamic_cast<ParseTreeNode*>(node)->write(out, indent + 1);
 
 		// Closing brace
 		out += tabs + "}\n";
@@ -573,35 +533,23 @@ void ParseTreeNode::write(string& out, int indent) const
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Parser Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------
-// Parser::Parser
-//
+
+// -----------------------------------------------------------------------------
 // Parser class constructor
-// ----------------------------------------------------------------------------
-Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root_ { dir_root }
+// -----------------------------------------------------------------------------
+Parser::Parser(ArchiveDir* dir_root) : archive_dir_root_{ dir_root }
 {
 	// Create parse tree root node
 	pt_root_ = std::make_unique<ParseTreeNode>(nullptr, this, archive_dir_root_);
 }
 
-// ----------------------------------------------------------------------------
-// Parser::~Parser
-//
-// Parser class destructor
-// ----------------------------------------------------------------------------
-Parser::~Parser()
-{
-}
-
-// ----------------------------------------------------------------------------
-// Parser::parseText
-//
+// -----------------------------------------------------------------------------
 // Parses the given text data to build a tree of ParseTreeNodes.
 // Example:
 // base
@@ -634,8 +582,8 @@ Parser::~Parser()
 // 			</child4>
 // 		</base>
 // 	</root>
-// ----------------------------------------------------------------------------
-bool Parser::parseText(MemChunk& mc, string source)
+// -----------------------------------------------------------------------------
+bool Parser::parseText(MemChunk& mc, string_view source) const
 {
 	Tokenizer tz;
 
@@ -643,14 +591,14 @@ bool Parser::parseText(MemChunk& mc, string source)
 	tz.setReadLowerCase(!case_sensitive_);
 	if (!tz.openMem(mc, source))
 	{
-		LOG_MESSAGE(1, "Unable to open text data for parsing");
+		log::error("Unable to open text data for parsing");
 		return false;
 	}
 
 	// Do parsing
 	return pt_root_->parse(tz);
 }
-bool Parser::parseText(const string& text, string source)
+bool Parser::parseText(string_view text, string_view source) const
 {
 	Tokenizer tz;
 
@@ -658,10 +606,30 @@ bool Parser::parseText(const string& text, string source)
 	tz.setReadLowerCase(!case_sensitive_);
 	if (!tz.openString(text, 0, 0, source))
 	{
-		LOG_MESSAGE(1, "Unable to open text data for parsing");
+		log::error("Unable to open text data for parsing");
 		return false;
 	}
 
 	// Do parsing
 	return pt_root_->parse(tz);
+}
+
+// -----------------------------------------------------------------------------
+// Adds [def] to the #defines list
+// -----------------------------------------------------------------------------
+void Parser::define(string_view def)
+{
+	defines_.emplace_back(def);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [def] has been previously #defined (case-insensitive)
+// -----------------------------------------------------------------------------
+bool Parser::defined(string_view def) const
+{
+	for (const auto& defined_str : defines_)
+		if (strutil::equalCI(defined_str, def))
+			return true;
+
+	return false;
 }

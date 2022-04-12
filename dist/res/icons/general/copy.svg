@@ -1,0 +1,16 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24">
+    <path
+        d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1z"
+        fill="#476DBD"
+        fill-opacity="0.8"
+    />
+	<path 
+        d="M8 5h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+        fill="#476DBD"
+    />
+</svg>

@@ -71,6 +71,7 @@ entry_types
 		match_ext = "dec";
 		match_extorname = 1;
 		text_language = "decorate";
+		icon = "code";
 	}
 
 	decorate_ns : text
@@ -78,6 +79,7 @@ entry_types
 		name = "Decorate";
 		section = "actors", "decorate";
 		text_language = "decorate";
+		icon = "code";
 	}
 
 	dehacked : text
@@ -105,6 +107,7 @@ entry_types
 	{
 		name = "FraggleScript";
 		match_name = "fsglobal";
+		icon = "code";
 	}
 
 	fontdefs : text
@@ -229,6 +232,7 @@ entry_types
 	{
 		name = "EDGE RTS";
 		match_name = "rscript";
+		icon = "code";
 	}
 
 	skininfo : text
@@ -252,6 +256,7 @@ entry_types
 		match_name = "scripts";
 		match_ext = "acs";
 		text_language = "acs_z";
+		icon = "code";
 	}
 
 	zsdf : text
@@ -346,6 +351,7 @@ entry_types
 		match_extorname = 1;
 		match_name = "dd_defns";
 		match_ext = "ded";
+		icon = "code";
 	}
 
 
@@ -356,6 +362,7 @@ entry_types
 		match_extorname = 1;
 		match_name = "ddf*";
 		match_ext = "ddf", "ldf";
+		icon = "code";
 	}
 
 	// Eternity text lumps
@@ -373,6 +380,7 @@ entry_types
 		match_ext = "edf";
 		match_name = "edfroot", "estrings", "eterrain", "emenus", "esndseq",
 					 "esndinfo", "efonts", "edf*";
+		icon = "code";
 	}
 	
 	emapinfo : text
@@ -407,7 +415,7 @@ entry_types
 	srb2lua : text
     	{
 		name = "Lua Script";
-		icon = "e_lua";
+		icon = "lua";
 		match_extorname = 1;
 		match_ext = "lua";
 		match_name = "lua_*";
@@ -433,6 +441,7 @@ entry_types
 	{
 		name = "OpenGL Shaders";
 		match_ext = "fp", "fs", "ps", "vp";
+		icon = "code";
 	}
 
 	compshaders // Not actually text!
@@ -463,6 +472,7 @@ entry_types
 	{
 		name = "HTML";
 		match_ext = "htm", "html";
+		icon = "code";
 	}
 
 	qrc : text
@@ -542,12 +552,14 @@ entry_types
 		name = "Source Code (C Based)";
 		match_ext = "c", "cpp", "cxx", "h", "hpp", "hxx", "java", "cs", "js";
 		text_language = "cstyle";
+		icon = "code";
 	}
 	
 	sourcecode_other : text
 	{
 		name = "Source Code (Other)";
 		match_ext = "bas", "py", "pl", "pm", "php", "pas", "p", "pp", "vb", "rb", "l", "m", "d", "e";
+		icon = "code";
 	}
 
 	tv_texdef : text
@@ -567,6 +579,7 @@ entry_types
 		name = "ZScript";
 		match_name = "zscript";
 		text_language = "zscript";
+		icon = "code";
 	}
 
 	zscript_ns : text
@@ -574,6 +587,7 @@ entry_types
 		name = "ZScript";
 		section = "zscript";
 		text_language = "zscript";
+		icon = "code";
 	}
 
 	iwadinfo : text
@@ -581,6 +595,13 @@ entry_types
 		name = "IWAD Info";
 		match_name = "iwadinfo";
 		text_language = "z_iwadinfo";
+	}
+
+	umapinfo : text
+	{
+		name = "Universal MapInfo";
+		match_name = "umapinfo";
+		text_language = "umapinfo";
 	}
 
 	txt : text

@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"name": "Source",
+			"path": "src"
+		},
+		{
+			"name": "Resources",
+			"path": "dist/res"
+		},
+		{
+			"name": "Docs",
+			"path": "docs"
+		},
+		{
+			"name": "Third Party Libraries",
+			"path": "thirdparty"
+		},
+		{
+			"name": "All Files",
+			"path": "."
+		},
+		
+	],
+	"settings": {}
+}

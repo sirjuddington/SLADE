@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -14,67 +14,65 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Game/GenLineSpecial.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
+#include "Game/GenLineSpecial.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
 
-// ----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 //
 // GenLineSpecialPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::GenLineSpecialPanel
-//
+// -----------------------------------------------------------------------------
 // GenLineSpecialPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// --- Setup layout ---
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Special Type
 	choice_type_ = new wxChoice(this, -1);
-	choice_type_->Set(WxUtils::arrayString({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
+	choice_type_->Set(wxutil::arrayString({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
 	choice_type_->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoiceTypeChanged, this);
-	sizer->Add(WxUtils::createLabelHBox(this, "Type:", choice_type_), 0, wxEXPAND | wxBOTTOM, UI::pad());
+	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type_), 0, wxEXPAND | wxBOTTOM, ui::pad());
 
-	gb_sizer_ = new wxGridBagSizer(UI::pad(), UI::pad());
+	gb_sizer_ = new wxGridBagSizer(ui::pad(), ui::pad());
 	sizer->Add(gb_sizer_, 1, wxEXPAND);
 
 	// Trigger
-	label_props_[0] = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
+	label_props_[0]  = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
 	choice_props_[0] = new wxChoice(this, -1);
-	choice_props_[0]->Set(WxUtils::arrayString({
-		"Cross (Once)",
-		"Cross (Repeatable)",
-		"Switch (Once)",
-		"Switch (Repeatable)",
-		"Shoot (Once)",
-		"Shoot (Repeatable)",
-		"Door (Once)",
-		"Door (Repeatable)"
-	}));
+	choice_props_[0]->Set(wxutil::arrayString({ "Cross (Once)",
+												"Cross (Repeatable)",
+												"Switch (Once)",
+												"Switch (Repeatable)",
+												"Shoot (Once)",
+												"Shoot (Repeatable)",
+												"Door (Once)",
+												"Door (Repeatable)" }));
 	choice_props_[0]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
 
 	// Other properties
@@ -93,11 +91,9 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	setupForType(0);
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::setupForType
-//
+// -----------------------------------------------------------------------------
 // Sets up generalised properties for special type [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GenLineSpecialPanel::setupForType(int type)
 {
 	// Clear properties
@@ -117,7 +113,7 @@ void GenLineSpecialPanel::setupForType(int type)
 		gb_sizer_->AddGrowableCol(1, 1);
 
 	// Floor
-	if (type == BoomGenLineSpecial::GS_FLOOR)
+	if (type == genlinespecial::SpecialType::Floor)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -163,7 +159,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Ceiling
-	else if (type == BoomGenLineSpecial::GS_CEILING)
+	else if (type == genlinespecial::SpecialType::Ceiling)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -209,7 +205,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Door
-	else if (type == BoomGenLineSpecial::GS_DOOR)
+	else if (type == genlinespecial::SpecialType::Door)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -241,7 +237,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Locked Door
-	else if (type == BoomGenLineSpecial::GS_LOCKED_DOOR)
+	else if (type == genlinespecial::SpecialType::LockedDoor)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -277,7 +273,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Lift
-	else if (type == BoomGenLineSpecial::GS_LIFT)
+	else if (type == genlinespecial::SpecialType::Lift)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -309,7 +305,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Stairs
-	else if (type == BoomGenLineSpecial::GS_STAIRS)
+	else if (type == genlinespecial::SpecialType::Stairs)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -344,7 +340,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Crusher
-	else if (type == BoomGenLineSpecial::GS_CRUSHER)
+	else if (type == genlinespecial::SpecialType::Crusher)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -380,11 +376,9 @@ void GenLineSpecialPanel::setupForType(int type)
 	Update();
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::setProp
-//
+// -----------------------------------------------------------------------------
 // Sets the generalised property at [index] to [value]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GenLineSpecialPanel::setProp(int prop, int value)
 {
 	if (prop < 0 || prop > 6)
@@ -393,7 +387,7 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 	choice_props_[prop]->Select(value);
 
 	// Floor
-	if (choice_type_->GetSelection() == BoomGenLineSpecial::GS_FLOOR)
+	if (choice_type_->GetSelection() == genlinespecial::SpecialType::Floor)
 	{
 		// Change
 		if (prop == 5)
@@ -423,17 +417,15 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::loadSpecial
-//
+// -----------------------------------------------------------------------------
 // Opens boom generalised line special [special], setting up controls as
 // necessary
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool GenLineSpecialPanel::loadSpecial(int special)
 {
 	// Get special info
 	int props[7];
-	int type = BoomGenLineSpecial::getLineTypeProperties(special, props);
+	int type = genlinespecial::getLineTypeProperties(special, props);
 
 	if (type >= 0)
 	{
@@ -455,49 +447,44 @@ bool GenLineSpecialPanel::loadSpecial(int special)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::getSpecial
-//
+// -----------------------------------------------------------------------------
 // Returns the currently selected special
-// ----------------------------------------------------------------------------
-int GenLineSpecialPanel::getSpecial()
+// -----------------------------------------------------------------------------
+int GenLineSpecialPanel::special() const
 {
 	int props[7];
 	for (unsigned a = 0; a < 7; a++)
 		props[a] = choice_props_[a]->GetSelection();
-	return BoomGenLineSpecial::generateSpecial(choice_type_->GetSelection(), props);
+	return genlinespecial::generateSpecial(
+		static_cast<genlinespecial::SpecialType>(choice_type_->GetSelection()), props);
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // GenLineSpecialPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::onChoiceTypeChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the special type dropdown is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GenLineSpecialPanel::onChoiceTypeChanged(wxCommandEvent& e)
 {
 	setupForType(choice_type_->GetSelection());
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::onChoicePropertyChanged
-//
+// -----------------------------------------------------------------------------
 // Called when a property dropdown is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent& e)
 {
-	int type = choice_type_->GetSelection();
-	wxChoice* choice_changed = (wxChoice*)e.GetEventObject();
+	int  type           = choice_type_->GetSelection();
+	auto choice_changed = dynamic_cast<wxChoice*>(e.GetEventObject());
 
 	// Floor
-	if (type == BoomGenLineSpecial::GS_FLOOR)
+	if (type == genlinespecial::SpecialType::Floor)
 	{
 		// Change
 		if (choice_changed == choice_props_[5])

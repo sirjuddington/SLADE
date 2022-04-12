@@ -2,88 +2,66 @@
 #pragma once
 
 #include <cmath>
-using std::min;
 using std::max;
+using std::min;
 
 // This is basically a collection of handy little structs I use a lot,
 // with some useful functions for each of them
 
-// point2_t: A 2d coordinate
-struct point2_t
+namespace slade
 {
-	int x, y;
+// 2D Vector/Point
+template<typename T> struct Vec2
+{
+	T x, y;
 
-	point2_t() { x = y = 0; }
-	point2_t(int X, int Y) { x = X; y = Y; }
+	Vec2<T>() : x{}, y{} {}
+	Vec2<T>(T X, T Y) : x{ X }, y{ Y } {}
 
-	void set(int X, int Y) { x = X; y = Y; }
-	void set(point2_t p) { x = p.x; y = p.y; }
-
-	point2_t operator+(point2_t point)
+	void set(T X, T Y)
 	{
-		return point2_t(point.x + x, point.y + y);
+		x = X;
+		y = Y;
+	}
+	void set(const Vec2<T>& v)
+	{
+		x = v.x;
+		y = v.y;
 	}
 
-	point2_t operator-(point2_t point)
-	{
-		return point2_t(x - point.x, y - point.y);
-	}
-
-	point2_t operator*(double num)
-	{
-		return point2_t((int)((double)x * num), (int)((double)y * num));
-	}
-
-	point2_t operator/(double num)
+	Vec2<T> operator+(const Vec2<T>& v) const { return { v.x + x, v.y + y }; }
+	Vec2<T> operator-(const Vec2<T>& v) const { return { x - v.x, y - v.y }; }
+	Vec2<T> operator*(T num) const { return { x * num, y * num }; }
+	Vec2<T> operator/(T num) const
 	{
 		if (num == 0)
-			return point2_t(0, 0);
-		else
-			return point2_t((int)((double)x / num), (int)((double)y / num));
+			return Vec2<T>{};
+
+		return Vec2<T>{ x / num, y / num };
+	}
+	bool     operator==(const Vec2<T>& rhs) const { return (x == rhs.x && y == rhs.y); }
+	bool     operator!=(const Vec2<T>& rhs) const { return (x != rhs.x || y != rhs.y); }
+	Vec2<T>& operator=(const Vec2<T>& rhs)
+	{
+		x = rhs.x;
+		y = rhs.y;
+		return *this;
 	}
 
-	bool operator==(point2_t rhs)
+	double magnitude() const { return std::sqrt((x * x) + (y * y)); }
+
+	Vec2<T> normalized() const
 	{
-		return (x == rhs.x && y == rhs.y);
-	}
+		auto mag = magnitude();
+		if (mag == 0)
+			return {};
 
-	bool operator!=(point2_t rhs)
-	{
-		return (x != rhs.x || y != rhs.y);
-	}
-};
-#define POINT_OUTSIDE point2_t(-1, -1)
-
-// fpoint2_t: A 2d coordinate (or vector) with floating-point precision
-struct fpoint2_t
-{
-	double x, y;
-
-	fpoint2_t() { x = y = 0.0f; }
-	fpoint2_t(double X, double Y) { x = X; y = Y; }
-	fpoint2_t(point2_t p) { x = p.x; y = p.y; }
-
-	void set(double X, double Y) { x = X; y = Y; }
-	void set(fpoint2_t p) { x = p.x; y = p.y; }
-	void set(point2_t p) { x = p.x; y = p.y; }
-
-	double magnitude()
-	{
-		return (double) sqrt((long double) (x * x + y * y));
-	}
-
-	fpoint2_t normalized()
-	{
-		double mag = magnitude();
-		if (mag == 0.0f)
-			return fpoint2_t(0.0f, 0.0f);
-		else
-			return fpoint2_t(x / mag, y / mag);
+		return { T(x / mag), T(y / mag) };
 	}
 
 	void normalize()
 	{
-		double mag = magnitude();
+		auto mag = magnitude();
 		if (mag == 0)
 		{
 			x = 0;
@@ -96,100 +74,87 @@ struct fpoint2_t
 		}
 	}
 
-	double distance_to(fpoint2_t point)
+	double distanceTo(const Vec2<T> other) const
 	{
-		double dist_x = point.x - x;
-		double dist_y = point.y - y;
+		T dist_x = other.x - x;
+		T dist_y = other.y - y;
 
-		return (double) sqrt((long double) (dist_x * dist_x + dist_y * dist_y));
+		return std::sqrt((dist_x * dist_x) + (dist_y * dist_y));
 	}
 
 	// aka "Manhattan" distance -- just the sum of the vertical and horizontal
 	// distance, and an upper bound on the true distance
-	double taxicab_distance_to(fpoint2_t point)
+	T taxicabDistanceTo(const Vec2<T>& other) const
 	{
-		double dist;
-		if (point.x < x)	dist = x - point.x;
-		else				dist = point.x - x;
-		if (point.y < y)	dist += y - point.y;
-		else				dist += point.y - y;
+		T dist;
+		if (other.x < x)
+			dist = x - other.x;
+		else
+			dist = other.x - x;
+		if (other.y < y)
+			dist += y - other.y;
+		else
+			dist += other.y - y;
 
 		return dist;
 	}
 
-	double dot(fpoint2_t vec)
-	{
-		return x*vec.x + y*vec.y;
-	}
+	T dot(const Vec2<T>& other) const { return x * other.x + y * other.y; }
 
-	double cross(fpoint2_t p2)
-	{
-		return (x*p2.y) - (y*p2.x);
-	}
-
-	fpoint2_t operator+(fpoint2_t point)
-	{
-		return fpoint2_t(point.x + x, point.y + y);
-	}
-
-	fpoint2_t operator-(fpoint2_t point)
-	{
-		return fpoint2_t(x - point.x, y - point.y);
-	}
-
-	fpoint2_t operator*(double num)
-	{
-		return fpoint2_t(x * num, y * num);
-	}
-
-	fpoint2_t operator/(double num)
-	{
-		if (num == 0.0f)
-			return fpoint2_t(0.0f, 0.0f);
-		else
-			return fpoint2_t(x / num, y / num);
-	}
-
-	bool operator==(fpoint2_t rhs)
-	{
-		return (x == rhs.x && y == rhs.y);
-	}
-	bool operator!=(fpoint2_t rhs)
-	{
-		return (x != rhs.x || y != rhs.y);
-	}
+	T cross(const Vec2<T>& other) const { return (x * other.y) - (y * other.x); }
 };
 
+typedef Vec2<int>    Vec2i;
+typedef Vec2<float>  Vec2f;
+typedef Vec2<double> Vec2d;
 
-// fpoint3_t: A 3d coordinate (or vector) with floating-point precision
-struct fpoint3_t
+template<typename T> using Point2 = Vec2<T>;
+typedef Point2<int>    Point2i;
+typedef Point2<float>  Point2f;
+typedef Point2<double> Point2d;
+
+
+// 3D Vector/Point
+template<typename T> struct Vec3
 {
-	double x, y, z;
+	T x, y, z;
 
-	fpoint3_t() { x = y = z = 0; }
-	fpoint3_t(double X, double Y, double Z) { x = X; y = Y; z = Z; }
-	fpoint3_t(fpoint2_t p, double Z = 0) { x = p.x; y = p.y; z = Z; }
+	Vec3<T>() : x{}, y{}, z{} {}
+	Vec3<T>(T x, T y, T z) : x{ x }, y{ y }, z{ z } {}
+	Vec3<T>(const Vec2<T>& p, T z = {}) : x{ p.x }, y{ p.y }, z{ z } {}
 
-	void set(double X, double Y, double Z) { x = X; y = Y; z = Z; }
-	void set(fpoint3_t p) { x = p.x; y = p.y; z = p.z; }
-
-	double magnitude()
+	void set(T x, T y, T z)
 	{
-		return (double) sqrt((long double) (x * x + y * y + z * z));
+		this->x = x;
+		this->y = y;
+		this->z = z;
+	}
+	void set(const Vec3<T>& p)
+	{
+		x = p.x;
+		y = p.y;
+		z = p.z;
 	}
 
-	double dot(fpoint3_t vec)
+	Vec3<T>& operator=(const Vec3<T>& rhs)
 	{
-		return x*vec.x + y*vec.y + z*vec.z;
+		x = rhs.x;
+		y = rhs.y;
+		z = rhs.z;
+		return *this;
 	}
 
-	fpoint3_t normalized()
+	double magnitude() const { return sqrt((x * x) + (y * y) + (z * z)); }
+
+	T dot(const Vec3<T>& vec) const { return x * vec.x + y * vec.y + z * vec.z; }
+
+	Vec3<T> normalized() const
 	{
-		double mag = magnitude();
+		auto mag = magnitude();
 		if (mag == 0)
-			return fpoint3_t(0, 0, 0);
+			return {};
 		else
-			return fpoint3_t(x / mag, y / mag, z / mag);
+			return { T(x / mag), T(y / mag), T(z / mag) };
 	}
 
 	void normalize()
@@ -205,41 +170,32 @@ struct fpoint3_t
 		}
 	}
 
-	double distance_to(fpoint3_t point)
+	double distanceTo(const Vec3<T>& point) const
 	{
-		double dist_x = point.x - x;
-		double dist_y = point.y - y;
-		double dist_z = point.z - z;
+		auto dist_x = point.x - x;
+		auto dist_y = point.y - y;
+		auto dist_z = point.z - z;
 
-		return (double) sqrt((long double) (dist_x * dist_x + dist_y * dist_y + dist_z * dist_z));
+		return sqrt((dist_x * dist_x) + (dist_y * dist_y) + (dist_z * dist_z));
 	}
 
-	fpoint3_t operator+(fpoint3_t point)
-	{
-		return fpoint3_t(point.x + x, point.y + y, point.z + z);
-	}
+	Vec3<T> operator+(const Vec3<T>& point) const { return { point.x + x, point.y + y, point.z + z }; }
 
-	fpoint3_t operator-(fpoint3_t point)
-	{
-		return fpoint3_t(x - point.x, y - point.y, z - point.z);
-	}
+	Vec3<T> operator-(const Vec3<T>& point) const { return { x - point.x, y - point.y, z - point.z }; }
 
-	fpoint3_t operator*(double num)
-	{
-		return fpoint3_t(x * num, y * num, z * num);
-	}
+	Vec3<T> operator*(T num) const { return { x * num, y * num, z * num }; }
 
-	fpoint3_t operator/(double num)
+	Vec3<T> operator/(T num) const
 	{
 		if (num == 0)
-			return fpoint3_t(0, 0, 0);
+			return {};
 		else
-			return fpoint3_t(x / num, y / num, z / num);
+			return { x / num, y / num, z / num };
 	}
 
-	fpoint3_t cross(fpoint3_t p2)
+	Vec3<T> cross(const Vec3<T>& p2) const
 	{
-		fpoint3_t cross_product;
+		Vec3<T> cross_product;
 
 		cross_product.x = ((y * p2.z) - (z * p2.y));
 		cross_product.y = ((z * p2.x) - (x * p2.z));
@@ -248,219 +204,46 @@ struct fpoint3_t
 		return cross_product;
 	}
 
-	fpoint2_t get2d()
-	{
-		return fpoint2_t(x, y);
-	}
+	Vec2<T> get2d() const { return { x, y }; }
 };
+typedef Vec3<int>    Vec3i;
+typedef Vec3<float>  Vec3f;
+typedef Vec3<double> Vec3d;
+
+template<typename T> using Point3 = Vec3<T>;
+typedef Point3<int>    Point3i;
+typedef Point3<float>  Point3f;
+typedef Point3<double> Point3d;
 
 
-// rgba_t: A 32-bit colour definition
-struct rgba_t
+// Rectangle
+template<typename T> struct Rect
 {
-	uint8_t r, g, b, a;
-	int16_t index; // -1=not indexed
-	char blend; // 0=normal, 1=additive
+	Vec2<T> tl, br;
 
 	// Constructors
-	rgba_t() { r = 0; g = 0; b = 0; a = 0; blend = -1; index = -1; }
-
-	rgba_t(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1, int16_t INDEX = -1)
+	Rect() = default;
+	Rect(const Vec2<T>& tl, const Vec2<T>& br) : tl{ tl }, br{ br } {}
+	Rect(T x1, T y1, T x2, T y2) : tl{ x1, y1 }, br{ x2, y2 } {}
+	Rect(T x, T y, T width, T height, bool center)
 	{
-		r = R;
-		g = G;
-		b = B;
-		a = A;
-		blend = BLEND;
-		index = INDEX;
-	}
-
-	// Functions
-	void set(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1, int16_t INDEX = -1)
-	{
-		r = R;
-		g = G;
-		b = B;
-		a = A;
-		blend = BLEND;
-		index = INDEX;
-	}
-
-	void set(rgba_t colour)
-	{
-		r = colour.r;
-		g = colour.g;
-		b = colour.b;
-		a = colour.a;
-		blend = colour.blend;
-		index = colour.index;
-	}
-
-	float fr() { return (float)r / 255.0f; }
-	float fg() { return (float)g / 255.0f; }
-	float fb() { return (float)b / 255.0f; }
-	float fa() { return (float)a / 255.0f; }
-
-	double dr() { return (double)r / 255.0; }
-	double dg() { return (double)g / 255.0; }
-	double db() { return (double)b / 255.0; }
-	double da() { return (double)a / 255.0; }
-
-	bool equals(rgba_t rhs, bool alpha = false, bool index = false)
-	{
-		bool col_equal = (r == rhs.r && g == rhs.g && b == rhs.b);
-
-		if (index)
-			col_equal &= (this->index == rhs.index);
-		if (alpha)
-			return col_equal && (a == rhs.a);
-		else
-			return col_equal;
-	}
-
-	// Amplify/fade colour components by given amounts
-	rgba_t amp(int R, int G, int B, int A)
-	{
-		int nr = r + R;
-		int ng = g + G;
-		int nb = b + B;
-		int na = a + A;
-
-		if (nr > 255) nr = 255;
-		if (nr < 0) nr = 0;
-		if (ng > 255) ng = 255;
-		if (ng < 0) ng = 0;
-		if (nb > 255) nb = 255;
-		if (nb < 0) nb = 0;
-		if (na > 255) na = 255;
-		if (na < 0) na = 0;
-
-		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
-	}
-
-	// Amplify/fade colour components by factors
-	rgba_t ampf(float fr, float fg, float fb, float fa)
-	{
-		int nr = (int)(r * fr);
-		int ng = (int)(g * fg);
-		int nb = (int)(b * fb);
-		int na = (int)(a * fa);
-
-		if (nr > 255) nr = 255;
-		if (nr < 0) nr = 0;
-		if (ng > 255) ng = 255;
-		if (ng < 0) ng = 0;
-		if (nb > 255) nb = 255;
-		if (nb < 0) nb = 0;
-		if (na > 255) na = 255;
-		if (na < 0) na = 0;
-
-		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
-	}
-
-	void write(uint8_t* ptr)
-	{
-		if (ptr)
+		if (center)
 		{
-			ptr[0] = r;
-			ptr[1] = g;
-			ptr[2] = b;
-			ptr[3] = a;
+			tl.set(x - (width * 0.5), y - (height * 0.5));
+			br.set(x + (width * 0.5), y + (height * 0.5));
 		}
-	}
-
-	// Returns a copy of this colour as greyscale (using 'common' component coefficients)
-	rgba_t greyscale()
-	{
-		uint8_t l = (uint8_t) round(r*0.3+g*0.59+b*0.11);
-		return rgba_t(l, l, l, a, blend);
-	}
-};
-
-// Some basic colours
-#define COL_WHITE	rgba_t(255, 255, 255, 255, 0)
-#define COL_BLACK	rgba_t(0, 0, 0, 255, 0)
-#define COL_RED		rgba_t(255, 0, 0, 255, 0)
-#define COL_GREEN	rgba_t(0, 255, 0, 255, 0)
-#define COL_BLUE	rgba_t(0, 0, 255, 255, 0)
-#define COL_YELLOW	rgba_t(255, 255, 0, 255, 0)
-#define COL_PURPLE	rgba_t(255, 0, 255, 255, 0)
-#define COL_CYAN	rgba_t(0, 255, 255, 255, 0)
-
-// Convert rgba_t to wxColor
-#define WXCOL(rgba) wxColor(rgba.r, rgba.g, rgba.b, rgba.a)
-#define COLWX(wxcol) wxcol.Red(), wxcol.Green(), wxcol.Blue()
-
-// hsl_t: Represents a colour in HSL format, generally used for calculations
-struct hsl_t
-{
-	double h, s, l;
-
-	hsl_t() { h = s = l = 0; }
-	hsl_t(double h, double s, double l)
-	{
-		this->h = h;
-		this->s = s;
-		this->l = l;
-	}
-};
-
-// lab_t: Represents a colour in CIE-L*a*b format, generally used for calculations
-struct lab_t
-{
-	double l, a, b;
-
-	lab_t() { l = a = b = 0; }
-	lab_t(double l, double a, double b)
-	{
-		this->l = l;
-		this->a = a;
-		this->b = b;
-	}
-};
-
-// rect_t: A rectangle (int points)
-struct rect_t
-{
-	point2_t tl, br;
-
-	// Constructors
-	rect_t() { tl.set(0, 0); br.set(0, 0); }
-
-	rect_t(point2_t TL, point2_t BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	rect_t(int x1, int y1, int x2, int y2)
-	{
-		tl.set(x1, y1);
-		br.set(x2, y2);
-	}
-
-	rect_t(int x, int y, int width, int height, int align)
-	{
-		// Top-left
-		if (align == 0)
+		else
 		{
 			tl.set(x, y);
 			br.set(x + width, y + height);
 		}
-
-		// Centered
-		else if (align == 1)
-		{
-			tl.set(x - (width / 2), y - (height / 2));
-			br.set(x + (width / 2), y + (height / 2));
-		}
 	}
 
 	// Functions
-	void set(point2_t TL, point2_t BR)
+	void set(const Vec2<T>& tl, const Vec2<T>& br)
 	{
-		tl.set(TL);
-		br.set(BR);
+		this->tl = tl;
+		this->br = br;
 	}
 
 	void set(int x1, int y1, int x2, int y2)
@@ -469,33 +252,37 @@ struct rect_t
 		br.set(x2, y2);
 	}
 
-	void set(rect_t rect)
+	void set(const Rect<T>& rect)
 	{
 		tl.set(rect.tl);
 		br.set(rect.br);
 	}
 
-	int x1() { return tl.x; }
-	int y1() { return tl.y; }
-	int x2() { return br.x; }
-	int y2() { return br.y; }
+	// TR/BL aliases that make more sense for line segments
+	const Vec2<T>& start() const { return tl; }
+	const Vec2<T>& end() const { return br; }
 
-	int left()	{ return min(tl.x, br.x); }
-	int top()		{ return min(tl.y, br.y); }
-	int right()	{ return max(br.x, tl.x); }
-	int bottom()	{ return max(br.y, tl.y); }
+	T x1() const { return tl.x; }
+	T y1() const { return tl.y; }
+	T x2() const { return br.x; }
+	T y2() const { return br.y; }
 
-	int width() { return br.x - tl.x; }
-	int height() { return br.y - tl.y; }
+	T left() const { return std::min<T>(tl.x, br.x); }
+	T top() const { return std::min<T>(tl.y, br.y); }
+	T right() const { return std::max<T>(br.x, tl.x); }
+	T bottom() const { return std::max<T>(br.y, tl.y); }
 
-	int awidth() { return max(br.x, tl.x) - min(tl.x, br.x); }
-	int aheight() { return max(br.y, tl.y) - min(tl.y, br.y); }
+	T width() const { return br.x - tl.x; }
+	T height() const { return br.y - tl.y; }
 
-	point2_t middle() { return point2_t(left() + (awidth() / 2), top() + (aheight() / 2)); }
+	T awidth() const { return std::max<T>(br.x, tl.x) - std::min<T>(tl.x, br.x); }
+	T aheight() const { return std::max<T>(br.y, tl.y) - std::min<T>(tl.y, br.y); }
 
-	void expand(int x, int y)
+	Vec2<T> middle() const { return { left() + T(awidth() * 0.5), top() + T(aheight() * 0.5) }; }
+
+	void expand(T x, T y)
 	{
-		if (x1() < x2())
+		if (tl.x < br.x)
 		{
 			tl.x -= x;
 			br.x += x;
@@ -506,7 +293,7 @@ struct rect_t
 			br.x -= x;
 		}
 
-		if (y1() < y2())
+		if (tl.y < br.y)
 		{
 			tl.y -= y;
 			br.y += y;
@@ -518,189 +305,46 @@ struct rect_t
 		}
 	}
 
-	double length()
+	T length() const
 	{
-		double dist_x = x2() - x1();
-		double dist_y = y2() - y1();
+		T dist_x = br.x - tl.x;
+		T dist_y = br.y - tl.y;
 
-		return (double) sqrt((long double) (dist_x * dist_x + dist_y * dist_y));
+		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool contains(point2_t point)
+	bool contains(Vec2<T> point) const
 	{
-		return (point.x >= left() && point.x <= right() &&
-				point.y >= top() && point.y <= bottom());
-	}
-};
-
-
-// frect_t: A rectangle (float points)
-struct frect_t
-{
-	fpoint2_t tl, br;
-
-	// Constructors
-	frect_t() { tl.set(0, 0); br.set(0, 0); }
-
-	frect_t(rect_t rect)
-	{
-		tl.set(rect.tl);
-		br.set(rect.br);
-	}
-
-	frect_t(fpoint2_t TL, fpoint2_t BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	frect_t(point2_t TL, point2_t BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	frect_t(double x1, double y1, double x2, double y2)
-	{
-		tl.set(x1, y1);
-		br.set(x2, y2);
-	}
-
-	frect_t(double x, double y, double width, double height, int align)
-	{
-		// Top-left
-		if (align == 0)
-		{
-			tl.set(x, y);
-			br.set(x + width, y + height);
-		}
-
-		// Centered
-		else if (align == 1)
-		{
-			tl.set(x - (width / 2), y - (height / 2));
-			br.set(x + (width / 2), y + (height / 2));
-		}
-	}
-
-	// Functions
-	void set(rect_t rect)
-	{
-		tl.set(rect.tl);
-		br.set(rect.br);
-	}
-
-	void set(fpoint2_t TL, fpoint2_t BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	void set(point2_t TL, point2_t BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	void set(double x1, double y1, double x2, double y2)
-	{
-		tl.set(x1, y1);
-		br.set(x2, y2);
-	}
-
-	void set(frect_t rect)
-	{
-		tl.set(rect.tl);
-		br.set(rect.br);
-	}
-
-	double x1() const { return tl.x; }
-	double y1() const { return tl.y; }
-	double x2() const { return br.x; }
-	double y2() const { return br.y; }
-	fpoint2_t p1() const { return tl; }
-	fpoint2_t p2() const { return br; }
-
-	double left()	const { return min(tl.x, br.x); }
-	double top()	const { return min(tl.y, br.y); }
-	double right()	const { return max(br.x, tl.x); }
-	double bottom()	const { return max(br.y, tl.y); }
-
-	double width() const { return br.x - tl.x; }
-	double height() const { return br.y - tl.y; }
-
-	double awidth() const { return max(br.x, tl.x) - min(tl.x, br.x); }
-	double aheight() const { return max(br.y, tl.y) - min(tl.y, br.y); }
-
-	fpoint2_t middle() { return fpoint2_t(left() + (awidth() / 2), top() + (aheight() / 2)); }
-
-	void expand(double x, double y)
-	{
-		if (x1() < x2())
-		{
-			tl.x -= x;
-			br.x += x;
-		}
-		else
-		{
-			tl.x += x;
-			br.x -= x;
-		}
-
-		if (y1() < y2())
-		{
-			tl.y -= y;
-			br.y += y;
-		}
-		else
-		{
-			tl.y += y;
-			br.y -= y;
-		}
-	}
-
-	double length()
-	{
-		double dist_x = x2() - x1();
-		double dist_y = y2() - y1();
-
-		return (double) sqrt((long double) (dist_x * dist_x + dist_y * dist_y));
-	}
-
-	bool contains(fpoint2_t point) const
-	{
-		return (point.x >= left() && point.x <= right() &&
-				point.y >= top() && point.y <= bottom());
+		return (point.x >= left() && point.x <= right() && point.y >= top() && point.y <= bottom());
 	}
 };
+
+typedef Rect<int>    Recti;
+typedef Rect<float>  Rectf;
+typedef Rect<double> Rectd;
+
 // Rectangle is not really any different from a 2D segment, but using it to
 // mean that can be confusing, so here's an alias.
-typedef frect_t fseg2_t;
+template<typename T> using Seg2 = Rect<T>;
+typedef Seg2<int>    Seg2i;
+typedef Seg2<double> Seg2d;
+typedef Seg2<float>  Seg2f;
 
 
-// plane_t: A 3d plane
-struct plane_t
+// Plane: A 3d plane
+struct Plane
 {
 	double a, b, c, d;
 
-	plane_t() : a(0.0), b(0.0), c(0.0), d(0.0) {}
-	plane_t(double a, double b, double c, double d) : a(a), b(b), c(c), d(d) {}
+	Plane() : a(0.0), b(0.0), c(0.0), d(0.0) {}
+	Plane(double a, double b, double c, double d) : a(a), b(b), c(c), d(d) {}
 
 	/** Construct a flat plane (perpendicular to the z axis) at the given height.
 	 */
-	static plane_t flat(float height)
-	{
-		return plane_t(0.0, 0.0, 1.0, height);
-	}
+	static Plane flat(float height) { return { 0.0, 0.0, 1.0, height }; }
 
-	bool operator==(const plane_t& rhs) const
-	{
-		return a == rhs.a && b == rhs.b && c == rhs.c && d == rhs.d;
-	}
-	bool operator!=(const plane_t& rhs) const
-	{
-		return !(*this == rhs);
-	}
+	bool operator==(const Plane& rhs) const { return a == rhs.a && b == rhs.b && c == rhs.c && d == rhs.d; }
+	bool operator!=(const Plane& rhs) const { return !(*this == rhs); }
 
 	void set(double a, double b, double c, double d)
 	{
@@ -710,41 +354,35 @@ struct plane_t
 		this->d = d;
 	}
 
-	fpoint3_t normal()
+	Vec3d normal() const
 	{
-		fpoint3_t norm(a, b, c);
+		Vec3d norm(a, b, c);
 		norm.normalize();
 		return norm;
 	}
 
 	void normalize()
 	{
-		fpoint3_t vec(a, b, c);
+		Vec3d  vec(a, b, c);
 		double mag = vec.magnitude();
-		a = a / mag;
-		b = b / mag;
-		c = c / mag;
-		d = d / mag;
+		a          = a / mag;
+		b          = b / mag;
+		c          = c / mag;
+		d          = d / mag;
 	}
 
-	double height_at(fpoint2_t point)
-	{
-		return height_at(point.x, point.y);
-	}
-	double height_at(double x, double y)
-	{
-		return ((-a * x) + (-b * y) + d) / c;
-	}
+	double heightAt(Vec2d point) const { return heightAt(point.x, point.y); }
+	double heightAt(double x, double y) const { return ((-a * x) + (-b * y) + d) / c; }
 };
 
 
-// bbox_t: A simple bounding box with related functions
-struct bbox_t
+// BBox: A simple bounding box with related functions
+struct BBox
 {
-	fpoint2_t	min;
-	fpoint2_t	max;
+	Vec2d min;
+	Vec2d max;
 
-	bbox_t() { reset(); }
+	BBox() { reset(); }
 
 	void reset()
 	{
@@ -773,155 +411,60 @@ struct bbox_t
 			max.y = y;
 	}
 
-	bool point_within(double x, double y)
+	void extend(const Vec2d& other) { extend(other.x, other.y); }
+
+	void extend(const BBox& other)
 	{
-		return (x >= min.x && x <= max.x && y >= min.y && y <= max.y);
-	}
-	bool contains(fpoint2_t point)
-	{
-		return point_within(point.x, point.y);
+		if (other.min.x < min.x)
+			min.x = other.min.x;
+		if (other.min.y < min.y)
+			min.y = other.min.y;
+
+		if (other.max.x > max.x)
+			max.x = other.max.x;
+		if (other.max.y > max.y)
+			max.y = other.max.y;
 	}
 
-	bool is_within(fpoint2_t bmin, fpoint2_t bmax)
+	bool pointWithin(double x, double y) const { return (x >= min.x && x <= max.x && y >= min.y && y <= max.y); }
+	bool contains(Vec2d point) const { return pointWithin(point.x, point.y); }
+	bool isWithin(Vec2d bmin, Vec2d bmax) const
 	{
 		return (min.x >= bmin.x && max.x <= bmax.x && min.y >= bmin.y && max.y <= bmax.y);
 	}
 
-	bool is_valid()
-	{
-		return ((max.x - min.x > 0) && (max.y - min.y) > 0);
-	}
+	bool isValid() const { return ((max.x - min.x > 0) && (max.y - min.y) > 0); }
 
-	fpoint2_t size()
-	{
-		return fpoint2_t(max.x - min.x, max.y - min.y);
-	}
+	Vec2d  size() const { return { max.x - min.x, max.y - min.y }; }
+	double width() const { return max.x - min.x; }
+	double height() const { return max.y - min.y; }
 
-	double width()
-	{
-		return max.x - min.x;
-	}
+	Vec2d  mid() const { return { midX(), midY() }; }
+	double midX() const { return min.x + ((max.x - min.x) * 0.5); }
+	double midY() const { return min.y + ((max.y - min.y) * 0.5); }
 
-	double height()
-	{
-		return max.y - min.y;
-	}
-
-	fpoint2_t mid()
-	{
-		return fpoint2_t(mid_x(), mid_y());
-	}
-
-	double mid_x()
-	{
-		return min.x + ((max.x - min.x) * 0.5);
-	}
-
-	double mid_y()
-	{
-		return min.y + ((max.y - min.y) * 0.5);
-	}
-
-	fseg2_t left_side()
-	{
-		return fseg2_t(min.x, min.y, min.x, max.y);
-	}
-
-	fseg2_t right_side()
-	{
-		return fseg2_t(max.x, min.y, max.x, max.y);
-	}
-
-	fseg2_t bottom_side()
-	{
-		return fseg2_t(min.x, max.y, max.x, max.y);
-	}
-
-	fseg2_t top_side()
-	{
-		return fseg2_t(min.x, min.y, max.x, min.y);
-	}
+	Seg2d leftSide() const { return { min.x, min.y, min.x, max.y }; }
+	Seg2d rightSide() const { return { max.x, min.y, max.x, max.y }; }
+	Seg2d bottomSide() const { return { min.x, max.y, max.x, max.y }; }
+	Seg2d topSide() const { return { min.x, min.y, max.x, min.y }; }
 };
 
-// key_value_t: Simple key-value pair (string-string)
-struct key_value_t
+// Formerly key_value_t
+typedef std::pair<string, string> StringPair;
+
+// Simple templated struct for string+value pairs
+template<typename T> struct Named
 {
-	string	key;
-	string	value;
+	string name;
+	T      value;
 
-	key_value_t(string key, string value = "")
-	{
-		this->key = key;
-		this->value = value;
-	}
+	Named(string_view name, const T& value) : name{ name }, value{ value } {}
+
+	// For sorting
+	bool operator< (const Named<T>& rhs) { return name < rhs.name; }
+	bool operator<= (const Named<T>& rhs) { return name <= rhs.name; }
+	bool operator> (const Named<T>& rhs) { return name > rhs.name; }
+	bool operator>= (const Named<T>& rhs) { return name >= rhs.name; }
 };
 
-
-// patch_header_t: The header of a Doom-format gfx image
-struct patch_header_t
-{
-	short	width;
-	short	height;
-	short	left;
-	short	top;
-};
-
-// oldpatch_header_t: The header of an alpha/beta Doom-format gfx image
-struct oldpatch_header_t
-{
-	uint8_t width;
-	uint8_t height;
-	int8_t left;
-	int8_t top;
-};
-
-// jagpic_header_t: The header of a Jaguar Doom-format gfx image
-struct jagpic_header_t
-{
-	short	width;
-	short	height;
-	short	depth;
-	short	palshift;
-	char	padding[8];
-};
-
-// psxpic_header_t: The header of a PSX Doom-format gfx image
-struct psxpic_header_t
-{
-	short	left;
-	short	top;
-	short	width;
-	short	height;
-};
-
-// rottpatch_header_t: The header of a rott-format gfx image
-struct rottpatch_header_t
-{
-	short	origsize;
-	short	width;
-	short	height;
-	short	left;
-	short	top;
-	//short	translevel; // Not all of them have that
-};
-
-// imgz_header: The header of a ZDoom imgz image
-struct imgz_header_t
-{
-	uint8_t  magic[4];
-	uint16_t width;
-	uint16_t height;
-	int16_t  left;
-	int16_t  top;
-	uint8_t  compression;
-	uint8_t  reserved[11];
-};
-
-
-// Platform-independent macros to read values from 8-bit arrays or MemChunks
-#define READ_L16(a, i) (a[i]+(a[i+1]<<8))
-#define READ_L24(a, i) (a[i]+(a[i+1]<<8)+(a[i+2]<<16))
-#define READ_L32(a, i) (a[i]+(a[i+1]<<8)+(a[i+2]<<16)+(a[i+3]<<24))
-#define READ_B16(a, i) (a[i+1]+(a[i]<<8))
-#define READ_B24(a, i) (a[i+2]+(a[i+1]<<8)+(a[i]<<16))
-#define READ_B32(a, i) (a[i+3]+(a[i+2]<<8)+(a[i+1]<<16)+(a[i]<<24))
+} // namespace slade

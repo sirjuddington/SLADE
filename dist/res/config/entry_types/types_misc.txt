@@ -17,7 +17,7 @@ entry_types
 		name = "TEXTUREx";
 		match_name = "TEXTURE1", "TEXTURE2", "TEXTURE3", "TEXTURES";
 		format = "texturex";
-		icon = "e_texturex";
+		icon = "texturex";
 		extra = textures;
 		export_ext = "lmp";
 		min_size = 4;
@@ -31,7 +31,7 @@ entry_types
 		format = pnames;
 		export_ext = "lmp";
 		min_size = 4;
-		icon = "e_pnames";
+		icon = "pnames";
 		colour = 255, 180, 0;
 		editor = data;
 	}
@@ -41,7 +41,7 @@ entry_types
 	{
 		name = "Not PNames";
 		match_name = "M_FNAMES", "M_PNAMES", "FLATNAME";
-		icon = "e_pnames";
+		icon = "pnames";
 		export_ext = "lmp";
 		editor = data;
 	}
@@ -52,7 +52,7 @@ entry_types
 		name = "General MIDI set";
 		match_name = "genmidi";
 		export_ext = "lmp";
-		icon = "e_data";
+		icon = "data";
 		size = 11908;
 		editor = data;
 	}
@@ -62,14 +62,14 @@ entry_types
 		name = "Sound curve";
 		match_name = "sndcurve";
 		export_ext = "lmp";
-		icon = "e_data";
+		icon = "data";
 	}
 
 	rominfo
 	{
 		name = "ROM Information";
 		match_name = "rominfo";
-		icon = "e_data";
+		icon = "data";
 	}
 
 	palette
@@ -82,7 +82,7 @@ entry_types
 		editor = palette;
 		match_name = "*pal*", "shadowpage+1";
 		export_ext = "pal";
-		icon = "e_palette";
+		icon = "palette";
 		colour = 255, 180, 0;
 	}
 
@@ -97,7 +97,7 @@ entry_types
 		extra = image;
 		export_ext = "cmp";
 		category = "Data";
-		icon = "e_colormap";
+		icon = "colormap";
 		colour = 255, 180, 0;
 	}
 
@@ -109,7 +109,7 @@ entry_types
 		extra = image;
 		export_ext = "lmp";
 		category = "Data";
-		icon = "e_palette";
+		icon = "palette";
 	}
 
 	ansi
@@ -119,7 +119,7 @@ entry_types
 		size = 4000;
 		match_name = "endoom", "endtext", "endstrf", "loading", "endboom", "doomerr", "duke3d";
 		export_ext = "bin";
-		icon = "e_gfx";
+		icon = "gfx";
 		editor = ansi;
 		colour = 255, 180, 0;
 	}
@@ -131,7 +131,7 @@ entry_types
 		match_name = "animated";
 		editor = data;
 		export_ext = "lmp";
-		icon = "e_animated";
+		icon = "animated";
 	}
 
 	switches
@@ -141,14 +141,14 @@ entry_types
 		match_name = "switches";
 		editor = data;
 		export_ext = "lmp";
-		icon = "e_switches";
+		icon = "switches";
 	}
 
 	misc_rle0
 	{
 		name = "RLE0-encoded entry";
 		format = misc_rle0;
-		icon = "e_data";
+		icon = "data";
 	}
 
 	// Compiled ACS that's not BEHAVIOR
@@ -156,7 +156,7 @@ entry_types
 	{
 		name = "Compiled ACS (Hexen)";
 		format = "acs0";
-		icon = "e_map_data";
+		icon = "map_data";
 		export_ext = "lmp";
 		category = "Maps";
 	}
@@ -165,7 +165,7 @@ entry_types
 	{
 		name = "Compiled ACS (ZDoom)";
 		format = "acsl";
-		icon = "e_map_data";
+		icon = "map_data";
 		export_ext = "lmp";
 		category = "Maps";
 	}
@@ -174,7 +174,7 @@ entry_types
 	{
 		name = "Compiled ACS (Enhanced)";
 		format = "acse";
-		icon = "e_map_data";
+		icon = "map_data";
 		export_ext = "lmp";
 		category = "Maps";
 	}
@@ -186,7 +186,7 @@ entry_types
 		name = "Raw Data";
 		match_ext = "raw";
 		export_ext = "raw";
-		icon = "e_data";
+		icon = "data";
 		reliability = 1;	// Detect anything else over this
 	}
 
@@ -195,14 +195,14 @@ entry_types
 		name = "DN3D Lookup Tables";
 		match_name = "tables";
 		match_size = 8448;
-		icon = "e_data";
+		icon = "data";
 	}
 
 	// misc SRB2
 	sonic_fade
 	{
 		name = "Fading Mask";
-		icon = "e_fademask";
+		icon = "gfx";
 		section = "fa";
 		format = img_raw;
 		image_format = "raw_flat";

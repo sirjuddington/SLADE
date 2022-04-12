@@ -1,84 +1,61 @@
+#pragma once
 
-#ifndef __GLTEXTURE_H__
-#define	__GLTEXTURE_H__
+#include "Utility/Colour.h"
 
-struct gl_tex_t
+namespace slade
 {
-	unsigned	id;
-	uint32_t	width;
-	uint32_t	height;
-};
-
 class SImage;
 class Palette;
 
-class GLTexture
+namespace gl
 {
-private:
-	uint32_t			width;
-	uint32_t			height;
-	vector<gl_tex_t>	tex;
-	int					filter;
-	bool				loaded;
-	bool				allow_split;
-	bool				tiling;
-	double				scale_x;
-	double				scale_y;
-	bool 				world_panning;
-
-	// Some generic/global textures
-	static GLTexture	tex_background;	// Checkerboard background texture
-	static GLTexture	tex_missing;	// Checkerboard 'missing' texture
-
-	// Stuff used internally
-	bool	loadData(const uint8_t* data, uint32_t width, uint32_t height, bool add = false);
-	bool	loadImagePortion(SImage* image, rect_t rect, Palette* pal = nullptr, bool add = false);
-
-public:
-	enum
+	enum class TexFilter
 	{
-	    // Filter types
-	    NEAREST,
-	    LINEAR,
-	    MIPMAP,
-	    LINEAR_MIPMAP,	// (same as MIPMAP)
-	    NEAREST_LINEAR_MIN,
-	    NEAREST_MIPMAP,
+		// Filter types
+		Nearest,
+		Linear,
+		Mipmap,
+		LinearMipmap, // (same as Mipmap)
+		NearestLinearMin,
+		NearestMipmap,
 	};
 
-	GLTexture(bool allow_split = true);
-	~GLTexture();
+	struct Texture
+	{
+		unsigned  id     = 0;
+		Vec2i     size   = { 0, 0 };
+		TexFilter filter = TexFilter::Nearest;
+		bool      tiling = true;
 
-	bool		isLoaded() { return loaded; }
-	uint32_t	getWidth() { return width; }
-	uint32_t	getHeight() { return height; }
-	int			getFilter() { return filter; }
-	double		getScaleX() { return scale_x; }
-	double		getScaleY() { return scale_y; }
-	bool		isTiling() { return tiling; }
-	unsigned	glId() { if (!tex.empty()) return tex[0].id; else return 0; }
-	bool		worldPanning() { return world_panning; }
+		static bool isCreated(unsigned id); // const { return id > 0; }
+		static bool isLoaded(unsigned id);  // const { return id > 0 && size.x > 0 && size.y > 0; }
 
-	void		setWorldPanning(bool wp) { world_panning = wp; }
-	void		setFilter(int filter) { this->filter = filter; }
-	void		setTiling(bool tiling) { this->tiling = tiling; }
-	void		setScale(double sx, double sy) { this->scale_x = sx; this->scale_y = sy; }
+		static const Texture& info(unsigned id);
+		static ColRGBA        averageColour(unsigned id, Recti area);
+		static void           bind(unsigned id, bool force = true);
 
-	bool	loadImage(SImage* image, Palette* pal = nullptr);
-	bool	loadRawData(const uint8_t* data, uint32_t width, uint32_t height);
+		static unsigned missingTexture();
+		static unsigned backgroundTexture();
+		static void     resetBackgroundTexture();
 
-	bool	clear();
-	bool	genChequeredTexture(uint8_t block_size, rgba_t col1, rgba_t col2);
+		static unsigned create(TexFilter filter = TexFilter::Nearest, bool tiling = true);
+		static unsigned createFromData(
+			const uint8_t* data,
+			unsigned       width,
+			unsigned       height,
+			TexFilter      filter = TexFilter::Nearest,
+			bool           tiling = true);
+		static unsigned createFromImage(
+			const SImage& image,
+			Palette*      pal    = nullptr,
+			TexFilter     filter = TexFilter::Nearest,
+			bool          tiling = true);
+		static bool loadData(unsigned id, const uint8_t* data, unsigned width, unsigned height);
+		static bool loadImage(unsigned id, const SImage& image, Palette* pal = nullptr);
+		static bool genChequeredTexture(unsigned id, uint8_t block_size, ColRGBA col1, ColRGBA col2);
+		static void clear(unsigned id);
+		static void clearAll();
+	};
 
-	bool	bind();
-	bool	draw2d(double x = 0, double y = 0, bool flipx = false, bool flipy = false);
-	bool	draw2dTiled(uint32_t width, uint32_t height);
-
-	rgba_t	averageColour(rect_t area);
-
-	static GLTexture&	bgTex();
-	static GLTexture&	missingTex();
-	static void			resetBgTex();
-};
-
-#endif//__GLTEXTURE_H__
+} // namespace gl
+} // namespace slade

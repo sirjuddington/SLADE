@@ -1,34 +1,44 @@
-
-#ifndef __MATHSTUFF_H__
-#define __MATHSTUFF_H__
+#pragma once
 
 #include "Structs.h"
 
-#define PI	3.1415926535897932384
-
-namespace MathStuff
+namespace slade::math
 {
-	double		clamp(double val, double min, double max);
-	int			floor(double val);
-	int			ceil(double val);
-	int			round(double val);
-	double		distance(fpoint2_t p1, fpoint2_t p2);
-	double		distance3d(fpoint3_t p1, fpoint3_t p2);
-	double		lineSide(fpoint2_t point, fseg2_t line);
-	fpoint2_t	closestPointOnLine(fpoint2_t point, fseg2_t line);
-	double		distanceToLine(fpoint2_t point, fseg2_t line);
-	double		distanceToLineFast(fpoint2_t point, fseg2_t line);
-	bool		linesIntersect(fseg2_t line1, fseg2_t line2, fpoint2_t& out);
-	double		distanceRayLine(fpoint2_t ray_origin, fpoint2_t ray_dir, fpoint2_t seg1, fpoint2_t seg2);
-	double		angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3);
-	fpoint2_t	rotatePoint(fpoint2_t origin, fpoint2_t point, double angle);
-	fpoint3_t	rotateVector3D(fpoint3_t vector, fpoint3_t axis, double angle);
-	double		degToRad(double angle);
-	double		radToDeg(double angle);
-	fpoint2_t	vectorAngle(double angle_rad);
-	double		distanceRayPlane(fpoint3_t ray_origin, fpoint3_t ray_dir, plane_t plane);
-	bool		boxLineIntersect(frect_t box, fseg2_t line);
-	plane_t		planeFromTriangle(fpoint3_t p1, fpoint3_t p2, fpoint3_t p3);
+constexpr double PI = 3.1415926535897932384;
+
+double clamp(double val, double min, double max);
+int    floor(double val);
+int    ceil(double val);
+int    round(double val);
+double distance(Vec2d p1, Vec2d p2);
+double distance3d(Vec3d p1, Vec3d p2);
+double lineSide(Vec2d point, Seg2d line);
+Vec2d  closestPointOnLine(Vec2d point, Seg2d line);
+double distanceToLine(Vec2d point, Seg2d line);
+double distanceToLineFast(Vec2d point, Seg2d line);
+bool   linesIntersect(Seg2d line1, Seg2d line2, Vec2d& out);
+double distanceRayLine(Vec2d ray_origin, Vec2d ray_dir, Vec2d seg1, Vec2d seg2);
+double angle2DRad(Vec2d p1, Vec2d p2, Vec2d p3);
+Vec2d  rotatePoint(Vec2d origin, Vec2d point, double angle);
+Vec3d  rotateVector3D(Vec3d vector, Vec3d axis, double angle);
+double degToRad(double angle);
+double radToDeg(double angle);
+Vec2d  vectorAngle(double angle_rad);
+double distanceRayPlane(Vec3d ray_origin, Vec3d ray_dir, Plane plane);
+bool   boxLineIntersect(Rectf box, Seg2d line);
+Plane  planeFromTriangle(Vec3d p1, Vec3d p2, Vec3d p3);
+
+template<typename T> T scale(T value, double scale)
+{
+	return static_cast<T>(static_cast<double>(value) * scale);
 }
 
-#endif//__MATHSTUFF_H__
+template<typename T> T scaleInverse(T value, double scale)
+{
+	if (scale != 0.0)
+		return static_cast<T>(static_cast<double>(value) / scale);
+
+	return 0.0;
+}
+
+} // namespace slade::math

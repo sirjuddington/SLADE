@@ -1,71 +1,74 @@
-
-#ifndef __TEXTUREXLIST_H__
-#define __TEXTUREXLIST_H__
+#pragma once
 
 #include "Archive/ArchiveEntry.h"
 #include "CTexture.h"
 #include "PatchTable.h"
 
-// Enum for different texturex formats
-enum TextureXFormat
+namespace slade
 {
-	TXF_NORMAL,
-	TXF_STRIFE11,
-	TXF_NAMELESS,
-	TXF_TEXTURES,
-	TXF_JAGUAR,
-};
-
-// Texture flags
-#define TX_WORLDPANNING	0x8000
-
-// TEXTUREx texture patch
-struct tx_patch_t
-{
-	int16_t		left;
-	int16_t		top;
-	uint16_t	patch;
-};
-
 class TextureXList
 {
-private:
-	vector<CTexture*>	textures;
-	uint8_t				txformat;
-	CTexture			tex_invalid;
-
 public:
-	TextureXList();
-	~TextureXList();
+	// TEXTUREx texture patch
+	struct Patch
+	{
+		int16_t  left;
+		int16_t  top;
+		uint16_t patch;
+	};
 
-	uint32_t	nTextures() { return textures.size(); }
+	// Enum for different texturex formats
+	enum class Format
+	{
+		Normal,
+		Strife11,
+		Nameless,
+		Textures,
+		Jaguar,
+	};
 
-	CTexture*	getTexture(size_t index);
-	CTexture*	getTexture(string name);
-	uint8_t		getFormat() { return txformat; }
-	int			textureIndex(string name);
+	enum Flags
+	{
+		WorldPanning = 0x8000
+	};
 
-	void	setFormat(uint8_t format) { txformat = format; }
+	TextureXList() = default;
+	TextureXList(Format format) : txformat_{ format } {}
+	~TextureXList() = default;
 
-	void		addTexture(CTexture* tex, int position = -1);
-	CTexture*	removeTexture(unsigned index, bool delete_texture = true);
-	void		swapTextures(unsigned index1, unsigned index2);
-	CTexture*	replaceTexture(unsigned index, CTexture* replacement);
+	const vector<unique_ptr<CTexture>>& textures() const { return textures_; }
+	uint32_t                            size() const { return textures_.size(); }
 
-	void	clear(bool clear_patches = false);
-	void	removePatch(string patch);
+	CTexture* texture(size_t index);
+	CTexture* texture(string_view name);
+	Format    format() const { return txformat_; }
+	string    textureXFormatString() const;
+	int       textureIndex(string_view name) const;
 
-	bool	readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table, bool add = false);
-	bool	writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table);
+	void setFormat(Format format) { txformat_ = format; }
 
-	bool	readTEXTURESData(ArchiveEntry* textures);
-	bool	writeTEXTURESData(ArchiveEntry* textures);
+	void                 addTexture(unique_ptr<CTexture> tex, int position = -1);
+	unique_ptr<CTexture> removeTexture(unsigned index);
+	void                 swapTextures(unsigned index1, unsigned index2);
+	unique_ptr<CTexture> replaceTexture(unsigned index, unique_ptr<CTexture> replacement);
 
-	bool	convertToTEXTURES();
+	void clear(bool clear_patches = false);
+	void removePatch(string_view patch) const;
 
-	bool	findErrors();
+	bool readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table, bool add = false);
+	bool writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table) const;
 
-	string	getTextureXFormatString();
+	bool readTEXTURESData(ArchiveEntry* textures);
+	bool writeTEXTURESData(ArchiveEntry* textures) const;
+
+	bool convertToTEXTURES();
+	bool findErrors() const;
+	bool removeDupesFoundIn(TextureXList& texture_list);
+	bool cleanTEXTURESsinglePatch(Archive* current_archive);
+
+private:
+	vector<unique_ptr<CTexture>> textures_;
+	Format                       txformat_ = Format::Normal;
+	CTexture tex_invalid_{ static_cast<string_view>("INVALID_TEXTURE") }; // Deliberately set the invalid name to >8 characters
 };
-
-#endif//__TEXTUREXLIST_H__
+} // namespace slade

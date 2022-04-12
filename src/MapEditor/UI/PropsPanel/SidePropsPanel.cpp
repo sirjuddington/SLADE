@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -21,108 +21,105 @@
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "SidePropsPanel.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
-#include "SidePropsPanel.h"
+#include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SideTexCanvas Class Functions
 //
 // A simple opengl canvas to display a texture
 // (will have more advanced functionality later)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SideTexCanvas::SideTexCanvas
-//
+// -----------------------------------------------------------------------------
 // SideTexCanvas class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 SideTexCanvas::SideTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-	SetInitialSize(WxUtils::scaledSize(136, 136));
+	SetInitialSize(wxutil::scaledSize(136, 136));
 }
 
-// ----------------------------------------------------------------------------
-// SideTexCanvas::setTexture
-//
+// -----------------------------------------------------------------------------
 // Sets the texture to display
-// ----------------------------------------------------------------------------
-void SideTexCanvas::setTexture(string tex)
+// -----------------------------------------------------------------------------
+void SideTexCanvas::setTexture(const wxString& tex)
 {
 	texname_ = tex;
-	if (tex == "-" || tex == "")
-		texture_ = nullptr;
+	if (tex.empty() || tex == "-")
+		texture_ = 0;
 	else
-		texture_ = MapEditor::textureManager().getTexture(
-			tex,
-			Game::configuration().featureSupported(Game::Feature::MixTexFlats)
-		);
+		texture_ = mapeditor::textureManager()
+					   .texture(tex.ToStdString(), game::configuration().featureSupported(game::Feature::MixTexFlats))
+					   .gl_id;
 
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// SideTexCanvas::draw
-//
+// -----------------------------------------------------------------------------
 // Draws the canvas content
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SideTexCanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, size.x, size.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	// Clear
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw background
 	drawCheckeredBackground();
 
 	// Draw texture
-	if (texture_ && texture_ != &(GLTexture::missingTex()))
+	if (texture_ && texture_ != gl::Texture::missingTexture())
 	{
 		glEnable(GL_TEXTURE_2D);
-		Drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0);
+		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0);
 	}
-	else if (texture_ == &(GLTexture::missingTex()))
+	else if (texture_ == gl::Texture::missingTexture())
 	{
 		// Draw unknown icon
-		GLTexture* tex = MapEditor::textureManager().getEditorImage("thing/unknown");
+		auto tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(180, 0, 0);
-		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
+		gl::setColour(180, 0, 0);
+		drawing::drawTextureWithin(tex, 0, 0, size.x, size.y, 0, 0.25);
 	}
 
 	// Swap buffers (ie show what was drawn)
@@ -130,23 +127,21 @@ void SideTexCanvas::draw()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // TextureComboBox Class Functions
 //
 // A custom combo box that will show a list of textures matching the current
 // text in the control (eg. 'BIG' will list all textures beginning with BIG).
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureComboBox::TextureComboBox
-//
+// -----------------------------------------------------------------------------
 // TextureComboBox class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextureComboBox::TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 {
 	// Init
-	SetInitialSize(WxUtils::scaledSize(136, -1));
+	SetInitialSize(wxutil::scaledSize(136, -1));
 	wxArrayString list;
 	list.Add("-");
 
@@ -159,64 +154,58 @@ TextureComboBox::TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureComboBox Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureComboBox::onDropDown
-//
+// -----------------------------------------------------------------------------
 // Called when the dropdown list is expanded
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureComboBox::onDropDown(wxCommandEvent& e)
 {
 	// Get current value
-	string text = GetValue().Upper();
+	wxString text = GetValue().Upper();
 	if (text == "-")
 		text = "";
 
 	// Populate dropdown with matching texture names
-	vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllTexturesInfo();
+	auto&         textures = mapeditor::textureManager().allTexturesInfo();
 	wxArrayString list;
 	list.Add("-");
-	for (unsigned a = 0; a < textures.size(); a++)
+	for (auto& texture : textures)
 	{
-		if (textures[a].shortName.StartsWith(text))
+		if (strutil::startsWith(texture.short_name, text.ToStdString()))
 		{
-			list.Add(textures[a].shortName);
+			list.Add(texture.short_name);
 		}
-		if (Game::configuration().featureSupported(Game::Feature::LongNames))
+		if (game::configuration().featureSupported(game::Feature::LongNames))
 		{
-			if (textures[a].longName.StartsWith(text))
+			if (strutil::startsWith(texture.long_name, text.ToStdString()))
 			{
-				list.Add(textures[a].longName);
+				list.Add(texture.long_name);
 			}
 		}
 	}
-	Set(list);	// Why does this clear the text box also?
+	Set(list); // Why does this clear the text box also?
 	SetValue(text);
 
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// TextureComboBox::onCloseUp
-//
+// -----------------------------------------------------------------------------
 // Called when the dropdown list is closed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureComboBox::onCloseUp(wxCommandEvent& e)
 {
 	list_down_ = false;
 }
 
-// ----------------------------------------------------------------------------
-// TextureComboBox::onKeyDown
-//
+// -----------------------------------------------------------------------------
 // Called when a key is pressed within the control
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureComboBox::onKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_DOWN && !list_down_)
@@ -229,49 +218,47 @@ void TextureComboBox::onKeyDown(wxKeyEvent& e)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SidePropsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SidePropsPanel::SidePropsPanel
-//
+// -----------------------------------------------------------------------------
 // SidePropsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	wxBoxSizer* vbox;
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// --- Textures ---
-	wxStaticBoxSizer* sizer_tex = new wxStaticBoxSizer(wxVERTICAL, this, "Textures");
+	auto sizer_tex = new wxStaticBoxSizer(wxVERTICAL, this, "Textures");
 	sizer->Add(sizer_tex, 0, wxEXPAND);
 
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	sizer_tex->Add(gb_sizer, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sizer_tex->Add(gb_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Upper
-	auto pad_min = UI::px(UI::Size::PadMinimum);
+	auto pad_min = ui::px(ui::Size::PadMinimum);
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Upper:"), 0, wxALIGN_CENTER|wxBOTTOM, pad_min);
+	vbox->Add(new wxStaticText(this, -1, "Upper:"), 0, wxALIGN_CENTER | wxBOTTOM, pad_min);
 	vbox->Add(gfx_upper_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_upper_ = new TextureComboBox(this), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Middle
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 1 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Middle:"), 0, wxALIGN_CENTER|wxBOTTOM, pad_min);
+	vbox->Add(new wxStaticText(this, -1, "Middle:"), 0, wxALIGN_CENTER | wxBOTTOM, pad_min);
 	vbox->Add(gfx_middle_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_middle_ = new TextureComboBox(this), { 1, 1 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Lower
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Lower:"), 0, wxALIGN_CENTER|wxBOTTOM, pad_min);
+	vbox->Add(new wxStaticText(this, -1, "Lower:"), 0, wxALIGN_CENTER | wxBOTTOM, pad_min);
 	vbox->Add(gfx_lower_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_lower_ = new TextureComboBox(this), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER);
 
@@ -282,18 +269,15 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 
 	// --- Offsets ---
-	auto layout_offsets = WxUtils::layoutVertically(
-		vector<wxObject*>{
-			WxUtils::createLabelHBox(this, "X Offset:", text_offsetx_ = new NumberTextCtrl(this)),
-			WxUtils::createLabelHBox(this, "Y Offset:", text_offsety_ = new NumberTextCtrl(this))
-		}
-	);
-	sizer->Add(layout_offsets, 0, wxEXPAND | wxTOP, UI::pad());
+	auto layout_offsets = wxutil::layoutVertically(
+		vector<wxObject*>{ wxutil::createLabelHBox(this, "X Offset:", text_offsetx_ = new NumberTextCtrl(this)),
+						   wxutil::createLabelHBox(this, "Y Offset:", text_offsety_ = new NumberTextCtrl(this)) });
+	sizer->Add(layout_offsets, 0, wxEXPAND | wxTOP, ui::pad());
 
 	// Bind events
 	tcb_upper_->Bind(wxEVT_TEXT, &SidePropsPanel::onTextureChanged, this);
 	tcb_middle_->Bind(wxEVT_TEXT, &SidePropsPanel::onTextureChanged, this);
-	tcb_lower_ ->Bind(wxEVT_TEXT, &SidePropsPanel::onTextureChanged, this);
+	tcb_lower_->Bind(wxEVT_TEXT, &SidePropsPanel::onTextureChanged, this);
 	gfx_upper_->Bind(wxEVT_LEFT_DOWN, &SidePropsPanel::onTextureClicked, this);
 	gfx_middle_->Bind(wxEVT_LEFT_DOWN, &SidePropsPanel::onTextureClicked, this);
 	gfx_lower_->Bind(wxEVT_LEFT_DOWN, &SidePropsPanel::onTextureClicked, this);
@@ -304,12 +288,10 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 #endif
 }
 
-// ----------------------------------------------------------------------------
-// SidePropsPanel::openSides
-//
+// -----------------------------------------------------------------------------
 // Loads textures and offsets from [sides]
-// ----------------------------------------------------------------------------
-void SidePropsPanel::openSides(vector<MapSide*>& sides)
+// -----------------------------------------------------------------------------
+void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 {
 	if (sides.empty())
 		return;
@@ -317,10 +299,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 	// --- Textures ---
 
 	// Upper
-	string tex_upper = sides[0]->getTexUpper();
+	wxString tex_upper = sides[0]->texUpper();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getTexUpper() != tex_upper)
+		if (sides[a]->texUpper() != tex_upper)
 		{
 			tex_upper = "";
 			break;
@@ -330,10 +312,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 	tcb_upper_->SetValue(tex_upper);
 
 	// Middle
-	string tex_middle = sides[0]->getTexMiddle();
+	wxString tex_middle = sides[0]->texMiddle();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getTexMiddle() != tex_middle)
+		if (sides[a]->texMiddle() != tex_middle)
 		{
 			tex_middle = "";
 			break;
@@ -343,10 +325,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 	tcb_middle_->SetValue(tex_middle);
 
 	// Lower
-	string tex_lower = sides[0]->getTexLower();
+	wxString tex_lower = sides[0]->texLower();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getTexLower() != tex_lower)
+		if (sides[a]->texLower() != tex_lower)
 		{
 			tex_lower = "";
 			break;
@@ -360,82 +342,78 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 
 	// X
 	bool multi = false;
-	int ofs = sides[0]->getOffsetX();
+	int  ofs   = sides[0]->texOffsetX();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getOffsetX() != ofs)
+		if (sides[a]->texOffsetX() != ofs)
 		{
 			multi = true;
 			break;
 		}
 	}
 	if (!multi)
-		text_offsetx_->SetValue(S_FMT("%d", ofs));
+		text_offsetx_->SetValue(wxString::Format("%d", ofs));
 
 	// Y
 	multi = false;
-	ofs = sides[0]->getOffsetY();
+	ofs   = sides[0]->texOffsetY();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getOffsetY() != ofs)
+		if (sides[a]->texOffsetY() != ofs)
 		{
 			multi = true;
 			break;
 		}
 	}
 	if (!multi)
-		text_offsety_->SetValue(S_FMT("%d", ofs));
+		text_offsety_->SetValue(wxString::Format("%d", ofs));
 }
 
-// ----------------------------------------------------------------------------
-// SidePropsPanel::applyTo
-//
+// -----------------------------------------------------------------------------
 // Applies current values to [sides]
-// ----------------------------------------------------------------------------
-void SidePropsPanel::applyTo(vector<MapSide*>& sides)
+// -----------------------------------------------------------------------------
+void SidePropsPanel::applyTo(vector<MapSide*>& sides) const
 {
 	// Get values
-	string tex_upper = tcb_upper_->GetValue();
-	string tex_middle = tcb_middle_->GetValue();
-	string tex_lower = tcb_lower_->GetValue();
+	auto tex_upper  = tcb_upper_->GetValue().ToStdString();
+	auto tex_middle = tcb_middle_->GetValue().ToStdString();
+	auto tex_lower  = tcb_lower_->GetValue().ToStdString();
 
-	for (unsigned a = 0; a < sides.size(); a++)
+	for (auto& side : sides)
 	{
 		// Upper Texture
-		if (!tex_upper.IsEmpty())
-			sides[a]->setStringProperty("texturetop", tex_upper);
+		if (!tex_upper.empty())
+			side->setTexUpper(tex_upper);
 
 		// Middle Texture
-		if (!tex_middle.IsEmpty())
-			sides[a]->setStringProperty("texturemiddle", tex_middle);
+		if (!tex_middle.empty())
+			side->setTexMiddle(tex_middle);
 
 		// Lower Texture
-		if (!tex_lower.IsEmpty())
-			sides[a]->setStringProperty("texturebottom", tex_lower);
+		if (!tex_lower.empty())
+			side->setTexLower(tex_lower);
 
 		// X Offset
 		if (!text_offsetx_->GetValue().IsEmpty())
-			sides[a]->setIntProperty("offsetx", text_offsetx_->getNumber(sides[a]->getOffsetX()));
+			side->setTexOffsetX(text_offsetx_->number(side->texOffsetX()));
 
 		// Y Offset
 		if (!text_offsety_->GetValue().IsEmpty())
-			sides[a]->setIntProperty("offsety", text_offsety_->getNumber(sides[a]->getOffsetY()));
+			side->setTexOffsetY(text_offsety_->number(side->texOffsetY()));
 	}
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SidePropsPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SidePropsPanel::onTextureChanged
-//
+// -----------------------------------------------------------------------------
 // Called when a texture name is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SidePropsPanel::onTextureChanged(wxCommandEvent& e)
 {
 	// Upper
@@ -453,15 +431,13 @@ void SidePropsPanel::onTextureChanged(wxCommandEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// SidePropsPanel::onTextureClicked
-//
+// -----------------------------------------------------------------------------
 // Called when a texture canvas is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SidePropsPanel::onTextureClicked(wxMouseEvent& e)
 {
 	// Get canvas
-	SideTexCanvas* stc = nullptr;
+	SideTexCanvas*   stc = nullptr;
 	TextureComboBox* tcb = nullptr;
 	if (e.GetEventObject() == gfx_upper_)
 	{
@@ -486,7 +462,7 @@ void SidePropsPanel::onTextureClicked(wxMouseEvent& e)
 	}
 
 	// Browse
-	MapTextureBrowser browser(this, 0, stc->texName(), &(MapEditor::editContext().map()));
-	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
-		tcb->SetValue(browser.getSelectedItem()->name());
+	MapTextureBrowser browser(this, mapeditor::TextureType::Texture, stc->texName(), &(mapeditor::editContext().map()));
+	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
+		tcb->SetValue(browser.selectedItem()->name());
 }

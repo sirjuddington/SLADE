@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2022 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -21,111 +21,108 @@
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "SectorPropsPanel.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapObject.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
 #include "OpenGL/Drawing.h"
-#include "SectorPropsPanel.h"
+#include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // FlatTexCanvas Class Functions
 //
 // A simple opengl canvas to display a texture
 // (will have more advanced functionality later)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// FlatTexCanvas::FlatTexCanvas
-//
+// -----------------------------------------------------------------------------
 // FlatTexCanvas class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
 	// Init variables
-	SetWindowStyleFlag(wxBORDER_SIMPLE);
-	SetInitialSize(WxUtils::scaledSize(136, 136));
+	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
+	SetInitialSize(wxutil::scaledSize(136, 136));
 }
 
-// ----------------------------------------------------------------------------
-// FlatTexCanvas::setTexture
-//
+// -----------------------------------------------------------------------------
 // Sets the texture to display
-// ----------------------------------------------------------------------------
-void FlatTexCanvas::setTexture(string tex)
+// -----------------------------------------------------------------------------
+void FlatTexCanvas::setTexture(const wxString& tex)
 {
 	texname_ = tex;
-	if (tex == "-" || tex == "")
-		texture_ = nullptr;
+	if (tex.empty() || tex == "-")
+		texture_ = 0;
 	else
-		texture_ = MapEditor::textureManager().getFlat(
-			tex,
-			Game::configuration().featureSupported(Game::Feature::MixTexFlats)
-		);
+		texture_ = mapeditor::textureManager()
+					   .flat(tex.ToStdString(), game::configuration().featureSupported(game::Feature::MixTexFlats))
+					   .gl_id;
 
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// FlatTexCanvas::draw
-//
+// -----------------------------------------------------------------------------
 // Draws the canvas content
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void FlatTexCanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, size.x, size.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	// Clear
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw background
 	drawCheckeredBackground();
 
 	// Draw texture
-	if (texture_ && texture_ != &(GLTexture::missingTex()))
+	if (texture_ && texture_ != gl::Texture::missingTexture())
 	{
 		glEnable(GL_TEXTURE_2D);
-		Drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0, 100.0);
+		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0, 100.0);
 	}
-	else if (texture_ == &(GLTexture::missingTex()))
+	else if (texture_ == gl::Texture::missingTexture())
 	{
 		// Draw unknown icon
-		GLTexture* tex = MapEditor::textureManager().getEditorImage("thing/unknown");
+		auto tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(180, 0, 0);
-		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
+		gl::setColour(180, 0, 0);
+		drawing::drawTextureWithin(tex, 0, 0, size.x, size.y, 0, 0.25);
 	}
 
 	// Swap buffers (ie show what was drawn)
@@ -133,19 +130,17 @@ void FlatTexCanvas::draw()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // FlatComboBox Class Functions
 //
 // A custom combo box that will show a list of flats matching the current text
 // in the control (eg. 'FLAT' will list all flats beginning with FLAT)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// FlatComboBox::FlatComboBox
-//
+// -----------------------------------------------------------------------------
 // FlatComboBox class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 FlatComboBox::FlatComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 {
 	// Init
@@ -161,62 +156,56 @@ FlatComboBox::FlatComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // FlatComboBox Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// FlatComboBox::onDropDown
-//
+// -----------------------------------------------------------------------------
 // Called when the dropdown list is expanded
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void FlatComboBox::onDropDown(wxCommandEvent& e)
 {
 	// Get current value
-	string text = GetValue().Upper();
+	wxString text = GetValue().Upper();
 
 	// Populate dropdown with matching flat names
-	vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllFlatsInfo();
+	auto&         textures = mapeditor::textureManager().allFlatsInfo();
 	wxArrayString list;
 	list.Add("-");
-	for (unsigned a = 0; a < textures.size(); a++)
+	for (auto& texture : textures)
 	{
-		if (textures[a].shortName.StartsWith(text))
+		if (strutil::startsWith(texture.short_name, text.ToStdString()))
 		{
-			list.Add(textures[a].shortName);
+			list.Add(texture.short_name);
 		}
-		if (Game::configuration().featureSupported(Game::Feature::LongNames))
+		if (game::configuration().featureSupported(game::Feature::LongNames))
 		{
-			if (textures[a].longName.StartsWith(text))
+			if (strutil::startsWith(texture.long_name, text.ToStdString()))
 			{
-				list.Add(textures[a].longName);
+				list.Add(texture.long_name);
 			}
 		}
 	}
-	Set(list);	// Why does this clear the text box also?
+	Set(list); // Why does this clear the text box also?
 	SetValue(text);
 
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// FlatComboBox::onCloseUp
-//
+// -----------------------------------------------------------------------------
 // Called when the dropdown list is closed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void FlatComboBox::onCloseUp(wxCommandEvent& e)
 {
 	list_down_ = false;
 }
 
-// ----------------------------------------------------------------------------
-// FlatComboBox::onKeyDown
-//
+// -----------------------------------------------------------------------------
 // Called when a key is pressed within the control
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void FlatComboBox::onKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_DOWN && !list_down_)
@@ -229,22 +218,20 @@ void FlatComboBox::onKeyDown(wxKeyEvent& e)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SectorPropsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SectorPropsPanel::SectorPropsPanel
-//
+// -----------------------------------------------------------------------------
 // SectorPropsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Tabs
@@ -259,7 +246,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 
 	// Other Properties tab
 
-	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
+	if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
 	{
 		mopp_all_props_ = new MapObjectPropsPanel(stc_tabs_, true);
 		mopp_all_props_->hideProperty("texturefloor");
@@ -282,30 +269,28 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	gfx_ceiling_->Bind(wxEVT_LEFT_DOWN, &SectorPropsPanel::onTextureClicked, this);
 }
 
-// ----------------------------------------------------------------------------
-// SectorPropsPanel::setupGeneralPanel
-//
+// -----------------------------------------------------------------------------
 // Creates and sets up the general properties panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* SectorPropsPanel::setupGeneralPanel()
 {
 	// Create panel
-	wxPanel* panel = new wxPanel(stc_tabs_);
+	auto panel = new wxPanel(stc_tabs_);
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// --- Floor ---
-	wxBoxSizer* m_hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(m_hbox, 0, wxEXPAND|wxALL, UI::pad());
-	wxStaticBox* frame = new wxStaticBox(panel, -1, "Floor");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_hbox->Add(framesizer, 1, wxALIGN_CENTER|wxRIGHT, UI::pad());
+	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(m_hbox, 0, wxEXPAND | wxALL, ui::pad());
+	auto frame      = new wxStaticBox(panel, -1, "Floor");
+	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	m_hbox->Add(framesizer, 1, wxALIGN_CENTER | wxRIGHT, ui::pad());
 
 	// Texture
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND|wxALL, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 	gb_sizer->Add(gfx_floor_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_floor_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
@@ -318,13 +303,13 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 
 
 	// --- Ceiling ---
-	frame = new wxStaticBox(panel, -1, "Ceiling");
+	frame      = new wxStaticBox(panel, -1, "Ceiling");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	m_hbox->Add(framesizer, 1, wxALIGN_CENTER);
 
 	// Texture
-	gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND|wxALL, UI::pad());
+	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 	gb_sizer->Add(gfx_ceiling_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_ceiling_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
@@ -337,11 +322,11 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 
 
 	// -- General ---
-	frame = new wxStaticBox(panel, -1, "General");
+	frame      = new wxStaticBox(panel, -1, "General");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND|wxALL, UI::pad());
-	gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND|wxALL, UI::pad());
+	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
+	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Light level
 	gb_sizer->Add(new wxStaticText(panel, -1, "Light Level:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -357,48 +342,42 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// SectorPropsPanel::setupSpecialPanel
-//
+// -----------------------------------------------------------------------------
 // Creates and sets up the special properties panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* SectorPropsPanel::setupSpecialPanel()
 {
 	// Create panel
-	wxPanel* panel = new wxPanel(stc_tabs_);
+	auto panel = new wxPanel(stc_tabs_);
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// Add special panel
-	sizer->Add(panel_special_ = new SectorSpecialPanel(panel), 1, wxEXPAND|wxALL, UI::pad());
+	sizer->Add(panel_special_ = new SectorSpecialPanel(panel), 1, wxEXPAND | wxALL, ui::pad());
 
 	// Add override checkbox
 	sizer->Add(
 		cb_override_special_ = new wxCheckBox(panel, -1, "Override Special"),
 		0,
 		wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
-		UI::pad()
-	);
+		ui::pad());
 	cb_override_special_->SetToolTip(
-		"Differing specials detected, tick this to set the special for all selected sectors"
-	);
+		"Differing specials detected, tick this to set the special for all selected sectors");
 
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// SectorPropsPanel::openObjects
-//
+// -----------------------------------------------------------------------------
 // Loads values from [objects]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 {
 	if (objects.empty())
 		return;
 
-	int ival;
+	int    ival;
 	string sval;
 
 	// Special
@@ -427,72 +406,70 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 
 	// Floor height
 	if (MapObject::multiIntProperty(objects, "heightfloor", ival))
-		text_height_floor_->SetValue(S_FMT("%d", ival));
+		text_height_floor_->SetValue(wxString::Format("%d", ival));
 
 	// Ceiling height
 	if (MapObject::multiIntProperty(objects, "heightceiling", ival))
-		text_height_ceiling_->SetValue(S_FMT("%d", ival));
+		text_height_ceiling_->SetValue(wxString::Format("%d", ival));
 
 	// Light level
 	if (MapObject::multiIntProperty(objects, "lightlevel", ival))
-		text_light_->SetValue(S_FMT("%d", ival));
+		text_light_->SetValue(wxString::Format("%d", ival));
 
 	// Tag
 	if (MapObject::multiIntProperty(objects, "id", ival))
-		text_tag_->SetValue(S_FMT("%d", ival));
+		text_tag_->SetValue(wxString::Format("%d", ival));
 
 	// Load other properties
 	if (mopp_all_props_)
 		mopp_all_props_->openObjects(objects);
 
 	// Update internal objects list
-	this->objects_.clear();
-	for (unsigned a = 0; a < objects.size(); a++)
-		this->objects_.push_back(objects[a]);
+	objects_.clear();
+	for (auto object : objects)
+		objects_.push_back(object);
 
 	// Update layout
 	Layout();
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// SectorPropsPanel::applyChanges
-//
+// -----------------------------------------------------------------------------
 // Apply values to opened objects
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SectorPropsPanel::applyChanges()
 {
-	for (unsigned a = 0; a < objects_.size(); a++)
+	for (auto& object : objects_)
 	{
-		MapSector* sector = (MapSector*)objects_[a];
+		auto sector = dynamic_cast<MapSector*>(object);
 
 		// Special
 		if (cb_override_special_->GetValue())
-			sector->setIntProperty("special", panel_special_->getSelectedSpecial());
+			sector->setIntProperty("special", panel_special_->selectedSpecial());
 
 		// Floor texture
 		if (!fcb_floor_->GetValue().IsEmpty())
-			sector->setStringProperty("texturefloor", fcb_floor_->GetValue());
+			sector->setFloorTexture(fcb_floor_->GetValue().ToStdString());
 
 		// Ceiling texture
 		if (!fcb_ceiling_->GetValue().IsEmpty())
-			sector->setStringProperty("textureceiling", fcb_ceiling_->GetValue());
+			sector->setCeilingTexture(fcb_ceiling_->GetValue().ToStdString());
 
 		// Floor height
 		if (!text_height_floor_->GetValue().IsEmpty())
-			sector->setIntProperty("heightfloor", text_height_floor_->getNumber(sector->getFloorHeight()));
+			sector->setFloorHeight(text_height_floor_->number(sector->floor().height));
 
 		// Ceiling height
 		if (!text_height_ceiling_->GetValue().IsEmpty())
-			sector->setIntProperty("heightceiling", text_height_ceiling_->getNumber(sector->getCeilingHeight()));
+			sector->setCeilingHeight(text_height_ceiling_->number(sector->ceiling().height));
 
 		// Light level
 		if (!text_light_->GetValue().IsEmpty())
-			sector->setIntProperty("lightlevel", text_light_->getNumber(sector->getLightLevel()));
+			sector->setLightLevel(text_light_->number(sector->lightLevel()));
 
 		// Tag
 		if (!text_tag_->GetValue().IsEmpty())
-			sector->setIntProperty("id", text_tag_->getNumber(sector->getTag()));
+			sector->setTag(text_tag_->number(sector->tag()));
 	}
 
 	if (mopp_all_props_)
@@ -500,18 +477,16 @@ void SectorPropsPanel::applyChanges()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SectorPropsPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SectorPropsPanel::onTextureChanged
-//
+// -----------------------------------------------------------------------------
 // Called when a texture name is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SectorPropsPanel::onTextureChanged(wxCommandEvent& e)
 {
 	// Floor
@@ -525,16 +500,14 @@ void SectorPropsPanel::onTextureChanged(wxCommandEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// SectorPropsPanel::onTextureClicked
-//
+// -----------------------------------------------------------------------------
 // Called when a texture canvas is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 {
 	// Get canvas
 	FlatTexCanvas* tc = nullptr;
-	FlatComboBox* cb = nullptr;
+	FlatComboBox*  cb = nullptr;
 	if (e.GetEventObject() == gfx_floor_)
 	{
 		tc = gfx_floor_;
@@ -553,18 +526,16 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 	}
 
 	// Browse
-	MapTextureBrowser browser(this, 1, tc->texName(), &(MapEditor::editContext().map()));
-	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
-		cb->SetValue(browser.getSelectedItem()->name());
+	MapTextureBrowser browser(this, mapeditor::TextureType::Flat, tc->texName(), &mapeditor::editContext().map());
+	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
+		cb->SetValue(browser.selectedItem()->name());
 }
 
-// ----------------------------------------------------------------------------
-// SectorPropsPanel::onBtnNewTag
-//
+// -----------------------------------------------------------------------------
 // Called when the 'New Tag' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SectorPropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
-	int tag = MapEditor::editContext().map().findUnusedSectorTag();
-	text_tag_->SetValue(S_FMT("%d", tag));
+	int tag = mapeditor::editContext().map().sectors().firstFreeId();
+	text_tag_->SetValue(wxString::Format("%d", tag));
 }

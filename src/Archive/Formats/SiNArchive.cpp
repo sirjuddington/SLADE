@@ -1,75 +1,70 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    SiNArchive.cpp
- * Description: SiNArchive, archive class to handle the Ritual 
- *              Entertainment SiN format, a variant on Quake 2
- *              pak files.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2022 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SiNArchive.cpp
+// Description: SiNArchive, archive class to handle the Ritual Entertainment SiN
+//              format, a variant on Quake 2 pak files.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SiNArchive.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
 
 
-/*******************************************************************
- * SINARCHIVE CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// SiNArchive Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* SiNArchive::SiNArchive
- * SiNArchive class constructor
- *******************************************************************/
-SiNArchive::SiNArchive() : Archive("sin")
-{
-}
 
-/* SiNArchive::~SiNArchive
- * SiNArchive class destructor
- *******************************************************************/
-SiNArchive::~SiNArchive()
-{
-}
-
-/* SiNArchive::open
- * Reads SiN format data from a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads SiN format data from a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool SiNArchive::open(MemChunk& mc)
 {
 	// Check given data is valid
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Read pak header
-	char pack[4];
+	char    pack[4];
 	int32_t dir_offset;
 	int32_t dir_size;
 	mc.seek(0, SEEK_SET);
@@ -80,25 +75,25 @@ bool SiNArchive::open(MemChunk& mc)
 	// Check it
 	if (pack[0] != 'S' || pack[1] != 'P' || pack[2] != 'A' || pack[3] != 'K')
 	{
-		LOG_MESSAGE(1, "SiNArchive::open: Opening failed, invalid header");
-		Global::error = "Invalid pak header";
+		log::error("SiNArchive::open: Opening failed, invalid header");
+		global::error = "Invalid pak header";
 		return false;
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	size_t num_entries = dir_size / 128;
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading SiN archive data");
+	ui::setSplashProgressMessage("Reading SiN archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_entries));
+		ui::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
-		char name[120];
+		char    name[120];
 		int32_t offset;
 		int32_t size;
 		mc.read(name, 120);
@@ -107,79 +102,74 @@ bool SiNArchive::open(MemChunk& mc)
 
 		// Byteswap if needed
 		offset = wxINT32_SWAP_ON_BE(offset);
-		size = wxINT32_SWAP_ON_BE(size);
+		size   = wxINT32_SWAP_ON_BE(size);
 
 		// Check offset+size
-		if ((unsigned)(offset + size) > mc.getSize())
+		if ((unsigned)(offset + size) > mc.size())
 		{
-			LOG_MESSAGE(1, "SiNArchive::open: SiN archive is invalid or corrupt (entry goes past end of file)");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("SiNArchive::open: SiN archive is invalid or corrupt (entry goes past end of file)");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
-		// Parse name
-		wxFileName fn(wxString::FromAscii(name, 120));
-
 		// Create directory if needed
-		ArchiveTreeNode* dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto dir = createDir(strutil::Path::pathOf(name));
 
 		// Create entry
-		ArchiveEntry* entry = new ArchiveEntry(fn.GetFullName(), size);
+		auto entry              = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), size);
 		entry->exProp("Offset") = (int)offset;
 		entry->setLoaded(false);
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to directory
 		dir->addEntry(entry);
 	}
 
 	// Detect all entry types
-	MemChunk edata;
+	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
-	getEntryTreeAsList(all_entries);
-	UI::setSplashProgressMessage("Detecting entry types");
+	putEntryTreeAsList(all_entries);
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_entries)));
+		ui::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
-		ArchiveEntry* entry = all_entries[a];
+		auto entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
+			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
 		// Detect entry type
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 
 		// Unload entry data if needed
 		if (!archive_load_data)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
 
-/* SiNArchive::write
- * Writes the SiN archive to a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the SiN archive to a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool SiNArchive::write(MemChunk& mc, bool update)
 {
 	// Clear current data
@@ -187,19 +177,19 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 
 	// Get archive tree as a list
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
+	putEntryTreeAsList(entries);
 
 	// Process entry list
 	int32_t dir_offset = 12;
-	int32_t dir_size = 0;
-	for (unsigned a = 0; a < entries.size(); a++)
+	int32_t dir_size   = 0;
+	for (auto& entry : entries)
 	{
 		// Ignore folder entries
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Increment directory offset and size
-		dir_offset += entries[a]->getSize();
+		dir_offset += entry->size();
 		dir_size += 128;
 	}
 
@@ -216,42 +206,41 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 	// Write directory
 	mc.seek(dir_offset, SEEK_SET);
 	int32_t offset = 12;
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Update entry
 		if (update)
 		{
-			entries[a]->setState(0);
-			entries[a]->exProp("Offset") = (int)offset;
+			entry->setState(ArchiveEntry::State::Unmodified);
+			entry->exProp("Offset") = (int)offset;
 		}
 
 		// Check entry name
-		string name = entries[a]->getPath(true);
-		name.Remove(0, 1);	// Remove leading /
-		if (name.Len() > 120)
+		auto name = entry->path(true);
+		name.erase(name.begin()); // Remove leading /
+		if (name.size() > 120)
 		{
-			LOG_MESSAGE(1, "Warning: Entry %s path is too long (> 120 characters), putting it in the root directory", name);
-			wxFileName fn(name);
-			name = fn.GetFullName();
-			if (name.Len() > 120)
-				name.Truncate(120);
+			log::warning("Entry {} path is too long (> 120 characters), putting it in the root directory", name);
+			name = strutil::Path::fileNameOf(name);
+			if (name.size() > 120)
+				strutil::truncateIP(name, 120);
 		}
 
 		// Write entry name
 		char name_data[120];
 		memset(name_data, 0, 120);
-		memcpy(name_data, CHR(name), name.Length());
+		memcpy(name_data, name.data(), name.size());
 		mc.write(name_data, 120);
 
 		// Write entry offset
 		mc.write(&offset, 4);
 
 		// Write entry size
-		int32_t size = entries[a]->getSize();
+		int32_t size = entry->size();
 		mc.write(&size, 4);
 
 		// Increment/update offset
@@ -260,23 +249,23 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 
 	// Write entry data
 	mc.seek(12, SEEK_SET);
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Write data
-		mc.write(entries[a]->getData(), entries[a]->getSize());
+		mc.write(entry->rawData(), entry->size());
 	}
 
 	return true;
 }
 
-/* SiNArchive::loadEntryData
- * Loads an entry's data from the SiN file
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads an entry's data from the SiN file
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check entry is ok
@@ -285,7 +274,7 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -297,13 +286,13 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "SiNArchive::loadEntryData: Unable to open archive file %s", filename_);
+		log::error("SiNArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
 	// Seek to entry offset in file and read it in
-	file.Seek((int)entry->exProp("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -311,21 +300,25 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/*******************************************************************
- * SINARCHIVE CLASS STATIC FUNCTIONS
- *******************************************************************/
 
-/* SiNArchive::isSiNArchive
- * Checks if the given data is a valid Ritual Entertainment SiN archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// SiNArchive Class Static Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Checks if the given data is a valid Ritual Entertainment SiN archive
+// -----------------------------------------------------------------------------
 bool SiNArchive::isSiNArchive(MemChunk& mc)
 {
 	// Check given data is valid
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Read pak header
-	char pack[4];
+	char    pack[4];
 	int32_t dir_offset;
 	int32_t dir_size;
 	mc.seek(0, SEEK_SET);
@@ -334,7 +327,7 @@ bool SiNArchive::isSiNArchive(MemChunk& mc)
 	mc.read(&dir_size, 4);
 
 	// Byteswap values for big endian if needed
-	dir_size = wxINT32_SWAP_ON_BE(dir_size);
+	dir_size   = wxINT32_SWAP_ON_BE(dir_size);
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check header
@@ -342,17 +335,17 @@ bool SiNArchive::isSiNArchive(MemChunk& mc)
 		return false;
 
 	// Check directory is sane
-	if (dir_offset < 12 || (unsigned)(dir_offset + dir_size) > mc.getSize())
+	if (dir_offset < 12 || (unsigned)(dir_offset + dir_size) > mc.size())
 		return false;
 
 	// That'll do
 	return true;
 }
 
-/* SiNArchive::isSiNArchive
- * Checks if the file at [filename] is a valid Ritual SiN archive
- *******************************************************************/
-bool SiNArchive::isSiNArchive(string filename)
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a valid Ritual SiN archive
+// -----------------------------------------------------------------------------
+bool SiNArchive::isSiNArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -362,7 +355,7 @@ bool SiNArchive::isSiNArchive(string filename)
 		return false;
 
 	// Read pak header
-	char pack[4];
+	char    pack[4];
 	int32_t dir_offset;
 	int32_t dir_size;
 	file.Seek(0, wxFromStart);
@@ -371,7 +364,7 @@ bool SiNArchive::isSiNArchive(string filename)
 	file.Read(&dir_size, 4);
 
 	// Byteswap values for big endian if needed
-	dir_size = wxINT32_SWAP_ON_BE(dir_size);
+	dir_size   = wxINT32_SWAP_ON_BE(dir_size);
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check header

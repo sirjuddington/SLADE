@@ -1,0 +1,245 @@
+
+body, h1, h2, h3, h4, h5, h6 {
+	color: hsl(225, 11%, 85%);
+}
+
+body {
+	/* background-color: hsla(220, 20%, 15%, 1); */
+	background-color: hsl(220, 30%, 10%);
+}
+
+.h2, h2 {
+	color: hsl(220, 91%, 95%);
+	border-color: hsl(218, 15%, 32%);
+}
+
+.wm-page-content {
+	color: hsl(220, 10%, 85%);
+	/* background-color: hsl(220, 10%, 23%); */
+	background-color: hsl(220, 10%, 15%);
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.wm-page-content h1, h2, h3, h4, h5, h6, article-head {
+	color: hsl(220, 91%, 95%) !important;
+}
+
+article-head {
+	color: hsl(220, 10%, 90%);
+	background-color: hsl(220, 35%, 40%);
+	border-color: hsl(220, 15%, 20%);
+}
+
+blockquote {
+	border-color: hsl(220, 35%, 60%);
+}
+
+.wm-page-content A:link,
+.wm-page-content A:visited,
+.wm-page-content code A:link,
+.wm-page-content code A:visited {
+	color: hsl(40, 100%, 70%);
+}
+
+.wm-page-content A:hover,
+.wm-page-content A:active,
+.wm-page-content code A:hover,
+.wm-page-content code A:active {
+	color: hsl(40, 100%, 95%);
+}
+
+
+
+.navbar {
+	background-color: hsl(220, 35%, 40%);
+}
+
+.btn-default,
+.btn-default A:link,
+.btn-default A:visited,
+.btn-default:focus,
+.btn-default:hover,
+.btn-default.active {
+	background-color: hsla(220, 35%, 50%, 1);
+	color: hsl(222, 100%, 98%) !important;
+}
+
+.btn-default:hover {
+	background-color: hsla(220, 35%, 60%, 1);
+}
+
+.btn-default.active.focus,
+.btn-default.active:focus,
+.btn-default.active:hover,
+.btn-default:active.focus,
+.btn-default:active:focus,
+.btn-default:active:hover,
+.open > .dropdown-toggle.btn-default.focus,
+.open > .dropdown-toggle.btn-default:focus,
+.open > .dropdown-toggle.btn-default:hover {
+	color: hsl(222, 100%, 98%);
+	/* background-color: hsla(220, 35%, 60%, 1); */
+	background-color: hsla(220, 35%, 55%, 1);
+}
+
+
+
+
+hr {
+	color: hsl(218, 15%, 32%);
+	border-color: hsl(218, 15%, 32%);
+}
+
+
+
+
+type,
+arg,
+prop,
+prop.ro,
+prop.rw,
+code,
+function,
+.admonition code,
+.md-typeset code {
+	background-color: rgba(0, 0, 0, 0);
+}
+
+code,
+.md-typeset code,
+.admonition code {
+	color: hsl(220, 68%, 83%);
+}
+
+type,
+type a {
+	color: hsl(130, 36%, 65%) !important;
+}
+
+type a:hover {
+	color: hsl(130, 86%, 85%) !important;
+}
+
+arg {
+	color: hsl(293, 56%, 77%);
+}
+
+arg.opt,
+arg > em {
+	color: hsla(293, 56%, 77%, 65%);
+}
+
+prop,
+prop.ro,
+prop.rw {
+	color: hsl(180, 83%, 70%);
+}
+
+prop.ro::before {
+	color: hsl(10, 88%, 53%);
+}
+
+prop.rw::before {
+	color: hsl(140, 68%, 33%);
+}
+
+pre code,
+.codehilite pre {
+	/* background: none repeat scroll 0 0 rgb(37, 37, 37) !important; */
+	background: none repeat scroll 0 0 rgba(0, 0, 0, 0.2) !important;
+	border-color: hsl(220, 20%, 34%);
+	/* box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); */
+}
+
+pre, .rst-content tt {
+	/*foreground = 176, 200, 186;
+		background = 47, 51, 49;*/
+	background: none repeat scroll 0 0 rgb(41, 51, 49) !important;
+	color: rgb(176, 200, 186);
+	border-color: hsl(220, 20%, 34%);
+}
+
+fdef {
+	color: hsl(220, 68%, 83%);
+}
+
+func {
+	color: hsl(48, 73%, 77%);
+}
+
+table {
+	background-color: hsl(220, 20%, 20%);
+}
+
+thead {
+	background-color: hsl(220, 12%, 23%);
+	color: hsl(220, 30%, 86%);
+	border-color: hsl(216, 22%, 39%);
+}
+
+.table-striped tbody tr {
+	background-color: hsl(220, 10%, 18%) !important;
+}
+
+.table-striped tbody tr:nth-child(even) td {
+	background-color: hsl(220, 10%, 16%) !important;
+}
+
+
+
+.admonition.warning {
+	color: hsl(50, 100%, 78%);
+	background-color: hsla(50, 100%, 54%, 10%);
+	border-color: hsla(50, 100%, 54%, 40%);
+}
+
+.admonition.attention {
+	color: hsl(20, 100%, 74%);
+	background-color: hsla(20, 100%, 54%, 10%);
+	border-color: hsla(20, 100%, 54%, 40%);
+}
+
+.admonition.tip {
+	color: hsl(140, 80%, 84%);
+	background-color: hsla(140, 80%, 54%, 10%);
+	border-color: hsla(140, 80%, 54%, 40%);
+}
+
+.admonition.note {
+	color: hsl(210, 80%, 84%);
+	background-color: hsla(210, 80%, 54%, 10%);
+	border-color: hsla(210, 80%, 54%, 40%);
+}
+
+
+
+
+
+/* ToC Pane */
+
+.wm-toc-pane {
+	background-color: hsl(220, 20%, 23%);
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+.wm-toctree a, .wm-toctree a:visited, .wm-toctree a:hover, .wm-toctree a:focus {
+	color: hsl(220, 10%, 85%);
+}
+
+.wm-toc-li:hover {
+	background-color: hsl(220, 20%, 33%);
+}
+
+.wm-toc-li.wm-current, .wm-toc-li.wm-current:hover {
+	background-color: hsl(220, 20%, 43%);
+	color: white;
+}
+
+.wm-toc-lev1,
+.wm-toc-lev1 > .wm-toc-text {
+	color: hsl(220, 95%, 83%);
+}
+
+.wm-toc-lev3 > .wm-toc-text {
+	color: hsl(220, 10%, 80%) !important;
+}

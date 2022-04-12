@@ -2,9 +2,11 @@
 
 #include "Archive/ArchiveEntry.h"
 
+namespace slade
+{
 class SLADEMap;
 
-namespace ScriptManager
+namespace scriptmanager
 {
 	enum class ScriptType
 	{
@@ -19,31 +21,31 @@ namespace ScriptManager
 
 	struct Script
 	{
-		ScriptType			type = ScriptType::Editor;
-		string				text;
-		string				name;
-		string				path;
-		bool				read_only = false;
-		ArchiveEntry::WPtr	source;
-
-		typedef std::unique_ptr<Script>	UPtr;
+		ScriptType             type = ScriptType::Editor;
+		string                 text;
+		string                 name;
+		string                 path;
+		bool                   read_only = false;
+		weak_ptr<ArchiveEntry> source_entry;
+		string                 source_file;
 	};
 
-	typedef vector<Script::UPtr> ScriptList;
+	typedef vector<unique_ptr<Script>> ScriptList;
 
-	ScriptList&	editorScripts(ScriptType type = ScriptType::Editor);
+	ScriptList& editorScripts(ScriptType type = ScriptType::Editor);
 
-	void	init();
-	void	open();
-	void	saveUserScripts();
+	void init();
+	void open();
+	void saveUserScripts();
 
-	bool	renameScript(Script* script, const string& new_name);
-	bool	deleteScript(Script* script);
+	bool renameScript(Script* script, string_view new_name);
+	bool deleteScript(Script* script);
 
-	Script*	createEditorScript(const string& name, ScriptType type);
-	void	populateEditorScriptMenu(wxMenu* menu, ScriptType type, const string& action_id);
+	Script* createEditorScript(string_view name, ScriptType type);
+	void    populateEditorScriptMenu(wxMenu* menu, ScriptType type, string_view action_id);
 
-	void	runArchiveScript(Archive* archive, int index, wxWindow* parent = nullptr);
-	void	runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent = nullptr);
-	void	runMapScript(SLADEMap* map, int index, wxWindow* parent = nullptr);
-}
+	void runArchiveScript(Archive* archive, int index, wxWindow* parent = nullptr);
+	void runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent = nullptr);
+	void runMapScript(SLADEMap* map, int index, wxWindow* parent = nullptr);
+} // namespace scriptmanager
+} // namespace slade

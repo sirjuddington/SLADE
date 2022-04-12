@@ -1,11 +1,9 @@
 #pragma once
 
-#include "common.h"
-
 wxDECLARE_EVENT(wxEVT_THREAD_WEBGET_COMPLETED, wxThreadEvent);
 
-namespace Web
+namespace slade::web
 {
-	string	getHttp(const char* host, const char* uri);
-	void	getHttpAsync(const char* host, const char* uri, wxEvtHandler* event_handler);
-}
+string getHttp(const string& host, const string& uri);
+void   getHttpAsync(const string& host, const string& uri, wxEvtHandler* event_handler);
+} // namespace slade::web

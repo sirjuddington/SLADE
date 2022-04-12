@@ -1,9 +1,7 @@
+#pragma once
 
-#ifndef __SECTOR_BUILDER_H__
-#define __SECTOR_BUILDER_H__
-
-#include "common.h"
-
+namespace slade
+{
 // Forward declarations
 class MapLine;
 class MapVertex;
@@ -11,62 +9,53 @@ class MapSector;
 class MapSide;
 class SLADEMap;
 
-WX_DECLARE_HASH_MAP(MapLine*, int, wxPointerHash, wxPointerEqual, MapLineSet);
-
 class SectorBuilder
 {
-private:
-	struct edge_t
+public:
+	struct Edge
 	{
-		MapLine*	line;
-		bool		front;
-		bool		side_created;
+		MapLine* line         = nullptr;
+		bool     front        = true;
+		bool     side_created = false;
 
-		edge_t(MapLine* line = nullptr, bool front = true)
-		{
-			this->line = line;
-			this->front = front;
-			side_created = false;
-		}
+		Edge(MapLine* line = nullptr, bool front = true) : line{ line }, front{ front } {}
 	};
 
-	vector<bool>	vertex_valid;
-	SLADEMap*		map;
-	vector<edge_t>	sector_edges;
-	string			error;
+	SectorBuilder()  = default;
+	~SectorBuilder() = default;
 
-	// Current outline
-	vector<edge_t>	o_edges;
-	bool			o_clockwise;
-	bbox_t			o_bbox;
-	MapVertex*		vertex_right;
+	const string& error() const { return error_; }
+	unsigned      nEdges() const { return sector_edges_.size(); }
+	MapLine*      edgeLine(unsigned index);
+	bool          edgeIsFront(unsigned index);
+	bool          edgeSideCreated(unsigned index);
 
-public:
-	SectorBuilder();
-	~SectorBuilder();
+	bool       traceOutline(MapLine* line, bool front = true);
+	int        nearestEdge(double x, double y);
+	bool       pointWithinOutline(double x, double y);
+	void       discardOutsideVertices();
+	Edge       findOuterEdge() const;
+	Edge       findInnerEdge();
+	MapSector* findCopySector();
+	MapSector* findExistingSector(vector<MapSide*>& sides_ignore);
+	bool       isValidSector();
 
-	string		getError() { return error; }
-	unsigned	nEdges() { return sector_edges.size(); }
-	MapLine*	getEdgeLine(unsigned index);
-	bool		edgeIsFront(unsigned index);
-	bool		edgeSideCreated(unsigned index);
-
-	edge_t		nextEdge(edge_t edge, MapLineSet& visited_lines);
-	bool		traceOutline(MapLine* line, bool front = true);
-	int			nearestEdge(double x, double y);
-	bool		pointWithinOutline(double x, double y);
-	void		discardOutsideVertices();
-	edge_t		findOuterEdge();
-	edge_t		findInnerEdge();
-	MapSector*	findCopySector();
-	MapSector*	findExistingSector(vector<MapSide*>& sides_ignore);
-	bool		isValidSector();
-
-	bool	traceSector(SLADEMap* map, MapLine* line, bool front = true);
-	void	createSector(MapSector* sector = nullptr, MapSector* sector_copy = nullptr);
+	bool traceSector(SLADEMap* map, MapLine* line, bool front = true);
+	void createSector(MapSector* sector = nullptr, MapSector* sector_copy = nullptr);
 
 	// Testing
-	void	drawResult();
-};
+	void drawResult();
 
-#endif//__SECTOR_BUILDER_H__
+private:
+	vector<bool> vertex_valid_;
+	SLADEMap*    map_ = nullptr;
+	vector<Edge> sector_edges_;
+	string       error_;
+
+	// Current outline
+	vector<Edge> o_edges_;
+	bool         o_clockwise_ = false;
+	BBox         o_bbox_;
+	MapVertex*   vertex_right_ = nullptr;
+};
+} // namespace slade

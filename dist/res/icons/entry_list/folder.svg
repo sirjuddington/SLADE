@@ -1,0 +1,13 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="-1 -1 18 18">
+    <path
+        d="M7 2l2 2h7v11H0V2z"
+        fill="#C4A000"
+        stroke="#000000"
+        stroke-width="0"
+    />
+</svg>
