@@ -33,6 +33,7 @@
 #include "ArchiveOperations.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/Formats/DirArchive.h"
 #include "Archive/Formats/WadArchive.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
@@ -45,6 +46,8 @@
 #include "SLADEMap/MapObject/MapSector.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
+#include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -67,6 +70,86 @@ typedef std::map<int, vector<ArchiveEntry*>>      CRCMap;
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// Saves [archive] to disk, returns true on success
+// -----------------------------------------------------------------------------
+bool archiveoperations::save(Archive& archive)
+{
+	if (!archive.canSave())
+		return false;
+
+	// Check if the file has been modified on disk
+	if (archive.formatId() != "folder" && fileutil::fileModifiedTime(archive.filename()) > archive.fileModifiedTime())
+	{
+		if (wxMessageBox(
+				wxString::Format(
+					"The file %s has been modified on disk since the archive was last saved, are you sure you want "
+					"to continue with saving?",
+					archive.filename(false)),
+				"File Modified",
+				wxICON_WARNING | wxYES_NO)
+			== wxNO)
+			return false;
+	}
+
+	// Save the archive if possible
+	auto time = wxDateTime::GetTimeNow();
+	if (!archive.save())
+	{
+		// If there was an error pop up a message box
+		wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxICON_ERROR);
+		return false;
+	}
+
+	// Check if there were issues saving directory
+	if (archive.formatId() == "folder")
+	{
+		auto* dir_archive = dynamic_cast<DirArchive*>(&archive);
+		if (dir_archive->saveErrorsOccurred())
+		{
+			auto   messages = log::since(time);
+			string msg_log_str;
+			for (const auto* msg : messages)
+				msg_log_str += msg->formattedMessageLine() + "\n";
+
+			ExtMessageDialog dlg(maineditor::windowWx(), "Directory Save Issues");
+			dlg.CenterOnParent();
+			dlg.setMessage("Some issues occurred while saving changes to the filesystem, see details below:");
+			dlg.setExt(msg_log_str);
+			dlg.ShowModal();
+		}
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Saves [archive] to disk under a different filename, opens a file dialog to
+// select the new name/path
+// -----------------------------------------------------------------------------
+bool archiveoperations::saveAs(Archive& archive)
+{
+	// Popup file save dialog
+	if (auto filename = filedialog::saveFile(
+			"Save Archive " + archive.filename(false) + " As", archive.fileExtensionString(), maineditor::windowWx());
+		!filename.empty())
+	{
+		// Save the archive
+		if (!archive.save(filename))
+		{
+			// If there was an error pop up a message box
+			wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxICON_ERROR);
+			return false;
+		}
+
+		// Add recent file
+		app::archiveManager().addRecentFile(filename);
+
+		return true;
+	}
+
+	return false;
+}
 
 // -----------------------------------------------------------------------------
 // Removes any patches and associated entries from [archive] that are not used

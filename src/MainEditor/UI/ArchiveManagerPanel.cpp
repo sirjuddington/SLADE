@@ -40,6 +40,7 @@
 #include "EntryPanel/EntryPanel.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditor.h"
@@ -1503,33 +1504,9 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive) const
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
 
+	// Save if we can
 	if (archive->canSave())
-	{
-		// Check if the file has been modified on disk
-		if (archive->formatId() != "folder"
-			&& fileutil::fileModifiedTime(archive->filename()) > archive->fileModifiedTime())
-		{
-			if (wxMessageBox(
-					wxString::Format(
-						"The file %s has been modified on disk since the archive was last saved, are you sure you want "
-						"to continue with saving?",
-						archive->filename(false)),
-					"File Modified",
-					wxICON_WARNING | wxYES_NO)
-				== wxNO)
-				return false;
-		}
-
-		// Save the archive if possible
-		if (!archive->save())
-		{
-			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxICON_ERROR);
-			return false;
-		}
-
-		return true;
-	}
+		return archiveoperations::save(*archive);
 	else
 		return saveArchiveAs(archive); // If the archive is newly created, do Save As instead
 }
@@ -1551,38 +1528,8 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
 
-	// Popup file save dialog
-	wxString formats  = archive->fileExtensionString();
-	wxString filename = wxFileSelector(
-		"Save Archive " + archive->filename(false) + " As",
-		dir_last,
-		"",
-		wxEmptyString,
-		formats,
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-
-	// Check a filename was selected
-	if (!filename.empty())
-	{
-		// Save the archive
-		if (!archive->save(filename.ToStdString()))
-		{
-			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxICON_ERROR);
-			return false;
-		}
-
-		// Save 'dir_last'
-		wxFileName fn(filename);
-		dir_last = wxutil::strToView(fn.GetPath(true));
-
-		// Add recent file
-		app::archiveManager().addRecentFile(filename.ToStdString());
-	}
-	else
-		return false;
-
-	return true;
+	// Do Save As
+	return archiveoperations::saveAs(*archive);
 }
 
 // -----------------------------------------------------------------------------
