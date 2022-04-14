@@ -5,6 +5,7 @@
 #define MyAppVersion "3.2.0"
 #define MyAppURL "http://slade.mancubus.net"
 #define MyAppExeName "SLADE.exe"
+#define MyAppPublisher "sirjuddington"
 
 ; TODO:
 ; - Add option to install portable version
@@ -17,6 +18,7 @@ AppId={{3EFD0AA9-5156-40DB-9646-360180FF5DFA}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
+AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
