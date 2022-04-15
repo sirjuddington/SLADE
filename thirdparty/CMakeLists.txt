@@ -29,5 +29,5 @@ add_subdirectory(lunasvg/3rdparty/software)
 add_subdirectory(lunasvg/3rdparty/plutovg)
 
 add_library(external STATIC ${EXTERNAL_SOURCES})
-target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt)
+target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt ${CMAKE_DL_LIBS})
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
