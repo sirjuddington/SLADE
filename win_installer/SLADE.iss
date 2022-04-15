@@ -3,7 +3,7 @@
 
 #define MyAppName "SLADE"
 #define MyAppVersion "3.2.0"
-#define MyAppURL "http://slade.mancubus.net"
+#define MyAppURL "https://slade.mancubus.net"
 #define MyAppExeName "SLADE.exe"
 
 ; TODO:
@@ -25,13 +25,12 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 ;InfoBeforeFile=..\dist\SLADE.html
 OutputBaseFilename=Setup_{#MyAppName}_{#MyAppVersion}
-SetupIconFile=..\build\msvc\slade.ico
+SetupIconFile=..\msvc\slade.ico
 Compression=lzma
 SolidCompression=yes
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
-;Name: "de"; MessagesFile: "compiler:Languages\German.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -69,7 +68,7 @@ begin
 	initwinversion();
 
   // Check for VS2015 runtimes installed
-  vcredist2015();
+  //vcredist2015();
 
   Result := true;
 end;

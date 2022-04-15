@@ -542,6 +542,7 @@ void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, 
 	int caption_offset = 0;
 	if (pane.icon.IsOk())
 	{
+#if wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1
 	    // Ensure the icon fits into the title bar.
 	    wxSize iconSize = pane.icon.GetSize();
 	    if (iconSize.y > rect.height)
@@ -554,7 +555,9 @@ void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, 
 	    dc.DrawBitmap(pane.icon,
 	                  rect.x+xOffset, rect.y+(rect.height-pane.icon.GetHeight())/2,
 	                  true);
-
+#else
+		DrawIcon(dc, rect, pane);
+#endif
 		caption_offset += pane.icon.GetWidth() + px3;
 	}
 
