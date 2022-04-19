@@ -37,6 +37,7 @@
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include <array>
 
 using namespace slade;
 using namespace ui;
@@ -51,8 +52,9 @@ CVAR(Int, zoom_gfx, 100, CVar::Save)
 CVAR(Int, zoom_ctex, 100, CVar::Save)
 namespace slade::ui
 {
-int n_zoom_presets  = 8;
-int zoom_percents[] = { 25, 50, 75, 100, 150, 200, 400, 800 };
+std::array<int, 8>  zoom_percents      = { 25, 50, 75, 100, 150, 200, 400, 800 };
+std::array<int, 23> zoom_percents_fine = { 25,  50,  75,  100,  125,  150,  200,  250,  300,  400,  500, 600,
+										   700, 800, 900, 1000, 1250, 1500, 2000, 2500, 3000, 4000, 5000 };
 } // namespace slade::ui
 
 
@@ -74,9 +76,9 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 // ZoomControl class constructor (linking GfxCanvas)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_gfx_canvas_{ linked_canvas }
+	wxPanel(parent, -1), linked_gfx_canvas_{ linked_canvas }, zoom_(zoom_gfx)
 {
-	zoom_ = zoom_gfx;
+	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
 }
@@ -85,9 +87,8 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
 // ZoomControl class constructor (linking CTextureCanvas)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_texture_canvas_{ linked_canvas }
+	wxPanel(parent, -1), linked_texture_canvas_{ linked_canvas }, zoom_(zoom_ctex)
 {
-	zoom_ = zoom_ctex;
 	linked_canvas->setScale(zoomScale());
 	setup();
 }
@@ -127,27 +128,51 @@ void ZoomControl::setZoomScale(double scale)
 // -----------------------------------------------------------------------------
 // Zooms out to the next smaller zoom preset
 // -----------------------------------------------------------------------------
-void ZoomControl::zoomOut()
+void ZoomControl::zoomOut(bool fine)
 {
-	for (int i = n_zoom_presets - 1; i >= 0; --i)
-		if (zoom_percents[i] < zoom_)
-		{
-			setZoomPercent(zoom_percents[i]);
-			return;
-		}
+	if (fine)
+	{
+		for (int i = zoom_percents_fine.size() - 1; i >= 0; --i)
+			if (zoom_percents_fine[i] < zoom_)
+			{
+				setZoomPercent(zoom_percents_fine[i]);
+				return;
+			}
+	}
+	else
+	{
+		for (int i = zoom_percents.size() - 1; i >= 0; --i)
+			if (zoom_percents[i] < zoom_)
+			{
+				setZoomPercent(zoom_percents[i]);
+				return;
+			}
+	}
 }
 
 // -----------------------------------------------------------------------------
 // Zooms in to the next larger zoom preset
 // -----------------------------------------------------------------------------
-void ZoomControl::zoomIn()
+void ZoomControl::zoomIn(bool fine)
 {
-	for (const auto& pct : zoom_percents)
-		if (pct > zoom_)
-		{
-			setZoomPercent(pct);
-			return;
-		}
+	if (fine)
+	{
+		for (const auto& pct : zoom_percents_fine)
+			if (pct > zoom_)
+			{
+				setZoomPercent(pct);
+				return;
+			}
+	}
+	else
+	{
+		for (const auto& pct : zoom_percents)
+			if (pct > zoom_)
+			{
+				setZoomPercent(pct);
+				return;
+			}
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -191,40 +216,49 @@ void ZoomControl::setup()
 	// --- Events ---
 
 	// Zoom level selected in dropdown
-	cb_zoom_->Bind(wxEVT_COMBOBOX, [this](wxCommandEvent& e) {
-		auto val = cb_zoom_->GetValue();
-		val.RemoveLast(1); // Remove %
-		long val_percent;
-		val.ToLong(&val_percent);
-		setZoomPercent(val_percent);
-	});
+	cb_zoom_->Bind(
+		wxEVT_COMBOBOX,
+		[this](wxCommandEvent& e)
+		{
+			auto val = cb_zoom_->GetValue();
+			val.RemoveLast(1); // Remove %
+			long val_percent;
+			val.ToLong(&val_percent);
+			setZoomPercent(val_percent);
+		});
 
 	// Zoom level text entered
-	cb_zoom_->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& e) {
-		auto val = e.GetString();
-		if (val.EndsWith("%"))
-			val.RemoveLast(1); // Remove % if entered
-		long val_percent;
-		if (val.ToLong(&val_percent))
-			setZoomPercent(val_percent);
-		else
-			setZoomPercent(zoom_);
-	});
+	cb_zoom_->Bind(
+		wxEVT_TEXT_ENTER,
+		[this](wxCommandEvent& e)
+		{
+			auto val = e.GetString();
+			if (val.EndsWith("%"))
+				val.RemoveLast(1); // Remove % if entered
+			long val_percent;
+			if (val.ToLong(&val_percent))
+				setZoomPercent(val_percent);
+			else
+				setZoomPercent(zoom_);
+		});
 
 	// Zoom in/out button clicked
-	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, [this](wxCommandEvent& e) {
-		if (e.GetString() == "zoom_in")
-			zoomIn();
-		else if (e.GetString() == "zoom_out")
-			zoomOut();
-	});
+	Bind(
+		wxEVT_STOOLBAR_BUTTON_CLICKED,
+		[this](wxCommandEvent& e)
+		{
+			if (e.GetString() == "zoom_in")
+				zoomIn();
+			else if (e.GetString() == "zoom_out")
+				zoomOut();
+		});
 }
 
 // -----------------------------------------------------------------------------
 // Updates the zoom in/out buttons depending on the current zoom level
 // -----------------------------------------------------------------------------
-void ZoomControl::updateZoomButtons()
+void ZoomControl::updateZoomButtons() const
 {
 	btn_zoom_out_->Enable(zoom_ > zoom_percents[0]);
-	btn_zoom_in_->Enable(zoom_ < zoom_percents[n_zoom_presets - 1]);
+	btn_zoom_in_->Enable(zoom_ < zoom_percents[zoom_percents.size() - 1]);
 }
