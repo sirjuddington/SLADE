@@ -45,6 +45,7 @@ private:
 
 	void processZDoomSlopes(SLADEMap* map) const;
 	void processEternitySlopes(SLADEMap* map) const;
+	void processSRB2Slopes(SLADEMap* map) const;
 
 	template<MapSector::SurfaceType>
 	void applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model_sector) const;
