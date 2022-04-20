@@ -1438,14 +1438,20 @@ void ArchiveEntryTree::homeDir()
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column)
 {
-	auto* entry = entryForItem(item);
-	if (!entry)
-		return;
+	if (model_->viewType() == ArchiveViewModel::ViewType::List)
+	{
+		auto* entry = entryForItem(item);
+		if (!entry)
+			return;
 
-	// Go to entry's parent dir if needed
-	if (model_->viewType() == ArchiveViewModel::ViewType::List && entry->parent()->formatDesc().supports_dirs
-		&& model_->rootDir() != entry->parentDir())
-		model_->setRootDir(ArchiveDir::getShared(entry->parentDir()));
+		const auto archive = archive_.lock();
+		if (!archive)
+			return;
+
+		// Go to entry's parent dir if needed
+		if (archive->formatDesc().supports_dirs && model_->rootDir() != entry->parentDir())
+			model_->setRootDir(ArchiveDir::getShared(entry->parentDir()));
+	}
 
 	wxDataViewCtrl::EnsureVisible(item, column);
 }
