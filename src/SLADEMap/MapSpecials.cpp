@@ -48,7 +48,7 @@ using SurfaceType = MapSector::SurfaceType;
 // -----------------------------------------------------------------------------
 namespace
 {
-const double TAU = math::PI * 2; // Number of radians in the unit circle
+constexpr double TAU = math::PI * 2; // Number of radians in the unit circle
 } // namespace
 
 
@@ -97,7 +97,7 @@ void MapSpecials::processLineSpecial(MapLine* line) const
 // Sets [colour] to the parsed colour for [tag].
 // Returns true if the tag has a colour, false otherwise
 // -----------------------------------------------------------------------------
-bool MapSpecials::tagColour(int tag, ColRGBA* colour)
+bool MapSpecials::tagColour(int tag, ColRGBA* colour) const
 {
 	unsigned a;
 	// scripts
@@ -120,7 +120,7 @@ bool MapSpecials::tagColour(int tag, ColRGBA* colour)
 // Sets [colour] to the parsed fade colour for [tag].
 // Returns true if the tag has a colour, false otherwise
 // -----------------------------------------------------------------------------
-bool MapSpecials::tagFadeColour(int tag, ColRGBA* colour)
+bool MapSpecials::tagFadeColour(int tag, ColRGBA* colour) const
 {
 	unsigned a;
 	// scripts
@@ -158,7 +158,7 @@ bool MapSpecials::tagFadeColoursSet() const
 // -----------------------------------------------------------------------------
 // Modify sector with [tag]
 // -----------------------------------------------------------------------------
-void MapSpecials::setModified(SLADEMap* map, int tag) const
+void MapSpecials::setModified(const SLADEMap* map, int tag) const
 {
 	for (auto& sector : map->sectors().allWithId(tag))
 		sector->setModified();
@@ -168,7 +168,7 @@ void MapSpecials::setModified(SLADEMap* map, int tag) const
 // Updates any sectors with tags that are affected by any processed
 // specials/scripts
 // -----------------------------------------------------------------------------
-void MapSpecials::updateTaggedSectors(SLADEMap* map)
+void MapSpecials::updateTaggedSectors(const SLADEMap* map) const
 {
 	// scripts
 	unsigned a;
@@ -362,51 +362,51 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Process SRB2 slope specials
 // -----------------------------------------------------------------------------
-void MapSpecials::processSRB2Slopes(SLADEMap* map) const
+void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 {
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		auto line = map->line(a);
 
 		auto front = line->frontSector();
-		auto back = line->backSector();
+		auto back  = line->backSector();
 
-		switch(line->special())
+		switch (line->special())
 		{
-			case 700: //Front sector floor
-				applyPlaneAlign<SurfaceType::Floor>(line,front,back);
+		case 700: // Front sector floor
+			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
 			break;
 
-			case 701: //Front sector ceiling
-				applyPlaneAlign<SurfaceType::Ceiling>(line,front,back);
+		case 701: // Front sector ceiling
+			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
 			break;
 
-			case 702: //Front sector floor and ceiling
-				applyPlaneAlign<SurfaceType::Floor>(line,front,back);
-				applyPlaneAlign<SurfaceType::Ceiling>(line,front,back);
+		case 702: // Front sector floor and ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
 			break;
 
-			case 703: //Front sector floor and back sector ceiling
-				applyPlaneAlign<SurfaceType::Floor>(line,front,back);
-				applyPlaneAlign<SurfaceType::Ceiling>(line,back,front);
+		case 703: // Front sector floor and back sector ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
 			break;
 
-			case 710: //Back sector floor
-				applyPlaneAlign<SurfaceType::Floor>(line,back,front);
+		case 710: // Back sector floor
+			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
 			break;
 
-			case 711: //Back sector ceiling
-				applyPlaneAlign<SurfaceType::Ceiling>(line,back,front);
-			break;
-			
-			case 712: //Back sector floor and ceiling
-				applyPlaneAlign<SurfaceType::Floor>(line,back,front);
-				applyPlaneAlign<SurfaceType::Ceiling>(line,back,front);
+		case 711: // Back sector ceiling
+			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
 			break;
 
-			case 713: //Back sector floor and front sector ceiling
-				applyPlaneAlign<SurfaceType::Floor>(line,back,front);
-				applyPlaneAlign<SurfaceType::Ceiling>(line,front,back);
+		case 712: // Back sector floor and ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+			break;
+
+		case 713: // Back sector floor and front sector ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
 			break;
 		}
 	}
@@ -682,7 +682,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 // -----------------------------------------------------------------------------
 // Process Eternity slope specials
 // -----------------------------------------------------------------------------
-void MapSpecials::processEternitySlopes(SLADEMap* map) const
+void MapSpecials::processEternitySlopes(const SLADEMap* map) const
 {
 	// Eternity plans on having a few slope mechanisms,
 	// which must be evaluated in a specific order.
@@ -787,11 +787,9 @@ void MapSpecials::processEternitySlopes(SLADEMap* map) const
 // -----------------------------------------------------------------------------
 template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model) const
 {
-	if(!model || !target) //Do nothing, ignore
+	if (!model || !target) // Do nothing, ignore
 	{
-		log::warning(
-			"Ignoring Plane_Align on line {}; line needs to have both sectors, but was only found one",
-			line->index()); 
+		log::warning("Ignoring Plane_Align on line {}; line needs to have sectors on both sides", line->index());
 		return;
 	}
 
@@ -800,15 +798,15 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 
 	Vec2d _min;
 	Vec2d _max;
-	bool firsttime = true;
+	bool  firsttime = true;
 
-	for(auto& vertex : vertices)
+	for (auto& vertex : vertices)
 	{
-		if(math::colinear(vertex->xPos(), vertex->yPos(), line->x1(), line->y1(), line->x2(), line->y2()))
+		if (math::colinear(vertex->xPos(), vertex->yPos(), line->x1(), line->y1(), line->x2(), line->y2()))
 		{
-			if(firsttime)
+			if (firsttime)
 			{
-				_min = vertex->position();
+				_min      = vertex->position();
 				firsttime = false;
 			}
 			_max = vertex->position();
@@ -826,7 +824,8 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 		this_vertex = vertex;
 		this_dist   = line->distanceTo(this_vertex->position());
 
-		if (!math::colinear(vertex->xPos(), vertex->yPos(), line->x1(), line->y1(), line->x2(), line->y2()) && this_dist > furthest_dist)
+		if (!math::colinear(vertex->xPos(), vertex->yPos(), line->x1(), line->y1(), line->x2(), line->y2())
+			&& this_dist > furthest_dist)
 		{
 			furthest_dist   = this_dist;
 			furthest_vertex = this_vertex;
