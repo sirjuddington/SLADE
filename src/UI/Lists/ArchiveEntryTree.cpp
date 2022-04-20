@@ -1366,11 +1366,29 @@ vector<ArchiveDir*> ArchiveEntryTree::expandedDirs() const
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::setFilter(string_view name, string_view category)
 {
-	Freeze();
 	auto expanded = expandedDirs();
+
+	// Set filter on model
+	Freeze();
 	model_->setFilter(name, category);
+
+	// Restore previously expanded directories
 	for (auto* dir : expanded)
+	{
 		Expand(wxDataViewItem(dir->dirEntry()));
+
+		// Have to collapse parent directories that weren't previously expanded, for whatever reason
+		// the 'Expand' function used above will also expand any parent nodes which is annoying
+		auto* pdir = dir->parent().get();
+		while (pdir)
+		{
+			if (std::find(expanded.begin(), expanded.end(), pdir) == expanded.end())
+				Collapse(wxDataViewItem(pdir->dirEntry()));
+
+			pdir = pdir->parent().get();
+		}
+	}
+
 	Thaw();
 }
 
