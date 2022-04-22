@@ -181,7 +181,10 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 
 			// Ignore possible borders
 			if (cell > 3)
-				++x, ++y;
+			{
+				++x;
+				++y;
+			}
 
 			// Get color from image
 			ColRGBA col = image.pixelAt(x, y);

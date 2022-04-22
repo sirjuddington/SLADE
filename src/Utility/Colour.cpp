@@ -108,8 +108,8 @@ void rgbToHsl(double red, double green, double blue, double& h, double& s, doubl
 // Converts an RGB colour [red,green,blue] to CIE-L*a*b colourspace
 // Conversion formulas lazily taken from easyrgb.com.
 // -----------------------------------------------------------------------------
-#define NORMALIZERGB(a) a = 100 * ((a > 0.04045) ? (pow(((a + 0.055) / 1.055), 2.4)) : (a / 12.92))
-#define NORMALIZEXYZ(a) a = ((a > 0.008856) ? (pow(a, (1.0 / 3.0))) : ((7.787 * a) + (16.0 / 116.0)))
+#define NORMALIZERGB(a) a = 100 * (((a) > 0.04045) ? (pow((((a) + 0.055) / 1.055), 2.4)) : ((a) / 12.92))
+#define NORMALIZEXYZ(a) a = (((a) > 0.008856) ? (pow(a, (1.0 / 3.0))) : ((7.787 * (a)) + (16.0 / 116.0)))
 void rgbToLab(double red, double green, double blue, double& l, double& a, double& b)
 {
 	double x, y, z;
@@ -145,9 +145,9 @@ void hslToRgb(double h, double s, double l, double& r, double& g, double& b)
 	}
 
 	// Find the rough values at given H with mid L and max S.
-	double  hue    = (6. * h);
-	uint8_t sector = (uint8_t)hue;
-	double  factor = hue - sector;
+	double hue    = (6. * h);
+	auto   sector = static_cast<uint8_t>(hue);
+	double factor = hue - sector;
 	switch (sector)
 	{
 		// RGB 0xFF0000 to 0xFFFF00, increasingly green
@@ -249,7 +249,7 @@ void hslToRgb(double h, double s, double l, double& r, double& g, double& b)
 ColHSL ColRGBA::asHSL() const
 {
 	ColHSL ret;
-	ret.alpha = a;
+	ret.alpha = static_cast<double>(a) / 255.0;
 	rgbToHsl(dr(), dg(), db(), ret.h, ret.s, ret.l);
 	return ret;
 }
@@ -261,7 +261,7 @@ ColLAB ColRGBA::asLAB() const
 {
 	ColLAB ret;
 	rgbToLab(dr(), dg(), db(), ret.l, ret.a, ret.b);
-	ret.alpha = a;
+	ret.alpha = static_cast<double>(a) / 255.0;
 	return ret;
 }
 
@@ -274,17 +274,20 @@ void ColRGBA::fromHSL(double h, double s, double l)
 	hslToRgb(h, s, l, dr, dg, db);
 
 	// Now convert from 0f--1f to 0i--255i, rounding up
-	r = (uint8_t)(dr * 255. + 0.499999999);
-	g = (uint8_t)(dg * 255. + 0.499999999);
-	b = (uint8_t)(db * 255. + 0.499999999);
+	r = static_cast<uint8_t>(dr * 255. + 0.499999999);
+	g = static_cast<uint8_t>(dg * 255. + 0.499999999);
+	b = static_cast<uint8_t>(db * 255. + 0.499999999);
 }
 
 // -----------------------------------------------------------------------------
 // Sets the colour from another HSL colour
 // -----------------------------------------------------------------------------
-void ColRGBA::fromHSL(const ColHSL& hsl)
+void ColRGBA::fromHSL(const ColHSL& hsl, bool take_alpha)
 {
 	fromHSL(hsl.h, hsl.s, hsl.l);
+
+	if (take_alpha)
+		a = static_cast<uint8_t>(hsl.alpha * 255.);
 }
 
 // -----------------------------------------------------------------------------
@@ -316,15 +319,15 @@ string ColRGBA::toString(StringFormat format) const
 // -----------------------------------------------------------------------------
 ColRGBA ColHSL::asRGB() const
 {
-	ColRGBA ret(0, 0, 0, uint8_t(alpha * 255.), -1);
+	ColRGBA ret(0, 0, 0, static_cast<uint8_t>(alpha * 255.), -1);
 
 	double r, g, b;
 	hslToRgb(h, s, l, r, g, b);
 
 	// Now convert from 0f--1f to 0i--255i, rounding up
-	ret.r = (uint8_t)(r * 255. + 0.499999999);
-	ret.g = (uint8_t)(g * 255. + 0.499999999);
-	ret.b = (uint8_t)(b * 255. + 0.499999999);
+	ret.r = static_cast<uint8_t>(r * 255. + 0.499999999);
+	ret.g = static_cast<uint8_t>(g * 255. + 0.499999999);
+	ret.b = static_cast<uint8_t>(b * 255. + 0.499999999);
 
 	return ret;
 }
