@@ -23,9 +23,6 @@ namespace property
 	// Returns the ValueType of the value currently held in [prop]
 	inline ValueType valueType(const Property& prop) { return static_cast<ValueType>(prop.index()); }
 
-	// Returns true if the given [prop] contains a value
-	inline bool hasValue(const Property& prop) { return prop.index() > 0; }
-
 	// Returns the value of [prop] if it is of type T, otherwise an empty std::optional
 	template<typename T> std::optional<T> value(const Property& prop)
 	{
