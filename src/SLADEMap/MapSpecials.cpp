@@ -796,8 +796,8 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	vector<MapVertex*> vertices;
 	target->putVertices(vertices);
 
-	Vec2d _min;
-	Vec2d _max;
+	Vec2d v1_pos;
+	Vec2d v2_pos;
 	bool  firsttime = true;
 
 	for (auto& vertex : vertices)
@@ -806,14 +806,14 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 		{
 			if (firsttime)
 			{
-				_min      = vertex->position();
+				v1_pos      = vertex->position();
 				firsttime = false;
 			}
-			_max = vertex->position();
+			v2_pos = vertex->position();
 		}
 	}
 
-
+	// The slope is between the line with Plane_Align, and the point in the
 	// sector furthest away from it, which can only be at a vertex
 	double     this_dist;
 	MapVertex* this_vertex;
@@ -845,8 +845,8 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	// (at the model sector's height) and the found vertex (at this sector's height).
 	double modelz  = model->planeHeight<T>();
 	double targetz = target->planeHeight<T>();
-	Vec3d  p1(_min, modelz);
-	Vec3d  p2(_max, modelz);
+	Vec3d  p1(v1_pos, modelz);
+	Vec3d  p2(v2_pos, modelz);
 	Vec3d  p3(furthest_vertex->position(), targetz);
 	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
 }
@@ -1006,6 +1006,15 @@ template<SurfaceType T>
 void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 	const
 {
+	string prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	auto v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
+	auto v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
+	auto v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
+
+	// Ignore if no vertices have a height set
+	if (!v1_hasheight && !v2_hasheight && !v3_hasheight)
+		return;
+
 	double z1 = heights.count(vertices[0]) ? heights[vertices[0]] : vertexHeight<T>(vertices[0], target);
 	double z2 = heights.count(vertices[1]) ? heights[vertices[1]] : vertexHeight<T>(vertices[1], target);
 	double z3 = heights.count(vertices[2]) ? heights[vertices[2]] : vertexHeight<T>(vertices[2], target);
