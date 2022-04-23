@@ -18,18 +18,18 @@ public:
 	void processMapSpecials(SLADEMap* map) const;
 	void processLineSpecial(MapLine* line) const;
 
-	bool tagColour(int tag, ColRGBA* colour);
-	bool tagFadeColour(int tag, ColRGBA* colour);
+	bool tagColour(int tag, ColRGBA* colour) const;
+	bool tagFadeColour(int tag, ColRGBA* colour) const;
 	bool tagColoursSet() const;
 	bool tagFadeColoursSet() const;
-	void updateTaggedSectors(SLADEMap* map);
+	void updateTaggedSectors(const SLADEMap* map) const;
 
 	// ZDoom
 	void processZDoomMapSpecials(SLADEMap* map) const;
 	void processZDoomLineSpecial(MapLine* line) const;
 	void updateZDoomSector(MapSector* line);
 	void processACSScripts(ArchiveEntry* entry);
-	void setModified(SLADEMap* map, int tag) const;
+	void setModified(const SLADEMap* map, int tag) const;
 
 private:
 	struct SectorColour
@@ -44,7 +44,8 @@ private:
 	vector<SectorColour> sector_fadecolours_;
 
 	void processZDoomSlopes(SLADEMap* map) const;
-	void processEternitySlopes(SLADEMap* map) const;
+	void processEternitySlopes(const SLADEMap* map) const;
+	void processSRB2Slopes(const SLADEMap* map) const;
 
 	template<MapSector::SurfaceType>
 	void applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model_sector) const;

@@ -99,6 +99,42 @@ bool filedialog::openFile(
 }
 
 // -----------------------------------------------------------------------------
+// Shows a dialog to open a single file.
+// Returns the selected filename if the user clicked ok, or an empty string
+// otherwise
+// -----------------------------------------------------------------------------
+string filedialog::openFile(
+	string_view caption,
+	string_view extensions,
+	wxWindow* parent,
+	string_view fn_default,
+	int ext_default)
+{
+	// Create file dialog
+	wxFileDialog fd(
+		parent,
+		wxutil::strFromView(caption),
+		dir_last,
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
+		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+	// Select default extension
+	fd.SetFilterIndex(ext_default);
+
+	// Run the dialog
+	if (fd.ShowModal() == wxID_OK)
+	{
+		auto filename = fd.GetPath().ToStdString();
+		dir_last = strutil::Path::pathOf(filename);
+
+		return filename;
+	}
+
+	return {};
+}
+
+// -----------------------------------------------------------------------------
 // Shows a dialog to open a single executable file.
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
@@ -108,6 +144,19 @@ bool filedialog::openExecutableFile(FDInfo& info, string_view caption, wxWindow*
                                                                          wxFileSelectorDefaultWildcardStr;
 
 	return openFile(info, caption, extensions, parent, fn_default);
+}
+
+// -----------------------------------------------------------------------------
+// Shows a dialog to open a single executable file.
+// Returns the selected filename if the user clicked ok, or an empty string
+// otherwise
+// -----------------------------------------------------------------------------
+string filedialog::openExecutableFile(string_view caption, wxWindow* parent, string_view fn_default)
+{
+	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat" :
+                                                                         wxFileSelectorDefaultWildcardStr;
+
+	return openFile(caption, extensions, parent, fn_default);
 }
 
 // -----------------------------------------------------------------------------
@@ -158,6 +207,23 @@ bool filedialog::openFiles(
 }
 
 // -----------------------------------------------------------------------------
+// Shows a dialog to open multiple files.
+// Returns an FDInfo struct with information about the selected files.
+// If the user cancelled, the FDInfo will contain no filenames
+// -----------------------------------------------------------------------------
+filedialog::FDInfo filedialog::openFiles(
+	string_view caption,
+	string_view extensions,
+	wxWindow* parent,
+	string_view fn_default,
+	int ext_default)
+{
+	FDInfo info;
+	openFiles(info, caption, extensions, parent, fn_default, ext_default);
+	return info;
+}
+
+// -----------------------------------------------------------------------------
 // Shows a dialog to save a single file.
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
@@ -201,6 +267,41 @@ bool filedialog::saveFile(
 }
 
 // -----------------------------------------------------------------------------
+// Shows a dialog to save a single file.
+// Returns the filename to save if the user clicked ok, or an empty string
+// otherwise
+// -----------------------------------------------------------------------------
+string filedialog::saveFile(
+	string_view caption,
+	string_view extensions,
+	wxWindow* parent,
+	string_view fn_default,
+	int ext_default)
+{
+	// Create file dialog
+	wxFileDialog fd(
+		parent,
+		wxutil::strFromView(caption),
+		dir_last,
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
+		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+	// Select default extension
+	fd.SetFilterIndex(ext_default);
+
+	// Run the dialog
+	if (fd.ShowModal() == wxID_OK)
+	{
+		auto filename = fd.GetPath().ToStdString();
+		dir_last = strutil::Path::pathOf(filename);
+		return filename;
+	}
+
+	return {};
+}
+
+// -----------------------------------------------------------------------------
 // Shows a dialog to save multiple files.
 // Returns true and sets [info] if the user clicked ok, false otherwise.
 // This is used to replace wxDirDialog, which sucks
@@ -235,6 +336,22 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 	}
 	else
 		return false;
+}
+
+// -----------------------------------------------------------------------------
+// Shows a dialog to save multiple files.
+// Returns an FDInfo struct with information about the selected files.
+// If the user cancelled, the FDInfo will contain no path
+// -----------------------------------------------------------------------------
+filedialog::FDInfo filedialog::saveFiles(
+	string_view caption,
+	string_view extensions,
+	wxWindow* parent,
+	int ext_default)
+{
+	FDInfo info;
+	saveFiles(info, caption, extensions, parent, ext_default);
+	return info;
 }
 
 // -----------------------------------------------------------------------------

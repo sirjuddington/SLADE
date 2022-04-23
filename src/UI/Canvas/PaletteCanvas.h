@@ -15,9 +15,8 @@ public:
 	};
 
 	PaletteCanvas(wxWindow* parent, int id);
-	~PaletteCanvas() = default;
+	~PaletteCanvas() override = default;
 
-	Palette&      palette() override { return palette_; }
 	bool          doubleWidth() const { return double_width_; }
 	int           selectionStart() const { return sel_begin_; }
 	int           selectionEnd() const { return sel_end_; }

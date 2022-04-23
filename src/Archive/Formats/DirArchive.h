@@ -39,6 +39,7 @@ public:
 	const vector<string>& removedFiles() const { return removed_files_; }
 	time_t                fileModificationTime(ArchiveEntry* entry) { return file_modification_times_[entry]; }
 	bool                  hiddenFilesIgnored() const { return ignore_hidden_; }
+	bool                  saveErrorsOccurred() const { return save_errors_; }
 
 	// Opening
 	bool open(string_view filename) override; // Open from File
@@ -83,6 +84,7 @@ private:
 	vector<string>                  removed_files_;
 	IgnoredFileChanges              ignored_file_changes_;
 	bool                            ignore_hidden_;
+	bool                            save_errors_ = false;
 };
 
 class DirArchiveTraverser : public wxDirTraverser

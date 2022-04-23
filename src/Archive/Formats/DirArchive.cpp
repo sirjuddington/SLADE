@@ -128,7 +128,7 @@ bool DirArchive::open(string_view filename)
 			return false;
 		new_entry->setLoaded(true);
 
-		file_modification_times_[new_entry.get()] = wxFileModificationTime(files[a]);
+		file_modification_times_[new_entry.get()] = fileutil::fileModifiedTime(files[a]);
 
 		// Detect entry type
 		EntryType::detectEntryType(*new_entry);
@@ -209,6 +209,8 @@ bool DirArchive::write(string_view filename, bool update)
 // -----------------------------------------------------------------------------
 bool DirArchive::save(string_view filename)
 {
+	save_errors_ = false;
+
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
 	putEntryTreeAsList(entries);
@@ -237,7 +239,8 @@ bool DirArchive::save(string_view filename)
 		if (fileutil::fileExists(removed_file))
 		{
 			log::info(2, "Removing file {}", removed_file);
-			fileutil::removeFile(removed_file);
+			if (!fileutil::removeFile(removed_file))
+				save_errors_ = true;
 		}
 	}
 
@@ -256,10 +259,11 @@ bool DirArchive::save(string_view filename)
 		}
 
 		// Dir on disk isn't part of the archive in memory
-		// (Note that this will fail if there are any untracked files in the
-		// directory)
-		if (!found && wxRmdir(dirs[a]))
-			log::info(2, "Removing directory {}", dirs[a]);
+		if (!found)
+		{
+			if (!fileutil::removeDir(dirs[a]))
+				save_errors_ = true;
+		}
 	}
 	log::info(2, "Remove check took {}ms", app::runTimer() - time);
 
@@ -272,8 +276,11 @@ bool DirArchive::save(string_view filename)
 		if (entries[a]->type() == EntryType::folderType())
 		{
 			// Create if needed
-			if (!wxDirExists(path))
-				wxMkdir(path);
+			if (!fileutil::dirExists(path))
+			{
+				if (!fileutil::createDir(path))
+					save_errors_ = true;
+			}
 
 			// Set unmodified
 			entries[a]->exProp("filePath") = path;
@@ -289,14 +296,17 @@ bool DirArchive::save(string_view filename)
 
 		// Write entry to file
 		if (!entries[a]->exportFile(path))
+		{
 			log::error("Unable to save entry {}: {}", entries[a]->name(), global::error);
+			save_errors_ = true;
+		}
 		else
 			files_written.push_back(path);
 
 		// Set unmodified
 		entries[a]->setState(ArchiveEntry::State::Unmodified);
 		entries[a]->exProp("filePath")       = path;
-		file_modification_times_[entries[a]] = wxFileModificationTime(path);
+		file_modification_times_[entries[a]] = fileutil::fileModifiedTime(path);
 	}
 
 	removed_files_.clear();
@@ -313,7 +323,7 @@ bool DirArchive::loadEntryData(ArchiveEntry* entry)
 {
 	if (entry->importFile(entry->exProp<string>("filePath")))
 	{
-		file_modification_times_[entry] = wxFileModificationTime(entry->exProp<string>("filePath"));
+		file_modification_times_[entry] = fileutil::fileModifiedTime(entry->exProp<string>("filePath"));
 		entry->setLoaded();
 		entry->setState(ArchiveEntry::State::Unmodified);
 
@@ -642,7 +652,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			auto entry = entryAtPath(change.entry_path);
 			entry->importFile(change.file_path);
 			EntryType::detectEntryType(*entry);
-			file_modification_times_[entry] = wxFileModificationTime(change.file_path);
+			file_modification_times_[entry] = fileutil::fileModifiedTime(change.file_path);
 		}
 
 		// Deleted Entries

@@ -117,7 +117,7 @@ public:
 		redraw();
 
 		// Init layout
-		wxWindowBase::Layout();
+		wxDialog::Layout();
 
 		// Bind events
 		cp_colour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
@@ -125,7 +125,7 @@ public:
 
 		// Setup dialog size
 		SetInitialSize(wxSize(-1, -1));
-		wxTopLevelWindowBase::SetMinSize(GetSize());
+		wxDialog::SetMinSize(GetSize());
 		CenterOnParent();
 	}
 
@@ -201,7 +201,7 @@ public:
 		redraw();
 
 		// Init layout
-		wxWindowBase::Layout();
+		wxDialog::Layout();
 
 		// Bind events
 		cp_colour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
@@ -216,7 +216,7 @@ public:
 
 		// Setup dialog size
 		SetInitialSize(wxSize(-1, -1));
-		wxTopLevelWindowBase::SetMinSize(GetSize());
+		wxDialog::SetMinSize(GetSize());
 		CenterOnParent();
 
 		// Set values
@@ -322,7 +322,7 @@ public:
 		redraw();
 
 		// Init layout
-		wxWindowBase::Layout();
+		wxDialog::Layout();
 
 		// Bind events
 		slider_hue_->Bind(
@@ -350,7 +350,7 @@ public:
 
 		// Setup dialog size
 		SetInitialSize(wxSize(-1, -1));
-		wxTopLevelWindowBase::SetMinSize(GetSize());
+		wxDialog::SetMinSize(GetSize());
 		CenterOnParent();
 
 		// Set values
@@ -422,14 +422,14 @@ public:
 		redraw();
 
 		// Init layout
-		wxWindowBase::Layout();
+		wxDialog::Layout();
 
 		// Bind events
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
 
 		// Setup dialog size
 		SetInitialSize({ -1, -1 });
-		wxTopLevelWindowBase::SetMinSize(GetSize());
+		wxDialog::SetMinSize(GetSize());
 		CenterOnParent();
 	}
 
@@ -486,11 +486,11 @@ public:
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Init layout
-		wxWindowBase::Layout();
+		wxDialog::Layout();
 
 		// Setup dialog size
 		SetInitialSize(wxSize(-1, -1));
-		wxTopLevelWindowBase::SetMinSize(GetSize());
+		wxDialog::SetMinSize(GetSize());
 		CenterOnParent();
 	}
 
@@ -557,7 +557,7 @@ public:
 		redraw();
 
 		// Init layout
-		wxWindowBase::Layout();
+		wxDialog::Layout();
 
 		// Bind events
 		cp_startcolour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
@@ -566,7 +566,7 @@ public:
 
 		// Setup dialog size
 		SetInitialSize(wxSize(-1, -1));
-		wxTopLevelWindowBase::SetMinSize(GetSize());
+		wxDialog::SetMinSize(GetSize());
 		CenterOnParent();
 	}
 
@@ -1035,7 +1035,7 @@ bool PaletteEntryPanel::gradient()
 // -----------------------------------------------------------------------------
 // Generates a COLORMAP lump from the current palette
 // -----------------------------------------------------------------------------
-#define DIMINISH(color, level) color = (uint8_t)((((float)(color)) * (32.0 - level) + 16.0) / 32.0)
+#define DIMINISH(color, level) color = (uint8_t)((((float)(color)) * (32.0 - (level)) + 16.0) / 32.0)
 bool PaletteEntryPanel::generateColormaps() const
 {
 	constexpr int GREENMAP = 255;

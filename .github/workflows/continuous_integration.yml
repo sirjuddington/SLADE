@@ -21,7 +21,7 @@ jobs:
             deps_cmdline: "sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc && \
 						   sudo apt-add-repository 'deb https://repos.codelite.org/wx3.1.5/ubuntu/ focal universe' && \
 						   sudo apt update && sudo apt install \
-                           libfluidsynth-dev libfreeimage-dev \
+                           libfluidsynth-dev libfreeimage-dev libwebkit2gtk-4.0-dev \
                            libftgl-dev libgtk-3-dev liblua5.3-dev libmpg123-dev libsfml-dev \
                            libwxgtk3.1unofficial-dev libwxgtk-webview3.1unofficial-dev"
           }
@@ -32,7 +32,7 @@ jobs:
             deps_cmdline: "sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc && \
 						   sudo apt-add-repository 'deb https://repos.codelite.org/wx3.1.5/ubuntu/ focal universe' && \
 						   sudo apt update && sudo apt install \
-                           libfluidsynth-dev libfreeimage-dev \
+                           libfluidsynth-dev libfreeimage-dev libwebkit2gtk-4.0-dev \
                            libftgl-dev libgtk-3-dev liblua5.3-dev libmpg123-dev libsfml-dev \
                            libwxgtk3.1unofficial-dev libwxgtk-webview3.1unofficial-dev"
           }

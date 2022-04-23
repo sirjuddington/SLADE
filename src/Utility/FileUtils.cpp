@@ -32,8 +32,8 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "FileUtils.h"
+#include "App.h"
 #include "StringUtils.h"
 #include <filesystem>
 #include <fstream>
@@ -159,17 +159,17 @@ bool fileutil::readFileToString(const string& path, string& str)
 	file.seekg(0, std::ios::end);
 	str.reserve(file.tellg());
 	file.seekg(0, std::ios::beg);
-	str.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	str.assign(std::istreambuf_iterator(file), std::istreambuf_iterator<char>());
 	file.close();
 
 	return true;
 }
 
 // -----------------------------------------------------------------------------
-// Writes [str] to a file at [path]. Will overwrite the file if it
-// already exists
+// Writes [str] to a file at [path].
+// Will overwrite the file if it already exists
 // -----------------------------------------------------------------------------
-bool fileutil::writeStringToFile(string& str, const string& path)
+bool fileutil::writeStringToFile(const string& str, const string& path)
 {
 	std::ofstream file(path);
 	if (!file.is_open())
@@ -190,7 +190,32 @@ bool fileutil::writeStringToFile(string& str, const string& path)
 // -----------------------------------------------------------------------------
 bool fileutil::createDir(string_view path)
 {
-	return fs::create_directory(path);
+	static std::error_code ec;
+	if (!fs::create_directory(path, ec))
+	{
+		if (ec.value() != 0)
+			log::warning("Unable to create directory \"{}\": {}", path, ec.message());
+
+		return false;
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Removes the directory at [path] and all its contents.
+// Returns true if successful
+// -----------------------------------------------------------------------------
+bool fileutil::removeDir(string_view path)
+{
+	static std::error_code ec;
+	if (!fs::remove_all(path, ec))
+	{
+		log::warning("Unable to remove directory \"{}\": {}", path, ec.message());
+		return false;
+	}
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -226,7 +251,14 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 // -----------------------------------------------------------------------------
 time_t fileutil::fileModifiedTime(string_view path)
 {
-	return static_cast<time_t>(fs::last_write_time(path).time_since_epoch().count());
+#if 0
+	// Use this whenever we update to C++20
+	const auto file_time = std::filesystem::last_write_time(path);
+	const auto sys_time  = std::chrono::clock_cast<std::chrono::system_clock>(file_time);
+	return std::chrono::system_clock::to_time_t(sys_time);
+#endif
+
+	return wxFileModificationTime(wxString{ path.data(), path.length() });
 }
 
 

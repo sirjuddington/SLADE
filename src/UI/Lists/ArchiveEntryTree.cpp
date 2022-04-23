@@ -1366,11 +1366,29 @@ vector<ArchiveDir*> ArchiveEntryTree::expandedDirs() const
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::setFilter(string_view name, string_view category)
 {
-	Freeze();
 	auto expanded = expandedDirs();
+
+	// Set filter on model
+	Freeze();
 	model_->setFilter(name, category);
+
+	// Restore previously expanded directories
 	for (auto* dir : expanded)
+	{
 		Expand(wxDataViewItem(dir->dirEntry()));
+
+		// Have to collapse parent directories that weren't previously expanded, for whatever reason
+		// the 'Expand' function used above will also expand any parent nodes which is annoying
+		auto* pdir = dir->parent().get();
+		while (pdir)
+		{
+			if (std::find(expanded.begin(), expanded.end(), pdir) == expanded.end())
+				Collapse(wxDataViewItem(pdir->dirEntry()));
+
+			pdir = pdir->parent().get();
+		}
+	}
+
 	Thaw();
 }
 
@@ -1420,14 +1438,20 @@ void ArchiveEntryTree::homeDir()
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column)
 {
-	auto* entry = entryForItem(item);
-	if (!entry)
-		return;
+	if (model_->viewType() == ArchiveViewModel::ViewType::List)
+	{
+		auto* entry = entryForItem(item);
+		if (!entry)
+			return;
 
-	// Go to entry's parent dir if needed
-	if (model_->viewType() == ArchiveViewModel::ViewType::List && entry->parent()->formatDesc().supports_dirs
-		&& model_->rootDir() != entry->parentDir())
-		model_->setRootDir(ArchiveDir::getShared(entry->parentDir()));
+		const auto archive = archive_.lock();
+		if (!archive)
+			return;
+
+		// Go to entry's parent dir if needed
+		if (archive->formatDesc().supports_dirs && model_->rootDir() != entry->parentDir())
+			model_->setRootDir(ArchiveDir::getShared(entry->parentDir()));
+	}
 
 	wxDataViewCtrl::EnsureVisible(item, column);
 }
