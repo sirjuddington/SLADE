@@ -7,8 +7,8 @@ namespace slade
 class ZipArchive : public Archive
 {
 public:
-	ZipArchive() : Archive("zip") {}
-	~ZipArchive();
+	ZipArchive();
+	~ZipArchive() override;
 
 	// Opening
 	bool open(string_view filename) override; // Open from File
