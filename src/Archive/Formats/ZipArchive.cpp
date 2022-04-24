@@ -281,9 +281,15 @@ bool ZipArchive::write(string_view filename, bool update)
 		if (inzip->IsOk())
 		{
 			// Get a list of all entries in the old zip
-			c_entries.resize(inzip->GetTotalEntries());
+			c_entries.resize(inzip->GetTotalEntries(), nullptr);
 			for (unsigned a = 0; a < c_entries.size(); a++)
+			{
 				c_entries[a] = inzip->GetNextEntry();
+
+				// Stop if reading the zip failed
+				if (!c_entries[a])
+					break;
+			}
 			inzip->Reset();
 		}
 		else
@@ -322,7 +328,7 @@ bool ZipArchive::write(string_view filename, bool update)
 
 		auto saname = misc::lumpNameToFileName(entries[a]->name());
 		if (!inzip || entries[a]->state() != ArchiveEntry::State::Unmodified || index < 0
-			|| index >= inzip->GetTotalEntries())
+			|| index >= inzip->GetTotalEntries() || !c_entries[index])
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
