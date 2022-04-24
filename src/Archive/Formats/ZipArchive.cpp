@@ -45,6 +45,14 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Bool, zip_allow_duplicate_names, false, CVar::Save)
+
+
+// -----------------------------------------------------------------------------
+//
 // External Variables
 //
 // -----------------------------------------------------------------------------
@@ -58,6 +66,14 @@ EXTERN_CVAR(Int, max_entry_size_mb)
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// ZipArchive class constructor
+// -----------------------------------------------------------------------------
+ZipArchive::ZipArchive() : Archive("zip")
+{
+	if (zip_allow_duplicate_names)
+		rootDir()->allowDuplicateNames(true);
+}
 
 // -----------------------------------------------------------------------------
 // ZipArchive class destructor
@@ -472,27 +488,27 @@ shared_ptr<ArchiveEntry> ZipArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* entry)
+Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
 {
 	MapDesc map;
 
 	// Check entry
-	if (!checkEntry(entry))
+	if (!checkEntry(maphead))
 		return map;
 
 	// Check entry type
-	if (entry->type()->formatId() != "archive_wad")
+	if (maphead->type()->formatId() != "archive_wad")
 		return map;
 
 	// Check entry directory
-	if (entry->parentDir()->parent() != rootDir() || entry->parentDir()->name() != "maps")
+	if (maphead->parentDir()->parent() != rootDir() || maphead->parentDir()->name() != "maps")
 		return map;
 
 	// Setup map info
 	map.archive = true;
-	map.head    = entry->getShared();
-	map.end     = entry->getShared();
-	map.name    = entry->upperNameNoExt();
+	map.head    = maphead->getShared();
+	map.end     = maphead->getShared();
+	map.name    = maphead->upperNameNoExt();
 
 	return map;
 }
