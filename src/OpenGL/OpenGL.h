@@ -53,7 +53,11 @@ namespace gl
 	unsigned       maxTextureSize();
 	bool           isInitialised();
 	bool           accuracyTweak();
+#if wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1
 	wxGLAttributes getWxGLAttribs();
+#else
+	int*           getWxGLAttribs();
+#endif
 	void           setColour(const ColRGBA& col, Blend blend = Blend::Ignore);
 	void           setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend blend = Blend::Ignore);
 	void           setBlend(Blend blend);
