@@ -498,7 +498,7 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 		wxDefaultPosition,
 		wxutil::scaledSize(200, -1),
 		wxTR_DEFAULT_STYLE | wxTR_NO_LINES | wxTR_HIDE_ROOT | wxTR_FULL_ROW_HIGHLIGHT);
-#if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
+#if wxCHECK_VERSION(3, 1, 0)
 	tree_scripts_->EnableSystemTheme(true);
 #endif
 	tree_scripts_->SetImageList(createTreeImageList());

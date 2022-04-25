@@ -1054,7 +1054,7 @@ void TextEditorCtrl::jumpToLine()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::foldAll(bool fold)
 {
-#if (wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1)
+#if wxCHECK_VERSION(3, 1, 0)
 	// FoldAll is only available in wxWidgets 3.1+
 	FoldAll(fold ? wxSTC_FOLDACTION_CONTRACT : wxSTC_FOLDACTION_EXPAND);
 #else

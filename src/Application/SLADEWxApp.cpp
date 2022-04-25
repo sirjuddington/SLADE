@@ -101,7 +101,7 @@ class SLADELog : public wxLog
 {
 protected:
 	// wx2.9.x is no longer supported.
-#if (wxMAJOR_VERSION < 3)
+#if !(wxCHECK_VERSION(3, 0, 0))
 #error This will not compile with wxWidgets older than 3.0.0 !
 #endif
 	void DoLogText(const wxString& msg) override

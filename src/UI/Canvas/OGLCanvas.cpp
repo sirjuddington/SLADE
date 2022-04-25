@@ -57,7 +57,7 @@ EXTERN_CVAR(Int, gl_depth_buffer_size)
 // -----------------------------------------------------------------------------
 // OGLCanvas class constructor, wxGLCanvas implementation
 // -----------------------------------------------------------------------------
-#if wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1
+#if wxCHECK_VERSION(3, 1, 0)
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
 	wxGLCanvas(parent, gl::getWxGLAttribs(), id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
 	timer_{ this },

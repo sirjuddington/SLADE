@@ -53,7 +53,7 @@ namespace gl
 	unsigned       maxTextureSize();
 	bool           isInitialised();
 	bool           accuracyTweak();
-#if wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1
+#if wxCHECK_VERSION(3, 1, 0)
 	wxGLAttributes getWxGLAttribs();
 #else
 	int*           getWxGLAttribs();

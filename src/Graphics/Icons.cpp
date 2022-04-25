@@ -373,7 +373,7 @@ wxBitmap loadPNGIcon(const IconDef& icon, int size, Point2i padding)
 bool icons::loadIcons()
 {
 	// Check for dark mode
-#if wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1
+#if wxCHECK_VERSION(3, 1, 3)
 	ui_icons_dark = wxSystemSettings::GetAppearance().IsDark();
 #else
 	auto fg = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);

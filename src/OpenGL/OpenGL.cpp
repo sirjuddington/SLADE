@@ -81,7 +81,7 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 		{
 			log::info("Setting up the OpenGL context");
 
-#if wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1
+#if wxCHECK_VERSION(3, 1, 0)
 			// Setup desired context attributes
 			wxGLContextAttrs attr;
 			attr.PlatformDefaults().CompatibilityProfile().OGLVersion(3, 1).EndList();
@@ -279,7 +279,7 @@ bool gl::accuracyTweak()
 // -----------------------------------------------------------------------------
 // Returns the GL attributes array for use with wxGLCanvas
 // -----------------------------------------------------------------------------
-#if wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1
+#if wxCHECK_VERSION(3, 1, 0)
 wxGLAttributes gl::getWxGLAttribs()
 {
 	wxGLAttributes attr;
