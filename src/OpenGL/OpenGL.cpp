@@ -47,6 +47,8 @@ CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
 CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
 CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
 CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
+CVAR(Int, gl_version_major, 0, CVar::Flag::Save)
+CVAR(Int, gl_version_minor, 0, CVar::Flag::Save)
 
 namespace slade::gl
 {
@@ -84,7 +86,10 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 #if wxCHECK_VERSION(3, 1, 0)
 			// Setup desired context attributes
 			wxGLContextAttrs attr;
-			attr.PlatformDefaults().CompatibilityProfile().OGLVersion(3, 1).EndList();
+			if (gl_version_major > 0)
+				attr.PlatformDefaults().CompatibilityProfile().OGLVersion(gl_version_major, gl_version_minor).EndList();
+			else
+				attr.PlatformDefaults().CompatibilityProfile().EndList();
 
 			// Create context
 			context = new wxGLContext(canvas, nullptr, &attr);
@@ -99,7 +104,7 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			// Create context
 			context = new wxGLContext(canvas);
 #endif
-			
+
 			// Make current
 			if (!context->SetCurrent(*canvas))
 			{
@@ -142,10 +147,10 @@ bool gl::init()
 	}
 
 	// Get OpenGL info
-	info.vendor     = (const char*)glGetString(GL_VENDOR);
-	info.renderer   = (const char*)glGetString(GL_RENDERER);
-	info.version    = (const char*)glGetString(GL_VERSION);
-	//info.extensions = (const char*)glGetString(GL_EXTENSIONS);
+	info.vendor   = (const char*)glGetString(GL_VENDOR);
+	info.renderer = (const char*)glGetString(GL_RENDERER);
+	info.version  = (const char*)glGetString(GL_VERSION);
+	// info.extensions = (const char*)glGetString(GL_EXTENSIONS);
 
 	// Get OpenGL version
 	string_view temp{ info.version.data(), 3 };
