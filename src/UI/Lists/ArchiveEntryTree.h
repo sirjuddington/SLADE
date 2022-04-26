@@ -140,10 +140,16 @@ namespace ui
 		wxDataViewColumn* col_type_                = nullptr;
 		wxDataViewColumn* col_index_               = nullptr;
 		int               multi_select_base_index_ = -1;
+		string            search_;
 
 		void setupColumns();
 		void saveColumnWidths() const;
 		void updateColumnWidths();
+
+#ifdef __WXMSW__
+		bool lookForSearchEntryFrom(int index_start);
+		void searchChar(int key_code);
+#endif
 	};
 
 } // namespace ui
