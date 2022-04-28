@@ -2169,12 +2169,12 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		things_[index].z = thing->zPos();
 	else if (things_[index].sector)
 	{
-		//true = thing's Z relative to floor | false = thing's Z relative to ceiling 
+		// true = thing's Z relative to floor | false = thing's Z relative to ceiling
 		bool gravity = !things_[index].type->hanging();
 
-		if(game::configuration().currentGame() == "srb2" && things_[index].flags & 2)
+		if (game::configuration().currentGame() == "srb2" && things_[index].flags & 2)
 		{
-			//Sonic robo blast 2 things contain a "Flip" flag that inverts the thing's gravity if set
+			// Sonic robo blast 2 things contain a "Flip" flag that inverts the thing's gravity if set
 			gravity = !gravity;
 		}
 

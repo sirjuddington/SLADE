@@ -377,114 +377,118 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 			// Sector-based slopes
 			//
 
-			case 700: // Front sector floor
-				applyPlaneAlign<SurfaceType::Floor>(line, front, back);
+		case 700: // Front sector floor
+			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
 			break;
 
-			case 701: // Front sector ceiling
-				applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
+		case 701: // Front sector ceiling
+			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
 			break;
 
-			case 702: // Front sector floor and ceiling
-				applyPlaneAlign<SurfaceType::Floor>(line, front, back);
-				applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
+		case 702: // Front sector floor and ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
 			break;
 
-			case 703: // Front sector floor and back sector ceiling
-				applyPlaneAlign<SurfaceType::Floor>(line, front, back);
-				applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+		case 703: // Front sector floor and back sector ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
 			break;
 
 
-			case 710: // Back sector floor
-				applyPlaneAlign<SurfaceType::Floor>(line, back, front);
+		case 710: // Back sector floor
+			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
 			break;
 
-			case 711: // Back sector ceiling
-				applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+		case 711: // Back sector ceiling
+			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
 			break;
 
-			case 712: // Back sector floor and ceiling
-				applyPlaneAlign<SurfaceType::Floor>(line, back, front);
-				applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+		case 712: // Back sector floor and ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
 			break;
 
-			case 713: // Back sector floor and front sector ceiling
-				applyPlaneAlign<SurfaceType::Floor>(line, back, front);
-				applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
+		case 713: // Back sector floor and front sector ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
 			break;
 
 			//
 			// Copied slopes
 			//
 
-			case 720: //Front sector floor
-			{
-				auto tagged = map->sectors().firstWithId(line->id());
-				front->setFloorPlane(tagged->floor().plane);
-			}
-			break;
+		case 720: // Front sector floor
+		{
+			auto tagged = map->sectors().firstWithId(line->id());
+			front->setFloorPlane(tagged->floor().plane);
+		}
+		break;
 
-			case 721: //Front sector ceiling
-			{
-				auto tagged = map->sectors().firstWithId(line->id());
-				front->setCeilingPlane(tagged->ceiling().plane);
-			}
-			break;
+		case 721: // Front sector ceiling
+		{
+			auto tagged = map->sectors().firstWithId(line->id());
+			front->setCeilingPlane(tagged->ceiling().plane);
+		}
+		break;
 
-			case 722: //Front sector floor and ceiling
-			{
-				auto tagged = map->sectors().firstWithId(line->id());
-				front->setCeilingPlane(tagged->ceiling().plane);
-				front->setFloorPlane(tagged->floor().plane);
-			}
-			break;
+		case 722: // Front sector floor and ceiling
+		{
+			auto tagged = map->sectors().firstWithId(line->id());
+			front->setCeilingPlane(tagged->ceiling().plane);
+			front->setFloorPlane(tagged->floor().plane);
+		}
+		break;
 
 			//
 			// Vertex-based slopes
 			//
 
-			case 704: //Front sector floor
-			
-			case 705: //Front sector ceiling
+		case 704: // Front sector floor
 
-			case 714: //Back sector floor
+		case 705: // Front sector ceiling
 
-			case 715: //Back sector ceiling
+		case 714: // Back sector floor
+
+		case 715: // Back sector ceiling
+		{
+			auto target = (line->special() == 704 || line->special() == 705) ? front : back;
+
+			auto sidedef = line->s1()->sector() == target ? line->s1() : line->s2();
+
+			Vec3d    vertices[3];
+			unsigned count = 0;
+			for (auto thing : map->things())
 			{
-				auto target = (line->special() == 704 || line->special() == 705) ? front : back; 
-				
-				auto sidedef = line->s1()->sector() == target ? line->s1() : line->s2();
-
-				Vec3d vertices[3];
-				unsigned count = 0;
-				for (auto thing : map->things())
-				{
-					if(thing->type() != 750)
-						break;
-
-					if((line->flagSet(8192) && (thing->angle() == line->id() || thing->angle() == sidedef->texOffsetX() || thing->angle() == sidedef->texOffsetY())) 
-						|| thing->angle() == line->id())
-					{
-						vertices[count++] = Vec3d(thing->xPos(), thing->yPos(), thing->zPos());
-						if (count >= 3)
-							break;
-					}
-				}
-
-				if(count < 3)
-				{
-					log::warning("Ignoring vertex slope special on line {}, No or insufficient vertex slope things (750) were provided", line->index());
+				if (thing->type() != 750)
 					break;
+
+				if ((line->flagSet(8192)
+					 && (thing->angle() == line->id() || thing->angle() == sidedef->texOffsetX()
+						 || thing->angle() == sidedef->texOffsetY()))
+					|| thing->angle() == line->id())
+				{
+					vertices[count++] = Vec3d(thing->xPos(), thing->yPos(), thing->zPos());
+					if (count >= 3)
+						break;
 				}
+			}
 
-				if(line->special() == 704 || line->special() == 714)
-					target->setPlane<SurfaceType::Floor>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
-				else
-					target->setPlane<SurfaceType::Ceiling>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
-			}	
-			break;
+			if (count < 3)
+			{
+				log::warning(
+					"Ignoring vertex slope special on line {}, No or insufficient vertex slope things (750) were "
+					"provided",
+					line->index());
+				break;
+			}
 
+			if (line->special() == 704 || line->special() == 714)
+				target->setPlane<SurfaceType::Floor>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+			else
+				target->setPlane<SurfaceType::Ceiling>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+		}
+		break;
 		}
 	}
 }
@@ -883,7 +887,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 		{
 			if (firsttime)
 			{
-				v1_pos      = vertex->position();
+				v1_pos    = vertex->position();
 				firsttime = false;
 			}
 			v2_pos = vertex->position();
@@ -1083,10 +1087,10 @@ template<SurfaceType T>
 void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 	const
 {
-	string prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
-	auto v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
-	auto v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
-	auto v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
+	string prop         = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	auto   v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
+	auto   v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
+	auto   v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
 
 	// Ignore if no vertices have a height set
 	if (!v1_hasheight && !v2_hasheight && !v3_hasheight)

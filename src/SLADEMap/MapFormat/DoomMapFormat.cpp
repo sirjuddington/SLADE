@@ -31,13 +31,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DoomMapFormat.h"
+#include "Game/Configuration.h"
 #include "General/UI.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
 #include "Utility/StringUtils.h"
-#include "Game/Configuration.h"
 
 using namespace slade;
 
@@ -153,7 +153,7 @@ bool DoomMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	auto     vert_data = (Vertex*)entry->rawData(true);
+	auto     vert_data = reinterpret_cast<const Vertex*>(entry->rawData(true));
 	unsigned nv        = entry->size() / sizeof(Vertex);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
@@ -186,7 +186,7 @@ bool DoomMapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	auto     side_data = (SideDef*)entry->rawData(true);
+	auto     side_data = reinterpret_cast<const SideDef*>(entry->rawData(true));
 	unsigned ns        = entry->size() / sizeof(SideDef);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
@@ -226,7 +226,7 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	auto     line_data = (LineDef*)entry->rawData(true);
+	auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData(true));
 	unsigned nl        = entry->size() / sizeof(LineDef);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
@@ -288,7 +288,7 @@ bool DoomMapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_da
 		return true;
 	}
 
-	auto     sect_data = (Sector*)entry->rawData(true);
+	auto     sect_data = reinterpret_cast<const Sector*>(entry->rawData(true));
 	unsigned ns        = entry->size() / sizeof(Sector);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
@@ -331,7 +331,7 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 		return true;
 	}
 
-	auto     thng_data = (Thing*)entry->rawData(true);
+	auto     thng_data = reinterpret_cast<const Thing*>(entry->rawData(true));
 	unsigned nt        = entry->size() / sizeof(Thing);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nt; a++)
@@ -343,14 +343,11 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 			thng_data[a].angle,
 			thng_data[a].flags));
 
-		if(game::configuration().currentGame() == "srb2") //Sonic robo blast 2
+		if (game::configuration().currentGame() == "srb2") // Sonic robo blast 2
 		{
-			//Srb2 stores thing's z position at the upper 12-bit from the thing's flags
+			// Srb2 stores thing's z position at the upper 12-bit from the thing's flags
 			thing->setZ((unsigned)(thng_data[a].flags >> 4));
 		}
-
-
-
 	}
 
 	log::info(3, "Read {} things", map_data.things().size());
@@ -517,9 +514,9 @@ unique_ptr<ArchiveEntry> DoomMapFormat::writeTHINGS(const ThingList& things) con
 		data.type  = thing->type();
 		data.flags = thing->flags();
 
-		if(game::configuration().currentGame() == "srb2") //Sonic robo blast 2
+		if (game::configuration().currentGame() == "srb2") // Sonic robo blast 2
 		{
-			//Srb2 stores thing's z position at the upper 12 bits from the thing's flags
+			// Srb2 stores thing's z position at the upper 12 bits from the thing's flags
 			data.flags = (data.flags & 0xf) | ((unsigned)thing->zPos() << 4);
 		}
 
