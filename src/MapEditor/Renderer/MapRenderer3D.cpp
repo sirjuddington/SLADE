@@ -2169,10 +2169,19 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		things_[index].z = thing->zPos();
 	else if (things_[index].sector)
 	{
+		//true = thing's Z relative to floor | false = thing's Z relative to ceiling 
+		bool gravity = !things_[index].type->hanging();
+
+		if(game::configuration().currentGame() == "srb2" && things_[index].flags & 2)
+		{
+			//Sonic robo blast 2 things contain a "Flip" flag that inverts the thing's gravity if set
+			gravity = !gravity;
+		}
+
 		// Get sector floor (or ceiling) height
 		int   sheight;
 		float zheight = thing->zPos();
-		if (things_[index].type->hanging())
+		if (!gravity)
 		{
 			sheight = things_[index].sector->ceiling().plane.heightAt(thing->xPos(), thing->yPos());
 			sheight -= theight;
