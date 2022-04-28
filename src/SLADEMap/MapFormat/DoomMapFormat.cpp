@@ -37,6 +37,7 @@
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
 #include "Utility/StringUtils.h"
+#include "Game/Configuration.h"
 
 using namespace slade;
 
@@ -336,11 +337,20 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 	for (size_t a = 0; a < nt; a++)
 	{
 		ui::setSplashProgress(p + ((float)a / nt) * 0.2f);
-		map_data.addThing(std::make_unique<MapThing>(
+		MapThing* thing = map_data.addThing(std::make_unique<MapThing>(
 			Vec3d{ (double)thng_data[a].x, (double)thng_data[a].y, 0. },
 			thng_data[a].type,
 			thng_data[a].angle,
 			thng_data[a].flags));
+
+		if(game::configuration().currentGame() == "srb2") //Sonic robo blast 2
+		{
+			//Srb2 stores thing's z position at the upper 12-bit from the thing's flags
+			thing->setZ((unsigned)(thng_data[a].flags >> 4));
+		}
+
+
+
 	}
 
 	log::info(3, "Read {} things", map_data.things().size());
@@ -506,6 +516,12 @@ unique_ptr<ArchiveEntry> DoomMapFormat::writeTHINGS(const ThingList& things) con
 		data.angle = thing->angle();
 		data.type  = thing->type();
 		data.flags = thing->flags();
+
+		if(game::configuration().currentGame() == "srb2") //Sonic robo blast 2
+		{
+			//Srb2 stores thing's z position at the upper 12 bits from the thing's flags
+			data.flags = (data.flags & 0xf) | ((unsigned)thing->zPos() << 4);
+		}
 
 		entry->write(&data, 10);
 	}
