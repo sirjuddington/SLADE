@@ -1362,6 +1362,22 @@ vector<ArchiveDir*> ArchiveEntryTree::expandedDirs() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the current root directory of the tree (or list in case of list view)
+// -----------------------------------------------------------------------------
+ArchiveDir* ArchiveEntryTree::currentRootDir() const
+{
+	// List view - current dir
+	if (model_->viewType() == ArchiveViewModel::ViewType::List)
+		return model_->rootDir();
+
+	// Tree view - archive root dir
+	if (auto* archive = archive_.lock().get())
+		return archive->rootDir().get();
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
 // Set the filter options on the model
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::setFilter(string_view name, string_view category)

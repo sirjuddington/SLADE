@@ -117,6 +117,7 @@ namespace ui
 		ArchiveDir*           currentSelectedDir() const;
 		ArchiveDir*           selectedEntriesDir() const;
 		vector<ArchiveDir*>   expandedDirs() const;
+		ArchiveDir*           currentRootDir() const;
 
 		void setPathPanel(ArchivePathPanel* path_panel) const
 		{
