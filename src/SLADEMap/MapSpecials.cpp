@@ -39,6 +39,7 @@
 
 using namespace slade;
 using SurfaceType = MapSector::SurfaceType;
+using ExtraFloor  = MapSector::ExtraFloor;
 
 
 // -----------------------------------------------------------------------------
@@ -50,6 +51,8 @@ namespace
 {
 constexpr double TAU = math::PI * 2; // Number of radians in the unit circle
 } // namespace
+
+CVAR(Bool, map_process_3d_floors, true, CVar::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -185,12 +188,17 @@ void MapSpecials::updateTaggedSectors(const SLADEMap* map) const
 // -----------------------------------------------------------------------------
 void MapSpecials::processZDoomMapSpecials(SLADEMap* map) const
 {
+	// All slope specials, which must be done in a particular order
+	processZDoomSlopes(map);
+
+	// Clear out all 3D floors, or every call to this function will create duplicates!
+	// TODO this isn't a very good solution, but we don't have incremental updates yet
+	for (unsigned a = 0; a < map->nSectors(); a++)
+		map->sector(a)->clearExtraFloors();
+
 	// Line specials
 	for (unsigned a = 0; a < map->nLines(); a++)
 		processZDoomLineSpecial(map->line(a));
-
-	// All slope specials, which must be done in a particular order
-	processZDoomSlopes(map);
 }
 
 // -----------------------------------------------------------------------------
@@ -211,8 +219,61 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line) const
 	for (unsigned arg = 0; arg < 5; arg++)
 		args[arg] = line->arg(arg);
 
+	// --- Sector_Set3dFloor
+	if (special == 160 && map_process_3d_floors)
+	{
+		MapSector* control_sector = line->frontSector();
+		if (!control_sector)
+			return;
+
+		int sector_tag = args[0];
+		int type_flags = args[1];
+		int flags      = args[2];
+		int alpha      = args[3];
+
+		float falpha = alpha / 255.0f;
+
+		ExtraFloor extra_floor;
+
+		// Liquids (swimmable, type 2) and floors with flag 4 have their inner
+		// surfaces drawn as well
+		// TODO this does something different with vavoom
+		extra_floor.draw_inside = (type_flags & 4 || (type_flags & 3) == 2);
+		extra_floor.flags       = flags;
+
+		// TODO only gzdoom supports slopes here.
+		// TODO this should probably happen live instead of being copied, if
+		// we're moving towards purely live updates here
+		// Guessing a bit here, but I suspect ZDoom sorts floors in order of
+		// the control sector's plain ceiling height
+		extra_floor.effective_height = control_sector->ceiling().height;
+		extra_floor.ceiling_plane    = control_sector->ceiling().plane;
+		if (extra_floor.ceilingOnly())
+			extra_floor.floor_plane = extra_floor.ceiling_plane;
+		else
+			extra_floor.floor_plane = control_sector->floor().plane;
+
+		extra_floor.control_sector_index = control_sector->index();
+		extra_floor.control_line_index   = line->index();
+		extra_floor.floor_type           = type_flags & 0x3;
+
+		extra_floor.alpha = falpha;
+
+		auto count = 0;
+		for (auto& sector : map->sectors())
+		{
+			if (sector->id() == sector_tag)
+			{
+				sector->addExtraFloor(extra_floor, *control_sector);
+				count++;
+			}
+		}
+		log::info(
+			4, "Adding a 3d floor controlled by sector {} to {} sectors", extra_floor.control_sector_index, count);
+	}
+
 	// --- TranslucentLine ---
-	if (special == 208)
+	else if (special == 208)
 	{
 		// Get tagged lines
 		vector<MapLine*> tagged;

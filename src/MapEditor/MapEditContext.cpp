@@ -328,7 +328,7 @@ bool MapEditContext::update(long frametime)
 				// Update 3d info overlay
 				if (info_overlay_3d && hl.index >= 0)
 				{
-					info_3d_.update(hl.index, hl.type, &map_);
+					info_3d_.update(hl, &map_);
 					info_showing_ = true;
 				}
 				else
@@ -537,7 +537,7 @@ void MapEditContext::forceRefreshRenderer()
 	if (edit_mode_ == Mode::Visual)
 	{
 		auto hl = renderer_.renderer3D().determineHilight();
-		info_3d_.update(hl.index, hl.type, &map_);
+		info_3d_.update(hl, &map_);
 	}
 
 	if (!canvas_->setActive())
@@ -670,9 +670,9 @@ void MapEditContext::updateTagged()
 				case TagType::Sector1Thing2:
 				{
 					int thingtag = (needs_tag == TagType::Sector1Thing2) ? arg2 : tag;
-					int sectag   = (needs_tag == TagType::Sector1Thing2) ?
-									 tag :
-									 (needs_tag == TagType::Thing1Sector2) ? arg2 : arg3;
+					int sectag   = (needs_tag == TagType::Sector1Thing2) ? tag :
+								   (needs_tag == TagType::Thing1Sector2) ? arg2 :
+                                                                           arg3;
 					if ((thingtag | sectag) == 0)
 						break;
 					else if (thingtag == 0)
@@ -1158,6 +1158,10 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 		else if (key == "me3d_paste_tex_adj")
 			edit_3d_.floodFill(Edit3D::CopyType::TexType);
 
+		// Delete texture
+		else if (key == "me3d_delete_texture")
+			edit_3d_.deleteTexture();
+
 		// Light changes
 		else if (key == "me3d_light_up16")
 			edit_3d_.changeSectorLight(16);
@@ -1317,7 +1321,10 @@ void MapEditContext::updateStatusText() const
 	if (gridSize() < 1)
 		grid = fmt::format("Grid: {:1.2f}x{:1.2f}", gridSize(), gridSize());
 	else
-		grid = fmt::format("Grid: {}x{}", (int)gridSize(), (int)gridSize());
+	{
+		auto gsize = static_cast<int>(round(gridSize()));
+		grid       = fmt::format("Grid: {}x{}", gsize, gsize);
+	}
 
 	if (grid_snap_)
 		grid += " (Snapping ON)";
@@ -1424,7 +1431,7 @@ void MapEditContext::doUndo()
 	selection_.clear();
 
 	// Undo
-	int  time      = app::runTimer() - 1;
+	auto time      = app::runTimer() - 1;
 	auto manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 	auto undo_name = manager->undo();
 

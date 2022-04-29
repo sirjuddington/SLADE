@@ -103,7 +103,7 @@ MapSide* mapeditor::Item::asSide(const SLADEMap& map) const
 {
 	if (type == ItemType::Side || type == ItemType::WallBottom || type == ItemType::WallMiddle
 		|| type == ItemType::WallTop)
-		return map.side(index);
+		return real_index >= 0 ? map.side(real_index) : map.side(index);
 
 	return nullptr;
 }
@@ -115,7 +115,7 @@ MapSide* mapeditor::Item::asSide(const SLADEMap& map) const
 MapSector* mapeditor::Item::asSector(const SLADEMap& map) const
 {
 	if (type == ItemType::Sector || type == ItemType::Ceiling || type == ItemType::Floor)
-		return map.sector(index);
+		return real_index >= 0 ? map.sector(real_index) : map.sector(index);
 
 	return nullptr;
 }

@@ -213,16 +213,18 @@ void Edit3D::changeOffset(int amount, bool x) const
 	bool        changed = false;
 	for (auto& item : items)
 	{
+		int index = item.real_index >= 0 ? item.real_index : item.index;
+
 		// Wall
 		if (item.type >= ItemType::WallTop && item.type <= ItemType::WallBottom)
 		{
-			auto side = context_.map().side(item.index);
+			auto side = context_.map().side(index);
 
 			// If offsets are linked, just change the whole side offset
 			if (link_offset_)
 			{
 				// Check we haven't processed this side already
-				if (VECTOR_EXISTS(done, item.index))
+				if (VECTOR_EXISTS(done, index))
 					continue;
 
 				// Change the appropriate offset
@@ -232,7 +234,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 					side->setIntProperty("offsety", side->texOffsetY() + amount);
 
 				// Add to done list
-				done.push_back(item.index);
+				done.push_back(index);
 			}
 
 			// Unlinked offsets
@@ -363,41 +365,32 @@ void Edit3D::changeSectorHeight(int amount) const
 			ceilings.push_back(index);
 		}
 
-		// Floor
-		else if (item.type == ItemType::Floor)
+		// Floor or ceiling
+		else if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
 		{
+			bool floor = (item.type == ItemType::Floor);
+
 			// Get sector
-			auto sector = context_.map().sector(item.index);
+			MapSector* sector = context_.map().sector(item.index);
 
-			// Change height
-			sector->setFloorHeight(sector->floor().height + amount);
-		}
-
-		// Ceiling
-		else if (item.type == ItemType::Ceiling)
-		{
-			// Get sector
-			auto sector = context_.map().sector(item.index);
-
-			// Check this sector's ceiling hasn't already been changed
-			bool done  = false;
-			int  index = sector->index();
-			for (int ceiling : ceilings)
+			if (floor)
 			{
-				if (ceiling == index)
-				{
-					done = true;
-					break;
-				}
+				// Change height
+				sector->setFloorHeight(sector->floor().height + amount);
 			}
-			if (done)
-				continue;
+			else
+			{
+				// Check this sector's ceiling hasn't already been changed
+				int index = sector->index();
+				if (VECTOR_EXISTS(ceilings, index))
+					continue;
 
-			// Change height
-			sector->setCeilingHeight(sector->ceiling().height + amount);
+				// Change height
+				sector->setCeilingHeight(sector->ceiling().height + amount);
 
-			// Set to changed
-			ceilings.push_back(sector->index());
+				// Set to changed
+				ceilings.push_back(sector->index());
+			}
 		}
 	}
 
@@ -1285,6 +1278,27 @@ void Edit3D::changeTexture() const
 
 		// End undo level
 		context_.endUndoRecord();
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Clear the texture property
+// -----------------------------------------------------------------------------
+void Edit3D::deleteTexture() const
+{
+	auto& map = context_.map();
+	for (auto& item : context_.selection().selectionOrHilight())
+	{
+		if (item.type == ItemType::Floor)
+			map.sector(item.index)->setStringProperty("texturefloor", "-");
+		else if (item.type == ItemType::Ceiling)
+			map.sector(item.index)->setStringProperty("textureceiling", "-");
+		else if (item.type == ItemType::WallBottom)
+			map.side(item.index)->setStringProperty("texturebottom", "-");
+		else if (item.type == ItemType::WallMiddle)
+			map.side(item.index)->setStringProperty("texturemiddle", "-");
+		else if (item.type == ItemType::WallTop)
+			map.side(item.index)->setStringProperty("texturetop", "-");
 	}
 }
 
