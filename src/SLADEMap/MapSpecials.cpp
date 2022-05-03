@@ -285,6 +285,9 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b   = -1;
 						for (auto& parameter : parameters)
 						{
+							if (!parameter.isInteger())
+								continue;
+
 							parameter.toInt(val);
 							if (tag < 0)
 								tag = val;
@@ -324,6 +327,9 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b   = -1;
 						for (auto& parameter : parameters)
 						{
+							if (!parameter.isInteger())
+								continue;
+
 							parameter.toInt(val);
 							if (tag < 0)
 								tag = val;
