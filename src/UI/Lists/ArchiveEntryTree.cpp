@@ -325,8 +325,6 @@ void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
 	wxDataViewItemArray prev_items;
 	getDirChildItems(prev_items, *cur_root);
 
-	sort_enabled_ = false;
-
 	// Remove previous root items
 	ItemsDeleted({}, prev_items);
 
@@ -336,7 +334,6 @@ void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
 	getDirChildItems(items, *dir);
 	ItemsAdded({}, items);
 
-	sort_enabled_ = true;
 	Resort();
 
 	if (path_panel_)
