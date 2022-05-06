@@ -1306,6 +1306,8 @@ bool ArchivePanel::moveUp() const
 	auto sel_entries = entry_tree_->selectedEntries();
 	auto focus       = entry_tree_->GetCurrentItem();
 	auto first       = entry_tree_->firstSelectedItem();
+	if (sel_entries.empty())
+		return false;
 
 	// If the first selected item is the first entry in the directory, don't move
 	if (sel_entries[0]->index() == 0)
@@ -1356,6 +1358,8 @@ bool ArchivePanel::moveDown() const
 	auto sel_entries = entry_tree_->selectedEntries();
 	auto focus       = entry_tree_->GetCurrentItem();
 	auto last        = entry_tree_->lastSelectedItem();
+	if (sel_entries.empty())
+		return false;
 
 	// If the last selected item the last entry in the directory, don't move
 	if (sel_entries.back()->index() == dir->numEntries() - 1)
@@ -3451,6 +3455,10 @@ bool ArchivePanel::canMoveEntries() const
 	if (auto archive = archive_.lock())
 		if (archive->formatId() == "folder")
 			return false;
+
+	// Can't move if no entries selected (ie. only dirs)
+	if (entry_tree_->selectedEntries().empty())
+		return false;
 
 	return true;
 }
