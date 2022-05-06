@@ -434,7 +434,7 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 
 	// Type column
 	else if (col == 2)
-		variant = entry->type() == EntryType::folderType() ? " " : entry->typeString();
+		variant = entry->type() == EntryType::folderType() ? "Folder" : entry->typeString();
 
 	// Index column
 	else if (col == 3)
