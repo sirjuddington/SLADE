@@ -57,7 +57,11 @@ namespace slade::ui
 wxColour                           col_text_modified(0, 0, 0, 0);
 wxColour                           col_text_new(0, 0, 0, 0);
 wxColour                           col_text_locked(0, 0, 0, 0);
+#if wxCHECK_VERSION(3, 1, 6)
+std::unordered_map<string, wxBitmapBundle> icon_cache;
+#else
 std::unordered_map<string, wxIcon> icon_cache;
+#endif
 } // namespace slade::ui
 
 CVAR(Int, elist_colsize_name_tree, 150, CVar::Save)
@@ -398,12 +402,18 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		{
 			// Not found, add to cache
 			const auto pad  = Point2i{ 1, elist_icon_padding };
+
+#if wxCHECK_VERSION(3, 1, 6)
+			const auto bundle  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
+			icon_cache[entry->type()->icon()] = bundle;
+#else
 			const auto size = scalePx(elist_icon_size);
 			const auto bmp  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), size, pad);
 
 			wxIcon icon;
 			icon.CopyFromBitmap(bmp);
 			icon_cache[entry->type()->icon()] = icon;
+#endif
 		}
 
 		wxString name = entry->name();
