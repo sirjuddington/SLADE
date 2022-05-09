@@ -285,6 +285,9 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b   = -1;
 						for (auto& parameter : parameters)
 						{
+							if (!parameter.isInteger())
+								continue;
+
 							parameter.toInt(val);
 							if (tag < 0)
 								tag = val;
@@ -324,6 +327,9 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b   = -1;
 						for (auto& parameter : parameters)
 						{
+							if (!parameter.isInteger())
+								continue;
+
 							parameter.toInt(val);
 							if (tag < 0)
 								tag = val;
@@ -373,6 +379,10 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 
 		switch (line->special())
 		{
+			//
+			// Sector-based slopes
+			//
+
 		case 700: // Front sector floor
 			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
 			break;
@@ -391,6 +401,7 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
 			break;
 
+
 		case 710: // Back sector floor
 			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
 			break;
@@ -408,6 +419,82 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
 			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
 			break;
+
+			//
+			// Copied slopes
+			//
+
+		case 720: // Front sector floor
+		{
+			auto tagged = map->sectors().firstWithId(line->id());
+			front->setFloorPlane(tagged->floor().plane);
+		}
+		break;
+
+		case 721: // Front sector ceiling
+		{
+			auto tagged = map->sectors().firstWithId(line->id());
+			front->setCeilingPlane(tagged->ceiling().plane);
+		}
+		break;
+
+		case 722: // Front sector floor and ceiling
+		{
+			auto tagged = map->sectors().firstWithId(line->id());
+			front->setCeilingPlane(tagged->ceiling().plane);
+			front->setFloorPlane(tagged->floor().plane);
+		}
+		break;
+
+			//
+			// Vertex-based slopes
+			//
+
+		case 704: // Front sector floor
+
+		case 705: // Front sector ceiling
+
+		case 714: // Back sector floor
+
+		case 715: // Back sector ceiling
+		{
+			auto target = (line->special() == 704 || line->special() == 705) ? front : back;
+
+			auto sidedef = line->s1()->sector() == target ? line->s1() : line->s2();
+
+			Vec3d    vertices[3];
+			unsigned count = 0;
+			for (auto thing : map->things())
+			{
+				if (thing->type() != 750)
+					break;
+
+				if ((line->flagSet(8192)
+					 && (thing->angle() == line->id() || thing->angle() == sidedef->texOffsetX()
+						 || thing->angle() == sidedef->texOffsetY()))
+					|| thing->angle() == line->id())
+				{
+					vertices[count++] = Vec3d(thing->xPos(), thing->yPos(), thing->zPos());
+					if (count >= 3)
+						break;
+				}
+			}
+
+			if (count < 3)
+			{
+				log::warning(
+					"Ignoring vertex slope special on line {}, No or insufficient vertex slope things (750) were "
+					"provided",
+					line->index());
+				break;
+			}
+
+			if (line->special() == 704 || line->special() == 714)
+				target->setPlane<SurfaceType::Floor>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+			else
+				target->setPlane<SurfaceType::Ceiling>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+		}
+		break;
 		}
 	}
 }
@@ -806,7 +893,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 		{
 			if (firsttime)
 			{
-				v1_pos      = vertex->position();
+				v1_pos    = vertex->position();
 				firsttime = false;
 			}
 			v2_pos = vertex->position();
@@ -1006,10 +1093,10 @@ template<SurfaceType T>
 void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 	const
 {
-	string prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
-	auto v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
-	auto v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
-	auto v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
+	string prop         = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	auto   v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
+	auto   v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
+	auto   v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
 
 	// Ignore if no vertices have a height set
 	if (!v1_hasheight && !v2_hasheight && !v3_hasheight)

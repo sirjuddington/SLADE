@@ -71,7 +71,7 @@ CVAR(Int, dir_archive_change_action, 2, CVar::Flag::Save) // 0=always ignore, 1=
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Int, autosave_entry_changes)
 
@@ -295,8 +295,10 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	auto  et_icon_list  = EntryType::iconList();
 	for (const auto& name : et_icon_list)
 	{
-		if (bm_image_list->Add(icons::getIcon(icons::Entry, name)) < 0)
-			bm_image_list->Add(icons::getIcon(icons::Entry, "default"));
+		if (icons::iconExists(icons::Entry, name))
+			wxutil::addImageListIcon(bm_image_list, icons::Entry, name);
+		else
+			wxutil::addImageListIcon(bm_image_list, icons::Entry, "default");
 	}
 	list_bookmarks_->SetImageList(bm_image_list, wxIMAGE_LIST_SMALL);
 	menu_bookmarks_ = new wxMenu();
@@ -369,10 +371,10 @@ void ArchiveManagerPanel::createRecentPanel()
 
 	// Setup image list
 	auto list = wxutil::createSmallImageList();
-	list->Add(icons::getIcon(icons::Entry, "archive"));
-	list->Add(icons::getIcon(icons::Entry, "wad"));
-	list->Add(icons::getIcon(icons::Entry, "zip"));
-	list->Add(icons::getIcon(icons::Entry, "folder"));
+	wxutil::addImageListIcon(list, icons::Entry, "archive");
+	wxutil::addImageListIcon(list, icons::Entry, "wad");
+	wxutil::addImageListIcon(list, icons::Entry, "zip");
+	wxutil::addImageListIcon(list, icons::Entry, "folder");
 	list_recent_->SetImageList(list, wxIMAGE_LIST_SMALL);
 }
 

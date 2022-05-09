@@ -57,7 +57,11 @@ namespace slade::ui
 wxColour                           col_text_modified(0, 0, 0, 0);
 wxColour                           col_text_new(0, 0, 0, 0);
 wxColour                           col_text_locked(0, 0, 0, 0);
+#if wxCHECK_VERSION(3, 1, 6)
+std::unordered_map<string, wxBitmapBundle> icon_cache;
+#else
 std::unordered_map<string, wxIcon> icon_cache;
+#endif
 vector<int>                        elist_chars = {
     '.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
     ']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
@@ -329,8 +333,6 @@ void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
 	wxDataViewItemArray prev_items;
 	getDirChildItems(prev_items, *cur_root);
 
-	sort_enabled_ = false;
-
 	// Remove previous root items
 	ItemsDeleted({}, prev_items);
 
@@ -340,7 +342,6 @@ void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
 	getDirChildItems(items, *dir);
 	ItemsAdded({}, items);
 
-	sort_enabled_ = true;
 	Resort();
 
 	if (path_panel_)
@@ -405,12 +406,18 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		{
 			// Not found, add to cache
 			const auto pad  = Point2i{ 1, elist_icon_padding };
+
+#if wxCHECK_VERSION(3, 1, 6)
+			const auto bundle  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
+			icon_cache[entry->type()->icon()] = bundle;
+#else
 			const auto size = scalePx(elist_icon_size);
 			const auto bmp  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), size, pad);
 
 			wxIcon icon;
 			icon.CopyFromBitmap(bmp);
 			icon_cache[entry->type()->icon()] = icon;
+#endif
 		}
 
 		wxString name = entry->name();
@@ -441,7 +448,7 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 
 	// Type column
 	else if (col == 2)
-		variant = entry->type() == EntryType::folderType() ? " " : entry->typeString();
+		variant = entry->type() == EntryType::folderType() ? "Folder" : entry->typeString();
 
 	// Index column
 	else if (col == 3)
@@ -1373,6 +1380,22 @@ vector<ArchiveDir*> ArchiveEntryTree::expandedDirs() const
 			expanded_dirs.push_back(dir.get());
 
 	return expanded_dirs;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the current root directory of the tree (or list in case of list view)
+// -----------------------------------------------------------------------------
+ArchiveDir* ArchiveEntryTree::currentRootDir() const
+{
+	// List view - current dir
+	if (model_->viewType() == ArchiveViewModel::ViewType::List)
+		return model_->rootDir();
+
+	// Tree view - archive root dir
+	if (auto* archive = archive_.lock().get())
+		return archive->rootDir().get();
+
+	return nullptr;
 }
 
 // -----------------------------------------------------------------------------

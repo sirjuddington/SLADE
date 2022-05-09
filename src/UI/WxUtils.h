@@ -12,6 +12,7 @@ wxMenuItem* createMenuItem(
 	const wxString& icon = wxEmptyString);
 wxFont       monospaceFont(wxFont base);
 wxImageList* createSmallImageList();
+int          addImageListIcon(wxImageList* list, int icon_type, string_view icon);
 wxPanel*     createPadPanel(wxWindow* parent, wxWindow* control, int pad = -1);
 wxSpinCtrl*  createSpinCtrl(wxWindow* parent, int value, int min, int max);
 
