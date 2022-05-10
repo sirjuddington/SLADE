@@ -353,7 +353,13 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, ui::scalePxU(1));
 	}
 
-	if (icon_.IsOk())
+#if wxCHECK_VERSION(3, 1, 6)
+	auto icon = icon_.GetBitmap(wxDefaultSize);
+#else
+	const auto& icon = icon_;
+#endif
+
+	if (icon.IsOk())
 	{
 		// Draw disabled icon if disabled
 		if (!IsEnabled())
@@ -367,12 +373,12 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 			// Draw disabled icon
 			gc->DrawBitmap(
-				icon_.ConvertToDisabled(r), pad_outer_ + pad_inner_, pad_outer_ + pad_inner_, icon_size_, icon_size_);
+				icon.ConvertToDisabled(r), pad_outer_ + pad_inner_, pad_outer_ + pad_inner_, icon_size_, icon_size_);
 		}
 
 		// Otherwise draw normal icon
 		else
-			gc->DrawBitmap(icon_, pad_outer_ + pad_inner_, pad_outer_ + pad_inner_, icon_size_, icon_size_);
+			gc->DrawBitmap(icon, pad_outer_ + pad_inner_, pad_outer_ + pad_inner_, icon_size_, icon_size_);
 	}
 
 	if (show_name_)
@@ -384,7 +390,11 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 	if (menu_dropdown_)
 	{
+#if wxCHECK_VERSION(3, 1, 6)
+		static auto arrow_down = icons::getInterfaceIcon("arrow-down", icon_size_ * 0.75).GetBitmap(wxDefaultSize);
+#else
 		static auto arrow_down = icons::getInterfaceIcon("arrow-down", icon_size_ * 0.75);
+#endif
 
 		gc->DrawBitmap(
 			arrow_down,

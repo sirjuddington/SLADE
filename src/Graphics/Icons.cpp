@@ -373,14 +373,16 @@ wxBitmap loadPNGIcon(const IconDef& icon, int size, Point2i padding)
 bool icons::loadIcons()
 {
 	// Check for dark mode
-#if wxCHECK_VERSION(3, 1, 3)
+#if defined(__WXMSW__)
+	ui_icons_dark = false; // Force light theme icons in windows
+#elif wxCHECK_VERSION(3, 1, 3)
 	ui_icons_dark = wxSystemSettings::GetAppearance().IsDark();
 #else
-	auto fg = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+	auto fg   = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	auto fg_r = fg.Red();
 	auto fg_g = fg.Green();
 	auto fg_b = fg.Blue();
-	auto bg = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+	auto bg   = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
 	auto bg_r = bg.Red();
 	auto bg_g = bg.Green();
 	auto bg_b = bg.Blue();
@@ -438,6 +440,47 @@ bool icons::loadIcons()
 	return true;
 }
 
+#if wxCHECK_VERSION(3, 1, 6)
+// -----------------------------------------------------------------------------
+// Loads the icon [name] of [type] into a wxBitmapBundle of minimum [size], with
+// optional [padding] (png icons only).
+//
+// NOTE: this does not use any kind of caching and will generate/load the icon
+// from svg/png data each time
+// -----------------------------------------------------------------------------
+wxBitmapBundle icons::getIcon(Type type, string_view name, int size, Point2i padding)
+{
+	// Get icon definition
+	const auto* icon_def = iconDef(type, name);
+	if (!icon_def)
+	{
+		log::warning("Unknown icon \"{}\"", name);
+		return wxNullBitmap;
+	}
+
+	// Check size
+	if (size <= 0)
+		size = 16;
+
+	// If there is SVG data use that
+	if (!icon_def->svg_data.empty())
+		return wxBitmapBundle::FromSVG(icon_def->svg_data.c_str(), { size, size });
+
+	// Otherwise load from png
+	if (icon_def->entry_png16 || icon_def->entry_png32)
+	{
+		wxVector<wxBitmap> bitmaps;
+		if (size <= 16)
+			bitmaps.push_back(loadPNGIcon(*icon_def, 16, padding));
+		if (size <= 24)
+			bitmaps.push_back(loadPNGIcon(*icon_def, 24, padding));
+		bitmaps.push_back(loadPNGIcon(*icon_def, 32, padding));
+		return wxBitmapBundle::FromBitmaps(bitmaps);
+	}
+
+	return wxNullBitmap;
+}
+#else
 // -----------------------------------------------------------------------------
 // Loads the icon [name] of [type] into a wxBitmap of [size], with optional
 // [padding].
@@ -469,7 +512,49 @@ wxBitmap icons::getIcon(Type type, string_view name, int size, Point2i padding)
 
 	return wxNullBitmap;
 }
+#endif
 
+#if wxCHECK_VERSION(3, 1, 6)
+// -----------------------------------------------------------------------------
+// Loads the interface icon [name] from [theme] into a wxBitmapBundle of minimum
+// [size].
+//
+// NOTE: this does not use any kind of caching and will generate/load the icon
+// from svg/png data each time
+// -----------------------------------------------------------------------------
+wxBitmapBundle icons::getInterfaceIcon(string_view name, int size, InterfaceTheme theme)
+{
+	// Get theme to use
+	bool dark = false;
+	switch (theme)
+	{
+	case System: dark = ui_icons_dark; break;
+	case Light: dark = false; break;
+	case Dark: dark = true; break;
+	}
+
+	// Get icon definition
+	auto&    icon_set = dark ? iconset_ui_dark : iconset_ui_light;
+	IconDef* icon_def = nullptr;
+	if (auto i = icon_set.icons.find(name); i != icon_set.icons.end())
+		icon_def = &i->second;
+	if (!icon_def)
+	{
+		log::warning("Unknown interface icon \"{}\"", name);
+		return wxNullBitmap;
+	}
+
+	// Check size
+	if (size <= 0)
+		size = 16;
+
+	// If there is SVG data use that
+	if (!icon_def->svg_data.empty())
+		return wxBitmapBundle::FromSVG(icon_def->svg_data.c_str(), { size, size });
+
+	return wxNullBitmap;
+}
+#else
 // -----------------------------------------------------------------------------
 // Loads the interface icon [name] from [theme] into a wxBitmap of [size].
 //
@@ -488,7 +573,7 @@ wxBitmap icons::getInterfaceIcon(string_view name, int size, InterfaceTheme them
 	}
 
 	// Get icon definition
-	auto& icon_set = dark ? iconset_ui_dark : iconset_ui_light;
+	auto&    icon_set = dark ? iconset_ui_dark : iconset_ui_light;
 	IconDef* icon_def = nullptr;
 	if (auto i = icon_set.icons.find(name); i != icon_set.icons.end())
 		icon_def = &i->second;
@@ -508,6 +593,7 @@ wxBitmap icons::getInterfaceIcon(string_view name, int size, InterfaceTheme them
 
 	return wxNullBitmap;
 }
+#endif
 
 // -----------------------------------------------------------------------------
 // Returns a list of all defined icon sets for [type]
@@ -525,4 +611,12 @@ vector<string> icons::iconSets(Type type)
 			sets.emplace_back(set.name);
 
 	return sets;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [icon] of [type] exists
+// -----------------------------------------------------------------------------
+bool icons::iconExists(Type type, string_view name)
+{
+	return iconDef(type, name) != nullptr;
 }

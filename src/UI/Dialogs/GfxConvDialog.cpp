@@ -224,6 +224,25 @@ bool GfxConvDialog::nextItem()
 }
 
 // -----------------------------------------------------------------------------
+// Updates the convert/skip buttons depending on the number of items
+// -----------------------------------------------------------------------------
+void GfxConvDialog::updateButtons() const
+{
+	if (items_.size() > 1)
+	{
+		btn_convert_all_->Show();
+		btn_skip_all_->Show();
+		btn_skip_->SetLabelText("Skip");
+	}
+	else
+	{
+		btn_convert_all_->Hide();
+		btn_skip_all_->Hide();
+		btn_skip_->SetLabelText("Cancel");
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Sets up the dialog UI layout
 // -----------------------------------------------------------------------------
 void GfxConvDialog::setupLayout()
@@ -241,7 +260,7 @@ void GfxConvDialog::setupLayout()
 
 	// Add current format label
 	label_current_format_ = new wxStaticText(this, -1, "Current Format:");
-	m_vbox->Add(label_current_format_, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, px_inner);
+	m_vbox->Add(label_current_format_, 0, wxBOTTOM, px_inner);
 
 	// Add 'Convert To' combo box
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -380,6 +399,7 @@ void GfxConvDialog::openEntry(ArchiveEntry* entry)
 	// Open it
 	current_item_ = -1;
 	nextItem();
+	updateButtons();
 }
 
 // -----------------------------------------------------------------------------
@@ -394,6 +414,7 @@ void GfxConvDialog::openEntries(const vector<ArchiveEntry*>& entries)
 	// Open the first item
 	current_item_ = -1;
 	nextItem();
+	updateButtons();
 }
 
 // -----------------------------------------------------------------------------
@@ -408,6 +429,7 @@ void GfxConvDialog::openTextures(const vector<CTexture*>& textures, Palette* pal
 	// Open the first item
 	current_item_ = -1;
 	nextItem();
+	updateButtons();
 }
 
 // -----------------------------------------------------------------------------

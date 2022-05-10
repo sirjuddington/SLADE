@@ -19,7 +19,7 @@ public:
 		int       height        = -1,
 		bool      main_tabs     = false,
 		bool      move_tabs     = false);
-	~STabCtrl() = default;
+	~STabCtrl() override = default;
 
 	static TabControl* createControl(
 		wxWindow* parent,

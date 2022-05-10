@@ -102,8 +102,8 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	auto  et_icon_list = EntryType::iconList();
 	for (const auto& name : et_icon_list)
 	{
-		if (image_list->Add(icons::getIcon(icons::Entry, name, elist_icon_size, pad)) < 0)
-			image_list->Add(icons::getIcon(icons::Entry, "default", elist_icon_size, pad));
+		//if (image_list->Add(icons::getIcon(icons::Entry, name, elist_icon_size, pad)) < 0)
+		//	image_list->Add(icons::getIcon(icons::Entry, "default", elist_icon_size, pad));
 	}
 
 	wxListCtrl::SetImageList(image_list, wxIMAGE_LIST_SMALL);

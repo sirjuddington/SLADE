@@ -185,8 +185,8 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const w
 wxImageList* createTreeImageList()
 {
 	auto image_list = wxutil::createSmallImageList();
-	image_list->Add(icons::getIcon(icons::Entry, "code"));
-	image_list->Add(icons::getIcon(icons::Entry, "folder"));
+	wxutil::addImageListIcon(image_list, icons::Entry, "code");
+	wxutil::addImageListIcon(image_list, icons::Entry, "folder");
 	return image_list;
 }
 

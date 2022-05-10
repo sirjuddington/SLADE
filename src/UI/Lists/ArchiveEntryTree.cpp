@@ -57,7 +57,15 @@ namespace slade::ui
 wxColour                           col_text_modified(0, 0, 0, 0);
 wxColour                           col_text_new(0, 0, 0, 0);
 wxColour                           col_text_locked(0, 0, 0, 0);
+#if wxCHECK_VERSION(3, 1, 6)
+std::unordered_map<string, wxBitmapBundle> icon_cache;
+#else
 std::unordered_map<string, wxIcon> icon_cache;
+#endif
+vector<int>                        elist_chars = {
+    '.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
+    ']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
+};
 } // namespace slade::ui
 
 CVAR(Int, elist_colsize_name_tree, 150, CVar::Save)
@@ -325,8 +333,6 @@ void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
 	wxDataViewItemArray prev_items;
 	getDirChildItems(prev_items, *cur_root);
 
-	sort_enabled_ = false;
-
 	// Remove previous root items
 	ItemsDeleted({}, prev_items);
 
@@ -336,7 +342,6 @@ void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
 	getDirChildItems(items, *dir);
 	ItemsAdded({}, items);
 
-	sort_enabled_ = true;
 	Resort();
 
 	if (path_panel_)
@@ -401,12 +406,18 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		{
 			// Not found, add to cache
 			const auto pad  = Point2i{ 1, elist_icon_padding };
+
+#if wxCHECK_VERSION(3, 1, 6)
+			const auto bundle  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
+			icon_cache[entry->type()->icon()] = bundle;
+#else
 			const auto size = scalePx(elist_icon_size);
 			const auto bmp  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), size, pad);
 
 			wxIcon icon;
 			icon.CopyFromBitmap(bmp);
 			icon_cache[entry->type()->icon()] = icon;
+#endif
 		}
 
 		wxString name = entry->name();
@@ -437,7 +448,7 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 
 	// Type column
 	else if (col == 2)
-		variant = entry->type() == EntryType::folderType() ? " " : entry->typeString();
+		variant = entry->type() == EntryType::folderType() ? "Folder" : entry->typeString();
 
 	// Index column
 	else if (col == 3)
@@ -1080,6 +1091,10 @@ ArchiveEntryTree::ArchiveEntryTree(
 				return;
 			}
 
+			// Search
+			if (e.GetModifiers() == 0)
+				searchChar(e.GetKeyCode());
+
 			e.Skip();
 		});
 
@@ -1090,8 +1105,14 @@ ArchiveEntryTree::ArchiveEntryTree(
 			if (GetSelectedItemsCount() == 1)
 				multi_select_base_index_ = GetRowByItem(GetSelection());
 
+			// Clear search string if selection change wasn't a result of searching
+			if (e.GetString().Cmp("search"))
+				search_.clear();
+
 			e.Skip();
 		});
+
+	Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& e) { search_.clear(); });
 #endif
 }
 
@@ -1362,6 +1383,22 @@ vector<ArchiveDir*> ArchiveEntryTree::expandedDirs() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the current root directory of the tree (or list in case of list view)
+// -----------------------------------------------------------------------------
+ArchiveDir* ArchiveEntryTree::currentRootDir() const
+{
+	// List view - current dir
+	if (model_->viewType() == ArchiveViewModel::ViewType::List)
+		return model_->rootDir();
+
+	// Tree view - archive root dir
+	if (auto* archive = archive_.lock().get())
+		return archive->rootDir().get();
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
 // Set the filter options on the model
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::setFilter(string_view name, string_view category)
@@ -1561,6 +1598,111 @@ void ArchiveEntryTree::updateColumnWidths()
 	col_type_->SetWidth(col_type_ == last_col ? 0 : elist_colsize_type);
 	Thaw();
 }
+
+#ifdef __WXMSW__
+// -----------------------------------------------------------------------------
+// Beginning from [index_start], finds and selects the first entry with a name
+// matching the internal search_ string.
+// Returns true if a match was found
+// -----------------------------------------------------------------------------
+bool ArchiveEntryTree::lookForSearchEntryFrom(int index_start)
+{
+	long      index = index_start;
+	wxVariant value;
+
+	while (true)
+	{
+		auto item = GetItemByRow(index);
+
+		if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
+		{
+			if (strutil::startsWithCI(entry->name(), search_))
+			{
+				// Matches, update selection+focus
+				wxDataViewItemArray items;
+				items.Add(item);
+				SetSelections(items);
+				SetCurrentItem(item);
+				EnsureVisible(item);
+				return true;
+			}
+
+			++index;
+		}
+		else
+			break;
+	}
+
+	// Didn't get any match
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Adds [key_code] to the current internal search string (if valid) and performs
+// quick search
+// -----------------------------------------------------------------------------
+void ArchiveEntryTree::searchChar(int key_code)
+{
+	// Check the key pressed is actually a character (a-z, 0-9 etc)
+	bool real_char = false;
+	if (key_code >= 'a' && key_code <= 'z') // Lowercase
+		real_char = true;
+	else if (key_code >= 'A' && key_code <= 'Z') // Uppercase
+		real_char = true;
+	else if (key_code >= '0' && key_code <= '9') // Number
+		real_char = true;
+	else
+	{
+		for (int elist_char : elist_chars)
+		{
+			if (key_code == elist_char)
+			{
+				real_char = true;
+				break;
+			}
+		}
+	}
+
+	if (!real_char)
+	{
+		search_.clear();
+		return;
+	}
+
+	// Get currently focused item (or first if nothing is focused)
+	auto index = GetRowByItem(GetCurrentItem());
+	if (index < 0)
+		index = 0;
+
+	// Build search string
+	search_ += static_cast<char>(key_code);
+
+	// Find matching entry/dir, beginning from current item
+	// If no match found, try again from the top
+	auto found = true;
+	if (!lookForSearchEntryFrom(index))
+		found = lookForSearchEntryFrom(0);
+
+	// No match, continue from next item with fresh search string
+	if (!found)
+	{
+		search_.clear();
+		search_ += static_cast<char>(key_code);
+		found = lookForSearchEntryFrom(index + 1);
+		if (!found)
+			found = lookForSearchEntryFrom(0);
+	}
+
+	if (found)
+	{
+		// Trigger selection change event
+		wxDataViewEvent de;
+		de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+		de.SetString("search");
+		ProcessWindowEvent(de);
+	}
+}
+#endif
 
 // -----------------------------------------------------------------------------
 // Sets the root directory to [dir] and updates UI accordingly

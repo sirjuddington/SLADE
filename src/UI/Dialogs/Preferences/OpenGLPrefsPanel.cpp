@@ -43,7 +43,6 @@ using namespace slade;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, gl_tex_enable_np2)
 EXTERN_CVAR(Bool, gl_point_sprite)
 EXTERN_CVAR(Bool, gl_vbo)
 EXTERN_CVAR(Int, gl_font_size)
@@ -67,8 +66,7 @@ OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent), l
 
 	wxutil::layoutVertically(
 		sizer,
-		vector<wxObject*>{ cb_gl_np2_ = new wxCheckBox(this, -1, "Enable Non-power-of-two textures if supported"),
-						   cb_gl_point_sprite_ = new wxCheckBox(this, -1, "Enable point sprites if supported"),
+		vector<wxObject*>{ cb_gl_point_sprite_ = new wxCheckBox(this, -1, "Enable point sprites if supported"),
 						   cb_gl_use_vbo_      = new wxCheckBox(this, -1, "Use Vertex Buffer Objects if supported"),
 						   wxutil::createLabelHBox(this, "Font Size:", ntc_font_size_ = new NumberTextCtrl(this)) },
 		wxSizerFlags(0).Expand());
@@ -83,7 +81,6 @@ OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent), l
 // -----------------------------------------------------------------------------
 void OpenGLPrefsPanel::init()
 {
-	cb_gl_np2_->SetValue(gl_tex_enable_np2);
 	cb_gl_point_sprite_->SetValue(gl_point_sprite);
 	cb_gl_use_vbo_->SetValue(gl_vbo);
 	ntc_font_size_->setNumber(gl_font_size);
@@ -94,10 +91,9 @@ void OpenGLPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void OpenGLPrefsPanel::applyPreferences()
 {
-	gl_tex_enable_np2 = cb_gl_np2_->GetValue();
-	gl_point_sprite   = cb_gl_point_sprite_->GetValue();
-	gl_vbo            = cb_gl_use_vbo_->GetValue();
-	gl_font_size      = ntc_font_size_->number();
+	gl_point_sprite = cb_gl_point_sprite_->GetValue();
+	gl_vbo          = cb_gl_use_vbo_->GetValue();
+	gl_font_size    = ntc_font_size_->number();
 
 	if (gl_font_size != last_font_size_)
 		drawing::initFonts();

@@ -42,7 +42,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, gl_tex_enable_np2, true, CVar::Flag::Save)
 CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
 CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
 CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
@@ -188,7 +187,7 @@ bool gl::init()
 // -----------------------------------------------------------------------------
 bool gl::np2TexSupport()
 {
-	return GLAD_GL_ARB_texture_non_power_of_two && gl_tex_enable_np2;
+	return GLAD_GL_ARB_texture_non_power_of_two;
 }
 
 // -----------------------------------------------------------------------------
