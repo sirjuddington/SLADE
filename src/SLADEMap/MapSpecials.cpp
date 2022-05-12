@@ -435,7 +435,7 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 		{
 			auto target = (line->special() == 704 || line->special() == 705) ? front : back;
 
-			if (!target) //One-sided line
+			if (!target) // One-sided line
 			{
 				log::warning(
 					"Ignoring vertex slope special on line {}, the target back/front sector for this line don't exist",
@@ -481,14 +481,14 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 		}
 	}
 
-	//Copied slopes linedefs need to be processed right after the other slope linedefs to assure ordering 
+	// Copied slopes linedefs need to be processed right after the other slope linedefs to assure ordering
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		auto line = map->line(a);
 
 		auto front = line->frontSector();
-		
-		switch(line->special())
+
+		switch (line->special())
 		{
 			//
 			// Copied slopes
@@ -500,17 +500,15 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 
 		case 722: // Front sector floor and ceiling
 		{
-			if(!front)
+			if (!front)
 			{
-				log::warning(
-					"Ignoring copied slopes special on line {}, no front sector on this line",
-					line->index());
+				log::warning("Ignoring copied slopes special on line {}, no front sector on this line", line->index());
 				break;
 			}
 
 			auto tagged = map->sectors().firstWithId(line->id());
 
-			if(!tagged)
+			if (!tagged)
 			{
 				log::warning(
 					"Ignoring copied slopes special on line {}, couldn't find sector with tag {}",
@@ -519,10 +517,10 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 				break;
 			}
 
-			if(line->special() == 720 || line->special() == 722)
+			if (line->special() == 720 || line->special() == 722)
 				front->setFloorPlane(tagged->floor().plane);
 
-			if(line->special() == 721 || line->special() == 722)
+			if (line->special() == 721 || line->special() == 722)
 				front->setCeilingPlane(tagged->ceiling().plane);
 		}
 		break;
@@ -915,14 +913,14 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	vector<MapVertex*> vertices;
 	target->putVertices(vertices);
 
-	Vec2d mid = line->getPoint(MapObject::Point::Mid);
+	Vec2d mid    = line->getPoint(MapObject::Point::Mid);
 	Vec2d v1_pos = (line->start() - mid).normalized();
-	Vec2d v2_pos = (line->end()   - mid).normalized();
+	Vec2d v2_pos = (line->end() - mid).normalized();
 
-	//Extend the line to the sector boundaries
+	// Extend the line to the sector boundaries
 	double max_dot_1 = 0.0;
 	double max_dot_2 = 0.0;
-	for(auto& vertex : vertices)
+	for (auto& vertex : vertices)
 	{
 		Vec2d vert = vertex->position() - mid;
 
@@ -932,7 +930,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 
 		dot = std::fabs(dot);
 
-		if(dot > max_dot)
+		if (dot > max_dot)
 			max_dot = dot;
 	}
 
@@ -943,15 +941,16 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	// sector furthest away from it, which can only be at a vertex
 	double     furthest_dist   = 0.0;
 	MapVertex* furthest_vertex = nullptr;
-	Seg2d seg(v1_pos, v2_pos);
+	Seg2d      seg(v1_pos, v2_pos);
 	for (auto& vertex : vertices)
 	{
 		double dist = math::distanceToLine(vertex->position(), seg);
-		
-		if (!math::colinear(vertex->xPos(), vertex->yPos(), v1_pos.x, v1_pos.y, v2_pos.x, v2_pos.y) && dist > furthest_dist)
+
+		if (!math::colinear(vertex->xPos(), vertex->yPos(), v1_pos.x, v1_pos.y, v2_pos.x, v2_pos.y)
+			&& dist > furthest_dist)
 		{
 			furthest_vertex = vertex;
-			furthest_dist = dist;
+			furthest_dist   = dist;
 		}
 	}
 
@@ -969,9 +968,9 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	double modelz  = model->planeHeight<T>();
 	double targetz = target->planeHeight<T>();
 
-	Vec3d  p1(v1_pos, modelz);
-	Vec3d  p2(v2_pos, modelz);
-	Vec3d  p3(furthest_vertex->position(), targetz);
+	Vec3d p1(v1_pos, modelz);
+	Vec3d p2(v2_pos, modelz);
+	Vec3d p3(furthest_vertex->position(), targetz);
 
 	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
 }
