@@ -420,31 +420,6 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
 			break;
 
-			//
-			// Copied slopes
-			//
-
-		case 720: // Front sector floor
-		{
-			auto tagged = map->sectors().firstWithId(line->id());
-			front->setFloorPlane(tagged->floor().plane);
-		}
-		break;
-
-		case 721: // Front sector ceiling
-		{
-			auto tagged = map->sectors().firstWithId(line->id());
-			front->setCeilingPlane(tagged->ceiling().plane);
-		}
-		break;
-
-		case 722: // Front sector floor and ceiling
-		{
-			auto tagged = map->sectors().firstWithId(line->id());
-			front->setCeilingPlane(tagged->ceiling().plane);
-			front->setFloorPlane(tagged->floor().plane);
-		}
-		break;
 
 			//
 			// Vertex-based slopes
@@ -460,14 +435,22 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 		{
 			auto target = (line->special() == 704 || line->special() == 705) ? front : back;
 
+			if (!target) //One-sided line
+			{
+				log::warning(
+					"Ignoring vertex slope special on line {}, the target back/front sector for this line don't exist",
+					line->index());
+				break;
+			}
+
 			auto sidedef = line->s1()->sector() == target ? line->s1() : line->s2();
 
 			Vec3d    vertices[3];
 			unsigned count = 0;
-			for (auto thing : map->things())
+			for (auto& thing : map->things())
 			{
 				if (thing->type() != 750)
-					break;
+					continue;
 
 				if ((line->flagSet(8192)
 					 && (thing->angle() == line->id() || thing->angle() == sidedef->texOffsetX()
@@ -497,7 +480,56 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 		break;
 		}
 	}
+
+	//Copied slopes linedefs need to be processed right after the other slope linedefs to assure ordering 
+	for (unsigned a = 0; a < map->nLines(); a++)
+	{
+		auto line = map->line(a);
+
+		auto front = line->frontSector();
+		
+		switch(line->special())
+		{
+			//
+			// Copied slopes
+			//
+
+		case 720: // Front sector floor
+
+		case 721: // Front sector ceiling
+
+		case 722: // Front sector floor and ceiling
+		{
+			if(!front)
+			{
+				log::warning(
+					"Ignoring copied slopes special on line {}, no front sector on this line",
+					line->index());
+				break;
+			}
+
+			auto tagged = map->sectors().firstWithId(line->id());
+
+			if(!tagged)
+			{
+				log::warning(
+					"Ignoring copied slopes special on line {}, couldn't find sector with tag {}",
+					line->index(),
+					line->id());
+				break;
+			}
+
+			if(line->special() == 720 || line->special() == 722)
+				front->setFloorPlane(tagged->floor().plane);
+
+			if(line->special() == 721 || line->special() == 722)
+				front->setCeilingPlane(tagged->ceiling().plane);
+		}
+		break;
+		}
+	}
 }
+
 
 // -----------------------------------------------------------------------------
 // Process ZDoom slope specials
@@ -883,39 +915,43 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	vector<MapVertex*> vertices;
 	target->putVertices(vertices);
 
-	Vec2d v1_pos;
-	Vec2d v2_pos;
-	bool  firsttime = true;
+	Vec2d mid = line->getPoint(MapObject::Point::Mid);
+	Vec2d v1_pos = (line->start() - mid).normalized();
+	Vec2d v2_pos = (line->end()   - mid).normalized();
 
-	for (auto& vertex : vertices)
+	//Extend the line to the sector boundaries
+	double max_dot_1 = 0.0;
+	double max_dot_2 = 0.0;
+	for(auto& vertex : vertices)
 	{
-		if (math::colinear(vertex->xPos(), vertex->yPos(), line->x1(), line->y1(), line->x2(), line->y2()))
-		{
-			if (firsttime)
-			{
-				v1_pos    = vertex->position();
-				firsttime = false;
-			}
-			v2_pos = vertex->position();
-		}
+		Vec2d vert = vertex->position() - mid;
+
+		double dot = vert.dot(v1_pos);
+
+		double& max_dot = dot > 0 ? max_dot_1 : max_dot_2;
+
+		dot = std::fabs(dot);
+
+		if(dot > max_dot)
+			max_dot = dot;
 	}
+
+	v1_pos = (v1_pos * max_dot_1) + mid;
+	v2_pos = (v2_pos * max_dot_2) + mid;
 
 	// The slope is between the line with Plane_Align, and the point in the
 	// sector furthest away from it, which can only be at a vertex
-	double     this_dist;
-	MapVertex* this_vertex;
 	double     furthest_dist   = 0.0;
 	MapVertex* furthest_vertex = nullptr;
+	Seg2d seg(v1_pos, v2_pos);
 	for (auto& vertex : vertices)
 	{
-		this_vertex = vertex;
-		this_dist   = line->distanceTo(this_vertex->position());
-
-		if (!math::colinear(vertex->xPos(), vertex->yPos(), line->x1(), line->y1(), line->x2(), line->y2())
-			&& this_dist > furthest_dist)
+		double dist = math::distanceToLine(vertex->position(), seg);
+		
+		if (!math::colinear(vertex->xPos(), vertex->yPos(), v1_pos.x, v1_pos.y, v2_pos.x, v2_pos.y) && dist > furthest_dist)
 		{
-			furthest_dist   = this_dist;
-			furthest_vertex = this_vertex;
+			furthest_vertex = vertex;
+			furthest_dist = dist;
 		}
 	}
 
@@ -932,9 +968,11 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	// (at the model sector's height) and the found vertex (at this sector's height).
 	double modelz  = model->planeHeight<T>();
 	double targetz = target->planeHeight<T>();
+
 	Vec3d  p1(v1_pos, modelz);
 	Vec3d  p2(v2_pos, modelz);
 	Vec3d  p3(furthest_vertex->position(), targetz);
+
 	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
 }
 
