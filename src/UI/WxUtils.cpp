@@ -103,6 +103,18 @@ wxImageList* wxutil::createSmallImageList()
 }
 
 // -----------------------------------------------------------------------------
+// Adds [icon] of [icon_type] to the given image [list]
+// -----------------------------------------------------------------------------
+int wxutil::addImageListIcon(wxImageList* list, int icon_type, string_view icon)
+{
+#if wxCHECK_VERSION(3, 1, 6)
+	return list->Add(icons::getIcon(static_cast<icons::Type>(icon_type), icon).GetBitmap(list->GetSize()));
+#else
+	return list->Add(icons::getIcon(static_cast<icons::Type>(icon_type), icon));
+#endif
+}
+
+// -----------------------------------------------------------------------------
 // Creates a wxPanel and places [control] on it, with [pad] padding around it
 // -----------------------------------------------------------------------------
 wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
@@ -343,8 +355,13 @@ wxRect wxutil::scaledRect(int x, int y, int width, int height)
 // -----------------------------------------------------------------------------
 void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 {
+#if wxCHECK_VERSION(3, 1, 6)
+	auto wx_icon = icons::getIcon(icons::General, icon).GetIconFor(window);
+#else
 	wxIcon wx_icon;
 	wx_icon.CopyFromBitmap(icons::getIcon(icons::General, icon));
+#endif
+
 	window->SetIcon(wx_icon);
 }
 

@@ -40,10 +40,14 @@ private:
 	};
 
 	SAction* action_ = nullptr;
+#if wxCHECK_VERSION(3, 1, 6)
+	wxBitmapBundle icon_;
+#else
 	wxBitmap icon_;
-	State    state_         = State::Normal;
-	bool     show_name_     = false;
-	wxMenu*  menu_dropdown_ = nullptr;
+#endif
+	State   state_         = State::Normal;
+	bool    show_name_     = false;
+	wxMenu* menu_dropdown_ = nullptr;
 
 	// For non-SAction buttons
 	wxString action_id_;

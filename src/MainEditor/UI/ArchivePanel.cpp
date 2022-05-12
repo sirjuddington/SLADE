@@ -127,7 +127,7 @@ EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 class APEntryListDropTarget : public wxFileDropTarget
 {
 public:
-	APEntryListDropTarget(ArchivePanel* parent, wxDataViewCtrl* list) : parent_{ parent }, list_{ list } {}
+	APEntryListDropTarget(ArchivePanel* parent, ui::ArchiveEntryTree* list) : parent_{ parent }, list_{ list } {}
 	~APEntryListDropTarget() override = default;
 
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
@@ -143,8 +143,8 @@ public:
 
 		// Determine directory and index to import to
 		auto* hit_entry = static_cast<ArchiveEntry*>(hit_item.GetID());
-		auto* dir       = archive->rootDir().get();
-		int   index     = -1;
+		auto* dir = list_->currentRootDir();
+		int index = -1;
 		if (hit_entry)
 		{
 			if (hit_entry->type() == EntryType::folderType())
@@ -166,8 +166,16 @@ public:
 			// Is this a directory?
 			if (wxDirExists(filenames[a]))
 			{
-				// TODO: Handle folders with recursively importing all content
-				// and converting to namespaces if dropping in a treeless archive.
+				// If the archive supports directories, create the directory and import its contents
+				if (archive->formatDesc().supports_dirs)
+				{
+					strutil::Path fn(filenames[a].ToStdString());
+					auto ndir = archive->createDir(fn.fileName(false), ArchiveDir::getShared(dir));
+					archive->importDir(fn.fullPath(), true, ndir);
+				}
+
+				// TODO: Do we want to support flat list archives here? If so might want special handling for
+				// namespaces etc.
 			}
 			else
 			{
@@ -213,8 +221,8 @@ public:
 	}
 
 private:
-	ArchivePanel*   parent_ = nullptr;
-	wxDataViewCtrl* list_   = nullptr;
+	ArchivePanel*         parent_ = nullptr;
+	ui::ArchiveEntryTree* list_   = nullptr;
 };
 
 
@@ -1298,6 +1306,8 @@ bool ArchivePanel::moveUp() const
 	auto sel_entries = entry_tree_->selectedEntries();
 	auto focus       = entry_tree_->GetCurrentItem();
 	auto first       = entry_tree_->firstSelectedItem();
+	if (sel_entries.empty())
+		return false;
 
 	// If the first selected item is the first entry in the directory, don't move
 	if (sel_entries[0]->index() == 0)
@@ -1348,6 +1358,8 @@ bool ArchivePanel::moveDown() const
 	auto sel_entries = entry_tree_->selectedEntries();
 	auto focus       = entry_tree_->GetCurrentItem();
 	auto last        = entry_tree_->lastSelectedItem();
+	if (sel_entries.empty())
+		return false;
 
 	// If the last selected item the last entry in the directory, don't move
 	if (sel_entries.back()->index() == dir->numEntries() - 1)
@@ -3443,6 +3455,10 @@ bool ArchivePanel::canMoveEntries() const
 	if (auto archive = archive_.lock())
 		if (archive->formatId() == "folder")
 			return false;
+
+	// Can't move if no entries selected (ie. only dirs)
+	if (entry_tree_->selectedEntries().empty())
+		return false;
 
 	return true;
 }

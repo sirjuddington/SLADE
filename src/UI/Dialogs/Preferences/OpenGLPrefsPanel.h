@@ -10,13 +10,12 @@ class OpenGLPrefsPanel : public PrefsPanelBase
 {
 public:
 	OpenGLPrefsPanel(wxWindow* parent);
-	~OpenGLPrefsPanel() = default;
+	~OpenGLPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;
 
 private:
-	wxCheckBox*     cb_gl_np2_          = nullptr;
 	wxCheckBox*     cb_gl_point_sprite_ = nullptr;
 	wxCheckBox*     cb_gl_use_vbo_      = nullptr;
 	NumberTextCtrl* ntc_font_size_      = nullptr;
