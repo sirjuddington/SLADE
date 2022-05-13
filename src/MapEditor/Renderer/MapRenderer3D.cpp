@@ -3093,10 +3093,13 @@ void MapRenderer3D::checkVisibleFlats()
 		// Skip if invisible
 		if (dist_sectors_[a] < 0)
 			continue;
-		for (unsigned b = 0; b < sector_flats_[a].size(); b++)
-			n_flats_++;
+
+		n_flats_ += sector_flats_[a].size();
 	}
 	flats_ = new Flat*[n_flats_];
+
+	for(unsigned a = 0; a < n_flats_; a++)
+		flats_[a] = nullptr;
 
 	// Go through sectors
 	MapSector* sector;
