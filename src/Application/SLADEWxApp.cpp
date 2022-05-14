@@ -100,9 +100,9 @@ CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
 class SLADELog : public wxLog
 {
 protected:
-	// wx2.9.x is no longer supported.
-#if !(wxCHECK_VERSION(3, 0, 0))
-#error This will not compile with wxWidgets older than 3.0.0 !
+	// wx < 3.1.0 is no longer supported.
+#if !(wxCHECK_VERSION(3, 1, 0))
+#error This will not compile with wxWidgets older than 3.1.0 !
 #endif
 	void DoLogText(const wxString& msg) override
 	{

@@ -57,17 +57,10 @@ EXTERN_CVAR(Int, gl_depth_buffer_size)
 // -----------------------------------------------------------------------------
 // OGLCanvas class constructor, wxGLCanvas implementation
 // -----------------------------------------------------------------------------
-#if wxCHECK_VERSION(3, 1, 0)
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
 	wxGLCanvas(parent, gl::getWxGLAttribs(), id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
 	timer_{ this },
 	last_time_{ app::runTimer() }
-#else
-OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
-	wxGLCanvas(parent, id, gl::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
-	timer_{ this },
-	last_time_{ app::runTimer() }
-#endif
 {
 	// Bind events
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);

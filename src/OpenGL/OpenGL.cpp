@@ -82,7 +82,6 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 		{
 			log::info("Setting up the OpenGL context");
 
-#if wxCHECK_VERSION(3, 1, 0)
 			// Setup desired context attributes
 			wxGLContextAttrs attr;
 			if (gl_version_major > 0)
@@ -99,10 +98,6 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 				context = nullptr;
 				return nullptr;
 			}
-#else
-			// Create context
-			context = new wxGLContext(canvas);
-#endif
 
 			// Make current
 			if (!context->SetCurrent(*canvas))
@@ -283,7 +278,6 @@ bool gl::accuracyTweak()
 // -----------------------------------------------------------------------------
 // Returns the GL attributes array for use with wxGLCanvas
 // -----------------------------------------------------------------------------
-#if wxCHECK_VERSION(3, 1, 0)
 wxGLAttributes gl::getWxGLAttribs()
 {
 	wxGLAttributes attr;
@@ -305,15 +299,6 @@ wxGLAttributes gl::getWxGLAttribs()
 
 	return attr;
 }
-#else
-int* gl::getWxGLAttribs()
-{
-	// Set specified depth buffer size
-	wx_gl_attrib[3] = gl_depth_buffer_size;
-
-	return wx_gl_attrib;
-}
-#endif
 
 // -----------------------------------------------------------------------------
 // Sets the colour to [col], and changes the colour blend mode if needed and
