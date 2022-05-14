@@ -80,7 +80,7 @@ bool            exiting         = false;
 std::thread::id main_thread_id;
 
 // Version
-Version version_num{ 3, 2, 1, 0 };
+Version version_num{ 3, 3, 0, 1000 };
 
 // Directory paths
 string dir_data;
@@ -151,7 +151,9 @@ int app::Version::cmp(const Version& rhs) const
 string app::Version::toString() const
 {
 	auto vers = fmt::format("{}.{}.{}", major, minor, revision);
-	if (beta > 0)
+	if (beta > 999)
+		vers += " alpha";
+	else if (beta > 0)
 		vers += fmt::format(" beta {}", beta);
 	return vers;
 }
