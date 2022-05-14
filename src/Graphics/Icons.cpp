@@ -375,7 +375,7 @@ bool icons::loadIcons()
 	// Check for dark mode
 #if defined(__WXMSW__)
 	ui_icons_dark = false; // Force light theme icons in windows
-#elif wxCHECK_VERSION(3, 1, 0)
+#elif wxCHECK_VERSION(3, 1, 3)
 	ui_icons_dark = wxSystemSettings::GetAppearance().IsDark();
 #else
 	auto fg   = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);

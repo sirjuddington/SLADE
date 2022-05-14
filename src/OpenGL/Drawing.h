@@ -1,8 +1,5 @@
 #pragma once
 
-#ifdef USE_SFML_RENDERWINDOW
-#include <SFML/Graphics.hpp>
-#endif
 #include "Utility/Colour.h"
 
 namespace slade
@@ -42,12 +39,12 @@ namespace drawing
 	void drawLine(double x1, double y1, double x2, double y2);
 	void drawLineTabbed(Vec2d start, Vec2d end, double tab = 0.1, double tab_max = 16);
 	void drawArrow(
-		Vec2d   p1,
-		Vec2d   p2,
+		Vec2d          p1,
+		Vec2d          p2,
 		const ColRGBA& color            = ColRGBA::WHITE,
-		bool    twoway           = false,
-		double  arrowhead_angle  = 0.7854f,
-		double  arrowhead_length = 25.f);
+		bool           twoway           = false,
+		double         arrowhead_angle  = 0.7854f,
+		double         arrowhead_length = 25.f);
 	void drawRect(Vec2d tl, Vec2d br);
 	void drawRect(double x1, double y1, double x2, double y2);
 	void drawFilledRect(Vec2d tl, Vec2d br);
@@ -93,18 +90,10 @@ namespace drawing
 		Align         alignment = Align::Left,
 		Rectd*        bounds    = nullptr);
 	Vec2d textExtents(const string& text, Font font = Font::Normal);
-	void  enableTextStateReset(bool enable = true);
-	void  setTextState(bool set = true);
 	void  setTextOutline(double thickness, const ColRGBA& colour = ColRGBA::BLACK);
 
 	// Specific
 	void drawHud();
-
-// Implementation-specific
-#ifdef USE_SFML_RENDERWINDOW
-	void setRenderTarget(sf::RenderWindow* target);
-#endif
-
 
 	// From CodeLite
 	wxColour systemPanelBGColour();
@@ -126,7 +115,7 @@ public:
 	void setText(string_view text);
 	void setSize(int width);
 	void setLineHeight(int height) { line_height_ = height; }
-	void draw(int x, int y, const ColRGBA& colour = ColRGBA::WHITE, drawing::Align alignment = drawing::Align::Left);
+	void draw(int x, int y, const ColRGBA& colour = ColRGBA::WHITE, drawing::Align alignment = drawing::Align::Left) const;
 
 private:
 	string         text_;

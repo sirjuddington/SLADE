@@ -111,12 +111,7 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 	int        line = editor->LineFromPosition(start);
 	LexerState state{ start, end, line, State::Unknown, 0, 0, false, editor };
 
-#if wxMAJOR_VERSION < 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION < 1) \
-	|| (wxMAJOR_VERSION == 3 && wxMINOR_VERSION == 1 && wxRELEASE_NUMBER == 0)
-	editor->StartStyling(start, 31);
-#else
 	editor->StartStyling(start);
-#endif
 
 	if (debug_lexer)
 		log::debug(wxString::Format("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));

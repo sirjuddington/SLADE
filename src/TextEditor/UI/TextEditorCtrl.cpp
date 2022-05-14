@@ -1063,17 +1063,7 @@ void TextEditorCtrl::jumpToLine()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::foldAll(bool fold)
 {
-#if (wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1)
-	// FoldAll is only available in wxWidgets 3.1+
 	FoldAll(fold ? wxSTC_FOLDACTION_CONTRACT : wxSTC_FOLDACTION_EXPAND);
-#else
-	for (int a = 0; a < GetNumberOfLines(); a++)
-	{
-		int level = GetFoldLevel(a);
-		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0 && GetFoldExpanded(a) == fold)
-			ToggleFold(a);
-	}
-#endif
 }
 
 // -----------------------------------------------------------------------------
