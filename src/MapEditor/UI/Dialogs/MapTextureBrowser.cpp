@@ -300,7 +300,7 @@ wxString MapTextureBrowser::determineTexturePath(
 		ret += "/";
 	}
 
-	if (category == MapTextureManager::Category::Tx)
+	if (category == MapTextureManager::Category::Tx && path.length() > 8)
 		return ret + path.substr(9);
 	else
 		return ret + path;
