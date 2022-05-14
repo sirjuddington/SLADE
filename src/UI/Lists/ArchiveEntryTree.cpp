@@ -1093,7 +1093,10 @@ ArchiveEntryTree::ArchiveEntryTree(
 
 			// Search
 			if (e.GetModifiers() == 0)
-				searchChar(e.GetKeyCode());
+			{
+				if (searchChar(e.GetKeyCode()))
+					return;
+			}
 
 			e.Skip();
 		});
@@ -1639,9 +1642,10 @@ bool ArchiveEntryTree::lookForSearchEntryFrom(int index_start)
 
 // -----------------------------------------------------------------------------
 // Adds [key_code] to the current internal search string (if valid) and performs
-// quick search
+// quick search.
+// Returns false if the key was not a 'real' character usable for searching
 // -----------------------------------------------------------------------------
-void ArchiveEntryTree::searchChar(int key_code)
+bool ArchiveEntryTree::searchChar(int key_code)
 {
 	// Check the key pressed is actually a character (a-z, 0-9 etc)
 	bool real_char = false;
@@ -1666,7 +1670,7 @@ void ArchiveEntryTree::searchChar(int key_code)
 	if (!real_char)
 	{
 		search_.clear();
-		return;
+		return false;
 	}
 
 	// Get currently focused item (or first if nothing is focused)
@@ -1701,6 +1705,8 @@ void ArchiveEntryTree::searchChar(int key_code)
 		de.SetString("search");
 		ProcessWindowEvent(de);
 	}
+
+	return true;
 }
 #endif
 
