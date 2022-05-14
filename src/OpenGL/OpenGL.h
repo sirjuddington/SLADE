@@ -1,17 +1,15 @@
 #pragma once
 
 // OpenGL
-// glew.h needs to be #included before gl/glu headers
+// glad.h replaces gl.h, still need glu.h
 // clang-format off
 #ifdef __APPLE__
 // OSX GL headers
-#include <GL/glew.h>
-#include <OpenGL/gl.h>
+#include "thirdparty/glad/include/glad/glad.h"
 #include <OpenGL/glu.h>
 #else
 // Windows/Unix GL headers
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include "thirdparty/glad/include/glad/glad.h"
 #include <GL/glu.h>
 #endif
 // clang-format on
@@ -44,23 +42,22 @@ namespace gl
 		Info() { vendor = renderer = version = extensions = "OpenGL not initialised"; }
 	};
 
-#ifndef USE_SFML_RENDERWINDOW
-	wxGLContext* getContext(wxGLCanvas* canvas);
-#endif
-	bool     init();
-	bool     np2TexSupport();
-	bool     pointSpriteSupport();
-	bool     vboSupport();
-	bool     validTexDimension(unsigned dim);
-	float    maxPointSize();
-	unsigned maxTextureSize();
-	bool     isInitialised();
-	bool     accuracyTweak();
-	int*     getWxGLAttribs();
-	void     setColour(const ColRGBA& col, Blend blend = Blend::Ignore);
-	void     setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend blend = Blend::Ignore);
-	void     setBlend(Blend blend);
-	void     resetBlend();
-	Info     sysInfo();
+	wxGLContext*   getContext(wxGLCanvas* canvas);
+	bool           init();
+	bool           np2TexSupport();
+	bool           pointSpriteSupport();
+	bool           vboSupport();
+	bool           fboSupport();
+	bool           validTexDimension(unsigned dim);
+	float          maxPointSize();
+	unsigned       maxTextureSize();
+	bool           isInitialised();
+	bool           accuracyTweak();
+	wxGLAttributes getWxGLAttribs();
+	void           setColour(const ColRGBA& col, Blend blend = Blend::Ignore);
+	void           setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend blend = Blend::Ignore);
+	void           setBlend(Blend blend);
+	void           resetBlend();
+	Info           sysInfo();
 } // namespace gl
 } // namespace slade

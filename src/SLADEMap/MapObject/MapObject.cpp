@@ -131,17 +131,6 @@ void MapObject::copy(MapObject* c)
 }
 
 // -----------------------------------------------------------------------------
-// Returns true if the object has a property matching [key]
-// -----------------------------------------------------------------------------
-bool MapObject::hasProp(string_view key)
-{
-	if (properties_.contains(key))
-		return property::hasValue(properties_[key]);
-
-	return false;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the value of the boolean property matching [key]
 // -----------------------------------------------------------------------------
 bool MapObject::boolProperty(string_view key)

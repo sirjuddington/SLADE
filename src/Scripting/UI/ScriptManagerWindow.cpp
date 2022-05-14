@@ -184,8 +184,8 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const w
 wxImageList* createTreeImageList()
 {
 	auto image_list = wxutil::createSmallImageList();
-	image_list->Add(icons::getIcon(icons::Entry, "code"));
-	image_list->Add(icons::getIcon(icons::Entry, "folder"));
+	wxutil::addImageListIcon(image_list, icons::Entry, "code");
+	wxutil::addImageListIcon(image_list, icons::Entry, "folder");
 	return image_list;
 }
 
@@ -475,9 +475,7 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 		wxDefaultPosition,
 		wxutil::scaledSize(200, -1),
 		wxTR_DEFAULT_STYLE | wxTR_NO_LINES | wxTR_HIDE_ROOT | wxTR_FULL_ROW_HIGHLIGHT);
-#if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
 	tree_scripts_->EnableSystemTheme(true);
-#endif
 	tree_scripts_->SetImageList(createTreeImageList());
 	populateScriptsTree();
 	sizer->Add(tree_scripts_, 1, wxEXPAND | wxALL, ui::pad());

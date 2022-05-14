@@ -71,7 +71,7 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 {
 	// Setup map canvas
 	map_canvas_ = new MapPreviewCanvas(this);
-	sizer_main_->Add(map_canvas_->toPanel(this), 1, wxEXPAND, 0);
+	sizer_main_->Add(map_canvas_, 1, wxEXPAND, 0);
 
 	// Setup map toolbar buttons
 	auto group = new SToolBarGroup(toolbar_, "Map");
@@ -163,7 +163,7 @@ bool MapEntryPanel::createImage()
 	ArchiveEntry temp;
 
 	// Stupid OpenGL grumble grumble grumble
-	if (GLEW_ARB_framebuffer_object)
+	if (gl::fboSupport())
 		map_canvas_->createImage(temp, map_image_width, map_image_height);
 	else
 		map_canvas_->createImage(

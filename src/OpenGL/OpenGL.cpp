@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
-#include "General/ColourConfiguration.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
@@ -43,26 +42,25 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, gl_tex_enable_np2, true, CVar::Flag::Save)
 CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
 CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
 CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
 CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
+CVAR(Int, gl_version_major, 0, CVar::Flag::Save)
+CVAR(Int, gl_version_minor, 0, CVar::Flag::Save)
 
 namespace slade::gl
 {
-#ifndef USE_SFML_RENDERWINDOW
-wxGLContext* context = NULL;
-#endif
-int      wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
-bool     initialised    = false;
-double   version        = 0;
-unsigned max_tex_size   = 128;
-unsigned pow_two[]      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
-uint8_t  n_pow_two      = 16;
-float    max_point_size = -1.0f;
-Blend    last_blend     = Blend::Normal;
-Info     info;
+wxGLContext* context        = nullptr;
+int          wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
+bool         initialised    = false;
+double       version        = 0;
+unsigned     max_tex_size   = 128;
+unsigned     pow_two[]      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
+uint8_t      n_pow_two      = 16;
+float        max_point_size = -1.0f;
+Blend        last_blend     = Blend::Normal;
+Info         info;
 } // namespace slade::gl
 
 
@@ -76,7 +74,6 @@ Info     info;
 // -----------------------------------------------------------------------------
 // Returns the global OpenGL context, and creates it if needed
 // -----------------------------------------------------------------------------
-#ifndef USE_SFML_RENDERWINDOW
 wxGLContext* gl::getContext(wxGLCanvas* canvas)
 {
 	if (!context)
@@ -84,16 +81,38 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 		if (canvas->IsShown())
 		{
 			log::info("Setting up the OpenGL context");
-			context = new wxGLContext(canvas);
+
+			// Setup desired context attributes
+			wxGLContextAttrs attr;
+			if (gl_version_major > 0)
+				attr.PlatformDefaults().CompatibilityProfile().OGLVersion(gl_version_major, gl_version_minor).EndList();
+			else
+				attr.PlatformDefaults().CompatibilityProfile().EndList();
+
+			// Create context
+			context = new wxGLContext(canvas, nullptr, &attr);
+			if (!context->IsOK())
+			{
+				log::error("Failed to setup the OpenGL context");
+				delete context;
+				context = nullptr;
+				return nullptr;
+			}
+
+			// Make current
 			if (!context->SetCurrent(*canvas))
 			{
 				log::error("Failed to setup the OpenGL context");
 				delete context;
+				context = nullptr;
 				return nullptr;
 			}
+
+			// Initialize OpenGL
 			if (!init())
 			{
 				delete context;
+				context = nullptr;
 				return nullptr;
 			}
 		}
@@ -103,25 +122,29 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 
 	return context;
 }
-#endif
 
 // -----------------------------------------------------------------------------
 // Initialises general OpenGL variables and settings
 // -----------------------------------------------------------------------------
 bool gl::init()
 {
-	GLenum ret;
-
 	if (initialised)
 		return true;
 
 	log::info(1, "Initialising OpenGL...");
 
+	// Initialise GLAD
+	if (!gladLoadGL())
+	{
+		log::error("GLAD initialization failed");
+		return false;
+	}
+
 	// Get OpenGL info
-	info.vendor     = (const char*)glGetString(GL_VENDOR);
-	info.renderer   = (const char*)glGetString(GL_RENDERER);
-	info.version    = (const char*)glGetString(GL_VERSION);
-	info.extensions = (const char*)glGetString(GL_EXTENSIONS);
+	info.vendor   = (const char*)glGetString(GL_VENDOR);
+	info.renderer = (const char*)glGetString(GL_RENDERER);
+	info.version  = (const char*)glGetString(GL_VERSION);
+	// info.extensions = (const char*)glGetString(GL_EXTENSIONS);
 
 	// Get OpenGL version
 	string_view temp{ info.version.data(), 3 };
@@ -134,24 +157,17 @@ bool gl::init()
 	max_tex_size = val;
 	log::info("Max Texture Size: {}x{}", max_tex_size, max_tex_size);
 
-	// Initialise GLEW
-	if ((ret = glewInit()) != GLEW_OK)
-	{
-		log::error("OpenGL initialization failed: {}", (char*)glewGetErrorString(ret));
-		return false;
-	}
-
 	// Test extensions
 	log::info("Checking extensions...");
-	if (GLEW_ARB_vertex_buffer_object)
+	if (GLAD_GL_ARB_vertex_buffer_object)
 		log::info("Vertex Buffer Objects supported");
 	else
 		log::info("Vertex Buffer Objects not supported");
-	if (GLEW_ARB_point_sprite)
+	if (GLAD_GL_ARB_point_sprite)
 		log::info("Point Sprites supported");
 	else
 		log::info("Point Sprites not supported");
-	if (GLEW_ARB_framebuffer_object)
+	if (GLAD_GL_ARB_framebuffer_object)
 		log::info("Framebuffer Objects supported");
 	else
 		log::info("Framebuffer Objects not supported");
@@ -166,7 +182,7 @@ bool gl::init()
 // -----------------------------------------------------------------------------
 bool gl::np2TexSupport()
 {
-	return GLEW_ARB_texture_non_power_of_two && gl_tex_enable_np2;
+	return GLAD_GL_ARB_texture_non_power_of_two;
 }
 
 // -----------------------------------------------------------------------------
@@ -175,7 +191,7 @@ bool gl::np2TexSupport()
 // -----------------------------------------------------------------------------
 bool gl::pointSpriteSupport()
 {
-	return GLEW_ARB_point_sprite && gl_point_sprite;
+	return GLAD_GL_ARB_point_sprite && gl_point_sprite;
 }
 
 // -----------------------------------------------------------------------------
@@ -184,7 +200,16 @@ bool gl::pointSpriteSupport()
 // -----------------------------------------------------------------------------
 bool gl::vboSupport()
 {
-	return GLEW_ARB_vertex_buffer_object && gl_vbo;
+	return GLAD_GL_ARB_vertex_buffer_object && gl_vbo;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the installed OpenGL version supports framebuffer objects,
+// false otherwise
+// -----------------------------------------------------------------------------
+bool gl::fboSupport()
+{
+	return GLAD_GL_ARB_framebuffer_object;
 }
 
 // -----------------------------------------------------------------------------
@@ -253,12 +278,26 @@ bool gl::accuracyTweak()
 // -----------------------------------------------------------------------------
 // Returns the GL attributes array for use with wxGLCanvas
 // -----------------------------------------------------------------------------
-int* gl::getWxGLAttribs()
+wxGLAttributes gl::getWxGLAttribs()
 {
-	// Set specified depth buffer size
-	wx_gl_attrib[3] = gl_depth_buffer_size;
+	wxGLAttributes attr;
 
-	return wx_gl_attrib;
+	// Try 32bit depth buffer first
+	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(32).Stencil(8).EndList();
+	if (wxGLCanvas::IsDisplaySupported(attr))
+		return attr;
+
+	// Then 24 bit depth buffer if not supported
+	attr.Reset();
+	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(24).Stencil(8).EndList();
+	if (wxGLCanvas::IsDisplaySupported(attr))
+		return attr;
+
+	// Then 16bit depth buffer (if this isn't supported then it's something else)
+	attr.Reset();
+	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(16).Stencil(8).EndList();
+
+	return attr;
 }
 
 // -----------------------------------------------------------------------------

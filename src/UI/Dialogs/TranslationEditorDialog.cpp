@@ -190,7 +190,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	pal_canvas_original_->setPalette(&palette_);
 	pal_canvas_original_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
 	pal_canvas_original_->setSelectionType(PaletteCanvas::SelectionType::Range);
-	framesizer->Add(pal_canvas_original_->toPanel(this), 1, wxALL | wxEXPAND, ui::pad());
+	framesizer->Add(pal_canvas_original_, 1, wxALL | wxEXPAND, ui::pad());
 
 
 	// --- Bottom half (translation target) ---
@@ -237,7 +237,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	pal_canvas_target_->setPalette(&palette_);
 	pal_canvas_target_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
 	pal_canvas_target_->setSelectionType(PaletteCanvas::SelectionType::Range);
-	vbox->Add(pal_canvas_target_->toPanel(panel_target_palette_), 1, wxEXPAND);
+	vbox->Add(pal_canvas_target_, 1, wxEXPAND);
 
 	// Reverse origin range
 	cb_target_reverse_ = new wxCheckBox(panel_target_palette_, -1, "Reverse Selection");
@@ -270,7 +270,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 
 	// Gradient preview
 	gb_gradient_ = new GradientBox(panel_target_gradient_);
-	vbox->Add(gb_gradient_->toPanel(panel_target_gradient_), 0, wxEXPAND);
+	vbox->Add(gb_gradient_, 0, wxEXPAND);
 	vbox->AddStretchSpacer();
 
 	// Target colourise/tint panel
@@ -318,7 +318,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	else
 		pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(160), ui::scalePx(160)));
 	pal_canvas_preview_->setPalette(&palette_);
-	framesizer->Add(pal_canvas_preview_->toPanel(this), 1, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(pal_canvas_preview_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Image preview
 	frame      = new wxStaticBox(this, -1, "Preview");
@@ -329,7 +329,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	gfx_preview_->setPalette(&palette_);
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
 	gfx_preview_->image().copyImage(&image_preview_);
-	framesizer->Add(gfx_preview_->toPanel(this), 1, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(gfx_preview_, 1, wxEXPAND | wxALL, ui::pad());
 
 
 	// --- Translation string ---

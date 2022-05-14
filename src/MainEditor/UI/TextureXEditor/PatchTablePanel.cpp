@@ -246,7 +246,7 @@ void PatchTablePanel::setupLayout()
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
 	framesizer->Add(zc_zoom_, 0, wxALL, ui::pad());
-	framesizer->Add(patch_canvas_->toPanel(this), 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->Add(patch_canvas_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	framesizer->Add(label_dimensions_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	framesizer->Add(label_textures_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 }

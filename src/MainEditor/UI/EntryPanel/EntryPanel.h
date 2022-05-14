@@ -22,7 +22,6 @@ public:
 	void          setUndoManager(UndoManager* manager) { undo_manager_ = manager; }
 	MemChunk*     entryData() { return &entry_data_; }
 	void          addBorderPadding();
-	void          showSaveButton(bool show) const;
 
 	bool             openEntry(ArchiveEntry* entry);
 	bool             openEntry(shared_ptr<ArchiveEntry> entry);
@@ -32,7 +31,7 @@ public:
 	virtual void     closeEntry();
 	void             updateStatus();
 	virtual wxString statusString() { return ""; }
-	virtual void     addCustomMenu();
+	void             addCustomMenu(bool add_entry_menu = false) const;
 	void             removeCustomMenu() const;
 	virtual bool     fillCustomMenu(wxMenu* custom) { return false; }
 	wxString         customMenuName() const { return custom_menu_name_; }
@@ -69,10 +68,17 @@ private:
 	bool     modified_ = false;
 	wxString id_;
 
+	bool handleStandaloneAction(string_view id);
+
 	bool handleAction(string_view id) override
 	{
 		if (isActivePanel())
+		{
+			if (handleStandaloneAction(id))
+				return true;
+
 			return handleEntryPanelAction(id);
+		}
 
 		return false;
 	}

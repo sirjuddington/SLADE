@@ -532,8 +532,6 @@ void Renderer::drawEditorMessages() const
 		yoff = 16;
 	auto col_fg = colourconfig::colour("map_editor_message");
 	auto col_bg = colourconfig::colour("map_editor_message_outline");
-	drawing::setTextState(true);
-	drawing::enableTextStateReset(false);
 
 	// Go through editor messages
 	for (unsigned a = 0; a < context_.numEditorMessages(); a++)
@@ -568,8 +566,6 @@ void Renderer::drawEditorMessages() const
 		yoff += 16;
 	}
 	drawing::setTextOutline(0);
-	drawing::setTextState(false);
-	drawing::enableTextStateReset(true);
 }
 
 // -----------------------------------------------------------------------------
@@ -605,16 +601,12 @@ void Renderer::drawFeatureHelpText() const
 
 	// Draw help text
 	int yoff = 22;
-	drawing::setTextState(true);
-	drawing::enableTextStateReset(false);
 	for (unsigned a = 1; a < help_lines.size(); a++)
 	{
 		drawing::drawText(help_lines[a], view_.size().x - 2, yoff, col, drawing::Font::Bold, drawing::Align::Right);
 		yoff += 16;
 	}
 	drawing::setTextOutline(0);
-	drawing::setTextState(false);
-	drawing::enableTextStateReset(true);
 }
 
 // -----------------------------------------------------------------------------
@@ -632,15 +624,9 @@ void Renderer::drawSelectionNumbers() const
 
 	// Go through selection
 	string text;
-	drawing::enableTextStateReset(false);
-	drawing::setTextState(true);
 	view_.setOverlayCoords(true);
-#if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
-	drawing::setTextOutline(1.0f, ColRGBA::BLACK);
-#else
 	if (context_.selection().size() <= map_max_selection_numbers * 0.5)
-		drawing::setTextOutline(1.0f, ColRGBA::BLACK);
-#endif
+		drawing::setTextOutline(1.0, ColRGBA::BLACK);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		if ((int)a > map_max_selection_numbers)
@@ -667,8 +653,6 @@ void Renderer::drawSelectionNumbers() const
 		drawing::drawText(fmt::format("{}", a + 1), tp.x, tp.y, col, drawing::Font::Bold);
 	}
 	drawing::setTextOutline(0);
-	drawing::enableTextStateReset();
-	drawing::setTextState(false);
 	view_.setOverlayCoords(false);
 
 	glDisable(GL_TEXTURE_2D);

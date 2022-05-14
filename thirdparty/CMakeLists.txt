@@ -16,10 +16,10 @@ set(EXTERNAL_SOURCES
 )
 file(GLOB_RECURSE EXTERNAL_SOURCES
 	dumb/*.c
-	email/*.cpp
 	lzma/C/LzmaDec.c
 	mus2mid/mus2mid.cpp
 	zreaders/*.cpp
+	glad/src/*.c
 	${SLADE_HEADERS}
 	)
 
@@ -34,5 +34,5 @@ add_subdirectory(lunasvg/3rdparty/software)
 add_subdirectory(lunasvg/3rdparty/plutovg)
 
 add_library(external STATIC ${EXTERNAL_SOURCES})
-target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt sqlite3)
+target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt sqlite3 ${CMAKE_DL_LIBS})
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)

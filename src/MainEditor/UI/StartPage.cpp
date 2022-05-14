@@ -276,10 +276,13 @@ void SStartPage::load(bool new_tip)
 
 	// Load page
 	html_startpage_->ClearHistory();
-	html_startpage_->LoadURL(html_file);
-
 	if (app::platform() == app::Windows)
+	{
+		html_startpage_->LoadURL(html_file);
 		html_startpage_->Reload();
+	}
+	else
+		html_startpage_->SetPage(html, html_file);
 }
 
 #else

@@ -185,11 +185,20 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	SetMarginWidth(2, 4);
 
 	// Register icons for autocompletion list
+#if wxCHECK_VERSION(3, 1, 6)
+	auto size = wxSize{ ui::scalePx(16), ui::scalePx(16) };
+	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }).GetBitmap(size));
+	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }).GetBitmap(size));
+	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }).GetBitmap(size));
+	RegisterImage(4, icons::getIcon(icons::TextEditor, "property", -1, { 1, 3 }).GetBitmap(size));
+	RegisterImage(5, icons::getIcon(icons::TextEditor, "function", -1, { 1, 3 }).GetBitmap(size));
+#else
 	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }));
 	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }));
 	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }));
 	RegisterImage(4, icons::getIcon(icons::TextEditor, "property", -1, { 1, 3 }));
 	RegisterImage(5, icons::getIcon(icons::TextEditor, "function", -1, { 1, 3 }));
+#endif
 
 	// Init w/no language
 	setLanguage(nullptr);
@@ -1054,17 +1063,7 @@ void TextEditorCtrl::jumpToLine()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::foldAll(bool fold)
 {
-#if (wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1)
-	// FoldAll is only available in wxWidgets 3.1+
 	FoldAll(fold ? wxSTC_FOLDACTION_CONTRACT : wxSTC_FOLDACTION_EXPAND);
-#else
-	for (int a = 0; a < GetNumberOfLines(); a++)
-	{
-		int level = GetFoldLevel(a);
-		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0 && GetFoldExpanded(a) == fold)
-			ToggleFold(a);
-	}
-#endif
 }
 
 // -----------------------------------------------------------------------------

@@ -48,7 +48,7 @@ using SurfaceType = MapSector::SurfaceType;
 // -----------------------------------------------------------------------------
 namespace
 {
-const double TAU = math::PI * 2; // Number of radians in the unit circle
+constexpr double TAU = math::PI * 2; // Number of radians in the unit circle
 } // namespace
 
 
@@ -79,6 +79,9 @@ void MapSpecials::processMapSpecials(SLADEMap* map) const
 	// Eternity, currently no need for processEternityMapSpecials
 	else if (game::configuration().currentPort() == "eternity")
 		processEternitySlopes(map);
+	// Sonic Robo Blast 2
+	else if (game::configuration().currentGame() == "srb2")
+		processSRB2Slopes(map);
 }
 
 // -----------------------------------------------------------------------------
@@ -94,7 +97,7 @@ void MapSpecials::processLineSpecial(MapLine* line) const
 // Sets [colour] to the parsed colour for [tag].
 // Returns true if the tag has a colour, false otherwise
 // -----------------------------------------------------------------------------
-bool MapSpecials::tagColour(int tag, ColRGBA* colour)
+bool MapSpecials::tagColour(int tag, ColRGBA* colour) const
 {
 	unsigned a;
 	// scripts
@@ -117,7 +120,7 @@ bool MapSpecials::tagColour(int tag, ColRGBA* colour)
 // Sets [colour] to the parsed fade colour for [tag].
 // Returns true if the tag has a colour, false otherwise
 // -----------------------------------------------------------------------------
-bool MapSpecials::tagFadeColour(int tag, ColRGBA* colour)
+bool MapSpecials::tagFadeColour(int tag, ColRGBA* colour) const
 {
 	unsigned a;
 	// scripts
@@ -155,7 +158,7 @@ bool MapSpecials::tagFadeColoursSet() const
 // -----------------------------------------------------------------------------
 // Modify sector with [tag]
 // -----------------------------------------------------------------------------
-void MapSpecials::setModified(SLADEMap* map, int tag) const
+void MapSpecials::setModified(const SLADEMap* map, int tag) const
 {
 	for (auto& sector : map->sectors().allWithId(tag))
 		sector->setModified();
@@ -165,7 +168,7 @@ void MapSpecials::setModified(SLADEMap* map, int tag) const
 // Updates any sectors with tags that are affected by any processed
 // specials/scripts
 // -----------------------------------------------------------------------------
-void MapSpecials::updateTaggedSectors(SLADEMap* map)
+void MapSpecials::updateTaggedSectors(const SLADEMap* map) const
 {
 	// scripts
 	unsigned a;
@@ -282,6 +285,9 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b   = -1;
 						for (auto& parameter : parameters)
 						{
+							if (!parameter.isInteger())
+								continue;
+
 							parameter.toInt(val);
 							if (tag < 0)
 								tag = val;
@@ -321,6 +327,9 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b   = -1;
 						for (auto& parameter : parameters)
 						{
+							if (!parameter.isInteger())
+								continue;
+
 							parameter.toInt(val);
 							if (tag < 0)
 								tag = val;
@@ -355,6 +364,170 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 		tz.adv();
 	}
 }
+
+// -----------------------------------------------------------------------------
+// Process SRB2 slope specials
+// -----------------------------------------------------------------------------
+void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
+{
+	for (unsigned a = 0; a < map->nLines(); a++)
+	{
+		auto line = map->line(a);
+
+		auto front = line->frontSector();
+		auto back  = line->backSector();
+
+		switch (line->special())
+		{
+			//
+			// Sector-based slopes
+			//
+
+		case 700: // Front sector floor
+			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
+			break;
+
+		case 701: // Front sector ceiling
+			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
+			break;
+
+		case 702: // Front sector floor and ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
+			break;
+
+		case 703: // Front sector floor and back sector ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+			break;
+
+
+		case 710: // Back sector floor
+			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
+			break;
+
+		case 711: // Back sector ceiling
+			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+			break;
+
+		case 712: // Back sector floor and ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+			break;
+
+		case 713: // Back sector floor and front sector ceiling
+			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
+			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
+			break;
+
+
+			//
+			// Vertex-based slopes
+			//
+
+		case 704: // Front sector floor
+
+		case 705: // Front sector ceiling
+
+		case 714: // Back sector floor
+
+		case 715: // Back sector ceiling
+		{
+			auto target = (line->special() == 704 || line->special() == 705) ? front : back;
+
+			if (!target) // One-sided line
+			{
+				log::warning(
+					"Ignoring vertex slope special on line {}, the target back/front sector for this line don't exist",
+					line->index());
+				break;
+			}
+
+			auto sidedef = line->s1()->sector() == target ? line->s1() : line->s2();
+
+			Vec3d    vertices[3];
+			unsigned count = 0;
+			for (auto& thing : map->things())
+			{
+				if (thing->type() != 750)
+					continue;
+
+				if ((line->flagSet(8192)
+					 && (thing->angle() == line->id() || thing->angle() == sidedef->texOffsetX()
+						 || thing->angle() == sidedef->texOffsetY()))
+					|| thing->angle() == line->id())
+				{
+					vertices[count++] = Vec3d(thing->xPos(), thing->yPos(), thing->zPos());
+					if (count >= 3)
+						break;
+				}
+			}
+
+			if (count < 3)
+			{
+				log::warning(
+					"Ignoring vertex slope special on line {}, No or insufficient vertex slope things (750) were "
+					"provided",
+					line->index());
+				break;
+			}
+
+			if (line->special() == 704 || line->special() == 714)
+				target->setPlane<SurfaceType::Floor>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+			else
+				target->setPlane<SurfaceType::Ceiling>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+		}
+		break;
+		}
+	}
+
+	// Copied slopes linedefs need to be processed right after the other slope linedefs to assure ordering
+	for (unsigned a = 0; a < map->nLines(); a++)
+	{
+		auto line = map->line(a);
+
+		auto front = line->frontSector();
+
+		switch (line->special())
+		{
+			//
+			// Copied slopes
+			//
+
+		case 720: // Front sector floor
+
+		case 721: // Front sector ceiling
+
+		case 722: // Front sector floor and ceiling
+		{
+			if (!front)
+			{
+				log::warning("Ignoring copied slopes special on line {}, no front sector on this line", line->index());
+				break;
+			}
+
+			auto tagged = map->sectors().firstWithId(line->id());
+
+			if (!tagged)
+			{
+				log::warning(
+					"Ignoring copied slopes special on line {}, couldn't find sector with tag {}",
+					line->index(),
+					line->id());
+				break;
+			}
+
+			if (line->special() == 720 || line->special() == 722)
+				front->setFloorPlane(tagged->floor().plane);
+
+			if (line->special() == 721 || line->special() == 722)
+				front->setCeilingPlane(tagged->ceiling().plane);
+		}
+		break;
+		}
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 // Process ZDoom slope specials
@@ -626,7 +799,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 // -----------------------------------------------------------------------------
 // Process Eternity slope specials
 // -----------------------------------------------------------------------------
-void MapSpecials::processEternitySlopes(SLADEMap* map) const
+void MapSpecials::processEternitySlopes(const SLADEMap* map) const
 {
 	// Eternity plans on having a few slope mechanisms,
 	// which must be evaluated in a specific order.
@@ -726,29 +899,58 @@ void MapSpecials::processEternitySlopes(SLADEMap* map) const
 	}
 }
 
-
 // -----------------------------------------------------------------------------
 // Applies a Plane_Align special on [line], to [target] from [model]
 // -----------------------------------------------------------------------------
 template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model) const
 {
+	if (!model || !target) // Do nothing, ignore
+	{
+		log::warning("Ignoring Plane_Align on line {}; line needs to have sectors on both sides", line->index());
+		return;
+	}
+
 	vector<MapVertex*> vertices;
 	target->putVertices(vertices);
 
-	// The slope is between the line with Plane_Align, and the point in the
-	// sector furthest away from it, which can only be at a vertex
-	double     this_dist;
-	MapVertex* this_vertex;
-	double     furthest_dist   = 0.0;
-	MapVertex* furthest_vertex = nullptr;
+	Vec2d mid    = line->getPoint(MapObject::Point::Mid);
+	Vec2d v1_pos = (line->start() - mid).normalized();
+	Vec2d v2_pos = (line->end() - mid).normalized();
+
+	// Extend the line to the sector boundaries
+	double max_dot_1 = 0.0;
+	double max_dot_2 = 0.0;
 	for (auto& vertex : vertices)
 	{
-		this_vertex = vertex;
-		this_dist   = line->distanceTo(this_vertex->position());
-		if (this_dist > furthest_dist)
+		Vec2d vert = vertex->position() - mid;
+
+		double dot = vert.dot(v1_pos);
+
+		double& max_dot = dot > 0 ? max_dot_1 : max_dot_2;
+
+		dot = std::fabs(dot);
+
+		if (dot > max_dot)
+			max_dot = dot;
+	}
+
+	v1_pos = (v1_pos * max_dot_1) + mid;
+	v2_pos = (v2_pos * max_dot_2) + mid;
+
+	// The slope is between the line with Plane_Align, and the point in the
+	// sector furthest away from it, which can only be at a vertex
+	double     furthest_dist   = 0.0;
+	MapVertex* furthest_vertex = nullptr;
+	Seg2d      seg(v1_pos, v2_pos);
+	for (auto& vertex : vertices)
+	{
+		double dist = math::distanceToLine(vertex->position(), seg);
+
+		if (!math::colinear(vertex->xPos(), vertex->yPos(), v1_pos.x, v1_pos.y, v2_pos.x, v2_pos.y)
+			&& dist > furthest_dist)
 		{
-			furthest_dist   = this_dist;
-			furthest_vertex = this_vertex;
+			furthest_vertex = vertex;
+			furthest_dist   = dist;
 		}
 	}
 
@@ -765,9 +967,11 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	// (at the model sector's height) and the found vertex (at this sector's height).
 	double modelz  = model->planeHeight<T>();
 	double targetz = target->planeHeight<T>();
-	Vec3d  p1(line->x1(), line->y1(), modelz);
-	Vec3d  p2(line->x2(), line->y2(), modelz);
-	Vec3d  p3(furthest_vertex->position(), targetz);
+
+	Vec3d p1(v1_pos, modelz);
+	Vec3d p2(v2_pos, modelz);
+	Vec3d p3(furthest_vertex->position(), targetz);
+
 	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
 }
 
@@ -926,6 +1130,15 @@ template<SurfaceType T>
 void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 	const
 {
+	string prop         = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	auto   v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
+	auto   v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
+	auto   v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
+
+	// Ignore if no vertices have a height set
+	if (!v1_hasheight && !v2_hasheight && !v3_hasheight)
+		return;
+
 	double z1 = heights.count(vertices[0]) ? heights[vertices[0]] : vertexHeight<T>(vertices[0], target);
 	double z2 = heights.count(vertices[1]) ? heights[vertices[1]] : vertexHeight<T>(vertices[1], target);
 	double z3 = heights.count(vertices[2]) ? heights[vertices[2]] : vertexHeight<T>(vertices[2], target);

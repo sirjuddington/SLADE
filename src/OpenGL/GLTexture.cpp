@@ -135,6 +135,9 @@ unsigned gl::Texture::backgroundTexture()
 // -----------------------------------------------------------------------------
 void gl::Texture::resetBackgroundTexture()
 {
+	if (!gl::isInitialised())
+		return;
+
 	glDeleteTextures(1, &tex_background.id);
 
 	textures[tex_background.id] = {};
@@ -405,7 +408,9 @@ ColRGBA gl::Texture::averageColour(unsigned id, Recti area)
 	delete[] pixels;
 
 	// Return average colour
-	return { uint8_t(red / npix), uint8_t(green / npix), uint8_t(blue / npix), 255 };
+	return {
+		static_cast<uint8_t>(red / npix), static_cast<uint8_t>(green / npix), static_cast<uint8_t>(blue / npix), 255
+	};
 }
 
 // -----------------------------------------------------------------------------
@@ -413,6 +418,9 @@ ColRGBA gl::Texture::averageColour(unsigned id, Recti area)
 // -----------------------------------------------------------------------------
 void gl::Texture::bind(unsigned id, bool force)
 {
+	if (!gl::isInitialised())
+		return;
+
 	if (force)
 	{
 		glBindTexture(GL_TEXTURE_2D, id);
@@ -430,7 +438,7 @@ void gl::Texture::bind(unsigned id, bool force)
 // -----------------------------------------------------------------------------
 void gl::Texture::clear(unsigned id)
 {
-	if (id == 0 || id == tex_missing.id || id == tex_background.id || textures.empty())
+	if (!gl::isInitialised() || id == 0 || id == tex_missing.id || id == tex_background.id || textures.empty())
 		return;
 
 	textures[id] = {};
@@ -442,6 +450,9 @@ void gl::Texture::clear(unsigned id)
 // -----------------------------------------------------------------------------
 void gl::Texture::clearAll()
 {
+	if (!gl::isInitialised())
+		return;
+
 	for (auto& tex : textures)
 		glDeleteTextures(1, &tex.second.id);
 

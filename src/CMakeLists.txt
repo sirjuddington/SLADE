@@ -67,14 +67,11 @@ find_package(wxWidgets ${WX_VERSION} COMPONENTS ${WX_LIBS} REQUIRED)
 include(${wxWidgets_USE_FILE})
 
 # SFML
-if (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window graphics network)
-ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
-else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window network)
+
+# FTGL
 find_package(Freetype REQUIRED)
 find_package(FTGL REQUIRED)
-endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
 if (NO_FLUIDSYNTH)
@@ -103,8 +100,6 @@ endif()
 find_package(FreeImage REQUIRED)
 find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(CURL REQUIRED)
 if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
 endif()
@@ -114,13 +109,12 @@ include_directories(
 	${SFML_INCLUDE_DIR}
 	${FREETYPE_INCLUDE_DIRS}
 	${FTGL_INCLUDE_DIR}
-	${GLEW_INCLUDE_PATH}
-	${CURL_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
 	${MPG123_INCLUDE_DIR}
 	.
 	..
 	../thirdparty/dumb
+	../thirdparty/glad/include
 	../thirdparty
 	./Application
 	)
@@ -203,8 +197,6 @@ target_link_libraries(slade
 	${FREETYPE_LIBRARIES}
 	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
-	${GLEW_LIBRARY}
-	${CURL_LIBRARIES}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
 )

@@ -848,7 +848,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 
 	// Setup OpenGL rigmarole
 	GLuint tex_id, fbo_id;
-	if (GLEW_ARB_framebuffer_object)
+	if (gl::fboSupport())
 	{
 		glGenTextures(1, &tex_id);
 		gl::Texture::bind(tex_id);
@@ -976,7 +976,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	vector<uint8_t> buffer(width * height * 4);
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 
-	if (GLEW_ARB_framebuffer_object)
+	if (gl::fboSupport())
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDeleteTextures(1, &tex_id);

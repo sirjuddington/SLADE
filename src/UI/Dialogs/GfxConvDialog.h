@@ -120,6 +120,7 @@ private:
 	ColRGBA colour_trans_;
 
 	bool nextItem();
+	void updateButtons() const;
 
 	// Static
 	static wxString current_palette_name_;

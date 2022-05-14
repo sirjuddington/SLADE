@@ -223,8 +223,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 	// Setup image list
 	img_list_ = wxutil::createSmallImageList();
-	img_list_->Add(icons::getIcon(icons::General, "tick"));
-	img_list_->Add(icons::getIcon(icons::General, "close"));
+	wxutil::addImageListIcon(img_list_, icons::General, "tick");
+	wxutil::addImageListIcon(img_list_, icons::General, "close");
 
 	// Map section
 	if (show_maplist)
@@ -273,7 +273,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 		// Add map preview
 		canvas_preview_ = new MapPreviewCanvas(this);
-		framesizer->Add(canvas_preview_->toPanel(this), 1, wxEXPAND | wxALL, ui::pad());
+		framesizer->Add(canvas_preview_, 1, wxEXPAND | wxALL, ui::pad());
 		int size = ui::scalePx(400);
 		canvas_preview_->SetInitialSize(wxSize(size, size));
 	}

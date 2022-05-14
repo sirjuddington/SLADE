@@ -66,7 +66,6 @@ namespace app
 	};
 	Platform      platform();
 	bool          useWebView();
-	bool          useSFMLRenderWindow();
 	const string& iconFile();
 	bool          isWin64Build();
 

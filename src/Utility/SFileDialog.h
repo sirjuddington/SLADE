@@ -8,6 +8,8 @@ struct FDInfo
 	string         extension;
 	int            ext_index;
 	string         path;
+
+	bool empty() const { return path.empty(); }
 };
 
 bool openFile(
@@ -18,14 +20,25 @@ bool openFile(
 	string_view fn_default  = "",
 	int         ext_default = 0);
 
-bool openExecutableFile(
-	FDInfo& info,
+string openFile(
 	string_view caption,
-	wxWindow* parent = nullptr,
-	string_view fn_default = "");
+	string_view extensions,
+	wxWindow*   parent      = nullptr,
+	string_view fn_default  = "",
+	int         ext_default = 0);
+
+bool   openExecutableFile(FDInfo& info, string_view caption, wxWindow* parent = nullptr, string_view fn_default = "");
+string openExecutableFile(string_view caption, wxWindow* parent = nullptr, string_view fn_default = "");
 
 bool openFiles(
 	FDInfo&     info,
+	string_view caption,
+	string_view extensions,
+	wxWindow*   parent      = nullptr,
+	string_view fn_default  = "",
+	int         ext_default = 0);
+
+FDInfo openFiles(
 	string_view caption,
 	string_view extensions,
 	wxWindow*   parent      = nullptr,
@@ -40,8 +53,21 @@ bool saveFile(
 	string_view fn_default  = "",
 	int         ext_default = 0);
 
+string saveFile(
+	string_view caption,
+	string_view extensions,
+	wxWindow*   parent      = nullptr,
+	string_view fn_default  = "",
+	int         ext_default = 0);
+
 bool saveFiles(
 	FDInfo&     info,
+	string_view caption,
+	string_view extensions,
+	wxWindow*   parent      = nullptr,
+	int         ext_default = 0);
+
+FDInfo saveFiles(
 	string_view caption,
 	string_view extensions,
 	wxWindow*   parent      = nullptr,

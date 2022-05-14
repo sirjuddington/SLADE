@@ -1,9 +1,9 @@
 
 #include "Main.h"
 #include "DateTime.h"
+#include "thirdparty/fmt/include/fmt/chrono.h"
 #include <chrono>
 #include <ctime>
-#include <fmt/chrono.h>
 
 using namespace slade;
 using namespace datetime;

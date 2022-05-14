@@ -51,7 +51,7 @@ ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
 	// Get the VGA font
 	ansi_chardata_.assign(DATASIZE, 0);
 	ansi_canvas_ = new ANSICanvas(this, -1);
-	sizer_main_->Add(ansi_canvas_->toPanel(this), 1, wxEXPAND, 0);
+	sizer_main_->Add(ansi_canvas_, 1, wxEXPAND, 0);
 
 	// Hide toolbar (no reason for it on this panel, yet)
 	toolbar_->Show(false);

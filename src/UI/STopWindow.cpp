@@ -61,7 +61,7 @@ STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, 
 	id_{ id }
 {
 	// Enable fullscreen mode on OSX
-#if __APPLE__ && ((wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1) || wxMAJOR_VERSION > 3)
+#ifdef __APPLE__
 	EnableFullScreenView(true);
 #endif
 

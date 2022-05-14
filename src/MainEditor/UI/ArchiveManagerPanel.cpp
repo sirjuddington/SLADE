@@ -41,6 +41,7 @@
 #include "General/Library.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditor.h"
@@ -71,7 +72,7 @@ CVAR(Int, dir_archive_change_action, 2, CVar::Flag::Save) // 0=always ignore, 1=
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Int, autosave_entry_changes)
 
@@ -295,8 +296,10 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	auto  et_icon_list  = EntryType::iconList();
 	for (const auto& name : et_icon_list)
 	{
-		if (bm_image_list->Add(icons::getIcon(icons::Entry, name)) < 0)
-			bm_image_list->Add(icons::getIcon(icons::Entry, "default"));
+		if (icons::iconExists(icons::Entry, name))
+			wxutil::addImageListIcon(bm_image_list, icons::Entry, name);
+		else
+			wxutil::addImageListIcon(bm_image_list, icons::Entry, "default");
 	}
 	list_bookmarks_->SetImageList(bm_image_list, wxIMAGE_LIST_SMALL);
 	menu_bookmarks_ = new wxMenu();
@@ -369,10 +372,10 @@ void ArchiveManagerPanel::createRecentPanel()
 
 	// Setup image list
 	auto list = wxutil::createSmallImageList();
-	list->Add(icons::getIcon(icons::Entry, "archive"));
-	list->Add(icons::getIcon(icons::Entry, "wad"));
-	list->Add(icons::getIcon(icons::Entry, "zip"));
-	list->Add(icons::getIcon(icons::Entry, "folder"));
+	wxutil::addImageListIcon(list, icons::Entry, "archive");
+	wxutil::addImageListIcon(list, icons::Entry, "wad");
+	wxutil::addImageListIcon(list, icons::Entry, "zip");
+	wxutil::addImageListIcon(list, icons::Entry, "folder");
 	list_recent_->SetImageList(list, wxIMAGE_LIST_SMALL);
 }
 
@@ -561,7 +564,7 @@ void ArchiveManagerPanel::updateRecentListItem(int index) const
 }
 
 // -----------------------------------------------------------------------------
-// Updates the title of the tab for the archive at <index>
+// Updates the title of the tab for the archive at [index]
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 {
@@ -588,6 +591,29 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 				title = archive->filename(false);
 			stc_archives_->SetPageText(a, title);
 			return;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Updates the title of the tab for [entry]
+// -----------------------------------------------------------------------------
+void ArchiveManagerPanel::updateEntryTabTitle(ArchiveEntry* entry) const
+{
+	for (unsigned i = 0; i < stc_archives_->GetPageCount(); ++i)
+	{
+		auto* page = stc_archives_->GetPage(i);
+		if (!page->GetName().CmpNoCase("entry"))
+		{
+			auto* ep = dynamic_cast<EntryPanel*>(page);
+			if (ep->entry() == entry)
+			{
+				auto tab_name = wxString::Format("%s/%s", entry->parent()->filename(false), entry->name());
+				if (ep->isModified())
+					tab_name += " *";
+
+				stc_archives_->SetPageText(i, tab_name);
+			}
 		}
 	}
 }
@@ -1075,7 +1101,6 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 	// Create an EntryPanel for the entry
 	maineditor::window()->Freeze();
 	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_);
-	ep->showSaveButton(false);
 	ep->addBorderPadding();
 	ep->openEntry(entry);
 
@@ -1093,7 +1118,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 		stc_archives_->GetPageCount() - 1, icons::getIcon(icons::Entry, entry->type()->icon()));
 	ep->SetName("entry");
 	ep->Show(true);
-	ep->addCustomMenu();
+	ep->addCustomMenu(true);
 	maineditor::window()->Thaw();
 
 	// Select the new tab
@@ -1483,33 +1508,9 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive) const
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
 
+	// Save if we can
 	if (archive->canSave())
-	{
-		// Check if the file has been modified on disk
-		if (archive->formatId() != "folder"
-			&& fileutil::fileModifiedTime(archive->filename()) > archive->fileModifiedTime())
-		{
-			if (wxMessageBox(
-					wxString::Format(
-						"The file %s has been modified on disk since the archive was last saved, are you sure you want "
-						"to continue with saving?",
-						archive->filename(false)),
-					"File Modified",
-					wxICON_WARNING | wxYES_NO)
-				== wxNO)
-				return false;
-		}
-
-		// Save the archive if possible
-		if (!archive->save())
-		{
-			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxICON_ERROR);
-			return false;
-		}
-
-		return true;
-	}
+		return archiveoperations::save(*archive);
 	else
 		return saveArchiveAs(archive); // If the archive is newly created, do Save As instead
 }
@@ -1531,38 +1532,8 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
 
-	// Popup file save dialog
-	wxString formats  = archive->fileExtensionString();
-	wxString filename = wxFileSelector(
-		"Save Archive " + archive->filename(false) + " As",
-		dir_last,
-		"",
-		wxEmptyString,
-		formats,
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-
-	// Check a filename was selected
-	if (!filename.empty())
-	{
-		// Save the archive
-		if (!archive->save(filename.ToStdString()))
-		{
-			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxICON_ERROR);
-			return false;
-		}
-
-		// Save 'dir_last'
-		wxFileName fn(filename);
-		dir_last = wxutil::strToView(fn.GetPath(true));
-
-		// Add to library
-		library::addOrUpdateArchive(filename.ToStdString(), *archive);
-	}
-	else
-		return false;
-
-	return true;
+	// Do Save As
+	return archiveoperations::saveAs(*archive);
 }
 
 // -----------------------------------------------------------------------------
@@ -2223,7 +2194,7 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	if (stc_archives_->GetPage(selection)->GetName() == "entry")
 	{
 		auto ep = dynamic_cast<EntryPanel*>(stc_archives_->GetPage(selection));
-		ep->addCustomMenu();
+		ep->addCustomMenu(true);
 	}
 
 	// TextureXEditor

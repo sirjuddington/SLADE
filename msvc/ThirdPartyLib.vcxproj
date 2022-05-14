@@ -44,6 +44,8 @@
     <ClInclude Include="..\thirdparty\fmt\include\fmt\printf.h" />
     <ClInclude Include="..\thirdparty\fmt\include\fmt\ranges.h" />
     <ClInclude Include="..\thirdparty\fmt\include\fmt\xchar.h" />
+    <ClInclude Include="..\thirdparty\glad\include\glad\glad.h" />
+    <ClInclude Include="..\thirdparty\glad\include\KHR\khrplatform.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-private.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_math.h" />
@@ -625,6 +627,7 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\fmt\src\format.cc" />
     <ClCompile Include="..\thirdparty\fmt\src\os.cc" />
+    <ClCompile Include="..\thirdparty\glad\src\glad.c" />
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-blend.c" />
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-dash.c" />
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-geometry.c" />
@@ -752,25 +755,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>

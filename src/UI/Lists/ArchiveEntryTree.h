@@ -117,6 +117,7 @@ namespace ui
 		ArchiveDir*           currentSelectedDir() const;
 		ArchiveDir*           selectedEntriesDir() const;
 		vector<ArchiveDir*>   expandedDirs() const;
+		ArchiveDir*           currentRootDir() const;
 
 		void setPathPanel(ArchivePathPanel* path_panel) const
 		{
@@ -134,15 +135,22 @@ namespace ui
 
 	private:
 		weak_ptr<Archive> archive_;
-		ArchiveViewModel* model_     = nullptr;
-		wxDataViewColumn* col_name_  = nullptr;
-		wxDataViewColumn* col_size_  = nullptr;
-		wxDataViewColumn* col_type_  = nullptr;
-		wxDataViewColumn* col_index_ = nullptr;
+		ArchiveViewModel* model_                   = nullptr;
+		wxDataViewColumn* col_name_                = nullptr;
+		wxDataViewColumn* col_size_                = nullptr;
+		wxDataViewColumn* col_type_                = nullptr;
+		wxDataViewColumn* col_index_               = nullptr;
+		int               multi_select_base_index_ = -1;
+		string            search_;
 
 		void setupColumns();
 		void saveColumnWidths() const;
 		void updateColumnWidths();
+
+#ifdef __WXMSW__
+		bool lookForSearchEntryFrom(int index_start);
+		bool searchChar(int key_code);
+#endif
 	};
 
 } // namespace ui

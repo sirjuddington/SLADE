@@ -14,14 +14,10 @@ struct ColRGBA
 	// Constructors
 	ColRGBA() = default;
 	ColRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, short index = -1) :
-		r{ r },
-		g{ g },
-		b{ b },
-		a{ a },
-		index{ index }
+		r{ r }, g{ g }, b{ b }, a{ a }, index{ index }
 	{
 	}
-	ColRGBA(const ColRGBA& c) : r{ c.r }, g{ c.g }, b{ c.b }, a{ c.a }, index{ c.index } {}
+	ColRGBA(const ColRGBA& c) = default;
 	explicit ColRGBA(const wxColour& c) : r{ c.Red() }, g{ c.Green() }, b{ c.Blue() }, a{ c.Alpha() } {}
 
 	// Functions
@@ -61,13 +57,13 @@ struct ColRGBA
 	double db() const { return (double)b / 255.0; }
 	double da() const { return (double)a / 255.0; }
 
-	bool equals(const ColRGBA& rhs, bool alpha = false, bool index = false) const
+	bool equals(const ColRGBA& rhs, bool check_alpha = false, bool check_index = false) const
 	{
 		bool col_equal = (r == rhs.r && g == rhs.g && b == rhs.b);
 
-		if (index)
+		if (check_index)
 			col_equal &= (this->index == rhs.index);
-		if (alpha)
+		if (check_alpha)
 			return col_equal && (a == rhs.a);
 		else
 			return col_equal;
@@ -150,7 +146,7 @@ struct ColRGBA
 	ColHSL asHSL() const;
 	ColLAB asLAB() const;
 	void   fromHSL(double h, double s, double l);
-	void   fromHSL(const ColHSL& hsl);
+	void   fromHSL(const ColHSL& hsl, bool take_alpha = false);
 
 	// String conversion
 	enum class StringFormat
@@ -161,7 +157,7 @@ struct ColRGBA
 		ZDoom // "rr gg bb"
 	};
 	string   toString(StringFormat format = StringFormat::HEX) const;
-	wxColour toWx() const { return wxColour(r, g, b, a); }
+	wxColour toWx() const { return { r, g, b, a }; }
 
 	// Some basic colours
 	static const ColRGBA WHITE;

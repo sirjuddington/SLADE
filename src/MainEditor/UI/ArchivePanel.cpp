@@ -127,7 +127,7 @@ EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 class APEntryListDropTarget : public wxFileDropTarget
 {
 public:
-	APEntryListDropTarget(ArchivePanel* parent, wxDataViewCtrl* list) : parent_{ parent }, list_{ list } {}
+	APEntryListDropTarget(ArchivePanel* parent, ui::ArchiveEntryTree* list) : parent_{ parent }, list_{ list } {}
 	~APEntryListDropTarget() override = default;
 
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
@@ -143,8 +143,8 @@ public:
 
 		// Determine directory and index to import to
 		auto* hit_entry = static_cast<ArchiveEntry*>(hit_item.GetID());
-		auto* dir       = archive->rootDir().get();
-		int   index     = -1;
+		auto* dir = list_->currentRootDir();
+		int index = -1;
 		if (hit_entry)
 		{
 			if (hit_entry->type() == EntryType::folderType())
@@ -166,8 +166,16 @@ public:
 			// Is this a directory?
 			if (wxDirExists(filenames[a]))
 			{
-				// TODO: Handle folders with recursively importing all content
-				// and converting to namespaces if dropping in a treeless archive.
+				// If the archive supports directories, create the directory and import its contents
+				if (archive->formatDesc().supports_dirs)
+				{
+					strutil::Path fn(filenames[a].ToStdString());
+					auto ndir = archive->createDir(fn.fileName(false), ArchiveDir::getShared(dir));
+					archive->importDir(fn.fullPath(), true, ndir);
+				}
+
+				// TODO: Do we want to support flat list archives here? If so might want special handling for
+				// namespaces etc.
 			}
 			else
 			{
@@ -213,8 +221,8 @@ public:
 	}
 
 private:
-	ArchivePanel*   parent_ = nullptr;
-	wxDataViewCtrl* list_   = nullptr;
+	ArchivePanel*         parent_ = nullptr;
+	ui::ArchiveEntryTree* list_   = nullptr;
 };
 
 
@@ -709,13 +717,12 @@ void ArchivePanel::addMenus() const
 		menu_entry->AppendSeparator();
 		SAction::fromId("arch_entry_import")->addToMenu(menu_entry);
 		SAction::fromId("arch_entry_export")->addToMenu(menu_entry);
-		menu_entry->AppendSeparator();
-		// SAction::fromId("arch_entry_bookmark")->addToMenu(menu_entry);
-		auto menu_scripts = new wxMenu();
 #ifndef NO_LUA
+		menu_entry->AppendSeparator();
+		auto menu_scripts = new wxMenu();
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Entry, "arch_entry_script");
-#endif
 		menu_entry->AppendSubMenu(menu_scripts, "&Run Script");
+#endif
 	}
 
 	// Add them to the main window menubar
@@ -1118,126 +1125,19 @@ bool ArchivePanel::renameEntry(bool each) const
 	if (!archive)
 		return false;
 
-	// Get a list of selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	// Begin recording undo level
-	undo_manager_->beginRecord("Rename Entry");
-
-	// Define alphabet
-	static const string alphabet       = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	static const string alphabet_lower = "abcdefghijklmnopqrstuvwxyz";
-
-	// Check any are selected
-	if (each || selection.size() == 1)
-	{
-		// If only one entry is selected, or "rename each" mode is desired, just do basic rename
-		for (auto* entry : selection)
-		{
-			// Prompt for a new name
-			wxString new_name = wxGetTextFromUser("Enter new entry name:", "Rename", entry->name());
-
-			// Rename entry (if needed)
-			if (!new_name.IsEmpty() && entry->name() != new_name)
-			{
-				if (!archive->renameEntry(entry, new_name.ToStdString()))
-					wxMessageBox(
-						wxString::Format("Unable to rename entry %s: %s", entry->name(), global::error),
-						"Rename Entry",
-						wxICON_EXCLAMATION | wxOK);
-			}
-		}
-	}
-	else if (selection.size() > 1)
-	{
-		// Get a list of entry names
-		vector<string> names;
-		for (auto& entry : selection)
-			names.emplace_back(entry->nameNoExt());
-
-		// Get filter string
-		auto filter = misc::massRenameFilter(names);
-
-		// Prompt for a new name
-		auto new_name = wxGetTextFromUser(
-							"Enter new entry name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n% = alphabet "
-							"repeat number, "
-							"& = entry number, %% or && = n-1)",
-							"Rename",
-							filter)
-							.ToStdString();
-
-		// Apply mass rename to list of names
-		if (!new_name.empty())
-		{
-			misc::doMassRename(names, new_name);
-
-			// Go through the list
-			for (size_t a = 0; a < selection.size(); a++)
-			{
-				auto entry = selection[a];
-
-				// If the entry is a folder then skip it
-				if (entry->type() == EntryType::folderType())
-					continue;
-
-				// Get current name as wxFileName for processing
-				strutil::Path fn(entry->name());
-
-				// Rename the entry (if needed)
-				if (fn.fileName(false) != names[a])
-				{
-					auto filename = names[a];
-					int  num      = a / alphabet.size();
-					int  cn       = a - (num * alphabet.size());
-					strutil::replaceIP(filename, "^^", { alphabet_lower.data() + cn, 1 });
-					strutil::replaceIP(filename, "^", { alphabet.data() + cn, 1 });
-					strutil::replaceIP(filename, "%%", fmt::format("{}", num));
-					strutil::replaceIP(filename, "%", fmt::format("{}", num + 1));
-					strutil::replaceIP(filename, "&&", fmt::format("{}", a));
-					strutil::replaceIP(filename, "&", fmt::format("{}", a + 1));
-					fn.setFileName(filename); // Change name
-
-					// Rename in archive
-					if (!archive->renameEntry(entry, fn.fileName()))
-						wxMessageBox(
-							wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), global::error),
-							"Rename Entry",
-							wxICON_EXCLAMATION | wxOK);
-				}
-			}
-		}
-	}
-
-
-	// Get a list of selected directories
+	// Get selected entries & directories
+	auto selection     = entry_tree_->selectedEntries();
 	auto selected_dirs = entry_tree_->selectedDirectories();
 
-	// Go through the list
-	for (auto* dir : selected_dirs)
-	{
-		// Get the current directory's name
-		auto old_name = dir->name();
-
-		// Prompt for a new name
-		auto new_name = wxGetTextFromUser(
-							"Enter new directory name:", wxString::Format("Rename Directory %s", old_name), old_name)
-							.ToStdString();
-
-		// Do nothing if no name was entered
-		if (new_name.empty())
-			continue;
-
-		// Discard any given path (for now)
-		new_name = strutil::Path::fileNameOf(new_name);
-
-		// Rename the directory if the new entered name is different from the original
-		if (new_name != old_name)
-			archive->renameDir(dir, new_name);
-	}
-
-	// Finish recording undo level
+	// Do rename (with undo level)
+	undo_manager_->beginRecord("Rename Entry");
+	entryoperations::rename(selection, archive.get(), each);
+	entryoperations::renameDir(selected_dirs, archive.get());
 	undo_manager_->endRecord(true);
+
+	// Update UI
+	for (auto* entry : selection)
+		maineditor::window()->archiveManagerPanel()->updateEntryTabTitle(entry);
 
 	return true;
 }
@@ -1406,6 +1306,8 @@ bool ArchivePanel::moveUp() const
 	auto sel_entries = entry_tree_->selectedEntries();
 	auto focus       = entry_tree_->GetCurrentItem();
 	auto first       = entry_tree_->firstSelectedItem();
+	if (sel_entries.empty())
+		return false;
 
 	// If the first selected item is the first entry in the directory, don't move
 	if (sel_entries[0]->index() == 0)
@@ -1456,6 +1358,8 @@ bool ArchivePanel::moveDown() const
 	auto sel_entries = entry_tree_->selectedEntries();
 	auto focus       = entry_tree_->GetCurrentItem();
 	auto last        = entry_tree_->lastSelectedItem();
+	if (sel_entries.empty())
+		return false;
 
 	// If the last selected item the last entry in the directory, don't move
 	if (sel_entries.back()->index() == dir->numEntries() - 1)
@@ -1919,7 +1823,7 @@ bool ArchivePanel::importEntry()
 // directory selection dialog is shown, and any selected entries will be
 // exported to that directory
 // -----------------------------------------------------------------------------
-bool ArchivePanel::exportEntry()
+bool ArchivePanel::exportEntry() const
 {
 	// Get a list of selected entries & dirs
 	auto selection     = entry_tree_->selectedEntries();
@@ -1927,58 +1831,10 @@ bool ArchivePanel::exportEntry()
 
 	// If we're just exporting 1 entry
 	if (selection.size() == 1 && selected_dirs.empty())
-	{
-		wxString   name = misc::lumpNameToFileName(selection[0]->name());
-		wxFileName fn(name);
+		return entryoperations::exportEntry(selection[0]);
 
-		// Add appropriate extension if needed
-		if (fn.GetExt().Len() == 0)
-			fn.SetExt(selection[0]->type()->extension());
-
-		// Run save file dialog
-		filedialog::FDInfo info;
-		if (filedialog::saveFile(
-				info,
-				"Export Entry \"" + selection[0]->name() + "\"",
-				"Any File (*.*)|*.*",
-				this,
-				fn.GetFullName().ToStdString()))
-			selection[0]->exportFile(info.filenames[0]); // Export entry if ok was clicked
-	}
-	else
-	{
-		// Run save files dialog
-		filedialog::FDInfo info;
-		if (filedialog::saveFiles(info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*.*", this))
-		{
-			// Go through the selected entries
-			for (auto& entry : selection)
-			{
-				// Setup entry filename
-				wxFileName fn(entry->name());
-				fn.SetPath(info.path);
-
-				// Add file extension if it doesn't exist
-				if (!fn.HasExt())
-				{
-					fn.SetExt(entry->type()->extension());
-
-					// ...unless a file already exists with said extension
-					if (wxFileExists(fn.GetFullPath()))
-						fn.SetEmptyExt();
-				}
-
-				// Do export
-				entry->exportFile(fn.GetFullPath().ToStdString());
-			}
-
-			// Go through selected dirs
-			for (auto& dir : selected_dirs)
-				dir->exportTo(string{ info.path + "/" + dir->name() });
-		}
-	}
-
-	return true;
+	// Multiple entries/dirs
+	return entryoperations::exportEntries(selection, selected_dirs);
 }
 
 // -----------------------------------------------------------------------------
@@ -3600,6 +3456,10 @@ bool ArchivePanel::canMoveEntries() const
 		if (archive->formatId() == "folder")
 			return false;
 
+	// Can't move if no entries selected (ie. only dirs)
+	if (entry_tree_->selectedEntries().empty())
+		return false;
+
 	return true;
 }
 
@@ -3688,6 +3548,8 @@ void ArchivePanel::onEntryListSelectionChange(wxDataViewEvent& e)
 		return;
 
 	selectionChanged();
+
+	e.Skip();
 }
 
 // -----------------------------------------------------------------------------

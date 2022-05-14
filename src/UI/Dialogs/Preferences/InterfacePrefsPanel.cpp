@@ -254,8 +254,7 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	gb_sizer->Add(cb_size_as_string_, { row++, 0 }, { 1, 4 }, wxEXPAND);
 	gb_sizer->Add(cb_filter_dirs_, { row++, 0 }, { 1, 4 }, wxEXPAND);
 	gb_sizer->Add(cb_context_submenus_, { row++, 0 }, { 1, 4 }, wxEXPAND);
-	// gb_sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 4 }, wxEXPAND);
-	cb_elist_bgcol_->Show(false);
+	gb_sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 4 }, wxEXPAND);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Folder List Style:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_elist_tree_style_, { row, 1 }, { 1, 3 }, wxEXPAND);
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);

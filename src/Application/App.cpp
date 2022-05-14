@@ -81,7 +81,7 @@ bool            exiting         = false;
 std::thread::id main_thread_id;
 
 // Version
-Version version_num{ 3, 2, 0, 4 };
+Version version_num{ 3, 3, 0, 1000 };
 
 // Directory paths
 string dir_data;
@@ -152,7 +152,9 @@ int app::Version::cmp(const Version& rhs) const
 string app::Version::toString() const
 {
 	auto vers = fmt::format("{}.{}.{}", major, minor, revision);
-	if (beta > 0)
+	if (beta > 999)
+		vers += " alpha";
+	else if (beta > 0)
 		vers += fmt::format(" beta {}", beta);
 	return vers;
 }
@@ -730,15 +732,6 @@ app::Platform app::platform()
 bool app::useWebView()
 {
 #ifdef USE_WEBVIEW_STARTPAGE
-	return true;
-#else
-	return false;
-#endif
-}
-
-bool app::useSFMLRenderWindow()
-{
-#ifdef USE_SFML_RENDERWINDOW
 	return true;
 #else
 	return false;

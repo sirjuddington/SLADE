@@ -53,7 +53,7 @@ public:
 	bool openTab() const;
 	bool convertEntryTo() const;
 	bool importEntry();
-	bool exportEntry();
+	bool exportEntry() const;
 	bool exportEntryAs() const;
 	bool copyEntry() const;
 	bool cutEntry();
