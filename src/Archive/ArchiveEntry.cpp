@@ -155,7 +155,7 @@ Archive* ArchiveEntry::topParent() const
 // -----------------------------------------------------------------------------
 string ArchiveEntry::path(bool include_name) const
 {
-	auto path = parent_->path();
+	auto path = parent_ ? parent_->path() : "";
 	return include_name ? path + name() : path;
 }
 
