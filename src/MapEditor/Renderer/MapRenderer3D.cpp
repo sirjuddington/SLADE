@@ -278,7 +278,7 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(mapeditor::Item item)
 		return nullptr;
 
 	// Get side
-	auto side = item.asSide(*map_);
+	auto side = map_->side(item.real_index >= 0 ? item.real_index : item.index);
 	if (!side)
 		return nullptr;
 
@@ -1357,7 +1357,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Get sector
-		auto sector = item.asSector(*map_);
+		auto sector = map_->sector(item.real_index >= 0 ? item.real_index : item.index);
 		if (!sector)
 			return;
 
@@ -2341,7 +2341,7 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Get side
-		auto side = item.asSide(*map_);
+		auto side = map_->side(item.real_index >= 0 ? item.real_index : item.index);
 		if (!side)
 			continue;
 
@@ -3388,7 +3388,7 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 		|| hilight.type == mapeditor::ItemType::WallTop /*|| hilight.type == MapEditor::ItemType::Wall3DFloor*/)
 	{
 		// Get side
-		auto side = hilight.asSide(*map_);
+		auto side = map_->side(hilight.real_index >= 0 ? hilight.real_index : hilight.index);
 		if (!side)
 			return;
 
@@ -3464,7 +3464,7 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 	if (hilight.type == mapeditor::ItemType::Floor || hilight.type == mapeditor::ItemType::Ceiling)
 	{
 		// Get sector
-		auto sector = hilight.asSector(*map_);
+		auto sector = map_->sector(hilight.real_index >= 0 ? hilight.real_index : hilight.index);
 		if (!sector)
 			return;
 
