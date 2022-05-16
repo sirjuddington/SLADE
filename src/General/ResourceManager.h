@@ -28,15 +28,15 @@ class EntryResource : public Resource
 
 public:
 	EntryResource() : Resource("entry") {}
-	virtual ~EntryResource() = default;
+	~EntryResource() override = default;
 
-	void add(shared_ptr<ArchiveEntry>& entry);
-	void remove(shared_ptr<ArchiveEntry>& entry);
-	void removeArchive(Archive* archive);
+	void add(const shared_ptr<ArchiveEntry>& entry);
+	void remove(const ArchiveEntry* entry);
+	void removeArchive(const Archive* archive);
 
 	int length() const override { return entries_.size(); }
 
-	ArchiveEntry* getEntry(Archive* priority = nullptr, string_view nspace = "", bool ns_required = false);
+	ArchiveEntry* getEntry(const Archive* priority = nullptr, string_view nspace = "", bool ns_required = false);
 
 private:
 	vector<weak_ptr<ArchiveEntry>> entries_;
@@ -52,14 +52,17 @@ public:
 		CTexture          tex;
 		weak_ptr<Archive> parent;
 
-		Texture(const CTexture& tex_copy, shared_ptr<Archive> parent) : parent(parent) { tex.copyTexture(tex_copy); }
+		Texture(const CTexture& tex_copy, const shared_ptr<Archive>& parent) : parent(parent)
+		{
+			tex.copyTexture(tex_copy);
+		}
 	};
 
 	TextureResource() : Resource("texture") {}
-	virtual ~TextureResource() = default;
+	~TextureResource() override = default;
 
 	void add(CTexture* tex, Archive* parent);
-	void remove(Archive* parent);
+	void remove(const Archive* parent);
 
 	int length() const override { return textures_.size(); }
 
@@ -77,30 +80,36 @@ public:
 	~ResourceManager() = default;
 
 	void addArchive(Archive* archive);
-	void removeArchive(Archive* archive);
+	void removeArchive(const Archive* archive);
 
 	void addEntry(shared_ptr<ArchiveEntry>& entry);
-	void removeEntry(shared_ptr<ArchiveEntry>& entry, string_view entry_name = {}, bool full_check = false);
+	void removeEntry(ArchiveEntry* entry, string_view entry_name = {}, bool full_check = false);
 
-	void listAllPatches();
-	void putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
+	void listAllPatches() const;
+	void putAllPatchEntries(vector<ArchiveEntry*>& list, const Archive* priority, bool fullPath = false);
 
-	void putAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = nullptr);
-	void putAllTextureNames(vector<string>& list);
+	void putAllTextures(
+		vector<TextureResource::Texture*>& list,
+		const Archive*                     priority,
+		const Archive*                     ignore = nullptr) const;
+	void putAllTextureNames(vector<string>& list) const;
 
-	void putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
-	void putAllFlatNames(vector<string>& list);
+	void putAllFlatEntries(vector<ArchiveEntry*>& list, const Archive* priority, bool fullPath = false);
+	void putAllFlatNames(vector<string>& list) const;
 
-	ArchiveEntry* getPaletteEntry(string_view palette, Archive* priority = nullptr);
-	ArchiveEntry* getPatchEntry(string_view patch, string_view nspace = "patches", Archive* priority = nullptr);
-	ArchiveEntry* getFlatEntry(string_view flat, Archive* priority = nullptr);
-	ArchiveEntry* getTextureEntry(string_view texture, string_view nspace = "textures", Archive* priority = nullptr);
-	ArchiveEntry* getHiresEntry(string_view texture, Archive* priority = nullptr);
+	ArchiveEntry* getPaletteEntry(string_view palette, const Archive* priority = nullptr);
+	ArchiveEntry* getPatchEntry(string_view patch, string_view nspace = "patches", const Archive* priority = nullptr);
+	ArchiveEntry* getFlatEntry(string_view flat, const Archive* priority = nullptr);
+	ArchiveEntry* getTextureEntry(
+		string_view    texture,
+		string_view    nspace   = "textures",
+		const Archive* priority = nullptr);
+	ArchiveEntry* getHiresEntry(string_view texture, const Archive* priority = nullptr);
 	CTexture*     getTexture(
-			string_view texture,
-			string_view type     = {},
-			Archive*    priority = nullptr,
-			Archive*    ignore   = nullptr);
+			string_view    texture,
+			string_view    type     = {},
+			const Archive* priority = nullptr,
+			const Archive* ignore   = nullptr);
 	uint16_t getTextureHash(string_view name) const;
 
 	// Signals

@@ -32,7 +32,7 @@ public:
 	string fileFilterString() const;
 
 	// Magic goes here
-	int isThisType(ArchiveEntry& entry);
+	int isThisType(ArchiveEntry& entry) const;
 
 	// Static functions
 	static void               initTypes();
