@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
-#include "General/ColourConfiguration.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
@@ -122,10 +121,9 @@ bool gl::init()
 	}
 
 	// Get OpenGL info
-	info.vendor     = (const char*)glGetString(GL_VENDOR);
-	info.renderer   = (const char*)glGetString(GL_RENDERER);
-	info.version    = (const char*)glGetString(GL_VERSION);
-	info.extensions = (const char*)glGetString(GL_EXTENSIONS);
+	info.vendor   = (const char*)glGetString(GL_VENDOR);
+	info.renderer = (const char*)glGetString(GL_RENDERER);
+	info.version  = (const char*)glGetString(GL_VERSION);
 
 	// Get OpenGL version
 	string_view temp{ info.version.data(), 3 };

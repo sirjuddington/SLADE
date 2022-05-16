@@ -149,6 +149,8 @@ bool OGLCanvas::createSFML()
 	settings.stencilBits    = 8;
 	settings.depthBits      = gl_depth_buffer_size;
 	settings.attributeFlags = sf::ContextSettings::Default;
+	settings.majorVersion   = 2;
+	settings.minorVersion   = 0;
 	sf::RenderWindow::create(handle, settings);
 #endif
 	return true;
@@ -204,7 +206,7 @@ void OGLCanvas::drawCheckeredBackground() const
 
 	// Draw background
 	const wxSize size = GetSize() * GetContentScaleFactor();
-	Rectf rect(0, 0, size.x, size.y);
+	Rectf        rect(0, 0, size.x, size.y);
 	gl::setColour(ColRGBA::WHITE);
 	glBegin(GL_QUADS);
 	glTexCoord2d(rect.x1() * 0.0625, rect.y1() * 0.0625);
