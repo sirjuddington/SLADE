@@ -135,7 +135,7 @@ string EntryType::fileFilterString() const
 // -----------------------------------------------------------------------------
 // Returns true if [entry] matches the EntryType's criteria, false otherwise
 // -----------------------------------------------------------------------------
-int EntryType::isThisType(ArchiveEntry& entry)
+int EntryType::isThisType(ArchiveEntry& entry) const
 {
 	// Check type is detectable
 	if (!detectable_)
@@ -241,6 +241,10 @@ int EntryType::isThisType(ArchiveEntry& entry)
 			auto name = fn;
 			if (ext_sep != string::npos)
 				name = fn.substr(0, ext_sep);
+
+			// If we are matching 8 characters or less, only check the first 8 characters of the entry name
+			if (match_name_.size() <= 8 && name.size() > 8)
+				name = name.substr(0, 8);
 
 			bool match = false;
 			for (const auto& match_name : match_name_)
