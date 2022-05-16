@@ -40,12 +40,9 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
+// Functions
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
 namespace
 {
 // -----------------------------------------------------------------------------
@@ -53,7 +50,7 @@ namespace
 // -----------------------------------------------------------------------------
 void fixBrokenWave(ArchiveEntry* const entry)
 {
-	static const uint32_t MIN_WAVE_SIZE = 44;
+	static constexpr uint32_t MIN_WAVE_SIZE = 44;
 
 	if ("snd_wav" != entry->type()->formatId() || entry->size() < MIN_WAVE_SIZE)
 		return;
@@ -107,7 +104,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	for (uint16_t i = 0; i < num_entries; ++i)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(static_cast<float>(i) / num_entries);
+		ui::setSplashProgress(i, num_entries);
 
 		// Read entry info
 		char name[NAME_SIZE] = {};
@@ -134,9 +131,14 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		name[sizeof name - 1] = '\0';
 
 		// Create entry
-		auto entry              = std::make_shared<ArchiveEntry>(name, size);
-		entry->exProp("Offset") = static_cast<int>(offset);
-		entry->setLoaded(false);
+		auto entry = std::make_shared<ArchiveEntry>(name, size);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk(size);
+
+		// Read entry data if it isn't zero-sized
+		if (entry->size() > 0)
+			entry->importMemChunk(mc, offset, size);
+
 		entry->setState(ArchiveEntry::State::Unmodified);
 
 		rootDir()->addEntry(entry);
@@ -153,26 +155,14 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	for (size_t i = 0; i < all_entries.size(); ++i)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(static_cast<float>(i) / num_entries);
+		ui::setSplashProgress(i, num_entries);
 
 		// Get entry
 		const auto entry = all_entries[i];
 
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
-			entry->importMemChunk(edata);
-		}
-
 		// Detect entry type
 		EntryType::detectEntryType(*entry);
 		fixBrokenWave(entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
 
 		// Set entry to unchanged
 		entry->setState(ArchiveEntry::State::Unmodified);
@@ -191,7 +181,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 // Writes Chasm bin archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::write(MemChunk& mc, bool update)
+bool ChasmBinArchive::write(MemChunk& mc)
 {
 	// Clear current data
 	mc.clear();
@@ -212,12 +202,12 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 	}
 
 	// Init data size
-	static const uint32_t HEADER_TOC_SIZE = HEADER_SIZE + ENTRY_SIZE * MAX_ENTRY_COUNT;
+	static constexpr uint32_t HEADER_TOC_SIZE = HEADER_SIZE + ENTRY_SIZE * MAX_ENTRY_COUNT;
 	mc.reSize(HEADER_TOC_SIZE, false);
 	mc.fillData(0);
 
 	// Write header
-	const char magic[4] = { 'C', 'S', 'i', 'd' };
+	constexpr char magic[4] = { 'C', 'S', 'i', 'd' };
 	mc.seek(0, SEEK_SET);
 	mc.write(magic, 4);
 	mc.write(&num_entries, sizeof num_entries);
@@ -230,11 +220,9 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 		const auto entry = entries[i];
 
 		// Update entry
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = static_cast<int>(offset);
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk(entry->size());
 
 		// Check entry name
 		auto    name        = entry->name();
@@ -278,49 +266,20 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from Chasm bin file
+// Loads an [entry]'s data from Chasm bin file to [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
+bool ChasmBinArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check entry is ok
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the entry's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open archive file
-	wxFile file(filename_);
-
-	// Check it opened
-	if (!file.IsOpened())
-	{
-		log::error("ChasmBinArchive::loadEntryData: Unable to open archive file {}", filename_);
-		return false;
-	}
-
-	// Seek to entry offset in file and read it in
-	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
+
 
 // -----------------------------------------------------------------------------
 //
 // ChasmBinArchive Class Static Functions
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Chasm bin archive

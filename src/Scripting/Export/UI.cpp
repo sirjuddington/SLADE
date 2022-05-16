@@ -163,7 +163,7 @@ void registerUINamespace(sol::state& lua)
 	ui["SplashProgress"]           = &ui::getSplashProgress;
 	ui["SetSplashMessage"]         = &ui::setSplashMessage;
 	ui["SetSplashProgressMessage"] = &ui::setSplashProgressMessage;
-	ui["SetSplashProgress"]        = &ui::setSplashProgress;
+	ui["SetSplashProgress"]        = sol::resolve<void(float)>(ui::setSplashProgress);
 
 	// Constants
 	// -------------------------------------------------------------------------

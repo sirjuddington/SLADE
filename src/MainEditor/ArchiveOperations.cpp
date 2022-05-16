@@ -1602,7 +1602,7 @@ size_t archiveoperations::replaceThings(Archive* archive, int oldtype, int newty
 			{
 				achanged = archiveoperations::replaceThings(temp_archive.get(), oldtype, newtype);
 				MemChunk mc;
-				if (!(temp_archive->write(mc, true)))
+				if (!(temp_archive->write(mc)))
 				{
 					achanged = 0;
 				}
@@ -1993,7 +1993,7 @@ size_t archiveoperations::replaceSpecials(
 					oldarg4,
 					newarg4);
 				MemChunk mc;
-				if (!(temp_archive->write(mc, true)))
+				if (!(temp_archive->write(mc)))
 				{
 					achanged = 0;
 				}
@@ -2426,7 +2426,7 @@ size_t archiveoperations::replaceTextures(
 				achanged = archiveoperations::replaceTextures(
 					temp_archive, oldtex, newtex, floor, ceiling, lower, middle, upper);
 				MemChunk mc;
-				if (!(temp_archive->write(mc, true)))
+				if (!(temp_archive->write(mc)))
 				{
 					achanged = 0;
 				}

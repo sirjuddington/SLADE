@@ -39,18 +39,9 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // PakArchive Class Functions
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Reads pak format data from a MemChunk
@@ -89,7 +80,7 @@ bool PakArchive::open(MemChunk& mc)
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_entries));
+		ui::setSplashProgress(d, num_entries);
 
 		// Read entry info
 		char    name[56];
@@ -115,9 +106,14 @@ bool PakArchive::open(MemChunk& mc)
 		auto dir = createDir(strutil::Path::pathOf(name));
 
 		// Create entry
-		auto entry              = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), size);
-		entry->exProp("Offset") = (int)offset;
-		entry->setLoaded(false);
+		auto entry = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), size);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk(size);
+
+		// Read entry data if it isn't zero-sized
+		if (entry->size() > 0)
+			entry->importMemChunk(mc, offset, size);
+
 		entry->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to directory
@@ -125,36 +121,7 @@ bool PakArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk              edata;
-	vector<ArchiveEntry*> all_entries;
-	putEntryTreeAsList(all_entries);
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < all_entries.size(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_entries)));
-
-		// Get entry
-		auto entry = all_entries[a];
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -169,7 +136,7 @@ bool PakArchive::open(MemChunk& mc)
 // Writes the pak archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool PakArchive::write(MemChunk& mc, bool update)
+bool PakArchive::write(MemChunk& mc)
 {
 	// Clear current data
 	mc.clear();
@@ -212,11 +179,9 @@ bool PakArchive::write(MemChunk& mc, bool update)
 			continue;
 
 		// Update entry
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)offset;
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk();
 
 		// Check entry name
 		auto name = entry->path(true);
@@ -231,8 +196,7 @@ bool PakArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Write entry name
-		char name_data[56];
-		memset(name_data, 0, 56);
+		char name_data[56] = {};
 		memcpy(name_data, name.data(), name.size());
 		mc.write(name_data, 56);
 
@@ -263,41 +227,12 @@ bool PakArchive::write(MemChunk& mc, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the pak file
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool PakArchive::loadEntryData(ArchiveEntry* entry)
+bool PakArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check entry is ok
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the entry's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open archive file
-	wxFile file(filename_);
-
-	// Check it opened
-	if (!file.IsOpened())
-	{
-		log::error("PakArchive::loadEntryData: Unable to open archive file {}", filename_);
-		return false;
-	}
-
-	// Seek to entry offset in file and read it in
-	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 

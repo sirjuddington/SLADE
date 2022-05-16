@@ -8,16 +8,16 @@ class BZip2Archive : public TreelessArchive
 {
 public:
 	BZip2Archive() : TreelessArchive("bz2") {}
-	~BZip2Archive() = default;
+	~BZip2Archive() override = default;
 
 	// Opening
 	bool open(MemChunk& mc) override;
 
 	// Writing/Saving
-	bool write(MemChunk& mc, bool update = true) override;
+	bool write(MemChunk& mc) override;
 
 	// Misc
-	bool loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Entry addition/removal
 	shared_ptr<ArchiveEntry> addEntry(

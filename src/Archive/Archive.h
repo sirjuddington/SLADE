@@ -65,7 +65,7 @@ public:
 	void setFilename(string_view filename) { filename_ = filename; }
 
 	// Entry retrieval/info
-	bool                             checkEntry(ArchiveEntry* entry) const;
+	bool                             checkEntry(const ArchiveEntry* entry) const;
 	virtual ArchiveEntry*            entry(string_view name, bool cut_ext = false, ArchiveDir* dir = nullptr) const;
 	virtual ArchiveEntry*            entryAt(unsigned index, ArchiveDir* dir = nullptr) const;
 	virtual int                      entryIndex(ArchiveEntry* entry, ArchiveDir* dir = nullptr) const;
@@ -83,12 +83,12 @@ public:
 	virtual bool open(MemChunk& mc) = 0;     // Open from MemChunk
 
 	// Writing/Saving
-	virtual bool write(MemChunk& mc, bool update = true) = 0;     // Write to MemChunk
-	virtual bool write(string_view filename, bool update = true); // Write to File
-	virtual bool save(string_view filename = "");                 // Save archive
+	virtual bool write(MemChunk& mc) = 0;         // Write to MemChunk
+	virtual bool write(string_view filename);     // Write to File
+	virtual bool save(string_view filename = ""); // Save archive
 
 	// Misc
-	virtual bool     loadEntryData(ArchiveEntry* entry) = 0;
+	virtual bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) = 0;
 	virtual unsigned numEntries();
 	virtual void     close();
 	void             entryStateChanged(ArchiveEntry* entry);
@@ -190,6 +190,10 @@ protected:
 	bool   read_only_     = false; // If true, the archive cannot be modified
 	time_t file_modified_ = 0;
 
+	// Helpers
+	bool genericLoadEntryData(const ArchiveEntry* entry, MemChunk& out) const;
+	void detectAllEntryTypes() const;
+
 private:
 	bool                   modified_ = true;
 	shared_ptr<ArchiveDir> dir_root_;
@@ -275,4 +279,5 @@ public:
 private:
 	Archive* archive_;
 };
+
 } // namespace slade

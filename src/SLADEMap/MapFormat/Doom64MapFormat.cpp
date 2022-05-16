@@ -139,7 +139,7 @@ bool Doom64MapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map
 		return true;
 	}
 
-	const auto     vert_data = reinterpret_cast<const Vertex*>(entry->rawData(true));
+	const auto     vert_data = reinterpret_cast<const Vertex*>(entry->rawData());
 	const unsigned nv        = entry->size() / sizeof(Vertex);
 	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
@@ -173,7 +173,7 @@ bool Doom64MapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		return true;
 	}
 
-	const auto     side_data = reinterpret_cast<const SideDef*>(entry->rawData(true));
+	const auto     side_data = reinterpret_cast<const SideDef*>(entry->rawData());
 	const unsigned ns        = entry->size() / sizeof(SideDef);
 	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
@@ -213,7 +213,7 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		return true;
 	}
 
-	const auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData(true));
+	const auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData());
 	const unsigned nl        = entry->size() / sizeof(LineDef);
 	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
@@ -280,7 +280,7 @@ bool Doom64MapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_
 		return true;
 	}
 
-	const auto     sect_data = reinterpret_cast<const Sector*>(entry->rawData(true));
+	const auto     sect_data = reinterpret_cast<const Sector*>(entry->rawData());
 	const unsigned ns        = entry->size() / sizeof(Sector);
 	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
@@ -331,7 +331,7 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	const auto        thng_data = reinterpret_cast<const Thing*>(entry->rawData(true));
+	const auto        thng_data = reinterpret_cast<const Thing*>(entry->rawData());
 	const unsigned    nt        = entry->size() / sizeof(Thing);
 	const float       p         = ui::getSplashProgress();
 	MapObject::ArgSet args;

@@ -15,14 +15,14 @@ public:
 	};
 
 	DiskArchive() : Archive("disk") {}
-	~DiskArchive() = default;
+	~DiskArchive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;                      // Open from MemChunk
-	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
+	bool open(MemChunk& mc) override;  // Open from MemChunk
+	bool write(MemChunk& mc) override; // Write to MemChunk
 
 	// Misc
-	bool loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
 	static bool isDiskArchive(MemChunk& mc);

@@ -40,14 +40,6 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // Functions
 //
 // -----------------------------------------------------------------------------
@@ -118,31 +110,6 @@ bool shouldEncodeTxb(string_view name)
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// Returns the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-uint32_t HogArchive::getEntryOffset(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return 0;
-
-	return (uint32_t)entry->exProp<int>("Offset");
-}
-
-// -----------------------------------------------------------------------------
-// Sets the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-void HogArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return;
-
-	entry->exProp("Offset") = (int)offset;
-}
-
 // -----------------------------------------------------------------------------
 // Reads hog format data from a MemChunk
 // Returns true if successful, false otherwise
@@ -169,10 +136,11 @@ bool HogArchive::open(MemChunk& mc)
 	ui::setSplashProgressMessage("Reading hog archive data");
 	size_t   iter_offset = 3;
 	uint32_t num_lumps   = 0;
+	MemChunk edata;
 	while (iter_offset < archive_size)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)iter_offset / (float)archive_size));
+		ui::setSplashProgress(iter_offset, archive_size);
 
 		// If the lump data goes past the end of the file,
 		// the hogfile is invalid
@@ -194,15 +162,29 @@ bool HogArchive::open(MemChunk& mc)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk(size);
 
 		// Handle txb/ctb as archive level encryption. This is not strictly
 		// correct, but since we're not making a proper Descent editor this
 		// prevents needless complication on loading text data.
 		if (shouldEncodeTxb(nlump->name()))
 			nlump->setEncryption(ArchiveEntry::Encryption::TXB);
+
+		// Read entry data if it isn't zero-sized
+		if (nlump->size() > 0)
+		{
+			// Read the entry data
+			mc.exportMemChunk(edata, offset, size);
+
+			// Decode if needed
+			if (nlump->encryption() == ArchiveEntry::Encryption::TXB)
+				decodeTxb(edata);
+
+			nlump->importMemChunk(edata);
+		}
+
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -212,36 +194,7 @@ bool HogArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			if (entry->encryption() == ArchiveEntry::Encryption::TXB)
-				decodeTxb(edata);
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -256,7 +209,7 @@ bool HogArchive::open(MemChunk& mc)
 // Writes the hog archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool HogArchive::write(MemChunk& mc, bool update)
+bool HogArchive::write(MemChunk& mc)
 {
 	// Determine individual lump offsets
 	uint32_t      offset = 3;
@@ -265,12 +218,9 @@ bool HogArchive::write(MemChunk& mc, bool update)
 	{
 		offset += 17;
 		entry = entryAt(l);
-		setEntryOffset(entry, offset);
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)offset;
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk();
 		offset += entry->size();
 	}
 
@@ -309,41 +259,12 @@ bool HogArchive::write(MemChunk& mc, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the hogfile
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool HogArchive::loadEntryData(ArchiveEntry* entry)
+bool HogArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open hogfile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("HogArchive::loadEntryData: Failed to open hogfile {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 // -----------------------------------------------------------------------------

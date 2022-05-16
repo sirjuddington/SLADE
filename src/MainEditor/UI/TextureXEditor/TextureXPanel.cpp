@@ -1471,7 +1471,7 @@ void TextureXPanel::exportTexture()
 	{
 		// Update splash window
 		ui::setSplashProgressMessage(selection[a]->name());
-		ui::setSplashProgress((float)a / (float)selection.size());
+		ui::setSplashProgress(a, selection.size());
 
 		// Skip if the image wasn't converted
 		if (!gcd.itemModified(a))
@@ -1590,7 +1590,7 @@ void TextureXPanel::extractTexture()
 			{
 				// Update splash window
 				ui::setSplashProgressMessage(selection[a]->name());
-				ui::setSplashProgress((float)a / (float)selection.size());
+				ui::setSplashProgress(a, selection.size());
 
 				// Setup entry filename
 				wxFileName fn(selection[a]->name());

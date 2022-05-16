@@ -172,7 +172,7 @@ bool PaletteManager::loadResourcePalettes()
 	{
 		// Load palette data
 		auto     pal = std::make_unique<Palette>();
-		MemChunk mc(dir_palettes->entryAt(a)->rawData(true), dir_palettes->entryAt(a)->size());
+		MemChunk mc(dir_palettes->entryAt(a)->data());
 		pal->loadMem(mc);
 
 		// Add the palette

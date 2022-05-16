@@ -152,15 +152,15 @@ size_t WolfConstant(int name, size_t numlumps)
 // Looks for the string naming the song towards the end of the file.
 // Returns an empty string if nothing is found.
 // -----------------------------------------------------------------------------
-string searchIMFName(MemChunk& mc)
+string searchIMFName(const MemChunk& mc)
 {
 	char tmp[17];
 	char tmp2[65];
 	tmp[16]  = 0;
 	tmp2[64] = 0;
 
-	string ret      = "";
-	string fullname = "";
+	string ret;
+	string fullname;
 	if (mc.size() >= 88u)
 	{
 		uint16_t nameOffset = mc.readL16(0) + 4u;
@@ -295,7 +295,7 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 		expanded = 64 * WolfConstant(NUMTILE8, numlumps);
 	else
 	{
-		expanded = *(uint32_t*)source;
+		expanded = *reinterpret_cast<const uint32_t*>(source);
 		source += 4; // skip over length
 	}
 
@@ -327,13 +327,16 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 		else
 			nodeval = huffptr->bit1;
 		if (mask == 0x80)
-			val = *source++, mask = 1;
+		{
+			val  = *source++;
+			mask = 1;
+		}
 		else
 			mask <<= 1;
 
 		if (nodeval < 256)
 		{
-			*dest++ = (uint8_t)nodeval;
+			*dest++ = static_cast<uint8_t>(nodeval);
 			written++;
 			huffptr = headptr;
 			if (dest >= end)
@@ -358,24 +361,6 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 // WolfArchive Class Functions
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Gets a lump entry's offset
-// Returns the lump entry's offset, or zero if it doesn't exist
-// -----------------------------------------------------------------------------
-uint32_t WolfArchive::getEntryOffset(ArchiveEntry* entry) const
-{
-	return uint32_t(entry->exProp<int>("Offset"));
-}
-
-// -----------------------------------------------------------------------------
-// Sets a lump entry's offset
-// -----------------------------------------------------------------------------
-void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) const
-{
-	entry->exProp("Offset") = (int)offset;
-}
 
 // -----------------------------------------------------------------------------
 // Reads a Wolf format file from disk
@@ -485,7 +470,7 @@ bool WolfArchive::open(MemChunk& mc)
 	for (uint32_t d = 0; d < num_chunks; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress((float)d / (float)num_chunks * 2.0f);
+		ui::setSplashProgress(d, num_chunks * 2);
 
 		// Read offset info
 		uint32_t offset = 0;
@@ -506,7 +491,7 @@ bool WolfArchive::open(MemChunk& mc)
 	for (uint32_t d = 0, l = 0; d < num_chunks; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress((float)(d + num_chunks) / (float)num_chunks * 2.0f);
+		ui::setSplashProgress(d + num_chunks, num_chunks * 2);
 
 		// Read size info
 		uint16_t size = 0;
@@ -543,53 +528,35 @@ bool WolfArchive::open(MemChunk& mc)
 				size = fullsize;
 			}
 
+			// If the lump data goes past the end of file,
+			// the data file is invalid
+			if (pages[d].offset + size > mc.size())
+			{
+				log::error("WolfArchive::open: Wolf archive is invalid or corrupt");
+				global::error = "Archive is invalid and/or corrupt";
+				return false;
+			}
+
 			// Create & setup lump
 			auto nlump = std::make_shared<ArchiveEntry>(name, size);
-			nlump->setLoaded(false);
-			nlump->exProp("Offset") = (int)pages[d].offset;
+			nlump->setOffsetOnDisk(pages[d].offset);
+			nlump->setSizeOnDisk();
+
+			// Read entry data if it isn't zero-sized
+			if (size > 0)
+				nlump->importMemChunk(mc, pages[d].offset, size);
+
 			nlump->setState(ArchiveEntry::State::Unmodified);
 
 			d = e;
 
 			// Add to entry list
 			rootDir()->addEntry(nlump);
-
-			// If the lump data goes past the end of file,
-			// the data file is invalid
-			if (getEntryOffset(nlump.get()) + size > mc.size())
-			{
-				log::error("WolfArchive::open: Wolf archive is invalid or corrupt");
-				global::error = "Archive is invalid and/or corrupt";
-				return false;
-			}
 		}
 	}
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -604,7 +571,7 @@ bool WolfArchive::open(MemChunk& mc)
 // Reads Wolf AUDIOT/AUDIOHEAD format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
+bool WolfArchive::openAudio(MemChunk& head, const MemChunk& data)
 {
 	// Check data was given
 	if (!head.hasData() || !data.hasData())
@@ -619,7 +586,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 
 	// Read the offsets
 	ui::setSplashProgressMessage("Reading Wolf archive data");
-	auto     offsets = (const uint32_t*)head.data();
+	auto     offsets = reinterpret_cast<const uint32_t*>(head.data());
 	MemChunk edata;
 
 	// First try to determine where data type changes
@@ -681,7 +648,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read offset info
 		uint32_t offset = wxINT32_SWAP_ON_BE(offsets[d]);
@@ -707,7 +674,6 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 			++current_seg;
 		}
 
-		//
 		// Read entry data if it isn't zero-sized
 		if (size > 0)
 		{
@@ -724,8 +690,8 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk();
 
 		// Detect entry type
 		if (size > 0)
@@ -750,7 +716,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 // Reads Wolf GAMEMAPS/MAPHEAD format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
+bool WolfArchive::openMaps(MemChunk& head, const MemChunk& data)
 {
 	// Check data was given
 	if (!head.hasData() || !data.hasData())
@@ -765,11 +731,11 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 
 	// Read the offsets
 	ui::setSplashProgressMessage("Reading Wolf archive data");
-	auto offsets = (const uint32_t*)(2 + head.data());
+	auto offsets = reinterpret_cast<const uint32_t*>(2 + head.data());
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read offset info
 		uint32_t offset = wxINT32_SWAP_ON_BE(offsets[d]);
@@ -796,8 +762,10 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		}
 
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk();
+		if (size > 0)
+			nlump->importMemChunk(data, offset, size);
 		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
@@ -816,38 +784,17 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		{
 			name        = fmt::format("PLANE{}", i);
 			auto nlump2 = std::make_shared<ArchiveEntry>(name, planelen[i]);
-			nlump2->setLoaded(false);
-			nlump2->exProp("Offset") = (int)planeofs[i];
+			nlump2->setOffsetOnDisk(planeofs[i]);
+			nlump2->setSizeOnDisk();
+			if (planelen[i] > 0)
+				nlump2->importMemChunk(data, planeofs[i], planelen[i]);
 			nlump2->setState(ArchiveEntry::State::Unmodified);
 			rootDir()->addEntry(nlump2);
 		}
 	}
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			data.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -863,7 +810,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
 #define WC(a) WolfConstant(a, num_lumps)
-bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
+bool WolfArchive::openGraph(const MemChunk& head, const MemChunk& data, MemChunk& dict)
 {
 	// Check data was given
 	if (!head.hasData() || !data.hasData() || !dict.hasData())
@@ -887,10 +834,11 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 
 	// Read the offsets
 	ui::setSplashProgressMessage("Reading Wolf archive data");
+	const uint16_t* pictable = nullptr;
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read offset info
 		uint32_t offset = head.readL24((d * 3));
@@ -937,8 +885,23 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk();
+
+		// Read entry data if it isn't zero-sized
+		if (size > 0)
+			nlump->importMemChunk(data, offset, size);
+		expandWolfGraphLump(nlump.get(), d, num_lumps, nodes);
+
+		// Store pictable information
+		if (d == 0)
+			pictable = reinterpret_cast<const uint16_t*>(nlump->rawData());
+		else if (d >= WC(STARTPICS) && d < WC(STARTPICM))
+		{
+			size_t i = (d - WC(STARTPICS)) << 1;
+			addWolfPicHeader(nlump.get(), pictable[i], pictable[i + 1]);
+		}
+
 		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
@@ -946,41 +909,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 	}
 
 	// Detect all entry types
-	MemChunk        edata;
-	const uint16_t* pictable = nullptr;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			data.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			entry->importMemChunk(edata);
-		}
-		expandWolfGraphLump(entry, a, num_lumps, nodes);
-
-		// Store pictable information
-		if (a == 0)
-			pictable = (uint16_t*)entry->rawData();
-		else if (a >= WC(STARTPICS) && a < WC(STARTPICM))
-		{
-			size_t i = (a - WC(STARTPICS)) << 1;
-			addWolfPicHeader(entry, pictable[i], pictable[i + 1]);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -1006,7 +935,7 @@ shared_ptr<ArchiveEntry> WolfArchive::addEntry(shared_ptr<ArchiveEntry> entry, u
 		return nullptr;
 
 	// Do default entry addition (to root directory)
-	Archive::addEntry(entry, position);
+	TreelessArchive::addEntry(entry, position);
 
 	return entry;
 }
@@ -1032,47 +961,18 @@ bool WolfArchive::renameEntry(ArchiveEntry* entry, string_view name)
 // Writes the dat archive to a MemChunk
 // Returns true if successful, false otherwise [Not implemented]
 // -----------------------------------------------------------------------------
-bool WolfArchive::write(MemChunk& mc, bool update)
+bool WolfArchive::write(MemChunk& mc)
 {
 	return false;
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the datafile
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::loadEntryData(ArchiveEntry* entry)
+bool WolfArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open wadfile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("WolfArchive::loadEntryData: Failed to open datfile {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 // -----------------------------------------------------------------------------

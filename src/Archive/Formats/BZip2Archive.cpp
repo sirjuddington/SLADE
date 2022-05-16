@@ -93,7 +93,7 @@ bool BZip2Archive::open(MemChunk& mc)
 // Writes the BZip2 archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool BZip2Archive::write(MemChunk& mc, bool update)
+bool BZip2Archive::write(MemChunk& mc)
 {
 	if (numEntries() == 1)
 		return compression::bzip2Compress(entryAt(0)->data(), mc);
@@ -105,9 +105,11 @@ bool BZip2Archive::write(MemChunk& mc, bool update)
 // Loads an entry's data from the BZip2 file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
+bool BZip2Archive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
 	return false;
+
+#if 0
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
@@ -138,6 +140,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	entry->setState(ArchiveEntry::State::Unmodified);
 
 	return true;
+#endif
 }
 
 // -----------------------------------------------------------------------------

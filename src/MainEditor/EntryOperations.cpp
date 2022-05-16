@@ -1393,7 +1393,7 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool entryoperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool animdefs)
 {
-	auto                 cursor = entry->rawData(true);
+	auto                 cursor = entry->rawData();
 	auto                 eodata = cursor + entry->size();
 	const AnimatedEntry* animation;
 	wxString             conversion;
@@ -1451,7 +1451,7 @@ bool entryoperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, b
 // -----------------------------------------------------------------------------
 bool entryoperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, bool animdefs)
 {
-	auto                 cursor = entry->rawData(true);
+	auto                 cursor = entry->rawData();
 	auto                 eodata = cursor + entry->size();
 	const SwitchesEntry* switches;
 	wxString             conversion;

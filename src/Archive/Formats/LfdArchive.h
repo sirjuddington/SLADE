@@ -8,18 +8,14 @@ class LfdArchive : public TreelessArchive
 {
 public:
 	LfdArchive() : TreelessArchive("lfd") {}
-	~LfdArchive() = default;
-
-	// LFD specific
-	uint32_t getEntryOffset(ArchiveEntry* entry);
-	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset);
+	~LfdArchive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;                      // Open from MemChunk
-	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
+	bool open(MemChunk& mc) override;  // Open from MemChunk
+	bool write(MemChunk& mc) override; // Write to MemChunk
 
 	// Misc
-	bool loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
 	static bool isLfdArchive(MemChunk& mc);

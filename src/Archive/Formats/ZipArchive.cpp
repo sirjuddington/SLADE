@@ -56,7 +56,6 @@ CVAR(Bool, zip_allow_duplicate_names, false, CVar::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Int, max_entry_size_mb)
 
 
@@ -143,7 +142,6 @@ bool ZipArchive::open(string_view filename)
 				misc::fileNameToLumpName(fn.fileName()), zip_entry->GetSize());
 
 			// Setup entry info
-			new_entry->setLoaded(false);
 			new_entry->exProp("ZipIndex") = entry_index;
 
 			// Add entry and directory to directory tree
@@ -158,14 +156,9 @@ bool ZipArchive::open(string_view filename)
 					zip.Read(data.data(), ze_size); // Note: this is where exceedingly large files cause an exception.
 					new_entry->importMem(data.data(), static_cast<uint32_t>(ze_size));
 				}
-				new_entry->setLoaded(true);
 
 				// Determine its type
 				EntryType::detectEntryType(*new_entry);
-
-				// Unload data if needed
-				if (!archive_load_data)
-					new_entry->unloadData();
 			}
 			else
 			{
@@ -230,13 +223,13 @@ bool ZipArchive::open(MemChunk& mc)
 // Writes the zip archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchive::write(MemChunk& mc, bool update)
+bool ZipArchive::write(MemChunk& mc)
 {
 	bool success = false;
 
 	// Write to a temporary file
 	const auto tempfile = app::path("slade-temp-write.zip", app::Dir::Temp);
-	if (write(tempfile, true))
+	if (write(tempfile))
 	{
 		// Load file into MemChunk
 		success = mc.importFile(tempfile);
@@ -252,7 +245,7 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 // Writes the zip archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchive::write(string_view filename, bool update)
+bool ZipArchive::write(string_view filename)
 {
 	// Check for entries with duplicate names (not allowed for zips)
 	auto all_dirs = rootDir()->allDirectories();
@@ -326,14 +319,13 @@ bool ZipArchive::write(string_view filename, bool update)
 	ui::updateSplash();
 	for (size_t a = 0; a < n_entries; a++)
 	{
-		ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(n_entries));
+		ui::setSplashProgress(a, n_entries);
 
 		if (entries[a]->type() == EntryType::folderType())
 		{
 			// If the current entry is a folder, just write a directory entry and continue
 			zip.PutNextDirEntry(entries[a]->path(true));
-			if (update)
-				entries[a]->setState(ArchiveEntry::State::Unmodified);
+			entries[a]->setState(ArchiveEntry::State::Unmodified);
 			continue;
 		}
 
@@ -361,11 +353,8 @@ bool ZipArchive::write(string_view filename, bool update)
 		}
 
 		// Update entry info
-		if (update)
-		{
-			entries[a]->setState(ArchiveEntry::State::Unmodified);
-			entries[a]->exProp("ZipIndex") = static_cast<int>(a);
-		}
+		entries[a]->setState(ArchiveEntry::State::Unmodified);
+		entries[a]->exProp("ZipIndex") = static_cast<int>(a);
 	}
 
 	// Clean up
@@ -383,11 +372,11 @@ bool ZipArchive::write(string_view filename, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the saved copy of the archive if any.
+// Loads an [entry]'s data from the saved copy of the archive if any into [out].
 // Returns false if the entry is invalid, doesn't belong to the archive or
 // doesn't exist in the saved copy, true otherwise.
 // -----------------------------------------------------------------------------
-bool ZipArchive::loadEntryData(ArchiveEntry* entry)
+bool ZipArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
 	// Check that the entry belongs to this archive
 	if (entry->parent() != this)
@@ -396,18 +385,10 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 		return false;
 	}
 
-	// Do nothing if the entry's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
 	// Check that the entry has a zip index
 	int zip_index;
 	if (entry->exProps().contains("ZipIndex"))
-		zip_index = entry->exProp<int>("ZipIndex");
+		zip_index = entry->exProps().get<int>("ZipIndex");
 	else
 	{
 		log::error("ZipArchive::loadEntryData: Entry {} has no zip entry index!", entry->name());
@@ -430,9 +411,6 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 		return false;
 	}
 
-	// Lock entry state
-	entry->lockState();
-
 	// Skip to correct entry in zip
 	auto zentry = zip.GetNextEntry();
 	for (long a = 0; a < zip_index; a++)
@@ -451,11 +429,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Read the data
 	vector<uint8_t> data(zentry->GetSize());
 	zip.Read(data.data(), zentry->GetSize());
-	entry->importMem(data.data(), static_cast<uint32_t>(zentry->GetSize()));
-
-	// Set the entry to loaded
-	entry->setLoaded();
-	entry->unlockState();
+	out.importMem(data.data(), static_cast<uint32_t>(zentry->GetSize()));
 
 	// Clean up
 	delete zentry;

@@ -15,11 +15,11 @@ public:
 	bool open(MemChunk& mc) override;         // Open from MemChunk
 
 	// Writing/Saving
-	bool write(MemChunk& mc, bool update = true) override;         // Write to MemChunk
-	bool write(string_view filename, bool update = true) override; // Write to File
+	bool write(MemChunk& mc) override;         // Write to MemChunk
+	bool write(string_view filename) override; // Write to File
 
 	// Misc
-	bool loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Entry addition/removal
 	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;

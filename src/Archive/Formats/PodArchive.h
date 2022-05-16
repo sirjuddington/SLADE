@@ -8,7 +8,7 @@ class PodArchive : public Archive
 {
 public:
 	PodArchive();
-	~PodArchive() = default;
+	~PodArchive() override = default;
 
 	string_view getId() const { return id_; }
 	void        setId(string_view id);
@@ -17,10 +17,10 @@ public:
 	bool open(MemChunk& mc) override;
 
 	// Writing/Saving
-	bool write(MemChunk& mc, bool update = true) override;
+	bool write(MemChunk& mc) override;
 
 	// Misc
-	bool loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
 	static bool isPodArchive(MemChunk& mc);

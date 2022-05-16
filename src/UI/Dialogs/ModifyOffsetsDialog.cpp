@@ -336,7 +336,6 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 		{
 			// Data changed, update entry state
 			entry.setState(ArchiveEntry::State::Modified);
-			entry.updateSize();
 		}
 	}
 	else

@@ -12,6 +12,7 @@ public:
 	MemChunk() = default;
 	MemChunk(uint32_t size);
 	MemChunk(const uint8_t* data, uint32_t size);
+	MemChunk(const MemChunk& copy);
 	~MemChunk() override;
 
 	uint8_t& operator[](int a) const { return data_[a]; }

@@ -40,18 +40,9 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // Wad2Archive Class Functions
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Reads wad format data from a MemChunk
@@ -95,7 +86,7 @@ bool Wad2Archive::open(MemChunk& mc)
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
 		Wad2Entry info;
@@ -117,11 +108,16 @@ bool Wad2Archive::open(MemChunk& mc)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(info.name, info.dsize);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)info.offset;
+		nlump->setOffsetOnDisk(info.offset);
+		nlump->setSizeOnDisk();
 		nlump->exProp("W2Type") = info.type;
 		nlump->exProp("W2Size") = (int)info.size;
 		nlump->exProp("W2Comp") = !!(info.cmprs);
+
+		// Read entry data if it isn't zero-sized
+		if (nlump->size() > 0)
+			nlump->importMemChunk(mc, info.offset, info.dsize);
+
 		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
@@ -129,34 +125,7 @@ bool Wad2Archive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Detect maps (will detect map entry types)
 	ui::setSplashProgressMessage("Detecting maps");
@@ -175,15 +144,15 @@ bool Wad2Archive::open(MemChunk& mc)
 // Writes the wad archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Wad2Archive::write(MemChunk& mc, bool update)
+bool Wad2Archive::write(MemChunk& mc)
 {
 	// Determine directory offset & individual lump offsets
 	uint32_t      dir_offset = 12;
 	ArchiveEntry* entry      = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry                   = entryAt(l);
-		entry->exProp("Offset") = (int)dir_offset;
+		entry = entryAt(l);
+		entry->setOffsetOnDisk(dir_offset);
 		dir_offset += entry->size();
 	}
 
@@ -222,55 +191,26 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 		info.cmprs  = entry->exProp<bool>("W2Comp");
 		info.dsize  = entry->size();
 		info.size   = entry->size();
-		info.offset = entry->exProp<int>("Offset");
+		info.offset = entry->offsetOnDisk();
 		info.type   = entry->exProp<int>("W2Type");
 
 		// Write it
 		mc.write(&info, 32);
 
-		if (update)
-			entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setSizeOnDisk();
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	return true;
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the wadfile
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
+bool Wad2Archive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open wadfile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("Wad2Archive::loadEntryData: Failed to open wadfile {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 

@@ -8,24 +8,22 @@ class WadArchive : public TreelessArchive
 {
 public:
 	WadArchive() : TreelessArchive("wad") {}
-	~WadArchive() = default;
+	~WadArchive() override = default;
 
 	// Wad specific
-	bool     isIWAD() const { return iwad_; }
-	bool     isWritable() override;
-	uint32_t getEntryOffset(ArchiveEntry* entry);
-	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset);
-	void     updateNamespaces();
+	bool isIWAD() const { return iwad_; }
+	bool isWritable() override;
+	void updateNamespaces();
 
 	// Opening
 	bool open(MemChunk& mc) override;
 
 	// Writing/Saving
-	bool write(MemChunk& mc, bool update = true) override;         // Write to MemChunk
-	bool write(string_view filename, bool update = true) override; // Write to File
+	bool write(MemChunk& mc) override;         // Write to MemChunk
+	bool write(string_view filename) override; // Write to File
 
 	// Misc
-	bool loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Entry addition/removal
 	shared_ptr<ArchiveEntry> addEntry(

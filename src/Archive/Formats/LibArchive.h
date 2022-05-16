@@ -8,18 +8,14 @@ class LibArchive : public TreelessArchive
 {
 public:
 	LibArchive() : TreelessArchive("lib") {}
-	~LibArchive() = default;
-
-	// Lib specific
-	uint32_t getEntryOffset(ArchiveEntry* entry);
-	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset);
+	~LibArchive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;                      // Open from MemChunk
-	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
+	bool open(MemChunk& mc) override;  // Open from MemChunk
+	bool write(MemChunk& mc) override; // Write to MemChunk
 
 	// Misc
-	bool     loadEntryData(ArchiveEntry* entry) override;
+	bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 	unsigned numEntries() override { return rootDir()->numEntries(); }
 
 	static bool isLibArchive(MemChunk& mc);

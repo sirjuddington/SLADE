@@ -67,6 +67,22 @@ MemChunk::MemChunk(const uint8_t* data, uint32_t size) : size_{ size }
 }
 
 // -----------------------------------------------------------------------------
+// MemChunk class copy constructor
+// -----------------------------------------------------------------------------
+MemChunk::MemChunk(const MemChunk& copy) : cur_ptr_{ copy.cur_ptr_ }, size_{ copy.size_ }
+{
+	data_ = allocData(size_, false);
+
+	if (data_)
+		memcpy(data_, copy.data_, size_);
+	else
+	{
+		size_    = 0;
+		cur_ptr_ = 0;
+	}
+}
+
+// -----------------------------------------------------------------------------
 // MemChunk class destructor
 // -----------------------------------------------------------------------------
 MemChunk::~MemChunk()

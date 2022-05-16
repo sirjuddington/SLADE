@@ -40,14 +40,6 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // ADatArchive Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -84,13 +76,14 @@ bool ADatArchive::open(MemChunk& mc)
 	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
-	size_t num_entries = dir_size / DIRENTRY;
+	MemChunk edata;
+	size_t   num_entries = dir_size / DIRENTRY;
 	mc.seek(dir_offset, SEEK_SET);
 	ui::setSplashProgressMessage("Reading dat archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_entries));
+		ui::setSplashProgress(d, num_entries);
 
 		// Read entry info
 		char name[128];
@@ -110,7 +103,7 @@ bool ADatArchive::open(MemChunk& mc)
 		compsize = wxINT32_SWAP_ON_BE(compsize);
 
 		// Check offset+size
-		if ((unsigned)(offset + compsize) > mc.size())
+		if (static_cast<unsigned>(offset + compsize) > mc.size())
 		{
 			log::error("ADatArchive::open: dat archive is invalid or corrupt (entry goes past end of file)");
 			global::error = "Archive is invalid and/or corrupt";
@@ -121,36 +114,18 @@ bool ADatArchive::open(MemChunk& mc)
 		auto dir = createDir(strutil::Path::pathOf(name));
 
 		// Create entry
-		auto entry                = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), compsize);
-		entry->exProp("Offset")   = (int)offset;
-		entry->exProp("FullSize") = (int)decsize;
-		entry->setLoaded(false);
-		entry->setState(ArchiveEntry::State::Unmodified);
-
-		// Add to directory
-		dir->addEntry(entry);
-	}
-
-	// Detect all entry types
-	MemChunk              edata;
-	vector<ArchiveEntry*> all_entries;
-	putEntryTreeAsList(all_entries);
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < all_entries.size(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((float)a / (float)num_entries);
-
-		// Get entry
-		auto entry = all_entries[a];
+		auto entry = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), compsize);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk(compsize);
+		entry->exProp("FullSize") = static_cast<int>(decsize);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
+		if (compsize > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
+			mc.exportMemChunk(edata, offset, compsize);
 			MemChunk xdata;
-			if (compression::zlibInflate(edata, xdata, entry->exProp<int>("FullSize")))
+			if (compression::zlibInflate(edata, xdata, decsize))
 				entry->importMemChunk(xdata);
 			else
 			{
@@ -159,16 +134,14 @@ bool ADatArchive::open(MemChunk& mc)
 			}
 		}
 
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
 		entry->setState(ArchiveEntry::State::Unmodified);
+
+		// Add to directory
+		dir->addEntry(entry);
 	}
+
+	// Detect all entry types
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -183,7 +156,7 @@ bool ADatArchive::open(MemChunk& mc)
 // Writes the dat archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ADatArchive::write(MemChunk& mc, bool update)
+bool ADatArchive::write(MemChunk& mc)
 {
 	// Clear current data
 	mc.clear();
@@ -226,11 +199,10 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 
 		// Update entry
 		int offset = mc.currentPos();
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)offset;
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk(data->size());
+		entry->exProp("FullSize") = static_cast<int>(entry->size());
 
 		///////////////////////////////////
 		// Step 1: Write directory entry //
@@ -292,25 +264,16 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Writes the dat archive to a file
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ADatArchive::write(string_view filename, bool update)
+bool ADatArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Write to a MemChunk, then export it to a file
-	MemChunk mc;
-	if (write(mc, true))
-		return mc.exportFile(filename);
-	else
-		return false;
-}
+	// TODO: Implement this - needs to properly decompress data etc.
+	// Not sure anyone is editing these so it's probably a low priority
+	return false;
 
-// -----------------------------------------------------------------------------
-// Loads an entry's data from the dat file
-// Returns true if successful, false otherwise
-// -----------------------------------------------------------------------------
-bool ADatArchive::loadEntryData(ArchiveEntry* entry)
-{
+#if 0
 	// Check entry is ok
 	if (!checkEntry(entry))
 		return false;
@@ -341,6 +304,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	entry->setLoaded();
 
 	return true;
+#endif
 }
 
 // -----------------------------------------------------------------------------

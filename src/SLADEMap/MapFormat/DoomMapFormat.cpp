@@ -153,7 +153,7 @@ bool DoomMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	auto     vert_data = reinterpret_cast<const Vertex*>(entry->rawData(true));
+	auto     vert_data = reinterpret_cast<const Vertex*>(entry->rawData());
 	unsigned nv        = entry->size() / sizeof(Vertex);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
@@ -186,7 +186,7 @@ bool DoomMapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	auto     side_data = reinterpret_cast<const SideDef*>(entry->rawData(true));
+	auto     side_data = reinterpret_cast<const SideDef*>(entry->rawData());
 	unsigned ns        = entry->size() / sizeof(SideDef);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
@@ -226,7 +226,7 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData(true));
+	auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData());
 	unsigned nl        = entry->size() / sizeof(LineDef);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
@@ -288,7 +288,7 @@ bool DoomMapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_da
 		return true;
 	}
 
-	auto     sect_data = reinterpret_cast<const Sector*>(entry->rawData(true));
+	auto     sect_data = reinterpret_cast<const Sector*>(entry->rawData());
 	unsigned ns        = entry->size() / sizeof(Sector);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
@@ -331,7 +331,7 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 		return true;
 	}
 
-	auto     thng_data = reinterpret_cast<const Thing*>(entry->rawData(true));
+	auto     thng_data = reinterpret_cast<const Thing*>(entry->rawData());
 	unsigned nt        = entry->size() / sizeof(Thing);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nt; a++)

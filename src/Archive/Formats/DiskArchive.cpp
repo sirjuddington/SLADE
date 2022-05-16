@@ -42,14 +42,6 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // DiskArchive Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -86,7 +78,7 @@ bool DiskArchive::open(MemChunk& mc)
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_entries));
+		ui::setSplashProgress(d, num_entries);
 
 		// Read entry info
 		DiskEntry dent;
@@ -117,9 +109,14 @@ bool DiskArchive::open(MemChunk& mc)
 		auto dir = createDir(fn.path());
 
 		// Create entry
-		auto entry              = std::make_shared<ArchiveEntry>(fn.fileName(), dent.length);
-		entry->exProp("Offset") = (int)dent.offset;
-		entry->setLoaded(false);
+		auto entry = std::make_shared<ArchiveEntry>(fn.fileName(), dent.length);
+		entry->setOffsetOnDisk(dent.offset);
+		entry->setSizeOnDisk(dent.length);
+
+		// Read entry data if it isn't zero-sized
+		if (entry->size() > 0)
+			entry->importMemChunk(mc, dent.offset, dent.length);
+
 		entry->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to directory
@@ -127,36 +124,7 @@ bool DiskArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk              edata;
-	vector<ArchiveEntry*> all_entries;
-	putEntryTreeAsList(all_entries);
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < all_entries.size(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_entries)));
-
-		// Get entry
-		auto entry = all_entries[a];
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -171,7 +139,7 @@ bool DiskArchive::open(MemChunk& mc)
 // Writes the disk archive to a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DiskArchive::write(MemChunk& mc, bool update)
+bool DiskArchive::write(MemChunk& mc)
 {
 	// Clear current data
 	mc.clear();
@@ -212,11 +180,9 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 			continue;
 
 		// Update entry
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)offset;
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk();
 
 		// Check entry name
 		auto name = entry->path(true);
@@ -277,38 +243,9 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 // Loads an entry's data from the disk file.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DiskArchive::loadEntryData(ArchiveEntry* entry)
+bool DiskArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check entry is ok
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the entry's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open archive file
-	wxFile file(filename_);
-
-	// Check it opened
-	if (!file.IsOpened())
-	{
-		log::error("DiskArchive::loadEntryData: Unable to open archive file {}", filename_);
-		return false;
-	}
-
-	// Seek to entry offset in file and read it in
-	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 
@@ -317,7 +254,6 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 // DiskArchive Class Static Functions
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Nerve disk archive

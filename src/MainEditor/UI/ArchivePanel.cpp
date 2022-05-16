@@ -969,7 +969,7 @@ bool ArchivePanel::importFiles()
 			wxString name = wxFileName(info.filenames[a]).GetFullName();
 
 			// Update splash window
-			ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(info.filenames.size()));
+			ui::setSplashProgress(a, info.filenames.size());
 			ui::setSplashProgressMessage(name.ToStdString());
 
 			// Create new entry
@@ -1989,7 +1989,7 @@ bool ArchivePanel::gfxConvert() const
 	{
 		// Update splash window
 		ui::setSplashProgressMessage(selection[a]->name());
-		ui::setSplashProgress((float)a / (float)selection.size());
+		ui::setSplashProgress(a, selection.size());
 
 		// Skip if the image wasn't converted
 		if (!gcd.itemModified(a))
@@ -2500,7 +2500,7 @@ bool ArchivePanel::palConvert() const
 {
 	// Get the entry index of the last selected list item
 	auto            pal6bit = currentEntry();
-	auto            source  = pal6bit->rawData(true);
+	auto            source  = pal6bit->rawData();
 	vector<uint8_t> dest(pal6bit->size());
 	memcpy(dest.data(), source, pal6bit->size());
 	for (size_t i = 0; i < pal6bit->size(); ++i)
@@ -2700,7 +2700,7 @@ bool ArchivePanel::optimizePNG() const
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		ui::setSplashProgressMessage(selection[a]->nameNoExt());
-		ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(selection.size()));
+		ui::setSplashProgress(a, selection.size());
 		if (selection[a]->type()->formatId() == "img_png")
 		{
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a]));
@@ -4212,7 +4212,7 @@ CONSOLE_COMMAND(palconv64, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry* pal    = meep->currentEntry();
-		auto&         source = pal->data(true);
+		auto&         source = pal->data();
 		uint8_t*      dest   = new uint8_t[(pal->size() / 2) * 3];
 		for (size_t i = 0; i < pal->size() / 2; ++i)
 		{
@@ -4238,7 +4238,7 @@ CONSOLE_COMMAND(palconvpsx, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry* pal    = meep->currentEntry();
-		auto&         source = pal->data(true);
+		auto&         source = pal->data();
 		uint8_t*      dest   = new uint8_t[(pal->size() / 2) * 3];
 		for (size_t i = 0; i < pal->size() / 2; ++i)
 		{
@@ -4269,7 +4269,7 @@ CONSOLE_COMMAND(vertex32x, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry*  v32x   = meep->currentEntry();
-		const uint8_t* source = v32x->rawData(true);
+		const uint8_t* source = v32x->rawData();
 		uint8_t*       dest   = new uint8_t[v32x->size() / 2];
 		for (size_t i = 0; i < v32x->size() / 4; ++i)
 		{
@@ -4289,7 +4289,7 @@ CONSOLE_COMMAND(vertexpsx, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry*  vpsx   = meep->currentEntry();
-		const uint8_t* source = vpsx->rawData(true);
+		const uint8_t* source = vpsx->rawData();
 		uint8_t*       dest   = new uint8_t[vpsx->size() / 2];
 		for (size_t i = 0; i < vpsx->size() / 4; ++i)
 		{
@@ -4309,7 +4309,7 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry*  lights  = meep->currentEntry();
-		const uint8_t* source  = lights->rawData(true);
+		const uint8_t* source  = lights->rawData();
 		size_t         entries = lights->size() / 4;
 		uint8_t*       dest    = new uint8_t[entries * 3];
 		for (size_t i = 0; i < entries; ++i)

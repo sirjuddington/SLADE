@@ -46,30 +46,9 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // BSPArchive Class Functions
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Returns the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-uint32_t BSPArchive::entryOffset(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return 0;
-
-	return (uint32_t)entry->exProp<int>("Offset");
-}
 
 // -----------------------------------------------------------------------------
 // Reads BSP format data from a MemChunk
@@ -154,7 +133,7 @@ bool BSPArchive::open(MemChunk& mc)
 	for (size_t a = 0; a < numtex; ++a)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)a / (float)numtex));
+		ui::setSplashProgress(a, numtex);
 
 		size_t offset;
 		mc.read(&offset, 4);
@@ -222,8 +201,9 @@ bool BSPArchive::open(MemChunk& mc)
 
 			// Create & setup lump
 			auto nlump = std::make_shared<ArchiveEntry>(name, lumpsize);
-			nlump->setLoaded(false);
-			nlump->exProp("Offset") = (int)(offset + texoffset);
+			nlump->setSizeOnDisk(lumpsize);
+			nlump->setOffsetOnDisk(offset + texoffset);
+			nlump->importMemChunk(mc, offset + texoffset, lumpsize);
 			nlump->setState(ArchiveEntry::State::Unmodified);
 
 			// Add to entry list
@@ -235,34 +215,7 @@ bool BSPArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)numtex)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, entryOffset(entry), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -277,48 +230,19 @@ bool BSPArchive::open(MemChunk& mc)
 // Writes the BSP archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool BSPArchive::write(MemChunk& mc, bool update)
+bool BSPArchive::write(MemChunk& mc)
 {
 	global::error = "Sorry, not implemented";
 	return false;
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the pak file
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool BSPArchive::loadEntryData(ArchiveEntry* entry)
+bool BSPArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check entry is ok
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the entry's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open archive file
-	wxFile file(filename_);
-
-	// Check it opened
-	if (!file.IsOpened())
-	{
-		log::error("BSPArchive::loadEntryData: Unable to open archive file {}", filename_);
-		return false;
-	}
-
-	// Seek to entry offset in file and read it in
-	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 

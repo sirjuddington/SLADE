@@ -39,42 +39,9 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // GrpArchive Class Functions
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Returns the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-uint32_t GrpArchive::getEntryOffset(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return 0;
-
-	return (uint32_t)entry->exProp<int>("Offset");
-}
-
-// -----------------------------------------------------------------------------
-// Sets the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-void GrpArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return;
-
-	entry->exProp("Offset") = (int)offset;
-}
 
 // -----------------------------------------------------------------------------
 // Reads grp format data from a MemChunk
@@ -118,7 +85,7 @@ bool GrpArchive::open(MemChunk& mc)
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
 		char     name[13] = "";
@@ -146,8 +113,13 @@ bool GrpArchive::open(MemChunk& mc)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk(size);
+
+		// Read entry data if it isn't zero-sized
+		if (nlump->size() > 0)
+			nlump->importMemChunk(mc, offset, size);
+
 		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
@@ -155,34 +127,7 @@ bool GrpArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -197,7 +142,7 @@ bool GrpArchive::open(MemChunk& mc)
 // Writes the grp archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GrpArchive::write(MemChunk& mc, bool update)
+bool GrpArchive::write(MemChunk& mc)
 {
 	// Clear/init MemChunk
 	mc.clear();
@@ -211,6 +156,7 @@ bool GrpArchive::write(MemChunk& mc, bool update)
 	mc.write(&num_lumps, 4);
 
 	// Write the directory
+	uint32_t offset = 16 * (1 + num_lumps);
 	for (uint32_t l = 0; l < num_lumps; l++)
 	{
 		entry         = entryAt(l);
@@ -223,12 +169,11 @@ bool GrpArchive::write(MemChunk& mc, bool update)
 		mc.write(name, 12);
 		mc.write(&size, 4);
 
-		if (update)
-		{
-			long offset = getEntryOffset(entry);
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)offset;
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk();
+
+		offset += size;
 	}
 
 	// Write the lumps
@@ -242,41 +187,12 @@ bool GrpArchive::write(MemChunk& mc, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the grpfile
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GrpArchive::loadEntryData(ArchiveEntry* entry)
+bool GrpArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open grpfile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("GrpArchive::loadEntryData: Failed to open grpfile {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 // -----------------------------------------------------------------------------

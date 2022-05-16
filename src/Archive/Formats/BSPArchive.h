@@ -8,15 +8,14 @@ class BSPArchive : public Archive
 {
 public:
 	BSPArchive() : Archive("bsp") {}
-	~BSPArchive() = default;
+	~BSPArchive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;                      // Open from MemChunk
-	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
+	bool open(MemChunk& mc) override;  // Open from MemChunk
+	bool write(MemChunk& mc) override; // Write to MemChunk
 
 	// Misc
-	bool     loadEntryData(ArchiveEntry* entry) override;
-	uint32_t entryOffset(ArchiveEntry* entry);
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
 	static bool isBSPArchive(MemChunk& mc);

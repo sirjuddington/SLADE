@@ -38,42 +38,9 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // ResArchive Class Functions
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Returns the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-uint32_t ResArchive::getEntryOffset(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return 0;
-
-	return (uint32_t)entry->exProp<int>("Offset");
-}
-
-// -----------------------------------------------------------------------------
-// Sets the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-void ResArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return;
-
-	entry->exProp("Offset") = (int)offset;
-}
 
 // -----------------------------------------------------------------------------
 // Reads a res directory from a MemChunk
@@ -91,7 +58,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
 		char     magic[4] = "";
@@ -147,18 +114,13 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk();
 		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Read entry data if it isn't zero-sized
 		if (nlump->size() > 0)
-		{
-			// Read the entry data
-			MemChunk edata;
-			mc.exportMemChunk(edata, offset, size);
-			nlump->importMemChunk(edata);
-		}
+			nlump->importMemChunk(mc, offset, size);
 
 		// What if the entry is a directory?
 		size_t d_o, n_l;
@@ -182,11 +144,10 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		else
 		{
 			parent->addEntry(nlump);
+
 			// Detect entry type
 			EntryType::detectEntryType(*nlump);
-			// Unload entry data if needed
-			if (!archive_load_data)
-				nlump->unloadData();
+
 			// Set entry to unchanged
 			nlump->setState(ArchiveEntry::State::Unmodified);
 		}
@@ -259,7 +220,7 @@ bool ResArchive::open(MemChunk& mc)
 // Writes the res archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ResArchive::write(MemChunk& mc, bool update)
+bool ResArchive::write(MemChunk& mc)
 {
 	/*	// Determine directory offset & individual lump offsets
 		uint32_t dir_offset = 12;
@@ -311,41 +272,12 @@ bool ResArchive::write(MemChunk& mc, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the resfile
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ResArchive::loadEntryData(ArchiveEntry* entry)
+bool ResArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open resfile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("ResArchive::loadEntryData: Failed to open resfile {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 // -----------------------------------------------------------------------------

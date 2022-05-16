@@ -62,7 +62,7 @@ unsigned maxEntrySizeBytes()
 	constexpr unsigned MB_TO_BYTES = 1024 * 1024;
 	return max_entry_size_mb * MB_TO_BYTES;
 }
-}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ unsigned maxEntrySizeBytes()
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
-	name_{ name }, upper_name_{ name }, size_{ size }, type_{ EntryType::unknownType() }
+	name_{ name }, upper_name_{ name }, data_{ size }, type_{ EntryType::unknownType() }
 {
 	strutil::upperIP(upper_name_);
 }
@@ -84,18 +84,15 @@ ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
 // -----------------------------------------------------------------------------
 // ArchiveEntry class copy constructor
 // -----------------------------------------------------------------------------
-ArchiveEntry::ArchiveEntry(ArchiveEntry& copy) :
+ArchiveEntry::ArchiveEntry(const ArchiveEntry& copy) :
 	name_{ copy.name_ },
 	upper_name_{ copy.upper_name_ },
-	size_{ copy.size_ },
+	data_{ copy.data_ },
 	type_{ copy.type_ },
 	ex_props_{ copy.ex_props_ },
 	encrypted_{ copy.encrypted_ },
 	reliability_{ copy.reliability_ }
 {
-	// Copy data
-	data_.importMem(copy.rawData(true), copy.size());
-
 	// Clear properties that shouldn't be copied
 	ex_props_.remove("ZipIndex");
 	ex_props_.remove("Offset");
@@ -160,35 +157,6 @@ string ArchiveEntry::path(bool include_name) const
 }
 
 // -----------------------------------------------------------------------------
-// Returns a pointer to the entry data. If no entry data exists and [allow_load]
-// is true, entry data will be loaded from its parent archive (if it exists)
-// -----------------------------------------------------------------------------
-const uint8_t* ArchiveEntry::rawData(bool allow_load)
-{
-	// Return entry data
-	return data(allow_load).data();
-}
-
-// -----------------------------------------------------------------------------
-// Returns the entry data MemChunk. If no entry data exists and [allow_load]
-// is true, entry data will be loaded from its parent archive (if it exists)
-// -----------------------------------------------------------------------------
-MemChunk& ArchiveEntry::data(bool allow_load)
-{
-	// Get parent archive
-	auto parent_archive = parent();
-
-	// Load the data if needed (and possible)
-	if (allow_load && !isLoaded() && parent_archive && size_ > 0 && size_ <= maxEntrySizeBytes())
-	{
-		data_loaded_ = parent_archive->loadEntryData(this);
-		setState(State::Unmodified);
-	}
-
-	return data_;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the 'next' entry from this (ie. index + 1) in its parent ArchiveDir,
 // or nullptr if it is the last entry or has no parent dir
 // -----------------------------------------------------------------------------
@@ -250,27 +218,6 @@ void ArchiveEntry::setState(State state, bool silent)
 	// Notify parent archive this entry has been modified
 	if (!silent)
 		stateChanged();
-}
-
-// -----------------------------------------------------------------------------
-// 'Unloads' entry data from memory.
-// If [force] is true, data will be unloaded even if the entry is modified
-// -----------------------------------------------------------------------------
-void ArchiveEntry::unloadData(bool force)
-{
-	// Check there is any data to be 'unloaded'
-	if (!data_.hasData() || !data_loaded_)
-		return;
-
-	// Only unload if the data wasn't modified
-	if (!force && state_ != State::Unmodified)
-		return;
-
-	// Delete any data
-	data_.clear();
-
-	// Update variables etc
-	setLoaded(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -383,21 +330,19 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 // -----------------------------------------------------------------------------
 // Clears entry data and resets its size to zero
 // -----------------------------------------------------------------------------
-void ArchiveEntry::clearData()
+bool ArchiveEntry::clearData()
 {
 	// Check if locked
 	if (locked_)
 	{
 		global::error = "Entry is locked";
-		return;
+		return false;
 	}
 
 	// Delete the data
 	data_.clear();
 
-	// Reset attributes
-	size_        = 0;
-	data_loaded_ = false;
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -429,11 +374,9 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	clearData();
 
 	// Copy data into the entry
-	data_.importMem((const uint8_t*)data, size);
+	data_.importMem(static_cast<const uint8_t*>(data), size);
 
 	// Update attributes
-	size_ = size;
-	setLoaded();
 	setType(EntryType::unknownType());
 	setState(State::Modified);
 
@@ -442,16 +385,33 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 
 // -----------------------------------------------------------------------------
 // Imports data from a MemChunk object into the entry, resizing it and clearing
-// any currently existing data.
+// any currently existing data. If [size] is 0 all data from [offset] to the end
+// of the MemChunk will be read.
 // Returns false if the MemChunk has no data, or true otherwise.
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importMemChunk(MemChunk& mc)
+bool ArchiveEntry::importMemChunk(const MemChunk& mc, uint32_t offset, uint32_t size)
 {
 	// Check that the given MemChunk has data
 	if (mc.hasData())
 	{
+		// If no size given read to end of MemChunk
+		if (size == 0)
+			size = mc.size() - offset;
+
+		// Check valid offset given
+		if (offset >= mc.size())
+		{
+			log::error(
+				"ArchiveEntry::importMemChunk: Invalid offset - {} is larger than MemChunk size {}", offset, size);
+			return false;
+		}
+
+		// Ensure offset+size is valid
+		if (offset + size > mc.size())
+			size = mc.size() - offset;
+
 		// Copy the data from the MemChunk into the entry
-		return importMem(mc.data(), mc.size());
+		return importMem(mc.data() + offset, size);
 	}
 
 	return false;
@@ -532,8 +492,6 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 	if (data_.importFileStreamWx(file, len))
 	{
 		// Update attributes
-		size_ = data_.size();
-		setLoaded();
 		setType(EntryType::unknownType());
 		setState(State::Modified);
 
@@ -548,7 +506,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 // any currently existing data.
 // Returns false if the entry is null, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importEntry(ArchiveEntry* entry)
+bool ArchiveEntry::importEntry(const ArchiveEntry* entry)
 {
 	// Check if locked
 	if (locked_)
@@ -571,7 +529,7 @@ bool ArchiveEntry::importEntry(ArchiveEntry* entry)
 // Exports entry data to a file.
 // Returns false if file cannot be written, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::exportFile(string_view filename)
+bool ArchiveEntry::exportFile(string_view filename) const
 {
 	// Attempt to open file
 	wxFile file({ filename.data(), filename.size() }, wxFile::write);
@@ -584,8 +542,7 @@ bool ArchiveEntry::exportFile(string_view filename)
 	}
 
 	// Write entry data to the file, if any
-	auto data = rawData();
-	if (data)
+	if (auto data = rawData())
 		file.Write(data, size());
 
 	return true;
@@ -603,15 +560,10 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 		return false;
 	}
 
-	// Load data if it isn't already
-	if (isLoaded())
-		rawData(true);
-
 	// Perform the write
 	if (data_.write(data, size))
 	{
 		// Update attributes
-		size_ = data_.size();
 		setState(State::Modified);
 
 		return true;
@@ -625,10 +577,6 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 // -----------------------------------------------------------------------------
 bool ArchiveEntry::read(void* buf, uint32_t size)
 {
-	// Load data if it isn't already
-	if (isLoaded())
-		rawData(true);
-
 	return data_.read(buf, size);
 }
 
@@ -647,8 +595,7 @@ string ArchiveEntry::sizeString() const
 // -----------------------------------------------------------------------------
 void ArchiveEntry::stateChanged()
 {
-	auto parent_archive = parent();
-	if (parent_archive)
+	if (auto parent_archive = parent())
 		parent_archive->entryStateChanged(this);
 }
 

@@ -42,7 +42,6 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, close_archive_with_tab)
-EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Bool, auto_open_wads_root)
 EXTERN_CVAR(Bool, update_check)
 EXTERN_CVAR(Bool, update_check_beta)
@@ -65,7 +64,6 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create + Layout controls
 	SetSizer(wxutil::layoutVertically({
-		cb_archive_load_              = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
 		cb_archive_close_tab_         = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
 		cb_wads_root_                 = new wxCheckBox(this, -1, "Auto open nested wad archives"),
 		cb_backup_archives_           = new wxCheckBox(this, -1, "Back up archives"),
@@ -90,7 +88,6 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 // -----------------------------------------------------------------------------
 void GeneralPrefsPanel::init()
 {
-	cb_archive_load_->SetValue(archive_load_data);
 	cb_archive_close_tab_->SetValue(close_archive_with_tab);
 	cb_wads_root_->SetValue(auto_open_wads_root);
 #ifdef __WXMSW__
@@ -107,7 +104,6 @@ void GeneralPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void GeneralPrefsPanel::applyPreferences()
 {
-	archive_load_data      = cb_archive_load_->GetValue();
 	close_archive_with_tab = cb_archive_close_tab_->GetValue();
 	auto_open_wads_root    = cb_wads_root_->GetValue();
 #ifdef __WXMSW__
