@@ -37,9 +37,8 @@ namespace gl
 		string vendor;
 		string renderer;
 		string version;
-		string extensions;
 
-		Info() { vendor = renderer = version = extensions = "OpenGL not initialised"; }
+		Info() { vendor = renderer = version = "OpenGL not initialised"; }
 	};
 
 #ifndef USE_SFML_RENDERWINDOW

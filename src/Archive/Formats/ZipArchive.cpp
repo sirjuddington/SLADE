@@ -45,6 +45,14 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Bool, zip_allow_duplicate_names, false, CVar::Save)
+
+
+// -----------------------------------------------------------------------------
+//
 // External Variables
 //
 // -----------------------------------------------------------------------------
@@ -58,6 +66,14 @@ EXTERN_CVAR(Int, max_entry_size_mb)
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// ZipArchive class constructor
+// -----------------------------------------------------------------------------
+ZipArchive::ZipArchive() : Archive("zip")
+{
+	if (zip_allow_duplicate_names)
+		rootDir()->allowDuplicateNames(true);
+}
 
 // -----------------------------------------------------------------------------
 // ZipArchive class destructor
@@ -281,9 +297,15 @@ bool ZipArchive::write(string_view filename, bool update)
 		if (inzip->IsOk())
 		{
 			// Get a list of all entries in the old zip
-			c_entries.resize(inzip->GetTotalEntries());
+			c_entries.resize(inzip->GetTotalEntries(), nullptr);
 			for (unsigned a = 0; a < c_entries.size(); a++)
+			{
 				c_entries[a] = inzip->GetNextEntry();
+
+				// Stop if reading the zip failed
+				if (!c_entries[a])
+					break;
+			}
 			inzip->Reset();
 		}
 		else
@@ -322,7 +344,7 @@ bool ZipArchive::write(string_view filename, bool update)
 
 		auto saname = misc::lumpNameToFileName(entries[a]->name());
 		if (!inzip || entries[a]->state() != ArchiveEntry::State::Unmodified || index < 0
-			|| index >= inzip->GetTotalEntries())
+			|| index >= inzip->GetTotalEntries() || !c_entries[index])
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
@@ -466,27 +488,27 @@ shared_ptr<ArchiveEntry> ZipArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* entry)
+Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
 {
 	MapDesc map;
 
 	// Check entry
-	if (!checkEntry(entry))
+	if (!checkEntry(maphead))
 		return map;
 
 	// Check entry type
-	if (entry->type()->formatId() != "archive_wad")
+	if (maphead->type()->formatId() != "archive_wad")
 		return map;
 
 	// Check entry directory
-	if (entry->parentDir()->parent() != rootDir() || entry->parentDir()->name() != "maps")
+	if (maphead->parentDir()->parent() != rootDir() || maphead->parentDir()->name() != "maps")
 		return map;
 
 	// Setup map info
 	map.archive = true;
-	map.head    = entry->getShared();
-	map.end     = entry->getShared();
-	map.name    = entry->upperNameNoExt();
+	map.head    = maphead->getShared();
+	map.end     = maphead->getShared();
+	map.name    = maphead->upperNameNoExt();
 
 	return map;
 }

@@ -27,6 +27,7 @@ Vec2d  vectorAngle(double angle_rad);
 double distanceRayPlane(Vec3d ray_origin, Vec3d ray_dir, Plane plane);
 bool   boxLineIntersect(Rectf box, Seg2d line);
 Plane  planeFromTriangle(Vec3d p1, Vec3d p2, Vec3d p3);
+bool colinear(double x1, double y1, double x2, double y2, double x3, double y3);
 
 template<typename T> T scale(T value, double scale)
 {

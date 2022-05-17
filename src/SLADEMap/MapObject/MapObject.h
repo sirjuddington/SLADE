@@ -71,7 +71,7 @@ public:
 	void      setIndex(unsigned index) { index_ = index; }
 
 	PropertyList& props() { return properties_; }
-	bool          hasProp(string_view key);
+	bool          hasProp(string_view key) const { return properties_.contains(key); }
 
 	// Generic property modification
 	virtual bool   boolProperty(string_view key);

@@ -131,7 +131,7 @@ public:
 	virtual bool revertEntry(ArchiveEntry* entry);
 
 	// Detection
-	virtual MapDesc         mapDesc(ArchiveEntry* maphead) { return MapDesc(); }
+	virtual MapDesc         mapDesc(ArchiveEntry* maphead) { return {}; }
 	virtual vector<MapDesc> detectMaps() { return {}; }
 	virtual string          detectNamespace(ArchiveEntry* entry);
 	virtual string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);

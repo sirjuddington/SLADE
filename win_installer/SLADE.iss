@@ -2,9 +2,10 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SLADE"
-#define MyAppVersion "3.2.0"
+#define MyAppVersion "3.2.1"
 #define MyAppURL "https://slade.mancubus.net"
 #define MyAppExeName "SLADE.exe"
+#define MyAppPublisher "sirjuddington"
 
 ; TODO:
 ; - Add option to install portable version
@@ -17,6 +18,7 @@ AppId={{3EFD0AA9-5156-40DB-9646-360180FF5DFA}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
+AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}

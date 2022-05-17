@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
-#include "General/ColourConfiguration.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
@@ -43,7 +42,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, gl_tex_enable_np2, true, CVar::Flag::Save)
 CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
 CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
 CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
@@ -123,10 +121,9 @@ bool gl::init()
 	}
 
 	// Get OpenGL info
-	info.vendor     = (const char*)glGetString(GL_VENDOR);
-	info.renderer   = (const char*)glGetString(GL_RENDERER);
-	info.version    = (const char*)glGetString(GL_VERSION);
-	info.extensions = (const char*)glGetString(GL_EXTENSIONS);
+	info.vendor   = (const char*)glGetString(GL_VENDOR);
+	info.renderer = (const char*)glGetString(GL_RENDERER);
+	info.version  = (const char*)glGetString(GL_VERSION);
 
 	// Get OpenGL version
 	string_view temp{ info.version.data(), 3 };
@@ -164,7 +161,7 @@ bool gl::init()
 // -----------------------------------------------------------------------------
 bool gl::np2TexSupport()
 {
-	return GLAD_GL_ARB_texture_non_power_of_two && gl_tex_enable_np2;
+	return GLAD_GL_ARB_texture_non_power_of_two;
 }
 
 // -----------------------------------------------------------------------------
