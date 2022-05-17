@@ -32,7 +32,7 @@ public:
 
 	// Constructor/Destructor
 	ArchiveEntry(string_view name = "", uint32_t size = 0);
-	ArchiveEntry(ArchiveEntry& copy);
+	ArchiveEntry(const ArchiveEntry& copy);
 	~ArchiveEntry() = default;
 
 	// Accessors
@@ -40,9 +40,9 @@ public:
 	string_view              nameNoExt() const;
 	const string&            upperName() const { return upper_name_; }
 	string_view              upperNameNoExt() const;
-	uint32_t                 size() const { return data_loaded_ ? data_.size() : size_; }
-	MemChunk&                data(bool allow_load = true);
-	const uint8_t*           rawData(bool allow_load = true);
+	uint32_t                 size() const { return data_.size(); }
+	const MemChunk&          data() const { return data_; }
+	const uint8_t*           rawData() const { return data_.data(); }
 	ArchiveDir*              parentDir() const { return parent_; }
 	Archive*                 parent() const;
 	Archive*                 topParent() const;
@@ -54,7 +54,6 @@ public:
 	template<typename T> T   exProp(const string& key);
 	State                    state() const { return state_; }
 	bool                     isLocked() const { return locked_; }
-	bool                     isLoaded() const { return data_loaded_; }
 	Encryption               encryption() const { return encrypted_; }
 	ArchiveEntry*            nextEntry();
 	ArchiveEntry*            prevEntry();
@@ -63,7 +62,6 @@ public:
 
 	// Modifiers (won't change entry state, except setState of course :P)
 	void setName(string_view name);
-	void setLoaded(bool loaded = true) { data_loaded_ = loaded; }
 	void setType(EntryType* type, int r = 0)
 	{
 		type_        = type;
@@ -71,36 +69,41 @@ public:
 	}
 	void setState(State state, bool silent = false);
 	void setEncryption(Encryption enc) { encrypted_ = enc; }
-	void unloadData(bool force = false);
 	void lock();
 	void unlock();
 	void lockState() { state_locked_ = true; }
 	void unlockState() { state_locked_ = false; }
 	void formatName(const ArchiveFormat& format);
-	void updateSize() { size_ = data_.size(); }
 
 	// Entry modification (will change entry state)
 	bool rename(string_view new_name);
 	bool resize(uint32_t new_size, bool preserve_data);
 
 	// Data modification
-	void clearData();
+	bool clearData();
 
 	// Data import
 	bool importMem(const void* data, uint32_t size);
-	bool importMemChunk(MemChunk& mc);
+	bool importMemChunk(const MemChunk& mc, uint32_t offset = 0, uint32_t size = 0);
 	bool importFile(string_view filename, uint32_t offset = 0, uint32_t size = 0);
 	bool importFileStream(wxFile& file, uint32_t len = 0);
-	bool importEntry(ArchiveEntry* entry);
+	bool importEntry(const ArchiveEntry* entry);
 
 	// Data export
-	bool exportFile(string_view filename);
+	bool exportFile(string_view filename) const;
 
 	// Data access
 	bool     write(const void* data, uint32_t size);
 	bool     read(void* buf, uint32_t size);
 	bool     seek(uint32_t offset, uint32_t start) { return data_.seek(offset, start); }
 	uint32_t currentPos() const { return data_.currentPos(); }
+
+	// Data on disk
+	int  sizeOnDisk() const { return ex_props_.getOr("SizeOnDisk", -1); }
+	void setSizeOnDisk(int size) { ex_props_["SizeOnDisk"] = size; }
+	void setSizeOnDisk() { ex_props_["SizeOnDisk"] = data_.size(); } // Parameterless version, use data size
+	int  offsetOnDisk() const { return ex_props_.getOr("OffsetOnDisk", -1); }
+	void setOffsetOnDisk(int offset) { ex_props_["OffsetOnDisk"] = offset; }
 
 	// Misc
 	string        sizeString() const;
@@ -115,7 +118,6 @@ private:
 	// Entry Info
 	string       name_;
 	string       upper_name_;
-	uint32_t     size_ = 0;
 	MemChunk     data_;
 	EntryType*   type_   = nullptr;
 	ArchiveDir*  parent_ = nullptr;
@@ -125,7 +127,6 @@ private:
 	State      state_        = State::New;
 	bool       state_locked_ = false;            // If true the entry state cannot be changed (used for initial loading)
 	bool       locked_       = false;            // If true the entry data+info cannot be changed
-	bool       data_loaded_  = true;             // True if the entry's data is currently loaded into the data MemChunk
 	Encryption encrypted_    = Encryption::None; // Is there some encrypting on the archive?
 
 	// Misc stuff

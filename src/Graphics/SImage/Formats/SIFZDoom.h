@@ -3,11 +3,11 @@ class SIFImgz : public SIFormat
 {
 public:
 	SIFImgz() : SIFormat("imgz", "IMGZ", "imgz") {}
-	~SIFImgz() = default;
+	~SIFImgz() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_imgz")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_imgz")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -24,7 +24,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Setup variables
 		auto header   = (gfx::IMGZHeader*)data.data();

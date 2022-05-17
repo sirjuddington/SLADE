@@ -36,7 +36,7 @@ public:
 	ColRGBA                colour(uint8_t index) const { return colours_[index]; }
 	short                  transIndex() const { return index_trans_; }
 
-	bool loadMem(MemChunk& mc);
+	bool loadMem(const MemChunk& mc);
 	bool loadMem(const uint8_t* data, uint32_t size);
 	bool loadMem(MemChunk& mc, Format format);
 	bool loadFile(string_view filename, Format format = Format::Raw);
@@ -51,9 +51,9 @@ public:
 	void setTransIndex(short index) { index_trans_ = index; }
 
 	void   copyPalette(const Palette* copy);
-	short  findColour(const ColRGBA& colour);
-	short  nearestColour(const ColRGBA& colour, ColourMatch match = ColourMatch::Default);
-	size_t countColours();
+	short  findColour(const ColRGBA& colour) const;
+	short  nearestColour(const ColRGBA& colour, ColourMatch match = ColourMatch::Default) const;
+	size_t countColours() const;
 	void   applyTranslation(Translation* trans);
 
 	// Advanced palette modification
@@ -74,6 +74,6 @@ private:
 	vector<ColLAB>  colours_lab_;
 	short           index_trans_;
 
-	double colourDiff(const ColRGBA& rgb, const ColHSL& hsl, const ColLAB& lab, int index, ColourMatch match);
+	double colourDiff(const ColRGBA& rgb, const ColHSL& hsl, const ColLAB& lab, int index, ColourMatch match) const;
 };
 } // namespace slade

@@ -9,16 +9,16 @@ class WadJArchive : public WadArchive
 {
 public:
 	WadJArchive();
-	~WadJArchive() = default;
+	~WadJArchive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;                      // Open from MemChunk
-	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
+	bool open(const MemChunk& mc) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;      // Write to MemChunk
 
 	string detectNamespace(ArchiveEntry* entry) override;
 	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override;
 
-	static bool isWadJArchive(MemChunk& mc);
+	static bool isWadJArchive(const MemChunk& mc);
 	static bool isWadJArchive(const string& filename);
 
 	static bool jaguarDecode(MemChunk& mc);

@@ -8,25 +8,21 @@ class WolfArchive : public TreelessArchive
 {
 public:
 	WolfArchive() : TreelessArchive("wolf") {}
-	~WolfArchive() = default;
-
-	// Wolf3D specific
-	uint32_t getEntryOffset(ArchiveEntry* entry) const;
-	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset) const;
+	~WolfArchive() override = default;
 
 	// Opening
 	bool open(string_view filename) override; // Open from File
-	bool open(MemChunk& mc) override;         // Open from MemChunk
+	bool open(const MemChunk& mc) override;   // Open from MemChunk
 
-	bool openAudio(MemChunk& head, MemChunk& data);
-	bool openGraph(MemChunk& head, MemChunk& data, MemChunk& dict);
-	bool openMaps(MemChunk& head, MemChunk& data);
+	bool openAudio(MemChunk& head, const MemChunk& data);
+	bool openGraph(const MemChunk& head, const MemChunk& data, MemChunk& dict);
+	bool openMaps(MemChunk& head, const MemChunk& data);
 
 	// Writing/Saving
-	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
+	bool write(MemChunk& mc) override; // Write to MemChunk
 
 	// Misc
-	bool     loadEntryData(ArchiveEntry* entry) override;
+	bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 	unsigned numEntries() override { return rootDir()->numEntries(); }
 
 	// Entry addition/removal
@@ -39,7 +35,7 @@ public:
 	// Entry modification
 	bool renameEntry(ArchiveEntry* entry, string_view name) override;
 
-	static bool isWolfArchive(MemChunk& mc);
+	static bool isWolfArchive(const MemChunk& mc);
 	static bool isWolfArchive(const string& filename);
 
 private:
@@ -49,7 +45,7 @@ private:
 		uint16_t size;
 	};
 
-	uint16_t spritestart_;
-	uint16_t soundstart_;
+	uint16_t spritestart_ = 0;
+	uint16_t soundstart_  = 0;
 };
 } // namespace slade

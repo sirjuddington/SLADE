@@ -593,21 +593,21 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	// Read things data
 	if (map_format == MapFormat::Doom)
 	{
-		auto     thng_data = (DoomMapFormat::Thing*)things->rawData(true);
+		auto     thng_data = (DoomMapFormat::Thing*)things->rawData();
 		unsigned nt        = things->size() / sizeof(DoomMapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Doom64)
 	{
-		auto     thng_data = (Doom64MapFormat::Thing*)things->rawData(true);
+		auto     thng_data = (Doom64MapFormat::Thing*)things->rawData();
 		unsigned nt        = things->size() / sizeof(Doom64MapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Hexen)
 	{
-		auto     thng_data = (HexenMapFormat::Thing*)things->rawData(true);
+		auto     thng_data = (HexenMapFormat::Thing*)things->rawData();
 		unsigned nt        = things->size() / sizeof(HexenMapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);

@@ -8,19 +8,17 @@ class DatArchive : public TreelessArchive
 {
 public:
 	DatArchive() : TreelessArchive("dat") {}
-	~DatArchive() = default;
+	~DatArchive() override = default;
 
 	// Dat specific
-	uint32_t getEntryOffset(ArchiveEntry* entry) const { return entry->exProp<int>("Offset"); }
-	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset) const { entry->exProp("Offset") = (int)offset; }
-	void     updateNamespaces();
+	void updateNamespaces();
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;                      // Open from MemChunk
-	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
+	bool open(const MemChunk& mc) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;      // Write to MemChunk
 
 	// Misc
-	bool     loadEntryData(ArchiveEntry* entry) override;
+	bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 	unsigned numEntries() override { return rootDir()->numEntries(); }
 
 	// Entry addition/removal
@@ -42,7 +40,7 @@ public:
 	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override;
 	string detectNamespace(ArchiveEntry* entry) override;
 
-	static bool isDatArchive(MemChunk& mc);
+	static bool isDatArchive(const MemChunk& mc);
 	static bool isDatArchive(const string& filename);
 
 private:

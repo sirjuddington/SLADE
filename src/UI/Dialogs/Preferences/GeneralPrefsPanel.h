@@ -14,7 +14,6 @@ public:
 	void applyPreferences() override;
 
 private:
-	wxCheckBox* cb_archive_load_              = nullptr;
 	wxCheckBox* cb_archive_close_tab_         = nullptr;
 	wxCheckBox* cb_wads_root_                 = nullptr;
 	wxCheckBox* cb_update_check_              = nullptr;

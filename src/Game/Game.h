@@ -24,7 +24,7 @@ namespace game
 		bool operator>(const GameDef& right) const { return title > right.title; }
 		bool operator<(const GameDef& right) const { return title < right.title; }
 
-		bool parse(MemChunk& mc);
+		bool parse(const MemChunk& mc);
 		bool supportsFilter(string_view filter) const;
 	};
 	struct PortDef
@@ -41,7 +41,7 @@ namespace game
 		bool operator>(const PortDef& right) const { return title > right.title; }
 		bool operator<(const PortDef& right) const { return title < right.title; }
 
-		bool parse(MemChunk& mc);
+		bool parse(const MemChunk& mc);
 		bool supportsGame(string_view game) const { return VECTOR_EXISTS(supported_games, game); }
 	};
 
@@ -96,7 +96,7 @@ namespace game
 	Configuration& configuration();
 
 	// Tagging
-	TagType parseTagged(ParseTreeNode* tagged);
+	TagType parseTagged(const ParseTreeNode* tagged);
 
 	// Custom definitions (ZScript, DECORATE, EDF, etc.)
 	void updateCustomDefinitions();

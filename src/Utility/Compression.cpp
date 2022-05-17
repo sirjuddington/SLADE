@@ -48,7 +48,7 @@ using namespace slade;
 // Inflates the content of [in] to [out]
 // -----------------------------------------------------------------------------
 #define CHUNK 4096
-bool compression::genericInflate(MemChunk& in, MemChunk& out, int windowbits, const char* function)
+bool compression::genericInflate(const MemChunk& in, MemChunk& out, int windowbits, const char* function)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();
@@ -69,7 +69,7 @@ bool compression::genericInflate(MemChunk& in, MemChunk& out, int windowbits, co
 // Basically a copy of zpipe.
 // Deflates the content of [in] to [out]
 // -----------------------------------------------------------------------------
-bool compression::genericDeflate(MemChunk& in, MemChunk& out, int level, int windowbits, const char* function)
+bool compression::genericDeflate(const MemChunk& in, MemChunk& out, int level, int windowbits, const char* function)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();
@@ -137,7 +137,7 @@ bool compression::genericDeflate(MemChunk& in, MemChunk& out, int level, int win
 // ZIP streams use a windowbits size of MAX_WBITS (15).
 // The value is inverted to signify wrapping should be used.
 // -----------------------------------------------------------------------------
-bool compression::zipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
+bool compression::zipInflate(const MemChunk& in, MemChunk& out, size_t maxsize)
 {
 	bool ret = compression::genericInflate(in, out, -MAX_WBITS, "ZipInflate");
 
@@ -152,7 +152,7 @@ bool compression::zipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 // GZip streams use a windowbits size of MAX_WBITS (15).
 // The value is inverted to tell it shouldn't use headers or footers
 // -----------------------------------------------------------------------------
-bool compression::zipDeflate(MemChunk& in, MemChunk& out, int level)
+bool compression::zipDeflate(const MemChunk& in, MemChunk& out, int level)
 {
 	return compression::genericDeflate(in, out, level, -MAX_WBITS, "ZipDeflate");
 }
@@ -162,7 +162,7 @@ bool compression::zipDeflate(MemChunk& in, MemChunk& out, int level)
 // GZip streams use a windowbits size of MAX_WBITS (15).
 // The +16 tells zlib to look out for a gzip header
 // -----------------------------------------------------------------------------
-bool compression::gzipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
+bool compression::gzipInflate(const MemChunk& in, MemChunk& out, size_t maxsize)
 {
 	bool ret = compression::genericInflate(in, out, 16 + MAX_WBITS, "GZipInflate");
 
@@ -177,7 +177,7 @@ bool compression::gzipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 // GZip streams use a windowbits size of MAX_WBITS (15).
 // The +16 tells zlib to use a gzip header
 // -----------------------------------------------------------------------------
-bool compression::gzipDeflate(MemChunk& in, MemChunk& out, int level)
+bool compression::gzipDeflate(const MemChunk& in, MemChunk& out, int level)
 {
 	return compression::genericDeflate(in, out, level, 16 + MAX_WBITS, "GZipDeflate");
 }
@@ -188,7 +188,7 @@ bool compression::gzipDeflate(MemChunk& in, MemChunk& out, int level)
 // as well, but the function used for initialization is different so we use 0
 // here instead.
 // -----------------------------------------------------------------------------
-bool compression::zlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
+bool compression::zlibInflate(const MemChunk& in, MemChunk& out, size_t maxsize)
 {
 	bool ret = compression::genericInflate(in, out, 0, "ZlibInflate");
 
@@ -201,7 +201,7 @@ bool compression::zlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 // -----------------------------------------------------------------------------
 // Deflates the content of [in] as a zlib stream to [out]
 // -----------------------------------------------------------------------------
-bool compression::zlibDeflate(MemChunk& in, MemChunk& out, int level)
+bool compression::zlibDeflate(const MemChunk& in, MemChunk& out, int level)
 {
 	return compression::genericDeflate(in, out, level, 0, "ZlibDeflate");
 }
@@ -209,7 +209,7 @@ bool compression::zlibDeflate(MemChunk& in, MemChunk& out, int level)
 // -----------------------------------------------------------------------------
 // Decompress the content of [in] as a bzip2 stream to [out]
 // -----------------------------------------------------------------------------
-bool compression::bzip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
+bool compression::bzip2Decompress(const MemChunk& in, MemChunk& out, size_t maxsize)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();
@@ -234,7 +234,7 @@ bool compression::bzip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
 // -----------------------------------------------------------------------------
 // Compress the content of [in] as a bzip2 stream to [out]
 // -----------------------------------------------------------------------------
-bool compression::bzip2Compress(MemChunk& in, MemChunk& out)
+bool compression::bzip2Compress(const MemChunk& in, MemChunk& out)
 {
 	// Clear out
 	out.clear();
@@ -245,11 +245,14 @@ bool compression::bzip2Compress(MemChunk& in, MemChunk& out)
 	int      ok        = -1;
 	if (buffer)
 	{
+		// Ugly workaround to get const memchunk data as non-const char* required by the function below
+		auto c_data = reinterpret_cast<const char*>(in.data());
+		auto data = const_cast<char*>(c_data);
+
 		ok = BZ2_bzBuffToBuffCompress(
 			buffer,
 			&bufferlen,
-			// How ridiculous is it that casting is needed here?
-			(char*)in.data(),
+			data,
 			in.size(),
 			9,
 			0,
@@ -263,7 +266,7 @@ bool compression::bzip2Compress(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Decompress the content of [in] as an LZMA stream to [out]
 // -----------------------------------------------------------------------------
-bool compression::lzmaDecompress(MemChunk& in, MemChunk& out, size_t size)
+bool compression::lzmaDecompress(const MemChunk& in, MemChunk& out, size_t size)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();

@@ -162,7 +162,7 @@ void colourconfig::setFlatAlpha(double alpha)
 // -----------------------------------------------------------------------------
 // Reads a colour configuration from text data [mc]
 // -----------------------------------------------------------------------------
-bool colourconfig::readConfiguration(MemChunk& mc)
+bool colourconfig::readConfiguration(const MemChunk& mc)
 {
 	// Parse text
 	Parser parser;

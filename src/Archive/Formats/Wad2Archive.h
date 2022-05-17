@@ -20,17 +20,17 @@ class Wad2Archive : public TreelessArchive
 {
 public:
 	Wad2Archive() : TreelessArchive("wad2") {}
-	~Wad2Archive() = default;
+	~Wad2Archive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;                      // Open from MemChunk
-	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
+	bool open(const MemChunk& mc) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;      // Write to MemChunk
 
 	// Misc
-	bool loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
-	static bool isWad2Archive(MemChunk& mc);
+	static bool isWad2Archive(const MemChunk& mc);
 	static bool isWad2Archive(const string& filename);
 
 private:

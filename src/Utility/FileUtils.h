@@ -42,11 +42,11 @@ public:
 	bool open(const string& path, Mode mode = Mode::ReadOnly);
 	void close();
 
-	bool seek(unsigned offset) override;
-	bool seekFromStart(unsigned offset) override;
-	bool seekFromEnd(unsigned offset) override;
+	bool seek(unsigned offset) const override;
+	bool seekFromStart(unsigned offset) const override;
+	bool seekFromEnd(unsigned offset) const override;
 
-	bool read(void* buffer, unsigned count) override;
+	bool read(void* buffer, unsigned count) const override;
 	bool read(MemChunk& mc, unsigned count);
 	bool read(string& str, unsigned count) const;
 

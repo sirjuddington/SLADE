@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive.h"
+#include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
@@ -45,7 +46,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, archive_load_data, false, CVar::Flag::Save)
 CVAR(Bool, backup_archives, true, CVar::Flag::Save)
 bool                  Archive::save_backup = true;
 vector<ArchiveFormat> Archive::formats_;
@@ -515,7 +515,7 @@ void Archive::setModified(bool modified)
 // -----------------------------------------------------------------------------
 // Checks that the given entry is valid and part of this archive
 // -----------------------------------------------------------------------------
-bool Archive::checkEntry(ArchiveEntry* entry) const
+bool Archive::checkEntry(const ArchiveEntry* entry) const
 {
 	// Check entry is valid
 	if (!entry)
@@ -622,14 +622,13 @@ shared_ptr<ArchiveEntry> Archive::entryAtPathShared(string_view path) const
 // Writes the archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::write(string_view filename, bool update)
+bool Archive::write(string_view filename)
 {
 	// Write to a MemChunk, then export it to a file
-	MemChunk mc;
-	if (write(mc, true))
+	if (MemChunk mc; write(mc))
 		return mc.exportFile(filename);
-	else
-		return false;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -654,7 +653,7 @@ bool Archive::save(string_view filename)
 	// If the archive has a parent ArchiveEntry, just write it to that
 	if (auto parent = parent_.lock())
 	{
-		success = write(parent->data());
+		success = write(parent->data_);
 		parent->setState(ArchiveEntry::State::Modified);
 	}
 	else
@@ -1327,9 +1326,10 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 		return true;
 
 	// Reload entry data from the archive on disk
-	entry->unloadData(true);
-	if (loadEntryData(entry))
+	MemChunk entry_data;
+	if (loadEntryData(entry, entry_data))
 	{
+		entry->importMemChunk(entry_data);
 		EntryType::detectEntryType(*entry);
 		entry->setState(ArchiveEntry::State::Unmodified);
 		return true;
@@ -1642,6 +1642,57 @@ void Archive::blockModificationSignals(bool block)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// A generic version of loadEntryData that works for many different archive
+// formats, taking the offset and size of [entry] from exProps to read directly
+// from the archive file
+// -----------------------------------------------------------------------------
+bool Archive::genericLoadEntryData(const ArchiveEntry* entry, MemChunk& out) const
+{
+	// Check entry is ok
+	if (!checkEntry(entry))
+		return false;
+
+	// Check if entry exists on disk
+	auto size   = entry->sizeOnDisk();
+	auto offset = entry->offsetOnDisk();
+	if (size < 0 || offset < 0)
+		return false;
+
+	// Open archive file
+	wxFile file(filename_);
+
+	// Check it opened
+	if (!file.IsOpened())
+	{
+		log::error("loadEntryData: Unable to open archive file {}", filename_);
+		return false;
+	}
+
+	// Seek to entry offset in file and read it in
+	file.Seek(offset, wxFromStart);
+	out.importFileStreamWx(file, size);
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Detects the type of all entries in the archive
+// -----------------------------------------------------------------------------
+void Archive::detectAllEntryTypes() const
+{
+	auto entries = dir_root_->allEntries();
+	auto n_entries = entries.size();
+	ui::setSplashProgressMessage("Detecting entry types");
+	for (size_t i = 0; i < n_entries; i++)
+	{
+		ui::setSplashProgress(i, n_entries);
+		EntryType::detectEntryType(*entries[i]);
+		entries[i]->setState(ArchiveEntry::State::Unmodified);
+	}
+}
+
+
 
 // -----------------------------------------------------------------------------
 //
@@ -1653,7 +1704,7 @@ void Archive::blockModificationSignals(bool block)
 // -----------------------------------------------------------------------------
 // Reads archive formats configuration file from [mc]
 // -----------------------------------------------------------------------------
-bool Archive::loadFormats(MemChunk& mc)
+bool Archive::loadFormats(const MemChunk& mc)
 {
 	Parser parser;
 	if (!parser.parseText(mc))

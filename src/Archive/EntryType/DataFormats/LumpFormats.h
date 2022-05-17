@@ -3,10 +3,10 @@
 class TextureXDataFormat : public EntryDataFormat
 {
 public:
-	TextureXDataFormat() : EntryDataFormat("texturex"){};
-	~TextureXDataFormat() = default;
+	TextureXDataFormat() : EntryDataFormat("texturex") {}
+	~TextureXDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() < 4)
@@ -26,10 +26,10 @@ public:
 class PNamesDataFormat : public EntryDataFormat
 {
 public:
-	PNamesDataFormat() : EntryDataFormat("pnames"){};
-	~PNamesDataFormat() = default;
+	PNamesDataFormat() : EntryDataFormat("pnames") {}
+	~PNamesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// It's a pretty simple format alright
 		uint32_t number = mc.readL32(0);
@@ -44,10 +44,10 @@ public:
 class BoomAnimatedDataFormat : public EntryDataFormat
 {
 public:
-	BoomAnimatedDataFormat() : EntryDataFormat("animated"){};
-	~BoomAnimatedDataFormat() = default;
+	BoomAnimatedDataFormat() : EntryDataFormat("animated") {}
+	~BoomAnimatedDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() > sizeof(AnimatedEntry))
 		{
@@ -68,10 +68,10 @@ public:
 class BoomSwitchesDataFormat : public EntryDataFormat
 {
 public:
-	BoomSwitchesDataFormat() : EntryDataFormat("switches"){};
-	~BoomSwitchesDataFormat() = default;
+	BoomSwitchesDataFormat() : EntryDataFormat("switches") {}
+	~BoomSwitchesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() > sizeof(SwitchesEntry))
 		{
@@ -88,10 +88,10 @@ public:
 class ZNodesDataFormat : public EntryDataFormat
 {
 public:
-	ZNodesDataFormat() : EntryDataFormat("znod"){};
-	~ZNodesDataFormat() = default;
+	ZNodesDataFormat() : EntryDataFormat("znod") {}
+	~ZNodesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -107,10 +107,10 @@ public:
 class ZGLNodesDataFormat : public EntryDataFormat
 {
 public:
-	ZGLNodesDataFormat() : EntryDataFormat("zgln"){};
-	~ZGLNodesDataFormat() = default;
+	ZGLNodesDataFormat() : EntryDataFormat("zgln") {}
+	~ZGLNodesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -126,10 +126,10 @@ public:
 class ZGLNodes2DataFormat : public EntryDataFormat
 {
 public:
-	ZGLNodes2DataFormat() : EntryDataFormat("zgl2"){};
-	~ZGLNodes2DataFormat() = default;
+	ZGLNodes2DataFormat() : EntryDataFormat("zgl2") {}
+	~ZGLNodes2DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -145,10 +145,10 @@ public:
 class XNodesDataFormat : public EntryDataFormat
 {
 public:
-	XNodesDataFormat() : EntryDataFormat("xnod"){};
-	~XNodesDataFormat() = default;
+	XNodesDataFormat() : EntryDataFormat("xnod") {}
+	~XNodesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -164,10 +164,10 @@ public:
 class XGLNodesDataFormat : public EntryDataFormat
 {
 public:
-	XGLNodesDataFormat() : EntryDataFormat("xgln"){};
-	~XGLNodesDataFormat() = default;
+	XGLNodesDataFormat() : EntryDataFormat("xgln") {}
+	~XGLNodesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -183,10 +183,10 @@ public:
 class XGLNodes2DataFormat : public EntryDataFormat
 {
 public:
-	XGLNodes2DataFormat() : EntryDataFormat("xgl2"){};
-	~XGLNodes2DataFormat() = default;
+	XGLNodes2DataFormat() : EntryDataFormat("xgl2") {}
+	~XGLNodes2DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -202,10 +202,10 @@ public:
 class ACS0DataFormat : public EntryDataFormat
 {
 public:
-	ACS0DataFormat() : EntryDataFormat("acs0"){};
-	~ACS0DataFormat() = default;
+	ACS0DataFormat() : EntryDataFormat("acs0") {}
+	~ACS0DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 15)
@@ -231,10 +231,10 @@ public:
 class ACSeDataFormat : public EntryDataFormat
 {
 public:
-	ACSeDataFormat() : EntryDataFormat("acsl"){};
-	~ACSeDataFormat() = default;
+	ACSeDataFormat() : EntryDataFormat("acsl") {}
+	~ACSeDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 32)
@@ -268,10 +268,10 @@ public:
 class ACSEDataFormat : public EntryDataFormat
 {
 public:
-	ACSEDataFormat() : EntryDataFormat("acse"){};
-	~ACSEDataFormat() = default;
+	ACSEDataFormat() : EntryDataFormat("acse") {}
+	~ACSEDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 32)

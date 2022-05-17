@@ -67,7 +67,7 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 		return true;
 	}
 
-	auto     line_data = (LineDef*)entry->rawData(true);
+	auto     line_data = (LineDef*)entry->rawData();
 	unsigned nl        = entry->size() / sizeof(LineDef);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
@@ -148,7 +148,7 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 		return true;
 	}
 
-	auto              thng_data = (Thing*)entry->rawData(true);
+	auto              thng_data = (Thing*)entry->rawData();
 	unsigned          nt        = entry->size() / sizeof(Thing);
 	float             p         = ui::getSplashProgress();
 	MapObject::ArgSet args;

@@ -47,7 +47,7 @@ namespace
 // -----------------------------------------------------------------------------
 // Returns true if [entry] is a namespace marker
 // -----------------------------------------------------------------------------
-bool isNamespaceEntry(ArchiveEntry* entry)
+bool isNamespaceEntry(const ArchiveEntry* entry)
 {
 	return strutil::startsWith(entry->upperName(), "START") || strutil::startsWith(entry->upperName(), "END");
 }
@@ -65,7 +65,7 @@ bool isNamespaceEntry(ArchiveEntry* entry)
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DatArchive::open(MemChunk& mc)
+bool DatArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -95,7 +95,7 @@ bool DatArchive::open(MemChunk& mc)
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
 		uint32_t offset  = 0;
@@ -143,8 +143,13 @@ bool DatArchive::open(MemChunk& mc)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(myname, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk(size);
+
+		// Read entry data if it isn't zero-sized
+		if (size > 0)
+			nlump->importMemChunk(mc, offset, size);
+
 		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		if (flags & 1)
@@ -169,34 +174,7 @@ bool DatArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
-
-	// Detect maps (will detect map entry types)
-	// UI::setSplashProgressMessage("Detecting maps");
-	// detectMaps();
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -418,9 +396,7 @@ bool DatArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* d
 		return false;
 
 	// Do default move (force root dir)
-	bool ok = Archive::moveEntry(entry, position, nullptr);
-
-	if (ok)
+	if (TreelessArchive::moveEntry(entry, position, nullptr))
 	{
 		// Update namespaces if necessary
 		if (isNamespaceEntry(entry))
@@ -428,15 +404,15 @@ bool DatArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* d
 
 		return true;
 	}
-	else
-		return false;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
 // Writes the dat archive to a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DatArchive::write(MemChunk& mc, bool update)
+bool DatArchive::write(MemChunk& mc)
 {
 	// Only two bytes are used for storing entry amount,
 	// so abort for excessively large files:
@@ -444,16 +420,17 @@ bool DatArchive::write(MemChunk& mc, bool update)
 		return false;
 
 	// Determine directory offset, name offsets & individual lump offsets
-	uint32_t      dir_offset   = 10;
-	uint16_t      name_offset  = numEntries() * 12;
-	uint32_t      name_size    = 0;
-	string        previousname = "";
-	uint16_t*     nameoffsets  = new uint16_t[numEntries()];
+	uint32_t      dir_offset  = 10;
+	uint16_t      name_offset = numEntries() * 12;
+	uint32_t      name_size   = 0;
+	string        previousname;
+	auto          nameoffsets = new uint16_t[numEntries()];
 	ArchiveEntry* entry;
-	for (uint16_t l = 0; l < numEntries(); l++)
+	for (unsigned l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
-		setEntryOffset(entry, dir_offset);
+		entry->setOffsetOnDisk(dir_offset);
+		entry->setSizeOnDisk(entry->size());
 		dir_offset += entry->size();
 
 		// Does the entry has a name?
@@ -470,7 +447,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 		{
 			// This is a true name
 			previousname   = name;
-			nameoffsets[l] = uint16_t(name_offset + name_size);
+			nameoffsets[l] = static_cast<uint16_t>(name_offset + name_size);
 			name_size += name.length() + 1;
 		}
 	}
@@ -500,7 +477,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 	{
 		entry = entryAt(l);
 
-		uint32_t offset  = wxINT32_SWAP_ON_BE(getEntryOffset(entry));
+		uint32_t offset  = wxINT32_SWAP_ON_BE(entry->offsetOnDisk());
 		uint32_t size    = wxINT32_SWAP_ON_BE(entry->size());
 		uint16_t nameofs = wxINT16_SWAP_ON_BE(nameoffsets[l]);
 		uint16_t flags   = wxINT16_SWAP_ON_BE((entry->encryption() == ArchiveEntry::Encryption::SCRLE0) ? 1 : 0);
@@ -510,11 +487,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 		mc.write(&nameofs, 2); // Name offset
 		mc.write(&flags, 2);   // Flags
 
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)wxINT32_SWAP_ON_BE(offset);
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Write the names
@@ -540,38 +513,9 @@ bool DatArchive::write(MemChunk& mc, bool update)
 // Loads an entry's data from the datfile
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DatArchive::loadEntryData(ArchiveEntry* entry)
+bool DatArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open wadfile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("DatArchive::loadEntryData: Failed to open datfile {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 
@@ -585,7 +529,7 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Shadowcaster dat archive
 // -----------------------------------------------------------------------------
-bool DatArchive::isDatArchive(MemChunk& mc)
+bool DatArchive::isDatArchive(const MemChunk& mc)
 {
 	// Read dat header
 	mc.seek(0, SEEK_SET);

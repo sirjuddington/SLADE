@@ -518,7 +518,7 @@ Vec2i gfx::calculateOffsets(int width, int height, OffsetType type)
 // Will return an empty std::optional if the data is not a format that supports
 // offsets, or if no offsets are present in the image.
 // -----------------------------------------------------------------------------
-std::optional<Vec2i> gfx::getImageOffsets(MemChunk& img_data)
+std::optional<Vec2i> gfx::getImageOffsets(const MemChunk& img_data)
 {
 	// Detect image format if any
 	auto* format = SIFormat::determineFormat(img_data);

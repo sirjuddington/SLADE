@@ -40,48 +40,15 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // LfdArchive Class Functions
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Returns the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-uint32_t LfdArchive::getEntryOffset(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return 0;
-
-	return (uint32_t)entry->exProp<int>("Offset");
-}
-
-// -----------------------------------------------------------------------------
-// Sets the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-void LfdArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return;
-
-	entry->exProp("Offset") = (int)offset;
-}
 
 // -----------------------------------------------------------------------------
 // Reads lfd format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool LfdArchive::open(MemChunk& mc)
+bool LfdArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -102,7 +69,7 @@ bool LfdArchive::open(MemChunk& mc)
 	dir_len = wxINT32_SWAP_ON_BE(dir_len);
 
 	// Check size
-	if ((unsigned)mc.size() < (dir_len) || dir_len % 16)
+	if (mc.size() < (dir_len) || dir_len % 16)
 		return false;
 
 	// Guess number of lumps
@@ -118,7 +85,7 @@ bool LfdArchive::open(MemChunk& mc)
 	for (uint32_t d = 0; offset < size; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
 		uint32_t length  = 0;
@@ -150,8 +117,13 @@ bool LfdArchive::open(MemChunk& mc)
 		strutil::Path fn(name);
 		fn.setExtension(type);
 		auto nlump = std::make_shared<ArchiveEntry>(fn.fileName(), length);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk(length);
+
+		// Read entry data if it isn't zero-sized
+		if (nlump->size() > 0)
+			nlump->importMemChunk(mc, offset, size);
+
 		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
@@ -166,34 +138,7 @@ bool LfdArchive::open(MemChunk& mc)
 		log::warning("Computed {} lumps, but actually {} entries", num_lumps, numEntries());
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -208,7 +153,7 @@ bool LfdArchive::open(MemChunk& mc)
 // Writes the lfd archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool LfdArchive::write(MemChunk& mc, bool update)
+bool LfdArchive::write(MemChunk& mc)
 {
 	// Determine total size
 	uint32_t      dir_size   = (numEntries() + 1) << 4;
@@ -218,12 +163,9 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	{
 		entry = entryAt(l);
 		total_size += 16;
-		setEntryOffset(entry, total_size);
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)total_size;
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setOffsetOnDisk(total_size);
+		entry->setSizeOnDisk();
 		total_size += entry->size();
 	}
 
@@ -288,47 +230,18 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the lfdfile
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool LfdArchive::loadEntryData(ArchiveEntry* entry)
+bool LfdArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open lfdfile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("LfdArchive::loadEntryData: Failed to open lfdfile {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Dark Forces lfd archive
 // -----------------------------------------------------------------------------
-bool LfdArchive::isLfdArchive(MemChunk& mc)
+bool LfdArchive::isLfdArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

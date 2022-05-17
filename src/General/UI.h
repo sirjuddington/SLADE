@@ -14,6 +14,7 @@ float getSplashProgress();
 void  setSplashMessage(string_view message);
 void  setSplashProgressMessage(string_view message);
 void  setSplashProgress(float progress);
+void  setSplashProgress(unsigned current, unsigned max);
 
 // Mouse Cursor
 enum class MouseCursor

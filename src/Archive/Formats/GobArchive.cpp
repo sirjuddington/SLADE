@@ -39,48 +39,15 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // GobArchive Class Functions
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Returns the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-uint32_t GobArchive::getEntryOffset(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return 0;
-
-	return (uint32_t)entry->exProp<int>("Offset");
-}
-
-// -----------------------------------------------------------------------------
-// Sets the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-void GobArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return;
-
-	entry->exProp("Offset") = (int)offset;
-}
 
 // -----------------------------------------------------------------------------
 // Reads gob format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GobArchive::open(MemChunk& mc)
+bool GobArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -101,7 +68,7 @@ bool GobArchive::open(MemChunk& mc)
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check size
-	if ((unsigned)mc.size() < (dir_offset + 4))
+	if (mc.size() < (dir_offset + 4))
 		return false;
 
 	// Get number of lumps
@@ -112,7 +79,7 @@ bool GobArchive::open(MemChunk& mc)
 
 	// Compute directory size
 	uint32_t dir_size = (num_lumps * 21) + 4;
-	if ((unsigned)mc.size() < (dir_offset + dir_size))
+	if (mc.size() < (dir_offset + dir_size))
 		return false;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
@@ -123,7 +90,7 @@ bool GobArchive::open(MemChunk& mc)
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
 		uint32_t offset   = 0;
@@ -149,8 +116,13 @@ bool GobArchive::open(MemChunk& mc)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk(size);
+
+		// Read entry data if it isn't zero-sized
+		if (nlump->size() > 0)
+			nlump->importMemChunk(mc, offset, size);
+
 		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
@@ -158,34 +130,7 @@ bool GobArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -200,7 +145,7 @@ bool GobArchive::open(MemChunk& mc)
 // Writes the gob archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GobArchive::write(MemChunk& mc, bool update)
+bool GobArchive::write(MemChunk& mc)
 {
 	// Determine directory offset & individual lump offsets
 	uint32_t      dir_offset = 8;
@@ -208,7 +153,7 @@ bool GobArchive::write(MemChunk& mc, bool update)
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
-		setEntryOffset(entry, dir_offset);
+		entry->setOffsetOnDisk(dir_offset);
 		dir_offset += entry->size();
 	}
 
@@ -237,7 +182,7 @@ bool GobArchive::write(MemChunk& mc, bool update)
 	{
 		entry         = entryAt(l);
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		long offset   = wxINT32_SWAP_ON_BE(getEntryOffset(entry));
+		long offset   = wxINT32_SWAP_ON_BE(entry->offsetOnDisk());
 		long size     = wxINT32_SWAP_ON_BE(entry->size());
 
 		for (size_t c = 0; c < entry->name().length() && c < 13; c++)
@@ -247,58 +192,27 @@ bool GobArchive::write(MemChunk& mc, bool update)
 		mc.write(&size, 4);
 		mc.write(name, 13);
 
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)offset;
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setOffsetOnDisk(offset);
+		entry->setSizeOnDisk();
 	}
 
 	return true;
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the gobfile
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GobArchive::loadEntryData(ArchiveEntry* entry)
+bool GobArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open gobfile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("GobArchive::loadEntryData: Failed to open gobfile {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Dark Forces gob archive
 // -----------------------------------------------------------------------------
-bool GobArchive::isGobArchive(MemChunk& mc)
+bool GobArchive::isGobArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

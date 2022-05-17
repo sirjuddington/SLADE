@@ -77,7 +77,7 @@ CVAR(String, zdoom_pk3_path, "", CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // Parses the basic game definition in [mc]
 // -----------------------------------------------------------------------------
-bool GameDef::parse(MemChunk& mc)
+bool GameDef::parse(const MemChunk& mc)
 {
 	// Parse configuration
 	Parser parser;
@@ -155,7 +155,7 @@ bool GameDef::supportsFilter(string_view filter) const
 // -----------------------------------------------------------------------------
 // Parses the basic port definition in [mc]
 // -----------------------------------------------------------------------------
-bool PortDef::parse(MemChunk& mc)
+bool PortDef::parse(const MemChunk& mc)
 {
 	// Parse configuration
 	Parser parser;
@@ -276,7 +276,7 @@ void game::updateCustomDefinitions()
 // -----------------------------------------------------------------------------
 // Returns the tagged type of the parsed tree node [tagged]
 // -----------------------------------------------------------------------------
-TagType game::parseTagged(ParseTreeNode* tagged)
+TagType game::parseTagged(const ParseTreeNode* tagged)
 {
 	static std::map<string, TagType> tag_type_map{
 		{ "no", TagType::None },
@@ -412,31 +412,33 @@ void game::init()
 	// Load zdoom.pk3 stuff
 	if (wxFileExists(zdoom_pk3_path))
 	{
-		zscript_parse_thread = std::make_unique<std::thread>([=]() {
-			ZipArchive zdoom_pk3;
-			if (!zdoom_pk3.open(zdoom_pk3_path))
-				return;
-
-			// ZScript
-			auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
-
-			if (!zscript_entry)
+		zscript_parse_thread = std::make_unique<std::thread>(
+			[=]()
 			{
-				// Bail out if no entry is found.
-				log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path);
-			}
-			else
-			{
-				zscript_base.parseZScript(zscript_entry);
+				ZipArchive zdoom_pk3;
+				if (!zdoom_pk3.open(zdoom_pk3_path))
+					return;
 
-				auto lang = TextLanguage::fromId("zscript");
-				if (lang)
-					lang->loadZScript(zscript_base);
+				// ZScript
+				auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
 
-				// MapInfo
-				config_current.parseMapInfo(zdoom_pk3);
-			}
-		});
+				if (!zscript_entry)
+				{
+					// Bail out if no entry is found.
+					log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path);
+				}
+				else
+				{
+					zscript_base.parseZScript(zscript_entry);
+
+					auto lang = TextLanguage::fromId("zscript");
+					if (lang)
+						lang->loadZScript(zscript_base);
+
+					// MapInfo
+					config_current.parseMapInfo(zdoom_pk3);
+				}
+			});
 		zscript_parse_thread->detach();
 	}
 

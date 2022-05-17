@@ -27,8 +27,8 @@ namespace entryoperations
 	bool optimizePNG(ArchiveEntry* entry);
 
 	// ANIMATED/SWITCHES
-	bool convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool animdefs);
-	bool convertSwitches(ArchiveEntry* entry, MemChunk* animdata, bool animdefs);
-	bool convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, bool switches);
+	bool convertAnimated(const ArchiveEntry* entry, MemChunk* animdata, bool animdefs);
+	bool convertSwitches(const ArchiveEntry* entry, MemChunk* animdata, bool animdefs);
+	bool convertSwanTbls(const ArchiveEntry* entry, MemChunk* animdata, bool switches);
 } // namespace entryoperations
 } // namespace slade

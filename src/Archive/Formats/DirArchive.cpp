@@ -55,7 +55,6 @@ CVAR(Bool, archive_dir_ignore_hidden, true, CVar::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Int, max_entry_size_mb)
 
 
@@ -98,9 +97,10 @@ bool DirArchive::open(string_view filename)
 	const ArchiveModSignalBlocker sig_blocker{ *this };
 
 	ui::setSplashProgressMessage("Reading files");
-	for (unsigned a = 0; a < files.size(); a++)
+	auto n_files = files.size();
+	for (unsigned a = 0; a < n_files; a++)
 	{
-		ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(files.size()));
+		ui::setSplashProgress(a, n_files);
 
 		// Cut off directory to get entry name + relative path
 		auto name = files[a];
@@ -115,7 +115,6 @@ bool DirArchive::open(string_view filename)
 		auto new_entry = std::make_shared<ArchiveEntry>(fn.fileName());
 
 		// Setup entry info
-		new_entry->setLoaded(false);
 		new_entry->exProp("filePath") = files[a];
 
 		// Add entry and directory to directory tree
@@ -126,16 +125,11 @@ bool DirArchive::open(string_view filename)
 		// Read entry data
 		if (!new_entry->importFile(files[a]))
 			return false;
-		new_entry->setLoaded(true);
 
 		file_modification_times_[new_entry.get()] = fileutil::fileModifiedTime(files[a]);
 
 		// Detect entry type
 		EntryType::detectEntryType(*new_entry);
-
-		// Unload data if needed
-		if (!archive_load_data)
-			new_entry->unloadData();
 	}
 
 	// Add empty directories
@@ -181,7 +175,7 @@ bool DirArchive::open(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Reads data from a MemChunk (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchive::open(MemChunk& mc)
+bool DirArchive::open(const MemChunk& mc)
 {
 	global::error = "Cannot open Folder Archive from memory";
 	return false;
@@ -190,7 +184,7 @@ bool DirArchive::open(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Writes the archive to a MemChunk (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchive::write(MemChunk& mc, bool update)
+bool DirArchive::write(MemChunk& mc)
 {
 	global::error = "Cannot write Folder Archive to memory";
 	return false;
@@ -199,7 +193,7 @@ bool DirArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Writes the archive to a file (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchive::write(string_view filename, bool update)
+bool DirArchive::write(string_view filename)
 {
 	return true;
 }
@@ -319,14 +313,13 @@ bool DirArchive::save(string_view filename)
 // -----------------------------------------------------------------------------
 // Loads an entry's data from the saved copy of the archive if any
 // -----------------------------------------------------------------------------
-bool DirArchive::loadEntryData(ArchiveEntry* entry)
+bool DirArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	if (entry->importFile(entry->exProp<string>("filePath")))
-	{
-		file_modification_times_[entry] = fileutil::fileModifiedTime(entry->exProp<string>("filePath"));
-		entry->setLoaded();
-		entry->setState(ArchiveEntry::State::Unmodified);
+	auto file_path = entry->exProps().getOr<string>("filePath", "");
 
+	if (out.importFile(file_path))
+	{
+		file_modification_times_[const_cast<ArchiveEntry*>(entry)] = fileutil::fileModifiedTime(file_path);
 		return true;
 	}
 
@@ -695,7 +688,6 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			auto          new_entry = std::make_shared<ArchiveEntry>(fn.fileName());
 
 			// Setup entry info
-			new_entry->setLoaded(false);
 			new_entry->exProp("filePath") = change.file_path;
 
 			// Add entry and directory to directory tree
@@ -704,16 +696,11 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 
 			// Read entry data
 			new_entry->importFile(change.file_path);
-			new_entry->setLoaded(true);
 
 			file_modification_times_[new_entry.get()] = fileutil::fileModifiedTime(change.file_path);
 
 			// Detect entry type
 			EntryType::detectEntryType(*new_entry);
-
-			// Unload data if needed
-			if (!archive_load_data)
-				new_entry->unloadData();
 
 			// Set entry not modified
 			new_entry->setState(ArchiveEntry::State::Unmodified);

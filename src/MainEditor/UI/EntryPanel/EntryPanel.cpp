@@ -174,7 +174,7 @@ bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 
 	// Copy current entry content
 	entry_data_.clear();
-	entry_data_.importMem(entry->rawData(true), entry->size());
+	entry_data_.importMem(entry->rawData(), entry->size());
 
 	// Load the entry
 	Freeze();

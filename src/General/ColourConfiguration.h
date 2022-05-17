@@ -36,7 +36,7 @@ void   setLineHilightWidth(double mult);
 void   setLineSelectionWidth(double mult);
 void   setFlatAlpha(double alpha);
 
-bool readConfiguration(MemChunk& mc);
+bool readConfiguration(const MemChunk& mc);
 bool writeConfiguration(MemChunk& mc);
 bool init();
 void loadDefaults();

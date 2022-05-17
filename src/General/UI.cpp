@@ -176,6 +176,14 @@ void ui::setSplashProgress(float progress)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the splash window progress to [current] out of [max]
+// -----------------------------------------------------------------------------
+void ui::setSplashProgress(unsigned current, unsigned max)
+{
+	setSplashProgress(static_cast<float>(current) / static_cast<float>(max));
+}
+
+// -----------------------------------------------------------------------------
 // Sets the mouse cursor for [window]
 // -----------------------------------------------------------------------------
 void ui::setCursor(wxWindow* window, MouseCursor cursor)

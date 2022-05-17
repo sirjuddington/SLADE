@@ -39,14 +39,6 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // Functions & Structs
 //
 // -----------------------------------------------------------------------------
@@ -146,7 +138,7 @@ bool tarWriteOctal(size_t sum, char* field, int size)
 // Computes the checksum of a tar header, both as signed and unsigned bytes, and
 // verifies that one of the two matches the existing value
 // -----------------------------------------------------------------------------
-bool tarChecksum(TarHeader* header)
+bool tarChecksum(const TarHeader* header)
 {
 	// Create our dummy header with three pointers so as to be able
 	// to address it either as a tar header, as a block of signed char,
@@ -264,7 +256,7 @@ void tarDefaultHeader(TarHeader* header)
 // Reads tar format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool TarArchive::open(MemChunk& mc)
+bool TarArchive::open(const MemChunk& mc)
 {
 	// Check given data is valid
 	if (mc.size() < 1024)
@@ -284,12 +276,12 @@ bool TarArchive::open(MemChunk& mc)
 	{
 		// Update splash window progress
 		// Since there is no directory in Unix tape archives, use the size
-		ui::setSplashProgress(((float)mc.currentPos() / (float)mc.size()));
+		ui::setSplashProgress(mc.currentPos(), mc.size());
 
 		// Read tar header
 		TarHeader header;
 		mc.read(&header, 512);
-		if (!strutil::equalCI({header.magic, sizeof(header.magic)}, TMAGIC))
+		if (!strutil::equalCI({ header.magic, sizeof(header.magic) }, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
@@ -313,11 +305,11 @@ bool TarArchive::open(MemChunk& mc)
 
 		// Find name
 		string name;
-		for (int a = 0; a < 100; ++a)
+		for (char a : header.name)
 		{
-			if (header.name[a] == 0)
+			if (a == 0)
 				break;
-			name += header.name[a];
+			name += a;
 		}
 
 		// Find size
@@ -329,9 +321,14 @@ bool TarArchive::open(MemChunk& mc)
 			auto dir = createDir(strutil::Path::pathOf(name));
 
 			// Create entry
-			auto entry              = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), size);
-			entry->exProp("Offset") = (int)mc.currentPos();
-			entry->setLoaded(false);
+			auto entry = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), size);
+			entry->setOffsetOnDisk(mc.currentPos());
+			entry->setSizeOnDisk();
+
+			// Read entry data if it isn't zero-sized
+			if (entry->size() > 0)
+				entry->importMemChunk(mc, mc.currentPos(), size);
+
 			entry->setState(ArchiveEntry::State::Unmodified);
 
 			// Add to directory
@@ -356,36 +353,7 @@ bool TarArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk              edata;
-	vector<ArchiveEntry*> all_entries;
-	putEntryTreeAsList(all_entries);
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < all_entries.size(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)all_entries.size())));
-
-		// Get entry
-		auto entry = all_entries[a];
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -400,14 +368,13 @@ bool TarArchive::open(MemChunk& mc)
 // Writes the tar archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool TarArchive::write(MemChunk& mc, bool update)
+bool TarArchive::write(MemChunk& mc)
 {
 	// Clear current data
 	mc.clear();
 
 	// We'll use that
-	uint8_t padding[512];
-	memset(padding, 0, 512);
+	uint8_t padding[512] = {};
 
 	// Get archive tree as a list
 	vector<ArchiveEntry*> entries;
@@ -450,6 +417,8 @@ bool TarArchive::write(MemChunk& mc, bool update)
 			if (padsize)
 				padsize = 512 - padsize;
 			mc.write(&header, 512);
+			entries[a]->setOffsetOnDisk(mc.currentPos());
+			entries[a]->setSizeOnDisk();
 			mc.write(entries[a]->rawData(), entries[a]->size());
 			if (padsize)
 				mc.write(padding, padsize);
@@ -463,41 +432,12 @@ bool TarArchive::write(MemChunk& mc, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the tar file
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool TarArchive::loadEntryData(ArchiveEntry* entry)
+bool TarArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check entry is ok
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the entry's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open archive file
-	wxFile file(filename_);
-
-	// Check it opened
-	if (!file.IsOpened())
-	{
-		log::error("TarArchive::loadEntryData: Unable to open archive file {}", filename_);
-		return false;
-	}
-
-	// Seek to entry offset in file and read it in
-	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 
@@ -511,7 +451,7 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Unix tar archive
 // -----------------------------------------------------------------------------
-bool TarArchive::isTarArchive(MemChunk& mc)
+bool TarArchive::isTarArchive(const MemChunk& mc)
 {
 	mc.seek(0, SEEK_SET);
 	int blankcount = 0;
@@ -520,7 +460,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 		// Read tar header
 		TarHeader header;
 		mc.read(&header, 512);
-		if (!strutil::equalCI({header.magic, sizeof(header.magic)}, TMAGIC))
+		if (!strutil::equalCI({ header.magic, sizeof(header.magic) }, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
@@ -574,7 +514,7 @@ bool TarArchive::isTarArchive(const string& filename)
 		// Read tar header
 		TarHeader header;
 		file.Read(&header, 512);
-		if (!strutil::equalCI({header.magic, sizeof(header.magic)}, TMAGIC))
+		if (!strutil::equalCI({ header.magic, sizeof(header.magic) }, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{

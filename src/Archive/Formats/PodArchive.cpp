@@ -42,18 +42,9 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // PodArchive Class Functions
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // PodArchive class constructor
@@ -77,7 +68,7 @@ void PodArchive::setId(string_view id)
 // Reads pod format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool PodArchive::open(MemChunk& mc)
+bool PodArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -104,12 +95,15 @@ bool PodArchive::open(MemChunk& mc)
 	{
 		// Create entry
 		auto new_entry = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(files[a].name), files[a].size);
-		new_entry->exProp("Offset") = files[a].offset;
-		new_entry->setLoaded(false);
+		new_entry->setOffsetOnDisk(files[a].offset);
+		new_entry->setSizeOnDisk();
 
 		// Add entry and directory to directory tree
 		auto ndir = createDir(strutil::Path::pathOf(files[a].name, false));
 		ndir->addEntry(new_entry);
+
+		// Read data
+		new_entry->importMemChunk(mc, files[a].offset, files[a].size);
 
 		new_entry->setState(ArchiveEntry::State::Unmodified);
 
@@ -117,37 +111,7 @@ bool PodArchive::open(MemChunk& mc)
 	}
 
 	// Detect entry types
-	vector<ArchiveEntry*> all_entries;
-	putEntryTreeAsList(all_entries);
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (unsigned a = 0; a < all_entries.size(); a++)
-	{
-		// Skip dir/marker
-		if (all_entries[a]->size() == 0 || all_entries[a]->type() == EntryType::folderType())
-		{
-			all_entries[a]->setState(ArchiveEntry::State::Unmodified);
-			continue;
-		}
-
-		// Update splash window progress
-		ui::setSplashProgress((float)a / (float)all_entries.size());
-
-		// Read data
-		MemChunk edata;
-		mc.exportMemChunk(edata, all_entries[a]->exProp<int>("Offset"), all_entries[a]->size());
-		all_entries[a]->importMemChunk(edata);
-
-		// Detect entry type
-		EntryType::detectEntryType(*all_entries[a]);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			all_entries[a]->unloadData();
-
-		// Set entry to unchanged
-		all_entries[a]->setState(ArchiveEntry::State::Unmodified);
-		log::info(5, "entry {} size {}", all_entries[a]->name(), all_entries[a]->size());
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -162,7 +126,7 @@ bool PodArchive::open(MemChunk& mc)
 // Writes the pod archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool PodArchive::write(MemChunk& mc, bool update)
+bool PodArchive::write(MemChunk& mc)
 {
 	// Get all entries
 	vector<ArchiveEntry*> entries;
@@ -217,12 +181,11 @@ bool PodArchive::write(MemChunk& mc, bool update)
 		mc.write(&fe.size, 4);
 		mc.write(&fe.offset, 4);
 		log::info(
-			5,
-			"entry {}: old={} new={} size={}",
-			fe.name,
-			entry->exProp<int>("Offset"),
-			fe.offset,
-			entry->size());
+			5, "entry {}: old={} new={} size={}", fe.name, entry->exProp<int>("Offset"), fe.offset, entry->size());
+
+		// Update entry
+		entry->setOffsetOnDisk(fe.offset);
+		entry->setSizeOnDisk();
 
 		// Next offset
 		fe.offset += fe.size;
@@ -237,41 +200,12 @@ bool PodArchive::write(MemChunk& mc, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the archive file
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool PodArchive::loadEntryData(ArchiveEntry* entry)
+bool PodArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open file
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("PodArchive::loadEntryData: Failed to open file {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 
@@ -285,7 +219,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid pod archive
 // -----------------------------------------------------------------------------
-bool PodArchive::isPodArchive(MemChunk& mc)
+bool PodArchive::isPodArchive(const MemChunk& mc)
 {
 	// Check size for header
 	if (mc.size() < 84)

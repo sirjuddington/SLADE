@@ -71,7 +71,7 @@ EntryType* etype_map     = nullptr; // Map marker type
 // -----------------------------------------------------------------------------
 // Dumps entry type info to the log
 // -----------------------------------------------------------------------------
-void EntryType::dump()
+void EntryType::dump() const
 {
 	log::info("Type {} \"{}\", format {}, extension {}", id_, name_, format_->id(), extension_);
 	log::info("Size limit: {}-{}", size_limit_[0], size_limit_[1]);
@@ -97,7 +97,7 @@ void EntryType::dump()
 // -----------------------------------------------------------------------------
 // Copies this entry type's info/properties to [target]
 // -----------------------------------------------------------------------------
-void EntryType::copyToType(EntryType& target)
+void EntryType::copyToType(EntryType& target) const
 {
 	// Copy type attributes
 	target.editor_      = editor_;
@@ -135,7 +135,7 @@ string EntryType::fileFilterString() const
 // -----------------------------------------------------------------------------
 // Returns true if [entry] matches the EntryType's criteria, false otherwise
 // -----------------------------------------------------------------------------
-int EntryType::isThisType(ArchiveEntry& entry)
+int EntryType::isThisType(ArchiveEntry& entry) const
 {
 	// Check type is detectable
 	if (!detectable_)
@@ -241,6 +241,10 @@ int EntryType::isThisType(ArchiveEntry& entry)
 			auto name = fn;
 			if (ext_sep != string::npos)
 				name = fn.substr(0, ext_sep);
+
+			// If we are matching 8 characters or less, only check the first 8 characters of the entry name
+			if (match_name_.size() <= 8 && name.size() > 8)
+				name = name.substr(0, 8);
 
 			bool match = false;
 			for (const auto& match_name : match_name_)
@@ -354,7 +358,7 @@ void slade::EntryType::initTypes()
 // Reads in a block of entry type definitions. Returns false if there was a
 // parsing error, true otherwise
 // -----------------------------------------------------------------------------
-bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
+bool EntryType::readEntryTypeDefinition(const MemChunk& mc, string_view source)
 {
 	// Parse the definition
 	const Parser p;

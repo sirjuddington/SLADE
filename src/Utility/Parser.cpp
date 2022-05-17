@@ -583,7 +583,7 @@ Parser::Parser(ArchiveDir* dir_root) : archive_dir_root_{ dir_root }
 // 		</base>
 // 	</root>
 // -----------------------------------------------------------------------------
-bool Parser::parseText(MemChunk& mc, string_view source) const
+bool Parser::parseText(const MemChunk& mc, string_view source) const
 {
 	Tokenizer tz;
 

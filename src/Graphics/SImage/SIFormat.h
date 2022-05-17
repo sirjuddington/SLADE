@@ -34,12 +34,12 @@ public:
 	const string& name() const { return name_; }
 	const string& extension() const { return extension_; }
 
-	virtual bool isThisFormat(MemChunk& mc) = 0;
+	virtual bool isThisFormat(const MemChunk& mc) = 0;
 
 	// Reading
-	virtual SImage::Info info(MemChunk& mc, int index = 0) = 0;
+	virtual SImage::Info info(const MemChunk& mc, int index = 0) = 0;
 
-	bool loadImage(SImage& image, MemChunk& data, int index = 0)
+	bool loadImage(SImage& image, const MemChunk& data, int index = 0)
 	{
 		// Check format
 		if (!isThisFormat(data))
@@ -90,7 +90,7 @@ public:
 
 	static void      initFormats();
 	static SIFormat* getFormat(string_view name);
-	static SIFormat* determineFormat(MemChunk& mc);
+	static SIFormat* determineFormat(const MemChunk& mc);
 	static SIFormat* unknownFormat();
 	static SIFormat* rawFormat();
 	static SIFormat* flatFormat();
@@ -108,7 +108,7 @@ protected:
 	uint8_t* imageMask(SImage& image) const { return image.mask_.data(); }
 	Palette& imagePalette(SImage& image) const { return image.palette_; }
 
-	virtual bool readImage(SImage& image, MemChunk& data, int index) = 0;
+	virtual bool readImage(SImage& image, const MemChunk& data, int index) = 0;
 	virtual bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) { return false; }
 };
 } // namespace slade

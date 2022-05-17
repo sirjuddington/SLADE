@@ -49,7 +49,7 @@ using namespace slade;
 // Reads gzip format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GZipArchive::open(MemChunk& mc)
+bool GZipArchive::open(const MemChunk& mc)
 {
 	// Minimal metadata size is 18: 10 for header, 8 for footer
 	size_t mds  = 18;
@@ -175,7 +175,7 @@ bool GZipArchive::open(MemChunk& mc)
 // Writes the gzip archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GZipArchive::write(MemChunk& mc, bool update)
+bool GZipArchive::write(MemChunk& mc)
 {
 	// Clear current data
 	mc.clear();
@@ -272,42 +272,12 @@ bool GZipArchive::renameEntry(ArchiveEntry* entry, string_view name)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the gzip file
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GZipArchive::loadEntryData(ArchiveEntry* entry)
+bool GZipArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
 	return false;
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open gzip file
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("GZipArchive::loadEntryData: Failed to open gzip file {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-	entry->setState(ArchiveEntry::State::Unmodified);
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -383,7 +353,7 @@ vector<ArchiveEntry*> GZipArchive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid GZip archive
 // -----------------------------------------------------------------------------
-bool GZipArchive::isGZipArchive(MemChunk& mc)
+bool GZipArchive::isGZipArchive(const MemChunk& mc)
 {
 	// Minimal metadata size is 18: 10 for header, 8 for footer
 	size_t mds  = 18;

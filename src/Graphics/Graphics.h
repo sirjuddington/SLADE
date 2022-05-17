@@ -27,7 +27,7 @@ namespace gfx
 		WeaponHexen
 	};
 	Vec2i                calculateOffsets(int width, int height, OffsetType type);
-	std::optional<Vec2i> getImageOffsets(MemChunk& img_data);
+	std::optional<Vec2i> getImageOffsets(const MemChunk& img_data);
 	bool                 setImageOffsets(MemChunk& img_data, int xoff, int yoff);
 } // namespace gfx
 } // namespace slade

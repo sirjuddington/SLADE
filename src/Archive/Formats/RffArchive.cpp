@@ -74,14 +74,6 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // Functions & Structs
 //
 // -----------------------------------------------------------------------------
@@ -122,36 +114,11 @@ void bloodCrypt(void* data, int key, int len)
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
-// Returns the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-uint32_t RffArchive::getEntryOffset(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return 0;
-
-	return (uint32_t)entry->exProp<int>("Offset");
-}
-
-// -----------------------------------------------------------------------------
-// Sets the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-void RffArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return;
-
-	entry->exProp("Offset") = (int)offset;
-}
-
-// -----------------------------------------------------------------------------
-// Reads grp format data from a MemChunk
+// Reads rff format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool RffArchive::open(MemChunk& mc)
+bool RffArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -184,7 +151,8 @@ bool RffArchive::open(MemChunk& mc)
 	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
-	auto lumps = new RFFLump[num_lumps];
+	MemChunk edata;
+	auto     lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
 	ui::setSplashProgressMessage("Reading rff archive data");
 	mc.read(lumps, num_lumps * sizeof(RFFLump));
@@ -192,7 +160,7 @@ bool RffArchive::open(MemChunk& mc)
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
 		char     name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -221,13 +189,34 @@ bool RffArchive::open(MemChunk& mc)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk();
 		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Is the entry encrypted?
 		if (lumps[d].Flags & 0x10)
 			nlump->setEncryption(ArchiveEntry::Encryption::Blood);
+
+		// Read entry data if it isn't zero-sized
+		if (nlump->size() > 0)
+		{
+			// Read the entry data
+			mc.exportMemChunk(edata, offset, size);
+
+			// If the entry is encrypted, decrypt it
+			if (nlump->encryption() != ArchiveEntry::Encryption::None)
+			{
+				uint8_t* cdata = new uint8_t[size];
+				memcpy(cdata, edata.data(), size);
+				int cryptlen = size < 256 ? size : 256;
+				bloodCrypt(cdata, 0, cryptlen);
+				edata.importMem(cdata, size);
+				delete[] cdata;
+			}
+
+			// Import data
+			nlump->importMemChunk(edata);
+		}
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -235,47 +224,7 @@ bool RffArchive::open(MemChunk& mc)
 	delete[] lumps;
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-
-			// If the entry is encrypted, decrypt it
-			if (entry->encryption() != ArchiveEntry::Encryption::None)
-			{
-				uint8_t* cdata = new uint8_t[entry->size()];
-				memcpy(cdata, edata.data(), entry->size());
-				int cryptlen = entry->size() < 256 ? entry->size() : 256;
-				bloodCrypt(cdata, 0, cryptlen);
-				edata.importMem(cdata, entry->size());
-				delete[] cdata;
-			}
-
-			// Import data
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -290,54 +239,25 @@ bool RffArchive::open(MemChunk& mc)
 // Writes the rff archive to a MemChunk
 // Not implemented because of encrypted directory and unknown stuff.
 // -----------------------------------------------------------------------------
-bool RffArchive::write(MemChunk& mc, bool update)
+bool RffArchive::write(MemChunk& mc)
 {
 	log::warning("Saving RFF files is not implemented because the format is not entirely known.");
 	return false;
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the grpfile
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool RffArchive::loadEntryData(ArchiveEntry* entry)
+bool RffArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open rfffile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("RffArchive::loadEntryData: Failed to open rff file {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Duke Nukem 3D grp archive
 // -----------------------------------------------------------------------------
-bool RffArchive::isRffArchive(MemChunk& mc)
+bool RffArchive::isRffArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

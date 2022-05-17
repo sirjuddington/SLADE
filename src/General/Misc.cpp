@@ -256,7 +256,7 @@ bool misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 		return false;
 
 	// Read palette colours
-	const uint8_t* playpal_dat = playpal->rawData(true);
+	const uint8_t* playpal_dat = playpal->rawData();
 	uint8_t        max         = 0;
 	for (int a = 0; a < 768; ++a)
 		if (playpal_dat[a] > max)

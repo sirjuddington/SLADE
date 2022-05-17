@@ -85,7 +85,7 @@ bool SFont::loadFont2(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Loads a monochrome vga font. Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool SFont::loadFontM(MemChunk& mc)
+bool SFont::loadFontM(const MemChunk& mc)
 {
 	// Check data
 	if (mc.size() == 0 || mc.size() % 256)
@@ -161,7 +161,7 @@ bool SFont::loadBMF(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Draws the character [c] with the font, in [colour]
 // -----------------------------------------------------------------------------
-void SFont::drawCharacter(char c, ColRGBA colour)
+void SFont::drawCharacter(char c, ColRGBA colour) const
 {
 	// Check texture is loaded
 	if (!gl::Texture::isLoaded(texture_))
@@ -200,7 +200,7 @@ void SFont::drawCharacter(char c, ColRGBA colour)
 // -----------------------------------------------------------------------------
 // Draws the string [str] with the font, in [colour] with [align]ment
 // -----------------------------------------------------------------------------
-void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align)
+void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align) const
 {
 	// Check texture is loaded
 	if (!gl::Texture::isLoaded(texture_))
@@ -214,10 +214,10 @@ void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align)
 
 	// Determine string length (for alignment)
 	int total_width = 0;
-	for (unsigned a = 0; a < str.size(); a++)
+	for (char c : str)
 	{
 		// Get character
-		auto& ch = characters_[(uint8_t)str[a]];
+		auto& ch = characters_[static_cast<uint8_t>(c)];
 
 		// Increment total width
 		if (ch.width_ > 0 || ch.height_ > 0)
@@ -235,10 +235,10 @@ void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align)
 
 	// Draw the string
 	unsigned xoff = 0;
-	for (unsigned a = 0; a < str.size(); a++)
+	for (char c : str)
 	{
 		// Get character
-		auto& ch = characters_[(uint8_t)str[a]];
+		auto& ch = characters_[static_cast<uint8_t>(c)];
 		if (ch.width_ == 0 && ch.height_ == 0)
 		{
 			xoff += spacing_;

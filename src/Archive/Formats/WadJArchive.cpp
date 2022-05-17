@@ -43,7 +43,6 @@ using namespace slade;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Bool, iwad_lock)
 
 
@@ -66,7 +65,7 @@ WadJArchive::WadJArchive()
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadJArchive::open(MemChunk& mc)
+bool WadJArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -96,12 +95,13 @@ bool WadJArchive::open(MemChunk& mc)
 	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
+	MemChunk edata;
 	mc.seek(dir_offset, SEEK_SET);
 	ui::setSplashProgressMessage("Reading wad archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
 		char     name[9] = "";
@@ -163,15 +163,36 @@ bool WadJArchive::open(MemChunk& mc)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, actualsize);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk();
 
 		if (jaguarencrypt)
 		{
 			nlump->setEncryption(ArchiveEntry::Encryption::Jaguar);
-			nlump->exProp("FullSize") = (int)size;
+			nlump->exProp("FullSize") = size;
 		}
+
+		// Read entry data if it isn't zero-sized
+		if (size > 0)
+		{
+			// Read the entry data
+			edata.clear();
+			mc.exportMemChunk(edata, offset, size);
+			if (nlump->encryption() != ArchiveEntry::Encryption::None)
+			{
+				if (nlump->exProps().contains("FullSize") && (unsigned)(nlump->exProp<int>("FullSize")) > size)
+					edata.reSize((nlump->exProp<int>("FullSize")), true);
+				if (!jaguarDecode(edata))
+					log::warning(
+						"{}: {} (following {}), did not decode properly",
+						d,
+						nlump->name(),
+						d > 0 ? entryAt(d - 1)->name() : "nothing");
+			}
+			nlump->importMemChunk(edata);
+		}
+
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -182,51 +203,7 @@ bool WadJArchive::open(MemChunk& mc)
 	updateNamespaces();
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)num_lumps)));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			edata.clear();
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			if (entry->encryption() != ArchiveEntry::Encryption::None)
-			{
-				if (entry->exProps().contains("FullSize")
-					&& (unsigned)(entry->exProp<int>("FullSize")) > entry->size())
-					edata.reSize((entry->exProp<int>("FullSize")), true);
-				if (!jaguarDecode(edata))
-					log::warning(
-						"{}: {} (following {}), did not decode properly",
-						a,
-						entry->name(),
-						a > 0 ? entryAt(a - 1)->name() : "nothing");
-			}
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Lock entry if IWAD
-		if (wad_type_[0] == 'I' && iwad_lock)
-			entry->lock();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Detect maps (will detect map entry types)
 	ui::setSplashProgressMessage("Detecting maps");
@@ -245,7 +222,7 @@ bool WadJArchive::open(MemChunk& mc)
 // Writes the wad archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadJArchive::write(MemChunk& mc, bool update)
+bool WadJArchive::write(MemChunk& mc)
 {
 	// Determine directory offset & individual lump offsets
 	uint32_t      dir_offset = 12;
@@ -253,7 +230,7 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
-		setEntryOffset(entry, dir_offset);
+		entry->setOffsetOnDisk(dir_offset);
 		dir_offset += entry->size();
 	}
 
@@ -286,7 +263,7 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 	{
 		entry        = entryAt(l);
 		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-		long offset  = wxINT32_SWAP_ON_LE(getEntryOffset(entry));
+		long offset  = wxINT32_SWAP_ON_LE(entry->offsetOnDisk());
 		long size    = wxINT32_SWAP_ON_LE(entry->size());
 
 		for (size_t c = 0; c < entry->name().length() && c < 8; c++)
@@ -296,11 +273,8 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 		mc.write(&size, 4);
 		mc.write(name, 8);
 
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)wxINT32_SWAP_ON_LE(offset);
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setSizeOnDisk();
 	}
 
 	return true;
@@ -328,7 +302,7 @@ string WadJArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Jaguar Doom wad archive
 // -----------------------------------------------------------------------------
-bool WadJArchive::isWadJArchive(MemChunk& mc)
+bool WadJArchive::isWadJArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

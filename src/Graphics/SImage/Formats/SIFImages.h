@@ -10,7 +10,7 @@ public:
 	uint32_t  crc() const { return crc_; }
 	MemChunk& data() { return data_; }
 
-	void read(MemChunk& mc)
+	void read(const MemChunk& mc)
 	{
 		// Read size and chunk name
 		mc.read(&size_, 4);
@@ -79,7 +79,7 @@ class SIFPng : public SIFormat
 public:
 	SIFPng() : SIFormat("png", "PNG", "png") {}
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		// Reset MemChunk
 		mc.seek(0, SEEK_SET);
@@ -96,7 +96,7 @@ public:
 		return false;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info inf;
 		inf.format = "png";
@@ -230,7 +230,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Create FreeImage bitmap from entry data
 		auto mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());

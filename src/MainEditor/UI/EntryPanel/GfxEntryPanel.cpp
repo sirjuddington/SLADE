@@ -156,10 +156,12 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 	sizer_bottom_->Add(zc_zoom_, 0, wxEXPAND);
 
 	// Refresh when main palette changed
-	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]() {
-		updateImagePalette();
-		gfx_canvas_->Refresh();
-	});
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+		[this]()
+		{
+			updateImagePalette();
+			gfx_canvas_->Refresh();
+		});
 
 	// Custom menu
 	menu_custom_ = new wxMenu();
@@ -248,7 +250,8 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 	image->setYOffset(spin_yoffset_->GetValue());
 
 	// Write new image data if modified
-	bool ok = true;
+	MemChunk data{ entry.data() };
+	bool     ok = true;
 	if (image_data_modified_)
 	{
 		auto* format = image->format();
@@ -269,7 +272,7 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 				log::info("Image converted for writing");
 			}
 
-			if (format->saveImage(*image, entry.data(), &gfx_canvas_->palette()))
+			if (format->saveImage(*image, data, &gfx_canvas_->palette()))
 				ok = true;
 			else
 				error = "Error writing image";
@@ -277,8 +280,8 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 
 		if (ok)
 		{
-			// Set modified
-			entry.setState(ArchiveEntry::State::Modified);
+			// Update entry data
+			entry.importMemChunk(data);
 
 			// Re-detect type
 			auto* oldtype = entry.type();
@@ -291,30 +294,43 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 		else
 			wxMessageBox(wxString("Cannot save changes to image: ") + error, "Error", wxICON_ERROR);
 	}
+
 	// Otherwise just set offsets
 	else
 	{
-		gfx::setImageOffsets(entry.data(), spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
-		entry.setState(ArchiveEntry::State::Modified);
+		gfx::setImageOffsets(data, spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
+		auto* etype = entry.type();
+		entry.importMemChunk(data);
+		entry.setType(etype, entry.typeReliability());
 	}
 
-	// Apply alPh/tRNS options
+
+	// PNG: Apply alPh/tRNS options
 	if (entry.type()->formatId() == "img_png")
 	{
+		auto* etype    = entry.type();
+		bool  modified = false;
+
 		// alPh
 		const bool alph = gfx::pngGetalPh(entry.data());
 		if (alph != menu_custom_->IsChecked(SAction::fromId("pgfx_alph")->wxId()))
 		{
-			gfx::pngSetalPh(entry.data(), !alph);
-			entry.setState(ArchiveEntry::State::Modified);
+			gfx::pngSetalPh(data, !alph);
+			modified = true;
 		}
 
 		// tRNS
 		const bool trns = gfx::pngGettRNS(entry.data());
 		if (trns != menu_custom_->IsChecked(SAction::fromId("pgfx_trns")->wxId()))
 		{
-			gfx::pngSettRNS(entry.data(), !trns);
-			entry.setState(ArchiveEntry::State::Modified);
+			gfx::pngSettRNS(data, !trns);
+			modified = true;
+		}
+
+		if (modified)
+		{
+			entry.importMemChunk(data);
+			entry.setType(etype, entry.typeReliability());
 		}
 	}
 
@@ -452,10 +468,15 @@ bool GfxEntryPanel::extractAll() const
 		// Only process images that actually contain some pixels
 		if (image()->width() && image()->height())
 		{
+			MemChunk img_data;
+			SIFormat::getFormat("png")->saveImage(*image(), img_data, &gfx_canvas_->palette());
+
 			auto newimg = parent->addNewEntry(newname.ToStdString(), index + pos + 1, entry->parentDir());
 			if (newimg == nullptr)
 				return false;
-			SIFormat::getFormat("png")->saveImage(*image(), newimg->data(), &gfx_canvas_->palette());
+
+			newimg->importMemChunk(img_data);
+
 			EntryType::detectEntryType(*newimg);
 			pos++;
 		}

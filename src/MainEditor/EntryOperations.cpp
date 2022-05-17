@@ -1360,10 +1360,18 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	errors.Clear();
 
 	// Rewrite special chunks
-	if (alphchunk)
-		gfx::pngSetalPh(entry->data(), true);
-	if (grabchunk)
-		gfx::setImageOffsets(entry->data(), grabchunk->x, grabchunk->y);
+	if (alphchunk || grabchunk)
+	{
+		MemChunk data(entry->data());
+
+		if (alphchunk)
+			gfx::pngSetalPh(data, true);
+		if (grabchunk)
+			gfx::setImageOffsets(data, grabchunk->x, grabchunk->y);
+
+		entry->importMemChunk(data);
+	}
+
 
 	log::info(
 		"PNG {} size {} =PNGCrush=> {} =PNGout=> {} =DeflOpt=> {} =+grAb/alPh=> {}",
@@ -1391,9 +1399,9 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Converts ANIMATED data in [entry] to ANIMDEFS format, written to [animdata]
 // -----------------------------------------------------------------------------
-bool entryoperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool animdefs)
+bool entryoperations::convertAnimated(const ArchiveEntry* entry, MemChunk* animdata, bool animdefs)
 {
-	auto                 cursor = entry->rawData(true);
+	auto                 cursor = entry->rawData();
 	auto                 eodata = cursor + entry->size();
 	const AnimatedEntry* animation;
 	wxString             conversion;
@@ -1449,9 +1457,9 @@ bool entryoperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, b
 // -----------------------------------------------------------------------------
 // Converts SWITCHES data in [entry] to ANIMDEFS format, written to [animdata]
 // -----------------------------------------------------------------------------
-bool entryoperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, bool animdefs)
+bool entryoperations::convertSwitches(const ArchiveEntry* entry, MemChunk* animdata, bool animdefs)
 {
-	auto                 cursor = entry->rawData(true);
+	auto                 cursor = entry->rawData();
 	auto                 eodata = cursor + entry->size();
 	const SwitchesEntry* switches;
 	wxString             conversion;
@@ -1497,7 +1505,7 @@ bool entryoperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, b
 // -----------------------------------------------------------------------------
 // Converts SWANTBLS data in [entry] to binary format, written to [animdata]
 // -----------------------------------------------------------------------------
-bool entryoperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, bool switches)
+bool entryoperations::convertSwanTbls(const ArchiveEntry* entry, MemChunk* animdata, bool switches)
 {
 	Tokenizer tz(Tokenizer::Hash);
 	tz.openMem(entry->data(), entry->name());

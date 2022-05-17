@@ -75,7 +75,7 @@ int HexTable::GetNumberCols()
 // -----------------------------------------------------------------------------
 wxString HexTable::GetValue(int row, int col)
 {
-	if (unsigned(row * hex_grid_width + col) >= data_.size())
+	if (static_cast<unsigned>(row * hex_grid_width + col) >= data_.size())
 		return "";
 	else
 	{
@@ -109,7 +109,7 @@ void HexTable::SetValue(int row, int col, const wxString& value)
 // -----------------------------------------------------------------------------
 // Loads in data from [mc]. Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool HexTable::loadData(MemChunk& mc)
+bool HexTable::loadData(const MemChunk& mc)
 {
 	data_.importMem(mc.data(), mc.size());
 	return true;
@@ -295,7 +295,7 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 // Loads data from [mc] into the hex grid
 // -----------------------------------------------------------------------------
-bool HexEditorPanel::loadData(MemChunk& mc)
+bool HexEditorPanel::loadData(const MemChunk& mc)
 {
 	if (table_hex_->loadData(mc))
 	{

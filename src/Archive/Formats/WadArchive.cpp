@@ -99,14 +99,6 @@ vector<SpecialNS> special_namespaces = {
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, archive_load_data)
-
-
-// -----------------------------------------------------------------------------
-//
 // Functions
 //
 // -----------------------------------------------------------------------------
@@ -115,7 +107,7 @@ namespace
 // -----------------------------------------------------------------------------
 // Returns true if [entry] is a namespace marker (*_START / *_END)
 // -----------------------------------------------------------------------------
-bool isNamespaceEntry(ArchiveEntry* entry)
+bool isNamespaceEntry(const ArchiveEntry* entry)
 {
 	return strutil::endsWith(entry->upperName(), "_START") || strutil::endsWith(entry->upperName(), "_END");
 }
@@ -135,30 +127,6 @@ bool isNamespaceEntry(ArchiveEntry* entry)
 bool WadArchive::isWritable()
 {
 	return !(iwad_ && iwad_lock);
-}
-
-// -----------------------------------------------------------------------------
-// Returns the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-uint32_t WadArchive::getEntryOffset(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return 0;
-
-	return (uint32_t)entry->exProp<int>("Offset");
-}
-
-// -----------------------------------------------------------------------------
-// Sets the file byte offset for [entry]
-// -----------------------------------------------------------------------------
-void WadArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return;
-
-	entry->exProp("Offset") = (int)offset;
 }
 
 // -----------------------------------------------------------------------------
@@ -317,7 +285,7 @@ bool WadArchive::hasFlatHack()
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadArchive::open(MemChunk& mc)
+bool WadArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -354,12 +322,13 @@ bool WadArchive::open(MemChunk& mc)
 	vector<uint32_t> offsets;
 
 	// Read the directory
+	MemChunk edata;
 	mc.seek(dir_offset, SEEK_SET);
 	ui::setSplashProgressMessage("Reading wad archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		ui::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
 		char     name[9] = "";
@@ -445,15 +414,36 @@ bool WadArchive::open(MemChunk& mc)
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
-		nlump->setLoaded(false);
-		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setOffsetOnDisk(offset);
+		nlump->setSizeOnDisk(size);
 
 		if (jaguarencrypt)
 		{
 			nlump->setEncryption(ArchiveEntry::Encryption::Jaguar);
 			nlump->exProp("FullSize") = (int)size;
 		}
+
+		// Read entry data if it isn't zero-sized
+		if (nlump->size() > 0)
+		{
+			// Read the entry data
+			mc.exportMemChunk(edata, offset, size);
+			if (nlump->encryption() != ArchiveEntry::Encryption::None)
+			{
+				if (nlump->exProps().contains("FullSize")
+					&& static_cast<unsigned>(nlump->exProp<int>("FullSize")) > size)
+					edata.reSize((nlump->exProp<int>("FullSize")), true);
+				if (!WadJArchive::jaguarDecode(edata))
+					log::warning(
+						"{}: {} (following {}), did not decode properly",
+						d,
+						nlump->name(),
+						d > 0 ? entryAt(d - 1)->name() : "nothing");
+			}
+			nlump->importMemChunk(edata);
+		}
+
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -464,46 +454,7 @@ bool WadArchive::open(MemChunk& mc)
 	updateNamespaces();
 
 	// Detect all entry types
-	MemChunk edata;
-	ui::setSplashProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++)
-	{
-		// Update splash window progress
-		ui::setSplashProgress((((float)a / (float)numEntries())));
-
-		// Get entry
-		auto entry = entryAt(a);
-
-		// Read entry data if it isn't zero-sized
-		if (entry->size() > 0)
-		{
-			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			if (entry->encryption() != ArchiveEntry::Encryption::None)
-			{
-				if (entry->exProps().contains("FullSize")
-					&& static_cast<unsigned>(entry->exProp<int>("FullSize")) > entry->size())
-					edata.reSize((entry->exProp<int>("FullSize")), true);
-				if (!WadJArchive::jaguarDecode(edata))
-					log::warning(
-						"{}: {} (following {}), did not decode properly",
-						a,
-						entry->name(),
-						a > 0 ? entryAt(a - 1)->name() : "nothing");
-			}
-			entry->importMemChunk(edata);
-		}
-
-		// Detect entry type
-		EntryType::detectEntryType(*entry);
-
-		// Unload entry data if needed
-		if (!archive_load_data)
-			entry->unloadData();
-
-		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
-	}
+	detectAllEntryTypes();
 
 	// Identify #included lumps (DECORATE, GLDEFS, etc.)
 	detectIncludes();
@@ -525,7 +476,7 @@ bool WadArchive::open(MemChunk& mc)
 // Writes the wad archive to a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadArchive::write(MemChunk& mc, bool update)
+bool WadArchive::write(MemChunk& mc)
 {
 	// Don't write if iwad
 	if (iwad_ && iwad_lock)
@@ -540,7 +491,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
-		setEntryOffset(entry, dir_offset);
+		entry->setOffsetOnDisk(dir_offset);
 		dir_offset += entry->size();
 	}
 
@@ -576,7 +527,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 	{
 		entry        = entryAt(l);
 		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-		long offset  = getEntryOffset(entry);
+		long offset  = entry->offsetOnDisk();
 		long size    = entry->size();
 
 		for (size_t c = 0; c < entry->name().length() && c < 8; c++)
@@ -586,11 +537,8 @@ bool WadArchive::write(MemChunk& mc, bool update)
 		mc.write(&size, 4);
 		mc.write(name, 8);
 
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)offset;
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setSizeOnDisk();
 	}
 
 	return true;
@@ -600,7 +548,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 // Writes the wad archive to a file at [filename]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadArchive::write(string_view filename, bool update)
+bool WadArchive::write(string_view filename)
 {
 	// Don't write if iwad
 	if (iwad_ && iwad_lock)
@@ -624,7 +572,7 @@ bool WadArchive::write(string_view filename, bool update)
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
-		setEntryOffset(entry, dir_offset);
+		entry->setOffsetOnDisk(dir_offset);
 		dir_offset += entry->size();
 	}
 
@@ -654,7 +602,7 @@ bool WadArchive::write(string_view filename, bool update)
 	{
 		entry        = entryAt(l);
 		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-		long offset  = getEntryOffset(entry);
+		long offset  = entry->offsetOnDisk();
 		long size    = entry->size();
 
 		for (size_t c = 0; c < entry->name().length() && c < 8; c++)
@@ -664,11 +612,8 @@ bool WadArchive::write(string_view filename, bool update)
 		file.Write(&size, 4);
 		file.Write(name, 8);
 
-		if (update)
-		{
-			entry->setState(ArchiveEntry::State::Unmodified);
-			entry->exProp("Offset") = (int)offset;
-		}
+		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setSizeOnDisk();
 	}
 
 	file.Close();
@@ -677,42 +622,12 @@ bool WadArchive::write(string_view filename, bool update)
 }
 
 // -----------------------------------------------------------------------------
-// Loads an entry's data from the wadfile
+// Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadArchive::loadEntryData(ArchiveEntry* entry)
+bool WadArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
-
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->size() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
-
-	// Open wadfile
-	wxFile file(filename_);
-
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		log::error("WadArchive::loadEntryData: Failed to open wadfile {}", filename_);
-		return false;
-	}
-
-	// Seek to lump offset in file and read it in
-	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->size());
-
-	// Set the lump to loaded
-	entry->setLoaded();
-	entry->setState(ArchiveEntry::State::Unmodified);
-
-	return true;
+	return genericLoadEntryData(entry, out);
 }
 
 // -----------------------------------------------------------------------------
@@ -929,7 +844,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 
 		// If we got to the end before we found ENDMAP, something is wrong
 		if (!entry)
-			return MapDesc();
+			return {};
 
 		// Set end entry
 		map.end = entry;
@@ -938,10 +853,9 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 	}
 
 	// Check for doom/hexen format map
-	uint8_t existing_map_lumps[NUMMAPLUMPS];
-	memset(existing_map_lumps, 0, NUMMAPLUMPS);
-	auto index = head_index + 1;
-	auto entry = dir->sharedEntryAt(index);
+	uint8_t existing_map_lumps[NUMMAPLUMPS] = {};
+	auto    index                           = head_index + 1;
+	auto    entry                           = dir->sharedEntryAt(index);
 	while (entry)
 	{
 		// Check that the entry is a valid map-related entry
@@ -1046,8 +960,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		// TODO maybe get rid of code duplication by calling getMapInfo() here too?
 
 		// Array to keep track of what doom/hexen map lumps have been found
-		uint8_t existing_map_lumps[NUMMAPLUMPS];
-		memset(existing_map_lumps, 0, NUMMAPLUMPS);
+		uint8_t existing_map_lumps[NUMMAPLUMPS] = {};
 
 		// Check if the current lump is a doom/hexen map lump
 		bool maplump_found = false;
@@ -1111,8 +1024,8 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				md.head = header_entry;         // Header lump
 				md.name = header_entry->name(); // Map title
 				md.end  = lastentryismapentry ? // End lump
-							 entry :
-							 rootDir()->sharedEntryAt(--index);
+                             entry :
+                              rootDir()->sharedEntryAt(--index);
 
 				// If BEHAVIOR lump exists, it's a hexen format map
 				if (existing_map_lumps[LUMP_BEHAVIOR])
@@ -1473,7 +1386,7 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Doom wad archive
 // -----------------------------------------------------------------------------
-bool WadArchive::isWadArchive(MemChunk& mc)
+bool WadArchive::isWadArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

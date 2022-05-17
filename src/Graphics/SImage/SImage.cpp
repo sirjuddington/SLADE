@@ -81,7 +81,7 @@ SImage::SImage(const SImage& img) :
 // Loads the image as RGBA data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::putRGBAData(MemChunk& mc, Palette* pal) const
+bool SImage::putRGBAData(MemChunk& mc, const Palette* pal) const
 {
 	// Check the image is valid
 	if (!isValid())
@@ -144,7 +144,7 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal) const
 // Loads the image as RGB data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::putRGBData(MemChunk& mc, Palette* pal) const
+bool SImage::putRGBData(MemChunk& mc, const Palette* pal) const
 {
 	// Check the image is valid
 	if (!isValid())
@@ -264,7 +264,7 @@ SImage::Info SImage::info() const
 // Returns the colour of the pixel at [x,y] in the image, or black+invisible if
 // out of range
 // -----------------------------------------------------------------------------
-ColRGBA SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
+ColRGBA SImage::pixelAt(unsigned x, unsigned y, const Palette* pal) const
 {
 	// Get pixel index
 	const unsigned index = y * stride() + x * bpp();
@@ -359,7 +359,7 @@ void SImage::clearData(bool clear_mask)
 // -----------------------------------------------------------------------------
 // Creates an empty image
 // -----------------------------------------------------------------------------
-void SImage::create(int width, int height, Type type, Palette* pal, int index, int numimages)
+void SImage::create(int width, int height, Type type, const Palette* pal, int index, int numimages)
 {
 	// Check valid width/height
 	if (width < 0 || height < 0)
@@ -397,7 +397,7 @@ void SImage::create(int width, int height, Type type, Palette* pal, int index, i
 // -----------------------------------------------------------------------------
 // Creates an empty image, initialising with properties from [info]
 // -----------------------------------------------------------------------------
-void SImage::create(Info info, Palette* pal)
+void SImage::create(const Info& info, const Palette* pal)
 {
 	// Normal creation
 	create(info.width, info.height, info.colformat, pal, info.imgindex, info.numimages);
@@ -472,8 +472,7 @@ short SImage::findUnusedColour() const
 		return -1;
 
 	// Init used colours list
-	uint8_t used[256];
-	memset(used, 0, 256);
+	uint8_t used[256] = {};
 
 	// Go through image data and mark used colours
 	for (int a = 0; a < width_ * height_; a++)
@@ -562,7 +561,7 @@ void SImage::shrinkPalette(Palette* pal)
 // -----------------------------------------------------------------------------
 // Copies all data and properties from [image]
 // -----------------------------------------------------------------------------
-bool SImage::copyImage(SImage* image)
+bool SImage::copyImage(const SImage* image)
 {
 	// Check image was given
 	if (!image)
@@ -598,7 +597,7 @@ bool SImage::copyImage(SImage* image)
 // Detects the format of [data] and, if it's a valid image format, loads it into
 // this image
 // -----------------------------------------------------------------------------
-bool SImage::open(MemChunk& data, int index, string_view type_hint)
+bool SImage::open(const MemChunk& data, int index, string_view type_hint)
 {
 	// Check with type hint format first
 	if (!type_hint.empty())
@@ -616,7 +615,7 @@ bool SImage::open(MemChunk& data, int index, string_view type_hint)
 // Converts the image to 32bpp (RGBA).
 // Returns false if the image was already 32bpp, true otherwise.
 // -----------------------------------------------------------------------------
-bool SImage::convertRGBA(Palette* pal)
+bool SImage::convertRGBA(const Palette* pal)
 {
 	// If it's already 32bpp do nothing
 	if (type_ == Type::RGBA)
@@ -650,7 +649,7 @@ bool SImage::convertRGBA(Palette* pal)
 // [pal_current] will be used as the image's current palette if it doesn't
 // already have one
 // -----------------------------------------------------------------------------
-bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
+bool SImage::convertPaletted(const Palette* pal_target, const Palette* pal_current)
 {
 	// Check image/parameters are valid
 	if (!isValid() || !pal_target)
@@ -709,7 +708,7 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 // Converts the image to an alpha map, generating alpha values from either pixel
 // brightness or existing alpha, depending on the value of [alpha_source]
 // -----------------------------------------------------------------------------
-bool SImage::convertAlphaMap(AlphaSource alpha_source, Palette* pal)
+bool SImage::convertAlphaMap(AlphaSource alpha_source, const Palette* pal)
 {
 	// Get RGBA data
 	MemChunk rgba;
@@ -747,7 +746,7 @@ bool SImage::convertAlphaMap(AlphaSource alpha_source, Palette* pal)
 // Changes the mask/alpha channel so that pixels that match [colour] are fully
 // transparent, and all other pixels fully opaque
 // -----------------------------------------------------------------------------
-bool SImage::maskFromColour(ColRGBA colour, Palette* pal)
+bool SImage::maskFromColour(ColRGBA colour, const Palette* pal)
 {
 	if (type_ == Type::PalMask)
 	{
@@ -794,7 +793,7 @@ bool SImage::maskFromColour(ColRGBA colour, Palette* pal)
 // Changes the mask/alpha channel so that each pixel's transparency matches its
 // brigntness level (where black is fully transparent)
 // -----------------------------------------------------------------------------
-bool SImage::maskFromBrightness(Palette* pal)
+bool SImage::maskFromBrightness(const Palette* pal)
 {
 	if (type_ == Type::PalMask)
 	{
@@ -1269,7 +1268,7 @@ bool SImage::setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight,
 {
 	if (ndata.empty())
 		return false;
-	
+
 	clearData();
 	type_   = ntype;
 	width_  = nwidth;
@@ -1285,7 +1284,7 @@ bool SImage::setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth,
 {
 	if (!ndata)
 		return false;
-	
+
 	clearData();
 	type_   = ntype;
 	width_  = nwidth;
@@ -1391,7 +1390,7 @@ bool SImage::applyTranslation(string_view tr, Palette* pal, bool truecolor)
 // If the image is paletted, the resulting pixel colour is converted to its
 // nearest match in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Palette* pal)
+bool SImage::drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, Palette* pal)
 {
 	// Check valid coords
 	if (x < 0 || y < 0 || x >= width_ || y >= height_)
@@ -1506,7 +1505,13 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 // [properties]. [pal_src] is used for the source image, and [pal_dest] is used
 // for the destination image, if either is paletted
 // -----------------------------------------------------------------------------
-bool SImage::drawImage(SImage& img, int x_pos, int y_pos, DrawProps& properties, Palette* pal_src, Palette* pal_dest)
+bool SImage::drawImage(
+	const SImage&    img,
+	int              x_pos,
+	int              y_pos,
+	const DrawProps& properties,
+	const Palette*   pal_src,
+	Palette*         pal_dest)
 {
 	// Check images
 	if (!data_.hasData() || !img.data_.hasData())

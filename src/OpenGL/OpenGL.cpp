@@ -144,7 +144,6 @@ bool gl::init()
 	info.vendor   = (const char*)glGetString(GL_VENDOR);
 	info.renderer = (const char*)glGetString(GL_RENDERER);
 	info.version  = (const char*)glGetString(GL_VERSION);
-	// info.extensions = (const char*)glGetString(GL_EXTENSIONS);
 
 	// Get OpenGL version
 	string_view temp{ info.version.data(), 3 };

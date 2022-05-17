@@ -44,15 +44,15 @@ public:
 	// Opening
 	bool open(string_view filename) override; // Open from File
 	bool open(ArchiveEntry* entry) override;  // Open from ArchiveEntry
-	bool open(MemChunk& mc) override;         // Open from MemChunk
+	bool open(const MemChunk& mc) override;   // Open from MemChunk
 
 	// Writing/Saving
-	bool write(MemChunk& mc, bool update = true) override;         // Write to MemChunk
-	bool write(string_view filename, bool update = true) override; // Write to File
-	bool save(string_view filename = "") override;                 // Save archive
+	bool write(MemChunk& mc) override;             // Write to MemChunk
+	bool write(string_view filename) override;     // Write to File
+	bool save(string_view filename = "") override; // Save archive
 
 	// Misc
-	bool loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Dir stuff
 	shared_ptr<ArchiveDir> removeDir(string_view path, ArchiveDir* base = nullptr) override;

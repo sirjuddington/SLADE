@@ -218,7 +218,7 @@ bool GfxConvDialog::nextItem()
 	// Update UI
 	updatePreviewGfx();
 	ui::setSplashProgressMessage(fmt::format("{} of {}", current_item_, items_.size()));
-	ui::setSplashProgress((float)current_item_ / (float)items_.size());
+	ui::setSplashProgress(current_item_, items_.size());
 
 	return ok;
 }
