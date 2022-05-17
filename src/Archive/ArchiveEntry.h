@@ -41,7 +41,7 @@ public:
 	const string&            upperName() const { return upper_name_; }
 	string_view              upperNameNoExt() const;
 	uint32_t                 size() const { return data_.size(); }
-	MemChunk&                data() { return data_; }
+	const MemChunk&          data() const { return data_; }
 	const uint8_t*           rawData() const { return data_.data(); }
 	ArchiveDir*              parentDir() const { return parent_; }
 	Archive*                 parent() const;

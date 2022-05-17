@@ -48,7 +48,7 @@ using namespace slade;
 // Reads lfd format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool LfdArchive::open(MemChunk& mc)
+bool LfdArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -241,7 +241,7 @@ bool LfdArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Dark Forces lfd archive
 // -----------------------------------------------------------------------------
-bool LfdArchive::isLfdArchive(MemChunk& mc)
+bool LfdArchive::isLfdArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

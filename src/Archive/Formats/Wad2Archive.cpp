@@ -48,7 +48,7 @@ using namespace slade;
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Wad2Archive::open(MemChunk& mc)
+bool Wad2Archive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -224,7 +224,7 @@ bool Wad2Archive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Quake wad2 archive
 // -----------------------------------------------------------------------------
-bool Wad2Archive::isWad2Archive(MemChunk& mc)
+bool Wad2Archive::isWad2Archive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

@@ -51,7 +51,7 @@ using namespace slade;
 // Reads disk format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DiskArchive::open(MemChunk& mc)
+bool DiskArchive::open(const MemChunk& mc)
 {
 	size_t mcsize = mc.size();
 
@@ -258,7 +258,7 @@ bool DiskArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Nerve disk archive
 // -----------------------------------------------------------------------------
-bool DiskArchive::isDiskArchive(MemChunk& mc)
+bool DiskArchive::isDiskArchive(const MemChunk& mc)
 {
 	// Check given data is valid
 	size_t mcsize = mc.size();

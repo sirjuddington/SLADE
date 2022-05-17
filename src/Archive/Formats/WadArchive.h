@@ -16,7 +16,7 @@ public:
 	void updateNamespaces();
 
 	// Opening
-	bool open(MemChunk& mc) override;
+	bool open(const MemChunk& mc) override;
 
 	// Writing/Saving
 	bool write(MemChunk& mc) override;         // Write to MemChunk
@@ -54,7 +54,7 @@ public:
 	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
 
 	// Static functions
-	static bool isWadArchive(MemChunk& mc);
+	static bool isWadArchive(const MemChunk& mc);
 	static bool isWadArchive(const string& filename);
 
 	static bool exportEntriesAsWad(string_view filename, vector<ArchiveEntry*> entries)

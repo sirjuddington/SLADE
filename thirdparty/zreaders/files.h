@@ -341,7 +341,7 @@ class MemoryReader : public FileReader
 {
 public:
 	MemoryReader (const char *buffer, long length);
-	MemoryReader (slade::MemChunk& mem);
+	MemoryReader (const slade::MemChunk& mem);
 	~MemoryReader ();
 
 	virtual long Tell () const;

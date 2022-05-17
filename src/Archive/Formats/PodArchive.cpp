@@ -68,7 +68,7 @@ void PodArchive::setId(string_view id)
 // Reads pod format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool PodArchive::open(MemChunk& mc)
+bool PodArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -219,7 +219,7 @@ bool PodArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid pod archive
 // -----------------------------------------------------------------------------
-bool PodArchive::isPodArchive(MemChunk& mc)
+bool PodArchive::isPodArchive(const MemChunk& mc)
 {
 	// Check size for header
 	if (mc.size() < 84)

@@ -48,7 +48,7 @@ using namespace slade;
 // Reads SiN format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool SiNArchive::open(MemChunk& mc)
+bool SiNArchive::open(const MemChunk& mc)
 {
 	// Check given data is valid
 	if (mc.size() < 12)
@@ -246,7 +246,7 @@ bool SiNArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Ritual Entertainment SiN archive
 // -----------------------------------------------------------------------------
-bool SiNArchive::isSiNArchive(MemChunk& mc)
+bool SiNArchive::isSiNArchive(const MemChunk& mc)
 {
 	// Check given data is valid
 	if (mc.size() < 12)

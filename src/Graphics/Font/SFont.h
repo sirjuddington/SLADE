@@ -38,12 +38,12 @@ public:
 	bool loadFont0(MemChunk& mc);
 	bool loadFont1(MemChunk& mc);
 	bool loadFont2(MemChunk& mc);
-	bool loadFontM(MemChunk& mc);
+	bool loadFontM(const MemChunk& mc);
 	bool loadBMF(MemChunk& mc);
 
 	// Rendering
-	void drawCharacter(char c, ColRGBA colour = ColRGBA::WHITE);
-	void drawString(string_view str, ColRGBA colour = ColRGBA::WHITE, Align align = Align::Left);
+	void drawCharacter(char c, ColRGBA colour = ColRGBA::WHITE) const;
+	void drawString(string_view str, ColRGBA colour = ColRGBA::WHITE, Align align = Align::Left) const;
 
 	// Static
 	static SFont& vgaFont();

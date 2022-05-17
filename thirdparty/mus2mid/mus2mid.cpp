@@ -343,7 +343,7 @@ static int GetMIDIChannel(int mus_channel)
     }
 }
 
-static bool ReadMusHeader(MemChunk& file, musheader *header)
+static bool ReadMusHeader(const MemChunk& file, musheader *header)
 {
  	if (file.size() >= sizeof(musheader)) {
 		const uint8_t * data = file.data();
@@ -359,7 +359,7 @@ static bool ReadMusHeader(MemChunk& file, musheader *header)
 //
 // Returns true if successful, false otherwise
 
-bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
+bool mus2mid(const MemChunk& musinput, MemChunk& midioutput)
 {
     // Header for the MUS file
     musheader musfileheader;

@@ -65,7 +65,7 @@ WadJArchive::WadJArchive()
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadJArchive::open(MemChunk& mc)
+bool WadJArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -302,7 +302,7 @@ string WadJArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Jaguar Doom wad archive
 // -----------------------------------------------------------------------------
-bool WadJArchive::isWadJArchive(MemChunk& mc)
+bool WadJArchive::isWadJArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

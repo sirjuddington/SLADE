@@ -6,14 +6,14 @@ public:
 		SIFormat(id, name, "dat", reliability)
 	{
 	}
-	~SIFRottGfx() = default;
+	~SIFRottGfx() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_rott")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -32,7 +32,7 @@ public:
 	}
 
 protected:
-	bool readRottGfx(SImage& image, MemChunk& data, bool mask)
+	bool readRottGfx(SImage& image, const MemChunk& data, bool mask)
 	{
 		// Get image info
 		auto info = this->info(data, 0);
@@ -48,7 +48,7 @@ protected:
 
 		// Read column offsets
 		vector<uint16_t> col_offsets(info.width);
-		auto             c_ofs = (const uint16_t*)(data.data() + hdr_size);
+		auto             c_ofs = reinterpret_cast<const uint16_t*>(data.data() + hdr_size);
 		for (int a = 0; a < info.width; a++)
 			col_offsets[a] = wxUINT16_SWAP_ON_BE(c_ofs[a]);
 
@@ -119,33 +119,33 @@ protected:
 		return true;
 	}
 
-	bool readImage(SImage& image, MemChunk& data, int index) override { return readRottGfx(image, data, false); }
+	bool readImage(SImage& image, const MemChunk& data, int index) override { return readRottGfx(image, data, false); }
 };
 
 class SIFRottGfxMasked : public SIFRottGfx
 {
 public:
 	SIFRottGfxMasked() : SIFRottGfx("rottmask", "ROTT Masked Gfx", 120) {}
-	~SIFRottGfxMasked() = default;
+	~SIFRottGfxMasked() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_rottmask")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_rottmask")->isThisFormat(mc); }
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override { return readRottGfx(image, data, true); }
+	bool readImage(SImage& image, const MemChunk& data, int index) override { return readRottGfx(image, data, true); }
 };
 
 class SIFRottLbm : public SIFormat
 {
 public:
 	SIFRottLbm() : SIFormat("rottlbm", "ROTT Lbm", "dat", 80) {}
-	~SIFRottLbm() = default;
+	~SIFRottLbm() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_rottlbm")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -160,7 +160,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);
@@ -208,8 +208,7 @@ protected:
 			else if (code > 0x80)
 			{
 				length = (code ^ 0xFF) + 2;
-				;
-				code = *read++;
+				code   = *read++;
 				memset(dest, code, length);
 				dest += length;
 			}
@@ -227,19 +226,19 @@ class SIFRottRaw : public SIFormat
 {
 public:
 	SIFRottRaw() : SIFormat("rottraw", "ROTT Raw", "dat", 101) {}
-	~SIFRottRaw() = default;
+	~SIFRottRaw() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_rottraw")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
 		// Read header
-		auto header   = (const gfx::PatchHeader*)mc.data();
+		auto header   = reinterpret_cast<const gfx::PatchHeader*>(mc.data());
 		info.width    = wxINT16_SWAP_ON_BE(header->width);
 		info.height   = wxINT16_SWAP_ON_BE(header->height);
 		info.offset_x = wxINT16_SWAP_ON_BE(header->left);
@@ -253,7 +252,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);
@@ -277,14 +276,14 @@ class SIFRottPic : public SIFormat
 {
 public:
 	SIFRottPic() : SIFormat("rottpic", "ROTT Picture", "dat", 60) {}
-	~SIFRottPic() = default;
+	~SIFRottPic() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_rottpic")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -300,7 +299,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);
@@ -344,11 +343,11 @@ class SIFRottWall : public SIFormat
 {
 public:
 	SIFRottWall() : SIFormat("rottwall", "ROTT Flat", "dat", 10) {}
-	~SIFRottWall() = default;
+	~SIFRottWall() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return (mc.size() == 4096 || mc.size() == 51200); }
+	bool isThisFormat(const MemChunk& mc) override { return (mc.size() == 4096 || mc.size() == 51200); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -364,7 +363,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);

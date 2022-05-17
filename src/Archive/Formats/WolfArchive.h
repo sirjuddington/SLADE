@@ -12,7 +12,7 @@ public:
 
 	// Opening
 	bool open(string_view filename) override; // Open from File
-	bool open(MemChunk& mc) override;         // Open from MemChunk
+	bool open(const MemChunk& mc) override;   // Open from MemChunk
 
 	bool openAudio(MemChunk& head, const MemChunk& data);
 	bool openGraph(const MemChunk& head, const MemChunk& data, MemChunk& dict);
@@ -35,7 +35,7 @@ public:
 	// Entry modification
 	bool renameEntry(ArchiveEntry* entry, string_view name) override;
 
-	static bool isWolfArchive(MemChunk& mc);
+	static bool isWolfArchive(const MemChunk& mc);
 	static bool isWolfArchive(const string& filename);
 
 private:

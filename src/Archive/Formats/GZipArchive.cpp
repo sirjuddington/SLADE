@@ -49,7 +49,7 @@ using namespace slade;
 // Reads gzip format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GZipArchive::open(MemChunk& mc)
+bool GZipArchive::open(const MemChunk& mc)
 {
 	// Minimal metadata size is 18: 10 for header, 8 for footer
 	size_t mds  = 18;
@@ -353,7 +353,7 @@ vector<ArchiveEntry*> GZipArchive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid GZip archive
 // -----------------------------------------------------------------------------
-bool GZipArchive::isGZipArchive(MemChunk& mc)
+bool GZipArchive::isGZipArchive(const MemChunk& mc)
 {
 	// Minimal metadata size is 18: 10 for header, 8 for footer
 	size_t mds  = 18;

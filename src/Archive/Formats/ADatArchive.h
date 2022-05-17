@@ -11,16 +11,16 @@ public:
 	~ADatArchive() override = default;
 
 	// Opening
-	bool open(MemChunk& mc) override; // Open from MemChunk
+	bool open(const MemChunk& mc) override; // Open from MemChunk
 
 	// Writing/Saving
-	bool write(MemChunk& mc) override;         // Write to MemChunk
+	bool write(MemChunk& mc) override; // Write to MemChunk
 
 	// Misc
 	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
-	static bool isADatArchive(MemChunk& mc);
+	static bool isADatArchive(const MemChunk& mc);
 	static bool isADatArchive(const string& filename);
 
 private:

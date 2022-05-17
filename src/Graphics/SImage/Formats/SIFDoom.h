@@ -8,9 +8,9 @@ public:
 		SIFormat(id, name, "lmp", reliability)
 	{
 	}
-	~SIFDoomGfx() = default;
+	~SIFDoomGfx() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		if (EntryDataFormat::format("img_doom")->isThisFormat(mc))
 			return true;
@@ -18,7 +18,7 @@ public:
 			return false;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -81,7 +81,7 @@ public:
 	}
 
 protected:
-	bool readDoomFormat(SImage& image, MemChunk& data, int version) const
+	bool readDoomFormat(SImage& image, const MemChunk& data, int version) const
 	{
 		// Init variables
 		auto gfx_data = data.data();
@@ -231,7 +231,7 @@ protected:
 		return true;
 	}
 
-	bool readImage(SImage& image, MemChunk& data, int index) override { return readDoomFormat(image, data, 0); }
+	bool readImage(SImage& image, const MemChunk& data, int index) override { return readDoomFormat(image, data, 0); }
 
 	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
 	{
@@ -432,11 +432,11 @@ class SIFDoomBetaGfx : public SIFDoomGfx
 {
 public:
 	SIFDoomBetaGfx() : SIFDoomGfx("doom_beta", "Doom Gfx (Beta)", 160) {}
-	~SIFDoomBetaGfx() = default;
+	~SIFDoomBetaGfx() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_beta")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_beta")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		auto info   = SIFDoomGfx::info(mc, index);
 		info.format = id_;
@@ -449,18 +449,18 @@ public:
 	bool     convertWritable(SImage& image, ConvertOptions opt) override { return false; }
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override { return readDoomFormat(image, data, 1); }
+	bool readImage(SImage& image, const MemChunk& data, int index) override { return readDoomFormat(image, data, 1); }
 };
 
 class SIFDoomAlphaGfx : public SIFDoomGfx
 {
 public:
 	SIFDoomAlphaGfx() : SIFDoomGfx("doom_alpha", "Doom Gfx (Alpha)", 100) {}
-	~SIFDoomAlphaGfx() = default;
+	~SIFDoomAlphaGfx() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_alpha")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_alpha")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -481,18 +481,18 @@ public:
 	bool     convertWritable(SImage& image, ConvertOptions opt) override { return false; }
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override { return readDoomFormat(image, data, 2); }
+	bool readImage(SImage& image, const MemChunk& data, int index) override { return readDoomFormat(image, data, 2); }
 };
 
 class SIFDoomArah : public SIFormat
 {
 public:
 	SIFDoomArah() : SIFormat("doom_arah", "Doom Arah", "lmp", 100) {}
-	~SIFDoomArah() = default;
+	~SIFDoomArah() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_arah")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_arah")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -512,7 +512,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Setup variables
 		gfx::PatchHeader header;
@@ -550,11 +550,11 @@ class SIFDoomSnea : public SIFormat
 {
 public:
 	SIFDoomSnea() : SIFormat("doom_snea", "Doom Snea", "lmp") {}
-	~SIFDoomSnea() = default;
+	~SIFDoomSnea() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_snea")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_snea")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -569,7 +569,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Check/setup size
 		uint8_t qwidth = data[0];
@@ -619,11 +619,11 @@ class SIFDoomPSX : public SIFormat
 {
 public:
 	SIFDoomPSX() : SIFormat("doom_psx", "Doom PSX", "lmp", 100) {}
-	~SIFDoomPSX() = default;
+	~SIFDoomPSX() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_psx")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_psx")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -678,7 +678,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Setup variables
 		gfx::PSXPicHeader header;
@@ -793,11 +793,11 @@ class SIFDoomJaguar : public SIFormat
 {
 public:
 	SIFDoomJaguar() : SIFormat("doom_jaguar", "Doom Jaguar", "lmp", 85) {}
-	~SIFDoomJaguar() = default;
+	~SIFDoomJaguar() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_jaguar")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_jaguar")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -817,7 +817,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Setup variables
 		gfx::JagPicHeader header;

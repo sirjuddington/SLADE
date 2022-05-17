@@ -332,11 +332,9 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 		Vec2i offsets = calculateOffsets(xoff, yoff, size.x, size.y);
 
 		// Write offsets to PNG data
-		if (gfx::pngSetgrAb(entry.data(), offsets.x, offsets.y))
-		{
-			// Data changed, update entry state
-			entry.setState(ArchiveEntry::State::Modified);
-		}
+		MemChunk data(entry.data());
+		if (gfx::pngSetgrAb(data, offsets.x, offsets.y))
+			entry.importMemChunk(data);
 	}
 	else
 		return false;

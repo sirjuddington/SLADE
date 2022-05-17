@@ -213,7 +213,7 @@ void TLFunction::clearCustomContexts()
 // -----------------------------------------------------------------------------
 // Returns true if the function has a context matching [name]
 // -----------------------------------------------------------------------------
-bool TLFunction::hasContext(string_view name)
+bool TLFunction::hasContext(string_view name) const
 {
 	for (auto& c : contexts_)
 		if (strutil::equalCI(c.context, name))
@@ -256,7 +256,7 @@ TextLanguage::~TextLanguage()
 // -----------------------------------------------------------------------------
 // Copies all language info to [copy]
 // -----------------------------------------------------------------------------
-void TextLanguage::copyTo(TextLanguage* copy)
+void TextLanguage::copyTo(TextLanguage* copy) const
 {
 	// Copy general attributes
 	copy->preferred_comments_ = preferred_comments_;
@@ -342,7 +342,7 @@ void TextLanguage::addFunction(
 // -----------------------------------------------------------------------------
 // Loads types (classes) and functions from parsed ZScript definitions [defs]
 // -----------------------------------------------------------------------------
-void TextLanguage::loadZScript(zscript::Definitions& defs, bool custom)
+void TextLanguage::loadZScript(const zscript::Definitions& defs, bool custom)
 {
 	// Classes
 	for (const auto& c : defs.classes())
@@ -383,7 +383,7 @@ void TextLanguage::loadZScript(zscript::Definitions& defs, bool custom)
 // Returns a string of all words of [type] in the language, separated by
 // spaces, which can be sent directly to scintilla for syntax hilighting
 // -----------------------------------------------------------------------------
-string TextLanguage::wordList(WordType type, bool include_custom)
+string TextLanguage::wordList(WordType type, bool include_custom) const
 {
 	// Init return string
 	string ret;
@@ -404,7 +404,7 @@ string TextLanguage::wordList(WordType type, bool include_custom)
 // Returns a string of all functions in the language, separated by spaces,
 // which can be sent directly to scintilla for syntax hilighting
 // -----------------------------------------------------------------------------
-string TextLanguage::functionsList()
+string TextLanguage::functionsList() const
 {
 	// Init return string
 	string ret;
@@ -459,7 +459,7 @@ string TextLanguage::autocompletionList(string_view start, bool include_custom)
 // -----------------------------------------------------------------------------
 // Returns a sorted wxArrayString of all words of [type] in the language
 // -----------------------------------------------------------------------------
-vector<string> TextLanguage::wordListSorted(WordType type, bool include_custom)
+vector<string> TextLanguage::wordListSorted(WordType type, bool include_custom) const
 {
 	// Get list
 	vector<string> list;
@@ -479,7 +479,7 @@ vector<string> TextLanguage::wordListSorted(WordType type, bool include_custom)
 // -----------------------------------------------------------------------------
 // Returns a sorted wxArrayString of all functions in the language
 // -----------------------------------------------------------------------------
-vector<string> TextLanguage::functionsSorted()
+vector<string> TextLanguage::functionsSorted() const
 {
 	// Get list
 	vector<string> list;
@@ -495,7 +495,7 @@ vector<string> TextLanguage::functionsSorted()
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a [type] word in this language, false otherwise
 // -----------------------------------------------------------------------------
-bool TextLanguage::isWord(WordType type, string_view word)
+bool TextLanguage::isWord(WordType type, string_view word) const
 {
 	for (auto& w : word_lists_[type].list)
 		if (w == word)
@@ -507,7 +507,7 @@ bool TextLanguage::isWord(WordType type, string_view word)
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a function in this language, false otherwise
 // -----------------------------------------------------------------------------
-bool TextLanguage::isFunction(string_view word)
+bool TextLanguage::isFunction(string_view word) const
 {
 	for (auto& func : functions_)
 		if (func.name() == word)
@@ -570,7 +570,7 @@ void TextLanguage::clearCustomDefs()
 // Reads in a text definition of a language. See slade.pk3 for
 // formatting examples
 // -----------------------------------------------------------------------------
-bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
+bool TextLanguage::readLanguageDefinition(const MemChunk& mc, string_view source)
 {
 	Tokenizer tz;
 
@@ -905,9 +905,10 @@ bool TextLanguage::loadLanguages()
 				defs.push_back(entry.get());
 
 			// Sort by name
-			std::sort(defs.begin(), defs.end(), [](ArchiveEntry* left, ArchiveEntry* right) {
-				return left->name() < right->name();
-			});
+			std::sort(
+				defs.begin(),
+				defs.end(),
+				[](const ArchiveEntry* left, const ArchiveEntry* right) { return left->name() < right->name(); });
 
 			// Read all (sorted) entries in this dir
 			for (auto* entry : defs)

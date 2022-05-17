@@ -11,14 +11,14 @@ public:
 	~RffArchive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;  // Open from MemChunk
-	bool write(MemChunk& mc) override; // Write to MemChunk
+	bool open(const MemChunk& mc) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;      // Write to MemChunk
 
 	// Misc
 	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
-	static bool isRffArchive(MemChunk& mc);
+	static bool isRffArchive(const MemChunk& mc);
 	static bool isRffArchive(const string& filename);
 };
 } // namespace slade

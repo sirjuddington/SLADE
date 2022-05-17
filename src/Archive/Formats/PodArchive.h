@@ -14,7 +14,7 @@ public:
 	void        setId(string_view id);
 
 	// Opening
-	bool open(MemChunk& mc) override;
+	bool open(const MemChunk& mc) override;
 
 	// Writing/Saving
 	bool write(MemChunk& mc) override;
@@ -23,7 +23,7 @@ public:
 	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
-	static bool isPodArchive(MemChunk& mc);
+	static bool isPodArchive(const MemChunk& mc);
 	static bool isPodArchive(const string& filename);
 
 private:

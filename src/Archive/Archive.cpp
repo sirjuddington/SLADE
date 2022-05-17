@@ -653,7 +653,7 @@ bool Archive::save(string_view filename)
 	// If the archive has a parent ArchiveEntry, just write it to that
 	if (auto parent = parent_.lock())
 	{
-		success = write(parent->data());
+		success = write(parent->data_);
 		parent->setState(ArchiveEntry::State::Modified);
 	}
 	else
@@ -1704,7 +1704,7 @@ void Archive::detectAllEntryTypes() const
 // -----------------------------------------------------------------------------
 // Reads archive formats configuration file from [mc]
 // -----------------------------------------------------------------------------
-bool Archive::loadFormats(MemChunk& mc)
+bool Archive::loadFormats(const MemChunk& mc)
 {
 	Parser parser;
 	if (!parser.parseText(mc))

@@ -71,7 +71,7 @@ EntryType* etype_map     = nullptr; // Map marker type
 // -----------------------------------------------------------------------------
 // Dumps entry type info to the log
 // -----------------------------------------------------------------------------
-void EntryType::dump()
+void EntryType::dump() const
 {
 	log::info("Type {} \"{}\", format {}, extension {}", id_, name_, format_->id(), extension_);
 	log::info("Size limit: {}-{}", size_limit_[0], size_limit_[1]);
@@ -97,7 +97,7 @@ void EntryType::dump()
 // -----------------------------------------------------------------------------
 // Copies this entry type's info/properties to [target]
 // -----------------------------------------------------------------------------
-void EntryType::copyToType(EntryType& target)
+void EntryType::copyToType(EntryType& target) const
 {
 	// Copy type attributes
 	target.editor_      = editor_;
@@ -358,7 +358,7 @@ void slade::EntryType::initTypes()
 // Reads in a block of entry type definitions. Returns false if there was a
 // parsing error, true otherwise
 // -----------------------------------------------------------------------------
-bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
+bool EntryType::readEntryTypeDefinition(const MemChunk& mc, string_view source)
 {
 	// Parse the definition
 	const Parser p;

@@ -47,7 +47,7 @@ using namespace slade;
 // Reads gob format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GobArchive::open(MemChunk& mc)
+bool GobArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -212,7 +212,7 @@ bool GobArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Dark Forces gob archive
 // -----------------------------------------------------------------------------
-bool GobArchive::isGobArchive(MemChunk& mc)
+bool GobArchive::isGobArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

@@ -475,7 +475,7 @@ MemoryReader::MemoryReader (const char *buffer, long length)
 	FilePos=0;
 }
 
-MemoryReader::MemoryReader (MemChunk& mem)
+MemoryReader::MemoryReader (const MemChunk& mem)
 {
 	bufptr=(const char *)mem.data();
 	Length=mem.size();

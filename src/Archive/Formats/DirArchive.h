@@ -44,7 +44,7 @@ public:
 	// Opening
 	bool open(string_view filename) override; // Open from File
 	bool open(ArchiveEntry* entry) override;  // Open from ArchiveEntry
-	bool open(MemChunk& mc) override;         // Open from MemChunk
+	bool open(const MemChunk& mc) override;   // Open from MemChunk
 
 	// Writing/Saving
 	bool write(MemChunk& mc) override;             // Write to MemChunk

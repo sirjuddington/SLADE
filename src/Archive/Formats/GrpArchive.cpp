@@ -47,7 +47,7 @@ using namespace slade;
 // Reads grp format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GrpArchive::open(MemChunk& mc)
+bool GrpArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -198,7 +198,7 @@ bool GrpArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Duke Nukem 3D grp archive
 // -----------------------------------------------------------------------------
-bool GrpArchive::isGrpArchive(MemChunk& mc)
+bool GrpArchive::isGrpArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 16)
@@ -378,7 +378,6 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 
 	// Clean up and go away
 	delete[] data;
-	mc.clear();
 }
 
 CONSOLE_COMMAND(palettedat, 0, false)
@@ -428,7 +427,6 @@ CONSOLE_COMMAND(palettedat, 0, false)
 
 	// Clean up and go away
 	delete[] data;
-	mc.clear();
 }
 
 CONSOLE_COMMAND(tablesdat, 0, false)
@@ -462,5 +460,4 @@ CONSOLE_COMMAND(tablesdat, 0, false)
 
 	// Clean up and go away
 	delete[] data;
-	mc.clear();
 }

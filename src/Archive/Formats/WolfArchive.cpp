@@ -444,7 +444,7 @@ bool WolfArchive::open(string_view filename)
 // Reads VSWAP Wolf format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::open(MemChunk& mc)
+bool WolfArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -978,7 +978,7 @@ bool WolfArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Wolfenstein VSWAP archive
 // -----------------------------------------------------------------------------
-bool WolfArchive::isWolfArchive(MemChunk& mc)
+bool WolfArchive::isWolfArchive(const MemChunk& mc)
 {
 	// Read Wolf header
 	mc.seek(0, SEEK_SET);

@@ -48,7 +48,7 @@ using namespace slade;
 // Reads bzip2 format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool BZip2Archive::open(MemChunk& mc)
+bool BZip2Archive::open(const MemChunk& mc)
 {
 	size_t size = mc.size();
 	if (size < 14)
@@ -215,7 +215,7 @@ vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid BZip2 archive
 // -----------------------------------------------------------------------------
-bool BZip2Archive::isBZip2Archive(MemChunk& mc)
+bool BZip2Archive::isBZip2Archive(const MemChunk& mc)
 {
 	size_t size = mc.size();
 	if (size < 14)

@@ -65,7 +65,7 @@ bool isNamespaceEntry(const ArchiveEntry* entry)
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DatArchive::open(MemChunk& mc)
+bool DatArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -529,7 +529,7 @@ bool DatArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Shadowcaster dat archive
 // -----------------------------------------------------------------------------
-bool DatArchive::isDatArchive(MemChunk& mc)
+bool DatArchive::isDatArchive(const MemChunk& mc)
 {
 	// Read dat header
 	mc.seek(0, SEEK_SET);

@@ -118,7 +118,7 @@ void bloodCrypt(void* data, int key, int len)
 // Reads rff format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool RffArchive::open(MemChunk& mc)
+bool RffArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -257,7 +257,7 @@ bool RffArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Duke Nukem 3D grp archive
 // -----------------------------------------------------------------------------
-bool RffArchive::isRffArchive(MemChunk& mc)
+bool RffArchive::isRffArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

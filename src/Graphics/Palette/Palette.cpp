@@ -82,7 +82,7 @@ Palette::Palette(unsigned size) : colours_{ size }, colours_hsl_{ size }, colour
 // -----------------------------------------------------------------------------
 // Reads colour information from raw data (MemChunk)
 // -----------------------------------------------------------------------------
-bool Palette::loadMem(MemChunk& mc)
+bool Palette::loadMem(const MemChunk& mc)
 {
 	// Check that the given data has at least 1 colour (3 bytes)
 	if (mc.size() < 3)
@@ -548,7 +548,7 @@ void Palette::copyPalette(const Palette* copy)
 // Returns the index of the colour in the palette matching [colour], or -1 if
 // no match is found
 // -----------------------------------------------------------------------------
-short Palette::findColour(const ColRGBA& colour)
+short Palette::findColour(const ColRGBA& colour) const
 {
 	for (int a = 0; a < 256; a++)
 	{
@@ -564,7 +564,7 @@ short Palette::findColour(const ColRGBA& colour)
 // palette colour at [index], using the colour matching method specified in
 // [match]
 // -----------------------------------------------------------------------------
-double Palette::colourDiff(const ColRGBA& rgb, const ColHSL& hsl, const ColLAB& lab, int index, ColourMatch match)
+double Palette::colourDiff(const ColRGBA& rgb, const ColHSL& hsl, const ColLAB& lab, int index, ColourMatch match) const
 {
 	double d1, d2, d3;
 	switch (match)
@@ -606,7 +606,7 @@ double Palette::colourDiff(const ColRGBA& rgb, const ColHSL& hsl, const ColLAB& 
 // -----------------------------------------------------------------------------
 // Returns the index of the closest colour in the palette to [colour]
 // -----------------------------------------------------------------------------
-short Palette::nearestColour(const ColRGBA& colour, ColourMatch match)
+short Palette::nearestColour(const ColRGBA& colour, ColourMatch match) const
 {
 	double min_d = 999999;
 	short  index = 0;
@@ -643,7 +643,7 @@ short Palette::nearestColour(const ColRGBA& colour, ColourMatch match)
 // -----------------------------------------------------------------------------
 // Returns the number of unique colors in a palette
 // -----------------------------------------------------------------------------
-size_t Palette::countColours()
+size_t Palette::countColours() const
 {
 	vector<ColRGBA> usedcolours(256);
 	memset(usedcolours.data(), 0, 256 * sizeof(ColRGBA));

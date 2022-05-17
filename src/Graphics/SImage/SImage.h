@@ -80,8 +80,8 @@ public:
 	bool isValid() const { return (width_ > 0 && height_ > 0 && data_.data()); }
 
 	Type      type() const { return type_; }
-	bool      putRGBAData(MemChunk& mc, Palette* pal = nullptr) const;
-	bool      putRGBData(MemChunk& mc, Palette* pal = nullptr) const;
+	bool      putRGBAData(MemChunk& mc, const Palette* pal = nullptr) const;
+	bool      putRGBData(MemChunk& mc, const Palette* pal = nullptr) const;
 	bool      putIndexedData(MemChunk& mc) const;
 	int       width() const { return width_; }
 	int       height() const { return height_; }
@@ -92,14 +92,14 @@ public:
 	Vec2i     offset() const { return { offset_x_, offset_y_ }; }
 	unsigned  stride() const;
 	uint8_t   bpp() const;
-	ColRGBA   pixelAt(unsigned x, unsigned y, Palette* pal = nullptr);
+	ColRGBA   pixelAt(unsigned x, unsigned y, const Palette* pal = nullptr) const;
 	uint8_t   pixelIndexAt(unsigned x, unsigned y) const;
 	SIFormat* format() const { return format_; }
 	Info      info() const;
 
 	void setXOffset(int offset);
 	void setYOffset(int offset);
-	void setPalette(Palette* pal)
+	void setPalette(const Palette* pal)
 	{
 		palette_.copyPalette(pal);
 		has_palette_ = true;
@@ -111,16 +111,16 @@ public:
 	// Misc
 	void   clear();
 	void   clear(Type new_type);
-	void   create(int width, int height, Type type, Palette* pal = nullptr, int index = 0, int numimages = 1);
-	void   create(Info info, Palette* pal = nullptr);
+	void   create(int width, int height, Type type, const Palette* pal = nullptr, int index = 0, int numimages = 1);
+	void   create(const Info& info, const Palette* pal = nullptr);
 	void   fillAlpha(uint8_t alpha = 0);
 	short  findUnusedColour() const;
 	size_t countColours() const;
 	void   shrinkPalette(Palette* pal = nullptr);
-	bool   copyImage(SImage* image);
+	bool   copyImage(const SImage* image);
 
 	// Image format reading
-	bool open(MemChunk& data, int index = 0, string_view type_hint = "");
+	bool open(const MemChunk& data, int index = 0, string_view type_hint = "");
 	bool loadFont0(const uint8_t* gfx_data, int size);
 	bool loadFont1(const uint8_t* gfx_data, int size);
 	bool loadFont2(const uint8_t* gfx_data, int size);
@@ -134,11 +134,11 @@ public:
 	bool loadSVG(const string& svg_text, int width, int height);
 
 	// Conversion stuff
-	bool convertRGBA(Palette* pal = nullptr);
-	bool convertPaletted(Palette* pal_target, Palette* pal_current = nullptr);
-	bool convertAlphaMap(AlphaSource alpha_source = AlphaSource::Brightness, Palette* pal = nullptr);
-	bool maskFromColour(ColRGBA colour, Palette* pal = nullptr);
-	bool maskFromBrightness(Palette* pal = nullptr);
+	bool convertRGBA(const Palette* pal = nullptr);
+	bool convertPaletted(const Palette* pal_target, const Palette* pal_current = nullptr);
+	bool convertAlphaMap(AlphaSource alpha_source = AlphaSource::Brightness, const Palette* pal = nullptr);
+	bool maskFromColour(ColRGBA colour, const Palette* pal = nullptr);
+	bool maskFromBrightness(const Palette* pal = nullptr);
 	bool cutoffMask(uint8_t threshold);
 
 	// Image modification
@@ -153,14 +153,14 @@ public:
 	bool setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth, int nheight, Type ntype);
 	bool applyTranslation(Translation* tr, Palette* pal = nullptr, bool truecolor = false);
 	bool applyTranslation(string_view tr, Palette* pal = nullptr, bool truecolor = false);
-	bool drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Palette* pal);
+	bool drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, Palette* pal);
 	bool drawImage(
-		SImage&    img,
-		int        x,
-		int        y,
-		DrawProps& properties,
-		Palette*   pal_src  = nullptr,
-		Palette*   pal_dest = nullptr);
+		const SImage&    img,
+		int              x,
+		int              y,
+		const DrawProps& properties,
+		const Palette*   pal_src  = nullptr,
+		Palette*         pal_dest = nullptr);
 	bool colourise(ColRGBA colour, Palette* pal = nullptr, int start = -1, int stop = -1);
 	bool tint(ColRGBA colour, float amount, Palette* pal = nullptr, int start = -1, int stop = -1);
 	bool adjust();

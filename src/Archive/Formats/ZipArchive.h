@@ -12,7 +12,7 @@ public:
 
 	// Opening
 	bool open(string_view filename) override; // Open from File
-	bool open(MemChunk& mc) override;         // Open from MemChunk
+	bool open(const MemChunk& mc) override;   // Open from MemChunk
 
 	// Writing/Saving
 	bool write(MemChunk& mc) override;         // Write to MemChunk
@@ -34,7 +34,7 @@ public:
 	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
 
 	// Static functions
-	static bool isZipArchive(MemChunk& mc);
+	static bool isZipArchive(const MemChunk& mc);
 	static bool isZipArchive(const string& filename);
 
 private:

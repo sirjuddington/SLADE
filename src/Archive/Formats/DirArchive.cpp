@@ -175,7 +175,7 @@ bool DirArchive::open(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Reads data from a MemChunk (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchive::open(MemChunk& mc)
+bool DirArchive::open(const MemChunk& mc)
 {
 	global::error = "Cannot open Folder Archive from memory";
 	return false;

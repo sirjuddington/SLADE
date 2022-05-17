@@ -7,9 +7,9 @@ class MUSDataFormat : public EntryDataFormat
 {
 public:
 	MUSDataFormat() : EntryDataFormat("midi_mus") {}
-	~MUSDataFormat() = default;
+	~MUSDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 16)
@@ -27,9 +27,9 @@ class MIDIDataFormat : public EntryDataFormat
 {
 public:
 	MIDIDataFormat() : EntryDataFormat("midi_smf") {}
-	~MIDIDataFormat() = default;
+	~MIDIDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 16)
@@ -47,9 +47,9 @@ class XMIDataFormat : public EntryDataFormat
 {
 public:
 	XMIDataFormat() : EntryDataFormat("midi_xmi") {}
-	~XMIDataFormat() = default;
+	~XMIDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 50)
@@ -72,9 +72,9 @@ class HMIDataFormat : public EntryDataFormat
 {
 public:
 	HMIDataFormat() : EntryDataFormat("midi_hmi") {}
-	~HMIDataFormat() = default;
+	~HMIDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 50)
@@ -93,9 +93,9 @@ class HMPDataFormat : public EntryDataFormat
 {
 public:
 	HMPDataFormat() : EntryDataFormat("midi_hmp") {}
-	~HMPDataFormat() = default;
+	~HMPDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 50)
@@ -114,9 +114,9 @@ class GMIDDataFormat : public EntryDataFormat
 {
 public:
 	GMIDDataFormat() : EntryDataFormat("midi_gmid") {}
-	~GMIDDataFormat() = default;
+	~GMIDDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 8)
@@ -138,9 +138,9 @@ class RMIDDataFormat : public EntryDataFormat
 {
 public:
 	RMIDDataFormat() : EntryDataFormat("midi_rmid") {}
-	~RMIDDataFormat() = default;
+	~RMIDDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 36)
@@ -161,9 +161,9 @@ class ITModuleDataFormat : public EntryDataFormat
 {
 public:
 	ITModuleDataFormat() : EntryDataFormat("mod_it") {}
-	~ITModuleDataFormat() = default;
+	~ITModuleDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 32)
@@ -181,9 +181,9 @@ class XMModuleDataFormat : public EntryDataFormat
 {
 public:
 	XMModuleDataFormat() : EntryDataFormat("mod_xm") {}
-	~XMModuleDataFormat() = default;
+	~XMModuleDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 80)
@@ -211,9 +211,9 @@ class S3MModuleDataFormat : public EntryDataFormat
 {
 public:
 	S3MModuleDataFormat() : EntryDataFormat("mod_s3m") {}
-	~S3MModuleDataFormat() = default;
+	~S3MModuleDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 60)
@@ -231,9 +231,9 @@ class MODModuleDataFormat : public EntryDataFormat
 {
 public:
 	MODModuleDataFormat() : EntryDataFormat("mod_mod") {}
-	~MODModuleDataFormat() = default;
+	~MODModuleDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 1084)
@@ -260,9 +260,9 @@ class OKTModuleDataFormat : public EntryDataFormat
 {
 public:
 	OKTModuleDataFormat() : EntryDataFormat("mod_okt") {}
-	~OKTModuleDataFormat() = default;
+	~OKTModuleDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 1360)
@@ -284,9 +284,9 @@ class IMFDataFormat : public EntryDataFormat
 {
 public:
 	IMFDataFormat() : EntryDataFormat("opl_imf") {}
-	~IMFDataFormat() = default;
+	~IMFDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 13)
@@ -306,9 +306,9 @@ class IMFRawDataFormat : public EntryDataFormat
 {
 public:
 	IMFRawDataFormat() : EntryDataFormat("opl_imf_raw") {}
-	~IMFRawDataFormat() = default;
+	~IMFRawDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		// Check size
@@ -369,9 +369,9 @@ class DRODataFormat : public EntryDataFormat
 {
 public:
 	DRODataFormat() : EntryDataFormat("opl_dro") {}
-	~DRODataFormat() = default;
+	~DRODataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 20)
@@ -394,9 +394,9 @@ class RAWDataFormat : public EntryDataFormat
 {
 public:
 	RAWDataFormat() : EntryDataFormat("opl_raw") {}
-	~RAWDataFormat() = default;
+	~RAWDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 10)
@@ -416,9 +416,9 @@ class DoomSoundDataFormat : public EntryDataFormat
 {
 public:
 	DoomSoundDataFormat() : EntryDataFormat("snd_doom") {}
-	~DoomSoundDataFormat() = default;
+	~DoomSoundDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 8)
@@ -443,9 +443,9 @@ class DoomMacSoundDataFormat : public EntryDataFormat
 {
 public:
 	DoomMacSoundDataFormat() : EntryDataFormat("snd_doom_mac") {}
-	~DoomMacSoundDataFormat() = default;
+	~DoomMacSoundDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 8)
@@ -473,9 +473,9 @@ class JaguarDoomSoundDataFormat : public EntryDataFormat
 {
 public:
 	JaguarDoomSoundDataFormat() : EntryDataFormat("snd_jaguar") {}
-	~JaguarDoomSoundDataFormat() = default;
+	~JaguarDoomSoundDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 28)
@@ -503,9 +503,9 @@ class DoomPCSpeakerDataFormat : public EntryDataFormat
 {
 public:
 	DoomPCSpeakerDataFormat() : EntryDataFormat("snd_speaker") {}
-	~DoomPCSpeakerDataFormat() = default;
+	~DoomPCSpeakerDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -537,7 +537,7 @@ public:
 #define WAVE_FMT_MP3 0x0055
 #define WAVE_FMT_XTNSBL 0xFFFE
 
-int RiffWavFormat(MemChunk& mc)
+int RiffWavFormat(const MemChunk& mc)
 {
 	// Check size
 	size_t size   = mc.size();
@@ -584,9 +584,9 @@ class WAVDataFormat : public EntryDataFormat
 {
 public:
 	WAVDataFormat() : EntryDataFormat("snd_wav") {}
-	~WAVDataFormat() = default;
+	~WAVDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		int fmt = RiffWavFormat(mc);
 		if (fmt == WAVE_FMT_UNK || fmt == WAVE_FMT_MP3)
@@ -601,9 +601,9 @@ class OggDataFormat : public EntryDataFormat
 {
 public:
 	OggDataFormat() : EntryDataFormat("snd_ogg") {}
-	~OggDataFormat() = default;
+	~OggDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 40)
@@ -626,9 +626,9 @@ class FLACDataFormat : public EntryDataFormat
 {
 public:
 	FLACDataFormat() : EntryDataFormat("snd_flac") {}
-	~FLACDataFormat() = default;
+	~FLACDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -645,11 +645,11 @@ class MP2DataFormat : public EntryDataFormat
 {
 public:
 	MP2DataFormat() : EntryDataFormat("snd_mp2") {}
-	~MP2DataFormat() = default;
+	~MP2DataFormat() override = default;
 
 	// This function was written using the following page as reference:
 	// http://mpgedit.org/mpgedit/mpeg_format/mpeghdr.htm
-	static int validMPEG(MemChunk& mc, uint8_t layer, size_t start)
+	static int validMPEG(const MemChunk& mc, uint8_t layer, size_t start)
 	{
 		// Check size
 		if (mc.size() > 4 + start)
@@ -682,16 +682,16 @@ public:
 		return MATCH_FALSE;
 	}
 
-	int isThisFormat(MemChunk& mc) override { return validMPEG(mc, 2, audio::checkForTags(mc)); }
+	int isThisFormat(const MemChunk& mc) override { return validMPEG(mc, 2, audio::checkForTags(mc)); }
 };
 
 class MP3DataFormat : public EntryDataFormat
 {
 public:
 	MP3DataFormat() : EntryDataFormat("snd_mp3") {}
-	~MP3DataFormat() = default;
+	~MP3DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// MP3 data might be contained in RIFF-WAV files.
 		// Officially, they are legit .WAV files, just using MP3 instead of PCM.
@@ -709,9 +709,9 @@ class VocDataFormat : public EntryDataFormat
 {
 public:
 	VocDataFormat() : EntryDataFormat("snd_voc") {}
-	~VocDataFormat() = default;
+	~VocDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 26)
@@ -738,18 +738,18 @@ class WolfSoundDataFormat : public EntryDataFormat
 {
 public:
 	WolfSoundDataFormat() : EntryDataFormat("snd_wolf") {}
-	~WolfSoundDataFormat() = default;
+	~WolfSoundDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override { return (mc.size() > 0 ? MATCH_MAYBE : MATCH_FALSE); }
+	int isThisFormat(const MemChunk& mc) override { return (mc.size() > 0 ? MATCH_MAYBE : MATCH_FALSE); }
 };
 
 class AudioTPCSoundDataFormat : public EntryDataFormat
 {
 public:
 	AudioTPCSoundDataFormat() : EntryDataFormat("snd_audiot") {}
-	~AudioTPCSoundDataFormat() = default;
+	~AudioTPCSoundDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 8)
@@ -774,9 +774,9 @@ class AudioTAdlibSoundDataFormat : public EntryDataFormat
 {
 public:
 	AudioTAdlibSoundDataFormat() : EntryDataFormat("opl_audiot") {}
-	~AudioTAdlibSoundDataFormat() = default;
+	~AudioTAdlibSoundDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 24 && size < 1024)
@@ -805,9 +805,9 @@ class BloodSFXDataFormat : public EntryDataFormat
 {
 public:
 	BloodSFXDataFormat() : EntryDataFormat("snd_bloodsfx") {}
-	~BloodSFXDataFormat() = default;
+	~BloodSFXDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size, must be between 22 and 29 included
 		if (mc.size() > 21 && mc.size() < 30)
@@ -835,9 +835,9 @@ class SunSoundDataFormat : public EntryDataFormat
 {
 public:
 	SunSoundDataFormat() : EntryDataFormat("snd_sun") {}
-	~SunSoundDataFormat() = default;
+	~SunSoundDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 32)
@@ -869,9 +869,9 @@ class AIFFSoundDataFormat : public EntryDataFormat
 {
 public:
 	AIFFSoundDataFormat() : EntryDataFormat("snd_aiff") {}
-	~AIFFSoundDataFormat() = default;
+	~AIFFSoundDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 50)
@@ -923,9 +923,9 @@ class AYDataFormat : public EntryDataFormat
 {
 public:
 	AYDataFormat() : EntryDataFormat("gme_ay") {}
-	~AYDataFormat() = default;
+	~AYDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 20)
@@ -942,9 +942,9 @@ class GBSDataFormat : public EntryDataFormat
 {
 public:
 	GBSDataFormat() : EntryDataFormat("gme_gbs") {}
-	~GBSDataFormat() = default;
+	~GBSDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 112)
@@ -961,9 +961,9 @@ class GYMDataFormat : public EntryDataFormat
 {
 public:
 	GYMDataFormat() : EntryDataFormat("gme_gym") {}
-	~GYMDataFormat() = default;
+	~GYMDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 428)
@@ -980,9 +980,9 @@ class HESDataFormat : public EntryDataFormat
 {
 public:
 	HESDataFormat() : EntryDataFormat("gme_hes") {}
-	~HESDataFormat() = default;
+	~HESDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 32)
@@ -999,9 +999,9 @@ class KSSDataFormat : public EntryDataFormat
 {
 public:
 	KSSDataFormat() : EntryDataFormat("gme_kss") {}
-	~KSSDataFormat() = default;
+	~KSSDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 16)
@@ -1019,9 +1019,9 @@ class NSFDataFormat : public EntryDataFormat
 {
 public:
 	NSFDataFormat() : EntryDataFormat("gme_nsf") {}
-	~NSFDataFormat() = default;
+	~NSFDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 128)
@@ -1038,9 +1038,9 @@ class NSFEDataFormat : public EntryDataFormat
 {
 public:
 	NSFEDataFormat() : EntryDataFormat("gme_nsfe") {}
-	~NSFEDataFormat() = default;
+	~NSFEDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 5)
@@ -1057,9 +1057,9 @@ class SAPDataFormat : public EntryDataFormat
 {
 public:
 	SAPDataFormat() : EntryDataFormat("gme_sap") {}
-	~SAPDataFormat() = default;
+	~SAPDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 16)
@@ -1077,9 +1077,9 @@ class SPCDataFormat : public EntryDataFormat
 {
 public:
 	SPCDataFormat() : EntryDataFormat("gme_spc") {}
-	~SPCDataFormat() = default;
+	~SPCDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 256)
@@ -1096,9 +1096,9 @@ class VGMDataFormat : public EntryDataFormat
 {
 public:
 	VGMDataFormat() : EntryDataFormat("gme_vgm") {}
-	~VGMDataFormat() = default;
+	~VGMDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 64)
@@ -1115,9 +1115,9 @@ class VGZDataFormat : public EntryDataFormat
 {
 public:
 	VGZDataFormat() : EntryDataFormat("gme_vgz") {}
-	~VGZDataFormat() = default;
+	~VGZDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 64)

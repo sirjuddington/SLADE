@@ -14,8 +14,8 @@ public:
 	void updateNamespaces();
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;  // Open from MemChunk
-	bool write(MemChunk& mc) override; // Write to MemChunk
+	bool open(const MemChunk& mc) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;      // Write to MemChunk
 
 	// Misc
 	bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
@@ -40,7 +40,7 @@ public:
 	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override;
 	string detectNamespace(ArchiveEntry* entry) override;
 
-	static bool isDatArchive(MemChunk& mc);
+	static bool isDatArchive(const MemChunk& mc);
 	static bool isDatArchive(const string& filename);
 
 private:

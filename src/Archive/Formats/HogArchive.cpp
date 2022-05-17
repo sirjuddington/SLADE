@@ -75,7 +75,7 @@ void decodeTxb(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Opposite of DecodeTXB. Caller should delete[] returned pointer.
 // -----------------------------------------------------------------------------
-uint8_t* encodeTxb(MemChunk& mc)
+uint8_t* encodeTxb(const MemChunk& mc)
 {
 	const uint8_t*       data    = mc.data();
 	const uint8_t* const dataend = data + mc.size();
@@ -114,7 +114,7 @@ bool shouldEncodeTxb(string_view name)
 // Reads hog format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool HogArchive::open(MemChunk& mc)
+bool HogArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -321,7 +321,7 @@ bool HogArchive::renameEntry(ArchiveEntry* entry, string_view name)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Descent hog archive
 // -----------------------------------------------------------------------------
-bool HogArchive::isHogArchive(MemChunk& mc)
+bool HogArchive::isHogArchive(const MemChunk& mc)
 {
 	// Check size
 	size_t size = mc.size();

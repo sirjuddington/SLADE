@@ -84,7 +84,7 @@ public:
 
 	void setCaseSensitive(bool cs) { case_sensitive_ = cs; }
 
-	bool parseText(MemChunk& mc, string_view source = "memory chunk") const;
+	bool parseText(const MemChunk& mc, string_view source = "memory chunk") const;
 	bool parseText(string_view text, string_view source = "string") const;
 	void define(string_view def);
 	bool defined(string_view def) const;

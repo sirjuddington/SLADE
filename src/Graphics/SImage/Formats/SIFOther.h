@@ -3,14 +3,14 @@ class SIFHalfLifeTex : public SIFormat
 {
 public:
 	SIFHalfLifeTex() : SIFormat("hlt", "Half-Life Texture", "hlt", 20) {}
-	~SIFHalfLifeTex() {}
+	~SIFHalfLifeTex() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_hlt")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -25,7 +25,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);
@@ -82,14 +82,14 @@ class SIFSCSprite : public SIFormat
 {
 public:
 	SIFSCSprite() : SIFormat("scsprite", "Shadowcaster Sprite", "dat", 110) {}
-	~SIFSCSprite() = default;
+	~SIFSCSprite() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_scsprite")->isThisFormat(mc) >= EntryDataFormat::MATCH_UNLIKELY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		int          size = mc.size();
 		SImage::Info info;
@@ -133,7 +133,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get width & height
 		auto info = this->info(data, index);
@@ -163,7 +163,7 @@ protected:
 				for (int z = 0; z < colheight; ++z)
 				{
 					int mypixel = ((z + startheight) * info.width) + h;
-					if (mypixel >= info.width * info.height || unsigned(colstart + 2 + z) >= data.size())
+					if (mypixel >= info.width * info.height || static_cast<unsigned>(colstart + 2 + z) >= data.size())
 						return false;
 					if (mypixel < 0)
 						return false;
@@ -185,14 +185,14 @@ class SIFSCGfx : public SIFormat
 {
 public:
 	SIFSCGfx() : SIFormat("scgfx", "Shadowcaster Gfx", "dat", 100) {}
-	~SIFSCGfx() = default;
+	~SIFSCGfx() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_scgfx")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -212,7 +212,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Setup variables
 		gfx::PatchHeader header;
@@ -255,9 +255,9 @@ public:
 		extension_   = "dat";
 		reliability_ = 101;
 	}
-	~SIFSCWall() = default;
+	~SIFSCWall() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		if (EntryDataFormat::format("img_scwall")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
@@ -265,7 +265,7 @@ public:
 			return false;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -279,9 +279,9 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
-		static const int HEADEROFFSET = 130;
+		static constexpr int HEADEROFFSET = 130;
 
 		// Determine width and height
 		int height = data[0] * 4;
@@ -323,14 +323,14 @@ class SIFAnaMip : public SIFormat
 {
 public:
 	SIFAnaMip() : SIFormat("mipimage", "Amulets & Armor", "dat", 100) {}
-	~SIFAnaMip() = default;
+	~SIFAnaMip() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_mipimage")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -348,13 +348,13 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);
 
 		// Check data
-		if (data.size() < unsigned(4 + (info.width * info.height)))
+		if (data.size() < static_cast<unsigned>(4 + (info.width * info.height)))
 			return false;
 
 		// Create image
@@ -372,14 +372,14 @@ class SIFBuildTile : public SIFormat
 {
 public:
 	SIFBuildTile() : SIFormat("arttile", "Build ART", "art", 100) {}
-	~SIFBuildTile() = default;
+	~SIFBuildTile() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_arttile")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -390,7 +390,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get info and data start
 		SImage::Info info;
@@ -432,7 +432,7 @@ protected:
 	}
 
 private:
-	unsigned getTileInfo(SImage::Info& info, MemChunk& mc, int index) const
+	unsigned getTileInfo(SImage::Info& info, const MemChunk& mc, int index) const
 	{
 		size_t headeroffset = 0;
 
@@ -501,14 +501,14 @@ class SIFHeretic2M8 : public SIFormat
 {
 public:
 	SIFHeretic2M8() : SIFormat("m8", "Heretic 2 8bpp", "dat", 80) {}
-	~SIFHeretic2M8() = default;
+	~SIFHeretic2M8() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_m8")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -518,7 +518,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get miplevel info and offset
 		SImage::Info info;
@@ -550,7 +550,7 @@ protected:
 	}
 
 private:
-	unsigned getLevelInfo(SImage::Info& info, MemChunk& mc, int index) const
+	unsigned getLevelInfo(SImage::Info& info, const MemChunk& mc, int index) const
 	{
 		// Check size
 		if (mc.size() < 1040)
@@ -578,14 +578,14 @@ class SIFHeretic2M32 : public SIFormat
 {
 public:
 	SIFHeretic2M32() : SIFormat("m32", "Heretic 2 32bpp", "dat", 80) {}
-	~SIFHeretic2M32() = default;
+	~SIFHeretic2M32() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_m32")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -595,7 +595,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get miplevel info and offset
 		SImage::Info info;
@@ -616,7 +616,7 @@ protected:
 	}
 
 private:
-	unsigned getLevelInfo(SImage::Info& info, MemChunk& mc, int index) const
+	unsigned getLevelInfo(SImage::Info& info, const MemChunk& mc, int index) const
 	{
 		// Check size
 		if (mc.size() < 968)
@@ -643,14 +643,14 @@ class SIFWolfPic : public SIFormat
 {
 public:
 	SIFWolfPic() : SIFormat("wolfpic", "Wolf3d Pic", "dat", 200) {}
-	~SIFWolfPic() = default;
+	~SIFWolfPic() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_wolfpic")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -666,7 +666,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);
@@ -702,14 +702,14 @@ class SIFWolfSprite : public SIFormat
 {
 public:
 	SIFWolfSprite() : SIFormat("wolfsprite", "Wolf3d Sprite", "dat", 200) {}
-	~SIFWolfSprite() = default;
+	~SIFWolfSprite() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		return EntryDataFormat::format("img_wolfsprite")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -730,7 +730,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);
@@ -741,11 +741,11 @@ protected:
 		auto img_mask = imageMask(image);
 
 		// Read data
-		auto     cmdptr = (const uint16_t*)(data.data() + 4);
+		auto     cmdptr = reinterpret_cast<const uint16_t*>(data.data() + 4);
 		uint32_t i, x, y;
 		for (x = 0; x < (unsigned)info.width; ++x)
 		{
-			auto linecmds = (const int16_t*)(data.data() + wxINT16_SWAP_ON_BE(*cmdptr));
+			auto linecmds = reinterpret_cast<const int16_t*>(data.data() + wxINT16_SWAP_ON_BE(*cmdptr));
 			cmdptr++;
 			for (; wxINT16_SWAP_ON_BE(*linecmds); linecmds += 3)
 			{

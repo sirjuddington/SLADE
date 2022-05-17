@@ -93,7 +93,7 @@ EntryDataFormat* registerDataFormat(string_view id)
 // To be overridden by specific data types, returns true if the data in [mc]
 // matches the data format
 // -----------------------------------------------------------------------------
-int EntryDataFormat::isThisFormat(MemChunk& mc)
+int EntryDataFormat::isThisFormat(const MemChunk& mc)
 {
 	return MATCH_TRUE;
 }
@@ -147,7 +147,7 @@ EntryDataFormat* EntryDataFormat::textFormat()
 // -----------------------------------------------------------------------------
 // Parses a user data format definition (unimplemented, currently)
 // -----------------------------------------------------------------------------
-bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
+bool EntryDataFormat::readDataFormatDefinition(const MemChunk& mc)
 {
 	// Parse the definition
 	Parser p;
@@ -179,9 +179,9 @@ class AnyDataFormat : public EntryDataFormat
 {
 public:
 	AnyDataFormat() : EntryDataFormat("any") {}
-	~AnyDataFormat() = default;
+	~AnyDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override { return MATCH_FALSE; }
+	int isThisFormat(const MemChunk& mc) override { return MATCH_FALSE; }
 };
 
 // Format enumeration moved to separate files

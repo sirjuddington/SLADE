@@ -11,14 +11,14 @@ public:
 	~LfdArchive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;  // Open from MemChunk
-	bool write(MemChunk& mc) override; // Write to MemChunk
+	bool open(const MemChunk& mc) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;      // Write to MemChunk
 
 	// Misc
 	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
-	static bool isLfdArchive(MemChunk& mc);
+	static bool isLfdArchive(const MemChunk& mc);
 	static bool isLfdArchive(const string& filename);
 };
 } // namespace slade

@@ -11,7 +11,7 @@ public:
 	~BZip2Archive() override = default;
 
 	// Opening
-	bool open(MemChunk& mc) override;
+	bool open(const MemChunk& mc) override;
 
 	// Writing/Saving
 	bool write(MemChunk& mc) override;
@@ -49,7 +49,7 @@ public:
 	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
 
 	// Static functions
-	static bool isBZip2Archive(MemChunk& mc);
+	static bool isBZip2Archive(const MemChunk& mc);
 	static bool isBZip2Archive(const string& filename);
 };
 } // namespace slade

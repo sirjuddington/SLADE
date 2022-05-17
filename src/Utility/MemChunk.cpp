@@ -254,7 +254,7 @@ bool MemChunk::importFileStreamWx(wxFile& file, uint32_t len)
 	return true;
 }
 
-bool MemChunk::importFileStream(SFile& file, unsigned len)
+bool MemChunk::importFileStream(const SFile& file, unsigned len)
 {
 	// Check file
 	if (!file.isOpen())
@@ -458,7 +458,7 @@ bool MemChunk::write(const void* data, uint32_t size, uint32_t start)
 // Reads [count] bytes of data from the current position into [buffer].
 // Returns false if attempting to read data outside of the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::read(void* buffer, unsigned count)
+bool MemChunk::read(void* buffer, unsigned count) const
 {
 	// Check pointers
 	if (!data_ || !buffer)
@@ -480,7 +480,7 @@ bool MemChunk::read(void* buffer, unsigned count)
 // Reads [size] bytes of data from [start] into [buf].
 // Returns false if attempting to read data outside of the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::read(void* buf, uint32_t size, uint32_t start)
+bool MemChunk::read(void* buf, uint32_t size, uint32_t start) const
 {
 	// Check options
 	if (start + size > size_)
@@ -494,7 +494,7 @@ bool MemChunk::read(void* buf, uint32_t size, uint32_t start)
 // -----------------------------------------------------------------------------
 // Moves the current position, works the same as fseek() etc.
 // -----------------------------------------------------------------------------
-bool MemChunk::seek(uint32_t offset, uint32_t start)
+bool MemChunk::seek(uint32_t offset, uint32_t start) const
 {
 	if (start == SEEK_CUR)
 	{
@@ -527,7 +527,7 @@ bool MemChunk::seek(uint32_t offset, uint32_t start)
 // Reads [size] bytes of data into [mc].
 // Returns false if attempting to read outside the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::readMC(MemChunk& mc, uint32_t size)
+bool MemChunk::readMC(MemChunk& mc, uint32_t size) const
 {
 	if (cur_ptr_ + size >= size_)
 		return false;

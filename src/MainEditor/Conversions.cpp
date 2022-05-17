@@ -46,14 +46,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::conversion
 {
-const int16_t SIGN_BIT   = 0x80; // Sign bit = values are otherwise treated as unsigned).
-const int16_t QUANT_MASK = 0xf;  // Quantization field mask.
-const int16_t SEG_SHIFT  = 4;    // Left shift for segment number.
-const int16_t SEG_MASK   = 0x70; // Segment field mask.
-const int16_t BIAS       = 0x84; // Bias for linear code.
-const uint8_t WAV_PCM    = 1;
-const uint8_t WAV_ALAW   = 6;
-const uint8_t WAV_ULAW   = 7;
+constexpr int16_t SIGN_BIT   = 0x80; // Sign bit = values are otherwise treated as unsigned).
+constexpr int16_t QUANT_MASK = 0xf;  // Quantization field mask.
+constexpr int16_t SEG_SHIFT  = 4;    // Left shift for segment number.
+constexpr int16_t SEG_MASK   = 0x70; // Segment field mask.
+constexpr int16_t BIAS       = 0x84; // Bias for linear code.
+constexpr uint8_t WAV_PCM    = 1;
+constexpr uint8_t WAV_ALAW   = 6;
+constexpr uint8_t WAV_ULAW   = 7;
 } // namespace slade::conversion
 CVAR(Bool, dmx_padding, true, CVar::Flag::Save)
 CVAR(Int, wolfsnd_rate, 7042, CVar::Flag::Save)
@@ -197,8 +197,8 @@ uint8_t pcm24to8bits(int32_t val)
 // -----------------------------------------------------------------------------
 uint8_t pcm32to8bits(int32_t val)
 {
-	static const int32_t mod = 0x800000FF;
-	int32_t              ret = (val >> 8);
+	static constexpr int32_t mod = 0x800000FF;
+	int32_t                  ret = (val >> 8);
 	if ((val & mod) > 127)
 		ret++;
 	else if ((val & mod) < -128)
@@ -266,7 +266,7 @@ int16_t mulawToLinear(uint8_t ulaw)
 // -----------------------------------------------------------------------------
 // Converts doom sound data [in] to wav format, written to [out]
 // -----------------------------------------------------------------------------
-bool conversion::doomSndToWav(MemChunk& in, MemChunk& out)
+bool conversion::doomSndToWav(const MemChunk& in, MemChunk& out)
 {
 	// --- Read Doom sound ---
 
@@ -368,7 +368,7 @@ bool conversion::doomSndToWav(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Converts wav data [in] to doom sound format, written to [out]
 // -----------------------------------------------------------------------------
-bool conversion::wavToDoomSnd(MemChunk& in, MemChunk& out)
+bool conversion::wavToDoomSnd(const MemChunk& in, MemChunk& out)
 {
 	// --- Read WAV ---
 	WavChunk chunk;
@@ -535,7 +535,7 @@ bool conversion::wavToDoomSnd(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Converts mus data [in] to midi, written to [out]
 // -----------------------------------------------------------------------------
-bool conversion::musToMidi(MemChunk& in, MemChunk& out)
+bool conversion::musToMidi(const MemChunk& in, MemChunk& out)
 {
 	return mus2mid(in, out);
 }
@@ -544,7 +544,7 @@ bool conversion::musToMidi(MemChunk& in, MemChunk& out)
 // Converts MIDI-like music data [in] to midi, written to [out], using ZDoom
 // MIDI system
 // -----------------------------------------------------------------------------
-bool conversion::zmusToMidi(MemChunk& in, MemChunk& out, int subsong, int* num_tracks)
+bool conversion::zmusToMidi(const MemChunk& in, MemChunk& out, int subsong, int* num_tracks)
 {
 	return zmus2mid(in, out, subsong, num_tracks);
 }
@@ -552,7 +552,7 @@ bool conversion::zmusToMidi(MemChunk& in, MemChunk& out, int subsong, int* num_t
 // -----------------------------------------------------------------------------
 // Creative Voice files to wav format
 // -----------------------------------------------------------------------------
-bool conversion::vocToWav(MemChunk& in, MemChunk& out)
+bool conversion::vocToWav(const MemChunk& in, MemChunk& out)
 {
 	if (in.size() < 26 || in[19] != 26 || in[20] != 26 || in[21] != 0
 		|| (0x1234 + ~(in.readL16(22)) != (in.readL16(24))))
@@ -729,7 +729,7 @@ bool conversion::vocToWav(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Blood SFX files to wav format
 // -----------------------------------------------------------------------------
-bool conversion::bloodToWav(ArchiveEntry* in, MemChunk& out)
+bool conversion::bloodToWav(const ArchiveEntry* in, MemChunk& out)
 {
 	auto& mc = in->data();
 	if (mc.size() < 22 || mc.size() > 29 || ((mc[12] != 1 && mc[12] != 5) || mc[mc.size() - 1] != 0))
@@ -800,7 +800,7 @@ bool conversion::bloodToWav(ArchiveEntry* in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Converts Wolf3D sound data [in] to wav format, written to [out]
 // -----------------------------------------------------------------------------
-bool conversion::wolfSndToWav(MemChunk& in, MemChunk& out)
+bool conversion::wolfSndToWav(const MemChunk& in, MemChunk& out)
 {
 	// --- Read Wolf sound ---
 
@@ -851,7 +851,7 @@ bool conversion::wolfSndToWav(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Converts Jaguar Doom sound data [in] to wav format, written to [out]
 // -----------------------------------------------------------------------------
-bool conversion::jagSndToWav(MemChunk& in, MemChunk& out)
+bool conversion::jagSndToWav(const MemChunk& in, MemChunk& out)
 {
 	// --- Read Jaguar Doom sound ---
 
@@ -920,7 +920,7 @@ bool conversion::jagSndToWav(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Dark Forces GMID file to Standard MIDI File
 // -----------------------------------------------------------------------------
-bool conversion::gmidToMidi(MemChunk& in, MemChunk& out)
+bool conversion::gmidToMidi(const MemChunk& in, MemChunk& out)
 {
 	// Skip beginning of file and look for MThd chunk
 	// (the standard MIDI header)
@@ -952,7 +952,7 @@ bool conversion::gmidToMidi(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // RMID file to Standard MIDI File
 // -----------------------------------------------------------------------------
-bool conversion::rmidToMidi(MemChunk& in, MemChunk& out)
+bool conversion::rmidToMidi(const MemChunk& in, MemChunk& out)
 {
 	// Skip beginning of file and look for MThd chunk
 	// (the standard MIDI header)
@@ -993,7 +993,7 @@ bool conversion::rmidToMidi(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Automatizes this: http://zdoom.org/wiki/Using_OPL_music_in_ZDoom
 // -----------------------------------------------------------------------------
-bool conversion::addImfHeader(MemChunk& in, MemChunk& out)
+bool conversion::addImfHeader(const MemChunk& in, MemChunk& out)
 {
 	if (in.size() == 0)
 		return false;
@@ -1051,23 +1051,23 @@ bool conversion::addImfHeader(MemChunk& in, MemChunk& out)
 // http://www.shikadi.net/moddingwiki/AudioT_Format and
 // http://www.shikadi.net/moddingwiki/Inverse_Frequency_Sound_format
 // -----------------------------------------------------------------------------
-bool conversion::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
+bool conversion::spkSndToWav(const MemChunk& in, MemChunk& out, bool audioT)
 {
-	static const double   ORIG_RATE     = 140.0;
-	static const int      FACTOR        = 315; // 315*140 = 44100
-	static const double   FREQ          = 1193181.0;
-	static const double   RATE          = (ORIG_RATE * FACTOR);
-	static const int      PC_VOLUME     = 20;
-	static const uint16_t counters[128] = {
-		0,    6818, 6628, 6449, 6279, 6087, 5906, 5736, 5575, 5423, 5279, 5120, 4971, 4830, 4697, 4554,
-		4435, 4307, 4186, 4058, 3950, 3836, 3728, 3615, 3519, 3418, 3323, 3224, 3131, 3043, 2960, 2875,
-		2794, 2711, 2633, 2560, 2485, 2415, 2348, 2281, 2213, 2153, 2089, 2032, 1975, 1918, 1864, 1810,
-		1757, 1709, 1659, 1612, 1565, 1521, 1478, 1435, 1395, 1355, 1316, 1280, 1242, 1207, 1173, 1140,
-		1107, 1075, 1045, 1015, 986,  959,  931,  905,  879,  854,  829,  806,  783,  760,  739,  718,
-		697,  677,  658,  640,  621,  604,  586,  570,  553,  538,  522,  507,  493,  479,  465,  452,
-		439,  427,  415,  403,  391,  380,  369,  359,  348,  339,  329,  319,  310,  302,  293,  285,
-		276,  269,  261,  253,  246,  239,  232,  226,  219,  213,  207,  201,  195,  190,  184,  179
-	};
+	constexpr double   ORIG_RATE     = 140.0;
+	constexpr int      FACTOR        = 315; // 315*140 = 44100
+	constexpr double   FREQ          = 1193181.0;
+	constexpr double   RATE          = (ORIG_RATE * FACTOR);
+	constexpr int      PC_VOLUME     = 20;
+	constexpr uint16_t counters[128] = { 0,    6818, 6628, 6449, 6279, 6087, 5906, 5736, 5575, 5423, 5279, 5120, 4971,
+										 4830, 4697, 4554, 4435, 4307, 4186, 4058, 3950, 3836, 3728, 3615, 3519, 3418,
+										 3323, 3224, 3131, 3043, 2960, 2875, 2794, 2711, 2633, 2560, 2485, 2415, 2348,
+										 2281, 2213, 2153, 2089, 2032, 1975, 1918, 1864, 1810, 1757, 1709, 1659, 1612,
+										 1565, 1521, 1478, 1435, 1395, 1355, 1316, 1280, 1242, 1207, 1173, 1140, 1107,
+										 1075, 1045, 1015, 986,  959,  931,  905,  879,  854,  829,  806,  783,  760,
+										 739,  718,  697,  677,  658,  640,  621,  604,  586,  570,  553,  538,  522,
+										 507,  493,  479,  465,  452,  439,  427,  415,  403,  391,  380,  369,  359,
+										 348,  339,  329,  319,  310,  302,  293,  285,  276,  269,  261,  253,  246,
+										 239,  232,  226,  219,  213,  207,  201,  195,  190,  184,  179 };
 
 	// --- Read Doom sound ---
 	// -- Also AudioT sound --
@@ -1150,7 +1150,7 @@ bool conversion::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 		}
 		else
 		{
-			memset(nsamples.data() + size_t(s * FACTOR), 128, FACTOR);
+			memset(nsamples.data() + static_cast<size_t>(s * FACTOR), 128, FACTOR);
 			phase_tic = 0;
 		}
 	}
@@ -1198,7 +1198,7 @@ bool conversion::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 // -----------------------------------------------------------------------------
 // Converts Sun/NeXT sound data [in] to wav format, written to [out]
 // -----------------------------------------------------------------------------
-bool conversion::auSndToWav(MemChunk& in, MemChunk& out)
+bool conversion::auSndToWav(const MemChunk& in, MemChunk& out)
 {
 	// --- Read Sun sound ---
 
@@ -1306,16 +1306,16 @@ bool conversion::auSndToWav(MemChunk& in, MemChunk& out)
 	return true;
 }
 
-bool conversion::voxToKvx(MemChunk& in, MemChunk& out)
+bool conversion::voxToKvx(const MemChunk& in, MemChunk& out)
 {
 #define AT(x, y, z) (((x)*length + (y)) * height + (z))
 
-	const uint8_t LEFT   = 1;
-	const uint8_t RIGHT  = 2;
-	const uint8_t FRONT  = 4;
-	const uint8_t BACK   = 8;
-	const uint8_t TOP    = 16;
-	const uint8_t BOTTOM = 32;
+	constexpr uint8_t LEFT   = 1;
+	constexpr uint8_t RIGHT  = 2;
+	constexpr uint8_t FRONT  = 4;
+	constexpr uint8_t BACK   = 8;
+	constexpr uint8_t TOP    = 16;
+	constexpr uint8_t BOTTOM = 32;
 
 	VoxHeader voxHeader;
 	in.seek(0, SEEK_SET);
@@ -1414,8 +1414,8 @@ bool conversion::voxToKvx(MemChunk& in, MemChunk& out)
 
 				if (must_write_post)
 				{
-					KvxColumnPostHeader postHeader{ uint8_t(z - (post_colors.size() - 1)),
-													uint8_t(post_colors.size()),
+					KvxColumnPostHeader postHeader{ static_cast<uint8_t>(z - (post_colors.size() - 1)),
+													static_cast<uint8_t>(post_colors.size()),
 													visibility };
 					out.write(&postHeader, sizeof(KvxColumnPostHeader));
 					out.write(post_colors.data(), post_colors.size());

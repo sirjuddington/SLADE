@@ -86,14 +86,14 @@ EXTERN_CVAR(Bool, gfx_extraconv)
 class SIFUnknown : public SIFormat
 {
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override { return false; }
+	bool readImage(SImage& image, const MemChunk& data, int index) override { return false; }
 
 public:
 	SIFUnknown() : SIFormat("unknown") { reliability_ = 0; }
-	~SIFUnknown() = default;
+	~SIFUnknown() override = default;
 
-	bool         isThisFormat(MemChunk& mc) override { return false; }
-	SImage::Info info(MemChunk& mc, int index) override { return {}; }
+	bool         isThisFormat(const MemChunk& mc) override { return false; }
+	SImage::Info info(const MemChunk& mc, int index) override { return {}; }
 };
 
 
@@ -107,9 +107,9 @@ class SIFGeneralImage : public SIFormat
 {
 public:
 	SIFGeneralImage() : SIFormat("image", "Image", "dat") {}
-	~SIFGeneralImage() = default;
+	~SIFGeneralImage() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		auto mem = FreeImage_OpenMemory((BYTE*)mc.data(), mc.size());
 		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
@@ -117,7 +117,7 @@ public:
 		return fif != FIF_UNKNOWN;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 		getFIInfo(mc, info);
@@ -125,7 +125,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		SImage::Info info;
@@ -189,7 +189,7 @@ protected:
 	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override { return false; }
 
 private:
-	FIBITMAP* getFIInfo(MemChunk& data, SImage::Info& info) const
+	FIBITMAP* getFIInfo(const MemChunk& data, SImage::Info& info) const
 	{
 		// Get FreeImage bitmap info from entry data
 		auto mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());
@@ -252,15 +252,15 @@ class SIFRaw : public SIFormat
 {
 public:
 	SIFRaw(string_view id = "raw") : SIFormat(id, "Raw", "dat") {}
-	~SIFRaw() = default;
+	~SIFRaw() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		// Just check the size
 		return validSize(mc.size());
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 		unsigned     size = mc.size();
@@ -353,7 +353,7 @@ protected:
 		return false;
 	}
 
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get info
 		auto inf = info(data, index);
@@ -381,7 +381,7 @@ public:
 		name_      = "Doom Flat";
 		extension_ = "lmp";
 	}
-	~SIFRawFlat() = default;
+	~SIFRawFlat() override = default;
 
 	Writable canWrite(SImage& image) override
 	{
@@ -486,10 +486,7 @@ protected:
 // SIFormat class constructor
 // ----------------------------------------------------------------------------
 SIFormat::SIFormat(string_view id, string_view name, string_view ext, uint8_t reliability) :
-	id_{ id },
-	name_{ name },
-	extension_{ ext },
-	reliability_{ reliability }
+	id_{ id }, name_{ name }, extension_{ ext }, reliability_{ reliability }
 {
 	// Add to list of formats
 	simage_formats.push_back(this);
@@ -595,7 +592,7 @@ SIFormat* SIFormat::getFormat(string_view id)
 // -----------------------------------------------------------------------------
 // Determines the format of the image data in [mc]
 // -----------------------------------------------------------------------------
-SIFormat* SIFormat::determineFormat(MemChunk& mc)
+SIFormat* SIFormat::determineFormat(const MemChunk& mc)
 {
 	// Go through all registered formats
 	SIFormat* format = sif_unknown;

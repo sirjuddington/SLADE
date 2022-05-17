@@ -49,7 +49,7 @@ using namespace slade;
 // Reads dat format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ADatArchive::open(MemChunk& mc)
+bool ADatArchive::open(const MemChunk& mc)
 {
 	// Check given data is valid
 	if (mc.size() < 16)
@@ -186,7 +186,7 @@ bool ADatArchive::write(MemChunk& mc)
 			continue;
 
 		// Create compressed version of the lump
-		MemChunk* data;
+		const MemChunk* data;
 		if (compression::zlibDeflate(entry->data(), compressed, 9))
 		{
 			data = &compressed;
@@ -219,8 +219,7 @@ bool ADatArchive::write(MemChunk& mc)
 		}
 
 		// Write entry name
-		char name_data[128];
-		memset(name_data, 0, 128);
+		char name_data[128] = {};
 		memcpy(name_data, name.data(), name.size());
 		directory.write(name_data, 128);
 
@@ -317,7 +316,7 @@ bool ADatArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Anachronox dat archive
 // -----------------------------------------------------------------------------
-bool ADatArchive::isADatArchive(MemChunk& mc)
+bool ADatArchive::isADatArchive(const MemChunk& mc)
 {
 	// Check it opened ok
 	if (mc.size() < 16)

@@ -46,7 +46,7 @@ using namespace slade;
 // Reads a res directory from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps, shared_ptr<ArchiveDir> parent)
+bool ResArchive::readDirectory(const MemChunk& mc, size_t dir_offset, size_t num_lumps, shared_ptr<ArchiveDir> parent)
 {
 	if (!parent)
 	{
@@ -159,7 +159,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 // Reads res format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ResArchive::open(MemChunk& mc)
+bool ResArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -283,12 +283,12 @@ bool ResArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid A&A res archive
 // -----------------------------------------------------------------------------
-bool ResArchive::isResArchive(MemChunk& mc)
+bool ResArchive::isResArchive(const MemChunk& mc)
 {
 	size_t dummy1, dummy2;
 	return isResArchive(mc, dummy1, dummy2);
 }
-bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lumps)
+bool ResArchive::isResArchive(const MemChunk& mc, size_t& dir_offset, size_t& num_lumps)
 {
 	// Check size
 	if (mc.size() < 12)

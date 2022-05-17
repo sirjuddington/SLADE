@@ -204,7 +204,7 @@ bool ZipArchive::open(string_view filename)
 // Reads zip format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchive::open(MemChunk& mc)
+bool ZipArchive::open(const MemChunk& mc)
 {
 	// Write the MemChunk to a temp file
 	const auto tempfile = app::path("slade-temp-open.zip", app::Dir::Temp);
@@ -664,7 +664,7 @@ void ZipArchive::generateTempFileName(string_view filename)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid zip archive
 // -----------------------------------------------------------------------------
-bool ZipArchive::isZipArchive(MemChunk& mc)
+bool ZipArchive::isZipArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 22)

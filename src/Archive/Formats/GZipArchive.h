@@ -11,7 +11,7 @@ public:
 	~GZipArchive() override = default;
 
 	// Opening
-	bool open(MemChunk& mc) override;
+	bool open(const MemChunk& mc) override;
 
 	// Writing/Saving
 	bool write(MemChunk& mc) override;
@@ -49,7 +49,7 @@ public:
 	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
 
 	// Static functions
-	static bool isGZipArchive(MemChunk& mc);
+	static bool isGZipArchive(const MemChunk& mc);
 	static bool isGZipArchive(const string& filename);
 
 private:

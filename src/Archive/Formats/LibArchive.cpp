@@ -46,7 +46,7 @@ using namespace slade;
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool LibArchive::open(MemChunk& mc)
+bool LibArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -196,7 +196,7 @@ bool LibArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Shadowcaster lib archive
 // -----------------------------------------------------------------------------
-bool LibArchive::isLibArchive(MemChunk& mc)
+bool LibArchive::isLibArchive(const MemChunk& mc)
 {
 	if (mc.size() < 64)
 		return false;

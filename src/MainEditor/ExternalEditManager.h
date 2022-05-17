@@ -18,6 +18,6 @@ public:
 private:
 	vector<ExternalEditFileMonitor*> file_monitors_;
 
-	void monitorStopped(ExternalEditFileMonitor* monitor);
+	void monitorStopped(const ExternalEditFileMonitor* monitor);
 };
 } // namespace slade

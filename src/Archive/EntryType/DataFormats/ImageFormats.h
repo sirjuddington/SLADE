@@ -6,9 +6,9 @@ class PNGDataFormat : public EntryDataFormat
 {
 public:
 	PNGDataFormat() : EntryDataFormat("img_png") {}
-	~PNGDataFormat() = default;
+	~PNGDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 8)
@@ -26,10 +26,10 @@ public:
 class BMPDataFormat : public EntryDataFormat
 {
 public:
-	BMPDataFormat() : EntryDataFormat("img_bmp"){};
-	~BMPDataFormat() = default;
+	BMPDataFormat() : EntryDataFormat("img_bmp") {}
+	~BMPDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 30)
@@ -58,10 +58,10 @@ public:
 class GIFDataFormat : public EntryDataFormat
 {
 public:
-	GIFDataFormat() : EntryDataFormat("img_gif"){};
-	~GIFDataFormat() = default;
+	GIFDataFormat() : EntryDataFormat("img_gif") {}
+	~GIFDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 6)
@@ -79,10 +79,10 @@ public:
 class PCXDataFormat : public EntryDataFormat
 {
 public:
-	PCXDataFormat() : EntryDataFormat("img_pcx"){};
-	~PCXDataFormat() = default;
+	PCXDataFormat() : EntryDataFormat("img_pcx") {}
+	~PCXDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() < 129)
@@ -153,10 +153,10 @@ public:
 class TGADataFormat : public EntryDataFormat
 {
 public:
-	TGADataFormat() : EntryDataFormat("img_tga"){};
-	~TGADataFormat() = default;
+	TGADataFormat() : EntryDataFormat("img_tga") {}
+	~TGADataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Size check for the header
 		if (mc.size() < 18)
@@ -201,10 +201,10 @@ public:
 class TIFFDataFormat : public EntryDataFormat
 {
 public:
-	TIFFDataFormat() : EntryDataFormat("img_tiff"){};
-	~TIFFDataFormat() = default;
+	TIFFDataFormat() : EntryDataFormat("img_tiff") {}
+	~TIFFDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size, minimum size is 26 if I'm not mistaken:
 		// 8 for the image header, +2 for at least one image
@@ -221,19 +221,19 @@ public:
 		// in the given endianness
 		if (42
 			!= (littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[2])) :
-							   wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
+                               wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
 			return MATCH_FALSE;
 		// First offset must be on a word boundary (therefore, %2 == 0) and
 		// somewhere within the file, but not in the header of course.
 		size_t offset =
 			(littleendian ? wxUINT32_SWAP_ON_BE((const uint32_t)(mc[4])) :
-							wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
+                            wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
 		if (offset < 8 || offset >= size || offset % 2)
 			return MATCH_FALSE;
 		// Check the first IFD for validity
 		uint16_t numentries =
 			(littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[offset])) :
-							wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
+                            wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
 		if (offset + 6 + (numentries * 12) > size)
 			return MATCH_FALSE;
 		// Okay, it seems valid so far
@@ -244,10 +244,10 @@ public:
 class JPEGDataFormat : public EntryDataFormat
 {
 public:
-	JPEGDataFormat() : EntryDataFormat("img_jpeg"){};
-	~JPEGDataFormat() = default;
+	JPEGDataFormat() : EntryDataFormat("img_jpeg") {}
+	~JPEGDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 128)
@@ -270,10 +270,10 @@ public:
 class ILBMDataFormat : public EntryDataFormat
 {
 public:
-	ILBMDataFormat() : EntryDataFormat("img_ilbm"){};
-	~ILBMDataFormat() = default;
+	ILBMDataFormat() : EntryDataFormat("img_ilbm") {}
+	~ILBMDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 48)
@@ -300,10 +300,10 @@ public:
 class DoomGfxDataFormat : public EntryDataFormat
 {
 public:
-	DoomGfxDataFormat() : EntryDataFormat("img_doom"){};
-	~DoomGfxDataFormat() = default;
+	DoomGfxDataFormat() : EntryDataFormat("img_doom") {}
+	~DoomGfxDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		const uint8_t* data = mc.data();
 
@@ -350,10 +350,10 @@ public:
 class DoomGfxAlphaDataFormat : public EntryDataFormat
 {
 public:
-	DoomGfxAlphaDataFormat() : EntryDataFormat("img_doom_alpha"){};
-	~DoomGfxAlphaDataFormat() = default;
+	DoomGfxAlphaDataFormat() : EntryDataFormat("img_doom_alpha") {}
+	~DoomGfxAlphaDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > sizeof(gfx::OldPatchHeader))
@@ -406,10 +406,10 @@ public:
 class DoomGfxBetaDataFormat : public EntryDataFormat
 {
 public:
-	DoomGfxBetaDataFormat() : EntryDataFormat("img_doom_beta"){};
-	~DoomGfxBetaDataFormat() = default;
+	DoomGfxBetaDataFormat() : EntryDataFormat("img_doom_beta") {}
+	~DoomGfxBetaDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() <= sizeof(gfx::PatchHeader))
@@ -471,8 +471,8 @@ public:
 class DoomSneaDataFormat : public EntryDataFormat
 {
 public:
-	DoomSneaDataFormat() : EntryDataFormat("img_doom_snea"){};
-	~DoomSneaDataFormat() = default;
+	DoomSneaDataFormat() : EntryDataFormat("img_doom_snea") {}
+	~DoomSneaDataFormat() override = default;
 
 	/* The following is the documentation about sneas from
 	 * the DeuTex source:
@@ -485,7 +485,7 @@ public:
 	 *	next WxH bytes contain the bitmap for columns 1, 5, 9,
 	 *	etc., and so on. No transparency.
 	 */
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() < 6)
@@ -507,8 +507,8 @@ public:
 class DoomArahDataFormat : public EntryDataFormat
 {
 public:
-	DoomArahDataFormat() : EntryDataFormat("img_doom_arah"){};
-	~DoomArahDataFormat() = default;
+	DoomArahDataFormat() : EntryDataFormat("img_doom_arah") {}
+	~DoomArahDataFormat() override = default;
 
 	/* This format is used in Doom alpha 0.2. DeuTex doesn't know it,
 	 * but it seems a really simple format, basically a eight-byte
@@ -518,7 +518,7 @@ public:
 	 * To be honest, I'm not actually sure there are offset fields
 	 * since those values always seem to be set to 0, but hey.
 	 */
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(gfx::PatchHeader))
 			return MATCH_FALSE;
@@ -542,12 +542,12 @@ public:
 class DoomJaguarDataFormat : public EntryDataFormat
 {
 public:
-	DoomJaguarDataFormat() : EntryDataFormat("img_doom_jaguar"){};
-	~DoomJaguarDataFormat() = default;
+	DoomJaguarDataFormat() : EntryDataFormat("img_doom_jaguar") {}
+	~DoomJaguarDataFormat() override = default;
 
 	/* This format is used in the Jaguar Doom IWAD.
 	 */
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(gfx::JagPicHeader))
 			return MATCH_FALSE;
@@ -577,13 +577,13 @@ public:
 class DoomJagTexDataFormat : public EntryDataFormat
 {
 public:
-	DoomJagTexDataFormat() : EntryDataFormat("img_jaguar_texture"){};
-	~DoomJagTexDataFormat() = default;
+	DoomJagTexDataFormat() : EntryDataFormat("img_jaguar_texture") {}
+	~DoomJagTexDataFormat() override = default;
 
 	/* This format is used in the Jaguar Doom IWAD. It can be recognized by the fact the last 320 bytes are a copy of
 	 * the first.
 	 */
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		// Smallest pic size 832 (32x16), largest pic size 33088 (256x128)
@@ -605,12 +605,12 @@ public:
 class DoomJagSpriteDataFormat : public EntryDataFormat
 {
 public:
-	DoomJagSpriteDataFormat() : EntryDataFormat("img_jaguar_sprite"){};
-	~DoomJagSpriteDataFormat() = default;
+	DoomJagSpriteDataFormat() : EntryDataFormat("img_jaguar_sprite") {}
+	~DoomJagSpriteDataFormat() override = default;
 
 	/* This format is used in the Jaguar Doom IWAD. It is an annoying format.
 	 */
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 16)
@@ -633,9 +633,9 @@ public:
 		for (size_t w = 0; w < width; ++w)
 			col_offsets[w] = mc.readB16(8 + 2 * w);
 
-		const int result = size < unsigned(4 + col_offsets[width - 1]) ?
+		const int result = size < static_cast<unsigned>(4 + col_offsets[width - 1]) ?
 							   MATCH_FALSE :
-							   MATCH_TRUE; // We can't test validity of pixel data here
+                               MATCH_TRUE; // We can't test validity of pixel data here
 
 		delete[] col_offsets;
 
@@ -646,10 +646,10 @@ public:
 class DoomPSXDataFormat : public EntryDataFormat
 {
 public:
-	DoomPSXDataFormat() : EntryDataFormat("img_doom_psx"){};
-	~DoomPSXDataFormat() = default;
+	DoomPSXDataFormat() : EntryDataFormat("img_doom_psx") {}
+	~DoomPSXDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(gfx::PSXPicHeader))
 			return MATCH_FALSE;
@@ -674,10 +674,10 @@ public:
 class IMGZDataFormat : public EntryDataFormat
 {
 public:
-	IMGZDataFormat() : EntryDataFormat("img_imgz"){};
-	~IMGZDataFormat() = default;
+	IMGZDataFormat() : EntryDataFormat("img_imgz") {}
+	~IMGZDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// A format created by Randy Heit and used by some crosshairs in ZDoom.
 		uint32_t size = mc.size();
@@ -709,12 +709,12 @@ public:
 class QuakeGfxDataFormat : public EntryDataFormat
 {
 public:
-	QuakeGfxDataFormat() : EntryDataFormat("img_quake"){};
-	~QuakeGfxDataFormat() = default;
+	QuakeGfxDataFormat() : EntryDataFormat("img_quake") {}
+	~QuakeGfxDataFormat() override = default;
 
 	// A data format found while rifling through some Legacy mods,
 	// specifically High Tech Hell 2. It seems to be how it works.
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		uint32_t size = mc.size();
 		if (size < 9)
@@ -736,11 +736,11 @@ public:
 class QuakeSpriteDataFormat : public EntryDataFormat
 {
 public:
-	QuakeSpriteDataFormat() : EntryDataFormat("img_qspr"){};
-	~QuakeSpriteDataFormat() = default;
+	QuakeSpriteDataFormat() : EntryDataFormat("img_qspr") {}
+	~QuakeSpriteDataFormat() override = default;
 
 	// A Quake sprite can contain several frames and each frame may contain several pictures.
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		uint32_t size = mc.size();
 		// Minimum size for a sprite with a single frame containing a single 2x2 picture
@@ -811,10 +811,10 @@ public:
 class QuakeTexDataFormat : public EntryDataFormat
 {
 public:
-	QuakeTexDataFormat() : EntryDataFormat("img_quaketex"){};
-	~QuakeTexDataFormat() = default;
+	QuakeTexDataFormat() : EntryDataFormat("img_quaketex") {}
+	~QuakeTexDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 125)
@@ -837,10 +837,10 @@ public:
 class QuakeIIWalDataFormat : public EntryDataFormat
 {
 public:
-	QuakeIIWalDataFormat() : EntryDataFormat("img_quake2wal"){};
-	~QuakeIIWalDataFormat() = default;
+	QuakeIIWalDataFormat() : EntryDataFormat("img_quake2wal") {}
+	~QuakeIIWalDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 101)
@@ -881,10 +881,10 @@ public:
 class ShadowCasterGfxFormat : public EntryDataFormat
 {
 public:
-	ShadowCasterGfxFormat() : EntryDataFormat("img_scgfx"){};
-	~ShadowCasterGfxFormat() = default;
+	ShadowCasterGfxFormat() : EntryDataFormat("img_scgfx") {}
+	~ShadowCasterGfxFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// If those were static functions, then I could
 		// just do this instead of such copypasta:
@@ -911,10 +911,10 @@ public:
 class ShadowCasterSpriteFormat : public EntryDataFormat
 {
 public:
-	ShadowCasterSpriteFormat() : EntryDataFormat("img_scsprite"){};
-	~ShadowCasterSpriteFormat() = default;
+	ShadowCasterSpriteFormat() : EntryDataFormat("img_scsprite") {}
+	~ShadowCasterSpriteFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		int size = mc.size();
 		if (size < 4)
@@ -966,10 +966,10 @@ public:
 class ShadowCasterWallFormat : public EntryDataFormat
 {
 public:
-	ShadowCasterWallFormat() : EntryDataFormat("img_scwall"){};
-	~ShadowCasterWallFormat() = default;
+	ShadowCasterWallFormat() : EntryDataFormat("img_scwall") {}
+	~ShadowCasterWallFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		int size = mc.size();
 		// Minimum valid size for such a picture to be
@@ -983,10 +983,10 @@ public:
 class AnaMipImageFormat : public EntryDataFormat
 {
 public:
-	AnaMipImageFormat() : EntryDataFormat("img_mipimage"){};
-	~AnaMipImageFormat() = default;
+	AnaMipImageFormat() : EntryDataFormat("img_mipimage") {}
+	~AnaMipImageFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 4)
@@ -1003,10 +1003,10 @@ public:
 class BuildTileFormat : public EntryDataFormat
 {
 public:
-	BuildTileFormat() : EntryDataFormat("img_arttile"){};
-	~BuildTileFormat() = default;
+	BuildTileFormat() : EntryDataFormat("img_arttile") {}
+	~BuildTileFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 16)
@@ -1045,10 +1045,10 @@ public:
 class Heretic2M8Format : public EntryDataFormat
 {
 public:
-	Heretic2M8Format() : EntryDataFormat("img_m8"){};
-	~Heretic2M8Format() = default;
+	Heretic2M8Format() : EntryDataFormat("img_m8") {}
+	~Heretic2M8Format() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 1040)
@@ -1077,10 +1077,10 @@ public:
 class Heretic2M32Format : public EntryDataFormat
 {
 public:
-	Heretic2M32Format() : EntryDataFormat("img_m32"){};
-	~Heretic2M32Format() = default;
+	Heretic2M32Format() : EntryDataFormat("img_m32") {}
+	~Heretic2M32Format() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 1040)
@@ -1109,10 +1109,10 @@ public:
 class HalfLifeTextureFormat : public EntryDataFormat
 {
 public:
-	HalfLifeTextureFormat() : EntryDataFormat("img_hlt"){};
-	~HalfLifeTextureFormat() = default;
+	HalfLifeTextureFormat() : EntryDataFormat("img_hlt") {}
+	~HalfLifeTextureFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 812)
@@ -1144,10 +1144,10 @@ public:
 class RottGfxDataFormat : public EntryDataFormat
 {
 public:
-	RottGfxDataFormat() : EntryDataFormat("img_rott"){};
-	~RottGfxDataFormat() = default;
+	RottGfxDataFormat() : EntryDataFormat("img_rott") {}
+	~RottGfxDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		const uint8_t* data = mc.data();
 
@@ -1194,10 +1194,10 @@ public:
 class RottTransGfxDataFormat : public EntryDataFormat
 {
 public:
-	RottTransGfxDataFormat() : EntryDataFormat("img_rottmask"){};
-	~RottTransGfxDataFormat() = default;
+	RottTransGfxDataFormat() : EntryDataFormat("img_rottmask") {}
+	~RottTransGfxDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		const uint8_t* data = mc.data();
 
@@ -1245,10 +1245,10 @@ public:
 class RottLBMDataFormat : public EntryDataFormat
 {
 public:
-	RottLBMDataFormat() : EntryDataFormat("img_rottlbm"){};
-	~RottLBMDataFormat() = default;
+	RottLBMDataFormat() : EntryDataFormat("img_rottlbm") {}
+	~RottLBMDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		const uint8_t* data = mc.data();
 
@@ -1268,13 +1268,13 @@ public:
 class RottRawDataFormat : public EntryDataFormat
 {
 public:
-	RottRawDataFormat() : EntryDataFormat("img_rottraw"){};
-	~RottRawDataFormat() = default;
+	RottRawDataFormat() : EntryDataFormat("img_rottraw") {}
+	~RottRawDataFormat() override = default;
 
 	/* How many format does ROTT need? This is just like the raw data plus header
 	 * format from the Doom alpha, except that it's column-major instead of row-major.
 	 */
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(gfx::PatchHeader))
 			return MATCH_FALSE;
@@ -1298,11 +1298,11 @@ public:
 class RottPicDataFormat : public EntryDataFormat
 {
 public:
-	RottPicDataFormat() : EntryDataFormat("img_rottpic"){};
-	~RottPicDataFormat() = default;
+	RottPicDataFormat() : EntryDataFormat("img_rottpic") {}
+	~RottPicDataFormat() override = default;
 
 	// Yet another ROTT image format. Cheesus.
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 8)
@@ -1318,11 +1318,11 @@ public:
 class WolfPicDataFormat : public EntryDataFormat
 {
 public:
-	WolfPicDataFormat() : EntryDataFormat("img_wolfpic"){};
-	~WolfPicDataFormat() = default;
+	WolfPicDataFormat() : EntryDataFormat("img_wolfpic") {}
+	~WolfPicDataFormat() override = default;
 
 	// Wolf picture format
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 4)
@@ -1337,11 +1337,11 @@ public:
 class WolfSpriteDataFormat : public EntryDataFormat
 {
 public:
-	WolfSpriteDataFormat() : EntryDataFormat("img_wolfsprite"){};
-	~WolfSpriteDataFormat() = default;
+	WolfSpriteDataFormat() : EntryDataFormat("img_wolfsprite") {}
+	~WolfSpriteDataFormat() override = default;
 
 	// Wolf picture format
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 8 || size > 4228)
@@ -1357,11 +1357,11 @@ public:
 class JediBMFormat : public EntryDataFormat
 {
 public:
-	JediBMFormat() : EntryDataFormat("img_jedi_bm"){};
-	~JediBMFormat() = default;
+	JediBMFormat() : EntryDataFormat("img_jedi_bm") {}
+	~JediBMFormat() override = default;
 
 	// Jedi engine bitmap format
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 32)
@@ -1384,11 +1384,11 @@ public:
 class JediFMEFormat : public EntryDataFormat
 {
 public:
-	JediFMEFormat() : EntryDataFormat("img_jedi_fme"){};
-	~JediFMEFormat() = default;
+	JediFMEFormat() : EntryDataFormat("img_jedi_fme") {}
+	~JediFMEFormat() override = default;
 
 	// Jedi engine frame format
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 64)
@@ -1437,11 +1437,11 @@ public:
 class JediWAXFormat : public EntryDataFormat
 {
 public:
-	JediWAXFormat() : EntryDataFormat("img_jedi_wax"){};
-	~JediWAXFormat() = default;
+	JediWAXFormat() : EntryDataFormat("img_jedi_wax") {}
+	~JediWAXFormat() override = default;
 
 	// Jedi engine wax format
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 460)
@@ -1472,10 +1472,10 @@ public:
 class Font0DataFormat : public EntryDataFormat
 {
 public:
-	Font0DataFormat() : EntryDataFormat("font_doom_alpha"){};
-	~Font0DataFormat() = default;
+	Font0DataFormat() : EntryDataFormat("font_doom_alpha") {}
+	~Font0DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() <= 0x302)
 			return MATCH_FALSE;
@@ -1504,10 +1504,10 @@ public:
 class Font1DataFormat : public EntryDataFormat
 {
 public:
-	Font1DataFormat() : EntryDataFormat("font_zd_console"){};
-	~Font1DataFormat() = default;
+	Font1DataFormat() : EntryDataFormat("font_zd_console") {}
+	~Font1DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -1523,10 +1523,10 @@ public:
 class Font2DataFormat : public EntryDataFormat
 {
 public:
-	Font2DataFormat() : EntryDataFormat("font_zd_big"){};
-	~Font2DataFormat() = default;
+	Font2DataFormat() : EntryDataFormat("font_zd_big") {}
+	~Font2DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -1542,10 +1542,10 @@ public:
 class BMFontDataFormat : public EntryDataFormat
 {
 public:
-	BMFontDataFormat() : EntryDataFormat("font_bmf"){};
-	~BMFontDataFormat() = default;
+	BMFontDataFormat() : EntryDataFormat("font_bmf") {}
+	~BMFontDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -1561,10 +1561,10 @@ public:
 class FontWolfDataFormat : public EntryDataFormat
 {
 public:
-	FontWolfDataFormat() : EntryDataFormat("font_wolf"){};
-	~FontWolfDataFormat() = default;
+	FontWolfDataFormat() : EntryDataFormat("font_wolf") {}
+	~FontWolfDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() <= 0x302)
 			return MATCH_FALSE;
@@ -1593,11 +1593,11 @@ public:
 class JediFNTFormat : public EntryDataFormat
 {
 public:
-	JediFNTFormat() : EntryDataFormat("font_jedi_fnt"){};
-	~JediFNTFormat() = default;
+	JediFNTFormat() : EntryDataFormat("font_jedi_fnt") {}
+	~JediFNTFormat() override = default;
 
 	// Jedi engine fnt format
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 35)
@@ -1621,11 +1621,11 @@ public:
 class JediFONTFormat : public EntryDataFormat
 {
 public:
-	JediFONTFormat() : EntryDataFormat("font_jedi_font"){};
-	~JediFONTFormat() = default;
+	JediFONTFormat() : EntryDataFormat("font_jedi_font") {}
+	~JediFONTFormat() override = default;
 
 	// Jedi engine font format
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 16)

@@ -285,7 +285,7 @@ bool WadArchive::hasFlatHack()
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadArchive::open(MemChunk& mc)
+bool WadArchive::open(const MemChunk& mc)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -1386,7 +1386,7 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Doom wad archive
 // -----------------------------------------------------------------------------
-bool WadArchive::isWadArchive(MemChunk& mc)
+bool WadArchive::isWadArchive(const MemChunk& mc)
 {
 	// Check size
 	if (mc.size() < 12)

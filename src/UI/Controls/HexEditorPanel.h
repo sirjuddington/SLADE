@@ -5,8 +5,8 @@ namespace slade
 class HexTable : public wxGridTableBase
 {
 public:
-	HexTable()  = default;
-	~HexTable() = default;
+	HexTable()           = default;
+	~HexTable() override = default;
 
 	MemChunk& getData() { return data_; }
 
@@ -16,7 +16,7 @@ public:
 	wxString GetValue(int row, int col) override;
 	void     SetValue(int row, int col, const wxString& value) override;
 
-	bool     loadData(MemChunk& mc);
+	bool     loadData(const MemChunk& mc);
 	uint32_t offset(int row, int col) const;
 	void     setViewType(int type) { view_type_ = type; }
 
@@ -41,9 +41,9 @@ class HexEditorPanel : public wxPanel
 {
 public:
 	HexEditorPanel(wxWindow* parent);
-	~HexEditorPanel() = default;
+	~HexEditorPanel() override = default;
 
-	bool loadData(MemChunk& mc);
+	bool loadData(const MemChunk& mc);
 
 private:
 	wxGrid*        grid_hex_         = nullptr;

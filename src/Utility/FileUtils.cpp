@@ -324,7 +324,7 @@ void SFile::close()
 // -----------------------------------------------------------------------------
 // Seeks ahead by [offset] bytes from the current position
 // -----------------------------------------------------------------------------
-bool SFile::seek(unsigned offset)
+bool SFile::seek(unsigned offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_CUR) == 0 : false;
 }
@@ -332,7 +332,7 @@ bool SFile::seek(unsigned offset)
 // -----------------------------------------------------------------------------
 // Seeks to [offset] bytes from the beginning of the file
 // -----------------------------------------------------------------------------
-bool SFile::seekFromStart(unsigned offset)
+bool SFile::seekFromStart(unsigned offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_SET) == 0 : false;
 }
@@ -340,7 +340,7 @@ bool SFile::seekFromStart(unsigned offset)
 // -----------------------------------------------------------------------------
 // Seeks to [offset] bytes back from the end of the file
 // -----------------------------------------------------------------------------
-bool SFile::seekFromEnd(unsigned offset)
+bool SFile::seekFromEnd(unsigned offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_END) == 0 : false;
 }
@@ -348,7 +348,7 @@ bool SFile::seekFromEnd(unsigned offset)
 // -----------------------------------------------------------------------------
 // Reads [count] bytes from the file into [buffer]
 // -----------------------------------------------------------------------------
-bool SFile::read(void* buffer, unsigned count)
+bool SFile::read(void* buffer, unsigned count) const
 {
 	if (handle_)
 		return fread(buffer, count, 1, handle_) > 0;

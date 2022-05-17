@@ -10,14 +10,14 @@ public:
 	ChasmBinArchive() : Archive("chasm_bin") {}
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;
+	bool open(const MemChunk& mc) override;
 	bool write(MemChunk& mc) override;
 
 	// Misc
 	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
-	static bool isChasmBinArchive(MemChunk& mc);
+	static bool isChasmBinArchive(const MemChunk& mc);
 	static bool isChasmBinArchive(const string& filename);
 
 private:

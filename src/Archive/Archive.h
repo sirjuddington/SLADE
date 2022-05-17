@@ -78,9 +78,9 @@ public:
 	virtual bool  isTreeless() { return false; }
 
 	// Opening
-	virtual bool open(string_view filename); // Open from File
-	virtual bool open(ArchiveEntry* entry);  // Open from ArchiveEntry
-	virtual bool open(MemChunk& mc) = 0;     // Open from MemChunk
+	virtual bool open(string_view filename);   // Open from File
+	virtual bool open(ArchiveEntry* entry);    // Open from ArchiveEntry
+	virtual bool open(const MemChunk& mc) = 0; // Open from MemChunk
 
 	// Writing/Saving
 	virtual bool write(MemChunk& mc) = 0;         // Write to MemChunk
@@ -179,7 +179,7 @@ public:
 	void     blockModificationSignals(bool block = true);
 
 	// Static functions
-	static bool                   loadFormats(MemChunk& mc);
+	static bool                   loadFormats(const MemChunk& mc);
 	static vector<ArchiveFormat>& allFormats() { return formats_; }
 
 protected:

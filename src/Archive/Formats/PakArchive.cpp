@@ -47,7 +47,7 @@ using namespace slade;
 // Reads pak format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool PakArchive::open(MemChunk& mc)
+bool PakArchive::open(const MemChunk& mc)
 {
 	// Check given data is valid
 	if (mc.size() < 12)
@@ -246,7 +246,7 @@ bool PakArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Quake pak archive
 // -----------------------------------------------------------------------------
-bool PakArchive::isPakArchive(MemChunk& mc)
+bool PakArchive::isPakArchive(const MemChunk& mc)
 {
 	// Check given data is valid
 	if (mc.size() < 12)

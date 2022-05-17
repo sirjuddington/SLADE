@@ -11,8 +11,8 @@ public:
 	~HogArchive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;  // Open from MemChunk
-	bool write(MemChunk& mc) override; // Write to MemChunk
+	bool open(const MemChunk& mc) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;      // Write to MemChunk
 
 	// Misc
 	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
@@ -28,7 +28,7 @@ public:
 	bool renameEntry(ArchiveEntry* entry, string_view name) override;
 
 	// Static functions
-	static bool isHogArchive(MemChunk& mc);
+	static bool isHogArchive(const MemChunk& mc);
 	static bool isHogArchive(const string& filename);
 };
 } // namespace slade

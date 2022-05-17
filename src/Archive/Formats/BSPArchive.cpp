@@ -54,7 +54,7 @@ using namespace slade;
 // Reads BSP format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool BSPArchive::open(MemChunk& mc)
+bool BSPArchive::open(const MemChunk& mc)
 {
 	// If size is less than 64, there's not even enough room for a full header
 	size_t size = mc.size();
@@ -256,7 +256,7 @@ bool BSPArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Quake BSP archive
 // -----------------------------------------------------------------------------
-bool BSPArchive::isBSPArchive(MemChunk& mc)
+bool BSPArchive::isBSPArchive(const MemChunk& mc)
 {
 	// If size is less than 64, there's not even enough room for a full header
 	size_t size = mc.size();

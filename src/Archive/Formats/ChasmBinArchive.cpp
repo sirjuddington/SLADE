@@ -48,7 +48,7 @@ namespace
 // -----------------------------------------------------------------------------
 // Fixes broken wav data
 // -----------------------------------------------------------------------------
-void fixBrokenWave(ArchiveEntry* const entry)
+void fixBrokenWave(const ArchiveEntry* entry)
 {
 	static constexpr uint32_t MIN_WAVE_SIZE = 44;
 
@@ -74,7 +74,7 @@ void fixBrokenWave(ArchiveEntry* const entry)
 // Reads Chasm bin format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::open(MemChunk& mc)
+bool ChasmBinArchive::open(const MemChunk& mc)
 {
 	// Check given data is valid
 	if (mc.size() < HEADER_SIZE)
@@ -284,7 +284,7 @@ bool ChasmBinArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Chasm bin archive
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
+bool ChasmBinArchive::isChasmBinArchive(const MemChunk& mc)
 {
 	// Check given data is valid
 	if (mc.size() < HEADER_SIZE)

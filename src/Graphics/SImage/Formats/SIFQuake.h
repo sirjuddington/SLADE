@@ -3,17 +3,17 @@ class SIFQuakeGfx : public SIFormat
 {
 public:
 	SIFQuakeGfx() : SIFormat("quake", "Quake Gfx", "dat") {}
-	~SIFQuakeGfx() = default;
+	~SIFQuakeGfx() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_quake")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_quake")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
 		// Get image properties
-		info.width  = wxINT16_SWAP_ON_BE(*(const uint16_t*)(mc.data()));
-		info.height = wxINT16_SWAP_ON_BE(*(const uint16_t*)(mc.data() + 4));
+		info.width  = wxINT16_SWAP_ON_BE(*reinterpret_cast<const uint16_t*>(mc.data()));
+		info.height = wxINT16_SWAP_ON_BE(*reinterpret_cast<const uint16_t*>(mc.data() + 4));
 
 		// Determine colour type
 		info.colformat = SImage::Type::RGBA;
@@ -29,11 +29,11 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image properties
-		int     width  = wxINT16_SWAP_ON_BE(*(const uint16_t*)(data.data()));
-		int     height = wxINT16_SWAP_ON_BE(*(const uint16_t*)(data.data() + 4));
+		int     width  = wxINT16_SWAP_ON_BE(*reinterpret_cast<const uint16_t*>(data.data()));
+		int     height = wxINT16_SWAP_ON_BE(*reinterpret_cast<const uint16_t*>(data.data() + 4));
 		uint8_t mode   = data[3];
 
 		// Determine image type
@@ -122,11 +122,11 @@ class SIFQuakeSprite : public SIFormat
 {
 public:
 	SIFQuakeSprite() : SIFormat("qspr", "Quake Sprite", "dat") {}
-	~SIFQuakeSprite() = default;
+	~SIFQuakeSprite() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_qspr")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_qspr")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		// Get image info
 		SImage::Info info;
@@ -136,7 +136,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		SImage::Info info;
@@ -166,7 +166,7 @@ protected:
 	}
 
 private:
-	unsigned sprInfo(MemChunk& mc, int index, SImage::Info& info) const
+	unsigned sprInfo(const MemChunk& mc, int index, SImage::Info& info) const
 	{
 		// Setup variables
 		uint32_t maxheight = mc.readL32(16);
@@ -254,11 +254,11 @@ class SIFQuakeTex : public SIFormat
 {
 public:
 	SIFQuakeTex() : SIFormat("quaketex", "Quake Texture", "dat", 11) {}
-	~SIFQuakeTex() = default;
+	~SIFQuakeTex() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_quaketex")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_quaketex")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -285,7 +285,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);
@@ -310,11 +310,14 @@ class SIFQuake2Wal : public SIFormat
 {
 public:
 	SIFQuake2Wal() : SIFormat("quake2wal", "Quake II Wall", "dat", 21) {}
-	~SIFQuake2Wal() = default;
+	~SIFQuake2Wal() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_quake2wal")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override
+	{
+		return EntryDataFormat::format("img_quake2wal")->isThisFormat(mc);
+	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -329,7 +332,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		auto info = this->info(data, index);

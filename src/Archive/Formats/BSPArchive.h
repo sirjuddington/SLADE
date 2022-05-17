@@ -11,14 +11,14 @@ public:
 	~BSPArchive() override = default;
 
 	// Opening/writing
-	bool open(MemChunk& mc) override;  // Open from MemChunk
-	bool write(MemChunk& mc) override; // Write to MemChunk
+	bool open(const MemChunk& mc) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;      // Write to MemChunk
 
 	// Misc
 	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Static functions
-	static bool isBSPArchive(MemChunk& mc);
+	static bool isBSPArchive(const MemChunk& mc);
 	static bool isBSPArchive(const string& filename);
 };
 } // namespace slade
