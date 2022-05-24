@@ -38,6 +38,7 @@
 #include "StringUtils.h"
 #include <filesystem>
 #include <fstream>
+#include <xxhash.h>
 
 using namespace slade;
 namespace fs = std::filesystem;
@@ -262,6 +263,11 @@ time_t fileutil::fileModifiedTime(string_view path)
 	return wxFileModificationTime(wxString{ path.data(), path.length() });
 }
 
+string fileutil::fileHash(string_view path)
+{
+	SFile file(path);
+	return file.calculateHash();
+}
 
 
 // -----------------------------------------------------------------------------
@@ -361,7 +367,7 @@ bool SFile::read(void* buffer, unsigned count) const
 // Reads [count] bytes from the file into a MemChunk [mc]
 // (replaces the existing contents of the MemChunk)
 // -----------------------------------------------------------------------------
-bool SFile::read(MemChunk& mc, unsigned count)
+bool SFile::read(MemChunk& mc, unsigned count) const
 {
 	return mc.importFileStream(*this, count);
 }
@@ -408,7 +414,7 @@ bool SFile::writeStr(string_view str) const
 // -----------------------------------------------------------------------------
 // Calculates the MD5 hash of the file and returns it as a string
 // -----------------------------------------------------------------------------
-string SFile::calculateMD5()
+string SFile::calculateMD5() const
 {
 	MD5  md5;
 	auto current_pos = currentPos();
@@ -436,4 +442,39 @@ string SFile::calculateMD5()
 	seekFromStart(current_pos);
 
 	return md5.hexdigest();
+}
+
+string SFile::calculateHash() const
+{
+	if (!isOpen())
+		return {};
+
+	auto current_pos = currentPos();
+	auto size        = this->size();
+
+	seekFromStart(0);
+	unsigned pos = 0;
+
+	auto* state = XXH3_createState();
+	XXH3_128bits_reset(state);
+
+	// Read in 1mb chunks
+	unsigned chunk_size = 1024;
+	char     buffer[1024];
+	while (pos < size)
+	{
+		if (size - pos < chunk_size)
+			chunk_size = size - pos;
+
+		read(buffer, chunk_size);
+		XXH3_128bits_update(state, buffer, chunk_size);
+
+		pos += chunk_size;
+	}
+
+	auto hash = XXH3_128bits_digest(state);
+	XXH3_freeState(state);
+	seekFromStart(current_pos);
+
+	return fmt::format("{:x}{:x}", hash.high64, hash.low64);
 }

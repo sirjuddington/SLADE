@@ -59,6 +59,7 @@ public:
 	ArchiveEntry*            prevEntry();
 	shared_ptr<ArchiveEntry> getShared();
 	int                      index();
+	string                   hash() const;
 
 	// Modifiers (won't change entry state, except setState of course :P)
 	void setName(string_view name);
@@ -94,8 +95,8 @@ public:
 
 	// Data access
 	bool     write(const void* data, uint32_t size);
-	bool     read(void* buf, uint32_t size);
-	bool     seek(uint32_t offset, uint32_t start) { return data_.seek(offset, start); }
+	bool     read(void* buf, uint32_t size) const;
+	bool     seek(uint32_t offset, uint32_t start) const { return data_.seek(offset, start); }
 	uint32_t currentPos() const { return data_.currentPos(); }
 
 	// Data on disk
@@ -116,12 +117,13 @@ public:
 
 private:
 	// Entry Info
-	string       name_;
-	string       upper_name_;
-	MemChunk     data_;
-	EntryType*   type_   = nullptr;
-	ArchiveDir*  parent_ = nullptr;
-	PropertyList ex_props_;
+	string         name_;
+	string         upper_name_;
+	MemChunk       data_;
+	EntryType*     type_   = nullptr;
+	ArchiveDir*    parent_ = nullptr;
+	PropertyList   ex_props_;
+	mutable string data_hash_;
 
 	// Entry status
 	State      state_        = State::New;

@@ -34,6 +34,8 @@
 #include "MemChunk.h"
 #include "FileUtils.h"
 #include "General/Misc.h"
+#include "MD5.h"
+#include <xxhash.h>
 
 using namespace slade;
 
@@ -580,6 +582,32 @@ string MemChunk::asString(uint32_t offset, uint32_t length) const
 	string s;
 	s.assign(reinterpret_cast<char*>(data_) + offset, length);
 	return s;
+}
+
+// -----------------------------------------------------------------------------
+// Calculates the MD5 hash of the data.
+// Returns the MD5 hash or an empty string if no data is present
+// -----------------------------------------------------------------------------
+string MemChunk::md5() const
+{
+	if (!hasData())
+		return {};
+
+	MD5 md5(*this);
+	return md5.hexdigest();
+}
+
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the data using xxHash (XXH128).
+// Returns the hash as a hex string or empty if no data is present
+// -----------------------------------------------------------------------------
+string MemChunk::hash() const
+{
+	if (!hasData())
+		return {};
+
+	auto hash = XXH3_128bits(data_, size_);
+	return fmt::format("{:x}{:x}", hash.high64, hash.low64);
 }
 
 

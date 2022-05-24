@@ -127,6 +127,20 @@ MD5::MD5(const std::string& text)
 	finalize();
 }
 
+MD5::MD5(const char* data, size_type length)
+{
+	init();
+	update(data, length);
+	finalize();
+}
+
+MD5::MD5(const slade::MemChunk& data)
+{
+	init();
+	update(data.data(), data.size());
+	finalize();
+}
+
 //////////////////////////////
 
 void MD5::init()

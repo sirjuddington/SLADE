@@ -90,6 +90,7 @@ ArchiveEntry::ArchiveEntry(const ArchiveEntry& copy) :
 	data_{ copy.data_ },
 	type_{ copy.type_ },
 	ex_props_{ copy.ex_props_ },
+	data_hash_{ copy.data_hash_ },
 	encrypted_{ copy.encrypted_ },
 	reliability_{ copy.reliability_ }
 {
@@ -190,6 +191,17 @@ shared_ptr<ArchiveEntry> ArchiveEntry::getShared()
 int ArchiveEntry::index()
 {
 	return parent_ ? parent_->entryIndex(this) : -1;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the hash (XXH128) of the entry's data, calculating it if needed
+// -----------------------------------------------------------------------------
+string ArchiveEntry::hash() const
+{
+	if (data_hash_.empty())
+		data_hash_ = data_.hash();
+
+	return data_hash_;
 }
 
 // -----------------------------------------------------------------------------
@@ -324,7 +336,14 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 	// Update attributes
 	setState(State::Modified);
 
-	return data_.reSize(new_size, preserve_data);
+	// Resize the data
+	if (data_.reSize(new_size, preserve_data))
+	{
+		data_hash_ = data_.hash();
+		return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -341,6 +360,7 @@ bool ArchiveEntry::clearData()
 
 	// Delete the data
 	data_.clear();
+	data_hash_.clear();
 
 	return true;
 }
@@ -377,6 +397,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	data_.importMem(static_cast<const uint8_t*>(data), size);
 
 	// Update attributes
+	data_hash_ = data_.hash();
 	setType(EntryType::unknownType());
 	setState(State::Modified);
 
@@ -492,6 +513,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 	if (data_.importFileStreamWx(file, len))
 	{
 		// Update attributes
+		data_hash_ = data_.hash();
 		setType(EntryType::unknownType());
 		setState(State::Modified);
 
@@ -564,6 +586,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 	if (data_.write(data, size))
 	{
 		// Update attributes
+		data_hash_.clear();
 		setState(State::Modified);
 
 		return true;
@@ -575,7 +598,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 // -----------------------------------------------------------------------------
 // Reads data from the entry MemChunk
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::read(void* buf, uint32_t size)
+bool ArchiveEntry::read(void* buf, uint32_t size) const
 {
 	return data_.read(buf, size);
 }
@@ -644,17 +667,17 @@ bool ArchiveEntry::isInNamespace(string_view ns)
 // Returns the entry at [path] relative to [base], or failing that, the entry
 // at absolute [path] in the archive (if [allow_absolute_path] is true)
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntry::relativeEntry(string_view at_path, bool allow_absolute_path) const
+ArchiveEntry* ArchiveEntry::relativeEntry(string_view path, bool allow_absolute_path) const
 {
 	if (!parent_)
 		return nullptr;
 
 	// Try relative to this entry
-	auto include = parent_->archive()->entryAtPath(path().append(at_path));
+	auto include = parent_->archive()->entryAtPath(this->path().append(path));
 
 	// Try absolute path
 	if (!include && allow_absolute_path)
-		include = parent_->archive()->entryAtPath(at_path);
+		include = parent_->archive()->entryAtPath(path);
 
 	return include;
 }

@@ -37,6 +37,10 @@ documentation and/or software.
 #include <cstring>
 #include <iostream>
 
+namespace slade
+{
+class MemChunk;
+}
 
 // a small class for calculating MD5 hashes of strings or byte arrays
 // it is not meant to be fast or secure
@@ -55,6 +59,8 @@ public:
 
 	MD5();
 	MD5(const std::string& text);
+	MD5(const char* data, size_type length);
+	MD5(const slade::MemChunk& data);
 	void                 init();
 	void                 update(const unsigned char* buf, size_type length);
 	void                 update(const char* buf, size_type length);
