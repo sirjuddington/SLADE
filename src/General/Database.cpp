@@ -39,6 +39,7 @@
 #include "General/Console.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
+#include <shared_mutex>
 
 using namespace slade;
 
@@ -53,6 +54,9 @@ namespace slade::database
 Context            db_global;
 string             template_db_path;
 vector<Named<int>> table_versions = { { "archive_file", 1 } };
+
+vector<Context*>  thread_contexts;
+std::shared_mutex mutex_thread_contexts;
 } // namespace slade::database
 
 
@@ -68,8 +72,30 @@ vector<Named<int>> table_versions = { { "archive_file", 1 } };
 // -----------------------------------------------------------------------------
 database::Context::Context(string_view file_path)
 {
+	thread_id_ = std::this_thread::get_id();
+
 	if (!file_path.empty())
 		open(file_path);
+}
+
+// -----------------------------------------------------------------------------
+// Context class destructor
+// -----------------------------------------------------------------------------
+database::Context::~Context()
+{
+	close();
+
+	for (int i = static_cast<int>(thread_contexts.size()) - 1; i >= 0; i--)
+		if (thread_contexts[i] == this)
+			thread_contexts.erase(thread_contexts.begin() + i);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the context was created on the current thread
+// -----------------------------------------------------------------------------
+bool database::Context::isForThisThread() const
+{
+	return thread_id_ == std::this_thread::get_id();
 }
 
 // -----------------------------------------------------------------------------
@@ -123,7 +149,7 @@ SQLite::Statement* database::Context::cachedQuery(string_view id)
 		i->second->tryReset();
 		return i->second.get();
 	}
-	
+
 	return nullptr;
 }
 
@@ -258,14 +284,29 @@ string templateDbPath()
 } // namespace slade::database
 
 // -----------------------------------------------------------------------------
-// Returns the 'global' database connection context.
-// This can only be used from the main thread
+// Returns the 'global' database connection context for this thread.
+//
+// If this isn't being called from the main thread, it will first look for a
+// context that has previously been registered for the current thread via
+// registerThreadContext. If no context has been registered for the thread, the
+// main thread's context will be returned and a warning logged
 // -----------------------------------------------------------------------------
 database::Context& database::global()
 {
-	// Check we are on the main thread
+	// Check if we are not on the main thread
 	if (std::this_thread::get_id() != app::mainThreadId())
+	{
+		std::shared_lock lock(mutex_thread_contexts);
+
+		// Find context for this thread
+		for (auto* thread_context : thread_contexts)
+			if (thread_context->isForThisThread())
+				return *thread_context;
+
+		// No context available for this thread, warn and use main thread context
+		// (should this throw an exception?)
 		log::warning("A non-main thread is requesting the global database connection context");
+	}
 
 	return db_global;
 }
@@ -279,7 +320,7 @@ SQLite::Database* database::connectionRO()
 	// Check we are on the main thread
 	if (std::this_thread::get_id() != app::mainThreadId())
 	{
-		log::error("Can't get global database connection from non-main thread, use newConnection instead");
+		log::error("Can't get global database connection from non-main thread");
 		return nullptr;
 	}
 
@@ -295,7 +336,7 @@ SQLite::Database* database::connectionRW()
 	// Check we are on the main thread
 	if (std::this_thread::get_id() != app::mainThreadId())
 	{
-		log::error("Can't get global database connection from non-main thread, use newConnection instead");
+		log::error("Can't get global database connection from non-main thread");
 		return nullptr;
 	}
 
@@ -333,6 +374,37 @@ int database::exec(const char* query, SQLite::Database* connection)
 bool database::fileExists()
 {
 	return fileutil::fileExists(app::path("slade.sqlite", app::Dir::User));
+}
+
+// -----------------------------------------------------------------------------
+// Sets [context] as the database connection context to use for the current
+// thread when calling database::global()
+// -----------------------------------------------------------------------------
+void database::registerThreadContext(Context& context)
+{
+	std::unique_lock lock(mutex_thread_contexts);
+
+	thread_contexts.push_back(&context);
+}
+
+// -----------------------------------------------------------------------------
+// Clears all contexts registered for the current thread
+// -----------------------------------------------------------------------------
+void database::deregisterThreadContexts()
+{
+	std::unique_lock lock(mutex_thread_contexts);
+
+	for (int i = static_cast<int>(thread_contexts.size()) - 1; i >= 0; i--)
+		if (thread_contexts[i]->isForThisThread())
+			thread_contexts.erase(thread_contexts.begin() + i);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the path to the program database file
+// -----------------------------------------------------------------------------
+string database::programDatabasePath()
+{
+	return app::path("slade.sqlite", app::Dir::User);
 }
 
 // -----------------------------------------------------------------------------

@@ -9,13 +9,14 @@ class Context
 {
 public:
 	Context(string_view file_path = {});
-	~Context() { close(); }
+	~Context();
 
 	const string&     filePath() const { return file_path_; }
 	SQLite::Database* connectionRO() const { return connection_ro_.get(); }
 	SQLite::Database* connectionRW() const { return connection_rw_.get(); }
 
 	bool isOpen() const { return connection_ro_.get(); }
+	bool isForThisThread() const;
 
 	bool open(string_view file_path);
 	bool close();
@@ -28,8 +29,11 @@ public:
 
 	SQLite::Transaction beginTransaction(bool write = false) const;
 
+	void vacuum() const { exec("VACUUM;"); } // Cleans up the database file to reduce size on disk
+
 private:
-	string file_path_;
+	string          file_path_;
+	std::thread::id thread_id_;
 
 	unique_ptr<SQLite::Database> connection_ro_;
 	unique_ptr<SQLite::Database> connection_rw_;
@@ -43,6 +47,10 @@ SQLite::Database* connectionRO();
 SQLite::Database* connectionRW();
 bool              fileExists();
 
+// Contexts for threads
+void registerThreadContext(Context& context);
+void deregisterThreadContexts();
+
 // Helpers
 int                       exec(const string& query, SQLite::Database* connection = nullptr);
 int                       exec(const char* query, SQLite::Database* connection = nullptr);
@@ -54,7 +62,8 @@ template<typename T> bool rowExists(SQLite::Database& connection, string_view ta
 }
 
 // General
-bool init();
-void close();
+string programDatabasePath();
+bool   init();
+void   close();
 
 } // namespace slade::database
