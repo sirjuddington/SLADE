@@ -13,28 +13,28 @@ public:
 	bool                        init();
 	bool                        initBaseResource();
 	bool                        resArchiveOK() const { return res_archive_open_; }
-	bool                        addArchive(shared_ptr<Archive> archive);
+	bool                        addArchive(shared_ptr<Archive> archive, int64_t library_archive_id = -1);
 	bool                        validResDir(string_view dir) const;
 	shared_ptr<Archive>         getArchive(int index);
 	shared_ptr<Archive>         getArchive(string_view filename);
-	shared_ptr<Archive>         getArchive(ArchiveEntry* parent);
+	shared_ptr<Archive>         getArchive(const ArchiveEntry* parent);
 	shared_ptr<Archive>         openArchive(string_view filename, bool manage = true, bool silent = false);
 	shared_ptr<Archive>         openArchive(ArchiveEntry* entry, bool manage = true, bool silent = false);
 	shared_ptr<Archive>         openDirArchive(string_view dir, bool manage = true, bool silent = false);
 	shared_ptr<Archive>         newArchive(string_view format);
 	bool                        closeArchive(int index);
 	bool                        closeArchive(string_view filename);
-	bool                        closeArchive(Archive* archive);
+	bool                        closeArchive(const Archive* archive);
 	void                        closeAll();
 	int                         numArchives() const { return (int)open_archives_.size(); }
-	int                         archiveIndex(Archive* archive);
-	vector<shared_ptr<Archive>> getDependentArchives(Archive* archive);
+	int                         archiveIndex(const Archive* archive) const;
+	vector<shared_ptr<Archive>> getDependentArchives(const Archive* archive);
 	Archive*                    programResourceArchive() const { return program_resource_archive_.get(); }
 	string                      getArchiveExtensionsString() const;
-	bool                        archiveIsResource(Archive* archive);
+	bool                        archiveIsResource(const Archive* archive) const;
 	void                        setArchiveResource(Archive* archive, bool resource = true);
-	vector<shared_ptr<Archive>> allArchives(bool resource_only = false);
-	shared_ptr<Archive>         shareArchive(Archive* archive);
+	vector<shared_ptr<Archive>> allArchives(bool resource_only = false) const;
+	shared_ptr<Archive>         shareArchive(const Archive* archive);
 
 	// General access
 	const vector<string>&                 baseResourcePaths() const { return base_resource_paths_; }
@@ -49,20 +49,21 @@ public:
 	bool     openBaseResource(int index);
 
 	// Resource entry get/search
-	ArchiveEntry*         getResourceEntry(string_view name, Archive* ignore = nullptr);
-	ArchiveEntry*         findResourceEntry(Archive::SearchOptions& options, Archive* ignore = nullptr);
-	vector<ArchiveEntry*> findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore = nullptr);
+	ArchiveEntry*         getResourceEntry(string_view name, const Archive* ignore = nullptr) const;
+	ArchiveEntry*         findResourceEntry(Archive::SearchOptions& options, const Archive* ignore = nullptr) const;
+	vector<ArchiveEntry*> findAllResourceEntries(Archive::SearchOptions& options, const Archive* ignore = nullptr)
+		const;
 
 	// Bookmarks
 	void          addBookmark(const shared_ptr<ArchiveEntry>& entry);
 	bool          deleteBookmark(ArchiveEntry* entry);
 	bool          deleteBookmark(unsigned index);
-	bool          deleteBookmarksInArchive(Archive* archive);
-	bool          deleteBookmarksInDir(ArchiveDir* node);
+	bool          deleteBookmarksInArchive(const Archive* archive);
+	bool          deleteBookmarksInDir(const ArchiveDir* node);
 	void          deleteAllBookmarks();
-	ArchiveEntry* getBookmark(unsigned index);
+	ArchiveEntry* getBookmark(unsigned index) const;
 	unsigned      numBookmarks() const { return bookmarks_.size(); }
-	bool          isBookmarked(ArchiveEntry* entry);
+	bool          isBookmarked(const ArchiveEntry* entry) const;
 
 	// Signals
 	struct Signals
@@ -87,7 +88,8 @@ private:
 	{
 		shared_ptr<Archive>       archive;
 		vector<weak_ptr<Archive>> open_children; // A list of currently open archives that are within this archive
-		bool                      resource;
+		bool                      resource   = true;
+		int64_t                   library_id = -1;
 	};
 
 	vector<OpenArchive>            open_archives_;
@@ -101,6 +103,6 @@ private:
 	Signals signals_;
 
 	bool initArchiveFormats() const;
-	void getDependentArchivesInternal(Archive* archive, vector<shared_ptr<Archive>>& vec);
+	void getDependentArchivesInternal(const Archive* archive, vector<shared_ptr<Archive>>& vec);
 };
 } // namespace slade

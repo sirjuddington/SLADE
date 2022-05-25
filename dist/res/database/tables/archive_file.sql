@@ -4,7 +4,7 @@ CREATE TABLE archive_file (
     path          TEXT     NOT NULL
                            PRIMARY KEY,
     size          INTEGER,
-    md5           TEXT,
+    hash          TEXT,
     format_id     TEXT,
     last_opened   DATETIME,
     last_modified DATETIME

@@ -52,6 +52,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "SLADEWxApp.h"
+#include "General/Library.h"
 #include "Scripting/Lua.h"
 #include "Scripting/ScriptManager.h"
 #include "TextEditor/TextLanguage.h"
@@ -468,6 +469,9 @@ bool app::init(const vector<string>& args, double ui_scale)
 	if (!database::init())
 		return false;
 
+	// Init library
+	library::init();
+
 	// Init SActions
 	SAction::setBaseWxId(26000);
 	SAction::initActions();
@@ -602,6 +606,19 @@ void app::saveConfigFile()
 	}
 	file.Write("}\n");
 
+	// Write recent files
+	// This isn't used in 3.3.0+, but we'll write them anyway for backwards-compatibility with previous versions
+	// (will be removed eventually, perhaps in 3.4.0)
+	auto recent_files = library::recentFiles();
+	file.Write("\nrecent_files\n{\n");
+	for (int i = recent_files.size() - 1; i >= 0; --i)
+	{
+		auto path = recent_files[i];
+		std::replace(path.begin(), path.end(), '\\', '/');
+		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
+	}
+	file.Write("}\n");
+
 	// Write keybinds
 	file.Write("\nkeys\n{\n");
 	file.Write(KeyBind::writeBinds());
@@ -681,6 +698,10 @@ void app::exit(bool save_config)
 
 	// Close DUMB
 	dumb_exit();
+
+	// Close program database
+	database::global().vacuum();
+	database::close();
 
 	// Exit wx Application
 	wxGetApp().Exit();
