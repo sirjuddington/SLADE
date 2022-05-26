@@ -11,8 +11,7 @@ CREATE TABLE archive_elist_config (
     type_visible    BOOLEAN,
     type_width      INTEGER,
     sort_column     TEXT,
-    sort_descending BOOLEAN,
-    filter_visible  BOOLEAN
+    sort_descending BOOLEAN
 );
 
 COMMIT TRANSACTION;

@@ -36,7 +36,6 @@
 #include "Archive/Formats/DirArchive.h"
 #include "Archive/Formats/WadArchive.h"
 #include "General/Console.h"
-#include "General/Library.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
@@ -142,9 +141,6 @@ bool archiveoperations::saveAs(Archive& archive)
 			wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxICON_ERROR);
 			return false;
 		}
-
-		// Add to library
-		library::addOrUpdateArchive(filename, archive);
 
 		return true;
 	}

@@ -34,14 +34,24 @@ string insert_archive_entry =
 string update_archive_elist_config =
 	"UPDATE archive_elist_config "
 	"SET index_visible = ?, index_width = ?, name_width = ?, size_visible = ?, size_width = ?, type_visible = ?, "
-	"    type_width = ?, sort_column = ?, sort_descending = ?, filter_visible = ? "
+	"    type_width = ?, sort_column = ?, sort_descending = ? "
 	"WHERE archive_id = ?";
 string insert_archive_elist_config =
 	"INSERT INTO archive_elist_config (archive_id, index_visible, index_width, name_width, size_visible, size_width, "
-	"                                  type_visible, type_width, sort_column, sort_descending, filter_visible) "
-	"VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+	"                                  type_visible, type_width, sort_column, sort_descending) "
+	"VALUES (?,?,?,?,?,?,?,?,?,?)";
 
 } // namespace slade::library
+
+
+EXTERN_CVAR(Int, elist_colsize_name_tree)
+EXTERN_CVAR(Int, elist_colsize_name_list)
+EXTERN_CVAR(Int, elist_colsize_size)
+EXTERN_CVAR(Int, elist_colsize_type)
+EXTERN_CVAR(Int, elist_colsize_index)
+EXTERN_CVAR(Bool, elist_colsize_show)
+EXTERN_CVAR(Bool, elist_coltype_show)
+EXTERN_CVAR(Bool, elist_colindex_show)
 
 
 namespace slade::library
@@ -130,7 +140,7 @@ int64_t insertArchiveFileRow(const ArchiveFile& row)
 
 ArchiveEntryListConfig getArchiveEntryListConfigRow(int64_t archive_id)
 {
-	ArchiveEntryListConfig row{ archive_id };
+	ArchiveEntryListConfig row;
 
 	if (auto sql = database::global().cacheQuery(
 			"get_archive_elist_config", "SELECT * FROM archive_elist_config WHERE archive_id = ?"))
@@ -140,6 +150,7 @@ ArchiveEntryListConfig getArchiveEntryListConfigRow(int64_t archive_id)
 
 		if (sql->executeStep())
 		{
+			row.archive_id      = archive_id;
 			row.index_visible   = sql->getColumn("index_visible").getInt() > 0;
 			row.index_width     = sql->getColumn("index_width").getInt();
 			row.name_width      = sql->getColumn("name_width").getInt();
@@ -149,7 +160,6 @@ ArchiveEntryListConfig getArchiveEntryListConfigRow(int64_t archive_id)
 			row.type_width      = sql->getColumn("type_width").getInt();
 			row.sort_column     = sql->getColumn("sort_column").getString();
 			row.sort_descending = sql->getColumn("sort_descending").getInt() > 0;
-			row.filter_visible  = sql->getColumn("filter_visible").getInt() > 0;
 		}
 
 		sql->reset();
@@ -179,8 +189,7 @@ int updateArchiveEntryListConfigRow(const ArchiveEntryListConfig& row)
 		sql->bind(7, row.type_width);
 		sql->bind(8, row.sort_column);
 		sql->bind(9, row.sort_descending);
-		sql->bind(10, row.filter_visible);
-		sql->bind(11, row.archive_id);
+		sql->bind(10, row.archive_id);
 
 		rows = sql->exec();
 		sql->reset();
@@ -208,7 +217,6 @@ int64_t insertArchiveEntryListConfigRow(const ArchiveEntryListConfig& row)
 		sql->bind(8, row.type_width);
 		sql->bind(9, row.sort_column);
 		sql->bind(10, row.sort_descending);
-		sql->bind(11, row.filter_visible);
 
 		if (sql->exec() > 0)
 			row_id = database::global().connectionRW()->getLastInsertRowid();
@@ -311,7 +319,7 @@ int deleteArchiveEntryRowsByArchiveId(int64_t archive_id)
 void library::init()
 {
 	//// Add to library when archive is opened
-	//app::archiveManager().signals().archive_opened.connect(
+	// app::archiveManager().signals().archive_opened.connect(
 	//	[](unsigned index)
 	//	{
 	//		auto archive = app::archiveManager().getArchive(index);
@@ -379,14 +387,34 @@ ArchiveEntryListConfig library::archiveEntryListConfig(int64_t archive_id)
 bool library::saveArchiveEntryListConfig(const ArchiveEntryListConfig& row)
 {
 	// Check if the row for the archive already exists
-	auto query  = fmt::format("SELECT EXISTS(SELECT 1 FROM archive_elist_config WHERE archive_id = {})");
+	auto query = fmt::format("SELECT EXISTS(SELECT 1 FROM archive_elist_config WHERE archive_id = {})", row.archive_id);
 	auto exists = database::connectionRO()->execAndGet(query).getInt() > 0;
+
+	log::debug("Saving entry list config for archive {}", row.archive_id);
 
 	// Update/Insert
 	if (exists)
 		return updateArchiveEntryListConfigRow(row) > 0;
 	else
 		return insertArchiveEntryListConfigRow(row) > 0;
+}
+
+ArchiveEntryListConfig library::createArchiveEntryListConfig(int64_t archive_id, bool tree_view)
+{
+	ArchiveEntryListConfig config;
+
+	config.archive_id    = archive_id;
+	config.index_visible = elist_colindex_show;
+	config.index_width   = elist_colsize_index;
+	config.name_width    = tree_view ? elist_colsize_name_tree : elist_colsize_name_list;
+	config.size_visible  = elist_colsize_show;
+	config.size_width    = elist_colsize_size;
+	config.type_visible  = elist_coltype_show;
+	config.type_width    = elist_colsize_type;
+
+	log::debug("Created default entry list config for archive {}", archive_id);
+
+	return config;
 }
 
 int64_t library::addOrUpdateArchive(string_view file_path, const Archive& archive)

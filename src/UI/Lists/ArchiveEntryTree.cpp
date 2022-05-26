@@ -38,6 +38,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/ColourConfiguration.h"
+#include "General/Library.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -54,17 +55,17 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-wxColour                           col_text_modified(0, 0, 0, 0);
-wxColour                           col_text_new(0, 0, 0, 0);
-wxColour                           col_text_locked(0, 0, 0, 0);
+wxColour col_text_modified(0, 0, 0, 0);
+wxColour col_text_new(0, 0, 0, 0);
+wxColour col_text_locked(0, 0, 0, 0);
 #if wxCHECK_VERSION(3, 1, 6)
 std::unordered_map<string, wxBitmapBundle> icon_cache;
 #else
 std::unordered_map<string, wxIcon> icon_cache;
 #endif
-vector<int>                        elist_chars = {
-    '.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
-    ']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
+vector<int> elist_chars = {
+	'.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
+	']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
 };
 } // namespace slade::ui
 
@@ -125,7 +126,7 @@ ArchivePathPanel::ArchivePathPanel(wxWindow* parent) : wxPanel{ parent }
 // -----------------------------------------------------------------------------
 // Sets the current path to where [dir] is in its Archive
 // -----------------------------------------------------------------------------
-void ArchivePathPanel::setCurrentPath(ArchiveDir* dir) const
+void ArchivePathPanel::setCurrentPath(const ArchiveDir* dir) const
 {
 	if (dir == nullptr)
 	{
@@ -405,10 +406,10 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		if (icon_cache.find(entry->type()->icon()) == icon_cache.end())
 		{
 			// Not found, add to cache
-			const auto pad  = Point2i{ 1, elist_icon_padding };
+			const auto pad = Point2i{ 1, elist_icon_padding };
 
 #if wxCHECK_VERSION(3, 1, 6)
-			const auto bundle  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
+			const auto bundle = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
 			icon_cache[entry->type()->icon()] = bundle;
 #else
 			const auto size = scalePx(elist_icon_size);
@@ -972,6 +973,13 @@ ArchiveEntryTree::ArchiveEntryTree(
 				model_->showModifiedIndicators(true);
 		});
 
+	// Header left click (ie. sorting change)
+	Bind(wxEVT_DATAVIEW_COLUMN_HEADER_CLICK, [this](wxDataViewEvent& e)
+	{
+		CallAfter(&ArchiveEntryTree::saveColumnConfig);
+		e.Skip();
+	});
+
 	// Header right click
 	Bind(
 		wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK,
@@ -981,9 +989,9 @@ ArchiveEntryTree::ArchiveEntryTree(
 			wxMenu context;
 			context.Append(0, "Reset Sorting");
 			context.AppendSeparator();
-			context.AppendCheckItem(1, "Index", "Show the Index column")->Check(elist_colindex_show);
-			context.AppendCheckItem(2, "Size", "Show the Size column")->Check(elist_colsize_show);
-			context.AppendCheckItem(3, "Type", "Show the Type column")->Check(elist_coltype_show);
+			context.AppendCheckItem(1, "Index", "Show the Index column")->Check(col_index_->IsShown());
+			context.AppendCheckItem(2, "Size", "Show the Size column")->Check(col_size_->IsShown());
+			context.AppendCheckItem(3, "Type", "Show the Type column")->Check(col_type_->IsShown());
 			PopupMenu(&context);
 			e.Skip();
 		});
@@ -1009,6 +1017,8 @@ ArchiveEntryTree::ArchiveEntryTree(
 					col_index_->UnsetAsSortKey();
 #endif
 				model_->Resort();
+				saveColumnConfig();
+
 				wxDataViewEvent de;
 				de.SetEventType(wxEVT_DATAVIEW_COLUMN_SORTED);
 				ProcessWindowEvent(de);
@@ -1019,6 +1029,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 				elist_colindex_show = !elist_colindex_show;
 				col_index_->SetHidden(!elist_colindex_show);
 				updateColumnWidths();
+				saveColumnConfig();
 			}
 			else if (e.GetId() == 2)
 			{
@@ -1026,6 +1037,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 				elist_colsize_show = !elist_colsize_show;
 				col_size_->SetHidden(!elist_colsize_show);
 				updateColumnWidths();
+				saveColumnConfig();
 			}
 			else if (e.GetId() == 3)
 			{
@@ -1033,6 +1045,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 				elist_coltype_show = !elist_coltype_show;
 				col_type_->SetHidden(!elist_coltype_show);
 				updateColumnWidths();
+				saveColumnConfig();
 			}
 			else
 				e.Skip();
@@ -1508,39 +1521,65 @@ void ArchiveEntryTree::setupColumns()
 	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
 	auto colstyle_hidden  = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_HIDDEN;
 
+	// Get entry list config from library for the archive
+	auto lib_id = library::archiveFileId(archive->filename());
+	auto config = library::archiveEntryListConfig(lib_id);
+
+	// If no config exists for the archive, create one from the cvars
+	if (config.archive_id < 0)
+	{
+		config = library::createArchiveEntryListConfig(lib_id, model_->viewType() == ArchiveViewModel::ViewType::Tree);
+		library::saveArchiveEntryListConfig(config);
+	}
+
 	// Add Columns
 	col_index_ = AppendTextColumn(
 		"#",
 		3,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_index,
+		config.index_width,
 		wxALIGN_NOT,
-		elist_colindex_show ? colstyle_visible : colstyle_hidden);
+		config.index_visible ? colstyle_visible : colstyle_hidden);
 	col_name_ = AppendIconTextColumn(
 		"Name",
 		0,
 		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
-		model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree : elist_colsize_name_list,
+		config.name_width,
 		wxALIGN_NOT,
 		colstyle_visible);
 	col_size_ = AppendTextColumn(
 		"Size",
 		1,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_size,
+		config.size_width,
 		wxALIGN_NOT,
-		elist_colsize_show ? colstyle_visible : colstyle_hidden);
+		config.size_visible ? colstyle_visible : colstyle_hidden);
 	col_type_ = AppendTextColumn(
 		"Type",
 		2,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_type,
+		config.type_width,
 		wxALIGN_NOT,
-		elist_coltype_show ? colstyle_visible : colstyle_hidden);
+		config.type_visible ? colstyle_visible : colstyle_hidden);
 	SetExpanderColumn(col_name_);
 
 	// Last column will expand anyway, this ensures we don't get unnecessary horizontal scrollbars
 	GetColumn(GetColumnCount() - 1)->SetWidth(0);
+
+	// Load sorting config
+	if (!config.sort_column.empty())
+	{
+		if (config.sort_column == "index")
+			col_index_->SetSortOrder(!config.sort_descending);
+		else if (config.sort_column == "name")
+			col_name_->SetSortOrder(!config.sort_descending);
+		else if (config.sort_column == "size")
+			col_size_->SetSortOrder(!config.sort_descending);
+		else if (config.sort_column == "type")
+			col_type_->SetSortOrder(!config.sort_descending);
+
+		model_->Resort();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1557,26 +1596,92 @@ void ArchiveEntryTree::saveColumnWidths() const
 			break;
 		}
 
+	// Need to check if any widths changed since last time so we aren't constantly hitting the library/database
+	static bool changed[4];
+	changed[0] = false;
+	changed[1] = false;
+	changed[2] = false;
+	changed[3] = false;
+
+	// Index column
+	if (!col_index_->IsHidden())
+	{
+		elist_colsize_index = col_index_->GetWidth();
+
+		if (col_index_width_ != col_index_->GetWidth())
+		{
+			col_index_width_ = col_index_->GetWidth();
+			changed[0]       = true;
+		}
+	}
+
+	// Name column
 	if (last_col != col_name_)
 	{
 		if (model_->viewType() == ArchiveViewModel::ViewType::Tree)
 			elist_colsize_name_tree = col_name_->GetWidth();
 		else
 			elist_colsize_name_list = col_name_->GetWidth();
+
+		if (col_name_width_ != col_name_->GetWidth())
+		{
+			col_name_width_ = col_name_->GetWidth();
+			changed[1]      = true;
+		}
 	}
 
+	// Size column
 	if (last_col != col_size_ && !col_size_->IsHidden())
+	{
 		elist_colsize_size = col_size_->GetWidth();
 
+		if (col_size_width_ != col_size_->GetWidth())
+		{
+			col_size_width_ = col_size_->GetWidth();
+			changed[2]      = true;
+		}
+	}
+
+	// Type column
 	if (last_col != col_type_ && !col_type_->IsHidden())
+	{
 		elist_colsize_type = col_type_->GetWidth();
 
-	if (!col_index_->IsHidden())
-		elist_colsize_index = col_index_->GetWidth();
+		if (col_type_width_ != col_type_->GetWidth())
+		{
+			col_type_width_ = col_type_->GetWidth();
+			changed[3]      = true;
+		}
+	}
+
+	// Write to library if anything changed
+	if (changed[0] || changed[1] || changed[2] || changed[3])
+	{
+		const auto archive = archive_.lock();
+		if (!archive)
+			return;
+
+		auto lib_id = library::archiveFileId(archive->filename());
+		auto config = library::archiveEntryListConfig(lib_id);
+		if (config.archive_id < 0)
+			return;
+
+		if (changed[0])
+			config.index_width = col_index_width_;
+		if (changed[1])
+			config.name_width = col_name_width_;
+		if (changed[2])
+			config.size_width = col_size_width_;
+		if (changed[3])
+			config.type_width = col_type_width_;
+
+		library::saveArchiveEntryListConfig(config);
+	}
 }
 
 // -----------------------------------------------------------------------------
-// Updates the currently visible columns' widths from their respective cvars
+// Updates the currently visible columns' widths from their respective cvars or
+// the config in the library
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::updateColumnWidths()
 {
@@ -1593,13 +1698,69 @@ void ArchiveEntryTree::updateColumnWidths()
 			break;
 		}
 
+	auto lib_id = library::archiveFileId(archive->filename());
+	auto config = library::archiveEntryListConfig(lib_id);
+
+	auto index_width = config.archive_id < 0 ? elist_colsize_index : config.index_width;
+	auto size_width  = config.archive_id < 0 ? elist_colsize_size : config.size_width;
+	auto type_width  = config.archive_id < 0 ? elist_colsize_type : config.type_width;
+	auto name_width  = config.name_width;
+	if (config.archive_id < 0)
+		name_width = model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree :
+                                                                              elist_colsize_name_list;
+
 	Freeze();
-	col_index_->SetWidth(elist_colsize_index);
-	col_name_->SetWidth(
-		model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree : elist_colsize_name_list);
-	col_size_->SetWidth(col_size_ == last_col ? 0 : elist_colsize_size);
-	col_type_->SetWidth(col_type_ == last_col ? 0 : elist_colsize_type);
+	col_index_->SetWidth(index_width);
+	col_name_->SetWidth(col_name_ == last_col ? 0 : name_width);
+	col_size_->SetWidth(col_size_ == last_col ? 0 : size_width);
+	col_type_->SetWidth(col_type_ == last_col ? 0 : type_width);
 	Thaw();
+}
+
+void ArchiveEntryTree::saveColumnConfig() // (can't be made const - is called from wx event handler)
+{
+	const auto archive = archive_.lock();
+	if (!archive)
+		return;
+
+	auto lib_id = library::archiveFileId(archive->filename());
+	auto config = library::archiveEntryListConfig(lib_id);
+	if (config.archive_id < 0)
+		return;
+
+	// Visible columns
+	config.index_visible = col_index_->IsShown();
+	config.size_visible = col_size_->IsShown();
+	config.type_visible = col_type_->IsShown();
+
+	// Sorting
+	config.sort_descending = false;
+	if (col_index_->IsSortKey())
+	{
+		config.sort_column = "index";
+		config.sort_descending = !col_index_->IsSortOrderAscending();
+	}
+	else if (col_name_->IsSortKey())
+	{
+		config.sort_column = "name";
+		config.sort_descending = !col_name_->IsSortOrderAscending();
+	}
+	else if (col_size_->IsSortKey())
+	{
+		config.sort_column = "size";
+		config.sort_descending = !col_size_->IsSortOrderAscending();
+	}
+	else if (col_type_->IsSortKey())
+	{
+		config.sort_column = "type";
+		config.sort_descending = !col_type_->IsSortOrderAscending();
+	}
+	else
+		config.sort_column = {};
+
+	// TODO: Column widths? Or just leave that to saveColumnWidths()
+
+	library::saveArchiveEntryListConfig(config);
 }
 
 #ifdef __WXMSW__

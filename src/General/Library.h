@@ -48,7 +48,6 @@ namespace library
 		int     type_width    = -1;
 		string  sort_column;
 		bool    sort_descending = false;
-		bool    filter_visible  = false;
 
 		ArchiveEntryListConfig() = default;
 		ArchiveEntryListConfig(int64_t archive_id) : archive_id{ archive_id } {}
@@ -73,8 +72,7 @@ namespace library
 			type_visible{ type_visible },
 			type_width{ type_width },
 			sort_column{ sort_column },
-			sort_descending{ sort_descending },
-			filter_visible{ filter_visible }
+			sort_descending{ sort_descending }
 		{
 		}
 	};
@@ -109,6 +107,7 @@ namespace library
 	// ArchiveEntryListConfig
 	ArchiveEntryListConfig archiveEntryListConfig(int64_t archive_id);
 	bool                   saveArchiveEntryListConfig(const ArchiveEntryListConfig& row);
+	ArchiveEntryListConfig createArchiveEntryListConfig(int64_t archive_id, bool tree_view);
 
 	// General
 	int64_t        addOrUpdateArchive(string_view file_path, const Archive& archive);

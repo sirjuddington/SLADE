@@ -18,7 +18,7 @@ namespace ui
 	public:
 		ArchivePathPanel(wxWindow* parent);
 
-		void setCurrentPath(ArchiveDir* dir) const;
+		void setCurrentPath(const ArchiveDir* dir) const;
 
 	private:
 		SToolBarButton* btn_home_  = nullptr;
@@ -143,9 +143,17 @@ namespace ui
 		int               multi_select_base_index_ = -1;
 		string            search_;
 
+		// Need to keep track of changes to column widths manually because
+		// wxDataViewCtrl doesn't offer any events for column size changes
+		mutable int col_index_width_ = -1;
+		mutable int col_name_width_  = -1;
+		mutable int col_size_width_  = -1;
+		mutable int col_type_width_  = -1;
+
 		void setupColumns();
 		void saveColumnWidths() const;
 		void updateColumnWidths();
+		void saveColumnConfig();
 
 #ifdef __WXMSW__
 		bool lookForSearchEntryFrom(int index_start);
