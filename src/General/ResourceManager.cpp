@@ -353,7 +353,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 	strutil::upperIP(path);
 	path.erase(0, 1);
 
-	log::debug("Adding entry {} to resource manager", path);
+	//log::debug("Adding entry {} to resource manager", path);
 
 	// Check for palette entry
 	if (type->id() == "palette")
@@ -480,7 +480,7 @@ void ResourceManager::removeEntry(ArchiveEntry* entry, string_view entry_name, b
 	strutil::upperIP(path);
 	path.erase(0, 1);
 
-	log::debug("Removing entry {} from resource manager", path);
+	//log::debug("Removing entry {} from resource manager", path);
 
 	// Remove from palettes
 	removeEntryFromMap(palettes_, name, entry, full_check);

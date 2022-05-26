@@ -184,15 +184,27 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive, int64_t library_arc
 	{
 		// Add to the list
 		OpenArchive n_archive;
-		n_archive.archive  = archive;
-		n_archive.resource = true;
+		n_archive.archive    = archive;
+		n_archive.resource   = true;
 		n_archive.library_id = library_archive_id;
 		open_archives_.push_back(n_archive);
 
 		// Emit archive changed/saved signal when received from the archive
 		archive->signals().modified.connect([this](Archive& archive, bool modified)
 											{ signals_.archive_modified(archiveIndex(&archive), modified); });
-		archive->signals().saved.connect([this](Archive& archive) { signals_.archive_saved(archiveIndex(&archive)); });
+		archive->signals().saved.connect(
+			[this](Archive& archive)
+			{
+				// Update in library
+				if (archive.isOnDisk() && archive.formatId() != "folder")
+				{
+					for (auto& open_archive : open_archives_)
+						if (open_archive.archive.get() == &archive)
+							open_archive.library_id = library::addOrUpdateArchive(archive.filename(), archive);
+				}
+
+				signals_.archive_saved(archiveIndex(&archive));
+			});
 
 		// Announce the addition
 		signals_.archive_added(open_archives_.size() - 1);
@@ -345,29 +357,32 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		return nullptr;
 	}
 
-	// Try to find archive in library
+	// Try to find archive in library (if archive will be managed)
 	int64_t lib_id = -1;
-	SFile file(filename);
-	if (file.isOpen())
+	if (manage)
 	{
-		lib_id = library::archiveFileId(fn);
-
-		// No filename match found, check for data-only match (eg. if file has been renamed/moved)
-		if (lib_id < 0)
+		SFile file(filename);
+		if (file.isOpen())
 		{
-			auto hash = file.calculateHash();
+			lib_id = library::archiveFileId(fn);
 
-			auto match_id = library::findArchiveFileIdFromData(file.size(), hash);
-			if (match_id >= 0)
+			// No filename match found, check for data-only match (eg. if file has been renamed/moved)
+			if (lib_id < 0)
 			{
-				log::info(2, "Found {} in library, id {} (data-only match)", filename, match_id);
-				lib_id = library::addArchiveCopy(filename, match_id);
+				auto hash = file.calculateHash();
+
+				auto match_id = library::findArchiveFileIdFromData(file.size(), hash);
+				if (match_id >= 0)
+				{
+					log::info(2, "Found {} in library, id {} (data-only match)", filename, match_id);
+					lib_id = library::addArchiveCopy(filename, match_id);
+				}
 			}
+			else
+				log::info(2, "Found {} in library, id {}", filename, lib_id);
 		}
-		else
-			log::info(2, "Found {} in library, id {}", filename, lib_id);
+		file.close();
 	}
-	file.close();
 
 	// If it opened successfully, add it to the list if needed & return it,
 	// Otherwise, delete it and return nullptr
@@ -378,6 +393,9 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 			// Add the archive
 			auto index = open_archives_.size();
 			addArchive(new_archive, lib_id);
+
+			// Add to library
+			library::addOrUpdateArchive(filename, *new_archive);
 
 			// Announce open
 			if (!silent)
@@ -488,6 +506,8 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// TODO: Add to library (and remove check from addArchive)
+
 			// Announce open
 			if (!silent)
 				signals_.archive_opened(index);
@@ -535,6 +555,8 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 			// Add the archive
 			auto index = open_archives_.size();
 			addArchive(new_archive);
+
+			// TODO: Add to library (and remove check in addArchive)
 
 			// Announce open
 			if (!silent)

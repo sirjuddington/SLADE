@@ -35,7 +35,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Game/Configuration.h"
-#include "General/Library.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapBackupManager.h"
@@ -929,7 +928,6 @@ bool MapEditorWindow::saveMapAs()
 	// Write wad to file
 	wad.save(info.filenames[0]);
 	auto archive = app::archiveManager().openArchive(info.filenames[0], true, true);
-	library::addOrUpdateArchive(info.filenames[0], *archive);
 
 	// Update current map description
 	auto maps = archive->detectMaps();

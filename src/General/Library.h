@@ -36,6 +36,49 @@ namespace library
 		ArchiveFile() = default;
 	};
 
+	struct ArchiveEntryListConfig
+	{
+		int64_t archive_id    = -1;
+		bool    index_visible = false;
+		int     index_width   = -1;
+		int     name_width    = -1;
+		bool    size_visible  = true;
+		int     size_width    = -1;
+		bool    type_visible  = true;
+		int     type_width    = -1;
+		string  sort_column;
+		bool    sort_descending = false;
+		bool    filter_visible  = false;
+
+		ArchiveEntryListConfig() = default;
+		ArchiveEntryListConfig(int64_t archive_id) : archive_id{ archive_id } {}
+		ArchiveEntryListConfig(
+			int64_t     archive_id,
+			bool        index_visible,
+			int         index_width,
+			int         name_width,
+			bool        size_visible,
+			int         size_width,
+			bool        type_visible,
+			int         type_width,
+			string_view sort_column,
+			bool        sort_descending,
+			bool        filter_visible) :
+			archive_id{ archive_id },
+			index_visible{ index_visible },
+			index_width{ index_width },
+			name_width{ name_width },
+			size_visible{ size_visible },
+			size_width{ size_width },
+			type_visible{ type_visible },
+			type_width{ type_width },
+			sort_column{ sort_column },
+			sort_descending{ sort_descending },
+			filter_visible{ filter_visible }
+		{
+		}
+	};
+
 	struct ArchiveEntry
 	{
 		int64_t  id;
@@ -53,15 +96,21 @@ namespace library
 
 	struct Signals
 	{
-		sigslot::signal<> updated;
+		sigslot::signal<> archive_file_updated;
 	};
 
 	void init();
 
+	// ArchiveFile
 	int64_t archiveFileId(const string& filename);
 	int64_t findArchiveFileIdFromData(unsigned size, const string& hash);
 	int64_t addArchiveCopy(string_view file_path, int64_t copy_from_id);
 
+	// ArchiveEntryListConfig
+	ArchiveEntryListConfig archiveEntryListConfig(int64_t archive_id);
+	bool                   saveArchiveEntryListConfig(const ArchiveEntryListConfig& row);
+
+	// General
 	int64_t        addOrUpdateArchive(string_view file_path, const Archive& archive);
 	vector<string> recentFiles(unsigned count = 20);
 	string         findEntryTypeId(const slade::ArchiveEntry& entry);

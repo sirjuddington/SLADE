@@ -546,7 +546,7 @@ void ArchiveManagerPanel::updateRecentListItem(int index) const
 {
 	// Get path as wxFileName for processing
 	const auto& path = recent_file_paths_[index];
-	wxFileName fn(path);
+	wxFileName  fn(path);
 
 	// Set item name
 	list_recent_->setItemText(index, 0, fn.GetFullName());
@@ -1781,7 +1781,7 @@ void ArchiveManagerPanel::removeSelection() const
 
 	// Remove selected recent files (starting from the last and going backward,
 	// because the list reorders itself whenever an item is removed)
-	//for (unsigned a = selection.size(); a > 0; --a)
+	// for (unsigned a = selection.size(); a > 0; --a)
 	//	app::archiveManager().removeRecentFile(app::archiveManager().recentFile(selection[a - 1]));
 }
 
@@ -2145,7 +2145,7 @@ void ArchiveManagerPanel::onListRecentRightClick(wxListEvent& e)
 	// Generate context menu
 	wxMenu context;
 	SAction::fromId("aman_recent_open")->addToMenu(&context, true);
-	//SAction::fromId("aman_recent_remove")->addToMenu(&context, true);
+	// SAction::fromId("aman_recent_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -2313,7 +2313,7 @@ void ArchiveManagerPanel::connectSignals()
 	signal_connections += signals.archive_opened.connect([this](int index) { openTab(index); });
 
 	// Refresh recent files list when library updated
-	signal_connections += library::signals().updated.connect([this]() { refreshRecentFileList(); });
+	signal_connections += library::signals().archive_file_updated.connect([this]() { refreshRecentFileList(); });
 
 	// Refresh bookmarks list when changed
 	signal_connections += signals.bookmark_added.connect([this](ArchiveEntry*) { refreshBookmarkList(); });
