@@ -859,6 +859,19 @@ shared_ptr<Archive> ArchiveManager::shareArchive(const Archive* const archive)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the id of [archive] in the library, or -1 if it is not a managed
+// archive or doesn't exist in the library
+// -----------------------------------------------------------------------------
+int64_t ArchiveManager::archiveLibraryId(const Archive& archive) const
+{
+	for (const auto& oa : open_archives_)
+		if (oa.archive.get() == &archive)
+			return oa.library_id;
+
+	return -1;
+}
+
+// -----------------------------------------------------------------------------
 // Adds [path] to the list of base resource paths
 // -----------------------------------------------------------------------------
 bool ArchiveManager::addBaseResourcePath(string_view path)

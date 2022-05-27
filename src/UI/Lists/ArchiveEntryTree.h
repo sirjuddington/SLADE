@@ -105,6 +105,7 @@ namespace ui
 		bool isSortedBySize() const { return GetSortingColumn() == col_size_; }
 		bool isSortedByType() const { return GetSortingColumn() == col_type_; }
 		bool isDefaultSorted() const;
+		bool isTreeView() const { return model_ ? model_->viewType() == ArchiveViewModel::ViewType::Tree : false; }
 
 		vector<ArchiveEntry*> selectedEntries(bool include_dirs = false) const;
 		ArchiveEntry*         firstSelectedEntry(bool include_dirs = false) const;

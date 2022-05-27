@@ -35,6 +35,7 @@ public:
 	void                        setArchiveResource(Archive* archive, bool resource = true);
 	vector<shared_ptr<Archive>> allArchives(bool resource_only = false) const;
 	shared_ptr<Archive>         shareArchive(const Archive* archive);
+	int64_t                     archiveLibraryId(const Archive& archive) const;
 
 	// General access
 	const vector<string>&                 baseResourcePaths() const { return base_resource_paths_; }

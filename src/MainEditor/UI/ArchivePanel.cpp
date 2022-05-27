@@ -50,6 +50,7 @@
 #include "General/Clipboard.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
+#include "General/Library.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/Palette/PaletteManager.h"
@@ -143,8 +144,8 @@ public:
 
 		// Determine directory and index to import to
 		auto* hit_entry = static_cast<ArchiveEntry*>(hit_item.GetID());
-		auto* dir = list_->currentRootDir();
-		int index = -1;
+		auto* dir       = list_->currentRootDir();
+		int   index     = -1;
 		if (hit_entry)
 		{
 			if (hit_entry->type() == EntryType::folderType())
@@ -170,7 +171,7 @@ public:
 				if (archive->formatDesc().supports_dirs)
 				{
 					strutil::Path fn(filenames[a].ToStdString());
-					auto ndir = archive->createDir(fn.fileName(false), ArchiveDir::getShared(dir));
+					auto          ndir = archive->createDir(fn.fileName(false), ArchiveDir::getShared(dir));
 					archive->importDir(fn.fullPath(), true, ndir);
 				}
 
@@ -426,14 +427,17 @@ size_t getNamespaceNumber(
 ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	wxPanel(parent, -1), archive_{ archive }, undo_manager_{ new UndoManager() }, ee_manager_{ new ExternalEditManager }
 {
-	setup(archive.get());
-	bindEvents(archive.get());
+	if (archive)
+	{
+		setup(*archive);
+		bindEvents(archive.get());
+	}
 }
 
 // -----------------------------------------------------------------------------
 // Setup the panel controls and layout
 // -----------------------------------------------------------------------------
-void ArchivePanel::setup(Archive* archive)
+void ArchivePanel::setup(const Archive& archive)
 {
 	// Create controls
 	splitter_         = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
@@ -461,9 +465,9 @@ void ArchivePanel::setup(Archive* archive)
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(ui::scalePx(300));
 	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	int split_pos = ap_splitter_position_list;
-	if (archive && archive->formatDesc().supports_dirs)
-		split_pos = ap_splitter_position_tree;
+	auto split_pos = library::archiveUIConfigSplitterPos(app::archiveManager().archiveLibraryId(archive));
+	if (split_pos < 0)
+		split_pos = archive.formatDesc().supports_dirs ? ap_splitter_position_tree : ap_splitter_position_list;
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
 	// Update size+layout
@@ -497,6 +501,9 @@ void ArchivePanel::bindEvents(Archive* archive)
 					ap_splitter_position_tree = e.GetSashPosition();
 				else
 					ap_splitter_position_list = e.GetSashPosition();
+
+				auto lib_id = app::archiveManager().archiveLibraryId(*archive);
+				library::saveArchiveUIConfigSplitterPos(lib_id, e.GetSashPosition());
 			}
 		});
 

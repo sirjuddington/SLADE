@@ -974,11 +974,13 @@ ArchiveEntryTree::ArchiveEntryTree(
 		});
 
 	// Header left click (ie. sorting change)
-	Bind(wxEVT_DATAVIEW_COLUMN_HEADER_CLICK, [this](wxDataViewEvent& e)
-	{
-		CallAfter(&ArchiveEntryTree::saveColumnConfig);
-		e.Skip();
-	});
+	Bind(
+		wxEVT_DATAVIEW_COLUMN_HEADER_CLICK,
+		[this](wxDataViewEvent& e)
+		{
+			CallAfter(&ArchiveEntryTree::saveColumnConfig);
+			e.Skip();
+		});
 
 	// Header right click
 	Bind(
@@ -1519,17 +1521,17 @@ void ArchiveEntryTree::setupColumns()
 		return;
 
 	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
-	auto colstyle_hidden  = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_HIDDEN;
+	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
 
 	// Get entry list config from library for the archive
-	auto lib_id = library::archiveFileId(archive->filename());
-	auto config = library::archiveEntryListConfig(lib_id);
+	auto lib_id = app::archiveManager().archiveLibraryId(*archive);
+	auto config = library::archiveUIConfig(lib_id);
 
 	// If no config exists for the archive, create one from the cvars
 	if (config.archive_id < 0)
 	{
-		config = library::createArchiveEntryListConfig(lib_id, model_->viewType() == ArchiveViewModel::ViewType::Tree);
-		library::saveArchiveEntryListConfig(config);
+		config = library::createArchiveUIConfig(lib_id, model_->viewType() == ArchiveViewModel::ViewType::Tree);
+		library::saveArchiveUIConfig(config);
 	}
 
 	// Add Columns
@@ -1537,46 +1539,46 @@ void ArchiveEntryTree::setupColumns()
 		"#",
 		3,
 		wxDATAVIEW_CELL_INERT,
-		config.index_width,
+		config.elist_index_width,
 		wxALIGN_NOT,
-		config.index_visible ? colstyle_visible : colstyle_hidden);
+		config.elist_index_visible ? colstyle_visible : colstyle_hidden);
 	col_name_ = AppendIconTextColumn(
 		"Name",
 		0,
 		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
-		config.name_width,
+		config.elist_name_width,
 		wxALIGN_NOT,
 		colstyle_visible);
 	col_size_ = AppendTextColumn(
 		"Size",
 		1,
 		wxDATAVIEW_CELL_INERT,
-		config.size_width,
+		config.elist_size_width,
 		wxALIGN_NOT,
-		config.size_visible ? colstyle_visible : colstyle_hidden);
+		config.elist_size_visible ? colstyle_visible : colstyle_hidden);
 	col_type_ = AppendTextColumn(
 		"Type",
 		2,
 		wxDATAVIEW_CELL_INERT,
-		config.type_width,
+		config.elist_type_width,
 		wxALIGN_NOT,
-		config.type_visible ? colstyle_visible : colstyle_hidden);
+		config.elist_type_visible ? colstyle_visible : colstyle_hidden);
 	SetExpanderColumn(col_name_);
 
 	// Last column will expand anyway, this ensures we don't get unnecessary horizontal scrollbars
 	GetColumn(GetColumnCount() - 1)->SetWidth(0);
 
 	// Load sorting config
-	if (!config.sort_column.empty())
+	if (!config.elist_sort_column.empty())
 	{
-		if (config.sort_column == "index")
-			col_index_->SetSortOrder(!config.sort_descending);
-		else if (config.sort_column == "name")
-			col_name_->SetSortOrder(!config.sort_descending);
-		else if (config.sort_column == "size")
-			col_size_->SetSortOrder(!config.sort_descending);
-		else if (config.sort_column == "type")
-			col_type_->SetSortOrder(!config.sort_descending);
+		if (config.elist_sort_column == "index")
+			col_index_->SetSortOrder(!config.elist_sort_descending);
+		else if (config.elist_sort_column == "name")
+			col_name_->SetSortOrder(!config.elist_sort_descending);
+		else if (config.elist_sort_column == "size")
+			col_size_->SetSortOrder(!config.elist_sort_descending);
+		else if (config.elist_sort_column == "type")
+			col_type_->SetSortOrder(!config.elist_sort_descending);
 
 		model_->Resort();
 	}
@@ -1587,6 +1589,8 @@ void ArchiveEntryTree::setupColumns()
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::saveColumnWidths() const
 {
+	const auto archive = archive_.lock();
+
 	// Get the last visible column (we don't want to save the width of this column since it stretches)
 	wxDataViewColumn* last_col = nullptr;
 	for (int i = static_cast<int>(GetColumnCount()) - 1; i >= 0; --i)
@@ -1618,7 +1622,7 @@ void ArchiveEntryTree::saveColumnWidths() const
 	// Name column
 	if (last_col != col_name_)
 	{
-		if (model_->viewType() == ArchiveViewModel::ViewType::Tree)
+		if (archive && archive->formatDesc().supports_dirs)
 			elist_colsize_name_tree = col_name_->GetWidth();
 		else
 			elist_colsize_name_list = col_name_->GetWidth();
@@ -1657,25 +1661,23 @@ void ArchiveEntryTree::saveColumnWidths() const
 	// Write to library if anything changed
 	if (changed[0] || changed[1] || changed[2] || changed[3])
 	{
-		const auto archive = archive_.lock();
 		if (!archive)
 			return;
 
-		auto lib_id = library::archiveFileId(archive->filename());
-		auto config = library::archiveEntryListConfig(lib_id);
+		auto config = library::archiveUIConfig(app::archiveManager().archiveLibraryId(*archive));
 		if (config.archive_id < 0)
 			return;
 
 		if (changed[0])
-			config.index_width = col_index_width_;
+			config.elist_index_width = col_index_width_;
 		if (changed[1])
-			config.name_width = col_name_width_;
+			config.elist_name_width = col_name_width_;
 		if (changed[2])
-			config.size_width = col_size_width_;
+			config.elist_size_width = col_size_width_;
 		if (changed[3])
-			config.type_width = col_type_width_;
+			config.elist_type_width = col_type_width_;
 
-		library::saveArchiveEntryListConfig(config);
+		library::saveArchiveUIConfig(config);
 	}
 }
 
@@ -1698,16 +1700,14 @@ void ArchiveEntryTree::updateColumnWidths()
 			break;
 		}
 
-	auto lib_id = library::archiveFileId(archive->filename());
-	auto config = library::archiveEntryListConfig(lib_id);
+	auto config = library::archiveUIConfig(app::archiveManager().archiveLibraryId(*archive));
 
-	auto index_width = config.archive_id < 0 ? elist_colsize_index : config.index_width;
-	auto size_width  = config.archive_id < 0 ? elist_colsize_size : config.size_width;
-	auto type_width  = config.archive_id < 0 ? elist_colsize_type : config.type_width;
-	auto name_width  = config.name_width;
+	auto index_width = config.archive_id < 0 ? elist_colsize_index : config.elist_index_width;
+	auto size_width  = config.archive_id < 0 ? elist_colsize_size : config.elist_size_width;
+	auto type_width  = config.archive_id < 0 ? elist_colsize_type : config.elist_type_width;
+	auto name_width  = config.elist_name_width;
 	if (config.archive_id < 0)
-		name_width = model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree :
-                                                                              elist_colsize_name_list;
+		name_width = archive->formatDesc().supports_dirs ? elist_colsize_name_tree : elist_colsize_name_list;
 
 	Freeze();
 	col_index_->SetWidth(index_width);
@@ -1723,44 +1723,41 @@ void ArchiveEntryTree::saveColumnConfig() // (can't be made const - is called fr
 	if (!archive)
 		return;
 
-	auto lib_id = library::archiveFileId(archive->filename());
-	auto config = library::archiveEntryListConfig(lib_id);
+	auto config = library::archiveUIConfig(app::archiveManager().archiveLibraryId(*archive));
 	if (config.archive_id < 0)
 		return;
 
 	// Visible columns
-	config.index_visible = col_index_->IsShown();
-	config.size_visible = col_size_->IsShown();
-	config.type_visible = col_type_->IsShown();
+	config.elist_index_visible = col_index_->IsShown();
+	config.elist_size_visible  = col_size_->IsShown();
+	config.elist_type_visible  = col_type_->IsShown();
 
 	// Sorting
-	config.sort_descending = false;
+	config.elist_sort_descending = false;
 	if (col_index_->IsSortKey())
 	{
-		config.sort_column = "index";
-		config.sort_descending = !col_index_->IsSortOrderAscending();
+		config.elist_sort_column     = "index";
+		config.elist_sort_descending = !col_index_->IsSortOrderAscending();
 	}
 	else if (col_name_->IsSortKey())
 	{
-		config.sort_column = "name";
-		config.sort_descending = !col_name_->IsSortOrderAscending();
+		config.elist_sort_column     = "name";
+		config.elist_sort_descending = !col_name_->IsSortOrderAscending();
 	}
 	else if (col_size_->IsSortKey())
 	{
-		config.sort_column = "size";
-		config.sort_descending = !col_size_->IsSortOrderAscending();
+		config.elist_sort_column     = "size";
+		config.elist_sort_descending = !col_size_->IsSortOrderAscending();
 	}
 	else if (col_type_->IsSortKey())
 	{
-		config.sort_column = "type";
-		config.sort_descending = !col_type_->IsSortOrderAscending();
+		config.elist_sort_column     = "type";
+		config.elist_sort_descending = !col_type_->IsSortOrderAscending();
 	}
 	else
-		config.sort_column = {};
+		config.elist_sort_column = {};
 
-	// TODO: Column widths? Or just leave that to saveColumnWidths()
-
-	library::saveArchiveEntryListConfig(config);
+	library::saveArchiveUIConfig(config);
 }
 
 #ifdef __WXMSW__
