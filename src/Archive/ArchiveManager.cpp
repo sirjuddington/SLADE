@@ -196,7 +196,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive, int64_t library_arc
 			[this](Archive& archive)
 			{
 				// Update in library
-				if (archive.isOnDisk() && archive.formatId() != "folder")
+				if (archive.isOnDisk())
 				{
 					for (auto& open_archive : open_archives_)
 						if (open_archive.archive.get() == &archive)
@@ -357,11 +357,19 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		return nullptr;
 	}
 
-	// Try to find archive in library (if archive will be managed)
-	int64_t lib_id = -1;
+	// Attempt to open archive
+	if (!new_archive->open(filename))
+	{
+		log::error(global::error);
+		return nullptr;
+	}
+
+	// Opened ok, add to manager if requested
 	if (manage)
 	{
-		SFile file(filename);
+		// Try to find archive in library
+		int64_t lib_id = -1;
+		SFile   file(filename);
 		if (file.isOpen())
 		{
 			lib_id = library::archiveFileId(fn);
@@ -382,34 +390,20 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 				log::info(2, "Found {} in library, id {}", filename, lib_id);
 		}
 		file.close();
+
+		// Update library
+		lib_id = library::addOrUpdateArchive(filename, *new_archive);
+
+		// Add the archive
+		auto index = open_archives_.size();
+		addArchive(new_archive, lib_id);
+
+		// Announce open
+		if (!silent)
+			signals_.archive_opened(index);
 	}
 
-	// If it opened successfully, add it to the list if needed & return it,
-	// Otherwise, delete it and return nullptr
-	if (new_archive->open(filename))
-	{
-		if (manage)
-		{
-			// Add the archive
-			auto index = open_archives_.size();
-			addArchive(new_archive, lib_id);
-
-			// Add to library
-			library::addOrUpdateArchive(filename, *new_archive);
-
-			// Announce open
-			if (!silent)
-				signals_.archive_opened(index);
-		}
-
-		// Return the opened archive
-		return new_archive;
-	}
-	else
-	{
-		log::error(global::error);
-		return nullptr;
-	}
+	return new_archive;
 }
 
 // -----------------------------------------------------------------------------
@@ -489,39 +483,49 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 		return nullptr;
 	}
 
-	// If it opened successfully, add it to the list & return it,
-	// Otherwise, delete it and return nullptr
-	if (new_archive->open(entry))
-	{
-		if (manage)
-		{
-			// Add to parent's child list if parent is open in the manager (it should be)
-			int index_parent = -1;
-			if (entry->parent())
-				index_parent = archiveIndex(entry->parent());
-			if (index_parent >= 0)
-				open_archives_[index_parent].open_children.emplace_back(new_archive);
-
-			// Add the new archive
-			auto index = open_archives_.size();
-			addArchive(new_archive);
-
-			// TODO: Add to library (and remove check from addArchive)
-
-			// Announce open
-			if (!silent)
-				signals_.archive_opened(index);
-
-			entry->lock();
-		}
-
-		return new_archive;
-	}
-	else
+	// Attempt to open archive
+	if (!new_archive->open(entry))
 	{
 		log::error(global::error);
 		return nullptr;
 	}
+
+	// Opened ok, add to manager if requested
+	if (manage)
+	{
+		// TODO: Nested archives in library
+		//// Try to find archive in library
+		//auto lib_path = fmt::format("{}{}", entry->parent()->filename(), entry->path(true));
+		//auto lib_id   = library::archiveFileId(lib_path);
+
+		//// No filename match found, check for data-only match (eg. if file has been renamed/moved)
+		//if (lib_id < 0)
+		//{
+		//	auto match_id = library::findArchiveFileIdFromData(entry->size(), entry->hash());
+		//	if (match_id >= 0)
+		//	{
+		//		log::info(2, "Found {} in library, id {} (data-only match)", lib_path, match_id);
+		//		lib_id = library::addArchiveCopy(lib_path, match_id);
+		//	}
+		//}
+		//else
+		//	log::info(2, "Found {} in library, id {}", lib_path, lib_id);
+
+		//// Update library
+		//lib_id = library::addOrUpdateArchive(lib_path, *new_archive);
+
+		// Add the archive
+		auto index = open_archives_.size();
+		addArchive(new_archive);
+
+		// Announce open
+		if (!silent)
+			signals_.archive_opened(index);
+
+		entry->lock();
+	}
+
+	return new_archive;
 }
 
 // -----------------------------------------------------------------------------
@@ -546,31 +550,29 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 
 	new_archive = std::make_shared<DirArchive>();
 
-	// If it opened successfully, add it to the list if needed & return it,
-	// Otherwise, delete it and return nullptr
-	if (new_archive->open(dir))
-	{
-		if (manage)
-		{
-			// Add the archive
-			auto index = open_archives_.size();
-			addArchive(new_archive);
-
-			// TODO: Add to library (and remove check in addArchive)
-
-			// Announce open
-			if (!silent)
-				signals_.archive_opened(index);
-		}
-
-		// Return the opened archive
-		return new_archive;
-	}
-	else
+	// Attempt to open archive
+	if (!new_archive->open(dir))
 	{
 		log::error(global::error);
 		return nullptr;
 	}
+
+	// Opened ok, add to manager if requested
+	if (manage)
+	{
+		// Update in library, get id
+		auto lib_id = library::addOrUpdateArchive(dir, *new_archive);
+
+		// Add the archive
+		auto index = open_archives_.size();
+		addArchive(new_archive, lib_id);
+
+		// Announce open
+		if (!silent)
+			signals_.archive_opened(index);
+	}
+
+	return new_archive;
 }
 
 // -----------------------------------------------------------------------------
