@@ -631,7 +631,10 @@ bool entryoperations::convertTextures(const vector<ArchiveEntry*>& entries)
 
 	// Check it exists
 	if (!pnames)
+	{
+		wxMessageBox("Unable to convert - could not find PNAMES entry", "Convert to TEXTURES", wxICON_ERROR|wxOK);
 		return false;
+	}
 
 	// Load patch table
 	PatchTable ptable;

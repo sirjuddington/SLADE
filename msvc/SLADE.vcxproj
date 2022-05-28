@@ -320,6 +320,7 @@
     <ClCompile Include="..\src\Audio\Mp3Music.cpp" />
     <ClCompile Include="..\src\General\Console.cpp" />
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
+    <ClCompile Include="..\src\OpenGL\View.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Archive.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Game.cpp" />
     <ClCompile Include="..\src\Scripting\Export\General.cpp" />
@@ -458,7 +459,6 @@
     <ClCompile Include="..\src\MapEditor\Renderer\Overlays\ThingInfoOverlay.cpp" />
     <ClCompile Include="..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.cpp" />
     <ClCompile Include="..\src\MapEditor\Renderer\Renderer.cpp" />
-    <ClCompile Include="..\src\MapEditor\Renderer\RenderView.cpp" />
     <ClCompile Include="..\src\MapEditor\SectorBuilder.cpp" />
     <ClCompile Include="..\src\MapEditor\UI\Dialogs\ActionSpecialDialog.cpp" />
     <ClCompile Include="..\src\MapEditor\UI\Dialogs\MapTextureBrowser.cpp" />
@@ -686,6 +686,7 @@
     <ClInclude Include="..\src\General\Console.h" />
     <ClInclude Include="..\src\General\Sigslot.h" />
     <ClInclude Include="..\src\Graphics\Graphics.h" />
+    <ClInclude Include="..\src\OpenGL\View.h" />
     <ClInclude Include="..\src\Scripting\Export\Export.h" />
     <ClInclude Include="..\src\UI\Controls\Splitter.h" />
     <ClInclude Include="..\src\UI\Controls\ZoomControl.h" />
@@ -830,7 +831,6 @@
     <ClInclude Include="..\src\MapEditor\Renderer\Overlays\ThingInfoOverlay.h" />
     <ClInclude Include="..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.h" />
     <ClInclude Include="..\src\MapEditor\Renderer\Renderer.h" />
-    <ClInclude Include="..\src\MapEditor\Renderer\RenderView.h" />
     <ClInclude Include="..\src\MapEditor\SectorBuilder.h" />
     <ClInclude Include="..\src\MapEditor\UI\Dialogs\ActionSpecialDialog.h" />
     <ClInclude Include="..\src\MapEditor\UI\Dialogs\MapTextureBrowser.h" />

@@ -1506,7 +1506,7 @@ void ArchiveEntryTree::setupColumns()
 		return;
 
 	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
-	auto colstyle_hidden  = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_HIDDEN;
+	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
 
 	// Add Columns
 	col_index_ = AppendTextColumn(
