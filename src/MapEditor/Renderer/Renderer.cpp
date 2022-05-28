@@ -92,7 +92,7 @@ EXTERN_CVAR(Int, vertex_size)
 // Renderer class constructor
 // -----------------------------------------------------------------------------
 Renderer::Renderer(MapEditContext& context) :
-	context_{ context }, renderer_2d_{ &context.map() }, renderer_3d_{ &context.map() }
+	context_{ context }, renderer_2d_{ &context.map() }, renderer_3d_{ &context.map() }, view_{ true }
 {
 }
 
@@ -114,7 +114,7 @@ void Renderer::setView(double map_x, double map_y)
 	view_.setOffset(map_x, map_y);
 
 	// Update object visibility
-	renderer_2d_.updateVisibility(view_.mapBounds().tl, view_.mapBounds().br);
+	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -126,7 +126,7 @@ void Renderer::setViewSize(int width, int height)
 	view_.setSize(width, height);
 
 	// Update object visibility
-	renderer_2d_.updateVisibility(view_.mapBounds().tl, view_.mapBounds().br);
+	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -134,7 +134,7 @@ void Renderer::setViewSize(int width, int height)
 // -----------------------------------------------------------------------------
 void Renderer::setTopY(double map_y)
 {
-	setView(view_.offset().x, view_.offset().y - (view_.mapY(0) - map_y));
+	setView(view_.offset().x, view_.offset().y - (view_.canvasY(0) - map_y));
 	view_.resetInter(false, true, false);
 }
 
@@ -162,13 +162,19 @@ void Renderer::zoom(double amount, bool toward_cursor)
 {
 	// Zoom view
 	if (toward_cursor)
-		view_.zoomToward(amount, context_.input().mousePosMap());
+	{
+		cursor_zoom_disabled_ = false;
+		view_.zoomToward(amount, context_.input().mousePos());
+	}
 	else
+	{
+		cursor_zoom_disabled_ = true;
 		view_.zoom(amount);
+	}
 
 	// Update object visibility
 	renderer_2d_.setScale(view_.scale(true));
-	renderer_2d_.updateVisibility(view_.mapBounds().tl, view_.mapBounds().br);
+	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -190,7 +196,7 @@ void Renderer::viewFitToMap(bool snap)
 	// Update object visibility
 	renderer_2d_.setScale(view_.scale(true));
 	renderer_2d_.forceUpdate();
-	renderer_2d_.updateVisibility(view_.mapBounds().tl, view_.mapBounds().br);
+	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -249,7 +255,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 	// Update object visibility
 	renderer_2d_.setScale(view_.scale(true));
 	renderer_2d_.forceUpdate();
-	renderer_2d_.updateVisibility(view_.mapBounds().tl, view_.mapBounds().br);
+	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -294,7 +300,7 @@ bool Renderer::viewIsInterpolated() const
 // -----------------------------------------------------------------------------
 // Sets the 3d camera to match [thing]
 // -----------------------------------------------------------------------------
-void Renderer::setCameraThing(MapThing* thing)
+void Renderer::setCameraThing(const MapThing* thing)
 {
 	// Determine position
 	Vec3d pos(thing->position(), 40);
@@ -348,10 +354,10 @@ void Renderer::drawGrid() const
 	int grid_hidelevel = 2.0 / view_.scale();
 
 	// Determine canvas edges in map coordinates
-	int start_x = view_.mapX(0, true);
-	int end_x   = view_.mapX(view_.size().x, true);
-	int start_y = view_.mapY(view_.size().y, true);
-	int end_y   = view_.mapY(0, true);
+	int start_x = view_.canvasX(0, true);
+	int end_x   = view_.canvasX(view_.size().x, true);
+	int start_y = view_.canvasY(view_.size().y, true);
+	int end_y   = view_.canvasY(0, true);
 
 	// Draw regular grid if it's not too small
 	if (gridsize > grid_hidelevel)
@@ -468,8 +474,8 @@ void Renderer::drawGrid() const
 	if (map_crosshair > 0)
 	{
 		auto   mouse_pos = context_.input().mousePos();
-		double x         = context_.snapToGrid(view_.mapX(mouse_pos.x), false);
-		double y         = context_.snapToGrid(view_.mapY(mouse_pos.y), false);
+		double x         = context_.snapToGrid(view_.canvasX(mouse_pos.x), false);
+		double y         = context_.snapToGrid(view_.canvasY(mouse_pos.y), false);
 		auto&  def       = colourconfig::colDef("map_64grid");
 		auto   col       = def.colour;
 
@@ -513,10 +519,10 @@ void Renderer::drawGrid() const
 			gl::setColour(col, def.blendMode());
 
 			glBegin(GL_LINES);
-			glVertex2d(x, view_.mapBounds().tl.y);
-			glVertex2d(x, view_.mapBounds().br.y);
-			glVertex2d(view_.mapBounds().tl.x, y);
-			glVertex2d(view_.mapBounds().br.x, y);
+			glVertex2d(x, view_.visibleRegion().tl.y);
+			glVertex2d(x, view_.visibleRegion().br.y);
+			glVertex2d(view_.visibleRegion().tl.x, y);
+			glVertex2d(view_.visibleRegion().br.x, y);
 			glEnd();
 		}
 	}
@@ -555,7 +561,7 @@ void Renderer::drawEditorMessages() const
 		col_bg.a = 255;
 		if (time > 1500)
 		{
-			col.a    = 255 - (double((time - 1500) / 500.0) * 255);
+			col.a    = 255 - ((time - 1500) / 500.0 * 255);
 			col_bg.a = col.a;
 		}
 
@@ -673,7 +679,7 @@ void Renderer::drawThingQuickAngleLines() const
 	gl::setColour(col);
 
 	// Draw lines
-	auto mouse_pos_m = view_.mapPos(context_.input().mousePos(), true);
+	auto mouse_pos_m = view_.canvasPos(context_.input().mousePos(), true);
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	for (auto& thing : selection)
@@ -720,7 +726,7 @@ void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 	gl::setColour(col);
 
 	// Determine end point
-	auto end = view_.mapPos(context_.input().mousePos(), true);
+	auto end = view_.canvasPos(context_.input().mousePos(), true);
 	if (snap_nearest_vertex)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
@@ -808,13 +814,13 @@ void Renderer::drawPasteLines() const
 	gl::setColour(col);
 
 	// Draw
-	auto pos = context_.relativeSnapToGrid(c->midpoint(), view_.mapPos(context_.input().mousePos(), true));
+	auto pos = context_.relativeSnapToGrid(c->midpoint(), view_.canvasPos(context_.input().mousePos(), true));
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (const auto& line : lines)
 	{
-		glVertex2d(pos.x + lines[a]->x1(), pos.y + lines[a]->y1());
-		glVertex2d(pos.x + lines[a]->x2(), pos.y + lines[a]->y2());
+		glVertex2d(pos.x + line->x1(), pos.y + line->y1());
+		glVertex2d(pos.x + line->x2(), pos.y + line->y2());
 	}
 	glEnd();
 }
@@ -921,12 +927,12 @@ void Renderer::drawObjectEdit()
 
 	// Line length
 	Vec2d nl_v1, nl_v2;
-	if (group.nearestLineEndpoints(view_.mapPos(context_.input().mousePos()), 128 / view_.scale(), nl_v1, nl_v2))
+	if (group.nearestLineEndpoints(view_.canvasPos(context_.input().mousePos()), 128 / view_.scale(), nl_v1, nl_v2))
 	{
 		Vec2d mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
 		int   length = math::distance(nl_v1, nl_v2);
-		int   x      = view_.mapX(mid.x);
-		int   y      = view_.mapY(mid.y) - 8;
+		int   x      = view_.canvasX(mid.x);
+		int   y      = view_.canvasY(mid.y) - 8;
 		view_.setOverlayCoords(true);
 		drawing::setTextOutline(1.0f, ColRGBA::BLACK);
 		drawing::drawText(fmt::format("{}", length), x, y, ColRGBA::WHITE, drawing::Font::Bold, drawing::Align::Center);
@@ -959,7 +965,7 @@ void Renderer::drawMap2d()
 
 	// Update visibility info if needed
 	if (!renderer_2d_.visOK())
-		renderer_2d_.updateVisibility(view_.mapBounds().tl, view_.mapBounds().br);
+		renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
 
 	// Draw flats if needed
 	gl::setColour(ColRGBA::WHITE, gl::Blend::Normal);
@@ -1108,10 +1114,10 @@ void Renderer::drawMap2d()
 
 
 	// Draw selection box if active
-	auto mx  = view_.mapX(context_.input().mousePos().x, true);
-	auto my  = view_.mapY(context_.input().mousePos().y, true);
-	auto mdx = view_.mapX(context_.input().mouseDownPos().x, true);
-	auto mdy = view_.mapY(context_.input().mouseDownPos().y, true);
+	auto mx  = view_.canvasX(context_.input().mousePos().x, true);
+	auto my  = view_.canvasY(context_.input().mousePos().y, true);
+	auto mdx = view_.canvasX(context_.input().mouseDownPos().x, true);
+	auto mdy = view_.canvasY(context_.input().mouseDownPos().y, true);
 	if (mouse_state == Input::MouseState::Selection)
 	{
 		// Outline
@@ -1172,7 +1178,7 @@ void Renderer::drawMap2d()
 		case Mode::Sectors: renderer_2d_.renderMovingSectors(items, offset); break;
 		case Mode::Things: renderer_2d_.renderMovingThings(items, offset); break;
 		default: break;
-		};
+		}
 	}
 }
 

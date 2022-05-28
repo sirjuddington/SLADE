@@ -529,7 +529,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 // -----------------------------------------------------------------------------
 // Opens [map] in the editor
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::openMap(Archive::MapDesc map)
+bool MapEditorWindow::openMap(const Archive::MapDesc& map)
 {
 	// If a map is currently open and modified, prompt to save changes
 	if (mapeditor::editContext().map().isModified())
@@ -629,7 +629,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 // -----------------------------------------------------------------------------
 // Loads any scripts from [map] into the script editor
 // -----------------------------------------------------------------------------
-void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
+void MapEditorWindow::loadMapScripts(const Archive::MapDesc& map)
 {
 	// Don't bother if no scripting language specified
 	if (game::configuration().scriptLanguage().empty())
@@ -1006,7 +1006,7 @@ bool MapEditorWindow::tryClose()
 // -----------------------------------------------------------------------------
 // Returns true if the currently open map is from [archive]
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::hasMapOpen(Archive* archive) const
+bool MapEditorWindow::hasMapOpen(const Archive* archive) const
 {
 	auto& mdesc = mapeditor::editContext().mapDesc();
 	if (auto head = mdesc.head.lock())
@@ -1046,7 +1046,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	auto& p_inf = m_mgr->GetPane("object_edit");
 
 	// Save current y offset
-	double top = mapeditor::editContext().renderer().view().mapY(0);
+	double top = mapeditor::editContext().renderer().view().canvasY(0);
 
 	// Enable/disable panel
 	if (show)
@@ -1073,7 +1073,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 	auto& p_inf = m_mgr->GetPane("shape_draw");
 
 	// Save current y offset
-	double top = mapeditor::editContext().renderer().view().mapY(0);
+	double top = mapeditor::editContext().renderer().view().canvasY(0);
 
 	// Enable/disable panel
 	p_inf.Show(show);
