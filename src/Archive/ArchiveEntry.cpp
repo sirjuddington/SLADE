@@ -161,7 +161,7 @@ string ArchiveEntry::path(bool include_name) const
 // Returns the 'next' entry from this (ie. index + 1) in its parent ArchiveDir,
 // or nullptr if it is the last entry or has no parent dir
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntry::nextEntry()
+ArchiveEntry* ArchiveEntry::nextEntry() const
 {
 	return parent_ ? parent_->entryAt(parent_->entryIndex(this) + 1) : nullptr;
 }
@@ -170,7 +170,7 @@ ArchiveEntry* ArchiveEntry::nextEntry()
 // Returns the 'previous' entry from this (ie. index - 1) in its parent
 // ArchiveDir, or nullptr if it is the first entry or has no parent dir
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntry::prevEntry()
+ArchiveEntry* ArchiveEntry::prevEntry() const
 {
 	return parent_ ? parent_->entryAt(parent_->entryIndex(this) - 1) : nullptr;
 }
@@ -179,7 +179,7 @@ ArchiveEntry* ArchiveEntry::prevEntry()
 // Returns the parent ArchiveDir's shared pointer to this entry, or
 // nullptr if this entry has no parent
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> ArchiveEntry::getShared()
+shared_ptr<ArchiveEntry> ArchiveEntry::getShared() const
 {
 	return parent_ ? parent_->sharedEntry(this) : nullptr;
 }
@@ -188,7 +188,7 @@ shared_ptr<ArchiveEntry> ArchiveEntry::getShared()
 // Returns the entry's index within its parent ArchiveDir, or -1 if it isn't
 // in a dir
 // -----------------------------------------------------------------------------
-int ArchiveEntry::index()
+int ArchiveEntry::index() const
 {
 	return parent_ ? parent_->entryIndex(this) : -1;
 }
@@ -196,7 +196,7 @@ int ArchiveEntry::index()
 // -----------------------------------------------------------------------------
 // Returns the hash (XXH128) of the entry's data, calculating it if needed
 // -----------------------------------------------------------------------------
-string ArchiveEntry::hash() const
+const string& ArchiveEntry::hash() const
 {
 	if (data_hash_.empty())
 		data_hash_ = data_.hash();

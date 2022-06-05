@@ -34,7 +34,7 @@
 #include "ResourceArchiveChooser.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Library.h"
+#include "Library/Library.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 

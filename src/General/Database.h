@@ -5,6 +5,67 @@
 
 namespace slade::database
 {
+class Transaction
+{
+public:
+	Transaction(SQLite::Database* connection, bool begin = true) : connection_{ connection }, has_begun_{ begin }
+	{
+		if (begin)
+			connection->exec("BEGIN");
+	}
+
+	Transaction(Transaction&& other) noexcept :
+		connection_{ other.connection_ }, has_begun_{ other.has_begun_ }, has_ended_{ other.has_ended_ }
+	{
+		other.connection_ = nullptr;
+		other.has_begun_  = true;
+		other.has_ended_  = true;
+	}
+
+	~Transaction()
+	{
+		if (has_begun_ && !has_ended_)
+			connection_->exec("ROLLBACK");
+	}
+
+	Transaction(const Transaction&) = delete;
+	Transaction& operator=(const Transaction&) = delete;
+
+	void begin()
+	{
+		if (has_begun_)
+			return;
+
+		connection_->exec("BEGIN");
+		has_begun_ = true;
+	}
+
+	void beginIfNoActiveTransaction();
+
+	void commit()
+	{
+		if (!has_begun_ || has_ended_)
+			return;
+
+		connection_->exec("COMMIT");
+		has_ended_ = true;
+	}
+
+	void rollback()
+	{
+		if (!has_begun_ || has_ended_)
+			return;
+
+		connection_->exec("ROLLBACK");
+		has_ended_ = true;
+	}
+
+private:
+	SQLite::Database* connection_ = nullptr;
+	bool              has_begun_  = false;
+	bool              has_ended_  = false;
+};
+
 class Context
 {
 public:
@@ -27,7 +88,9 @@ public:
 	int exec(const string& query) const;
 	int exec(const char* query) const;
 
-	SQLite::Transaction beginTransaction(bool write = false) const;
+	bool rowIdExists(string_view table_name, int64_t id, string_view id_col = "id") const;
+
+	Transaction beginTransaction(bool write = false) const;
 
 	void vacuum() const { exec("VACUUM;"); } // Cleans up the database file to reduce size on disk
 
@@ -52,13 +115,22 @@ void registerThreadContext(Context& context);
 void deregisterThreadContexts();
 
 // Helpers
-int                       exec(const string& query, SQLite::Database* connection = nullptr);
-int                       exec(const char* query, SQLite::Database* connection = nullptr);
+bool        isTransactionActive(const SQLite::Database* connection);
+int         exec(const string& query, SQLite::Database* connection = nullptr);
+int         exec(const char* query, SQLite::Database* connection = nullptr);
+inline bool rowIdExists(string_view table_name, int64_t id, string_view id_col = "id")
+{
+	return global().rowIdExists(table_name, id, id_col);
+}
 template<typename T> bool rowExists(SQLite::Database& connection, string_view table_name, string_view col_name, T value)
 {
 	SQLite::Statement sql(connection, fmt::format("SELECT * FROM {} WHERE {} = ?", table_name, col_name));
 	sql.bind(1, value);
 	return sql.executeStep();
+}
+inline SQLite::Statement* cacheQuery(string_view id, const char* sql, bool writes = false)
+{
+	return global().cacheQuery(id, sql, writes);
 }
 
 // General
@@ -67,3 +139,6 @@ bool   init();
 void   close();
 
 } // namespace slade::database
+
+// Shortcut alias for database namespace
+namespace db = slade::database;

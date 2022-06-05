@@ -36,9 +36,10 @@
 #include "Formats/All.h"
 #include "Formats/DirArchive.h"
 #include "General/Console.h"
-#include "General/Library.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
+#include "Library/Library.h"
+#include "Utility/DateTime.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -53,6 +54,35 @@ using namespace slade;
 CVAR(Int, base_resource, -1, CVar::Flag::Save)
 CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
 CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+int64_t updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
+{
+	ui::setSplashProgressMessage("Updating library");
+
+	// Read info from library into archive
+	auto lib_id = library::readArchiveInfo(archive);
+
+	// If it wasn' in the library, add it
+	if (lib_id < 0)
+		lib_id = library::writeArchiveInfo(archive);
+
+	// Update last opened time if needed
+	if (update_last_opened)
+		library::setArchiveLastOpenedTime(lib_id, datetime::now());
+
+	ui::setSplashProgressMessage("");
+
+	return lib_id;
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -116,7 +146,8 @@ bool ArchiveManager::init()
 	program_resource_archive_ = std::make_unique<ZipArchive>();
 
 #ifdef __WXOSX__
-	auto resdir = app::path("../Resources", app::Dir::Executable); // Use Resources dir within bundle on mac
+	// Use Resources dir within bundle on mac
+	auto resdir = app::path("../Resources", app::Dir::Executable);
 #else
 	auto resdir = app::path("res", app::Dir::Executable);
 #endif
@@ -200,7 +231,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive, int64_t library_arc
 				{
 					for (auto& open_archive : open_archives_)
 						if (open_archive.archive.get() == &archive)
-							open_archive.library_id = library::addOrUpdateArchive(archive.filename(), archive);
+							open_archive.library_id = library::writeArchiveInfo(archive);
 				}
 
 				signals_.archive_saved(archiveIndex(&archive));
@@ -367,32 +398,8 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 	// Opened ok, add to manager if requested
 	if (manage)
 	{
-		// Try to find archive in library
-		int64_t lib_id = -1;
-		SFile   file(filename);
-		if (file.isOpen())
-		{
-			lib_id = library::archiveFileId(fn);
-
-			// No filename match found, check for data-only match (eg. if file has been renamed/moved)
-			if (lib_id < 0)
-			{
-				auto hash = file.calculateHash();
-
-				auto match_id = library::findArchiveFileIdFromData(file.size(), hash);
-				if (match_id >= 0)
-				{
-					log::info(2, "Found {} in library, id {} (data-only match)", filename, match_id);
-					lib_id = library::addArchiveCopy(filename, match_id);
-				}
-			}
-			else
-				log::info(2, "Found {} in library, id {}", filename, lib_id);
-		}
-		file.close();
-
-		// Update library
-		lib_id = library::addOrUpdateArchive(filename, *new_archive);
+		// Add/update in library, get id
+		auto lib_id = updateArchiveInLibrary(*new_archive, true);
 
 		// Add the archive
 		auto index = open_archives_.size();
@@ -494,25 +501,9 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	if (manage)
 	{
 		// TODO: Nested archives in library
-		//// Try to find archive in library
-		//auto lib_path = fmt::format("{}{}", entry->parent()->filename(), entry->path(true));
-		//auto lib_id   = library::archiveFileId(lib_path);
-
-		//// No filename match found, check for data-only match (eg. if file has been renamed/moved)
-		//if (lib_id < 0)
-		//{
-		//	auto match_id = library::findArchiveFileIdFromData(entry->size(), entry->hash());
-		//	if (match_id >= 0)
-		//	{
-		//		log::info(2, "Found {} in library, id {} (data-only match)", lib_path, match_id);
-		//		lib_id = library::addArchiveCopy(lib_path, match_id);
-		//	}
-		//}
-		//else
-		//	log::info(2, "Found {} in library, id {}", lib_path, lib_id);
 
 		//// Update library
-		//lib_id = library::addOrUpdateArchive(lib_path, *new_archive);
+		// lib_id = library::addOrUpdateArchive(lib_path, *new_archive);
 
 		// Add the archive
 		auto index = open_archives_.size();
@@ -561,7 +552,7 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 	if (manage)
 	{
 		// Update in library, get id
-		auto lib_id = library::addOrUpdateArchive(dir, *new_archive);
+		auto lib_id = updateArchiveInLibrary(*new_archive, true);
 
 		// Add the archive
 		auto index = open_archives_.size();
@@ -630,7 +621,8 @@ bool ArchiveManager::closeArchive(int index)
 	app::resources().removeArchive(open_archives_[index].archive.get());
 
 	// Close any open child archives
-	// Clear out the open_children vector first, lest the children try to remove themselves from it
+	// Clear out the open_children vector first, lest the children try to remove
+	// themselves from it
 	auto open_children = open_archives_[index].open_children;
 	open_archives_[index].open_children.clear();
 	for (auto& archive : open_children)
@@ -866,6 +858,9 @@ shared_ptr<Archive> ArchiveManager::shareArchive(const Archive* const archive)
 // -----------------------------------------------------------------------------
 int64_t ArchiveManager::archiveLibraryId(const Archive& archive) const
 {
+	if (&archive == base_resource_archive_.get())
+		return base_resource_library_id_;
+
 	for (const auto& oa : open_archives_)
 		if (oa.archive.get() == &archive)
 			return oa.library_id;
@@ -973,6 +968,7 @@ bool ArchiveManager::openBaseResource(int index)
 	{
 		base_resource = index;
 		ui::hideSplash();
+		base_resource_library_id_ = updateArchiveInLibrary(*base_resource_archive_, false);
 		app::resources().addArchive(base_resource_archive_.get());
 		signals_.base_res_current_changed(index);
 		return true;

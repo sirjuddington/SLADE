@@ -662,6 +662,14 @@ EntryType* EntryType::folderType()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the global 'marker' entry type
+// -----------------------------------------------------------------------------
+EntryType* EntryType::markerType()
+{
+	return etype_marker;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the global 'map marker' entry type
 // -----------------------------------------------------------------------------
 EntryType* EntryType::mapMarkerType()

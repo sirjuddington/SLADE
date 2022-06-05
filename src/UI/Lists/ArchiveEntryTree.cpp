@@ -38,9 +38,9 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/ColourConfiguration.h"
-#include "General/Library.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
+#include "Library/ArchiveUIConfig.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include <wx/headerctrl.h>
@@ -1525,12 +1525,12 @@ void ArchiveEntryTree::setupColumns()
 
 	// Get entry list config from library for the archive
 	auto lib_id = app::archiveManager().archiveLibraryId(*archive);
-	auto config = library::archiveUIConfig(lib_id);
+	auto config = library::getArchiveUIConfig(lib_id);
 
 	// If no config exists for the archive, create one from the cvars
 	if (config.archive_id < 0)
 	{
-		config = library::createArchiveUIConfig(lib_id, model_->viewType() == ArchiveViewModel::ViewType::Tree);
+		config = library::ArchiveUIConfigRow{ lib_id, archive->formatDesc().supports_dirs };
 		library::saveArchiveUIConfig(config);
 	}
 
@@ -1664,7 +1664,7 @@ void ArchiveEntryTree::saveColumnWidths() const
 		if (!archive)
 			return;
 
-		auto config = library::archiveUIConfig(app::archiveManager().archiveLibraryId(*archive));
+		auto config = library::getArchiveUIConfig(app::archiveManager().archiveLibraryId(*archive));
 		if (config.archive_id < 0)
 			return;
 
@@ -1700,7 +1700,7 @@ void ArchiveEntryTree::updateColumnWidths()
 			break;
 		}
 
-	auto config = library::archiveUIConfig(app::archiveManager().archiveLibraryId(*archive));
+	auto config = library::getArchiveUIConfig(app::archiveManager().archiveLibraryId(*archive));
 
 	auto index_width = config.archive_id < 0 ? elist_colsize_index : config.elist_index_width;
 	auto size_width  = config.archive_id < 0 ? elist_colsize_size : config.elist_size_width;
@@ -1723,7 +1723,7 @@ void ArchiveEntryTree::saveColumnConfig() // (can't be made const - is called fr
 	if (!archive)
 		return;
 
-	auto config = library::archiveUIConfig(app::archiveManager().archiveLibraryId(*archive));
+	auto config = library::getArchiveUIConfig(app::archiveManager().archiveLibraryId(*archive));
 	if (config.archive_id < 0)
 		return;
 

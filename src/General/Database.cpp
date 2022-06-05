@@ -40,6 +40,7 @@
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <shared_mutex>
+#include <sqlite3.h>
 
 using namespace slade;
 
@@ -62,10 +63,26 @@ std::shared_mutex mutex_thread_contexts;
 
 // -----------------------------------------------------------------------------
 //
-// Database::Context Class Functions
+// database::Transaction Class Functions
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// Begins the transaction if there are no currently active transactions on the
+// connection
+// -----------------------------------------------------------------------------
+void database::Transaction::beginIfNoActiveTransaction()
+{
+	if (!isTransactionActive(connection_))
+		begin();
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// database::Context Class Functions
+//
+// -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
 // Context class constructor
@@ -195,9 +212,22 @@ int database::Context::exec(const char* query) const
 	return connection_rw_ ? connection_rw_->exec(query) : 0;
 }
 
-SQLite::Transaction database::Context::beginTransaction(bool write) const
+// -----------------------------------------------------------------------------
+// Returns true if a row exists in [table_name] where [id_col] = [id].
+// The column must be an integer column for this to work correctly
+// -----------------------------------------------------------------------------
+bool database::Context::rowIdExists(string_view table_name, int64_t id, string_view id_col) const
 {
-	return SQLite::Transaction(write ? *connection_rw_ : *connection_ro_);
+	auto query = fmt::format("SELECT EXISTS(SELECT 1 FROM {} WHERE {} = {})", table_name, id_col, id);
+	return connection_ro_->execAndGet(query).getInt() > 0;
+}
+
+// -----------------------------------------------------------------------------
+// Begins a transaction and returns a Transaction object to encapsulate it
+// -----------------------------------------------------------------------------
+database::Transaction database::Context::beginTransaction(bool write) const
+{
+	return { write ? connection_rw_.get() : connection_ro_.get(), true };
 }
 
 
@@ -400,6 +430,15 @@ void database::deregisterThreadContexts()
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if a transaction (BEGIN -> COMMIT/ROLLBACK) is currently active
+// on [connection]
+// -----------------------------------------------------------------------------
+bool database::isTransactionActive(const SQLite::Database* connection)
+{
+	return sqlite3_get_autocommit(connection->getHandle()) == 0;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the path to the program database file
 // -----------------------------------------------------------------------------
 string database::programDatabasePath()
@@ -454,7 +493,8 @@ void database::close()
 
 
 
-CONSOLE_COMMAND(db, 1, false)
+void c_db(const vector<string>& args);
+ConsoleCommand db_cmd("db", &c_db, 1, false); void c_db(const vector<string>& args)
 {
 	auto command = args[0];
 

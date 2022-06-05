@@ -55,11 +55,12 @@ public:
 	State                    state() const { return state_; }
 	bool                     isLocked() const { return locked_; }
 	Encryption               encryption() const { return encrypted_; }
-	ArchiveEntry*            nextEntry();
-	ArchiveEntry*            prevEntry();
-	shared_ptr<ArchiveEntry> getShared();
-	int                      index();
-	string                   hash() const;
+	ArchiveEntry*            nextEntry() const;
+	ArchiveEntry*            prevEntry() const;
+	shared_ptr<ArchiveEntry> getShared() const;
+	int                      index() const;
+	const string&            hash() const;
+	int64_t                  libraryId() const { return library_id_; }
 
 	// Modifiers (won't change entry state, except setState of course :P)
 	void setName(string_view name);
@@ -70,6 +71,7 @@ public:
 	}
 	void setState(State state, bool silent = false);
 	void setEncryption(Encryption enc) { encrypted_ = enc; }
+	void setLibraryId(int64_t id) { library_id_ = id; }
 	void lock();
 	void unlock();
 	void lockState() { state_locked_ = true; }
@@ -132,8 +134,9 @@ private:
 	Encryption encrypted_    = Encryption::None; // Is there some encrypting on the archive?
 
 	// Misc stuff
-	int    reliability_ = 0; // The reliability of the entry's identification
-	size_t index_guess_ = 0; // for speed
+	int            reliability_ = 0;  // The reliability of the entry's identification
+	mutable size_t index_guess_ = 0;  // for speed
+	int64_t        library_id_  = -1; // The id of this entry in the library
 };
 
 template<typename T> T ArchiveEntry::exProp(const string& key)

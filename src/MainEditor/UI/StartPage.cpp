@@ -36,9 +36,9 @@
 #include "StartPage.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Library.h"
 #include "General/SAction.h"
 #include "General/Web.h"
+#include "Library/Library.h"
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
