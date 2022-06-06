@@ -24,6 +24,13 @@ namespace library
 	void           removeMissingArchives();
 	vector<string> recentFiles(unsigned count = 20);
 
+	// Bookmarks
+	vector<int64_t> bookmarkedEntries(int64_t archive_id);
+	void            addBookmark(int64_t archive_id, int64_t entry_id);
+	void            removeBookmark(int64_t archive_id, int64_t entry_id);
+	void            removeArchiveBookmarks(int64_t archive_id);
+	void            writeArchiveBookmarks(int64_t archive_id, const vector<int64_t>& entry_ids);
+
 	// Entries
 	string findEntryTypeId(const slade::ArchiveEntry& entry);
 } // namespace library

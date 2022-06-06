@@ -52,6 +52,8 @@ using namespace library;
 namespace slade::library
 {
 Signals lib_signals;
+
+string insert_archive_bookmark = "INSERT OR REPLACE INTO archive_bookmark VALUES (?,?)";
 } // namespace slade::library
 
 
@@ -160,6 +162,8 @@ void library::setArchiveLastOpenedTime(int64_t archive_id, time_t last_opened)
 			sql->exec();
 			sql->reset();
 		}
+
+		lib_signals.archive_file_updated();
 	}
 	catch (SQLite::Exception& ex)
 	{
@@ -293,6 +297,96 @@ vector<string> library::recentFiles(unsigned count)
 	}
 
 	return paths;
+}
+
+// -----------------------------------------------------------------------------
+// Returns all bookmarked entry ids for [archive_id]
+// -----------------------------------------------------------------------------
+vector<int64_t> library::bookmarkedEntries(int64_t archive_id)
+{
+	vector<int64_t> entry_ids;
+
+	if (auto sql = db::cacheQuery(
+			"archive_all_bookmarks", "SELECT entry_id FROM archive_bookmark WHERE archive_id = ?"))
+	{
+		sql->bind(1, archive_id);
+		while (sql->executeStep())
+			entry_ids.push_back(sql->getColumn(0).getInt64());
+		sql->reset();
+	}
+
+	return entry_ids;
+}
+
+// -----------------------------------------------------------------------------
+// Adds a bookmarked entry to the library
+// -----------------------------------------------------------------------------
+void library::addBookmark(int64_t archive_id, int64_t entry_id)
+{
+	if (archive_id < 0 || entry_id < 0)
+		return;
+
+	if (auto sql = db::cacheQuery("insert_archive_bookmark", insert_archive_bookmark.c_str(), true))
+	{
+		sql->bind(1, archive_id);
+		sql->bind(2, entry_id);
+		sql->exec();
+		sql->reset();
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Removes a bookmarked entry from the library
+// -----------------------------------------------------------------------------
+void library::removeBookmark(int64_t archive_id, int64_t entry_id)
+{
+	if (archive_id < 0 || entry_id < 0)
+		return;
+
+	if (auto sql = db::cacheQuery(
+			"delete_archive_bookmark", "DELETE FROM archive_bookmark WHERE archive_id = ? AND entry_id = ?", true))
+	{
+		sql->bind(1, archive_id);
+		sql->bind(2, entry_id);
+		sql->exec();
+		sql->reset();
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Removes all bookmarked entries for [archive_id] in the library
+// -----------------------------------------------------------------------------
+void library::removeArchiveBookmarks(int64_t archive_id)
+{
+	db::connectionRW()->exec(fmt::format("DELETE FROM archive_bookmark WHERE archive_id = {}", archive_id));
+}
+
+// -----------------------------------------------------------------------------
+// Writes multiple bookmarked entries to the library
+// -----------------------------------------------------------------------------
+void library::writeArchiveBookmarks(int64_t archive_id, const vector<int64_t>& entry_ids)
+{
+	auto connection = db::connectionRW();
+
+	// Delete existing bookmarks in library first
+	removeArchiveBookmarks(archive_id);
+
+	// Insert bookmark rows
+	if (auto sql = db::cacheQuery("insert_archive_bookmark", insert_archive_bookmark.c_str(), true))
+	{
+		db::Transaction transaction{ connection, false };
+		transaction.beginIfNoActiveTransaction();
+
+		for (const auto& entry_id : entry_ids)
+		{
+			sql->bind(1, archive_id);
+			sql->bind(2, entry_id);
+			sql->exec();
+			sql->reset();
+		}
+
+		transaction.commit();
+	}
 }
 
 // -----------------------------------------------------------------------------

@@ -58,7 +58,7 @@ public:
 	void          addBookmark(const shared_ptr<ArchiveEntry>& entry);
 	bool          deleteBookmark(ArchiveEntry* entry);
 	bool          deleteBookmark(unsigned index);
-	bool          deleteBookmarksInArchive(const Archive* archive);
+	bool          deleteBookmarksInArchive(const Archive* archive, bool remove_from_library = true);
 	bool          deleteBookmarksInDir(const ArchiveDir* node);
 	void          deleteAllBookmarks();
 	ArchiveEntry* getBookmark(unsigned index) const;
@@ -101,7 +101,9 @@ private:
 	// Signals
 	Signals signals_;
 
-	bool initArchiveFormats() const;
-	void getDependentArchivesInternal(const Archive* archive, vector<shared_ptr<Archive>>& vec);
+	bool        initArchiveFormats() const;
+	void        getDependentArchivesInternal(const Archive* archive, vector<shared_ptr<Archive>>& vec);
+	inline void removeBookmark(unsigned index);
+	void        addBookmarksFromLibrary(const Archive& archive);
 };
 } // namespace slade

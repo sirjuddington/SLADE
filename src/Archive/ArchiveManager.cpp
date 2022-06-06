@@ -63,6 +63,10 @@ CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Updates/Adds [archive] in/to the library and updates last opened time if
+// requested
+// -----------------------------------------------------------------------------
 void updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
 {
 	ui::setSplashProgressMessage("Updating library");
@@ -79,6 +83,21 @@ void updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
 		library::setArchiveLastOpenedTime(lib_id, datetime::now());
 
 	ui::setSplashProgressMessage("");
+}
+
+// -----------------------------------------------------------------------------
+// Writes all bookmarked entries for [archive] to the library
+// -----------------------------------------------------------------------------
+void writeArchiveBookmarksToLibrary(const Archive* archive, const vector<weak_ptr<ArchiveEntry>>& bookmarks)
+{
+	// Remove existing bookmarks for [archive] in library
+	library::removeArchiveBookmarks(archive->libraryId());
+
+	// Add any bookmarks that are in [archive] to the library
+	for (auto& bookmark : bookmarks)
+		if (auto entry = bookmark.lock().get())
+			if (entry->parent() == archive)
+				library::addBookmark(archive->libraryId(), entry->libraryId());
 }
 } // namespace
 
@@ -213,8 +232,8 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 	{
 		// Add to the list
 		OpenArchive n_archive;
-		n_archive.archive    = archive;
-		n_archive.resource   = true;
+		n_archive.archive  = archive;
+		n_archive.resource = true;
 		open_archives_.push_back(n_archive);
 
 		// Emit archive changed/saved signal when received from the archive
@@ -225,7 +244,13 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 			{
 				// Update in library
 				if (archive.isOnDisk())
+				{
 					archive.setLibraryId(library::writeArchiveInfo(archive));
+
+					// (Re)Write bookmarks since entry ids have likely changed
+					// and/or been added
+					writeArchiveBookmarksToLibrary(&archive, bookmarks_);
+				}
 
 				signals_.archive_saved(archiveIndex(&archive));
 			});
@@ -393,6 +418,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 	{
 		// Add/update in library
 		updateArchiveInLibrary(*new_archive, true);
+		addBookmarksFromLibrary(*new_archive);
 
 		// Add the archive
 		auto index = open_archives_.size();
@@ -546,6 +572,7 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 	{
 		// Update in library
 		updateArchiveInLibrary(*new_archive, true);
+		addBookmarksFromLibrary(*new_archive);
 
 		// Add the archive
 		auto index = open_archives_.size();
@@ -608,7 +635,7 @@ bool ArchiveManager::closeArchive(int index)
 	signals_.archive_closing(index);
 
 	// Delete any bookmarked entries contained in the archive
-	deleteBookmarksInArchive(open_archives_[index].archive.get());
+	deleteBookmarksInArchive(open_archives_[index].archive.get(), false);
 
 	// Remove from resource manager
 	app::resources().removeArchive(open_archives_[index].archive.get());
@@ -1069,6 +1096,7 @@ void ArchiveManager::addBookmark(const shared_ptr<ArchiveEntry>& entry)
 
 	// Add bookmark
 	bookmarks_.push_back(entry);
+	library::addBookmark(entry->parent()->libraryId(), entry->libraryId());
 
 	// Announce
 	signals_.bookmark_added(entry.get());
@@ -1085,10 +1113,10 @@ bool ArchiveManager::deleteBookmark(ArchiveEntry* entry)
 		if (bookmarks_[a].lock().get() == entry)
 		{
 			// Remove it
-			bookmarks_.erase(bookmarks_.begin() + a);
+			removeBookmark(a);
 
 			// Announce
-			signals_.bookmarks_removed(vector<ArchiveEntry*>(1, entry));
+			signals_.bookmarks_removed({ 1, entry });
 
 			return true;
 		}
@@ -1109,10 +1137,10 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 
 	// Remove bookmark
 	auto* entry = bookmarks_[index].lock().get();
-	bookmarks_.erase(bookmarks_.begin() + index);
+	removeBookmark(index);
 
 	// Announce
-	signals_.bookmarks_removed(vector<ArchiveEntry*>(1, entry));
+	signals_.bookmarks_removed({ 1, entry });
 
 	return true;
 }
@@ -1120,7 +1148,7 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Removes any bookmarked entries in [archive] from the list
 // -----------------------------------------------------------------------------
-bool ArchiveManager::deleteBookmarksInArchive(const Archive* archive)
+bool ArchiveManager::deleteBookmarksInArchive(const Archive* archive, bool remove_from_library)
 {
 	// Go through bookmarks
 	bool                  removed = false;
@@ -1132,7 +1160,10 @@ bool ArchiveManager::deleteBookmarksInArchive(const Archive* archive)
 		if (!bookmark || bookmark->parent() == archive)
 		{
 			removed_entries.push_back(bookmark.get());
-			bookmarks_.erase(bookmarks_.begin() + a);
+			if (remove_from_library)
+				removeBookmark(a);
+			else
+				bookmarks_.erase(bookmarks_.begin() + a);
 			a--;
 			removed = true;
 		}
@@ -1187,7 +1218,7 @@ bool ArchiveManager::deleteBookmarksInDir(const ArchiveDir* node)
 			if (remove)
 			{
 				removed_entries.push_back(bookmark.get());
-				bookmarks_.erase(bookmarks_.begin() + a);
+				removeBookmark(a);
 				--a;
 				removed = true;
 			}
@@ -1213,7 +1244,11 @@ void ArchiveManager::deleteAllBookmarks()
 	{
 		vector<ArchiveEntry*> removed;
 		for (const auto& entry : bookmarks_)
-			removed.push_back(entry.lock().get());
+		{
+			auto sp = entry.lock();
+			removed.push_back(sp.get());
+			library::removeBookmark(sp->parent()->libraryId(), sp->libraryId());
+		}
 
 		bookmarks_.clear();
 		signals_.bookmarks_removed(removed);
@@ -1242,6 +1277,34 @@ bool slade::ArchiveManager::isBookmarked(const ArchiveEntry* entry) const
 			return true;
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Helper function that removes the bookmark at [index] and handles library
+// updates etc.
+// -----------------------------------------------------------------------------
+void ArchiveManager::removeBookmark(unsigned index)
+{
+	auto* entry = bookmarks_[index].lock().get();
+
+	bookmarks_.erase(bookmarks_.begin() + index);
+
+	if (entry)
+		library::removeBookmark(entry->parent()->libraryId(), entry->libraryId());
+}
+
+// -----------------------------------------------------------------------------
+// Adds all bookmarks from the library for [archive]
+// -----------------------------------------------------------------------------
+void ArchiveManager::addBookmarksFromLibrary(const Archive& archive)
+{
+	auto bookmark_ids = library::bookmarkedEntries(archive.libraryId());
+
+	vector<ArchiveEntry*> entries;
+	archive.putEntryTreeAsList(entries);
+	for (auto entry : entries)
+		if (VECTOR_EXISTS(bookmark_ids, entry->libraryId()))
+			addBookmark(entry->getShared());
 }
 
 
