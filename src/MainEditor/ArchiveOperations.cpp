@@ -1484,7 +1484,8 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 
 			auto texture = texture_list.texture(texture_index);
 
-			string texture_name = strutil::upperIP(string(texture->name()));
+			string texture_name = string(texture->name());
+			texture_name = strutil::upperIP(texture_name);
 
 			if (found_entries.find(texture_name) != found_entries.end())
 			{
@@ -1594,7 +1595,8 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 
 		for (const PatchTable::Patch& patch_entry : ptable.patches())
 		{
-			string entry_name = strutil::upperIP(string(patch_entry.name));
+			string entry_name = string(patch_entry.name);
+			entry_name = strutil::upperIP(entry_name);
 
 			if (found_entries.find(entry_name) != found_entries.end())
 			{
