@@ -1,4 +1,4 @@
-BEGIN TRANSACTION;
+BEGIN;
 
 CREATE TABLE archive_entry (
     archive_id INTEGER REFERENCES archive_file (id) ON DELETE CASCADE,
@@ -21,4 +21,4 @@ CREATE INDEX entry_match ON archive_entry (
     hash
 );
 
-COMMIT TRANSACTION;
+COMMIT;

@@ -57,6 +57,11 @@ string copy_archive_entries =
 	"INSERT INTO archive_entry (archive_id, id, path, [index], name, size, hash, type_id) "
 	"            SELECT ?, id, path, [index], name, size, hash, type_id "
 	"            FROM archive_entry WHERE archive_id = ?";
+string insert_archive_entry_property = "INSERT INTO archive_entry_property VALUES (?,?,?,?,?)";
+string get_archive_entry_properties =
+	"SELECT key, value_type, value FROM archive_entry_property WHERE archive_id = ? AND entry_id = ?";
+
+vector<string> saved_ex_props = { "TextPosition", "TextLanguage" };
 } // namespace slade::library
 
 
@@ -87,8 +92,7 @@ ArchiveEntryRow::ArchiveEntryRow(int64_t archive_id, int64_t id, const ArchiveEn
 // Reads existing data from the database. If row [archive_id]+[id] doesn't exist
 // in the database, the row id will be set to -1
 // -----------------------------------------------------------------------------
-ArchiveEntryRow::ArchiveEntryRow(db::Context& db, int64_t archive_id, int64_t id) :
-	archive_id{ archive_id }, id{ id }
+ArchiveEntryRow::ArchiveEntryRow(db::Context& db, int64_t archive_id, int64_t id) : archive_id{ archive_id }, id{ id }
 {
 	if (auto sql = db.cacheQuery("get_archive_entry", "SELECT * FROM archive_entry WHERE archive_id = ? AND id = ?"))
 	{
@@ -200,8 +204,7 @@ bool ArchiveEntryRow::remove()
 
 	auto rows = 0;
 
-	if (auto sql = db::cacheQuery(
-			"delete_archive_entry", "DELETE FROM archive_entry WHERE archive_id = ? AND id = ?"))
+	if (auto sql = db::cacheQuery("delete_archive_entry", "DELETE FROM archive_entry WHERE archive_id = ? AND id = ?"))
 	{
 		sql->bind(1, archive_id);
 		sql->bind(2, id);
@@ -353,13 +356,61 @@ int deleteArchiveEntryRowsByArchiveId(int64_t archive_id)
 inline bool entryRowExactMatch(
 	const ArchiveEntryRow& row,
 	string_view            entry_path,
-	// unsigned               entry_index,
-	string_view entry_name,
-	unsigned    entry_size,
-	string_view entry_hash)
+	string_view            entry_name,
+	unsigned               entry_size,
+	string_view            entry_hash)
 {
-	return row.path == entry_path && /*row.index == entry_index && */ row.name == entry_name && row.size == entry_size
-		   && row.hash == entry_hash;
+	return row.path == entry_path && row.name == entry_name && row.size == entry_size && row.hash == entry_hash;
+}
+
+void writeEntryProperties(SQLite::Statement* sql, int64_t archive_id, const ArchiveEntry* entry)
+{
+	for (const auto& prop : entry->exProps().properties())
+	{
+		if (VECTOR_EXISTS(saved_ex_props, prop.name))
+		{
+			sql->bind(1, archive_id);
+			sql->bind(2, entry->libraryId());
+			sql->bind(3, prop.name);
+			sql->bind(4, static_cast<unsigned>(prop.value.index()));
+			switch (prop.value.index())
+			{
+			case 0: sql->bind(5, std::get<bool>(prop.value)); break;
+			case 1: sql->bind(5, std::get<int>(prop.value)); break;
+			case 2: sql->bind(5, std::get<unsigned int>(prop.value)); break;
+			case 3: sql->bind(5, std::get<double>(prop.value)); break;
+			case 4: sql->bind(5, std::get<string>(prop.value)); break;
+			default: sql->bind(5, 0); break; // Shouldn't happen
+			}
+			sql->exec();
+			sql->reset();
+		}
+	}
+}
+
+void readEntryProperties(int64_t archive_id, ArchiveEntry* entry)
+{
+	if (auto sql = db::cacheQuery("get_archive_entry_properties", get_archive_entry_properties.c_str()))
+	{
+		sql->bind(1, archive_id);
+		sql->bind(2, entry->libraryId());
+
+		while (sql->executeStep())
+		{
+			auto key = sql->getColumn(0).getString();
+			switch (sql->getColumn(1).getInt())
+			{
+			case 0: entry->exProp(key) = sql->getColumn(2).getInt() > 0; break;
+			case 1: entry->exProp(key) = sql->getColumn(2).getInt(); break;
+			case 2: entry->exProp(key) = sql->getColumn(2).getUInt(); break;
+			case 3: entry->exProp(key) = sql->getColumn(2).getDouble(); break;
+			case 4: entry->exProp(key) = sql->getColumn(2).getString(); break;
+			default: break; // Shouldn't happen
+			}
+		}
+
+		sql->reset();
+	}
 }
 } // namespace slade::library
 
@@ -394,7 +445,7 @@ int library::copyArchiveEntries(int64_t from_archive_id, int64_t to_archive_id)
 void library::rebuildEntries(int64_t archive_id, const vector<ArchiveEntry*>& entries)
 {
 	auto start_time = app::runTimer();
-	
+
 	// Delete all existing archive_entry rows for archive_id
 	deleteArchiveEntryRowsByArchiveId(archive_id);
 
@@ -409,7 +460,42 @@ void library::rebuildEntries(int64_t archive_id, const vector<ArchiveEntry*>& en
 	// Add rows to database
 	insertArchiveEntryRows(rows);
 
+	// Write entry properties to database
+	saveAllEntryProperties(archive_id, entries);
+
 	log::debug("library::rebuildEntries took {}ms", app::runTimer() - start_time);
+}
+
+void library::saveEntryProperties(int64_t archive_id, const ArchiveEntry& entry)
+{
+	if (entry.libraryId() < 0)
+		return;
+
+	// Delete existing rows
+	db::connectionRW()->exec(fmt::format(
+		"DELETE FROM archive_entry_property WHERE archive_id = {} AND entry_id = {}", archive_id, entry.libraryId()));
+
+	// Insert prop rows
+	if (auto sql = db::cacheQuery("insert_archive_entry_property", insert_archive_entry_property.c_str(), true))
+		writeEntryProperties(sql, archive_id, &entry);
+}
+
+void library::saveAllEntryProperties(int64_t archive_id, const vector<ArchiveEntry*>& entries)
+{
+	// Delete existing rows
+	db::connectionRW()->exec(fmt::format("DELETE FROM archive_entry_property WHERE archive_id = {}", archive_id));
+
+	// Insert prop rows for all entries
+	if (auto sql = db::cacheQuery("insert_archive_entry_property", insert_archive_entry_property.c_str(), true))
+	{
+		db::Transaction transaction(db::connectionRW(), false);
+		transaction.beginIfNoActiveTransaction();
+
+		for (auto entry : entries)
+			writeEntryProperties(sql, archive_id, entry);
+
+		transaction.commit();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -577,7 +663,10 @@ void library::readEntryInfo(int64_t archive_id, const vector<ArchiveEntry*>& ent
 	else
 		log::debug("All archive_entry rows in archive {} matched", archive_id);
 
-	// TODO: Load extra stuff here, eventually
+
+	// Load entry properties
+	for (auto entry : entries)
+		readEntryProperties(archive_id, entry);
 
 
 	// Rebuild entry rows if there were any mismatches

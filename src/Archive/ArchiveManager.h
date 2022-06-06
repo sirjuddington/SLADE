@@ -13,7 +13,7 @@ public:
 	bool                        init();
 	bool                        initBaseResource();
 	bool                        resArchiveOK() const { return res_archive_open_; }
-	bool                        addArchive(shared_ptr<Archive> archive, int64_t library_archive_id = -1);
+	bool                        addArchive(shared_ptr<Archive> archive);
 	bool                        validResDir(string_view dir) const;
 	shared_ptr<Archive>         getArchive(int index);
 	shared_ptr<Archive>         getArchive(string_view filename);
@@ -35,7 +35,6 @@ public:
 	void                        setArchiveResource(Archive* archive, bool resource = true);
 	vector<shared_ptr<Archive>> allArchives(bool resource_only = false) const;
 	shared_ptr<Archive>         shareArchive(const Archive* archive);
-	int64_t                     archiveLibraryId(const Archive& archive) const;
 
 	// General access
 	const vector<string>&                 baseResourcePaths() const { return base_resource_paths_; }
@@ -89,15 +88,13 @@ private:
 	{
 		shared_ptr<Archive>       archive;
 		vector<weak_ptr<Archive>> open_children; // A list of currently open archives that are within this archive
-		bool                      resource   = true;
-		int64_t                   library_id = -1;
+		bool                      resource = true;
 	};
 
 	vector<OpenArchive>            open_archives_;
 	unique_ptr<Archive>            program_resource_archive_;
 	shared_ptr<Archive>            base_resource_archive_;
-	int64_t                        base_resource_library_id_ = -1;
-	bool                           res_archive_open_         = false;
+	bool                           res_archive_open_ = false;
 	vector<string>                 base_resource_paths_;
 	vector<weak_ptr<ArchiveEntry>> bookmarks_;
 

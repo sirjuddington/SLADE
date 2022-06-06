@@ -156,7 +156,7 @@ void EntryPanel::addBorderPadding()
 // -----------------------------------------------------------------------------
 // 'Opens' the given entry (sets the frame label then loads it)
 // -----------------------------------------------------------------------------
-bool EntryPanel::openEntry(ArchiveEntry* entry)
+bool EntryPanel::openEntry(const ArchiveEntry* entry)
 {
 	return openEntry(entry ? entry->getShared() : nullptr);
 }
@@ -370,7 +370,7 @@ void EntryPanel::removeCustomMenu() const
 // return true if the panel is shown on any tab, even if it is not on the one
 // that is selected...
 // -----------------------------------------------------------------------------
-bool EntryPanel::isActivePanel()
+bool EntryPanel::isActivePanel() const
 {
 	return (IsShown() && maineditor::currentEntryPanel() == this);
 }

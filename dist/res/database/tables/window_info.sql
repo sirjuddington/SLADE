@@ -1,4 +1,4 @@
-BEGIN TRANSACTION;
+BEGIN;
 
 CREATE TABLE window_info (
     window_id TEXT    PRIMARY KEY
@@ -9,4 +9,4 @@ CREATE TABLE window_info (
     height    INTEGER
 );
 
-COMMIT TRANSACTION;
+COMMIT;

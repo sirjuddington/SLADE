@@ -465,7 +465,7 @@ void ArchivePanel::setup(const Archive& archive)
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(ui::scalePx(300));
 	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	auto split_pos = library::archiveUIConfigSplitterPos(app::archiveManager().archiveLibraryId(archive));
+	auto split_pos = library::archiveUIConfigSplitterPos(archive.libraryId());
 	if (split_pos < 0)
 		split_pos = archive.formatDesc().supports_dirs ? ap_splitter_position_tree : ap_splitter_position_list;
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
@@ -502,8 +502,7 @@ void ArchivePanel::bindEvents(Archive* archive)
 				else
 					ap_splitter_position_list = e.GetSashPosition();
 
-				auto lib_id = app::archiveManager().archiveLibraryId(*archive);
-				library::saveArchiveUIConfigSplitterPos(lib_id, e.GetSashPosition());
+				library::saveArchiveUIConfigSplitterPos(archive->libraryId(), e.GetSashPosition());
 			}
 		});
 

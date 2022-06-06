@@ -20,6 +20,7 @@ namespace library
 	int64_t        readArchiveInfo(const Archive& archive);
 	void           setArchiveLastOpenedTime(int64_t archive_id, time_t last_opened);
 	int64_t        writeArchiveInfo(const Archive& archive);
+	void           writeArchiveEntryInfo(const Archive& archive);
 	void           removeMissingArchives();
 	vector<string> recentFiles(unsigned count = 20);
 

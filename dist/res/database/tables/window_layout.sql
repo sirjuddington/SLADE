@@ -1,4 +1,4 @@
-BEGIN TRANSACTION;
+BEGIN;
 
 CREATE TABLE window_layout (
     window_id TEXT,
@@ -10,4 +10,4 @@ CREATE TABLE window_layout (
     )
 );
 
-COMMIT TRANSACTION;
+COMMIT;

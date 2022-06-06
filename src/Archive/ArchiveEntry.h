@@ -71,7 +71,7 @@ public:
 	}
 	void setState(State state, bool silent = false);
 	void setEncryption(Encryption enc) { encrypted_ = enc; }
-	void setLibraryId(int64_t id) { library_id_ = id; }
+	void setLibraryId(int64_t id) const { library_id_ = id; }
 	void lock();
 	void unlock();
 	void lockState() { state_locked_ = true; }
@@ -134,9 +134,9 @@ private:
 	Encryption encrypted_    = Encryption::None; // Is there some encrypting on the archive?
 
 	// Misc stuff
-	int            reliability_ = 0;  // The reliability of the entry's identification
-	mutable size_t index_guess_ = 0;  // for speed
-	int64_t        library_id_  = -1; // The id of this entry in the library
+	int             reliability_ = 0;  // The reliability of the entry's identification
+	mutable size_t  index_guess_ = 0;  // for speed
+	mutable int64_t library_id_  = -1; // The id of this entry in the library
 };
 
 template<typename T> T ArchiveEntry::exProp(const string& key)

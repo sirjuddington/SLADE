@@ -50,12 +50,10 @@ namespace library
 		bool    remove();
 	};
 
-	int64_t findEntryId(int64_t archive_id, const string& name, const string& path, const string& hash);
-	int64_t findFolderEntryId(int64_t archive_id, const string& path, const string& name);
-	void    removeArchiveEntry(int64_t archive_id, int64_t id);
-	int     copyArchiveEntries(int64_t from_archive_id, int64_t to_archive_id);
-	void    rebuildEntries(int64_t archive_id, const vector<ArchiveEntry*>& entries);
-
+	int  copyArchiveEntries(int64_t from_archive_id, int64_t to_archive_id);
+	void rebuildEntries(int64_t archive_id, const vector<ArchiveEntry*>& entries);
+	void saveEntryProperties(int64_t archive_id, const ArchiveEntry& entry);
+	void saveAllEntryProperties(int64_t archive_id, const vector<ArchiveEntry*>& entries);
 	void readEntryInfo(int64_t archive_id, const vector<ArchiveEntry*>& entries);
 
 } // namespace library

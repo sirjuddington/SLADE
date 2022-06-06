@@ -1,4 +1,4 @@
-BEGIN TRANSACTION;
+BEGIN;
 
 CREATE TABLE archive_file (
     path          TEXT     NOT NULL     /* Path to the archive file on disk (or directory), must be unique in the table */
@@ -10,4 +10,4 @@ CREATE TABLE archive_file (
     last_modified DATETIME              /* Modified time of the file on disk */
 );
 
-COMMIT TRANSACTION;
+COMMIT;

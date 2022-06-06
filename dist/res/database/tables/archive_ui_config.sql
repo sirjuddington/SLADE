@@ -1,4 +1,4 @@
-BEGIN TRANSACTION;
+BEGIN;
 
 CREATE TABLE archive_ui_config (
     archive_id            INTEGER PRIMARY KEY
@@ -15,4 +15,4 @@ CREATE TABLE archive_ui_config (
     splitter_position     INTEGER
 );
 
-COMMIT TRANSACTION;
+COMMIT;

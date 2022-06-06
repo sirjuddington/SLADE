@@ -82,56 +82,67 @@ void library::init()
 // -----------------------------------------------------------------------------
 int64_t library::readArchiveInfo(const Archive& archive)
 {
-	// Find archive_file row for [archive] -------------------------------------
-
-	// Create row from file path to use for comparison
-	auto archive_file = ArchiveFileRow{ archive.filename(), archive.formatId() };
-
-	// Find existing archive_file row id for the archive's filename
-	auto archive_id = archiveFileId(archive_file.path);
-	if (archive_id < 0)
+	try
 	{
-		// Not found - look for match
+		// Find archive_file row for [archive] ---------------------------------
 
-		// Can't match folder archives by data (yet)
-		// TODO: Figure out a good way to store size/hash for folder archive
-		if (archive_file.format_id == "folder")
-			return -1;
+		// Create row from file path to use for comparison
+		auto archive_file = ArchiveFileRow{ archive.filename(), archive.formatId() };
 
-		// Find archive_file row with matching data
-		// If no data match found this archive doesn't exist in the library
-		auto match_id = findArchiveFileIdFromData(archive_file.size, archive_file.hash);
-		if (match_id < 0)
-			return -1;
-
-		// Check if the matched file exists on disk
-		// - If it exists the archive has likely been copied so copy its data in
-		//   the library
-		// - If it doesn't exist the archive has likely been moved so just use
-		//   and update the existing (matched) row in the library
-		auto match_row = ArchiveFileRow{ db::global(), match_id };
-		if (fileutil::fileExists(match_row.path))
-			archive_id = copyArchiveFile(archive_file.path, match_id);
-		else
+		// Find existing archive_file row id for the archive's filename
+		auto archive_id = archiveFileId(archive_file.path);
+		if (archive_id < 0)
 		{
-			archive_id = match_id;
+			// Not found - look for match
 
-			// Update existing row with new file details
-			auto existing_row          = ArchiveFileRow{ db::global(), archive_id };
-			existing_row.path          = archive_file.path;
-			existing_row.last_modified = archive_file.last_modified;
-			existing_row.format_id     = archive_file.format_id;
-			existing_row.update();
+			// Can't match folder archives by data (yet)
+			// TODO: Figure out a good way to store size/hash for folder archive
+			if (archive_file.format_id == "folder")
+				return -1;
+
+			// Find archive_file row with matching data
+			// If no data match found this archive doesn't exist in the library
+			auto match_id = findArchiveFileIdFromData(archive_file.size, archive_file.hash);
+			if (match_id < 0)
+				return -1;
+
+			// Check if the matched file exists on disk
+			// - If it exists the archive has likely been copied so copy its
+			//   data in the library
+			// - If it doesn't exist the archive has likely been moved so just
+			//   use and update the existing (matched) row in the library
+			auto match_row = ArchiveFileRow{ db::global(), match_id };
+			if (fileutil::fileExists(match_row.path))
+				archive_id = copyArchiveFile(archive_file.path, match_id);
+			else
+			{
+				archive_id = match_id;
+
+				// Update existing row with new file details
+				auto existing_row          = ArchiveFileRow{ db::global(), archive_id };
+				existing_row.path          = archive_file.path;
+				existing_row.last_modified = archive_file.last_modified;
+				existing_row.format_id     = archive_file.format_id;
+				existing_row.update();
+			}
 		}
+
+		// Read archive_entry rows for archive ---------------------------------
+
+		vector<ArchiveEntry*> all_entries;
+		archive.putEntryTreeAsList(all_entries);
+		readEntryInfo(archive_id, all_entries);
+
+
+		// Finish up
+		archive.setLibraryId(archive_id);
+		return archive_id;
 	}
-
-	// Read archive_entry rows for archive -------------------------------------
-
-	vector<ArchiveEntry*> all_entries;
-	archive.putEntryTreeAsList(all_entries);
-	readEntryInfo(archive_id, all_entries);
-
-	return archive_id;
+	catch (SQLite::Exception& ex)
+	{
+		log::error("Error reading archive info from the library: {}", ex.what());
+		return -1;
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -139,13 +150,20 @@ int64_t library::readArchiveInfo(const Archive& archive)
 // -----------------------------------------------------------------------------
 void library::setArchiveLastOpenedTime(int64_t archive_id, time_t last_opened)
 {
-	if (auto sql = db::cacheQuery(
-			"lib_set_archive_last_opened", "UPDATE archive_file SET last_opened = ? WHERE id = ?", true))
+	try
 	{
-		sql->bind(1, last_opened);
-		sql->bind(2, archive_id);
-		sql->exec();
-		sql->reset();
+		if (auto sql = db::cacheQuery(
+				"lib_set_archive_last_opened", "UPDATE archive_file SET last_opened = ? WHERE id = ?", true))
+		{
+			sql->bind(1, last_opened);
+			sql->bind(2, archive_id);
+			sql->exec();
+			sql->reset();
+		}
+	}
+	catch (SQLite::Exception& ex)
+	{
+		log::error("Error setting archive last opened time in library: {}", ex.what());
 	}
 }
 
@@ -155,29 +173,64 @@ void library::setArchiveLastOpenedTime(int64_t archive_id, time_t last_opened)
 // -----------------------------------------------------------------------------
 int64_t library::writeArchiveInfo(const Archive& archive)
 {
-	// Create row from archive path + format
-	auto archive_file = ArchiveFileRow{ archive.filename(), archive.formatId() };
-
-	// Get id of row in database if it exists
-	archive_file.id      = archiveFileId(archive_file.path);
-	auto new_archive_row = archive_file.id < 0;
-
-	// Write row to database
-	saveArchiveFile(archive_file);
-
-	// Create archive_ui_config row if needed
-	if (new_archive_row)
+	try
 	{
-		ArchiveUIConfigRow ui_config{ archive_file.id, archive.formatDesc().supports_dirs };
-		ui_config.insert();
+		// Create row from archive path + format
+		auto archive_file = ArchiveFileRow{ archive.filename(), archive.formatId() };
+
+		// Get id of row in database if it exists
+		archive_file.id      = archiveFileId(archive_file.path);
+		auto new_archive_row = archive_file.id < 0;
+
+		// Write row to database
+		saveArchiveFile(archive_file);
+
+		// Create archive_ui_config row if needed
+		if (new_archive_row)
+		{
+			ArchiveUIConfigRow ui_config{ archive_file.id, archive.formatDesc().supports_dirs };
+			ui_config.insert();
+		}
+
+		// Write entries to database
+		vector<ArchiveEntry*> all_entries;
+		archive.putEntryTreeAsList(all_entries);
+		rebuildEntries(archive_file.id, all_entries);
+
+		// Finish up
+		archive.setLibraryId(archive_file.id);
+		return archive_file.id;
+	}
+	catch (SQLite::Exception& ex)
+	{
+		log::error("Error writing archive info to the library: {}", ex.what());
+		return -1;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// (Re)Writes all info for [archive]'s entries into the library
+// -----------------------------------------------------------------------------
+void library::writeArchiveEntryInfo(const Archive& archive)
+{
+	// If it doesn't exist in the library need to add it
+	if (archive.libraryId() < 0)
+	{
+		writeArchiveInfo(archive);
+		return;
 	}
 
-	// Write entries to database
-	vector<ArchiveEntry*> all_entries;
-	archive.putEntryTreeAsList(all_entries);
-	rebuildEntries(archive_file.id, all_entries);
-
-	return archive_file.id;
+	try
+	{
+		// Write entries to database
+		vector<ArchiveEntry*> all_entries;
+		archive.putEntryTreeAsList(all_entries);
+		rebuildEntries(archive.libraryId(), all_entries);
+	}
+	catch (SQLite::Exception& ex)
+	{
+		log::error("Error writing archive entry info to the library: {}", ex.what());
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -185,23 +238,30 @@ int64_t library::writeArchiveInfo(const Archive& archive)
 // -----------------------------------------------------------------------------
 void library::removeMissingArchives()
 {
-	vector<int64_t> to_remove;
-
-	if (auto sql = db::cacheQuery("lib_all_archive_paths", "SELECT id, path FROM archive_file"))
+	try
 	{
-		while (sql->executeStep())
+		vector<int64_t> to_remove;
+
+		if (auto sql = db::cacheQuery("lib_all_archive_paths", "SELECT id, path FROM archive_file"))
 		{
-			if (!fileutil::fileExists(sql->getColumn(1).getString()))
-				to_remove.push_back(sql->getColumn(0).getInt64());
+			while (sql->executeStep())
+			{
+				if (!fileutil::fileExists(sql->getColumn(1).getString()))
+					to_remove.push_back(sql->getColumn(0).getInt64());
+			}
+
+			sql->reset();
 		}
 
-		sql->reset();
+		for (auto id : to_remove)
+		{
+			log::info("Removing archive {} from library (no longer exists)", id);
+			removeArchiveFile(id);
+		}
 	}
-
-	for (auto id : to_remove)
+	catch (SQLite::Exception& ex)
 	{
-		log::info("Removing archive {} from library (no longer exists)", id);
-		removeArchiveFile(id);
+		log::error("Error removing missing archives from the library: {}", ex.what());
 	}
 }
 
@@ -212,17 +272,24 @@ vector<string> library::recentFiles(unsigned count)
 {
 	vector<string> paths;
 
-	// Get or create cached query to select base resource paths
-	if (auto sql = db::cacheQuery(
-			"lib_recent_files", "SELECT path FROM archive_file ORDER BY last_opened DESC LIMIT ?"))
+	try
 	{
-		sql->bind(1, count);
+		// Get or create cached query to select base resource paths
+		if (auto sql = db::cacheQuery(
+				"lib_recent_files", "SELECT path FROM archive_file ORDER BY last_opened DESC LIMIT ?"))
+		{
+			sql->bind(1, count);
 
-		// Execute query and add results to list
-		while (sql->executeStep())
-			paths.push_back(sql->getColumn(0).getString());
+			// Execute query and add results to list
+			while (sql->executeStep())
+				paths.push_back(sql->getColumn(0).getString());
 
-		sql->reset();
+			sql->reset();
+		}
+	}
+	catch (SQLite::Exception& ex)
+	{
+		log::error("Error getting recent files from the library: {}", ex.what());
 	}
 
 	return paths;

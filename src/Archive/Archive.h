@@ -60,9 +60,11 @@ public:
 	bool                   isReadOnly() const { return read_only_; }
 	virtual bool           isWritable() { return true; }
 	time_t                 fileModifiedTime() const { return file_modified_; }
+	int64_t                libraryId() const { return library_id_; }
 
 	void setModified(bool modified);
 	void setFilename(string_view filename) { filename_ = filename; }
+	void setLibraryId(int64_t library_id) const { library_id_ = library_id; }
 
 	// Entry retrieval/info
 	bool                             checkEntry(const ArchiveEntry* entry) const;
@@ -198,6 +200,7 @@ private:
 	bool                   modified_ = true;
 	shared_ptr<ArchiveDir> dir_root_;
 	Signals                signals_;
+	mutable int64_t        library_id_ = -1;
 
 	static vector<ArchiveFormat> formats_;
 };

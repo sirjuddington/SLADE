@@ -63,14 +63,14 @@ CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 namespace
 {
-int64_t updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
+void updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
 {
 	ui::setSplashProgressMessage("Updating library");
 
 	// Read info from library into archive
 	auto lib_id = library::readArchiveInfo(archive);
 
-	// If it wasn' in the library, add it
+	// If it wasn't in the library, add it
 	if (lib_id < 0)
 		lib_id = library::writeArchiveInfo(archive);
 
@@ -79,8 +79,6 @@ int64_t updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
 		library::setArchiveLastOpenedTime(lib_id, datetime::now());
 
 	ui::setSplashProgressMessage("");
-
-	return lib_id;
 }
 } // namespace
 
@@ -208,7 +206,7 @@ bool ArchiveManager::initBaseResource()
 // -----------------------------------------------------------------------------
 // Adds an archive to the archive list
 // -----------------------------------------------------------------------------
-bool ArchiveManager::addArchive(shared_ptr<Archive> archive, int64_t library_archive_id)
+bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 {
 	// Only add if archive is a valid pointer
 	if (archive)
@@ -217,7 +215,6 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive, int64_t library_arc
 		OpenArchive n_archive;
 		n_archive.archive    = archive;
 		n_archive.resource   = true;
-		n_archive.library_id = library_archive_id;
 		open_archives_.push_back(n_archive);
 
 		// Emit archive changed/saved signal when received from the archive
@@ -228,11 +225,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive, int64_t library_arc
 			{
 				// Update in library
 				if (archive.isOnDisk())
-				{
-					for (auto& open_archive : open_archives_)
-						if (open_archive.archive.get() == &archive)
-							open_archive.library_id = library::writeArchiveInfo(archive);
-				}
+					archive.setLibraryId(library::writeArchiveInfo(archive));
 
 				signals_.archive_saved(archiveIndex(&archive));
 			});
@@ -398,12 +391,12 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 	// Opened ok, add to manager if requested
 	if (manage)
 	{
-		// Add/update in library, get id
-		auto lib_id = updateArchiveInLibrary(*new_archive, true);
+		// Add/update in library
+		updateArchiveInLibrary(*new_archive, true);
 
 		// Add the archive
 		auto index = open_archives_.size();
-		addArchive(new_archive, lib_id);
+		addArchive(new_archive);
 
 		// Announce open
 		if (!silent)
@@ -551,12 +544,12 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 	// Opened ok, add to manager if requested
 	if (manage)
 	{
-		// Update in library, get id
-		auto lib_id = updateArchiveInLibrary(*new_archive, true);
+		// Update in library
+		updateArchiveInLibrary(*new_archive, true);
 
 		// Add the archive
 		auto index = open_archives_.size();
-		addArchive(new_archive, lib_id);
+		addArchive(new_archive);
 
 		// Announce open
 		if (!silent)
@@ -656,6 +649,9 @@ bool ArchiveManager::closeArchive(int index)
 
 		parent->unlock();
 	}
+
+	// Update library
+	library::writeArchiveEntryInfo(*open_archives_[index].archive);
 
 	// Close the archive
 	open_archives_[index].archive->close();
@@ -853,22 +849,6 @@ shared_ptr<Archive> ArchiveManager::shareArchive(const Archive* const archive)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the id of [archive] in the library, or -1 if it is not a managed
-// archive or doesn't exist in the library
-// -----------------------------------------------------------------------------
-int64_t ArchiveManager::archiveLibraryId(const Archive& archive) const
-{
-	if (&archive == base_resource_archive_.get())
-		return base_resource_library_id_;
-
-	for (const auto& oa : open_archives_)
-		if (oa.archive.get() == &archive)
-			return oa.library_id;
-
-	return -1;
-}
-
-// -----------------------------------------------------------------------------
 // Adds [path] to the list of base resource paths
 // -----------------------------------------------------------------------------
 bool ArchiveManager::addBaseResourcePath(string_view path)
@@ -968,7 +948,7 @@ bool ArchiveManager::openBaseResource(int index)
 	{
 		base_resource = index;
 		ui::hideSplash();
-		base_resource_library_id_ = updateArchiveInLibrary(*base_resource_archive_, false);
+		updateArchiveInLibrary(*base_resource_archive_, false);
 		app::resources().addArchive(base_resource_archive_.get());
 		signals_.base_res_current_changed(index);
 		return true;
