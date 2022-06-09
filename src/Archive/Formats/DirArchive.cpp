@@ -700,7 +700,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 
 			// Add entry and directory to directory tree
 			auto ndir = createDir(fn.path());
-			ndir->addEntry(new_entry);
+			Archive::addEntry(new_entry, -1, ndir.get());
 
 			// Read entry data
 			new_entry->importFile(change.file_path);
