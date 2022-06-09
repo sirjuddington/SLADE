@@ -18,7 +18,7 @@ namespace ui
 	public:
 		ArchivePathPanel(wxWindow* parent);
 
-		void setCurrentPath(ArchiveDir* dir) const;
+		void setCurrentPath(const ArchiveDir* dir) const;
 
 	private:
 		SToolBarButton* btn_home_  = nullptr;
