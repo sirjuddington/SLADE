@@ -409,7 +409,7 @@ shared_ptr<ArchiveEntry> DirArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // If [delete_entry] is true, the entry will also be deleted.
 // Returns true if the removal succeeded
 // -----------------------------------------------------------------------------
-bool DirArchive::removeEntry(ArchiveEntry* entry)
+bool DirArchive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -417,14 +417,16 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 
 	if (entry->exProps().contains("filePath"))
 	{
+		// If it exists on disk we need to update removed_files_
 		const auto old_name = entry->exProp<string>("filePath");
-		const bool success  = Archive::removeEntry(entry);
+		const bool success  = Archive::removeEntry(entry, set_deleted);
 		if (success)
 			removed_files_.push_back(old_name);
 		return success;
 	}
 
-	return Archive::removeEntry(entry);
+	// Not on disk, just do default remove
+	return Archive::removeEntry(entry, set_deleted);
 }
 
 // -----------------------------------------------------------------------------
@@ -692,7 +694,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 
 			// Add entry and directory to directory tree
 			auto ndir = createDir(fn.path());
-			ndir->addEntry(new_entry);
+			Archive::addEntry(new_entry, -1, ndir.get());
 
 			// Read entry data
 			new_entry->importFile(change.file_path);

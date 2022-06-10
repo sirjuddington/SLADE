@@ -173,10 +173,8 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 	undo_manager_ = undo_manager;
 	view_type_    = archive->formatDesc().supports_dirs && !force_list ? ViewType::Tree : ViewType::List;
 
-	// Add root items
-	wxDataViewItemArray items;
-	getDirChildItems(items, *archive->rootDir());
-	ItemsAdded({}, items);
+	// Refresh (will load all items)
+	Cleared();
 
 
 	// --- Connect to Archive/ArchiveManager signals ---
@@ -275,15 +273,6 @@ void ArchiveViewModel::setFilter(string_view name, string_view category)
 	if (name.empty() && filter_name_.empty() && filter_category_ == category)
 		return;
 
-	// Check current dir is valid
-	auto root_dir = root_dir_.lock();
-	if (!root_dir)
-		return;
-
-	// Get current root items (to remove)
-	wxDataViewItemArray prev_items;
-	getDirChildItems(prev_items, *root_dir);
-
 	filter_category_ = category;
 
 	// Process filter string
@@ -303,18 +292,8 @@ void ArchiveViewModel::setFilter(string_view name, string_view category)
 		}
 	}
 
-	sort_enabled_ = false;
-
-	// Remove previous root items
-	ItemsDeleted({}, prev_items);
-
-	// Re-Add root items (filtered)
-	wxDataViewItemArray items;
-	getDirChildItems(items, *root_dir);
-	ItemsAdded({}, items);
-
-	sort_enabled_ = true;
-	Resort();
+	// Fully refresh the list
+	Cleared();
 }
 
 // -----------------------------------------------------------------------------
@@ -330,20 +309,9 @@ void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
 	if (!cur_root)
 		return;
 
-	// Get current root items (to remove)
-	wxDataViewItemArray prev_items;
-	getDirChildItems(prev_items, *cur_root);
-
-	// Remove previous root items
-	ItemsDeleted({}, prev_items);
-
-	// Re-Add root items
+	// Change root dir and refresh
 	root_dir_ = dir;
-	wxDataViewItemArray items;
-	getDirChildItems(items, *dir);
-	ItemsAdded({}, items);
-
-	Resort();
+	Cleared();
 
 	if (path_panel_)
 		path_panel_->setCurrentPath(dir.get());
@@ -1421,27 +1389,44 @@ ArchiveDir* ArchiveEntryTree::currentRootDir() const
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::setFilter(string_view name, string_view category)
 {
-	auto expanded = expandedDirs();
+	// Get expanded dirs (if in tree view)
+	vector<ArchiveDir*> expanded;
+	auto                tree_view = model_->viewType() == ArchiveViewModel::ViewType::Tree;
+	if (tree_view)
+		expanded = expandedDirs();
+
+	// Get selected items
+	wxDataViewItemArray selected;
+	GetSelections(selected);
 
 	// Set filter on model
 	Freeze();
 	model_->setFilter(name, category);
 
 	// Restore previously expanded directories
-	for (auto* dir : expanded)
+	if (tree_view)
 	{
-		Expand(wxDataViewItem(dir->dirEntry()));
-
-		// Have to collapse parent directories that weren't previously expanded, for whatever reason
-		// the 'Expand' function used above will also expand any parent nodes which is annoying
-		auto* pdir = dir->parent().get();
-		while (pdir)
+		for (auto* dir : expanded)
 		{
-			if (std::find(expanded.begin(), expanded.end(), pdir) == expanded.end())
-				Collapse(wxDataViewItem(pdir->dirEntry()));
+			Expand(wxDataViewItem(dir->dirEntry()));
 
-			pdir = pdir->parent().get();
+			// Have to collapse parent directories that weren't previously expanded, for whatever reason
+			// the 'Expand' function used above will also expand any parent nodes which is annoying
+			auto* pdir = dir->parent().get();
+			while (pdir)
+			{
+				if (std::find(expanded.begin(), expanded.end(), pdir) == expanded.end())
+					Collapse(wxDataViewItem(pdir->dirEntry()));
+
+				pdir = pdir->parent().get();
+			}
 		}
+	}
+
+	if (!selected.empty())
+	{
+		SetSelections(selected);
+		EnsureVisible(selected[0]);
 	}
 
 	Thaw();

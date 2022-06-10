@@ -67,7 +67,7 @@ public:
 	void setLibraryId(int64_t library_id) const { library_id_ = library_id; }
 
 	// Entry retrieval/info
-	bool                             checkEntry(const ArchiveEntry* entry) const;
+	inline bool                      checkEntry(const ArchiveEntry* entry) const;
 	virtual ArchiveEntry*            entry(string_view name, bool cut_ext = false, ArchiveDir* dir = nullptr) const;
 	virtual ArchiveEntry*            entryAt(unsigned index, ArchiveDir* dir = nullptr) const;
 	virtual int                      entryIndex(ArchiveEntry* entry, ArchiveDir* dir = nullptr) const;
@@ -121,7 +121,7 @@ public:
 		unsigned    position = 0xFFFFFFFF,
 		ArchiveDir* dir      = nullptr);
 	virtual shared_ptr<ArchiveEntry> addNewEntry(string_view name, string_view add_namespace);
-	virtual bool                     removeEntry(ArchiveEntry* entry);
+	virtual bool                     removeEntry(ArchiveEntry* entry, bool set_deleted = true);
 
 	// Entry moving
 	virtual bool swapEntries(unsigned index1, unsigned index2, ArchiveDir* dir = nullptr);
