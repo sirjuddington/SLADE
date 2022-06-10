@@ -515,7 +515,7 @@ void Archive::setModified(bool modified)
 // -----------------------------------------------------------------------------
 // Checks that the given entry is valid and part of this archive
 // -----------------------------------------------------------------------------
-bool Archive::checkEntry(ArchiveEntry* entry) const
+bool Archive::checkEntry(const ArchiveEntry* entry) const
 {
 	// Check entry is valid
 	if (!entry)
@@ -1016,7 +1016,7 @@ shared_ptr<ArchiveEntry> Archive::addNewEntry(string_view name, string_view add_
 // If [delete_entry] is true, the entry will also be deleted.
 // Returns true if the removal succeeded
 // -----------------------------------------------------------------------------
-bool Archive::removeEntry(ArchiveEntry* entry)
+bool Archive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 {
 	// Abort if read only
 	if (read_only_)
@@ -1041,23 +1041,20 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 	if (undoredo::currentlyRecording())
 		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(false, entry));
 
-	// Get the entry index
-	const int index = dir->entryIndex(entry);
-
-	// Get a shared pointer to the entry to ensure it's kept around until this function ends
-	auto entry_shared = entry->getShared();
-
-	// Remove it from its directory
-	const bool ok = dir->removeEntry(index);
+	// Remove the entry
+	const int  index        = dir->entryIndex(entry);
+	auto       entry_shared = entry->getShared();      // Ensure the entry is kept around until this function ends
+	const bool ok           = dir->removeEntry(index); // Remove it from its directory
 
 	// If it was removed ok
 	if (ok)
 	{
-		// Signal entry removed
-		signals_.entry_removed(*this, *dir, *entry);
+		// Set state
+		if (set_deleted)
+			entry_shared->setState(ArchiveEntry::State::Deleted);
 
-		// Update variables etc
-		setModified(true);
+		signals_.entry_removed(*this, *dir, *entry); // Signal entry removed
+		setModified(true);                           // Update variables etc
 	}
 
 	return ok;
@@ -1187,7 +1184,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 
 	// Remove the entry from its current dir
 	const auto sptr = entry->getShared(); // Get a shared pointer so it isn't deleted
-	removeEntry(entry);
+	removeEntry(entry, false);
 
 	// Add it to the destination dir
 	addEntry(sptr, position, dir);

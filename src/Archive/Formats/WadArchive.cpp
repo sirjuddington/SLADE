@@ -775,7 +775,7 @@ shared_ptr<ArchiveEntry> WadArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // -----------------------------------------------------------------------------
 // Override of Archive::removeEntry to update namespaces if needed
 // -----------------------------------------------------------------------------
-bool WadArchive::removeEntry(ArchiveEntry* entry)
+bool WadArchive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -785,7 +785,7 @@ bool WadArchive::removeEntry(ArchiveEntry* entry)
 	bool ns_entry = isNamespaceEntry(entry);
 
 	// Do default remove
-	if (Archive::removeEntry(entry))
+	if (Archive::removeEntry(entry, set_deleted))
 	{
 		// Update namespaces if necessary
 		if (ns_entry)
