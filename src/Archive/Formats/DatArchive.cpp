@@ -314,7 +314,7 @@ shared_ptr<ArchiveEntry> DatArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // -----------------------------------------------------------------------------
 // Override of Archive::removeEntry to update namespaces if needed
 // -----------------------------------------------------------------------------
-bool DatArchive::removeEntry(ArchiveEntry* entry)
+bool DatArchive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -324,9 +324,7 @@ bool DatArchive::removeEntry(ArchiveEntry* entry)
 	auto name = entry->upperName();
 
 	// Do default remove
-	bool ok = Archive::removeEntry(entry);
-
-	if (ok)
+	if (Archive::removeEntry(entry, set_deleted))
 	{
 		// Update namespaces if necessary
 		if (strutil::startsWith(name, "START") || strutil::startsWith(name, "END"))

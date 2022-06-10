@@ -154,7 +154,8 @@ void AdvancedPrefsPanel::applyPreferences()
 			*((CStringCVar*)cvar) = wxutil::strToView(value.GetString());
 
 		pg_cvars_->GetProperty(name)->SetModifiedStatus(false);
-		pg_cvars_->Refresh();
-		pg_cvars_->RefreshEditor();
 	}
+
+	pg_cvars_->Refresh();
+	pg_cvars_->RefreshEditor();
 }
