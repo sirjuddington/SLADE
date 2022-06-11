@@ -50,5 +50,6 @@ namespace library
 	int64_t copyArchiveFile(string_view file_path, int64_t copy_from_id);
 	void    removeArchiveFile(int64_t id);
 	time_t  archiveFileLastOpened(int64_t id);
+	time_t  archiveFileLastModified(int64_t id);
 } // namespace library
 } // namespace slade

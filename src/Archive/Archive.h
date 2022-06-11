@@ -283,4 +283,13 @@ private:
 	Archive* archive_;
 };
 
+// Helper functions
+namespace archive
+{
+	shared_ptr<Archive> createIfArchive(const string& filename);
+	shared_ptr<Archive> createIfArchive(const MemChunk& mc, string_view name = {});
+	shared_ptr<Archive> create(string_view format);
+	bool                isKnownExtension(string_view file_ext);
+} // namespace archive
+
 } // namespace slade

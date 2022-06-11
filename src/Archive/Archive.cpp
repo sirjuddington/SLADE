@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive.h"
+#include "Formats/All.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Utility/FileUtils.h"
@@ -1823,4 +1824,162 @@ bool TreelessArchive::paste(ArchiveDir* tree, unsigned position, shared_ptr<Arch
 	setModified(true);
 
 	return true;
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// archive Namespace Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a recognized archive format and returns a
+// new (unopened) shared_ptr of the detected format Archive, or nullptr if the
+// file was not a recognized archive format
+// -----------------------------------------------------------------------------
+shared_ptr<Archive> archive::createIfArchive(const string& filename)
+{
+	if (WadArchive::isWadArchive(filename))
+		return std::make_shared<WadArchive>();
+	if (ZipArchive::isZipArchive(filename))
+		return std::make_shared<ZipArchive>();
+	if (ResArchive::isResArchive(filename))
+		return std::make_shared<ResArchive>();
+	if (DatArchive::isDatArchive(filename))
+		return std::make_shared<DatArchive>();
+	if (LibArchive::isLibArchive(filename))
+		return std::make_shared<LibArchive>();
+	if (PakArchive::isPakArchive(filename))
+		return std::make_shared<PakArchive>();
+	if (BSPArchive::isBSPArchive(filename))
+		return std::make_shared<BSPArchive>();
+	if (GrpArchive::isGrpArchive(filename))
+		return std::make_shared<GrpArchive>();
+	if (RffArchive::isRffArchive(filename))
+		return std::make_shared<RffArchive>();
+	if (GobArchive::isGobArchive(filename))
+		return std::make_shared<GobArchive>();
+	if (LfdArchive::isLfdArchive(filename))
+		return std::make_shared<LfdArchive>();
+	if (HogArchive::isHogArchive(filename))
+		return std::make_shared<HogArchive>();
+	if (ADatArchive::isADatArchive(filename))
+		return std::make_shared<ADatArchive>();
+	if (Wad2Archive::isWad2Archive(filename))
+		return std::make_shared<Wad2Archive>();
+	if (WadJArchive::isWadJArchive(filename))
+		return std::make_shared<WadJArchive>();
+	if (WolfArchive::isWolfArchive(filename))
+		return std::make_shared<WolfArchive>();
+	if (GZipArchive::isGZipArchive(filename))
+		return std::make_shared<GZipArchive>();
+	if (BZip2Archive::isBZip2Archive(filename))
+		return std::make_shared<BZip2Archive>();
+	if (TarArchive::isTarArchive(filename))
+		return std::make_shared<TarArchive>();
+	if (DiskArchive::isDiskArchive(filename))
+		return std::make_shared<DiskArchive>();
+	if (PodArchive::isPodArchive(filename))
+		return std::make_shared<PodArchive>();
+	if (ChasmBinArchive::isChasmBinArchive(filename))
+		return std::make_shared<ChasmBinArchive>();
+	if (SiNArchive::isSiNArchive(filename))
+		return std::make_shared<SiNArchive>();
+
+	// Not a known archive format
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Checks if the data in [mc] is a recognized archive format and returns a new
+// (unopened) shared_ptr of the detected format Archive, or nullptr if the file
+// was not a recognized archive format.
+//
+// Can also give a [name] for archive formats that rely on a specific filename
+// or extension for detection
+// -----------------------------------------------------------------------------
+shared_ptr<Archive> archive::createIfArchive(const MemChunk& mc, string_view name)
+{
+	if (WadArchive::isWadArchive(mc))
+		return std::make_shared<WadArchive>();
+	if (ZipArchive::isZipArchive(mc))
+		return std::make_shared<ZipArchive>();
+	if (ResArchive::isResArchive(mc))
+		return std::make_shared<ResArchive>();
+	if (LibArchive::isLibArchive(mc))
+		return std::make_shared<LibArchive>();
+	if (DatArchive::isDatArchive(mc))
+		return std::make_shared<DatArchive>();
+	if (PakArchive::isPakArchive(mc))
+		return std::make_shared<PakArchive>();
+	if (BSPArchive::isBSPArchive(mc))
+		return std::make_shared<BSPArchive>();
+	if (GrpArchive::isGrpArchive(mc))
+		return std::make_shared<GrpArchive>();
+	if (RffArchive::isRffArchive(mc))
+		return std::make_shared<RffArchive>();
+	if (GobArchive::isGobArchive(mc))
+		return std::make_shared<GobArchive>();
+	if (LfdArchive::isLfdArchive(mc))
+		return std::make_shared<LfdArchive>();
+	if (HogArchive::isHogArchive(mc))
+		return std::make_shared<HogArchive>();
+	if (ADatArchive::isADatArchive(mc))
+		return std::make_shared<ADatArchive>();
+	if (Wad2Archive::isWad2Archive(mc))
+		return std::make_shared<Wad2Archive>();
+	if (WadJArchive::isWadJArchive(mc))
+		return std::make_shared<WadJArchive>();
+	if (WolfArchive::isWolfArchive(mc))
+		return std::make_shared<WolfArchive>();
+	if (GZipArchive::isGZipArchive(mc))
+		return std::make_shared<GZipArchive>();
+	if (BZip2Archive::isBZip2Archive(mc))
+		return std::make_shared<BZip2Archive>();
+	if (TarArchive::isTarArchive(mc))
+		return std::make_shared<TarArchive>();
+	if (DiskArchive::isDiskArchive(mc))
+		return std::make_shared<DiskArchive>();
+	if (strutil::endsWithCI(name, ".pod") && PodArchive::isPodArchive(mc))
+		return std::make_shared<PodArchive>();
+	if (ChasmBinArchive::isChasmBinArchive(mc))
+		return std::make_shared<ChasmBinArchive>();
+	if (SiNArchive::isSiNArchive(mc))
+		return std::make_shared<SiNArchive>();
+
+	// Not a known archive format
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new archive of [format] and returns a shared_ptr to the created
+// Archive, or nullptr if the format isn't supported for creation
+// -----------------------------------------------------------------------------
+shared_ptr<Archive> archive::create(string_view format)
+{
+	if (format == "wad")
+		return std::make_shared<WadArchive>();
+	if (format == "zip")
+		return std::make_shared<ZipArchive>();
+	if (format == "grp")
+		return std::make_shared<GrpArchive>();
+	if (format == "pak")
+		return std::make_shared<PakArchive>();
+
+	// Unsupported format for creating
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [file_ext] is a known archive file extension
+// -----------------------------------------------------------------------------
+bool archive::isKnownExtension(string_view file_ext)
+{
+	for (const auto& format : Archive::allFormats())
+		for (const auto& ext : format.extensions)
+			if (strutil::equalCI(ext.second, file_ext))
+				return true;
+
+	return false;
 }

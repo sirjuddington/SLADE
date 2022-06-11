@@ -33,8 +33,9 @@
 #include "Main.h"
 #include "ArchiveManager.h"
 #include "App.h"
-#include "Formats/All.h"
 #include "Formats/DirArchive.h"
+#include "Formats/WadArchive.h"
+#include "Formats/ZipArchive.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
@@ -351,55 +352,9 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		return new_archive;
 	}
 
-	// Determine file format
-	string fn{ filename };
-	if (WadArchive::isWadArchive(fn))
-		new_archive = std::make_shared<WadArchive>();
-	else if (ZipArchive::isZipArchive(fn))
-		new_archive = std::make_shared<ZipArchive>();
-	else if (ResArchive::isResArchive(fn))
-		new_archive = std::make_shared<ResArchive>();
-	else if (DatArchive::isDatArchive(fn))
-		new_archive = std::make_shared<DatArchive>();
-	else if (LibArchive::isLibArchive(fn))
-		new_archive = std::make_shared<LibArchive>();
-	else if (PakArchive::isPakArchive(fn))
-		new_archive = std::make_shared<PakArchive>();
-	else if (BSPArchive::isBSPArchive(fn))
-		new_archive = std::make_shared<BSPArchive>();
-	else if (GrpArchive::isGrpArchive(fn))
-		new_archive = std::make_shared<GrpArchive>();
-	else if (RffArchive::isRffArchive(fn))
-		new_archive = std::make_shared<RffArchive>();
-	else if (GobArchive::isGobArchive(fn))
-		new_archive = std::make_shared<GobArchive>();
-	else if (LfdArchive::isLfdArchive(fn))
-		new_archive = std::make_shared<LfdArchive>();
-	else if (HogArchive::isHogArchive(fn))
-		new_archive = std::make_shared<HogArchive>();
-	else if (ADatArchive::isADatArchive(fn))
-		new_archive = std::make_shared<ADatArchive>();
-	else if (Wad2Archive::isWad2Archive(fn))
-		new_archive = std::make_shared<Wad2Archive>();
-	else if (WadJArchive::isWadJArchive(fn))
-		new_archive = std::make_shared<WadJArchive>();
-	else if (WolfArchive::isWolfArchive(fn))
-		new_archive = std::make_shared<WolfArchive>();
-	else if (GZipArchive::isGZipArchive(fn))
-		new_archive = std::make_shared<GZipArchive>();
-	else if (BZip2Archive::isBZip2Archive(fn))
-		new_archive = std::make_shared<BZip2Archive>();
-	else if (TarArchive::isTarArchive(fn))
-		new_archive = std::make_shared<TarArchive>();
-	else if (DiskArchive::isDiskArchive(fn))
-		new_archive = std::make_shared<DiskArchive>();
-	else if (PodArchive::isPodArchive(fn))
-		new_archive = std::make_shared<PodArchive>();
-	else if (ChasmBinArchive::isChasmBinArchive(fn))
-		new_archive = std::make_shared<ChasmBinArchive>();
-	else if (SiNArchive::isSiNArchive(fn))
-		new_archive = std::make_shared<SiNArchive>();
-	else
+	// Check if file is a known archive format
+	new_archive = archive::createIfArchive(string{ filename });
+	if (!new_archive)
 	{
 		// Unsupported format
 		global::error = "Unsupported or invalid Archive format";
@@ -455,54 +410,8 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	}
 
 	// Check entry type
-	shared_ptr<Archive> new_archive;
-	if (WadArchive::isWadArchive(entry->data()))
-		new_archive = std::make_shared<WadArchive>();
-	else if (ZipArchive::isZipArchive(entry->data()))
-		new_archive = std::make_shared<ZipArchive>();
-	else if (ResArchive::isResArchive(entry->data()))
-		new_archive = std::make_shared<ResArchive>();
-	else if (LibArchive::isLibArchive(entry->data()))
-		new_archive = std::make_shared<LibArchive>();
-	else if (DatArchive::isDatArchive(entry->data()))
-		new_archive = std::make_shared<DatArchive>();
-	else if (PakArchive::isPakArchive(entry->data()))
-		new_archive = std::make_shared<PakArchive>();
-	else if (BSPArchive::isBSPArchive(entry->data()))
-		new_archive = std::make_shared<BSPArchive>();
-	else if (GrpArchive::isGrpArchive(entry->data()))
-		new_archive = std::make_shared<GrpArchive>();
-	else if (RffArchive::isRffArchive(entry->data()))
-		new_archive = std::make_shared<RffArchive>();
-	else if (GobArchive::isGobArchive(entry->data()))
-		new_archive = std::make_shared<GobArchive>();
-	else if (LfdArchive::isLfdArchive(entry->data()))
-		new_archive = std::make_shared<LfdArchive>();
-	else if (HogArchive::isHogArchive(entry->data()))
-		new_archive = std::make_shared<HogArchive>();
-	else if (ADatArchive::isADatArchive(entry->data()))
-		new_archive = std::make_shared<ADatArchive>();
-	else if (Wad2Archive::isWad2Archive(entry->data()))
-		new_archive = std::make_shared<Wad2Archive>();
-	else if (WadJArchive::isWadJArchive(entry->data()))
-		new_archive = std::make_shared<WadJArchive>();
-	else if (WolfArchive::isWolfArchive(entry->data()))
-		new_archive = std::make_shared<WolfArchive>();
-	else if (GZipArchive::isGZipArchive(entry->data()))
-		new_archive = std::make_shared<GZipArchive>();
-	else if (BZip2Archive::isBZip2Archive(entry->data()))
-		new_archive = std::make_shared<BZip2Archive>();
-	else if (TarArchive::isTarArchive(entry->data()))
-		new_archive = std::make_shared<TarArchive>();
-	else if (DiskArchive::isDiskArchive(entry->data()))
-		new_archive = std::make_shared<DiskArchive>();
-	else if (strutil::endsWithCI(entry->name(), ".pod") && PodArchive::isPodArchive(entry->data()))
-		new_archive = std::make_shared<PodArchive>();
-	else if (ChasmBinArchive::isChasmBinArchive(entry->data()))
-		new_archive = std::make_shared<ChasmBinArchive>();
-	else if (SiNArchive::isSiNArchive(entry->data()))
-		new_archive = std::make_shared<SiNArchive>();
-	else
+	auto new_archive = archive::createIfArchive(entry->data(), entry->name());
+	if (!new_archive)
 	{
 		// Unsupported format
 		global::error = "Unsupported or invalid Archive format";
@@ -594,16 +503,8 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 {
 	// Create a new archive depending on the type specified
-	shared_ptr<Archive> new_archive;
-	if (format == "wad")
-		new_archive = std::make_shared<WadArchive>();
-	else if (format == "zip")
-		new_archive = std::make_shared<ZipArchive>();
-	else if (format == "grp")
-		new_archive = std::make_shared<GrpArchive>();
-	else if (format == "pak")
-		new_archive = std::make_shared<PakArchive>();
-	else
+	auto new_archive = archive::create(format);
+	if (!new_archive)
 	{
 		global::error = fmt::format("Can not create archive of format: {}", format);
 		log::error(global::error);

@@ -342,38 +342,6 @@ database::Context& database::global()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the 'global' read-only database connection, or nullptr if the
-// context isn't connected or this isn't called from the main thread
-// -----------------------------------------------------------------------------
-SQLite::Database* database::connectionRO()
-{
-	// Check we are on the main thread
-	if (std::this_thread::get_id() != app::mainThreadId())
-	{
-		log::error("Can't get global database connection from non-main thread");
-		return nullptr;
-	}
-
-	return db_global.connectionRO();
-}
-
-// -----------------------------------------------------------------------------
-// Returns the 'global' read+write database connection, or nullptr if the
-// context isn't connected or this isn't called from the main thread
-// -----------------------------------------------------------------------------
-SQLite::Database* database::connectionRW()
-{
-	// Check we are on the main thread
-	if (std::this_thread::get_id() != app::mainThreadId())
-	{
-		log::error("Can't get global database connection from non-main thread");
-		return nullptr;
-	}
-
-	return db_global.connectionRW();
-}
-
-// -----------------------------------------------------------------------------
 // Executes an sql [query] on the database using the given [connection].
 // If [connection] is null, the global read+write connection is used.
 // Returns the number of rows modified/created by the query, or 0 if the global

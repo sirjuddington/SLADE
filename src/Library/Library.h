@@ -24,6 +24,11 @@ namespace library
 	void           removeMissingArchives();
 	vector<string> recentFiles(unsigned count = 20);
 
+	// Archive Dir Scan
+	void scanArchivesInDir(string_view path, const vector<string>& ignore_ext);
+	void stopArchiveDirScan();
+	bool archiveDirScanRunning();
+
 	// Bookmarks
 	vector<int64_t> bookmarkedEntries(int64_t archive_id);
 	void            addBookmark(int64_t archive_id, int64_t entry_id);

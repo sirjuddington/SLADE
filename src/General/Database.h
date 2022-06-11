@@ -105,10 +105,8 @@ private:
 };
 
 // Global (config) database context
-Context&          global();
-SQLite::Database* connectionRO();
-SQLite::Database* connectionRW();
-bool              fileExists();
+Context& global();
+bool     fileExists();
 
 // Contexts for threads
 void registerThreadContext(Context& context);
@@ -131,6 +129,14 @@ template<typename T> bool rowExists(SQLite::Database& connection, string_view ta
 inline SQLite::Statement* cacheQuery(string_view id, const char* sql, bool writes = false)
 {
 	return global().cacheQuery(id, sql, writes);
+}
+inline SQLite::Database* connectionRO()
+{
+	return global().connectionRO();
+}
+inline SQLite::Database* connectionRW()
+{
+	return global().connectionRW();
 }
 
 // General

@@ -101,8 +101,8 @@ ArchiveFileRow::ArchiveFileRow(database::Context& db, int64_t id) : id{ id }
 			size          = sql->getColumn(2).getUInt();
 			hash          = sql->getColumn(3).getString();
 			format_id     = sql->getColumn(4).getString();
-			last_modified = sql->getColumn(5).getInt64();
-			last_opened   = sql->getColumn(6).getInt64();
+			last_opened   = sql->getColumn(5).getInt64();
+			last_modified = sql->getColumn(6).getInt64();
 		}
 		else
 		{
@@ -288,6 +288,9 @@ int64_t library::copyArchiveFile(string_view file_path, int64_t copy_from_id)
 	archive_file.id   = -1;
 	archive_file.path = file_path;
 
+	// Reset last opened time
+	archive_file.last_opened = 0;
+
 	// Add new archive_file row
 	auto archive_id = archive_file.insert();
 
@@ -326,4 +329,26 @@ time_t library::archiveFileLastOpened(int64_t id)
 	}
 
 	return last_opened;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the time archive [id] in the library was last modified on disk
+// (as time_t)
+// -----------------------------------------------------------------------------
+time_t library::archiveFileLastModified(int64_t id)
+{
+	time_t last_modified = 0;
+
+	if (auto sql = db::cacheQuery(
+			"get_archive_file_last_modified", "SELECT last_modified FROM archive_file WHERE id = ?"))
+	{
+		sql->bind(1, id);
+
+		if (sql->executeStep())
+			last_modified = sql->getColumn(0).getInt64();
+
+		sql->reset();
+	}
+
+	return last_modified;
 }

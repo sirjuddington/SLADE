@@ -146,8 +146,6 @@ void WadArchive::updateNamespaces()
 		// Check for namespace begin
 		if (strutil::endsWith(entry->upperName(), "_START"))
 		{
-			log::debug("Found namespace start marker {} at index {}", entry->name(), entryIndex(entry));
-
 			// Create new namespace
 			NSPair      ns(entry, nullptr);
 			string_view name = entry->name();
@@ -165,8 +163,6 @@ void WadArchive::updateNamespaces()
 			if (ns.name == "tt")
 				ns.name = "t";
 
-			log::debug("Added namespace {}", ns.name);
-
 			// Add to namespace list
 			namespaces_.push_back(ns);
 		}
@@ -174,8 +170,6 @@ void WadArchive::updateNamespaces()
 		// else if (strutil::matches(entry->upperName(), "?_END") || strutil::matches(entry->upperName(), "??_END"))
 		else if (strutil::endsWith(entry->upperName(), "_END"))
 		{
-			log::debug("Found namespace end marker {} at index {}", entry->name(), entryIndex(entry));
-
 			// Get namespace 'name'
 			auto ns_name = strutil::lower(entry->name());
 			strutil::removeLastIP(ns_name, 4);
@@ -189,8 +183,6 @@ void WadArchive::updateNamespaces()
 				ns_name = "s";
 			if (ns_name == "tt")
 				ns_name = "t";
-
-			log::debug("Namespace name {}", ns_name);
 
 			// Check if it's the end of an existing namespace
 			// Remember entry is getEntry(a)? index is 'a'

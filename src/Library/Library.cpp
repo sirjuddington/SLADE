@@ -51,7 +51,8 @@ using namespace library;
 // -----------------------------------------------------------------------------
 namespace slade::library
 {
-Signals lib_signals;
+Signals     lib_signals;
+std::atomic lib_scan_running{ false }; // Whether a library scan is currently running, set to false to request stop
 
 string insert_archive_bookmark = "INSERT OR REPLACE INTO archive_bookmark VALUES (?,?)";
 } // namespace slade::library
@@ -280,7 +281,8 @@ vector<string> library::recentFiles(unsigned count)
 	{
 		// Get or create cached query to select base resource paths
 		if (auto sql = db::cacheQuery(
-				"lib_recent_files", "SELECT path FROM archive_file ORDER BY last_opened DESC LIMIT ?"))
+				"lib_recent_files",
+				"SELECT path FROM archive_file WHERE last_opened > 0 ORDER BY last_opened DESC LIMIT ?"))
 		{
 			sql->bind(1, count);
 
@@ -297,6 +299,110 @@ vector<string> library::recentFiles(unsigned count)
 	}
 
 	return paths;
+}
+
+// -----------------------------------------------------------------------------
+// Finds and scans all archives in [path] (recursively), adding or updating them
+// in the library. Files with extensions in [ignore_ext] will be ignored.
+//
+// This is safe to run in a background thread, and only one scan can be running
+// at any time
+// -----------------------------------------------------------------------------
+void library::scanArchivesInDir(string_view path, const vector<string>& ignore_ext)
+{
+	if (lib_scan_running)
+	{
+		// Abort if a scan is already running (eg. in another thread)
+		log::warning("Library scan already running, can only have one running at once");
+		return;
+	}
+
+	auto files = fileutil::allFilesInDir(path, true);
+
+	lib_scan_running = true;
+
+	for (auto& filename : files)
+	{
+		// Sanitize path
+		strutil::replaceIP(filename, "\\", "/");
+
+		// Check extension
+		auto ext = strutil::Path::extensionOf(filename);
+		if (VECTOR_EXISTS(ignore_ext, ext))
+		{
+			log::debug("File {} has ignored extension, skipping", filename);
+			continue;
+		}
+		if (!archive::isKnownExtension(ext))
+		{
+			log::debug("File {} has unknown archive extension, skipping", filename);
+			continue;
+		}
+
+		// Check if the file exists in the library
+		auto lib_id = archiveFileId(filename);
+		if (lib_id >= 0)
+		{
+			// Check if the file on disk hasn't been modified since it was last updated in the library
+			auto lib_file_modified = archiveFileLastModified(lib_id);
+			if (lib_file_modified == fileutil::fileModifiedTime(filename))
+			{
+				log::info(
+					"Library Scan: File {} is already in library and has not been modified since last scanned",
+					filename);
+				continue;
+			}
+		}
+
+		// Check if file is a known archive format
+		if (auto archive = archive::createIfArchive(filename))
+		{
+			log::info("Library Scan: Scanning file \"{}\" (detected as {})", filename, archive->formatDesc().name);
+
+			if (!archive->open(filename))
+			{
+				log::info("Library Scan: Failed to open archive file {}: {}", filename, global::error);
+				continue;
+			}
+
+			auto id = readArchiveInfo(*archive);
+			if (id < 0)
+			{
+				log::info("Library Scan: Archive file doesn't exist in library, adding");
+				writeArchiveInfo(*archive);
+			}
+			else
+				log::info("Library Scan: Archive already exists in library");
+		}
+		else
+			log::debug("File {} is not a known/valid archive format, skipping", filename);
+
+		// Check if stop scan was requested
+		if (!lib_scan_running)
+		{
+			log::info("Library Scan: Stop scan requested, ending scan");
+			return;
+		}
+	}
+
+	lib_scan_running = false;
+}
+
+// -----------------------------------------------------------------------------
+// Stops the currently running library scan (if any)
+// -----------------------------------------------------------------------------
+void library::stopArchiveDirScan()
+{
+	if (lib_scan_running)
+		lib_scan_running = false;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if a library scan is currently running
+// -----------------------------------------------------------------------------
+bool library::archiveDirScanRunning()
+{
+	return lib_scan_running;
 }
 
 // -----------------------------------------------------------------------------
@@ -433,4 +539,31 @@ CONSOLE_COMMAND(lib_cleanup, 0, true)
 	library::removeMissingArchives();
 
 	log::console("Library cleanup complete");
+}
+
+CONSOLE_COMMAND(lib_scan, 1, true)
+{
+	if (args[0] == "stop")
+	{
+		// Stop scan requested
+		lib_scan_running = false;
+		log::console("Library scan stop requested, will stop after the current archive is finished scanning");
+		return;
+	}
+
+	vector<string> ignore_ext{ "zip" }; // Ignore zips by default
+
+	// Start scan in background thread
+	std::thread scan_thread(
+		[ignore_ext, args]
+		{
+			// Create+Register database connection context for thread
+			db::Context ctx{ db::programDatabasePath() };
+			db::registerThreadContext(ctx);
+
+			library::scanArchivesInDir(args[0], ignore_ext);
+
+			db::deregisterThreadContexts();
+		});
+	scan_thread.detach();
 }
