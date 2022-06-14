@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "ArchiveFile.h"
 #include "ArchiveEntry.h"
+#include "Library.h"
 #include "General/Database.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -115,6 +116,24 @@ ArchiveFileRow::ArchiveFileRow(database::Context& db, int64_t id) : id{ id }
 }
 
 // -----------------------------------------------------------------------------
+// ArchiveFileRow constructor
+// Reads data from result columns in the given SQLite statement [sql]
+// -----------------------------------------------------------------------------
+ArchiveFileRow::ArchiveFileRow(SQLite::Statement* sql)
+{
+	if (!sql)
+		return;
+
+	id            = sql->getColumn(0).getInt64();
+	path          = sql->getColumn(1).getString();
+	size          = sql->getColumn(2).getUInt();
+	hash          = sql->getColumn(3).getString();
+	format_id     = sql->getColumn(4).getString();
+	last_opened   = sql->getColumn(5).getInt64();
+	last_modified = sql->getColumn(6).getInt64();
+}
+
+// -----------------------------------------------------------------------------
 // Inserts this row into the database.
 // If successful, id will be updated and returned, otherwise returns -1
 // -----------------------------------------------------------------------------
@@ -142,6 +161,9 @@ int64_t ArchiveFileRow::insert()
 
 		sql->reset();
 	}
+
+	if (id >= 0)
+		library::signals().archive_file_inserted(id);
 
 	return id;
 }
@@ -175,7 +197,13 @@ bool ArchiveFileRow::update() const
 		sql->reset();
 	}
 
-	return rows > 0;
+	if (rows > 0)
+	{
+		library::signals().archive_file_updated(id);
+		return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -202,6 +230,7 @@ bool ArchiveFileRow::remove()
 
 	if (rows > 0)
 	{
+		library::signals().archive_file_deleted(id);
 		id = -1;
 		return true;
 	}
@@ -308,7 +337,8 @@ void library::removeArchiveFile(int64_t id)
 {
 	// Delete row from archive_file
 	// (all related data will also be removed via cascading foreign keys)
-	db::connectionRW()->exec(fmt::format("DELETE FROM archive_file WHERE id = {}", id));
+	if (db::connectionRW()->exec(fmt::format("DELETE FROM archive_file WHERE id = {}", id)) > 0)
+		library::signals().archive_file_deleted(id);
 }
 
 // -----------------------------------------------------------------------------
@@ -351,4 +381,20 @@ time_t library::archiveFileLastModified(int64_t id)
 	}
 
 	return last_modified;
+}
+
+// -----------------------------------------------------------------------------
+// Returns models for all rows in the archive_file table
+// -----------------------------------------------------------------------------
+vector<ArchiveFileRow> library::allArchiveFileRows()
+{
+	vector<ArchiveFileRow> rows;
+
+	if (auto sql = db::cacheQuery("all_archive_file_rows", "SELECT * FROM archive_file"))
+	{
+		while (sql->executeStep())
+			rows.emplace_back(sql);
+	}
+
+	return rows;
 }

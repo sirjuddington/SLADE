@@ -36,6 +36,7 @@ namespace maineditor
 
 	void openTextureEditor(Archive* archive, ArchiveEntry* entry = nullptr);
 	void openMapEditor(Archive* archive);
+	void openArchiveFile(string_view filename);
 	void openArchiveTab(Archive* archive);
 	void openEntry(ArchiveEntry* entry);
 

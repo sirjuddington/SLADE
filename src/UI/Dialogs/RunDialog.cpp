@@ -342,7 +342,7 @@ void RunDialog::openGameExe(unsigned index) const
 // Returns a command line based on the currently selected run configuration and
 // resources
 // -----------------------------------------------------------------------------
-wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_name, const wxString& map_file) const
+wxString RunDialog::selectedCommandLine(const Config& cfg) const
 {
 	auto exe = executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
@@ -355,34 +355,39 @@ wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_na
 
 		wxString path = wxString::Format("\"%s\"", exe_path);
 
-		unsigned    cfg     = choice_config_->GetSelection();
-		const auto& configs = run_map_ ? exe->map_configs : exe->run_configs;
-		if (cfg < configs.size())
+		unsigned    cfg_index = choice_config_->GetSelection();
+		const auto& configs   = run_map_ ? exe->map_configs : exe->run_configs;
+		if (cfg_index < configs.size())
 		{
 			path += " ";
-			path += configs[cfg].second;
+			path += configs[cfg_index].second;
 		}
 
 		// IWAD
-		auto bra = app::archiveManager().baseResourceArchive();
-		path.Replace("%i", wxString::Format("\"%s\"", bra ? bra->filename() : ""));
+		if (cfg.iwad_path.IsEmpty())
+		{
+			auto bra = app::archiveManager().baseResourceArchive();
+			path.Replace("%i", wxString::Format("\"%s\"", bra ? bra->filename() : ""));
+		}
+		else
+			path.Replace("%i", wxString::Format("\"%s\"", cfg.iwad_path));
 
 		// Resources
 		path.Replace("%r", selectedResourceList());
 
 		// Archive (+ temp map if specified)
-		if (map_file.IsEmpty() && archive)
-			path.Replace("%a", wxString::Format("\"%s\"", archive->filename()));
+		if (cfg.map_file.IsEmpty() && !cfg.archive_path.IsEmpty())
+			path.Replace("%a", wxString::Format("\"%s\"", cfg.archive_path));
 		else
 		{
-			if (archive)
-				path.Replace("%a", wxString::Format("\"%s\" \"%s\"", archive->filename(), map_file));
+			if (!cfg.archive_path.empty())
+				path.Replace("%a", wxString::Format("\"%s\" \"%s\"", cfg.archive_path, cfg.map_file));
 			else
-				path.Replace("%a", wxString::Format("\"%s\"", map_file));
+				path.Replace("%a", wxString::Format("\"%s\"", cfg.map_file));
 		}
 
 		// Running an archive yields no map name, so don't try to warp
-		if (map_name.IsEmpty())
+		if (cfg.map_name.IsEmpty())
 		{
 			path.Replace("-warp ", wxEmptyString);
 			path.Replace("+map ", wxEmptyString);
@@ -392,12 +397,12 @@ wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_na
 		// Map name
 		else
 		{
-			path.Replace("%mn", map_name);
+			path.Replace("%mn", cfg.map_name);
 
 			// Map warp
 			if (path.Contains("%mw"))
 			{
-				wxString mn = map_name.Lower();
+				wxString mn = cfg.map_name.Lower();
 
 				// MAPxx
 				wxString mapnum;
@@ -405,7 +410,7 @@ wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_na
 					path.Replace("%mw", mapnum);
 
 				// ExMx
-				else if (map_name.length() == 4 && mn[0] == 'e' && mn[2] == 'm')
+				else if (cfg.map_name.length() == 4 && mn[0] == 'e' && mn[2] == 'm')
 					path.Replace("%mw", wxString::Format("%c %c", mn[1], mn[3]));
 			}
 		}
@@ -465,6 +470,26 @@ wxString RunDialog::selectedExeId() const
 bool RunDialog::start3dModeChecked() const
 {
 	return cb_start_3d_->GetValue();
+}
+
+// -----------------------------------------------------------------------------
+// Runs the currently selected executable+run configuration with [archive_path]
+// -----------------------------------------------------------------------------
+void RunDialog::run(const Config& cfg) const
+{
+	auto command = selectedCommandLine(cfg);
+	if (!command.IsEmpty())
+	{
+		// Set working directory
+		wxString wd = wxGetCwd();
+		wxSetWorkingDirectory(selectedExeDir());
+
+		// Run
+		wxExecute(command, wxEXEC_ASYNC);
+
+		// Restore working directory
+		wxSetWorkingDirectory(wd);
+	}
 }
 
 
@@ -558,10 +583,10 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	RunConfigDialog dlg(this, "Edit Run Config", name, params, custom);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		wxString name         = dlg.name().IsEmpty() ? wxString(configs[index].first) : dlg.name();
-		configs[index].first  = name;
+		wxString cfg_name     = dlg.name().IsEmpty() ? wxString(configs[index].first) : dlg.name();
+		configs[index].first  = cfg_name;
 		configs[index].second = dlg.params();
-		choice_config_->SetString(index, name);
+		choice_config_->SetString(index, cfg_name);
 	}
 }
 

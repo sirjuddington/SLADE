@@ -290,6 +290,7 @@ namespace archive
 	shared_ptr<Archive> createIfArchive(const MemChunk& mc, string_view name = {});
 	shared_ptr<Archive> create(string_view format);
 	bool                isKnownExtension(string_view file_ext);
+	ArchiveFormat       formatDesc(string_view id);
 } // namespace archive
 
 } // namespace slade

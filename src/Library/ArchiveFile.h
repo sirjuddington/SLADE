@@ -1,5 +1,10 @@
 #pragma once
 
+namespace SQLite
+{
+class Statement;
+}
+
 namespace slade
 {
 namespace database
@@ -38,6 +43,7 @@ namespace library
 		}
 		ArchiveFileRow(string_view file_path, string_view format_id);
 		ArchiveFileRow(database::Context& db, int64_t id);
+		ArchiveFileRow(SQLite::Statement* sql);
 
 		int64_t insert();
 		bool    update() const;
@@ -51,5 +57,7 @@ namespace library
 	void    removeArchiveFile(int64_t id);
 	time_t  archiveFileLastOpened(int64_t id);
 	time_t  archiveFileLastModified(int64_t id);
+
+	vector<ArchiveFileRow> allArchiveFileRows();
 } // namespace library
 } // namespace slade

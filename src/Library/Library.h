@@ -9,7 +9,9 @@ namespace library
 {
 	struct Signals
 	{
-		sigslot::signal<> archive_file_updated;
+		sigslot::signal<int64_t> archive_file_updated;
+		sigslot::signal<int64_t> archive_file_inserted;
+		sigslot::signal<int64_t> archive_file_deleted;
 	};
 
 	// General

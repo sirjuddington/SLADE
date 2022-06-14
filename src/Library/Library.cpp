@@ -164,7 +164,7 @@ void library::setArchiveLastOpenedTime(int64_t archive_id, time_t last_opened)
 			sql->reset();
 		}
 
-		lib_signals.archive_file_updated();
+		lib_signals.archive_file_updated(archive_id);
 	}
 	catch (SQLite::Exception& ex)
 	{

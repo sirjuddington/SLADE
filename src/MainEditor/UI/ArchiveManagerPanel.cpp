@@ -2313,7 +2313,10 @@ void ArchiveManagerPanel::connectSignals()
 	signal_connections += signals.archive_opened.connect([this](int index) { openTab(index); });
 
 	// Refresh recent files list when library updated
-	signal_connections += library::signals().archive_file_updated.connect([this]() { refreshRecentFileList(); });
+	signal_connections += library::signals().archive_file_updated.connect([this](int64_t) { refreshRecentFileList(); });
+	signal_connections += library::signals().archive_file_inserted.connect([this](int64_t)
+																		   { refreshRecentFileList(); });
+	signal_connections += library::signals().archive_file_deleted.connect([this](int64_t) { refreshRecentFileList(); });
 
 	// Refresh bookmarks list when changed
 	signal_connections += signals.bookmark_added.connect([this](ArchiveEntry*) { refreshBookmarkList(); });

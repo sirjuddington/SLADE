@@ -11,14 +11,25 @@ class RunDialog : public SDialog
 {
 public:
 	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false, bool run_map = false);
-	~RunDialog();
+	~RunDialog() override;
+
+	struct Config
+	{
+		wxString archive_path;
+		wxString iwad_path;
+		wxString map_name;
+		wxString map_file;
+
+		Config(const string& archive_path) : archive_path{ archive_path } {}
+	};
 
 	void     openGameExe(unsigned index) const;
-	wxString selectedCommandLine(Archive* archive, const wxString& map_name, const wxString& map_file = "") const;
+	wxString selectedCommandLine(const Config& cfg) const;
 	wxString selectedResourceList() const;
 	wxString selectedExeDir() const;
 	wxString selectedExeId() const;
 	bool     start3dModeChecked() const;
+	void     run(const Config& cfg) const;
 
 private:
 	wxChoice*               choice_game_exes_  = nullptr;

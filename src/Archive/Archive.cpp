@@ -1983,3 +1983,15 @@ bool archive::isKnownExtension(string_view file_ext)
 
 	return false;
 }
+
+// -----------------------------------------------------------------------------
+// Returns the ArchiveFormat info for [id]
+// -----------------------------------------------------------------------------
+ArchiveFormat archive::formatDesc(string_view id)
+{
+	for (const auto& format : Archive::allFormats())
+		if (format.id == id)
+			return format;
+
+	return ArchiveFormat{ id };
+}

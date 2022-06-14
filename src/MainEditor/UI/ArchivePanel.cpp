@@ -3369,21 +3369,7 @@ bool ArchivePanel::handleAction(string_view id)
 	{
 		RunDialog dlg(this, archive.get());
 		if (dlg.ShowModal() == wxID_OK)
-		{
-			wxString command = dlg.selectedCommandLine(archive.get(), "");
-			if (!command.IsEmpty())
-			{
-				// Set working directory
-				wxString wd = wxGetCwd();
-				wxSetWorkingDirectory(dlg.selectedExeDir());
-
-				// Run
-				wxExecute(command, wxEXEC_ASYNC);
-
-				// Restore working directory
-				wxSetWorkingDirectory(wd);
-			}
-		}
+			dlg.run(RunDialog::Config{ archive->filename() });
 
 		return true;
 	}

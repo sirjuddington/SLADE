@@ -37,6 +37,7 @@
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
 #include "Graphics/Icons.h"
+#include "Library/UI/LibraryPanel.h"
 #include "MapEditor/MapEditor.h"
 #include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
@@ -285,6 +286,7 @@ void MainWindow::setupLayout()
 
 	// Tools menu
 	auto tools_menu = new wxMenu("");
+	SAction::fromId("main_showlibrary")->addToMenu(tools_menu);
 	SAction::fromId("main_runscript")->addToMenu(tools_menu);
 	menu->Append(tools_menu, "&Tools");
 
@@ -327,7 +329,14 @@ void MainWindow::setupLayout()
 	b_maint->setMenu(ArchivePanel::createMaintenanceMenu());
 	toolbar_->addGroup(tbg_archive);
 
-	// Create Boomkarks toolbar
+	// Create General toolbar
+	auto* tbg_general = new SToolBarGroup(toolbar_, "_General");
+	tbg_general->addActionButton("main_showlibrary");
+	tbg_general->addActionButton("main_runscript");
+	tbg_general->addActionButton("main_preferences");
+	toolbar_->addGroup(tbg_general);
+
+	// Create Bookmarks toolbar
 	auto* tbg_bookmarks = new SToolBarGroup(toolbar_, "_Bookmarks");
 	auto* b_bookmarks   = tbg_bookmarks->addActionButton(
         "bookmarks", "Bookmarks", "bookmark", "Go to a bookmarked entry");
@@ -491,8 +500,44 @@ void MainWindow::openStartPageTab()
 	start_page_ = new SStartPage(stc_tabs_);
 	start_page_->init();
 	stc_tabs_->AddPage(start_page_, "Start Page");
-	stc_tabs_->SetPageBitmap(0, icons::getIcon(icons::General, "logo"));
+	stc_tabs_->SetPageBitmap(stc_tabs_->GetPageIndex(start_page_), icons::getIcon(icons::General, "logo"));
 	createStartPage();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the Archive Library tab is currently open
+// -----------------------------------------------------------------------------
+bool MainWindow::libraryTabOpen() const
+{
+	for (unsigned a = 0; a < stc_tabs_->GetPageCount(); a++)
+	{
+		if (stc_tabs_->GetPage(a)->GetName() == "library")
+			return true;
+	}
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Switches to the Archive Library tab, or (re)creates it if it has been closed
+// -----------------------------------------------------------------------------
+void MainWindow::openLibraryTab() const
+{
+	// Find existing tab
+	for (unsigned a = 0; a < stc_tabs_->GetPageCount(); a++)
+	{
+		if (stc_tabs_->GetPage(a)->GetName() == "library")
+		{
+			stc_tabs_->SetSelection(a);
+			return;
+		}
+	}
+
+	// Not found, create library tab
+	auto lib_tab = new ui::LibraryPanel(stc_tabs_);
+	lib_tab->SetName("library");
+	stc_tabs_->AddPage(lib_tab, "Archive Library", true);
+	stc_tabs_->SetPageBitmap(stc_tabs_->GetPageIndex(lib_tab), icons::getIcon(icons::General, "library"));
 }
 
 // -----------------------------------------------------------------------------
@@ -615,7 +660,10 @@ bool MainWindow::handleAction(string_view id)
 
 	// View->Show Start Page
 	if (id == "main_showstartpage")
+	{
 		openStartPageTab();
+		return true;
+	}
 
 #ifndef NO_LUA
 	// Tools->Run Script
@@ -625,6 +673,13 @@ bool MainWindow::handleAction(string_view id)
 		return true;
 	}
 #endif
+
+	// Tools->Archive Library
+	if (id == "main_showlibrary")
+	{
+		openLibraryTab();
+		return true;
+	}
 
 	// Help->About
 	if (id == "main_about")

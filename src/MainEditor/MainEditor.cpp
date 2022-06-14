@@ -129,6 +129,14 @@ void maineditor::openMapEditor(Archive* archive)
 }
 
 // -----------------------------------------------------------------------------
+// Opens the archive file at [filename]
+// -----------------------------------------------------------------------------
+void maineditor::openArchiveFile(string_view filename)
+{
+	main_window->archiveManagerPanel()->openFile(wxutil::strFromView(filename));
+}
+
+// -----------------------------------------------------------------------------
 // Shows the tab for [archive], opening a new tab for it if needed
 // -----------------------------------------------------------------------------
 void ::maineditor::openArchiveTab(Archive* archive)

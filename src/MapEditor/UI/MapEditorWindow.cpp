@@ -1301,19 +1301,10 @@ bool MapEditorWindow::handleAction(string_view id)
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
 				mapeditor::editContext().resetPlayerStart();
 
-			wxString command = dlg.selectedCommandLine(archive, mdesc_current.name, wad.filename());
-			if (!command.IsEmpty())
-			{
-				// Set working directory
-				wxString wd = wxGetCwd();
-				wxSetWorkingDirectory(dlg.selectedExeDir());
-
-				// Run
-				wxExecute(command, wxEXEC_ASYNC);
-
-				// Restore working directory
-				wxSetWorkingDirectory(wd);
-			}
+			RunDialog::Config cfg{ archive->filename() };
+			cfg.map_name = mdesc_current.name;
+			cfg.map_file = wad.filename();
+			dlg.run(cfg);
 		}
 
 		return true;

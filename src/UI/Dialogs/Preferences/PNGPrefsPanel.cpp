@@ -45,7 +45,6 @@ using namespace slade;
 EXTERN_CVAR(String, path_pngout)
 EXTERN_CVAR(String, path_pngcrush)
 EXTERN_CVAR(String, path_deflopt)
-CVAR(String, dir_last_pngtool, "", CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
