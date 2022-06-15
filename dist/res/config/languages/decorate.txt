@@ -54,7 +54,7 @@ decorate : cstyle {
 		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
 		AddShaded, Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
 		BloodColor, BloodType, Decal, FloatBobPhase, DistanceCheck, SpriteAngle, SpriteRotation, VisibleAngles,
-		VisiblePitch, StealthAlpha, FloatBobStrength, RenderRadius, CameraFOV, 
+		VisiblePitch, StealthAlpha, FloatBobStrength, RenderRadius, CameraFOV, LightLevel,
 		
 		// Sounds
 		SeeSound, AttackSound, PainSound, BounceSound, CrushPainSound,
@@ -115,7 +115,7 @@ decorate : cstyle {
 		Ammo, BackpackAmount, BackpackMaxAmount, DropAmount,
 		
 		// Puzzle items
-		PuzzleItem, Number, FailMessage,
+		PuzzleItem, Number, FailMessage, FailSound,
 
 		// Combos
 		Monster, Projectile,
@@ -173,7 +173,8 @@ decorate : cstyle {
 		NOFRICTIONBOUNCE, FALLDAMAGE, ALLOWTHRUBITS, DONTFACETALKER, AVOIDHAZARDS, STAYONLIFT, FRIGHTENING,
 		NOINFIGHTSPECIES, FORCEINFIGHTING, STOPRAILS, FULLVOLSEE, FORCEZERORADIUSDMG, POISONALWAYS, HITOWNER,
 		BOUNCEONUNRIPPABLES, DONTBOUNCEONSHOOTABLES, DONTBOUNCEONSKY, RETARGETAFTERSLAM, E1M8BOSS, E2M8BOSS,
-		E3M8BOSS, E4M6BOSS, E4M8BOSS, MAP07BOSS1, MAP07BOSS2, HIGHERMPROB,
+		E3M8BOSS, E4M6BOSS, E4M8BOSS, MAP07BOSS1, MAP07BOSS2, HIGHERMPROB, DONTFOLLOWPLAYERS, SEEFRIENDLYMONSTERS,
+		ADDLIGHTLEVEL, CROSSLINECHECK, MASTERNOSEE,
 
 		// INVENTORY.
 		INVENTORY,
@@ -345,7 +346,7 @@ decorate : cstyle {
 		PSP_WEAPON, PSP_FLASH,
 
 		// A_QuakeEx flags
-		QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_MAX, QF_FULLINTENSITY, QF_WAVE,
+		QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_MAX, QF_FULLINTENSITY, QF_WAVE, QF_3D,
 
 		// A_RadiusDamageSelf flags
 		RDSF_BFGDAMAGE,
