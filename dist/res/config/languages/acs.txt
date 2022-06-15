@@ -905,7 +905,7 @@ acs_z : acs
 		SetHUDClipRect = "int x, int y, int width, int height, [int wrapwidth], [bool aspectratio]";
 		SetHUDSize = "int width, int height, bool statusbar";
 		SetHUDWrapWidth = "int wrapwidth";
-		SetLineActivation = "int lineid, int activation";
+		SetLineActivation = "int lineid, int activation, [int repeat]";
 		SetLineBlocking = "int lineid, int setting";
 		SetLineMonsterBlocking = "int lineid, int setting";
 		SetLineSpecial = "int lineid, int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
