@@ -67,7 +67,7 @@ public:
 	void setLibraryId(int64_t library_id) const { library_id_ = library_id; }
 
 	// Entry retrieval/info
-	inline bool                      checkEntry(const ArchiveEntry* entry) const;
+	bool                             checkEntry(const ArchiveEntry* entry) const;
 	virtual ArchiveEntry*            entry(string_view name, bool cut_ext = false, ArchiveDir* dir = nullptr) const;
 	virtual ArchiveEntry*            entryAt(unsigned index, ArchiveDir* dir = nullptr) const;
 	virtual int                      entryIndex(ArchiveEntry* entry, ArchiveDir* dir = nullptr) const;

@@ -22,7 +22,7 @@ zscript
 	{
 		object, vector2, vector3, name, string, color, sound, void, double, bool,
 		int, float, uint8, uint16, uint, int8, int16, TextureID, SpriteID, Array,
-		voidptr, short
+		voidptr, short, fvector2, fvector3
 	}
 
 	// Function info we cannot parse from (g)zdoom.pk3
