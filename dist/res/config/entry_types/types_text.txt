@@ -208,6 +208,13 @@ entry_types
 		text_language = "z_modeldef";
 	}
 
+	modeldefs_ns : text
+	{
+		name = "3D model defs";
+		section = "modeldefs";
+		text_language = "z_modeldef";
+	}
+
 	voxeldefs : text
 	{
 		name = "Voxel defs";
@@ -307,6 +314,14 @@ entry_types
 	{
 		name = "Texture definitions";
 		match_name = "textures", "hirestex";
+		icon = "e_texturex";
+		text_language = "z_textures";
+	}
+
+	zdtextures_ns : text
+	{
+		name = "Texture definitions";
+		section = "texturedefs";
 		icon = "e_texturex";
 		text_language = "z_textures";
 	}
