@@ -83,7 +83,7 @@ public:
 	bool close();
 
 	SQLite::Statement* cachedQuery(string_view id);
-	SQLite::Statement* cacheQuery(string_view id, const char* sql, bool writes = false);
+	SQLite::Statement* cacheQuery(string_view id, string_view sql, bool writes = false);
 
 	int exec(const string& query) const;
 	int exec(const char* query) const;
@@ -126,7 +126,7 @@ template<typename T> bool rowExists(SQLite::Database& connection, string_view ta
 	sql.bind(1, value);
 	return sql.executeStep();
 }
-inline SQLite::Statement* cacheQuery(string_view id, const char* sql, bool writes = false)
+inline SQLite::Statement* cacheQuery(string_view id, string_view sql, bool writes = false)
 {
 	return global().cacheQuery(id, sql, writes);
 }

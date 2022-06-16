@@ -32,13 +32,14 @@
 #include "Main.h"
 #include "ArchiveFile.h"
 #include "ArchiveEntry.h"
-#include "Library.h"
 #include "General/Database.h"
+#include "Library.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace library;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -145,7 +146,7 @@ int64_t ArchiveFileRow::insert()
 		return id;
 	}
 
-	if (auto sql = db::cacheQuery("insert_archive_file", insert_archive_file.c_str(), true))
+	if (auto sql = db::cacheQuery("insert_archive_file", insert_archive_file, true))
 	{
 		sql->clearBindings();
 
@@ -181,7 +182,7 @@ bool ArchiveFileRow::update() const
 	}
 
 	auto rows = 0;
-	if (auto sql = db::cacheQuery("update_archive_file", update_archive_file.c_str(), true))
+	if (auto sql = db::cacheQuery("update_archive_file", update_archive_file, true))
 	{
 		sql->clearBindings();
 
@@ -249,7 +250,7 @@ bool ArchiveFileRow::remove()
 // Returns the archive_file row id for [filename], or -1 if it does not exist
 // in the database
 // -----------------------------------------------------------------------------
-int64_t library::archiveFileId(const string& filename)
+int64_t library::archiveFileId(string_view filename)
 {
 	int64_t archive_id = -1;
 
@@ -270,7 +271,7 @@ int64_t library::archiveFileId(const string& filename)
 // Returns the first archive_file row id found that has a matching [size] and
 // [hash], or -1 if none found
 // -----------------------------------------------------------------------------
-int64_t library::findArchiveFileIdFromData(unsigned size, const string& hash)
+int64_t library::findArchiveFileIdFromData(unsigned size, string_view hash)
 {
 	int64_t archive_id = -1;
 

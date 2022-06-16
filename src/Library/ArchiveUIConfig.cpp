@@ -150,7 +150,7 @@ int64_t ArchiveUIConfigRow::insert() const
 
 	int64_t row_id = -1;
 
-	if (auto sql = db::cacheQuery("insert_archive_ui_config", insert_archive_ui_config.c_str(), true))
+	if (auto sql = db::cacheQuery("insert_archive_ui_config", insert_archive_ui_config, true))
 	{
 		sql->clearBindings();
 
@@ -188,7 +188,7 @@ bool ArchiveUIConfigRow::update() const
 	}
 
 	auto rows = 0;
-	if (auto sql = db::cacheQuery("update_archive_ui_config", update_archive_ui_config.c_str(), true))
+	if (auto sql = db::cacheQuery("update_archive_ui_config", update_archive_ui_config, true))
 	{
 		sql->clearBindings();
 

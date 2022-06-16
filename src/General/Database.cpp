@@ -40,7 +40,7 @@
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <shared_mutex>
-#include <sqlite3.h>
+#include "thirdparty/sqlitecpp/sqlite3/sqlite3.h"
 
 using namespace slade;
 
@@ -175,7 +175,7 @@ SQLite::Statement* database::Context::cachedQuery(string_view id)
 // query from the given [sql] string and returns it.
 // If [writes] is true, the created query will use the read+write connection.
 // -----------------------------------------------------------------------------
-SQLite::Statement* database::Context::cacheQuery(string_view id, const char* sql, bool writes)
+SQLite::Statement* database::Context::cacheQuery(string_view id, string_view sql, bool writes)
 {
 	// Check for existing cached query [id]
 	auto i = cached_queries_.find(id);

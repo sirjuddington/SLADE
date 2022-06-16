@@ -50,8 +50,8 @@ namespace library
 		bool    remove();
 	};
 
-	int64_t archiveFileId(const string& filename);
-	int64_t findArchiveFileIdFromData(unsigned size, const string& hash);
+	int64_t archiveFileId(string_view filename);
+	int64_t findArchiveFileIdFromData(unsigned size, string_view hash);
 	bool    saveArchiveFile(ArchiveFileRow& row);
 	int64_t copyArchiveFile(string_view file_path, int64_t copy_from_id);
 	void    removeArchiveFile(int64_t id);

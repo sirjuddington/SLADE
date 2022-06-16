@@ -1,0 +1,11 @@
+include(CMakeFindDependencyMacro)
+find_dependency(SQLite3 REQUIRED)
+if(@UNIX@)
+    set(THREADS_PREFER_PTHREAD_FLAG @THREADS_PREFER_PTHREAD_FLAG@)
+    find_dependency(Threads REQUIRED)
+endif()
+
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+check_required_components("@PROJECT_NAME@")

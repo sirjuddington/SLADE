@@ -432,7 +432,7 @@ void library::addBookmark(int64_t archive_id, int64_t entry_id)
 	if (archive_id < 0 || entry_id < 0)
 		return;
 
-	if (auto sql = db::cacheQuery("insert_archive_bookmark", insert_archive_bookmark.c_str(), true))
+	if (auto sql = db::cacheQuery("insert_archive_bookmark", insert_archive_bookmark, true))
 	{
 		sql->bind(1, archive_id);
 		sql->bind(2, entry_id);
@@ -478,7 +478,7 @@ void library::writeArchiveBookmarks(int64_t archive_id, const vector<int64_t>& e
 	removeArchiveBookmarks(archive_id);
 
 	// Insert bookmark rows
-	if (auto sql = db::cacheQuery("insert_archive_bookmark", insert_archive_bookmark.c_str(), true))
+	if (auto sql = db::cacheQuery("insert_archive_bookmark", insert_archive_bookmark, true))
 	{
 		db::Transaction transaction{ connection, false };
 		transaction.beginIfNoActiveTransaction();

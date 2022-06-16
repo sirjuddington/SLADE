@@ -134,7 +134,7 @@ int64_t ArchiveEntryRow::insert() const
 	}
 
 	int64_t row_id = -1;
-	if (auto sql = db::cacheQuery("insert_archive_entry", insert_archive_entry.c_str(), true))
+	if (auto sql = db::cacheQuery("insert_archive_entry", insert_archive_entry, true))
 	{
 		sql->clearBindings();
 
@@ -169,7 +169,7 @@ bool ArchiveEntryRow::update() const
 	}
 
 	auto rows = 0;
-	if (auto sql = db::cacheQuery("update_archive_entry", update_archive_entry.c_str(), true))
+	if (auto sql = db::cacheQuery("update_archive_entry", update_archive_entry, true))
 	{
 		sql->clearBindings();
 
@@ -266,7 +266,7 @@ vector<ArchiveEntryRow> getArchiveEntryRows(int64_t archive_id)
 // -----------------------------------------------------------------------------
 void updateArchiveEntryRows(const vector<ArchiveEntryRow>& rows)
 {
-	if (auto sql = db::cacheQuery("update_archive_entry", update_archive_entry.c_str(), true))
+	if (auto sql = db::cacheQuery("update_archive_entry", update_archive_entry, true))
 	{
 		// Begin transaction if none currently active
 		db::Transaction transaction(db::connectionRW(), false);
@@ -299,7 +299,7 @@ void updateArchiveEntryRows(const vector<ArchiveEntryRow>& rows)
 // -----------------------------------------------------------------------------
 void insertArchiveEntryRows(const vector<ArchiveEntryRow>& rows)
 {
-	if (auto sql = db::cacheQuery("insert_archive_entry", insert_archive_entry.c_str(), true))
+	if (auto sql = db::cacheQuery("insert_archive_entry", insert_archive_entry, true))
 	{
 		// Begin transaction if none currently active
 		db::Transaction transaction(db::connectionRW(), false);
@@ -390,7 +390,7 @@ void writeEntryProperties(SQLite::Statement* sql, int64_t archive_id, const Arch
 
 void readEntryProperties(int64_t archive_id, ArchiveEntry* entry)
 {
-	if (auto sql = db::cacheQuery("get_archive_entry_properties", get_archive_entry_properties.c_str()))
+	if (auto sql = db::cacheQuery("get_archive_entry_properties", get_archive_entry_properties))
 	{
 		sql->bind(1, archive_id);
 		sql->bind(2, entry->libraryId());
@@ -426,7 +426,7 @@ int library::copyArchiveEntries(int64_t from_archive_id, int64_t to_archive_id)
 
 	int n_copied = 0;
 
-	if (auto sql = db::cacheQuery("copy_archive_entries", copy_archive_entries.c_str(), true))
+	if (auto sql = db::cacheQuery("copy_archive_entries", copy_archive_entries, true))
 	{
 		sql->bind(1, to_archive_id);
 		sql->bind(2, from_archive_id);
@@ -476,7 +476,7 @@ void library::saveEntryProperties(int64_t archive_id, const ArchiveEntry& entry)
 		"DELETE FROM archive_entry_property WHERE archive_id = {} AND entry_id = {}", archive_id, entry.libraryId()));
 
 	// Insert prop rows
-	if (auto sql = db::cacheQuery("insert_archive_entry_property", insert_archive_entry_property.c_str(), true))
+	if (auto sql = db::cacheQuery("insert_archive_entry_property", insert_archive_entry_property, true))
 		writeEntryProperties(sql, archive_id, &entry);
 }
 
@@ -486,7 +486,7 @@ void library::saveAllEntryProperties(int64_t archive_id, const vector<ArchiveEnt
 	db::connectionRW()->exec(fmt::format("DELETE FROM archive_entry_property WHERE archive_id = {}", archive_id));
 
 	// Insert prop rows for all entries
-	if (auto sql = db::cacheQuery("insert_archive_entry_property", insert_archive_entry_property.c_str(), true))
+	if (auto sql = db::cacheQuery("insert_archive_entry_property", insert_archive_entry_property, true))
 	{
 		db::Transaction transaction(db::connectionRW(), false);
 		transaction.beginIfNoActiveTransaction();
