@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "ArchiveUIConfig.h"
 #include "General/Database.h"
+#include "General/UI.h"
+#include "UI/State.h"
 
 using namespace slade;
 using namespace library;
@@ -56,23 +58,6 @@ string insert_archive_ui_config =
 	"                               elist_sort_column, elist_sort_descending, splitter_position) "
 	"VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 } // namespace slade::library
-
-
-// -----------------------------------------------------------------------------
-//
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Int, elist_colsize_name_tree)
-EXTERN_CVAR(Int, elist_colsize_name_list)
-EXTERN_CVAR(Int, elist_colsize_size)
-EXTERN_CVAR(Int, elist_colsize_type)
-EXTERN_CVAR(Int, elist_colsize_index)
-EXTERN_CVAR(Bool, elist_colsize_show)
-EXTERN_CVAR(Bool, elist_coltype_show)
-EXTERN_CVAR(Bool, elist_colindex_show)
-EXTERN_CVAR(Int, ap_splitter_position_tree)
-EXTERN_CVAR(Int, ap_splitter_position_list)
 
 
 // -----------------------------------------------------------------------------
@@ -123,14 +108,14 @@ ArchiveUIConfigRow::ArchiveUIConfigRow(db::Context& db, int64_t archive_id) : ar
 // -----------------------------------------------------------------------------
 ArchiveUIConfigRow::ArchiveUIConfigRow(int64_t archive_id, bool tree_view) : archive_id{ archive_id }
 {
-	elist_index_visible = elist_colindex_show;
-	elist_index_width   = elist_colsize_index;
-	elist_name_width    = tree_view ? elist_colsize_name_tree : elist_colsize_name_list;
-	elist_size_visible  = elist_colsize_show;
-	elist_size_width    = elist_colsize_size;
-	elist_type_visible  = elist_coltype_show;
-	elist_type_width    = elist_colsize_type;
-	splitter_position   = tree_view ? ap_splitter_position_tree : ap_splitter_position_list;
+	elist_index_visible = ui::getStateBool("EntryListIndexVisible");
+	elist_index_width   = ui::getStateInt("EntryListIndexWidth");
+	elist_name_width    = ui::getStateInt(tree_view ? "EntryListNameWidthTree" : "EntryListNameWidthList");
+	elist_size_visible  = ui::getStateBool("EntryListSizeVisible");
+	elist_size_width    = ui::getStateInt("EntryListSizeWidth");
+	elist_type_visible  = ui::getStateBool("EntryListTypeVisible");
+	elist_type_width    = ui::getStateInt("EntryListTypeWidth");
+	splitter_position   = ui::getStateInt(tree_view ? "ArchivePanelSplitPosTree" : "ArchivePanelSplitPosList");
 
 	log::debug("Created default entry list config for archive {}", archive_id);
 }

@@ -35,6 +35,7 @@
 #include "Archive/Archive.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "UI/WxUtils.h"
+#include "Utility/SFileDialog.h"
 
 using namespace slade;
 
@@ -53,7 +54,6 @@ CVAR(Int, map_image_height, -5, CVar::Flag::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Bool, map_view_things)
 
 
@@ -174,30 +174,23 @@ bool MapEntryPanel::createImage()
 	wxString   name = wxString::Format("%s_%s", entry->parent()->filename(false), entry->name());
 	wxFileName fn(name);
 
-	// Create save file dialog
-	wxFileDialog dialog_save(
-		this,
-		wxString::Format("Save Map Preview \"%s\"", name),
-		dir_last,
-		fn.GetFullName(),
-		"PNG (*.PNG)|*.png",
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
-		wxDefaultPosition);
-
-	// Run the dialog & check that the user didn't cancel
-	if (dialog_save.ShowModal() == wxID_OK)
+	// Open save file dialog for map image
+	if (auto path = filedialog::saveFile(
+			fmt::format("Save Map Preview \"{}\"", name),
+			"PNG (*.PNG)|*.png",
+			this,
+			wxutil::strToView(fn.GetFullName()));
+		!path.empty())
 	{
 		// If a filename was selected, export it
-		bool ret = temp.exportFile(dialog_save.GetPath().ToStdString());
-
-		// Save 'dir_last'
-		dir_last = wxutil::strToView(dialog_save.GetDirectory());
+		bool ret = temp.exportFile(path);
 
 		// Open the saved image
-		wxLaunchDefaultApplication(dialog_save.GetPath());
+		wxLaunchDefaultApplication(path);
 
 		return ret;
 	}
+
 	return true;
 }
 

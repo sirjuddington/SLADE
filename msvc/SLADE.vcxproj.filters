@@ -1035,6 +1035,9 @@
     <ClCompile Include="..\src\Library\UI\LibraryPanel.cpp">
       <Filter>Library\UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\UI\State.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1981,6 +1984,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Library\UI\LibraryPanel.h">
       <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\State.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -42,6 +42,7 @@
 #include "Graphics/Icons.h"
 #include "Library/ArchiveUIConfig.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include <wx/headerctrl.h>
 
@@ -65,11 +66,6 @@ vector<int>      elist_chars = {
 };
 } // namespace slade::ui
 
-CVAR(Int, elist_colsize_name_tree, 150, CVar::Save)
-CVAR(Int, elist_colsize_name_list, 150, CVar::Save)
-CVAR(Int, elist_colsize_size, 80, CVar::Save)
-CVAR(Int, elist_colsize_type, 150, CVar::Save)
-CVAR(Int, elist_colsize_index, 50, CVar::Save)
 #ifdef __WXGTK__
 // Disable by default in GTK because double-click seems to trigger it, which interferes
 // with double-click to expand folders or open entries
@@ -87,9 +83,6 @@ CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
 EXTERN_CVAR(Bool, elist_filter_dirs)
-EXTERN_CVAR(Bool, elist_colsize_show)
-EXTERN_CVAR(Bool, elist_coltype_show)
-EXTERN_CVAR(Bool, elist_colindex_show)
 EXTERN_CVAR(Bool, list_font_monospace)
 EXTERN_CVAR(Bool, elist_type_bgcol)
 EXTERN_CVAR(Float, elist_type_bgcol_intensity)
@@ -981,24 +974,24 @@ ArchiveEntryTree::ArchiveEntryTree(
 			else if (e.GetId() == 1)
 			{
 				// Toggle index column
-				elist_colindex_show = !elist_colindex_show;
-				col_index_->SetHidden(!elist_colindex_show);
+				col_index_->SetHidden(!col_index_->IsHidden());
+				saveStateBool("EntryListIndexVisible", col_index_->IsShown());
 				updateColumnWidths();
 				saveColumnConfig();
 			}
 			else if (e.GetId() == 2)
 			{
 				// Toggle size column
-				elist_colsize_show = !elist_colsize_show;
-				col_size_->SetHidden(!elist_colsize_show);
+				col_size_->SetHidden(!col_size_->IsHidden());
+				saveStateBool("EntryListSizeVisible", col_size_->IsShown());
 				updateColumnWidths();
 				saveColumnConfig();
 			}
 			else if (e.GetId() == 3)
 			{
 				// Toggle type column
-				elist_coltype_show = !elist_coltype_show;
-				col_type_->SetHidden(!elist_coltype_show);
+				col_type_->SetHidden(!col_type_->IsHidden());
+				saveStateBool("EntryListTypeVisible", col_type_->IsShown());
 				updateColumnWidths();
 				saveColumnConfig();
 			}
@@ -1570,83 +1563,88 @@ void ArchiveEntryTree::saveColumnWidths() const
 		}
 
 	// Need to check if any widths changed since last time so we aren't constantly hitting the library/database
-	static bool changed[4];
-	changed[0] = false;
-	changed[1] = false;
-	changed[2] = false;
-	changed[3] = false;
+	bool changed = false;
 
 	// Index column
 	if (!col_index_->IsHidden())
 	{
-		elist_colsize_index = col_index_->GetWidth();
-
 		if (col_index_width_ != col_index_->GetWidth())
 		{
 			col_index_width_ = col_index_->GetWidth();
-			changed[0]       = true;
+			changed          = true;
 		}
 	}
 
 	// Name column
 	if (last_col != col_name_)
 	{
-		if (archive && archive->formatDesc().supports_dirs)
-			elist_colsize_name_tree = col_name_->GetWidth();
-		else
-			elist_colsize_name_list = col_name_->GetWidth();
-
 		if (col_name_width_ != col_name_->GetWidth())
 		{
 			col_name_width_ = col_name_->GetWidth();
-			changed[1]      = true;
+			changed         = true;
 		}
 	}
 
 	// Size column
 	if (last_col != col_size_ && !col_size_->IsHidden())
 	{
-		elist_colsize_size = col_size_->GetWidth();
-
 		if (col_size_width_ != col_size_->GetWidth())
 		{
 			col_size_width_ = col_size_->GetWidth();
-			changed[2]      = true;
+			changed         = true;
 		}
 	}
 
 	// Type column
 	if (last_col != col_type_ && !col_type_->IsHidden())
 	{
-		elist_colsize_type = col_type_->GetWidth();
-
 		if (col_type_width_ != col_type_->GetWidth())
 		{
 			col_type_width_ = col_type_->GetWidth();
-			changed[3]      = true;
+			changed         = true;
 		}
 	}
 
-	// Write to library if anything changed
-	if (changed[0] || changed[1] || changed[2] || changed[3])
+	// Write to database if anything changed
+	if (changed)
 	{
 		if (!archive)
 			return;
 
 		auto config = library::getArchiveUIConfig(archive->libraryId());
-		if (config.archive_id < 0)
-			return;
 
-		if (changed[0])
+		// Index
+		if (col_index_width_ > 0)
+		{
+			saveStateInt("EntryListIndexWidth", col_index_width_);
 			config.elist_index_width = col_index_width_;
-		if (changed[1])
-			config.elist_name_width = col_name_width_;
-		if (changed[2])
-			config.elist_size_width = col_size_width_;
-		if (changed[3])
-			config.elist_type_width = col_type_width_;
+		}
 
-		library::saveArchiveUIConfig(config);
+		// Name
+		if (col_name_width_ > 0)
+		{
+			saveStateInt(
+				archive->formatDesc().supports_dirs ? "EntryListNameWidthTree" : "EntryListNameWidthList",
+				col_name_width_);
+			config.elist_name_width = col_name_width_;
+		}
+
+		// Size
+		if (col_size_width_ > 0)
+		{
+			saveStateInt("EntryListSizeWidth", col_size_width_);
+			config.elist_size_width = col_size_width_;
+		}
+
+		// Type
+		if (col_type_width_ > 0)
+		{
+			saveStateInt("EntryListTypeWidth", col_type_width_);
+			config.elist_type_width = col_type_width_;
+		}
+
+		if (config.archive_id >= 0)
+			library::saveArchiveUIConfig(config);
 	}
 }
 
@@ -1671,18 +1669,11 @@ void ArchiveEntryTree::updateColumnWidths()
 
 	auto config = library::getArchiveUIConfig(archive->libraryId());
 
-	auto index_width = config.archive_id < 0 ? elist_colsize_index : config.elist_index_width;
-	auto size_width  = config.archive_id < 0 ? elist_colsize_size : config.elist_size_width;
-	auto type_width  = config.archive_id < 0 ? elist_colsize_type : config.elist_type_width;
-	auto name_width  = config.elist_name_width;
-	if (config.archive_id < 0)
-		name_width = archive->formatDesc().supports_dirs ? elist_colsize_name_tree : elist_colsize_name_list;
-
 	Freeze();
-	col_index_->SetWidth(index_width);
-	col_name_->SetWidth(col_name_ == last_col ? 0 : name_width);
-	col_size_->SetWidth(col_size_ == last_col ? 0 : size_width);
-	col_type_->SetWidth(col_type_ == last_col ? 0 : type_width);
+	col_index_->SetWidth(config.elist_index_width);
+	col_name_->SetWidth(col_name_ == last_col ? 0 : config.elist_name_width);
+	col_size_->SetWidth(col_size_ == last_col ? 0 : config.elist_size_width);
+	col_type_->SetWidth(col_type_ == last_col ? 0 : config.elist_type_width);
 	Thaw();
 }
 

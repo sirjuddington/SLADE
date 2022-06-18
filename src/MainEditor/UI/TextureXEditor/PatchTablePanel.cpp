@@ -45,16 +45,9 @@
 #include "UI/Controls/ZoomControl.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
+#include "Utility/SFileDialog.h"
 
 using namespace slade;
-
-
-// -----------------------------------------------------------------------------
-//
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(String, dir_last)
 
 
 // -----------------------------------------------------------------------------
@@ -384,7 +377,7 @@ void PatchTablePanel::addPatchFromFile()
 	auto etypes = EntryType::allTypes();
 
 	// Go through types
-	wxString ext_filter = "All files (*.*)|*.*|";
+	string ext_filter = "All files (*.*)|*.*|";
 	for (auto& etype : etypes)
 	{
 		// If the type is a valid image type, add its extension filter
@@ -395,32 +388,16 @@ void PatchTablePanel::addPatchFromFile()
 		}
 	}
 
-	// Create open file dialog
-	wxFileDialog dialog_open(
-		this,
-		"Choose file(s) to open",
-		dir_last,
-		wxEmptyString,
-		ext_filter,
-		wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST,
-		wxDefaultPosition);
-
-	// Run the dialog & check that the user didn't cancel
-	if (dialog_open.ShowModal() == wxID_OK)
+	// Show file dialog to open multiple files
+	filedialog::FDInfo inf;
+	if (filedialog::openFiles(inf, "Choose file(s) to open", ext_filter, this))
 	{
-		// Get file selection
-		wxArrayString files;
-		dialog_open.GetPaths(files);
-
-		// Save 'dir_last'
-		dir_last = wxutil::strToView(dialog_open.GetDirectory());
-
 		// Go through file selection
-		for (const auto& file : files)
+		for (const auto& file : inf.filenames)
 		{
 			// Load the file into a temporary ArchiveEntry
 			auto entry = std::make_shared<ArchiveEntry>();
-			entry->importFile(file.ToStdString());
+			entry->importFile(file);
 
 			// Determine type
 			EntryType::detectEntryType(*entry);

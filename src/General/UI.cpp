@@ -35,6 +35,7 @@
 #include "General/Console.h"
 #include "General/Database.h"
 #include "UI/SplashWindow.h"
+#include "UI/State.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -78,10 +79,12 @@ bool isMainThread()
 } // namespace slade::ui
 
 // -----------------------------------------------------------------------------
-// Initialises UI metric values based on [scale]
+// Initialises UI metric values based on [scale] and other various UI related
+// things
 // -----------------------------------------------------------------------------
 void ui::init(double scale)
 {
+	// Set scale + metrics
 	ui::scale    = scale;
 	px_pad_small = 8 * scale;
 	px_pad       = 12 * scale;
@@ -91,6 +94,9 @@ void ui::init(double scale)
 		px_spin_width = -1;
 	else
 		px_spin_width = 64 * scale;
+
+	// Init saved state props
+	initStateProps();
 }
 
 // -----------------------------------------------------------------------------

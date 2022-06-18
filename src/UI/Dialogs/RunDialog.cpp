@@ -39,6 +39,7 @@
 #include "General/UI.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
@@ -56,9 +57,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(String, run_last_exe, "", CVar::Flag::Save)
-CVAR(Int, run_last_config, 0, CVar::Flag::Save)
-CVAR(String, run_last_extra, "", CVar::Flag::Save)
 CVAR(Bool, run_start_3d, false, CVar::Flag::Save)
 
 
@@ -234,7 +232,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	// Extra parameters
 	gb_sizer->Add(
 		new wxStaticText(this, -1, "Extra Parameters:"), wxGBPosition(3, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	text_extra_params_ = new wxTextCtrl(this, -1, run_last_extra);
+	text_extra_params_ = new wxTextCtrl(this, -1, ui::getStateString("RunDialogLastExtra"));
 	gb_sizer->Add(text_extra_params_, wxGBPosition(3, 1), wxGBSpan(1, 4), wxEXPAND);
 
 	// Resources
@@ -263,7 +261,8 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	hbox->Add(wxutil::createDialogButtonBox(btn_run_, btn_cancel_), 1, wxEXPAND);
 
 	// Populate game executables dropdown
-	int last_index = -1;
+	int  last_index   = -1;
+	auto run_last_exe = ui::getStateString("RunDialogLastExe");
 	for (unsigned a = 0; a < executables::nGameExes(); a++)
 	{
 		auto exe = executables::gameExe(a);
@@ -276,7 +275,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	{
 		choice_game_exes_->Select(last_index);
 		openGameExe(last_index);
-		choice_config_->Select(run_last_config);
+		choice_config_->Select(ui::getStateInt("RunDialogLastConfig"));
 	}
 
 	// Bind Events
@@ -607,10 +606,10 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 	auto exe  = executables::gameExe(choice_game_exes_->GetSelection());
 	exe->path = exe_path;
 
-	// Update cvars
-	run_last_extra  = wxutil::strToView(text_extra_params_->GetValue());
-	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = wxutil::strToView(selectedExeId());
+	// Update saved UI state
+	ui::saveStateString("RunDialogLastExtra", wxutil::strToView(text_extra_params_->GetValue()));
+	ui::saveStateInt("RunDialogLastConfig", choice_config_->GetSelection());
+	ui::saveStateString("RunDialogLastExe", wxutil::strToView(selectedExeId()));
 
 	EndModal(wxID_OK);
 }
@@ -620,10 +619,10 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void RunDialog::onBtnCancel(wxCommandEvent& e)
 {
-	// Update cvars
-	run_last_extra  = wxutil::strToView(text_extra_params_->GetValue());
-	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = wxutil::strToView(selectedExeId());
+	// Update saved UI state
+	ui::saveStateString("RunDialogLastExtra", wxutil::strToView(text_extra_params_->GetValue()));
+	ui::saveStateInt("RunDialogLastConfig", choice_config_->GetSelection());
+	ui::saveStateString("RunDialogLastExe", wxutil::strToView(selectedExeId()));
 
 	EndModal(wxID_CANCEL);
 }
@@ -634,7 +633,7 @@ void RunDialog::onBtnCancel(wxCommandEvent& e)
 void RunDialog::onChoiceGameExe(wxCommandEvent& e)
 {
 	openGameExe(e.GetSelection());
-	run_last_exe = wxutil::strToView(selectedExeId());
+	ui::saveStateString("RunDialogLastExe", wxutil::strToView(selectedExeId()));
 }
 
 // -----------------------------------------------------------------------------
@@ -642,7 +641,7 @@ void RunDialog::onChoiceGameExe(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void RunDialog::onChoiceConfig(wxCommandEvent& e)
 {
-	run_last_config = choice_config_->GetSelection();
+	ui::saveStateInt("RunDialogLastConfig", choice_config_->GetSelection());
 	btn_edit_config_->Enable(true);
 	auto        exe            = executables::gameExe(choice_game_exes_->GetSelection());
 	const auto& configs_custom = run_map_ ? exe->map_configs_custom : exe->run_configs_custom;

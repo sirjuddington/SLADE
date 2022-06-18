@@ -56,7 +56,7 @@ private:
 	DirArchiveChangeList change_list_;
 	bool                 ignore_hidden_ = true;
 
-	void addChange(DirEntryChange change);
+	void addChange(const DirEntryChange& change);
 };
 
 class WMFileBrowser : public wxGenericDirCtrl
@@ -94,7 +94,7 @@ public:
 	void        updateRecentListItem(int index) const;
 	void        updateBookmarkListItem(int index) const;
 	void        updateArchiveTabTitle(int index) const;
-	void        updateEntryTabTitle(ArchiveEntry* entry) const;
+	void        updateEntryTabTitle(const ArchiveEntry* entry) const;
 	bool        isArchiveTab(int tab_index) const;
 	bool        isEntryTab(int tab_index) const;
 	bool        isTextureEditorTab(int tab_index) const;
@@ -109,20 +109,20 @@ public:
 	vector<ArchiveEntry*> currentEntrySelection() const;
 
 	void            openTab(int archive_index) const;
-	ArchivePanel*   tabForArchive(Archive* archive) const;
-	void            openTab(Archive* archive) const;
+	ArchivePanel*   tabForArchive(const Archive* archive) const;
+	void            openTab(const Archive* archive) const;
 	void            closeTab(int archive_index) const;
 	void            openTextureTab(int archive_index, ArchiveEntry* entry = nullptr) const;
 	TextureXEditor* textureTabForArchive(int archive_index) const;
 	void            closeTextureTab(int archive_index) const;
 	void            openEntryTab(ArchiveEntry* entry) const;
-	void            closeEntryTab(ArchiveEntry* entry) const;
-	void            closeEntryTabs(Archive* parent) const;
+	void            closeEntryTab(const ArchiveEntry* entry) const;
+	void            closeEntryTabs(const Archive* parent) const;
 	void            openFile(const wxString& filename) const;
 	void            openFiles(const wxArrayString& files) const;
 	void            openDirAsArchive(const wxString& dir) const;
-	bool            redirectToTab(ArchiveEntry* entry) const;
-	bool            entryIsOpenInTab(ArchiveEntry* entry) const;
+	bool            redirectToTab(const ArchiveEntry* entry) const;
+	bool            entryIsOpenInTab(const ArchiveEntry* entry) const;
 	void            closeCurrentTab();
 	bool            saveCurrentTab() const;
 
@@ -131,7 +131,7 @@ public:
 	bool redo() const;
 
 	// Single archive actions
-	bool saveEntryChanges(Archive* archive) const;
+	bool saveEntryChanges(const Archive* archive) const;
 	bool saveArchive(Archive* archive) const;
 	bool saveArchiveAs(Archive* archive) const;
 	bool beforeCloseArchive(Archive* archive);
@@ -139,7 +139,7 @@ public:
 
 	void createNewArchive(const wxString& format) const;
 	bool closeAll();
-	void saveAll() const;
+	void saveAll();
 	void checkDirArchives();
 
 	// Selected archives in the lists

@@ -58,6 +58,7 @@
 #include "TextEditor/TextStyle.h"
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -105,7 +106,6 @@ ResourceManager resource_manager;
 
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
 CVAR(String, temp_location_custom, "", CVar::Flag::Save)
-CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 
 
 // ----------------------------------------------------------------------------
@@ -562,11 +562,11 @@ bool app::init(const vector<string>& args, double ui_scale)
 	log::info("SLADE Initialisation OK");
 
 	// Show Setup Wizard if needed
-	if (!setup_wizard_run)
+	if (!ui::getStateBool("SetupWizardRun"))
 	{
 		SetupWizardDialog dlg(maineditor::windowWx());
 		dlg.ShowModal();
-		setup_wizard_run = true;
+		ui::saveStateBool("SetupWizardRun", true);
 		maineditor::windowWx()->Update();
 		maineditor::windowWx()->Refresh();
 	}

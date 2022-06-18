@@ -33,7 +33,7 @@ namespace ui
 		int zoom_ = 100;
 
 		void setup();
-		void updateZoomButtons();
+		void updateZoomButtons() const;
 	};
 } // namespace ui
 } // namespace slade
