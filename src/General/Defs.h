@@ -11,6 +11,7 @@ enum class MapFormat
 	Hexen,
 	Doom64,
 	UDMF,
+	Doom32X,
 	Unknown, // Needed for maps in zip archives
 };
 }

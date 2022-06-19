@@ -327,6 +327,7 @@
     <ClCompile Include="..\src\Scripting\Export\Graphics.cpp" />
     <ClCompile Include="..\src\Scripting\Export\MapEditor.cpp" />
     <ClCompile Include="..\src\Scripting\Export\UI.cpp" />
+    <ClCompile Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.cpp" />
     <ClCompile Include="..\src\UI\Controls\Splitter.cpp" />
     <ClCompile Include="..\src\UI\Controls\ZoomControl.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\DirArchiveUpdateDialog.cpp" />
@@ -690,6 +691,7 @@
     <ClInclude Include="..\src\Graphics\Graphics.h" />
     <ClInclude Include="..\src\OpenGL\View.h" />
     <ClInclude Include="..\src\Scripting\Export\Export.h" />
+    <ClInclude Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.h" />
     <ClInclude Include="..\src\UI\Controls\Splitter.h" />
     <ClInclude Include="..\src\UI\Controls\ZoomControl.h" />
     <ClInclude Include="..\src\UI\Dialogs\DirArchiveUpdateDialog.h" />
