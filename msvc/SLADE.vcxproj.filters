@@ -1038,6 +1038,9 @@
     <ClCompile Include="..\src\UI\State.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\UI\Lists\SDataViewCtrl.cpp">
+      <Filter>UI\Lists</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1987,6 +1990,9 @@
     </ClInclude>
     <ClInclude Include="..\src\UI\State.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Lists\SDataViewCtrl.h">
+      <Filter>UI\Lists</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

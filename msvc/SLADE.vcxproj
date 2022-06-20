@@ -375,6 +375,7 @@
     <ClCompile Include="..\src\UI\Dialogs\SetupWizard\TempFolderWizardPage.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\TranslationEditorDialog.cpp" />
     <ClCompile Include="..\src\UI\Lists\ArchiveEntryTree.cpp" />
+    <ClCompile Include="..\src\UI\Lists\SDataViewCtrl.cpp" />
     <ClCompile Include="..\src\UI\State.cpp" />
     <ClCompile Include="..\src\Utility\DateTime.cpp" />
     <ClCompile Include="..\src\Utility\FileUtils.cpp" />
@@ -747,6 +748,7 @@
     <ClInclude Include="..\src\UI\Dialogs\SetupWizard\WizardPageBase.h" />
     <ClInclude Include="..\src\UI\Dialogs\TranslationEditorDialog.h" />
     <ClInclude Include="..\src\UI\Lists\ArchiveEntryTree.h" />
+    <ClInclude Include="..\src\UI\Lists\SDataViewCtrl.h" />
     <ClInclude Include="..\src\UI\State.h" />
     <ClInclude Include="..\src\Utility\DateTime.h" />
     <ClInclude Include="..\src\Utility\FileUtils.h" />

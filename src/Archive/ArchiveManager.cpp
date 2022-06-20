@@ -579,7 +579,8 @@ bool ArchiveManager::closeArchive(int index)
 	}
 
 	// Update library
-	library::writeArchiveEntryInfo(*open_archives_[index].archive);
+	if (open_archives_[index].archive->isOnDisk())
+		library::writeArchiveEntryInfo(*open_archives_[index].archive);
 
 	// Close the archive
 	open_archives_[index].archive->close();

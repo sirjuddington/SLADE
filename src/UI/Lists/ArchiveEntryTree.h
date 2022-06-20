@@ -1,7 +1,7 @@
 #pragma once
 
 #include "General/Sigslot.h"
-#include <wx/dataview.h>
+#include "SDataViewCtrl.h"
 
 namespace slade
 {
@@ -87,7 +87,7 @@ namespace ui
 		bool dirIsInList(const ArchiveDir& dir) const;
 	};
 
-	class ArchiveEntryTree : public wxDataViewCtrl
+	class ArchiveEntryTree : public SDataViewCtrl
 	{
 	public:
 		ArchiveEntryTree(
@@ -136,30 +136,16 @@ namespace ui
 
 	private:
 		weak_ptr<Archive> archive_;
-		ArchiveViewModel* model_                   = nullptr;
-		wxDataViewColumn* col_name_                = nullptr;
-		wxDataViewColumn* col_size_                = nullptr;
-		wxDataViewColumn* col_type_                = nullptr;
-		wxDataViewColumn* col_index_               = nullptr;
-		int               multi_select_base_index_ = -1;
-		string            search_;
-
-		// Need to keep track of changes to column widths manually because
-		// wxDataViewCtrl doesn't offer any events for column size changes
-		mutable int col_index_width_ = -1;
-		mutable int col_name_width_  = -1;
-		mutable int col_size_width_  = -1;
-		mutable int col_type_width_  = -1;
+		ArchiveViewModel* model_     = nullptr;
+		wxDataViewColumn* col_name_  = nullptr;
+		wxDataViewColumn* col_size_  = nullptr;
+		wxDataViewColumn* col_type_  = nullptr;
+		wxDataViewColumn* col_index_ = nullptr;
 
 		void setupColumns();
-		void saveColumnWidths() const;
 		void updateColumnWidths();
 		void saveColumnConfig();
-
-#ifdef __WXMSW__
-		bool lookForSearchEntryFrom(int index_start);
-		bool searchChar(int key_code);
-#endif
+		void onAnyColumnResized() override;
 	};
 
 } // namespace ui

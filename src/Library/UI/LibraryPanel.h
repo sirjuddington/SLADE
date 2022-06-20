@@ -3,6 +3,7 @@
 #include "General/SAction.h"
 #include "General/Sigslot.h"
 #include "Library/ArchiveFile.h"
+#include "UI/Lists/SDataViewCtrl.h"
 
 namespace slade
 {
@@ -63,11 +64,18 @@ namespace ui
 		bool handleAction(string_view id) override;
 
 	private:
-		wxDataViewCtrl*   list_archives_ = nullptr;
+		SDataViewCtrl*    list_archives_ = nullptr;
 		LibraryViewModel* model_library_ = nullptr;
 		SToolBar*         toolbar_       = nullptr;
 
-		void bindEvents() const;
+		void bindEvents();
+		void setupListColumns() const;
+		void updateColumnWidths();
+
+		wxDataViewColumn* modelColumn(LibraryViewModel::Column column) const
+		{
+			return list_archives_->GetColumn(list_archives_->GetModelColumnIndex(static_cast<int>(column)));
+		}
 	};
 } // namespace ui
 } // namespace slade

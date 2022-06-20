@@ -60,10 +60,10 @@ wxColour         col_text_modified(0, 0, 0, 0);
 wxColour         col_text_new(0, 0, 0, 0);
 wxColour         col_text_locked(0, 0, 0, 0);
 icons::IconCache icon_cache;
-vector<int>      elist_chars = {
-    '.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
-    ']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
-};
+// vector<int>      elist_chars = {
+//     '.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
+//     ']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
+// };
 } // namespace slade::ui
 
 #ifdef __WXGTK__
@@ -844,7 +844,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 	shared_ptr<Archive> archive,
 	UndoManager*        undo_manager,
 	bool                force_list) :
-	wxDataViewCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE), archive_{ archive }
+	SDataViewCtrl{ parent, wxDV_MULTIPLE }, archive_{ archive }
 {
 	// Init settings
 	SetRowHeight(ui::scalePx(elist_icon_size + (elist_icon_padding * 2) + 2));
@@ -893,9 +893,6 @@ ArchiveEntryTree::ArchiveEntryTree(
 				e.Skip();
 		});
 
-	// Update column width cvars when we can
-	Bind(wxEVT_IDLE, [this](wxIdleEvent&) { saveColumnWidths(); });
-
 	// Disable modified indicator (" *" after name) when in-place editing entry names
 	Bind(
 		wxEVT_DATAVIEW_ITEM_EDITING_STARTED,
@@ -937,9 +934,9 @@ ArchiveEntryTree::ArchiveEntryTree(
 			wxMenu context;
 			context.Append(0, "Reset Sorting");
 			context.AppendSeparator();
-			context.AppendCheckItem(1, "Index", "Show the Index column")->Check(col_index_->IsShown());
-			context.AppendCheckItem(2, "Size", "Show the Size column")->Check(col_size_->IsShown());
-			context.AppendCheckItem(3, "Type", "Show the Type column")->Check(col_type_->IsShown());
+			appendColumnToggleItem(context, 3); // Index
+			appendColumnToggleItem(context, 1); // Size
+			appendColumnToggleItem(context, 2); // Type
 			PopupMenu(&context);
 			e.Skip();
 		});
@@ -971,113 +968,30 @@ ArchiveEntryTree::ArchiveEntryTree(
 				de.SetEventType(wxEVT_DATAVIEW_COLUMN_SORTED);
 				ProcessWindowEvent(de);
 			}
-			else if (e.GetId() == 1)
+			else if (e.GetId() == 3)
 			{
 				// Toggle index column
-				col_index_->SetHidden(!col_index_->IsHidden());
-				saveStateBool("EntryListIndexVisible", col_index_->IsShown());
+				toggleColumnVisibility(3, "EntryListIndexVisible");
+				updateColumnWidths();
+				saveColumnConfig();
+			}
+			else if (e.GetId() == 1)
+			{
+				// Toggle size column
+				toggleColumnVisibility(1, "EntryListSizeVisible");
 				updateColumnWidths();
 				saveColumnConfig();
 			}
 			else if (e.GetId() == 2)
 			{
-				// Toggle size column
-				col_size_->SetHidden(!col_size_->IsHidden());
-				saveStateBool("EntryListSizeVisible", col_size_->IsShown());
-				updateColumnWidths();
-				saveColumnConfig();
-			}
-			else if (e.GetId() == 3)
-			{
 				// Toggle type column
-				col_type_->SetHidden(!col_type_->IsHidden());
-				saveStateBool("EntryListTypeVisible", col_type_->IsShown());
+				toggleColumnVisibility(2, "EntryListTypeVisible");
 				updateColumnWidths();
 				saveColumnConfig();
 			}
 			else
 				e.Skip();
 		});
-
-#ifdef __WXMSW__
-	// Keypress event
-	Bind(
-		wxEVT_CHAR,
-		[this](wxKeyEvent& e)
-		{
-			// Custom handling for shift+up/down
-			if (e.ShiftDown())
-			{
-				int from_row = multi_select_base_index_;
-
-				// Get row to select to
-				// TODO: Handle PgUp/PgDn as well?
-				int to_row;
-				switch (e.GetKeyCode())
-				{
-				case WXK_DOWN: to_row = GetRowByItem(GetCurrentItem()) + 1; break;
-				case WXK_UP: to_row = GetRowByItem(GetCurrentItem()) - 1; break;
-				default:
-					// Not up or down arrow, do default handling
-					e.Skip();
-					return;
-				}
-
-				// Get new item to focus
-				auto new_current_item = GetItemByRow(to_row);
-				if (!new_current_item.IsOk())
-				{
-					e.Skip();
-					return;
-				}
-
-				// Ensure valid range
-				if (from_row > to_row)
-					std::swap(from_row, to_row);
-
-				// Get items to select
-				wxDataViewItemArray items;
-				for (int i = from_row; i <= to_row; ++i)
-					items.Add(GetItemByRow(i));
-
-				// Set new selection
-				SetSelections(items);
-				SetCurrentItem(new_current_item);
-
-				// Trigger selection change event
-				wxDataViewEvent de;
-				de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
-				ProcessWindowEvent(de);
-
-				return;
-			}
-
-			// Search
-			if (e.GetModifiers() == 0)
-			{
-				if (searchChar(e.GetKeyCode()))
-					return;
-			}
-
-			e.Skip();
-		});
-
-	Bind(
-		wxEVT_DATAVIEW_SELECTION_CHANGED,
-		[this](wxDataViewEvent& e)
-		{
-			if (GetSelectedItemsCount() == 1)
-				multi_select_base_index_ = GetRowByItem(GetSelection());
-
-			// Clear search string if selection change wasn't a result of searching
-			if (e.GetString().Cmp("search"))
-				search_.clear();
-
-			e.Skip();
-		});
-
-	Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& e) { search_.clear(); });
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -1483,6 +1397,9 @@ void ArchiveEntryTree::setupColumns()
 	if (!archive)
 		return;
 
+	// Name column for searching
+	setSearchColumn(0);
+
 	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
 	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
 
@@ -1543,108 +1460,6 @@ void ArchiveEntryTree::setupColumns()
 			col_type_->SetSortOrder(!config.elist_sort_descending);
 
 		model_->Resort();
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Saves the current column widths to their respective cvars
-// -----------------------------------------------------------------------------
-void ArchiveEntryTree::saveColumnWidths() const
-{
-	const auto archive = archive_.lock();
-
-	// Get the last visible column (we don't want to save the width of this column since it stretches)
-	wxDataViewColumn* last_col = nullptr;
-	for (int i = static_cast<int>(GetColumnCount()) - 1; i >= 0; --i)
-		if (!GetColumn(i)->IsHidden())
-		{
-			last_col = GetColumn(i);
-			break;
-		}
-
-	// Need to check if any widths changed since last time so we aren't constantly hitting the library/database
-	bool changed = false;
-
-	// Index column
-	if (!col_index_->IsHidden())
-	{
-		if (col_index_width_ != col_index_->GetWidth())
-		{
-			col_index_width_ = col_index_->GetWidth();
-			changed          = true;
-		}
-	}
-
-	// Name column
-	if (last_col != col_name_)
-	{
-		if (col_name_width_ != col_name_->GetWidth())
-		{
-			col_name_width_ = col_name_->GetWidth();
-			changed         = true;
-		}
-	}
-
-	// Size column
-	if (last_col != col_size_ && !col_size_->IsHidden())
-	{
-		if (col_size_width_ != col_size_->GetWidth())
-		{
-			col_size_width_ = col_size_->GetWidth();
-			changed         = true;
-		}
-	}
-
-	// Type column
-	if (last_col != col_type_ && !col_type_->IsHidden())
-	{
-		if (col_type_width_ != col_type_->GetWidth())
-		{
-			col_type_width_ = col_type_->GetWidth();
-			changed         = true;
-		}
-	}
-
-	// Write to database if anything changed
-	if (changed)
-	{
-		if (!archive)
-			return;
-
-		auto config = library::getArchiveUIConfig(archive->libraryId());
-
-		// Index
-		if (col_index_width_ > 0)
-		{
-			saveStateInt("EntryListIndexWidth", col_index_width_);
-			config.elist_index_width = col_index_width_;
-		}
-
-		// Name
-		if (col_name_width_ > 0)
-		{
-			saveStateInt(
-				archive->formatDesc().supports_dirs ? "EntryListNameWidthTree" : "EntryListNameWidthList",
-				col_name_width_);
-			config.elist_name_width = col_name_width_;
-		}
-
-		// Size
-		if (col_size_width_ > 0)
-		{
-			saveStateInt("EntryListSizeWidth", col_size_width_);
-			config.elist_size_width = col_size_width_;
-		}
-
-		// Type
-		if (col_type_width_ > 0)
-		{
-			saveStateInt("EntryListTypeWidth", col_type_width_);
-			config.elist_type_width = col_type_width_;
-		}
-
-		if (config.archive_id >= 0)
-			library::saveArchiveUIConfig(config);
 	}
 }
 
@@ -1720,113 +1535,51 @@ void ArchiveEntryTree::saveColumnConfig() // (can't be made const - is called fr
 	library::saveArchiveUIConfig(config);
 }
 
-#ifdef __WXMSW__
-// -----------------------------------------------------------------------------
-// Beginning from [index_start], finds and selects the first entry with a name
-// matching the internal search_ string.
-// Returns true if a match was found
-// -----------------------------------------------------------------------------
-bool ArchiveEntryTree::lookForSearchEntryFrom(int index_start)
+void ArchiveEntryTree::onAnyColumnResized()
 {
-	long      index = index_start;
-	wxVariant value;
+	const auto archive = archive_.lock();
+	if (!archive)
+		return;
 
-	while (true)
+	auto config = library::getArchiveUIConfig(archive->libraryId());
+	if (config.archive_id < 0)
+		return;
+
+	// Get the last visible column (we don't want to save the width of this column since it stretches)
+	auto last_col = lastVisibleColumn();
+
+	// Index
+	if (col_index_->IsShown())
 	{
-		auto item = GetItemByRow(index);
-
-		if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
-		{
-			if (strutil::startsWithCI(entry->name(), search_))
-			{
-				// Matches, update selection+focus
-				wxDataViewItemArray items;
-				items.Add(item);
-				SetSelections(items);
-				SetCurrentItem(item);
-				EnsureVisible(item);
-				return true;
-			}
-
-			++index;
-		}
-		else
-			break;
+		config.elist_index_width = col_index_->GetWidth();
+		saveStateInt("EntryListIndexWidth", config.elist_index_width);
 	}
 
-	// Didn't get any match
-	return false;
+	// Name
+	if (col_name_ != last_col)
+	{
+		config.elist_name_width = col_name_->GetWidth();
+		saveStateInt(
+			archive->formatDesc().supports_dirs ? "EntryListNameWidthTree" : "EntryListNameWidthList",
+			config.elist_name_width);
+	}
+
+	// Size
+	if (col_size_ != last_col && col_size_->IsShown())
+	{
+		config.elist_size_width = col_size_->GetWidth();
+		saveStateInt("EntryListSizeWidth", config.elist_size_width);
+	}
+
+	// Type
+	if (col_type_ != last_col && col_type_->IsShown())
+	{
+		config.elist_type_width = col_type_->GetWidth();
+		saveStateInt("EntryListTypeWidth", config.elist_type_width);
+	}
+
+	library::saveArchiveUIConfig(config);
 }
-
-// -----------------------------------------------------------------------------
-// Adds [key_code] to the current internal search string (if valid) and performs
-// quick search.
-// Returns false if the key was not a 'real' character usable for searching
-// -----------------------------------------------------------------------------
-bool ArchiveEntryTree::searchChar(int key_code)
-{
-	// Check the key pressed is actually a character (a-z, 0-9 etc)
-	bool real_char = false;
-	if (key_code >= 'a' && key_code <= 'z') // Lowercase
-		real_char = true;
-	else if (key_code >= 'A' && key_code <= 'Z') // Uppercase
-		real_char = true;
-	else if (key_code >= '0' && key_code <= '9') // Number
-		real_char = true;
-	else
-	{
-		for (int elist_char : elist_chars)
-		{
-			if (key_code == elist_char)
-			{
-				real_char = true;
-				break;
-			}
-		}
-	}
-
-	if (!real_char)
-	{
-		search_.clear();
-		return false;
-	}
-
-	// Get currently focused item (or first if nothing is focused)
-	auto index = GetRowByItem(GetCurrentItem());
-	if (index < 0)
-		index = 0;
-
-	// Build search string
-	search_ += static_cast<char>(key_code);
-
-	// Find matching entry/dir, beginning from current item
-	// If no match found, try again from the top
-	auto found = true;
-	if (!lookForSearchEntryFrom(index))
-		found = lookForSearchEntryFrom(0);
-
-	// No match, continue from next item with fresh search string
-	if (!found)
-	{
-		search_.clear();
-		search_ += static_cast<char>(key_code);
-		found = lookForSearchEntryFrom(index + 1);
-		if (!found)
-			found = lookForSearchEntryFrom(0);
-	}
-
-	if (found)
-	{
-		// Trigger selection change event
-		wxDataViewEvent de;
-		de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
-		de.SetString("search");
-		ProcessWindowEvent(de);
-	}
-
-	return true;
-}
-#endif
 
 // -----------------------------------------------------------------------------
 // Sets the root directory to [dir] and updates UI accordingly

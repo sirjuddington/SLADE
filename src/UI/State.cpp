@@ -34,7 +34,18 @@ void ui::initStateProps()
 									  { "TintDialogLastColour", "RGB(255, 0, 0)" },
 									  { "TintDialogLastAmount", 50 },
 									  { "ZoomGfxCanvas", 100 },
-									  { "ZoomCTextureCanvas", 100 } };
+									  { "ZoomCTextureCanvas", 100 },
+									  { "LibraryPanelFilenameWidth", scalePx(250) },
+									  { "LibraryPanelPathVisible", true },
+									  { "LibraryPanelPathWidth", scalePx(250) },
+									  { "LibraryPanelSizeVisible", true },
+									  { "LibraryPanelSizeWidth", scalePx(100) },
+									  { "LibraryPanelTypeVisible", true },
+									  { "LibraryPanelTypeWidth", scalePx(150) },
+									  { "LibraryPanelLastOpenedVisible", true },
+									  { "LibraryPanelLastOpenedWidth", scalePx(200) },
+									  { "LibraryPanelFileModifiedVisible", true },
+									  { "LibraryPanelFileModifiedWidth", scalePx(200) } };
 
 	if (auto sql = db::cacheQuery("init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?)", true))
 	{
