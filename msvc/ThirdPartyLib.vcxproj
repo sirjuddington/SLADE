@@ -776,25 +776,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\sqlite3;$(ProjectDir)..\thirdparty\sqlitecpp\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\sqlite3;$(ProjectDir)..\thirdparty\sqlitecpp\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\sqlitecpp\sqlite3</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\sqlite3;$(ProjectDir)..\thirdparty\sqlitecpp\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\sqlite3;$(ProjectDir)..\thirdparty\sqlitecpp\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>
