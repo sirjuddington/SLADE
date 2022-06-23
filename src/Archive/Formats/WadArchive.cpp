@@ -277,7 +277,7 @@ bool WadArchive::hasFlatHack()
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadArchive::open(const MemChunk& mc)
+bool WadArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -1041,7 +1041,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		{
 			// Detect map format (probably kinda slow but whatever, no better way to do it really)
 			WadArchive tempwad;
-			tempwad.open(entry->data());
+			tempwad.open(entry->data(), true);
 			auto emaps = tempwad.detectMaps();
 			if (!emaps.empty())
 			{

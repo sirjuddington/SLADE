@@ -47,7 +47,7 @@ using namespace slade;
 // Reads gob format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GobArchive::open(const MemChunk& mc)
+bool GobArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())

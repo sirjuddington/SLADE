@@ -66,24 +66,40 @@ namespace
 {
 // -----------------------------------------------------------------------------
 // Updates/Adds [archive] in/to the library and updates last opened time if
-// requested
+// requested.
+// Returns true if the archive was added to the library (and thus entry types
+// were already detected)
 // -----------------------------------------------------------------------------
-void updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
+bool updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
 {
-	ui::setSplashProgressMessage("Updating library");
+	ui::setSplashProgressMessage("Updating Library");
+	ui::setSplashProgress(1.0f);
 
 	// Read info from library into archive
 	auto lib_id = library::readArchiveInfo(archive);
 
 	// If it wasn't in the library, add it
+	auto added = false;
 	if (lib_id < 0)
+	{
+		// Need to detect all entry types before adding
+		ui::setSplashProgressMessage("Detecting entry types");
+		archive.detectAllEntryTypes();
+
+		// Add to library
+		ui::setSplashProgressMessage("Updating Library");
 		lib_id = library::writeArchiveInfo(archive);
+
+		added = true;
+	}
 
 	// Update last opened time if needed
 	if (update_last_opened)
 		library::setArchiveLastOpenedTime(lib_id, datetime::now());
 
 	ui::setSplashProgressMessage("");
+
+	return added;
 }
 
 // -----------------------------------------------------------------------------
@@ -193,7 +209,7 @@ bool ArchiveManager::init()
 		dir_slade_pk3 = "slade.pk3";
 
 	// Open slade.pk3
-	if (!program_resource_archive_->open(dir_slade_pk3))
+	if (!program_resource_archive_->open(dir_slade_pk3, true))
 	{
 		log::error("Unable to find slade.pk3!");
 		res_archive_open_ = false;
@@ -220,7 +236,7 @@ bool ArchiveManager::initArchiveFormats() const
 // -----------------------------------------------------------------------------
 bool ArchiveManager::initBaseResource()
 {
-	return openBaseResource((int)base_resource);
+	return openBaseResource(base_resource);
 }
 
 // -----------------------------------------------------------------------------
@@ -260,6 +276,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		signals_.archive_added(open_archives_.size() - 1);
 
 		// Add to resource manager
+		ui::setSplashProgressMessage("Loading Resources");
 		app::resources().addArchive(archive.get());
 
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
@@ -362,7 +379,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 	}
 
 	// Attempt to open archive
-	if (!new_archive->open(filename))
+	if (!new_archive->open(filename, false))
 	{
 		log::error(global::error);
 		return nullptr;
@@ -372,7 +389,13 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 	if (manage)
 	{
 		// Add/update in library
-		updateArchiveInLibrary(*new_archive, true);
+		auto added = updateArchiveInLibrary(*new_archive, true);
+
+		// Detect entry types if needed (use hints from library)
+		if (!added)
+			new_archive->detectAllEntryTypes();
+
+		// Restore bookmarks
 		addBookmarksFromLibrary(*new_archive);
 
 		// Add the archive
@@ -419,7 +442,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	}
 
 	// Attempt to open archive
-	if (!new_archive->open(entry))
+	if (!new_archive->open(entry, true))
 	{
 		log::error(global::error);
 		return nullptr;
@@ -470,7 +493,7 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 	new_archive = std::make_shared<DirArchive>();
 
 	// Attempt to open archive
-	if (!new_archive->open(dir))
+	if (!new_archive->open(dir, false))
 	{
 		log::error(global::error);
 		return nullptr;
@@ -479,8 +502,14 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 	// Opened ok, add to manager if requested
 	if (manage)
 	{
-		// Update in library
-		updateArchiveInLibrary(*new_archive, true);
+		// Add/update in library
+		auto added = updateArchiveInLibrary(*new_archive, true);
+
+		// Detect entry types if needed (use hints from library)
+		if (!added)
+			new_archive->detectAllEntryTypes();
+
+		// Restore bookmarks
 		addBookmarksFromLibrary(*new_archive);
 
 		// Add the archive
@@ -873,7 +902,7 @@ bool ArchiveManager::openBaseResource(int index)
 
 	// Attempt to open the file
 	ui::showSplash(fmt::format("Opening {}...", filename), true);
-	if (base_resource_archive_->open(filename))
+	if (base_resource_archive_->open(filename, true))
 	{
 		base_resource = index;
 		ui::hideSplash();

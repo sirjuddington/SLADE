@@ -566,7 +566,7 @@ bool MapEditorWindow::openMap(const Archive::MapDesc& map)
 		if (map.archive)
 		{
 			WadArchive temp;
-			temp.open(head->data());
+			temp.open(head->data(), true);
 			for (unsigned a = 0; a < temp.numEntries(); a++)
 				map_data_.emplace_back(new ArchiveEntry(*(temp.entryAt(a))));
 		}
@@ -654,7 +654,7 @@ void MapEditorWindow::loadMapScripts(const Archive::MapDesc& map)
 	if (map.archive)
 	{
 		auto wad = new WadArchive();
-		wad->open(head->data());
+		wad->open(head->data(), true);
 		auto maps = wad->detectMaps();
 		if (!maps.empty())
 		{
@@ -753,7 +753,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 
 		// Re-load wad
 		wad->close();
-		wad->open(filename);
+		wad->open(filename, true);
 	}
 	else if (nb_warned)
 		log::info(1, "Nodebuilder path not set up, no nodes were built");
@@ -844,7 +844,7 @@ bool MapEditorWindow::saveMap()
 	if (mdesc_current.archive && current_head)
 	{
 		tempwad = std::make_unique<WadArchive>();
-		tempwad->open(current_head.get());
+		tempwad->open(current_head.get(), true);
 		auto amaps = tempwad->detectMaps();
 		if (!amaps.empty())
 			map = amaps[0];

@@ -114,7 +114,7 @@ bool shouldEncodeTxb(string_view name)
 // Reads hog format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool HogArchive::open(const MemChunk& mc)
+bool HogArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())

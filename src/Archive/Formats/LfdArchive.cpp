@@ -48,7 +48,7 @@ using namespace slade;
 // Reads lfd format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool LfdArchive::open(const MemChunk& mc)
+bool LfdArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())

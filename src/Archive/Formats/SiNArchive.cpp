@@ -48,7 +48,7 @@ using namespace slade;
 // Reads SiN format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool SiNArchive::open(const MemChunk& mc)
+bool SiNArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check given data is valid
 	if (mc.size() < 12)

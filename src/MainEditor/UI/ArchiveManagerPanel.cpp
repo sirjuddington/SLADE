@@ -2263,7 +2263,12 @@ void ArchiveManagerPanel::connectSignals()
 		});
 
 	// When an archive is opened, open its tab
-	signal_connections += signals.archive_opened.connect([this](int index) { openTab(index); });
+	signal_connections += signals.archive_opened.connect([this](int index)
+	{
+		ui::setSplashProgressMessage("Initializing UI");
+		ui::setSplashProgress(1.0f);
+		openTab(index);
+	});
 
 	// Refresh recent files list when library updated
 	signal_connections += library::signals().archive_file_updated.connect([this](int64_t) { refreshRecentFileList(); });

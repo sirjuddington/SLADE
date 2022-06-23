@@ -118,7 +118,7 @@ void bloodCrypt(void* data, int key, int len)
 // Reads rff format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool RffArchive::open(const MemChunk& mc)
+bool RffArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())

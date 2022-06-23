@@ -87,7 +87,7 @@ ZipArchive::~ZipArchive()
 // Reads zip data from a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchive::open(string_view filename)
+bool ZipArchive::open(string_view filename, bool detect_types)
 {
 	// Check the file exists
 	if (!fileutil::fileExists(filename))
@@ -156,9 +156,6 @@ bool ZipArchive::open(string_view filename)
 					zip.Read(data.data(), ze_size); // Note: this is where exceedingly large files cause an exception.
 					new_entry->importMem(data.data(), static_cast<uint32_t>(ze_size));
 				}
-
-				// Determine its type
-				EntryType::detectEntryType(*new_entry);
 			}
 			else
 			{
@@ -186,6 +183,10 @@ bool ZipArchive::open(string_view filename)
 	for (auto& entry : entry_list)
 		entry->setState(ArchiveEntry::State::Unmodified);
 
+	// Detect all entry types
+	if (detect_types)
+		detectAllEntryTypes();
+
 	// Enable announcements
 	sig_blocker.unblock();
 
@@ -204,14 +205,14 @@ bool ZipArchive::open(string_view filename)
 // Reads zip format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchive::open(const MemChunk& mc)
+bool ZipArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Write the MemChunk to a temp file
 	const auto tempfile = app::path("slade-temp-open.zip", app::Dir::Temp);
 	mc.exportFile(tempfile);
 
 	// Load the file
-	const bool success = open(tempfile);
+	const bool success = open(tempfile, true);
 
 	// Clean up
 	fileutil::removeFile(tempfile);
@@ -512,7 +513,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 		// Detect map format (probably kinda slow but whatever, no better way to do it really)
 		auto       format = MapFormat::Unknown;
 		WadArchive tempwad;
-		tempwad.open(entry->data());
+		tempwad.open(entry->data(), true);
 		auto emaps = tempwad.detectMaps();
 		if (!emaps.empty())
 			format = emaps[0].format;

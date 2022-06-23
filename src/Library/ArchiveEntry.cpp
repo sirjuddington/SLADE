@@ -539,6 +539,7 @@ void library::readEntryInfo(int64_t archive_id, const vector<ArchiveEntry*>& ent
 			if (entryRowExactMatch(existing_rows[i], entry->path(), entry->name(), entry->size(), entry->hash()))
 			{
 				entry->setLibraryId(existing_rows[i].id);
+				entry->exProp("TypeHint") = existing_rows[i].type_id;
 				existing_rows[i].id = -1;
 				break;
 			}

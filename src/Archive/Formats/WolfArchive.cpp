@@ -366,7 +366,7 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 // Reads a Wolf format file from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::open(string_view filename)
+bool WolfArchive::open(string_view filename, bool detect_types)
 {
 	// Find wolf archive type
 	strutil::Path fn1(filename);
@@ -424,11 +424,15 @@ bool WolfArchive::open(string_view filename)
 			return false;
 		}
 		// Load from MemChunk
-		opened = open(mc);
+		opened = open(mc, true);
 	}
 
 	if (opened)
 	{
+		// Detect all entry types
+		if (detect_types)
+			detectAllEntryTypes();
+
 		// Update variables
 		filename_      = filename;
 		file_modified_ = fileutil::fileModifiedTime(filename);
@@ -444,7 +448,7 @@ bool WolfArchive::open(string_view filename)
 // Reads VSWAP Wolf format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::open(const MemChunk& mc)
+bool WolfArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -693,10 +697,9 @@ bool WolfArchive::openAudio(MemChunk& head, const MemChunk& data)
 		nlump->setOffsetOnDisk(offset);
 		nlump->setSizeOnDisk();
 
-		// Detect entry type
+		// Load data
 		if (size > 0)
 			nlump->importMemChunk(edata);
-		EntryType::detectEntryType(*nlump);
 
 		// Add to entry list
 		nlump->setState(ArchiveEntry::State::Unmodified);

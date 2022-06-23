@@ -47,7 +47,7 @@ using namespace slade;
 // Reads grp format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GrpArchive::open(const MemChunk& mc)
+bool GrpArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())

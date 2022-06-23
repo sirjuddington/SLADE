@@ -607,6 +607,20 @@ bool EntryType::detectEntryType(ArchiveEntry& entry)
 	// Reset entry type
 	entry.setType(etype_unknown);
 
+	// Check for hinted type first
+	if (entry.exProps().contains("TypeHint"))
+	{
+		auto hint_type = fromId(std::get<string>(entry.exProp("TypeHint")));
+		if (auto r = hint_type->isThisType(entry); r > 0)
+		{
+			entry.setType(hint_type, r);
+			return true;
+		}
+
+		// Wasn't the hinted type, remove hint
+		entry.exProps().remove("TypeHint");
+	}
+
 	// Go through all registered types
 	const size_t entry_types_size = entry_types.size();
 	for (size_t a = 0; a < entry_types_size; a++)

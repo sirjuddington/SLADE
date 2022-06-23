@@ -48,7 +48,7 @@ using namespace slade;
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Wad2Archive::open(const MemChunk& mc)
+bool Wad2Archive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())

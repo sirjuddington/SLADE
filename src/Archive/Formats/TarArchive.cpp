@@ -256,7 +256,7 @@ void tarDefaultHeader(TarHeader* header)
 // Reads tar format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool TarArchive::open(const MemChunk& mc)
+bool TarArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check given data is valid
 	if (mc.size() < 1024)

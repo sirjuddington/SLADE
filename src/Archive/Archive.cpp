@@ -453,7 +453,7 @@ string Archive::filename(bool full) const
 // Reads an archive from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::open(string_view filename)
+bool Archive::open(string_view filename, bool detect_types)
 {
 	// Read the file into a MemChunk
 	MemChunk mc;
@@ -470,7 +470,7 @@ bool Archive::open(string_view filename)
 
 	// Load from MemChunk
 	const sf::Clock timer;
-	if (open(mc))
+	if (open(mc, true))
 	{
 		log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
 		on_disk_ = true;
@@ -487,11 +487,11 @@ bool Archive::open(string_view filename)
 // Reads an archive from an ArchiveEntry
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::open(ArchiveEntry* entry)
+bool Archive::open(ArchiveEntry* entry, bool detect_types)
 {
 	// Load from entry's data
 	auto sp_entry = entry->getShared();
-	if (sp_entry && open(sp_entry->data()))
+	if (sp_entry && open(sp_entry->data(), true))
 	{
 		// Update variables and return success
 		parent_ = sp_entry;
@@ -1686,8 +1686,8 @@ void Archive::detectAllEntryTypes() const
 	{
 		ui::setSplashProgress(i, n_entries);
 		EntryType::detectEntryType(*entries[i]);
-		entries[i]->setState(ArchiveEntry::State::Unmodified);
 	}
+	ui::setSplashProgress(1.0f);
 }
 
 

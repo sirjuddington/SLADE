@@ -359,7 +359,7 @@ void library::scanArchivesInDir(string_view path, const vector<string>& ignore_e
 		{
 			log::info("Library Scan: Scanning file \"{}\" (detected as {})", filename, archive->formatDesc().name);
 
-			if (!archive->open(filename))
+			if (!archive->open(filename, true))
 			{
 				log::info("Library Scan: Failed to open archive file {}: {}", filename, global::error);
 				continue;

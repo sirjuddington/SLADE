@@ -111,7 +111,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 
 		// Attempt to open entry as wad archive
 		temp_archive_ = std::make_unique<WadArchive>();
-		if (!temp_archive_->open(m_head->data()))
+		if (!temp_archive_->open(m_head->data(), true))
 		{
 			temp_archive_.reset();
 			return false;

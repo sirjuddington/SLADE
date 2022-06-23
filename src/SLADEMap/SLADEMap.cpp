@@ -117,7 +117,7 @@ bool SLADEMap::readMap(const Archive::MapDesc& map)
 	auto       m_head = map.head.lock();
 	if (map.archive && m_head)
 	{
-		tempwad.open(m_head->data());
+		tempwad.open(m_head->data(), true);
 		auto amaps = tempwad.detectMaps();
 		if (!amaps.empty())
 			omap = amaps[0];

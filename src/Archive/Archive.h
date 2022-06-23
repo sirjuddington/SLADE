@@ -80,9 +80,9 @@ public:
 	virtual bool  isTreeless() { return false; }
 
 	// Opening
-	virtual bool open(string_view filename);   // Open from File
-	virtual bool open(ArchiveEntry* entry);    // Open from ArchiveEntry
-	virtual bool open(const MemChunk& mc) = 0; // Open from MemChunk
+	virtual bool open(string_view filename, bool detect_types);   // Open from File
+	virtual bool open(ArchiveEntry* entry, bool detect_types);    // Open from ArchiveEntry
+	virtual bool open(const MemChunk& mc, bool detect_types) = 0; // Open from MemChunk
 
 	// Writing/Saving
 	virtual bool write(MemChunk& mc) = 0;         // Write to MemChunk
@@ -137,6 +137,7 @@ public:
 	virtual vector<MapDesc> detectMaps() { return {}; }
 	virtual string          detectNamespace(ArchiveEntry* entry);
 	virtual string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);
+	void                    detectAllEntryTypes() const;
 
 	// Search
 	struct SearchOptions
@@ -194,7 +195,6 @@ protected:
 
 	// Helpers
 	bool genericLoadEntryData(const ArchiveEntry* entry, MemChunk& out) const;
-	void detectAllEntryTypes() const;
 
 private:
 	bool                   modified_ = true;
