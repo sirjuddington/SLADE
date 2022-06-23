@@ -45,7 +45,9 @@ void ui::initStateProps()
 									  { "LibraryPanelLastOpenedVisible", true },
 									  { "LibraryPanelLastOpenedWidth", scalePx(200) },
 									  { "LibraryPanelFileModifiedVisible", true },
-									  { "LibraryPanelFileModifiedWidth", scalePx(200) } };
+									  { "LibraryPanelFileModifiedWidth", scalePx(200) },
+									  { "LibraryPanelEntryCountVisible", true },
+									  { "LibraryPanelEntryCountWidth", scalePx(50) } };
 
 	if (auto sql = db::cacheQuery("init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?)", true))
 	{
@@ -70,17 +72,11 @@ void ui::initStateProps()
 
 bool ui::hasSavedState(string_view name)
 {
-	// if (prop_cache.contains(name))
-	//	return true;
-
 	return db::rowExists<string_view>(*db::connectionRO(), "ui_state", "name", name);
 }
 
 bool ui::getStateBool(string_view name)
 {
-	// if (prop_cache.contains(name))
-	//	return std::get<bool>(prop_cache[name]);
-
 	auto val = false;
 
 	if (auto sql = db::cacheQuery("get_ui_state", get_ui_state))

@@ -240,7 +240,7 @@ database::Transaction database::Context::beginTransaction(bool write) const
 namespace slade::database
 {
 // -----------------------------------------------------------------------------
-// Creates any missing tables in the SLADE database [db]
+// Creates any missing tables/views in the SLADE database [db]
 // -----------------------------------------------------------------------------
 bool createMissingTables(SQLite::Database& db)
 {
@@ -270,6 +270,32 @@ bool createMissingTables(SQLite::Database& db)
 		{
 			global::error = fmt::format("Failed to create database table {}: {}", table_name, ex.what());
 			return false;
+		}
+	}
+
+	// Get slade.pk3 dir with view definition scripts
+	auto views_dir = app::programResource()->dirAtPath("database/views");
+	if (views_dir)
+	{
+		for (const auto& entry : views_dir->entries())
+		{
+			// Check view exists
+			string view_name{ strutil::Path::fileNameOf(entry->name(), false) };
+			if (db.viewExists(view_name))
+				continue;
+
+			// Doesn't exist, create view
+			string sql{ (const char*)entry->data().data(), entry->data().size() };
+			try
+			{
+				db.exec(sql);
+				log::info("Created database view {}", view_name);
+			}
+			catch (const SQLite::Exception& ex)
+			{
+				global::error = fmt::format("Failed to create database view {}: {}", view_name, ex.what());
+				return false;
+			}
 		}
 	}
 

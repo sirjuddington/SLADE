@@ -52,7 +52,7 @@ LibraryViewModel::LibraryViewModel()
 			for (auto& row : rows_)
 				if (row.id == id)
 				{
-					row = ArchiveFileRow{ db::global(), id };
+					row = LibraryListRow{ db::global(), id };
 					ItemChanged(wxDataViewItem{ &row });
 				}
 		});
@@ -79,6 +79,25 @@ LibraryViewModel::LibraryViewModel()
 		});
 }
 
+LibraryViewModel::LibraryListRow::LibraryListRow(database::Context& db, int64_t id)
+{
+	if (auto sql = db.cacheQuery("get_library_list", "SELECT * FROM archive_library_list WHERE id = ?"))
+	{
+		if (sql->executeStep())
+		{
+			this->id      = id;
+			path          = sql->getColumn(1).getString();
+			size          = sql->getColumn(2).getUInt();
+			format_id     = sql->getColumn(3).getString();
+			last_opened   = sql->getColumn(4).getInt64();
+			last_modified = sql->getColumn(5).getInt64();
+			entry_count   = sql->getColumn(6).getUInt();
+		}
+
+		sql->reset();
+	}
+}
+
 wxDataViewItem LibraryViewModel::itemForArchiveId(int64_t id) const
 {
 	for (auto& row : rows_)
@@ -99,7 +118,7 @@ wxString LibraryViewModel::GetColumnType(unsigned col) const
 
 void LibraryViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned col) const
 {
-	auto* row = static_cast<ArchiveFileRow*>(item.GetID());
+	auto* row = static_cast<LibraryListRow*>(item.GetID());
 	if (!row)
 		return;
 
@@ -157,6 +176,7 @@ void LibraryViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		else
 			variant = datetime::toString(row->last_modified, datetime::Format::Local);
 		break;
+	case Column::EntryCount: variant = wxString::Format("%d", row->entry_count); break;
 	case Column::_Count: break;
 	default: break;
 	}
@@ -199,8 +219,8 @@ unsigned LibraryViewModel::GetChildren(const wxDataViewItem& item, wxDataViewIte
 int LibraryViewModel::Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned column, bool ascending)
 	const
 {
-	auto row1 = static_cast<ArchiveFileRow*>(item1.GetID());
-	auto row2 = static_cast<ArchiveFileRow*>(item2.GetID());
+	auto row1 = static_cast<LibraryListRow*>(item1.GetID());
+	auto row2 = static_cast<LibraryListRow*>(item2.GetID());
 	if (!row1 || !row2)
 		return 0;
 
@@ -220,13 +240,37 @@ int LibraryViewModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
 		return ascending ? compare(row1->last_modified, row2->last_modified) :
                            compare(row2->last_modified, row1->last_modified);
 
+	// Entry Count column
+	if (col == Column::EntryCount)
+		return ascending ? compare(row1->entry_count, row2->entry_count) :
+                           compare(row2->entry_count, row1->entry_count);
+
 	// Default compare
 	return wxDataViewModel::Compare(item1, item2, column, ascending);
 }
 
 void LibraryViewModel::loadRows() const
 {
-	rows_ = library::allArchiveFileRows();
+	rows_.clear();
+
+	if (auto sql = db::cacheQuery("library_list", "SELECT * FROM archive_library_list"))
+	{
+		LibraryListRow row;
+		while (sql->executeStep())
+		{
+			row.id            = sql->getColumn(0).getInt64();
+			row.path          = sql->getColumn(1).getString();
+			row.size          = sql->getColumn(2).getUInt();
+			row.format_id     = sql->getColumn(3).getString();
+			row.last_opened   = sql->getColumn(4).getInt64();
+			row.last_modified = sql->getColumn(5).getInt64();
+			row.entry_count   = sql->getColumn(6).getUInt();
+
+			rows_.push_back(row);
+		}
+
+		sql->reset();
+	}
 }
 
 LibraryPanel::LibraryPanel(wxWindow* parent) : wxPanel{ parent }
@@ -267,7 +311,7 @@ bool LibraryPanel::handleAction(string_view id)
 		list_archives_->GetSelections(selection);
 
 		for (const auto& item : selection)
-			if (auto row = static_cast<ArchiveFileRow*>(item.GetID()))
+			if (auto row = model_library_->rowForItem(item))
 				maineditor::openArchiveFile(row->path);
 
 		return true;
@@ -281,7 +325,7 @@ bool LibraryPanel::handleAction(string_view id)
 
 		vector<int64_t> to_remove;
 		for (const auto& item : selection)
-			if (auto row = static_cast<ArchiveFileRow*>(item.GetID()))
+			if (auto row = model_library_->rowForItem(item))
 				to_remove.push_back(row->id);
 
 		for (auto archive_id : to_remove)
@@ -298,7 +342,7 @@ bool LibraryPanel::handleAction(string_view id)
 
 		string path;
 		for (const auto& item : selection)
-			if (auto row = static_cast<ArchiveFileRow*>(item.GetID()))
+			if (auto row = model_library_->rowForItem(item))
 			{
 				path = row->path;
 				break;
@@ -321,7 +365,7 @@ void LibraryPanel::bindEvents()
 		wxEVT_DATAVIEW_ITEM_ACTIVATED,
 		[this](wxDataViewEvent& e)
 		{
-			if (auto row = static_cast<ArchiveFileRow*>(e.GetItem().GetID()))
+			if (auto row = model_library_->rowForItem(e.GetItem()))
 				maineditor::openArchiveFile(row->path);
 		});
 
@@ -353,6 +397,7 @@ void LibraryPanel::bindEvents()
 			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::Type));
 			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::LastOpened));
 			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::FileModified));
+			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::EntryCount));
 			list_archives_->PopupMenu(&context);
 			e.Skip();
 		});
@@ -391,6 +436,11 @@ void LibraryPanel::bindEvents()
 				list_archives_->toggleColumnVisibility(e.GetId(), "LibraryPanelFileModifiedVisible");
 				updateColumnWidths();
 			}
+			else if (e.GetId() == static_cast<int>(Column::EntryCount))
+			{
+				list_archives_->toggleColumnVisibility(e.GetId(), "LibraryPanelEntryCountVisible");
+				updateColumnWidths();
+			}
 			else
 				e.Skip();
 		});
@@ -412,6 +462,7 @@ void LibraryPanel::bindEvents()
 			case Column::Type: saveStateInt("LibraryPanelTypeWidth", width); break;
 			case Column::LastOpened: saveStateInt("LibraryPanelLastOpenedWidth", width); break;
 			case Column::FileModified: saveStateInt("LibraryPanelFileModifiedWidth", width); break;
+			case Column::EntryCount: saveStateInt("LibraryPanelEntryCountWidth", width); break;
 			default: break;
 			}
 		});
@@ -424,51 +475,22 @@ void LibraryPanel::setupListColumns() const
 	// Search by filename column
 	list_archives_->setSearchColumn(static_cast<int>(Column::Name));
 
-	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
-	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
-
+	// Filename column is fixed
 	list_archives_->AppendIconTextColumn(
 		"Filename",
 		static_cast<int>(Column::Name),
 		wxDATAVIEW_CELL_INERT,
 		getStateInt("LibraryPanelFilenameWidth"),
 		wxALIGN_NOT,
-		colstyle_visible);
-	list_archives_->AppendTextColumn(
-		"Path",
-		static_cast<int>(Column::Path),
-		wxDATAVIEW_CELL_INERT,
-		getStateInt("LibraryPanelPathWidth"),
-		wxALIGN_NOT,
-		getStateBool("LibraryPanelPathVisible") ? colstyle_visible : colstyle_hidden);
-	list_archives_->AppendTextColumn(
-		"Size",
-		static_cast<int>(Column::Size),
-		wxDATAVIEW_CELL_INERT,
-		getStateInt("LibraryPanelSizeWidth"),
-		wxALIGN_NOT,
-		getStateBool("LibraryPanelSizeVisible") ? colstyle_visible : colstyle_hidden);
-	list_archives_->AppendTextColumn(
-		"Type",
-		static_cast<int>(Column::Type),
-		wxDATAVIEW_CELL_INERT,
-		getStateInt("LibraryPanelTypeWidth"),
-		wxALIGN_NOT,
-		getStateBool("LibraryPanelTypeVisible") ? colstyle_visible : colstyle_hidden);
-	list_archives_->AppendTextColumn(
-		"Last Opened",
-		static_cast<int>(Column::LastOpened),
-		wxDATAVIEW_CELL_INERT,
-		getStateInt("LibraryPanelLastOpenedWidth"),
-		wxALIGN_NOT,
-		getStateBool("LibraryPanelLastOpenedVisible") ? colstyle_visible : colstyle_hidden);
-	list_archives_->AppendTextColumn(
-		"File Modified",
-		static_cast<int>(Column::FileModified),
-		wxDATAVIEW_CELL_INERT,
-		getStateInt("LibraryPanelFileModifiedWidth"),
-		wxALIGN_NOT,
-		getStateBool("LibraryPanelFileModifiedVisible") ? colstyle_visible : colstyle_hidden);
+		wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE);
+
+	// Add other columns
+	appendTextColumn(Column::Path, "Path", "Path");
+	appendTextColumn(Column::Size, "Size", "Size");
+	appendTextColumn(Column::Type, "Type", "Type");
+	appendTextColumn(Column::LastOpened, "Last Opened", "LastOpened");
+	appendTextColumn(Column::FileModified, "File Modified", "FileModified");
+	appendTextColumn(Column::EntryCount, "# Entries", "EntryCount");
 }
 
 void LibraryPanel::updateColumnWidths()
@@ -482,5 +504,20 @@ void LibraryPanel::updateColumnWidths()
 	list_archives_->setColumnWidth(modelColumn(Column::Type), getStateInt("LibraryPanelTypeWidth"));
 	list_archives_->setColumnWidth(modelColumn(Column::LastOpened), getStateInt("LibraryPanelLastOpenedWidth"));
 	list_archives_->setColumnWidth(modelColumn(Column::FileModified), getStateInt("LibraryPanelFileModifiedWidth"));
+	list_archives_->setColumnWidth(modelColumn(Column::EntryCount), getStateInt("LibraryPanelEntryCountWidth"));
 	Thaw();
+}
+
+void LibraryPanel::appendTextColumn(LibraryViewModel::Column column, string_view title, string_view id) const
+{
+	static auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
+	static auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
+
+	list_archives_->AppendTextColumn(
+		wxutil::strFromView(title),
+		static_cast<int>(column),
+		wxDATAVIEW_CELL_INERT,
+		getStateInt(fmt::format("LibraryPanel{}Width", id)),
+		wxALIGN_NOT,
+		getStateBool(fmt::format("LibraryPanel{}Visible", id)) ? colstyle_visible : colstyle_hidden);
 }

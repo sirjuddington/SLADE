@@ -408,6 +408,35 @@ public:
     }
 
     /**
+     * @brief Shortcut to test if a view exists.
+     *
+     *  View names are case sensitive.
+     *
+     * @param[in] apViewName an UTF-8 encoded case sensitive View name
+     *
+     * @return true if the view exists.
+     *
+     * @throw SQLite::Exception in case of error
+     */
+    bool viewExists(const char* apViewName);
+
+    /**
+     * @brief Shortcut to test if a view exists.
+     *
+     *  View names are case sensitive.
+     *
+     * @param[in] aViewName an UTF-8 encoded case sensitive View name
+     *
+     * @return true if the view exists.
+     *
+     * @throw SQLite::Exception in case of error
+     */
+    bool viewExists(const std::string& aViewName)
+    {
+        return viewExists(aViewName.c_str());
+    }
+
+    /**
      * @brief Get the rowid of the most recent successful INSERT into the database from the current connection.
      *
      *  Each entry in an SQLite table always has a unique 64-bit signed integer key called the rowid.

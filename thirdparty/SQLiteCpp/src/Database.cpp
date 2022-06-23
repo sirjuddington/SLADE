@@ -150,6 +150,15 @@ bool Database::tableExists(const char* apTableName)
     return (1 == query.getColumn(0).getInt());
 }
 
+// Shortcut to test if a view exists.
+bool Database::viewExists(const char* apViewName)
+{
+    Statement query(*this, "SELECT count(*) FROM sqlite_master WHERE type='view' AND name=?");
+    query.bind(1, apViewName);
+    (void)query.executeStep(); // Cannot return false, as the above query always return a result
+    return (1 == query.getColumn(0).getInt());
+}
+
 // Get the rowid of the most recent successful INSERT into the database from the current connection.
 long long Database::getLastInsertRowid() const noexcept
 {

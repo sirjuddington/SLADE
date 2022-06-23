@@ -25,15 +25,34 @@ namespace ui
 			Type,
 			LastOpened,
 			FileModified,
+			EntryCount,
 
 			_Count
 		};
 
-		wxDataViewItem itemForArchiveId(int64_t id) const;
+		struct LibraryListRow
+		{
+			int64_t  id = -1;
+			string   path;
+			unsigned size = 0;
+			string   format_id;
+			time_t   last_opened   = 0;
+			time_t   last_modified = 0;
+			unsigned entry_count   = 0;
+
+			LibraryListRow() = default;
+			LibraryListRow(database::Context& db, int64_t id);
+		};
+
+		wxDataViewItem  itemForArchiveId(int64_t id) const;
+		LibraryListRow* rowForItem(const wxDataViewItem& item) const
+		{
+			return static_cast<LibraryListRow*>(item.GetID());
+		}
 
 	private:
-		mutable vector<library::ArchiveFileRow> rows_;
-		ScopedConnectionList                    signal_connections_;
+		mutable vector<LibraryListRow> rows_;
+		ScopedConnectionList           signal_connections_;
 
 		// wxDataViewModel
 		unsigned int   GetColumnCount() const override { return static_cast<unsigned>(Column::_Count); }
@@ -71,6 +90,7 @@ namespace ui
 		void bindEvents();
 		void setupListColumns() const;
 		void updateColumnWidths();
+		void appendTextColumn(LibraryViewModel::Column column, string_view title, string_view id) const;
 
 		wxDataViewColumn* modelColumn(LibraryViewModel::Column column) const
 		{
