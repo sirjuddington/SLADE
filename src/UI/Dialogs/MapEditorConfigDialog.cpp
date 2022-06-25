@@ -62,7 +62,8 @@ struct MapFormatDef
 MapFormatDef map_formats[] = { { MapFormat::Doom, "Doom", "D" },
 							   { MapFormat::Hexen, "Hexen", "H" },
 							   { MapFormat::Doom64, "Doom64", "64" },
-							   { MapFormat::UDMF, "UDMF", "U" } };
+							   { MapFormat::UDMF, "UDMF", "U" },
+							   { MapFormat::Doom32X, "Doom32X", "32X" } };
 } // namespace
 
 

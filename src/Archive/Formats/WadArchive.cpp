@@ -81,6 +81,7 @@ string map_lumps[] = { "THINGS",   "VERTEXES", "LINEDEFS", "SIDEDEFS", "SECTORS"
 					   "BLOCKMAP", "REJECT",   "SCRIPTS",  "BEHAVIOR", "LEAFS",   "LIGHTS",  "MACROS",   "GL_MAP01",
 					   "GL_VERT",  "GL_SEGS",  "GL_SSECT", "GL_NODES", "GL_PVS",  "TEXTMAP", "ZNODES" };
 
+
 // Special namespaces (at the moment these are just mapping to zdoom's "zip as wad" namespace folders)
 // http://zdoom.org/wiki/Using_ZIPs_as_WAD_replacement#How_to
 struct SpecialNS
@@ -1002,7 +1003,15 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 		map.format = MapFormat::Doom64;
 	// Otherwise it's doom format
 	else
-		map.format = MapFormat::Doom;
+	{
+		Archive::SearchOptions opt;
+		opt.match_name = "playpals";
+		auto match     = findFirst(opt);
+		if (match)
+			map.format = MapFormat::Doom32X;
+		else
+			map.format = MapFormat::Doom;
+	}
 
 	return map;
 }
@@ -1019,6 +1028,14 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 	auto entry_count         = numEntries();
 	auto entry               = rootDir()->sharedEntryAt(index);
 	bool lastentryismapentry = false;
+	bool playpals            = false;
+
+	Archive::SearchOptions opt;
+	opt.match_name = "playpals";
+	auto match     = findFirst(opt);
+	if (match)
+		playpals = true;
+
 	while (entry)
 	{
 		// UDMF format map check ********************************************************
@@ -1122,6 +1139,8 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 					existing_map_lumps[LUMP_LEAFS] && existing_map_lumps[LUMP_LIGHTS]
 					&& existing_map_lumps[LUMP_MACROS])
 					md.format = MapFormat::Doom64;
+				else if (playpals)
+					md.format = MapFormat::Doom32X;
 				// Otherwise it's doom format
 				else
 					md.format = MapFormat::Doom;
