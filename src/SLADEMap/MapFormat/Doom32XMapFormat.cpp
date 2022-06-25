@@ -5,8 +5,8 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    DoomMapFormat.cpp
-// Description: MapFormatHandler specialization to handle Doom format maps
+// Filename:    Doom32XMapFormat.cpp
+// Description: MapFormatHandler specialization to handle Doom32X format maps
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -32,11 +32,8 @@
 #include "Main.h"
 #include "Doom32XMapFormat.h"
 #include "General/UI.h"
-#include "SLADEMap/MapObject/MapLine.h"
-#include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
-#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -66,15 +63,15 @@ bool Doom32XMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& ma
 		return true;
 	}
 
-	auto     vert_data = (Vertex32BE*)entry->rawData(true);
+	auto     vert_data = reinterpret_cast<const Vertex32BE*>(entry->rawData(true));
 	unsigned nv        = entry->size() / sizeof(Vertex32BE);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nv) * 0.2f);
-		map_data.addVertex(std::make_unique<MapVertex>(Vec2d{
-			(double)wxUINT32_SWAP_ON_LE(vert_data[a].x) / 65536.0f,
-			(double)wxUINT32_SWAP_ON_LE(vert_data[a].y) / 65536.0f }));
+		ui::setSplashProgress(p + (static_cast<float>(a) / nv) * 0.2f);
+		map_data.addVertex(
+			std::make_unique<MapVertex>(Vec2d{ static_cast<double>(wxUINT32_SWAP_ON_LE(vert_data[a].x)) / 65536.0,
+											   static_cast<double>(wxUINT32_SWAP_ON_LE(vert_data[a].y)) / 65536.0 }));
 	}
 
 	log::info(3, "Read {} vertices", map_data.vertices().size());

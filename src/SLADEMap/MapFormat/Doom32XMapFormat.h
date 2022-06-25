@@ -21,6 +21,6 @@ public:
 	};
 
 protected:
-	virtual bool readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_data) const;
+	bool readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_data) const override;
 };
 } // namespace slade
