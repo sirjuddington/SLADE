@@ -1011,6 +1011,9 @@
     <ClCompile Include="..\src\OpenGL\View.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.cpp">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\General\Database.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -1963,6 +1966,9 @@
     </ClInclude>
     <ClInclude Include="..\src\OpenGL\View.h">
       <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.h">
+      <Filter>SLADEMap\MapFormat</Filter>
     </ClInclude>
     <ClInclude Include="..\src\General\Database.h">
       <Filter>General</Filter>

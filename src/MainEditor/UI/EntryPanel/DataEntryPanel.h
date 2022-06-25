@@ -14,6 +14,8 @@ public:
 	{
 		IntSigned,
 		IntUnsigned,
+		IntBESigned,
+		IntBEUnsigned,
 		Fixed,
 		String,
 		Boolean,

@@ -331,6 +331,7 @@ void Archive::MapDesc::updateMapFormatHints() const
 	case MapFormat::Hexen: fmt_name = "hexen"; break;
 	case MapFormat::Doom64: fmt_name = "doom64"; break;
 	case MapFormat::UDMF: fmt_name = "udmf"; break;
+	case MapFormat::Doom32X: fmt_name = "doom32x"; break;
 	case MapFormat::Unknown:
 	default: fmt_name = "unknown"; break;
 	}

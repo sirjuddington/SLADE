@@ -75,8 +75,10 @@ wxString DataEntryTable::GetValue(int row, int col)
 		return "INVALID";
 
 	// Signed integer column
-	if (columns_[col].type == ColType::IntSigned)
+	if (columns_[col].type == ColType::IntSigned || columns_[col].type == ColType::IntBESigned)
 	{
+		bool be = columns_[col].type == ColType::IntBESigned;
+
 		if (columns_[col].size == 1)
 		{
 			int8_t val;
@@ -87,26 +89,34 @@ wxString DataEntryTable::GetValue(int row, int col)
 		{
 			int16_t val;
 			data_.read(&val, 2);
+			if (be)
+				val = wxINT16_SWAP_ON_LE(val);
 			return wxString::Format("%hd", val);
 		}
 		else if (columns_[col].size == 4)
 		{
 			int32_t val;
 			data_.read(&val, 4);
+			if (be)
+				val = wxINT32_SWAP_ON_LE(val);
 			return wxString::Format("%d", val);
 		}
 		else if (columns_[col].size == 8)
 		{
 			int64_t val;
 			data_.read(&val, 8);
+			if (be)
+				val = wxINT64_SWAP_ON_LE(val);
 			return wxString::Format("%lld", val);
 		}
 		return "INVALID SIZE";
 	}
 
 	// Unsigned integer column
-	else if (columns_[col].type == ColType::IntUnsigned)
+	else if (columns_[col].type == ColType::IntUnsigned || columns_[col].type == ColType::IntBEUnsigned)
 	{
+		bool be = columns_[col].type == ColType::IntBEUnsigned;
+
 		if (columns_[col].size == 1)
 		{
 			uint8_t val;
@@ -117,18 +127,24 @@ wxString DataEntryTable::GetValue(int row, int col)
 		{
 			uint16_t val;
 			data_.read(&val, 2);
+			if (be)
+				val = wxINT16_SWAP_ON_LE(val);
 			return wxString::Format("%hd", val);
 		}
 		else if (columns_[col].size == 4)
 		{
 			uint32_t val;
 			data_.read(&val, 4);
+			if (be)
+				val = wxINT32_SWAP_ON_LE(val);
 			return wxString::Format("%d", val);
 		}
 		else if (columns_[col].size == 8)
 		{
 			uint64_t val;
 			data_.read(&val, 8);
+			if (be)
+				val = wxINT64_SWAP_ON_LE(val);
 			return wxString::Format("%lld", (long long)val);
 		}
 		return "INVALID SIZE";
@@ -454,6 +470,12 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns_.emplace_back("Y Position", ColType::Fixed, 4, 4);
 			row_stride_ = 8;
 		}
+		else if (entry->exProp<string>("MapFormat") == "doom32x")
+		{
+			columns_.emplace_back("X Position", ColType::IntBESigned, 2, 0);
+			columns_.emplace_back("Y Position", ColType::IntBESigned, 2, 4);
+			row_stride_ = 8;
+		}
 		else
 		{
 			columns_.emplace_back("X Position", ColType::IntSigned, 2, 0);
@@ -466,7 +488,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_linedefs")
 	{
 		// Doom format
-		if (entry->exProp<string>("MapFormat") == "doom")
+		if (entry->exProp<string>("MapFormat") == "doom" || entry->exProp<string>("MapFormat") == "doom32x")
 		{
 			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
@@ -576,7 +598,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_things")
 	{
 		// Doom format
-		if (entry->exProp<string>("MapFormat") == "doom")
+		if (entry->exProp<string>("MapFormat") == "doom" || entry->exProp<string>("MapFormat") == "doom32x")
 		{
 			columns_.emplace_back("X Position", ColType::IntSigned, 2, 0);
 			columns_.emplace_back("Y Position", ColType::IntSigned, 2, 2);
@@ -644,21 +666,42 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// NODES
 	else if (type == "map_nodes")
 	{
-		columns_.emplace_back("Partition X", ColType::IntSigned, 2, 0);
-		columns_.emplace_back("Partition Y", ColType::IntSigned, 2, 2);
-		columns_.emplace_back("Partition X Diff", ColType::IntSigned, 2, 4);
-		columns_.emplace_back("Partition Y Diff", ColType::IntSigned, 2, 6);
-		columns_.emplace_back("Right Box Top", ColType::IntSigned, 2, 8);
-		columns_.emplace_back("Right Box Bottom", ColType::IntSigned, 2, 10);
-		columns_.emplace_back("Right Box Left", ColType::IntSigned, 2, 12);
-		columns_.emplace_back("Right Box Right", ColType::IntSigned, 2, 14);
-		columns_.emplace_back("Left Box Top", ColType::IntSigned, 2, 16);
-		columns_.emplace_back("Left Box Bottom", ColType::IntSigned, 2, 18);
-		columns_.emplace_back("Left Box Left", ColType::IntSigned, 2, 20);
-		columns_.emplace_back("Left Box Right", ColType::IntSigned, 2, 22);
-		columns_.emplace_back("Right Child", ColType::IntUnsigned, 2, 24);
-		columns_.emplace_back("Left Child", ColType::IntUnsigned, 2, 26);
-		row_stride_ = 28;
+		if (entry->exProp<string>("MapFormat") == "doom32x")
+		{
+			columns_.emplace_back("Partition X", ColType::IntBESigned, 2, 0);
+			columns_.emplace_back("Partition Y", ColType::IntBESigned, 2, 4);
+			columns_.emplace_back("Partition X Diff", ColType::IntBESigned, 2, 8);
+			columns_.emplace_back("Partition Y Diff", ColType::IntBESigned, 2, 12);
+			columns_.emplace_back("Right Box Top", ColType::IntBESigned, 2, 16);
+			columns_.emplace_back("Right Box Bottom", ColType::IntBESigned, 2, 20);
+			columns_.emplace_back("Right Box Left", ColType::IntBESigned, 2, 24);
+			columns_.emplace_back("Right Box Right", ColType::IntBESigned, 2, 28);
+			columns_.emplace_back("Left Box Top", ColType::IntBESigned, 2, 32);
+			columns_.emplace_back("Left Box Bottom", ColType::IntBESigned, 2, 36);
+			columns_.emplace_back("Left Box Left", ColType::IntBESigned, 2, 40);
+			columns_.emplace_back("Left Box Right", ColType::IntBESigned, 2, 44);
+			columns_.emplace_back("Right Child", ColType::IntBESigned, 2, 50);
+			columns_.emplace_back("Left Child", ColType::IntBESigned, 2, 54);
+			row_stride_ = 56;
+		}
+		else
+		{
+			columns_.emplace_back("Partition X", ColType::IntSigned, 2, 0);
+			columns_.emplace_back("Partition Y", ColType::IntSigned, 2, 2);
+			columns_.emplace_back("Partition X Diff", ColType::IntSigned, 2, 4);
+			columns_.emplace_back("Partition Y Diff", ColType::IntSigned, 2, 6);
+			columns_.emplace_back("Right Box Top", ColType::IntSigned, 2, 8);
+			columns_.emplace_back("Right Box Bottom", ColType::IntSigned, 2, 10);
+			columns_.emplace_back("Right Box Left", ColType::IntSigned, 2, 12);
+			columns_.emplace_back("Right Box Right", ColType::IntSigned, 2, 14);
+			columns_.emplace_back("Left Box Top", ColType::IntSigned, 2, 16);
+			columns_.emplace_back("Left Box Bottom", ColType::IntSigned, 2, 18);
+			columns_.emplace_back("Left Box Left", ColType::IntSigned, 2, 20);
+			columns_.emplace_back("Left Box Right", ColType::IntSigned, 2, 22);
+			columns_.emplace_back("Right Child", ColType::IntUnsigned, 2, 24);
+			columns_.emplace_back("Left Child", ColType::IntUnsigned, 2, 26);
+			row_stride_ = 28;
+		}
 	}
 
 	// LIGHTS

@@ -43,6 +43,7 @@
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
+#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
