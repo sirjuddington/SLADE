@@ -35,6 +35,7 @@
 #include "Doom64MapFormat.h"
 #include "DoomMapFormat.h"
 #include "HexenMapFormat.h"
+#include "Doom32XMapFormat.h"
 #include "UniversalDoomMapFormat.h"
 
 using namespace slade;
@@ -79,6 +80,7 @@ unique_ptr<MapFormatHandler> MapFormatHandler::get(MapFormat format)
 	case MapFormat::Hexen: return std::make_unique<HexenMapFormat>();
 	case MapFormat::UDMF: return std ::make_unique<UniversalDoomMapFormat>();
 	case MapFormat::Doom64: return std::make_unique<Doom64MapFormat>();
+	case MapFormat::Doom32X: return std::make_unique<Doom32XMapFormat>();
 	default: return std::make_unique<NoMapFormat>();
 	}
 }

@@ -116,6 +116,8 @@ bool GameDef::parse(const MemChunk& mc)
 					supported_formats[MapFormat::Hexen] = true;
 				else if (strutil::equalCI(str_val, "doom64"))
 					supported_formats[MapFormat::Doom64] = true;
+				else if (strutil::equalCI(str_val, "doom32x"))
+					supported_formats[MapFormat::Doom32X] = true;
 				else if (strutil::equalCI(str_val, "udmf"))
 					supported_formats[MapFormat::UDMF] = true;
 			}
@@ -202,6 +204,8 @@ bool PortDef::parse(const MemChunk& mc)
 					supported_formats[MapFormat::Hexen] = true;
 				else if (strutil::equalCI(str_val, "doom64"))
 					supported_formats[MapFormat::Doom64] = true;
+				else if (strutil::equalCI(str_val, "doom32x"))
+					supported_formats[MapFormat::Doom32X] = true;
 				else if (strutil::equalCI(str_val, "udmf"))
 					supported_formats[MapFormat::UDMF] = true;
 			}
