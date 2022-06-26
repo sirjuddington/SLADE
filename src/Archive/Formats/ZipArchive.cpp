@@ -463,7 +463,7 @@ shared_ptr<ArchiveEntry> ZipArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
+Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead) const
 {
 	MapDesc map;
 
@@ -479,11 +479,20 @@ Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
 	if (maphead->parentDir()->parent() != rootDir() || maphead->parentDir()->name() != "maps")
 		return map;
 
+	// Detect map format
+	auto       format = MapFormat::Unknown;
+	WadArchive tempwad;
+	tempwad.open(maphead->data(), true);
+	auto emaps = tempwad.detectMaps();
+	if (!emaps.empty())
+		format = emaps[0].format;
+
 	// Setup map info
 	map.archive = true;
 	map.head    = maphead->getShared();
 	map.end     = maphead->getShared();
 	map.name    = maphead->upperNameNoExt();
+	map.format  = format;
 
 	return map;
 }
@@ -492,7 +501,7 @@ Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> ZipArchive::detectMaps()
+vector<Archive::MapDesc> ZipArchive::detectMaps() const
 {
 	vector<MapDesc> ret;
 
@@ -535,7 +544,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
+ArchiveEntry* ZipArchive::findFirst(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = rootDir().get();
@@ -568,7 +577,7 @@ ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
+ArchiveEntry* ZipArchive::findLast(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = rootDir().get();
@@ -600,7 +609,7 @@ ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options) const
 {
 	// Init search variables
 	auto                  dir = rootDir().get();

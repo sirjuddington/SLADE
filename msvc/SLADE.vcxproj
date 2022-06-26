@@ -323,6 +323,7 @@
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
     <ClCompile Include="..\src\Library\ArchiveEntry.cpp" />
     <ClCompile Include="..\src\Library\ArchiveFile.cpp" />
+    <ClCompile Include="..\src\Library\ArchiveMap.cpp" />
     <ClCompile Include="..\src\Library\ArchiveUIConfig.cpp" />
     <ClCompile Include="..\src\Library\Library.cpp" />
     <ClCompile Include="..\src\Library\UI\LibraryPanel.cpp" />
@@ -700,6 +701,7 @@
     <ClInclude Include="..\src\Graphics\Graphics.h" />
     <ClInclude Include="..\src\Library\ArchiveEntry.h" />
     <ClInclude Include="..\src\Library\ArchiveFile.h" />
+    <ClInclude Include="..\src\Library\ArchiveMap.h" />
     <ClInclude Include="..\src\Library\ArchiveUIConfig.h" />
     <ClInclude Include="..\src\Library\Library.h" />
     <ClInclude Include="..\src\Library\UI\LibraryPanel.h" />

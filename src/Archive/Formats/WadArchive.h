@@ -41,17 +41,17 @@ public:
 	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveDir* dir = nullptr) override;
 
 	// Detection
-	MapDesc         mapDesc(ArchiveEntry* maphead) override;
-	vector<MapDesc> detectMaps() override;
-	string          detectNamespace(ArchiveEntry* entry) override;
-	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override;
+	MapDesc         mapDesc(ArchiveEntry* maphead) const override;
+	vector<MapDesc> detectMaps() const override;
+	string          detectNamespace(ArchiveEntry* entry) const override;
+	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const override;
 	void            detectIncludes();
 	bool            hasFlatHack() override;
 
 	// Search
-	ArchiveEntry*         findFirst(SearchOptions& options) override;
-	ArchiveEntry*         findLast(SearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
+	ArchiveEntry*         findFirst(SearchOptions& options) const override;
+	ArchiveEntry*         findLast(SearchOptions& options) const override;
+	vector<ArchiveEntry*> findAll(SearchOptions& options) const override;
 
 	// Static functions
 	static bool isWadArchive(const MemChunk& mc);

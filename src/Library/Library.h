@@ -23,11 +23,12 @@ namespace library
 	void           setArchiveLastOpenedTime(int64_t archive_id, time_t last_opened);
 	int64_t        writeArchiveInfo(const Archive& archive);
 	void           writeArchiveEntryInfo(const Archive& archive);
+	void           writeArchiveMapInfo(const Archive& archive);
 	void           removeMissingArchives();
 	vector<string> recentFiles(unsigned count = 20);
 
 	// Archive Dir Scan
-	void scanArchivesInDir(string_view path, const vector<string>& ignore_ext);
+	void scanArchivesInDir(string_view path, const vector<string>& ignore_ext, bool rebuild = false);
 	void stopArchiveDirScan();
 	bool archiveDirScanRunning();
 

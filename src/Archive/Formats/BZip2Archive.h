@@ -44,9 +44,9 @@ public:
 	}
 
 	// Search
-	ArchiveEntry*         findFirst(SearchOptions& options) override;
-	ArchiveEntry*         findLast(SearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
+	ArchiveEntry*         findFirst(SearchOptions& options) const override;
+	ArchiveEntry*         findLast(SearchOptions& options) const override;
+	vector<ArchiveEntry*> findAll(SearchOptions& options) const override;
 
 	// Static functions
 	static bool isBZip2Archive(const MemChunk& mc);

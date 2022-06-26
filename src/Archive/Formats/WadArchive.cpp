@@ -780,7 +780,7 @@ bool WadArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* d
 // If [maphead] is not really a map header entry, an invalid MapDesc will be
 // returned (MapDesc::head == nullptr)
 // -----------------------------------------------------------------------------
-Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
+Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead) const
 {
 	MapDesc map;
 
@@ -925,7 +925,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 // -----------------------------------------------------------------------------
 // Searches for any maps in the wad and adds them to the map list
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> WadArchive::detectMaps()
+vector<Archive::MapDesc> WadArchive::detectMaps() const
 {
 	vector<MapDesc> maps;
 
@@ -1094,7 +1094,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string WadArchive::detectNamespace(ArchiveEntry* entry)
+string WadArchive::detectNamespace(ArchiveEntry* entry) const
 {
 	return detectNamespace(entryIndex(entry));
 }
@@ -1102,7 +1102,7 @@ string WadArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string WadArchive::detectNamespace(unsigned index, ArchiveDir* dir)
+string WadArchive::detectNamespace(unsigned index, ArchiveDir* dir) const
 {
 	// Go through namespaces
 	for (auto& ns : namespaces_)
@@ -1179,7 +1179,7 @@ void WadArchive::detectIncludes()
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
+ArchiveEntry* WadArchive::findFirst(SearchOptions& options) const
 {
 	// Init search variables
 	unsigned index     = 0;
@@ -1248,7 +1248,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchive::findLast(SearchOptions& options)
+ArchiveEntry* WadArchive::findLast(SearchOptions& options) const
 {
 	// Init search variables
 	int index       = numEntries() - 1;
@@ -1320,7 +1320,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options) const
 {
 	// Init search variables
 	unsigned index     = 0;

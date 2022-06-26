@@ -91,7 +91,7 @@ public:
 
 	// Misc
 	virtual bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) = 0;
-	virtual unsigned numEntries();
+	virtual unsigned numEntries() const;
 	virtual void     close();
 	void             entryStateChanged(ArchiveEntry* entry);
 	void             putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr) const;
@@ -133,10 +133,10 @@ public:
 	virtual bool revertEntry(ArchiveEntry* entry);
 
 	// Detection
-	virtual MapDesc         mapDesc(ArchiveEntry* maphead) { return {}; }
-	virtual vector<MapDesc> detectMaps() { return {}; }
-	virtual string          detectNamespace(ArchiveEntry* entry);
-	virtual string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);
+	virtual MapDesc         mapDesc(ArchiveEntry* maphead) const { return {}; }
+	virtual vector<MapDesc> detectMaps() const { return {}; }
+	virtual string          detectNamespace(ArchiveEntry* entry) const;
+	virtual string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const;
 	void                    detectAllEntryTypes() const;
 
 	// Search
@@ -159,9 +159,9 @@ public:
 			search_subdirs  = false;
 		}
 	};
-	virtual ArchiveEntry*         findFirst(SearchOptions& options);
-	virtual ArchiveEntry*         findLast(SearchOptions& options);
-	virtual vector<ArchiveEntry*> findAll(SearchOptions& options);
+	virtual ArchiveEntry*         findFirst(SearchOptions& options) const;
+	virtual ArchiveEntry*         findLast(SearchOptions& options) const;
+	virtual vector<ArchiveEntry*> findAll(SearchOptions& options) const;
 	virtual vector<ArchiveEntry*> findModifiedEntries(ArchiveDir* dir = nullptr);
 
 	// Signals
@@ -227,7 +227,7 @@ public:
 	}
 
 	// Misc
-	unsigned numEntries() override { return rootDir()->numEntries(); }
+	unsigned numEntries() const override { return rootDir()->numEntries(); }
 	void     getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr) const
 	{
 		return Archive::putEntryTreeAsList(list, nullptr);
@@ -266,8 +266,8 @@ public:
 	}
 
 	// Detection
-	string detectNamespace(ArchiveEntry* entry) override { return "global"; }
-	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override { return "global"; }
+	string detectNamespace(ArchiveEntry* entry) const override { return "global"; }
+	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const override { return "global"; }
 };
 
 // Simple class that will block and unblock modification signals for an archive via RAII

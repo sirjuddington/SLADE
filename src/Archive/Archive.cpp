@@ -707,7 +707,7 @@ bool Archive::save(string_view filename)
 // -----------------------------------------------------------------------------
 // Returns the total number of entries in the archive
 // -----------------------------------------------------------------------------
-unsigned Archive::numEntries()
+unsigned Archive::numEntries() const
 {
 	return dir_root_->numEntries(true);
 }
@@ -1340,7 +1340,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
+string Archive::detectNamespace(unsigned index, ArchiveDir* dir) const
 {
 	if (dir && index < dir->numEntries())
 		return detectNamespace(dir->entryAt(index));
@@ -1351,7 +1351,7 @@ string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(ArchiveEntry* entry)
+string Archive::detectNamespace(ArchiveEntry* entry) const
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -1377,7 +1377,7 @@ string Archive::detectNamespace(ArchiveEntry* entry)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findFirst(SearchOptions& options)
+ArchiveEntry* Archive::findFirst(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1447,7 +1447,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findLast(SearchOptions& options)
+ArchiveEntry* Archive::findLast(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1516,7 +1516,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns a list of entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> Archive::findAll(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1979,7 +1979,7 @@ bool archive::isKnownExtension(string_view file_ext)
 {
 	for (const auto& format : Archive::allFormats())
 		for (const auto& ext : format.extensions)
-			if (strutil::equalCI(ext.second, file_ext))
+			if (strutil::equalCI(ext.first, file_ext))
 				return true;
 
 	return false;

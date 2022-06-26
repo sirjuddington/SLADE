@@ -188,7 +188,7 @@ bool DatArchive::open(const MemChunk& mc, bool detect_types)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string DatArchive::detectNamespace(ArchiveEntry* entry)
+string DatArchive::detectNamespace(ArchiveEntry* entry) const
 {
 	return detectNamespace(entryIndex(entry));
 }
@@ -196,7 +196,7 @@ string DatArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string DatArchive::detectNamespace(unsigned index, ArchiveDir* dir)
+string DatArchive::detectNamespace(unsigned index, ArchiveDir* dir) const
 {
 	// Textures
 	if (index > (unsigned)walls_[0] && index < (unsigned)walls_[1])

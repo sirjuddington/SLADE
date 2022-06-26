@@ -7,11 +7,19 @@ CREATE VIEW archive_library_list AS
            archive_file.format_id,
            archive_file.last_opened,
            archive_file.last_modified,
-           COUNT(archive_entry.id) AS entry_count
+           (
+               SELECT COUNT( * ) 
+                 FROM archive_entry
+                WHERE archive_entry.archive_id = archive_file.id
+           )
+           AS entry_count,
+           (
+               SELECT COUNT( * ) 
+                 FROM archive_map
+                WHERE archive_map.archive_id = archive_file.id
+           )
+           AS map_count
       FROM archive_file
-           JOIN
-           archive_entry ON archive_entry.archive_id = archive_file.id
-     GROUP BY archive_file.id
      ORDER BY archive_file.path;
 
 COMMIT;

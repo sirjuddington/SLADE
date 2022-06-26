@@ -1044,6 +1044,9 @@
     <ClCompile Include="..\src\UI\Lists\SDataViewCtrl.cpp">
       <Filter>UI\Lists</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Library\ArchiveMap.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1999,6 +2002,9 @@
     </ClInclude>
     <ClInclude Include="..\src\UI\Lists\SDataViewCtrl.h">
       <Filter>UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Library\ArchiveMap.h">
+      <Filter>Library</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

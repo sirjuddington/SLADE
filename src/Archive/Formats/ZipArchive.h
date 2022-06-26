@@ -25,13 +25,13 @@ public:
 	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
 
 	// Detection
-	MapDesc         mapDesc(ArchiveEntry* maphead) override;
-	vector<MapDesc> detectMaps() override;
+	MapDesc         mapDesc(ArchiveEntry* maphead) const override;
+	vector<MapDesc> detectMaps() const override;
 
 	// Search
-	ArchiveEntry*         findFirst(SearchOptions& options) override;
-	ArchiveEntry*         findLast(SearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
+	ArchiveEntry*         findFirst(SearchOptions& options) const override;
+	ArchiveEntry*         findLast(SearchOptions& options) const override;
+	vector<ArchiveEntry*> findAll(SearchOptions& options) const override;
 
 	// Static functions
 	static bool isZipArchive(const MemChunk& mc);

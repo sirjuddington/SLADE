@@ -92,6 +92,7 @@ LibraryViewModel::LibraryListRow::LibraryListRow(database::Context& db, int64_t 
 			last_opened   = sql->getColumn(4).getInt64();
 			last_modified = sql->getColumn(5).getInt64();
 			entry_count   = sql->getColumn(6).getUInt();
+			map_count     = sql->getColumn(7).getUInt();
 		}
 
 		sql->reset();
@@ -177,6 +178,7 @@ void LibraryViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 			variant = datetime::toString(row->last_modified, datetime::Format::Local);
 		break;
 	case Column::EntryCount: variant = wxString::Format("%d", row->entry_count); break;
+	case Column::MapCount: variant = row->map_count > 0 ? wxString ::Format("%d", row->map_count) : ""; break;
 	case Column::_Count: break;
 	default: break;
 	}
@@ -245,6 +247,10 @@ int LibraryViewModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
 		return ascending ? compare(row1->entry_count, row2->entry_count) :
                            compare(row2->entry_count, row1->entry_count);
 
+	// Map Count column
+	if (col == Column::MapCount)
+		return ascending ? compare(row1->map_count, row2->map_count) : compare(row2->map_count, row1->map_count);
+
 	// Default compare
 	return wxDataViewModel::Compare(item1, item2, column, ascending);
 }
@@ -265,6 +271,7 @@ void LibraryViewModel::loadRows() const
 			row.last_opened   = sql->getColumn(4).getInt64();
 			row.last_modified = sql->getColumn(5).getInt64();
 			row.entry_count   = sql->getColumn(6).getUInt();
+			row.map_count     = sql->getColumn(7).getUInt();
 
 			rows_.push_back(row);
 		}
@@ -398,6 +405,7 @@ void LibraryPanel::bindEvents()
 			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::LastOpened));
 			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::FileModified));
 			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::EntryCount));
+			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::MapCount));
 			list_archives_->PopupMenu(&context);
 			e.Skip();
 		});
@@ -441,6 +449,11 @@ void LibraryPanel::bindEvents()
 				list_archives_->toggleColumnVisibility(e.GetId(), "LibraryPanelEntryCountVisible");
 				updateColumnWidths();
 			}
+			else if (e.GetId() == static_cast<int>(Column::MapCount))
+			{
+				list_archives_->toggleColumnVisibility(e.GetId(), "LibraryPanelMapCountVisible");
+				updateColumnWidths();
+			}
 			else
 				e.Skip();
 		});
@@ -463,6 +476,7 @@ void LibraryPanel::bindEvents()
 			case Column::LastOpened: saveStateInt("LibraryPanelLastOpenedWidth", width); break;
 			case Column::FileModified: saveStateInt("LibraryPanelFileModifiedWidth", width); break;
 			case Column::EntryCount: saveStateInt("LibraryPanelEntryCountWidth", width); break;
+			case Column::MapCount: saveStateInt("LibraryPanelMapCountWidth", width); break;
 			default: break;
 			}
 		});
@@ -491,6 +505,7 @@ void LibraryPanel::setupListColumns() const
 	appendTextColumn(Column::LastOpened, "Last Opened", "LastOpened");
 	appendTextColumn(Column::FileModified, "File Modified", "FileModified");
 	appendTextColumn(Column::EntryCount, "# Entries", "EntryCount");
+	appendTextColumn(Column::MapCount, "# Maps", "MapCount");
 }
 
 void LibraryPanel::updateColumnWidths()
@@ -505,6 +520,7 @@ void LibraryPanel::updateColumnWidths()
 	list_archives_->setColumnWidth(modelColumn(Column::LastOpened), getStateInt("LibraryPanelLastOpenedWidth"));
 	list_archives_->setColumnWidth(modelColumn(Column::FileModified), getStateInt("LibraryPanelFileModifiedWidth"));
 	list_archives_->setColumnWidth(modelColumn(Column::EntryCount), getStateInt("LibraryPanelEntryCountWidth"));
+	list_archives_->setColumnWidth(modelColumn(Column::MapCount), getStateInt("LibraryPanelMapCountWidth"));
 	Thaw();
 }
 

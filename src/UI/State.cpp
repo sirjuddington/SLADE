@@ -47,7 +47,9 @@ void ui::initStateProps()
 									  { "LibraryPanelFileModifiedVisible", true },
 									  { "LibraryPanelFileModifiedWidth", scalePx(200) },
 									  { "LibraryPanelEntryCountVisible", true },
-									  { "LibraryPanelEntryCountWidth", scalePx(50) } };
+									  { "LibraryPanelEntryCountWidth", scalePx(80) },
+									  { "LibraryPanelMapCountVisible", true },
+									  { "LibraryPanelMapCountWidth", scalePx(80) } };
 
 	if (auto sql = db::cacheQuery("init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?)", true))
 	{

@@ -64,13 +64,13 @@ public:
 	bool                     renameEntry(ArchiveEntry* entry, string_view name) override;
 
 	// Detection
-	MapDesc         mapDesc(ArchiveEntry* entry) override;
-	vector<MapDesc> detectMaps() override;
+	MapDesc         mapDesc(ArchiveEntry* entry) const override;
+	vector<MapDesc> detectMaps() const override;
 
 	// Search
-	ArchiveEntry*         findFirst(SearchOptions& options) override;
-	ArchiveEntry*         findLast(SearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
+	ArchiveEntry*         findFirst(SearchOptions& options) const override;
+	ArchiveEntry*         findLast(SearchOptions& options) const override;
+	vector<ArchiveEntry*> findAll(SearchOptions& options) const override;
 
 	// DirArchive-specific
 	void ignoreChangedEntries(const vector<DirEntryChange>& changes);

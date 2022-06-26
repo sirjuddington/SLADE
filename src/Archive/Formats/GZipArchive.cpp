@@ -284,7 +284,7 @@ bool GZipArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // Returns the entry if it matches the search criteria in [options], or null
 // otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
+ArchiveEntry* GZipArchive::findFirst(SearchOptions& options) const
 {
 	// Init search variables
 	strutil::upperIP(options.match_name);
@@ -325,7 +325,7 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* GZipArchive::findLast(SearchOptions& options)
+ArchiveEntry* GZipArchive::findLast(SearchOptions& options) const
 {
 	return findFirst(options);
 }
@@ -333,7 +333,7 @@ ArchiveEntry* GZipArchive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> GZipArchive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> GZipArchive::findAll(SearchOptions& options) const
 {
 	// Init search variables
 	vector<ArchiveEntry*> ret;

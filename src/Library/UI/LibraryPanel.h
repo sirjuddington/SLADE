@@ -26,6 +26,7 @@ namespace ui
 			LastOpened,
 			FileModified,
 			EntryCount,
+			MapCount,
 
 			_Count
 		};
@@ -39,6 +40,7 @@ namespace ui
 			time_t   last_opened   = 0;
 			time_t   last_modified = 0;
 			unsigned entry_count   = 0;
+			unsigned map_count     = 0;
 
 			LibraryListRow() = default;
 			LibraryListRow(database::Context& db, int64_t id);

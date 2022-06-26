@@ -36,6 +36,7 @@
 #include "Archive/Archive.h"
 #include "ArchiveEntry.h"
 #include "ArchiveFile.h"
+#include "ArchiveMap.h"
 #include "ArchiveUIConfig.h"
 #include "General/Database.h"
 #include "Utility/FileUtils.h"
@@ -187,6 +188,10 @@ int64_t library::writeArchiveInfo(const Archive& archive)
 		archive_file.id      = archiveFileId(archive_file.path);
 		auto new_archive_row = archive_file.id < 0;
 
+		// Keep last opened time if the row exists
+		if (!new_archive_row)
+			archive_file.last_opened = archiveFileLastOpened(archive_file.id);
+
 		// Write row to database
 		saveArchiveFile(archive_file);
 
@@ -201,6 +206,9 @@ int64_t library::writeArchiveInfo(const Archive& archive)
 		vector<ArchiveEntry*> all_entries;
 		archive.putEntryTreeAsList(all_entries);
 		rebuildEntries(archive_file.id, all_entries);
+
+		// Write maps to database
+		updateArchiveMaps(archive_file.id, archive);
 
 		// Finish up
 		archive.setLibraryId(archive_file.id);
@@ -235,6 +243,29 @@ void library::writeArchiveEntryInfo(const Archive& archive)
 	catch (SQLite::Exception& ex)
 	{
 		log::error("Error writing archive entry info to the library: {}", ex.what());
+	}
+}
+
+// -----------------------------------------------------------------------------
+// (Re)Writes all info for [archive]'s maps into the library
+// -----------------------------------------------------------------------------
+void library::writeArchiveMapInfo(const Archive& archive)
+{
+	// If it doesn't exist in the library need to add it
+	if (archive.libraryId() < 0)
+	{
+		writeArchiveInfo(archive);
+		return;
+	}
+
+	try
+	{
+		// Write maps to database
+		updateArchiveMaps(archive.libraryId(), archive);
+	}
+	catch (SQLite::Exception& ex)
+	{
+		log::error("Error writing archive map info to the library: {}", ex.what());
 	}
 }
 
@@ -308,7 +339,7 @@ vector<string> library::recentFiles(unsigned count)
 // This is safe to run in a background thread, and only one scan can be running
 // at any time
 // -----------------------------------------------------------------------------
-void library::scanArchivesInDir(string_view path, const vector<string>& ignore_ext)
+void library::scanArchivesInDir(string_view path, const vector<string>& ignore_ext, bool rebuild)
 {
 	if (lib_scan_running)
 	{
@@ -341,7 +372,7 @@ void library::scanArchivesInDir(string_view path, const vector<string>& ignore_e
 
 		// Check if the file exists in the library
 		auto lib_id = archiveFileId(filename);
-		if (lib_id >= 0)
+		if (lib_id >= 0 && !rebuild)
 		{
 			// Check if the file on disk hasn't been modified since it was last updated in the library
 			auto lib_file_modified = archiveFileLastModified(lib_id);
@@ -366,9 +397,11 @@ void library::scanArchivesInDir(string_view path, const vector<string>& ignore_e
 			}
 
 			auto id = readArchiveInfo(*archive);
-			if (id < 0)
+			if (id < 0 || rebuild)
 			{
-				log::info("Library Scan: Archive file doesn't exist in library, adding");
+				if (!rebuild)
+					log::info("Library Scan: Archive file doesn't exist in library, adding");
+
 				writeArchiveInfo(*archive);
 			}
 			else
@@ -561,7 +594,11 @@ CONSOLE_COMMAND(lib_scan, 1, true)
 			db::Context ctx{ db::programDatabasePath() };
 			db::registerThreadContext(ctx);
 
-			library::scanArchivesInDir(args[0], ignore_ext);
+			bool rebuild = false;
+			if (args.size() >= 2 && args[1] == "rebuild")
+				rebuild = true;
+
+			library::scanArchivesInDir(args[0], ignore_ext, rebuild);
 
 			db::deregisterThreadContexts();
 		});
