@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "ArchiveUIConfig.h"
 #include "General/Database.h"
-#include "General/UI.h"
 #include "UI/State.h"
 
 using namespace slade;
@@ -67,7 +66,7 @@ string insert_archive_ui_config =
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
-// ArchiveFileRow constructor
+// ArchiveUIConfigRow constructor
 // Reads existing data from the database. If a row with [archive_id] doesn't
 // exist in the database, the row archive_id will be set to -1
 // -----------------------------------------------------------------------------
@@ -102,7 +101,7 @@ ArchiveUIConfigRow::ArchiveUIConfigRow(db::Context& db, int64_t archive_id) : ar
 }
 
 // -----------------------------------------------------------------------------
-// ArchiveFileRow constructor
+// ArchiveUIConfigRow constructor
 // Initializes the row for [archive_id] with 'default' values taken from cvars
 // depending on [tree_view]
 // -----------------------------------------------------------------------------
@@ -250,8 +249,6 @@ bool library::saveArchiveUIConfig(const ArchiveUIConfigRow& row)
 {
 	if (row.archive_id < 0)
 		return false;
-
-	log::debug("Saving entry list config for archive {}", row.archive_id);
 
 	// Update/Insert
 	return db::rowIdExists("archive_ui_config", row.archive_id, "archive_id") ? row.update() : row.insert() >= 0;

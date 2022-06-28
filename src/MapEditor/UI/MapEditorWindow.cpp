@@ -1304,7 +1304,7 @@ bool MapEditorWindow::handleAction(string_view id)
 			RunDialog::Config cfg{ archive->filename() };
 			cfg.map_name = mdesc_current.name;
 			cfg.map_file = wad.filename();
-			dlg.run(cfg);
+			dlg.run(cfg, archive->libraryId());
 		}
 
 		return true;

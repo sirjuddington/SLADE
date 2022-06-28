@@ -11,6 +11,7 @@ class RunDialog : public SDialog
 {
 public:
 	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false, bool run_map = false);
+	RunDialog(wxWindow* parent, int64_t archive_lib_id);
 	~RunDialog() override;
 
 	struct Config
@@ -29,7 +30,7 @@ public:
 	wxString selectedExeDir() const;
 	wxString selectedExeId() const;
 	bool     start3dModeChecked() const;
-	void     run(const Config& cfg) const;
+	void     run(const Config& cfg, int64_t archive_lib_id = -1) const;
 
 private:
 	wxChoice*               choice_game_exes_  = nullptr;
@@ -47,6 +48,12 @@ private:
 	wxTextCtrl*             text_extra_params_ = nullptr;
 	wxCheckBox*             cb_start_3d_       = nullptr;
 	bool                    run_map_           = false;
+
+	void setup(
+		Archive* archive          = nullptr,
+		int64_t  archive_lib_id   = -1,
+		bool     show_start_3d_cb = false,
+		bool     run_map          = false);
 
 	// Events
 	void onBtnAddGame(wxCommandEvent& e);

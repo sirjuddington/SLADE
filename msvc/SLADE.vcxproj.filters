@@ -1047,6 +1047,9 @@
     <ClCompile Include="..\src\Library\ArchiveMap.cpp">
       <Filter>Library</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Library\ArchiveRunConfig.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -2004,6 +2007,9 @@
       <Filter>UI\Lists</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Library\ArchiveMap.h">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Library\ArchiveRunConfig.h">
       <Filter>Library</Filter>
     </ClInclude>
   </ItemGroup>

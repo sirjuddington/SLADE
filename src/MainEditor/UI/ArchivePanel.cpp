@@ -3366,7 +3366,7 @@ bool ArchivePanel::handleAction(string_view id)
 	{
 		RunDialog dlg(this, archive.get());
 		if (dlg.ShowModal() == wxID_OK)
-			dlg.run(RunDialog::Config{ archive->filename() });
+			dlg.run(RunDialog::Config{ archive->filename() }, archive->libraryId());
 
 		return true;
 	}

@@ -347,17 +347,19 @@ bool LibraryPanel::handleAction(string_view id)
 		wxDataViewItemArray selection;
 		list_archives_->GetSelections(selection);
 
-		string path;
+		string  path;
+		int64_t id = -1;
 		for (const auto& item : selection)
 			if (auto row = model_library_->rowForItem(item))
 			{
 				path = row->path;
+				id   = row->id;
 				break;
 			}
 
-		RunDialog dlg{ this, nullptr };
+		RunDialog dlg{ this, id };
 		if (dlg.ShowModal() == wxID_OK) // TODO: IWAD probably shouldn't be just the current base resource
-			dlg.run(RunDialog::Config{ path });
+			dlg.run(RunDialog::Config{ path }, id);
 
 		return true;
 	}
