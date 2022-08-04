@@ -138,6 +138,16 @@ entry_types
 		export_ext = "lmp";
 		category = "Maps";
 	}
+	
+	map_xglnodes3 : map_base
+	{
+		name = "Map GLNodes+ (Extended)";
+		match_name = "SSECTORS", "ZNODES", "XGLNODES";
+		format = "xgl3";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
 
 	map_nodes : map_base
 	{
