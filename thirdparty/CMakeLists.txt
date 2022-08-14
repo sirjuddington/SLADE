@@ -19,7 +19,13 @@ file(GLOB_RECURSE EXTERNAL_SOURCES
 	)
 
 # Add fmt
-add_subdirectory(fmt)
+option(USE_SYSTEM_FMT "Use system fmt library" OFF)
+if(USE_SYSTEM_FMT)
+	find_package(fmt REQUIRED)
+else()
+	add_subdirectory(fmt)
+	target_include_directories(fmt INTERFACE ${CMAKE_CURRENT_LIST_DIR}/fmt/include)
+endif()
 
 # Add lunasvg
 add_library(lunasvg STATIC)
@@ -29,5 +35,5 @@ add_subdirectory(lunasvg/3rdparty/software)
 add_subdirectory(lunasvg/3rdparty/plutovg)
 
 add_library(external STATIC ${EXTERNAL_SOURCES})
-target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt ${CMAKE_DL_LIBS})
+target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt::fmt ${CMAKE_DL_LIBS})
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
