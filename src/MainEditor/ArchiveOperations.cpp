@@ -1632,7 +1632,7 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 
 	if (found_duplicates.empty())
 	{
-		wxMessageBox("No duplicated textures exist");
+		wxMessageBox("No duplicated patches exist");
 		return false;
 	}
 
