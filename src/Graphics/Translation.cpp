@@ -231,7 +231,7 @@ TransRange* Translation::parseRange(string_view range)
 
 		// Add translation
 		const ColRGBA col_start{ static_cast<uint8_t>(sr), static_cast<uint8_t>(sg), static_cast<uint8_t>(sb) };
-		const ColRGBA col_end{ static_cast<uint8_t>(sr), static_cast<uint8_t>(sg), static_cast<uint8_t>(sb) };
+		const ColRGBA col_end{ static_cast<uint8_t>(er), static_cast<uint8_t>(eg), static_cast<uint8_t>(eb) };
 		if (reverse)
 			translations_.emplace_back(new TransRangeColour{ { o_end, o_start }, col_end, col_start });
 		else

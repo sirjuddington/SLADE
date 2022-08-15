@@ -29,7 +29,7 @@ public:
 		unsigned                 position = 0xFFFFFFFF,
 		ArchiveDir*              dir      = nullptr) override;
 	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
-	bool                     removeEntry(ArchiveEntry* entry) override;
+	bool                     removeEntry(ArchiveEntry* entry, bool set_deleted = true) override;
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;

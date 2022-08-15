@@ -203,7 +203,7 @@ entry_types
 	{
 		name = "Fading Mask";
 		icon = "gfx";
-		section = "fa";
+		section = "fa", "fades";
 		format = img_raw;
 		image_format = "raw_flat";
 		export_ext = "raw";
