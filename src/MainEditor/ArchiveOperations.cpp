@@ -447,7 +447,6 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 	if (count == 0)
 	{
 		wxMessageBox("No overridden entries exist");
-		return false;
 	}
 
 	wxString message = wxString::Format(
@@ -455,11 +454,139 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 		count,
 		(count > 1) ? "ies were" : "y was");
 
-	// Display list of deleted duplicate entries
+	// Display list of duplicate entries
 	ExtMessageDialog msg(theMainWindow, (count > 1) ? "Overridden Entries" : "Deleted Entry");
 	msg.setExt(overrides);
 	msg.setMessage(message);
 	msg.ShowModal();
+
+
+
+
+	// Find all texture entries
+	std::unordered_map<ArchiveEntry*, TextureXList> braTextureEntries;
+	std::unordered_multimap<string, std::pair<ArchiveEntry*, ArchiveEntry*>>  duplicate_texture_entries;
+	std::set<string>                                found_duplicate_textures;
+
+	Archive::SearchOptions pnamesopt;
+	pnamesopt.match_type = EntryType::fromId("pnames");
+
+	Archive::SearchOptions texturexopt;
+	texturexopt.match_type = EntryType::fromId("texturex");
+
+	Archive::SearchOptions zdtexturesopt;
+	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
+
+
+	auto bra_pnames = bra->findLast(pnamesopt);
+
+	// Load BRA patch table and BRA textures
+	PatchTable bra_ptable;
+	if (bra_pnames)
+	{
+		bra_ptable.loadPNAMES(bra_pnames);
+
+		// Load all BRA Texturex entries
+		for (ArchiveEntry* texturexentry : bra->findAll(texturexopt))
+		{
+			braTextureEntries[texturexentry].readTEXTUREXData(texturexentry, bra_ptable);
+		}
+	}
+
+	// Load BRA Zdoom Textures
+	for (ArchiveEntry* texturesentry : bra->findAll(zdtexturesopt))
+	{
+		braTextureEntries[texturesentry].readTEXTURESData(texturesentry);
+	}
+
+	// If we ended up not loading textures from base resource archive
+	if (!braTextureEntries.size())
+	{
+		log::error("Base resource archive has no texture entries to compare against");
+		return true;
+	}
+
+	// Find patch table in archive
+	auto pnames = archive->findLast(pnamesopt);
+
+	// Load patch table if we have it
+	PatchTable ptable;
+	if (pnames)
+		ptable.loadPNAMES(pnames);
+
+	auto processTextureList = [&found_duplicate_textures, 
+		&duplicate_texture_entries, 
+		&braTextureEntries](ArchiveEntry* textureEntry, TextureXList& textureList)
+	{
+		for (unsigned a = 0; a < textureList.textures().size(); a++)
+		{
+			CTexture* this_texture = textureList.texture(a);
+
+			for (auto const& iter : braTextureEntries)
+			{
+				int other_texture_index = iter.second.textureIndex(this_texture->name());
+
+				if (other_texture_index >= 0)
+				{
+					// Other texture with this name found
+					log::info(wxString::Format("Found Duplicate Texture: %s.", this_texture->name()));
+					found_duplicate_textures.insert(this_texture->name());
+					duplicate_texture_entries.emplace(this_texture->name(), std::make_pair(textureEntry, iter.first));
+				}
+			}
+		}
+	};
+
+	// Load textures
+	for (ArchiveEntry* textureEntry : archive->findAll(texturexopt))
+	{
+		TextureXList textureList;
+		textureList.readTEXTUREXData(textureEntry, ptable);
+
+		processTextureList(textureEntry, textureList);
+	}
+
+	for (ArchiveEntry* textureEntry : archive->findAll(zdtexturesopt))
+	{
+		TextureXList textureList;
+		textureList.readTEXTURESData(textureEntry);
+
+		processTextureList(textureEntry, textureList);
+	}
+
+	if (found_duplicate_textures.size())
+	{
+		wxString dups = "";
+
+		for (string duplicate_entry : found_duplicate_textures)
+		{
+			dups += wxString::Format("\n%s", duplicate_entry);
+
+			auto duplicated_entries_range = duplicate_texture_entries.equal_range(duplicate_entry);
+
+			for (auto entry_iter = duplicated_entries_range.first; entry_iter != duplicated_entries_range.second;
+				 ++entry_iter)
+			{
+				ArchiveEntry* duplicated_entry = entry_iter->second.first;
+				ArchiveEntry* bra_entry = entry_iter->second.second;
+				dups += wxString::Format("\n\tThis Archive Asset Path: %s%s", duplicated_entry->path(), duplicated_entry->name());
+				dups += wxString::Format("\n\tOther Archive Asset Path: %s%s", bra_entry->path(), bra_entry->name());
+			}
+		}
+
+		// Display list of duplicate entry names
+		ExtMessageDialog msg(theMainWindow, "Overridden Texture Entries");
+		msg.setExt(dups);
+		msg.setMessage("The following textures are overridden:");
+		msg.ShowModal();
+	}
+	else
+	{
+		wxMessageBox(
+			"Didn't find any textures overridden from the iwad",
+			"Overridden Texture Entries",
+			wxOK | wxCENTER | wxICON_INFORMATION);
+	}
 
 	return true;
 }
