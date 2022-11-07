@@ -398,6 +398,144 @@ void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 }
 
 // -----------------------------------------------------------------------------
+// Checks entries of the same name from the base resource archive. Also checks
+// texture definitions. This helps know what your archive overrides.
+// -----------------------------------------------------------------------------
+bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive) 
+{
+	// Do nothing if there is no base resource archive,
+	// or if the archive *is* the base resource archive.
+	auto bra = app::archiveManager().baseResourceArchive();
+	if (bra == nullptr || bra == archive || archive == nullptr)
+		return false;
+
+	// Get list of all entries in archive
+	vector<ArchiveEntry*> entries;
+	archive->putEntryTreeAsList(entries);
+
+	// Init search options
+	Archive::SearchOptions search;
+	ArchiveEntry*          other = nullptr;
+	wxString               overrides  = "";
+	size_t                 count = 0;
+
+	// Go through list
+	for (auto& entry : entries)
+	{
+		// Skip directory entries
+		if (entry->type() == EntryType::folderType())
+			continue;
+
+		// Skip markers
+		if (entry->type() == EntryType::mapMarkerType() || entry->size() == 0)
+			continue;
+
+		// Now, let's look for a counterpart in the IWAD
+		search.match_namespace = archive->detectNamespace(entry);
+		search.match_name      = entry->name();
+		other                  = bra->findLast(search);
+
+		// If there is one list it
+		if (other != nullptr)
+		{
+			++count;
+			overrides += wxString::Format("%s: %s\n", search.match_namespace, search.match_name);
+		}
+	}
+
+	// If no overrides exist, do nothing
+	if (count == 0)
+	{
+		wxMessageBox("No overridden entries exist");
+		return false;
+	}
+
+	wxString message = wxString::Format(
+		"The following %ld entr%s overridden from the base resource archive:",
+		count,
+		(count > 1) ? "ies were" : "y was");
+
+	// Display list of deleted duplicate entries
+	ExtMessageDialog msg(theMainWindow, (count > 1) ? "Overridden Entries" : "Deleted Entry");
+	msg.setExt(overrides);
+	msg.setMessage(message);
+	msg.ShowModal();
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Checks entries of the same name from the base resource archive. Also checks
+// texture definitions. This helps know what your archive overrides.
+// This is a ZDoom version that has additional behavior for checking across 
+// flats, patches, and other assets.
+// -----------------------------------------------------------------------------
+bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive) 
+{
+	// Do nothing if there is no base resource archive,
+	// or if the archive *is* the base resource archive.
+	auto bra = app::archiveManager().baseResourceArchive();
+	if (bra == nullptr || bra == archive || archive == nullptr)
+		return false;
+
+	// Get list of all entries in archive
+	vector<ArchiveEntry*> entries;
+	archive->putEntryTreeAsList(entries);
+
+	// Init search options
+	Archive::SearchOptions search;
+	ArchiveEntry*          other     = nullptr;
+	wxString               overrides = "";
+	size_t                 count     = 0;
+
+	// Go through list
+	for (auto& entry : entries)
+	{
+		// Skip directory entries
+		if (entry->type() == EntryType::folderType())
+			continue;
+
+		// Skip markers
+		if (entry->type() == EntryType::mapMarkerType() || entry->size() == 0)
+			continue;
+
+		// Now, let's look for a counterpart in the IWAD
+		search.match_namespace = archive->detectNamespace(entry);
+		search.match_name      = entry->name();
+		other                  = bra->findLast(search);
+
+		// If there is one list it
+		if (other != nullptr)
+		{
+			++count;
+			overrides += wxString::Format("%s: %s\n", search.match_namespace, search.match_name);
+		}
+	}
+
+	// If no overrides exist, do nothing
+	if (count == 0)
+	{
+		wxMessageBox("No overridden entries exist");
+		return false;
+	}
+
+	wxString message = wxString::Format(
+		"The following %ld entr%s overridden from the base resource archive:",
+		count,
+		(count > 1) ? "ies were" : "y was");
+
+	// Display list of deleted duplicate entries
+	ExtMessageDialog msg(theMainWindow, (count > 1) ? "Overridden Entries" : "Deleted Entry");
+	msg.setExt(overrides);
+	msg.setMessage(message);
+	msg.ShowModal();
+
+	// Now display textures
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
 // Checks [archive] for multiple entries with the same data, and displays a list
 // of the duplicate entries' names if any are found
 // -----------------------------------------------------------------------------
