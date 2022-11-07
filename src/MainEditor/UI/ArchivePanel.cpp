@@ -3201,7 +3201,7 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_check_iwadoverrides")
 		archiveoperations::checkOverriddenEntriesInIWAD(archive.get());
 
-	else if (id == "arch_check_zdoomiwadoverrides")
+	else if (id == "arch_check_zdoomiwadtexoverrides")
 		archiveoperations::checkZDoomOverriddenEntriesInIWAD(archive.get());
 
 	// Archive->Maintenance->Replace in Maps
@@ -3449,7 +3449,7 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 	SAction::fromId("arch_clean_zdoom_textures")->addToMenu(menu_clean);
 	SAction::fromId("arch_clean_iwaddupes")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_iwadoverrides")->addToMenu(menu_clean);
-	SAction::fromId("arch_check_zdoomiwadoverrides")->addToMenu(menu_clean);
+	SAction::fromId("arch_check_zdoomiwadtexoverrides")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_duplicates")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_zdoom_texture_duplicates")->addToMenu(menu_clean);

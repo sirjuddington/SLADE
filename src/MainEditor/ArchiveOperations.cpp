@@ -570,7 +570,7 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 				ArchiveEntry* duplicated_entry = entry_iter->second.first;
 				ArchiveEntry* bra_entry = entry_iter->second.second;
 				dups += wxString::Format("\n\tThis Archive Asset Path: %s%s", duplicated_entry->path(), duplicated_entry->name());
-				dups += wxString::Format("\n\tOther Archive Asset Path: %s%s", bra_entry->path(), bra_entry->name());
+				dups += wxString::Format("\n\Iwad Asset Path: %s%s", bra_entry->path(), bra_entry->name());
 			}
 		}
 
@@ -605,59 +605,221 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 	if (bra == nullptr || bra == archive || archive == nullptr)
 		return false;
 
-	// Get list of all entries in archive
-	vector<ArchiveEntry*> entries;
-	archive->putEntryTreeAsList(entries);
+	std::unordered_multimap<string, ArchiveEntry*> archiveTexEntries;
+	std::unordered_multimap<string, ArchiveEntry*> overiddenBraTexEntries;
+	std::set<string>                               overiddenBraTexNames;
 
-	// Init search options
-	Archive::SearchOptions search;
-	ArchiveEntry*          other     = nullptr;
-	wxString               overrides = "";
-	size_t                 count     = 0;
-
-	// Go through list
-	for (auto& entry : entries)
+	auto process_entries = [&archiveTexEntries](const vector<ArchiveEntry*> archive_entries)
 	{
-		// Skip directory entries
-		if (entry->type() == EntryType::folderType())
-			continue;
-
-		// Skip markers
-		if (entry->type() == EntryType::mapMarkerType() || entry->size() == 0)
-			continue;
-
-		// Now, let's look for a counterpart in the IWAD
-		search.match_namespace = archive->detectNamespace(entry);
-		search.match_name      = entry->name();
-		other                  = bra->findLast(search);
-
-		// If there is one list it
-		if (other != nullptr)
+		for (auto& archive_entry : archive_entries)
 		{
-			++count;
-			overrides += wxString::Format("%s: %s\n", search.match_namespace, search.match_name);
+			// Skip markers
+			if (archive_entry->size() == 0)
+				continue;
+
+			string entry_name{ archive_entry->upperNameNoExt() };
+
+			archiveTexEntries.emplace(entry_name, archive_entry);
+		}
+	};
+
+	auto process_texture_list =
+		[&archiveTexEntries](ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
+	{
+		for (unsigned texture_index = 0; texture_index < texture_list.size(); texture_index++)
+		{
+			// Skip markers
+			if (texture_archive_entry->size() == 0)
+				continue;
+
+			auto texture = texture_list.texture(texture_index);
+
+			string texture_name = string(texture->name());
+			texture_name        = strutil::upperIP(texture_name);
+
+			archiveTexEntries.emplace(texture_name, texture_archive_entry);
+		}
+	};
+
+	// Find all textures
+	{
+		Archive::SearchOptions search_opt;
+		search_opt.match_namespace = "textures";
+		process_entries(archive->findAll(search_opt));
+	}
+
+	// Find all flats
+	{
+		Archive::SearchOptions search_opt;
+		search_opt.match_namespace = "flats";
+		process_entries(archive->findAll(search_opt));
+	}
+
+	Archive::SearchOptions pnames_opt;
+	pnames_opt.match_type = EntryType::fromId("pnames");
+	auto pnames           = archive->findLast(pnames_opt);
+
+	// Load patch table
+	if (pnames)
+	{
+		PatchTable ptable;
+		ptable.loadPNAMES(pnames);
+
+		// Load all Texturex entries
+		Archive::SearchOptions texturexopt;
+		texturexopt.match_type = EntryType::fromId("texturex");
+
+		for (ArchiveEntry* texturexentry : archive->findAll(texturexopt))
+		{
+			TextureXList texture_list;
+			texture_list.readTEXTUREXData(texturexentry, ptable, true);
+
+			process_texture_list(texturexentry, texture_list);
 		}
 	}
 
-	// If no overrides exist, do nothing
-	if (count == 0)
+	// Load all zdtextures entries
 	{
-		wxMessageBox("No overridden entries exist");
+		Archive::SearchOptions zdtexturesopt;
+		zdtexturesopt.match_type = EntryType::fromId("zdtextures");
+
+		for (ArchiveEntry* texturesentry : archive->findAll(zdtexturesopt))
+		{
+			TextureXList texture_list;
+			texture_list.readTEXTURESData(texturesentry);
+
+			process_texture_list(texturesentry, texture_list);
+		}
+	}
+
+	auto process_bra_entries = [&archiveTexEntries, &overiddenBraTexEntries, &overiddenBraTexNames](
+								   const vector<ArchiveEntry*> archive_entries)
+	{
+		for (auto& archive_entry : archive_entries)
+		{
+			// Skip markers
+			if (archive_entry->size() == 0)
+				continue;
+
+			string entry_name{ archive_entry->upperNameNoExt() };
+
+			if (archiveTexEntries.find(entry_name) != archiveTexEntries.end())
+			{
+				overiddenBraTexEntries.emplace(entry_name, archive_entry);
+				overiddenBraTexNames.insert(entry_name);
+			}
+		}
+	};
+
+	auto process_bra_texture_list = [&archiveTexEntries, &overiddenBraTexEntries, &overiddenBraTexNames](
+										ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
+	{
+		for (unsigned texture_index = 0; texture_index < texture_list.size(); texture_index++)
+		{
+			// Skip markers
+			if (texture_archive_entry->size() == 0)
+				continue;
+
+			auto texture = texture_list.texture(texture_index);
+
+			string texture_name = string(texture->name());
+			texture_name        = strutil::upperIP(texture_name);
+
+			if (archiveTexEntries.find(texture_name) != archiveTexEntries.end())
+			{
+				overiddenBraTexEntries.emplace(texture_name, texture_archive_entry);
+				overiddenBraTexNames.insert(texture_name);
+			}
+		}
+	};
+
+	// Find all textures
+	{
+		Archive::SearchOptions search_opt;
+		search_opt.match_namespace = "textures";
+		process_bra_entries(bra->findAll(search_opt));
+	}
+
+	// Find all flats
+	{
+		Archive::SearchOptions search_opt;
+		search_opt.match_namespace = "flats";
+		process_bra_entries(bra->findAll(search_opt));
+	}
+
+	auto braPnames           = bra->findLast(pnames_opt);
+
+	// Load patch table
+	if (braPnames)
+	{
+		PatchTable ptable;
+		ptable.loadPNAMES(braPnames);
+
+		// Load all Texturex entries
+		Archive::SearchOptions texturexopt;
+		texturexopt.match_type = EntryType::fromId("texturex");
+
+		for (ArchiveEntry* texturexentry : bra->findAll(texturexopt))
+		{
+			TextureXList texture_list;
+			texture_list.readTEXTUREXData(texturexentry, ptable, true);
+
+			process_bra_texture_list(texturexentry, texture_list);
+		}
+	}
+
+	// Load all zdtextures entries
+	{
+		Archive::SearchOptions zdtexturesopt;
+		zdtexturesopt.match_type = EntryType::fromId("zdtextures");
+
+		for (ArchiveEntry* texturesentry : bra->findAll(zdtexturesopt))
+		{
+			TextureXList texture_list;
+			texture_list.readTEXTURESData(texturesentry);
+
+			process_bra_texture_list(texturesentry, texture_list);
+		}
+	}
+
+	if (overiddenBraTexEntries.empty())
+	{
+		wxMessageBox("No overridden textures exist");
 		return false;
 	}
 
-	wxString message = wxString::Format(
-		"The following %ld entr%s overridden from the base resource archive:",
-		count,
-		(count > 1) ? "ies were" : "y was");
+	wxString dups = "";
 
-	// Display list of deleted duplicate entries
-	ExtMessageDialog msg(theMainWindow, (count > 1) ? "Overridden Entries" : "Deleted Entry");
-	msg.setExt(overrides);
-	msg.setMessage(message);
+	for (string overriddenTexName : overiddenBraTexNames)
+	{
+		dups += wxString::Format("\n%s", overriddenTexName);
+
+		{
+			auto entries_range = archiveTexEntries.equal_range(overriddenTexName);
+
+			for (auto entry_iter = entries_range.first; entry_iter != entries_range.second; ++entry_iter)
+			{
+				ArchiveEntry* entry = entry_iter->second;
+				dups += wxString::Format("\n\tThis Archive Asset Path: %s%s", entry->path(), entry->name());
+			}
+		}
+
+		{
+			auto entries_range = overiddenBraTexEntries.equal_range(overriddenTexName);
+
+			for (auto entry_iter = entries_range.first; entry_iter != entries_range.second; ++entry_iter)
+			{
+				ArchiveEntry* entry = entry_iter->second;
+				dups += wxString::Format("\n\tIwad Asset Path: %s%s", entry->path(), entry->name());
+			}
+		}
+	}
+
+	// Display list of duplicate entry names
+	ExtMessageDialog msg(theMainWindow, "Duplicate Entries");
+	msg.setExt(dups);
+	msg.setMessage("The following entry data are duplicated:");
 	msg.ShowModal();
-
-	// Now display textures
 
 	return true;
 }
