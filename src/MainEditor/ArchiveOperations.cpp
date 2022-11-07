@@ -623,6 +623,17 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		}
 	};
 
+	auto process_patch_table = [&archiveTexEntries](ArchiveEntry* pnames_entry, const PatchTable& patch_table)
+	{
+		for (int patchIndex = 0; patchIndex < patch_table.nPatches(); ++patchIndex) 
+		{
+			string patch_name = string(patch_table.patchName(patchIndex));
+			patch_name        = strutil::upperIP(patch_name);
+
+			archiveTexEntries.emplace(patch_name, pnames_entry);
+		}
+	};
+
 	auto process_texture_list =
 		[&archiveTexEntries](ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
 	{
@@ -664,6 +675,8 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 	{
 		PatchTable ptable;
 		ptable.loadPNAMES(pnames);
+
+		process_patch_table(pnames, ptable);
 
 		// Load all Texturex entries
 		Archive::SearchOptions texturexopt;
@@ -711,6 +724,27 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		}
 	};
 
+	auto process_bra_patch_table = [&archiveTexEntries, &overiddenBraTexEntries, &overiddenBraTexNames](
+									   ArchiveEntry* pnames_entry, const PatchTable& patch_table)
+	{
+		for (int patchIndex = 0; patchIndex < patch_table.nPatches(); ++patchIndex)
+		{
+			string patch_name = string(patch_table.patchName(patchIndex));
+			patch_name        = strutil::upperIP(patch_name);
+
+			archiveTexEntries.emplace(patch_name, pnames_entry);
+
+			auto iter = archiveTexEntries.find(patch_name);
+
+			// If the pnames ptr is the same, we loaded pnames from the bra
+			if (iter != archiveTexEntries.end() && iter->second != pnames_entry)
+			{
+				overiddenBraTexEntries.emplace(patch_name, pnames_entry);
+				overiddenBraTexNames.insert(patch_name);
+			}
+		}
+	};
+
 	auto process_bra_texture_list = [&archiveTexEntries, &overiddenBraTexEntries, &overiddenBraTexNames](
 										ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
 	{
@@ -754,6 +788,8 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 	{
 		PatchTable ptable;
 		ptable.loadPNAMES(braPnames);
+
+		process_bra_patch_table(braPnames, ptable);
 
 		// Load all Texturex entries
 		Archive::SearchOptions texturexopt;
@@ -1901,6 +1937,23 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 		}
 	};
 
+	auto process_patch_table =
+		[&found_entries, &found_duplicates](ArchiveEntry* pnames_entry, const PatchTable& patch_table)
+	{
+		for (int patchIndex = 0; patchIndex < patch_table.nPatches(); ++patchIndex)
+		{
+			string patch_name = string(patch_table.patchName(patchIndex));
+			patch_name        = strutil::upperIP(patch_name);
+
+			if (found_entries.find(patch_name) != found_entries.end())
+			{
+				found_duplicates.insert(patch_name);
+			}
+
+			found_entries.emplace(patch_name, pnames_entry);
+		}
+	};
+
 	auto process_texture_list = [&found_entries, &found_duplicates](
 									ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
 	{
@@ -1947,6 +2000,8 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 	{
 		PatchTable ptable;
 		ptable.loadPNAMES(pnames);
+
+		process_patch_table(pnames, ptable);
 
 		// Load all Texturex entries
 		Archive::SearchOptions texturexopt;
