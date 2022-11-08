@@ -529,7 +529,7 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 				if (other_texture_index >= 0)
 				{
 					// Other texture with this name found
-					log::info(wxString::Format("Found Duplicate Texture: %s.", this_texture->name()));
+					log::info(wxString::Format("Found Overridden Texture: %s.", this_texture->name()));
 					found_duplicate_textures.insert(this_texture->name());
 					duplicate_texture_entries.emplace(this_texture->name(), std::make_pair(textureEntry, iter.first));
 				}
@@ -736,7 +736,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 			auto iter = archiveTexEntries.find(patch_name);
 
-			// If the pnames ptr is the same, we loaded pnames from the bra
+			// If the pnames ptr is the same, we loaded pnames from the bra, so don't mark it as overridden
 			if (iter != archiveTexEntries.end() && iter->second != pnames_entry)
 			{
 				overiddenBraTexEntries.emplace(patch_name, pnames_entry);
@@ -836,6 +836,13 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 			for (auto entry_iter = entries_range.first; entry_iter != entries_range.second; ++entry_iter)
 			{
 				ArchiveEntry* entry = entry_iter->second;
+
+				// skip BRA pnames, we don't want to print that as if it's our archive's asset
+				if (entry == braPnames)
+				{
+					continue;
+				}
+
 				dups += wxString::Format("\n\tThis Archive Asset Path: %s%s", entry->path(), entry->name());
 			}
 		}
@@ -852,9 +859,9 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 	}
 
 	// Display list of duplicate entry names
-	ExtMessageDialog msg(theMainWindow, "Duplicate Entries");
+	ExtMessageDialog msg(theMainWindow, "iWad Overridden Entries");
 	msg.setExt(dups);
-	msg.setMessage("The following entry data are duplicated:");
+	msg.setMessage("The following entry data is overridden from the iWad:");
 	msg.ShowModal();
 
 	return true;
