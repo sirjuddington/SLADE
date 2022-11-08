@@ -1021,14 +1021,6 @@ shared_ptr<ArchiveEntry> WolfArchive::addEntry(shared_ptr<ArchiveEntry> entry, s
 }
 
 // -----------------------------------------------------------------------------
-// Wolf chunks have no names, so renaming is pointless.
-// -----------------------------------------------------------------------------
-bool WolfArchive::renameEntry(ArchiveEntry* entry, string_view name)
-{
-	return false;
-}
-
-// -----------------------------------------------------------------------------
 // Writes the dat archive to a MemChunk
 // Returns true if successful, false otherwise [Not implemented]
 // -----------------------------------------------------------------------------

@@ -36,7 +36,7 @@ public:
 	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveDir* dir = nullptr) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string_view name) override;
+	bool renameEntry(ArchiveEntry* entry, string_view name, bool force = false) override;
 
 	// Detection
 	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override;

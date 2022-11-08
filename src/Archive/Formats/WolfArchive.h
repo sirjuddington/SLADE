@@ -37,7 +37,7 @@ public:
 	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string_view name) override;
+	bool renameEntry(ArchiveEntry* entry, string_view name, bool force = false) override { return false; }
 
 	static bool isWolfArchive(MemChunk& mc);
 	static bool isWolfArchive(const string& filename);

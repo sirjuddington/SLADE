@@ -361,14 +361,14 @@ bool DatArchive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 // -----------------------------------------------------------------------------
 // Override of Archive::renameEntry to update namespaces if needed
 // -----------------------------------------------------------------------------
-bool DatArchive::renameEntry(ArchiveEntry* entry, string_view name)
+bool DatArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
 
 	// Do default rename
-	bool ok = Archive::renameEntry(entry, name);
+	bool ok = Archive::renameEntry(entry, name, force);
 
 	if (ok)
 	{

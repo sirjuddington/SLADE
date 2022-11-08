@@ -127,7 +127,7 @@ public:
 	virtual bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveDir* dir = nullptr);
 
 	// Entry modification
-	virtual bool renameEntry(ArchiveEntry* entry, string_view name);
+	virtual bool renameEntry(ArchiveEntry* entry, string_view name, bool force = false);
 	virtual bool revertEntry(ArchiveEntry* entry);
 
 	// Detection

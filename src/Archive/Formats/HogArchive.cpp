@@ -380,10 +380,10 @@ shared_ptr<ArchiveEntry> HogArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // -----------------------------------------------------------------------------
 // Override of Archive::renameEntry to update entry encryption info
 // -----------------------------------------------------------------------------
-bool HogArchive::renameEntry(ArchiveEntry* entry, string_view name)
+bool HogArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
 	// Do default rename
-	if (Archive::renameEntry(entry, name))
+	if (Archive::renameEntry(entry, name, force))
 	{
 		// Update encode status
 		if (shouldEncodeTxb(entry->name()))

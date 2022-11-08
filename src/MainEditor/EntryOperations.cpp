@@ -154,7 +154,7 @@ bool entryoperations::rename(const vector<ArchiveEntry*>& entries, Archive* arch
 					fn.setFileName(filename); // Change name
 
 					// Rename in archive
-					if (!archive->renameEntry(entry, fn.fileName()))
+					if (!archive->renameEntry(entry, fn.fileName(), true))
 						wxMessageBox(
 							wxString::Format("Unable to rename entry %s: %s", entries[a]->name(), global::error),
 							"Rename Entry",
