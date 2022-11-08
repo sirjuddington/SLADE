@@ -609,6 +609,12 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 	std::unordered_multimap<string, ArchiveEntry*> overiddenBraTexEntries;
 	std::set<string>                               overiddenBraTexNames;
 
+	// Load BRA pnames
+	Archive::SearchOptions pnames_opt;
+	pnames_opt.match_type = EntryType::fromId("pnames");
+
+	auto braPnames = bra->findLast(pnames_opt);
+
 	auto process_entries = [&archiveTexEntries](const vector<ArchiveEntry*> archive_entries)
 	{
 		for (auto& archive_entry : archive_entries)
@@ -666,8 +672,6 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		process_entries(archive->findAll(search_opt));
 	}
 
-	Archive::SearchOptions pnames_opt;
-	pnames_opt.match_type = EntryType::fromId("pnames");
 	auto pnames           = archive->findLast(pnames_opt);
 
 	// Load patch table
@@ -676,7 +680,11 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		PatchTable ptable;
 		ptable.loadPNAMES(pnames);
 
-		process_patch_table(pnames, ptable);
+		// Don't process the patch table if we loaded it from the iWad
+		if (pnames != braPnames) 
+		{
+			process_patch_table(pnames, ptable);
+		}
 
 		// Load all Texturex entries
 		Archive::SearchOptions texturexopt;
@@ -705,7 +713,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		}
 	}
 
-	auto process_bra_entries = [&archiveTexEntries, &overiddenBraTexEntries, &overiddenBraTexNames](
+	auto process_bra_entries = [&archiveTexEntries, &overiddenBraTexEntries, &overiddenBraTexNames, &braPnames](
 								   const vector<ArchiveEntry*> archive_entries)
 	{
 		for (auto& archive_entry : archive_entries)
@@ -716,7 +724,10 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 			string entry_name{ archive_entry->upperNameNoExt() };
 
-			if (archiveTexEntries.find(entry_name) != archiveTexEntries.end())
+			auto iter = archiveTexEntries.find(entry_name);
+
+			// If the pnames ptr is the same, we loaded pnames from the bra, so don't mark it as overridden
+			if (iter != archiveTexEntries.end() && iter->second != braPnames)
 			{
 				overiddenBraTexEntries.emplace(entry_name, archive_entry);
 				overiddenBraTexNames.insert(entry_name);
@@ -745,7 +756,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		}
 	};
 
-	auto process_bra_texture_list = [&archiveTexEntries, &overiddenBraTexEntries, &overiddenBraTexNames](
+	auto process_bra_texture_list = [&archiveTexEntries, &overiddenBraTexEntries, &overiddenBraTexNames, &braPnames](
 										ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
 	{
 		for (unsigned texture_index = 0; texture_index < texture_list.size(); texture_index++)
@@ -759,7 +770,11 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 			string texture_name = string(texture->name());
 			texture_name        = strutil::upperIP(texture_name);
 
-			if (archiveTexEntries.find(texture_name) != archiveTexEntries.end())
+			auto iter = archiveTexEntries.find(texture_name);
+
+			// If the duplicate is the bra pnames, don't mark it as overridden
+			if (iter != archiveTexEntries.end()
+				&& iter->second != braPnames)
 			{
 				overiddenBraTexEntries.emplace(texture_name, texture_archive_entry);
 				overiddenBraTexNames.insert(texture_name);
@@ -780,8 +795,6 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		search_opt.match_namespace = "flats";
 		process_bra_entries(bra->findAll(search_opt));
 	}
-
-	auto braPnames           = bra->findLast(pnames_opt);
 
 	// Load patch table
 	if (braPnames)
