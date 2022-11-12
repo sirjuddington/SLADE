@@ -11,7 +11,7 @@ z_animdefs {
 	keywords = {
 		texture, flat, tics, rand, range, fit, switch, sound, animateddoor,
 		pic, warp, warp2, on, off, opensound, closesound, cameratexture, worldpanning,
-		notrim
+		notrim, canvastexture
 	}
 
 	constants = {
@@ -351,13 +351,14 @@ z_modeldef {
 	keywords = {
 		MODEL, PATH, SKIN, SCALE, FRAME, FRAMEINDEX,
 		Rotation-Speed, Rotation-Vector, Rotation-Center, 
-		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin
+		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin,
+		Animation
 	}
 
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
 		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL, DONTCULLBACKFACES,
-		SCALEWEAPONFOV
+		SCALEWEAPONFOV, MODELSAREATTACHMENTS
 	}
 }
 
