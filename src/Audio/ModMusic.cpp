@@ -7,7 +7,7 @@
 // Web:         http://slade.mancubus.net
 // Filename:    ModMusic.cpp
 // Description: ModMusic class, an SFML sound stream class to play mod music
-//              using DUMB
+//              using XMP
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -32,18 +32,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ModMusic.h"
-#include "thirdparty/dumb/dumb.h"
+#include "thirdparty/libxmp/xmp.h"
 
 using namespace slade;
 using namespace audio;
-
-
-// -----------------------------------------------------------------------------
-//
-// Variables
-//
-// -----------------------------------------------------------------------------
-bool ModMusic::init_done_ = false;
 
 
 // -----------------------------------------------------------------------------
@@ -66,23 +58,23 @@ ModMusic::~ModMusic()
 // -----------------------------------------------------------------------------
 bool ModMusic::openFromFile(const string& filename)
 {
-	// Init DUMB if needed
-	if (!init_done_)
-		initDumb();
-
 	// Close current module if any
-	close();
+	if (xmp_player_)
+	    close();
+
+    xmp_player_ = xmp_create_context();
 
 	// Load module file
-	dumb_module_ = dumb_load_any(filename.c_str(), 0, 0);
-	if (dumb_module_ != nullptr)
+	if (xmp_load_module(xmp_player_, filename.c_str()) == 0)
 	{
+	    xmp_start_player(xmp_player_, 44100, 0);
 		initialize(2, 44100);
 		return true;
 	}
 	else
 	{
 		log::error(fmt::format("Failed to load module music file \"{}\"", filename.c_str()));
+		xmp_free_context(xmp_player_);
 		return false;
 	}
 }
@@ -92,24 +84,23 @@ bool ModMusic::openFromFile(const string& filename)
 // -----------------------------------------------------------------------------
 bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 {
-	// Init DUMB if needed
-	if (!init_done_)
-		initDumb();
-
 	// Close current module if any
-	close();
+	if (xmp_player_)
+	    close();
+
+    xmp_player_ = xmp_create_context();
 
 	// Load module file
-	dumb_module_ = dumb_read_any(dumbfile_open_memory((const char*)data, size), 0, 0);
-	if (dumb_module_ != nullptr)
+	if (xmp_load_module_from_memory(xmp_player_, data, size) == 0)
 	{
+	    xmp_start_player(xmp_player_, 44100, 0);
 		initialize(2, 44100);
-		dumb_player_ = duh_start_sigrenderer(dumb_module_, 0, 2, 0);
 		return true;
 	}
 	else
 	{
 		log::error("Failed to load module music data");
+		xmp_free_context(xmp_player_);
 		return false;
 	}
 }
@@ -119,7 +110,15 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 // -----------------------------------------------------------------------------
 sf::Time ModMusic::duration() const
 {
-	return sf::seconds(static_cast<float>(duh_get_length(dumb_module_) / 65536.f));
+    xmp_module_info *track_info = new xmp_module_info;
+    xmp_get_module_info(xmp_player_, track_info);
+    int duration = 0;
+    for (int i=0; i < track_info->num_sequences; i++)
+    {
+        duration += track_info->seq_data[i].duration;
+    }
+    delete track_info;
+	return sf::milliseconds(duration);
 }
 
 // -----------------------------------------------------------------------------
@@ -127,15 +126,12 @@ sf::Time ModMusic::duration() const
 // -----------------------------------------------------------------------------
 void ModMusic::close()
 {
-	if (dumb_player_ != nullptr)
+	if (xmp_player_ != nullptr)
 	{
-		duh_end_sigrenderer(dumb_player_);
-		dumb_player_ = nullptr;
-	}
-	if (dumb_module_ != nullptr)
-	{
-		unload_duh(dumb_module_);
-		dumb_module_ = nullptr;
+		xmp_end_player(xmp_player_);
+		xmp_release_module(xmp_player_);
+		xmp_free_context(xmp_player_);
+		xmp_player_ = nullptr;
 	}
 }
 
@@ -144,9 +140,7 @@ void ModMusic::close()
 // -----------------------------------------------------------------------------
 void ModMusic::onSeek(sf::Time timeOffset)
 {
-	long pos     = static_cast<long>(timeOffset.asSeconds() * 65536);
-	dumb_player_ = duh_start_sigrenderer(dumb_module_, 0, 2, pos);
-	// dumb_it_set_loop_callback(duh_get_it_sigrenderer(dumb_player), dumb_it_callback_terminate, NULL);
+	xmp_seek_time(xmp_player_, timeOffset.asMilliseconds());
 }
 
 // -----------------------------------------------------------------------------
@@ -154,17 +148,8 @@ void ModMusic::onSeek(sf::Time timeOffset)
 // -----------------------------------------------------------------------------
 bool ModMusic::onGetData(Chunk& data)
 {
-	duh_render(dumb_player_, 16, 0, 1.0f, (65536.0f / 44100.0f), 44100 / 2, samples_);
+	xmp_play_buffer(xmp_player_, samples_, 44100 * sizeof(sf::Int16), 1);
 	data.samples     = samples_;
 	data.sampleCount = 44100;
 	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Initialises the DUMB library
-// -----------------------------------------------------------------------------
-void ModMusic::initDumb()
-{
-	dumb_register_stdfiles();
-	init_done_ = true;
 }

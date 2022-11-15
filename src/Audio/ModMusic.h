@@ -2,9 +2,6 @@
 
 #include <SFML/Audio.hpp>
 
-struct DUH;
-struct DUH_SIGRENDERER;
-
 namespace slade::audio
 {
 class ModMusic : public sf::SoundStream
@@ -17,7 +14,7 @@ public:
 	bool     loadFromMemory(const uint8_t* data, const uint32_t size);
 	sf::Time duration() const;
 
-	static void initDumb();
+	static void initXMP();
 
 private:
 	void close();
@@ -25,9 +22,6 @@ private:
 	void onSeek(sf::Time timeOffset) override;
 
 	sf::Int16        samples_[44100]{};
-	DUH*             dumb_module_ = nullptr;
-	DUH_SIGRENDERER* dumb_player_ = nullptr;
-
-	static bool init_done_;
+	char*            xmp_player_ = nullptr;
 };
 } // namespace slade::audio
