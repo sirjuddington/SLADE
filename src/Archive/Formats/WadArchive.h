@@ -36,7 +36,7 @@ public:
 	bool                     removeEntry(ArchiveEntry* entry, bool set_deleted = true) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string_view name) override;
+	bool renameEntry(ArchiveEntry* entry, string_view name, bool force = false) override;
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;

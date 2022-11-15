@@ -1450,6 +1450,216 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	app::archiveManager().closeArchive(archive);
 }
 
+bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive) 
+{
+	std::unordered_multimap<string, ArchiveEntry*> found_entries;
+	std::set<string> found_duplicates;
+
+	auto process_entries = [&found_entries, &found_duplicates](const vector<ArchiveEntry*> archive_entries)
+	{
+		for (auto& archive_entry : archive_entries)
+		{
+			// Skip markers
+			if (archive_entry->size() == 0)
+				continue;
+
+			string entry_name{archive_entry->upperNameNoExt()};
+
+			if (found_entries.find(entry_name) != found_entries.end())
+			{
+				found_duplicates.insert(entry_name);
+			}
+
+			found_entries.emplace(entry_name, archive_entry);
+		}
+	};
+
+	auto process_texture_list = [&found_entries, &found_duplicates](
+									ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
+	{
+		for (unsigned texture_index = 0; texture_index < texture_list.size(); texture_index++)
+		{
+			// Skip markers
+			if (texture_archive_entry->size() == 0)
+				continue;
+
+			auto texture = texture_list.texture(texture_index);
+
+			string texture_name = string(texture->name());
+			texture_name = strutil::upperIP(texture_name);
+
+			if (found_entries.find(texture_name) != found_entries.end())
+			{
+				found_duplicates.insert(texture_name);
+			}
+
+			found_entries.emplace(texture_name, texture_archive_entry);
+		}
+	};
+
+	// Find all textures
+	{ 
+		Archive::SearchOptions search_opt;
+		search_opt.match_namespace = "textures";
+		process_entries(archive->findAll(search_opt));
+	}
+
+	// Find all flats
+	{
+		Archive::SearchOptions search_opt;
+		search_opt.match_namespace = "flats";
+		process_entries(archive->findAll(search_opt));
+	}
+
+	Archive::SearchOptions pnames_opt;
+	pnames_opt.match_type = EntryType::fromId("pnames");
+	auto pnames           = archive->findLast(pnames_opt);
+
+	// Load patch table	
+	if (pnames)
+	{
+		PatchTable ptable;
+		ptable.loadPNAMES(pnames);
+
+		// Load all Texturex entries
+		Archive::SearchOptions texturexopt;
+		texturexopt.match_type = EntryType::fromId("texturex");
+
+		for (ArchiveEntry* texturexentry : archive->findAll(texturexopt))
+		{
+			TextureXList texture_list;
+			texture_list.readTEXTUREXData(texturexentry, ptable, true);
+
+			process_texture_list(texturexentry, texture_list);
+		}
+	}
+
+	// Load all zdtextures entries
+	{
+		Archive::SearchOptions zdtexturesopt;
+		zdtexturesopt.match_type = EntryType::fromId("zdtextures");
+
+		for (ArchiveEntry* texturesentry : archive->findAll(zdtexturesopt))
+		{
+			TextureXList texture_list;
+			texture_list.readTEXTURESData(texturesentry);
+
+			process_texture_list(texturesentry, texture_list);
+		}
+	}
+
+	if (found_duplicates.empty()) 
+	{
+		wxMessageBox("No duplicated textures exist");
+		return false;
+	}
+
+	wxString dups = "";
+
+	for (string duplicate_entry : found_duplicates) 
+	{
+		dups += wxString::Format("\n%s", duplicate_entry);
+
+		auto duplicated_entries_range = found_entries.equal_range(duplicate_entry);
+
+		for (auto entry_iter = duplicated_entries_range.first; entry_iter != duplicated_entries_range.second;
+			 ++entry_iter) 
+		{
+			ArchiveEntry* duplicated_entry = entry_iter->second;
+			dups += wxString::Format("\n\t%s%s", duplicated_entry->path(), duplicated_entry->name());
+		}
+	}
+
+	// Display list of duplicate entry names
+	ExtMessageDialog msg(theMainWindow, "Duplicate Entries");
+	msg.setExt(dups);
+	msg.setMessage("The following entry data are duplicated:");
+	msg.ShowModal();
+
+	return true;
+}
+
+bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
+{
+	std::unordered_multimap<string, ArchiveEntry*> found_entries;
+	std::set<string>                               found_duplicates;
+
+	Archive::SearchOptions pnames_opt;
+	pnames_opt.match_type = EntryType::fromId("pnames");
+	auto pnames           = archive->findLast(pnames_opt);
+
+	// Load patch table
+	if (pnames)
+	{
+		PatchTable ptable;
+		ptable.loadPNAMES(pnames);
+
+		for (const PatchTable::Patch& patch_entry : ptable.patches())
+		{
+			string entry_name = string(patch_entry.name);
+			entry_name = strutil::upperIP(entry_name);
+
+			if (found_entries.find(entry_name) != found_entries.end())
+			{
+				found_duplicates.insert(entry_name);
+			}
+
+			found_entries.emplace(entry_name, pnames);
+		}
+	}
+
+	// Find all patches
+	{
+		Archive::SearchOptions search_opt;
+		search_opt.match_namespace = "patches";
+
+		for (auto& archive_entry : archive->findAll(search_opt))
+		{
+			// Skip markers
+			if (archive_entry->size() == 0)
+				continue;
+
+			string entry_name{ archive_entry->upperNameNoExt() };
+
+			if (found_entries.find(entry_name) != found_entries.end())
+			{
+				found_duplicates.insert(entry_name);
+			}
+
+			found_entries.emplace(entry_name, archive_entry);
+		}
+	}
+
+	if (found_duplicates.empty())
+	{
+		wxMessageBox("No duplicated patches exist");
+		return false;
+	}
+
+	wxString dups = "";
+
+	for (string duplicate_entry : found_duplicates)
+	{
+		dups += wxString::Format("\n%s", duplicate_entry);
+
+		auto duplicated_entries_range = found_entries.equal_range(duplicate_entry);
+
+		for (auto entry_iter = duplicated_entries_range.first; entry_iter != duplicated_entries_range.second;
+			 ++entry_iter)
+		{
+			ArchiveEntry* duplicated_entry = entry_iter->second;
+			dups += wxString::Format("\n\t%s%s", duplicated_entry->path(), duplicated_entry->name());
+		}
+	}
+
+	// Display list of duplicate entry names
+	ExtMessageDialog msg(theMainWindow, "Duplicate Entries");
+	msg.setExt(dups);
+	msg.setMessage("The following entry data are duplicated:");
+	msg.ShowModal();
+
+	return true;
+}
 
 CONSOLE_COMMAND(test_cleantex, 0, false)
 {

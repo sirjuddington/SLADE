@@ -439,7 +439,7 @@ bool DirArchive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 // -----------------------------------------------------------------------------
 // Renames [entry].  Returns true if the rename succeeded
 // -----------------------------------------------------------------------------
-bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
+bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -449,7 +449,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
 	if (entry->exProps().contains("filePath"))
 	{
 		const auto old_name = entry->exProp<string>("filePath");
-		const bool success  = Archive::renameEntry(entry, name);
+		const bool success  = Archive::renameEntry(entry, name, force);
 		if (success)
 			removed_files_.push_back(old_name);
 		return success;
