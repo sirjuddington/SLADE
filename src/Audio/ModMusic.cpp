@@ -148,8 +148,7 @@ void ModMusic::onSeek(sf::Time timeOffset)
 // -----------------------------------------------------------------------------
 bool ModMusic::onGetData(Chunk& data)
 {
-	xmp_play_buffer(xmp_player_, samples_, 44100 * sizeof(sf::Int16), 1);
+	data.sampleCount = xmp_play_buffer(xmp_player_, samples_, 44100 * sizeof(sf::Int16), 0) / sizeof(sf::Int16);
 	data.samples     = samples_;
-	data.sampleCount = 44100;
 	return true;
 }

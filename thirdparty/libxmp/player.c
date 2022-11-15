@@ -1788,7 +1788,7 @@ int xmp_play_buffer(xmp_context opaque, void *out_buffer, int size, int loop)
 		p->buffer_data.consumed += copy_size;
 		filled += copy_size;
 	}
-	return ret;
+	return filled;
 }
     
 void xmp_end_player(xmp_context opaque)

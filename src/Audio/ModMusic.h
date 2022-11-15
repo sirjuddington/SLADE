@@ -14,8 +14,6 @@ public:
 	bool     loadFromMemory(const uint8_t* data, const uint32_t size);
 	sf::Time duration() const;
 
-	static void initXMP();
-
 private:
 	void close();
 	bool onGetData(Chunk& data) override;
