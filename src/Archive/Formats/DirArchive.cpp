@@ -396,10 +396,6 @@ bool DirArchive::renameDir(ArchiveDir* dir, string_view new_name)
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> DirArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
-	// Check entry
-	if (!checkEntry(entry.get()))
-		return nullptr;
-
 	// Check namespace
 	if (add_namespace.empty() || add_namespace == "global")
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr);
