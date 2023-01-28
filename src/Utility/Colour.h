@@ -94,7 +94,7 @@ struct ColRGBA
 		if (na < 0)
 			na = 0;
 
-		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, -1 };
+		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, (char)-1 };
 	}
 
 	// Amplify/fade colour components by factors
@@ -122,7 +122,7 @@ struct ColRGBA
 		if (na < 0)
 			na = 0;
 
-		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, -1 };
+		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, (char)-1 };
 	}
 
 	void write(uint8_t* ptr) const

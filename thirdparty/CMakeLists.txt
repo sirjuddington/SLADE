@@ -10,7 +10,8 @@ set(BZIP2_LIBRARIES ${BZIP2_LIBRARIES} PARENT_SCOPE)
 set(EXTERNAL_SOURCES
 )
 file(GLOB_RECURSE EXTERNAL_SOURCES
-	dumb/*.c
+	libxmp/*.c
+	libxmp/loaders/*.c
 	lzma/C/LzmaDec.c
 	mus2mid/mus2mid.cpp
 	zreaders/*.cpp

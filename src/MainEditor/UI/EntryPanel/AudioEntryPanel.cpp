@@ -739,10 +739,12 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	// Stop the timer if playback has reached the end
 	if (pos >= slider_seek_->GetMax() || (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Music && music_->getStatus() == sf::Sound::Stopped)
-		|| (audio_type_ == Mod && mod_->getStatus() == sf::Sound::Stopped)
+		|| (audio_type_ == Mod && pos == 0)
 		|| (audio_type_ == Mp3 && mp3_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == MIDI && !audio::midiPlayer().isPlaying()))
 	{
+	    if (audio_type_ == Mod)
+	        resetStream();
 		timer_seek_->Stop();
 		slider_seek_->SetValue(0);
 	}
