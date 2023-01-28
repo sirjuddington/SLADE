@@ -60,7 +60,6 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include "thirdparty/dumb/dumb.h"
 #include <filesystem>
 
 using namespace slade;
@@ -699,9 +698,6 @@ void app::exit(bool save_config)
 	// Close lua
 	lua::close();
 #endif
-
-	// Close DUMB
-	dumb_exit();
 
 	// Exit wx Application
 	wxGetApp().Exit();
