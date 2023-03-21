@@ -75,7 +75,15 @@ void ConsolePanel::initLayout()
 	// Create and add the message log textbox
 	text_log_ = new wxStyledTextCtrl(this, -1, wxDefaultPosition, wxDefaultSize);
 	text_log_->SetEditable(false);
+#ifdef __WXGTK__
+	// workaround for an extremely convoluted wxGTK bug that causes a resource
+	// leak that makes SLADE unusable on linux (!) -- see:
+	// https://github.com/sirjuddington/SLADE/issues/1016
+	// https://github.com/wxWidgets/wxWidgets/issues/23364
+	text_log_->SetWrapMode(wxSTC_WRAP_NONE);
+#else
 	text_log_->SetWrapMode(wxSTC_WRAP_WORD);
+#endif
 	text_log_->SetSizeHints(wxSize(-1, 0));
 	vbox->Add(text_log_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::pad());
 
