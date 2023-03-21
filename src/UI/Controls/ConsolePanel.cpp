@@ -156,7 +156,7 @@ void ConsolePanel::update()
 		text_log_->MarginSetStyle(line_no, wxSTC_STYLE_LINENUMBER);
 
 		// Set line colour depending on message type
-		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no), 0);
+		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no));
 		switch (log[a].type)
 		{
 		case log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;

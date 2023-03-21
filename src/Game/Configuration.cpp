@@ -1404,7 +1404,7 @@ void Configuration::linkDoomEdNums()
 			// Editor number found, copy the definition to thing types map
 			thing_types_[ednum].define(ednum, parsed.name(), parsed.group());
 			thing_types_[ednum].copy(parsed);
-			log::info(2, "Linked parsed class {} to DoomEdNum %d", parsed.className(), ednum);
+			log::info(2, "Linked parsed class {} to DoomEdNum {}", parsed.className(), ednum);
 		}
 	}
 }
