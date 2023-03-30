@@ -691,7 +691,12 @@ void ArchivePanel::addMenus() const
 		SAction::fromId("arch_texeditor")->addToMenu(menu_archive);
 		SAction::fromId("arch_mapeditor")->addToMenu(menu_archive);
 		auto menu_clean = createMaintenanceMenu();
-		menu_archive->AppendSubMenu(menu_clean, "&Maintenance")->SetBitmap(icons::getIcon(icons::Type::Any, "wrench"));
+
+		wxMenuItem *maintenanceItem = new wxMenuItem(menu_archive, wxID_ANY, "&Maintenance");
+		maintenanceItem->SetSubMenu(menu_clean);
+		maintenanceItem->SetBitmap(icons::getIcon(icons::Type::Any, "wrench"));
+		menu_archive->Append(maintenanceItem);
+
 		auto menu_scripts = new wxMenu();
 #ifndef NO_LUA
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Archive, "arch_script");
@@ -3198,6 +3203,12 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_clean_iwaddupes")
 		archiveoperations::removeEntriesUnchangedFromIWAD(archive.get());
 
+	else if (id == "arch_check_iwadoverrides")
+		archiveoperations::checkOverriddenEntriesInIWAD(archive.get());
+
+	else if (id == "arch_check_zdoomiwadtexoverrides")
+		archiveoperations::checkZDoomOverriddenEntriesInIWAD(archive.get());
+
 	// Archive->Maintenance->Replace in Maps
 	else if (id == "arch_replace_maps")
 	{
@@ -3442,6 +3453,8 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 	SAction::fromId("arch_clean_flats")->addToMenu(menu_clean);
 	SAction::fromId("arch_clean_zdoom_textures")->addToMenu(menu_clean);
 	SAction::fromId("arch_clean_iwaddupes")->addToMenu(menu_clean);
+	SAction::fromId("arch_check_iwadoverrides")->addToMenu(menu_clean);
+	SAction::fromId("arch_check_zdoomiwadtexoverrides")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_duplicates")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_zdoom_texture_duplicates")->addToMenu(menu_clean);
@@ -3711,7 +3724,10 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
 
 	// Add 'Open In' menu
-	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(icons::getIcon(icons::General, "open"));
+	wxMenuItem *openItem = new wxMenuItem(&context, wxID_ANY, "Open");
+	openItem->SetSubMenu(createEntryOpenMenu(category));
+	openItem->SetBitmap(icons::getIcon(icons::General, "open"));
+	context.Append(openItem);
 
 	// Add custom menu items
 	wxMenu* custom;

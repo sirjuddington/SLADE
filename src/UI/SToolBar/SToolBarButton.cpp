@@ -219,7 +219,7 @@ bool SToolBarButton::updateState()
 {
 	auto prev_state = state_;
 
-	if (GetScreenRect().Contains(wxGetMousePosition()) && IsEnabled())
+	if (IsShownOnScreen() && IsEnabled() && GetScreenRect().Contains(wxGetMousePosition()))
 	{
 		if (wxGetMouseState().LeftIsDown())
 			state_ = State::MouseDown;
