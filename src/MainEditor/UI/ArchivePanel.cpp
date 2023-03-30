@@ -691,7 +691,12 @@ void ArchivePanel::addMenus() const
 		SAction::fromId("arch_texeditor")->addToMenu(menu_archive);
 		SAction::fromId("arch_mapeditor")->addToMenu(menu_archive);
 		auto menu_clean = createMaintenanceMenu();
-		menu_archive->AppendSubMenu(menu_clean, "&Maintenance")->SetBitmap(icons::getIcon(icons::Type::Any, "wrench"));
+
+		wxMenuItem *maintenanceItem = new wxMenuItem(menu_archive, wxID_ANY, "&Maintenance");
+		maintenanceItem->SetSubMenu(menu_clean);
+		maintenanceItem->SetBitmap(icons::getIcon(icons::Type::Any, "wrench"));
+		menu_archive->Append(maintenanceItem);
+
 		auto menu_scripts = new wxMenu();
 #ifndef NO_LUA
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Archive, "arch_script");
@@ -3719,7 +3724,10 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
 
 	// Add 'Open In' menu
-	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(icons::getIcon(icons::General, "open"));
+	wxMenuItem *openItem = new wxMenuItem(&context, wxID_ANY, "Open");
+	openItem->SetSubMenu(createEntryOpenMenu(category));
+	openItem->SetBitmap(icons::getIcon(icons::General, "open"));
+	context.Append(openItem);
 
 	// Add custom menu items
 	wxMenu* custom;
