@@ -46,12 +46,7 @@ public:
 			string_view path,
 			unsigned    index     = 0,
 			string_view long_name = "") :
-			short_name(short_name),
-			category(category),
-			archive(archive),
-			path(path),
-			index(index),
-			long_name(long_name)
+			short_name(short_name), category(category), archive(archive), path(path), index(index), long_name(long_name)
 		{
 		}
 	};
@@ -62,7 +57,6 @@ public:
 	void init();
 	void setArchive(shared_ptr<Archive> archive);
 	void refreshResources();
-	void buildTexInfoList();
 
 	Palette*       resourcePalette() const;
 	const Texture& texture(string_view name, bool mixed);
@@ -71,8 +65,21 @@ public:
 	const Texture& editorImage(string_view name);
 	int            verticalOffset(string_view name) const;
 
-	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
-	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
+	vector<TexInfo>& allTexturesInfo()
+	{
+		if (tex_info_.empty() && flat_info_.empty())
+			buildTexInfoList();
+
+		return tex_info_;
+	}
+
+	vector<TexInfo>& allFlatsInfo()
+	{
+		if (tex_info_.empty() && flat_info_.empty())
+			buildTexInfoList();
+
+		return flat_info_;
+	}
 
 private:
 	weak_ptr<Archive>   archive_;
@@ -89,6 +96,7 @@ private:
 	sigslot::scoped_connection sc_resources_updated_;
 	sigslot::scoped_connection sc_palette_changed_;
 
-	void importEditorImages(MapTexHashMap& map, ArchiveDir* dir, string_view path) const;
+	void buildTexInfoList();
+	void importEditorImages(MapTexHashMap& map, const ArchiveDir* dir, string_view path) const;
 };
 } // namespace slade

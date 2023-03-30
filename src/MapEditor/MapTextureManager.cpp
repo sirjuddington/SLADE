@@ -82,8 +82,8 @@ void MapTextureManager::init()
 {
 	// Refresh when resources are updated or the main palette is changed
 	sc_resources_updated_ = app::resources().signals().resources_updated.connect([this]() { refreshResources(); });
-	sc_palette_changed_   = theMainWindow->paletteChooser()->signals().palette_changed.connect(
-        [this]() { refreshResources(); });
+	sc_palette_changed_   = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]()
+                                                                                             { refreshResources(); });
 
 	// Load palette
 	if (auto pal = resourcePalette(); pal != palette_.get())
@@ -246,7 +246,7 @@ const MapTextureManager::Texture& MapTextureManager::flat(string_view name, bool
 		// If the texture filter matches the desired one, return it
 		if (gl::Texture::info(mtex.gl_id).filter == filter)
 			return mtex;
-		
+
 		// Otherwise, reload the texture
 		gl::Texture::clear(mtex.gl_id);
 		mtex.gl_id = 0;
@@ -262,7 +262,7 @@ const MapTextureManager::Texture& MapTextureManager::flat(string_view name, bool
 	// Try composite flat texture
 	if (mixed)
 	{
-		if (auto * ctex = app::resources().getTexture(name, "Flat", archive))
+		if (auto* ctex = app::resources().getTexture(name, "Flat", archive))
 		{
 			SImage image;
 			if (ctex->toImage(image, archive, palette_.get(), true))
@@ -287,33 +287,33 @@ const MapTextureManager::Texture& MapTextureManager::flat(string_view name, bool
 	// Try to search for an actual flat
 	if (!mtex.gl_id)
 	{
-		auto* entry = app::resources().getFlatEntry(name, archive);
+		auto* entry       = app::resources().getFlatEntry(name, archive);
 		auto* hires_entry = app::resources().getHiresEntry(name, archive);
 		auto* image_entry = hires_entry;
 		auto* scale_entry = entry;
-		
+
 		// No high-res texture found
 		if (!image_entry)
 		{
 			image_entry = entry;
 			scale_entry = nullptr;
 		}
-		
+
 		// Load the image
 		SImage image;
 		if (misc::loadImageFromEntry(&image, image_entry))
 			mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
-		
+
 		// Get high-res texture scale
 		if (scale_entry)
 		{
 			SImage lores_image;
 			if (misc::loadImageFromEntry(&lores_image, scale_entry))
 			{
-				double scale_x = static_cast<double>(lores_image.width()) / static_cast<double>(image.width());
-				double scale_y = static_cast<double>(lores_image.height()) / static_cast<double>(image.height());
+				double scale_x     = static_cast<double>(lores_image.width()) / static_cast<double>(image.width());
+				double scale_y     = static_cast<double>(lores_image.height()) / static_cast<double>(image.height());
 				mtex.world_panning = true;
-				mtex.scale = { scale_x, scale_y };
+				mtex.scale         = { scale_x, scale_y };
 			}
 		}
 	}
@@ -494,7 +494,7 @@ int MapTextureManager::verticalOffset(string_view name) const
 // -----------------------------------------------------------------------------
 // Loads all editor images (thing icons, etc) from the program resource archive
 // -----------------------------------------------------------------------------
-void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveDir* dir, string_view path) const
+void MapTextureManager::importEditorImages(MapTexHashMap& map, const ArchiveDir* dir, string_view path) const
 {
 	SImage image;
 
@@ -549,14 +549,19 @@ const MapTextureManager::Texture& MapTextureManager::editorImage(string_view nam
 // -----------------------------------------------------------------------------
 void MapTextureManager::refreshResources()
 {
-	// Just clear all cached textures
+	// Clear all cached textures
 	textures_.clear();
 	flats_.clear();
 	sprites_.clear();
+
+	// Update palette
 	theMainWindow->paletteChooser()->setGlobalFromArchive(archive_.lock().get());
 	mapeditor::forceRefresh(true);
 	palette_->copyPalette(resourcePalette());
-	buildTexInfoList();
+
+	// Clear texture info
+	tex_info_.clear();
+	flat_info_.clear();
 }
 
 // -----------------------------------------------------------------------------
