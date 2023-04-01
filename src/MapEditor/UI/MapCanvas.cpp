@@ -93,7 +93,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	Bind(wxEVT_KILL_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_TIMER, &MapCanvas::onRTimer, this);
 
-	timer_.Start(map_bg_ms, true);
+	timer_.Start(map_bg_ms);
 }
 
 // -----------------------------------------------------------------------------
@@ -505,8 +505,6 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
 		Refresh();
 	}
-
-	timer_.Start(map_bg_ms, true);
 }
 
 // -----------------------------------------------------------------------------

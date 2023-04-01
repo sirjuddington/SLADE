@@ -81,6 +81,10 @@ bool isMainThread()
 // -----------------------------------------------------------------------------
 void ui::init(double scale)
 {
+	splash_window = std::make_unique<SplashWindow>();
+
+	scale = splash_window->GetDPIScaleFactor();
+
 	ui::scale    = scale;
 	px_pad_small = 8 * scale;
 	px_pad       = 12 * scale;
@@ -90,6 +94,8 @@ void ui::init(double scale)
 		px_spin_width = -1;
 	else
 		px_spin_width = 64 * scale;
+
+	SplashWindow::init();
 }
 
 // -----------------------------------------------------------------------------

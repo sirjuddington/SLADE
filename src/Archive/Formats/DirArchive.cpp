@@ -389,10 +389,6 @@ bool DirArchive::renameDir(ArchiveDir* dir, string_view new_name)
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> DirArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
-	// Check entry
-	if (!checkEntry(entry.get()))
-		return nullptr;
-
 	// Check namespace
 	if (add_namespace.empty() || add_namespace == "global")
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr);
@@ -432,7 +428,7 @@ bool DirArchive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 // -----------------------------------------------------------------------------
 // Renames [entry].  Returns true if the rename succeeded
 // -----------------------------------------------------------------------------
-bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
+bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -442,7 +438,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
 	if (entry->exProps().contains("filePath"))
 	{
 		const auto old_name = entry->exProp<string>("filePath");
-		const bool success  = Archive::renameEntry(entry, name);
+		const bool success  = Archive::renameEntry(entry, name, force);
 		if (success)
 			removed_files_.push_back(old_name);
 		return success;

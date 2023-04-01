@@ -60,7 +60,7 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include "thirdparty/dumb/dumb.h"
+#include <dumb.h>
 #include <filesystem>
 
 using namespace slade;

@@ -603,7 +603,7 @@ wxString parseID3v2Tag(const MemChunk& mc, size_t start)
 	if (artist.length())
 		ret += wxString::Format("Artist%s: %s\n", artists ? "s" : "", artist);
 	if (copyright.length())
-		ret += wxString::Format("Copyright \x00A9 %s\n", copyright);
+		ret += wxString::Format(wxString::FromUTF8("Copyright \xC2\xA9 %s\n"), copyright);
 	if (year.length())
 		ret += wxString::Format("Year: %s\n", year);
 	if (genre.length())

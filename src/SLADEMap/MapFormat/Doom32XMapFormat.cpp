@@ -63,7 +63,7 @@ bool Doom32XMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& ma
 		return true;
 	}
 
-	auto     vert_data = reinterpret_cast<const Vertex32BE*>(entry->rawData(true));
+	auto     vert_data = reinterpret_cast<const Vertex32BE*>(entry->rawData());
 	unsigned nv        = entry->size() / sizeof(Vertex32BE);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)

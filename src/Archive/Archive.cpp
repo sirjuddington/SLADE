@@ -1200,7 +1200,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 // Renames [entry] with [name].
 // Returns false if the entry was invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
+bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
 	// Abort if read only
 	if (read_only_)
@@ -1226,9 +1226,10 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
 
 	// Rename the entry
+	auto fmt_desc = formatDesc();
 	entry->setName(name);
-	entry->formatName(formatDesc());
-	if (!formatDesc().allow_duplicate_names)
+	entry->formatName(fmt_desc);
+	if (!force && !fmt_desc.allow_duplicate_names)
 		entry->parentDir()->ensureUniqueName(entry);
 	entry->setState(ArchiveEntry::State::Modified, true);
 

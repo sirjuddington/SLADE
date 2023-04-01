@@ -718,7 +718,7 @@ bool WadArchive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 // the entry if necessary to be wad-friendly (8 characters max and no file
 // extension)
 // -----------------------------------------------------------------------------
-bool WadArchive::renameEntry(ArchiveEntry* entry, string_view name)
+bool WadArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -728,7 +728,7 @@ bool WadArchive::renameEntry(ArchiveEntry* entry, string_view name)
 	bool ns_entry = isNamespaceEntry(entry);
 
 	// Do default rename
-	if (Archive::renameEntry(entry, name))
+	if (Archive::renameEntry(entry, name, force))
 	{
 		// Update namespaces if necessary
 		if (ns_entry || isNamespaceEntry(entry))

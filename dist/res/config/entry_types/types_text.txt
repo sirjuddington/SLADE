@@ -369,15 +369,32 @@ entry_types
 		icon = "code";
 	}
 
+	// EDGE COAL lumps and files
+	coal: text
+	{
+		name = "EDGE COAL";
+		match_extorname = 1;
+		match_name = "coal*";
+		match_ext = "ec";
+		icon = "code";
+	}
 
 	// EDGE DDF lumps and files
 	ddf: text
 	{
 		name = "EDGE DDF";
 		match_extorname = 1;
-		match_name = "ddf*";
+		match_name = "ddf*", "wadfixes";
 		match_ext = "ddf", "ldf";
 		icon = "code";
+	}
+	
+	// EDGE versioning lump
+	edgever: text
+	{
+		name = "EDGE VERSION";
+		match_name = "edgever";
+		icon = "e_text";
 	}
 
 	// Eternity text lumps

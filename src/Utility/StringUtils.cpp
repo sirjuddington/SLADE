@@ -333,11 +333,13 @@ bool strutil::matchesCI(string_view str, string_view match)
 // If [swap_backslash] is true, instead of escaping it will swap backslashes to
 // forward slashes
 // -----------------------------------------------------------------------------
-string strutil::escapedString(string_view str, bool swap_backslash)
+string strutil::escapedString(string_view str, bool swap_backslash, bool escape_backslash)
 {
 	auto escaped = string{ str };
 
-	replaceIP(escaped, SLASH_BACK, swap_backslash ? SLASH_FORWARD : ESCAPED_SLASH_BACK);
+	if (escape_backslash)
+		replaceIP(escaped, SLASH_BACK, swap_backslash ? SLASH_FORWARD : ESCAPED_SLASH_BACK);
+
 	replaceIP(escaped, QUOTE_DOUBLE, ESCAPED_QUOTE_DOUBLE);
 
 	return escaped;
