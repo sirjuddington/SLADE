@@ -56,7 +56,7 @@ namespace strutil
 
 	// String transformations
 	// IP = In-Place
-	string  escapedString(string_view str, bool swap_backslash = false);
+	string  escapedString(string_view str, bool swap_backslash = false, bool escape_backslash = true);
 	string& replaceIP(string& str, string_view from, string_view to);
 	string  replace(string_view str, string_view from, string_view to);
 	string& replaceFirstIP(string& str, string_view from, string_view to);
