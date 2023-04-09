@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ModMusic.h"
-#include "thirdparty/dumb/dumb.h"
+#include <dumb.h>
 
 using namespace slade;
 using namespace audio;

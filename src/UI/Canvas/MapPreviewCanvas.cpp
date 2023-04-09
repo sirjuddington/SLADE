@@ -42,6 +42,7 @@
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
+#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
 
@@ -443,6 +444,19 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 			addVertex((double)v.x / 65536, (double)v.y / 65536);
 		}
 	}
+	else if (map_format == MapFormat::Doom32X)
+	{
+		Doom32XMapFormat::Vertex32BE v;
+		while (true)
+		{
+			// Read vertex
+			if (!mc.read(&v, 8))
+				break;
+
+			// Add vertex
+			addVertex((double)wxINT32_SWAP_ON_LE(v.x) / 65536, (double)wxINT32_SWAP_ON_LE(v.y) / 65536);
+		}
+	}
 	else
 	{
 		DoomMapFormat::Vertex v;
@@ -490,7 +504,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 	// Read line data
 	auto& mc = linedefs->data();
 	mc.seek(0, SEEK_SET);
-	if (map_format == MapFormat::Doom)
+	if (map_format == MapFormat::Doom || map_format == MapFormat::Doom32X)
 	{
 		while (true)
 		{
@@ -591,7 +605,7 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 		return false;
 
 	// Read things data
-	if (map_format == MapFormat::Doom)
+	if (map_format == MapFormat::Doom || map_format == MapFormat::Doom32X)
 	{
 		auto     thng_data = (DoomMapFormat::Thing*)things->rawData(true);
 		unsigned nt        = things->size() / sizeof(DoomMapFormat::Thing);

@@ -218,7 +218,7 @@ void MapEditorWindow::setupMenu()
 	auto menu_map = new wxMenu("");
 	SAction::fromId("mapw_save")->addToMenu(menu_map);
 	SAction::fromId("mapw_saveas")->addToMenu(menu_map);
-	//SAction::fromId("mapw_rename")->addToMenu(menu_map);
+	// SAction::fromId("mapw_rename")->addToMenu(menu_map);
 	SAction::fromId("mapw_backup")->addToMenu(menu_map);
 	menu_map->AppendSeparator();
 	SAction::fromId("mapw_run_map")->addToMenu(menu_map);
@@ -302,7 +302,7 @@ void MapEditorWindow::setupLayout()
 	auto tbg_map = new SToolBarGroup(toolbar_, "_Map");
 	tbg_map->addActionButton("mapw_save");
 	tbg_map->addActionButton("mapw_saveas");
-	//tbg_map->addActionButton("mapw_rename"); // TODO: Actually implement this one
+	// tbg_map->addActionButton("mapw_rename"); // TODO: Actually implement this one
 	tbg_map->addActionButton("mapw_preferences");
 	toolbar_->addGroup(tbg_map);
 
@@ -556,7 +556,9 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 		{
 			Hide();
 			wxMessageBox(
-				wxString::Format("Unable to open map %s: %s", md.name, global::error), "Invalid map error", wxICON_ERROR);
+				wxString::Format("Unable to open map %s: %s", md.name, global::error),
+				"Invalid map error",
+				wxICON_ERROR);
 			return false;
 		}
 		else
@@ -568,7 +570,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 // -----------------------------------------------------------------------------
 // Opens [map] in the editor
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::openMap(Archive::MapDesc map)
+bool MapEditorWindow::openMap(const Archive::MapDesc& map)
 {
 	// If a map is currently open and modified, prompt to save changes
 	if (mapeditor::editContext().map().isModified())
@@ -668,7 +670,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 // -----------------------------------------------------------------------------
 // Loads any scripts from [map] into the script editor
 // -----------------------------------------------------------------------------
-void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
+void MapEditorWindow::loadMapScripts(const Archive::MapDesc& map)
 {
 	// Don't bother if no scripting language specified
 	if (game::configuration().scriptLanguage().empty())
@@ -1046,7 +1048,7 @@ bool MapEditorWindow::tryClose()
 // -----------------------------------------------------------------------------
 // Returns true if the currently open map is from [archive]
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::hasMapOpen(Archive* archive) const
+bool MapEditorWindow::hasMapOpen(const Archive* archive) const
 {
 	auto& mdesc = mapeditor::editContext().mapDesc();
 	if (auto head = mdesc.head.lock())
@@ -1086,7 +1088,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	auto& p_inf = m_mgr->GetPane("object_edit");
 
 	// Save current y offset
-	double top = mapeditor::editContext().renderer().view().mapY(0);
+	double top = mapeditor::editContext().renderer().view().canvasY(0);
 
 	// Enable/disable panel
 	if (show)
@@ -1113,7 +1115,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 	auto& p_inf = m_mgr->GetPane("shape_draw");
 
 	// Save current y offset
-	double top = mapeditor::editContext().renderer().view().mapY(0);
+	double top = mapeditor::editContext().renderer().view().canvasY(0);
 
 	// Enable/disable panel
 	p_inf.Show(show);
@@ -1408,7 +1410,8 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 	saveLayout();
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
+		misc::setWindowInfo(
+			id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
 
 	Show(false);
 	closeMap();

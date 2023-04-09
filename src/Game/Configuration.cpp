@@ -346,6 +346,10 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				{
 					map_formats_[MapFormat::Doom64] = true;
 				}
+				else if (strutil::equalCI(node->stringValue(v), "doom32x"))
+				{
+					map_formats_[MapFormat::Doom32X] = true;
+				}
 				else if (strutil::equalCI(node->stringValue(v), "udmf"))
 				{
 					map_formats_[MapFormat::UDMF] = true;
@@ -551,6 +555,7 @@ bool Configuration::readConfiguration(
 	case MapFormat::Doom: parser.define("MAP_DOOM"); break;
 	case MapFormat::Hexen: parser.define("MAP_HEXEN"); break;
 	case MapFormat::Doom64: parser.define("MAP_DOOM64"); break;
+	case MapFormat::Doom32X: parser.define("MAP_DOOM32X"); break;
 	case MapFormat::UDMF: parser.define("MAP_UDMF"); break;
 	default: parser.define("MAP_UNKNOWN"); break;
 	}
@@ -1399,7 +1404,7 @@ void Configuration::linkDoomEdNums()
 			// Editor number found, copy the definition to thing types map
 			thing_types_[ednum].define(ednum, parsed.name(), parsed.group());
 			thing_types_[ednum].copy(parsed);
-			log::info(2, "Linked parsed class {} to DoomEdNum %d", parsed.className(), ednum);
+			log::info(2, "Linked parsed class {} to DoomEdNum {}", parsed.className(), ednum);
 		}
 	}
 }

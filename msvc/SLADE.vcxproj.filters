@@ -582,9 +582,6 @@
     <ClCompile Include="..\src\MapEditor\Edit\ObjectEdit.cpp">
       <Filter>Map Editor\Edit</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\MapEditor\Renderer\RenderView.cpp">
-      <Filter>Map Editor\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\MapEditor\Edit\Edit2D.cpp">
       <Filter>Map Editor\Edit</Filter>
     </ClCompile>
@@ -1010,6 +1007,12 @@
     </ClCompile>
     <ClCompile Include="..\src\UI\Controls\Splitter.cpp">
       <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\View.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.cpp">
+      <Filter>SLADEMap\MapFormat</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1501,9 +1504,6 @@
     <ClInclude Include="..\src\MapEditor\Edit\ObjectEdit.h">
       <Filter>Map Editor\Edit</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\MapEditor\Renderer\RenderView.h">
-      <Filter>Map Editor\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\MapEditor\Edit\Edit2D.h">
       <Filter>Map Editor\Edit</Filter>
     </ClInclude>
@@ -1933,6 +1933,12 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\src\UI\Controls\Splitter.h">
       <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\View.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.h">
+      <Filter>SLADEMap\MapFormat</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

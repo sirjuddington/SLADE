@@ -5,9 +5,9 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    RenderView.cpp
-// Description: RenderView class - handles the view and screen <-> map
-//              coordinate translation for the map editor
+// Filename:    View.cpp
+// Description: View class - handles a 2d opengl 'view' that can be scrolled and
+//              zoomed, with conversion between screen <-> canvas coordinates
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -31,17 +31,17 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "RenderView.h"
+#include "View.h"
 #include "OpenGL/OpenGL.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
-using namespace mapeditor;
+using namespace gl;
 
 
 // -----------------------------------------------------------------------------
 //
-// RenderView Class Functions
+// View Class Functions
 //
 // -----------------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ using namespace mapeditor;
 // -----------------------------------------------------------------------------
 // Resets the interpolated view values to their non-interpolated counterparts
 // -----------------------------------------------------------------------------
-void RenderView::resetInter(bool x, bool y, bool scale)
+void View::resetInter(bool x, bool y, bool scale)
 {
 	if (x)
 		offset_inter_.x = offset_.x;
@@ -62,9 +62,20 @@ void RenderView::resetInter(bool x, bool y, bool scale)
 }
 
 // -----------------------------------------------------------------------------
+// Pans the view by [x,y]
+// -----------------------------------------------------------------------------
+void View::pan(double x, double y)
+{
+	offset_.x += x;
+	offset_.y += y;
+
+	updateVisibleRegion();
+}
+
+// -----------------------------------------------------------------------------
 // Zooms the view by [amount] towards the center of the view
 // -----------------------------------------------------------------------------
-void RenderView::zoom(double amount)
+void View::zoom(double amount)
 {
 	// Zoom view
 	scale_ *= amount;
@@ -76,16 +87,16 @@ void RenderView::zoom(double amount)
 		scale_ = max_scale_;
 
 	// Update screen limits
-	updateMapBounds();
+	updateVisibleRegion();
 }
 
 // -----------------------------------------------------------------------------
-// Zooms the view by [amount] towards [point] (in map coords)
+// Zooms the view by [amount] towards [point] (in screen coords)
 // -----------------------------------------------------------------------------
-void RenderView::zoomToward(double amount, const Vec2d point)
+void View::zoomToward(double amount, const Vec2i& point)
 {
-	// Get current [point] before zooming
-	auto orig_point = point;
+	// Get current [point] in canvas coords before zooming
+	auto orig_point = canvasPos(point);
 
 	// Zoom view
 	scale_ *= amount;
@@ -97,32 +108,32 @@ void RenderView::zoomToward(double amount, const Vec2d point)
 		scale_ = max_scale_;
 
 	// Zoom towards [point]
-	offset_.x += orig_point.x - point.x;
-	offset_.y += orig_point.y - point.y;
+	offset_.x += orig_point.x - canvasX(point.x);
+	offset_.y += orig_point.y - canvasY(point.y);
 
 	// Update screen limits
-	updateMapBounds();
+	updateVisibleRegion();
 }
 
 // -----------------------------------------------------------------------------
 // Zooms and offsets the view such that [bbox] fits within the current view size
 // -----------------------------------------------------------------------------
-void RenderView::fitTo(BBox bbox)
+void View::fitTo(BBox bbox)
 {
-	// Reset zoom and set offsets to the middle of the map
+	// Reset zoom and set offsets to the middle of the canvas
 	scale_    = 2;
 	offset_.x = bbox.min.x + ((bbox.max.x - bbox.min.x) * 0.5);
 	offset_.y = bbox.min.y + ((bbox.max.y - bbox.min.y) * 0.5);
 
-	// Now just keep zooming out until we fit the whole map in the view
+	// Now just keep zooming out until we fit the whole canvas in the view
 	bool done = false;
 	while (!done)
 	{
 		// Update screen limits
-		updateMapBounds();
+		updateVisibleRegion();
 
-		if (bbox.min.x >= mapBounds().tl.x && bbox.max.x <= mapBounds().br.x && bbox.min.y >= mapBounds().tl.y
-			&& bbox.max.y <= mapBounds().br.y)
+		if (bbox.min.x >= visibleRegion().tl.x && bbox.max.x <= visibleRegion().br.x
+			&& bbox.min.y >= visibleRegion().tl.y && bbox.max.y <= visibleRegion().br.y)
 			done = true;
 		else
 			scale_ *= 0.8;
@@ -134,7 +145,7 @@ void RenderView::fitTo(BBox bbox)
 // If [towards] is not nullptr, the scale interpolation will also interpolate
 // offsets towards [towards]
 // -----------------------------------------------------------------------------
-bool RenderView::interpolate(double mult, const Vec2d* towards)
+bool View::interpolate(double mult, const Vec2d* towards)
 {
 	bool interpolating = false;
 
@@ -142,12 +153,12 @@ bool RenderView::interpolate(double mult, const Vec2d* towards)
 	double diff_scale = scale_ - scale_inter_;
 	if (diff_scale < -0.0000001 || diff_scale > 0.0000001)
 	{
-		// Get current mouse position in map coordinates (for zdooming towards [towards])
-		double mx, my;
+		// Get current mouse position in canvas coordinates (for zdooming towards [towards])
+		double mx{}, my{};
 		if (towards)
 		{
-			mx = mapX(towards->x, true);
-			my = mapY(towards->y, true);
+			mx = canvasX(towards->x, true);
+			my = canvasY(towards->y, true);
 		}
 
 		// Interpolate zoom
@@ -161,7 +172,8 @@ bool RenderView::interpolate(double mult, const Vec2d* towards)
 
 		if (towards)
 		{
-			setOffset(offset_inter_.x + mx - mapX(towards->x, true), offset_inter_.y + my - mapY(towards->y, true));
+			setOffset(
+				offset_inter_.x + mx - canvasX(towards->x, true), offset_inter_.y + my - canvasY(towards->y, true));
 			offset_inter_ = offset_;
 		}
 	}
@@ -204,68 +216,81 @@ bool RenderView::interpolate(double mult, const Vec2d* towards)
 
 // -----------------------------------------------------------------------------
 // Translates an x position on the screen to the corresponding x position on the
-// map itself
+// canvas itself
 // -----------------------------------------------------------------------------
-double RenderView::mapX(int screen_x, bool inter) const
+double View::canvasX(int screen_x, bool inter) const
 {
-	return inter ? double(screen_x / scale_inter_) + offset_inter_.x - (double(size_.x * 0.5) / scale_inter_) :
-				   double(screen_x / scale_) + offset_.x - (double(size_.x * 0.5) / scale_);
+	return inter ? screen_x / scale_inter_ + offset_inter_.x - (size_.x * 0.5 / scale_inter_) :
+                   screen_x / scale_ + offset_.x - (size_.x * 0.5 / scale_);
 }
 
 // -----------------------------------------------------------------------------
 // Translates a y position on the screen to the corresponding y position on the
-// map itself
+// canvas itself
 // -----------------------------------------------------------------------------
-double RenderView::mapY(int screen_y, bool inter) const
+double View::canvasY(int screen_y, bool inter) const
 {
-	return inter ? double(-screen_y / scale_inter_) + offset_inter_.y + (double(size_.y * 0.5) / scale_inter_) :
-				   double(-screen_y / scale_) + offset_.y + (double(size_.y * 0.5) / scale_);
+	if (y_flipped_)
+	{
+		return inter ? -screen_y / scale_inter_ + offset_inter_.y + (size_.y * 0.5 / scale_inter_) :
+                       -screen_y / scale_ + offset_.y + (size_.y * 0.5 / scale_);
+	}
+	else
+	{
+		return inter ? -screen_y / scale_inter_ + offset_inter_.y - (size_.y * 0.5 / scale_inter_) :
+                       -screen_y / scale_ + offset_.y - (size_.y * 0.5 / scale_);
+	}
 }
 
 // -----------------------------------------------------------------------------
-// Translates a position on the screen to the corresponding position on the map
-// itself
+// Translates a position on the screen to the corresponding position on the
+// canvas itself
 // -----------------------------------------------------------------------------
-Vec2d RenderView::mapPos(const Vec2i& screen_pos, bool inter) const
+Vec2d View::canvasPos(const Vec2i& screen_pos, bool inter) const
 {
-	return { mapX(screen_pos.x, inter), mapY(screen_pos.y, inter) };
+	return { canvasX(screen_pos.x, inter), canvasY(screen_pos.y, inter) };
 }
 
 // -----------------------------------------------------------------------------
-// Translates [x] from map coordinates to screen coordinates
+// Translates [x] from canvas coordinates to screen coordinates
 // -----------------------------------------------------------------------------
-int RenderView::screenX(double map_x) const
+int View::screenX(double canvas_x) const
 {
-	return math::round((size_.x * 0.5) + ((map_x - offset_inter_.x) * scale_inter_));
+	return math::round((size_.x * 0.5) + ((canvas_x - offset_inter_.x) * scale_inter_));
 }
 
 // -----------------------------------------------------------------------------
-// Translates [y] from map coordinates to screen coordinates
+// Translates [y] from canvas coordinates to screen coordinates
 // -----------------------------------------------------------------------------
-int RenderView::screenY(double map_y) const
+int View::screenY(double canvas_y) const
 {
-	return math::round((size_.y * 0.5) - ((map_y - offset_inter_.y) * scale_inter_));
+	return y_flipped_ ? math::round((size_.y * 0.5) - ((canvas_y - offset_inter_.y) * scale_inter_)) :
+                        math::round((size_.y * 0.5) + ((canvas_y - offset_inter_.y) * scale_inter_));
 }
 
 // -----------------------------------------------------------------------------
-// Applies the current (interpolated) view in OpenGL
+// Applies the current (interpolated) view in OpenGL.
+// If [init] is true, will also initialize the projection+view matrices
 // -----------------------------------------------------------------------------
-void RenderView::apply() const
+void View::apply(bool init) const
 {
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0.0f, size_.x, 0.0f, size_.y, -1.0f, 1.0f);
+	if (init)
+	{
+		// Setup the screen projection
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(0.0f, size_.x, 0.0f, size_.y, -1.0f, 1.0f);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
 
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implemenataions)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
+		// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implemenataions)
+		if (gl::accuracyTweak())
+			glTranslatef(0.375f, 0.375f, 0);
+	}
 
 	// Translate to middle of screen
 	glTranslated(size_.x * 0.5, size_.y * 0.5, 0);
@@ -280,7 +305,7 @@ void RenderView::apply() const
 // -----------------------------------------------------------------------------
 // Sets/unsets the projection for rendering overlays (and text, etc.)
 // -----------------------------------------------------------------------------
-void RenderView::setOverlayCoords(bool set) const
+void View::setOverlayCoords(bool set) const
 {
 	if (set)
 	{
@@ -304,12 +329,22 @@ void RenderView::setOverlayCoords(bool set) const
 }
 
 // -----------------------------------------------------------------------------
-// Updates the map bounds member variable for the current view
+// Updates the canvas bounds member variable for the current view
 // -----------------------------------------------------------------------------
-void RenderView::updateMapBounds()
+void View::updateVisibleRegion()
 {
-	map_bounds_.tl.x = mapX(0);
-	map_bounds_.tl.y = mapY(size_.y);
-	map_bounds_.br.x = mapX(size_.x);
-	map_bounds_.br.y = mapY(0);
+	if (y_flipped_)
+	{
+		visible_region_.tl.x = canvasX(0);
+		visible_region_.tl.y = canvasY(size_.y);
+		visible_region_.br.x = canvasX(size_.x);
+		visible_region_.br.y = canvasY(0);
+	}
+	else
+	{
+		visible_region_.tl.x = canvasX(0);
+		visible_region_.tl.y = canvasY(0);
+		visible_region_.br.x = canvasX(size_.x);
+		visible_region_.br.y = canvasY(size_.y);
+	}
 }

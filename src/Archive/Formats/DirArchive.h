@@ -60,8 +60,8 @@ public:
 
 	// Entry addition/removal
 	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
-	bool                     removeEntry(ArchiveEntry* entry) override;
-	bool                     renameEntry(ArchiveEntry* entry, string_view name) override;
+	bool                     removeEntry(ArchiveEntry* entry, bool set_deleted = true) override;
+	bool                     renameEntry(ArchiveEntry* entry, string_view name, bool force = false) override;
 
 	// Detection
 	MapDesc         mapDesc(ArchiveEntry* entry) override;

@@ -149,6 +149,7 @@ string PropertyList::toString(bool condensed, int float_precision) const
 
 		if (property::valueType(prop.value) == property::ValueType::String)
 		{
+			val = strutil::escapedString(val, false, true);
 			val.insert(val.begin(), '\"');
 			val.push_back('\"');
 		}

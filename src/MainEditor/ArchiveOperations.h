@@ -13,7 +13,11 @@ bool checkDuplicateEntryContent(const Archive* archive);
 void removeUnusedTextures(Archive* archive);
 void removeUnusedFlats(Archive* archive);
 void removeUnusedZDoomTextures(Archive* archive);
+bool checkDuplicateZDoomTextures(Archive* archive);
+bool checkDuplicateZDoomPatches(Archive* archive);
 void removeEntriesUnchangedFromIWAD(Archive* archive);
+bool checkOverriddenEntriesInIWAD(Archive* archive);
+bool checkZDoomOverriddenEntriesInIWAD(Archive* archive);
 
 // Search and replace in maps
 size_t replaceThings(Archive* archive, int oldtype, int newtype);

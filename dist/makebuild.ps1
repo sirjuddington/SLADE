@@ -1,4 +1,4 @@
-$version = "3.2.1"
+$version = "3.2.2"
 $rev_short = Invoke-Expression "git.exe rev-parse --short HEAD"
 
 # Check for 7-zip install
@@ -25,20 +25,33 @@ $buildbinaries = Read-Host
 if ($buildbinaries.ToLower() -eq "y")
 {
 	# Find devenv path (community or professional)
-	$devenvpath19 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.com"
-	if (-not (Test-Path $devenvpath19))
+	$devenvpath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\Common7\IDE\devenv.com"
+	if (-not (Test-Path $devenvpath))
 	{
-		$devenvpath19 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.com"
+		$devenvpath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.com"
 	}
-	if (-not (Test-Path $devenvpath19))
+	if (-not (Test-Path $devenvpath))
 	{
-		Write-Host "`nCould not find Visual Studio 2019 path" -ForegroundColor Red
+		Write-Host "`nCould not find Visual Studio 2022 path" -ForegroundColor Red
 		Exit-PSSession
 	}
 	else
 	{
-		& $devenvpath19 (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|Win32" /project SLADE.vcxproj
-	    & $devenvpath19 (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|x64" /project SLADE.vcxproj
+		Write-Host "`nFound VS2022 at ${devenvpath}";
+
+		Write-Host "`nProceed with 64bit build? (y/n) " -foregroundcolor cyan -nonewline
+		$build64 = Read-Host
+		if ($build64.ToLower() -eq "y")
+		{
+			& $devenvpath (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|x64" /project SLADE.vcxproj
+		}
+		
+		Write-Host "`nProceed with 32bit build? (y/n) " -foregroundcolor cyan -nonewline
+		$build32 = Read-Host
+		if ($build32.ToLower() -eq "y")
+		{
+			& $devenvpath (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|Win32" /project SLADE.vcxproj
+		}
 	}
 }
 

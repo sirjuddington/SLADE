@@ -330,6 +330,7 @@ void Archive::MapDesc::updateMapFormatHints() const
 	case MapFormat::Hexen: fmt_name = "hexen"; break;
 	case MapFormat::Doom64: fmt_name = "doom64"; break;
 	case MapFormat::UDMF: fmt_name = "udmf"; break;
+	case MapFormat::Doom32X: fmt_name = "doom32x"; break;
 	case MapFormat::Unknown:
 	default: fmt_name = "unknown"; break;
 	}
@@ -515,7 +516,7 @@ void Archive::setModified(bool modified)
 // -----------------------------------------------------------------------------
 // Checks that the given entry is valid and part of this archive
 // -----------------------------------------------------------------------------
-bool Archive::checkEntry(ArchiveEntry* entry) const
+bool Archive::checkEntry(const ArchiveEntry* entry) const
 {
 	// Check entry is valid
 	if (!entry)
@@ -1016,7 +1017,7 @@ shared_ptr<ArchiveEntry> Archive::addNewEntry(string_view name, string_view add_
 // If [delete_entry] is true, the entry will also be deleted.
 // Returns true if the removal succeeded
 // -----------------------------------------------------------------------------
-bool Archive::removeEntry(ArchiveEntry* entry)
+bool Archive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 {
 	// Abort if read only
 	if (read_only_)
@@ -1041,23 +1042,20 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 	if (undoredo::currentlyRecording())
 		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(false, entry));
 
-	// Get the entry index
-	const int index = dir->entryIndex(entry);
-
-	// Get a shared pointer to the entry to ensure it's kept around until this function ends
-	auto entry_shared = entry->getShared();
-
-	// Remove it from its directory
-	const bool ok = dir->removeEntry(index);
+	// Remove the entry
+	const int  index        = dir->entryIndex(entry);
+	auto       entry_shared = entry->getShared();      // Ensure the entry is kept around until this function ends
+	const bool ok           = dir->removeEntry(index); // Remove it from its directory
 
 	// If it was removed ok
 	if (ok)
 	{
-		// Signal entry removed
-		signals_.entry_removed(*this, *dir, *entry);
+		// Set state
+		if (set_deleted)
+			entry_shared->setState(ArchiveEntry::State::Deleted);
 
-		// Update variables etc
-		setModified(true);
+		signals_.entry_removed(*this, *dir, *entry); // Signal entry removed
+		setModified(true);                           // Update variables etc
 	}
 
 	return ok;
@@ -1187,7 +1185,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 
 	// Remove the entry from its current dir
 	const auto sptr = entry->getShared(); // Get a shared pointer so it isn't deleted
-	removeEntry(entry);
+	removeEntry(entry, false);
 
 	// Add it to the destination dir
 	addEntry(sptr, position, dir);
@@ -1203,7 +1201,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 // Renames [entry] with [name].
 // Returns false if the entry was invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
+bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
 	// Abort if read only
 	if (read_only_)
@@ -1229,9 +1227,10 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
 
 	// Rename the entry
+	auto fmt_desc = formatDesc();
 	entry->setName(name);
-	entry->formatName(formatDesc());
-	if (!formatDesc().allow_duplicate_names)
+	entry->formatName(fmt_desc);
+	if (!force && !fmt_desc.allow_duplicate_names)
 		entry->parentDir()->ensureUniqueName(entry);
 	entry->setState(ArchiveEntry::State::Modified, true);
 

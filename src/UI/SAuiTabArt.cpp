@@ -117,11 +117,6 @@ SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs) :
 	m_normalFont   = *wxNORMAL_FONT;
 	m_selectedFont = *wxNORMAL_FONT;
 
-#if wxCHECK_VERSION(3, 1, 6) && defined(__WXMSW__)
-	m_normalFont.SetPointSize(ui::scalePx(m_normalFont.GetPointSize()));
-	m_selectedFont.SetPointSize(ui::scalePx(m_selectedFont.GetPointSize()));
-#endif
-
 	m_measuringFont = m_selectedFont;
 	m_fixedTabWidth = ui::scalePx(100);
 	m_tabCtrlHeight = 0;

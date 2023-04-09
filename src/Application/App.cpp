@@ -60,7 +60,7 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include "thirdparty/dumb/dumb.h"
+#include <dumb.h>
 #include <filesystem>
 
 using namespace slade;
@@ -80,7 +80,7 @@ bool            exiting         = false;
 std::thread::id main_thread_id;
 
 // Version
-Version version_num{ 3, 2, 1, 0 };
+Version version_num{ 3, 2, 2, 0 };
 
 // Directory paths
 string dir_data;
