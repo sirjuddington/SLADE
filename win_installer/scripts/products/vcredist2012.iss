@@ -5,12 +5,16 @@
 
 [CustomMessages]
 vcredist2012_title=Visual C++ 2012 Redistributable
+ru.vcredist2012_title=Распространяемые пакеты Visual C++ 2012
 
 en.vcredist2012_size=6.3 MB
+ru.vcredist2012_size=6,3 МБ
 
 en.vcredist2012_size_x64=7.0 MB
+ru.vcredist2012_size_x64=7,0 МБ
 
 en.vcredist2012_size_ia64=7.0 MB
+ru.vcredist2012_size_ia64=7,0 МБ
 
 ;http://www.microsoft.com/globaldev/reference/lcid-all.mspx
 en.vcredist2012_lcid=''

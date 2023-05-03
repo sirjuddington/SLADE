@@ -4,9 +4,11 @@
 
 [CustomMessages]
 dotnetfx11sp1_title=.NET Framework 1.1 Service Pack 1
+ru.dotnetfx11sp1_title=.NET Framework 1.1 с пакетом обновления 1
 
 en.dotnetfx11sp1_size=10.5 MB
 de.dotnetfx11sp1_size=10,5 MB
+ru.dotnetfx11sp1_size=10,5 МБ
 
 
 [Code]

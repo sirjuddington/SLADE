@@ -1,8 +1,10 @@
 [CustomMessages]
 msi20_title=Windows Installer 2.0
+ru.msi20_title=Установщик Windows 2.0
 
 en.msi20_size=1.7 MB
 de.msi20_size=1,7 MB
+ru.msi20_size=1,7 МБ
 
 
 [Code]

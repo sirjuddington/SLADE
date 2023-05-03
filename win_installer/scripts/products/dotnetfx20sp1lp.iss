@@ -2,8 +2,10 @@
 
 [CustomMessages]
 de.dotnetfx20sp1lp_title=.NET Framework 2.0 SP1 Sprachpaket: Deutsch
+ru.dotnetfx20sp1lp_title=.NET Framework 2.0 с пакетом обновления 1 и языковым пакетом: немецкий
 
 de.dotnetfx20sp1lp_size=3,4 MB
+ru.dotnetfx20sp1lp_size=3,4 МБ
 
 ;http://www.microsoft.com/globaldev/reference/lcid-all.mspx
 de.dotnetfx20sp1lp_lcid=1031

@@ -5,9 +5,11 @@
 [CustomMessages]
 en.kb835732_title=Windows 2000 Security Update (KB835732)
 de.kb835732_title=Windows 2000 Sicherheitsupdate (KB835732)
+ru.kb835732_title=Windows 2000 обновление безопасности (KB835732)
 
 en.kb835732_size=6.8 MB
 de.kb835732_size=6,8 MB
+ru.kb835732_size=6,8 МБ
 
 
 [Code]

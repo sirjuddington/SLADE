@@ -5,15 +5,19 @@
 
 [CustomMessages]
 vcredist2010_title=Visual C++ 2010 Redistributable
+ru.vcredist2010_title=Распространяемые пакеты Visual C++ 2010
 
 en.vcredist2010_size=4.8 MB
 de.vcredist2010_size=4,8 MB
+ru.vcredist2010_size=4,8 МБ
 
 en.vcredist2010_size_x64=5.5 MB
 de.vcredist2010_size_x64=5,5 MB
+ru.vcredist2010_size_x64=5,5 МБ
 
 en.vcredist2010_size_ia64=2.2 MB
 de.vcredist2010_size_ia64=2,2 MB
+ru.vcredist2010_size_ia64=2,2 МБ
 
 ;http://www.microsoft.com/globaldev/reference/lcid-all.mspx
 en.vcredist2010_lcid=''

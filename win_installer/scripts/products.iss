@@ -4,20 +4,28 @@
 DependenciesDir=MyProgramDependencies
 
 en.depdownload_msg=The following applications are required before setup can continue:%n%n%1%nDownload and install now?
+ru.depdownload_msg=Для продолжения установки необходимы следующие приложения:%n%n%1%nСкачать и установить сейчас?
 
 en.depdownload_memo_title=Download dependencies
+ru.depdownload_memo_title=Скачать зависимости
 
 en.depinstall_memo_title=Install dependencies
+ru.depinstall_memo_title=Установить зависимости
 
 en.depinstall_title=Installing dependencies
+ru.depinstall_title=Установка зависимостей
 
 en.depinstall_description=Please wait while Setup installs dependencies on your computer.
+ru.depinstall_description=Пожалуйста, подождите, пока установщик установит компоненты зависимостей на ваш компьютер.
 
 en.depinstall_status=Installing %1...
+ru.depinstall_status=Идёт установка %1...
 
 en.depinstall_missing=%1 must be installed before setup can continue. Please install %1 and run Setup again.
+ru.depinstall_missing=%1 должен быть установлен до продолжения установки. Пожалуйста, установите %1 и запустите установщик снова.
 
 en.depinstall_error=An error occured while installing the dependencies. Please restart the computer and run the setup again or install the following dependencies manually:%n
+ru.depinstall_error=При установке зависимостей возникла ошибка. Пожалуйста, перезагрузите компьютер и запустите установку снова или установите следующие зависимости вручную:%n
 
 en.isxdl_langfile=
 
