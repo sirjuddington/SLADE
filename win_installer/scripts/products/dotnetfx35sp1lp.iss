@@ -1,7 +1,9 @@
 [CustomMessages]
 de.dotnetfx35sp1lp_title=.NET Framework 3.5 SP1 Sprachpaket: Deutsch
+ru.dotnetfx35sp1lp_title=.NET Framework 3.5 с пакетом обновления 1 и языковым пакетом: немецкий
 
 de.dotnetfx35sp1lp_size=22 MB - 98 MB
+ru.dotnetfx35sp1lp_size=22 МБ - 98 МБ
 
 ;http://www.microsoft.com/globaldev/reference/lcid-all.mspx
 de.dotnetfx35sp1lp_lcid=1031

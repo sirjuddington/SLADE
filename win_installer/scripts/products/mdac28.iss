@@ -1,8 +1,10 @@
 [CustomMessages]
 mdac28_title=Microsoft Data Access Components 2.8
+ru.mdac28_title=Microsoft Data Access Components (MDAC) 2.8
 
 en.mdac28_size=5.4 MB
 de.mdac28_size=5,4 MB
+ru.mdac28_size=5,4 МБ
 
 
 [Code]

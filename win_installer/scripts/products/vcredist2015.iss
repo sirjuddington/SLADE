@@ -5,12 +5,16 @@
 
 [CustomMessages]
 vcredist2015_title=Visual C++ 2015 Redistributable
+ru.vcredist2015_title=Распространяемые пакеты Visual C++ 2015
 
 en.vcredist2015_size=6.2 MB
+ru.vcredist2015_size=6,2 МБ
 
 en.vcredist2015_size_x64=6.8 MB
+ru.vcredist2015_size_x64=6,8 МБ
 
 en.vcredist2015_size_ia64=6.8 MB
+ru.vcredist2015_size_ia64=6,8 МБ
 
 ;http://www.microsoft.com/globaldev/reference/lcid-all.mspx
 en.vcredist2015_lcid=''
