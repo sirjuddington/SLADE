@@ -2349,7 +2349,9 @@ bool ArchivePanel::swanConvert() const
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = currentEntry()->index();
+	auto lastEntry = entry_tree_->lastSelectedEntry();
+	if (!lastEntry) return false;
+	int index = lastEntry->index();
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2400,7 +2402,7 @@ bool ArchivePanel::swanConvert() const
 			undo_manager_->beginRecord(fmt::format("Create {}", wadnames[e]));
 
 			auto output = archive->addNewEntry(
-				(archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, currentEntry()->parentDir());
+				(archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, lastEntry->parentDir());
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
@@ -2431,7 +2433,9 @@ bool ArchivePanel::basConvert(bool animdefs)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = currentEntry()->index();
+	auto lastEntry = entry_tree_->lastSelectedEntry();
+	if (!lastEntry) return false;
+	int index = lastEntry->index();
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2448,7 +2452,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 		(animdefs ? (archive->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt") :
                     (archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
 		index,
-		currentEntry()->parentDir());
+		lastEntry->parentDir());
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
