@@ -126,7 +126,7 @@ void BrowserItem::draw(
 		// Create text box if needed
 		if (!text_box_)
 			text_box_ = std::make_unique<TextBox>(
-				fmt::format("{}\n{}", index_, name_.c_str()), font, ui::scalePx(144), ui::scalePx(16));
+				fmt::format("{}\n{}", index_, name_.mb_str()), font, ui::scalePx(144), ui::scalePx(16));
 
 		int top = y;
 		top += ((size - text_box_->height()) * 0.5);

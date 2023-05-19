@@ -694,7 +694,12 @@ void ArchivePanel::addMenus() const
 		SAction::fromId("arch_texeditor")->addToMenu(menu_archive);
 		SAction::fromId("arch_mapeditor")->addToMenu(menu_archive);
 		auto menu_clean = createMaintenanceMenu();
-		menu_archive->AppendSubMenu(menu_clean, "&Maintenance")->SetBitmap(icons::getIcon(icons::Type::Any, "wrench"));
+
+		auto maintenance_item = new wxMenuItem(menu_archive, wxID_ANY, "&Maintenance");
+		maintenance_item->SetSubMenu(menu_clean);
+		maintenance_item->SetBitmap(icons::getIcon(icons::Type::Any, "wrench"));
+		menu_archive->Append(maintenance_item);
+
 		auto menu_scripts = new wxMenu();
 #ifndef NO_LUA
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Archive, "arch_script");
@@ -2347,7 +2352,10 @@ bool ArchivePanel::swanConvert() const
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = currentEntry()->index();
+	auto lastEntry = entry_tree_->lastSelectedEntry();
+	if (!lastEntry)
+		return false;
+	int index = lastEntry->index();
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2398,7 +2406,7 @@ bool ArchivePanel::swanConvert() const
 			undo_manager_->beginRecord(fmt::format("Create {}", wadnames[e]));
 
 			auto output = archive->addNewEntry(
-				(archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, currentEntry()->parentDir());
+				(archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, lastEntry->parentDir());
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
@@ -2429,7 +2437,10 @@ bool ArchivePanel::basConvert(bool animdefs)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = currentEntry()->index();
+	auto lastEntry = entry_tree_->lastSelectedEntry();
+	if (!lastEntry)
+		return false;
+	int index = lastEntry->index();
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2444,9 +2455,9 @@ bool ArchivePanel::basConvert(bool animdefs)
 	// Create new entry
 	auto output = archive->addNewEntry(
 		(animdefs ? (archive->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt") :
-                    (archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
+					(archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
 		index,
-		currentEntry()->parentDir());
+		lastEntry->parentDir());
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -3191,9 +3202,21 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_check_duplicates2")
 		archiveoperations::checkDuplicateEntryContent(archive.get());
 
+	else if (id == "arch_check_zdoom_texture_duplicates")
+		archiveoperations::checkDuplicateZDoomTextures(archive.get());
+
+	else if (id == "arch_check_zdoom_patch_duplicates")
+		archiveoperations::checkDuplicateZDoomPatches(archive.get());
+
 	// Archive->Maintenance->Check Duplicate Entry Names
 	else if (id == "arch_clean_iwaddupes")
 		archiveoperations::removeEntriesUnchangedFromIWAD(archive.get());
+
+	else if (id == "arch_check_iwadoverrides")
+		archiveoperations::checkOverriddenEntriesInIWAD(archive.get());
+
+	else if (id == "arch_check_zdoomiwadtexoverrides")
+		archiveoperations::checkZDoomOverriddenEntriesInIWAD(archive.get());
 
 	// Archive->Maintenance->Replace in Maps
 	else if (id == "arch_replace_maps")
@@ -3425,8 +3448,12 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 	SAction::fromId("arch_clean_flats")->addToMenu(menu_clean);
 	SAction::fromId("arch_clean_zdoom_textures")->addToMenu(menu_clean);
 	SAction::fromId("arch_clean_iwaddupes")->addToMenu(menu_clean);
+	SAction::fromId("arch_check_iwadoverrides")->addToMenu(menu_clean);
+	SAction::fromId("arch_check_zdoomiwadtexoverrides")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_duplicates")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
+	SAction::fromId("arch_check_zdoom_texture_duplicates")->addToMenu(menu_clean);
+	SAction::fromId("arch_check_zdoom_patch_duplicates")->addToMenu(menu_clean);
 	SAction::fromId("arch_replace_maps")->addToMenu(menu_clean);
 	return menu_clean;
 }
@@ -3546,6 +3573,9 @@ void ArchivePanel::onEntryListSelectionChange(wxDataViewEvent& e)
 // -----------------------------------------------------------------------------
 void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 {
+	auto archive  = archive_.lock();
+	bool has_dirs = archive->formatDesc().supports_dirs;
+
 	// Get selected entries
 	auto selection = entry_tree_->selectedEntries();
 
@@ -3667,32 +3697,49 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 
 	// Generate context menu
 	wxMenu context;
-	SAction::fromId("arch_entry_rename")->addToMenu(&context, true);
-	if (selection.size() > 1)
-		SAction::fromId("arch_entry_rename_each")->addToMenu(&context, true);
-	SAction::fromId("arch_entry_delete")->addToMenu(&context, true);
-	if (modified_selected)
-		SAction::fromId("arch_entry_revert")->addToMenu(&context, true);
-	context.AppendSeparator();
-	SAction::fromId("arch_entry_cut")->addToMenu(&context, true);
-	SAction::fromId("arch_entry_copy")->addToMenu(&context, true);
-	SAction::fromId("arch_entry_paste")->addToMenu(&context, true);
-	context.AppendSeparator();
-	SAction::fromId("arch_entry_import")->addToMenu(&context, true);
-	SAction::fromId("arch_entry_export")->addToMenu(&context, true);
-	context.AppendSeparator();
-	if (canMoveEntries())
+	if (!selection.empty())
 	{
-		SAction::fromId("arch_entry_moveup")->addToMenu(&context, true);
-		SAction::fromId("arch_entry_movedown")->addToMenu(&context, true);
-		SAction::fromId("arch_entry_sort")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_rename")->addToMenu(&context, true);
+		if (selection.size() > 1)
+			SAction::fromId("arch_entry_rename_each")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_delete")->addToMenu(&context, true);
+		if (modified_selected)
+			SAction::fromId("arch_entry_revert")->addToMenu(&context, true);
 		context.AppendSeparator();
+		SAction::fromId("arch_entry_cut")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_copy")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_paste")->addToMenu(&context, true);
+		context.AppendSeparator();
+		SAction::fromId("arch_entry_import")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_export")->addToMenu(&context, true);
+		context.AppendSeparator();
+		if (canMoveEntries())
+		{
+			SAction::fromId("arch_entry_moveup")->addToMenu(&context, true);
+			SAction::fromId("arch_entry_movedown")->addToMenu(&context, true);
+			SAction::fromId("arch_entry_sort")->addToMenu(&context, true);
+			context.AppendSeparator();
+		}
+		if (selection.size() == 1)
+			SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
 	}
-	if (selection.size() == 1)
-		SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
+	else
+	{
+		// No entry selected
+		SAction::fromId("arch_entry_paste")->addToMenu(&context, true);
+		context.AppendSeparator();
+		SAction::fromId("arch_importfiles")->addToMenu(&context, true);
+		SAction::fromId("arch_importdir")->addToMenu(&context, true);
+	}
 
 	// Add 'Open In' menu
-	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(icons::getIcon(icons::General, "open"));
+	if (!selection.empty())
+	{
+		auto open_item = new wxMenuItem(&context, wxID_ANY, "Open");
+		open_item->SetSubMenu(createEntryOpenMenu(category));
+		open_item->SetBitmap(icons::getIcon(icons::General, "open"));
+		context.Append(open_item);
+	}
 
 	// Add custom menu items
 	wxMenu* custom;
@@ -3742,18 +3789,21 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 	}
 
 	// 'View As' menu
-	if (context_submenus)
+	if (!selection.empty())
 	{
-		auto viewas = new wxMenu();
-		context.AppendSubMenu(viewas, "View As");
-		SAction::fromId("arch_view_text")->addToMenu(viewas, "Text");
-		SAction::fromId("arch_view_hex")->addToMenu(viewas, "Hex");
-	}
-	else
-	{
-		context.AppendSeparator();
-		SAction::fromId("arch_view_text")->addToMenu(&context, true);
-		SAction::fromId("arch_view_hex")->addToMenu(&context, true);
+		if (context_submenus)
+		{
+			auto viewas = new wxMenu();
+			context.AppendSubMenu(viewas, "View As");
+			SAction::fromId("arch_view_text")->addToMenu(viewas, "Text");
+			SAction::fromId("arch_view_hex")->addToMenu(viewas, "Hex");
+		}
+		else
+		{
+			context.AppendSeparator();
+			SAction::fromId("arch_view_text")->addToMenu(&context, true);
+			SAction::fromId("arch_view_hex")->addToMenu(&context, true);
+		}
 	}
 
 	// Add gfx-related menu items if gfx are selected (multi-select only)
@@ -3857,6 +3907,22 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		context.AppendSubMenu(menu_scripts, "Run &Script");
 	}
 #endif
+
+	// New entry/dir options
+	// Would be nice to eventually have each different type of entry that can be
+	// created in a submenu to skip the new entry/dir dialog but this will do
+	// for now
+	context.AppendSeparator();
+	if (has_dirs)
+	{
+		// 'New' menu for archives supporting directories
+		auto menu_new = new wxMenu();
+		SAction::fromId("arch_newentry")->addToMenu(menu_new, true, "Entry");
+		SAction::fromId("arch_newdir")->addToMenu(menu_new, true, "Directory");
+		context.AppendSubMenu(menu_new, "New");
+	}
+	else
+		SAction::fromId("arch_newentry")->addToMenu(&context, true);
 
 	// Popup the context menu
 	PopupMenu(&context);

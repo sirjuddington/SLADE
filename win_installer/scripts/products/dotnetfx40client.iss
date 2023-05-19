@@ -6,8 +6,10 @@
 
 [CustomMessages]
 dotnetfx40client_title=.NET Framework 4.0 Client
+ru.dotnetfx40client_title=.NET Framework 4.0 клиентский
 
 dotnetfx40client_size=3 MB - 197 MB
+ru.dotnetfx40client_size=3 МБ - 197 МБ
 
 ;http://www.microsoft.com/globaldev/reference/lcid-all.mspx
 en.dotnetfx40client_lcid=''

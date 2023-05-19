@@ -5,6 +5,7 @@
 // Forward declarations
 namespace slade::audio
 {
+class Music;
 class ModMusic;
 class Mp3Music;
 } // namespace slade::audio
@@ -12,7 +13,6 @@ namespace sf
 {
 class SoundBuffer;
 class Sound;
-class Music;
 } // namespace sf
 
 namespace slade
@@ -64,7 +64,7 @@ private:
 
 	unique_ptr<sf::SoundBuffer> sound_buffer_;
 	unique_ptr<sf::Sound>       sound_;
-	unique_ptr<sf::Music>       music_;
+	unique_ptr<audio::Music>    music_;
 	unique_ptr<audio::ModMusic> mod_;
 	unique_ptr<audio::Mp3Music> mp3_;
 

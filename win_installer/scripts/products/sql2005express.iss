@@ -5,12 +5,15 @@
 
 [CustomMessages]
 sql2005express_title=SQL Server 2005 Express SP3
+ru.sql2005express_title=SQL Server 2005 Express с пакетом обновления 3
 
 en.sql2005express_size=38.1 MB
 de.sql2005express_size=38,1 MB
+ru.sql2005express_size=38,1 МБ
 
 en.sql2005express_size_x64=58.1 MB
 de.sql2005express_size_x64=58,1 MB
+ru.sql2005express_size_x64=58,1 МБ
 
 
 [Code]

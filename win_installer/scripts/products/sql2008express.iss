@@ -10,9 +10,11 @@ sql2008expressr2_title=SQL Server 2008 Express R2
 
 en.sql2008expressr2_size=58.2 MB
 de.sql2008expressr2_size=58,2 MB
+ru.sql2008expressr2_size=58,2 МБ
 
 en.sql2008expressr2_size_x64=74.1 MB
 de.sql2008expressr2_size_x64=74,1 MB
+ru.sql2008expressr2_size_x64=74,1 МБ
 
 
 [Code]

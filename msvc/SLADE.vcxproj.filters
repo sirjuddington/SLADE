@@ -2012,6 +2012,9 @@
     <ClInclude Include="..\src\Library\ArchiveRunConfig.h">
       <Filter>Library</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Audio\Music.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />

@@ -93,7 +93,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	Bind(wxEVT_KILL_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_TIMER, &MapCanvas::onRTimer, this);
 
-	timer_.Start(map_bg_ms, true);
+	timer_.Start(map_bg_ms);
 }
 
 // -----------------------------------------------------------------------------
@@ -157,8 +157,9 @@ void MapCanvas::mouseLook3d()
 		auto overlay_current = context_->currentOverlay();
 		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
-			// Get relative mouse movement (scale with dpi on macOS)
-			const double scale     = app::platform() == app::MacOS ? GetContentScaleFactor() : 1.;
+			// Get relative mouse movement (scale with dpi on macOS and Linux)
+			const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux); 
+			const double scale = useScaleFactor ? GetContentScaleFactor() : 1.;
 			const double threshold = scale - 1.0;
 
 			wxRealPoint mouse_pos = wxGetMousePosition();
@@ -505,8 +506,6 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
 		Refresh();
 	}
-
-	timer_.Start(map_bg_ms, true);
 }
 
 // -----------------------------------------------------------------------------

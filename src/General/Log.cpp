@@ -31,8 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "thirdparty/fmt/include/fmt/chrono.h"
-#include "thirdparty/fmt/include/fmt/format.h"
+#include <fmt/chrono.h>
+#include <fmt/format.h>
 #include <fstream>
 
 using namespace slade;

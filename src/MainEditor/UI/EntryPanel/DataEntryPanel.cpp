@@ -613,7 +613,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		{
 			columns_.emplace_back("ID", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("X Position", ColType::IntSigned, 2, 2);
-			columns_.emplace_back("Y Position", ColType::IntSigned, 2, 5);
+			columns_.emplace_back("Y Position", ColType::IntSigned, 2, 4);
 			columns_.emplace_back("Z Height", ColType::IntSigned, 2, 6);
 			columns_.emplace_back("Direction", ColType::IntSigned, 2, 8);
 			columns_.emplace_back("Type", ColType::IntUnsigned, 2, 10);

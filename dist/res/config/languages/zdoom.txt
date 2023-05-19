@@ -11,7 +11,7 @@ z_animdefs {
 	keywords = {
 		texture, flat, tics, rand, range, fit, switch, sound, animateddoor,
 		pic, warp, warp2, on, off, opensound, closesound, cameratexture, worldpanning,
-		notrim
+		notrim, canvastexture
 	}
 
 	constants = {
@@ -28,8 +28,9 @@ z_cvarinfo {
 
 	keywords = {
 		// Scopes
-		server, user,
+		server, user, nosave,
 
+		// Flags
 		noarchive, cheat, latch,
 
 		// Types
@@ -39,6 +40,10 @@ z_cvarinfo {
 	constants = {
 		//Boolean values
 		TRUE, FALSE
+	}
+
+	functions {
+		HandlerClass = "classname";
 	}
 }
 
@@ -251,7 +256,7 @@ z_mapinfo {
 		propermonsterfallingdamage, disableskyboxao, enableskyboxao, e1m8special,
 		e2m8special, e3m8special, e4m6special, e4m8special, disableshadowmap, enableshadowmap,
 		avoidmelee, compat_avoidhazards, compat_stayonlift, compat_nombf21, compat_vileghosts,
-		attenuatelights, intro, outro,
+		attenuatelights, intro, outro, lightblendmode, cvar_redirect,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -328,7 +333,8 @@ z_menudef {
 		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command,
 		NetgameMessage, StaticPatchCentered, StaticTextCentered, MouseWindow, CenterMenu,
 		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField,
-		ScaleSlider, Size, AnimatedTransition, FlagOption, Before, After
+		ScaleSlider, Size, AnimatedTransition, FlagOption, Before, After, DontDim, DontBlur,
+		ForceList, Animated
 	}
 	
 	functions { ifgame = "game, [...]"; ifoption = "option, [...]"; }
@@ -351,13 +357,14 @@ z_modeldef {
 	keywords = {
 		MODEL, PATH, SKIN, SCALE, FRAME, FRAMEINDEX,
 		Rotation-Speed, Rotation-Vector, Rotation-Center, 
-		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin
+		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin,
+		Animation
 	}
 
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
 		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL, DONTCULLBACKFACES,
-		SCALEWEAPONFOV
+		SCALEWEAPONFOV, MODELSAREATTACHMENTS, CORRECTPIXELSTRETCH
 	}
 }
 

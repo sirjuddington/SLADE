@@ -70,7 +70,7 @@ BEGIN
             VALUE "FileDescription", "SLADE"
             VALUE "FileVersion", "3.3.0 alpha"
             VALUE "InternalName", "SLADE.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2022"
+            VALUE "LegalCopyright", "Copyright (C) 2023"
             VALUE "OriginalFilename", "SLADE.exe"
             VALUE "ProductName", "SLADE"
             VALUE "ProductVersion", "3.3.0 alpha"

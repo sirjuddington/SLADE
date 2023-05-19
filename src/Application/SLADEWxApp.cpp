@@ -188,7 +188,7 @@ public:
 		img.LoadFile(app::path("STFDEAD0.png", app::Dir::Temp));
 		img.Rescale(img.GetWidth(), img.GetHeight(), wxIMAGE_QUALITY_NEAREST);
 		auto picture = new wxStaticBitmap(this, -1, wxBitmap(img));
-		hbox->Add(picture, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxTOP | wxBOTTOM, 10);
+		hbox->Add(picture, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxTOP | wxBOTTOM, 10);
 
 		// Add general crash message
 		string message =
@@ -197,7 +197,7 @@ public:
 			"issue details, along with a description of what you were doing at the time of the "
 			"crash.";
 		auto label = new wxStaticText(this, -1, message);
-		hbox->Add(label, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 10);
+		hbox->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxALL, 10);
 		label->Wrap(480 - 20 - picture->GetSize().x);
 
 		// Add stack trace text area
@@ -380,7 +380,8 @@ IMPLEMENT_APP(SLADEWxApp)
 bool SLADEWxApp::singleInstanceCheck()
 {
 	single_instance_checker_ = new wxSingleInstanceChecker;
-	single_instance_checker_->Create(wxString::Format("SLADE-%s", app::version().toString()));
+	single_instance_checker_->Create(
+		wxString::Format("SLADE-%s", app::version().toString()), wxStandardPaths::Get().GetUserDataDir());
 
 	if (argc == 1)
 		return true;

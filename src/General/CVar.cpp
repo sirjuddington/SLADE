@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Utility/StringUtils.h"
-#include "thirdparty/fmt/include/fmt/format.h"
+#include <fmt/format.h>
 
 using namespace slade;
 

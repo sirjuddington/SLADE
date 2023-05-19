@@ -5,6 +5,7 @@ jet4sp8_title=Jet 4
 
 en.jet4sp8_size=3.7 MB
 de.jet4sp8_size=3,7 MB
+ru.jet4sp8_size=3,7 МБ
 
 
 [Code]

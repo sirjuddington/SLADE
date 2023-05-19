@@ -113,7 +113,6 @@ include_directories(
 	${MPG123_INCLUDE_DIR}
 	.
 	..
-	../thirdparty/dumb
 	../thirdparty/glad/include
 	../thirdparty
 	./Application
@@ -233,7 +232,7 @@ else(APPLE)
 		install(FILES "${SLADE_OUTPUT_DIR}/slade.pk3"
 			DESTINATION share/slade3
 			)
-		
+
 		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/logo_icon.png"
 			DESTINATION share/icons/
 			RENAME net.mancubus.SLADE.png

@@ -255,9 +255,16 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 				s2_index = static_cast<unsigned short>(data.side2);
 		}
 
+		// Copy side(s) if they already have parent lines (compressed sidedefs)
+		auto s1 = map_data.sides().at(s1_index);
+		auto s2 = map_data.sides().at(s2_index);
+		if (s1 && s1->parentLine())
+			s1 = map_data.addSide(std::make_unique<MapSide>(s1->sector(), s1));
+		if (s2 && s2->parentLine())
+			s2 = map_data.addSide(std::make_unique<MapSide>(s2->sector(), s2));
+
 		// Create line
-		auto line = map_data.addLine(std::make_unique<MapLine>(
-			v1, v2, map_data.sides().at(s1_index), map_data.sides().at(s2_index), data.type, data.flags));
+		auto line = map_data.addLine(std::make_unique<MapLine>(v1, v2, s1, s2, data.type, data.flags));
 
 		// Set properties
 		line->setArg(0, data.sector_tag);

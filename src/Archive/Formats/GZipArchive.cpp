@@ -258,14 +258,14 @@ bool GZipArchive::write(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Renames the entry and set the fname flag
 // -----------------------------------------------------------------------------
-bool GZipArchive::renameEntry(ArchiveEntry* entry, string_view name)
+bool GZipArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
 
 	// Do default rename
-	bool ok = Archive::renameEntry(entry, name);
+	bool ok = Archive::renameEntry(entry, name, force);
 	if (ok)
 		flags_ |= FLG_FNAME;
 	return ok;

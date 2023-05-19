@@ -34,7 +34,7 @@ public:
 	bool removeEntry(ArchiveEntry* entry, bool) override { return false; }
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string_view name) override { return false; }
+	bool renameEntry(ArchiveEntry* entry, string_view name, bool) override { return false; }
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override { return false; }
