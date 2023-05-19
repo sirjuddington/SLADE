@@ -1940,6 +1940,9 @@
     <ClInclude Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.h">
       <Filter>SLADEMap\MapFormat</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Audio\Music.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />

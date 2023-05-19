@@ -686,6 +686,7 @@
     <ClInclude Include="..\src\Audio\MIDIPlayer.h" />
     <ClInclude Include="..\src\Audio\ModMusic.h" />
     <ClInclude Include="..\src\Audio\Mp3Music.h" />
+    <ClInclude Include="..\src\Audio\Music.h" />
     <ClInclude Include="..\src\common.h" />
     <ClInclude Include="..\src\common2.h" />
     <ClInclude Include="..\src\General\Console.h" />
