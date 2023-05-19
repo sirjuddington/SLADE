@@ -457,7 +457,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 		if (texture_->loadPatchImage(num, temp, parent_, &palette_, blend_rgba_))
 		{
 			// Load the image as a texture
-			gl::Texture::loadImage(patch_textures_[num], temp, &palette_);
+			patch_textures_[num] = gl::Texture::createFromImage(temp, &palette_);
 		}
 		else
 			patch_textures_[num] = gl::Texture::missingTexture();
