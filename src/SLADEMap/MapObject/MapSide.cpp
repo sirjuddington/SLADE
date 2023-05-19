@@ -102,6 +102,17 @@ MapSide::MapSide(MapSector* sector, ParseTreeNode* udmf_def) : MapObject{ Type::
 }
 
 // -----------------------------------------------------------------------------
+// MapSide class constructor to copy another side
+// -----------------------------------------------------------------------------
+MapSide::MapSide(MapSector* sector, MapSide* copy_side) : MapObject{ Type::Side }, sector_{ sector }
+{
+	if (sector)
+		sector->connectSide(this);
+
+	MapSide::copy(copy_side);
+}
+
+// -----------------------------------------------------------------------------
 // Copies another MapSide object [c]
 // -----------------------------------------------------------------------------
 void MapSide::copy(MapObject* c)

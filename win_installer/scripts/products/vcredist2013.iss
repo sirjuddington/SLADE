@@ -5,12 +5,16 @@
 
 [CustomMessages]
 vcredist2013_title=Visual C++ 2013 Redistributable
+ru.vcredist2013_title=Распространяемые пакеты Visual C++ 2013
 
 en.vcredist2013_size=6.2 MB
+ru.vcredist2013_size=6,2 МБ
 
 en.vcredist2013_size_x64=6.8 MB
+ru.vcredist2013_size_x64=6,8 МБ
 
 en.vcredist2013_size_ia64=6.8 MB
+ru.vcredist2013_size_ia64=6,8 МБ
 
 ;http://www.microsoft.com/globaldev/reference/lcid-all.mspx
 en.vcredist2013_lcid=''
