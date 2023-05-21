@@ -771,7 +771,7 @@ CONSOLE_COMMAND(crash, 0, false)
 		== wxYES)
 	{
 		uint8_t* test = nullptr;
-		test[123]     = 5;
+		*test         = 5;
 	}
 }
 
