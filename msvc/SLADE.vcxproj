@@ -962,16 +962,6 @@
     <Manifest Include="SLADE.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\dist\res\config\entry_types\types_archives.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_audio.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_fonts.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_gfx_doom.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_gfx_others.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_gfx_std.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_map.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_misc.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_model.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_text.txt" />
     <Text Include="..\misc\stuff.txt" />
   </ItemGroup>
   <ItemGroup>

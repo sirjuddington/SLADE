@@ -100,9 +100,6 @@
     <Filter Include="Archive\EntryType\Data Formats">
       <UniqueIdentifier>{639d4195-f616-4708-bc9b-82e7652914c0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Archive\EntryType\Config">
-      <UniqueIdentifier>{e7b5e9e0-b8de-4082-845a-f7bd5fa91926}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Map Editor\Edit">
       <UniqueIdentifier>{8c15c8af-a29b-46c5-b73c-699f04cea254}</UniqueIdentifier>
     </Filter>
@@ -1958,36 +1955,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\misc\stuff.txt" />
-    <Text Include="..\dist\res\config\entry_types\types_archives.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\entry_types\types_audio.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\entry_types\types_fonts.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\entry_types\types_gfx_doom.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\entry_types\types_gfx_others.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\entry_types\types_gfx_std.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\entry_types\types_map.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\entry_types\types_misc.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\entry_types\types_model.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\entry_types\types_text.txt">
-      <Filter>Archive\EntryType\Config</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />
