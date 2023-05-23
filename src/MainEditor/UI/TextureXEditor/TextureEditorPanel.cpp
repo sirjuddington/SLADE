@@ -54,6 +54,8 @@ namespace
 // double-clicking a patch in the patch browser to select it
 bool hack_nodrag = false;
 } // namespace
+CVAR(Bool, tx_apply_scale, true, CVar::Flag::Save)
+CVAR(Bool, tx_show_outside, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -95,9 +97,9 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 void TextureEditorPanel::setupLayout()
 {
 	// Init controls
-	cb_tex_scale_->SetValue(false);
+	cb_tex_scale_->SetValue(tx_apply_scale);
 	cb_tex_arc_->SetValue(tx_arc);
-	cb_draw_outside_->SetValue(true);
+	cb_draw_outside_->SetValue(tx_show_outside);
 	choice_viewtype_->SetSelection(0);
 	tex_canvas_->setViewType(CTextureCanvas::View::Normal);
 	cb_blend_rgba_->SetValue(false);
@@ -411,7 +413,7 @@ void TextureEditorPanel::updateTextureName(const wxString& new_name) const
 // ----------------------------------------------------------------------------
 // Loads a TEXTUREX format texture into the editor
 // -----------------------------------------------------------------------------
-bool TextureEditorPanel::openTexture(CTexture* tex, TextureXList* list)
+bool TextureEditorPanel::openTexture(const CTexture* tex, TextureXList* list)
 {
 	// Check texture was given
 	if (!tex)
@@ -744,6 +746,7 @@ bool TextureEditorPanel::handleSAction(string_view id)
 void TextureEditorPanel::onDrawOutsideChanged(wxCommandEvent& e)
 {
 	// Set texture canvas 'show outside' option depending on checkbox value
+	tx_show_outside = cb_draw_outside_->GetValue();
 	tex_canvas_->drawOutside(cb_draw_outside_->GetValue());
 
 	// Update UI
@@ -1195,6 +1198,7 @@ void TextureEditorPanel::onPatchPositionYChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::onApplyScaleChanged(wxCommandEvent& e)
 {
+	tx_apply_scale = cb_tex_scale_->GetValue();
 	tex_canvas_->applyTexScale(cb_tex_scale_->GetValue());
 	tex_canvas_->redraw();
 }
