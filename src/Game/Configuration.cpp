@@ -319,7 +319,7 @@ void Configuration::readUDMFProperties(const ParseTreeNode* block, UDMFPropMap& 
 // -----------------------------------------------------------------------------
 #define SET_UDMF_FEATURE(feature, field)              \
 	else if (strutil::equalCI(node->name(), #field))( \
-		supported_features_[static_cast<unsigned>(feature)]) = node->boolValue()
+		udmf_features_[static_cast<unsigned>(feature)]) = node->boolValue()
 #define SET_FEATURE(feature, value) supported_features_[static_cast<unsigned>(feature)] = value
 void Configuration::readGameSection(const ParseTreeNode* node_game, bool port_section)
 {
