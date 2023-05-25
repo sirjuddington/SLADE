@@ -9,7 +9,7 @@ class SToolBarGroup : public wxPanel
 {
 public:
 	SToolBarGroup(SToolBar* parent, const wxString& name, bool force_name = false);
-	~SToolBarGroup() = default;
+	~SToolBarGroup() override = default;
 
 	wxString name() const { return name_; }
 	bool     hidden() const { return hidden_; }
@@ -17,7 +17,7 @@ public:
 
 	void hide(bool hide = true);
 	void redraw();
-	void showGroupSeparator(bool show = true) { separator_->Show(show); }
+	void showGroupSeparator(bool show = true) const { separator_->Show(show); }
 
 	SToolBarButton* addActionButton(const wxString& action, const wxString& icon = "", bool show_name = false);
 	SToolBarButton* addActionButton(
@@ -34,7 +34,7 @@ public:
 	void            setAllButtonsEnabled(bool enable = true);
 	void            setAllButtonsChecked(bool check = true);
 
-	void addToMenu(wxMenu& menu);
+	void addToMenu(wxMenu& menu) const;
 
 private:
 	wxString      name_;
@@ -63,26 +63,26 @@ class SToolBar : public wxPanel
 {
 public:
 	SToolBar(wxWindow* parent, bool main_toolbar = false, wxOrientation orientation = wxHORIZONTAL);
-	~SToolBar() = default;
+	~SToolBar() override = default;
 
 	const vector<SToolBarGroup*>& groups() const { return groups_; }
 	bool                          mainToolbar() const { return main_toolbar_; }
 	wxOrientation                 orientation() const { return orientation_; }
 
-	SToolBarGroup*  group(const wxString& name);
+	SToolBarGroup*  group(const wxString& name) const;
 	void            addGroup(SToolBarGroup* group, bool at_end = false);
 	void            deleteGroup(const wxString& name);
 	void            deleteCustomGroups();
-	void            addActionGroup(const wxString& name, wxArrayString actions, bool at_end = false);
+	void            addActionGroup(const wxString& name, const wxArrayString& actions, bool at_end = false);
 	void            addActionGroup(const wxString& name, const vector<string>& actions, bool at_end = false);
 	void            enableGroup(const wxString& name, bool enable = true);
-	void            populateGroupsMenu(wxMenu* menu, int start_id = 0);
+	void            populateGroupsMenu(wxMenu* menu, int start_id = 0) const;
 	void            enableContextMenu(bool enable = true) { enable_context_menu_ = enable; }
 	SToolBarButton* findActionButton(const wxString& action_id) const;
 
 	void updateLayout(bool force = false, bool generate_event = true);
 	void hideOverflowGroups();
-	int  calculateNumRows(int width);
+	int  calculateNumRows(int width) const;
 
 	void drawBorder(bool draw = true) { draw_border_ = draw; }
 

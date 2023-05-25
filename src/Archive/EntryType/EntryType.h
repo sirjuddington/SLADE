@@ -36,7 +36,7 @@ public:
 
 	// Static functions
 	static void               initTypes();
-	static bool               readEntryTypeDefinition(const MemChunk& mc, string_view source);
+	static bool               readEntryTypeDefinitions(string_view definitions, string_view source);
 	static bool               loadEntryTypes();
 	static bool               detectEntryType(ArchiveEntry& entry);
 	static EntryType*         fromId(string_view id);

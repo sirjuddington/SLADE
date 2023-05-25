@@ -199,6 +199,25 @@ public:
 	}
 };
 
+class XGLNodes3DataFormat : public EntryDataFormat
+{
+public:
+	XGLNodes3DataFormat() : EntryDataFormat("xgl3") {}
+	~XGLNodes3DataFormat() override = default;
+
+	int isThisFormat(const MemChunk& mc) override
+	{
+		// Check size
+		if (mc.size() > 4)
+		{
+			// Check for XGL3 header
+			if (mc[0] == 'X' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == '3')
+				return MATCH_TRUE;
+		}
+		return MATCH_FALSE;
+	}
+};
+
 class ACS0DataFormat : public EntryDataFormat
 {
 public:
