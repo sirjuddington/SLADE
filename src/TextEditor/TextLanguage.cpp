@@ -861,10 +861,10 @@ bool TextLanguage::readLanguageDefinition(const MemChunk& mc, string_view source
 				// ZScript function info which cannot be parsed from (g)zdoom.pk3
 				else
 				{
-					ZFuncExProp ex_prop;
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						auto* child_func = child->childPTN(f);
+						ZFuncExProp ex_prop;
+						auto*       child_func = child->childPTN(f);
 						for (unsigned p = 0; p < child_func->nChildren(); ++p)
 						{
 							auto* child_prop = child_func->childPTN(p);

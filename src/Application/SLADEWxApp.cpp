@@ -44,6 +44,7 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include <wx/statbmp.h>
+#include <wx/filefn.h>
 #undef BOOL
 #ifdef UPDATEREVISION
 #include "gitinfo.h"
@@ -379,9 +380,12 @@ IMPLEMENT_APP(SLADEWxApp)
 // -----------------------------------------------------------------------------
 bool SLADEWxApp::singleInstanceCheck()
 {
+	auto data_dir = wxStandardPaths::Get().GetUserDataDir();
+	if (!wxDirExists(data_dir))
+		wxMkdir(data_dir);
+
 	single_instance_checker_ = new wxSingleInstanceChecker;
-	single_instance_checker_->Create(
-		wxString::Format("SLADE-%s", app::version().toString()), wxStandardPaths::Get().GetUserDataDir());
+	single_instance_checker_->Create(wxString::Format("SLADE-%s", app::version().toString()), data_dir);
 
 	if (argc == 1)
 		return true;
@@ -773,7 +777,7 @@ CONSOLE_COMMAND(crash, 0, false)
 		== wxYES)
 	{
 		uint8_t* test = nullptr;
-		test[123]     = 5;
+		*test         = 5;
 	}
 }
 

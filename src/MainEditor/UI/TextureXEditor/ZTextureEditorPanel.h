@@ -11,7 +11,7 @@ class ZTextureEditorPanel : public TextureEditorPanel
 {
 public:
 	ZTextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor) : TextureEditorPanel{ parent, tx_editor } {}
-	~ZTextureEditorPanel() = default;
+	~ZTextureEditorPanel() override = default;
 
 	// UI Stuff
 	wxPanel* createTextureControls(wxWindow* parent) override;
@@ -58,13 +58,13 @@ private:
 	// Events
 	void onCBBlendRGBAChanged(wxCommandEvent& e);
 	void onChoiceViewTypeSelected(wxCommandEvent& e);
-	void onTexScaleXChanged(wxCommandEvent& e);
-	void onTexScaleYChanged(wxCommandEvent& e);
+	void onTexScaleXChanged(wxCommandEvent& e) override;
+	void onTexScaleYChanged(wxCommandEvent& e) override;
 	void onTexOffsetXChanged(wxCommandEvent& e);
 	void onTexOffsetYChanged(wxCommandEvent& e);
 	void onTexTypeChanged(wxCommandEvent& e);
 	void onTexOptionalChanged(wxCommandEvent& e);
-	void onTexWorldPanningChanged(wxCommandEvent& e);
+	void onTexWorldPanningChanged(wxCommandEvent& e) override;
 	void onTexNoDecalsChanged(wxCommandEvent& e);
 	void onTexNullTextureChanged(wxCommandEvent& e);
 	void onPatchFlipXChanged(wxCommandEvent& e);

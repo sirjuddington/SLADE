@@ -86,7 +86,9 @@ void ui::init(double scale)
 {
 	splash_window = std::make_unique<SplashWindow>();
 
+#if wxCHECK_VERSION(3, 1, 4)
 	scale = splash_window->GetDPIScaleFactor();
+#endif
 
 	// Set scale + metrics
 	ui::scale    = scale;

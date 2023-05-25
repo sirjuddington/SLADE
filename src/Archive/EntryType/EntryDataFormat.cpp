@@ -331,6 +331,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<XNodesDataFormat>();
 	registerDataFormat<XGLNodesDataFormat>();
 	registerDataFormat<XGLNodes2DataFormat>();
+	registerDataFormat<XGLNodes3DataFormat>();
 	registerDataFormat<DMDModelDataFormat>();
 	registerDataFormat<MDLModelDataFormat>();
 	registerDataFormat<MD2ModelDataFormat>();

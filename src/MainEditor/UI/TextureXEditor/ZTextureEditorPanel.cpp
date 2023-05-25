@@ -36,7 +36,6 @@
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
-#include "UI/Controls/SIconButton.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -58,6 +57,8 @@ CTextureCanvas::View view_types[] = { CTextureCanvas::View::Normal,
 									  CTextureCanvas::View::Sprite,
 									  CTextureCanvas::View::HUD };
 }
+CVAR(Bool, tx_truecolour, true, CVar::Flag::Save)
+CVAR(Int, tx_offset_type, 0, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -94,8 +95,8 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Size
-	const auto spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
-	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
+	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
+	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
 	spin_tex_width_  = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
 	spin_tex_height_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Size:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -157,7 +158,10 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	choice_viewtype_->Bind(wxEVT_CHOICE, &ZTextureEditorPanel::onChoiceViewTypeSelected, this);
 
 	// Show extra view options
+	cb_blend_rgba_->SetValue(tx_truecolour);
 	cb_blend_rgba_->Show(true);
+	choice_viewtype_->SetSelection(tx_offset_type);
+	tex_canvas_->setViewType(view_types[tx_offset_type]);
 	choice_viewtype_->Show(true);
 	label_viewtype_->Show(true);
 
@@ -223,7 +227,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	// Create patches list
 	list_patches_ = new ListView(panel, -1);
 	list_patches_->enableSizeUpdate(false);
-	
+
 	// Create patches toolbar
 	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
 	tb_patches_->addActionGroup(
@@ -252,9 +256,9 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// X Position
-	const auto spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
-	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	spin_patch_left_     = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
+	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
+	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
+	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "X Position:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_patch_left_, { 0, 1 }, { 1, 1 }, wxEXPAND);
 
@@ -441,7 +445,7 @@ void ZTextureEditorPanel::updatePatchControls()
 			case 180: choice_rotation_->SetSelection(2); break;
 			case -90: choice_rotation_->SetSelection(3); break;
 			default: choice_rotation_->SetSelection(-1); break;
-			};
+			}
 
 			// Update patch colour controls
 			switch (patch->blendType())
@@ -571,6 +575,7 @@ void ZTextureEditorPanel::enableBlendControls(bool enable, bool tint) const
 void ZTextureEditorPanel::onCBBlendRGBAChanged(wxCommandEvent& e)
 {
 	// Set rgba blending
+	tx_truecolour = cb_blend_rgba_->GetValue();
 	tex_canvas_->setBlendRGBA(cb_blend_rgba_->GetValue());
 
 	// Update UI
@@ -583,6 +588,7 @@ void ZTextureEditorPanel::onCBBlendRGBAChanged(wxCommandEvent& e)
 void ZTextureEditorPanel::onChoiceViewTypeSelected(wxCommandEvent& e)
 {
 	// Set offset type
+	tx_offset_type = choice_viewtype_->GetSelection();
 	tex_canvas_->setViewType(view_types[choice_viewtype_->GetSelection()]);
 
 	// Update UI
@@ -793,7 +799,7 @@ void ZTextureEditorPanel::onPatchRotationChanged(wxCommandEvent& e)
 	case 2: rot = 180; break;
 	case 3: rot = -90; break;
 	default: rot = 0; break;
-	};
+	}
 
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)

@@ -358,11 +358,11 @@ void slade::EntryType::initTypes()
 // Reads in a block of entry type definitions. Returns false if there was a
 // parsing error, true otherwise
 // -----------------------------------------------------------------------------
-bool EntryType::readEntryTypeDefinition(const MemChunk& mc, string_view source)
+bool EntryType::readEntryTypeDefinitions(string_view definitions, string_view source)
 {
 	// Parse the definition
 	const Parser p;
-	p.parseText(mc, source);
+	p.parseText(definitions, source);
 
 	// Get entry_types tree
 	auto pt_etypes = p.parseTreeRoot()->childPTN("entry_types");
@@ -540,24 +540,22 @@ bool EntryType::loadEntryTypes()
 		return false;
 	}
 
-	// Get entry types directory
-	const auto et_dir = res_archive->dirAtPath("config/entry_types/");
+	// Get entry types config
+	auto etypes_cfg = res_archive->entryAtPath("config/entry_types.cfg");
 
 	// Check it exists
-	if (!et_dir)
+	if (!etypes_cfg)
 	{
-		log::error("config/entry_types does not exist in slade.pk3");
+		log::error("config/entry_types.cfg does not exist in slade.pk3");
 		return false;
 	}
 
-	// Read in each file in the directory
-	bool               etypes_read       = false;
-	const unsigned int et_dir_numEntries = et_dir->numEntries();
-	for (unsigned a = 0; a < et_dir_numEntries; a++)
-	{
-		if (readEntryTypeDefinition(et_dir->entryAt(a)->data(), et_dir->entryAt(a)->name()))
-			etypes_read = true;
-	}
+	// Get full config as string (process #includes)
+	string full_config;
+	strutil::processIncludes(etypes_cfg, full_config);
+
+	// Parse config
+	auto etypes_read = readEntryTypeDefinitions(full_config, "entry_types.cfg");
 
 	// Warn if no types were read (this shouldn't happen unless the resource archive is corrupted)
 	if (!etypes_read)
@@ -582,7 +580,7 @@ bool EntryType::loadEntryTypes()
 		mc.importFile(path);
 
 		// Parse file
-		readEntryTypeDefinition(mc, path);
+		readEntryTypeDefinitions(mc.asString(), path);
 	}
 
 	return true;
