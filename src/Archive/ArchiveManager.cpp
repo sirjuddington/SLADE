@@ -456,6 +456,13 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 		//// Update library
 		// lib_id = library::addOrUpdateArchive(lib_path, *new_archive);
 
+		// Add to parent's child list if parent is open in the manager (it should be)
+		int index_parent = -1;
+		if (entry->parent())
+			index_parent = archiveIndex(entry->parent());
+		if (index_parent >= 0)
+			open_archives_[index_parent].open_children.emplace_back(new_archive);
+
 		// Add the archive
 		auto index = open_archives_.size();
 		addArchive(new_archive);
