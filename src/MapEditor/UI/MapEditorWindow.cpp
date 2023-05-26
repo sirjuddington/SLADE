@@ -520,9 +520,12 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 				wxICON_ERROR);
 			return false;
 		}
-		else
-			return true;
+
+		dlg.saveConfigToDatabase();
+
+		return true;
 	}
+
 	return false;
 }
 

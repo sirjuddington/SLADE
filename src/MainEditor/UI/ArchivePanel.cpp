@@ -4100,7 +4100,10 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 
 				// Attempt to open map
 				if (mapeditor::window()->openMap(info))
+				{
+					dlg.saveConfigToDatabase();
 					mapeditor::window()->Show();
+				}
 				else
 				{
 					mapeditor::window()->Hide();

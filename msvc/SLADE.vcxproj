@@ -326,6 +326,7 @@
     <ClCompile Include="..\src\Library\ArchiveEntry.cpp" />
     <ClCompile Include="..\src\Library\ArchiveFile.cpp" />
     <ClCompile Include="..\src\Library\ArchiveMap.cpp" />
+    <ClCompile Include="..\src\Library\ArchiveMapConfig.cpp" />
     <ClCompile Include="..\src\Library\ArchiveRunConfig.cpp" />
     <ClCompile Include="..\src\Library\ArchiveUIConfig.cpp" />
     <ClCompile Include="..\src\Library\Library.cpp" />
@@ -706,6 +707,7 @@
     <ClInclude Include="..\src\Library\ArchiveEntry.h" />
     <ClInclude Include="..\src\Library\ArchiveFile.h" />
     <ClInclude Include="..\src\Library\ArchiveMap.h" />
+    <ClInclude Include="..\src\Library\ArchiveMapConfig.h" />
     <ClInclude Include="..\src\Library\ArchiveRunConfig.h" />
     <ClInclude Include="..\src\Library\ArchiveUIConfig.h" />
     <ClInclude Include="..\src\Library\Library.h" />
