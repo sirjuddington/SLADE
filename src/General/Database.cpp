@@ -36,11 +36,18 @@
 #include "Database.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Console.h"
+#include "General/UI.h"
+#include "Library/ArchiveFile.h"
+#include "UI/State.h"
+#include "UI/WxUtils.h"
+#include "Utility/DateTime.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
-#include <shared_mutex>
+#include "Utility/Tokenizer.h"
 #include "thirdparty/sqlitecpp/sqlite3/sqlite3.h"
+#include <shared_mutex>
 
 using namespace slade;
 
@@ -239,6 +246,30 @@ database::Transaction database::Context::beginTransaction(bool write) const
 
 namespace slade::database
 {
+void migrateWindowLayout(string_view filename, const char* window_id)
+{
+	// Open layout file
+	Tokenizer tz;
+	if (!tz.openFile(app::path(filename, app::Dir::User)))
+		return;
+
+	// Parse layout
+	vector<StringPair> layouts;
+	while (true)
+	{
+		// Read component+layout pair
+		auto component = tz.getToken();
+		auto layout    = tz.getToken();
+		layouts.emplace_back(component, layout);
+
+		// Check if we're done
+		if (tz.peekToken().empty())
+			break;
+	}
+
+	ui::setWindowLayout(window_id, layouts);
+}
+
 // -----------------------------------------------------------------------------
 // Creates any missing tables/views in the SLADE database [db]
 // -----------------------------------------------------------------------------
@@ -467,6 +498,10 @@ bool database::init()
 		return false;
 	}
 
+	// Migrate pre-3.3.0 config stuff to database
+	if (created)
+		migrateConfigs();
+
 	// Update the database if needed
 	if (!created)
 		return updateDatabase();
@@ -482,15 +517,132 @@ void database::close()
 	db_global.close();
 }
 
-
-
-
-
-
-void c_db(const vector<string>& args);
-ConsoleCommand db_cmd("db", &c_db, 1, false); void c_db(const vector<string>& args)
+// -----------------------------------------------------------------------------
+// Migrates various configurations from text/cfg files (pre-3.3.0) to the
+// SLADE program database
+// -----------------------------------------------------------------------------
+void database::migrateConfigs()
 {
-	auto command = args[0];
+#define MIGRATE_CVAR_BOOL(cvar, state) else if (tz.check(#cvar)) ui::saveStateBool(#state, tz.peek().asBool())
+#define MIGRATE_CVAR_INT(cvar, state) else if (tz.check(#cvar)) ui::saveStateInt(#state, tz.peek().asInt())
+#define MIGRATE_CVAR_STRING(cvar, state) else if (tz.check(#cvar)) ui::saveStateString(#state, tz.peek().text)
+
+	// Migrate window layouts from .layout files
+	migrateWindowLayout("mainwindow.layout", "main");
+	migrateWindowLayout("mapwindow.layout", "map");
+	migrateWindowLayout("scriptmanager.layout", "scriptmanager");
+
+	// Migrate various things from SLADE.cfg
+	Tokenizer tz;
+	if (!tz.openFile(app::path("slade3.cfg", app::Dir::User)))
+		return;
+	while (!tz.atEnd())
+	{
+		// Migrate old CVars to UI state table
+		if (tz.advIf("cvars", 2))
+		{
+			while (!tz.checkOrEnd("}"))
+			{
+				// Last archive format
+				if (tz.check("archive_last_created_format"))
+					ui::saveStateString("ArchiveLastCreatedFormat", tz.peek().text);
+
+				// Window maximized flags
+				MIGRATE_CVAR_BOOL(browser_maximised, BrowserWindowMaximized);
+				MIGRATE_CVAR_BOOL(mw_maximized, MainWindowMaximized);
+				MIGRATE_CVAR_BOOL(mew_maximized, MapEditorWindowMaximized);
+				MIGRATE_CVAR_BOOL(sm_maximized, ScriptManagerWindowMaximized);
+
+				// Entry list column widths
+				MIGRATE_CVAR_INT(elist_colsize_index, EntryListIndexWidth);
+				MIGRATE_CVAR_INT(elist_colsize_size, EntryListSizeWidth);
+				MIGRATE_CVAR_INT(elist_colsize_type, EntryListTypeWidth);
+				MIGRATE_CVAR_INT(elist_colsize_name_list, EntryListNameWidthList);
+				MIGRATE_CVAR_INT(elist_colsize_name_tree, EntryListNameWidthTree);
+
+				// Entry list column visibility
+				MIGRATE_CVAR_BOOL(elist_colindex_show, EntryListIndexVisible);
+				MIGRATE_CVAR_BOOL(elist_colsize_show, EntryListSizeVisible);
+				MIGRATE_CVAR_BOOL(elist_coltype_show, EntryListTypeVisible);
+
+				// Splitter position
+				MIGRATE_CVAR_INT(ap_splitter_position_list, ArchivePanelSplitPosList);
+				MIGRATE_CVAR_INT(ap_splitter_position_tree, ArchivePanelSplitPosTree);
+
+				// Colourize/Tint Dialogs
+				MIGRATE_CVAR_STRING(last_colour, ColouriseDialogLastColour);
+				MIGRATE_CVAR_STRING(last_tint_colour, TintDialogLastColour);
+				MIGRATE_CVAR_INT(last_tint_amount, TintDialogLastAmount);
+
+				// Zoom sliders
+				MIGRATE_CVAR_INT(zoom_gfx, ZoomGfxCanvas);
+				MIGRATE_CVAR_INT(zoom_ctex, ZoomCTextureCanvas);
+
+				// Misc.
+				MIGRATE_CVAR_BOOL(setup_wizard_run, SetupWizardRun);
+
+				tz.adv(2);
+			}
+
+			tz.adv(); // Skip ending }
+		}
+
+		// Migrate recent files list
+		// Going to leave this here commented out as this technically kinda
+		// works but leaves the library incomplete (archives with 0 entries,
+		// fake last opened times etc.) which I'm not sure is the best solution
+		// for keeping recent files, for now I think we'll just drop them
+		//if (tz.advIf("recent_files", 2))
+		//{
+		//	auto time_opened = datetime::now();
+
+		//	while (!tz.checkOrEnd("}"))
+		//	{
+		//		auto path    = wxString::FromUTF8(tz.current().text.c_str());
+		//		auto archive = archive::createIfArchive(path.ToStdString());
+		//		if (archive)
+		//		{
+		//			library::ArchiveFileRow archive_file{ wxutil::strToView(path), archive->formatId() };
+		//			archive_file.last_opened = time_opened++;
+		//			archive_file.insert();
+		//		}
+
+		//		tz.adv();
+		//	}
+
+		//	tz.adv(); // Skip ending }
+		//}
+
+		// Migrate window size/position info
+		if (tz.advIf("window_info", 2))
+		{
+			tz.advIf("{");
+			while (!tz.check("}") && !tz.atEnd())
+			{
+				auto id     = tz.current().text;
+				int  width  = tz.next().asInt();
+				int  height = tz.next().asInt();
+				int  left   = tz.next().asInt();
+				int  top    = tz.next().asInt();
+				ui::setWindowInfo(id.c_str(), width, height, left, top);
+				tz.adv();
+			}
+		}
+
+		// Next token
+		tz.adv();
+	}
+#undef MIGRATE_CVAR_BOOL
+#undef MIGRATE_CVAR_INT
+#undef MIGRATE_CVAR_STRING
+}
+
+
+void           c_db(const vector<string>& args);
+ConsoleCommand db_cmd("db", &c_db, 1, false);
+void           c_db(const vector<string>& args)
+{
+	const auto& command = args[0];
 
 	try
 	{

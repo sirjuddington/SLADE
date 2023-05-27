@@ -28,7 +28,7 @@ public:
 			connection_->exec("ROLLBACK");
 	}
 
-	Transaction(const Transaction&) = delete;
+	Transaction(const Transaction&)            = delete;
 	Transaction& operator=(const Transaction&) = delete;
 
 	void begin()
@@ -143,6 +143,7 @@ inline SQLite::Database* connectionRW()
 string programDatabasePath();
 bool   init();
 void   close();
+void   migrateConfigs();
 
 } // namespace slade::database
 
