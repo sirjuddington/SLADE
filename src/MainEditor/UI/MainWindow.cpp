@@ -51,6 +51,7 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #ifdef USE_WEBVIEW_STARTPAGE
@@ -118,7 +119,7 @@ MainWindow::MainWindow() : STopWindow("SLADE", "main")
 {
 	custom_menus_begin_ = 2;
 
-	if (mw_maximized)
+	if (ui::getStateBool("MainWindowMaximized"))
 		wxTopLevelWindow::Maximize();
 
 	setupLayout();
@@ -448,7 +449,7 @@ bool MainWindow::exitProgram()
 	// Save current layout
 	// main_window_layout = aui_mgr_->SavePerspective();
 	saveLayout();
-	mw_maximized      = IsMaximized();
+	ui::saveStateBool("MainWindowMaximized", IsMaximized());
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
 		ui::setWindowInfo(
@@ -784,7 +785,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 #endif
 
 	// Update maximized cvar
-	mw_maximized = IsMaximized();
+	ui::saveStateBool("MainWindowMaximized", IsMaximized());
 
 	e.Skip();
 }

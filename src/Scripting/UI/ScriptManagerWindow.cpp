@@ -45,6 +45,7 @@
 #include "UI/Controls/STabCtrl.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -248,7 +249,7 @@ void ScriptManagerWindow::saveLayout()
 void ScriptManagerWindow::setupLayout()
 {
 	// Maximize if it was last time
-	if (sm_maximized)
+	if (ui::getStateBool("ScriptManagerWindowMaximized"))
 		Maximize();
 
 	// Create the wxAUI manager & related things
@@ -434,7 +435,7 @@ void ScriptManagerWindow::bindEvents()
 		{
 			// Save Layout
 			saveLayout();
-			sm_maximized      = IsMaximized();
+			ui::saveStateBool("ScriptManagerWindowMaximized", IsMaximized());
 			const wxSize size = GetSize() * GetContentScaleFactor();
 			if (!IsMaximized())
 				ui::setWindowInfo(

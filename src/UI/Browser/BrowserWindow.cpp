@@ -34,6 +34,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BrowserWindow.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -258,7 +259,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	wxWindowBase::Layout();
 	wxTopLevelWindowBase::SetMinSize(wxutil::scaledSize(540, 400));
 
-	if (browser_maximised)
+	if (ui::getStateBool("BrowserWindowMaximized"))
 		wxTopLevelWindow::Maximize();
 	else
 		CenterOnParent();
@@ -272,7 +273,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 // -----------------------------------------------------------------------------
 BrowserWindow::~BrowserWindow()
 {
-	browser_maximised        = wxTopLevelWindow::IsMaximized();
+	ui::saveStateBool("BrowserWindowMaximized", wxTopLevelWindow::IsMaximized());
 	const wxSize client_size = GetClientSize() * GetContentScaleFactor();
 	if (!wxTopLevelWindow::IsMaximized())
 		ui::setWindowInfo(

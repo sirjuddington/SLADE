@@ -49,7 +49,12 @@ void ui::initStateProps()
 									  { "LibraryPanelEntryCountVisible", true },
 									  { "LibraryPanelEntryCountWidth", scalePx(80) },
 									  { "LibraryPanelMapCountVisible", true },
-									  { "LibraryPanelMapCountWidth", scalePx(80) } };
+									  { "LibraryPanelMapCountWidth", scalePx(80) },
+									  { "BrowserWindowMaximized", false },
+									  { "MainWindowMaximized", true },
+									  { "MapEditorWindowMaximized", true },
+									  { "ScriptManagerWindowMaximized", false },
+									  { "SetupWizardRun", false } };
 
 	if (auto sql = db::cacheQuery("init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?)", true))
 	{
