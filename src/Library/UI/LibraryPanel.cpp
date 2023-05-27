@@ -179,7 +179,6 @@ void LibraryViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		break;
 	case Column::EntryCount: variant = wxString::Format("%d", row->entry_count); break;
 	case Column::MapCount: variant = row->map_count > 0 ? wxString ::Format("%d", row->map_count) : ""; break;
-	case Column::_Count: break;
 	default: break;
 	}
 }
@@ -399,7 +398,7 @@ void LibraryPanel::bindEvents()
 
 			// Popup context menu
 			wxMenu context;
-			context.Append(static_cast<int>(Column::_Count), "Reset Sorting");
+			context.Append(static_cast<int>(Column::__Count), "Reset Sorting");
 			context.AppendSeparator();
 			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::Path));
 			list_archives_->appendColumnToggleItem(context, static_cast<int>(Column::Size));
@@ -419,7 +418,7 @@ void LibraryPanel::bindEvents()
 		{
 			using Column = LibraryViewModel::Column;
 
-			if (e.GetId() == static_cast<int>(Column::_Count))
+			if (e.GetId() == static_cast<int>(Column::__Count))
 				list_archives_->resetSorting();
 			else if (e.GetId() == static_cast<int>(Column::Path))
 			{

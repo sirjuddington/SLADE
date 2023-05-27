@@ -28,7 +28,7 @@ namespace ui
 			EntryCount,
 			MapCount,
 
-			_Count
+			__Count
 		};
 
 		struct LibraryListRow
@@ -57,7 +57,7 @@ namespace ui
 		ScopedConnectionList           signal_connections_;
 
 		// wxDataViewModel
-		unsigned int   GetColumnCount() const override { return static_cast<unsigned>(Column::_Count); }
+		unsigned int   GetColumnCount() const override { return static_cast<unsigned>(Column::__Count); }
 		wxString       GetColumnType(unsigned int col) const override;
 		void           GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const override;
 		bool           GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr) const override;

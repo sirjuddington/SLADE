@@ -70,14 +70,6 @@ string insert_archive_bookmark = "INSERT OR REPLACE INTO archive_bookmark VALUES
 // -----------------------------------------------------------------------------
 void library::init()
 {
-	//// Add to library when archive is opened
-	// app::archiveManager().signals().archive_opened.connect(
-	//	[](unsigned index)
-	//	{
-	//		auto archive = app::archiveManager().getArchive(index);
-	//		if (!archive->parentEntry()) // Only add standalone archives for now
-	//			addOrUpdateArchive(archive->filename(), *archive);
-	//	});
 }
 
 // -----------------------------------------------------------------------------
