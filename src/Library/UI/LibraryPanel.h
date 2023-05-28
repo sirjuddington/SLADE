@@ -52,9 +52,12 @@ namespace ui
 			return static_cast<LibraryListRow*>(item.GetID());
 		}
 
+		void setFilter(string_view filter);
+
 	private:
 		mutable vector<LibraryListRow> rows_;
 		ScopedConnectionList           signal_connections_;
+		string                         filter_;
 
 		// wxDataViewModel
 		unsigned int   GetColumnCount() const override { return static_cast<unsigned>(Column::__Count); }
@@ -71,6 +74,7 @@ namespace ui
 			const override;
 
 		void loadRows() const;
+		bool matchesFilter(const LibraryListRow& row) const;
 	};
 
 	class LibraryPanel : public wxPanel, SActionHandler
@@ -79,8 +83,6 @@ namespace ui
 		LibraryPanel(wxWindow* parent);
 		~LibraryPanel() override = default;
 
-		void setup();
-
 		// SAction handler
 		bool handleAction(string_view id) override;
 
@@ -88,7 +90,10 @@ namespace ui
 		SDataViewCtrl*    list_archives_ = nullptr;
 		LibraryViewModel* model_library_ = nullptr;
 		SToolBar*         toolbar_       = nullptr;
+		wxTextCtrl*       text_filter_   = nullptr;
 
+		void setup();
+		void setupToolbar();
 		void bindEvents();
 		void setupListColumns() const;
 		void updateColumnWidths();
