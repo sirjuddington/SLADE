@@ -4,6 +4,7 @@ namespace slade
 {
 class Archive;
 class ArchiveEntry;
+class Tokenizer;
 
 namespace library
 {
@@ -41,5 +42,8 @@ namespace library
 
 	// Entries
 	string findEntryTypeId(const slade::ArchiveEntry& entry);
+
+	// Recent Files (for pre-3.3.0 compatibility, remove in 3.4.0)
+	void readPre330RecentFiles(Tokenizer& tz);
 } // namespace library
 } // namespace slade

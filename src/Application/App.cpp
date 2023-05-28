@@ -278,6 +278,10 @@ void readConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
+		// Read (pre-3.3.0) recent files list
+		if (tz.advIf("recent_files", 2))
+			library::readPre330RecentFiles(tz);
+
 		// Read keybinds
 		if (tz.advIf("keys", 2))
 			KeyBind::readBinds(tz);

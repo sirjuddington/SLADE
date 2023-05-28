@@ -33,13 +33,17 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Library.h"
+#include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveManager.h"
 #include "ArchiveEntry.h"
 #include "ArchiveFile.h"
 #include "ArchiveMap.h"
 #include "ArchiveUIConfig.h"
 #include "General/Database.h"
+#include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
+#include "Utility/Tokenizer.h"
 
 using namespace slade;
 using namespace library;
@@ -56,6 +60,8 @@ Signals     lib_signals;
 std::atomic lib_scan_running{ false }; // Whether a library scan is currently running, set to false to request stop
 
 string insert_archive_bookmark = "INSERT OR REPLACE INTO archive_bookmark VALUES (?,?)";
+
+vector<string> recent_files;
 } // namespace slade::library
 
 
@@ -70,6 +76,26 @@ string insert_archive_bookmark = "INSERT OR REPLACE INTO archive_bookmark VALUES
 // -----------------------------------------------------------------------------
 void library::init()
 {
+	// Remove pre-3.3.0 recent files that exist in the library
+	// (and have been opened)
+	vector<string> rf_to_remove;
+	for (const auto& recent_file : recent_files)
+	{
+		// Find archive_file row id from path
+		auto archive_id = archiveFileId(recent_file);
+		if (archive_id < 0)
+			 continue;
+
+		// Load row details
+		ArchiveFileRow archive_file{ db::global(), archive_id };
+
+		// If the last_opened time exists, we can remove it from the pre-3.3.0
+		// recent files list
+		if (archive_file.last_opened > 0)
+			rf_to_remove.push_back(recent_file);
+	}
+	for (const auto& path : rf_to_remove)
+		VECTOR_REMOVE(recent_files, path);
 }
 
 // -----------------------------------------------------------------------------
@@ -202,6 +228,10 @@ int64_t library::writeArchiveInfo(const Archive& archive)
 		// Write maps to database
 		updateArchiveMaps(archive_file.id, archive);
 
+		// Remove from pre-3.3.0 recent files list if it's there
+		if (auto rf = find(recent_files.begin(), recent_files.end(), archive_file.path); rf != recent_files.end())
+			recent_files.erase(rf);
+
 		// Finish up
 		archive.setLibraryId(archive_file.id);
 		return archive_file.id;
@@ -319,6 +349,18 @@ vector<string> library::recentFiles(unsigned count)
 	catch (SQLite::Exception& ex)
 	{
 		log::error("Error getting recent files from the library: {}", ex.what());
+	}
+
+	// Append pre-3.3.0 recent files list to make up count if required
+	if (!recent_files.empty() && paths.size() < count)
+	{
+		for (const auto& recent_file : recent_files)
+		{
+			if (paths.size() == count)
+				break;
+
+			paths.push_back(recent_file);
+		}
 	}
 
 	return paths;
@@ -544,6 +586,27 @@ string library::findEntryTypeId(const ArchiveEntry& entry)
 	}
 
 	return format_id;
+}
+
+// -----------------------------------------------------------------------------
+// Reads the pre-3.3.0 recent_files section in slade3.cfg
+// -----------------------------------------------------------------------------
+void library::readPre330RecentFiles(Tokenizer& tz)
+{
+	while (!tz.checkOrEnd("}"))
+	{
+		// Read recent file path
+		auto path = wxString::FromUTF8(tz.current().text.c_str()).ToStdString();
+		tz.adv();
+
+		// Check the path is valid
+		if (!(fileutil::fileExists(path) || fileutil::dirExists(path)))
+			continue;
+
+		recent_files.insert(recent_files.begin(), path);
+	}
+
+	tz.adv(); // Skip ending }
 }
 
 // -----------------------------------------------------------------------------
