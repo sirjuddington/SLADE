@@ -47,6 +47,7 @@ private:
 	ResourceArchiveChooser* rac_resources_     = nullptr;
 	wxTextCtrl*             text_extra_params_ = nullptr;
 	wxCheckBox*             cb_start_3d_       = nullptr;
+	wxWindow*               isp_iwad_          = nullptr;
 	bool                    run_map_           = false;
 
 	void setup(

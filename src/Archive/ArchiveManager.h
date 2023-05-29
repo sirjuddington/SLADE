@@ -46,6 +46,7 @@ public:
 	void     removeBaseResourcePath(unsigned index);
 	unsigned numBaseResourcePaths() const { return base_resource_paths_.size(); }
 	string   getBaseResourcePath(unsigned index);
+	string   currentBaseResourcePath();
 	bool     openBaseResource(int index);
 
 	// Resource entry get/search

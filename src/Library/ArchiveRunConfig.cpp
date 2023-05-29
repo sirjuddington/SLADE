@@ -44,10 +44,10 @@ using namespace library;
 // -----------------------------------------------------------------------------
 namespace slade::library
 {
-string insert_archive_run_config = "INSERT INTO archive_run_config VALUES (?,?,?,?)";
+string insert_archive_run_config = "INSERT INTO archive_run_config VALUES (?,?,?,?,?)";
 string update_archive_run_config =
 	"UPDATE archive_run_config "
-	"SET executable_id = ?, run_config = ?, run_extra = ? "
+	"SET executable_id = ?, run_config = ?, run_extra = ?, iwad_path = ? "
 	"WHERE archive_id = ?";
 } // namespace slade::library
 
@@ -75,6 +75,7 @@ ArchiveRunConfigRow::ArchiveRunConfigRow(database::Context& db, int64_t archive_
 			executable_id    = sql->getColumn(1).getString();
 			run_config       = sql->getColumn(2).getInt();
 			run_extra        = sql->getColumn(3).getString();
+			iwad_path        = sql->getColumn(4).getString();
 		}
 
 		sql->reset();
@@ -102,6 +103,7 @@ int64_t ArchiveRunConfigRow::insert() const
 		sql->bind(2, executable_id);
 		sql->bind(3, run_config);
 		sql->bind(4, run_extra);
+		sql->bind(5, iwad_path);
 
 		if (sql->exec() > 0)
 			row_id = db::connectionRW()->getLastInsertRowid();
@@ -131,7 +133,8 @@ bool ArchiveRunConfigRow::update() const
 		sql->bind(1, executable_id);
 		sql->bind(2, run_config);
 		sql->bind(3, run_extra);
-		sql->bind(4, archive_id);
+		sql->bind(4, iwad_path);
+		sql->bind(5, archive_id);
 
 		rows = sql->exec();
 

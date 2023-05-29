@@ -175,6 +175,50 @@ private:
 
 
 // -----------------------------------------------------------------------------
+// IwadSelectionPanel Class
+//
+// A control to select an IWAD path, with dropdown options showing configured
+// base resource archive paths and a button to browse for one
+// -----------------------------------------------------------------------------
+class IwadSelectionPanel : public wxPanel
+{
+public:
+	IwadSelectionPanel(wxWindow* parent, const string& iwad_path) : wxPanel(parent, -1)
+	{
+		auto sizer = new wxBoxSizer(wxHORIZONTAL);
+		SetSizer(sizer);
+		combo_iwad_path_ = new wxComboBox(this, -1, iwad_path);
+		sizer->Add(combo_iwad_path_, wxSizerFlags(1).Expand());
+
+		// Add base resource paths to dropdown
+		for (const auto& br_path : app::archiveManager().baseResourcePaths())
+			combo_iwad_path_->AppendString(br_path);
+
+		btn_browse_ = new SIconButton(this, "open", "Browse IWAD path");
+		sizer->Add(btn_browse_, wxSizerFlags(0).Expand().Border(wxLEFT, ui::pad()));
+
+		btn_browse_->Bind(
+			wxEVT_BUTTON,
+			[&](wxCommandEvent& e)
+			{
+				filedialog::FDInfo inf;
+				if (filedialog::openFile(
+						inf, "Browse IWAD path", app::archiveManager().getArchiveExtensionsString(), this))
+				{
+					combo_iwad_path_->SetValue(inf.filenames[0]);
+				}
+			});
+	}
+
+	string selectedIwadPath() const { return combo_iwad_path_->GetValue().ToStdString(); }
+
+private:
+	wxComboBox*  combo_iwad_path_ = nullptr;
+	SIconButton* btn_browse_      = nullptr;
+};
+
+
+// -----------------------------------------------------------------------------
 //
 // RunDialog Class Functions
 //
@@ -260,13 +304,10 @@ wxString RunDialog::selectedCommandLine(const Config& cfg) const
 		}
 
 		// IWAD
-		if (cfg.iwad_path.IsEmpty())
-		{
-			auto bra = app::archiveManager().baseResourceArchive();
-			path.Replace("%i", wxString::Format("\"%s\"", bra ? bra->filename() : ""));
-		}
-		else
-			path.Replace("%i", wxString::Format("\"%s\"", cfg.iwad_path));
+		auto iwad_path = cfg.iwad_path;
+		if (iwad_path.IsEmpty())
+			iwad_path = dynamic_cast<IwadSelectionPanel*>(isp_iwad_)->selectedIwadPath();
+		path.Replace("%i", wxString::Format("\"%s\"", iwad_path));
 
 		// Resources
 		path.Replace("%r", selectedResourceList());
@@ -383,6 +424,7 @@ void RunDialog::run(const Config& cfg, int64_t archive_lib_id) const
 			run_cfg.executable_id = wxutil::strToView(selectedExeId());
 			run_cfg.run_config    = choice_config_->GetSelection();
 			run_cfg.run_extra     = wxutil::strToView(text_extra_params_->GetValue());
+			run_cfg.iwad_path     = dynamic_cast<IwadSelectionPanel*>(isp_iwad_)->selectedIwadPath();
 			library::saveArchiveRunConfig(run_cfg);
 		}
 
@@ -410,6 +452,7 @@ void RunDialog::setup(Archive* archive, int64_t archive_lib_id, bool show_start_
 	string run_last_extra = ui::getStateString("RunDialogLastExtra");
 	string run_last_exe   = ui::getStateString("RunDialogLastExe");
 	int    run_last_cfg   = ui::getStateInt("RunDialogLastConfig");
+	string iwad_path      = app::archiveManager().currentBaseResourcePath();
 	if (archive_lib_id >= 0)
 	{
 		auto run_cfg = library::getArchiveRunConfig(archive_lib_id);
@@ -418,6 +461,7 @@ void RunDialog::setup(Archive* archive, int64_t archive_lib_id, bool show_start_
 			run_last_exe   = run_cfg.executable_id;
 			run_last_cfg   = run_cfg.run_config;
 			run_last_extra = run_cfg.run_extra;
+			iwad_path      = run_cfg.iwad_path;
 		}
 	}
 
@@ -472,6 +516,9 @@ void RunDialog::setup(Archive* archive, int64_t archive_lib_id, bool show_start_
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->AddSpacer(ui::padLarge());
 	sizer->Add(framesizer, 1, wxEXPAND | wxLEFT | wxRIGHT, ui::padLarge());
+	isp_iwad_ = new IwadSelectionPanel(this, iwad_path);
+	framesizer->Add(
+		wxutil::createLabelHBox(this, "IWAD:", isp_iwad_), 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, ui::pad());
 	rac_resources_ = new ResourceArchiveChooser(this, archive);
 	framesizer->Add(rac_resources_, 1, wxEXPAND | wxALL, ui::pad());
 

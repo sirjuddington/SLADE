@@ -15,6 +15,7 @@ namespace library
 		string  executable_id;
 		int     run_config = 0;
 		string  run_extra;
+		string  iwad_path;
 
 		ArchiveRunConfigRow() = default;
 		ArchiveRunConfigRow(database::Context& db, int64_t archive_id);

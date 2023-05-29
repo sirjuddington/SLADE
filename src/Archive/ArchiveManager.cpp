@@ -879,6 +879,14 @@ string ArchiveManager::getBaseResourcePath(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the currently selected base resource path
+// -----------------------------------------------------------------------------
+string ArchiveManager::currentBaseResourcePath()
+{
+	return getBaseResourcePath(base_resource);
+}
+
+// -----------------------------------------------------------------------------
 // Opens the base resource archive [index]
 // -----------------------------------------------------------------------------
 bool ArchiveManager::openBaseResource(int index)
