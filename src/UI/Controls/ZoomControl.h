@@ -20,8 +20,8 @@ namespace ui
 
 		void setZoomPercent(int percent);
 		void setZoomScale(double scale);
-		void zoomOut();
-		void zoomIn();
+		void zoomOut(bool fine = false);
+		void zoomIn(bool fine = false);
 
 	private:
 		wxComboBox*     cb_zoom_               = nullptr;
@@ -33,7 +33,7 @@ namespace ui
 		int zoom_ = 100;
 
 		void setup();
-		void updateZoomButtons();
+		void updateZoomButtons() const;
 	};
 } // namespace ui
 } // namespace slade
