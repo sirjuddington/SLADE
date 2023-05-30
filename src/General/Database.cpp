@@ -55,10 +55,8 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::database
 {
-Context            db_global;
-string             template_db_path;
-vector<Named<int>> table_versions = { { "archive_file", 1 } };
-
+Context           db_global;
+int               db_version = 1;
 vector<Context*>  thread_contexts;
 std::shared_mutex mutex_thread_contexts;
 } // namespace slade::database
@@ -335,34 +333,45 @@ bool createMissingTables(SQLite::Database& db)
 bool createDatabase(const string& file_path)
 {
 	SQLite::Database db(file_path, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
-	return createMissingTables(db);
-}
 
-// -----------------------------------------------------------------------------
-// Updates the program database tables
-// -----------------------------------------------------------------------------
-bool updateDatabase()
-{
-	// Create missing tables
-	if (!createMissingTables(*db_global.connectionRW()))
+	// Create tables
+	if (!createMissingTables(db))
 		return false;
+
+	// Init db_info table
+	try
+	{
+		Statement sql{ db, "INSERT INTO db_info (version) VALUES (?)" };
+		sql.bind(1, db_version);
+		sql.exec();
+	}
+	catch (const SQLite::Exception& ex)
+	{
+		global::error = fmt::format("Failed to initialize database: {}", ex.what());
+		log::error(global::error);
+		return false;
+	}
 
 	return true;
 }
 
 // -----------------------------------------------------------------------------
-// Copies the template database from slade.pk3 to the temp folder if needed and
-// returns the path to it
+// Updates the program database tables
 // -----------------------------------------------------------------------------
-string templateDbPath()
+bool updateDatabase(int prev_version)
 {
-	if (template_db_path.empty())
-	{
-		template_db_path = app::path("slade_template.sqlite", app::Dir::Temp);
-		fileutil::copyFile(app::path("res/Database/slade.sqlite", app::Dir::Executable), template_db_path);
-	}
+	log::info("Updating database from v{} to v{}...", prev_version, db_version);
 
-	return template_db_path;
+	// Create missing tables
+	if (!createMissingTables(*db_global.connectionRW()))
+		return false;
+
+	// Update db_info.version
+	db_global.exec(fmt::format("UPDATE db_info SET version = {}", db_version));
+
+	// Done
+	log::info("Database updated to v{} successfully", db_version);
+	return true;
 }
 } // namespace slade::database
 
@@ -425,9 +434,9 @@ int database::exec(const char* query, SQLite::Database* connection)
 bool database::viewExists(string_view view_name, const SQLite::Database& connection)
 {
 	Statement query(connection, "SELECT count(*) FROM sqlite_master WHERE type='view' AND name=?");
-    query.bind(1, view_name);
-    (void)query.executeStep(); // Cannot return false, as the above query always return a result
-    return (1 == query.getColumn(0).getInt());
+	query.bind(1, view_name);
+	(void)query.executeStep(); // Cannot return false, as the above query always return a result
+	return (1 == query.getColumn(0).getInt());
 }
 
 // -----------------------------------------------------------------------------
@@ -510,8 +519,9 @@ bool database::init()
 		migrateConfigs();
 
 	// Update the database if needed
-	if (!created)
-		return updateDatabase();
+	auto existing_version = db_global.connectionRO()->execAndGet("SELECT version FROM db_info").getInt();
+	if (existing_version < db_version)
+		return updateDatabase(existing_version);
 
 	return true;
 }
@@ -521,6 +531,7 @@ bool database::init()
 // -----------------------------------------------------------------------------
 void database::close()
 {
+	db_global.vacuum(); // Shrink size on disk
 	db_global.close();
 }
 

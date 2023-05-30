@@ -591,10 +591,10 @@ void app::saveConfigFile()
 		return;
 
 	// Write cfg header
-	file.Write("/*****************************************************\n");
-	file.Write(" * SLADE Configuration File\n");
-	file.Write(" * Don't edit this unless you know what you're doing\n");
-	file.Write(" *****************************************************/\n\n");
+	file.Write("// ----------------------------------------------------\n");
+	file.Write(wxString::Format("// SLADE v%s Configuration File\n", version_num.toString()));
+	file.Write("// Don't edit this unless you know what you're doing\n");
+	file.Write("// ----------------------------------------------------\n\n");
 
 	// Write cvars
 	file.Write(CVar::writeAll(), wxConvUTF8);
@@ -613,7 +613,7 @@ void app::saveConfigFile()
 	// This isn't used in 3.3.0+, but we'll write them anyway for backwards-compatibility with previous versions
 	// (will be removed eventually, perhaps in 3.4.0)
 	auto recent_files = library::recentFiles();
-	file.Write("\nrecent_files\n{\n");
+	file.Write("\n// Recent Files (for backwards compatibility with pre-3.3.0 SLADE)\nrecent_files\n{\n");
 	for (int i = recent_files.size() - 1; i >= 0; --i)
 	{
 		auto path = recent_files[i];
@@ -637,7 +637,9 @@ void app::saveConfigFile()
 	file.Write("}\n");
 
 	// Close configuration file
-	file.Write("\n// End Configuration File\n\n");
+	file.Write("\n// ----------------------------------------------------\n");
+	file.Write("// End Configuration File\n");
+	file.Write("// ----------------------------------------------------\n");
 }
 
 // -----------------------------------------------------------------------------
@@ -703,7 +705,6 @@ void app::exit(bool save_config)
 	dumb_exit();
 
 	// Close program database
-	database::global().vacuum();
 	database::close();
 
 	// Exit wx Application
