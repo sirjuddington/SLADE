@@ -31,7 +31,7 @@ if(USE_SYSTEM_FMT)
 	find_package(fmt REQUIRED)
 else()
 	add_subdirectory(fmt)
-	target_include_directories(fmt INTERFACE ${CMAKE_CURRENT_LIST_DIR}/fmt/include)
+	#target_include_directories(fmt INTERFACE ${CMAKE_CURRENT_LIST_DIR}/fmt/include)
 endif()
 
 # Add lunasvg

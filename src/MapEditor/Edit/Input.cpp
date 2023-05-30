@@ -1177,6 +1177,6 @@ string Input::mouseButtonKBName(MouseButton button)
 	case Middle: return "mouse3";
 	case Mouse4: return "mouse4";
 	case Mouse5: return "mouse5";
-	default: return fmt::format("mouse{}", button);
+	default: return fmt::format("mouse{}", static_cast<int>(button));
 	}
 }
