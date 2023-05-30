@@ -35,13 +35,11 @@
 #include "Library.h"
 #include "App.h"
 #include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
 #include "ArchiveEntry.h"
 #include "ArchiveFile.h"
 #include "ArchiveMap.h"
 #include "ArchiveUIConfig.h"
 #include "General/Database.h"
-#include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -639,7 +637,7 @@ CONSOLE_COMMAND(lib_scan, 1, true)
 		return;
 	}
 
-	vector<string> ignore_ext{ "zip" }; // Ignore zips by default
+	vector<string> ignore_ext;//{ "zip" };
 
 	// Start scan in background thread
 	std::thread scan_thread(

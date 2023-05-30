@@ -120,7 +120,7 @@ ArchiveFileRow::ArchiveFileRow(database::Context& db, int64_t id) : id{ id }
 // ArchiveFileRow constructor
 // Reads data from result columns in the given SQLite statement [sql]
 // -----------------------------------------------------------------------------
-ArchiveFileRow::ArchiveFileRow(SQLite::Statement* sql)
+ArchiveFileRow::ArchiveFileRow(const SQLite::Statement* sql)
 {
 	if (!sql)
 		return;

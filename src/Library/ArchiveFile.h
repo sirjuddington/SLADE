@@ -43,7 +43,7 @@ namespace library
 		}
 		ArchiveFileRow(string_view file_path, string_view format_id);
 		ArchiveFileRow(database::Context& db, int64_t id);
-		ArchiveFileRow(SQLite::Statement* sql);
+		ArchiveFileRow(const SQLite::Statement* sql);
 
 		int64_t insert();
 		bool    update() const;

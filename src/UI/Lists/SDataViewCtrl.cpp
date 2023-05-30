@@ -1,4 +1,37 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2022 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SDataViewCtrl.cpp
+// Description: wxDataViewCtrl extension that handles some common extra
+//              functionality such as typing to search (in Windows), improved
+//              multiple selection (again in Windows), column visibility menus,
+//              etc.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SDataViewCtrl.h"
 #include "UI/State.h"
@@ -8,6 +41,12 @@
 using namespace slade;
 using namespace ui;
 
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 wxDEFINE_EVENT(EVT_SDVC_COLUMN_RESIZED, wxDataViewEvent);
 
 vector<int> real_chars = {
@@ -15,6 +54,16 @@ vector<int> real_chars = {
 	']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
 };
 
+
+// -----------------------------------------------------------------------------
+//
+// SDataViewCtrl Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// SDataViewCtrl class constructor
+// -----------------------------------------------------------------------------
 SDataViewCtrl::SDataViewCtrl(wxWindow* parent, long style) : wxDataViewCtrl(parent, -1, {}, {}, style)
 {
 	Bind(
@@ -123,6 +172,9 @@ SDataViewCtrl::SDataViewCtrl(wxWindow* parent, long style) : wxDataViewCtrl(pare
 #endif
 }
 
+// -----------------------------------------------------------------------------
+// Returns the last visible column
+// -----------------------------------------------------------------------------
 wxDataViewColumn* SDataViewCtrl::lastVisibleColumn() const
 {
 	for (int i = static_cast<int>(GetColumnCount()) - 1; i >= 0; --i)
@@ -132,6 +184,9 @@ wxDataViewColumn* SDataViewCtrl::lastVisibleColumn() const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Resets sorting to the default state (ie. no columns selected for sorting)
+// -----------------------------------------------------------------------------
 void SDataViewCtrl::resetSorting()
 {
 	for (unsigned c = 0; c < GetColumnCount(); ++c)
@@ -150,6 +205,9 @@ void SDataViewCtrl::resetSorting()
 	ProcessWindowEvent(de);
 }
 
+// -----------------------------------------------------------------------------
+// Adds a check item to [menu] for showing/hiding a column [col_model]
+// -----------------------------------------------------------------------------
 void SDataViewCtrl::appendColumnToggleItem(wxMenu& menu, int col_model) const
 {
 	for (unsigned i = 0; i < GetColumnCount(); ++i)
@@ -165,6 +223,10 @@ void SDataViewCtrl::appendColumnToggleItem(wxMenu& menu, int col_model) const
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Toggles visibility of column [col_model], saving the result to UI state
+// property [state_prop]
+// -----------------------------------------------------------------------------
 void SDataViewCtrl::toggleColumnVisibility(int col_model, string_view state_prop) const
 {
 	auto* column = GetColumn(GetModelColumnIndex(col_model));
@@ -175,6 +237,9 @@ void SDataViewCtrl::toggleColumnVisibility(int col_model, string_view state_prop
 		saveStateBool(state_prop, column->IsShown());
 }
 
+// -----------------------------------------------------------------------------
+// Sets [column]'s [width]
+// -----------------------------------------------------------------------------
 void SDataViewCtrl::setColumnWidth(wxDataViewColumn* column, int width) const
 {
 	if (!column || column->IsHidden())

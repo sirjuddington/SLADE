@@ -36,13 +36,9 @@
 #include "Database.h"
 #include "App.h"
 #include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
 #include "General/Console.h"
 #include "General/UI.h"
-#include "Library/ArchiveFile.h"
 #include "UI/State.h"
-#include "UI/WxUtils.h"
-#include "Utility/DateTime.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -597,32 +593,6 @@ void database::migrateConfigs()
 
 			tz.adv(); // Skip ending }
 		}
-
-		// Migrate recent files list
-		// Going to leave this here commented out as this technically kinda
-		// works but leaves the library incomplete (archives with 0 entries,
-		// fake last opened times etc.) which I'm not sure is the best solution
-		// for keeping recent files, for now I think we'll just drop them
-		//if (tz.advIf("recent_files", 2))
-		//{
-		//	auto time_opened = datetime::now();
-
-		//	while (!tz.checkOrEnd("}"))
-		//	{
-		//		auto path    = wxString::FromUTF8(tz.current().text.c_str());
-		//		auto archive = archive::createIfArchive(path.ToStdString());
-		//		if (archive)
-		//		{
-		//			library::ArchiveFileRow archive_file{ wxutil::strToView(path), archive->formatId() };
-		//			archive_file.last_opened = time_opened++;
-		//			archive_file.insert();
-		//		}
-
-		//		tz.adv();
-		//	}
-
-		//	tz.adv(); // Skip ending }
-		//}
 
 		// Migrate window size/position info
 		if (tz.advIf("window_info", 2))
