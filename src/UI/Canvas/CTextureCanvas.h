@@ -8,6 +8,10 @@ namespace slade
 {
 class CTexture;
 class Archive;
+namespace ui
+{
+	class ZoomControl;
+}
 
 class CTextureCanvas : public OGLCanvas
 {
@@ -59,6 +63,8 @@ public:
 
 	bool swapPatches(size_t p1, size_t p2);
 
+	void linkZoomControl(ui::ZoomControl* zoom_control) { linked_zoom_control_ = zoom_control; }
+
 private:
 	CTexture*        texture_ = nullptr;
 	Archive*         parent_  = nullptr;
@@ -68,13 +74,14 @@ private:
 	int              hilight_patch_ = -1;
 	Vec2d            offset_;
 	Vec2i            mouse_prev_;
-	double           scale_        = 1.;
-	bool             draw_outside_ = true;
-	bool             dragging_     = false;
-	bool             show_grid_    = false;
-	bool             blend_rgba_   = false;
-	bool             tex_scale_    = false;
-	View             view_type_    = View::Normal;
+	double           scale_               = 1.;
+	bool             draw_outside_        = true;
+	bool             dragging_            = false;
+	bool             show_grid_           = false;
+	bool             blend_rgba_          = false;
+	bool             tex_scale_           = false;
+	View             view_type_           = View::Normal;
+	ui::ZoomControl* linked_zoom_control_ = nullptr;
 
 	// Signal connections
 	sigslot::scoped_connection sc_patches_modified_;
