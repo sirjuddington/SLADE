@@ -157,7 +157,7 @@ void SDataViewCtrl::appendColumnToggleItem(wxMenu& menu, int col_model) const
 		auto* col = GetColumn(i);
 		if (col->GetModelColumn() == col_model)
 		{
-			menu.AppendCheckItem(col_model, col->GetTitle(), fmt::format("Show the {} column", col->GetTitle()))
+			menu.AppendCheckItem(col_model, col->GetTitle(), wxString::Format("Show the %s column", col->GetTitle()))
 				->Check(col->IsShown());
 
 			return;

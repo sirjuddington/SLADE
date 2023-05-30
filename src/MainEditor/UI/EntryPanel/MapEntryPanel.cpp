@@ -176,7 +176,7 @@ bool MapEntryPanel::createImage()
 
 	// Open save file dialog for map image
 	if (auto path = filedialog::saveFile(
-			fmt::format("Save Map Preview \"{}\"", name),
+			fmt::format("Save Map Preview \"{}\"", name.ToStdString()),
 			"PNG (*.PNG)|*.png",
 			this,
 			wxutil::strToView(fn.GetFullName()));
