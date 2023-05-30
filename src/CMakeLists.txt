@@ -13,7 +13,7 @@ if (WITH_WXPATH)
 endif()
 unset(WITH_WXPATH CACHE)
 
-set( CL_WX_CONFIG wx-config )
+set(CL_WX_CONFIG wx-config CACHE STRING "")
 
 if (UNIX OR MINGW)
     if(NOT wxWidgets_CONFIG_EXECUTABLE)
@@ -50,6 +50,7 @@ if (UNIX OR MINGW)
         string(SUBSTRING "${WX_GTK_VERSION}" "3" "1" GTK_VERSION)
         message("-- gtk version is: ${GTK_VERSION}")
     endif()
+	set(wxWidgets_CONFIG_EXECUTABLE "${WX_TOOL}")
 endif (UNIX OR MINGW)
 
 if (WX_GTK3)

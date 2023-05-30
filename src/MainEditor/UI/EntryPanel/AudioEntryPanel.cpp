@@ -36,6 +36,7 @@
 #include "Audio/MIDIPlayer.h"
 #include "Audio/ModMusic.h"
 #include "Audio/Mp3Music.h"
+#include "Audio/Music.h"
 #include "MainEditor/Conversions.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
@@ -69,7 +70,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	EntryPanel(parent, "audio"),
 	timer_seek_{ new wxTimer(this) },
 	sound_{ new sf::Sound() },
-	music_{ new sf::Music() },
+	music_{ new audio::Music() },
 	mod_{ new audio::ModMusic() },
 	mp3_{ new audio::Mp3Music() }
 {
@@ -135,8 +136,6 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	audio::midiPlayer().setVolume(snd_volume);
 	mod_->setVolume(snd_volume);
 	mp3_->setVolume(snd_volume);
-	// theGMEPlayer->setVolume(snd_volume);
-	// theOPLPlayer->setVolume(snd_volume);
 
 	// Disable general entrypanel buttons
 	toolbar_->Show(false);
@@ -261,6 +260,7 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 		return true;
 
 	// Stop if sound currently playing
+	music_->allowSeek(false); // Needed to avoid a crash in SFML with ogg files
 	resetStream();
 
 	subsong_    = 0;
@@ -343,6 +343,7 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 	}
 
 	opened_ = true;
+	music_->allowSeek(true);
 	return true;
 }
 
@@ -609,17 +610,6 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 		if (entry.type() == EntryType::fromId("midi_rmid"))
 			info += audio::getRmidInfo(mc);
 		break;
-	/*case AUTYPE_EMU:
-		info += theGMEPlayer->getInfo(subsong);
-		break;
-	case AUTYPE_OPL:
-		if (entry.getType() == EntryType::getType("opl_audiot"))
-		{
-			size_t samples = READ_L32(mc, 0);
-			info += wxString::Format("%zu samples", samples);
-		}
-		info += theOPLPlayer->getInfo();
-		break;*/
 	default: break;
 	}
 	txt_info_->SetValue(info);
@@ -687,8 +677,6 @@ void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
 
 		updateInfo(*entry);
 	}
-	// else if (entry->getType()->getFormat().StartsWith("gme"))
-	//	theGMEPlayer->play(subsong);
 
 	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
 }
@@ -699,6 +687,7 @@ void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
 void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
 {
 	int newsong = (subsong_ + 1) % num_tracks_;
+
 	if (auto entry = entry_.lock(); entry && entry->type()->formatId() == "xmi")
 	{
 		MemChunk convdata;
@@ -707,11 +696,7 @@ void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
 
 		updateInfo(*entry);
 	}
-	/*else if (entry->getType()->getFormat().StartsWith("gme"))
-	{
-		if (theGMEPlayer->play(newsong))
-			subsong = newsong;
-	}*/
+
 	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
 }
 

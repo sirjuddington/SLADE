@@ -377,7 +377,7 @@ unique_ptr<MapSide> UniversalDoomMapFormat::createSide(ParseTreeNode* def, const
 // -----------------------------------------------------------------------------
 // Creates and returns a line from parsed UDMF definition [def]
 // -----------------------------------------------------------------------------
-unique_ptr<MapLine> UniversalDoomMapFormat::createLine(ParseTreeNode* def, const MapObjectCollection& map_data) const
+unique_ptr<MapLine> UniversalDoomMapFormat::createLine(ParseTreeNode* def, MapObjectCollection& map_data) const
 {
 	// Check for required properties
 	auto prop_v1 = def->childPTN(MapLine::PROP_V1);
@@ -396,6 +396,12 @@ unique_ptr<MapLine> UniversalDoomMapFormat::createLine(ParseTreeNode* def, const
 	// Get sides
 	auto s1 = map_data.sides().at(prop_s1->intValue());
 	auto s2 = prop_s2 ? map_data.sides().at(prop_s2->intValue()) : nullptr;
+
+	// Copy side(s) if they already have parent lines (compressed sidedefs)
+	if (s1 && s1->parentLine())
+		s1 = map_data.addSide(std::make_unique<MapSide>(s1->sector(), s1));
+	if (s2 && s2->parentLine())
+		s2 = map_data.addSide(std::make_unique<MapSide>(s2->sector(), s2));
 
 	// Create line
 	return std::make_unique<MapLine>(v1, v2, s1, s2, def);

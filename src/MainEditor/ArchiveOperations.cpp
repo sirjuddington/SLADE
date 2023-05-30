@@ -570,7 +570,7 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 				ArchiveEntry* duplicated_entry = entry_iter->second.first;
 				ArchiveEntry* bra_entry = entry_iter->second.second;
 				dups += wxString::Format("\n\tThis Archive Asset Path: %s%s", duplicated_entry->path(), duplicated_entry->name());
-				dups += wxString::Format("\n\Iwad Asset Path: %s%s", bra_entry->path(), bra_entry->name());
+				dups += wxString::Format("\n\tIwad Asset Path: %s%s", bra_entry->path(), bra_entry->name());
 			}
 		}
 

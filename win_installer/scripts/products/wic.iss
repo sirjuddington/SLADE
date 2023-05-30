@@ -2,10 +2,12 @@
 
 [CustomMessages]
 wic_title=Windows Imaging Component
- 
+ru.wic_title=Windows Imaging Component (WIC)
+
 en.wic_size=1.2 MB
 de.wic_size=1,2 MB
- 
+ru.wic_size=1,2 МБ
+
 
 [Code]
 const

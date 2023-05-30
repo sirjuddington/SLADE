@@ -35,9 +35,7 @@ public:
 		Context() = default;
 
 		Context(string_view context, string_view return_type, string_view description) :
-			context{ context },
-			return_type{ return_type },
-			description{ description }
+			context{ context }, return_type{ return_type }, description{ description }
 		{
 		}
 
@@ -87,7 +85,7 @@ public:
 	void clearContexts() { contexts_.clear(); }
 	void clearCustomContexts();
 
-	bool hasContext(string_view name);
+	bool hasContext(string_view name) const;
 
 private:
 	string          name_;
@@ -130,13 +128,13 @@ public:
 	const vector<string>& jumpBlocks() const { return jump_blocks_; }
 	const vector<string>& jumpBlocksIgnored() const { return jb_ignore_; }
 
-	void copyTo(TextLanguage* copy);
+	void copyTo(TextLanguage* copy) const;
 
 	void setName(string_view name) { name_ = name; }
 	void setPreferedComments(unsigned index) { preferred_comments_ = index; }
-	void setLineCommentList(vector<string> token) { line_comment_l_ = std::move(token); };
-	void setCommentBeginList(vector<string> token) { comment_begin_l_ = std::move(token); };
-	void setCommentEndList(vector<string> token) { comment_end_l_ = std::move(token); };
+	void setLineCommentList(vector<string> token) { line_comment_l_ = std::move(token); }
+	void setCommentBeginList(vector<string> token) { comment_begin_l_ = std::move(token); }
+	void setCommentEndList(vector<string> token) { comment_end_l_ = std::move(token); }
 	void setPreprocessor(string_view token) { preprocessor_ = token; }
 	void setDocComment(string_view token) { doc_comment_ = token; }
 	void setCaseSensitive(bool cs) { case_sensitive_ = cs; }
@@ -148,20 +146,20 @@ public:
 		string_view deprecated  = "",
 		bool        replace     = false,
 		string_view return_type = "");
-	void loadZScript(zscript::Definitions& defs, bool custom = false);
+	void loadZScript(const zscript::Definitions& defs, bool custom = false);
 
-	string wordList(WordType type, bool include_custom = true);
-	string functionsList();
+	string wordList(WordType type, bool include_custom = true) const;
+	string functionsList() const;
 	string autocompletionList(string_view start = "", bool include_custom = true);
 
-	vector<string> wordListSorted(WordType type, bool include_custom = true);
-	vector<string> functionsSorted();
+	vector<string> wordListSorted(WordType type, bool include_custom = true) const;
+	vector<string> functionsSorted() const;
 
 	string        wordLink(WordType type) const { return word_lists_[type].lookup_url; }
 	const string& functionLink() const { return f_lookup_url_; }
 
-	bool isWord(WordType type, string_view word);
-	bool isFunction(string_view word);
+	bool isWord(WordType type, string_view word) const;
+	bool isFunction(string_view word) const;
 
 	TLFunction* function(string_view name);
 

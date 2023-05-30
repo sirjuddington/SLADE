@@ -6,8 +6,10 @@
 
 [CustomMessages]
 dotnetfx40full_title=.NET Framework 4.0 Full
+ru.dotnetfx40full_title=.NET Framework 4.0 полный
 
 dotnetfx40full_size=3 MB - 197 MB
+ru.dotnetfx40full_size=3 МБ - 197 МБ
 
 ;http://www.microsoft.com/globaldev/reference/lcid-all.mspx
 en.dotnetfx40full_lcid=''

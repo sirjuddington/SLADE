@@ -34,7 +34,7 @@ public:
 	virtual void     updatePatchControls();
 	void             updateTextureName(const wxString& new_name) const;
 
-	bool openTexture(CTexture* tex, TextureXList* list);
+	bool openTexture(const CTexture* tex, TextureXList* list);
 	void clearTexture();
 	void setPalette(Palette* pal) const;
 
@@ -53,23 +53,22 @@ public:
 	bool handleSAction(string_view id);
 
 	// Events
-	void onDrawOutsideChanged(wxCommandEvent& e);
-	void onTexCanvasMouseEvent(wxMouseEvent& e);
-	void onTexCanvasDragEnd(wxCommandEvent& e);
-	void onTexCanvasKeyDown(wxKeyEvent& e);
-	void onTexNameChanged(wxCommandEvent& e);
-	void onTexWidthChanged(wxCommandEvent& e);
-	void onTexHeightChanged(wxCommandEvent& e);
-	void onTexScaleXChanged(wxCommandEvent& e);
-	void onTexScaleYChanged(wxCommandEvent& e);
-	void onTexWorldPanningChanged(wxCommandEvent& e);
-	void onPatchListSelect(wxListEvent& e);
-	void onPatchListDeSelect(wxListEvent& e);
-	void onPatchPositionXChanged(wxCommandEvent& e);
-	void onPatchPositionYChanged(wxCommandEvent& e);
-	void onContextMenu(wxCommandEvent& e);
-	void onApplyScaleChanged(wxCommandEvent& e);
-	void onARCChanged(wxCommandEvent& e);
+	void         onDrawOutsideChanged(wxCommandEvent& e);
+	void         onTexCanvasMouseEvent(wxMouseEvent& e);
+	void         onTexCanvasDragEnd(wxCommandEvent& e);
+	void         onTexCanvasKeyDown(wxKeyEvent& e);
+	void         onTexNameChanged(wxCommandEvent& e);
+	void         onTexWidthChanged(wxCommandEvent& e);
+	void         onTexHeightChanged(wxCommandEvent& e);
+	virtual void onTexScaleXChanged(wxCommandEvent& e);
+	virtual void onTexScaleYChanged(wxCommandEvent& e);
+	virtual void onTexWorldPanningChanged(wxCommandEvent& e);
+	void         onPatchListSelect(wxListEvent& e);
+	void         onPatchListDeSelect(wxListEvent& e);
+	void         onPatchPositionXChanged(wxCommandEvent& e);
+	void         onPatchPositionYChanged(wxCommandEvent& e);
+	void         onApplyScaleChanged(wxCommandEvent& e);
+	void         onARCChanged(wxCommandEvent& e);
 
 protected:
 	TextureXEditor*      tx_editor_ = nullptr;
