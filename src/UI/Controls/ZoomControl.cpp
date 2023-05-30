@@ -89,6 +89,7 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
 ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
 	wxPanel(parent, -1), linked_texture_canvas_{ linked_canvas }, zoom_(zoom_ctex)
 {
+	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
 }
