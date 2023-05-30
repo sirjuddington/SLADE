@@ -66,6 +66,33 @@ private:
 	bool              has_ended_  = false;
 };
 
+class Statement : public SQLite::Statement
+{
+public:
+	Statement(const SQLite::Database& db, string_view query) :
+		SQLite::Statement(db, string{ query.data(), query.size() })
+	{
+	}
+
+	void bind(int index, int32_t value) { SQLite::Statement::bind(index, value); }
+	void bind(int index, uint32_t value) { SQLite::Statement::bind(index, value); }
+	void bind(int index, int64_t value) { SQLite::Statement::bind(index, value); }
+	void bind(int index, double value) { SQLite::Statement::bind(index, value); }
+	void bind(int index, const string& value) { SQLite::Statement::bind(index, value); }
+	void bind(int index, const char* value) { SQLite::Statement::bind(index, value); }
+	void bind(int index, string_view value) { SQLite::Statement::bind(index, string{ value.data(), value.size() }); }
+	void bind(int index, const void* value, int size) { SQLite::Statement::bind(index, value, size); }
+	void bind(int index) { SQLite::Statement::bind(index); }
+
+	void bindNoCopy(int index, const string& value) { SQLite::Statement::bindNoCopy(index, value); }
+	void bindNoCopy(int index, const char* value) { SQLite::Statement::bindNoCopy(index, value); }
+	void bindNoCopy(int index, string_view value)
+	{
+		SQLite::Statement::bindNoCopy(index, string{ value.data(), value.size() });
+	}
+	void bindNoCopy(int index, const void* value, int size) { SQLite::Statement::bindNoCopy(index, value, size); }
+};
+
 class Context
 {
 public:
@@ -82,8 +109,8 @@ public:
 	bool open(string_view file_path);
 	bool close();
 
-	SQLite::Statement* cachedQuery(string_view id);
-	SQLite::Statement* cacheQuery(string_view id, string_view sql, bool writes = false);
+	Statement* cachedQuery(string_view id);
+	Statement* cacheQuery(string_view id, string_view sql, bool writes = false);
 
 	int exec(const string& query) const;
 	int exec(const char* query) const;
@@ -101,7 +128,7 @@ private:
 	unique_ptr<SQLite::Database> connection_ro_;
 	unique_ptr<SQLite::Database> connection_rw_;
 
-	std::map<string, unique_ptr<SQLite::Statement>, std::less<>> cached_queries_;
+	std::map<string, unique_ptr<Statement>, std::less<>> cached_queries_;
 };
 
 // Global (config) database context
@@ -116,17 +143,18 @@ void deregisterThreadContexts();
 bool        isTransactionActive(const SQLite::Database* connection);
 int         exec(const string& query, SQLite::Database* connection = nullptr);
 int         exec(const char* query, SQLite::Database* connection = nullptr);
+bool        viewExists(string_view view_name, const SQLite::Database& connection);
 inline bool rowIdExists(string_view table_name, int64_t id, string_view id_col = "id")
 {
 	return global().rowIdExists(table_name, id, id_col);
 }
 template<typename T> bool rowExists(SQLite::Database& connection, string_view table_name, string_view col_name, T value)
 {
-	SQLite::Statement sql(connection, fmt::format("SELECT * FROM {} WHERE {} = ?", table_name, col_name));
+	Statement sql(connection, fmt::format("SELECT * FROM {} WHERE {} = ?", table_name, col_name));
 	sql.bind(1, value);
 	return sql.executeStep();
 }
-inline SQLite::Statement* cacheQuery(string_view id, string_view sql, bool writes = false)
+inline Statement* cacheQuery(string_view id, string_view sql, bool writes = false)
 {
 	return global().cacheQuery(id, sql, writes);
 }

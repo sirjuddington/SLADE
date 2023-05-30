@@ -10,7 +10,7 @@ SQLiteC++
 [![Coverity](https://img.shields.io/coverity/scan/14508.svg)](https://scan.coverity.com/projects/srombauts-sqlitecpp "Coverity Scan Build Status")
 [![Join the chat at https://gitter.im/SRombauts/SQLiteCpp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/SQLiteCpp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-SQLiteC++ (SQLiteCpp) is a smart and easy to use C++ SQLite3 wrapper.
+SQLiteC++ (SQLiteCpp) is a lean and easy to use C++ SQLite3 wrapper.
 
 <!--Keywords: sqlite, sqlite3, C, library, wrapper C++-->
 <meta name="keywords" content="sqlite, sqlite3, C, library, wrapper C++">
@@ -22,7 +22,7 @@ with a few intuitive and well documented C++ classes.
 
 ### License:
 
-Copyright (c) 2012-2021 Sébastien Rombauts (sebastien.rombauts@gmail.com)
+Copyright (c) 2012-2023 Sébastien Rombauts (sebastien.rombauts@gmail.com)
 <a href="https://www.paypal.me/SRombauts" title="Pay Me a Beer! Donate with PayPal :)"><img src="https://www.paypalobjects.com/webstatic/paypalme/images/pp_logo_small.png" width="118"></a>
 
 Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
@@ -69,17 +69,17 @@ and then is always valid until destroyed.
 Now requires a C++11 compiler. Use branch [sqlitecpp-2.x](https://github.com/SRombauts/SQLiteCpp/tree/sqlitecpp-2.x) for latest pre-C++11 developments.
 
 Developments and tests are done under the following OSs:
-- Ubuntu 14.04, 16.04 and 18.04 (Travis CI)
-- Windows 10, and Windows Server 2012 R2 & Windows Server 2016 (AppVeyor)
-- OS X 10.11 (Travis CI)
-- Github Actions
+- Ubuntu 14.04, 16.04 and 18.04 (Travis CI and Github Actions)
+- Windows 10, and Windows Server 2012 R2, Windows Server 2016, Windows Server 2022 (AppVeyor and Github Actions)
+- MacOS 10.11 and 11.7 (Travis CI and Github Actions)
 - Valgrind memcheck tool
 
 And the following IDEs/Compilers
-- GCC 4.8.4, 5.3.0 and 7.1.1 (C++11, C++14, C++17)
-- Clang 5
-- Xcode 8 & 9
-- Visual Studio Community 2019, 2017, and 2015 (AppVeyor)
+- GCC 4.8.4, 5.3.0, 7.1.1 and latest eg 9.4 (C++11, C++14, C++17)
+- Clang 5 and 7 (Travis CI)
+- AppleClang 8, 9 and 13 (Travis CI and Github Actions)
+- Xcode 8 & 9 (Travis CI)
+- Visual Studio Community/Entreprise 2022, 2019, 2017, and 2015 (AppVeyor and Github Actions)
 
 ### Dependencies
 
@@ -87,7 +87,7 @@ And the following IDEs/Compilers
 - exception support (the class Exception inherits from std::runtime_error)
 - the SQLite library (3.7.15 minimum from 2012-12-12) either by linking to it dynamically or statically (install the libsqlite3-dev package under Debian/Ubuntu/Mint Linux),
   or by adding its source file in your project code base (source code provided in src/sqlite3 for Windows),
-  with the SQLITE_ENABLE_COLUMN_METADATA macro defined (see http://www.sqlite.org/compile.html#enable_column_metadata).
+  with the `SQLITE_ENABLE_COLUMN_METADATA` macro defined (see http://www.sqlite.org/compile.html#enable_column_metadata).
 
 ## Getting started
 ### Installation
@@ -127,6 +127,21 @@ cd SQLiteCpp
 git submodule init
 git submodule update
 ```
+
+### Installing SQLiteCpp (vcpkg)
+
+Alternatively, you can build and install SQLiteCpp using [vcpkg](https://github.com/Microsoft/vcpkg/) dependency manager:
+
+```bash or powershell
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+./vcpkg install sqlitecpp
+```
+
+The SQLiteCpp port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+
 
 #### Using SQLiteCpp on a system-wide installation
 
@@ -178,6 +193,73 @@ cmake --build .
 ctest --output-on-failure
 ```
 
+#### Building with meson
+
+You can build SQLiteCpp with [meson](https://mesonbuild.com/) using the provided meson project.
+
+you can install meson using pip: `pip install meson` however you may need to install ninja and other dependencies depending on your platform as an compiler toolchain
+
+Arch Linux:
+
+```sh
+# install clang (compiler toolchain) and ninja (recommended build system)
+sudo pacman -Syu clang ninja
+# install python and pip (required for meson)
+sudo pacman -Syu python python-pip
+# install meson 
+pip install meson
+```
+
+Ubuntu:
+
+```sh
+# install gcc(compiler toolchain) and ninja (recommended build system)
+sudo apt install build-essential ninja-build
+# install python and pip (required for meson)
+sudo apt install python3 python3-pip
+# install meson
+pip install meson
+```
+
+for example you can build the library using the default options with:
+
+```sh
+# setup the build directory
+meson setup builddir 
+# build sqlitecpp
+meson compile -C builddir
+```
+
+or if you wish to build with tests and examples:
+
+```sh
+# setup the build directory with tests and examples enabled
+meson setup builddir -DSQLITECPP_BUILD_TESTS=true -DSQLITECPP_BUILD_EXAMPLES=true
+# build sqlitecpp
+meson compile -C builddir
+```
+
+#### Using SQLiteCpp as subproject in meson
+
+please check the examples in the examples folder for usage of SQLiteCpp as a subproject in meson, as for the wrap file you can use the one provided in the subprojects folder called `SQLiteCpp.wrap`
+
+> keep in mind that even that this wrap should be up to date, it is recommended to check the latest version of SQLiteCpp and update the wrap file accordingly
+
+#### System SQLiteCpp support under meson
+
+additionally meson can detect and use the bundled sqlitecpp library included on your system if available, for example with vcpkg you would need to set the `PKG_CONFIG_PATH` environment variable to the vcpkg directory before running meson setup, and if applies the corresponding `PKG-CONFIG` executable to the path.
+
+#### Building the Doxygen/html documentation
+
+Make sure you have Dogygen installed and configure CMake using the `SQLITECPP_RUN_DOXYGEN=ON` flag:
+
+```
+cmake -DSQLITECPP_RUN_DOXYGEN=ON   <MORE ARGUMENTS_HERE>
+```
+
+and then execute the `SQLiteCpp_doxygen` target (or build all targets, see above).
+The documentation will be generated in the 'doc' subfolder of the source tree.
+
 #### CMake options
 
   * For more options on customizing the build, see the [CMakeLists.txt](https://github.com/SRombauts/SQLiteCpp/blob/master/CMakeLists.txt) file.
@@ -189,12 +271,11 @@ it's that you lack the "sqlite3" library: install the libsqlite3-dev package.
 
 If you get a single linker error "Column.cpp: undefined reference to sqlite3_column_origin_name",
 it's that your "sqlite3" library was not compiled with
-the SQLITE_ENABLE_COLUMN_METADATA macro defined (see [http://www.sqlite.org/compile.html#enable_column_metadata](http://www.sqlite.org/compile.html#enable_column_metadata)).
-You can either recompile it yourself (seek help online) or you can comment out the following line in src/Column.h:
-
-```C++
-#define SQLITE_ENABLE_COLUMN_METADATA
-```
+the `SQLITE_ENABLE_COLUMN_METADATA` macro defined (see [http://www.sqlite.org/compile.html#enable_column_metadata](http://www.sqlite.org/compile.html#enable_column_metadata)).
+You can:
+ - either recompile the sqlite3 library provided by your distribution yourself (seek help online)
+ - or turn off the `option(SQLITE_ENABLE_COLUMN_METADATA "Enable Column::getColumnOriginName(). Require support from sqlite3 library." ON)` in [CMakeFiles.txt](CMakeFiles.txt) (or other build system scripts)
+ - or turn on the `option(SQLITECPP_INTERNAL_SQLITE "Add the internal SQLite3 source to the project." ON)` in [CMakeFiles.txt](CMakeFiles.txt)
 
 ### Continuous Integration
 
@@ -222,6 +303,17 @@ provided that no single database connection is used simultaneously in two or mor
 But SQLiteC++ does not support the fully thread-safe "Serialized" mode of SQLite,
 because of the way it shares the underlying SQLite precompiled statement
 in a custom shared pointer (See the inner class "Statement::Ptr").
+
+### Valgrind memcheck
+
+Run valgrind to search for memory leaks in your application, the SQLiteCpp wrapper, or the sqlite3 library.
+Execute the following command under Unix like OS (Linux, MacOS or WSL2/Ubuntu under Windows Subsystem for Linux):
+
+```Shell
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose build/SQLiteCpp_example1
+```
+
+or uncoment the line at the end of [build.sh](build.sh)
 
 ## Examples
 ### The first sample demonstrates how to query a database and get results: 
@@ -278,6 +370,42 @@ try
 catch (std::exception& e)
 {
     std::cout << "exception: " << e.what() << std::endl;
+}
+```
+
+### The third sample shows how to manage a prepared statement with a transaction:
+
+```C++
+try 
+{ 
+    SQLite::Database    db("test.db3", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE);
+
+    db.exec("DROP TABLE IF EXISTS test");
+
+    db.exec("CREATE TABLE test (value INTEGER)");
+
+    // Begin transaction
+    SQLite::Transaction transaction(db);
+
+    // Prepare query
+    SQLite::Statement query {db, "INSERT INTO test (value) VALUES (?)"};
+
+    // Collection to save in database
+    std::vector<int> values{1, 2, 3};
+
+    for (const auto& v: values)
+    {
+      query.bind(1, v);
+      query.exec();
+      query.reset();
+    }
+
+    // Commit transaction
+    transaction.commit();
+}
+catch (std::exception& e)
+{
+  std::cout << "exception: " << e.what() << std::endl;
 }
 ```
 

@@ -3,7 +3,7 @@
  * @ingroup SQLiteCpp
  * @brief   A prepared SQLite Statement is a compiled SQL query ready to be executed, pointing to a row of result.
  *
- * Copyright (c) 2012-2021 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+ * Copyright (c) 2012-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
  *
  * Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
  * or copy at http://opensource.org/licenses/MIT)
@@ -17,10 +17,21 @@
 
 #include <sqlite3.h>
 
+// check for if SQLite3 version >= 3.14.0
+#if SQLITE_VERSION_NUMBER < 3014000
+    #warning "SQLite3 version is less than 3.14.0, so expanded SQL is not available"
+    #warning "To use expanded SQL, please upgrade to SQLite3 version 3.14.0 or later"
+    #warning "If you want to disable this warning, define SQLITECPP_DISABLE_SQLITE3_EXPANDED_SQL"
+    #warning "or use the specific project option in your build system"
+    #warning "disabling expanded SQL support"
+    #define SQLITECPP_DISABLE_SQLITE3_EXPANDED_SQL
+#endif
+
+
 namespace SQLite
 {
 
-Statement::Statement(const Database& aDatabase, std::string_view apQuery) :
+Statement::Statement(const Database& aDatabase, const char* apQuery) :
     mQuery(apQuery),
     mpSQLite(aDatabase.getHandle()),
     mpPreparedStatement(prepareStatement()) // prepare the SQL query (needs Database friendship)
@@ -43,7 +54,7 @@ Statement::Statement(Statement&& aStatement) noexcept :
     aStatement.mbDone = false;
 }
 
-// Reset the statement to make it ready for a new execution (see also #clearBindings() bellow)
+// Reset the statement to make it ready for a new execution (see also #clearBindings() below)
 void Statement::reset()
 {
     const int ret = tryReset();
@@ -105,14 +116,6 @@ void Statement::bind(const int aIndex, const std::string& aValue)
     check(ret);
 }
 
-// Bind a string_view value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement
-void Statement::bind(const int aIndex, std::string_view aValue)
-{
-    const int ret = sqlite3_bind_text(getPreparedStatement(), aIndex, aValue.data(),
-                                      static_cast<int>(aValue.size()), SQLITE_TRANSIENT);
-    check(ret);
-}
-
 // Bind a text value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement
 void Statement::bind(const int aIndex, const char* apValue)
 {
@@ -131,14 +134,6 @@ void Statement::bind(const int aIndex, const void* apValue, const int aSize)
 void Statement::bindNoCopy(const int aIndex, const std::string& aValue)
 {
     const int ret = sqlite3_bind_text(getPreparedStatement(), aIndex, aValue.c_str(),
-                                      static_cast<int>(aValue.size()), SQLITE_STATIC);
-    check(ret);
-}
-
-// Bind a string value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement
-void Statement::bindNoCopy(const int aIndex, std::string_view aValue)
-{
-    const int ret = sqlite3_bind_text(getPreparedStatement(), aIndex, aValue.data(),
                                       static_cast<int>(aValue.size()), SQLITE_STATIC);
     check(ret);
 }
@@ -304,7 +299,7 @@ int Statement::getColumnIndex(const char* apName) const
     return iIndex->second;
 }
 
-const char * Statement::getColumnDeclaredType(const int aIndex) const
+const char* Statement::getColumnDeclaredType(const int aIndex) const
 {
     checkIndex(aIndex);
     const char * result = sqlite3_column_decltype(getPreparedStatement(), aIndex);
@@ -347,13 +342,19 @@ const char* Statement::getErrorMsg() const noexcept
     return sqlite3_errmsg(mpSQLite);
 }
 
+
 // Return a UTF-8 string containing the SQL text of prepared statement with bound parameters expanded.
 std::string Statement::getExpandedSQL() const {
+    #ifdef SQLITECPP_DISABLE_SQLITE3_EXPANDED_SQL
+    throw SQLite::Exception("this version of SQLiteCpp does not support expanded SQL");
+    #else
     char* expanded = sqlite3_expanded_sql(getPreparedStatement());
     std::string expandedString(expanded);
     sqlite3_free(expanded);
     return expandedString;
+    #endif
 }
+
 
 // Prepare SQLite statement object and return shared pointer to this object
 Statement::TStatementPtr Statement::prepareStatement()

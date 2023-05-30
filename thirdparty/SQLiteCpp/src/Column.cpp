@@ -3,7 +3,7 @@
  * @ingroup SQLiteCpp
  * @brief   Encapsulation of a Column in a row of the result pointed by the prepared SQLite::Statement.
  *
- * Copyright (c) 2012-2021 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+ * Copyright (c) 2012-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
  *
  * Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
  * or copy at http://opensource.org/licenses/MIT)
@@ -13,7 +13,6 @@
 #include <sqlite3.h>
 
 #include <iostream>
-
 
 namespace SQLite
 {
@@ -51,19 +50,19 @@ const char* Column::getOriginName() const noexcept
 #endif
 
 // Return the integer value of the column specified by its index starting at 0
-int Column::getInt() const noexcept
+int32_t Column::getInt() const noexcept
 {
     return sqlite3_column_int(mStmtPtr.get(), mIndex);
 }
 
 // Return the unsigned integer value of the column specified by its index starting at 0
-unsigned Column::getUInt() const noexcept
+uint32_t Column::getUInt() const noexcept
 {
     return static_cast<unsigned>(getInt64());
 }
 
 // Return the 64bits integer value of the column specified by its index starting at 0
-long long Column::getInt64() const noexcept
+int64_t Column::getInt64() const noexcept
 {
     return sqlite3_column_int64(mStmtPtr.get(), mIndex);
 }
@@ -78,7 +77,7 @@ double Column::getDouble() const noexcept
 const char* Column::getText(const char* apDefaultValue /* = "" */) const noexcept
 {
     auto pText = reinterpret_cast<const char*>(sqlite3_column_text(mStmtPtr.get(), mIndex));
-    return (pText?pText:apDefaultValue);
+    return (pText ? pText : apDefaultValue);
 }
 
 // Return a pointer to the blob value (*not* NULL terminated) of the column specified by its index starting at 0
@@ -92,6 +91,9 @@ std::string Column::getString() const
 {
     // Note: using sqlite3_column_blob and not sqlite3_column_text
     // - no need for sqlite3_column_text to add a \0 on the end, as we're getting the bytes length directly
+    //   however, we need to call sqlite3_column_bytes() to ensure correct format. It's a noop on a BLOB
+    //   or a TEXT value with the correct encoding (UTF-8). Otherwise it'll do a conversion to TEXT (UTF-8).
+    (void)sqlite3_column_bytes(mStmtPtr.get(), mIndex);
     auto data = static_cast<const char *>(sqlite3_column_blob(mStmtPtr.get(), mIndex));
 
     // SQLite docs: "The safest policy is to invoke… sqlite3_column_blob() followed by sqlite3_column_bytes()"
@@ -117,6 +119,5 @@ std::ostream& operator<<(std::ostream& aStream, const Column& aColumn)
     aStream.write(aColumn.getText(), aColumn.getBytes());
     return aStream;
 }
-
 
 }  // namespace SQLite

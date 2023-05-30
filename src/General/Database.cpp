@@ -165,7 +165,7 @@ bool database::Context::close()
 // -----------------------------------------------------------------------------
 // Returns the cached query [id] or nullptr if not found
 // -----------------------------------------------------------------------------
-SQLite::Statement* database::Context::cachedQuery(string_view id)
+database::Statement* database::Context::cachedQuery(string_view id)
 {
 	auto i = cached_queries_.find(id);
 	if (i != cached_queries_.end())
@@ -182,7 +182,7 @@ SQLite::Statement* database::Context::cachedQuery(string_view id)
 // query from the given [sql] string and returns it.
 // If [writes] is true, the created query will use the read+write connection.
 // -----------------------------------------------------------------------------
-SQLite::Statement* database::Context::cacheQuery(string_view id, string_view sql, bool writes)
+database::Statement* database::Context::cacheQuery(string_view id, string_view sql, bool writes)
 {
 	// Check for existing cached query [id]
 	auto i = cached_queries_.find(id);
@@ -198,7 +198,7 @@ SQLite::Statement* database::Context::cacheQuery(string_view id, string_view sql
 
 	// Create & add cached query
 	auto& db        = writes ? *connection_rw_ : *connection_ro_;
-	auto  statement = std::make_unique<SQLite::Statement>(db, sql);
+	auto  statement = std::make_unique<Statement>(db, sql);
 	auto  ptr       = statement.get();
 	cached_queries_.emplace(id, std::move(statement));
 
@@ -312,7 +312,7 @@ bool createMissingTables(SQLite::Database& db)
 		{
 			// Check view exists
 			string view_name{ strutil::Path::fileNameOf(entry->name(), false) };
-			if (db.viewExists(view_name))
+			if (viewExists(view_name, db))
 				continue;
 
 			// Doesn't exist, create view
@@ -421,6 +421,17 @@ int database::exec(const char* query, SQLite::Database* connection)
 		return 0;
 
 	return connection->exec(query);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if a view with [view_name] exists in the database [connection]
+// -----------------------------------------------------------------------------
+bool database::viewExists(string_view view_name, const SQLite::Database& connection)
+{
+	Statement query(connection, "SELECT count(*) FROM sqlite_master WHERE type='view' AND name=?");
+    query.bind(1, view_name);
+    (void)query.executeStep(); // Cannot return false, as the above query always return a result
+    return (1 == query.getColumn(0).getInt());
 }
 
 // -----------------------------------------------------------------------------

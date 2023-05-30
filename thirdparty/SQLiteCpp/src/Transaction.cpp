@@ -3,7 +3,7 @@
  * @ingroup SQLiteCpp
  * @brief   A Transaction is way to group multiple SQL statements into an atomic secured operation.
  *
- * Copyright (c) 2012-2019 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+ * Copyright (c) 2012-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
  *
  * Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
  * or copy at http://opensource.org/licenses/MIT)
@@ -18,11 +18,9 @@
 namespace SQLite
 {
 
-
 // Begins the SQLite transaction
 Transaction::Transaction(Database& aDatabase, TransactionBehavior behavior) :
-    mDatabase(aDatabase),
-    mbCommited(false)
+    mDatabase(aDatabase)
 {
     const char *stmt;
     switch (behavior) {
@@ -43,10 +41,9 @@ Transaction::Transaction(Database& aDatabase, TransactionBehavior behavior) :
 
 // Begins the SQLite transaction
 Transaction::Transaction(Database &aDatabase) :
-    mDatabase(aDatabase),
-    mbCommited(false)
+    mDatabase(aDatabase)
 {
-    mDatabase.exec("BEGIN");
+    mDatabase.exec("BEGIN TRANSACTION");
 }
 
 // Safely rollback the transaction if it has not been committed.
@@ -56,7 +53,7 @@ Transaction::~Transaction()
     {
         try
         {
-            mDatabase.exec("ROLLBACK");
+            mDatabase.exec("ROLLBACK TRANSACTION");
         }
         catch (SQLite::Exception&)
         {
@@ -70,7 +67,7 @@ void Transaction::commit()
 {
     if (false == mbCommited)
     {
-        mDatabase.exec("COMMIT");
+        mDatabase.exec("COMMIT TRANSACTION");
         mbCommited = true;
     }
     else
@@ -79,5 +76,17 @@ void Transaction::commit()
     }
 }
 
+// Rollback the transaction
+void Transaction::rollback()
+{
+    if (false == mbCommited)
+    {
+        mDatabase.exec("ROLLBACK TRANSACTION");
+    }
+    else
+    {
+        throw SQLite::Exception("Transaction already committed.");
+    }
+}
 
 }  // namespace SQLite

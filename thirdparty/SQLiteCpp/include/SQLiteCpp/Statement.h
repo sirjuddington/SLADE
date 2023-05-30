@@ -3,35 +3,33 @@
  * @ingroup SQLiteCpp
  * @brief   A prepared SQLite Statement is a compiled SQL query ready to be executed, pointing to a row of result.
  *
- * Copyright (c) 2012-2021 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+ * Copyright (c) 2012-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
  *
  * Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
  * or copy at http://opensource.org/licenses/MIT)
  */
 #pragma once
 
+#include <SQLiteCpp/SQLiteCppExport.h>
 #include <SQLiteCpp/Exception.h>
 #include <SQLiteCpp/Utils.h> // SQLITECPP_PURE_FUNC
 
 #include <string>
 #include <map>
 #include <memory>
-#include <string_view>
 
 // Forward declarations to avoid inclusion of <sqlite3.h> in a header
 struct sqlite3;
 struct sqlite3_stmt;
 
-
 namespace SQLite
 {
-
 
 // Forward declaration
 class Database;
 class Column;
 
-extern const int OK; ///< SQLITE_OK
+SQLITECPP_API extern const int OK; ///< SQLITE_OK
 
 /**
  * @brief RAII encapsulation of a prepared SQLite Statement.
@@ -50,7 +48,7 @@ extern const int OK; ///< SQLITE_OK
  *    because of the way it shares the underling SQLite precompiled statement
  *    in a custom shared pointer (See the inner class "Statement::Ptr").
  */
-class Statement
+class SQLITECPP_API Statement
 {
 public:
     /**
@@ -61,37 +59,36 @@ public:
      *
      * Exception is thrown in case of error, then the Statement object is NOT constructed.
      */
-    Statement(const Database& aDatabase, std::string_view apQuery);
-
-    ///**
-    // * @brief Compile and register the SQL query for the provided SQLite Database Connection
-    // *
-    // * @param[in] aDatabase the SQLite Database Connection
-    // * @param[in] aQuery    an UTF-8 encoded query string
-    // *
-    // * Exception is thrown in case of error, then the Statement object is NOT constructed.
-    // */
-    //Statement(const Database& aDatabase, const std::string& aQuery) :
-    //    Statement(aDatabase, aQuery)
-    //{}
+    Statement(const Database& aDatabase, const char* apQuery);
 
     /**
-     * @brief Move an SQLite statement.
+     * @brief Compile and register the SQL query for the provided SQLite Database Connection
      *
-     * @param[in] aStatement    Statement to move
+     * @param[in] aDatabase the SQLite Database Connection
+     * @param[in] aQuery    an UTF-8 encoded query string
+     *
+     * Exception is thrown in case of error, then the Statement object is NOT constructed.
      */
-    Statement(Statement&& aStatement) noexcept;
-    Statement& operator=(Statement&& aStatement) noexcept = default;
+    Statement(const Database& aDatabase, const std::string& aQuery) :
+        Statement(aDatabase, aQuery.c_str())
+    {}
 
     // Statement is non-copyable
     Statement(const Statement&) = delete;
     Statement& operator=(const Statement&) = delete;
 
+    // TODO: Change Statement move constructor to default
+    Statement(Statement&& aStatement) noexcept;
+    Statement& operator=(Statement&& aStatement) noexcept = default;
+
     /// Finalize and unregister the SQL query from the SQLite Database Connection.
     /// The finalization will be done by the destructor of the last shared pointer
     ~Statement() = default;
 
-    /// Reset the statement to make it ready for a new execution. Throws an exception on error.
+    /// Reset the statement to make it ready for a new execution by calling sqlite3_reset.
+    /// Throws an exception on error.
+    /// Call this function before any news calls to bind() if the statement was already executed before.
+    /// Calling reset() does not clear the bindings (see clearBindings()).
     void reset();
 
     /// Reset the statement. Returns the sqlite result code instead of throwing an exception on error.
@@ -148,12 +145,6 @@ public:
      */
     void bind(const int aIndex, const std::string&  aValue);
     /**
-     * @brief Bind a string_view value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
-     *
-     * @note Uses the SQLITE_TRANSIENT flag, making a copy of the data, for SQLite internal use
-     */
-    void bind(const int aIndex, std::string_view    aValue);
-    /**
      * @brief Bind a text value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
      *
      * @note Uses the SQLITE_TRANSIENT flag, making a copy of the data, for SQLite internal use
@@ -173,14 +164,6 @@ public:
      * @warning Uses the SQLITE_STATIC flag, avoiding a copy of the data. The string must remains unchanged while executing the statement.
      */
     void bindNoCopy(const int aIndex, const std::string&    aValue);
-    /**
-     * @brief Bind a string_view value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1).
-     *
-     * The string can contain null characters as it is binded using its size.
-     *
-     * @warning Uses the SQLITE_STATIC flag, avoiding a copy of the data. The string must remains unchanged while executing the statement.
-     */
-    void bindNoCopy(const int aIndex, std::string_view      aValue);
     /**
      * @brief Bind a text value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
      *
@@ -717,13 +700,12 @@ private:
     std::string             mQuery;                 //!< UTF-8 SQL Query
     sqlite3*                mpSQLite;               //!< Pointer to SQLite Database Connection Handle
     TStatementPtr           mpPreparedStatement;    //!< Shared Pointer to the prepared SQLite Statement Object
-    int                     mColumnCount{0};        //!< Number of columns in the result of the prepared statement
-    bool                    mbHasRow{false};        //!< true when a row has been fetched with executeStep()
-    bool                    mbDone{false};          //!< true when the last executeStep() had no more row to fetch
-    
-    /// Map of columns index by name (mutable so getColumnIndex can be const)
-    mutable std::map<std::string, int>  mColumnNames{};
-};
+    int                     mColumnCount = 0;       //!< Number of columns in the result of the prepared statement
+    bool                    mbHasRow = false;       //!< true when a row has been fetched with executeStep()
+    bool                    mbDone = false;         //!< true when the last executeStep() had no more row to fetch
 
+    /// Map of columns index by name (mutable so getColumnIndex can be const)
+    mutable std::map<std::string, int>  mColumnNames;
+};
 
 }  // namespace SQLite

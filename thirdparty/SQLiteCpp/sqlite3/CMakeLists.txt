@@ -1,6 +1,6 @@
 # CMake file for compiling the sqlite3 static library under Windows (for ease of use)
 #
-# Copyright (c) 2012-2022 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+# Copyright (c) 2012-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 #
 # Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 # or copy at http://opensource.org/licenses/MIT) 
@@ -11,9 +11,18 @@ add_library(sqlite3
  sqlite3.h
 )
 
+if(WIN32)
+    if(BUILD_SHARED_LIBS)
+            add_definitions("-DSQLITE_API=__declspec(dllexport)")
+    endif()
+endif()
+
+add_library(SQLite::SQLite3 ALIAS sqlite3)
+
 target_include_directories(sqlite3
-  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  PUBLIC $<INSTALL_INTERFACE:include/>)
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include/>)
 
 if (SQLITE_ENABLE_COLUMN_METADATA)
     # Enable the use of SQLite column metadata method

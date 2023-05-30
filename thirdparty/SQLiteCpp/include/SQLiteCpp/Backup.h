@@ -4,16 +4,18 @@
  * @brief   Backup is used to backup a database file in a safe and online way.
  *
  * Copyright (c) 2015 Shibao HONG (shibaohong@outlook.com)
- * Copyright (c) 2015-2021 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+ * Copyright (c) 2015-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
  *
  * Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
  * or copy at http://opensource.org/licenses/MIT)
  */
 #pragma once
 
+#include <SQLiteCpp/SQLiteCppExport.h>
 #include <SQLiteCpp/Database.h>
 
 #include <string>
+#include <memory>
 
 // Forward declaration to avoid inclusion of <sqlite3.h> in a header
 struct sqlite3_backup;
@@ -30,7 +32,7 @@ namespace SQLite
  * See also the a reference implementation of live backup taken from the official site:
  * https://www.sqlite.org/backup.html
  */
-class Backup
+class SQLITECPP_API Backup
 {
 public:
     /**
@@ -95,9 +97,6 @@ public:
     Backup(const Backup&) = delete;
     Backup& operator=(const Backup&) = delete;
 
-    /// Release the SQLite Backup resource.
-    ~Backup();
-
     /**
      * @brief Execute a step of backup with a given number of source pages to be copied
      *
@@ -114,14 +113,19 @@ public:
     int executeStep(const int aNumPage = -1);
 
     /// Return the number of source pages still to be backed up as of the most recent call to executeStep().
-    int getRemainingPageCount();
+    int getRemainingPageCount() const;
 
     /// Return the total number of pages in the source database as of the most recent call to executeStep().
-    int getTotalPageCount();
+    int getTotalPageCount() const;
 
 private:
-    // TODO: use std::unique_ptr with a custom deleter to call sqlite3_backup_finish()
-    sqlite3_backup* mpSQLiteBackup = nullptr;   ///< Pointer to SQLite Database Backup Handle
+    // Deleter functor to use with smart pointers to close the SQLite database backup in an RAII fashion.
+    struct Deleter
+    {
+        void operator()(sqlite3_backup* apBackup);
+    };
+
+    std::unique_ptr<sqlite3_backup, Deleter> mpSQLiteBackup;    ///< Pointer to SQLite Database Backup Handle
 };
 
 }  // namespace SQLite

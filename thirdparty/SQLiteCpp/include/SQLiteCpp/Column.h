@@ -3,19 +3,19 @@
  * @ingroup SQLiteCpp
  * @brief   Encapsulation of a Column in a row of the result pointed by the prepared SQLite::Statement.
  *
- * Copyright (c) 2012-2021 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+ * Copyright (c) 2012-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
  *
  * Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
  * or copy at http://opensource.org/licenses/MIT)
  */
 #pragma once
 
+#include <SQLiteCpp/SQLiteCppExport.h>
 #include <SQLiteCpp/Statement.h>
 #include <SQLiteCpp/Exception.h>
 
 #include <string>
 #include <memory>
-#include <climits> // For INT_MAX
 
 // Forward declarations to avoid inclusion of <sqlite3.h> in a header
 struct sqlite3_stmt;
@@ -23,16 +23,16 @@ struct sqlite3_stmt;
 namespace SQLite
 {
 
-extern const int INTEGER;   ///< SQLITE_INTEGER
-extern const int FLOAT;     ///< SQLITE_FLOAT
-extern const int TEXT;      ///< SQLITE_TEXT
-extern const int BLOB;      ///< SQLITE_BLOB
-extern const int Null;      ///< SQLITE_NULL
+SQLITECPP_API extern const int INTEGER;   ///< SQLITE_INTEGER
+SQLITECPP_API extern const int FLOAT;     ///< SQLITE_FLOAT
+SQLITECPP_API extern const int TEXT;      ///< SQLITE_TEXT
+SQLITECPP_API extern const int BLOB;      ///< SQLITE_BLOB
+SQLITECPP_API extern const int Null;      ///< SQLITE_NULL
 
 /**
  * @brief Encapsulation of a Column in a row of the result pointed by the prepared Statement.
  *
- *  A Column is a particular field of SQLite data in the current row of result
+ * A Column is a particular field of SQLite data in the current row of result
  * of the Statement : it points to a single cell.
  *
  * Its value can be expressed as a text, and, when applicable, as a numeric
@@ -45,7 +45,7 @@ extern const int Null;      ///< SQLITE_NULL
  *    because of the way it shares the underling SQLite precompiled statement
  *    in a custom shared pointer (See the inner class "Statement::Ptr").
  */
-class Column
+class SQLITECPP_API Column
 {
 public:
     /**
@@ -55,10 +55,6 @@ public:
      * @param[in] aIndex    Index of the column in the row of result, starting at 0
      */
     explicit Column(const Statement::TStatementPtr& aStmtPtr, int aIndex);
-
-    // default destructor: the finalization will be done by the destructor of the last shared pointer
-    // default copy constructor and assignment operator are perfectly suited :
-    // they copy the Statement::Ptr which in turn increments the reference counter.
 
     /**
      * @brief Return a pointer to the named assigned to this result column (potentially aliased)
@@ -79,11 +75,11 @@ public:
 #endif
 
     /// Return the integer value of the column.
-    int         getInt() const noexcept;
+    int32_t     getInt() const noexcept;
     /// Return the 32bits unsigned integer value of the column (note that SQLite3 does not support unsigned 64bits).
-    unsigned    getUInt() const noexcept;
+    uint32_t    getUInt() const noexcept;
     /// Return the 64bits integer value of the column (note that SQLite3 does not support unsigned 64bits).
-    long long   getInt64() const noexcept;
+    int64_t     getInt64() const noexcept;
     /// Return the double (64bits float) value of the column
     double      getDouble() const noexcept;
     /**
@@ -108,9 +104,12 @@ public:
     std::string getString() const;
 
     /**
-     * @brief Return the type of the value of the column
+     * @brief Return the type of the value of the column using sqlite3_column_type()
      *
      * Return either SQLite::INTEGER, SQLite::FLOAT, SQLite::TEXT, SQLite::BLOB, or SQLite::Null.
+     * This type may change from one row to the next, since
+     * SQLite stores data types dynamically for each value and not per column.
+     * Use Statement::getColumnDeclaredType() to retrieve the declared column type from a SELECT statement.
      *
      * @warning After a type conversion (by a call to a getXxx on a Column of a Yyy type),
      *          the value returned by sqlite3_column_type() is undefined.
@@ -160,62 +159,39 @@ public:
         return getBytes ();
     }
 
-    /// Inline cast operator to char
+    /// Inline cast operators to basic types
     operator char() const
     {
         return static_cast<char>(getInt());
     }
-    /// Inline cast operator to unsigned char
-    operator unsigned char() const
+    operator int8_t() const
     {
-        return static_cast<unsigned char>(getInt());
+        return static_cast<int8_t>(getInt());
     }
-    /// Inline cast operator to short
-    operator short() const
+    operator uint8_t() const
     {
-        return static_cast<short>(getInt());
+        return static_cast<uint8_t>(getInt());
     }
-    /// Inline cast operator to unsigned short
-    operator unsigned short() const
+    operator int16_t() const
     {
-        return static_cast<unsigned short>(getInt());
+        return static_cast<int16_t>(getInt());
     }
-
-    /// Inline cast operator to int
-    operator int() const
+    operator uint16_t() const
     {
-        return getInt();
+        return static_cast<uint16_t>(getInt());
     }
-    /// Inline cast operator to 32bits unsigned integer
-    operator unsigned int() const
-    {
-        return getUInt();
-    }
-#if (LONG_MAX == INT_MAX) // 4 bytes "long" type means the data model is ILP32 or LLP64 (Win64 Visual C++ and MinGW)
-    /// Inline cast operator to 32bits long
-    operator long() const
+    operator int32_t() const
     {
         return getInt();
     }
-    /// Inline cast operator to 32bits unsigned long
-    operator unsigned long() const
+    operator uint32_t() const
     {
         return getUInt();
     }
-#else // 8 bytes "long" type means the data model is LP64 (Most Unix-like, Windows when using Cygwin; z/OS)
-    /// Inline cast operator to 64bits long when the data model of the system is LP64 (Linux 64 bits...)
-    operator long() const
+    operator int64_t() const
     {
         return getInt64();
     }
-#endif
-
-    /// Inline cast operator to 64bits integer
-    operator long long() const
-    {
-        return getInt64();
-    }
-    /// Inline cast operator to double
     operator double() const
     {
         return getDouble();
@@ -252,8 +228,8 @@ public:
     }
 
 private:
-    Statement::TStatementPtr    mStmtPtr;  ///< Shared Pointer to the prepared SQLite Statement Object
-    int                         mIndex;    ///< Index of the column in the row of result, starting at 0
+    Statement::TStatementPtr    mStmtPtr;   ///< Shared Pointer to the prepared SQLite Statement Object
+    int                         mIndex;     ///< Index of the column in the row of result, starting at 0
 };
 
 /**
@@ -266,7 +242,7 @@ private:
  *
  * @return  Reference to the stream used
  */
-std::ostream& operator<<(std::ostream& aStream, const Column& aColumn);
+SQLITECPP_API std::ostream& operator<<(std::ostream& aStream, const Column& aColumn);
 
 #if __cplusplus >= 201402L || (defined(_MSC_VER) && _MSC_VER >= 1900) // c++14: Visual Studio 2015
 

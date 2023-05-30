@@ -3,7 +3,7 @@
  * @ingroup SQLiteCpp
  * @brief   Management of a SQLite Database Connection.
  *
- * Copyright (c) 2012-2021 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+ * Copyright (c) 2012-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
  *
  * Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
  * or copy at http://opensource.org/licenses/MIT)
@@ -23,10 +23,10 @@
 #define SQLITE_DETERMINISTIC 0x800
 #endif // SQLITE_DETERMINISTIC
 
-
 namespace SQLite
 {
 
+const int   OK                = SQLITE_OK;
 const int   OPEN_READONLY     = SQLITE_OPEN_READONLY;
 const int   OPEN_READWRITE    = SQLITE_OPEN_READWRITE;
 const int   OPEN_CREATE       = SQLITE_OPEN_CREATE;
@@ -36,16 +36,15 @@ const int   OPEN_NOMUTEX      = SQLITE_OPEN_NOMUTEX;
 const int   OPEN_FULLMUTEX    = SQLITE_OPEN_FULLMUTEX;
 const int   OPEN_SHAREDCACHE  = SQLITE_OPEN_SHAREDCACHE;
 const int   OPEN_PRIVATECACHE = SQLITE_OPEN_PRIVATECACHE;
-#if SQLITE_VERSION_NUMBER >= 3031000
+// check if sqlite version is >= 3.31.0 and SQLITE_OPEN_NOFOLLOW is defined
+#if SQLITE_VERSION_NUMBER >= 3031000 && defined(SQLITE_OPEN_NOFOLLOW)
 const int   OPEN_NOFOLLOW     = SQLITE_OPEN_NOFOLLOW;
 #else
 const int   OPEN_NOFOLLOW     = 0;
 #endif
 
-const int   OK              = SQLITE_OK;
-
-const char* VERSION         = SQLITE_VERSION;
-const int   VERSION_NUMBER  = SQLITE_VERSION_NUMBER;
+const char* const VERSION        = SQLITE_VERSION;
+const int         VERSION_NUMBER = SQLITE_VERSION_NUMBER;
 
 // Return SQLite version string using runtime call to the compiled library
 const char* getLibVersion() noexcept
@@ -93,19 +92,7 @@ void Database::Deleter::operator()(sqlite3* apSQLite)
     SQLITECPP_ASSERT(SQLITE_OK == ret, "database is locked");  // See SQLITECPP_ENABLE_ASSERT_HANDLER
 }
 
-/**
- * @brief Set a busy handler that sleeps for a specified amount of time when a table is locked.
- *
- *  This is useful in multithreaded program to handle case where a table is locked for writting by a thread.
- *  Any other thread cannot access the table and will receive a SQLITE_BUSY error:
- *  setting a timeout will wait and retry up to the time specified before returning this SQLITE_BUSY error.
- *  Reading the value of timeout for current connection can be done with SQL query "PRAGMA busy_timeout;".
- *  Default busy timeout is 0ms.
- *
- * @param[in] aBusyTimeoutMs    Amount of milliseconds to wait before returning SQLITE_BUSY
- *
- * @throw SQLite::Exception in case of error
- */
+// Set a busy handler that sleeps for a specified amount of time when a table is locked.
 void Database::setBusyTimeout(const int aBusyTimeoutMs)
 {
     const int ret = sqlite3_busy_timeout(getHandle(), aBusyTimeoutMs);
@@ -142,7 +129,7 @@ Column Database::execAndGet(const char* apQuery)
 }
 
 // Shortcut to test if a table exists.
-bool Database::tableExists(const char* apTableName)
+bool Database::tableExists(const char* apTableName) const
 {
     Statement query(*this, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?");
     query.bind(1, apTableName);
@@ -150,17 +137,8 @@ bool Database::tableExists(const char* apTableName)
     return (1 == query.getColumn(0).getInt());
 }
 
-// Shortcut to test if a view exists.
-bool Database::viewExists(const char* apViewName)
-{
-    Statement query(*this, "SELECT count(*) FROM sqlite_master WHERE type='view' AND name=?");
-    query.bind(1, apViewName);
-    (void)query.executeStep(); // Cannot return false, as the above query always return a result
-    return (1 == query.getColumn(0).getInt());
-}
-
 // Get the rowid of the most recent successful INSERT into the database from the current connection.
-long long Database::getLastInsertRowid() const noexcept
+int64_t Database::getLastInsertRowid() const noexcept
 {
     return sqlite3_last_insert_rowid(getHandle());
 }
@@ -448,8 +426,8 @@ void Database::backup(const char* apFilename, BackupType aType)
     Database otherDatabase(apFilename, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
 
     // For a 'Save' operation, data is copied from the current Database to the other. A 'Load' is the reverse.
-    Database& src = (aType == Save ? *this : otherDatabase);
-    Database& dest = (aType == Save ? otherDatabase : *this);
+    Database& src = (aType == BackupType::Save ? *this : otherDatabase);
+    Database& dest = (aType == BackupType::Save ? otherDatabase : *this);
 
     // Set up the backup procedure to copy between the "main" databases of each connection
     Backup bkp(dest, src);

@@ -3,7 +3,7 @@
  * @ingroup tests
  * @brief   Test of a SQLiteCpp Database.
  *
- * Copyright (c) 2012-2021 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+ * Copyright (c) 2012-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
  *
  * Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
  * or copy at http://opensource.org/licenses/MIT)
@@ -34,6 +34,7 @@ void assertion_failed(const char* apFile, const long apLine, const char* apFunc,
 }
 #endif
 
+#ifdef SQLITECPP_INTERNAL_SQLITE
 TEST(SQLiteCpp, version)
 {
     EXPECT_STREQ(SQLITE_VERSION,        SQLite::VERSION);
@@ -41,6 +42,7 @@ TEST(SQLiteCpp, version)
     EXPECT_STREQ(SQLITE_VERSION,        SQLite::getLibVersion());
     EXPECT_EQ   (SQLITE_VERSION_NUMBER, SQLite::getLibVersionNumber());
 }
+#endif
 
 TEST(Database, ctorExecCreateDropExist)
 {

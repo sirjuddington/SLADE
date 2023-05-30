@@ -1,4 +1,4 @@
-@REM Copyright (c) 2012-2021 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+@REM Copyright (c) 2012-2023 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 @REM
 @REM Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 @REM or copy at http://opensource.org/licenses/MIT)
@@ -18,9 +18,9 @@ cmake --build .
 ctest --output-on-failure
 @if ERRORLEVEL 1 goto onError
 
-goto onSuccess
+@goto onSuccess
 
 :onError
 @echo An error occured!
 :onSuccess
-cd ..
+@cd ..
