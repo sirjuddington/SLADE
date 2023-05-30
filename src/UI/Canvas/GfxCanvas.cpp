@@ -685,7 +685,7 @@ void GfxCanvas::onMouseLeaving(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void GfxCanvas::onMouseWheel(wxMouseEvent& e)
 {
-	if (!wxGetKeyState(WXK_CONTROL) && allow_scroll_)
+	if (wxGetKeyState(WXK_CONTROL) && allow_scroll_)
 	{
 		if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL || wxGetKeyState(WXK_SHIFT))
 		{
@@ -703,7 +703,7 @@ void GfxCanvas::onMouseWheel(wxMouseEvent& e)
 		}
 	}
 
-	if (wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
+	if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 	{
 		if (e.GetWheelRotation() > 0)
 			linked_zoom_control_->zoomIn(true);
