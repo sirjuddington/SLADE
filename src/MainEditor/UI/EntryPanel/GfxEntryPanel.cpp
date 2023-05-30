@@ -391,7 +391,7 @@ void GfxEntryPanel::setupToolbars()
 	g_tool->addActionButton("tool_drag", "Drag offsets", "gfx_drag", "Drag image to change its offsets")
 		->setChecked(true);
 	g_tool->addActionButton("tool_draw", "Drag pixels", "gfx_draw", "Draw on the image");
-	g_tool->addActionButton("tool_erase", "Erase pizels", "gfx_erase", "Erase pixels from the image");
+	g_tool->addActionButton("tool_erase", "Erase pixels", "gfx_erase", "Erase pixels from the image");
 	g_tool->addActionButton(
 		"tool_translate", "Translate pixels", "gfx_translate", "Apply a translation to pixels of the image");
 	g_tool->Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &GfxEntryPanel::onToolSelected, this);
