@@ -1,4 +1,4 @@
-$version = "3.2.2"
+$version = "3.2.3"
 $rev_short = Invoke-Expression "git.exe rev-parse --short HEAD"
 
 # Check for 7-zip install
@@ -90,7 +90,6 @@ Copy-Item (resolve-path ".\slade.pk3") "$releasedir" -Force
 # Win32
 Copy-Item (resolve-path ".\SLADE.exe")               "$releasedir32" -Force
 Copy-Item (resolve-path ".\SLADE.pdb")               "$releasedir32" -Force
-Copy-Item (resolve-path ".\dll32\libfluidsynth.dll") "$releasedir32" -Force
 # x64
 Copy-Item (resolve-path ".\SLADE-x64.exe")       "$releasedir64\SLADE.exe" -Force
 Copy-Item (resolve-path ".\SLADE-x64.pdb")       "$releasedir64\SLADE.pdb" -Force
@@ -114,7 +113,6 @@ if ($buildbinaries.ToLower() -eq "y")
 
 	Write-Host "`nBuiling win32 binaries 7z..." -foregroundcolor yellow
 	& $7zpath a -t7z "$releasedir\slade_${version}${timestamp}.7z" `
-	"$releasedir32\libfluidsynth.dll" `
 	"$releasedir32\SLADE.exe" `
 	"$releasedir32\SLADE.pdb" `
 	"$releasedir\slade.pk3"
