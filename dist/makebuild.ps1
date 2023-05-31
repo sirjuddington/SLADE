@@ -129,21 +129,25 @@ if ($buildbinaries.ToLower() -eq "y")
 }
 
 # Prompt to build installer
-Write-Host "`nBuild Installer? (y/n) " -foregroundcolor cyan -nonewline
+Write-Host "`nBuild Installers? (y/n) " -foregroundcolor cyan -nonewline
 $buildinstaller = Read-Host
 
 # Build installer
 if ($buildinstaller.ToLower() -eq "y")
 {
-	$innocompiler = "${env:ProgramFiles(x86)}\Inno Setup 5\iscc.exe"
+	$innocompiler = "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe"
 	if (-not (Test-Path $innocompiler))
 	{
-		$innocompiler = "${env:ProgramFiles}\Inno Setup 5\iscc.exe"
+		$innocompiler = "${env:ProgramFiles}\Inno Setup 6\iscc.exe"
 	}
 	if (Test-Path $innocompiler)
 	{
-		Write-Host "`nBuiling installer..." -foregroundcolor yellow
-		& $innocompiler "/Q" "/O$releasedir" "/F`"Setup_SLADE_$version`"" (resolve-path "..\win_installer\SLADE.iss").Path
+		Write-Host "`nBuiling x86 installer..." -foregroundcolor yellow
+		& $innocompiler "/O+" "/O$releasedir" (resolve-path "..\win_installer\SLADE-x86.iss").Path
+		Write-Host "Done" -foregroundcolor green
+
+		Write-Host "`nBuiling x64 installer..." -foregroundcolor yellow
+		& $innocompiler "/O+" "/O$releasedir" (resolve-path "..\win_installer\SLADE-x64.iss").Path
 		Write-Host "Done" -foregroundcolor green
 	}
 }
