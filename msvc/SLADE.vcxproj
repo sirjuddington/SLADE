@@ -79,14 +79,14 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)..\build\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)..\build\lib\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)..\build\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)..\build\lib\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\src;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\src;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)..\build\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\build\lib\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\src;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\src;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)..\build\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\build\lib\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SLADE-dbg64</TargetName>
   </PropertyGroup>
@@ -167,7 +167,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;ThirdPartyLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;dsound.lib;ThirdPartyLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -230,7 +230,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;ThirdPartyLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;dsound.lib;ThirdPartyLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>

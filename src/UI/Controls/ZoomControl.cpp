@@ -75,7 +75,7 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 // ZoomControl class constructor (linking GfxCanvas)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_gfx_canvas_{ linked_canvas }, zoom_(zoom_gfx)
+	wxPanel(parent, -1), linked_gfx_canvas_{ linked_canvas }
 {
 	zoom_ = getStateInt("ZoomGfxCanvas");
 	linked_canvas->linkZoomControl(this);
@@ -87,7 +87,7 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
 // ZoomControl class constructor (linking CTextureCanvas)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_texture_canvas_{ linked_canvas }, zoom_(zoom_ctex)
+	wxPanel(parent, -1), linked_texture_canvas_{ linked_canvas }
 {
 	zoom_ = getStateInt("ZoomCTextureCanvas");
 	linked_canvas->linkZoomControl(this);
