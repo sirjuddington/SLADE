@@ -90,7 +90,6 @@ Copy-Item (resolve-path ".\slade.pk3") "$releasedir" -Force
 # Win32
 Copy-Item (resolve-path ".\SLADE.exe")               "$releasedir32" -Force
 Copy-Item (resolve-path ".\SLADE.pdb")               "$releasedir32" -Force
-Copy-Item (resolve-path ".\dll32\libfluidsynth.dll") "$releasedir32" -Force
 # x64
 Copy-Item (resolve-path ".\SLADE-x64.exe")       "$releasedir64\SLADE.exe" -Force
 Copy-Item (resolve-path ".\SLADE-x64.pdb")       "$releasedir64\SLADE.pdb" -Force
@@ -114,7 +113,6 @@ if ($buildbinaries.ToLower() -eq "y")
 
 	Write-Host "`nBuiling win32 binaries 7z..." -foregroundcolor yellow
 	& $7zpath a -t7z "$releasedir\slade_${version}${timestamp}.7z" `
-	"$releasedir32\libfluidsynth.dll" `
 	"$releasedir32\SLADE.exe" `
 	"$releasedir32\SLADE.pdb" `
 	"$releasedir\slade.pk3"
@@ -129,21 +127,25 @@ if ($buildbinaries.ToLower() -eq "y")
 }
 
 # Prompt to build installer
-Write-Host "`nBuild Installer? (y/n) " -foregroundcolor cyan -nonewline
+Write-Host "`nBuild Installers? (y/n) " -foregroundcolor cyan -nonewline
 $buildinstaller = Read-Host
 
 # Build installer
 if ($buildinstaller.ToLower() -eq "y")
 {
-	$innocompiler = "${env:ProgramFiles(x86)}\Inno Setup 5\iscc.exe"
+	$innocompiler = "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe"
 	if (-not (Test-Path $innocompiler))
 	{
-		$innocompiler = "${env:ProgramFiles}\Inno Setup 5\iscc.exe"
+		$innocompiler = "${env:ProgramFiles}\Inno Setup 6\iscc.exe"
 	}
 	if (Test-Path $innocompiler)
 	{
-		Write-Host "`nBuiling installer..." -foregroundcolor yellow
-		& $innocompiler "/Q" "/O$releasedir" "/F`"Setup_SLADE_$version`"" (resolve-path "..\win_installer\SLADE.iss").Path
+		Write-Host "`nBuiling x86 installer..." -foregroundcolor yellow
+		& $innocompiler "/O+" "/O$releasedir" (resolve-path "..\win_installer\SLADE-x86.iss").Path
+		Write-Host "Done" -foregroundcolor green
+
+		Write-Host "`nBuiling x64 installer..." -foregroundcolor yellow
+		& $innocompiler "/O+" "/O$releasedir" (resolve-path "..\win_installer\SLADE-x64.iss").Path
 		Write-Host "Done" -foregroundcolor green
 	}
 }
