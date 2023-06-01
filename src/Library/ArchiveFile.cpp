@@ -51,11 +51,11 @@ namespace slade::library
 // SQL query strings
 string update_archive_file =
 	"UPDATE archive_file "
-	"SET path = ?, size = ?, hash = ?, format_id = ?, last_opened = ?, last_modified = ? "
+	"SET path = ?, size = ?, hash = ?, format_id = ?, last_opened = ?, last_modified = ?, parent_id = ? "
 	"WHERE id = ?";
 string insert_archive_file =
-	"REPLACE INTO archive_file (path, size, hash, format_id, last_opened, last_modified) "
-	"VALUES (?,?,?,?,?,?)";
+	"REPLACE INTO archive_file (path, size, hash, format_id, last_opened, last_modified, parent_id) "
+	"VALUES (?,?,?,?,?,?,?)";
 } // namespace slade::library
 
 
@@ -105,6 +105,7 @@ ArchiveFileRow::ArchiveFileRow(database::Context& db, int64_t id) : id{ id }
 			format_id     = sql->getColumn(4).getString();
 			last_opened   = sql->getColumn(5).getInt64();
 			last_modified = sql->getColumn(6).getInt64();
+			parent_id     = sql->getColumn(7).getInt64();
 		}
 		else
 		{
@@ -132,6 +133,7 @@ ArchiveFileRow::ArchiveFileRow(const SQLite::Statement* sql)
 	format_id     = sql->getColumn(4).getString();
 	last_opened   = sql->getColumn(5).getInt64();
 	last_modified = sql->getColumn(6).getInt64();
+	parent_id     = sql->getColumn(7).getInt64();
 }
 
 // -----------------------------------------------------------------------------
@@ -156,6 +158,7 @@ int64_t ArchiveFileRow::insert()
 		sql->bind(4, format_id);
 		sql->bind(5, last_opened);
 		sql->bind(6, last_modified);
+		sql->bind(7, parent_id);
 
 		if (sql->exec() > 0)
 			id = db::connectionRW()->getLastInsertRowid();
@@ -192,7 +195,8 @@ bool ArchiveFileRow::update() const
 		sql->bind(4, format_id);
 		sql->bind(5, last_opened);
 		sql->bind(6, last_modified);
-		sql->bind(7, id);
+		sql->bind(7, parent_id);
+		sql->bind(8, id);
 
 		rows = sql->exec();
 		sql->reset();
@@ -247,16 +251,17 @@ bool ArchiveFileRow::remove()
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
-// Returns the archive_file row id for [filename], or -1 if it does not exist
-// in the database
+// Returns the archive_file row id for [filename] (in [parent_id] if given),
+// or -1 if it does not exist in the database
 // -----------------------------------------------------------------------------
-int64_t library::archiveFileId(string_view filename)
+int64_t library::archiveFileId(string_view filename, int64_t parent_id)
 {
 	int64_t archive_id = -1;
 
-	if (auto sql = db::cacheQuery("lib_get_archive_id", "SELECT id FROM archive_file WHERE path = ?"))
+	if (auto sql = db::cacheQuery("lib_get_archive_id", "SELECT id FROM archive_file WHERE path = ? AND parent_id = ?"))
 	{
 		sql->bind(1, filename);
+		sql->bind(2, parent_id);
 
 		if (sql->executeStep())
 			archive_id = sql->getColumn(0);
@@ -271,15 +276,16 @@ int64_t library::archiveFileId(string_view filename)
 // Returns the first archive_file row id found that has a matching [size] and
 // [hash], or -1 if none found
 // -----------------------------------------------------------------------------
-int64_t library::findArchiveFileIdFromData(unsigned size, string_view hash)
+int64_t library::findArchiveFileIdFromData(unsigned size, string_view hash, int64_t parent_id)
 {
 	int64_t archive_id = -1;
 
 	if (auto sql = db::cacheQuery(
-			"lib_find_archive_id_data", "SELECT id FROM archive_file WHERE size = ? AND hash = ?"))
+			"lib_find_archive_id_data", "SELECT id FROM archive_file WHERE size = ? AND hash = ? AND parent_id = ?"))
 	{
 		sql->bind(1, size);
 		sql->bind(2, hash);
+		sql->bind(3, parent_id);
 
 		if (sql->executeStep())
 			archive_id = sql->getColumn(0);

@@ -137,7 +137,7 @@ public:
 	virtual vector<MapDesc> detectMaps() const { return {}; }
 	virtual string          detectNamespace(ArchiveEntry* entry) const;
 	virtual string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const;
-	void                    detectAllEntryTypes() const;
+	void                    detectAllEntryTypes(bool show_in_splash_window = true) const;
 
 	// Search
 	struct SearchOptions

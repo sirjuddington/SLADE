@@ -82,7 +82,7 @@ void library::init()
 		// Find archive_file row id from path
 		auto archive_id = archiveFileId(recent_file);
 		if (archive_id < 0)
-			 continue;
+			continue;
 
 		// Load row details
 		ArchiveFileRow archive_file{ db::global(), archive_id };
@@ -109,8 +109,16 @@ int64_t library::readArchiveInfo(const Archive& archive)
 		// Create row from file path to use for comparison
 		auto archive_file = ArchiveFileRow{ archive.filename(), archive.formatId() };
 
+		// Check for parent archive
+		if (auto* parent = archive.parentArchive())
+		{
+			auto* entry            = archive.parentEntry();
+			archive_file.parent_id = parent->libraryId();
+			archive_file.path      = parent->filename() + "/" + entry->name();
+		}
+
 		// Find existing archive_file row id for the archive's filename
-		auto archive_id = archiveFileId(archive_file.path);
+		auto archive_id = archiveFileId(archive_file.path, archive_file.parent_id);
 		if (archive_id < 0)
 		{
 			// Not found - look for match
@@ -122,17 +130,19 @@ int64_t library::readArchiveInfo(const Archive& archive)
 
 			// Find archive_file row with matching data
 			// If no data match found this archive doesn't exist in the library
-			auto match_id = findArchiveFileIdFromData(archive_file.size, archive_file.hash);
+			auto match_id = findArchiveFileIdFromData(archive_file.size, archive_file.hash, archive_file.parent_id);
 			if (match_id < 0)
 				return -1;
 
-			// Check if the matched file exists on disk
+			// Check if the matched file exists on disk (or in the parent archive)
 			// - If it exists the archive has likely been copied so copy its
 			//   data in the library
 			// - If it doesn't exist the archive has likely been moved so just
 			//   use and update the existing (matched) row in the library
 			auto match_row = ArchiveFileRow{ db::global(), match_id };
-			if (fileutil::fileExists(match_row.path))
+			if (archive_file.parent_id < 0 && fileutil::fileExists(match_row.path))
+				archive_id = copyArchiveFile(archive_file.path, match_id);
+			else if (archive_file.parent_id >= 0 && archive.parentArchive()->entryAtPath(archive_file.path))
 				archive_id = copyArchiveFile(archive_file.path, match_id);
 			else
 			{
@@ -200,8 +210,18 @@ int64_t library::writeArchiveInfo(const Archive& archive)
 		// Create row from archive path + format
 		auto archive_file = ArchiveFileRow{ archive.filename(), archive.formatId() };
 
+		// Check for parent archive
+		if (auto* parent = archive.parentArchive())
+		{
+			auto* entry            = archive.parentEntry();
+			archive_file.parent_id = parent->libraryId();
+			archive_file.path      = parent->filename() + "/" + entry->name();
+			archive_file.size      = entry->size();
+			archive_file.hash      = entry->hash();
+		}
+
 		// Get id of row in database if it exists
-		archive_file.id      = archiveFileId(archive_file.path);
+		archive_file.id      = archiveFileId(archive_file.path, archive_file.parent_id);
 		auto new_archive_row = archive_file.id < 0;
 
 		// Keep last opened time if the row exists
@@ -298,7 +318,7 @@ void library::removeMissingArchives()
 	{
 		vector<int64_t> to_remove;
 
-		if (auto sql = db::cacheQuery("lib_all_archive_paths", "SELECT id, path FROM archive_file"))
+		if (auto sql = db::cacheQuery("lib_all_archive_paths", "SELECT id, path FROM archive_file WHERE parent_id < 0"))
 		{
 			while (sql->executeStep())
 			{
@@ -333,7 +353,9 @@ vector<string> library::recentFiles(unsigned count)
 		// Get or create cached query to select base resource paths
 		if (auto sql = db::cacheQuery(
 				"lib_recent_files",
-				"SELECT path FROM archive_file WHERE last_opened > 0 ORDER BY last_opened DESC LIMIT ?"))
+				"SELECT path FROM archive_file "
+				"WHERE last_opened > 0 AND parent_id < 0 "
+				"ORDER BY last_opened DESC LIMIT ?"))
 		{
 			sql->bind(1, count);
 
@@ -637,7 +659,7 @@ CONSOLE_COMMAND(lib_scan, 1, true)
 		return;
 	}
 
-	vector<string> ignore_ext;//{ "zip" };
+	vector<string> ignore_ext; //{ "zip" };
 
 	// Start scan in background thread
 	std::thread scan_thread(

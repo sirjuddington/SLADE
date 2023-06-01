@@ -1,7 +1,9 @@
 
 #include "Main.h"
 #include "LibraryPanel.h"
+#include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Database.h"
 #include "General/Misc.h"
 #include "General/UI.h"
@@ -35,6 +37,26 @@ template<typename T> int compare(const T& left, const T& right)
 
 	return left < right ? -1 : 1;
 }
+
+void openArchive(const LibraryViewModel::LibraryListRow* row)
+{
+	// Check if it's an archive within another archive
+	if (row->parent_id >= 0)
+	{
+		// Open parent archive
+		ArchiveFileRow parent_row{ db::global(), row->parent_id };
+		maineditor::openArchiveFile(parent_row.path);
+
+		// Now open the archive's entry within the parent
+		auto parent_archive = app::archiveManager().getArchive(parent_row.path);
+		if (auto entry = parent_archive->entryAtPath(strutil::replace(row->path, parent_row.path, {})))
+			maineditor::openEntry(entry);
+
+		return;
+	}
+
+	maineditor::openArchiveFile(row->path);
+}
 } // namespace
 
 LibraryViewModel::LibraryViewModel()
@@ -49,12 +71,17 @@ LibraryViewModel::LibraryViewModel()
 	signal_connections_ += signals.archive_file_updated.connect(
 		[this](int64_t id)
 		{
+			bool changed = false;
 			for (auto& row : rows_)
 				if (row.id == id)
 				{
 					row = LibraryListRow{ db::global(), id };
 					ItemChanged(wxDataViewItem{ &row });
+					changed = true;
 				}
+
+			if (changed)
+				Resort();
 		});
 
 	// Archive added
@@ -63,6 +90,7 @@ LibraryViewModel::LibraryViewModel()
 		{
 			rows_.emplace_back(database::global(), id);
 			ItemAdded({}, wxDataViewItem{ &rows_.back() });
+			Resort();
 		});
 
 	// Archive deleted
@@ -74,6 +102,7 @@ LibraryViewModel::LibraryViewModel()
 				{
 					ItemDeleted({}, wxDataViewItem{ &rows_[i] });
 					rows_.erase(rows_.begin() + i);
+					Resort();
 					break;
 				}
 		});
@@ -93,8 +122,9 @@ LibraryViewModel::LibraryListRow::LibraryListRow(database::Context& db, int64_t 
 			format_id     = sql->getColumn(3).getString();
 			last_opened   = sql->getColumn(4).getInt64();
 			last_modified = sql->getColumn(5).getInt64();
-			entry_count   = sql->getColumn(6).getUInt();
-			map_count     = sql->getColumn(7).getUInt();
+			parent_id     = sql->getColumn(6).getInt64();
+			entry_count   = sql->getColumn(7).getUInt();
+			map_count     = sql->getColumn(8).getUInt();
 		}
 
 		sql->reset();
@@ -279,8 +309,9 @@ void LibraryViewModel::loadRows() const
 			row.format_id     = sql->getColumn(3).getString();
 			row.last_opened   = sql->getColumn(4).getInt64();
 			row.last_modified = sql->getColumn(5).getInt64();
-			row.entry_count   = sql->getColumn(6).getUInt();
-			row.map_count     = sql->getColumn(7).getUInt();
+			row.parent_id     = sql->getColumn(6).getInt64();
+			row.entry_count   = sql->getColumn(7).getUInt();
+			row.map_count     = sql->getColumn(8).getUInt();
 
 			rows_.push_back(row);
 		}
@@ -335,7 +366,7 @@ void LibraryPanel::setupToolbar()
 
 	// Filter
 	auto tbg_filter = new SToolBarGroup(toolbar_, "Filter");
-	text_filter_ = new wxTextCtrl(tbg_filter, -1);
+	text_filter_    = new wxTextCtrl(tbg_filter, -1);
 	tbg_filter->addCustomControl(new wxStaticText(tbg_filter, -1, "Filter:"));
 	tbg_filter->addCustomControl(text_filter_);
 	toolbar_->addGroup(tbg_filter, true);
@@ -351,7 +382,7 @@ bool LibraryPanel::handleAction(string_view id)
 
 		for (const auto& item : selection)
 			if (auto row = model_library_->rowForItem(item))
-				maineditor::openArchiveFile(row->path);
+				openArchive(row);
 
 		return true;
 	}
@@ -390,7 +421,7 @@ bool LibraryPanel::handleAction(string_view id)
 			}
 
 		RunDialog dlg{ this, id };
-		if (dlg.ShowModal() == wxID_OK) // TODO: IWAD probably shouldn't be just the current base resource
+		if (dlg.ShowModal() == wxID_OK)
 			dlg.run(RunDialog::Config{ path }, id);
 
 		return true;
@@ -407,7 +438,7 @@ void LibraryPanel::bindEvents()
 		[this](wxDataViewEvent& e)
 		{
 			if (auto row = model_library_->rowForItem(e.GetItem()))
-				maineditor::openArchiveFile(row->path);
+				openArchive(row);
 		});
 
 	// Context menu
@@ -497,10 +528,9 @@ void LibraryPanel::bindEvents()
 		});
 
 	// Filter changed
-	text_filter_->Bind(wxEVT_TEXT, [this](wxCommandEvent& e)
-	{
-		model_library_->setFilter(wxutil::strToView(text_filter_->GetValue()));
-	});
+	text_filter_->Bind(
+		wxEVT_TEXT,
+		[this](wxCommandEvent& e) { model_library_->setFilter(wxutil::strToView(text_filter_->GetValue())); });
 }
 
 void LibraryPanel::setupListColumns() const

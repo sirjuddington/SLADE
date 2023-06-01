@@ -447,7 +447,8 @@ bool WadArchive::open(const MemChunk& mc, bool detect_types)
 	updateNamespaces();
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Identify #included lumps (DECORATE, GLDEFS, etc.)
 	detectIncludes();

@@ -39,6 +39,7 @@ namespace ui
 			string   format_id;
 			time_t   last_opened   = 0;
 			time_t   last_modified = 0;
+			int64_t  parent_id     = -1;
 			unsigned entry_count   = 0;
 			unsigned map_count     = 0;
 

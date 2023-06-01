@@ -444,7 +444,7 @@ string Archive::filename(bool full) const
 		if (parentArchive())
 			parent_archive = parentArchive()->filename(false) + "/";
 
-		return parent_archive.append(strutil::Path::fileNameOf(parent->name(), false));
+		return parent_archive.append(strutil::Path::fileNameOf(parent->name()));
 	}
 
 	return full ? filename_ : string{ strutil::Path::fileNameOf(filename_) };
@@ -1679,14 +1679,16 @@ bool Archive::genericLoadEntryData(const ArchiveEntry* entry, MemChunk& out) con
 // -----------------------------------------------------------------------------
 // Detects the type of all entries in the archive
 // -----------------------------------------------------------------------------
-void Archive::detectAllEntryTypes() const
+void Archive::detectAllEntryTypes(bool show_in_splash_window) const
 {
 	auto entries   = dir_root_->allEntries();
 	auto n_entries = entries.size();
-	ui::setSplashProgressMessage("Detecting entry types");
+	if (show_in_splash_window)
+		ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t i = 0; i < n_entries; i++)
 	{
-		ui::setSplashProgress(i, n_entries);
+		if (show_in_splash_window)
+			ui::setSplashProgress(i, n_entries);
 		EntryType::detectEntryType(*entries[i]);
 	}
 	ui::setSplashProgress(1.0f);

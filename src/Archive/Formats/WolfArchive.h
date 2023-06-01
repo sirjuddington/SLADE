@@ -15,8 +15,8 @@ public:
 	bool open(const MemChunk& mc, bool detect_types) override;   // Open from MemChunk
 
 	bool openAudio(MemChunk& head, const MemChunk& data);
-	bool openGraph(const MemChunk& head, const MemChunk& data, MemChunk& dict);
-	bool openMaps(MemChunk& head, const MemChunk& data);
+	bool openGraph(const MemChunk& head, const MemChunk& data, MemChunk& dict, bool detect_types);
+	bool openMaps(MemChunk& head, const MemChunk& data, bool detect_types);
 
 	// Writing/Saving
 	bool write(MemChunk& mc) override; // Write to MemChunk

@@ -7,6 +7,7 @@ CREATE VIEW archive_library_list AS
 		archive_file.format_id,
 		archive_file.last_opened,
 		archive_file.last_modified,
+		archive_file.parent_id,
 		(
 			SELECT COUNT( * ) 
 				FROM archive_entry

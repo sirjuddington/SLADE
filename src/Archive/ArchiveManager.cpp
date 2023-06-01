@@ -83,8 +83,7 @@ bool updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
 	if (lib_id < 0)
 	{
 		// Need to detect all entry types before adding
-		ui::setSplashProgressMessage("Detecting entry types");
-		archive.detectAllEntryTypes();
+		archive.detectAllEntryTypes(false);
 
 		// Add to library
 		ui::setSplashProgressMessage("Updating Library");
@@ -442,7 +441,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	}
 
 	// Attempt to open archive
-	if (!new_archive->open(entry, true))
+	if (!new_archive->open(entry, false))
 	{
 		log::error(global::error);
 		return nullptr;
@@ -451,10 +450,12 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	// Opened ok, add to manager if requested
 	if (manage)
 	{
-		// TODO: Nested archives in library
+		// Add/update in library
+		auto added = updateArchiveInLibrary(*new_archive, true);
 
-		//// Update library
-		// lib_id = library::addOrUpdateArchive(lib_path, *new_archive);
+		// Detect entry types if needed (use hints from library)
+		if (!added)
+			new_archive->detectAllEntryTypes();
 
 		// Add to parent's child list if parent is open in the manager (it should be)
 		int index_parent = -1;

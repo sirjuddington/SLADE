@@ -389,7 +389,7 @@ bool WolfArchive::open(string_view filename, bool detect_types)
 		MemChunk data, head;
 		head.importFile(findFileCasing(fn1));
 		data.importFile(findFileCasing(fn2));
-		opened = openMaps(head, data);
+		opened = openMaps(head, data, detect_types);
 	}
 	else if (fn1_name == "AUDIOHED" || fn1_name == "AUDIOT")
 	{
@@ -412,7 +412,7 @@ bool WolfArchive::open(string_view filename, bool detect_types)
 		head.importFile(findFileCasing(fn1));
 		data.importFile(findFileCasing(fn2));
 		dict.importFile(findFileCasing(fn3));
-		opened = openGraph(head, data, dict);
+		opened = openGraph(head, data, dict, detect_types);
 	}
 	else
 	{
@@ -560,7 +560,8 @@ bool WolfArchive::open(const MemChunk& mc, bool detect_types)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -719,7 +720,7 @@ bool WolfArchive::openAudio(MemChunk& head, const MemChunk& data)
 // Reads Wolf GAMEMAPS/MAPHEAD format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::openMaps(MemChunk& head, const MemChunk& data)
+bool WolfArchive::openMaps(MemChunk& head, const MemChunk& data, bool detect_types)
 {
 	// Check data was given
 	if (!head.hasData() || !data.hasData())
@@ -797,7 +798,8 @@ bool WolfArchive::openMaps(MemChunk& head, const MemChunk& data)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -813,7 +815,7 @@ bool WolfArchive::openMaps(MemChunk& head, const MemChunk& data)
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
 #define WC(a) WolfConstant(a, num_lumps)
-bool WolfArchive::openGraph(const MemChunk& head, const MemChunk& data, MemChunk& dict)
+bool WolfArchive::openGraph(const MemChunk& head, const MemChunk& data, MemChunk& dict, bool detect_types)
 {
 	// Check data was given
 	if (!head.hasData() || !data.hasData() || !dict.hasData())
@@ -912,7 +914,8 @@ bool WolfArchive::openGraph(const MemChunk& head, const MemChunk& data, MemChunk
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

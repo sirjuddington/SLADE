@@ -203,7 +203,8 @@ bool WadJArchive::open(const MemChunk& mc, bool detect_types)
 	updateNamespaces();
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Detect maps (will detect map entry types)
 	ui::setSplashProgressMessage("Detecting maps");

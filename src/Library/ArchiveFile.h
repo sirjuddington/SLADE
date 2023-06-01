@@ -24,6 +24,7 @@ namespace library
 		string   format_id;
 		time_t   last_opened   = 0;
 		time_t   last_modified = 0;
+		int64_t  parent_id     = -1;
 
 		ArchiveFileRow() = default;
 		ArchiveFileRow(
@@ -32,13 +33,15 @@ namespace library
 			string_view hash,
 			string_view format_id,
 			time_t      last_opened,
-			time_t      last_modified) :
+			time_t      last_modified,
+			int64_t     parent_id) :
 			path{ path },
 			size{ size },
 			hash{ hash },
 			format_id{ format_id },
 			last_opened{ last_opened },
-			last_modified{ last_modified }
+			last_modified{ last_modified },
+			parent_id{ parent_id }
 		{
 		}
 		ArchiveFileRow(string_view file_path, string_view format_id);
@@ -50,8 +53,8 @@ namespace library
 		bool    remove();
 	};
 
-	int64_t archiveFileId(string_view filename);
-	int64_t findArchiveFileIdFromData(unsigned size, string_view hash);
+	int64_t archiveFileId(string_view filename, int64_t parent_id = -1);
+	int64_t findArchiveFileIdFromData(unsigned size, string_view hash, int64_t parent_id = -1);
 	bool    saveArchiveFile(ArchiveFileRow& row);
 	int64_t copyArchiveFile(string_view file_path, int64_t copy_from_id);
 	void    removeArchiveFile(int64_t id);

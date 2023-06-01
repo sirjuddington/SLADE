@@ -224,7 +224,8 @@ bool RffArchive::open(const MemChunk& mc, bool detect_types)
 	delete[] lumps;
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

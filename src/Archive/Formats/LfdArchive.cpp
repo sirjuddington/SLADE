@@ -138,7 +138,8 @@ bool LfdArchive::open(const MemChunk& mc, bool detect_types)
 		log::warning("Computed {} lumps, but actually {} entries", num_lumps, numEntries());
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
