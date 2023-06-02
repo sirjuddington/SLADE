@@ -39,6 +39,7 @@
 #include "General/Console.h"
 #include "General/UI.h"
 #include "UI/State.h"
+#include "Utility/DateTime.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -57,6 +58,7 @@ namespace slade::database
 {
 Context           db_global;
 int               db_version = 1;
+int64_t           session_id = -1;
 vector<Context*>  thread_contexts;
 std::shared_mutex mutex_thread_contexts;
 } // namespace slade::database
@@ -373,6 +375,66 @@ bool updateDatabase(int prev_version)
 	log::info("Database updated to v{} successfully", db_version);
 	return true;
 }
+
+// -----------------------------------------------------------------------------
+// Writes a new session row to the database
+// -----------------------------------------------------------------------------
+bool beginSession()
+{
+	try
+	{
+		Statement sql_new_session{ *db_global.connectionRW(),
+								   "INSERT INTO session (opened_time, closed_time, version_major, version_minor, "
+								   "version_revision, version_beta) "
+								   "VALUES (?,?,?,?,?,?)" };
+
+		sql_new_session.bind(1, datetime::now());
+		sql_new_session.bind(2); // NULL closed time
+		sql_new_session.bind(3, static_cast<int32_t>(app::version().major));
+		sql_new_session.bind(4, static_cast<int32_t>(app::version().minor));
+		sql_new_session.bind(5, static_cast<int32_t>(app::version().revision));
+		sql_new_session.bind(6, static_cast<int32_t>(app::version().beta));
+
+		if (sql_new_session.exec() == 0)
+		{
+			global::error = "Failed to initialize database: Session row creation failed";
+			return false;
+		}
+
+		session_id = db_global.connectionRO()->execAndGet("SELECT MAX(id) FROM session").getInt64();
+
+		return true;
+	}
+	catch (const SQLite::Exception& ex)
+	{
+		global::error = fmt::format("Failed to initialize database: {}", ex.what());
+		log::error(global::error);
+		return false;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Sets the closed time in the current session row
+// -----------------------------------------------------------------------------
+bool endSession()
+{
+	try
+	{
+		Statement sql_close_session{ *db_global.connectionRW(), "UPDATE session SET closed_time = ? WHERE id = ?" };
+		sql_close_session.bind(1, datetime::now());
+		sql_close_session.bind(2, session_id);
+		sql_close_session.exec();
+
+		session_id = -1;
+
+		return true;
+	}
+	catch (const SQLite::Exception& ex)
+	{
+		log::error(ex.what());
+		return false;
+	}
+}
 } // namespace slade::database
 
 // -----------------------------------------------------------------------------
@@ -523,6 +585,10 @@ bool database::init()
 	if (existing_version < db_version)
 		return updateDatabase(existing_version);
 
+	// Write new session
+	if (!beginSession())
+		return false;
+
 	return true;
 }
 
@@ -531,6 +597,7 @@ bool database::init()
 // -----------------------------------------------------------------------------
 void database::close()
 {
+	endSession();
 	db_global.vacuum(); // Shrink size on disk
 	db_global.close();
 }
