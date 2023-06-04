@@ -126,7 +126,8 @@ bool archiveoperations::save(Archive& archive)
 
 // -----------------------------------------------------------------------------
 // Saves [archive] to disk under a different filename, opens a file dialog to
-// select the new name/path
+// select the new name/path.
+// Returns false on error or if the dialog was cancelled, true otherwise
 // -----------------------------------------------------------------------------
 bool archiveoperations::saveAs(Archive& archive)
 {
