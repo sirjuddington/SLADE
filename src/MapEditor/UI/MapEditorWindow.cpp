@@ -1151,9 +1151,17 @@ bool MapEditorWindow::handleAction(string_view id)
 			// Save archive
 			if (auto head = mdesc_current.head.lock())
 			{
-				auto a = head->parent();
-				if (a && save_archive_with_map)
-					a->save();
+				if (auto a = head->parent(); a && save_archive_with_map)
+				{
+					if (a->canSave())
+						a->save();
+					else
+					{
+						// Can't save archive, do Save As instead
+						if (maineditor::saveArchiveAs(a))
+							SetTitle(wxString::Format("SLADE - %s of %s", mdesc_current.name, a->filename(false)));
+					}
+				}
 			}
 		}
 		mapeditor::editContext().renderer().forceUpdate();
