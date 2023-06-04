@@ -1129,6 +1129,16 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 		}
 	}
 
+	// Flip any one-sided lines that only have a side 2
+	for (auto& connected_line : connected_lines)
+	{
+		if (connected_line->side2_ && !connected_line->side1_)
+			connected_line->flip();
+	}
+
+	// Correct sector references for merged lines
+	correctSectors(connected_lines, true);
+
 	// Check if anything was actually merged
 	bool merged = false;
 	if (nVertices() != n_vertices || nLines() != n_lines)
@@ -1138,25 +1148,10 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 	if (!remove_lines.empty())
 		merged = true;
 
-	// Correct sector references if any merging was done
 	if (merged)
-		correctSectors(connected_lines, true);
-
-	// Flip any one-sided lines that only have a side 2
-	for (auto& connected_line : connected_lines)
-	{
-		if (connected_line->side2_ && !connected_line->side1_)
-			connected_line->flip();
-	}
-
-	if (merged)
-	{
 		log::info(4, "Architecture merged");
-	}
 	else
-	{
 		log::info(4, "No Architecture merged");
-	}
 
 	return merged;
 }

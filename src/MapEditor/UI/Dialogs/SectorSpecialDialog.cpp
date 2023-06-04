@@ -113,16 +113,21 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 			wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, ui::pad()));
 
 		// MBF21 Flags: Alternative Damage Mode | Kill Grounded Monsters
+		cb_alt_damage_    = new wxCheckBox(this, -1, "Alternate Damage Mode");
+		cb_kill_grounded_ = new wxCheckBox(this, -1, "Kill Grounded Monsters");
 		if (game::configuration().featureSupported(game::Feature::MBF21))
 		{
-			cb_alt_damage_    = new wxCheckBox(this, -1, "Alternate Damage Mode");
-			cb_kill_grounded_ = new wxCheckBox(this, -1, "Kill Grounded Monsters");
 			wxutil::layoutHorizontally(
 				framesizer,
 				{ cb_alt_damage_, cb_kill_grounded_ },
 				wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, ui::pad()));
 
 			cb_alt_damage_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDamageDropdown(); });
+		}
+		else
+		{
+			cb_alt_damage_->Hide();
+			cb_kill_grounded_->Hide();
 		}
 
 		width = -1;

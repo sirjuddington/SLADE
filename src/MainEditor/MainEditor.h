@@ -39,6 +39,7 @@ namespace maineditor
 	void openArchiveFile(string_view filename);
 	void openArchiveTab(Archive* archive);
 	void openEntry(ArchiveEntry* entry);
+	bool saveArchiveAs(Archive* archive);
 
 	void setGlobalPaletteFromArchive(Archive* archive);
 

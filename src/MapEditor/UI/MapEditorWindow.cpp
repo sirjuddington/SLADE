@@ -479,6 +479,28 @@ void MapEditorWindow::lockMapEntries(bool lock) const
 		else if (!app::archiveManager().getArchive(head.get()))
 			head->unlock();
 	}
+
+	// Otherwise lock all map entries (head -> end)
+	else
+	{
+		auto end_ptr = map_desc.end.lock();
+		auto current = head.get();
+		if (auto end = end_ptr.get())
+		{
+			while (current)
+			{
+				if (lock)
+					current->lock();
+				else
+					current->unlock();
+
+				if (current == end)
+					break;
+
+				current = current->nextEntry();
+			}
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1113,9 +1135,17 @@ bool MapEditorWindow::handleAction(string_view id)
 			// Save archive
 			if (auto head = mdesc_current.head.lock())
 			{
-				auto a = head->parent();
-				if (a && save_archive_with_map)
-					a->save();
+				if (auto a = head->parent(); a && save_archive_with_map)
+				{
+					if (a->canSave())
+						a->save();
+					else
+					{
+						// Can't save archive, do Save As instead
+						if (maineditor::saveArchiveAs(a))
+							SetTitle(wxString::Format("SLADE - %s of %s", mdesc_current.name, a->filename(false)));
+					}
+				}
 			}
 		}
 		mapeditor::editContext().renderer().forceUpdate();

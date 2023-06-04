@@ -261,17 +261,12 @@ void ArchiveEntry::unlock()
 // -----------------------------------------------------------------------------
 void ArchiveEntry::formatName(const ArchiveFormat& format)
 {
-	bool changed = false;
-
 	// Perform character substitution if needed
 	name_ = misc::fileNameToLumpName(name_);
 
 	// Max length
 	if (format.max_name_length > 0 && static_cast<int>(name_.size()) > format.max_name_length)
-	{
 		strutil::truncateIP(name_, format.max_name_length);
-		changed = true;
-	}
 
 	// Uppercase
 	if (format.prefer_uppercase && wad_force_uppercase)
@@ -279,19 +274,15 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 
 	// Remove \ or / if the format supports folders
 	if (format.supports_dirs && (name_.find('/') != string::npos || name_.find('\\') != string::npos))
-	{
 		name_   = misc::lumpNameToFileName(name_);
-		changed = true;
-	}
 
 	// Remove extension if the format doesn't have them
 	if (!format.names_extensions)
 		if (const auto pos = name_.find('.'); pos != string::npos)
 			strutil::truncateIP(name_, pos);
 
-	// Update upper name
-	if (changed)
-		upper_name_ = strutil::upper(name_);
+	// Update uppercase name
+	upper_name_ = strutil::upper(name_);
 }
 
 // -----------------------------------------------------------------------------

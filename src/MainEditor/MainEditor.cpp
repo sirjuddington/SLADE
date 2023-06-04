@@ -153,6 +153,16 @@ void maineditor::openEntry(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
+// Saves [archive] to disk under a different filename, opens a file dialog to
+// select the new name/path.
+// Returns false on error or if the dialog was cancelled, true otherwise
+// -----------------------------------------------------------------------------
+bool maineditor::saveArchiveAs(Archive* archive)
+{
+	return main_window->archiveManagerPanel()->saveArchiveAs(archive);
+}
+
+// -----------------------------------------------------------------------------
 // Sets the global palette to the main palette in [archive] (eg. PLAYPAL)
 // -----------------------------------------------------------------------------
 void maineditor::setGlobalPaletteFromArchive(Archive* archive)
