@@ -519,6 +519,28 @@ void MapEditorWindow::lockMapEntries(bool lock) const
 		else if (!app::archiveManager().getArchive(head.get()))
 			head->unlock();
 	}
+
+	// Otherwise lock all map entries (head -> end)
+	else
+	{
+		auto end_ptr = map_desc.end.lock();
+		auto current = head.get();
+		if (auto end = end_ptr.get())
+		{
+			while (current)
+			{
+				if (lock)
+					current->lock();
+				else
+					current->unlock();
+
+				if (current == end)
+					break;
+
+				current = current->nextEntry();
+			}
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
