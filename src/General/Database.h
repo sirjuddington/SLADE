@@ -168,10 +168,11 @@ inline SQLite::Database* connectionRW()
 }
 
 // General
-string programDatabasePath();
-bool   init();
-void   close();
-void   migrateConfigs();
+string  programDatabasePath();
+int64_t sessionId();
+bool    init();
+void    close();
+void    migrateConfigs();
 
 } // namespace slade::database
 

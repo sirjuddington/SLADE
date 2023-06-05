@@ -128,8 +128,8 @@ bool database::Context::open(string_view file_path)
 		return false;
 
 	file_path_     = file_path;
-	connection_ro_ = std::make_unique<SQLite::Database>(file_path_, SQLite::OPEN_READONLY);
-	connection_rw_ = std::make_unique<SQLite::Database>(file_path_, SQLite::OPEN_READWRITE);
+	connection_ro_ = std::make_unique<SQLite::Database>(file_path_, SQLite::OPEN_READONLY, 100);
+	connection_rw_ = std::make_unique<SQLite::Database>(file_path_, SQLite::OPEN_READWRITE, 100);
 
 	return true;
 }
@@ -547,6 +547,14 @@ bool database::isTransactionActive(const SQLite::Database* connection)
 string database::programDatabasePath()
 {
 	return app::path("slade.sqlite", app::Dir::User);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the current database session id
+// -----------------------------------------------------------------------------
+int64_t database::sessionId()
+{
+	return session_id;
 }
 
 // -----------------------------------------------------------------------------
