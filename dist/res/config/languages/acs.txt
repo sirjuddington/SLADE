@@ -906,9 +906,9 @@ acs_z : acs
 		SetFogDensity = "int tag, int amount";
 		SetFont = "str fontlump";
 		SetGravity = "fixed amount";
-		SetHUDClipRect = "int x, int y, int width, int height, [int wrapwidth], [bool aspectratio]";
-		SetHUDSize = "int width, int height, bool statusbar";
-		SetHUDWrapWidth = "int wrapwidth";
+		SetHudClipRect = "int x, int y, int width, int height, [int wrapwidth], [bool aspectratio]";
+		SetHudSize = "int width, int height, bool statusbar";
+		SetHudWrapWidth = "int wrapwidth";
 		SetLineActivation = "int lineid, int activation, [int repeat]";
 		SetLineBlocking = "int lineid, int setting";
 		SetLineMonsterBlocking = "int lineid, int setting";
