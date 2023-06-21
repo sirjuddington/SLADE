@@ -1356,7 +1356,7 @@ bool MapEditorWindow::handleAction(string_view id)
 		Archive* archive = nullptr;
 		if (auto head = mdesc_current.head.lock())
 			archive = head->parent();
-		RunDialog dlg(this, archive, id == "mapw_run_map");
+		RunDialog dlg(this, archive, id == "mapw_run_map", true);
 		if (id == "mapw_quick_run_map" || dlg.ShowModal() == wxID_OK)
 		{
 			auto& edit_context = mapeditor::editContext();
