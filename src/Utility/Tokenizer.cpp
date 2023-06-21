@@ -792,8 +792,8 @@ void Tokenizer::tokenizeToken()
 			return;
 		}
 
-		// Escape backslash
-		if (data_[state_.position] == '\\')
+		// Escape backslash+double-quote
+		if (state_.position < state_.size && data_[state_.position] == '\\' && data_[state_.position + 1] == '\"')
 			++state_.position;
 
 		// Continue token
@@ -907,7 +907,7 @@ bool Tokenizer::readNext(Token* target)
 		target->text.clear();
 		for (unsigned a = state_.current_token.pos_start; a < state_.position; ++a)
 		{
-			if (state_.current_token.quoted_string && data_[a] == '\\')
+			if (state_.current_token.quoted_string && a < data_.size() - 1 && data_[a] == '\\' && data_[a + 1] == '\"')
 				++a;
 
 			target->text += data_[a];

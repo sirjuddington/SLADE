@@ -75,7 +75,15 @@ void ConsolePanel::initLayout()
 	// Create and add the message log textbox
 	text_log_ = new wxStyledTextCtrl(this, -1, wxDefaultPosition, wxDefaultSize);
 	text_log_->SetEditable(false);
+#ifdef __WXGTK__
+	// workaround for an extremely convoluted wxGTK bug that causes a resource
+	// leak that makes SLADE unusable on linux (!) -- see:
+	// https://github.com/sirjuddington/SLADE/issues/1016
+	// https://github.com/wxWidgets/wxWidgets/issues/23364
+	text_log_->SetWrapMode(wxSTC_WRAP_NONE);
+#else
 	text_log_->SetWrapMode(wxSTC_WRAP_WORD);
+#endif
 	text_log_->SetSizeHints(wxSize(-1, 0));
 	vbox->Add(text_log_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::pad());
 
@@ -148,7 +156,11 @@ void ConsolePanel::update()
 		text_log_->MarginSetStyle(line_no, wxSTC_STYLE_LINENUMBER);
 
 		// Set line colour depending on message type
-		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no), 0);
+		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no)
+#if !wxCHECK_VERSION(3, 1, 1) /* Prior to wxWidgets 3.1.1 StartStyling took 2 arguments, no overload exists for compatibility */
+			, 0
+#endif
+		);
 		switch (log[a].type)
 		{
 		case log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;

@@ -164,7 +164,7 @@ public:
 	{
 		if (atEnd())
 			return "";
-		return token_next_.text;
+		return token_current_.text;
 	}
 	int getInteger()
 	{

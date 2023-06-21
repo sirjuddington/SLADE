@@ -71,7 +71,7 @@ EntryType* etype_map     = nullptr; // Map marker type
 // -----------------------------------------------------------------------------
 // Dumps entry type info to the log
 // -----------------------------------------------------------------------------
-void EntryType::dump()
+void EntryType::dump() const
 {
 	log::info("Type {} \"{}\", format {}, extension {}", id_, name_, format_->id(), extension_);
 	log::info("Size limit: {}-{}", size_limit_[0], size_limit_[1]);
@@ -97,7 +97,7 @@ void EntryType::dump()
 // -----------------------------------------------------------------------------
 // Copies this entry type's info/properties to [target]
 // -----------------------------------------------------------------------------
-void EntryType::copyToType(EntryType& target)
+void EntryType::copyToType(EntryType& target) const
 {
 	// Copy type attributes
 	target.editor_      = editor_;
@@ -135,7 +135,7 @@ string EntryType::fileFilterString() const
 // -----------------------------------------------------------------------------
 // Returns true if [entry] matches the EntryType's criteria, false otherwise
 // -----------------------------------------------------------------------------
-int EntryType::isThisType(ArchiveEntry& entry)
+int EntryType::isThisType(ArchiveEntry& entry) const
 {
 	// Check type is detectable
 	if (!detectable_)
@@ -241,6 +241,10 @@ int EntryType::isThisType(ArchiveEntry& entry)
 			auto name = fn;
 			if (ext_sep != string::npos)
 				name = fn.substr(0, ext_sep);
+
+			// If we are matching 8 characters or less, only check the first 8 characters of the entry name
+			if (match_name_.size() <= 8 && name.size() > 8)
+				name = name.substr(0, 8);
 
 			bool match = false;
 			for (const auto& match_name : match_name_)
@@ -354,11 +358,11 @@ void slade::EntryType::initTypes()
 // Reads in a block of entry type definitions. Returns false if there was a
 // parsing error, true otherwise
 // -----------------------------------------------------------------------------
-bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
+bool EntryType::readEntryTypeDefinitions(string_view definitions, string_view source)
 {
 	// Parse the definition
 	const Parser p;
-	p.parseText(mc, source);
+	p.parseText(definitions, source);
 
 	// Get entry_types tree
 	auto pt_etypes = p.parseTreeRoot()->childPTN("entry_types");
@@ -536,24 +540,22 @@ bool EntryType::loadEntryTypes()
 		return false;
 	}
 
-	// Get entry types directory
-	const auto et_dir = res_archive->dirAtPath("config/entry_types/");
+	// Get entry types config
+	auto etypes_cfg = res_archive->entryAtPath("config/entry_types.cfg");
 
 	// Check it exists
-	if (!et_dir)
+	if (!etypes_cfg)
 	{
-		log::error("config/entry_types does not exist in slade.pk3");
+		log::error("config/entry_types.cfg does not exist in slade.pk3");
 		return false;
 	}
 
-	// Read in each file in the directory
-	bool               etypes_read       = false;
-	const unsigned int et_dir_numEntries = et_dir->numEntries();
-	for (unsigned a = 0; a < et_dir_numEntries; a++)
-	{
-		if (readEntryTypeDefinition(et_dir->entryAt(a)->data(), et_dir->entryAt(a)->name()))
-			etypes_read = true;
-	}
+	// Get full config as string (process #includes)
+	string full_config;
+	strutil::processIncludes(etypes_cfg, full_config);
+
+	// Parse config
+	auto etypes_read = readEntryTypeDefinitions(full_config, "entry_types.cfg");
 
 	// Warn if no types were read (this shouldn't happen unless the resource archive is corrupted)
 	if (!etypes_read)
@@ -578,7 +580,7 @@ bool EntryType::loadEntryTypes()
 		mc.importFile(path);
 
 		// Parse file
-		readEntryTypeDefinition(mc, path);
+		readEntryTypeDefinitions(mc.asString(), path);
 	}
 
 	return true;

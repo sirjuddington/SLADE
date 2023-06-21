@@ -219,8 +219,8 @@ void SToolBarGroup::hide(bool hide)
 
 	// Update 'hidden toolbars' cvar
 	string tb_hidden = toolbars_hidden;
-	auto   name      = fmt::format("[{}]", name_.c_str());
-	if (hide)
+	auto   name      = fmt::format("[{}]", name_.mb_str().data());
+	if (hide && !strutil::contains(tb_hidden, name))
 		tb_hidden += name;
 	else
 		strutil::replaceIP(tb_hidden, name, {});
@@ -370,7 +370,7 @@ void SToolBarGroup::setAllButtonsChecked(bool check)
 	Thaw();
 }
 
-void SToolBarGroup::addToMenu(wxMenu& menu)
+void SToolBarGroup::addToMenu(wxMenu& menu) const
 {
 	auto* submenu = new wxMenu();
 	for (const auto& item : items_)
@@ -536,7 +536,7 @@ void SToolBar::deleteCustomGroups()
 // Adds a new group [name] to the toolbar, containing toolbar buttons for each
 // action in [actions]
 // -----------------------------------------------------------------------------
-void SToolBar::addActionGroup(const wxString& name, wxArrayString actions, bool at_end)
+void SToolBar::addActionGroup(const wxString& name, const wxArrayString& actions, bool at_end)
 {
 	// Do nothing if no actions were given
 	if (actions.empty())
@@ -784,7 +784,7 @@ void SToolBar::enableGroup(const wxString& name, bool enable)
 // Populates [menu] with items to toggle each toolbar group and an item to
 // toggle the 'show_toolbar_names' option
 // -----------------------------------------------------------------------------
-void SToolBar::populateGroupsMenu(wxMenu* menu, int start_id)
+void SToolBar::populateGroupsMenu(wxMenu* menu, int start_id) const
 {
 	for (unsigned a = 0; a < groups_.size(); a++)
 	{
@@ -805,7 +805,7 @@ void SToolBar::populateGroupsMenu(wxMenu* menu, int start_id)
 // -----------------------------------------------------------------------------
 // Calculates the number of toolbar rows to fit within [width]
 // -----------------------------------------------------------------------------
-int SToolBar::calculateNumRows(int width)
+int SToolBar::calculateNumRows(int width) const
 {
 	// Go through all groups
 	int current_size = 0;
@@ -842,7 +842,7 @@ int SToolBar::calculateNumRows(int width)
 // -----------------------------------------------------------------------------
 // Returns the SToolBarGroup matching [name], or nullptr if not found
 // -----------------------------------------------------------------------------
-SToolBarGroup* SToolBar::group(const wxString& name)
+SToolBarGroup* SToolBar::group(const wxString& name) const
 {
 	for (auto* group : groups_)
 		if (S_CMPNOCASE(group->name(), name))

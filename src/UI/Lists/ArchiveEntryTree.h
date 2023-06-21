@@ -18,7 +18,7 @@ namespace ui
 	public:
 		ArchivePathPanel(wxWindow* parent);
 
-		void setCurrentPath(ArchiveDir* dir) const;
+		void setCurrentPath(const ArchiveDir* dir) const;
 
 	private:
 		SToolBarButton* btn_home_  = nullptr;
@@ -149,7 +149,7 @@ namespace ui
 
 #ifdef __WXMSW__
 		bool lookForSearchEntryFrom(int index_start);
-		void searchChar(int key_code);
+		bool searchChar(int key_code);
 #endif
 	};
 

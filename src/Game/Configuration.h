@@ -32,6 +32,7 @@ namespace game
 		MixTexFlats,
 		TxTextures,
 		LongNames,
+		MBF21,
 	};
 	enum class UDMFFeature
 	{
@@ -82,7 +83,7 @@ namespace game
 		string        udmfNamespace() const;
 		const string& skyFlat() const { return sky_flat_; }
 		const string& scriptLanguage() const { return script_language_; }
-		int           lightLevelInterval();
+		int           lightLevelInterval() const;
 		int           playerEyeHeight() const { return player_eye_height_; }
 
 		unsigned      nMapNames() const { return maps_.size(); }
@@ -95,17 +96,17 @@ namespace game
 		const std::map<int, string>&        allSectorTypes() const { return sector_types_; }
 
 		// Feature Support
-		bool featureSupported(Feature feature) { return supported_features_[feature]; }
-		bool featureSupported(UDMFFeature feature) { return udmf_features_[feature]; }
+		bool featureSupported(Feature feature) const { return supported_features_[static_cast<int>(feature)]; }
+		bool featureSupported(UDMFFeature feature) const { return udmf_features_[static_cast<int>(feature)]; }
 
 		// Configuration reading
 		void readActionSpecials(
-			ParseTreeNode*   node,
-			Arg::SpecialMap& shared_args,
-			ActionSpecial*   group_defaults = nullptr);
+			ParseTreeNode*       node,
+			Arg::SpecialMap&     shared_args,
+			const ActionSpecial* group_defaults = nullptr);
 		void readThingTypes(ParseTreeNode* node, const ThingType& group_defaults = ThingType::unknown());
-		void readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist) const;
-		void readGameSection(ParseTreeNode* node_game, bool port_section = false);
+		void readUDMFProperties(const ParseTreeNode* block, UDMFPropMap& plist) const;
+		void readGameSection(const ParseTreeNode* node_game, bool port_section = false);
 		bool readConfiguration(
 			string_view cfg,
 			string_view source      = "",
@@ -125,17 +126,17 @@ namespace game
 		// Thing flags
 		int    nThingFlags() const { return flags_thing_.size(); }
 		string thingFlag(unsigned flag_index);
-		bool   thingFlagSet(unsigned flag_index, MapThing* thing);
-		bool   thingFlagSet(string_view udmf_name, MapThing* thing, MapFormat map_format);
-		bool   thingBasicFlagSet(string_view flag, MapThing* thing, MapFormat map_format);
-		string thingFlagsString(int flags);
-		void   setThingFlag(unsigned flag_index, MapThing* thing, bool set = true);
-		void   setThingFlag(string_view udmf_name, MapThing* thing, MapFormat map_format, bool set = true);
-		void   setThingBasicFlag(string_view flag, MapThing* thing, MapFormat map_format, bool set = true);
+		bool   thingFlagSet(unsigned flag_index, const MapThing* thing) const;
+		bool   thingFlagSet(string_view udmf_name, MapThing* thing, MapFormat map_format) const;
+		bool   thingBasicFlagSet(string_view flag, MapThing* thing, MapFormat map_format) const;
+		string thingFlagsString(int flags) const;
+		void   setThingFlag(unsigned flag_index, MapThing* thing, bool set = true) const;
+		void   setThingFlag(string_view udmf_name, MapThing* thing, MapFormat map_format, bool set = true) const;
+		void   setThingBasicFlag(string_view flag, MapThing* thing, MapFormat map_format, bool set = true) const;
 
 		// DECORATE
 		bool parseDecorateDefs(Archive* archive);
-		void clearDecorateDefs();
+		void clearDecorateDefs() const;
 
 		// ZScript
 		void importZScriptDefs(zscript::Definitions& defs);
@@ -148,19 +149,19 @@ namespace game
 		// Line flags
 		unsigned    nLineFlags() const { return flags_line_.size(); }
 		const Flag& lineFlag(unsigned flag_index);
-		bool        lineFlagSet(unsigned flag_index, MapLine* line);
-		bool        lineFlagSet(string_view udmf_name, MapLine* line, MapFormat map_format);
-		bool        lineBasicFlagSet(string_view flag, MapLine* line, MapFormat map_format);
-		string      lineFlagsString(MapLine* line);
-		void        setLineFlag(unsigned flag_index, MapLine* line, bool set = true);
-		void        setLineFlag(string_view udmf_name, MapLine* line, MapFormat map_format, bool set = true);
-		void        setLineBasicFlag(string_view flag, MapLine* line, MapFormat map_format, bool set = true);
+		bool        lineFlagSet(unsigned flag_index, const MapLine* line) const;
+		bool        lineFlagSet(string_view udmf_name, MapLine* line, MapFormat map_format) const;
+		bool        lineBasicFlagSet(string_view flag, MapLine* line, MapFormat map_format) const;
+		string      lineFlagsString(const MapLine* line) const;
+		void        setLineFlag(unsigned flag_index, MapLine* line, bool set = true) const;
+		void        setLineFlag(string_view udmf_name, MapLine* line, MapFormat map_format, bool set = true) const;
+		void        setLineBasicFlag(string_view flag, MapLine* line, MapFormat map_format, bool set = true) const;
 
 		// Line action (SPAC) triggers
 		string         spacTriggerString(MapLine* line, MapFormat map_format);
-		int            spacTriggerIndexHexen(MapLine* line);
-		vector<string> allSpacTriggers();
-		void           setLineSpacTrigger(unsigned trigger_index, MapLine* line);
+		int            spacTriggerIndexHexen(const MapLine* line) const;
+		vector<string> allSpacTriggers() const;
+		void           setLineSpacTrigger(unsigned trigger_index, MapLine* line) const;
 		const string&  spacTriggerUDMFName(unsigned trigger_index);
 
 		// UDMF properties
@@ -170,33 +171,42 @@ namespace game
 
 		// Sector types
 		string sectorTypeName(int type);
-		int    sectorTypeByName(string_view name);
+		int    sectorTypeByName(string_view name) const;
 		int    baseSectorType(int type) const;
 		int    sectorBoomDamage(int type) const;
 		bool   sectorBoomSecret(int type) const;
 		bool   sectorBoomFriction(int type) const;
 		bool   sectorBoomPushPull(int type) const;
-		int    boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull) const;
+		bool   sectorMBF21AltDamageMode(int type) const;
+		bool   sectorMBF21KillGroundedMonsters(int type) const;
+		int    boomSectorType(
+			   int  base,
+			   int  damage,
+			   bool secret,
+			   bool friction,
+			   bool pushpull,
+			   bool alt_damage,
+			   bool kill_grounded) const;
 
 		// Defaults
 		string defaultString(MapObject::Type type, const string& property) const;
 		int    defaultInt(MapObject::Type type, const string& property) const;
 		double defaultFloat(MapObject::Type type, const string& property) const;
 		bool   defaultBool(MapObject::Type type, const string& property) const;
-		void   applyDefaults(MapObject* object, bool udmf = false);
+		void   applyDefaults(MapObject* object, bool udmf = false) const;
 
 		// Special Presets
 		const vector<SpecialPreset>& specialPresets() const { return special_presets_; }
 
 		// Misc
 		void setLightLevelInterval(int interval);
-		int  upLightLevel(int light_level);
-		int  downLightLevel(int light_level);
+		int  upLightLevel(int light_level) const;
+		int  downLightLevel(int light_level) const;
 
 		// Testing
-		void dumpActionSpecials();
-		void dumpThingTypes();
-		void dumpValidMapNames();
+		void dumpActionSpecials() const;
+		void dumpThingTypes() const;
+		void dumpValidMapNames() const;
 		void dumpUDMFProperties();
 
 	private:
@@ -250,8 +260,8 @@ namespace game
 		PropertyList defaults_thing_udmf_;
 
 		// Feature Support
-		std::map<Feature, bool>     supported_features_;
-		std::map<UDMFFeature, bool> udmf_features_;
+		std::array<bool, 6>  supported_features_;
+		std::array<bool, 15> udmf_features_;
 
 		// Special Presets
 		vector<SpecialPreset> special_presets_;

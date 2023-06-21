@@ -38,6 +38,7 @@ namespace maineditor
 	void openMapEditor(Archive* archive);
 	void openArchiveTab(Archive* archive);
 	void openEntry(ArchiveEntry* entry);
+	bool saveArchiveAs(Archive* archive);
 
 	void setGlobalPaletteFromArchive(Archive* archive);
 

@@ -40,6 +40,21 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+wxString damage_types[]     = { "None", "5%", "10%", "20%" };
+wxString alt_damage_types[] = { "Instantly Kill Player w/o Radsuit or Invuln",
+								"Instantly Kill Player",
+								"Kill All Players, Exit Map (Normal Exit)",
+								"Kill All Players, Exit Map (Secret Exit)" };
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
 // SectorSpecialPanel Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -84,8 +99,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 		sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
 
 		// Damage
-		wxString damage_types[] = { "None", "5%", "10%", "20%" };
-		choice_damage_          = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
+		choice_damage_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
 		choice_damage_->Select(0);
 		framesizer->Add(wxutil::createLabelHBox(this, "Damage:", choice_damage_), 0, wxEXPAND | wxALL, ui::pad());
 
@@ -97,6 +111,24 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 			framesizer,
 			{ cb_secret_, cb_friction_, cb_pushpull_ },
 			wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, ui::pad()));
+
+		// MBF21 Flags: Alternative Damage Mode | Kill Grounded Monsters
+		cb_alt_damage_    = new wxCheckBox(this, -1, "Alternate Damage Mode");
+		cb_kill_grounded_ = new wxCheckBox(this, -1, "Kill Grounded Monsters");
+		if (game::configuration().featureSupported(game::Feature::MBF21))
+		{
+			wxutil::layoutHorizontally(
+				framesizer,
+				{ cb_alt_damage_, cb_kill_grounded_ },
+				wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, ui::pad()));
+
+			cb_alt_damage_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDamageDropdown(); });
+		}
+		else
+		{
+			cb_alt_damage_->Hide();
+			cb_kill_grounded_->Hide();
+		}
 
 		width = -1;
 	}
@@ -140,6 +172,17 @@ void SectorSpecialPanel::setup(int special) const
 
 		// Pusher/Puller
 		cb_pushpull_->SetValue(game::configuration().sectorBoomPushPull(special));
+
+		// MBF21
+		if (game::configuration().featureSupported(game::Feature::MBF21))
+		{
+			// Alternate Damage Mode
+			cb_alt_damage_->SetValue(game::configuration().sectorMBF21AltDamageMode(special));
+			updateDamageDropdown();
+
+			// Kill Grounded Monsters
+			cb_kill_grounded_->SetValue(game::configuration().sectorMBF21KillGroundedMonsters(special));
+		}
 	}
 }
 
@@ -178,10 +221,22 @@ int SectorSpecialPanel::selectedSpecial() const
 			choice_damage_->GetSelection(),
 			cb_secret_->GetValue(),
 			cb_friction_->GetValue(),
-			cb_pushpull_->GetValue());
+			cb_pushpull_->GetValue(),
+			cb_alt_damage_->GetValue(),
+			cb_kill_grounded_->GetValue());
 	}
 	else
 		return base;
+}
+
+// -----------------------------------------------------------------------------
+// Updates the Damage dropdown items based on the alt damage mode flag
+// -----------------------------------------------------------------------------
+void SectorSpecialPanel::updateDamageDropdown() const
+{
+	auto selection = choice_damage_->GetSelection();
+	choice_damage_->Set(4, cb_alt_damage_->GetValue() ? alt_damage_types : damage_types);
+	choice_damage_->Select(selection);
 }
 
 

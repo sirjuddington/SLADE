@@ -38,6 +38,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "UI/SBrush.h"
+#include "UI/Controls/ZoomControl.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -77,6 +78,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), scale_{ 
 	Bind(wxEVT_LEFT_UP, &GfxCanvas::onMouseLeftUp, this);
 	Bind(wxEVT_MOTION, &GfxCanvas::onMouseMovement, this);
 	Bind(wxEVT_LEAVE_WINDOW, &GfxCanvas::onMouseLeaving, this);
+	Bind(wxEVT_MOUSEWHEEL, &GfxCanvas::onMouseWheel, this);
 	Bind(wxEVT_KEY_DOWN, &GfxCanvas::onKeyDown, this);
 }
 
@@ -228,8 +230,7 @@ void GfxCanvas::drawImage()
 		// Draw tiled image
 		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 		const wxSize size = GetSize() * GetContentScaleFactor();
-		drawing::drawTextureTiled(
-			tex_image_, math::scaleInverse(size.x, scale_), math::scaleInverse(size.y, scale_));
+		drawing::drawTextureTiled(tex_image_, math::scaleInverse(size.x, scale_), math::scaleInverse(size.y, scale_));
 	}
 	else if (drag_origin_.x < 0) // If not dragging
 	{
@@ -307,7 +308,7 @@ void GfxCanvas::zoomToFit(bool mag, double padding)
 {
 	// Determine padding
 	const wxSize size = GetSize() * GetContentScaleFactor();
-	const double pad = static_cast<double>(std::min<int>(size.x, size.y)) * padding;
+	const double pad  = static_cast<double>(std::min<int>(size.x, size.y)) * padding;
 
 	// Get image dimensions
 	const double x_dim = image_.width();
@@ -346,7 +347,7 @@ bool GfxCanvas::onImage(int x, int y) const
 Vec2i GfxCanvas::imageCoords(int x, int y) const
 {
 	// Determine top-left coordinates of image in screen coords
-	const wxSize size = GetSize() * GetContentScaleFactor();
+	const wxSize size   = GetSize() * GetContentScaleFactor();
 	double       left   = size.x * 0.5 + offset_.x;
 	double       top    = size.y * 0.5 + offset_.y;
 	const double yscale = scale_ * (gfx_arc ? 1.2 : 1);
@@ -654,7 +655,10 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	}
 	else if (e.MiddleIsDown())
 	{
-		offset_ = offset_ + Vec2d(e.GetPosition().x * GetContentScaleFactor() - mouse_prev_.x, e.GetPosition().y * GetContentScaleFactor() - mouse_prev_.y);
+		offset_ = offset_
+				  + Vec2d(
+					  e.GetPosition().x * GetContentScaleFactor() - mouse_prev_.x,
+					  e.GetPosition().y * GetContentScaleFactor() - mouse_prev_.y);
 		refresh = true;
 	}
 	// Right mouse down
@@ -674,6 +678,38 @@ void GfxCanvas::onMouseLeaving(wxMouseEvent& e)
 {
 	image_hilight_ = false;
 	Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Called when the mouse wheel is scrolled
+// -----------------------------------------------------------------------------
+void GfxCanvas::onMouseWheel(wxMouseEvent& e)
+{
+	if (wxGetKeyState(WXK_CONTROL) && allow_scroll_)
+	{
+		if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL || wxGetKeyState(WXK_SHIFT))
+		{
+			if (e.GetWheelRotation() > 0)
+				offset_.x -= 8 * scale_;
+			else
+				offset_.x += 8 * scale_;
+		}
+		else if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
+		{
+			if (e.GetWheelRotation() > 0)
+				offset_.y += 8 * scale_;
+			else
+				offset_.y -= 8 * scale_;
+		}
+	}
+
+	if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
+	{
+		if (e.GetWheelRotation() > 0)
+			linked_zoom_control_->zoomIn(true);
+		else
+			linked_zoom_control_->zoomOut(true);
+	}
 }
 
 // -----------------------------------------------------------------------------

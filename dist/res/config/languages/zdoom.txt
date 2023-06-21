@@ -11,7 +11,7 @@ z_animdefs {
 	keywords = {
 		texture, flat, tics, rand, range, fit, switch, sound, animateddoor,
 		pic, warp, warp2, on, off, opensound, closesound, cameratexture, worldpanning,
-		notrim
+		notrim, canvastexture
 	}
 
 	constants = {
@@ -28,8 +28,9 @@ z_cvarinfo {
 
 	keywords = {
 		// Scopes
-		server, user,
+		server, user, nosave,
 
+		// Flags
 		noarchive, cheat, latch,
 
 		// Types
@@ -39,6 +40,10 @@ z_cvarinfo {
 	constants = {
 		//Boolean values
 		TRUE, FALSE
+	}
+
+	functions {
+		HandlerClass = "classname";
 	}
 }
 
@@ -105,7 +110,8 @@ z_gldefs {
 
 	constants = {
 		color, size, offset, subtractive, secondarySize, interval, chance, dontlightself,
-		scale, map, iwad, thiswad, disablefullbright, Texture, Shader, speed, attenuate
+		scale, map, iwad, thiswad, disablefullbright, Texture, Shader, speed, attenuate,
+		dontlightothers, dontlightmap
 	}
 }
 
@@ -193,14 +199,17 @@ z_mapinfo {
 	keywords = {
 		// Generic
 		lookup, include,
-		
+
+		// Cutscene
+		clear, delete, fps, function, sound, soundid, video,
+
 		// Cluster
 		Cluster, ClusterDef, EnterText, ExitText, ExitTextIsLump, Music, Flat, Pic, Hub, 
-		AllowIntermission, entertextislump,
+		AllowIntermission, entertextislump, gameover, intro, outro,
 		
 		// Episode
 		ClearEpisodes, Episode, Name, PicName, Key, Remove, NoSkillMenu, Optional, Extended,
-		teaser,
+		teaser, intro,
 		
 		// Map
 		Map, DefaultMap, AddDefaultMap, GameDefaults, 
@@ -246,7 +255,8 @@ z_mapinfo {
 		soundinfo, specialaction_lowerfloortohighest, warptrans, wrapmidtextures,
 		propermonsterfallingdamage, disableskyboxao, enableskyboxao, e1m8special,
 		e2m8special, e3m8special, e4m6special, e4m8special, disableshadowmap, enableshadowmap,
-		avoidmelee, compat_avoidhazards, compat_stayonlift, compat_nombf21,
+		avoidmelee, compat_avoidhazards, compat_stayonlift, compat_nombf21, compat_vileghosts,
+		attenuatelights, intro, outro, lightblendmode, cvar_redirect,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -274,6 +284,7 @@ z_mapinfo {
 		BlurAmount, CorrectPrintBold, MenuSliderColor, althudclass, forcenogfxsubstitution, forcetextinmenus,
 		fullscreenautoaspect, nomergepickupmsg, normforwardmove, normsidemove, statscreen_authorfont,
 		statscreen_contentfont, menusliderbackcolor, hidepartimes, adddialogues, helpmenuclass, menudelegateclass,
+		intro,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
@@ -322,7 +333,8 @@ z_menudef {
 		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command,
 		NetgameMessage, StaticPatchCentered, StaticTextCentered, MouseWindow, CenterMenu,
 		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField,
-		ScaleSlider, Size, AnimatedTransition, FlagOption, Before, After
+		ScaleSlider, Size, AnimatedTransition, FlagOption, Before, After, DontDim, DontBlur,
+		ForceList, Animated
 	}
 	
 	functions { ifgame = "game, [...]"; ifoption = "option, [...]"; }
@@ -345,13 +357,14 @@ z_modeldef {
 	keywords = {
 		MODEL, PATH, SKIN, SCALE, FRAME, FRAMEINDEX,
 		Rotation-Speed, Rotation-Vector, Rotation-Center, 
-		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin
+		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin,
+		Animation
 	}
 
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
 		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL, DONTCULLBACKFACES,
-		SCALEWEAPONFOV
+		SCALEWEAPONFOV, MODELSAREATTACHMENTS, CORRECTPIXELSTRETCH
 	}
 }
 
@@ -453,7 +466,7 @@ z_sndinfo {
 		random, alias, limit, pitchshift, pitchshiftrange, playerreserve, playersound, playersounddup,
 		playeralias, playercompat, ambient, ifdoom, ifheretic, ifhexen, ifstrife, map, musicvolume,
 		registered, archivepath, point, surround, world, continuous, periodic, random,
-		volume, rolloff, mididevice, attenuation, edfoverride, musicalias, singular, endif
+		volume, rolloff, mididevice, attenuation, edfoverride, musicalias, singular, endif, pitchset
 	}
 
 	constants = {

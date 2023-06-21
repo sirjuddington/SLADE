@@ -119,7 +119,6 @@ string parseType(const vector<string>& tokens, unsigned& index)
 		while (index < tokens.size() && tokens[index] != '>')
 			type += tokens[index++];
 		type += '>';
-		++index;
 	}
 
 	++index;
@@ -191,7 +190,7 @@ bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, st
 void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<ArchiveEntry*>& entry_stack)
 {
 	Tokenizer tz;
-	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.");
+	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.<>");
 	tz.enableDecorate(true);
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.openMem(entry->data(), "ZScript");
@@ -420,12 +419,24 @@ bool Function::parse(ParsedStatement& statement)
 	}
 	++index; // Skip (
 
-	while (statement.tokens[index] != ')' && index < statement.tokens.size())
+	while (index < statement.tokens.size() && statement.tokens[index] != ')')
 	{
 		parameters_.emplace_back();
 		index = parameters_.back().parse(statement.tokens, index);
 
-		if (statement.tokens[index] == ',')
+		// Skip unknown tokens
+		while (index < statement.tokens.size() && statement.tokens[index] != ',' && statement.tokens[index] != ')')
+		{
+			logParserMessage(
+				statement,
+				log::MessageType::Warning,
+				fmt::format("Unknown token \"{}\" in parameter list", statement.tokens[index]));
+
+			++index;
+		}
+
+		// Skip ,
+		if (index < statement.tokens.size() && statement.tokens[index] == ',')
 			++index;
 	}
 

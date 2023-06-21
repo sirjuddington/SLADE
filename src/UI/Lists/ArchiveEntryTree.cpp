@@ -54,17 +54,17 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-wxColour                           col_text_modified(0, 0, 0, 0);
-wxColour                           col_text_new(0, 0, 0, 0);
-wxColour                           col_text_locked(0, 0, 0, 0);
+wxColour col_text_modified(0, 0, 0, 0);
+wxColour col_text_new(0, 0, 0, 0);
+wxColour col_text_locked(0, 0, 0, 0);
 #if wxCHECK_VERSION(3, 1, 6)
 std::unordered_map<string, wxBitmapBundle> icon_cache;
 #else
 std::unordered_map<string, wxIcon> icon_cache;
 #endif
-vector<int>                        elist_chars = {
-    '.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
-    ']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
+vector<int> elist_chars = {
+	'.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
+	']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
 };
 } // namespace slade::ui
 
@@ -125,7 +125,7 @@ ArchivePathPanel::ArchivePathPanel(wxWindow* parent) : wxPanel{ parent }
 // -----------------------------------------------------------------------------
 // Sets the current path to where [dir] is in its Archive
 // -----------------------------------------------------------------------------
-void ArchivePathPanel::setCurrentPath(ArchiveDir* dir) const
+void ArchivePathPanel::setCurrentPath(const ArchiveDir* dir) const
 {
 	if (dir == nullptr)
 	{
@@ -172,10 +172,8 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 	undo_manager_ = undo_manager;
 	view_type_    = archive->formatDesc().supports_dirs && !force_list ? ViewType::Tree : ViewType::List;
 
-	// Add root items
-	wxDataViewItemArray items;
-	getDirChildItems(items, *archive->rootDir());
-	ItemsAdded({}, items);
+	// Refresh (will load all items)
+	Cleared();
 
 
 	// --- Connect to Archive/ArchiveManager signals ---
@@ -274,15 +272,6 @@ void ArchiveViewModel::setFilter(string_view name, string_view category)
 	if (name.empty() && filter_name_.empty() && filter_category_ == category)
 		return;
 
-	// Check current dir is valid
-	auto root_dir = root_dir_.lock();
-	if (!root_dir)
-		return;
-
-	// Get current root items (to remove)
-	wxDataViewItemArray prev_items;
-	getDirChildItems(prev_items, *root_dir);
-
 	filter_category_ = category;
 
 	// Process filter string
@@ -302,18 +291,8 @@ void ArchiveViewModel::setFilter(string_view name, string_view category)
 		}
 	}
 
-	sort_enabled_ = false;
-
-	// Remove previous root items
-	ItemsDeleted({}, prev_items);
-
-	// Re-Add root items (filtered)
-	wxDataViewItemArray items;
-	getDirChildItems(items, *root_dir);
-	ItemsAdded({}, items);
-
-	sort_enabled_ = true;
-	Resort();
+	// Fully refresh the list
+	Cleared();
 }
 
 // -----------------------------------------------------------------------------
@@ -329,20 +308,9 @@ void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
 	if (!cur_root)
 		return;
 
-	// Get current root items (to remove)
-	wxDataViewItemArray prev_items;
-	getDirChildItems(prev_items, *cur_root);
-
-	// Remove previous root items
-	ItemsDeleted({}, prev_items);
-
-	// Re-Add root items
+	// Change root dir and refresh
 	root_dir_ = dir;
-	wxDataViewItemArray items;
-	getDirChildItems(items, *dir);
-	ItemsAdded({}, items);
-
-	Resort();
+	Cleared();
 
 	if (path_panel_)
 		path_panel_->setCurrentPath(dir.get());
@@ -405,10 +373,10 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		if (icon_cache.find(entry->type()->icon()) == icon_cache.end())
 		{
 			// Not found, add to cache
-			const auto pad  = Point2i{ 1, elist_icon_padding };
+			const auto pad = Point2i{ 1, elist_icon_padding };
 
 #if wxCHECK_VERSION(3, 1, 6)
-			const auto bundle  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
+			const auto bundle = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
 			icon_cache[entry->type()->icon()] = bundle;
 #else
 			const auto size = scalePx(elist_icon_size);
@@ -1093,7 +1061,10 @@ ArchiveEntryTree::ArchiveEntryTree(
 
 			// Search
 			if (e.GetModifiers() == 0)
-				searchChar(e.GetKeyCode());
+			{
+				if (searchChar(e.GetKeyCode()))
+					return;
+			}
 
 			e.Skip();
 		});
@@ -1403,27 +1374,44 @@ ArchiveDir* ArchiveEntryTree::currentRootDir() const
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::setFilter(string_view name, string_view category)
 {
-	auto expanded = expandedDirs();
+	// Get expanded dirs (if in tree view)
+	vector<ArchiveDir*> expanded;
+	auto                tree_view = model_->viewType() == ArchiveViewModel::ViewType::Tree;
+	if (tree_view)
+		expanded = expandedDirs();
+
+	// Get selected items
+	wxDataViewItemArray selected;
+	GetSelections(selected);
 
 	// Set filter on model
 	Freeze();
 	model_->setFilter(name, category);
 
 	// Restore previously expanded directories
-	for (auto* dir : expanded)
+	if (tree_view)
 	{
-		Expand(wxDataViewItem(dir->dirEntry()));
-
-		// Have to collapse parent directories that weren't previously expanded, for whatever reason
-		// the 'Expand' function used above will also expand any parent nodes which is annoying
-		auto* pdir = dir->parent().get();
-		while (pdir)
+		for (auto* dir : expanded)
 		{
-			if (std::find(expanded.begin(), expanded.end(), pdir) == expanded.end())
-				Collapse(wxDataViewItem(pdir->dirEntry()));
+			Expand(wxDataViewItem(dir->dirEntry()));
 
-			pdir = pdir->parent().get();
+			// Have to collapse parent directories that weren't previously expanded, for whatever reason
+			// the 'Expand' function used above will also expand any parent nodes which is annoying
+			auto* pdir = dir->parent().get();
+			while (pdir)
+			{
+				if (std::find(expanded.begin(), expanded.end(), pdir) == expanded.end())
+					Collapse(wxDataViewItem(pdir->dirEntry()));
+
+				pdir = pdir->parent().get();
+			}
 		}
+	}
+
+	if (!selected.empty())
+	{
+		SetSelections(selected);
+		EnsureVisible(selected[0]);
 	}
 
 	Thaw();
@@ -1503,7 +1491,7 @@ void ArchiveEntryTree::setupColumns()
 		return;
 
 	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
-	auto colstyle_hidden  = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_HIDDEN;
+	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
 
 	// Add Columns
 	col_index_ = AppendTextColumn(
@@ -1639,9 +1627,10 @@ bool ArchiveEntryTree::lookForSearchEntryFrom(int index_start)
 
 // -----------------------------------------------------------------------------
 // Adds [key_code] to the current internal search string (if valid) and performs
-// quick search
+// quick search.
+// Returns false if the key was not a 'real' character usable for searching
 // -----------------------------------------------------------------------------
-void ArchiveEntryTree::searchChar(int key_code)
+bool ArchiveEntryTree::searchChar(int key_code)
 {
 	// Check the key pressed is actually a character (a-z, 0-9 etc)
 	bool real_char = false;
@@ -1666,7 +1655,7 @@ void ArchiveEntryTree::searchChar(int key_code)
 	if (!real_char)
 	{
 		search_.clear();
-		return;
+		return false;
 	}
 
 	// Get currently focused item (or first if nothing is focused)
@@ -1701,6 +1690,8 @@ void ArchiveEntryTree::searchChar(int key_code)
 		de.SetString("search");
 		ProcessWindowEvent(de);
 	}
+
+	return true;
 }
 #endif
 

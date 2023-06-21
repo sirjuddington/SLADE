@@ -179,7 +179,7 @@ class AnyDataFormat : public EntryDataFormat
 {
 public:
 	AnyDataFormat() : EntryDataFormat("any") {}
-	~AnyDataFormat() = default;
+	~AnyDataFormat() override = default;
 
 	int isThisFormat(MemChunk& mc) override { return MATCH_FALSE; }
 };
@@ -331,6 +331,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<XNodesDataFormat>();
 	registerDataFormat<XGLNodesDataFormat>();
 	registerDataFormat<XGLNodes2DataFormat>();
+	registerDataFormat<XGLNodes3DataFormat>();
 	registerDataFormat<DMDModelDataFormat>();
 	registerDataFormat<MDLModelDataFormat>();
 	registerDataFormat<MD2ModelDataFormat>();

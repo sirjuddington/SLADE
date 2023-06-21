@@ -28,6 +28,7 @@ public:
 		string_view tex_lower  = TEX_NONE,
 		Vec2i       tex_offset = { 0, 0 });
 	MapSide(MapSector* sector, ParseTreeNode* udmf_def);
+	MapSide(MapSector* sector, MapSide* copy_side);
 	~MapSide() = default;
 
 	void copy(MapObject* c) override;

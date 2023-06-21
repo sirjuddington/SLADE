@@ -28,7 +28,7 @@ private:
 	unique_ptr<MapVertex> createVertex(ParseTreeNode* def) const;
 	unique_ptr<MapSector> createSector(ParseTreeNode* def) const;
 	unique_ptr<MapSide>   createSide(ParseTreeNode* def, const MapObjectCollection& map_data) const;
-	unique_ptr<MapLine>   createLine(ParseTreeNode* def, const MapObjectCollection& map_data) const;
+	unique_ptr<MapLine>   createLine(ParseTreeNode* def, MapObjectCollection& map_data) const;
 	unique_ptr<MapThing>  createThing(ParseTreeNode* def) const;
 };
 } // namespace slade

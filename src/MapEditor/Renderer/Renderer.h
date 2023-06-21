@@ -3,7 +3,7 @@
 #include "MCAnimations.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
-#include "RenderView.h"
+#include "OpenGL/View.h"
 
 namespace slade
 {
@@ -19,7 +19,7 @@ namespace mapeditor
 
 		MapRenderer2D& renderer2D() { return renderer_2d_; }
 		MapRenderer3D& renderer3D() { return renderer_3d_; }
-		RenderView&    view() { return view_; }
+		gl::View&      view() { return view_; }
 
 		void forceUpdate();
 
@@ -35,7 +35,7 @@ namespace mapeditor
 		bool   viewIsInterpolated() const;
 
 		// 3d Mode
-		void  setCameraThing(MapThing* thing);
+		void  setCameraThing(const MapThing* thing);
 		Vec2d cameraPos2D() const;
 		Vec2d cameraDir2D() const;
 
@@ -54,7 +54,7 @@ namespace mapeditor
 		MapEditContext& context_;
 		MapRenderer2D   renderer_2d_;
 		MapRenderer3D   renderer_3d_;
-		RenderView      view_;
+		gl::View        view_;
 
 		// MCAnimations
 		vector<unique_ptr<MCAnimation>> animations_;

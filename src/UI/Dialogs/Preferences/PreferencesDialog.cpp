@@ -320,6 +320,9 @@ void PreferencesDialog::applyPreferences() const
 
 	// Write file so changes are not lost
 	app::saveConfigFile();
+
+	// Refresh all prefs pages
+	initPages();
 }
 
 

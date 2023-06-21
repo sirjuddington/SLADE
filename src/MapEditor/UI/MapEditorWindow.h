@@ -22,7 +22,7 @@ class MapEditorWindow : public STopWindow, public SActionHandler
 {
 public:
 	MapEditorWindow();
-	~MapEditorWindow();
+	~MapEditorWindow() override;
 
 	// Layout save/load
 	void loadLayout();
@@ -31,8 +31,8 @@ public:
 	void setupMenu();
 	void setupLayout();
 	bool chooseMap(Archive* archive = nullptr);
-	bool openMap(Archive::MapDesc map);
-	void loadMapScripts(Archive::MapDesc map);
+	bool openMap(const Archive::MapDesc& map);
+	void loadMapScripts(const Archive::MapDesc& map);
 	bool writeMap(WadArchive& wad, const wxString& name = "MAP01", bool nodes = true);
 	bool saveMap();
 	bool saveMapAs();
@@ -41,7 +41,7 @@ public:
 	void refreshToolBar() const;
 	void setUndoManager(UndoManager* manager) const;
 	bool tryClose();
-	bool hasMapOpen(Archive* archive) const;
+	bool hasMapOpen(const Archive* archive) const;
 	void reloadScriptsMenu() const;
 
 	MapObjectPropsPanel* propsPanel() const { return panel_obj_props_; }

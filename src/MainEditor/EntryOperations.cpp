@@ -154,7 +154,7 @@ bool entryoperations::rename(const vector<ArchiveEntry*>& entries, Archive* arch
 					fn.setFileName(filename); // Change name
 
 					// Rename in archive
-					if (!archive->renameEntry(entry, fn.fileName()))
+					if (!archive->renameEntry(entry, fn.fileName(), true))
 						wxMessageBox(
 							wxString::Format("Unable to rename entry %s: %s", entries[a]->name(), global::error),
 							"Rename Entry",
@@ -631,7 +631,10 @@ bool entryoperations::convertTextures(const vector<ArchiveEntry*>& entries)
 
 	// Check it exists
 	if (!pnames)
+	{
+		wxMessageBox("Unable to convert - could not find PNAMES entry", "Convert to TEXTURES", wxICON_ERROR | wxOK);
 		return false;
+	}
 
 	// Load patch table
 	PatchTable ptable;
@@ -956,7 +959,8 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		return false;
 
 	// Check entry has a parent (this is useless otherwise)
-	if (!target && !entry->parent())
+	auto* archive = entry->parent();
+	if (!target && !archive)
 		return false;
 
 	// Check entry is text
@@ -1006,7 +1010,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			continue;
 
 		// Ignore entries from other archives
-		if (entry->parent() && (entry->parent()->filename(true) != res_entry->parent()->filename(true)))
+		if (archive && (archive->filename(true) != res_entry->parent()->filename(true)))
 			continue;
 
 		auto path = app::path(fmt::format("{}.acs", res_entry->nameNoExt()), app::Dir::Temp);
@@ -1071,11 +1075,11 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			if (entry->upperName() == "SCRIPTS")
 			{
 				// Get entry before SCRIPTS
-				auto prev = entry->parent()->entryAt(entry->parent()->entryIndex(entry) - 1);
+				auto prev = archive->entryAt(archive->entryIndex(entry) - 1);
 
 				// Create a new entry there if it isn't BEHAVIOR
 				if (!prev || prev->upperName() != "BEHAVIOR")
-					prev = entry->parent()->addNewEntry("BEHAVIOR", entry->parent()->entryIndex(entry)).get();
+					prev = archive->addNewEntry("BEHAVIOR", archive->entryIndex(entry)).get();
 
 				// Import compiled script
 				prev->importFile(ofile);
@@ -1088,18 +1092,19 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				Archive::SearchOptions opt;
 				opt.match_namespace = "acs";
 				opt.match_name      = entry->nameNoExt();
-				if (entry->parent()->formatDesc().names_extensions)
+				if (archive->formatDesc().names_extensions)
 				{
 					opt.match_name += ".o";
 					opt.ignore_ext = false;
 				}
-				auto lib = entry->parent()->findLast(opt);
+				auto lib = archive->findLast(opt);
 
 				// If it doesn't exist, create it
 				if (!lib)
-					lib = entry->parent()
-							  ->addEntry(std::make_shared<ArchiveEntry>(fmt::format("{}.o", entry->nameNoExt())), "acs")
-							  .get();
+				{
+					auto new_lib = std::make_shared<ArchiveEntry>(fmt::format("{}.o", entry->nameNoExt()));
+					lib          = archive->addEntry(new_lib, "acs").get();
+				}
 
 				// Import compiled script
 				lib->importFile(ofile);
@@ -1131,7 +1136,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
 			dlg.setMessage(
 				success ? "The following errors were encountered while compiling, please fix them and recompile:" :
-                          "Compiler output shown below: ");
+						  "Compiler output shown below: ");
 			dlg.setExt(errors);
 			dlg.ShowModal();
 		}

@@ -396,10 +396,6 @@ bool DirArchive::renameDir(ArchiveDir* dir, string_view new_name)
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> DirArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
-	// Check entry
-	if (!checkEntry(entry.get()))
-		return nullptr;
-
 	// Check namespace
 	if (add_namespace.empty() || add_namespace == "global")
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr);
@@ -416,7 +412,7 @@ shared_ptr<ArchiveEntry> DirArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // If [delete_entry] is true, the entry will also be deleted.
 // Returns true if the removal succeeded
 // -----------------------------------------------------------------------------
-bool DirArchive::removeEntry(ArchiveEntry* entry)
+bool DirArchive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -424,20 +420,22 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 
 	if (entry->exProps().contains("filePath"))
 	{
+		// If it exists on disk we need to update removed_files_
 		const auto old_name = entry->exProp<string>("filePath");
-		const bool success  = Archive::removeEntry(entry);
+		const bool success  = Archive::removeEntry(entry, set_deleted);
 		if (success)
 			removed_files_.push_back(old_name);
 		return success;
 	}
 
-	return Archive::removeEntry(entry);
+	// Not on disk, just do default remove
+	return Archive::removeEntry(entry, set_deleted);
 }
 
 // -----------------------------------------------------------------------------
 // Renames [entry].  Returns true if the rename succeeded
 // -----------------------------------------------------------------------------
-bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
+bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -447,7 +445,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
 	if (entry->exProps().contains("filePath"))
 	{
 		const auto old_name = entry->exProp<string>("filePath");
-		const bool success  = Archive::renameEntry(entry, name);
+		const bool success  = Archive::renameEntry(entry, name, force);
 		if (success)
 			removed_files_.push_back(old_name);
 		return success;
@@ -700,7 +698,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 
 			// Add entry and directory to directory tree
 			auto ndir = createDir(fn.path());
-			ndir->addEntry(new_entry);
+			Archive::addEntry(new_entry, -1, ndir.get());
 
 			// Read entry data
 			new_entry->importFile(change.file_path);

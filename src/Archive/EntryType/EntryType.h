@@ -27,16 +27,16 @@ public:
 	ColRGBA       colour() const { return colour_; }
 
 	// Misc
-	void   dump();
-	void   copyToType(EntryType& target);
+	void   dump() const;
+	void   copyToType(EntryType& target) const;
 	string fileFilterString() const;
 
 	// Magic goes here
-	int isThisType(ArchiveEntry& entry);
+	int isThisType(ArchiveEntry& entry) const;
 
 	// Static functions
 	static void               initTypes();
-	static bool               readEntryTypeDefinition(MemChunk& mc, string_view source);
+	static bool               readEntryTypeDefinitions(string_view definitions, string_view source);
 	static bool               loadEntryTypes();
 	static bool               detectEntryType(ArchiveEntry& entry);
 	static EntryType*         fromId(string_view id);

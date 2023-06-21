@@ -54,11 +54,11 @@ decorate : cstyle {
 		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
 		AddShaded, Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
 		BloodColor, BloodType, Decal, FloatBobPhase, DistanceCheck, SpriteAngle, SpriteRotation, VisibleAngles,
-		VisiblePitch, StealthAlpha, FloatBobStrength, RenderRadius, CameraFOV, 
+		VisiblePitch, StealthAlpha, FloatBobStrength, RenderRadius, CameraFOV, LightLevel,
 		
 		// Sounds
 		SeeSound, AttackSound, PainSound, BounceSound, CrushPainSound,
-		DeathSound, ActiveSound, MeleeSound, HowlSound, PainSound, WallBounceSound, RipSound,
+		DeathSound, ActiveSound, MeleeSound, HowlSound, PainSound, WallBounceSound, RipSound, PushSound,
 		
 		// Multiplayer weirdness
 		DesignatedTeam, VisibleToTeam, VisibleToPlayerClass, 
@@ -71,7 +71,7 @@ decorate : cstyle {
 		AttackZOffset, JumpZ, SpawnClass, ViewHeight, ForwardMove, SideMove, MaxHealth, MugshotMaxHealth, 
 		RunHealth, MorphWeapon, FlechetteType, ScoreIcon, CrouchSprite, DamageScreenColor, StartItem, 
 		InvulnerabilityMode, HealRadiusType, HexenArmor, Portrait, WeaponSlot, FallingScreamSpeed, GruntSpeed,
-		AirCapacity, UseRange, ViewBob, TeleportFreezeTime,
+		AirCapacity, UseRange, ViewBob, TeleportFreezeTime, FlyBob, WaterClimbSpeed,
 		
 		// Inventory-specific properties
 		Inventory, RestrictedTo, ForbiddenTo, Amount, Icon, InterHubAmount, MaxAmount, 
@@ -115,7 +115,7 @@ decorate : cstyle {
 		Ammo, BackpackAmount, BackpackMaxAmount, DropAmount,
 		
 		// Puzzle items
-		PuzzleItem, Number, FailMessage,
+		PuzzleItem, Number, FailMessage, FailSound,
 
 		// Combos
 		Monster, Projectile,
@@ -173,7 +173,8 @@ decorate : cstyle {
 		NOFRICTIONBOUNCE, FALLDAMAGE, ALLOWTHRUBITS, DONTFACETALKER, AVOIDHAZARDS, STAYONLIFT, FRIGHTENING,
 		NOINFIGHTSPECIES, FORCEINFIGHTING, STOPRAILS, FULLVOLSEE, FORCEZERORADIUSDMG, POISONALWAYS, HITOWNER,
 		BOUNCEONUNRIPPABLES, DONTBOUNCEONSHOOTABLES, DONTBOUNCEONSKY, RETARGETAFTERSLAM, E1M8BOSS, E2M8BOSS,
-		E3M8BOSS, E4M6BOSS, E4M8BOSS, MAP07BOSS1, MAP07BOSS2, HIGHERMPROB,
+		E3M8BOSS, E4M6BOSS, E4M8BOSS, MAP07BOSS1, MAP07BOSS2, HIGHERMPROB, DONTFOLLOWPLAYERS, SEEFRIENDLYMONSTERS,
+		ADDLIGHTLEVEL, CROSSLINECHECK, MASTERNOSEE, INVISIBLEINMIRRORS, ONLYVISIBLEINMIRRORS, ONLYSLAMSOLID,
 
 		// INVENTORY.
 		INVENTORY,
@@ -291,6 +292,9 @@ decorate : cstyle {
 		// A_ChangeCountFlags
 		FLAG_NO_CHANGE,
 
+		// A_ChangeModel flags
+		CMDL_HIDEMODEL, CMDL_USESURFACESKIN, CMDL_WEAPONTOPLAYER,
+
 		// A_FaceMovementDirection flags
 		FMDF_NOPITCH, FMDF_INTERPOLATE, FMDF_NOANGLE,
 
@@ -345,7 +349,8 @@ decorate : cstyle {
 		PSP_WEAPON, PSP_FLASH,
 
 		// A_QuakeEx flags
-		QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_MAX, QF_FULLINTENSITY, QF_WAVE,
+		QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_MAX, QF_FULLINTENSITY, QF_WAVE, QF_3D, QF_GROUNDONLY,
+		QF_AFFECTACTORS, QF_SHAKEONLY,
 
 		// A_RadiusDamageSelf flags
 		RDSF_BFGDAMAGE,
@@ -381,6 +386,7 @@ decorate : cstyle {
 
 		// A_SpawnParticle flags
 		SPF_FULLBRIGHT, SPF_RELACCEL, SPF_RELANG, SPF_RELATIVE, SPF_RELPOS, SPF_RELVEL, SPF_NOTIMEFREEZE,
+		SPF_ROLL, SPF_REPLACE,
 
 		// Render styles
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_OptFuzzy, STYLE_Stencil, STYLE_Translucent,
@@ -520,8 +526,8 @@ decorate : cstyle {
 		A_RadiusGive = "class itemtype, float distance, int flags, [int amount], [class filter], [string species], [float mindist], [int limit]";
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
-		A_Quake = "int intensity, int duration, int damrad, int tremrad, [sound sfx]";
-		A_QuakeEx = "int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ], [int falloff], [int highpoint], [float rollIntensity], [float rollWave]";
+		A_Quake = "float intensity, int duration, int damrad, int tremrad, [sound sfx]";
+		A_QuakeEx = "float intensityX, float intensityY, float intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ], [int falloff], [int highpoint], [float rollIntensity], [float rollWave]";
 		A_SetTics = "int tics";
 
 		A_FreezeDeath;
@@ -614,6 +620,7 @@ decorate : cstyle {
 		A_ClassBossHealth;
 		A_ChangeCountFlags = "[int kill], [int item], [int secret]";
 		A_ChangeFlag = "string flagname, bool value";
+		A_ChangeModel = "string modeldef, [int modelindex], [string modelpath], [string model], [int skinindex], [string skinpath], [string skin], [int flags], [int generatorindex], [int animationindex], [string animationpath], [string animation]";
 		A_CheckFlag = "string flagname, state label, [pointer which_actor]";
 		A_SetFloorClip;
 		A_UnSetFloorClip;

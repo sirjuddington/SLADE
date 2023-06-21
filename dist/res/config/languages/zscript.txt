@@ -15,14 +15,15 @@ zscript
 		break, continue, deprecated, state, null, readonly, true, false, struct,
 		extend, clearscope, vararg, ui, play, virtual, virtualscope, meta, Property,
 		version, in, out, states, action, override, super, is, let, const, replaces,
-		protected, self, abstract, enum, switch, case, until
+		protected, self, abstract, enum, switch, case, until, nullptr, foreach, array,
+		map, mapiterator
 	}
 
 	types =
 	{
 		object, vector2, vector3, name, string, color, sound, void, double, bool,
-		int, float, uint8, uint16, uint, int8, int16, TextureID, SpriteID, Array,
-		voidptr, short
+		int, float, uint8, uint16, uint, int8, int16, TextureID, SpriteID,
+		voidptr, short, fvector2, fvector3, fvector4, vector4, fquat, quat
 	}
 
 	// Function info we cannot parse from (g)zdoom.pk3

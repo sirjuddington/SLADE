@@ -98,7 +98,7 @@ bool Input::mouseMove(int new_x, int new_y)
 
 	// Update mouse variables
 	mouse_pos_     = { new_x, new_y };
-	mouse_pos_map_ = context_.renderer().view().mapPos(mouse_pos_);
+	mouse_pos_map_ = context_.renderer().view().canvasPos(mouse_pos_);
 
 	// Update coordinates on status bar
 	double mx = context_.snapToGrid(mouse_pos_map_.x, false);
@@ -809,7 +809,7 @@ void Input::handleKeyBind2d(string_view name)
 			case 1: SAction::fromId("mapw_flat_untextured")->setChecked(); break;
 			case 2: SAction::fromId("mapw_flat_textured")->setChecked(); break;
 			default: break;
-			};
+			}
 
 			mapeditor::window()->refreshToolBar();
 		}
@@ -1177,6 +1177,6 @@ string Input::mouseButtonKBName(MouseButton button)
 	case Middle: return "mouse3";
 	case Mouse4: return "mouse4";
 	case Mouse5: return "mouse5";
-	default: return fmt::format("mouse{}", button);
+	default: return fmt::format("mouse{}", static_cast<int>(button));
 	}
 }

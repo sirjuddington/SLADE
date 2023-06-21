@@ -10,7 +10,7 @@ class AdvancedPrefsPanel : public PrefsPanelBase
 {
 public:
 	AdvancedPrefsPanel(wxWindow* parent);
-	~AdvancedPrefsPanel() = default;
+	~AdvancedPrefsPanel() override = default;
 
 	void refreshPropGrid() const;
 	void init() override;

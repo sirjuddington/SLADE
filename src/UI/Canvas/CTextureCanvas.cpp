@@ -36,6 +36,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "UI/Controls/ZoomControl.h"
 
 using namespace slade;
 
@@ -66,6 +67,7 @@ CTextureCanvas::CTextureCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 	Bind(wxEVT_MOTION, &CTextureCanvas::onMouseEvent, this);
 	Bind(wxEVT_LEFT_UP, &CTextureCanvas::onMouseEvent, this);
 	Bind(wxEVT_LEAVE_WINDOW, &CTextureCanvas::onMouseEvent, this);
+	Bind(wxEVT_MOUSEWHEEL, &CTextureCanvas::onMouseEvent, this);
 }
 
 // -----------------------------------------------------------------------------
@@ -196,22 +198,24 @@ bool CTextureCanvas::openTexture(CTexture* tex, Archive* parent)
 	}
 
 	// Update when texture patches are modified
-	sc_patches_modified_ = tex->signals().patches_modified.connect([this](CTexture&) {
-		// Reload patches
-		selected_patches_.clear();
-		clearPatchTextures();
-		hilight_patch_ = -1;
-		for (uint32_t a = 0; a < texture_->nPatches(); a++)
+	sc_patches_modified_ = tex->signals().patches_modified.connect(
+		[this](CTexture&)
 		{
-			// Create GL texture
-			patch_textures_.push_back(gl::Texture::create());
+			// Reload patches
+			selected_patches_.clear();
+			clearPatchTextures();
+			hilight_patch_ = -1;
+			for (uint32_t a = 0; a < texture_->nPatches(); a++)
+			{
+				// Create GL texture
+				patch_textures_.push_back(gl::Texture::create());
 
-			// Set selection
-			selected_patches_.push_back(false);
-		}
+				// Set selection
+				selected_patches_.push_back(false);
+			}
 
-		redraw(true);
-	});
+			redraw(true);
+		});
 
 	// Redraw
 	Refresh();
@@ -457,7 +461,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 		if (texture_->loadPatchImage(num, temp, parent_, &palette_, blend_rgba_))
 		{
 			// Load the image as a texture
-			gl::Texture::loadImage(patch_textures_[num], temp, &palette_);
+			patch_textures_[num] = gl::Texture::createFromImage(temp, &palette_);
 		}
 		else
 			patch_textures_[num] = gl::Texture::missingTexture();
@@ -687,8 +691,8 @@ Vec2i CTextureCanvas::screenToTexPosition(int x, int y) const
 
 	// Get top-left of texture in screen coordinates (ie relative to the top-left of the canvas)
 	const wxSize size = GetSize() * GetContentScaleFactor();
-	int left = size.x * 0.5 + offset_.x;
-	int top  = size.y * 0.5 + offset_.y;
+	int          left = size.x * 0.5 + offset_.x;
+	int          top  = size.y * 0.5 + offset_.y;
 
 	// Adjust for view type
 	const double yscale = tx_arc ? scale_ * 1.2 : scale_;
@@ -740,7 +744,7 @@ Vec2i CTextureCanvas::texToScreenPosition(int x, int y) const
 	const double yscale = tx_arc ? scale_ * 1.2 : scale_;
 	const double halfx  = texture_->width() * 0.5 * scale_ * tscalex;
 	const double halfy  = texture_->height() * 0.5 * yscale * tscaley;
-	const wxSize size = GetSize() * GetContentScaleFactor();
+	const wxSize size   = GetSize() * GetContentScaleFactor();
 	double       left   = offset_.x + size.x * 0.5 - halfx;
 	double       top    = -offset_.y + size.y * 0.5 - halfy;
 
@@ -826,7 +830,10 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		// Pan if middle button is down
 		if (e.MiddleIsDown())
 		{
-			offset_   = offset_ + Vec2d(e.GetPosition().x * GetContentScaleFactor() - mouse_prev_.x, e.GetPosition().y * GetContentScaleFactor() - mouse_prev_.y);
+			offset_ = offset_
+					  + Vec2d(
+						  e.GetPosition().x * GetContentScaleFactor() - mouse_prev_.x,
+						  e.GetPosition().y * GetContentScaleFactor() - mouse_prev_.y);
 			refresh   = true;
 			dragging_ = true;
 		}
@@ -864,6 +871,35 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		// Set no hilighted patch
 		hilight_patch_ = -1;
 		refresh        = true;
+	}
+
+	// MOUSEWHEEL
+	if (e.GetWheelRotation() != 0)
+	{
+		if (wxGetKeyState(WXK_CONTROL))
+		{
+			if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL || wxGetKeyState(WXK_SHIFT))
+			{
+				if (e.GetWheelRotation() > 0)
+					offset_.x -= 8 * scale_;
+				else
+					offset_.x += 8 * scale_;
+			}
+			else if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
+			{
+				if (e.GetWheelRotation() > 0)
+					offset_.y += 8 * scale_;
+				else
+					offset_.y -= 8 * scale_;
+			}
+		}
+		if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
+		{
+			if (e.GetWheelRotation() > 0)
+				linked_zoom_control_->zoomIn(true);
+			else
+				linked_zoom_control_->zoomOut(true);
+		}
 	}
 
 	// Refresh is needed

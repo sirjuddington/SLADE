@@ -31,10 +31,10 @@ public:
 	{
 		return nullptr;
 	}
-	bool removeEntry(ArchiveEntry* entry) override { return false; }
+	bool removeEntry(ArchiveEntry* entry, bool) override { return false; }
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string_view name) override;
+	bool renameEntry(ArchiveEntry* entry, string_view name, bool force = false) override;
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override { return false; }
