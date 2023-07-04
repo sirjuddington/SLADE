@@ -66,12 +66,13 @@ void MapSpecials::reset()
 {
 	sector_colours_.clear();
 	sector_fadecolours_.clear();
+	translucent_lines_.clear();
 }
 
 // -----------------------------------------------------------------------------
 // Process map specials, depending on the current game/port
 // -----------------------------------------------------------------------------
-void MapSpecials::processMapSpecials(SLADEMap* map) const
+void MapSpecials::processMapSpecials(SLADEMap* map)
 {
 	// ZDoom
 	if (game::configuration().currentPort() == "zdoom")
@@ -87,7 +88,7 @@ void MapSpecials::processMapSpecials(SLADEMap* map) const
 // -----------------------------------------------------------------------------
 // Process a line's special, depending on the current game/port
 // -----------------------------------------------------------------------------
-void MapSpecials::processLineSpecial(MapLine* line) const
+void MapSpecials::processLineSpecial(MapLine* line)
 {
 	if (game::configuration().currentPort() == "zdoom")
 		processZDoomLineSpecial(line);
@@ -165,6 +166,42 @@ void MapSpecials::setModified(const SLADEMap* map, int tag) const
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if [line] is translucent (via TranslucentLine special)
+// -----------------------------------------------------------------------------
+bool MapSpecials::lineIsTranslucent(const MapLine* line) const
+{
+	for (const auto& tl : translucent_lines_)
+		if (tl.line == line)
+			return true;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Returns TranslucentLine special alpha for [line]
+// -----------------------------------------------------------------------------
+double MapSpecials::translucentLineAlpha(const MapLine* line) const
+{
+	for (const auto& tl : translucent_lines_)
+		if (tl.line == line)
+			return tl.alpha;
+
+	return 1.;
+}
+
+// -----------------------------------------------------------------------------
+// Returns TranslucentLine special additive flag for [line]
+// -----------------------------------------------------------------------------
+bool MapSpecials::translucentLineAdditive(const MapLine* line) const
+{
+	for (const auto& tl : translucent_lines_)
+		if (tl.line == line)
+			return tl.additive;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Updates any sectors with tags that are affected by any processed
 // specials/scripts
 // -----------------------------------------------------------------------------
@@ -183,9 +220,10 @@ void MapSpecials::updateTaggedSectors(const SLADEMap* map) const
 // Process ZDoom map specials, mostly to convert hexen specials to UDMF
 // counterparts
 // -----------------------------------------------------------------------------
-void MapSpecials::processZDoomMapSpecials(SLADEMap* map) const
+void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 {
 	// Line specials
+	translucent_lines_.clear();
 	for (unsigned a = 0; a < map->nLines(); a++)
 		processZDoomLineSpecial(map->line(a));
 
@@ -196,7 +234,7 @@ void MapSpecials::processZDoomMapSpecials(SLADEMap* map) const
 // -----------------------------------------------------------------------------
 // Process ZDoom line special
 // -----------------------------------------------------------------------------
-void MapSpecials::processZDoomLineSpecial(MapLine* line) const
+void MapSpecials::processZDoomLineSpecial(MapLine* line)
 {
 	// Get special
 	int special = line->special();
@@ -228,8 +266,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line) const
 		// Set transparency
 		for (auto& l : tagged)
 		{
-			l->setFloatProperty("alpha", alpha);
-			l->setStringProperty("renderstyle", type);
+			translucent_lines_.push_back({ l, alpha, args[2] != 0 });
 
 			log::info(3, "Line {} translucent: ({}) {:1.2f}, {}", l->index(), args[1], alpha, type);
 		}
