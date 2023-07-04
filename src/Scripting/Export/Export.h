@@ -9,6 +9,7 @@ void registerAppNamespace(sol::state& lua);
 void registerGameNamespace(sol::state& lua);
 void registerArchivesNamespace(sol::state& lua);
 void registerUINamespace(sol::state& lua);
+void registerGraphicsNamespace(sol::state& lua);
 
 // Types
 void registerMiscTypes(sol::state& lua);
