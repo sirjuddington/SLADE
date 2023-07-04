@@ -52,7 +52,7 @@ namespace
 constexpr double TAU = math::PI * 2; // Number of radians in the unit circle
 } // namespace
 
-CVAR(Bool, map_process_3d_floors, true, CVar::Save)
+CVAR(Bool, map_process_3d_floors, false, CVar::Save)
 
 
 // -----------------------------------------------------------------------------
