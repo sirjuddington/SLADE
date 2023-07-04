@@ -1511,6 +1511,10 @@ void MapRenderer3D::updateLine(unsigned index)
 	if (!line->s1())
 		return;
 
+	// Process line special
+	map_->mapSpecials()->processLineSpecial(line);
+	bool line_translucent = map_->mapSpecials()->lineIsTranslucent(line);
+
 	// Get relevant line info
 	auto   map_format = mapeditor::editContext().mapDesc().format;
 	bool   upeg       = game::configuration().lineBasicFlagSet("dontpegtop", line, map_format);
@@ -1521,6 +1525,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	double alpha       = 1.0;
 	if (line->hasProp("alpha"))
 		alpha = line->floatProperty("alpha");
+	else if (line_translucent) // TranslucentLine special
+		alpha = map_->mapSpecials()->translucentLineAlpha(line);
 
 	int line_shading = 0;
 	if (render_shade_orthogonal_lines)
@@ -1794,6 +1800,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.flags |= MIDTEX;
 		if (line->hasProp("renderstyle") && line->stringProperty("renderstyle") == "add")
 			quad.flags |= TRANSADD;
+		else if (line_translucent && map_->mapSpecials()->translucentLineAdditive(line)) // TranslucentLine special
+			quad.flags |= TRANSADD;
 
 		// Add quad
 		lines_[index].quads.push_back(quad);
@@ -2010,6 +2018,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.flags |= BACK;
 		quad.flags |= MIDTEX;
 		if (line->hasProp("renderstyle") && line->stringProperty("renderstyle") == "add")
+			quad.flags |= TRANSADD;
+		else if (line_translucent && map_->mapSpecials()->translucentLineAdditive(line)) // TranslucentLine special
 			quad.flags |= TRANSADD;
 
 		// Add quad
