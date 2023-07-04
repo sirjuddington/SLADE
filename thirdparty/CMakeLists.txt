@@ -32,6 +32,7 @@ file(GLOB_RECURSE EXTERNAL_SOURCES
 
 # Add fmt
 option(USE_SYSTEM_FMT "Use system fmt library" OFF)
+option(FMT_INSTALL OFF)
 if(USE_SYSTEM_FMT)
 	find_package(fmt REQUIRED)
 else()

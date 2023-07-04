@@ -165,9 +165,9 @@ void DB2MapFileMonitor::fileModified()
 
 			// Now re-add map entries from the temp archive
 			auto index = archive_->entryIndex(map.head.lock().get());
-			for (unsigned b = 0; b < wad->numEntries(); b++)
+			for (unsigned b = 1; b < wad->numEntries(); b++) // Start at 1 to skip map header
 			{
-				auto ne = archive_->addEntry(std::make_shared<ArchiveEntry>(*wad->entryAt(b)), index, nullptr);
+				auto ne = archive_->addEntry(std::make_shared<ArchiveEntry>(*wad->entryAt(b)), index + 1, nullptr);
 				if (index <= archive_->numEntries())
 					index++;
 				ne->lock();
@@ -189,7 +189,7 @@ void DB2MapFileMonitor::processTerminated()
 			// Unlock map entries
 			auto index     = archive_->entryIndex(map.head.lock().get());
 			auto index_end = archive_->entryIndex(map.end.lock().get());
-			while (index < index_end)
+			while (index <= index_end)
 				archive_->entryAt(index++)->unlock();
 		}
 	}

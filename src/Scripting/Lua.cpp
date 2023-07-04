@@ -180,6 +180,7 @@ bool lua::init()
 	registerUINamespace(lua);
 	registerGameNamespace(lua);
 	registerArchivesNamespace(lua);
+	registerGraphicsNamespace(lua);
 
 	// Register types
 	registerMiscTypes(lua);

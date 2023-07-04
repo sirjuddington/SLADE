@@ -182,6 +182,7 @@ void MapEditorWindow::setupMenu()
 	SAction::fromId("mapw_backup")->addToMenu(menu_map);
 	menu_map->AppendSeparator();
 	SAction::fromId("mapw_run_map")->addToMenu(menu_map);
+	SAction::fromId("mapw_quick_run_map")->addToMenu(menu_map);
 	menu->Append(menu_map, "&Map");
 
 	// Edit menu
@@ -303,6 +304,7 @@ void MapEditorWindow::setupLayout()
 	// Extra toolbar
 	auto tbg_misc = new SToolBarGroup(toolbar_, "_Misc");
 	tbg_misc->addActionButton("mapw_run_map");
+	tbg_misc->addActionButton("mapw_quick_run_map");
 	toolbar_->addGroup(tbg_misc);
 
 	// Add toolbar
@@ -1311,13 +1313,13 @@ bool MapEditorWindow::handleAction(string_view id)
 	}
 
 	// Run Map
-	else if (id == "mapw_run_map" || id == "mapw_run_map_here")
+	else if (id == "mapw_run_map" || id == "mapw_run_map_here" || id == "mapw_quick_run_map")
 	{
 		Archive* archive = nullptr;
 		if (auto head = mdesc_current.head.lock())
 			archive = head->parent();
-		RunDialog dlg(this, archive, id == "mapw_run_map");
-		if (dlg.ShowModal() == wxID_OK)
+		RunDialog dlg(this, archive, id == "mapw_run_map", true);
+		if (id == "mapw_quick_run_map" || dlg.ShowModal() == wxID_OK)
 		{
 			auto& edit_context = mapeditor::editContext();
 			// Move player 1 start if needed
