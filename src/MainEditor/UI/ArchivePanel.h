@@ -137,10 +137,7 @@ protected:
 	EntryPanel* text_area_     = nullptr;
 	EntryPanel* ansi_area_     = nullptr;
 	EntryPanel* gfx_area_      = nullptr;
-	EntryPanel* voxel_area_    = nullptr;
 	EntryPanel* pal_area_      = nullptr;
-	EntryPanel* texturex_area_ = nullptr;
-	EntryPanel* pnames_area_   = nullptr;
 	EntryPanel* hex_area_      = nullptr;
 	EntryPanel* map_area_      = nullptr;
 	EntryPanel* audio_area_    = nullptr;
@@ -154,6 +151,17 @@ protected:
 	bool canMoveEntries() const;
 	void selectionChanged();
 	void updateFilter() const;
+
+	// Entry panel getters
+	// (used to 'lazy load' the different entry panels as needed)
+	EntryPanel* textArea();
+	EntryPanel* ansiArea();
+	EntryPanel* gfxArea();
+	EntryPanel* palArea();
+	EntryPanel* hexArea();
+	EntryPanel* mapArea();
+	EntryPanel* audioArea();
+	EntryPanel* dataArea();
 
 	// Events
 	void         onEntryListSelectionChange(wxDataViewEvent& e);
