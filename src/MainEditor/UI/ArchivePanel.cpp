@@ -692,8 +692,11 @@ void ArchivePanel::addMenus() const
 		auto menu_scripts = new wxMenu();
 #ifndef NO_LUA
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Archive, "arch_script");
-#endif
 		menu_archive->AppendSubMenu(menu_scripts, "&Run Script");
+#endif
+
+		menu_archive->AppendSeparator();
+		SAction::fromId("arch_run")->addToMenu(menu_archive, true, "Run");
 	}
 	if (!menu_entry)
 	{
