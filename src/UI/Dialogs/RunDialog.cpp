@@ -188,8 +188,12 @@ private:
 RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, bool run_map) :
 	SDialog(parent, "Run", "run", 500, 400), run_map_{ run_map }
 {
-	// Set dialog icon
+	// Set dialog icon + title
 	wxutil::setWindowIcon(this, "run");
+	if (run_map)
+		SetTitle("Run Map");
+	if (archive)
+		SetTitle(wxString::Format("Run Archive - %s", archive->filename(false)));
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
