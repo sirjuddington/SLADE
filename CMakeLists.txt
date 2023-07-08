@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.3...3.26)
 project(Slade3 VERSION 3.2.0)
 
 if(COMMAND cmake_policy)
@@ -11,7 +11,7 @@ if(COMMAND cmake_policy)
 	endif(POLICY CMP0072)
 endif(COMMAND cmake_policy)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
