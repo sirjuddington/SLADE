@@ -9,11 +9,11 @@
 
 using namespace slade;
 
-GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour, const gl::View& view) :
+GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour, gl::View view) :
 	wxGLCanvas(parent, gl::getWxGLAttribs(), -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
+	view_{ std::move(view) },
 	bg_style_{ bg_style },
-	bg_colour_{ bg_colour },
-	view_{ view }
+	bg_colour_{ bg_colour }
 {
 	// Do nothing on erase background event to avoid flicker
 	Bind(wxEVT_ERASE_BACKGROUND, [](wxEraseEvent&) {});
@@ -29,6 +29,39 @@ GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour,
 			view_.setSize(GetSize().x, GetSize().y);
 			updateBackgroundVB();
 		});
+}
+
+void GLCanvas::setupMousewheelZoom()
+{
+	Bind(
+		wxEVT_MOUSEWHEEL,
+		[&](wxMouseEvent& e)
+		{
+			if (e.GetWheelRotation() < 0)
+				view_.zoomToward(0.8, { e.GetPosition().x, e.GetPosition().y });
+			else if (e.GetWheelRotation() > 0)
+				view_.zoomToward(1.25, { e.GetPosition().x, e.GetPosition().y });
+
+			Refresh();
+		});
+}
+
+void GLCanvas::setupMousePanning()
+{
+	Bind(wxEVT_MOTION, [&](wxMouseEvent& e)
+	{
+		if (e.MiddleIsDown())
+		{
+			auto cpos_current = view_.canvasPos({ e.GetPosition().x, e.GetPosition().y });
+			auto cpos_prev = view_.canvasPos(mouse_prev_);
+
+			view_.pan(cpos_prev.x - cpos_current.x, cpos_prev.y - cpos_current.y);
+
+			Refresh();
+		}
+
+		mouse_prev_.set(e.GetPosition().x, e.GetPosition().y);
+	});
 }
 
 // -----------------------------------------------------------------------------
@@ -171,17 +204,7 @@ CONSOLE_COMMAND(tgc, 0, false)
 	dlg.SetSizer(new wxBoxSizer(wxVERTICAL));
 	dlg.GetSizer()->Add(canvas, 1, wxEXPAND | wxALL, 10);
 
-	canvas->Bind(
-		wxEVT_MOUSEWHEEL,
-		[&](wxMouseEvent& e)
-		{
-			if (e.GetWheelRotation() < 0)
-				canvas->view().zoomToward(0.8, { e.GetPosition().x, e.GetPosition().y });
-			else if (e.GetWheelRotation() > 0)
-				canvas->view().zoomToward(1.25, { e.GetPosition().x, e.GetPosition().y });
-
-			canvas->Refresh();
-		});
+	canvas->setupMousewheelZoom();
 
 	canvas->Bind(
 		wxEVT_LEFT_DOWN,

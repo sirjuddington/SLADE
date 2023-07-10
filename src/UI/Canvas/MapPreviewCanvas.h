@@ -11,7 +11,7 @@ class GLTexture;
 class MapPreviewCanvas : public GLCanvas
 {
 public:
-	MapPreviewCanvas(wxWindow* parent) : GLCanvas(parent) {}
+	MapPreviewCanvas(wxWindow* parent, bool allow_zoom = false, bool allow_pan = false);
 	~MapPreviewCanvas() override = default;
 
 	void addVertex(double x, double y);
@@ -24,7 +24,7 @@ public:
 	void clearMap();
 	void showMap();
 	void draw() override;
-	void createImage(ArchiveEntry& ae, int width, int height);
+	void createImage(ArchiveEntry& ae, int width, int height) const;
 
 	unsigned nVertices() const;
 	unsigned nSides() const { return n_sides_; }
@@ -40,11 +40,7 @@ private:
 	{
 		double x;
 		double y;
-		Vertex(double x, double y)
-		{
-			this->x = x;
-			this->y = y;
-		}
+		Vertex(double x, double y) : x{ x }, y{ y } {}
 	};
 
 	struct Line
@@ -80,10 +76,10 @@ private:
 	vector<Thing>       things_;
 	unsigned            n_sides_   = 0;
 	unsigned            n_sectors_ = 0;
-	double              zoom_      = 1.;
-	Vec2d               offset_;
 	unique_ptr<Archive> temp_archive_;
 	unsigned            tex_thing_ = 0;
+	bool                panning_   = false;
+	bool                view_init_ = false;
 
 	unique_ptr<gl::VertexBuffer2D> vb_lines_;
 	unique_ptr<gl::VertexBuffer2D> vb_things_;

@@ -62,7 +62,7 @@ public:
 	void pan(double x, double y);
 	void zoom(double amount);
 	void zoomToward(double amount, const Vec2i& point);
-	void fitTo(const BBox& bbox);
+	void fitTo(const BBox& bbox, double scale_inc = 1.25);
 	bool interpolate(double mult, const Vec2d* towards = nullptr);
 
 	// Canvas <-> Screen Coordinate Translation

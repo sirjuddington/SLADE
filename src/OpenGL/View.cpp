@@ -138,7 +138,7 @@ void View::zoomToward(double amount, const Vec2i& point)
 // -----------------------------------------------------------------------------
 // Zooms and offsets the view such that [bbox] fits within the current view size
 // -----------------------------------------------------------------------------
-void View::fitTo(const BBox& bbox)
+void View::fitTo(const BBox& bbox, double scale_inc)
 {
 	// Reset zoom and set offsets to the middle of the canvas
 	scale_    = 2;
@@ -156,7 +156,7 @@ void View::fitTo(const BBox& bbox)
 			&& bbox.min.y >= visibleRegion().tl.y && bbox.max.y <= visibleRegion().br.y)
 			done = true;
 		else
-			scale_ *= 0.8;
+			scale_ *= 1.0 / scale_inc;
 	}
 
 	if (!interpolated_)

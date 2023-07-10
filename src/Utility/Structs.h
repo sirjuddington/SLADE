@@ -383,6 +383,8 @@ struct BBox
 	Vec2d max;
 
 	BBox() { reset(); }
+	BBox(const Vec2d& min, const Vec2d& max) : min{ min }, max{ max } {}
+	BBox(double min_x, double min_y, double max_x, double max_y) : min{ min_x, min_y }, max{ max_x, max_y } {}
 
 	void reset()
 	{
@@ -461,10 +463,10 @@ template<typename T> struct Named
 	Named(string_view name, const T& value) : name{ name }, value{ value } {}
 
 	// For sorting
-	bool operator< (const Named<T>& rhs) { return name < rhs.name; }
-	bool operator<= (const Named<T>& rhs) { return name <= rhs.name; }
-	bool operator> (const Named<T>& rhs) { return name > rhs.name; }
-	bool operator>= (const Named<T>& rhs) { return name >= rhs.name; }
+	bool operator<(const Named<T>& rhs) { return name < rhs.name; }
+	bool operator<=(const Named<T>& rhs) { return name <= rhs.name; }
+	bool operator>(const Named<T>& rhs) { return name > rhs.name; }
+	bool operator>=(const Named<T>& rhs) { return name >= rhs.name; }
 };
 
 } // namespace slade

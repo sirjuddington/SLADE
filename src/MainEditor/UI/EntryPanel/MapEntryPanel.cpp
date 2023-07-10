@@ -70,7 +70,7 @@ EXTERN_CVAR(Bool, map_view_things)
 MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 {
 	// Setup map canvas
-	map_canvas_ = new MapPreviewCanvas(this);
+	map_canvas_ = new MapPreviewCanvas(this, true, true);
 	sizer_main_->Add(map_canvas_, 1, wxEXPAND, 0);
 
 	// Setup map toolbar buttons

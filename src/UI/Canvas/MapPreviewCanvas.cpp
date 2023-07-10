@@ -69,6 +69,21 @@ CVAR(Bool, map_view_things, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 
 
+MapPreviewCanvas::MapPreviewCanvas(wxWindow* parent, bool allow_zoom, bool allow_pan) : GLCanvas(parent)
+{
+	// Centered view
+	setView({ true, true, false });
+
+	// Mousewheel zoom
+	if (allow_zoom)
+		setupMousewheelZoom();
+
+	// View Panning
+	if (allow_pan)
+		setupMousePanning();
+}
+
+
 // -----------------------------------------------------------------------------
 // Adds a vertex to the map data
 // -----------------------------------------------------------------------------
@@ -398,6 +413,8 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		temp_archive_ = nullptr;
 	}
 
+	view_init_ = false;
+
 	// Refresh map
 	Refresh();
 
@@ -670,17 +687,9 @@ void MapPreviewCanvas::showMap()
 			m_max.y = vert.y;
 	}
 
-	// Offset to center of map
-	double width  = m_max.x - m_min.x;
-	double height = m_max.y - m_min.y;
-	offset_       = { m_min.x + (width * 0.5), m_min.y + (height * 0.5) };
-
-	// Zoom to fit whole map
-	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
-	double       x_scale    = ((double)ClientSize.x) / width;
-	double       y_scale    = ((double)ClientSize.y) / height;
-	zoom_                   = std::min<double>(x_scale, y_scale);
-	zoom_ *= 0.95;
+	// Fit in view
+	view_.fitTo(BBox{ m_min.x, m_min.y, m_max.x, m_max.y }, 1.1);
+	view_.zoom(0.95);
 }
 
 // -----------------------------------------------------------------------------
@@ -693,21 +702,15 @@ void MapPreviewCanvas::draw()
 		updateLinesBuffer();
 
 	// Zoom/offset to show full map
-	showMap();
-
-	// Translate to middle of canvas
-	glm::mat4 model = glm::translate(glm::mat4(1.f), { GetSize().x * 0.5f, GetSize().y * 0.5f, 0.f });
-
-	// Zoom
-	model = glm::scale(model, { zoom_, -zoom_, 1. });
-
-	// Translate to offset
-	model = glm::translate(model, { -offset_.x, -offset_.y, 0. });
+	if (!view_init_)
+	{
+		showMap();
+		view_init_ = true;
+	}
 
 	// Setup drawing
 	auto& shader = gl::draw2d::linesShader();
 	view_.setupShader(shader);
-	shader.setUniform("model", model);
 	shader.setUniform("line_width", 1.5f);
 
 	// Draw lines
@@ -742,7 +745,6 @@ void MapPreviewCanvas::draw()
 		// Setup drawing
 		const auto& ps_shader = gl::draw2d::pointSpriteShader();
 		view_.setupShader(ps_shader);
-		ps_shader.setUniform("model", model);
 		ps_shader.setUniform("point_radius", 20.f);
 		ps_shader.setUniform("colour", colourconfig::colour("map_view_thing").asVec4());
 
@@ -758,7 +760,7 @@ void MapPreviewCanvas::draw()
 // TODO: Factorize code with normal draw() and showMap() functions.
 // TODO: Find a way to generate an arbitrary-sized image through tiled rendering
 // -----------------------------------------------------------------------------
-void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
+void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height) const
 {
 	// Find extents of map
 	Vertex m_min(999999.0, 999999.0);
@@ -834,22 +836,22 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 
 	// Zoom/offset to show full map
 	// Offset to center of map
-	offset_ = { m_min.x + (mapwidth * 0.5), m_min.y + (mapheight * 0.5) };
+	Vec2d offset = { m_min.x + (mapwidth * 0.5), m_min.y + (mapheight * 0.5) };
 
 	// Zoom to fit whole map
 	double x_scale = ((double)width) / mapwidth;
 	double y_scale = ((double)height) / mapheight;
-	zoom_          = std::min<double>(x_scale, y_scale);
-	zoom_ *= 0.95;
+	double zoom    = std::min<double>(x_scale, y_scale);
+	zoom *= 0.95;
 
 	// Translate to middle of canvas
 	glTranslated(width >> 1, height >> 1, 0);
 
 	// Zoom
-	glScaled(zoom_, zoom_, 1);
+	glScaled(zoom, zoom, 1);
 
 	// Translate to offset
-	glTranslated(-offset_.x, -offset_.y, 0);
+	glTranslated(-offset.x, -offset.y, 0);
 
 	// Setup drawing
 	glDisable(GL_TEXTURE_2D);
