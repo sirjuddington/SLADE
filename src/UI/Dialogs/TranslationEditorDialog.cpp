@@ -185,7 +185,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	sizer->Add(framesizer, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 	// Origin palette
-	pal_canvas_original_ = new PaletteCanvas(this, -1);
+	pal_canvas_original_ = new PaletteCanvas(this);
 	pal_canvas_original_->doubleWidth(true);
 	pal_canvas_original_->setPalette(&palette_);
 	pal_canvas_original_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
@@ -232,7 +232,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	panel_target_palette_->SetSizer(vbox);
 
 	// Target palette
-	pal_canvas_target_ = new PaletteCanvas(panel_target_palette_, -1);
+	pal_canvas_target_ = new PaletteCanvas(panel_target_palette_);
 	pal_canvas_target_->doubleWidth(true);
 	pal_canvas_target_->setPalette(&palette_);
 	pal_canvas_target_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
@@ -311,7 +311,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 0, wxEXPAND | wxRIGHT, ui::pad());
 
-	pal_canvas_preview_ = new PaletteCanvas(this, -1);
+	pal_canvas_preview_ = new PaletteCanvas(this);
 	pal_canvas_preview_->doubleWidth(translation_editor_condensed);
 	if (translation_editor_condensed)
 		pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(320), ui::scalePx(80)));
@@ -790,8 +790,9 @@ void TranslationEditorDialog::showTintTarget(bool tint)
 void TranslationEditorDialog::updatePreviews()
 {
 	// Update palette preview
-	pal_canvas_preview_->setPalette(&palette_);
-	pal_canvas_preview_->palette().applyTranslation(&translation_);
+	Palette pal_translated{ palette_ };
+	pal_translated.applyTranslation(&translation_);
+	pal_canvas_preview_->setPalette(&pal_translated);
 	pal_canvas_preview_->Refresh();
 
 	// Update image preview

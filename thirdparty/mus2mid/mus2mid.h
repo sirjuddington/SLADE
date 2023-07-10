@@ -29,7 +29,6 @@
 #ifndef MUS2MID_H
 #define MUS2MID_H
 
-#include "Main.h"
 #include "Utility/MemChunk.h"
 
 bool mus2mid(const slade::MemChunk& musinput, slade::MemChunk& midioutput);

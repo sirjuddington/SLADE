@@ -2,6 +2,7 @@
 
 #include "Graphics/Palette/Palette.h"
 #include "OpenGL/OpenGL.h"
+#include "OpenGL/View.h"
 
 class wxWindow;
 
@@ -24,10 +25,11 @@ public:
 	void             setup2D() const;
 
 protected:
-	bool    init_done_ = false;
-	Palette palette_;
-	wxTimer timer_;
-	long    last_time_ = 0;
+	bool     init_done_ = false;
+	Palette  palette_;
+	wxTimer  timer_;
+	long     last_time_ = 0;
+	gl::View view_;
 
 	// Events
 	void onPaint(wxPaintEvent& e);

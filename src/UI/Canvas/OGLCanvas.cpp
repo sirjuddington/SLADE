@@ -65,6 +65,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 	// Bind events
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
+	Bind(wxEVT_SIZE, [this](wxSizeEvent& e) { view_.setSize(GetSize().x, GetSize().y); });
 
 	gl::Texture::resetBackgroundTexture();
 }

@@ -50,7 +50,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // PaletteDialog class constructor
 // -----------------------------------------------------------------------------
-PaletteDialog::PaletteDialog(Palette* palette) :
+PaletteDialog::PaletteDialog(const Palette* palette) :
 	wxDialog(nullptr, -1, "Palette", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	int size = ui::scalePx(400);
@@ -58,8 +58,8 @@ PaletteDialog::PaletteDialog(Palette* palette) :
 	auto m_vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_vbox);
 
-	pal_canvas_ = new PaletteCanvas(this, -1);
-	pal_canvas_->palette().copyPalette(palette);
+	pal_canvas_ = new PaletteCanvas(this);
+	pal_canvas_->setPalette(palette);
 	pal_canvas_->SetInitialSize(wxSize(size, size));
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
 	m_vbox->Add(pal_canvas_, 1, wxEXPAND | wxALL, ui::padLarge());

@@ -38,13 +38,17 @@
 #include "General/ColourConfiguration.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/Shader.h"
+#include "OpenGL/VertexBuffer2D.h"
+#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
-#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
+#include <glm/ext/matrix_transform.hpp>
 
 using namespace slade;
 
@@ -403,7 +407,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 // -----------------------------------------------------------------------------
 // Reads non-UDMF vertex data
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format)
+bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format)
 {
 	// Find VERTEXES entry
 	ArchiveEntry* vertexes = nullptr;
@@ -477,7 +481,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 // -----------------------------------------------------------------------------
 // Reads non-UDMF line data
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format)
+bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format)
 {
 	// Find LINEDEFS entry
 	ArchiveEntry* linedefs = nullptr;
@@ -580,7 +584,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 // -----------------------------------------------------------------------------
 // Reads non-UDMF thing data
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format)
+bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format)
 {
 	// Find THINGS entry
 	ArchiveEntry* things = nullptr;
@@ -607,21 +611,21 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	// Read things data
 	if (map_format == MapFormat::Doom || map_format == MapFormat::Doom32X)
 	{
-		auto     thng_data = (DoomMapFormat::Thing*)things->rawData();
+		auto     thng_data = reinterpret_cast<const DoomMapFormat::Thing*>(things->rawData());
 		unsigned nt        = things->size() / sizeof(DoomMapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Doom64)
 	{
-		auto     thng_data = (Doom64MapFormat::Thing*)things->rawData();
+		auto     thng_data = reinterpret_cast<const Doom64MapFormat::Thing*>(things->rawData());
 		unsigned nt        = things->size() / sizeof(Doom64MapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Hexen)
 	{
-		auto     thng_data = (HexenMapFormat::Thing*)things->rawData();
+		auto     thng_data = reinterpret_cast<const HexenMapFormat::Thing*>(things->rawData());
 		unsigned nt        = things->size() / sizeof(HexenMapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
@@ -640,6 +644,10 @@ void MapPreviewCanvas::clearMap()
 	things_.clear();
 	n_sides_   = 0;
 	n_sectors_ = 0;
+	if (vb_lines_)
+		vb_lines_->clear();
+	if (vb_things_)
+		vb_things_->clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -680,86 +688,37 @@ void MapPreviewCanvas::showMap()
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::draw()
 {
-	// Setup colours
-	auto col_view_background   = colourconfig::colour("map_view_background");
-	auto col_view_line_1s      = colourconfig::colour("map_view_line_1s");
-	auto col_view_line_2s      = colourconfig::colour("map_view_line_2s");
-	auto col_view_line_special = colourconfig::colour("map_view_line_special");
-	auto col_view_line_macro   = colourconfig::colour("map_view_line_macro");
-	auto col_view_thing        = colourconfig::colour("map_view_thing");
-
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, size.x, 0, size.y, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(
-		((double)col_view_background.r) / 255.f,
-		((double)col_view_background.g) / 255.f,
-		((double)col_view_background.b) / 255.f,
-		((double)col_view_background.a) / 255.f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
+	// Update buffer if needed
+	if (!vb_lines_ || vb_lines_->empty())
+		updateLinesBuffer();
 
 	// Zoom/offset to show full map
 	showMap();
 
 	// Translate to middle of canvas
-	glTranslated(size.x * 0.5, size.y * 0.5, 0);
+	glm::mat4 model = glm::translate(glm::mat4(1.f), { GetSize().x * 0.5f, GetSize().y * 0.5f, 0.f });
 
 	// Zoom
-	glScaled(zoom_, zoom_, 1);
+	model = glm::scale(model, { zoom_, -zoom_, 1. });
 
 	// Translate to offset
-	glTranslated(-offset_.x, -offset_.y, 0);
+	model = glm::translate(model, { -offset_.x, -offset_.y, 0. });
 
 	// Setup drawing
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	glLineWidth(1.5f);
-	glEnable(GL_LINE_SMOOTH);
+	auto& shader = gl::draw2d::linesShader();
+	view_.setupShader(shader);
+	shader.setUniform("model", model);
+	shader.setUniform("line_width", 1.5f);
 
 	// Draw lines
-	for (auto& line : lines_)
-	{
-		// Check ends
-		if (line.v1 >= verts_.size() || line.v2 >= verts_.size())
-			continue;
-
-		// Get vertices
-		auto v1 = verts_[line.v1];
-		auto v2 = verts_[line.v2];
-
-		// Set colour
-		if (line.special)
-			gl::setColour(col_view_line_special);
-		else if (line.macro)
-			gl::setColour(col_view_line_macro);
-		else if (line.twosided)
-			gl::setColour(col_view_line_2s);
-		else
-			gl::setColour(col_view_line_1s);
-
-		// Draw line
-		glBegin(GL_LINES);
-		glVertex2d(v1.x, v1.y);
-		glVertex2d(v2.x, v2.y);
-		glEnd();
-	}
+	glLineWidth(1.5f);
+	glDepthMask(GL_FALSE);
+	vb_lines_->draw(gl::Primitive::Lines);
+	glDepthMask(GL_TRUE);
+	glLineWidth(1.f);
 
 	// Load thing texture if needed
-	if (!tex_loaded_)
+	if (!tex_thing_)
 	{
 		// Load thing texture
 		SImage image;
@@ -771,52 +730,26 @@ void MapPreviewCanvas::draw()
 		}
 		else
 			tex_thing_ = 0;
-
-		tex_loaded_ = true;
 	}
 
 	// Draw things
 	if (map_view_things)
 	{
-		gl::setColour(col_view_thing);
-		if (tex_thing_)
-		{
-			double radius = 20;
-			glEnable(GL_TEXTURE_2D);
-			gl::Texture::bind(tex_thing_);
-			for (auto& thing : things_)
-			{
-				glPushMatrix();
-				glTranslated(thing.x, thing.y, 0);
-				glBegin(GL_QUADS);
-				glTexCoord2f(0.0f, 0.0f);
-				glVertex2d(-radius, -radius);
-				glTexCoord2f(0.0f, 1.0f);
-				glVertex2d(-radius, radius);
-				glTexCoord2f(1.0f, 1.0f);
-				glVertex2d(radius, radius);
-				glTexCoord2f(1.0f, 0.0f);
-				glVertex2d(radius, -radius);
-				glEnd();
-				glPopMatrix();
-			}
-		}
-		else
-		{
-			glEnable(GL_POINT_SMOOTH);
-			glPointSize(8.0f);
-			glBegin(GL_POINTS);
-			for (auto& thing : things_)
-				glVertex2d(thing.x, thing.y);
-			glEnd();
-		}
+		// Update buffer if needed
+		if (!vb_things_ || vb_things_->empty())
+			updateThingsBuffer();
+
+		// Setup drawing
+		const auto& ps_shader = gl::draw2d::pointSpriteShader();
+		view_.setupShader(ps_shader);
+		ps_shader.setUniform("model", model);
+		ps_shader.setUniform("point_radius", 20.f);
+		ps_shader.setUniform("colour", colourconfig::colour("map_view_thing").asVec4());
+
+		// Draw things
+		gl::Texture::bind(tex_thing_);
+		vb_things_->draw(gl::Primitive::Points);
 	}
-
-	glLineWidth(1.0f);
-	glDisable(GL_LINE_SMOOTH);
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 
@@ -1007,7 +940,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 // -----------------------------------------------------------------------------
 // Returns the number of (attached) vertices in the map
 // -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::nVertices()
+unsigned MapPreviewCanvas::nVertices() const
 {
 	// Get list of used vertices
 	vector<bool> v_used;
@@ -1033,7 +966,7 @@ unsigned MapPreviewCanvas::nVertices()
 // -----------------------------------------------------------------------------
 // Returns the width (in map units) of the map
 // -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::width()
+unsigned MapPreviewCanvas::width() const
 {
 	int min_x = wxINT32_MAX;
 	int max_x = wxINT32_MIN;
@@ -1052,7 +985,7 @@ unsigned MapPreviewCanvas::width()
 // -----------------------------------------------------------------------------
 // Returns the height (in map units) of the map
 // -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::height()
+unsigned MapPreviewCanvas::height() const
 {
 	int min_y = wxINT32_MAX;
 	int max_y = wxINT32_MIN;
@@ -1066,4 +999,63 @@ unsigned MapPreviewCanvas::height()
 	}
 
 	return max_y - min_y;
+}
+
+// -----------------------------------------------------------------------------
+// Updates the lines vertex buffer
+// -----------------------------------------------------------------------------
+void MapPreviewCanvas::updateLinesBuffer()
+{
+	// Setup colours
+	auto col_view_line_1s      = colourconfig::colour("map_view_line_1s").asVec4();
+	auto col_view_line_2s      = colourconfig::colour("map_view_line_2s").asVec4();
+	auto col_view_line_special = colourconfig::colour("map_view_line_special").asVec4();
+	auto col_view_line_macro   = colourconfig::colour("map_view_line_macro").asVec4();
+
+	if (!vb_lines_)
+		vb_lines_ = std::make_unique<gl::VertexBuffer2D>();
+	else
+		vb_lines_->clear();
+
+	gl::VertexBuffer2D::Vertex vertex({ 0.f, 0.f });
+	for (auto& line : lines_)
+	{
+		// Check ends
+		if (line.v1 >= verts_.size() || line.v2 >= verts_.size())
+			continue;
+
+		// Set colour
+		if (line.special)
+			vertex.colour = col_view_line_special;
+		else if (line.macro)
+			vertex.colour = col_view_line_macro;
+		else if (line.twosided)
+			vertex.colour = col_view_line_2s;
+		else
+			vertex.colour = col_view_line_1s;
+
+		// First vertex
+		vertex.position = { verts_[line.v1].x, verts_[line.v1].y };
+		vb_lines_->add(vertex);
+
+		// Second vertex
+		vertex.position = { verts_[line.v2].x, verts_[line.v2].y };
+		vb_lines_->add(vertex);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Updates the things vertex buffer
+// -----------------------------------------------------------------------------
+void MapPreviewCanvas::updateThingsBuffer()
+{
+	if (!vb_things_)
+		vb_things_ = std::make_unique<gl::VertexBuffer2D>();
+	else
+		vb_things_->clear();
+
+	auto col = glm::vec4(1.0f);
+	auto tc  = glm::vec2();
+	for (auto& thing : things_)
+		vb_things_->add({ { thing.x, thing.y }, col, tc });
 }

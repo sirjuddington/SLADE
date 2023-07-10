@@ -92,7 +92,7 @@ EXTERN_CVAR(Int, vertex_size)
 // Renderer class constructor
 // -----------------------------------------------------------------------------
 Renderer::Renderer(MapEditContext& context) :
-	context_{ context }, renderer_2d_{ &context.map() }, renderer_3d_{ &context.map() }, view_{ true }
+	context_{ context }, renderer_2d_{ &context.map() }, renderer_3d_{ &context.map() }, view_{ true, true }
 {
 }
 
@@ -354,10 +354,10 @@ void Renderer::drawGrid() const
 	int grid_hidelevel = 2.0 / view_.scale();
 
 	// Determine canvas edges in map coordinates
-	int start_x = view_.canvasX(0, true);
-	int end_x   = view_.canvasX(view_.size().x, true);
-	int start_y = view_.canvasY(view_.size().y, true);
-	int end_y   = view_.canvasY(0, true);
+	int start_x = view_.canvasX(0);
+	int end_x   = view_.canvasX(view_.size().x);
+	int start_y = view_.canvasY(view_.size().y);
+	int end_y   = view_.canvasY(0);
 
 	// Draw regular grid if it's not too small
 	if (gridsize > grid_hidelevel)
@@ -679,7 +679,7 @@ void Renderer::drawThingQuickAngleLines() const
 	gl::setColour(col);
 
 	// Draw lines
-	auto mouse_pos_m = view_.canvasPos(context_.input().mousePos(), true);
+	auto mouse_pos_m = view_.canvasPos(context_.input().mousePos());
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	for (auto& thing : selection)
@@ -726,7 +726,7 @@ void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 	gl::setColour(col);
 
 	// Determine end point
-	auto end = view_.canvasPos(context_.input().mousePos(), true);
+	auto end = view_.canvasPos(context_.input().mousePos());
 	if (snap_nearest_vertex)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
@@ -814,7 +814,7 @@ void Renderer::drawPasteLines() const
 	gl::setColour(col);
 
 	// Draw
-	auto pos = context_.relativeSnapToGrid(c->midpoint(), view_.canvasPos(context_.input().mousePos(), true));
+	auto pos = context_.relativeSnapToGrid(c->midpoint(), view_.canvasPos(context_.input().mousePos()));
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	for (const auto& line : lines)
@@ -1114,10 +1114,10 @@ void Renderer::drawMap2d()
 
 
 	// Draw selection box if active
-	auto mx  = view_.canvasX(context_.input().mousePos().x, true);
-	auto my  = view_.canvasY(context_.input().mousePos().y, true);
-	auto mdx = view_.canvasX(context_.input().mouseDownPos().x, true);
-	auto mdy = view_.canvasY(context_.input().mouseDownPos().y, true);
+	auto mx  = view_.canvasX(context_.input().mousePos().x);
+	auto my  = view_.canvasY(context_.input().mousePos().y);
+	auto mdx = view_.canvasX(context_.input().mouseDownPos().x);
+	auto mdy = view_.canvasY(context_.input().mouseDownPos().y);
 	if (mouse_state == Input::MouseState::Selection)
 	{
 		// Outline

@@ -33,7 +33,10 @@
 #include "Main.h"
 #include "View.h"
 #include "OpenGL/OpenGL.h"
+#include "Shader.h"
 #include "Utility/MathStuff.h"
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 using namespace slade;
 using namespace gl;
@@ -59,6 +62,8 @@ void View::resetInter(bool x, bool y, bool scale)
 
 	if (scale)
 		scale_inter_ = scale_;
+
+	updateMatrices();
 }
 
 // -----------------------------------------------------------------------------
@@ -69,7 +74,11 @@ void View::pan(double x, double y)
 	offset_.x += x;
 	offset_.y += y;
 
+	if (!interpolated_)
+		offset_inter_ = offset_;
+
 	updateVisibleRegion();
+	updateMatrices();
 }
 
 // -----------------------------------------------------------------------------
@@ -86,8 +95,12 @@ void View::zoom(double amount)
 	if (scale_ > max_scale_)
 		scale_ = max_scale_;
 
+	if (!interpolated_)
+		scale_inter_ = scale_;
+
 	// Update screen limits
 	updateVisibleRegion();
+	updateMatrices();
 }
 
 // -----------------------------------------------------------------------------
@@ -96,7 +109,7 @@ void View::zoom(double amount)
 void View::zoomToward(double amount, const Vec2i& point)
 {
 	// Get current [point] in canvas coords before zooming
-	auto orig_point = canvasPos(point);
+	auto orig_point = canvasPosUninterpolated(point);
 
 	// Zoom view
 	scale_ *= amount;
@@ -108,17 +121,24 @@ void View::zoomToward(double amount, const Vec2i& point)
 		scale_ = max_scale_;
 
 	// Zoom towards [point]
-	offset_.x += orig_point.x - canvasX(point.x);
-	offset_.y += orig_point.y - canvasY(point.y);
+	offset_.x += orig_point.x - canvasXUninterpolated(point.x);
+	offset_.y += orig_point.y - canvasYUninterpolated(point.y);
+
+	if (!interpolated_)
+	{
+		offset_inter_ = offset_;
+		scale_inter_ = scale_;
+	}
 
 	// Update screen limits
 	updateVisibleRegion();
+	updateMatrices();
 }
 
 // -----------------------------------------------------------------------------
 // Zooms and offsets the view such that [bbox] fits within the current view size
 // -----------------------------------------------------------------------------
-void View::fitTo(BBox bbox)
+void View::fitTo(const BBox& bbox)
 {
 	// Reset zoom and set offsets to the middle of the canvas
 	scale_    = 2;
@@ -138,6 +158,14 @@ void View::fitTo(BBox bbox)
 		else
 			scale_ *= 0.8;
 	}
+
+	if (!interpolated_)
+	{
+		offset_inter_ = offset_;
+		scale_inter_ = scale_;
+	}
+
+	updateMatrices();
 }
 
 // -----------------------------------------------------------------------------
@@ -157,8 +185,8 @@ bool View::interpolate(double mult, const Vec2d* towards)
 		double mx{}, my{};
 		if (towards)
 		{
-			mx = canvasX(towards->x, true);
-			my = canvasY(towards->y, true);
+			mx = canvasX(towards->x);
+			my = canvasY(towards->y);
 		}
 
 		// Interpolate zoom
@@ -172,8 +200,7 @@ bool View::interpolate(double mult, const Vec2d* towards)
 
 		if (towards)
 		{
-			setOffset(
-				offset_inter_.x + mx - canvasX(towards->x, true), offset_inter_.y + my - canvasY(towards->y, true));
+			setOffset(offset_inter_.x + mx - canvasX(towards->x), offset_inter_.y + my - canvasY(towards->y));
 			offset_inter_ = offset_;
 		}
 	}
@@ -218,37 +245,32 @@ bool View::interpolate(double mult, const Vec2d* towards)
 // Translates an x position on the screen to the corresponding x position on the
 // canvas itself
 // -----------------------------------------------------------------------------
-double View::canvasX(int screen_x, bool inter) const
+double View::canvasX(int screen_x) const
 {
-	return inter ? screen_x / scale_inter_ + offset_inter_.x - (size_.x * 0.5 / scale_inter_) :
-                   screen_x / scale_ + offset_.x - (size_.x * 0.5 / scale_);
+	return centered_ ? screen_x / scale_inter_ + offset_inter_.x - size_.x * 0.5 / scale_inter_ :
+					   screen_x / scale_inter_ + offset_inter_.x;
 }
 
 // -----------------------------------------------------------------------------
 // Translates a y position on the screen to the corresponding y position on the
 // canvas itself
 // -----------------------------------------------------------------------------
-double View::canvasY(int screen_y, bool inter) const
+double View::canvasY(int screen_y) const
 {
 	if (y_flipped_)
-	{
-		return inter ? -screen_y / scale_inter_ + offset_inter_.y + (size_.y * 0.5 / scale_inter_) :
-                       -screen_y / scale_ + offset_.y + (size_.y * 0.5 / scale_);
-	}
-	else
-	{
-		return inter ? -screen_y / scale_inter_ + offset_inter_.y - (size_.y * 0.5 / scale_inter_) :
-                       -screen_y / scale_ + offset_.y - (size_.y * 0.5 / scale_);
-	}
+		screen_y = size_.y - screen_y;
+
+	return centered_ ? screen_y / scale_inter_ + offset_inter_.y - size_.y * 0.5 / scale_inter_ :
+					   screen_y / scale_inter_ + offset_inter_.y;
 }
 
 // -----------------------------------------------------------------------------
 // Translates a position on the screen to the corresponding position on the
 // canvas itself
 // -----------------------------------------------------------------------------
-Vec2d View::canvasPos(const Vec2i& screen_pos, bool inter) const
+Vec2d View::canvasPos(const Vec2i& screen_pos) const
 {
-	return { canvasX(screen_pos.x, inter), canvasY(screen_pos.y, inter) };
+	return { canvasX(screen_pos.x), canvasY(screen_pos.y) };
 }
 
 // -----------------------------------------------------------------------------
@@ -256,7 +278,8 @@ Vec2d View::canvasPos(const Vec2i& screen_pos, bool inter) const
 // -----------------------------------------------------------------------------
 int View::screenX(double canvas_x) const
 {
-	return math::round((size_.x * 0.5) + ((canvas_x - offset_inter_.x) * scale_inter_));
+	return centered_ ? math::round((size_.x * 0.5) + ((canvas_x - offset_inter_.x) * scale_inter_)) :
+					   math::round((canvas_x - offset_inter_.x) * scale_inter_);
 }
 
 // -----------------------------------------------------------------------------
@@ -264,8 +287,10 @@ int View::screenX(double canvas_x) const
 // -----------------------------------------------------------------------------
 int View::screenY(double canvas_y) const
 {
-	return y_flipped_ ? math::round((size_.y * 0.5) - ((canvas_y - offset_inter_.y) * scale_inter_)) :
-                        math::round((size_.y * 0.5) + ((canvas_y - offset_inter_.y) * scale_inter_));
+	auto y = centered_ ? math::round((size_.y * 0.5) + ((canvas_y - offset_inter_.y) * scale_inter_)) :
+						 math::round((canvas_y - offset_inter_.y) * scale_inter_);
+
+	return y_flipped_ ? size_.y - y : y;
 }
 
 // -----------------------------------------------------------------------------
@@ -292,8 +317,9 @@ void View::apply(bool init) const
 			glTranslatef(0.375f, 0.375f, 0);
 	}
 
-	// Translate to middle of screen
-	glTranslated(size_.x * 0.5, size_.y * 0.5, 0);
+	// Translate to middle of screen if centered
+	if (centered_)
+		glTranslated(size_.x * 0.5, size_.y * 0.5, 0);
 
 	// Zoom
 	glScaled(scale_inter_, scale_inter_, 1);
@@ -328,6 +354,15 @@ void View::setOverlayCoords(bool set) const
 	}
 }
 
+void View::setupShader(const Shader& shader) const
+{
+	shader.bind();
+	shader.setUniform("projection", projection_matrix_);
+	shader.setUniform("model", model_matrix_);
+	shader.setUniform("colour", glm::vec4(1.f, 1.f, 1.f, 1.f));
+	shader.setUniform("viewport_size", glm::vec2(size_.x, size_.y));
+}
+
 // -----------------------------------------------------------------------------
 // Updates the canvas bounds member variable for the current view
 // -----------------------------------------------------------------------------
@@ -335,16 +370,57 @@ void View::updateVisibleRegion()
 {
 	if (y_flipped_)
 	{
-		visible_region_.tl.x = canvasX(0);
-		visible_region_.tl.y = canvasY(size_.y);
-		visible_region_.br.x = canvasX(size_.x);
-		visible_region_.br.y = canvasY(0);
+		visible_region_.tl.x = canvasXUninterpolated(0);
+		visible_region_.tl.y = canvasYUninterpolated(size_.y);
+		visible_region_.br.x = canvasXUninterpolated(size_.x);
+		visible_region_.br.y = canvasYUninterpolated(0);
 	}
 	else
 	{
-		visible_region_.tl.x = canvasX(0);
-		visible_region_.tl.y = canvasY(0);
-		visible_region_.br.x = canvasX(size_.x);
-		visible_region_.br.y = canvasY(size_.y);
+		visible_region_.tl.x = canvasXUninterpolated(0);
+		visible_region_.tl.y = canvasYUninterpolated(0);
+		visible_region_.br.x = canvasXUninterpolated(size_.x);
+		visible_region_.br.y = canvasYUninterpolated(size_.y);
 	}
+}
+
+void View::updateMatrices()
+{
+	// Projection --------------------------------------------------------------
+	if (y_flipped_)
+		projection_matrix_ = glm::ortho(0.f, static_cast<float>(size_.x), 0.f, static_cast<float>(size_.y), -1.f, 1.f);
+	else
+		projection_matrix_ = glm::ortho(0.f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.f, -1.f, 1.f);
+
+
+	// ModelView ---------------------------------------------------------------
+	model_matrix_ = glm::mat4(1.f);
+
+	// Translate to middle of screen if centered
+	if (centered_)
+		model_matrix_ = glm::translate(model_matrix_, { size_.x * 0.5f, size_.y * 0.5f, 0.f });
+
+	// Zoom
+	model_matrix_ = glm::scale(model_matrix_, { scale_inter_, scale_inter_, 1. });
+
+	// Translate to offsets
+	model_matrix_ = glm::translate(model_matrix_, { -offset_inter_.x, -offset_inter_.y, 0. });
+}
+
+double View::canvasXUninterpolated(int screen_x) const
+{
+	return centered_ ? screen_x / scale_ + offset_.x - size_.x * 0.5 / scale_ : screen_x / scale_ + offset_.x;
+}
+
+double View::canvasYUninterpolated(int screen_y) const
+{
+	if (y_flipped_)
+		screen_y = size_.y - screen_y;
+
+	return centered_ ? screen_y / scale_ + offset_.y - size_.y * 0.5 / scale_ : screen_y / scale_ + offset_.y;
+}
+
+Vec2d View::canvasPosUninterpolated(const Vec2i& screen_pos) const
+{
+	return { canvasXUninterpolated(screen_pos.x), canvasYUninterpolated(screen_pos.y) };
 }

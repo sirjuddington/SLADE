@@ -322,6 +322,9 @@
     <ClCompile Include="..\src\Audio\Mp3Music.cpp" />
     <ClCompile Include="..\src\General\Console.cpp" />
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
+    <ClCompile Include="..\src\OpenGL\Draw2D.cpp" />
+    <ClCompile Include="..\src\OpenGL\Shader.cpp" />
+    <ClCompile Include="..\src\OpenGL\VertexBuffer2D.cpp" />
     <ClCompile Include="..\src\OpenGL\View.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Archive.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Game.cpp" />
@@ -330,6 +333,7 @@
     <ClCompile Include="..\src\Scripting\Export\MapEditor.cpp" />
     <ClCompile Include="..\src\Scripting\Export\UI.cpp" />
     <ClCompile Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.cpp" />
+    <ClCompile Include="..\src\UI\Canvas\GLCanvas.cpp" />
     <ClCompile Include="..\src\UI\Controls\Splitter.cpp" />
     <ClCompile Include="..\src\UI\Controls\ZoomControl.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\DirArchiveUpdateDialog.cpp" />
@@ -578,60 +582,15 @@
     <ClCompile Include="..\src\Utility\StringUtils.cpp" />
     <ClCompile Include="..\src\Utility\Tokenizer.cpp" />
     <ClCompile Include="..\src\Utility\Tree.cpp" />
-    <ClCompile Include="..\thirdparty\mus2mid\mus2mid.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\files.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\i_music.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_hmi_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_midistream.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_mus_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_smf_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_xmi_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\m_alloc.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="..\thirdparty\mus2mid\mus2mid.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\files.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\i_music.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_hmi_midiout.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_midistream.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_mus_midiout.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_smf_midiout.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_xmi_midiout.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\m_alloc.cpp" />
     <ClCompile Include="_CreatePCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -690,9 +649,13 @@
     <ClInclude Include="..\src\General\Console.h" />
     <ClInclude Include="..\src\General\Sigslot.h" />
     <ClInclude Include="..\src\Graphics\Graphics.h" />
+    <ClInclude Include="..\src\OpenGL\Draw2D.h" />
+    <ClInclude Include="..\src\OpenGL\Shader.h" />
+    <ClInclude Include="..\src\OpenGL\VertexBuffer2D.h" />
     <ClInclude Include="..\src\OpenGL\View.h" />
     <ClInclude Include="..\src\Scripting\Export\Export.h" />
     <ClInclude Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.h" />
+    <ClInclude Include="..\src\UI\Canvas\GLCanvas.h" />
     <ClInclude Include="..\src\UI\Controls\Splitter.h" />
     <ClInclude Include="..\src\UI\Controls\ZoomControl.h" />
     <ClInclude Include="..\src\UI\Dialogs\DirArchiveUpdateDialog.h" />

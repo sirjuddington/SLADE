@@ -1,37 +1,38 @@
 #pragma once
 
 #include "Archive/Archive.h"
-#include "OGLCanvas.h"
+#include "GLCanvas.h"
+#include "OpenGL/VertexBuffer2D.h"
 
 namespace slade
 {
 class GLTexture;
 
-class MapPreviewCanvas : public OGLCanvas
+class MapPreviewCanvas : public GLCanvas
 {
 public:
-	MapPreviewCanvas(wxWindow* parent) : OGLCanvas(parent, -1) {}
-	~MapPreviewCanvas() = default;
+	MapPreviewCanvas(wxWindow* parent) : GLCanvas(parent) {}
+	~MapPreviewCanvas() override = default;
 
 	void addVertex(double x, double y);
 	void addLine(unsigned v1, unsigned v2, bool twosided, bool special, bool macro = false);
 	void addThing(double x, double y);
 	bool openMap(Archive::MapDesc map);
-	bool readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format);
-	bool readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format);
-	bool readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format);
+	bool readVertices(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format);
+	bool readLines(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format);
+	bool readThings(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format);
 	void clearMap();
 	void showMap();
 	void draw() override;
 	void createImage(ArchiveEntry& ae, int width, int height);
 
-	unsigned nVertices();
+	unsigned nVertices() const;
 	unsigned nSides() const { return n_sides_; }
 	unsigned nLines() const { return lines_.size(); }
 	unsigned nSectors() const { return n_sectors_; }
 	unsigned nThings() const { return things_.size(); }
-	unsigned width();
-	unsigned height();
+	unsigned width() const;
+	unsigned height() const;
 
 private:
 	// Structs for basic map features
@@ -62,12 +63,7 @@ private:
 			bool     special  = false,
 			bool     macro    = false,
 			bool     segment  = false) :
-			v1{ v1 },
-			v2{ v2 },
-			twosided{ twosided },
-			special{ special },
-			macro{ macro },
-			segment{ segment }
+			v1{ v1 }, v2{ v2 }, twosided{ twosided }, special{ special }, macro{ macro }, segment{ segment }
 		{
 		}
 	};
@@ -87,7 +83,12 @@ private:
 	double              zoom_      = 1.;
 	Vec2d               offset_;
 	unique_ptr<Archive> temp_archive_;
-	unsigned            tex_thing_;
-	bool                tex_loaded_ = false;
+	unsigned            tex_thing_ = 0;
+
+	unique_ptr<gl::VertexBuffer2D> vb_lines_;
+	unique_ptr<gl::VertexBuffer2D> vb_things_;
+
+	void updateLinesBuffer();
+	void updateThingsBuffer();
 };
 } // namespace slade

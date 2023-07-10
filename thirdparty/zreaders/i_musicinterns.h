@@ -1,4 +1,3 @@
-#include "Main.h"
 
 #include "mus2midi.h"
 #include "tarray.h"

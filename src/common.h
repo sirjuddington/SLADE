@@ -131,6 +131,9 @@
 // Sigslot
 #include "thirdparty/sigslot/signal.hpp"
 
+// glm
+#include <glm/glm.hpp>
+
 
 // C++ -------------------------------------------------------------------------
 

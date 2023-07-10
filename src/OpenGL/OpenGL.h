@@ -32,6 +32,15 @@ namespace gl
 		Ignore
 	};
 
+	enum class Primitive
+	{
+		Points    = GL_POINTS,
+		Lines     = GL_LINES,
+		LineLoop  = GL_LINE_LOOP,
+		Triangles = GL_TRIANGLES,
+		Quads     = GL_QUADS
+	};
+
 	struct Info
 	{
 		string vendor;
@@ -58,5 +67,17 @@ namespace gl
 	void           setBlend(Blend blend);
 	void           resetBlend();
 	Info           sysInfo();
+
+	// VBO
+	unsigned currentVBO();
+	unsigned createVBO();
+	void     bindVBO(unsigned id);
+	void     deleteVBO(unsigned id);
+
+	// VAO
+	unsigned currentVAO();
+	unsigned createVAO();
+	void     bindVAO(unsigned id);
+	void     deleteVAO(unsigned id);
 } // namespace gl
 } // namespace slade

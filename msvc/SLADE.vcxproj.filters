@@ -1005,6 +1005,18 @@
     <ClCompile Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.cpp">
       <Filter>SLADEMap\MapFormat</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\OpenGL\Shader.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\VertexBuffer2D.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\Draw2D.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\Canvas\GLCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1933,6 +1945,18 @@
     </ClInclude>
     <ClInclude Include="..\src\Audio\Music.h">
       <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\Shader.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\VertexBuffer2D.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\Draw2D.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Canvas\GLCanvas.h">
+      <Filter>UI\Canvas</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

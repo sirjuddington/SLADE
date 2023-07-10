@@ -10,7 +10,7 @@ class Palette;
 class PaletteDialog : public wxDialog
 {
 public:
-	PaletteDialog(Palette* palette);
+	PaletteDialog(const Palette* palette);
 	~PaletteDialog() = default;
 
 	ColRGBA selectedColour() const;

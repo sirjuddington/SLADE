@@ -159,6 +159,9 @@ struct ColRGBA
 	string   toString(StringFormat format = StringFormat::HEX) const;
 	wxColour toWx() const { return { r, g, b, a }; }
 
+	// Other conversions
+	glm::vec4 asVec4() const { return glm::vec4(fr(), fg(), fb(), fa()); }
+
 	// Some basic colours
 	static const ColRGBA WHITE;
 	static const ColRGBA BLACK;

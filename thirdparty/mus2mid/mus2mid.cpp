@@ -28,7 +28,7 @@
 // the original code returned true on failure, false on success. Now this
 // consistently return true on success and false if there were a problem.
 
-
+#include "Main.h"
 #include "mus2mid.h"
 
 using namespace slade;

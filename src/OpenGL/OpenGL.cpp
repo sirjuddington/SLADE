@@ -61,6 +61,8 @@ uint8_t      n_pow_two      = 16;
 float        max_point_size = -1.0f;
 Blend        last_blend     = Blend::Normal;
 Info         info;
+unsigned     vbo_current;
+unsigned     vao_current;
 } // namespace slade::gl
 
 
@@ -372,4 +374,74 @@ void gl::resetBlend()
 gl::Info gl::sysInfo()
 {
 	return info;
+}
+
+unsigned gl::currentVBO()
+{
+	return vbo_current;
+}
+
+unsigned gl::createVBO()
+{
+	unsigned vbo;
+	glGenBuffers(1, &vbo);
+	return vbo;
+}
+
+void gl::bindVBO(unsigned id)
+{
+	if (vbo_current == id)
+		return;
+
+	glBindBuffer(GL_ARRAY_BUFFER, id);
+	vbo_current = id;
+}
+
+void gl::deleteVBO(unsigned id)
+{
+	if (id > 0)
+	{
+		if (vbo_current == id)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			vbo_current = 0;
+		}
+
+		glDeleteBuffers(1, &id);
+	}
+}
+
+unsigned gl::currentVAO()
+{
+	return vao_current;
+}
+
+unsigned gl::createVAO()
+{
+	unsigned vao;
+	glGenVertexArrays(1, &vao);
+	return vao;
+}
+
+void gl::bindVAO(unsigned id)
+{
+	if (vao_current == id)
+		return;
+
+	glBindVertexArray(id);
+	vao_current = id;
+}
+
+void gl::deleteVAO(unsigned id)
+{
+	if (id > 0)
+	{
+		if (vao_current == id)
+		{
+			glBindVertexArray(0);
+			vao_current = 0;
+		}
+
+		glDeleteVertexArrays(1, &id);
+	}
 }
