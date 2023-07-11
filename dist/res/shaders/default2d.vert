@@ -12,7 +12,9 @@ uniform mat4 projection;
 uniform mat4 model;
 uniform vec2 viewport_size;
 
+#ifdef THICK_LINES
 varying vec2 line_center;
+#endif
 
 void main()
 {

@@ -1017,6 +1017,9 @@
     <ClCompile Include="..\src\UI\Canvas\GLCanvas.cpp">
       <Filter>UI\Canvas</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\OpenGL\LineBuffer.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1957,6 +1960,9 @@
     </ClInclude>
     <ClInclude Include="..\src\UI\Canvas\GLCanvas.h">
       <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\LineBuffer.h">
+      <Filter>OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

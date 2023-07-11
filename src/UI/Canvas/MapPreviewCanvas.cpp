@@ -709,16 +709,11 @@ void MapPreviewCanvas::draw()
 	}
 
 	// Setup drawing
-	auto& shader = gl::draw2d::linesShader();
+	auto& shader = gl::LineBuffer::shader();
 	view_.setupShader(shader);
-	shader.setUniform("line_width", 1.5f);
 
 	// Draw lines
-	glLineWidth(1.5f);
-	glDepthMask(GL_FALSE);
-	vb_lines_->draw(gl::Primitive::Lines);
-	glDepthMask(GL_TRUE);
-	glLineWidth(1.f);
+	vb_lines_->draw();
 
 	// Load thing texture if needed
 	if (!tex_thing_)
@@ -1015,11 +1010,11 @@ void MapPreviewCanvas::updateLinesBuffer()
 	auto col_view_line_macro   = colourconfig::colour("map_view_line_macro").asVec4();
 
 	if (!vb_lines_)
-		vb_lines_ = std::make_unique<gl::VertexBuffer2D>();
+		vb_lines_ = std::make_unique<gl::LineBuffer>();
 	else
 		vb_lines_->clear();
 
-	gl::VertexBuffer2D::Vertex vertex({ 0.f, 0.f });
+	gl::LineBuffer::Line lb_line;
 	for (auto& line : lines_)
 	{
 		// Check ends
@@ -1028,21 +1023,18 @@ void MapPreviewCanvas::updateLinesBuffer()
 
 		// Set colour
 		if (line.special)
-			vertex.colour = col_view_line_special;
+			lb_line.v1_colour = lb_line.v2_colour = col_view_line_special;
 		else if (line.macro)
-			vertex.colour = col_view_line_macro;
+			lb_line.v1_colour = lb_line.v2_colour = col_view_line_macro;
 		else if (line.twosided)
-			vertex.colour = col_view_line_2s;
+			lb_line.v1_colour = lb_line.v2_colour = col_view_line_2s;
 		else
-			vertex.colour = col_view_line_1s;
+			lb_line.v1_colour = lb_line.v2_colour = col_view_line_1s;
 
-		// First vertex
-		vertex.position = { verts_[line.v1].x, verts_[line.v1].y };
-		vb_lines_->add(vertex);
-
-		// Second vertex
-		vertex.position = { verts_[line.v2].x, verts_[line.v2].y };
-		vb_lines_->add(vertex);
+		// Add to buffer
+		lb_line.v1_pos_width = { verts_[line.v1].x, verts_[line.v1].y, 0.0f, line.twosided ? 1.5f : 2.0f };
+		lb_line.v2_pos_width = { verts_[line.v2].x, verts_[line.v2].y, 0.0f, line.twosided ? 1.5f : 2.0f };
+		vb_lines_->add(lb_line);
 	}
 }
 

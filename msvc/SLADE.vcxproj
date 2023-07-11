@@ -323,6 +323,7 @@
     <ClCompile Include="..\src\General\Console.cpp" />
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
     <ClCompile Include="..\src\OpenGL\Draw2D.cpp" />
+    <ClCompile Include="..\src\OpenGL\LineBuffer.cpp" />
     <ClCompile Include="..\src\OpenGL\Shader.cpp" />
     <ClCompile Include="..\src\OpenGL\VertexBuffer2D.cpp" />
     <ClCompile Include="..\src\OpenGL\View.cpp" />
@@ -650,6 +651,7 @@
     <ClInclude Include="..\src\General\Sigslot.h" />
     <ClInclude Include="..\src\Graphics\Graphics.h" />
     <ClInclude Include="..\src\OpenGL\Draw2D.h" />
+    <ClInclude Include="..\src\OpenGL\LineBuffer.h" />
     <ClInclude Include="..\src\OpenGL\Shader.h" />
     <ClInclude Include="..\src\OpenGL\VertexBuffer2D.h" />
     <ClInclude Include="..\src\OpenGL\View.h" />

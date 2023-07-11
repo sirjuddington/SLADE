@@ -445,3 +445,9 @@ void gl::deleteVAO(unsigned id)
 		glDeleteVertexArrays(1, &id);
 	}
 }
+
+void gl::deleteBuffer(unsigned id)
+{
+	if (id > 0)
+		glDeleteBuffers(1, &id);
+}

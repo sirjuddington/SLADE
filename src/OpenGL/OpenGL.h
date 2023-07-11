@@ -79,5 +79,8 @@ namespace gl
 	unsigned createVAO();
 	void     bindVAO(unsigned id);
 	void     deleteVAO(unsigned id);
+
+	// Generic Buffers
+	void deleteBuffer(unsigned id);
 } // namespace gl
 } // namespace slade
