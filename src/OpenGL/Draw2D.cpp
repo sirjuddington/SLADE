@@ -97,7 +97,7 @@ const Shader& draw2d::linesShader()
 	return shader_lines;
 }
 
-const Shader& draw2d::pointSpriteShader()
+const Shader& draw2d::pointSpriteShader(PointSprite type)
 {
 	static Shader shader_psprite("default2d_pointsprite");
 
@@ -106,13 +106,21 @@ const Shader& draw2d::pointSpriteShader()
 		auto program_resource = app::archiveManager().programResourceArchive();
 		if (program_resource)
 		{
+			auto fragment_shader = "shaders/default2d.frag";
+
+			if (type == PointSprite::Circle)
+				fragment_shader = "shaders/circle.frag";
+
 			auto entry_vert = program_resource->entryAtPath("shaders/default2d.vert");
 			auto entry_geom = program_resource->entryAtPath("shaders/point_sprite.geom");
-			auto entry_frag = program_resource->entryAtPath("shaders/default2d.frag");
+			auto entry_frag = program_resource->entryAtPath(fragment_shader);
 			if (entry_vert && entry_frag && entry_geom)
 			{
-				shader_psprite.define("TEXTURED");
+				if (type == PointSprite::Textured)
+					shader_psprite.define("TEXTURED");
+
 				shader_psprite.define("GEOMETRY_SHADER");
+
 				shader_psprite.load(
 					entry_vert->data().asString(), entry_frag->data().asString(), entry_geom->data().asString());
 			}

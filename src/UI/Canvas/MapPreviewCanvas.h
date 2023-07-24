@@ -78,7 +78,6 @@ private:
 	unsigned            n_sides_   = 0;
 	unsigned            n_sectors_ = 0;
 	unique_ptr<Archive> temp_archive_;
-	unsigned            tex_thing_ = 0;
 	bool                panning_   = false;
 	bool                view_init_ = false;
 

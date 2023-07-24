@@ -715,21 +715,6 @@ void MapPreviewCanvas::draw()
 	// Draw lines
 	vb_lines_->draw();
 
-	// Load thing texture if needed
-	if (!tex_thing_)
-	{
-		// Load thing texture
-		SImage image;
-		auto   entry = app::archiveManager().programResourceArchive()->entryAtPath("images/thing/normal_n.png");
-		if (entry)
-		{
-			image.open(entry->data());
-			tex_thing_ = gl::Texture::createFromImage(image, nullptr, gl::TexFilter::Mipmap);
-		}
-		else
-			tex_thing_ = 0;
-	}
-
 	// Draw things
 	if (map_view_things)
 	{
@@ -738,13 +723,12 @@ void MapPreviewCanvas::draw()
 			updateThingsBuffer();
 
 		// Setup drawing
-		const auto& ps_shader = gl::draw2d::pointSpriteShader();
+		const auto& ps_shader = gl::draw2d::pointSpriteShader(gl::draw2d::PointSprite::Circle);
 		view_.setupShader(ps_shader);
 		ps_shader.setUniform("point_radius", 20.f);
 		ps_shader.setUniform("colour", colourconfig::colour("map_view_thing").asVec4());
 
 		// Draw things
-		gl::Texture::bind(tex_thing_);
 		vb_things_->draw(gl::Primitive::Points);
 	}
 }

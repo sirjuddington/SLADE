@@ -30,9 +30,15 @@ namespace gl
 			}
 		};
 
+		enum class PointSprite
+		{
+			Textured,
+			Circle
+		};
+
 		const Shader& defaultShader(bool textured = true);
 		const Shader& linesShader();
-		const Shader& pointSpriteShader();
+		const Shader& pointSpriteShader(PointSprite type);
 
 		void drawRect(Rectf rect, const RenderOptions& opt = {});
 		void drawRectOutline(Rectf rect, const RenderOptions& opt = {});
