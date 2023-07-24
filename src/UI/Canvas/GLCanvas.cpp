@@ -143,7 +143,11 @@ void GLCanvas::drawCheckeredBackground()
 
 	// Setup default shader
 	auto& shader = gl::draw2d::defaultShader();
-	view_.setupShader(shader);
+	shader.bind();
+	shader.setUniform("projection", view_.projectionMatrix());
+	shader.setUniform("model", glm::mat4(1.0f));
+	shader.setUniform("colour", glm::vec4(1.0f));
+	shader.setUniform("viewport_size", glm::vec2(view_.size().x, view_.size().y));
 
 	// Draw
 	vb_background_->draw(gl::Primitive::Quads);
@@ -199,12 +203,13 @@ CONSOLE_COMMAND(tgc, 0, false)
 	wxDialog dlg(
 		nullptr, -1, "GLCanvas Test", wxDefaultPosition, { 800, 800 }, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
 
-	auto canvas = new GLCanvas{ &dlg, GLCanvas::BGStyle::Colour, ColRGBA::BLACK, gl::View{ false, false, false } };
+	auto canvas = new GLCanvas{ &dlg, GLCanvas::BGStyle::Checkered, ColRGBA::BLACK, gl::View{ false, false, false } };
 
 	dlg.SetSizer(new wxBoxSizer(wxVERTICAL));
 	dlg.GetSizer()->Add(canvas, 1, wxEXPAND | wxALL, 10);
 
 	canvas->setupMousewheelZoom();
+	canvas->setupMousePanning();
 
 	canvas->Bind(
 		wxEVT_LEFT_DOWN,

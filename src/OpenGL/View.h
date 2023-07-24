@@ -19,6 +19,8 @@ public:
 	const Rectd& visibleRegion() const { return visible_region_; }
 	bool         yFlipped() const { return y_flipped_; }
 	bool         interpolated() const { return interpolated_; }
+	glm::mat4    projectionMatrix() const { return projection_matrix_; }
+	glm::mat4    modelViewMatrix() const { return model_matrix_; }
 
 	void flipY(bool flip)
 	{
@@ -75,8 +77,7 @@ public:
 	void apply(bool init = true) const;
 	void setOverlayCoords(bool set) const;
 
-	void      setupShader(const Shader& shader) const;
-	glm::mat4 modelViewMatrix() const { return model_matrix_; }
+	void setupShader(const Shader& shader) const;
 
 private:
 	bool   y_flipped_    = false; // If true, the Y-axis is flipped (ie. bottom is 0)
