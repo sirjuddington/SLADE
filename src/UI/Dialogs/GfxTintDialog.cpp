@@ -88,7 +88,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 	hbox->Add(label_amount_, 0, wxALIGN_CENTER_VERTICAL);
 
 	// Add preview
-	gfx_preview_ = new GfxCanvas(this, -1);
+	gfx_preview_ = new GfxCanvas(this);
 	sizer->Add(gfx_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Add buttons

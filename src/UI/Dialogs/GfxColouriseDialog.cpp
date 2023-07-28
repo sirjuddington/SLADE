@@ -76,7 +76,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, co
 	hbox->Add(cb_colour_, 0, wxEXPAND);
 
 	// Add preview
-	gfx_preview_ = new GfxCanvas(this, -1);
+	gfx_preview_ = new GfxCanvas(this);
 	sizer->Add(gfx_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Add buttons

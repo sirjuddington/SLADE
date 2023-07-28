@@ -186,7 +186,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override { return false; }
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override { return false; }
 
 private:
 	FIBITMAP* getFIInfo(const MemChunk& data, SImage::Info& info) const
@@ -456,7 +456,7 @@ public:
 	}
 
 protected:
-	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) override
 	{
 		// Can't write if RGBA
 		if (image.type() == SImage::Type::RGBA)

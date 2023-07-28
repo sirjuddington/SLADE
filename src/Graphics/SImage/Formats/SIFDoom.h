@@ -233,7 +233,7 @@ protected:
 
 	bool readImage(SImage& image, const MemChunk& data, int index) override { return readDoomFormat(image, data, 0); }
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override
 	{
 		// Convert image to column/post structure
 		vector<Column> columns;
@@ -711,7 +711,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override
 	{
 		// Write the PSX image header (in little endian format)
 		out.clear();

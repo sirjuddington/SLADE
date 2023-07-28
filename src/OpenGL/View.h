@@ -14,13 +14,14 @@ public:
 	}
 
 	const Vec2d& offset(bool inter = false) const { return inter ? offset_inter_ : offset_; }
-	double       scale(bool inter = false) const { return inter ? scale_inter_ : scale_; }
+	const Vec2d& scale(bool inter = false) const { return inter ? scale_inter_ : scale_; }
 	const Vec2i& size() const { return size_; }
 	const Rectd& visibleRegion() const { return visible_region_; }
 	bool         yFlipped() const { return y_flipped_; }
 	bool         interpolated() const { return interpolated_; }
 	glm::mat4    projectionMatrix() const { return projection_matrix_; }
-	glm::mat4    modelViewMatrix() const { return model_matrix_; }
+	glm::mat4    viewMatrix() const { return view_matrix_; }
+	glm::mat4    mvpMatrix(const glm::mat4& model) const { return projection_matrix_ * view_matrix_ * model; }
 
 	void flipY(bool flip)
 	{
@@ -33,6 +34,12 @@ public:
 		if (!interpolated)
 			resetInter();
 	}
+	void setCentered(bool centered)
+	{
+		centered_ = centered;
+		updateVisibleRegion();
+		updateMatrices();
+	}
 	void setOffset(double x, double y)
 	{
 		offset_ = { x, y };
@@ -43,7 +50,7 @@ public:
 		updateVisibleRegion();
 		updateMatrices();
 	}
-	void setScale(double scale)
+	void setScale(const Vec2d& scale)
 	{
 		scale_ = scale;
 
@@ -53,6 +60,9 @@ public:
 		updateVisibleRegion();
 		updateMatrices();
 	}
+	void setScale(const Vec2d& scale, const Vec2i& focus_point);
+	void setScale(double scale) { setScale({ scale, scale }); }
+	void setScale(double scale, const Vec2i& focus_point) { setScale({ scale, scale }, focus_point); }
 	void setSize(int width, int height)
 	{
 		size_ = { width, height };
@@ -83,19 +93,19 @@ private:
 	bool   y_flipped_    = false; // If true, the Y-axis is flipped (ie. bottom is 0)
 	bool   centered_     = false; // If true, 0,0 is at the center of the 'screen'
 	double min_scale_    = 0.005;
-	double max_scale_    = 10.;
+	double max_scale_    = 100.;
 	bool   interpolated_ = true; // If true, pan/zoom interpolation is enabled (in which case, interpolate() needs to be
 								 // called regularly to correctly update the interpolated scale/zoom values)
 
-	Vec2i  size_;
-	Vec2d  offset_;
-	Vec2d  offset_inter_;
-	double scale_       = 1.;
-	double scale_inter_ = 1.;
+	Vec2i size_;
+	Vec2d offset_;
+	Vec2d offset_inter_;
+	Vec2d scale_       = { 1.0, 1.0 };
+	Vec2d scale_inter_ = { 1.0, 1.0 };
 
 	Rectd     visible_region_;
 	glm::mat4 projection_matrix_ = glm::mat4(1.0f);
-	glm::mat4 model_matrix_      = glm::mat4(1.0f);
+	glm::mat4 view_matrix_       = glm::mat4(1.0f);
 
 	void updateVisibleRegion();
 	void updateMatrices();

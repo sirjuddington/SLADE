@@ -280,7 +280,7 @@ void GfxConvDialog::setupLayout()
 
 	// Current
 	gbsizer->Add(new wxStaticText(this, -1, "Current Graphic"), { 0, 0 }, { 1, 1 });
-	gfx_current_ = new GfxCanvas(this, -1);
+	gfx_current_ = new GfxCanvas(this);
 	gfx_current_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
 	gfx_current_->setViewType(GfxCanvas::View::Centered);
 	gbsizer->Add(gfx_current_, { 1, 0 }, { 1, 1 }, wxEXPAND);
@@ -290,7 +290,7 @@ void GfxConvDialog::setupLayout()
 
 	// Converted
 	gbsizer->Add(new wxStaticText(this, -1, "Converted Graphic"), { 0, 1 }, { 1, 2 });
-	gfx_target_ = new GfxCanvas(this, -1);
+	gfx_target_ = new GfxCanvas(this);
 	gfx_target_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
 	gfx_target_->setViewType(GfxCanvas::View::Centered);
 	gbsizer->Add(gfx_target_, { 1, 1 }, { 1, 2 }, wxEXPAND);

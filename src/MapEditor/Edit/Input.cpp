@@ -201,7 +201,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 {
 	// Update hilight
 	if (mouse_state_ == MouseState::Normal)
-		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
+		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale().x);
 
 	// Update mouse variables
 	mouse_down_pos_            = mouse_pos_;
@@ -569,7 +569,7 @@ void Input::onKeyBindRelease(string_view name)
 	{
 		panning_ = false;
 		if (mouse_state_ == MouseState::Normal)
-			context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
+			context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale().x);
 		context_.setCursor(ui::MouseCursor::Normal);
 	}
 
@@ -577,7 +577,7 @@ void Input::onKeyBindRelease(string_view name)
 	{
 		mouse_state_ = MouseState::Normal;
 		context_.endUndoRecord(true);
-		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
+		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale().x);
 	}
 }
 
@@ -830,7 +830,7 @@ void Input::handleKeyBind2d(string_view name)
 
 		// Split line
 		else if (name == "me2d_split_line")
-			context_.edit2D().splitLine(mouse_pos_map_.x, mouse_pos_map_.y, 16 / context_.renderer().view().scale());
+			context_.edit2D().splitLine(mouse_pos_map_.x, mouse_pos_map_.y, 16 / context_.renderer().view().scale().x);
 
 		// Begin line drawing
 		else if (name == "me2d_begin_linedraw")

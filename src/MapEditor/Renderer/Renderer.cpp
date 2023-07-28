@@ -146,8 +146,8 @@ void Renderer::pan(double x, double y, bool scale)
 {
 	if (scale)
 	{
-		x /= view().scale();
-		y /= view().scale();
+		x /= view().scale().x;
+		y /= view().scale().y;
 	}
 
 	setView(view_.offset().x + x, view_.offset().y + y);
@@ -173,7 +173,7 @@ void Renderer::zoom(double amount, bool toward_cursor)
 	}
 
 	// Update object visibility
-	renderer_2d_.setScale(view_.scale(true));
+	renderer_2d_.setScale(view_.scale(true).x);
 	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
 }
 
@@ -194,7 +194,7 @@ void Renderer::viewFitToMap(bool snap)
 		view_.resetInter(true, true, true);
 
 	// Update object visibility
-	renderer_2d_.setScale(view_.scale(true));
+	renderer_2d_.setScale(view_.scale(true).x);
 	renderer_2d_.forceUpdate();
 	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
 }
@@ -253,7 +253,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 	view_.fitTo(bbox);
 
 	// Update object visibility
-	renderer_2d_.setScale(view_.scale(true));
+	renderer_2d_.setScale(view_.scale(true).x);
 	renderer_2d_.forceUpdate();
 	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
 }
@@ -351,7 +351,7 @@ void Renderer::drawGrid() const
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Determine smallest grid size to bother drawing
-	int grid_hidelevel = 2.0 / view_.scale();
+	int grid_hidelevel = 2.0 / view_.scale().x;
 
 	// Determine canvas edges in map coordinates
 	int start_x = view_.canvasX(0);
@@ -486,7 +486,7 @@ void Renderer::drawGrid() const
 			col         = col.ampf(1.0f, 1.0f, 1.0f, 2.0f);
 			auto   col2 = col.ampf(1.0f, 1.0f, 1.0f, 0.0f);
 			double size = context_.gridSize();
-			double one  = 1.0 / view_.scale(true);
+			double one  = 1.0 / view_.scale(true).x;
 
 			gl::setBlend(def.blendMode());
 
@@ -696,7 +696,7 @@ void Renderer::drawThingQuickAngleLines() const
 void Renderer::drawLineLength(Vec2d p1, Vec2d p2, ColRGBA col) const
 {
 	// Determine distance in screen scale
-	double tdist = 20 / view_.scale(true);
+	double tdist = 20 / view_.scale(true).x;
 
 	// Determine line midpoint and front vector
 	Vec2d mid(p1.x + (p2.x - p1.x) * 0.5, p1.y + (p2.y - p1.y) * 0.5);
@@ -841,10 +841,10 @@ void Renderer::drawObjectEdit()
 	gl::setColour(ColRGBA::WHITE, gl::Blend::Normal);
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
 	auto bbox = group.bbox();
-	bbox.min.x -= 4 / view_.scale(true);
-	bbox.min.y -= 4 / view_.scale(true);
-	bbox.max.x += 4 / view_.scale(true);
-	bbox.max.y += 4 / view_.scale(true);
+	bbox.min.x -= 4 / view_.scale(true).x;
+	bbox.min.y -= 4 / view_.scale(true).x;
+	bbox.max.x += 4 / view_.scale(true).x;
+	bbox.max.y += 4 / view_.scale(true).x;
 
 	if (context_.objectEdit().rotating())
 	{
@@ -863,7 +863,7 @@ void Renderer::drawObjectEdit()
 		drawing::drawLine(tr, tl);
 
 		// Top Left
-		double rad = 4 / view_.scale(true);
+		double rad = 4 / view_.scale(true).x;
 		glLineWidth(1.0f);
 		if (edit_state == ObjectEdit::State::TopLeft)
 			drawing::drawFilledRect(tl.x - rad, tl.y - rad, tl.x + rad, tl.y + rad);
@@ -927,7 +927,7 @@ void Renderer::drawObjectEdit()
 
 	// Line length
 	Vec2d nl_v1, nl_v2;
-	if (group.nearestLineEndpoints(view_.canvasPos(context_.input().mousePos()), 128 / view_.scale(), nl_v1, nl_v2))
+	if (group.nearestLineEndpoints(view_.canvasPos(context_.input().mousePos()), 128 / view_.scale().x, nl_v1, nl_v2))
 	{
 		Vec2d mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
 		int   length = math::distance(nl_v1, nl_v2);
@@ -1390,7 +1390,7 @@ void Renderer::updateAnimations(double mult)
 			animations_active_ = true;
 
 		// Update renderer scale
-		renderer_2d_.setScale(view_.scale(true));
+		renderer_2d_.setScale(view_.scale(true).x);
 	}
 
 	// Flashing animation for hilight
@@ -1671,8 +1671,8 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 
 		// Determine current vertex size
 		float vs = vertex_size;
-		if (view_.scale() < 1.0)
-			vs *= view_.scale();
+		if (view_.scale().x < 1.0)
+			vs *= view_.scale().x;
 		if (vs < 2.0)
 			vs = 2.0;
 

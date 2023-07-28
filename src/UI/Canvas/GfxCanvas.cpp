@@ -32,14 +32,20 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GfxCanvas.h"
+#include "GLCanvas.h"
 #include "General/UI.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
-#include "UI/SBrush.h"
+#include "OpenGL/LineBuffer.h"
+#include "OpenGL/Shader.h"
+#include "OpenGL/VertexBuffer2D.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/SBrush.h"
 #include "Utility/MathStuff.h"
+#include <glm/ext/matrix_transform.hpp>
 
 using namespace slade;
 
@@ -67,12 +73,17 @@ CVAR(Bool, gfx_arc, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // GfxCanvas class constructor
 // -----------------------------------------------------------------------------
-GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), scale_{ ui::scaleFactor() }
+GfxCanvas::GfxCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 {
+	view_.setCentered(true);
+	view_.setInterpolated(false);
+	view_.setScale(ui::scaleFactor());
+
 	// Update texture when the image changes
 	sc_image_changed_ = image_.signals().image_changed.connect(&GfxCanvas::updateImageTexture, this);
 
 	// Bind events
+	setupMousePanning();
 	Bind(wxEVT_LEFT_DOWN, &GfxCanvas::onMouseLeftDown, this);
 	Bind(wxEVT_RIGHT_DOWN, &GfxCanvas::onMouseRightDown, this);
 	Bind(wxEVT_LEFT_UP, &GfxCanvas::onMouseLeftUp, this);
@@ -82,12 +93,33 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), scale_{ 
 	Bind(wxEVT_KEY_DOWN, &GfxCanvas::onKeyDown, this);
 }
 
+void GfxCanvas::setPalette(const Palette* pal)
+{
+	palette_.copyPalette(pal);
+	update_texture_ = true;
+	Refresh();
+}
+
+void GfxCanvas::setViewType(View type)
+{
+	bool changed = view_type_ != type;
+	view_type_   = type;
+	if (changed)
+	{
+		view_.setCentered(type != View::Tiled);
+		resetViewOffsets();
+	}
+}
+
 // -----------------------------------------------------------------------------
 // Sets the gfx canvas [scale]
 // -----------------------------------------------------------------------------
 void GfxCanvas::setScale(double scale)
 {
-	scale_ = scale * ui::scaleFactor();
+	if (zoom_point_.x < 0 && zoom_point_.y < 0)
+		view_.setScale(scale * ui::scaleFactor());
+	else
+		view_.setScale(scale * ui::scaleFactor(), zoom_point_);
 }
 
 // -----------------------------------------------------------------------------
@@ -95,113 +127,11 @@ void GfxCanvas::setScale(double scale)
 // -----------------------------------------------------------------------------
 void GfxCanvas::draw()
 {
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, size.x, size.y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw the background
-	drawCheckeredBackground();
-
-	// Pan by view offset
-	if (allow_scroll_)
-		glTranslated(offset_.x, offset_.y, 0);
-
-	// Pan if offsets
-	if (view_type_ == View::Centered || view_type_ == View::Sprite || view_type_ == View::HUD)
-	{
-		const int mid_x = size.x / 2;
-		const int mid_y = size.y / 2;
-		glTranslated(mid_x, mid_y, 0);
-	}
-
-	// Scale by UI scale
-	// glScaled(UI::scaleFactor(), UI::scaleFactor(), 1.);
-
-	// Draw offset lines
-	if (view_type_ == View::Sprite || view_type_ == View::HUD)
-		drawOffsetLines();
-
-	// Draw the image
-	drawImage();
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
-}
-
-// -----------------------------------------------------------------------------
-// Draws the offset center lines
-// -----------------------------------------------------------------------------
-void GfxCanvas::drawOffsetLines() const
-{
-	if (view_type_ == View::Sprite)
-	{
-		gl::setColour(ColRGBA::BLACK, gl::Blend::Normal);
-
-		glBegin(GL_LINES);
-		glVertex2d(-9999, 0);
-		glVertex2d(9999, 0);
-		glVertex2d(0, -9999);
-		glVertex2d(0, 9999);
-		glEnd();
-	}
-	else if (view_type_ == View::HUD)
-	{
-		const double yscale = (gfx_arc ? scale_ * 1.2 : scale_);
-		glPushMatrix();
-		glEnable(GL_LINE_SMOOTH);
-		glScaled(scale_, yscale, 1);
-		drawing::drawHud();
-		glDisable(GL_LINE_SMOOTH);
-		glPopMatrix();
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Draws the image
-// (reloads the image as a texture each time, will change this later...)
-// -----------------------------------------------------------------------------
-void GfxCanvas::drawImage()
-{
-	// Check image is valid
-	if (!image_.isValid())
-		return;
-
-	// Save current matrix
-	glPushMatrix();
-
-	// Zoom
-	const double yscale = (gfx_arc ? scale_ * 1.2 : scale_);
-	glScaled(scale_, yscale, 1.0);
-
-	// Pan
-	if (view_type_ == View::Centered)
-		glTranslated(-(image_.width() * 0.5), -(image_.height() * 0.5), 0); // Pan to center image
-	else if (view_type_ == View::Sprite)
-		glTranslated(-image_.offset().x, -image_.offset().y, 0); // Pan by offsets
-	else if (view_type_ == View::HUD)
-	{
-		glTranslated(-160, -100, 0);                             // Pan to hud 'top left'
-		glTranslated(-image_.offset().x, -image_.offset().y, 0); // Pan by offsets
-	}
-
-	// Enable textures
-	glEnable(GL_TEXTURE_2D);
+	// Aspect Ratio Correction
+	if (gfx_arc)
+		view_.setScale({ view_.scale().x, view_.scale().x * 1.2 });
+	else
+		view_.setScale(view_.scale().x);
 
 	// Update texture if needed
 	if (update_texture_)
@@ -220,72 +150,133 @@ void GfxCanvas::drawImage()
 		update_texture_ = false;
 	}
 
-	// Determine (texture)coordinates
-	const double x = image_.width();
-	const double y = image_.height();
+	// Draw offset lines
+	if (view_type_ == View::Sprite || view_type_ == View::HUD)
+		drawOffsetLines();
 
-	// If tiled view
+	// Draw the image
 	if (view_type_ == View::Tiled)
-	{
-		// Draw tiled image
-		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
-		const wxSize size = GetSize() * GetContentScaleFactor();
-		drawing::drawTextureTiled(tex_image_, math::scaleInverse(size.x, scale_), math::scaleInverse(size.y, scale_));
-	}
-	else if (drag_origin_.x < 0) // If not dragging
-	{
-		// Draw the image
-		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
-		drawing::drawTexture(tex_image_);
+		drawImageTiled();
+	else
+		drawImage();
+}
 
-		// Draw hilight otherwise
+// -----------------------------------------------------------------------------
+// Draws the offset center lines
+// -----------------------------------------------------------------------------
+void GfxCanvas::drawOffsetLines()
+{
+	if (view_type_ == View::Sprite)
+	{
+		if (!lb_sprite_)
+		{
+			auto colour = ColRGBA::BLACK.asVec4();
+			colour.a    = 0.75f;
+			lb_sprite_  = std::make_unique<gl::LineBuffer>();
+
+			lb_sprite_->add2d(-99999.0f, 0.0f, 99999.0f, 0.0f, colour, 1.5f);
+			lb_sprite_->add2d(0.0f, -99999.0f, 0.0f, 99999.0f, colour, 1.5f);
+		}
+
+		view_.setupShader(lb_sprite_->shader());
+		lb_sprite_->draw();
+	}
+	else if (view_type_ == View::HUD)
+		gl::draw2d::drawHud(&view_);
+}
+
+// -----------------------------------------------------------------------------
+// Draws the image
+// (reloads the image as a texture each time, will change this later...)
+// -----------------------------------------------------------------------------
+void GfxCanvas::drawImage() const
+{
+	// Check image is valid
+	if (!image_.isValid())
+		return;
+
+	bool  dragging = drag_origin_.x > 0;
+	Rectf img_rect{ 0.0f, 0.0f, static_cast<float>(image_.width()), static_cast<float>(image_.height()), false };
+
+	// Apply offsets for sprite/hud view
+	if (view_type_ == View::Sprite || view_type_ == View::HUD)
+		img_rect.move(-image_.offset().x, -image_.offset().y);
+
+	gl::draw2d::RenderOptions opt{ tex_image_ };
+	if (dragging)
+	{
+		// Draw image in original position (semitransparent)
+		opt.colour.a = 128;
+		gl::draw2d::drawRect(img_rect, opt, &view_);
+
+		// Draw image in dragged position
+		img_rect.move(
+			math::scaleInverse(drag_pos_.x - drag_origin_.x, view_.scale().x),
+			math::scaleInverse(drag_pos_.y - drag_origin_.y, view_.scale().y));
+		opt.colour.a = 255;
+		gl::draw2d::drawRect(img_rect, opt, &view_);
+	}
+	else
+	{
+		// Not dragging, just draw image
+		gl::draw2d::drawRect(img_rect, opt, &view_);
+
+		// Hilight if needed
 		if (image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None)
 		{
-			gl::setColour(255, 255, 255, 80, gl::Blend::Additive);
-			drawing::drawTexture(tex_image_);
-
-			// Reset colour
-			gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
+			gl::setBlend(gl::Blend::Additive);
+			opt.colour.a = 50;
+			gl::draw2d::drawRect(img_rect, opt, &view_);
+			gl::setBlend(gl::Blend::Normal);
 		}
 	}
-	else // Dragging
-	{
-		// Draw the original
-		gl::setColour(ColRGBA(0, 0, 0, 180), gl::Blend::Normal);
-		drawing::drawTexture(tex_image_);
 
-		// Draw the dragged image
-		const auto off_x = static_cast<double>(drag_pos_.x - drag_origin_.x) / scale_;
-		const auto off_y = static_cast<double>(drag_pos_.y - drag_origin_.y) / scale_;
-		glTranslated(off_x, off_y, 0);
-		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
-		drawing::drawTexture(tex_image_);
-	}
 	// Draw brush shadow when in editing mode
-	if (editing_mode_ != EditMode::None && cursor_pos_ != Vec2i{ -1, -1 })
+	if (editing_mode_ != EditMode::None && gl::Texture::isCreated(tex_brush_) && cursor_pos_ != Vec2i{ -1, -1 })
 	{
-		gl::setColour(255, 255, 255, 160, gl::Blend::Normal);
-		drawing::drawTexture(tex_brush_);
-		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
+		opt.colour.a = 160;
+		opt.texture = tex_brush_;
+		gl::draw2d::drawRect(img_rect, opt, &view_);
 	}
-
-	// Disable textures
-	glDisable(GL_TEXTURE_2D);
 
 	// Draw outline
 	if (gfx_show_border)
 	{
-		gl::setColour(0, 0, 0, 64);
-		glBegin(GL_LINE_LOOP);
-		glVertex2d(0, 0);
-		glVertex2d(0, y);
-		glVertex2d(x, y);
-		glVertex2d(x, 0);
-		glEnd();
-	}
+		opt.colour.set(0, 0, 0, 64);
+		opt.texture = 0;
+		gl::draw2d::drawRectOutline(img_rect, opt, &view_);
+	 }
+}
 
-	// Restore previous matrix
-	glPopMatrix();
+void GfxCanvas::drawImageTiled() const
+{
+	auto widthf    = static_cast<float>(view_.size().x / view_.scale().x);
+	auto heightf   = static_cast<float>(view_.size().y / view_.scale().y);
+	auto i_widthf  = static_cast<float>(image_.width());
+	auto i_heightf = static_cast<float>(image_.height());
+
+	// Setup vertex buffer
+	gl::VertexBuffer2D vb_tiled;
+	vb_tiled.add({ { 0.f, 0.f }, { 1.f, 1.f, 1.f, 1.f }, { 0.f, 0.f } });
+	vb_tiled.add({ { 0.f, heightf }, { 1.f, 1.f, 1.f, 1.f }, { 0.f, heightf / i_heightf } });
+	vb_tiled.add({ { widthf, heightf }, { 1.f, 1.f, 1.f, 1.f }, { widthf / i_widthf, heightf / i_heightf } });
+	vb_tiled.add({ { widthf, 0.f }, { 1.f, 1.f, 1.f, 1.f }, { widthf / i_widthf, 0.f } });
+
+	// Calculate view matrix (no offset/panning)
+	auto view_matrix = glm::translate(glm::mat4(1.f), { 0.375f, 0.375f, 0.f });
+	view_matrix      = glm::scale(view_matrix, { view_.scale().x, view_.scale().y, 1. });
+
+	// Setup default shader
+	auto& shader = gl::draw2d::defaultShader();
+	shader.bind();
+	shader.setUniform("mvp", view_.projectionMatrix() * view_matrix);
+	shader.setUniform("colour", glm::vec4(1.0f));
+	shader.setUniform("viewport_size", glm::vec2(view_.size().x, view_.size().y));
+
+	// Draw
+	glEnable(GL_TEXTURE_2D);
+	gl::Texture::bind(tex_image_);
+	vb_tiled.draw(gl::Primitive::Quads);
 }
 
 // -----------------------------------------------------------------------------
@@ -319,11 +310,23 @@ void GfxCanvas::zoomToFit(bool mag, double padding)
 	const double y_scale = (static_cast<double>(size.y) - pad) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the image will be clipped)
-	scale_ = std::min<double>(x_scale, y_scale);
+	auto scale = std::min<double>(x_scale, y_scale);
 
 	// If we don't want to magnify the image, clamp scale to a max of 1.0
-	if (!mag && scale_ > 1)
-		scale_ = 1;
+	if (!mag && scale > 1)
+		scale = 1;
+
+	view_.setScale(scale);
+}
+
+void GfxCanvas::resetViewOffsets()
+{
+	if (view_type_ == View::HUD)
+		view_.setOffset(160, 100);
+	else if (view_type_ == View::Default || view_type_ == View::Centered)
+		view_.setOffset(image_.width() / 2., image_.height() / 2.);
+	else
+		view_.setOffset(0, 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -346,52 +349,19 @@ bool GfxCanvas::onImage(int x, int y) const
 // -----------------------------------------------------------------------------
 Vec2i GfxCanvas::imageCoords(int x, int y) const
 {
-	// Determine top-left coordinates of image in screen coords
-	const wxSize size   = GetSize() * GetContentScaleFactor();
-	double       left   = size.x * 0.5 + offset_.x;
-	double       top    = size.y * 0.5 + offset_.y;
-	const double yscale = scale_ * (gfx_arc ? 1.2 : 1);
+	auto canvas_pos = view_.canvasPos({ x, y });
+	auto image_pos  = canvas_pos;
 
-	if (view_type_ == View::Default || view_type_ == View::Tiled)
+	if (view_type_ == View::Sprite || view_type_ == View::HUD)
 	{
-		left = offset_.x;
-		top  = offset_.y;
-	}
-	else if (view_type_ == View::Centered)
-	{
-		left -= static_cast<double>(image_.width()) * 0.5 * scale_;
-		top -= static_cast<double>(image_.height()) * 0.5 * yscale;
-	}
-	else if (view_type_ == View::Sprite)
-	{
-		left -= image_.offset().x * scale_;
-		top -= image_.offset().y * yscale;
-	}
-	else if (view_type_ == View::HUD)
-	{
-		left -= 160 * scale_;
-		top -= 100 * scale_ * (gfx_arc ? 1.2 : 1);
-		left -= image_.offset().x * scale_;
-		top -= image_.offset().y * yscale;
+		image_pos.x += image_.offset().x;
+		image_pos.y += image_.offset().y;
 	}
 
-	// Determine bottom-right coordinates of image in screen coords
-	const double right  = left + image_.width() * scale_;
-	const double bottom = top + image_.height() * yscale;
+	if (image_pos.x < 0 || image_pos.y < 0 || image_pos.x >= image_.width() || image_pos.y >= image_.height())
+		return { -1, -1 }; // Not on image
 
-	// Check if the pointer is within the image
-	if (x >= left && x <= right && y >= top && y <= bottom)
-	{
-		// Determine where in the image it is
-		const double w    = right - left;
-		const double h    = bottom - top;
-		const double xpos = (x - left) / w;
-		const double ypos = (y - top) / h;
-
-		return { static_cast<int>(xpos * image_.width()), static_cast<int>(ypos * image_.height()) };
-	}
-	else
-		return { -1, -1 };
+	return { static_cast<int>(image_pos.x), static_cast<int>(image_pos.y) };
 }
 
 // -----------------------------------------------------------------------------
@@ -400,8 +370,8 @@ Vec2i GfxCanvas::imageCoords(int x, int y) const
 void GfxCanvas::endOffsetDrag()
 {
 	// Get offset
-	const auto x = math::scaleInverse(drag_pos_.x - drag_origin_.x, scale_);
-	const auto y = math::scaleInverse(drag_pos_.y - drag_origin_.y, scale_);
+	const auto x = math::scaleInverse(drag_pos_.x - drag_origin_.x, view_.scale().x);
+	const auto y = math::scaleInverse(drag_pos_.y - drag_origin_.y, view_.scale().y);
 
 	// If there was a change
 	if (x != 0 || y != 0)
@@ -621,7 +591,11 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	if (on_image && editing_mode_ != EditMode::None)
 	{
 		if (cursor_pos_ != prev_pos_)
+		{
 			generateBrushShadow();
+			refresh = true;
+		}
+
 		prev_pos_ = cursor_pos_;
 	}
 	if (on_image != image_hilight_)
@@ -640,6 +614,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 		else if (allow_drag_ && !e.LeftIsDown())
 			SetCursor(wxNullCursor);
 	}
+
 	// Drag
 	if (e.LeftIsDown())
 	{
@@ -653,14 +628,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 			refresh = true;
 		}
 	}
-	else if (e.MiddleIsDown())
-	{
-		offset_ = offset_
-				  + Vec2d(
-					  e.GetPosition().x * GetContentScaleFactor() - mouse_prev_.x,
-					  e.GetPosition().y * GetContentScaleFactor() - mouse_prev_.y);
-		refresh = true;
-	}
+
 	// Right mouse down
 	if (e.RightIsDown() && on_image)
 		pickColour(x, y);
@@ -669,6 +637,8 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 		Refresh();
 
 	mouse_prev_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
+
+	e.Skip();
 }
 
 // -----------------------------------------------------------------------------
@@ -690,25 +660,30 @@ void GfxCanvas::onMouseWheel(wxMouseEvent& e)
 		if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL || wxGetKeyState(WXK_SHIFT))
 		{
 			if (e.GetWheelRotation() > 0)
-				offset_.x -= 8 * scale_;
+				view_.pan(8 * view_.scale().x, 0);
 			else
-				offset_.x += 8 * scale_;
+				view_.pan(-8 * view_.scale().x, 0);
 		}
 		else if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 		{
 			if (e.GetWheelRotation() > 0)
-				offset_.y += 8 * scale_;
+				view_.pan(0, 8 * view_.scale().y);
 			else
-				offset_.y -= 8 * scale_;
+				view_.pan(0, -8 * view_.scale().y);
 		}
 	}
 
 	if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 	{
+		// Zoom towards cursor
+		zoom_point_.set(e.GetPosition().x, e.GetPosition().y);
+
 		if (e.GetWheelRotation() > 0)
 			linked_zoom_control_->zoomIn(true);
 		else
 			linked_zoom_control_->zoomOut(true);
+
+		zoom_point_.set(-1, -1);
 	}
 }
 
@@ -719,25 +694,25 @@ void GfxCanvas::onKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
 	{
-		offset_.y += 8;
+		view_.pan(0, 8 * view_.scale().y);
 		Refresh();
 	}
 
 	else if (e.GetKeyCode() == WXK_DOWN)
 	{
-		offset_.y -= 8;
+		view_.pan(0, -8 * view_.scale().y);
 		Refresh();
 	}
 
 	else if (e.GetKeyCode() == WXK_LEFT)
 	{
-		offset_.x += 8;
+		view_.pan(8 * view_.scale().x, 0);
 		Refresh();
 	}
 
 	else if (e.GetKeyCode() == WXK_RIGHT)
 	{
-		offset_.x -= 8;
+		view_.pan(-8 * view_.scale().x, 0);
 		Refresh();
 	}
 

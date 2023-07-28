@@ -348,7 +348,7 @@ bool MapEditContext::update(long frametime)
 		if (input_.mouseState() == mapeditor::Input::MouseState::Normal /* && !mouse_movebegin*/)
 		{
 			auto old_hl = selection_.hilightedObject();
-			if (selection_.updateHilight(input_.mousePosMap(), renderer_.view().scale()) && hilight_smooth)
+			if (selection_.updateHilight(input_.mousePosMap(), renderer_.view().scale().x) && hilight_smooth)
 				renderer_.animateHilightChange({}, old_hl);
 		}
 

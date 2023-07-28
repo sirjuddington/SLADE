@@ -26,7 +26,7 @@ public:
 		BGStyle        bg_style  = BGStyle::Colour,
 		const ColRGBA& bg_colour = ColRGBA::BLACK,
 		gl::View       view      = {});
-	~GLCanvas() override = default;
+	~GLCanvas();
 
 	const gl::View& view() const { return view_; }
 	gl::View&       view() { return view_; }

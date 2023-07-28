@@ -31,6 +31,8 @@ GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour,
 		});
 }
 
+GLCanvas::~GLCanvas() {}
+
 void GLCanvas::setupMousewheelZoom()
 {
 	Bind(
@@ -48,20 +50,24 @@ void GLCanvas::setupMousewheelZoom()
 
 void GLCanvas::setupMousePanning()
 {
-	Bind(wxEVT_MOTION, [&](wxMouseEvent& e)
-	{
-		if (e.MiddleIsDown())
+	Bind(
+		wxEVT_MOTION,
+		[&](wxMouseEvent& e)
 		{
-			auto cpos_current = view_.canvasPos({ e.GetPosition().x, e.GetPosition().y });
-			auto cpos_prev = view_.canvasPos(mouse_prev_);
+			if (e.MiddleIsDown())
+			{
+				auto cpos_current = view_.canvasPos({ e.GetPosition().x, e.GetPosition().y });
+				auto cpos_prev    = view_.canvasPos(mouse_prev_);
 
-			view_.pan(cpos_prev.x - cpos_current.x, cpos_prev.y - cpos_current.y);
+				view_.pan(cpos_prev.x - cpos_current.x, cpos_prev.y - cpos_current.y);
 
-			Refresh();
-		}
+				Refresh();
+			}
+			else
+				e.Skip();
 
-		mouse_prev_.set(e.GetPosition().x, e.GetPosition().y);
-	});
+			mouse_prev_.set(e.GetPosition().x, e.GetPosition().y);
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -144,8 +150,7 @@ void GLCanvas::drawCheckeredBackground()
 	// Setup default shader
 	auto& shader = gl::draw2d::defaultShader();
 	shader.bind();
-	shader.setUniform("projection", view_.projectionMatrix());
-	shader.setUniform("model", glm::mat4(1.0f));
+	shader.setUniform("mvp", view_.projectionMatrix());
 	shader.setUniform("colour", glm::vec4(1.0f));
 	shader.setUniform("viewport_size", glm::vec2(view_.size().x, view_.size().y));
 

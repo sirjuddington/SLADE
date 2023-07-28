@@ -1,7 +1,7 @@
 #pragma once
 
+#include "GLCanvas.h"
 #include "Graphics/SImage/SImage.h"
-#include "OGLCanvas.h"
 #include "OpenGL/GLTexture.h"
 
 namespace slade
@@ -14,8 +14,12 @@ namespace ui
 {
 	class ZoomControl;
 }
+namespace gl
+{
+	class LineBuffer;
+}
 
-class GfxCanvas : public OGLCanvas
+class GfxCanvas : public GLCanvas
 {
 public:
 	enum class View
@@ -35,12 +39,14 @@ public:
 		Translate
 	};
 
-	GfxCanvas(wxWindow* parent, int id);
+	GfxCanvas(wxWindow* parent);
 	~GfxCanvas() override = default;
 
-	SImage& image() { return image_; }
+	SImage&        image() { return image_; }
+	const Palette& palette() const { return palette_; }
 
-	void    setViewType(View type) { view_type_ = type; }
+	void    setPalette(const Palette* pal);
+	void    setViewType(View type);
 	View    viewType() const { return view_type_; }
 	void    setScale(double scale);
 	bool    allowDrag() const { return allow_drag_; }
@@ -56,8 +62,6 @@ public:
 	void    linkZoomControl(ui::ZoomControl* zoom_control) { linked_zoom_control_ = zoom_control; }
 
 	void draw() override;
-	void drawImage();
-	void drawOffsetLines() const;
 	void updateImageTexture();
 	void endOffsetDrag();
 	void paintPixel(int x, int y);
@@ -66,16 +70,15 @@ public:
 	void generateBrushShadow();
 
 	void zoomToFit(bool mag = true, double padding = 0.0f);
-	void resetOffsets() { offset_.x = offset_.y = 0; }
+	void resetViewOffsets();
 
 	bool  onImage(int x, int y) const;
 	Vec2i imageCoords(int x, int y) const;
 
 private:
 	SImage           image_;
-	View             view_type_ = View::Default;
-	double           scale_     = 1.;
-	Vec2d            offset_; // panning offsets (not image offsets)
+	Palette          palette_;
+	View             view_type_      = View::Default;
 	unsigned         tex_image_      = 0;
 	bool             update_texture_ = false;
 	bool             image_hilight_  = false;
@@ -94,6 +97,15 @@ private:
 	Vec2i            prev_pos_            = { -1, -1 }; // previous position of cursor
 	unsigned         tex_brush_           = 0;          // preview the effect of the brush
 	ui::ZoomControl* linked_zoom_control_ = nullptr;
+	Vec2i            zoom_point_          = { -1, -1 };
+
+	// OpenGL
+	unique_ptr<gl::LineBuffer> lb_sprite_;
+	unique_ptr<gl::LineBuffer> lb_hud_;
+
+	void drawImage() const;
+	void drawImageTiled() const;
+	void drawOffsetLines();
 
 	// Signal connections
 	sigslot::scoped_connection sc_image_changed_;

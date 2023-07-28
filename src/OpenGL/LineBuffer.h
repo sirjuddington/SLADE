@@ -38,6 +38,10 @@ public:
 
 	void add(const Line& line);
 	void add(const vector<Line>& lines);
+	void add2d(float x1, float y1, float x2, float y2, glm::vec4 colour, float width = 1.0f)
+	{
+		add(Line{ { x1, y1, 0.0f, width }, colour, { x2, y2, 0.0f, width }, colour });
+	}
 
 	void draw() const;
 

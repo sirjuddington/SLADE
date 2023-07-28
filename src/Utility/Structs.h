@@ -317,6 +317,14 @@ template<typename T> struct Rect
 	{
 		return (point.x >= left() && point.x <= right() && point.y >= top() && point.y <= bottom());
 	}
+
+	void move(T x_offset, T y_offset)
+	{
+		tl.x += x_offset;
+		tl.y += y_offset;
+		br.x += x_offset;
+		br.y += y_offset;
+	}
 };
 
 typedef Rect<int>    Recti;

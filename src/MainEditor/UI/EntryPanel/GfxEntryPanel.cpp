@@ -82,7 +82,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 	edit_translation_.addRange(TransRange::Type::Palette, 0);
 
 	// Add gfx canvas
-	gfx_canvas_ = new GfxCanvas(this, -1);
+	gfx_canvas_ = new GfxCanvas(this);
 	sizer_main_->Add(gfx_canvas_, 1, wxEXPAND, 0);
 	gfx_canvas_->setViewType(GfxCanvas::View::Default);
 	gfx_canvas_->allowDrag(true);
@@ -564,7 +564,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 
 	// Reset display offsets in graphics mode
 	if (gfx_canvas_->viewType() != GfxCanvas::View::Sprite)
-		gfx_canvas_->resetOffsets();
+		gfx_canvas_->resetViewOffsets();
 
 	// Setup custom menu
 	if (image()->type() == SImage::Type::RGBA)

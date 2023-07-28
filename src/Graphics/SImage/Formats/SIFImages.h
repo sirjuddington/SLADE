@@ -377,7 +377,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) override
 	{
 		// Variables
 		FIBITMAP* bm       = nullptr;

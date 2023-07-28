@@ -325,7 +325,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 1, wxEXPAND);
 
-	gfx_preview_ = new GfxCanvas(this, -1);
+	gfx_preview_ = new GfxCanvas(this);
 	gfx_preview_->setPalette(&palette_);
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
 	gfx_preview_->image().copyImage(&image_preview_);

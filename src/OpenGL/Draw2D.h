@@ -10,6 +10,7 @@ class GLCanvas;
 namespace gl
 {
 	class Shader;
+	class View;
 
 	namespace draw2d
 	{
@@ -40,8 +41,10 @@ namespace gl
 		const Shader& linesShader();
 		const Shader& pointSpriteShader(PointSprite type);
 
-		void drawRect(Rectf rect, const RenderOptions& opt = {});
-		void drawRectOutline(Rectf rect, const RenderOptions& opt = {});
+		void drawRect(Rectf rect, const RenderOptions& opt = {}, const View* view = nullptr);
+		void drawRectOutline(Rectf rect, const RenderOptions& opt = {}, const View* view = nullptr);
+
+		void drawHud(const View* view = nullptr);
 
 	} // namespace draw2d
 } // namespace gl

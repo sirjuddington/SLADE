@@ -8,8 +8,7 @@ out VertexData
 	vec2 tex_coord;
 } vertex_out;
 
-uniform mat4 projection;
-uniform mat4 model;
+uniform mat4 mvp;
 uniform vec2 viewport_size;
 
 #ifdef THICK_LINES
@@ -25,7 +24,7 @@ void main()
 	// Perform matrix transformations in the geometry shader if it exists
 	gl_Position = vec4(in_position, 0.0, 1.0);
 #else
-	gl_Position = projection * model * vec4(in_position, 0.0, 1.0);
+	gl_Position = mvp * vec4(in_position, 0.0, 1.0);
 #endif
 
 #ifdef THICK_LINES

@@ -303,7 +303,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override { return false; }
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override { return false; }
 };
 
 class SIFQuake2Wal : public SIFormat

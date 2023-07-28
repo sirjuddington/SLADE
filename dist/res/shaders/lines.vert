@@ -6,8 +6,7 @@ layout(location = 2) in vec4 in_v1_colour;
 layout(location = 3) in vec4 in_v2_pos_width;
 layout(location = 4) in vec4 in_v2_colour;
 
-uniform mat4 projection;
-uniform mat4 model;
+uniform mat4 mvp;
 uniform vec2 viewport_size;
 uniform vec2 aa_radius;
 
@@ -28,8 +27,8 @@ void main()
 	colors[1].a *= min(1.0, in_v2_pos_width.w);
 	v_col = colors[int(in_quad_pos.x)];
 
-	vec4 clip_pos_a = projection * model * vec4(in_v1_pos_width.xyz, 1.0f);
-	vec4 clip_pos_b = projection * model * vec4(in_v2_pos_width.xyz, 1.0f);
+	vec4 clip_pos_a = mvp * vec4(in_v1_pos_width.xyz, 1.0f);
+	vec4 clip_pos_b = mvp * vec4(in_v2_pos_width.xyz, 1.0f);
 
 	vec2 ndc_pos_0 = clip_pos_a.xy / clip_pos_a.w;
 	vec2 ndc_pos_1 = clip_pos_b.xy / clip_pos_b.w;
