@@ -1,17 +1,16 @@
 #pragma once
 
-#include "OGLCanvas.h"
+#include "GLCanvas.h"
 
 namespace slade
 {
-class ANSICanvas : public OGLCanvas
+class ANSICanvas : public GLCanvas
 {
 public:
-	ANSICanvas(wxWindow* parent, int id);
-	~ANSICanvas();
+	ANSICanvas(wxWindow* parent);
+	~ANSICanvas() override;
 
 	void draw() override;
-	void drawImage();
 	void writeRGBAData(uint8_t* dest) const;
 	void loadData(uint8_t* data) { ansidata_ = data; }
 	void drawCharacter(size_t index) const;
