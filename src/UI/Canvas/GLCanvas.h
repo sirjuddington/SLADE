@@ -6,6 +6,7 @@
 
 namespace slade
 {
+class Palette;
 namespace gl
 {
 	class VertexBuffer2D;
@@ -26,14 +27,16 @@ public:
 		BGStyle        bg_style  = BGStyle::Colour,
 		const ColRGBA& bg_colour = ColRGBA::BLACK,
 		gl::View       view      = {});
-	~GLCanvas();
+	~GLCanvas() override;
 
 	const gl::View& view() const { return view_; }
 	gl::View&       view() { return view_; }
+	const Palette*  palette() const { return palette_.get(); }
 	ColRGBA         backgroundColour() const { return bg_colour_; }
 
-	void setView(const gl::View& view) { view_ = view; }
-	void setBackground(BGStyle style, ColRGBA colour)
+	void         setView(const gl::View& view) { view_ = view; }
+	virtual void setPalette(const Palette* pal);
+	void         setBackground(BGStyle style, ColRGBA colour)
 	{
 		bg_colour_ = colour;
 		bg_style_  = style;
@@ -45,7 +48,8 @@ public:
 	bool activateContext();
 
 protected:
-	gl::View view_;
+	gl::View            view_;
+	unique_ptr<Palette> palette_;
 
 private:
 	BGStyle                        bg_style_ = BGStyle::Colour;

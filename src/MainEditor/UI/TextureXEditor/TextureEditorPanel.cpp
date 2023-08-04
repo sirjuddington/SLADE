@@ -80,7 +80,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 	wxPanel(parent, -1), tx_editor_{ tx_editor }
 {
 	// Create controls
-	tex_canvas_      = new CTextureCanvas(this, -1);
+	tex_canvas_      = new CTextureCanvas(this);
 	zc_zoom_         = new ui::ZoomControl(this, tex_canvas_);
 	cb_tex_scale_    = new wxCheckBox(this, -1, "Apply Scale");
 	cb_tex_arc_      = new wxCheckBox(this, -1, "Aspect Ratio Correction");
@@ -462,7 +462,7 @@ void TextureEditorPanel::clearTexture()
 // -----------------------------------------------------------------------------
 // Sets the texture canvas' palette and refreshes it
 // -----------------------------------------------------------------------------
-void TextureEditorPanel::setPalette(Palette* pal) const
+void TextureEditorPanel::setPalette(const Palette* pal) const
 {
 	tex_canvas_->setPalette(pal);
 	tex_canvas_->updatePatchTextures();
@@ -472,9 +472,9 @@ void TextureEditorPanel::setPalette(Palette* pal) const
 // -----------------------------------------------------------------------------
 // Returns the texture canvas' palette
 // -----------------------------------------------------------------------------
-Palette* TextureEditorPanel::palette() const
+const Palette* TextureEditorPanel::palette() const
 {
-	return &tex_canvas_->palette();
+	return tex_canvas_->palette();
 }
 
 // -----------------------------------------------------------------------------

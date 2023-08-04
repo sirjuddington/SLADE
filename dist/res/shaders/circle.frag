@@ -1,3 +1,5 @@
+// Fragment shader for rendering a smooth antialiased circle
+
 in VertexData
 {
 	vec4 colour;

@@ -46,17 +46,17 @@ public:
 	void openEntries(const vector<ArchiveEntry*>& entries);
 	void openTextures(
 		const vector<CTexture*>& textures,
-		Palette*                 palette    = nullptr,
+		const Palette*           palette    = nullptr,
 		Archive*                 archive    = nullptr,
 		bool                     force_rgba = false);
 	void updatePreviewGfx();
 	void updateControls() const;
 	void convertOptions(SIFormat::ConvertOptions& opt) const;
 
-	bool      itemModified(int index) const;
-	SImage*   itemImage(int index);
-	SIFormat* itemFormat(int index) const;
-	Palette*  itemPalette(int index) const;
+	bool           itemModified(int index) const;
+	SImage*        itemImage(int index);
+	SIFormat*      itemFormat(int index) const;
+	const Palette* itemPalette(int index) const;
 
 	void applyConversion();
 
@@ -74,18 +74,22 @@ private:
 
 	struct ConvItem
 	{
-		ArchiveEntry* entry   = nullptr;
-		CTexture*     texture = nullptr;
-		SImage        image;
-		bool          modified   = false;
-		SIFormat*     new_format = nullptr;
-		Palette*      palette    = nullptr;
-		Archive*      archive    = nullptr;
-		bool          force_rgba = false;
+		ArchiveEntry*  entry   = nullptr;
+		CTexture*      texture = nullptr;
+		SImage         image;
+		bool           modified   = false;
+		SIFormat*      new_format = nullptr;
+		const Palette* palette    = nullptr;
+		Archive*       archive    = nullptr;
+		bool           force_rgba = false;
 
 		ConvItem(ArchiveEntry* entry = nullptr) : entry{ entry } {}
 
-		ConvItem(CTexture* texture, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false) :
+		ConvItem(
+			CTexture*      texture,
+			const Palette* palette    = nullptr,
+			Archive*       archive    = nullptr,
+			bool           force_rgba = false) :
 			texture{ texture }, palette{ palette }, archive{ archive }, force_rgba{ force_rgba }
 		{
 		}

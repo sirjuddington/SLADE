@@ -55,13 +55,11 @@ class TransRangePalette : public TransRange
 
 public:
 	TransRangePalette(IndexRange range, IndexRange dest_range) :
-		TransRange{ Type::Palette, range },
-		dest_range_{ dest_range }
+		TransRange{ Type::Palette, range }, dest_range_{ dest_range }
 	{
 	}
 	TransRangePalette(const TransRangePalette& copy) :
-		TransRange{ Type::Palette, copy.range_ },
-		dest_range_{ copy.dest_range_ }
+		TransRange{ Type::Palette, copy.range_ }, dest_range_{ copy.dest_range_ }
 	{
 	}
 
@@ -89,15 +87,11 @@ public:
 		IndexRange     range,
 		const ColRGBA& col_start = ColRGBA::BLACK,
 		const ColRGBA& col_end   = ColRGBA::WHITE) :
-		TransRange{ Type::Colour, range },
-		col_start_{ col_start },
-		col_end_{ col_end }
+		TransRange{ Type::Colour, range }, col_start_{ col_start }, col_end_{ col_end }
 	{
 	}
 	TransRangeColour(const TransRangeColour& copy) :
-		TransRange{ Type::Colour, copy.range_ },
-		col_start_{ copy.col_start_ },
-		col_end_{ copy.col_end_ }
+		TransRange{ Type::Colour, copy.range_ }, col_start_{ copy.col_start_ }, col_end_{ copy.col_end_ }
 	{
 	}
 
@@ -136,15 +130,11 @@ public:
 	};
 
 	TransRangeDesat(IndexRange range, const RGB& start = { 0, 0, 0 }, const RGB& end = { 2, 2, 2 }) :
-		TransRange{ Type::Desat, range },
-		rgb_start_{ start },
-		rgb_end_{ end }
+		TransRange{ Type::Desat, range }, rgb_start_{ start }, rgb_end_{ end }
 	{
 	}
 	TransRangeDesat(const TransRangeDesat& copy) :
-		TransRange{ Type::Desat, copy.range_ },
-		rgb_start_{ copy.rgb_start_ },
-		rgb_end_{ copy.rgb_end_ }
+		TransRange{ Type::Desat, copy.range_ }, rgb_start_{ copy.rgb_start_ }, rgb_end_{ copy.rgb_end_ }
 	{
 	}
 
@@ -179,8 +169,7 @@ class TransRangeBlend : public TransRange
 
 public:
 	TransRangeBlend(IndexRange range, const ColRGBA& colour = ColRGBA::RED) :
-		TransRange{ Type::Blend, range },
-		colour_{ colour }
+		TransRange{ Type::Blend, range }, colour_{ colour }
 	{
 	}
 	TransRangeBlend(const TransRangeBlend& copy) : TransRange{ Type::Blend, copy.range_ }, colour_{ copy.colour_ } {}
@@ -203,15 +192,11 @@ class TransRangeTint : public TransRange
 
 public:
 	TransRangeTint(IndexRange range, const ColRGBA& colour = ColRGBA::RED, uint8_t amount = 50) :
-		TransRange{ Type::Tint, range },
-		colour_{ colour },
-		amount_{ amount }
+		TransRange{ Type::Tint, range }, colour_{ colour }, amount_{ amount }
 	{
 	}
 	TransRangeTint(const TransRangeTint& copy) :
-		TransRange{ Type::Tint, copy.range_ },
-		colour_{ copy.colour_ },
-		amount_{ copy.amount_ }
+		TransRange{ Type::Tint, copy.range_ }, colour_{ copy.colour_ }, amount_{ copy.amount_ }
 	{
 	}
 
@@ -236,13 +221,11 @@ class TransRangeSpecial : public TransRange
 
 public:
 	TransRangeSpecial(IndexRange range, string_view special = "") :
-		TransRange{ Type::Special, range },
-		special_{ special }
+		TransRange{ Type::Special, range }, special_{ special }
 	{
 	}
 	TransRangeSpecial(const TransRangeSpecial& copy) :
-		TransRange{ Type::Special, copy.range_ },
-		special_{ copy.special_ }
+		TransRange{ Type::Special, copy.range_ }, special_{ copy.special_ }
 	{
 	}
 
@@ -273,20 +256,20 @@ public:
 	bool        isEmpty() const { return built_in_name_.empty() && translations_.empty(); }
 
 	unsigned      nRanges() const { return translations_.size(); }
-	TransRange*   range(unsigned index);
+	TransRange*   range(unsigned index) const;
 	const string& builtInName() const { return built_in_name_; }
 	uint8_t       desaturationAmount() const { return desat_amount_; }
 
 	void setBuiltInName(string_view name) { built_in_name_ = name; }
 	void setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
 
-	ColRGBA translate(const ColRGBA& col, Palette* pal = nullptr);
+	ColRGBA translate(const ColRGBA& col, const Palette* pal = nullptr) const;
 
 	TransRange* addRange(TransRange::Type type, int pos = -1, int range_start = 0, int range_end = 0);
 	void        removeRange(int pos);
 	void        swapRanges(int pos1, int pos2);
 
-	static ColRGBA specialBlend(const ColRGBA& col, uint8_t type, Palette* pal = nullptr);
+	static ColRGBA specialBlend(const ColRGBA& col, uint8_t type, const Palette* pal = nullptr);
 	static string  getPredefined(string_view def);
 
 private:

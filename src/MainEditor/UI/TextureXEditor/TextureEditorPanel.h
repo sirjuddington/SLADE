@@ -36,10 +36,10 @@ public:
 
 	bool openTexture(const CTexture* tex, TextureXList* list);
 	void clearTexture();
-	void setPalette(Palette* pal) const;
+	void setPalette(const Palette* pal) const;
 
-	Palette* palette() const;
-	bool     blendRGBA() const;
+	const Palette* palette() const;
+	bool           blendRGBA() const;
 
 	// Editing
 	virtual void addPatch();

@@ -451,7 +451,7 @@ void Translation::copy(const Translation& copy)
 // -----------------------------------------------------------------------------
 // Returns the translation range at [index]
 // -----------------------------------------------------------------------------
-TransRange* Translation::range(unsigned index)
+TransRange* Translation::range(unsigned index) const
 {
 	if (index >= translations_.size())
 		return nullptr;
@@ -462,7 +462,7 @@ TransRange* Translation::range(unsigned index)
 // -----------------------------------------------------------------------------
 // Apply the translation to the given color
 // -----------------------------------------------------------------------------
-ColRGBA Translation::translate(const ColRGBA& col, Palette* pal)
+ColRGBA Translation::translate(const ColRGBA& col, const Palette* pal) const
 {
 	ColRGBA colour(col);
 	if (pal == nullptr)
@@ -696,7 +696,7 @@ void Translation::swapRanges(int pos1, int pos2)
 // Apply one of the special colour blending modes from ZDoom:
 // Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
 // -----------------------------------------------------------------------------
-ColRGBA Translation::specialBlend(const ColRGBA& col, uint8_t type, Palette* pal)
+ColRGBA Translation::specialBlend(const ColRGBA& col, uint8_t type, const Palette* pal)
 {
 	// Abort just in case
 	if (type == SpecialBlend::Invalid)

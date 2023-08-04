@@ -1,6 +1,7 @@
 
 #include "Main.h"
 #include "GLCanvas.h"
+#include "Graphics/Palette/Palette.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/Shader.h"
@@ -31,7 +32,15 @@ GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour,
 		});
 }
 
-GLCanvas::~GLCanvas() {}
+GLCanvas::~GLCanvas() = default;
+
+void GLCanvas::setPalette(const Palette* pal)
+{
+	if (!palette_)
+		palette_ = std::make_unique<Palette>(*pal);
+	else
+		palette_->copyPalette(pal);
+}
 
 void GLCanvas::setupMousewheelZoom()
 {

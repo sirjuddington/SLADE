@@ -176,12 +176,12 @@ public:
 	bool convertExtended();
 	bool convertRegular();
 	bool loadPatchImage(
-		unsigned pindex,
-		SImage&  image,
-		Archive* parent     = nullptr,
-		Palette* pal        = nullptr,
-		bool     force_rgba = false) const;
-	bool toImage(SImage& image, Archive* parent = nullptr, Palette* pal = nullptr, bool force_rgba = false);
+		unsigned       pindex,
+		SImage&        image,
+		Archive*       parent     = nullptr,
+		const Palette* pal        = nullptr,
+		bool           force_rgba = false) const;
+	bool toImage(SImage& image, Archive* parent = nullptr, const Palette* pal = nullptr, bool force_rgba = false);
 
 	// Signals
 	struct Signals

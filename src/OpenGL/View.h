@@ -80,22 +80,23 @@ public:
 	// Canvas <-> Screen Coordinate Translation
 	double canvasX(int screen_x) const;
 	double canvasY(int screen_y) const;
-	Vec2d  canvasPos(const Vec2i& screen_pos) const;
+	Vec2d  canvasPos(const Vec2i& screen_pos) const { return { canvasX(screen_pos.x), canvasY(screen_pos.y) }; }
 	int    screenX(double canvas_x) const;
 	int    screenY(double canvas_y) const;
+	Vec2i  screenPos(double canvas_x, double canvas_y) const { return { screenX(canvas_x), screenY(canvas_y) }; }
 
 	void apply(bool init = true) const;
 	void setOverlayCoords(bool set) const;
 
-	void setupShader(const Shader& shader) const;
+	void setupShader(const Shader& shader, const glm::mat4& model = glm::mat4(1.0f)) const;
 
 private:
-	bool   y_flipped_    = false; // If true, the Y-axis is flipped (ie. bottom is 0)
-	bool   centered_     = false; // If true, 0,0 is at the center of the 'screen'
-	double min_scale_    = 0.005;
-	double max_scale_    = 100.;
-	bool   interpolated_ = true; // If true, pan/zoom interpolation is enabled (in which case, interpolate() needs to be
-								 // called regularly to correctly update the interpolated scale/zoom values)
+	bool   y_flipped_  = false; // If true, the Y-axis is flipped (ie. bottom is 0)
+	bool   centered_   = false; // If true, 0,0 is at the center of the 'screen'
+	double min_scale_  = 0.005;
+	double max_scale_  = 100.;
+	bool interpolated_ = false; // If true, pan/zoom interpolation is enabled (in which case, interpolate() needs to be
+								// called regularly to correctly update the interpolated scale/zoom values)
 
 	Vec2i size_;
 	Vec2d offset_;

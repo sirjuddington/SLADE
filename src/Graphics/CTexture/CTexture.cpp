@@ -810,7 +810,7 @@ bool CTexture::convertRegular()
 // Generates a SImage representation of this texture, using patches from
 // [parent] primarily, and the palette [pal]
 // -----------------------------------------------------------------------------
-bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_rgba)
+bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool force_rgba)
 {
 	// Init image
 	image.clear();
@@ -932,7 +932,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 // Loads the image for the patch at [pindex] into [image].
 // Can deal with textures-as-patches
 // -----------------------------------------------------------------------------
-bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal, bool force_rgba) const
+bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, const Palette* pal, bool force_rgba) const
 {
 	// Check patch index
 	if (pindex >= patches_.size())

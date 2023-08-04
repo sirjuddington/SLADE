@@ -272,7 +272,7 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 				log::info("Image converted for writing");
 			}
 
-			if (format->saveImage(*image, data, &gfx_canvas_->palette()))
+			if (format->saveImage(*image, data, gfx_canvas_->palette()))
 				ok = true;
 			else
 				error = "Error writing image";
@@ -348,7 +348,7 @@ void GfxEntryPanel::setupToolbars()
 	auto* g_brush = new SToolBarGroup(toolbar_, "Brush", true);
 	button_brush_ = g_brush->addActionButton("pgfx_setbrush");
 	cb_colour_    = new ColourBox(g_brush, -1, ColRGBA::BLACK, false, true, SToolBar::scaledButtonSize());
-	cb_colour_->setPalette(&gfx_canvas_->palette());
+	cb_colour_->setPalette(gfx_canvas_->palette());
 	cb_colour_->SetToolTip("Set brush colour");
 	g_brush->addCustomControl(cb_colour_);
 	g_brush->addActionButton("pgfx_settrans", "");
@@ -469,7 +469,7 @@ bool GfxEntryPanel::extractAll() const
 		if (image()->width() && image()->height())
 		{
 			MemChunk img_data;
-			SIFormat::getFormat("png")->saveImage(*image(), img_data, &gfx_canvas_->palette());
+			SIFormat::getFormat("png")->saveImage(*image(), img_data, gfx_canvas_->palette());
 
 			auto newimg = parent->addNewEntry(newname.ToStdString(), index + pos + 1, entry->parentDir());
 			if (newimg == nullptr)

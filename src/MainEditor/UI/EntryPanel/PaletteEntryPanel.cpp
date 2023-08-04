@@ -129,7 +129,7 @@ public:
 		CenterOnParent();
 	}
 
-	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
 	ColRGBA colour() const { return ColRGBA{ cp_colour_->GetColour() }; }
 
@@ -224,7 +224,7 @@ public:
 		label_amount_->SetLabel("50% ");
 	}
 
-	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
 	ColRGBA colour() const { return ColRGBA{ cp_colour_->GetColour() }; }
 
@@ -361,7 +361,7 @@ public:
 		label_lum_->SetLabel("100% ");
 	}
 
-	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
 	float hue() const { return (float)slider_hue_->GetValue() * 0.002f; }
 	float sat() const { return (float)slider_sat_->GetValue() * 0.01f; }
@@ -436,7 +436,7 @@ public:
 		CenterOnParent();
 	}
 
-	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
 	// Re-apply the changes in selection on a fresh palette
 	void redraw() const
@@ -574,7 +574,7 @@ public:
 		CenterOnParent();
 	}
 
-	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
 	ColRGBA startColour() const { return ColRGBA{ cp_startcolour_->GetColour() }; }
 

@@ -354,6 +354,8 @@ void gl::setBlend(Blend blend)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		else if (blend == Blend::Additive)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		else if (blend == Blend::Invert)
+			glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ZERO);
 
 		last_blend = blend;
 	}

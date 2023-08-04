@@ -1,8 +1,6 @@
 #pragma once
 
 #include "GLCanvas.h"
-#include "Graphics/Palette/Palette.h"
-#include "OpenGL/VertexBuffer2D.h"
 
 namespace slade
 {
@@ -24,16 +22,15 @@ public:
 	PaletteCanvas(wxWindow* parent);
 	~PaletteCanvas() override = default;
 
-	const Palette& palette() const { return palette_; }
-	bool           doubleWidth() const { return double_width_; }
-	int            selectionStart() const { return sel_begin_; }
-	int            selectionEnd() const { return sel_end_; }
-	SelectionType  selectionType() const { return allow_selection_; }
+	bool          doubleWidth() const { return double_width_; }
+	int           selectionStart() const { return sel_begin_; }
+	int           selectionEnd() const { return sel_end_; }
+	SelectionType selectionType() const { return allow_selection_; }
 
 	void doubleWidth(bool dw) { double_width_ = dw; }
 	void setSelection(int begin, int end = -1);
 	void setSelectionType(SelectionType sel) { allow_selection_ = sel; }
-	void setPalette(const Palette* pal);
+	void setPalette(const Palette* pal) override;
 
 	ColRGBA selectedColour() const;
 
@@ -43,7 +40,6 @@ public:
 	void onMouseMotion(wxMouseEvent& e);
 
 private:
-	Palette       palette_;
 	int           sel_begin_       = -1;
 	int           sel_end_         = -1;
 	bool          double_width_    = false;

@@ -37,7 +37,6 @@
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
 #include "OpenGL/Draw2D.h"
-#include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
@@ -73,14 +72,13 @@ CVAR(Bool, gfx_arc, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // GfxCanvas class constructor
 // -----------------------------------------------------------------------------
-GfxCanvas::GfxCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
+GfxCanvas::GfxCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered), image_{ new SImage() }
 {
 	view_.setCentered(true);
-	view_.setInterpolated(false);
 	view_.setScale(ui::scaleFactor());
 
 	// Update texture when the image changes
-	sc_image_changed_ = image_.signals().image_changed.connect(&GfxCanvas::updateImageTexture, this);
+	sc_image_changed_ = image_->signals().image_changed.connect(&GfxCanvas::updateImageTexture, this);
 
 	// Bind events
 	setupMousePanning();
@@ -95,7 +93,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 
 void GfxCanvas::setPalette(const Palette* pal)
 {
-	palette_.copyPalette(pal);
+	GLCanvas::setPalette(pal);
 	update_texture_ = true;
 	Refresh();
 }
@@ -140,12 +138,12 @@ void GfxCanvas::draw()
 		if (!drawing_)
 		{
 			delete[] drawing_mask_;
-			drawing_mask_ = new bool[image_.width() * image_.height()];
-			memset(drawing_mask_, false, image_.width() * image_.height());
+			drawing_mask_ = new bool[image_->width() * image_->height()];
+			memset(drawing_mask_, false, image_->width() * image_->height());
 		}
 
 		gl::Texture::clear(tex_image_);
-		tex_image_ = gl::Texture::createFromImage(image_, &palette_);
+		tex_image_ = gl::Texture::createFromImage(*image_, palette_.get());
 
 		update_texture_ = false;
 	}
@@ -192,15 +190,15 @@ void GfxCanvas::drawOffsetLines()
 void GfxCanvas::drawImage() const
 {
 	// Check image is valid
-	if (!image_.isValid())
+	if (!image_->isValid())
 		return;
 
 	bool  dragging = drag_origin_.x > 0;
-	Rectf img_rect{ 0.0f, 0.0f, static_cast<float>(image_.width()), static_cast<float>(image_.height()), false };
+	Rectf img_rect{ 0.0f, 0.0f, static_cast<float>(image_->width()), static_cast<float>(image_->height()), false };
 
 	// Apply offsets for sprite/hud view
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
-		img_rect.move(-image_.offset().x, -image_.offset().y);
+		img_rect.move(-image_->offset().x, -image_->offset().y);
 
 	gl::draw2d::RenderOptions opt{ tex_image_ };
 	if (dragging)
@@ -235,7 +233,7 @@ void GfxCanvas::drawImage() const
 	if (editing_mode_ != EditMode::None && gl::Texture::isCreated(tex_brush_) && cursor_pos_ != Vec2i{ -1, -1 })
 	{
 		opt.colour.a = 160;
-		opt.texture = tex_brush_;
+		opt.texture  = tex_brush_;
 		gl::draw2d::drawRect(img_rect, opt, &view_);
 	}
 
@@ -245,15 +243,15 @@ void GfxCanvas::drawImage() const
 		opt.colour.set(0, 0, 0, 64);
 		opt.texture = 0;
 		gl::draw2d::drawRectOutline(img_rect, opt, &view_);
-	 }
+	}
 }
 
 void GfxCanvas::drawImageTiled() const
 {
 	auto widthf    = static_cast<float>(view_.size().x / view_.scale().x);
 	auto heightf   = static_cast<float>(view_.size().y / view_.scale().y);
-	auto i_widthf  = static_cast<float>(image_.width());
-	auto i_heightf = static_cast<float>(image_.height());
+	auto i_widthf  = static_cast<float>(image_->width());
+	auto i_heightf = static_cast<float>(image_->height());
 
 	// Setup vertex buffer
 	gl::VertexBuffer2D vb_tiled;
@@ -302,8 +300,8 @@ void GfxCanvas::zoomToFit(bool mag, double padding)
 	const double pad  = static_cast<double>(std::min<int>(size.x, size.y)) * padding;
 
 	// Get image dimensions
-	const double x_dim = image_.width();
-	const double y_dim = image_.height();
+	const double x_dim = image_->width();
+	const double y_dim = image_->height();
 
 	// Get max scale for x and y (including padding)
 	const double x_scale = (static_cast<double>(size.x) - pad) / x_dim;
@@ -324,7 +322,7 @@ void GfxCanvas::resetViewOffsets()
 	if (view_type_ == View::HUD)
 		view_.setOffset(160, 100);
 	else if (view_type_ == View::Default || view_type_ == View::Centered)
-		view_.setOffset(image_.width() / 2., image_.height() / 2.);
+		view_.setOffset(image_->width() / 2., image_->height() / 2.);
 	else
 		view_.setOffset(0, 0);
 }
@@ -354,11 +352,11 @@ Vec2i GfxCanvas::imageCoords(int x, int y) const
 
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
 	{
-		image_pos.x += image_.offset().x;
-		image_pos.y += image_.offset().y;
+		image_pos.x += image_->offset().x;
+		image_pos.y += image_->offset().y;
 	}
 
-	if (image_pos.x < 0 || image_pos.y < 0 || image_pos.x >= image_.width() || image_pos.y >= image_.height())
+	if (image_pos.x < 0 || image_pos.y < 0 || image_pos.x >= image_->width() || image_pos.y >= image_->height())
 		return { -1, -1 }; // Not on image
 
 	return { static_cast<int>(image_pos.x), static_cast<int>(image_pos.y) };
@@ -377,8 +375,8 @@ void GfxCanvas::endOffsetDrag()
 	if (x != 0 || y != 0)
 	{
 		// Set image offsets
-		image_.setXOffset(image_.offset().x - x);
-		image_.setYOffset(image_.offset().y - y);
+		image_->setXOffset(image_->offset().x - x);
+		image_->setYOffset(image_->offset().y - y);
 
 		// Generate event
 		wxNotifyEvent e(wxEVT_GFXCANVAS_OFFSET_CHANGED, GetId());
@@ -397,7 +395,7 @@ void GfxCanvas::paintPixel(int x, int y)
 {
 	// With large brushes, it's very possible that some of the pixels
 	// are out of the image area; so don't process them.
-	if (x < 0 || y < 0 || x >= image_.width() || y >= image_.height())
+	if (x < 0 || y < 0 || x >= image_->width() || y >= image_->height())
 		return;
 
 	// Do not process pixels that were already modified in the
@@ -406,27 +404,27 @@ void GfxCanvas::paintPixel(int x, int y)
 	// of mouse events can happen while the mouse moves, leading
 	// to the same pixel being processed over and over, and that
 	// does not play well when applying translations.
-	const size_t pos = x + image_.width() * y;
+	const size_t pos = x + image_->width() * y;
 	if (drawing_mask_[pos])
 		return;
 
 	bool painted = false;
 	if (editing_mode_ == EditMode::Erase) // eraser
-		painted = image_.setPixel(x, y, 255, 0);
+		painted = image_->setPixel(x, y, 255, 0);
 	else if (editing_mode_ == EditMode::Translate) // translator
 	{
 		if (translation_ != nullptr)
 		{
-			const auto    ocol  = image_.pixelAt(x, y, &palette_);
+			const auto    ocol  = image_->pixelAt(x, y, palette_.get());
 			const uint8_t alpha = ocol.a;
-			auto          ncol  = (translation_->translate(ocol, &palette_));
+			auto          ncol  = (translation_->translate(ocol, palette_.get()));
 			ncol.a              = alpha;
 			if (!ocol.equals(ncol, false, true))
-				painted = image_.setPixel(x, y, ncol);
+				painted = image_->setPixel(x, y, ncol);
 		}
 	}
 	else
-		painted = image_.setPixel(x, y, paint_colour_);
+		painted = image_->setPixel(x, y, paint_colour_);
 
 	// Mark the modification, if any, and announce the modification
 	drawing_mask_[pos] = painted;
@@ -462,7 +460,7 @@ void GfxCanvas::pickColour(int x, int y)
 	const auto coord = imageCoords(x, y);
 
 	// Pick its colour
-	paint_colour_ = image_.pixelAt(coord.x, coord.y, &palette_);
+	paint_colour_ = image_->pixelAt(coord.x, coord.y, palette_.get());
 
 	// Announce it triumphantly to the world
 	wxNotifyEvent e(wxEVT_GFXCANVAS_COLOUR_PICKED, GetId());
@@ -480,7 +478,7 @@ void GfxCanvas::generateBrushShadow()
 
 	// Generate image
 	SImage img;
-	img.create(image_.width(), image_.height(), SImage::Type::RGBA);
+	img.create(image_->width(), image_->height(), SImage::Type::RGBA);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))
@@ -488,7 +486,7 @@ void GfxCanvas::generateBrushShadow()
 				auto col = paint_colour_;
 				if (editing_mode_ == EditMode::Translate && translation_)
 					col = translation_->translate(
-						image_.pixelAt(cursor_pos_.x + i, cursor_pos_.y + j, &palette_), &palette_);
+						image_->pixelAt(cursor_pos_.x + i, cursor_pos_.y + j, palette_.get()), palette_.get());
 				// Not sure what's the best way to preview cutting out
 				// Mimicking the checkerboard pattern perhaps?
 				// Cyan will do for now
@@ -565,7 +563,7 @@ void GfxCanvas::onMouseLeftUp(wxMouseEvent& e)
 	if (drawing_)
 	{
 		drawing_ = false;
-		memset(drawing_mask_, false, image_.width() * image_.height());
+		memset(drawing_mask_, false, image_->width() * image_->height());
 	}
 	// Stop dragging
 	if (drag_origin_.x >= 0)

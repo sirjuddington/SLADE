@@ -1,8 +1,10 @@
 
 #include "Main.h"
-#include "Shader.h"
+
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "OpenGL.h"
+#include "Shader.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -216,6 +218,58 @@ bool Shader::loadFiles(const string& vertex_file, const string& fragment_file, c
 	}
 
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Loads and compiles the vertex+fragment+(optional)geometry shaders from
+// [vertex_entry],[fragment_entry],[geometry_entry] in slade.pk3 (/shaders dir),
+// and links the program if [link] is true
+// -----------------------------------------------------------------------------
+bool Shader::loadResourceEntries(
+	string_view vertex_entry,
+	string_view fragment_entry,
+	string_view geometry_entry,
+	bool        link)
+{
+	auto program_resource = app::archiveManager().programResourceArchive();
+	if (program_resource)
+	{
+		// Vertex shader
+		auto entry_vert = program_resource->entryAtPath(fmt::format("shaders/{}", vertex_entry));
+		if (!entry_vert)
+		{
+			log::error("Vertex shader file {} not found in slade.pk3", vertex_entry);
+			return false;
+		}
+
+		// Fragment shader
+		auto entry_frag = program_resource->entryAtPath(fmt::format("shaders/{}", fragment_entry));
+		if (!entry_frag)
+		{
+			log::error("Fragment shader file {} not found in slade.pk3", fragment_entry);
+			return false;
+		}
+
+		// Geometry shader (optional)
+		ArchiveEntry* entry_geom = nullptr;
+		if (!geometry_entry.empty())
+		{
+			entry_geom = program_resource->entryAtPath(fmt::format("shaders/{}", geometry_entry));
+			if (!entry_geom)
+			{
+				log::error("Geometry shader file {} not found in slade.pk3", geometry_entry);
+				return false;
+			}
+		}
+
+		return load(
+			entry_vert->data().asString(),
+			entry_frag->data().asString(),
+			entry_geom ? entry_geom->data().asString() : string{},
+			link);
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

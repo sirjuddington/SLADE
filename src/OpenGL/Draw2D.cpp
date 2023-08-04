@@ -1,8 +1,6 @@
 
 #include "Main.h"
 #include "Draw2D.h"
-#include "App.h"
-#include "Archive/ArchiveManager.h"
 #include "GLTexture.h"
 #include "LineBuffer.h"
 #include "Shader.h"
@@ -15,8 +13,9 @@ using namespace gl;
 
 namespace
 {
-glm::mat4 identity_matrix(1.f);
-}
+glm::mat4      identity_matrix(1.f);
+gl::LineBuffer lb_lines;
+} // namespace
 EXTERN_CVAR(Bool, hud_statusbar)
 EXTERN_CVAR(Bool, hud_center)
 EXTERN_CVAR(Bool, hud_wide)
@@ -57,24 +56,9 @@ const Shader& draw2d::defaultShader(bool textured)
 
 	if (!shader_2d.isValid())
 	{
-		string shader_vert, shader_frag;
-
-		auto program_resource = app::archiveManager().programResourceArchive();
-		if (program_resource)
-		{
-			auto entry_vert = program_resource->entryAtPath("shaders/default2d.vert");
-			auto entry_frag = program_resource->entryAtPath("shaders/default2d.frag");
-			if (entry_vert && entry_frag)
-			{
-				shader_vert.assign(reinterpret_cast<const char*>(entry_vert->rawData()), entry_vert->size());
-				shader_frag.assign(reinterpret_cast<const char*>(entry_frag->rawData()), entry_frag->size());
-				shader_2d.define("TEXTURED");
-				shader_2d.load(shader_vert, shader_frag);
-				shader_2d_notex.load(shader_vert, shader_frag);
-			}
-			else
-				log::error("Unable to find default 2d shaders in the program resource!");
-		}
+		shader_2d.define("TEXTURED");
+		shader_2d.loadResourceEntries("default2d.vert", "default2d.frag");
+		shader_2d_notex.loadResourceEntries("default2d.vert", "default2d.frag");
 	}
 
 	return textured ? shader_2d : shader_2d_notex;
@@ -86,19 +70,8 @@ const Shader& draw2d::linesShader()
 
 	if (!shader_lines.isValid())
 	{
-		auto program_resource = app::archiveManager().programResourceArchive();
-		if (program_resource)
-		{
-			auto entry_vert = program_resource->entryAtPath("shaders/default2d.vert");
-			auto entry_frag = program_resource->entryAtPath("shaders/default2d.frag");
-			if (entry_vert && entry_frag)
-			{
-				shader_lines.define("THICK_LINES");
-				shader_lines.load(entry_vert->data().asString(), entry_frag->data().asString());
-			}
-			else
-				log::error("Unable to find default 2d shaders in the program resource!");
-		}
+		shader_lines.define("THICK_LINES");
+		shader_lines.loadResourceEntries("default2d.vert", "default2d.frag");
 	}
 
 	return shader_lines;
@@ -106,37 +79,27 @@ const Shader& draw2d::linesShader()
 
 const Shader& draw2d::pointSpriteShader(PointSprite type)
 {
-	static Shader shader_psprite("default2d_pointsprite");
+	static Shader shader_psprite_tex("default2d_pointsprite_tex");
+	static Shader shader_psprite_circle("default2d_pointsprite_circle");
 
-	if (!shader_psprite.isValid())
+	if (!shader_psprite_tex.isValid())
 	{
-		auto program_resource = app::archiveManager().programResourceArchive();
-		if (program_resource)
-		{
-			auto fragment_shader = "shaders/default2d.frag";
+		// PointSprite::Textured
+		shader_psprite_tex.define("GEOMETRY_SHADER");
+		shader_psprite_tex.define("TEXTURED");
+		shader_psprite_tex.loadResourceEntries("default2d.vert", "default2d.frag", "point_sprite.geom");
 
-			if (type == PointSprite::Circle)
-				fragment_shader = "shaders/circle.frag";
-
-			auto entry_vert = program_resource->entryAtPath("shaders/default2d.vert");
-			auto entry_geom = program_resource->entryAtPath("shaders/point_sprite.geom");
-			auto entry_frag = program_resource->entryAtPath(fragment_shader);
-			if (entry_vert && entry_frag && entry_geom)
-			{
-				if (type == PointSprite::Textured)
-					shader_psprite.define("TEXTURED");
-
-				shader_psprite.define("GEOMETRY_SHADER");
-
-				shader_psprite.load(
-					entry_vert->data().asString(), entry_frag->data().asString(), entry_geom->data().asString());
-			}
-			else
-				log::error("Unable to find default 2d shaders in the program resource!");
-		}
+		// PointSprite::Circle
+		shader_psprite_circle.define("GEOMETRY_SHADER");
+		shader_psprite_circle.loadResourceEntries("default2d.vert", "circle.frag", "point_sprite.geom");
 	}
 
-	return shader_psprite;
+	switch (type)
+	{
+	case PointSprite::Textured: return shader_psprite_tex;
+	case PointSprite::Circle: return shader_psprite_circle;
+	default: return shader_psprite_tex;
+	}
 }
 
 void draw2d::drawRect(Rectf rect, const RenderOptions& opt, const View* view)
@@ -161,6 +124,17 @@ void draw2d::drawRectOutline(Rectf rect, const RenderOptions& opt, const View* v
 	glLineWidth(opt.line_thickness);
 
 	VertexBuffer2D::unitSquare().draw(Primitive::LineLoop);
+}
+
+void draw2d::drawLines(const vector<Rectf>& lines, const RenderOptions& opt, const View* view)
+{
+	lb_lines.clear();
+	auto colour = opt.colour.asVec4();
+	for (const auto& line : lines)
+		lb_lines.add2d(line.x1(), line.y1(), line.x2(), line.y2(), colour, opt.line_thickness);
+	lb_lines.setAaRadius(opt.line_aa_radius, opt.line_aa_radius);
+
+	lb_lines.draw(view);
 }
 
 void draw2d::drawHud(const View* view)
@@ -230,8 +204,5 @@ void draw2d::drawHud(const View* view)
 	}
 
 	// Draw the hud lines
-	const auto& shader = lb_hud->shader();
-	if (view)
-		view->setupShader(shader);
-	lb_hud->draw();
+	lb_hud->draw(view);
 }

@@ -420,7 +420,11 @@ void GfxConvDialog::openEntries(const vector<ArchiveEntry*>& entries)
 // -----------------------------------------------------------------------------
 // Opens a list of composite textures to be converted
 // -----------------------------------------------------------------------------
-void GfxConvDialog::openTextures(const vector<CTexture*>& textures, Palette* palette, Archive* archive, bool force_rgba)
+void GfxConvDialog::openTextures(
+	const vector<CTexture*>& textures,
+	const Palette*           palette,
+	Archive*                 archive,
+	bool                     force_rgba)
 {
 	// Add entries to item list
 	for (auto& texture : textures)
@@ -450,7 +454,7 @@ void GfxConvDialog::updatePreviewGfx()
 	else
 		gfx_current_->setPalette(pal_chooser_current_->selectedPalette(item.entry));
 	if (pal_chooser_target_->globalSelected())
-		gfx_target_->setPalette(&gfx_current_->palette());
+		gfx_target_->setPalette(gfx_current_->palette());
 	else
 		gfx_target_->setPalette(pal_chooser_target_->selectedPalette(item.entry));
 
@@ -491,7 +495,7 @@ void GfxConvDialog::updateControls() const
 	// Set colourbox palette if source image has one
 	auto coltype = gfx_current_->image().type();
 	if (coltype == SImage::Type::PalMask)
-		colbox_transparent_->setPalette(&gfx_current_->palette());
+		colbox_transparent_->setPalette(gfx_current_->palette());
 	else
 		colbox_transparent_->setPalette(nullptr);
 
@@ -584,7 +588,7 @@ SIFormat* GfxConvDialog::itemFormat(int index) const
 // -----------------------------------------------------------------------------
 // Returns the palette for the item at [index]
 // -----------------------------------------------------------------------------
-Palette* GfxConvDialog::itemPalette(int index) const
+const Palette* GfxConvDialog::itemPalette(int index) const
 {
 	// Check index
 	if (index < 0 || index >= (int)items_.size())
@@ -751,7 +755,7 @@ void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 		return;
 
 	// Get the colour at that point
-	auto col = gfx_current_->image().pixelAt(imgcoord.x, imgcoord.y, &gfx_current_->palette());
+	auto col = gfx_current_->image().pixelAt(imgcoord.x, imgcoord.y, gfx_current_->palette());
 
 	// Set the background colour
 	colbox_transparent_->setColour(col);

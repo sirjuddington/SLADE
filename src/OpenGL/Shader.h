@@ -33,6 +33,11 @@ namespace gl
 			const string& fragment_file,
 			const string& geometry_file = {},
 			bool          link          = true);
+		bool loadResourceEntries(
+			string_view vertex_entry,
+			string_view fragment_entry,
+			string_view geometry_entry = {},
+			bool        link           = true);
 		bool link();
 
 		void bind() const;

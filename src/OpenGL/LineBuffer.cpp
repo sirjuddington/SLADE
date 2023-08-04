@@ -1,22 +1,29 @@
 
 #include "Main.h"
-
-#include "App.h"
 #include "LineBuffer.h"
 #include "Shader.h"
-#include "Archive/ArchiveManager.h"
+#include "View.h"
 
 using namespace slade;
 using namespace gl;
 
 namespace
 {
-unsigned vbo_quad = 0;
-unsigned ebo_quad = 0;
+unsigned vbo_quad        = 0;
+unsigned ebo_quad        = 0;
 float    quad_vertices[] = { 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0 };
 uint16_t quad_indices[]  = { 0, 1, 2, 0, 2, 3 };
 Shader   shader_lines{ "lines" };
 } // namespace
+
+
+namespace
+{
+void initShader()
+{
+	shader_lines.loadResourceEntries("lines.vert", "lines.frag");
+}
+}
 
 void LineBuffer::add(const Line& line)
 {
@@ -32,7 +39,7 @@ void LineBuffer::add(const vector<Line>& lines)
 	lines_updated_ = true;
 }
 
-void LineBuffer::draw() const
+void LineBuffer::draw(const View* view, const glm::vec4& colour) const
 {
 	if (lines_.empty())
 		return;
@@ -43,29 +50,25 @@ void LineBuffer::draw() const
 	if (lines_updated_)
 		updateVBO();
 
+	// Setup shader for drawing
+	if (!shader_lines.isValid())
+		initShader();
+	shader_lines.bind();
+	shader_lines.setUniform("aa_radius", aa_radius_);
+	shader_lines.setUniform("line_width", width_mult_);
+	shader_lines.setUniform("colour", colour);
+	if (view)
+		view->setupShader(shader_lines);
+
 	gl::bindVAO(vao_);
 	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr, lines_.size());
 	gl::bindVAO(0);
 }
 
-const Shader& LineBuffer::shader(float aa_radius)
+const Shader& LineBuffer::shader()
 {
 	if (!shader_lines.isValid())
-	{
-		auto program_resource = app::archiveManager().programResourceArchive();
-		if (program_resource)
-		{
-			auto entry_vert = program_resource->entryAtPath("shaders/lines.vert");
-			auto entry_frag = program_resource->entryAtPath("shaders/lines.frag");
-			if (entry_vert && entry_frag)
-				shader_lines.load(entry_vert->data().asString(), entry_frag->data().asString());
-			else
-				log::error("Unable to find line drawing shaders in the program resource!");
-		}
-	}
-
-	shader_lines.bind();
-	shader_lines.setUniform("aa_radius", glm::vec2{ aa_radius, aa_radius });
+		initShader();
 
 	return shader_lines;
 }

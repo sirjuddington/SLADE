@@ -28,6 +28,7 @@ namespace gl
 	{
 		Normal,
 		Additive,
+		Invert,
 
 		Ignore
 	};

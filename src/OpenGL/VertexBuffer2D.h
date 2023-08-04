@@ -4,6 +4,8 @@
 
 namespace slade::gl
 {
+class Shader;
+
 class VertexBuffer2D
 {
 public:
@@ -42,6 +44,10 @@ public:
 
 	void add(const Vertex& vertex);
 	void add(const vector<Vertex>& vertices);
+	void add(const glm::vec2& pos, const glm::vec4& colour, const glm::vec2& tex_coord)
+	{
+		add(Vertex{ pos, colour, tex_coord });
+	}
 
 	void draw(Primitive primitive = Primitive::Triangles) const;
 

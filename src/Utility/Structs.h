@@ -246,7 +246,7 @@ template<typename T> struct Rect
 		this->br = br;
 	}
 
-	void set(int x1, int y1, int x2, int y2)
+	void set(T x1, T y1, T x2, T y2)
 	{
 		tl.set(x1, y1);
 		br.set(x2, y2);

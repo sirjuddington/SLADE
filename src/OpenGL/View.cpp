@@ -282,15 +282,6 @@ double View::canvasY(int screen_y) const
 }
 
 // -----------------------------------------------------------------------------
-// Translates a position on the screen to the corresponding position on the
-// canvas itself
-// -----------------------------------------------------------------------------
-Vec2d View::canvasPos(const Vec2i& screen_pos) const
-{
-	return { canvasX(screen_pos.x), canvasY(screen_pos.y) };
-}
-
-// -----------------------------------------------------------------------------
 // Translates [x] from canvas coordinates to screen coordinates
 // -----------------------------------------------------------------------------
 int View::screenX(double canvas_x) const
@@ -371,11 +362,10 @@ void View::setOverlayCoords(bool set) const
 	}
 }
 
-void View::setupShader(const Shader& shader) const
+void View::setupShader(const Shader& shader, const glm::mat4& model) const
 {
 	shader.bind();
-	shader.setUniform("mvp", projection_matrix_ * view_matrix_);
-	shader.setUniform("colour", glm::vec4(1.f, 1.f, 1.f, 1.f));
+	shader.setUniform("mvp", projection_matrix_ * view_matrix_ * model);
 	shader.setUniform("viewport_size", glm::vec2(size_.x, size_.y));
 }
 

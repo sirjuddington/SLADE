@@ -32,7 +32,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PaletteCanvas.h"
+#include "Graphics/Palette/Palette.h"
 #include "OpenGL/Draw2D.h"
+#include "OpenGL/Shader.h"
+#include "OpenGL/VertexBuffer2D.h"
 
 using namespace slade;
 
@@ -49,6 +52,9 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 PaletteCanvas::PaletteCanvas(wxWindow* parent) : GLCanvas(parent), vb_palette_{ new gl::VertexBuffer2D() }
 {
+	// Init with default palette
+	palette_ = std::make_unique<Palette>();
+
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN, &PaletteCanvas::onMouseLeftDown, this);
 	Bind(wxEVT_RIGHT_DOWN, &PaletteCanvas::onMouseRightDown, this);
@@ -71,7 +77,7 @@ PaletteCanvas::PaletteCanvas(wxWindow* parent) : GLCanvas(parent), vb_palette_{ 
 ColRGBA PaletteCanvas::selectedColour() const
 {
 	if (sel_begin_ >= 0)
-		return palette_.colour(sel_begin_);
+		return palette_->colour(sel_begin_);
 	else
 		return { 0, 0, 0, 0 };
 }
@@ -95,7 +101,7 @@ void PaletteCanvas::setSelection(int begin, int end)
 // -----------------------------------------------------------------------------
 void PaletteCanvas::setPalette(const Palette* pal)
 {
-	palette_.copyPalette(pal);
+	GLCanvas::setPalette(pal);
 	updatePaletteBuffer();
 	Refresh();
 }
@@ -111,6 +117,7 @@ void PaletteCanvas::draw()
 	// Setup default 2d shader (untextured)
 	const auto& shader = gl::draw2d::defaultShader(false);
 	view_.setupShader(shader);
+	shader.setUniform("colour", glm::vec4{ 1.0f });
 
 	// Draw palette
 	vb_palette_->draw(gl::Primitive::Quads);
@@ -143,9 +150,9 @@ void PaletteCanvas::updatePaletteBuffer()
 		for (auto col = 0; col < cols_; col++)
 		{
 			// Get colour
-			colour.r = palette_.colour(index).fr();
-			colour.g = palette_.colour(index).fg();
-			colour.b = palette_.colour(index).fb();
+			colour.r = palette_->colour(index).fr();
+			colour.g = palette_->colour(index).fg();
+			colour.b = palette_->colour(index).fb();
 
 			if (index >= sel_begin_ && index <= sel_end_)
 			{
