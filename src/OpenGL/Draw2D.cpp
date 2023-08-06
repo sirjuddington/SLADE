@@ -1,26 +1,104 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2022 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Draw2D.cpp
+// Description: Various OpenGL 2D drawing functions and related classes
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+// FONT HANDLING
+// Load each font face in 36px size (our 'default' is 18px, so 2x that)
+// Each font face has custom smoothness value
+// When drawing with the font, calculate scale required to get desired pixel size
+// Smoothness value is scaled inverse, eg.
+// 18px = 0.5x scale, 2x smoothness
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Draw2D.h"
+#include "App.h"
+#include "Archive/ArchiveManager.h"
 #include "GLTexture.h"
 #include "LineBuffer.h"
 #include "Shader.h"
-#include "UI/Canvas/GLCanvas.h"
 #include "VertexBuffer2D.h"
+#include "View.h"
+#include "thirdparty/libdrawtext/drawtext.h"
 #include <glm/ext/matrix_transform.hpp>
 
 using namespace slade;
 using namespace gl;
 
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 glm::mat4      identity_matrix(1.f);
 gl::LineBuffer lb_lines;
+
+// Fonts & text rendering
+struct FontDef
+{
+	string    face;
+	float     softness = 0.015f;
+	dtx_font* handle   = nullptr;
+};
+constexpr int      FONT_SIZE_BASE = 36;
+vector<FontDef>    fonts          = { { "FiraSans-Regular", 0.018f, nullptr },          // Normal
+									  { "FiraSans-Bold", 0.018f, nullptr },             // Bold
+									  { "FiraSansCondensed-Regular", 0.018f, nullptr }, // Condensed
+									  { "FiraSansCondensed-Bold", 0.018f, nullptr },    // CondensedBold
+									  { "FiraMono-Medium", 0.02f, nullptr },            // Monospace
+									  { "FiraMono-Bold", 0.02f, nullptr } };            // MonospaceBold
+gl::VertexBuffer2D vb_text;
+bool               text_draw_init = false;
+glm::vec2          text_offset;
+float              text_scale = 1.0f;
 } // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, hud_statusbar)
 EXTERN_CVAR(Bool, hud_center)
 EXTERN_CVAR(Bool, hud_wide)
 EXTERN_CVAR(Bool, hud_bob)
 
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace slade::gl::draw2d
 {
 const Shader& setOptions(const RenderOptions& opt)
@@ -46,8 +124,111 @@ const Shader& setOptions(const RenderOptions& opt)
 
 	return shader;
 }
+
+bool loadFont(FontDef& font)
+{
+	auto entry = app::archiveManager().programResourceArchive()->entryAtPath(fmt::format("fonts/{}.gm", font.face));
+	if (!entry)
+	{
+		log::error("Font {} does not exist in slade.pk3", font.face);
+		return false;
+	}
+
+	font.handle = dtx_open_font_glyphmap_mem(const_cast<uint8_t*>(entry->rawData()), entry->size());
+
+	if (!font.handle)
+	{
+		log::error("Error loading font {} glyphmap", font.face);
+		return false;
+	}
+
+	return true;
+}
+
+FontDef* getFont(Font font)
+{
+	auto* fdef = &fonts[static_cast<int>(font)];
+
+	if (!fdef->handle)
+	{
+		if (!loadFont(*fdef))
+			return nullptr;
+	}
+
+	return fdef;
+}
+
+inline float fontScale(int size)
+{
+	constexpr auto font_size_base = static_cast<float>(FONT_SIZE_BASE);
+	return static_cast<float>(size) / font_size_base;
+}
+
+void drawTextCustomCallback(dtx_vertex* v, int vcount, dtx_pixmap* pixmap, void* cls)
+{
+	// Generate texture if needed
+	auto tex = reinterpret_cast<unsigned>(pixmap->udata);
+	if (tex == 0)
+	{
+		tex = gl::Texture::create(TexFilter::Linear, false);
+		gl::Texture::loadAlphaData(tex, pixmap->pixels, pixmap->width, pixmap->height);
+		pixmap->udata = reinterpret_cast<void*>(tex);
+	}
+
+	glm::vec4 colour{ 1.0f };
+	vb_text.clear();
+	for (int i = 0; i < vcount; ++i)
+	{
+		vb_text.add({ text_offset.x + v->x * text_scale, text_offset.y - v->y * text_scale }, colour, { v->s, v->t });
+		++v;
+	}
+
+	glEnable(GL_TEXTURE_2D);
+	gl::Texture::bind(tex);
+	gl::setBlend(gl::Blend::Normal);
+
+	vb_text.draw();
+}
+
+void initTextDrawing()
+{
+	dtx_set(DTX_PADDING, 64);
+
+	// Register custom callback for rendering text via libdrawtext
+	dtx_target_user(drawTextCustomCallback, nullptr);
+
+	text_draw_init = true;
+}
 } // namespace slade::gl::draw2d
 
+
+float draw2d::lineHeight(Font font, int size)
+{
+	auto fdef = getFont(font);
+	if (fdef)
+	{
+		dtx_use_font(fdef->handle, FONT_SIZE_BASE);
+		return dtx_line_height() * fontScale(size);
+	}
+
+	return 0.0f;
+}
+
+Vec2f draw2d::textExtents(const string& text, Font font, int size)
+{
+	auto fdef = getFont(font);
+	if (fdef)
+	{
+		dtx_box box;
+		auto    scale = fontScale(size);
+
+		dtx_use_font(fdef->handle, FONT_SIZE_BASE);
+		dtx_string_box(text.c_str(), &box);
+		return { (box.width - box.x) * scale, box.height * scale };
+	}
+
+	return {};
+}
 
 const Shader& draw2d::defaultShader(bool textured)
 {
@@ -205,4 +386,109 @@ void draw2d::drawHud(const View* view)
 
 	// Draw the hud lines
 	lb_hud->draw(view);
+}
+
+void draw2d::drawText(const string& text, const Vec2f& pos, const TextOptions& opt, const View* view)
+{
+	// TODO: Improve DropShadow rendering
+	// Using just the shader doesn't really allow for the shadow to be offset much,
+	// so it isn't very visible for small text.
+	// Might need to do something like render the text twice, once for the shadow and once normally on top
+	// (we have a vertex buffer for the string so it'd just be 1 extra draw call)
+
+	if (!text_draw_init)
+		initTextDrawing();
+
+	// Get+setup font
+	auto font = getFont(opt.font);
+	if (!font)
+		return;
+
+	// Determine offset
+	switch (opt.alignment)
+	{
+	case Align::Right:
+	{
+		auto size     = textExtents(text, opt.font, opt.size);
+		text_offset.x = pos.x - size.x;
+		text_offset.y = pos.y;
+		break;
+	}
+	case Align::Center:
+	{
+		auto size     = textExtents(text, opt.font, opt.size);
+		text_offset.x = pos.x - size.x * 0.5f;
+		text_offset.y = pos.y;
+		break;
+	}
+	default:
+		text_offset.x = pos.x;
+		text_offset.y = pos.y;
+		break;
+	}
+
+	// Sharpen softness value if the view is zoomed in
+	auto scale      = fontScale(opt.size);
+	auto full_scale = scale;
+	if (view && view->scale().x > 1)
+		full_scale *= view->scale().x;
+
+	// Create shaders if needed
+	static Shader shader_text("text");
+	static Shader shader_text_outline("text_outline");
+	static Shader shader_text_dropshadow("text_dropshadow");
+	if (!shader_text.isValid())
+	{
+		shader_text.loadResourceEntries("default2d.vert", "text.frag");
+		shader_text_outline.loadResourceEntries("default2d.vert", "text_outline.frag");
+		shader_text_dropshadow.loadResourceEntries("default2d.vert", "text_dropshadow.frag");
+	}
+
+	// Setup shader
+	const Shader* shader = nullptr;
+	switch (opt.style)
+	{
+	case TextStyle::Normal: shader = &shader_text; break;
+	case TextStyle::Outline: shader = &shader_text_outline; break;
+	case TextStyle::DropShadow: shader = &shader_text_dropshadow; break;
+	}
+	shader->bind();
+	shader->setUniform("colour", glm::vec4{ 1.0f });
+	shader->setUniform("mvp", view ? view->mvpMatrix(identity_matrix) : identity_matrix);
+	shader->setUniform("softness", font->softness / full_scale);
+	if (view)
+		shader->setUniform("viewport_size", glm::vec2(view->size().x, view->size().y));
+	if (opt.style == TextStyle::Outline)
+		shader->setUniform("outline_colour", opt.outline_shadow_colour.asVec4());
+	if (opt.style == TextStyle::DropShadow)
+		shader->setUniform("shadow_colour", opt.outline_shadow_colour.asVec4());
+
+	// Draw the text
+	text_scale = scale;
+	dtx_use_font(font->handle, FONT_SIZE_BASE);
+	dtx_string(text.c_str());
+}
+
+
+
+#include "General/Console.h"
+
+CONSOLE_COMMAND(gen_glyphmap, 1, false)
+{
+	dtx_set(DTX_PADDING, 64);
+
+	auto font = dtx_open_font(args[0].c_str(), 0);
+	if (!font)
+	{
+		log::error("Unable to open font file");
+		return;
+	}
+
+	auto mult = 8;
+	dtx_prepare_range(font, FONT_SIZE_BASE * mult, 32, 127);
+	dtx_calc_font_distfield(font, 1, mult);
+
+	auto gm_fn   = fmt::format("{}.gm", strutil::Path::fileNameOf(args[0], false));
+	auto gm_path = app::path(gm_fn, app::Dir::Data);
+	dtx_save_glyphmap(gm_path.c_str(), dtx_get_glyphmap(font, 0));
 }

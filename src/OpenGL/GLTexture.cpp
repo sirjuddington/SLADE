@@ -276,6 +276,40 @@ bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, uns
 	return true;
 }
 
+bool gl::Texture::loadAlphaData(unsigned id, const uint8_t* data, unsigned width, unsigned height)
+{
+	// Check OpenGL is initialised
+	if (!gl::isInitialised())
+		return false;
+
+	// Check given id
+	if (id == 0 || id == tex_missing.id || id == tex_background.id)
+	{
+		log::warning("Unable to load OpenGL texture with id {} - invalid or built-in texture", id);
+		return false;
+	}
+
+	// Check image dimensions
+	if (!validTexDimension(width) || !validTexDimension(height))
+	{
+		log::warning("Attempt to create OpenGL texture of invalid size {}x{}", width, height);
+		return false;
+	}
+
+	bind(id);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, data);
+
+	textures[id].tiling = false;
+	textures[id].filter = TexFilter::Linear;
+	textures[id].size = { static_cast<int>(width), static_cast<int>(height) };
+
+	return true;
+}
+
 // -----------------------------------------------------------------------------
 // Loads [image] to the OpenGL texture [id], using [pal] if necessary
 // -----------------------------------------------------------------------------

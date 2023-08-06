@@ -14,6 +14,41 @@ namespace gl
 
 	namespace draw2d
 	{
+		// Point Sprite types
+		enum class PointSprite
+		{
+			Textured,
+			Circle
+		};
+
+		// Font styles
+		enum class Font
+		{
+			Normal,
+			Bold,
+			Condensed,
+			CondensedBold,
+			Monospace,
+			MonospaceBold,
+		};
+
+		// Text styles
+		enum class TextStyle
+		{
+			Normal,
+			Outline,
+			DropShadow
+		};
+
+		// Text alignment
+		enum class Align
+		{
+			Left,
+			Right,
+			Center
+		};
+
+		// Options for rendering shapes
 		struct RenderOptions
 		{
 			unsigned texture        = 0;
@@ -32,23 +67,34 @@ namespace gl
 			}
 		};
 
-		enum class PointSprite
+		// Options for rendering text
+		struct TextOptions
 		{
-			Textured,
-			Circle
+			Font      font                  = Font::Normal;
+			ColRGBA   colour                = ColRGBA::WHITE;
+			int       size                  = 18;
+			Align     alignment             = Align::Left;
+			TextStyle style                 = TextStyle::Normal;
+			ColRGBA   outline_shadow_colour = ColRGBA::BLACK;
 		};
+
+		// Font/text metrics
+		float lineHeight(Font font, int size = 18);
+		Vec2f textExtents(const string& text, Font font, int size = 18);
 
 		// 2d drawing shaders
 		const Shader& defaultShader(bool textured = true);
 		const Shader& linesShader();
 		const Shader& pointSpriteShader(PointSprite type);
 
+		// General drawing
 		void drawRect(Rectf rect, const RenderOptions& opt = {}, const View* view = nullptr);
 		void drawRectOutline(Rectf rect, const RenderOptions& opt = {}, const View* view = nullptr);
 		void drawLines(const vector<Rectf>& lines, const RenderOptions& opt = {}, const View* view = nullptr);
+		void drawText(const string& text, const Vec2f& pos, const TextOptions& opt = {}, const View* view = nullptr);
 
+		// Specialized drawing
 		void drawHud(const View* view = nullptr);
-
 	} // namespace draw2d
 } // namespace gl
 } // namespace slade

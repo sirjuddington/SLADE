@@ -97,7 +97,9 @@ bool GLCanvas::activateContext()
 
 void GLCanvas::draw()
 {
-	static gl::VertexBuffer2D testbuf;
+	using namespace gl;
+
+	static VertexBuffer2D testbuf;
 	if (testbuf.empty())
 	{
 		testbuf.add({ { 50.f, 50.f }, { 1.f, 0.f, 0.f, 1.f }, { 0.f, 0.f } });
@@ -105,9 +107,60 @@ void GLCanvas::draw()
 		testbuf.add({ { 150.f, 50.f }, { 0.f, 0.f, 1.f, 0.4f }, { 0.f, 0.f } });
 	}
 
-	auto& shader = gl::draw2d::defaultShader(false);
+	auto& shader = draw2d::defaultShader(false);
 	view_.setupShader(shader);
+	shader.setUniform("colour", glm::vec4{ 1.0f });
 	testbuf.draw();
+
+	draw2d::TextOptions opt;
+	string test = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz 1234567890 !@#$%^&*() :;[]{}-_=+`~/\\";
+	float  y    = 50.0f;
+	opt.style   = draw2d::TextStyle::Normal;
+	opt.outline_shadow_colour = { 0, 0, 0, 255 };
+	draw2d::drawText(fmt::format("Normal - {}", test), { 50, y }, opt, &view_);
+
+	y += draw2d::lineHeight(opt.font);
+	opt.style = draw2d::TextStyle::Outline;
+	draw2d::drawText(fmt::format("Normal (Outline) - {}", test), { 50, y }, opt, &view_);
+
+	y += draw2d::lineHeight(opt.font);
+	opt.style = draw2d::TextStyle::DropShadow;
+	draw2d::drawText(fmt::format("Normal (DropShadow) - {}", test), { 50, y }, opt, &view_);
+
+	opt.style = draw2d::TextStyle::Normal;
+	opt.font  = draw2d::Font::Bold;
+	y += draw2d::lineHeight(opt.font);
+	draw2d::drawText(fmt::format("Bold - {}", test), { 50, y }, opt, &view_);
+
+	opt.font = draw2d::Font::Condensed;
+	y += draw2d::lineHeight(opt.font);
+	draw2d::drawText(fmt::format("Condensed - {}", test), { 50, y }, opt, &view_);
+
+	opt.font = draw2d::Font::CondensedBold;
+	y += draw2d::lineHeight(opt.font);
+	draw2d::drawText(fmt::format("CondensedBold - {}", test), { 50, y }, opt, &view_);
+
+	opt.font = draw2d::Font::Monospace;
+	y += draw2d::lineHeight(opt.font);
+	draw2d::drawText(fmt::format("Monospace - {}", test), { 50, y }, opt, &view_);
+
+	opt.font = draw2d::Font::MonospaceBold;
+	y += draw2d::lineHeight(opt.font);
+	draw2d::drawText(fmt::format("MonospaceBold - {}", test), { 50, y }, opt, &view_);
+
+	opt.style = draw2d::TextStyle::Outline;
+	opt.size = 24;
+	opt.font = draw2d::Font::Bold;
+	y += 100.0f;
+	draw2d::drawText("Left Aligned", { (float)view_.canvasX(0), y }, opt, &view_);
+
+	opt.alignment = draw2d::Align::Center;
+	y += draw2d::lineHeight(opt.font, opt.size);
+	draw2d::drawText("Center Aligned", { (float)view_.canvasX(GetSize().x / 2), y }, opt, &view_);
+
+	opt.alignment = draw2d::Align::Right;
+	y += draw2d::lineHeight(opt.font, opt.size);
+	draw2d::drawText("Right Aligned", { (float)view_.canvasX(GetSize().x), y }, opt, &view_);
 }
 
 void GLCanvas::init()
@@ -210,7 +263,9 @@ void GLCanvas::onPaint(wxPaintEvent& e)
 
 
 // Testing
+#include "App.h"
 #include "General/Console.h"
+#include "UI/Controls/ConsolePanel.h"
 
 CONSOLE_COMMAND(tgc, 0, false)
 {
@@ -220,7 +275,8 @@ CONSOLE_COMMAND(tgc, 0, false)
 	auto canvas = new GLCanvas{ &dlg, GLCanvas::BGStyle::Checkered, ColRGBA::BLACK, gl::View{ false, false, false } };
 
 	dlg.SetSizer(new wxBoxSizer(wxVERTICAL));
-	dlg.GetSizer()->Add(canvas, 1, wxEXPAND | wxALL, 10);
+	dlg.GetSizer()->Add(canvas, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+	dlg.GetSizer()->Add(new ConsolePanel(&dlg, -1), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
 	canvas->setupMousewheelZoom();
 	canvas->setupMousePanning();
@@ -260,6 +316,18 @@ CONSOLE_COMMAND(tgc, 0, false)
 				canvas->view().zoom(0.8);
 
 			canvas->Refresh();
+		});
+
+	auto tick = app::runTimer();
+	canvas->Bind(
+		wxEVT_IDLE,
+		[&](wxIdleEvent& e)
+		{
+			if (app::runTimer() > tick + 100)
+			{
+				canvas->Refresh();
+				tick = app::runTimer();
+			}
 		});
 
 	dlg.CenterOnParent();
