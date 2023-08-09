@@ -389,6 +389,24 @@ void CTexture::copyTexture(const CTexture& tex, bool keep_type)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the texture's scale as a multiplication factor
+// -----------------------------------------------------------------------------
+Vec2d CTexture::scaleFactor() const
+{
+	Vec2d scale = scale_;
+	if (scale.x == 0.0)
+		scale.x = 1.0;
+	else
+		scale.x = 1.0 / scale.x;
+	if (scale.y == 0.0)
+		scale.y = 1.0;
+	else
+		scale.y = 1.0 / scale.y;
+
+	return scale;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the patch at [index], or NULL if [index] is out of bounds
 // -----------------------------------------------------------------------------
 CTPatch* CTexture::patch(size_t index) const

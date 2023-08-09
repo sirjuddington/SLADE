@@ -137,13 +137,13 @@ void ANSICanvas::draw()
 	auto hy = static_cast<float>(height_) * 0.5f;
 
 	// Draw the image
-	gl::draw2d::RenderOptions opt{ tex_image_ };
-	gl::draw2d::drawRect({ -hx, -hy, hx, hy }, opt, &view_);
+	gl::draw2d::Context dc(&view_);
+	dc.texture = tex_image_;
+	dc.drawRect({ -hx, -hy, hx, hy });
 
 	// Draw outline
-	opt.texture = 0;
-	opt.colour.set(0, 0, 0, 64);
-	gl::draw2d::drawRectOutline({ -hx, -hy, hx, hy }, opt, &view_);
+	dc.colour.set(0, 0, 0, 64);
+	dc.drawRectOutline({ -hx, -hy, hx, hy });
 }
 
 // -----------------------------------------------------------------------------

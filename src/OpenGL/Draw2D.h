@@ -48,34 +48,36 @@ namespace gl
 			Center
 		};
 
-		// Options for rendering shapes
-		struct RenderOptions
+		struct Context
 		{
-			unsigned texture        = 0;
-			ColRGBA  colour         = ColRGBA::WHITE;
-			Blend    blend          = Blend::Ignore;
-			float    line_thickness = 1.0f;
-			float    line_aa_radius = 2.0f;
+			Context() = default;
+			Context(const View* view) : view{ view } {}
 
-			RenderOptions(
-				unsigned       texture        = 0,
-				const ColRGBA& colour         = ColRGBA::WHITE,
-				Blend          blend          = Blend::Ignore,
-				float          line_thickness = 1.0f) :
-				texture{ texture }, colour{ colour }, blend{ blend }, line_thickness{ line_thickness }
-			{
-			}
-		};
+			const View* view;
+			glm::mat4   model_matrix = glm::mat4{ 1.0f };
 
-		// Options for rendering text
-		struct TextOptions
-		{
-			Font      font                  = Font::Normal;
-			ColRGBA   colour                = ColRGBA::WHITE;
-			int       size                  = 18;
-			Align     alignment             = Align::Left;
-			TextStyle style                 = TextStyle::Normal;
-			ColRGBA   outline_shadow_colour = ColRGBA::BLACK;
+			unsigned  texture        = 0;
+			ColRGBA   colour         = ColRGBA::WHITE;
+			ColRGBA   outline_colour = ColRGBA::BLACK;
+			Blend     blend          = Blend::Ignore;
+			float     line_thickness = 1.0f;
+			float     line_aa_radius = 2.0f;
+			Font      font           = Font::Normal;
+			int       text_size      = 18;
+			Align     text_alignment = Align::Left;
+			TextStyle text_style     = TextStyle::Normal;
+
+			void translate(float x, float y);
+			void scale(float x, float y);
+
+			float textLineHeight() const;
+			Vec2f textExtents(const string& text) const;
+
+			void drawRect(const Rectf& rect) const;
+			void drawRectOutline(const Rectf& rect) const;
+			void drawLines(const vector<Rectf>& lines) const;
+			void drawText(const string& text, const Vec2f& pos) const;
+			void drawHud() const;
 		};
 
 		// Font/text metrics
@@ -86,15 +88,6 @@ namespace gl
 		const Shader& defaultShader(bool textured = true);
 		const Shader& linesShader();
 		const Shader& pointSpriteShader(PointSprite type);
-
-		// General drawing
-		void drawRect(Rectf rect, const RenderOptions& opt = {}, const View* view = nullptr);
-		void drawRectOutline(Rectf rect, const RenderOptions& opt = {}, const View* view = nullptr);
-		void drawLines(const vector<Rectf>& lines, const RenderOptions& opt = {}, const View* view = nullptr);
-		void drawText(const string& text, const Vec2f& pos, const TextOptions& opt = {}, const View* view = nullptr);
-
-		// Specialized drawing
-		void drawHud(const View* view = nullptr);
 	} // namespace draw2d
 } // namespace gl
 } // namespace slade

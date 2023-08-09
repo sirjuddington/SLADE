@@ -23,13 +23,6 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
 // -----------------------------------------------------------------------------
 
-// FONT HANDLING
-// Load each font face in 36px size (our 'default' is 18px, so 2x that)
-// Each font face has custom smoothness value
-// When drawing with the font, calculate scale required to get desired pixel size
-// Smoothness value is scaled inverse, eg.
-// 18px = 0.5x scale, 2x smoothness
-
 
 // -----------------------------------------------------------------------------
 //
@@ -101,30 +94,6 @@ EXTERN_CVAR(Bool, hud_bob)
 // -----------------------------------------------------------------------------
 namespace slade::gl::draw2d
 {
-const Shader& setOptions(const RenderOptions& opt)
-{
-	const auto& shader = defaultShader(opt.texture > 0);
-	shader.bind();
-
-	// Texture
-	if (opt.texture > 0)
-	{
-		glEnable(GL_TEXTURE_2D);
-		Texture::bind(opt.texture);
-	}
-	else
-		glDisable(GL_TEXTURE_2D);
-
-	// Colour
-	shader.setUniform("colour", glm::vec4(opt.colour.fr(), opt.colour.fg(), opt.colour.fb(), opt.colour.fa()));
-
-	// Blending
-	if (opt.blend != Blend::Ignore)
-		gl::setBlend(opt.blend);
-
-	return shader;
-}
-
 bool loadFont(FontDef& font)
 {
 	auto entry = app::archiveManager().programResourceArchive()->entryAtPath(fmt::format("fonts/{}.gm", font.face));
@@ -200,6 +169,248 @@ void initTextDrawing()
 	text_draw_init = true;
 }
 } // namespace slade::gl::draw2d
+
+
+void draw2d::Context::translate(float x, float y)
+{
+	model_matrix = glm::translate(model_matrix, { x, y, 0.0f });
+}
+
+void draw2d::Context::scale(float x, float y)
+{
+	model_matrix = glm::scale(model_matrix, { x, y, 1.0f });
+}
+
+float draw2d::Context::textLineHeight() const
+{
+	return draw2d::lineHeight(font, text_size);
+}
+
+Vec2f draw2d::Context::textExtents(const string& text) const
+{
+	return draw2d::textExtents(text, font, text_size);
+}
+
+void draw2d::Context::drawRect(const Rectf& rect) const
+{
+	const auto& shader = defaultShader(texture > 0);
+	shader.bind();
+
+	// Texture
+	if (texture > 0)
+	{
+		glEnable(GL_TEXTURE_2D);
+		Texture::bind(texture);
+	}
+	else
+		glDisable(GL_TEXTURE_2D);
+
+	// Colour
+	shader.setUniform("colour", colour.asVec4());
+
+	// Blending
+	if (blend != Blend::Ignore)
+		gl::setBlend(blend);
+
+	auto model = glm::translate(model_matrix, { rect.tl.x, rect.tl.y, 0.f });
+	model      = glm::scale(model, { rect.width(), rect.height(), 1.f });
+	shader.setUniform("mvp", view ? view->mvpMatrix(model) : model);
+
+	VertexBuffer2D::unitSquare().draw(Primitive::Quads);
+}
+
+void draw2d::Context::drawRectOutline(const Rectf& rect) const
+{
+	auto& shader = defaultShader(false);
+
+	// Texture
+	glDisable(GL_TEXTURE_2D);
+
+	// Colour
+	shader.setUniform("colour", colour.asVec4());
+
+	// Blending
+	if (blend != Blend::Ignore)
+		gl::setBlend(blend);
+
+	auto model = glm::translate(model_matrix, { rect.tl.x, rect.tl.y, 0.f });
+	model      = glm::scale(model, { rect.width(), rect.height(), 1.f });
+	shader.setUniform("mvp", view ? view->mvpMatrix(model) : model);
+
+	glLineWidth(line_thickness);
+
+	VertexBuffer2D::unitSquare().draw(Primitive::LineLoop);
+}
+
+void draw2d::Context::drawLines(const vector<Rectf>& lines) const
+{
+	// Build line buffer
+	lb_lines.clear();
+	auto col = colour.asVec4();
+	for (const auto& line : lines)
+		lb_lines.add2d(line.x1(), line.y1(), line.x2(), line.y2(), col, line_thickness);
+	lb_lines.setAaRadius(line_aa_radius, line_aa_radius);
+
+	// Blending
+	if (blend != Blend::Ignore)
+		gl::setBlend(blend);
+
+	lb_lines.draw(view, glm::vec4{ 1.0f }, model_matrix);
+}
+
+void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
+{
+	// TODO: Improve DropShadow rendering
+	// Using just the shader doesn't really allow for the shadow to be offset much,
+	// so it isn't very visible for small text.
+	// Might need to do something like render the text twice, once for the shadow and once normally on top
+	// (we have a vertex buffer for the string so it'd just be 1 extra draw call)
+
+	if (!text_draw_init)
+		initTextDrawing();
+
+	// Get+setup font
+	auto fdef = getFont(font);
+	if (!fdef)
+		return;
+
+	// Determine offset
+	switch (text_alignment)
+	{
+	case Align::Right:
+	{
+		auto size     = textExtents(text);
+		text_offset.x = pos.x - size.x;
+		text_offset.y = pos.y;
+		break;
+	}
+	case Align::Center:
+	{
+		auto size     = textExtents(text);
+		text_offset.x = pos.x - size.x * 0.5f;
+		text_offset.y = pos.y;
+		break;
+	}
+	default:
+		text_offset.x = pos.x;
+		text_offset.y = pos.y;
+		break;
+	}
+
+	// Sharpen softness value if the view is zoomed in
+	auto scale      = fontScale(text_size);
+	auto full_scale = scale;
+	if (view && view->scale().x > 1)
+		full_scale *= view->scale().x;
+
+	// Create shaders if needed
+	static Shader shader_text("text");
+	static Shader shader_text_outline("text_outline");
+	static Shader shader_text_dropshadow("text_dropshadow");
+	if (!shader_text.isValid())
+	{
+		shader_text.loadResourceEntries("default2d.vert", "text.frag");
+		shader_text_outline.loadResourceEntries("default2d.vert", "text_outline.frag");
+		shader_text_dropshadow.loadResourceEntries("default2d.vert", "text_dropshadow.frag");
+	}
+
+	// Setup shader
+	const Shader* shader = nullptr;
+	switch (text_style)
+	{
+	case TextStyle::Normal: shader = &shader_text; break;
+	case TextStyle::Outline: shader = &shader_text_outline; break;
+	case TextStyle::DropShadow: shader = &shader_text_dropshadow; break;
+	}
+	shader->bind();
+	shader->setUniform("colour", glm::vec4{ 1.0f });
+	shader->setUniform("mvp", view ? view->mvpMatrix(model_matrix) : model_matrix);
+	shader->setUniform("softness", fdef->softness / full_scale);
+	if (view)
+		shader->setUniform("viewport_size", glm::vec2(view->size().x, view->size().y));
+	if (text_style == TextStyle::Outline)
+		shader->setUniform("outline_colour", outline_colour.asVec4());
+	if (text_style == TextStyle::DropShadow)
+		shader->setUniform("shadow_colour", outline_colour.asVec4());
+
+	// Draw the text
+	text_scale = scale;
+	dtx_use_font(fdef->handle, FONT_SIZE_BASE);
+	dtx_string(text.c_str());
+}
+
+void draw2d::Context::drawHud() const
+{
+	static unique_ptr<LineBuffer> lb_hud;
+	static bool                   hud_wide_prev, hud_statusbar_prev, hud_center_prev, hud_bob_prev;
+
+	// Create hud line buffer when called for the first time
+	if (!lb_hud)
+	{
+		lb_hud        = std::make_unique<LineBuffer>();
+		hud_wide_prev = !hud_wide; // Force buffer rebuild
+	}
+
+	// Rebuild line buffer if hud drawing options changed
+	if (hud_wide != hud_wide_prev || hud_statusbar != hud_statusbar_prev || hud_center != hud_center_prev
+		|| hud_bob != hud_bob_prev)
+	{
+		lb_hud->clear();
+
+		glm::vec4 col{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+		// (320/354)x200 screen outline
+		float right = hud_wide ? 337.0f : 320.0f;
+		float left  = hud_wide ? -17.0f : 0.0f;
+		lb_hud->add2d(left, 0.0f, left, 200.0f, col, 1.5f);
+		lb_hud->add2d(left, 200.0f, right, 200.0f, col, 1.5f);
+		lb_hud->add2d(right, 200.0f, right, 0.0f, col, 1.5f);
+		lb_hud->add2d(right, 0.0f, left, 0.0f, col, 1.5f);
+
+		// Statusbar line(s)
+		col.a = 0.5f;
+		if (hud_statusbar)
+		{
+			lb_hud->add2d(left, 168.0f, right, 168.0f, col); // Doom's status bar: 32 pixels tall
+			lb_hud->add2d(left, 162.0f, right, 162.0f, col); // Hexen: 38 pixels
+			lb_hud->add2d(left, 158.0f, right, 158.0f, col); // Heretic: 42 pixels
+		}
+
+		// Center lines
+		if (hud_center)
+		{
+			lb_hud->add2d(left, 100.0f, right, 100.0f, col);
+			lb_hud->add2d(160.0f, 0.0f, 160.0f, 200.0f, col);
+		}
+
+		// Normal screen edge guides if widescreen
+		if (hud_wide)
+		{
+			lb_hud->add2d(0.0f, 0.0f, 0.0f, 200.0f, col);
+			lb_hud->add2d(320.0f, 0.0f, 320.0f, 200.0f, col);
+		}
+
+		// Weapon bobbing guides
+		if (hud_bob)
+		{
+			lb_hud->add2d(left - 16.0f, -16.0f, left - 16.0f, 216.0f, col, 0.8f);
+			lb_hud->add2d(left - 16.0f, 216.0f, right + 16.0f, 216.0f, col, 0.8f);
+			lb_hud->add2d(right + 16.0f, 216.0f, right + 16.0f, -16.0f, col, 0.8f);
+			lb_hud->add2d(right + 16.0f, -16.0f, left - 16.0f, -16.0f, col, 0.8f);
+		}
+
+		hud_wide_prev      = hud_wide;
+		hud_statusbar_prev = hud_statusbar;
+		hud_center_prev    = hud_center;
+		hud_bob_prev       = hud_bob;
+	}
+
+	// Draw the hud lines
+	lb_hud->draw(view, glm::vec4{ 1.0f }, model_matrix);
+}
+
+
+
 
 
 float draw2d::lineHeight(Font font, int size)
@@ -283,191 +494,6 @@ const Shader& draw2d::pointSpriteShader(PointSprite type)
 	}
 }
 
-void draw2d::drawRect(Rectf rect, const RenderOptions& opt, const View* view)
-{
-	auto& shader = setOptions(opt);
-
-	auto model = glm::translate(identity_matrix, { rect.tl.x, rect.tl.y, 0.f });
-	model      = glm::scale(model, { rect.width(), rect.height(), 1.f });
-	shader.setUniform("mvp", view ? view->mvpMatrix(model) : model);
-
-	VertexBuffer2D::unitSquare().draw(Primitive::Quads);
-}
-
-void draw2d::drawRectOutline(Rectf rect, const RenderOptions& opt, const View* view)
-{
-	auto& shader = setOptions(opt);
-
-	auto model = glm::translate(identity_matrix, { rect.tl.x, rect.tl.y, 0.f });
-	model      = glm::scale(model, { rect.width(), rect.height(), 1.f });
-	shader.setUniform("mvp", view ? view->mvpMatrix(model) : model);
-
-	glLineWidth(opt.line_thickness);
-
-	VertexBuffer2D::unitSquare().draw(Primitive::LineLoop);
-}
-
-void draw2d::drawLines(const vector<Rectf>& lines, const RenderOptions& opt, const View* view)
-{
-	lb_lines.clear();
-	auto colour = opt.colour.asVec4();
-	for (const auto& line : lines)
-		lb_lines.add2d(line.x1(), line.y1(), line.x2(), line.y2(), colour, opt.line_thickness);
-	lb_lines.setAaRadius(opt.line_aa_radius, opt.line_aa_radius);
-
-	lb_lines.draw(view);
-}
-
-void draw2d::drawHud(const View* view)
-{
-	static unique_ptr<LineBuffer> lb_hud;
-	static bool                   hud_wide_prev, hud_statusbar_prev, hud_center_prev, hud_bob_prev;
-
-	// Create hud line buffer when called for the first time
-	if (!lb_hud)
-	{
-		lb_hud        = std::make_unique<LineBuffer>();
-		hud_wide_prev = !hud_wide; // Force buffer rebuild
-	}
-
-	// Rebuild line buffer if hud drawing options changed
-	if (hud_wide != hud_wide_prev || hud_statusbar != hud_statusbar_prev || hud_center != hud_center_prev
-		|| hud_bob != hud_bob_prev)
-	{
-		lb_hud->clear();
-
-		glm::vec4 colour{ 0.0f, 0.0f, 0.0f, 1.0f };
-
-		// (320/354)x200 screen outline
-		float right = hud_wide ? 337.0f : 320.0f;
-		float left  = hud_wide ? -17.0f : 0.0f;
-		lb_hud->add2d(left, 0.0f, left, 200.0f, colour, 1.5f);
-		lb_hud->add2d(left, 200.0f, right, 200.0f, colour, 1.5f);
-		lb_hud->add2d(right, 200.0f, right, 0.0f, colour, 1.5f);
-		lb_hud->add2d(right, 0.0f, left, 0.0f, colour, 1.5f);
-
-		// Statusbar line(s)
-		colour.a = 0.5f;
-		if (hud_statusbar)
-		{
-			lb_hud->add2d(left, 168.0f, right, 168.0f, colour); // Doom's status bar: 32 pixels tall
-			lb_hud->add2d(left, 162.0f, right, 162.0f, colour); // Hexen: 38 pixels
-			lb_hud->add2d(left, 158.0f, right, 158.0f, colour); // Heretic: 42 pixels
-		}
-
-		// Center lines
-		if (hud_center)
-		{
-			lb_hud->add2d(left, 100.0f, right, 100.0f, colour);
-			lb_hud->add2d(160.0f, 0.0f, 160.0f, 200.0f, colour);
-		}
-
-		// Normal screen edge guides if widescreen
-		if (hud_wide)
-		{
-			lb_hud->add2d(0.0f, 0.0f, 0.0f, 200.0f, colour);
-			lb_hud->add2d(320.0f, 0.0f, 320.0f, 200.0f, colour);
-		}
-
-		// Weapon bobbing guides
-		if (hud_bob)
-		{
-			lb_hud->add2d(left - 16.0f, -16.0f, left - 16.0f, 216.0f, colour, 0.8f);
-			lb_hud->add2d(left - 16.0f, 216.0f, right + 16.0f, 216.0f, colour, 0.8f);
-			lb_hud->add2d(right + 16.0f, 216.0f, right + 16.0f, -16.0f, colour, 0.8f);
-			lb_hud->add2d(right + 16.0f, -16.0f, left - 16.0f, -16.0f, colour, 0.8f);
-		}
-
-		hud_wide_prev      = hud_wide;
-		hud_statusbar_prev = hud_statusbar;
-		hud_center_prev    = hud_center;
-		hud_bob_prev       = hud_bob;
-	}
-
-	// Draw the hud lines
-	lb_hud->draw(view);
-}
-
-void draw2d::drawText(const string& text, const Vec2f& pos, const TextOptions& opt, const View* view)
-{
-	// TODO: Improve DropShadow rendering
-	// Using just the shader doesn't really allow for the shadow to be offset much,
-	// so it isn't very visible for small text.
-	// Might need to do something like render the text twice, once for the shadow and once normally on top
-	// (we have a vertex buffer for the string so it'd just be 1 extra draw call)
-
-	if (!text_draw_init)
-		initTextDrawing();
-
-	// Get+setup font
-	auto font = getFont(opt.font);
-	if (!font)
-		return;
-
-	// Determine offset
-	switch (opt.alignment)
-	{
-	case Align::Right:
-	{
-		auto size     = textExtents(text, opt.font, opt.size);
-		text_offset.x = pos.x - size.x;
-		text_offset.y = pos.y;
-		break;
-	}
-	case Align::Center:
-	{
-		auto size     = textExtents(text, opt.font, opt.size);
-		text_offset.x = pos.x - size.x * 0.5f;
-		text_offset.y = pos.y;
-		break;
-	}
-	default:
-		text_offset.x = pos.x;
-		text_offset.y = pos.y;
-		break;
-	}
-
-	// Sharpen softness value if the view is zoomed in
-	auto scale      = fontScale(opt.size);
-	auto full_scale = scale;
-	if (view && view->scale().x > 1)
-		full_scale *= view->scale().x;
-
-	// Create shaders if needed
-	static Shader shader_text("text");
-	static Shader shader_text_outline("text_outline");
-	static Shader shader_text_dropshadow("text_dropshadow");
-	if (!shader_text.isValid())
-	{
-		shader_text.loadResourceEntries("default2d.vert", "text.frag");
-		shader_text_outline.loadResourceEntries("default2d.vert", "text_outline.frag");
-		shader_text_dropshadow.loadResourceEntries("default2d.vert", "text_dropshadow.frag");
-	}
-
-	// Setup shader
-	const Shader* shader = nullptr;
-	switch (opt.style)
-	{
-	case TextStyle::Normal: shader = &shader_text; break;
-	case TextStyle::Outline: shader = &shader_text_outline; break;
-	case TextStyle::DropShadow: shader = &shader_text_dropshadow; break;
-	}
-	shader->bind();
-	shader->setUniform("colour", glm::vec4{ 1.0f });
-	shader->setUniform("mvp", view ? view->mvpMatrix(identity_matrix) : identity_matrix);
-	shader->setUniform("softness", font->softness / full_scale);
-	if (view)
-		shader->setUniform("viewport_size", glm::vec2(view->size().x, view->size().y));
-	if (opt.style == TextStyle::Outline)
-		shader->setUniform("outline_colour", opt.outline_shadow_colour.asVec4());
-	if (opt.style == TextStyle::DropShadow)
-		shader->setUniform("shadow_colour", opt.outline_shadow_colour.asVec4());
-
-	// Draw the text
-	text_scale = scale;
-	dtx_use_font(font->handle, FONT_SIZE_BASE);
-	dtx_string(text.c_str());
-}
 
 
 

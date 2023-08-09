@@ -112,55 +112,59 @@ void GLCanvas::draw()
 	shader.setUniform("colour", glm::vec4{ 1.0f });
 	testbuf.draw();
 
-	draw2d::TextOptions opt;
+	draw2d::Context dc(&view_);
+
 	string test = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz 1234567890 !@#$%^&*() :;[]{}-_=+`~/\\";
-	float  y    = 50.0f;
-	opt.style   = draw2d::TextStyle::Normal;
-	opt.outline_shadow_colour = { 0, 0, 0, 255 };
-	draw2d::drawText(fmt::format("Normal - {}", test), { 50, y }, opt, &view_);
+	Vec2f pos = { 50.0f, 50.0f };
+	dc.text_style = draw2d::TextStyle::Normal;
+	dc.outline_colour = { 0, 0, 0, 255 };
+	dc.drawText(fmt::format("Normal - {}", test), pos);
 
-	y += draw2d::lineHeight(opt.font);
-	opt.style = draw2d::TextStyle::Outline;
-	draw2d::drawText(fmt::format("Normal (Outline) - {}", test), { 50, y }, opt, &view_);
+	pos.y += dc.textLineHeight();
+	dc.text_style = draw2d::TextStyle::Outline;
+	dc.drawText(fmt::format("Normal (Outline) - {}", test), pos);
 
-	y += draw2d::lineHeight(opt.font);
-	opt.style = draw2d::TextStyle::DropShadow;
-	draw2d::drawText(fmt::format("Normal (DropShadow) - {}", test), { 50, y }, opt, &view_);
+	pos.y += dc.textLineHeight();
+	dc.text_style = draw2d::TextStyle::DropShadow;
+	dc.drawText(fmt::format("Normal (DropShadow) - {}", test), pos);
 
-	opt.style = draw2d::TextStyle::Normal;
-	opt.font  = draw2d::Font::Bold;
-	y += draw2d::lineHeight(opt.font);
-	draw2d::drawText(fmt::format("Bold - {}", test), { 50, y }, opt, &view_);
+	dc.text_style = draw2d::TextStyle::Normal;
+	dc.font = draw2d::Font::Bold;
+	pos.y += dc.textLineHeight();
+	dc.drawText(fmt::format("Bold - {}", test), pos);
 
-	opt.font = draw2d::Font::Condensed;
-	y += draw2d::lineHeight(opt.font);
-	draw2d::drawText(fmt::format("Condensed - {}", test), { 50, y }, opt, &view_);
+	dc.font = draw2d::Font::Condensed;
+	pos.y += dc.textLineHeight();
+	dc.drawText(fmt::format("Condensed - {}", test), pos);
 
-	opt.font = draw2d::Font::CondensedBold;
-	y += draw2d::lineHeight(opt.font);
-	draw2d::drawText(fmt::format("CondensedBold - {}", test), { 50, y }, opt, &view_);
+	dc.font = draw2d::Font::CondensedBold;
+	pos.y += dc.textLineHeight();
+	dc.drawText(fmt::format("CondensedBold - {}", test), pos);
 
-	opt.font = draw2d::Font::Monospace;
-	y += draw2d::lineHeight(opt.font);
-	draw2d::drawText(fmt::format("Monospace - {}", test), { 50, y }, opt, &view_);
+	dc.font = draw2d::Font::Monospace;
+	pos.y += dc.textLineHeight();
+	dc.drawText(fmt::format("Monospace - {}", test), pos);
 
-	opt.font = draw2d::Font::MonospaceBold;
-	y += draw2d::lineHeight(opt.font);
-	draw2d::drawText(fmt::format("MonospaceBold - {}", test), { 50, y }, opt, &view_);
+	dc.font = draw2d::Font::MonospaceBold;
+	pos.y += dc.textLineHeight();
+	dc.drawText(fmt::format("MonospaceBold - {}", test), pos);
 
-	opt.style = draw2d::TextStyle::Outline;
-	opt.size = 24;
-	opt.font = draw2d::Font::Bold;
-	y += 100.0f;
-	draw2d::drawText("Left Aligned", { (float)view_.canvasX(0), y }, opt, &view_);
+	dc.text_style = draw2d::TextStyle::Outline;
+	dc.text_size = 24;
+	dc.font = draw2d::Font::Bold;
+	pos.x = static_cast<float>(view_.canvasX(0));
+	pos.y += 100.0f;
+	dc.drawText("Left Aligned", pos);
 
-	opt.alignment = draw2d::Align::Center;
-	y += draw2d::lineHeight(opt.font, opt.size);
-	draw2d::drawText("Center Aligned", { (float)view_.canvasX(GetSize().x / 2), y }, opt, &view_);
+	dc.text_alignment = draw2d::Align::Center;
+	pos.x = static_cast<float>(view_.canvasX(GetSize().x / 2));
+	pos.y += dc.textLineHeight();
+	dc.drawText("Center Aligned", pos);
 
-	opt.alignment = draw2d::Align::Right;
-	y += draw2d::lineHeight(opt.font, opt.size);
-	draw2d::drawText("Right Aligned", { (float)view_.canvasX(GetSize().x), y }, opt, &view_);
+	dc.text_alignment = draw2d::Align::Right;
+	pos.x = static_cast<float>(view_.canvasX(GetSize().x));
+	pos.y += dc.textLineHeight();
+	dc.drawText("Right Aligned", pos);
 }
 
 void GLCanvas::init()
@@ -240,6 +244,9 @@ void GLCanvas::onPaint(wxPaintEvent& e)
 	// Clear
 	glClearColor(bg_colour_.fr(), bg_colour_.fg(), bg_colour_.fb(), 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Set normal blending
+	gl::setBlend(gl::Blend::Normal);
 
 	// Draw checkered background if needed
 	if (bg_style_ == BGStyle::Checkered)

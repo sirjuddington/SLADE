@@ -17,6 +17,10 @@ namespace gl
 {
 	class LineBuffer;
 	class Shader;
+	namespace draw2d
+	{
+		struct Context;
+	}
 } // namespace gl
 
 class CTextureCanvas : public GLCanvas
@@ -101,10 +105,10 @@ private:
 	sigslot::scoped_connection sc_patches_modified_;
 
 	// Private functions
-	void drawOffsetLines();
-	void drawTexture(glm::vec2 scale, glm::vec2 offset, bool draw_patches);
+	void drawOffsetLines(const gl::draw2d::Context& dc);
+	void drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm::vec2 offset, bool draw_patches);
 	void drawPatch(int num, bool outside = false);
-	void drawPatchOutline(int num, const ColRGBA& colour) const;
+	void drawPatchOutline(const gl::draw2d::Context& dc, int num) const;
 	void drawTextureBorder(glm::vec2 scale, glm::vec2 offset);
 	void initShader() const;
 

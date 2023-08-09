@@ -148,21 +148,23 @@ void GfxCanvas::draw()
 		update_texture_ = false;
 	}
 
+	gl::draw2d::Context dc(&view_);
+
 	// Draw offset lines
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
-		drawOffsetLines();
+		drawOffsetLines(dc);
 
 	// Draw the image
 	if (view_type_ == View::Tiled)
 		drawImageTiled();
 	else
-		drawImage();
+		drawImage(dc);
 }
 
 // -----------------------------------------------------------------------------
 // Draws the offset center lines
 // -----------------------------------------------------------------------------
-void GfxCanvas::drawOffsetLines()
+void GfxCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 {
 	if (view_type_ == View::Sprite)
 	{
@@ -180,14 +182,14 @@ void GfxCanvas::drawOffsetLines()
 		lb_sprite_->draw();
 	}
 	else if (view_type_ == View::HUD)
-		gl::draw2d::drawHud(&view_);
+		dc.drawHud();
 }
 
 // -----------------------------------------------------------------------------
 // Draws the image
 // (reloads the image as a texture each time, will change this later...)
 // -----------------------------------------------------------------------------
-void GfxCanvas::drawImage() const
+void GfxCanvas::drawImage(gl::draw2d::Context& dc) const
 {
 	// Check image is valid
 	if (!image_->isValid())
@@ -200,31 +202,32 @@ void GfxCanvas::drawImage() const
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
 		img_rect.move(-image_->offset().x, -image_->offset().y);
 
-	gl::draw2d::RenderOptions opt{ tex_image_ };
+	dc.texture = tex_image_;
+	dc.colour.set(255, 255, 255, 255);
 	if (dragging)
 	{
 		// Draw image in original position (semitransparent)
-		opt.colour.a = 128;
-		gl::draw2d::drawRect(img_rect, opt, &view_);
+		dc.colour.a = 128;
+		dc.drawRect(img_rect);
 
 		// Draw image in dragged position
 		img_rect.move(
 			math::scaleInverse(drag_pos_.x - drag_origin_.x, view_.scale().x),
 			math::scaleInverse(drag_pos_.y - drag_origin_.y, view_.scale().y));
-		opt.colour.a = 255;
-		gl::draw2d::drawRect(img_rect, opt, &view_);
+		dc.colour.a = 255;
+		dc.drawRect(img_rect);
 	}
 	else
 	{
 		// Not dragging, just draw image
-		gl::draw2d::drawRect(img_rect, opt, &view_);
+		dc.drawRect(img_rect);
 
 		// Hilight if needed
 		if (image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None)
 		{
 			gl::setBlend(gl::Blend::Additive);
-			opt.colour.a = 50;
-			gl::draw2d::drawRect(img_rect, opt, &view_);
+			dc.colour.a = 50;
+			dc.drawRect(img_rect);
 			gl::setBlend(gl::Blend::Normal);
 		}
 	}
@@ -232,17 +235,16 @@ void GfxCanvas::drawImage() const
 	// Draw brush shadow when in editing mode
 	if (editing_mode_ != EditMode::None && gl::Texture::isCreated(tex_brush_) && cursor_pos_ != Vec2i{ -1, -1 })
 	{
-		opt.colour.a = 160;
-		opt.texture  = tex_brush_;
-		gl::draw2d::drawRect(img_rect, opt, &view_);
+		dc.colour.a = 160;
+		dc.texture  = tex_brush_;
+		dc.drawRect(img_rect);
 	}
 
 	// Draw outline
 	if (gfx_show_border)
 	{
-		opt.colour.set(0, 0, 0, 64);
-		opt.texture = 0;
-		gl::draw2d::drawRectOutline(img_rect, opt, &view_);
+		dc.colour.set(0, 0, 0, 64);
+		dc.drawRectOutline(img_rect);
 	}
 }
 

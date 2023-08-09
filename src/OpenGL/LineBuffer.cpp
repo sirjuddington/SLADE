@@ -39,7 +39,7 @@ void LineBuffer::add(const vector<Line>& lines)
 	lines_updated_ = true;
 }
 
-void LineBuffer::draw(const View* view, const glm::vec4& colour) const
+void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4& model) const
 {
 	if (lines_.empty())
 		return;
@@ -58,7 +58,7 @@ void LineBuffer::draw(const View* view, const glm::vec4& colour) const
 	shader_lines.setUniform("line_width", width_mult_);
 	shader_lines.setUniform("colour", colour);
 	if (view)
-		view->setupShader(shader_lines);
+		view->setupShader(shader_lines, model);
 
 	gl::bindVAO(vao_);
 	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr, lines_.size());

@@ -16,6 +16,10 @@ namespace ui
 namespace gl
 {
 	class LineBuffer;
+	namespace draw2d
+	{
+		struct Context;
+	}
 }
 
 class GfxCanvas : public GLCanvas
@@ -99,9 +103,9 @@ private:
 	// OpenGL
 	unique_ptr<gl::LineBuffer> lb_sprite_;
 
-	void drawImage() const;
+	void drawImage(gl::draw2d::Context& dc) const;
 	void drawImageTiled() const;
-	void drawOffsetLines();
+	void drawOffsetLines(const gl::draw2d::Context& dc);
 
 	// Signal connections
 	sigslot::scoped_connection sc_image_changed_;

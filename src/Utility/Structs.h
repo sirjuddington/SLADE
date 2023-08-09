@@ -32,6 +32,7 @@ template<typename T> struct Vec2
 	Vec2<T> operator+(const Vec2<T>& v) const { return { v.x + x, v.y + y }; }
 	Vec2<T> operator-(const Vec2<T>& v) const { return { x - v.x, y - v.y }; }
 	Vec2<T> operator*(T num) const { return { x * num, y * num }; }
+	Vec2<T> operator*(const Vec2<T>& v) const { return { x * v.x, y * v.y }; }
 	Vec2<T> operator/(T num) const
 	{
 		if (num == 0)

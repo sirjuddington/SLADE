@@ -37,7 +37,6 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Draw2D.h"
-#include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
@@ -254,7 +253,8 @@ void CTextureCanvas::draw()
 		return;
 
 	// Draw offset guides if needed
-	drawOffsetLines();
+	gl::draw2d::Context dc(&view_);
+	drawOffsetLines(dc);
 
 	// Determine offset/scale
 	glm::vec2 offset{ 0.0f }, scale{ 1.0f };
@@ -286,28 +286,30 @@ void CTextureCanvas::draw()
 	view_.setupShader(*shader_);
 
 	// Draw the texture
-	drawTexture(scale, offset, draw_outside_ || dragging_);
+	drawTexture(dc, scale, offset, draw_outside_ || dragging_);
 	drawTextureBorder(scale, offset);
 
 	// Draw selected patch outlines
-	ColRGBA colour{ 70, 210, 220, 255 };
+	dc.colour         = { 70, 210, 220, 255 };
+	dc.line_thickness = 2.0f;
+	dc.line_aa_radius = 0.0f;
 	for (unsigned a = 0; a < patches_.size(); a++)
 		if (patches_[a].selected)
-			drawPatchOutline(a, colour);
+			drawPatchOutline(dc, a);
 
 	// Draw hilighted patch outline
 	if (hilight_patch_ >= 0 && hilight_patch_ < static_cast<int>(texture_->nPatches()))
 	{
-		gl::setBlend(gl::Blend::Additive);
-		drawPatchOutline(hilight_patch_, { 255, 255, 255, 150 });
-		gl::setBlend(gl::Blend::Normal);
+		dc.colour = { 255, 255, 255, 150 };
+		dc.blend = gl::Blend::Additive;
+		drawPatchOutline(dc, hilight_patch_);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws the currently opened composite texture
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawTexture(glm::vec2 scale, glm::vec2 offset, bool draw_patches)
+void CTextureCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm::vec2 offset, bool draw_patches)
 {
 	auto width  = texture_->width();
 	auto height = texture_->height();
@@ -337,9 +339,8 @@ void CTextureCanvas::drawTexture(glm::vec2 scale, glm::vec2 offset, bool draw_pa
 		}
 
 		// Draw the texture
-		gl::draw2d::RenderOptions opt{ tex_preview_ };
-		gl::draw2d::drawRect(
-			{ offset.x, offset.y, offset.x + width * scale.x, offset.y + height * scale.y, false }, opt, &view_);
+		dc.texture = tex_preview_;
+		dc.drawRect({ offset.x, offset.y, offset.x + width * scale.x, offset.y + height * scale.y, false });
 	}
 }
 
@@ -432,7 +433,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	vb_patch.draw(gl::Primitive::Quads);
 }
 
-void CTextureCanvas::drawPatchOutline(int num, const ColRGBA& colour) const
+void CTextureCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) const
 {
 	const auto&   rect = patches_[num].rect;
 	vector<Rectf> lines;
@@ -441,11 +442,7 @@ void CTextureCanvas::drawPatchOutline(int num, const ColRGBA& colour) const
 	lines.emplace_back(rect.br.x, rect.br.y, rect.br.x, rect.tl.y);
 	lines.emplace_back(rect.br.x, rect.tl.y, rect.tl.x, rect.tl.y);
 
-	gl::draw2d::RenderOptions opt;
-	opt.colour         = colour;
-	opt.line_thickness = 2.0f;
-	opt.line_aa_radius = 0.0f;
-	gl::draw2d::drawLines(lines, opt, &view_);
+	dc.drawLines(lines);
 }
 
 // -----------------------------------------------------------------------------
@@ -548,7 +545,7 @@ void CTextureCanvas::resetViewOffsets()
 // -----------------------------------------------------------------------------
 // Draws the offset center lines
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawOffsetLines()
+void CTextureCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 {
 	if (view_type_ == View::Sprite)
 	{
@@ -566,7 +563,7 @@ void CTextureCanvas::drawOffsetLines()
 		lb_sprite_->draw();
 	}
 	else if (view_type_ == View::HUD)
-		gl::draw2d::drawHud(&view_);
+		dc.drawHud();
 }
 
 // -----------------------------------------------------------------------------

@@ -50,7 +50,10 @@ public:
 		add(Line{ { x1, y1, 0.0f, width }, colour, { x2, y2, 0.0f, width }, colour });
 	}
 
-	void draw(const View* view = nullptr, const glm::vec4& colour = glm::vec4{ 1.0f }) const;
+	void draw(
+		const View*      view   = nullptr,
+		const glm::vec4& colour = glm::vec4{ 1.0f },
+		const glm::mat4& model  = glm::mat4{ 1.0f }) const;
 
 	static const Shader& shader();
 
