@@ -113,47 +113,37 @@ void GLCanvas::draw()
 	testbuf.draw();
 
 	draw2d::Context dc(&view_);
-
 	string test = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz 1234567890 !@#$%^&*() :;[]{}-_=+`~/\\";
 	Vec2f pos = { 50.0f, 50.0f };
-	dc.text_style = draw2d::TextStyle::Normal;
-	dc.outline_colour = { 0, 0, 0, 255 };
-	dc.drawText(fmt::format("Normal - {}", test), pos);
 
-	pos.y += dc.textLineHeight();
-	dc.text_style = draw2d::TextStyle::Outline;
-	dc.drawText(fmt::format("Normal (Outline) - {}", test), pos);
+	auto draw_font_test = [&](draw2d::Font font, string_view font_name)
+	{
+		dc.font = font;
+		dc.text_style = draw2d::TextStyle::Normal;
+		dc.drawText(fmt::format("{} - {}", font_name, test), pos);
+		pos.y += dc.textLineHeight() * 1.1f;
+		dc.text_style = draw2d::TextStyle::Outline;
+		dc.drawText(fmt::format("{} - {}", font_name, test), pos);
+		pos.y += dc.textLineHeight() * 1.1f;
+		dc.text_style = draw2d::TextStyle::Normal;
+		dc.text_dropshadow = true;
+		dc.drawText(fmt::format("{} - {}", font_name, test), pos);
+		pos.y += dc.textLineHeight() * 1.1f;
+		dc.text_dropshadow = false;
+	};
 
-	pos.y += dc.textLineHeight();
-	dc.text_style = draw2d::TextStyle::DropShadow;
-	dc.drawText(fmt::format("Normal (DropShadow) - {}", test), pos);
-
-	dc.text_style = draw2d::TextStyle::Normal;
-	dc.font = draw2d::Font::Bold;
-	pos.y += dc.textLineHeight();
-	dc.drawText(fmt::format("Bold - {}", test), pos);
-
-	dc.font = draw2d::Font::Condensed;
-	pos.y += dc.textLineHeight();
-	dc.drawText(fmt::format("Condensed - {}", test), pos);
-
-	dc.font = draw2d::Font::CondensedBold;
-	pos.y += dc.textLineHeight();
-	dc.drawText(fmt::format("CondensedBold - {}", test), pos);
-
-	dc.font = draw2d::Font::Monospace;
-	pos.y += dc.textLineHeight();
-	dc.drawText(fmt::format("Monospace - {}", test), pos);
-
-	dc.font = draw2d::Font::MonospaceBold;
-	pos.y += dc.textLineHeight();
-	dc.drawText(fmt::format("MonospaceBold - {}", test), pos);
+	draw_font_test(draw2d::Font::Normal, "Normal");
+	draw_font_test(draw2d::Font::Bold, "Bold");
+	draw_font_test(draw2d::Font::Condensed, "Condensed");
+	draw_font_test(draw2d::Font::CondensedBold, "CondensedBold");
+	draw_font_test(draw2d::Font::Monospace, "Monospace");
+	draw_font_test(draw2d::Font::MonospaceBold, "MonospaceBold");
 
 	dc.text_style = draw2d::TextStyle::Outline;
 	dc.text_size = 24;
 	dc.font = draw2d::Font::Bold;
 	pos.x = static_cast<float>(view_.canvasX(0));
-	pos.y += 100.0f;
+	pos.y += dc.textLineHeight();
 	dc.drawText("Left Aligned", pos);
 
 	dc.text_alignment = draw2d::Align::Center;

@@ -494,3 +494,28 @@ void gl::Texture::clearAll()
 	tex_missing    = {};
 	tex_background = {};
 }
+
+// -----------------------------------------------------------------------------
+// Sets texture [id]'s [tiling] flag (ie. GL_TEXTURE_WRAP_* value)
+// -----------------------------------------------------------------------------
+void gl::Texture::setTiling(unsigned id, bool tiling)
+{
+	auto& tex_info = textures[id];
+	if (tex_info.tiling == tiling)
+		return;
+
+	bind(id);
+	
+	if (tiling)
+	{
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+	else
+	{
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	}
+
+	tex_info.tiling = tiling;
+}

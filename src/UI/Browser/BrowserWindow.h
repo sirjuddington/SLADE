@@ -7,7 +7,7 @@
 
 namespace slade
 {
-namespace drawing
+namespace gl::draw2d
 {
 	enum class Font;
 }
@@ -68,7 +68,7 @@ public:
 	void addItemTree(BrowserTreeNode* node, wxTreeListItem& item) const;
 
 	// Canvas display options
-	void setFont(drawing::Font font) const;
+	void setFont(gl::draw2d::Font font) const;
 	void setItemNameType(BrowserCanvas::NameType type) const;
 	void setItemSize(int size);
 	void setItemViewType(BrowserCanvas::ItemView type) const;

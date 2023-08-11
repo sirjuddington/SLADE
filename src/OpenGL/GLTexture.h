@@ -56,6 +56,7 @@ namespace gl
 		static bool genChequeredTexture(unsigned id, uint8_t block_size, ColRGBA col1, ColRGBA col2);
 		static void clear(unsigned id);
 		static void clearAll();
+		static void setTiling(unsigned id, bool tiling);
 	};
 
 } // namespace gl

@@ -558,7 +558,7 @@ void BrowserWindow::addItemTree(BrowserTreeNode* node, wxTreeListItem& item) con
 // -----------------------------------------------------------------------------
 // Sets the font to be used for item names
 // -----------------------------------------------------------------------------
-void BrowserWindow::setFont(drawing::Font font) const
+void BrowserWindow::setFont(gl::draw2d::Font font) const
 {
 	canvas_->setFont(font);
 }

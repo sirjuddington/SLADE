@@ -75,7 +75,6 @@ CVAR(Bool, gfx_arc, false, CVar::Flag::Save)
 GfxCanvas::GfxCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered), image_{ new SImage() }
 {
 	view_.setCentered(true);
-	view_.setScale(ui::scaleFactor());
 
 	// Update texture when the image changes
 	sc_image_changed_ = image_->signals().image_changed.connect(&GfxCanvas::updateImageTexture, this);
@@ -115,9 +114,9 @@ void GfxCanvas::setViewType(View type)
 void GfxCanvas::setScale(double scale)
 {
 	if (zoom_point_.x < 0 && zoom_point_.y < 0)
-		view_.setScale(scale * ui::scaleFactor());
+		view_.setScale(scale);
 	else
-		view_.setScale(scale * ui::scaleFactor(), zoom_point_);
+		view_.setScale(scale, zoom_point_);
 }
 
 // -----------------------------------------------------------------------------
@@ -204,6 +203,7 @@ void GfxCanvas::drawImage(gl::draw2d::Context& dc) const
 
 	dc.texture = tex_image_;
 	dc.colour.set(255, 255, 255, 255);
+	gl::Texture::setTiling(tex_image_, false);
 	if (dragging)
 	{
 		// Draw image in original position (semitransparent)
@@ -276,6 +276,7 @@ void GfxCanvas::drawImageTiled() const
 	// Draw
 	glEnable(GL_TEXTURE_2D);
 	gl::Texture::bind(tex_image_);
+	gl::Texture::setTiling(tex_image_, true);
 	vb_tiled.draw(gl::Primitive::Quads);
 }
 
@@ -499,7 +500,7 @@ void GfxCanvas::generateBrushShadow()
 
 	// Load it as a GL texture
 	gl::Texture::clear(tex_brush_);
-	tex_brush_ = gl::Texture::createFromImage(img);
+	tex_brush_ = gl::Texture::createFromImage(img, nullptr, gl::TexFilter::Nearest, false);
 }
 
 

@@ -15,9 +15,11 @@ const float outline_dist = 0.42;
 
 void main()
 {
+	float softness_ol = softness * 1.2;
+
 	float distance = texture2D(tex_unit, vertex_in.tex_coord).a;
-	float outline_factor = smoothstep(0.5 - softness, 0.5 + softness, distance);
-	float alpha = smoothstep(outline_dist - softness, outline_dist + softness, distance);
+	float outline_factor = smoothstep(0.495 - softness_ol, 0.495 + softness_ol, distance);
+	float alpha = smoothstep(outline_dist - softness_ol, outline_dist + softness_ol, distance);
 	
 	f_colour.rgb = mix(outline_colour.rgb, colour.rgb, outline_factor);
 	f_colour.a = alpha;

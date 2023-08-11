@@ -78,7 +78,7 @@ void View::setScale(const Vec2d& scale, const Vec2i& focus_point)
 	if (!interpolated_)
 	{
 		offset_inter_ = offset_;
-		scale_inter_ = scale_;
+		scale_inter_  = scale_;
 	}
 
 	// Update screen limits
@@ -125,7 +125,7 @@ void View::zoom(double amount)
 {
 	// Zoom view
 	scale_ = scale_ * amount;
-	 
+
 	// Check for zoom limits
 	if (scale_.x < min_scale_)
 		scale_.x = min_scale_;
@@ -179,7 +179,7 @@ void View::fitTo(const BBox& bbox, double scale_inc)
 	if (!interpolated_)
 	{
 		offset_inter_ = offset_;
-		scale_inter_ = scale_;
+		scale_inter_  = scale_;
 	}
 
 	updateMatrices();
@@ -400,7 +400,7 @@ void View::updateMatrices()
 
 
 	// View --------------------------------------------------------------------
-	view_matrix_ = glm::translate(glm::mat4(1.f), { 0.375f, 0.375f, 0.f });
+	view_matrix_ = glm::mat4{ 1.0f };
 
 	// Translate to middle of screen if centered
 	if (centered_)

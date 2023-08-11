@@ -72,7 +72,6 @@ CTextureCanvas::CTextureCanvas(wxWindow* parent) : GLCanvas(parent, GLCanvas::BG
 {
 	palette_ = std::make_unique<Palette>();
 	view_.setCentered(true);
-	view_.setScale(ui::scaleFactor());
 
 	// Bind events
 	setupMousePanning();
@@ -87,9 +86,9 @@ CTextureCanvas::~CTextureCanvas() = default;
 void CTextureCanvas::setScale(double scale)
 {
 	if (zoom_point_.x < 0 && zoom_point_.y < 0)
-		view_.setScale(scale * ui::scaleFactor());
+		view_.setScale(scale);
 	else
-		view_.setScale(scale * ui::scaleFactor(), zoom_point_);
+		view_.setScale(scale, zoom_point_);
 }
 
 void CTextureCanvas::setViewType(View type)

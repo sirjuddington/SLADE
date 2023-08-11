@@ -168,6 +168,18 @@ void initTextDrawing()
 
 	text_draw_init = true;
 }
+
+void setupTextShader(const Shader& shader, const Context& dc, const ColRGBA& colour, float softness)
+{
+	shader.bind();
+	shader.setUniform("colour", colour.asVec4());
+	shader.setUniform("mvp", dc.view ? dc.view->mvpMatrix(dc.model_matrix) : dc.model_matrix);
+	shader.setUniform("softness", softness);
+	if (dc.view)
+		shader.setUniform("viewport_size", glm::vec2(dc.view->size().x, dc.view->size().y));
+	if (dc.text_style == TextStyle::Outline)
+		shader.setUniform("outline_colour", dc.outline_colour.asVec4());
+}
 } // namespace slade::gl::draw2d
 
 
@@ -271,29 +283,31 @@ void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
 
 	// Get+setup font
 	auto fdef = getFont(font);
-	if (!fdef)
+	if (!fdef || !fdef->handle)
 		return;
+	dtx_use_font(fdef->handle, FONT_SIZE_BASE);
 
 	// Determine offset
+	auto line_height = (dtx_baseline() - dtx_line_height()) * fontScale(text_size);
 	switch (text_alignment)
 	{
 	case Align::Right:
 	{
 		auto size     = textExtents(text);
 		text_offset.x = pos.x - size.x;
-		text_offset.y = pos.y;
+		text_offset.y = pos.y + line_height;
 		break;
 	}
 	case Align::Center:
 	{
 		auto size     = textExtents(text);
 		text_offset.x = pos.x - size.x * 0.5f;
-		text_offset.y = pos.y;
+		text_offset.y = pos.y + line_height;
 		break;
 	}
 	default:
 		text_offset.x = pos.x;
-		text_offset.y = pos.y;
+		text_offset.y = pos.y + line_height;
 		break;
 	}
 
@@ -302,40 +316,40 @@ void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
 	auto full_scale = scale;
 	if (view && view->scale().x > 1)
 		full_scale *= view->scale().x;
+	text_scale = scale;
 
 	// Create shaders if needed
 	static Shader shader_text("text");
 	static Shader shader_text_outline("text_outline");
-	static Shader shader_text_dropshadow("text_dropshadow");
 	if (!shader_text.isValid())
 	{
 		shader_text.loadResourceEntries("default2d.vert", "text.frag");
 		shader_text_outline.loadResourceEntries("default2d.vert", "text_outline.frag");
-		shader_text_dropshadow.loadResourceEntries("default2d.vert", "text_dropshadow.frag");
+	}
+
+	// Draw drop shadow if needed
+	const Shader* shader = nullptr;
+	if (text_dropshadow)
+	{
+		shader = &shader_text;
+		setupTextShader(*shader, *this, text_dropshadow_colour, 0.1f);
+		auto prev_offset = text_offset;
+		text_offset.x += 2;
+		text_offset.y += 2;
+		dtx_string(text.c_str());
+		text_offset = prev_offset;
 	}
 
 	// Setup shader
-	const Shader* shader = nullptr;
 	switch (text_style)
 	{
 	case TextStyle::Normal: shader = &shader_text; break;
 	case TextStyle::Outline: shader = &shader_text_outline; break;
-	case TextStyle::DropShadow: shader = &shader_text_dropshadow; break;
+	default: shader = &shader_text; break;
 	}
-	shader->bind();
-	shader->setUniform("colour", glm::vec4{ 1.0f });
-	shader->setUniform("mvp", view ? view->mvpMatrix(model_matrix) : model_matrix);
-	shader->setUniform("softness", fdef->softness / full_scale);
-	if (view)
-		shader->setUniform("viewport_size", glm::vec2(view->size().x, view->size().y));
-	if (text_style == TextStyle::Outline)
-		shader->setUniform("outline_colour", outline_colour.asVec4());
-	if (text_style == TextStyle::DropShadow)
-		shader->setUniform("shadow_colour", outline_colour.asVec4());
+	setupTextShader(*shader, *this, colour, fdef->softness / full_scale);
 
 	// Draw the text
-	text_scale = scale;
-	dtx_use_font(fdef->handle, FONT_SIZE_BASE);
 	dtx_string(text.c_str());
 }
 
@@ -408,6 +422,149 @@ void draw2d::Context::drawHud() const
 	// Draw the hud lines
 	lb_hud->draw(view, glm::vec4{ 1.0f }, model_matrix);
 }
+
+
+
+
+
+// -----------------------------------------------------------------------------
+//
+// TextBox Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// TextBox class constructor
+// -----------------------------------------------------------------------------
+draw2d::TextBox::TextBox(string_view text, float width, Font font, int font_size, float line_height) :
+	font_{ font }, font_size_{ font_size }, width_{ width }, line_height_{ line_height }
+{
+	setText(text);
+}
+
+// -----------------------------------------------------------------------------
+// Splits [text] into separate lines (split by newlines), also performs further
+// splitting to word wrap the text within the box
+// -----------------------------------------------------------------------------
+void draw2d::TextBox::split(string_view text)
+{
+	// Clear current text lines
+	lines_.clear();
+
+	// Do nothing for empty string
+	if (text.empty())
+		return;
+
+	// Split at newlines
+	auto split = strutil::splitV(text, '\n');
+	for (auto& line : split)
+		lines_.emplace_back(line);
+
+	// Don't bother wrapping if width is really small
+	if (width_ < 32)
+		return;
+
+	// Word wrap
+	unsigned line = 0;
+	while (line < lines_.size())
+	{
+		// Ignore empty or single-character line
+		if (lines_[line].length() < 2)
+		{
+			line++;
+			continue;
+		}
+
+		// Get line width
+		auto width = textExtents(lines_[line], font_, font_size_).x;
+
+		// Continue to next line if within box
+		if (width < width_)
+		{
+			line++;
+			continue;
+		}
+
+		// Halve length until it fits in the box
+		unsigned c = lines_[line].length() - 1;
+		while (width >= width_)
+		{
+			if (c <= 1)
+				break;
+
+			c *= 0.5;
+			width = textExtents(lines_[line].substr(0, c), font_, font_size_).x;
+		}
+
+		// Increment length until it doesn't fit
+		while (width < width_)
+		{
+			c++;
+			width = textExtents(lines_[line].substr(0, c), font_, font_size_).x;
+		}
+		c--;
+
+		// Find previous space
+		int sc = c;
+		while (sc >= 0)
+		{
+			if (lines_[line][sc] == ' ')
+				break;
+			sc--;
+		}
+		if (sc <= 0)
+			sc = c;
+		else
+			sc++;
+
+		// Split line
+		auto nl      = lines_[line].substr(sc);
+		lines_[line] = lines_[line].substr(0, sc);
+		lines_.insert(lines_.begin() + line + 1, nl);
+		line++;
+	}
+
+	// Update height
+	height_ = lines_.size() * (lineHeight(font_, font_size_) * line_height_);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the text box text
+// -----------------------------------------------------------------------------
+void draw2d::TextBox::setText(string_view text)
+{
+	text_ = text;
+	split(text);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the text box width
+// -----------------------------------------------------------------------------
+void draw2d::TextBox::setWidth(float width)
+{
+	width_ = width;
+	split(text_);
+}
+
+// -----------------------------------------------------------------------------
+// Draws the text box
+// -----------------------------------------------------------------------------
+void draw2d::TextBox::draw(Vec2f& pos, Context& dc) const
+{
+	auto prev_font = dc.font;
+	auto prev_size = dc.text_size;
+
+	for (const auto& line : lines_)
+	{
+		dc.drawText(line, pos);
+		pos.y += dc.textLineHeight() * line_height_;
+	}
+
+	dc.font      = prev_font;
+	dc.text_size = prev_size;
+}
+
 
 
 

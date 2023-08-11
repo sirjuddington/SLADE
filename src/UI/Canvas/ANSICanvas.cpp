@@ -68,7 +68,6 @@ const int NUMCOLS = 80;
 ANSICanvas::ANSICanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 {
 	view_.setCentered(true);
-	view_.setScale(ui::scaleFactor());
 
 	// Get the all-important font data
 	auto res_archive = app::archiveManager().programResourceArchive();
