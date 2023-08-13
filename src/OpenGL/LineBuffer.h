@@ -42,6 +42,12 @@ public:
 
 	void setWidthMult(float width) { width_mult_ = width; }
 	void setAaRadius(float x, float y) { aa_radius_ = { x, y }; }
+	void setDashed(bool dashed, float dash_size = 6.0f, float gap_size = 6.0f)
+	{
+		dashed_        = dashed;
+		dash_size_     = dash_size;
+		dash_gap_size_ = gap_size;
+	}
 
 	void add(const Line& line);
 	void add(const vector<Line>& lines);
@@ -58,8 +64,11 @@ public:
 	static const Shader& shader();
 
 private:
-	float     width_mult_ = 1.0f;
-	glm::vec2 aa_radius_  = { 2.0f, 2.0f };
+	float     width_mult_    = 1.0f;
+	glm::vec2 aa_radius_     = { 2.0f, 2.0f };
+	bool      dashed_        = false;
+	float     dash_size_     = 6.0f;
+	float     dash_gap_size_ = 6.0f;
 
 	vector<Line>     lines_;
 	mutable unsigned vao_           = 0;

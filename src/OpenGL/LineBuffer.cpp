@@ -14,6 +14,7 @@ unsigned ebo_quad        = 0;
 float    quad_vertices[] = { 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0 };
 uint16_t quad_indices[]  = { 0, 1, 2, 0, 2, 3 };
 Shader   shader_lines{ "lines" };
+Shader   shader_lines_dashed{ "lines_dashed" };
 } // namespace
 
 
@@ -22,8 +23,10 @@ namespace
 void initShader()
 {
 	shader_lines.loadResourceEntries("lines.vert", "lines.frag");
+	shader_lines_dashed.define("DASHED_LINES");
+	shader_lines_dashed.load("lines.vert", "lines.frag");
 }
-}
+} // namespace
 
 void LineBuffer::add(const Line& line)
 {
@@ -53,12 +56,18 @@ void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4
 	// Setup shader for drawing
 	if (!shader_lines.isValid())
 		initShader();
-	shader_lines.bind();
-	shader_lines.setUniform("aa_radius", aa_radius_);
-	shader_lines.setUniform("line_width", width_mult_);
-	shader_lines.setUniform("colour", colour);
+	Shader& shader = dashed_ ? shader_lines_dashed : shader_lines;
+	shader.bind();
+	shader.setUniform("aa_radius", aa_radius_);
+	shader.setUniform("line_width", width_mult_);
+	shader.setUniform("colour", colour);
+	if (dashed_)
+	{
+		shader.setUniform("dash_size", dash_size_);
+		shader.setUniform("gap_size", dash_gap_size_);
+	}
 	if (view)
-		view->setupShader(shader_lines, model);
+		view->setupShader(shader, model);
 
 	gl::bindVAO(vao_);
 	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr, lines_.size());
