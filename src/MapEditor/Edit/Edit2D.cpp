@@ -445,7 +445,7 @@ void Edit2D::changeSectorTexture() const
 
 	// Unlock hilight if needed
 	context_.selection().lockHilight(hl_lock);
-	context_.renderer().renderer2D().clearTextureCache();
+	context_.renderer().clearTextureCache();
 }
 
 // -----------------------------------------------------------------------------

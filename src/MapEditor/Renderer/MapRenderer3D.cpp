@@ -1048,7 +1048,7 @@ void MapRenderer3D::renderFlat(Flat* flat)
 		}
 
 		// Render
-		flat->sector->polygon()->renderVBO(false);
+		flat->sector->polygon()->renderVBO();
 	}
 	else
 	{

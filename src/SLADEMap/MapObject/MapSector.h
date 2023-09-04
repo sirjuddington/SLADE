@@ -25,9 +25,7 @@ public:
 		Plane  plane  = { 0., 0., 1., 0. };
 
 		Surface(string_view texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
-			texture{ texture },
-			height{ height },
-			plane{ plane }
+			texture{ texture }, height{ height }, plane{ plane }
 		{
 		}
 	};
@@ -82,23 +80,24 @@ public:
 	template<SurfaceType p> Plane plane();
 	template<SurfaceType p> void  setPlane(const Plane& plane);
 
-	Vec2d             getPoint(Point point) override;
-	void              resetBBox() { bbox_.reset(); }
-	BBox              boundingBox();
-	vector<MapSide*>& connectedSides() { return connected_sides_; }
-	void              resetPolygon() { poly_needsupdate_ = true; }
-	Polygon2D*        polygon();
-	bool              containsPoint(Vec2d point);
-	double            distanceTo(Vec2d point, double maxdist = -1);
-	bool              putLines(vector<MapLine*>& list);
-	bool              putVertices(vector<MapVertex*>& list);
-	bool              putVertices(vector<MapObject*>& list);
-	uint8_t           lightAt(int where = 0);
-	void              changeLight(int amount, int where = 0);
-	ColRGBA           colourAt(int where = 0, bool fullbright = false);
-	ColRGBA           fogColour();
-	long              geometryUpdatedTime() const { return geometry_updated_; }
-	void              findTextPoint();
+	Vec2d                   getPoint(Point point) override;
+	void                    resetBBox() { bbox_.reset(); }
+	BBox                    boundingBox();
+	vector<MapSide*>&       connectedSides() { return connected_sides_; }
+	const vector<MapSide*>& connectedSides() const { return connected_sides_; }
+	void                    resetPolygon() { poly_needsupdate_ = true; }
+	Polygon2D*              polygon();
+	bool                    containsPoint(Vec2d point);
+	double                  distanceTo(Vec2d point, double maxdist = -1);
+	bool                    putLines(vector<MapLine*>& list);
+	bool                    putVertices(vector<MapVertex*>& list);
+	bool                    putVertices(vector<MapObject*>& list);
+	uint8_t                 lightAt(int where = 0);
+	void                    changeLight(int amount, int where = 0);
+	ColRGBA                 colourAt(int where = 0, bool fullbright = false);
+	ColRGBA                 fogColour();
+	long                    geometryUpdatedTime() const { return geometry_updated_; }
+	void                    findTextPoint();
 
 	void connectSide(MapSide* side);
 	void disconnectSide(MapSide* side);

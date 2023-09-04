@@ -16,5 +16,5 @@ void main()
 	float alpha = smoothstep(0.5 - softness, 0.5 + softness, distance);
 	
 	f_colour.rgb = colour.rgb;
-	f_colour.a = alpha;
+	f_colour.a = colour.a * alpha;
 }

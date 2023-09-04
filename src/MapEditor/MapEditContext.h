@@ -130,7 +130,7 @@ public:
 	void       openLineTextureOverlay();
 	bool       infoOverlayActive() const { return info_showing_; }
 	void       updateInfoOverlay();
-	void       drawInfoOverlay(const Vec2i& size, float alpha);
+	void       drawInfoOverlay(gl::draw2d::Context& dc, float alpha);
 
 	// Player start swapping
 	void swapPlayerStart3d();

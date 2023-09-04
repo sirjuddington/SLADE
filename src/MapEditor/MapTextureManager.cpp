@@ -510,7 +510,7 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, const ArchiveDir*
 			auto name = fmt::format("{}{}", path, entry->nameNoExt());
 			log::info(4, "Loading editor texture {}", name);
 			auto& mtex = map[name];
-			mtex.gl_id = gl::Texture::createFromImage(image, nullptr, gl::TexFilter::Mipmap);
+			mtex.gl_id = gl::Texture::createFromImage(image, nullptr, gl::TexFilter::Mipmap, false);
 		}
 	}
 

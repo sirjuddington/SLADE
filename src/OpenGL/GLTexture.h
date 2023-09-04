@@ -34,6 +34,7 @@ namespace gl
 		static ColRGBA        averageColour(unsigned id, Recti area);
 		static void           bind(unsigned id, bool force = true);
 
+		static unsigned whiteTexture();
 		static unsigned missingTexture();
 		static unsigned backgroundTexture();
 		static void     resetBackgroundTexture();

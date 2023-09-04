@@ -22,5 +22,5 @@ void main()
 	float alpha = smoothstep(outline_dist - softness_ol, outline_dist + softness_ol, distance);
 	
 	f_colour.rgb = mix(outline_colour.rgb, colour.rgb, outline_factor);
-	f_colour.a = alpha;
+	f_colour.a = colour.a * alpha;
 }

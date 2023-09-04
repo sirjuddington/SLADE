@@ -35,11 +35,21 @@ namespace gl
 
 	enum class Primitive
 	{
-		Points    = GL_POINTS,
-		Lines     = GL_LINES,
-		LineLoop  = GL_LINE_LOOP,
-		Triangles = GL_TRIANGLES,
-		Quads     = GL_QUADS
+		Points      = GL_POINTS,
+		Lines       = GL_LINES,
+		LineLoop    = GL_LINE_LOOP,
+		Triangles   = GL_TRIANGLES,
+		TriangleFan = GL_TRIANGLE_FAN,
+		Quads       = GL_QUADS
+	};
+
+	enum class PointSpriteType
+	{
+		Textured,
+		Circle,
+		CircleOutline,
+		RoundedSquare,
+		RoundedSquareOutline
 	};
 
 	struct Info
@@ -68,6 +78,11 @@ namespace gl
 	void           setBlend(Blend blend);
 	void           resetBlend();
 	Info           sysInfo();
+
+	inline glm::mat4 identityMatrix()
+	{
+		return glm::mat4{ 1.0f };
+	}
 
 	// VBO
 	unsigned currentVBO();

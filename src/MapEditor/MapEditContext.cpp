@@ -47,6 +47,7 @@
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ShowItemDialog.h"
 #include "MapTextureManager.h"
+#include "OpenGL/Draw2D.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UndoSteps.h"
@@ -300,8 +301,8 @@ bool MapEditContext::update(long frametime)
 		next_frame_length_ = 2;
 
 	// Ignore if we aren't ready to update
-	if (frametime < next_frame_length_)
-		return false;
+	//if (frametime < next_frame_length_)
+	//	return false;
 
 	// Get frame time multiplier
 	double mult = (double)frametime / 10.0f;
@@ -540,7 +541,7 @@ void MapEditContext::forceRefreshRenderer()
 		info_3d_.update(hl.index, hl.type, &map_);
 	}
 
-	if (!canvas_->setActive())
+	if (!canvas_->activateContext())
 		return;
 
 	renderer_.forceUpdate();
@@ -670,9 +671,9 @@ void MapEditContext::updateTagged()
 				case TagType::Sector1Thing2:
 				{
 					int thingtag = (needs_tag == TagType::Sector1Thing2) ? arg2 : tag;
-					int sectag   = (needs_tag == TagType::Sector1Thing2) ?
-									 tag :
-									 (needs_tag == TagType::Thing1Sector2) ? arg2 : arg3;
+					int sectag   = (needs_tag == TagType::Sector1Thing2) ? tag :
+								   (needs_tag == TagType::Thing1Sector2) ? arg2 :
+																		   arg3;
 					if ((thingtag | sectag) == 0)
 						break;
 					else if (thingtag == 0)
@@ -1627,14 +1628,15 @@ void MapEditContext::updateInfoOverlay()
 // -----------------------------------------------------------------------------
 // Draws the current info overlay
 // -----------------------------------------------------------------------------
-void MapEditContext::drawInfoOverlay(const Vec2i& size, float alpha)
+void MapEditContext::drawInfoOverlay(gl::draw2d::Context& dc, float alpha)
 {
+	auto size = dc.view->size();
 	switch (edit_mode_)
 	{
-	case Mode::Vertices: info_vertex_.draw(size.y, size.x, alpha); return;
-	case Mode::Lines: info_line_.draw(size.y, size.x, alpha); return;
-	case Mode::Sectors: info_sector_.draw(size.y, size.x, alpha); return;
-	case Mode::Things: info_thing_.draw(size.y, size.x, alpha); return;
+	case Mode::Vertices: info_vertex_.draw(dc, alpha); return;
+	case Mode::Lines: info_line_.draw(dc, alpha); return;
+	case Mode::Sectors: info_sector_.draw(dc, alpha); return;
+	case Mode::Things: info_thing_.draw(dc, alpha); return;
 	case Mode::Visual: info_3d_.draw(size.y, size.x, size.x * 0.5, alpha); return;
 	}
 }
@@ -1919,7 +1921,7 @@ bool MapEditContext::handleAction(string_view id)
 				beginUndoRecord("Change Line Special", true, false, false);
 				dlg.applyTo(selection, true);
 				endUndoRecord();
-				renderer_.renderer2D().forceUpdate();
+				renderer_.forceUpdate(true, false);
 			}
 		}
 

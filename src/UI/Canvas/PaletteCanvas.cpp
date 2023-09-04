@@ -111,7 +111,7 @@ void PaletteCanvas::setPalette(const Palette* pal)
 // -----------------------------------------------------------------------------
 void PaletteCanvas::draw()
 {
-	if (vb_palette_->empty())
+	if (!vb_palette_->isUploaded())
 		updatePaletteBuffer();
 
 	// Setup default 2d shader (untextured)
@@ -134,8 +134,6 @@ void PaletteCanvas::updatePaletteBuffer()
 	int x_size   = (GetSize().x) / cols_;
 	int y_size   = (GetSize().y) / rows_;
 	square_size_ = std::min<int>(x_size, y_size);
-
-	vb_palette_->clear();
 
 	// Add vertices to buffer
 	int       index     = 0;
@@ -190,6 +188,8 @@ void PaletteCanvas::updatePaletteBuffer()
 		y += sizef + 2.f;
 		x = 1.f;
 	}
+
+	vb_palette_->upload(false);
 }
 
 

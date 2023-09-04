@@ -4,6 +4,11 @@ namespace slade
 {
 class MapSector;
 
+namespace gl
+{
+	class VertexBuffer2D;
+}
+
 class Polygon2D
 {
 public:
@@ -25,24 +30,19 @@ public:
 	~Polygon2D() { clear(); }
 
 	unsigned texture() const { return texture_; }
-	float    colRed() { return colour_[0]; }
-	float    colGreen() { return colour_[1]; }
-	float    colBlue() { return colour_[2]; }
-	float    colAlpha() { return colour_[3]; }
 
 	void setTexture(unsigned tex) { texture_ = tex; }
-	void setColour(float r, float g, float b, float a);
 	bool hasPolygon() const { return !subpolys_.empty(); }
 	int  vboUpdate() const { return vbo_update_; }
 	void setZ(float z);
-	void setZ(Plane plane);
+	void setZ(const Plane& plane);
 
 	unsigned nSubPolys() const { return subpolys_.size(); }
 	void     addSubPoly();
 	SubPoly* subPoly(unsigned index);
 	void     removeSubPoly(unsigned index);
 	void     clear();
-	unsigned totalVertices();
+	unsigned totalVertices() const;
 
 	bool openSector(MapSector* sector);
 	void updateTextureCoords(
@@ -52,22 +52,24 @@ public:
 		double offset_y = 0,
 		double rotation = 0);
 
-	unsigned vboDataSize();
+	unsigned vboDataSize() const;
 	unsigned writeToVBO(unsigned offset, unsigned index);
 	void     updateVBOData();
+	void     writeToVB(gl::VertexBuffer2D& vb, bool update = true);
+	void     updateVBData(const gl::VertexBuffer2D& vb);
 
-	void render();
-	void renderWireframe();
-	void renderVBO(bool colour = true);
-	void renderWireframeVBO(bool colour = true) const;
+	void render() const;
+	void renderWireframe() const;
+	void renderVBO() const;
+	void renderWireframeVBO() const;
+	void render(const gl::VertexBuffer2D& vb) const;
 
 	static void setupVBOPointers();
 
 private:
 	// Polygon data
 	vector<SubPoly> subpolys_;
-	unsigned        texture_   = 0;
-	float           colour_[4] = { 1.f, 1.f, 1.f, 1.f };
+	unsigned        texture_ = 0;
 
 	int vbo_update_ = 2;
 };

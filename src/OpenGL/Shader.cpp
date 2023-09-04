@@ -20,10 +20,21 @@ using namespace gl;
 // -----------------------------------------------------------------------------
 namespace
 {
+struct LoadedShader
+{
+	Shader* shader;
+	string  name;
+	string  vertex_entry;
+	string  fragment_entry;
+	string  geometry_entry;
+
+	LoadedShader(Shader* shader, string_view name) : shader{ shader }, name{ name } {}
+};
+vector<LoadedShader>     loaded_shaders;
 std::map<GLenum, string> shader_types = { { GL_VERTEX_SHADER, "vertex" },
 										  { GL_FRAGMENT_SHADER, "fragment" },
 										  { GL_GEOMETRY_SHADER, "geometry" } };
-}
+} // namespace
 CVAR(String, gl_glsl_version, "330 core", CVar::Save)
 
 
@@ -32,7 +43,7 @@ CVAR(String, gl_glsl_version, "330 core", CVar::Save)
 // Functions
 //
 // -----------------------------------------------------------------------------
-namespace
+namespace slade::gl
 {
 bool loadShader(const string& shader_text, GLenum type, GLuint& shader_id, const std::map<string, string>& defines)
 {
@@ -96,7 +107,24 @@ bool loadShaderFile(const string& filename, GLenum type, GLuint& shader_id, cons
 	// Load shader
 	return loadShader(shader_text, type, shader_id, defines);
 }
-} // namespace
+
+Shader* getShader(string_view name)
+{
+	for (const auto& ls : loaded_shaders)
+	{
+		if (ls.name == name)
+			return ls.shader;
+	}
+
+	return nullptr;
+}
+
+void reloadShaders()
+{
+	// TODO: this
+	// Need to add the ability to reload program resource entries from disk
+}
+} // namespace slade::gl
 
 
 // -----------------------------------------------------------------------------
@@ -107,6 +135,14 @@ bool loadShaderFile(const string& filename, GLenum type, GLuint& shader_id, cons
 
 
 // -----------------------------------------------------------------------------
+// Shader class constructor
+// -----------------------------------------------------------------------------
+Shader::Shader(string_view name) : name_{ name }
+{
+	loaded_shaders.emplace_back(this, name);
+}
+
+// -----------------------------------------------------------------------------
 // Shader class constructor taking vertex and fragment shader text strings
 // -----------------------------------------------------------------------------
 Shader::Shader(string_view name, const string& vertex_text, const string& fragment_text) : name_{ name }
@@ -114,6 +150,8 @@ Shader::Shader(string_view name, const string& vertex_text, const string& fragme
 	loadVertex(vertex_text);
 	loadFragment(fragment_text);
 	link();
+
+	loaded_shaders.emplace_back(this, name);
 }
 
 void Shader::define(string_view name, string_view value)
@@ -262,11 +300,24 @@ bool Shader::loadResourceEntries(
 			}
 		}
 
-		return load(
-			entry_vert->data().asString(),
-			entry_frag->data().asString(),
-			entry_geom ? entry_geom->data().asString() : string{},
-			link);
+		if (load(
+				entry_vert->data().asString(),
+				entry_frag->data().asString(),
+				entry_geom ? entry_geom->data().asString() : string{},
+				link))
+		{
+			for (auto& ls : loaded_shaders)
+			{
+				if (ls.shader == this)
+				{
+					ls.vertex_entry   = vertex_entry;
+					ls.fragment_entry = fragment_entry;
+					ls.geometry_entry = geometry_entry;
+				}
+			}
+
+			return true;
+		}
 	}
 
 	return false;
@@ -344,7 +395,7 @@ int Shader::uniformLocation(const string& name) const
 
 	// Not in cache, get location
 	auto location = glGetUniformLocation(id_, name.c_str());
-	if (location < 0)
+	if (location < 0 && name != "viewport_size") // viewport_size is optional, don't spam warnings about it
 		log::warning(fmt::format(R"(Uniform "{}" does not exist in shader {})", name, name_));
 	else if (location == GL_INVALID_VALUE)
 		log::warning(fmt::format("Shader {} has an invalid program id", name_));
@@ -364,6 +415,7 @@ bool Shader::setUniform(const string& name, bool value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
+		bind();
 		glUniform1i(loc, static_cast<int>(value));
 		return true;
 	}
@@ -378,6 +430,7 @@ bool Shader::setUniform(const string& name, int value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
+		bind();
 		glUniform1i(loc, value);
 		return true;
 	}
@@ -392,6 +445,7 @@ bool Shader::setUniform(const string& name, float value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
+		bind();
 		glUniform1f(loc, value);
 		return true;
 	}
@@ -406,6 +460,7 @@ bool Shader::setUniform(const string& name, const glm::vec2& value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
+		bind();
 		glUniform2fv(loc, 1, glm::value_ptr(value));
 		return true;
 	}
@@ -420,6 +475,7 @@ bool Shader::setUniform(const string& name, const glm::vec3& value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
+		bind();
 		glUniform3fv(loc, 1, glm::value_ptr(value));
 		return true;
 	}
@@ -434,6 +490,7 @@ bool Shader::setUniform(const string& name, const glm::vec4& value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
+		bind();
 		glUniform4fv(loc, 1, glm::value_ptr(value));
 		return true;
 	}
@@ -448,6 +505,7 @@ bool Shader::setUniform(const string& name, const glm::mat4& value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
+		bind();
 		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
 		return true;
 	}
@@ -462,6 +520,7 @@ bool Shader::setUniform(const string& name, const ColRGBA& value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
+		bind();
 		glUniform4fv(loc, 1, glm::value_ptr(glm::vec4(value.fr(), value.fg(), value.fb(), value.fa())));
 		return true;
 	}

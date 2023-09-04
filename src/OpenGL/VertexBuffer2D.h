@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Buffer.h"
 #include "OpenGL.h"
 
 namespace slade::gl
 {
+class View;
 class Shader;
 
 class VertexBuffer2D
@@ -25,11 +27,7 @@ public:
 
 	VertexBuffer2D() = default;
 
-	~VertexBuffer2D()
-	{
-		gl::deleteVBO(vbo_);
-		gl::deleteVAO(vao_);
-	}
+	~VertexBuffer2D() { gl::deleteVAO(vao_); }
 
 	// Vector-like access to vertices
 	unsigned      size() const { return vertices_.size(); }
@@ -42,24 +40,43 @@ public:
 		return vertices_[index];
 	}
 
+	const Buffer<Vertex>& buffer() const { return buffer_; }
+	Buffer<Vertex>&       buffer() { return buffer_; }
+
+	bool isUploaded() const { return buffer_.size() > 0; }
+
 	void add(const Vertex& vertex);
 	void add(const vector<Vertex>& vertices);
 	void add(const glm::vec2& pos, const glm::vec4& colour, const glm::vec2& tex_coord)
 	{
 		add(Vertex{ pos, colour, tex_coord });
 	}
+	void addQuadTriangles(
+		glm::vec2 tl,
+		glm::vec2 br,
+		glm::vec4 colour = glm::vec4{ 1.0f },
+		glm::vec2 uv_tl = glm::vec2{ 0.0f },
+		glm::vec2 uv_br = glm::vec2{ 1.0f });
 
-	void draw(Primitive primitive = Primitive::Triangles) const;
+	void update(unsigned offset, const vector<Vertex>& vertices) const { buffer_.update(offset, vertices); }
+	void upload() const;
+	void upload(bool keep_data);
+
+	void draw(
+		Primitive     primitive = Primitive::Triangles,
+		const Shader* shader    = nullptr,
+		const View*   view      = nullptr,
+		unsigned      first     = 0,
+		unsigned      count     = 0) const;
 
 	static const VertexBuffer2D& unitSquare();
 
 private:
-	vector<Vertex>   vertices_;
-	mutable unsigned vao_              = 0;
-	mutable unsigned vbo_              = 0;
-	mutable bool     vertices_updated_ = false;
+	vector<Vertex>         vertices_;
+	mutable unsigned       vao_ = 0;
+	mutable Buffer<Vertex> buffer_;
+	mutable bool           vertices_updated_ = false; // True if we need to update the VBO next draw
 
 	void initVAO() const;
-	void updateVBO() const;
 };
 } // namespace slade::gl

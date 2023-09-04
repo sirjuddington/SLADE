@@ -3,11 +3,14 @@
 #include "Archive/Archive.h"
 #include "GLCanvas.h"
 #include "OpenGL/LineBuffer.h"
-#include "OpenGL/VertexBuffer2D.h"
 
 namespace slade
 {
 class GLTexture;
+namespace gl
+{
+	class PointSpriteBuffer;
+}
 
 class MapPreviewCanvas : public GLCanvas
 {
@@ -81,8 +84,8 @@ private:
 	bool                panning_   = false;
 	bool                view_init_ = false;
 
-	unique_ptr<gl::LineBuffer>     vb_lines_;
-	unique_ptr<gl::VertexBuffer2D> vb_things_;
+	unique_ptr<gl::LineBuffer>        vb_lines_;
+	unique_ptr<gl::PointSpriteBuffer> psb_things_;
 
 	void updateLinesBuffer();
 	void updateThingsBuffer();

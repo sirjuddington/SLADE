@@ -48,6 +48,7 @@ CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
 CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
 CVAR(Int, gl_version_major, 0, CVar::Flag::Save)
 CVAR(Int, gl_version_minor, 0, CVar::Flag::Save)
+CVAR(Int, gl_msaa, 2, CVar::Flag::Save)
 
 namespace slade::gl
 {
@@ -60,6 +61,7 @@ unsigned     pow_two[]      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 uint8_t      n_pow_two      = 16;
 float        max_point_size = -1.0f;
 Blend        last_blend     = Blend::Normal;
+int          msaa           = -1;
 Info         info;
 unsigned     vbo_current;
 unsigned     vao_current;
@@ -71,7 +73,23 @@ unsigned     vao_current;
 // OpenGL Namespace Functions
 //
 // -----------------------------------------------------------------------------
+namespace slade::gl
+{
+wxGLAttributes& buildGlAttr(wxGLAttributes& attr, int depth)
+{
+	if (msaa < 0)
+		msaa = gl_msaa;
 
+	attr.Reset();
+	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(depth).Stencil(8);
+
+	if (msaa > 1)
+		attr.Samplers(msaa);
+
+	attr.EndList();
+	return attr;
+}
+} // namespace slade::gl
 
 // -----------------------------------------------------------------------------
 // Returns the global OpenGL context, and creates it if needed
@@ -284,19 +302,17 @@ wxGLAttributes gl::getWxGLAttribs()
 	wxGLAttributes attr;
 
 	// Try 32bit depth buffer first
-	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(32).Stencil(8).EndList();
+	buildGlAttr(attr, 32);
 	if (wxGLCanvas::IsDisplaySupported(attr))
 		return attr;
 
 	// Then 24 bit depth buffer if not supported
-	attr.Reset();
-	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(24).Stencil(8).EndList();
+	buildGlAttr(attr, 24);
 	if (wxGLCanvas::IsDisplaySupported(attr))
 		return attr;
 
 	// Then 16bit depth buffer (if this isn't supported then it's something else)
-	attr.Reset();
-	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(16).Stencil(8).EndList();
+	buildGlAttr(attr, 16);
 
 	return attr;
 }
@@ -385,6 +401,9 @@ unsigned gl::currentVBO()
 
 unsigned gl::createVBO()
 {
+	if (!initialised)
+		return 0;
+
 	unsigned vbo;
 	glGenBuffers(1, &vbo);
 	return vbo;
@@ -392,7 +411,7 @@ unsigned gl::createVBO()
 
 void gl::bindVBO(unsigned id)
 {
-	if (vbo_current == id)
+	if (!initialised || vbo_current == id)
 		return;
 
 	glBindBuffer(GL_ARRAY_BUFFER, id);
@@ -401,6 +420,9 @@ void gl::bindVBO(unsigned id)
 
 void gl::deleteVBO(unsigned id)
 {
+	if (!initialised)
+		return;
+
 	if (id > 0)
 	{
 		if (vbo_current == id)
@@ -420,6 +442,9 @@ unsigned gl::currentVAO()
 
 unsigned gl::createVAO()
 {
+	if (!initialised)
+		return 0;
+
 	unsigned vao;
 	glGenVertexArrays(1, &vao);
 	return vao;
@@ -427,7 +452,7 @@ unsigned gl::createVAO()
 
 void gl::bindVAO(unsigned id)
 {
-	if (vao_current == id)
+	if (!initialised || vao_current == id)
 		return;
 
 	glBindVertexArray(id);
@@ -436,6 +461,9 @@ void gl::bindVAO(unsigned id)
 
 void gl::deleteVAO(unsigned id)
 {
+	if (!initialised)
+		return;
+
 	if (id > 0)
 	{
 		if (vao_current == id)
@@ -450,6 +478,6 @@ void gl::deleteVAO(unsigned id)
 
 void gl::deleteBuffer(unsigned id)
 {
-	if (id > 0)
+	if (initialised && id > 0)
 		glDeleteBuffers(1, &id);
 }

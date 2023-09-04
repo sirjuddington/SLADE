@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "MapCanvas.h"
 #include "App.h"
+#include "General/ColourConfiguration.h"
+#include "MapEditor/MapEditContext.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/SectorBuilder.h"
 #include "OpenGL/Drawing.h"
@@ -62,9 +64,8 @@ CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // MapCanvas class constructor
 // -----------------------------------------------------------------------------
-MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
-	OGLCanvas{ parent, id, false },
-	context_{ context }
+MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
+	GLCanvas{ parent }, context_{ context }, timer_{ this }, last_time_{ app::runTimer() }
 {
 	// Init variables
 	context_->setCanvas(this);
@@ -92,6 +93,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	Bind(wxEVT_SET_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_KILL_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_TIMER, &MapCanvas::onRTimer, this);
+	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
 
 	timer_.Start(map_bg_ms);
 }
@@ -101,14 +103,12 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 // -----------------------------------------------------------------------------
 void MapCanvas::draw()
 {
-	if (!IsEnabled())
-		return;
+	// if (!IsEnabled())
+	//	return;
+
+	setBackground(BGStyle::Colour, colourconfig::colour("map_background"));
 
 	context_->renderer().draw();
-
-	SwapBuffers();
-
-	glFinish();
 }
 
 // -----------------------------------------------------------------------------
@@ -158,9 +158,9 @@ void MapCanvas::mouseLook3d()
 		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
 			// Get relative mouse movement (scale with dpi on macOS and Linux)
-			const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux); 
-			const double scale = useScaleFactor ? GetContentScaleFactor() : 1.;
-			const double threshold = scale - 1.0;
+			const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux);
+			const double scale          = useScaleFactor ? GetContentScaleFactor() : 1.;
+			const double threshold      = scale - 1.0;
 
 			wxRealPoint mouse_pos = wxGetMousePosition();
 			mouse_pos.x *= scale;
@@ -229,6 +229,24 @@ void MapCanvas::onKeyBindPress(string_view name)
 		}
 	}
 #endif
+}
+
+// -----------------------------------------------------------------------------
+// Update and redraw the canvas if necessary
+// -----------------------------------------------------------------------------
+void MapCanvas::update()
+{
+	// Handle 3d mode mouselook
+	mouseLook3d();
+
+	// Get time since last redraw
+	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
+
+	if (context_->update(frametime))
+	{
+		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
+		Refresh();
+	}
 }
 
 
@@ -477,17 +495,7 @@ void MapCanvas::onMouseEnter(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
-	// Handle 3d mode mouselook
-	mouseLook3d();
-
-	// Get time since last redraw
-	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
-
-	if (context_->update(frametime))
-	{
-		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
-		Refresh();
-	}
+	update();
 }
 
 // -----------------------------------------------------------------------------
@@ -495,17 +503,7 @@ void MapCanvas::onIdle(wxIdleEvent& e)
 // -----------------------------------------------------------------------------
 void MapCanvas::onRTimer(wxTimerEvent& e)
 {
-	// Handle 3d mode mouselook
-	mouseLook3d();
-
-	// Get time since last redraw
-	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
-
-	if (context_->update(frametime))
-	{
-		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
-		Refresh();
-	}
+	update();
 }
 
 // -----------------------------------------------------------------------------

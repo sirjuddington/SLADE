@@ -100,11 +100,12 @@ void GLCanvas::draw()
 	using namespace gl;
 
 	static VertexBuffer2D testbuf;
-	if (testbuf.empty())
+	if (!testbuf.isUploaded())
 	{
 		testbuf.add({ { 50.f, 50.f }, { 1.f, 0.f, 0.f, 1.f }, { 0.f, 0.f } });
 		testbuf.add({ { 50.f, 150.f }, { 0.f, 1.f, 0.f, 0.8f }, { 0.f, 0.f } });
 		testbuf.add({ { 150.f, 50.f }, { 0.f, 0.f, 1.f, 0.4f }, { 0.f, 0.f } });
+		testbuf.upload(false);
 	}
 
 	auto& shader = draw2d::defaultShader(false);
@@ -216,7 +217,7 @@ void GLCanvas::drawCheckeredBackground()
 
 void GLCanvas::onPaint(wxPaintEvent& e)
 {
-	wxPaintDC(this);
+	wxPaintDC dc(this);
 
 	if (!IsShown())
 		return;
@@ -236,7 +237,7 @@ void GLCanvas::onPaint(wxPaintEvent& e)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Set normal blending
-	gl::setBlend(gl::Blend::Normal);
+	gl::resetBlend();
 
 	// Draw checkered background if needed
 	if (bg_style_ == BGStyle::Checkered)
@@ -249,6 +250,7 @@ void GLCanvas::onPaint(wxPaintEvent& e)
 	// Cleanup state
 	gl::Shader::unbind();
 	gl::bindVAO(0);
+	gl::bindVBO(0);
 }
 
 

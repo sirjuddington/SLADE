@@ -4,7 +4,7 @@
 
 namespace slade::math
 {
-constexpr double PI = 3.1415926535897932384;
+constexpr double PI = 3.1415926535897932384626433832795;
 
 double clamp(double val, double min, double max);
 int    floor(double val);
@@ -27,7 +27,8 @@ Vec2d  vectorAngle(double angle_rad);
 double distanceRayPlane(Vec3d ray_origin, Vec3d ray_dir, Plane plane);
 bool   boxLineIntersect(Rectf box, Seg2d line);
 Plane  planeFromTriangle(Vec3d p1, Vec3d p2, Vec3d p3);
-bool colinear(double x1, double y1, double x2, double y2, double x3, double y3);
+bool   colinear(double x1, double y1, double x2, double y2, double x3, double y3);
+Rectf  lineTab(const Rectf& line, float tab = 0.1f, float tab_max = 16.0f);
 
 template<typename T> T scale(T value, double scale)
 {

@@ -38,6 +38,8 @@
 #include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "MapEditor/Renderer/MapRenderer2D.h"
+#include "OpenGL/View.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 

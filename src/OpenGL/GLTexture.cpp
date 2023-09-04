@@ -49,6 +49,7 @@ namespace
 std::map<unsigned, gl::Texture> textures;
 gl::Texture                     tex_missing;
 gl::Texture                     tex_background;
+gl::Texture                     tex_white;
 unsigned                        last_bound_tex = 0;
 } // namespace
 
@@ -234,8 +235,8 @@ bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, uns
 	}
 	else
 	{
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	}
 
 	// Generate the texture
@@ -305,7 +306,7 @@ bool gl::Texture::loadAlphaData(unsigned id, const uint8_t* data, unsigned width
 
 	textures[id].tiling = false;
 	textures[id].filter = TexFilter::Linear;
-	textures[id].size = { static_cast<int>(width), static_cast<int>(height) };
+	textures[id].size   = { static_cast<int>(width), static_cast<int>(height) };
 
 	return true;
 }
@@ -468,6 +469,27 @@ void gl::Texture::bind(unsigned id, bool force)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the 'plain white' texture id
+// Used to simulate something being untextured since by default sampling a
+// non-existant texture results in all black (and 0 alpha)
+// -----------------------------------------------------------------------------
+unsigned gl::Texture::whiteTexture()
+{
+	if (!gl::isInitialised())
+		return 0;
+
+	// Create the 'white' texture if necessary
+	if (tex_white.id == 0)
+	{
+		auto id = create();
+		genChequeredTexture(id, 8, ColRGBA::WHITE, ColRGBA::WHITE);
+		tex_white = textures[id];
+	}
+
+	return tex_white.id;
+}
+
+// -----------------------------------------------------------------------------
 // Deletes the OpenGL texture [id]
 // -----------------------------------------------------------------------------
 void gl::Texture::clear(unsigned id)
@@ -505,7 +527,7 @@ void gl::Texture::setTiling(unsigned id, bool tiling)
 		return;
 
 	bind(id);
-	
+
 	if (tiling)
 	{
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

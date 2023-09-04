@@ -496,7 +496,26 @@ bool math::colinear(double x1, double y1, double x2, double y2, double x3, doubl
 	return a == 0;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the 'tab' line for the given [line], of length [line].length * [tab]
+// (to a max length of [tab_max])
+// -----------------------------------------------------------------------------
+Rectf math::lineTab(const Rectf& line, float tab, float tab_max)
+{
+	// Calculate tab length
+	auto tablen = line.length() * tab;
+	if (tablen > tab_max)
+		tablen = tab_max;
+	if (tablen < 2)
+		tablen = 2;
 
+	// Calculate tab endpoint
+	Vec2f invdir{ -(line.br.y - line.tl.y), line.br.x - line.tl.x };
+	invdir.normalize();
+
+	auto mid = line.middle();
+	return { mid.x, mid.y, mid.x - invdir.x * tablen, mid.y - invdir.y * tablen };
+}
 
 
 CONSOLE_COMMAND(angle2d, 6, false)

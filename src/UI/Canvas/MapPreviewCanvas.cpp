@@ -40,6 +40,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/PointSpriteBuffer.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
 #include "SLADEMap/MapFormat/Doom32XMapFormat.h"
@@ -663,8 +664,8 @@ void MapPreviewCanvas::clearMap()
 	n_sectors_ = 0;
 	if (vb_lines_)
 		vb_lines_->clear();
-	if (vb_things_)
-		vb_things_->clear();
+	if (psb_things_)
+		psb_things_->buffer().clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -697,6 +698,8 @@ void MapPreviewCanvas::showMap()
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::draw()
 {
+	setBackground(BGStyle::Colour, colourconfig::colour("map_view_background"));
+
 	// Update buffer if needed
 	if (!vb_lines_ || vb_lines_->empty())
 		updateLinesBuffer();
@@ -719,17 +722,13 @@ void MapPreviewCanvas::draw()
 	if (map_view_things)
 	{
 		// Update buffer if needed
-		if (!vb_things_ || vb_things_->empty())
+		if (!psb_things_ || psb_things_->buffer().size() == 0)
 			updateThingsBuffer();
 
-		// Setup drawing
-		const auto& ps_shader = gl::draw2d::pointSpriteShader(gl::draw2d::PointSprite::Circle);
-		view_.setupShader(ps_shader);
-		ps_shader.setUniform("point_radius", 20.f);
-		ps_shader.setUniform("colour", colourconfig::colour("map_view_thing").asVec4());
-
 		// Draw things
-		vb_things_->draw(gl::Primitive::Points);
+		psb_things_->setPointRadius(20.0f);
+		psb_things_->setColour(colourconfig::colour("map_view_thing").asVec4());
+		psb_things_->draw(gl::PointSpriteType::Circle, &view_);
 	}
 }
 
@@ -1027,13 +1026,14 @@ void MapPreviewCanvas::updateLinesBuffer()
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::updateThingsBuffer()
 {
-	if (!vb_things_)
-		vb_things_ = std::make_unique<gl::VertexBuffer2D>();
+	if (!psb_things_)
+		psb_things_ = std::make_unique<gl::PointSpriteBuffer>();
 	else
-		vb_things_->clear();
+		psb_things_->buffer().clear();
 
 	auto col = glm::vec4(1.0f);
 	auto tc  = glm::vec2();
 	for (auto& thing : things_)
-		vb_things_->add({ { thing.x, thing.y }, col, tc });
+		psb_things_->add({ { thing.x, thing.y }, col, tc });
+	psb_things_->upload();
 }

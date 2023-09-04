@@ -9,8 +9,12 @@ namespace gl
 	class Shader
 	{
 	public:
-		Shader(string_view name) : name_{ name } {}
+		Shader(string_view name);
 		Shader(string_view name, const string& vertex_text, const string& fragment_text);
+
+		// Non-copyable
+		Shader(const Shader&)      = delete;
+		Shader& operator=(Shader&) = delete;
 
 		unsigned id() const { return id_; }
 		bool     isValid() const { return id_ > 0; }
@@ -74,5 +78,8 @@ namespace gl
 
 		static unsigned inline current_shader_ = 0;
 	};
+
+	Shader* getShader(string_view name);
+	void    reloadShaders();
 } // namespace gl
 } // namespace slade

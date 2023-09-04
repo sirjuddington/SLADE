@@ -36,6 +36,7 @@
 #include "MathStuff.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "OpenGL/VertexBuffer2D.h"
 #include "SLADEMap/SLADEMap.h"
 
 using namespace slade;
@@ -48,14 +49,6 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 
 
-void Polygon2D::setColour(float r, float g, float b, float a)
-{
-	colour_[0] = r;
-	colour_[1] = g;
-	colour_[2] = b;
-	colour_[3] = a;
-}
-
 void Polygon2D::setZ(float z)
 {
 	// Go through all sub-polys
@@ -67,7 +60,7 @@ void Polygon2D::setZ(float z)
 	}
 }
 
-void Polygon2D::setZ(Plane plane)
+void Polygon2D::setZ(const Plane& plane)
 {
 	// Go through all sub-polys
 	for (auto& subpoly : subpolys_)
@@ -106,7 +99,7 @@ void Polygon2D::clear()
 	texture_    = 0;
 }
 
-unsigned Polygon2D::totalVertices()
+unsigned Polygon2D::totalVertices() const
 {
 	unsigned total = 0;
 	for (auto& subpoly : subpolys_)
@@ -139,9 +132,9 @@ bool Polygon2D::openSector(MapSector* sector)
 
 		// Add the edge to the splitter (direction depends on what side of the line this is)
 		if (line->s1() == side)
-			splitter.addEdge(line->v1()->xPos(), line->v1()->yPos(), line->v2()->xPos(), line->v2()->yPos());
+			splitter.addEdge(line->x1(), line->y1(), line->x2(), line->y2());
 		else
-			splitter.addEdge(line->v2()->xPos(), line->v2()->yPos(), line->v1()->xPos(), line->v1()->yPos());
+			splitter.addEdge(line->x2(), line->y2(), line->x1(), line->y1());
 	}
 
 	// Split the polygon into convex sub-polygons
@@ -201,7 +194,7 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 	vbo_update_ = 1;
 }
 
-unsigned Polygon2D::vboDataSize()
+unsigned Polygon2D::vboDataSize() const
 {
 	unsigned total = 0;
 	for (auto& subpoly : subpolys_)
@@ -243,7 +236,38 @@ void Polygon2D::updateVBOData()
 	vbo_update_ = 0;
 }
 
-void Polygon2D::render()
+void Polygon2D::writeToVB(gl::VertexBuffer2D& vb, bool update)
+{
+	for (auto& subpoly : subpolys_)
+	{
+		if (update)
+			subpoly.vbo_offset = vb.size();
+
+		for (const auto& vertex : subpoly.vertices)
+			vb.add({ vertex.x, vertex.y }, glm::vec4{ 1.0f }, { vertex.tx, vertex.ty });
+	}
+
+	// Update variables
+	if (update)
+		vbo_update_ = 0;
+}
+
+void Polygon2D::updateVBData(const gl::VertexBuffer2D& vb)
+{
+	for (auto& subpoly : subpolys_)
+	{
+		vector<gl::VertexBuffer2D::Vertex> vertices;
+		for (const auto& vertex : subpoly.vertices)
+			vertices.emplace_back(
+				glm::vec2{ vertex.x, vertex.y }, glm::vec4{ 1.0f }, glm::vec2{ vertex.tx, vertex.ty });
+		vb.update(subpoly.vbo_offset, vertices);
+	}
+
+	// Update variables
+	vbo_update_ = 0;
+}
+
+void Polygon2D::render() const
 {
 	// Go through sub-polys
 	for (auto& poly : subpolys_)
@@ -258,7 +282,7 @@ void Polygon2D::render()
 	}
 }
 
-void Polygon2D::renderWireframe()
+void Polygon2D::renderWireframe() const
 {
 	// Go through sub-polys
 	for (auto& poly : subpolys_)
@@ -273,15 +297,20 @@ void Polygon2D::renderWireframe()
 	}
 }
 
-void Polygon2D::renderVBO(bool colour)
+void Polygon2D::renderVBO() const
 {
 	// Render
-	// glColor4f(this->colour[0], this->colour[1], this->colour[2], this->colour[3]);
 	for (const auto& subpoly : subpolys_)
 		glDrawArrays(GL_TRIANGLE_FAN, subpoly.vbo_index, subpoly.vertices.size());
 }
 
-void Polygon2D::renderWireframeVBO(bool colour) const {}
+void Polygon2D::renderWireframeVBO() const {}
+
+void Polygon2D::render(const gl::VertexBuffer2D& vb) const
+{
+	for (const auto& subpoly : subpolys_)
+		vb.draw(gl::Primitive::TriangleFan, nullptr, nullptr, subpoly.vbo_offset, subpoly.vertices.size());
+}
 
 void Polygon2D::setupVBOPointers()
 {

@@ -1,14 +1,23 @@
 #pragma once
 
 #include "MCAnimations.h"
-#include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
-#include "OpenGL/View.h"
 
 namespace slade
 {
 class MapEditContext;
 class MCOverlay;
+namespace gl
+{
+	class LineBuffer;
+	class VertexBuffer2D;
+	class View;
+
+	namespace draw2d
+	{
+		struct Context;
+	}
+} // namespace gl
 
 namespace mapeditor
 {
@@ -16,18 +25,20 @@ namespace mapeditor
 	{
 	public:
 		Renderer(MapEditContext& context);
+		~Renderer();
 
-		MapRenderer2D& renderer2D() { return renderer_2d_; }
+		MapRenderer2D& renderer2D() const { return *renderer_2d_; }
 		MapRenderer3D& renderer3D() { return renderer_3d_; }
-		gl::View&      view() { return view_; }
+		gl::View&      view() const { return *view_; }
 
-		void forceUpdate();
+		void forceUpdate(bool update_2d = true, bool update_3d = true);
+		void clearTextureCache() const;
 
 		// View manipulation
-		void   setView(double map_x, double map_y);
-		void   setViewSize(int width, int height);
-		void   setTopY(double map_y);
-		void   pan(double x, double y, bool scale = false);
+		void   setView(double map_x, double map_y) const;
+		void   setViewSize(int width, int height) const;
+		void   setTopY(double map_y) const;
+		void   pan(double x, double y, bool scale = false) const;
 		void   zoom(double amount, bool toward_cursor = false);
 		void   viewFitToMap(bool snap = false);
 		void   viewFitToObjects(const vector<MapObject*>& objects);
@@ -51,10 +62,17 @@ namespace mapeditor
 		void addAnimation(unique_ptr<MCAnimation> animation);
 
 	private:
-		MapEditContext& context_;
-		MapRenderer2D   renderer_2d_;
-		MapRenderer3D   renderer_3d_;
-		gl::View        view_;
+		MapEditContext&           context_;
+		unique_ptr<MapRenderer2D> renderer_2d_;
+		MapRenderer3D             renderer_3d_;
+		unique_ptr<gl::View>      view_;
+		unique_ptr<gl::View>      view_screen_;
+
+		// OpenGL
+		unique_ptr<gl::VertexBuffer2D> vb_grid_;
+		unique_ptr<gl::VertexBuffer2D> vb_linedraw_points_;
+		unique_ptr<gl::LineBuffer>     lb_crosshair_;
+		unique_ptr<gl::LineBuffer>     lb_objectedit_box_;
 
 		// MCAnimations
 		vector<unique_ptr<MCAnimation>> animations_;
@@ -75,17 +93,17 @@ namespace mapeditor
 
 
 		// Drawing
-		void drawGrid() const;
-		void drawEditorMessages() const;
-		void drawFeatureHelpText() const;
-		void drawSelectionNumbers() const;
-		void drawThingQuickAngleLines() const;
-		void drawLineLength(Vec2d p1, Vec2d p2, ColRGBA col) const;
-		void drawLineDrawLines(bool snap_nearest_vertex) const;
-		void drawPasteLines() const;
-		void drawObjectEdit();
-		void drawAnimations() const;
-		void drawMap2d();
+		void drawGrid(gl::draw2d::Context& dc) const;
+		void drawEditorMessages(gl::draw2d::Context& dc) const;
+		void drawFeatureHelpText(gl::draw2d::Context& dc) const;
+		void drawSelectionNumbers(gl::draw2d::Context& dc) const;
+		void drawThingQuickAngleLines(gl::draw2d::Context& dc) const;
+		void drawLineLength(gl::draw2d::Context& dc, const Vec2d& p1, const Vec2d& p2) const;
+		void drawLineDrawLines(gl::draw2d::Context& dc, bool snap_nearest_vertex) const;
+		void drawPasteLines(gl::draw2d::Context& dc) const;
+		void drawObjectEdit(gl::draw2d::Context& dc) const;
+		void drawAnimations(gl::draw2d::Context& dc) const;
+		void drawMap2d(gl::draw2d::Context& dc) const;
 		void drawMap3d();
 
 		// Animation

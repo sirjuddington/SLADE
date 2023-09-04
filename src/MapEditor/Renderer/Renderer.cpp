@@ -38,13 +38,19 @@
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Edit/LineDraw.h"
 #include "MapEditor/MapEditContext.h"
-#include "OpenGL/Drawing.h"
+#include "MapRenderer2D.h"
+#include "OpenGL/Draw2D.h"
+#include "OpenGL/LineBuffer.h"
 #include "OpenGL/OpenGL.h"
+#include "OpenGL/Shader.h"
+#include "OpenGL/VertexBuffer2D.h"
+#include "OpenGL/View.h"
 #include "Overlays/MCOverlay.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
 using namespace mapeditor;
+using namespace gl;
 
 
 // -----------------------------------------------------------------------------
@@ -79,6 +85,7 @@ CVAR(Int, flat_drawtype, 2, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, vertex_round)
 EXTERN_CVAR(Int, vertex_size)
+EXTERN_CVAR(Int, thing_shape)
 
 
 // -----------------------------------------------------------------------------
@@ -91,58 +98,79 @@ EXTERN_CVAR(Int, vertex_size)
 // -----------------------------------------------------------------------------
 // Renderer class constructor
 // -----------------------------------------------------------------------------
-Renderer::Renderer(MapEditContext& context) :
-	context_{ context }, renderer_2d_{ &context.map() }, renderer_3d_{ &context.map() }, view_{ true, true }
+Renderer::Renderer(MapEditContext& context) : context_{ context }, renderer_3d_{ &context.map() }
 {
+	view_              = std::make_unique<View>(true, true);
+	view_screen_       = std::make_unique<View>(false, false);
+	renderer_2d_       = std::make_unique<MapRenderer2D>(&context.map(), view_.get());
+	vb_grid_           = std::make_unique<VertexBuffer2D>();
+	lb_crosshair_      = std::make_unique<LineBuffer>();
+	lb_objectedit_box_ = std::make_unique<LineBuffer>();
 }
 
 // -----------------------------------------------------------------------------
-// Updates/refreshes the 2d and 3d renderers
+// Renderer class destructor
 // -----------------------------------------------------------------------------
-void Renderer::forceUpdate()
+Renderer::~Renderer() = default;
+
+// -----------------------------------------------------------------------------
+// Updates/refreshes the 2d and/or 3d renderers
+// -----------------------------------------------------------------------------
+void Renderer::forceUpdate(bool update_2d, bool update_3d)
 {
-	renderer_2d_.forceUpdate(fade_lines_);
-	renderer_3d_.clearData();
+	if (update_2d)
+		renderer_2d_->forceUpdate(fade_lines_);
+	if (update_3d)
+		renderer_3d_.clearData();
+}
+
+// -----------------------------------------------------------------------------
+// Clears the 2d renderer's texture cache
+// -----------------------------------------------------------------------------
+void Renderer::clearTextureCache() const
+{
+	renderer_2d_->clearTextureCache();
 }
 
 // -----------------------------------------------------------------------------
 // Scrolls the view to be centered on map coordinates [x,y]
 // -----------------------------------------------------------------------------
-void Renderer::setView(double map_x, double map_y)
+void Renderer::setView(double map_x, double map_y) const
 {
 	// Set new view
-	view_.setOffset(map_x, map_y);
+	view_->setOffset(map_x, map_y);
 
 	// Update object visibility
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
 // Sets the view size to [width,height]
 // -----------------------------------------------------------------------------
-void Renderer::setViewSize(int width, int height)
+void Renderer::setViewSize(int width, int height) const
 {
 	// Set new size
-	view_.setSize(width, height);
+	view_->setSize(width, height);
+	view_screen_->setSize(width, height);
 
 	// Update object visibility
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
 // Sets the view such that the map coordinate [y] is at the top of the canvas
 // -----------------------------------------------------------------------------
-void Renderer::setTopY(double map_y)
+void Renderer::setTopY(double map_y) const
 {
-	setView(view_.offset().x, view_.offset().y - (view_.canvasY(0) - map_y));
-	view_.resetInter(false, true, false);
+	setView(view_->offset().x, view_->offset().y - (view_->canvasY(0) - map_y));
+	view_->resetInter(false, true, false);
 }
 
 // -----------------------------------------------------------------------------
 // Scrolls the view relatively by [x,y].
 // If [scale] is true, [x,y] will be scaled by the current view scale
 // -----------------------------------------------------------------------------
-void Renderer::pan(double x, double y, bool scale)
+void Renderer::pan(double x, double y, bool scale) const
 {
 	if (scale)
 	{
@@ -150,7 +178,7 @@ void Renderer::pan(double x, double y, bool scale)
 		y /= view().scale().y;
 	}
 
-	setView(view_.offset().x + x, view_.offset().y + y);
+	setView(view_->offset().x + x, view_->offset().y + y);
 }
 
 // -----------------------------------------------------------------------------
@@ -164,17 +192,16 @@ void Renderer::zoom(double amount, bool toward_cursor)
 	if (toward_cursor)
 	{
 		cursor_zoom_disabled_ = false;
-		view_.zoomToward(amount, context_.input().mousePos());
+		view_->zoomToward(amount, context_.input().mousePos());
 	}
 	else
 	{
 		cursor_zoom_disabled_ = true;
-		view_.zoom(amount);
+		view_->zoom(amount);
 	}
 
 	// Update object visibility
-	renderer_2d_.setScale(view_.scale(true).x);
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -187,16 +214,15 @@ void Renderer::viewFitToMap(bool snap)
 	cursor_zoom_disabled_ = true;
 
 	// Fit the view to the map bbox
-	view_.fitTo(context_.map().bounds());
+	view_->fitTo(context_.map().bounds());
 
 	// Don't animate if specified
 	if (snap)
-		view_.resetInter(true, true, true);
+		view_->resetInter(true, true, true);
 
 	// Update object visibility
-	renderer_2d_.setScale(view_.scale(true).x);
-	renderer_2d_.forceUpdate();
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->forceUpdate();
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -250,12 +276,11 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 	}
 
 	// Fit the view to the bbox
-	view_.fitTo(bbox);
+	view_->fitTo(bbox);
 
 	// Update object visibility
-	renderer_2d_.setScale(view_.scale(true).x);
-	renderer_2d_.forceUpdate();
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->forceUpdate();
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -269,7 +294,7 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 	{
 		auto mouse_pos = Vec2d{ (double)context_.input().mousePos().x, (double)context_.input().mousePos().y };
 
-		if (!view_.interpolate(mult * view_speed, cursor_zoom_disabled_ ? nullptr : &mouse_pos))
+		if (!view_->interpolate(mult * view_speed, cursor_zoom_disabled_ ? nullptr : &mouse_pos))
 		{
 			cursor_zoom_disabled_ = false;
 			anim_view_speed       = 0.05;
@@ -282,7 +307,7 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 		}
 	}
 	else
-		view_.resetInter(true, true, true);
+		view_->resetInter(true, true, true);
 
 	return anim_view_speed;
 }
@@ -292,9 +317,7 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 // -----------------------------------------------------------------------------
 bool Renderer::viewIsInterpolated() const
 {
-	return (
-		view_.scale(false) != view_.scale(true) || view_.offset(false).x != view_.offset(true).x
-		|| view_.offset(false).y != view_.offset(true).y);
+	return view_->scale(false) != view_->scale(true) || view_->offset(false) != view_->offset(true);
 }
 
 // -----------------------------------------------------------------------------
@@ -331,213 +354,175 @@ Vec2d Renderer::cameraDir2D() const
 // -----------------------------------------------------------------------------
 // Draws the grid
 // -----------------------------------------------------------------------------
-void Renderer::drawGrid() const
+void Renderer::drawGrid(gl::draw2d::Context& dc) const
 {
-	// Get grid size
-	int gridsize = context_.gridSize();
-
-	// Disable line smoothing (not needed for straight, 1.0-sized lines)
-	glDisable(GL_LINE_SMOOTH);
-	glLineWidth(1.0f);
-
-	// Enable dashed lines if needed
-	if (grid_dashed)
-	{
-		glLineStipple(2, 0xAAAA);
-		glEnable(GL_LINE_STIPPLE);
-	}
-
-	gl::setColour(colourconfig::colour("map_grid"));
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	// Determine smallest grid size to bother drawing
-	int grid_hidelevel = 2.0 / view_.scale().x;
+	int grid_hidelevel = 4.0 / view_->scale().x;
 
 	// Determine canvas edges in map coordinates
-	int start_x = view_.canvasX(0);
-	int end_x   = view_.canvasX(view_.size().x);
-	int start_y = view_.canvasY(view_.size().y);
-	int end_y   = view_.canvasY(0);
-
-	// Draw regular grid if it's not too small
-	if (gridsize > grid_hidelevel)
-	{
-		// Vertical
-		int ofs = start_x % gridsize;
-		for (int x = start_x - ofs; x <= end_x; x += gridsize)
-		{
-			glBegin(GL_LINES);
-			glVertex2d(x, start_y);
-			glVertex2d(x, end_y);
-			glEnd();
-		}
-
-		// Horizontal
-		ofs = start_y % gridsize;
-		for (int y = start_y - ofs; y <= end_y; y += gridsize)
-		{
-			glBegin(GL_LINES);
-			glVertex2d(start_x, y);
-			glVertex2d(end_x, y);
-			glEnd();
-		}
-	}
+	auto start_x = view_->canvasX(0);
+	auto end_x   = view_->canvasX(view_->size().x);
+	auto start_y = view_->canvasY(view_->size().y);
+	auto end_y   = view_->canvasY(0);
 
 	// Draw origin grid lines
 	if (grid_show_origin)
 	{
-		glEnable(GL_LINE_SMOOTH);
-		glLineWidth(3.0f);
-
-		glBegin(GL_LINES);
-		glVertex2d(0, start_y);
-		glVertex2d(0, end_y);
-		glVertex2d(start_x, 0);
-		glVertex2d(end_x, 0);
-		glEnd();
-
-		glDisable(GL_LINE_SMOOTH);
-		glLineWidth(1.0f);
+		dc.line_thickness = 3.0f;
+		dc.setColourFromConfig("map_grid");
+		dc.drawLines({ Rectf(0, start_y, 0, end_y), Rectf(start_x, 0, end_x, 0) });
 	}
 
-	// Disable dashed lines if 64 grid is set to crosses
-	if (grid_64_style > 1)
-		glDisable(GL_LINE_STIPPLE);
+	// Setup regular grid if it's not too small
+	// TODO: Dashed
+	// vb_grid_->clear();
+	auto& shader   = draw2d::defaultShader(false);
+	auto  gridsize = static_cast<int>(context_.gridSize());
+	if (gridsize > grid_hidelevel)
+	{
+		auto col_grid = colourconfig::colour("map_grid").asVec4();
 
-	// Draw 64 grid if it's not too small and we're not on a larger grid size
+		// Vertical
+		int ofs = static_cast<int>(start_x) % gridsize;
+		for (int x = start_x - ofs; x <= end_x; x += gridsize)
+		{
+			vb_grid_->add({ x, start_y }, col_grid, {});
+			vb_grid_->add({ x, end_y }, col_grid, {});
+		}
+
+		// Horizontal
+		ofs = static_cast<int>(start_y) % gridsize;
+		for (int y = start_y - ofs; y <= end_y; y += gridsize)
+		{
+			vb_grid_->add({ start_x, y }, col_grid, {});
+			vb_grid_->add({ end_x, y }, col_grid, {});
+		}
+
+		vb_grid_->upload(false);
+
+		gl::setBlend(colourconfig::colDef("map_grid").blendMode());
+		shader.setUniform("colour", glm::vec4{ 1.0f });
+		vb_grid_->draw(Primitive::Lines, &shader, view_.get());
+	}
+
+	// Setup 64 grid if it's not too small and we're not on a larger grid size
 	if (64 > grid_hidelevel && gridsize < 64 && grid_64_style > 0)
 	{
-		int cross_size = 8;
+		auto col_64grid = colourconfig::colour("map_64grid").asVec4();
+		int  cross_size = 8;
 		if (gridsize < cross_size)
 			cross_size = gridsize;
 
-		colourconfig::setGLColour("map_64grid");
-
 		// Vertical
-		int ofs = start_x % 64;
+		int ofs = static_cast<int>(start_x) % 64;
 		for (int x = start_x - ofs; x <= end_x; x += 64)
 		{
-			glBegin(GL_LINES);
-
 			if (grid_64_style > 1)
 			{
 				// Cross style
-				int y = start_y - (start_y % 64);
+				int y = start_y - (static_cast<int>(start_y) % 64);
 				while (y < end_y)
 				{
-					glVertex2d(x, y - cross_size);
-					glVertex2d(x, y + cross_size);
+					vb_grid_->add({ x, y - cross_size }, col_64grid, {});
+					vb_grid_->add({ x, y + cross_size }, col_64grid, {});
 					y += 64;
 				}
 			}
 			else
 			{
 				// Full style
-				glVertex2d(x, start_y);
-				glVertex2d(x, end_y);
+				vb_grid_->add({ x, start_y }, col_64grid, {});
+				vb_grid_->add({ x, end_y }, col_64grid, {});
 			}
-
-			glEnd();
 		}
 
 		// Horizontal
-		ofs = start_y % 64;
+		ofs = static_cast<int>(start_y) % 64;
 		for (int y = start_y - ofs; y <= end_y; y += 64)
 		{
-			glBegin(GL_LINES);
-
 			if (grid_64_style > 1)
 			{
 				// Cross style
-				int x = start_x - (start_x % 64);
+				int x = start_x - (static_cast<int>(start_x) % 64);
 				while (x < end_x)
 				{
-					glVertex2d(x - cross_size, y);
-					glVertex2d(x + cross_size, y);
+					vb_grid_->add({ x - cross_size, y }, col_64grid, {});
+					vb_grid_->add({ x + cross_size, y }, col_64grid, {});
 					x += 64;
 				}
 			}
 			else
 			{
 				// Full style
-				glVertex2d(start_x, y);
-				glVertex2d(end_x, y);
+				vb_grid_->add({ start_x, y }, col_64grid, {});
+				vb_grid_->add({ end_x, y }, col_64grid, {});
 			}
-
-			glEnd();
 		}
-	}
 
-	glDisable(GL_LINE_STIPPLE);
+		vb_grid_->upload(false);
+
+		gl::setBlend(colourconfig::colDef("map_64grid").blendMode());
+		shader.setUniform("colour", glm::vec4{ 1.0f });
+		vb_grid_->draw(Primitive::Lines, &shader, view_.get());
+	}
 
 	// Draw crosshair if needed
 	if (map_crosshair > 0)
 	{
+		lb_crosshair_->clear();
+
 		auto   mouse_pos = context_.input().mousePos();
-		double x         = context_.snapToGrid(view_.canvasX(mouse_pos.x), false);
-		double y         = context_.snapToGrid(view_.canvasY(mouse_pos.y), false);
+		double x         = context_.snapToGrid(view_->canvasX(mouse_pos.x), false);
+		double y         = context_.snapToGrid(view_->canvasY(mouse_pos.y), false);
 		auto&  def       = colourconfig::colDef("map_64grid");
 		auto   col       = def.colour;
 
 		// Small
-		glLineWidth(2.0f);
 		if (map_crosshair == 1)
 		{
-			col         = col.ampf(1.0f, 1.0f, 1.0f, 2.0f);
-			auto   col2 = col.ampf(1.0f, 1.0f, 1.0f, 0.0f);
-			double size = context_.gridSize();
-			double one  = 1.0 / view_.scale(true).x;
+			auto           col1  = col.ampf(1.0f, 1.0f, 1.0f, 2.0f).asVec4();
+			auto           col2  = col.ampf(1.0f, 1.0f, 1.0f, 0.0f).asVec4();
+			double         size  = context_.gridSize();
+			double         one   = 1.0 / view_->scale(true).x;
+			constexpr auto width = 4.0f;
 
-			gl::setBlend(def.blendMode());
-
-			glBegin(GL_LINES);
-			gl::setColour(col);
-			glVertex2d(x + one, y);
-			gl::setColour(col2);
-			glVertex2d(x + size, y);
-
-			gl::setColour(col);
-			glVertex2d(x - one, y);
-			gl::setColour(col2);
-			glVertex2d(x - size, y);
-
-			gl::setColour(col);
-			glVertex2d(x, y + one);
-			gl::setColour(col2);
-			glVertex2d(x, y + size);
-
-			gl::setColour(col);
-			glVertex2d(x, y - one);
-			gl::setColour(col2);
-			glVertex2d(x, y - size);
-			glEnd();
+			lb_crosshair_->add(
+				LineBuffer::Line{ { x + one, y, 0.0f, width }, col1, { x + size, y, 0.0f, width }, col2 });
+			lb_crosshair_->add(
+				LineBuffer::Line{ { x - one, y, 0.0f, width }, col1, { x - size, y, 0.0f, width }, col2 });
+			lb_crosshair_->add(
+				LineBuffer::Line{ { x, y + one, 0.0f, width }, col1, { x, y + size, 0.0f, width }, col2 });
+			lb_crosshair_->add(
+				LineBuffer::Line{ { x, y - one, 0.0f, width }, col1, { x, y - size, 0.0f, width }, col2 });
 		}
 
 		// Full
 		else if (map_crosshair == 2)
 		{
-			gl::setColour(col, def.blendMode());
-
-			glBegin(GL_LINES);
-			glVertex2d(x, view_.visibleRegion().tl.y);
-			glVertex2d(x, view_.visibleRegion().br.y);
-			glVertex2d(view_.visibleRegion().tl.x, y);
-			glVertex2d(view_.visibleRegion().br.x, y);
-			glEnd();
+			lb_crosshair_->add2d(x, start_y, x, end_y, col.asVec4(), 3.0f);
+			lb_crosshair_->add2d(start_x, y, end_x, y, col.asVec4(), 3.0f);
 		}
+
+		gl::setBlend(def.blendMode());
+		lb_crosshair_->draw(view_.get());
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws any currently showing editor messages
 // -----------------------------------------------------------------------------
-void Renderer::drawEditorMessages() const
+void Renderer::drawEditorMessages(draw2d::Context& dc) const
 {
-	int yoff = 0;
+	float yoff = 4.0f;
 	if (map_showfps)
-		yoff = 16;
+		yoff = 32.0f;
 	auto col_fg = colourconfig::colour("map_editor_message");
 	auto col_bg = colourconfig::colour("map_editor_message_outline");
+
+	dc.font           = draw2d::Font::Bold;
+	dc.text_size      = 20 * ui::scaleFactor();
+	dc.text_style     = draw2d::TextStyle::Outline;
+	dc.text_alignment = draw2d::Align::Left;
 
 	// Go through editor messages
 	for (unsigned a = 0; a < context_.numEditorMessages(); a++)
@@ -548,104 +533,100 @@ void Renderer::drawEditorMessages() const
 			continue;
 
 		// Setup message colour
-		auto col = col_fg;
+		dc.colour = col_fg;
 		if (time < 200)
 		{
 			float flash = 1.0f - (time / 200.0f);
-			col.r += (255 - col.r) * flash;
-			col.g += (255 - col.g) * flash;
-			col.b += (255 - col.b) * flash;
+			dc.colour.r += (255 - dc.colour.r) * flash;
+			dc.colour.g += (255 - dc.colour.g) * flash;
+			dc.colour.b += (255 - dc.colour.b) * flash;
 		}
 
 		// Setup message alpha
 		col_bg.a = 255;
 		if (time > 1500)
 		{
-			col.a    = 255 - ((time - 1500) / 500.0 * 255);
-			col_bg.a = col.a;
+			dc.colour.a = 255 - ((time - 1500) / 500.0 * 255);
+			col_bg.a    = dc.colour.a;
 		}
 
 		// Draw message
-		drawing::setTextOutline(1.0f, col_bg);
-		drawing::drawText(context_.editorMessage(a), 0, yoff, col, drawing::Font::Bold);
+		dc.outline_colour = col_bg;
+		dc.drawText(context_.editorMessage(a), { 4.0f, yoff });
 
-		yoff += 16;
+		yoff += dc.textLineHeight();
 	}
-	drawing::setTextOutline(0);
 }
 
 // -----------------------------------------------------------------------------
 // Draws any feature help text currently showing
 // -----------------------------------------------------------------------------
-void Renderer::drawFeatureHelpText() const
+void Renderer::drawFeatureHelpText(draw2d::Context& dc) const
 {
 	// Check if any text
 	auto& help_lines = context_.featureHelpLines();
 	if (help_lines.empty() || !map_show_help)
 		return;
 
-	// Draw title
-	Rectd bounds;
-	auto  col    = colourconfig::colour("map_editor_message");
-	auto  col_bg = colourconfig::colour("map_editor_message_outline");
-	col.a        = col.a * anim_help_fade_;
-	col_bg.a     = col_bg.a * anim_help_fade_;
-	drawing::setTextOutline(1.0f, col_bg);
-	drawing::drawText(help_lines[0], view_.size().x - 2, 2, col, drawing::Font::Bold, drawing::Align::Right, &bounds);
+	// Title
+	dc.font           = draw2d::Font::Bold;
+	dc.text_size      = 20 * ui::scaleFactor();
+	dc.text_style     = draw2d::TextStyle::Outline;
+	dc.text_alignment = draw2d::Align::Right;
+	dc.colour         = colourconfig::colour("map_editor_message").ampf(1.0f, 1.0f, 1.0f, anim_help_fade_);
+	dc.outline_colour = colourconfig::colour("map_editor_message_outline").ampf(1.0f, 1.0f, 1.0f, anim_help_fade_);
+	auto x            = static_cast<float>(view_->size().x) - 4.0f;
+	auto underline_y  = 6.0f + dc.textLineHeight();
+	dc.drawText(help_lines[0], { x, 4.0f });
 
-	// Draw underline
-	glDisable(GL_TEXTURE_2D);
-	glLineWidth(1.0f);
-	gl::setColour(col);
-	glBegin(GL_LINES);
-	glVertex2d(bounds.right() + 8, bounds.bottom() + 1);
-	glVertex2d(bounds.left() + 16, bounds.bottom() + 1);
-	glVertex2d(bounds.left() + 16, bounds.bottom() + 1);
-	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-	glVertex2d(bounds.left() - 48, bounds.bottom() + 1);
-	glEnd();
-
-	// Draw help text
-	int yoff = 22;
+	// Help Text
+	auto yoff            = 4.0f + dc.textLineHeight() + 8.0f;
+	auto underline_width = dc.textExtents(help_lines[0]).x;
+	dc.text_size         = 18 * ui::scaleFactor();
 	for (unsigned a = 1; a < help_lines.size(); a++)
 	{
-		drawing::drawText(help_lines[a], view_.size().x - 2, yoff, col, drawing::Font::Bold, drawing::Align::Right);
-		yoff += 16;
+		dc.drawText(help_lines[a], { x, yoff });
+		yoff += dc.textLineHeight();
+
+		if (auto te = dc.textExtents(help_lines[a]); te.x > underline_width)
+			underline_width = te.x;
 	}
-	drawing::setTextOutline(0);
+
+	// Title Underline
+	dc.drawLines({ Rectf{ x - underline_width, underline_y, x + 4.0f, underline_y } });
 }
 
 // -----------------------------------------------------------------------------
 // Draws numbers for selected map objects
 // -----------------------------------------------------------------------------
-void Renderer::drawSelectionNumbers() const
+void Renderer::drawSelectionNumbers(draw2d::Context& dc) const
 {
 	// Check if any selection exists
 	auto selection = context_.selection().selectedObjects();
 	if (selection.empty())
 		return;
 
-	// Get editor message text colour
-	auto col = colourconfig::colour("map_editor_message");
+	// Setup drawing options
+	dc.font       = draw2d::Font::Bold;
+	dc.text_style = draw2d::TextStyle::Outline;
+	dc.colour     = colourconfig::colour("map_editor_message");
+	dc.view       = view_screen_.get();
 
 	// Go through selection
 	string text;
-	view_.setOverlayCoords(true);
-	if (context_.selection().size() <= map_max_selection_numbers * 0.5)
-		drawing::setTextOutline(1.0, ColRGBA::BLACK);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if ((int)a > map_max_selection_numbers)
+		if (map_max_selection_numbers > 0 && (int)a > map_max_selection_numbers)
 			break;
 		if (!selection[a])
 			continue;
 
 		auto tp = selection[a]->getPoint(MapObject::Point::Text);
-		tp.x    = view_.screenX(tp.x);
-		tp.y    = view_.screenY(tp.y);
+		tp.x    = view_->screenX(tp.x);
+		tp.y    = view_->screenY(tp.y);
 
 		text    = fmt::format("{}", a + 1);
-		auto ts = drawing::textExtents(text, drawing::Font::Bold);
+		auto ts = draw2d::textExtents(text, draw2d::Font::Bold);
 		tp.x -= ts.x * 0.5;
 		tp.y -= ts.y * 0.5;
 
@@ -656,47 +637,44 @@ void Renderer::drawSelectionNumbers() const
 		}
 
 		// Draw text
-		drawing::drawText(fmt::format("{}", a + 1), tp.x, tp.y, col, drawing::Font::Bold);
+		dc.drawText(text, Vec2f(tp.x, tp.y));
 	}
-	drawing::setTextOutline(0);
-	view_.setOverlayCoords(false);
 
-	glDisable(GL_TEXTURE_2D);
+	// Reset to map view
+	dc.view = view_.get();
 }
 
 // -----------------------------------------------------------------------------
 // Draws directional lines for thing quick angle selection
 // -----------------------------------------------------------------------------
-void Renderer::drawThingQuickAngleLines() const
+void Renderer::drawThingQuickAngleLines(draw2d::Context& dc) const
 {
 	// Check if any selection exists
 	auto selection = context_.selection().selectedThings();
 	if (selection.empty())
 		return;
 
-	// Get moving colour
-	auto col = colourconfig::colour("map_moving");
-	gl::setColour(col);
+	// Setup drawing options
+	dc.setColourFromConfig("map_moving");
+	dc.line_thickness = 2.0f;
 
-	// Draw lines
-	auto mouse_pos_m = view_.canvasPos(context_.input().mousePos());
-	glLineWidth(2.0f);
-	glBegin(GL_LINES);
+	// Build lines list
+	auto          mouse_pos_m = view_->canvasPos(context_.input().mousePos());
+	vector<Rectf> lines;
 	for (auto& thing : selection)
-	{
-		glVertex2d(thing->xPos(), thing->yPos());
-		glVertex2d(mouse_pos_m.x, mouse_pos_m.y);
-	}
-	glEnd();
+		lines.emplace_back(thing->xPos(), thing->yPos(), mouse_pos_m.x, mouse_pos_m.y);
+
+	// Draw
+	dc.drawLines(lines);
 }
 
 // -----------------------------------------------------------------------------
 // Draws text showing the length from [p1] to [p2]
 // -----------------------------------------------------------------------------
-void Renderer::drawLineLength(Vec2d p1, Vec2d p2, ColRGBA col) const
+void Renderer::drawLineLength(draw2d::Context& dc, const Vec2d& p1, const Vec2d& p2) const
 {
 	// Determine distance in screen scale
-	double tdist = 20 / view_.scale(true).x;
+	double tdist = 20 / view_->scale(true).x;
 
 	// Determine line midpoint and front vector
 	Vec2d mid(p1.x + (p2.x - p1.x) * 0.5, p1.y + (p2.y - p1.y) * 0.5);
@@ -708,39 +686,27 @@ void Renderer::drawLineLength(Vec2d p1, Vec2d p2, ColRGBA col) const
 
 	// Determine text half-height for vertical alignment
 	auto   length = fmt::format("{}", math::round(math::distance(p1, p2)));
-	double hh     = drawing::textExtents(length).y * 0.5;
+	double hh     = draw2d::textExtents(length, dc.font).y * 0.5;
 
 	// Draw text
-	drawing::drawText(
-		length, view_.screenX(tp.x), view_.screenY(tp.y) - hh, col, drawing::Font::Normal, drawing::Align::Center);
-	glDisable(GL_TEXTURE_2D);
+	dc.text_alignment = draw2d::Align::Center;
+	dc.drawText(length, Vec2f(view_->screenX(tp.x), view_->screenY(tp.y) - hh));
 }
 
 // -----------------------------------------------------------------------------
 // Draws current line drawing lines (best function name ever)
 // -----------------------------------------------------------------------------
-void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
+void Renderer::drawLineDrawLines(draw2d::Context& dc, bool snap_nearest_vertex) const
 {
-	// Get line draw colour
-	auto col = colourconfig::colour("map_linedraw");
-	gl::setColour(col);
-
 	// Determine end point
-	auto end = view_.canvasPos(context_.input().mousePos());
+	auto end = view_->canvasPos(context_.input().mousePos());
 	if (snap_nearest_vertex)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
-		auto vertex = context_.map().vertices().nearest(end);
-		if (vertex)
+		if (auto vertex = context_.map().vertices().nearest(end))
 		{
 			end.x = vertex->xPos();
 			end.y = vertex->yPos();
-		}
-		else if (context_.gridSnap())
-		{
-			// No nearest vertex, snap to grid if needed
-			end.x = context_.snapToGrid(end.x);
-			end.y = context_.snapToGrid(end.y);
 		}
 	}
 	else if (context_.gridSnap())
@@ -753,43 +719,53 @@ void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 	// Draw lines
 	auto& line_draw = context_.lineDraw();
 	int   npoints   = line_draw.nPoints();
-	glLineWidth(2.0f);
+	dc.setColourFromConfig("map_linedraw");
+	dc.line_thickness = 2.0f;
+	vector<Rectf> lines;
 	if (npoints > 1)
 	{
 		for (int a = 0; a < npoints - 1; a++)
-			drawing::drawLineTabbed(line_draw.point(a), line_draw.point(a + 1));
+		{
+			lines.emplace_back(line_draw.point(a), line_draw.point(a + 1));
+			lines.push_back(math::lineTab(lines.back()));
+		}
 	}
 	if (npoints > 0 && context_.lineDraw().state() == LineDraw::State::Line)
-		drawing::drawLineTabbed(line_draw.point(npoints - 1), end);
+	{
+		lines.emplace_back(line_draw.point(npoints - 1), end);
+		lines.push_back(math::lineTab(lines.back()));
+	}
+	dc.drawLines(lines);
 
 	// Draw line lengths
-	view_.setOverlayCoords(true);
+	dc.view = view_screen_.get();
+	dc.font = draw2d::Font::Bold;
 	if (npoints > 1)
 	{
 		for (int a = 0; a < npoints - 1; a++)
-			drawLineLength(line_draw.point(a), line_draw.point(a + 1), col);
+			drawLineLength(dc, line_draw.point(a), line_draw.point(a + 1));
 	}
 	if (npoints > 0 && context_.lineDraw().state() == LineDraw::State::Line)
-		drawLineLength(line_draw.point(npoints - 1), end, col);
-	view_.setOverlayCoords(false);
+		drawLineLength(dc, line_draw.point(npoints - 1), end);
+	dc.view = view_.get();
 
 	// Draw points
-	glPointSize(vertex_size);
-	if (vertex_round)
-		glEnable(GL_POINT_SMOOTH);
-	glBegin(GL_POINTS);
+	auto          ps_type = vertex_round ? PointSpriteType::Circle : PointSpriteType::Textured;
+	vector<Vec2f> points;
 	for (auto& point : line_draw.points())
-		glVertex2d(point.x, point.y);
+		points.emplace_back(point);
 	if (context_.lineDraw().state() == LineDraw::State::Line
 		|| context_.lineDraw().state() == LineDraw::State::ShapeOrigin)
-		glVertex2d(end.x, end.y);
-	glEnd();
+		points.emplace_back(end);
+	dc.pointsprite_type   = ps_type;
+	dc.pointsprite_radius = vertex_size / view_->scale(true).x;
+	dc.drawPointSprites(points);
 }
 
 // -----------------------------------------------------------------------------
 // Draws lines currently being pasted
 // -----------------------------------------------------------------------------
-void Renderer::drawPasteLines() const
+void Renderer::drawPasteLines(draw2d::Context& dc) const
 {
 	// Get clipboard item
 	MapArchClipboardItem* c = nullptr;
@@ -806,45 +782,45 @@ void Renderer::drawPasteLines() const
 		return;
 
 	// Get lines
-	vector<MapLine*> lines;
-	c->putLines(lines);
-
-	// Get line draw colour
-	auto col = colourconfig::colour("map_linedraw");
-	gl::setColour(col);
+	vector<MapLine*> map_lines;
+	c->putLines(map_lines);
+	auto          pos = context_.relativeSnapToGrid(c->midpoint(), view_->canvasPos(context_.input().mousePos()));
+	vector<Rectf> lines;
+	for (const auto& line : map_lines)
+		lines.emplace_back(pos.x + line->x1(), pos.y + line->y1(), pos.x + line->x2(), pos.y + line->y2());
 
 	// Draw
-	auto pos = context_.relativeSnapToGrid(c->midpoint(), view_.canvasPos(context_.input().mousePos()));
-	glLineWidth(2.0f);
-	glBegin(GL_LINES);
-	for (const auto& line : lines)
-	{
-		glVertex2d(pos.x + line->x1(), pos.y + line->y1());
-		glVertex2d(pos.x + line->x2(), pos.y + line->y2());
-	}
-	glEnd();
+	dc.setColourFromConfig("map_linedraw");
+	dc.line_thickness = 2.0f;
+	dc.drawLines(lines);
 }
 
 // -----------------------------------------------------------------------------
 // Draws object edit objects, bounding box and text
 // -----------------------------------------------------------------------------
-void Renderer::drawObjectEdit()
+void Renderer::drawObjectEdit(draw2d::Context& dc) const
 {
+	using State = ObjectEdit::State;
+
 	auto& group      = context_.objectEdit().group();
-	auto  col        = colourconfig::colour("map_object_edit");
 	auto  edit_state = context_.objectEdit().state();
 
 	// Map objects
-	renderer_2d_.renderObjectEditGroup(&group);
+	renderer_2d_->renderObjectEditGroup(dc, &group);
 
 	// Bounding box
-	gl::setColour(ColRGBA::WHITE, gl::Blend::Normal);
-	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
 	auto bbox = group.bbox();
-	bbox.min.x -= 4 / view_.scale(true).x;
-	bbox.min.y -= 4 / view_.scale(true).x;
-	bbox.max.x += 4 / view_.scale(true).x;
-	bbox.max.y += 4 / view_.scale(true).x;
+	bbox.min.x -= 4 / view_->scale(true).x;
+	bbox.min.y -= 4 / view_->scale(true).x;
+	bbox.max.x += 4 / view_->scale(true).x;
+	bbox.max.y += 4 / view_->scale(true).x;
+
+	// Setup draw options
+	dc.colour         = colourconfig::colour("map_object_edit");
+	dc.colour.a       = 255;
+	dc.blend          = Blend::Normal;
+	dc.line_thickness = 2.0f;
+	gl::setBlend(dc.blend);
 
 	if (context_.objectEdit().rotating())
 	{
@@ -856,119 +832,119 @@ void Renderer::drawObjectEdit()
 		auto  tl = math::rotatePoint(mid, Vec2d(bbox.min.x, bbox.max.y), group.rotation());
 		auto  tr = math::rotatePoint(mid, bbox.max, group.rotation());
 		auto  br = math::rotatePoint(mid, Vec2d(bbox.max.x, bbox.min.y), group.rotation());
-		glLineWidth(2.0f);
-		drawing::drawLine(tl, bl);
-		drawing::drawLine(bl, br);
-		drawing::drawLine(br, tr);
-		drawing::drawLine(tr, tl);
+		dc.drawLines({ { tl, bl }, { bl, br }, { br, tr }, { tr, tl } });
 
 		// Top Left
-		double rad = 4 / view_.scale(true).x;
-		glLineWidth(1.0f);
-		if (edit_state == ObjectEdit::State::TopLeft)
-			drawing::drawFilledRect(tl.x - rad, tl.y - rad, tl.x + rad, tl.y + rad);
+		float rad         = 4.0f / view_->scale(true).x;
+		dc.line_thickness = 1.0f;
+		if (edit_state == State::TopLeft)
+			dc.drawRect({ tl.x - rad, tl.y - rad, tl.x + rad, tl.y + rad });
 		else
-			drawing::drawRect(tl.x - rad, tl.y - rad, tl.x + rad, tl.y + rad);
+			dc.drawRectOutline({ tl.x - rad, tl.y - rad, tl.x + rad, tl.y + rad });
 
 		// Bottom Left
-		if (edit_state == ObjectEdit::State::BottomLeft)
-			drawing::drawFilledRect(bl.x - rad, bl.y - rad, bl.x + rad, bl.y + rad);
+		if (edit_state == State::BottomLeft)
+			dc.drawRect({ bl.x - rad, bl.y - rad, bl.x + rad, bl.y + rad });
 		else
-			drawing::drawRect(bl.x - rad, bl.y - rad, bl.x + rad, bl.y + rad);
+			dc.drawRectOutline({ bl.x - rad, bl.y - rad, bl.x + rad, bl.y + rad });
 
 		// Top Right
-		if (edit_state == ObjectEdit::State::TopRight)
-			drawing::drawFilledRect(tr.x - rad, tr.y - rad, tr.x + rad, tr.y + rad);
+		if (edit_state == State::TopRight)
+			dc.drawRect({ tr.x - rad, tr.y - rad, tr.x + rad, tr.y + rad });
 		else
-			drawing::drawRect(tr.x - rad, tr.y - rad, tr.x + rad, tr.y + rad);
+			dc.drawRectOutline({ tr.x - rad, tr.y - rad, tr.x + rad, tr.y + rad });
 
 		// Bottom Right
-		if (edit_state == ObjectEdit::State::BottomRight)
-			drawing::drawFilledRect(br.x - rad, br.y - rad, br.x + rad, br.y + rad);
+		if (edit_state == State::BottomRight)
+			dc.drawRect({ br.x - rad, br.y - rad, br.x + rad, br.y + rad });
 		else
-			drawing::drawRect(br.x - rad, br.y - rad, br.x + rad, br.y + rad);
+			dc.drawRectOutline({ br.x - rad, br.y - rad, br.x + rad, br.y + rad });
 	}
 	else
 	{
 		// Move/scale
+		lb_objectedit_box_->clear();
+		float width;
 
 		// Left
-		if (edit_state == ObjectEdit::State::Move || edit_state == ObjectEdit::State::Left
-			|| edit_state == ObjectEdit::State::TopLeft || edit_state == ObjectEdit::State::BottomLeft)
-			glLineWidth(4.0f);
+		if (edit_state == State::Move || edit_state == State::Left || edit_state == State::TopLeft
+			|| edit_state == State::BottomLeft)
+			width = 4.0f;
 		else
-			glLineWidth(2.0f);
-		drawing::drawLine(bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
+			width = 2.0f;
+		lb_objectedit_box_->add2d(bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y, glm::vec4{ 1.0f }, width);
 
 		// Bottom
-		if (edit_state == ObjectEdit::State::Move || edit_state == ObjectEdit::State::Bottom
-			|| edit_state == ObjectEdit::State::BottomLeft || edit_state == ObjectEdit::State::BottomRight)
-			glLineWidth(4.0f);
+		if (edit_state == State::Move || edit_state == State::Bottom || edit_state == State::BottomLeft
+			|| edit_state == State::BottomRight)
+			width = 4.0f;
 		else
-			glLineWidth(2.0f);
-		drawing::drawLine(bbox.min.x, bbox.min.y, bbox.max.x, bbox.min.y);
+			width = 2.0f;
+		lb_objectedit_box_->add2d(bbox.min.x, bbox.min.y, bbox.max.x, bbox.min.y, glm::vec4{ 1.0f }, width);
 
 		// Right
-		if (edit_state == ObjectEdit::State::Move || edit_state == ObjectEdit::State::Right
-			|| edit_state == ObjectEdit::State::TopRight || edit_state == ObjectEdit::State::BottomRight)
-			glLineWidth(4.0f);
+		if (edit_state == State::Move || edit_state == State::Right || edit_state == State::TopRight
+			|| edit_state == State::BottomRight)
+			width = 4.0f;
 		else
-			glLineWidth(2.0f);
-		drawing::drawLine(bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y);
+			width = 2.0f;
+		lb_objectedit_box_->add2d(bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y, glm::vec4{ 1.0f }, width);
 
 		// Top
-		if (edit_state == ObjectEdit::State::Move || edit_state == ObjectEdit::State::Top
-			|| edit_state == ObjectEdit::State::TopLeft || edit_state == ObjectEdit::State::TopRight)
-			glLineWidth(4.0f);
+		if (edit_state == State::Move || edit_state == State::Top || edit_state == State::TopLeft
+			|| edit_state == State::TopRight)
+			width = 4.0f;
 		else
-			glLineWidth(2.0f);
-		drawing::drawLine(bbox.max.x, bbox.max.y, bbox.min.x, bbox.max.y);
+			width = 2.0f;
+		lb_objectedit_box_->add2d(bbox.max.x, bbox.max.y, bbox.min.x, bbox.max.y, glm::vec4{ 1.0f }, width);
+
+		lb_objectedit_box_->draw(dc.view, dc.colour.asVec4());
 	}
 
 	// Line length
 	Vec2d nl_v1, nl_v2;
-	if (group.nearestLineEndpoints(view_.canvasPos(context_.input().mousePos()), 128 / view_.scale().x, nl_v1, nl_v2))
+	if (group.nearestLineEndpoints(view_->canvasPos(context_.input().mousePos()), 128 / view_->scale().x, nl_v1, nl_v2))
 	{
 		Vec2d mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
 		int   length = math::distance(nl_v1, nl_v2);
-		int   x      = view_.canvasX(mid.x);
-		int   y      = view_.canvasY(mid.y) - 8;
-		view_.setOverlayCoords(true);
-		drawing::setTextOutline(1.0f, ColRGBA::BLACK);
-		drawing::drawText(fmt::format("{}", length), x, y, ColRGBA::WHITE, drawing::Font::Bold, drawing::Align::Center);
-		drawing::setTextOutline(0);
-		view_.setOverlayCoords(false);
-		glDisable(GL_TEXTURE_2D);
+		auto  pos    = view_->screenPos(mid.x, mid.y);
+		pos.y -= 8.0f;
+
+		dc.view           = view_screen_.get();
+		dc.text_style     = draw2d::TextStyle::Outline;
+		dc.colour         = ColRGBA::WHITE;
+		dc.outline_colour = ColRGBA::BLACK;
+		dc.font           = draw2d::Font::Bold;
+		dc.text_alignment = draw2d::Align::Center;
+		dc.drawText(fmt::format("{}", length), pos);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws all MCAnimations for the current edit mode
 // -----------------------------------------------------------------------------
-void Renderer::drawAnimations() const
+void Renderer::drawAnimations(gl::draw2d::Context& dc) const
 {
 	auto mode = context_.editMode();
 	for (auto& animation : animations_)
 	{
 		if ((mode == Mode::Visual && animation->mode3d()) || (mode != Mode::Visual && !animation->mode3d()))
-			animation->draw();
+			animation->draw(dc);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws the 2d map
 // -----------------------------------------------------------------------------
-void Renderer::drawMap2d()
+void Renderer::drawMap2d(draw2d::Context& dc) const
 {
-	// Apply the current 2d view
-	view_.apply();
+	auto mouse_state = context_.input().mouseState();
 
 	// Update visibility info if needed
-	if (!renderer_2d_.visOK())
-		renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	if (!renderer_2d_->visOK())
+		renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 
 	// Draw flats if needed
-	gl::setColour(ColRGBA::WHITE, gl::Blend::Normal);
 	if (flat_drawtype > 0)
 	{
 		bool texture = false;
@@ -985,69 +961,68 @@ void Renderer::drawMap2d()
 				drawtype = 2;
 		}
 
-		renderer_2d_.renderFlats(drawtype, texture, fade_flats_);
+		renderer_2d_->renderFlats(drawtype, texture, fade_flats_);
 	}
 
 	// Draw grid
-	drawGrid();
+	drawGrid(dc);
 
 	// --- Draw map (depending on mode) ---
-	auto mouse_state = context_.input().mouseState();
 	gl::resetBlend();
 	if (context_.editMode() == Mode::Vertices)
 	{
 		// Vertices mode
-		renderer_2d_.renderThings(fade_things_);                 // Things
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_); // Lines
+		renderer_2d_->renderThings(fade_things_);                 // Things
+		renderer_2d_->renderLines(line_tabs_always, fade_lines_); // Lines
 
 		// Vertices
 		if (mouse_state == Input::MouseState::Move)
-			renderer_2d_.renderVertices(0.25f);
+			renderer_2d_->renderVertices(0.25f);
 		else
-			renderer_2d_.renderVertices(fade_vertices_);
+			renderer_2d_->renderVertices(fade_vertices_);
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_.renderVertexSelection(context_.selection(), anim_flash_level_);
+			renderer_2d_->renderVertexSelection(dc, context_.selection(), anim_flash_level_);
 
 		// Hilight if needed
 		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_.renderVertexHilight(context_.hilightItem().index, anim_flash_level_);
+			renderer_2d_->renderVertexHilight(context_.hilightItem().index, anim_flash_level_);
 	}
 	else if (context_.editMode() == Mode::Lines)
 	{
 		// Lines mode
-		renderer_2d_.renderThings(fade_things_);     // Things
-		renderer_2d_.renderVertices(fade_vertices_); // Vertices
-		renderer_2d_.renderLines(true);              // Lines
+		renderer_2d_->renderThings(fade_things_);     // Things
+		renderer_2d_->renderVertices(fade_vertices_); // Vertices
+		renderer_2d_->renderLines(true);              // Lines
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_.renderLineSelection(context_.selection(), anim_flash_level_);
+			renderer_2d_->renderLineSelection(dc, context_.selection(), anim_flash_level_);
 
 		// Hilight if needed
 		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_.renderLineHilight(context_.hilightItem().index, anim_flash_level_);
+			renderer_2d_->renderLineHilight(dc, context_.hilightItem().index, anim_flash_level_);
 	}
 	else if (context_.editMode() == Mode::Sectors)
 	{
 		// Sectors mode
-		renderer_2d_.renderThings(fade_things_);                 // Things
-		renderer_2d_.renderVertices(fade_vertices_);             // Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_); // Lines
+		renderer_2d_->renderThings(fade_things_);                 // Things
+		renderer_2d_->renderVertices(fade_vertices_);             // Vertices
+		renderer_2d_->renderLines(line_tabs_always, fade_lines_); // Lines
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_.renderFlatSelection(context_.selection(), anim_flash_level_);
+			renderer_2d_->renderFlatSelection(dc, context_.selection(), anim_flash_level_);
 
 		// splitter.testRender();	// Testing
 
 		// Hilight if needed
 		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_.renderFlatHilight(context_.hilightItem().index, anim_flash_level_);
+			renderer_2d_->renderFlatHilight(dc, context_.hilightItem().index, anim_flash_level_);
 	}
 	else if (context_.editMode() == Mode::Things)
 	{
@@ -1058,22 +1033,22 @@ void Renderer::drawMap2d()
 
 		// Things mode
 		auto hl_index = context_.hilightItem().index;
-		renderer_2d_.renderVertices(fade_vertices_);                   // Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);       // Lines
-		renderer_2d_.renderPointLightPreviews(fade_things_, hl_index); // Point light previews
-		renderer_2d_.renderThings(fade_things_, force_dir);            // Things
+		renderer_2d_->renderVertices(fade_vertices_);                       // Vertices
+		renderer_2d_->renderLines(line_tabs_always, fade_lines_);           // Lines
+		renderer_2d_->renderPointLightPreviews(dc, fade_things_, hl_index); // Point light previews
+		renderer_2d_->renderThings(fade_things_, force_dir);                // Things
 
 		// Thing paths
-		renderer_2d_.renderPathedThings(context_.pathedThings());
+		renderer_2d_->renderPathedThings(dc, context_.pathedThings());
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_.renderThingSelection(context_.selection(), anim_flash_level_);
+			renderer_2d_->renderThingSelection(dc, context_.selection(), anim_flash_level_);
 
 		// Hilight if needed
 		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_.renderThingHilight(hl_index, anim_flash_level_);
+			renderer_2d_->renderThingHilight(dc, hl_index, anim_flash_level_);
 	}
 
 	// Draw tagged sectors/lines/things if needed
@@ -1082,72 +1057,66 @@ void Renderer::drawMap2d()
 			|| mouse_state == Input::MouseState::TagThings))
 	{
 		if (!context_.taggedSectors().empty())
-			renderer_2d_.renderTaggedFlats(context_.taggedSectors(), anim_flash_level_);
+			renderer_2d_->renderTaggedFlats(dc, context_.taggedSectors(), anim_flash_level_);
 		if (!context_.taggedLines().empty())
-			renderer_2d_.renderTaggedLines(context_.taggedLines(), anim_flash_level_);
+			renderer_2d_->renderTaggedLines(dc, context_.taggedLines(), anim_flash_level_);
 		if (!context_.taggedThings().empty())
-			renderer_2d_.renderTaggedThings(context_.taggedThings(), anim_flash_level_);
+			renderer_2d_->renderTaggedThings(dc, context_.taggedThings(), anim_flash_level_);
 		if (!context_.taggingLines().empty())
-			renderer_2d_.renderTaggingLines(context_.taggingLines(), anim_flash_level_);
+			renderer_2d_->renderTaggingLines(dc, context_.taggingLines(), anim_flash_level_);
 		if (!context_.taggingThings().empty())
-			renderer_2d_.renderTaggingThings(context_.taggingThings(), anim_flash_level_);
+			renderer_2d_->renderTaggingThings(dc, context_.taggingThings(), anim_flash_level_);
 	}
 
 	// Draw selection numbers if needed
 	if (!context_.selection().empty() && mouse_state == Input::MouseState::Normal && map_show_selection_numbers)
-		drawSelectionNumbers();
+		drawSelectionNumbers(dc);
 
 	// Draw thing quick angle lines if needed
 	if (mouse_state == Input::MouseState::ThingAngle)
-		drawThingQuickAngleLines();
+		drawThingQuickAngleLines(dc);
 
 	// Draw line drawing lines if needed
 	if (mouse_state == Input::MouseState::LineDraw)
-		drawLineDrawLines(context_.input().shiftDown());
+		drawLineDrawLines(dc, context_.input().shiftDown());
 
 	// Draw object edit objects if needed
 	if (mouse_state == Input::MouseState::ObjectEdit)
-		drawObjectEdit();
+		drawObjectEdit(dc);
 
 	// Draw sectorbuilder test stuff
 	// sbuilder.drawResult();
 
 
 	// Draw selection box if active
-	auto mx  = view_.canvasX(context_.input().mousePos().x);
-	auto my  = view_.canvasY(context_.input().mousePos().y);
-	auto mdx = view_.canvasX(context_.input().mouseDownPos().x);
-	auto mdy = view_.canvasY(context_.input().mouseDownPos().y);
+	Rectf sel_rect(
+		view_->canvasX(context_.input().mousePos().x),
+		view_->canvasY(context_.input().mousePos().y),
+		view_->canvasX(context_.input().mouseDownPos().x),
+		view_->canvasY(context_.input().mouseDownPos().y));
 	if (mouse_state == Input::MouseState::Selection)
 	{
 		// Outline
-		colourconfig::setGLColour("map_selbox_outline");
-		glLineWidth(2.0f);
-		glBegin(GL_LINE_LOOP);
-		glVertex2d(mdx, mdy);
-		glVertex2d(mdx, my);
-		glVertex2d(mx, my);
-		glVertex2d(mx, mdy);
-		glEnd();
+		dc.setColourFromConfig("map_selbox_outline");
+		dc.texture        = 0;
+		dc.line_thickness = 2.0f;
+		dc.drawRectOutline(sel_rect);
 
 		// Fill
-		colourconfig::setGLColour("map_selbox_fill");
-		glBegin(GL_QUADS);
-		glVertex2d(mdx, mdy);
-		glVertex2d(mdx, my);
-		glVertex2d(mx, my);
-		glVertex2d(mx, mdy);
-		glEnd();
+		dc.setColourFromConfig("map_selbox_fill");
+		dc.drawRect(sel_rect);
 	}
 
 	// Draw animations
-	drawAnimations();
+	drawAnimations(dc);
 
 	// Draw paste objects if needed
 	if (mouse_state == Input::MouseState::Paste)
 	{
 		if (context_.editMode() == Mode::Things)
 		{
+			Vec2d mpos{ view_->canvasX(context_.input().mousePos().x), view_->canvasY(context_.input().mousePos().y) };
+
 			// Get clipboard item
 			for (unsigned a = 0; a < app::clipboard().size(); a++)
 			{
@@ -1157,13 +1126,13 @@ void Renderer::drawMap2d()
 					vector<MapThing*> things;
 					auto              p = dynamic_cast<MapThingsClipboardItem*>(item);
 					p->putThings(things);
-					auto pos(context_.relativeSnapToGrid(p->midpoint(), { mx, my }));
-					renderer_2d_.renderPasteThings(things, pos);
+					auto pos(context_.relativeSnapToGrid(p->midpoint(), mpos));
+					renderer_2d_->renderPasteThings(dc, things, pos);
 				}
 			}
 		}
 		else
-			drawPasteLines();
+			drawPasteLines(dc);
 	}
 
 	// Draw moving stuff if needed
@@ -1173,10 +1142,10 @@ void Renderer::drawMap2d()
 		auto  offset = context_.moveObjects().offset();
 		switch (context_.editMode())
 		{
-		case Mode::Vertices: renderer_2d_.renderMovingVertices(items, offset); break;
-		case Mode::Lines: renderer_2d_.renderMovingLines(items, offset); break;
-		case Mode::Sectors: renderer_2d_.renderMovingSectors(items, offset); break;
-		case Mode::Things: renderer_2d_.renderMovingThings(items, offset); break;
+		case Mode::Vertices: renderer_2d_->renderMovingVertices(dc, items, offset); break;
+		case Mode::Lines: renderer_2d_->renderMovingLines(dc, items, offset); break;
+		case Mode::Sectors: renderer_2d_->renderMovingSectors(dc, items, offset); break;
+		case Mode::Things: renderer_2d_->renderMovingThings(dc, items, offset); break;
 		default: break;
 		}
 	}
@@ -1188,7 +1157,7 @@ void Renderer::drawMap2d()
 void Renderer::drawMap3d()
 {
 	// Setup 3d renderer view
-	renderer_3d_.setupView(view_.size().x, view_.size().y);
+	renderer_3d_.setupView(view_->size().x, view_->size().y);
 
 	// Render 3d map
 	renderer_3d_.renderMap();
@@ -1204,7 +1173,7 @@ void Renderer::drawMap3d()
 		renderer_3d_.renderHilight(context_.selection().hilight(), anim_flash_level_);
 
 	// Draw animations
-	drawAnimations();
+	// drawAnimations();
 }
 
 // -----------------------------------------------------------------------------
@@ -1212,101 +1181,83 @@ void Renderer::drawMap3d()
 // -----------------------------------------------------------------------------
 void Renderer::draw()
 {
-	// Setup the viewport
-	glViewport(0, 0, view_.size().x, view_.size().y);
-
-	// Setup GL state
-	auto col_bg = colourconfig::colour("map_background");
-	glClearColor(col_bg.fr(), col_bg.fg(), col_bg.fb(), 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisable(GL_TEXTURE_2D);
+	draw2d::Context dc{ view_.get() };
 
 	// Draw 2d or 3d map depending on mode
 	if (context_.editMode() == Mode::Visual)
-		drawMap3d();
+		drawMap2d(dc); // drawMap3d();
 	else
-		drawMap2d();
+		drawMap2d(dc);
+
+	// Set view for overlays
+	dc.view = view_screen_.get();
 
 	// Draw info overlay
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, view_.size().x, view_.size().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implemenataions)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw current info overlay
-	glDisable(GL_TEXTURE_2D);
-	context_.drawInfoOverlay(view_.size(), anim_info_fade_);
+	dc.font       = draw2d::Font::Condensed;
+	dc.text_size  = 16 * ui::scaleFactor();
+	dc.text_style = draw2d::TextStyle::Normal;
+	dc.blend      = Blend::Normal;
+	context_.drawInfoOverlay(dc, anim_info_fade_);
 
 	// Draw current fullscreen overlay
 	if (context_.currentOverlay() && anim_overlay_fade_ > 0.01f)
-		context_.currentOverlay()->draw(view_.size().x, view_.size().y, anim_overlay_fade_);
+		context_.currentOverlay()->draw(dc, anim_overlay_fade_);
 
-	// Draw crosshair if 3d mode
-	if (context_.editMode() == Mode::Visual)
-	{
-		// Get crosshair colour
-		auto& def = colourconfig::colDef("map_3d_crosshair");
-		auto  col = def.colour;
-		gl::setColour(col, def.blendMode());
+	//// Draw crosshair if 3d mode
+	// if (context_.editMode() == Mode::Visual)
+	//{
+	//	// Get crosshair colour
+	//	auto& def = colourconfig::colDef("map_3d_crosshair");
+	//	auto  col = def.colour;
+	//	gl::setColour(col, def.blendMode());
 
-		glDisable(GL_TEXTURE_2D);
-		glEnable(GL_LINE_SMOOTH);
-		glLineWidth(1.5f);
+	//	glDisable(GL_TEXTURE_2D);
+	//	glEnable(GL_LINE_SMOOTH);
+	//	glLineWidth(1.5f);
 
-		double midx = view_.size().x * 0.5;
-		double midy = view_.size().y * 0.5;
-		int    size = camera_3d_crosshair_size;
+	//	double midx = view_->size().x * 0.5;
+	//	double midy = view_->size().y * 0.5;
+	//	int    size = camera_3d_crosshair_size;
 
-		glBegin(GL_LINES);
-		// Right
-		gl::setColour(col);
-		glVertex2d(midx + 1, midy);
-		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-		glVertex2d(midx + size, midy);
+	//	glBegin(GL_LINES);
+	//	// Right
+	//	gl::setColour(col);
+	//	glVertex2d(midx + 1, midy);
+	//	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
+	//	glVertex2d(midx + size, midy);
 
-		// Left
-		gl::setColour(col);
-		glVertex2d(midx - 1, midy);
-		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-		glVertex2d(midx - size, midy);
+	//	// Left
+	//	gl::setColour(col);
+	//	glVertex2d(midx - 1, midy);
+	//	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
+	//	glVertex2d(midx - size, midy);
 
-		// Bottom
-		gl::setColour(col);
-		glVertex2d(midx, midy + 1);
-		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-		glVertex2d(midx, midy + size);
+	//	// Bottom
+	//	gl::setColour(col);
+	//	glVertex2d(midx, midy + 1);
+	//	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
+	//	glVertex2d(midx, midy + size);
 
-		// Top
-		gl::setColour(col);
-		glVertex2d(midx, midy - 1);
-		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-		glVertex2d(midx, midy - size);
-		glEnd();
+	//	// Top
+	//	gl::setColour(col);
+	//	glVertex2d(midx, midy - 1);
+	//	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
+	//	glVertex2d(midx, midy - size);
+	//	glEnd();
 
-		// Draw item distance (if any)
-		if (context_.renderer().renderer3D().itemDistance() >= 0 && camera_3d_show_distance)
-		{
-			glEnable(GL_TEXTURE_2D);
-			gl::setColour(col);
-			drawing::drawText(
-				fmt::format("{}", renderer_3d_.itemDistance()),
-				midx + 5,
-				midy + 5,
-				ColRGBA(255, 255, 255, 200),
-				drawing::Font::Small);
-		}
-	}
+	//	// Draw item distance (if any)
+	//	if (context_.renderer().renderer3D().itemDistance() >= 0 && camera_3d_show_distance)
+	//	{
+	//		glEnable(GL_TEXTURE_2D);
+	//		gl::setColour(col);
+	//		drawing::drawText(
+	//			fmt::format("{}", renderer_3d_.itemDistance()),
+	//			midx + 5,
+	//			midy + 5,
+	//			ColRGBA(255, 255, 255, 200),
+	//			drawing::Font::Small);
+	//	}
+	//}
 
 	// FPS counter
 	/*if (map_showfps)
@@ -1329,10 +1280,10 @@ void Renderer::draw()
 	// Drawing::drawText(fmt::format("Render distance: {:1.2f}", (double)render_max_dist), 0, 100);
 
 	// Editor messages
-	drawEditorMessages();
+	drawEditorMessages(dc);
 
 	// Help text
-	drawFeatureHelpText();
+	drawFeatureHelpText(dc);
 }
 
 namespace
@@ -1388,32 +1339,31 @@ void Renderer::updateAnimations(double mult)
 		anim_view_speed_ = interpolateView(scroll_smooth, anim_view_speed_, mult);
 		if (viewIsInterpolated())
 			animations_active_ = true;
-
-		// Update renderer scale
-		renderer_2d_.setScale(view_.scale(true).x);
 	}
 
 	// Flashing animation for hilight
 	// Pulsates between 0.5-1.0f (multiplied with hilight alpha)
+	constexpr float flash_min = 0.5f;
+	constexpr float flash_max = 1.0f;
 	if (anim_flash_inc_)
 	{
-		if (anim_flash_level_ < 0.5f)
+		if (anim_flash_level_ < flash_min)
 			anim_flash_level_ += 0.053 * mult; // Initial fade in
 		else
 			anim_flash_level_ += 0.015f * mult;
-		if (anim_flash_level_ >= 1.0f)
+		if (anim_flash_level_ >= flash_max)
 		{
 			anim_flash_inc_   = false;
-			anim_flash_level_ = 1.0f;
+			anim_flash_level_ = flash_max;
 		}
 	}
 	else
 	{
 		anim_flash_level_ -= 0.015f * mult;
-		if (anim_flash_level_ <= 0.5f)
+		if (anim_flash_level_ <= flash_min)
 		{
 			anim_flash_inc_   = true;
-			anim_flash_level_ = 0.6f;
+			anim_flash_level_ = flash_min;
 		}
 	}
 
@@ -1638,15 +1588,13 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 		if (!t)
 			return;
 
-		// Get thing type
-		auto& tt = game::configuration().thingType(t->type());
-
 		// Start animation
-		double radius = tt.radius();
-		if (tt.shrinkOnZoom())
-			radius = renderer_2d_.scaledRadius(radius);
 		animations_.push_back(std::make_unique<MCAThingSelection>(
-			app::runTimer(), t->xPos(), t->yPos(), radius, renderer_2d_.viewScaleInv(), selected));
+			app::runTimer(),
+			vector{ t },
+			1.0 / view_->scale(true).x,
+			thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+			selected));
 	}
 
 	// 2d mode line
@@ -1658,7 +1606,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 			return;
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCALineSelection>(app::runTimer(), vector<MapLine*>{ line }, selected));
+		animations_.push_back(std::make_unique<MCALineSelection>(app::runTimer(), vector{ line }, selected));
 	}
 
 	// 2d mode vertex
@@ -1669,16 +1617,9 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 		if (!vertex)
 			return;
 
-		// Determine current vertex size
-		float vs = vertex_size;
-		if (view_.scale().x < 1.0)
-			vs *= view_.scale().x;
-		if (vs < 2.0)
-			vs = 2.0;
-
 		// Start animation
-		animations_.push_back(
-			std::make_unique<MCAVertexSelection>(app::runTimer(), vector<MapVertex*>{ vertex }, vs, selected));
+		animations_.push_back(std::make_unique<MCAVertexSelection>(
+			app::runTimer(), vector{ vertex }, renderer_2d_->vertexRadius(), selected));
 	}
 
 	// 2d mode sector
@@ -1690,8 +1631,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 			return;
 
 		// Start animation
-		animations_.push_back(
-			std::make_unique<MCASectorSelection>(app::runTimer(), vector<Polygon2D*>{ sector->polygon() }, selected));
+		animations_.push_back(std::make_unique<MCASectorSelection>(app::runTimer(), vector{ sector }, selected));
 	}
 }
 
@@ -1700,8 +1640,102 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 // -----------------------------------------------------------------------------
 void Renderer::animateSelectionChange(const ItemSelection& selection)
 {
+	const auto&        map = context_.map();
+	vector<MapVertex*> vertices_selected;
+	vector<MapVertex*> vertices_deselected;
+	vector<MapLine*>   lines_selected;
+	vector<MapLine*>   lines_deselected;
+	vector<MapSector*> sectors_selected;
+	vector<MapSector*> sectors_deselected;
+	vector<MapThing*>  things_selected;
+	vector<MapThing*>  things_deselected;
+
 	for (auto& change : selection.lastChange())
-		animateSelectionChange(change.first, change.second);
+	{
+		// 2d mode vertex
+		if (change.first.type == ItemType::Vertex)
+		{
+			if (change.second)
+				vertices_selected.push_back(change.first.asVertex(map));
+			else
+				vertices_deselected.push_back(change.first.asVertex(map));
+		}
+
+		// 2d mode line
+		else if (change.first.type == ItemType::Line)
+		{
+			if (change.second)
+				lines_selected.push_back(change.first.asLine(map));
+			else
+				lines_deselected.push_back(change.first.asLine(map));
+		}
+
+		// 2d mode sector
+		else if (change.first.type == ItemType::Sector)
+		{
+			if (change.second)
+				sectors_selected.push_back(change.first.asSector(map));
+			else
+				sectors_deselected.push_back(change.first.asSector(map));
+		}
+
+		// 2d mode thing
+		else if (change.first.type == ItemType::Thing)
+		{
+			if (change.second)
+				things_selected.push_back(change.first.asThing(map));
+			else
+				things_deselected.push_back(change.first.asThing(map));
+		}
+
+		// Other (animate individual items)
+		else
+			animateSelectionChange(change.first, change.second);
+	}
+
+	// Animate selected vertices
+	if (!vertices_selected.empty())
+		animations_.push_back(std::make_unique<MCAVertexSelection>(
+			app::runTimer(), vertices_selected, renderer_2d_->vertexRadius(), true));
+
+	// Animate deselected vertices
+	if (!vertices_deselected.empty())
+		animations_.push_back(std::make_unique<MCAVertexSelection>(
+			app::runTimer(), vertices_deselected, renderer_2d_->vertexRadius(), false));
+
+	// Animate selected lines
+	if (!lines_selected.empty())
+		animations_.push_back(std::make_unique<MCALineSelection>(app::runTimer(), lines_selected, true));
+
+	// Animate deselected lines
+	if (!lines_deselected.empty())
+		animations_.push_back(std::make_unique<MCALineSelection>(app::runTimer(), lines_deselected, false));
+
+	// Animate selected sectors
+	if (!sectors_selected.empty())
+		animations_.push_back(std::make_unique<MCASectorSelection>(app::runTimer(), sectors_selected, true));
+
+	// Animate deselected sectors
+	if (!sectors_deselected.empty())
+		animations_.push_back(std::make_unique<MCASectorSelection>(app::runTimer(), sectors_deselected, false));
+
+	// Animate selected things
+	if (!things_selected.empty())
+		animations_.push_back(std::make_unique<MCAThingSelection>(
+			app::runTimer(),
+			things_selected,
+			view_->scale(true).x,
+			thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+			true));
+
+	// Animate deselected things
+	if (!things_deselected.empty())
+		animations_.push_back(std::make_unique<MCAThingSelection>(
+			app::runTimer(),
+			things_deselected,
+			view_->scale(true).x,
+			thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+			false));
 }
 
 // -----------------------------------------------------------------------------
@@ -1713,7 +1747,7 @@ void Renderer::animateHilightChange(const mapeditor::Item& old_item, MapObject* 
 	{
 		// 2d mode
 		animations_.push_back(
-			std::make_unique<MCAHilightFade>(app::runTimer(), old_object, &renderer_2d_, anim_flash_level_));
+			std::make_unique<MCAHilightFade>(app::runTimer(), old_object, renderer_2d_.get(), anim_flash_level_));
 	}
 	else
 	{

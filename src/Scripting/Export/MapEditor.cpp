@@ -301,7 +301,7 @@ void registerMapSector(sol::state& lua)
 	lua_sector["lightLevel"]     = sol::property(&MapSector::lightLevel);
 	lua_sector["special"]        = sol::property(&MapSector::special);
 	lua_sector["id"]             = sol::property(&MapSector::tag);
-	lua_sector["connectedSides"] = sol::property(&MapSector::connectedSides);
+	lua_sector["connectedSides"] = sol::property(sol::resolve<vector<MapSide*>&()>(&MapSector::connectedSides));
 	lua_sector["colour"]         = sol::property(&MapSector::colourAt);
 	lua_sector["fogColour"]      = sol::property(&MapSector::fogColour);
 	lua_sector["planeFloor"]     = sol::property([](MapSector& self) { return self.floor().plane; });

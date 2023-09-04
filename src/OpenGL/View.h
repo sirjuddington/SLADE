@@ -20,6 +20,7 @@ public:
 	bool         yFlipped() const { return y_flipped_; }
 	bool         interpolated() const { return interpolated_; }
 	glm::mat4    projectionMatrix() const { return projection_matrix_; }
+	glm::mat4    projectionMatrix(bool y_flipped) const;
 	glm::mat4    viewMatrix() const { return view_matrix_; }
 	glm::mat4    mvpMatrix(const glm::mat4& model) const { return projection_matrix_ * view_matrix_ * model; }
 

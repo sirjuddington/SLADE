@@ -1,10 +1,13 @@
 #pragma once
 
-#include "OpenGL/Drawing.h"
-
 namespace slade
 {
 class MapLine;
+namespace gl::draw2d
+{
+	struct Context;
+	class TextBox;
+} // namespace gl::draw2d
 
 class LineInfoOverlay
 {
@@ -13,12 +16,13 @@ public:
 	~LineInfoOverlay() = default;
 
 	void update(MapLine* line);
-	void draw(int bottom, int right, float alpha = 1.0f);
+	void draw(gl::draw2d::Context& dc, float alpha = 1.0f);
 
 private:
-	double  scale_ = 1.;
-	TextBox text_box_;
-	int     last_size_ = 100;
+	float scale_     = 1.0f;
+	float last_size_ = 100.0f;
+
+	unique_ptr<gl::draw2d::TextBox> text_box_;
 
 	struct Side
 	{
@@ -35,7 +39,14 @@ private:
 	Side side_front_{};
 	Side side_back_{};
 
-	void drawSide(int bottom, int right, float alpha, Side& side, int xstart = 0);
-	void drawTexture(float alpha, int x, int y, string_view texture, bool needed, string_view pos = "U") const;
+	void drawSide(gl::draw2d::Context& dc, float bottom, float alpha, const Side& side, float xstart = 0) const;
+	void drawTexture(
+		gl::draw2d::Context& dc,
+		float                alpha,
+		float                x,
+		float                y,
+		string_view          texture,
+		bool                 needed,
+		string_view          pos = "U") const;
 };
 } // namespace slade

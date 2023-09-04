@@ -1020,6 +1020,12 @@
     <ClCompile Include="..\src\OpenGL\LineBuffer.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\MapEditor\Renderer\ThingBuffer2D.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\PointSpriteBuffer.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1962,6 +1968,15 @@
       <Filter>UI\Canvas</Filter>
     </ClInclude>
     <ClInclude Include="..\src\OpenGL\LineBuffer.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\Buffer.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MapEditor\Renderer\ThingBuffer2D.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\PointSpriteBuffer.h">
       <Filter>OpenGL</Filter>
     </ClInclude>
   </ItemGroup>

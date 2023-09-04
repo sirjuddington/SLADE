@@ -288,7 +288,7 @@ void MapEditorWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Map canvas
-	map_canvas_ = new MapCanvas(this, -1, &mapeditor::editContext());
+	map_canvas_ = new MapCanvas(this, &mapeditor::editContext());
 	p_inf.CenterPane();
 	m_mgr->AddPane(map_canvas_, p_inf);
 

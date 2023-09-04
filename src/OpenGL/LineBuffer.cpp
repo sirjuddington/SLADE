@@ -2,6 +2,7 @@
 #include "Main.h"
 #include "LineBuffer.h"
 #include "Shader.h"
+#include "Utility/MathStuff.h"
 #include "View.h"
 
 using namespace slade;
@@ -24,7 +25,7 @@ void initShader()
 {
 	shader_lines.loadResourceEntries("lines.vert", "lines.frag");
 	shader_lines_dashed.define("DASHED_LINES");
-	shader_lines_dashed.load("lines.vert", "lines.frag");
+	shader_lines_dashed.loadResourceEntries("lines.vert", "lines.frag");
 }
 } // namespace
 
@@ -42,16 +43,66 @@ void LineBuffer::add(const vector<Line>& lines)
 	lines_updated_ = true;
 }
 
-void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4& model) const
+void LineBuffer::addArrow(
+	const Rectf& line,
+	glm::vec4    colour,
+	float        width,
+	float        arrowhead_length,
+	float        arrowhead_angle,
+	bool         arrowhead_both)
 {
-	if (lines_.empty())
-		return;
+	Vec2f vector  = line.br - line.tl;
+	auto  angle   = atan2(-vector.y, vector.x);
+	auto  ang_rad = math::degToRad(arrowhead_angle);
 
+	// Line end arrowhead
+	Vec2f a1r;
+	Vec2f a1l = a1r = line.br;
+	a1l.x += arrowhead_length * sin(angle - ang_rad);
+	a1l.y += arrowhead_length * cos(angle - ang_rad);
+	a1r.x -= arrowhead_length * sin(angle + ang_rad);
+	a1r.y -= arrowhead_length * cos(angle + ang_rad);
+	add2d(line.tl.x, line.tl.y, line.br.x, line.br.y, colour, width);
+	add2d(line.br.x, line.br.y, a1l.x, a1l.y, colour, width);
+	add2d(line.br.x, line.br.y, a1r.x, a1r.y, colour, width);
+
+	if (arrowhead_both)
+	{
+		// Line start arrowhead
+		vector = line.tl - line.br;
+		angle  = atan2(-vector.y, vector.x);
+
+		Vec2f a2r;
+		Vec2f a2l = a2r = line.tl;
+		a2l.x += arrowhead_length * sin(angle - ang_rad);
+		a2l.y += arrowhead_length * cos(angle - ang_rad);
+		a2r.x -= arrowhead_length * sin(angle + ang_rad);
+		a2r.y -= arrowhead_length * cos(angle + ang_rad);
+		add2d(line.tl.x, line.tl.y, a2l.x, a2l.y, colour, width);
+		add2d(line.tl.x, line.tl.y, a2r.x, a2r.y, colour, width);
+	}
+}
+
+void LineBuffer::upload()
+{
 	if (!vao_)
 		initVAO();
-
-	if (lines_updated_)
+	else
 		updateVBO();
+
+	lines_.clear();
+}
+
+void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4& model) const
+{
+	// Init/update gl objects
+	if (!vao_)
+		initVAO();
+	else if (lines_updated_)
+		updateVBO();
+
+	if (lines_uploaded_ == 0)
+		return;
 
 	// Setup shader for drawing
 	if (!shader_lines.isValid())
@@ -70,7 +121,7 @@ void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4
 		view->setupShader(shader, model);
 
 	gl::bindVAO(vao_);
-	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr, lines_.size());
+	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr, lines_uploaded_);
 	gl::bindVAO(0);
 }
 
@@ -140,7 +191,13 @@ void LineBuffer::updateVBO() const
 		vbo_ = gl::createVBO();
 
 	gl::bindVBO(vbo_);
-	glBufferData(GL_ARRAY_BUFFER, lines_.size() * sizeof(Line), lines_.data(), GL_STATIC_DRAW);
 
-	lines_updated_ = false;
+	// Only allocate new buffer if we are uploading more data than the buffer currently holds
+	if (lines_.size() > lines_uploaded_)
+		glBufferData(GL_ARRAY_BUFFER, lines_.size() * sizeof(Line), lines_.data(), GL_STATIC_DRAW);
+	else
+		glBufferSubData(GL_ARRAY_BUFFER, 0, lines_.size() * sizeof(Line), lines_.data());
+
+	lines_updated_  = false;
+	lines_uploaded_ = lines_.size();
 }

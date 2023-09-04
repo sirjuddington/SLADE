@@ -39,6 +39,7 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/Drawing.h"
 #include "SLADEMap/MapObject/MapSector.h"
 
@@ -70,9 +71,9 @@ void SectorTextureOverlay::update(long frametime)
 }
 
 // -----------------------------------------------------------------------------
-// Draws the overlay to [width],[height]
+// Draws the overlay
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::draw(int width, int height, float fade)
+void SectorTextureOverlay::draw(gl::draw2d::Context& dc, float fade)
 {
 	// Get colours
 	auto& col_fg      = colourconfig::colDef("map_overlay_foreground");
@@ -80,20 +81,16 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 	col_fg_rgba.a *= fade;
 
 	// Draw background
-	glDisable(GL_TEXTURE_2D);
-	colourconfig::setGLColour("map_overlay_background", fade);
-	drawing::drawFilledRect(0, 0, width, height);
+	auto width  = dc.viewSize().x;
+	auto height = dc.viewSize().y;
+	dc.texture  = 0;
+	dc.setColourFromConfig("map_overlay_background", fade);
+	dc.drawRect({ 0.0f, 0.0f, width, height, false });
 
 	// Check if any sectors are open
 	if (sectors_.empty())
 	{
-		drawing::drawText(
-			"No sectors are open. Just press escape and pretend this never happened.",
-			width * 0.5,
-			height * 0.5,
-			ColRGBA::WHITE,
-			drawing::Font::Normal,
-			drawing::Align::Center);
+		close(true);
 		return;
 	}
 
@@ -126,104 +123,93 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 	}
 
 	// Floor texture
-	glEnable(GL_LINE_SMOOTH);
 	drawTexture(
+		dc,
 		fade,
 		middlex_ - border_ - tex_size_ * 0.5 - cur_size * 0.5,
 		middley_ - cur_size * 0.5,
 		cur_size,
 		tex_floor_,
 		hover_floor_);
-	drawing::drawText(
-		"Floor:",
-		middlex_ - border_ - tex_size_ * 0.5,
-		middley_ - tex_size_ * 0.5 - 18,
-		col_fg_rgba,
-		drawing::Font::Bold,
-		drawing::Align::Center);
-	drawing::drawText(
-		ftex,
-		middlex_ - border_ - tex_size_ * 0.5,
-		middley_ + tex_size_ * 0.5 + 2,
-		col_fg_rgba,
-		drawing::Font::Bold,
-		drawing::Align::Center);
+	dc.font           = gl::draw2d::Font::Bold;
+	dc.text_alignment = gl::draw2d::Align::Center;
+	dc.colour         = col_fg_rgba;
+	dc.drawText(
+		"Floor:", { middlex_ - border_ - tex_size_ * 0.5f, middley_ - tex_size_ * 0.5f - dc.textLineHeight() - 2.0f });
+	dc.drawText(ftex, { middlex_ - border_ - tex_size_ * 0.5f, middley_ + tex_size_ * 0.5f + 2.0f });
 
 	// Ceiling texture
 	drawTexture(
+		dc,
 		fade,
 		middlex_ + border_ + tex_size_ * 0.5 - cur_size * 0.5,
 		middley_ - cur_size * 0.5,
 		cur_size,
 		tex_ceil_,
 		hover_ceil_);
-	drawing::drawText(
+	dc.drawText(
 		"Ceiling:",
-		middlex_ + border_ + tex_size_ * 0.5,
-		middley_ - tex_size_ * 0.5 - 18,
-		col_fg_rgba,
-		drawing::Font::Bold,
-		drawing::Align::Center);
-	drawing::drawText(
-		ctex,
-		middlex_ + border_ + tex_size_ * 0.5,
-		middley_ + tex_size_ * 0.5 + 2,
-		col_fg_rgba,
-		drawing::Font::Bold,
-		drawing::Align::Center);
+		{
+			middlex_ + border_ + tex_size_ * 0.5f,
+			middley_ - tex_size_ * 0.5f - dc.textLineHeight() - 2.0f,
+		});
+	dc.drawText(ctex, { middlex_ + border_ + tex_size_ * 0.5f, middley_ + tex_size_ * 0.5f + 2.0f });
 }
 
 // -----------------------------------------------------------------------------
 // Draws the texture box for [textures]
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover) const
+void SectorTextureOverlay::drawTexture(
+	gl::draw2d::Context&  dc,
+	float                 alpha,
+	float                 x,
+	float                 y,
+	float                 size,
+	const vector<string>& textures,
+	bool                  hover) const
 {
 	// Get colours
-	auto col_bg  = colourconfig::colour("map_overlay_background");
 	auto col_fg  = colourconfig::colour("map_overlay_foreground");
 	auto col_sel = colourconfig::colour("map_hilight");
-	col_fg.a     = col_fg.a * alpha;
 
 	// Draw background
-	glEnable(GL_TEXTURE_2D);
-	gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
-	glPushMatrix();
-	glTranslated(x, y, 0);
-	drawing::drawTextureTiled(gl::Texture::backgroundTexture(), size, size);
-	glPopMatrix();
+	dc.colour.set(255, 255, 255, 255 * alpha);
+	dc.texture = gl::Texture::backgroundTexture();
+	dc.drawTextureTiled({ x, y, x + size, y + size });
 
 	// Draw first texture
 	bool mixed = game::configuration().featureSupported(game::Feature::MixTexFlats);
-	gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
-	drawing::drawTextureWithin(
-		mapeditor::textureManager().flat(textures[0], mixed).gl_id, x, y, x + size, y + size, 0, 100);
+	dc.texture = mapeditor::textureManager().flat(textures[0], mixed).gl_id;
+	dc.drawTextureWithin({ x, y, x + size, y + size }, 0.0f, 100.0f);
 
 	// Draw up to 4 subsequent textures (overlaid)
-	gl::setColour(255, 255, 255, 127 * alpha, gl::Blend::Normal);
+	dc.colour.a = 127 * alpha;
 	for (unsigned a = 1; a < textures.size() && a < 5; a++)
-		drawing::drawTextureWithin(
-			mapeditor::textureManager().flat(textures[a], mixed).gl_id, x, y, x + size, y + size, 0, 100);
+	{
+		dc.texture = mapeditor::textureManager().flat(textures[a], mixed).gl_id;
+		dc.drawTextureWithin({ x, y, x + size, y + size }, 0.0f, 100.0f);
+	}
 
-	glDisable(GL_TEXTURE_2D);
+	dc.texture = 0;
 
 	// Draw outline
 	if (hover)
 	{
-		gl::setColour(col_sel.r, col_sel.g, col_sel.b, 255 * alpha, gl::Blend::Normal);
-		glLineWidth(3.0f);
+		dc.colour.set(col_sel.r, col_sel.g, col_sel.b, 255 * alpha);
+		dc.line_thickness = 3.0f;
 	}
 	else
 	{
-		gl::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, gl::Blend::Normal);
-		glLineWidth(1.5f);
+		dc.colour.set(col_fg.r, col_fg.g, col_fg.b, 255 * alpha);
+		dc.line_thickness = 1.5f;
 	}
-	drawing::drawRect(x, y, x + size, y + size);
+	dc.drawRectOutline({ x, y, x + size, y + size });
 }
 
 // -----------------------------------------------------------------------------
 // 'Opens' all sectors in [list], adds both textures from each
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::openSectors(vector<MapSector*>& list)
+void SectorTextureOverlay::openSectors(const vector<MapSector*>& list)
 {
 	// Clear current sectors list (if any)
 	sectors_.clear();

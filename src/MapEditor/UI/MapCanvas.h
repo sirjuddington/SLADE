@@ -1,16 +1,17 @@
 #pragma once
 
 #include "General/KeyBind.h"
-#include "MapEditor/MapEditContext.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 
 namespace slade
 {
-class MapCanvas : public OGLCanvas, public KeyBindHandler
+class MapEditContext;
+
+class MapCanvas : public GLCanvas, public KeyBindHandler
 {
 public:
-	MapCanvas(wxWindow* parent, int id, MapEditContext* context);
-	~MapCanvas() = default;
+	MapCanvas(wxWindow* parent, MapEditContext* context);
+	~MapCanvas() override = default;
 
 	// Drawing
 	void draw() override;
@@ -28,6 +29,10 @@ private:
 	bool            mouse_warp_ = false;
 	vector<int>     fps_avg_;
 	sf::Clock       sf_clock_;
+	wxTimer         timer_;
+	long            last_time_ = 0;
+
+	void update();
 
 	// Events
 	void onSize(wxSizeEvent& e);

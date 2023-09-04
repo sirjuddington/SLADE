@@ -50,6 +50,15 @@ using namespace gl;
 
 
 // -----------------------------------------------------------------------------
+// Returns a generated projection matrix for this view with/without [y_flipped]
+// -----------------------------------------------------------------------------
+glm::mat4 View::projectionMatrix(bool y_flipped) const
+{
+	return y_flipped ? glm::ortho(0.0f, static_cast<float>(size_.x), 0.0f, static_cast<float>(size_.y), -1.0f, 1.0f) :
+					   glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f, -1.0f, 1.0f);
+}
+
+// -----------------------------------------------------------------------------
 // Sets the [scale], ensuring that [focus_point] (in screen coords) stays at the
 // same relative screen<->canvas position
 // -----------------------------------------------------------------------------
@@ -255,6 +264,8 @@ bool View::interpolate(double mult, const Vec2d* towards)
 	else
 		offset_inter_.y = offset_.y;
 
+	updateMatrices();
+
 	return interpolating;
 }
 
@@ -392,11 +403,14 @@ void View::updateVisibleRegion()
 
 void View::updateMatrices()
 {
+	auto size_x = static_cast<float>(size_.x);
+	auto size_y = static_cast<float>(size_.y);
+
 	// Projection --------------------------------------------------------------
 	if (y_flipped_)
-		projection_matrix_ = glm::ortho(0.f, static_cast<float>(size_.x), 0.f, static_cast<float>(size_.y), 0.0f, 1.f);
+		projection_matrix_ = glm::ortho(0.0f, size_x, 0.0f, size_y, -1.0f, 1.0f);
 	else
-		projection_matrix_ = glm::ortho(0.f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.f, 0.0f, 1.f);
+		projection_matrix_ = glm::ortho(0.0f, size_x, size_y, 0.0f, -1.0f, 1.0f);
 
 
 	// View --------------------------------------------------------------------

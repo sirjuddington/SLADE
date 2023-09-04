@@ -15,34 +15,48 @@ template<typename T> struct Vec2
 {
 	T x, y;
 
-	Vec2<T>() : x{}, y{} {}
-	Vec2<T>(T X, T Y) : x{ X }, y{ Y } {}
+	// Constructors
+	Vec2() : x{}, y{} {}
+	Vec2(T x, T y) : x{ x }, y{ y } {}
+
+	// Converting Constructors
+	template<typename OtherT> Vec2(const Vec2<OtherT>& other)
+	{
+		x = static_cast<T>(other.x);
+		y = static_cast<T>(other.y);
+	}
+	template<typename OtherT> Vec2(OtherT x, OtherT y) : x{ static_cast<T>(x) }, y{ static_cast<T>(y) } {}
 
 	void set(T X, T Y)
 	{
 		x = X;
 		y = Y;
 	}
-	void set(const Vec2<T>& v)
+	void set(const Vec2& v)
 	{
 		x = v.x;
 		y = v.y;
 	}
+	template<typename OtherT> void set(const Vec2<OtherT>& v)
+	{
+		x = static_cast<T>(v.x);
+		y = static_cast<T>(v.y);
+	}
 
-	Vec2<T> operator+(const Vec2<T>& v) const { return { v.x + x, v.y + y }; }
-	Vec2<T> operator-(const Vec2<T>& v) const { return { x - v.x, y - v.y }; }
-	Vec2<T> operator*(T num) const { return { x * num, y * num }; }
-	Vec2<T> operator*(const Vec2<T>& v) const { return { x * v.x, y * v.y }; }
-	Vec2<T> operator/(T num) const
+	Vec2 operator+(const Vec2& v) const { return { v.x + x, v.y + y }; }
+	Vec2 operator-(const Vec2& v) const { return { x - v.x, y - v.y }; }
+	Vec2 operator*(T num) const { return { x * num, y * num }; }
+	Vec2 operator*(const Vec2& v) const { return { x * v.x, y * v.y }; }
+	Vec2 operator/(T num) const
 	{
 		if (num == 0)
-			return Vec2<T>{};
+			return Vec2{};
 
-		return Vec2<T>{ x / num, y / num };
+		return Vec2{ x / num, y / num };
 	}
-	bool     operator==(const Vec2<T>& rhs) const { return (x == rhs.x && y == rhs.y); }
-	bool     operator!=(const Vec2<T>& rhs) const { return (x != rhs.x || y != rhs.y); }
-	Vec2<T>& operator=(const Vec2<T>& rhs)
+	bool  operator==(const Vec2& rhs) const { return (x == rhs.x && y == rhs.y); }
+	bool  operator!=(const Vec2& rhs) const { return (x != rhs.x || y != rhs.y); }
+	Vec2& operator=(const Vec2& rhs)
 	{
 		x = rhs.x;
 		y = rhs.y;
@@ -51,7 +65,7 @@ template<typename T> struct Vec2
 
 	double magnitude() const { return std::sqrt((x * x) + (y * y)); }
 
-	Vec2<T> normalized() const
+	Vec2 normalized() const
 	{
 		auto mag = magnitude();
 		if (mag == 0)
@@ -75,7 +89,7 @@ template<typename T> struct Vec2
 		}
 	}
 
-	double distanceTo(const Vec2<T> other) const
+	double distanceTo(const Vec2 other) const
 	{
 		T dist_x = other.x - x;
 		T dist_y = other.y - y;
@@ -85,7 +99,7 @@ template<typename T> struct Vec2
 
 	// aka "Manhattan" distance -- just the sum of the vertical and horizontal
 	// distance, and an upper bound on the true distance
-	T taxicabDistanceTo(const Vec2<T>& other) const
+	T taxicabDistanceTo(const Vec2& other) const
 	{
 		T dist;
 		if (other.x < x)
@@ -100,9 +114,9 @@ template<typename T> struct Vec2
 		return dist;
 	}
 
-	T dot(const Vec2<T>& other) const { return x * other.x + y * other.y; }
+	T dot(const Vec2& other) const { return x * other.x + y * other.y; }
 
-	T cross(const Vec2<T>& other) const { return (x * other.y) - (y * other.x); }
+	T cross(const Vec2& other) const { return (x * other.y) - (y * other.x); }
 };
 
 typedef Vec2<int>    Vec2i;
@@ -120,9 +134,20 @@ template<typename T> struct Vec3
 {
 	T x, y, z;
 
-	Vec3<T>() : x{}, y{}, z{} {}
-	Vec3<T>(T x, T y, T z) : x{ x }, y{ y }, z{ z } {}
-	Vec3<T>(const Vec2<T>& p, T z = {}) : x{ p.x }, y{ p.y }, z{ z } {}
+	// Constructors
+	Vec3() : x{}, y{}, z{} {}
+	Vec3(T x, T y, T z) : x{ x }, y{ y }, z{ z } {}
+	Vec3(const Vec2<T>& p, T z = {}) : x{ p.x }, y{ p.y }, z{ z } {}
+
+	// Converting Constructors
+	template<typename OtherT>
+	Vec3(const Vec3<OtherT>& v) : x{ static_cast<T>(v.x) }, y{ static_cast<T>(v.y) }, z{ static_cast<T>(v.z) }
+	{
+	}
+	template<typename OtherT>
+	Vec3(OtherT x, OtherT y, OtherT z) : x{ static_cast<T>(x) }, y{ static_cast<T>(y) }, z{ static_cast<T>(z) }
+	{
+	}
 
 	void set(T x, T y, T z)
 	{
@@ -130,14 +155,14 @@ template<typename T> struct Vec3
 		this->y = y;
 		this->z = z;
 	}
-	void set(const Vec3<T>& p)
+	void set(const Vec3& p)
 	{
 		x = p.x;
 		y = p.y;
 		z = p.z;
 	}
 
-	Vec3<T>& operator=(const Vec3<T>& rhs)
+	Vec3& operator=(const Vec3& rhs)
 	{
 		x = rhs.x;
 		y = rhs.y;
@@ -147,9 +172,9 @@ template<typename T> struct Vec3
 
 	double magnitude() const { return sqrt((x * x) + (y * y) + (z * z)); }
 
-	T dot(const Vec3<T>& vec) const { return x * vec.x + y * vec.y + z * vec.z; }
+	T dot(const Vec3& vec) const { return x * vec.x + y * vec.y + z * vec.z; }
 
-	Vec3<T> normalized() const
+	Vec3 normalized() const
 	{
 		auto mag = magnitude();
 		if (mag == 0)
@@ -171,7 +196,7 @@ template<typename T> struct Vec3
 		}
 	}
 
-	double distanceTo(const Vec3<T>& point) const
+	double distanceTo(const Vec3& point) const
 	{
 		auto dist_x = point.x - x;
 		auto dist_y = point.y - y;
@@ -180,13 +205,13 @@ template<typename T> struct Vec3
 		return sqrt((dist_x * dist_x) + (dist_y * dist_y) + (dist_z * dist_z));
 	}
 
-	Vec3<T> operator+(const Vec3<T>& point) const { return { point.x + x, point.y + y, point.z + z }; }
+	Vec3 operator+(const Vec3& point) const { return { point.x + x, point.y + y, point.z + z }; }
 
-	Vec3<T> operator-(const Vec3<T>& point) const { return { x - point.x, y - point.y, z - point.z }; }
+	Vec3 operator-(const Vec3& point) const { return { x - point.x, y - point.y, z - point.z }; }
 
-	Vec3<T> operator*(T num) const { return { x * num, y * num, z * num }; }
+	Vec3 operator*(T num) const { return { x * num, y * num, z * num }; }
 
-	Vec3<T> operator/(T num) const
+	Vec3 operator/(T num) const
 	{
 		if (num == 0)
 			return {};
@@ -194,9 +219,9 @@ template<typename T> struct Vec3
 			return { x / num, y / num, z / num };
 	}
 
-	Vec3<T> cross(const Vec3<T>& p2) const
+	Vec3 cross(const Vec3& p2) const
 	{
-		Vec3<T> cross_product;
+		Vec3 cross_product;
 
 		cross_product.x = ((y * p2.z) - (z * p2.y));
 		cross_product.y = ((z * p2.x) - (x * p2.z));
@@ -240,6 +265,14 @@ template<typename T> struct Rect
 		}
 	}
 
+	// Converting Constructors
+	template<typename OtherT> Rect(const Vec2<OtherT>& tl, const Vec2<OtherT>& br) : tl{ tl }, br{ br } {}
+	template<typename OtherT>
+	Rect(OtherT x1, OtherT y1, OtherT x2, OtherT y2) :
+		tl{ static_cast<T>(x1), static_cast<T>(y1) }, br{ static_cast<T>(x2), static_cast<T>(y2) }
+	{
+	}
+
 	// Functions
 	void set(const Vec2<T>& tl, const Vec2<T>& br)
 	{
@@ -253,7 +286,7 @@ template<typename T> struct Rect
 		br.set(x2, y2);
 	}
 
-	void set(const Rect<T>& rect)
+	void set(const Rect& rect)
 	{
 		tl.set(rect.tl);
 		br.set(rect.br);
@@ -472,10 +505,10 @@ template<typename T> struct Named
 	Named(string_view name, const T& value) : name{ name }, value{ value } {}
 
 	// For sorting
-	bool operator<(const Named<T>& rhs) { return name < rhs.name; }
-	bool operator<=(const Named<T>& rhs) { return name <= rhs.name; }
-	bool operator>(const Named<T>& rhs) { return name > rhs.name; }
-	bool operator>=(const Named<T>& rhs) { return name >= rhs.name; }
+	bool operator<(const Named& rhs) { return name < rhs.name; }
+	bool operator<=(const Named& rhs) { return name <= rhs.name; }
+	bool operator>(const Named& rhs) { return name > rhs.name; }
+	bool operator>=(const Named& rhs) { return name >= rhs.name; }
 };
 
 } // namespace slade

@@ -55,6 +55,15 @@ public:
 	{
 		add(Line{ { x1, y1, 0.0f, width }, colour, { x2, y2, 0.0f, width }, colour });
 	}
+	void addArrow(
+		const Rectf& line,
+		glm::vec4    colour,
+		float        width            = 1.0f,
+		float        arrowhead_length = 0.0f,
+		float        arrowhead_angle  = 45.0f,
+		bool         arrowhead_both   = false);
+
+	void upload();
 
 	void draw(
 		const View*      view   = nullptr,
@@ -71,9 +80,10 @@ private:
 	float     dash_gap_size_ = 6.0f;
 
 	vector<Line>     lines_;
-	mutable unsigned vao_           = 0;
-	mutable unsigned vbo_           = 0;
-	mutable bool     lines_updated_ = false;
+	mutable unsigned vao_            = 0;
+	mutable unsigned vbo_            = 0;
+	mutable bool     lines_updated_  = false;
+	mutable unsigned lines_uploaded_ = 0;
 
 	void initVAO() const;
 	void updateVBO() const;

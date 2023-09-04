@@ -39,6 +39,7 @@
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/UI/ObjectEditPanel.h"
+#include "OpenGL/View.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -179,7 +180,7 @@ bool Input::mouseMove(int new_x, int new_y)
 		mouse_state_ = MouseState::Move;
 		mouse_drag_  = DragType::None;
 		context_.moveObjects().begin(mouse_down_pos_map_);
-		context_.renderer().renderer2D().forceUpdate();
+		context_.renderer().forceUpdate(true, false);
 	}
 
 	// Check if we are in thing quick angle state
@@ -416,7 +417,7 @@ bool Input::mouseUp(MouseButton button)
 		{
 			context_.moveObjects().end();
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_.renderer().forceUpdate(true, false);
 		}
 
 		// Paste state, cancel paste
@@ -728,7 +729,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_.moveObjects().end();
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_.renderer().forceUpdate(true, false);
 		}
 
 		// Accept move
@@ -736,7 +737,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_.moveObjects().end();
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_.renderer().forceUpdate(true, false);
 		}
 
 		// Cancel move
@@ -744,7 +745,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_.moveObjects().end(false);
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_.renderer().forceUpdate(true, false);
 		}
 	}
 
@@ -756,7 +757,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_.objectEdit().end(true);
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_.renderer().forceUpdate(true, false);
 			context_.setCursor(ui::MouseCursor::Normal);
 		}
 
@@ -765,7 +766,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_.objectEdit().end(false);
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_.renderer().forceUpdate(true, false);
 			context_.setCursor(ui::MouseCursor::Normal);
 		}
 	}
@@ -820,7 +821,7 @@ void Input::handleKeyBind2d(string_view name)
 			if (context_.moveObjects().begin(mouse_pos_map_))
 			{
 				mouse_state_ = MouseState::Move;
-				context_.renderer().renderer2D().forceUpdate();
+				context_.renderer().forceUpdate(true, false);
 			}
 		}
 

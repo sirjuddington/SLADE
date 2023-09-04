@@ -34,7 +34,9 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "GLTexture.h"
+#include "General/ColourConfiguration.h"
 #include "LineBuffer.h"
+#include "PointSpriteBuffer.h"
 #include "Shader.h"
 #include "VertexBuffer2D.h"
 #include "View.h"
@@ -52,8 +54,17 @@ using namespace gl;
 // -----------------------------------------------------------------------------
 namespace
 {
-glm::mat4      identity_matrix(1.f);
-gl::LineBuffer lb_lines;
+glm::mat4 identity_matrix(1.f);
+glm::vec4 col_white{ 1.0f };
+
+// Buffers
+unique_ptr<LineBuffer>        line_buffer;
+unique_ptr<VertexBuffer2D>    vertex_buffer;
+unique_ptr<PointSpriteBuffer> ps_buffer;
+
+// Shaders
+unique_ptr<Shader> shader_2d;
+unique_ptr<Shader> shader_2d_notex;
 
 // Fonts & text rendering
 struct FontDef
@@ -61,6 +72,7 @@ struct FontDef
 	string    face;
 	float     softness = 0.015f;
 	dtx_font* handle   = nullptr;
+	float     yoff     = 0.08f;
 };
 constexpr int      FONT_SIZE_BASE = 36;
 vector<FontDef>    fonts          = { { "FiraSans-Regular", 0.018f, nullptr },          // Normal
@@ -145,12 +157,12 @@ void drawTextCustomCallback(dtx_vertex* v, int vcount, dtx_pixmap* pixmap, void*
 	}
 
 	glm::vec4 colour{ 1.0f };
-	vb_text.clear();
 	for (int i = 0; i < vcount; ++i)
 	{
 		vb_text.add({ text_offset.x + v->x * text_scale, text_offset.y - v->y * text_scale }, colour, { v->s, v->t });
 		++v;
 	}
+	vb_text.upload(false);
 
 	glEnable(GL_TEXTURE_2D);
 	gl::Texture::bind(tex);
@@ -180,8 +192,36 @@ void setupTextShader(const Shader& shader, const Context& dc, const ColRGBA& col
 	if (dc.text_style == TextStyle::Outline)
 		shader.setUniform("outline_colour", dc.outline_colour.asVec4());
 }
+
+void drawPointSprites(const Context& dc)
+{
+	// Blending
+	if (dc.blend != Blend::Ignore)
+		gl::setBlend(dc.blend);
+
+	// Texture
+	if (dc.pointsprite_type == PointSpriteType::Textured)
+	{
+		glEnable(GL_TEXTURE_2D);
+		gl::Texture::bind(dc.texture);
+	}
+
+	// Set buffer options
+	ps_buffer->setColour(dc.colour.asVec4());
+	ps_buffer->setPointRadius(dc.pointsprite_radius);
+	ps_buffer->setOutlineWidth(dc.pointsprite_outline_width);
+	ps_buffer->setFillOpacity(dc.pointsprite_fill_opacity);
+
+	// Draw
+	ps_buffer->draw(dc.pointsprite_type, dc.view);
+}
 } // namespace slade::gl::draw2d
 
+
+Vec2f draw2d::Context::viewSize() const
+{
+	return view ? Vec2f{ static_cast<float>(view->size().x), static_cast<float>(view->size().y) } : Vec2f{};
+}
 
 void draw2d::Context::translate(float x, float y)
 {
@@ -193,6 +233,15 @@ void draw2d::Context::scale(float x, float y)
 	model_matrix = glm::scale(model_matrix, { x, y, 1.0f });
 }
 
+void draw2d::Context::setColourFromConfig(const string& def_name, float alpha, bool blend)
+{
+	auto def = colourconfig::colDef(def_name);
+	colour   = def.colour;
+	colour.a *= alpha;
+	if (blend)
+		this->blend = def.blendMode();
+}
+
 float draw2d::Context::textLineHeight() const
 {
 	return draw2d::lineHeight(font, text_size);
@@ -201,6 +250,25 @@ float draw2d::Context::textLineHeight() const
 Vec2f draw2d::Context::textExtents(const string& text) const
 {
 	return draw2d::textExtents(text, font, text_size);
+}
+
+void draw2d::Context::setupToDraw(const Shader& shader, bool mvp) const
+{
+	shader.bind();
+
+	// Texture
+	Texture::bind(texture);
+
+	// Colour
+	shader.setUniform("colour", colour.asVec4());
+
+	// Blending
+	if (blend != Blend::Ignore)
+		gl::setBlend(blend);
+
+	// MVP matrix
+	if (mvp)
+		shader.setUniform("mvp", view ? view->mvpMatrix(model_matrix) : model_matrix);
 }
 
 void draw2d::Context::drawRect(const Rectf& rect) const
@@ -233,51 +301,82 @@ void draw2d::Context::drawRect(const Rectf& rect) const
 
 void draw2d::Context::drawRectOutline(const Rectf& rect) const
 {
-	auto& shader = defaultShader(false);
+	static LineBuffer lb_rect;
 
-	// Texture
-	glDisable(GL_TEXTURE_2D);
+	if (lb_rect.empty())
+	{
+		lb_rect.add2d(0.0f, 0.0f, 0.0f, 1.0f, col_white);
+		lb_rect.add2d(0.0f, 1.0f, 1.0f, 1.0f, col_white);
+		lb_rect.add2d(1.0f, 1.0f, 1.0f, 0.0f, col_white);
+		lb_rect.add2d(1.0f, 0.0f, 0.0f, 0.0f, col_white);
+	}
 
-	// Colour
-	shader.setUniform("colour", colour.asVec4());
+	auto model = glm::translate(model_matrix, { rect.tl.x, rect.tl.y, 0.0f });
+	model      = glm::scale(model, { rect.width(), rect.height(), 1.0f });
 
-	// Blending
-	if (blend != Blend::Ignore)
-		gl::setBlend(blend);
-
-	auto model = glm::translate(model_matrix, { rect.tl.x, rect.tl.y, 0.f });
-	model      = glm::scale(model, { rect.width(), rect.height(), 1.f });
-	shader.setUniform("mvp", view ? view->mvpMatrix(model) : model);
-
-	glLineWidth(line_thickness);
-
-	VertexBuffer2D::unitSquare().draw(Primitive::LineLoop);
+	lb_rect.setWidthMult(line_thickness);
+	if (line_thickness != 1.0f)
+		lb_rect.setAaRadius(line_aa_radius, line_aa_radius);
+	else
+		lb_rect.setAaRadius(0.0f, 0.0f);
+	lb_rect.draw(view, colour.asVec4(), model);
 }
 
 void draw2d::Context::drawLines(const vector<Rectf>& lines) const
 {
+	if (!line_buffer)
+		line_buffer = std::make_unique<LineBuffer>();
+
 	// Build line buffer
-	lb_lines.clear();
+	line_buffer->clear();
 	auto col = colour.asVec4();
 	for (const auto& line : lines)
-		lb_lines.add2d(line.x1(), line.y1(), line.x2(), line.y2(), col, line_thickness);
-	lb_lines.setAaRadius(line_aa_radius, line_aa_radius);
+	{
+		if (line_arrow_length > 0.0f)
+			line_buffer->addArrow(line, col, line_thickness, line_arrow_length, line_arrow_angle);
+		else
+			line_buffer->add2d(line.x1(), line.y1(), line.x2(), line.y2(), col, line_thickness);
+	}
+	line_buffer->setAaRadius(line_aa_radius, line_aa_radius);
 
 	// Blending
 	if (blend != Blend::Ignore)
 		gl::setBlend(blend);
 
-	lb_lines.draw(view, glm::vec4{ 1.0f }, model_matrix);
+	line_buffer->draw(view, glm::vec4{ 1.0f }, model_matrix);
+}
+
+void draw2d::Context::drawPointSprites(const vector<Vec2f>& points) const
+{
+	// Create buffer if needed
+	if (!ps_buffer)
+		ps_buffer = std::make_unique<PointSpriteBuffer>();
+
+	// Populate buffer
+	// TODO: Use glm::vec2 as input or add direct conversion from Vec2f to glm::vec2
+	for (const auto& point : points)
+		ps_buffer->add({ point.x, point.y });
+	ps_buffer->upload();
+
+	draw2d::drawPointSprites(*this);
+}
+void draw2d::Context::drawPointSprites(const vector<Vec2d>& points) const
+{
+	// Create buffer if needed
+	if (!ps_buffer)
+		ps_buffer = std::make_unique<PointSpriteBuffer>();
+
+	// Populate buffer
+	// TODO: Use glm::vec2 as input or add direct conversion from Vec2f to glm::vec2
+	for (const auto& point : points)
+		ps_buffer->add({ point.x, point.y });
+	ps_buffer->upload();
+
+	draw2d::drawPointSprites(*this);
 }
 
 void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
 {
-	// TODO: Improve DropShadow rendering
-	// Using just the shader doesn't really allow for the shadow to be offset much,
-	// so it isn't very visible for small text.
-	// Might need to do something like render the text twice, once for the shadow and once normally on top
-	// (we have a vertex buffer for the string so it'd just be 1 extra draw call)
-
 	if (!text_draw_init)
 		initTextDrawing();
 
@@ -310,8 +409,9 @@ void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
 		text_offset.y = pos.y + line_height;
 		break;
 	}
+	text_offset.y += textLineHeight() * fdef->yoff;
 
-	// Sharpen softness value if the view is zoomed in
+	// Reduce softness value if the view is zoomed in
 	auto scale      = fontScale(text_size);
 	auto full_scale = scale;
 	if (view && view->scale().x > 1)
@@ -328,7 +428,7 @@ void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
 	}
 
 	// Draw drop shadow if needed
-	const Shader* shader = nullptr;
+	const Shader* shader;
 	if (text_dropshadow)
 	{
 		shader = &shader_text;
@@ -351,6 +451,75 @@ void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
 
 	// Draw the text
 	dtx_string(text.c_str());
+}
+
+void draw2d::Context::drawTextureTiled(const Rectf& rect) const
+{
+	// Ignore empty texture
+	if (!Texture::isLoaded(texture))
+		return;
+
+	// Calculate texture coordinates
+	auto&  tex_info = Texture::info(texture);
+	double tex_x    = rect.width() / (double)tex_info.size.x;
+	double tex_y    = rect.height() / (double)tex_info.size.y;
+
+	// Setup vertex buffer
+	if (!vertex_buffer)
+		vertex_buffer = std::make_unique<VertexBuffer2D>();
+	vertex_buffer->add({ rect.tl.x, rect.tl.y }, col_white, { 0.0f, 0.0f });
+	vertex_buffer->add({ rect.tl.x, rect.br.y }, col_white, { 0.0f, tex_y });
+	vertex_buffer->add({ rect.br.x, rect.br.y }, col_white, { tex_x, tex_y });
+	vertex_buffer->add({ rect.br.x, rect.tl.y }, col_white, { tex_x, 0.0f });
+	vertex_buffer->upload(false);
+
+	// Bind the texture
+	glEnable(GL_TEXTURE_2D);
+	Texture::bind(texture);
+
+	// Colour
+	const auto& shader = defaultShader(true);
+	shader.bind();
+	shader.setUniform("colour", colour.asVec4());
+
+	// Blending
+	if (blend != Blend::Ignore)
+		gl::setBlend(blend);
+
+	// MVP matrix
+	shader.setUniform("mvp", view ? view->mvpMatrix(model_matrix) : model_matrix);
+
+	// Draw
+	vertex_buffer->draw(Primitive::Quads);
+}
+
+void draw2d::Context::drawTextureWithin(const Rectf& rect, float pad, float max_scale) const
+{
+	// Ignore empty texture
+	if (!Texture::isLoaded(texture))
+		return;
+
+	auto width  = rect.x2() - rect.x1();
+	auto height = rect.y2() - rect.y1();
+
+	// Get image dimensions
+	auto& tex_info = Texture::info(texture);
+	auto  x_dim    = static_cast<float>(tex_info.size.x);
+	auto  y_dim    = static_cast<float>(tex_info.size.y);
+
+	// Get max scale for x and y (including padding)
+	auto x_scale = (width - pad) / x_dim;
+	auto y_scale = (height - pad) / y_dim;
+
+	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
+	auto scale = std::min<float>(x_scale, y_scale);
+
+	// Clamp scale to maximum desired scale
+	if (scale > max_scale)
+		scale = max_scale;
+
+	// Now draw the texture
+	drawRect({ rect.x1() + width * 0.5f, rect.y1() + height * 0.5f, x_dim * scale, y_dim * scale, true });
 }
 
 void draw2d::Context::drawHud() const
@@ -424,9 +593,6 @@ void draw2d::Context::drawHud() const
 }
 
 
-
-
-
 // -----------------------------------------------------------------------------
 //
 // TextBox Class Functions
@@ -441,6 +607,17 @@ draw2d::TextBox::TextBox(string_view text, float width, Font font, int font_size
 	font_{ font }, font_size_{ font_size }, width_{ width }, line_height_{ line_height }
 {
 	setText(text);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the height of the text box based on the font, text and max width
+// -----------------------------------------------------------------------------
+float draw2d::TextBox::height()
+{
+	if (lines_.empty())
+		split(text_);
+
+	return height_;
 }
 
 // -----------------------------------------------------------------------------
@@ -534,8 +711,11 @@ void draw2d::TextBox::split(string_view text)
 // -----------------------------------------------------------------------------
 void draw2d::TextBox::setText(string_view text)
 {
+	if (text_ == text)
+		return;
+
 	text_ = text;
-	split(text);
+	lines_.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -543,26 +723,70 @@ void draw2d::TextBox::setText(string_view text)
 // -----------------------------------------------------------------------------
 void draw2d::TextBox::setWidth(float width)
 {
+	if (width_ == width)
+		return;
+
 	width_ = width;
-	split(text_);
+	lines_.clear();
+}
+
+// -----------------------------------------------------------------------------
+// Sets the text box font (+size)
+// -----------------------------------------------------------------------------
+void draw2d::TextBox::setFont(Font font, int size)
+{
+	if (font_ == font && font_size_ == size)
+		return;
+
+	font_      = font;
+	font_size_ = size;
+	lines_.clear();
 }
 
 // -----------------------------------------------------------------------------
 // Draws the text box
 // -----------------------------------------------------------------------------
-void draw2d::TextBox::draw(Vec2f& pos, Context& dc) const
+// #define TEST_TB
+void draw2d::TextBox::draw(const Vec2f& pos, Context& dc)
 {
+	if (lines_.empty())
+		split(text_);
+
 	auto prev_font = dc.font;
 	auto prev_size = dc.text_size;
+	auto cpos      = pos;
+
+#ifdef TEST_TB
+	auto prev_alpha   = dc.colour.a;
+	auto prev_lt      = dc.line_thickness;
+	dc.line_thickness = 1.0f;
+#endif
+
+	dc.font      = font_;
+	dc.text_size = font_size_;
 
 	for (const auto& line : lines_)
 	{
-		dc.drawText(line, pos);
-		pos.y += dc.textLineHeight() * line_height_;
+		dc.drawText(line, cpos);
+		cpos.y += dc.textLineHeight() * line_height_;
+
+#ifdef TEST_TB
+		dc.colour.a *= 0.5;
+		if (&line != &lines_.back())
+			dc.drawLines({ { pos.x, cpos.y, pos.x + width_, cpos.y } });
+		dc.colour.a = prev_alpha;
+#endif
 	}
 
 	dc.font      = prev_font;
 	dc.text_size = prev_size;
+
+#ifdef TEST_TB
+	dc.colour.a *= 0.5;
+	dc.drawRectOutline({ pos.x, pos.y, width_, height_, false });
+	dc.colour.a       = prev_alpha;
+	dc.line_thickness = prev_lt;
+#endif
 }
 
 
@@ -600,36 +824,27 @@ Vec2f draw2d::textExtents(const string& text, Font font, int size)
 
 const Shader& draw2d::defaultShader(bool textured)
 {
-	static Shader shader_2d("default2d");
-	static Shader shader_2d_notex("default2d_notex");
+	// static Shader shader_2d("default2d");
+	// static Shader shader_2d_notex("default2d_notex");
 
-	if (!shader_2d.isValid())
+	if (!shader_2d)
 	{
-		shader_2d.define("TEXTURED");
-		shader_2d.loadResourceEntries("default2d.vert", "default2d.frag");
-		shader_2d_notex.loadResourceEntries("default2d.vert", "default2d.frag");
+		shader_2d       = std::make_unique<Shader>("default2d");
+		shader_2d_notex = std::make_unique<Shader>("default2d_notex");
+
+		shader_2d->define("TEXTURED");
+		shader_2d->loadResourceEntries("default2d.vert", "default2d.frag");
+		shader_2d_notex->loadResourceEntries("default2d.vert", "default2d.frag");
 	}
 
-	return textured ? shader_2d : shader_2d_notex;
+	return textured ? *shader_2d : *shader_2d_notex;
 }
 
-const Shader& draw2d::linesShader()
-{
-	static Shader shader_lines("default2d_lines");
-
-	if (!shader_lines.isValid())
-	{
-		shader_lines.define("THICK_LINES");
-		shader_lines.loadResourceEntries("default2d.vert", "default2d.frag");
-	}
-
-	return shader_lines;
-}
-
-const Shader& draw2d::pointSpriteShader(PointSprite type)
+const Shader& draw2d::pointSpriteShader(PointSpriteType type)
 {
 	static Shader shader_psprite_tex("default2d_pointsprite_tex");
 	static Shader shader_psprite_circle("default2d_pointsprite_circle");
+	static Shader shader_psprite_circle_ol("default2d_pointsprite_circle_outline");
 
 	if (!shader_psprite_tex.isValid())
 	{
@@ -641,12 +856,18 @@ const Shader& draw2d::pointSpriteShader(PointSprite type)
 		// PointSprite::Circle
 		shader_psprite_circle.define("GEOMETRY_SHADER");
 		shader_psprite_circle.loadResourceEntries("default2d.vert", "circle.frag", "point_sprite.geom");
+
+		// PointSprite::CircleOutline
+		shader_psprite_circle_ol.define("GEOMETRY_SHADER");
+		shader_psprite_circle_ol.define("OUTLINE");
+		shader_psprite_circle_ol.loadResourceEntries("default2d.vert", "circle.frag", "point_sprite.geom");
 	}
 
 	switch (type)
 	{
-	case PointSprite::Textured: return shader_psprite_tex;
-	case PointSprite::Circle: return shader_psprite_circle;
+	case PointSpriteType::Textured: return shader_psprite_tex;
+	case PointSpriteType::Circle: return shader_psprite_circle;
+	case PointSpriteType::CircleOutline: return shader_psprite_circle_ol;
 	default: return shader_psprite_tex;
 	}
 }

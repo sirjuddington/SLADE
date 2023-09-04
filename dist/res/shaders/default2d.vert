@@ -11,10 +11,6 @@ out VertexData
 uniform mat4 mvp;
 uniform vec2 viewport_size;
 
-#ifdef THICK_LINES
-varying vec2 line_center;
-#endif
-
 void main()
 {
 	vertex_out.colour = in_colour;
@@ -25,9 +21,5 @@ void main()
 	gl_Position = vec4(in_position, 0.0, 1.0);
 #else
 	gl_Position = mvp * vec4(in_position, 0.0, 1.0);
-#endif
-
-#ifdef THICK_LINES
-	line_center = 0.5 * (gl_Position.xy + vec2(1, 1)) * viewport_size;
 #endif
 }
