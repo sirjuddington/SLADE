@@ -1979,6 +1979,9 @@
     <ClInclude Include="..\src\OpenGL\PointSpriteBuffer.h">
       <Filter>OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Utility\Vector.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />

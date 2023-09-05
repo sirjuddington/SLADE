@@ -111,7 +111,7 @@ void PaletteCanvas::setPalette(const Palette* pal)
 // -----------------------------------------------------------------------------
 void PaletteCanvas::draw()
 {
-	if (!vb_palette_->isUploaded())
+	if (vb_palette_->buffer().empty())
 		updatePaletteBuffer();
 
 	// Setup default 2d shader (untextured)
@@ -189,7 +189,7 @@ void PaletteCanvas::updatePaletteBuffer()
 		x = 1.f;
 	}
 
-	vb_palette_->upload(false);
+	vb_palette_->push();
 }
 
 

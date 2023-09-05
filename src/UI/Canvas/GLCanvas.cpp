@@ -100,12 +100,12 @@ void GLCanvas::draw()
 	using namespace gl;
 
 	static VertexBuffer2D testbuf;
-	if (!testbuf.isUploaded())
+	if (testbuf.buffer().empty())
 	{
 		testbuf.add({ { 50.f, 50.f }, { 1.f, 0.f, 0.f, 1.f }, { 0.f, 0.f } });
 		testbuf.add({ { 50.f, 150.f }, { 0.f, 1.f, 0.f, 0.8f }, { 0.f, 0.f } });
 		testbuf.add({ { 150.f, 50.f }, { 0.f, 0.f, 1.f, 0.4f }, { 0.f, 0.f } });
-		testbuf.upload(false);
+		testbuf.push();
 	}
 
 	auto& shader = draw2d::defaultShader(false);
@@ -179,7 +179,7 @@ void GLCanvas::init()
 
 void GLCanvas::updateBackgroundVB()
 {
-	if (bg_style_ != BGStyle::Checkered)
+	if (!gl::getContext() || bg_style_ != BGStyle::Checkered)
 		return;
 
 	if (!vb_background_)
@@ -188,11 +188,11 @@ void GLCanvas::updateBackgroundVB()
 	auto widthf  = static_cast<float>(GetSize().x);
 	auto heightf = static_cast<float>(GetSize().y);
 
-	vb_background_->clear();
 	vb_background_->add({ { 0.f, 0.f }, { 1.f, 1.f, 1.f, 1.f }, { 0.f, 0.f } });
 	vb_background_->add({ { 0.f, heightf }, { 1.f, 1.f, 1.f, 1.f }, { 0.f, heightf / 16.f } });
 	vb_background_->add({ { widthf, heightf }, { 1.f, 1.f, 1.f, 1.f }, { widthf / 16.f, heightf / 16.f } });
 	vb_background_->add({ { widthf, 0.f }, { 1.f, 1.f, 1.f, 1.f }, { widthf / 16.f, 0.f } });
+	vb_background_->push();
 }
 
 void GLCanvas::drawCheckeredBackground()

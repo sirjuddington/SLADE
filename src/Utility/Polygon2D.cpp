@@ -241,7 +241,7 @@ void Polygon2D::writeToVB(gl::VertexBuffer2D& vb, bool update)
 	for (auto& subpoly : subpolys_)
 	{
 		if (update)
-			subpoly.vbo_offset = vb.size();
+			subpoly.vbo_offset = vb.queueSize();
 
 		for (const auto& vertex : subpoly.vertices)
 			vb.add({ vertex.x, vertex.y }, glm::vec4{ 1.0f }, { vertex.tx, vertex.ty });
@@ -252,7 +252,7 @@ void Polygon2D::writeToVB(gl::VertexBuffer2D& vb, bool update)
 		vbo_update_ = 0;
 }
 
-void Polygon2D::updateVBData(const gl::VertexBuffer2D& vb)
+void Polygon2D::updateVBData(gl::VertexBuffer2D& vb)
 {
 	for (auto& subpoly : subpolys_)
 	{
@@ -260,7 +260,7 @@ void Polygon2D::updateVBData(const gl::VertexBuffer2D& vb)
 		for (const auto& vertex : subpoly.vertices)
 			vertices.emplace_back(
 				glm::vec2{ vertex.x, vertex.y }, glm::vec4{ 1.0f }, glm::vec2{ vertex.tx, vertex.ty });
-		vb.update(subpoly.vbo_offset, vertices);
+		vb.buffer().update(subpoly.vbo_offset, vertices);
 	}
 
 	// Update variables

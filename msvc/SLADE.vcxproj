@@ -911,6 +911,7 @@
     <ClInclude Include="..\src\Utility\Structs.h" />
     <ClInclude Include="..\src\Utility\Tokenizer.h" />
     <ClInclude Include="..\src\Utility\Tree.h" />
+    <ClInclude Include="..\src\Utility\Vector.h" />
     <ClInclude Include="..\thirdparty\mus2mid\mus2mid.h" />
     <ClInclude Include="..\thirdparty\zreaders\files.h" />
     <ClInclude Include="..\thirdparty\zreaders\i_music.h" />

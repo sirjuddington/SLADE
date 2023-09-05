@@ -398,7 +398,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 			vb_grid_->add({ end_x, y }, col_grid, {});
 		}
 
-		vb_grid_->upload(false);
+		vb_grid_->push();
 
 		gl::setBlend(colourconfig::colDef("map_grid").blendMode());
 		shader.setUniform("colour", glm::vec4{ 1.0f });
@@ -459,7 +459,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 			}
 		}
 
-		vb_grid_->upload(false);
+		vb_grid_->push();
 
 		gl::setBlend(colourconfig::colDef("map_64grid").blendMode());
 		shader.setUniform("colour", glm::vec4{ 1.0f });
@@ -469,8 +469,6 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	// Draw crosshair if needed
 	if (map_crosshair > 0)
 	{
-		lb_crosshair_->clear();
-
 		auto   mouse_pos = context_.input().mousePos();
 		double x         = context_.snapToGrid(view_->canvasX(mouse_pos.x), false);
 		double y         = context_.snapToGrid(view_->canvasY(mouse_pos.y), false);
@@ -504,6 +502,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		}
 
 		gl::setBlend(def.blendMode());
+		lb_crosshair_->push();
 		lb_crosshair_->draw(view_.get());
 	}
 }
@@ -863,7 +862,6 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 	else
 	{
 		// Move/scale
-		lb_objectedit_box_->clear();
 		float width;
 
 		// Left
@@ -898,6 +896,7 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 			width = 2.0f;
 		lb_objectedit_box_->add2d(bbox.max.x, bbox.max.y, bbox.min.x, bbox.max.y, glm::vec4{ 1.0f }, width);
 
+		lb_objectedit_box_->push();
 		lb_objectedit_box_->draw(dc.view, dc.colour.asVec4());
 	}
 

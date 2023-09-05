@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "GfxCanvas.h"
 #include "GLCanvas.h"
-#include "General/UI.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
 #include "OpenGL/Draw2D.h"
@@ -175,6 +174,7 @@ void GfxCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 
 			lb_sprite_->add2d(-99999.0f, 0.0f, 99999.0f, 0.0f, colour, 1.5f);
 			lb_sprite_->add2d(0.0f, -99999.0f, 0.0f, 99999.0f, colour, 1.5f);
+			lb_sprite_->push();
 		}
 
 		view_.setupShader(lb_sprite_->shader());

@@ -96,7 +96,7 @@ wxGLAttributes& buildGlAttr(wxGLAttributes& attr, int depth)
 // -----------------------------------------------------------------------------
 wxGLContext* gl::getContext(wxGLCanvas* canvas)
 {
-	if (!context)
+	if (!context && canvas)
 	{
 		if (canvas->IsShown())
 		{

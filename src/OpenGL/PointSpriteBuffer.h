@@ -32,15 +32,12 @@ public:
 	void setOutlineWidth(float width) { outline_width_ = width; }
 	void setFillOpacity(float opacity) { fill_opacity_ = opacity; }
 
-	bool     empty() const { return sprites_.empty(); }
-	unsigned size() const { return sprites_.size(); }
-
 	void add(const glm::vec2& position, float radius = 1.0f);
 	void add(const vector<glm::vec2>& positions, float radius = 1.0f);
 
-	void upload();
+	void push();
 
-	void draw(PointSpriteType type, const View* view, unsigned first = 0, unsigned count = 0);
+	void draw(PointSpriteType type, const View* view, unsigned first = 0, unsigned count = 0) const;
 
 private:
 	vector<PointSprite> sprites_;
@@ -51,7 +48,5 @@ private:
 	float     radius_        = 1.0f;
 	float     outline_width_ = 0.05f; // For outline types
 	float     fill_opacity_  = 0.0f;  // For outline types
-
-	void initVAO();
 };
 } // namespace slade::gl

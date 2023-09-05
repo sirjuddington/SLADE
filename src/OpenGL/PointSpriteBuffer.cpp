@@ -53,6 +53,24 @@ Shader* pointSpriteShader(PointSpriteType type)
 	default: return shader_ps_textured.get();
 	}
 }
+
+unsigned initVAO(Buffer<PointSpriteBuffer::PointSprite>& buffer)
+{
+	auto vao = createVAO();
+	bindVAO(vao);
+
+	buffer.bind();
+
+	// Position
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// Radius
+	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(2 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	return vao;
+}
 } // namespace
 
 PointSpriteBuffer::~PointSpriteBuffer()
@@ -71,19 +89,23 @@ void PointSpriteBuffer::add(const vector<glm::vec2>& positions, float radius)
 		sprites_.emplace_back(pos, radius);
 }
 
-void PointSpriteBuffer::upload()
+void PointSpriteBuffer::push()
 {
+	if (!vao_)
+		vao_ = initVAO(buffer_);
+
 	buffer_.upload(sprites_);
 	sprites_.clear();
 }
 
-void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned first, unsigned count)
+void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned first, unsigned count) const
 {
-	if (buffer_.size() == 0)
+	if (!getContext())
 		return;
 
-	if (!vao_)
-		initVAO();
+	// Check we have anything to draw
+	if (buffer_.empty())
+		return;
 
 	// Check valid parameters
 	if (count == 0)
@@ -107,20 +129,4 @@ void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned fi
 	gl::bindVAO(vao_);
 	glDrawArrays(GL_POINTS, first, count);
 	gl::bindVAO(0);
-}
-
-void PointSpriteBuffer::initVAO()
-{
-	vao_ = gl::createVAO();
-	gl::bindVAO(vao_);
-
-	buffer_.bind();
-
-	// Position
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	// Radius
-	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
 }

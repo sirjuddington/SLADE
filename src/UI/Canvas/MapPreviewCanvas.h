@@ -2,7 +2,6 @@
 
 #include "Archive/Archive.h"
 #include "GLCanvas.h"
-#include "OpenGL/LineBuffer.h"
 
 namespace slade
 {
@@ -10,6 +9,7 @@ class GLTexture;
 namespace gl
 {
 	class PointSpriteBuffer;
+	class LineBuffer;
 }
 
 class MapPreviewCanvas : public GLCanvas
@@ -81,11 +81,10 @@ private:
 	unsigned            n_sides_   = 0;
 	unsigned            n_sectors_ = 0;
 	unique_ptr<Archive> temp_archive_;
-	bool                panning_   = false;
 	bool                view_init_ = false;
 
-	unique_ptr<gl::LineBuffer>        vb_lines_;
-	unique_ptr<gl::PointSpriteBuffer> psb_things_;
+	unique_ptr<gl::LineBuffer>        lines_buffer_;
+	unique_ptr<gl::PointSpriteBuffer> things_buffer_;
 
 	void updateLinesBuffer();
 	void updateThingsBuffer();

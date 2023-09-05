@@ -136,7 +136,7 @@ MCAThingSelection::MCAThingSelection(
 
 		buffer_->add(glm::vec2{ thing->xPos(), thing->yPos() }, radius);
 	}
-	buffer_->upload();
+	buffer_->push();
 
 	buffer_->setOutlineWidth(std::min(3.0f / view_scale, 4.0f));
 	buffer_->setFillOpacity(0.25f);
@@ -343,7 +343,7 @@ MCASectorSelection::MCASectorSelection(long start, const vector<MapSector*>& sec
 		for (unsigned i = 0; i < poly->nSubPolys(); ++i)
 		{
 			auto subpoly = poly->subPoly(i);
-			polygons_.emplace_back(vertex_buffer_->size(), subpoly->vertices.size());
+			polygons_.emplace_back(vertex_buffer_->queueSize(), subpoly->vertices.size());
 			for (const auto& vertex : subpoly->vertices)
 				vertex_buffer_->add({ vertex.x, vertex.y }, white, { vertex.tx, vertex.ty });
 		}
@@ -398,6 +398,8 @@ void MCASectorSelection::draw(gl::draw2d::Context& dc)
 	shader.setUniform("colour", colour);
 
 	// Draw
+	if (vertex_buffer_->buffer().empty())
+		vertex_buffer_->push();
 	for (const auto& poly : polygons_)
 		vertex_buffer_->draw(gl::Primitive::TriangleFan, nullptr, nullptr, poly.offset, poly.vertices);
 }

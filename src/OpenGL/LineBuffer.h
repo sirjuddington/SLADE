@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenGL.h"
+#include "Buffer.h"
 
 namespace slade::gl
 {
@@ -19,26 +19,12 @@ public:
 	};
 
 	LineBuffer() = default;
+	~LineBuffer();
 
-	~LineBuffer()
-	{
-		gl::deleteVBO(vbo_);
-		gl::deleteVAO(vao_);
-	}
-
-	// Vector-like access to lines
-	unsigned    size() const { return lines_.size(); }
-	void        clear() { lines_.clear(); }
-	bool        empty() const { return lines_.empty(); }
-	const Line& operator[](unsigned index) const { return lines_[index]; }
-	Line&       operator[](unsigned index)
-	{
-		lines_updated_ = true;
-		return lines_[index];
-	}
-
-	float     widthMult() const { return width_mult_; }
-	glm::vec2 aaRadius() const { return aa_radius_; }
+	const Buffer<Line>& buffer() const { return buffer_; }
+	Buffer<Line>&       buffer() { return buffer_; }
+	float               widthMult() const { return width_mult_; }
+	glm::vec2           aaRadius() const { return aa_radius_; }
 
 	void setWidthMult(float width) { width_mult_ = width; }
 	void setAaRadius(float x, float y) { aa_radius_ = { x, y }; }
@@ -63,7 +49,7 @@ public:
 		float        arrowhead_angle  = 45.0f,
 		bool         arrowhead_both   = false);
 
-	void upload();
+	void push();
 
 	void draw(
 		const View*      view   = nullptr,
@@ -79,13 +65,8 @@ private:
 	float     dash_size_     = 6.0f;
 	float     dash_gap_size_ = 6.0f;
 
-	vector<Line>     lines_;
-	mutable unsigned vao_            = 0;
-	mutable unsigned vbo_            = 0;
-	mutable bool     lines_updated_  = false;
-	mutable unsigned lines_uploaded_ = 0;
-
-	void initVAO() const;
-	void updateVBO() const;
+	vector<Line> lines_;
+	Buffer<Line> buffer_;
+	unsigned     vao_ = 0;
 };
 } // namespace slade::gl

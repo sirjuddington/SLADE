@@ -153,9 +153,9 @@ void CTextureCanvas::clearTexture()
 
 	// Clear buffers
 	if (lb_border_)
-		lb_border_->clear();
+		lb_border_->buffer().clear();
 	if (lb_grid_)
-		lb_grid_->clear();
+		lb_grid_->buffer().clear();
 
 	// Reset view offset
 	resetViewOffsets();
@@ -461,7 +461,7 @@ void CTextureCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 		lb_border_ = std::make_unique<gl::LineBuffer>();
 		lb_border_->setAaRadius(0.0f, 0.0f);
 	}
-	if (lb_border_->empty())
+	if (lb_border_->buffer().empty())
 	{
 		auto colour = ColRGBA::BLACK.asVec4();
 
@@ -485,6 +485,8 @@ void CTextureCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 			lb_border_->add2d(x, y1 - 4, x, y1, colour);
 			lb_border_->add2d(x, y2, x, y2 + 4, colour);
 		}
+
+		lb_border_->push();
 	}
 
 	// Draw border lines
@@ -499,7 +501,7 @@ void CTextureCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 			lb_grid_ = std::make_unique<gl::LineBuffer>();
 			lb_grid_->setAaRadius(0.0f, 0.0f);
 		}
-		if (lb_grid_->empty())
+		if (lb_grid_->buffer().empty())
 		{
 			auto colour = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -510,6 +512,8 @@ void CTextureCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 			// Horizontal
 			for (float x = x1 + 8.0f; x <= x2 - 8.0f; x += 8.0f)
 				lb_grid_->add2d(x, y1, x, y2, colour);
+
+			lb_grid_->push();
 		}
 
 		// Draw with inverted blending
@@ -556,6 +560,7 @@ void CTextureCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 
 			lb_sprite_->add2d(-99999.0f, 0.0f, 99999.0f, 0.0f, colour, 1.5f);
 			lb_sprite_->add2d(0.0f, -99999.0f, 0.0f, 99999.0f, colour, 1.5f);
+			lb_sprite_->push();
 		}
 
 		view_.setupShader(lb_sprite_->shader());

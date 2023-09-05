@@ -56,7 +56,7 @@ public:
 	unsigned writeToVBO(unsigned offset, unsigned index);
 	void     updateVBOData();
 	void     writeToVB(gl::VertexBuffer2D& vb, bool update = true);
-	void     updateVBData(const gl::VertexBuffer2D& vb);
+	void     updateVBData(gl::VertexBuffer2D& vb);
 
 	void render() const;
 	void renderWireframe() const;

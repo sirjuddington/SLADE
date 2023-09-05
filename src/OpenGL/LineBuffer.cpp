@@ -3,6 +3,7 @@
 #include "LineBuffer.h"
 #include "Shader.h"
 #include "Utility/MathStuff.h"
+#include "Utility/Vector.h"
 #include "View.h"
 
 using namespace slade;
@@ -27,20 +28,75 @@ void initShader()
 	shader_lines_dashed.define("DASHED_LINES");
 	shader_lines_dashed.loadResourceEntries("lines.vert", "lines.frag");
 }
+
+unsigned initVAO(Buffer<LineBuffer::Line>& buffer)
+{
+	auto vao = createVAO();
+	bindVAO(vao);
+
+	buffer.bind();
+
+	// Vertex1 Position + Width (vec4 X,Y,Z,Width)
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribDivisor(1, 1);
+
+	// Vertex1 Colour (vec4 R,G,B,A)
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(4 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribDivisor(2, 1);
+
+	// Vertex2 Position + Width (vec4 X,Y,Z,Width)
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(8 * sizeof(float)));
+	glEnableVertexAttribArray(3);
+	glVertexAttribDivisor(3, 1);
+
+	// Vertex2 Colour (vec4 R,G,B,A)
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(12 * sizeof(float)));
+	glEnableVertexAttribArray(4);
+	glVertexAttribDivisor(4, 1);
+
+
+	// Setup instanced quad
+	if (vbo_quad == 0)
+	{
+		vbo_quad = createVBO();
+		bindVBO(vbo_quad);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
+
+		ebo_quad = createVBO();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_quad);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_indices), quad_indices, GL_STATIC_DRAW);
+	}
+	else
+	{
+		bindVBO(vbo_quad);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_quad);
+	}
+
+	// Instanced quad vertex position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	bindVAO(0);
+
+	return vao;
+}
 } // namespace
+
+LineBuffer::~LineBuffer()
+{
+	deleteVAO(vao_);
+}
 
 void LineBuffer::add(const Line& line)
 {
 	lines_.push_back(line);
-	lines_updated_ = true;
 }
 
 void LineBuffer::add(const vector<Line>& lines)
 {
-	for (const auto& line : lines)
-		lines_.push_back(line);
-
-	lines_updated_ = true;
+	vectorConcat(lines_, lines);
 }
 
 void LineBuffer::addArrow(
@@ -83,25 +139,26 @@ void LineBuffer::addArrow(
 	}
 }
 
-void LineBuffer::upload()
+void LineBuffer::push()
 {
-	if (!vao_)
-		initVAO();
-	else
-		updateVBO();
+	if (!getContext())
+		return;
 
+	// Init VAO if needed
+	if (!vao_)
+		vao_ = initVAO(buffer_);
+
+	buffer_.upload(lines_);
 	lines_.clear();
 }
 
 void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4& model) const
 {
-	// Init/update gl objects
-	if (!vao_)
-		initVAO();
-	else if (lines_updated_)
-		updateVBO();
+	if (!getContext())
+		return;
 
-	if (lines_uploaded_ == 0)
+	// Check we have anything to draw
+	if (buffer_.empty())
 		return;
 
 	// Setup shader for drawing
@@ -121,7 +178,7 @@ void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4
 		view->setupShader(shader, model);
 
 	gl::bindVAO(vao_);
-	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr, lines_uploaded_);
+	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr, buffer_.size());
 	gl::bindVAO(0);
 }
 
@@ -131,73 +188,4 @@ const Shader& LineBuffer::shader()
 		initShader();
 
 	return shader_lines;
-}
-
-void LineBuffer::initVAO() const
-{
-	vao_ = gl::createVAO();
-	gl::bindVAO(vao_);
-
-	updateVBO();
-
-	// Vertex1 Position + Width (vec4 X,Y,Z,Width)
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribDivisor(1, 1);
-
-	// Vertex1 Colour (vec4 R,G,B,A)
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(4 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	glVertexAttribDivisor(2, 1);
-
-	// Vertex2 Position + Width (vec4 X,Y,Z,Width)
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(8 * sizeof(float)));
-	glEnableVertexAttribArray(3);
-	glVertexAttribDivisor(3, 1);
-
-	// Vertex2 Colour (vec4 R,G,B,A)
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(12 * sizeof(float)));
-	glEnableVertexAttribArray(4);
-	glVertexAttribDivisor(4, 1);
-
-
-	// Setup instanced quad
-	if (vbo_quad == 0)
-	{
-		vbo_quad = gl::createVBO();
-		gl::bindVBO(vbo_quad);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
-
-		ebo_quad = gl::createVBO();
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_quad);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_indices), quad_indices, GL_STATIC_DRAW);
-	}
-	else
-	{
-		gl::bindVBO(vbo_quad);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_quad);
-	}
-
-	// Instanced quad vertex position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	gl::bindVAO(0);
-}
-
-void LineBuffer::updateVBO() const
-{
-	if (vbo_ == 0)
-		vbo_ = gl::createVBO();
-
-	gl::bindVBO(vbo_);
-
-	// Only allocate new buffer if we are uploading more data than the buffer currently holds
-	if (lines_.size() > lines_uploaded_)
-		glBufferData(GL_ARRAY_BUFFER, lines_.size() * sizeof(Line), lines_.data(), GL_STATIC_DRAW);
-	else
-		glBufferSubData(GL_ARRAY_BUFFER, 0, lines_.size() * sizeof(Line), lines_.data());
-
-	lines_updated_  = false;
-	lines_uploaded_ = lines_.size();
 }

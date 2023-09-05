@@ -23,24 +23,18 @@ namespace gl
 		unsigned         texture() const { return texture_; }
 		bool             showArrow() const { return arrow_; }
 
-		unsigned size() const { return things_.size(); }
-
 		void setup(const game::ThingType& type);
 		void setTexture(unsigned texture, bool sprite);
 
 		void add(float x, float y, float angle, float alpha = 1.0f);
 
-		void upload()
-		{
-			buffer_things_->upload(things_);
-			things_.clear();
-		}
+		void push();
 
 		void draw(
 			const View*      view        = nullptr,
 			const glm::vec4& colour      = glm::vec4{ 1.0f },
 			bool             square      = false,
-			bool             force_arrow = false);
+			bool             force_arrow = false) const;
 
 	private:
 		struct ThingInstance

@@ -162,7 +162,7 @@ void drawTextCustomCallback(dtx_vertex* v, int vcount, dtx_pixmap* pixmap, void*
 		vb_text.add({ text_offset.x + v->x * text_scale, text_offset.y - v->y * text_scale }, colour, { v->s, v->t });
 		++v;
 	}
-	vb_text.upload(false);
+	vb_text.push();
 
 	glEnable(GL_TEXTURE_2D);
 	gl::Texture::bind(tex);
@@ -303,12 +303,13 @@ void draw2d::Context::drawRectOutline(const Rectf& rect) const
 {
 	static LineBuffer lb_rect;
 
-	if (lb_rect.empty())
+	if (lb_rect.buffer().empty())
 	{
 		lb_rect.add2d(0.0f, 0.0f, 0.0f, 1.0f, col_white);
 		lb_rect.add2d(0.0f, 1.0f, 1.0f, 1.0f, col_white);
 		lb_rect.add2d(1.0f, 1.0f, 1.0f, 0.0f, col_white);
 		lb_rect.add2d(1.0f, 0.0f, 0.0f, 0.0f, col_white);
+		lb_rect.push();
 	}
 
 	auto model = glm::translate(model_matrix, { rect.tl.x, rect.tl.y, 0.0f });
@@ -328,7 +329,6 @@ void draw2d::Context::drawLines(const vector<Rectf>& lines) const
 		line_buffer = std::make_unique<LineBuffer>();
 
 	// Build line buffer
-	line_buffer->clear();
 	auto col = colour.asVec4();
 	for (const auto& line : lines)
 	{
@@ -337,6 +337,7 @@ void draw2d::Context::drawLines(const vector<Rectf>& lines) const
 		else
 			line_buffer->add2d(line.x1(), line.y1(), line.x2(), line.y2(), col, line_thickness);
 	}
+	line_buffer->push();
 	line_buffer->setAaRadius(line_aa_radius, line_aa_radius);
 
 	// Blending
@@ -356,7 +357,7 @@ void draw2d::Context::drawPointSprites(const vector<Vec2f>& points) const
 	// TODO: Use glm::vec2 as input or add direct conversion from Vec2f to glm::vec2
 	for (const auto& point : points)
 		ps_buffer->add({ point.x, point.y });
-	ps_buffer->upload();
+	ps_buffer->push();
 
 	draw2d::drawPointSprites(*this);
 }
@@ -370,7 +371,7 @@ void draw2d::Context::drawPointSprites(const vector<Vec2d>& points) const
 	// TODO: Use glm::vec2 as input or add direct conversion from Vec2f to glm::vec2
 	for (const auto& point : points)
 		ps_buffer->add({ point.x, point.y });
-	ps_buffer->upload();
+	ps_buffer->push();
 
 	draw2d::drawPointSprites(*this);
 }
@@ -471,7 +472,7 @@ void draw2d::Context::drawTextureTiled(const Rectf& rect) const
 	vertex_buffer->add({ rect.tl.x, rect.br.y }, col_white, { 0.0f, tex_y });
 	vertex_buffer->add({ rect.br.x, rect.br.y }, col_white, { tex_x, tex_y });
 	vertex_buffer->add({ rect.br.x, rect.tl.y }, col_white, { tex_x, 0.0f });
-	vertex_buffer->upload(false);
+	vertex_buffer->push();
 
 	// Bind the texture
 	glEnable(GL_TEXTURE_2D);
@@ -538,8 +539,6 @@ void draw2d::Context::drawHud() const
 	if (hud_wide != hud_wide_prev || hud_statusbar != hud_statusbar_prev || hud_center != hud_center_prev
 		|| hud_bob != hud_bob_prev)
 	{
-		lb_hud->clear();
-
 		glm::vec4 col{ 0.0f, 0.0f, 0.0f, 1.0f };
 
 		// (320/354)x200 screen outline
@@ -581,6 +580,8 @@ void draw2d::Context::drawHud() const
 			lb_hud->add2d(right + 16.0f, 216.0f, right + 16.0f, -16.0f, col, 0.8f);
 			lb_hud->add2d(right + 16.0f, -16.0f, left - 16.0f, -16.0f, col, 0.8f);
 		}
+
+		lb_hud->push();
 
 		hud_wide_prev      = hud_wide;
 		hud_statusbar_prev = hud_statusbar;

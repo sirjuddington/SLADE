@@ -8,26 +8,33 @@ template<typename T> class Buffer
 {
 public:
 	Buffer() = default;
-	~Buffer() { gl::deleteVBO(vbo_); }
+	~Buffer() { deleteVBO(vbo_); }
 
 	unsigned vbo() const { return vbo_; }
 	unsigned size() const { return data_uploaded_; }
+	bool     empty() const { return data_uploaded_ == 0; }
 
 	// This doesn't actually clear the buffer on the gpu, just use it to indicate the buffer needs re-uploading
 	void clear() { data_uploaded_ = 0; }
 
 	bool bind()
 	{
-		if (vbo_ == 0)
-			vbo_ = gl::createVBO();
+		if (!getContext())
+			return false;
 
-		gl::bindVBO(vbo_);
+		if (vbo_ == 0)
+			vbo_ = createVBO();
+
+		bindVBO(vbo_);
 
 		return vbo_ != 0;
 	}
 
 	bool update(unsigned offset, const vector<T>& data)
 	{
+		if (!getContext())
+			return false;
+
 		if (offset >= data_uploaded_ || offset + data.size() > data_uploaded_)
 			return false;
 
@@ -42,6 +49,9 @@ public:
 
 	bool upload(const vector<T>& data)
 	{
+		if (!getContext())
+			return false;
+
 		if (!bind())
 			return false;
 

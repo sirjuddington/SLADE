@@ -120,8 +120,24 @@ void ThingBuffer2D::add(float x, float y, float angle, float alpha)
 	things_.emplace_back(glm::vec2{ x, y }, glm::vec2{ dir.x, dir.y }, alpha);
 }
 
-void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square, bool force_arrow)
+void ThingBuffer2D::push()
 {
+	if (!vao_)
+		initVAO();
+
+	buffer_things_->upload(things_);
+	things_.clear();
+}
+
+void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square, bool force_arrow) const
+{
+	if (!getContext())
+		return;
+
+	// Check we have anything to draw
+	if (buffer_things_->empty())
+		return;
+
 	// Determine radius
 	auto radius = radius_;
 	if (shrink_on_zoom_ && view)
@@ -142,12 +158,6 @@ void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square,
 		shader->setUniform("tex_size", tex_size_ * 1.2f); // Smaller sprite if round background
 	else
 		shader->setUniform("tex_size", tex_size_);
-
-	if (!vao_)
-		initVAO();
-
-	if (buffer_things_->size() == 0)
-		return;
 
 	gl::bindVAO(vao_);
 	gl::Texture::bind(texture_);

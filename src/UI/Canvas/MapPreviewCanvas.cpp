@@ -32,22 +32,18 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapPreviewCanvas.h"
-#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
 #include "General/ColourConfiguration.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
-#include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/LineBuffer.h"
 #include "OpenGL/PointSpriteBuffer.h"
-#include "OpenGL/Shader.h"
-#include "OpenGL/VertexBuffer2D.h"
 #include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
-#include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
 #include <glm/ext/matrix_transform.hpp>
 
@@ -662,10 +658,10 @@ void MapPreviewCanvas::clearMap()
 	things_.clear();
 	n_sides_   = 0;
 	n_sectors_ = 0;
-	if (vb_lines_)
-		vb_lines_->clear();
-	if (psb_things_)
-		psb_things_->buffer().clear();
+	if (lines_buffer_)
+		lines_buffer_->buffer().clear();
+	if (things_buffer_)
+		things_buffer_->buffer().clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -701,7 +697,7 @@ void MapPreviewCanvas::draw()
 	setBackground(BGStyle::Colour, colourconfig::colour("map_view_background"));
 
 	// Update buffer if needed
-	if (!vb_lines_ || vb_lines_->empty())
+	if (!lines_buffer_ || lines_buffer_->buffer().empty())
 		updateLinesBuffer();
 
 	// Zoom/offset to show full map
@@ -716,19 +712,19 @@ void MapPreviewCanvas::draw()
 	view_.setupShader(shader);
 
 	// Draw lines
-	vb_lines_->draw();
+	lines_buffer_->draw();
 
 	// Draw things
 	if (map_view_things)
 	{
 		// Update buffer if needed
-		if (!psb_things_ || psb_things_->buffer().size() == 0)
+		if (!things_buffer_ || things_buffer_->buffer().empty())
 			updateThingsBuffer();
 
 		// Draw things
-		psb_things_->setPointRadius(20.0f);
-		psb_things_->setColour(colourconfig::colour("map_view_thing").asVec4());
-		psb_things_->draw(gl::PointSpriteType::Circle, &view_);
+		things_buffer_->setPointRadius(20.0f);
+		things_buffer_->setColour(colourconfig::colour("map_view_thing").asVec4());
+		things_buffer_->draw(gl::PointSpriteType::Circle, &view_);
 	}
 }
 
@@ -992,10 +988,8 @@ void MapPreviewCanvas::updateLinesBuffer()
 	auto col_view_line_special = colourconfig::colour("map_view_line_special").asVec4();
 	auto col_view_line_macro   = colourconfig::colour("map_view_line_macro").asVec4();
 
-	if (!vb_lines_)
-		vb_lines_ = std::make_unique<gl::LineBuffer>();
-	else
-		vb_lines_->clear();
+	if (!lines_buffer_)
+		lines_buffer_ = std::make_unique<gl::LineBuffer>();
 
 	gl::LineBuffer::Line lb_line;
 	for (auto& line : lines_)
@@ -1017,8 +1011,9 @@ void MapPreviewCanvas::updateLinesBuffer()
 		// Add to buffer
 		lb_line.v1_pos_width = { verts_[line.v1].x, verts_[line.v1].y, 0.0f, line.twosided ? 1.5f : 2.0f };
 		lb_line.v2_pos_width = { verts_[line.v2].x, verts_[line.v2].y, 0.0f, line.twosided ? 1.5f : 2.0f };
-		vb_lines_->add(lb_line);
+		lines_buffer_->add(lb_line);
 	}
+	lines_buffer_->push();
 }
 
 // -----------------------------------------------------------------------------
@@ -1026,14 +1021,11 @@ void MapPreviewCanvas::updateLinesBuffer()
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::updateThingsBuffer()
 {
-	if (!psb_things_)
-		psb_things_ = std::make_unique<gl::PointSpriteBuffer>();
-	else
-		psb_things_->buffer().clear();
+	if (!things_buffer_)
+		things_buffer_ = std::make_unique<gl::PointSpriteBuffer>();
 
-	auto col = glm::vec4(1.0f);
-	auto tc  = glm::vec2();
 	for (auto& thing : things_)
-		psb_things_->add({ { thing.x, thing.y }, col, tc });
-	psb_things_->upload();
+		things_buffer_->add({ thing.x, thing.y });
+
+	things_buffer_->push();
 }

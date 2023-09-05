@@ -61,7 +61,7 @@ namespace gl
 		Info() { vendor = renderer = version = "OpenGL not initialised"; }
 	};
 
-	wxGLContext*   getContext(wxGLCanvas* canvas);
+	wxGLContext*   getContext(wxGLCanvas* canvas = nullptr);
 	bool           init();
 	bool           np2TexSupport();
 	bool           pointSpriteSupport();

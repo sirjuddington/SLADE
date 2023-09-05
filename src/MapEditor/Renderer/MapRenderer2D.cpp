@@ -311,7 +311,7 @@ void MapRenderer2D::renderLines(bool show_direction, float alpha)
 		return;
 
 	// Update lines buffer if needed
-	if (!lines_buffer_ || lines_buffer_->empty() || show_direction != lines_dirs_ || map_->nLines() != n_lines_
+	if (!lines_buffer_ || lines_buffer_->buffer().empty() || show_direction != lines_dirs_ || map_->nLines() != n_lines_
 		|| map_->geometryUpdated() > lines_updated_
 		|| map_->mapData().modifiedSince(lines_updated_, MapObject::Type::Line))
 		updateLinesBuffer(show_direction);
@@ -507,7 +507,7 @@ void MapRenderer2D::renderThingOverlays(
 		thing_overlay_buffer_->add(
 			glm::vec2{ thing->xPos() + offset.x, thing->yPos() + offset.y }, radius + 4.0f + radius_extra);
 	}
-	thing_overlay_buffer_->upload();
+	thing_overlay_buffer_->push();
 
 	// Draw the buffer
 	thing_overlay_buffer_->draw(
@@ -562,7 +562,7 @@ void MapRenderer2D::renderThings(const vector<MapThing*>& things, float alpha, c
 			if (things[i]->type() == ttype)
 				temp_things_buffer_->add(
 					things[i]->xPos() + offset.x, things[i]->yPos() + offset.y, things[i]->angle());
-		temp_things_buffer_->upload();
+		temp_things_buffer_->push();
 
 		// Render
 		temp_things_buffer_->draw(view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, thing_shape == 1);
@@ -836,7 +836,7 @@ void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alph
 			hl_radius   = light_radius;
 		}
 	}
-	thing_light_preview_buffer_->upload(false);
+	thing_light_preview_buffer_->push();
 
 	// Setup rendering
 	const auto& shader = gl::draw2d::defaultShader();
@@ -1229,7 +1229,7 @@ void MapRenderer2D::renderMovingVertices(
 		// Add to buffer
 		temp_lines_buffer_->add2d(v1.x, v1.y, v2.x, v2.y, lineColour(line, true).asVec4());
 	}
-	temp_lines_buffer_->upload();
+	temp_lines_buffer_->push();
 
 	// Draw moving lines
 	gl::setBlend(gl::Blend::Normal);
@@ -1313,7 +1313,7 @@ void MapRenderer2D::renderMovingLines(
 		// Add to buffer
 		temp_lines_buffer_->add2d(v1.x, v1.y, v2.x, v2.y, lineColour(line, true).asVec4());
 	}
-	temp_lines_buffer_->upload();
+	temp_lines_buffer_->push();
 
 	// Draw moving lines
 	gl::setBlend(gl::Blend::Normal);
@@ -1427,7 +1427,7 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, ObjectEditGro
 			line.v2->position.y,
 			lineColour(line.map_line, true).asVec4());
 	}
-	temp_lines_buffer_->upload();
+	temp_lines_buffer_->push();
 	temp_lines_buffer_->setWidthMult(line_width);
 	temp_lines_buffer_->draw(view_);
 
@@ -1474,7 +1474,7 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, ObjectEditGro
 
 			// Draw thing
 			temp_things_buffer_->add(x, y, angle);
-			temp_things_buffer_->upload();
+			temp_things_buffer_->push();
 			temp_things_buffer_->draw(view_, glm::vec4{ 1.0f }, thing_shape == 1);
 		}
 
@@ -1489,7 +1489,7 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, ObjectEditGro
 
 			thing_overlay_buffer_->add({ item.position.x, item.position.y }, radius + 4.0f);
 		}
-		thing_overlay_buffer_->upload();
+		thing_overlay_buffer_->push();
 		thing_overlay_buffer_->setColour(colourconfig::colour("map_object_edit").asVec4());
 		thing_overlay_buffer_->setFillOpacity(0.25f);
 		thing_overlay_buffer_->setOutlineWidth(std::min(3.0f / (float)view_->scale().x, 4.0f));
@@ -1509,7 +1509,7 @@ void MapRenderer2D::updateVerticesBuffer()
 	// Fill vertices buffer
 	for (const auto vertex : map_->vertices())
 		vertices_buffer_->add({ vertex->xPos(), vertex->yPos() });
-	vertices_buffer_->upload();
+	vertices_buffer_->push();
 
 	n_vertices_       = map_->nVertices();
 	vertices_updated_ = app::runTimer();
@@ -1525,7 +1525,6 @@ void MapRenderer2D::updateLinesBuffer(bool show_direction)
 		lines_buffer_ = std::make_unique<gl::LineBuffer>();
 
 	// Add all map lines to buffer
-	lines_buffer_->clear();
 	for (const auto line : map_->lines())
 	{
 		auto col = lineColour(line);
@@ -1540,7 +1539,7 @@ void MapRenderer2D::updateLinesBuffer(bool show_direction)
 			lines_buffer_->add2d(mid.x, mid.y, tab.x, tab.y, { col.fr(), col.fg(), col.fb(), col.fa() * 0.6f }, 1.0f);
 		}
 	}
-	lines_buffer_->upload();
+	lines_buffer_->push();
 
 	lines_dirs_    = show_direction;
 	n_lines_       = map_->nLines();
@@ -1559,7 +1558,7 @@ void MapRenderer2D::updateFlatsBuffer()
 	// Write sector polygons to buffer
 	for (const auto& sector : map_->sectors())
 		sector->polygon()->writeToVB(*flats_buffer_);
-	flats_buffer_->upload();
+	flats_buffer_->push();
 
 	flats_updated_ = app::runTimer();
 }
@@ -1593,7 +1592,7 @@ void MapRenderer2D::updateThingBuffers()
 
 	// Upload buffers
 	for (auto& buffer : thing_buffers_)
-		buffer->upload();
+		buffer->push();
 
 	things_updated_ = app::runTimer();
 }
