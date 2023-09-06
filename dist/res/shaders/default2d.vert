@@ -9,7 +9,11 @@ out VertexData
 } vertex_out;
 
 uniform mat4 mvp;
-uniform vec2 viewport_size;
+
+#ifdef LINE_STIPPLE
+flat out vec2 line_start;
+out vec2      line_pos;
+#endif
 
 void main()
 {
@@ -21,5 +25,10 @@ void main()
 	gl_Position = vec4(in_position, 0.0, 1.0);
 #else
 	gl_Position = mvp * vec4(in_position, 0.0, 1.0);
+#endif
+
+#ifdef LINE_STIPPLE
+	line_pos = gl_Position.xy / gl_Position.w;
+	line_start = line_pos;
 #endif
 }

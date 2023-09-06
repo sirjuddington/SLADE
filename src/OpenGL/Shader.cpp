@@ -454,6 +454,21 @@ bool Shader::setUniform(const string& name, float value) const
 }
 
 // -----------------------------------------------------------------------------
+// Sets the unsigned short (16bit) uniform [name] to [value]
+// -----------------------------------------------------------------------------
+bool Shader::setUniform(const string& name, uint16_t value) const
+{
+	if (auto loc = uniformLocation(name); loc >= 0)
+	{
+		bind();
+		glUniform1ui(loc, value);
+		return true;
+	}
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Sets the vec2 uniform [name] to [value]
 // -----------------------------------------------------------------------------
 bool Shader::setUniform(const string& name, const glm::vec2& value) const

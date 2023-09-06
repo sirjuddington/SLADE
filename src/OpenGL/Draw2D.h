@@ -136,7 +136,7 @@ namespace gl
 
 		// 2d drawing shaders
 		const Shader& defaultShader(bool textured = true);
-		const Shader& pointSpriteShader(PointSpriteType type);
+		const Shader& lineStippleShader(uint16_t pattern, float factor = 1.0f);
 	} // namespace draw2d
 } // namespace gl
 } // namespace slade

@@ -374,10 +374,8 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	}
 
 	// Setup regular grid if it's not too small
-	// TODO: Dashed
-	// vb_grid_->clear();
-	auto& shader   = draw2d::defaultShader(false);
-	auto  gridsize = static_cast<int>(context_.gridSize());
+	auto shader   = grid_dashed ? &draw2d::lineStippleShader(0xAAAA, 2.0f) : &draw2d::defaultShader(false);
+	auto gridsize = static_cast<int>(context_.gridSize());
 	if (gridsize > grid_hidelevel)
 	{
 		auto col_grid = colourconfig::colour("map_grid").asVec4();
@@ -401,8 +399,8 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		vb_grid_->push();
 
 		gl::setBlend(colourconfig::colDef("map_grid").blendMode());
-		shader.setUniform("colour", glm::vec4{ 1.0f });
-		vb_grid_->draw(Primitive::Lines, &shader, view_.get());
+		shader->setUniform("colour", glm::vec4{ 1.0f });
+		vb_grid_->draw(Primitive::Lines, shader, view_.get());
 	}
 
 	// Setup 64 grid if it's not too small and we're not on a larger grid size
@@ -412,6 +410,10 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		int  cross_size = 8;
 		if (gridsize < cross_size)
 			cross_size = gridsize;
+
+		// Disable stipple if style set to crosses
+		if (grid_64_style > 1)
+			shader = &draw2d::defaultShader(false);
 
 		// Vertical
 		int ofs = static_cast<int>(start_x) % 64;
@@ -462,8 +464,8 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		vb_grid_->push();
 
 		gl::setBlend(colourconfig::colDef("map_64grid").blendMode());
-		shader.setUniform("colour", glm::vec4{ 1.0f });
-		vb_grid_->draw(Primitive::Lines, &shader, view_.get());
+		shader->setUniform("colour", glm::vec4{ 1.0f });
+		vb_grid_->draw(Primitive::Lines, shader, view_.get());
 	}
 
 	// Draw crosshair if needed

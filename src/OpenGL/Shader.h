@@ -51,6 +51,7 @@ namespace gl
 		bool setUniform(const string& name, bool value) const;
 		bool setUniform(const string& name, int value) const;
 		bool setUniform(const string& name, float value) const;
+		bool setUniform(const string& name, uint16_t value) const;
 		bool setUniform(const string& name, const glm::vec2& value) const;
 		bool setUniform(const string& name, const glm::vec3& value) const;
 		bool setUniform(const string& name, const glm::vec4& value) const;

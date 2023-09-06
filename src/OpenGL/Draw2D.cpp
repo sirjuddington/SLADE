@@ -65,6 +65,7 @@ unique_ptr<PointSpriteBuffer> ps_buffer;
 // Shaders
 unique_ptr<Shader> shader_2d;
 unique_ptr<Shader> shader_2d_notex;
+unique_ptr<Shader> shader_line_stipple;
 
 // Fonts & text rendering
 struct FontDef
@@ -825,9 +826,6 @@ Vec2f draw2d::textExtents(const string& text, Font font, int size)
 
 const Shader& draw2d::defaultShader(bool textured)
 {
-	// static Shader shader_2d("default2d");
-	// static Shader shader_2d_notex("default2d_notex");
-
 	if (!shader_2d)
 	{
 		shader_2d       = std::make_unique<Shader>("default2d");
@@ -841,36 +839,20 @@ const Shader& draw2d::defaultShader(bool textured)
 	return textured ? *shader_2d : *shader_2d_notex;
 }
 
-const Shader& draw2d::pointSpriteShader(PointSpriteType type)
+const Shader& draw2d::lineStippleShader(uint16_t pattern, float factor)
 {
-	static Shader shader_psprite_tex("default2d_pointsprite_tex");
-	static Shader shader_psprite_circle("default2d_pointsprite_circle");
-	static Shader shader_psprite_circle_ol("default2d_pointsprite_circle_outline");
-
-	if (!shader_psprite_tex.isValid())
+	if (!shader_line_stipple)
 	{
-		// PointSprite::Textured
-		shader_psprite_tex.define("GEOMETRY_SHADER");
-		shader_psprite_tex.define("TEXTURED");
-		shader_psprite_tex.loadResourceEntries("default2d.vert", "default2d.frag", "point_sprite.geom");
-
-		// PointSprite::Circle
-		shader_psprite_circle.define("GEOMETRY_SHADER");
-		shader_psprite_circle.loadResourceEntries("default2d.vert", "circle.frag", "point_sprite.geom");
-
-		// PointSprite::CircleOutline
-		shader_psprite_circle_ol.define("GEOMETRY_SHADER");
-		shader_psprite_circle_ol.define("OUTLINE");
-		shader_psprite_circle_ol.loadResourceEntries("default2d.vert", "circle.frag", "point_sprite.geom");
+		shader_line_stipple = std::make_unique<Shader>("default2d_line_stipple");
+		shader_line_stipple->define("LINE_STIPPLE");
+		shader_line_stipple->loadResourceEntries("default2d.vert", "default2d.frag");
 	}
 
-	switch (type)
-	{
-	case PointSpriteType::Textured: return shader_psprite_tex;
-	case PointSpriteType::Circle: return shader_psprite_circle;
-	case PointSpriteType::CircleOutline: return shader_psprite_circle_ol;
-	default: return shader_psprite_tex;
-	}
+	shader_line_stipple->bind();
+	shader_line_stipple->setUniform("stipple_pattern", pattern);
+	shader_line_stipple->setUniform("stipple_factor", factor);
+
+	return *shader_line_stipple;
 }
 
 
