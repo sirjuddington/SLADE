@@ -36,6 +36,7 @@
 #include "General/KeyBind.h"
 #include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/Renderer/Camera.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/UI/ObjectEditPanel.h"
@@ -1102,60 +1103,61 @@ bool Input::updateCamera3d(double mult) const
 	bool   moving = false;
 	double speed  = shift_down_ ? mult * 8 : mult * 4;
 	auto&  r3d    = context_.renderer().renderer3D();
+	auto&  camera = r3d.camera();
 
 	// Camera forward
 	if (KeyBind::isPressed("me3d_camera_forward"))
 	{
-		r3d.cameraMove(speed, !camera_3d_gravity);
+		camera.move(speed, !camera_3d_gravity);
 		moving = true;
 	}
 
 	// Camera backward
 	if (KeyBind::isPressed("me3d_camera_back"))
 	{
-		r3d.cameraMove(-speed, !camera_3d_gravity);
+		camera.move(-speed, !camera_3d_gravity);
 		moving = true;
 	}
 
 	// Camera left (strafe)
 	if (KeyBind::isPressed("me3d_camera_left"))
 	{
-		r3d.cameraStrafe(-speed);
+		camera.strafe(-speed);
 		moving = true;
 	}
 
 	// Camera right (strafe)
 	if (KeyBind::isPressed("me3d_camera_right"))
 	{
-		r3d.cameraStrafe(speed);
+		camera.strafe(speed);
 		moving = true;
 	}
 
 	// Camera up
 	if (KeyBind::isPressed("me3d_camera_up"))
 	{
-		r3d.cameraMoveUp(speed);
+		camera.moveUp(speed);
 		moving = true;
 	}
 
 	// Camera down
 	if (KeyBind::isPressed("me3d_camera_down"))
 	{
-		r3d.cameraMoveUp(-speed);
+		camera.moveUp(-speed);
 		moving = true;
 	}
 
 	// Camera turn left
 	if (KeyBind::isPressed("me3d_camera_turn_left"))
 	{
-		r3d.cameraTurn(shift_down_ ? mult * 2 : mult);
+		camera.turn(shift_down_ ? mult * 2 : mult);
 		moving = true;
 	}
 
 	// Camera turn right
 	if (KeyBind::isPressed("me3d_camera_turn_right"))
 	{
-		r3d.cameraTurn(shift_down_ ? -mult * 2 : -mult);
+		camera.turn(shift_down_ ? -mult * 2 : -mult);
 		moving = true;
 	}
 

@@ -29,6 +29,7 @@ namespace ui
 	enum class MouseCursor;
 }
 
+class Camera;
 class MapCanvas;
 
 class MapEditContext : public SActionHandler
@@ -136,6 +137,9 @@ public:
 	void swapPlayerStart3d();
 	void swapPlayerStart2d(Vec2d pos);
 	void resetPlayerStart() const;
+
+	// Renderer
+	Camera& camera3d();
 
 	// Misc
 	string modeString(bool plural = true) const;

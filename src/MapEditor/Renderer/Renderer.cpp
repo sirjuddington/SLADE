@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "Renderer.h"
 #include "App.h"
+#include "Camera.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
@@ -323,7 +324,7 @@ bool Renderer::viewIsInterpolated() const
 // -----------------------------------------------------------------------------
 // Sets the 3d camera to match [thing]
 // -----------------------------------------------------------------------------
-void Renderer::setCameraThing(const MapThing* thing)
+void Renderer::setCameraThing(const MapThing* thing) const
 {
 	// Determine position
 	Vec3d pos(thing->position(), 40);
@@ -332,7 +333,7 @@ void Renderer::setCameraThing(const MapThing* thing)
 		pos.z += sector->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction
-	renderer_3d_.cameraSet(pos, math::vectorAngle(math::degToRad(thing->angle())));
+	renderer_3d_.camera().set(pos, math::vectorAngle(math::degToRad(thing->angle())));
 }
 
 // -----------------------------------------------------------------------------
@@ -340,7 +341,7 @@ void Renderer::setCameraThing(const MapThing* thing)
 // -----------------------------------------------------------------------------
 Vec2d Renderer::cameraPos2D() const
 {
-	return { renderer_3d_.camPosition().x, renderer_3d_.camPosition().y };
+	return renderer_3d_.camera().position().get2d();
 }
 
 // -----------------------------------------------------------------------------
@@ -348,7 +349,7 @@ Vec2d Renderer::cameraPos2D() const
 // -----------------------------------------------------------------------------
 Vec2d Renderer::cameraDir2D() const
 {
-	return renderer_3d_.camDirection();
+	return renderer_3d_.camera().direction();
 }
 
 // -----------------------------------------------------------------------------

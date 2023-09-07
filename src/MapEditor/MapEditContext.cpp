@@ -51,6 +51,7 @@
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UndoSteps.h"
+#include "Renderer/Camera.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -315,7 +316,7 @@ bool MapEditContext::update(long frametime)
 			next_frame_length_ = 2;
 
 		// Update status bar
-		auto pos = renderer_.renderer3D().camPosition();
+		auto pos = camera3d().position();
 		mapeditor::setStatusText(fmt::format("Position: ({}, {}, {})", (int)pos.x, (int)pos.y, (int)pos.z), 3);
 
 		// Update hilight
@@ -1561,6 +1562,14 @@ void MapEditContext::resetPlayerStart() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the 3d renderer's camera
+// -----------------------------------------------------------------------------
+Camera& MapEditContext::camera3d()
+{
+	return renderer_.renderer3D().camera();
+}
+
+// -----------------------------------------------------------------------------
 // Opens the sector texture selection overlay
 // -----------------------------------------------------------------------------
 void MapEditContext::openSectorTextureOverlay(vector<MapSector*>& sectors)
@@ -1879,7 +1888,7 @@ bool MapEditContext::handleAction(string_view id)
 		auto  sector = map_.sectors().atPos(input_.mousePosMap());
 		if (sector)
 			pos.z = sector->floor().plane.heightAt(pos.x, pos.y) + 40;
-		renderer_.renderer3D().cameraSetPosition(pos);
+		camera3d().setPosition(pos);
 		return true;
 	}
 

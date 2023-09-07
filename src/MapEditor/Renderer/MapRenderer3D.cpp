@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MapRenderer3D.h"
 #include "App.h"
+#include "Camera.h"
 #include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "General/ResourceManager.h"
@@ -68,9 +69,6 @@ CVAR(Float, render_3d_brightness, 1, CVar::Flag::Save)
 CVAR(Float, render_fog_distance, 1500, CVar::Flag::Save)
 CVAR(Bool, render_fog_new_formula, true, CVar::Flag::Save)
 CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
-CVAR(Bool, mlook_invert_y, false, CVar::Flag::Save)
-CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVar::Flag::Save)
-CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVar::Flag::Save)
 CVAR(Int, render_fov, 90, CVar::Flag::Save)
 
 
@@ -93,7 +91,7 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // -----------------------------------------------------------------------------
 // MapRenderer3D class constructor
 // -----------------------------------------------------------------------------
-MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
+MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }, camera_{ new Camera() }
 {
 	// Build skybox circle
 	buildSkyCircle();
@@ -130,10 +128,8 @@ bool MapRenderer3D::init()
 {
 	// Init camera
 	auto bbox = map_->bounds();
-	cam_position_.set(bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5, 64);
-	cam_direction_.set(0, 1);
-	cam_pitch_ = 0;
-	cameraUpdateVectors();
+	camera_->set(
+		{ bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5, 64 }, { 0, 1 });
 
 	refresh();
 
@@ -308,167 +304,30 @@ MapRenderer3D::Flat* MapRenderer3D::getFlat(mapeditor::Item item)
 }
 
 // -----------------------------------------------------------------------------
-// Moves the camera the direction it is facing by [distance].
-// If [z] is false it will only be moved along x/y axes
-// -----------------------------------------------------------------------------
-void MapRenderer3D::cameraMove(double distance, bool z)
-{
-	// Move along direction vector
-	if (z)
-	{
-		cam_position_.x += cam_dir3d_.x * distance;
-		cam_position_.y += cam_dir3d_.y * distance;
-		cam_position_.z += cam_dir3d_.z * distance;
-	}
-	else
-	{
-		cam_position_.x += cam_direction_.x * distance;
-		cam_position_.y += cam_direction_.y * distance;
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Rotates the camera by [angle] around the z axis
-// -----------------------------------------------------------------------------
-void MapRenderer3D::cameraTurn(double angle)
-{
-	// Find rotated view point
-	Vec2d cp2d(cam_position_.x, cam_position_.y);
-	Vec2d nd = math::rotatePoint(cp2d, cp2d + cam_direction_, angle);
-
-	// Update direction
-	cam_direction_.x = nd.x - cam_position_.x;
-	cam_direction_.y = nd.y - cam_position_.y;
-
-	// Update vectors
-	cameraUpdateVectors();
-}
-
-// -----------------------------------------------------------------------------
-// Moves the camera along the z axis by [distance]
-// -----------------------------------------------------------------------------
-void MapRenderer3D::cameraMoveUp(double distance)
-{
-	cam_position_.z += distance;
-}
-
-// -----------------------------------------------------------------------------
-// Moves the camera along the strafe axis by [distance]
-// -----------------------------------------------------------------------------
-void MapRenderer3D::cameraStrafe(double distance)
-{
-	// Move along strafe vector
-	cam_position_.x += cam_strafe_.x * distance;
-	cam_position_.y += cam_strafe_.y * distance;
-}
-
-// -----------------------------------------------------------------------------
-// Rotates the camera view around the strafe axis by [amount]
-// -----------------------------------------------------------------------------
-void MapRenderer3D::cameraPitch(double amount)
-{
-	// Pitch camera
-	cam_pitch_ += amount;
-
-	// Clamp
-	double rad90 = math::PI * 0.5;
-	if (cam_pitch_ > rad90)
-		cam_pitch_ = rad90;
-	if (cam_pitch_ < -rad90)
-		cam_pitch_ = -rad90;
-
-	// Update vectors
-	cameraUpdateVectors();
-}
-
-// -----------------------------------------------------------------------------
-// Updates the strafe and direction vectors for the camera
-// -----------------------------------------------------------------------------
-void MapRenderer3D::cameraUpdateVectors()
-{
-	// Normalize direction
-	cam_direction_.normalize();
-
-	// Calculate strafe vector
-	cam_strafe_ = Vec3d(cam_direction_, 0).cross(Vec3d(0, 0, 1));
-	cam_strafe_.normalize();
-
-	// Calculate 3d direction vector
-	cam_dir3d_ = math::rotateVector3D(Vec3d(cam_direction_, 0), cam_strafe_, cam_pitch_);
-	cam_dir3d_.normalize();
-}
-
-// -----------------------------------------------------------------------------
-// Sets the camera position to [position], facing [direction]
-// -----------------------------------------------------------------------------
-void MapRenderer3D::cameraSet(Vec3d position, Vec2d direction)
-{
-	// Set camera position/direction
-	cam_position_  = position;
-	cam_direction_ = direction;
-	cam_pitch_     = 0;
-
-	// Update camera vectors
-	cameraUpdateVectors();
-}
-
-// -----------------------------------------------------------------------------
-// Moves the camera to [position]
-// -----------------------------------------------------------------------------
-void MapRenderer3D::cameraSetPosition(Vec3d position)
-{
-	cam_position_ = position;
-}
-
-// -----------------------------------------------------------------------------
 // Applies gravity to the camera
 // -----------------------------------------------------------------------------
-void MapRenderer3D::cameraApplyGravity(double mult)
+void MapRenderer3D::cameraApplyGravity(double mult) const
 {
 	// Get current sector
-	auto sector = map_->sectors().atPos(cam_position_.get2d());
+	auto pos    = camera_->position().get2d();
+	auto sector = map_->sectors().atPos(pos);
 	if (!sector)
 		return;
 
 	// Get target height
-	auto fheight = sector->floor().plane.heightAt(cam_position_.get2d()) + game::configuration().playerEyeHeight();
-	auto cheight = sector->ceiling().plane.heightAt(cam_position_.get2d());
+	auto fheight = sector->floor().plane.heightAt(pos) + game::configuration().playerEyeHeight();
+	auto cheight = sector->ceiling().plane.heightAt(pos);
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
-	if (cam_position_.z > fheight)
-	{
-		double diff = cam_position_.z - fheight;
-		cam_position_.z -= (diff * 0.3 * mult);
-		if (cam_position_.z < fheight)
-			cam_position_.z = fheight;
-	}
-
-	else if (cam_position_.z < fheight)
-	{
-		double diff = fheight - cam_position_.z;
-		cam_position_.z += (diff * 0.5 * mult);
-		if (cam_position_.z > fheight)
-			cam_position_.z = fheight;
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Moves the camera direction/pitch based on [xrel],[yrel]
-// -----------------------------------------------------------------------------
-void MapRenderer3D::cameraLook(double xrel, double yrel)
-{
-	cameraTurn(-xrel * 0.1 * camera_3d_sensitivity_x);
-	if (mlook_invert_y)
-		cameraPitch(yrel * 0.003 * camera_3d_sensitivity_y);
-	else
-		cameraPitch(-yrel * 0.003 * camera_3d_sensitivity_y);
+	// Apply to camera
+	camera_->applyGravity(fheight, mult);
 }
 
 // -----------------------------------------------------------------------------
 // Sets up the OpenGL view/projection for rendering
 // -----------------------------------------------------------------------------
-void MapRenderer3D::setupView(int width, int height)
+void MapRenderer3D::setupView(int width, int height) const
 {
 	// Calculate aspect ratio
 	float aspect = (1.6f / 1.333333f) * ((float)width / (float)height);
@@ -486,27 +345,20 @@ void MapRenderer3D::setupView(int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Calculate up vector
-	auto up = cam_strafe_.cross(cam_dir3d_).normalized();
+	// Get camera info
+	auto pos = camera_->position();
+	auto dir = pos + camera_->directionVector();
+	auto up  = camera_->upVector();
 
 	// Setup camera view
-	gluLookAt(
-		cam_position_.x,
-		cam_position_.y,
-		cam_position_.z,
-		cam_position_.x + cam_dir3d_.x,
-		cam_position_.y + cam_dir3d_.y,
-		cam_position_.z + cam_dir3d_.z,
-		up.x,
-		up.y,
-		up.z);
+	gluLookAt(pos.x, pos.y, pos.z, dir.x, dir.y, dir.z, up.x, up.y, up.z);
 }
 
 // -----------------------------------------------------------------------------
 // Sets the OpenGL colour for rendering an object using [colour] and [light]
 // level
 // -----------------------------------------------------------------------------
-void MapRenderer3D::setLight(ColRGBA& colour, uint8_t light, float alpha) const
+void MapRenderer3D::setLight(const ColRGBA& colour, uint8_t light, float alpha) const
 {
 	// Force 255 light in fullbright mode
 	if (fullbright_)
@@ -526,7 +378,7 @@ void MapRenderer3D::setLight(ColRGBA& colour, uint8_t light, float alpha) const
 // -----------------------------------------------------------------------------
 // Sets the OpenGL fog for rendering an object using [fogcol]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::setFog(ColRGBA& fogcol, uint8_t light)
+void MapRenderer3D::setFog(const ColRGBA& fogcol, uint8_t light)
 {
 	if (!fog_)
 		return;
@@ -690,33 +542,30 @@ void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float ab
 	glBegin(GL_QUADS);
 
 	// Go through circular points
+	const auto& cam_pos = camera_->position();
 	for (unsigned a = 0; a < 31; a++)
 	{
 		// Top
 		glColor4f(1.0f, 1.0f, 1.0f, atop);
 		glTexCoord2f(tc_x + tx, tc_y1);
 		glVertex3f(
-			cam_position_.x + (sky_circle_[a + 1].x * size),
-			cam_position_.y - (sky_circle_[a + 1].y * size),
-			cam_position_.z + (top * size));
+			cam_pos.x + (sky_circle_[a + 1].x * size),
+			cam_pos.y - (sky_circle_[a + 1].y * size),
+			cam_pos.z + (top * size));
 		glTexCoord2f(tc_x, tc_y1);
 		glVertex3f(
-			cam_position_.x + (sky_circle_[a].x * size),
-			cam_position_.y - (sky_circle_[a].y * size),
-			cam_position_.z + (top * size));
+			cam_pos.x + (sky_circle_[a].x * size), cam_pos.y - (sky_circle_[a].y * size), cam_pos.z + (top * size));
 
 		// Bottom
 		glColor4f(1.0f, 1.0f, 1.0f, abottom);
 		glTexCoord2f(tc_x, tc_y2);
 		glVertex3f(
-			cam_position_.x + (sky_circle_[a].x * size),
-			cam_position_.y - (sky_circle_[a].y * size),
-			cam_position_.z + (bottom * size));
+			cam_pos.x + (sky_circle_[a].x * size), cam_pos.y - (sky_circle_[a].y * size), cam_pos.z + (bottom * size));
 		glTexCoord2f(tc_x + tx, tc_y2);
 		glVertex3f(
-			cam_position_.x + (sky_circle_[a + 1].x * size),
-			cam_position_.y - (sky_circle_[a + 1].y * size),
-			cam_position_.z + (bottom * size));
+			cam_pos.x + (sky_circle_[a + 1].x * size),
+			cam_pos.y - (sky_circle_[a + 1].y * size),
+			cam_pos.z + (bottom * size));
 
 		tc_x += tx;
 	}
@@ -725,28 +574,19 @@ void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float ab
 	// Top
 	glColor4f(1.0f, 1.0f, 1.0f, atop);
 	glTexCoord2f(tc_x + tx, tc_y1);
-	glVertex3f(
-		cam_position_.x + (sky_circle_[0].x * size),
-		cam_position_.y - (sky_circle_[0].y * size),
-		cam_position_.z + (top * size));
+	glVertex3f(cam_pos.x + (sky_circle_[0].x * size), cam_pos.y - (sky_circle_[0].y * size), cam_pos.z + (top * size));
 	glTexCoord2f(tc_x, tc_y1);
 	glVertex3f(
-		cam_position_.x + (sky_circle_[31].x * size),
-		cam_position_.y - (sky_circle_[31].y * size),
-		cam_position_.z + (top * size));
+		cam_pos.x + (sky_circle_[31].x * size), cam_pos.y - (sky_circle_[31].y * size), cam_pos.z + (top * size));
 
 	// Bottom
 	glColor4f(1.0f, 1.0f, 1.0f, abottom);
 	glTexCoord2f(tc_x, tc_y2);
 	glVertex3f(
-		cam_position_.x + (sky_circle_[31].x * size),
-		cam_position_.y - (sky_circle_[31].y * size),
-		cam_position_.z + (bottom * size));
+		cam_pos.x + (sky_circle_[31].x * size), cam_pos.y - (sky_circle_[31].y * size), cam_pos.z + (bottom * size));
 	glTexCoord2f(tc_x + tx, tc_y2);
 	glVertex3f(
-		cam_position_.x + (sky_circle_[0].x * size),
-		cam_position_.y - (sky_circle_[0].y * size),
-		cam_position_.z + (bottom * size));
+		cam_pos.x + (sky_circle_[0].x * size), cam_pos.y - (sky_circle_[0].y * size), cam_pos.z + (bottom * size));
 
 	glEnd();
 }
@@ -789,23 +629,24 @@ void MapRenderer3D::renderSky()
 		}
 
 		// Render top cap
-		float size = 64.0f;
+		const auto& cam_pos = camera_->position();
+		float       size    = 64.0f;
 		glDisable(GL_TEXTURE_2D);
 		gl::setColour(skycol_top_);
 		glBegin(GL_QUADS);
-		glVertex3f(cam_position_.x - (size * 10), cam_position_.y - (size * 10), cam_position_.z + size);
-		glVertex3f(cam_position_.x - (size * 10), cam_position_.y + (size * 10), cam_position_.z + size);
-		glVertex3f(cam_position_.x + (size * 10), cam_position_.y + (size * 10), cam_position_.z + size);
-		glVertex3f(cam_position_.x + (size * 10), cam_position_.y - (size * 10), cam_position_.z + size);
+		glVertex3f(cam_pos.x - (size * 10), cam_pos.y - (size * 10), cam_pos.z + size);
+		glVertex3f(cam_pos.x - (size * 10), cam_pos.y + (size * 10), cam_pos.z + size);
+		glVertex3f(cam_pos.x + (size * 10), cam_pos.y + (size * 10), cam_pos.z + size);
+		glVertex3f(cam_pos.x + (size * 10), cam_pos.y - (size * 10), cam_pos.z + size);
 		glEnd();
 
 		// Render bottom cap
 		gl::setColour(skycol_bottom_);
 		glBegin(GL_QUADS);
-		glVertex3f(cam_position_.x - (size * 10), cam_position_.y - (size * 10), cam_position_.z - size);
-		glVertex3f(cam_position_.x - (size * 10), cam_position_.y + (size * 10), cam_position_.z - size);
-		glVertex3f(cam_position_.x + (size * 10), cam_position_.y + (size * 10), cam_position_.z - size);
-		glVertex3f(cam_position_.x + (size * 10), cam_position_.y - (size * 10), cam_position_.z - size);
+		glVertex3f(cam_pos.x - (size * 10), cam_pos.y - (size * 10), cam_pos.z - size);
+		glVertex3f(cam_pos.x - (size * 10), cam_pos.y + (size * 10), cam_pos.z - size);
+		glVertex3f(cam_pos.x + (size * 10), cam_pos.y + (size * 10), cam_pos.z - size);
+		glVertex3f(cam_pos.x + (size * 10), cam_pos.y - (size * 10), cam_pos.z - size);
 		glEnd();
 
 		// Render skybox sides
@@ -866,7 +707,7 @@ void MapRenderer3D::renderSky()
 // -----------------------------------------------------------------------------
 // Updates the vertex texture coordinates of all polygons for sector [index]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
+void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor) const
 {
 	using game::UDMFFeature;
 
@@ -1002,7 +843,7 @@ void MapRenderer3D::updateSector(unsigned index)
 // -----------------------------------------------------------------------------
 // Renders [flat]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::renderFlat(Flat* flat)
+void MapRenderer3D::renderFlat(const Flat* flat)
 {
 	// Skip if no sector (for whatever reason)
 	if (!flat->sector)
@@ -1229,8 +1070,8 @@ void MapRenderer3D::setupQuad(
 	double               y1,
 	double               x2,
 	double               y2,
-	Plane                top,
-	Plane                bottom) const
+	const Plane&         top,
+	const Plane&         bottom) const
 {
 	// Left
 	quad->points[0].x = quad->points[1].x = x1;
@@ -1907,7 +1748,7 @@ void MapRenderer3D::updateLine(unsigned index)
 // -----------------------------------------------------------------------------
 // Renders [quad]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::renderQuad(MapRenderer3D::Quad* quad, float alpha)
+void MapRenderer3D::renderQuad(const Quad* quad, float alpha)
 {
 	// Setup special rendering options
 	if (quad->colour.a == 255)
@@ -2128,7 +1969,7 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 // -----------------------------------------------------------------------------
 // Updates cached data for [thing] (at [index])
 // -----------------------------------------------------------------------------
-void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
+void MapRenderer3D::updateThing(unsigned index, const MapThing* thing)
 {
 	// Check index
 	if (index >= things_.size() || !thing)
@@ -2229,25 +2070,27 @@ void MapRenderer3D::renderThings()
 	double mdist = render_max_thing_dist;
 	if (mdist <= 0 || mdist > render_max_dist)
 		mdist = render_max_dist;
-	ColRGBA  col;
-	uint8_t  light;
-	float    x1, y1, x2, y2;
-	unsigned update = 0;
-	Seg2d    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	ColRGBA     col;
+	uint8_t     light;
+	float       x1, y1, x2, y2;
+	unsigned    update     = 0;
+	auto        strafe     = camera_->strafeLine();
+	auto        cam_pos_2d = camera_->position().get2d();
+	const auto& cam_strafe = camera_->strafeVector();
 	for (unsigned a = 0; a < map_->nThings(); a++)
 	{
 		auto thing       = map_->thing(a);
 		things_[a].flags = things_[a].flags & ~DRAWN;
 
 		// Check side of camera
-		if (cam_pitch_ > -0.9 && cam_pitch_ < 0.9)
+		if (camera_->pitch() > -0.9 && camera_->pitch() < 0.9)
 		{
 			if (math::lineSide(thing->position(), strafe) > 0)
 				continue;
 		}
 
 		// Check thing distance if needed
-		dist = math::distance(cam_position_.get2d(), thing->position());
+		dist = math::distance(cam_pos_2d, thing->position());
 		if (mdist > 0 && dist > mdist)
 			continue;
 
@@ -2282,10 +2125,10 @@ void MapRenderer3D::renderThings()
 			halfwidth = render_thing_icon_size * 0.5;
 			theight   = render_thing_icon_size;
 		}
-		x1                = thing->xPos() - cam_strafe_.x * halfwidth;
-		y1                = thing->yPos() - cam_strafe_.y * halfwidth;
-		x2                = thing->xPos() + cam_strafe_.x * halfwidth;
-		y2                = thing->yPos() + cam_strafe_.y * halfwidth;
+		x1                = thing->xPos() - cam_strafe.x * halfwidth;
+		y1                = thing->yPos() - cam_strafe.y * halfwidth;
+		x2                = thing->xPos() + cam_strafe.x * halfwidth;
+		y2                = thing->yPos() + cam_strafe.y * halfwidth;
 		things_[a].height = theight;
 
 		// Set colour/brightness
@@ -2481,7 +2324,8 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 	col2.a *= 0.5;
 
 	// Go through selection
-	double halfwidth, theight, x1, y1, x2, y2;
+	double      halfwidth, theight, x1, y1, x2, y2;
+	const auto& cam_strafe = camera_->strafeVector();
 	for (auto item : selection)
 	{
 		// Ignore if not a thing selection
@@ -2510,10 +2354,10 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			halfwidth = render_thing_icon_size * 0.5;
 			theight   = render_thing_icon_size;
 		}
-		x1 = thing->xPos() - cam_strafe_.x * halfwidth;
-		y1 = thing->yPos() - cam_strafe_.y * halfwidth;
-		x2 = thing->xPos() + cam_strafe_.x * halfwidth;
-		y2 = thing->yPos() + cam_strafe_.y * halfwidth;
+		x1 = thing->xPos() - cam_strafe.x * halfwidth;
+		y1 = thing->yPos() - cam_strafe.y * halfwidth;
+		x2 = thing->xPos() + cam_strafe.x * halfwidth;
+		y2 = thing->yPos() + cam_strafe.y * halfwidth;
 
 		// Render outline
 		double z = things_[item.index].z;
@@ -2625,9 +2469,9 @@ void MapRenderer3D::quickVisDiscard()
 		dist_sectors_.resize(map_->nSectors());
 
 	// Go through all sectors
-	auto   cam = cam_position_.get2d();
+	auto   cam = camera_->position().get2d();
 	double min_dist, dist;
-	Seg2d  strafe(cam, cam + cam_strafe_.get2d());
+	auto   strafe = camera_->strafeLine();
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Get sector bbox
@@ -2641,7 +2485,7 @@ void MapRenderer3D::quickVisDiscard()
 			continue;
 
 		// Check side of camera
-		if (cam_pitch_ > -0.9 && cam_pitch_ < 0.9)
+		if (camera_->pitch() > -0.9 && camera_->pitch() < 0.9)
 		{
 			if (math::lineSide(bbox.min, strafe) > 0 && math::lineSide(Vec2d(bbox.max.x, bbox.min.y), strafe) > 0
 				&& math::lineSide(bbox.max, strafe) > 0 && math::lineSide(Vec2d(bbox.min.x, bbox.max.y), strafe) > 0)
@@ -2714,7 +2558,8 @@ void MapRenderer3D::checkVisibleQuads()
 	n_quads_         = 0;
 	unsigned updates = 0;
 	bool     update  = false;
-	Seg2d    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	auto     strafe  = camera_->strafeLine();
+	auto     cam_pos = camera_->position().get2d();
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
 		line = map_->line(a);
@@ -2724,7 +2569,7 @@ void MapRenderer3D::checkVisibleQuads()
 			continue;
 
 		// Check side of camera
-		if (cam_pitch_ > -0.9 && cam_pitch_ < 0.9)
+		if (camera_->pitch() > -0.9 && camera_->pitch() < 0.9)
 		{
 			if (math::lineSide(line->start(), strafe) > 0 && math::lineSide(line->end(), strafe) > 0)
 				continue;
@@ -2732,7 +2577,7 @@ void MapRenderer3D::checkVisibleQuads()
 
 		// Check for distance fade
 		if (render_max_dist > 0)
-			distfade = calcDistFade(math::distanceToLine(cam_position_.get2d(), line->seg()), render_max_dist);
+			distfade = calcDistFade(math::distanceToLine(cam_pos, line->seg()), render_max_dist);
 		else
 			distfade = 1.0f;
 
@@ -2770,9 +2615,7 @@ void MapRenderer3D::checkVisibleQuads()
 		for (auto& quad : lines_[a].quads)
 		{
 			// Check we're on the right side of the quad
-			if (math::lineSide(
-					cam_position_.get2d(),
-					Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
+			if (math::lineSide(cam_pos, Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
 				< 0)
 				continue;
 
@@ -2796,7 +2639,7 @@ void MapRenderer3D::checkVisibleFlats()
 	MapSector* sector;
 	n_flats_ = 0;
 	float alpha;
-	auto  cam = cam_position_.get2d();
+	auto  cam = camera_->position().get2d();
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		sector = map_->sector(a);
@@ -2853,7 +2696,9 @@ mapeditor::Item MapRenderer3D::determineHilight()
 	// Init
 	double          min_dist = 9999999;
 	mapeditor::Item current;
-	Seg2d           strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	auto            strafe  = camera_->strafeLine();
+	const auto&     cam_pos = camera_->position();
+	const auto&     cam_dir = camera_->directionVector();
 
 	// Check for required map structures
 	if (!map_ || lines_.size() != map_->nLines() || floors_.size() != map_->nSectors()
@@ -2871,21 +2716,19 @@ mapeditor::Item MapRenderer3D::determineHilight()
 		auto line = map_->line(a);
 
 		// Find (2d) distance to line
-		dist = math::distanceRayLine(
-			cam_position_.get2d(), (cam_position_ + cam_dir3d_).get2d(), line->start(), line->end());
+		dist = math::distanceRayLine(cam_pos.get2d(), (cam_pos + cam_dir).get2d(), line->start(), line->end());
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)
 			continue;
 
 		// Find quad intersect if any
-		auto intersection = cam_position_ + cam_dir3d_ * dist;
+		auto intersection = cam_pos + cam_dir * dist;
 		for (auto& quad : lines_[a].quads)
 		{
 			// Check side of camera
 			if (math::lineSide(
-					cam_position_.get2d(),
-					Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
+					cam_pos.get2d(), Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
 				< 0)
 				continue;
 
@@ -2929,14 +2772,14 @@ mapeditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Check distance to floor plane
-		dist = math::distanceRayPlane(cam_position_, cam_dir3d_, floors_[a].plane);
+		dist = math::distanceRayPlane(cam_pos, cam_dir, floors_[a].plane);
 		if (dist >= 0 && dist < min_dist)
 		{
 			// Check if on the correct side of the plane
-			if (cam_position_.z > floors_[a].plane.heightAt(cam_position_.x, cam_position_.y))
+			if (cam_pos.z > floors_[a].plane.heightAt(cam_pos.x, cam_pos.y))
 			{
 				// Check if intersection is within sector
-				if (map_->sector(a)->containsPoint((cam_position_ + cam_dir3d_ * dist).get2d()))
+				if (map_->sector(a)->containsPoint((cam_pos + cam_dir * dist).get2d()))
 				{
 					current.index = a;
 					current.type  = mapeditor::ItemType::Floor;
@@ -2946,14 +2789,14 @@ mapeditor::Item MapRenderer3D::determineHilight()
 		}
 
 		// Check distance to ceiling plane
-		dist = math::distanceRayPlane(cam_position_, cam_dir3d_, ceilings_[a].plane);
+		dist = math::distanceRayPlane(cam_pos, cam_dir, ceilings_[a].plane);
 		if (dist >= 0 && dist < min_dist)
 		{
 			// Check if on the correct side of the plane
-			if (cam_position_.z < ceilings_[a].plane.heightAt(cam_position_.x, cam_position_.y))
+			if (cam_pos.z < ceilings_[a].plane.heightAt(cam_pos.x, cam_pos.y))
 			{
 				// Check if intersection is within sector
-				if (map_->sector(a)->containsPoint((cam_position_ + cam_dir3d_ * dist).get2d()))
+				if (map_->sector(a)->containsPoint((cam_pos + cam_dir * dist).get2d()))
 				{
 					current.index = a;
 					current.type  = mapeditor::ItemType::Ceiling;
@@ -2973,6 +2816,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 	if (render_3d_things == 0)
 		return current;
 	double halfwidth, theight;
+	auto   cam_strafe_2d = camera_->strafeVector().get2d();
 	for (unsigned a = 0; a < map_->nThings(); a++)
 	{
 		// Ignore if no sprite
@@ -2994,10 +2838,10 @@ mapeditor::Item MapRenderer3D::determineHilight()
 		if (things_[a].flags & ICON)
 			halfwidth = render_thing_icon_size * 0.5;
 		dist = math::distanceRayLine(
-			cam_position_.get2d(),
-			(cam_position_ + cam_dir3d_).get2d(),
-			thing->position() - cam_strafe_.get2d() * halfwidth,
-			thing->position() + cam_strafe_.get2d() * halfwidth);
+			cam_pos.get2d(),
+			(cam_pos + cam_dir).get2d(),
+			thing->position() - cam_strafe_2d * halfwidth,
+			thing->position() + cam_strafe_2d * halfwidth);
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)
@@ -3005,7 +2849,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 
 		// Check intersection height
 		theight = tex_info.size.y;
-		height  = cam_position_.z + cam_dir3d_.z * dist;
+		height  = cam_pos.z + cam_dir.z * dist;
 		if (things_[a].flags & ICON)
 			theight = render_thing_icon_size;
 		if (height >= things_[a].z && height <= things_[a].z + theight)
@@ -3152,6 +2996,7 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 
 	// Thing hilight
 	double x1, y1, x2, y2;
+	auto   cam_strafe = camera_->strafeVector();
 	if (hilight.type == mapeditor::ItemType::Thing)
 	{
 		// Get thing
@@ -3168,10 +3013,10 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 			halfwidth = render_thing_icon_size * 0.5;
 			theight   = render_thing_icon_size;
 		}
-		x1 = thing->xPos() - cam_strafe_.x * halfwidth;
-		y1 = thing->yPos() - cam_strafe_.y * halfwidth;
-		x2 = thing->xPos() + cam_strafe_.x * halfwidth;
-		y2 = thing->yPos() + cam_strafe_.y * halfwidth;
+		x1 = thing->xPos() - cam_strafe.x * halfwidth;
+		y1 = thing->yPos() - cam_strafe.y * halfwidth;
+		x2 = thing->xPos() + cam_strafe.x * halfwidth;
+		y2 = thing->yPos() + cam_strafe.y * halfwidth;
 
 		// Render outline of sprite
 		double z = things_[hilight.index].z;

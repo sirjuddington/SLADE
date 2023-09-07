@@ -7,6 +7,7 @@ namespace slade
 {
 class ItemSelection;
 class Polygon2D;
+class Camera;
 
 namespace game
 {
@@ -108,25 +109,13 @@ public:
 	Flat* getFlat(mapeditor::Item item);
 
 	// Camera
-	void cameraMove(double distance, bool z = true);
-	void cameraTurn(double angle);
-	void cameraMoveUp(double distance);
-	void cameraStrafe(double distance);
-	void cameraPitch(double amount);
-	void cameraUpdateVectors();
-	void cameraSet(Vec3d position, Vec2d direction);
-	void cameraSetPosition(Vec3d position);
-	void cameraApplyGravity(double mult);
-	void cameraLook(double xrel, double yrel);
-
-	double camPitch() const { return cam_pitch_; }
-	Vec3d  camPosition() const { return cam_position_; }
-	Vec2d  camDirection() const { return cam_direction_; }
+	Camera& camera() const { return *camera_; }
+	void    cameraApplyGravity(double mult) const;
 
 	// -- Rendering --
-	void setupView(int width, int height);
-	void setLight(ColRGBA& colour, uint8_t light, float alpha = 1.0f) const;
-	void setFog(ColRGBA& fogcol, uint8_t light);
+	void setupView(int width, int height) const;
+	void setLight(const ColRGBA& colour, uint8_t light, float alpha = 1.0f) const;
+	void setFog(const ColRGBA& fogcol, uint8_t light);
 	void renderMap();
 	void renderSkySlice(
 		float top,
@@ -139,15 +128,15 @@ public:
 	void renderSky();
 
 	// Flats
-	void updateFlatTexCoords(unsigned index, bool floor);
+	void updateFlatTexCoords(unsigned index, bool floor) const;
 	void updateSector(unsigned index);
-	void renderFlat(Flat* flat);
+	void renderFlat(const Flat* flat);
 	void renderFlats();
 	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f) const;
 
 	// Walls
 	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, double top, double bottom) const;
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, Plane top, Plane bottom) const;
+	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, const Plane& top, const Plane& bottom) const;
 	void setupQuadTexCoords(
 		Quad*  quad,
 		int    length,
@@ -159,13 +148,13 @@ public:
 		double sx        = 1,
 		double sy        = 1) const;
 	void updateLine(unsigned index);
-	void renderQuad(Quad* quad, float alpha = 1.0f);
+	void renderQuad(const Quad* quad, float alpha = 1.0f);
 	void renderWalls();
 	void renderTransparentWalls();
 	void renderWallSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// Things
-	void updateThing(unsigned index, MapThing* thing);
+	void updateThing(unsigned index, const MapThing* thing);
 	void renderThings();
 	void renderThingSelection(const ItemSelection& selection, float alpha = 1.0f);
 
@@ -199,14 +188,8 @@ private:
 	vector<float> dist_sectors_;
 
 	// Camera
-	Vec3d  cam_position_;
-	Vec2d  cam_direction_;
-	double cam_pitch_ = 0.;
-	double cam_angle_ = 0.;
-	Vec3d  cam_dir3d_;
-	Vec3d  cam_strafe_;
-	double gravity_   = 0.5;
-	int    item_dist_ = 0;
+	unique_ptr<Camera> camera_;
+	int                item_dist_ = 0;
 
 	// Map Structures
 	vector<Line>  lines_;

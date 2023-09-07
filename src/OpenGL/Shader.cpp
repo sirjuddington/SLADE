@@ -1,6 +1,5 @@
 
 #include "Main.h"
-
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "OpenGL.h"

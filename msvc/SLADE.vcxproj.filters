@@ -1026,6 +1026,12 @@
     <ClCompile Include="..\src\OpenGL\PointSpriteBuffer.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\OpenGL\VertexBuffer3D.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MapEditor\Renderer\Camera.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1979,8 +1985,14 @@
     <ClInclude Include="..\src\OpenGL\PointSpriteBuffer.h">
       <Filter>OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\OpenGL\VertexBuffer3D.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Utility\Vector.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MapEditor\Renderer\Camera.h">
+      <Filter>Map Editor\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

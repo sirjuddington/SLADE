@@ -37,6 +37,7 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/SectorBuilder.h"
+#include "MapEditor/Renderer/Camera.h"
 #include "OpenGL/Drawing.h"
 #include "UI/WxUtils.h"
 #include "Utility/MathStuff.h"
@@ -176,7 +177,7 @@ void MapCanvas::mouseLook3d()
 
 			if (fabs(xrel) > threshold || fabs(yrel) > threshold)
 			{
-				context_->renderer().renderer3D().cameraLook(xrel, yrel);
+				context_->camera3d().look(xrel, yrel);
 				mouseToCenter();
 			}
 		}

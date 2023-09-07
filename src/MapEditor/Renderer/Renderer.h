@@ -46,7 +46,7 @@ namespace mapeditor
 		bool   viewIsInterpolated() const;
 
 		// 3d Mode
-		void  setCameraThing(const MapThing* thing);
+		void  setCameraThing(const MapThing* thing) const;
 		Vec2d cameraPos2D() const;
 		Vec2d cameraDir2D() const;
 
