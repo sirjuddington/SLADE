@@ -32,8 +32,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MoveObjects.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UndoSteps.h"
+#include "SLADEMap/SLADEMap.h"
 
 using namespace slade;
 

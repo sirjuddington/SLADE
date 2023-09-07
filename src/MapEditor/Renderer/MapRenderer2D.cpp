@@ -36,6 +36,7 @@
 #include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Edit/ObjectEdit.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"

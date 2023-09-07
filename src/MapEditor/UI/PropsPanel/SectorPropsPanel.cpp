@@ -39,7 +39,7 @@
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
 #include "OpenGL/Drawing.h"
-#include "SLADEMap/MapObject/MapObject.h"
+#include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"

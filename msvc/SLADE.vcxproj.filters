@@ -1032,6 +1032,9 @@
     <ClCompile Include="..\src\MapEditor\Renderer\Camera.cpp">
       <Filter>Map Editor\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\MapEditor\ClipboardItems.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1993,6 +1996,12 @@
     </ClInclude>
     <ClInclude Include="..\src\MapEditor\Renderer\Camera.h">
       <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MapEditor\ClipboardItems.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SLADEMap\SLADEMapFwd.h">
+      <Filter>SLADEMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

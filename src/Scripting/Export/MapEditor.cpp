@@ -32,8 +32,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Game/Configuration.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "SLADEMap/MapObject/MapObject.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
@@ -181,9 +183,8 @@ void registerMapEditor(sol::state& lua)
         &selectMapObject, [](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); });
 	lua_mapeditor["SetEditMode"] = sol::overload(
 		[](MapEditContext& self, mapeditor::Mode mode) { setEditMode(self, mode); },
-		[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode) {
-			setEditMode(self, mode, sector_mode);
-		});
+		[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode)
+		{ setEditMode(self, mode, sector_mode); });
 }
 
 // -----------------------------------------------------------------------------

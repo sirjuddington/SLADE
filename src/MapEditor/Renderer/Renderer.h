@@ -1,10 +1,14 @@
 #pragma once
 
-#include "MCAnimations.h"
-#include "MapRenderer3D.h"
-
 namespace slade
 {
+// Forward declarations
+class MapThing;
+class MapObject;
+class ItemSelection;
+class MCAnimation;
+class MapRenderer2D;
+class MapRenderer3D;
 class MapEditContext;
 class MCOverlay;
 namespace gl
@@ -21,6 +25,8 @@ namespace gl
 
 namespace mapeditor
 {
+	struct Item;
+
 	class Renderer
 	{
 	public:
@@ -28,10 +34,10 @@ namespace mapeditor
 		~Renderer();
 
 		MapRenderer2D& renderer2D() const { return *renderer_2d_; }
-		MapRenderer3D& renderer3D() { return renderer_3d_; }
+		MapRenderer3D& renderer3D() const { return *renderer_3d_; }
 		gl::View&      view() const { return *view_; }
 
-		void forceUpdate(bool update_2d = true, bool update_3d = true);
+		void forceUpdate(bool update_2d = true, bool update_3d = true) const;
 		void clearTextureCache() const;
 
 		// View manipulation
@@ -51,7 +57,7 @@ namespace mapeditor
 		Vec2d cameraDir2D() const;
 
 		// Drawing
-		void draw();
+		void draw() const;
 
 		// Animation
 		bool animationsActive() const { return !animations_.empty() || animations_active_; }
@@ -64,7 +70,7 @@ namespace mapeditor
 	private:
 		MapEditContext&           context_;
 		unique_ptr<MapRenderer2D> renderer_2d_;
-		MapRenderer3D             renderer_3d_;
+		unique_ptr<MapRenderer3D> renderer_3d_;
 		unique_ptr<gl::View>      view_;
 		unique_ptr<gl::View>      view_screen_;
 
@@ -104,7 +110,7 @@ namespace mapeditor
 		void drawObjectEdit(gl::draw2d::Context& dc) const;
 		void drawAnimations(gl::draw2d::Context& dc) const;
 		void drawMap2d(gl::draw2d::Context& dc) const;
-		void drawMap3d();
+		void drawMap3d() const;
 
 		// Animation
 		bool update2dModeCrossfade(double mult);

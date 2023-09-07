@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapChecks.h"
+#include "Edit/Edit2D.h"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/SAction.h"
@@ -620,9 +621,7 @@ private:
 		Vec2d    intersect_point;
 
 		Intersection(MapLine* line1, MapLine* line2, double x, double y) :
-			line1{ line1 },
-			line2{ line2 },
-			intersect_point{ x, y }
+			line1{ line1 }, line2{ line2 }, intersect_point{ x, y }
 		{
 		}
 	};

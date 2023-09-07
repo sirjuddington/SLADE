@@ -34,12 +34,19 @@
 #include "Renderer.h"
 #include "App.h"
 #include "Camera.h"
-#include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
+#include "General/UI.h"
+#include "MCAnimations.h"
+#include "MapEditor/ClipboardItems.h"
+#include "MapEditor/Edit/Input.h"
 #include "MapEditor/Edit/LineDraw.h"
+#include "MapEditor/Edit/MoveObjects.h"
+#include "MapEditor/Edit/ObjectEdit.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapRenderer2D.h"
+#include "MapRenderer3D.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/OpenGL.h"
@@ -47,6 +54,7 @@
 #include "OpenGL/VertexBuffer2D.h"
 #include "OpenGL/View.h"
 #include "Overlays/MCOverlay.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -99,11 +107,12 @@ EXTERN_CVAR(Int, thing_shape)
 // -----------------------------------------------------------------------------
 // Renderer class constructor
 // -----------------------------------------------------------------------------
-Renderer::Renderer(MapEditContext& context) : context_{ context }, renderer_3d_{ &context.map() }
+Renderer::Renderer(MapEditContext& context) : context_{ context }
 {
 	view_              = std::make_unique<View>(true, true);
 	view_screen_       = std::make_unique<View>(false, false);
 	renderer_2d_       = std::make_unique<MapRenderer2D>(&context.map(), view_.get());
+	renderer_3d_       = std::make_unique<MapRenderer3D>(&context.map());
 	vb_grid_           = std::make_unique<VertexBuffer2D>();
 	lb_crosshair_      = std::make_unique<LineBuffer>();
 	lb_objectedit_box_ = std::make_unique<LineBuffer>();
@@ -117,12 +126,12 @@ Renderer::~Renderer() = default;
 // -----------------------------------------------------------------------------
 // Updates/refreshes the 2d and/or 3d renderers
 // -----------------------------------------------------------------------------
-void Renderer::forceUpdate(bool update_2d, bool update_3d)
+void Renderer::forceUpdate(bool update_2d, bool update_3d) const
 {
 	if (update_2d)
 		renderer_2d_->forceUpdate(fade_lines_);
 	if (update_3d)
-		renderer_3d_.clearData();
+		renderer_3d_->clearData();
 }
 
 // -----------------------------------------------------------------------------
@@ -333,7 +342,7 @@ void Renderer::setCameraThing(const MapThing* thing) const
 		pos.z += sector->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction
-	renderer_3d_.camera().set(pos, math::vectorAngle(math::degToRad(thing->angle())));
+	renderer_3d_->camera().set(pos, math::vectorAngle(math::degToRad(thing->angle())));
 }
 
 // -----------------------------------------------------------------------------
@@ -341,7 +350,7 @@ void Renderer::setCameraThing(const MapThing* thing) const
 // -----------------------------------------------------------------------------
 Vec2d Renderer::cameraPos2D() const
 {
-	return renderer_3d_.camera().position().get2d();
+	return renderer_3d_->camera().position().get2d();
 }
 
 // -----------------------------------------------------------------------------
@@ -349,7 +358,7 @@ Vec2d Renderer::cameraPos2D() const
 // -----------------------------------------------------------------------------
 Vec2d Renderer::cameraDir2D() const
 {
-	return renderer_3d_.camera().direction();
+	return renderer_3d_->camera().direction();
 }
 
 // -----------------------------------------------------------------------------
@@ -1156,23 +1165,23 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 // -----------------------------------------------------------------------------
 // Draws the 3d map
 // -----------------------------------------------------------------------------
-void Renderer::drawMap3d()
+void Renderer::drawMap3d() const
 {
 	// Setup 3d renderer view
-	renderer_3d_.setupView(view_->size().x, view_->size().y);
+	renderer_3d_->setupView(view_->size().x, view_->size().y);
 
 	// Render 3d map
-	renderer_3d_.renderMap();
+	renderer_3d_->renderMap();
 
 	// Draw selection if any
 	auto selection = context_.selection();
-	renderer_3d_.renderFlatSelection(selection);
-	renderer_3d_.renderWallSelection(selection);
-	renderer_3d_.renderThingSelection(selection);
+	renderer_3d_->renderFlatSelection(selection);
+	renderer_3d_->renderWallSelection(selection);
+	renderer_3d_->renderThingSelection(selection);
 
 	// Draw hilight if any
 	if (context_.selection().hasHilight())
-		renderer_3d_.renderHilight(context_.selection().hilight(), anim_flash_level_);
+		renderer_3d_->renderHilight(context_.selection().hilight(), anim_flash_level_);
 
 	// Draw animations
 	// drawAnimations();
@@ -1181,7 +1190,7 @@ void Renderer::drawMap3d()
 // -----------------------------------------------------------------------------
 // Draws the current map editor state
 // -----------------------------------------------------------------------------
-void Renderer::draw()
+void Renderer::draw() const
 {
 	draw2d::Context dc{ view_.get() };
 
@@ -1253,7 +1262,7 @@ void Renderer::draw()
 	//		glEnable(GL_TEXTURE_2D);
 	//		gl::setColour(col);
 	//		drawing::drawText(
-	//			fmt::format("{}", renderer_3d_.itemDistance()),
+	//			fmt::format("{}", renderer_3d_->itemDistance()),
 	//			midx + 5,
 	//			midy + 5,
 	//			ColRGBA(255, 255, 255, 200),
@@ -1556,7 +1565,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	if (mapeditor::baseItemType(item.type) == ItemType::Side)
 	{
 		// Get quad
-		auto quad = renderer_3d_.getQuad(item);
+		auto quad = renderer_3d_->getQuad(item);
 
 		if (quad)
 		{
@@ -1574,7 +1583,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	else if (item.type == ItemType::Ceiling || item.type == ItemType::Floor)
 	{
 		// Get flat
-		auto flat = renderer_3d_.getFlat(item);
+		auto flat = renderer_3d_->getFlat(item);
 
 		// Start animation
 		if (flat)
@@ -1755,7 +1764,7 @@ void Renderer::animateHilightChange(const mapeditor::Item& old_item, MapObject* 
 	{
 		// 3d mode
 		animations_.push_back(std::make_unique<MCAHilightFade3D>(
-			app::runTimer(), old_item.index, old_item.type, &renderer_3d_, anim_flash_level_));
+			app::runTimer(), old_item.index, old_item.type, renderer_3d_.get(), anim_flash_level_));
 	}
 
 	// Reset hilight flash

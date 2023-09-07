@@ -1,17 +1,24 @@
 #pragma once
 
-#include "MapEditor/Edit/Edit3D.h"
-#include "SLADEMap/SLADEMap.h"
+#include "Utility/Colour.h"
 
 namespace slade
 {
+// Forward declarations
 class ItemSelection;
 class Polygon2D;
 class Camera;
-
+class MapThing;
+class SLADEMap;
+class MapSector;
+class MapLine;
 namespace game
 {
 	class ThingType;
+}
+namespace mapeditor
+{
+	struct Item;
 }
 
 class MapRenderer3D

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "MapEditor/MapEditor.h"
-
 namespace slade
 {
 // Forward declarations
@@ -27,6 +25,10 @@ namespace gl
 		struct Context;
 	}
 } // namespace gl
+namespace mapeditor
+{
+	struct Item;
+}
 
 class MapRenderer2D
 {

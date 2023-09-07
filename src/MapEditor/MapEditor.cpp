@@ -32,6 +32,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "ItemSelection.h"
 #include "MapBackupManager.h"
 #include "MapEditContext.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
@@ -40,6 +41,7 @@
 #include "MapEditor/UI/PropsPanel/SectorPropsPanel.h"
 #include "MapEditor/UI/PropsPanel/ThingPropsPanel.h"
 #include "MapTextureManager.h"
+#include "SLADEMap/SLADEMap.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UI/PropsPanel/MapObjectPropsPanel.h"

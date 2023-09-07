@@ -40,6 +40,7 @@
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
 #include "OpenGL/Drawing.h"
+#include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
@@ -303,9 +304,9 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 		{
 			// Get cursor position in canvas coordinates
 			const wxSize size = GetSize();
-			double x = -1.2 + ((double)e.GetX() / (double)size.x) * 2.4;
-			double y = -1.2 + ((double)e.GetY() / (double)size.y) * 2.4;
-			Vec2d  cursor_pos(x, y);
+			double       x    = -1.2 + ((double)e.GetX() / (double)size.x) * 2.4;
+			double       y    = -1.2 + ((double)e.GetY() / (double)size.y) * 2.4;
+			Vec2d        cursor_pos(x, y);
 
 			// Find closest dir point to cursor
 			point_hl_       = -1;
@@ -636,9 +637,9 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 		gb_sizer->AddGrowableCol(1, 1);
 
 		// 'New TID' button event
-		btn_new_id_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
-			text_id_->setNumber(mapeditor::editContext().map().things().firstFreeId());
-		});
+		btn_new_id_->Bind(
+			wxEVT_BUTTON,
+			[&](wxCommandEvent&) { text_id_->setNumber(mapeditor::editContext().map().things().firstFreeId()); });
 	}
 
 	return panel;

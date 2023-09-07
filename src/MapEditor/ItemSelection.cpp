@@ -35,6 +35,7 @@
 #include "ItemSelection.h"
 #include "Game/Configuration.h"
 #include "MapEditContext.h"
+#include "SLADEMap/SLADEMap.h"
 #include "UI/MapCanvas.h"
 #include "Utility/MathStuff.h"
 

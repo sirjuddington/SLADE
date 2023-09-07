@@ -39,6 +39,7 @@
 #include "General/ResourceManager.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/OpenGL.h"

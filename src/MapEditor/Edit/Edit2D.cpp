@@ -34,9 +34,13 @@
 #include "App.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
+#include "MapEditor/ClipboardItems.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/SectorBuilder.h"
 #include "MapEditor/UndoSteps.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -62,8 +66,7 @@ CVAR(Bool, map_remove_invalid_lines, false, CVar::Flag::Save)
 // Edit2D class constructor
 // -----------------------------------------------------------------------------
 Edit2D::Edit2D(MapEditContext& context) :
-	context_{ context },
-	copy_line_{ nullptr, nullptr, &copy_side_front_, &copy_side_back_ }
+	context_{ context }, copy_line_{ nullptr, nullptr, &copy_side_front_, &copy_side_back_ }
 {
 }
 

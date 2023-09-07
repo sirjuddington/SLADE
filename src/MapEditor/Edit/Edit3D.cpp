@@ -33,9 +33,12 @@
 #include "Edit3D.h"
 #include "Game/Configuration.h"
 #include "General/UndoRedo.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/UndoSteps.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;

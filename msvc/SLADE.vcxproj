@@ -322,6 +322,7 @@
     <ClCompile Include="..\src\Audio\Mp3Music.cpp" />
     <ClCompile Include="..\src\General\Console.cpp" />
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
+    <ClCompile Include="..\src\MapEditor\ClipboardItems.cpp" />
     <ClCompile Include="..\src\MapEditor\Renderer\Camera.cpp" />
     <ClCompile Include="..\src\MapEditor\Renderer\ThingBuffer2D.cpp" />
     <ClCompile Include="..\src\OpenGL\Draw2D.cpp" />
@@ -654,6 +655,7 @@
     <ClInclude Include="..\src\General\Console.h" />
     <ClInclude Include="..\src\General\Sigslot.h" />
     <ClInclude Include="..\src\Graphics\Graphics.h" />
+    <ClInclude Include="..\src\MapEditor\ClipboardItems.h" />
     <ClInclude Include="..\src\MapEditor\Renderer\Camera.h" />
     <ClInclude Include="..\src\MapEditor\Renderer\ThingBuffer2D.h" />
     <ClInclude Include="..\src\OpenGL\Buffer.h" />
@@ -666,6 +668,7 @@
     <ClInclude Include="..\src\OpenGL\View.h" />
     <ClInclude Include="..\src\Scripting\Export\Export.h" />
     <ClInclude Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.h" />
+    <ClInclude Include="..\src\SLADEMap\SLADEMapFwd.h" />
     <ClInclude Include="..\src\UI\Canvas\GLCanvas.h" />
     <ClInclude Include="..\src\UI\Controls\Splitter.h" />
     <ClInclude Include="..\src\UI\Controls\ZoomControl.h" />

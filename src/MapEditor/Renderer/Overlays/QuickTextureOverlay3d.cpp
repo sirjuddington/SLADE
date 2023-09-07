@@ -36,12 +36,14 @@
 #include "Main.h"
 #include "QuickTextureOverlay3d.h"
 #include "Game/Configuration.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

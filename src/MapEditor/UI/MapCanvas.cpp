@@ -34,12 +34,13 @@
 #include "MapCanvas.h"
 #include "App.h"
 #include "General/ColourConfiguration.h"
+#include "MapEditor/Edit/Input.h"
 #include "MapEditor/MapEditContext.h"
-#include "MapEditor/Renderer/Overlays/MCOverlay.h"
-#include "MapEditor/SectorBuilder.h"
 #include "MapEditor/Renderer/Camera.h"
-#include "OpenGL/Drawing.h"
-#include "UI/WxUtils.h"
+#include "MapEditor/Renderer/Overlays/MCOverlay.h"
+#include "MapEditor/Renderer/Renderer.h"
+#include "MapEditor/SectorBuilder.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -330,14 +331,14 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 
 			context_->addEditorMessage(fmt::format("Front {} Back {}", i1, i2));
 		}
-		if (e.GetKeyCode() == WXK_F5 && context_->editMode() == Mode::Sectors)
+		/*if (e.GetKeyCode() == WXK_F5 && context_->editMode() == Mode::Sectors)
 		{
 			PolygonSplitter splitter;
 			splitter.setVerbose(true);
 			splitter.openSector(context_->selection().hilightedSector());
 			Polygon2D temp;
 			splitter.doSplitting(&temp);
-		}
+		}*/
 	}
 
 	// Update cursor in object edit mode

@@ -32,8 +32,10 @@
 #include "Main.h"
 #include "LineDraw.h"
 #include "General/KeyBind.h"
+#include "Input.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;

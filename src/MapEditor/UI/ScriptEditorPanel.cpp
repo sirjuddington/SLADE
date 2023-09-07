@@ -36,6 +36,7 @@
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "SLADEMap/SLADEMap.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/SToolBar/SToolBar.h"
@@ -72,9 +73,7 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 // ScriptEditorPanel class constructor
 // -----------------------------------------------------------------------------
 ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
-	wxPanel(parent, -1),
-	entry_script_{ new ArchiveEntry() },
-	entry_compiled_{ new ArchiveEntry() }
+	wxPanel(parent, -1), entry_script_{ new ArchiveEntry() }, entry_compiled_{ new ArchiveEntry() }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);

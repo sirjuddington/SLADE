@@ -46,6 +46,7 @@
 #include "OpenGL/VertexBuffer2D.h"
 #include "OpenGL/View.h"
 #include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 
 using namespace slade;
