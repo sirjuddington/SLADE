@@ -139,7 +139,7 @@ void SectorList::initPolygons()
 	for (unsigned i = 0; i < count_; ++i)
 	{
 		ui::setSplashProgress(i, count_);
-		objects_[i]->polygon();
+		objects_[i]->polygonVertices();
 	}
 	ui::setSplashProgress(1.0f);
 }

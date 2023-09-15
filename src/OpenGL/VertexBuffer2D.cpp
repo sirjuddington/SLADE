@@ -10,7 +10,7 @@ using namespace gl;
 
 namespace
 {
-unsigned initVAO(Buffer<VertexBuffer2D::Vertex>& buffer)
+unsigned initVAO(Buffer<Vertex2D>& buffer)
 {
 	auto vao = createVAO();
 	bindVAO(vao);
@@ -41,19 +41,19 @@ VertexBuffer2D::~VertexBuffer2D()
 	deleteVAO(vao_);
 }
 
-void VertexBuffer2D::add(const Vertex& vertex)
+void VertexBuffer2D::add(const Vertex2D& vertex)
 {
 	vertices_.push_back(vertex);
 }
 
-void VertexBuffer2D::add(const vector<Vertex>& vertices)
+void VertexBuffer2D::add(const vector<Vertex2D>& vertices)
 {
 	vectorConcat(vertices_, vertices);
 }
 
 void VertexBuffer2D::add(const glm::vec2& pos, const glm::vec4& colour, const glm::vec2& tex_coord)
 {
-	add(Vertex{ pos, colour, tex_coord });
+	add(Vertex2D{ pos, colour, tex_coord });
 }
 
 void VertexBuffer2D::addQuadTriangles(glm::vec2 tl, glm::vec2 br, glm::vec4 colour, glm::vec2 uv_tl, glm::vec2 uv_br)

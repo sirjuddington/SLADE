@@ -2205,11 +2205,21 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 CONSOLE_COMMAND(m_n_polys, 0, false)
 {
 	SLADEMap& map   = mapeditor::editContext().map();
-	int       npoly = 0;
+	//int       npoly = 0;
+	int       nvert = 0;
 	for (unsigned a = 0; a < map.nSectors(); a++)
-		npoly += map.sector(a)->polygon()->nSubPolys();
+	{
+		//auto poly = map.sector(a)->polygon();
+		//if (!poly)
+		//	continue;
 
-	log::console(fmt::format("{} polygons total", npoly));
+		//npoly += poly->nSubPolys();
+		nvert += map.sector(a)->polygonVertices().size(); //poly->totalVertices();
+	}
+
+	log::console(
+		fmt::format("{} vertices total ({} bytes)", nvert, nvert * sizeof(glm::vec2)));
+		//fmt::format("{} polygons with {} vertices total ({} bytes)", npoly, nvert, nvert * sizeof(Polygon2D::Vertex)));
 }
 
 CONSOLE_COMMAND(mobj_info, 1, false)

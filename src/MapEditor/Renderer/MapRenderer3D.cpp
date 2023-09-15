@@ -101,8 +101,8 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }, camera_{ new Camera()
 	init();
 
 	// Refresh textures when resources are updated or the main palette is changed
-	sc_resources_updated_ = app::resources().signals().resources_updated.connect([this]() { refreshTextures(); });
-	sc_palette_changed_   = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]()
+	sc_resources_updated_ = app::resources().signals().resources_updated.connect([this] { refreshTextures(); });
+	sc_palette_changed_   = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]
                                                                                              { refreshTextures(); });
 }
 
@@ -231,7 +231,7 @@ void MapRenderer3D::buildSkyCircle()
 	for (auto& pos : sky_circle_)
 	{
 		pos.set(sin(rot), -cos(rot));
-		rot -= (3.1415926535897932384626433832795 * 2) / 32.0;
+		rot -= (math::PI * 2) / 32.0;
 	}
 }
 
@@ -430,7 +430,7 @@ void MapRenderer3D::renderMap()
 	{
 		// Check if any polygon vertex data has changed (in this case we need to refresh the entire vbo)
 		bool vbo_updated = false;
-		for (unsigned a = 0; a < map_->nSectors(); a++)
+		/*for (unsigned a = 0; a < map_->nSectors(); a++)
 		{
 			auto poly = map_->sector(a)->polygon();
 			if (poly && poly->vboUpdate() > 1)
@@ -439,7 +439,7 @@ void MapRenderer3D::renderMap()
 				vbo_updated = true;
 				break;
 			}
-		}
+		}*/
 
 		// Create VBO if necessary
 		if (!vbo_updated && vbo_floors_ == 0)
@@ -766,12 +766,12 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor) const
 	ox /= sx;
 	oy /= sy;
 
-	// Update polygon texture coordinates
-	if (floor)
-		sector->polygon()->setTexture(floors_[index].texture);
-	else
-		sector->polygon()->setTexture(ceilings_[index].texture);
-	sector->polygon()->updateTextureCoords(sx, sy, ox, oy, rot);
+	//// Update polygon texture coordinates
+	//if (floor)
+	//	sector->polygon()->setTexture(floors_[index].texture);
+	//else
+	//	sector->polygon()->setTexture(ceilings_[index].texture);
+	//sector->polygon()->updateTextureCoords(sx, sy, ox, oy, rot);
 }
 
 // -----------------------------------------------------------------------------
@@ -798,15 +798,15 @@ void MapRenderer3D::updateSector(unsigned index)
 	if (strutil::equalCI(sector->floor().texture, game::configuration().skyFlat()))
 		floors_[index].flags |= SKY;
 
-	// Update floor VBO
-	if (gl::vboSupport())
-	{
-		updateFlatTexCoords(index, true);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_floors_);
-		Polygon2D::setupVBOPointers();
-		sector->polygon()->setZ(floors_[index].plane);
-		sector->polygon()->updateVBOData();
-	}
+	//// Update floor VBO
+	//if (gl::vboSupport())
+	//{
+	//	updateFlatTexCoords(index, true);
+	//	glBindBuffer(GL_ARRAY_BUFFER, vbo_floors_);
+	//	Polygon2D::setupVBOPointers();
+	//	sector->polygon()->setZ(floors_[index].plane);
+	//	sector->polygon()->updateVBOData();
+	//}
 
 	// Update ceiling
 	auto& ctex                 = mapeditor::textureManager().flat(sector->ceiling().texture, mix_tex_flats);
@@ -821,24 +821,24 @@ void MapRenderer3D::updateSector(unsigned index)
 	if (strutil::equalCI(sector->ceiling().texture, game::configuration().skyFlat()))
 		ceilings_[index].flags |= SKY;
 
-	// Update ceiling VBO
-	if (gl::vboSupport())
-	{
-		updateFlatTexCoords(index, false);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings_);
-		Polygon2D::setupVBOPointers();
-		sector->polygon()->setZ(ceilings_[index].plane);
-		sector->polygon()->updateVBOData();
-	}
+	//// Update ceiling VBO
+	//if (gl::vboSupport())
+	//{
+	//	updateFlatTexCoords(index, false);
+	//	glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings_);
+	//	Polygon2D::setupVBOPointers();
+	//	sector->polygon()->setZ(ceilings_[index].plane);
+	//	sector->polygon()->updateVBOData();
+	//}
 
-	// Finish up
-	floors_[index].updated_time   = app::runTimer();
-	ceilings_[index].updated_time = app::runTimer();
-	if (gl::vboSupport())
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		sector->polygon()->setZ(0);
-	}
+	//// Finish up
+	//floors_[index].updated_time   = app::runTimer();
+	//ceilings_[index].updated_time = app::runTimer();
+	//if (gl::vboSupport())
+	//{
+	//	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//	sector->polygon()->setZ(0);
+	//}
 }
 
 // -----------------------------------------------------------------------------
@@ -874,7 +874,7 @@ void MapRenderer3D::renderFlat(const Flat* flat)
 			{
 				glCullFace(GL_BACK);
 				glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings_);
-				Polygon2D::setupVBOPointers();
+				//Polygon2D::setupVBOPointers();
 				flat_last_ = 2;
 			}
 		}
@@ -884,13 +884,13 @@ void MapRenderer3D::renderFlat(const Flat* flat)
 			{
 				glCullFace(GL_FRONT);
 				glBindBuffer(GL_ARRAY_BUFFER, vbo_floors_);
-				Polygon2D::setupVBOPointers();
+				//Polygon2D::setupVBOPointers();
 				flat_last_ = 1;
 			}
 		}
 
 		// Render
-		flat->sector->polygon()->renderVBO();
+		//flat->sector->polygon()->renderVBO();
 	}
 	else
 	{
@@ -909,7 +909,7 @@ void MapRenderer3D::renderFlat(const Flat* flat)
 		}
 
 		// Render
-		flat->sector->polygon()->render();
+		//flat->sector->polygon()->render();
 
 		glPopMatrix();
 	}
@@ -1028,9 +1028,9 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 		// Render fill
 		gl::setColour(col2);
 		glDisable(GL_CULL_FACE);
-		sector->polygon()->setZ(plane);
-		sector->polygon()->render();
-		sector->polygon()->setZ(0);
+		//sector->polygon()->setZ(plane);
+		//sector->polygon()->render();
+		//sector->polygon()->setZ(0);
 		glEnable(GL_CULL_FACE);
 	}
 
@@ -2398,56 +2398,56 @@ void MapRenderer3D::updateFlatsVBO()
 
 	// Get total size needed
 	unsigned totalsize = 0;
-	for (unsigned a = 0; a < map_->nSectors(); a++)
+	/*for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		auto poly = map_->sector(a)->polygon();
 		totalsize += poly->vboDataSize();
-	}
+	}*/
 
 	// --- Floors ---
 
 	// Allocate buffer data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_floors_);
-	Polygon2D::setupVBOPointers();
+	//Polygon2D::setupVBOPointers();
 	glBufferData(GL_ARRAY_BUFFER, totalsize, nullptr, GL_STATIC_DRAW);
 
 	// Write polygon data to VBO
 	unsigned offset = 0;
 	unsigned index  = 0;
-	for (unsigned a = 0; a < map_->nSectors(); a++)
-	{
-		// Set polygon z height
-		auto poly = map_->sector(a)->polygon();
-		poly->setZ(map_->sector(a)->floor().height);
+	//for (unsigned a = 0; a < map_->nSectors(); a++)
+	//{
+	//	// Set polygon z height
+	//	auto poly = map_->sector(a)->polygon();
+	//	poly->setZ(map_->sector(a)->floor().height);
 
-		// Write to VBO
-		offset = poly->writeToVBO(offset, index);
-		index += poly->totalVertices();
-	}
+	//	// Write to VBO
+	//	offset = poly->writeToVBO(offset, index);
+	//	index += poly->totalVertices();
+	//}
 
 	// --- Ceilings ---
 
 	// Allocate buffer data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings_);
-	Polygon2D::setupVBOPointers();
+	//Polygon2D::setupVBOPointers();
 	glBufferData(GL_ARRAY_BUFFER, totalsize, nullptr, GL_STATIC_DRAW);
 
 	// Write polygon data to VBO
 	offset = 0;
 	index  = 0;
-	for (unsigned a = 0; a < map_->nSectors(); a++)
-	{
-		// Set polygon z height
-		auto poly = map_->sector(a)->polygon();
-		poly->setZ(map_->sector(a)->ceiling().height);
+	//for (unsigned a = 0; a < map_->nSectors(); a++)
+	//{
+	//	// Set polygon z height
+	//	auto poly = map_->sector(a)->polygon();
+	//	poly->setZ(map_->sector(a)->ceiling().height);
 
-		// Write to VBO
-		offset = poly->writeToVBO(offset, index);
-		index += poly->totalVertices();
+	//	// Write to VBO
+	//	offset = poly->writeToVBO(offset, index);
+	//	index += poly->totalVertices();
 
-		// Reset polygon z
-		poly->setZ(0.0f);
-	}
+	//	// Reset polygon z
+	//	poly->setZ(0.0f);
+	//}
 
 	// Clean up
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -2988,9 +2988,9 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 			col_hilight.a *= 0.3;
 			gl::setColour(col_hilight);
 			glDisable(GL_CULL_FACE);
-			sector->polygon()->setZ(plane);
-			sector->polygon()->render();
-			sector->polygon()->setZ(0);
+			//sector->polygon()->setZ(plane);
+			//sector->polygon()->render();
+			//sector->polygon()->setZ(0);
 			glEnable(GL_CULL_FACE);
 		}
 	}

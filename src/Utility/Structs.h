@@ -26,6 +26,7 @@ template<typename T> struct Vec2
 		y = static_cast<T>(other.y);
 	}
 	template<typename OtherT> Vec2(OtherT x, OtherT y) : x{ static_cast<T>(x) }, y{ static_cast<T>(y) } {}
+	Vec2(const glm::vec2& glm_vec) : x{ static_cast<T>(glm_vec.x) }, y{ static_cast<T>(glm_vec.y) } {}
 
 	void set(T X, T Y)
 	{
@@ -117,6 +118,8 @@ template<typename T> struct Vec2
 	T dot(const Vec2& other) const { return x * other.x + y * other.y; }
 
 	T cross(const Vec2& other) const { return (x * other.y) - (y * other.x); }
+
+	glm::vec2 toGLM() const { return glm::vec2{ x, y }; }
 };
 
 typedef Vec2<int>    Vec2i;
@@ -146,6 +149,10 @@ template<typename T> struct Vec3
 	}
 	template<typename OtherT>
 	Vec3(OtherT x, OtherT y, OtherT z) : x{ static_cast<T>(x) }, y{ static_cast<T>(y) }, z{ static_cast<T>(z) }
+	{
+	}
+	Vec3(const glm::vec3& glm_vec) :
+		x{ static_cast<T>(glm_vec.x) }, y{ static_cast<T>(glm_vec.y) }, z{ static_cast<T>(glm_vec.z) }
 	{
 	}
 
@@ -230,7 +237,8 @@ template<typename T> struct Vec3
 		return cross_product;
 	}
 
-	Vec2<T> get2d() const { return { x, y }; }
+	Vec2<T>   get2d() const { return { x, y }; }
+	glm::vec3 toGLM() const { return glm::vec3{ x, y, z }; }
 };
 typedef Vec3<int>    Vec3i;
 typedef Vec3<float>  Vec3f;

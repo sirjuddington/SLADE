@@ -1,11 +1,11 @@
 #pragma once
 
 #include "MapObject.h"
-#include "Utility/Colour.h"
-#include "Utility/Polygon2D.h"
 
 namespace slade
 {
+struct ColRGBA;
+
 class MapSector : public MapObject
 {
 	friend class SLADEMap;
@@ -48,7 +48,7 @@ public:
 		short       special  = 0,
 		short       id       = 0);
 	MapSector(string_view f_tex, string_view c_tex, ParseTreeNode* udmf_def);
-	~MapSector() = default;
+	~MapSector() override = default;
 
 	void copy(MapObject* obj) override;
 
@@ -80,24 +80,24 @@ public:
 	template<SurfaceType p> Plane plane();
 	template<SurfaceType p> void  setPlane(const Plane& plane);
 
-	Vec2d                   getPoint(Point point) override;
-	void                    resetBBox() { bbox_.reset(); }
-	BBox                    boundingBox();
-	vector<MapSide*>&       connectedSides() { return connected_sides_; }
-	const vector<MapSide*>& connectedSides() const { return connected_sides_; }
-	void                    resetPolygon() { poly_needsupdate_ = true; }
-	Polygon2D*              polygon();
-	bool                    containsPoint(Vec2d point);
-	double                  distanceTo(Vec2d point, double maxdist = -1);
-	bool                    putLines(vector<MapLine*>& list);
-	bool                    putVertices(vector<MapVertex*>& list);
-	bool                    putVertices(vector<MapObject*>& list);
-	uint8_t                 lightAt(int where = 0);
-	void                    changeLight(int amount, int where = 0);
-	ColRGBA                 colourAt(int where = 0, bool fullbright = false);
-	ColRGBA                 fogColour();
-	long                    geometryUpdatedTime() const { return geometry_updated_; }
-	void                    findTextPoint();
+	Vec2d                    getPoint(Point point) override;
+	void                     resetBBox() { bbox_.reset(); }
+	BBox                     boundingBox();
+	vector<MapSide*>&        connectedSides() { return connected_sides_; }
+	const vector<MapSide*>&  connectedSides() const { return connected_sides_; }
+	const vector<glm::vec2>& polygonVertices();
+	void                     resetPolygon() { poly_needsupdate_ = true; }
+	bool                     containsPoint(Vec2d point);
+	double                   distanceTo(Vec2d point, double maxdist = -1);
+	bool                     putLines(vector<MapLine*>& list);
+	bool                     putVertices(vector<MapVertex*>& list);
+	bool                     putVertices(vector<MapObject*>& list);
+	uint8_t                  lightAt(int where = 0);
+	void                     changeLight(int amount, int where = 0);
+	ColRGBA                  colourAt(int where = 0, bool fullbright = false);
+	ColRGBA                  fogColour();
+	long                     geometryUpdatedTime() const { return geometry_updated_; }
+	void                     findTextPoint();
 
 	void connectSide(MapSide* side);
 	void disconnectSide(MapSide* side);
@@ -127,12 +127,12 @@ private:
 	short   id_      = 0;
 
 	// Internal info
-	vector<MapSide*> connected_sides_;
-	BBox             bbox_;
-	Polygon2D        polygon_;
-	bool             poly_needsupdate_ = true;
-	long             geometry_updated_ = 0;
-	Vec2d            text_point_;
+	vector<MapSide*>  connected_sides_;
+	BBox              bbox_;
+	vector<glm::vec2> polygon_triangles_;
+	bool              poly_needsupdate_ = true;
+	long              geometry_updated_ = 0;
+	Vec2d             text_point_;
 
 	void setGeometryUpdated();
 };

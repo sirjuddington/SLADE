@@ -332,23 +332,12 @@ void MCAVertexSelection::draw(gl::draw2d::Context& dc)
 MCASectorSelection::MCASectorSelection(long start, const vector<MapSector*>& sectors, bool select) :
 	MCAnimation(start), select_{ select }, blend_{ gl::Blend::Normal }
 {
-	// Build vertex buffer from sector polygons
+	// Build vertex buffer from sector polygon vertices
 	vertex_buffer_ = std::make_unique<gl::VertexBuffer2D>();
 	constexpr glm::vec4 white{ 1.0f };
 	for (auto& sector : sectors)
-	{
-		auto poly = sector->polygon();
-		if (!poly || !poly->hasPolygon())
-			continue;
-
-		for (unsigned i = 0; i < poly->nSubPolys(); ++i)
-		{
-			auto subpoly = poly->subPoly(i);
-			polygons_.emplace_back(vertex_buffer_->queueSize(), subpoly->vertices.size());
-			for (const auto& vertex : subpoly->vertices)
-				vertex_buffer_->add({ vertex.x, vertex.y }, white, { vertex.tx, vertex.ty });
-		}
-	}
+		for (const auto& vertex : sector->polygonVertices())
+			vertex_buffer_->add(vertex, white, glm::vec2{ 0.0f });
 
 	// Set colour
 	if (select_)
@@ -401,8 +390,7 @@ void MCASectorSelection::draw(gl::draw2d::Context& dc)
 	// Draw
 	if (vertex_buffer_->buffer().empty())
 		vertex_buffer_->push();
-	for (const auto& poly : polygons_)
-		vertex_buffer_->draw(gl::Primitive::TriangleFan, nullptr, nullptr, poly.offset, poly.vertices);
+	vertex_buffer_->draw(gl::Primitive::Triangles);
 }
 
 
@@ -503,14 +491,14 @@ void MCA3dFlatSelection::draw()
 		colourconfig::setGLColour("map_3d_selection", fade_);
 	glDisable(GL_CULL_FACE);
 
-	// Set polygon to plane height
-	sector_->polygon()->setZ(plane_);
+	//// Set polygon to plane height
+	//sector_->polygon()->setZ(plane_);
 
-	// Render flat
-	sector_->polygon()->render();
+	//// Render flat
+	//sector_->polygon()->render();
 
-	// Reset polygon height
-	sector_->polygon()->setZ(0);
+	//// Reset polygon height
+	//sector_->polygon()->setZ(0);
 
 	glEnable(GL_CULL_FACE);
 }

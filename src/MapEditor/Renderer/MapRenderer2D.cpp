@@ -50,7 +50,7 @@
 #include "OpenGL/View.h"
 #include "SLADEMap/SLADEMap.h"
 #include "ThingBuffer2D.h"
-#include "Utility/Polygon2D.h"
+#include "Utility/Polygon.h"
 
 using namespace slade;
 
@@ -879,30 +879,13 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 	if (texture)
 		alpha *= colourconfig::flatAlpha();
 
-	// Re-init flats texture list if invalid
-	if ((texture && tex_flats_.size() != map_->nSectors()) || last_flat_type_ != type)
-	{
-		tex_flats_.clear();
-		for (unsigned a = 0; a < map_->nSectors(); a++)
-			tex_flats_.push_back(0);
-
-		last_flat_type_ = type;
-	}
-
 	// Create vertex buffer if necessary
 	if (!flats_buffer_)
 		updateFlatsBuffer();
 
-	// Check if any polygon vertex data has changed (in this case we need to refresh the entire buffer)
-	for (unsigned a = 0; a < map_->nSectors(); a++)
-	{
-		auto poly = map_->sector(a)->polygon();
-		if (poly && poly->vboUpdate() > 1)
-		{
-			updateFlatsBuffer();
-			break;
-		}
-	}
+	// Check if any map geometry has changed (in this case we need to refresh the entire buffer)
+	if (map_->geometryUpdated() > flats_updated_)
+		updateFlatsBuffer();
 
 	// Setup shader
 	const auto& shader = gl::draw2d::defaultShader(texture);
@@ -913,7 +896,7 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 	// Go through sectors
 	unsigned tex_last = 0;
 	unsigned tex      = 0;
-	unsigned update   = 0;
+	bool     update   = false;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		auto sector = map_->sector(a);
@@ -925,7 +908,7 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 		const MapTextureManager::Texture* map_tex_props = nullptr;
 		if (texture)
 		{
-			if (!tex_flats_[a] || sector->modifiedTime() > flats_updated_ - 100)
+			if (!flats_[a].texture || sector->modifiedTime() > flats_updated_ - 100)
 			{
 				// Get the sector texture
 				bool mix_tex_flats = game::configuration().featureSupported(Feature::MixTexFlats);
@@ -934,19 +917,20 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 				else
 					map_tex_props = &mapeditor::textureManager().flat(sector->ceiling().texture, mix_tex_flats);
 
-				tex           = map_tex_props->gl_id;
-				tex_flats_[a] = tex;
+				tex               = map_tex_props->gl_id;
+				flats_[a].texture = tex;
+				update            = true;
 			}
 			else
-				tex = tex_flats_[a];
+			{
+				tex    = flats_[a].texture;
+				update = false;
+			}
 		}
 
 		// Setup polygon texture info if needed
-		auto poly = sector->polygon();
-		if (texture && poly->texture() != tex)
+		if (texture && update)
 		{
-			poly->setTexture(tex); // Set polygon texture
-
 			// Get scaling/offset info
 			double ox  = 0.;
 			double oy  = 0.;
@@ -994,16 +978,12 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 			ox /= sx;
 			oy /= sy;
 
-			poly->updateTextureCoords(sx, sy, ox, oy, rot);
-		}
-
-		// Update polygon VBO data if needed
-		if (poly->vboUpdate() > 0)
-		{
-			poly->updateVBData(*flats_buffer_);
-			update++;
-			if (update > 200)
-				break;
+			// Update in flats buffer
+			vector<gl::Vertex2D> verts;
+			for (const auto& v : sector->polygonVertices())
+				verts.emplace_back(glm::vec2{ v.x, v.y }, glm::vec4{ 1.0f });
+			polygon::generateTextureCoords(verts, tex, sx, sy, ox, oy, rot);
+			flats_buffer_->buffer().update(flats_[a].buffer_offset, verts);
 		}
 
 		// Bind the texture if needed
@@ -1017,7 +997,8 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 			auto col = sector->colourAt(type).ampf(flat_brightness, flat_brightness, flat_brightness, alpha);
 			shader.setUniform("colour", col.asVec4());
 		}
-		poly->render(*flats_buffer_);
+		flats_buffer_->draw(
+			gl::Primitive::Triangles, nullptr, nullptr, flats_[a].buffer_offset, flats_[a].vertex_count);
 	}
 }
 
@@ -1027,7 +1008,7 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float fade) const
 {
 	// Check hilight
-	if (!map_->sector(index))
+	if (!map_->sector(index) || index >= flats_.size())
 		return;
 
 	// Reset fade if hilight animation is disabled
@@ -1044,7 +1025,8 @@ void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float 
 		const auto& shader = gl::draw2d::defaultShader(false);
 		shader.setUniform("colour", dc.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f).asVec4());
 		dc.view->setupShader(shader);
-		map_->sector(index)->polygon()->render(*flats_buffer_);
+		flats_buffer_->draw(
+			gl::Primitive::Triangles, nullptr, nullptr, flats_[index].buffer_offset, flats_[index].vertex_count);
 		dc.line_thickness *= 0.75f;
 	}
 
@@ -1096,8 +1078,13 @@ void MapRenderer2D::renderFlatOverlays(const gl::draw2d::Context& dc, const vect
 			continue;
 
 		// Render fill if needed
-		if (sector_selected_fill && sector->polygon()->hasPolygon())
-			sector->polygon()->render(*flats_buffer_);
+		if (sector_selected_fill)
+			flats_buffer_->draw(
+				gl::Primitive::Triangles,
+				nullptr,
+				nullptr,
+				flats_[sector->index()].buffer_offset,
+				flats_[sector->index()].vertex_count);
 
 		// Go through sides
 		for (const auto side : sector->connectedSides())
@@ -1556,9 +1543,19 @@ void MapRenderer2D::updateFlatsBuffer()
 	if (!flats_buffer_)
 		flats_buffer_ = std::make_unique<gl::VertexBuffer2D>();
 
-	// Write sector polygons to buffer
+	// Init flats info cache
+	flats_.clear();
+	flats_.resize(map_->nSectors());
+
+	// Write sector polygon triangle vertices to buffer
 	for (const auto& sector : map_->sectors())
-		sector->polygon()->writeToVB(*flats_buffer_);
+	{
+		flats_[sector->index()].buffer_offset = flats_buffer_->queueSize();
+		flats_[sector->index()].vertex_count  = sector->polygonVertices().size();
+
+		for (const auto& vertex : sector->polygonVertices())
+			flats_buffer_->add({ vertex.x, vertex.y }, glm::vec4{ 1.0f }, glm::vec2{ 0.0f });
+	}
 	flats_buffer_->push();
 
 	flats_updated_ = app::runTimer();
@@ -1637,16 +1634,17 @@ void MapRenderer2D::updateVisibility(const Vec2d& view_tl, const Vec2d& view_br)
 void MapRenderer2D::forceUpdate(float line_alpha)
 {
 	// Update variables
-	tex_flats_.clear();
+	flats_.clear();
 	thing_paths_.clear();
 
 	// Update buffers
+	updateFlatsBuffer();
 	updateLinesBuffer(lines_dirs_);
 	updateVerticesBuffer();
 	updateThingBuffers();
 
-	renderVertices(view_->scale().x);
-	renderLines(lines_dirs_, line_alpha);
+	// renderVertices(view_->scale().x);
+	// renderLines(lines_dirs_, line_alpha);
 }
 
 // -----------------------------------------------------------------------------
@@ -1670,6 +1668,15 @@ double MapRenderer2D::scaledRadius(int radius) const
 bool MapRenderer2D::visOK() const
 {
 	return map_->nSectors() == vis_s_.size();
+}
+
+// -----------------------------------------------------------------------------
+// Clears cached flat texture data
+// -----------------------------------------------------------------------------
+void MapRenderer2D::clearTextureCache()
+{
+	for (auto& flat : flats_)
+		flat.texture = 0;
 }
 
 // -----------------------------------------------------------------------------

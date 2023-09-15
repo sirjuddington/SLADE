@@ -582,6 +582,7 @@
     <ClCompile Include="..\src\Utility\MathStuff.cpp" />
     <ClCompile Include="..\src\Utility\MemChunk.cpp" />
     <ClCompile Include="..\src\Utility\Parser.cpp" />
+    <ClCompile Include="..\src\Utility\Polygon.cpp" />
     <ClCompile Include="..\src\Utility\Polygon2D.cpp" />
     <ClCompile Include="..\src\Utility\Property.cpp" />
     <ClCompile Include="..\src\Utility\SFileDialog.cpp" />
@@ -715,6 +716,7 @@
     <ClInclude Include="..\src\UI\Dialogs\TranslationEditorDialog.h" />
     <ClInclude Include="..\src\UI\Lists\ArchiveEntryTree.h" />
     <ClInclude Include="..\src\Utility\FileUtils.h" />
+    <ClInclude Include="..\src\Utility\Polygon.h" />
     <ClInclude Include="..\src\Utility\Property.h" />
     <ClInclude Include="..\src\Utility\SeekableData.h" />
     <ClInclude Include="..\src\Game\ActionSpecial.h" />

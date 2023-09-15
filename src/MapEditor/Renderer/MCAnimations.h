@@ -132,13 +132,6 @@ public:
 	void draw(gl::draw2d::Context& dc) override;
 
 private:
-	struct PolyData
-	{
-		unsigned offset;
-		unsigned vertices;
-		PolyData(unsigned offset, unsigned vertices) : offset{ offset }, vertices{ vertices } {}
-	};
-	vector<PolyData>               polygons_;
 	unique_ptr<gl::VertexBuffer2D> vertex_buffer_;
 	bool                           select_ = true;
 	float                          fade_   = 1.f;

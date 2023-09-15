@@ -7,33 +7,33 @@ namespace slade::gl
 class View;
 class Shader;
 
+struct Vertex2D
+{
+	glm::vec2 position;
+	glm::vec4 colour;
+	glm::vec2 tex_coord;
+
+	Vertex2D(glm::vec2 position) : position{ position }, colour{}, tex_coord{} {}
+	Vertex2D(glm::vec2 position, glm::vec4 colour) : position{ position }, colour{ colour }, tex_coord{} {}
+	Vertex2D(glm::vec2 position, glm::vec4 colour, glm::vec2 tex_coord) :
+		position{ position }, colour{ colour }, tex_coord{ tex_coord }
+	{
+	}
+};
+
 class VertexBuffer2D
 {
 public:
-	struct Vertex
-	{
-		glm::vec2 position;
-		glm::vec4 colour;
-		glm::vec2 tex_coord;
-
-		Vertex(glm::vec2 position) : position{ position }, colour{}, tex_coord{} {}
-		Vertex(glm::vec2 position, glm::vec4 colour) : position{ position }, colour{ colour }, tex_coord{} {}
-		Vertex(glm::vec2 position, glm::vec4 colour, glm::vec2 tex_coord) :
-			position{ position }, colour{ colour }, tex_coord{ tex_coord }
-		{
-		}
-	};
-
 	VertexBuffer2D() = default;
 	~VertexBuffer2D();
 
-	const Buffer<Vertex>& buffer() const { return buffer_; }
-	Buffer<Vertex>&       buffer() { return buffer_; }
+	const Buffer<Vertex2D>& buffer() const { return buffer_; }
+	Buffer<Vertex2D>&       buffer() { return buffer_; }
 
 	unsigned queueSize() const { return vertices_.size(); }
 
-	void add(const Vertex& vertex);
-	void add(const vector<Vertex>& vertices);
+	void add(const Vertex2D& vertex);
+	void add(const vector<Vertex2D>& vertices);
 	void add(const glm::vec2& pos, const glm::vec4& colour, const glm::vec2& tex_coord);
 	void addQuadTriangles(
 		glm::vec2 tl,
@@ -54,8 +54,8 @@ public:
 	static const VertexBuffer2D& unitSquare();
 
 private:
-	vector<Vertex> vertices_;
-	unsigned       vao_ = 0;
-	Buffer<Vertex> buffer_;
+	vector<Vertex2D> vertices_;
+	unsigned         vao_ = 0;
+	Buffer<Vertex2D> buffer_;
 };
 } // namespace slade::gl

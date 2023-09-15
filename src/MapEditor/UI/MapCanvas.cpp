@@ -283,19 +283,19 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	// Testing
 	if (global::debug)
 	{
-		if (e.GetKeyCode() == WXK_F6)
-		{
-			Polygon2D poly;
-			sf::Clock clock;
-			log::info(1, "Generating polygons...");
-			for (unsigned a = 0; a < context_->map().nSectors(); a++)
-			{
-				if (!poly.openSector(context_->map().sector(a)))
-					log::info(1, wxString::Format("Splitting failed for sector %d", a));
-			}
-			// int ms = clock.GetElapsedTime() * 1000;
-			// log::info(1, "Polygon generation took %dms", ms);
-		}
+		//if (e.GetKeyCode() == WXK_F6)
+		//{
+		//	Polygon2D poly;
+		//	sf::Clock clock;
+		//	log::info(1, "Generating polygons...");
+		//	for (unsigned a = 0; a < context_->map().nSectors(); a++)
+		//	{
+		//		if (!poly.openSector(context_->map().sector(a)))
+		//			log::info(1, wxString::Format("Splitting failed for sector %d", a));
+		//	}
+		//	// int ms = clock.GetElapsedTime() * 1000;
+		//	// log::info(1, "Polygon generation took %dms", ms);
+		//}
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line

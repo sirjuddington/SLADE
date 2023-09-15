@@ -36,6 +36,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
+#include "Utility/Polygon.h"
 
 using namespace slade;
 
@@ -72,9 +73,7 @@ MapSector::MapSector(
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
 MapSector::MapSector(string_view f_tex, string_view c_tex, ParseTreeNode* udmf_def) :
-	MapObject(Type::Sector),
-	floor_{ f_tex },
-	ceiling_{ c_tex }
+	MapObject(Type::Sector), floor_{ f_tex }, ceiling_{ c_tex }
 {
 	// Set UDMF defaults
 	light_ = 160;
@@ -205,17 +204,17 @@ void MapSector::setFloatProperty(string_view key, double value)
 {
 	using game::UDMFFeature;
 
-	// Check if flat offset/scale/rotation is changing (if UDMF)
-	if (parent_map_->currentFormat() == MapFormat::UDMF)
-	{
-		if ((game::configuration().featureSupported(UDMFFeature::FlatPanning)
-			 && (key == "xpanningfloor" || key == "ypanningfloor"))
-			|| (game::configuration().featureSupported(UDMFFeature::FlatScaling)
-				&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
-			|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
-				&& (key == "rotationfloor" || key == "rotationceiling")))
-			polygon_.setTexture(0); // Clear texture to force update
-	}
+	//// Check if flat offset/scale/rotation is changing (if UDMF)
+	// if (parent_map_->currentFormat() == MapFormat::UDMF)
+	//{
+	//	if ((game::configuration().featureSupported(UDMFFeature::FlatPanning)
+	//		 && (key == "xpanningfloor" || key == "ypanningfloor"))
+	//		|| (game::configuration().featureSupported(UDMFFeature::FlatScaling)
+	//			&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
+	//		|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
+	//			&& (key == "rotationfloor" || key == "rotationceiling")))
+	//		polygon_.setTexture(0); // Clear texture to force update
+	// }
 
 	MapObject::setFloatProperty(key, value);
 }
@@ -389,17 +388,17 @@ BBox MapSector::boundingBox()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the sector polygon, updating it if necessary
+// Returns the sector polygon vertices (as triangles), updating if necessary
 // -----------------------------------------------------------------------------
-Polygon2D* MapSector::polygon()
+const vector<glm::vec2>& MapSector::polygonVertices()
 {
 	if (poly_needsupdate_)
 	{
-		polygon_.openSector(this);
-		poly_needsupdate_ = false;
+		polygon_triangles_ = polygon::generateSectorTriangles(*this);
+		poly_needsupdate_  = false;
 	}
 
-	return &polygon_;
+	return polygon_triangles_;
 }
 
 // -----------------------------------------------------------------------------

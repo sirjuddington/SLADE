@@ -2,16 +2,13 @@
 
 #include "Utility/Colour.h"
 
+
+// Forward declarations
+#include "SLADEMap/SLADEMapFwd.h"
 namespace slade
 {
-// Forward declarations
 class ItemSelection;
-class Polygon2D;
 class Camera;
-class MapThing;
-class SLADEMap;
-class MapSector;
-class MapLine;
 namespace game
 {
 	class ThingType;
@@ -20,7 +17,11 @@ namespace mapeditor
 {
 	struct Item;
 }
+} // namespace slade
 
+
+namespace slade
+{
 class MapRenderer3D
 {
 public:

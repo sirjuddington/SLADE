@@ -1,14 +1,11 @@
 #pragma once
 
+// Forward declarations
+#include "SLADEMap/SLADEMapFwd.h"
 namespace slade
 {
-// Forward declarations
 class ItemSelection;
-class MapLine;
-class MapSector;
-class MapThing;
 class ObjectEditGroup;
-class SLADEMap;
 namespace game
 {
 	class ThingType;
@@ -29,7 +26,11 @@ namespace mapeditor
 {
 	struct Item;
 }
+} // namespace slade
 
+
+namespace slade
+{
 class MapRenderer2D
 {
 public:
@@ -99,7 +100,7 @@ public:
 	void updateVisibility(const Vec2d& view_tl, const Vec2d& view_br);
 	void forceUpdate(float line_alpha = 1.0f);
 	bool visOK() const;
-	void clearTextureCache() { tex_flats_.clear(); }
+	void clearTextureCache();
 
 private:
 	SLADEMap* map_              = nullptr;
@@ -119,6 +120,16 @@ private:
 	unique_ptr<gl::VertexBuffer2D>        thing_light_preview_buffer_;
 	unique_ptr<gl::ThingBuffer2D>         temp_things_buffer_;
 
+	// Flats
+	struct Flat
+	{
+		unsigned texture       = 0;
+		long     updated_time  = 0;
+		unsigned buffer_offset = 0;
+		unsigned vertex_count  = 0;
+	};
+	vector<Flat> flats_;
+
 	// Visibility
 	enum
 	{
@@ -131,12 +142,11 @@ private:
 	vector<uint8_t> vis_s_;
 
 	// Other
-	bool             lines_dirs_    = false;
-	unsigned         n_vertices_    = 0;
-	unsigned         n_lines_       = 0;
-	bool             things_angles_ = false;
-	vector<unsigned> tex_flats_;
-	int              last_flat_type_ = -1;
+	bool     lines_dirs_     = false;
+	unsigned n_vertices_     = 0;
+	unsigned n_lines_        = 0;
+	bool     things_angles_  = false;
+	int      last_flat_type_ = -1;
 
 	// Thing paths
 	enum class PathType
