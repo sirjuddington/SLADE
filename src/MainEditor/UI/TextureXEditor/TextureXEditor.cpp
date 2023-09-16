@@ -171,8 +171,8 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	SAction::fromId("txed_rename")->addToMenu(menu_texture_);
 	SAction::fromId("txed_rename_each")->addToMenu(menu_texture_);
 	auto menu_export = new wxMenu();
-	SAction::fromId("txed_export")->addToMenu(menu_export, "Archive (as image)");
-	SAction::fromId("txed_extract")->addToMenu(menu_export, "File");
+	SAction::fromId("txed_export")->addToMenu(menu_export, true, "Archive (as image)");
+	SAction::fromId("txed_extract")->addToMenu(menu_export, true, "File");
 	menu_texture_->AppendSubMenu(menu_export, "&Export To");
 	menu_texture_->AppendSeparator();
 	SAction::fromId("txed_copy")->addToMenu(menu_texture_);
