@@ -711,8 +711,8 @@ void ArchivePanel::addMenus() const
 		SAction::fromId("arch_entry_copy")->addToMenu(menu_entry);
 		SAction::fromId("arch_entry_paste")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		SAction::fromId("arch_entry_moveup")->addToMenu(menu_entry);
-		SAction::fromId("arch_entry_movedown")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_moveup")->addToMenu(menu_entry, false);
+		SAction::fromId("arch_entry_movedown")->addToMenu(menu_entry, false);
 		SAction::fromId("arch_entry_sort")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
 		SAction::fromId("arch_entry_import")->addToMenu(menu_entry);
