@@ -532,6 +532,8 @@ void KeyBind::initBinds()
 	addBind("ted_line_comment", Keypress("/", KPM_CTRL), "Line Comment", group);
 	addBind("ted_block_comment", Keypress("/", KPM_CTRL | KPM_SHIFT), "Block Comment", group);
 	addBind("ted_cycle_comments", Keypress("/", KPM_ALT), "Cycle Comments", group);
+	addBind("ted_select_next_occ", Keypress("D", KPM_CTRL), "Select Next Occurrence", group);
+	addBind("ted_select_all_occ", Keypress("D", KPM_CTRL | KPM_SHIFT), "Select All Occurrences", group);
 
 	// Texture editor (txed*)
 	group = "Texture Editor";

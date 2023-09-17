@@ -154,7 +154,7 @@ void SAction::initWxId()
 // -----------------------------------------------------------------------------
 bool SAction::addToMenu(wxMenu* menu, string_view text_override, string_view icon_override, int wx_id_offset)
 {
-	return addToMenu(menu, false, text_override, icon_override, wx_id_offset);
+	return addToMenu(menu, true, text_override, icon_override, wx_id_offset);
 }
 bool SAction::addToMenu(
 	wxMenu*     menu,
@@ -184,7 +184,8 @@ bool SAction::addToMenu(
 	auto item_text = text_;
 	if (text_override != "NO")
 		item_text = text_override;
-	if (!sc.empty() && (sc_control || show_shortcut))
+	//if (!sc.empty() && (sc_control || show_shortcut))
+	if (show_shortcut && !sc.empty())
 		item_text = fmt::format("{}\t{}", item_text, sc);
 
 	// Append this action to the menu

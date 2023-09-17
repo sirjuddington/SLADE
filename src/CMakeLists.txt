@@ -168,7 +168,12 @@ if(APPLE)
 endif(APPLE)
 
 # Enable SSE instructions for dumb library
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
+include(CheckCCompilerFlag)
+check_c_compiler_flag(-msse HAVE_SSE)
+if(HAVE_SSE)
+	add_compile_options(-msse)
+	add_definitions(-D_USE_SSE)
+endif()
 
 # Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")

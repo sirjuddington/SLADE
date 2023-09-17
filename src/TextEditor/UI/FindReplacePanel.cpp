@@ -41,6 +41,16 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Bool, txed_fr_matchcase)
+EXTERN_CVAR(Bool, txed_fr_matchword)
+EXTERN_CVAR(Bool, txed_fr_matchword_start)
+
+
+// -----------------------------------------------------------------------------
+//
 // FindReplacePanel Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -50,8 +60,7 @@ using namespace slade;
 // FindReplacePanel class constructor
 // -----------------------------------------------------------------------------
 FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor) :
-	wxPanel(parent, -1),
-	text_editor_(text_editor)
+	wxPanel(parent, -1), text_editor_(text_editor)
 {
 	SetSizer(new wxBoxSizer(wxVERTICAL));
 
@@ -95,6 +104,9 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 	wsizer->Add(cb_search_regex_, 0, wxEXPAND);
 	wsizer->AddSpacer(ui::pad());
 	wsizer->Add(cb_allow_escape_, 0, wxEXPAND);
+	cb_match_case_->SetValue(txed_fr_matchcase);
+	cb_match_word_whole_->SetValue(txed_fr_matchword);
+	cb_match_word_start_->SetValue(txed_fr_matchword_start);
 
 	gb_sizer->AddGrowableCol(1, 1);
 
@@ -116,23 +128,40 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 		wxEVT_BUTTON, [&](wxCommandEvent& e) { text_editor_.replaceCurrent(findText(), replaceText(), findFlags()); });
 
 	// Replace All button clicked
-	btn_replace_all_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) {
-		auto n_replaced = text_editor_.replaceAll(findText(), replaceText(), findFlags());
-		wxMessageBox(wxString::Format("Replaced %d occurrence(s)", n_replaced), "Replace All");
-	});
+	btn_replace_all_->Bind(
+		wxEVT_BUTTON,
+		[&](wxCommandEvent& e)
+		{
+			auto n_replaced = text_editor_.replaceAll(findText(), replaceText(), findFlags());
+			wxMessageBox(wxString::Format("Replaced %d occurrence(s)", n_replaced), "Replace All");
+		});
 
 	// Enter pressed in find text box
-	text_find_->Bind(wxEVT_TEXT_ENTER, [&](wxCommandEvent& e) {
-		if (wxGetKeyState(WXK_SHIFT))
-			text_editor_.findPrev(findText(), findFlags());
-		else
-			text_editor_.findNext(findText(), findFlags());
-	});
+	text_find_->Bind(
+		wxEVT_TEXT_ENTER,
+		[&](wxCommandEvent& e)
+		{
+			if (wxGetKeyState(WXK_SHIFT))
+				text_editor_.findPrev(findText(), findFlags());
+			else
+				text_editor_.findNext(findText(), findFlags());
+		});
 
 	// Enter pressed in replace text box
-	text_replace_->Bind(wxEVT_TEXT_ENTER, [&](wxCommandEvent& e) {
-		text_editor_.replaceCurrent(findText(), replaceText(), findFlags());
-	});
+	text_replace_->Bind(
+		wxEVT_TEXT_ENTER,
+		[&](wxCommandEvent& e) { text_editor_.replaceCurrent(findText(), replaceText(), findFlags()); });
+
+	// Match Case checkbox changed
+	cb_match_case_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e) { txed_fr_matchcase = cb_match_case_->GetValue(); });
+
+	// Match Word (Whole) checkbox changed
+	cb_match_word_whole_->Bind(
+		wxEVT_CHECKBOX, [&](wxCommandEvent& e) { txed_fr_matchword = cb_match_word_whole_->GetValue(); });
+
+	// Match Word (Start) checkbox changed
+	cb_match_word_start_->Bind(
+		wxEVT_CHECKBOX, [&](wxCommandEvent& e) { txed_fr_matchword_start = cb_match_word_start_->GetValue(); });
 
 	Bind(wxEVT_CHAR_HOOK, &FindReplacePanel::onKeyDown, this);
 
