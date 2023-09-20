@@ -144,6 +144,11 @@ MCAThingSelection::MCAThingSelection(
 }
 
 // -----------------------------------------------------------------------------
+// MCAThingSelection class destructor
+// -----------------------------------------------------------------------------
+slade::MCAThingSelection::~MCAThingSelection() = default;
+
+// -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
 // -----------------------------------------------------------------------------
 bool MCAThingSelection::update(long time)

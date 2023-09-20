@@ -166,8 +166,8 @@ private:
 	long                 next_frame_length_ = 0;
 
 	// Undo/Redo stuff
-	unique_ptr<UndoManager> undo_manager_     = nullptr;
-	unique_ptr<UndoStep>    us_create_delete_ = nullptr;
+	unique_ptr<UndoManager> undo_manager_;
+	unique_ptr<UndoStep>    us_create_delete_;
 
 	// Editor state
 	mapeditor::Mode           edit_mode_      = mapeditor::Mode::Lines;
@@ -205,11 +205,11 @@ private:
 	unique_ptr<ObjectEdit>  object_edit_;
 
 	// Object properties and copy/paste
-	unique_ptr<MapThing>  copy_thing_      = nullptr;
-	unique_ptr<MapSector> copy_sector_     = nullptr;
-	unique_ptr<MapSide>   copy_side_front_ = nullptr;
-	unique_ptr<MapSide>   copy_side_back_  = nullptr;
-	unique_ptr<MapLine>   copy_line_       = nullptr;
+	unique_ptr<MapThing>  copy_thing_;
+	unique_ptr<MapSector> copy_sector_;
+	unique_ptr<MapSide>   copy_side_front_;
+	unique_ptr<MapSide>   copy_side_back_;
+	unique_ptr<MapLine>   copy_line_;
 
 	// Editor messages
 	vector<EditorMessage> editor_messages_;
@@ -228,7 +228,7 @@ private:
 	unique_ptr<mapeditor::Input> input_;
 
 	// Full-Screen Overlay
-	unique_ptr<MCOverlay> overlay_current_ = nullptr;
+	unique_ptr<MCOverlay> overlay_current_;
 
 	// Info overlays
 	bool                          info_showing_ = false;

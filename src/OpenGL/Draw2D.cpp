@@ -149,13 +149,15 @@ inline float fontScale(int size)
 void drawTextCustomCallback(dtx_vertex* v, int vcount, dtx_pixmap* pixmap, void* cls)
 {
 	// Generate texture if needed
-	auto tex = reinterpret_cast<unsigned>(pixmap->udata);
-	if (tex == 0)
+	unsigned tex;
+	if (!pixmap->udata)
 	{
 		tex = gl::Texture::create(TexFilter::Linear, false);
 		gl::Texture::loadAlphaData(tex, pixmap->pixels, pixmap->width, pixmap->height);
-		pixmap->udata = reinterpret_cast<void*>(tex);
+		pixmap->udata = new unsigned{ tex };
 	}
+	else
+		tex = *static_cast<unsigned*>(pixmap->udata);
 
 	glm::vec4 colour{ 1.0f };
 	for (int i = 0; i < vcount; ++i)
