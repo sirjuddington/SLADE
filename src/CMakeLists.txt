@@ -105,6 +105,7 @@ if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
 endif()
 find_package(MPG123 REQUIRED)
+find_package(glm CONFIG REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
 	${SFML_INCLUDE_DIR}
@@ -203,6 +204,7 @@ target_link_libraries(slade
 	${OPENGL_LIBRARIES}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
+	glm::glm
 )
 
 if(LINUX)

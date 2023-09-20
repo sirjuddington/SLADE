@@ -69,7 +69,7 @@ public:
 		float                    view_scale,
 		gl::PointSpriteType      ps_type,
 		bool                     select = true);
-	~MCAThingSelection() override = default;
+	~MCAThingSelection() override;
 
 	bool update(long time) override;
 	void draw(gl::draw2d::Context& dc) override;
