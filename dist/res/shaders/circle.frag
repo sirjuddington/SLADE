@@ -12,7 +12,7 @@ uniform vec4 colour;
 uniform vec2 viewport_size;
 uniform float point_radius;
 
-varying float i_radius;
+in float i_radius;
 
 
 #ifdef OUTLINE // Circle Outline -----------------------------------------------
