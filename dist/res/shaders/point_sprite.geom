@@ -9,7 +9,7 @@ out VertexData
 	vec2 tex_coord;
 } vertex_out;
 
-varying float i_radius;
+out float i_radius;
 
 uniform mat4 mvp;
 uniform float point_radius;

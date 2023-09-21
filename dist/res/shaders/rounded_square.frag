@@ -6,13 +6,13 @@ in VertexData
 	vec2 tex_coord;
 } vertex_in;
 
+in float i_radius;
+
 out vec4 f_colour;
 
 uniform vec4 colour;
 uniform vec2 viewport_size;
 uniform float point_radius;
-
-varying float i_radius;
 
 const float corner_radius = 0.025;
 
@@ -31,7 +31,7 @@ void main()
 	float outline_size = (outline_width / (point_radius * i_radius));
 
 	float dist = rounded_rect_dist(vertex_in.tex_coord - vec2(0.5), vec2(0.5 - outline_size), corner_radius);
-	float delta = fwidth(dist) * 0.5;
+	float delta = fwidth(dist);// * 0.5;
 
     float alpha = smoothstep(0.0 - delta, delta, dist);
 	float alpha_ol = smoothstep(outline_size - delta, outline_size + delta, dist);
