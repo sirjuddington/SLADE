@@ -112,6 +112,7 @@ private:
 
 	// OpenGL Buffers
 	unique_ptr<gl::LineBuffer>            lines_buffer_;
+	unique_ptr<gl::VertexBuffer2D>        lines_buffer_basic_;
 	unique_ptr<gl::LineBuffer>            temp_lines_buffer_;
 	unique_ptr<gl::PointSpriteBuffer>     vertices_buffer_;
 	unique_ptr<gl::VertexBuffer2D>        flats_buffer_;

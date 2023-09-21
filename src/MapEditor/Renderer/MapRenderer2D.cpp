@@ -312,14 +312,27 @@ void MapRenderer2D::renderLines(bool show_direction, float alpha)
 		return;
 
 	// Update lines buffer if needed
-	if (!lines_buffer_ || lines_buffer_->buffer().empty() || show_direction != lines_dirs_ || map_->nLines() != n_lines_
+	bool buffer_empty = false;
+	if (line_smooth)
+		buffer_empty = !lines_buffer_ || lines_buffer_->buffer().empty();
+	else
+		buffer_empty = !lines_buffer_basic_ || lines_buffer_basic_->buffer().empty();
+	if (buffer_empty || show_direction != lines_dirs_ || map_->nLines() != n_lines_
 		|| map_->geometryUpdated() > lines_updated_
 		|| map_->mapData().modifiedSince(lines_updated_, MapObject::Type::Line))
 		updateLinesBuffer(show_direction);
 
 	// Render lines buffer
-	lines_buffer_->setWidthMult(line_width);
-	lines_buffer_->draw(view_, { 1.0f, 1.0f, 1.0f, alpha });
+	if (line_smooth)
+	{
+		lines_buffer_->setWidthMult(line_width);
+		lines_buffer_->draw(view_, { 1.0f, 1.0f, 1.0f, alpha });
+	}
+	else
+	{
+		auto& shader = gl::draw2d::defaultShader(false);
+		lines_buffer_basic_->draw(gl::Primitive::Lines, &shader, view_);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1509,25 +1522,43 @@ void MapRenderer2D::updateVerticesBuffer()
 void MapRenderer2D::updateLinesBuffer(bool show_direction)
 {
 	// Init buffer
-	if (!lines_buffer_)
+	if (line_smooth && !lines_buffer_)
 		lines_buffer_ = std::make_unique<gl::LineBuffer>();
+	if (!line_smooth && !lines_buffer_basic_)
+		lines_buffer_basic_ = std::make_unique<gl::VertexBuffer2D>();
 
 	// Add all map lines to buffer
 	for (const auto line : map_->lines())
 	{
 		auto col = lineColour(line);
 
-		lines_buffer_->add2d(line->x1(), line->y1(), line->x2(), line->y2(), col.asVec4(), 1.0f);
+		if (line_smooth)
+			lines_buffer_->add2d(line->x1(), line->y1(), line->x2(), line->y2(), col.asVec4(), 1.0f);
+		else
+		{
+			lines_buffer_basic_->add(line->start().toGLM(), col.asVec4(), {});
+			lines_buffer_basic_->add(line->end().toGLM(), col.asVec4(), {});
+		}
 
 		// Direction tab if needed
 		if (show_direction)
 		{
 			auto mid = line->getPoint(MapObject::Point::Mid);
 			auto tab = line->dirTabPoint();
-			lines_buffer_->add2d(mid.x, mid.y, tab.x, tab.y, { col.fr(), col.fg(), col.fb(), col.fa() * 0.6f }, 1.0f);
+			if (line_smooth)
+				lines_buffer_->add2d(mid.x, mid.y, tab.x, tab.y, { col.fr(), col.fg(), col.fb(), col.fa() * 0.6f }, 1.0f);
+			else
+			{
+				auto dcol = col.ampf(1.0f, 1.0f, 1.0f, 0.6f).asVec4();
+				lines_buffer_basic_->add(mid.toGLM(), dcol, {});
+				lines_buffer_basic_->add(tab.toGLM(), dcol, {});
+			}
 		}
 	}
-	lines_buffer_->push();
+	if (line_smooth)
+		lines_buffer_->push();
+	else
+		lines_buffer_basic_->push();
 
 	lines_dirs_    = show_direction;
 	n_lines_       = map_->nLines();
