@@ -48,11 +48,12 @@ EXTERN_CVAR(Int, vertex_size)
 EXTERN_CVAR(Int, vertices_always)
 EXTERN_CVAR(Float, line_width)
 EXTERN_CVAR(Bool, line_smooth)
-EXTERN_CVAR(Int, thing_drawtype)
 EXTERN_CVAR(Int, things_always)
 EXTERN_CVAR(Bool, thing_force_dir)
 EXTERN_CVAR(Bool, thing_overlay_square)
 EXTERN_CVAR(Float, thing_shadow)
+EXTERN_CVAR(Int, thing_shape)
+EXTERN_CVAR(Bool, thing_sprites)
 EXTERN_CVAR(Float, flat_brightness)
 EXTERN_CVAR(Bool, sector_hilight_fill)
 EXTERN_CVAR(Bool, sector_selected_fill)
@@ -64,8 +65,6 @@ EXTERN_CVAR(Bool, map_animate_tagged)
 EXTERN_CVAR(Bool, line_fade)
 EXTERN_CVAR(Bool, flat_fade)
 EXTERN_CVAR(Int, map_crosshair)
-EXTERN_CVAR(Bool, arrow_colour)
-EXTERN_CVAR(Float, arrow_alpha)
 EXTERN_CVAR(Bool, action_lines)
 EXTERN_CVAR(Bool, map_show_help)
 EXTERN_CVAR(Int, map_tex_filter)
@@ -240,12 +239,15 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 	int row = 0;
 
-	// Thing style
-	gb_sizer->Add(new wxStaticText(panel, -1, "Thing style: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	choice_thing_drawtype_ = new wxChoice(panel, -1);
-	choice_thing_drawtype_->Set(
-		wxutil::arrayString({ "Square", "Round", "Sprite", "Square + Sprite", "Framed Sprite" }));
-	gb_sizer->Add(choice_thing_drawtype_, { row++, 1 }, { 1, 1 }, wxEXPAND);
+	// Thing shape
+	gb_sizer->Add(new wxStaticText(panel, -1, "Thing shape: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	choice_thing_shape_ = new wxChoice(panel, -1);
+	choice_thing_shape_->Set(wxutil::arrayString({ "Round", "Square" }));
+	gb_sizer->Add(choice_thing_shape_, { row, 1 }, { 1, 1 }, wxEXPAND);
+
+	// Sprites
+	cb_thing_sprites_ = new wxCheckBox(panel, -1, "Show Sprites");
+	gb_sizer->Add(cb_thing_sprites_, { row++, 2 }, { 1, 1 }, wxEXPAND);
 
 	// When not in things mode
 	gb_sizer->Add(
@@ -261,12 +263,6 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	slider_thing_shadow_ = new wxSlider(panel, -1, thing_shadow * 10, 0, 10, dp, ds, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_thing_shadow_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
-	// Arrow opacity
-	gb_sizer->Add(
-		new wxStaticText(panel, -1, "Thing angle arrow opacity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	slider_thing_arrow_alpha_ = new wxSlider(panel, -1, thing_shadow * 10, 0, 10, dp, ds, wxSL_AUTOTICKS);
-	gb_sizer->Add(slider_thing_arrow_alpha_, { row++, 1 }, { 1, 1 }, wxEXPAND);
-
 	// Halo width
 	gb_sizer->Add(new wxStaticText(panel, -1, "Halo extra width: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_halo_width_ = new wxSlider(panel, -1, halo_width, 0, 10, dp, ds, wxSL_AUTOTICKS);
@@ -281,10 +277,6 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	// Always show angles
 	cb_thing_force_dir_ = new wxCheckBox(panel, -1, "Always show thing angles");
 	gb_sizer->Add(cb_thing_force_dir_, { row++, 0 }, { 1, 2 }, wxEXPAND);
-
-	// Colour angle arrows
-	cb_thing_arrow_colour_ = new wxCheckBox(panel, -1, "Colour thing angle arrows");
-	gb_sizer->Add(cb_thing_arrow_colour_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Force square hilight/selection
 	cb_thing_overlay_square_ = new wxCheckBox(panel, -1, "Force square thing hilight/selection overlay");
@@ -332,10 +324,10 @@ void MapDisplayPrefsPanel::init()
 	cb_vertex_round_->SetValue(vertex_round);
 	cb_line_smooth_->SetValue(line_smooth);
 	cb_line_tabs_always_->SetValue(line_tabs_always);
-	choice_thing_drawtype_->SetSelection(thing_drawtype);
+	choice_thing_shape_->SetSelection(thing_shape);
+	cb_thing_sprites_->SetValue(thing_sprites);
 	cb_thing_force_dir_->SetValue(thing_force_dir);
 	cb_thing_overlay_square_->SetValue(thing_overlay_square);
-	cb_thing_arrow_colour_->SetValue(arrow_colour);
 	cb_flat_ignore_light_->SetValue(flat_ignore_light);
 	cb_sector_hilight_fill_->SetValue(sector_hilight_fill);
 	cb_sector_selected_fill_->SetValue(sector_selected_fill);
@@ -350,7 +342,6 @@ void MapDisplayPrefsPanel::init()
 	slider_vertex_size_->SetValue(vertex_size);
 	slider_line_width_->SetValue(line_width * 10);
 	slider_thing_shadow_->SetValue(thing_shadow * 10);
-	slider_thing_arrow_alpha_->SetValue(arrow_alpha * 10);
 	slider_flat_brightness_->SetValue(flat_brightness * 10);
 	choice_crosshair_->Select(map_crosshair);
 	cb_action_lines_->SetValue(action_lines);
@@ -371,16 +362,15 @@ void MapDisplayPrefsPanel::applyPreferences()
 	grid_dashed           = cb_grid_dashed_->GetValue();
 	vertex_round          = cb_vertex_round_->GetValue();
 	vertex_size           = slider_vertex_size_->GetValue();
-	line_width            = (float)slider_line_width_->GetValue() * 0.1f;
+	line_width            = static_cast<float>(slider_line_width_->GetValue()) * 0.1f;
 	line_smooth           = cb_line_smooth_->GetValue();
 	line_tabs_always      = cb_line_tabs_always_->GetValue();
-	thing_drawtype        = choice_thing_drawtype_->GetSelection();
+	thing_shape           = choice_thing_shape_->GetSelection();
+	thing_sprites         = cb_thing_sprites_->GetValue();
 	thing_force_dir       = cb_thing_force_dir_->GetValue();
 	thing_overlay_square  = cb_thing_overlay_square_->GetValue();
-	thing_shadow          = (float)slider_thing_shadow_->GetValue() * 0.1f;
-	arrow_colour          = cb_thing_arrow_colour_->GetValue();
-	arrow_alpha           = (float)slider_thing_arrow_alpha_->GetValue() * 0.1f;
-	flat_brightness       = (float)slider_flat_brightness_->GetValue() * 0.1f;
+	thing_shadow          = static_cast<float>(slider_thing_shadow_->GetValue()) * 0.1f;
+	flat_brightness       = static_cast<float>(slider_flat_brightness_->GetValue()) * 0.1f;
 	flat_ignore_light     = cb_flat_ignore_light_->GetValue();
 	sector_hilight_fill   = cb_sector_hilight_fill_->GetValue();
 	sector_selected_fill  = cb_sector_selected_fill_->GetValue();
@@ -399,5 +389,5 @@ void MapDisplayPrefsPanel::applyPreferences()
 	halo_width            = slider_halo_width_->GetValue();
 	grid_64_style         = choice_grid_64_->GetSelection();
 	grid_show_origin      = cb_grid_show_origin_->GetValue();
-	thing_light_intensity = slider_light_intensity_->GetValue() * 0.1f;
+	thing_light_intensity = static_cast<float>(slider_light_intensity_->GetValue()) * 0.1f;
 }

@@ -14,6 +14,7 @@ out vec4 f_colour;
 uniform vec4 colour;
 uniform sampler2D tex_unit;
 uniform float radius;
+uniform float shadow_opacity;
 
 // Constants
 const float outline_size = 0.065;
@@ -26,17 +27,19 @@ const float arrow_thickness = 0.02;
 #ifdef SQUARE
 
 // Square Shape
-float sd_rounded_rect(vec2 center, vec2 size, float radius)
+float sd_rounded_rect(vec2 center, vec2 size, float corner_radius)
 {
-    return length(max(abs(center) - size + radius, 0.0)) - radius;
+    return length(max(abs(center) - size + corner_radius, 0.0)) - corner_radius;
 }
 vec4 shape(vec2 uv, vec4 base_colour)
 {
-	float dist = sd_rounded_rect(uv - vec2(0.5), vec2(0.5 - outline_size), 0.025);
+	float outline_width = min(1.2 / radius, 0.065);
+
+	float dist = sd_rounded_rect(uv - vec2(0.5), vec2(0.5 - outline_width), 0.025);
 	float delta = fwidth(dist) * 0.5;
-	float alpha_ol = smoothstep(outline_size - delta, outline_size + delta, dist);
+	float alpha_ol = smoothstep(outline_width - delta, outline_width + delta, dist);
 	float alpha = smoothstep(0.0 - delta, 0.0 + delta, dist);
-	float alpha_ds = smoothstep(outline_size - shadow_smoothing, outline_size + shadow_smoothing, dist);
+	float alpha_ds = smoothstep(outline_width - shadow_smoothing, outline_width + shadow_smoothing, dist);
 
 	// Apply outline
 	vec4 out_colour = vec4(
@@ -45,7 +48,7 @@ vec4 shape(vec2 uv, vec4 base_colour)
 	);
 
 	// Apply drop shadow
-	vec4 shadow = vec4(vec3(0.0), (1.0 - alpha_ds) * 0.7);
+	vec4 shadow = vec4(vec3(0.0), (1.0 - alpha_ds) * shadow_opacity);
 	out_colour = mix(shadow, out_colour, out_colour.a);
 
 	return out_colour;
@@ -55,11 +58,13 @@ vec4 shape(vec2 uv, vec4 base_colour)
 // Round Shape
 vec4 shape(vec2 uv, vec4 base_colour)
 {
+	float outline_width = min(1.2 / radius, 0.065);
+
 	float dist = distance(uv, vec2(0.5));
 	float delta = fwidth(dist);
 	float size = circle_size;
 	float alpha_ol = smoothstep(size - delta, size, dist);
-	float alpha = smoothstep(size - outline_size - delta, size - outline_size + delta, dist);
+	float alpha = smoothstep(size - outline_width - delta, size - outline_width + delta, dist);
 	float alpha_ds = smoothstep(size - shadow_smoothing, size + shadow_smoothing, dist);
 
 	// Apply outline
@@ -69,7 +74,7 @@ vec4 shape(vec2 uv, vec4 base_colour)
 	);
 
 	// Apply drop shadow
-	vec4 shadow = vec4(vec3(0.0), (1.0 - alpha_ds) * 0.7);
+	vec4 shadow = vec4(vec3(0.0), (1.0 - alpha_ds) * shadow_opacity);
 	out_colour = mix(shadow, out_colour, out_colour.a);
 
 	return out_colour;
@@ -101,13 +106,15 @@ float sd_arrow(vec2 uv, vec2 p_start, vec2 p_end, float head_length, float thick
 
 vec4 arrow(vec2 uv, vec2 direction, float length)
 {
+	float thickness = min(0.75 / radius, 0.02);
+
 	vec2 start_point = vec2(0.5, 0.5) + direction * (length * 0.7);
     vec2 end_point = vec2(0.5, 0.5) + direction * (length * 1.1);
     
-    float dist = sd_arrow(uv, start_point, end_point, 0.125, arrow_thickness, arrow_sc);
+    float dist = sd_arrow(uv, start_point, end_point, 0.125, thickness, arrow_sc);
     float delta = fwidth(dist);
     
-    float alpha_ol = smoothstep((arrow_thickness * 2.0) - delta, (arrow_thickness * 2.0) + delta, dist);
+    float alpha_ol = smoothstep((thickness * 2.0) - delta, (thickness * 2.0) + delta, dist);
 	float alpha = smoothstep(0.0 - delta, 0.0 + delta, dist);
     
     vec4 fill_colour = vec4(1.0, 1.0, 1.0, colour.a);
@@ -118,8 +125,8 @@ vec4 arrow(vec2 uv, vec2 direction, float length)
 	out_colour.a = fill_colour.a * (1.0 - alpha_ol);
     
     // Apply drop shadow
-    float alpha_ds = smoothstep((arrow_thickness * 1.5) - (shadow_smoothing * 0.5), (arrow_thickness * 1.5) + (shadow_smoothing * 0.5), dist);
-	vec4 shadow = vec4(vec3(0.0), (1.0 - alpha_ds) * 0.5);
+    float alpha_ds = smoothstep((thickness * 1.5) - (shadow_smoothing * 0.5), (thickness * 1.5) + (shadow_smoothing * 0.5), dist);
+	vec4 shadow = vec4(vec3(0.0), (1.0 - alpha_ds) * (shadow_opacity * 0.75));
 	out_colour = mix(shadow, out_colour, out_colour.a);
     
     return out_colour;

@@ -67,7 +67,7 @@ public:
 		const Vec2d&             offset       = {}) const;
 	void renderThings(float alpha = 1.0f, bool force_dir = false);
 	void renderThings(const vector<MapThing*>& things, float alpha = 1.0f, const Vec2d& offset = {}) const;
-	void renderThingHilight(gl::draw2d::Context& dc, int index, float fade) const;
+	void renderThingHilight(gl::draw2d::Context& dc, int index, float fade, bool redraw_thing = true) const;
 	void renderThingSelection(gl::draw2d::Context& dc, const ItemSelection& selection, float fade = 1.0f) const;
 	void renderTaggedThings(gl::draw2d::Context& dc, const vector<MapThing*>& things, float fade) const;
 	void renderTaggingThings(gl::draw2d::Context& dc, const vector<MapThing*>& things, float fade) const;
@@ -143,11 +143,9 @@ private:
 	vector<uint8_t> vis_s_;
 
 	// Other
-	bool     lines_dirs_     = false;
-	unsigned n_vertices_     = 0;
-	unsigned n_lines_        = 0;
-	bool     things_angles_  = false;
-	int      last_flat_type_ = -1;
+	bool     lines_dirs_ = false;
+	unsigned n_vertices_ = 0;
+	unsigned n_lines_    = 0;
 
 	// Thing paths
 	enum class PathType

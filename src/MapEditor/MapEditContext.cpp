@@ -298,8 +298,8 @@ bool MapEditContext::update(long frametime)
 		next_frame_length_ = 2;
 
 	// Ignore if we aren't ready to update
-	// if (frametime < next_frame_length_)
-	//	return false;
+	if (frametime < next_frame_length_)
+		return false;
 
 	// Get frame time multiplier
 	double mult = (double)frametime / 10.0f;
@@ -2205,21 +2205,15 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 CONSOLE_COMMAND(m_n_polys, 0, false)
 {
 	SLADEMap& map   = mapeditor::editContext().map();
-	//int       npoly = 0;
 	int       nvert = 0;
 	for (unsigned a = 0; a < map.nSectors(); a++)
-	{
-		//auto poly = map.sector(a)->polygon();
-		//if (!poly)
-		//	continue;
+		nvert += map.sector(a)->polygonVertices().size();
 
-		//npoly += poly->nSubPolys();
-		nvert += map.sector(a)->polygonVertices().size(); //poly->totalVertices();
-	}
+	auto bytes = nvert * sizeof(glm::vec2);
+	auto mbytes = bytes / 1024.0 / 1024.0;
 
 	log::console(
-		fmt::format("{} vertices total ({} bytes)", nvert, nvert * sizeof(glm::vec2)));
-		//fmt::format("{} polygons with {} vertices total ({} bytes)", npoly, nvert, nvert * sizeof(Polygon2D::Vertex)));
+		fmt::format("{} vertices total ({} bytes / {:1.2f}mb)", nvert, bytes, mbytes));
 }
 
 CONSOLE_COMMAND(mobj_info, 1, false)

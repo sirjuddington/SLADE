@@ -204,9 +204,6 @@
     <ClCompile Include="..\src\Utility\Parser.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Utility\Polygon2D.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Utility\SFileDialog.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -1089,9 +1086,6 @@
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Utility\Parser.h">
-      <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Utility\Polygon2D.h">
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Utility\SFileDialog.h">

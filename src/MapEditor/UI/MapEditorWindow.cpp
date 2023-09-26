@@ -1250,6 +1250,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	if (id == "mapw_preferences")
 	{
 		PreferencesDialog::openPreferences(this, "Map Editor");
+		mapeditor::forceRefresh(true);
 
 		return true;
 	}

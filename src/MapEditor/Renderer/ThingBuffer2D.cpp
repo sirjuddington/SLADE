@@ -158,6 +158,7 @@ void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square,
 		shader->setUniform("tex_size", tex_size_ * 1.2f); // Smaller sprite if round background
 	else
 		shader->setUniform("tex_size", tex_size_);
+	shader->setUniform("shadow_opacity", shadow_opacity_);
 
 	gl::bindVAO(vao_);
 	gl::Texture::bind(texture_);

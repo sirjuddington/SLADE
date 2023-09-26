@@ -25,8 +25,9 @@ namespace gl
 
 		void setup(const game::ThingType& type);
 		void setTexture(unsigned texture, bool sprite);
+		void setShadowOpacity(float opacity) { shadow_opacity_ = opacity; }
 
-		void add(float x, float y, float angle, float alpha = 1.0f);
+			void add(float x, float y, float angle, float alpha = 1.0f);
 
 		void push();
 
@@ -54,6 +55,7 @@ namespace gl
 		bool                  sprite_         = false;
 		bool                  arrow_          = false;
 		bool                  shrink_on_zoom_ = false;
+		float                 shadow_opacity_ = 0.7f;
 		glm::vec2             tex_size_       = glm::vec2{ 1.0f };
 		vector<ThingInstance> things_;
 

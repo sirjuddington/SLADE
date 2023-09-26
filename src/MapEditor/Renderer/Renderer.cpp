@@ -1769,7 +1769,7 @@ void Renderer::animateHilightChange(const mapeditor::Item& old_item, MapObject* 
 
 	// Reset hilight flash
 	anim_flash_inc_   = true;
-	anim_flash_level_ = 0.f;
+	anim_flash_level_ = 0.3f;
 }
 
 // -----------------------------------------------------------------------------

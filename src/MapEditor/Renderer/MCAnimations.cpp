@@ -557,7 +557,7 @@ void MCAHilightFade::draw(gl::draw2d::Context& dc)
 	{
 	case MapObject::Type::Line: renderer_->renderLineHilight(dc, object_->index(), fade_); break;
 	case MapObject::Type::Sector: renderer_->renderFlatHilight(dc, object_->index(), fade_); break;
-	case MapObject::Type::Thing: renderer_->renderThingHilight(dc, object_->index(), fade_); break;
+	case MapObject::Type::Thing: renderer_->renderThingHilight(dc, object_->index(), fade_, false); break;
 	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->index(), fade_); break;
 	default: break;
 	}

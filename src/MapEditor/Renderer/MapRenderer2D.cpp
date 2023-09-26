@@ -51,6 +51,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "ThingBuffer2D.h"
 #include "Utility/Polygon.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
 
@@ -66,23 +67,20 @@ CVAR(Float, line_width, 1.5f, CVar::Flag::Save)
 CVAR(Bool, line_smooth, true, CVar::Flag::Save)
 CVAR(Int, thing_shape, 0, CVar::Flag::Save)
 CVAR(Bool, thing_sprites, true, CVar::Flag::Save)
-CVAR(Int, thing_drawtype, 1, CVar::Flag::Save)
 CVAR(Bool, thing_force_dir, false, CVar::Flag::Save)
 CVAR(Bool, thing_overlay_square, false, CVar::Flag::Save)
 CVAR(Bool, thing_preview_lights, true, CVar::Flag::Save)
 CVAR(Float, thing_light_intensity, 0.5f, CVar::Flag::Save)
 CVAR(Float, flat_brightness, 0.8f, CVar::Flag::Save)
 CVAR(Bool, flat_ignore_light, false, CVar::Flag::Save)
-CVAR(Float, thing_shadow, 0.5f, CVar::Flag::Save)
+CVAR(Float, thing_shadow, 0.7f, CVar::Flag::Save)
 CVAR(Bool, sector_hilight_fill, true, CVar::Flag::Save)
 CVAR(Bool, sector_selected_fill, true, CVar::Flag::Save)
 CVAR(Bool, map_animate_hilight, true, CVar::Flag::Save)
 CVAR(Bool, map_animate_selection, false, CVar::Flag::Save)
 CVAR(Bool, map_animate_tagged, true, CVar::Flag::Save)
-CVAR(Float, arrow_alpha, 1.0f, CVar::Flag::Save)
-CVAR(Bool, arrow_colour, false, CVar::Flag::Save)
 CVAR(Bool, flats_use_vbo, true, CVar::Flag::Save)
-CVAR(Int, halo_width, 5, CVar::Flag::Save)
+CVAR(Int, halo_width, 4, CVar::Flag::Save)
 CVAR(Float, arrowhead_angle, 0.7854f, CVar::Flag::Save)
 CVAR(Float, arrowhead_length, 25.f, CVar::Flag::Save)
 CVAR(Bool, action_lines, true, CVar::Flag::Save)
@@ -129,6 +127,7 @@ void setupThingBuffer(gl::ThingBuffer2D& buffer, const game::ThingType& tt)
 
 	// Setup buffer
 	buffer.setup(tt);
+	buffer.setShadowOpacity(thing_shadow);
 	buffer.setTexture(tex, sprite);
 }
 
@@ -312,11 +311,8 @@ void MapRenderer2D::renderLines(bool show_direction, float alpha)
 		return;
 
 	// Update lines buffer if needed
-	bool buffer_empty = false;
-	if (line_smooth)
-		buffer_empty = !lines_buffer_ || lines_buffer_->buffer().empty();
-	else
-		buffer_empty = !lines_buffer_basic_ || lines_buffer_basic_->buffer().empty();
+	auto buffer_empty = line_smooth ? !lines_buffer_ || lines_buffer_->buffer().empty() :
+									  !lines_buffer_basic_ || lines_buffer_basic_->buffer().empty();
 	if (buffer_empty || show_direction != lines_dirs_ || map_->nLines() != n_lines_
 		|| map_->geometryUpdated() > lines_updated_
 		|| map_->mapData().modifiedSince(lines_updated_, MapObject::Type::Line))
@@ -513,13 +509,16 @@ void MapRenderer2D::renderThingOverlays(
 	thing_overlay_buffer_->setPointRadius(dc.pointsprite_radius);
 
 	// Populate thing overlay buffer
+	auto hwidth = static_cast<float>(halo_width);
 	for (const auto thing : things)
 	{
 		const auto& tt     = game::configuration().thingType(thing->type());
-		float       radius = tt.shrinkOnZoom() ? scaledRadius(tt.radius()) : tt.radius();
+		float       radius = tt.radius() + hwidth;
+		if (tt.shrinkOnZoom())
+			radius = scaledRadius(radius);
 
 		thing_overlay_buffer_->add(
-			glm::vec2{ thing->xPos() + offset.x, thing->yPos() + offset.y }, radius + 4.0f + radius_extra);
+			glm::vec2{ thing->xPos() + offset.x, thing->yPos() + offset.y }, radius + radius_extra);
 	}
 	thing_overlay_buffer_->push();
 
@@ -537,15 +536,13 @@ void MapRenderer2D::renderThings(float alpha, bool force_dir)
 	if (alpha <= 0.01f || map_->nThings() == 0)
 		return;
 
-	things_angles_ = force_dir;
-
 	if (thing_buffers_.empty() || map_->thingsUpdated() > things_updated_)
 		updateThingBuffers();
 
 	// Draw thing buffers
 	gl::setBlend(gl::Blend::Normal);
 	for (auto& buffer : thing_buffers_)
-		buffer->draw(view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, thing_shape == 1, force_dir);
+		buffer->draw(view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, thing_shape == 1, thing_force_dir || force_dir);
 }
 
 // -----------------------------------------------------------------------------
@@ -556,13 +553,13 @@ void MapRenderer2D::renderThings(const vector<MapThing*>& things, float alpha, c
 	gl::setBlend(gl::Blend::Normal);
 
 	// Render given things (by type)
-	vector<int> types_rendered;
-	unsigned    index = 0;
+	vector<short> types_rendered;
+	unsigned      index = 0;
 	while (index < things.size())
 	{
 		// Ignore if things of this type were already rendered
 		auto ttype = things[index]->type();
-		if (VECTOR_EXISTS(types_rendered, ttype))
+		if (vectorContains(types_rendered, ttype))
 		{
 			++index;
 			continue;
@@ -579,7 +576,7 @@ void MapRenderer2D::renderThings(const vector<MapThing*>& things, float alpha, c
 		temp_things_buffer_->push();
 
 		// Render
-		temp_things_buffer_->draw(view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, thing_shape == 1);
+		temp_things_buffer_->draw(view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, thing_shape == 1, thing_force_dir);
 
 		// Continue
 		types_rendered.push_back(ttype);
@@ -590,12 +587,16 @@ void MapRenderer2D::renderThings(const vector<MapThing*>& things, float alpha, c
 // -----------------------------------------------------------------------------
 // Renders the thing hilight overlay for thing [index]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderThingHilight(gl::draw2d::Context& dc, int index, float fade) const
+void MapRenderer2D::renderThingHilight(gl::draw2d::Context& dc, int index, float fade, bool redraw_thing) const
 {
 	// Check hilight
 	auto thing = map_->thing(index);
 	if (!thing)
 		return;
+
+	// Render the thing again (so it's drawn in front)
+	if (redraw_thing)
+		renderThings(vector{ thing });
 
 	// Reset fade if hilight animation is disabled
 	if (!map_animate_hilight)
@@ -627,7 +628,7 @@ void MapRenderer2D::renderThingHilight(gl::draw2d::Context& dc, int index, float
 	}
 
 	// Otherwise draw point sprite overlay
-	renderThingOverlays(dc, { map_->thing(index) }, 4.0f * fade);
+	renderThingOverlays(dc, { map_->thing(index) }); //, /*4.0f * */1.0f + fade);
 }
 
 // -----------------------------------------------------------------------------
@@ -1684,8 +1685,8 @@ void MapRenderer2D::forceUpdate(float line_alpha)
 // -----------------------------------------------------------------------------
 double MapRenderer2D::scaledRadius(int radius) const
 {
-	if (radius > 16)
-		radius = 16;
+	// if (radius > 16)
+	//	radius = 16;
 
 	if (view_->scale().x > 1.0)
 		return radius / view_->scale().x;

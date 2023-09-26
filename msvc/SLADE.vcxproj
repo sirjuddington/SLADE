@@ -583,7 +583,6 @@
     <ClCompile Include="..\src\Utility\MemChunk.cpp" />
     <ClCompile Include="..\src\Utility\Parser.cpp" />
     <ClCompile Include="..\src\Utility\Polygon.cpp" />
-    <ClCompile Include="..\src\Utility\Polygon2D.cpp" />
     <ClCompile Include="..\src\Utility\Property.cpp" />
     <ClCompile Include="..\src\Utility\SFileDialog.cpp" />
     <ClCompile Include="..\src\Utility\StringUtils.cpp" />
@@ -914,7 +913,6 @@
     <ClInclude Include="..\src\Utility\MemChunk.h" />
     <ClInclude Include="..\src\Utility\Memory.h" />
     <ClInclude Include="..\src\Utility\Parser.h" />
-    <ClInclude Include="..\src\Utility\Polygon2D.h" />
     <ClInclude Include="..\src\Utility\SFileDialog.h" />
     <ClInclude Include="..\src\Utility\StringUtils.h" />
     <ClInclude Include="..\src\Utility\Structs.h" />
