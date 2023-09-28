@@ -1,5 +1,6 @@
 
 #include "Main.h"
+#include "IndexBuffer.h"
 #include "VertexBuffer2D.h"
 #include "Utility/Vector.h"
 #include "View.h"
@@ -104,8 +105,33 @@ void VertexBuffer2D::draw(Primitive primitive, const Shader* shader, const View*
 
 	// Draw
 	gl::bindVAO(vao_);
-	glDrawArrays(static_cast<GLenum>(primitive), first, count);
+	gl::drawArrays(primitive, first, count);
 	gl::bindVAO(0);
+}
+
+void VertexBuffer2D::drawElements(
+	IndexBuffer& index_buffer,
+	Primitive primitive,
+	const Shader* shader,
+	const View* view) const
+{
+	if (!getContext())
+		return;
+
+	// Check we have anything to draw
+	if (buffer_.empty() || index_buffer.empty())
+		return;
+
+	// Setup shader/view if given
+	if (shader && view)
+		view->setupShader(*shader);
+
+	// Draw
+	bindVAO(vao_);
+	index_buffer.bind();
+	gl::drawElements(primitive, index_buffer.size(), GL_UNSIGNED_INT);
+	bindEBO(0);
+	bindVAO(0);
 }
 
 const VertexBuffer2D& VertexBuffer2D::unitSquare()

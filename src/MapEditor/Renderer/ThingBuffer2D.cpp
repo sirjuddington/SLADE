@@ -163,7 +163,7 @@ void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square,
 	gl::bindVAO(vao_);
 	gl::Texture::bind(texture_);
 
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, buffer_things_->size());
+	gl::drawArraysInstanced(Primitive::Triangles, 0, 6, buffer_things_->size());
 
 	gl::bindVAO(0);
 }

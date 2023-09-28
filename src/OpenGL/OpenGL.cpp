@@ -65,6 +65,8 @@ int          msaa           = -1;
 Info         info;
 unsigned     vbo_current;
 unsigned     vao_current;
+unsigned     ebo_current;
+unsigned     drawcall_count = 0;
 } // namespace slade::gl
 
 
@@ -394,12 +396,7 @@ gl::Info gl::sysInfo()
 	return info;
 }
 
-unsigned gl::currentVBO()
-{
-	return vbo_current;
-}
-
-unsigned gl::createVBO()
+unsigned gl::createBuffer()
 {
 	if (!initialised)
 		return 0;
@@ -407,6 +404,17 @@ unsigned gl::createVBO()
 	unsigned vbo;
 	glGenBuffers(1, &vbo);
 	return vbo;
+}
+
+void gl::deleteBuffer(unsigned id)
+{
+	if (initialised && id > 0)
+		glDeleteBuffers(1, &id);
+}
+
+unsigned gl::currentVBO()
+{
+	return vbo_current;
 }
 
 void gl::bindVBO(unsigned id)
@@ -433,6 +441,34 @@ void gl::deleteVBO(unsigned id)
 
 		glDeleteBuffers(1, &id);
 	}
+}
+
+unsigned gl::currentEBO()
+{
+	return ebo_current;
+}
+
+void gl::bindEBO(unsigned id)
+{
+	if (!initialised || ebo_current == id)
+		return;
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+	ebo_current = id;
+}
+
+void gl::deleteEBO(unsigned id)
+{
+	if (!initialised || id == 0)
+		return;
+
+	if (ebo_current == id)
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		ebo_current = 0;
+	}
+
+	glDeleteBuffers(1, &id);
 }
 
 unsigned gl::currentVAO()
@@ -476,8 +512,41 @@ void gl::deleteVAO(unsigned id)
 	}
 }
 
-void gl::deleteBuffer(unsigned id)
+void gl::resetDrawCallCount()
 {
-	if (initialised && id > 0)
-		glDeleteBuffers(1, &id);
+	drawcall_count = 0;
+}
+
+unsigned gl::drawCallCount()
+{
+	return drawcall_count;
+}
+
+void gl::drawArrays(Primitive primitive, unsigned first, unsigned count)
+{
+	drawcall_count++;
+	glDrawArrays(static_cast<GLenum>(primitive), first, count);
+}
+
+void gl::drawArraysInstanced(Primitive primitive, unsigned first, unsigned count, unsigned instance_count)
+{
+	drawcall_count++;
+	glDrawArraysInstanced(static_cast<GLenum>(primitive), first, count, instance_count);
+}
+
+void gl::drawElements(Primitive primitive, unsigned count, GLenum type, const void* indices)
+{
+	drawcall_count++;
+	glDrawElements(static_cast<GLenum>(primitive), count, type, indices);
+}
+
+void gl::drawElementsInstanced(
+	Primitive   primitive,
+	unsigned    count,
+	GLenum      type,
+	unsigned    instance_count,
+	const void* indices)
+{
+	drawcall_count++;
+	glDrawElementsInstanced(static_cast<GLenum>(primitive), count, type, indices, instance_count);
 }

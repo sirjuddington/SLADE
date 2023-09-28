@@ -56,6 +56,8 @@
 #include "Overlays/MCOverlay.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
+#include <deque>
+#include <numeric>
 
 using namespace slade;
 using namespace mapeditor;
@@ -1021,8 +1023,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 	{
 		// Sectors mode
 		renderer_2d_->renderThings(fade_things_);                 // Things
-		renderer_2d_->renderVertices(fade_vertices_);             // Vertices
 		renderer_2d_->renderLines(line_tabs_always, fade_lines_); // Lines
+		renderer_2d_->renderVertices(fade_vertices_);             // Vertices
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
@@ -1044,8 +1046,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 
 		// Things mode
 		auto hl_index = context_.hilightItem().index;
-		renderer_2d_->renderVertices(fade_vertices_);                       // Vertices
 		renderer_2d_->renderLines(line_tabs_always, fade_lines_);           // Lines
+		renderer_2d_->renderVertices(fade_vertices_);                       // Vertices
 		renderer_2d_->renderPointLightPreviews(dc, fade_things_, hl_index); // Point light previews
 		renderer_2d_->renderThings(fade_things_, force_dir);                // Things
 
@@ -1192,13 +1194,25 @@ void Renderer::drawMap3d() const
 // -----------------------------------------------------------------------------
 void Renderer::draw() const
 {
+	static sf::Clock           clock;
+	static std::deque<int64_t> render_times;
+	static unsigned            draw_calls;
+
 	draw2d::Context dc{ view_.get() };
+
+	clock.restart();
+	gl::resetDrawCallCount();
 
 	// Draw 2d or 3d map depending on mode
 	if (context_.editMode() == Mode::Visual)
 		drawMap2d(dc); // drawMap3d();
 	else
 		drawMap2d(dc);
+
+	render_times.push_back(clock.getElapsedTime().asMicroseconds());
+	if (render_times.size() > 50)
+		render_times.pop_front();
+	draw_calls = gl::drawCallCount();
 
 	// Set view for overlays
 	dc.view = view_screen_.get();
@@ -1295,6 +1309,16 @@ void Renderer::draw() const
 
 	// Help text
 	drawFeatureHelpText(dc);
+
+	// TESTING: Render performance info
+	auto avg_frame    = std::accumulate(render_times.begin(), render_times.end(), (int64_t)0) / render_times.size();
+	dc.text_alignment = draw2d::Align::Left;
+	dc.text_size      = 18;
+	dc.text_style     = draw2d::TextStyle::Normal;
+	dc.font           = draw2d::Font::Monospace;
+	dc.colour         = ColRGBA::WHITE;
+	dc.drawText(
+		fmt::format("{:1.2f}ms - {} draw calls", static_cast<double>(avg_frame) / 1000.0, draw_calls), { 0.0f, 0.0f });
 }
 
 namespace

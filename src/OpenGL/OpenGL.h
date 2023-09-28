@@ -84,11 +84,19 @@ namespace gl
 		return glm::mat4{ 1.0f };
 	}
 
+	// Buffers
+	unsigned createBuffer();
+	void     deleteBuffer(unsigned id);
+
 	// VBO
 	unsigned currentVBO();
-	unsigned createVBO();
 	void     bindVBO(unsigned id);
 	void     deleteVBO(unsigned id);
+
+	// EBO
+	unsigned currentEBO();
+	void     bindEBO(unsigned id);
+	void     deleteEBO(unsigned id);
 
 	// VAO
 	unsigned currentVAO();
@@ -96,7 +104,17 @@ namespace gl
 	void     bindVAO(unsigned id);
 	void     deleteVAO(unsigned id);
 
-	// Generic Buffers
-	void deleteBuffer(unsigned id);
+	// Drawing
+	void     resetDrawCallCount();
+	unsigned drawCallCount();
+	void     drawArrays(Primitive primitive, unsigned first, unsigned count);
+	void     drawArraysInstanced(Primitive primitive, unsigned first, unsigned count, unsigned instance_count);
+	void     drawElements(Primitive primitive, unsigned count, GLenum type, const void* indices = nullptr);
+	void     drawElementsInstanced(
+			Primitive   primitive,
+			unsigned    count,
+			GLenum      type,
+			unsigned    instance_count,
+			const void* indices = nullptr);
 } // namespace gl
 } // namespace slade

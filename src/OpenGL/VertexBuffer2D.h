@@ -6,6 +6,7 @@ namespace slade::gl
 {
 class View;
 class Shader;
+class IndexBuffer;
 
 struct Vertex2D
 {
@@ -27,6 +28,7 @@ public:
 	VertexBuffer2D() = default;
 	~VertexBuffer2D();
 
+	unsigned                vao() const { return vao_; }
 	const Buffer<Vertex2D>& buffer() const { return buffer_; }
 	Buffer<Vertex2D>&       buffer() { return buffer_; }
 
@@ -50,6 +52,12 @@ public:
 		const View*   view      = nullptr,
 		unsigned      first     = 0,
 		unsigned      count     = 0) const;
+
+	void drawElements(
+		IndexBuffer&  index_buffer,
+		Primitive     primitive = Primitive::Triangles,
+		const Shader* shader    = nullptr,
+		const View*   view      = nullptr) const;
 
 	static const VertexBuffer2D& unitSquare();
 

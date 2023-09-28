@@ -127,6 +127,6 @@ void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned fi
 
 	// Draw
 	gl::bindVAO(vao_);
-	glDrawArrays(GL_POINTS, first, count);
+	gl::drawArrays(Primitive::Points, first, count);
 	gl::bindVAO(0);
 }

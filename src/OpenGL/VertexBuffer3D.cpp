@@ -88,6 +88,6 @@ void VertexBuffer3D::draw(Primitive primitive, const Shader* shader, const View*
 
 	// Draw
 	bindVAO(vao_);
-	glDrawArrays(static_cast<GLenum>(primitive), first, count);
+	drawArrays(primitive, first, count);
 	bindVAO(0);
 }

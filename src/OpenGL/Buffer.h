@@ -23,7 +23,7 @@ public:
 			return false;
 
 		if (vbo_ == 0)
-			vbo_ = createVBO();
+			vbo_ = createBuffer();
 
 		bindVBO(vbo_);
 

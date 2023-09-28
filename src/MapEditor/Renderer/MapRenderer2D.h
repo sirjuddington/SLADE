@@ -12,6 +12,7 @@ namespace game
 }
 namespace gl
 {
+	class IndexBuffer;
 	class PointSpriteBuffer;
 	class LineBuffer;
 	class VertexBuffer2D;
@@ -129,7 +130,13 @@ private:
 		unsigned buffer_offset = 0;
 		unsigned vertex_count  = 0;
 	};
-	vector<Flat> flats_;
+	struct FlatGroup
+	{
+		unsigned                    texture = 0;
+		unique_ptr<gl::IndexBuffer> index_buffer;
+	};
+	vector<Flat>      flats_;
+	vector<FlatGroup> flat_groups_;
 
 	// Visibility
 	enum
@@ -167,7 +174,8 @@ private:
 	// Buffer updates
 	void updateVerticesBuffer();
 	void updateLinesBuffer(bool show_direction);
-	void updateFlatsBuffer();
+	void updateFlatsBuffer(bool ceilings = false);
+	//void updateFlatTextures(bool ceilings = false);
 	void updateThingBuffers();
 
 	// Misc.

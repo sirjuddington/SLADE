@@ -60,11 +60,11 @@ unsigned initVAO(Buffer<LineBuffer::Line>& buffer)
 	// Setup instanced quad
 	if (vbo_quad == 0)
 	{
-		vbo_quad = createVBO();
+		vbo_quad = createBuffer();
 		bindVBO(vbo_quad);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
 
-		ebo_quad = createVBO();
+		ebo_quad = createBuffer();
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_quad);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_indices), quad_indices, GL_STATIC_DRAW);
 	}
@@ -178,7 +178,7 @@ void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4
 		view->setupShader(shader, model);
 
 	gl::bindVAO(vao_);
-	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr, buffer_.size());
+	gl::drawElementsInstanced(Primitive::Triangles, 6, GL_UNSIGNED_SHORT, buffer_.size());
 	gl::bindVAO(0);
 }
 

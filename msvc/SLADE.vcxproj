@@ -326,6 +326,7 @@
     <ClCompile Include="..\src\MapEditor\Renderer\Camera.cpp" />
     <ClCompile Include="..\src\MapEditor\Renderer\ThingBuffer2D.cpp" />
     <ClCompile Include="..\src\OpenGL\Draw2D.cpp" />
+    <ClCompile Include="..\src\OpenGL\IndexBuffer.cpp" />
     <ClCompile Include="..\src\OpenGL\LineBuffer.cpp" />
     <ClCompile Include="..\src\OpenGL\PointSpriteBuffer.cpp" />
     <ClCompile Include="..\src\OpenGL\Shader.cpp" />
@@ -660,6 +661,7 @@
     <ClInclude Include="..\src\MapEditor\Renderer\ThingBuffer2D.h" />
     <ClInclude Include="..\src\OpenGL\Buffer.h" />
     <ClInclude Include="..\src\OpenGL\Draw2D.h" />
+    <ClInclude Include="..\src\OpenGL\IndexBuffer.h" />
     <ClInclude Include="..\src\OpenGL\LineBuffer.h" />
     <ClInclude Include="..\src\OpenGL\PointSpriteBuffer.h" />
     <ClInclude Include="..\src\OpenGL\Shader.h" />
