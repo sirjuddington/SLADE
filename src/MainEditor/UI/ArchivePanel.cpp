@@ -3053,7 +3053,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(const wxString& category)
 	unsigned num        = std::min<unsigned>(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
 	{
-		a_open_ext->addToMenu(menu_open, "With " + external[a].name, "NO", a);
+		a_open_ext->addToMenu(menu_open, 0, "With " + external[a].name, "NO", a);
 		current_external_exes_.push_back(external[a].name);
 	}
 
@@ -3889,8 +3889,8 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		{
 			auto viewas = new wxMenu();
 			context.AppendSubMenu(viewas, "View As");
-			SAction::fromId("arch_view_text")->addToMenu(viewas, "Text");
-			SAction::fromId("arch_view_hex")->addToMenu(viewas, "Hex");
+			SAction::fromId("arch_view_text")->addToMenu(viewas, 2, "Text");
+			SAction::fromId("arch_view_hex")->addToMenu(viewas, 2, "Hex");
 		}
 		else
 		{
