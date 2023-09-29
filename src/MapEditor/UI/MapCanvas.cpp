@@ -67,11 +67,10 @@ CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
 // MapCanvas class constructor
 // -----------------------------------------------------------------------------
 MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
-	GLCanvas{ parent }, context_{ context }, timer_{ this }, last_time_{ app::runTimer() }
+	GLCanvas{ parent }, context_{ context }, timer_{ this }
 {
 	// Init variables
 	context_->setCanvas(this);
-	last_time_ = 0;
 
 	// Bind Events
 	Bind(wxEVT_SIZE, &MapCanvas::onSize, this);
@@ -242,12 +241,12 @@ void MapCanvas::update()
 	mouseLook3d();
 
 	// Get time since last redraw
-	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
+	auto frametime = sf_clock_.getElapsedTime().asSeconds() * 1000.0;
 
 	if (context_->update(frametime))
 	{
-		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
-		Refresh();
+		Refresh(false);
+		sf_clock_.restart();
 	}
 }
 

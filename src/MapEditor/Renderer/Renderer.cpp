@@ -151,6 +151,7 @@ void Renderer::setView(double map_x, double map_y) const
 {
 	// Set new view
 	view_->setOffset(map_x, map_y);
+	view_->resetInter(true, true, false);
 
 	// Update object visibility
 	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);

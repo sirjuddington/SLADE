@@ -77,7 +77,7 @@ public:
 	void lockMouse(bool lock);
 
 	// General
-	bool update(long frametime);
+	bool update(double frametime);
 
 	// Map loading
 	bool openMap(const Archive::MapDesc& map);

@@ -1576,8 +1576,6 @@ void MapRenderer2D::updateFlatsBuffer(bool ceilings)
 
 	if (rebuild)
 	{
-		log::info("REBUILDING FLATS BUFFER");
-
 		// Init flats info cache
 		flats_.clear();
 		flats_.resize(map_->nSectors());
@@ -1631,8 +1629,6 @@ void MapRenderer2D::updateFlatsBuffer(bool ceilings)
 				generateTextureCoords(vertices, sector, ceilings, tex);
 				flats_buffer_->buffer().update(flats_[i].buffer_offset, vertices);
 				flats_[i].updated_time = app::runTimer();
-
-				log::info("UPDATED SECTOR {} IN FLATS BUFFER", i);
 			}
 		}
 
@@ -1642,7 +1638,6 @@ void MapRenderer2D::updateFlatsBuffer(bool ceilings)
 
 	if (flat_groups_.empty())
 	{
-		log::info("REBUILDING FLAT GROUPS");
 		vector<uint8_t> flats_processed(flats_.size());
 
 		for (unsigned i = 0; i < flats_.size(); ++i)

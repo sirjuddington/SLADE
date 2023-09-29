@@ -30,7 +30,6 @@ private:
 	vector<int>     fps_avg_;
 	sf::Clock       sf_clock_;
 	wxTimer         timer_;
-	long            last_time_ = 0;
 
 	void update();
 

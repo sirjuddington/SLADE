@@ -291,18 +291,18 @@ void MapEditContext::lockMouse(bool lock)
 // -----------------------------------------------------------------------------
 // Updates the current map editor state (hilight, animations, etc.)
 // -----------------------------------------------------------------------------
-bool MapEditContext::update(long frametime)
+bool MapEditContext::update(double frametime)
 {
-	// Force an update if animations are active
-	if (renderer_->animationsActive() || selection_->hasHilight())
-		next_frame_length_ = 2;
+	//// Force an update if animations are active
+	//if (renderer_->animationsActive() || selection_->hasHilight())
+	//	next_frame_length_ = 2;
 
-	// Ignore if we aren't ready to update
-	if (frametime < next_frame_length_)
-		return false;
+	//// Ignore if we aren't ready to update
+	//if (frametime < next_frame_length_)
+	//	return false;
 
 	// Get frame time multiplier
-	double mult = (double)frametime / 10.0f;
+	double mult = frametime / 10.0;
 
 	// 3d mode
 	if (edit_mode_ == Mode::Visual && !overlayActive())
