@@ -191,7 +191,7 @@ void STopWindow::populateToolbarsMenu() const
 		auto name = group->name().ToStdString();
 		strutil::replaceIP(name, "_", "");
 
-		action_toolbar_menu_->addToMenu(toolbar_menu_, name, "NO", a + 1);
+		action_toolbar_menu_->addToMenu(toolbar_menu_, 0, name, "NO", a + 1);
 		toolbar_menu_->GetMenuItems()[toolbar_menu_->GetMenuItemCount() - 1]->Check(!group->hidden());
 	}
 }
