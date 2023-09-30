@@ -72,6 +72,7 @@ CVAR(Bool, thing_force_dir, false, CVar::Flag::Save)
 CVAR(Bool, thing_overlay_square, false, CVar::Flag::Save)
 CVAR(Bool, thing_preview_lights, true, CVar::Flag::Save)
 CVAR(Float, thing_light_intensity, 0.5f, CVar::Flag::Save)
+CVAR(Int, flat_drawtype, 2, CVar::Flag::Save)
 CVAR(Float, flat_brightness, 0.8f, CVar::Flag::Save)
 CVAR(Bool, flat_ignore_light, false, CVar::Flag::Save)
 CVAR(Float, thing_shadow, 0.7f, CVar::Flag::Save)
@@ -965,18 +966,19 @@ void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alph
 // -----------------------------------------------------------------------------
 // Renders map flats (sectors)
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
+void MapRenderer2D::renderFlats(bool ceilings, float alpha)
 {
 	// Don't bother if (practically) invisible
-	if (alpha <= 0.01f)
+	if (alpha <= 0.01f || flat_drawtype == 0)
 		return;
 
 	// Apply flat alpha from theme
+	bool texture = flat_drawtype > 1;
 	if (texture)
 		alpha *= colourconfig::flatAlpha();
 
 	// Update flats buffer if needed
-	updateFlatsBuffer(type == 2);
+	updateFlatsBuffer(ceilings);
 
 	// Setup shader
 	const auto& shader = gl::draw2d::defaultShader(texture);
@@ -1580,7 +1582,7 @@ void MapRenderer2D::updateFlatsBuffer(bool ceilings)
 		flats_.clear();
 		flats_.resize(map_->nSectors());
 
-		// Write sector polygon triangle vertices to buffer
+		// Write sector triangle vertices to buffer
 		for (unsigned i = 0; i < map_->nSectors(); ++i)
 		{
 			auto  sector  = map_->sector(i);
@@ -1645,7 +1647,7 @@ void MapRenderer2D::updateFlatsBuffer(bool ceilings)
 			if (flats_processed[i])
 				continue;
 
-			// Build list of flat buffer vertex indices for sectors using this texture
+			// Build list of vertex indices for sectors using this texture
 			vector<GLuint> indices;
 			for (unsigned f = i; f < flats_.size(); ++f)
 			{
@@ -1708,57 +1710,19 @@ void MapRenderer2D::updateThingBuffers()
 }
 
 // -----------------------------------------------------------------------------
-// Updates map object visibility info depending on the current view
-// -----------------------------------------------------------------------------
-void MapRenderer2D::updateVisibility(const Vec2d& view_tl, const Vec2d& view_br)
-{
-	return;
-
-	// Sector visibility
-	if (map_->nSectors() != vis_s_.size())
-	{
-		// Number of sectors changed, reset array
-		vis_s_.clear();
-		for (unsigned a = 0; a < map_->nSectors(); a++)
-			vis_s_.push_back(0);
-	}
-	for (unsigned a = 0; a < map_->nSectors(); a++)
-	{
-		// Check against sector bounding box
-		auto bbox = map_->sector(a)->boundingBox();
-		vis_s_[a] = 0;
-		if (bbox.max.x < view_tl.x)
-			vis_s_[a] = VIS_LEFT;
-		if (bbox.max.y < view_tl.y)
-			vis_s_[a] = VIS_ABOVE;
-		if (bbox.min.x > view_br.x)
-			vis_s_[a] = VIS_RIGHT;
-		if (bbox.min.y > view_br.y)
-			vis_s_[a] = VIS_BELOW;
-
-		// Check if the sector is worth drawing
-		if ((bbox.max.x - bbox.min.x) * view_->scale().x < 4 || (bbox.max.y - bbox.min.y) * view_->scale().x < 4)
-			vis_s_[a] = VIS_SMALL;
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Updates all VBOs and other cached data
 // -----------------------------------------------------------------------------
-void MapRenderer2D::forceUpdate(float line_alpha)
+void MapRenderer2D::forceUpdate(bool flats_ceilings)
 {
 	// Update variables
 	flats_.clear();
 	thing_paths_.clear();
 
 	// Update buffers
-	updateFlatsBuffer();
+	updateFlatsBuffer(flats_ceilings);
 	updateLinesBuffer(lines_dirs_);
 	updateVerticesBuffer();
 	updateThingBuffers();
-
-	// renderVertices(view_->scale().x);
-	// renderLines(lines_dirs_, line_alpha);
 }
 
 // -----------------------------------------------------------------------------
@@ -1777,20 +1741,13 @@ double MapRenderer2D::scaledRadius(int radius) const
 }
 
 // -----------------------------------------------------------------------------
-// Returns true if the current visibility info is valid
-// -----------------------------------------------------------------------------
-bool MapRenderer2D::visOK() const
-{
-	return map_->nSectors() == vis_s_.size();
-}
-
-// -----------------------------------------------------------------------------
 // Clears cached flat texture data
 // -----------------------------------------------------------------------------
 void MapRenderer2D::clearTextureCache()
 {
 	for (auto& flat : flats_)
 		flat.texture = 0;
+	flat_groups_.clear();
 }
 
 // -----------------------------------------------------------------------------

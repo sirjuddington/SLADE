@@ -40,7 +40,6 @@
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/Renderer/MapRenderer2D.h"
 #include "MapEditor/Renderer/Renderer.h"
 #include "OpenGL/View.h"
 #include "SLADEMap/SLADEMap.h"
@@ -681,7 +680,7 @@ bool ObjectEdit::begin()
 	mapeditor::showObjectEditPanel(true, &group_);
 
 	context_.input().setMouseState(Input::MouseState::ObjectEdit);
-	context_.renderer().renderer2D().forceUpdate();
+	context_.renderer().forceUpdate(true, false);
 
 	// Setup help text
 	auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();

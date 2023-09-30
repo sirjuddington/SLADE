@@ -86,7 +86,6 @@ CVAR(Bool, map_show_help, true, CVar::Flag::Save)
 CVAR(Int, map_crosshair, 0, CVar::Flag::Save)
 CVAR(Bool, map_show_selection_numbers, true, CVar::Flag::Save)
 CVAR(Int, map_max_selection_numbers, 1000, CVar::Flag::Save)
-CVAR(Int, flat_drawtype, 2, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -131,7 +130,7 @@ Renderer::~Renderer() = default;
 void Renderer::forceUpdate(bool update_2d, bool update_3d) const
 {
 	if (update_2d)
-		renderer_2d_->forceUpdate(fade_lines_);
+		renderer_2d_->forceUpdate(context_.sectorEditMode() == SectorMode::Ceiling);
 	if (update_3d)
 		renderer_3d_->clearData();
 }
@@ -152,9 +151,6 @@ void Renderer::setView(double map_x, double map_y) const
 	// Set new view
 	view_->setOffset(map_x, map_y);
 	view_->resetInter(true, true, false);
-
-	// Update object visibility
-	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -165,9 +161,6 @@ void Renderer::setViewSize(int width, int height) const
 	// Set new size
 	view_->setSize(width, height);
 	view_screen_->setSize(width, height);
-
-	// Update object visibility
-	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -212,9 +205,6 @@ void Renderer::zoom(double amount, bool toward_cursor)
 		cursor_zoom_disabled_ = true;
 		view_->zoom(amount);
 	}
-
-	// Update object visibility
-	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -232,10 +222,6 @@ void Renderer::viewFitToMap(bool snap)
 	// Don't animate if specified
 	if (snap)
 		view_->resetInter(true, true, true);
-
-	// Update object visibility
-	renderer_2d_->forceUpdate();
-	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -290,10 +276,6 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 
 	// Fit the view to the bbox
 	view_->fitTo(bbox);
-
-	// Update object visibility
-	renderer_2d_->forceUpdate();
-	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -954,29 +936,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 {
 	auto mouse_state = context_.input().mouseState();
 
-	// Update visibility info if needed
-	if (!renderer_2d_->visOK())
-		renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
-
 	// Draw flats if needed
-	if (flat_drawtype > 0)
-	{
-		bool texture = false;
-		if (flat_drawtype > 1)
-			texture = true;
-
-		// Adjust flat type depending on sector mode
-		int drawtype = 0;
-		if (context_.editMode() == Mode::Sectors)
-		{
-			if (context_.sectorEditMode() == SectorMode::Floor)
-				drawtype = 1;
-			else if (context_.sectorEditMode() == SectorMode::Ceiling)
-				drawtype = 2;
-		}
-
-		renderer_2d_->renderFlats(drawtype, texture, fade_flats_);
-	}
+	renderer_2d_->renderFlats(context_.sectorEditMode() == SectorMode::Ceiling, fade_flats_);
 
 	// Draw grid
 	drawGrid(dc);

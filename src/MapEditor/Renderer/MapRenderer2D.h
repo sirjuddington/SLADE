@@ -76,7 +76,7 @@ public:
 	void renderPointLightPreviews(gl::draw2d::Context& dc, float alpha, int hilight_index) const;
 
 	// Flats (sectors)
-	void renderFlats(int type = 0, bool texture = true, float alpha = 1.0f);
+	void renderFlats(bool ceilings, float alpha = 1.0f);
 	void renderFlatHilight(gl::draw2d::Context& dc, int index, float fade) const;
 	void renderFlatOverlays(const gl::draw2d::Context& dc, const vector<MapSector*>& sectors) const;
 	void renderFlatSelection(gl::draw2d::Context& dc, const ItemSelection& selection, float fade = 1.0f) const;
@@ -98,9 +98,7 @@ public:
 	void renderObjectEditGroup(gl::draw2d::Context& dc, ObjectEditGroup* group) const;
 
 	// Misc
-	void updateVisibility(const Vec2d& view_tl, const Vec2d& view_br);
-	void forceUpdate(float line_alpha = 1.0f);
-	bool visOK() const;
+	void forceUpdate(bool flats_ceilings);
 	void clearTextureCache();
 
 private:
@@ -138,17 +136,6 @@ private:
 	vector<Flat>      flats_;
 	vector<FlatGroup> flat_groups_;
 
-	// Visibility
-	enum
-	{
-		VIS_LEFT  = 1,
-		VIS_RIGHT = 2,
-		VIS_ABOVE = 4,
-		VIS_BELOW = 8,
-		VIS_SMALL = 16,
-	};
-	vector<uint8_t> vis_s_;
-
 	// Other
 	bool     lines_dirs_ = false;
 	unsigned n_vertices_ = 0;
@@ -174,8 +161,7 @@ private:
 	// Buffer updates
 	void updateVerticesBuffer();
 	void updateLinesBuffer(bool show_direction);
-	void updateFlatsBuffer(bool ceilings = false);
-	//void updateFlatTextures(bool ceilings = false);
+	void updateFlatsBuffer(bool ceilings);
 	void updateThingBuffers();
 
 	// Misc.
