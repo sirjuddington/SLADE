@@ -33,6 +33,7 @@
 #include "UI/WxUtils.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "Utility/Colour.h"
 #include "thirdparty/lunasvg/include/lunasvg.h"
 
 using namespace slade;
@@ -217,7 +218,7 @@ wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const wxString& 
 // Returns a horizontal box sizer containing [widgets].
 // [widgets] can contain a combination of wxWindow and wxSizer objects
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
+wxSizer* wxutil::layoutHorizontally(const vector<wxObject*>& widgets, int expand_col)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 
@@ -254,16 +255,16 @@ wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 // Same as above, however instead of returning a new sizer, it adds it to the
 // given [sizer] with [flags]
 // -----------------------------------------------------------------------------
-void wxutil::layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_col)
+void wxutil::layoutHorizontally(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags, int expand_col)
 {
-	sizer->Add(layoutHorizontally(std::move(widgets), expand_col), flags);
+	sizer->Add(layoutHorizontally(widgets, expand_col), flags);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a vertical box sizer containing [widgets].
 // [widgets] can contain a combination of wxWindow and wxSizer objects
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
+wxSizer* wxutil::layoutVertically(const vector<wxObject*>& widgets, int expand_row)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 
@@ -300,15 +301,15 @@ wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
 // Same as above, however instead of returning a new sizer, it adds it to the
 // given [sizer] with [flags]
 // -----------------------------------------------------------------------------
-void wxutil::layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_row)
+void wxutil::layoutVertically(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags, int expand_row)
 {
-	sizer->Add(layoutVertically(std::move(widgets), expand_row), flags);
+	sizer->Add(layoutVertically(widgets, expand_row), flags);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a wxArrayString containing the (wx) strings in [vector]
 // -----------------------------------------------------------------------------
-wxArrayString wxutil::arrayString(vector<wxString> vector)
+wxArrayString wxutil::arrayString(const vector<wxString>& vector)
 {
 	return wxArrayString{ vector.size(), vector.data() };
 }
@@ -399,4 +400,84 @@ wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height
 
 	// Create wxImage
 	return { width, height, rgb_data, alpha_data, false };
+}
+
+
+
+// The following functions are taken from CodeLite (http://codelite.org)
+
+wxColour wxutil::systemPanelBGColour()
+{
+#ifdef __WXGTK__
+	static bool     intitialized(false);
+	static wxColour bgColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
+
+	if (!intitialized)
+	{
+		// try to get the background colour from a menu
+		GtkWidget* menu = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		GtkStyle*  def  = gtk_rc_get_style(menu);
+		if (!def)
+			def = gtk_widget_get_default_style();
+
+		if (def)
+		{
+			GdkColor col = def->bg[GTK_STATE_NORMAL];
+			bgColour     = wxColour(col);
+		}
+		gtk_widget_destroy(menu);
+		intitialized = true;
+	}
+	return bgColour;
+#else
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
+#endif
+}
+
+wxColour wxutil::systemMenuTextColour()
+{
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
+}
+
+wxColour wxutil::systemMenuBarBGColour()
+{
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
+}
+
+wxColour wxutil::lightColour(const wxColour& colour, float percent)
+{
+	if (percent == 0)
+	{
+		return colour;
+	}
+
+	// Convert to HSL
+	ColHSL hsl = ColRGBA(colour).asHSL();
+
+	// Increase luminance
+	hsl.l += (float)((percent * 5.0) / 100.0);
+	if (hsl.l > 1.0)
+		hsl.l = 1.0;
+
+	ColRGBA rgb = hsl.asRGB();
+	return { rgb.r, rgb.g, rgb.b };
+}
+
+wxColour wxutil::darkColour(const wxColour& colour, float percent)
+{
+	if (percent == 0)
+	{
+		return colour;
+	}
+
+	// Convert to HSL
+	ColHSL hsl = ColRGBA(colour).asHSL();
+
+	// Decrease luminance
+	hsl.l -= (float)((percent * 5.0) / 100.0);
+	if (hsl.l < 0)
+		hsl.l = 0;
+
+	ColRGBA rgb = hsl.asRGB();
+	return { rgb.r, rgb.g, rgb.b };
 }

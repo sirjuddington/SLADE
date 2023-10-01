@@ -65,7 +65,7 @@ PaletteCanvas::PaletteCanvas(wxWindow* parent) : GLCanvas(parent), vb_palette_{ 
 		wxEVT_SIZE,
 		[this](wxSizeEvent& e)
 		{
-			updatePaletteBuffer();
+			vb_palette_->buffer().clear();
 			e.Skip();
 		});
 }
@@ -93,7 +93,7 @@ void PaletteCanvas::setSelection(int begin, int end)
 	else
 		sel_end_ = end;
 
-	updatePaletteBuffer();
+	vb_palette_->buffer().clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -102,7 +102,7 @@ void PaletteCanvas::setSelection(int begin, int end)
 void PaletteCanvas::setPalette(const Palette* pal)
 {
 	GLCanvas::setPalette(pal);
-	updatePaletteBuffer();
+	vb_palette_->buffer().clear();
 	Refresh();
 }
 
@@ -230,7 +230,7 @@ void PaletteCanvas::onMouseLeftDown(wxMouseEvent& e)
 			setSelection(-1);
 
 		// Redraw
-		updatePaletteBuffer();
+		vb_palette_->buffer().clear();
 		Refresh();
 	}
 
@@ -277,7 +277,7 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 			if (sel > sel_begin_)
 				setSelection(sel_begin_, sel);
 
-			updatePaletteBuffer();
+			vb_palette_->buffer().clear();
 			Refresh();
 		}
 	}

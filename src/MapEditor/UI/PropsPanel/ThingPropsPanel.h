@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PropsPanelBase.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
 namespace slade
@@ -15,11 +15,11 @@ namespace game
 	class ThingType;
 }
 
-class SpriteTexCanvas : public OGLCanvas
+class SpriteTexCanvas : public GLCanvas
 {
 public:
 	SpriteTexCanvas(wxWindow* parent);
-	~SpriteTexCanvas() = default;
+	~SpriteTexCanvas() override = default;
 
 	wxString texName() const { return texname_; }
 	void     setSprite(const game::ThingType& type);
@@ -33,25 +33,23 @@ private:
 };
 
 class AngleControl;
-class ThingDirCanvas : public OGLCanvas
+class ThingDirCanvas : public wxPanel
 {
 public:
 	ThingDirCanvas(AngleControl* parent);
-	~ThingDirCanvas() = default;
+	~ThingDirCanvas() override = default;
 
 	void setAngle(int angle);
-	void draw() override;
-
-	void onMouseEvent(wxMouseEvent& e);
 
 private:
 	AngleControl* parent_ = nullptr;
 	vector<Vec2d> dir_points_;
-	ColRGBA       col_bg_;
-	ColRGBA       col_fg_;
 	int           point_hl_   = -1;
 	int           point_sel_  = -1;
 	long          last_check_ = 0;
+
+	void onMouseEvent(wxMouseEvent& e);
+	void onPaint(wxPaintEvent& e);
 };
 
 

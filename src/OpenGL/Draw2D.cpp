@@ -87,17 +87,10 @@ bool               text_draw_init = false;
 glm::vec2          text_offset;
 float              text_scale = 1.0f;
 } // namespace
-
-
-// -----------------------------------------------------------------------------
-//
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, hud_statusbar)
-EXTERN_CVAR(Bool, hud_center)
-EXTERN_CVAR(Bool, hud_wide)
-EXTERN_CVAR(Bool, hud_bob)
+CVAR(Bool, hud_statusbar, 1, CVar::Flag::Save)
+CVAR(Bool, hud_center, 1, CVar::Flag::Save)
+CVAR(Bool, hud_wide, 0, CVar::Flag::Save)
+CVAR(Bool, hud_bob, 0, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

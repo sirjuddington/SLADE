@@ -28,7 +28,8 @@ GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour,
 		[this](wxSizeEvent& e)
 		{
 			view_.setSize(GetSize().x, GetSize().y);
-			updateBackgroundVB();
+			if (vb_background_)
+				vb_background_->buffer().clear();
 		});
 }
 
@@ -197,11 +198,10 @@ void GLCanvas::updateBackgroundVB()
 
 void GLCanvas::drawCheckeredBackground()
 {
-	if (!vb_background_)
+	if (!vb_background_ || vb_background_->buffer().empty())
 		updateBackgroundVB();
 
 	// Set background texture
-	glEnable(GL_TEXTURE_2D);
 	gl::Texture::bind(gl::Texture::backgroundTexture());
 
 	// Setup default shader

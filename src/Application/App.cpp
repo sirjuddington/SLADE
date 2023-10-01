@@ -48,7 +48,6 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/NodeBuilders.h"
-#include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "SLADEWxApp.h"
 #include "Scripting/Lua.h"
@@ -508,9 +507,6 @@ bool app::init(const vector<string>& args, double ui_scale)
 	log::info("Loading icons");
 	icons::loadIcons();
 
-	// Load program fonts
-	drawing::initFonts();
-
 	// Load entry types
 	log::info("Loading entry types");
 	EntryType::loadEntryTypes();
@@ -683,7 +679,6 @@ void app::exit(bool save_config)
 	archive_manager.closeAll();
 
 	// Clean up
-	drawing::cleanupFonts();
 	gl::Texture::clearAll();
 
 	// Clear temp folder

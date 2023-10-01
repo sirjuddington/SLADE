@@ -1,12 +1,23 @@
 #pragma once
 
-#include "MapEditor/Edit/Edit3D.h"
-
+// Forward declarations
 namespace slade
 {
 class SLADEMap;
 class MapObject;
 
+namespace mapeditor
+{
+	enum class ItemType;
+}
+namespace gl::draw2d
+{
+	struct Context;
+}
+} // namespace slade
+
+namespace slade
+{
 class InfoOverlay3D
 {
 public:
@@ -14,8 +25,7 @@ public:
 	~InfoOverlay3D() = default;
 
 	void update(int item_index, mapeditor::ItemType item_type, SLADEMap* map);
-	void draw(int bottom, int right, int middle, float alpha = 1.0f);
-	void drawTexture(float alpha, int x, int y) const;
+	void draw(gl::draw2d::Context& dc, float alpha = 1.0f);
 	void reset()
 	{
 		texture_ = 0;
@@ -25,11 +35,13 @@ public:
 private:
 	vector<string>      info_;
 	vector<string>      info2_;
-	mapeditor::ItemType current_type_ = mapeditor::ItemType::WallMiddle;
+	mapeditor::ItemType current_type_;
 	string              texname_;
 	unsigned            texture_     = 0;
 	bool                thing_icon_  = false;
 	MapObject*          object_      = nullptr;
 	long                last_update_ = 0;
+
+	void drawTexture(gl::draw2d::Context& dc, float alpha, float x, float y) const;
 };
 } // namespace slade

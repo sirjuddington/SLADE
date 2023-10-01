@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MCOverlay.h"
-#include "MapEditor/Edit/Edit3D.h"
 
 namespace slade
 {
@@ -12,15 +11,15 @@ class QuickTextureOverlay3d : public MCOverlay
 {
 public:
 	QuickTextureOverlay3d(MapEditContext* editor);
-	~QuickTextureOverlay3d() = default;
+	~QuickTextureOverlay3d() override = default;
 
 	void setTexture(string_view name);
-	void applyTexture();
+	void applyTexture() const;
 
 	void update(long frametime) override;
 
-	void   draw(int width, int height, float fade = 1.0f) override;
-	void   drawTexture(unsigned index, double x, double bottom, double size, float fade);
+	void   draw(gl::draw2d::Context& dc, float fade = 1.0f) override;
+	void   drawTexture(gl::draw2d::Context& dc, unsigned index, double x, double bottom, double size, float fade);
 	double determineSize(double x, int width) const;
 
 	void close(bool cancel = false) override;

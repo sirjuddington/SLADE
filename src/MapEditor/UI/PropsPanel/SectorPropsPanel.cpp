@@ -38,7 +38,7 @@
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
@@ -59,7 +59,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // FlatTexCanvas class constructor
 // -----------------------------------------------------------------------------
-FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 {
 	// Init variables
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
@@ -87,46 +87,21 @@ void FlatTexCanvas::setTexture(const wxString& tex)
 // -----------------------------------------------------------------------------
 void FlatTexCanvas::draw()
 {
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, size.x, size.y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw background
-	drawCheckeredBackground();
+	gl::draw2d::Context dc(&view_);
 
 	// Draw texture
 	if (texture_ && texture_ != gl::Texture::missingTexture())
 	{
-		glEnable(GL_TEXTURE_2D);
-		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0, 100.0);
+		dc.texture = texture_;
+		dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 100.0f);
 	}
 	else if (texture_ == gl::Texture::missingTexture())
 	{
 		// Draw unknown icon
-		auto tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
-		glEnable(GL_TEXTURE_2D);
-		gl::setColour(180, 0, 0);
-		drawing::drawTextureWithin(tex, 0, 0, size.x, size.y, 0, 0.25);
+		dc.texture = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
+		dc.colour.set(180, 0, 0);
+		dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 0.25f);
 	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 

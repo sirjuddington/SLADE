@@ -481,7 +481,7 @@ unsigned gl::createVAO()
 	if (!initialised)
 		return 0;
 
-	unsigned vao;
+	unsigned vao = 0;
 	glGenVertexArrays(1, &vao);
 	return vao;
 }

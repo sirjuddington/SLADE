@@ -63,53 +63,19 @@ CVAR(Bool, translation_editor_condensed, false, CVar::Save)
 // -----------------------------------------------------------------------------
 // GradientBox class constructor
 // -----------------------------------------------------------------------------
-GradientBox::GradientBox(wxWindow* parent, int steps) : OGLCanvas(parent, -1), steps_{ steps }
+GradientBox::GradientBox(wxWindow* parent, int steps) :
+	wxPanel(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE), steps_{ steps }
 {
+	Bind(
+		wxEVT_PAINT,
+		[&](wxPaintEvent& e)
+		{
+			wxPaintDC dc(this);
+			dc.GradientFillLinear({ 0, 0, GetSize().x, GetSize().y }, col_start_.toWx(), col_end_.toWx());
+		});
+
 	// Minimum height 16
 	SetInitialSize(wxSize(-1, ui::scalePx(16)));
-}
-
-// -----------------------------------------------------------------------------
-// Called when the canvas needs to be redrawn
-// -----------------------------------------------------------------------------
-void GradientBox::draw()
-{
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, size.x, size.y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw gradient
-	if (steps_ < 0)
-	{
-		// No steps defined, draw smooth gradient
-		glBegin(GL_QUADS);
-		gl::setColour(col_start_);
-		glVertex2d(0, 0);
-		glVertex2d(0, size.y);
-		gl::setColour(col_end_);
-		glVertex2d(size.x, size.y);
-		glVertex2d(size.x, 0);
-		glEnd();
-	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 

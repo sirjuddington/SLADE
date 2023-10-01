@@ -36,7 +36,7 @@
 #include "BrowserItem.h"
 #include "General/UI.h"
 #include "OpenGL/Draw2D.h"
-#include "OpenGL/Drawing.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -69,7 +69,7 @@ BrowserCanvas::BrowserCanvas(wxWindow* parent) :
 	if (browser_bg_type == 1)
 	{
 		// 'System' style, get system panel background colour
-		auto bgcolwx = drawing::systemPanelBGColour();
+		auto bgcolwx = wxutil::systemPanelBGColour();
 		col_bg.set(bgcolwx);
 	}
 	setBackground(browser_bg_type == 0 ? BGStyle::Checkered : BGStyle::Colour, col_bg);
@@ -317,7 +317,7 @@ void BrowserCanvas::updateLayout(int viewed_index)
 	if (browser_bg_type == 1)
 	{
 		// 'System' style, get system panel background colour
-		auto bgcolwx = drawing::systemPanelBGColour();
+		auto bgcolwx = wxutil::systemPanelBGColour();
 		col_bg.set(bgcolwx);
 	}
 	setBackground(browser_bg_type == 0 ? BGStyle::Checkered : BGStyle::Colour, col_bg);

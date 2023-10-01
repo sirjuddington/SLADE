@@ -1,13 +1,13 @@
 #pragma once
 
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 
 namespace slade
 {
 class MapSide;
 class NumberTextCtrl;
 
-class SideTexCanvas : public OGLCanvas
+class SideTexCanvas : public GLCanvas
 {
 public:
 	SideTexCanvas(wxWindow* parent);

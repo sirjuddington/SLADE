@@ -903,7 +903,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	{
 		auto*         image = this->image();
 		auto*         pal   = maineditor::currentPalette();
-		GfxCropDialog gcd(theMainWindow, image, pal);
+		GfxCropDialog gcd(theMainWindow, *image, pal);
 
 		// Show crop dialog
 		if (gcd.ShowModal() == wxID_OK)

@@ -1,23 +1,25 @@
 #pragma once
 
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 
 namespace slade
 {
 class SImage;
 class NumberTextCtrl;
 
-class CropCanvas : public OGLCanvas
+class CropCanvas : public GLCanvas
 {
 public:
-	CropCanvas(wxWindow* parent, SImage* image, Palette* palette);
+	CropCanvas(wxWindow* parent, SImage& image);
+	~CropCanvas() override;
 
 	const Recti& cropRect() const { return crop_rect_; }
-	void         setCropRect(Recti& rect) { crop_rect_.set(rect); }
+	void         setCropRect(const Recti& rect) { crop_rect_.set(rect); }
 
 	void draw() override;
 
 private:
+	SImage*  image_   = nullptr;
 	unsigned texture_ = 0;
 	Recti    crop_rect_;
 };
@@ -25,11 +27,11 @@ private:
 class GfxCropDialog : public wxDialog
 {
 public:
-	GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette);
-	~GfxCropDialog() = default;
+	GfxCropDialog(wxWindow* parent, SImage& image, const Palette* palette);
+	~GfxCropDialog() override = default;
 
 	const Recti& cropRect() const { return crop_rect_; }
-	void         updatePreview();
+	void         updatePreview() const;
 
 private:
 	CropCanvas*     canvas_preview_ = nullptr;

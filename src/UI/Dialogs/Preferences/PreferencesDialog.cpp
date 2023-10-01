@@ -132,7 +132,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 
 	// Setup preferences TreeBook
 	addPrefsPage<GeneralPrefsPanel>("General", false, true);
-	addPrefsPage<OpenGLPrefsPanel>("OpenGL", true);
+	//addPrefsPage<OpenGLPrefsPanel>("OpenGL", true);
 	addPrefsPage<InterfacePrefsPanel>("Interface");
 	addPrefsPage<ColourPrefsPanel>("Colours & Theme", true);
 	addPrefsPage<InputPrefsPanel>("Keyboard Shortcuts");

@@ -39,7 +39,7 @@
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
@@ -59,7 +59,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // SpriteTexCanvas class constructor
 // -----------------------------------------------------------------------------
-SpriteTexCanvas::SpriteTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+SpriteTexCanvas::SpriteTexCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 {
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
 	SetInitialSize(wxutil::scaledSize(128, 128));
@@ -100,46 +100,15 @@ void SpriteTexCanvas::setSprite(const game::ThingType& type)
 // -----------------------------------------------------------------------------
 void SpriteTexCanvas::draw()
 {
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, size.x, size.y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw background
-	drawCheckeredBackground();
+	gl::draw2d::Context dc(&view_);
 
 	// Draw texture
-	gl::setColour(colour_);
+	dc.colour  = colour_;
+	dc.texture = texture_;
 	if (texture_ && !icon_)
-	{
-		// Sprite
-		glEnable(GL_TEXTURE_2D);
-		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 4, 2);
-	}
+		dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 4.0f, 2.0f); // Sprite
 	else if (texture_ && icon_)
-	{
-		// Icon
-		glEnable(GL_TEXTURE_2D);
-		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0, 0.25);
-	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
+		dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 0.25f); // Icon
 }
 
 
@@ -151,19 +120,12 @@ void SpriteTexCanvas::draw()
 // direction
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // ThingDirCanvas class constructor
 // -----------------------------------------------------------------------------
-ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, true, 15), parent_{ parent }
+ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : wxPanel(parent), parent_{ parent }
 {
-	// Get system panel background colour
-	auto bgcolwx = drawing::systemPanelBGColour();
-	col_bg_.set(bgcolwx);
-
-	// Get system text colour
-	auto textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-	col_fg_.set(textcol);
+	SetDoubleBuffered(true);
 
 	// Setup dir points
 	double rot = 0;
@@ -177,6 +139,7 @@ ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, tru
 	Bind(wxEVT_MOTION, &ThingDirCanvas::onMouseEvent, this);
 	Bind(wxEVT_LEAVE_WINDOW, &ThingDirCanvas::onMouseEvent, this);
 	Bind(wxEVT_LEFT_DOWN, &ThingDirCanvas::onMouseEvent, this);
+	Bind(wxEVT_PAINT, &ThingDirCanvas::onPaint, this);
 
 	// Fixed size
 	auto size = ui::scalePx(128);
@@ -215,81 +178,12 @@ void ThingDirCanvas::setAngle(int angle)
 	Refresh();
 }
 
-// -----------------------------------------------------------------------------
-// Draws the control
-// -----------------------------------------------------------------------------
-void ThingDirCanvas::draw()
-{
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-1.2, 1.2, 1.2, -1.2, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(col_bg_.fr(), col_bg_.fg(), col_bg_.fb(), 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Draw angle ring
-	glDisable(GL_TEXTURE_2D);
-	glLineWidth(1.5f);
-	glEnable(GL_LINE_SMOOTH);
-	ColRGBA col_faded(
-		col_bg_.r * 0.6 + col_fg_.r * 0.4, col_bg_.g * 0.6 + col_fg_.g * 0.4, col_bg_.b * 0.6 + col_fg_.b * 0.4);
-	drawing::drawEllipse(Vec2d(0, 0), 1, 1, 48, col_faded);
-
-	// Draw dir points
-	for (auto dir_point : dir_points_)
-	{
-		drawing::drawFilledEllipse(dir_point, 0.12, 0.12, 8, col_bg_);
-		drawing::drawEllipse(dir_point, 0.12, 0.12, 16, col_fg_);
-	}
-
-	// Draw angle arrow
-	glLineWidth(2.0f);
-	if (parent_->angleSet())
-	{
-		auto tip = math::rotatePoint(Vec2d(0, 0), Vec2d(0.8, 0), -parent_->angle());
-		drawing::drawArrow(tip, Vec2d(0, 0), col_fg_, false, 1.2, 0.2);
-	}
-
-	// Draw hover point
-	glPointSize(8.0f);
-	glEnable(GL_POINT_SMOOTH);
-	if (point_hl_ >= 0 && point_hl_ < (int)dir_points_.size())
-	{
-		gl::setColour(col_faded);
-		glBegin(GL_POINTS);
-		glVertex2d(dir_points_[point_hl_].x, dir_points_[point_hl_].y);
-		glEnd();
-	}
-
-	// Draw selected point
-	if (parent_->angleSet() && point_sel_ >= 0 && point_sel_ < (int)dir_points_.size())
-	{
-		gl::setColour(col_fg_);
-		glBegin(GL_POINTS);
-		glVertex2d(dir_points_[point_sel_].x, dir_points_[point_sel_].y);
-		glEnd();
-	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
-}
-
 
 // -----------------------------------------------------------------------------
 //
 // ThingDirCanvas Class Events
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Called when a mouse event happens in the canvas
@@ -361,6 +255,69 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 	}
 
 	e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when the canvas needs to be (re)painted
+// -----------------------------------------------------------------------------
+void ThingDirCanvas::onPaint(wxPaintEvent& e)
+{
+	wxPaintDC dc(this);
+	auto      gc = wxGraphicsContext::Create(dc);
+
+	auto half_size    = GetSize().x / 2;
+	auto pad          = ui::scalePx(8);
+	auto radius       = half_size - pad;
+	auto point_radius = ui::scalePx(7);
+	auto col_bg       = wxutil::systemPanelBGColour();
+	auto col_fg       = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+	auto pi           = wxGraphicsPenInfo(wxColour(col_fg.Red(), col_fg.Green(), col_fg.Blue(), 80), 1.75);
+
+	// Draw angle ring
+	gc->SetPen(gc->CreatePen(pi));
+	gc->SetBrush(*wxTRANSPARENT_BRUSH);
+	gc->DrawEllipse(pad, pad, radius * 2, radius * 2);
+
+	// Draw dir points
+	pi.Colour(col_fg);
+	gc->SetPen(gc->CreatePen(pi));
+	gc->SetBrush(wxBrush(col_bg));
+	for (auto dir_point : dir_points_)
+	{
+		auto point = dir_point * radius;
+		gc->DrawEllipse(
+			half_size + point.x - point_radius, half_size + point.y - point_radius, point_radius * 2, point_radius * 2);
+	}
+
+	// Draw angle arrow
+	if (parent_->angleSet())
+	{
+		auto                    tip = math::rotatePoint(Vec2d(0, 0), Vec2d(radius * 0.8, 0), -parent_->angle());
+		vector<wxPoint2DDouble> points;
+		for (auto line : math::arrowLines({ 0.0, 0.0, tip.x, tip.y }, pad, 60.0f))
+		{
+			line.move(half_size, half_size);
+			gc->StrokeLine(line.x1(), line.y1(), line.x2(), line.y2());
+		}
+	}
+
+	// Draw hover point
+	gc->SetPen(*wxTRANSPARENT_PEN);
+	auto pr = static_cast<double>(point_radius) * 0.7;
+	if (point_hl_ >= 0 && point_hl_ < (int)dir_points_.size())
+	{
+		gc->SetBrush(wxBrush(wxColour(col_fg.Red(), col_fg.Green(), col_fg.Blue(), 80)));
+		auto point = dir_points_[point_hl_] * radius;
+		gc->DrawEllipse(half_size + point.x - pr, half_size + point.y - pr, pr * 2, pr * 2);
+	}
+
+	// Draw selected point
+	if (parent_->angleSet() && point_sel_ >= 0 && point_sel_ < (int)dir_points_.size())
+	{
+		gc->SetBrush(wxBrush(col_fg));
+		auto point = dir_points_[point_sel_] * radius;
+		gc->DrawEllipse(half_size + point.x - pr, half_size + point.y - pr, pr * 2, pr * 2);
+	}
 }
 
 
@@ -547,11 +504,11 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 			{
 				if (i.second.showAlways())
 				{
-					flags.push_back(i.second.name());
-					udmf_flags_.push_back(i.second.propName());
+					flags.emplace_back(i.second.name());
+					udmf_flags_.emplace_back(i.second.propName());
 				}
 				else
-					udmf_flags_extra_.push_back(i.second.propName());
+					udmf_flags_extra_.emplace_back(i.second.propName());
 			}
 		}
 
@@ -668,7 +625,7 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	for (const auto& a : udmf_flags_extra_)
 	{
 		auto prop = game::configuration().getUDMFProperty(a.ToStdString(), MapObject::Type::Thing);
-		flags.push_back(prop->name());
+		flags.emplace_back(prop->name());
 	}
 
 	// Add flag checkboxes

@@ -322,7 +322,6 @@ void MapRenderer2D::renderVertices(float alpha)
 	gl::setBlend(gl::Blend::Normal);
 
 	// Set texture
-	glEnable(GL_TEXTURE_2D);
 	gl::Texture::bind(vertexTexture(false));
 
 	// Render vertices
@@ -349,7 +348,6 @@ void MapRenderer2D::renderVertexHilight(int index, float fade) const
 	gl::setBlend(colourconfig::colDef("map_hilight").blendMode());
 
 	// Set texture
-	glEnable(GL_TEXTURE_2D);
 	gl::Texture::bind(vertexTexture(true));
 
 	// Render

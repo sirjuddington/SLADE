@@ -40,8 +40,7 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "OpenGL/Drawing.h"
-#include "OpenGL/GLTexture.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/StringUtils.h"
@@ -189,7 +188,7 @@ void QuickTextureOverlay3d::setTexture(string_view name)
 // -----------------------------------------------------------------------------
 // Applies the current texture to all selected walls/flats
 // -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::applyTexture()
+void QuickTextureOverlay3d::applyTexture() const
 {
 	// Check editor is associated
 	if (!editor_)
@@ -257,26 +256,22 @@ void QuickTextureOverlay3d::update(long frametime)
 }
 
 // -----------------------------------------------------------------------------
-// Draws the overlay to [width],[height]
+// Draws the overlay
 // -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::draw(int width, int height, float fade)
+void QuickTextureOverlay3d::draw(gl::draw2d::Context& dc, float fade)
 {
 	// Don't draw if invisible
 	if (fade < 0.001f)
 		return;
 
 	// Draw background
-	glColor4f(0.0f, 0.0f, 0.0f, fade * 0.6f);
-	glDisable(GL_TEXTURE_2D);
-	drawing::drawFilledRect(0, height - 120, width, height);
-
-	// Draw current tex name
-	glEnable(GL_TEXTURE_2D);
+	dc.colour.set(0, 0, 0, 140 * fade);
+	dc.drawRect({ 0, dc.viewSize().y - 120, dc.viewSize().x, dc.viewSize().y });
 
 	// Draw textures
-	double x = ((double)width * 0.5) - (anim_offset_ * 136.0);
-	glColor4f(1.0f, 1.0f, 1.0f, fade);
-	for (unsigned a = 0; a < textures_.size(); a++)
+	dc.colour.set(255, 255, 255, 255 * fade);
+	auto x = (dc.viewSize().x * 0.5f) - (anim_offset_ * 136.0f);
+	for (unsigned i = 0; i < textures_.size(); i++)
 	{
 		// Skip until first texture to show on left
 		if (x < -96)
@@ -286,11 +281,11 @@ void QuickTextureOverlay3d::draw(int width, int height, float fade)
 		}
 
 		// Draw texture
-		drawTexture(a, x, height - 18, determineSize(x, width), fade);
+		drawTexture(dc, i, x, dc.viewSize().y - dc.textLineHeight() - 2, determineSize(x, dc.viewSize().x), fade);
 		x += 136;
 
 		// Stop when we get to the right edge of the screen
-		if (x > width + 96)
+		if (x > dc.viewSize().x + 96)
 			break;
 	}
 }
@@ -298,7 +293,13 @@ void QuickTextureOverlay3d::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture in the list at [index]
 // -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom, double size, float fade)
+void QuickTextureOverlay3d::drawTexture(
+	gl::draw2d::Context& dc,
+	unsigned             index,
+	double               x,
+	double               bottom,
+	double               size,
+	float                fade)
 {
 	// Get texture if needed
 	if (!textures_[index].texture)
@@ -313,29 +314,14 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 
 	// Draw name
 	double brightness = 0.5 + (size - 1.0);
-	drawing::drawText(
-		textures_[index].name,
-		x,
-		bottom + 2,
-		ColRGBA(brightness * 255, brightness * 255, brightness * 255, brightness * 255 * fade),
-		index == current_index_ ? drawing::Font::Bold : drawing::Font::Normal,
-		drawing::Align::Center);
+	dc.colour.set(brightness * 255, brightness * 255, brightness * 255, brightness * 255 * fade);
+	dc.font           = index == current_index_ ? gl::draw2d::Font::Bold : gl::draw2d::Font::Normal;
+	dc.text_alignment = gl::draw2d::Align::Center;
+	dc.drawText(textures_[index].name, { x, bottom + 2 });
 
 	// Draw texture
-	auto rect = drawing::fitTextureWithin(
-		textures_[index].texture, x - 48 * size, bottom - (96 * size), x + 48 * size, bottom, 0, 2);
-	glColor4f(brightness, brightness, brightness, brightness * fade);
-	gl::Texture::bind(textures_[index].texture);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f);
-	glVertex2d(rect.x1(), rect.y1());
-	glTexCoord2f(0.0f, 1.0f);
-	glVertex2d(rect.x1(), rect.y2());
-	glTexCoord2f(1.0f, 1.0f);
-	glVertex2d(rect.x2(), rect.y2());
-	glTexCoord2f(1.0f, 0.0f);
-	glVertex2d(rect.x2(), rect.y1());
-	glEnd();
+	dc.texture = textures_[index].texture;
+	dc.drawTextureWithin({ x - 48 * size, bottom - (96 * size), x + 48 * size, bottom }, 0, 2);
 }
 
 // -----------------------------------------------------------------------------

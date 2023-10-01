@@ -264,9 +264,9 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <ObjectFileName>$(IntDir)$(Configuration)\%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <ObjectFileName>$(IntDir)$(Configuration)\%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;dsound.lib;ThirdPartyLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -495,7 +495,6 @@
     <ClCompile Include="..\src\MapEditor\UI\ScriptEditorPanel.cpp" />
     <ClCompile Include="..\src\MapEditor\UI\ShapeDrawPanel.cpp" />
     <ClCompile Include="..\src\MapEditor\UndoSteps.cpp" />
-    <ClCompile Include="..\src\OpenGL\Drawing.cpp" />
     <ClCompile Include="..\src\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\src\OpenGL\OpenGL.cpp" />
     <ClCompile Include="..\src\Scripting\Lua.cpp" />
@@ -534,7 +533,6 @@
     <ClCompile Include="..\src\UI\Canvas\CTextureCanvas.cpp" />
     <ClCompile Include="..\src\UI\Canvas\GfxCanvas.cpp" />
     <ClCompile Include="..\src\UI\Canvas\MapPreviewCanvas.cpp" />
-    <ClCompile Include="..\src\UI\Canvas\OGLCanvas.cpp" />
     <ClCompile Include="..\src\UI\Canvas\PaletteCanvas.cpp" />
     <ClCompile Include="..\src\UI\Controls\BaseResourceChooser.cpp" />
     <ClCompile Include="..\src\UI\Controls\ColourBox.cpp" />
@@ -839,7 +837,6 @@
     <ClInclude Include="..\src\MapEditor\UI\ScriptEditorPanel.h" />
     <ClInclude Include="..\src\MapEditor\UI\ShapeDrawPanel.h" />
     <ClInclude Include="..\src\MapEditor\UndoSteps.h" />
-    <ClInclude Include="..\src\OpenGL\Drawing.h" />
     <ClInclude Include="..\src\OpenGL\GLTexture.h" />
     <ClInclude Include="..\src\OpenGL\OpenGL.h" />
     <ClInclude Include="..\src\Scripting\Lua.h" />
@@ -879,7 +876,6 @@
     <ClInclude Include="..\src\UI\Canvas\CTextureCanvas.h" />
     <ClInclude Include="..\src\UI\Canvas\GfxCanvas.h" />
     <ClInclude Include="..\src\UI\Canvas\MapPreviewCanvas.h" />
-    <ClInclude Include="..\src\UI\Canvas\OGLCanvas.h" />
     <ClInclude Include="..\src\UI\Canvas\PaletteCanvas.h" />
     <ClInclude Include="..\src\UI\Controls\BaseResourceChooser.h" />
     <ClInclude Include="..\src\UI\Controls\ColourBox.h" />

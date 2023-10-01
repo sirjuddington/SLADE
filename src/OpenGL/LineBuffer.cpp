@@ -107,36 +107,8 @@ void LineBuffer::addArrow(
 	float        arrowhead_angle,
 	bool         arrowhead_both)
 {
-	Vec2f vector  = line.br - line.tl;
-	auto  angle   = atan2(-vector.y, vector.x);
-	auto  ang_rad = math::degToRad(arrowhead_angle);
-
-	// Line end arrowhead
-	Vec2f a1r;
-	Vec2f a1l = a1r = line.br;
-	a1l.x += arrowhead_length * sin(angle - ang_rad);
-	a1l.y += arrowhead_length * cos(angle - ang_rad);
-	a1r.x -= arrowhead_length * sin(angle + ang_rad);
-	a1r.y -= arrowhead_length * cos(angle + ang_rad);
-	add2d(line.tl.x, line.tl.y, line.br.x, line.br.y, colour, width);
-	add2d(line.br.x, line.br.y, a1l.x, a1l.y, colour, width);
-	add2d(line.br.x, line.br.y, a1r.x, a1r.y, colour, width);
-
-	if (arrowhead_both)
-	{
-		// Line start arrowhead
-		vector = line.tl - line.br;
-		angle  = atan2(-vector.y, vector.x);
-
-		Vec2f a2r;
-		Vec2f a2l = a2r = line.tl;
-		a2l.x += arrowhead_length * sin(angle - ang_rad);
-		a2l.y += arrowhead_length * cos(angle - ang_rad);
-		a2r.x -= arrowhead_length * sin(angle + ang_rad);
-		a2r.y -= arrowhead_length * cos(angle + ang_rad);
-		add2d(line.tl.x, line.tl.y, a2l.x, a2l.y, colour, width);
-		add2d(line.tl.x, line.tl.y, a2r.x, a2r.y, colour, width);
-	}
+	for (const auto& l : math::arrowLines(line, arrowhead_length, arrowhead_angle, arrowhead_both))
+		add2d(l.x1(), l.y1(), l.x2(), l.y2(), colour, width);
 }
 
 void LineBuffer::push()

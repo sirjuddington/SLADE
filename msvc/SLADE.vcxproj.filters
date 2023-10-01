@@ -180,9 +180,6 @@
     <ClCompile Include="..\src\Audio\ModMusic.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\OpenGL\Drawing.cpp">
-      <Filter>OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\OpenGL\OpenGL.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
@@ -253,9 +250,6 @@
       <Filter>UI\Canvas</Filter>
     </ClCompile>
     <ClCompile Include="..\src\UI\Canvas\MapPreviewCanvas.cpp">
-      <Filter>UI\Canvas</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\UI\Canvas\OGLCanvas.cpp">
       <Filter>UI\Canvas</Filter>
     </ClCompile>
     <ClCompile Include="..\src\UI\Canvas\PaletteCanvas.cpp">
@@ -1067,9 +1061,6 @@
     <ClInclude Include="..\src\Audio\ModMusic.h">
       <Filter>Audio</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\OpenGL\Drawing.h">
-      <Filter>OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\OpenGL\OpenGL.h">
       <Filter>OpenGL</Filter>
     </ClInclude>
@@ -1146,9 +1137,6 @@
       <Filter>UI\Canvas</Filter>
     </ClInclude>
     <ClInclude Include="..\src\UI\Canvas\MapPreviewCanvas.h">
-      <Filter>UI\Canvas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\UI\Canvas\OGLCanvas.h">
       <Filter>UI\Canvas</Filter>
     </ClInclude>
     <ClInclude Include="..\src\UI\Canvas\PaletteCanvas.h">
