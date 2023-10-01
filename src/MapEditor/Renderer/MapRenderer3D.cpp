@@ -88,7 +88,6 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // MapRenderer3D class constructor
 // -----------------------------------------------------------------------------
@@ -426,28 +425,28 @@ void MapRenderer3D::renderMap()
 	glAlphaFunc(GL_GREATER, 0.0f);
 
 	// Init VBO stuff
-	if (gl::vboSupport())
-	{
-		// Check if any polygon vertex data has changed (in this case we need to refresh the entire vbo)
-		bool vbo_updated = false;
-		/*for (unsigned a = 0; a < map_->nSectors(); a++)
-		{
-			auto poly = map_->sector(a)->polygon();
-			if (poly && poly->vboUpdate() > 1)
-			{
-				updateFlatsVBO();
-				vbo_updated = true;
-				break;
-			}
-		}*/
+	// if (gl::vboSupport())
+	//{
+	//	// Check if any polygon vertex data has changed (in this case we need to refresh the entire vbo)
+	//	bool vbo_updated = false;
+	//	/*for (unsigned a = 0; a < map_->nSectors(); a++)
+	//	{
+	//		auto poly = map_->sector(a)->polygon();
+	//		if (poly && poly->vboUpdate() > 1)
+	//		{
+	//			updateFlatsVBO();
+	//			vbo_updated = true;
+	//			break;
+	//		}
+	//	}*/
 
-		// Create VBO if necessary
-		if (!vbo_updated && vbo_floors_ == 0)
-			updateFlatsVBO();
+	//	// Create VBO if necessary
+	//	if (!vbo_updated && vbo_floors_ == 0)
+	//		updateFlatsVBO();
 
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	}
+	//	glEnableClientState(GL_VERTEX_ARRAY);
+	//	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//}
 
 	// Create flat arrays if needed
 	if (floors_.size() != map_->nSectors())
@@ -475,7 +474,7 @@ void MapRenderer3D::renderMap()
 	// Render sky
 	if (render_3d_sky)
 		renderSky();
-	gl::setColour(ColRGBA::WHITE);
+	// gl::setColour(ColRGBA::WHITE);
 
 	if (fog_)
 	{
@@ -597,7 +596,7 @@ void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float ab
 // -----------------------------------------------------------------------------
 void MapRenderer3D::renderSky()
 {
-	gl::setColour(ColRGBA::WHITE);
+	// gl::setColour(ColRGBA::WHITE);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_FOG);
 	glDisable(GL_DEPTH_TEST);
@@ -633,7 +632,7 @@ void MapRenderer3D::renderSky()
 		const auto& cam_pos = camera_->position();
 		float       size    = 64.0f;
 		glDisable(GL_TEXTURE_2D);
-		gl::setColour(skycol_top_);
+		// gl::setColour(skycol_top_);
 		glBegin(GL_QUADS);
 		glVertex3f(cam_pos.x - (size * 10), cam_pos.y - (size * 10), cam_pos.z + size);
 		glVertex3f(cam_pos.x - (size * 10), cam_pos.y + (size * 10), cam_pos.z + size);
@@ -642,7 +641,7 @@ void MapRenderer3D::renderSky()
 		glEnd();
 
 		// Render bottom cap
-		gl::setColour(skycol_bottom_);
+		// gl::setColour(skycol_bottom_);
 		glBegin(GL_QUADS);
 		glVertex3f(cam_pos.x - (size * 10), cam_pos.y - (size * 10), cam_pos.z - size);
 		glVertex3f(cam_pos.x - (size * 10), cam_pos.y + (size * 10), cam_pos.z - size);
@@ -767,11 +766,11 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor) const
 	oy /= sy;
 
 	//// Update polygon texture coordinates
-	//if (floor)
+	// if (floor)
 	//	sector->polygon()->setTexture(floors_[index].texture);
-	//else
+	// else
 	//	sector->polygon()->setTexture(ceilings_[index].texture);
-	//sector->polygon()->updateTextureCoords(sx, sy, ox, oy, rot);
+	// sector->polygon()->updateTextureCoords(sx, sy, ox, oy, rot);
 }
 
 // -----------------------------------------------------------------------------
@@ -799,14 +798,14 @@ void MapRenderer3D::updateSector(unsigned index)
 		floors_[index].flags |= SKY;
 
 	//// Update floor VBO
-	//if (gl::vboSupport())
+	// if (gl::vboSupport())
 	//{
 	//	updateFlatTexCoords(index, true);
 	//	glBindBuffer(GL_ARRAY_BUFFER, vbo_floors_);
 	//	Polygon2D::setupVBOPointers();
 	//	sector->polygon()->setZ(floors_[index].plane);
 	//	sector->polygon()->updateVBOData();
-	//}
+	// }
 
 	// Update ceiling
 	auto& ctex                 = mapeditor::textureManager().flat(sector->ceiling().texture, mix_tex_flats);
@@ -822,23 +821,23 @@ void MapRenderer3D::updateSector(unsigned index)
 		ceilings_[index].flags |= SKY;
 
 	//// Update ceiling VBO
-	//if (gl::vboSupport())
+	// if (gl::vboSupport())
 	//{
 	//	updateFlatTexCoords(index, false);
 	//	glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings_);
 	//	Polygon2D::setupVBOPointers();
 	//	sector->polygon()->setZ(ceilings_[index].plane);
 	//	sector->polygon()->updateVBOData();
-	//}
+	// }
 
 	//// Finish up
-	//floors_[index].updated_time   = app::runTimer();
-	//ceilings_[index].updated_time = app::runTimer();
-	//if (gl::vboSupport())
+	// floors_[index].updated_time   = app::runTimer();
+	// ceilings_[index].updated_time = app::runTimer();
+	// if (gl::vboSupport())
 	//{
 	//	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	//	sector->polygon()->setZ(0);
-	//}
+	// }
 }
 
 // -----------------------------------------------------------------------------
@@ -865,7 +864,7 @@ void MapRenderer3D::renderFlat(const Flat* flat)
 	setFog(flat->fogcolour, flat->light);
 
 	// Render flat
-	if (gl::vboSupport() && flats_use_vbo)
+	if (true) // gl::vboSupport() && flats_use_vbo)
 	{
 		// Setup for floor or ceiling
 		if (flat->flags & CEIL)
@@ -874,7 +873,7 @@ void MapRenderer3D::renderFlat(const Flat* flat)
 			{
 				glCullFace(GL_BACK);
 				glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings_);
-				//Polygon2D::setupVBOPointers();
+				// Polygon2D::setupVBOPointers();
 				flat_last_ = 2;
 			}
 		}
@@ -884,13 +883,13 @@ void MapRenderer3D::renderFlat(const Flat* flat)
 			{
 				glCullFace(GL_FRONT);
 				glBindBuffer(GL_ARRAY_BUFFER, vbo_floors_);
-				//Polygon2D::setupVBOPointers();
+				// Polygon2D::setupVBOPointers();
 				flat_last_ = 1;
 			}
 		}
 
 		// Render
-		//flat->sector->polygon()->renderVBO();
+		// flat->sector->polygon()->renderVBO();
 	}
 	else
 	{
@@ -909,7 +908,7 @@ void MapRenderer3D::renderFlat(const Flat* flat)
 		}
 
 		// Render
-		//flat->sector->polygon()->render();
+		// flat->sector->polygon()->render();
 
 		glPopMatrix();
 	}
@@ -962,7 +961,7 @@ void MapRenderer3D::renderFlats()
 
 	// Reset gl stuff
 	glDisable(GL_TEXTURE_2D);
-	if (gl::vboSupport())
+	if (true) // gl::vboSupport())
 	{
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -990,7 +989,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 	auto& def  = colourconfig::colDef("map_3d_selection");
 	auto  col1 = def.colour;
 	col1.a *= alpha;
-	gl::setColour(col1, def.blendMode());
+	// gl::setColour(col1, def.blendMode());
 	auto col2 = col1;
 	col2.a *= 0.5;
 
@@ -1016,7 +1015,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 		// Draw sector outline
 		vector<MapLine*> lines;
 		sector->putLines(lines);
-		gl::setColour(col1);
+		// gl::setColour(col1);
 		glBegin(GL_LINES);
 		for (auto& line : lines)
 		{
@@ -1026,11 +1025,11 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 		glEnd();
 
 		// Render fill
-		gl::setColour(col2);
+		// gl::setColour(col2);
 		glDisable(GL_CULL_FACE);
-		//sector->polygon()->setZ(plane);
-		//sector->polygon()->render();
-		//sector->polygon()->setZ(0);
+		// sector->polygon()->setZ(plane);
+		// sector->polygon()->render();
+		// sector->polygon()->setZ(0);
 		glEnable(GL_CULL_FACE);
 	}
 
@@ -1894,7 +1893,7 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 	auto& def  = colourconfig::colDef("map_3d_selection");
 	auto  col1 = def.colour;
 	col1.a *= alpha;
-	gl::setColour(col1);
+	// gl::setColour(col1);
 	auto col2 = col1;
 	col2.a *= 0.5;
 
@@ -1952,14 +1951,14 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Render quad outline
-		gl::setColour(col1);
+		// gl::setColour(col1);
 		glBegin(GL_LINE_LOOP);
 		for (auto& point : quad->points)
 			glVertex3f(point.x, point.y, point.z);
 		glEnd();
 
 		// Render quad fill
-		gl::setColour(col2);
+		// gl::setColour(col2);
 		glBegin(GL_QUADS);
 		for (auto& point : quad->points)
 			glVertex3f(point.x, point.y, point.z);
@@ -2320,7 +2319,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 	// Setup colour
 	auto col1 = colourconfig::colour("map_3d_selection");
 	col1.a *= alpha;
-	gl::setColour(col1);
+	// gl::setColour(col1);
 	auto col2 = col1;
 	col2.a *= 0.5;
 
@@ -2362,7 +2361,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 
 		// Render outline
 		double z = things_[item.index].z;
-		gl::setColour(col1);
+		// gl::setColour(col1);
 		glBegin(GL_LINE_LOOP);
 		glVertex3f(x1, y1, z + theight);
 		glVertex3f(x1, y1, z);
@@ -2371,7 +2370,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 		glEnd();
 
 		// Render fill
-		gl::setColour(col2);
+		// gl::setColour(col2);
 		glBegin(GL_QUADS);
 		glVertex3f(x1, y1, z + theight);
 		glVertex3f(x1, y1, z);
@@ -2408,13 +2407,13 @@ void MapRenderer3D::updateFlatsVBO()
 
 	// Allocate buffer data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_floors_);
-	//Polygon2D::setupVBOPointers();
+	// Polygon2D::setupVBOPointers();
 	glBufferData(GL_ARRAY_BUFFER, totalsize, nullptr, GL_STATIC_DRAW);
 
 	// Write polygon data to VBO
 	unsigned offset = 0;
 	unsigned index  = 0;
-	//for (unsigned a = 0; a < map_->nSectors(); a++)
+	// for (unsigned a = 0; a < map_->nSectors(); a++)
 	//{
 	//	// Set polygon z height
 	//	auto poly = map_->sector(a)->polygon();
@@ -2429,13 +2428,13 @@ void MapRenderer3D::updateFlatsVBO()
 
 	// Allocate buffer data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings_);
-	//Polygon2D::setupVBOPointers();
+	// Polygon2D::setupVBOPointers();
 	glBufferData(GL_ARRAY_BUFFER, totalsize, nullptr, GL_STATIC_DRAW);
 
 	// Write polygon data to VBO
 	offset = 0;
 	index  = 0;
-	//for (unsigned a = 0; a < map_->nSectors(); a++)
+	// for (unsigned a = 0; a < map_->nSectors(); a++)
 	//{
 	//	// Set polygon z height
 	//	auto poly = map_->sector(a)->polygon();
@@ -2888,7 +2887,7 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 	auto& def         = colourconfig::colDef("map_3d_hilight");
 	auto  col_hilight = def.colour;
 	col_hilight.a *= alpha;
-	gl::setColour(col_hilight);
+	// gl::setColour(col_hilight);
 
 	// Quad hilight
 	if (hilight.type == mapeditor::ItemType::WallBottom || hilight.type == mapeditor::ItemType::WallMiddle
@@ -2948,7 +2947,7 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 		{
 			glCullFace(GL_BACK);
 			col_hilight.a *= 0.3;
-			gl::setColour(col_hilight);
+			// gl::setColour(col_hilight);
 			glBegin(GL_QUADS);
 			for (auto& point : quad->points)
 				glVertex3f(point.x, point.y, point.z);
@@ -2986,11 +2985,11 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 		if (render_3d_hilight > 1)
 		{
 			col_hilight.a *= 0.3;
-			gl::setColour(col_hilight);
+			// gl::setColour(col_hilight);
 			glDisable(GL_CULL_FACE);
-			//sector->polygon()->setZ(plane);
-			//sector->polygon()->render();
-			//sector->polygon()->setZ(0);
+			// sector->polygon()->setZ(plane);
+			// sector->polygon()->render();
+			// sector->polygon()->setZ(0);
 			glEnable(GL_CULL_FACE);
 		}
 	}
@@ -3033,7 +3032,7 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 		{
 			glCullFace(GL_BACK);
 			col_hilight.a *= 0.3;
-			gl::setColour(col_hilight);
+			// gl::setColour(col_hilight);
 			glBegin(GL_QUADS);
 			glVertex3f(x1, y1, z + theight);
 			glVertex3f(x1, y1, z);
@@ -3044,5 +3043,5 @@ void MapRenderer3D::renderHilight(mapeditor::Item hilight, float alpha)
 	}
 
 	// glEnable(GL_DEPTH_TEST);
-	gl::setColour(ColRGBA::WHITE);
+	// gl::setColour(ColRGBA::WHITE);
 }

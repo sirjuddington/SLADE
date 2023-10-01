@@ -1403,9 +1403,6 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, ObjectEditGro
 	vector<ObjectEditGroup::Line> lines;
 	group->putLinesToDraw(lines);
 
-	// Set 'drawing' colour
-	colourconfig::setGLColour("map_linedraw");
-
 	// --- Lines ---
 
 	// Lines

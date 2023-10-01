@@ -731,11 +731,13 @@ void MapPreviewCanvas::draw()
 
 // -----------------------------------------------------------------------------
 // Draws the map in an image
+// TODO: REIMPLEMENT
 // TODO: Factorize code with normal draw() and showMap() functions.
 // TODO: Find a way to generate an arbitrary-sized image through tiled rendering
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height) const
 {
+#if 0
 	// Find extents of map
 	Vertex m_min(999999.0, 999999.0);
 	Vertex m_max(-999999.0, -999999.0);
@@ -911,6 +913,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height) cons
 	MemChunk mc;
 	SIFormat::getFormat("png")->saveImage(img, mc);
 	ae.importMemChunk(mc);
+#endif
 }
 
 // -----------------------------------------------------------------------------

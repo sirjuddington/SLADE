@@ -42,8 +42,8 @@ using namespace slade;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, gl_point_sprite)
-EXTERN_CVAR(Bool, gl_vbo)
+//EXTERN_CVAR(Bool, gl_point_sprite)
+//EXTERN_CVAR(Bool, gl_vbo)
 //EXTERN_CVAR(Int, gl_font_size)
 
 
@@ -80,8 +80,8 @@ OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)//,
 // -----------------------------------------------------------------------------
 void OpenGLPrefsPanel::init()
 {
-	cb_gl_point_sprite_->SetValue(gl_point_sprite);
-	cb_gl_use_vbo_->SetValue(gl_vbo);
+	//cb_gl_point_sprite_->SetValue(gl_point_sprite);
+	//cb_gl_use_vbo_->SetValue(gl_vbo);
 	//ntc_font_size_->setNumber(gl_font_size);
 }
 
@@ -90,8 +90,8 @@ void OpenGLPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void OpenGLPrefsPanel::applyPreferences()
 {
-	gl_point_sprite = cb_gl_point_sprite_->GetValue();
-	gl_vbo          = cb_gl_use_vbo_->GetValue();
+	//gl_point_sprite = cb_gl_point_sprite_->GetValue();
+	//gl_vbo          = cb_gl_use_vbo_->GetValue();
 	//gl_font_size    = ntc_font_size_->number();
 
 	//last_font_size_ = gl_font_size;

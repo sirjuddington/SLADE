@@ -431,26 +431,26 @@ bool MCA3dWallSelection::update(long time)
 // -----------------------------------------------------------------------------
 void MCA3dWallSelection::draw()
 {
-	// Setup colour
-	if (select_)
-		gl::setColour(255, 255, 255, 90 * fade_, gl::Blend::Additive);
-	else
-		colourconfig::setGLColour("map_3d_selection", fade_);
+	//// Setup colour
+	//if (select_)
+	//	gl::setColour(255, 255, 255, 90 * fade_, gl::Blend::Additive);
+	//else
+	//	colourconfig::setGLColour("map_3d_selection", fade_);
 
-	// Draw quad outline
-	glLineWidth(2.0f);
-	glEnable(GL_LINE_SMOOTH);
-	glBegin(GL_LINE_LOOP);
-	for (auto& point : points_)
-		glVertex3d(point.x, point.y, point.z);
-	glEnd();
+	//// Draw quad outline
+	//glLineWidth(2.0f);
+	//glEnable(GL_LINE_SMOOTH);
+	//glBegin(GL_LINE_LOOP);
+	//for (auto& point : points_)
+	//	glVertex3d(point.x, point.y, point.z);
+	//glEnd();
 
-	// Draw quad fill
-	colourconfig::setGLColour("map_3d_selection", fade_ * 0.5f);
-	glBegin(GL_QUADS);
-	for (auto& point : points_)
-		glVertex3d(point.x, point.y, point.z);
-	glEnd();
+	//// Draw quad fill
+	//colourconfig::setGLColour("map_3d_selection", fade_ * 0.5f);
+	//glBegin(GL_QUADS);
+	//for (auto& point : points_)
+	//	glVertex3d(point.x, point.y, point.z);
+	//glEnd();
 }
 
 
@@ -486,26 +486,26 @@ bool MCA3dFlatSelection::update(long time)
 // -----------------------------------------------------------------------------
 void MCA3dFlatSelection::draw()
 {
-	if (!sector_)
-		return;
+	//if (!sector_)
+	//	return;
 
-	// Setup colour
-	if (select_)
-		gl::setColour(255, 255, 255, 60 * fade_, gl::Blend::Additive);
-	else
-		colourconfig::setGLColour("map_3d_selection", fade_);
-	glDisable(GL_CULL_FACE);
+	//// Setup colour
+	//if (select_)
+	//	gl::setColour(255, 255, 255, 60 * fade_, gl::Blend::Additive);
+	//else
+	//	colourconfig::setGLColour("map_3d_selection", fade_);
+	//glDisable(GL_CULL_FACE);
 
-	//// Set polygon to plane height
-	//sector_->polygon()->setZ(plane_);
+	////// Set polygon to plane height
+	////sector_->polygon()->setZ(plane_);
 
-	//// Render flat
-	//sector_->polygon()->render();
+	////// Render flat
+	////sector_->polygon()->render();
 
-	//// Reset polygon height
-	//sector_->polygon()->setZ(0);
+	////// Reset polygon height
+	////sector_->polygon()->setZ(0);
 
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 }
 
 

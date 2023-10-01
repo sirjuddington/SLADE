@@ -160,9 +160,8 @@ void drawTextCustomCallback(dtx_vertex* v, int vcount, dtx_pixmap* pixmap, void*
 	}
 	vb_text.push();
 
-	glEnable(GL_TEXTURE_2D);
-	gl::Texture::bind(tex);
-	gl::setBlend(gl::Blend::Normal);
+	Texture::bind(tex);
+	setBlend(Blend::Normal);
 
 	vb_text.draw();
 }
@@ -193,14 +192,11 @@ void drawPointSprites(const Context& dc)
 {
 	// Blending
 	if (dc.blend != Blend::Ignore)
-		gl::setBlend(dc.blend);
+		setBlend(dc.blend);
 
 	// Texture
 	if (dc.pointsprite_type == PointSpriteType::Textured)
-	{
-		glEnable(GL_TEXTURE_2D);
-		gl::Texture::bind(dc.texture);
-	}
+		Texture::bind(dc.texture);
 
 	// Set buffer options
 	ps_buffer->setColour(dc.colour.asVec4());
@@ -274,12 +270,7 @@ void draw2d::Context::drawRect(const Rectf& rect) const
 
 	// Texture
 	if (texture > 0)
-	{
-		glEnable(GL_TEXTURE_2D);
 		Texture::bind(texture);
-	}
-	else
-		glDisable(GL_TEXTURE_2D);
 
 	// Colour
 	shader.setUniform("colour", colour.asVec4());
@@ -471,7 +462,6 @@ void draw2d::Context::drawTextureTiled(const Rectf& rect) const
 	vertex_buffer->push();
 
 	// Bind the texture
-	glEnable(GL_TEXTURE_2D);
 	Texture::bind(texture);
 
 	// Colour

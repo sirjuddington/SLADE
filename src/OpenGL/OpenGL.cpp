@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
-#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -42,9 +41,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
-CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
-CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
 CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
 CVAR(Int, gl_version_major, 0, CVar::Flag::Save)
 CVAR(Int, gl_version_minor, 0, CVar::Flag::Save)
@@ -52,21 +48,18 @@ CVAR(Int, gl_msaa, 2, CVar::Flag::Save)
 
 namespace slade::gl
 {
-wxGLContext* context        = nullptr;
-int          wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
-bool         initialised    = false;
-double       version        = 0;
-unsigned     max_tex_size   = 128;
-unsigned     pow_two[]      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
-uint8_t      n_pow_two      = 16;
-float        max_point_size = -1.0f;
-Blend        last_blend     = Blend::Normal;
-int          msaa           = -1;
-Info         info;
-unsigned     vbo_current;
-unsigned     vao_current;
-unsigned     ebo_current;
-unsigned     drawcall_count = 0;
+wxGLContext*     context        = nullptr;
+bool             initialised    = false;
+double           version        = 0;
+unsigned         max_tex_size   = 128;
+vector<unsigned> pow_two        = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
+Blend            last_blend     = Blend::Normal;
+int              msaa           = -1;
+Info             info;
+unsigned         vbo_current;
+unsigned         vao_current;
+unsigned         ebo_current;
+unsigned         drawcall_count = 0;
 } // namespace slade::gl
 
 
@@ -180,14 +173,6 @@ bool gl::init()
 
 	// Test extensions
 	log::info("Checking extensions...");
-	if (GLAD_GL_ARB_vertex_buffer_object)
-		log::info("Vertex Buffer Objects supported");
-	else
-		log::info("Vertex Buffer Objects not supported");
-	if (GLAD_GL_ARB_point_sprite)
-		log::info("Point Sprites supported");
-	else
-		log::info("Point Sprites not supported");
 	if (GLAD_GL_ARB_framebuffer_object)
 		log::info("Framebuffer Objects supported");
 	else
@@ -207,24 +192,6 @@ bool gl::np2TexSupport()
 }
 
 // -----------------------------------------------------------------------------
-// Returns true if the installed OpenGL version supports point sprites, false
-// otherwise
-// -----------------------------------------------------------------------------
-bool gl::pointSpriteSupport()
-{
-	return GLAD_GL_ARB_point_sprite && gl_point_sprite;
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the installed OpenGL version supports vertex buffer objects,
-// false otherwise
-// -----------------------------------------------------------------------------
-bool gl::vboSupport()
-{
-	return GLAD_GL_ARB_vertex_buffer_object && gl_vbo;
-}
-
-// -----------------------------------------------------------------------------
 // Returns true if the installed OpenGL version supports framebuffer objects,
 // false otherwise
 // -----------------------------------------------------------------------------
@@ -241,33 +208,16 @@ bool gl::validTexDimension(unsigned dim)
 {
 	if (dim > max_tex_size)
 		return false;
-	else if (!np2TexSupport())
-	{
-		for (uint8_t a = 0; a < n_pow_two; a++)
-		{
-			if (dim == pow_two[a])
-				return true;
-		}
 
-		return false;
-	}
-	else
+	if (np2TexSupport())
 		return true;
-}
 
-// -----------------------------------------------------------------------------
-// Returns the implementation-dependant maximum size for GL_POINTS
-// -----------------------------------------------------------------------------
-float gl::maxPointSize()
-{
-	if (max_point_size < 0)
-	{
-		GLfloat sizes[2];
-		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, sizes);
-		max_point_size = sizes[1];
-	}
+	// Check for power-of-two dimension
+	for (auto s : pow_two)
+		if (dim == s)
+			return true;
 
-	return max_point_size;
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -284,16 +234,6 @@ unsigned gl::maxTextureSize()
 bool gl::isInitialised()
 {
 	return initialised;
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the 'accuracy tweak' is enabled.
-// This can fix inaccuracies when rendering 2d textures, but tends to cause
-// fonts to blur when using FTGL
-// -----------------------------------------------------------------------------
-bool gl::accuracyTweak()
-{
-	return gl_tweak_accuracy;
 }
 
 // -----------------------------------------------------------------------------
@@ -317,48 +257,6 @@ wxGLAttributes gl::getWxGLAttribs()
 	buildGlAttr(attr, 16);
 
 	return attr;
-}
-
-// -----------------------------------------------------------------------------
-// Sets the colour to [col], and changes the colour blend mode if needed and
-// [set_blend] is true
-// -----------------------------------------------------------------------------
-void gl::setColour(const ColRGBA& col, Blend blend)
-{
-	// Colour
-	glColor4ub(col.r, col.g, col.b, col.a);
-
-	// Blend
-	if (blend != Blend::Ignore && blend != last_blend)
-	{
-		if (blend == Blend::Normal)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (blend == Blend::Additive)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-		last_blend = blend;
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Sets the colour to [r,g,b,a], and changes the colour blend mode to [blend] if
-// needed
-// -----------------------------------------------------------------------------
-void gl::setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a, Blend blend)
-{
-	// Colour
-	glColor4ub(r, g, b, a);
-
-	// Blend
-	if (blend != Blend::Ignore && blend != last_blend)
-	{
-		if (blend == Blend::Normal)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (blend == Blend::Additive)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-		last_blend = blend;
-	}
 }
 
 // -----------------------------------------------------------------------------

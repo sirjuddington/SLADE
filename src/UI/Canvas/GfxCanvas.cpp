@@ -274,7 +274,6 @@ void GfxCanvas::drawImageTiled() const
 	shader.setUniform("viewport_size", glm::vec2(view_.size().x, view_.size().y));
 
 	// Draw
-	glEnable(GL_TEXTURE_2D);
 	gl::Texture::bind(tex_image_);
 	gl::Texture::setTiling(tex_image_, true);
 	vb_tiled.draw(gl::Primitive::Quads);

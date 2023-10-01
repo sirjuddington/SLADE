@@ -1198,7 +1198,6 @@ void Renderer::draw() const
 	//	auto  col = def.colour;
 	//	gl::setColour(col, def.blendMode());
 
-	//	glDisable(GL_TEXTURE_2D);
 	//	glEnable(GL_LINE_SMOOTH);
 	//	glLineWidth(1.5f);
 
@@ -1235,7 +1234,6 @@ void Renderer::draw() const
 	//	// Draw item distance (if any)
 	//	if (context_.renderer().renderer3D().itemDistance() >= 0 && camera_3d_show_distance)
 	//	{
-	//		glEnable(GL_TEXTURE_2D);
 	//		gl::setColour(col);
 	//		drawing::drawText(
 	//			fmt::format("{}", renderer_3d_->itemDistance()),
@@ -1249,7 +1247,6 @@ void Renderer::draw() const
 	// FPS counter
 	/*if (map_showfps)
 	{
-		glEnable(GL_TEXTURE_2D);
 		if (frametime_last > 0)
 		{
 			int fps = MathStuff::round(1.0 / (frametime_last / 1000.0));

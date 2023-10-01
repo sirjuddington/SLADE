@@ -35,6 +35,7 @@
 #include "MapEditContext.h"
 #include "App.h"
 #include "Edit/Edit2D.h"
+#include "Edit/Edit3D.h"
 #include "Edit/Input.h"
 #include "Edit/LineDraw.h"
 #include "Edit/MoveObjects.h"
@@ -294,11 +295,11 @@ void MapEditContext::lockMouse(bool lock)
 bool MapEditContext::update(double frametime)
 {
 	//// Force an update if animations are active
-	//if (renderer_->animationsActive() || selection_->hasHilight())
+	// if (renderer_->animationsActive() || selection_->hasHilight())
 	//	next_frame_length_ = 2;
 
 	//// Ignore if we aren't ready to update
-	//if (frametime < next_frame_length_)
+	// if (frametime < next_frame_length_)
 	//	return false;
 
 	// Get frame time multiplier
@@ -1658,7 +1659,7 @@ void MapEditContext::drawInfoOverlay(gl::draw2d::Context& dc, float alpha) const
 	case Mode::Lines: info_line_->draw(dc, alpha); return;
 	case Mode::Sectors: info_sector_->draw(dc, alpha); return;
 	case Mode::Things: info_thing_->draw(dc, alpha); return;
-	case Mode::Visual: info_3d_->draw(size.y, size.x, size.x * 0.5, alpha); return;
+	case Mode::Visual: info_3d_->draw(dc, alpha); return;
 	}
 }
 
@@ -2209,11 +2210,10 @@ CONSOLE_COMMAND(m_n_polys, 0, false)
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		nvert += map.sector(a)->polygonVertices().size();
 
-	auto bytes = nvert * sizeof(glm::vec2);
+	auto bytes  = nvert * sizeof(glm::vec2);
 	auto mbytes = bytes / 1024.0 / 1024.0;
 
-	log::console(
-		fmt::format("{} vertices total ({} bytes / {:1.2f}mb)", nvert, bytes, mbytes));
+	log::console(fmt::format("{} vertices total ({} bytes / {:1.2f}mb)", nvert, bytes, mbytes));
 }
 
 CONSOLE_COMMAND(mobj_info, 1, false)

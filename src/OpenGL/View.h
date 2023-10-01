@@ -86,9 +86,6 @@ public:
 	int    screenY(double canvas_y) const;
 	Vec2i  screenPos(double canvas_x, double canvas_y) const { return { screenX(canvas_x), screenY(canvas_y) }; }
 
-	void apply(bool init = true) const;
-	void setOverlayCoords(bool set) const;
-
 	void setupShader(const Shader& shader, const glm::mat4& model = glm::mat4(1.0f)) const;
 
 private:

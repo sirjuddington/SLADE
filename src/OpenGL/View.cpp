@@ -312,67 +312,6 @@ int View::screenY(double canvas_y) const
 	return y_flipped_ ? size_.y - y : y;
 }
 
-// -----------------------------------------------------------------------------
-// Applies the current (interpolated) view in OpenGL.
-// If [init] is true, will also initialize the projection+view matrices
-// -----------------------------------------------------------------------------
-void View::apply(bool init) const
-{
-	if (init)
-	{
-		// Setup the screen projection
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0.0f, size_.x, 0.0f, size_.y, -1.0f, 1.0f);
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_DEPTH_TEST);
-
-		// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implemenataions)
-		if (gl::accuracyTweak())
-			glTranslatef(0.375f, 0.375f, 0);
-	}
-
-	// Translate to middle of screen if centered
-	if (centered_)
-		glTranslated(size_.x * 0.5, size_.y * 0.5, 0);
-
-	// Zoom
-	glScaled(scale_inter_.x, scale_inter_.y, 1);
-
-	// Translate to offsets
-	glTranslated(-offset_inter_.x, -offset_inter_.y, 0);
-}
-
-// -----------------------------------------------------------------------------
-// Sets/unsets the projection for rendering overlays (and text, etc.)
-// -----------------------------------------------------------------------------
-void View::setOverlayCoords(bool set) const
-{
-	if (set)
-	{
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0, size_.x, size_.y, 0, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-		if (gl::accuracyTweak())
-			glTranslatef(0.375f, 0.375f, 0);
-	}
-	else
-	{
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-	}
-}
-
 void View::setupShader(const Shader& shader, const glm::mat4& model) const
 {
 	shader.bind();
