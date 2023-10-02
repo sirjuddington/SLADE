@@ -276,7 +276,7 @@ void GfxCanvas::drawImageTiled() const
 	// Draw
 	gl::Texture::bind(tex_image_);
 	gl::Texture::setTiling(tex_image_, true);
-	vb_tiled.draw(gl::Primitive::Quads);
+	vb_tiled.draw(gl::Primitive::TriangleFan);
 }
 
 // -----------------------------------------------------------------------------

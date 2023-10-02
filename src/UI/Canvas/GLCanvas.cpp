@@ -166,14 +166,11 @@ void GLCanvas::init()
 	glClearDepth(1.0);
 	glShadeModel(GL_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glCullFace(GL_NONE);
+	glCullFace(GL_BACK);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_FOG);
-	glEnable(GL_ALPHA_TEST);
 
 	init_done_ = true;
 }
@@ -212,7 +209,7 @@ void GLCanvas::drawCheckeredBackground()
 	shader.setUniform("viewport_size", glm::vec2(view_.size().x, view_.size().y));
 
 	// Draw
-	vb_background_->draw(gl::Primitive::Quads);
+	vb_background_->draw(gl::Primitive::TriangleFan);
 }
 
 void GLCanvas::onPaint(wxPaintEvent& e)

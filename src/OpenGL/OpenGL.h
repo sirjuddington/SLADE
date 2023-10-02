@@ -39,8 +39,7 @@ namespace gl
 		Lines       = GL_LINES,
 		LineLoop    = GL_LINE_LOOP,
 		Triangles   = GL_TRIANGLES,
-		TriangleFan = GL_TRIANGLE_FAN,
-		Quads       = GL_QUADS
+		TriangleFan = GL_TRIANGLE_FAN
 	};
 
 	enum class PointSpriteType

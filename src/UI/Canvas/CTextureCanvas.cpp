@@ -429,7 +429,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	}
 
 	gl::Texture::bind(patches_[num].texture);
-	vb_patch.draw(gl::Primitive::Quads);
+	vb_patch.draw(gl::Primitive::TriangleFan);
 }
 
 void CTextureCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) const

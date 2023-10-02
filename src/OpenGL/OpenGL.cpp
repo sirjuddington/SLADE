@@ -45,16 +45,17 @@ CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
 CVAR(Int, gl_version_major, 0, CVar::Flag::Save)
 CVAR(Int, gl_version_minor, 0, CVar::Flag::Save)
 CVAR(Int, gl_msaa, 2, CVar::Flag::Save)
+CVAR(Bool, gl_debug, false, CVar::Flag::Save)
 
 namespace slade::gl
 {
-wxGLContext*     context        = nullptr;
-bool             initialised    = false;
-double           version        = 0;
-unsigned         max_tex_size   = 128;
-vector<unsigned> pow_two        = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
-Blend            last_blend     = Blend::Normal;
-int              msaa           = -1;
+wxGLContext*     context      = nullptr;
+bool             initialised  = false;
+double           version      = 0;
+unsigned         max_tex_size = 128;
+vector<unsigned> pow_two      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
+Blend            last_blend   = Blend::Normal;
+int              msaa         = -1;
 Info             info;
 unsigned         vbo_current;
 unsigned         vao_current;
@@ -84,6 +85,47 @@ wxGLAttributes& buildGlAttr(wxGLAttributes& attr, int depth)
 	attr.EndList();
 	return attr;
 }
+
+void GLAPIENTRY glMessageCallback(
+	GLenum        source,
+	GLenum        type,
+	GLuint        id,
+	GLenum        severity,
+	GLsizei       length,
+	const GLchar* message,
+	const void*   userParam)
+{
+	if (type == GL_DEBUG_TYPE_ERROR)
+		log::error("OpenGL Error: {}", message);
+	// else
+	//	log::info("OpenGL: {}", message);
+}
+
+wxGLContext* createBestContext(wxGLCanvas* canvas)
+{
+	// Try OpenGL 4.6 -> 4.0
+	int v_minor = 6;
+	while (v_minor >= 0)
+	{
+		wxGLContextAttrs attr;
+		attr.PlatformDefaults().CoreProfile().OGLVersion(4, v_minor).EndList();
+		if (auto ctx = new wxGLContext(canvas, nullptr, &attr); ctx->IsOK())
+			return ctx;
+		else
+			delete ctx;
+	}
+
+	// No 4.0, try 3.3 (minimum)
+	wxGLContextAttrs attr;
+	attr.PlatformDefaults().CoreProfile().OGLVersion(3, 3).EndList();
+	auto ctx = new wxGLContext(canvas, nullptr, &attr);
+	if (ctx->IsOK())
+		return ctx;
+
+	// Unable to create core context
+	delete ctx;
+	return nullptr;
+}
 } // namespace slade::gl
 
 // -----------------------------------------------------------------------------
@@ -97,15 +139,25 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 		{
 			log::info("Setting up the OpenGL context");
 
-			// Setup desired context attributes
-			wxGLContextAttrs attr;
+			// Create context with requested gl version first (if any)
 			if (gl_version_major > 0)
-				attr.PlatformDefaults().CompatibilityProfile().OGLVersion(gl_version_major, gl_version_minor).EndList();
-			else
-				attr.PlatformDefaults().CompatibilityProfile().EndList();
+			{
+				wxGLContextAttrs attr;
+				attr.PlatformDefaults().CoreProfile().OGLVersion(gl_version_major, gl_version_minor).EndList();
+				context = new wxGLContext(canvas, nullptr, &attr);
+				if (!context->IsOK())
+				{
+					// Context creation failed
+					delete context;
+					context = nullptr;
+				}
+			}
 
-			// Create context
-			context = new wxGLContext(canvas, nullptr, &attr);
+			// Create core profile context with max supported GL version
+			if (!context)
+				context = createBestContext(canvas);
+
+			// Check created context is valid
 			if (!context->IsOK())
 			{
 				log::error("Failed to setup the OpenGL context");
@@ -161,9 +213,9 @@ bool gl::init()
 	info.version  = (const char*)glGetString(GL_VERSION);
 
 	// Get OpenGL version
-	string_view temp{ info.version.data(), 3 };
-	strutil::toDouble(temp, version);
-	log::info("OpenGL Version: {:1.1f}", version);
+	// string_view temp{ info.version.data(), 3 };
+	// strutil::toDouble(temp, version);
+	log::info("OpenGL Version: {}", info.version);
 
 	// Get max texture size
 	GLint val = 0;
@@ -177,6 +229,13 @@ bool gl::init()
 		log::info("Framebuffer Objects supported");
 	else
 		log::info("Framebuffer Objects not supported");
+
+	// Log GL messages
+	if (gl_debug)
+	{
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(glMessageCallback, nullptr);
+	}
 
 	initialised = true;
 	return true;

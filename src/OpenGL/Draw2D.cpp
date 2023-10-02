@@ -283,7 +283,7 @@ void draw2d::Context::drawRect(const Rectf& rect) const
 	model      = glm::scale(model, { rect.width(), rect.height(), 1.f });
 	shader.setUniform("mvp", view ? view->mvpMatrix(model) : model);
 
-	VertexBuffer2D::unitSquare().draw(Primitive::Quads);
+	VertexBuffer2D::unitSquare().draw(Primitive::TriangleFan);
 }
 
 void draw2d::Context::drawRectOutline(const Rectf& rect) const
@@ -477,7 +477,7 @@ void draw2d::Context::drawTextureTiled(const Rectf& rect) const
 	shader.setUniform("mvp", view ? view->mvpMatrix(model_matrix) : model_matrix);
 
 	// Draw
-	vertex_buffer->draw(Primitive::Quads);
+	vertex_buffer->draw(Primitive::TriangleFan);
 }
 
 void draw2d::Context::drawTextureWithin(const Rectf& rect, float pad, float max_scale) const

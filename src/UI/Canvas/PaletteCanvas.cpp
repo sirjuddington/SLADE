@@ -120,7 +120,7 @@ void PaletteCanvas::draw()
 	shader.setUniform("colour", glm::vec4{ 1.0f });
 
 	// Draw palette
-	vb_palette_->draw(gl::Primitive::Quads);
+	vb_palette_->draw(gl::Primitive::Triangles);
 }
 
 // -----------------------------------------------------------------------------
@@ -155,28 +155,15 @@ void PaletteCanvas::updatePaletteBuffer()
 			if (index >= sel_begin_ && index <= sel_end_)
 			{
 				// Selected: White -> Black -> Colour
-				vb_palette_->add({ { x, y }, col_white });
-				vb_palette_->add({ { x + sizef, y }, col_white });
-				vb_palette_->add({ { x + sizef, y + sizef }, col_white });
-				vb_palette_->add({ { x, y + sizef }, col_white });
-
-				vb_palette_->add({ { x + 1.f, y + 1.f }, col_black });
-				vb_palette_->add({ { x + sizef - 1.f, y + 1.f }, col_black });
-				vb_palette_->add({ { x + sizef - 1.f, y + sizef - 1.f }, col_black });
-				vb_palette_->add({ { x + 1.f, y + sizef - 1.f }, col_black });
-
-				vb_palette_->add({ { x + 2.f, y + 2.f }, colour });
-				vb_palette_->add({ { x + sizef - 2.f, y + 2.f }, colour });
-				vb_palette_->add({ { x + sizef - 2.f, y + sizef - 2.f }, colour });
-				vb_palette_->add({ { x + 2.f, y + sizef - 2.f }, colour });
+				vb_palette_->addQuadTriangles({ x, y }, { x + sizef, y + sizef }, col_white);
+				vb_palette_->addQuadTriangles(
+					{ x + 1.0f, y + 1.0f }, { x + sizef - 1.0f, y + sizef - 1.0f }, col_black);
+				vb_palette_->addQuadTriangles({ x + 2.0f, y + 2.0f }, { x + sizef - 2.0f, y + sizef - 2.0f }, colour);
 			}
 			else
 			{
 				// Not selected
-				vb_palette_->add({ { x, y }, colour });
-				vb_palette_->add({ { x + sizef, y }, colour });
-				vb_palette_->add({ { x + sizef, y + sizef }, colour });
-				vb_palette_->add({ { x, y + sizef }, colour });
+				vb_palette_->addQuadTriangles({ x, y }, { x + sizef, y + sizef }, colour);
 			}
 
 			// Next column
