@@ -108,7 +108,7 @@ wxGLContext* createBestContext(wxGLCanvas* canvas)
 	while (v_minor >= 0)
 	{
 		wxGLContextAttrs attr;
-		attr.PlatformDefaults().CoreProfile().OGLVersion(4, v_minor).EndList();
+		attr.PlatformDefaults().CoreProfile().OGLVersion(4, v_minor--).EndList();
 		if (auto ctx = new wxGLContext(canvas, nullptr, &attr); ctx->IsOK())
 			return ctx;
 		else
