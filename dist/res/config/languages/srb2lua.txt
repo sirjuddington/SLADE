@@ -1025,6 +1025,16 @@ srb2lua {
 		CV_Unsigned,
 		CV_Natural,
 
+		// Userdata
+		sprnames,
+		states,
+		mobjinfo,
+		S_Sfx, sfxinfo,
+		powers,
+		mapheaderinfo,
+		sidenum,
+		hudinfo,
+
 		// Aliases
 		FU,
 		V_50TRANS,
