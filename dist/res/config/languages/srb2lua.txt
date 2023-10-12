@@ -15,6 +15,14 @@ srb2lua {
 		$1, $2, $3, $4, $5, $6, $7, $8, $9,
 	}
 
+	properties = {
+		// Namespaces
+		input, ease, hud, coroutine, string, io, table, os,
+
+		// Userdata
+		players, mobjs, skins, mapthings, sectors, subsectors, lines, sides, vertexes, polyobjects,
+	}
+
 	constants = {
 		false,
 		true,
@@ -1021,5 +1029,508 @@ srb2lua {
 		FU,
 		V_50TRANS,
 		CV_HIDEN,
+	}
+
+	functions {
+		// Basic Math
+		abs = "int a";
+		min = "int a, int b";
+		max = "int a, int b";
+
+		// Angle Math
+		sin = "angle a";
+		cos = "angle a";
+		tan = "angle a";
+
+		asin = "fixed x";
+		acos = "fixed x";
+
+		FixedAngle = "fixed a";
+		AngleFixed = "angle a";
+		InvAngle = "angle a";
+
+		// Fixed-point Math
+		FixedMul = "fixed a, fixed b";
+		FixedInt = "fixed a";
+		FixedDiv = "fixed a, fixed b";
+		FixedRem = "fixed a, fixed b";
+		FixedSqrt = "fixed a";
+		FixedHypot = "fixed a, fixed b";
+		FixedFloor = "fixed a";
+		FixedTrunc = "fixed a";
+		FixedRound = "fixed a";
+		FixedCeil = "fixed a";
+
+		// Miscellanous
+		GetSecSpecial = "int special, int section";
+		All7Emeralds = "int flags";
+		ColorOpposite = "int color";
+
+		// Easing library
+		ease.linear = "fixed t, [fixed start], [fixed end]";
+		ease.insine = "fixed t, [fixed start], [fixed end]";
+		ease.outsine = "fixed t, [fixed start], [fixed end]";
+		ease.inoutsine = "fixed t, [fixed start], [fixed end]";
+		ease.inquad = "fixed t, [fixed start], [fixed end]";
+		ease.outquad = "fixed t, [fixed start], [fixed end]";
+		ease.inoutquad = "fixed t, [fixed start], [fixed end]";
+		ease.incubic = "fixed t, [fixed start], [fixed end]";
+		ease.outcubic = "fixed t, [fixed start], [fixed end]";
+		ease.inoutcubic = "fixed t, [fixed start], [fixed end]";
+		ease.inquart = "fixed t, [fixed start], [fixed end]";
+		ease.outquart = "fixed t, [fixed start], [fixed end]";
+		ease.inoutquart = "fixed t, [fixed start], [fixed end]";
+		ease.inquint = "fixed t, [fixed start], [fixed end]";
+		ease.outquint = "fixed t, [fixed start], [fixed end]";
+		ease.inoutquint = "fixed t, [fixed start], [fixed end]";
+		ease.inexpo = "fixed t, [fixed start], [fixed end]";
+		ease.outexpo = "fixed t, [fixed start], [fixed end]";
+		ease.inoutexpo = "fixed t, [fixed start], [fixed end]";
+		ease.inback = "fixed t, [fixed start], [fixed end]", "fixed t, fixed end";
+		ease.outback = "fixed t, [fixed start], [fixed end]", "fixed t, fixed end";
+		ease.inoutback = "fixed t, [fixed start], [fixed end]", "fixed t, fixed end";
+
+		// HUD library
+		hud.enable = "string huditem";
+		hud.disable = "string huditem";
+		hud.enabled = "string huditem";
+		hud.add = "function(*) func, string type";
+
+		// Drawing functions (weird)
+		v.patchExists = "string name";
+		v.cachePatch = "string name";
+		v.getSpritePatch = "string/int sprite, [int frame], [int rotation], [angle rollangle]";
+		v.getSprite2Patch = "string/int skin, string/int sprite2, [boolean super], [int frame], [int rotation], [angle rollangle]";
+
+		v.draw = "int x, int y, patch_t patch, [int flags], [colormap c]";
+		v.drawScaled = "fixed x, fixed y, fixed scale, patch_t patch, [int flags], [colormap c]";
+		v.drawStretched = "fixed x, fixed y, fixed hscale, fixed vscale, patch_t patch, [int flags], [colormap c]";
+		v.drawCropped = "fixed x, fixed y, fixed hscale, fixed vscale, patch_t patch, [int flags], [colormap c], fixed sx, fixed sy, fixed w, fixed h";
+
+		v.drawNum = "int x, int y, int num, [int flags]";
+		v.drawPaddedNum = "int x, int y, int num, [int digits], [int flags]";
+		v.drawFill = "[int x], [int y], [int width], [int height], [int color]";
+
+		v.drawString = "int/fixed x, int/fixed y, string text, [int flags], [string alignment]";
+		v.drawNameTag = "int x, int y, string text, [int flags], [int basecolor], [int outlinecolor]";
+		v.drawScaledNameTag = "fixed x, fixed y, string text, [int flags], [fixed scale], [int basecolor], [int outlinecolor]";
+		v.drawLevelTitle = "int x, int y, string text, [int flags]";
+
+		v.stringWidth = "string text, [int flags], [string widthtype]";
+		v.nameTagWidth = "string text";
+		v.levelTitleWidth = "string text";
+		v.levelTitleHeight = "string text";
+
+		v.getColormap = "string/int skin, [int color]";
+		v.getStringColormap = "int textcolor";
+
+		v.fadeScreen = "int color, int strength";
+
+		v.width; v.height;
+		v.dupx; v.dupy;
+		v.renderer;
+
+		v.userTransFlag;
+		v.localTransFlag;
+
+		v.RandomFixed;
+		v.RandomByte;
+		v.RandomKey = "int a";
+		v.RandomRange = "int a, int b";
+		v.SignedRandom;
+		v.RandomChange = "fixed p";
+
+		// Console library
+		CONS_Printf = "player_t player, string text";
+
+		COM_AddCommand = "string name, function fn, [int flags]";
+		COM_BufAddText = "player_t player, string text";
+		COM_BufInsertText = "player_t player, string text";
+
+		CV_RegisterVar = "table{} t";
+		CV_FindVar = "string var";
+		CV_Set = "consvar_t cvar, string/int value";
+		CV_StealthSet = "consvar_t cvar, string/int value";
+		CV_AddValue = "consvar_t cvar, int increment";
+
+		// Blockmap Search
+		searchBlockmap = "string searchtype, function fn, mobj_t refmobj, [fixed x1], [fixed x2], [fixed y1], [fixed y2]";
+
+		// Input library
+		input.gameControlDown = "int gc";
+		input.gameControl2Down = "int gc";
+		input.gameControlToKeyNum = "int gc";
+		input.gameControl2ToKeyNum = "int gc";
+		input.joyAxis = "int axissel";
+		input.joy2Axis = "int axissel";
+		input.keyNumToName = "int keynum";
+		input.keyNameToNum = "string keyname";
+		input.keyNumPrintable = "string keyname";
+		input.shiftKeyNum = "string keynum";
+		input.getMouseGrab;
+		input.setMouseGrab = "boolean grab";
+		input.getCursorPosition;
+
+		// Base functions
+		print = "string output, [...]";
+		chatprint = "string output, [boolean sound]";
+		chatprintf = "player_t player, string output, [boolean sound]";
+		freeslot = "string resource, [...]";
+		addHook = "string hook, function fn, [int/string extra]";
+		super = "mobj_t actor, int var1, int var2";
+		IsPlayerAdmin = "player_t player";
+		userdataType = "* v";
+		reserveLuaBanks;
+		registerMetatable = "table{} metatable";
+		userdataMetatable = "string userdataname";
+		getTimeMicros;
+
+		// G_Game
+		G_BuildMapName = "[int map]";
+		G_BuildMapTitle = "[int map]";
+		G_FindMap = "string query";
+		G_FindMapByNameOrCode = "string query";
+		G_DoReborn = "int playernum";
+		G_EnoughPlayersFinished;
+		G_SetCustomExitVars = "[int nextmap], [int skipstats]";
+		G_ExitLevel;
+		G_IsSpecialStage = "[int map]";
+		G_AddGametype = "table{} t";
+		G_GametypeUsesLives;
+		G_GametypeUsesCoopLives;
+		G_GametypeUsesCoopStarposts;
+		G_GametypeHasTeams;
+		G_GametypeHasSpectators;
+		G_RingSlingerGametype;
+		G_PlatformGametype;
+		G_CoopGametype;
+		G_TagGametype;
+		G_CompetitionGametype;
+		G_AddPlayer = "int skin, int color, string name, int bottype";
+		G_RemovePlayer = "int player num";
+		G_TicsToHours = "int tics";
+		G_TicsToMinutes = "int tics, [boolean full]";
+		G_TicsToSeconds = "int tics";
+		G_TicsToCentiseconds = "int tics";
+		G_TicsToMilliseconds = "int tics";
+
+		// M_Random
+		P_RandomFixed;
+		P_RandomByte;
+		P_RandomKey = "int a";
+		P_RandomRange = "int a, int b";
+		P_SignedRandom;
+		P_RandomChoice = "fixed p";
+
+		// M_Menu
+		M_MoveColorAfter = "UINT16 color, UINT16 target";
+		M_MoveColorBefore = "UINT16 color, UINT16 target";
+		M_GetColorAfter = "UINT16 color";
+		M_GetColorBefore = "UINT16 color";
+
+		// M_Map
+		M_MapNumber = "string name";
+
+		// P_Enemy
+		P_CheckMeleeRange = "mobj_t actor";
+		P_JetbCheckMeleeRange = "mobj_t actor";
+		P_FaceStabCheckMeleeRange = "mobj_t actor";
+		P_SkimCheckMeleeRange = "mobj_t actor";
+		P_CheckMissileRange = "mobj_t actor";
+		P_NewChaseDir = "mobj_t actor";
+		P_LookForPlayers = "mobj_t actor, [fixed dist], [boolean allaround], [boolean tracer]";
+
+		// P_Inter
+		P_RemoveShield = "player_t player";
+		P_DamageMobj = "mobj_t target, [mobj_t inflictor], [mobj_t source], [int damage], [int damagetype]";
+		P_KillMobj = "mobj_t target, [mobj_t inflictor], [mobj_t source], [int damagetype]";
+		P_PlayerRingBurst = "player_t player, [int numrings]";
+		P_PlayerWeaponPanelBurst = "player_t player";
+		P_PlayerWeaponAmmoBurst = "player_t player";
+		P_PlayerWeaponPanelOrAmmoBurst = "player_t player";
+		P_PlayerEmeraldBurst = "player_t player, [boolean burst]";
+		P_PlayerFlagBurst = "player_t player, [boolean burst]";
+		P_PlayRinglossSound = "mobj_t source, [player_t player]";
+		P_PlayDeathSound = "mobj_t source, [player_t player]";
+		P_PlayVictorySound = "mobj_t source, [player_t player]";
+		P_PlayLivesJingle = "player_t player";
+		P_CanPickupItem = "player_t player, [boolean weapon]";
+		P_DoNightsScore = "player_t player";
+		P_DoMatchSuper = "player_t player";
+
+		// P_Map
+		P_CheckPosition = "mobj_t mobj, fixed x, fixed y";
+		P_TryMove = "mobj_t mobj, fixed x, fixed y, [boolean allowdropoff]";
+		P_Move = "mobj_t actor, int speed";
+		P_SetOrigin = "mobj_t mobj, fixed x, fixed y, fixed z";
+		P_MoveOrigin = "mobj_t mobj, fixed x, fixed y, fixed z";
+		P_SlideMove = "mobj_t mobj";
+		P_BounceMove = "mobj_t mobj";
+		P_CheckSight = "mobj_t source, mobj_t target";
+		P_CheckHoopPosition = "mobj_t hoop, fixed x, fixed y, fixed z, fixed radius";
+		P_RadiusAttack = "mobj_t inflictor, mobj_t source, fixed radius, [int damagetype], [boolean sightcheck]";
+		P_FloorzAtPos = "fixed x, fixed y, fixed z, fixed height";
+		P_CeilingzAtPos = "fixed x, fixed y, fixed z, fixed height";
+		P_DoSpring = "mobj_t spring, mobj_t object";
+		P_TryCameraMove = "camera_t cam, fixed x, fixed y";
+		P_TeleportCameraMove = "camera_t cam, fixed x, fixed y, fixed z";
+
+		// P_Maputl
+		P_AproxDistance = "fixed dx, fixed dy";
+		P_ClosestPointOnLine = "fixed x, fixed y, line_t line";
+		P_PointOnLineSide = "fixed x, fixed y, line_t line";
+
+		// P_Mobj
+		P_SpawnMobj = "fixed x, fixed y, fixed z, int type";
+		P_SpawnMobjFromMobj = "mobj_t origin, fixed x, fixed y, fixed z, int type";
+		P_RemoveMobj = "mobj_t mobj";
+		P_IsValidSprite2 = "mobj_t mobj, int sprite2";
+		P_SpawnLockOn = "player_t player, mobj_t target, state state";
+		P_SpawnMissile = "mobj_t source, mobj_t dest, int type";
+		P_SpawnXYZMissile = "mobj_t source, mobj_t dest, int type, fixed x, fixed y, fixed z";
+		P_SpawnPointMissile = "mobj_t source, fixed dest_x, fixed dest_y, fixed dest_z, int type, fixed x, fixed y, fixed z";
+		P_SpawnAlteredDirectionMissile = "mobj_t source, int type, fixed x, fixed y, fixed z, int angle_shift";
+		P_ColorTeamMissile = "mobj_t missile, player_t player";
+		P_SPMAngle = "mobj_t source, int type, angle angle, [int allowaim], [int flags2]";
+		P_SpawnPlayerMissile = "mobj_t source, int type, [int flags2]";
+		P_MobjFlip = "mobj_t mobj";
+		P_GetMobjGravity = "mobj_t mobj";
+		P_WeaponOrPanel = "int type";
+		P_FlashPal = "player_t player, int type, int duration";
+		P_GetClosestAxis = "mobj_t source";
+		P_SpawnParaloop = "fixed x, fixed y, fixed z, fixed radius, int number, int type, angle rotangle, [int state], [boolean spawncenter]";
+		P_BossTargetPlayer = "mobj_t actor, [boolean closest]";
+		P_SupermanLook4Players = "mobj_t actor";
+		P_SetScale = "mobj_t mobj, fixed scale";
+		P_InsideANonSolidFFloor = "mobj_t mobj, ffloor_t rover";
+		P_CheckDeathPitCollide = "mobj_t mobj";
+		P_CheckSolidLava = "ffloor_t rover";
+		P_CanRunOnWater = "player_t player, ffloor_t rover";
+		P_MaceRotate = "mobj_t center, int baserot, int baseprevrot";
+		P_CreateFloorSpriteSlope = "mobj_t mobj";
+		P_RemoveFloorSpriteSlope = "mobj_t mobj";
+		P_RailThinker = "mobj_t mobj";
+		P_XYMovement = "mobj_t mobj";
+		P_RingXYMovement = "mobj_t mobj";
+		P_SceneryXYMovement = "mobj_t mobj";
+		P_ZMovement = "mobj_t mobj";
+		P_RingZMovement = "mobj_t mobj";
+		P_SceneryZMovement = "mobj_t mobj";
+		P_PlayerZMovement = "mobj_t mobj";
+
+		// P_Polyobj
+		polyobjects.GetForNum = "polyobj_t polyobject, int id";
+
+		// P_Slopes
+		P_GetZAt = "pslope_t slope, fixed x, fixed y";
+		P_ButteredSlope = "mobj_t mobj";
+
+		// P_Spec
+		P_Thrust = "mobj_t mobj, angle angle, fixed move";
+		P_SetMobjStateNF = "mobj_t mobj, int statenum";
+		P_DoSuperTransformation = "player_t player, [boolean giverings]";
+		P_ExplodeMissile = "mobj_t missile";
+		P_PlayerTouchingSectorSpecial = "player_t player, int section, int specialnum";
+		P_FindLowestFloorSurrounding = "sector_t sector";
+		P_FindHighestFloorSurrounding = "sector_t sector";
+		P_FindLowestCeilingSurrounding = "sector_t sector";
+		P_FindHighestFloorSurrounding = "sector_t sector";
+		P_FindNextHighestFloor = "sector_t sector, [fixed currentheight]";
+		P_FindNextLowestFloor = "sector_t sector, [fixed currentheight]";
+		P_FindSpecialLineFromTag = "int special, int tag, [int start]";
+		P_SwitchWeather = "int weathernum, [player_t player]";
+		P_LinedefExecute = "int tag, [mobj_t actor], [sector_t caller]";
+		P_SpawnLightningFlash = "sector_t sector";
+		P_FadeLight = "int tag, int destvalue, int speed, [boolean ticbased], [boolean force]";
+		P_ThingOnSpecial3DFloor = "mobj_t mobj";
+		P_IsFlagAtBase = "int type";
+		P_SetupLevelSky = "int skynum, [player_t player]";
+		P_SetSkyboxMobj = "[mobj_t mobj], [boolean/int centerpoint], [player_t user]";
+		P_StartQuake = "fixed intensity, int time, [table{} epicenter], [fixed radius]";
+		EV_CrumbleChain = "[sector_t sector], ffloor_t rover";
+		EV_StartCrumble = "sector_t sector, ffloor_t rover, [boolean floating], [player_t player], [fixed origalpha], [boolean crumblereturn]";
+
+		// P_User
+		P_GetPlayerHeight = "player_t player";
+		P_GetPlayerSpinHeight = "player_t player";
+		P_GetPlayerControlDirection = "player_t player";
+		P_AddPlayerScore = "player_t player, int amount";
+		P_StealPlayerScore = "player_t player, int amount";
+		P_GetJumpFlags = "player_t player";
+		P_PlayerInPain = "player_t player";
+		P_DoPlayerPain = "player_t player, [mobj_t source], [mobj_t inflictor]";
+		P_ResetPlayer = "player_t player";
+		P_PlayerCanDamage = "player_t player, mobj_t mobj";
+		P_IsObjectInGoop = "mobj_t mobj";
+		P_IsObjectOnGround = "mobj_t mobj";
+		P_InSpaceSector = "mobj_t mobj";
+		P_InQuicksand = "mobj_t mobj";
+		P_SetObjectMomZ = "mobj_t mobj, fixed momz, [boolean relative]";
+		P_RestoreMusic = "player_t player";
+		P_SpawnShieldOrb = "player_t player";
+		P_SpawnGhostMobj = "mobj_t mobj";
+		P_GivePlayerRings = "player_t player, int amount";
+		P_GivePlayerLives = "player_t player, int amount";
+		P_GiveCoopLives = "player_t player, int amount, [boolean playsound]";
+		P_ResetScore = "player_t player";
+		P_DoJumpShield = "player_t player";
+		P_DoBubbleBounce = "player_t player";
+		P_BlackOw = "player_t player";
+		P_ElementalFire = "player_t player, [boolean cropcircle]";
+		P_DoPlayerFinish = "player_t player";
+		P_DoPlayerExit = "player_t player";
+		P_InstaThrust = "mobj_t mobj, angle angle, fixed move";
+		P_ReturnThrustX = "[mobj_t mobj], angle angle, fixed move";
+		P_ReturnThrustY = "[mobj_t mobj], angle angle, fixed move";
+		P_LookForEnemies = "player_t player, [boolean nonenemies], [boolean bullet]";
+		P_NukeEnemies = "mobj_t inflictor, mobj_t source, fixed radius";
+		P_HomingAttack = "mobj_t source, mobj_t target";
+		P_SuperReady = "player_t player";
+		P_DoJump = "player_t player, [boolean soundandstate]";
+		P_SpawnThokMobj = "player_t player";
+		P_SpawnSpinMobj = "player_t player, int type";
+		P_Telekinesis = "player_t player, fixed thrust, fixed range";
+		P_SwitchShield = "player_t player, int shield";
+		P_PlayJingle = "player_t player, int jingletype";
+		P_PlayJingleMusic = "player_t player, string musname, [int musflags], [boolean looping], [int jingletype]";
+		P_SpawnSkidDust = "player_t player, fixed radius, [int sound]";
+		P_EarthQuake = "mobj_t inflictor, mobj_t source, fixed radius";
+		P_PlayerFullbright = "player_t player";
+		P_MovePlayer = "player_t player";
+		P_PlayerCanEnterSpinGaps = "player_t player";
+		P_PlayerShouldUseSpinHeight = "player_t player";
+
+		// R_Data
+		R_TextureNumForName = "string name";
+		R_CheckTextureNumForName = "string name";
+		R_TextureNameForNum = "int number";
+		R_CheckTextureNameForNum = "int number";
+
+		// R_Draw
+		R_GetColorByName = "string name";
+		R_GetSuperColorByName = "string name";
+		R_GetNameByColor = "int color";
+
+		// R_Defs
+		R_PointToAngle = "fixed x, fixed y";
+		R_PointToAngle2 = "fixed x, fixed y, fixed dest_x, fixed dest_y";
+		R_PointToDist = "fixed x, fixed y";
+		R_PointToDist2 = "fixed x, fixed y, fixed dest_x, fixed dest_y";
+		R_PointInSubsector = "fixed x, fixed y";
+		R_PointInSubsectorOrNil = "fixed x, fixed y";
+
+		// R_Things
+		R_Char2Frame = "string char";
+		R_Frame2Char = "int frame";
+		R_SetPlayerSkin = "player_t player, int/string skin";
+		R_SkinUsable = "player_t player, int/string skin";
+
+		// S_Sound
+		S_StartSound = "[mobj_t/sector_t origin], int soundnum, [player_t player]";
+		S_StartSoundAtVolume = "[mobj_t/sector_t origin], int soundnum, UINT8 volume, [player_t player]";
+		S_StopSound = "mobj_t/sector_t origin";
+		S_StopSoundByID = "mobj_t/sector_t origin, int soundnum";
+		S_ChangeMusic = "string musname, [boolean looping], [player_t player], [int mflags], [int position], [int prefadems], [int fadeinms]";
+		S_SpeedMusic = "fixed musspeed, [player_t player]";
+		S_StopMusic = "[player_t player]";
+		S_SetInternalMusicVolume = "int volume, [player_t player]";
+		S_StopFadingMusic = "[player_t player]";
+		S_FadeMusic = "int target_volume, int ms, [player_t player]";
+		S_FadeOutStopMusic = "int ms, [player_t player]";
+		S_OriginPlaying = "mobj_t/sector_t origin";
+		S_IdPlaying = "int soundnum";
+		S_SoundPlaying = "mobj_t/sector_t origin, int soundnum";
+		S_StartMusicCaption = "string caption, int lifespan, [player_t player]";
+		S_GetMusicLength;
+		S_GetMusicPosition;
+		S_SetMusicPosition = "int position";
+		S_MusicType;
+		S_MusicExists = "string musname, [boolean checkmidi], [boolean checkdigi]";
+		S_MusicPlaying = "[player_t player]";
+		S_MusicPaused = "[player_t player]";
+		S_MusicName = "[player_t player]";
+		S_SetMusicLoopPoint = "UINT32 looppoint, [player_t player]";
+		S_GetMusicLoopPoint = "[player_t player]";
+		S_PauseMusic = "[player_t player]";
+		S_ResumeMusic = "[player_t player]";
+
+		// Iterator functions
+		players.iterate;
+		mobjs.iterate;
+		skins.iterate;
+		mapthings.iterate;
+		sectors.iterate;
+		subsectors.iterate;
+		lines.iterate;
+		sides.iterate;
+		vertexes.iterate;
+		polyobjects.iterate;
+
+		// Base Lua functions
+		assert = "* v, [string errormsg]";
+		collectgarbage = "[string opt], [int arg]";
+		error = "string message, [int level]";
+		dofile = "string file";
+		gcinfo;
+		getfenv = "[function/int f]";
+		getmetatable = "object obj";
+		ipairs = "table{} t";
+		next = "table{} t, [int index]";
+		pairs = "table{} t";
+		pcall = "function fn, [* arg], [...]";
+		rawequal = "* v1, * v2";
+		rawget = "table{} t, * index";
+		rawset = "table{} t, * index, * value";
+		select = "string index, ...";
+		setfenv = "function/int f, table{} t";
+		setmetatable = "table{} t, table{} metatable";
+		tonumber = "* e, [int base]";
+		tostring = "* e";
+		type = "* v";
+		unpack = "table{} list, [int start], [int end]";
+		xpcall = "function call, function(status) errortrap";
+
+		// Coroutine library
+		coroutine.create = "function fn";
+		coroutine.resume = "thread co, [* val], [...]";
+		coroutine.running;
+		coroutine.status = "thread co";
+		coroutine.wrap = "function fn";
+		coroutine.yield = "[...]";
+
+		// String library
+		string.byte = "string s, [int start], [int end]";
+		string.char = "[int charid], [...]";
+		string.find = "string s, string pattern, [int start], [boolean plain]";
+		string.format = "string formatstr, [...]";
+		string.gmatch = "string s, string pattern";
+		string.gsub = "string s, string pattern, int/string/table/function replace, [int n]";
+		string.len = "string s";
+		string.upper = "string s";
+		string.lower = "string s";
+		string.match = "string s, string pattern, [int n]";
+		string.rep = "string s, int n";
+		string.reverse = "string s";
+		string.sub = "string s, int start, [int end]";
+
+		// Table library
+		table.concat = "table{} t, [string sep], [int start], [int end]";
+		table.insert = "table{} t, [int key], * element";
+		table.maxn = "table{} t";
+		table.remove = "table{} t, [int key]";
+		table.sort = "table{} t, [function(*) comp]";
+
+		// I/O library
+		io.open = "string filename, [string mode], function callback";
+		io.openlocal = "string filename, [string mode]";
+		io.close = "file* file";
+		io.tmpfile;
+		io.type = "* obj";
+
+		// OS library
+		os.clock;
+		os.time = "[table{} time]";
+		os.date = "[string format], [int time]";
+		os.difftime = "int t1, int t2";
 	}
 }
