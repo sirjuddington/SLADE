@@ -1027,13 +1027,18 @@ srb2lua {
 
 		// Userdata
 		sprnames,
+		spr2names,
 		states,
 		mobjinfo,
+		skincolors,
 		S_Sfx, sfxinfo,
 		powers,
 		mapheaderinfo,
 		sidenum,
 		hudinfo,
+		spriteinfo,
+		spr2defaults,
+		gamekeydown,
 
 		// Aliases
 		FU,
