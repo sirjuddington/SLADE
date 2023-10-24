@@ -3525,6 +3525,7 @@ void ArchivePanel::selectionChanged()
 	{
 		toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
 		toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
+		toolbar_elist_->findActionButton("arch_entry_export")->Enable(true);
 
 		if (sel_dirs.size() == 1)
 			toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
@@ -3672,6 +3673,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 
 	// Get selected entries
 	auto selection = entry_tree_->selectedEntries();
+	auto sel_dirs  = entry_tree_->selectedDirectories();
 
 	// Check what types exist in the selection
 	// TODO: This stuff is absolutely terrible, nicer system needed
@@ -3816,6 +3818,24 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		}
 		if (selection.size() == 1)
 			SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
+	}
+	else if (!sel_dirs.empty())
+	{
+		SAction::fromId("arch_entry_rename")->addToMenu(&context, true);
+		if (sel_dirs.size() > 1)
+			SAction::fromId("arch_entry_rename_each")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_delete")->addToMenu(&context, true);
+		context.AppendSeparator();
+		SAction::fromId("arch_entry_cut")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_copy")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_paste")->addToMenu(&context, true);
+		context.AppendSeparator();
+		SAction::fromId("arch_entry_export")->addToMenu(&context, true);
+		if (sel_dirs.size() == 1)
+		{
+			context.AppendSeparator();
+			SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
+		}
 	}
 	else
 	{
