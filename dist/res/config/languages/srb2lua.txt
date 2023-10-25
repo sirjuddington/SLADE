@@ -332,7 +332,7 @@ srb2lua {
 		SF_NOSPINDASHDUST,
 		SF_HIRES,
 		SF_NOSKID,
-		SF_NOSPEEDPADADJUST,
+		SF_NOSPEEDADJUST,
 		SF_RUNONWATER,
 		SF_NOJUMPSPIN,
 		SF_NOJUMPDAMAGE,
@@ -635,6 +635,16 @@ srb2lua {
 		GT_HIDEANDSEEK,
 		GT_CTF,
 
+		// Intermission types (int_*)
+		int_none,
+		int_coop,
+		int_match,
+		int_teammatch,
+		int_ctf,
+		int_race,
+		int_competition,
+		int_spec,
+
 		// Marathon mode flags (MA_*)
 		MA_RUNNING,
 		MA_INIT,
@@ -739,19 +749,22 @@ srb2lua {
 		FOF_FLOATBOB,
 		FOF_NORETURN,
 		FOF_CRUMBLE,
-		FOF_SHATTERBOTTOM,
 		FOF_GOOWATER,
 		FOF_MARIO,
 		FOF_BUSTUP,
 		FOF_QUICKSAND,
 		FOF_PLATFORM,
 		FOF_REVERSEPLATFORM,
-		FOF_INTANGIBLEFLATS,
-		FOF_SHATTER,
-		FOF_SPINBUST,
-		FOF_STRONGBUST,
 		FOF_RIPPLE,
 		FOF_COLORMAPONLY,
+		FOF_BOUNCY,
+		FOF_SPLAT,
+
+		FF_SHATTERBOTTOM,
+		FF_INTANGIBLEFLATS,
+		FF_SHATTER,
+		FF_SPINBUST,
+		FF_STRONGBUST,
 
 		// Slope flags (SL_*)
 		SL_NOPHYSICS,
@@ -775,6 +788,29 @@ srb2lua {
 		POF_ONESIDE,
 		POF_NOSPECIALS,
 		POF_SPLAT,
+
+		// Sector special flags (SSF_*)
+		SSF_OUTERSPACE,
+		SSF_DOUBLESTEPUP,
+		SSF_NOSTEPDOWN,
+		SSF_WINDCURRENT,
+		SSF_CONVEYOR,
+		SSF_SPEEDPAD,
+		SSF_STARPOSTACTIVATOR,
+		SSF_EXIT,
+		SSF_SPECIALSTAGEPIT,
+		SSF_RETURNFLAG,
+		SSF_REDTEAMBASE,
+		SSF_BLUETEAMBASE,
+		SSF_FAN,
+		SSF_SUPERTRANSFORM,
+		SSF_FORCESPIN,
+		SSF_ZOOMTUBESTART,
+		SSF_ZOOMTUBEEND,
+		SSF_FINISHLINE,
+		SSF_ROPEHANG,
+		SSF_JUMPFLIP,
+		SSF_GRAVITYOVERRIDE,
 
 		// Emblem flags (GE_*/ME_*)
 		GE_NIGHTSPULL,
@@ -999,7 +1035,9 @@ srb2lua {
 		GC_SYSTEMMENU,
 		GC_SCREENSHOT,
 		GC_RECORDGIF,
+		GC_VIEWPOINTNEXT,
 		GC_VIEWPOINT,
+		GC_VIEWPOINTPREV,
 		GC_CUSTOM1,
 		GC_CUSTOM2,
 		GC_CUSTOM3,
@@ -1017,6 +1055,21 @@ srb2lua {
 		JA_SPIN,
 		JA_FIRE,
 		JA_FIRENORMAL,
+
+		// Bot types (BOT_*)
+		BOT_NONE,
+		BOT_2PAI,
+		BOT_2PHUMAN,
+		BOT_MPAI,
+
+		// Dashmode constants (DASHMODE_*)
+		DASHMODE_THRESHOLD,
+		DASHMODE_MAX,
+
+		// Skincolors (other)
+		MAXSKINCOLORS,
+		FIRSTSUPERCOLOR,
+		NUMSUPERCOLORS,
 
 		// Possible value arrays (CV_*)
 		CV_YesNo,
@@ -1153,7 +1206,7 @@ srb2lua {
 		v.RandomKey = "int a";
 		v.RandomRange = "int a, int b";
 		v.SignedRandom;
-		v.RandomChange = "fixed p";
+		v.RandomChance = "fixed p";
 
 		// Console library
 		CONS_Printf = "player_t player, string text";
@@ -1235,7 +1288,7 @@ srb2lua {
 		P_RandomKey = "int a";
 		P_RandomRange = "int a, int b";
 		P_SignedRandom;
-		P_RandomChoice = "fixed p";
+		P_RandomChance = "fixed p";
 
 		// M_Menu
 		M_MoveColorAfter = "UINT16 color, UINT16 target";
