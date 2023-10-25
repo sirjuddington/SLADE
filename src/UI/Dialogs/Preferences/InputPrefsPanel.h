@@ -8,7 +8,7 @@ namespace slade
 class InputKeyCtrl : public wxTextCtrl
 {
 public:
-	InputKeyCtrl(wxWindow* parent, Keypress init);
+	InputKeyCtrl(wxWindow* parent, const Keypress& init);
 
 	const Keypress& key() const { return key_; }
 
@@ -25,7 +25,7 @@ class InputPrefsPanel : public PrefsPanelBase
 {
 public:
 	InputPrefsPanel(wxWindow* parent);
-	~InputPrefsPanel() = default;
+	~InputPrefsPanel() override = default;
 
 	wxTreeListItem getListGroupItem(const wxString& group) const;
 	void           initBindsList() const;
