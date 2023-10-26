@@ -1251,39 +1251,53 @@ void MapSpecials::applyRectangularVertexHeightSlope(MapSector* target, vector<Ma
 		height_verts.push_back(3);
 	if (height_verts.size() == 2) // Must only have two out of the four verts assigned a zfloor/ceiling value
 	{
-		// The zfloor/zceiling values must be equal
-		if (fabs(heights.count(vertices[height_verts[0]]) ? heights[vertices[height_verts[0]]] : vertexHeight<T>(vertices[height_verts[0]], target) -
-			heights.count(vertices[height_verts[1]]) ? heights[vertices[height_verts[1]]] : vertexHeight<T>(vertices[height_verts[1]], target)) < 0.001f)
+		MapVertex *v1 = vertices[height_verts[0]];
+		MapVertex *v2 = vertices[height_verts[1]];
+		// Must be both verts of the same line
+		bool same_line = false;
+		for (const auto& line : v1->connectedLines())
 		{
-			// Psuedo-Plane_Align routine
-			double     furthest_dist   = 0.0;
-			MapVertex* furthest_vertex = nullptr;
-			Seg2d      seg(vertices[height_verts[0]]->position(), vertices[height_verts[1]]->position());
-			for (auto& vertex : vertices)
+			if ((line->v1() == v1 && line->v2() == v2) || (line->v1() == v2 && line->v2() == v1))
 			{
-				double dist = math::distanceToLine(vertex->position(), seg);
-
-				if (!math::colinear(vertex->xPos(), vertex->yPos(), vertices[height_verts[0]]->xPos(), vertices[height_verts[0]]->yPos(), vertices[height_verts[1]]->xPos(), vertices[height_verts[1]]->yPos())
-					&& dist > furthest_dist)
-				{
-					furthest_vertex = vertex;
-					furthest_dist   = dist;
-				}
+				same_line = true;
+				break;
 			}
+		}
+		if (same_line)
+		{
+			// The zfloor/zceiling values must be equal
+			if (fabs(heights.count(v1) ? heights[v1] : vertexHeight<T>(v1, target) - heights.count(v2) ? heights[v2] : vertexHeight<T>(v2, target)) < 0.001f)
+			{
+				// Psuedo-Plane_Align routine
+				double     furthest_dist   = 0.0;
+				MapVertex* furthest_vertex = nullptr;
+				Seg2d      seg(v1->position(), v2->position());
+				for (auto& vertex : vertices)
+				{
+					double dist = math::distanceToLine(vertex->position(), seg);
 
-			if (!furthest_vertex || furthest_dist < 0.01)
-				return;
+					if (!math::colinear(vertex->xPos(), vertex->yPos(), v1->xPos(), v1->yPos(), v2->xPos(), v2->yPos())
+						&& dist > furthest_dist)
+					{
+						furthest_vertex = vertex;
+						furthest_dist   = dist;
+					}
+				}
 
-			// Calculate slope plane from our three points: this line's endpoints
-			// (at the model sector's height) and the found vertex (at this sector's height).
-			double modelz  = heights.count(vertices[height_verts[0]]) ? heights[vertices[height_verts[0]]] : vertexHeight<T>(vertices[height_verts[0]], target);
-			double targetz = target->planeHeight<T>();
+				if (!furthest_vertex || furthest_dist < 0.01)
+					return;
 
-			Vec3d p1(vertices[height_verts[0]]->position(), modelz);
-			Vec3d p2(vertices[height_verts[1]]->position(), modelz);
-			Vec3d p3(furthest_vertex->position(), targetz);
+				// Calculate slope plane from our three points: this line's endpoints
+				// (at the model sector's height) and the found vertex (at this sector's height).
+				double modelz  = heights.count(v1) ? heights[v1] : vertexHeight<T>(v1, target);
+				double targetz = target->planeHeight<T>();
 
-			target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+				Vec3d p1(v1->position(), modelz);
+				Vec3d p2(v2->position(), modelz);
+				Vec3d p3(furthest_vertex->position(), targetz);
+
+				target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+			}
 		}
 	}
 }
