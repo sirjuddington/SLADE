@@ -806,12 +806,12 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 		if ((tag = line->arg(2)) && back)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
-				front->setFloorPlane(sector->floor().plane);
+				back->setFloorPlane(sector->floor().plane);
 		}
 		if ((tag = line->arg(3)) && back)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
-				front->setCeilingPlane(sector->ceiling().plane);
+				back->setCeilingPlane(sector->ceiling().plane);
 		}
 
 		// The fifth "share" argument copies from one side of the line to the
@@ -909,12 +909,12 @@ void MapSpecials::processEternitySlopes(const SLADEMap* map) const
 		if ((tag = line->arg(2)) && back)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
-				front->setFloorPlane(sector->floor().plane);
+				back->setFloorPlane(sector->floor().plane);
 		}
 		if ((tag = line->arg(3)) && back)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
-				front->setCeilingPlane(sector->ceiling().plane);
+				back->setCeilingPlane(sector->ceiling().plane);
 		}
 
 		// The fifth "share" argument copies from one side of the line to the
