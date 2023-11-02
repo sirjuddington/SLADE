@@ -111,12 +111,12 @@ void MapObject::setModified()
 // -----------------------------------------------------------------------------
 void MapObject::copy(MapObject* c)
 {
-	// Update modified time
-	setModified();
-
 	// Can't copy an object of a different type
 	if (c->type_ != type_)
 		return;
+
+	// Update modified time
+	setModified();
 
 	// Reset properties
 	properties_.clear();
