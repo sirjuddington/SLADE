@@ -113,6 +113,7 @@ void MapSector::copy(MapObject* obj)
 	if (obj->objType() != Type::Sector)
 		return;
 
+	// Update modified time
 	setModified();
 
 	// Update texture counts (decrement previous)

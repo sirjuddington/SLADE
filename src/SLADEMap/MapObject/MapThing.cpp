@@ -228,6 +228,9 @@ void MapThing::copy(MapObject* c)
 	if (c->objType() != Type::Thing)
 		return;
 
+	// Update modified time
+	setModified();
+
 	// Basic variables
 	auto thing  = dynamic_cast<MapThing*>(c);
 	position_.x = thing->position_.x;
