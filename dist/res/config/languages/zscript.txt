@@ -16,7 +16,7 @@ zscript
 		extend, clearscope, vararg, ui, play, virtual, virtualscope, meta, Property,
 		version, in, out, states, action, override, super, is, let, const, replaces,
 		protected, self, abstract, enum, switch, case, until, nullptr, foreach, array,
-		map, mapiterator
+		map, mapiterator, sealed
 	}
 
 	types =

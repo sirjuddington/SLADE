@@ -120,6 +120,9 @@ void MapSide::copy(MapObject* c)
 	if (c->objType() != Type::Side)
 		return;
 
+	// Update modified time
+	setModified();
+
 	// Copy properties
 	auto side = dynamic_cast<MapSide*>(c);
 	setTexLower(side->tex_lower_, false);

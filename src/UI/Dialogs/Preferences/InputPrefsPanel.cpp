@@ -64,7 +64,7 @@ public:
 // -----------------------------------------------------------------------------
 // InputKeyCtrl class constructor
 // -----------------------------------------------------------------------------
-InputKeyCtrl::InputKeyCtrl(wxWindow* parent, Keypress init) :
+InputKeyCtrl::InputKeyCtrl(wxWindow* parent, const Keypress& init) :
 	wxTextCtrl(parent, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_TAB | wxTE_PROCESS_ENTER),
 	key_{ init }
 {
@@ -194,11 +194,6 @@ InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 void InputPrefsPanel::init()
 {
 	updateBindsList();
-
-	// Update list column sizes
-	//int width = list_binds_->GetSize().x / 3;
-	//list_binds_->SetColumnWidth(1, width);
-	//list_binds_->SetColumnWidth(0, width * 1.8);
 }
 
 // -----------------------------------------------------------------------------
@@ -230,9 +225,8 @@ void InputPrefsPanel::initBindsList() const
 	KeyBind::allKeyBinds(binds);
 
 	// Create columns
-	int width = list_binds_->GetSize().x / 3;
-	list_binds_->AppendColumn("Control", width * 1.8);
-	list_binds_->AppendColumn("Bound Keys", width);
+	list_binds_->AppendColumn("Control", wxCOL_WIDTH_AUTOSIZE);
+	list_binds_->AppendColumn("Bound Keys", ui::scalePx(150));
 
 	// Add binds to list
 	for (auto& bind : binds)
@@ -250,12 +244,6 @@ void InputPrefsPanel::initBindsList() const
 		for (int b = 1; b < bind->nKeys(); b++)
 			list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->key(b)));
 	}
-
-	// Update list column sizes
-	//list_binds_->SetColumnWidth(1, width);
-	//list_binds_->SetColumnWidth(0, width * 1.8);
-	list_binds_->SetColumnWidth(1, wxCOL_WIDTH_AUTOSIZE);
-	list_binds_->SetColumnWidth(0, wxCOL_WIDTH_AUTOSIZE);
 }
 
 // -----------------------------------------------------------------------------
@@ -269,11 +257,8 @@ void InputPrefsPanel::updateBindsList() const
 	// Go through all list items
 	while (item.IsOk())
 	{
-		// Get item data
-		auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
-
 		// Set item text if key data exists
-		if (bind)
+		if (auto bind = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(item)))
 			list_binds_->SetItemText(item, 1, bind->key.asString());
 
 		// Next item
@@ -287,7 +272,7 @@ void InputPrefsPanel::updateBindsList() const
 void InputPrefsPanel::changeKey(wxTreeListItem item)
 {
 	// Get item keybind info
-	auto bind = (BindListItemData*)list_binds_->GetItemData(item);
+	auto bind = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(item));
 
 	// Do nothing if item is a group
 	if (!bind)
@@ -330,7 +315,7 @@ void InputPrefsPanel::addKey()
 {
 	// Get selected item
 	auto item = list_binds_->GetSelection();
-	auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
+	auto bind = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(item));
 
 	// Do nothing if item is a group
 	if (!bind)
@@ -345,7 +330,7 @@ void InputPrefsPanel::addKey()
 	changeKey(n);
 
 	// Delete item if no key was chosen (or dialog cancelled)
-	bind = ((BindListItemData*)list_binds_->GetItemData(n));
+	bind = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(n));
 	if (bind->key.key.empty())
 		list_binds_->DeleteItem(n);
 	else
@@ -361,7 +346,7 @@ void InputPrefsPanel::addKey()
 void InputPrefsPanel::removeKey(wxTreeListItem item) const
 {
 	// Get item keybind info
-	auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
+	auto bind = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(item));
 
 	// Do nothing if item is a group
 	if (!bind)
@@ -381,7 +366,7 @@ void InputPrefsPanel::removeKey(wxTreeListItem item) const
 	while (child.IsOk())
 	{
 		last_child = child;
-		bind->key  = ((BindListItemData*)list_binds_->GetItemData(child))->key;
+		bind->key  = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(child))->key;
 		child      = list_binds_->GetNextSibling(child);
 	}
 
@@ -403,7 +388,7 @@ void InputPrefsPanel::applyPreferences()
 	while (item.IsOk())
 	{
 		// Get bind info
-		auto     bind  = ((BindListItemData*)list_binds_->GetItemData(item));
+		auto     bind  = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(item));
 		KeyBind* kbind = nullptr;
 		if (bind)
 			kbind = bind->bind;
@@ -423,7 +408,7 @@ void InputPrefsPanel::applyPreferences()
 			while (child.IsOk())
 			{
 				// Add key
-				bind = ((BindListItemData*)list_binds_->GetItemData(child));
+				bind = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(child));
 				kbind->addKey(bind->key.key, bind->key.alt, bind->key.ctrl, bind->key.shift);
 
 				// Next child
@@ -471,10 +456,9 @@ void InputPrefsPanel::onListSelectionChanged(wxTreeListEvent& e)
 	auto item = e.GetItem();
 
 	// Check it has a keybind attached
-	bool kb   = false;
-	bool kbp  = false;
-	auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
-	if (bind)
+	bool kb  = false;
+	bool kbp = false;
+	if (auto bind = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(item)))
 	{
 		kb = true;
 		if (bind->bind)
@@ -525,7 +509,7 @@ void InputPrefsPanel::onBtnDefaults(wxCommandEvent& e)
 {
 	// Get selected item
 	auto item = list_binds_->GetSelection();
-	auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
+	auto bind = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(item));
 
 	// Do nothing if it's not a primary keybind
 	if (!bind || !(bind->bind))

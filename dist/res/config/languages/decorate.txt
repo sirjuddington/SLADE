@@ -44,6 +44,7 @@ decorate : cstyle {
 		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack, 
 		RipperLevel, RipLevelMin, RipLevelMax,
 		Threshold, DefThreshold,
+		ShadowAimFactor, ShadowPenaltyFactor,
 		
 		// Physics
 		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
@@ -71,7 +72,7 @@ decorate : cstyle {
 		AttackZOffset, JumpZ, SpawnClass, ViewHeight, ForwardMove, SideMove, MaxHealth, MugshotMaxHealth, 
 		RunHealth, MorphWeapon, FlechetteType, ScoreIcon, CrouchSprite, DamageScreenColor, StartItem, 
 		InvulnerabilityMode, HealRadiusType, HexenArmor, Portrait, WeaponSlot, FallingScreamSpeed, GruntSpeed,
-		AirCapacity, UseRange, ViewBob, TeleportFreezeTime, FlyBob, WaterClimbSpeed,
+		AirCapacity, UseRange, ViewBob, TeleportFreezeTime, FlyBob, WaterClimbSpeed, ViewBobSpeed,
 		
 		// Inventory-specific properties
 		Inventory, RestrictedTo, ForbiddenTo, Amount, Icon, InterHubAmount, MaxAmount, 
@@ -175,6 +176,7 @@ decorate : cstyle {
 		BOUNCEONUNRIPPABLES, DONTBOUNCEONSHOOTABLES, DONTBOUNCEONSKY, RETARGETAFTERSLAM, E1M8BOSS, E2M8BOSS,
 		E3M8BOSS, E4M6BOSS, E4M8BOSS, MAP07BOSS1, MAP07BOSS2, HIGHERMPROB, DONTFOLLOWPLAYERS, SEEFRIENDLYMONSTERS,
 		ADDLIGHTLEVEL, CROSSLINECHECK, MASTERNOSEE, INVISIBLEINMIRRORS, ONLYVISIBLEINMIRRORS, ONLYSLAMSOLID,
+		SHADOWAIM, DOSHADOWBLOCK, SHADOWBLOCK, SHADOWAIMVERT, NOSAVEGAME,
 
 		// INVENTORY.
 		INVENTORY,
@@ -251,7 +253,7 @@ decorate : cstyle {
 
 		// A_Chase flags
 		CHF_DONTMOVE, CHF_FASTCHASE, CHF_NIGHTMAREFAST, CHF_NOPLAYACTIVE, CHF_RESURRECT, CHF_NORANDOMTURN,
-		CHF_NODIRECTIONTURN, CHF_NOPOSTATTACKTURN, CHF_STOPIFBLOCKED, CHF_DONTTURN, CHF_DONTIDLE,
+		CHF_NODIRECTIONTURN, CHF_NOPOSTATTACKTURN, CHF_STOPIFBLOCKED, CHF_DONTTURN, CHF_DONTIDLE, CHF_DONTLOOKALLAROUND,
 
 		// A_CheckLOF flags
 		CLOFF_NOAIM_VERT, CLOFF_NOAIM_HORZ, CLOFF_AIM_VERT_NOOFFSET, CLOFF_FROMBASE, CLOFF_MUL_HEIGHT,
@@ -350,7 +352,7 @@ decorate : cstyle {
 
 		// A_QuakeEx flags
 		QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_MAX, QF_FULLINTENSITY, QF_WAVE, QF_3D, QF_GROUNDONLY,
-		QF_AFFECTACTORS, QF_SHAKEONLY,
+		QF_AFFECTACTORS, QF_SHAKEONLY, QF_DAMAGEFALLOFF,
 
 		// A_RadiusDamageSelf flags
 		RDSF_BFGDAMAGE,
@@ -433,7 +435,7 @@ decorate : cstyle {
 		WRF_ALLOWUSER1, WRF_ALLOWUSER2, WRF_ALLOWUSER3, WRF_ALLOWUSER4,
 
 		// A_Explode
-		XF_HURTSOURCE, XF_NOTMISSILE, XF_EXPLICITDAMAGETYPE,
+		XF_HURTSOURCE, XF_NOTMISSILE, XF_EXPLICITDAMAGETYPE, XF_NOSPLASH, XF_THRUSTZ, XF_THRUSTLESS, XF_NOALLIES, XF_CIRCULAR,
 		
 		// A_ZoomFactor constants (not in constants.txt)
 		ZOOM_INSTANT, ZOOM_NOSCALETURNING,
@@ -527,7 +529,7 @@ decorate : cstyle {
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
 		A_Quake = "float intensity, int duration, int damrad, int tremrad, [sound sfx]";
-		A_QuakeEx = "float intensityX, float intensityY, float intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ], [int falloff], [int highpoint], [float rollIntensity], [float rollWave]";
+		A_QuakeEx = "float intensityX, float intensityY, float intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ], [int falloff], [int highpoint], [float rollIntensity], [float rollWave], [float damageMultiplier], [float thrustMultiplier], [int damage]";
 		A_SetTics = "int tics";
 
 		A_FreezeDeath;
@@ -787,6 +789,7 @@ decorate : cstyle {
 		A_SPosAttack;
 		A_SPosAttackUseAtkSound;
 		A_CPosAttack;
+		A_CPosAttackDehacked;
 		A_CPosRefire;
 		A_SpidRefire;
 		A_TroopAttack;
@@ -1080,6 +1083,7 @@ decorate : cstyle {
 		Generic_Ceiling = "int tag, int speed, int height, int target, int flags";
 		Generic_Crusher = "int tag, int downspeed, int upspeed, int silent, int damage";
 		Generic_Crusher2 = "int tag, int downspeed, int upspeed, int silent, int damage";
+		Generic_CrusherDist = "int tag, int downspeed, int upspeed, int silent, int damage";
 		Generic_Door = "int tag, int speed, int kind, int delay, int lock";
 		Generic_Floor = "int tag, int speed, int height, int target, int flags";
 		Generic_Lift = "int tag, int speed, int delay, int target, int height";

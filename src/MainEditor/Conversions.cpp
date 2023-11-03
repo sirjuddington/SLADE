@@ -171,9 +171,9 @@ uint8_t pcm16to8bits(int16_t val)
 	uint8_t ret = 128 + (val >> 8);
 	// Round value up or down depending on value
 	// of shifted-off bits.
-	if ((val & 0x80FF) > 127)
+	if ((val & 0x80FF) > 127 && ret < 255)
 		ret++;
-	else if ((val & 0x80FF) < -128)
+	else if ((val & 0x80FF) < -128 && ret > 0)
 		ret--;
 	// Send it.
 	return ret;
@@ -185,9 +185,9 @@ uint8_t pcm16to8bits(int16_t val)
 uint8_t pcm24to8bits(int32_t val)
 {
 	int16_t ret = (val >> 8);
-	if ((val & 0x8000FF) > 127)
+	if ((val & 0x8000FF) > 127 && ret < 255)
 		ret++;
-	else if ((val & 0x8000FF) < -128)
+	else if ((val & 0x8000FF) < -128 && ret > 0)
 		ret--;
 	return pcm16to8bits(ret);
 }
@@ -199,9 +199,9 @@ uint8_t pcm32to8bits(int32_t val)
 {
 	static constexpr int32_t mod = 0x800000FF;
 	int32_t                  ret = (val >> 8);
-	if ((val & mod) > 127)
+	if ((val & mod) > 127 && ret < 255)
 		ret++;
-	else if ((val & mod) < -128)
+	else if ((val & mod) < -128 && ret > 0)
 		ret--;
 	return pcm24to8bits(ret);
 }

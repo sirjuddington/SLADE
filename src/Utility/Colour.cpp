@@ -186,6 +186,12 @@ void hslToRgb(double h, double s, double l, double& r, double& g, double& b)
 		g = 0.;
 		b = 1. - factor;
 		break;
+		// Shouldn't get here but just in case
+	default:
+		r = 0.;
+		g = 0.;
+		b = 0.;
+		break;
 	}
 
 	// Now apply desaturation
