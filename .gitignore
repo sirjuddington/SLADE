@@ -41,3 +41,5 @@
 !/dist/res
 !/dist/CMakeLists.txt
 !/dist/makebuild.ps1
+
+CMakeSettings.json
