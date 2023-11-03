@@ -83,6 +83,9 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 	// Sonic Robo Blast 2
 	else if (game::configuration().currentGame() == "srb2")
 		processSRB2Slopes(map);
+	// EDGE-Classic
+	else if (game::configuration().currentPort() == "edge_classic")
+		processEDGEClassicSlopes(map);
 }
 
 // -----------------------------------------------------------------------------
@@ -565,6 +568,44 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Process EDGE-Classic slope specials
+// -----------------------------------------------------------------------------
+void MapSpecials::processEDGEClassicSlopes(SLADEMap* map) const
+{
+	// First things first: reset every sector to flat planes
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
+		auto target = map->sector(a);
+		target->setPlane<SurfaceType::Floor>(Plane::flat(target->planeHeight<SurfaceType::Floor>()));
+		target->setPlane<SurfaceType::Ceiling>(Plane::flat(target->planeHeight<SurfaceType::Ceiling>()));
+	}
+
+	VertexHeightMap vertex_floor_heights;
+	VertexHeightMap vertex_ceiling_heights;
+	// Vertex heights -- only applies for sectors with exactly three vertices,
+	// or sectors with exactly four vertices that also fulfill other criteria.
+	// Heights are set by UDMF properties.
+	vector<MapVertex*> vertices;
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
+		auto target = map->sector(a);
+		vertices.clear();
+		target->putVertices(vertices);
+		if (vertices.size() == 4)
+		{
+			applyRectangularVertexHeightSlope<SurfaceType::Floor>(target, vertices, vertex_floor_heights);
+			applyRectangularVertexHeightSlope<SurfaceType::Ceiling>(target, vertices, vertex_ceiling_heights);
+		}
+		else if (vertices.size() == 3)
+		{
+			applyVertexHeightSlope<SurfaceType::Floor>(target, vertices, vertex_floor_heights);
+			applyVertexHeightSlope<SurfaceType::Ceiling>(target, vertices, vertex_ceiling_heights);
+		}
+		else
+			continue;
+	}
+}
 
 // -----------------------------------------------------------------------------
 // Process ZDoom slope specials
@@ -1184,4 +1225,79 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 	Vec3d p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
 	Vec3d p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
 	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+}
+
+// -----------------------------------------------------------------------------
+// Applies a slope to sector [target] based on the heights of its vertices
+// (EDGE-Classic rectangular sectors only; performs additional validation)
+// -----------------------------------------------------------------------------
+template<SurfaceType T>
+void MapSpecials::applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
+	const
+{
+	std::vector<int> height_verts;
+	string prop         = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	auto   v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
+	auto   v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
+	auto   v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
+	auto   v4_hasheight = heights.count(vertices[3]) || vertices[3]->hasProp(prop);
+	if (v1_hasheight)
+		height_verts.push_back(0);
+	if (v2_hasheight)
+		height_verts.push_back(1);
+	if (v3_hasheight)
+		height_verts.push_back(2);
+	if (v4_hasheight)
+		height_verts.push_back(3);
+	if (height_verts.size() == 2) // Must only have two out of the four verts assigned a zfloor/ceiling value
+	{
+		MapVertex *v1 = vertices[height_verts[0]];
+		MapVertex *v2 = vertices[height_verts[1]];
+		// Must be both verts of the same line
+		bool same_line = false;
+		for (const auto& line : v1->connectedLines())
+		{
+			if ((line->v1() == v1 && line->v2() == v2) || (line->v1() == v2 && line->v2() == v1))
+			{
+				same_line = true;
+				break;
+			}
+		}
+		if (same_line)
+		{
+			// The zfloor/zceiling values must be equal
+			if (fabs(heights.count(v1) ? heights[v1] : vertexHeight<T>(v1, target) - heights.count(v2) ? heights[v2] : vertexHeight<T>(v2, target)) < 0.001f)
+			{
+				// Psuedo-Plane_Align routine
+				double     furthest_dist   = 0.0;
+				MapVertex* furthest_vertex = nullptr;
+				Seg2d      seg(v1->position(), v2->position());
+				for (auto& vertex : vertices)
+				{
+					double dist = math::distanceToLine(vertex->position(), seg);
+
+					if (!math::colinear(vertex->xPos(), vertex->yPos(), v1->xPos(), v1->yPos(), v2->xPos(), v2->yPos())
+						&& dist > furthest_dist)
+					{
+						furthest_vertex = vertex;
+						furthest_dist   = dist;
+					}
+				}
+
+				if (!furthest_vertex || furthest_dist < 0.01)
+					return;
+
+				// Calculate slope plane from our three points: this line's endpoints
+				// (at the model sector's height) and the found vertex (at this sector's height).
+				double modelz  = heights.count(v1) ? heights[v1] : vertexHeight<T>(v1, target);
+				double targetz = target->planeHeight<T>();
+
+				Vec3d p1(v1->position(), modelz);
+				Vec3d p2(v2->position(), modelz);
+				Vec3d p3(furthest_vertex->position(), targetz);
+
+				target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+			}
+		}
+	}
 }
