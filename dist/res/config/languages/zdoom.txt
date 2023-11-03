@@ -11,7 +11,7 @@ z_animdefs {
 	keywords = {
 		texture, flat, tics, rand, range, fit, switch, sound, animateddoor,
 		pic, warp, warp2, on, off, opensound, closesound, cameratexture, worldpanning,
-		notrim, canvastexture
+		notrim, canvastexture, hdr
 	}
 
 	constants = {
@@ -256,7 +256,8 @@ z_mapinfo {
 		propermonsterfallingdamage, disableskyboxao, enableskyboxao, e1m8special,
 		e2m8special, e3m8special, e4m6special, e4m8special, disableshadowmap, enableshadowmap,
 		avoidmelee, compat_avoidhazards, compat_stayonlift, compat_nombf21, compat_vileghosts,
-		attenuatelights, intro, outro, lightblendmode, cvar_redirect,
+		attenuatelights, intro, outro, lightblendmode, cvar_redirect, compat_voodoozombies,
+		nopassover, passover,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
