@@ -892,11 +892,11 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	// Okay, so it's finally time to read some pixel data
 	for (int w = 0; w < width_; ++w)
 	{
+		int top;
 		int post_p = col_offsets[w];
 		// Process all posts in the column
-		while (memory::readB16(header, post_p) != 0xFFFF)
+		while ((top = header[post_p]) != 0xFF)
 		{
-			int top     = header[post_p];
 			int len     = header[post_p + 1];
 			int pixel_p = memory::readB16(header, post_p + 2);
 			if (pixel_p + len > size)
