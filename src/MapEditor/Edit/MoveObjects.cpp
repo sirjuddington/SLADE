@@ -187,6 +187,10 @@ void MoveObjects::end(bool accept)
 		vector<uint8_t> move_verts(context_.map().nVertices());
 		memset(&move_verts[0], 0, context_.map().nVertices());
 
+		// Get list of things (inside sectors) being moved
+		vector<uint8_t> move_things(context_.map().nThings());
+		memset(&move_things[0], 0, context_.map().nThings());
+
 		if (context_.editMode() == Mode::Vertices)
 		{
 			for (auto& item : items_)
@@ -210,7 +214,14 @@ void MoveObjects::end(bool accept)
 			vector<MapVertex*> sv;
 			for (auto& item : items_)
 				if (auto sector = item.asSector(context_.map()))
+				{
 					sector->putVertices(sv);
+					for (auto& thing : context_.map().things())
+					{
+						if (sector->containsPoint(thing->position()))
+							move_things[thing->index()] = 1;
+					}
+				}
 
 			for (auto vertex : sv)
 				move_verts[vertex->index()] = 1;
@@ -228,6 +239,17 @@ void MoveObjects::end(bool accept)
 
 			moved_verts.push_back(vertex);
 		}
+
+		// Move things
+		for (unsigned a = 0; a < context_.map().nThings(); a++)
+		{
+			if (!move_things[a])
+				continue;
+
+			auto thing = context_.map().thing(a);
+			thing->move(thing->position() + offset_, true);
+		}
+
 
 		// Begin extra 'Merge' undo step if wanted
 		if (map_merge_undo_step)
