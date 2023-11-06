@@ -214,17 +214,40 @@ void MoveObjects::end(bool accept)
 			vector<MapVertex*> sv;
 			for (auto& item : items_)
 				if (auto sector = item.asSector(context_.map()))
-				{
 					sector->putVertices(sv);
-					for (auto& thing : context_.map().things())
-					{
-						if (sector->containsPoint(thing->position()))
-							move_things[thing->index()] = 1;
-					}
-				}
 
 			for (auto vertex : sv)
 				move_verts[vertex->index()] = 1;
+		}
+
+		// Find moved sectors to move things
+		for (auto& sector : context_.map().sectors())
+		{
+			bool allMoved = true;
+			for (auto& side : sector->connectedSides())
+			{
+				auto line = side->parentLine();
+				if (line->v1())
+					if (!move_verts[line->v1()->index()])
+					{
+						allMoved = false;
+						break;
+					}
+				if (line->v2())
+					if (!move_verts[line->v2()->index()])
+					{
+						allMoved = false;
+						break;
+					}
+			}
+			if (!allMoved)
+				continue;
+			// All the vertices are moved, so move its things
+			for (auto& thing : context_.map().things())
+			{
+				if (sector->containsPoint(thing->position()))
+					move_things[thing->index()] = 1;
+			}
 		}
 
 		// Move vertices
