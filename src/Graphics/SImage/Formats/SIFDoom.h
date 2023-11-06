@@ -826,9 +826,20 @@ protected:
 		int height = wxINT16_SWAP_ON_LE(header.height);
 		int depth  = wxINT16_SWAP_ON_LE(header.depth);
 		int shift  = wxINT16_SWAP_ON_LE(header.palshift);
+		int flags  = wxINT16_SWAP_ON_LE(header.flags);
 
 		// Create image
-		image.create(width, height, SImage::Type::PalMask);
+		if (flags & 1)
+		{
+			// the format is column-major, so swap width and height
+			// and then rotate and mirror the image in order to 
+			// convert it to row-major format
+			image.create(height, width, SImage::Type::PalMask);
+		}
+		else
+		{
+			image.create(width, height, SImage::Type::PalMask);
+		}
 		auto img_data = imageData(image);
 		auto img_mask = imageMask(image);
 
@@ -852,6 +863,12 @@ protected:
 		}
 		else
 			return false;
+
+		if (flags & 1)
+		{
+			image.rotate(90);
+			image.mirror(false);
+		}
 
 		// Mark palette index 0 as transparent
 		for (int p = 0; p < width * height; ++p)
