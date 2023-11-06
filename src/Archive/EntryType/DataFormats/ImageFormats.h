@@ -587,7 +587,7 @@ public:
 	{
 		size_t size = mc.size();
 		// Smallest pic size 832 (32x16), largest pic size 33088 (256x128)
-		if (size < 640 || size % 32 || size > 33088)
+		if (size < 832 || size % 32 || size > 33088)
 			return MATCH_FALSE;
 
 		// Verify duplication of content
