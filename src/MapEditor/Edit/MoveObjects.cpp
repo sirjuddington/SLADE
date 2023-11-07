@@ -227,18 +227,16 @@ void MoveObjects::end(bool accept)
 			for (auto& side : sector->connectedSides())
 			{
 				auto line = side->parentLine();
-				if (line->v1())
-					if (!move_verts[line->v1()->index()])
-					{
-						allMoved = false;
-						break;
-					}
-				if (line->v2())
-					if (!move_verts[line->v2()->index()])
-					{
-						allMoved = false;
-						break;
-					}
+				if (line->v1() && !move_verts[line->v1()->index()])
+				{
+					allMoved = false;
+					break;
+				}
+				if (line->v2() && !move_verts[line->v2()->index()])
+				{
+					allMoved = false;
+					break;
+				}
 			}
 			if (!allMoved)
 				continue;
