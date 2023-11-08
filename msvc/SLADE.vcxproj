@@ -190,7 +190,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <ObjectFileName>$(IntDir)$(Configuration)\%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -264,7 +264,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <ObjectFileName>$(IntDir)$(Configuration)\%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

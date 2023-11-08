@@ -75,10 +75,38 @@ CVAR(Int, txed_line_extra_height, 0, CVar::Flag::Save)
 CVAR(Bool, txed_tab_spaces, false, CVar::Flag::Save)
 CVAR(Int, txed_show_whitespace, 0, CVar::Flag::Save)
 CVAR(Bool, txed_calltips_argset_kb, true, CVar::Flag::Save)
+CVAR(Int, txed_font_quality, wxSTC_EFF_QUALITY_DEFAULT, CVar::Flag::Save)
+CVAR(Bool, txed_fr_matchcase, false, CVar::Save)
+CVAR(Bool, txed_fr_matchword, false, CVar::Save)
+CVAR(Bool, txed_fr_matchword_start, false, CVar::Save)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Returns the current search flags based on cvars
+// -----------------------------------------------------------------------------
+int searchFlags()
+{
+	int flags = 0;
+	if (txed_fr_matchcase)
+		flags |= wxSTC_FIND_MATCHCASE;
+	if (txed_fr_matchword_start)
+		flags |= wxSTC_FIND_WORDSTART;
+	if (txed_fr_matchword)
+		flags |= wxSTC_FIND_WHOLEWORD;
+
+	return flags;
+}
+}
 
 // -----------------------------------------------------------------------------
 //
@@ -242,8 +270,13 @@ TextEditorCtrl::~TextEditorCtrl()
 void TextEditorCtrl::setup()
 {
 	// General settings
+	SetDoubleBuffered(true);
 	SetBufferedDraw(true);
 	SetUseAntiAliasing(true);
+	SetTechnology(wxSTC_TECHNOLOGY_DIRECTWRITE);
+	SetFontQuality(txed_font_quality);
+	SetMultipleSelection(true);
+	SetAdditionalSelectionTyping(true);
 	SetMouseDwellTime(300);
 	AutoCompSetIgnoreCase(true);
 	AutoCompSetMaxHeight(10);
@@ -683,6 +716,26 @@ int TextEditorCtrl::replaceAll(const wxString& find, const wxString& replace, in
 
 	// Return number of instances replaced
 	return replaced;
+}
+
+// -----------------------------------------------------------------------------
+// Adds the next occurrence of the current selection to the multiple selection
+// -----------------------------------------------------------------------------
+void TextEditorCtrl::selectNextOccurrence()
+{
+	TargetWholeDocument();
+	SetSearchFlags(searchFlags());
+	MultipleSelectAddNext();
+}
+
+// -----------------------------------------------------------------------------
+// Adds all occurrences of the current selection as a multiple selection
+// -----------------------------------------------------------------------------
+void TextEditorCtrl::selectAllOccurrences()
+{
+	TargetWholeDocument();
+	SetSearchFlags(searchFlags());
+	MultipleSelectAddEach();
 }
 
 // -----------------------------------------------------------------------------
@@ -1348,6 +1401,18 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 		else if (name == "ted_cycle_comments")
 		{
 			cycleComments();
+			handled = true;
+		}
+
+		else if (name == "ted_select_next_occ")
+		{
+			selectNextOccurrence();
+			handled = true;
+		}
+
+		else if (name == "ted_select_all_occ")
+		{
+			selectAllOccurrences();
 			handled = true;
 		}
 	}

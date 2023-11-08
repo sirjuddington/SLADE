@@ -437,7 +437,7 @@ acs_z : acs
 
 		// QuakeEx flags
 		QF_FULLINTENSITY, QF_MAX, QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_WAVE, QF_3D,
-		QF_AFFECTACTORS, QF_GROUNDONLY, QF_SHAKEONLY,
+		QF_AFFECTACTORS, QF_GROUNDONLY, QF_SHAKEONLY, QF_DAMAGEFALLOFF,
 
 		// Warp flags
 		WARPF_ABSOLUTEOFFSET, WARPF_ABSOLUTEANGLE, WARPF_USECALLERANGLE, WARPF_NOCHECKPOSITION,
@@ -603,6 +603,7 @@ acs_z : acs
 		Generic_Ceiling = "int tag, int speed, int height, int target, int flags";
 		Generic_Crusher = "int tag, int downspeed, int upspeed, int silent, int damage";
 		Generic_Crusher2 = "int tag, int downspeed, int upspeed, int silent, int damage";
+		Generic_CrusherDist = "int tag, int downspeed, int upspeed, int silent, int damage";
 		Generic_Door = "int tag, int speed, int kind, int delay, int lock";
 		Generic_Floor = "int tag, int speed, int height, int target, int flags";
 		Generic_Lift = "int tag, int speed, int delay, int target, int height";
@@ -875,7 +876,7 @@ acs_z : acs
 		PolyWait = "int polynum";
 		Print = "type:expression";
 		PrintBold = "type:expression";
-		QuakeEx = "int tid, int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, sound sfx, [int flags], [fixed mulWaveX], [fixed mulWaveY], [fixed mulWaveZ], [int falloff], [int highpoint], [fixed rollIntensity], [fixed rollWave]";
+		QuakeEx = "int tid, int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, sound sfx, [int flags], [fixed mulWaveX], [fixed mulWaveY], [fixed mulWaveZ], [int falloff], [int highpoint], [fixed rollIntensity], [fixed rollWave], [fixed damageMultiplier], [fixed thrustMultiplier], [int damage]";
 		Radius_Quake2 = "int tid, int intensity, int duration, int damrad, int tremrad, str sound";
 		Random = "int min, int max";
 		ReplaceTextures = "str oldtexturename, str newtexturename, [int flags]";

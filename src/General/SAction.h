@@ -50,12 +50,7 @@ public:
 
 	bool addToMenu(
 		wxMenu*     menu,
-		string_view text_override = "NO",
-		string_view icon_override = "NO",
-		int         wx_id_offset  = 0);
-	bool addToMenu(
-		wxMenu*     menu,
-		bool        show_shortcut,
+		int         show_shortcut = 2, // 0 = don't show, 1 = always show, 2 = auto (show if ctrl or alt)
 		string_view text_override = "NO",
 		string_view icon_override = "NO",
 		int         wx_id_offset  = 0);
