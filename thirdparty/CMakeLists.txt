@@ -44,7 +44,9 @@ add_subdirectory(lunasvg/3rdparty/software)
 add_subdirectory(lunasvg/3rdparty/plutovg)
 
 # Required for libdrawtext or we get multiple definition linker errors
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fcommon")
+if (NOT MSVC)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fcommon")
+endif ()
 
 add_library(external STATIC ${EXTERNAL_SOURCES})
 target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt::fmt ${CMAKE_DL_LIBS})
