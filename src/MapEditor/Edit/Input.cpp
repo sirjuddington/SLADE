@@ -896,12 +896,6 @@ void Input::handleKeyBind2d(string_view name)
 				context_.addEditorMessage("Selection numbers disabled");
 		}
 
-		// Mirror
-		else if (name == "me2d_mirror_x")
-			context_.edit2D().mirror(true);
-		else if (name == "me2d_mirror_y")
-			context_.edit2D().mirror(false);
-
 		// Object Properties
 		else if (name == "me2d_object_properties")
 			context_.edit2D().editObjectProperties();
