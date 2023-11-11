@@ -1837,15 +1837,23 @@ bool MapEditContext::handleAction(string_view id)
 	// Mirror Y
 	else if (id == "mapw_mirror_y")
 	{
-		edit_2d_.mirror(false);
-		return true;
+		// Mirroring sectors breaks Edit Objects functionality
+		if (input_.mouseState() != mapeditor::Input::MouseState::ObjectEdit)
+		{
+			edit_2d_.mirror(false);
+			return true;
+		}
 	}
 
 	// Mirror X
 	else if (id == "mapw_mirror_x")
 	{
-		edit_2d_.mirror(true);
-		return true;
+		// Mirroring sectors breaks Edit Objects functionality
+		if (input_.mouseState() != mapeditor::Input::MouseState::ObjectEdit)
+		{
+			edit_2d_.mirror(true);
+			return true;
+		}
 	}
 
 	// Increment grid
