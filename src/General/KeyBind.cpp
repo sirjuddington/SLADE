@@ -595,7 +595,7 @@ void KeyBind::initBinds()
 	addBind("me2d_mode_sectors", Keypress("S"), "Sectors mode", group);
 	addBind("me2d_mode_things", Keypress("T"), "Things mode", group);
 	addBind("me2d_flat_type", Keypress("F", KPM_CTRL), "Cycle flat type", group);
-	addBind("me2d_split_line", Keypress("S", KPM_CTRL | KPM_SHIFT), "Split nearest line", group);
+	addBind("me2d_split_line", Keypress("S", KPM_SHIFT), "Split nearest line", group);
 	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock hilight", group);
 	addBind("me2d_begin_linedraw", Keypress("space"), "Begin line drawing", group);
 	addBind("me2d_begin_shapedraw", Keypress("space", KPM_SHIFT), "Begin shape drawing", group);
