@@ -968,7 +968,10 @@ void Input::handleKeyBind2d(string_view name)
 				bool success = false;
 				for (auto& thing : things)
 				{
-					thing->setAngle((thing->angle() - 45) % 360);
+					short angle = (thing->angle() - 45) % 360;
+					if (angle < 0)
+						angle += 360;
+					thing->setAngle(angle);
 					success = true;
 				}
 				context_.endUndoRecord(success);
