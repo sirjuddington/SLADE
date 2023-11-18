@@ -836,7 +836,10 @@ public:
 class SIFDoomJaguar : public SIFormat
 {
 public:
-	SIFDoomJaguar() : SIFormat("doom_jaguar", "Doom Jaguar", "lmp", 85) {}
+	SIFDoomJaguar(int colmajor = 0, string_view id = "doom_jaguar", string_view name = "Doom Jaguar") :
+		SIFormat(id, name, "lmp", 85), colmajor(colmajor)
+	{
+	}
 	~SIFDoomJaguar() = default;
 
 	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_jaguar")->isThisFormat(mc); }
@@ -969,12 +972,37 @@ protected:
 		header.width	= wxINT16_SWAP_ON_LE((short) image.width());
 		header.height	= wxINT16_SWAP_ON_LE((short) image.height());
 		header.depth    = wxINT16_SWAP_ON_LE(3);
+		header.flags    = wxINT16_SWAP_ON_LE(colmajor & 1);
 
 		out.write(&header, sizeof(header));
 
 		// Write the image data
-		image.putIndexedData(out);
+		if (colmajor)
+		{
+			SImage cmimage;
+			image.copyImage(&cmimage);
+
+			cmimage.mirror(false);
+			cmimage.rotate(270);
+			cmimage.putIndexedData(out);
+		}
+		else
+		{
+			image.putIndexedData(out);
+		}
 
 		return true;
 	}
+
+private:
+	int colmajor;
+};
+
+class SIFDoomJaguarColMajor : public SIFDoomJaguar
+{
+public:
+	SIFDoomJaguarColMajor() : SIFDoomJaguar(1, "doom_jaguar_colmajor", "Doom Jaguar CM") {}
+	~SIFDoomJaguarColMajor() final = default;
+
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_jaguar_colmajor")->isThisFormat(mc); }
 };
