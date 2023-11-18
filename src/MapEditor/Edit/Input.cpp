@@ -959,6 +959,26 @@ void Input::handleKeyBind2d(string_view name)
 					mouse_state_ = MouseState::ThingAngle;
 				}
 			}
+
+			// Rotate Clockwise
+			else if(name == "me2d_thing_rotate_clockwise")
+			{
+				auto things = context_.selection().selectedThings(true);
+				for (auto& thing : things)
+				{
+					thing->setAngle((thing->angle() - 45) % 360);
+				}
+			}
+
+			// Rotate Counterclockwise
+			else if(name == "me2d_thing_rotate_counterclockwise")
+			{
+				auto things = context_.selection().selectedThings(true);
+				for (auto& thing : things)
+				{
+					thing->setAngle((thing->angle() + 45) % 360);
+				}
+			}
 		}
 
 

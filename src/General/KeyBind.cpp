@@ -642,6 +642,8 @@ void KeyBind::initBinds()
 	group = "Map Editor 2D Things Mode";
 	addBind("me2d_thing_change_type", Keypress("T", KPM_CTRL), "Change type", group);
 	addBind("me2d_thing_quick_angle", Keypress("D"), "Quick angle edit", group);
+	addBind("me2d_thing_rotate_clockwise", Keypress("."), "Rotate clockwise", group);
+	addBind("me2d_thing_rotate_counterclockwise", Keypress(","), "Rotate counterclockwise", group);
 
 	// Map Editor 3D (me3d*)
 	group = "Map Editor 3D Mode";
