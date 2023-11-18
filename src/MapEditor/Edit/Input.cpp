@@ -963,17 +963,29 @@ void Input::handleKeyBind2d(string_view name)
 			// Rotate Clockwise
 			else if(name == "me2d_thing_rotate_clockwise")
 			{
+				context_.beginUndoRecord("Rotate Things Clockwise", true, false, false);
 				auto things = context_.selection().selectedThings(true);
+				bool success = false;
 				for (auto& thing : things)
+				{
 					thing->setAngle((thing->angle() - 45) % 360);
+					success = true;
+				}
+				context_.endUndoRecord(success);
 			}
 
 			// Rotate Counterclockwise
 			else if(name == "me2d_thing_rotate_counterclockwise")
 			{
+				context_.beginUndoRecord("Rotate Things Counterclockwise", true, false, false);
 				auto things = context_.selection().selectedThings(true);
+				bool success = false;
 				for (auto& thing : things)
+				{
 					thing->setAngle((thing->angle() + 45) % 360);
+					success = true;
+				}
+				context_.endUndoRecord(success);
 			}
 		}
 
