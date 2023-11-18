@@ -965,9 +965,7 @@ void Input::handleKeyBind2d(string_view name)
 			{
 				auto things = context_.selection().selectedThings(true);
 				for (auto& thing : things)
-				{
 					thing->setAngle((thing->angle() - 45) % 360);
-				}
 			}
 
 			// Rotate Counterclockwise
@@ -975,9 +973,7 @@ void Input::handleKeyBind2d(string_view name)
 			{
 				auto things = context_.selection().selectedThings(true);
 				for (auto& thing : things)
-				{
 					thing->setAngle((thing->angle() + 45) % 360);
-				}
 			}
 		}
 
