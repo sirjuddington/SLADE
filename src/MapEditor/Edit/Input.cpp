@@ -961,10 +961,10 @@ void Input::handleKeyBind2d(string_view name)
 			}
 
 			// Rotate Clockwise
-			else if(name == "me2d_thing_rotate_clockwise")
+			else if (name == "me2d_thing_rotate_clockwise")
 			{
 				context_.beginUndoRecord("Rotate Things Clockwise", true, false, false);
-				auto things = context_.selection().selectedThings(true);
+				auto things  = context_.selection().selectedThings(true);
 				bool success = false;
 				for (auto& thing : things)
 				{
@@ -978,10 +978,10 @@ void Input::handleKeyBind2d(string_view name)
 			}
 
 			// Rotate Counterclockwise
-			else if(name == "me2d_thing_rotate_counterclockwise")
+			else if (name == "me2d_thing_rotate_counterclockwise")
 			{
 				context_.beginUndoRecord("Rotate Things Counterclockwise", true, false, false);
-				auto things = context_.selection().selectedThings(true);
+				auto things  = context_.selection().selectedThings(true);
 				bool success = false;
 				for (auto& thing : things)
 				{

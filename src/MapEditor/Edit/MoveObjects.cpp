@@ -185,11 +185,11 @@ void MoveObjects::end(bool accept)
 
 		// Get list of vertices being moved
 		vector<uint8_t> move_verts(context_.map().nVertices());
-		memset(&move_verts[0], 0, context_.map().nVertices());
+		memset(move_verts.data(), 0, context_.map().nVertices());
 
 		// Get list of things (inside sectors) being moved
 		vector<uint8_t> move_things(context_.map().nThings());
-		memset(&move_things[0], 0, context_.map().nThings());
+		memset(move_things.data(), 0, context_.map().nThings());
 
 		if (context_.editMode() == Mode::Vertices)
 		{

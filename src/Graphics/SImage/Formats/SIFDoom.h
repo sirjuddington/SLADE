@@ -618,11 +618,12 @@ class SIFDoomPSXHelper
 {
 public:
 	// Helper: corrects for the opaque RGB colour '0,0,0' being considered fully transparent by the PSX hardware.
-	// Swaps it for the next nearest colour to black in the palette, otherwise there may be unwanted holes in the image where black is used.
-	// Black with the semi-transparency flag set will be used as the swap color, if it is found in the palette.
-	// This special PSX color can be used to achieve true black since most geometry in PSX Doom is rendered with opaque draw commands.
-	// For more on this problem, and the 'black with semi-transparency flag' workaround see the 'No$PSX Specifications' under the 
-	// "GPU Video Memory (VRAM) -> Texture Color Black Limitations" section: http://problemkaputt.de/psx-spx.htm#gpuvideomemoryvram
+	// Swaps it for the next nearest colour to black in the palette, otherwise there may be unwanted holes in the image
+	// where black is used. Black with the semi-transparency flag set will be used as the swap color, if it is found in
+	// the palette. This special PSX color can be used to achieve true black since most geometry in PSX Doom is rendered
+	// with opaque draw commands. For more on this problem, and the 'black with semi-transparency flag' workaround see
+	// the 'No$PSX Specifications' under the "GPU Video Memory (VRAM) -> Texture Color Black Limitations" section:
+	// http://problemkaputt.de/psx-spx.htm#gpuvideomemoryvram
 	static void correctOpaqueBlackForPsx(SImage& image)
 	{
 		if (!image.palette())
@@ -636,7 +637,8 @@ public:
 			{
 				ColRGBA colour = image.pixelAt(x, y);
 
-				// Note: only do the correction if color index '0' (transparent) is being used but opaque black was intended
+				// Note: only do the correction if color index '0' (transparent) is being used but opaque black was
+				// intended
 				if (colour.index == 0 && colour.a != 0 && colour.equals(ColRGBA::BLACK))
 				{
 					image.setPixel(x, y, blackColorIndex);
@@ -646,10 +648,11 @@ public:
 	}
 
 	// Helper: returns a color index to represent ColRGBA::BLACK (opaque black) for the PSX palette.
-	// Will return a color index that represents black with the PSX 'semi-transparency' (0x8000) bit set if that color is found in the palette.
-	// Failing that, the color index closest to black will be returned. Note that all color indexes other than '0' which are black are assumed
-	// to be black with the 'semi transparency' flag set. We have to make this assumption because SLADE does not have the concept of the PSX
-	// semi-transparency flag in it's color model...
+	// Will return a color index that represents black with the PSX 'semi-transparency' (0x8000) bit set if that color
+	// is found in the palette. Failing that, the color index closest to black will be returned. Note that all color
+	// indexes other than '0' which are black are assumed to be black with the 'semi transparency' flag set. We have to
+	// make this assumption because SLADE does not have the concept of the PSX semi-transparency flag in it's color
+	// model...
 	static short getPsxOpaqueBlackColorIndex(Palette& palette)
 	{
 		// Search for for black with the 'semi-transparency' bit set first (any black with color index other than '0')
@@ -664,14 +667,14 @@ public:
 		// Failing that try to find a color in the palette that is close to black, but not black
 		for (short i = 1; i < 256; i++)
 		{
-			short colourIdx = palette.nearestColour(ColRGBA(i, i, i));
-			ColRGBA colour = palette.colour(colourIdx);
+			short   colourIdx = palette.nearestColour(ColRGBA(i, i, i));
+			ColRGBA colour    = palette.colour(colourIdx);
 
 			if (!colour.equals(ColRGBA::BLACK))
 				return colourIdx;
 		}
 
-		return 0;	// Give up...
+		return 0; // Give up...
 	}
 };
 
@@ -730,7 +733,8 @@ public:
 		else if (opt.mask_source == Mask::Alpha)
 			image.cutoffMask(opt.alpha_threshold);
 
-		// Convert to paletted and correct for opaque black (0,0,0) being considered fully transparent by the PSX hardware
+		// Convert to paletted and correct for opaque black (0,0,0) being considered fully transparent by the PSX
+		// hardware
 		image.convertPaletted(opt.pal_target, opt.pal_current);
 		SIFDoomPSXHelper::correctOpaqueBlackForPsx(image);
 
@@ -760,7 +764,7 @@ protected:
 		memset(img_mask, 255, width * height);
 
 		// Mark as transparent all pixels that are index 0
-		for (size_t i = 0; i < (unsigned)(width * height); ++i)
+		for (size_t i = 0; i < static_cast<unsigned>(width * height); ++i)
 			if (img_data[i] == 0)
 				img_mask[i] = 0;
 
@@ -778,10 +782,10 @@ protected:
 		out.seek(0, SEEK_SET);
 
 		gfx::PSXPicHeader header;
-		header.width	= wxINT16_SWAP_ON_BE((short) image.width());
-		header.height	= wxINT16_SWAP_ON_BE((short) image.height());
-		header.left		= wxINT16_SWAP_ON_BE((short) image.offset().x);
-		header.top		= wxINT16_SWAP_ON_BE((short) image.offset().y);
+		header.width  = wxINT16_SWAP_ON_BE(static_cast<short>(image.width()));
+		header.height = wxINT16_SWAP_ON_BE(static_cast<short>(image.height()));
+		header.left   = wxINT16_SWAP_ON_BE(static_cast<short>(image.offset().x));
+		header.top    = wxINT16_SWAP_ON_BE(static_cast<short>(image.offset().y));
 
 		out.write(&header, sizeof(header));
 
@@ -790,7 +794,6 @@ protected:
 
 		return true;
 	}
-
 };
 
 class SIFDoomJagHelper
@@ -913,7 +916,7 @@ protected:
 		if (flags & 1)
 		{
 			// the format is column-major, so swap width and height
-			// and then rotate and mirror the image in order to 
+			// and then rotate and mirror the image in order to
 			// convert it to row-major format
 			image.create(height, width, SImage::Type::PalMask);
 		}
@@ -969,10 +972,10 @@ protected:
 
 		gfx::JagPicHeader header;
 		memset(&header, 0, sizeof(header));
-		header.width	= wxINT16_SWAP_ON_LE((short) image.width());
-		header.height	= wxINT16_SWAP_ON_LE((short) image.height());
-		header.depth    = wxINT16_SWAP_ON_LE(3);
-		header.flags    = wxINT16_SWAP_ON_LE(colmajor & 1);
+		header.width  = wxINT16_SWAP_ON_LE((short)image.width());
+		header.height = wxINT16_SWAP_ON_LE((short)image.height());
+		header.depth  = wxINT16_SWAP_ON_LE(3);
+		header.flags  = wxINT16_SWAP_ON_LE(colmajor & 1);
 
 		out.write(&header, sizeof(header));
 
@@ -1004,5 +1007,8 @@ public:
 	SIFDoomJaguarColMajor() : SIFDoomJaguar(1, "doom_jaguar_colmajor", "Doom Jaguar CM") {}
 	~SIFDoomJaguarColMajor() final = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_jaguar_colmajor")->isThisFormat(mc); }
+	bool isThisFormat(MemChunk& mc) override
+	{
+		return EntryDataFormat::format("img_doom_jaguar_colmajor")->isThisFormat(mc);
+	}
 };
