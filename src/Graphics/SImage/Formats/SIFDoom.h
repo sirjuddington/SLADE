@@ -991,17 +991,11 @@ protected:
 		// Write the image data
 		if (colmajor)
 		{
-			SImage cmimage;
-			image.copyImage(&cmimage);
+			image.mirror(false);
+			image.rotate(270);
+		}
 
-			cmimage.mirror(false);
-			cmimage.rotate(270);
-			cmimage.putIndexedData(out);
-		}
-		else
-		{
-			image.putIndexedData(out);
-		}
+		image.putIndexedData(out);
 
 		return true;
 	}
