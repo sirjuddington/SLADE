@@ -922,12 +922,8 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), t
 
 	// Add actions to toolbar
 	wxArrayString actions;
-	actions.Add("data_add_row");
-	actions.Add("data_delete_row");
-	actions.Add("data_cut_row");
-	actions.Add("data_copy_row");
-	actions.Add("data_paste_row");
-	toolbar_->addActionGroup("Data", actions);
+	toolbar_->addActionGroup(
+		"Data", { "data_add_row", "data_delete_row", "data_cut_row", "data_copy_row", "data_paste_row" });
 
 	// Bind events
 	Bind(wxEVT_KEY_DOWN, &DataEntryPanel::onKeyDown, this);

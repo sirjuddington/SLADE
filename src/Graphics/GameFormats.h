@@ -27,7 +27,8 @@ struct JagPicHeader
 	short height;
 	short depth;
 	short palshift;
-	char  padding[8];
+	short flags;
+	char  padding[6];
 };
 
 // The header of a PSX Doom-format gfx image

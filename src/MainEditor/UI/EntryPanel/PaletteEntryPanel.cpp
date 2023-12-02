@@ -621,18 +621,19 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	toolbar_->addGroup(group_palette);
 
 	// Current Palette
-	wxString actions = "ppal_moveup;ppal_movedown;ppal_duplicate;ppal_remove;ppal_removeothers";
-	toolbar_->addActionGroup("Palette Organisation", wxSplit(actions, ';'));
+	toolbar_->addActionGroup(
+		"Palette Organisation",
+		{ "ppal_moveup", "ppal_movedown", "ppal_duplicate", "ppal_remove", "ppal_removeothers" });
 
 	// Palette Entry Operations
-	actions = "ppal_addcustom;ppal_exportas;ppal_importfrom;ppal_test;ppal_generate";
-	toolbar_->addActionGroup("Palette Operations", wxSplit(actions, ';'));
+	toolbar_->addActionGroup(
+		"Palette Operations", { "ppal_addcustom", "ppal_exportas", "ppal_importfrom", "ppal_test", "ppal_generate" });
 
 	// --- Left toolbar ---
 
 	// Colour Operations
-	actions = "ppal_colourise;ppal_tint;ppal_invert;ppal_tweak;ppal_gradient";
-	toolbar_left_->addActionGroup("Colours", wxSplit(actions, ';'));
+	toolbar_left_->addActionGroup(
+		"Colours", { "ppal_colourise", "ppal_tint", "ppal_invert", "ppal_tweak", "ppal_gradient" });
 
 	// --- Palette canvas ---
 	pal_canvas_ = new PaletteCanvas(this, -1);
