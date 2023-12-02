@@ -93,7 +93,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	text_area_->setJumpToControl(choice_jump_to_);
 
 	// Add 'Compile ACS' to end of toolbar
-	toolbar_->addActionGroup("Compile", vector<string>{ "arch_scripts_compileacs" }, true);
+	toolbar_->addActionGroup("Compile", { "arch_scripts_compileacs" }, true);
 
 	// Bind events
 	choice_text_language_->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);

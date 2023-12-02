@@ -152,7 +152,7 @@ void STopWindow::enableToolBar(const wxString& name, bool enable) const
 // Adds a custom toolbar group to the toolbar, with buttons for each action in
 // [actions]
 // -----------------------------------------------------------------------------
-void STopWindow::addCustomToolBar(const wxString& name, const wxArrayString& actions) const
+void STopWindow::addCustomToolBar(const wxString& name, const vector<wxString>& actions) const
 {
 	toolbar_->addActionGroup(name, actions);
 	populateToolbarsMenu();

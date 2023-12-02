@@ -212,11 +212,8 @@ void MapEditContext::setEditMode(Mode mode)
 		// Sector mode toolbar
 		if (edit_mode_prev_ != Mode::Sectors)
 		{
-			wxArrayString actions;
-			actions.Add("mapw_sectormode_normal");
-			actions.Add("mapw_sectormode_floor");
-			actions.Add("mapw_sectormode_ceiling");
-			mapeditor::window()->addCustomToolBar("Sector Mode", actions);
+			mapeditor::window()->addCustomToolBar(
+				"Sector Mode", { "mapw_sectormode_normal", "mapw_sectormode_floor", "mapw_sectormode_ceiling" });
 		}
 
 		// Toggle current sector mode
@@ -231,9 +228,7 @@ void MapEditContext::setEditMode(Mode mode)
 	{
 		SAction::fromId("mapw_mode_things")->setChecked();
 
-		wxArrayString actions;
-		actions.Add("mapw_thing_light_previews");
-		mapeditor::window()->addCustomToolBar("Things Mode", actions);
+		mapeditor::window()->addCustomToolBar("Things Mode", { "mapw_thing_light_previews" });
 
 		SAction::fromId("mapw_thing_light_previews")->setChecked(thing_preview_lights);
 	}
@@ -670,9 +665,9 @@ void MapEditContext::updateTagged()
 				case TagType::Sector1Thing2:
 				{
 					int thingtag = (needs_tag == TagType::Sector1Thing2) ? arg2 : tag;
-					int sectag   = (needs_tag == TagType::Sector1Thing2) ?
-									 tag :
-									 (needs_tag == TagType::Thing1Sector2) ? arg2 : arg3;
+					int sectag   = (needs_tag == TagType::Sector1Thing2) ? tag :
+								   (needs_tag == TagType::Thing1Sector2) ? arg2 :
+																		   arg3;
 					if ((thingtag | sectag) == 0)
 						break;
 					else if (thingtag == 0)
