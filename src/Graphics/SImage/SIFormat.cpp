@@ -522,6 +522,7 @@ void SIFormat::initFormats()
 	new SIFDoomArah();
 	new SIFDoomSnea();
 	new SIFDoomJaguar();
+	new SIFDoomJaguarColMajor();
 	new SIFDoomPSX();
 
 	// Hexen formats

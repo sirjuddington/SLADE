@@ -536,27 +536,7 @@ void SToolBar::deleteCustomGroups()
 // Adds a new group [name] to the toolbar, containing toolbar buttons for each
 // action in [actions]
 // -----------------------------------------------------------------------------
-void SToolBar::addActionGroup(const wxString& name, const wxArrayString& actions, bool at_end)
-{
-	// Do nothing if no actions were given
-	if (actions.empty())
-		return;
-
-	// Create new toolbar group
-	auto* group = new SToolBarGroup(this, name);
-	if (at_end)
-		groups_end_.push_back(group);
-	else
-		groups_.push_back(group);
-
-	// Add actions to the group
-	for (const auto& action : actions)
-		group->addActionButton(action);
-
-	// Update layout
-	updateLayout(true);
-}
-void SToolBar::addActionGroup(const wxString& name, const vector<string>& actions, bool at_end)
+void SToolBar::addActionGroup(const wxString& name, const vector<wxString>& actions, bool at_end)
 {
 	// Do nothing if no actions were given
 	if (actions.empty())

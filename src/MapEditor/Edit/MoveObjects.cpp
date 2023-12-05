@@ -187,7 +187,11 @@ void MoveObjects::end(bool accept)
 
 		// Get list of vertices being moved
 		vector<uint8_t> move_verts(context_.map().nVertices());
-		memset(&move_verts[0], 0, context_.map().nVertices());
+		memset(move_verts.data(), 0, context_.map().nVertices());
+
+		// Get list of things (inside sectors) being moved
+		vector<uint8_t> move_things(context_.map().nThings());
+		memset(move_things.data(), 0, context_.map().nThings());
 
 		if (context_.editMode() == Mode::Vertices)
 		{
@@ -218,6 +222,34 @@ void MoveObjects::end(bool accept)
 				move_verts[vertex->index()] = 1;
 		}
 
+		// Find moved sectors to move things
+		for (auto& sector : context_.map().sectors())
+		{
+			bool allMoved = true;
+			for (auto& side : sector->connectedSides())
+			{
+				auto line = side->parentLine();
+				if (line->v1() && !move_verts[line->v1()->index()])
+				{
+					allMoved = false;
+					break;
+				}
+				if (line->v2() && !move_verts[line->v2()->index()])
+				{
+					allMoved = false;
+					break;
+				}
+			}
+			if (!allMoved)
+				continue;
+			// All the vertices are moved, so move its things
+			for (auto& thing : context_.map().things())
+			{
+				if (sector->containsPoint(thing->position()))
+					move_things[thing->index()] = 1;
+			}
+		}
+
 		// Move vertices
 		vector<MapVertex*> moved_verts;
 		for (unsigned a = 0; a < context_.map().nVertices(); a++)
@@ -230,6 +262,17 @@ void MoveObjects::end(bool accept)
 
 			moved_verts.push_back(vertex);
 		}
+
+		// Move things
+		for (unsigned a = 0; a < context_.map().nThings(); a++)
+		{
+			if (!move_things[a])
+				continue;
+
+			auto thing = context_.map().thing(a);
+			thing->move(thing->position() + offset_, true);
+		}
+
 
 		// Begin extra 'Merge' undo step if wanted
 		if (map_merge_undo_step)

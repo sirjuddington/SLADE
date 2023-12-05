@@ -30,7 +30,7 @@
 /src/updaterevision
 /src/gitinfo.h
 /win_installer/Output
-/cmake-build-debug
+/cmake-build-*
 /.idea/
 /msvc/.vs
 /msvc/x64/

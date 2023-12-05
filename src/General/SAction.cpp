@@ -174,7 +174,9 @@ bool SAction::addToMenu(
 			sc = kp.asString();
 		else
 			sc = "None";
-		sc_control = (kp.ctrl || kp.alt);
+
+		// Keybinds are handled separately so we don't want menu item shortcut keys to override them
+		show_shortcut = 0;
 	}
 
 	// Determine if shortcut key should be added

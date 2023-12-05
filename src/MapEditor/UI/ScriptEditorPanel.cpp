@@ -84,10 +84,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	sizer->Add(toolbar, 0, wxEXPAND);
 
 	wxArrayString actions;
-	actions.Add("mapw_script_save");
-	actions.Add("mapw_script_compile");
-	actions.Add("mapw_script_togglelanguage");
-	toolbar->addActionGroup("Scripts", actions);
+	toolbar->addActionGroup("Scripts", { "mapw_script_save", "mapw_script_compile", "mapw_script_togglelanguage" });
 
 	// Jump To toolbar group
 	auto group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);

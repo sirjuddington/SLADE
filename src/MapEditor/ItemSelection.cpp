@@ -711,7 +711,11 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 			// To things mode
 			else if (to_edit_mode == Mode::Things)
 			{
-				// TODO this is much harder
+				for (auto& thing : context_->map().things())
+				{
+					if (sector->containsPoint(thing->position()))
+						new_selection.insert({ (int)thing->index(), ItemType::Thing });
+				}
 			}
 		}
 	}

@@ -211,11 +211,8 @@ void MapEditContext::setEditMode(Mode mode)
 		// Sector mode toolbar
 		if (edit_mode_prev_ != Mode::Sectors)
 		{
-			wxArrayString actions;
-			actions.Add("mapw_sectormode_normal");
-			actions.Add("mapw_sectormode_floor");
-			actions.Add("mapw_sectormode_ceiling");
-			mapeditor::window()->addCustomToolBar("Sector Mode", actions);
+			mapeditor::window()->addCustomToolBar(
+				"Sector Mode", { "mapw_sectormode_normal", "mapw_sectormode_floor", "mapw_sectormode_ceiling" });
 		}
 
 		// Toggle current sector mode
@@ -230,9 +227,7 @@ void MapEditContext::setEditMode(Mode mode)
 	{
 		SAction::fromId("mapw_mode_things")->setChecked();
 
-		wxArrayString actions;
-		actions.Add("mapw_thing_light_previews");
-		mapeditor::window()->addCustomToolBar("Things Mode", actions);
+		mapeditor::window()->addCustomToolBar("Things Mode", { "mapw_thing_light_previews" });
 
 		SAction::fromId("mapw_thing_light_previews")->setChecked(thing_preview_lights);
 	}
@@ -1861,15 +1856,23 @@ bool MapEditContext::handleAction(string_view id)
 	// Mirror Y
 	else if (id == "mapw_mirror_y")
 	{
-		edit_2d_->mirror(false);
-		return true;
+		// Mirroring sectors breaks Edit Objects functionality
+		if (input_->mouseState() != mapeditor::Input::MouseState::ObjectEdit)
+		{
+			edit_2d_->mirror(false);
+			return true;
+		}
 	}
 
 	// Mirror X
 	else if (id == "mapw_mirror_x")
 	{
-		edit_2d_->mirror(true);
-		return true;
+		// Mirroring sectors breaks Edit Objects functionality
+		if (input_->mouseState() != mapeditor::Input::MouseState::ObjectEdit)
+		{
+			edit_2d_->mirror(true);
+			return true;
+		}
 	}
 
 	// Increment grid

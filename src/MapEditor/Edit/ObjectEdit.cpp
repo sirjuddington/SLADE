@@ -524,8 +524,8 @@ void ObjectEditGroup::doAll(
 		}
 
 		// Scale
-		thing.position.x = original_bbox_.min.x + ((thing.position.x - original_bbox_.min.x) * xscale);
-		thing.position.y = original_bbox_.min.y + ((thing.position.y - original_bbox_.min.y) * yscale);
+		thing.position.x = original_bbox_.midX() + (thing.position.x - original_bbox_.midX()) * xscale;
+		thing.position.y = original_bbox_.midY() + (thing.position.y - original_bbox_.midY()) * yscale;
 
 		// Move
 		thing.position.x += xoff;
