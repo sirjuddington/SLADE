@@ -218,6 +218,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<DoomArahDataFormat>();
 	registerDataFormat<DoomPSXDataFormat>();
 	registerDataFormat<DoomJaguarDataFormat>();
+	registerDataFormat<DoomJaguarColMajorDataFormat>();
 	registerDataFormat<DoomJagTexDataFormat>();
 	registerDataFormat<DoomJagSpriteDataFormat>();
 	registerDataFormat<ShadowCasterSpriteFormat>();

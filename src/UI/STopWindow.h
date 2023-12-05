@@ -24,7 +24,7 @@ public:
 
 	// Toolbars
 	void enableToolBar(const wxString& name, bool enable = true) const;
-	void addCustomToolBar(const wxString& name, const wxArrayString& actions) const;
+	void addCustomToolBar(const wxString& name, const vector<wxString>& actions) const;
 	void removeCustomToolBar(const wxString& name) const;
 	void removeAllCustomToolBars() const;
 	void populateToolbarsMenu() const;
