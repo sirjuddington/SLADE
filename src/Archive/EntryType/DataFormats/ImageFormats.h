@@ -300,17 +300,20 @@ public:
 class WebPDataFormat : public EntryDataFormat
 {
 public:
-	WebPDataFormat() : EntryDataFormat("img_webp"){};
+	WebPDataFormat() : EntryDataFormat("img_webp") {}
 	~WebPDataFormat() override = default;
 
 	int isThisFormat(MemChunk& mc) override
 	{
+		if (mc.size() < 12)
+			return MATCH_FALSE;
+
 		// Check header
 		if ((mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F')
 			&& (mc[8] == 'W' && mc[9] == 'E' && mc[10] == 'B' && mc[11] == 'P'))
 		{
 			// Check size
-			auto size = mc.readB32(4) - 8;
+			auto size = mc.readL32(4) + 8;
 			if (size != mc.size())
 				return MATCH_FALSE;
 
