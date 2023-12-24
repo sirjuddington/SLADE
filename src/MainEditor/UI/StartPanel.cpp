@@ -244,16 +244,40 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 
 	// Underline filename on mouseover
 	filename_label->Bind(
-		wxEVT_ENTER_WINDOW,
-		[filename_label](wxMouseEvent&) { filename_label->SetFont(filename_label->GetFont().Underlined()); });
-	filename_label->Bind(
-		wxEVT_LEAVE_WINDOW,
-		[filename_label](wxMouseEvent&)
+		wxEVT_IDLE,
+		[filename_label](wxIdleEvent&)
 		{
 			auto font = filename_label->GetFont();
-			font.SetUnderlined(false);
-			filename_label->SetFont(font);
+			auto mouseover = filename_label->GetScreenRect().Contains(wxGetMousePosition());
+			if (!mouseover && font.GetUnderlined())
+			{
+				font.SetUnderlined(false);
+				filename_label->SetFont(font);
+				filename_label->Refresh();
+			}
+			else if (mouseover && !font.GetUnderlined())
+			{
+				font.SetUnderlined(true);
+				filename_label->SetFont(font);
+				filename_label->Refresh();
+			}
 		});
+	// filename_label->Bind(
+	// 	wxEVT_ENTER_WINDOW,
+	// 	[filename_label](wxMouseEvent&)
+	// 	{
+	// 		filename_label->SetFont(filename_label->GetFont().Underlined());
+	// 		filename_label->Refresh();
+	// 	});
+	// filename_label->Bind(
+	// 	wxEVT_LEAVE_WINDOW,
+	// 	[filename_label](wxMouseEvent&)
+	// 	{
+	// 		auto font = filename_label->GetFont();
+	// 		font.SetUnderlined(false);
+	// 		filename_label->SetFont(font);
+	// 		filename_label->Refresh();
+	// 	});
 
 	return sizer;
 }
