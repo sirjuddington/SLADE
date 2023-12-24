@@ -181,6 +181,7 @@ public:
 	// Static functions
 	static bool                   loadFormats(const MemChunk& mc);
 	static vector<ArchiveFormat>& allFormats() { return formats_; }
+	static ArchiveFormat*         formatFromId(string_view id);
 
 protected:
 	string                 format_;
