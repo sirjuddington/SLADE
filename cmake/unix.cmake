@@ -186,7 +186,7 @@ target_link_libraries(slade
 	${MPG123_LIBRARIES}
 )
 
-if(LINUX)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)
 	target_link_libraries(slade -lstdc++fs)
 endif()
 

@@ -37,8 +37,8 @@
 #include "Graphics/Translation.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
-#include "UI/SBrush.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/SBrush.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -255,8 +255,8 @@ void GfxCanvas::drawImage()
 		drawing::drawTexture(tex_image_);
 
 		// Draw the dragged image
-		const auto off_x = static_cast<double>(drag_pos_.x - drag_origin_.x) / scale_;
-		const auto off_y = static_cast<double>(drag_pos_.y - drag_origin_.y) / scale_;
+		const auto off_x = static_cast<int>((drag_pos_.x - drag_origin_.x) / scale_);
+		const auto off_y = static_cast<int>((drag_pos_.y - drag_origin_.y) / scale_);
 		glTranslated(off_x, off_y, 0);
 		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 		drawing::drawTexture(tex_image_);

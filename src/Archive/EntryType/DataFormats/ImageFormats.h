@@ -297,6 +297,33 @@ public:
 	}
 };
 
+class WebPDataFormat : public EntryDataFormat
+{
+public:
+	WebPDataFormat() : EntryDataFormat("img_webp") {}
+	~WebPDataFormat() override = default;
+
+	int isThisFormat(MemChunk& mc) override
+	{
+		if (mc.size() < 12)
+			return MATCH_FALSE;
+
+		// Check header
+		if ((mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F')
+			&& (mc[8] == 'W' && mc[9] == 'E' && mc[10] == 'B' && mc[11] == 'P'))
+		{
+			// Check size
+			auto size = mc.readL32(4) + 8;
+			if (size != mc.size())
+				return MATCH_FALSE;
+
+			return MATCH_TRUE;
+		}
+
+		return MATCH_FALSE;
+	}
+};
+
 class DoomGfxDataFormat : public EntryDataFormat
 {
 public:
@@ -543,7 +570,8 @@ class DoomJaguarDataFormat : public EntryDataFormat
 {
 public:
 	DoomJaguarDataFormat(int colmajor = 0, string_view id = "img_doom_jaguar") :
-		EntryDataFormat(id), colmajor(colmajor){};
+		EntryDataFormat(id),
+		colmajor(colmajor){};
 	~DoomJaguarDataFormat() = default;
 
 	int isThisFormat(const MemChunk& mc) override
