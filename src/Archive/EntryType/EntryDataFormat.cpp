@@ -211,6 +211,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<TIFFDataFormat>();
 	registerDataFormat<JPEGDataFormat>();
 	registerDataFormat<ILBMDataFormat>();
+	registerDataFormat<WebPDataFormat>();
 	registerDataFormat<DoomGfxDataFormat>();
 	registerDataFormat<DoomGfxAlphaDataFormat>();
 	registerDataFormat<DoomGfxBetaDataFormat>();
