@@ -221,19 +221,19 @@ public:
 		// in the given endianness
 		if (42
 			!= (littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[2])) :
-                               wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
+							   wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
 			return MATCH_FALSE;
 		// First offset must be on a word boundary (therefore, %2 == 0) and
 		// somewhere within the file, but not in the header of course.
 		size_t offset =
 			(littleendian ? wxUINT32_SWAP_ON_BE((const uint32_t)(mc[4])) :
-                            wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
+							wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
 		if (offset < 8 || offset >= size || offset % 2)
 			return MATCH_FALSE;
 		// Check the first IFD for validity
 		uint16_t numentries =
 			(littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[offset])) :
-                            wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
+							wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
 		if (offset + 6 + (numentries * 12) > size)
 			return MATCH_FALSE;
 		// Okay, it seems valid so far
@@ -303,7 +303,7 @@ public:
 	WebPDataFormat() : EntryDataFormat("img_webp") {}
 	~WebPDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() < 12)
 			return MATCH_FALSE;
@@ -675,7 +675,7 @@ public:
 
 		const int result = size < static_cast<unsigned>(4 + col_offsets[width - 1]) ?
 							   MATCH_FALSE :
-                               MATCH_TRUE; // We can't test validity of pixel data here
+							   MATCH_TRUE; // We can't test validity of pixel data here
 
 		delete[] col_offsets;
 
