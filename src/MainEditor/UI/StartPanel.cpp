@@ -5,6 +5,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
 #include "General/UI.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include <wx/statbmp.h>
 
@@ -28,12 +29,13 @@ wxBitmapBundle getIconBitmapBundle(string_view icon, int size)
 	return wxBitmapBundle::FromSVG(reinterpret_cast<const char*>(svg_entry->rawData()), wxutil::scaledSize(size, size));
 }
 
-wxWindow* createActionButton(wxWindow* parent, string_view icon, const string& text)
+SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, const string& text, const string& icon)
 {
-	auto button = new wxButton(parent, -1, text, wxDefaultPosition, wxutil::scaledSize(-1, 40), wxBU_LEFT);
-	button->SetBitmap(getIconBitmapBundle(icon, 20));
-	button->SetBitmapMargins(ui::pad(), 0);
-
+	auto button = new SToolBarButton(parent, action_id, text, icon, "", true, 22);
+	button->SetBackgroundColour(wxColour(background_colour));
+	button->setExactFit(false);
+	button->setFontSize(1.1f);
+	button->setPadding(8);
 	return button;
 }
 
@@ -75,16 +77,22 @@ wxSizer* createActionsSizer(wxWindow* parent)
 	title_label->SetFont(title_label->GetFont().Bold().Scale(1.5f));
 	sizer->Add(title_label, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 
-	auto open_button       = createActionButton(parent, "general/open.svg", "Open Archive");
-	auto opendir_button    = createActionButton(parent, "general/opendir.svg", "Open Directory");
-	auto newarchive_button = createActionButton(parent, "general/newarchive.svg", "Create New Archive");
-	auto newmap_button     = createActionButton(parent, "general/mapeditor.svg", "Create New Map");
+	// Create buttons
+	auto open_button       = createActionButton(parent, "aman_open", "Open Archive", "open");
+	auto opendir_button    = createActionButton(parent, "aman_opendir", "Open Directory", "opendir");
+	auto newarchive_button = createActionButton(parent, "aman_newarchive", "Create New Archive", "newarchive");
+	auto newmap_button     = createActionButton(parent, "aman_newmap", "Create New Map", "mapeditor");
 
-	open_button->Bind(wxEVT_BUTTON, [](wxCommandEvent&) { SActionHandler::doAction("aman_open"); });
-	opendir_button->Bind(wxEVT_BUTTON, [](wxCommandEvent&) { SActionHandler::doAction("aman_opendir"); });
-	newarchive_button->Bind(wxEVT_BUTTON, [](wxCommandEvent&) { SActionHandler::doAction("aman_newarchive"); });
-	newmap_button->Bind(wxEVT_BUTTON, [](wxCommandEvent&) { SActionHandler::doAction("aman_newmap"); });
+	// Bind events
+	open_button->Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, [](wxCommandEvent&) { SActionHandler::doAction("aman_open"); });
+	opendir_button->Bind(
+		wxEVT_STOOLBAR_BUTTON_CLICKED, [](wxCommandEvent&) { SActionHandler::doAction("aman_opendir"); });
+	newarchive_button->Bind(
+		wxEVT_STOOLBAR_BUTTON_CLICKED, [](wxCommandEvent&) { SActionHandler::doAction("aman_newarchive"); });
+	newmap_button->Bind(
+		wxEVT_STOOLBAR_BUTTON_CLICKED, [](wxCommandEvent&) { SActionHandler::doAction("aman_newmap"); });
 
+	// Layout
 	sizer->Add(open_button, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 	sizer->Add(opendir_button, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 	sizer->Add(newarchive_button, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
@@ -247,7 +255,7 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 		wxEVT_IDLE,
 		[filename_label](wxIdleEvent&)
 		{
-			auto font = filename_label->GetFont();
+			auto font      = filename_label->GetFont();
 			auto mouseover = filename_label->GetScreenRect().Contains(wxGetMousePosition());
 			if (!mouseover && font.GetUnderlined())
 			{
@@ -262,22 +270,6 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 				filename_label->Refresh();
 			}
 		});
-	// filename_label->Bind(
-	// 	wxEVT_ENTER_WINDOW,
-	// 	[filename_label](wxMouseEvent&)
-	// 	{
-	// 		filename_label->SetFont(filename_label->GetFont().Underlined());
-	// 		filename_label->Refresh();
-	// 	});
-	// filename_label->Bind(
-	// 	wxEVT_LEAVE_WINDOW,
-	// 	[filename_label](wxMouseEvent&)
-	// 	{
-	// 		auto font = filename_label->GetFont();
-	// 		font.SetUnderlined(false);
-	// 		filename_label->SetFont(font);
-	// 		filename_label->Refresh();
-	// 	});
 
 	return sizer;
 }
