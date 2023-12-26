@@ -17,8 +17,8 @@ namespace
 const string background_colour = "#1f242e";
 const string foreground_colour = "#d5d7dd";
 const string link_colour       = "#ffcc66";
-const string blue_dark_colour  = "#496499";
-const string blue_light_colour = "#507CD6";
+const string blue_dark_colour  = "#4D6FB3";
+const string blue_light_colour = "#4D83F0";
 } // namespace
 
 namespace
@@ -31,7 +31,7 @@ wxBitmapBundle getIconBitmapBundle(string_view icon, int size)
 
 SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, const string& text, const string& icon)
 {
-	auto button = new SToolBarButton(parent, action_id, text, icon, "", true, 22);
+	auto button = new SToolBarButton(parent, action_id, text, icon, "", true, 24);
 	button->SetBackgroundColour(wxColour(background_colour));
 	button->setExactFit(false);
 	button->setFontSize(1.1f);
@@ -59,10 +59,16 @@ wxSizer* createLogoSizer(wxWindow* parent)
 	vbox->Add(slade_label, wxSizerFlags().Left());
 
 	// "It's a Doom Editor"
-	auto tagline_label = new wxStaticText(parent, -1, "It's a Doom Editor");
+	auto tagline_label = new wxStaticText(parent, -1, "\"It's a Doom Editor\"");
 	tagline_label->SetFont(tagline_label->GetFont().Bold().Italic().Scale(1.2f));
 	tagline_label->SetForegroundColour(wxColour(blue_dark_colour));
 	vbox->Add(tagline_label, wxSizerFlags().CenterHorizontal().Border(wxBOTTOM, ui::pad()));
+
+	// Version
+	auto version_label = new wxStaticText(parent, -1, "v" + app::version().toString());
+	version_label->SetFont(version_label->GetFont().Bold());
+	version_label->SetForegroundColour(wxColour(blue_dark_colour));
+	vbox->Add(version_label, wxSizerFlags().Center());
 
 	vbox->AddStretchSpacer();
 
@@ -72,10 +78,6 @@ wxSizer* createLogoSizer(wxWindow* parent)
 wxSizer* createActionsSizer(wxWindow* parent)
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-
-	auto title_label = new wxStaticText(parent, -1, "Get Started");
-	title_label->SetFont(title_label->GetFont().Bold().Scale(1.5f));
-	sizer->Add(title_label, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 
 	// Create buttons
 	auto open_button       = createActionButton(parent, "aman_open", "Open Archive", "open");
@@ -132,30 +134,16 @@ void StartPanel::setupLayout()
 
 	// Left side (logo + actions)
 	auto left_sizer = new wxBoxSizer(wxVERTICAL);
-	left_sizer->Add(createLogoSizer(this), wxSizerFlags(0));
-	left_sizer->Add(createActionsSizer(this), wxSizerFlags(1).Expand().Border(wxTOP, ui::pad()));
-
-	// We need this so we can right-align left_sizer within content_sizer
-	auto left_alignment_sizer = new wxBoxSizer(wxVERTICAL);
-	left_alignment_sizer->Add(left_sizer, wxSizerFlags(1).Right());
+	left_sizer->Add(createActionsSizer(this), wxSizerFlags(1).Right());
 
 	auto content_sizer = new wxBoxSizer(wxHORIZONTAL);
-	content_sizer->Add(left_alignment_sizer, wxSizerFlags(1).Border(wxRIGHT, ui::padLarge() * 2));
-	content_sizer->Add(recent_files_panel_, wxSizerFlags(1).CenterVertical().Border(wxLEFT, ui::padLarge() * 2));
+	content_sizer->Add(left_sizer, wxSizerFlags(1).CenterVertical().Border(wxRIGHT, ui::padLarge()));
+	content_sizer->Add(recent_files_panel_, wxSizerFlags(1).CenterVertical().Border(wxLEFT, ui::padLarge()));
 
 	main_sizer->AddStretchSpacer();
+	main_sizer->Add(createLogoSizer(this), wxSizerFlags(0).Center().Border(wxBOTTOM, ui::padLarge()));
 	main_sizer->Add(content_sizer, wxSizerFlags(1).Center().Border(wxLEFT | wxRIGHT, ui::pad()));
 	main_sizer->AddStretchSpacer();
-
-	// Bottom (version)
-	auto bottom_sizer = new wxBoxSizer(wxHORIZONTAL);
-	bottom_sizer->AddStretchSpacer();
-	auto version_label = new wxStaticText(this, -1, "v" + app::version().toString());
-	version_label->SetFont(version_label->GetFont().Bold());
-	bottom_sizer->Add(version_label, wxSizerFlags().CenterVertical());
-
-	main_sizer->Add(bottom_sizer, wxSizerFlags().Expand().Border(wxRIGHT, ui::pad()));
-	main_sizer->AddSpacer(ui::padMin());
 }
 
 void StartPanel::updateRecentFilesPanel()
@@ -170,7 +158,7 @@ void StartPanel::updateRecentFilesPanel()
 	sizer->Clear(true);
 
 	auto title_label = new wxStaticText(recent_files_panel_, -1, "Recent Files");
-	title_label->SetFont(title_label->GetFont().Bold().Scale(1.5f));
+	title_label->SetFont(title_label->GetFont().Bold().Scale(1.25f));
 	sizer->Add(title_label, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 
 	auto recent_files = app::archiveManager().recentFiles();
@@ -187,7 +175,7 @@ void StartPanel::updateRecentFilesPanel()
 		{
 			sizer->Add(createRecentFileSizer(path, index), wxSizerFlags().Border(wxBOTTOM, ui::padMin()));
 
-			if (index++ > 13)
+			if (index++ > 10)
 				break;
 		}
 	}
@@ -231,11 +219,16 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 
 
 	// Text --------------------------------------------------------------------
-	auto filename_label = new wxStaticText(recent_files_panel_, -1, wxutil::strFromView(path.fileName()));
+	auto filename = wxutil::strFromView(path.fileName());
+	if (filename.length() > 24)
+		filename = filename.SubString(0, 18) + "..." + wxutil::strFromView(path.extension());
+	auto filename_label = new wxStaticText(recent_files_panel_, -1, filename);
 	filename_label->SetFont(filename_label->GetFont().Bold());
 	filename_label->SetForegroundColour(wxColour(link_colour));
 	filename_label->SetCursor(wxCURSOR_HAND);
 	filename_label->SetDoubleBuffered(true);
+	if (path.fileName().length() > 24)
+		filename_label->SetToolTip(wxutil::strFromView(path.fileName()));
 	sizer->Add(filename_label, wxSizerFlags().Bottom().Border(wxRIGHT, ui::padLarge()));
 
 	auto path_label = new wxStaticText(recent_files_panel_, -1, wxutil::strFromView(path.path(false)));

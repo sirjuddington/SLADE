@@ -287,19 +287,17 @@ void SToolBarButton::sendClickedEvent()
 // -----------------------------------------------------------------------------
 void SToolBarButton::updateSize()
 {
-	int height = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
-	int width  = -1;
-	if (exact_fit_)
-	{
-		width = height + text_width_;
-		if (text_width_ > 0)
-			width += pad_inner_;
-		if (menu_dropdown_)
-			width += icon_size_ * 0.6;
-	}
+	int height    = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
+	int min_width = height + text_width_;
+	if (text_width_ > 0)
+		min_width += pad_inner_;
+	if (menu_dropdown_)
+		min_width += icon_size_ * 0.6;
 
-	wxWindowBase::SetSizeHints(width, height, width, height);
-	wxWindowBase::SetMinSize(wxSize(width, height));
+	auto width = exact_fit_ ? min_width : -1;
+
+	wxWindowBase::SetSizeHints(min_width, height, width, height);
+	wxWindowBase::SetMinSize(wxSize(min_width, height));
 	SetSize(width, height);
 }
 
