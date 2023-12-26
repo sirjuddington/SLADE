@@ -1,4 +1,36 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2022 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    StartPanel.cpp
+// Description: StartPanel class - A simple 'start' page containing buttons for
+//              useful actions to do on startup (open archive, etc.) and a list
+//              of recently opened archives
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "StartPanel.h"
 #include "App.h"
@@ -12,23 +44,41 @@
 using namespace slade;
 using namespace ui;
 
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace
 {
-const string background_colour = "#1f242e";
-const string foreground_colour = "#d5d7dd";
-const string link_colour       = "#ffcc66";
+const string background_colour = "#1F242E";
+const string foreground_colour = "#D5D7DD";
+const string link_colour       = "#FFCC66";
 const string blue_dark_colour  = "#4D6FB3";
 const string blue_light_colour = "#4D83F0";
 } // namespace
 
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Returns a wxBitmapBundle of [icon] at base [size]
+// -----------------------------------------------------------------------------
 wxBitmapBundle getIconBitmapBundle(string_view icon, int size)
 {
 	auto svg_entry = app::archiveManager().programResourceArchive()->entryAtPath(fmt::format("icons/{}", icon));
 	return wxBitmapBundle::FromSVG(reinterpret_cast<const char*>(svg_entry->rawData()), wxutil::scaledSize(size, size));
 }
 
+// -----------------------------------------------------------------------------
+// Creates a custom button (SToolBarButton) for an action with [text] and [icon]
+// -----------------------------------------------------------------------------
 SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, const string& text, const string& icon)
 {
 	auto button = new SToolBarButton(parent, action_id, text, icon, "", true, 24);
@@ -39,6 +89,9 @@ SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, co
 	return button;
 }
 
+// -----------------------------------------------------------------------------
+// Creates the layout sizer and widgets for the SLADE logo and title
+// -----------------------------------------------------------------------------
 wxSizer* createLogoSizer(wxWindow* parent)
 {
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -59,7 +112,7 @@ wxSizer* createLogoSizer(wxWindow* parent)
 	vbox->Add(slade_label, wxSizerFlags().Left());
 
 	// "It's a Doom Editor"
-	auto tagline_label = new wxStaticText(parent, -1, "\"It's a Doom Editor\"");
+	auto tagline_label = new wxStaticText(parent, -1, "It's a Doom Editor");
 	tagline_label->SetFont(tagline_label->GetFont().Bold().Italic().Scale(1.2f));
 	tagline_label->SetForegroundColour(wxColour(blue_dark_colour));
 	vbox->Add(tagline_label, wxSizerFlags().CenterHorizontal().Border(wxBOTTOM, ui::pad()));
@@ -75,6 +128,9 @@ wxSizer* createLogoSizer(wxWindow* parent)
 	return sizer;
 }
 
+// -----------------------------------------------------------------------------
+// Creates the layout sizer and widgets for the start page action buttons
+// -----------------------------------------------------------------------------
 wxSizer* createActionsSizer(wxWindow* parent)
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -104,6 +160,16 @@ wxSizer* createActionsSizer(wxWindow* parent)
 }
 } // namespace
 
+
+// -----------------------------------------------------------------------------
+//
+// StartPanel Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// StartPanel class  constructor
+// -----------------------------------------------------------------------------
 StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	wxPanel::SetName("startpage");
@@ -122,6 +188,9 @@ StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 	setupLayout();
 }
 
+// -----------------------------------------------------------------------------
+// Sets up the start panel layout
+// -----------------------------------------------------------------------------
 void StartPanel::setupLayout()
 {
 	auto main_sizer = new wxBoxSizer(wxVERTICAL);
@@ -146,6 +215,9 @@ void StartPanel::setupLayout()
 	main_sizer->AddStretchSpacer();
 }
 
+// -----------------------------------------------------------------------------
+// Updates and refreshes the recent files panel
+// -----------------------------------------------------------------------------
 void StartPanel::updateRecentFilesPanel()
 {
 	auto sizer = recent_files_panel_->GetSizer();
@@ -183,6 +255,9 @@ void StartPanel::updateRecentFilesPanel()
 	Layout();
 }
 
+// -----------------------------------------------------------------------------
+// Creates the layout sizer and widgets for a recent file at [full_path]
+// -----------------------------------------------------------------------------
 wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) const
 {
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -222,6 +297,8 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 	auto filename = wxutil::strFromView(path.fileName());
 	if (filename.length() > 24)
 		filename = filename.SubString(0, 18) + "..." + wxutil::strFromView(path.extension());
+	if (!path.hasExtension())
+		filename += "/";
 	auto filename_label = new wxStaticText(recent_files_panel_, -1, filename);
 	filename_label->SetFont(filename_label->GetFont().Bold());
 	filename_label->SetForegroundColour(wxColour(link_colour));
@@ -254,13 +331,11 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 			{
 				font.SetUnderlined(false);
 				filename_label->SetFont(font);
-				filename_label->Refresh();
 			}
 			else if (mouseover && !font.GetUnderlined())
 			{
 				font.SetUnderlined(true);
 				filename_label->SetFont(font);
-				filename_label->Refresh();
 			}
 		});
 
