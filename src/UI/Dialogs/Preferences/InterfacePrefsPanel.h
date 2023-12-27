@@ -8,7 +8,7 @@ class InterfacePrefsPanel : public PrefsPanelBase
 {
 public:
 	InterfacePrefsPanel(wxWindow* parent);
-	~InterfacePrefsPanel() = default;
+	~InterfacePrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;
@@ -22,9 +22,7 @@ private:
 	wxCheckBox* cb_elist_bgcol_          = nullptr;
 	wxCheckBox* cb_file_browser_         = nullptr;
 	wxCheckBox* cb_condensed_tabs_       = nullptr;
-	wxCheckBox* cb_web_dark_theme_       = nullptr;
 	wxChoice*   choice_toolbar_size_     = nullptr;
-	wxChoice*   choice_tab_style_        = nullptr;
 	wxChoice*   choice_iconset_general_  = nullptr;
 	wxChoice*   choice_iconset_entry_    = nullptr;
 	wxChoice*   choice_elist_icon_size_  = nullptr;

@@ -285,12 +285,8 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	{
 		if (strutil::equalCI(app::console()->command(a).name(), args[0]))
 		{
-#ifdef USE_WEBVIEW_STARTPAGE
-			maineditor::openDocs(fmt::format("{}-Console-Command", args[0]));
-#else
 			wxString url = wxString::Format("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
 			wxLaunchDefaultBrowser(url);
-#endif
 			return;
 		}
 	}

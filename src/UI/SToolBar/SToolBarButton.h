@@ -16,7 +16,7 @@ public:
 		const wxString& help_text,
 		bool            show_name = false,
 		int             icon_size = -1);
-	~SToolBarButton() = default;
+	~SToolBarButton() override = default;
 
 	SAction*        action() const { return action_; }
 	const wxString& actionId() const { return action_id_; }
@@ -26,6 +26,9 @@ public:
 	void setIcon(const wxString& icon);
 	void setChecked(bool checked);
 	void setMenu(wxMenu* menu, bool delete_existing = false);
+	void setFontSize(float scale);
+	void setPadding(int inner, int outer = 1);
+	void setExactFit(bool fit);
 
 	bool updateState();
 
@@ -45,9 +48,10 @@ private:
 #else
 	wxBitmap icon_;
 #endif
-	State   state_         = State::Normal;
-	bool    show_name_     = false;
-	wxMenu* menu_dropdown_ = nullptr;
+	State   state_             = State::Normal;
+	bool    show_name_         = false;
+	wxMenu* menu_dropdown_     = nullptr;
+	bool    last_draw_enabled_ = true; // True if the button was enabled last time it was drawn
 
 	// For non-SAction buttons
 	wxString action_id_;
@@ -56,11 +60,13 @@ private:
 	bool     checked_ = false;
 
 	// Layout
-	int pad_outer_  = 3;
-	int pad_inner_  = 1;
-	int icon_size_  = 16;
-	int text_width_ = 0;
+	int  pad_outer_  = 3;
+	int  pad_inner_  = 1;
+	int  icon_size_  = 16;
+	int  text_width_ = 0;
+	bool exact_fit_  = true;
 
+	void setup(bool show_name, string_view icon);
 	void sendClickedEvent();
 	void updateSize();
 

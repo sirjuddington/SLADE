@@ -66,12 +66,6 @@ if (WX_GTK3)
 endif (WX_GTK3)
 
 SET(WX_LIBS std aui gl stc richtext propgrid)
-if (NO_WEBVIEW)
-	SET(WX_LIBS ${WX_LIBS} html)
-else (NO_WEBVIEW)
-	SET(WX_LIBS ${WX_LIBS} webview)
-	ADD_DEFINITIONS(-DUSE_WEBVIEW_STARTPAGE)
-endif (NO_WEBVIEW)
 find_package(wxWidgets ${WX_VERSION} COMPONENTS ${WX_LIBS} REQUIRED)
 include(${wxWidgets_USE_FILE})
 
