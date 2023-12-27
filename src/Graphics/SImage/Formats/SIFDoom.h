@@ -952,12 +952,21 @@ protected:
 		}
 		else if (depth == 2)
 		{
+			int pixshift = 0;
+
 			if (shift == 0)
 				shift = 40;
+			shift <<= 1;
+
+			if (flags & 2)
+				shift++;
+			if (flags & 4)
+				pixshift++;
+
 			for (int p = 0; p < width * height / 2; ++p)
 			{
-				img_data[p * 2]     = ((data[16 + p] & 0xF0) >> 4) + (shift << 1);
-				img_data[p * 2 + 1] = (data[16 + p] & 0x0F) + (shift << 1);
+				img_data[p * 2]     = shift + (((data[16 + p] & 0xF0) >> 4) << pixshift);
+				img_data[p * 2 + 1] = shift + ((data[16 + p] & 0x0F) << pixshift);
 			}
 		}
 		else
@@ -997,17 +1006,11 @@ protected:
 		// Write the image data
 		if (colmajor)
 		{
-			SImage cmimage;
-			image.copyImage(&cmimage);
+			image.mirror(false);
+			image.rotate(270);
+		}
 
-			cmimage.mirror(false);
-			cmimage.rotate(270);
-			cmimage.putIndexedData(out);
-		}
-		else
-		{
-			image.putIndexedData(out);
-		}
+		image.putIndexedData(out);
 
 		return true;
 	}

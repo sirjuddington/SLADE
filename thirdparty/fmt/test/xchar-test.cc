@@ -146,15 +146,19 @@ TEST(xchar_test, format_to) {
 }
 
 TEST(xchar_test, vformat_to) {
-  using wcontext = fmt::wformat_context;
-  fmt::basic_format_arg<wcontext> warg = fmt::detail::make_arg<wcontext>(42);
-  auto wargs = fmt::basic_format_args<wcontext>(&warg, 1);
+  auto args = fmt::make_wformat_args(42);
   auto w = std::wstring();
-  fmt::vformat_to(std::back_inserter(w), L"{}", wargs);
+  fmt::vformat_to(std::back_inserter(w), L"{}", args);
   EXPECT_EQ(L"42", w);
-  w.clear();
-  fmt::vformat_to(std::back_inserter(w), FMT_STRING(L"{}"), wargs);
-  EXPECT_EQ(L"42", w);
+}
+
+namespace test {
+struct struct_as_wstring_view {};
+auto format_as(struct_as_wstring_view) -> fmt::wstring_view { return L"foo"; }
+}  // namespace test
+
+TEST(xchar_test, format_as) {
+  EXPECT_EQ(fmt::format(L"{}", test::struct_as_wstring_view()), L"foo");
 }
 
 TEST(format_test, wide_format_to_n) {
@@ -442,8 +446,8 @@ TEST(locale_test, format) {
   EXPECT_EQ("1~234~567", fmt::format(loc, "{:L}", 1234567));
   EXPECT_EQ("-1~234~567", fmt::format(loc, "{:L}", -1234567));
   EXPECT_EQ("-256", fmt::format(loc, "{:L}", -256));
-  fmt::format_arg_store<fmt::format_context, int> as{1234567};
-  EXPECT_EQ("1~234~567", fmt::vformat(loc, "{:L}", fmt::format_args(as)));
+  auto n = 1234567;
+  EXPECT_EQ("1~234~567", fmt::vformat(loc, "{:L}", fmt::make_format_args(n)));
   auto s = std::string();
   fmt::format_to(std::back_inserter(s), loc, "{:L}", 1234567);
   EXPECT_EQ("1~234~567", s);
@@ -476,10 +480,9 @@ TEST(locale_test, wformat) {
   auto loc = std::locale(std::locale(), new numpunct<wchar_t>());
   EXPECT_EQ(L"1234567", fmt::format(std::locale(), L"{:L}", 1234567));
   EXPECT_EQ(L"1~234~567", fmt::format(loc, L"{:L}", 1234567));
-  using wcontext = fmt::buffer_context<wchar_t>;
-  fmt::format_arg_store<wcontext, int> as{1234567};
+  int n = 1234567;
   EXPECT_EQ(L"1~234~567",
-            fmt::vformat(loc, L"{:L}", fmt::basic_format_args<wcontext>(as)));
+            fmt::vformat(loc, L"{:L}", fmt::make_wformat_args(n)));
   EXPECT_EQ(L"1234567", fmt::format(std::locale("C"), L"{:L}", 1234567));
 
   auto no_grouping_loc = std::locale(std::locale(), new no_grouping<wchar_t>());

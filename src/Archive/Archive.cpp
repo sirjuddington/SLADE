@@ -1680,7 +1680,7 @@ bool Archive::genericLoadEntryData(const ArchiveEntry* entry, MemChunk& out) con
 // -----------------------------------------------------------------------------
 void Archive::detectAllEntryTypes() const
 {
-	auto entries = dir_root_->allEntries();
+	auto entries   = dir_root_->allEntries();
 	auto n_entries = entries.size();
 	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t i = 0; i < n_entries; i++)
@@ -1785,6 +1785,18 @@ bool Archive::loadFormats(const MemChunk& mc)
 	formats_.push_back(fmt_folder);
 
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the ArchiveFormat matching [id] or nullptr if not found
+// -----------------------------------------------------------------------------
+ArchiveFormat* Archive::formatFromId(string_view id)
+{
+	for (auto& format : formats_)
+		if (format.id == id)
+			return &format;
+
+	return nullptr;
 }
 
 
