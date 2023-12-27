@@ -41,7 +41,7 @@
 #include "MapEditor/MapEditor.h"
 #include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
-#include "StartPage.h"
+#include "StartPanel.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/PaletteChooser.h"
@@ -54,9 +54,6 @@
 #include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
-#ifdef USE_WEBVIEW_STARTPAGE
-#include "DocsPage.h"
-#endif
 
 using namespace slade;
 
@@ -66,10 +63,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace
-{
-wxString main_window_layout = "";
-}
 CVAR(Bool, show_start_page, true, CVar::Flag::Save);
 CVAR(String, global_palette, "", CVar::Flag::Save);
 CVAR(Bool, mw_maximized, true, CVar::Flag::Save);
@@ -188,16 +181,8 @@ void MainWindow::setupLayout()
 	aui_mgr_->AddPane(stc_tabs_, p_inf);
 
 	// Create Start Page
-	start_page_ = new SStartPage(stc_tabs_);
 	if (show_start_page)
-	{
-		stc_tabs_->AddPage(start_page_, "Start Page");
-		stc_tabs_->SetPageBitmap(0, icons::getIcon(icons::General, "logo"));
-		start_page_->init();
-		createStartPage();
-	}
-	else
-		start_page_->Show(false);
+		stc_tabs_->AddPage(new ui::StartPanel(stc_tabs_), "Start Page", true, icons::getIcon(icons::General, "logo"));
 
 	// -- Console Panel --
 	auto panel_console = new ConsolePanel(this, -1);
@@ -294,10 +279,13 @@ void MainWindow::setupLayout()
 	// Help menu
 	auto help_menu = new wxMenu("");
 	SAction::fromId("main_onlinedocs")->addToMenu(help_menu);
-	SAction::fromId("main_about")->addToMenu(help_menu);
+	SAction::fromId("main_homepage")->addToMenu(help_menu);
+	SAction::fromId("main_github")->addToMenu(help_menu);
 #ifdef __WXMSW__
 	SAction::fromId("main_updatecheck")->addToMenu(help_menu);
 #endif
+	help_menu->AppendSeparator();
+	SAction::fromId("main_about")->addToMenu(help_menu);
 	menu->Append(help_menu, "&Help");
 
 	// Set the menu
@@ -395,14 +383,6 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar_->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
 	Bind(
-		wxEVT_AUINOTEBOOK_PAGE_CLOSE,
-		[&](wxAuiNotebookEvent& e)
-		{
-			// Null start_page pointer if start page tab is being closed
-			if (auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection()); page && page->GetName() == "startpage")
-				start_page_ = nullptr;
-		});
-	Bind(
 		wxEVT_AUINOTEBOOK_PAGE_CLOSED,
 		[&](wxAuiNotebookEvent& e)
 		{
@@ -413,15 +393,6 @@ void MainWindow::setupLayout()
 
 	// Initial focus to toolbar
 	toolbar_->SetFocus();
-}
-
-// -----------------------------------------------------------------------------
-// (Re-)Creates the start page
-// -----------------------------------------------------------------------------
-void MainWindow::createStartPage(bool newtip) const
-{
-	if (start_page_)
-		start_page_->load(newtip);
 }
 
 // -----------------------------------------------------------------------------
@@ -485,7 +456,7 @@ bool MainWindow::startPageTabOpen() const
 // -----------------------------------------------------------------------------
 // Switches to the Start Page tab, or (re)creates it if it has been closed
 // -----------------------------------------------------------------------------
-void MainWindow::openStartPageTab()
+void MainWindow::openStartPageTab() const
 {
 	// Find existing tab
 	for (unsigned a = 0; a < stc_tabs_->GetPageCount(); a++)
@@ -498,11 +469,7 @@ void MainWindow::openStartPageTab()
 	}
 
 	// Not found, create start page tab
-	start_page_ = new SStartPage(stc_tabs_);
-	start_page_->init();
-	stc_tabs_->AddPage(start_page_, "Start Page");
-	stc_tabs_->SetPageBitmap(stc_tabs_->GetPageIndex(start_page_), icons::getIcon(icons::General, "logo"));
-	createStartPage();
+	stc_tabs_->AddPage(new ui::StartPanel(stc_tabs_), "Start Page", true, icons::getIcon(icons::General, "logo"));
 }
 
 // -----------------------------------------------------------------------------
@@ -540,46 +507,6 @@ void MainWindow::openLibraryTab() const
 	stc_tabs_->AddPage(lib_tab, "Archive Library", true);
 	stc_tabs_->SetPageBitmap(stc_tabs_->GetPageIndex(lib_tab), icons::getIcon(icons::General, "library"));
 }
-
-// -----------------------------------------------------------------------------
-// Opens [entry] in its own tab
-// -----------------------------------------------------------------------------
-#ifdef USE_WEBVIEW_STARTPAGE
-void MainWindow::openDocs(const wxString& page_name)
-{
-	// Check if docs tab is already open
-	bool found = false;
-	for (unsigned a = 0; a < stc_tabs_->GetPageCount(); a++)
-	{
-		if (stc_tabs_->GetPage(a)->GetName() == "docs")
-		{
-			stc_tabs_->SetSelection(a);
-			found = true;
-			break;
-		}
-	}
-
-	// Open new docs tab if not already open
-	if (!found)
-	{
-		// Create docs page
-		docs_page_ = new DocsPage(this);
-		docs_page_->SetName("docs");
-
-		// Add tab
-		stc_tabs_->AddPage(docs_page_, "Documentation", true, -1);
-		stc_tabs_->SetPageBitmap(stc_tabs_->GetPageCount() - 1, icons::getIcon(icons::General, "wiki"));
-	}
-
-	// Load specified page, if any
-	if (!page_name.empty())
-		docs_page_->openPage(page_name);
-
-	// Refresh page
-	docs_page_->Layout();
-	docs_page_->Update();
-}
-#endif
 
 // -----------------------------------------------------------------------------
 // Handles the action [id].
@@ -691,7 +618,7 @@ bool MainWindow::handleAction(string_view id)
 		if (!global::sc_rev.empty())
 			version = version + " (Git Rev " + global::sc_rev + ")";
 		info.SetVersion(version);
-		info.SetWebSite("http://slade.mancubus.net");
+		info.SetWebSite("https://slade.mancubus.net");
 		info.SetDescription("It's a Doom Editor");
 
 		// Set icon
@@ -711,11 +638,21 @@ bool MainWindow::handleAction(string_view id)
 	// Help->Online Documentation
 	if (id == "main_onlinedocs")
 	{
-#ifdef USE_WEBVIEW_STARTPAGE
-		openDocs();
-#else
-		wxLaunchDefaultBrowser("http://slade.mancubus.net/wiki");
-#endif
+		wxLaunchDefaultBrowser("https://slade.mancubus.net/wiki");
+		return true;
+	}
+
+	// Help->SLADE Homepage
+	if (id == "main_homepage")
+	{
+		wxLaunchDefaultBrowser("https://slade.mancubus.net");
+		return true;
+	}
+
+	// Help->SLADE on GitHub
+	if (id == "main_github")
+	{
+		wxLaunchDefaultBrowser("https://github.com/sirjuddington/SLADE");
 		return true;
 	}
 
@@ -755,18 +692,9 @@ void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 	// Get current page
 	auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
 
-	// If start page is selected, refresh it
-	if (page->GetName() == "startpage")
-	{
-		createStartPage();
-		SetStatusText("", 1);
-		SetStatusText("", 2);
-		panel_undo_history_->setManager(nullptr);
-	}
-
 	// Archive tab, update undo history panel
-	else if (page->GetName() == "archive")
-		panel_undo_history_->setManager(((ArchivePanel*)page)->undoManager());
+	if (page->GetName() == "archive")
+		panel_undo_history_->setManager(static_cast<ArchivePanel*>(page)->undoManager());
 
 	// Continue
 	e.Skip();
@@ -809,20 +737,6 @@ void MainWindow::onActivate(wxActivateEvent& e)
 	{
 		e.Skip();
 		return;
-	}
-
-	// Get current tab
-	if (stc_tabs_->GetPageCount())
-	{
-		auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
-
-		// If start page is selected, refresh it
-		if (page && page->GetName() == "startpage")
-		{
-			createStartPage(false);
-			SetStatusText("", 1);
-			SetStatusText("", 2);
-		}
 	}
 
 	e.Skip();

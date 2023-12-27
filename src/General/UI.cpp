@@ -276,6 +276,14 @@ int ui::padLarge()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the standard 'minimum' padding size in pixels
+// -----------------------------------------------------------------------------
+int ui::padMin()
+{
+	return px_pad_min;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the saved window info for window/dialog [id]
 // -----------------------------------------------------------------------------
 ui::WindowInfo ui::getWindowInfo(const char* id)

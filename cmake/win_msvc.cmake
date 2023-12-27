@@ -16,12 +16,6 @@ add_compile_options(/bigobj)
 # wxWidgets
 find_package(wxWidgets CONFIG REQUIRED)
 set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net)
-if (NO_WEBVIEW)
-	SET(WX_LIBS ${WX_LIBS} wx::html)
-else (NO_WEBVIEW)
-	SET(WX_LIBS ${WX_LIBS} wx::webview)
-	ADD_DEFINITIONS(-DUSE_WEBVIEW_STARTPAGE)
-endif (NO_WEBVIEW)
 
 # FTGL
 find_package(Freetype REQUIRED)
@@ -74,11 +68,15 @@ add_executable(slade WIN32
 	${SLADE_HEADERS}
 )
 
+if(NOT SLADE_EXE_NAME)
+set(SLADE_EXE_NAME SLADE)
+endif()
+
 # Properties
 set_target_properties(slade
 	PROPERTIES
 	LINK_FLAGS "/subsystem:windows"
-	OUTPUT_NAME "SLADE"
+	OUTPUT_NAME "${SLADE_EXE_NAME}"
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/dist"
 )
 

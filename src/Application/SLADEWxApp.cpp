@@ -38,13 +38,12 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "MainEditor/UI/StartPage.h"
 #include "OpenGL/OpenGL.h"
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
-#include <wx/statbmp.h>
 #include <wx/filefn.h>
+#include <wx/statbmp.h>
 #undef BOOL
 #ifdef UPDATEREVISION
 #include "gitinfo.h"
@@ -232,7 +231,7 @@ public:
 		wxDialog::Layout();
 		SetInitialSize(wxSize(500, 600));
 		CenterOnParent();
-		Show(false);
+		wxDialog::Show(false);
 	}
 
 	~SLADECrashDialog() override = default;
@@ -395,10 +394,8 @@ bool SLADEWxApp::singleInstanceCheck()
 		delete single_instance_checker_;
 
 		// Connect to the file listener of the existing SLADE process
-		auto client     = std::make_unique<MainAppFLClient>();
-		auto connection = client->MakeConnection(wxGetHostName(), "SLADE_MAFL", "files");
-
-		if (connection)
+		auto client = std::make_unique<MainAppFLClient>();
+		if (auto connection = client->MakeConnection(wxGetHostName(), "SLADE_MAFL", "files"))
 		{
 			// Send args as archives to open
 			for (int a = 1; a < argc; a++)
@@ -456,7 +453,7 @@ bool SLADEWxApp::OnInit()
 #else  // !__APPLE__
     // Calculate scaling factor (from system ppi)
     wxMemoryDC dc;
-    double     ui_scale = (double)(dc.GetPPI().x) / 96.0;
+    double     ui_scale = static_cast<double>(dc.GetPPI().x) / 96.0;
     if (ui_scale < 1.)
         ui_scale = 1.;
 #endif // __APPLE__
@@ -592,7 +589,7 @@ void SLADEWxApp::onMenu(wxCommandEvent& e)
 		{
 			if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
 			{
-				auto item = (wxMenuItem*)e.GetEventObject();
+				auto item = static_cast<wxMenuItem*>(e.GetEventObject());
 				item->Check(s_action->isChecked());
 			}
 		}
@@ -630,12 +627,10 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	if (parser.parseText(e.GetString().ToStdString()))
 	{
 		// Stable
-		auto node_stable = parser.parseTreeRoot()->childPTN("stable");
-		if (node_stable)
+		if (auto node_stable = parser.parseTreeRoot()->childPTN("stable"))
 		{
 			// Version
-			auto node_version = node_stable->childPTN("version");
-			if (node_version)
+			if (auto node_version = node_stable->childPTN("version"))
 			{
 				stable.major    = node_version->intValue(0);
 				stable.minor    = node_version->intValue(1);
@@ -643,23 +638,19 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 			}
 
 			// Binaries link
-			auto node_bin = node_stable->childPTN("bin");
-			if (node_bin)
+			if (auto node_bin = node_stable->childPTN("bin"))
 				bin_stable = node_bin->stringValue();
 
 			// Installer link
-			auto node_install = node_stable->childPTN("install");
-			if (node_install)
+			if (auto node_install = node_stable->childPTN("install"))
 				installer_stable = node_install->stringValue();
 		}
 
 		// Beta
-		auto node_beta = parser.parseTreeRoot()->childPTN("beta");
-		if (node_beta)
+		if (auto node_beta = parser.parseTreeRoot()->childPTN("beta"))
 		{
 			// Version
-			auto node_version = node_beta->childPTN("version");
-			if (node_version)
+			if (auto node_version = node_beta->childPTN("version"))
 			{
 				beta.major    = node_version->intValue(0);
 				beta.minor    = node_version->intValue(1);
@@ -667,13 +658,11 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 			}
 
 			// Beta number
-			auto node_beta_num = node_beta->childPTN("beta");
-			if (node_beta_num)
+			if (auto node_beta_num = node_beta->childPTN("beta"))
 				beta.beta = node_beta_num->intValue();
 
 			// Binaries link
-			auto node_bin = node_beta->childPTN("bin");
-			if (node_bin)
+			if (auto node_bin = node_beta->childPTN("bin"))
 				bin_beta = node_bin->stringValue();
 		}
 	}
@@ -728,19 +717,8 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	}
 
 	// Prompt to update
-	auto main_window = maineditor::window();
-	if (main_window->startPageTabOpen() && app::useWebView())
-	{
-		// Start Page (webview version) is open, show it there
-		main_window->openStartPageTab();
-		main_window->startPage()->updateAvailable(version);
-	}
-	else
-	{
-		// No start page, show a message box
-		if (wxMessageBox(message, caption, wxOK | wxCANCEL) == wxOK)
-			wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads");
-	}
+	if (wxMessageBox(message, caption, wxOK | wxCANCEL) == wxOK)
+		wxLaunchDefaultBrowser("https://slade.mancubus.net/index.php?page=downloads");
 }
 
 // -----------------------------------------------------------------------------

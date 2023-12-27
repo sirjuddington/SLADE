@@ -13,7 +13,7 @@ class ScriptManagerWindow : public STopWindow, SActionHandler
 {
 public:
 	ScriptManagerWindow();
-	virtual ~ScriptManagerWindow() = default;
+	~ScriptManagerWindow() override = default;
 
 	void                   openScriptTab(scriptmanager::Script* script) const;
 	scriptmanager::Script* currentScript() const;
@@ -24,11 +24,6 @@ private:
 	scriptmanager::Script* script_clicked_ = nullptr;
 
 	std::map<scriptmanager::ScriptType, wxTreeItemId> editor_script_nodes_;
-
-	// Documentation tab
-#if USE_WEBVIEW_STARTPAGE
-	wxWebView* webview_docs_ = nullptr;
-#endif
 
 	// Widgets
 	STabCtrl*   tabs_scripts_ = nullptr;
@@ -49,7 +44,7 @@ private:
 	void         addEditorScriptsNode(wxTreeItemId parent_node, scriptmanager::ScriptType type, const wxString& name);
 	void         populateScriptsTree();
 	ScriptPanel* currentPage() const;
-	void         closeScriptTab(scriptmanager::Script* script) const;
+	void         closeScriptTab(const scriptmanager::Script* script) const;
 	void         showDocs(const wxString& url = "");
 
 	// SActionHandler

@@ -42,11 +42,7 @@ namespace maineditor
 	bool saveArchiveAs(Archive* archive);
 
 	void setGlobalPaletteFromArchive(Archive* archive);
-
-#ifdef USE_WEBVIEW_STARTPAGE
-	void openDocs(string_view page_name = "");
-#endif
-}; // namespace maineditor
+} // namespace maineditor
 } // namespace slade
 
 // Define for less cumbersome maineditor::window()

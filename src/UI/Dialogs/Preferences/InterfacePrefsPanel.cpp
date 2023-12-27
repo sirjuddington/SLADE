@@ -56,7 +56,6 @@ EXTERN_CVAR(Bool, am_file_browser_tab)
 EXTERN_CVAR(String, iconset_general)
 EXTERN_CVAR(String, iconset_entry_list)
 EXTERN_CVAR(Bool, tabs_condensed)
-EXTERN_CVAR(Bool, web_dark_theme)
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
 EXTERN_CVAR(Bool, elist_no_tree)
@@ -98,7 +97,6 @@ void InterfacePrefsPanel::init()
 	cb_elist_bgcol_->SetValue(elist_type_bgcol);
 	cb_file_browser_->SetValue(am_file_browser_tab);
 	cb_condensed_tabs_->SetValue(tabs_condensed);
-	cb_web_dark_theme_->SetValue(web_dark_theme);
 	spin_elist_icon_pad_->SetValue(elist_icon_padding);
 
 	if (toolbar_size <= 16)
@@ -147,7 +145,6 @@ void InterfacePrefsPanel::applyPreferences()
 	elist_type_bgcol    = cb_elist_bgcol_->GetValue();
 	am_file_browser_tab = cb_file_browser_->GetValue();
 	tabs_condensed      = cb_condensed_tabs_->GetValue();
-	web_dark_theme      = cb_web_dark_theme_->GetValue();
 	elist_icon_padding  = spin_elist_icon_pad_->GetValue();
 
 	if (choice_toolbar_size_->GetSelection() == 0)
@@ -178,9 +175,7 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	auto panel = new wxPanel(stc_tabs, -1);
 
 	// Create controls
-	cb_start_page_     = new wxCheckBox(panel, -1, "Show Start Page on Startup");
-	cb_web_dark_theme_ = new wxCheckBox(panel, -1, "Use dark theme for web content *");
-	cb_web_dark_theme_->SetToolTip("Use a dark theme for web content eg. the Start Page and Online Documentation");
+	cb_start_page_          = new wxCheckBox(panel, -1, "Show Start Page on Startup");
 	cb_file_browser_        = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
 	cb_list_monospace_      = new wxCheckBox(panel, -1, "Use monospaced font for lists");
 	cb_condensed_tabs_      = new wxCheckBox(panel, -1, "Condensed tabs *");
@@ -197,7 +192,6 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 
 	int row = 0;
 	gb_sizer->Add(cb_start_page_, { row++, 0 }, { 1, 2 }, wxEXPAND);
-	gb_sizer->Add(cb_web_dark_theme_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 	gb_sizer->Add(cb_file_browser_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 	gb_sizer->Add(cb_list_monospace_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 	gb_sizer->Add(cb_condensed_tabs_, { row++, 0 }, { 1, 2 }, wxEXPAND);

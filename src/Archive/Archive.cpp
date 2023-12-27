@@ -1790,6 +1790,18 @@ bool Archive::loadFormats(const MemChunk& mc)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the ArchiveFormat matching [id] or nullptr if not found
+// -----------------------------------------------------------------------------
+ArchiveFormat* Archive::formatFromId(string_view id)
+{
+	for (auto& format : formats_)
+		if (format.id == id)
+			return &format;
+
+	return nullptr;
+}
+
 
 // -----------------------------------------------------------------------------
 //

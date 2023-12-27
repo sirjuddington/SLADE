@@ -43,8 +43,9 @@ double scaleFactor();
 int    px(Size size);
 int    scalePx(int px);
 int    scalePxU(int px);
-int    pad();      // Shortcut for UI::px(UI::Size::Pad)
-int    padLarge(); // Shortcut for UI::px(UI::Size::PadLarge)
+int    pad();      // Shortcut for ui::px(UI::Size::Pad)
+int    padLarge(); // Shortcut for ui::px(UI::Size::PadLarge)
+int    padMin();   // Shortcut for ui::px(ui::Size::PadMinimum)
 
 // Window size, position & layout persistence
 struct WindowInfo

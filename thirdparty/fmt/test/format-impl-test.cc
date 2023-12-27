@@ -196,43 +196,6 @@ TEST(fp_test, multiply) {
   EXPECT_EQ(v.e, 4 + 8 + 64);
 }
 
-TEST(fp_test, get_cached_power) {
-  using limits = std::numeric_limits<double>;
-  for (auto exp = limits::min_exponent; exp <= limits::max_exponent; ++exp) {
-    int dec_exp = 0;
-    auto power = fmt::detail::get_cached_power(exp, dec_exp);
-    bigint exact, cache(power.f);
-    if (dec_exp >= 0) {
-      exact.assign_pow10(dec_exp);
-      if (power.e <= 0)
-        exact <<= -power.e;
-      else
-        cache <<= power.e;
-      exact.align(cache);
-      cache.align(exact);
-      auto exact_str = fmt::to_string(exact);
-      auto cache_str = fmt::to_string(cache);
-      EXPECT_EQ(exact_str.size(), cache_str.size());
-      EXPECT_EQ(exact_str.substr(0, 15), cache_str.substr(0, 15));
-      int diff = cache_str[15] - exact_str[15];
-      if (diff == 1)
-        EXPECT_GT(exact_str[16], '8');
-      else
-        EXPECT_EQ(diff, 0);
-    } else {
-      cache.assign_pow10(-dec_exp);
-      cache *= power.f + 1;  // Inexact check.
-      exact = 1;
-      exact <<= -power.e;
-      exact.align(cache);
-      auto exact_str = fmt::to_string(exact);
-      auto cache_str = fmt::to_string(cache);
-      EXPECT_EQ(exact_str.size(), cache_str.size());
-      EXPECT_EQ(exact_str.substr(0, 16), cache_str.substr(0, 16));
-    }
-  }
-}
-
 TEST(fp_test, dragonbox_max_k) {
   using fmt::detail::dragonbox::floor_log10_pow2;
   using float_info = fmt::detail::dragonbox::float_info<float>;
@@ -247,54 +210,6 @@ TEST(fp_test, dragonbox_max_k) {
                 floor_log10_pow2(
                     std::numeric_limits<double>::min_exponent -
                     2 * fmt::detail::num_significand_bits<double>() - 1));
-}
-
-TEST(fp_test, get_round_direction) {
-  using fmt::detail::get_round_direction;
-  using fmt::detail::round_direction;
-  EXPECT_EQ(get_round_direction(100, 50, 0), round_direction::down);
-  EXPECT_EQ(get_round_direction(100, 51, 0), round_direction::up);
-  EXPECT_EQ(get_round_direction(100, 40, 10), round_direction::down);
-  EXPECT_EQ(get_round_direction(100, 60, 10), round_direction::up);
-  for (size_t i = 41; i < 60; ++i)
-    EXPECT_EQ(get_round_direction(100, i, 10), round_direction::unknown);
-  uint64_t max = max_value<uint64_t>();
-  EXPECT_THROW(get_round_direction(100, 100, 0), assertion_failure);
-  EXPECT_THROW(get_round_direction(100, 0, 100), assertion_failure);
-  EXPECT_THROW(get_round_direction(100, 0, 50), assertion_failure);
-  // Check that remainder + error doesn't overflow.
-  EXPECT_EQ(get_round_direction(max, max - 1, 2), round_direction::up);
-  // Check that 2 * (remainder + error) doesn't overflow.
-  EXPECT_EQ(get_round_direction(max, max / 2 + 1, max / 2),
-            round_direction::unknown);
-  // Check that remainder - error doesn't overflow.
-  EXPECT_EQ(get_round_direction(100, 40, 41), round_direction::unknown);
-  // Check that 2 * (remainder - error) doesn't overflow.
-  EXPECT_EQ(get_round_direction(max, max - 1, 1), round_direction::up);
-}
-
-TEST(fp_test, fixed_handler) {
-  struct handler : fmt::detail::gen_digits_handler {
-    char buffer[10];
-    handler(int prec = 0) : fmt::detail::gen_digits_handler() {
-      buf = buffer;
-      precision = prec;
-    }
-  };
-  handler().on_digit('0', 100, 99, 0, false);
-  EXPECT_THROW(handler().on_digit('0', 100, 100, 0, false), assertion_failure);
-  namespace digits = fmt::detail::digits;
-  EXPECT_EQ(handler(1).on_digit('0', 100, 10, 10, false), digits::error);
-  // Check that divisor - error doesn't overflow.
-  EXPECT_EQ(handler(1).on_digit('0', 100, 10, 101, false), digits::error);
-  // Check that 2 * error doesn't overflow.
-  uint64_t max = max_value<uint64_t>();
-  EXPECT_EQ(handler(1).on_digit('0', max, 10, max - 1, false), digits::error);
-}
-
-TEST(fp_test, grisu_format_compiles_with_on_ieee_double) {
-  auto buf = fmt::memory_buffer();
-  format_float(0.42, -1, fmt::detail::float_specs(), buf);
 }
 
 TEST(format_impl_test, format_error_code) {
@@ -560,9 +475,9 @@ TEST(format_impl_test, utf8_decode_bogus_byte_sequences) {
   EXPECT_EQ(len, 2);  // "bogus [c0 0a] recovery %d", len);
 }
 
-TEST(format_impl_test, unicode_to_utf8) {
+TEST(format_impl_test, to_utf8) {
   auto s = std::string("ёжик");
-  fmt::detail::unicode_to_utf8<wchar_t> u(L"\x0451\x0436\x0438\x043A");
+  auto u = fmt::detail::to_utf8<wchar_t>(L"\x0451\x0436\x0438\x043A");
   EXPECT_EQ(s, u.str());
   EXPECT_EQ(s.size(), u.size());
 }

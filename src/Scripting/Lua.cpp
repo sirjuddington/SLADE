@@ -30,11 +30,10 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#define SOL_CHECK_ARGUMENTS 1
+#include "Lua.h"
 #include "Export/Export.h"
 #include "General/Console.h"
 #include "General/Misc.h"
-#include "Lua.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
