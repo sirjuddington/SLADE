@@ -529,11 +529,12 @@ TEST(printf_test, wide_string) {
 }
 
 TEST(printf_test, vprintf) {
-  fmt::format_arg_store<fmt::printf_context, int> as{42};
-  fmt::basic_format_args<fmt::printf_context> args(as);
-  EXPECT_EQ(fmt::vsprintf("%d", args), "42");
-  EXPECT_WRITE(stdout, fmt::vprintf("%d", args), "42");
-  EXPECT_WRITE(stdout, fmt::vfprintf(stdout, "%d", args), "42");
+  int n = 42;
+  auto store = fmt::format_arg_store<fmt::printf_context, int>(n);
+  auto args = fmt::basic_format_args<fmt::printf_context>(store);
+  EXPECT_EQ(fmt::vsprintf(fmt::string_view("%d"), args), "42");
+  EXPECT_WRITE(stdout, fmt::vfprintf(stdout, fmt::string_view("%d"), args),
+               "42");
 }
 
 template <typename... Args>
@@ -549,31 +550,11 @@ TEST(printf_test, fixed_large_exponent) {
   EXPECT_EQ("1000000000000000000000", fmt::sprintf("%.*f", -13, 1e21));
 }
 
-TEST(printf_test, vsprintf_make_args_example) {
-  fmt::format_arg_store<fmt::printf_context, int, const char*> as{42,
-                                                                  "something"};
-  fmt::basic_format_args<fmt::printf_context> args(as);
-  EXPECT_EQ("[42] something happened", fmt::vsprintf("[%d] %s happened", args));
-  auto as2 = fmt::make_printf_args(42, "something");
-  fmt::basic_format_args<fmt::printf_context> args2(as2);
+TEST(printf_test, make_printf_args) {
   EXPECT_EQ("[42] something happened",
-            fmt::vsprintf("[%d] %s happened", args2));
-  EXPECT_EQ("[42] something happened",
-            fmt::vsprintf("[%d] %s happened",
+            fmt::vsprintf(fmt::string_view("[%d] %s happened"),
                           {fmt::make_printf_args(42, "something")}));
-}
-
-TEST(printf_test, vsprintf_make_wargs_example) {
-  fmt::format_arg_store<fmt::wprintf_context, int, const wchar_t*> as{
-      42, L"something"};
-  fmt::basic_format_args<fmt::wprintf_context> args(as);
   EXPECT_EQ(L"[42] something happened",
-            fmt::vsprintf(L"[%d] %s happened", args));
-  auto as2 = fmt::make_wprintf_args(42, L"something");
-  fmt::basic_format_args<fmt::wprintf_context> args2(as2);
-  EXPECT_EQ(L"[42] something happened",
-            fmt::vsprintf(L"[%d] %s happened", args2));
-  EXPECT_EQ(L"[42] something happened",
-            fmt::vsprintf(L"[%d] %s happened",
+            fmt::vsprintf(fmt::basic_string_view<wchar_t>(L"[%d] %s happened"),
                           {fmt::make_wprintf_args(42, L"something")}));
 }
