@@ -23,9 +23,9 @@ body:
       description: "On which operating system are you experiencing this bug?"
       multiple: true
       options:
-        - Windows
-		- macOS
-        - Linux
+		  - Windows
+		  - macOS
+		  - Linux
     validations:
       required: true
   - type: dropdown
