@@ -86,6 +86,7 @@ SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, co
 	button->setExactFit(false);
 	button->setFontSize(1.1f);
 	button->setPadding(8);
+	button->Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, [action_id](wxCommandEvent&) { SActionHandler::doAction(action_id); });
 	return button;
 }
 
@@ -135,26 +136,25 @@ wxSizer* createActionsSizer(wxWindow* parent)
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 
-	// Create buttons
-	auto open_button       = createActionButton(parent, "aman_open", "Open Archive", "open");
-	auto opendir_button    = createActionButton(parent, "aman_opendir", "Open Directory", "opendir");
-	auto newarchive_button = createActionButton(parent, "aman_newarchive", "Create New Archive", "newarchive");
-	auto newmap_button     = createActionButton(parent, "aman_newmap", "Create New Map", "mapeditor");
+	// Open Archive
+	sizer->Add(
+		createActionButton(parent, "aman_open", "Open Archive", "open"),
+		wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 
-	// Bind events
-	open_button->Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, [](wxCommandEvent&) { SActionHandler::doAction("aman_open"); });
-	opendir_button->Bind(
-		wxEVT_STOOLBAR_BUTTON_CLICKED, [](wxCommandEvent&) { SActionHandler::doAction("aman_opendir"); });
-	newarchive_button->Bind(
-		wxEVT_STOOLBAR_BUTTON_CLICKED, [](wxCommandEvent&) { SActionHandler::doAction("aman_newarchive"); });
-	newmap_button->Bind(
-		wxEVT_STOOLBAR_BUTTON_CLICKED, [](wxCommandEvent&) { SActionHandler::doAction("aman_newmap"); });
+	// Open Directory
+	sizer->Add(
+		createActionButton(parent, "aman_opendir", "Open Directory", "opendir"),
+		wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 
-	// Layout
-	sizer->Add(open_button, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
-	sizer->Add(opendir_button, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
-	sizer->Add(newarchive_button, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
-	sizer->Add(newmap_button, wxSizerFlags().Expand());
+	// New Archive
+	sizer->Add(
+		createActionButton(parent, "aman_newarchive", "Create New Archive", "newarchive"),
+		wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
+
+	// New Map
+	sizer->Add(
+		createActionButton(parent, "aman_newmap", "Create New Map", "mapeditor"),
+		wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 
 	return sizer;
 }
