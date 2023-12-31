@@ -215,9 +215,11 @@ else(APPLE)
 			RUNTIME DESTINATION bin
 			)
 
+if (BUILD_PK3)
 		install(FILES "${SLADE_OUTPUT_DIR}/slade.pk3"
 			DESTINATION share/slade3
 			)
+endif()
 
 		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/logo_icon.png"
 			DESTINATION share/icons/
