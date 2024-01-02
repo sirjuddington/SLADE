@@ -1,6 +1,6 @@
 name: Crash Report
 description: File a crash report
-labels: ["crash+bug"]
+labels: ["crash bug"]
 body:
   - type: input
     id: version
