@@ -44,7 +44,7 @@ body:
     id: repro
     attributes:
       label: Steps to Reproduce and Observed Behavior
-      description: What exactly can someone else do, in order to observe the problem that you observed? Include the output and all error messages.
+      description: What exactly can someone else do, in order to observe the problem that you observed? Include output and error messages if applicable.
       value: |
         1. Go to '...'
         2. Click on '....'
@@ -60,7 +60,15 @@ body:
       description: What did you expect to happen instead?
       render: text
     validations:
-      required: true
+      required: false
+  - type: textarea
+    id: stacktrace
+    attributes:
+      label: Stack Trace
+      description: If the bug caused SLADE to crash with a stack trace window, copy+paste the stack trace here.
+      render: text
+    validations:
+      required: false
   - type: textarea
     id: screenshot
     attributes:
