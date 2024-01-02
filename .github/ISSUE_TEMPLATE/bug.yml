@@ -62,14 +62,6 @@ body:
     validations:
       required: false
   - type: textarea
-    id: stacktrace
-    attributes:
-      label: Stack Trace
-      description: If the bug caused SLADE to crash with a stack trace window, copy+paste the stack trace here.
-      render: text
-    validations:
-      required: false
-  - type: textarea
     id: screenshot
     attributes:
       label: "Screenshots"
