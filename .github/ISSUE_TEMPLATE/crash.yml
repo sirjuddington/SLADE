@@ -39,18 +39,21 @@ body:
       label: Steps to Reproduce
       description: What were you doing when the crash occurred, and can you reproduce it reliably? Include output and error messages if applicable.
       value: |
+        I was...
+
+        To reproduce:
         1. Go to '...'
         2. Click on '....'
         3. Scroll down to '....'
-        4. Crash
+        4. Crash occurrs
       render: text
     validations:
       required: true
   - type: textarea
-    id: stacktrace
+    id: crashinfo
     attributes:
-      label: Stack Trace
-      description: Paste the stack trace from the SLADE crash dialog here
+      label: Crash Information
+      description: Paste the "Crash Information" text from the SLADE crash dialog here
       render: text
     validations:
       required: true
