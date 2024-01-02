@@ -1,0 +1,73 @@
+name: Bug Report
+description: File a bug report
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A bug is when something works differently than it is expected to.
+        # Remember to search before filing a new report
+        Please search for this bug in the issue tracker, and use a bug report title that
+        would have made your bug report turn up in the search results for your search query.
+  - type: input
+    id: version
+    attributes:
+      label: SLADE Version
+      description: "The version displayed in Help→About. Please add the commit hash if you have compiled SLADE yourself."
+      placeholder: "3.2.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: "OS"
+      description: "On which operating system are you experiencing this bug?"
+      multiple: true
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: dropdown
+    id: editor
+    attributes:
+      label: "Editor"
+      description: "In which part of SLADE are you experiencing this bug?"
+      multiple: true
+      options:
+        - Resource editor
+        - Map editor
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to Reproduce and Observed Behavior
+      description: What exactly can someone else do, in order to observe the problem that you observed? Include the output and all error messages.
+      value: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: "Screenshots"
+      description: If applicable, add screenshots to help explain your problem.
+      value: |
+        ![DESCRIPTION](LINK.png)
+      render: text
+    validations:
+      required: false
