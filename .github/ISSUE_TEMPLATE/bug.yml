@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        A bug is when something works differently than it is expected to.
+        A bug is when something works differently than it is expected to. Note that if the issue causes SLADE to crash, please use the crash report issue template instead.
         # Remember to search before filing a new report
         Please search for this bug in the issue tracker, and use a bug report title that
         would have made your bug report turn up in the search results for your search query.
