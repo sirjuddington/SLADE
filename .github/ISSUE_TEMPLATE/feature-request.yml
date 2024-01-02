@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        A feature request is asking for a functionality that is considered missing.
+        A feature request is asking for functionality that is considered missing.
         # Remember to search before filing a new report
         Please search for this feature request in the issue tracker, and use a title that
         would have made it turn up in the results for your search query.
@@ -27,14 +27,6 @@ body:
       description: "What exactly are you looking for in SLADE?"
       value: |
         I would like SLADE to ...
-      render: text
-    validations:
-      required: true
-  - type: textarea
-    id: expected
-    attributes:
-      label: "Expected Behavior"
-      description: "How would you like SLADE to behave? Describe the user experience you are waiting for, for this feature."
       render: text
     validations:
       required: true
