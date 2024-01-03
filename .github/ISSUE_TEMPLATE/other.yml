@@ -1,0 +1,30 @@
+name: Other Issue
+description: Any other issue that doesn't fit the other options
+body:
+  - type: input
+    id: version
+    attributes:
+      label: SLADE Version
+      description: "If applicable, the version displayed in Help→About. Please add the commit hash if you have compiled SLADE yourself."
+      placeholder: "3.2.5"
+    validations:
+      required: false
+  - type: dropdown
+    id: os
+    attributes:
+      label: "OS"
+      description: "Which Operating System(s) this issue relates to"
+      multiple: true
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: false
+  - type: textarea
+    id: repro
+    attributes:
+      label: Issue Details
+      render: text
+    validations:
+      required: true

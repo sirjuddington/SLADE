@@ -211,9 +211,11 @@ else(APPLE)
 			RUNTIME DESTINATION bin
 			)
 
+if (BUILD_PK3)
 		install(FILES "${SLADE_OUTPUT_DIR}/slade.pk3"
 			DESTINATION share/slade3
 			)
+endif()
 
 		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/logo_icon.png"
 			DESTINATION share/icons/
@@ -238,7 +240,7 @@ if(NOT TARGET uninstall)
         IMMEDIATE @ONLY)
 
     add_custom_target(uninstall
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake COMMENT "Uninstall the project...")
 endif()
 
 if (NOT NO_COTIRE)
