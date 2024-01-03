@@ -47,7 +47,7 @@ private:
 	wxRect        rect_btn_up_;
 	wxRect        rect_btn_down_;
 	int           btn_mouse_over_ = 0;
-	wxBitmap      buffer_;
+	wxBitmap      scratch_, buffer_;
 	wxFont        font_;
 
 	void loadContext(unsigned long index);

@@ -515,8 +515,8 @@ void MapCanvas::onFocus(wxFocusEvent& e)
 	if (e.GetEventType() == wxEVT_SET_FOCUS)
 	{
 		if (context_->editMode() == Mode::Visual)
-			lockMouse(true);
+			context_->lockMouse(true);
 	}
 	else if (e.GetEventType() == wxEVT_KILL_FOCUS)
-		lockMouse(false);
+		context_->lockMouse(false);
 }
