@@ -1,0 +1,69 @@
+name: Crash Report
+description: File a crash report
+labels: ["crash bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: SLADE Version
+      description: "The version displayed in Help→About. Please add the commit hash if you have compiled SLADE yourself."
+      placeholder: "3.2.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: "OS"
+      description: "On which operating system are you experiencing this crash?"
+      multiple: true
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: dropdown
+    id: editor
+    attributes:
+      label: "Editor"
+      description: "In which part of SLADE are you experiencing this crash?"
+      multiple: true
+      options:
+        - Resource editor
+        - Map editor
+    validations:
+      required: false
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to Reproduce
+      description: What were you doing when the crash occurred, and can you reproduce it reliably? Include output and error messages if applicable.
+      value: |
+        I was...
+
+        To reproduce:
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. Crash occurrs
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: crashinfo
+    attributes:
+      label: Crash Information
+      description: Paste the "Crash Information" text from the SLADE crash dialog here
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: "Screenshots"
+      description: If applicable, add screenshots to help explain how to reproduce the crash.
+      value: |
+        ![DESCRIPTION](LINK.png)
+      render: text
+    validations:
+      required: false
