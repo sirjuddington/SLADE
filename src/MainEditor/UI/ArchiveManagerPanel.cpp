@@ -445,7 +445,7 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 				icon = "folder";
 
 			// Create and add menu item
-			a_recent->addToMenu(menu_recent_, fn, icon, a);
+			a_recent->addToMenu(menu_recent_, 0, fn, icon, a);
 			// wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
 			// mi->SetBitmap(Icons::getIcon(Icons::ENTRY, icon));
 			// menu_recent->Append(mi);
@@ -2001,7 +2001,7 @@ void ArchiveManagerPanel::refreshBookmarkList() const
 			auto  entry_path = fmt::format("{}/{}", entry->parent()->filename(false), entry->path(true).substr(1));
 
 			// Create and add menu item
-			a_bookmark->addToMenu(menu_bookmarks_, entry_path, entry->type()->icon(), a);
+			a_bookmark->addToMenu(menu_bookmarks_, 0, entry_path, entry->type()->icon(), a);
 		}
 	}
 

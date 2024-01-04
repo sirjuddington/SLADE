@@ -297,6 +297,33 @@ public:
 	}
 };
 
+class WebPDataFormat : public EntryDataFormat
+{
+public:
+	WebPDataFormat() : EntryDataFormat("img_webp") {}
+	~WebPDataFormat() override = default;
+
+	int isThisFormat(MemChunk& mc) override
+	{
+		if (mc.size() < 12)
+			return MATCH_FALSE;
+
+		// Check header
+		if ((mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F')
+			&& (mc[8] == 'W' && mc[9] == 'E' && mc[10] == 'B' && mc[11] == 'P'))
+		{
+			// Check size
+			auto size = mc.readL32(4) + 8;
+			if (size != mc.size())
+				return MATCH_FALSE;
+
+			return MATCH_TRUE;
+		}
+
+		return MATCH_FALSE;
+	}
+};
+
 class DoomGfxDataFormat : public EntryDataFormat
 {
 public:
@@ -542,11 +569,11 @@ public:
 class DoomJaguarDataFormat : public EntryDataFormat
 {
 public:
-	DoomJaguarDataFormat() : EntryDataFormat("img_doom_jaguar"){};
+	DoomJaguarDataFormat(int colmajor = 0, string_view id = "img_doom_jaguar") :
+		EntryDataFormat(id),
+		colmajor(colmajor){};
 	~DoomJaguarDataFormat() = default;
 
-	/* This format is used in the Jaguar Doom IWAD.
-	 */
 	int isThisFormat(MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(gfx::JagPicHeader))
@@ -554,17 +581,20 @@ public:
 
 		const uint8_t*           data   = mc.data();
 		const gfx::JagPicHeader* header = (const gfx::JagPicHeader*)data;
-		int                      width, height, depth, size;
-		width  = wxINT16_SWAP_ON_LE(header->width);
-		height = wxINT16_SWAP_ON_LE(header->height);
-		depth  = wxINT16_SWAP_ON_LE(header->depth);
+		int                      width  = wxINT16_SWAP_ON_LE(header->width);
+		int                      height = wxINT16_SWAP_ON_LE(header->height);
+		int                      depth  = wxINT16_SWAP_ON_LE(header->depth);
+		int                      flags  = wxINT16_SWAP_ON_LE(header->flags);
+
+		if ((flags & 1) != colmajor)
+			return MATCH_FALSE;
 
 		// Check header values are 'sane'
 		if (!(height > 0 && height < 4096 && width > 0 && width < 4096 && (depth == 2 || depth == 3)))
 			return MATCH_FALSE;
 
 		// Check the size matches
-		size = width * height;
+		int size = width * height;
 		if (depth == 2)
 			size >>= 1;
 		if (mc.size() < (sizeof(gfx::JagPicHeader) + size))
@@ -572,6 +602,16 @@ public:
 
 		return MATCH_TRUE;
 	}
+
+private:
+	int colmajor;
+};
+
+class DoomJaguarColMajorDataFormat : public DoomJaguarDataFormat
+{
+public:
+	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor"){};
+	~DoomJaguarColMajorDataFormat() final = default;
 };
 
 class DoomJagTexDataFormat : public EntryDataFormat
@@ -587,7 +627,7 @@ public:
 	{
 		size_t size = mc.size();
 		// Smallest pic size 832 (32x16), largest pic size 33088 (256x128)
-		if (size < 640 || size % 32 || size > 33088)
+		if (size < 832 || size % 32 || size > 33088)
 			return MATCH_FALSE;
 
 		// Verify duplication of content

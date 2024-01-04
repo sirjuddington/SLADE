@@ -112,6 +112,8 @@ void ObjectEditPanel::init(ObjectEditGroup* group)
 	text_scalex_->SetValue(wxString::Format("%d", 100));
 	text_scaley_->SetValue(wxString::Format("%d", 100));
 	combo_rotation_->Select(0);
+	cb_mirror_x_->SetValue(false);
+	cb_mirror_y_->SetValue(false);
 }
 
 // -----------------------------------------------------------------------------

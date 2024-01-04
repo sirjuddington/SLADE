@@ -62,6 +62,9 @@
 #include "Utility/Tokenizer.h"
 #include <dumb.h>
 #include <filesystem>
+#ifdef __WXOSX__
+	#include <ApplicationServices/ApplicationServices.h>
+#endif
 
 using namespace slade;
 
@@ -80,7 +83,7 @@ bool            exiting         = false;
 std::thread::id main_thread_id;
 
 // Version
-Version version_num{ 3, 2, 4, 0 };
+Version version_num{ 3, 2, 5, 0 };
 
 // Directory paths
 string dir_data;
@@ -573,6 +576,20 @@ bool app::init(const vector<string>& args, double ui_scale)
 		maineditor::windowWx()->Update();
 		maineditor::windowWx()->Refresh();
 	}
+
+	// Show Accessibility Pop-Up on Mac if needed
+	#ifdef __WXOSX__
+		CFStringRef keys[] = { kAXTrustedCheckOptionPrompt };
+		CFTypeRef values[] = { kCFBooleanTrue };
+		CFDictionaryRef options = CFDictionaryCreate(NULL,
+													(const void **)&keys,
+													(const void **)&values,
+													sizeof(keys) / sizeof(keys[0]),
+													&kCFTypeDictionaryKeyCallBacks,
+													&kCFTypeDictionaryValueCallBacks);
+		if(AXIsProcessTrustedWithOptions(options))
+		CFRelease(options);
+	#endif
 
 	return true;
 }

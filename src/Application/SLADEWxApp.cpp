@@ -43,8 +43,9 @@
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
-#include <wx/statbmp.h>
 #include <wx/filefn.h>
+#include <wx/statbmp.h>
+#include <wx/url.h>
 #undef BOOL
 #ifdef UPDATEREVISION
 #include "gitinfo.h"
@@ -195,9 +196,7 @@ public:
 		// Add general crash message
 		string message =
 			"SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
-			"please click 'Create GitHub Issue' below and copy+paste the stack trace into the "
-			"issue details, along with a description of what you were doing at the time of the "
-			"crash.";
+			"please click 'Create GitHub Issue' below and complete the issue details on GitHub.";
 		auto label = new wxStaticText(this, -1, message);
 		hbox->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxALL, 10);
 		label->Wrap(480 - 20 - picture->GetSize().x);
@@ -304,7 +303,13 @@ public:
 
 	void onBtnPostReport(wxCommandEvent& e)
 	{
-		wxLaunchDefaultBrowser("https://github.com/sirjuddington/SLADE/issues/new");
+		auto url_base = "https://github.com/sirjuddington/SLADE/issues/new?labels=crash+bug&template=crash.yml";
+		auto version  = global::sc_rev.empty() ? app::version().toString() :
+												 app::version().toString() + " " + global::sc_rev;
+
+		wxURL url(wxString::Format("%s&version=%s&crashinfo=%s", url_base, version, trace_));
+
+		wxLaunchDefaultBrowser(url.BuildURI());
 	}
 
 	void onBtnExit(wxCommandEvent& e) { EndModal(wxID_OK); }

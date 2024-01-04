@@ -1,4 +1,4 @@
-$version = "3.2.4"
+$version = "3.2.5"
 $rev_short = Invoke-Expression "git.exe rev-parse --short HEAD"
 
 # Check for 7-zip install
@@ -16,6 +16,9 @@ if ($userev.ToLower() -eq "y")
 	$env:CL = "/DGIT_DESCRIPTION=`"\`"$rev_short\`"`""
 	$version = "${version}_$rev_short"
 }
+
+<# SLADE is now built on Windows via cmake, not sure how to do it here properly yet
+   so will just build manually in VS for now
 
 # Prompt to build SLADE
 Write-Host "`nRebuild SLADE? (y/n) " -foregroundcolor cyan -nonewline
@@ -54,6 +57,7 @@ if ($buildbinaries.ToLower() -eq "y")
 		}
 	}
 }
+#>
 
 # Determine release directory + platforms
 $releasedir = "$PSScriptRoot\$version"
@@ -88,11 +92,11 @@ Write-Host "`nCopying SLADE files..." -foregroundcolor yellow
 # Common
 Copy-Item (resolve-path ".\slade.pk3") "$releasedir" -Force
 # Win32
-Copy-Item (resolve-path ".\SLADE.exe")               "$releasedir32" -Force
-Copy-Item (resolve-path ".\SLADE.pdb")               "$releasedir32" -Force
+Copy-Item (resolve-path ".\SLADE.exe") "$releasedir32" -Force
+Copy-Item (resolve-path ".\SLADE.pdb") "$releasedir32" -Force
 # x64
-Copy-Item (resolve-path ".\SLADE-x64.exe")       "$releasedir64\SLADE.exe" -Force
-Copy-Item (resolve-path ".\SLADE-x64.pdb")       "$releasedir64\SLADE.pdb" -Force
+Copy-Item (resolve-path ".\SLADE-x64.exe") "$releasedir64\SLADE.exe" -Force
+Copy-Item (resolve-path ".\SLADE-x64.pdb") "$releasedir64" -Force
 Write-Host "Done" -foregroundcolor green
 
 # Prompt to build binaries 7z
@@ -121,7 +125,7 @@ if ($buildbinaries.ToLower() -eq "y")
 	Write-Host "`nBuiling x64 binaries 7z..." -foregroundcolor yellow
 	& $7zpath a -t7z "$releasedir\slade_${version}_x64${timestamp}.7z" `
 	"$releasedir64\SLADE.exe" `
-	"$releasedir64\SLADE.pdb" `
+	"$releasedir64\SLADE-x64.pdb" `
 	"$releasedir\slade.pk3"
 	Write-Host "Done" -foregroundcolor green
 }

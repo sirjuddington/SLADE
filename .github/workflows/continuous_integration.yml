@@ -12,7 +12,8 @@ jobs:
         config:
         - {
             name: "macOS",
-            os: macos-11,
+            os: macos-12,
+            extra_options: "-DBUILD_PK3=ON",
             deps_cmdline: "brew install fluidsynth freeimage ftgl lua mpg123 sfml wxwidgets"
           }
         - {

@@ -966,6 +966,9 @@ void MapLine::copy(MapObject* c)
 	if (objType() != c->objType())
 		return;
 
+	// Update modified time
+	setModified();
+
 	MapObject::copy(c);
 
 	auto l = dynamic_cast<MapLine*>(c);

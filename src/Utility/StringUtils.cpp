@@ -59,7 +59,7 @@ namespace slade::strutil
 std::regex re_int1{ "^[+-]?[0-9]+[0-9]*$" };
 std::regex re_int2{ "^0[0-9]+$" };
 std::regex re_int3{ "^0x[0-9A-Fa-f]+$" };
-std::regex re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$" };
+std::regex re_float{ "^[+-]?[0-9]+[.][0-9]*([eE][+-]?[0-9]+)?$" };
 } // namespace slade::strutil
 
 

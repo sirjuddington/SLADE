@@ -532,6 +532,8 @@ void KeyBind::initBinds()
 	addBind("ted_line_comment", Keypress("/", KPM_CTRL), "Line Comment", group);
 	addBind("ted_block_comment", Keypress("/", KPM_CTRL | KPM_SHIFT), "Block Comment", group);
 	addBind("ted_cycle_comments", Keypress("/", KPM_ALT), "Cycle Comments", group);
+	addBind("ted_select_next_occ", Keypress("D", KPM_CTRL), "Select Next Occurrence", group);
+	addBind("ted_select_all_occ", Keypress("D", KPM_CTRL | KPM_SHIFT), "Select All Occurrences", group);
 
 	// Texture editor (txed*)
 	group = "Texture Editor";
@@ -593,7 +595,7 @@ void KeyBind::initBinds()
 	addBind("me2d_mode_sectors", Keypress("S"), "Sectors mode", group);
 	addBind("me2d_mode_things", Keypress("T"), "Things mode", group);
 	addBind("me2d_flat_type", Keypress("F", KPM_CTRL), "Cycle flat type", group);
-	addBind("me2d_split_line", Keypress("S", KPM_CTRL | KPM_SHIFT), "Split nearest line", group);
+	addBind("me2d_split_line", Keypress("S", KPM_SHIFT), "Split nearest line", group);
 	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock hilight", group);
 	addBind("me2d_begin_linedraw", Keypress("space"), "Begin line drawing", group);
 	addBind("me2d_begin_shapedraw", Keypress("space", KPM_SHIFT), "Begin shape drawing", group);
@@ -640,6 +642,8 @@ void KeyBind::initBinds()
 	group = "Map Editor 2D Things Mode";
 	addBind("me2d_thing_change_type", Keypress("T", KPM_CTRL), "Change type", group);
 	addBind("me2d_thing_quick_angle", Keypress("D"), "Quick angle edit", group);
+	addBind("me2d_thing_rotate_clockwise", Keypress("."), "Rotate clockwise", group);
+	addBind("me2d_thing_rotate_counterclockwise", Keypress(","), "Rotate counterclockwise", group);
 
 	// Map Editor 3D (me3d*)
 	group = "Map Editor 3D Mode";

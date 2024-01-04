@@ -111,6 +111,7 @@ void MapSector::copy(MapObject* obj)
 	if (obj->objType() != Type::Sector)
 		return;
 
+	// Update modified time
 	setModified();
 
 	// Update texture counts (decrement previous)
@@ -804,7 +805,7 @@ void MapSector::findTextPoint()
 	// Find nearest line to sector midpoint (that is also part of the sector)
 	double   min_dist        = 9999999999.0;
 	auto     mid_side        = connected_sides_[0];
-	MapLine* mid_side_parent = nullptr;
+	MapLine* mid_side_parent = mid_side->parentLine();
 	for (auto& connected_side : connected_sides_)
 	{
 		auto   l    = connected_side->parentLine();

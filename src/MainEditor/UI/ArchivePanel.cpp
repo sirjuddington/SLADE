@@ -439,14 +439,6 @@ void ArchivePanel::setup(Archive* archive)
 	splitter_         = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
 	entry_area_       = new EntryPanel(splitter_, "nil");
 	default_area_     = new DefaultEntryPanel(splitter_);
-	text_area_        = new TextEntryPanel(splitter_);
-	gfx_area_         = new GfxEntryPanel(splitter_);
-	pal_area_         = new PaletteEntryPanel(splitter_);
-	hex_area_         = new HexEntryPanel(splitter_);
-	ansi_area_        = new ANSIEntryPanel(splitter_);
-	map_area_         = new MapEntryPanel(splitter_);
-	audio_area_       = new AudioEntryPanel(splitter_);
-	data_area_        = new DataEntryPanel(splitter_);
 	auto* elist_panel = createEntryListPanel(splitter_);
 
 	// Create sizer
@@ -700,8 +692,11 @@ void ArchivePanel::addMenus() const
 		auto menu_scripts = new wxMenu();
 #ifndef NO_LUA
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Archive, "arch_script");
-#endif
 		menu_archive->AppendSubMenu(menu_scripts, "&Run Script");
+#endif
+
+		menu_archive->AppendSeparator();
+		SAction::fromId("arch_run")->addToMenu(menu_archive, true, "Run");
 	}
 	if (!menu_entry)
 	{
@@ -716,8 +711,8 @@ void ArchivePanel::addMenus() const
 		SAction::fromId("arch_entry_copy")->addToMenu(menu_entry);
 		SAction::fromId("arch_entry_paste")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		SAction::fromId("arch_entry_moveup")->addToMenu(menu_entry);
-		SAction::fromId("arch_entry_movedown")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_moveup")->addToMenu(menu_entry, false);
+		SAction::fromId("arch_entry_movedown")->addToMenu(menu_entry, false);
 		SAction::fromId("arch_entry_sort")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
 		SAction::fromId("arch_entry_import")->addToMenu(menu_entry);
@@ -2037,7 +2032,7 @@ bool ArchivePanel::gfxRemap()
 	// Create translation editor dialog
 	auto                    pal = theMainWindow->paletteChooser()->selectedPalette();
 	TranslationEditorDialog ted(this, *pal, "Colour Remap", &image);
-	ted.openTranslation(dynamic_cast<GfxEntryPanel*>(gfx_area_)->prevTranslation());
+	ted.openTranslation(dynamic_cast<GfxEntryPanel*>(gfxArea())->prevTranslation());
 
 	// Run dialog
 	if (ted.ShowModal() == wxID_OK)
@@ -2068,7 +2063,7 @@ bool ArchivePanel::gfxRemap()
 		}
 
 		// Update variables
-		dynamic_cast<GfxEntryPanel*>(gfx_area_)->prevTranslation().copy(ted.getTranslation());
+		dynamic_cast<GfxEntryPanel*>(gfxArea())->prevTranslation().copy(ted.getTranslation());
 
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
@@ -2863,19 +2858,19 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		if (am_panel->entryIsOpenInTab(entry))
 			new_area = default_area_;
 		else if (entry->type() == EntryType::mapMarkerType())
-			new_area = map_area_;
+			new_area = mapArea();
 		else if (entry->type()->editor() == "gfx")
-			new_area = gfx_area_;
+			new_area = gfxArea();
 		else if (entry->type()->editor() == "palette")
-			new_area = pal_area_;
+			new_area = palArea();
 		else if (entry->type()->editor() == "ansi")
-			new_area = ansi_area_;
+			new_area = ansiArea();
 		else if (entry->type()->editor() == "text")
-			new_area = text_area_;
+			new_area = textArea();
 		else if (entry->type()->editor() == "audio")
-			new_area = audio_area_;
+			new_area = audioArea();
 		else if (entry->type()->editor() == "data")
-			new_area = data_area_;
+			new_area = dataArea();
 		else if (entry->type()->editor() == "default")
 			new_area = default_area_;
 		else
@@ -2911,11 +2906,11 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 		return true;
 
 	// Load the current entry into the panel
-	if (!text_area_->openEntry(entry))
+	if (!textArea()->openEntry(entry))
 		wxMessageBox(wxString::Format("Error loading entry:\n%s", global::error), "Error", wxOK | wxICON_ERROR);
 
 	// Show the text entry panel
-	return showEntryPanel(text_area_);
+	return showEntryPanel(textArea());
 }
 
 // -----------------------------------------------------------------------------
@@ -2933,11 +2928,11 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 		return true;
 
 	// Load the current entry into the panel
-	if (!hex_area_->openEntry(entry))
+	if (!hexArea()->openEntry(entry))
 		wxMessageBox(wxString::Format("Error loading entry:\n%s", global::error), "Error", wxOK | wxICON_ERROR);
 
 	// Show the text entry panel
-	return showEntryPanel(hex_area_);
+	return showEntryPanel(hexArea());
 }
 
 // -----------------------------------------------------------------------------
@@ -3058,7 +3053,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(const wxString& category)
 	unsigned num        = std::min<unsigned>(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
 	{
-		a_open_ext->addToMenu(menu_open, "With " + external[a].name, "NO", a);
+		a_open_ext->addToMenu(menu_open, 0, "With " + external[a].name, "NO", a);
 		current_external_exes_.push_back(external[a].name);
 	}
 
@@ -3375,7 +3370,7 @@ bool ArchivePanel::handleAction(string_view id)
 		// Edit Level Script
 
 		// Get entry to edit
-		ArchiveEntry* entry = map_area_->entry();
+		ArchiveEntry* entry = mapArea()->entry();
 
 		// Open in text editor
 		openEntryAsText(entry);
@@ -3530,6 +3525,7 @@ void ArchivePanel::selectionChanged()
 	{
 		toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
 		toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
+		toolbar_elist_->findActionButton("arch_entry_export")->Enable(true);
 
 		if (sel_dirs.size() == 1)
 			toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
@@ -3555,6 +3551,94 @@ void ArchivePanel::updateFilter() const
 	}
 	else
 		entry_tree_->setFilter({}, {});
+}
+
+// -----------------------------------------------------------------------------
+// Returns the TextEntryPanel for this ArchivePanel, creating it if needed
+// -----------------------------------------------------------------------------
+EntryPanel* ArchivePanel::textArea()
+{
+	if (text_area_ == nullptr)
+		text_area_ = new TextEntryPanel(splitter_);
+
+	return text_area_;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the ANSIEntryPanel for this ArchivePanel, creating it if needed
+// -----------------------------------------------------------------------------
+EntryPanel* ArchivePanel::ansiArea()
+{
+	if (ansi_area_ == nullptr)
+		ansi_area_ = new ANSIEntryPanel(splitter_);
+
+	return ansi_area_;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the GfxEntryPanel for this ArchivePanel, creating it if needed
+// -----------------------------------------------------------------------------
+EntryPanel* ArchivePanel::gfxArea()
+{
+	if (gfx_area_ == nullptr)
+		gfx_area_ = new GfxEntryPanel(splitter_);
+
+	return gfx_area_;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the PaletteEntryPanel for this ArchivePanel, creating it if needed
+// -----------------------------------------------------------------------------
+EntryPanel* ArchivePanel::palArea()
+{
+	if (pal_area_ == nullptr)
+		pal_area_ = new PaletteEntryPanel(splitter_);
+
+	return pal_area_;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the HexEntryPanel for this ArchivePanel, creating it if needed
+// -----------------------------------------------------------------------------
+EntryPanel* ArchivePanel::hexArea()
+{
+	if (hex_area_ == nullptr)
+		hex_area_ = new HexEntryPanel(splitter_);
+
+	return hex_area_;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the MapEntryPanel for this ArchivePanel, creating it if needed
+// -----------------------------------------------------------------------------
+EntryPanel* ArchivePanel::mapArea()
+{
+	if (map_area_ == nullptr)
+		map_area_ = new MapEntryPanel(splitter_);
+
+	return map_area_;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the AudioEntryPanel for this ArchivePanel, creating it if needed
+// -----------------------------------------------------------------------------
+EntryPanel* ArchivePanel::audioArea()
+{
+	if (audio_area_ == nullptr)
+		audio_area_ = new AudioEntryPanel(splitter_);
+
+	return audio_area_;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the DataEntryPanel for this ArchivePanel, creating it if needed
+// -----------------------------------------------------------------------------
+EntryPanel* ArchivePanel::dataArea()
+{
+	if (data_area_ == nullptr)
+		data_area_ = new DataEntryPanel(splitter_);
+
+	return data_area_;
 }
 
 
@@ -3589,6 +3673,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 
 	// Get selected entries
 	auto selection = entry_tree_->selectedEntries();
+	auto sel_dirs  = entry_tree_->selectedDirectories();
 
 	// Check what types exist in the selection
 	// TODO: This stuff is absolutely terrible, nicer system needed
@@ -3734,6 +3819,24 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		if (selection.size() == 1)
 			SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
 	}
+	else if (!sel_dirs.empty())
+	{
+		SAction::fromId("arch_entry_rename")->addToMenu(&context, true);
+		if (sel_dirs.size() > 1)
+			SAction::fromId("arch_entry_rename_each")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_delete")->addToMenu(&context, true);
+		context.AppendSeparator();
+		SAction::fromId("arch_entry_cut")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_copy")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_paste")->addToMenu(&context, true);
+		context.AppendSeparator();
+		SAction::fromId("arch_entry_export")->addToMenu(&context, true);
+		if (sel_dirs.size() == 1)
+		{
+			context.AppendSeparator();
+			SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
+		}
+	}
 	else
 	{
 		// No entry selected
@@ -3806,8 +3909,8 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		{
 			auto viewas = new wxMenu();
 			context.AppendSubMenu(viewas, "View As");
-			SAction::fromId("arch_view_text")->addToMenu(viewas, "Text");
-			SAction::fromId("arch_view_hex")->addToMenu(viewas, "Hex");
+			SAction::fromId("arch_view_text")->addToMenu(viewas, 2, "Text");
+			SAction::fromId("arch_view_hex")->addToMenu(viewas, 2, "Hex");
 		}
 		else
 		{
@@ -4138,7 +4241,7 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 void ArchivePanel::onMEPEditAsText(wxCommandEvent& e)
 {
 	// Get entry to edit
-	auto entry = map_area_->entry();
+	auto entry = mapArea()->entry();
 
 	// Open in text editor
 	openEntryAsText(entry);

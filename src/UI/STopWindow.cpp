@@ -152,7 +152,7 @@ void STopWindow::enableToolBar(const wxString& name, bool enable) const
 // Adds a custom toolbar group to the toolbar, with buttons for each action in
 // [actions]
 // -----------------------------------------------------------------------------
-void STopWindow::addCustomToolBar(const wxString& name, const wxArrayString& actions) const
+void STopWindow::addCustomToolBar(const wxString& name, const vector<wxString>& actions) const
 {
 	toolbar_->addActionGroup(name, actions);
 	populateToolbarsMenu();
@@ -191,7 +191,7 @@ void STopWindow::populateToolbarsMenu() const
 		auto name = group->name().ToStdString();
 		strutil::replaceIP(name, "_", "");
 
-		action_toolbar_menu_->addToMenu(toolbar_menu_, name, "NO", a + 1);
+		action_toolbar_menu_->addToMenu(toolbar_menu_, 0, name, "NO", a + 1);
 		toolbar_menu_->GetMenuItems()[toolbar_menu_->GetMenuItemCount() - 1]->Check(!group->hidden());
 	}
 }

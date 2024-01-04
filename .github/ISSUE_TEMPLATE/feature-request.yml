@@ -1,0 +1,42 @@
+name: Feature Request
+description: Ask for a new feature in SLADE
+labels: ["feature request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A feature request is asking for functionality that is considered missing.
+        # Remember to search before filing a new report
+        Please search for this feature request in the issue tracker, and use a title that
+        would have made it turn up in the results for your search query.
+  - type: dropdown
+    id: editor
+    attributes:
+      label: "Editor"
+      description: "In which part of SLADE do you want this feature to be added?"
+      multiple: true
+      options:
+        - Resource editor
+        - Map editor
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: "Description of your feature request"
+      description: "What exactly are you looking for in SLADE?"
+      value: |
+        I would like SLADE to ...
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: "Mock-up"
+      description: "If applicable ONLY, add mock-ups to help explain your feature request."
+      value: |
+        ![DESCRIPTION](LINK.png)
+      render: text
+    validations:
+      required: false

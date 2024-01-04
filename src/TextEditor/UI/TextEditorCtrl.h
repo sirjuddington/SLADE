@@ -67,6 +67,8 @@ public:
 	bool findPrev(const wxString& find, int flags);
 	bool replaceCurrent(const wxString& find, const wxString& replace, int flags);
 	int  replaceAll(const wxString& find, const wxString& replace, int flags);
+	void selectNextOccurrence();
+	void selectAllOccurrences();
 
 	// Hilight/matching
 	void checkBraceMatch();

@@ -211,6 +211,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<TIFFDataFormat>();
 	registerDataFormat<JPEGDataFormat>();
 	registerDataFormat<ILBMDataFormat>();
+	registerDataFormat<WebPDataFormat>();
 	registerDataFormat<DoomGfxDataFormat>();
 	registerDataFormat<DoomGfxAlphaDataFormat>();
 	registerDataFormat<DoomGfxBetaDataFormat>();
@@ -218,6 +219,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<DoomArahDataFormat>();
 	registerDataFormat<DoomPSXDataFormat>();
 	registerDataFormat<DoomJaguarDataFormat>();
+	registerDataFormat<DoomJaguarColMajorDataFormat>();
 	registerDataFormat<DoomJagTexDataFormat>();
 	registerDataFormat<DoomJagSpriteDataFormat>();
 	registerDataFormat<ShadowCasterSpriteFormat>();

@@ -1,8 +1,9 @@
 [Desktop Entry]
 Name=SLADE
-Exec=slade 
+Exec=slade %F
 Type=Application
 Categories=Development
 Comment=It's a Doom editor
 Icon=net.mancubus.SLADE
 Terminal=false
+MimeType=application/x-doom-wad;
