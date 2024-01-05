@@ -39,6 +39,7 @@
 
 using namespace slade;
 using SurfaceType = MapSector::SurfaceType;
+using ExtraFloor  = MapSector::ExtraFloor;
 
 
 // -----------------------------------------------------------------------------
@@ -50,6 +51,8 @@ namespace
 {
 constexpr double TAU = math::PI * 2; // Number of radians in the unit circle
 } // namespace
+
+CVAR(Bool, map_process_3d_floors, false, CVar::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -74,6 +77,12 @@ void MapSpecials::reset()
 // -----------------------------------------------------------------------------
 void MapSpecials::processMapSpecials(SLADEMap* map)
 {
+
+	// Clear out all 3D floors, or every call to this function will create duplicates!
+	// TODO this isn't a very good solution, but we don't have incremental updates yet
+	for (unsigned a = 0; a < map->nSectors(); a++)
+		map->sector(a)->clearExtraFloors();
+
 	// ZDoom
 	if (game::configuration().currentPort() == "zdoom")
 		processZDoomMapSpecials(map);
@@ -82,7 +91,11 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 		processEternitySlopes(map);
 	// Sonic Robo Blast 2
 	else if (game::configuration().currentGame() == "srb2")
+	{
 		processSRB2Slopes(map);
+		if (map_process_3d_floors)
+			processSRB2FOFs(map);
+	}
 	// EDGE-Classic
 	else if (game::configuration().currentPort() == "edge_classic")
 		processEDGEClassicSlopes(map);
@@ -225,13 +238,13 @@ void MapSpecials::updateTaggedSectors(const SLADEMap* map) const
 // -----------------------------------------------------------------------------
 void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 {
+	// All slope specials, which must be done in a particular order
+	processZDoomSlopes(map);
+
 	// Line specials
 	translucent_lines_.clear();
 	for (unsigned a = 0; a < map->nLines(); a++)
 		processZDoomLineSpecial(map->line(a));
-
-	// All slope specials, which must be done in a particular order
-	processZDoomSlopes(map);
 }
 
 // -----------------------------------------------------------------------------
@@ -252,8 +265,61 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 	for (unsigned arg = 0; arg < 5; arg++)
 		args[arg] = line->arg(arg);
 
+	// --- Sector_Set3dFloor
+	if (special == 160 && map_process_3d_floors)
+	{
+		MapSector* control_sector = line->frontSector();
+		if (!control_sector)
+			return;
+
+		int sector_tag = args[0];
+		int type_flags = args[1];
+		int flags      = args[2];
+		int alpha      = args[3];
+
+		float falpha = alpha / 255.0f;
+
+		ExtraFloor extra_floor;
+
+		// Liquids (swimmable, type 2) and floors with flag 4 have their inner
+		// surfaces drawn as well
+		// TODO this does something different with vavoom
+		extra_floor.draw_inside = (type_flags & 4 || (type_flags & 3) == 2);
+		extra_floor.flags       = flags;
+
+		// TODO only gzdoom supports slopes here.
+		// TODO this should probably happen live instead of being copied, if
+		// we're moving towards purely live updates here
+		// Guessing a bit here, but I suspect ZDoom sorts floors in order of
+		// the control sector's plain ceiling height
+		extra_floor.effective_height = control_sector->ceiling().height;
+		extra_floor.ceiling_plane    = control_sector->ceiling().plane;
+		if (extra_floor.ceilingOnly())
+			extra_floor.floor_plane = extra_floor.ceiling_plane;
+		else
+			extra_floor.floor_plane = control_sector->floor().plane;
+
+		extra_floor.control_sector_index = control_sector->index();
+		extra_floor.control_line_index   = line->index();
+		extra_floor.floor_type           = type_flags & 0x3;
+
+		extra_floor.alpha = falpha;
+
+		auto count = 0;
+		for (auto& sector : map->sectors())
+		{
+			if (sector->id() == sector_tag)
+			{
+				sector->addExtraFloor(extra_floor, *control_sector);
+				count++;
+			}
+		}
+		log::info(
+			4, "Adding a 3d floor controlled by sector {} to {} sectors", extra_floor.control_sector_index, count);
+	}
+
 	// --- TranslucentLine ---
-	if (special == 208)
+	else if (special == 208)
 	{
 		// Get tagged lines
 		vector<MapLine*> tagged;
@@ -564,6 +630,177 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 				front->setCeilingPlane(tagged->ceiling().plane);
 		}
 		break;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Process SRB2 Floor Over Floor specials
+// -----------------------------------------------------------------------------
+void MapSpecials::processSRB2FOFs(const SLADEMap* map) const
+{
+	for (unsigned a = 0; a < map->nLines(); a++)
+	{
+		MapLine* line = map->line(a);
+		MapSector* control_sector = line->frontSector();
+
+		if(!control_sector)
+			continue;
+
+		ExtraFloor extra_floor;
+
+		auto special = line->special();
+		switch (special)
+		{
+
+		//
+		//	Solid
+		//
+		case 100: //Solid, Opaque, Shadowcasting
+		case 101: //Solid, Opaque, Non-Shadowcasting
+		case 102: //Solid, Translucent
+		case 103: //Solid, Sides Only
+		case 105: //Solid, Invisible
+		case 140: //Intangible from Bottom, Opaque
+		case 141: //Intangible from Bottom, Translucent
+		case 143: //Intangible from Top, Opaque
+		case 144: //Intangible from Top, Translucent
+		case 146: //Only Tangible from Sides
+		
+		//
+		//	Intangible
+		//
+		case 120: //Water, Opaque
+		case 121: //Water, Translucent
+		case 124: //Goo Water, Translucent
+		case 220: //Intangible, Opaque
+		case 221: //Intangible, Translucent
+		case 222: //Intangible, Sides Only
+		case 223: //Intangible, Invisible
+
+		//
+		//	Moving
+		//
+		case 150: //Air bobbing
+		case 151: //Air bobbing (Adjustable)
+		case 152: //Reverse Air Bobbing (Adjustable)
+		case 153: //Dynamically Sinking Platform
+		case 160: //Floating, Bobbing
+		case 190: //Rising Platform, Solid, Opaque, Shadowcasting
+		case 191: //Rising Platform, Solid, Opaque, Non-Shadowcasting
+		case 192: //Rising Platform, Solid, Translucent
+		case 193: //Rising Platform, Solid, Invisible
+		case 194: //Rising Platform, Intangible from Bottom, Opaque
+		case 195: //Rising Platform, Intangible from Bottom, Translucent
+
+		//
+		//	Crumbling
+		//
+		case 170: //Crumbling, Respawn
+		case 171: //Crumbling, No Respawn
+		case 172: //Crumbling, Respawn, Intangible from Bottom
+		case 173: //Crumbling, No Respawn, Intangible from Bottom
+		case 174: //Crumbling, Respawn, Intangible from Bottom Translucent
+		case 175: //Crumbling, Respawn, Intangible from Bottom,Translucent
+		case 176: //Crumbling, Respawn, Floating, Bobbing
+		case 177: //Crumbling, No Respawn, Floating, Bobbing
+		case 178: //Crumbling, Respawn, Floating
+		case 179: //Crumbling, No Respawn, Floating
+		case 180: //Crumbling, Respawn, Air Bobbing
+
+		//
+		//	Special
+		//
+		case 200: //Light Block
+		case 201: //Half light Block
+		case 250: //Mario Block
+		case 251: //Thwomp Block
+		case 252: //Shatter Block
+		case 253: //Shatter Block, Translucent
+		case 254: //Bustable Block
+		case 255: //Spin-Bustable Block
+		case 256: //Spin-Bustable Block, Translucent
+		case 257: //Quicksand
+		//case 258: //Laser
+		case 259: //Custom FOF
+		{
+
+			extra_floor.floor_type = ExtraFloor::SOLID;
+
+			extra_floor.effective_height = control_sector->ceiling().height;
+
+			//Side only FOFs?
+			if(special != 103 && special != 222)
+			{
+				extra_floor.ceiling_plane    = control_sector->ceiling().plane;
+				extra_floor.floor_plane      = control_sector->floor().plane;
+			}
+			else
+			{
+				extra_floor.ceiling_plane    = Plane();
+				extra_floor.floor_plane      = Plane();
+			}
+
+			extra_floor.control_sector_index = control_sector->index();
+			extra_floor.control_line_index   = line->index();
+
+			int translucency = 255;
+
+			//Translucent FOF?
+			if (
+				special == 102 
+				|| special == 141 
+				|| special == 144
+				|| special == 121
+				|| special == 124
+				|| special == 221
+				|| special == 192
+				|| special == 195
+				|| special == 174
+				|| special == 175
+				|| special == 253
+				|| special == 256)
+			{
+				translucency = 128;
+				const string &texture = line->s1()->texUpper();
+
+				if (texture.size() >= 4 && texture[0] == '#')
+				{
+					errno = 0;
+					int n = std::strtol(texture.c_str()+1, NULL, 10);
+
+					if (errno == 0)
+						translucency = n;
+				}
+			} 
+			else if ( //Invisible FOF?
+				special == 105 
+				|| special == 223
+				|| special == 193
+				|| special == 200
+				|| special == 201
+				|| special == 259)
+			{
+				translucency = 0;
+			}
+
+			extra_floor.flags = 0;
+			extra_floor.alpha = (translucency/255.f);
+
+			//Only draw inside for water FOFs
+			extra_floor.draw_inside = (special >= 120 && special <= 125);
+		}
+		break;
+
+		default:
+			continue;
+		break;
+		}
+
+		for (auto& sector : map->sectors())
+		{
+			if (sector->id() == line->id())
+				sector->addExtraFloor(extra_floor, *control_sector);
 		}
 	}
 }

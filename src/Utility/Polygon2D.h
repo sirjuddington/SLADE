@@ -17,18 +17,16 @@ public:
 	struct SubPoly
 	{
 		vector<Vertex> vertices;
-		unsigned       vbo_offset = 0;
-		unsigned       vbo_index  = 0;
 	};
 
 	Polygon2D() = default;
 	~Polygon2D() { clear(); }
 
 	unsigned texture() const { return texture_; }
-	float    colRed() { return colour_[0]; }
-	float    colGreen() { return colour_[1]; }
-	float    colBlue() { return colour_[2]; }
-	float    colAlpha() { return colour_[3]; }
+	float    colRed() const { return colour_[0]; }
+	float    colGreen() const { return colour_[1]; }
+	float    colBlue() const { return colour_[2]; }
+	float    colAlpha() const { return colour_[3]; }
 
 	void setTexture(unsigned tex) { texture_ = tex; }
 	void setColour(float r, float g, float b, float a);
@@ -42,7 +40,7 @@ public:
 	SubPoly* subPoly(unsigned index);
 	void     removeSubPoly(unsigned index);
 	void     clear();
-	unsigned totalVertices();
+	unsigned totalVertices() const;
 
 	bool openSector(MapSector* sector);
 	void updateTextureCoords(
@@ -52,13 +50,12 @@ public:
 		double offset_y = 0,
 		double rotation = 0);
 
-	unsigned vboDataSize();
-	unsigned writeToVBO(unsigned offset, unsigned index);
-	void     updateVBOData();
+	unsigned vboDataSize() const;
+	unsigned writeToVBO(unsigned offset);
 
-	void render();
-	void renderWireframe();
-	void renderVBO(bool colour = true);
+	void render() const;
+	void renderWireframe() const;
+	void renderVBO(unsigned offset) const;
 	void renderWireframeVBO(bool colour = true) const;
 
 	static void setupVBOPointers();

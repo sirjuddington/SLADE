@@ -71,10 +71,8 @@ MapSector::MapSector(
 // -----------------------------------------------------------------------------
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapSector::MapSector(string_view f_tex, string_view c_tex, ParseTreeNode* udmf_def) :
-	MapObject(Type::Sector),
-	floor_{ f_tex },
-	ceiling_{ c_tex }
+MapSector::MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* udmf_def) :
+	MapObject(Type::Sector), floor_{ f_tex }, ceiling_{ c_tex }
 {
 	// Set UDMF defaults
 	light_ = 160;
@@ -492,7 +490,7 @@ double MapSector::distanceTo(Vec2d point, double maxdist)
 // -----------------------------------------------------------------------------
 // Adds all lines that are part of the sector to [list]
 // -----------------------------------------------------------------------------
-bool MapSector::putLines(vector<MapLine*>& list)
+bool MapSector::putLines(vector<MapLine*>& list) const
 {
 	// Go through connected sides
 	for (auto& connected_side : connected_sides_)
@@ -508,7 +506,7 @@ bool MapSector::putLines(vector<MapLine*>& list)
 // -----------------------------------------------------------------------------
 // Adds all vertices that are part of the sector to [list]
 // -----------------------------------------------------------------------------
-bool MapSector::putVertices(vector<MapVertex*>& list)
+bool MapSector::putVertices(vector<MapVertex*>& list) const
 {
 	for (auto& connected_side : connected_sides_)
 	{
@@ -527,7 +525,7 @@ bool MapSector::putVertices(vector<MapVertex*>& list)
 // -----------------------------------------------------------------------------
 // Adds all vertices that are part of the sector to [list]
 // -----------------------------------------------------------------------------
-bool MapSector::putVertices(vector<MapObject*>& list)
+bool MapSector::putVertices(vector<MapObject*>& list) const
 {
 	for (auto& connected_side : connected_sides_)
 	{
@@ -546,16 +544,35 @@ bool MapSector::putVertices(vector<MapObject*>& list)
 // -----------------------------------------------------------------------------
 // Returns the light level of the sector at [where] - 1 = floor, 2 = ceiling
 // -----------------------------------------------------------------------------
-uint8_t MapSector::lightAt(int where)
+uint8_t MapSector::lightAt(int where, int extra_floor_index)
 {
 	// Check for UDMF + flat lighting
 	if (parent_map_->currentFormat() == MapFormat::UDMF
 		&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting))
 	{
+		// 3D floors cast their light downwards to the next floor down, so we
+		// need to know which floor this plane is below.
+		// The floor plane is on the bottom of the 3D floor, so no change is
+		// necessary -- unless we're being asked for the light of the sector
+		// itself, which is below the bottommost floor.
+		// Ceilings are below the next 3D floor up, so subtract 1.
+		int floor_gap = extra_floor_index;
+		if (where == 2)
+			floor_gap--;
+		else if (where == 1 && floor_gap < 0)
+			floor_gap = extra_floors_.size() - 1;
+		auto* control_sector = this;
+		if (floor_gap >= 0 && floor_gap < extra_floors_.size() && !extra_floors_[floor_gap].disableLighting()
+			&& !extra_floors_[floor_gap].lightingInsideOnly())
+		{
+			control_sector = parent_map_->sector(extra_floors_[floor_gap].control_sector_index);
+		}
+
 		// Get general light level
-		int l = light_;
+		int l = control_sector->lightLevel();
 
 		// Get specific light level
+		// TODO unclear how 3D floors work here -- what wins? what sector does it come from?
 		if (where == 1)
 		{
 			// Floor
@@ -683,7 +700,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 
 		// Ignore light level if fullbright
 		if (fullbright)
-			return ColRGBA(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255);
+			return { wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255 };
 
 		// Get sector light level
 		int ll = light_;
@@ -719,12 +736,15 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 
 		// Calculate and return the colour
 		float lightmult = (float)ll / 255.0f;
-		return ColRGBA(wxcol.Blue() * lightmult, wxcol.Green() * lightmult, wxcol.Red() * lightmult, 255);
+		return { static_cast<uint8_t>(wxcol.Blue() * lightmult),
+				 static_cast<uint8_t>(wxcol.Green() * lightmult),
+				 static_cast<uint8_t>(wxcol.Red() * lightmult),
+				 255 };
 	}
 
 	// Other format, simply return the light level
 	if (fullbright)
-		return ColRGBA(255, 255, 255, 255);
+		return { 255, 255, 255, 255 };
 	else
 	{
 		int l = light_;
@@ -735,7 +755,9 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 		if (l < 0)
 			l = 0;
 
-		return ColRGBA(l, l, l, 255);
+		auto l8 = static_cast<uint8_t>(l);
+
+		return { l8, l8, l8, 255 };
 	}
 }
 
@@ -746,14 +768,14 @@ ColRGBA MapSector::fogColour()
 {
 	ColRGBA color(0, 0, 0, 0);
 
-	// map specials/scripts
+	// Map specials/scripts
 	if (parent_map_->mapSpecials()->tagFadeColoursSet())
 	{
 		if (parent_map_->mapSpecials()->tagFadeColour(id_, &color))
 			return color;
 	}
 
-	// udmf
+	// UDMF
 	if (parent_map_->currentFormat() == MapFormat::UDMF
 		&& game::configuration().featureSupported(game::UDMFFeature::SectorFog))
 	{
@@ -837,7 +859,7 @@ void MapSector::connectSide(MapSide* side)
 // -----------------------------------------------------------------------------
 // Removes [side] from the list of connected sides
 // -----------------------------------------------------------------------------
-void MapSector::disconnectSide(MapSide* side)
+void MapSector::disconnectSide(const MapSide* side)
 {
 	setModified();
 	for (unsigned a = 0; a < connected_sides_.size(); a++)
@@ -852,6 +874,23 @@ void MapSector::disconnectSide(MapSide* side)
 	poly_needsupdate_ = true;
 	bbox_.reset();
 	setGeometryUpdated();
+}
+
+void MapSector::addExtraFloor(const ExtraFloor& extra_floor, const MapSector& control_sector)
+{
+	extra_floors_.emplace_back(extra_floor);
+
+	// Sort extra floors from top down
+	std::sort(
+		extra_floors_.begin(),
+		extra_floors_.end(),
+		[](const ExtraFloor& a, const ExtraFloor& b) { return b.effective_height < a.effective_height; });
+
+	// Mark the sector as updated if the control sector has been; this is a sort of very rudimentary dependency graph
+	if (control_sector.geometry_updated_ > geometry_updated_)
+		setGeometryUpdated();
+	if (control_sector.modifiedTime() > modifiedTime())
+		setModified();
 }
 
 // -----------------------------------------------------------------------------

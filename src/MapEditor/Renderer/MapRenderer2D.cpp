@@ -340,7 +340,7 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 // -----------------------------------------------------------------------------
 // Returns the colour for [line]
 // -----------------------------------------------------------------------------
-ColRGBA MapRenderer2D::lineColour(MapLine* line, bool ignore_filter) const
+ColRGBA MapRenderer2D::lineColour(const MapLine* line, bool ignore_filter) const
 {
 	ColRGBA col;
 
@@ -581,7 +581,7 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 // -----------------------------------------------------------------------------
 // Renders the tagged line overlay for lines in [lines]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade) const
+void MapRenderer2D::renderTaggedLines(const vector<MapLine*>& lines, float fade) const
 {
 	// Reset fade if tagged animation is disabled
 	if (!map_animate_tagged)
@@ -638,7 +638,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade) const
 // -----------------------------------------------------------------------------
 // Renders the tagging line overlay for lines in [lines]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade) const
+void MapRenderer2D::renderTaggingLines(const vector<MapLine*>& lines, float fade) const
 {
 	// Reset fade if tagging animation is disabled
 	if (!map_animate_tagged)
@@ -1080,7 +1080,7 @@ bool MapRenderer2D::renderSquareThing(
 				default: // Unsupported angle, don't draw arrow
 					tex = mapeditor::textureManager().editorImage("thing/square/normal_n").gl_id;
 					break;
-				};
+				}
 			}
 		}
 	}
@@ -1570,7 +1570,7 @@ void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float f
 // -----------------------------------------------------------------------------
 // Renders the tagged thing overlay for things in [things]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade) const
+void MapRenderer2D::renderTaggedThings(const vector<MapThing*>& things, float fade) const
 {
 	// Reset fade if tagged animation is disabled
 	if (!map_animate_tagged)
@@ -1625,7 +1625,7 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade) co
 // -----------------------------------------------------------------------------
 // Renders the tagging thing overlay for things in [things]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade) const
+void MapRenderer2D::renderTaggingThings(const vector<MapThing*>& things, float fade) const
 {
 	// Reset fade if tagging animation is disabled
 	if (!map_animate_tagged)
@@ -1669,9 +1669,8 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade) c
 	{
 		auto src = object->getPoint(MapObject::Point::Within);
 		glLineWidth(line_width * 1.5f);
-		for (unsigned a = 0; a < things.size(); a++)
+		for (auto thing : things)
 		{
-			auto thing = things[a];
 			drawing::drawArrow(
 				src, thing->getPoint(MapObject::Point::Within), col, false, arrowhead_angle, arrowhead_length);
 		}
@@ -1681,7 +1680,7 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade) c
 // -----------------------------------------------------------------------------
 // Renders thing pathing lines/arrows for [things]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
+void MapRenderer2D::renderPathedThings(const vector<MapThing*>& things)
 {
 	// Skip if action lines are not desired, or if there's nothing to do
 	if (!action_lines || things.empty())
@@ -1852,7 +1851,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 				to->getPoint(MapObject::Point::Mid),
 				from->getPoint(MapObject::Point::Mid),
 				(thing_path.type == PathType::DragonBoth || thing_path.type == PathType::Dragon) ? dragoncol :
-																								   pathedcol,
+                                                                                                   pathedcol,
 				(thing_path.type == PathType::NormalBoth || thing_path.type == PathType::DragonBoth),
 				arrowhead_angle,
 				arrowhead_length);
@@ -1867,10 +1866,10 @@ void MapRenderer2D::renderPointLightPreviews(float alpha, int hilight_index) con
 {
 	if (!thing_preview_lights)
 		return;
-	
+
 	ColRGBA light_col{ 0, 0, 0, static_cast<uint8_t>(alpha * (thing_light_intensity * 255.f)) };
 	double  light_radius = 0.;
-\
+
 	glEnable(GL_TEXTURE_2D);
 	const auto light_tex = mapeditor::textureManager().editorImage("thing/light_preview").gl_id;
 	gl::Texture::bind(light_tex);
@@ -1928,7 +1927,7 @@ void MapRenderer2D::renderPointLightPreviews(float alpha, int hilight_index) con
 		if (hilight_index >= 0 && thing->index() == hilight_index)
 		{
 			auto col = light_col;
-			col.a = 180;
+			col.a    = 180;
 			glDisable(GL_TEXTURE_2D);
 			glLineWidth(2.f);
 			drawing::drawEllipse(thing->position(), light_radius, light_radius, 64, col);
@@ -1958,7 +1957,7 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 // -----------------------------------------------------------------------------
 // Sorting function to sort polygons by their texture
 // -----------------------------------------------------------------------------
-bool sortPolyByTex(Polygon2D* left, Polygon2D* right)
+bool sortPolyByTex(const Polygon2D* left, const Polygon2D* right)
 {
 	return left->texture() < right->texture();
 }
@@ -2249,7 +2248,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		// Update polygon VBO data if needed
 		if (poly->vboUpdate() > 0)
 		{
-			poly->updateVBOData();
+			poly->writeToVBO(sector_vbo_offsets_[a]);
 			update++;
 			if (update > 200)
 				break;
@@ -2274,7 +2273,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			col.ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
 			glColor4f(col.fr(), col.fg(), col.fb(), alpha);
 		}
-		poly->renderVBO(false);
+		poly->renderVBO(sector_vbo_offsets_[a]);
 	}
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -2349,7 +2348,7 @@ void MapRenderer2D::renderFlatHilight(int index, float fade) const
 // -----------------------------------------------------------------------------
 // Renders the flat selection overlay for sector indices in [selection]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fade)
+void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fade) const
 {
 	// Check anything is selected
 	if (selection.empty())
@@ -2427,7 +2426,7 @@ void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fa
 // -----------------------------------------------------------------------------
 // Renders the tagged flat overlay for sectors in [sectors]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade) const
+void MapRenderer2D::renderTaggedFlats(const vector<MapSector*>& sectors, float fade) const
 {
 	// Reset fade if tagged animation is disabled
 	if (!map_animate_tagged)
@@ -2776,7 +2775,7 @@ void MapRenderer2D::renderMovingThings(const vector<mapeditor::Item>& things, Ve
 // -----------------------------------------------------------------------------
 // Renders pasting overlay for [things] at [pos]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2d pos)
+void MapRenderer2D::renderPasteThings(const vector<MapThing*>& things, Vec2d pos)
 {
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -3119,9 +3118,12 @@ void MapRenderer2D::updateFlatsVBO()
 	if (vbo_flats_ == 0)
 		glGenBuffers(1, &vbo_flats_);
 
+	auto n_sectors = map_->nSectors();
+	sector_vbo_offsets_.resize(n_sectors);
+
 	// Get total size needed
 	unsigned totalsize = 0;
-	for (unsigned a = 0; a < map_->nSectors(); a++)
+	for (unsigned a = 0; a < n_sectors; a++)
 	{
 		auto poly = map_->sector(a)->polygon();
 		totalsize += poly->vboDataSize();
@@ -3133,12 +3135,11 @@ void MapRenderer2D::updateFlatsVBO()
 
 	// Write polygon data to VBO
 	unsigned offset = 0;
-	unsigned index  = 0;
-	for (unsigned a = 0; a < map_->nSectors(); a++)
+	for (unsigned a = 0; a < n_sectors; a++)
 	{
-		auto poly = map_->sector(a)->polygon();
-		offset    = poly->writeToVBO(offset, index);
-		index += poly->totalVertices();
+		sector_vbo_offsets_[a] = offset;
+		auto* poly             = map_->sector(a)->polygon();
+		offset                 = poly->writeToVBO(offset);
 	}
 
 	// Clean up
