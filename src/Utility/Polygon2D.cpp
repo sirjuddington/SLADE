@@ -43,6 +43,14 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+constexpr int VERTEX_SIZE = 20;
+
+
+// -----------------------------------------------------------------------------
+//
 // Polygon2D Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -106,7 +114,7 @@ void Polygon2D::clear()
 	texture_    = 0;
 }
 
-unsigned Polygon2D::totalVertices()
+unsigned Polygon2D::totalVertices() const
 {
 	unsigned total = 0;
 	for (auto& subpoly : subpolys_)
@@ -201,49 +209,33 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 	vbo_update_ = 1;
 }
 
-unsigned Polygon2D::vboDataSize()
+unsigned Polygon2D::vboDataSize() const
 {
 	unsigned total = 0;
 	for (auto& subpoly : subpolys_)
-		total += subpoly.vertices.size() * 20;
+		total += subpoly.vertices.size() * VERTEX_SIZE;
 	return total;
 }
 
-unsigned Polygon2D::writeToVBO(unsigned offset, unsigned index)
+unsigned Polygon2D::writeToVBO(unsigned offset)
 {
 	// Go through subpolys
-	unsigned ofs = offset;
-	unsigned i   = index;
 	for (auto& subpoly : subpolys_)
 	{
 		// Write subpoly data to VBO at the correct offset
-		glBufferSubData(GL_ARRAY_BUFFER, ofs, subpoly.vertices.size() * 20, subpoly.vertices.data());
-
-		// Update the subpoly vbo offset
-		subpoly.vbo_offset = ofs;
-		subpoly.vbo_index  = i;
-		ofs += subpoly.vertices.size() * 20;
-		i += subpoly.vertices.size();
+		unsigned length = subpoly.vertices.size() * VERTEX_SIZE;
+		glBufferSubData(GL_ARRAY_BUFFER, offset, length, subpoly.vertices.data());
+		offset += length;
 	}
 
 	// Update variables
 	vbo_update_ = 0;
 
 	// Return the offset to the end of the data
-	return ofs;
+	return offset;
 }
 
-void Polygon2D::updateVBOData()
-{
-	// Go through subpolys
-	for (auto& subpoly : subpolys_)
-		glBufferSubData(GL_ARRAY_BUFFER, subpoly.vbo_offset, subpoly.vertices.size() * 20, subpoly.vertices.data());
-
-	// Update variables
-	vbo_update_ = 0;
-}
-
-void Polygon2D::render()
+void Polygon2D::render() const
 {
 	// Go through sub-polys
 	for (auto& poly : subpolys_)
@@ -258,7 +250,7 @@ void Polygon2D::render()
 	}
 }
 
-void Polygon2D::renderWireframe()
+void Polygon2D::renderWireframe() const
 {
 	// Go through sub-polys
 	for (auto& poly : subpolys_)
@@ -273,12 +265,17 @@ void Polygon2D::renderWireframe()
 	}
 }
 
-void Polygon2D::renderVBO(bool colour)
+void Polygon2D::renderVBO(unsigned offset) const
 {
 	// Render
-	// glColor4f(this->colour[0], this->colour[1], this->colour[2], this->colour[3]);
-	for (const auto& subpoly : subpolys_)
-		glDrawArrays(GL_TRIANGLE_FAN, subpoly.vbo_index, subpoly.vertices.size());
+	unsigned index = offset / VERTEX_SIZE;
+	size_t   n_vertices;
+	for (auto& subpoly : subpolys_)
+	{
+		n_vertices = subpoly.vertices.size();
+		glDrawArrays(GL_TRIANGLE_FAN, index, n_vertices);
+		index += n_vertices;
+	}
 }
 
 void Polygon2D::renderWireframeVBO(bool colour) const {}

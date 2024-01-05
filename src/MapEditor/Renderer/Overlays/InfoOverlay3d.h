@@ -13,7 +13,7 @@ public:
 	InfoOverlay3D()  = default;
 	~InfoOverlay3D() = default;
 
-	void update(int item_index, mapeditor::ItemType item_type, SLADEMap* map);
+	void update(mapeditor::Item item, SLADEMap* map);
 	void draw(int bottom, int right, int middle, float alpha = 1.0f);
 	void drawTexture(float alpha, int x, int y) const;
 	void reset()
@@ -26,6 +26,7 @@ private:
 	vector<string>      info_;
 	vector<string>      info2_;
 	mapeditor::ItemType current_type_ = mapeditor::ItemType::WallMiddle;
+	mapeditor::Item     current_item_;
 	string              texname_;
 	unsigned            texture_     = 0;
 	bool                thing_icon_  = false;

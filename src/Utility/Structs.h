@@ -262,6 +262,8 @@ template<typename T> struct Rect
 	const Vec2<T>& start() const { return tl; }
 	const Vec2<T>& end() const { return br; }
 
+	Rect<T> flip() const { return Rect<T>(br, tl); }
+
 	T x1() const { return tl.x; }
 	T y1() const { return tl.y; }
 	T x2() const { return br.x; }
@@ -461,10 +463,10 @@ template<typename T> struct Named
 	Named(string_view name, const T& value) : name{ name }, value{ value } {}
 
 	// For sorting
-	bool operator< (const Named<T>& rhs) { return name < rhs.name; }
-	bool operator<= (const Named<T>& rhs) { return name <= rhs.name; }
-	bool operator> (const Named<T>& rhs) { return name > rhs.name; }
-	bool operator>= (const Named<T>& rhs) { return name >= rhs.name; }
+	bool operator<(const Named<T>& rhs) { return name < rhs.name; }
+	bool operator<=(const Named<T>& rhs) { return name <= rhs.name; }
+	bool operator>(const Named<T>& rhs) { return name > rhs.name; }
+	bool operator>=(const Named<T>& rhs) { return name >= rhs.name; }
 };
 
 } // namespace slade

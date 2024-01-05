@@ -35,14 +35,14 @@ public:
 	void renderVertexSelection(const ItemSelection& selection, float fade = 1.0f) const;
 
 	// Lines
-	ColRGBA lineColour(MapLine* line, bool ignore_filter = false) const;
+	ColRGBA lineColour(const MapLine* line, bool ignore_filter = false) const;
 	void    renderLines(bool show_direction, float alpha = 1.0f);
 	void    renderLinesVBO(bool show_direction, float alpha);
 	void    renderLinesImmediate(bool show_direction, float alpha);
 	void    renderLineHilight(int index, float fade) const;
 	void    renderLineSelection(const ItemSelection& selection, float fade = 1.0f) const;
-	void    renderTaggedLines(vector<MapLine*>& lines, float fade) const;
-	void    renderTaggingLines(vector<MapLine*>& lines, float fade) const;
+	void    renderTaggedLines(const vector<MapLine*>& lines, float fade) const;
+	void    renderTaggingLines(const vector<MapLine*>& lines, float fade) const;
 
 	// Things
 	enum ThingDrawType
@@ -92,9 +92,9 @@ public:
 	void renderThingsImmediate(float alpha);
 	void renderThingHilight(int index, float fade) const;
 	void renderThingSelection(const ItemSelection& selection, float fade = 1.0f) const;
-	void renderTaggedThings(vector<MapThing*>& things, float fade) const;
-	void renderTaggingThings(vector<MapThing*>& things, float fade) const;
-	void renderPathedThings(vector<MapThing*>& things);
+	void renderTaggedThings(const vector<MapThing*>& things, float fade) const;
+	void renderTaggingThings(const vector<MapThing*>& things, float fade) const;
+	void renderPathedThings(const vector<MapThing*>& things);
 	void renderPointLightPreviews(float alpha, int hilight_index) const;
 
 	// Flats (sectors)
@@ -102,8 +102,8 @@ public:
 	void renderFlatsImmediate(int type, bool texture, float alpha);
 	void renderFlatsVBO(int type, bool texture, float alpha);
 	void renderFlatHilight(int index, float fade) const;
-	void renderFlatSelection(const ItemSelection& selection, float fade = 1.0f);
-	void renderTaggedFlats(vector<MapSector*>& sectors, float fade) const;
+	void renderFlatSelection(const ItemSelection& selection, float fade = 1.0f) const;
+	void renderTaggedFlats(const vector<MapSector*>& sectors, float fade) const;
 
 	// Moving
 	void renderMovingVertices(const vector<mapeditor::Item>& vertices, Vec2d move_vec) const;
@@ -112,7 +112,7 @@ public:
 	void renderMovingThings(const vector<mapeditor::Item>& things, Vec2d move_vec);
 
 	// Paste
-	void renderPasteThings(vector<MapThing*>& things, Vec2d pos);
+	void renderPasteThings(const vector<MapThing*>& things, Vec2d pos);
 
 	// Object Edit
 	void renderObjectEditGroup(ObjectEditGroup* group);
@@ -135,16 +135,16 @@ public:
 	void   clearTextureCache() { tex_flats_.clear(); }
 
 private:
-	SLADEMap* map_ = nullptr;
-	// unsigned  tex_last_         = 0;
-	long vertices_updated_ = 0;
-	long lines_updated_    = 0;
-	long flats_updated_    = 0;
+	SLADEMap* map_              = nullptr;
+	long      vertices_updated_ = 0;
+	long      lines_updated_    = 0;
+	long      flats_updated_    = 0;
 
 	// VBOs etc
-	unsigned vbo_vertices_ = 0;
-	unsigned vbo_lines_    = 0;
-	unsigned vbo_flats_    = 0;
+	unsigned         vbo_vertices_ = 0;
+	unsigned         vbo_lines_    = 0;
+	unsigned         vbo_flats_    = 0;
+	vector<unsigned> sector_vbo_offsets_;
 
 	// Display lists
 	unsigned list_vertices_ = 0;
