@@ -66,10 +66,13 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // -----------------------------------------------------------------------------
 // Updates the info text for the object of [item_type] at [item_index] in [map]
 // -----------------------------------------------------------------------------
-void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEMap* map)
+void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 {
 	using game::Feature;
 	using game::UDMFFeature;
+
+	int  item_index = item.index;
+	auto item_type  = item.type;
 
 	// Clear current info
 	info_.clear();
@@ -77,6 +80,7 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 
 	// Setup variables
 	current_type_   = item_type;
+	current_item_   = item;
 	texname_        = "";
 	texture_        = 0;
 	thing_icon_     = false;
@@ -84,7 +88,7 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 
 	// Wall
 	if (item_type == mapeditor::ItemType::WallBottom || item_type == mapeditor::ItemType::WallMiddle
-		|| item_type == mapeditor::ItemType::WallTop)
+		|| item_type == mapeditor::ItemType::WallTop /* || item_type == MapEditor::ItemType::Wall3DFloor*/)
 	{
 		// Get line and side
 		auto side = map->side(item_index);
@@ -93,10 +97,24 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 		auto line = side->parentLine();
 		if (!line)
 			return;
+		/*
+		MapLine* line3d = nullptr;
+		if (item_type == MapEditor::ItemType::Wall3DFloor) {
+			line3d = line;
+			line = map->getLine(item.control_line);
+			side = line->s1();
+		}
+		*/
 		object_ = side;
 
+		// TODO: 3d floors
+
 		// --- Line/side info ---
-		info_.push_back(fmt::format("Line #{}", line->index()));
+		if (item.real_index >= 0)
+			info_.push_back(fmt::format(
+				"3D floor line {} on Line #{}", line->index(), map->side(item.real_index)->parentLine()->index()));
+		else
+			info_.push_back(fmt::format("Line #{}", line->index()));
 		if (side == line->s1())
 			info_.push_back(fmt::format("Front Side #{}", side->index()));
 		else
@@ -126,8 +144,10 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 			info2_.emplace_back("Lower Texture");
 		else if (item_type == mapeditor::ItemType::WallMiddle)
 			info2_.emplace_back("Middle Texture");
-		else
+		else if (item_type == mapeditor::ItemType::WallTop)
 			info2_.emplace_back("Upper Texture");
+		/*else if (item_type == mapeditor::ItemType::Wall3DFloor)
+			info2.push_back("3D Floor Texture"); // TODO: determine*/
 
 		// Offsets
 		if (map->currentFormat() == MapFormat::UDMF
@@ -208,8 +228,7 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 		}
 
 		// Height of this section of the wall
-		// TODO this is wrong in the case of slopes, but slope support only
-		// exists in the 3.1.1 branch
+		// TODO this is wrong in the case of slopes
 		Vec2d    left_point, right_point;
 		MapSide* other_side;
 		if (side == line->s1())
@@ -231,7 +250,8 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 			other_sector = other_side->sector();
 
 		double left_height, right_height;
-		if (item_type == mapeditor::ItemType::WallMiddle && other_sector)
+		if ((item_type == mapeditor::ItemType::WallMiddle /* || item_type == mapeditor::ItemType::Wall3DFloor*/)
+			&& other_sector)
 		{
 			// A two-sided line's middle area is the smallest distance between
 			// both sides' floors and ceilings, which is more complicated with
@@ -248,7 +268,7 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 		else
 		{
 			Plane top_plane, bottom_plane;
-			if (item_type == mapeditor::ItemType::WallMiddle)
+			if (item_type == mapeditor::ItemType::WallMiddle /* || item_type == MapEditor::ItemType::Wall3DFloor*/)
 			{
 				top_plane    = this_sector->ceiling().plane;
 				bottom_plane = this_sector->floor().plane;
@@ -282,22 +302,30 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 			texname_ = side->texLower();
 		else if (item_type == mapeditor::ItemType::WallMiddle)
 			texname_ = side->texMiddle();
-		else
+		else if (item_type == mapeditor::ItemType::WallTop)
 			texname_ = side->texUpper();
+		/*else if (item_type == mapeditor::ItemType::Wall3DFloor)
+			texname = side->getTexMiddle(); // TODO: Upper/lower flags*/
 		texture_ = mapeditor::textureManager()
 					   .texture(texname_, game::configuration().featureSupported(Feature::MixTexFlats))
 					   .gl_id;
 	}
 
 
-	// Floor
+	// Flat
 	else if (item_type == mapeditor::ItemType::Floor || item_type == mapeditor::ItemType::Ceiling)
 	{
+		bool floor = (item_type == mapeditor::ItemType::Floor);
+
 		// Get sector
-		auto sector = map->sector(item_index);
-		if (!sector)
+		auto real_sector = map->sector(item_index);
+		if (!real_sector)
 			return;
-		object_ = sector;
+		object_ = real_sector;
+
+		// For a 3D floor, use the control sector for most properties
+		// TODO this is already duplicated elsewhere that examines a highlight; maybe need a map method?
+		MapSector* sector = real_sector;
 
 		// Get basic info
 		int fheight = sector->floor().height;
@@ -306,7 +334,10 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 		// --- Sector info ---
 
 		// Sector index
-		info_.push_back(fmt::format("Sector #{}", item_index));
+		if (sector == real_sector)
+			info_.push_back(fmt::format("Sector #{}", item_index));
+		else
+			info_.push_back(fmt::format("3D floor in sector #{}", item_index));
 
 		// Sector height
 		info_.push_back(fmt::format("Total Height: {}", cheight - fheight));
@@ -324,19 +355,21 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 		// --- Flat info ---
 
 		// Height
-		if (item_type == mapeditor::ItemType::Floor)
+		if (floor)
 			info2_.push_back(fmt::format("Floor Height: {}", fheight));
 		else
 			info2_.push_back(fmt::format("Ceiling Height: {}", cheight));
 
 		// Light
+		// TODO: this is more complex with 3D floors -- also i would like to not dupe code from the renderer, so maybe
+		// this should be MapSpecials's problem?
 		int light = sector->lightLevel();
 		if (game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
 			// Get extra light info
 			int  fl  = 0;
 			bool abs = false;
-			if (item_type == mapeditor::ItemType::Floor)
+			if (floor)
 			{
 				fl  = sector->intProperty("lightfloor");
 				abs = sector->boolProperty("lightfloorabsolute");
@@ -373,7 +406,7 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 			xoff = yoff = 0.0;
 			if (game::configuration().featureSupported(UDMFFeature::FlatPanning))
 			{
-				if (item_type == mapeditor::ItemType::Floor)
+				if (floor)
 				{
 					xoff = sector->floatProperty("xpanningfloor");
 					yoff = sector->floatProperty("ypanningfloor");
@@ -391,7 +424,7 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 			xscale = yscale = 1.0;
 			if (game::configuration().featureSupported(UDMFFeature::FlatScaling))
 			{
-				if (item_type == mapeditor::ItemType::Floor)
+				if (floor)
 				{
 					xscale = sector->floatProperty("xscalefloor");
 					yscale = sector->floatProperty("yscalefloor");
@@ -406,7 +439,7 @@ void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEM
 		}
 
 		// Texture
-		if (item_type == mapeditor::ItemType::Floor)
+		if (floor)
 			texname_ = sector->floor().texture;
 		else
 			texname_ = sector->ceiling().texture;
@@ -503,11 +536,15 @@ void InfoOverlay3D::draw(gl::draw2d::Context& dc, float alpha)
 
 	// Update if needed
 	if (object_
-		&& (object_->modifiedTime() > last_update_ || // object updated
+		&& (object_->modifiedTime() > last_update_ || // object_ updated
 			(object_->objType() == MapObject::Type::Side
 			 && (dynamic_cast<MapSide*>(object_)->parentLine()->modifiedTime() > last_update_ || // parent line updated
 				 dynamic_cast<MapSide*>(object_)->sector()->modifiedTime() > last_update_)))) // parent sector updated
-		update(object_->index(), current_type_, object_->parentMap());
+	{
+		mapeditor::Item newitem{ static_cast<int>(object_->index()), current_type_ };
+		newitem.real_index = current_item_.real_index;
+		update(newitem, object_->parentMap());
+	}
 
 	// Determine overlay height
 	int nlines = std::max<int>(info_.size(), info2_.size());

@@ -58,6 +58,7 @@ private:
 	void processZDoomSlopes(SLADEMap* map) const;
 	void processEternitySlopes(const SLADEMap* map) const;
 	void processSRB2Slopes(const SLADEMap* map) const;
+	void processSRB2FOFs(const SLADEMap* map) const;
 	void processEDGEClassicSlopes(SLADEMap* map) const;
 
 	template<MapSector::SurfaceType>
@@ -69,6 +70,7 @@ private:
 	template<MapSector::SurfaceType>
 	void applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights) const;
 	template<MapSector::SurfaceType>
-	void applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights) const;
+	void applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
+		const;
 };
 } // namespace slade

@@ -64,20 +64,34 @@ namespace mapeditor
 	{
 		int      index;
 		ItemType type;
+		int      real_index;
+		int      control_line;
 
-		Item(int index = -1, ItemType type = ItemType::Any) : index{ index }, type{ type } {}
+		Item(int index = -1, ItemType type = ItemType::Any) :
+			index{ index },
+			type{ type },
+			real_index{ -1 },
+			control_line{ -1 }
+		{
+		}
 
 		// Comparison operators
 		bool operator<(const Item& other) const
 		{
 			if (type == other.type)
-				return index < other.index;
+			{
+				if (index == other.index)
+					return real_index < other.real_index;
+				else
+					return index < other.index;
+			}
 			else
 				return type < other.type;
 		}
 		bool operator==(const Item& other) const
 		{
-			return index == other.index && (type == ItemType::Any || type == other.type);
+			return index == other.index && (type == ItemType::Any || type == other.type)
+				   && real_index == other.real_index;
 		}
 		bool operator!=(const Item& other) const { return !(*this == other); }
 

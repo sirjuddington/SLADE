@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MapEditor/MapEditor.h"
+
 // Forward declarations
 namespace slade
 {
@@ -24,7 +26,7 @@ public:
 	InfoOverlay3D()  = default;
 	~InfoOverlay3D() = default;
 
-	void update(int item_index, mapeditor::ItemType item_type, SLADEMap* map);
+	void update(mapeditor::Item item, SLADEMap* map);
 	void draw(gl::draw2d::Context& dc, float alpha = 1.0f);
 	void reset()
 	{
@@ -36,6 +38,7 @@ private:
 	vector<string>      info_;
 	vector<string>      info2_;
 	mapeditor::ItemType current_type_;
+	mapeditor::Item     current_item_;
 	string              texname_;
 	unsigned            texture_     = 0;
 	bool                thing_icon_  = false;

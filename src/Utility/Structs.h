@@ -152,7 +152,9 @@ template<typename T> struct Vec3
 	{
 	}
 	Vec3(const glm::vec3& glm_vec) :
-		x{ static_cast<T>(glm_vec.x) }, y{ static_cast<T>(glm_vec.y) }, z{ static_cast<T>(glm_vec.z) }
+		x{ static_cast<T>(glm_vec.x) },
+		y{ static_cast<T>(glm_vec.y) },
+		z{ static_cast<T>(glm_vec.z) }
 	{
 	}
 
@@ -277,7 +279,8 @@ template<typename T> struct Rect
 	template<typename OtherT> Rect(const Vec2<OtherT>& tl, const Vec2<OtherT>& br) : tl{ tl }, br{ br } {}
 	template<typename OtherT>
 	Rect(OtherT x1, OtherT y1, OtherT x2, OtherT y2) :
-		tl{ static_cast<T>(x1), static_cast<T>(y1) }, br{ static_cast<T>(x2), static_cast<T>(y2) }
+		tl{ static_cast<T>(x1), static_cast<T>(y1) },
+		br{ static_cast<T>(x2), static_cast<T>(y2) }
 	{
 	}
 
@@ -303,6 +306,8 @@ template<typename T> struct Rect
 	// TR/BL aliases that make more sense for line segments
 	const Vec2<T>& start() const { return tl; }
 	const Vec2<T>& end() const { return br; }
+
+	Rect flip() const { return Rect(br, tl); }
 
 	T x1() const { return tl.x; }
 	T y1() const { return tl.y; }
