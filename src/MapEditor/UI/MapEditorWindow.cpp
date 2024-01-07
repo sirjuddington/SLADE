@@ -224,7 +224,7 @@ void MapEditorWindow::setupMenu()
 	SAction::fromId("mapw_run_map")->addToMenu(menu_map);
 	SAction::fromId("mapw_quick_run_map")->addToMenu(menu_map);
 	menu_map->AppendSeparator();
-	SAction::fromId("mapw_close_map")->addToMenu(menu_map);
+	SAction::fromId("mapw_close")->addToMenu(menu_map);
 	menu->Append(menu_map, "&Map");
 
 	// Edit menu
@@ -1225,7 +1225,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	}
 
 	// Map->Close
-	if (id == "mapw_close_map")
+	if (id == "mapw_close")
 	{
 		wxWindow::Close();
 		return true;
