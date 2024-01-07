@@ -52,7 +52,7 @@ public:
 	bool setLanguage(TextLanguage* lang);
 
 	void setup();
-	void setupFoldMargin(TextStyle* margin_style = nullptr);
+	void setupFoldMargin(const TextStyle* margin_style = nullptr);
 	bool applyStyleSet(StyleSet* style);
 	bool loadEntry(ArchiveEntry* entry);
 	void getRawText(MemChunk& mc) const;

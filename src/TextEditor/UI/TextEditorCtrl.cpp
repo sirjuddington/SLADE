@@ -75,6 +75,7 @@ CVAR(Int, txed_line_extra_height, 0, CVar::Flag::Save)
 CVAR(Bool, txed_tab_spaces, false, CVar::Flag::Save)
 CVAR(Int, txed_show_whitespace, 0, CVar::Flag::Save)
 CVAR(Bool, txed_calltips_argset_kb, true, CVar::Flag::Save)
+CVAR(Bool, txed_use_directwrite, true, CVar::Flag::Save)
 CVAR(Int, txed_font_quality, wxSTC_EFF_QUALITY_DEFAULT, CVar::Flag::Save)
 CVAR(Bool, txed_fr_matchcase, false, CVar::Save)
 CVAR(Bool, txed_fr_matchword, false, CVar::Save)
@@ -106,7 +107,7 @@ int searchFlags()
 
 	return flags;
 }
-}
+} // namespace
 
 // -----------------------------------------------------------------------------
 //
@@ -273,7 +274,8 @@ void TextEditorCtrl::setup()
 	SetDoubleBuffered(true);
 	SetBufferedDraw(true);
 	SetUseAntiAliasing(true);
-	SetTechnology(wxSTC_TECHNOLOGY_DIRECTWRITE);
+	if (txed_use_directwrite)
+		SetTechnology(wxSTC_TECHNOLOGY_DIRECTWRITE);
 	SetFontQuality(txed_font_quality);
 	SetMultipleSelection(true);
 	SetAdditionalSelectionTyping(true);
@@ -346,7 +348,7 @@ void TextEditorCtrl::setup()
 // -----------------------------------------------------------------------------
 // Sets up the code folding margin
 // -----------------------------------------------------------------------------
-void TextEditorCtrl::setupFoldMargin(TextStyle* margin_style)
+void TextEditorCtrl::setupFoldMargin(const TextStyle* margin_style)
 {
 	if (!txed_fold_enable)
 	{
@@ -470,10 +472,10 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 		return true;
 
 	// Get character entry data
-	wxString text = wxString::FromUTF8((const char*)entry->rawData(), entry->size());
+	wxString text = wxString::FromUTF8(reinterpret_cast<const char*>(entry->rawData()), entry->size());
 	// If opening as UTF8 failed for some reason, try again as 8-bit data
 	if (text.length() == 0)
-		text = wxString::From8BitData((const char*)entry->rawData(), entry->size());
+		text = wxString::From8BitData(reinterpret_cast<const char*>(entry->rawData()), entry->size());
 
 	// Load text into editor
 	SetText(text);
@@ -493,7 +495,7 @@ void TextEditorCtrl::getRawText(MemChunk& mc) const
 {
 	mc.clear();
 	wxString text = GetText();
-	mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
+	mc.importMem(reinterpret_cast<const uint8_t*>(text.ToUTF8().data()), text.ToUTF8().length());
 }
 
 // -----------------------------------------------------------------------------
@@ -872,7 +874,7 @@ void TextEditorCtrl::showCalltip(int position)
 		call_tip_->setKeywordColour(ss_current->style("keyword")->foreground());
 	}
 	if (txed_calltips_use_font)
-		call_tip_->setFont(ss_current->defaultFontFace(), (int)round(ss_current->defaultFontSize() * 0.9));
+		call_tip_->setFont(ss_current->defaultFontFace(), static_cast<int>(round(ss_current->defaultFontSize() * 0.9)));
 	else
 		call_tip_->setFont("", 0);
 
@@ -1325,7 +1327,7 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 				auto word = GetTextRange(WordStartPosition(GetCurrentPos(), true), GetCurrentPos()).ToStdString();
 
 				autocomp_list_ = language_->autocompletionList(word);
-				AutoCompShow((int)word.size(), autocomp_list_);
+				AutoCompShow(static_cast<int>(word.size()), autocomp_list_);
 			}
 
 			handled = true;
@@ -1666,7 +1668,7 @@ void TextEditorCtrl::onCalltipClicked(wxStyledTextEvent& e)
 	// Argset down
 	if (e.GetPosition() == 2)
 	{
-		if ((unsigned)ct_argset_ < ct_function_->contexts().size() - 1)
+		if (static_cast<unsigned>(ct_argset_) < ct_function_->contexts().size() - 1)
 		{
 			ct_argset_++;
 			updateCalltip();
