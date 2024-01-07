@@ -359,6 +359,8 @@ void ScriptManagerWindow::setupMenu()
 	// File menu
 	auto file_menu = new wxMenu();
 	SAction::fromId("scrm_newscript_editor")->addToMenu(file_menu);
+	file_menu->AppendSeparator();
+	SAction::fromId("scrm_close")->addToMenu(file_menu);
 	menu->Append(file_menu, "&File");
 
 	// Script menu
@@ -683,7 +685,7 @@ void ScriptManagerWindow::openScriptTab(scriptmanager::Script* script) const
 scriptmanager::Script* ScriptManagerWindow::currentScript() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
-	if (page->GetName() == "script")
+	if (page && page->GetName() == "script")
 		return dynamic_cast<ScriptPanel*>(page)->script();
 
 	return nullptr;
@@ -718,7 +720,7 @@ bool ScriptManagerWindow::handleAction(string_view id)
 	if (current && current->handleAction(id))
 		return true;
 
-	// File->New->Editor Script
+	// File->New Editor Script
 	if (id == "scrm_newscript_editor")
 	{
 		NewEditorScriptDialog dlg(this);
@@ -737,6 +739,23 @@ bool ScriptManagerWindow::handleAction(string_view id)
 				if (type == ScriptType::Map)
 					mapeditor::window()->reloadScriptsMenu();
 			}
+		}
+
+		return true;
+	}
+
+	// File->Close
+	if (id == "scrm_close")
+	{
+		auto script = currentScript();
+
+		if (script)
+		{
+			closeScriptTab(script);
+		}
+		else
+		{
+			wxWindow::Close();
 		}
 
 		return true;
