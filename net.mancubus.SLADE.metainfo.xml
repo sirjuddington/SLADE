@@ -4,7 +4,7 @@
 	<name>SLADE</name>
 	<summary>It's a Doom editor</summary>
 	<metadata_license>CC0-1.0</metadata_license>
-	<project_license>GPL-2.0</project_license>
+	<project_license>GPL-2.0-only</project_license>
 	<developer_name>Simon Judd</developer_name>
 	<url type="homepage">https://slade.mancubus.net/</url>
 	<url type="bugtracker">https://github.com/sirjuddington/SLADE/issues</url>
@@ -22,7 +22,7 @@
 			SLADE3 can be considered a successor to both SLumpEd and SLADE - it combines the features of both, to create an all-in-one editor. Why does it keep the name of what was previously just a map editor? Because it fits :)
 		</p>
 		<p>
-			As with SLumpEd and previous versions of SLADE, SLADE3 is fully cross-platform. It can be run on various operating systems, including Windows, Linux and Mac OS/X. So no matter your preferred OS, SLADE3 is available for you.
+			As with SLumpEd and previous versions of SLADE, SLADE3 is fully cross-platform. It can be run on various operating systems, including Windows, Linux and macOS. So no matter your preferred OS, SLADE3 is available for you.
 		</p>
 	</description>
 	<screenshots>
