@@ -53,6 +53,7 @@
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/Palette/PaletteManager.h"
+#include "Library/ArchiveUIConfig.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
 #include "MainEditor/EntryOperations.h"
@@ -75,6 +76,7 @@
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/Lists/ArchiveEntryTree.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
@@ -97,13 +99,8 @@ const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry 
 CVAR(Int, autosave_entry_changes, 2, CVar::Flag::Save) // 0=no, 1=yes, 2=ask
 CVAR(Bool, confirm_entry_delete, true, CVar::Flag::Save)
 CVAR(Bool, context_submenus, true, CVar::Flag::Save)
-CVAR(String, last_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
-CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
-CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
 CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
-CVAR(Int, ap_splitter_position_tree, 300, CVar::Flag::Save)
-CVAR(Int, ap_splitter_position_list, 300, CVar::Flag::Save)
 CVAR(Bool, elist_no_tree, false, CVar::Flag::Save)
 
 
@@ -426,14 +423,17 @@ size_t getNamespaceNumber(
 ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	wxPanel(parent, -1), archive_{ archive }, undo_manager_{ new UndoManager() }, ee_manager_{ new ExternalEditManager }
 {
-	setup(archive.get());
-	bindEvents(archive.get());
+	if (archive)
+	{
+		setup(*archive);
+		bindEvents(archive.get());
+	}
 }
 
 // -----------------------------------------------------------------------------
 // Setup the panel controls and layout
 // -----------------------------------------------------------------------------
-void ArchivePanel::setup(Archive* archive)
+void ArchivePanel::setup(const Archive& archive)
 {
 	// Create controls
 	splitter_         = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
@@ -453,9 +453,10 @@ void ArchivePanel::setup(Archive* archive)
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(ui::scalePx(300));
 	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	int split_pos = ap_splitter_position_list;
-	if (archive && archive->formatDesc().supports_dirs)
-		split_pos = ap_splitter_position_tree;
+	auto split_pos = library::archiveUIConfigSplitterPos(archive.libraryId());
+	if (split_pos < 0)
+		split_pos = ui::getStateInt(
+			archive.formatDesc().supports_dirs ? "ArchivePanelSplitPosTree" : "ArchivePanelSplitPosList");
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
 	// Update size+layout
@@ -486,9 +487,11 @@ void ArchivePanel::bindEvents(Archive* archive)
 			if (auto archive = archive_.lock().get())
 			{
 				if (archive->formatDesc().supports_dirs)
-					ap_splitter_position_tree = e.GetSashPosition();
+					ui::saveStateInt("ArchivePanelSplitPosTree", e.GetSashPosition());
 				else
-					ap_splitter_position_list = e.GetSashPosition();
+					ui::saveStateInt("ArchivePanelSplitPosList", e.GetSashPosition());
+
+				library::saveArchiveUIConfigSplitterPos(archive->libraryId(), e.GetSashPosition());
 			}
 		});
 
@@ -2084,7 +2087,7 @@ bool ArchivePanel::gfxColourise()
 	// Create colourise dialog
 	auto               pal = theMainWindow->paletteChooser()->selectedPalette();
 	GfxColouriseDialog gcd(this, selection[0], *pal);
-	gcd.setColour(last_colour);
+	gcd.setColour(ui::getStateString("ColouriseDialogLastColour"));
 
 	// Run dialog
 	if (gcd.ShowModal() == wxID_OK)
@@ -2115,7 +2118,7 @@ bool ArchivePanel::gfxColourise()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	last_colour = gcd.colour().toString(ColRGBA::StringFormat::RGB);
+	ui::saveStateString("ColouriseDialogLastColour", gcd.colour().toString(ColRGBA::StringFormat::RGB));
 	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
@@ -2132,7 +2135,7 @@ bool ArchivePanel::gfxTint()
 	// Create colourise dialog
 	auto          pal = theMainWindow->paletteChooser()->selectedPalette();
 	GfxTintDialog gtd(this, selection[0], *pal);
-	gtd.setValues(last_tint_colour, last_tint_amount);
+	gtd.setValues(ui::getStateString("TintDialogLastColour"), ui::getStateInt("TintDialogLastAmount"));
 
 	// Run dialog
 	if (gtd.ShowModal() == wxID_OK)
@@ -2164,8 +2167,8 @@ bool ArchivePanel::gfxTint()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	last_tint_colour = gtd.colour().toString(ColRGBA::StringFormat::RGB);
-	last_tint_amount = (int)(gtd.amount() * 100.0f);
+	ui::saveStateString("TintDialogLastColour", gtd.colour().toString(ColRGBA::StringFormat::RGB));
+	ui::saveStateInt("TintDialogLastAmount", static_cast<int>(gtd.amount() * 100.0f));
 	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
@@ -3381,21 +3384,7 @@ bool ArchivePanel::handleAction(string_view id)
 	{
 		RunDialog dlg(this, archive.get());
 		if (dlg.ShowModal() == wxID_OK)
-		{
-			wxString command = dlg.selectedCommandLine(archive.get(), "");
-			if (!command.IsEmpty())
-			{
-				// Set working directory
-				wxString wd = wxGetCwd();
-				wxSetWorkingDirectory(dlg.selectedExeDir());
-
-				// Run
-				wxExecute(command, wxEXEC_ASYNC);
-
-				// Restore working directory
-				wxSetWorkingDirectory(wd);
-			}
-		}
+			dlg.run(RunDialog::Config{ archive->filename() }, archive->libraryId());
 
 		return true;
 	}
@@ -4214,7 +4203,10 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 
 				// Attempt to open map
 				if (mapeditor::window()->openMap(info))
+				{
+					dlg.saveConfigToDatabase();
 					mapeditor::window()->Show();
+				}
 				else
 				{
 					mapeditor::window()->Hide();

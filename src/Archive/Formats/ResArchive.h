@@ -12,8 +12,8 @@ public:
 
 	// Opening/writing
 	bool readDirectory(const MemChunk& mc, size_t dir_offset, size_t num_lumps, shared_ptr<ArchiveDir> parent);
-	bool open(const MemChunk& mc) override; // Open from MemChunk
-	bool write(MemChunk& mc) override;      // Write to MemChunk
+	bool open(const MemChunk& mc, bool detect_types) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;                         // Write to MemChunk
 
 	// Misc
 	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;

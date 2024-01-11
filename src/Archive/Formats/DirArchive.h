@@ -42,9 +42,9 @@ public:
 	bool                  saveErrorsOccurred() const { return save_errors_; }
 
 	// Opening
-	bool open(string_view filename) override; // Open from File
-	bool open(ArchiveEntry* entry) override;  // Open from ArchiveEntry
-	bool open(const MemChunk& mc) override;   // Open from MemChunk
+	bool open(string_view filename, bool detect_types) override; // Open from File
+	bool open(ArchiveEntry* entry, bool detect_types) override;  // Open from ArchiveEntry
+	bool open(const MemChunk& mc, bool detect_types) override;   // Open from MemChunk
 
 	// Writing/Saving
 	bool write(MemChunk& mc) override;             // Write to MemChunk
@@ -64,13 +64,13 @@ public:
 	bool                     renameEntry(ArchiveEntry* entry, string_view name, bool force = false) override;
 
 	// Detection
-	MapDesc         mapDesc(ArchiveEntry* entry) override;
-	vector<MapDesc> detectMaps() override;
+	MapDesc         mapDesc(ArchiveEntry* entry) const override;
+	vector<MapDesc> detectMaps() const override;
 
 	// Search
-	ArchiveEntry*         findFirst(SearchOptions& options) override;
-	ArchiveEntry*         findLast(SearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
+	ArchiveEntry*         findFirst(SearchOptions& options) const override;
+	ArchiveEntry*         findLast(SearchOptions& options) const override;
+	vector<ArchiveEntry*> findAll(SearchOptions& options) const override;
 
 	// DirArchive-specific
 	void ignoreChangedEntries(const vector<DirEntryChange>& changes);

@@ -14,12 +14,11 @@ public:
 	void updateNamespaces();
 
 	// Opening/writing
-	bool open(const MemChunk& mc) override; // Open from MemChunk
-	bool write(MemChunk& mc) override;      // Write to MemChunk
+	bool open(const MemChunk& mc, bool detect_types) override; // Open from MemChunk
+	bool write(MemChunk& mc) override;                         // Write to MemChunk
 
 	// Misc
-	bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
-	unsigned numEntries() override { return rootDir()->numEntries(); }
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Entry addition/removal
 	shared_ptr<ArchiveEntry> addEntry(
@@ -37,8 +36,8 @@ public:
 	bool renameEntry(ArchiveEntry* entry, string_view name, bool force = false) override;
 
 	// Detection
-	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override;
-	string detectNamespace(ArchiveEntry* entry) override;
+	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const override;
+	string detectNamespace(ArchiveEntry* entry) const override;
 
 	static bool isDatArchive(const MemChunk& mc);
 	static bool isDatArchive(const string& filename);

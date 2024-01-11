@@ -15,7 +15,11 @@ class ResourceArchiveChooser;
 class MapEditorConfigDialog : public SDialog
 {
 public:
-	MapEditorConfigDialog(wxWindow* parent, Archive* archive = nullptr, bool show_maps = true, bool creating = false);
+	MapEditorConfigDialog(
+		wxWindow* parent,
+		Archive*  archive      = nullptr,
+		bool      show_maplist = true,
+		bool      creating     = false);
 	~MapEditorConfigDialog() override;
 
 	void             populateGameList();
@@ -25,6 +29,7 @@ public:
 	bool             configMatchesMap(const Archive::MapDesc& map) const;
 	wxString         selectedGame();
 	wxString         selectedPort();
+	void             saveConfigToDatabase() const;
 
 private:
 	wxChoice*               choice_game_config_   = nullptr;

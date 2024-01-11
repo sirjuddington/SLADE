@@ -60,9 +60,11 @@ public:
 	bool                   isReadOnly() const { return read_only_; }
 	virtual bool           isWritable() { return true; }
 	time_t                 fileModifiedTime() const { return file_modified_; }
+	int64_t                libraryId() const { return library_id_; }
 
 	void setModified(bool modified);
 	void setFilename(string_view filename) { filename_ = filename; }
+	void setLibraryId(int64_t library_id) const { library_id_ = library_id; }
 
 	// Entry retrieval/info
 	bool                             checkEntry(const ArchiveEntry* entry) const;
@@ -78,9 +80,9 @@ public:
 	virtual bool  isTreeless() { return false; }
 
 	// Opening
-	virtual bool open(string_view filename);   // Open from File
-	virtual bool open(ArchiveEntry* entry);    // Open from ArchiveEntry
-	virtual bool open(const MemChunk& mc) = 0; // Open from MemChunk
+	virtual bool open(string_view filename, bool detect_types);   // Open from File
+	virtual bool open(ArchiveEntry* entry, bool detect_types);    // Open from ArchiveEntry
+	virtual bool open(const MemChunk& mc, bool detect_types) = 0; // Open from MemChunk
 
 	// Writing/Saving
 	virtual bool write(MemChunk& mc) = 0;         // Write to MemChunk
@@ -89,7 +91,7 @@ public:
 
 	// Misc
 	virtual bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) = 0;
-	virtual unsigned numEntries();
+	virtual unsigned numEntries() const;
 	virtual void     close();
 	void             entryStateChanged(ArchiveEntry* entry);
 	void             putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr) const;
@@ -131,10 +133,11 @@ public:
 	virtual bool revertEntry(ArchiveEntry* entry);
 
 	// Detection
-	virtual MapDesc         mapDesc(ArchiveEntry* maphead) { return {}; }
-	virtual vector<MapDesc> detectMaps() { return {}; }
-	virtual string          detectNamespace(ArchiveEntry* entry);
-	virtual string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);
+	virtual MapDesc         mapDesc(ArchiveEntry* maphead) const { return {}; }
+	virtual vector<MapDesc> detectMaps() const { return {}; }
+	virtual string          detectNamespace(ArchiveEntry* entry) const;
+	virtual string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const;
+	void                    detectAllEntryTypes(bool show_in_splash_window = true) const;
 
 	// Search
 	struct SearchOptions
@@ -156,9 +159,9 @@ public:
 			search_subdirs  = false;
 		}
 	};
-	virtual ArchiveEntry*         findFirst(SearchOptions& options);
-	virtual ArchiveEntry*         findLast(SearchOptions& options);
-	virtual vector<ArchiveEntry*> findAll(SearchOptions& options);
+	virtual ArchiveEntry*         findFirst(SearchOptions& options) const;
+	virtual ArchiveEntry*         findLast(SearchOptions& options) const;
+	virtual vector<ArchiveEntry*> findAll(SearchOptions& options) const;
 	virtual vector<ArchiveEntry*> findModifiedEntries(ArchiveDir* dir = nullptr);
 
 	// Signals
@@ -193,12 +196,12 @@ protected:
 
 	// Helpers
 	bool genericLoadEntryData(const ArchiveEntry* entry, MemChunk& out) const;
-	void detectAllEntryTypes() const;
 
 private:
 	bool                   modified_ = true;
 	shared_ptr<ArchiveDir> dir_root_;
 	Signals                signals_;
+	mutable int64_t        library_id_ = -1;
 
 	static vector<ArchiveFormat> formats_;
 };
@@ -225,7 +228,7 @@ public:
 	}
 
 	// Misc
-	unsigned numEntries() override { return rootDir()->numEntries(); }
+	unsigned numEntries() const override { return rootDir()->numEntries(); }
 	void     getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr) const
 	{
 		return Archive::putEntryTreeAsList(list, nullptr);
@@ -264,8 +267,8 @@ public:
 	}
 
 	// Detection
-	string detectNamespace(ArchiveEntry* entry) override { return "global"; }
-	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override { return "global"; }
+	string detectNamespace(ArchiveEntry* entry) const override { return "global"; }
+	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const override { return "global"; }
 };
 
 // Simple class that will block and unblock modification signals for an archive via RAII
@@ -280,5 +283,15 @@ public:
 private:
 	Archive* archive_;
 };
+
+// Helper functions
+namespace archive
+{
+	shared_ptr<Archive> createIfArchive(const string& filename);
+	shared_ptr<Archive> createIfArchive(const MemChunk& mc, string_view name = {});
+	shared_ptr<Archive> create(string_view format);
+	bool                isKnownExtension(string_view file_ext);
+	ArchiveFormat       formatDesc(string_view id);
+} // namespace archive
 
 } // namespace slade

@@ -79,12 +79,12 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\src;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\src;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)..\build\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\build\lib\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\src;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\src;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\include;$(ProjectDir)..\thirdparty\fmt\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)..\build\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\build\lib\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
@@ -321,7 +321,16 @@
     <ClCompile Include="..\src\Audio\ModMusic.cpp" />
     <ClCompile Include="..\src\Audio\Mp3Music.cpp" />
     <ClCompile Include="..\src\General\Console.cpp" />
+    <ClCompile Include="..\src\General\Database.cpp" />
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
+    <ClCompile Include="..\src\Library\ArchiveEntry.cpp" />
+    <ClCompile Include="..\src\Library\ArchiveFile.cpp" />
+    <ClCompile Include="..\src\Library\ArchiveMap.cpp" />
+    <ClCompile Include="..\src\Library\ArchiveMapConfig.cpp" />
+    <ClCompile Include="..\src\Library\ArchiveRunConfig.cpp" />
+    <ClCompile Include="..\src\Library\ArchiveUIConfig.cpp" />
+    <ClCompile Include="..\src\Library\Library.cpp" />
+    <ClCompile Include="..\src\Library\UI\LibraryPanel.cpp" />
     <ClCompile Include="..\src\OpenGL\View.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Archive.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Game.cpp" />
@@ -372,6 +381,9 @@
     <ClCompile Include="..\src\UI\Dialogs\SetupWizard\TempFolderWizardPage.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\TranslationEditorDialog.cpp" />
     <ClCompile Include="..\src\UI\Lists\ArchiveEntryTree.cpp" />
+    <ClCompile Include="..\src\UI\Lists\SDataViewCtrl.cpp" />
+    <ClCompile Include="..\src\UI\State.cpp" />
+    <ClCompile Include="..\src\Utility\DateTime.cpp" />
     <ClCompile Include="..\src\Utility\FileUtils.cpp" />
     <ClCompile Include="..\src\Game\ActionSpecial.cpp" />
     <ClCompile Include="..\src\Game\Args.cpp" />
@@ -570,6 +582,7 @@
     </ClCompile>
     <ClCompile Include="..\src\Utility\FileMonitor.cpp" />
     <ClCompile Include="..\src\Utility\MathStuff.cpp" />
+    <ClCompile Include="..\src\Utility\MD5.cpp" />
     <ClCompile Include="..\src\Utility\MemChunk.cpp" />
     <ClCompile Include="..\src\Utility\Parser.cpp" />
     <ClCompile Include="..\src\Utility\Polygon2D.cpp" />
@@ -688,8 +701,17 @@
     <ClInclude Include="..\src\common.h" />
     <ClInclude Include="..\src\common2.h" />
     <ClInclude Include="..\src\General\Console.h" />
+    <ClInclude Include="..\src\General\Database.h" />
     <ClInclude Include="..\src\General\Sigslot.h" />
     <ClInclude Include="..\src\Graphics\Graphics.h" />
+    <ClInclude Include="..\src\Library\ArchiveEntry.h" />
+    <ClInclude Include="..\src\Library\ArchiveFile.h" />
+    <ClInclude Include="..\src\Library\ArchiveMap.h" />
+    <ClInclude Include="..\src\Library\ArchiveMapConfig.h" />
+    <ClInclude Include="..\src\Library\ArchiveRunConfig.h" />
+    <ClInclude Include="..\src\Library\ArchiveUIConfig.h" />
+    <ClInclude Include="..\src\Library\Library.h" />
+    <ClInclude Include="..\src\Library\UI\LibraryPanel.h" />
     <ClInclude Include="..\src\OpenGL\View.h" />
     <ClInclude Include="..\src\Scripting\Export\Export.h" />
     <ClInclude Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.h" />
@@ -737,7 +759,11 @@
     <ClInclude Include="..\src\UI\Dialogs\SetupWizard\WizardPageBase.h" />
     <ClInclude Include="..\src\UI\Dialogs\TranslationEditorDialog.h" />
     <ClInclude Include="..\src\UI\Lists\ArchiveEntryTree.h" />
+    <ClInclude Include="..\src\UI\Lists\SDataViewCtrl.h" />
+    <ClInclude Include="..\src\UI\State.h" />
+    <ClInclude Include="..\src\Utility\DateTime.h" />
     <ClInclude Include="..\src\Utility\FileUtils.h" />
+    <ClInclude Include="..\src\Utility\MD5.h" />
     <ClInclude Include="..\src\Utility\Property.h" />
     <ClInclude Include="..\src\Utility\SeekableData.h" />
     <ClInclude Include="..\src\Game\ActionSpecial.h" />

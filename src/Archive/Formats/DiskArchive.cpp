@@ -51,7 +51,7 @@ using namespace slade;
 // Reads disk format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DiskArchive::open(const MemChunk& mc)
+bool DiskArchive::open(const MemChunk& mc, bool detect_types)
 {
 	size_t mcsize = mc.size();
 
@@ -124,7 +124,8 @@ bool DiskArchive::open(const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

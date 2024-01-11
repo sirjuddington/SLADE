@@ -48,7 +48,7 @@ using namespace slade;
 // Reads bzip2 format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool BZip2Archive::open(const MemChunk& mc)
+bool BZip2Archive::open(const MemChunk& mc, bool detect_types)
 {
 	size_t size = mc.size();
 	if (size < 14)
@@ -147,7 +147,7 @@ bool BZip2Archive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // Returns the entry if it matches the search criteria in [options],
 // or null otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
+ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options) const
 {
 	// Init search variables
 	strutil::upperIP(options.match_name);
@@ -187,7 +187,7 @@ ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Same as findFirst since there's just one entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2Archive::findLast(SearchOptions& options)
+ArchiveEntry* BZip2Archive::findLast(SearchOptions& options) const
 {
 	return findFirst(options);
 }
@@ -195,7 +195,7 @@ ArchiveEntry* BZip2Archive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options) const
 {
 	// Init search variables
 	vector<ArchiveEntry*> ret;

@@ -33,11 +33,14 @@
 #include "Main.h"
 #include "ArchiveManager.h"
 #include "App.h"
-#include "Formats/All.h"
 #include "Formats/DirArchive.h"
+#include "Formats/WadArchive.h"
+#include "Formats/ZipArchive.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
+#include "Library/Library.h"
+#include "Utility/DateTime.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -52,6 +55,67 @@ using namespace slade;
 CVAR(Int, base_resource, -1, CVar::Flag::Save)
 CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
 CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Updates/Adds [archive] in/to the library and updates last opened time if
+// requested.
+// Returns true if the archive was added to the library (and thus entry types
+// were already detected)
+// -----------------------------------------------------------------------------
+bool updateArchiveInLibrary(const Archive& archive, bool update_last_opened)
+{
+	ui::setSplashProgressMessage("Updating Library");
+	ui::setSplashProgress(1.0f);
+
+	// Read info from library into archive
+	auto lib_id = library::readArchiveInfo(archive);
+
+	// If it wasn't in the library, add it
+	auto added = false;
+	if (lib_id < 0)
+	{
+		// Need to detect all entry types before adding
+		archive.detectAllEntryTypes(false);
+
+		// Add to library
+		ui::setSplashProgressMessage("Updating Library");
+		lib_id = library::writeArchiveInfo(archive);
+
+		added = true;
+	}
+
+	// Update last opened time if needed
+	if (update_last_opened)
+		library::setArchiveLastOpenedTime(lib_id, datetime::now());
+
+	ui::setSplashProgressMessage("");
+
+	return added;
+}
+
+// -----------------------------------------------------------------------------
+// Writes all bookmarked entries for [archive] to the library
+// -----------------------------------------------------------------------------
+void writeArchiveBookmarksToLibrary(const Archive* archive, const vector<weak_ptr<ArchiveEntry>>& bookmarks)
+{
+	// Remove existing bookmarks for [archive] in library
+	library::removeArchiveBookmarks(archive->libraryId());
+
+	// Add any bookmarks that are in [archive] to the library
+	for (auto& bookmark : bookmarks)
+		if (auto entry = bookmark.lock().get())
+			if (entry->parent() == archive)
+				library::addBookmark(archive->libraryId(), entry->libraryId());
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -115,7 +179,8 @@ bool ArchiveManager::init()
 	program_resource_archive_ = std::make_unique<ZipArchive>();
 
 #ifdef __WXOSX__
-	auto resdir = app::path("../Resources", app::Dir::Executable); // Use Resources dir within bundle on mac
+	// Use Resources dir within bundle on mac
+	auto resdir = app::path("../Resources", app::Dir::Executable);
 #else
 	auto resdir = app::path("res", app::Dir::Executable);
 #endif
@@ -143,7 +208,7 @@ bool ArchiveManager::init()
 		dir_slade_pk3 = "slade.pk3";
 
 	// Open slade.pk3
-	if (!program_resource_archive_->open(dir_slade_pk3))
+	if (!program_resource_archive_->open(dir_slade_pk3, true))
 	{
 		log::error("Unable to find slade.pk3!");
 		res_archive_open_ = false;
@@ -170,7 +235,7 @@ bool ArchiveManager::initArchiveFormats() const
 // -----------------------------------------------------------------------------
 bool ArchiveManager::initBaseResource()
 {
-	return openBaseResource((int)base_resource);
+	return openBaseResource(base_resource);
 }
 
 // -----------------------------------------------------------------------------
@@ -190,12 +255,27 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		// Emit archive changed/saved signal when received from the archive
 		archive->signals().modified.connect([this](Archive& archive, bool modified)
 											{ signals_.archive_modified(archiveIndex(&archive), modified); });
-		archive->signals().saved.connect([this](Archive& archive) { signals_.archive_saved(archiveIndex(&archive)); });
+		archive->signals().saved.connect(
+			[this](Archive& archive)
+			{
+				// Update in library
+				if (archive.isOnDisk())
+				{
+					archive.setLibraryId(library::writeArchiveInfo(archive));
+
+					// (Re)Write bookmarks since entry ids have likely changed
+					// and/or been added
+					writeArchiveBookmarksToLibrary(&archive, bookmarks_);
+				}
+
+				signals_.archive_saved(archiveIndex(&archive));
+			});
 
 		// Announce the addition
 		signals_.archive_added(open_archives_.size() - 1);
 
 		// Add to resource manager
+		ui::setSplashProgressMessage("Loading Resources");
 		app::resources().addArchive(archive.get());
 
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
@@ -253,12 +333,12 @@ shared_ptr<Archive> ArchiveManager::getArchive(string_view filename)
 // Returns the archive opened from the given parent entry
 // (nullptr if it doesn't exist)
 // ----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::getArchive(ArchiveEntry* parent)
+shared_ptr<Archive> ArchiveManager::getArchive(const ArchiveEntry* parent)
 {
-	for (unsigned a = 0; a < open_archives_.size(); ++a)
+	for (auto& open_archive : open_archives_)
 	{
-		if (open_archives_[a].archive->parentEntry() == parent)
-			return open_archives_[a].archive;
+		if (open_archive.archive->parentEntry() == parent)
+			return open_archive.archive;
 	}
 
 	return nullptr;
@@ -288,87 +368,45 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		return new_archive;
 	}
 
-	// Determine file format
-	string std_fn{ filename };
-	if (WadArchive::isWadArchive(std_fn))
-		new_archive = std::make_shared<WadArchive>();
-	else if (ZipArchive::isZipArchive(std_fn))
-		new_archive = std::make_shared<ZipArchive>();
-	else if (ResArchive::isResArchive(std_fn))
-		new_archive = std::make_shared<ResArchive>();
-	else if (DatArchive::isDatArchive(std_fn))
-		new_archive = std::make_shared<DatArchive>();
-	else if (LibArchive::isLibArchive(std_fn))
-		new_archive = std::make_shared<LibArchive>();
-	else if (PakArchive::isPakArchive(std_fn))
-		new_archive = std::make_shared<PakArchive>();
-	else if (BSPArchive::isBSPArchive(std_fn))
-		new_archive = std::make_shared<BSPArchive>();
-	else if (GrpArchive::isGrpArchive(std_fn))
-		new_archive = std::make_shared<GrpArchive>();
-	else if (RffArchive::isRffArchive(std_fn))
-		new_archive = std::make_shared<RffArchive>();
-	else if (GobArchive::isGobArchive(std_fn))
-		new_archive = std::make_shared<GobArchive>();
-	else if (LfdArchive::isLfdArchive(std_fn))
-		new_archive = std::make_shared<LfdArchive>();
-	else if (HogArchive::isHogArchive(std_fn))
-		new_archive = std::make_shared<HogArchive>();
-	else if (ADatArchive::isADatArchive(std_fn))
-		new_archive = std::make_shared<ADatArchive>();
-	else if (Wad2Archive::isWad2Archive(std_fn))
-		new_archive = std::make_shared<Wad2Archive>();
-	else if (WadJArchive::isWadJArchive(std_fn))
-		new_archive = std::make_shared<WadJArchive>();
-	else if (WolfArchive::isWolfArchive(std_fn))
-		new_archive = std::make_shared<WolfArchive>();
-	else if (GZipArchive::isGZipArchive(std_fn))
-		new_archive = std::make_shared<GZipArchive>();
-	else if (BZip2Archive::isBZip2Archive(std_fn))
-		new_archive = std::make_shared<BZip2Archive>();
-	else if (TarArchive::isTarArchive(std_fn))
-		new_archive = std::make_shared<TarArchive>();
-	else if (DiskArchive::isDiskArchive(std_fn))
-		new_archive = std::make_shared<DiskArchive>();
-	else if (PodArchive::isPodArchive(std_fn))
-		new_archive = std::make_shared<PodArchive>();
-	else if (ChasmBinArchive::isChasmBinArchive(std_fn))
-		new_archive = std::make_shared<ChasmBinArchive>();
-	else if (SiNArchive::isSiNArchive(std_fn))
-		new_archive = std::make_shared<SiNArchive>();
-	else
+	// Check if file is a known archive format
+	new_archive = archive::createIfArchive(string{ filename });
+	if (!new_archive)
 	{
 		// Unsupported format
 		global::error = "Unsupported or invalid Archive format";
 		return nullptr;
 	}
 
-	// If it opened successfully, add it to the list if needed & return it,
-	// Otherwise, delete it and return nullptr
-	if (new_archive->open(filename))
-	{
-		if (manage)
-		{
-			// Add the archive
-			auto index = open_archives_.size();
-			addArchive(new_archive);
-
-			// Announce open
-			if (!silent)
-				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(filename);
-		}
-
-		// Return the opened archive
-		return new_archive;
-	}
-	else
+	// Attempt to open archive
+	if (!new_archive->open(filename, false))
 	{
 		log::error(global::error);
 		return nullptr;
 	}
+
+	// Opened ok, add to manager if requested
+	if (manage)
+	{
+		// Add/update in library
+		auto added = updateArchiveInLibrary(*new_archive, true);
+
+		// Detect entry types if needed (use hints from library)
+		if (!added)
+			new_archive->detectAllEntryTypes();
+
+		// Restore bookmarks
+		addBookmarksFromLibrary(*new_archive);
+
+		// Add the archive
+		auto index = open_archives_.size();
+		addArchive(new_archive);
+
+		// Announce open
+		if (!silent)
+			signals_.archive_opened(index);
+	}
+
+	return new_archive;
 }
 
 // -----------------------------------------------------------------------------
@@ -394,91 +432,50 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	}
 
 	// Check entry type
-	shared_ptr<Archive> new_archive;
-	if (WadArchive::isWadArchive(entry->data()))
-		new_archive = std::make_shared<WadArchive>();
-	else if (ZipArchive::isZipArchive(entry->data()))
-		new_archive = std::make_shared<ZipArchive>();
-	else if (ResArchive::isResArchive(entry->data()))
-		new_archive = std::make_shared<ResArchive>();
-	else if (LibArchive::isLibArchive(entry->data()))
-		new_archive = std::make_shared<LibArchive>();
-	else if (DatArchive::isDatArchive(entry->data()))
-		new_archive = std::make_shared<DatArchive>();
-	else if (PakArchive::isPakArchive(entry->data()))
-		new_archive = std::make_shared<PakArchive>();
-	else if (BSPArchive::isBSPArchive(entry->data()))
-		new_archive = std::make_shared<BSPArchive>();
-	else if (GrpArchive::isGrpArchive(entry->data()))
-		new_archive = std::make_shared<GrpArchive>();
-	else if (RffArchive::isRffArchive(entry->data()))
-		new_archive = std::make_shared<RffArchive>();
-	else if (GobArchive::isGobArchive(entry->data()))
-		new_archive = std::make_shared<GobArchive>();
-	else if (LfdArchive::isLfdArchive(entry->data()))
-		new_archive = std::make_shared<LfdArchive>();
-	else if (HogArchive::isHogArchive(entry->data()))
-		new_archive = std::make_shared<HogArchive>();
-	else if (ADatArchive::isADatArchive(entry->data()))
-		new_archive = std::make_shared<ADatArchive>();
-	else if (Wad2Archive::isWad2Archive(entry->data()))
-		new_archive = std::make_shared<Wad2Archive>();
-	else if (WadJArchive::isWadJArchive(entry->data()))
-		new_archive = std::make_shared<WadJArchive>();
-	else if (WolfArchive::isWolfArchive(entry->data()))
-		new_archive = std::make_shared<WolfArchive>();
-	else if (GZipArchive::isGZipArchive(entry->data()))
-		new_archive = std::make_shared<GZipArchive>();
-	else if (BZip2Archive::isBZip2Archive(entry->data()))
-		new_archive = std::make_shared<BZip2Archive>();
-	else if (TarArchive::isTarArchive(entry->data()))
-		new_archive = std::make_shared<TarArchive>();
-	else if (DiskArchive::isDiskArchive(entry->data()))
-		new_archive = std::make_shared<DiskArchive>();
-	else if (strutil::endsWithCI(entry->name(), ".pod") && PodArchive::isPodArchive(entry->data()))
-		new_archive = std::make_shared<PodArchive>();
-	else if (ChasmBinArchive::isChasmBinArchive(entry->data()))
-		new_archive = std::make_shared<ChasmBinArchive>();
-	else if (SiNArchive::isSiNArchive(entry->data()))
-		new_archive = std::make_shared<SiNArchive>();
-	else
+	auto new_archive = archive::createIfArchive(entry->data(), entry->name());
+	if (!new_archive)
 	{
 		// Unsupported format
 		global::error = "Unsupported or invalid Archive format";
 		return nullptr;
 	}
 
-	// If it opened successfully, add it to the list & return it,
-	// Otherwise, delete it and return nullptr
-	if (new_archive->open(entry))
-	{
-		if (manage)
-		{
-			// Add to parent's child list if parent is open in the manager (it should be)
-			int index_parent = -1;
-			if (entry->parent())
-				index_parent = archiveIndex(entry->parent());
-			if (index_parent >= 0)
-				open_archives_[index_parent].open_children.emplace_back(new_archive);
-
-			// Add the new archive
-			auto index = open_archives_.size();
-			addArchive(new_archive);
-
-			// Announce open
-			if (!silent)
-				signals_.archive_opened(index);
-
-			entry->lock();
-		}
-
-		return new_archive;
-	}
-	else
+	// Attempt to open archive
+	if (!new_archive->open(entry, false))
 	{
 		log::error(global::error);
 		return nullptr;
 	}
+
+	// Opened ok, add to manager if requested
+	if (manage)
+	{
+		// Add/update in library
+		auto added = updateArchiveInLibrary(*new_archive, true);
+
+		// Detect entry types if needed (use hints from library)
+		if (!added)
+			new_archive->detectAllEntryTypes();
+
+		// Add to parent's child list if parent is open in the manager (it should be)
+		int index_parent = -1;
+		if (entry->parent())
+			index_parent = archiveIndex(entry->parent());
+		if (index_parent >= 0)
+			open_archives_[index_parent].open_children.emplace_back(new_archive);
+
+		// Add the archive
+		auto index = open_archives_.size();
+		addArchive(new_archive);
+
+		// Announce open
+		if (!silent)
+			signals_.archive_opened(index);
+
+		entry->lock();
+	}
+
+	return new_archive;
 }
 
 // -----------------------------------------------------------------------------
@@ -503,32 +500,36 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 
 	new_archive = std::make_shared<DirArchive>();
 
-	// If it opened successfully, add it to the list if needed & return it,
-	// Otherwise, delete it and return nullptr
-	if (new_archive->open(dir))
-	{
-		if (manage)
-		{
-			// Add the archive
-			auto index = open_archives_.size();
-			addArchive(new_archive);
-
-			// Announce open
-			if (!silent)
-				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(dir);
-		}
-
-		// Return the opened archive
-		return new_archive;
-	}
-	else
+	// Attempt to open archive
+	if (!new_archive->open(dir, false))
 	{
 		log::error(global::error);
 		return nullptr;
 	}
+
+	// Opened ok, add to manager if requested
+	if (manage)
+	{
+		// Add/update in library
+		auto added = updateArchiveInLibrary(*new_archive, true);
+
+		// Detect entry types if needed (use hints from library)
+		if (!added)
+			new_archive->detectAllEntryTypes();
+
+		// Restore bookmarks
+		addBookmarksFromLibrary(*new_archive);
+
+		// Add the archive
+		auto index = open_archives_.size();
+		addArchive(new_archive);
+
+		// Announce open
+		if (!silent)
+			signals_.archive_opened(index);
+	}
+
+	return new_archive;
 }
 
 // -----------------------------------------------------------------------------
@@ -539,16 +540,8 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 {
 	// Create a new archive depending on the type specified
-	shared_ptr<Archive> new_archive;
-	if (format == "wad")
-		new_archive = std::make_shared<WadArchive>();
-	else if (format == "zip")
-		new_archive = std::make_shared<ZipArchive>();
-	else if (format == "grp")
-		new_archive = std::make_shared<GrpArchive>();
-	else if (format == "pak")
-		new_archive = std::make_shared<PakArchive>();
-	else
+	auto new_archive = archive::create(format);
+	if (!new_archive)
 	{
 		global::error = fmt::format("Can not create archive of format: {}", format);
 		log::error(global::error);
@@ -580,13 +573,14 @@ bool ArchiveManager::closeArchive(int index)
 	signals_.archive_closing(index);
 
 	// Delete any bookmarked entries contained in the archive
-	deleteBookmarksInArchive(open_archives_[index].archive.get());
+	deleteBookmarksInArchive(open_archives_[index].archive.get(), false);
 
 	// Remove from resource manager
 	app::resources().removeArchive(open_archives_[index].archive.get());
 
 	// Close any open child archives
-	// Clear out the open_children vector first, lest the children try to remove themselves from it
+	// Clear out the open_children vector first, lest the children try to remove
+	// themselves from it
 	auto open_children = open_archives_[index].open_children;
 	open_archives_[index].open_children.clear();
 	for (auto& archive : open_children)
@@ -619,6 +613,14 @@ bool ArchiveManager::closeArchive(int index)
 		}
 
 		parent->unlock();
+	}
+
+	// Update library
+	if (open_archives_[index].archive->isOnDisk())
+	{
+		const auto& archive = *open_archives_[index].archive;
+		library::writeArchiveEntryInfo(archive);
+		library::writeArchiveMapInfo(archive);
 	}
 
 	// Close the archive
@@ -656,7 +658,7 @@ bool ArchiveManager::closeArchive(string_view filename)
 // Closes the specified archive and removes it from the list, if it exists in
 // the list. Returns false if it doesn't exist, else true
 // -----------------------------------------------------------------------------
-bool ArchiveManager::closeArchive(Archive* archive)
+bool ArchiveManager::closeArchive(const Archive* archive)
 {
 	// Go through all open archives
 	for (int a = 0; a < (int)open_archives_.size(); a++)
@@ -684,7 +686,7 @@ void ArchiveManager::closeAll()
 // Returns the index in the list of the given archive, or -1 if the archive
 // doesn't exist in the list
 // -----------------------------------------------------------------------------
-int ArchiveManager::archiveIndex(Archive* archive)
+int ArchiveManager::archiveIndex(const Archive* archive) const
 {
 	// Go through all open archives
 	for (size_t a = 0; a < open_archives_.size(); a++)
@@ -702,7 +704,7 @@ int ArchiveManager::archiveIndex(Archive* archive)
 // Returns all open archives that live inside this one, recursively.
 // -----------------------------------------------------------------------------
 // This is the recursive bit, separate from the public entry point
-void ArchiveManager::getDependentArchivesInternal(Archive* archive, vector<shared_ptr<Archive>>& vec)
+void ArchiveManager::getDependentArchivesInternal(const Archive* archive, vector<shared_ptr<Archive>>& vec)
 {
 	int ai = archiveIndex(archive);
 
@@ -715,7 +717,7 @@ void ArchiveManager::getDependentArchivesInternal(Archive* archive, vector<share
 		}
 	}
 }
-vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(Archive* archive)
+vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(const Archive* archive)
 {
 	vector<shared_ptr<Archive>> vec;
 	getDependentArchivesInternal(archive, vec);
@@ -757,7 +759,7 @@ string ArchiveManager::getArchiveExtensionsString() const
 // -----------------------------------------------------------------------------
 // Returns true if [archive] is set to be used as a resource, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManager::archiveIsResource(Archive* archive)
+bool ArchiveManager::archiveIsResource(const Archive* archive) const
 {
 	int index = archiveIndex(archive);
 	if (index < 0)
@@ -789,7 +791,7 @@ void ArchiveManager::setArchiveResource(Archive* archive, bool resource)
 // Returns a vector of all open archives.
 // If [resources_only] is true, only includes archives marked as resources
 // -----------------------------------------------------------------------------
-vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only)
+vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only) const
 {
 	vector<shared_ptr<Archive>> ret;
 
@@ -804,7 +806,7 @@ vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only)
 // Returns a shared_ptr to the given [archive], or nullptr if it isn't open in
 // the archive manager
 // -----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::shareArchive(Archive* const archive)
+shared_ptr<Archive> ArchiveManager::shareArchive(const Archive* const archive)
 {
 	if (archive == base_resource_archive_.get())
 		return base_resource_archive_;
@@ -878,6 +880,14 @@ string ArchiveManager::getBaseResourcePath(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the currently selected base resource path
+// -----------------------------------------------------------------------------
+string ArchiveManager::currentBaseResourcePath()
+{
+	return getBaseResourcePath(base_resource);
+}
+
+// -----------------------------------------------------------------------------
 // Opens the base resource archive [index]
 // -----------------------------------------------------------------------------
 bool ArchiveManager::openBaseResource(int index)
@@ -912,10 +922,11 @@ bool ArchiveManager::openBaseResource(int index)
 
 	// Attempt to open the file
 	ui::showSplash(fmt::format("Opening {}...", filename), true);
-	if (base_resource_archive_->open(filename))
+	if (base_resource_archive_->open(filename, true))
 	{
 		base_resource = index;
 		ui::hideSplash();
+		updateArchiveInLibrary(*base_resource_archive_, false);
 		app::resources().addArchive(base_resource_archive_.get());
 		signals_.base_res_current_changed(index);
 		return true;
@@ -930,7 +941,7 @@ bool ArchiveManager::openBaseResource(int index)
 // Returns the first entry matching [name] in the resource archives.
 // Resource archives = open archives -> base resource archives.
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, Archive* ignore)
+ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, const Archive* ignore) const
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -959,7 +970,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, Archive* ignore
 // -----------------------------------------------------------------------------
 // Searches for an entry matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options, Archive* ignore)
+ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options, const Archive* ignore) const
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -988,7 +999,8 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options,
 // -----------------------------------------------------------------------------
 // Searches for entries matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore)
+vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOptions& options, const Archive* ignore)
+	const
 {
 	vector<ArchiveEntry*> ret;
 
@@ -1019,94 +1031,6 @@ vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOpti
 }
 
 // -----------------------------------------------------------------------------
-// Returns the recent file path at [index]
-// -----------------------------------------------------------------------------
-string ArchiveManager::recentFile(unsigned index)
-{
-	// Check index
-	if (index >= recent_files_.size())
-		return "";
-
-	return recent_files_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Adds a recent file to the list, if it doesn't exist already
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFile(string_view path)
-{
-	// Check the path is valid
-	if (!(fileutil::fileExists(path) || fileutil::dirExists(path)))
-		return;
-
-	// Replace \ with /
-	auto file_path = string{ path };
-	std::replace(file_path.begin(), file_path.end(), '\\', '/');
-
-	// Check if the file is already in the list
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == file_path)
-		{
-			// Move this file to the top of the list
-			recent_files_.erase(recent_files_.begin() + a);
-			recent_files_.insert(recent_files_.begin(), file_path);
-
-			// Announce
-			signals_.recent_files_changed();
-
-			return;
-		}
-	}
-
-	// Add the file to the top of the list
-	recent_files_.insert(recent_files_.begin(), file_path);
-
-	// Keep it trimmed
-	while (recent_files_.size() > (unsigned)max_recent_files)
-		recent_files_.pop_back();
-
-	// Announce
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Adds a list of recent file paths to the recent file list
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFiles(const vector<string>& paths)
-{
-	// Mute annoucements
-	signals_.recent_files_changed.block();
-
-	// Clear existing list
-	recent_files_.clear();
-
-	// Add the files
-	for (const auto& path : paths)
-		addRecentFile(path);
-
-	// Announce
-	signals_.recent_files_changed.unblock();
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Removes the recent file matching [path]
-// -----------------------------------------------------------------------------
-void ArchiveManager::removeRecentFile(string_view path)
-{
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == path)
-		{
-			recent_files_.erase(recent_files_.begin() + a);
-			signals_.recent_files_changed();
-			return;
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Adds [entry] to the bookmark list
 // -----------------------------------------------------------------------------
 void ArchiveManager::addBookmark(const shared_ptr<ArchiveEntry>& entry)
@@ -1123,6 +1047,7 @@ void ArchiveManager::addBookmark(const shared_ptr<ArchiveEntry>& entry)
 
 	// Add bookmark
 	bookmarks_.push_back(entry);
+	library::addBookmark(entry->parent()->libraryId(), entry->libraryId());
 
 	// Announce
 	signals_.bookmark_added(entry.get());
@@ -1139,10 +1064,10 @@ bool ArchiveManager::deleteBookmark(ArchiveEntry* entry)
 		if (bookmarks_[a].lock().get() == entry)
 		{
 			// Remove it
-			bookmarks_.erase(bookmarks_.begin() + a);
+			removeBookmark(a);
 
 			// Announce
-			signals_.bookmarks_removed(vector<ArchiveEntry*>(1, entry));
+			signals_.bookmarks_removed({ 1, entry });
 
 			return true;
 		}
@@ -1163,10 +1088,10 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 
 	// Remove bookmark
 	auto* entry = bookmarks_[index].lock().get();
-	bookmarks_.erase(bookmarks_.begin() + index);
+	removeBookmark(index);
 
 	// Announce
-	signals_.bookmarks_removed(vector<ArchiveEntry*>(1, entry));
+	signals_.bookmarks_removed({ 1, entry });
 
 	return true;
 }
@@ -1174,7 +1099,7 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Removes any bookmarked entries in [archive] from the list
 // -----------------------------------------------------------------------------
-bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
+bool ArchiveManager::deleteBookmarksInArchive(const Archive* archive, bool remove_from_library)
 {
 	// Go through bookmarks
 	bool                  removed = false;
@@ -1186,7 +1111,10 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 		if (!bookmark || bookmark->parent() == archive)
 		{
 			removed_entries.push_back(bookmark.get());
-			bookmarks_.erase(bookmarks_.begin() + a);
+			if (remove_from_library)
+				removeBookmark(a);
+			else
+				bookmarks_.erase(bookmarks_.begin() + a);
 			a--;
 			removed = true;
 		}
@@ -1205,7 +1133,7 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 // Removes any bookmarked entries in [node] from the list
 // -----------------------------------------------------------------------------
-bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
+bool ArchiveManager::deleteBookmarksInDir(const ArchiveDir* node)
 {
 	auto archive = node->archive();
 	bool removed = deleteBookmark(node->dirEntry());
@@ -1241,7 +1169,7 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 			if (remove)
 			{
 				removed_entries.push_back(bookmark.get());
-				bookmarks_.erase(bookmarks_.begin() + a);
+				removeBookmark(a);
 				--a;
 				removed = true;
 			}
@@ -1267,7 +1195,11 @@ void ArchiveManager::deleteAllBookmarks()
 	{
 		vector<ArchiveEntry*> removed;
 		for (const auto& entry : bookmarks_)
-			removed.push_back(entry.lock().get());
+		{
+			auto sp = entry.lock();
+			removed.push_back(sp.get());
+			library::removeBookmark(sp->parent()->libraryId(), sp->libraryId());
+		}
 
 		bookmarks_.clear();
 		signals_.bookmarks_removed(removed);
@@ -1277,7 +1209,7 @@ void ArchiveManager::deleteAllBookmarks()
 // -----------------------------------------------------------------------------
 // Returns the bookmarked entry at [index]
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
+ArchiveEntry* ArchiveManager::getBookmark(unsigned index) const
 {
 	// Check index
 	if (index >= bookmarks_.size())
@@ -1289,13 +1221,41 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns true if [entry] exists in the bookmarks list
 // -----------------------------------------------------------------------------
-bool slade::ArchiveManager::isBookmarked(ArchiveEntry* entry)
+bool slade::ArchiveManager::isBookmarked(const ArchiveEntry* entry) const
 {
 	for (const auto& bm : bookmarks_)
 		if (bm.lock().get() == entry)
 			return true;
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Helper function that removes the bookmark at [index] and handles library
+// updates etc.
+// -----------------------------------------------------------------------------
+void ArchiveManager::removeBookmark(unsigned index)
+{
+	auto* entry = bookmarks_[index].lock().get();
+
+	bookmarks_.erase(bookmarks_.begin() + index);
+
+	if (entry)
+		library::removeBookmark(entry->parent()->libraryId(), entry->libraryId());
+}
+
+// -----------------------------------------------------------------------------
+// Adds all bookmarks from the library for [archive]
+// -----------------------------------------------------------------------------
+void ArchiveManager::addBookmarksFromLibrary(const Archive& archive)
+{
+	auto bookmark_ids = library::bookmarkedEntries(archive.libraryId());
+
+	vector<ArchiveEntry*> entries;
+	archive.putEntryTreeAsList(entries);
+	for (auto entry : entries)
+		if (VECTOR_EXISTS(bookmark_ids, entry->libraryId()))
+			addBookmark(entry->getShared());
 }
 
 

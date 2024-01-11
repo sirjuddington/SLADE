@@ -65,7 +65,7 @@ WadJArchive::WadJArchive()
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadJArchive::open(const MemChunk& mc)
+bool WadJArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -203,7 +203,8 @@ bool WadJArchive::open(const MemChunk& mc)
 	updateNamespaces();
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Detect maps (will detect map entry types)
 	ui::setSplashProgressMessage("Detecting maps");
@@ -283,14 +284,14 @@ bool WadJArchive::write(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Hack to account for Jaguar Doom's silly sprite scheme
 // -----------------------------------------------------------------------------
-string WadJArchive::detectNamespace(unsigned index, ArchiveDir* dir)
+string WadJArchive::detectNamespace(unsigned index, ArchiveDir* dir) const
 {
 	auto nextentry = entryAt(index + 1);
 	if (nextentry && strutil::equalCI(nextentry->name(), "."))
 		return "sprites";
 	return WadArchive::detectNamespace(index);
 }
-string WadJArchive::detectNamespace(ArchiveEntry* entry)
+string WadJArchive::detectNamespace(ArchiveEntry* entry) const
 {
 	size_t index     = entryIndex(entry);
 	auto   nextentry = entryAt(index + 1);

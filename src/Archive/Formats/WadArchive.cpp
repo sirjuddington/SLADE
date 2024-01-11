@@ -147,8 +147,6 @@ void WadArchive::updateNamespaces()
 		// Check for namespace begin
 		if (strutil::endsWith(entry->upperName(), "_START"))
 		{
-			log::debug("Found namespace start marker {} at index {}", entry->name(), entryIndex(entry));
-
 			// Create new namespace
 			NSPair      ns(entry, nullptr);
 			string_view name = entry->name();
@@ -166,8 +164,6 @@ void WadArchive::updateNamespaces()
 			if (ns.name == "tt")
 				ns.name = "t";
 
-			log::debug("Added namespace {}", ns.name);
-
 			// Add to namespace list
 			namespaces_.push_back(ns);
 		}
@@ -175,8 +171,6 @@ void WadArchive::updateNamespaces()
 		// else if (strutil::matches(entry->upperName(), "?_END") || strutil::matches(entry->upperName(), "??_END"))
 		else if (strutil::endsWith(entry->upperName(), "_END"))
 		{
-			log::debug("Found namespace end marker {} at index {}", entry->name(), entryIndex(entry));
-
 			// Get namespace 'name'
 			auto ns_name = strutil::lower(entry->name());
 			strutil::removeLastIP(ns_name, 4);
@@ -190,8 +184,6 @@ void WadArchive::updateNamespaces()
 				ns_name = "s";
 			if (ns_name == "tt")
 				ns_name = "t";
-
-			log::debug("Namespace name {}", ns_name);
 
 			// Check if it's the end of an existing namespace
 			// Remember entry is getEntry(a)? index is 'a'
@@ -286,7 +278,7 @@ bool WadArchive::hasFlatHack()
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadArchive::open(const MemChunk& mc)
+bool WadArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -455,7 +447,8 @@ bool WadArchive::open(const MemChunk& mc)
 	updateNamespaces();
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Identify #included lumps (DECORATE, GLDEFS, etc.)
 	detectIncludes();
@@ -788,7 +781,7 @@ bool WadArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* d
 // If [maphead] is not really a map header entry, an invalid MapDesc will be
 // returned (MapDesc::head == nullptr)
 // -----------------------------------------------------------------------------
-Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
+Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead) const
 {
 	MapDesc map;
 
@@ -933,7 +926,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 // -----------------------------------------------------------------------------
 // Searches for any maps in the wad and adds them to the map list
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> WadArchive::detectMaps()
+vector<Archive::MapDesc> WadArchive::detectMaps() const
 {
 	vector<MapDesc> maps;
 
@@ -1068,7 +1061,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		{
 			// Detect map format (probably kinda slow but whatever, no better way to do it really)
 			WadArchive tempwad;
-			tempwad.open(entry->data());
+			tempwad.open(entry->data(), true);
 			auto emaps = tempwad.detectMaps();
 			if (!emaps.empty())
 			{
@@ -1102,7 +1095,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string WadArchive::detectNamespace(ArchiveEntry* entry)
+string WadArchive::detectNamespace(ArchiveEntry* entry) const
 {
 	return detectNamespace(entryIndex(entry));
 }
@@ -1110,7 +1103,7 @@ string WadArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string WadArchive::detectNamespace(unsigned index, ArchiveDir* dir)
+string WadArchive::detectNamespace(unsigned index, ArchiveDir* dir) const
 {
 	// Go through namespaces
 	for (auto& ns : namespaces_)
@@ -1187,7 +1180,7 @@ void WadArchive::detectIncludes()
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
+ArchiveEntry* WadArchive::findFirst(SearchOptions& options) const
 {
 	// Init search variables
 	unsigned index     = 0;
@@ -1256,7 +1249,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchive::findLast(SearchOptions& options)
+ArchiveEntry* WadArchive::findLast(SearchOptions& options) const
 {
 	// Init search variables
 	int index       = numEntries() - 1;
@@ -1328,7 +1321,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options) const
 {
 	// Init search variables
 	unsigned index     = 0;

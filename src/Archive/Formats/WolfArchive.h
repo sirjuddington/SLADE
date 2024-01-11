@@ -11,19 +11,18 @@ public:
 	~WolfArchive() override = default;
 
 	// Opening
-	bool open(string_view filename) override; // Open from File
-	bool open(const MemChunk& mc) override;   // Open from MemChunk
+	bool open(string_view filename, bool detect_types) override; // Open from File
+	bool open(const MemChunk& mc, bool detect_types) override;   // Open from MemChunk
 
 	bool openAudio(MemChunk& head, const MemChunk& data);
-	bool openGraph(const MemChunk& head, const MemChunk& data, MemChunk& dict);
-	bool openMaps(MemChunk& head, const MemChunk& data);
+	bool openGraph(const MemChunk& head, const MemChunk& data, MemChunk& dict, bool detect_types);
+	bool openMaps(MemChunk& head, const MemChunk& data, bool detect_types);
 
 	// Writing/Saving
 	bool write(MemChunk& mc) override; // Write to MemChunk
 
 	// Misc
-	bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
-	unsigned numEntries() override { return rootDir()->numEntries(); }
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Entry addition/removal
 	shared_ptr<ArchiveEntry> addEntry(

@@ -35,17 +35,10 @@
 #include "SFileDialog.h"
 #include "App.h"
 #include "StringUtils.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
-
-
-// -----------------------------------------------------------------------------
-//
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(String, dir_last)
 
 
 // -----------------------------------------------------------------------------
@@ -71,7 +64,7 @@ bool filedialog::openFile(
 	wxFileDialog fd(
 		parent,
 		wxutil::strFromView(caption),
-		dir_last,
+		ui::getStateString("FileDialogLastDir"),
 		wxutil::strFromView(fn_default),
 		wxutil::strFromView(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
@@ -90,7 +83,7 @@ bool filedialog::openFile(
 		info.path      = fn.path(true);
 
 		// Set last dir
-		dir_last = info.path;
+		ui::saveStateString("FileDialogLastDir", info.path);
 
 		return true;
 	}
@@ -106,15 +99,15 @@ bool filedialog::openFile(
 string filedialog::openFile(
 	string_view caption,
 	string_view extensions,
-	wxWindow* parent,
+	wxWindow*   parent,
 	string_view fn_default,
-	int ext_default)
+	int         ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
 		wxutil::strFromView(caption),
-		dir_last,
+		ui::getStateString("FileDialogLastDir"),
 		wxutil::strFromView(fn_default),
 		wxutil::strFromView(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
@@ -126,7 +119,7 @@ string filedialog::openFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		auto filename = fd.GetPath().ToStdString();
-		dir_last = strutil::Path::pathOf(filename);
+		ui::saveStateString("FileDialogLastDir", string{ strutil::Path::pathOf(filename) });
 
 		return filename;
 	}
@@ -175,7 +168,7 @@ bool filedialog::openFiles(
 	wxFileDialog fd(
 		parent,
 		wxutil::strFromView(caption),
-		dir_last,
+		ui::getStateString("FileDialogLastDir"),
 		wxutil::strFromView(fn_default),
 		wxutil::strFromView(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
@@ -198,7 +191,7 @@ bool filedialog::openFiles(
 		info.path      = fn.path(true);
 
 		// Set last dir
-		dir_last = info.path;
+		ui::saveStateString("FileDialogLastDir", info.path);
 
 		return true;
 	}
@@ -214,9 +207,9 @@ bool filedialog::openFiles(
 filedialog::FDInfo filedialog::openFiles(
 	string_view caption,
 	string_view extensions,
-	wxWindow* parent,
+	wxWindow*   parent,
 	string_view fn_default,
-	int ext_default)
+	int         ext_default)
 {
 	FDInfo info;
 	openFiles(info, caption, extensions, parent, fn_default, ext_default);
@@ -239,7 +232,7 @@ bool filedialog::saveFile(
 	wxFileDialog fd(
 		parent,
 		wxutil::strFromView(caption),
-		dir_last,
+		ui::getStateString("FileDialogLastDir"),
 		wxutil::strFromView(fn_default),
 		wxutil::strFromView(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -258,7 +251,7 @@ bool filedialog::saveFile(
 		info.path      = fn.path(true);
 
 		// Set last dir
-		dir_last = info.path;
+		ui::saveStateString("FileDialogLastDir", info.path);
 
 		return true;
 	}
@@ -274,15 +267,15 @@ bool filedialog::saveFile(
 string filedialog::saveFile(
 	string_view caption,
 	string_view extensions,
-	wxWindow* parent,
+	wxWindow*   parent,
 	string_view fn_default,
-	int ext_default)
+	int         ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
 		wxutil::strFromView(caption),
-		dir_last,
+		ui::getStateString("FileDialogLastDir"),
 		wxutil::strFromView(fn_default),
 		wxutil::strFromView(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -294,7 +287,7 @@ string filedialog::saveFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		auto filename = fd.GetPath().ToStdString();
-		dir_last = strutil::Path::pathOf(filename);
+		ui::saveStateString("FileDialogLastDir", string{ strutil::Path::pathOf(filename) });
 		return filename;
 	}
 
@@ -312,7 +305,7 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 	wxFileDialog fd(
 		parent,
 		wxutil::strFromView(caption),
-		dir_last,
+		ui::getStateString("FileDialogLastDir"),
 		"ignored",
 		wxutil::strFromView(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -330,7 +323,7 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 		info.path      = fd.GetDirectory();
 
 		// Set last dir
-		dir_last = info.path;
+		ui::saveStateString("FileDialogLastDir", info.path);
 
 		return true;
 	}
@@ -343,11 +336,7 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 // Returns an FDInfo struct with information about the selected files.
 // If the user cancelled, the FDInfo will contain no path
 // -----------------------------------------------------------------------------
-filedialog::FDInfo filedialog::saveFiles(
-	string_view caption,
-	string_view extensions,
-	wxWindow* parent,
-	int ext_default)
+filedialog::FDInfo filedialog::saveFiles(string_view caption, string_view extensions, wxWindow* parent, int ext_default)
 {
 	FDInfo info;
 	saveFiles(info, caption, extensions, parent, ext_default);
@@ -361,13 +350,17 @@ filedialog::FDInfo filedialog::saveFiles(
 string filedialog::openDirectory(string_view caption, wxWindow* parent)
 {
 	// Open a directory browser dialog
-	wxDirDialog dialog_open(parent, wxutil::strFromView(caption), dir_last, wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
+	wxDirDialog dialog_open(
+		parent,
+		wxutil::strFromView(caption),
+		ui::getStateString("FileDialogLastDir"),
+		wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
 
 	// Run the dialog
 	if (dialog_open.ShowModal() == wxID_OK)
 	{
 		// Set last dir
-		dir_last = wxutil::strToView(dialog_open.GetPath());
+		ui::saveStateString("FileDialogLastDir", dialog_open.GetPath().ToStdString());
 
 		return dialog_open.GetPath().ToStdString();
 	}

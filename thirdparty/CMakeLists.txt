@@ -1,6 +1,6 @@
 # Use system packages if available
-find_package(ZLIB REQUIRED)
-find_package(BZip2 REQUIRED)
+find_package(ZLIB)
+find_package(BZip2)
 
 # Set in parent scope
 set(ZLIB_LIBRARY ${ZLIB_LIBRARY} PARENT_SCOPE)
@@ -12,6 +12,10 @@ if(USE_SYSTEM_DUMB)
 else()
 	file(GLOB_RECURSE DUMB_SOURCES dumb/*.c)
 endif()
+
+include_directories(
+	.
+)
 
 # Roll the rest up into a big ball and compile it by itself
 set(EXTERNAL_SOURCES
@@ -42,8 +46,11 @@ add_subdirectory(lunasvg/source)
 add_subdirectory(lunasvg/3rdparty/software)
 add_subdirectory(lunasvg/3rdparty/plutovg)
 
+# Add SQLiteCpp
+add_subdirectory(SQLiteCpp)
+
 add_library(external STATIC ${EXTERNAL_SOURCES})
-target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt::fmt ${CMAKE_DL_LIBS})
+target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt::fmt ${CMAKE_DL_LIBS} SQLiteCpp)
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
 
 if(USE_SYSTEM_DUMB)

@@ -420,7 +420,7 @@ void game::init()
 			[=]()
 			{
 				ZipArchive zdoom_pk3;
-				if (!zdoom_pk3.open(zdoom_pk3_path))
+				if (!zdoom_pk3.open(zdoom_pk3_path, true))
 					return;
 
 				// ZScript

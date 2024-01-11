@@ -37,6 +37,7 @@
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include <array>
 
 using namespace slade;
@@ -48,8 +49,6 @@ using namespace ui;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, zoom_gfx, 100, CVar::Save)
-CVAR(Int, zoom_ctex, 100, CVar::Save)
 namespace slade::ui
 {
 std::array<int, 8>  zoom_percents      = { 25, 50, 75, 100, 150, 200, 400, 800 };
@@ -76,8 +75,9 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 // ZoomControl class constructor (linking GfxCanvas)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_gfx_canvas_{ linked_canvas }, zoom_(zoom_gfx)
+	wxPanel(parent, -1), linked_gfx_canvas_{ linked_canvas }
 {
+	zoom_ = getStateInt("ZoomGfxCanvas");
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
@@ -87,8 +87,9 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
 // ZoomControl class constructor (linking CTextureCanvas)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_texture_canvas_{ linked_canvas }, zoom_(zoom_ctex)
+	wxPanel(parent, -1), linked_texture_canvas_{ linked_canvas }
 {
+	zoom_ = getStateInt("ZoomCTextureCanvas");
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
@@ -108,13 +109,13 @@ void ZoomControl::setZoomPercent(int percent)
 	{
 		linked_gfx_canvas_->setScale(zoomScale());
 		linked_gfx_canvas_->Refresh();
-		zoom_gfx = zoom_;
+		saveStateInt("ZoomGfxCanvas", zoom_);
 	}
 	if (linked_texture_canvas_)
 	{
 		linked_texture_canvas_->setScale(zoomScale());
 		linked_texture_canvas_->redraw(false);
-		zoom_ctex = zoom_;
+		saveStateInt("ZoomCTextureCanvas", zoom_);
 	}
 }
 
@@ -186,7 +187,7 @@ void ZoomControl::setup()
 	for (const auto& pct : zoom_percents)
 		values.Add(fmt::format("{}%", pct));
 
-	// Combobox size
+		// Combobox size
 #ifdef WIN32
 	wxSize cbsize(ui::scalePx(64), -1);
 #else

@@ -74,7 +74,7 @@ void fixBrokenWave(const ArchiveEntry* entry)
 // Reads Chasm bin format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::open(const MemChunk& mc)
+bool ChasmBinArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check given data is valid
 	if (mc.size() < HEADER_SIZE)

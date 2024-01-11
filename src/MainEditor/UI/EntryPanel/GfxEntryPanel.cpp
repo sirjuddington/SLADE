@@ -48,6 +48,7 @@
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/SBrush.h"
+#include "UI/State.h"
 #include "Utility/StringUtils.h"
 
 
@@ -56,13 +57,10 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// Variables
+// External Variables
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, gfx_arc)
-EXTERN_CVAR(String, last_colour)
-EXTERN_CVAR(String, last_tint_colour)
-EXTERN_CVAR(Int, last_tint_amount)
 
 
 // -----------------------------------------------------------------------------
@@ -852,7 +850,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	{
 		auto*              pal = maineditor::currentPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry.get(), *pal);
-		gcd.setColour(last_colour);
+		gcd.setColour(ui::getStateString("ColouriseDialogLastColour"));
 
 		// Show colourise dialog
 		if (gcd.ShowModal() == wxID_OK)
@@ -869,7 +867,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		last_colour = gcd.colour().toString(ColRGBA::StringFormat::RGB);
+		ui::saveStateString("ColouriseDialogLastColour", gcd.colour().toString(ColRGBA::StringFormat::RGB));
 	}
 
 	// Tint
@@ -877,7 +875,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	{
 		auto*         pal = maineditor::currentPalette();
 		GfxTintDialog gtd(theMainWindow, entry.get(), *pal);
-		gtd.setValues(last_tint_colour, last_tint_amount);
+		gtd.setValues(ui::getStateString("TintDialogLastColour"), ui::getStateInt("TintDialogLastAmount"));
 
 		// Show tint dialog
 		if (gtd.ShowModal() == wxID_OK)
@@ -894,8 +892,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		last_tint_colour = gtd.colour().toString(ColRGBA::StringFormat::RGB);
-		last_tint_amount = static_cast<int>(gtd.amount() * 100.0);
+		ui::saveStateString("TintDialogLastColour", gtd.colour().toString(ColRGBA::StringFormat::RGB));
+		ui::saveStateInt("TintDialogLastAmount", static_cast<int>(gtd.amount() * 100.0f));
 	}
 
 	// Crop

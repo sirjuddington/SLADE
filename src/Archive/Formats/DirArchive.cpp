@@ -84,7 +84,7 @@ DirArchive::DirArchive() : Archive("folder"), ignore_hidden_{ archive_dir_ignore
 // Reads files from the directory [filename] into the archive
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DirArchive::open(string_view filename)
+bool DirArchive::open(string_view filename, bool detect_types)
 {
 	ui::setSplashProgressMessage("Reading directory structure");
 	ui::setSplashProgress(0);
@@ -127,9 +127,6 @@ bool DirArchive::open(string_view filename)
 			return false;
 
 		file_modification_times_[new_entry.get()] = fileutil::fileModifiedTime(files[a]);
-
-		// Detect entry type
-		EntryType::detectEntryType(*new_entry);
 	}
 
 	// Add empty directories
@@ -150,6 +147,10 @@ bool DirArchive::open(string_view filename)
 	for (auto& entry : entry_list)
 		entry->setState(ArchiveEntry::State::Unmodified);
 
+	// Detect all entry types
+	if (detect_types)
+		detectAllEntryTypes();
+
 	// Enable announcements
 	sig_blocker.unblock();
 
@@ -166,7 +167,7 @@ bool DirArchive::open(string_view filename)
 // -----------------------------------------------------------------------------
 // Reads an archive from an ArchiveEntry (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchive::open(ArchiveEntry* entry)
+bool DirArchive::open(ArchiveEntry* entry, bool detect_types)
 {
 	global::error = "Cannot open Folder Archive from entry";
 	return false;
@@ -175,7 +176,7 @@ bool DirArchive::open(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Reads data from a MemChunk (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchive::open(const MemChunk& mc)
+bool DirArchive::open(const MemChunk& mc, bool detect_types)
 {
 	global::error = "Cannot open Folder Archive from memory";
 	return false;
@@ -451,7 +452,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
+Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry) const
 {
 	MapDesc map;
 
@@ -467,11 +468,20 @@ Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
 	if (entry->parentDir()->parent() != rootDir() || entry->parentDir()->name() != "maps")
 		return map;
 
+	// Detect map format
+	auto       format = MapFormat::Unknown;
+	WadArchive tempwad;
+	tempwad.open(entry->data(), true);
+	auto emaps = tempwad.detectMaps();
+	if (!emaps.empty())
+		format = emaps[0].format;
+
 	// Setup map info
 	map.archive = true;
 	map.head    = entry->getShared();
 	map.end     = entry->getShared();
 	map.name    = entry->upperNameNoExt();
+	map.format  = format;
 
 	return map;
 }
@@ -480,7 +490,7 @@ Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> DirArchive::detectMaps()
+vector<Archive::MapDesc> DirArchive::detectMaps() const
 {
 	vector<MapDesc> ret;
 
@@ -501,7 +511,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 		// Detect map format (probably kinda slow but whatever, no better way to do it really)
 		auto       format = MapFormat::Unknown;
 		WadArchive tempwad;
-		tempwad.open(entry->data());
+		tempwad.open(entry->data(), true);
 		auto emaps = tempwad.detectMaps();
 		if (!emaps.empty())
 			format = emaps[0].format;
@@ -523,7 +533,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
+ArchiveEntry* DirArchive::findFirst(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = rootDir().get();
@@ -556,7 +566,7 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchive::findLast(SearchOptions& options)
+ArchiveEntry* DirArchive::findLast(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = rootDir().get();
@@ -588,7 +598,7 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = rootDir().get();

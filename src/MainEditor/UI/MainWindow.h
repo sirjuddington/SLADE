@@ -29,6 +29,9 @@ public:
 	bool startPageTabOpen() const;
 	void openStartPageTab() const;
 
+	bool libraryTabOpen() const;
+	void openLibraryTab() const;
+
 	ArchiveManagerPanel*     archiveManagerPanel() const { return panel_archivemanager_; }
 	PaletteChooser*          paletteChooser() const { return palette_chooser_; }
 	UndoManagerHistoryPanel* undoHistoryPanel() const { return panel_undo_history_; }

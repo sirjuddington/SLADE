@@ -56,10 +56,12 @@ public:
 	State                    state() const { return state_; }
 	bool                     isLocked() const { return locked_; }
 	Encryption               encryption() const { return encrypted_; }
-	ArchiveEntry*            nextEntry();
-	ArchiveEntry*            prevEntry();
-	shared_ptr<ArchiveEntry> getShared();
-	int                      index();
+	ArchiveEntry*            nextEntry() const;
+	ArchiveEntry*            prevEntry() const;
+	shared_ptr<ArchiveEntry> getShared() const;
+	int                      index() const;
+	const string&            hash() const;
+	int64_t                  libraryId() const { return library_id_; }
 
 	// Modifiers (won't change entry state, except setState of course :P)
 	void setName(string_view name);
@@ -70,6 +72,7 @@ public:
 	}
 	void setState(State state, bool silent = false);
 	void setEncryption(Encryption enc) { encrypted_ = enc; }
+	void setLibraryId(int64_t id) const { library_id_ = id; }
 	void lock();
 	void unlock();
 	void lockState() { state_locked_ = true; }
@@ -95,8 +98,8 @@ public:
 
 	// Data access
 	bool     write(const void* data, uint32_t size);
-	bool     read(void* buf, uint32_t size);
-	bool     seek(uint32_t offset, uint32_t start) { return data_.seek(offset, start); }
+	bool     read(void* buf, uint32_t size) const;
+	bool     seek(uint32_t offset, uint32_t start) const { return data_.seek(offset, start); }
 	uint32_t currentPos() const { return data_.currentPos(); }
 
 	// Data on disk
@@ -117,12 +120,13 @@ public:
 
 private:
 	// Entry Info
-	string       name_;
-	string       upper_name_;
-	MemChunk     data_;
-	EntryType*   type_   = nullptr;
-	ArchiveDir*  parent_ = nullptr;
-	PropertyList ex_props_;
+	string         name_;
+	string         upper_name_;
+	MemChunk       data_;
+	EntryType*     type_   = nullptr;
+	ArchiveDir*    parent_ = nullptr;
+	PropertyList   ex_props_;
+	mutable string data_hash_;
 
 	// Entry status
 	State      state_        = State::New;
@@ -131,8 +135,9 @@ private:
 	Encryption encrypted_    = Encryption::None; // Is there some encrypting on the archive?
 
 	// Misc stuff
-	int    reliability_ = 0; // The reliability of the entry's identification
-	size_t index_guess_ = 0; // for speed
+	int             reliability_ = 0;  // The reliability of the entry's identification
+	mutable size_t  index_guess_ = 0;  // for speed
+	mutable int64_t library_id_  = -1; // The id of this entry in the library
 };
 
 template<typename T> T ArchiveEntry::exProp(const string& key)

@@ -123,7 +123,7 @@ void ArchiveDir::setArchive(Archive* archive)
 // Returns the index of [entry] within this directory, or -1 if the entry
 // doesn't exist
 // -----------------------------------------------------------------------------
-int ArchiveDir::entryIndex(ArchiveEntry* entry, size_t startfrom) const
+int ArchiveDir::entryIndex(const ArchiveEntry* entry, size_t startfrom) const
 {
 	// Check entry was given
 	if (!entry)
@@ -261,7 +261,7 @@ shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(string_view name, bool cut_ext)
 // Returns a shared pointer to [entry] in this directory, or null if no entries
 // match
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(ArchiveEntry* entry) const
+shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(const ArchiveEntry* entry) const
 {
 	// Find entry
 	for (auto& e : entries_)
@@ -684,7 +684,7 @@ shared_ptr<ArchiveEntry> ArchiveDir::entryAtPath(const shared_ptr<ArchiveDir>& r
 // -----------------------------------------------------------------------------
 bool ArchiveDir::merge(
 	shared_ptr<ArchiveDir>&           target,
-	ArchiveDir*                       dir,
+	const ArchiveDir*                 dir,
 	unsigned                          position,
 	ArchiveEntry::State               state,
 	vector<shared_ptr<ArchiveDir>>*   created_dirs,
@@ -755,7 +755,7 @@ shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(
 // added (directory entries for subdirs will still be added). It should only
 // really be set to false if [root] is an actual root directory and has no name
 // -----------------------------------------------------------------------------
-void ArchiveDir::entryTreeAsList(ArchiveDir* root, vector<shared_ptr<ArchiveEntry>>& list, bool include_dir_entry)
+void ArchiveDir::entryTreeAsList(const ArchiveDir* root, vector<shared_ptr<ArchiveEntry>>& list, bool include_dir_entry)
 {
 	if (include_dir_entry)
 		list.push_back(root->dir_entry_);
@@ -771,7 +771,7 @@ void ArchiveDir::entryTreeAsList(ArchiveDir* root, vector<shared_ptr<ArchiveEntr
 // Attempts to get a shared_ptr to [dir] via its parent or archive.
 // Will return nullptr if [dir] has no parent or archive
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveDir> ArchiveDir::getShared(ArchiveDir* dir)
+shared_ptr<ArchiveDir> ArchiveDir::getShared(const ArchiveDir* dir)
 {
 	if (!dir)
 		return nullptr;

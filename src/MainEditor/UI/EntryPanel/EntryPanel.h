@@ -18,12 +18,12 @@ public:
 	wxString      name() const { return id_; }
 	ArchiveEntry* entry() const { return entry_.lock().get(); }
 	bool          isModified() const { return modified_; }
-	bool          isActivePanel();
+	bool          isActivePanel() const;
 	void          setUndoManager(UndoManager* manager) { undo_manager_ = manager; }
 	MemChunk*     entryData() { return &entry_data_; }
 	void          addBorderPadding();
 
-	bool             openEntry(ArchiveEntry* entry);
+	bool             openEntry(const ArchiveEntry* entry);
 	bool             openEntry(shared_ptr<ArchiveEntry> entry);
 	bool             saveEntry();
 	virtual bool     revertEntry(bool confirm = true);

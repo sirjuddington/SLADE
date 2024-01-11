@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive.h"
+#include "Formats/All.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Utility/FileUtils.h"
@@ -443,7 +444,7 @@ string Archive::filename(bool full) const
 		if (parentArchive())
 			parent_archive = parentArchive()->filename(false) + "/";
 
-		return parent_archive.append(strutil::Path::fileNameOf(parent->name(), false));
+		return parent_archive.append(strutil::Path::fileNameOf(parent->name()));
 	}
 
 	return full ? filename_ : string{ strutil::Path::fileNameOf(filename_) };
@@ -453,7 +454,7 @@ string Archive::filename(bool full) const
 // Reads an archive from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::open(string_view filename)
+bool Archive::open(string_view filename, bool detect_types)
 {
 	// Read the file into a MemChunk
 	MemChunk mc;
@@ -470,7 +471,7 @@ bool Archive::open(string_view filename)
 
 	// Load from MemChunk
 	const sf::Clock timer;
-	if (open(mc))
+	if (open(mc, true))
 	{
 		log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
 		on_disk_ = true;
@@ -487,11 +488,11 @@ bool Archive::open(string_view filename)
 // Reads an archive from an ArchiveEntry
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::open(ArchiveEntry* entry)
+bool Archive::open(ArchiveEntry* entry, bool detect_types)
 {
 	// Load from entry's data
 	auto sp_entry = entry->getShared();
-	if (sp_entry && open(sp_entry->data()))
+	if (sp_entry && open(sp_entry->data(), true))
 	{
 		// Update variables and return success
 		parent_ = sp_entry;
@@ -706,7 +707,7 @@ bool Archive::save(string_view filename)
 // -----------------------------------------------------------------------------
 // Returns the total number of entries in the archive
 // -----------------------------------------------------------------------------
-unsigned Archive::numEntries()
+unsigned Archive::numEntries() const
 {
 	return dir_root_->numEntries(true);
 }
@@ -1340,7 +1341,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
+string Archive::detectNamespace(unsigned index, ArchiveDir* dir) const
 {
 	if (dir && index < dir->numEntries())
 		return detectNamespace(dir->entryAt(index));
@@ -1351,7 +1352,7 @@ string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(ArchiveEntry* entry)
+string Archive::detectNamespace(ArchiveEntry* entry) const
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -1377,7 +1378,7 @@ string Archive::detectNamespace(ArchiveEntry* entry)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findFirst(SearchOptions& options)
+ArchiveEntry* Archive::findFirst(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1447,7 +1448,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findLast(SearchOptions& options)
+ArchiveEntry* Archive::findLast(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1516,7 +1517,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns a list of entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> Archive::findAll(SearchOptions& options) const
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1678,17 +1679,19 @@ bool Archive::genericLoadEntryData(const ArchiveEntry* entry, MemChunk& out) con
 // -----------------------------------------------------------------------------
 // Detects the type of all entries in the archive
 // -----------------------------------------------------------------------------
-void Archive::detectAllEntryTypes() const
+void Archive::detectAllEntryTypes(bool show_in_splash_window) const
 {
 	auto entries   = dir_root_->allEntries();
 	auto n_entries = entries.size();
-	ui::setSplashProgressMessage("Detecting entry types");
+	if (show_in_splash_window)
+		ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t i = 0; i < n_entries; i++)
 	{
-		ui::setSplashProgress(i, n_entries);
+		if (show_in_splash_window)
+			ui::setSplashProgress(i, n_entries);
 		EntryType::detectEntryType(*entries[i]);
-		entries[i]->setState(ArchiveEntry::State::Unmodified);
 	}
+	ui::setSplashProgress(1.0f);
 }
 
 
@@ -1837,4 +1840,174 @@ bool TreelessArchive::paste(ArchiveDir* tree, unsigned position, shared_ptr<Arch
 	setModified(true);
 
 	return true;
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// archive Namespace Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a recognized archive format and returns a
+// new (unopened) shared_ptr of the detected format Archive, or nullptr if the
+// file was not a recognized archive format
+// -----------------------------------------------------------------------------
+shared_ptr<Archive> archive::createIfArchive(const string& filename)
+{
+	if (WadArchive::isWadArchive(filename))
+		return std::make_shared<WadArchive>();
+	if (ZipArchive::isZipArchive(filename))
+		return std::make_shared<ZipArchive>();
+	if (ResArchive::isResArchive(filename))
+		return std::make_shared<ResArchive>();
+	if (DatArchive::isDatArchive(filename))
+		return std::make_shared<DatArchive>();
+	if (LibArchive::isLibArchive(filename))
+		return std::make_shared<LibArchive>();
+	if (PakArchive::isPakArchive(filename))
+		return std::make_shared<PakArchive>();
+	if (BSPArchive::isBSPArchive(filename))
+		return std::make_shared<BSPArchive>();
+	if (GrpArchive::isGrpArchive(filename))
+		return std::make_shared<GrpArchive>();
+	if (RffArchive::isRffArchive(filename))
+		return std::make_shared<RffArchive>();
+	if (GobArchive::isGobArchive(filename))
+		return std::make_shared<GobArchive>();
+	if (LfdArchive::isLfdArchive(filename))
+		return std::make_shared<LfdArchive>();
+	if (HogArchive::isHogArchive(filename))
+		return std::make_shared<HogArchive>();
+	if (ADatArchive::isADatArchive(filename))
+		return std::make_shared<ADatArchive>();
+	if (Wad2Archive::isWad2Archive(filename))
+		return std::make_shared<Wad2Archive>();
+	if (WadJArchive::isWadJArchive(filename))
+		return std::make_shared<WadJArchive>();
+	if (WolfArchive::isWolfArchive(filename))
+		return std::make_shared<WolfArchive>();
+	if (GZipArchive::isGZipArchive(filename))
+		return std::make_shared<GZipArchive>();
+	if (BZip2Archive::isBZip2Archive(filename))
+		return std::make_shared<BZip2Archive>();
+	if (TarArchive::isTarArchive(filename))
+		return std::make_shared<TarArchive>();
+	if (DiskArchive::isDiskArchive(filename))
+		return std::make_shared<DiskArchive>();
+	if (PodArchive::isPodArchive(filename))
+		return std::make_shared<PodArchive>();
+	if (ChasmBinArchive::isChasmBinArchive(filename))
+		return std::make_shared<ChasmBinArchive>();
+	if (SiNArchive::isSiNArchive(filename))
+		return std::make_shared<SiNArchive>();
+
+	// Not a known archive format
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Checks if the data in [mc] is a recognized archive format and returns a new
+// (unopened) shared_ptr of the detected format Archive, or nullptr if the file
+// was not a recognized archive format.
+//
+// Can also give a [name] for archive formats that rely on a specific filename
+// or extension for detection
+// -----------------------------------------------------------------------------
+shared_ptr<Archive> archive::createIfArchive(const MemChunk& mc, string_view name)
+{
+	if (WadArchive::isWadArchive(mc))
+		return std::make_shared<WadArchive>();
+	if (ZipArchive::isZipArchive(mc))
+		return std::make_shared<ZipArchive>();
+	if (ResArchive::isResArchive(mc))
+		return std::make_shared<ResArchive>();
+	if (LibArchive::isLibArchive(mc))
+		return std::make_shared<LibArchive>();
+	if (DatArchive::isDatArchive(mc))
+		return std::make_shared<DatArchive>();
+	if (PakArchive::isPakArchive(mc))
+		return std::make_shared<PakArchive>();
+	if (BSPArchive::isBSPArchive(mc))
+		return std::make_shared<BSPArchive>();
+	if (GrpArchive::isGrpArchive(mc))
+		return std::make_shared<GrpArchive>();
+	if (RffArchive::isRffArchive(mc))
+		return std::make_shared<RffArchive>();
+	if (GobArchive::isGobArchive(mc))
+		return std::make_shared<GobArchive>();
+	if (LfdArchive::isLfdArchive(mc))
+		return std::make_shared<LfdArchive>();
+	if (HogArchive::isHogArchive(mc))
+		return std::make_shared<HogArchive>();
+	if (ADatArchive::isADatArchive(mc))
+		return std::make_shared<ADatArchive>();
+	if (Wad2Archive::isWad2Archive(mc))
+		return std::make_shared<Wad2Archive>();
+	if (WadJArchive::isWadJArchive(mc))
+		return std::make_shared<WadJArchive>();
+	if (WolfArchive::isWolfArchive(mc))
+		return std::make_shared<WolfArchive>();
+	if (GZipArchive::isGZipArchive(mc))
+		return std::make_shared<GZipArchive>();
+	if (BZip2Archive::isBZip2Archive(mc))
+		return std::make_shared<BZip2Archive>();
+	if (TarArchive::isTarArchive(mc))
+		return std::make_shared<TarArchive>();
+	if (DiskArchive::isDiskArchive(mc))
+		return std::make_shared<DiskArchive>();
+	if (strutil::endsWithCI(name, ".pod") && PodArchive::isPodArchive(mc))
+		return std::make_shared<PodArchive>();
+	if (ChasmBinArchive::isChasmBinArchive(mc))
+		return std::make_shared<ChasmBinArchive>();
+	if (SiNArchive::isSiNArchive(mc))
+		return std::make_shared<SiNArchive>();
+
+	// Not a known archive format
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new archive of [format] and returns a shared_ptr to the created
+// Archive, or nullptr if the format isn't supported for creation
+// -----------------------------------------------------------------------------
+shared_ptr<Archive> archive::create(string_view format)
+{
+	if (format == "wad")
+		return std::make_shared<WadArchive>();
+	if (format == "zip")
+		return std::make_shared<ZipArchive>();
+	if (format == "grp")
+		return std::make_shared<GrpArchive>();
+	if (format == "pak")
+		return std::make_shared<PakArchive>();
+
+	// Unsupported format for creating
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [file_ext] is a known archive file extension
+// -----------------------------------------------------------------------------
+bool archive::isKnownExtension(string_view file_ext)
+{
+	for (const auto& format : Archive::allFormats())
+		for (const auto& ext : format.extensions)
+			if (strutil::equalCI(ext.first, file_ext))
+				return true;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the ArchiveFormat info for [id]
+// -----------------------------------------------------------------------------
+ArchiveFormat archive::formatDesc(string_view id)
+{
+	for (const auto& format : Archive::allFormats())
+		if (format.id == id)
+			return format;
+
+	return ArchiveFormat{ id };
 }

@@ -65,7 +65,7 @@ bool isNamespaceEntry(const ArchiveEntry* entry)
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DatArchive::open(const MemChunk& mc)
+bool DatArchive::open(const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -174,7 +174,8 @@ bool DatArchive::open(const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes();
+	if (detect_types)
+		detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -188,7 +189,7 @@ bool DatArchive::open(const MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string DatArchive::detectNamespace(ArchiveEntry* entry)
+string DatArchive::detectNamespace(ArchiveEntry* entry) const
 {
 	return detectNamespace(entryIndex(entry));
 }
@@ -196,7 +197,7 @@ string DatArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string DatArchive::detectNamespace(unsigned index, ArchiveDir* dir)
+string DatArchive::detectNamespace(unsigned index, ArchiveDir* dir) const
 {
 	// Textures
 	if (index > (unsigned)walls_[0] && index < (unsigned)walls_[1])

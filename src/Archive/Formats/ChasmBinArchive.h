@@ -10,7 +10,7 @@ public:
 	ChasmBinArchive() : Archive("chasm_bin") {}
 
 	// Opening/writing
-	bool open(const MemChunk& mc) override;
+	bool open(const MemChunk& mc, bool detect_types) override;
 	bool write(MemChunk& mc) override;
 
 	// Misc

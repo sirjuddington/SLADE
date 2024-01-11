@@ -144,9 +144,6 @@ bool archiveoperations::saveAs(Archive& archive)
 			return false;
 		}
 
-		// Add recent file
-		app::archiveManager().addRecentFile(filename);
-
 		return true;
 	}
 
@@ -2312,7 +2309,7 @@ size_t archiveoperations::replaceThings(Archive* archive, int oldtype, int newty
 		{
 			// Attempt to open entry as wad archive
 			auto temp_archive = std::make_shared<WadArchive>();
-			if (temp_archive->open(m_head->data()))
+			if (temp_archive->open(m_head->data(), true))
 			{
 				achanged = archiveoperations::replaceThings(temp_archive.get(), oldtype, newtype);
 				MemChunk mc;
@@ -2683,7 +2680,7 @@ size_t archiveoperations::replaceSpecials(
 		{
 			// Attempt to open entry as wad archive
 			Archive* temp_archive = new WadArchive();
-			if (temp_archive->open(m_head.get()))
+			if (temp_archive->open(m_head.get(), true))
 			{
 				achanged = archiveoperations::replaceSpecials(
 					temp_archive,
@@ -3135,7 +3132,7 @@ size_t archiveoperations::replaceTextures(
 		{
 			// Attempt to open entry as wad archive
 			Archive* temp_archive = new WadArchive();
-			if (temp_archive->open(m_head.get()))
+			if (temp_archive->open(m_head.get(), true))
 			{
 				achanged = archiveoperations::replaceTextures(
 					temp_archive, oldtex, newtex, floor, ceiling, lower, middle, upper);

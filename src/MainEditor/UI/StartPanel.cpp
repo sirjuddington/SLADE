@@ -37,6 +37,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
 #include "General/UI.h"
+#include "Library/Library.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include <wx/statbmp.h>
@@ -156,6 +157,10 @@ wxSizer* createActionsSizer(wxWindow* parent)
 		createActionButton(parent, "aman_newmap", "Create New Map", "mapeditor"),
 		wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 
+	// Archive Library
+	sizer->Add(
+		createActionButton(parent, "main_showlibrary", "View Archive Library", "library"), wxSizerFlags().Expand());
+
 	return sizer;
 }
 } // namespace
@@ -179,8 +184,8 @@ StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Setup Recent Files panel
 	recent_files_panel_      = new wxPanel(this);
-	sc_recent_files_updated_ = app::archiveManager().signals().recent_files_changed.connect_scoped(
-		[this] { updateRecentFilesPanel(); }); // Update panel when recent files list changes
+	sc_recent_files_updated_ = library::signals().archive_file_updated.connect_scoped(
+		[this](int64_t) { updateRecentFilesPanel(); }); // Update panel when recent files list changes
 	recent_files_panel_->SetBackgroundColour(wxColour(background_colour));
 	recent_files_panel_->SetForegroundColour(wxColour(foreground_colour));
 	updateRecentFilesPanel();
@@ -233,7 +238,7 @@ void StartPanel::updateRecentFilesPanel()
 	title_label->SetFont(title_label->GetFont().Bold().Scale(1.25f));
 	sizer->Add(title_label, wxSizerFlags().Expand().Border(wxBOTTOM, ui::pad()));
 
-	auto recent_files = app::archiveManager().recentFiles();
+	auto recent_files = library::recentFiles(12);
 	if (recent_files.empty())
 	{
 		auto no_recent_label = new wxStaticText(recent_files_panel_, -1, "No recently opened files");
@@ -244,12 +249,7 @@ void StartPanel::updateRecentFilesPanel()
 	{
 		auto index = 0;
 		for (const auto& path : recent_files)
-		{
-			sizer->Add(createRecentFileSizer(path, index), wxSizerFlags().Border(wxBOTTOM, ui::padMin()));
-
-			if (index++ > 10)
-				break;
-		}
+			sizer->Add(createRecentFileSizer(path, index++), wxSizerFlags().Border(wxBOTTOM, ui::padMin()));
 	}
 
 	Layout();

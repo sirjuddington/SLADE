@@ -176,7 +176,7 @@ protected:
 	void         onBtnClearFilter(wxCommandEvent& e);
 
 private:
-	void     setup(Archive* archive);
+	void     setup(const Archive& archive);
 	void     bindEvents(Archive* archive);
 	wxPanel* createEntryListPanel(wxWindow* parent);
 };
