@@ -148,9 +148,6 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
 // -----------------------------------------------------------------------------
 MapRenderer3D::~MapRenderer3D()
 {
-	delete[] quads_;
-	delete[] flats_;
-
 	if (vbo_flats_ > 0)
 		glDeleteBuffers(1, &vbo_flats_);
 	if (vbo_walls_ > 0)
@@ -181,16 +178,8 @@ void MapRenderer3D::refresh()
 {
 	// Clear any existing map data
 	dist_sectors_.clear();
-	if (quads_)
-	{
-		delete[] quads_;
-		quads_ = nullptr;
-	}
-	if (flats_)
-	{
-		delete[] flats_;
-		flats_ = nullptr;
-	}
+	quads_.clear();
+	flats_.clear();
 
 	// Clear VBOs
 	if (vbo_flats_ != 0)
@@ -2991,8 +2980,10 @@ float MapRenderer3D::calcDistFade(double distance, double max) const
 void MapRenderer3D::checkVisibleQuads()
 {
 	// Create quads array if empty
-	if (!quads_)
-		quads_ = new Quad*[map_->nLines() * 4];
+	// if (!quads_)
+	//	quads_ = new Quad*[map_->nLines() * 4];
+	if (quads_.empty())
+		quads_.resize(map_->nLines() * 4);
 
 	// Go through lines
 	MapLine* line;
@@ -3096,7 +3087,7 @@ void MapRenderer3D::checkVisibleQuads()
 void MapRenderer3D::checkVisibleFlats()
 {
 	// Update flats array
-	delete[] flats_;
+	flats_.clear();
 	n_flats_ = 0;
 	for (unsigned a = 0; a < sector_flats_.size(); a++)
 	{
@@ -3106,19 +3097,15 @@ void MapRenderer3D::checkVisibleFlats()
 
 		n_flats_ += sector_flats_[a].size();
 	}
-	flats_ = new Flat*[n_flats_];
-
-	for(unsigned a = 0; a < n_flats_; a++)
-		flats_[a] = nullptr;
+	flats_.resize(n_flats_);
 
 	// Go through sectors
-	MapSector* sector;
-	float      alpha;
-	unsigned   flat_idx = 0;
-	auto       cam      = cam_position_.get2d();
+	float    alpha;
+	unsigned flat_idx = 0;
+	auto     cam      = cam_position_.get2d();
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
-		sector = map_->sector(a);
+		const auto sector = map_->sector(a);
 
 		// Skip if invisible
 		if (dist_sectors_[a] < 0)
