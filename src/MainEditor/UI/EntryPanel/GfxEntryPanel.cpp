@@ -156,10 +156,12 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 	sizer_bottom_->Add(zc_zoom_, 0, wxEXPAND);
 
 	// Refresh when main palette changed
-	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]() {
-		updateImagePalette();
-		gfx_canvas_->Refresh();
-	});
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+		[this]()
+		{
+			updateImagePalette();
+			gfx_canvas_->Refresh();
+		});
 
 	// Custom menu
 	menu_custom_ = new wxMenu();
@@ -376,7 +378,7 @@ void GfxEntryPanel::setupToolbars()
 	auto* g_tool = new SToolBarGroup(toolbar_left_, "Tool");
 	g_tool->addActionButton("tool_drag", "Drag offsets", "gfx_drag", "Drag image to change its offsets")
 		->setChecked(true);
-	g_tool->addActionButton("tool_draw", "Drag pixels", "gfx_draw", "Draw on the image");
+	g_tool->addActionButton("tool_draw", "Draw pixels", "gfx_draw", "Draw on the image");
 	g_tool->addActionButton("tool_erase", "Erase pixels", "gfx_erase", "Erase pixels from the image");
 	g_tool->addActionButton(
 		"tool_translate", "Translate pixels", "gfx_translate", "Apply a translation to pixels of the image");
