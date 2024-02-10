@@ -13,7 +13,7 @@ endif()
 OPTION(NO_WEBVIEW "Disable wxWebview usage (for start page and documentation)" OFF)
 OPTION(NO_LUA "Disable Lua/Scripting features to reduce compile time" OFF)
 OPTION(NO_FLUIDSYNTH "Disable FluidSynth MIDI playback" OFF)
-OPTION(BUILD_PK3 "Build the SLADE pk3 file from dist/res" OFF)
+OPTION(BUILD_PK3 "Build the SLADE pk3 file from dist/res" ON)
 
 # c++17 is required to compile
 set(CMAKE_CXX_STANDARD 17)
