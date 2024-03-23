@@ -260,7 +260,7 @@ bool SLADEMap::readMap(const MapDesc& map)
 // -----------------------------------------------------------------------------
 void SLADEMap::clearMap()
 {
-	map_specials_.reset();
+	map_specials_->reset();
 
 	// Clear map objects
 	data_.clear();
