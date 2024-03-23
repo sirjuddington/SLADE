@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -42,6 +42,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "CIEDeltaEquations.h"
+#include "Colour.h"
 #include "MathStuff.h"
 
 using namespace slade;
@@ -54,7 +55,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-const double P257 = 6103515625.0; // 25 to the power of 7
+constexpr double P257 = 6103515625.0; // 25 to the power of 7
 } // namespace
 
 

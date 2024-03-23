@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,6 +40,7 @@
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
@@ -74,7 +75,7 @@ bool PatchBrowserItem::loadImage()
 	SImage img;
 
 	// Load patch image
-	if (type_ == Type::Patch)
+	if (patch_type_ == Type::Patch)
 	{
 		// Find patch entry
 		auto entry = app::resources().getPatchEntry(name_.ToStdString(), nspace_.ToStdString(), archive_);
@@ -87,7 +88,7 @@ bool PatchBrowserItem::loadImage()
 	}
 
 	// Or, load texture image
-	if (type_ == Type::CTexture)
+	if (patch_type_ == Type::CTexture)
 	{
 		// Find texture
 		auto tex = app::resources().getTexture(name_.ToStdString(), "", archive_);
@@ -122,7 +123,7 @@ wxString PatchBrowserItem::itemInfo()
 		info += "Unknown size";
 
 	// Add patch type
-	if (type_ == Type::Patch)
+	if (patch_type_ == Type::Patch)
 		info += ", Patch";
 	else
 		info += ", Texture";
@@ -166,14 +167,16 @@ PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 	items_root_->addChild("Unknown");
 
 	// Update when main palette changed
-	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]() {
-		// Update palette
-		palette_.copyPalette(theMainWindow->paletteChooser()->selectedPalette());
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+		[this]
+		{
+			// Update palette
+			palette_->copyPalette(theMainWindow->paletteChooser()->selectedPalette());
 
-		// Reload all items
-		reloadItems();
-		Refresh();
-	});
+			// Reload all items
+			reloadItems();
+			Refresh();
+		});
 
 	// Set dialog title
 	wxTopLevelWindow::SetTitle("Browse Patches");
@@ -443,15 +446,12 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 // -----------------------------------------------------------------------------
 // Returns the index of the currently selected patch, or -1 if none are selected
 // -----------------------------------------------------------------------------
-int PatchBrowser::selectedPatch()
+int PatchBrowser::selectedPatch() const
 {
 	// Get selected item
 	auto item = dynamic_cast<PatchBrowserItem*>(selectedItem());
 
-	if (item)
-		return item->index();
-	else
-		return -1;
+	return item ? item->index() : -1;
 }
 
 // -----------------------------------------------------------------------------
@@ -464,7 +464,7 @@ void PatchBrowser::selectPatch(int pt_index)
 		return;
 
 	// Check index
-	if (pt_index < 0 || pt_index >= (int)patch_table_->nPatches())
+	if (pt_index < 0 || pt_index >= static_cast<int>(patch_table_->nPatches()))
 		return;
 
 	// Select by patch name

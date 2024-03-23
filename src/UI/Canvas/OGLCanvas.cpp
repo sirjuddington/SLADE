@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,8 +33,10 @@
 #include "Main.h"
 #include "OGLCanvas.h"
 #include "App.h"
+#include "Graphics/Palette/Palette.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/OpenGL.h"
 
 using namespace slade;
 
@@ -55,10 +57,11 @@ EXTERN_CVAR(Int, gl_depth_buffer_size)
 
 
 // -----------------------------------------------------------------------------
-// OGLCanvas class constructor, wxGLCanvas implementation
+// OGLCanvas class constructor
 // -----------------------------------------------------------------------------
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
 	wxGLCanvas(parent, gl::getWxGLAttribs(), id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
+	palette_{ new Palette() },
 	timer_{ this },
 	last_time_{ app::runTimer() }
 {
@@ -67,6 +70,19 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
 
 	gl::Texture::resetBackgroundTexture();
+}
+
+// -----------------------------------------------------------------------------
+// OGLCanvas class destructor
+// -----------------------------------------------------------------------------
+OGLCanvas::~OGLCanvas() = default;
+
+// -----------------------------------------------------------------------------
+// Sets the canvas palette to [pal]
+// -----------------------------------------------------------------------------
+void OGLCanvas::setPalette(const Palette* pal) const
+{
+	palette_->copyPalette(pal);
 }
 
 // -----------------------------------------------------------------------------

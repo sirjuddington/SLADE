@@ -46,7 +46,6 @@ public:
 		if (index < count_)
 		{
 			objects_[index] = objects_.back();
-			objects_[index]->setIndex(index);
 			objects_.pop_back();
 			--count_;
 		}
@@ -58,7 +57,7 @@ public:
 	}
 
 	// Misc
-	void putModifiedObjects(long since, vector<MapObject*>& modified_objects) const
+	/*void putModifiedObjects(long since, vector<MapObject*>& modified_objects) const
 	{
 		for (const auto& object : objects_)
 			if (object->modifiedTime() >= since)
@@ -71,7 +70,7 @@ public:
 				return true;
 
 		return false;
-	}
+	}*/
 
 protected:
 	vector<T*> objects_;

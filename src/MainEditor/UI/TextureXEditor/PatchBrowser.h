@@ -1,5 +1,6 @@
 #pragma once
 
+#include "UI/Browser/BrowserItem.h"
 #include "UI/Browser/BrowserWindow.h"
 
 namespace slade
@@ -18,27 +19,27 @@ public:
 	};
 
 	PatchBrowserItem(
-		wxString name,
-		Archive* archive = nullptr,
-		Type     type    = Type::Patch,
-		wxString nspace  = "",
-		unsigned index   = 0) :
+		const wxString& name,
+		Archive*        archive = nullptr,
+		Type            type    = Type::Patch,
+		const wxString& nspace  = "",
+		unsigned        index   = 0) :
 		BrowserItem{ name, index, "patch" },
 		archive_{ archive },
-		type_{ type },
+		patch_type_{ type },
 		nspace_{ nspace }
 	{
 	}
 
-	~PatchBrowserItem();
+	~PatchBrowserItem() override;
 
 	bool     loadImage() override;
 	wxString itemInfo() override;
 	void     clearImage() override;
 
 private:
-	Archive* archive_ = nullptr;
-	Type     type_    = Type::Patch;
+	Archive* archive_    = nullptr;
+	Type     patch_type_ = Type::Patch;
 	wxString nspace_;
 };
 
@@ -46,12 +47,12 @@ class PatchBrowser : public BrowserWindow
 {
 public:
 	PatchBrowser(wxWindow* parent);
-	~PatchBrowser() = default;
+	~PatchBrowser() override = default;
 
 	bool openPatchTable(PatchTable* table);
 	bool openArchive(Archive* archive);
 	bool openTextureXList(TextureXList* texturex, Archive* parent);
-	int  selectedPatch();
+	int  selectedPatch() const;
 	void selectPatch(int pt_index);
 	void selectPatch(const wxString& name);
 	void setFullPath(bool enabled) { full_path_ = enabled; }

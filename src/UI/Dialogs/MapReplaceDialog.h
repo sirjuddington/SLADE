@@ -10,7 +10,7 @@ class ThingTypeReplacePanel : public wxPanel
 {
 public:
 	ThingTypeReplacePanel(wxWindow* parent);
-	~ThingTypeReplacePanel() = default;
+	~ThingTypeReplacePanel() override = default;
 
 	void doReplace(Archive* archive) const;
 
@@ -23,7 +23,7 @@ class SpecialReplacePanel : public wxPanel
 {
 public:
 	SpecialReplacePanel(wxWindow* parent);
-	~SpecialReplacePanel() = default;
+	~SpecialReplacePanel() override = default;
 
 	void doReplace(Archive* archive) const;
 
@@ -41,7 +41,7 @@ class TextureReplacePanel : public wxPanel
 {
 public:
 	TextureReplacePanel(wxWindow* parent);
-	~TextureReplacePanel() = default;
+	~TextureReplacePanel() override = default;
 
 	void doReplace(Archive* archive) const;
 
@@ -59,7 +59,7 @@ class MapReplaceDialog : public wxDialog
 {
 public:
 	MapReplaceDialog(wxWindow* parent = nullptr, Archive* archive = nullptr);
-	~MapReplaceDialog() = default;
+	~MapReplaceDialog() override = default;
 
 private:
 	Archive* archive_ = nullptr;

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -181,7 +181,7 @@ void BrowserItem::draw(
 	// Scale up if size > 128
 	if (size > 128)
 	{
-		double scale = (double)size / 128.0;
+		double scale = static_cast<double>(size) / 128.0;
 		width *= scale;
 		height *= scale;
 	}
@@ -191,7 +191,7 @@ void BrowserItem::draw(
 		// Scale down by width
 		if (width > size)
 		{
-			double scale = (double)size / width;
+			double scale = static_cast<double>(size) / width;
 			width *= scale;
 			height *= scale;
 		}
@@ -201,15 +201,15 @@ void BrowserItem::draw(
 		// Scale down by height
 		if (height > size)
 		{
-			double scale = (double)size / height;
+			double scale = static_cast<double>(size) / height;
 			width *= scale;
 			height *= scale;
 		}
 	}
 
 	// Determine draw coords
-	double top  = y + ((double)size * 0.5) - (height * 0.5);
-	double left = x + ((double)size * 0.5) - (width * 0.5);
+	double top  = y + (static_cast<double>(size) * 0.5) - (height * 0.5);
+	double left = x + (static_cast<double>(size) * 0.5) - (width * 0.5);
 
 	// Draw
 	gl::Texture::bind(image_tex_);

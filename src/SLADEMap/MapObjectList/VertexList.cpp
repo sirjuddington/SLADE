@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "VertexList.h"
+#include "SLADEMap/MapObject/MapVertex.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -49,7 +50,7 @@ using namespace slade;
 // Returns the vertex closest to the point, or null if none found.
 // Igonres any vertices further away than [min]
 // -----------------------------------------------------------------------------
-MapVertex* VertexList::nearest(Vec2d point, double min) const
+MapVertex* VertexList::nearest(const Vec2d& point, double min) const
 {
 	// Go through vertices
 	double     dist;

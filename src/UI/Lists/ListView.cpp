@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -185,11 +185,11 @@ bool ListView::setItemStatus(int item, ItemStatus status)
 	// Set item text colour to given status colour
 	switch (status)
 	{
-	case ItemStatus::Normal: SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
+	case ItemStatus::Normal:   SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
 	case ItemStatus::Modified: SetItemTextColour(item, colourconfig::colour("modified").toWx()); break;
-	case ItemStatus::New: SetItemTextColour(item, colourconfig::colour("new").toWx()); break;
-	case ItemStatus::Locked: SetItemTextColour(item, colourconfig::colour("locked").toWx()); break;
-	case ItemStatus::Error: SetItemTextColour(item, colourconfig::colour("error").toWx());
+	case ItemStatus::New:      SetItemTextColour(item, colourconfig::colour("new").toWx()); break;
+	case ItemStatus::Locked:   SetItemTextColour(item, colourconfig::colour("locked").toWx()); break;
+	case ItemStatus::Error:    SetItemTextColour(item, colourconfig::colour("error").toWx()); break;
 	case ItemStatus::Disabled: SetItemTextColour(item, disabledColour().toWx());
 	}
 

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MapEntryPanel.h"
 #include "Archive/Archive.h"
+#include "OpenGL/OpenGL.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "UI/WxUtils.h"
 
@@ -71,7 +72,7 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 {
 	// Setup map canvas
 	map_canvas_ = new MapPreviewCanvas(this);
-	sizer_main_->Add(map_canvas_, 1, wxEXPAND, 0);
+	sizer_main_->Add(map_canvas_, wxSizerFlags(1).Expand());
 
 	// Setup map toolbar buttons
 	auto group = new SToolBarGroup(toolbar_, "Map");
@@ -85,9 +86,9 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 	stb_revert_ = nullptr;
 
 	// Setup bottom panel
-	sizer_bottom_->Add(label_stats_ = new wxStaticText(this, -1, ""), 0, wxALIGN_CENTER_VERTICAL);
+	sizer_bottom_->Add(label_stats_ = new wxStaticText(this, -1, ""), wxSizerFlags().CenterVertical());
 	sizer_bottom_->AddStretchSpacer();
-	sizer_bottom_->Add(cb_show_things_ = new wxCheckBox(this, -1, "Show Things"), 0, wxALIGN_CENTER_VERTICAL);
+	sizer_bottom_->Add(cb_show_things_ = new wxCheckBox(this, -1, "Show Things"), wxSizerFlags().CenterVertical());
 	cb_show_things_->SetValue(map_view_things);
 
 	// Bind events
@@ -107,9 +108,9 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	map_canvas_->clearMap();
 
 	// Find map definition for entry
-	auto             maps = entry->parent()->detectMaps();
-	Archive::MapDesc thismap;
-	bool             found = false;
+	auto    maps = entry->parent()->detectMaps();
+	MapDesc thismap;
+	bool    found = false;
 	for (auto& map : maps)
 	{
 		if (map.head.lock().get() == entry)

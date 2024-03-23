@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -76,7 +76,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 
 	// Setup layout
 	SetInitialSize(wxSize(ui::scalePx(600), ui::scalePx(500)));
-	wxWindowBase::Layout();
+	wxTopLevelWindowBase::Layout();
 	wxWindowBase::Fit();
 	wxTopLevelWindowBase::SetMinSize(GetBestSize());
 	CenterOnParent();
@@ -93,7 +93,8 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 void SetupWizardDialog::setupLayout()
 {
-	auto pad_xl = ui::scalePx(16);
+	namespace wx = wxutil;
+	auto pad_xl  = ui::scalePx(16);
 
 	// Setup main sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -103,27 +104,27 @@ void SetupWizardDialog::setupLayout()
 	label_page_title_ = new wxStaticText(
 		this, -1, pages_[0]->title(), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
 	label_page_title_->SetFont(label_page_title_->GetFont().MakeLarger().MakeBold());
-	sizer->Add(label_page_title_, 0, wxEXPAND | wxALL, pad_xl);
+	sizer->Add(label_page_title_, wx::sfWithBorder(0, wxALL, pad_xl).Expand());
 
 	// Page description
 	label_page_description_ = new wxStaticText(this, -1, "");
-	sizer->Add(label_page_description_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, pad_xl);
+	sizer->Add(label_page_description_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM, pad_xl).Expand());
 
 	// Main page area
-	sizer->Add(pages_[0], 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, pad_xl);
+	sizer->Add(pages_[0], wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM, pad_xl).Expand());
 
 	// Bottom buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->AddStretchSpacer();
-	sizer->Add(hbox, 0, wxEXPAND | wxALL, pad_xl);
+	sizer->Add(hbox, wx::sfWithBorder(0, wxALL, pad_xl).Expand());
 
 	// Previous button
 	btn_prev_ = new wxButton(this, -1, "Previous");
-	hbox->Add(btn_prev_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_prev_, wx::sfWithBorder(0, wxRIGHT).Expand());
 
 	// Next button
 	btn_next_ = new wxButton(this, -1, "Next");
-	hbox->Add(btn_next_, 0, wxEXPAND);
+	hbox->Add(btn_next_, wxSizerFlags().Expand());
 
 	btn_prev_->Enable(false);
 }

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -129,21 +129,21 @@ size_t WolfConstant(int name, size_t numlumps)
 	case 414: game = 4; break; // GFXE_WL6: Just a mess of chunks without anything usable
 	case 556: game = 0; break; // GFXV_WL1
 	case 558: game = 1; break; // GFXE_WL1
-	default: return 0;
+	default:  return 0;
 	}
 	switch (name) //	  VW1, EW1, ?W1, VW6, EW6, SDM, SOD
 	{
-	case STARTPICS: return7(game, 3, 3, 3, 3, 0, 3, 3) break;
-	case STARTPICM: return7(game, 139, 142, 147, 135, 0, 128, 150) break;
-	case NUMTILE8: return7(game, 72, 72, 72, 72, 0, 72, 72) break;
-	case STARTPAL: return7(game, 0, 0, 0, 0, 0, 131, 153) break;
-	case ENDPAL: return7(game, 0, 0, 0, 0, 0, 131, 163) break;
-	case TITLE1PIC: return7(game, 0, 0, 0, 0, 0, 74, 79) break;
-	case TITLE2PIC: return7(game, 0, 0, 0, 0, 0, 75, 80) break;
+	case STARTPICS:     return7(game, 3, 3, 3, 3, 0, 3, 3) break;
+	case STARTPICM:     return7(game, 139, 142, 147, 135, 0, 128, 150) break;
+	case NUMTILE8:      return7(game, 72, 72, 72, 72, 0, 72, 72) break;
+	case STARTPAL:      return7(game, 0, 0, 0, 0, 0, 131, 153) break;
+	case ENDPAL:        return7(game, 0, 0, 0, 0, 0, 131, 163) break;
+	case TITLE1PIC:     return7(game, 0, 0, 0, 0, 0, 74, 79) break;
+	case TITLE2PIC:     return7(game, 0, 0, 0, 0, 0, 75, 80) break;
 	case ENDSCREEN1PIC: return7(game, 0, 0, 0, 0, 0, 0, 81) break;
 	case ENDSCREEN9PIC: return7(game, 0, 0, 0, 0, 0, 0, 89) break;
-	case IDGUYS1PIC: return7(game, 0, 0, 0, 0, 0, 0, 93) break;
-	case IDGUYS2PIC: return7(game, 0, 0, 0, 0, 0, 0, 94) break;
+	case IDGUYS1PIC:    return7(game, 0, 0, 0, 0, 0, 0, 93) break;
+	case IDGUYS2PIC:    return7(game, 0, 0, 0, 0, 0, 0, 94) break;
 	}
 	return 0;
 }
@@ -204,10 +204,10 @@ void addWolfPicHeader(ArchiveEntry* entry, uint16_t width, uint16_t height)
 	uint32_t newsize = mc.size() + 4;
 	uint8_t* newdata = new uint8_t[newsize];
 
-	newdata[0] = (uint8_t)(width & 0xFF);
-	newdata[1] = (uint8_t)(width >> 8);
-	newdata[2] = (uint8_t)(height & 0xFF);
-	newdata[3] = (uint8_t)(height >> 8);
+	newdata[0] = static_cast<uint8_t>(width & 0xFF);
+	newdata[1] = static_cast<uint8_t>(width >> 8);
+	newdata[2] = static_cast<uint8_t>(height & 0xFF);
+	newdata[3] = static_cast<uint8_t>(height >> 8);
 
 	for (size_t i = 0; 4 + i < newsize; ++i)
 	{
@@ -479,7 +479,7 @@ bool WolfArchive::open(const MemChunk& mc)
 
 		// If the lump data goes before the end of the directory,
 		// the data file is invalid
-		if (pages[d].offset != 0 && pages[d].offset < (unsigned)((num_lumps + 1) * 6))
+		if (pages[d].offset != 0 && pages[d].offset < static_cast<unsigned>((num_lumps + 1) * 6))
 		{
 			log::error("WolfArchive::open: Wolf archive is invalid or corrupt");
 			global::error = "Archive is invalid and/or corrupt ";

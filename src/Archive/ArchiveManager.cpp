@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -225,7 +225,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 shared_ptr<Archive> ArchiveManager::getArchive(int index)
 {
 	// Check that index is valid
-	if (index < 0 || index >= (int)open_archives_.size())
+	if (index < 0 || index >= static_cast<int>(open_archives_.size()))
 		return nullptr;
 	else
 		return open_archives_[index].archive;
@@ -253,7 +253,7 @@ shared_ptr<Archive> ArchiveManager::getArchive(string_view filename)
 // Returns the archive opened from the given parent entry
 // (nullptr if it doesn't exist)
 // ----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::getArchive(ArchiveEntry* parent)
+shared_ptr<Archive> ArchiveManager::getArchive(const ArchiveEntry* parent)
 {
 	for (unsigned a = 0; a < open_archives_.size(); ++a)
 	{
@@ -573,7 +573,7 @@ shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 bool ArchiveManager::closeArchive(int index)
 {
 	// Check for invalid index
-	if (index < 0 || index >= (int)open_archives_.size())
+	if (index < 0 || index >= static_cast<int>(open_archives_.size()))
 		return false;
 
 	// Announce archive closing
@@ -597,11 +597,9 @@ bool ArchiveManager::closeArchive(int index)
 	}
 
 	// Remove ourselves from our parent's open-child list
-	auto parent = open_archives_[index].archive->parentEntry();
-	if (parent)
+	if (auto parent = open_archives_[index].archive->parentEntry())
 	{
-		auto gp = parent->parent();
-		if (gp)
+		if (auto gp = parent->parent())
 		{
 			int pi = archiveIndex(gp);
 			if (pi >= 0)
@@ -641,7 +639,7 @@ bool ArchiveManager::closeArchive(int index)
 bool ArchiveManager::closeArchive(string_view filename)
 {
 	// Go through all open archives
-	for (int a = 0; a < (int)open_archives_.size(); a++)
+	for (int a = 0; a < static_cast<int>(open_archives_.size()); a++)
 	{
 		// If the filename matches, remove it
 		if (open_archives_[a].archive->filename() == filename)
@@ -656,10 +654,10 @@ bool ArchiveManager::closeArchive(string_view filename)
 // Closes the specified archive and removes it from the list, if it exists in
 // the list. Returns false if it doesn't exist, else true
 // -----------------------------------------------------------------------------
-bool ArchiveManager::closeArchive(Archive* archive)
+bool ArchiveManager::closeArchive(const Archive* archive)
 {
 	// Go through all open archives
-	for (int a = 0; a < (int)open_archives_.size(); a++)
+	for (int a = 0; a < static_cast<int>(open_archives_.size()); a++)
 	{
 		// If the archive exists in the list, remove it
 		if (open_archives_[a].archive.get() == archive)
@@ -684,14 +682,14 @@ void ArchiveManager::closeAll()
 // Returns the index in the list of the given archive, or -1 if the archive
 // doesn't exist in the list
 // -----------------------------------------------------------------------------
-int ArchiveManager::archiveIndex(Archive* archive)
+int ArchiveManager::archiveIndex(const Archive* archive) const
 {
 	// Go through all open archives
 	for (size_t a = 0; a < open_archives_.size(); a++)
 	{
 		// If the archive we're looking for is this one, return the index
 		if (open_archives_[a].archive.get() == archive)
-			return (int)a;
+			return static_cast<int>(a);
 	}
 
 	// If we get to here the archive wasn't found, so return -1
@@ -702,7 +700,7 @@ int ArchiveManager::archiveIndex(Archive* archive)
 // Returns all open archives that live inside this one, recursively.
 // -----------------------------------------------------------------------------
 // This is the recursive bit, separate from the public entry point
-void ArchiveManager::getDependentArchivesInternal(Archive* archive, vector<shared_ptr<Archive>>& vec)
+void ArchiveManager::getDependentArchivesInternal(const Archive* archive, vector<shared_ptr<Archive>>& vec)
 {
 	int ai = archiveIndex(archive);
 
@@ -715,7 +713,7 @@ void ArchiveManager::getDependentArchivesInternal(Archive* archive, vector<share
 		}
 	}
 }
-vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(Archive* archive)
+vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(const Archive* archive)
 {
 	vector<shared_ptr<Archive>> vec;
 	getDependentArchivesInternal(archive, vec);
@@ -757,7 +755,7 @@ string ArchiveManager::getArchiveExtensionsString() const
 // -----------------------------------------------------------------------------
 // Returns true if [archive] is set to be used as a resource, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManager::archiveIsResource(Archive* archive)
+bool ArchiveManager::archiveIsResource(const Archive* archive) const
 {
 	int index = archiveIndex(archive);
 	if (index < 0)
@@ -789,7 +787,7 @@ void ArchiveManager::setArchiveResource(Archive* archive, bool resource)
 // Returns a vector of all open archives.
 // If [resources_only] is true, only includes archives marked as resources
 // -----------------------------------------------------------------------------
-vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only)
+vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only) const
 {
 	vector<shared_ptr<Archive>> ret;
 
@@ -804,7 +802,7 @@ vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only)
 // Returns a shared_ptr to the given [archive], or nullptr if it isn't open in
 // the archive manager
 // -----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::shareArchive(Archive* const archive)
+shared_ptr<Archive> ArchiveManager::shareArchive(const Archive* const archive)
 {
 	if (archive == base_resource_archive_.get())
 		return base_resource_archive_;
@@ -851,11 +849,11 @@ void ArchiveManager::removeBaseResourcePath(unsigned index)
 		return;
 
 	// Unload base resource if removed is open
-	if (index == (unsigned)base_resource)
+	if (index == static_cast<unsigned>(base_resource))
 		openBaseResource(-1);
 
 	// Modify base_resource cvar if needed
-	else if (base_resource > (signed)index)
+	else if (base_resource > static_cast<signed>(index))
 		base_resource = base_resource - 1;
 
 	// Remove the path
@@ -894,7 +892,7 @@ bool ArchiveManager::openBaseResource(int index)
 	}
 
 	// Check index
-	if (index < 0 || (unsigned)index >= base_resource_paths_.size())
+	if (index < 0 || static_cast<unsigned>(index) >= base_resource_paths_.size())
 	{
 		base_resource = -1;
 		signals_.base_res_current_cleared();
@@ -930,7 +928,7 @@ bool ArchiveManager::openBaseResource(int index)
 // Returns the first entry matching [name] in the resource archives.
 // Resource archives = open archives -> base resource archives.
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, Archive* ignore)
+ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, const Archive* ignore) const
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -944,8 +942,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, Archive* ignore
 			continue;
 
 		// Try to find the entry in the archive
-		auto entry = open_archive.archive->entry(name);
-		if (entry)
+		if (auto entry = open_archive.archive->entry(name))
 			return entry;
 	}
 
@@ -959,7 +956,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, Archive* ignore
 // -----------------------------------------------------------------------------
 // Searches for an entry matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options, Archive* ignore)
+ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options, const Archive* ignore) const
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -973,8 +970,7 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options,
 			continue;
 
 		// Try to find the entry in the archive
-		auto entry = open_archive.archive->findLast(options);
-		if (entry)
+		if (auto entry = open_archive.archive->findLast(options))
 			return entry;
 	}
 
@@ -988,7 +984,8 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options,
 // -----------------------------------------------------------------------------
 // Searches for entries matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore)
+vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOptions& options, const Archive* ignore)
+	const
 {
 	vector<ArchiveEntry*> ret;
 
@@ -1063,7 +1060,7 @@ void ArchiveManager::addRecentFile(string_view path)
 	recent_files_.insert(recent_files_.begin(), file_path);
 
 	// Keep it trimmed
-	while (recent_files_.size() > (unsigned)max_recent_files)
+	while (recent_files_.size() > static_cast<unsigned>(max_recent_files))
 		recent_files_.pop_back();
 
 	// Announce
@@ -1174,7 +1171,7 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Removes any bookmarked entries in [archive] from the list
 // -----------------------------------------------------------------------------
-bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
+bool ArchiveManager::deleteBookmarksInArchive(const Archive* archive)
 {
 	// Go through bookmarks
 	bool                  removed = false;
@@ -1205,7 +1202,7 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 // Removes any bookmarked entries in [node] from the list
 // -----------------------------------------------------------------------------
-bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
+bool ArchiveManager::deleteBookmarksInDir(const ArchiveDir* node)
 {
 	auto archive = node->archive();
 	bool removed = deleteBookmark(node->dirEntry());
@@ -1277,7 +1274,7 @@ void ArchiveManager::deleteAllBookmarks()
 // -----------------------------------------------------------------------------
 // Returns the bookmarked entry at [index]
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
+ArchiveEntry* ArchiveManager::getBookmark(unsigned index) const
 {
 	// Check index
 	if (index >= bookmarks_.size())
@@ -1289,7 +1286,7 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns true if [entry] exists in the bookmarks list
 // -----------------------------------------------------------------------------
-bool slade::ArchiveManager::isBookmarked(ArchiveEntry* entry)
+bool slade::ArchiveManager::isBookmarked(const ArchiveEntry* entry) const
 {
 	for (const auto& bm : bookmarks_)
 		if (bm.lock().get() == entry)

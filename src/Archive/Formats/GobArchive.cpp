@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -278,7 +278,7 @@ bool GobArchive::isGobArchive(const string& filename)
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check size
-	if ((unsigned)file.Length() < (dir_offset + 4))
+	if (static_cast<unsigned>(file.Length()) < (dir_offset + 4))
 		return false;
 
 	// Get number of lumps
@@ -289,7 +289,7 @@ bool GobArchive::isGobArchive(const string& filename)
 
 	// Compute directory size
 	uint32_t dir_size = (num_lumps * 21) + 4;
-	if ((unsigned)file.Length() < (dir_offset + dir_size))
+	if (static_cast<unsigned>(file.Length()) < (dir_offset + dir_size))
 		return false;
 
 	// If it's passed to here it's probably a gob file

@@ -10,7 +10,7 @@ namespace ui
 	{
 	public:
 		NewArchiveDialog(wxWindow* parent);
-		~NewArchiveDialog() = default;
+		~NewArchiveDialog() override = default;
 
 		Archive* createdArchive() const;
 

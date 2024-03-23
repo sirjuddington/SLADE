@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -44,8 +44,8 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::math
 {
-const double RAD_TO_DEG = 180. / PI;
-const double DEG_TO_RAD = PI / 180.;
+constexpr double RAD_TO_DEG = 180. / PI;
+constexpr double DEG_TO_RAD = PI / 180.;
 } // namespace slade::math
 
 
@@ -74,9 +74,9 @@ double math::clamp(double val, double min, double max)
 int math::floor(double val)
 {
 	if (val >= 0)
-		return (int)val;
+		return static_cast<int>(val);
 	else
-		return (int)val - 1;
+		return static_cast<int>(val) - 1;
 }
 
 // -----------------------------------------------------------------------------
@@ -85,9 +85,9 @@ int math::floor(double val)
 int math::ceil(double val)
 {
 	if (val > 0)
-		return (int)val + 1;
+		return static_cast<int>(val) + 1;
 	else
-		return (int)val;
+		return static_cast<int>(val);
 }
 
 // -----------------------------------------------------------------------------
@@ -95,8 +95,8 @@ int math::ceil(double val)
 // -----------------------------------------------------------------------------
 int math::round(double val)
 {
-	int ret = (int)val;
-	if ((val - (double)ret) >= 0.5)
+	int ret = static_cast<int>(val);
+	if ((val - static_cast<double>(ret)) >= 0.5)
 		ret++;
 	return ret;
 }
@@ -104,7 +104,7 @@ int math::round(double val)
 // -----------------------------------------------------------------------------
 // Returns the distance between [p1] and [p2]
 // -----------------------------------------------------------------------------
-double math::distance(Vec2d p1, Vec2d p2)
+double math::distance(const Vec2d& p1, const Vec2d& p2)
 {
 	return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
 }
@@ -112,7 +112,7 @@ double math::distance(Vec2d p1, Vec2d p2)
 // -----------------------------------------------------------------------------
 // Returns the distance between [p1] and [p2]
 // -----------------------------------------------------------------------------
-double math::distance3d(Vec3d p1, Vec3d p2)
+double math::distance3d(const Vec3d& p1, const Vec3d& p2)
 {
 	return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y) + (p2.z - p1.z) * (p2.z - p1.z));
 }
@@ -121,7 +121,7 @@ double math::distance3d(Vec3d p1, Vec3d p2)
 // Returns the side of the [line] that the [point] lies on.
 // Positive is front, negative is back, zero is on the line
 // -----------------------------------------------------------------------------
-double math::lineSide(Vec2d point, Seg2d line)
+double math::lineSide(const Vec2d& point, const Seg2d& line)
 {
 	return (point.x - line.x1()) * line.height() - (point.y - line.y1()) * line.width();
 }
@@ -129,7 +129,7 @@ double math::lineSide(Vec2d point, Seg2d line)
 // -----------------------------------------------------------------------------
 // Returns the point on the given [line] that's closest to the given [point]
 // -----------------------------------------------------------------------------
-Vec2d math::closestPointOnLine(Vec2d point, Seg2d line)
+Vec2d math::closestPointOnLine(const Vec2d& point, const Seg2d& line)
 {
 	// Get line length
 	double len = line.length();
@@ -155,7 +155,7 @@ Vec2d math::closestPointOnLine(Vec2d point, Seg2d line)
 // -----------------------------------------------------------------------------
 // Returns the shortest distance between the given [point] and [line]
 // -----------------------------------------------------------------------------
-double math::distanceToLine(Vec2d point, Seg2d line)
+double math::distanceToLine(const Vec2d& point, const Seg2d& line)
 {
 	// Calculate intersection point
 	auto i = closestPointOnLine(point, line);
@@ -170,7 +170,7 @@ double math::distanceToLine(Vec2d point, Seg2d line)
 // The distance returned isn't the real distance, but can be used to find the
 // closest line to the point
 // -----------------------------------------------------------------------------
-double math::distanceToLineFast(Vec2d point, Seg2d line)
+double math::distanceToLineFast(const Vec2d& point, const Seg2d& line)
 {
 	// Calculate intersection point
 	auto i = closestPointOnLine(point, line);
@@ -184,7 +184,7 @@ double math::distanceToLineFast(Vec2d point, Seg2d line)
 // Checks for an intersection between two lines [l1] and [l2].
 // Returns true if they intersect and sets [out] to the intersection point
 // -----------------------------------------------------------------------------
-bool math::linesIntersect(Seg2d l1, Seg2d l2, Vec2d& out)
+bool math::linesIntersect(const Seg2d& l1, const Seg2d& l2, Vec2d& out)
 {
 	// First, simple check for two parallel horizontal or vertical lines
 	if ((l1.x1() == l1.x2() && l2.x1() == l2.x2()) || (l1.y1() == l1.y2() && l2.y1() == l2.y2()))
@@ -251,7 +251,7 @@ bool math::linesIntersect(Seg2d l1, Seg2d l2, Vec2d& out)
 // Returns the distance between the ray [r1 -> r2] and the line segment
 // [s1 -> s2]
 // -----------------------------------------------------------------------------
-double math::distanceRayLine(Vec2d r1, Vec2d r2, Vec2d s1, Vec2d s2)
+double math::distanceRayLine(const Vec2d& r1, const Vec2d& r2, const Vec2d& s1, const Vec2d& s2)
 {
 	// Calculate the intersection distance from the ray
 	double u_ray = ((s2.x - s1.x) * (r1.y - s1.y) - (s2.y - s1.y) * (r1.x - s1.x))
@@ -271,7 +271,7 @@ double math::distanceRayLine(Vec2d r1, Vec2d r2, Vec2d s1, Vec2d s2)
 // -----------------------------------------------------------------------------
 // Returns the angle between the 2d points [p1], [p2] and [p3]
 // -----------------------------------------------------------------------------
-double math::angle2DRad(Vec2d p1, Vec2d p2, Vec2d p3)
+double math::angle2DRad(const Vec2d& p1, const Vec2d& p2, const Vec2d& p3)
 {
 	// From: http://stackoverflow.com/questions/3486172/angle-between-3-points
 	// modified not to bother converting to degrees
@@ -321,7 +321,7 @@ double math::angle2DRad(Vec2d p1, Vec2d p2, Vec2d p3)
 // Rotates [point] around [origin] by [angle] and returns the newly rotated
 // point
 // -----------------------------------------------------------------------------
-Vec2d math::rotatePoint(Vec2d origin, Vec2d point, double angle)
+Vec2d math::rotatePoint(const Vec2d& origin, const Vec2d& point, double angle)
 {
 	// Translate to origin
 	double x = point.x - origin.x;
@@ -341,13 +341,13 @@ Vec2d math::rotatePoint(Vec2d origin, Vec2d point, double angle)
 // Rotates [vector] around [axis] by [angle] and returns the resulting rotated
 // vector
 // -----------------------------------------------------------------------------
-Vec3d math::rotateVector3D(Vec3d vector, Vec3d axis, double angle)
+Vec3d math::rotateVector3D(const Vec3d& vector, const Vec3d& axis, double angle)
 {
 	Vec3d rvec;
 
 	// Calculate the sine and cosine of the angle once
-	float crot = (float)cos(angle);
-	float srot = (float)sin(angle);
+	float crot = static_cast<float>(cos(angle));
+	float srot = static_cast<float>(sin(angle));
 
 	// Rotate x
 	rvec.x = (crot + (1 - crot) * axis.x * axis.x) * vector.x;
@@ -394,7 +394,7 @@ Vec2d math::vectorAngle(double angle_rad)
 // -----------------------------------------------------------------------------
 // Returns the distance along the ray [r_o -> r_v] to [plane]
 // -----------------------------------------------------------------------------
-double math::distanceRayPlane(Vec3d r_o, Vec3d r_v, Plane plane)
+double math::distanceRayPlane(const Vec3d& r_o, const Vec3d& r_v, const Plane& plane)
 {
 	Vec3d  p_normal = plane.normal();
 	double cos_a    = r_v.dot(p_normal);
@@ -410,7 +410,7 @@ double math::distanceRayPlane(Vec3d r_o, Vec3d r_v, Plane plane)
 // Returns true if the given [box] intersects with the given [line].
 // Taken from http://stackoverflow.com/a/100165
 // -----------------------------------------------------------------------------
-bool math::boxLineIntersect(Rectf box, Seg2d line)
+bool math::boxLineIntersect(const Rectf& box, const Seg2d& line)
 {
 	// Find min and max X for the segment
 	double minX = line.x1();
@@ -466,7 +466,7 @@ bool math::boxLineIntersect(Rectf box, Seg2d line)
 // -----------------------------------------------------------------------------
 // Calculates a plane from the given points [p1,p2,p3]
 // -----------------------------------------------------------------------------
-Plane math::planeFromTriangle(Vec3d p1, Vec3d p2, Vec3d p3)
+Plane math::planeFromTriangle(const Vec3d& p1, const Vec3d& p2, const Vec3d& p3)
 {
 	auto v1 = p3 - p1;
 	auto v2 = p2 - p1;
@@ -489,9 +489,7 @@ Plane math::planeFromTriangle(Vec3d p1, Vec3d p2, Vec3d p3)
 // -----------------------------------------------------------------------------
 bool math::colinear(double x1, double y1, double x2, double y2, double x3, double y3)
 {
-	double a = x1 * (y2 - y3) +
-	x2 * (y3 - y1) +
-	x3 * (y1 - y2);
+	double a = x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2);
 
 	return a == 0;
 }

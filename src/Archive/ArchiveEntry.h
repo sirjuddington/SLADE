@@ -58,7 +58,7 @@ public:
 	Encryption               encryption() const { return encrypted_; }
 	ArchiveEntry*            nextEntry();
 	ArchiveEntry*            prevEntry();
-	shared_ptr<ArchiveEntry> getShared();
+	shared_ptr<ArchiveEntry> getShared() const;
 	int                      index();
 
 	// Modifiers (won't change entry state, except setState of course :P)
@@ -95,8 +95,8 @@ public:
 
 	// Data access
 	bool     write(const void* data, uint32_t size);
-	bool     read(void* buf, uint32_t size);
-	bool     seek(uint32_t offset, uint32_t start) { return data_.seek(offset, start); }
+	bool     read(void* buf, uint32_t size) const;
+	bool     seek(uint32_t offset, uint32_t start) const { return data_.seek(offset, start); }
 	uint32_t currentPos() const { return data_.currentPos(); }
 
 	// Data on disk

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
+#include "General/UI.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
@@ -68,7 +69,8 @@ EXTERN_CVAR(String, dir_last)
 // PatchTableListView class constructor
 // -----------------------------------------------------------------------------
 PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table) :
-	VirtualListView(parent), patch_table_{ patch_table }
+	VirtualListView(parent),
+	patch_table_{ patch_table }
 {
 	// Add columns
 	InsertColumn(0, "#");
@@ -97,7 +99,7 @@ wxString PatchTableListView::itemText(long item, long column, long index) const
 		return "INVALID INDEX";
 
 	// Check index is ok
-	if (index < 0 || (unsigned)index > patch_table_->nPatches())
+	if (index < 0 || static_cast<unsigned>(index) > patch_table_->nPatches())
 		return "INVALID INDEX";
 
 	// Get associated patch
@@ -171,7 +173,7 @@ bool PatchTableListView::usageSort(long left, long right)
 		return left < right;
 	else
 		return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
-                                            p1.used_in.size() < p2.used_in.size();
+											p1.used_in.size() < p2.used_in.size();
 }
 
 // -----------------------------------------------------------------------------
@@ -198,7 +200,9 @@ void PatchTableListView::sortItems()
 // PatchTablePanel class constructor
 // -----------------------------------------------------------------------------
 PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor) :
-	wxPanel(parent, -1), patch_table_{ patch_table }, parent_{ tx_editor }
+	wxPanel(parent, -1),
+	patch_table_{ patch_table },
+	parent_{ tx_editor }
 {
 	// Create controls
 	list_patches_ = new PatchTableListView(this, patch_table);
@@ -221,7 +225,7 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
 
 	// Update when main palette changed
-	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]()
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]
 																							 { updateDisplay(); });
 }
 
@@ -230,25 +234,27 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 // -----------------------------------------------------------------------------
 void PatchTablePanel::setupLayout()
 {
+	namespace wx = wxutil;
+
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
 	// Patches List + actions
 	auto frame      = new wxStaticBox(this, -1, "Patch List (PNAMES)");
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
-	framesizer->Add(toolbar_, 0, wxEXPAND | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
-	framesizer->AddSpacer(ui::px(ui::Size::PadMinimum));
-	framesizer->Add(list_patches_, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(framesizer, wx::sfWithBorder().Expand());
+	framesizer->Add(toolbar_, wx::sfWithMinBorder(0, wxTOP | wxBOTTOM).Expand());
+	framesizer->AddSpacer(ui::padMin());
+	framesizer->Add(list_patches_, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 
 	// Patch preview & info
 	frame      = new wxStaticBox(this, -1, "Patch Preview && Info");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
-	framesizer->Add(zc_zoom_, 0, wxALL, ui::pad());
-	framesizer->Add(patch_canvas_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
-	framesizer->Add(label_dimensions_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
-	framesizer->Add(label_textures_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(framesizer, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(zc_zoom_, wx::sfWithBorder());
+	framesizer->Add(patch_canvas_, wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(label_dimensions_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(label_textures_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 }
 
 // -----------------------------------------------------------------------------

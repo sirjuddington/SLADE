@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,12 +32,14 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ThingInfoOverlay.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapThing.h"
 
@@ -63,9 +65,14 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // ThingInfoOverlay class constructor
 // -----------------------------------------------------------------------------
 ThingInfoOverlay::ThingInfoOverlay() :
-	text_box_{ "", drawing::Font::Condensed, 100, int(16 * (drawing::fontSize() / 12.0)) }
+	text_box_{ new TextBox("", drawing::Font::Condensed, 100, static_cast<int>(16 * (drawing::fontSize() / 12.0))) }
 {
 }
+
+// -----------------------------------------------------------------------------
+// ThingInfoOverlay class destructor
+// -----------------------------------------------------------------------------
+ThingInfoOverlay::~ThingInfoOverlay() = default;
 
 // -----------------------------------------------------------------------------
 // Updates the overlay with info from [thing]
@@ -93,9 +100,13 @@ void ThingInfoOverlay::update(MapThing* thing)
 	// Position
 	if (map_format != MapFormat::Doom)
 		info_text += fmt::format(
-			"Position: {}, {}, {}\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->zPos()));
+			"Position: {}, {}, {}\n",
+			static_cast<int>(thing->xPos()),
+			static_cast<int>(thing->yPos()),
+			static_cast<int>(thing->zPos()));
 	else
-		info_text += fmt::format("Position: {}, {}\n", (int)thing->xPos(), (int)thing->yPos());
+		info_text += fmt::format(
+			"Position: {}, {}\n", static_cast<int>(thing->xPos()), static_cast<int>(thing->yPos()));
 
 	// Direction
 	int  angle = thing->angle();
@@ -158,7 +169,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 	zeth_icon_   = tt.zethIcon();
 
 	// Setup text box
-	text_box_.setText(info_text);
+	text_box_->setText(info_text);
 }
 
 // -----------------------------------------------------------------------------
@@ -178,9 +189,9 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	if (last_size_ != right)
 	{
 		last_size_ = right;
-		text_box_.setSize(right - 68);
+		text_box_->setSize(right - 68);
 	}
-	int height = text_box_.height() + 4;
+	int height = text_box_->height() + 4;
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
@@ -198,8 +209,8 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	drawing::drawBorderedRect(0, bottom - height - 4, right, bottom + 2, col_bg, col_border);
 
 	// Draw info text lines
-	text_box_.setLineHeight(16 * (drawing::fontSize() / 12.0));
-	text_box_.draw(2, bottom - height, col_fg);
+	text_box_->setLineHeight(16 * (drawing::fontSize() / 12.0));
+	text_box_->draw(2, bottom - height, col_fg);
 
 	// Draw sprite
 	bool isicon = false;

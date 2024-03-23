@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -346,7 +346,7 @@ bool ADatArchive::isADatArchive(const MemChunk& mc)
 		return false;
 
 	// Check directory is sane
-	if (dir_offset < 16 || (unsigned)(dir_offset + dir_size) > mc.size())
+	if (dir_offset < 16 || static_cast<unsigned>(dir_offset + dir_size) > mc.size())
 		return false;
 
 	// That'll do

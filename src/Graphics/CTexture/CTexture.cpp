@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "CTexture.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/SImage/SImage.h"
@@ -88,7 +89,8 @@ ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 // CTPatchEx class constructor w/basic initial values
 // -----------------------------------------------------------------------------
 CTPatchEx::CTPatchEx(string_view name, int16_t offset_x, int16_t offset_y, Type type) :
-	CTPatch{ name, offset_x, offset_y }, type_{ type }
+	CTPatch{ name, offset_x, offset_y },
+	type_{ type }
 {
 }
 

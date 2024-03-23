@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -45,7 +45,7 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, col_match, (int)Palette::ColourMatch::Old, CVar::Flag::Save)
+CVAR(Int, col_match, static_cast<int>(Palette::ColourMatch::Old), CVar::Flag::Save)
 CVAR(Float, col_match_r, 1.0, CVar::Flag::Save)
 CVAR(Float, col_match_g, 1.0, CVar::Flag::Save)
 CVAR(Float, col_match_b, 1.0, CVar::Flag::Save)
@@ -72,7 +72,7 @@ Palette::Palette(unsigned size) : colours_{ size }, colours_hsl_{ size }, colour
 	// Init palette (to greyscale)
 	for (unsigned a = 0; a < size; a++)
 	{
-		double mult = (double)a / (double)size;
+		double mult = static_cast<double>(a) / static_cast<double>(size);
 		colours_[a].set(mult * 255, mult * 255, mult * 255, 255, -1, a);
 		colours_lab_[a].l = mult;
 		colours_hsl_[a].l = mult;
@@ -354,7 +354,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, string_view name)
 		string csv;
 		for (unsigned a = 0; a < 256; a++)
 			csv += fmt::format("{}, {}, {}\n", colours_[a].r, colours_[a].g, colours_[a].b);
-		mc.importMem((const uint8_t*)((const char*)csv.data()), csv.size());
+		mc.importMem(reinterpret_cast<const uint8_t*>(csv.data()), csv.size());
 	}
 
 	// JASC palette
@@ -363,7 +363,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, string_view name)
 		string jasc = "JASC-PAL\n0100\n256\n";
 		for (unsigned a = 0; a < 256; a++)
 			jasc += fmt::format("{} {} {}\n", colours_[a].r, colours_[a].g, colours_[a].b);
-		mc.importMem((const uint8_t*)((const char*)jasc.data()), jasc.size());
+		mc.importMem(reinterpret_cast<const uint8_t*>(jasc.data()), jasc.size());
 	}
 
 	// GIMP palette
@@ -372,7 +372,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, string_view name)
 		string gimp = fmt::format("GIMP Palette\nName: {}\n#\n", name);
 		for (unsigned a = 0; a < 256; a++)
 			gimp += fmt::format("{}\t{}\t{}\tIndex {}\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
-		mc.importMem((const uint8_t*)((const char*)gimp.data()), gimp.size());
+		mc.importMem(reinterpret_cast<const uint8_t*>(gimp.data()), gimp.size());
 	}
 
 	// Image
@@ -515,13 +515,13 @@ void Palette::setGradient(uint8_t startIndex, uint8_t endIndex, const ColRGBA& s
 		}
 		else
 		{
-			perc = (float)a / (float)range;
+			perc = static_cast<float>(a) / static_cast<float>(range);
 		}
 
 		gradCol.set(
-			(int)(((r_range * perc) + startCol.fr()) * 255.0f),
-			(int)(((g_range * perc) + startCol.fg()) * 255.0f),
-			(int)(((b_range * perc) + startCol.fb()) * 255.0f),
+			static_cast<int>(((r_range * perc) + startCol.fr()) * 255.0f),
+			static_cast<int>(((g_range * perc) + startCol.fg()) * 255.0f),
+			static_cast<int>(((b_range * perc) + startCol.fb()) * 255.0f),
 			255,
 			-1,
 			a + startIndex);
@@ -705,9 +705,9 @@ void Palette::colourise(const ColRGBA& colour, int start, int end)
 		double  grey = (ncol.r * col_greyscale_r + ncol.g * col_greyscale_g + ncol.b * col_greyscale_b) / 255.0f;
 		if (grey > 1.0)
 			grey = 1.0;
-		ncol.r = (uint8_t)(colour.r * grey);
-		ncol.g = (uint8_t)(colour.g * grey);
-		ncol.b = (uint8_t)(colour.b * grey);
+		ncol.r = static_cast<uint8_t>(colour.r * grey);
+		ncol.g = static_cast<uint8_t>(colour.g * grey);
+		ncol.b = static_cast<uint8_t>(colour.b * grey);
 		setColour(i, ncol);
 	}
 }

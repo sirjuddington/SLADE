@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,13 +31,28 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "MapEditor/MapEditor.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
+#include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapObject.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/SideList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
 using namespace slade;
+using namespace mapeditor;
+
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 
 // -----------------------------------------------------------------------------
@@ -120,7 +135,7 @@ void registerSLADEMap(sol::state& lua)
 void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 {
 	if (object)
-		self.selection().select({ (int)object->index(), mapeditor::itemTypeFromObject(object) }, select);
+		self.selection().select({ static_cast<int>(object->index()), mapeditor::itemTypeFromObject(object) }, select);
 }
 
 // -----------------------------------------------------------------------------
@@ -181,9 +196,8 @@ void registerMapEditor(sol::state& lua)
         &selectMapObject, [](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); });
 	lua_mapeditor["SetEditMode"] = sol::overload(
 		[](MapEditContext& self, mapeditor::Mode mode) { setEditMode(self, mode); },
-		[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode) {
-			setEditMode(self, mode, sector_mode);
-		});
+		[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode)
+		{ setEditMode(self, mode, sector_mode); });
 }
 
 // -----------------------------------------------------------------------------

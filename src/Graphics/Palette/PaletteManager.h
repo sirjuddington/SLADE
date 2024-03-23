@@ -12,13 +12,13 @@ public:
 
 	bool     init();
 	bool     addPalette(unique_ptr<Palette> pal, string_view name);
-	int      numPalettes() const { return (int)palettes_.size(); }
+	int      numPalettes() const { return static_cast<int>(palettes_.size()); }
 	Palette* defaultPalette() { return &pal_default_; }
 	Palette* globalPalette();
 	Palette* palette(int index);
 	Palette* palette(string_view name);
 	string   palName(int index);
-	string   palName(Palette* pal);
+	string   palName(const Palette* pal);
 
 	bool loadResourcePalettes();
 	bool loadCustomPalettes();

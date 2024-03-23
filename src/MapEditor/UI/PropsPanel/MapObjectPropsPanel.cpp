@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "MapObjectPropsPanel.h"
 #include "Game/Configuration.h"
+#include "Game/UDMFProperty.h"
+#include "General/UI.h"
 #include "MOPGProperty.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
@@ -63,8 +65,11 @@ CVAR(Bool, mobj_props_auto_apply, false, CVar::Flag::Save)
 // MapObjectPropsPanel class constructor
 // -----------------------------------------------------------------------------
 MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
-	PropsPanelBase{ parent }, no_apply_{ no_apply }
+	PropsPanelBase{ parent },
+	no_apply_{ no_apply }
 {
+	namespace wx = wxutil;
+
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -72,11 +77,11 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	// Add item label
 	cb_show_all_ = new wxCheckBox(this, -1, "Show All");
 	cb_show_all_->SetValue(mobj_props_show_all);
-	sizer->Add(cb_show_all_, 0, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(cb_show_all_, wx::sfWithBorder().Expand());
 
 	// Add tabs
 	stc_sections_ = STabCtrl::createControl(this);
-	sizer->Add(stc_sections_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(stc_sections_, wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
@@ -99,20 +104,20 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 
 	// Add buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(hbox, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add button
 	btn_add_ = new SIconButton(this, "plus", "Add Property");
-	hbox->Add(btn_add_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_add_, wx::sfWithBorder(0, wxRIGHT).Expand());
 	hbox->AddStretchSpacer(1);
 
 	// Reset button
 	btn_reset_ = new SIconButton(this, "close", "Discard Changes");
-	hbox->Add(btn_reset_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_reset_, wx::sfWithBorder(0, wxRIGHT).Expand());
 
 	// Apply button
 	btn_apply_ = new SIconButton(this, "tick", "Apply Changes");
-	hbox->Add(btn_apply_, 0, wxEXPAND);
+	hbox->Add(btn_apply_, wxSizerFlags().Expand());
 
 	wxPGCell cell;
 	cell.SetText("<multiple values>");
@@ -157,7 +162,7 @@ bool MapObjectPropsPanel::showAll() const
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addBoolProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	bool                readonly,
@@ -188,7 +193,7 @@ MOPGProperty* MapObjectPropsPanel::addBoolProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addIntProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	bool                readonly,
@@ -219,7 +224,7 @@ MOPGProperty* MapObjectPropsPanel::addIntProperty(
 // [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addFloatProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	bool                readonly,
@@ -250,7 +255,7 @@ MOPGProperty* MapObjectPropsPanel::addFloatProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addStringProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	bool                readonly,
@@ -281,7 +286,7 @@ MOPGProperty* MapObjectPropsPanel::addStringProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	int                 index,
@@ -313,7 +318,7 @@ MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	int                 index,
@@ -345,7 +350,7 @@ MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addTextureProperty(
-	wxPGProperty*          group,
+	const wxPGProperty*    group,
 	const wxString&        label,
 	const wxString&        propname,
 	mapeditor::TextureType textype,
@@ -996,10 +1001,10 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 					// Add property
 					switch (property::valueType(prop.value))
 					{
-					case property::ValueType::Bool: addBoolProperty(group_custom_, prop.name, prop.name); break;
-					case property::ValueType::Int: addIntProperty(group_custom_, prop.name, prop.name); break;
+					case property::ValueType::Bool:  addBoolProperty(group_custom_, prop.name, prop.name); break;
+					case property::ValueType::Int:   addIntProperty(group_custom_, prop.name, prop.name); break;
 					case property::ValueType::Float: addFloatProperty(group_custom_, prop.name, prop.name); break;
-					default: addStringProperty(group_custom_, prop.name, prop.name); break;
+					default:                         addStringProperty(group_custom_, prop.name, prop.name); break;
 					}
 				}
 			}
@@ -1063,7 +1068,7 @@ void MapObjectPropsPanel::updateArgs(MOPGIntWithArgsProperty* source)
 	{
 		if (prop->type() == MOPGProperty::Type::ThingType || prop->type() == MOPGProperty::Type::ActionSpecial)
 		{
-			prop_with_args = (MOPGIntWithArgsProperty*)prop;
+			prop_with_args = static_cast<MOPGIntWithArgsProperty*>(prop);
 
 			if (!prop_with_args->IsValueUnspecified() && prop_with_args->GetValue().GetInteger() != 0
 				&& prop_with_args->hasArgs())
@@ -1128,6 +1133,8 @@ void MapObjectPropsPanel::clearGrid()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the apply button is clicked
@@ -1188,7 +1195,7 @@ void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(msizer);
 	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	msizer->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	// Name
 	auto text_name = new wxTextCtrl(&dlg, -1, "");

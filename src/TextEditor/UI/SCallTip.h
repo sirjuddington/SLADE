@@ -9,7 +9,7 @@ class SCallTip : public wxPopupWindow
 {
 public:
 	SCallTip(wxWindow* parent);
-	~SCallTip() = default;
+	~SCallTip() override = default;
 
 	void setBackgroundColour(ColRGBA col) { col_bg_ = col; }
 	void setTextColour(ColRGBA col) { col_fg_ = col_func_ = col_type_ = col_keyword_ = col; }
@@ -29,7 +29,7 @@ public:
 	void nextArgSet();
 	void prevArgSet();
 
-	static const int MAX_WIDTH = 800;
+	static constexpr int MAX_WIDTH = 800;
 
 private:
 	TLFunction*         function_ = nullptr;
@@ -55,15 +55,20 @@ private:
 
 	int    drawText(wxDC& dc, const wxString& text, int left, int top, wxRect* bounds) const;
 	wxRect drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top) const;
-	wxRect drawArgs(wxDC& dc, const TLFunction::Context& context, int left, int top, wxColour& col_faded, wxFont& bold)
-		const;
+	wxRect drawArgs(
+		wxDC&                      dc,
+		const TLFunction::Context& context,
+		int                        left,
+		int                        top,
+		const wxColour&            col_faded,
+		const wxFont&              bold) const;
 	wxRect drawFunctionContext(
 		wxDC&                      dc,
 		const TLFunction::Context& context,
 		int                        left,
 		int                        top,
-		wxColour&                  col_faded,
-		wxFont&                    bold) const;
+		const wxColour&            col_faded,
+		const wxFont&              bold) const;
 	wxRect drawFunctionDescription(wxDC& dc, const wxString& desc, int left, int top) const;
 	wxSize drawCallTip(wxDC& dc, int xoff = 0, int yoff = 0);
 	void   updateBuffer();

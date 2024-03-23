@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Utility/Colour.h"
-#include "Utility/Parser.h"
 
 namespace slade
 {
+class ParseTreeNode;
 class TextEditorCtrl;
 class TextStyle
 {
@@ -46,9 +46,9 @@ public:
 	ColRGBA foreground() const { return foreground_; }
 	ColRGBA background() const { return background_; }
 
-	bool   parse(ParseTreeNode* node);
-	void   applyTo(wxStyledTextCtrl* stc);
-	bool   copyStyle(TextStyle* copy);
+	bool   parse(const ParseTreeNode* node);
+	void   applyTo(wxStyledTextCtrl* stc) const;
+	bool   copyStyle(const TextStyle* copy);
 	string textDefinition(unsigned tabs = 0) const;
 
 private:
@@ -76,13 +76,13 @@ public:
 	const string& getName() const { return name_; }
 	unsigned      nStyles() const { return styles_.size(); }
 
-	bool       parseSet(ParseTreeNode* root);
+	bool       parseSet(const ParseTreeNode* root);
 	void       applyTo(TextEditorCtrl* stc);
 	void       applyToWx(wxStyledTextCtrl* stc);
-	bool       copySet(StyleSet* copy);
+	bool       copySet(const StyleSet* copy);
 	TextStyle* style(string_view name);
 	TextStyle* style(unsigned index);
-	bool       writeFile(string_view filename);
+	bool       writeFile(string_view filename) const;
 
 	ColRGBA styleForeground(string_view style_name);
 	ColRGBA styleBackground(string_view style_name);
@@ -100,7 +100,7 @@ public:
 	static unsigned  numSets();
 	static StyleSet* set(unsigned index);
 	static void      addEditor(TextEditorCtrl* stc);
-	static void      removeEditor(TextEditorCtrl* stc);
+	static void      removeEditor(const TextEditorCtrl* stc);
 	static void      applyCurrentToAll();
 	static void      addSet(StyleSet* set);
 

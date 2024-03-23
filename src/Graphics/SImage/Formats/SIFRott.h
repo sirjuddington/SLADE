@@ -18,7 +18,7 @@ public:
 		SImage::Info info;
 
 		// Read header
-		auto header   = (const gfx::ROTTPatchHeader*)mc.data();
+		auto header   = reinterpret_cast<const gfx::ROTTPatchHeader*>(mc.data());
 		info.width    = wxINT16_SWAP_ON_BE(header->width);
 		info.height   = wxINT16_SWAP_ON_BE(header->height);
 		info.offset_x = wxINT16_SWAP_ON_BE(header->left) + (wxINT16_SWAP_ON_BE(header->origsize) / 2);
@@ -64,7 +64,7 @@ protected:
 			uint16_t col_offset = col_offsets[c];
 
 			// Check column offset is valid
-			if (col_offset >= (unsigned)data.size())
+			if (col_offset >= data.size())
 				return false;
 
 			// Go to start of column
@@ -305,7 +305,7 @@ protected:
 		auto info = this->info(data, index);
 
 		// Check data
-		if ((int)data.size() != 4 + info.width * info.height)
+		if (static_cast<int>(data.size()) != 4 + info.width * info.height)
 			return false;
 
 		// Create image

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MapEditor/Edit/Edit3D.h"
+#include "MapEditor/Item.h"
 
 namespace slade
 {

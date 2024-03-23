@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,6 +40,7 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -56,37 +57,39 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "default")
 {
+	namespace wx = wxutil;
+
 	sizer_main_->AddStretchSpacer(1);
 
 	// Add index label
 	label_index_ = new wxStaticText(this, -1, "Index");
-	sizer_main_->Add(label_index_, 0, wxALL | wxALIGN_CENTER, ui::pad());
+	sizer_main_->Add(label_index_, wx::sfWithBorder().Center());
 
 	// Add type label
 	label_type_ = new wxStaticText(this, -1, "Type");
-	sizer_main_->Add(label_type_, 0, wxALL | wxALIGN_CENTER, ui::pad());
+	sizer_main_->Add(label_type_, wx::sfWithBorder().Center());
 
 	// Add size label
 	label_size_ = new wxStaticText(this, -1, "Size");
-	sizer_main_->Add(label_size_, 0, wxALL | wxALIGN_CENTER, ui::pad());
+	sizer_main_->Add(label_size_, wx::sfWithBorder().Center());
 
 	// Add actions frame
 	frame_actions_  = new wxStaticBox(this, -1, "Actions");
 	auto framesizer = new wxStaticBoxSizer(frame_actions_, wxVERTICAL);
-	sizer_main_->Add(framesizer, 0, wxALL | wxALIGN_CENTER, ui::pad());
+	sizer_main_->Add(framesizer, wx::sfWithBorder().Center());
 
 	// Add 'Convert Gfx' button
 	btn_gfx_convert_ = new wxButton(this, -1, "Convert Gfx To...");
 	framesizer->AddSpacer(4);
-	framesizer->Add(btn_gfx_convert_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->Add(btn_gfx_convert_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Modify Gfx Offsets' button
 	btn_gfx_modify_offsets_ = new wxButton(this, -1, "Modify Gfx Offsets");
-	framesizer->Add(btn_gfx_modify_offsets_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->Add(btn_gfx_modify_offsets_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Edit Textures' button
 	btn_texture_edit_ = new wxButton(this, -1, "Edit Textures");
-	framesizer->Add(btn_texture_edit_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->Add(btn_texture_edit_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	sizer_main_->AddStretchSpacer(1);
 
@@ -155,7 +158,7 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Loads [entries] into the panel, for multiple selection handling
 // -----------------------------------------------------------------------------
-bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
+bool DefaultEntryPanel::loadEntries(const vector<ArchiveEntry*>& entries)
 {
 	// Update labels
 	label_type_->SetLabel(wxString::Format("%lu selected entries", static_cast<unsigned long>(entries.size())));

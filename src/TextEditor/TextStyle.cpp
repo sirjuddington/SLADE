@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -74,7 +74,8 @@ StyleSet*                    ss_current = nullptr;
 // TextStyle class constructor
 // -----------------------------------------------------------------------------
 TextStyle::TextStyle(string_view name, string_view description, int style_id) :
-	name_{ name }, description_{ description }
+	name_{ name },
+	description_{ description }
 {
 	// Init variables
 	if (style_id >= 0)
@@ -93,7 +94,7 @@ void TextStyle::addWxStyleId(int style)
 // -----------------------------------------------------------------------------
 // Reads text style information from a parse tree
 // -----------------------------------------------------------------------------
-bool TextStyle::parse(ParseTreeNode* node)
+bool TextStyle::parse(const ParseTreeNode* node)
 {
 	// Check any info was given
 	if (!node)
@@ -129,15 +130,15 @@ bool TextStyle::parse(ParseTreeNode* node)
 
 		// Bold
 		else if (strutil::equalCI(name, "bold"))
-			bold_ = (int)child->boolValue();
+			bold_ = static_cast<int>(child->boolValue());
 
 		// Italic
 		else if (strutil::equalCI(name, "italic"))
-			italic_ = (int)child->boolValue();
+			italic_ = static_cast<int>(child->boolValue());
 
 		// Underlined
 		else if (strutil::equalCI(name, "underlined"))
-			underlined_ = (int)child->boolValue();
+			underlined_ = static_cast<int>(child->boolValue());
 	}
 
 	return true;
@@ -146,7 +147,7 @@ bool TextStyle::parse(ParseTreeNode* node)
 // -----------------------------------------------------------------------------
 // Applies the style settings to the scintilla text control [stc]
 // -----------------------------------------------------------------------------
-void TextStyle::applyTo(wxStyledTextCtrl* stc)
+void TextStyle::applyTo(wxStyledTextCtrl* stc) const
 {
 	for (int wx_style : wx_styles_)
 	{
@@ -193,7 +194,7 @@ void TextStyle::applyTo(wxStyledTextCtrl* stc)
 // -----------------------------------------------------------------------------
 // Copies style info from [copy]
 // -----------------------------------------------------------------------------
-bool TextStyle::copyStyle(TextStyle* copy)
+bool TextStyle::copyStyle(const TextStyle* copy)
 {
 	if (!copy)
 		return false;
@@ -264,7 +265,8 @@ string TextStyle::textDefinition(unsigned tabs) const
 // StyleSet class constructor
 // -----------------------------------------------------------------------------
 StyleSet::StyleSet(string_view name) :
-	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT), ts_selection_("selection", "Selected Text")
+	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT),
+	ts_selection_("selection", "Selected Text")
 {
 	// Init default style
 	wxFont f(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
@@ -311,7 +313,7 @@ StyleSet::StyleSet(string_view name) :
 // -----------------------------------------------------------------------------
 // Reads style set info from a parse tree
 // -----------------------------------------------------------------------------
-bool StyleSet::parseSet(ParseTreeNode* root)
+bool StyleSet::parseSet(const ParseTreeNode* root)
 {
 	if (!root)
 		return false;
@@ -434,7 +436,7 @@ void StyleSet::applyToWx(wxStyledTextCtrl* stc)
 // -----------------------------------------------------------------------------
 // Copies all styles in [copy] to this set
 // -----------------------------------------------------------------------------
-bool StyleSet::copySet(StyleSet* copy)
+bool StyleSet::copySet(const StyleSet* copy)
 {
 	if (!copy)
 		return false;
@@ -486,7 +488,7 @@ TextStyle* StyleSet::style(unsigned index)
 // -----------------------------------------------------------------------------
 // Writes this style set as a text definition to a file [filename]
 // -----------------------------------------------------------------------------
-bool StyleSet::writeFile(string_view filename)
+bool StyleSet::writeFile(string_view filename) const
 {
 	// Open file for writing
 	wxFile file(wxString{ filename.data(), filename.size() }, wxFile::write);
@@ -720,7 +722,7 @@ void StyleSet::addEditor(TextEditorCtrl* stc)
 // -----------------------------------------------------------------------------
 // Removes [stc] from the current list of text editors
 // -----------------------------------------------------------------------------
-void StyleSet::removeEditor(TextEditorCtrl* stc)
+void StyleSet::removeEditor(const TextEditorCtrl* stc)
 {
 	VECTOR_REMOVE(editors_, stc);
 }

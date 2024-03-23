@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,7 +36,10 @@
 #include "MathStuff.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
-#include "SLADEMap/SLADEMap.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapVertex.h"
 
 using namespace slade;
 
@@ -75,7 +78,7 @@ void Polygon2D::setZ(float z)
 	}
 }
 
-void Polygon2D::setZ(Plane plane)
+void Polygon2D::setZ(const Plane& plane)
 {
 	// Go through all sub-polys
 	for (auto& subpoly : subpolys_)
@@ -509,10 +512,10 @@ bool PolygonSplitter::detectUnclosed()
 		{
 			auto& edge = edges_[e];
 
-			bool flipped = false;
+			// bool flipped = false;
 			for (int start_vert : start_verts)
 			{
-				auto& sv = vertices_[start_vert];
+				// auto& sv = vertices_[start_vert];
 
 				if (edge.v1 == start_vert && edge.v2 == end_vert)
 					flipEdge(e); // Flip the edge
@@ -1046,7 +1049,7 @@ void PolygonSplitter::openSector(MapSector* sector)
 	}
 }
 
-void PolygonSplitter::testRender()
+void PolygonSplitter::testRender() const
 {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Draw vertices

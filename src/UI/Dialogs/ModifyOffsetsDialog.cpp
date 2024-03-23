@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -80,7 +80,7 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 	auto* gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gbsizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sizer->Add(gbsizer, wxutil::sfWithLargeBorder(1).Expand());
 	gbsizer->Add(opt_auto_, { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gbsizer->Add(combo_aligntype_, { 0, 1 }, { 1, 3 }, wxEXPAND);
 	gbsizer->Add(opt_set_, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -90,7 +90,8 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 
 	// Add default dialog buttons
 	sizer->Add(
-		wxutil::createDialogButtonBox(this, "OK", "Cancel"), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+		wxutil::createDialogButtonBox(this, "OK", "Cancel"),
+		wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 
 	// Bind events
@@ -99,7 +100,7 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 
 
 	// Apply layout and size
-	wxWindowBase::Layout();
+	wxTopLevelWindowBase::Layout();
 	SetInitialSize(wxDefaultSize);
 }
 
@@ -272,7 +273,7 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
 		log::error(wxString::Format(
-			"Entry \"%s\" is of type \"%s\" which does not support offsets", entry.name(), type->name()));
+			R"(Entry "%s" is of type "%s" which does not support offsets)", entry.name(), type->name()));
 		return false;
 	}
 
@@ -289,8 +290,8 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 		Vec2i offsets = calculateOffsets(header.left, header.top, header.width, header.height);
 
 		// Apply new offsets
-		header.left = wxINT16_SWAP_ON_BE((int16_t)offsets.x);
-		header.top  = wxINT16_SWAP_ON_BE((int16_t)offsets.y);
+		header.left = wxINT16_SWAP_ON_BE(static_cast<int16_t>(offsets.x));
+		header.top  = wxINT16_SWAP_ON_BE(static_cast<int16_t>(offsets.y));
 
 		// Write new header to entry
 		entry.seek(0, SEEK_SET);
@@ -309,8 +310,8 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 		Vec2i offsets = calculateOffsets(header.left, header.top, header.width, header.height);
 
 		// Apply new offsets
-		header.left = (int8_t)offsets.x;
-		header.top  = (int8_t)offsets.y;
+		header.left = static_cast<int8_t>(offsets.x);
+		header.top  = static_cast<int8_t>(offsets.y);
 
 		// Write new header to entry
 		entry.seek(0, SEEK_SET);
@@ -349,6 +350,8 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the 'Set Offsets' radio button is selected

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,7 +33,7 @@
 #include "ZScript.h"
 #include "App.h"
 #include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
+#include "ThingType.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -241,7 +241,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 		}
 
 		// ZScript
-		parsed.push_back({});
+		parsed.emplace_back();
 		parsed.back().entry = entry;
 		if (!parsed.back().parse(tz))
 			parsed.pop_back();
@@ -385,7 +385,7 @@ bool Function::parse(ParsedStatement& statement)
 			override_      = true;
 			last_qualifier = index;
 		}
-		else if ((int)index > last_qualifier + 2 && statement.tokens[index] == '(')
+		else if (static_cast<int>(index) > last_qualifier + 2 && statement.tokens[index] == '(')
 		{
 			name_        = statement.tokens[index - 1];
 			return_type_ = statement.tokens[index - 2];
@@ -1176,7 +1176,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 			return false;
 		}
 
-		block.push_back({});
+		block.emplace_back();
 		block.back().entry = entry;
 		if (!block.back().parse(tz) || block.back().tokens.empty())
 			block.pop_back();

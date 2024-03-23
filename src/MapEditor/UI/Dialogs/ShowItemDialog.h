@@ -11,7 +11,7 @@ class ShowItemDialog : public wxDialog
 {
 public:
 	ShowItemDialog(wxWindow* parent);
-	~ShowItemDialog() {}
+	~ShowItemDialog() override = default;
 
 	MapObject::Type type() const;
 	int             index() const;

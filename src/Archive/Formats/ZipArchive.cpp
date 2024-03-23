@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -462,7 +462,7 @@ shared_ptr<ArchiveEntry> ZipArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
+MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -491,7 +491,7 @@ Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> ZipArchive::detectMaps()
+vector<MapDesc> ZipArchive::detectMaps()
 {
 	vector<MapDesc> ret;
 
@@ -602,8 +602,7 @@ ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	auto                  dir = rootDir().get();
-	vector<ArchiveEntry*> ret;
+	auto dir = rootDir().get();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -617,7 +616,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
-			return ret;
+			return {};
 		else
 			options.search_subdirs = true; // Namespace search always includes namespace subdirs
 	}

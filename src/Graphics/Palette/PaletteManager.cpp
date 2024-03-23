@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -142,7 +142,7 @@ string PaletteManager::palName(int index)
 // Returns the name of the given palette, or an empty string if the palette
 // isn't managed by the PaletteManager
 // -----------------------------------------------------------------------------
-string PaletteManager::palName(Palette* pal)
+string PaletteManager::palName(const Palette* pal)
 {
 	for (uint32_t a = 0; a < palettes_.size(); a++)
 	{

@@ -2,7 +2,7 @@
 
 #include "ArchiveDir.h"
 #include "ArchiveEntry.h"
-#include "General/Defs.h"
+#include "MapDesc.h"
 
 namespace slade
 {
@@ -25,26 +25,6 @@ struct ArchiveFormat
 class Archive
 {
 public:
-	struct MapDesc
-	{
-		string                 name;
-		weak_ptr<ArchiveEntry> head;
-		weak_ptr<ArchiveEntry> end;     // The last entry of the map data
-		MapFormat              format;  // See MapTypes enum
-		bool                   archive; // True if head is an archive (for maps in zips)
-
-		vector<ArchiveEntry*> unk; // Unknown map lumps (must be preserved for UDMF compliance)
-
-		MapDesc()
-		{
-			archive = false;
-			format  = MapFormat::Unknown;
-		}
-
-		vector<ArchiveEntry*> entries(const Archive& parent, bool include_head = false) const;
-		void                  updateMapFormatHints() const;
-	};
-
 	static bool save_backup;
 
 	Archive(string_view format = "");
@@ -92,10 +72,10 @@ public:
 	virtual unsigned numEntries();
 	virtual void     close();
 	void             entryStateChanged(ArchiveEntry* entry);
-	void             putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr) const;
-	void             putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir* start = nullptr) const;
-	bool             canSave() const { return parent_.lock() || on_disk_; }
-	virtual bool     paste(ArchiveDir* tree, unsigned position = 0xFFFFFFFF, shared_ptr<ArchiveDir> base = nullptr);
+	void             putEntryTreeAsList(vector<ArchiveEntry*>& list, const ArchiveDir* start = nullptr) const;
+	void         putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, const ArchiveDir* start = nullptr) const;
+	bool         canSave() const { return parent_.lock() || on_disk_; }
+	virtual bool paste(ArchiveDir* tree, unsigned position = 0xFFFFFFFF, shared_ptr<ArchiveDir> base = nullptr);
 	virtual bool importDir(string_view directory, bool ignore_hidden = false, shared_ptr<ArchiveDir> base = nullptr);
 	virtual bool hasFlatHack() { return false; }
 

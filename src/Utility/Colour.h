@@ -14,7 +14,11 @@ struct ColRGBA
 	// Constructors
 	ColRGBA() = default;
 	ColRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, short index = -1) :
-		r{ r }, g{ g }, b{ b }, a{ a }, index{ index }
+		r{ r },
+		g{ g },
+		b{ b },
+		a{ a },
+		index{ index }
 	{
 	}
 	ColRGBA(const ColRGBA& c) = default;
@@ -47,15 +51,15 @@ struct ColRGBA
 		a = colour.Alpha();
 	}
 
-	float fr() const { return (float)r / 255.0f; }
-	float fg() const { return (float)g / 255.0f; }
-	float fb() const { return (float)b / 255.0f; }
-	float fa() const { return (float)a / 255.0f; }
+	float fr() const { return static_cast<float>(r) / 255.0f; }
+	float fg() const { return static_cast<float>(g) / 255.0f; }
+	float fb() const { return static_cast<float>(b) / 255.0f; }
+	float fa() const { return static_cast<float>(a) / 255.0f; }
 
-	double dr() const { return (double)r / 255.0; }
-	double dg() const { return (double)g / 255.0; }
-	double db() const { return (double)b / 255.0; }
-	double da() const { return (double)a / 255.0; }
+	double dr() const { return static_cast<double>(r) / 255.0; }
+	double dg() const { return static_cast<double>(g) / 255.0; }
+	double db() const { return static_cast<double>(b) / 255.0; }
+	double da() const { return static_cast<double>(a) / 255.0; }
 
 	bool equals(const ColRGBA& rhs, bool check_alpha = false, bool check_index = false) const
 	{
@@ -94,16 +98,18 @@ struct ColRGBA
 		if (na < 0)
 			na = 0;
 
-		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na };
+		return {
+			static_cast<uint8_t>(nr), static_cast<uint8_t>(ng), static_cast<uint8_t>(nb), static_cast<uint8_t>(na)
+		};
 	}
 
 	// Amplify/fade colour components by factors
 	ColRGBA ampf(float fr, float fg, float fb, float fa) const
 	{
-		int nr = (int)(r * fr);
-		int ng = (int)(g * fg);
-		int nb = (int)(b * fb);
-		int na = (int)(a * fa);
+		int nr = static_cast<int>(r * fr);
+		int ng = static_cast<int>(g * fg);
+		int nb = static_cast<int>(b * fb);
+		int na = static_cast<int>(a * fa);
 
 		if (nr > 255)
 			nr = 255;
@@ -122,7 +128,9 @@ struct ColRGBA
 		if (na < 0)
 			na = 0;
 
-		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na };
+		return {
+			static_cast<uint8_t>(nr), static_cast<uint8_t>(ng), static_cast<uint8_t>(nb), static_cast<uint8_t>(na)
+		};
 	}
 
 	void write(uint8_t* ptr) const

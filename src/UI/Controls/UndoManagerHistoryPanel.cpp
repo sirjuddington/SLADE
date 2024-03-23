@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UndoManagerHistoryPanel.h"
+#include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
@@ -72,12 +73,12 @@ wxString UndoListView::itemText(long item, long column, long index) const
 	{
 		if (column == 0)
 		{
-			wxString name = manager_->undoLevel((unsigned)item)->name();
+			wxString name = manager_->undoLevel(static_cast<unsigned>(item))->name();
 			return wxString::Format("%lu. %s", item + 1, name);
 		}
 		else
 		{
-			return manager_->undoLevel((unsigned)item)->timeStamp(false, true);
+			return manager_->undoLevel(static_cast<unsigned>(item))->timeStamp(false, true);
 		}
 	}
 	else
@@ -169,7 +170,8 @@ void UndoListView::connectManagerSignals()
 // UndoManagerHistoryPanel class constructor
 // -----------------------------------------------------------------------------
 UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* manager) :
-	wxPanel{ parent, -1 }, manager_{ manager }
+	wxPanel{ parent, -1 },
+	manager_{ manager }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -177,7 +179,7 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 
 	// Add undo levels list
 	list_levels_ = new UndoListView(this, manager);
-	sizer->Add(list_levels_, 1, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(list_levels_, wxutil::sfWithBorder(1).Expand());
 
 	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, ui::scalePx(160));
 	list_levels_->AppendColumn("Time", wxLIST_FORMAT_RIGHT);
@@ -201,6 +203,8 @@ void UndoManagerHistoryPanel::setManager(UndoManager* manager)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a list item is right clicked

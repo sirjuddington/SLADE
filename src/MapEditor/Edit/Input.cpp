@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,13 +32,25 @@
 #include "Main.h"
 #include "Input.h"
 #include "App.h"
+#include "Edit2D.h"
+#include "Edit3D.h"
 #include "General/Clipboard.h"
 #include "General/KeyBind.h"
 #include "General/UI.h"
+#include "LineDraw.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/Renderer/MCAnimations.h"
+#include "MapEditor/Renderer/MapRenderer2D.h"
+#include "MapEditor/Renderer/MapRenderer3D.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/UI/ObjectEditPanel.h"
+#include "MoveObjects.h"
+#include "ObjectEdit.h"
+#include "OpenGL/View.h"
+#include "SLADEMap/MapObject/MapThing.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -78,7 +90,7 @@ EXTERN_CVAR(Bool, info_overlay_3d)
 // -----------------------------------------------------------------------------
 // Input class constructor
 // -----------------------------------------------------------------------------
-Input::Input(MapEditContext& context) : context_{ context } {}
+Input::Input(MapEditContext& context) : context_{ &context } {}
 
 // -----------------------------------------------------------------------------
 // Handles mouse movement to [new_x],[new_y] on the map editor view
@@ -86,40 +98,40 @@ Input::Input(MapEditContext& context) : context_{ context } {}
 bool Input::mouseMove(int new_x, int new_y)
 {
 	// Check if a full screen overlay is active
-	if (context_.overlayActive())
+	if (context_->overlayActive())
 	{
-		context_.currentOverlay()->mouseMotion(new_x, new_y);
+		context_->currentOverlay()->mouseMotion(new_x, new_y);
 		return false;
 	}
 
 	// Panning
 	if (panning_)
-		context_.renderer().pan(mouse_pos_.x - new_x, -(mouse_pos_.y - new_y), true);
+		context_->renderer().pan(mouse_pos_.x - new_x, -(mouse_pos_.y - new_y), true);
 
 	// Update mouse variables
 	mouse_pos_     = { new_x, new_y };
-	mouse_pos_map_ = context_.renderer().view().canvasPos(mouse_pos_);
+	mouse_pos_map_ = context_->renderer().view().canvasPos(mouse_pos_);
 
 	// Update coordinates on status bar
-	double mx = context_.snapToGrid(mouse_pos_map_.x, false);
-	double my = context_.snapToGrid(mouse_pos_map_.y, false);
+	double mx = context_->snapToGrid(mouse_pos_map_.x, false);
+	double my = context_->snapToGrid(mouse_pos_map_.y, false);
 	string status_text;
-	if (context_.mapDesc().format == MapFormat::UDMF)
+	if (context_->mapDesc().format == MapFormat::UDMF)
 		status_text = fmt::format("Position: ({:1.3f}, {:1.3f})", mx, my);
 	else
-		status_text = fmt::format("Position: ({}, {})", (int)mx, (int)my);
+		status_text = fmt::format("Position: ({}, {})", static_cast<int>(mx), static_cast<int>(my));
 	mapeditor::setStatusText(status_text, 3);
 
 	// Object edit
-	auto edit_state = context_.objectEdit().state();
+	auto edit_state = context_->objectEdit().state();
 	if (mouse_state_ == MouseState::ObjectEdit)
 	{
 		// Do dragging if left mouse is down
 		if (mouse_button_down_[Left] && edit_state != ObjectEdit::State::None)
 		{
-			auto& group = context_.objectEdit().group();
+			auto& group = context_->objectEdit().group();
 
-			if (context_.objectEdit().rotating())
+			if (context_->objectEdit().rotating())
 			{
 				// Rotate
 				group.doRotate(mouse_down_pos_map_, mouse_pos_map_, !shift_down_);
@@ -134,8 +146,8 @@ bool Input::mouseMove(int new_x, int new_y)
 				// Snap to grid if shift not held down
 				if (!shift_down_)
 				{
-					xoff = context_.snapToGrid(xoff);
-					yoff = context_.snapToGrid(yoff);
+					xoff = context_->snapToGrid(xoff);
+					yoff = context_->snapToGrid(yoff);
 				}
 
 				if (edit_state == ObjectEdit::State::Move)
@@ -150,16 +162,16 @@ bool Input::mouseMove(int new_x, int new_y)
 					group.doScale(
 						xoff,
 						yoff,
-						context_.objectEdit().stateLeft(false),
-						context_.objectEdit().stateTop(false),
-						context_.objectEdit().stateRight(false),
-						context_.objectEdit().stateBottom(false));
+						context_->objectEdit().stateLeft(false),
+						context_->objectEdit().stateTop(false),
+						context_->objectEdit().stateRight(false),
+						context_->objectEdit().stateBottom(false));
 					mapeditor::window()->objectEditPanel()->update(&group);
 				}
 			}
 		}
 		else
-			context_.objectEdit().determineState();
+			context_->objectEdit().determineState();
 
 		return false;
 	}
@@ -178,17 +190,17 @@ bool Input::mouseMove(int new_x, int new_y)
 	{
 		mouse_state_ = MouseState::Move;
 		mouse_drag_  = DragType::None;
-		context_.moveObjects().begin(mouse_down_pos_map_);
-		context_.renderer().renderer2D().forceUpdate();
+		context_->moveObjects().begin(mouse_down_pos_map_);
+		context_->renderer().renderer2D().forceUpdate();
 	}
 
 	// Check if we are in thing quick angle state
 	if (mouse_state_ == MouseState::ThingAngle)
-		context_.edit2D().thingQuickAngle(mouse_pos_map_);
+		context_->edit2D().thingQuickAngle(mouse_pos_map_);
 
 	// Update shape drawing if needed
-	if (mouse_state_ == MouseState::LineDraw && context_.lineDraw().state() == LineDraw::State::ShapeEdge)
-		context_.lineDraw().updateShape(mouse_pos_map_);
+	if (mouse_state_ == MouseState::LineDraw && context_->lineDraw().state() == LineDraw::State::ShapeEdge)
+		context_->lineDraw().updateShape(mouse_pos_map_);
 
 	return true;
 }
@@ -201,7 +213,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 {
 	// Update hilight
 	if (mouse_state_ == MouseState::Normal)
-		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
+		context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale());
 
 	// Update mouse variables
 	mouse_down_pos_            = mouse_pos_;
@@ -210,15 +222,15 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 	mouse_drag_                = DragType::None;
 
 	// Check if a full screen overlay is active
-	if (context_.overlayActive())
+	if (context_->overlayActive())
 	{
 		// Left click
 		if (button == Left)
-			context_.currentOverlay()->mouseLeftClick();
+			context_->currentOverlay()->mouseLeftClick();
 
 		// Right click
 		else if (button == Right)
-			context_.currentOverlay()->mouseRightClick();
+			context_->currentOverlay()->mouseRightClick();
 
 		return false;
 	}
@@ -227,20 +239,20 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 	if (button == Left)
 	{
 		// 3d mode
-		if (context_.editMode() == Mode::Visual)
+		if (context_->editMode() == Mode::Visual)
 		{
 			// If the mouse is unlocked, lock the mouse
-			if (!context_.mouseLocked())
-				context_.lockMouse(true);
+			if (!context_->mouseLocked())
+				context_->lockMouse(true);
 			else
 			{
 				// Shift down, select all matching adjacent structures
 				if (shift_down_)
-					context_.edit3D().selectAdjacent(context_.hilightItem());
+					context_->edit3D().selectAdjacent(context_->hilightItem());
 
 				// Otherwise toggle selection
 				else
-					context_.selection().toggleCurrent();
+					context_->selection().toggleCurrent();
 			}
 
 			return false;
@@ -255,9 +267,9 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 				nearest_vertex = true;
 
 			// Line drawing
-			if (context_.lineDraw().state() == LineDraw::State::Line)
+			if (context_->lineDraw().state() == LineDraw::State::Line)
 			{
-				if (context_.lineDraw().addPoint(mouse_down_pos_map_, nearest_vertex))
+				if (context_->lineDraw().addPoint(mouse_down_pos_map_, nearest_vertex))
 				{
 					// If line drawing finished, revert to normal state
 					mouse_state_ = MouseState::Normal;
@@ -267,16 +279,16 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 			// Shape drawing
 			else
 			{
-				if (context_.lineDraw().state() == LineDraw::State::ShapeOrigin)
+				if (context_->lineDraw().state() == LineDraw::State::ShapeOrigin)
 				{
 					// Set shape origin
-					context_.lineDraw().setShapeOrigin(mouse_down_pos_map_, nearest_vertex);
-					context_.lineDraw().setState(LineDraw::State::ShapeEdge);
+					context_->lineDraw().setShapeOrigin(mouse_down_pos_map_, nearest_vertex);
+					context_->lineDraw().setState(LineDraw::State::ShapeEdge);
 				}
 				else
 				{
 					// Finish shape draw
-					context_.lineDraw().end(true);
+					context_->lineDraw().end(true);
 					mapeditor::window()->showShapeDrawPanel(false);
 					mouse_state_ = MouseState::Normal;
 				}
@@ -286,7 +298,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 		// Paste state, accept paste
 		else if (mouse_state_ == MouseState::Paste)
 		{
-			context_.edit2D().paste(mouse_pos_map_);
+			context_->edit2D().paste(mouse_pos_map_);
 			if (!shift_down_)
 				mouse_state_ = MouseState::Normal;
 		}
@@ -294,7 +306,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 		// Sector tagging state
 		else if (mouse_state_ == MouseState::TagSectors)
 		{
-			context_.tagSectorAt(mouse_pos_map_);
+			context_->tagSectorAt(mouse_pos_map_);
 		}
 
 		else if (mouse_state_ == MouseState::Normal)
@@ -302,16 +314,16 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 			// Double click to edit the current selection
 			if (double_click && property_edit_dclick)
 			{
-				context_.edit2D().editObjectProperties();
-				if (context_.selection().size() == 1)
-					context_.selection().clear();
+				context_->edit2D().editObjectProperties();
+				if (context_->selection().size() == 1)
+					context_->selection().clear();
 			}
 			// Begin box selection if shift is held down, otherwise toggle selection on hilighted object
 			else if (shift_down_)
 				mouse_state_ = MouseState::Selection;
 			else
 			{
-				if (!context_.selection().toggleCurrent(selection_clear_click))
+				if (!context_->selection().toggleCurrent(selection_clear_click))
 					mouse_drag_ = DragType::Selection;
 			}
 		}
@@ -321,17 +333,17 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 	else if (button == Right)
 	{
 		// 3d mode
-		if (context_.editMode() == Mode::Visual)
+		if (context_->editMode() == Mode::Visual)
 		{
 			// Get selection or hilight
-			auto sel = context_.selection().selectionOrHilight();
+			auto sel = context_->selection().selectionOrHilight();
 			if (!sel.empty())
 			{
 				// Check type
-				if (sel[0].type == mapeditor::ItemType::Thing)
-					context_.edit2D().changeThingType();
+				if (sel[0].type == ItemType::Thing)
+					context_->edit2D().changeThingType();
 				else
-					context_.edit3D().changeTexture();
+					context_->edit3D().changeTexture();
 			}
 		}
 
@@ -339,14 +351,14 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 		else if (mouse_state_ == MouseState::LineDraw)
 		{
 			// Line drawing
-			if (context_.lineDraw().state() == LineDraw::State::Line)
-				context_.lineDraw().removePoint();
+			if (context_->lineDraw().state() == LineDraw::State::Line)
+				context_->lineDraw().removePoint();
 
 			// Shape drawing
-			else if (context_.lineDraw().state() == LineDraw::State::ShapeEdge)
+			else if (context_->lineDraw().state() == LineDraw::State::ShapeEdge)
 			{
-				context_.lineDraw().end(false);
-				context_.lineDraw().setState(LineDraw::State::ShapeOrigin);
+				context_->lineDraw().end(false);
+				context_->lineDraw().setState(LineDraw::State::ShapeOrigin);
 			}
 		}
 
@@ -354,7 +366,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 		else if (mouse_state_ == MouseState::Normal)
 		{
 			// Begin move if something is selected/hilighted
-			if (context_.selection().hasHilightOrSelection())
+			if (context_->selection().hasHilightOrSelection())
 				mouse_drag_ = DragType::Move;
 		}
 	}
@@ -375,7 +387,7 @@ bool Input::mouseUp(MouseButton button)
 	mouse_button_down_[button] = false;
 
 	// Check if a full screen overlay is active
-	if (context_.overlayActive())
+	if (context_->overlayActive())
 		return false;
 
 	// Left button
@@ -390,7 +402,7 @@ bool Input::mouseUp(MouseButton button)
 			mouse_state_ = MouseState::Normal;
 
 			// Select
-			context_.selection().selectWithin(
+			context_->selection().selectWithin(
 				{ min(mouse_down_pos_map_.x, mouse_pos_map_.x),
 				  min(mouse_down_pos_map_.y, mouse_pos_map_.y),
 				  max(mouse_down_pos_map_.x, mouse_pos_map_.x),
@@ -398,13 +410,13 @@ bool Input::mouseUp(MouseButton button)
 				shift_down_);
 
 			// Begin selection box fade animation
-			context_.renderer().addAnimation(
+			context_->renderer().addAnimation(
 				std::make_unique<MCASelboxFader>(app::runTimer(), mouse_down_pos_map_, mouse_pos_map_));
 		}
 
 		// If we're in object edit mode
 		if (mouse_state_ == MouseState::ObjectEdit)
-			context_.objectEdit().group().resetPositions();
+			context_->objectEdit().group().resetPositions();
 	}
 
 	// Right button
@@ -414,9 +426,9 @@ bool Input::mouseUp(MouseButton button)
 
 		if (mouse_state_ == MouseState::Move)
 		{
-			context_.moveObjects().end();
+			context_->moveObjects().end();
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_->renderer().renderer2D().forceUpdate();
 		}
 
 		// Paste state, cancel paste
@@ -446,8 +458,8 @@ void Input::mouseWheel(bool up, double amount)
 		KeyBind::keyPressed(Keypress("mwheelup", alt_down_, ctrl_down_, shift_down_));
 
 		// Send to overlay if active
-		if (context_.overlayActive())
-			context_.currentOverlay()->keyDown("mwheelup");
+		if (context_->overlayActive())
+			context_->currentOverlay()->keyDown("mwheelup");
 
 		KeyBind::keyReleased("mwheelup");
 	}
@@ -456,8 +468,8 @@ void Input::mouseWheel(bool up, double amount)
 		KeyBind::keyPressed(Keypress("mwheeldown", alt_down_, ctrl_down_, shift_down_));
 
 		// Send to overlay if active
-		if (context_.overlayActive())
-			context_.currentOverlay()->keyDown("mwheeldown");
+		if (context_->overlayActive())
+			context_->currentOverlay()->keyDown("mwheeldown");
 
 		KeyBind::keyReleased("mwheeldown");
 	}
@@ -472,7 +484,7 @@ void Input::mouseLeave()
 	if (panning_)
 	{
 		panning_ = false;
-		context_.setCursor(ui::MouseCursor::Normal);
+		context_->setCursor(ui::MouseCursor::Normal);
 	}
 }
 
@@ -490,8 +502,8 @@ void Input::updateKeyModifiersWx(int modifiers)
 bool Input::keyDown(string_view key) const
 {
 	// Send to overlay if active
-	if (context_.overlayActive())
-		context_.currentOverlay()->keyDown(key);
+	if (context_->overlayActive())
+		context_->currentOverlay()->keyDown(key);
 
 	// Let keybind system handle it
 	return KeyBind::keyPressed({ key, alt_down_, ctrl_down_, shift_down_ });
@@ -512,22 +524,22 @@ bool Input::keyUp(string_view key) const
 void Input::onKeyBindPress(string_view name)
 {
 	// Check if an overlay is active
-	if (context_.overlayActive())
+	if (context_->overlayActive())
 	{
 		// Accept edit
 		if (name == "map_edit_accept")
 		{
-			context_.closeCurrentOverlay();
-			context_.renderer().renderer3D().enableHilight(true);
-			context_.renderer().renderer3D().enableSelection(true);
+			context_->closeCurrentOverlay();
+			context_->renderer().renderer3D().enableHilight(true);
+			context_->renderer().renderer3D().enableSelection(true);
 		}
 
 		// Cancel edit
 		else if (name == "map_edit_cancel")
 		{
-			context_.closeCurrentOverlay(true);
-			context_.renderer().renderer3D().enableHilight(true);
-			context_.renderer().renderer3D().enableSelection(true);
+			context_->closeCurrentOverlay(true);
+			context_->renderer().renderer3D().enableHilight(true);
+			context_->renderer().renderer3D().enableSelection(true);
 		}
 
 		// Nothing else
@@ -537,21 +549,21 @@ void Input::onKeyBindPress(string_view name)
 	// Toggle 3d mode
 	if (name == "map_toggle_3d")
 	{
-		if (context_.editMode() == Mode::Visual)
-			context_.setPrevEditMode();
+		if (context_->editMode() == Mode::Visual)
+			context_->setPrevEditMode();
 		else
-			context_.setEditMode(Mode::Visual);
+			context_->setEditMode(Mode::Visual);
 	}
 
 	// Send to edit context first
 	if (mouse_state_ == MouseState::Normal)
 	{
-		if (context_.handleKeyBind(name, mouse_pos_map_))
+		if (context_->handleKeyBind(name, mouse_pos_map_))
 			return;
 	}
 
 	// Handle keybinds depending on mode
-	if (context_.editMode() == Mode::Visual)
+	if (context_->editMode() == Mode::Visual)
 		handleKeyBind3d(name);
 	else
 	{
@@ -569,15 +581,15 @@ void Input::onKeyBindRelease(string_view name)
 	{
 		panning_ = false;
 		if (mouse_state_ == MouseState::Normal)
-			context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
-		context_.setCursor(ui::MouseCursor::Normal);
+			context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale());
+		context_->setCursor(ui::MouseCursor::Normal);
 	}
 
 	else if (name == "me2d_thing_quick_angle" && mouse_state_ == MouseState::ThingAngle)
 	{
 		mouse_state_ = MouseState::Normal;
-		context_.endUndoRecord(true);
-		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
+		context_->endUndoRecord(true);
+		context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale());
 	}
 }
 
@@ -589,43 +601,43 @@ void Input::handleKeyBind2dView(string_view name)
 {
 	// Pan left
 	if (name == "me2d_left")
-		context_.renderer().pan(-128, 0, true);
+		context_->renderer().pan(-128, 0, true);
 
 	// Pan right
 	else if (name == "me2d_right")
-		context_.renderer().pan(128, 0, true);
+		context_->renderer().pan(128, 0, true);
 
 	// Pan up
 	else if (name == "me2d_up")
-		context_.renderer().pan(0, 128, true);
+		context_->renderer().pan(0, 128, true);
 
 	// Pan down
 	else if (name == "me2d_down")
-		context_.renderer().pan(0, -128, true);
+		context_->renderer().pan(0, -128, true);
 
 	// Zoom out
 	else if (name == "me2d_zoom_out")
-		context_.renderer().zoom(0.8);
+		context_->renderer().zoom(0.8);
 
 	// Zoom in
 	else if (name == "me2d_zoom_in")
-		context_.renderer().zoom(1.25);
+		context_->renderer().zoom(1.25);
 
 	// Zoom out (follow mouse)
 	if (name == "me2d_zoom_out_m")
-		context_.renderer().zoom(1.0 - (0.2 * mouse_wheel_speed_), true);
+		context_->renderer().zoom(1.0 - (0.2 * mouse_wheel_speed_), true);
 
 	// Zoom in (follow mouse)
 	else if (name == "me2d_zoom_in_m")
-		context_.renderer().zoom(1.0 + (0.25 * mouse_wheel_speed_), true);
+		context_->renderer().zoom(1.0 + (0.25 * mouse_wheel_speed_), true);
 
 	// Zoom in (show object)
 	else if (name == "me2d_show_object")
-		context_.showItem(-1);
+		context_->showItem(-1);
 
 	// Zoom out (full map)
 	else if (name == "me2d_show_all")
-		context_.renderer().viewFitToMap();
+		context_->renderer().viewFitToMap();
 
 	// Pan view
 	else if (name == "me2d_pan_view")
@@ -633,17 +645,17 @@ void Input::handleKeyBind2dView(string_view name)
 		mouse_down_pos_ = mouse_pos_;
 		panning_        = true;
 		if (mouse_state_ == MouseState::Normal)
-			context_.selection().clearHilight();
-		context_.setCursor(ui::MouseCursor::Move);
+			context_->selection().clearHilight();
+		context_->setCursor(ui::MouseCursor::Move);
 	}
 
 	// Increment grid
 	else if (name == "me2d_grid_inc")
-		context_.incrementGrid();
+		context_->incrementGrid();
 
 	// Decrement grid
 	else if (name == "me2d_grid_dec")
-		context_.decrementGrid();
+		context_->decrementGrid();
 }
 
 // -----------------------------------------------------------------------------
@@ -658,7 +670,7 @@ void Input::handleKeyBind2d(string_view name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state_ = MouseState::Normal;
-			context_.lineDraw().end();
+			context_->lineDraw().end();
 			mapeditor::window()->showShapeDrawPanel(false);
 		}
 
@@ -666,7 +678,7 @@ void Input::handleKeyBind2d(string_view name)
 		else if (name == "map_edit_cancel")
 		{
 			mouse_state_ = MouseState::Normal;
-			context_.lineDraw().end(false);
+			context_->lineDraw().end(false);
 			mapeditor::window()->showShapeDrawPanel(false);
 		}
 	}
@@ -678,7 +690,7 @@ void Input::handleKeyBind2d(string_view name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state_ = MouseState::Normal;
-			context_.edit2D().paste(mouse_pos_map_);
+			context_->edit2D().paste(mouse_pos_map_);
 		}
 
 		// Cancel paste
@@ -693,14 +705,14 @@ void Input::handleKeyBind2d(string_view name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state_ = MouseState::Normal;
-			context_.endTagEdit(true);
+			context_->endTagEdit(true);
 		}
 
 		// Cancel
 		else if (name == "map_edit_cancel")
 		{
 			mouse_state_ = MouseState::Normal;
-			context_.endTagEdit(false);
+			context_->endTagEdit(false);
 		}
 	}
 	else if (mouse_state_ == MouseState::TagThings)
@@ -709,14 +721,14 @@ void Input::handleKeyBind2d(string_view name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state_ = MouseState::Normal;
-			context_.endTagEdit(true);
+			context_->endTagEdit(true);
 		}
 
 		// Cancel
 		else if (name == "map_edit_cancel")
 		{
 			mouse_state_ = MouseState::Normal;
-			context_.endTagEdit(false);
+			context_->endTagEdit(false);
 		}
 	}
 
@@ -726,25 +738,25 @@ void Input::handleKeyBind2d(string_view name)
 		// Move toggle
 		if (name == "me2d_move")
 		{
-			context_.moveObjects().end();
+			context_->moveObjects().end();
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_->renderer().renderer2D().forceUpdate();
 		}
 
 		// Accept move
 		else if (name == "map_edit_accept")
 		{
-			context_.moveObjects().end();
+			context_->moveObjects().end();
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_->renderer().renderer2D().forceUpdate();
 		}
 
 		// Cancel move
 		else if (name == "map_edit_cancel")
 		{
-			context_.moveObjects().end(false);
+			context_->moveObjects().end(false);
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
+			context_->renderer().renderer2D().forceUpdate();
 		}
 	}
 
@@ -754,19 +766,19 @@ void Input::handleKeyBind2d(string_view name)
 		// Accept edit
 		if (name == "map_edit_accept")
 		{
-			context_.objectEdit().end(true);
+			context_->objectEdit().end(true);
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
-			context_.setCursor(ui::MouseCursor::Normal);
+			context_->renderer().renderer2D().forceUpdate();
+			context_->setCursor(ui::MouseCursor::Normal);
 		}
 
 		// Cancel edit
 		else if (name == "map_edit_cancel" || name == "me2d_begin_object_edit")
 		{
-			context_.objectEdit().end(false);
+			context_->objectEdit().end(false);
 			mouse_state_ = MouseState::Normal;
-			context_.renderer().renderer2D().forceUpdate();
-			context_.setCursor(ui::MouseCursor::Normal);
+			context_->renderer().renderer2D().forceUpdate();
+			context_->setCursor(ui::MouseCursor::Normal);
 		}
 	}
 
@@ -777,23 +789,23 @@ void Input::handleKeyBind2d(string_view name)
 
 		// Vertices mode
 		if (name == "me2d_mode_vertices")
-			context_.setEditMode(Mode::Vertices);
+			context_->setEditMode(Mode::Vertices);
 
 		// Lines mode
 		else if (name == "me2d_mode_lines")
-			context_.setEditMode(Mode::Lines);
+			context_->setEditMode(Mode::Lines);
 
 		// Sectors mode
 		else if (name == "me2d_mode_sectors")
-			context_.setEditMode(Mode::Sectors);
+			context_->setEditMode(Mode::Sectors);
 
 		// Things mode
 		else if (name == "me2d_mode_things")
-			context_.setEditMode(Mode::Things);
+			context_->setEditMode(Mode::Things);
 
 		// 3d mode
 		else if (name == "me2d_mode_3d")
-			context_.setEditMode(Mode::Visual);
+			context_->setEditMode(Mode::Visual);
 
 		// Cycle flat type
 		if (name == "me2d_flat_type")
@@ -805,9 +817,9 @@ void Input::handleKeyBind2d(string_view name)
 			// Editor message and toolbar update
 			switch (flat_drawtype)
 			{
-			case 0: SAction::fromId("mapw_flat_none")->setChecked(); break;
-			case 1: SAction::fromId("mapw_flat_untextured")->setChecked(); break;
-			case 2: SAction::fromId("mapw_flat_textured")->setChecked(); break;
+			case 0:  SAction::fromId("mapw_flat_none")->setChecked(); break;
+			case 1:  SAction::fromId("mapw_flat_untextured")->setChecked(); break;
+			case 2:  SAction::fromId("mapw_flat_textured")->setChecked(); break;
 			default: break;
 			}
 
@@ -817,53 +829,53 @@ void Input::handleKeyBind2d(string_view name)
 		// Move items (toggle)
 		else if (name == "me2d_move")
 		{
-			if (context_.moveObjects().begin(mouse_pos_map_))
+			if (context_->moveObjects().begin(mouse_pos_map_))
 			{
 				mouse_state_ = MouseState::Move;
-				context_.renderer().renderer2D().forceUpdate();
+				context_->renderer().renderer2D().forceUpdate();
 			}
 		}
 
 		// Edit items
 		else if (name == "me2d_begin_object_edit")
-			context_.objectEdit().begin();
+			context_->objectEdit().begin();
 
 		// Split line
 		else if (name == "me2d_split_line")
-			context_.edit2D().splitLine(mouse_pos_map_.x, mouse_pos_map_.y, 16 / context_.renderer().view().scale());
+			context_->edit2D().splitLine(mouse_pos_map_.x, mouse_pos_map_.y, 16 / context_->renderer().view().scale());
 
 		// Begin line drawing
 		else if (name == "me2d_begin_linedraw")
-			context_.lineDraw().begin();
+			context_->lineDraw().begin();
 
 		// Begin shape drawing
 		else if (name == "me2d_begin_shapedraw")
-			context_.lineDraw().begin(true);
+			context_->lineDraw().begin(true);
 
 		// Create object
 		else if (name == "me2d_create_object")
 		{
 			// If in lines mode, begin line drawing
-			if (context_.editMode() == Mode::Lines)
+			if (context_->editMode() == Mode::Lines)
 			{
-				context_.lineDraw().setState(LineDraw::State::Line);
+				context_->lineDraw().setState(LineDraw::State::Line);
 				mouse_state_ = MouseState::LineDraw;
 			}
 			else
-				context_.edit2D().createObject(mouse_pos_map_);
+				context_->edit2D().createObject(mouse_pos_map_);
 		}
 
 		// Delete object
 		else if (name == "me2d_delete_object")
-			context_.edit2D().deleteObject();
+			context_->edit2D().deleteObject();
 
 		// Copy properties
 		else if (name == "me2d_copy_properties")
-			context_.edit2D().copyProperties();
+			context_->edit2D().copyProperties();
 
 		// Paste properties
 		else if (name == "me2d_paste_properties")
-			context_.edit2D().pasteProperties();
+			context_->edit2D().pasteProperties();
 
 		// Paste object(s)
 		else if (name == "paste")
@@ -891,70 +903,70 @@ void Input::handleKeyBind2d(string_view name)
 			map_show_selection_numbers = !map_show_selection_numbers;
 
 			if (map_show_selection_numbers)
-				context_.addEditorMessage("Selection numbers enabled");
+				context_->addEditorMessage("Selection numbers enabled");
 			else
-				context_.addEditorMessage("Selection numbers disabled");
+				context_->addEditorMessage("Selection numbers disabled");
 		}
 
 		// Mirror
 		else if (name == "me2d_mirror_x")
-			context_.edit2D().mirror(true);
+			context_->edit2D().mirror(true);
 		else if (name == "me2d_mirror_y")
-			context_.edit2D().mirror(false);
+			context_->edit2D().mirror(false);
 
 		// Object Properties
 		else if (name == "me2d_object_properties")
-			context_.edit2D().editObjectProperties();
+			context_->edit2D().editObjectProperties();
 
 
 		// --- Lines edit mode ---
-		if (context_.editMode() == Mode::Lines)
+		if (context_->editMode() == Mode::Lines)
 		{
 			// Change line texture
 			if (name == "me2d_line_change_texture")
-				context_.openLineTextureOverlay();
+				context_->openLineTextureOverlay();
 
 			// Flip line
 			else if (name == "me2d_line_flip")
-				context_.edit2D().flipLines();
+				context_->edit2D().flipLines();
 
 			// Flip line (no sides)
 			else if (name == "me2d_line_flip_nosides")
-				context_.edit2D().flipLines(false);
+				context_->edit2D().flipLines(false);
 
 			// Edit line tags
 			else if (name == "me2d_line_tag_edit")
 			{
-				if (context_.beginTagEdit() > 0)
+				if (context_->beginTagEdit() > 0)
 				{
 					mouse_state_ = MouseState::TagSectors;
 
 					// Setup help text
 					auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
 					auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
-					context_.setFeatureHelp({ "Tag Edit",
-											  fmt::format("{} = Accept", key_accept),
-											  fmt::format("{} = Cancel", key_cancel),
-											  "Left Click = Toggle tagged sector" });
+					context_->setFeatureHelp({ "Tag Edit",
+											   fmt::format("{} = Accept", key_accept),
+											   fmt::format("{} = Cancel", key_cancel),
+											   "Left Click = Toggle tagged sector" });
 				}
 			}
 		}
 
 
 		// --- Things edit mode ---
-		else if (context_.editMode() == Mode::Things)
+		else if (context_->editMode() == Mode::Things)
 		{
 			// Change type
 			if (name == "me2d_thing_change_type")
-				context_.edit2D().changeThingType();
+				context_->edit2D().changeThingType();
 
 			// Quick angle
 			else if (name == "me2d_thing_quick_angle")
 			{
 				if (mouse_state_ == MouseState::Normal)
 				{
-					if (context_.selection().hasHilightOrSelection())
-						context_.beginUndoRecord("Thing Direction Change", true, false, false);
+					if (context_->selection().hasHilightOrSelection())
+						context_->beginUndoRecord("Thing Direction Change", true, false, false);
 
 					mouse_state_ = MouseState::ThingAngle;
 				}
@@ -963,8 +975,8 @@ void Input::handleKeyBind2d(string_view name)
 			// Rotate Clockwise
 			else if (name == "me2d_thing_rotate_clockwise")
 			{
-				context_.beginUndoRecord("Rotate Things Clockwise", true, false, false);
-				auto things  = context_.selection().selectedThings(true);
+				context_->beginUndoRecord("Rotate Things Clockwise", true, false, false);
+				auto things  = context_->selection().selectedThings(true);
 				bool success = false;
 				for (auto& thing : things)
 				{
@@ -974,31 +986,31 @@ void Input::handleKeyBind2d(string_view name)
 					thing->setAngle(angle);
 					success = true;
 				}
-				context_.endUndoRecord(success);
+				context_->endUndoRecord(success);
 			}
 
 			// Rotate Counterclockwise
 			else if (name == "me2d_thing_rotate_counterclockwise")
 			{
-				context_.beginUndoRecord("Rotate Things Counterclockwise", true, false, false);
-				auto things  = context_.selection().selectedThings(true);
+				context_->beginUndoRecord("Rotate Things Counterclockwise", true, false, false);
+				auto things  = context_->selection().selectedThings(true);
 				bool success = false;
 				for (auto& thing : things)
 				{
 					thing->setAngle((thing->angle() + 45) % 360);
 					success = true;
 				}
-				context_.endUndoRecord(success);
+				context_->endUndoRecord(success);
 			}
 		}
 
 
 		// --- Sectors edit mode ---
-		else if (context_.editMode() == Mode::Sectors)
+		else if (context_->editMode() == Mode::Sectors)
 		{
 			// Change sector texture
 			if (name == "me2d_sector_change_texture")
-				context_.edit2D().changeSectorTexture();
+				context_->edit2D().changeSectorTexture();
 		}
 	}
 }
@@ -1010,28 +1022,28 @@ void Input::handleKeyBind3d(string_view name) const
 {
 	// Escape from 3D mode
 	if (name == "map_edit_cancel")
-		context_.setPrevEditMode();
+		context_->setPrevEditMode();
 
 	// Toggle fog
 	else if (name == "me3d_toggle_fog")
 	{
-		bool fog = context_.renderer().renderer3D().fogEnabled();
-		context_.renderer().renderer3D().enableFog(!fog);
+		bool fog = context_->renderer().renderer3D().fogEnabled();
+		context_->renderer().renderer3D().enableFog(!fog);
 		if (fog)
-			context_.addEditorMessage("Fog disabled");
+			context_->addEditorMessage("Fog disabled");
 		else
-			context_.addEditorMessage("Fog enabled");
+			context_->addEditorMessage("Fog enabled");
 	}
 
 	// Toggle fullbright
 	else if (name == "me3d_toggle_fullbright")
 	{
-		bool fb = context_.renderer().renderer3D().fullbrightEnabled();
-		context_.renderer().renderer3D().enableFullbright(!fb);
+		bool fb = context_->renderer().renderer3D().fullbrightEnabled();
+		context_->renderer().renderer3D().enableFullbright(!fb);
 		if (fb)
-			context_.addEditorMessage("Fullbright disabled");
+			context_->addEditorMessage("Fullbright disabled");
 		else
-			context_.addEditorMessage("Fullbright enabled");
+			context_->addEditorMessage("Fullbright enabled");
 	}
 
 	// Adjust brightness
@@ -1042,7 +1054,7 @@ void Input::handleKeyBind3d(string_view name) const
 		{
 			render_3d_brightness = 1.0;
 		}
-		context_.addEditorMessage(fmt::format("Brightness set to {:1.1f}", (double)render_3d_brightness));
+		context_->addEditorMessage(fmt::format("Brightness set to {:1.1f}", static_cast<double>(render_3d_brightness)));
 	}
 
 	// Toggle gravity
@@ -1050,14 +1062,14 @@ void Input::handleKeyBind3d(string_view name) const
 	{
 		camera_3d_gravity = !camera_3d_gravity;
 		if (!camera_3d_gravity)
-			context_.addEditorMessage("Gravity disabled");
+			context_->addEditorMessage("Gravity disabled");
 		else
-			context_.addEditorMessage("Gravity enabled");
+			context_->addEditorMessage("Gravity enabled");
 	}
 
 	// Release mouse cursor
 	else if (name == "me3d_release_mouse")
-		context_.lockMouse(false);
+		context_->lockMouse(false);
 
 	// Toggle things
 	else if (name == "me3d_toggle_things")
@@ -1069,11 +1081,11 @@ void Input::handleKeyBind3d(string_view name) const
 
 		// Editor message
 		if (render_3d_things == 0)
-			context_.addEditorMessage("Things disabled");
+			context_->addEditorMessage("Things disabled");
 		else if (render_3d_things == 1)
-			context_.addEditorMessage("Things enabled: All");
+			context_->addEditorMessage("Things enabled: All");
 		else
-			context_.addEditorMessage("Things enabled: Decorations only");
+			context_->addEditorMessage("Things enabled: Decorations only");
 	}
 
 	// Change thing render style
@@ -1086,11 +1098,11 @@ void Input::handleKeyBind3d(string_view name) const
 
 		// Editor message
 		if (render_3d_things_style == 0)
-			context_.addEditorMessage("Thing render style: Sprites only");
+			context_->addEditorMessage("Thing render style: Sprites only");
 		else if (render_3d_things_style == 1)
-			context_.addEditorMessage("Thing render style: Sprites + Ground boxes");
+			context_->addEditorMessage("Thing render style: Sprites + Ground boxes");
 		else
-			context_.addEditorMessage("Thing render style: Sprites + Full boxes");
+			context_->addEditorMessage("Thing render style: Sprites + Full boxes");
 	}
 
 	// Toggle hilight
@@ -1103,11 +1115,11 @@ void Input::handleKeyBind3d(string_view name) const
 
 		// Editor message
 		if (render_3d_hilight == 0)
-			context_.addEditorMessage("Hilight disabled");
+			context_->addEditorMessage("Hilight disabled");
 		else if (render_3d_hilight == 1)
-			context_.addEditorMessage("Hilight enabled: Outline");
+			context_->addEditorMessage("Hilight enabled: Outline");
 		else if (render_3d_hilight == 2)
-			context_.addEditorMessage("Hilight enabled: Solid");
+			context_->addEditorMessage("Hilight enabled: Solid");
 	}
 
 	// Toggle info overlay
@@ -1116,11 +1128,11 @@ void Input::handleKeyBind3d(string_view name) const
 
 	// Quick texture
 	else if (name == "me3d_quick_texture")
-		context_.openQuickTextureOverlay();
+		context_->openQuickTextureOverlay();
 
 	// Send to map editor
 	else
-		context_.handleKeyBind(name, mouse_pos_map_);
+		context_->handleKeyBind(name, mouse_pos_map_);
 }
 
 // -----------------------------------------------------------------------------
@@ -1131,7 +1143,7 @@ bool Input::updateCamera3d(double mult) const
 	// --- Check for held-down keys ---
 	bool   moving = false;
 	double speed  = shift_down_ ? mult * 8 : mult * 4;
-	auto&  r3d    = context_.renderer().renderer3D();
+	auto&  r3d    = context_->renderer().renderer3D();
 
 	// Camera forward
 	if (KeyBind::isPressed("me3d_camera_forward"))
@@ -1203,11 +1215,11 @@ string Input::mouseButtonKBName(MouseButton button)
 {
 	switch (button)
 	{
-	case Left: return "mouse1";
-	case Right: return "mouse2";
+	case Left:   return "mouse1";
+	case Right:  return "mouse2";
 	case Middle: return "mouse3";
 	case Mouse4: return "mouse4";
 	case Mouse5: return "mouse5";
-	default: return fmt::format("mouse{}", static_cast<int>(button));
+	default:     return fmt::format("mouse{}", static_cast<int>(button));
 	}
 }

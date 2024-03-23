@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,26 +35,30 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Game/Configuration.h"
+#include "Game/Game.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
+#include "MapEditor/Edit/Input.h"
 #include "MapEditor/MapBackupManager.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "MapEditor/NodeBuilders.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/UI/MapCanvas.h"
 #include "MapEditor/UI/MapChecksPanel.h"
 #include "MapEditor/UI/ObjectEditPanel.h"
 #include "MapEditor/UI/PropsPanel/MapObjectPropsPanel.h"
 #include "MapEditor/UI/ScriptEditorPanel.h"
 #include "MapEditor/UI/ShapeDrawPanel.h"
+#include "OpenGL/View.h"
+#include "SLADEMap/SLADEMap.h"
 #include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/MapEditorConfigDialog.h"
-#include "UI/Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/SAuiTabArt.h"
@@ -64,6 +68,7 @@
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -594,7 +599,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 // -----------------------------------------------------------------------------
 // Opens [map] in the editor
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::openMap(const Archive::MapDesc& map)
+bool MapEditorWindow::openMap(const MapDesc& map)
 {
 	// If a map is currently open and modified, prompt to save changes
 	if (mapeditor::editContext().map().isModified())
@@ -694,7 +699,7 @@ bool MapEditorWindow::openMap(const Archive::MapDesc& map)
 // -----------------------------------------------------------------------------
 // Loads any scripts from [map] into the script editor
 // -----------------------------------------------------------------------------
-void MapEditorWindow::loadMapScripts(const Archive::MapDesc& map)
+void MapEditorWindow::loadMapScripts(const MapDesc& map)
 {
 	// Don't bother if no scripting language specified
 	if (game::configuration().scriptLanguage().empty())

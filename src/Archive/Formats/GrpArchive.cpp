@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -317,7 +317,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	uint8_t numlookup = 0;
 	uint8_t dummy     = 0;
 	mc.read(&numlookup, 1);
-	if (mc.size() < (uint32_t)((numlookup * 256) + (5 * 768) + 1))
+	if (mc.size() < static_cast<uint32_t>((numlookup * 256) + (5 * 768) + 1))
 		return;
 
 	auto nentry = entry->parent()->addNewEntry("COLORMAP.DAT", index + 1, entry->parentDir());

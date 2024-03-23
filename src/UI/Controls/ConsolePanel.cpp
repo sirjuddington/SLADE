@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 #include "ConsolePanel.h"
 #include "App.h"
 #include "General/Console.h"
+#include "General/UI.h"
 #include "TextEditor/TextStyle.h"
 #include "UI/WxUtils.h"
 
@@ -85,12 +86,12 @@ void ConsolePanel::initLayout()
 	text_log_->SetWrapMode(wxSTC_WRAP_WORD);
 #endif
 	text_log_->SetSizeHints(wxSize(-1, 0));
-	vbox->Add(text_log_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::pad());
+	vbox->Add(text_log_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Create and add the command entry textbox
 	text_command_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	vbox->AddSpacer(ui::px(ui::Size::PadMinimum));
-	vbox->Add(text_command_, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, ui::pad());
+	vbox->AddSpacer(ui::padMin());
+	vbox->Add(text_command_, wxutil::sfWithBorder(0, wxBOTTOM | wxLEFT | wxRIGHT).Expand());
 
 	Layout();
 
@@ -156,18 +157,20 @@ void ConsolePanel::update()
 		text_log_->MarginSetStyle(line_no, wxSTC_STYLE_LINENUMBER);
 
 		// Set line colour depending on message type
-		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no)
-#if !wxCHECK_VERSION(3, 1, 1) /* Prior to wxWidgets 3.1.1 StartStyling took 2 arguments, no overload exists for compatibility */
-			, 0
+#if !wxCHECK_VERSION(3, 1, 1)
+		// Prior to wxWidgets 3.1.1 StartStyling took 2 arguments, no overload exists for compatibility
+		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no), 0);
+#else
+		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no));
 #endif
-		);
+
 		switch (log[a].type)
 		{
-		case log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;
+		case log::MessageType::Error:   text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;
 		case log::MessageType::Warning: text_log_->SetStyling(text_log_->GetLineLength(line_no), 201); break;
-		case log::MessageType::Script: text_log_->SetStyling(text_log_->GetLineLength(line_no), 202); break;
-		case log::MessageType::Debug: text_log_->SetStyling(text_log_->GetLineLength(line_no), 203); break;
-		default: break;
+		case log::MessageType::Script:  text_log_->SetStyling(text_log_->GetLineLength(line_no), 202); break;
+		case log::MessageType::Debug:   text_log_->SetStyling(text_log_->GetLineLength(line_no), 203); break;
+		default:                        break;
 		}
 
 		++line_no;
@@ -188,6 +191,8 @@ void ConsolePanel::update()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the enter key is pressed in the command text box

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,7 +33,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "LineList.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/Game.h"
+#include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
@@ -51,7 +54,7 @@ using namespace slade;
 // Returns the line closest to the point, or null if none is found.
 // Ignores lines further away than [mindist]
 // -----------------------------------------------------------------------------
-MapLine* LineList::nearest(Vec2d point, double min) const
+MapLine* LineList::nearest(const Vec2d& point, double min) const
 {
 	// Go through lines
 	double   dist;
@@ -84,7 +87,7 @@ MapLine* LineList::nearest(Vec2d point, double min) const
 // If [reverse] is false, only looks for lines with first vertex [v1] and second
 // vertex [v2] (not the other way around)
 // -----------------------------------------------------------------------------
-MapLine* LineList::withVertices(MapVertex* v1, MapVertex* v2, bool reverse) const
+MapLine* LineList::withVertices(const MapVertex* v1, const MapVertex* v2, bool reverse) const
 {
 	for (const auto& line : objects_)
 		if (line->v1() == v1 && line->v2() == v2 || reverse && line->v2() == v1 && line->v1() == v2)
@@ -132,25 +135,29 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 	{
 		// Sort points along x axis
 		if (xdif >= 0)
-			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2d& left, const Vec2d& right) {
-				return left.x < right.x;
-			});
+			std::sort(
+				intersect_points.begin(),
+				intersect_points.end(),
+				[](const Vec2d& left, const Vec2d& right) { return left.x < right.x; });
 		else
-			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2d& left, const Vec2d& right) {
-				return left.x > right.x;
-			});
+			std::sort(
+				intersect_points.begin(),
+				intersect_points.end(),
+				[](const Vec2d& left, const Vec2d& right) { return left.x > right.x; });
 	}
 	else
 	{
 		// Sort points along y axis
 		if (ydif >= 0)
-			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2d& left, const Vec2d& right) {
-				return left.y < right.y;
-			});
+			std::sort(
+				intersect_points.begin(),
+				intersect_points.end(),
+				[](const Vec2d& left, const Vec2d& right) { return left.y < right.y; });
 		else
-			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2d& left, const Vec2d& right) {
-				return left.y > right.y;
-			});
+			std::sort(
+				intersect_points.begin(),
+				intersect_points.end(),
+				[](const Vec2d& left, const Vec2d& right) { return left.y > right.y; });
 	}
 
 	return intersect_points;
@@ -210,9 +217,9 @@ void LineList::putAllTaggingWithId(int id, int type, vector<MapLine*>& list) con
 			case TagType::Sector:
 			case TagType::SectorOrBack:
 			case TagType::SectorAndBack: fits = (IDEQ(tag) && type == SLADEMap::SECTORS); break;
-			case TagType::LineNegative: tag = abs(tag);
-			case TagType::Line: fits = (IDEQ(tag) && type == SLADEMap::LINEDEFS); break;
-			case TagType::Thing: fits = (IDEQ(tag) && type == SLADEMap::THINGS); break;
+			case TagType::LineNegative:  tag = abs(tag);
+			case TagType::Line:          fits = (IDEQ(tag) && type == SLADEMap::LINEDEFS); break;
+			case TagType::Thing:         fits = (IDEQ(tag) && type == SLADEMap::THINGS); break;
 			case TagType::Thing1Sector2:
 				arg2 = line->arg(1);
 				fits = (type == SLADEMap::THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SLADEMap::SECTORS));

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -69,9 +69,9 @@ string mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",     "R
 // in [map_data]
 // -----------------------------------------------------------------------------
 bool MapBackupManager::writeBackup(
-	vector<unique_ptr<ArchiveEntry>>& map_data,
-	std::string_view                  archive_name,
-	std::string_view                  map_name) const
+	const vector<unique_ptr<ArchiveEntry>>& map_data,
+	std::string_view                        archive_name,
+	std::string_view                        map_name) const
 {
 	// Create backup directory if needed
 	auto backup_dir = app::path("backups", app::Dir::User);
@@ -151,7 +151,7 @@ bool MapBackupManager::writeBackup(
 
 	// Check for max backups & remove old ones if over
 	map_dir = backup->dirAtPath(map_name);
-	while ((int)map_dir->numSubdirs() > max_map_backups)
+	while (static_cast<int>(map_dir->numSubdirs()) > max_map_backups)
 		backup->removeDir(map_dir->subdirAt(0)->name(), map_dir);
 
 	// Save backup file

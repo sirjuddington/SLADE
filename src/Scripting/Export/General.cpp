@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,10 +35,13 @@
 #include "Graphics/Palette/Palette.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
 #include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
 using namespace slade;
+
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 
 // -----------------------------------------------------------------------------
@@ -73,7 +76,7 @@ bool showArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 string_view memChunkData(MemChunk& mc)
 {
-	return string_view{ (char*)mc.data(), mc.size() };
+	return string_view{ reinterpret_cast<char*>(mc.data()), mc.size() };
 }
 
 // -----------------------------------------------------------------------------
@@ -142,9 +145,8 @@ void registerMemChunkType(sol::state& lua)
 	// Functions
 	// -------------------------------------------------------------------------
 	lua_mc["AsString"] = &memChunkData;
-	lua_mc["SetData"]  = [](MemChunk& self, string_view data) {
-        self.importMem((const uint8_t*)data.data(), data.size());
-	};
+	lua_mc["SetData"]  = [](MemChunk& self, string_view data)
+	{ self.importMem(reinterpret_cast<const uint8_t*>(data.data()), data.size()); };
 	lua_mc["Clear"]  = &MemChunk::clear;
 	lua_mc["Resize"] = &MemChunk::reSize;
 	lua_mc["Copy"]   = sol::resolve<bool(const MemChunk&)>(&MemChunk::importMem);
@@ -169,9 +171,8 @@ void registerMemChunkType(sol::state& lua)
 	lua_mc["WriteUInt32"] = &memChunkWrite<uint32_t>;
 	lua_mc["WriteInt64"]  = &memChunkWrite<int64_t>;
 	lua_mc["WriteUInt64"] = &memChunkWrite<uint64_t>;
-	lua_mc["WriteString"] = [](MemChunk& self, int offset, string_view value, bool expand) {
-		self.write(offset, value.data(), value.size(), expand);
-	};
+	lua_mc["WriteString"] = [](MemChunk& self, int offset, string_view value, bool expand)
+	{ self.write(offset, value.data(), value.size(), expand); };
 	lua_mc["ReadInt8"]   = &memChunkRead<int8_t>;
 	lua_mc["ReadUInt8"]  = &memChunkRead<uint8_t>;
 	lua_mc["ReadInt16"]  = &memChunkRead<int16_t>;
@@ -180,9 +181,10 @@ void registerMemChunkType(sol::state& lua)
 	lua_mc["ReadUInt32"] = &memChunkRead<uint32_t>;
 	lua_mc["ReadInt64"]  = &memChunkRead<int64_t>;
 	lua_mc["ReadUInt64"] = &memChunkRead<uint64_t>;
-	lua_mc["ReadString"] = sol::overload(&memChunkReadString, [](MemChunk& self, unsigned offset, unsigned length) {
-		return memChunkReadString(self, offset, length, false);
-	});
+	lua_mc["ReadString"] = sol::overload(
+		&memChunkReadString,
+		[](MemChunk& self, unsigned offset, unsigned length)
+		{ return memChunkReadString(self, offset, length, false); });
 }
 
 // -----------------------------------------------------------------------------
@@ -257,7 +259,7 @@ void registerMiscTypes(sol::state& lua)
 	lua_plane["b"]        = &Plane::b;
 	lua_plane["c"]        = &Plane::c;
 	lua_plane["d"]        = &Plane::d;
-	lua_plane["HeightAt"] = sol::resolve<double(Vec2d) const>(&Plane::heightAt);
+	lua_plane["HeightAt"] = sol::resolve<double(const Vec2d&) const>(&Plane::heightAt);
 
 	// MemChunk type
 	registerMemChunkType(lua);

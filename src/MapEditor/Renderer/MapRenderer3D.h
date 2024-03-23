@@ -1,10 +1,14 @@
 #pragma once
 
-#include "MapEditor/Edit/Edit3D.h"
-#include "SLADEMap/SLADEMap.h"
+#include "MapEditor/Item.h"
+#include "Utility/Colour.h"
 
 namespace slade
 {
+class MapThing;
+class SLADEMap;
+class MapSector;
+class MapLine;
 class ItemSelection;
 class Polygon2D;
 
@@ -114,7 +118,7 @@ public:
 
 	Quad*                 getQuad(mapeditor::Item item);
 	Flat*                 getFlat(mapeditor::Item item);
-	vector<vector<Flat>>& getSectorFlats() { return sector_flats_; };
+	vector<vector<Flat>>& getSectorFlats() { return sector_flats_; }
 
 	// Camera
 	void cameraMove(double distance, bool z = true);
@@ -123,8 +127,8 @@ public:
 	void cameraStrafe(double distance);
 	void cameraPitch(double amount);
 	void cameraUpdateVectors();
-	void cameraSet(Vec3d position, Vec2d direction);
-	void cameraSetPosition(Vec3d position);
+	void cameraSet(const Vec3d& position, const Vec2d& direction);
+	void cameraSetPosition(const Vec3d& position);
 	void cameraApplyGravity(double mult);
 	void cameraLook(double xrel, double yrel);
 
@@ -158,8 +162,8 @@ public:
 	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f) const;
 
 	// Walls
-	void setupQuad(Quad* quad, Seg2d seg, double top, double bottom) const;
-	void setupQuad(Quad* quad, Seg2d seg, Plane top, Plane bottom) const;
+	void setupQuad(Quad* quad, const Seg2d& seg, double top, double bottom) const;
+	void setupQuad(Quad* quad, const Seg2d& seg, const Plane& top, const Plane& bottom) const;
 	void setupQuadTexCoords(
 		Quad*  quad,
 		int    length,
@@ -214,10 +218,8 @@ private:
 	Vec3d  cam_position_;
 	Vec2d  cam_direction_;
 	double cam_pitch_ = 0.;
-	double cam_angle_ = 0.;
 	Vec3d  cam_dir3d_;
 	Vec3d  cam_strafe_;
-	double gravity_   = 0.5;
 	int    item_dist_ = 0;
 
 	// Map Structures

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,9 +33,15 @@
 #include "MapSector.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "MapLine.h"
+#include "MapSide.h"
+#include "MapVertex.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
+#include "Utility/Polygon2D.h"
 
 using namespace slade;
 
@@ -64,6 +70,7 @@ MapSector::MapSector(
 	light_{ light },
 	special_{ special },
 	id_{ id },
+	polygon_{ new Polygon2D() },
 	geometry_updated_{ app::runTimer() }
 {
 }
@@ -72,7 +79,9 @@ MapSector::MapSector(
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
 MapSector::MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* udmf_def) :
-	MapObject(Type::Sector), floor_{ f_tex }, ceiling_{ c_tex }
+	MapObject(Type::Sector),
+	floor_{ f_tex },
+	ceiling_{ c_tex }
 {
 	// Set UDMF defaults
 	light_ = 160;
@@ -213,7 +222,7 @@ void MapSector::setFloatProperty(string_view key, double value)
 				&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
 			|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
 				&& (key == "rotationfloor" || key == "rotationceiling")))
-			polygon_.setTexture(0); // Clear texture to force update
+			polygon_->setTexture(0); // Clear texture to force update
 	}
 
 	MapObject::setFloatProperty(key, value);
@@ -394,17 +403,17 @@ Polygon2D* MapSector::polygon()
 {
 	if (poly_needsupdate_)
 	{
-		polygon_.openSector(this);
+		polygon_->openSector(this);
 		poly_needsupdate_ = false;
 	}
 
-	return &polygon_;
+	return polygon_.get();
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the given [point] is inside the sector
 // -----------------------------------------------------------------------------
-bool MapSector::containsPoint(Vec2d point)
+bool MapSector::containsPoint(const Vec2d& point)
 {
 	// Check with bbox first
 	if (!boundingBox().contains(point))
@@ -444,7 +453,7 @@ bool MapSector::containsPoint(Vec2d point)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the closest line in the sector
 // -----------------------------------------------------------------------------
-double MapSector::distanceTo(Vec2d point, double maxdist)
+double MapSector::distanceTo(const Vec2d& point, double maxdist)
 {
 	// Init
 	if (maxdist < 0)
@@ -677,7 +686,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 				ll = 0;
 
 			// Calculate and return the colour
-			float lightmult = (float)ll / 255.0f;
+			float lightmult = static_cast<float>(ll) / 255.0f;
 			return col.ampf(lightmult, lightmult, lightmult, 1.0f);
 		}
 	}
@@ -735,7 +744,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 			ll = 0;
 
 		// Calculate and return the colour
-		float lightmult = (float)ll / 255.0f;
+		float lightmult = static_cast<float>(ll) / 255.0f;
 		return { static_cast<uint8_t>(wxcol.Blue() * lightmult),
 				 static_cast<uint8_t>(wxcol.Green() * lightmult),
 				 static_cast<uint8_t>(wxcol.Red() * lightmult),

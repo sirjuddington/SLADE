@@ -10,7 +10,7 @@ class ColourPrefsPanel : public PrefsPanelBase
 {
 public:
 	ColourPrefsPanel(wxWindow* parent);
-	~ColourPrefsPanel() = default;
+	~ColourPrefsPanel() override = default;
 
 	void     init() override;
 	void     refreshPropGrid() const;

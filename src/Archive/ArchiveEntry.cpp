@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -76,7 +76,10 @@ unsigned maxEntrySizeBytes()
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
-	name_{ name }, upper_name_{ name }, data_{ size }, type_{ EntryType::unknownType() }
+	name_{ name },
+	upper_name_{ name },
+	data_{ size },
+	type_{ EntryType::unknownType() }
 {
 	strutil::upperIP(upper_name_);
 }
@@ -178,7 +181,7 @@ ArchiveEntry* ArchiveEntry::prevEntry()
 // Returns the parent ArchiveDir's shared pointer to this entry, or
 // nullptr if this entry has no parent
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> ArchiveEntry::getShared()
+shared_ptr<ArchiveEntry> ArchiveEntry::getShared() const
 {
 	return parent_ ? parent_->sharedEntry(this) : nullptr;
 }
@@ -262,7 +265,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 
 	// Remove \ or / if the format supports folders
 	if (format.supports_dirs && (name_.find('/') != string::npos || name_.find('\\') != string::npos))
-		name_   = misc::lumpNameToFileName(name_);
+		name_ = misc::lumpNameToFileName(name_);
 
 	// Remove extension if the format doesn't have them
 	if (!format.names_extensions)
@@ -566,7 +569,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 // -----------------------------------------------------------------------------
 // Reads data from the entry MemChunk
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::read(void* buf, uint32_t size)
+bool ArchiveEntry::read(void* buf, uint32_t size) const
 {
 	return data_.read(buf, size);
 }

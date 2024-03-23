@@ -1,10 +1,11 @@
 #pragma once
 
 #include "MapObjectList.h"
-#include "SLADEMap/MapObject/MapSide.h"
 
 namespace slade
 {
+class MapSide;
+
 class SideList : public MapObjectList<MapSide>
 {
 public:

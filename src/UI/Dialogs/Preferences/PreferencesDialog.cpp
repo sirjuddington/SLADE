@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -92,15 +92,15 @@ wxSizer* createTitleSizer(wxWindow* parent, const wxString& title, const wxStrin
 	auto font        = title_label->GetFont();
 	title_label->SetFont(font.MakeLarger().MakeLarger().MakeBold());
 	title_label->SetMinSize(wxSize(-1, title_label->GetTextExtent("Wy").y));
-	sizer->Add(title_label, 0, wxEXPAND);
+	sizer->Add(title_label, wxSizerFlags().Expand());
 
 	// Description
 	if (!description.empty())
-		sizer->Add(new wxStaticText(parent, -1, description), 0, wxEXPAND);
+		sizer->Add(new wxStaticText(parent, -1, description), wxSizerFlags().Expand());
 
 	// Separator
-	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
-	sizer->Add(new wxStaticLine(parent), 0, wxEXPAND | wxBOTTOM, ui::padLarge());
+	sizer->AddSpacer(ui::padMin());
+	sizer->Add(new wxStaticLine(parent), wxutil::sfWithLargeBorder(0, wxBOTTOM).Expand());
 
 	return sizer;
 }
@@ -158,20 +158,20 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 		tree_prefs_->ExpandNode(page);
 
 	// Add preferences treebook
-	sizer->Add(tree_prefs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
+	sizer->Add(tree_prefs_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Add buttons
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL | wxAPPLY), 0, wxEXPAND | wxALL, ui::padLarge());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL | wxAPPLY), wxutil::sfWithLargeBorder().Expand());
 
 	// Bind events
 	Bind(wxEVT_BUTTON, &PreferencesDialog::onButtonClicked, this);
 
 	// Setup layout
-	Layout();
-	const wxSize size = GetSize() * GetContentScaleFactor();
+	wxTopLevelWindowBase::Layout();
+	const wxSize size = GetSize() * wxWindowBase::GetContentScaleFactor();
 	SetInitialSize(size);
 	// Fit();
-	SetMinSize(wxSize(ui::scalePx(800), ui::scalePx(600)));
+	wxTopLevelWindowBase::SetMinSize(wxSize(ui::scalePx(800), ui::scalePx(600)));
 	CenterOnParent();
 
 	// Collapse all tree nodes
@@ -196,13 +196,11 @@ void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const wxString& title
 	sizer->Add(
 		createTitleSizer(
 			panel, page->pageTitle().empty() ? title + " Settings" : page->pageTitle(), page->pageDescription()),
-		0,
-		wxEXPAND | wxLEFT,
-		ui::pad());
+		wxutil::sfWithBorder(0, wxLEFT).Expand());
 
 	// Add prefs page to panel
 	page->Reparent(panel);
-	panel->GetSizer()->Add(page, 1, wxEXPAND | wxLEFT, ui::pad());
+	panel->GetSizer()->Add(page, wxutil::sfWithBorder(1, wxLEFT).Expand());
 
 	// Add panel to treebook
 	if (sub_page)
@@ -226,11 +224,11 @@ wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
 	panel->SetSizer(psizer);
 
 	// Add page title section
-	psizer->Add(createTitleSizer(panel, "Base Resource Archive", ""), 0, wxEXPAND | wxLEFT, ui::pad());
+	psizer->Add(createTitleSizer(panel, "Base Resource Archive", ""), wxutil::sfWithBorder(0, wxLEFT).Expand());
 
 	// Add BRA panel
 	panel_bra_ = new BaseResourceArchivesPanel(panel);
-	psizer->Add(panel_bra_, 1, wxEXPAND | wxLEFT, ui::pad());
+	psizer->Add(panel_bra_, wxutil::sfWithBorder(1, wxLEFT).Expand());
 
 	return panel;
 }
@@ -252,13 +250,11 @@ wxPanel* PreferencesDialog::setupAdvancedPanel()
 			"Advanced Settings",
 			"Warning: Only modify these values if you know what you are doing!\n"
 			"Most of these settings can be changed more safely from the other sections."),
-		0,
-		wxEXPAND | wxLEFT,
-		ui::pad());
+		wxutil::sfWithBorder(0, wxLEFT).Expand());
 
 	// Add advanced settings panel
 	prefs_advanced_ = new AdvancedPrefsPanel(panel);
-	psizer->Add(prefs_advanced_, 1, wxEXPAND | wxLEFT, ui::pad());
+	psizer->Add(prefs_advanced_, wxutil::sfWithBorder(1, wxLEFT).Expand());
 
 	return panel;
 }
@@ -330,6 +326,8 @@ void PreferencesDialog::applyPreferences() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a button is clicked

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "WadArchive.h"
-#include "General/Misc.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -421,7 +420,7 @@ bool WadArchive::open(const MemChunk& mc)
 		if (jaguarencrypt)
 		{
 			nlump->setEncryption(ArchiveEntry::Encryption::Jaguar);
-			nlump->exProp("FullSize") = (int)size;
+			nlump->exProp("FullSize") = static_cast<int>(size);
 		}
 
 		// Read entry data if it isn't zero-sized
@@ -788,7 +787,7 @@ bool WadArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* d
 // If [maphead] is not really a map header entry, an invalid MapDesc will be
 // returned (MapDesc::head == nullptr)
 // -----------------------------------------------------------------------------
-Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
+MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -920,8 +919,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 	{
 		Archive::SearchOptions opt;
 		opt.match_name = "playpals";
-		auto match     = findFirst(opt);
-		if (match)
+		if (findFirst(opt))
 			map.format = MapFormat::Doom32X;
 		else
 			map.format = MapFormat::Doom;
@@ -933,7 +931,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 // -----------------------------------------------------------------------------
 // Searches for any maps in the wad and adds them to the map list
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> WadArchive::detectMaps()
+vector<MapDesc> WadArchive::detectMaps()
 {
 	vector<MapDesc> maps;
 
@@ -946,8 +944,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 
 	Archive::SearchOptions opt;
 	opt.match_name = "playpals";
-	auto match     = findFirst(opt);
-	if (match)
+	if (findFirst(opt))
 		playpals = true;
 
 	while (entry)
@@ -1042,7 +1039,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				md.name = header_entry->name(); // Map title
 				md.end  = lastentryismapentry ? // End lump
                              entry :
-                              rootDir()->sharedEntryAt(--index);
+							  rootDir()->sharedEntryAt(--index);
 
 				// If BEHAVIOR lump exists, it's a hexen format map
 				if (existing_map_lumps[LUMP_BEHAVIOR])
@@ -1170,8 +1167,7 @@ void WadArchive::detectIncludes()
 						if (i == 5) // skip ')'
 							tz.adv();
 						opt.match_name = name;
-						auto match     = findFirst(opt);
-						if (match)
+						if (auto match = findFirst(opt))
 							match->setType(EntryType::fromId(entrytypes[i]));
 						tz.adv();
 					}

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -61,7 +61,7 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	choice_configs_ = new wxChoice(this, -1);
 	for (const auto& cname : cnames)
 		choice_configs_->Append(cname);
-	sizer->Add(wxutil::createLabelHBox(this, "Preset:", choice_configs_), 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(wxutil::createLabelHBox(this, "Preset:", choice_configs_), wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 
 	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
@@ -70,18 +70,21 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 		this, -1, wxDefaultPosition, wxDefaultSize, wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS);
 	pg_colours_->SetCaptionTextColour(inactiveTextColour);
 	pg_colours_->SetCellDisabledTextColour(inactiveTextColour);
-	sizer->Add(pg_colours_, 1, wxEXPAND);
+	sizer->Add(pg_colours_, wxSizerFlags(1).Expand());
 
 	// Load colour config into grid
 	refreshPropGrid();
 
 	// Bind events
-	choice_configs_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
-		auto config = choice_configs_->GetStringSelection().ToStdString();
-		colourconfig::readConfiguration(config);
-		refreshPropGrid();
-		mapeditor::forceRefresh(true);
-	});
+	choice_configs_->Bind(
+		wxEVT_CHOICE,
+		[&](wxCommandEvent&)
+		{
+			auto config = choice_configs_->GetStringSelection().ToStdString();
+			colourconfig::readConfiguration(config);
+			refreshPropGrid();
+			mapeditor::forceRefresh(true);
+		});
 
 	wxWindowBase::Layout();
 }
@@ -165,8 +168,8 @@ void ColourPrefsPanel::applyPreferences()
 		cdef_path += colours[a];
 
 		// Get properties from grid
-		auto p_alpha = (wxIntProperty*)pg_colours_->GetProperty(cdef_path + ".alpha");
-		auto p_add   = (wxBoolProperty*)pg_colours_->GetProperty(cdef_path + ".additive");
+		auto p_alpha = dynamic_cast<wxIntProperty*>(pg_colours_->GetProperty(cdef_path + ".alpha"));
+		auto p_add   = dynamic_cast<wxBoolProperty*>(pg_colours_->GetProperty(cdef_path + ".additive"));
 
 		if (p_alpha && p_add)
 		{
@@ -197,11 +200,11 @@ void ColourPrefsPanel::applyPreferences()
 		}
 	}
 
-	colourconfig::setLineHilightWidth((double)pg_colours_->GetProperty("line_hilight_width")->GetValue());
+	colourconfig::setLineHilightWidth(pg_colours_->GetProperty("line_hilight_width")->GetValue());
 	pg_colours_->GetProperty("line_hilight_width")->SetModifiedStatus(false);
-	colourconfig::setLineSelectionWidth((double)pg_colours_->GetProperty("line_selection_width")->GetValue());
+	colourconfig::setLineSelectionWidth(pg_colours_->GetProperty("line_selection_width")->GetValue());
 	pg_colours_->GetProperty("line_selection_width")->SetModifiedStatus(false);
-	colourconfig::setFlatAlpha((double)pg_colours_->GetProperty("flat_alpha")->GetValue());
+	colourconfig::setFlatAlpha(pg_colours_->GetProperty("flat_alpha")->GetValue());
 	pg_colours_->GetProperty("flat_alpha")->SetModifiedStatus(false);
 
 	pg_colours_->Refresh();

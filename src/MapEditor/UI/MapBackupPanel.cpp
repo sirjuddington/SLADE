@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -58,7 +58,7 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel{ parent, -1 }, archiv
 	SetSizer(sizer);
 
 	// Backups list
-	sizer->Add(list_backups_ = new ListView(this, -1), 0, wxEXPAND | wxRIGHT, ui::pad());
+	sizer->Add(list_backups_ = new ListView(this, -1), wxutil::sfWithBorder(0, wxRIGHT).Expand());
 
 	// Map preview
 	sizer->Add(canvas_map_ = new MapPreviewCanvas(this), 1, wxEXPAND);

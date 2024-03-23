@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,7 +33,8 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Game/Configuration.h"
+#include "Game/Game.h"
+#include "Game/SpecialPreset.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "General/Console.h"
@@ -60,10 +61,15 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+#include <FreeImage.h>
 #include <dumb.h>
 #include <filesystem>
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
+#endif
+
+#ifndef _WIN32
+#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
 #endif
 
 using namespace slade;
@@ -748,12 +754,12 @@ string app::path(string_view filename, Dir dir)
 {
 	switch (dir)
 	{
-	case Dir::User: return fmt::format("{}{}{}", dir_user, dir_separator, filename);
-	case Dir::Data: return fmt::format("{}{}{}", dir_data, dir_separator, filename);
+	case Dir::User:       return fmt::format("{}{}{}", dir_user, dir_separator, filename);
+	case Dir::Data:       return fmt::format("{}{}{}", dir_data, dir_separator, filename);
 	case Dir::Executable: return fmt::format("{}{}{}", dir_app, dir_separator, filename);
-	case Dir::Resources: return fmt::format("{}{}{}", dir_res, dir_separator, filename);
-	case Dir::Temp: return fmt::format("{}{}{}", dir_temp, dir_separator, filename);
-	default: return string{ filename };
+	case Dir::Resources:  return fmt::format("{}{}{}", dir_res, dir_separator, filename);
+	case Dir::Temp:       return fmt::format("{}{}{}", dir_temp, dir_separator, filename);
+	default:              return string{ filename };
 	}
 }
 

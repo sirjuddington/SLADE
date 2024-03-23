@@ -1,7 +1,5 @@
 #pragma once
 
-#include "MapEditor/Edit/Edit3D.h"
-
 namespace slade
 {
 // Forward declarations
@@ -12,6 +10,10 @@ class MapSector;
 class MapRenderer2D;
 class MapObject;
 class MapRenderer3D;
+namespace mapeditor
+{
+	enum class ItemType;
+}
 
 class MCAnimation
 {
@@ -33,8 +35,8 @@ protected:
 class MCASelboxFader : public MCAnimation
 {
 public:
-	MCASelboxFader(long start, Vec2d tl, Vec2d br);
-	~MCASelboxFader() = default;
+	MCASelboxFader(long start, const Vec2d& tl, const Vec2d& br);
+	~MCASelboxFader() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -50,7 +52,7 @@ class MCAThingSelection : public MCAnimation
 {
 public:
 	MCAThingSelection(long start, double x, double y, double radius, double scale_inv, bool select = true);
-	~MCAThingSelection() = default;
+	~MCAThingSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -68,7 +70,7 @@ class MCALineSelection : public MCAnimation
 {
 public:
 	MCALineSelection(long start, const vector<MapLine*>& lines, bool select = true);
-	~MCALineSelection() = default;
+	~MCALineSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -85,7 +87,7 @@ class MCAVertexSelection : public MCAnimation
 {
 public:
 	MCAVertexSelection(long start, const vector<MapVertex*>& verts, double size, bool select = true);
-	~MCAVertexSelection() = default;
+	~MCAVertexSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -102,7 +104,7 @@ class MCASectorSelection : public MCAnimation
 {
 public:
 	MCASectorSelection(long start, const vector<Polygon2D*>& polys, bool select = true);
-	~MCASectorSelection() = default;
+	~MCASectorSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -118,7 +120,7 @@ class MCA3dWallSelection : public MCAnimation
 {
 public:
 	MCA3dWallSelection(long start, Vec3f points[4], bool select = true);
-	~MCA3dWallSelection() = default;
+	~MCA3dWallSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -133,8 +135,8 @@ private:
 class MCA3dFlatSelection : public MCAnimation
 {
 public:
-	MCA3dFlatSelection(long start, MapSector* sector, Plane plane, bool select = true);
-	~MCA3dFlatSelection() = default;
+	MCA3dFlatSelection(long start, MapSector* sector, const Plane& plane, bool select = true);
+	~MCA3dFlatSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -151,7 +153,7 @@ class MCAHilightFade : public MCAnimation
 {
 public:
 	MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init);
-	~MCAHilightFade() = default;
+	~MCAHilightFade() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -173,7 +175,7 @@ public:
 		mapeditor::ItemType item_type,
 		MapRenderer3D*      renderer,
 		float               fade_init);
-	~MCAHilightFade3D() = default;
+	~MCAHilightFade3D() override = default;
 
 	bool update(long time) override;
 	void draw() override;

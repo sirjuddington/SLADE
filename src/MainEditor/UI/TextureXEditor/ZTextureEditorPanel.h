@@ -1,12 +1,13 @@
 #pragma once
 
 #include "TextureEditorPanel.h"
-#include "UI/Controls/ColourBox.h"
 
 class wxSpinCtrlDouble;
 
 namespace slade
 {
+class ColourBox;
+
 class ZTextureEditorPanel : public TextureEditorPanel
 {
 public:

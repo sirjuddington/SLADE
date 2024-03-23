@@ -222,7 +222,7 @@ private:
 	static Token invalid_token_;
 
 	// Tokenizing
-	unsigned checkCommentBegin();
+	unsigned checkCommentBegin() const;
 	void     tokenizeUnknown();
 	void     tokenizeToken();
 	void     tokenizeComment();

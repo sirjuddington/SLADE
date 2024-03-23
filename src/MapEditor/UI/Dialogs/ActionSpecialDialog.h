@@ -22,7 +22,7 @@ class ActionSpecialTreeView : public wxDataViewTreeCtrl
 {
 public:
 	ActionSpecialTreeView(wxWindow* parent);
-	~ActionSpecialTreeView() = default;
+	~ActionSpecialTreeView() override = default;
 
 	void setParentDialog(wxDialog* dlg) { parent_dialog_ = dlg; }
 
@@ -50,11 +50,11 @@ class ArgsPanel : public wxScrolled<wxPanel>
 {
 public:
 	ArgsPanel(wxWindow* parent);
-	~ArgsPanel() = default;
+	~ArgsPanel() override = default;
 
 	void setup(const game::ArgSpec& args, bool udmf);
-	void setValues(int args[5]);
-	int  argValue(int index);
+	void setValues(int args[5]) const;
+	int  argValue(int index) const;
 	void onSize(wxSizeEvent& event);
 
 private:
@@ -68,18 +68,18 @@ class ActionSpecialPanel : public wxPanel
 {
 public:
 	ActionSpecialPanel(wxWindow* parent, bool trigger = true);
-	~ActionSpecialPanel() = default;
+	~ActionSpecialPanel() override = default;
 
 	void setupSpecialPanel();
 	void setArgsPanel(ArgsPanel* panel) { panel_args_ = panel; }
 	void setSpecial(int special);
-	void setTrigger(int index);
-	void setTrigger(const wxString& trigger);
-	void clearTrigger();
+	void setTrigger(int index) const;
+	void setTrigger(const wxString& trigger) const;
+	void clearTrigger() const;
 	int  selectedSpecial() const;
 	void showGeneralised(bool show = true);
-	void applyTo(vector<MapObject*>& lines, bool apply_special);
-	void openLines(vector<MapObject*>& lines);
+	void applyTo(const vector<MapObject*>& lines, bool apply_special) const;
+	void openLines(const vector<MapObject*>& lines);
 
 	void onRadioButtonChanged(wxCommandEvent& e);
 	void onSpecialSelectionChanged(wxDataViewEvent& e);
@@ -111,13 +111,13 @@ class ActionSpecialDialog : public SDialog
 {
 public:
 	ActionSpecialDialog(wxWindow* parent, bool show_args = false);
-	~ActionSpecialDialog() = default;
+	~ActionSpecialDialog() override = default;
 
 	void setSpecial(int special) const;
 	void setArgs(int args[5]) const;
 	int  selectedSpecial() const;
 	int  argValue(int index) const;
-	void applyTo(vector<MapObject*>& lines, bool apply_special) const;
+	void applyTo(const vector<MapObject*>& lines, bool apply_special) const;
 	void openLines(vector<MapObject*>& lines) const;
 
 private:

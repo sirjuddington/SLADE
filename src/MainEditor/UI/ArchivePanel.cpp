@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -56,6 +56,7 @@
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
 #include "MainEditor/EntryOperations.h"
+#include "MainEditor/ExternalEditManager.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditor.h"
@@ -252,9 +253,9 @@ public:
 
 		// Add choose
 		pal_chooser_ = new PaletteChooser(this, -1);
-		sizer->Add(pal_chooser_, 0, wxEXPAND | wxALL, 4);
+		sizer->Add(pal_chooser_, wxutil::sfWithBorder().Expand());
 
-		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 		// Init layout
 		wxDialog::Layout();
@@ -280,7 +281,8 @@ class EntryTreeClipboardItem : public ClipboardItem
 {
 public:
 	EntryTreeClipboardItem(const vector<ArchiveEntry*>& entries, const vector<ArchiveDir*>& dirs) :
-		ClipboardItem(Type::EntryTree), tree_{ new ArchiveDir("") }
+		ClipboardItem(Type::EntryTree),
+		tree_{ new ArchiveDir("") }
 	{
 		// Copy entries
 		for (auto& entry : entries)
@@ -357,7 +359,7 @@ void initNamespaceVector(vector<wxString>& ns, bool flathack)
 // Checks through a MapDesc vector and returns which one, if any, the entry
 // index is in, -1 otherwise
 // -----------------------------------------------------------------------------
-int isInMap(size_t index, const vector<Archive::MapDesc>& maps)
+int isInMap(size_t index, const vector<MapDesc>& maps)
 {
 	for (size_t m = 0; m < maps.size(); ++m)
 	{
@@ -381,11 +383,7 @@ int isInMap(size_t index, const vector<Archive::MapDesc>& maps)
 // namespace vector. Also hacks around a bit to put less entries in the global
 // namespace and allow sorting a bit by categories.
 // -----------------------------------------------------------------------------
-size_t getNamespaceNumber(
-	const ArchiveEntry*             entry,
-	size_t                          index,
-	vector<wxString>&               ns,
-	const vector<Archive::MapDesc>& maps)
+size_t getNamespaceNumber(const ArchiveEntry* entry, size_t index, vector<wxString>& ns, const vector<MapDesc>& maps)
 {
 	auto ens = entry->parent()->detectNamespace(index);
 	if (strutil::equalCI(ens, "global"))
@@ -424,7 +422,10 @@ size_t getNamespaceNumber(
 // ArchivePanel class constructor
 // -----------------------------------------------------------------------------
 ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
-	wxPanel(parent, -1), archive_{ archive }, undo_manager_{ new UndoManager() }, ee_manager_{ new ExternalEditManager }
+	wxPanel(parent, -1),
+	archive_{ archive },
+	undo_manager_{ new UndoManager() },
+	ee_manager_{ new ExternalEditManager }
 {
 	setup(archive.get());
 	bindEvents(archive.get());
@@ -433,7 +434,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 // -----------------------------------------------------------------------------
 // Setup the panel controls and layout
 // -----------------------------------------------------------------------------
-void ArchivePanel::setup(Archive* archive)
+void ArchivePanel::setup(const Archive* archive)
 {
 	// Create controls
 	splitter_         = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
@@ -452,7 +453,7 @@ void ArchivePanel::setup(Archive* archive)
 
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(ui::scalePx(300));
-	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
+	m_hbox->Add(splitter_, wxutil::sfWithBorder(1).Expand());
 	int split_pos = ap_splitter_position_list;
 	if (archive && archive->formatDesc().supports_dirs)
 		split_pos = ap_splitter_position_tree;
@@ -526,7 +527,6 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	auto* panel    = new wxPanel(parent);
 	auto  archive  = archive_.lock();
 	bool  has_dirs = archive->formatDesc().supports_dirs;
-	auto  min_pad  = ui::px(ui::Size::PadMinimum);
 
 	// Create & set sizer & border
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -614,19 +614,19 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	panel_filter_->Show(elist_show_filter);
 
 	// Layout entry list
-	hbox->Add(toolbar_elist_, 0, wxEXPAND);
-	hbox->AddSpacer(min_pad);
+	hbox->Add(toolbar_elist_, wxSizerFlags().Expand());
+	hbox->AddSpacer(ui::padMin());
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
-	hbox->Add(vbox, 1, wxEXPAND | wxRIGHT, min_pad);
+	hbox->Add(vbox, wxutil::sfWithMinBorder(1, wxRIGHT).Expand());
 	if (etree_path_)
 	{
-		vbox->Add(etree_path_, 0, wxEXPAND);
-		vbox->AddSpacer(min_pad);
-		vbox->Add(entry_tree_, 1, wxEXPAND);
+		vbox->Add(etree_path_, wxSizerFlags().Expand());
+		vbox->AddSpacer(ui::padMin());
+		vbox->Add(entry_tree_, wxSizerFlags(1).Expand());
 	}
 	else
-		vbox->Add(entry_tree_, 1, wxEXPAND);
-	vbox->Add(panel_filter_, 0, wxEXPAND | wxTOP, ui::pad());
+		vbox->Add(entry_tree_, wxSizerFlags(1).Expand());
+	vbox->Add(panel_filter_, wxutil::sfWithBorder(0, wxTOP).Expand());
 
 	return panel;
 }
@@ -2165,7 +2165,7 @@ bool ArchivePanel::gfxTint()
 		undo_manager_->endRecord(true);
 	}
 	last_tint_colour = gtd.colour().toString(ColRGBA::StringFormat::RGB);
-	last_tint_amount = (int)(gtd.amount() * 100.0f);
+	last_tint_amount = static_cast<int>(gtd.amount() * 100.0f);
 	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
@@ -2894,7 +2894,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 // -----------------------------------------------------------------------------
 // Opens [entry] in the text editor panel
 // -----------------------------------------------------------------------------
-bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
+bool ArchivePanel::openEntryAsText(const ArchiveEntry* entry)
 {
 	// Check entry was given
 	if (!entry)
@@ -2916,7 +2916,7 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Opens [entry] in the hex editor panel
 // -----------------------------------------------------------------------------
-bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
+bool ArchivePanel::openEntryAsHex(const ArchiveEntry* entry)
 {
 	// Check entry was given
 	if (!entry)
@@ -2958,6 +2958,14 @@ void ArchivePanel::focusOnEntry(ArchiveEntry* entry) const
 	wxDataViewItem item{ entry };
 	entry_tree_->EnsureVisible(item);
 	entry_tree_->SetSelections(wxDataViewItemArray(1, item));
+}
+
+// -----------------------------------------------------------------------------
+// Sets focus to the entry list
+// -----------------------------------------------------------------------------
+void ArchivePanel::focusEntryList() const
+{
+	entry_tree_->SetFocus();
 }
 
 // -----------------------------------------------------------------------------
@@ -4306,6 +4314,17 @@ void ArchivePanel::onBtnClearFilter(wxCommandEvent& e)
 //
 // -----------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// EntryDataUS class constructor
+// -----------------------------------------------------------------------------
+EntryDataUS::EntryDataUS(ArchiveEntry* entry) :
+	path_{ entry->path() },
+	index_{ entry->index() },
+	archive_{ entry->parent() }
+{
+	data_.importMem(entry->rawData(), entry->size());
+}
 
 // -----------------------------------------------------------------------------
 // Swaps data between the entry and the undo step

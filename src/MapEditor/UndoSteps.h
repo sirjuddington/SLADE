@@ -10,7 +10,7 @@ class PropertyChangeUS : public UndoStep
 {
 public:
 	PropertyChangeUS(MapObject* object);
-	~PropertyChangeUS() = default;
+	~PropertyChangeUS() override = default;
 
 	void doSwap(MapObject* obj);
 	bool doUndo() override;
@@ -25,9 +25,9 @@ class MapObjectCreateDeleteUS : public UndoStep
 {
 public:
 	MapObjectCreateDeleteUS();
-	~MapObjectCreateDeleteUS() = default;
+	~MapObjectCreateDeleteUS() override = default;
 
-	bool isValid(vector<unsigned>& list) const { return !(list.size() == 1 && list[0] == 0); }
+	bool isValid(const vector<unsigned>& list) const { return !(list.size() == 1 && list[0] == 0); }
 	void swapLists();
 	bool doUndo() override;
 	bool doRedo() override;
@@ -47,7 +47,7 @@ class MultiMapObjectPropertyChangeUS : public UndoStep
 {
 public:
 	MultiMapObjectPropertyChangeUS();
-	~MultiMapObjectPropertyChangeUS() = default;
+	~MultiMapObjectPropertyChangeUS() override = default;
 
 	void doSwap(MapObject* obj, unsigned index);
 	bool doUndo() override;

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,13 +33,18 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Configuration.h"
+#include "ActionSpecial.h"
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "Decorate.h"
+#include "Game.h"
 #include "GenLineSpecial.h"
 #include "General/Console.h"
-#include "SLADEMap/SLADEMap.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SpecialPreset.h"
+#include "UDMFProperty.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"
@@ -56,6 +61,25 @@ using namespace game;
 EXTERN_CVAR(String, game_configuration)
 EXTERN_CVAR(String, port_configuration)
 CVAR(Bool, debug_configuration, false, CVar::Flag::Save)
+namespace slade::game
+{
+Configuration config_current;
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// Game Namespace Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Returns the currently loaded game configuration
+// -----------------------------------------------------------------------------
+Configuration& game::configuration()
+{
+	return config_current;
+}
 
 
 // -----------------------------------------------------------------------------
@@ -317,9 +341,8 @@ void Configuration::readUDMFProperties(const ParseTreeNode* block, UDMFPropMap& 
 // Reads a game or port definition from a parsed tree [node]. If [port_section]
 // is true it is a port definition
 // -----------------------------------------------------------------------------
-#define SET_UDMF_FEATURE(feature, field)              \
-	else if (strutil::equalCI(node->name(), #field))( \
-		udmf_features_[static_cast<unsigned>(feature)]) = node->boolValue()
+#define SET_UDMF_FEATURE(feature, field) \
+	else if (strutil::equalCI(node->name(), #field))(udmf_features_[static_cast<unsigned>(feature)]) = node->boolValue()
 #define SET_FEATURE(feature, value) supported_features_[static_cast<unsigned>(feature)] = value
 void Configuration::readGameSection(const ParseTreeNode* node_game, bool port_section)
 {
@@ -561,12 +584,12 @@ bool Configuration::readConfiguration(
 	Parser parser;
 	switch (format)
 	{
-	case MapFormat::Doom: parser.define("MAP_DOOM"); break;
-	case MapFormat::Hexen: parser.define("MAP_HEXEN"); break;
-	case MapFormat::Doom64: parser.define("MAP_DOOM64"); break;
+	case MapFormat::Doom:    parser.define("MAP_DOOM"); break;
+	case MapFormat::Hexen:   parser.define("MAP_HEXEN"); break;
+	case MapFormat::Doom64:  parser.define("MAP_DOOM64"); break;
 	case MapFormat::Doom32X: parser.define("MAP_DOOM32X"); break;
-	case MapFormat::UDMF: parser.define("MAP_UDMF"); break;
-	default: parser.define("MAP_UNKNOWN"); break;
+	case MapFormat::UDMF:    parser.define("MAP_UDMF"); break;
+	default:                 parser.define("MAP_UNKNOWN"); break;
 	}
 	parser.parseText(cfg, source);
 
@@ -681,7 +704,7 @@ bool Configuration::readConfiguration(
 				bool exists = false;
 				for (auto& f : flags_line_)
 				{
-					if ((unsigned)f.flag == flag_val)
+					if (static_cast<unsigned>(f.flag) == flag_val)
 					{
 						exists = true;
 						f.name = flag_name;
@@ -691,7 +714,7 @@ bool Configuration::readConfiguration(
 
 				// Add flag otherwise
 				if (!exists)
-					flags_line_.push_back({ (int)flag_val, flag_name, flag_udmf, activation });
+					flags_line_.push_back({ static_cast<int>(flag_val), flag_name, flag_udmf, activation });
 			}
 		}
 
@@ -749,7 +772,7 @@ bool Configuration::readConfiguration(
 
 				// Add trigger otherwise
 				if (!exists)
-					triggers_line_.push_back({ (int)flag_val, flag_name, flag_udmf, false });
+					triggers_line_.push_back({ static_cast<int>(flag_val), flag_name, flag_udmf, false });
 			}
 		}
 
@@ -807,7 +830,7 @@ bool Configuration::readConfiguration(
 
 				// Add flag otherwise
 				if (!exists)
-					flags_thing_.push_back({ (int)flag_val, flag_name, flag_udmf, false });
+					flags_thing_.push_back({ static_cast<int>(flag_val), flag_name, flag_udmf, false });
 			}
 		}
 
@@ -984,7 +1007,7 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 			log::info("Reading SLADECFG in {}", parent->filename());
 
 		// Read embedded config
-		string config{ (const char*)cfg_entry->rawData(), cfg_entry->size() };
+		string config{ reinterpret_cast<const char*>(cfg_entry->rawData()), cfg_entry->size() };
 		if (!readConfiguration(config, cfg_entry->name(), format, true, false))
 			log::error("Error reading embedded game configuration, not loaded");
 	}
@@ -1783,11 +1806,11 @@ UDMFPropMap& Configuration::allUDMFProperties(MapObject::Type type)
 	switch (type)
 	{
 	case MapObject::Type::Vertex: return udmf_vertex_props_;
-	case MapObject::Type::Line: return udmf_linedef_props_;
-	case MapObject::Type::Side: return udmf_sidedef_props_;
+	case MapObject::Type::Line:   return udmf_linedef_props_;
+	case MapObject::Type::Side:   return udmf_sidedef_props_;
 	case MapObject::Type::Sector: return udmf_sector_props_;
-	case MapObject::Type::Thing: return udmf_thing_props_;
-	default: return map_invalid_type;
+	case MapObject::Type::Thing:  return udmf_thing_props_;
+	default:                      return map_invalid_type;
 	}
 }
 
@@ -2135,11 +2158,11 @@ string Configuration::defaultString(MapObject::Type type, const string& property
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_.getOr<string>(property, {});
-	case MapObject::Type::Side: return defaults_side_.getOr<string>(property, {});
+	case MapObject::Type::Line:   return defaults_line_.getOr<string>(property, {});
+	case MapObject::Type::Side:   return defaults_side_.getOr<string>(property, {});
 	case MapObject::Type::Sector: return defaults_sector_.getOr<string>(property, {});
-	case MapObject::Type::Thing: return defaults_thing_.getOr<string>(property, {});
-	default: return {};
+	case MapObject::Type::Thing:  return defaults_thing_.getOr<string>(property, {});
+	default:                      return {};
 	}
 }
 
@@ -2150,11 +2173,11 @@ int Configuration::defaultInt(MapObject::Type type, const string& property) cons
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_.getOr<int>(property, 0);
-	case MapObject::Type::Side: return defaults_side_.getOr<int>(property, 0);
+	case MapObject::Type::Line:   return defaults_line_.getOr<int>(property, 0);
+	case MapObject::Type::Side:   return defaults_side_.getOr<int>(property, 0);
 	case MapObject::Type::Sector: return defaults_sector_.getOr<int>(property, 0);
-	case MapObject::Type::Thing: return defaults_thing_.getOr<int>(property, 0);
-	default: return 0;
+	case MapObject::Type::Thing:  return defaults_thing_.getOr<int>(property, 0);
+	default:                      return 0;
 	}
 }
 
@@ -2165,11 +2188,11 @@ double Configuration::defaultFloat(MapObject::Type type, const string& property)
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_.getOr(property, 0.);
-	case MapObject::Type::Side: return defaults_side_.getOr(property, 0.);
+	case MapObject::Type::Line:   return defaults_line_.getOr(property, 0.);
+	case MapObject::Type::Side:   return defaults_side_.getOr(property, 0.);
 	case MapObject::Type::Sector: return defaults_sector_.getOr(property, 0.);
-	case MapObject::Type::Thing: return defaults_thing_.getOr(property, 0.);
-	default: return 0.;
+	case MapObject::Type::Thing:  return defaults_thing_.getOr(property, 0.);
+	default:                      return 0.;
 	}
 }
 
@@ -2180,11 +2203,11 @@ bool Configuration::defaultBool(MapObject::Type type, const string& property) co
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_.getOr(property, false);
-	case MapObject::Type::Side: return defaults_side_.getOr(property, false);
+	case MapObject::Type::Line:   return defaults_line_.getOr(property, false);
+	case MapObject::Type::Side:   return defaults_side_.getOr(property, false);
 	case MapObject::Type::Sector: return defaults_sector_.getOr(property, false);
-	case MapObject::Type::Thing: return defaults_thing_.getOr(property, false);
-	default: return false;
+	case MapObject::Type::Thing:  return defaults_thing_.getOr(property, false);
+	default:                      return false;
 	}
 }
 
@@ -2251,7 +2274,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf) const
 		switch (property::valueType(prop_vals[a]))
 		{
 		case property::ValueType::Bool: object->setBoolProperty(prop_names[a], std::get<bool>(prop_vals[a])); break;
-		case property::ValueType::Int: object->setIntProperty(prop_names[a], std::get<int>(prop_vals[a])); break;
+		case property::ValueType::Int:  object->setIntProperty(prop_names[a], std::get<int>(prop_vals[a])); break;
 		case property::ValueType::UInt:
 			object->setIntProperty(prop_names[a], std::get<unsigned int>(prop_vals[a]));
 			break;
@@ -2294,7 +2317,7 @@ int Configuration::upLightLevel(int light_level) const
 	if (light_levels_.empty())
 		return light_level;
 
-	for (int a = 0; a < (int)light_levels_.size() - 1; a++)
+	for (int a = 0; a < static_cast<int>(light_levels_.size()) - 1; a++)
 	{
 		if (light_level >= light_levels_[a] && light_level < light_levels_[a + 1])
 			return light_levels_[a + 1];
@@ -2313,7 +2336,7 @@ int Configuration::downLightLevel(int light_level) const
 	if (light_levels_.empty())
 		return light_level;
 
-	for (int a = 0; a < (int)light_levels_.size() - 1; a++)
+	for (int a = 0; a < static_cast<int>(light_levels_.size()) - 1; a++)
 	{
 		if (light_level > light_levels_[a] && light_level <= light_levels_[a + 1])
 			return light_levels_[a];

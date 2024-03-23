@@ -7,11 +7,11 @@ class Archive;
 class ResourceArchiveChooser : public wxPanel
 {
 public:
-	ResourceArchiveChooser(wxWindow* parent, Archive* archive);
-	~ResourceArchiveChooser() {}
+	ResourceArchiveChooser(wxWindow* parent, const Archive* archive);
+	~ResourceArchiveChooser() override = default;
 
-	vector<Archive*> selectedResourceArchives();
-	wxString         selectedResourceList();
+	vector<Archive*> selectedResourceArchives() const;
+	wxString         selectedResourceList() const;
 
 private:
 	wxCheckListBox*  list_resources_    = nullptr;

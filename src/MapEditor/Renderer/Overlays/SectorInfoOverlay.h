@@ -9,9 +9,9 @@ class SectorInfoOverlay
 {
 public:
 	SectorInfoOverlay();
-	~SectorInfoOverlay() = default;
+	~SectorInfoOverlay();
 
-	void update(MapSector* sector);
+	void update(const MapSector* sector);
 	void draw(int bottom, int right, float alpha = 1.0f);
 
 private:

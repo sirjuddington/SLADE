@@ -1,9 +1,9 @@
 
 #include "Main.h"
+#include "General/UI.h"
 #include "Export.h"
 #include "Scripting/Lua.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
-#include "UI/Dialogs/Preferences/ACSPrefsPanel.h"
 #include "Utility/SFileDialog.h"
 #include "thirdparty/sol/sol.hpp"
 
@@ -42,10 +42,10 @@ void messageBox(const string& title, const string& message, MessageBoxIcon icon 
 	long style = 4 | wxCENTRE;
 	switch (icon)
 	{
-	case MessageBoxIcon::Info: style |= wxICON_INFORMATION; break;
+	case MessageBoxIcon::Info:     style |= wxICON_INFORMATION; break;
 	case MessageBoxIcon::Question: style |= wxICON_QUESTION; break;
-	case MessageBoxIcon::Warning: style |= wxICON_WARNING; break;
-	case MessageBoxIcon::Error: style |= wxICON_ERROR; break;
+	case MessageBoxIcon::Warning:  style |= wxICON_WARNING; break;
+	case MessageBoxIcon::Error:    style |= wxICON_ERROR; break;
 	}
 
 	wxMessageBox(message, title, style, currentWindow());
@@ -77,7 +77,7 @@ string promptString(const string& title, const string& message, const string& de
 // -----------------------------------------------------------------------------
 int promptNumber(const string& title, const string& message, int default_value, int min, int max)
 {
-	return (int)wxGetNumberFromUser(message, "", title, default_value, min, max);
+	return static_cast<int>(wxGetNumberFromUser(message, "", title, default_value, min, max));
 }
 
 // -----------------------------------------------------------------------------

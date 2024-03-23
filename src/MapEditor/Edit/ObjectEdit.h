@@ -1,14 +1,19 @@
 #pragma once
 
-#include "Utility/Structs.h"
-
 namespace slade
 {
-class MapEditContext;
 class MapVertex;
 class MapLine;
 class MapThing;
 
+namespace mapeditor
+{
+	class MapEditContext;
+}
+} // namespace slade
+
+namespace slade::mapeditor
+{
 class ObjectEditGroup
 {
 public:
@@ -43,26 +48,26 @@ public:
 	void    addVertex(MapVertex* vertex, bool ignored = false);
 	void    addConnectedLines();
 	void    addThing(MapThing* thing);
-	bool    hasLine(MapLine* line);
-	Vertex* findVertex(MapVertex* vertex);
+	bool    hasLine(const MapLine* line) const;
+	Vertex* findVertex(const MapVertex* vertex) const;
 	void    clear();
-	void    filterObjects(bool filter);
+	void    filterObjects(bool filter) const;
 	void    resetPositions();
 	bool    empty() const { return vertices_.empty() && things_.empty(); }
-	bool    nearestLineEndpoints(Vec2d pos, double min, Vec2d& v1, Vec2d& v2);
-	void    putMapVertices(vector<MapVertex*>& list);
+	bool    nearestLineEndpoints(const Vec2d& pos, double min, Vec2d& v1, Vec2d& v2) const;
+	void    putMapVertices(vector<MapVertex*>& list) const;
 
 	// Drawing
-	void putVerticesToDraw(vector<Vec2d>& list);
-	void putLinesToDraw(vector<Line>& list);
-	void putThingsToDraw(vector<Thing>& list);
+	void putVerticesToDraw(vector<Vec2d>& list) const;
+	void putLinesToDraw(vector<Line>& list) const;
+	void putThingsToDraw(vector<Thing>& list) const;
 
 	// Modification
 	void doMove(double xoff, double yoff);
 	void doScale(double xoff, double yoff, bool left, bool top, bool right, bool bottom);
-	void doRotate(Vec2d p1, Vec2d p2, bool lock45);
+	void doRotate(const Vec2d& p1, const Vec2d& p2, bool lock45);
 	void doAll(double xoff, double yoff, double xscale, double yscale, double rotation, bool mirror_x, bool mirror_y);
-	void applyEdit();
+	void applyEdit() const;
 
 private:
 	vector<unique_ptr<Vertex>> vertices_;
@@ -95,7 +100,7 @@ public:
 		BottomRight,
 	};
 
-	ObjectEdit(MapEditContext& context) : context_{ context } {}
+	ObjectEdit(mapeditor::MapEditContext& context) : context_{ &context } {}
 
 	ObjectEditGroup& group() { return group_; }
 	State            state() const { return state_; }
@@ -126,13 +131,13 @@ public:
 	}
 
 	bool begin();
-	void end(bool accept);
+	void end(bool accept) const;
 	void determineState();
 
 private:
-	MapEditContext& context_;
-	ObjectEditGroup group_;
-	State           state_    = State::None;
-	bool            rotating_ = false;
+	mapeditor::MapEditContext* context_;
+	ObjectEditGroup            group_;
+	State                      state_    = State::None;
+	bool                       rotating_ = false;
 };
-} // namespace slade
+} // namespace slade::mapeditor

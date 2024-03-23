@@ -1,7 +1,5 @@
 #pragma once
 
-#include "General/UI.h"
-
 namespace slade::wxutil
 {
 wxMenuItem* createMenuItem(
@@ -27,11 +25,15 @@ wxSizer* createDialogButtonBox(
 	const wxString& text_ok     = "OK",
 	const wxString& text_cancel = "Cancel");
 
-wxSizer* layoutHorizontally(vector<wxObject*> widgets, int expand_col = -1);
+wxSizer* layoutHorizontally(const vector<wxObject*>& widgets, int expand_col = -1);
 void     layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_col = -1);
 
-wxSizer* layoutVertically(vector<wxObject*> widgets, int expand_row = -1);
+wxSizer* layoutVertically(const vector<wxObject*>& widgets, int expand_row = -1);
 void     layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_row = -1);
+
+wxSizerFlags sfWithBorder(int proportion = 0, int direction = wxALL, int size = -1);
+wxSizerFlags sfWithLargeBorder(int proportion = 0, int direction = wxALL);
+wxSizerFlags sfWithMinBorder(int proportion = 0, int direction = wxALL);
 
 // Strings
 inline string_view strToView(const wxString& str)
@@ -42,7 +44,7 @@ inline wxString strFromView(string_view view)
 {
 	return { view.data(), view.size() };
 }
-wxArrayString arrayString(vector<wxString> vector);
+wxArrayString arrayString(const vector<wxString>& vector);
 wxArrayString arrayStringStd(const vector<string>& vector);
 
 // Scaling

@@ -142,7 +142,7 @@ public:
 	bool cutoffMask(uint8_t threshold);
 
 	// Image modification
-	bool setPixel(int x, int y, ColRGBA colour, Palette* pal = nullptr);
+	bool setPixel(int x, int y, ColRGBA colour, const Palette* pal = nullptr);
 	bool setPixel(int x, int y, uint8_t pal_index, uint8_t alpha = 255);
 	bool imgconv();
 	bool rotate(int angle);
@@ -153,16 +153,16 @@ public:
 	bool setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth, int nheight, Type ntype);
 	bool applyTranslation(Translation* tr, Palette* pal = nullptr, bool truecolor = false);
 	bool applyTranslation(string_view tr, Palette* pal = nullptr, bool truecolor = false);
-	bool drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, Palette* pal);
+	bool drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, const Palette* pal);
 	bool drawImage(
 		const SImage&    img,
 		int              x,
 		int              y,
 		const DrawProps& properties,
 		const Palette*   pal_src  = nullptr,
-		Palette*         pal_dest = nullptr);
-	bool colourise(ColRGBA colour, Palette* pal = nullptr, int start = -1, int stop = -1);
-	bool tint(ColRGBA colour, float amount, Palette* pal = nullptr, int start = -1, int stop = -1);
+		const Palette*   pal_dest = nullptr);
+	bool colourise(ColRGBA colour, const Palette* pal = nullptr, int start = -1, int stop = -1);
+	bool tint(ColRGBA colour, float amount, const Palette* pal = nullptr, int start = -1, int stop = -1);
 	bool adjust();
 	bool mirrorpad();
 

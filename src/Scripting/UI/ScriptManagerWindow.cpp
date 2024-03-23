@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
@@ -49,6 +50,7 @@
 #include "Utility/StringUtils.h"
 
 using namespace slade;
+using namespace scriptmanager;
 
 
 // -----------------------------------------------------------------------------
@@ -80,7 +82,7 @@ public:
 		SetSizer(sizer);
 
 		auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-		sizer->Add(gbsizer, 1, wxEXPAND | wxALL, ui::padLarge());
+		sizer->Add(gbsizer, wxutil::sfWithLargeBorder(1).Expand());
 		gbsizer->AddGrowableCol(1, 1);
 
 		// Script type
@@ -98,25 +100,25 @@ public:
 
 		// Dialog buttons
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::padLarge());
+		sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxBOTTOM).Expand());
 		hbox->AddStretchSpacer(1);
 
 		// OK
-		hbox->Add(new wxButton(this, wxID_OK, "OK"), 0, wxEXPAND | wxRIGHT, ui::padLarge());
+		hbox->Add(new wxButton(this, wxID_OK, "OK"), wxutil::sfWithLargeBorder(0, wxRIGHT).Expand());
 
 		SetEscapeId(wxID_CANCEL);
 		wxWindowBase::Layout();
 		sizer->Fit(this);
 	}
 
-	scriptmanager::ScriptType selectedType() const
+	ScriptType selectedType() const
 	{
 		switch (choice_type_->GetCurrentSelection())
 		{
-		case 1: return scriptmanager::ScriptType::Archive;
-		case 2: return scriptmanager::ScriptType::Entry;
-		case 3: return scriptmanager::ScriptType::Map;
-		default: return scriptmanager::ScriptType::Custom;
+		case 1:  return ScriptType::Archive;
+		case 2:  return ScriptType::Entry;
+		case 3:  return ScriptType::Map;
+		default: return ScriptType::Custom;
 		}
 	}
 
@@ -136,8 +138,8 @@ private:
 class ScriptTreeItemData : public wxTreeItemData
 {
 public:
-	ScriptTreeItemData(scriptmanager::Script* script) : script{ script } {}
-	scriptmanager::Script* script;
+	ScriptTreeItemData(Script* script) : script{ script } {}
+	Script* script;
 };
 
 
@@ -203,17 +205,19 @@ wxImageList* createTreeImageList()
 // -----------------------------------------------------------------------------
 // ScriptManagerWindow class constructor
 // -----------------------------------------------------------------------------
-ScriptManagerWindow::ScriptManagerWindow() : STopWindow("SLADE Script Manager", "scriptmanager")
+ScriptManagerWindow::ScriptManagerWindow() :
+	STopWindow("SLADE Script Manager", "scriptmanager"),
+	script_scratchbox_{ new Script() }
 {
 	setupLayout();
 
 	// Open 'scratch box' initially
-	script_scratchbox_.name = "Scratch Box";
-	script_scratchbox_.text =
+	script_scratchbox_->name = "Scratch Box";
+	script_scratchbox_->text =
 		"-- Use this script to write ad-hoc SLADE editor scripts\n"
 		"-- Note that this will not be saved between sessions\n\n";
-	script_scratchbox_.read_only = true;
-	openScriptTab(&script_scratchbox_);
+	script_scratchbox_->read_only = true;
+	openScriptTab(script_scratchbox_.get());
 }
 
 // -----------------------------------------------------------------------------
@@ -515,7 +519,7 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 // -----------------------------------------------------------------------------
 // Populates the editor scripts wxTreeCtrl node for [type]
 // -----------------------------------------------------------------------------
-void ScriptManagerWindow::populateEditorScriptsTree(scriptmanager::ScriptType type)
+void ScriptManagerWindow::populateEditorScriptsTree(ScriptType type)
 {
 	if (!editor_script_nodes_[type].IsOk())
 		return;
@@ -529,10 +533,7 @@ void ScriptManagerWindow::populateEditorScriptsTree(scriptmanager::ScriptType ty
 // Adds the editor scripts wxTreeCtrl node for [type] with [name], under
 // [parent_node] and populates it
 // -----------------------------------------------------------------------------
-void ScriptManagerWindow::addEditorScriptsNode(
-	wxTreeItemId              parent_node,
-	scriptmanager::ScriptType type,
-	const wxString&           name)
+void ScriptManagerWindow::addEditorScriptsNode(wxTreeItemId parent_node, ScriptType type, const wxString& name)
 {
 	editor_script_nodes_[type] = tree_scripts_->AppendItem(parent_node, name, 1);
 	populateEditorScriptsTree(type);
@@ -553,7 +554,7 @@ void ScriptManagerWindow::populateScriptsTree()
 
 	// Editor scripts (general)
 	auto editor_scripts = tree_scripts_->AppendItem(root, "SLADE Editor Scripts", 1);
-	tree_scripts_->AppendItem(editor_scripts, "Scratch Box", 0, 0, new ScriptTreeItemData(&script_scratchbox_));
+	tree_scripts_->AppendItem(editor_scripts, "Scratch Box", 0, 0, new ScriptTreeItemData(script_scratchbox_.get()));
 	for (auto& script : scriptmanager::editorScripts())
 		tree_scripts_->AppendItem(
 			getOrCreateNode(tree_scripts_, editor_scripts, script->path),
@@ -587,7 +588,7 @@ ScriptPanel* ScriptManagerWindow::currentPage() const
 // -----------------------------------------------------------------------------
 // Closes the tab for [script] if it is currently open
 // -----------------------------------------------------------------------------
-void ScriptManagerWindow::closeScriptTab(const scriptmanager::Script* script) const
+void ScriptManagerWindow::closeScriptTab(const Script* script) const
 {
 	// Find existing tab
 	for (unsigned a = 0; a < tabs_scripts_->GetPageCount(); a++)
@@ -614,7 +615,7 @@ void ScriptManagerWindow::showDocs(const wxString& url)
 // -----------------------------------------------------------------------------
 // Opens the tab for [script], or creates a new tab for it if needed
 // -----------------------------------------------------------------------------
-void ScriptManagerWindow::openScriptTab(scriptmanager::Script* script) const
+void ScriptManagerWindow::openScriptTab(Script* script) const
 {
 	// Find existing tab
 	for (unsigned a = 0; a < tabs_scripts_->GetPageCount(); a++)
@@ -640,7 +641,7 @@ void ScriptManagerWindow::openScriptTab(scriptmanager::Script* script) const
 // -----------------------------------------------------------------------------
 // Returns the currently open/focused script, or nullptr if none are open
 // -----------------------------------------------------------------------------
-scriptmanager::Script* ScriptManagerWindow::currentScript() const
+Script* ScriptManagerWindow::currentScript() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
 	if (page->GetName() == "script")

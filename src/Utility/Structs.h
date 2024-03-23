@@ -373,7 +373,7 @@ struct Plane
 		d          = d / mag;
 	}
 
-	double heightAt(Vec2d point) const { return heightAt(point.x, point.y); }
+	double heightAt(const Vec2d& point) const { return heightAt(point.x, point.y); }
 	double heightAt(double x, double y) const { return ((-a * x) + (-b * y) + d) / c; }
 };
 
@@ -429,8 +429,8 @@ struct BBox
 	}
 
 	bool pointWithin(double x, double y) const { return (x >= min.x && x <= max.x && y >= min.y && y <= max.y); }
-	bool contains(Vec2d point) const { return pointWithin(point.x, point.y); }
-	bool isWithin(Vec2d bmin, Vec2d bmax) const
+	bool contains(const Vec2d& point) const { return pointWithin(point.x, point.y); }
+	bool isWithin(const Vec2d& bmin, const Vec2d& bmax) const
 	{
 		return (min.x >= bmin.x && max.x <= bmax.x && min.y >= bmin.y && max.y <= bmax.y);
 	}

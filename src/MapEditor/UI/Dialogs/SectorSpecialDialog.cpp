@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "SectorSpecialDialog.h"
 #include "Game/Configuration.h"
+#include "General/UI.h"
+#include "UI/Lists/ListView.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -65,6 +67,8 @@ wxString alt_damage_types[] = { "Instantly Kill Player w/o Radsuit or Invuln",
 // -----------------------------------------------------------------------------
 SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
+	namespace wx = wxutil;
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -73,8 +77,8 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	auto frame      = new wxStaticBox(this, -1, "Special");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	lv_specials_    = new ListView(this, -1);
-	framesizer->Add(lv_specials_, 1, wxEXPAND | wxALL, ui::pad());
-	sizer->Add(framesizer, 1, wxEXPAND);
+	framesizer->Add(lv_specials_, wx::sfWithBorder(1).Expand());
+	sizer->Add(framesizer, wxSizerFlags(1).Expand());
 
 	lv_specials_->enableSizeUpdate(false);
 	lv_specials_->AppendColumn("#");
@@ -96,31 +100,31 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	{
 		frame      = new wxStaticBox(this, -1, "Flags");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
+		sizer->Add(framesizer, wx::sfWithBorder(0, wxTOP).Expand());
 
 		// Damage
 		choice_damage_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
 		choice_damage_->Select(0);
-		framesizer->Add(wxutil::createLabelHBox(this, "Damage:", choice_damage_), 0, wxEXPAND | wxALL, ui::pad());
+		framesizer->Add(wx::createLabelHBox(this, "Damage:", choice_damage_), wx::sfWithBorder().Expand());
 
 		// Secret | Friction | Pusher/Puller
 		cb_secret_   = new wxCheckBox(this, -1, "Secret");
 		cb_friction_ = new wxCheckBox(this, -1, "Friction Enabled");
 		cb_pushpull_ = new wxCheckBox(this, -1, "Pushers/Pullers Enabled");
-		wxutil::layoutHorizontally(
+		wx::layoutHorizontally(
 			framesizer,
 			{ cb_secret_, cb_friction_, cb_pushpull_ },
-			wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, ui::pad()));
+			wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 		// MBF21 Flags: Alternative Damage Mode | Kill Grounded Monsters
 		cb_alt_damage_    = new wxCheckBox(this, -1, "Alternate Damage Mode");
 		cb_kill_grounded_ = new wxCheckBox(this, -1, "Kill Grounded Monsters");
 		if (game::configuration().featureSupported(game::Feature::MBF21))
 		{
-			wxutil::layoutHorizontally(
+			wx::layoutHorizontally(
 				framesizer,
 				{ cb_alt_damage_, cb_kill_grounded_ },
-				wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, ui::pad()));
+				wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 			cb_alt_damage_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDamageDropdown(); });
 		}
@@ -133,7 +137,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 		width = -1;
 	}
 
-	wxWindowBase::SetMinSize(wxutil::scaledSize(width, 300));
+	wxWindowBase::SetMinSize(wx::scaledSize(width, 300));
 }
 
 // -----------------------------------------------------------------------------
@@ -199,7 +203,7 @@ int SectorSpecialPanel::selectedSpecial() const
 
 	// Get selected base type
 	int base = 0;
-	if (selection < (int)types.size())
+	if (selection < static_cast<int>(types.size()))
 	{
 		int index = 0;
 		for (auto& i : types)
@@ -258,11 +262,11 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent) : SDialog(parent, "Se
 
 	// Special panel
 	panel_special_ = new SectorSpecialPanel(this);
-	sizer->Add(panel_special_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
+	sizer->Add(panel_special_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Dialog buttons
 	sizer->AddSpacer(ui::pad());
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Bind Events
 	panel_special_->getSpecialsList()->Bind(wxEVT_LIST_ITEM_ACTIVATED, [&](wxListEvent& e) { EndModal(wxID_OK); });

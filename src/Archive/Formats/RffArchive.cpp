@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -100,10 +100,10 @@ struct RFFLump
 // -----------------------------------------------------------------------------
 void bloodCrypt(void* data, int key, int len)
 {
-	int p = (uint8_t)key, i;
+	int p = static_cast<uint8_t>(key), i;
 
 	for (i = 0; i < len; ++i)
-		((uint8_t*)data)[i] ^= (unsigned char)(p + (i >> 1));
+		static_cast<uint8_t*>(data)[i] ^= static_cast<unsigned char>(p + (i >> 1));
 }
 } // namespace
 

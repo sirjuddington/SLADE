@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,12 +39,22 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "Utility/MathStuff.h"
+#include "Utility/Polygon2D.h"
 #include "Utility/StringUtils.h"
+#include <SFML/System/Clock.hpp>
 
 using namespace slade;
 using ExtraFloor = MapSector::ExtraFloor;
@@ -444,7 +454,7 @@ void MapRenderer3D::cameraUpdateVectors()
 // -----------------------------------------------------------------------------
 // Sets the camera position to [position], facing [direction]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::cameraSet(Vec3d position, Vec2d direction)
+void MapRenderer3D::cameraSet(const Vec3d& position, const Vec2d& direction)
 {
 	// Set camera position/direction
 	cam_position_  = position;
@@ -458,7 +468,7 @@ void MapRenderer3D::cameraSet(Vec3d position, Vec2d direction)
 // -----------------------------------------------------------------------------
 // Moves the camera to [position]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::cameraSetPosition(Vec3d position)
+void MapRenderer3D::cameraSetPosition(const Vec3d& position)
 {
 	cam_position_ = position;
 }
@@ -476,7 +486,7 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 	// Get target height from nearest floor down, including 3D floors
 	auto  view_height = game::configuration().playerEyeHeight();
 	Vec2d cam2d       = cam_position_.get2d();
-	int   fheight     = (int)sector->floor().plane.heightAt(cam2d) + view_height;
+	int   fheight     = static_cast<int>(sector->floor().plane.heightAt(cam2d)) + view_height;
 	for (const auto& extra : sector->extraFloors())
 	{
 		// Only check solid floors
@@ -528,7 +538,7 @@ void MapRenderer3D::cameraLook(double xrel, double yrel)
 void MapRenderer3D::setupView(int width, int height) const
 {
 	// Calculate aspect ratio
-	float aspect = (1.6f / 1.333333f) * ((float)width / (float)height);
+	float aspect = (1.6f / 1.333333f) * (static_cast<float>(width) / static_cast<float>(height));
 	float fovy   = 2 * math::radToDeg(atan(tan(math::degToRad(render_fov) / 2) / aspect));
 
 	// Setup projection
@@ -575,7 +585,7 @@ void MapRenderer3D::setLight(const ColRGBA& colour, uint8_t light, float alpha) 
 
 	// If we have a non-coloured light, darken it a bit to
 	// closer resemble the software renderer light level
-	float mult = (float)light / 255.0f;
+	float mult = static_cast<float>(light) / 255.0f;
 	mult *= (mult * 1.3f);
 	glColor4f(colour.fr() * mult, colour.fg() * mult, colour.fb() * mult, colour.fa() * alpha);
 }
@@ -870,7 +880,7 @@ void MapRenderer3D::renderSky()
 		float tx = 0.125f;
 		float ty = 2.0f;
 		if (tex_info.size.x > 256)
-			tx = 0.125f / ((float)tex_info.size.x / 256.0f);
+			tx = 0.125f / (static_cast<float>(tex_info.size.x) / 256.0f);
 		if (tex_info.size.y > 128)
 			ty = 1.0f;
 
@@ -932,8 +942,7 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, unsigned flat_index) con
 		return;
 
 	// Get sector
-	auto sector         = map_->sector(index);
-	auto control_sector = sector_flats_[index][flat_index].control_sector;
+	auto sector = map_->sector(index);
 
 	// Get scaling/offset info
 	double ox = 0.;
@@ -1411,7 +1420,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 // -----------------------------------------------------------------------------
 // Sets up coordinates for a quad
 // -----------------------------------------------------------------------------
-void MapRenderer3D::setupQuad(Quad* quad, Seg2d seg, double top, double bottom) const
+void MapRenderer3D::setupQuad(Quad* quad, const Seg2d& seg, double top, double bottom) const
 {
 	// Left
 	quad->points[0].x = quad->points[1].x = seg.x1();
@@ -1429,7 +1438,7 @@ void MapRenderer3D::setupQuad(Quad* quad, Seg2d seg, double top, double bottom) 
 // -----------------------------------------------------------------------------
 // Sets up coordinates for a quad
 // -----------------------------------------------------------------------------
-void MapRenderer3D::setupQuad(Quad* quad, Seg2d seg, Plane top, Plane bottom) const
+void MapRenderer3D::setupQuad(Quad* quad, const Seg2d& seg, const Plane& top, const Plane& bottom) const
 {
 	// Left
 	quad->points[0].x = quad->points[1].x = seg.x1();
@@ -2997,10 +3006,9 @@ void MapRenderer3D::checkVisibleQuads()
 	// Go through lines
 	MapLine* line;
 	float    distfade;
-	n_quads_         = 0;
-	unsigned updates = 0;
-	bool     update  = false;
-	Seg2d    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	n_quads_     = 0;
+	bool  update = false;
+	Seg2d strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
 		line = map_->line(a);
@@ -3108,7 +3116,7 @@ void MapRenderer3D::checkVisibleFlats()
 	}
 	flats_ = new Flat*[n_flats_];
 
-	for(unsigned a = 0; a < n_flats_; a++)
+	for (unsigned a = 0; a < n_flats_; a++)
 		flats_[a] = nullptr;
 
 	// Go through sectors

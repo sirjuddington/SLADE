@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -38,7 +38,6 @@
 #include "SImage.h"
 #include "Utility/Memory.h"
 #undef BOOL
-#include "General/Misc.h"
 #include "SIFormat.h"
 #include "thirdparty/lunasvg/include/lunasvg.h"
 

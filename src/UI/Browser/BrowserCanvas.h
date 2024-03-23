@@ -13,7 +13,7 @@ class BrowserCanvas : public OGLCanvas
 {
 public:
 	BrowserCanvas(wxWindow* parent);
-	~BrowserCanvas() = default;
+	~BrowserCanvas() override = default;
 
 	enum class ItemView
 	{
@@ -29,7 +29,7 @@ public:
 	};
 
 	vector<BrowserItem*>& itemList() { return items_; }
-	int                   getViewedIndex();
+	int                   getViewedIndex() const;
 	void                  addItem(BrowserItem* item);
 	void                  clearItems();
 	int                   fullItemSizeX() const;
@@ -38,8 +38,8 @@ public:
 	void                  setScrollBar(wxScrollBar* scrollbar);
 	void                  updateLayout(int viewed_index = -1);
 	BrowserItem*          selectedItem() const;
-	BrowserItem*          itemAt(int index);
-	int                   itemIndex(BrowserItem* item);
+	BrowserItem*          itemAt(int index) const;
+	int                   itemIndex(const BrowserItem* item) const;
 	void                  selectItem(int index);
 	void                  selectItem(BrowserItem* item);
 	void                  filterItems(wxString filter);

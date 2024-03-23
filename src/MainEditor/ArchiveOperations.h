@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Archive/Archive.h"
+namespace slade
+{
+class Archive;
+}
 
 namespace slade::archiveoperations
 {
@@ -23,8 +26,8 @@ bool checkZDoomOverriddenEntriesInIWAD(Archive* archive);
 size_t replaceThings(Archive* archive, int oldtype, int newtype);
 size_t replaceTextures(
 	Archive*        archive,
-	const wxString& oldname,
-	const wxString& newname,
+	const wxString& oldtex,
+	const wxString& newtex,
 	bool            floor   = false,
 	bool            ceiling = false,
 	bool            lower   = false,

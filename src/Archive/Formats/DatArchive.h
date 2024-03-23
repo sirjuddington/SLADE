@@ -44,8 +44,8 @@ public:
 	static bool isDatArchive(const string& filename);
 
 private:
-	int sprites_[2];
-	int flats_[2];
-	int walls_[2];
+	int sprites_[2] = {};
+	int flats_[2]   = {};
+	int walls_[2]   = {};
 };
 } // namespace slade

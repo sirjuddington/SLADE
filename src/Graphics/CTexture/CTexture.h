@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
 #include "Graphics/Translation.h"
 
 namespace slade
 {
+class Archive;
+class ArchiveEntry;
 class SImage;
 class Tokenizer;
 

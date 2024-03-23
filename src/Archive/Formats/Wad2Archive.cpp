@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -99,7 +99,7 @@ bool Wad2Archive::open(const MemChunk& mc)
 
 		// If the lump data goes past the end of the file,
 		// the wadfile is invalid
-		if ((unsigned)(info.offset + info.dsize) > mc.size())
+		if (static_cast<unsigned>(info.offset + info.dsize) > mc.size())
 		{
 			log::error("Wad2Archive::open: Wad2 archive is invalid or corrupt");
 			global::error = "Archive is invalid and/or corrupt";
@@ -249,7 +249,7 @@ bool Wad2Archive::isWad2Archive(const MemChunk& mc)
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check directory offset is decent
-	if ((unsigned)(dir_offset + (num_lumps * 32)) > mc.size() || dir_offset < 12)
+	if (static_cast<unsigned>(dir_offset + (num_lumps * 32)) > mc.size() || dir_offset < 12)
 		return false;
 
 	// If it's passed to here it's probably a wad2 file

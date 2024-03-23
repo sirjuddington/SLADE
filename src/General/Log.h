@@ -21,8 +21,10 @@ namespace log
 		MessageType type;
 		std::tm     timestamp;
 
-		Message(string_view message, MessageType type, std::tm timestamp) :
-			message{ message.data(), message.size() }, type{ type }, timestamp{ timestamp }
+		Message(string_view message, MessageType type, const std::tm& timestamp) :
+			message{ message.data(), message.size() },
+			type{ type },
+			timestamp{ timestamp }
 		{
 		}
 
@@ -43,14 +45,32 @@ namespace log
 	// Message shortcuts by type
 	// -----------------------------------------------------------------------------
 
-	inline void info(int level, const wxString& text) { message(MessageType::Info, level, text.ToStdString()); }
-	inline void info(const wxString& text) { message(MessageType::Info, text.ToStdString()); }
+	inline void info(int level, const wxString& text)
+	{
+		message(MessageType::Info, level, text.ToStdString());
+	}
+	inline void info(const wxString& text)
+	{
+		message(MessageType::Info, text.ToStdString());
+	}
 
-	inline void warning(int level, const wxString& text) { message(MessageType::Warning, level, text.ToStdString()); }
-	inline void warning(const wxString& text) { message(MessageType::Warning, text.ToStdString()); }
+	inline void warning(int level, const wxString& text)
+	{
+		message(MessageType::Warning, level, text.ToStdString());
+	}
+	inline void warning(const wxString& text)
+	{
+		message(MessageType::Warning, text.ToStdString());
+	}
 
-	inline void error(int level, const wxString& text) { message(MessageType::Error, level, text.ToStdString()); }
-	inline void error(const wxString& text) { message(MessageType::Error, text.ToStdString()); }
+	inline void error(int level, const wxString& text)
+	{
+		message(MessageType::Error, level, text.ToStdString());
+	}
+	inline void error(const wxString& text)
+	{
+		message(MessageType::Error, text.ToStdString());
+	}
 
 	// These can't be inline, need access to Global::debug
 	void debug(int level, const wxString& text);
@@ -58,7 +78,10 @@ namespace log
 	void debug(int level, string_view text, fmt::format_args args);
 	void debug(string_view text, fmt::format_args args);
 
-	inline void console(const wxString& text) { message(MessageType::Console, text.ToStdString()); }
+	inline void console(const wxString& text)
+	{
+		message(MessageType::Console, text.ToStdString());
+	}
 
 
 	// Message shortcuts by type with args for fmt::format
@@ -109,13 +132,12 @@ namespace log
 // disabled, but it's also the only macro cmake defines differently between
 // debug and release builds, so we co-opt it just for this.
 #ifndef NDEBUG
-#include <typeinfo>
 class Debuggable
 {
 	wxString repr;
 
 public:
-	Debuggable(wxString v) { repr = v; }
+	Debuggable(const wxString& v) { repr = v; }
 	Debuggable(const char* v) { repr = v; }
 	Debuggable(bool v) { repr = v ? "true" : "false"; }
 	Debuggable(int v) { repr = wxString::Format("%d", v); }
@@ -124,9 +146,12 @@ public:
 	Debuggable(unsigned long v) { repr = wxString::Format("%lu", v); }
 	Debuggable(double v) { repr = wxString::Format("%g", v); }
 
-	Debuggable(Vec2d v) { repr = wxString::Format("(%0.6f, %0.6f)", v.x, v.y); }
-	Debuggable(Vec3f v) { repr = wxString::Format("(%0.6f, %0.6f, %0.6f)", v.x, v.y, v.z); }
-	Debuggable(Rectf v) { repr = wxString::Format("(%0.6f, %0.6f to %0.6f, %0.6f)", v.x1(), v.y1(), v.x2(), v.y2()); }
+	Debuggable(const Vec2d& v) { repr = wxString::Format("(%0.6f, %0.6f)", v.x, v.y); }
+	Debuggable(const Vec3f& v) { repr = wxString::Format("(%0.6f, %0.6f, %0.6f)", v.x, v.y, v.z); }
+	Debuggable(const Rectf& v)
+	{
+		repr = wxString::Format("(%0.6f, %0.6f to %0.6f, %0.6f)", v.x1(), v.y1(), v.x2(), v.y2());
+	}
 
 	template<typename T> Debuggable(T* v) { repr = Debuggable(*v).repr; }
 

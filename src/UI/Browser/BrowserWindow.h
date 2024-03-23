@@ -1,8 +1,6 @@
 #pragma once
 
 #include "BrowserCanvas.h"
-#include "BrowserItem.h"
-#include "Graphics/Palette/Palette.h"
 #include "Utility/Tree.h"
 
 namespace slade
@@ -16,7 +14,7 @@ class BrowserTreeNode : public STreeNode
 {
 public:
 	BrowserTreeNode(BrowserTreeNode* parent = nullptr) : STreeNode(parent) {}
-	~BrowserTreeNode() { clearItems(); }
+	~BrowserTreeNode() override { clearItems(); }
 
 	const string&  name() const override { return name_; }
 	wxTreeListItem treeId() const { return tree_id_; }
@@ -25,7 +23,7 @@ public:
 
 	void         clearItems();
 	unsigned     nItems() const { return items_.size(); }
-	BrowserItem* item(unsigned index);
+	BrowserItem* item(unsigned index) const;
 	void         addItem(BrowserItem* item, unsigned index = 0xFFFFFFFF);
 
 private:
@@ -45,27 +43,27 @@ class BrowserWindow : public wxDialog
 {
 public:
 	BrowserWindow(wxWindow* parent, bool truncate_names = false);
-	~BrowserWindow();
+	~BrowserWindow() override;
 
 	bool truncateNames() const { return truncate_names_; }
 
-	Palette* palette() { return &palette_; }
-	void     setPalette(Palette* pal) { palette_.copyPalette(pal); }
+	Palette* palette() const { return palette_.get(); }
+	void     setPalette(const Palette* pal) const;
 
 	bool         addItem(BrowserItem* item, const wxString& where = "");
 	void         addGlobalItem(BrowserItem* item);
 	void         clearItems(BrowserTreeNode* node = nullptr) const;
-	void         reloadItems(BrowserTreeNode* node = nullptr) const;
+	void         reloadItems(const BrowserTreeNode* node = nullptr) const;
 	BrowserItem* selectedItem() const;
-	bool         selectItem(const wxString& name, BrowserTreeNode* node = nullptr);
+	bool         selectItem(const wxString& name, const BrowserTreeNode* node = nullptr);
 
 	unsigned     addSortType(const wxString& name) const;
 	virtual void doSort(unsigned sort_type = 0);
 	void         setSortType(int type);
 
-	void openTree(BrowserTreeNode* node, bool clear = true, bool show = false);
+	void openTree(const BrowserTreeNode* node, bool clear = true, bool show = false);
 	void populateItemTree(bool collapse_all = true);
-	void addItemTree(BrowserTreeNode* node, wxTreeListItem& item) const;
+	void addItemTree(const BrowserTreeNode* node, const wxTreeListItem& item) const;
 
 	// Canvas display options
 	void setFont(drawing::Font font) const;
@@ -76,7 +74,7 @@ public:
 protected:
 	BrowserTreeNode*     items_root_   = nullptr;
 	wxBoxSizer*          sizer_bottom_ = nullptr;
-	Palette              palette_;
+	unique_ptr<Palette>  palette_;
 	BrowserCanvas*       canvas_ = nullptr;
 	vector<BrowserItem*> items_global_;
 	bool                 truncate_names_ = false;

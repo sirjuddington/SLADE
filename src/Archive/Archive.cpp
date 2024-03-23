@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,7 @@
 #include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
+#include <SFML/System/Clock.hpp>
 #include <filesystem>
 
 using namespace slade;
@@ -72,8 +73,7 @@ public:
 	bool doUndo() override
 	{
 		// Get entry parent dir
-		const auto dir = archive_->dirAtPath(entry_path_);
-		if (dir)
+		if (const auto dir = archive_->dirAtPath(entry_path_))
 		{
 			// Rename entry
 			const auto entry = dir->entryAt(entry_index_);
@@ -86,8 +86,7 @@ public:
 	bool doRedo() override
 	{
 		// Get entry parent dir
-		const auto dir = archive_->dirAtPath(entry_path_);
-		if (dir)
+		if (const auto dir = archive_->dirAtPath(entry_path_))
 		{
 			// Rename entry
 			const auto entry = dir->entryAt(entry_index_);
@@ -151,15 +150,17 @@ class EntrySwapUS : public UndoStep
 {
 public:
 	EntrySwapUS(const ArchiveDir* dir, unsigned index1, unsigned index2) :
-		archive_{ dir->archive() }, path_{ dir->path() }, index1_{ index1 }, index2_{ index2 }
+		archive_{ dir->archive() },
+		path_{ dir->path() },
+		index1_{ index1 },
+		index2_{ index2 }
 	{
 	}
 
 	bool doSwap() const
 	{
 		// Get parent dir
-		auto dir = archive_->dirAtPath(path_);
-		if (dir)
+		if (const auto dir = archive_->dirAtPath(path_))
 			return dir->swapEntries(index1_, index2_);
 		return false;
 	}
@@ -196,8 +197,7 @@ public:
 	bool createEntry() const
 	{
 		// Get parent dir
-		const auto dir = archive_->dirAtPath(path_);
-		if (dir)
+		if (const auto dir = archive_->dirAtPath(path_))
 		{
 			archive_->addEntry(std::make_shared<ArchiveEntry>(*entry_copy_), index_, dir);
 			return true;
@@ -223,7 +223,9 @@ class DirCreateDeleteUS : public UndoStep
 {
 public:
 	DirCreateDeleteUS(bool created, ArchiveDir* dir) :
-		created_{ created }, archive_{ dir->archive() }, path_{ dir->path() }
+		created_{ created },
+		archive_{ dir->archive() },
+		path_{ dir->path() }
 	{
 		strutil::removePrefixIP(path_, '/');
 
@@ -282,7 +284,7 @@ private:
 
 // -----------------------------------------------------------------------------
 //
-// Archive::MapDesc Class Functions
+// MapDesc Struct Functions
 //
 // -----------------------------------------------------------------------------
 
@@ -291,7 +293,7 @@ private:
 // Returns a list of all data entries (eg. LINEDEFS, TEXTMAP) for the map.
 // If [include_head] is true, the map header entry is also added
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> Archive::MapDesc::entries(const Archive& parent, bool include_head) const
+vector<ArchiveEntry*> MapDesc::entries(const Archive& parent, bool include_head) const
 {
 	vector<ArchiveEntry*> list;
 
@@ -313,7 +315,7 @@ vector<ArchiveEntry*> Archive::MapDesc::entries(const Archive& parent, bool incl
 // -----------------------------------------------------------------------------
 // Sets the appropriate 'MapFormat' extra property in all entries for the map
 // -----------------------------------------------------------------------------
-void Archive::MapDesc::updateMapFormatHints() const
+void MapDesc::updateMapFormatHints() const
 {
 	// Get parent archive
 	Archive* parent = nullptr;
@@ -326,13 +328,13 @@ void Archive::MapDesc::updateMapFormatHints() const
 	string fmt_name;
 	switch (format)
 	{
-	case MapFormat::Doom: fmt_name = "doom"; break;
-	case MapFormat::Hexen: fmt_name = "hexen"; break;
-	case MapFormat::Doom64: fmt_name = "doom64"; break;
-	case MapFormat::UDMF: fmt_name = "udmf"; break;
+	case MapFormat::Doom:    fmt_name = "doom"; break;
+	case MapFormat::Hexen:   fmt_name = "hexen"; break;
+	case MapFormat::Doom64:  fmt_name = "doom64"; break;
+	case MapFormat::UDMF:    fmt_name = "udmf"; break;
 	case MapFormat::Doom32X: fmt_name = "doom32x"; break;
 	case MapFormat::Unknown:
-	default: fmt_name = "unknown"; break;
+	default:                 fmt_name = "unknown"; break;
 	}
 
 	// Set format hint in map entries
@@ -747,7 +749,7 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Adds the directory structure starting from [start] to [list]
 // -----------------------------------------------------------------------------
-void Archive::putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start) const
+void Archive::putEntryTreeAsList(vector<ArchiveEntry*>& list, const ArchiveDir* start) const
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
@@ -766,7 +768,7 @@ void Archive::putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start)
 // -----------------------------------------------------------------------------
 // Adds the directory structure starting from [start] to [list]
 // -----------------------------------------------------------------------------
-void Archive::putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir* start) const
+void Archive::putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, const ArchiveDir* start) const
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
@@ -1429,12 +1431,11 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 	{
 		for (unsigned a = 0; a < dir->numSubdirs(); a++)
 		{
-			auto opt         = options;
-			opt.dir          = dir->subdirAt(a).get();
-			const auto match = findFirst(opt);
+			auto opt = options;
+			opt.dir  = dir->subdirAt(a).get();
 
 			// If a match was found in this subdir, return it
-			if (match)
+			if (const auto match = findFirst(opt))
 				return match;
 		}
 	}
@@ -1499,12 +1500,11 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 	{
 		for (int a = static_cast<int>(dir->numSubdirs()) - 1; a >= 0; a--)
 		{
-			auto opt         = options;
-			opt.dir          = dir->subdirAt(a).get();
-			const auto match = findLast(opt);
+			auto opt = options;
+			opt.dir  = dir->subdirAt(a).get();
 
 			// If a match was found in this subdir, return it
-			if (match)
+			if (const auto match = findLast(opt))
 				return match;
 		}
 	}

@@ -96,13 +96,13 @@ protected:
 		{
 			width    = gfx_data[0];
 			height   = gfx_data[1];
-			offset_x = (int8_t)gfx_data[2];
-			offset_y = (int8_t)gfx_data[3];
+			offset_x = static_cast<int8_t>(gfx_data[2]);
+			offset_y = static_cast<int8_t>(gfx_data[3]);
 			hdr_size = 4;
 		}
 		else
 		{
-			auto header = (gfx::PatchHeader*)gfx_data;
+			auto header = reinterpret_cast<const gfx::PatchHeader*>(gfx_data);
 			width       = wxINT16_SWAP_ON_BE(header->width);
 			height      = wxINT16_SWAP_ON_BE(header->height);
 			offset_x    = wxINT16_SWAP_ON_BE(header->left);
@@ -117,13 +117,13 @@ protected:
 		vector<uint32_t> col_offsets(width);
 		if (version > 0)
 		{
-			auto c_ofs = (uint16_t*)((uint8_t*)gfx_data + hdr_size);
+			auto c_ofs = reinterpret_cast<const uint16_t*>(gfx_data + hdr_size);
 			for (int a = 0; a < width; a++)
 				col_offsets[a] = wxUINT16_SWAP_ON_BE(c_ofs[a]);
 		}
 		else
 		{
-			auto c_ofs = (uint32_t*)((uint8_t*)gfx_data + hdr_size);
+			auto c_ofs = reinterpret_cast<const uint32_t*>(gfx_data + hdr_size);
 			for (int a = 0; a < width; a++)
 				col_offsets[a] = wxUINT32_SWAP_ON_BE(c_ofs[a]);
 		}
@@ -241,7 +241,6 @@ protected:
 		auto           mask = imageMask(image);
 
 		// Go through columns
-		uint32_t offset = 0;
 		for (int c = 0; c < image.width(); c++)
 		{
 			Column col;
@@ -250,8 +249,8 @@ protected:
 			bool ispost    = false;
 			bool first_254 = true; // First 254 pixels should use absolute offsets
 
-			offset          = c;
-			uint8_t row_off = 0;
+			uint32_t offset  = c;
+			uint8_t  row_off = 0;
 			for (int r = 0; r < image.height(); r++)
 			{
 				// For vanilla-compatible dimensions, use a split at 128 to prevent tiling.
@@ -278,7 +277,6 @@ protected:
 					{
 						col.posts.push_back(post);
 						post.pixels.clear();
-						ispost = false;
 					}
 
 					// Begin relative offsets
@@ -333,9 +331,6 @@ protected:
 
 			// Add the column data
 			columns.push_back(col);
-
-			// Go to next column
-			offset++;
 		}
 
 		// Write doom gfx data to output
@@ -434,7 +429,10 @@ public:
 	SIFDoomBetaGfx() : SIFDoomGfx("doom_beta", "Doom Gfx (Beta)", 160) {}
 	~SIFDoomBetaGfx() override = default;
 
-	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_beta")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override
+	{
+		return EntryDataFormat::format("img_doom_beta")->isThisFormat(mc);
+	}
 
 	SImage::Info info(const MemChunk& mc, int index) override
 	{
@@ -458,7 +456,10 @@ public:
 	SIFDoomAlphaGfx() : SIFDoomGfx("doom_alpha", "Doom Gfx (Alpha)", 100) {}
 	~SIFDoomAlphaGfx() override = default;
 
-	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_alpha")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override
+	{
+		return EntryDataFormat::format("img_doom_alpha")->isThisFormat(mc);
+	}
 
 	SImage::Info info(const MemChunk& mc, int index) override
 	{
@@ -490,7 +491,10 @@ public:
 	SIFDoomArah() : SIFormat("doom_arah", "Doom Arah", "lmp", 100) {}
 	~SIFDoomArah() override = default;
 
-	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_arah")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override
+	{
+		return EntryDataFormat::format("img_doom_arah")->isThisFormat(mc);
+	}
 
 	SImage::Info info(const MemChunk& mc, int index) override
 	{
@@ -534,7 +538,7 @@ protected:
 		memset(img_mask, 255, width * height);
 
 		// Mark as transparent all pixels that are index 255
-		for (size_t i = 0; i < (unsigned)(width * height); ++i)
+		for (size_t i = 0; i < static_cast<unsigned>(width * height); ++i)
 			if (img_data[i] == 255)
 				img_mask[i] = 0;
 
@@ -552,7 +556,10 @@ public:
 	SIFDoomSnea() : SIFormat("doom_snea", "Doom Snea", "lmp") {}
 	~SIFDoomSnea() override = default;
 
-	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_snea")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override
+	{
+		return EntryDataFormat::format("img_doom_snea")->isThisFormat(mc);
+	}
 
 	SImage::Info info(const MemChunk& mc, int index) override
 	{
@@ -653,12 +660,12 @@ public:
 	// indexes other than '0' which are black are assumed to be black with the 'semi transparency' flag set. We have to
 	// make this assumption because SLADE does not have the concept of the PSX semi-transparency flag in it's color
 	// model...
-	static short getPsxOpaqueBlackColorIndex(Palette& palette)
+	static short getPsxOpaqueBlackColorIndex(const Palette& palette)
 	{
 		// Search for for black with the 'semi-transparency' bit set first (any black with color index other than '0')
 		const std::vector<slade::ColRGBA>& colors = palette.colours();
 
-		for (short i = 1; i < colors.size(); ++i)
+		for (short i = 1; i < static_cast<short>(colors.size()); ++i)
 		{
 			if (colors[i].equals(ColRGBA::BLACK))
 				return i;
@@ -823,7 +830,7 @@ public:
 		}
 	}
 
-	static short getOpaqueZeroColorIndex(Palette& palette)
+	static short getOpaqueZeroColorIndex(const Palette& palette)
 	{
 		ColRGBA color  = palette.colour(0);
 		auto    icolor = ColRGBA(255 - color.r, 255 - color.g, 255 - color.b, 255);
@@ -840,12 +847,16 @@ class SIFDoomJaguar : public SIFormat
 {
 public:
 	SIFDoomJaguar(int colmajor = 0, string_view id = "doom_jaguar", string_view name = "Doom Jaguar") :
-		SIFormat(id, name, "lmp", 85), colmajor(colmajor)
+		SIFormat(id, name, "lmp", 85),
+		colmajor(colmajor)
 	{
 	}
-	~SIFDoomJaguar() = default;
+	~SIFDoomJaguar() override = default;
 
-	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_doom_jaguar")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override
+	{
+		return EntryDataFormat::format("img_doom_jaguar")->isThisFormat(mc);
+	}
 
 	SImage::Info info(const MemChunk& mc, int index) override
 	{
@@ -979,12 +990,11 @@ protected:
 		out.clear();
 		out.seek(0, SEEK_SET);
 
-		gfx::JagPicHeader header;
-		memset(&header, 0, sizeof(header));
-		header.width  = wxINT16_SWAP_ON_LE((short)image.width());
-		header.height = wxINT16_SWAP_ON_LE((short)image.height());
-		header.depth  = wxINT16_SWAP_ON_LE(3);
-		header.flags  = wxINT16_SWAP_ON_LE(colmajor & 1);
+		gfx::JagPicHeader header = {};
+		header.width             = wxINT16_SWAP_ON_LE((short)image.width());
+		header.height            = wxINT16_SWAP_ON_LE((short)image.height());
+		header.depth             = wxINT16_SWAP_ON_LE(3);
+		header.flags             = wxINT16_SWAP_ON_LE(colmajor & 1);
 
 		out.write(&header, sizeof(header));
 
@@ -1008,7 +1018,7 @@ class SIFDoomJaguarColMajor : public SIFDoomJaguar
 {
 public:
 	SIFDoomJaguarColMajor() : SIFDoomJaguar(1, "doom_jaguar_colmajor", "Doom Jaguar CM") {}
-	~SIFDoomJaguarColMajor() final = default;
+	~SIFDoomJaguarColMajor() override = default;
 
 	bool isThisFormat(const MemChunk& mc) override
 	{

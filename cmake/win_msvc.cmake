@@ -78,7 +78,7 @@ set_target_properties(slade
 )
 
 # Precompiled Header
-target_precompile_headers(slade PRIVATE "common.h")
+target_precompile_headers(slade PRIVATE "Application/Main.h")
 
 # Link
 target_link_libraries(slade

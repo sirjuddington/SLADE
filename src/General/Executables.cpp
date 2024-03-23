@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -195,7 +195,7 @@ void executables::init()
 // -----------------------------------------------------------------------------
 // Parses an executables configuration from [p]
 // -----------------------------------------------------------------------------
-void executables::parse(Parser* p, bool custom)
+void executables::parse(const Parser* p, bool custom)
 {
 	auto n = p->parseTreeRoot()->childPTN("executables");
 	if (!n)
@@ -219,7 +219,7 @@ void executables::parse(Parser* p, bool custom)
 // -----------------------------------------------------------------------------
 // Parses a game executable config from [node]
 // -----------------------------------------------------------------------------
-void executables::parseGameExe(ParseTreeNode* node, bool custom)
+void executables::parseGameExe(const ParseTreeNode* node, bool custom)
 {
 	// Get GameExe being parsed
 	auto exe = gameExe(strutil::lower(node->name()));
@@ -434,7 +434,7 @@ executables::ExternalExe executables::externalExe(string_view name, string_view 
 			if (exe.name == name)
 				return exe;
 
-	return ExternalExe();
+	return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -454,7 +454,7 @@ vector<executables::ExternalExe> executables::externalExes(string_view category)
 // -----------------------------------------------------------------------------
 // Parses an external executable config from [node]
 // -----------------------------------------------------------------------------
-void executables::parseExternalExe(ParseTreeNode* node)
+void executables::parseExternalExe(const ParseTreeNode* node)
 {
 	ExternalExe exe;
 	exe.name = node->name();

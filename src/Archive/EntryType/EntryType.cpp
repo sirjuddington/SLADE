@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -223,14 +223,15 @@ int EntryType::isThisType(ArchiveEntry& entry) const
 
 	// If both names and extensions are defined, and the type only needs one
 	// of the two, not both, take it into account.
-	bool extorname   = false;
-	bool matchedname = false;
+	bool extorname = false;
 	if (match_ext_or_name_ && !match_name_.empty() && !match_extension_.empty())
 		extorname = true;
 
 	// Entry name related stuff
 	if (!match_name_.empty() || !match_extension_.empty())
 	{
+		bool matchedname = false;
+
 		// Get entry name (lowercase), find extension separator
 		const string_view fn      = entry.upperName();
 		const size_t      ext_sep = fn.find_last_of('.');

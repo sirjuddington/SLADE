@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Archive/Archive.h"
 #include "MapObjectCollection.h"
-#include "MapSpecials.h"
 
 namespace slade
 {
+class MapSpecials;
+struct MapDesc;
 class ParseTreeNode;
+enum class MapFormat;
 namespace Game
 {
 	enum class TagType;
@@ -40,17 +41,17 @@ public:
 	void setThingsUpdated();
 
 	// MapObject access
-	MapVertex*        vertex(unsigned index) const { return data_.vertices().at(index); }
-	MapSide*          side(unsigned index) const { return data_.sides().at(index); }
-	MapLine*          line(unsigned index) const { return data_.lines().at(index); }
-	MapSector*        sector(unsigned index) const { return data_.sectors().at(index); }
-	MapThing*         thing(unsigned index) const { return data_.things().at(index); }
+	MapVertex*        vertex(unsigned index) const;
+	MapSide*          side(unsigned index) const;
+	MapLine*          line(unsigned index) const;
+	MapSector*        sector(unsigned index) const;
+	MapThing*         thing(unsigned index) const;
 	MapObject*        object(MapObject::Type type, unsigned index) const;
-	size_t            nVertices() const { return data_.vertices().size(); }
-	size_t            nLines() const { return data_.lines().size(); }
-	size_t            nSides() const { return data_.sides().size(); }
-	size_t            nSectors() const { return data_.sectors().size(); }
-	size_t            nThings() const { return data_.things().size(); }
+	size_t            nVertices() const;
+	size_t            nLines() const;
+	size_t            nSides() const;
+	size_t            nSectors() const;
+	size_t            nThings() const;
 	const VertexList& vertices() const { return data_.vertices(); }
 	const LineList&   lines() const { return data_.lines(); }
 	const SideList&   sides() const { return data_.sides(); }
@@ -59,10 +60,10 @@ public:
 
 	vector<ArchiveEntry*>& udmfExtraEntries() { return udmf_extra_entries_; }
 
-	bool readMap(const Archive::MapDesc& map);
+	bool readMap(const MapDesc& map);
 	void clearMap();
 
-	MapSpecials* mapSpecials() { return &map_specials_; }
+	MapSpecials* mapSpecials() const { return map_specials_.get(); }
 	void         recomputeSpecials();
 
 	// Map saving
@@ -77,15 +78,21 @@ public:
 	MapSide*   createSide(MapSector* sector);
 
 	// Removal
-	bool removeVertex(MapVertex* vertex, bool merge_lines = false) { return data_.removeVertex(vertex, merge_lines); }
+	bool removeVertex(const MapVertex* vertex, bool merge_lines = false)
+	{
+		return data_.removeVertex(vertex, merge_lines);
+	}
 	bool removeVertex(unsigned index, bool merge_lines = false) { return data_.removeVertex(index, merge_lines); }
-	bool removeLine(MapLine* line) { return data_.removeLine(line); }
+	bool removeLine(const MapLine* line) { return data_.removeLine(line); }
 	bool removeLine(unsigned index) { return data_.removeLine(index); }
-	bool removeSide(MapSide* side, bool remove_from_line = true) { return data_.removeSide(side, remove_from_line); }
+	bool removeSide(const MapSide* side, bool remove_from_line = true)
+	{
+		return data_.removeSide(side, remove_from_line);
+	}
 	bool removeSide(unsigned index, bool remove_from_line = true) { return data_.removeSide(index, remove_from_line); }
-	bool removeSector(MapSector* sector) { return data_.removeSector(sector); }
+	bool removeSector(const MapSector* sector) { return data_.removeSector(sector); }
 	bool removeSector(unsigned index) { return data_.removeSector(index); }
-	bool removeThing(MapThing* thing) { return data_.removeThing(thing); }
+	bool removeThing(const MapThing* thing) { return data_.removeThing(thing); }
 	bool removeThing(unsigned index) { return data_.removeThing(index); }
 	int  removeDetachedVertices() { return data_.removeDetachedVertices(); }
 
@@ -99,7 +106,7 @@ public:
 	void putDragonTargets(MapThing* first, vector<MapThing*>& list);
 
 	// Info
-	string     adjacentLineTexture(MapVertex* vertex, int tex_part = 255) const;
+	string     adjacentLineTexture(const MapVertex* vertex, int tex_part = 255) const;
 	MapSector* lineSideSector(MapLine* line, bool front = true);
 	bool       isModified() const;
 	void       setOpenedTime();
@@ -125,7 +132,10 @@ public:
 	// Misc. map data access
 	void rebuildConnectedLines() { data_.rebuildConnectedLines(); }
 	void rebuildConnectedSides() { data_.rebuildConnectedSides(); }
-	void restoreObjectIdList(MapObject::Type type, vector<unsigned>& list) { data_.restoreObjectIdList(type, list); }
+	void restoreObjectIdList(MapObject::Type type, const vector<unsigned>& list)
+	{
+		data_.restoreObjectIdList(type, list);
+	}
 
 	// Convert
 	bool convertToHexen() const;
@@ -137,13 +147,13 @@ public:
 	int  thingTypeUsageCount(int type);
 
 private:
-	MapObjectCollection data_;
-	string              udmf_namespace_;
-	PropertyList        udmf_props_;
-	string              name_;
-	MapFormat           current_format_ = MapFormat::Unknown;
-	long                opened_time_    = 0;
-	MapSpecials         map_specials_;
+	MapObjectCollection     data_;
+	string                  udmf_namespace_;
+	PropertyList            udmf_props_;
+	string                  name_;
+	MapFormat               current_format_;
+	long                    opened_time_ = 0;
+	unique_ptr<MapSpecials> map_specials_;
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
 

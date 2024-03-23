@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Colour.h"
+namespace slade
+{
+struct ColRGBA;
+}
 
 namespace slade::codepages
 {

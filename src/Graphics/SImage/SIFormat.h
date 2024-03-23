@@ -89,7 +89,7 @@ public:
 	}
 
 	static void      initFormats();
-	static SIFormat* getFormat(string_view name);
+	static SIFormat* getFormat(string_view id);
 	static SIFormat* determineFormat(const MemChunk& mc);
 	static SIFormat* unknownFormat();
 	static SIFormat* rawFormat();

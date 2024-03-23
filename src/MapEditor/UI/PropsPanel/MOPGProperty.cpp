@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -34,7 +34,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MOPGProperty.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/UDMFProperty.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
@@ -42,6 +44,11 @@
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 
@@ -82,7 +89,8 @@ void MOPGProperty::resetValue()
 // MOPGBoolProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name }, wxBoolProperty(label, name, false)
+	MOPGProperty{ name },
+	wxBoolProperty(label, name, false)
 {
 }
 
@@ -164,7 +172,8 @@ void MOPGBoolProperty::applyValue()
 // MOPGIntProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name }, wxIntProperty(label, name, 0)
+	MOPGProperty{ name },
+	wxIntProperty(label, name, 0)
 {
 }
 
@@ -246,7 +255,8 @@ void MOPGIntProperty::applyValue()
 // MOPGFloatProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name }, wxFloatProperty(label, name, 0)
+	MOPGProperty{ name },
+	wxFloatProperty(label, name, 0)
 {
 }
 
@@ -328,7 +338,8 @@ void MOPGFloatProperty::applyValue()
 // MOPGStringProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name }, wxStringProperty(label, name, "")
+	MOPGProperty{ name },
+	wxStringProperty(label, name, "")
 {
 }
 
@@ -650,7 +661,8 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 // MOPGLineFlagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString& name, int index) :
-	MOPGBoolProperty(label, name), index_{ index }
+	MOPGBoolProperty(label, name),
+	index_{ index }
 {
 }
 
@@ -668,12 +680,12 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = game::configuration().lineFlagSet(index_, (MapLine*)objects[0]);
+	bool first = game::configuration().lineFlagSet(index_, dynamic_cast<MapLine*>(objects[0]));
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (game::configuration().lineFlagSet(index_, (MapLine*)objects[a]) != first)
+		if (game::configuration().lineFlagSet(index_, dynamic_cast<MapLine*>(objects[a])) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -705,7 +717,7 @@ void MOPGLineFlagProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		game::configuration().setLineFlag(index_, (MapLine*)object, GetValue());
+		game::configuration().setLineFlag(index_, dynamic_cast<MapLine*>(object), GetValue());
 }
 
 
@@ -720,7 +732,8 @@ void MOPGLineFlagProperty::applyValue()
 // MOPGThingFlagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxString& name, int index) :
-	MOPGBoolProperty(label, name), index_{ index }
+	MOPGBoolProperty(label, name),
+	index_{ index }
 {
 }
 
@@ -738,12 +751,12 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = game::configuration().thingFlagSet(index_, (MapThing*)objects[0]);
+	bool first = game::configuration().thingFlagSet(index_, dynamic_cast<MapThing*>(objects[0]));
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (game::configuration().thingFlagSet(index_, (MapThing*)objects[a]) != first)
+		if (game::configuration().thingFlagSet(index_, dynamic_cast<MapThing*>(objects[a])) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -775,7 +788,7 @@ void MOPGThingFlagProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		game::configuration().setThingFlag(index_, (MapThing*)object, GetValue());
+		game::configuration().setThingFlag(index_, dynamic_cast<MapThing*>(object), GetValue());
 }
 
 
@@ -790,7 +803,8 @@ void MOPGThingFlagProperty::applyValue()
 // MOPGAngleProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name }, wxEditEnumProperty(label, name)
+	MOPGProperty{ name },
+	wxEditEnumProperty(label, name)
 {
 	// Setup combo box choices
 	wxArrayString labels;
@@ -890,15 +904,15 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
 
 	switch (angle)
 	{
-	case 0: return "0: East";
-	case 45: return "45: Northeast";
-	case 90: return "90: North";
+	case 0:   return "0: East";
+	case 45:  return "45: Northeast";
+	case 90:  return "90: North";
 	case 135: return "135: Northwest";
 	case 180: return "180: West";
 	case 225: return "225: Southwest";
 	case 270: return "270: South";
 	case 315: return "315: Southeast";
-	default: return wxString::Format("%d", angle);
+	default:  return wxString::Format("%d", angle);
 	}
 }
 
@@ -914,7 +928,8 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
 // MOPGColourProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name }, wxColourProperty(label, name)
+	MOPGProperty{ name },
+	wxColourProperty(label, name)
 {
 }
 
@@ -999,7 +1014,8 @@ void MOPGColourProperty::applyValue()
 // MOPGTextureProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGTextureProperty::MOPGTextureProperty(TextureType textype, const wxString& label, const wxString& name) :
-	MOPGStringProperty(label, name), textype_{ textype }
+	MOPGStringProperty(label, name),
+	textype_{ textype }
 {
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
@@ -1076,7 +1092,8 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 // MOPGSPACTriggerProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name }, wxEnumProperty(label, name)
+	MOPGProperty{ name },
+	wxEnumProperty(label, name)
 {
 	// Set to combo box editor
 	SetEditor(wxPGEditor_ComboBox);
@@ -1166,7 +1183,8 @@ void MOPGSPACTriggerProperty::applyValue()
 // MOPGTagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGTagProperty::MOPGTagProperty(IdType id_type, const wxString& label, const wxString& name) :
-	MOPGIntProperty(label, name), id_type_{ id_type }
+	MOPGIntProperty(label, name),
+	id_type_{ id_type }
 {
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);

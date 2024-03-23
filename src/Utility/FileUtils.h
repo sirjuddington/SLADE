@@ -47,7 +47,7 @@ public:
 	bool seekFromEnd(unsigned offset) const override;
 
 	bool read(void* buffer, unsigned count) const override;
-	bool read(MemChunk& mc, unsigned count);
+	bool read(MemChunk& mc, unsigned count) const;
 	bool read(string& str, unsigned count) const;
 
 	bool write(const void* buffer, unsigned count) override;

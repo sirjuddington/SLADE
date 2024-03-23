@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Lua.h"
+#include "Archive/Archive.h"
 #include "Export/Export.h"
 #include "General/Console.h"
 #include "General/Misc.h"
@@ -345,11 +346,11 @@ void lua::setCurrentWindow(wxWindow* window)
 
 CONSOLE_COMMAND(script, 1, true)
 {
-	auto script = args[0];
+	auto script_text = args[0];
 	for (unsigned a = 1; a < args.size(); a++)
-		script += " " + args[a];
+		script_text += " " + args[a];
 
-	lua::run(script);
+	lua::run(script_text);
 }
 
 CONSOLE_COMMAND(script_file, 1, true)

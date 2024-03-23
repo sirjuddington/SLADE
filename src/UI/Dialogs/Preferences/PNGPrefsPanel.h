@@ -10,7 +10,7 @@ class PNGPrefsPanel : public PrefsPanelBase
 {
 public:
 	PNGPrefsPanel(wxWindow* parent);
-	~PNGPrefsPanel() = default;
+	~PNGPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;

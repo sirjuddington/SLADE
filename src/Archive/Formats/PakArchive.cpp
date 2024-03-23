@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -95,7 +95,7 @@ bool PakArchive::open(const MemChunk& mc)
 		size   = wxINT32_SWAP_ON_BE(size);
 
 		// Check offset+size
-		if ((unsigned)(offset + size) > mc.size())
+		if (static_cast<unsigned>(offset + size) > mc.size())
 		{
 			log::error("PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
 			global::error = "Archive is invalid and/or corrupt";
@@ -270,7 +270,7 @@ bool PakArchive::isPakArchive(const MemChunk& mc)
 		return false;
 
 	// Check directory is sane
-	if (dir_offset < 12 || (unsigned)(dir_offset + dir_size) > mc.size())
+	if (dir_offset < 12 || static_cast<unsigned>(dir_offset + dir_size) > mc.size())
 		return false;
 
 	// That'll do

@@ -1,33 +1,42 @@
 #pragma once
 
-#include "MCAnimations.h"
-#include "MapRenderer2D.h"
-#include "MapRenderer3D.h"
-#include "OpenGL/View.h"
-
 namespace slade
 {
-class MapEditContext;
+struct ColRGBA;
+class MCAnimation;
+class ItemSelection;
+class MapThing;
+class MapObject;
+namespace gl
+{
+	class View;
+}
+class MapRenderer3D;
+class MapRenderer2D;
 class MCOverlay;
 
 namespace mapeditor
 {
+	struct Item;
+	class MapEditContext;
+
 	class Renderer
 	{
 	public:
 		Renderer(MapEditContext& context);
+		~Renderer();
 
-		MapRenderer2D& renderer2D() { return renderer_2d_; }
-		MapRenderer3D& renderer3D() { return renderer_3d_; }
-		gl::View&      view() { return view_; }
+		MapRenderer2D& renderer2D() const { return *renderer_2d_; }
+		MapRenderer3D& renderer3D() const { return *renderer_3d_; }
+		gl::View&      view() const { return *view_; }
 
-		void forceUpdate();
+		void forceUpdate() const;
 
 		// View manipulation
-		void   setView(double map_x, double map_y);
-		void   setViewSize(int width, int height);
-		void   setTopY(double map_y);
-		void   pan(double x, double y, bool scale = false);
+		void   setView(double map_x, double map_y) const;
+		void   setViewSize(int width, int height) const;
+		void   setTopY(double map_y) const;
+		void   pan(double x, double y, bool scale = false) const;
 		void   zoom(double amount, bool toward_cursor = false);
 		void   viewFitToMap(bool snap = false);
 		void   viewFitToObjects(const vector<MapObject*>& objects);
@@ -35,26 +44,26 @@ namespace mapeditor
 		bool   viewIsInterpolated() const;
 
 		// 3d Mode
-		void  setCameraThing(const MapThing* thing);
+		void  setCameraThing(const MapThing* thing) const;
 		Vec2d cameraPos2D() const;
 		Vec2d cameraDir2D() const;
 
 		// Drawing
-		void draw();
+		void draw() const;
 
 		// Animation
 		bool animationsActive() const { return !animations_.empty() || animations_active_; }
 		void updateAnimations(double mult);
-		void animateSelectionChange(const mapeditor::Item& item, bool selected = true);
+		void animateSelectionChange(const Item& item, bool selected = true);
 		void animateSelectionChange(const ItemSelection& selection);
-		void animateHilightChange(const mapeditor::Item& old_item, MapObject* old_object = nullptr);
+		void animateHilightChange(const Item& old_item, MapObject* old_object = nullptr);
 		void addAnimation(unique_ptr<MCAnimation> animation);
 
 	private:
-		MapEditContext& context_;
-		MapRenderer2D   renderer_2d_;
-		MapRenderer3D   renderer_3d_;
-		gl::View        view_;
+		MapEditContext*           context_;
+		unique_ptr<MapRenderer2D> renderer_2d_;
+		unique_ptr<MapRenderer3D> renderer_3d_;
+		unique_ptr<gl::View>      view_;
 
 		// MCAnimations
 		vector<unique_ptr<MCAnimation>> animations_;
@@ -80,13 +89,13 @@ namespace mapeditor
 		void drawFeatureHelpText() const;
 		void drawSelectionNumbers() const;
 		void drawThingQuickAngleLines() const;
-		void drawLineLength(Vec2d p1, Vec2d p2, ColRGBA col) const;
+		void drawLineLength(const Vec2d& p1, const Vec2d& p2, ColRGBA col) const;
 		void drawLineDrawLines(bool snap_nearest_vertex) const;
 		void drawPasteLines() const;
-		void drawObjectEdit();
+		void drawObjectEdit() const;
 		void drawAnimations() const;
-		void drawMap2d();
-		void drawMap3d();
+		void drawMap2d() const;
+		void drawMap3d() const;
 
 		// Animation
 		bool update2dModeCrossfade(double mult);

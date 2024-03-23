@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -30,12 +30,14 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #undef BOOL
 #include "Archive/Archive.h"
-#include "Archive/EntryType/EntryType.h"
-#include "General/Misc.h"
 #include "SIFormat.h"
+#include <FreeImage.h>
+
+#ifndef _WIN32
+#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
+#endif
 
 using namespace slade;
 
@@ -111,7 +113,7 @@ public:
 
 	bool isThisFormat(const MemChunk& mc) override
 	{
-		auto mem = FreeImage_OpenMemory((BYTE*)mc.data(), mc.size());
+		auto mem = FreeImage_OpenMemory(const_cast<BYTE*>(mc.data()), mc.size());
 		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
 		FreeImage_CloseMemory(mem);
 		return fif != FIF_UNKNOWN;
@@ -192,7 +194,7 @@ private:
 	FIBITMAP* getFIInfo(const MemChunk& data, SImage::Info& info) const
 	{
 		// Get FreeImage bitmap info from entry data
-		auto mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());
+		auto mem = FreeImage_OpenMemory(const_cast<BYTE*>(data.data()), data.size());
 		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
 		auto bm  = FreeImage_LoadFromMemory(fif, mem, 0);
 		FreeImage_CloseMemory(mem);
@@ -337,7 +339,7 @@ protected:
 	{
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
 		{
-			if ((int)valid_flat_size[a][0] == width && (int)valid_flat_size[a][1] == height
+			if (static_cast<int>(valid_flat_size[a][0]) == width && static_cast<int>(valid_flat_size[a][1]) == height
 				&& (valid_flat_size[a][2] == 1 || gfx_extraconv))
 				return true;
 		}
@@ -398,8 +400,8 @@ public:
 
 		// Otherwise, check if it can be cropped to a valid size
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
-			if (((unsigned)width >= valid_flat_size[a][0] && (unsigned)height >= valid_flat_size[a][1]
-				 && valid_flat_size[a][2] == 1)
+			if ((static_cast<unsigned>(width) >= valid_flat_size[a][0]
+				 && static_cast<unsigned>(height) >= valid_flat_size[a][1] && valid_flat_size[a][2] == 1)
 				|| gfx_extraconv)
 				return Writable::Convert;
 
@@ -432,13 +434,14 @@ public:
 			bool writable = (valid_flat_size[a][2] == 1 || gfx_extraconv);
 
 			// Check for exact match (no need to crop)
-			if (image.width() == (int)valid_flat_size[a][0] && image.height() == (int)valid_flat_size[a][1] && writable)
+			if (image.width() == static_cast<int>(valid_flat_size[a][0])
+				&& image.height() == static_cast<int>(valid_flat_size[a][1]) && writable)
 				return true;
 
 			// If the flat will fit within this size, crop to the previous size
 			// (this works because flat sizes list is in size-order)
-			if (image.width() <= (int)valid_flat_size[a][0] && image.height() <= (int)valid_flat_size[a][1] && width > 0
-				&& height > 0)
+			if (image.width() <= static_cast<int>(valid_flat_size[a][0])
+				&& image.height() <= static_cast<int>(valid_flat_size[a][1]) && width > 0 && height > 0)
 			{
 				image.crop(0, 0, width, height);
 				return true;
@@ -486,7 +489,10 @@ protected:
 // SIFormat class constructor
 // ----------------------------------------------------------------------------
 SIFormat::SIFormat(string_view id, string_view name, string_view ext, uint8_t reliability) :
-	id_{ id }, name_{ name }, extension_{ ext }, reliability_{ reliability }
+	id_{ id },
+	name_{ name },
+	extension_{ ext },
+	reliability_{ reliability }
 {
 	// Add to list of formats
 	simage_formats.push_back(this);

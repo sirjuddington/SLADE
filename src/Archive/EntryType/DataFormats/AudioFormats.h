@@ -239,7 +239,7 @@ public:
 		if (mc.size() > 1084)
 		{
 			// Check format; note: byte 951 is used by NoiseTracker to indicate restart byte so it can be any value
-			if (mc[950] >= 0 && mc[950] <= 129 /*&& (mc[951] & 127) == 127*/)
+			if (mc[950] <= 129 /*&& (mc[951] & 127) == 127*/)
 			{
 				if ((mc[1080] == 'M' && mc[1081] == '.' && mc[1082] == 'K' && mc[1083] == '.')
 					|| (mc[1080] == 'M' && mc[1081] == '!' && mc[1082] == 'K' && mc[1083] == '!')
@@ -529,15 +529,18 @@ public:
 // under the "WAVE form wFormatTag IDs" comment.
 // There are dozens upon dozens of them, most of
 // which are not usually seen in practice.
-#define WAVE_FMT_UNK 0x0000
-#define WAVE_FMT_PCM 0x0001
-#define WAVE_FMT_ADPCM 0x0002
-#define WAVE_FMT_ALAW 0x0006
-#define WAVE_FMT_MULAW 0x0007
-#define WAVE_FMT_MP3 0x0055
-#define WAVE_FMT_XTNSBL 0xFFFE
+enum
+{
+	WAVE_FMT_UNK    = 0x0000,
+	WAVE_FMT_PCM    = 0x0001,
+	WAVE_FMT_ADPCM  = 0x0002,
+	WAVE_FMT_ALAW   = 0x0006,
+	WAVE_FMT_MULAW  = 0x0007,
+	WAVE_FMT_MP3    = 0x0055,
+	WAVE_FMT_XTNSBL = 0xFFFE
+};
 
-int RiffWavFormat(const MemChunk& mc)
+inline int RiffWavFormat(const MemChunk& mc)
 {
 	// Check size
 	size_t size   = mc.size();
@@ -758,12 +761,11 @@ public:
 			if (size < (nsamples + 9) && size < 1024 && size > (nsamples + 6) && mc[nsamples + 6] == 0)
 				return MATCH_TRUE;
 			// Hack #1: last PC sound in Wolf3D/Spear carries a Muse end marker
-			else if (
-				size == (nsamples + 11) && (mc[nsamples + 7] == '!') && (mc[nsamples + 8] == 'I')
+			if (size == (nsamples + 11) && (mc[nsamples + 7] == '!') && (mc[nsamples + 8] == 'I')
 				&& (mc[nsamples + 9] == 'D') && (mc[nsamples + 10] == '!'))
 				return MATCH_TRUE;
 			// Hack #2: Rise of the Triad's PCSP53
-			else if (size == 150 && nsamples == 142 && mc[147] == 156 && mc[148] == 157 && mc[149] == 97)
+			if (size == 150 && nsamples == 142 && mc[147] == 156 && mc[148] == 157 && mc[149] == 97)
 				return MATCH_TRUE;
 		}
 		return MATCH_FALSE;
@@ -788,12 +790,11 @@ public:
 			if (size >= (nsamples + 24) && (mc[size - 1] == 0))
 				return MATCH_TRUE;
 			// Hack #1: last Adlib sound in Wolf3D/Spear carries a Muse end marker
-			else if (
-				size >= nsamples + 28 && mc[size - 1] == '!' && mc[size - 2] == 'D' && mc[size - 3] == 'I'
+			if (size >= nsamples + 28 && mc[size - 1] == '!' && mc[size - 2] == 'D' && mc[size - 3] == 'I'
 				&& mc[size - 4] == '!')
 				return MATCH_TRUE;
 			// Hack #2: Rise of the Triad's ADLB53
-			else if (size == 166 && nsamples == 142 && mc[163] == 7 && mc[164] == 7 && mc[165] == 6)
+			if (size == 166 && nsamples == 142 && mc[163] == 7 && mc[164] == 7 && mc[165] == 6)
 				return MATCH_TRUE;
 		}
 		return MATCH_FALSE;
@@ -864,7 +865,7 @@ public:
 	}
 };
 
-CVAR(Bool, debugaiff, false, 0)
+// CVAR(Bool, debugaiff, false, 0)
 class AIFFSoundDataFormat : public EntryDataFormat
 {
 public:
@@ -883,12 +884,12 @@ public:
 				&& mc[10] == 'F' && (mc[11] == 'F' || mc[11] == 'C'))
 			{
 				size_t size = mc.readB32(4) + 8;
-				if (debugaiff)
-					log::info(wxString::Format("size %d", size));
+				// if (debugaiff)
+				//	log::info(wxString::Format("size %d", size));
 				if (size > mc.size())
 				{
-					if (debugaiff)
-						log::info(wxString::Format("%d <= %d fails", size, mc.size()));
+					// if (debugaiff)
+					//	log::info(wxString::Format("%d <= %d fails", size, mc.size()));
 					return MATCH_FALSE;
 				}
 				size_t s          = 12;
@@ -896,8 +897,8 @@ public:
 				bool   ssnd_found = false;
 				while (s < size && !(comm_found && ssnd_found))
 				{
-					if (debugaiff)
-						log::info(wxString::Format("%d/%d", s, size));
+					// if (debugaiff)
+					//	log::info(wxString::Format("%d/%d", s, size));
 					if (mc[s + 0] == 'C' && mc[s + 1] == 'O' && mc[s + 2] == 'M' && mc[s + 3] == 'M')
 						comm_found = true;
 					else if (mc[s + 0] == 'S' && mc[s + 1] == 'S' && mc[s + 2] == 'N' && mc[s + 3] == 'D')
@@ -905,14 +906,14 @@ public:
 					s += 8 + mc.readB32(s + 4);
 					if (s % 2)
 						++s;
-					if (debugaiff)
-						log::info(wxString::Format("looking now at offset %d", s));
+					// if (debugaiff)
+					//	log::info(wxString::Format("looking now at offset %d", s));
 				}
 				if (comm_found && ssnd_found)
 					return MATCH_TRUE;
-				if (debugaiff)
-					log::info(wxString::Format(
-						"COMM was %sfound and SSND was %sfound", comm_found ? "" : "not ", ssnd_found ? "" : "not "));
+				// if (debugaiff)
+				//	log::info(wxString::Format(
+				//		"COMM was %sfound and SSND was %sfound", comm_found ? "" : "not ", ssnd_found ? "" : "not "));
 			}
 		}
 		return MATCH_FALSE;

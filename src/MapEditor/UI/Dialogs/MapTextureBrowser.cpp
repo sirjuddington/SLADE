@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,12 +32,14 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapTextureBrowser.h"
+#include "Archive/Archive.h"
 #include "Game/Configuration.h"
-#include "General/ResourceManager.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
+#include "OpenGL/GLTexture.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/SideList.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -272,7 +274,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 // Builds and returns the tree item path for [info]
 // -----------------------------------------------------------------------------
 wxString MapTextureBrowser::determineTexturePath(
-	Archive*                    archive,
+	const Archive*              archive,
 	MapTextureManager::Category category,
 	const wxString&             type,
 	const wxString&             path) const
@@ -289,11 +291,11 @@ wxString MapTextureBrowser::determineTexturePath(
 		{
 			switch (category)
 			{
-			case MapTextureManager::Category::TextureX: ret += "TEXTUREx"; break;
+			case MapTextureManager::Category::TextureX:   ret += "TEXTUREx"; break;
 			case MapTextureManager::Category::ZDTextures: ret += "TEXTURES"; break;
-			case MapTextureManager::Category::HiRes: ret += "HIRESTEX"; break;
-			case MapTextureManager::Category::Tx: ret += "Single (TX)"; break;
-			default: continue;
+			case MapTextureManager::Category::HiRes:      ret += "HIRESTEX"; break;
+			case MapTextureManager::Category::Tx:         ret += "Single (TX)"; break;
+			default:                                      continue;
 			}
 		}
 

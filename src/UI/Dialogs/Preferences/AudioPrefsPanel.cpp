@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,7 @@
 #include "Audio/MIDIPlayer.h"
 #include "General/UI.h"
 #include "UI/Controls/FileLocationPanel.h"
+#include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -81,10 +82,13 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	setupLayout();
 
 	// Bind events
-	btn_reset_player_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
-		audio::resetMIDIPlayer();
-		audio::midiPlayer().setVolume(snd_volume);
-	});
+	btn_reset_player_->Bind(
+		wxEVT_BUTTON,
+		[&](wxCommandEvent&)
+		{
+			audio::resetMIDIPlayer();
+			audio::midiPlayer().setVolume(snd_volume);
+		});
 	rb_fluidsynth_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent&) { updateControls(); });
 	rb_timidity_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent&) { updateControls(); });
 
@@ -135,24 +139,24 @@ void AudioPrefsPanel::applyPreferences()
 // -----------------------------------------------------------------------------
 void AudioPrefsPanel::setupLayout()
 {
+	namespace wx = wxutil;
+
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Autoplay
-	sizer->Add(cb_snd_autoplay_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(cb_snd_autoplay_, wx::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// DMX Padding
-	sizer->Add(cb_dmx_padding_, 0, wxEXPAND);
+	sizer->Add(cb_dmx_padding_, wxSizerFlags().Expand());
 
 	sizer->Add(
 		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL),
-		0,
-		wxEXPAND | wxBOTTOM | wxTOP,
-		ui::padLarge());
+		wx::sfWithLargeBorder(0, wxBOTTOM | wxTOP).Expand());
 
 	// MIDI Playback (fluidsynth/timidity)
-	auto gbsizer = new wxGridBagSizer(ui::px(ui::Size::PadMinimum), ui::pad());
+	auto gbsizer = new wxGridBagSizer(ui::padMin(), ui::pad());
 	gbsizer->Add(new wxStaticText(this, -1, "MIDI Playback:"), { 0, 0 }, { 1, 2 }, wxEXPAND | wxBOTTOM, ui::pad());
 	gbsizer->Add(rb_fluidsynth_, { 1, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, ui::pad());
 	gbsizer->Add(new wxStaticText(this, -1, "Location of MIDI soundfont:"), { 2, 0 }, { 1, 1 }, wxEXPAND);
@@ -164,10 +168,10 @@ void AudioPrefsPanel::setupLayout()
 	gbsizer->Add(text_timidity_options_, { 5, 1 }, { 1, 1 }, wxEXPAND);
 	gbsizer->AddGrowableCol(0, 1);
 	gbsizer->AddGrowableCol(1, 1);
-	sizer->Add(gbsizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(gbsizer, wx::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Reset MIDI player
-	sizer->Add(btn_reset_player_, 0, wxEXPAND);
+	sizer->Add(btn_reset_player_, wxSizerFlags().Expand());
 }
 
 // -----------------------------------------------------------------------------

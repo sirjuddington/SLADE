@@ -1,14 +1,22 @@
 #pragma once
 
 #include "General/SAction.h"
-#include "Scripting/ScriptManager.h"
 #include "UI/STopWindow.h"
 
+// Forward declarations
 namespace slade
 {
 class STabCtrl;
 class ScriptPanel;
+namespace scriptmanager
+{
+	enum class ScriptType;
+	struct Script;
+} // namespace scriptmanager
+} // namespace slade
 
+namespace slade
+{
 class ScriptManagerWindow : public STopWindow, SActionHandler
 {
 public:
@@ -20,8 +28,8 @@ public:
 	string                 currentScriptText() const;
 
 private:
-	scriptmanager::Script  script_scratchbox_;
-	scriptmanager::Script* script_clicked_ = nullptr;
+	unique_ptr<scriptmanager::Script> script_scratchbox_;
+	scriptmanager::Script*            script_clicked_ = nullptr;
 
 	std::map<scriptmanager::ScriptType, wxTreeItemId> editor_script_nodes_;
 

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -118,7 +118,7 @@ void View::zoomToward(double amount, const Vec2i& point)
 // -----------------------------------------------------------------------------
 // Zooms and offsets the view such that [bbox] fits within the current view size
 // -----------------------------------------------------------------------------
-void View::fitTo(BBox bbox)
+void View::fitTo(const BBox& bbox)
 {
 	// Reset zoom and set offsets to the middle of the canvas
 	scale_    = 2;
@@ -221,7 +221,7 @@ bool View::interpolate(double mult, const Vec2d* towards)
 double View::canvasX(int screen_x, bool inter) const
 {
 	return inter ? screen_x / scale_inter_ + offset_inter_.x - (size_.x * 0.5 / scale_inter_) :
-                   screen_x / scale_ + offset_.x - (size_.x * 0.5 / scale_);
+				   screen_x / scale_ + offset_.x - (size_.x * 0.5 / scale_);
 }
 
 // -----------------------------------------------------------------------------
@@ -233,12 +233,12 @@ double View::canvasY(int screen_y, bool inter) const
 	if (y_flipped_)
 	{
 		return inter ? -screen_y / scale_inter_ + offset_inter_.y + (size_.y * 0.5 / scale_inter_) :
-                       -screen_y / scale_ + offset_.y + (size_.y * 0.5 / scale_);
+					   -screen_y / scale_ + offset_.y + (size_.y * 0.5 / scale_);
 	}
 	else
 	{
 		return inter ? -screen_y / scale_inter_ + offset_inter_.y - (size_.y * 0.5 / scale_inter_) :
-                       -screen_y / scale_ + offset_.y - (size_.y * 0.5 / scale_);
+					   -screen_y / scale_ + offset_.y - (size_.y * 0.5 / scale_);
 	}
 }
 
@@ -265,7 +265,7 @@ int View::screenX(double canvas_x) const
 int View::screenY(double canvas_y) const
 {
 	return y_flipped_ ? math::round((size_.y * 0.5) - ((canvas_y - offset_inter_.y) * scale_inter_)) :
-                        math::round((size_.y * 0.5) + ((canvas_y - offset_inter_.y) * scale_inter_));
+						math::round((size_.y * 0.5) + ((canvas_y - offset_inter_.y) * scale_inter_));
 }
 
 // -----------------------------------------------------------------------------

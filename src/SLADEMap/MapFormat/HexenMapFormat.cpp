@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,10 +33,18 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexenMapFormat.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/Game.h"
 #include "General/UI.h"
 #include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObjectCollection.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SideList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
 
 using namespace slade;
 
@@ -67,12 +75,12 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 		return true;
 	}
 
-	auto     line_data = (LineDef*)entry->rawData();
+	auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData());
 	unsigned nl        = entry->size() / sizeof(LineDef);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nl) * 0.2f);
+		ui::setSplashProgress(p + (static_cast<float>(a) / nl) * 0.2f);
 		const auto& data = line_data[a];
 
 		// Check vertices exist
@@ -118,8 +126,8 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 			{
 			case game::TagType::LineId:
 			case game::TagType::LineId1Line2: line->setId(data.args[0]); break;
-			case game::TagType::LineIdHi5: line->setId((data.args[0] + (data.args[4] << 8))); break;
-			default: break;
+			case game::TagType::LineIdHi5:    line->setId((data.args[0] + (data.args[4] << 8))); break;
+			default:                          break;
 			}
 		}
 	}
@@ -148,13 +156,13 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 		return true;
 	}
 
-	auto              thng_data = (Thing*)entry->rawData();
+	auto              thng_data = reinterpret_cast<const Thing*>(entry->rawData());
 	unsigned          nt        = entry->size() / sizeof(Thing);
 	float             p         = ui::getSplashProgress();
 	MapObject::ArgSet args;
 	for (size_t a = 0; a < nt; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nt) * 0.2f);
+		ui::setSplashProgress(p + (static_cast<float>(a) / nt) * 0.2f);
 		const auto& data = thng_data[a];
 
 		// Set args
@@ -163,7 +171,7 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 
 		// Create thing
 		map_data.addThing(std::make_unique<MapThing>(
-			Vec3d{ (double)data.x, (double)data.y, (double)data.z },
+			Vec3d{ static_cast<double>(data.x), static_cast<double>(data.y), static_cast<double>(data.z) },
 			data.type,
 			data.angle,
 			data.flags,

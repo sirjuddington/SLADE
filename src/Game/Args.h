@@ -33,7 +33,7 @@ namespace game
 		vector<ArgValue> custom_values;
 		vector<ArgValue> custom_flags;
 
-		Arg() {}
+		Arg() = default;
 		Arg(string_view name) : name{ name } {}
 
 		string valueString(int value) const;

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -56,7 +56,7 @@ BaseResourceWizardPage::BaseResourceWizardPage(wxWindow* parent) : WizardPageBas
 	bra_panel_ = new BaseResourceArchivesPanel(this);
 	bra_panel_->init();
 	bra_panel_->autodetect();
-	sizer->Add(bra_panel_, 1, wxEXPAND);
+	sizer->Add(bra_panel_, wxSizerFlags(1).Expand());
 }
 
 // -----------------------------------------------------------------------------

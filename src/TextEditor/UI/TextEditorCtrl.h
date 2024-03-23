@@ -1,11 +1,5 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
-#include "TextEditor/Lexer.h"
-#include "TextEditor/TextLanguage.h"
-#include "TextEditor/TextStyle.h"
-#include <utility>
-
 class wxButton;
 class wxCheckBox;
 class wxTextCtrl;
@@ -16,6 +10,12 @@ wxDECLARE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 
 namespace slade
 {
+class ArchiveEntry;
+class StyleSet;
+class TextStyle;
+class TLFunction;
+class TextLanguage;
+class Lexer;
 class FindReplacePanel;
 class SCallTip;
 
@@ -29,7 +29,7 @@ public:
 		ignore_(std::move(ignore))
 	{
 	}
-	virtual ~JumpToCalculator() = default;
+	~JumpToCalculator() override = default;
 
 	ExitCode Entry() override;
 
@@ -44,7 +44,7 @@ class TextEditorCtrl : public wxStyledTextCtrl
 {
 public:
 	TextEditorCtrl(wxWindow* parent, int id);
-	~TextEditorCtrl();
+	~TextEditorCtrl() override;
 
 	TextLanguage* language() const { return language_; }
 	long          lastModified() const { return last_modified_; }
@@ -52,9 +52,9 @@ public:
 	bool setLanguage(TextLanguage* lang);
 
 	void setup();
-	void setupFoldMargin(TextStyle* margin_style = nullptr);
+	void setupFoldMargin(const TextStyle* margin_style = nullptr);
 	bool applyStyleSet(StyleSet* style);
-	bool loadEntry(ArchiveEntry* entry);
+	bool loadEntry(const ArchiveEntry* entry);
 	void getRawText(MemChunk& mc) const;
 
 	// Misc

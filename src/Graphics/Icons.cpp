@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -278,7 +278,7 @@ void parseGeneralBlock(const ParseTreeNode& node, const Archive& res_archive)
 // -----------------------------------------------------------------------------
 // Loads an SVG [svg_data] of [size] into a wxBitmap, with optional [padding]
 // -----------------------------------------------------------------------------
-wxBitmap loadSVGIcon(const string& svg_data, int size, Point2i padding)
+wxBitmap loadSVGIcon(const string& svg_data, int size, const Point2i& padding)
 {
 	const auto img = wxutil::createImageFromSVG(svg_data, size, size);
 
@@ -448,7 +448,7 @@ bool icons::loadIcons()
 // NOTE: this does not use any kind of caching and will generate/load the icon
 // from svg/png data each time
 // -----------------------------------------------------------------------------
-wxBitmapBundle icons::getIcon(Type type, string_view name, int size, Point2i padding)
+wxBitmapBundle icons::getIcon(Type type, string_view name, int size, const Point2i& padding)
 {
 	// Get icon definition
 	const auto* icon_def = iconDef(type, name);
@@ -529,8 +529,8 @@ wxBitmapBundle icons::getInterfaceIcon(string_view name, int size, InterfaceThem
 	switch (theme)
 	{
 	case System: dark = ui_icons_dark; break;
-	case Light: dark = false; break;
-	case Dark: dark = true; break;
+	case Light:  dark = false; break;
+	case Dark:   dark = true; break;
 	}
 
 	// Get icon definition
@@ -568,8 +568,8 @@ wxBitmap icons::getInterfaceIcon(string_view name, int size, InterfaceTheme them
 	switch (theme)
 	{
 	case System: dark = ui_icons_dark; break;
-	case Light: dark = false; break;
-	case Dark: dark = true; break;
+	case Light:  dark = false; break;
+	case Dark:   dark = true; break;
 	}
 
 	// Get icon definition

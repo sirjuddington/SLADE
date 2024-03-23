@@ -1,11 +1,47 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2024 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Mp3Music.cpp
+// Description: Mp3Music class, an SFML sound stream class to play mp3 music
+//              using libmpg123
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Mp3Music.h"
-#include <iostream>
 
 using namespace slade;
 using namespace audio;
 
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace slade::audio
 {
 struct Mp3MemoryData
@@ -18,26 +54,25 @@ struct Mp3MemoryData
 ssize_t memoryDataRead(void* raw_mp3_data, void* buffer, size_t nbyte)
 {
 	auto mp3_data = static_cast<Mp3MemoryData*>(raw_mp3_data);
-	if (mp3_data->offset >= (ssize_t)mp3_data->size)
+	if (mp3_data->offset >= static_cast<ssize_t>(mp3_data->size))
 	{
 		memset(buffer, 0, nbyte);
-		return (ssize_t)0;
+		return 0;
 	}
-	else if (mp3_data->offset + (ssize_t)nbyte > (ssize_t)mp3_data->size)
+
+	if (mp3_data->offset + static_cast<ssize_t>(nbyte) > static_cast<ssize_t>(mp3_data->size))
 	{
 		size_t read_size    = mp3_data->size - mp3_data->offset;
-		size_t mem_set_size = mp3_data->offset + nbyte - (ssize_t)mp3_data->size;
-		memcpy(buffer, (unsigned char*)mp3_data->data + mp3_data->offset, read_size);
+		size_t mem_set_size = mp3_data->offset + nbyte - static_cast<ssize_t>(mp3_data->size);
+		memcpy(buffer, static_cast<unsigned char*>(mp3_data->data) + mp3_data->offset, read_size);
 		memset(buffer, 0, mem_set_size);
 		mp3_data->offset += read_size;
-		return (ssize_t)read_size;
+		return static_cast<ssize_t>(read_size);
 	}
-	else
-	{
-		memcpy(buffer, (unsigned char*)mp3_data->data + mp3_data->offset, nbyte);
-		mp3_data->offset += nbyte;
-		return (ssize_t)nbyte;
-	}
+
+	memcpy(buffer, static_cast<unsigned char*>(mp3_data->data) + mp3_data->offset, nbyte);
+	mp3_data->offset += nbyte;
+	return static_cast<ssize_t>(nbyte);
 }
 
 off_t memoryDataLSeek(void* raw_mp3_data, off_t offset, int whence)
@@ -60,25 +95,37 @@ void memoryDataCleanup(void* raw_mp3_data)
 } // namespace slade::audio
 
 
+// -----------------------------------------------------------------------------
+//
+// Mp3Music Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Mp3Music class constructor
+// -----------------------------------------------------------------------------
 Mp3Music::Mp3Music()
 {
 	int err = MPG123_OK;
 	if ((err = mpg123_init()) != MPG123_OK)
 	{
-		std::cerr << mpg123_plain_strerror(err) << std::endl;
+		log::error(mpg123_plain_strerror(err));
 		return;
 	}
 
 	handle_ = mpg123_new(nullptr, &err);
 	if (!handle_)
 	{
-		std::cerr << "Unable to create mpg123 handle: " << mpg123_plain_strerror(err) << std::endl;
+		log::error("Unable to create mpg123 handle: {}", mpg123_plain_strerror(err));
 		return;
 	}
 
 	mpg123_replace_reader_handle(handle_, &memoryDataRead, &memoryDataLSeek, &memoryDataCleanup);
 }
 
+// -----------------------------------------------------------------------------
+// Mp3Music class destructor
+// -----------------------------------------------------------------------------
 Mp3Music::~Mp3Music()
 {
 	SoundStream::stop();
@@ -94,6 +141,9 @@ Mp3Music::~Mp3Music()
 	mpg123_exit();
 }
 
+// -----------------------------------------------------------------------------
+// Loads an mp3 file for playback
+// -----------------------------------------------------------------------------
 bool Mp3Music::openFromFile(const std::string& filename)
 {
 	stop();
@@ -109,7 +159,7 @@ bool Mp3Music::openFromFile(const std::string& filename)
 
 	if (mpg123_open(handle_, filename.c_str()) != MPG123_OK)
 	{
-		std::cerr << mpg123_strerror(handle_) << std::endl;
+		log::error(mpg123_strerror(handle_));
 		return false;
 	}
 
@@ -117,7 +167,7 @@ bool Mp3Music::openFromFile(const std::string& filename)
 	int  channels = 0, encoding = 0;
 	if (mpg123_getformat(handle_, &rate, &channels, &encoding) != MPG123_OK)
 	{
-		std::cerr << "Failed to get format information for \"" << filename << "\"" << std::endl;
+		log::error("Failed to get format information for \"{}\"", filename);
 		return false;
 	}
 	sampling_rate_ = rate;
@@ -126,7 +176,7 @@ bool Mp3Music::openFromFile(const std::string& filename)
 	buffer_      = new unsigned char[buffer_size_];
 	if (!buffer_)
 	{
-		std::cerr << "Failed to reserve memory for decoding one frame for \"" << filename << "\"" << std::endl;
+		log::error("Failed to reserve memory for decoding one frame for \"{}\"", filename);
 		return false;
 	}
 
@@ -135,6 +185,9 @@ bool Mp3Music::openFromFile(const std::string& filename)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Loads mp3 data for playback
+// -----------------------------------------------------------------------------
 bool Mp3Music::loadFromMemory(void* data, size_t size_in_bytes)
 {
 	stop();
@@ -179,26 +232,32 @@ bool Mp3Music::loadFromMemory(void* data, size_t size_in_bytes)
 		return false;
 	}
 
-	log::info("rate {}, channels {}", rate, channels);
+	log::debug("rate {}, channels {}", rate, channels);
 
 	initialize(channels, rate);
 
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the duration of the currently loaded mp3
+// -----------------------------------------------------------------------------
 sf::Time Mp3Music::duration() const
 {
 	if (!handle_ || sampling_rate_ == 0)
 		return {};
 
 	auto len  = mpg123_length(handle_);
-	auto secs = (float)len / (float)sampling_rate_;
+	auto secs = static_cast<float>(len) / static_cast<float>(sampling_rate_);
 
-	log::info("len {} rate {} secs {}", len, sampling_rate_, secs);
+	log::debug("len {} rate {} secs {}", len, sampling_rate_, secs);
 
 	return sf::seconds(secs);
 }
 
+// -----------------------------------------------------------------------------
+// Called when sound data is requested from the stream
+// -----------------------------------------------------------------------------
 bool Mp3Music::onGetData(Chunk& data)
 {
 	sf::Lock lock(mutex_);
@@ -208,7 +267,7 @@ bool Mp3Music::onGetData(Chunk& data)
 		size_t done;
 		mpg123_read(handle_, buffer_, buffer_size_, &done);
 
-		data.samples     = (short*)buffer_;
+		data.samples     = reinterpret_cast<short*>(buffer_);
 		data.sampleCount = done / sizeof(short);
 
 		return (data.sampleCount > 0);
@@ -217,6 +276,9 @@ bool Mp3Music::onGetData(Chunk& data)
 		return false;
 }
 
+// -----------------------------------------------------------------------------
+// Called when seeking is requested on the sound stream
+// -----------------------------------------------------------------------------
 void Mp3Music::onSeek(sf::Time time_offset)
 {
 	sf::Lock lock(mutex_);

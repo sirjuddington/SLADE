@@ -243,7 +243,7 @@ endif()
 
 if (NOT NO_COTIRE)
 	set_target_properties(slade PROPERTIES
-		COTIRE_CXX_PREFIX_HEADER_INIT "common.h"
+		COTIRE_CXX_PREFIX_HEADER_INIT "Application/Main.h"
 		# Enable multithreaded unity builds by default
 		# because otherwise probably no one would realize how
 		COTIRE_UNITY_SOURCE_MAXIMUM_NUMBER_OF_INCLUDES -j

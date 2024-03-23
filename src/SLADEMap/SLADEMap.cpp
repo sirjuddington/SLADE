@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,16 @@
 #include "Game/Configuration.h"
 #include "MapEditor/SectorBuilder.h"
 #include "MapFormat/MapFormatHandler.h"
+#include "MapObject/MapLine.h"
+#include "MapObject/MapSide.h"
+#include "MapObject/MapThing.h"
+#include "MapObject/MapVertex.h"
+#include "MapObjectList/LineList.h"
+#include "MapObjectList/SectorList.h"
+#include "MapObjectList/SideList.h"
+#include "MapObjectList/ThingList.h"
+#include "MapObjectList/VertexList.h"
+#include "MapSpecials.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -59,7 +69,7 @@ CVAR(Bool, map_split_auto_offset, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // SLADEMap class constructor
 // -----------------------------------------------------------------------------
-SLADEMap::SLADEMap() : data_{ this }
+SLADEMap::SLADEMap() : data_{ this }, current_format_{ MapFormat::Unknown }, map_specials_{ new MapSpecials() }
 {
 	// Init opened time so it's not random leftover garbage values
 	setOpenedTime();
@@ -74,19 +84,99 @@ SLADEMap::~SLADEMap()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the object of [type] at [index], or NULL if [index] is invalid
+// Returns the vertex at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapVertex* SLADEMap::vertex(unsigned index) const
+{
+	return data_.vertices().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the side at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapSide* SLADEMap::side(unsigned index) const
+{
+	return data_.sides().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the line at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapLine* SLADEMap::line(unsigned index) const
+{
+	return data_.lines().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the sector at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapSector* SLADEMap::sector(unsigned index) const
+{
+	return data_.sectors().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the thing at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapThing* SLADEMap::thing(unsigned index) const
+{
+	return data_.things().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the object of [type] at [index], or nullptr if [index] is invalid
 // -----------------------------------------------------------------------------
 MapObject* SLADEMap::object(MapObject::Type type, unsigned index) const
 {
 	switch (type)
 	{
 	case MapObject::Type::Vertex: return vertex(index);
-	case MapObject::Type::Line: return line(index);
-	case MapObject::Type::Side: return side(index);
+	case MapObject::Type::Line:   return line(index);
+	case MapObject::Type::Side:   return side(index);
 	case MapObject::Type::Sector: return sector(index);
-	case MapObject::Type::Thing: return thing(index);
-	default: return nullptr;
+	case MapObject::Type::Thing:  return thing(index);
+	default:                      return nullptr;
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of vertices in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nVertices() const
+{
+	return data_.vertices().size();
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of lines in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nLines() const
+{
+	return data_.lines().size();
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of sides in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nSides() const
+{
+	return data_.sides().size();
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of sectors in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nSectors() const
+{
+	return data_.sectors().size();
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of things in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nThings() const
+{
+	return data_.things().size();
 }
 
 // -----------------------------------------------------------------------------
@@ -108,7 +198,7 @@ void SLADEMap::setThingsUpdated()
 // -----------------------------------------------------------------------------
 // Reads map data using info in [map]
 // -----------------------------------------------------------------------------
-bool SLADEMap::readMap(const Archive::MapDesc& map)
+bool SLADEMap::readMap(const MapDesc& map)
 {
 	auto omap = map;
 
@@ -332,7 +422,7 @@ void SLADEMap::putDragonTargets(MapThing* first, vector<MapThing*>& list)
 // -----------------------------------------------------------------------------
 // Returns the first texture at [tex_part] found on lines connected to [vertex]
 // -----------------------------------------------------------------------------
-string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
+string SLADEMap::adjacentLineTexture(const MapVertex* vertex, int tex_part) const
 {
 	// Go through adjacent lines
 	auto tex = MapSide::TEX_NONE;
@@ -495,7 +585,7 @@ void SLADEMap::setOpenedTime()
 // -----------------------------------------------------------------------------
 void SLADEMap::recomputeSpecials()
 {
-	map_specials_.processMapSpecials(this);
+	map_specials_->processMapSpecials(this);
 }
 
 // -----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,7 @@
 #include "ResourceArchiveChooser.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "General/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -50,7 +51,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // ResourceArchiveChooser class constructor
 // -----------------------------------------------------------------------------
-ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archive) : wxPanel(parent, -1)
+ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, const Archive* archive) : wxPanel(parent, -1)
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -58,7 +59,7 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 
 	// Resource archive list
 	list_resources_ = new wxCheckListBox(this, -1);
-	sizer->Add(list_resources_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(list_resources_, wxutil::sfWithBorder(1, wxBOTTOM).Expand());
 	list_resources_->SetInitialSize(wxutil::scaledSize(350, 100));
 
 	// Populate resource archive list
@@ -78,13 +79,13 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 
 	// 'Open Resource' button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxRIGHT, ui::pad());
+	sizer->Add(hbox, wxutil::sfWithBorder(0, wxRIGHT).Expand());
 	btn_open_resource_ = new wxButton(this, -1, "Open Archive");
-	hbox->Add(btn_open_resource_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_open_resource_, wxutil::sfWithBorder(0, wxRIGHT).Expand());
 
 	// 'Open Recent' button
 	btn_recent_ = new wxButton(this, -1, "Open Recent");
-	hbox->Add(btn_recent_, 0, wxEXPAND, 0);
+	hbox->Add(btn_recent_, wxSizerFlags().Expand());
 
 	// Bind events
 	btn_open_resource_->Bind(wxEVT_BUTTON, &ResourceArchiveChooser::onBtnOpenResource, this);
@@ -97,25 +98,25 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 // -----------------------------------------------------------------------------
 // Returns a list of archives that have been selected as resources
 // -----------------------------------------------------------------------------
-vector<Archive*> ResourceArchiveChooser::selectedResourceArchives()
+vector<Archive*> ResourceArchiveChooser::selectedResourceArchives() const
 {
 	wxArrayInt       checked;
 	vector<Archive*> list;
 	list_resources_->GetCheckedItems(checked);
-	for (unsigned a = 0; a < checked.size(); a++)
-		list.push_back(archives_[checked[a]]);
+	for (int a : checked)
+		list.push_back(archives_[a]);
 	return list;
 }
 
 // -----------------------------------------------------------------------------
 // Returns a string of all selected resource archive filenames
 // -----------------------------------------------------------------------------
-wxString ResourceArchiveChooser::selectedResourceList()
+wxString ResourceArchiveChooser::selectedResourceList() const
 {
 	vector<Archive*> selected = selectedResourceArchives();
 	wxString         ret;
-	for (unsigned a = 0; a < selected.size(); a++)
-		ret += wxString::Format("\"%s\" ", selected[a]->filename());
+	for (auto a : selected)
+		ret += wxString::Format("\"%s\" ", a->filename());
 	return ret;
 }
 
@@ -126,6 +127,8 @@ wxString ResourceArchiveChooser::selectedResourceList()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the 'Open Archive' button is clicked

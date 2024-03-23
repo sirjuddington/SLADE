@@ -1,16 +1,25 @@
 #pragma once
 
 #include "General/KeyBind.h"
-#include "MapEditor/MapEditContext.h"
 #include "UI/Canvas/OGLCanvas.h"
+
+namespace sf
+{
+class Clock;
+}
 
 namespace slade
 {
+namespace mapeditor
+{
+	class MapEditContext;
+}
+
 class MapCanvas : public OGLCanvas, public KeyBindHandler
 {
 public:
-	MapCanvas(wxWindow* parent, int id, MapEditContext* context);
-	~MapCanvas() = default;
+	MapCanvas(wxWindow* parent, int id, mapeditor::MapEditContext* context);
+	~MapCanvas() override = default;
 
 	// Drawing
 	void draw() override;
@@ -24,10 +33,10 @@ public:
 	void onKeyBindPress(string_view name) override;
 
 private:
-	MapEditContext* context_    = nullptr;
-	bool            mouse_warp_ = false;
-	vector<int>     fps_avg_;
-	sf::Clock       sf_clock_;
+	mapeditor::MapEditContext* context_    = nullptr;
+	bool                       mouse_warp_ = false;
+	vector<int>                fps_avg_;
+	unique_ptr<sf::Clock>      sf_clock_;
 
 	// Events
 	void onSize(wxSizeEvent& e);

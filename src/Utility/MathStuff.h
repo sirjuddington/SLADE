@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Structs.h"
-
 namespace slade::math
 {
 constexpr double PI = 3.1415926535897932384;
@@ -10,24 +8,24 @@ double clamp(double val, double min, double max);
 int    floor(double val);
 int    ceil(double val);
 int    round(double val);
-double distance(Vec2d p1, Vec2d p2);
-double distance3d(Vec3d p1, Vec3d p2);
-double lineSide(Vec2d point, Seg2d line);
-Vec2d  closestPointOnLine(Vec2d point, Seg2d line);
-double distanceToLine(Vec2d point, Seg2d line);
-double distanceToLineFast(Vec2d point, Seg2d line);
-bool   linesIntersect(Seg2d line1, Seg2d line2, Vec2d& out);
-double distanceRayLine(Vec2d ray_origin, Vec2d ray_dir, Vec2d seg1, Vec2d seg2);
-double angle2DRad(Vec2d p1, Vec2d p2, Vec2d p3);
-Vec2d  rotatePoint(Vec2d origin, Vec2d point, double angle);
-Vec3d  rotateVector3D(Vec3d vector, Vec3d axis, double angle);
+double distance(const Vec2d& p1, const Vec2d& p2);
+double distance3d(const Vec3d& p1, const Vec3d& p2);
+double lineSide(const Vec2d& point, const Seg2d& line);
+Vec2d  closestPointOnLine(const Vec2d& point, const Seg2d& line);
+double distanceToLine(const Vec2d& point, const Seg2d& line);
+double distanceToLineFast(const Vec2d& point, const Seg2d& line);
+bool   linesIntersect(const Seg2d& line1, const Seg2d& line2, Vec2d& out);
+double distanceRayLine(const Vec2d& ray_origin, const Vec2d& ray_dir, const Vec2d& seg1, const Vec2d& seg2);
+double angle2DRad(const Vec2d& p1, const Vec2d& p2, const Vec2d& p3);
+Vec2d  rotatePoint(const Vec2d& origin, const Vec2d& point, double angle);
+Vec3d  rotateVector3D(const Vec3d& vector, const Vec3d& axis, double angle);
 double degToRad(double angle);
 double radToDeg(double angle);
 Vec2d  vectorAngle(double angle_rad);
-double distanceRayPlane(Vec3d ray_origin, Vec3d ray_dir, Plane plane);
-bool   boxLineIntersect(Rectf box, Seg2d line);
-Plane  planeFromTriangle(Vec3d p1, Vec3d p2, Vec3d p3);
-bool colinear(double x1, double y1, double x2, double y2, double x3, double y3);
+double distanceRayPlane(const Vec3d& ray_origin, const Vec3d& ray_dir, const Plane& plane);
+bool   boxLineIntersect(const Rectf& box, const Seg2d& line);
+Plane  planeFromTriangle(const Vec3d& p1, const Vec3d& p2, const Vec3d& p3);
+bool   colinear(double x1, double y1, double x2, double y2, double x3, double y3);
 
 template<typename T> T scale(T value, double scale)
 {

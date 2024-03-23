@@ -103,10 +103,10 @@ public:
 	static void beginPropBackup(long current_time);
 	static void endPropBackup();
 
-	static bool multiBoolProperty(vector<MapObject*>& objects, string_view prop, bool& value);
-	static bool multiIntProperty(vector<MapObject*>& objects, string_view prop, int& value);
-	static bool multiFloatProperty(vector<MapObject*>& objects, string_view prop, double& value);
-	static bool multiStringProperty(vector<MapObject*>& objects, string_view prop, string& value);
+	static bool multiBoolProperty(const vector<MapObject*>& objects, string_view prop, bool& value);
+	static bool multiIntProperty(const vector<MapObject*>& objects, string_view prop, int& value);
+	static bool multiFloatProperty(const vector<MapObject*>& objects, string_view prop, double& value);
+	static bool multiStringProperty(const vector<MapObject*>& objects, string_view prop, string& value);
 
 protected:
 	unsigned           index_      = 0;

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -247,36 +247,38 @@ void GfxConvDialog::updateButtons() const
 // -----------------------------------------------------------------------------
 void GfxConvDialog::setupLayout()
 {
-	int px_inner        = ui::pad();
+	namespace wx = wxutil;
+
+	/*int px_inner        = ui::pad();
 	int px_outer        = ui::padLarge();
-	int px_pad          = ui::px(ui::Size::PadMinimum);
+	int px_pad          = ui::px(ui::Size::PadMinimum);*/
 	int px_preview_size = ui::scalePx(192);
 
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 
 	auto m_vbox = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(m_vbox, 1, wxEXPAND | wxALL, px_outer);
+	msizer->Add(m_vbox, wx::sfWithLargeBorder(1).Expand());
 
 	// Add current format label
 	label_current_format_ = new wxStaticText(this, -1, "Current Format:");
-	m_vbox->Add(label_current_format_, 0, wxBOTTOM, px_inner);
+	m_vbox->Add(label_current_format_, wx::sfWithBorder(0, wxBOTTOM));
 
 	// Add 'Convert To' combo box
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, px_outer);
-	hbox->Add(new wxStaticText(this, -1, "Convert to:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, px_pad);
+	m_vbox->Add(hbox, wx::sfWithLargeBorder(0, wxBOTTOM).Expand());
+	hbox->Add(new wxStaticText(this, -1, "Convert to:"), wx::sfWithMinBorder(0, wxRIGHT).CenterVertical());
 	combo_target_format_ = new wxChoice(this, -1);
-	hbox->Add(combo_target_format_, 1, wxEXPAND);
+	hbox->Add(combo_target_format_, wxSizerFlags(1).Expand());
 
 
 	// Add Gfx previews
 	auto frame      = new wxStaticBox(this, -1, "Colour Options");
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	m_vbox->Add(framesizer, 1, wxEXPAND | wxBOTTOM, px_outer);
+	m_vbox->Add(framesizer, wx::sfWithLargeBorder(1, wxBOTTOM).Expand());
 
-	auto gbsizer = new wxGridBagSizer(px_inner, px_inner);
-	framesizer->Add(gbsizer, 1, wxEXPAND | wxALL, px_inner);
+	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gbsizer, wx::sfWithBorder(1).Expand());
 
 	// Current
 	gbsizer->Add(new wxStaticText(this, -1, "Current Graphic"), { 0, 0 }, { 1, 1 });
@@ -309,10 +311,10 @@ void GfxConvDialog::setupLayout()
 	// Add transparency options
 	frame      = new wxStaticBox(this, -1, "Transparency Options");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, px_outer);
+	m_vbox->Add(framesizer, wx::sfWithLargeBorder(0, wxBOTTOM).Expand());
 
-	gbsizer = new wxGridBagSizer(px_inner, px_inner);
-	framesizer->Add(gbsizer, 1, wxEXPAND | wxALL, px_inner);
+	gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gbsizer, wx::sfWithBorder(1).Expand());
 
 	// 'Enable transparency' checkbox
 	cb_enable_transparency_ = new wxCheckBox(this, -1, "Enable Transparency");
@@ -351,7 +353,7 @@ void GfxConvDialog::setupLayout()
 
 	// Buttons
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND);
+	m_vbox->Add(hbox, wxSizerFlags().Expand());
 
 	btn_convert_     = new wxButton(this, -1, "Convert");
 	btn_convert_all_ = new wxButton(this, -1, "Convert All");
@@ -359,10 +361,10 @@ void GfxConvDialog::setupLayout()
 	btn_skip_all_    = new wxButton(this, -1, "Skip All");
 
 	hbox->AddStretchSpacer(1);
-	hbox->Add(btn_convert_, 0, wxEXPAND | wxRIGHT, px_inner);
-	hbox->Add(btn_convert_all_, 0, wxEXPAND | wxRIGHT, px_inner);
-	hbox->Add(btn_skip_, 0, wxEXPAND | wxRIGHT, px_inner);
-	hbox->Add(btn_skip_all_, 0, wxEXPAND);
+	hbox->Add(btn_convert_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_convert_all_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_skip_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_skip_all_, wxSizerFlags().Expand());
 
 
 	// Bind events
@@ -551,7 +553,7 @@ void GfxConvDialog::convertOptions(SIFormat::ConvertOptions& opt) const
 bool GfxConvDialog::itemModified(int index) const
 {
 	// Check index
-	if (index < 0 || index >= (int)items_.size())
+	if (index < 0 || index >= static_cast<int>(items_.size()))
 		return false;
 
 	return items_[index].modified;
@@ -563,7 +565,7 @@ bool GfxConvDialog::itemModified(int index) const
 SImage* GfxConvDialog::itemImage(int index)
 {
 	// Check index
-	if (index < 0 || index >= (int)items_.size())
+	if (index < 0 || index >= static_cast<int>(items_.size()))
 		return nullptr;
 
 	return &(items_[index].image);
@@ -575,7 +577,7 @@ SImage* GfxConvDialog::itemImage(int index)
 SIFormat* GfxConvDialog::itemFormat(int index) const
 {
 	// Check index
-	if (index < 0 || index >= (int)items_.size())
+	if (index < 0 || index >= static_cast<int>(items_.size()))
 		return nullptr;
 
 	return items_[index].new_format;
@@ -587,7 +589,7 @@ SIFormat* GfxConvDialog::itemFormat(int index) const
 Palette* GfxConvDialog::itemPalette(int index) const
 {
 	// Check index
-	if (index < 0 || index >= (int)items_.size())
+	if (index < 0 || index >= static_cast<int>(items_.size()))
 		return nullptr;
 
 	return items_[index].palette;
@@ -617,6 +619,8 @@ void GfxConvDialog::applyConversion()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the dialog is resized

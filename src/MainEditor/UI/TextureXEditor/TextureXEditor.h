@@ -1,21 +1,22 @@
 #pragma once
 
-#include "Archive/Archive.h"
-#include "General/UndoRedo.h"
 #include "Graphics/CTexture/PatchTable.h"
-#include "PatchBrowser.h"
-#include "PatchTablePanel.h"
-#include "TextureEditorPanel.h"
-#include "TextureXPanel.h"
 #include "UI/Controls/STabCtrl.h"
 
 namespace slade
 {
+class PatchBrowser;
+class TextureXPanel;
+class ArchiveEntry;
+class UndoManager;
+class PatchTable;
+class Archive;
+
 class TextureXEditor : public wxPanel
 {
 public:
 	TextureXEditor(wxWindow* parent);
-	~TextureXEditor();
+	~TextureXEditor() override;
 
 	Archive*     archive() const { return archive_; }
 	PatchTable&  patchTable() { return patch_table_; }
@@ -23,18 +24,18 @@ public:
 	UndoManager* undoManager() const { return undo_manager_.get(); }
 
 	bool openArchive(Archive* archive);
-	void updateTexturePalette();
+	void updateTexturePalette() const;
 	void saveChanges();
 	bool close();
 	void showTextureMenu(bool show = true) const;
 	void setSelection(size_t index) const;
-	void setSelection(ArchiveEntry* entry) const;
+	void setSelection(const ArchiveEntry* entry) const;
 	void updateMenuStatus() const;
-	void undo();
-	void redo();
+	void undo() const;
+	void redo() const;
 
 	// Editing
-	void     setFullPath(bool enabled = false) const { patch_browser_->setFullPath(enabled); }
+	void     setFullPath(bool enabled = false) const;
 	bool     removePatch(unsigned index, bool delete_entry = false);
 	int      browsePatchTable(const wxString& first = "") const;
 	wxString browsePatchEntry(const wxString& first = "");

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -42,10 +42,17 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Polygon2D.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -483,7 +490,7 @@ void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_lines_);
 	glVertexPointer(2, GL_FLOAT, 24, nullptr);
 
-	glColorPointer(4, GL_FLOAT, 24, ((char*)nullptr + 8));
+	glColorPointer(4, GL_FLOAT, 24, (static_cast<char*>(nullptr) + 8));
 
 	// Render the VBO
 	if (show_direction)
@@ -940,7 +947,7 @@ bool MapRenderer2D::renderSpriteThing(
 	// Fit to radius if needed
 	if (fitradius)
 	{
-		double scale = ((double)type.radius() * 0.8) / max(hw, hh);
+		double scale = (static_cast<double>(type.radius()) * 0.8) / max(hw, hh);
 		hw *= scale;
 		hh *= scale;
 	}
@@ -1049,7 +1056,7 @@ bool MapRenderer2D::renderSquareThing(
 				tex = mapeditor::textureManager().editorImage("thing/square/normal_d1").gl_id;
 
 				// Setup variables depending on angle
-				switch ((int)angle)
+				switch (static_cast<int>(angle))
 				{
 				case 0: // East: normal, texcoord 0
 					break;
@@ -1851,7 +1858,7 @@ void MapRenderer2D::renderPathedThings(const vector<MapThing*>& things)
 				to->getPoint(MapObject::Point::Mid),
 				from->getPoint(MapObject::Point::Mid),
 				(thing_path.type == PathType::DragonBoth || thing_path.type == PathType::Dragon) ? dragoncol :
-                                                                                                   pathedcol,
+																								   pathedcol,
 				(thing_path.type == PathType::NormalBoth || thing_path.type == PathType::DragonBoth),
 				arrowhead_angle,
 				arrowhead_length);
@@ -2489,7 +2496,7 @@ void MapRenderer2D::renderTaggedFlats(const vector<MapSector*>& sectors, float f
 // Renders the moving overlay for vertex indices in [vertices], to show movement
 // by [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingVertices(const vector<mapeditor::Item>& vertices, Vec2d move_vec) const
+void MapRenderer2D::renderMovingVertices(const vector<Item>& vertices, const Vec2d& move_vec) const
 {
 	vector<uint8_t> lines_drawn(map_->nLines(), 0);
 
@@ -2563,7 +2570,7 @@ void MapRenderer2D::renderMovingVertices(const vector<mapeditor::Item>& vertices
 // Renders the moving overlay for line indices in [lines], to show movement by
 // [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingLines(const vector<mapeditor::Item>& lines, Vec2d move_vec) const
+void MapRenderer2D::renderMovingLines(const vector<Item>& lines, const Vec2d& move_vec) const
 {
 	vector<uint8_t> lines_drawn(map_->nLines(), 0);
 
@@ -2649,7 +2656,7 @@ void MapRenderer2D::renderMovingLines(const vector<mapeditor::Item>& lines, Vec2
 // Renders the moving overlay for sector indices in [sectors], to show movement
 // by [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingSectors(const vector<mapeditor::Item>& sectors, Vec2d move_vec) const
+void MapRenderer2D::renderMovingSectors(const vector<Item>& sectors, const Vec2d& move_vec) const
 {
 	// Determine what lines are being moved
 	vector<uint8_t> lines_moved(map_->nLines(), 0);
@@ -2665,11 +2672,11 @@ void MapRenderer2D::renderMovingSectors(const vector<mapeditor::Item>& sectors, 
 	}
 
 	// Build list of moving lines
-	vector<mapeditor::Item> lines;
+	vector<Item> lines;
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
 		if (lines_moved[a] > 0)
-			lines.emplace_back((int)a, mapeditor::ItemType::Line);
+			lines.emplace_back(static_cast<int>(a), ItemType::Line);
 	}
 
 	// Draw moving lines
@@ -2680,7 +2687,7 @@ void MapRenderer2D::renderMovingSectors(const vector<mapeditor::Item>& sectors, 
 // Renders the moving overlay for thing indices in [things], to show movement by
 // [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingThings(const vector<mapeditor::Item>& things, Vec2d move_vec)
+void MapRenderer2D::renderMovingThings(const vector<Item>& things, const Vec2d& move_vec)
 {
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -2775,7 +2782,7 @@ void MapRenderer2D::renderMovingThings(const vector<mapeditor::Item>& things, Ve
 // -----------------------------------------------------------------------------
 // Renders pasting overlay for [things] at [pos]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderPasteThings(const vector<MapThing*>& things, Vec2d pos)
+void MapRenderer2D::renderPasteThings(const vector<MapThing*>& things, const Vec2d& pos)
 {
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -2858,7 +2865,7 @@ void MapRenderer2D::renderPasteThings(const vector<MapThing*>& things, Vec2d pos
 // -----------------------------------------------------------------------------
 // Renders object edit group overlay for [group]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
+void MapRenderer2D::renderObjectEditGroup(const ObjectEditGroup* group)
 {
 	// Simple test
 	vector<Vec2d> vertex_points;
@@ -3151,7 +3158,7 @@ void MapRenderer2D::updateFlatsVBO()
 // -----------------------------------------------------------------------------
 // Updates map object visibility info depending on the current view
 // -----------------------------------------------------------------------------
-void MapRenderer2D::updateVisibility(Vec2d view_tl, Vec2d view_br)
+void MapRenderer2D::updateVisibility(const Vec2d& view_tl, const Vec2d& view_br)
 {
 	// Sector visibility
 	if (map_->nSectors() != vis_s_.size())

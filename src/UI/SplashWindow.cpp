@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -237,7 +237,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	font.SetWeight(wxFONTWEIGHT_BOLD);
 	dc.SetFont(font);
 	text_size = dc.GetTextExtent(message_);
-	x         = (img_width * 0.5) - int((double)text_size.GetWidth() * 0.5);
+	x         = (img_width * 0.5) - static_cast<int>(static_cast<double>(text_size.GetWidth()) * 0.5);
 	y         = (img_height - 4) - text_size.GetHeight();
 	dc.DrawText(message_, x, y);
 
@@ -286,7 +286,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 		font.SetPointSize(8);
 		dc.SetFont(font);
 		text_size = dc.GetTextExtent(message_progress_);
-		x         = (img_width * 0.5) - int((double)text_size.GetWidth() * 0.5);
+		x         = (img_width * 0.5) - static_cast<int>(static_cast<double>(text_size.GetWidth()) * 0.5);
 		y         = img_height - ui::scalePx(4);
 		dc.SetTextForeground(wxColour(200, 210, 255));
 		dc.DrawText(message_progress_, x, y);

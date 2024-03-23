@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexEditorPanel.h"
+#include "General/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/CodePages.h"
 
@@ -91,7 +92,7 @@ wxString HexTable::GetValue(int row, int col)
 
 		// ASCII
 		else if (view_type_ == 2)
-			return wxString::FromAscii((char)val);
+			return wxString::FromAscii(static_cast<char>(val));
 
 		return "";
 	}
@@ -317,29 +318,27 @@ void HexEditorPanel::setupLayout()
 
 	// Left side
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	GetSizer()->Add(vbox, 0, wxEXPAND);
+	GetSizer()->Add(vbox, wxSizerFlags().Expand());
 
 	// View type
 	wxutil::layoutHorizontally(
 		vbox,
 		vector<wxObject*>{ new wxStaticText(this, -1, "View As:"), rb_view_hex_, rb_view_dec_, rb_view_ascii_ },
-		wxSizerFlags(0).Border(wxBOTTOM, ui::px(ui::Size::PadMinimum)));
+		wxutil::sfWithMinBorder(0, wxBOTTOM));
 
 	// Hex grid
-	vbox->Add(grid_hex_, 0, wxEXPAND);
+	vbox->Add(grid_hex_, wxSizerFlags().Expand());
 
 	// Right side
 	vbox = new wxBoxSizer(wxVERTICAL);
-	GetSizer()->Add(vbox, 1, wxEXPAND | wxLEFT, ui::pad());
+	GetSizer()->Add(vbox, wxutil::sfWithBorder(1, wxLEFT).Expand());
 
 	// Values
 	auto frame      = new wxStaticBox(this, -1, "Values (General)");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	wxutil::layoutVertically(
-		framesizer,
-		{ label_offset_, label_byte_, label_ubyte_, label_ascii_ },
-		wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		framesizer, { label_offset_, label_byte_, label_ubyte_, label_ascii_ }, wxutil::sfWithBorder(1).Expand());
+	vbox->Add(framesizer, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Little endian values
 	frame      = new wxStaticBox(this, -1, "Values (Little Endian)");
@@ -347,8 +346,8 @@ void HexEditorPanel::setupLayout()
 	wxutil::layoutVertically(
 		framesizer,
 		{ label_short_le_, label_ushort_le_, label_int32_le_, label_uint32_le_ },
-		wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		wxutil::sfWithBorder(1).Expand());
+	vbox->Add(framesizer, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Big endian values
 	frame      = new wxStaticBox(this, -1, "Values (Big Endian)");
@@ -356,11 +355,11 @@ void HexEditorPanel::setupLayout()
 	wxutil::layoutVertically(
 		framesizer,
 		{ label_short_be_, label_ushort_be_, label_int32_be_, label_uint32_be_ },
-		wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		wxutil::sfWithBorder(1).Expand());
+	vbox->Add(framesizer, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// 'Go to Offset' button
-	vbox->Add(btn_go_to_offset_, 0, wxBOTTOM, ui::pad());
+	vbox->Add(btn_go_to_offset_, wxutil::sfWithBorder(0, wxBOTTOM));
 }
 
 
@@ -370,6 +369,8 @@ void HexEditorPanel::setupLayout()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the cell selection (focus) is changed

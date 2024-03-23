@@ -1,5 +1,6 @@
-#ifndef COMMON_H
-#define COMMON_H
+
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 // wxWidgets -------------------------------------------------------------------
 
@@ -102,21 +103,6 @@
 
 // Other Libraries -------------------------------------------------------------
 
-// Fluidsynth
-#ifndef NO_FLUIDSYNTH
-#include <fluidsynth.h>
-#endif
-
-// SFML
-#include <SFML/System.hpp>
-
-// Freeimage
-#define FREEIMAGE_LIB
-#include <FreeImage.h>
-#ifndef _WIN32
-#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
-#endif
-
 // fmt
 #include <fmt/core.h>
 
@@ -134,6 +120,7 @@
 #include <optional>
 #include <set>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
-#endif // COMMON_H
+#endif // __COMMON_H__

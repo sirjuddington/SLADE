@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Utility/Colour.h"
-
 namespace slade
 {
+struct ColRGBA;
+
 class ListView : public wxListCtrl
 {
 public:
@@ -18,7 +18,7 @@ public:
 	};
 
 	ListView(wxWindow* parent, int id, long style = wxLC_REPORT);
-	~ListView() = default;
+	~ListView() override = default;
 
 	bool showIcons() const { return icons_; }
 	void showIcons(bool show) { icons_ = show; }

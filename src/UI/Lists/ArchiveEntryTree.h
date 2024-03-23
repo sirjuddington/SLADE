@@ -42,11 +42,11 @@ namespace ui
 
 		void setFilter(string_view name, string_view category);
 		void showModifiedIndicators(bool show) { modified_indicator_ = show; }
-		void setRootDir(shared_ptr<ArchiveDir> dir);
+		void setRootDir(const shared_ptr<ArchiveDir>& dir);
 		void setRootDir(const wxDataViewItem& item);
 		void setPathPanel(ArchivePathPanel* path_panel);
 
-		void openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager, bool force_list = false);
+		void openArchive(const shared_ptr<Archive>& archive, UndoManager* undo_manager, bool force_list = false);
 
 		ArchiveEntry* entryForItem(const wxDataViewItem& item) const
 		{
@@ -91,10 +91,10 @@ namespace ui
 	{
 	public:
 		ArchiveEntryTree(
-			wxWindow*           parent,
-			shared_ptr<Archive> archive,
-			UndoManager*        undo_manager,
-			bool                force_list = false);
+			wxWindow*                  parent,
+			const shared_ptr<Archive>& archive,
+			UndoManager*               undo_manager,
+			bool                       force_list = false);
 
 		ArchiveEntry* entryForItem(const wxDataViewItem& item) const
 		{
@@ -128,7 +128,7 @@ namespace ui
 		void collapseAll(const ArchiveDir& dir_start);
 		void upDir();
 		void homeDir();
-		void goToDir(shared_ptr<ArchiveDir> dir, bool expand = false);
+		void goToDir(const shared_ptr<ArchiveDir>& dir, bool expand = false);
 
 		// Overrides
 		void EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column = nullptr) override;

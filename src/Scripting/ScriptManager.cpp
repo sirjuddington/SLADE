@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -73,7 +73,7 @@ namespace slade::scriptmanager
 // Adds a new editor script of [type], created from [entry]. [cut_path] will be
 // removed from the start of the script's path property
 // -----------------------------------------------------------------------------
-Script* addEditorScriptFromEntry(shared_ptr<ArchiveEntry>& entry, ScriptType type, string_view cut_path)
+Script* addEditorScriptFromEntry(const shared_ptr<ArchiveEntry>& entry, ScriptType type, string_view cut_path)
 {
 	auto s          = std::make_unique<Script>();
 	s->type         = type;
@@ -84,7 +84,7 @@ Script* addEditorScriptFromEntry(shared_ptr<ArchiveEntry>& entry, ScriptType typ
 
 	auto& list = scripts_editor[type];
 	list.push_back(std::move(s));
-	list.back()->text = string((const char*)entry->rawData(), entry->size());
+	list.back()->text = string(reinterpret_cast<const char*>(entry->rawData()), entry->size());
 
 	return list.back().get();
 }
@@ -177,7 +177,7 @@ void loadEditorScripts(ScriptType type, string_view dir)
 // -----------------------------------------------------------------------------
 // Exports all scripts in [list] to .lua files at [path]
 // -----------------------------------------------------------------------------
-void exportUserScripts(string_view path, ScriptList& list)
+void exportUserScripts(string_view path, const ScriptList& list)
 {
 	// Check dir exists
 	auto scripts_dir = app::path(path, app::Dir::User);
@@ -212,7 +212,7 @@ void readResourceEntryText(string& target, string_view res_path)
 {
 	auto entry = app::archiveManager().programResourceArchive()->entryAtPath(res_path);
 	if (entry)
-		target.assign((const char*)entry->rawData(), entry->size());
+		target.assign(reinterpret_cast<const char*>(entry->rawData()), entry->size());
 }
 
 // -----------------------------------------------------------------------------
@@ -302,7 +302,7 @@ bool scriptmanager::renameScript(Script* script, string_view new_name)
 // -----------------------------------------------------------------------------
 // Deletes [script]. Returns false if the script couldn't be deleted
 // -----------------------------------------------------------------------------
-bool scriptmanager::deleteScript(Script* script)
+bool scriptmanager::deleteScript(const Script* script)
 {
 	if (script->read_only || script->type == ScriptType::NonEditor)
 		return false;

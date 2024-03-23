@@ -8,7 +8,7 @@ class ANSICanvas : public OGLCanvas
 {
 public:
 	ANSICanvas(wxWindow* parent, int id);
-	~ANSICanvas();
+	~ANSICanvas() override;
 
 	void draw() override;
 	void drawImage();

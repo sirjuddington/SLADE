@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -62,7 +62,7 @@ MapThing::MapThing(const Vec3d& pos, short type, short angle, short flags, const
 // -----------------------------------------------------------------------------
 // MapThing class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapThing::MapThing(const Vec3d& pos, short type, ParseTreeNode* def) :
+MapThing::MapThing(const Vec3d& pos, short type, const ParseTreeNode* def) :
 	MapObject(Type::Thing),
 	type_{ type },
 	position_{ pos.x, pos.y },
@@ -121,11 +121,11 @@ int MapThing::intProperty(string_view key)
 	if (key == PROP_TYPE)
 		return type_;
 	if (key == PROP_X)
-		return (int)position_.x;
+		return static_cast<int>(position_.x);
 	if (key == PROP_Y)
-		return (int)position_.y;
+		return static_cast<int>(position_.y);
 	if (key == PROP_Z)
-		return (int)z_;
+		return static_cast<int>(z_);
 	if (key == PROP_ANGLE)
 		return angle_;
 	if (key == PROP_FLAGS)
@@ -251,7 +251,7 @@ void MapThing::copy(MapObject* c)
 // Sets the position of the thing to [pos].
 // If [modify] is false, the thing won't be marked as modified
 // -----------------------------------------------------------------------------
-void MapThing::move(Vec2d pos, bool modify)
+void MapThing::move(const Vec2d& pos, bool modify)
 {
 	if (modify)
 		setModified();
@@ -291,7 +291,7 @@ void MapThing::setAngle(int angle, bool modify)
 // Sets the angle (direction) of the thing to be facing towards [point].
 // If [modify] is false, the thing won't be marked as modified
 // -----------------------------------------------------------------------------
-void MapThing::setAnglePoint(Vec2d point, bool modify)
+void MapThing::setAnglePoint(const Vec2d& point, bool modify)
 {
 	// Calculate direction vector
 	Vec2d  vec(point.x - position_.x, point.y - position_.y);

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,6 +38,7 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapSector.h"
 
@@ -60,9 +61,14 @@ SectorInfoOverlay::SectorInfoOverlay()
 }
 
 // -----------------------------------------------------------------------------
+// SectorInfoOverlay class destructor
+// -----------------------------------------------------------------------------
+SectorInfoOverlay::~SectorInfoOverlay() = default;
+
+// -----------------------------------------------------------------------------
 // Updates the overlay with info from [sector]
 // -----------------------------------------------------------------------------
-void SectorInfoOverlay::update(MapSector* sector)
+void SectorInfoOverlay::update(const MapSector* sector)
 {
 	if (!sector)
 		return;
@@ -159,7 +165,6 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string_view textu
 	int    line_height  = 16 * scale;
 
 	// Get colours
-	auto col_bg = colourconfig::colour("map_overlay_background");
 	auto col_fg = colourconfig::colour("map_overlay_foreground");
 	col_fg.a    = col_fg.a * alpha;
 

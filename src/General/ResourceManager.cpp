@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,6 +37,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/Console.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Utility/StringUtils.h"
 
@@ -207,7 +208,7 @@ ArchiveEntry* EntryResource::getEntry(const Archive* priority, string_view nspac
 // -----------------------------------------------------------------------------
 // Adds a texture to this resource
 // -----------------------------------------------------------------------------
-void TextureResource::add(CTexture* tex, Archive* parent)
+void TextureResource::add(CTexture* tex, const Archive* parent)
 {
 	// Check args
 	auto parent_shared = app::archiveManager().shareArchive(parent);
@@ -803,7 +804,6 @@ CONSOLE_COMMAND(list_res_patches, 0, false)
 	app::resources().listAllPatches();
 }
 
-#include "App.h"
 CONSOLE_COMMAND(test_res_speed, 0, false)
 {
 	vector<ArchiveEntry*> list;
@@ -830,5 +830,5 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 	}
 
 	float avg = static_cast<float>(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;
-	log::console(fmt::format("Test took {}ms avg", (int)avg));
+	log::console(fmt::format("Test took {}ms avg", static_cast<int>(avg)));
 }

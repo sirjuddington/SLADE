@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -132,7 +132,7 @@ bool DatArchive::open(const MemChunk& mc)
 			{
 				++len;
 			}
-			myname.assign((const char*)mcdata + start, len);
+			myname.assign(reinterpret_cast<const char*>(mcdata) + start, len);
 			lastname  = myname;
 			namecount = 0;
 		}
@@ -199,15 +199,15 @@ string DatArchive::detectNamespace(ArchiveEntry* entry)
 string DatArchive::detectNamespace(unsigned index, ArchiveDir* dir)
 {
 	// Textures
-	if (index > (unsigned)walls_[0] && index < (unsigned)walls_[1])
+	if (index > static_cast<unsigned>(walls_[0]) && index < static_cast<unsigned>(walls_[1]))
 		return "textures";
 
 	// Flats
-	if (index > (unsigned)flats_[0] && index < (unsigned)flats_[1])
+	if (index > static_cast<unsigned>(flats_[0]) && index < static_cast<unsigned>(flats_[1]))
 		return "flats";
 
 	// Sprites
-	if (index > (unsigned)sprites_[0] && index < (unsigned)sprites_[1])
+	if (index > static_cast<unsigned>(sprites_[0]) && index < static_cast<unsigned>(sprites_[1]))
 		return "sprites";
 
 	return "global";
@@ -346,9 +346,7 @@ bool DatArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 		return false;
 
 	// Do default rename
-	bool ok = Archive::renameEntry(entry, name, force);
-
-	if (ok)
+	if (Archive::renameEntry(entry, name, force))
 	{
 		// Update namespaces if necessary
 		if (isNamespaceEntry(entry))
@@ -370,9 +368,7 @@ bool DatArchive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 		return false;
 
 	// Do default swap (force root dir)
-	bool ok = Archive::swapEntries(entry1, entry2);
-
-	if (ok)
+	if (Archive::swapEntries(entry1, entry2))
 	{
 		// Update namespaces if needed
 		if (isNamespaceEntry(entry1) || isNamespaceEntry(entry2))

@@ -1,36 +1,20 @@
 #pragma once
 
-#include "Graphics/SImage/SImage.h"
-#include "Graphics/Translation.h"
 #include "UI/Canvas/OGLCanvas.h"
-#include "UI/Controls/ColourBox.h"
 
+class GradientBox;
 class wxListBox;
 class wxPanel;
 
 namespace slade
 {
+class ColourBox;
+struct ColRGBA;
+class Translation;
+class SImage;
 class GfxCanvas;
 class PaletteCanvas;
 class ArchiveEntry;
-
-class GradientBox : public OGLCanvas
-{
-public:
-	GradientBox(wxWindow* parent, int steps = -1);
-	~GradientBox() override = default;
-
-	void setStartCol(ColRGBA col) { col_start_.set(col.r, col.g, col.b, 255); }
-	void setEndCol(ColRGBA col) { col_end_.set(col.r, col.g, col.b, 255); }
-	void setSteps(int steps) { steps_ = steps; }
-
-	void draw() override;
-
-private:
-	ColRGBA col_start_ = ColRGBA::BLACK;
-	ColRGBA col_end_   = ColRGBA::WHITE;
-	int     steps_     = 0;
-};
 
 class TranslationEditorDialog : public wxDialog
 {
@@ -42,25 +26,25 @@ public:
 		SImage*         preview_image = nullptr);
 	~TranslationEditorDialog() override = default;
 
-	Translation& getTranslation() { return translation_; }
+	Translation& getTranslation() const { return *translation_; }
 	bool         getTruecolor() const;
 
 	void openTranslation(const Translation& trans);
 	void openRange(int index);
-	void updateListItem(int index);
-	void setStartColour(const ColRGBA& col);
-	void setEndColour(const ColRGBA& col);
-	void setTintColour(const ColRGBA& col);
-	void setTintAmount(int amount);
+	void updateListItem(int index) const;
+	void setStartColour(const ColRGBA& col) const;
+	void setEndColour(const ColRGBA& col) const;
+	void setTintColour(const ColRGBA& col) const;
+	void setTintAmount(int amount) const;
 	void showPaletteTarget();
 	void showGradientTarget();
 	void showTintTarget(bool tint);
-	void updatePreviews();
+	void updatePreviews() const;
 
 private:
-	Palette     palette_;
-	Translation translation_;
-	SImage      image_preview_;
+	unique_ptr<Palette>     palette_;
+	unique_ptr<Translation> translation_;
+	unique_ptr<SImage>      image_preview_;
 
 	PaletteCanvas* pal_canvas_original_ = nullptr;
 	wxListBox*     list_translations_   = nullptr;

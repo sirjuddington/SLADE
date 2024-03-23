@@ -1,5 +1,6 @@
 #pragma once
 
+#include "UI/Browser/BrowserItem.h"
 #include "UI/Browser/BrowserWindow.h"
 
 namespace slade
@@ -14,22 +15,22 @@ class ThingBrowserItem : public BrowserItem
 public:
 	ThingBrowserItem(const wxString& name, const game::ThingType& type, unsigned index) :
 		BrowserItem{ name, index },
-		type_{ type }
+		thing_type_{ &type }
 	{
 	}
-	~ThingBrowserItem() = default;
+	~ThingBrowserItem() override = default;
 
 	bool loadImage() override;
 
 private:
-	game::ThingType const& type_;
+	game::ThingType const* thing_type_;
 };
 
 class ThingTypeBrowser : public BrowserWindow
 {
 public:
 	ThingTypeBrowser(wxWindow* parent, int type = -1);
-	~ThingTypeBrowser() = default;
+	~ThingTypeBrowser() override = default;
 
 	void setupViewOptions();
 	int  selectedType() const;

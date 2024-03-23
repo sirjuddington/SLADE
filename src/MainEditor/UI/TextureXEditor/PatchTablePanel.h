@@ -2,11 +2,11 @@
 
 #include "General/SAction.h"
 #include "General/Sigslot.h"
-#include "Graphics/CTexture/PatchTable.h"
 #include "UI/Lists/VirtualListView.h"
 
 namespace slade
 {
+class PatchTable;
 class GfxCanvas;
 class TextureXEditor;
 class SToolBar;
@@ -24,7 +24,7 @@ protected:
 
 public:
 	PatchTableListView(wxWindow* parent, PatchTable* patch_table);
-	~PatchTableListView() = default;
+	~PatchTableListView() override = default;
 
 	PatchTable* patchTable() const { return patch_table_; }
 
@@ -43,7 +43,7 @@ class PatchTablePanel : public wxPanel, SActionHandler
 {
 public:
 	PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor = nullptr);
-	~PatchTablePanel() = default;
+	~PatchTablePanel() override = default;
 
 private:
 	PatchTable*         patch_table_      = nullptr;

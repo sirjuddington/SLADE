@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -32,10 +32,14 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ActionSpecialDialog.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/UDMFProperty.h"
+#include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
+#include "SLADEMap/MapObject/MapLine.h"
 #include "SpecialPresetDialog.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
@@ -79,10 +83,13 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 
 	// Bind events
 	Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, [&](wxDataViewEvent& e) { e.Veto(); });
-	Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [&](wxDataViewEvent&) {
-		if (parent_dialog_)
-			parent_dialog_->EndModal(wxID_OK);
-	});
+	Bind(
+		wxEVT_DATAVIEW_ITEM_ACTIVATED,
+		[&](wxDataViewEvent&)
+		{
+			if (parent_dialog_)
+				parent_dialog_->EndModal(wxID_OK);
+		});
 
 	// 64 is an arbitrary fudge factor -- should be at least the width of a
 	// scrollbar plus the expand icons plus any extra padding
@@ -212,7 +219,7 @@ public:
 	{
 		SetSizer(new wxBoxSizer(wxVERTICAL));
 	}
-	~ArgsControl() = default;
+	~ArgsControl() override = default;
 
 	virtual long getArgValue()         = 0;
 	virtual void setArgValue(long val) = 0;
@@ -246,7 +253,7 @@ public:
 		wxString val = text_control_->GetValue();
 
 		// Empty string means ignore it
-		if (val == "")
+		if (val.empty())
 			return -1;
 
 		long ret;
@@ -542,7 +549,7 @@ private:
 	// -------------------------------------------------------------------------
 	// Do the actual work of updating the checkbox states.
 	// -------------------------------------------------------------------------
-	void updateCheckState(long val)
+	void updateCheckState(long val) const
 	{
 		for (unsigned i = 0; i < arg_.custom_flags.size(); i++)
 		{
@@ -688,13 +695,12 @@ void ArgsPanel::setup(const game::ArgSpec& args, bool udmf)
 	}
 
 	// Setup layout
-	int row = 0;
 	for (unsigned a = 0; a < 5; a++)
 	{
 		auto& arg      = args[a];
 		bool  has_desc = false;
 
-		if ((int)a < args.count)
+		if (static_cast<int>(a) < args.count)
 		{
 			has_desc = !arg.desc.empty();
 
@@ -770,7 +776,7 @@ void ArgsPanel::setup(const game::ArgSpec& args, bool udmf)
 // -----------------------------------------------------------------------------
 // Sets the arg values
 // -----------------------------------------------------------------------------
-void ArgsPanel::setValues(int args[5])
+void ArgsPanel::setValues(int args[5]) const
 {
 	for (unsigned a = 0; a < 5; a++)
 	{
@@ -781,7 +787,7 @@ void ArgsPanel::setValues(int args[5])
 // -----------------------------------------------------------------------------
 // Returns the current value for arg [index]
 // -----------------------------------------------------------------------------
-int ArgsPanel::argValue(int index)
+int ArgsPanel::argValue(int index) const
 {
 	// Check index
 	if (index < 0 || index > 4 || !control_args_[index])
@@ -836,13 +842,13 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	{
 		// Action Special radio button
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		sizer->Add(hbox, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 		rb_special_ = new wxRadioButton(this, -1, "Action Special", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		hbox->Add(rb_special_, 0, wxEXPAND | wxRIGHT, ui::pad());
+		hbox->Add(rb_special_, wxutil::sfWithBorder(0, wxRIGHT).Expand());
 
 		// Generalised Special radio button
 		rb_generalised_ = new wxRadioButton(this, -1, "Generalised Special");
-		hbox->Add(rb_generalised_, 0, wxEXPAND);
+		hbox->Add(rb_generalised_, wxSizerFlags().Expand());
 
 		// Boom generalised line special panel
 		panel_gen_specials_ = new GenLineSpecialPanel(this);
@@ -875,13 +881,13 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 	// Special box
 	text_special_ = new NumberTextCtrl(panel_action_special_);
-	sizer->Add(text_special_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(text_special_, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 	text_special_->Bind(
 		wxEVT_TEXT, [&](wxCommandEvent& e) { tree_specials_->showSpecial(text_special_->number(), false); });
 
 	// Action specials tree
 	tree_specials_ = new ActionSpecialTreeView(panel_action_special_);
-	sizer->Add(tree_specials_, 1, wxEXPAND);
+	sizer->Add(tree_specials_, wxSizerFlags(1).Expand());
 
 	if (show_trigger_)
 	{
@@ -904,20 +910,20 @@ void ActionSpecialPanel::setupSpecialPanel()
 				{
 					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
 					auto sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
-					sizer->Add(sizer_triggers, 0, wxEXPAND | wxTOP, ui::pad());
+					sizer->Add(sizer_triggers, wxutil::sfWithBorder(0, wxTOP).Expand());
 
 					frame_sizer = new wxFlexGridSizer(3, ui::pad() / 2, ui::pad());
 					frame_sizer->AddGrowableCol(0, 1);
 					frame_sizer->AddGrowableCol(1, 1);
 					frame_sizer->AddGrowableCol(2, 1);
-					sizer_triggers->Add(frame_sizer, 1, wxEXPAND | wxALL, ui::pad());
+					sizer_triggers->Add(frame_sizer, wxutil::sfWithBorder(1).Expand());
 
 					named_flexgrids.find(group)->second = frame_sizer;
 				}
 
 				auto cb_trigger = new wxCheckBox(
 					panel_action_special_, -1, i.second.name(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
-				frame_sizer->Add(cb_trigger, 0, wxEXPAND);
+				frame_sizer->Add(cb_trigger, wxSizerFlags().Expand());
 
 				flags_.push_back({ cb_trigger, -1, i.second.propName() });
 			}
@@ -928,26 +934,26 @@ void ActionSpecialPanel::setupSpecialPanel()
 		{
 			auto frame_trigger = new wxStaticBox(panel_action_special_, -1, "Special Trigger");
 			auto sizer_trigger = new wxStaticBoxSizer(frame_trigger, wxVERTICAL);
-			sizer->Add(sizer_trigger, 0, wxEXPAND | wxALL, ui::pad());
+			sizer->Add(sizer_trigger, wxutil::sfWithBorder().Expand());
 
 			// Add triggers dropdown
 			auto spac_triggers = wxutil::arrayStringStd(game::configuration().allSpacTriggers());
 			choice_trigger_ = new wxChoice(panel_action_special_, -1, wxDefaultPosition, wxDefaultSize, spac_triggers);
-			sizer_trigger->Add(choice_trigger_, 0, wxEXPAND | wxALL, ui::pad());
+			sizer_trigger->Add(choice_trigger_, wxutil::sfWithBorder().Expand());
 
 			// Add activation-related flags
 			auto fg_sizer = new wxFlexGridSizer(3, ui::pad() / 2, ui::pad());
 			fg_sizer->AddGrowableCol(0, 1);
 			fg_sizer->AddGrowableCol(1, 1);
 			fg_sizer->AddGrowableCol(2, 1);
-			sizer_trigger->Add(fg_sizer, 0, wxEXPAND | wxALL, ui::pad());
+			sizer_trigger->Add(fg_sizer, wxutil::sfWithBorder().Expand());
 			for (unsigned a = 0; a < game::configuration().nLineFlags(); a++)
 			{
 				if (game::configuration().lineFlag(a).activation)
 				{
 					flags_.push_back(
 						{ new wxCheckBox(panel_action_special_, -1, game::configuration().lineFlag(a).name),
-						  (int)a,
+						  static_cast<int>(a),
 						  game::configuration().lineFlag(a).udmf });
 					fg_sizer->Add(flags_.back().check_box, 0, wxEXPAND);
 				}
@@ -956,7 +962,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 		// Preset button
 		btn_preset_ = new wxButton(panel_action_special_, -1, "Preset...");
-		sizer->Add(btn_preset_, 0, wxALIGN_RIGHT | wxTOP, ui::pad());
+		sizer->Add(btn_preset_, wxutil::sfWithBorder(0, wxTOP).Right());
 		btn_preset_->Bind(wxEVT_BUTTON, &ActionSpecialPanel::onSpecialPresetClicked, this);
 	}
 
@@ -998,7 +1004,7 @@ void ActionSpecialPanel::setSpecial(int special)
 // -----------------------------------------------------------------------------
 // Sets the action special trigger (hexen or udmf)
 // -----------------------------------------------------------------------------
-void ActionSpecialPanel::setTrigger(int index)
+void ActionSpecialPanel::setTrigger(int index) const
 {
 	if (!show_trigger_)
 		return;
@@ -1008,14 +1014,14 @@ void ActionSpecialPanel::setTrigger(int index)
 		choice_trigger_->SetSelection(index);
 
 	// UDMF Trigger
-	else if (index < (int)flags_.size())
+	else if (index < static_cast<int>(flags_.size()))
 		flags_[index].check_box->SetValue(true);
 }
 
 // -----------------------------------------------------------------------------
 // Sets the action special trigger from a udmf trigger name (hexen or udmf)
 // -----------------------------------------------------------------------------
-void ActionSpecialPanel::setTrigger(const wxString& trigger)
+void ActionSpecialPanel::setTrigger(const wxString& trigger) const
 {
 	if (!show_trigger_)
 		return;
@@ -1043,7 +1049,7 @@ void ActionSpecialPanel::setTrigger(const wxString& trigger)
 // -----------------------------------------------------------------------------
 // Deselects all triggers (or resets to 'player cross' in hexen format)
 // -----------------------------------------------------------------------------
-void ActionSpecialPanel::clearTrigger()
+void ActionSpecialPanel::clearTrigger() const
 {
 	// UDMF Triggers and Flags
 	for (auto& flag : flags_)
@@ -1101,7 +1107,7 @@ void ActionSpecialPanel::showGeneralised(bool show)
 // Applies selected special (if [apply_special] is true), trigger(s) and args
 // (if any) to [lines]
 // -----------------------------------------------------------------------------
-void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
+void ActionSpecialPanel::applyTo(const vector<MapObject*>& lines, bool apply_special) const
 {
 	// Special
 	int special = selectedSpecial();
@@ -1140,11 +1146,11 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 	// Trigger(s)
 	if (show_trigger_)
 	{
-		for (auto& line : lines)
+		for (auto line : lines)
 		{
 			// Hexen
 			if (choice_trigger_)
-				game::configuration().setLineSpacTrigger(choice_trigger_->GetSelection(), (MapLine*)line);
+				game::configuration().setLineSpacTrigger(choice_trigger_->GetSelection(), dynamic_cast<MapLine*>(line));
 
 			// UDMF / Flags
 			for (auto& flag : flags_)
@@ -1153,7 +1159,8 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 					continue;
 
 				if (choice_trigger_)
-					game::configuration().setLineFlag(flag.index, (MapLine*)line, flag.check_box->GetValue());
+					game::configuration().setLineFlag(
+						flag.index, dynamic_cast<MapLine*>(line), flag.check_box->GetValue());
 				else
 					line->setBoolProperty(flag.udmf.ToStdString(), flag.check_box->GetValue());
 			}
@@ -1164,7 +1171,7 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 // -----------------------------------------------------------------------------
 // Loads special/trigger/arg values from [lines]
 // -----------------------------------------------------------------------------
-void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
+void ActionSpecialPanel::openLines(const vector<MapObject*>& lines)
 {
 	if (lines.empty())
 		return;
@@ -1192,10 +1199,10 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 		// Hexen
 		if (choice_trigger_)
 		{
-			int trigger = game::configuration().spacTriggerIndexHexen((MapLine*)lines[0]);
+			int trigger = game::configuration().spacTriggerIndexHexen(dynamic_cast<MapLine*>(lines[0]));
 			for (unsigned a = 1; a < lines.size(); a++)
 			{
-				if (trigger != game::configuration().spacTriggerIndexHexen((MapLine*)lines[a]))
+				if (trigger != game::configuration().spacTriggerIndexHexen(dynamic_cast<MapLine*>(lines[a])))
 				{
 					trigger = -1;
 					break;
@@ -1209,13 +1216,15 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 			for (auto& flag : flags_)
 			{
 				// Set initial flag checked value
-				flag.check_box->SetValue(game::configuration().lineFlagSet(flag.index, (MapLine*)lines[0]));
+				flag.check_box->SetValue(
+					game::configuration().lineFlagSet(flag.index, dynamic_cast<MapLine*>(lines[0])));
 
 				// Go through subsequent lines
 				for (unsigned b = 1; b < lines.size(); b++)
 				{
 					// Check for mismatch
-					if (flag.check_box->GetValue() != game::configuration().lineFlagSet(flag.index, (MapLine*)lines[b]))
+					if (flag.check_box->GetValue()
+						!= game::configuration().lineFlagSet(flag.index, dynamic_cast<MapLine*>(lines[b])))
 					{
 						// Set undefined
 						flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
@@ -1247,6 +1256,8 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the radio button selection is changed
@@ -1351,14 +1362,14 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 	if (mapeditor::editContext().mapDesc().format == MapFormat::Doom || !show_args)
 	{
 		panel_special_ = new ActionSpecialPanel(this, false);
-		sizer->Add(panel_special_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
+		sizer->Add(panel_special_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 	}
 
 	// Args (use tabs)
 	else
 	{
 		stc_tabs_ = STabCtrl::createControl(this);
-		sizer->Add(stc_tabs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
+		sizer->Add(stc_tabs_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 		// Special panel
 		panel_special_ = new ActionSpecialPanel(stc_tabs_);
@@ -1372,7 +1383,7 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 
 	// Add buttons
 	sizer->AddSpacer(ui::pad());
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Init
 	SetSizerAndFit(sizer);
@@ -1423,7 +1434,7 @@ int ActionSpecialDialog::argValue(int index) const
 // -----------------------------------------------------------------------------
 // Applies selected trigger(s) (hexen or udmf) to [lines]
 // -----------------------------------------------------------------------------
-void ActionSpecialDialog::applyTo(vector<MapObject*>& lines, bool apply_special) const
+void ActionSpecialDialog::applyTo(const vector<MapObject*>& lines, bool apply_special) const
 {
 	panel_special_->applyTo(lines, apply_special);
 }

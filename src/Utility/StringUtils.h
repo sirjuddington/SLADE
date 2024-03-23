@@ -9,28 +9,28 @@ class ArchiveEntry;
 namespace strutil
 {
 	// Static common strings
-	static string FULLSTOP              = ".";
-	static string COMMA                 = ",";
-	static string COLON                 = ":";
-	static string SEMICOLON             = ";";
-	static string SLASH_FORWARD         = "/";
-	static string SLASH_BACK            = "\\";
-	static string QUOTE_SINGLE          = "'";
-	static string QUOTE_DOUBLE          = "\"";
-	static string CARET                 = "^";
-	static string ESCAPED_QUOTE_DOUBLE  = "\\\"";
-	static string ESCAPED_SLASH_BACK    = "\\\\";
-	static string CURLYBRACE_OPEN       = "{";
-	static string CURLYBRACE_CLOSE      = "}";
-	static string DASH                  = "-";
-	static string WHITESPACE_CHARACTERS = " \t\n\r\f\v";
-	static string EMPTY                 = "";
-	static string SPACE                 = " ";
-	static string UNDERSCORE            = "_";
-	static string AMPERSAND             = "&";
-	static string EQUALS                = "=";
-	static string BOOL_TRUE             = "true";
-	static string BOOL_FALSE            = "false";
+	static const string FULLSTOP              = ".";
+	static const string COMMA                 = ",";
+	static const string COLON                 = ":";
+	static const string SEMICOLON             = ";";
+	static const string SLASH_FORWARD         = "/";
+	static const string SLASH_BACK            = "\\";
+	static const string QUOTE_SINGLE          = "'";
+	static const string QUOTE_DOUBLE          = "\"";
+	static const string CARET                 = "^";
+	static const string ESCAPED_QUOTE_DOUBLE  = "\\\"";
+	static const string ESCAPED_SLASH_BACK    = "\\\\";
+	static const string CURLYBRACE_OPEN       = "{";
+	static const string CURLYBRACE_CLOSE      = "}";
+	static const string DASH                  = "-";
+	static const string WHITESPACE_CHARACTERS = " \t\n\r\f\v";
+	static const string EMPTY                 = "";
+	static const string SPACE                 = " ";
+	static const string UNDERSCORE            = "_";
+	static const string AMPERSAND             = "&";
+	static const string EQUALS                = "=";
+	static const string BOOL_TRUE             = "true";
+	static const string BOOL_FALSE            = "false";
 
 	// String comparisons and checks
 	// CI = Case-Insensitive
@@ -103,7 +103,7 @@ namespace strutil
 
 	// Misc
 	void processIncludes(const string& filename, string& out);
-	void processIncludes(ArchiveEntry* entry, string& out, bool use_res = true);
+	void processIncludes(const ArchiveEntry* entry, string& out, bool use_res = true);
 
 	// Conversion
 	int         asInt(string_view str, int base = 10);
@@ -271,7 +271,7 @@ namespace wxStringUtils
 	wxString escapedString(const wxString& str, bool swap_backslash = false);
 
 	void processIncludes(const wxString& filename, wxString& out);
-	void processIncludes(ArchiveEntry* entry, wxString& out, bool use_res = true);
+	void processIncludes(const ArchiveEntry* entry, wxString& out, bool use_res = true);
 
 	bool isInteger(const wxString& str, bool allow_hex = true);
 	bool isHex(const wxString& str);

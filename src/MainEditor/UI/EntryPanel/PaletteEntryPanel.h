@@ -1,7 +1,6 @@
 #pragma once
 
 #include "EntryPanel.h"
-#include "Graphics/Palette/Palette.h"
 
 /* TODO:
  * - Improve and enrich palette edition functions
@@ -18,6 +17,7 @@
 
 namespace slade
 {
+class Palette;
 class PaletteCanvas;
 class ArchiveEntry;
 

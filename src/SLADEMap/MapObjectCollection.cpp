@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,9 +35,38 @@
 #include "Game/Configuration.h"
 #include "MapObject/MapLine.h"
 #include "MapObject/MapSector.h"
+#include "MapObject/MapSide.h"
+#include "MapObject/MapThing.h"
+#include "MapObject/MapVertex.h"
+#include "MapObjectList/LineList.h"
+#include "MapObjectList/SectorList.h"
+#include "MapObjectList/SideList.h"
+#include "MapObjectList/ThingList.h"
+#include "MapObjectList/VertexList.h"
 #include "SLADEMap.h"
 
 using namespace slade;
+
+
+namespace
+{
+template<class T>
+void putModifiedObjects(const MapObjectList<T>& objects, long since, vector<MapObject*>& modified_objects)
+{
+	for (const auto& object : objects)
+		if (object->modifiedTime() >= since)
+			modified_objects.push_back(object);
+}
+
+template<class T> bool anyModifiedSince(const MapObjectList<T>& objects, long since)
+{
+	for (const auto& object : objects)
+		if (object->modifiedTime() > since)
+			return true;
+
+	return false;
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -45,6 +74,12 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 MapObjectCollection::MapObjectCollection(SLADEMap* parent_map) : parent_map_{ parent_map }
 {
+	vertices_ = std::make_unique<VertexList>();
+	sides_    = std::make_unique<SideList>();
+	lines_    = std::make_unique<LineList>();
+	sectors_  = std::make_unique<SectorList>();
+	things_   = std::make_unique<ThingList>();
+
 	// Object id 0 is always null
 	objects_.emplace_back(nullptr, false);
 }
@@ -63,7 +98,7 @@ void MapObjectCollection::addMapObject(unique_ptr<MapObject> object)
 // Removes [object] from the map
 // (keeps it in the objects list, but removes the 'in map' flag)
 // -----------------------------------------------------------------------------
-void MapObjectCollection::removeMapObject(MapObject* object)
+void MapObjectCollection::removeMapObject(const MapObject* object)
 {
 	objects_[object->obj_id_].in_map = false;
 }
@@ -75,27 +110,27 @@ void MapObjectCollection::putObjectIdList(MapObject::Type type, vector<unsigned>
 {
 	if (type == MapObject::Type::Vertex)
 	{
-		for (auto& vertex : vertices_)
+		for (auto& vertex : *vertices_)
 			list.push_back(vertex->obj_id_);
 	}
 	else if (type == MapObject::Type::Line)
 	{
-		for (auto& line : lines_)
+		for (auto& line : *lines_)
 			list.push_back(line->obj_id_);
 	}
 	else if (type == MapObject::Type::Side)
 	{
-		for (auto& side : sides_)
+		for (auto& side : *sides_)
 			list.push_back(side->obj_id_);
 	}
 	else if (type == MapObject::Type::Sector)
 	{
-		for (auto& sector : sectors_)
+		for (auto& sector : *sectors_)
 			list.push_back(sector->obj_id_);
 	}
 	else if (type == MapObject::Type::Thing)
 	{
-		for (auto& thing : things_)
+		for (auto& thing : *things_)
 			list.push_back(thing->obj_id_);
 	}
 }
@@ -104,81 +139,91 @@ void MapObjectCollection::putObjectIdList(MapObject::Type type, vector<unsigned>
 // Add all object ids in [list] to the map as [type], clearing any objects of
 // [type] currently in the map
 // -----------------------------------------------------------------------------
-void MapObjectCollection::restoreObjectIdList(MapObject::Type type, vector<unsigned>& list)
+void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector<unsigned>& list)
 {
 	if (type == MapObject::Type::Vertex)
 	{
+		auto vertices = *vertices_;
+
 		// Clear
-		for (auto& vertex : vertices_)
+		for (auto& vertex : vertices)
 			objects_[vertex->obj_id_].in_map = false;
-		vertices_.clear();
+		vertices.clear();
 
 		// Restore
 		for (auto id : list)
 		{
 			objects_[id].in_map = true;
-			vertices_.add(dynamic_cast<MapVertex*>(objects_[id].object.get()));
-			vertices_.last()->index_ = vertices_.size() - 1;
+			vertices.add(dynamic_cast<MapVertex*>(objects_[id].object.get()));
+			vertices.last()->index_ = vertices.size() - 1;
 		}
 	}
 	else if (type == MapObject::Type::Line)
 	{
+		auto lines = *lines_;
+
 		// Clear
-		for (auto& line : lines_)
+		for (auto& line : lines)
 			objects_[line->obj_id_].in_map = false;
-		lines_.clear();
+		lines.clear();
 
 		// Restore
 		for (auto id : list)
 		{
 			objects_[id].in_map = true;
-			lines_.add(dynamic_cast<MapLine*>(objects_[id].object.get()));
-			lines_.back()->index_ = lines_.size() - 1;
+			lines.add(dynamic_cast<MapLine*>(objects_[id].object.get()));
+			lines.back()->index_ = lines.size() - 1;
 		}
 	}
 	else if (type == MapObject::Type::Side)
 	{
+		auto sides = *sides_;
+
 		// Clear
-		for (auto& side : sides_)
+		for (auto& side : sides)
 			objects_[side->obj_id_].in_map = false;
-		sides_.clear();
+		sides.clear();
 
 		// Restore
 		for (auto id : list)
 		{
 			objects_[id].in_map = true;
-			sides_.add(dynamic_cast<MapSide*>(objects_[id].object.get()));
-			sides_.back()->index_ = sides_.size() - 1;
+			sides.add(dynamic_cast<MapSide*>(objects_[id].object.get()));
+			sides.back()->index_ = sides.size() - 1;
 		}
 	}
 	else if (type == MapObject::Type::Sector)
 	{
+		auto sectors = *sectors_;
+
 		// Clear
-		for (auto& sector : sectors_)
+		for (auto& sector : sectors)
 			objects_[sector->obj_id_].in_map = false;
-		sectors_.clear();
+		sectors.clear();
 
 		// Restore
 		for (auto id : list)
 		{
 			objects_[id].in_map = true;
-			sectors_.add(dynamic_cast<MapSector*>(objects_[id].object.get()));
-			sectors_.back()->index_ = sectors_.size() - 1;
+			sectors.add(dynamic_cast<MapSector*>(objects_[id].object.get()));
+			sectors.back()->index_ = sectors.size() - 1;
 		}
 	}
 	else if (type == MapObject::Type::Thing)
 	{
+		auto things = *things_;
+
 		// Clear
-		for (auto& thing : things_)
+		for (auto& thing : things)
 			objects_[thing->obj_id_].in_map = false;
-		things_.clear();
+		things.clear();
 
 		// Restore
 		for (auto id : list)
 		{
 			objects_[id].in_map = true;
-			things_.add(dynamic_cast<MapThing*>(objects_[id].object.get()));
-			things_.back()->index_ = things_.size() - 1;
+			things.add(dynamic_cast<MapThing*>(objects_[id].object.get()));
+			things.back()->index_ = things.size() - 1;
 		}
 	}
 }
@@ -186,27 +231,27 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, vector<unsig
 // -----------------------------------------------------------------------------
 // Refreshes all map object indices
 // -----------------------------------------------------------------------------
-void MapObjectCollection::refreshIndices()
+void MapObjectCollection::refreshIndices() const
 {
 	// Vertex indices
-	for (unsigned a = 0; a < vertices_.size(); a++)
-		vertices_[a]->index_ = a;
+	for (unsigned a = 0; a < vertices_->size(); a++)
+		(*vertices_)[a]->index_ = a;
 
 	// Side indices
-	for (unsigned a = 0; a < sides_.size(); a++)
-		sides_[a]->index_ = a;
+	for (unsigned a = 0; a < sides_->size(); a++)
+		(*sides_)[a]->index_ = a;
 
 	// Line indices
-	for (unsigned a = 0; a < lines_.size(); a++)
-		lines_[a]->index_ = a;
+	for (unsigned a = 0; a < lines_->size(); a++)
+		(*lines_)[a]->index_ = a;
 
 	// Sector indices
-	for (unsigned a = 0; a < sectors_.size(); a++)
-		sectors_[a]->index_ = a;
+	for (unsigned a = 0; a < sectors_->size(); a++)
+		(*sectors_)[a]->index_ = a;
 
 	// Thing indices
-	for (unsigned a = 0; a < things_.size(); a++)
-		things_[a]->index_ = a;
+	for (unsigned a = 0; a < things_->size(); a++)
+		(*things_)[a]->index_ = a;
 }
 
 // -----------------------------------------------------------------------------
@@ -215,11 +260,11 @@ void MapObjectCollection::refreshIndices()
 void MapObjectCollection::clear()
 {
 	// Clear lists
-	sides_.clear();
-	lines_.clear();
-	vertices_.clear();
-	sectors_.clear();
-	things_.clear();
+	sides_->clear();
+	lines_->clear();
+	vertices_->clear();
+	sectors_->clear();
+	things_->clear();
 
 	// Clear map objects
 	objects_.clear();
@@ -231,7 +276,7 @@ void MapObjectCollection::clear()
 // -----------------------------------------------------------------------------
 // Removes [vertex] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeVertex(MapVertex* vertex, bool merge_lines)
+bool MapObjectCollection::removeVertex(const MapVertex* vertex, bool merge_lines)
 {
 	// Check vertex was given
 	if (!vertex)
@@ -245,13 +290,15 @@ bool MapObjectCollection::removeVertex(MapVertex* vertex, bool merge_lines)
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 {
+	auto vertices = *vertices_;
+
 	// Check index
-	if (index >= vertices_.size())
+	if (index >= vertices.size())
 		return false;
 
 	// Check if we should merge connected lines
 	bool merged = false;
-	auto vertex = vertices_[index];
+	auto vertex = vertices[index];
 	if (merge_lines && vertex->nConnectedLines() == 2)
 	{
 		// Get other end vertex of second connected line
@@ -298,7 +345,7 @@ bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 
 	// Remove the vertex
 	removeMapObject(vertex);
-	vertices_.remove(index);
+	vertices.remove(index);
 
 	if (parent_map_)
 		parent_map_->setGeometryUpdated();
@@ -309,7 +356,7 @@ bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 // -----------------------------------------------------------------------------
 // Removes [line] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeLine(MapLine* line)
+bool MapObjectCollection::removeLine(const MapLine* line)
 {
 	// Check line was given
 	if (!line)
@@ -323,14 +370,16 @@ bool MapObjectCollection::removeLine(MapLine* line)
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeLine(unsigned index)
 {
+	auto lines = *lines_;
+
 	// Check index
-	if (index >= lines_.size())
+	if (index >= lines.size())
 		return false;
 
-	log::info(4, "id {}  index {}  objindex {}", lines_[index]->obj_id_, index, lines_[index]->index_);
+	log::info(4, "id {}  index {}  objindex {}", lines[index]->obj_id_, index, lines[index]->index_);
 
 	// Init
-	auto line = lines_[index];
+	auto line = lines[index];
 	line->resetInternals();
 
 	// Remove the line's sides
@@ -345,7 +394,7 @@ bool MapObjectCollection::removeLine(unsigned index)
 
 	// Remove the line
 	removeMapObject(line);
-	lines_.remove(index);
+	lines.remove(index);
 
 	if (parent_map_)
 		parent_map_->setGeometryUpdated();
@@ -356,7 +405,7 @@ bool MapObjectCollection::removeLine(unsigned index)
 // -----------------------------------------------------------------------------
 // Removes [side] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeSide(MapSide* side, bool remove_from_line)
+bool MapObjectCollection::removeSide(const MapSide* side, bool remove_from_line)
 {
 	// Check side was given
 	if (!side)
@@ -370,18 +419,20 @@ bool MapObjectCollection::removeSide(MapSide* side, bool remove_from_line)
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 {
+	auto sides = *sides_;
+
 	// Check index
-	if (index >= sides_.size())
+	if (index >= sides.size())
 		return false;
 
 	if (remove_from_line)
 	{
 		// Remove from parent line
-		auto l = sides_[index]->parentLine();
+		auto l = sides[index]->parentLine();
 		l->setModified();
-		if (l->s1() == sides_[index])
+		if (l->s1() == sides[index])
 			l->setS1(nullptr);
-		if (l->s2() == sides_[index])
+		if (l->s2() == sides[index])
 			l->setS2(nullptr);
 
 		// Set appropriate line flags
@@ -393,13 +444,13 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 	}
 
 	// Remove side from its sector, if any
-	if (sides_[index]->sector())
+	if (sides[index]->sector())
 	{
-		auto  sector          = sides_[index]->sector();
+		auto  sector          = sides[index]->sector();
 		auto& connected_sides = sector->connectedSides();
 		for (unsigned a = 0; a < connected_sides.size(); a++)
 		{
-			if (connected_sides[a] == sides_[index])
+			if (connected_sides[a] == sides[index])
 			{
 				connected_sides.erase(connected_sides.begin() + a);
 
@@ -413,8 +464,8 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 	}
 
 	// Remove the side
-	removeMapObject(sides_[index]);
-	sides_.remove(index);
+	removeMapObject(sides[index]);
+	sides.remove(index);
 
 	return true;
 }
@@ -422,7 +473,7 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 // -----------------------------------------------------------------------------
 // Removes [sector] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeSector(MapSector* sector)
+bool MapObjectCollection::removeSector(const MapSector* sector)
 {
 	// Check sector was given
 	if (!sector)
@@ -436,13 +487,15 @@ bool MapObjectCollection::removeSector(MapSector* sector)
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeSector(unsigned index)
 {
+	auto sectors = *sectors_;
+
 	// Check index
-	if (index >= sectors_.size())
+	if (index >= sectors.size())
 		return false;
 
 	// Remove the sector
-	removeMapObject(sectors_[index]);
-	sectors_.remove(index);
+	removeMapObject(sectors[index]);
+	sectors.remove(index);
 
 	return true;
 }
@@ -450,7 +503,7 @@ bool MapObjectCollection::removeSector(unsigned index)
 // -----------------------------------------------------------------------------
 // Removes [thing] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeThing(MapThing* thing)
+bool MapObjectCollection::removeThing(const MapThing* thing)
 {
 	// Check thing was given
 	if (!thing)
@@ -464,13 +517,15 @@ bool MapObjectCollection::removeThing(MapThing* thing)
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeThing(unsigned index)
 {
+	auto things = *things_;
+
 	// Check index
-	if (index >= things_.size())
+	if (index >= things.size())
 		return false;
 
 	// Remove the thing
-	removeMapObject(things_[index]);
-	things_.remove(index);
+	removeMapObject(things[index]);
+	things.remove(index);
 
 	if (parent_map_)
 		parent_map_->setThingsUpdated();
@@ -483,10 +538,10 @@ bool MapObjectCollection::removeThing(unsigned index)
 // -----------------------------------------------------------------------------
 MapVertex* MapObjectCollection::addVertex(unique_ptr<MapVertex> vertex)
 {
-	vertex->index_ = vertices_.size();
-	vertices_.add(vertex.get());
+	vertex->index_ = vertices_->size();
+	vertices_->add(vertex.get());
 	addMapObject(std::move(vertex));
-	return vertices_.back();
+	return vertices_->back();
 }
 
 // -----------------------------------------------------------------------------
@@ -494,10 +549,10 @@ MapVertex* MapObjectCollection::addVertex(unique_ptr<MapVertex> vertex)
 // -----------------------------------------------------------------------------
 MapSide* MapObjectCollection::addSide(unique_ptr<MapSide> side)
 {
-	side->index_ = sides_.size();
-	sides_.add(side.get());
+	side->index_ = sides_->size();
+	sides_->add(side.get());
 	addMapObject(std::move(side));
-	return sides_.back();
+	return sides_->back();
 }
 
 // -----------------------------------------------------------------------------
@@ -505,10 +560,10 @@ MapSide* MapObjectCollection::addSide(unique_ptr<MapSide> side)
 // -----------------------------------------------------------------------------
 MapLine* MapObjectCollection::addLine(unique_ptr<MapLine> line)
 {
-	line->index_ = lines_.size();
-	lines_.add(line.get());
+	line->index_ = lines_->size();
+	lines_->add(line.get());
 	addMapObject(std::move(line));
-	return lines_.back();
+	return lines_->back();
 }
 
 // -----------------------------------------------------------------------------
@@ -516,10 +571,10 @@ MapLine* MapObjectCollection::addLine(unique_ptr<MapLine> line)
 // -----------------------------------------------------------------------------
 MapSector* MapObjectCollection::addSector(unique_ptr<MapSector> sector)
 {
-	sector->index_ = sectors_.size();
-	sectors_.add(sector.get());
+	sector->index_ = sectors_->size();
+	sectors_->add(sector.get());
 	addMapObject(std::move(sector));
-	return sectors_.back();
+	return sectors_->back();
 }
 
 // -----------------------------------------------------------------------------
@@ -527,10 +582,10 @@ MapSector* MapObjectCollection::addSector(unique_ptr<MapSector> sector)
 // -----------------------------------------------------------------------------
 MapThing* MapObjectCollection::addThing(unique_ptr<MapThing> thing)
 {
-	thing->index_ = things_.size();
-	things_.add(thing.get());
+	thing->index_ = things_->size();
+	things_->add(thing.get());
 	addMapObject(std::move(thing));
-	return things_.back();
+	return things_->back();
 }
 
 // -----------------------------------------------------------------------------
@@ -544,7 +599,7 @@ MapSide* MapObjectCollection::duplicateSide(MapSide* side)
 	auto ns = std::make_unique<MapSide>(side->sector());
 	ns->copy(side);
 	addSide(std::move(ns));
-	return sides_.back();
+	return sides_->back();
 }
 
 // -----------------------------------------------------------------------------
@@ -556,15 +611,15 @@ vector<MapObject*> MapObjectCollection::modifiedObjects(long since, MapObject::T
 	vector<MapObject*> modified_objects;
 
 	if (type == MapObject::Type::Object || type == MapObject::Type::Vertex)
-		vertices_.putModifiedObjects(since, modified_objects);
+		putModifiedObjects(*vertices_, since, modified_objects);
 	if (type == MapObject::Type::Object || type == MapObject::Type::Side)
-		sides_.putModifiedObjects(since, modified_objects);
+		putModifiedObjects(*sides_, since, modified_objects);
 	if (type == MapObject::Type::Object || type == MapObject::Type::Line)
-		lines_.putModifiedObjects(since, modified_objects);
+		putModifiedObjects(*lines_, since, modified_objects);
 	if (type == MapObject::Type::Object || type == MapObject::Type::Sector)
-		sectors_.putModifiedObjects(since, modified_objects);
+		putModifiedObjects(*sectors_, since, modified_objects);
 	if (type == MapObject::Type::Object || type == MapObject::Type::Thing)
-		things_.putModifiedObjects(since, modified_objects);
+		putModifiedObjects(*things_, since, modified_objects);
 
 	return modified_objects;
 }
@@ -609,12 +664,12 @@ bool MapObjectCollection::modifiedSince(long since, MapObject::Type type) const
 	switch (type)
 	{
 	case MapObject::Type::Object: return lastModifiedTime() > since;
-	case MapObject::Type::Vertex: return vertices_.modifiedSince(since);
-	case MapObject::Type::Line: return lines_.modifiedSince(since);
-	case MapObject::Type::Side: return sides_.modifiedSince(since);
-	case MapObject::Type::Sector: return sectors_.modifiedSince(since);
-	case MapObject::Type::Thing: return things_.modifiedSince(since);
-	default: return false;
+	case MapObject::Type::Vertex: return anyModifiedSince(*vertices_, since);
+	case MapObject::Type::Line:   return anyModifiedSince(*lines_, since);
+	case MapObject::Type::Side:   return anyModifiedSince(*sides_, since);
+	case MapObject::Type::Sector: return anyModifiedSince(*sectors_, since);
+	case MapObject::Type::Thing:  return anyModifiedSince(*things_, since);
+	default:                      return false;
 	}
 }
 
@@ -624,10 +679,11 @@ bool MapObjectCollection::modifiedSince(long since, MapObject::Type type) const
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeDetachedVertices()
 {
-	int count = 0;
-	for (int a = vertices_.size() - 1; a >= 0; a--)
+	auto vertices = *vertices_;
+	int  count    = 0;
+	for (int a = vertices.size() - 1; a >= 0; a--)
 	{
-		if (vertices_[a]->nConnectedLines() == 0)
+		if (vertices[a]->nConnectedLines() == 0)
 		{
 			removeVertex(a);
 			count++;
@@ -645,10 +701,11 @@ int MapObjectCollection::removeDetachedVertices()
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeDetachedSides()
 {
-	int count = 0;
-	for (int a = sides_.size() - 1; a >= 0; a--)
+	auto sides = *sides_;
+	int  count = 0;
+	for (int a = sides.size() - 1; a >= 0; a--)
 	{
-		if (!sides_[a]->parentLine())
+		if (!sides[a]->parentLine())
 		{
 			removeSide(a, false);
 			count++;
@@ -666,10 +723,11 @@ int MapObjectCollection::removeDetachedSides()
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeDetachedSectors()
 {
-	int count = 0;
-	for (int a = sectors_.size() - 1; a >= 0; a--)
+	auto sectors = *sectors_;
+	int  count   = 0;
+	for (int a = sectors.size() - 1; a >= 0; a--)
 	{
-		if (sectors_[a]->connectedSides().empty())
+		if (sectors[a]->connectedSides().empty())
 		{
 			removeSector(a);
 			count++;
@@ -687,10 +745,11 @@ int MapObjectCollection::removeDetachedSectors()
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeZeroLengthLines()
 {
-	int count = 0;
-	for (unsigned a = 0; a < lines_.size(); a++)
+	auto lines = *lines_;
+	int  count = 0;
+	for (unsigned a = 0; a < lines.size(); a++)
 	{
-		if (lines_[a]->v1() == lines_[a]->v2())
+		if (lines[a]->v1() == lines[a]->v2())
 		{
 			removeLine(a);
 			a--;
@@ -706,10 +765,11 @@ int MapObjectCollection::removeZeroLengthLines()
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeInvalidSides()
 {
-	int count = 0;
-	for (unsigned a = 0; a < sides_.size(); a++)
+	auto sides = *sides_;
+	int  count = 0;
+	for (unsigned a = 0; a < sides.size(); a++)
 	{
-		if (!sides_[a]->sector())
+		if (!sides[a]->sector())
 		{
 			removeSide(a);
 			a--;
@@ -726,11 +786,11 @@ int MapObjectCollection::removeInvalidSides()
 void MapObjectCollection::rebuildConnectedLines()
 {
 	// Clear vertex connected lines lists
-	for (auto& vertex : vertices_)
+	for (auto& vertex : *vertices_)
 		vertex->clearConnectedLines();
 
 	// Connect lines to their vertices
-	for (auto& line : lines_)
+	for (auto& line : *lines_)
 	{
 		line->v1()->connectLine(line);
 		line->v2()->connectLine(line);
@@ -743,11 +803,11 @@ void MapObjectCollection::rebuildConnectedLines()
 void MapObjectCollection::rebuildConnectedSides()
 {
 	// Clear sector connected sides lists
-	for (auto& sector : sectors_)
+	for (auto& sector : *sectors_)
 		sector->clearConnectedSides();
 
 	// Connect sides to their sectors
-	for (auto& side : sides_)
+	for (auto& side : *sides_)
 	{
 		if (side->sector())
 			side->sector()->connectSide(side);

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -126,8 +126,7 @@ bool ResArchive::readDirectory(const MemChunk& mc, size_t dir_offset, size_t num
 		size_t d_o, n_l;
 		if (isResArchive(nlump->data(), d_o, n_l))
 		{
-			auto ndir = createDir(name, parent);
-			if (ndir)
+			if (auto ndir = createDir(name, parent))
 			{
 				ui::setSplashProgressMessage(fmt::format("Reading res archive data: {} directory", name));
 				// Save offset to restore it once the recursion is done

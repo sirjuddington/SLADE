@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Utility/Colour.h"
 
 namespace slade
@@ -25,7 +26,7 @@ public:
 		uint8_t start = 0;
 		uint8_t end   = 0;
 
-		IndexRange(int start, int end) : start{ (uint8_t)start }, end{ (uint8_t)end } {}
+		IndexRange(int start, int end) : start{ static_cast<uint8_t>(start) }, end{ static_cast<uint8_t>(end) } {}
 
 		string asText() const { return fmt::format("{}:{}", start, end); }
 	};
@@ -273,20 +274,20 @@ public:
 	bool        isEmpty() const { return built_in_name_.empty() && translations_.empty(); }
 
 	unsigned      nRanges() const { return translations_.size(); }
-	TransRange*   range(unsigned index);
+	TransRange*   range(unsigned index) const;
 	const string& builtInName() const { return built_in_name_; }
 	uint8_t       desaturationAmount() const { return desat_amount_; }
 
 	void setBuiltInName(string_view name) { built_in_name_ = name; }
 	void setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
 
-	ColRGBA translate(const ColRGBA& col, Palette* pal = nullptr);
+	ColRGBA translate(const ColRGBA& col, const Palette* pal = nullptr) const;
 
 	TransRange* addRange(TransRange::Type type, int pos = -1, int range_start = 0, int range_end = 0);
 	void        removeRange(int pos);
 	void        swapRanges(int pos1, int pos2);
 
-	static ColRGBA specialBlend(const ColRGBA& col, uint8_t type, Palette* pal = nullptr);
+	static ColRGBA specialBlend(const ColRGBA& col, uint8_t type, const Palette* pal = nullptr);
 	static string  getPredefined(string_view def);
 
 private:

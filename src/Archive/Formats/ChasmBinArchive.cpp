@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -195,8 +195,7 @@ bool ChasmBinArchive::write(MemChunk& mc)
 
 	if (num_entries > MAX_ENTRY_COUNT)
 	{
-		log::error(
-			"ChasmBinArchive::write: Bin archive can contain no more than {} entries", (unsigned)MAX_ENTRY_COUNT);
+		log::error("ChasmBinArchive::write: Bin archive can contain no more than {} entries", MAX_ENTRY_COUNT);
 		global::error = "Maximum number of entries exceeded for Chasm: The Rift bin archive";
 		return false;
 	}

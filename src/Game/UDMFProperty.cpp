@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -48,7 +48,7 @@ using namespace game;
 // -----------------------------------------------------------------------------
 // Reads a UDMF property definition from a parsed tree [node]
 // -----------------------------------------------------------------------------
-void UDMFProperty::parse(ParseTreeNode* node, string_view group)
+void UDMFProperty::parse(const ParseTreeNode* node, string_view group)
 {
 	// Set group and property name
 	group_    = group;
@@ -107,18 +107,18 @@ void UDMFProperty::parse(ParseTreeNode* node, string_view group)
 		{
 			switch (type_)
 			{
-			case Type::Boolean: default_value_ = prop->boolValue(); break;
-			case Type::Int: default_value_ = prop->intValue(); break;
-			case Type::Float: default_value_ = prop->floatValue(); break;
-			case Type::String: default_value_ = prop->stringValue(); break;
+			case Type::Boolean:       default_value_ = prop->boolValue(); break;
+			case Type::Int:           default_value_ = prop->intValue(); break;
+			case Type::Float:         default_value_ = prop->floatValue(); break;
+			case Type::String:        default_value_ = prop->stringValue(); break;
 			case Type::ActionSpecial: default_value_ = prop->intValue(); break;
 			case Type::SectorSpecial: default_value_ = prop->intValue(); break;
-			case Type::ThingType: default_value_ = prop->intValue(); break;
-			case Type::Angle: default_value_ = prop->intValue(); break;
-			case Type::TextureWall: default_value_ = prop->stringValue(); break;
-			case Type::TextureFlat: default_value_ = prop->stringValue(); break;
-			case Type::ID: default_value_ = prop->intValue(); break;
-			default: default_value_ = prop->stringValue(); break;
+			case Type::ThingType:     default_value_ = prop->intValue(); break;
+			case Type::Angle:         default_value_ = prop->intValue(); break;
+			case Type::TextureWall:   default_value_ = prop->stringValue(); break;
+			case Type::TextureFlat:   default_value_ = prop->stringValue(); break;
+			case Type::ID:            default_value_ = prop->intValue(); break;
+			default:                  default_value_ = prop->stringValue(); break;
 			}
 
 			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work
@@ -179,20 +179,20 @@ string UDMFProperty::getStringRep()
 
 	switch (type_)
 	{
-	case Type::Boolean: ret += ", type = bool"; break;
-	case Type::Int: ret += ", type = int"; break;
-	case Type::Float: ret += ", type = float"; break;
-	case Type::String: ret += ", type = string"; break;
-	case Type::Colour: ret += ", type = colour"; break;
+	case Type::Boolean:       ret += ", type = bool"; break;
+	case Type::Int:           ret += ", type = int"; break;
+	case Type::Float:         ret += ", type = float"; break;
+	case Type::String:        ret += ", type = string"; break;
+	case Type::Colour:        ret += ", type = colour"; break;
 	case Type::ActionSpecial: ret += ", type = actionspecial"; break;
 	case Type::SectorSpecial: ret += ", type = sectorspecial"; break;
-	case Type::ThingType: ret += ", type = thingtype"; break;
-	case Type::Angle: ret += ", type = angle"; break;
-	case Type::TextureWall: ret += ", type = wall texture"; break;
-	case Type::TextureFlat: ret += ", type = flat texture"; break;
-	case Type::ID: ret += ", type = id"; break;
-	default: ret += ", ******unknown type********"; break;
-	};
+	case Type::ThingType:     ret += ", type = thingtype"; break;
+	case Type::Angle:         ret += ", type = angle"; break;
+	case Type::TextureWall:   ret += ", type = wall texture"; break;
+	case Type::TextureFlat:   ret += ", type = flat texture"; break;
+	case Type::ID:            ret += ", type = id"; break;
+	default:                  ret += ", ******unknown type********"; break;
+	}
 
 	if (has_default_)
 	{

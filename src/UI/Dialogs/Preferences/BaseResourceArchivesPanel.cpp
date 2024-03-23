@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -65,7 +65,7 @@ namespace
 // registry key into the reference, and returns true if the value actually
 // exists and isn't an empty string.
 // -----------------------------------------------------------------------------
-bool QueryPathKey(wxRegKey::StdKey hkey, const wxString& path, const wxString& variable, wxString& value)
+bool queryPathKey(wxRegKey::StdKey hkey, const wxString& path, const wxString& variable, wxString& value)
 {
 	wxRegKey key(hkey, path);
 	key.QueryValue(variable, value);
@@ -218,14 +218,14 @@ void BaseResourceArchivesPanel::autodetect() const
 	// should be safe to use in all cases.
 	wxString gogregistrypath = "Software\\GOG.com";
 #endif
-	if (QueryPathKey(wxRegKey::HKLM, gogregistrypath, "DefaultPackPath", path))
+	if (queryPathKey(wxRegKey::HKLM, gogregistrypath, "DefaultPackPath", path))
 	{
 		auto list = p.parseTreeRoot()->childPTN("gog");
 		for (size_t i = 0; i < list->nChildren(); ++i)
 		{
 			auto child = list->childPTN(i);
 			gamepath   = gogregistrypath + (child->childPTN("id"))->stringValue();
-			if (QueryPathKey(wxRegKey::HKLM, gamepath, "Path", path))
+			if (queryPathKey(wxRegKey::HKLM, gamepath, "Path", path))
 				paths.Add(path + (child->childPTN("path"))->stringValue());
 		}
 	}
@@ -234,8 +234,8 @@ void BaseResourceArchivesPanel::autodetect() const
 
 	// Now query Steam paths -- Windows only for now as well
 #ifdef __WXMSW__
-	if (QueryPathKey(wxRegKey::HKCU, "Software\\Valve\\Steam", "SteamPath", gamepath)
-		|| QueryPathKey(wxRegKey::HKLM, "Software\\Valve\\Steam", "InstallPath", gamepath))
+	if (queryPathKey(wxRegKey::HKCU, "Software\\Valve\\Steam", "SteamPath", gamepath)
+		|| queryPathKey(wxRegKey::HKLM, "Software\\Valve\\Steam", "InstallPath", gamepath))
 	{
 		gamepath += "/SteamApps/common/";
 		auto list = p.parseTreeRoot()->childPTN("steam");
@@ -299,6 +299,8 @@ void BaseResourceArchivesPanel::applyPreferences()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the 'Add Archive' button is clicked

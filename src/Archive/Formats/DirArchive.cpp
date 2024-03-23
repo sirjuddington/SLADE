@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -451,7 +451,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
+MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
 {
 	MapDesc map;
 
@@ -480,7 +480,7 @@ Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> DirArchive::detectMaps()
+vector<MapDesc> DirArchive::detectMaps()
 {
 	vector<MapDesc> ret;
 
@@ -649,9 +649,8 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		// Deleted Entries
 		else if (change.action == DirEntryChange::Action::DeletedFile)
 		{
-			const auto entry = entryAtPath(change.entry_path);
 			// If the parent directory was already removed, this entry no longer exists
-			if (entry)
+			if (const auto entry = entryAtPath(change.entry_path))
 				removeEntry(entry);
 		}
 

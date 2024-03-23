@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,145 +37,187 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// Defines
+// Values
 //
 // -----------------------------------------------------------------------------
-#define GenFloorBase 0x6000
-#define GenCeilingBase 0x4000
-#define GenDoorBase 0x3c00
-#define GenLockedBase 0x3800
-#define GenLiftBase 0x3400
-#define GenStairsBase 0x3000
-#define GenCrusherBase 0x2F80
-
-#define TriggerType 0x0007
-#define TriggerTypeShift 0
-
-#define FloorCrush 0x1000
-#define FloorChange 0x0c00
-#define FloorTarget 0x0380
-#define FloorDirection 0x0040
-#define FloorModel 0x0020
-#define FloorSpeed 0x0018
-
-#define FloorCrushShift 12
-#define FloorChangeShift 10
-#define FloorTargetShift 7
-#define FloorDirectionShift 6
-#define FloorModelShift 5
-#define FloorSpeedShift 3
-
-#define CeilingCrush 0x1000
-#define CeilingChange 0x0c00
-#define CeilingTarget 0x0380
-#define CeilingDirection 0x0040
-#define CeilingModel 0x0020
-#define CeilingSpeed 0x0018
-
-#define CeilingCrushShift 12
-#define CeilingChangeShift 10
-#define CeilingTargetShift 7
-#define CeilingDirectionShift 6
-#define CeilingModelShift 5
-#define CeilingSpeedShift 3
-
-#define LiftTarget 0x0300
-#define LiftDelay 0x00c0
-#define LiftMonster 0x0020
-#define LiftSpeed 0x0018
-
-#define LiftTargetShift 8
-#define LiftDelayShift 6
-#define LiftMonsterShift 5
-#define LiftSpeedShift 3
-
-#define StairIgnore 0x0200
-#define StairDirection 0x0100
-#define StairStep 0x00c0
-#define StairMonster 0x0020
-#define StairSpeed 0x0018
-
-#define StairIgnoreShift 9
-#define StairDirectionShift 8
-#define StairStepShift 6
-#define StairMonsterShift 5
-#define StairSpeedShift 3
-
-#define CrusherSilent 0x0040
-#define CrusherMonster 0x0020
-#define CrusherSpeed 0x0018
-
-#define CrusherSilentShift 6
-#define CrusherMonsterShift 5
-#define CrusherSpeedShift 3
-
-#define DoorDelay 0x0300
-#define DoorMonster 0x0080
-#define DoorKind 0x0060
-#define DoorSpeed 0x0018
-
-#define DoorDelayShift 8
-#define DoorMonsterShift 7
-#define DoorKindShift 5
-#define DoorSpeedShift 3
-
-#define LockedNKeys 0x0200
-#define LockedKey 0x01c0
-#define LockedKind 0x0020
-#define LockedSpeed 0x0018
-
-#define LockedNKeysShift 9
-#define LockedKeyShift 6
-#define LockedKindShift 5
-#define LockedSpeedShift 3
-
-
-// -----------------------------------------------------------------------------
-//
-// genlinespecial Namespace
-//
-// -----------------------------------------------------------------------------
-namespace slade::genlinespecial
+namespace
 {
-static const char* Triggers[] = {
+enum
+{
+	GenFloorBase   = 0x6000,
+	GenCeilingBase = 0x4000,
+	GenDoorBase    = 0x3c00,
+	GenLockedBase  = 0x3800,
+	GenLiftBase    = 0x3400,
+	GenStairsBase  = 0x3000,
+	GenCrusherBase = 0x2F80
+};
+
+enum
+{
+	TriggerType      = 0x0007,
+	TriggerTypeShift = 0
+};
+
+enum
+{
+	FloorCrush     = 0x1000,
+	FloorChange    = 0x0c00,
+	FloorTarget    = 0x0380,
+	FloorDirection = 0x0040,
+	FloorModel     = 0x0020,
+	FloorSpeed     = 0x0018
+};
+
+enum
+{
+	FloorCrushShift     = 12,
+	FloorChangeShift    = 10,
+	FloorTargetShift    = 7,
+	FloorDirectionShift = 6,
+	FloorModelShift     = 5,
+	FloorSpeedShift     = 3
+};
+
+enum
+{
+	CeilingCrush     = 0x1000,
+	CeilingChange    = 0x0c00,
+	CeilingTarget    = 0x0380,
+	CeilingDirection = 0x0040,
+	CeilingModel     = 0x0020,
+	CeilingSpeed     = 0x0018
+};
+
+enum
+{
+	CeilingCrushShift     = 12,
+	CeilingChangeShift    = 10,
+	CeilingTargetShift    = 7,
+	CeilingDirectionShift = 6,
+	CeilingModelShift     = 5,
+	CeilingSpeedShift     = 3
+};
+
+enum
+{
+	LiftTarget  = 0x0300,
+	LiftDelay   = 0x00c0,
+	LiftMonster = 0x0020,
+	LiftSpeed   = 0x0018
+};
+
+enum
+{
+	LiftTargetShift  = 8,
+	LiftDelayShift   = 6,
+	LiftMonsterShift = 5,
+	LiftSpeedShift   = 3
+};
+
+enum
+{
+	StairIgnore    = 0x0200,
+	StairDirection = 0x0100,
+	StairStep      = 0x00c0,
+	StairMonster   = 0x0020,
+	StairSpeed     = 0x0018
+};
+
+enum
+{
+	StairIgnoreShift    = 9,
+	StairDirectionShift = 8,
+	StairStepShift      = 6,
+	StairMonsterShift   = 5,
+	StairSpeedShift     = 3
+};
+
+enum
+{
+	CrusherSilent  = 0x0040,
+	CrusherMonster = 0x0020,
+	CrusherSpeed   = 0x0018
+};
+
+enum
+{
+	CrusherSilentShift  = 6,
+	CrusherMonsterShift = 5,
+	CrusherSpeedShift   = 3
+};
+
+enum
+{
+	DoorDelay   = 0x0300,
+	DoorMonster = 0x0080,
+	DoorKind    = 0x0060,
+	DoorSpeed   = 0x0018
+};
+
+enum
+{
+	DoorDelayShift   = 8,
+	DoorMonsterShift = 7,
+	DoorKindShift    = 5,
+	DoorSpeedShift   = 3
+};
+
+enum
+{
+	LockedNKeys = 0x0200,
+	LockedKey   = 0x01c0,
+	LockedKind  = 0x0020,
+	LockedSpeed = 0x0018
+};
+
+enum
+{
+	LockedNKeysShift = 9,
+	LockedKeyShift   = 6,
+	LockedKindShift  = 5,
+	LockedSpeedShift = 3
+};
+
+const char* triggers[] = {
 	"W1", "WR", "S1", "SR", "G1", "GR", "D1", "DR",
 };
 
-static const char* FloorTargets[] = {
+const char* floor_targets[] = {
 	"to Highest N Floor", "to Lowest N Floor", "to Next N Floor", "to Lowest N Ceiling",
 	"to Ceiling",         "by Lower Tex",      "24 Units",        "32 Units",
 };
 
-static const char* Directions[] = {
+const char* directions[] = {
 	"Down",
 	"Up",
 };
 
-static const char* Speeds[] = {
+const char* speeds[] = {
 	"Slow",
 	"Normal",
 	"Fast",
 	"Turbo",
 };
 
-static const char* Changers[] = {
+const char* changers[] = {
 	"",
 	"Zero Type/Copy Tex",
 	"Copy Tex",
 	"Copy Type/Copy Tex",
 };
 
-static const char* Models[] = {
+const char* models[] = {
 	"Trigger",
 	"Numeric",
 };
 
-static const char* Crushers[] = {
+const char* crushers[] = {
 	"",
 	"Cr",
 };
 
-static const char* CeilingTargets[] = {
+const char* ceiling_targets[] = {
 	"to Highest N Ceiling",
 	"to Lowest N Ceiling",
 	"to Next N Ceiling",
@@ -186,57 +228,66 @@ static const char* CeilingTargets[] = {
 	"32 Units",
 };
 
-static const char* Doors1[] = {
+const char* doors1[] = {
 	"OpnD",
 	"Opn",
 	"ClsD",
 	"Cls",
 };
 
-static const char* Doors2[] = {
+const char* doors2[] = {
 	"Cls",
 	"",
 	"Opn",
 	"",
 };
 
-static const char* Delays[] = {
+const char* delays[] = {
 	"1",
 	"4",
 	"9",
 	"30",
 };
 
-static const char* LockedDelays[] = {
+const char* locked_delays[] = {
 	"4",
 };
 
-static const char* Locks[] = {
+const char* locks[] = {
 	"Any Key", "Red Card", "Blue Card", "Yellow Card", "Red Skull", "Blue Skull", "Yellow Skull", "All 6 Keys",
 	"Any Key", "Red Key",  "Blue Key",  "Yellow Key",  "Red Key",   "Blue Key",   "Yellow Key",   "All 3 Keys",
 };
 
-static const char* LiftTargets[] = {
+const char* lift_targets[] = {
 	"to Lowest N Floor",
 	"to Next N Floor",
 	"to Lowest N Ceiling",
 	"Perpetual",
 };
 
-static const char* LiftDelays[] = {
+const char* lift_delays[] = {
 	"1",
 	"3",
 	"5",
 	"10",
 };
 
-static const char* Steps[] = {
+const char* steps[] = {
 	"4",
 	"8",
 	"16",
 	"24",
 };
+} // namespace
 
+
+// -----------------------------------------------------------------------------
+//
+// genlinespecial Namespace
+//
+// -----------------------------------------------------------------------------
+namespace slade::genlinespecial
+{
 // ------------------------------------------------------------------------
 // Returns a string representation of the generalised line value [type]
 // ------------------------------------------------------------------------
@@ -255,18 +306,18 @@ string parseLineType(int type)
 		int model     = (type & FloorModel) >> FloorModelShift;
 
 		// Trigger
-		type_string += Triggers[trigger];
+		type_string += triggers[trigger];
 		if (change == 0 && model == 1)
 			type_string += "M";
 
 		type_string += " Floor ";
 
 		// Direction, target, speed
-		type_string += fmt::format("{} {} {}", Directions[direction], FloorTargets[target], Speeds[speed]);
+		type_string += fmt::format("{} {} {}", directions[direction], floor_targets[target], speeds[speed]);
 
 		// Change
 		if (type & FloorChange)
-			type_string += fmt::format(" {} ({})", Changers[change], Models[model]);
+			type_string += fmt::format(" {} ({})", changers[change], models[model]);
 
 		// Crush
 		if (type & FloorCrush)
@@ -284,18 +335,18 @@ string parseLineType(int type)
 		int model     = (type & CeilingModel) >> CeilingModelShift;
 
 		// Trigger
-		type_string += Triggers[trigger];
+		type_string += triggers[trigger];
 		if (change == 0 && model == 1)
 			type_string += "M";
 
 		type_string += " Ceiling ";
 
 		// Direction, target, speed
-		type_string += fmt::format("{} {} {}", Directions[direction], CeilingTargets[target], Speeds[speed]);
+		type_string += fmt::format("{} {} {}", directions[direction], ceiling_targets[target], speeds[speed]);
 
 		// Change
 		if (type & CeilingChange)
-			type_string += fmt::format(" {} ({})", Changers[change], Models[model]);
+			type_string += fmt::format(" {} ({})", changers[change], models[model]);
 
 		// Crush
 		if (type & CeilingCrush)
@@ -311,7 +362,7 @@ string parseLineType(int type)
 		int speed   = (type & DoorSpeed) >> DoorSpeedShift;
 
 		// Trigger
-		type_string += Triggers[trigger];
+		type_string += triggers[trigger];
 		if (type & DoorMonster)
 			type_string += "M";
 
@@ -320,15 +371,15 @@ string parseLineType(int type)
 		// Door kind
 		switch (kind)
 		{
-		case 0: type_string += fmt::format("Open Wait {} Close", Delays[delay]); break;
-		case 1: type_string += "Open Stay"; break;
-		case 2: type_string += fmt::format("Close Wait {} Open", Delays[delay]); break;
-		case 3: type_string += "Close Stay"; break;
+		case 0:  type_string += fmt::format("Open Wait {} Close", delays[delay]); break;
+		case 1:  type_string += "Open Stay"; break;
+		case 2:  type_string += fmt::format("Close Wait {} Open", delays[delay]); break;
+		case 3:  type_string += "Close Stay"; break;
 		default: break;
 		}
 
 		// Door speed
-		type_string += fmt::format(" {}", Speeds[speed]);
+		type_string += fmt::format(" {}", speeds[speed]);
 	}
 
 	// Locked Door type
@@ -341,25 +392,25 @@ string parseLineType(int type)
 		int speed   = (type & DoorSpeed) >> DoorSpeedShift;
 
 		// Trigger
-		type_string += Triggers[trigger];
+		type_string += triggers[trigger];
 
 		type_string += " Door ";
 
 		// Lock
-		type_string += fmt::format("{} ", Locks[num * 8 + key]);
+		type_string += fmt::format("{} ", locks[num * 8 + key]);
 
 		// Door kind
 		switch (kind)
 		{
-		case 0: type_string += "Open Wait 4 Close"; break;
-		case 1: type_string += "Open Stay"; break;
-		case 2: type_string += "Close Wait 4 Open"; break;
-		case 3: type_string += "Close Stay"; break;
+		case 0:  type_string += "Open Wait 4 Close"; break;
+		case 1:  type_string += "Open Stay"; break;
+		case 2:  type_string += "Close Wait 4 Open"; break;
+		case 3:  type_string += "Close Stay"; break;
 		default: break;
 		}
 
 		// Door speed
-		type_string += fmt::format(" {}", Speeds[speed]);
+		type_string += fmt::format(" {}", speeds[speed]);
 	}
 
 	// Lift type
@@ -371,20 +422,20 @@ string parseLineType(int type)
 		int speed   = (type & LiftSpeed) >> LiftSpeedShift;
 
 		// Trigger
-		type_string += Triggers[trigger];
+		type_string += triggers[trigger];
 		if (type & LiftMonster)
 			type_string += "M";
 
 		type_string += " Lift ";
 
 		// Target
-		type_string += LiftTargets[target];
+		type_string += lift_targets[target];
 
 		// Delay
-		type_string += fmt::format(" Delay {} ", LiftDelays[delay]);
+		type_string += fmt::format(" Delay {} ", lift_delays[delay]);
 
 		// Speed
-		type_string += Speeds[speed];
+		type_string += speeds[speed];
 	}
 
 	// Stairs type
@@ -396,12 +447,12 @@ string parseLineType(int type)
 		int speed     = (type & StairSpeed) >> StairSpeedShift;
 
 		// Trigger
-		type_string += Triggers[trigger];
+		type_string += triggers[trigger];
 		if (type & StairMonster)
 			type_string += "M";
 
 		// Direction, step height, speed
-		type_string += fmt::format(" Stairs {} {} {}", Directions[direction], Steps[step], Speeds[speed]);
+		type_string += fmt::format(" Stairs {} {} {}", directions[direction], steps[step], speeds[speed]);
 
 		// Ignore
 		if (type & StairIgnore)
@@ -415,12 +466,12 @@ string parseLineType(int type)
 		int speed   = (type & CrusherSpeed) >> CrusherSpeedShift;
 
 		// Trigger
-		type_string += Triggers[trigger];
+		type_string += triggers[trigger];
 		if (type & CrusherMonster)
 			type_string += "M";
 
 		// Speed
-		type_string += fmt::format(" Crusher {}", Speeds[speed]);
+		type_string += fmt::format(" Crusher {}", speeds[speed]);
 
 		// Silent
 		if (type & CrusherSilent)

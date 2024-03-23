@@ -24,7 +24,7 @@ public:
 	};
 
 	CTextureCanvas(wxWindow* parent, int id);
-	~CTextureCanvas() = default;
+	~CTextureCanvas() override = default;
 
 	CTexture* texture() const { return texture_; }
 	View      viewType() const { return view_type_; }
@@ -59,7 +59,7 @@ public:
 
 	Vec2i screenToTexPosition(int x, int y) const;
 	Vec2i texToScreenPosition(int x, int y) const;
-	int   patchAt(int x, int y);
+	int   patchAt(int x, int y) const;
 
 	bool swapPatches(size_t p1, size_t p2);
 

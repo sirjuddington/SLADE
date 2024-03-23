@@ -8,7 +8,7 @@ class BaseResourceChooser : public wxChoice
 {
 public:
 	BaseResourceChooser(wxWindow* parent, bool load_change = true);
-	~BaseResourceChooser() = default;
+	~BaseResourceChooser() override = default;
 
 	void populateChoices();
 

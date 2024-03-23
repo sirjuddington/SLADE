@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
 #include "CTexture.h"
-#include "PatchTable.h"
 
 namespace slade
 {
+class PatchTable;
 class TextureXList
 {
 public:
@@ -55,10 +54,10 @@ public:
 	void clear(bool clear_patches = false);
 	void removePatch(string_view patch) const;
 
-	bool readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table, bool add = false);
+	bool readTEXTUREXData(const ArchiveEntry* texturex, const PatchTable& patch_table, bool add = false);
 	bool writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table) const;
 
-	bool readTEXTURESData(ArchiveEntry* textures);
+	bool readTEXTURESData(const ArchiveEntry* textures);
 	bool writeTEXTURESData(ArchiveEntry* textures) const;
 
 	bool convertToTEXTURES();
@@ -69,6 +68,7 @@ public:
 private:
 	vector<unique_ptr<CTexture>> textures_;
 	Format                       txformat_ = Format::Normal;
-	CTexture tex_invalid_{ static_cast<string_view>("INVALID_TEXTURE") }; // Deliberately set the invalid name to >8 characters
+	CTexture                     tex_invalid_{ static_cast<string_view>(
+        "INVALID_TEXTURE") }; // Deliberately set the invalid name to >8 characters
 };
 } // namespace slade

@@ -57,7 +57,7 @@ public:
 	static bool isWadArchive(const MemChunk& mc);
 	static bool isWadArchive(const string& filename);
 
-	static bool exportEntriesAsWad(string_view filename, vector<ArchiveEntry*> entries)
+	static bool exportEntriesAsWad(string_view filename, const vector<ArchiveEntry*>& entries)
 	{
 		WadArchive wad;
 

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "LineInfoOverlay.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditContext.h"
@@ -42,6 +43,7 @@
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "Utility/MathStuff.h"
 #include "Utility/StringUtils.h"
@@ -61,9 +63,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 LineInfoOverlay::LineInfoOverlay() :
 	scale_{ drawing::fontSize() / 12.0 },
-	text_box_{ "", drawing::Font::Condensed, 100, int(16 * scale_) }
+	text_box_{ new TextBox("", drawing::Font::Condensed, 100, static_cast<int>(16 * scale_)) }
 {
 }
+
+// -----------------------------------------------------------------------------
+// LineInfoOverlay class destructor
+// -----------------------------------------------------------------------------
+LineInfoOverlay::~LineInfoOverlay() = default;
 
 // -----------------------------------------------------------------------------
 // Updates the overlay with info from [line]
@@ -118,7 +125,7 @@ void LineInfoOverlay::update(MapLine* line)
 		info_text += (fmt::format("\nFlags: {}", game::configuration().lineFlagsString(line)));
 
 	// Setup text box
-	text_box_.setText(info_text);
+	text_box_->setText(info_text);
 
 	// Check needed textures
 	int needed_tex = line->needsTexture();
@@ -188,9 +195,9 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	if (last_size_ != right - sides_width)
 	{
 		last_size_ = right - sides_width;
-		text_box_.setSize(right - sides_width);
+		text_box_->setSize(right - sides_width);
 	}
-	int height = text_box_.height() + 4;
+	int height = text_box_->height() + 4;
 
 	// Get colours
 	ColRGBA col_bg = colourconfig::colour("map_overlay_background");
@@ -220,8 +227,8 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	drawing::drawBorderedRect(0, bottom - height - 4, main_panel_end, bottom + 2, col_bg, col_border);
 
 	// Draw info text lines
-	text_box_.setLineHeight(16 * scale_);
-	text_box_.draw(2, bottom - height, col_fg);
+	text_box_->setLineHeight(16 * scale_);
+	text_box_->draw(2, bottom - height, col_fg);
 
 	// Side info
 	int x = right - sinf_size;
@@ -231,7 +238,7 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 		glDisable(GL_TEXTURE_2D);
 		drawing::drawBorderedRect(x, bottom - height - 4, x + sinf_size, bottom + 2, col_bg, col_border);
 
-		drawSide(bottom - 4, right, alpha, side_front_, x);
+		drawSide(bottom - 4, alpha, side_front_, x);
 		x -= (sinf_size + 2);
 	}
 	if (side_back_.exists)
@@ -240,7 +247,7 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 		glDisable(GL_TEXTURE_2D);
 		drawing::drawBorderedRect(x, bottom - height - 4, x + sinf_size, bottom + 2, col_bg, col_border);
 
-		drawSide(bottom - 4, right, alpha, side_back_, x);
+		drawSide(bottom - 4, alpha, side_back_, x);
 	}
 
 	// Done
@@ -250,7 +257,7 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 // -----------------------------------------------------------------------------
 // Draws side/texture info for [side]
 // -----------------------------------------------------------------------------
-void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, int xstart)
+void LineInfoOverlay::drawSide(int bottom, float alpha, const Side& side, int xstart) const
 {
 	// Get colours
 	ColRGBA col_fg = colourconfig::colour("map_overlay_foreground");

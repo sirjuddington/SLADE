@@ -1,17 +1,21 @@
 #pragma once
 
-#include "MapEditor.h"
+#include "Item.h"
 
 namespace slade
 {
 class MapCanvas;
-class MapEditContext;
 class MapLine;
 class MapObject;
 class MapSector;
 class MapThing;
 class MapVertex;
 class SLADEMap;
+namespace mapeditor
+{
+	enum class Mode;
+	class MapEditContext;
+} // namespace mapeditor
 
 class ItemSelection
 {
@@ -21,7 +25,7 @@ public:
 	typedef vector<mapeditor::Item>::iterator       iterator;
 	typedef vector<mapeditor::Item>::value_type     value_type;
 
-	ItemSelection(MapEditContext* context = nullptr) : context_{ context } {}
+	ItemSelection(mapeditor::MapEditContext* context = nullptr) : context_{ context } {}
 
 	// Accessors
 	mapeditor::Item  hilight() const { return hilight_; }
@@ -37,7 +41,7 @@ public:
 	const mapeditor::Item& operator[](unsigned index) const { return selection_[index]; }
 
 	vector<mapeditor::Item> selectionOrHilight();
-	mapeditor::Item         firstSelectedOrHilight();
+	mapeditor::Item         firstSelectedOrHilight() const;
 
 	// Setters
 	void lockHilight(bool lock = true) { hilight_lock_ = lock; }
@@ -57,7 +61,7 @@ public:
 	bool isSelected(const mapeditor::Item& item) const { return VECTOR_EXISTS(selection_, item); }
 	bool isHilighted(const mapeditor::Item& item) const { return item == hilight_; }
 
-	bool updateHilight(Vec2d mouse_pos, double dist_scale);
+	bool updateHilight(const Vec2d& mouse_pos, double dist_scale);
 	void clear();
 
 	void select(const mapeditor::Item& item, bool select = true, bool new_change = true);
@@ -85,15 +89,12 @@ public:
 
 	void migrate(mapeditor::Mode from_edit_mode, mapeditor::Mode to_edit_mode);
 
-	// void	showItem(int index);
-	// void	selectItem3d(MapEditor::Item item, int sel);
-
 private:
-	mapeditor::Item         hilight_ = { -1, mapeditor::ItemType::Any };
-	vector<mapeditor::Item> selection_;
-	bool                    hilight_lock_ = false;
-	ChangeSet               last_change_;
-	MapEditContext*         context_ = nullptr;
+	mapeditor::Item            hilight_ = { -1, mapeditor::ItemType::Any };
+	vector<mapeditor::Item>    selection_;
+	bool                       hilight_lock_ = false;
+	ChangeSet                  last_change_;
+	mapeditor::MapEditContext* context_ = nullptr;
 
 	void selectItem(const mapeditor::Item& item, bool select = true);
 };

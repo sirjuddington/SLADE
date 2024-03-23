@@ -30,7 +30,7 @@ class SAuiTabArt : public wxAuiGenericTabArt
 {
 public:
 	SAuiTabArt(bool close_buttons = false, bool main_tabs = false);
-	virtual ~SAuiTabArt();
+	~SAuiTabArt() override;
 
 	wxAuiTabArt* Clone() override;
 	void         SetSelectedFont(const wxFont& font) override;
@@ -88,7 +88,7 @@ class SAuiDockArt : public wxAuiDefaultDockArt
 {
 public:
 	SAuiDockArt();
-	virtual ~SAuiDockArt();
+	~SAuiDockArt() override;
 
 	void DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, const wxRect& rect, wxAuiPaneInfo& pane)
 		override;

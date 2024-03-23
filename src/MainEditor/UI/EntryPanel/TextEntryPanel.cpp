@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,14 +32,17 @@
 #include "Main.h"
 #include "TextEntryPanel.h"
 #include "Game/Configuration.h"
+#include "Game/Game.h"
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
+#include "MainEditor/MainEditor.h"
+#include "TextEditor/TextLanguage.h"
+#include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "Utility/StringUtils.h"
-#include "MainEditor/MainEditor.h"
 
 using namespace slade;
 
@@ -66,14 +69,13 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 {
 	// Create the text area
 	text_area_ = new TextEditorCtrl(this, -1);
-	sizer_main_->Add(text_area_, 1, wxEXPAND, 0);
+	sizer_main_->Add(text_area_, wxSizerFlags(1).Expand());
 
 	// Create the find+replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
-	sizer_main_->Add(panel_fr_, 0, wxEXPAND | wxTOP, ui::padLarge());
-	// sizer_main_->AddSpacer(UI::pad());
+	sizer_main_->Add(panel_fr_, wxutil::sfWithLargeBorder(0, wxTOP).Expand());
 
 	// Add 'Text Language' choice to toolbar
 	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
@@ -128,9 +130,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	menu_custom_->AppendSeparator();
 	SAction::fromId("ptxt_wrap")->addToMenu(menu_custom_);
 
-	
 	custom_menu_name_ = "Text";
-
 
 	wxWindowBase::Layout();
 }

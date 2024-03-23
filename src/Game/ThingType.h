@@ -66,7 +66,7 @@ namespace game
 		void define(int number, string_view name, string_view group);
 
 		void   reset();
-		void   parse(ParseTreeNode* node);
+		void   parse(const ParseTreeNode* node);
 		string stringDesc() const;
 		void   loadProps(PropertyList& props, bool decorate = true, bool zscript = false);
 

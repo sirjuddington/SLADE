@@ -32,8 +32,8 @@ public:
 		const ArgSet& args    = {},
 		int           id      = 0,
 		int           special = 0);
-	MapThing(const Vec3d& pos, short type, ParseTreeNode* def);
-	~MapThing() = default;
+	MapThing(const Vec3d& pos, short type, const ParseTreeNode* def);
+	~MapThing() override = default;
 
 	double        xPos() const { return position_.x; }
 	double        yPos() const { return position_.y; }
@@ -58,11 +58,11 @@ public:
 
 	void copy(MapObject* c) override;
 
-	void move(Vec2d pos, bool modify = true);
+	void move(const Vec2d& pos, bool modify = true);
 	void setZ(double z);
 	void setType(int type);
 	void setAngle(int angle, bool modify = true);
-	void setAnglePoint(Vec2d point, bool modify = true);
+	void setAnglePoint(const Vec2d& point, bool modify = true);
 	void setId(int id);
 	void setFlags(int flags);
 	void setFlag(int flag);

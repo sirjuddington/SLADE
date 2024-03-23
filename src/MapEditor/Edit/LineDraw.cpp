@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,8 +32,15 @@
 #include "Main.h"
 #include "LineDraw.h"
 #include "General/KeyBind.h"
+#include "Input.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -79,16 +86,16 @@ bool LineDraw::addPoint(Vec2d point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		auto vertex = context_.map().vertices().nearest(point);
+		auto vertex = context_->map().vertices().nearest(point);
 		if (vertex)
 			point = vertex->position();
 	}
 
 	// Otherwise, snap to grid if necessary
-	else if (context_.gridSnap())
+	else if (context_->gridSnap())
 	{
-		point.x = context_.snapToGrid(point.x);
-		point.y = context_.snapToGrid(point.y);
+		point.x = context_->snapToGrid(point.x);
+		point.y = context_->snapToGrid(point.y);
 	}
 
 	// Check if this is the same as the last point
@@ -140,16 +147,16 @@ void LineDraw::setShapeOrigin(Vec2d point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		auto vertex = context_.map().vertices().nearest(point);
+		auto vertex = context_->map().vertices().nearest(point);
 		if (vertex)
 			point = vertex->position();
 	}
 
 	// Otherwise, snap to grid if necessary
-	else if (context_.gridSnap())
+	else if (context_->gridSnap())
 	{
-		point.x = context_.snapToGrid(point.x);
-		point.y = context_.snapToGrid(point.y);
+		point.x = context_->snapToGrid(point.x);
+		point.y = context_->snapToGrid(point.y);
 	}
 
 	draw_origin_ = point;
@@ -165,10 +172,10 @@ void LineDraw::updateShape(Vec2d point)
 	draw_points_.clear();
 
 	// Snap edge to grid if needed
-	if (context_.gridSnap())
+	if (context_->gridSnap())
 	{
-		point.x = context_.snapToGrid(point.x);
-		point.y = context_.snapToGrid(point.y);
+		point.x = context_->snapToGrid(point.x);
+		point.y = context_->snapToGrid(point.y);
 	}
 
 	// Lock width:height at 1:1 if needed
@@ -239,7 +246,7 @@ void LineDraw::updateShape(Vec2d point)
 
 			// Add point
 			draw_points_.push_back(p);
-			rot -= (3.1415926535897932384626433832795 * 2) / (double)shapedraw_sides;
+			rot -= (3.1415926535897932384626433832795 * 2) / static_cast<double>(shapedraw_sides);
 
 			if (a == 0)
 				start = p;
@@ -257,28 +264,28 @@ void LineDraw::begin(bool shape)
 {
 	// Setup state
 	state_current_ = shape ? State::ShapeOrigin : State::Line;
-	context_.input().setMouseState(Input::MouseState::LineDraw);
+	context_->input().setMouseState(Input::MouseState::LineDraw);
 
 	// Setup help text
 	auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
 	auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 	if (shape)
 	{
-		context_.setFeatureHelp({ "Shape Drawing",
-								  fmt::format("{} = Accept", key_accept),
-								  fmt::format("{} = Cancel", key_cancel),
-								  "Left Click = Draw point",
-								  "Right Click = Undo previous point" });
+		context_->setFeatureHelp({ "Shape Drawing",
+								   fmt::format("{} = Accept", key_accept),
+								   fmt::format("{} = Cancel", key_cancel),
+								   "Left Click = Draw point",
+								   "Right Click = Undo previous point" });
 		mapeditor::showShapeDrawPanel(true);
 	}
 	else
 	{
-		context_.setFeatureHelp({ "Line Drawing",
-								  fmt::format("{} = Accept", key_accept),
-								  fmt::format("{} = Cancel", key_cancel),
-								  "Left Click = Draw point",
-								  "Right Click = Undo previous point",
-								  "Shift = Snap to nearest vertex" });
+		context_->setFeatureHelp({ "Line Drawing",
+								   fmt::format("{} = Accept", key_accept),
+								   fmt::format("{} = Cancel", key_cancel),
+								   "Left Click = Draw point",
+								   "Right Click = Undo previous point",
+								   "Shift = Snap to nearest vertex" });
 	}
 }
 
@@ -294,15 +301,15 @@ void LineDraw::end(bool apply)
 	if (!apply || draw_points_.size() <= 1)
 	{
 		draw_points_.clear();
-		context_.setFeatureHelp({});
+		context_->setFeatureHelp({});
 		return;
 	}
 
 	// Begin undo level
-	context_.beginUndoRecord("Line Draw");
+	context_->beginUndoRecord("Line Draw");
 
 	// Add extra points if any lines overlap existing vertices
-	auto& map = context_.map();
+	auto& map = context_->map();
 	for (unsigned a = 0; a < draw_points_.size() - 1; a++)
 	{
 		auto v = map.vertices().firstCrossed({ draw_points_[a], draw_points_[a + 1] });
@@ -365,11 +372,11 @@ void LineDraw::end(bool apply)
 	map.correctSectors(invalid_lines);
 
 	// End recording undo level
-	context_.endUndoRecord(true);
+	context_->endUndoRecord(true);
 
 	// Clear draw points
 	draw_points_.clear();
 
 	// Clear feature help text
-	context_.setFeatureHelp({});
+	context_->setFeatureHelp({});
 }

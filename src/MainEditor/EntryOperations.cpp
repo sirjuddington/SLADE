@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,6 +38,7 @@
 #include "BinaryControlLump.h"
 #include "General/Console.h"
 #include "General/Misc.h"
+#include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"

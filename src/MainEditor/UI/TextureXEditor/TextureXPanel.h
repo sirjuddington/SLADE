@@ -1,11 +1,14 @@
 #pragma once
 
 #include "General/SAction.h"
-#include "Graphics/CTexture/TextureXList.h"
 #include "UI/Lists/VirtualListView.h"
 
 namespace slade
 {
+class Palette;
+class CTexture;
+class ArchiveEntry;
+class TextureXList;
 class TextureXEditor;
 class TextureEditorPanel;
 class UndoManager;
@@ -15,7 +18,7 @@ class TextureXListView : public VirtualListView
 {
 public:
 	TextureXListView(wxWindow* parent, TextureXList* texturex);
-	~TextureXListView() = default;
+	~TextureXListView() override = default;
 
 	TextureXList* txList() const { return texturex_; }
 
@@ -41,9 +44,9 @@ class TextureXPanel : public wxPanel, SActionHandler
 {
 public:
 	TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor);
-	~TextureXPanel();
+	~TextureXPanel() override;
 
-	TextureXList&       txList() { return texturex_; }
+	TextureXList&       txList() const { return *texturex_; }
 	ArchiveEntry*       txEntry() const { return tx_entry_; }
 	bool                isModified() const { return modified_; }
 	CTexture*           currentTexture() const { return tex_current_; }
@@ -51,7 +54,7 @@ public:
 
 	bool openTEXTUREX(ArchiveEntry* entry);
 	bool saveTEXTUREX();
-	void setPalette(Palette* pal) const;
+	void setPalette(const Palette* pal) const;
 	void applyChanges();
 	void updateTextureList() const { list_textures_->updateList(); }
 
@@ -69,7 +72,7 @@ public:
 	void                 moveUp();
 	void                 moveDown();
 	void                 sort();
-	void                 copy();
+	void                 copy() const;
 	void                 paste();
 
 	// Undo/Redo
@@ -80,12 +83,12 @@ public:
 	bool handleAction(string_view id) override;
 
 private:
-	TextureXList    texturex_;
-	TextureXEditor* tx_editor_    = nullptr;
-	ArchiveEntry*   tx_entry_     = nullptr;
-	CTexture*       tex_current_  = nullptr;
-	bool            modified_     = false;
-	UndoManager*    undo_manager_ = nullptr;
+	unique_ptr<TextureXList> texturex_;
+	TextureXEditor*          tx_editor_    = nullptr;
+	ArchiveEntry*            tx_entry_     = nullptr;
+	CTexture*                tex_current_  = nullptr;
+	bool                     modified_     = false;
+	UndoManager*             undo_manager_ = nullptr;
 
 	// Controls
 	TextureXListView*   list_textures_    = nullptr;

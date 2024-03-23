@@ -12,7 +12,7 @@ class ACSPrefsPanel : public PrefsPanelBase
 {
 public:
 	ACSPrefsPanel(wxWindow* parent);
-	~ACSPrefsPanel() = default;
+	~ACSPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;

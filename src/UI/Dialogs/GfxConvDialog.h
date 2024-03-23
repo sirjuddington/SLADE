@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Graphics/SImage/SIFormat.h"
-#include "Graphics/SImage/SImage.h"
 #include "UI/SDialog.h"
 
 /* Convert from anything to:
@@ -67,7 +66,8 @@ private:
 		SImage::Type coltype;
 
 		ConvFormat(SIFormat* format = nullptr, SImage::Type coltype = SImage::Type::RGBA) :
-			format{ format }, coltype{ coltype }
+			format{ format },
+			coltype{ coltype }
 		{
 		}
 	};
@@ -86,7 +86,10 @@ private:
 		ConvItem(ArchiveEntry* entry = nullptr) : entry{ entry } {}
 
 		ConvItem(CTexture* texture, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false) :
-			texture{ texture }, palette{ palette }, archive{ archive }, force_rgba{ force_rgba }
+			texture{ texture },
+			palette{ palette },
+			archive{ archive },
+			force_rgba{ force_rgba }
 		{
 		}
 	};

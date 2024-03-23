@@ -22,14 +22,14 @@ public:
 	~UndoLevel() = default;
 
 	string name() const { return name_; }
-	bool   doUndo();
-	bool   doRedo();
+	bool   doUndo() const;
+	bool   doRedo() const;
 	void   addStep(unique_ptr<UndoStep> step) { undo_steps_.push_back(std::move(step)); }
 	string timeStamp(bool date, bool time) const;
 
 	bool writeFile(string_view filename) const;
 	bool readFile(string_view filename) const;
-	void createMerged(vector<unique_ptr<UndoLevel>>& levels);
+	void createMerged(const vector<unique_ptr<UndoLevel>>& levels);
 
 private:
 	string                       name_;
@@ -45,7 +45,7 @@ public:
 	~UndoManager() = default;
 
 	SLADEMap*  map() const { return map_; }
-	void       putAllLevels(vector<string>& list);
+	void       putAllLevels(vector<string>& list) const;
 	int        currentIndex() const { return current_level_index_; }
 	unsigned   nUndoLevels() const { return undo_levels_.size(); }
 	UndoLevel* undoLevel(unsigned index) const { return undo_levels_[index].get(); }

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,10 +33,10 @@
 #include "Main.h"
 #include "ThingTypeBrowser.h"
 #include "Game/Configuration.h"
+#include "General/UI.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Drawing.h"
-#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -63,16 +63,20 @@ CVAR(Bool, use_zeth_icons, false, CVar::Flag::Save)
 bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
-	auto tex = mapeditor::textureManager().sprite(type_.sprite(), type_.translation(), type_.palette()).gl_id;
-	if (!tex && use_zeth_icons && type_.zethIcon() >= 0)
+	auto tex = mapeditor::textureManager()
+				   .sprite(thing_type_->sprite(), thing_type_->translation(), thing_type_->palette())
+				   .gl_id;
+	if (!tex && use_zeth_icons && thing_type_->zethIcon() >= 0)
 	{
 		// Sprite not found, try the Zeth icon
-		tex = mapeditor::textureManager().editorImage(fmt::format("zethicons/zeth{:02d}", type_.zethIcon())).gl_id;
+		tex = mapeditor::textureManager()
+				  .editorImage(fmt::format("zethicons/zeth{:02d}", thing_type_->zethIcon()))
+				  .gl_id;
 	}
 	if (!tex)
 	{
 		// Sprite not found, try an icon
-		tex = mapeditor::textureManager().editorImage(fmt::format("thing/{}", type_.icon())).gl_id;
+		tex = mapeditor::textureManager().editorImage(fmt::format("thing/{}", thing_type_->icon())).gl_id;
 	}
 	if (!tex)
 	{

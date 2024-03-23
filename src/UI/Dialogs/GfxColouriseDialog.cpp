@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -54,45 +54,47 @@ using namespace slade;
 GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, const Palette& pal) :
 	wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 	entry_{ entry },
-	palette_{ pal }
+	palette_{ new Palette(pal) }
 {
+	namespace wx = wxutil;
+
 	// Set dialog icon
-	wxutil::setWindowIcon(this, "colourise");
+	wx::setWindowIcon(this, "colourise");
 
 	// Setup main sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	msizer->Add(sizer, wx::sfWithLargeBorder(1).Expand());
 
 	// Add colour chooser
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(hbox, wx::sfWithBorder(0, wxBOTTOM).Expand());
 
 	cb_colour_ = new ColourBox(this, -1, false, true);
 	cb_colour_->setColour(ColRGBA::RED);
-	cb_colour_->setPalette(&palette_);
-	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-	hbox->Add(cb_colour_, 0, wxEXPAND);
+	cb_colour_->setPalette(palette_.get());
+	hbox->Add(new wxStaticText(this, -1, "Colour:"), wx::sfWithBorder(1, wxRIGHT).CenterVertical());
+	hbox->Add(cb_colour_, wxSizerFlags().Expand());
 
 	// Add preview
 	gfx_preview_ = new GfxCanvas(this, -1);
-	sizer->Add(gfx_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(gfx_preview_, wx::sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add buttons
-	sizer->Add(wxutil::createDialogButtonBox(this, "Colourise", "Cancel"), 0, wxEXPAND);
+	sizer->Add(wx::createDialogButtonBox(this, "Colourise", "Cancel"), wxSizerFlags().Expand());
 
 	// Setup preview
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
-	gfx_preview_->setPalette(&palette_);
+	gfx_preview_->setPalette(palette_.get());
 	gfx_preview_->SetInitialSize(wxSize(192, 192));
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry);
 	auto col = cb_colour_->colour();
-	gfx_preview_->image().colourise(col, &palette_);
+	gfx_preview_->image().colourise(col, palette_.get());
 	gfx_preview_->updateImageTexture();
 
 	// Init layout
-	wxWindowBase::Layout();
+	wxTopLevelWindowBase::Layout();
 
 	// Bind events
 	cb_colour_->Bind(wxEVT_COLOURBOX_CHANGED, &GfxColouriseDialog::onColourChanged, this);
@@ -115,11 +117,11 @@ ColRGBA GfxColouriseDialog::colour() const
 // -----------------------------------------------------------------------------
 // Sets the colour to use
 // -----------------------------------------------------------------------------
-void GfxColouriseDialog::setColour(const wxString& col)
+void GfxColouriseDialog::setColour(const wxString& col) const
 {
 	auto rgba = ColRGBA(wxColour(col));
 	cb_colour_->setColour(rgba);
-	gfx_preview_->image().colourise(rgba, &palette_);
+	gfx_preview_->image().colourise(rgba, palette_.get());
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
 }
@@ -131,6 +133,8 @@ void GfxColouriseDialog::setColour(const wxString& col)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the selected colour is changed
@@ -138,7 +142,7 @@ void GfxColouriseDialog::setColour(const wxString& col)
 void GfxColouriseDialog::onColourChanged(wxEvent& e)
 {
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
-	gfx_preview_->image().colourise(cb_colour_->colour(), &palette_);
+	gfx_preview_->image().colourise(cb_colour_->colour(), palette_.get());
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
 }

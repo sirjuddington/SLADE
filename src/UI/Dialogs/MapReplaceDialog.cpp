@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,7 @@
 #include "MapReplaceDialog.h"
 #include "General/UI.h"
 #include "MainEditor/ArchiveOperations.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -57,7 +58,7 @@ ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent,
 
 	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	sizer->AddStretchSpacer();
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::padLarge());
+	sizer->Add(gbsizer, wxutil::sfWithLargeBorder().Center());
 	sizer->AddStretchSpacer();
 
 	// From type
@@ -104,7 +105,7 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	sizer->AddStretchSpacer();
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::padLarge());
+	sizer->Add(gbsizer, wxutil::sfWithLargeBorder().Center());
 
 	// From special
 	gbsizer->Add(
@@ -128,13 +129,11 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	sizer->Add(
 		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL),
-		0,
-		wxEXPAND | wxLEFT | wxRIGHT,
-		ui::pad());
+		wxutil::sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
 
 	// Args
 	gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::padLarge());
+	sizer->Add(gbsizer, wxutil::sfWithLargeBorder().Center());
 	for (int a = 0; a < 5; a++)
 	{
 		// Create controls
@@ -209,7 +208,7 @@ TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	sizer->AddStretchSpacer();
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::pad());
+	sizer->Add(gbsizer, wxutil::sfWithBorder().Center());
 
 	// From texture
 	gbsizer->Add(
@@ -224,10 +223,10 @@ TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	gbsizer->Add(text_to_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	sizer->Add(
-		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), 0, wxEXPAND | wxALL, ui::pad());
+		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), wxutil::sfWithBorder().Expand());
 
 	gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::pad());
+	sizer->Add(gbsizer, wxutil::sfWithBorder().Center());
 
 	// Upper
 	cb_upper_ = new wxCheckBox(this, -1, "Upper Textures");
@@ -300,7 +299,7 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive) :
 
 	// Add tabs
 	stc_tabs_ = STabCtrl::createControl(this);
-	sizer->Add(stc_tabs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
+	sizer->Add(stc_tabs_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Thing type tab
 	panel_thing_ = new ThingTypeReplacePanel(stc_tabs_);
@@ -319,14 +318,14 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive) :
 	btn_done_    = new wxButton(this, wxID_CANCEL, "Close");
 	auto hbox    = new wxBoxSizer(wxHORIZONTAL);
 	hbox->AddStretchSpacer();
-	hbox->Add(btn_replace_, 0, wxEXPAND | wxRIGHT, ui::pad());
-	hbox->Add(btn_done_, 0, wxEXPAND, ui::pad());
+	hbox->Add(btn_replace_, wxutil::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_done_, wxSizerFlags().Expand());
 	sizer->AddSpacer(ui::pad());
-	sizer->Add(hbox, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, ui::padLarge());
+	sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Setup dialog layout
 	SetInitialSize(wxSize(-1, -1));
-	wxWindowBase::Layout();
+	wxTopLevelWindowBase::Layout();
 	wxWindowBase::Fit();
 	wxTopLevelWindowBase::SetMinSize(GetBestSize());
 	CenterOnParent();
@@ -343,6 +342,8 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive) :
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the 'Replace' button is clicked

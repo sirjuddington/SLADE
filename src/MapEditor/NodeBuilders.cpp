@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -164,10 +164,10 @@ unsigned nodebuilders::nNodeBuilders()
 // -----------------------------------------------------------------------------
 nodebuilders::Builder& nodebuilders::builder(string_view id)
 {
-	for (unsigned a = 0; a < builders.size(); a++)
+	for (auto& builder : builders)
 	{
-		if (builders[a].id == id)
-			return builders[a];
+		if (builder.id == id)
+			return builder;
 	}
 
 	return invalid;

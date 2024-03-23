@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -336,7 +336,7 @@ bool LfdArchive::isLfdArchive(const string& filename)
 	len1 = wxINT32_SWAP_ON_BE(len1);
 
 	// Check size
-	if ((unsigned)file.Length() < (dir_offset + 16 + len1))
+	if (static_cast<unsigned>(file.Length()) < (dir_offset + 16 + len1))
 		return false;
 
 	// Compare

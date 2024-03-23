@@ -2,6 +2,7 @@
 
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
+#include "UI/Browser/BrowserItem.h"
 #include "UI/Browser/BrowserWindow.h"
 
 namespace slade
@@ -16,7 +17,7 @@ public:
 	static const wxString FLAT;
 
 	MapTexBrowserItem(const wxString& name, const wxString& type, unsigned index = 0);
-	~MapTexBrowserItem() = default;
+	~MapTexBrowserItem() override = default;
 
 	bool     loadImage() override;
 	wxString itemInfo() override;
@@ -36,10 +37,10 @@ public:
 		mapeditor::TextureType type    = mapeditor::TextureType::Texture,
 		const wxString&        texture = "",
 		SLADEMap*              map     = nullptr);
-	~MapTextureBrowser() = default;
+	~MapTextureBrowser() override = default;
 
 	wxString determineTexturePath(
-		Archive*                    archive,
+		const Archive*              archive,
 		MapTextureManager::Category category,
 		const wxString&             type,
 		const wxString&             path) const;

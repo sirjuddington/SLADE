@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -51,7 +51,7 @@ HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex")
 {
 	// Create hex editor
 	hex_editor_ = new HexEditorPanel(this);
-	sizer_main_->Add(hex_editor_, 1, wxEXPAND);
+	sizer_main_->Add(hex_editor_, wxSizerFlags(1).Expand());
 
 	// Hide toolbar
 	toolbar_->Show(false);

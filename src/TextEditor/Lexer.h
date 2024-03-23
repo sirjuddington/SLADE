@@ -33,7 +33,7 @@ public:
 	virtual void loadLanguage(TextLanguage* language);
 
 	virtual void doStyling(TextEditorCtrl* editor, int start, int end);
-	void         updateComments(TextEditorCtrl* editor, int start, int end);
+	void         updateComments(const TextEditorCtrl* editor, int start, int end);
 
 	virtual void addWord(string_view word, int style);
 	virtual void clearWords() { word_list_.clear(); }
@@ -113,16 +113,17 @@ protected:
 	bool processWhitespace(LexerState& state);
 
 	virtual void styleWord(LexerState& state, string_view word);
-	bool         checkToken(TextEditorCtrl* editor, int pos, string_view token) const;
-	bool checkToken(TextEditorCtrl* editor, int pos, const vector<string>& tokens, int* found_idx = nullptr) const;
-	int  isWithinComment(int pos);
+	bool         checkToken(const TextEditorCtrl* editor, int pos, string_view token) const;
+	bool checkToken(const TextEditorCtrl* editor, int pos, const vector<string>& tokens, int* found_idx = nullptr)
+		const;
+	int isWithinComment(int pos) const;
 };
 
 class ZScriptLexer : public Lexer
 {
 public:
-	ZScriptLexer()          = default;
-	virtual ~ZScriptLexer() = default;
+	ZScriptLexer()           = default;
+	~ZScriptLexer() override = default;
 
 protected:
 	void addWord(string_view word, int style) override;

@@ -2,8 +2,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#include "common.h"
-#include "common2.h"
+#include "Common.h"
 
 #if defined _MSC_VER && _MSC_VER < 1900
 #define _CRT_SECURE_NO_WARNINGS 1

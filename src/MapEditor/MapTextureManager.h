@@ -1,7 +1,5 @@
 #pragma once
 
-#include "OpenGL/GLTexture.h"
-
 namespace slade
 {
 class ArchiveDir;
@@ -26,7 +24,10 @@ public:
 		unsigned gl_id         = 0;
 		bool     world_panning = false;
 		Vec2d    scale         = { 1., 1. };
-		~Texture() { gl::Texture::clear(gl_id); }
+
+		Texture()               = default;
+		Texture(const Texture&) = default;
+		~Texture();
 	};
 	typedef std::map<string, Texture> MapTexHashMap;
 
@@ -46,16 +47,21 @@ public:
 			string_view path,
 			unsigned    index     = 0,
 			string_view long_name = "") :
-			short_name(short_name), category(category), archive(archive), path(path), index(index), long_name(long_name)
+			short_name(short_name),
+			category(category),
+			archive(archive),
+			path(path),
+			index(index),
+			long_name(long_name)
 		{
 		}
 	};
 
-	MapTextureManager(shared_ptr<Archive> archive = nullptr);
-	~MapTextureManager() = default;
+	MapTextureManager(const shared_ptr<Archive>& archive = nullptr);
+	~MapTextureManager();
 
 	void init();
-	void setArchive(shared_ptr<Archive> archive);
+	void setArchive(const shared_ptr<Archive>& archive);
 	void refreshResources();
 
 	Palette*       resourcePalette() const;

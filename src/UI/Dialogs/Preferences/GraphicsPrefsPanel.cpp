@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -148,7 +148,7 @@ void GraphicsPrefsPanel::setupLayout()
 		  wxutil::createLabelHBox(this, "Preset:", choice_presets_) },
 		wxSizerFlags(0).Expand());
 
-	sizer->Add(new wxStaticLine(this, -1), 0, wxEXPAND | wxTOP | wxBOTTOM, ui::padLarge());
+	sizer->Add(new wxStaticLine(this, -1), wxutil::sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
 
 	// Other gfx options
 	wxutil::layoutVertically(
@@ -218,7 +218,7 @@ void GraphicsPrefsPanel::onChoicePresetSelected(wxCommandEvent& e)
 		cp_colour1_->SetColour(wxColour(64, 64, 80));
 		cp_colour2_->SetColour(wxColour(80, 80, 96));
 		break;
-	};
+	}
 
 	applyPreferences();
 }

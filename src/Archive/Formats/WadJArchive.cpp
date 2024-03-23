@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -180,7 +180,8 @@ bool WadJArchive::open(const MemChunk& mc)
 			mc.exportMemChunk(edata, offset, size);
 			if (nlump->encryption() != ArchiveEntry::Encryption::None)
 			{
-				if (nlump->exProps().contains("FullSize") && (unsigned)(nlump->exProp<int>("FullSize")) > size)
+				if (nlump->exProps().contains("FullSize")
+					&& static_cast<unsigned>(nlump->exProp<int>("FullSize")) > size)
 					edata.reSize((nlump->exProp<int>("FullSize")), true);
 				if (!jaguarDecode(edata))
 					log::warning(
@@ -378,7 +379,7 @@ bool WadJArchive::isWadJArchive(const string& filename)
 // -----------------------------------------------------------------------------
 bool WadJArchive::jaguarDecode(MemChunk& mc)
 {
-	static const int LENSHIFT = 4; /* this must be log2(LOOKAHEAD_SIZE) */
+	static constexpr int LENSHIFT = 4; /* this must be log2(LOOKAHEAD_SIZE) */
 
 	bool     okay      = false;
 	uint8_t  getidbyte = 0;

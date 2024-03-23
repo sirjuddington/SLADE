@@ -1,9 +1,8 @@
 #pragma once
 
-#include "UI/Lists/ListView.h"
-
 namespace slade
 {
+class ListView;
 class TextureXEditor;
 class TextureXList;
 class CTextureCanvas;
@@ -36,7 +35,7 @@ public:
 
 	bool openTexture(const CTexture* tex, TextureXList* list);
 	void clearTexture();
-	void setPalette(Palette* pal) const;
+	void setPalette(const Palette* pal) const;
 
 	Palette* palette() const;
 	bool     blendRGBA() const;

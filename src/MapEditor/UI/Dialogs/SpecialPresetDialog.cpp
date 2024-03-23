@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "SpecialPresetDialog.h"
 #include "Game/Configuration.h"
+#include "General/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -48,12 +49,12 @@ namespace slade
 class SpecialPresetData : public wxClientData
 {
 public:
-	SpecialPresetData(const game::SpecialPreset& preset) : preset_{ preset } {}
+	SpecialPresetData(const game::SpecialPreset& preset) : preset_{ &preset } {}
 
-	const game::SpecialPreset& preset() const { return preset_; }
+	const game::SpecialPreset& preset() const { return *preset_; }
 
 private:
-	game::SpecialPreset const& preset_;
+	game::SpecialPreset const* preset_;
 };
 
 // -----------------------------------------------------------------------------
@@ -65,10 +66,7 @@ private:
 class SpecialPresetTreeView : public wxDataViewTreeCtrl
 {
 public:
-	SpecialPresetTreeView(wxWindow* parent) :
-		wxDataViewTreeCtrl{ parent, -1 },
-		root_{ wxDataViewItem(nullptr) },
-		parent_dialog_{ nullptr }
+	SpecialPresetTreeView(wxWindow* parent) : wxDataViewTreeCtrl{ parent, -1 }, root_{ wxDataViewItem(nullptr) }
 	{
 		// Computing the minimum width of the tree is slightly complicated, since
 		// wx doesn't expose it to us directly
@@ -83,16 +81,19 @@ public:
 
 		// Bind events
 		Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, [&](wxDataViewEvent& e) { e.Veto(); });
-		Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [&](wxDataViewEvent& e) {
-			if (GetChildCount(e.GetItem()) > 0)
+		Bind(
+			wxEVT_DATAVIEW_ITEM_ACTIVATED,
+			[&](wxDataViewEvent& e)
 			{
-				// Expand if group node
-				Expand(e.GetItem());
-				e.Skip();
-			}
-			else if (parent_dialog_)
-				parent_dialog_->EndModal(wxID_OK);
-		});
+				if (GetChildCount(e.GetItem()) > 0)
+				{
+					// Expand if group node
+					Expand(e.GetItem());
+					e.Skip();
+				}
+				else if (parent_dialog_)
+					parent_dialog_->EndModal(wxID_OK);
+			});
 
 		// 64 is an arbitrary fudge factor -- should be at least the width of a
 		// scrollbar plus the expand icons plus any extra padding
@@ -166,7 +167,7 @@ private:
 		return current;
 	}
 
-	void addPresets(const vector<game::SpecialPreset>& presets, wxSize& textsize, wxClientDC& dc)
+	void addPresets(const vector<game::SpecialPreset>& presets, wxSize& textsize, const wxClientDC& dc)
 	{
 		for (auto& preset : presets)
 		{
@@ -197,19 +198,19 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "S
 	// Presets tree
 	tree_presets_ = new SpecialPresetTreeView(this);
 	tree_presets_->setParentDialog(this);
-	sizer->Add(tree_presets_, 1, wxALL | wxEXPAND, ui::padLarge());
+	sizer->Add(tree_presets_, wxutil::sfWithLargeBorder(1).Expand());
 
 	// OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	hbox->AddStretchSpacer(1);
 	auto btn_ok = new wxButton(this, -1, "OK");
-	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_ok, wxutil::sfWithBorder(0, wxRIGHT).Expand());
 	btn_ok->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_OK); });
 
 	// Cancel button
 	auto btn_cancel = new wxButton(this, -1, "Cancel");
-	hbox->Add(btn_cancel, 0, wxEXPAND);
+	hbox->Add(btn_cancel, wxSizerFlags().Expand());
 	btn_cancel->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_CANCEL); });
 }
 

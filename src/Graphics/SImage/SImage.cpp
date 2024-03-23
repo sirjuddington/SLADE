@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -209,10 +209,10 @@ bool SImage::putIndexedData(MemChunk& mc) const
 
 	switch (type_)
 	{
-	case Type::RGBA: return false; // Cannot do this for trucolor graphics.
+	case Type::RGBA:     return false; // Cannot do this for trucolor graphics.
 	case Type::PalMask:
 	case Type::AlphaMap: return mc.write(data_.data(), data_.size());
-	default: return false;
+	default:             return false;
 	}
 }
 
@@ -884,7 +884,7 @@ bool SImage::cutoffMask(uint8_t threshold)
 // Sets the pixel at [x],[y] to [colour].
 // Returns false if the position is out of range, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::setPixel(int x, int y, ColRGBA colour, Palette* pal)
+bool SImage::setPixel(int x, int y, ColRGBA colour, const Palette* pal)
 {
 	// Check position
 	if (x < 0 || x >= width_ || y < 0 || y >= height_)
@@ -1046,10 +1046,10 @@ bool SImage::rotate(int angle)
 		switch (angle)
 		{
 			// Urgh maths...
-		case 90: j = (((new_height - 1) - (i % width_)) * new_width) + (i / width_); break;
+		case 90:  j = (((new_height - 1) - (i % width_)) * new_width) + (i / width_); break;
 		case 180: j = (numpixels - 1) - i; break;
 		case 270: j = ((i % width_) * new_width) + ((new_width - 1) - (i / width_)); break;
-		default: return false;
+		default:  return false;
 		}
 		if (j >= numpixels)
 		{
@@ -1390,7 +1390,7 @@ bool SImage::applyTranslation(string_view tr, Palette* pal, bool truecolor)
 // If the image is paletted, the resulting pixel colour is converted to its
 // nearest match in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, Palette* pal)
+bool SImage::drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, const Palette* pal)
 {
 	// Check valid coords
 	if (x < 0 || y < 0 || x >= width_ || y >= height_)
@@ -1511,7 +1511,7 @@ bool SImage::drawImage(
 	int              y_pos,
 	const DrawProps& properties,
 	const Palette*   pal_src,
-	Palette*         pal_dest)
+	const Palette*   pal_dest)
 {
 	// Check images
 	if (!data_.hasData() || !img.data_.hasData())
@@ -1585,7 +1585,7 @@ bool SImage::drawImage(
 // If the image is paletted, each pixel will be set to its nearest matching
 // colour in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
+bool SImage::colourise(ColRGBA colour, const Palette* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type_ == Type::AlphaMap)
@@ -1636,7 +1636,7 @@ bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
 // If the image is paletted, each pixel will be set to its nearest matching
 // colour in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::tint(ColRGBA colour, float amount, Palette* pal, int start, int stop)
+bool SImage::tint(ColRGBA colour, float amount, const Palette* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type_ == Type::AlphaMap)

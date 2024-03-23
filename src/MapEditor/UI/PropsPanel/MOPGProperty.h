@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Game/Args.h"
 #include "MapEditor/MapEditor.h"
 
 namespace slade
 {
 namespace game
 {
+	struct ArgSpec;
 	class UDMFProperty;
-}
+} // namespace game
 class MapObject;
 class MapObjectPropsPanel;
 

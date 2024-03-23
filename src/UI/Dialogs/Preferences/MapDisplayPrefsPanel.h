@@ -11,7 +11,7 @@ class MapDisplayPrefsPanel : public PrefsPanelBase
 {
 public:
 	MapDisplayPrefsPanel(wxWindow* parent);
-	~MapDisplayPrefsPanel() = default;
+	~MapDisplayPrefsPanel() override = default;
 
 	void setupGeneralTab();
 	void setupVerticesTab();

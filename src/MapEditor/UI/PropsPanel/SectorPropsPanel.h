@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PropsPanelBase.h"
-#include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
 namespace slade
@@ -10,42 +9,14 @@ class SectorSpecialPanel;
 class MapObject;
 class MapObjectPropsPanel;
 class NumberTextCtrl;
-
-class FlatTexCanvas : public OGLCanvas
-{
-public:
-	FlatTexCanvas(wxWindow* parent);
-	~FlatTexCanvas() = default;
-
-	wxString texName() const { return texname_; }
-	void     setTexture(const wxString& texture);
-	void     draw() override;
-
-private:
-	unsigned texture_ = 0;
-	wxString texname_;
-};
-
-class FlatComboBox : public wxComboBox
-{
-public:
-	FlatComboBox(wxWindow* parent);
-	~FlatComboBox() = default;
-
-private:
-	bool list_down_ = false;
-
-	void onDropDown(wxCommandEvent& e);
-	void onCloseUp(wxCommandEvent& e);
-	void onKeyDown(wxKeyEvent& e);
-};
-
+class FlatTexCanvas;
+class FlatComboBox;
 
 class SectorPropsPanel : public PropsPanelBase
 {
 public:
 	SectorPropsPanel(wxWindow* parent);
-	~SectorPropsPanel() = default;
+	~SectorPropsPanel() override = default;
 
 	void openObjects(vector<MapObject*>& objects) override;
 	void applyChanges() override;

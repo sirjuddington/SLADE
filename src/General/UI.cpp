@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -197,14 +197,14 @@ void ui::setCursor(wxWindow* window, MouseCursor cursor)
 {
 	switch (cursor)
 	{
-	case MouseCursor::Hand: window->SetCursor(wxCursor(wxCURSOR_HAND)); break;
-	case MouseCursor::Move: window->SetCursor(wxCursor(wxCURSOR_SIZING)); break;
-	case MouseCursor::Cross: window->SetCursor(wxCursor(wxCURSOR_CROSS)); break;
-	case MouseCursor::SizeNS: window->SetCursor(wxCursor(wxCURSOR_SIZENS)); break;
-	case MouseCursor::SizeWE: window->SetCursor(wxCursor(wxCURSOR_SIZEWE)); break;
+	case MouseCursor::Hand:     window->SetCursor(wxCursor(wxCURSOR_HAND)); break;
+	case MouseCursor::Move:     window->SetCursor(wxCursor(wxCURSOR_SIZING)); break;
+	case MouseCursor::Cross:    window->SetCursor(wxCursor(wxCURSOR_CROSS)); break;
+	case MouseCursor::SizeNS:   window->SetCursor(wxCursor(wxCURSOR_SIZENS)); break;
+	case MouseCursor::SizeWE:   window->SetCursor(wxCursor(wxCURSOR_SIZEWE)); break;
 	case MouseCursor::SizeNESW: window->SetCursor(wxCursor(wxCURSOR_SIZENESW)); break;
 	case MouseCursor::SizeNWSE: window->SetCursor(wxCursor(wxCURSOR_SIZENWSE)); break;
-	default: window->SetCursor(wxNullCursor);
+	default:                    window->SetCursor(wxNullCursor);
 	}
 }
 
@@ -225,13 +225,14 @@ int ui::px(Size size)
 {
 	switch (size)
 	{
-	case Size::PadLarge: return px_pad;
-	case Size::Pad: return px_pad_small;
-	case Size::PadMinimum: return px_pad_min;
-	case Size::Splitter: return px_splitter;
+	case Size::PadLarge:      return px_pad;
+	case Size::Pad:           return px_pad_small;
+	case Size::PadMinimum:    return px_pad_min;
+	case Size::Splitter:      return px_splitter;
 	case Size::SpinCtrlWidth: return px_spin_width;
-	default: return 0;
 	}
+
+	return 0;
 }
 
 // -----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,8 +34,9 @@
 #include "ANSICanvas.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "MainEditor/UI/TextureXEditor/TextureXEditor.h"
+#include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/OpenGL.h"
 #include "Utility/CodePages.h"
 
 using namespace slade;
@@ -48,8 +49,8 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-const int NUMROWS = 25;
-const int NUMCOLS = 80;
+constexpr int NUMROWS = 25;
+constexpr int NUMCOLS = 80;
 } // namespace
 
 
@@ -170,8 +171,8 @@ void ANSICanvas::drawImage()
 	}
 
 	// Determine (texture)coordinates
-	double x = (double)width_;
-	double y = (double)height_;
+	double x = static_cast<double>(width_);
+	double y = static_cast<double>(height_);
 
 	// Draw the image
 	gl::setColour(ColRGBA::WHITE, gl::Blend::Normal);

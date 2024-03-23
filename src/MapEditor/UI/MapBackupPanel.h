@@ -12,7 +12,7 @@ class MapBackupPanel : public wxPanel
 {
 public:
 	MapBackupPanel(wxWindow* parent);
-	~MapBackupPanel() = default;
+	~MapBackupPanel() override = default;
 
 	Archive* selectedMapData() const { return archive_mapdata_.get(); }
 

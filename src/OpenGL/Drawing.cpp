@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -246,13 +246,13 @@ FTFont* getFont(Font font)
 {
 	switch (font)
 	{
-	case Font::Normal: return font_normal;
-	case Font::Condensed: return font_condensed;
-	case Font::Bold: return font_bold;
+	case Font::Normal:        return font_normal;
+	case Font::Condensed:     return font_condensed;
+	case Font::Bold:          return font_bold;
 	case Font::BoldCondensed: return font_boldcondensed;
-	case Font::Monospace: return font_mono;
-	case Font::Small: return font_small;
-	default: return font_normal;
+	case Font::Monospace:     return font_mono;
+	case Font::Small:         return font_small;
+	default:                  return font_normal;
 	}
 }
 } // namespace slade::drawing
@@ -269,7 +269,7 @@ int drawing::fontSize()
 // -----------------------------------------------------------------------------
 // Draws a line from [start] to [end]
 // -----------------------------------------------------------------------------
-void drawing::drawLine(Vec2d start, Vec2d end)
+void drawing::drawLine(const Vec2d& start, const Vec2d& end)
 {
 	glBegin(GL_LINES);
 	glVertex2d(start.x, start.y);
@@ -291,7 +291,7 @@ void drawing::drawLine(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a line from [start] to [end]
 // -----------------------------------------------------------------------------
-void drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
+void drawing::drawLineTabbed(const Vec2d& start, const Vec2d& end, double tab, double tab_max)
 {
 	// Draw line
 	glBegin(GL_LINES);
@@ -327,8 +327,8 @@ void drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
 // If [twoway] is true, an arrowhead is also drawn at the [p2] end
 // -----------------------------------------------------------------------------
 void drawing::drawArrow(
-	Vec2d          p1,
-	Vec2d          p2,
+	const Vec2d&   p1,
+	const Vec2d&   p2,
 	const ColRGBA& color,
 	bool           twoway,
 	double         arrowhead_angle,
@@ -377,7 +377,7 @@ void drawing::drawArrow(
 // -----------------------------------------------------------------------------
 // Draws a rectangle from [tl] to [br]
 // -----------------------------------------------------------------------------
-void drawing::drawRect(Vec2d tl, Vec2d br)
+void drawing::drawRect(const Vec2d& tl, const Vec2d& br)
 {
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(tl.x, tl.y);
@@ -403,7 +403,7 @@ void drawing::drawRect(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle from [tl] to [br]
 // -----------------------------------------------------------------------------
-void drawing::drawFilledRect(Vec2d tl, Vec2d br)
+void drawing::drawFilledRect(const Vec2d& tl, const Vec2d& br)
 {
 	glBegin(GL_QUADS);
 	glVertex2d(tl.x, tl.y);
@@ -429,7 +429,7 @@ void drawing::drawFilledRect(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void drawing::drawBorderedRect(Vec2d tl, Vec2d br, const ColRGBA& colour, const ColRGBA& border_colour)
+void drawing::drawBorderedRect(const Vec2d& tl, const Vec2d& br, const ColRGBA& colour, const ColRGBA& border_colour)
 {
 	drawBorderedRect(tl.x, tl.y, br.x, br.y, colour, border_colour);
 }
@@ -467,7 +467,7 @@ void drawing::drawBorderedRect(
 // -----------------------------------------------------------------------------
 // Draws an ellipse at [mid]
 // -----------------------------------------------------------------------------
-void drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
+void drawing::drawEllipse(const Vec2d& mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
 {
 	// Set colour
 	gl::setColour(colour);
@@ -478,7 +478,7 @@ void drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides
 	for (int a = 0; a < sides; a++)
 	{
 		glVertex2d(mid.x + sin(rot) * radius_x, mid.y - cos(rot) * radius_y);
-		rot -= (3.1415926535897932384626433832795 * 2) / (double)sides;
+		rot -= (3.1415926535897932384626433832795 * 2) / static_cast<double>(sides);
 	}
 	glEnd();
 }
@@ -486,7 +486,7 @@ void drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides
 // -----------------------------------------------------------------------------
 // Draws a filled ellipse at [mid]
 // -----------------------------------------------------------------------------
-void drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
+void drawing::drawFilledEllipse(const Vec2d& mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
 {
 	// Set colour
 	gl::setColour(colour);
@@ -498,7 +498,7 @@ void drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int
 	for (int a = 0; a < sides + 1; a++)
 	{
 		glVertex2d(mid.x + sin(rot) * radius_x, mid.y - cos(rot) * radius_y);
-		rot -= (3.1415926535897932384626433832795 * 2) / (double)sides;
+		rot -= (3.1415926535897932384626433832795 * 2) / static_cast<double>(sides);
 	}
 	glEnd();
 }
@@ -563,8 +563,8 @@ void drawing::drawTextureTiled(unsigned id, uint32_t width, uint32_t height)
 
 	// Calculate texture coordinates
 	auto&  tex_info = gl::Texture::info(id);
-	double tex_x    = (double)width / (double)tex_info.size.x;
-	double tex_y    = (double)height / (double)tex_info.size.y;
+	double tex_x    = static_cast<double>(width) / static_cast<double>(tex_info.size.x);
+	double tex_y    = static_cast<double>(height) / static_cast<double>(tex_info.size.y);
 
 	// Draw
 	glBegin(GL_QUADS);
@@ -864,7 +864,7 @@ wxColour drawing::lightColour(const wxColour& colour, float percent)
 	ColHSL hsl = ColRGBA(colour).asHSL();
 
 	// Increase luminance
-	hsl.l += (float)((percent * 5.0) / 100.0);
+	hsl.l += static_cast<float>((percent * 5.0) / 100.0);
 	if (hsl.l > 1.0)
 		hsl.l = 1.0;
 
@@ -883,7 +883,7 @@ wxColour drawing::darkColour(const wxColour& colour, float percent)
 	ColHSL hsl = ColRGBA(colour).asHSL();
 
 	// Decrease luminance
-	hsl.l -= (float)((percent * 5.0) / 100.0);
+	hsl.l -= static_cast<float>((percent * 5.0) / 100.0);
 	if (hsl.l < 0)
 		hsl.l = 0;
 
@@ -903,7 +903,9 @@ wxColour drawing::darkColour(const wxColour& colour, float percent)
 // TextBox class constructor
 // -----------------------------------------------------------------------------
 TextBox::TextBox(string_view text, drawing::Font font, int width, int line_height) :
-	font_{ font }, width_{ width }, line_height_{ line_height }
+	font_{ font },
+	width_{ width },
+	line_height_{ line_height }
 {
 	setText(text);
 }

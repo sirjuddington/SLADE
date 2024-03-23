@@ -48,7 +48,7 @@ namespace game
 			return has_default_ && property::value<T>(default_value_) == value;
 		}
 
-		void parse(ParseTreeNode* node, string_view group);
+		void parse(const ParseTreeNode* node, string_view group);
 
 		string getStringRep();
 

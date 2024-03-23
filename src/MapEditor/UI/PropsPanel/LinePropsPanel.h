@@ -16,11 +16,11 @@ class LinePropsPanel : public PropsPanelBase
 {
 public:
 	LinePropsPanel(wxWindow* parent);
-	~LinePropsPanel();
+	~LinePropsPanel() override;
 
 	wxPanel* setupGeneralTab();
 	wxPanel* setupSpecialTab();
-	void     openObjects(vector<MapObject*>& objects) override;
+	void     openObjects(vector<MapObject*>& lines) override;
 	void     applyChanges() override;
 
 private:

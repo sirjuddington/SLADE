@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,6 +38,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/ColourConfiguration.h"
+#include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -80,6 +81,14 @@ CVAR(Bool, elist_rename_inplace, false, CVar::Save)
 #else
 CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 #endif
+CVAR(Bool, elist_colsize_show, true, CVar::Flag::Save)
+CVAR(Bool, elist_coltype_show, true, CVar::Flag::Save)
+CVAR(Bool, elist_colindex_show, false, CVar::Flag::Save)
+CVAR(Bool, elist_filter_dirs, false, CVar::Flag::Save)
+CVAR(Bool, elist_type_bgcol, false, CVar::Flag::Save)
+CVAR(Float, elist_type_bgcol_intensity, 0.18, CVar::Flag::Save)
+CVAR(Int, elist_icon_size, 16, CVar::Flag::Save)
+CVAR(Int, elist_icon_padding, 1, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -87,15 +96,7 @@ CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Int, elist_icon_size)
-EXTERN_CVAR(Int, elist_icon_padding)
-EXTERN_CVAR(Bool, elist_filter_dirs)
-EXTERN_CVAR(Bool, elist_colsize_show)
-EXTERN_CVAR(Bool, elist_coltype_show)
-EXTERN_CVAR(Bool, elist_colindex_show)
 EXTERN_CVAR(Bool, list_font_monospace)
-EXTERN_CVAR(Bool, elist_type_bgcol)
-EXTERN_CVAR(Float, elist_type_bgcol_intensity)
 
 
 // -----------------------------------------------------------------------------
@@ -165,7 +166,7 @@ void ArchivePathPanel::setCurrentPath(const ArchiveDir* dir) const
 // Associates [archive] with this model, connecting to its signals and
 // populating the root node with the archive's root directory
 // -----------------------------------------------------------------------------
-void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager, bool force_list)
+void ArchiveViewModel::openArchive(const shared_ptr<Archive>& archive, UndoManager* undo_manager, bool force_list)
 {
 	archive_      = archive;
 	root_dir_     = archive->rootDir();
@@ -177,6 +178,9 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 
 
 	// --- Connect to Archive/ArchiveManager signals ---
+
+	// ReSharper disable CppMemberFunctionMayBeConst
+	// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 	// Entry added
 	connections_ += archive->signals().entry_added.connect(
@@ -261,6 +265,9 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 					items.push_back(wxDataViewItem{ entry });
 			ItemsChanged(items);
 		});
+
+	// ReSharper enable CppMemberFunctionMayBeConst
+	// ReSharper enable CppParameterMayBeConstPtrOrRef
 }
 
 // -----------------------------------------------------------------------------
@@ -298,7 +305,7 @@ void ArchiveViewModel::setFilter(string_view name, string_view category)
 // -----------------------------------------------------------------------------
 // Sets the root directory
 // -----------------------------------------------------------------------------
-void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
+void ArchiveViewModel::setRootDir(const shared_ptr<ArchiveDir>& dir)
 {
 	// Check given dir is part of archive
 	if (dir->archive() != archive_.lock().get())
@@ -348,10 +355,10 @@ wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 {
 	switch (col)
 	{
-	case 0: return "wxDataViewIconText";
-	case 1: return "string";
-	case 2: return "string";
-	case 3: return "string"; // Index is a number technically, but will need to be blank for folders
+	case 0:  return "wxDataViewIconText";
+	case 1:  return "string";
+	case 2:  return "string";
+	case 3:  return "string"; // Index is a number technically, but will need to be blank for folders
 	default: return "string";
 	}
 }
@@ -831,7 +838,7 @@ bool ArchiveViewModel::dirIsInList(const ArchiveDir& dir) const
 	switch (view_type_)
 	{
 	case ViewType::List: return dir.parent() == root_dir_.lock();
-	default: return true;
+	default:             return true;
 	}
 }
 
@@ -861,11 +868,12 @@ ArchiveDir* ArchiveViewModel::dirForDirItem(const wxDataViewItem& item) const
 // ArchiveEntryTree class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntryTree::ArchiveEntryTree(
-	wxWindow*           parent,
-	shared_ptr<Archive> archive,
-	UndoManager*        undo_manager,
-	bool                force_list) :
-	wxDataViewCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE), archive_{ archive }
+	wxWindow*                  parent,
+	const shared_ptr<Archive>& archive,
+	UndoManager*               undo_manager,
+	bool                       force_list) :
+	wxDataViewCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE),
+	archive_{ archive }
 {
 	// Init settings
 	SetRowHeight(ui::scalePx(elist_icon_size + (elist_icon_padding * 2) + 2));
@@ -1023,7 +1031,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 				switch (e.GetKeyCode())
 				{
 				case WXK_DOWN: to_row = GetRowByItem(GetCurrentItem()) + 1; break;
-				case WXK_UP: to_row = GetRowByItem(GetCurrentItem()) - 1; break;
+				case WXK_UP:   to_row = GetRowByItem(GetCurrentItem()) - 1; break;
 				default:
 					// Not up or down arrow, do default handling
 					e.Skip();
@@ -1698,7 +1706,7 @@ bool ArchiveEntryTree::searchChar(int key_code)
 // -----------------------------------------------------------------------------
 // Sets the root directory to [dir] and updates UI accordingly
 // -----------------------------------------------------------------------------
-void ArchiveEntryTree::goToDir(shared_ptr<ArchiveDir> dir, bool expand)
+void ArchiveEntryTree::goToDir(const shared_ptr<ArchiveDir>& dir, bool expand)
 {
 	if (const auto archive = archive_.lock())
 	{

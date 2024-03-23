@@ -1,22 +1,27 @@
 #pragma once
 
-#include "Archive/Archive.h"
 #include "General/SAction.h"
 #include "UI/STopWindow.h"
 
 namespace slade
 {
+struct MapDesc;
+class Archive;
 class MapObject;
 class MapObjectPropsPanel;
 class ScriptEditorPanel;
 class ObjectEditPanel;
-class ObjectEditGroup;
 class WadArchive;
 class MapCanvas;
 class MapChecksPanel;
 class UndoManagerHistoryPanel;
 class UndoManager;
 class ArchiveEntry;
+
+namespace mapeditor
+{
+	class ObjectEditGroup;
+}
 
 class MapEditorWindow : public STopWindow, public SActionHandler
 {
@@ -31,8 +36,8 @@ public:
 	void setupMenu();
 	void setupLayout();
 	bool chooseMap(Archive* archive = nullptr);
-	bool openMap(const Archive::MapDesc& map);
-	void loadMapScripts(const Archive::MapDesc& map);
+	bool openMap(const MapDesc& map);
+	void loadMapScripts(const MapDesc& map);
 	bool writeMap(WadArchive& wad, const wxString& name = "MAP01", bool nodes = true);
 	bool saveMap();
 	bool saveMapAs();
@@ -47,7 +52,7 @@ public:
 	MapObjectPropsPanel* propsPanel() const { return panel_obj_props_; }
 	ObjectEditPanel*     objectEditPanel() const { return panel_obj_edit_; }
 
-	void showObjectEditPanel(bool show, ObjectEditGroup* group);
+	void showObjectEditPanel(bool show, mapeditor::ObjectEditGroup* group);
 	void showShapeDrawPanel(bool show = true);
 
 	// SAction handler

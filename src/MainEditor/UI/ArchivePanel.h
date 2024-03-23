@@ -1,20 +1,29 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
 #include "General/SAction.h"
 #include "General/UndoRedo.h"
-#include "MainEditor/ExternalEditManager.h"
-#include "UI/Lists/ArchiveEntryTree.h"
-#include <wx/splitter.h>
 
+// Forward declarations
+class wxSplitterWindow;
 class wxStaticText;
 class wxBitmapButton;
+namespace slade
+{
+namespace ui
+{
+	class ArchivePathPanel;
+	class ArchiveEntryTree;
+} // namespace ui
+class ExternalEditManager;
+class ArchiveDir;
+class ArchiveEntry;
+class Archive;
+class EntryPanel;
+class SToolBar;
+} // namespace slade
 
 namespace slade
 {
-class EntryPanel;
-class SToolBar;
-
 class ArchivePanel : public wxPanel, SActionHandler
 {
 public:
@@ -93,11 +102,11 @@ public:
 	// UI related
 	bool    openDir(const shared_ptr<ArchiveDir>& dir) const;
 	bool    openEntry(ArchiveEntry* entry, bool force = false);
-	bool    openEntryAsText(ArchiveEntry* entry);
-	bool    openEntryAsHex(ArchiveEntry* entry);
+	bool    openEntryAsText(const ArchiveEntry* entry);
+	bool    openEntryAsHex(const ArchiveEntry* entry);
 	bool    showEntryPanel(EntryPanel* new_area, bool ask_save = true);
 	void    focusOnEntry(ArchiveEntry* entry) const;
-	void    focusEntryList() const { entry_tree_->SetFocus(); }
+	void    focusEntryList() const;
 	void    refreshPanel();
 	void    closeCurrentEntry();
 	wxMenu* createEntryOpenMenu(const wxString& category);
@@ -131,17 +140,17 @@ protected:
 	wxSplitterWindow*     splitter_         = nullptr;
 
 	// Entry panels
-	EntryPanel* cur_area_      = nullptr;
-	EntryPanel* entry_area_    = nullptr;
-	EntryPanel* default_area_  = nullptr;
-	EntryPanel* text_area_     = nullptr;
-	EntryPanel* ansi_area_     = nullptr;
-	EntryPanel* gfx_area_      = nullptr;
-	EntryPanel* pal_area_      = nullptr;
-	EntryPanel* hex_area_      = nullptr;
-	EntryPanel* map_area_      = nullptr;
-	EntryPanel* audio_area_    = nullptr;
-	EntryPanel* data_area_     = nullptr;
+	EntryPanel* cur_area_     = nullptr;
+	EntryPanel* entry_area_   = nullptr;
+	EntryPanel* default_area_ = nullptr;
+	EntryPanel* text_area_    = nullptr;
+	EntryPanel* ansi_area_    = nullptr;
+	EntryPanel* gfx_area_     = nullptr;
+	EntryPanel* pal_area_     = nullptr;
+	EntryPanel* hex_area_     = nullptr;
+	EntryPanel* map_area_     = nullptr;
+	EntryPanel* audio_area_   = nullptr;
+	EntryPanel* data_area_    = nullptr;
 
 	// Signal connections
 	sigslot::scoped_connection sc_archive_saved_;
@@ -176,7 +185,7 @@ protected:
 	void         onBtnClearFilter(wxCommandEvent& e);
 
 private:
-	void     setup(Archive* archive);
+	void     setup(const Archive* archive);
 	void     bindEvents(Archive* archive);
 	wxPanel* createEntryListPanel(wxWindow* parent);
 };
@@ -184,10 +193,7 @@ private:
 class EntryDataUS : public UndoStep
 {
 public:
-	EntryDataUS(ArchiveEntry* entry) : path_{ entry->path() }, index_{ entry->index() }, archive_{ entry->parent() }
-	{
-		data_.importMem(entry->rawData(), entry->size());
-	}
+	EntryDataUS(ArchiveEntry* entry);
 
 	bool swapData();
 	bool doUndo() override { return swapData(); }

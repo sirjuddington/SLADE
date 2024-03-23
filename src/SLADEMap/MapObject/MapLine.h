@@ -34,15 +34,15 @@ public:
 	inline static const string PROP_ARG4    = "arg4";
 
 	MapLine(
-		MapVertex* v1,
-		MapVertex* v2,
-		MapSide*   s1      = nullptr,
-		MapSide*   s2      = nullptr,
-		int        special = 0,
-		int        flags   = 0,
-		ArgSet     args    = {});
-	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTreeNode* udmf_def);
-	~MapLine() = default;
+		MapVertex*    v1,
+		MapVertex*    v2,
+		MapSide*      s1      = nullptr,
+		MapSide*      s2      = nullptr,
+		int           special = 0,
+		int           flags   = 0,
+		const ArgSet& args    = {});
+	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, const ParseTreeNode* udmf_def);
+	~MapLine() override = default;
 
 	bool isOk() const { return vertex1_ && vertex2_; }
 
@@ -99,10 +99,10 @@ public:
 	bool   doubleSector() const;
 	Vec2d  frontVector();
 	Vec2d  dirTabPoint(double tab_length = 0.);
-	double distanceTo(Vec2d point);
+	double distanceTo(const Vec2d& point);
 	int    needsTexture() const;
-	bool   overlaps(MapLine* other) const;
-	bool   intersects(MapLine* other, Vec2d& intersect_point) const;
+	bool   overlaps(const MapLine* other) const;
+	bool   intersects(const MapLine* other, Vec2d& intersect_point) const;
 
 	void clearUnneededTextures() const;
 	void resetInternals();

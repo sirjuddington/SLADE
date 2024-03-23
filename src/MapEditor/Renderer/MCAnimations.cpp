@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,13 +33,17 @@
 #include "Main.h"
 #include "MCAnimations.h"
 #include "General/ColourConfiguration.h"
+#include "MapEditor/Item.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapVertex.h"
+#include "Utility/Polygon2D.h"
 
 using namespace slade;
 
@@ -67,7 +71,9 @@ EXTERN_CVAR(Bool, sector_selected_fill)
 // -----------------------------------------------------------------------------
 // MCASelboxFader class constructor
 // -----------------------------------------------------------------------------
-MCASelboxFader::MCASelboxFader(long start, Vec2d tl, Vec2d br) : MCAnimation(start), tl_{ tl }, br_{ br } {}
+MCASelboxFader::MCASelboxFader(long start, const Vec2d& tl, const Vec2d& br) : MCAnimation(start), tl_{ tl }, br_{ br }
+{
+}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -492,7 +498,7 @@ void MCA3dWallSelection::draw()
 // -----------------------------------------------------------------------------
 // MCA3dFlatSelection class constructor
 // -----------------------------------------------------------------------------
-MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, Plane plane, bool select) :
+MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, const Plane& plane, bool select) :
 	MCAnimation(start, true),
 	sector_{ sector },
 	plane_{ plane },
@@ -578,11 +584,11 @@ void MCAHilightFade::draw()
 {
 	switch (object_->objType())
 	{
-	case MapObject::Type::Line: renderer_->renderLineHilight(object_->index(), fade_); break;
+	case MapObject::Type::Line:   renderer_->renderLineHilight(object_->index(), fade_); break;
 	case MapObject::Type::Sector: renderer_->renderFlatHilight(object_->index(), fade_); break;
-	case MapObject::Type::Thing: renderer_->renderThingHilight(object_->index(), fade_); break;
+	case MapObject::Type::Thing:  renderer_->renderThingHilight(object_->index(), fade_); break;
 	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->index(), fade_); break;
-	default: break;
+	default:                      break;
 	}
 }
 
