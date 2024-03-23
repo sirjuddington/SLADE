@@ -57,7 +57,7 @@ public:
 	};
 
 	MapEditContext();
-	~MapEditContext() override = default;
+	~MapEditContext() override;
 
 	SLADEMap&           map() const { return *map_; }
 	Mode                editMode() const { return edit_mode_; }

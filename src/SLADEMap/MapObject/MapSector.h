@@ -91,7 +91,7 @@ public:
 		short       special  = 0,
 		short       id       = 0);
 	MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* udmf_def);
-	~MapSector() override = default;
+	~MapSector() override;
 
 	void copy(MapObject* obj) override;
 

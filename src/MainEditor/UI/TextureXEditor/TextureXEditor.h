@@ -52,7 +52,7 @@ private:
 	PatchTable              patch_table_;             // The patch table for TEXTURE1/2 (ie PNAMES)
 	vector<TextureXPanel*>  texture_editors_;         // One panel per TEXTUREX list (ie TEXTURE1/TEXTURE2)
 	PatchBrowser*           patch_browser_ = nullptr; // The patch browser window
-	unique_ptr<UndoManager> undo_manager_  = nullptr;
+	unique_ptr<UndoManager> undo_manager_;
 
 	// UI Stuff
 	TabControl* tabs_         = nullptr;

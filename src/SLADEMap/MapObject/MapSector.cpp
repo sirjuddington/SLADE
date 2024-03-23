@@ -112,6 +112,11 @@ MapSector::MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* 
 }
 
 // -----------------------------------------------------------------------------
+// MapSector class destructor
+// -----------------------------------------------------------------------------
+MapSector::~MapSector() = default;
+
+// -----------------------------------------------------------------------------
 // Copies another map object [s]
 // -----------------------------------------------------------------------------
 void MapSector::copy(MapObject* obj)

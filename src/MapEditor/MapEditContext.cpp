@@ -138,6 +138,11 @@ MapEditContext::MapEditContext() :
 }
 
 // -----------------------------------------------------------------------------
+// MapEditContext class destructor
+// -----------------------------------------------------------------------------
+MapEditContext::~MapEditContext() = default;
+
+// -----------------------------------------------------------------------------
 // Changes the current edit mode to [mode]
 // -----------------------------------------------------------------------------
 void MapEditContext::setEditMode(Mode mode)
