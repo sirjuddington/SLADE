@@ -32,12 +32,13 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "General/SAction.h"
+#include "SAction.h"
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/KeyBind.h"
+#include "SActionHandler.h"
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"

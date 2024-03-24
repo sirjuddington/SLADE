@@ -37,6 +37,7 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "General/SAction.h"
 #include "Lua.h"
 #include "UI/ScriptManagerWindow.h"
 #include "Utility/FileUtils.h"

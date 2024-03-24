@@ -55,6 +55,7 @@
 #include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/Translation.h"

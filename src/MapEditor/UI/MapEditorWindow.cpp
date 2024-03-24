@@ -38,6 +38,7 @@
 #include "Game/Configuration.h"
 #include "Game/Game.h"
 #include "General/Misc.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/Edit/Input.h"

@@ -40,6 +40,7 @@
 #include "Archive/Formats/DirArchive.h"
 #include "ArchivePanel.h"
 #include "EntryPanel/EntryPanel.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/ArchiveOperations.h"

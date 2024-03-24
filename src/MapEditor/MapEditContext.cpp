@@ -45,6 +45,7 @@
 #include "Game/Game.h"
 #include "Game/ThingType.h"
 #include "General/Console.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "MapChecks.h"

@@ -35,6 +35,7 @@
 #include "Archive/EntryType/EntryType.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"

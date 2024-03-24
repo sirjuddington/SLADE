@@ -36,6 +36,7 @@
 #include "Edit3D.h"
 #include "General/Clipboard.h"
 #include "General/KeyBind.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "LineDraw.h"
 #include "MapEditor/MapEditContext.h"

@@ -32,6 +32,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "ItemSelection.h"
 #include "MapBackupManager.h"

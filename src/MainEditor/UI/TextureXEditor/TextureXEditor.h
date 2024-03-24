@@ -33,7 +33,7 @@ public:
 
 	// Editing
 	void     setFullPath(bool enabled = false) const;
-	bool     removePatch(unsigned index, bool delete_entry = false);
+	bool     removePatch(unsigned index, bool delete_entry = false) const;
 	int      browsePatchTable(const wxString& first = "") const;
 	wxString browsePatchEntry(const wxString& first = "");
 

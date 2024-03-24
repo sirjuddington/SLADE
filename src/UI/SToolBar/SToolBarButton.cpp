@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SToolBarButton.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/UI/MainWindow.h"

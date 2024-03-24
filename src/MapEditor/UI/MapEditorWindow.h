@@ -1,6 +1,6 @@
 #pragma once
 
-#include "General/SAction.h"
+#include "General/SActionHandler.h"
 #include "UI/STopWindow.h"
 
 namespace slade

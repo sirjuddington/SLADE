@@ -1,6 +1,6 @@
 #pragma once
 
-#include "General/SAction.h"
+#include "General/SActionHandler.h"
 
 namespace slade
 {

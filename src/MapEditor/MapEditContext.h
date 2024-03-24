@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Archive/MapDesc.h"
-#include "General/SAction.h"
+#include "General/SActionHandler.h"
 #include "ItemSelection.h"
 
 // Forward declarations

@@ -36,8 +36,6 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
-#include "General/SAction.h"
-#include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"

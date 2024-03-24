@@ -38,6 +38,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/ResourceManager.h"
+#include "General/SAction.h"
 #include "General/UndoRedo.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
@@ -482,7 +483,7 @@ void TextureXEditor::showTextureMenu(bool show) const
 // Removes the patch at [index] on the patch table from any textures that
 // contain it (and from the patch table itself)
 // -----------------------------------------------------------------------------
-bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
+bool TextureXEditor::removePatch(unsigned index, bool delete_entry) const
 {
 	// Get patch we're removing
 	auto& p    = patch_table_->patch(index);

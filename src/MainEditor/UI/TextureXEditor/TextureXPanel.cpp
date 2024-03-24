@@ -41,6 +41,7 @@
 #include "General/ColourConfiguration.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -1772,6 +1773,8 @@ bool TextureXPanel::handleAction(string_view id)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when an item on the texture list is selected

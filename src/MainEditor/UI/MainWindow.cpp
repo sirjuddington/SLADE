@@ -38,6 +38,7 @@
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
 #include "General/Misc.h"
+#include "General/SAction.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
 #include "SLADEWxApp.h"

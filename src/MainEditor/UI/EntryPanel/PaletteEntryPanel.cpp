@@ -35,6 +35,7 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/Palette/PaletteManager.h"

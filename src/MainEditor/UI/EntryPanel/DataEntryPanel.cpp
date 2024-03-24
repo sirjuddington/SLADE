@@ -35,6 +35,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/ColourConfiguration.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
