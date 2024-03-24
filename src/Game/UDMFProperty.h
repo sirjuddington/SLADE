@@ -43,7 +43,14 @@ namespace game
 		bool                      internalOnly() const { return internal_only_; }
 		template<typename T> bool isDefault(T value) const
 		{
-			return has_default_ && property::value<T>(default_value_) == value;
+			if (has_default_)
+			{
+				auto val = std::get_if<T>(&default_value_);
+				if (val && *val == value)
+					return true;
+			}
+
+			return false;
 		}
 
 		void parse(const ParseTreeNode* node, string_view group);

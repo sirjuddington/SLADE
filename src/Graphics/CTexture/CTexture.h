@@ -7,6 +7,7 @@ namespace slade
 class SImage;
 class Tokenizer;
 class Translation;
+class TextureXList;
 
 // Basic patch
 class CTPatch
