@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TarArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -329,7 +331,7 @@ bool TarArchive::open(const MemChunk& mc)
 			if (entry->size() > 0)
 				entry->importMemChunk(mc, mc.currentPos(), size);
 
-			entry->setState(ArchiveEntry::State::Unmodified);
+			entry->setState(EntryState::Unmodified);
 
 			// Add to directory
 			dir->addEntry(entry);
@@ -400,7 +402,7 @@ bool TarArchive::write(MemChunk& mc)
 		memcpy(header.name, name.data(), name.size());
 
 		// Address folders
-		if (entries[a]->type() == EntryType::folderType())
+		if (entries[a]->isFolderType())
 		{
 			header.typeflag = DIRTYPE;
 			tarWriteOctal(tarMakeChecksum(&header), header.chksum, 7);

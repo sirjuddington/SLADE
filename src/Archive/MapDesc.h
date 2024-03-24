@@ -4,9 +4,6 @@
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
-
 struct MapDesc
 {
 	string                 name;

@@ -36,16 +36,20 @@
 #include "ActionSpecial.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Decorate.h"
 #include "Game.h"
 #include "GenLineSpecial.h"
 #include "General/Console.h"
+#include "MapInfo.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SpecialPreset.h"
+#include "ThingType.h"
 #include "UDMFProperty.h"
 #include "Utility/Parser.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"
 
@@ -92,10 +96,15 @@ Configuration& game::configuration()
 // -----------------------------------------------------------------------------
 // Configuration class constructor
 // -----------------------------------------------------------------------------
-Configuration::Configuration()
+Configuration::Configuration() : map_info_{ new MapInfo }
 {
 	setDefaults();
 }
+
+// -----------------------------------------------------------------------------
+// Configuration class destructor
+// -----------------------------------------------------------------------------
+Configuration::~Configuration() = default;
 
 // -----------------------------------------------------------------------------
 // Resets all game configuration values to defaults
@@ -239,7 +248,7 @@ void Configuration::readActionSpecials(
 // Reads thing type definitions from a parsed tree [node], using
 // [group_defaults] for default values
 // -----------------------------------------------------------------------------
-void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_defaults)
+void Configuration::readThingTypes(const ParseTreeNode* node, const ThingType* group_defaults)
 {
 	// Check if we're clearing all existing specials
 	if (node->child("clearexisting"))
@@ -265,8 +274,8 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 	// --- Set up group default properties ---
 	auto& cur_group_defaults = tt_group_defaults_[groupname];
 	cur_group_defaults.define(-1, "", groupname);
-	if (&group_defaults != &ThingType::unknown())
-		cur_group_defaults.copy(group_defaults);
+	if (group_defaults)
+		cur_group_defaults.copy(*group_defaults);
 	cur_group_defaults.parse(node);
 
 	// --- Go through all child nodes ---
@@ -277,7 +286,7 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 
 		// Check for 'group'
 		if (strutil::equalCI(child->type(), "group"))
-			readThingTypes(child, cur_group_defaults);
+			readThingTypes(child, &cur_group_defaults);
 
 		// Thing type
 		else if (strutil::equalCI(child->type(), "thing"))
@@ -996,7 +1005,7 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 	}
 
 	// Read any embedded configurations in resource archives
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_name   = "sladecfg";
 	auto cfg_entries = app::archiveManager().findAllResourceEntries(opt);
 	for (auto& cfg_entry : cfg_entries)
@@ -1415,9 +1424,17 @@ void Configuration::importZScriptDefs(zscript::Definitions& defs)
 // -----------------------------------------------------------------------------
 // Parses all *MAPINFO definitions in [archive]
 // -----------------------------------------------------------------------------
-bool Configuration::parseMapInfo(const Archive& archive)
+bool Configuration::parseMapInfo(const Archive& archive) const
 {
-	return map_info_.readMapInfo(archive);
+	return map_info_->readMapInfo(archive);
+}
+
+// -----------------------------------------------------------------------------
+// Clear all parsed *MAPINFO definitions
+// -----------------------------------------------------------------------------
+void Configuration::clearMapInfo() const
+{
+	map_info_->clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -1429,7 +1446,7 @@ void Configuration::linkDoomEdNums()
 	for (auto& parsed : parsed_types_)
 	{
 		// Find MAPINFO editor number for parsed actor class
-		int ednum = map_info_.doomEdNumForClass(parsed.className());
+		int ednum = map_info_->doomEdNumForClass(parsed.className());
 
 		if (ednum >= 0)
 		{

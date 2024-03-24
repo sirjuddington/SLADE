@@ -35,6 +35,7 @@
 #include "InfoOverlay3d.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"

@@ -33,7 +33,10 @@
 #include "Main.h"
 #include "Archive/Archive.h"
 #include "App.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Archive/Formats/All.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
@@ -113,7 +116,7 @@ shared_ptr<ArchiveEntry> archiveCreateEntryInNamespace(Archive& self, string_vie
 // -----------------------------------------------------------------------------
 // Wrapper for Archive::findFirst that returns a shared pointer
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> archiveFindFirst(Archive& self, Archive::SearchOptions& opt)
+shared_ptr<ArchiveEntry> archiveFindFirst(Archive& self, ArchiveSearchOptions& opt)
 {
 	auto found = self.findFirst(opt);
 	return found ? found->getShared() : nullptr;
@@ -122,7 +125,7 @@ shared_ptr<ArchiveEntry> archiveFindFirst(Archive& self, Archive::SearchOptions&
 // -----------------------------------------------------------------------------
 // Wrapper for Archive::findLast that returns a shared pointer
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> archiveFindLast(Archive& self, Archive::SearchOptions& opt)
+shared_ptr<ArchiveEntry> archiveFindLast(Archive& self, ArchiveSearchOptions& opt)
 {
 	auto found = self.findLast(opt);
 	return found ? found->getShared() : nullptr;
@@ -131,7 +134,7 @@ shared_ptr<ArchiveEntry> archiveFindLast(Archive& self, Archive::SearchOptions& 
 // -----------------------------------------------------------------------------
 // Wrapper for Archive::findAll that returns shared pointers
 // -----------------------------------------------------------------------------
-vector<shared_ptr<ArchiveEntry>> archiveFindAll(Archive& self, Archive::SearchOptions& opt)
+vector<shared_ptr<ArchiveEntry>> archiveFindAll(Archive& self, ArchiveSearchOptions& opt)
 {
 	auto found = self.findAll(opt);
 
@@ -167,17 +170,17 @@ void registerArchiveFormat(sol::state& lua)
 // -----------------------------------------------------------------------------
 void registerArchiveSearchOptions(sol::state& lua)
 {
-	auto lua_search_opt = lua.new_usertype<Archive::SearchOptions>(
-		"ArchiveSearchOptions", "new", sol::constructors<Archive::SearchOptions()>());
+	auto lua_search_opt = lua.new_usertype<ArchiveSearchOptions>(
+		"ArchiveSearchOptions", "new", sol::constructors<ArchiveSearchOptions()>());
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_search_opt["matchName"]      = sol::property(&Archive::SearchOptions::match_name);
-	lua_search_opt["matchType"]      = sol::property(&Archive::SearchOptions::match_type);
-	lua_search_opt["matchNamespace"] = sol::property(&Archive::SearchOptions::match_namespace);
-	lua_search_opt["dir"]            = sol::property(&Archive::SearchOptions::dir);
-	lua_search_opt["ignoreExt"]      = sol::property(&Archive::SearchOptions::ignore_ext);
-	lua_search_opt["searchSubdirs"]  = sol::property(&Archive::SearchOptions::search_subdirs);
+	lua_search_opt["matchName"]      = sol::property(&ArchiveSearchOptions::match_name);
+	lua_search_opt["matchType"]      = sol::property(&ArchiveSearchOptions::match_type);
+	lua_search_opt["matchNamespace"] = sol::property(&ArchiveSearchOptions::match_namespace);
+	lua_search_opt["dir"]            = sol::property(&ArchiveSearchOptions::dir);
+	lua_search_opt["ignoreExt"]      = sol::property(&ArchiveSearchOptions::ignore_ext);
+	lua_search_opt["searchSubdirs"]  = sol::property(&ArchiveSearchOptions::search_subdirs);
 }
 
 // -----------------------------------------------------------------------------

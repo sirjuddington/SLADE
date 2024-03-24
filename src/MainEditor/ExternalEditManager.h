@@ -2,7 +2,6 @@
 
 namespace slade
 {
-class ArchiveEntry;
 class ExternalEditFileMonitor;
 
 class ExternalEditManager

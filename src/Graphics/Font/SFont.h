@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 #include <array>
 
 namespace slade

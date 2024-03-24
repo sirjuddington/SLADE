@@ -4,8 +4,6 @@
 
 namespace slade
 {
-class MapSector;
-
 class SectorTextureOverlay : public MCOverlay
 {
 public:

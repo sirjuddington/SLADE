@@ -3,9 +3,6 @@
 namespace slade
 {
 class SImage;
-class Archive;
-class ArchiveEntry;
-class Palette;
 class Tokenizer;
 
 namespace misc

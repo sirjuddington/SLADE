@@ -1,16 +1,11 @@
 #pragma once
 
 #include "SLADEMap/MapObject/MapObject.h"
-#include "Utility/Colour.h"
 
 namespace slade
 {
 // Forward declarations
 class ItemSelection;
-class MapLine;
-class MapSector;
-class MapThing;
-class SLADEMap;
 namespace game
 {
 	class ThingType;

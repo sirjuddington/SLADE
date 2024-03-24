@@ -33,8 +33,10 @@
 #include "Main.h"
 #include "ResourceManager.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Console.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
@@ -444,7 +446,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 		PatchTable ptable;
 		if (txentry == 1)
 		{
-			Archive::SearchOptions opt;
+			ArchiveSearchOptions opt;
 			opt.match_type = EntryType::fromId("pnames");
 			auto* pnames   = entry->parent()->findLast(opt);
 			ptable.loadPNAMES(pnames, entry->parent());

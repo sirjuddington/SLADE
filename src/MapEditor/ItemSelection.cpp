@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "ItemSelection.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "MapEditContext.h"
 #include "MapEditor.h"
 #include "SLADEMap/MapObject/MapLine.h"

@@ -1,10 +1,5 @@
 #pragma once
 
-namespace slade
-{
-class Archive;
-}
-
 namespace slade::archiveoperations
 {
 bool save(Archive& archive);

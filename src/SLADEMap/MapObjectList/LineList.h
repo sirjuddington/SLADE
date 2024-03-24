@@ -4,8 +4,6 @@
 
 namespace slade
 {
-class MapVertex;
-class MapLine;
 enum class MapFormat;
 
 class LineList : public MapObjectList<MapLine>

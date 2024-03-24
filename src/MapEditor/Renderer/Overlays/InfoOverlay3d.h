@@ -4,9 +4,6 @@
 
 namespace slade
 {
-class SLADEMap;
-class MapObject;
-
 class InfoOverlay3D
 {
 public:

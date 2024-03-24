@@ -2,11 +2,8 @@
 
 namespace slade
 {
-class ArchiveEntry;
 class ColourBox;
 class GfxCanvas;
-class Palette;
-struct ColRGBA;
 
 /*******************************************************************
  * GFXTINTDIALOG CLASS

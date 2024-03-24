@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Archive.h"
-
 namespace slade
 {
+struct ArchiveSearchOptions;
 class ArchiveManager
 {
 public:
@@ -51,9 +50,8 @@ public:
 
 	// Resource entry get/search
 	ArchiveEntry*         getResourceEntry(string_view name, const Archive* ignore = nullptr) const;
-	ArchiveEntry*         findResourceEntry(Archive::SearchOptions& options, const Archive* ignore = nullptr) const;
-	vector<ArchiveEntry*> findAllResourceEntries(Archive::SearchOptions& options, const Archive* ignore = nullptr)
-		const;
+	ArchiveEntry*         findResourceEntry(ArchiveSearchOptions& options, const Archive* ignore = nullptr) const;
+	vector<ArchiveEntry*> findAllResourceEntries(ArchiveSearchOptions& options, const Archive* ignore = nullptr) const;
 
 	// Recent files
 	string   recentFile(unsigned index);

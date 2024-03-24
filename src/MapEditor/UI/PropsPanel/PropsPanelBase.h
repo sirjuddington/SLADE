@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class MapObject;
-
 class PropsPanelBase : public wxPanel
 {
 public:

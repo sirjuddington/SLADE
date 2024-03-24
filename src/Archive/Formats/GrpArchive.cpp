@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GrpArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -120,7 +122,7 @@ bool GrpArchive::open(const MemChunk& mc)
 		if (nlump->size() > 0)
 			nlump->importMemChunk(mc, offset, size);
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -169,7 +171,7 @@ bool GrpArchive::write(MemChunk& mc)
 		mc.write(name, 12);
 		mc.write(&size, 4);
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setOffsetOnDisk(offset);
 		entry->setSizeOnDisk();
 

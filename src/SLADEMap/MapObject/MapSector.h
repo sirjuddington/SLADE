@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MapObject.h"
-#include "Utility/Colour.h"
 
 namespace slade
 {

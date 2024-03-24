@@ -2,13 +2,6 @@
 
 namespace slade
 {
-// Forward declarations
-class MapLine;
-class MapVertex;
-class MapSector;
-class MapSide;
-class SLADEMap;
-
 class SectorBuilder
 {
 public:

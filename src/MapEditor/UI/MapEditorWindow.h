@@ -5,18 +5,15 @@
 
 namespace slade
 {
-struct MapDesc;
-class Archive;
-class MapObject;
-class MapObjectPropsPanel;
-class ScriptEditorPanel;
-class ObjectEditPanel;
-class WadArchive;
 class MapCanvas;
 class MapChecksPanel;
-class UndoManagerHistoryPanel;
+class MapObjectPropsPanel;
+class ObjectEditPanel;
+class ScriptEditorPanel;
 class UndoManager;
-class ArchiveEntry;
+class UndoManagerHistoryPanel;
+class WadArchive;
+struct MapDesc;
 
 namespace mapeditor
 {

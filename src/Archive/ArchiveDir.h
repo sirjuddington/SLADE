@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ArchiveEntry.h"
+#include "EntryState.h"
 
 namespace slade
 {
@@ -23,7 +23,7 @@ public:
 	shared_ptr<ArchiveDir>                  parent() const { return parent_dir_.lock(); }
 
 	// Mutators
-	void setName(string_view new_name) const { dir_entry_->setName(new_name); }
+	void setName(string_view new_name) const;
 	void setArchive(Archive* archive);
 
 	// Entry Access
@@ -66,7 +66,7 @@ public:
 							shared_ptr<ArchiveDir>&           target,
 							const ArchiveDir*                 dir,
 							unsigned                          position        = -1,
-							ArchiveEntry::State               state           = ArchiveEntry::State::New,
+							EntryState                        state           = EntryState::New,
 							vector<shared_ptr<ArchiveDir>>*   created_dirs    = nullptr,
 							vector<shared_ptr<ArchiveEntry>>* created_entries = nullptr);
 	static shared_ptr<ArchiveDir> getOrCreateSubdir(

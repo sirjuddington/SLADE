@@ -34,7 +34,9 @@
 #include "PaletteChooser.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Misc.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/Palette/PaletteManager.h"
 
 using namespace slade;

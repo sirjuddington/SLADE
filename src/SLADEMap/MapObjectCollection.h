@@ -9,7 +9,7 @@ class SectorList;
 class LineList;
 class SideList;
 class VertexList;
-class SLADEMap;
+
 class MapObjectCollection
 {
 public:

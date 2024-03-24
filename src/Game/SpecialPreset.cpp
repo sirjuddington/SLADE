@@ -33,7 +33,7 @@
 #include "SpecialPreset.h"
 #include "App.h"
 #include "Utility/Parser.h"
-#include "Utility/Property.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

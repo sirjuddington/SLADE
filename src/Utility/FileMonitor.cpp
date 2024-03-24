@@ -34,7 +34,9 @@
 #include "Main.h"
 #include "FileMonitor.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/Formats/WadArchive.h"
+#include "Archive/MapDesc.h"
 #include "FileUtils.h"
 #include "StringUtils.h"
 #include <filesystem>

@@ -35,6 +35,7 @@
 #include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/SImage/SImage.h"
+#include "Graphics/Translation.h"
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
@@ -442,7 +443,7 @@ void ZTextureEditorPanel::updatePatchControls()
 			choice_style_->SetStringSelection(patch->style());
 			cb_blend_col_->setColour(patch->colour());
 			spin_tint_amount_->SetValue(static_cast<double>(patch->colour().a) / 255.0);
-			text_translation_->SetValue(patch->translation().asText());
+			text_translation_->SetValue(patch->hasTranslation() ? patch->translation()->asText() : "");
 
 			switch (patch->rotation())
 			{
@@ -1033,10 +1034,17 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 	if (selection.empty())
 		return;
 
-	// Get translation from first selected patch
+	// Copy first translation found from selected patches
 	Translation trans;
-	auto        patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(selection[0]));
-	trans.copy(patch->translation());
+	for (auto i : selection)
+	{
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(selection[i]));
+		if (patch->hasTranslation())
+		{
+			trans.copy(*patch->translation());
+			break;
+		}
+	}
 
 	// Add palette range if no translation ranges exist
 	if (trans.nRanges() == 0)
@@ -1055,7 +1063,7 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 		for (int index : selection)
 		{
 			auto patchx = dynamic_cast<CTPatchEx*>(tex_current_->patch(index));
-			patchx->translation().copy(ted.getTranslation());
+			patchx->setTranslation(ted.getTranslation());
 		}
 
 		// Update UI
@@ -1104,7 +1112,7 @@ void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 	for (int index : selection)
 	{
 		auto patchx = dynamic_cast<CTPatchEx*>(tex_current_->patch(index));
-		patchx->translation().copy(trans);
+		patchx->setTranslation(trans);
 	}
 
 	// Update UI

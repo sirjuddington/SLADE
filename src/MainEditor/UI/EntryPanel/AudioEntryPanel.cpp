@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "AudioEntryPanel.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Audio/AudioTags.h"
 #include "Audio/MIDIPlayer.h"
 #include "Audio/ModMusic.h"
@@ -40,6 +42,7 @@
 #include "General/UI.h"
 #include "MainEditor/Conversions.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 

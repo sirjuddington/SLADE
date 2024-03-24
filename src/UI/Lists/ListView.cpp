@@ -186,11 +186,11 @@ bool ListView::setItemStatus(int item, ItemStatus status)
 	switch (status)
 	{
 	case ItemStatus::Normal:   SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
-	case ItemStatus::Modified: SetItemTextColour(item, colourconfig::colour("modified").toWx()); break;
-	case ItemStatus::New:      SetItemTextColour(item, colourconfig::colour("new").toWx()); break;
-	case ItemStatus::Locked:   SetItemTextColour(item, colourconfig::colour("locked").toWx()); break;
-	case ItemStatus::Error:    SetItemTextColour(item, colourconfig::colour("error").toWx()); break;
-	case ItemStatus::Disabled: SetItemTextColour(item, disabledColour().toWx());
+	case ItemStatus::Modified: SetItemTextColour(item, colourconfig::colour("modified")); break;
+	case ItemStatus::New:      SetItemTextColour(item, colourconfig::colour("new")); break;
+	case ItemStatus::Locked:   SetItemTextColour(item, colourconfig::colour("locked")); break;
+	case ItemStatus::Error:    SetItemTextColour(item, colourconfig::colour("error")); break;
+	case ItemStatus::Disabled: SetItemTextColour(item, disabledColour());
 	}
 
 	return true;

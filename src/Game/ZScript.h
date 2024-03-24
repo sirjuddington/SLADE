@@ -1,11 +1,9 @@
 #pragma once
 
-#include "Utility/Property.h"
+#include "Utility/PropertyList.h"
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
 class Tokenizer;
 namespace game
 {

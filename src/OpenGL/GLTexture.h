@@ -1,11 +1,8 @@
 #pragma once
 
-#include "Utility/Colour.h"
-
 namespace slade
 {
 class SImage;
-class Palette;
 
 namespace gl
 {

@@ -34,6 +34,7 @@
 #include "Renderer.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "MCAnimations.h"

@@ -18,8 +18,7 @@ public:
 	bool write(MemChunk& mc) override;      // Write to MemChunk
 
 	// Misc
-	bool     loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
-	unsigned numEntries() override { return rootDir()->numEntries(); }
+	bool loadEntryData(const ArchiveEntry* entry, MemChunk& out) override;
 
 	// Entry addition/removal
 	shared_ptr<ArchiveEntry> addEntry(

@@ -2,9 +2,7 @@
 
 namespace slade
 {
-class SLADEMap;
 class MapTextureManager;
-class MapObject;
 
 namespace mapeditor
 {

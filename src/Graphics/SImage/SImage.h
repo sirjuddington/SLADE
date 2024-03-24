@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Graphics/Palette/Palette.h"
-
 namespace slade
 {
 class Translation;
@@ -72,10 +70,10 @@ public:
 		}
 	};
 
-	SImage() = default;
-	SImage(Type type) : type_{ type } {}
+	SImage();
+	SImage(Type type);
 	SImage(const SImage& img);
-	virtual ~SImage() = default;
+	virtual ~SImage();
 
 	bool isValid() const { return (width_ > 0 && height_ > 0 && data_.data()); }
 
@@ -87,8 +85,8 @@ public:
 	int       height() const { return height_; }
 	int       index() const { return imgindex_; }
 	int       size() const { return numimages_; }
-	bool      hasPalette() const { return has_palette_; }
-	Palette*  palette() { return &palette_; }
+	bool      hasPalette() const { return !!palette_; }
+	Palette*  palette() const { return palette_.get(); }
 	Vec2i     offset() const { return { offset_x_, offset_y_ }; }
 	unsigned  stride() const;
 	uint8_t   bpp() const;
@@ -99,11 +97,7 @@ public:
 
 	void setXOffset(int offset);
 	void setYOffset(int offset);
-	void setPalette(const Palette* pal)
-	{
-		palette_.copyPalette(pal);
-		has_palette_ = true;
-	}
+	void setPalette(const Palette* pal);
 
 	void setWidth(int w);
 	void setHeight(int h);
@@ -116,7 +110,7 @@ public:
 	void   fillAlpha(uint8_t alpha = 0);
 	short  findUnusedColour() const;
 	size_t countColours() const;
-	void   shrinkPalette(Palette* pal = nullptr);
+	void   shrinkPalette(Palette* pal = nullptr) const;
 	bool   copyImage(const SImage* image);
 
 	// Image format reading
@@ -151,7 +145,7 @@ public:
 	bool resize(int nwidth, int nheight);
 	bool setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight, Type ntype);
 	bool setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth, int nheight, Type ntype);
-	bool applyTranslation(Translation* tr, Palette* pal = nullptr, bool truecolor = false);
+	bool applyTranslation(const Translation* tr, Palette* pal = nullptr, bool truecolor = false);
 	bool applyTranslation(string_view tr, Palette* pal = nullptr, bool truecolor = false);
 	bool drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, const Palette* pal);
 	bool drawImage(
@@ -175,23 +169,24 @@ public:
 	Signals& signals() { return signals_; }
 
 private:
-	int       width_  = 0;
-	int       height_ = 0;
-	MemChunk  data_;
-	MemChunk  mask_;
-	Type      type_ = Type::RGBA;
-	Palette   palette_;
-	bool      has_palette_ = false;
-	int       offset_x_    = 0;
-	int       offset_y_    = 0;
-	SIFormat* format_      = nullptr;
-	Signals   signals_;
+	int                 width_  = 0;
+	int                 height_ = 0;
+	MemChunk            data_;
+	MemChunk            mask_;
+	Type                type_ = Type::RGBA;
+	unique_ptr<Palette> palette_;
+	int                 offset_x_ = 0;
+	int                 offset_y_ = 0;
+	SIFormat*           format_   = nullptr;
+	Signals             signals_;
 
 	// For multi-image files
 	int imgindex_  = 0;
 	int numimages_ = 1;
 
 	// Internal functions
-	void clearData(bool clear_mask = true);
+	void           clearData(bool clear_mask = true);
+	const Palette* paletteToUse(const Palette* pal) const;
+	Palette*       paletteToUse(Palette* pal) const;
 };
 } // namespace slade

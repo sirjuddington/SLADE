@@ -3,12 +3,6 @@
 // Forward declarations
 namespace slade
 {
-class MapThing;
-class MapSector;
-class MapSide;
-class MapLine;
-class MapObject;
-
 namespace mapeditor
 {
 	class MapEditContext;

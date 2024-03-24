@@ -17,9 +17,7 @@
 
 namespace slade
 {
-class Palette;
 class PaletteCanvas;
-class ArchiveEntry;
 
 class PaletteEntryPanel : public EntryPanel
 {

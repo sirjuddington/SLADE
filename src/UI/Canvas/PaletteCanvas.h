@@ -1,7 +1,6 @@
 #pragma once
 
 #include "OGLCanvas.h"
-#include "Utility/Colour.h"
 
 namespace slade
 {

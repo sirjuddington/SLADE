@@ -7,7 +7,6 @@ wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 namespace slade
 {
 class CTexture;
-class Archive;
 namespace ui
 {
 	class ZoomControl;

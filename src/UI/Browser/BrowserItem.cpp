@@ -41,9 +41,7 @@
 #include "Utility/StringUtils.h"
 
 using namespace slade;
-using NameType = BrowserCanvas::NameType;
-using ItemView = BrowserCanvas::ItemView;
-
+using namespace browser;
 
 // -----------------------------------------------------------------------------
 //
@@ -61,6 +59,11 @@ BrowserItem::BrowserItem(const wxString& name, unsigned index, const wxString& t
 	index_{ index }
 {
 }
+
+// -----------------------------------------------------------------------------
+// BrowserItem class destructor
+// -----------------------------------------------------------------------------
+BrowserItem::~BrowserItem() = default;
 
 // -----------------------------------------------------------------------------
 // Loads the item image (base class does nothing, must be overridden by child

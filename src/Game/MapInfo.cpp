@@ -32,6 +32,9 @@
 #include "Main.h"
 #include "MapInfo.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 

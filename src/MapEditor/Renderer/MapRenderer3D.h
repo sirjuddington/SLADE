@@ -1,14 +1,10 @@
 #pragma once
 
 #include "MapEditor/Item.h"
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
-class MapThing;
-class SLADEMap;
-class MapSector;
-class MapLine;
 class ItemSelection;
 class Polygon2D;
 

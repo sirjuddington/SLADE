@@ -34,7 +34,9 @@
 #include "Main.h"
 #include "ArchiveManagerPanel.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Archive/Formats/DirArchive.h"
 #include "ArchivePanel.h"
 #include "EntryPanel/EntryPanel.h"
@@ -78,10 +80,54 @@ EXTERN_CVAR(Int, autosave_entry_changes)
 
 // -----------------------------------------------------------------------------
 //
-// DirArchiveCheck Class Functions
+// DirArchiveCheck Class
 //
 // -----------------------------------------------------------------------------
 wxDEFINE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
+class DirArchiveCheck : public wxThread
+{
+public:
+	struct ChangeList
+	{
+		Archive*               archive;
+		vector<DirEntryChange> changes;
+	};
+
+	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
+	~DirArchiveCheck() override = default;
+
+	ExitCode Entry() override;
+
+private:
+	struct EntryInfo
+	{
+		wxString entry_path;
+		wxString file_path;
+		bool     is_dir;
+		time_t   file_modified;
+
+		EntryInfo(
+			const wxString& entry_path    = "",
+			const wxString& file_path     = "",
+			bool            is_dir        = false,
+			time_t          file_modified = 0) :
+			entry_path{ entry_path },
+			file_path{ file_path },
+			is_dir{ is_dir },
+			file_modified{ file_modified }
+		{
+		}
+	};
+
+	wxEvtHandler*     handler_;
+	wxString          dir_path_;
+	vector<EntryInfo> entry_info_;
+	vector<string>    removed_files_;
+	ChangeList        change_list_;
+	bool              ignore_hidden_ = true;
+
+	void addChange(const DirEntryChange& change);
+};
 
 // -----------------------------------------------------------------------------
 // DirArchiveCheck class constructor
@@ -103,7 +149,7 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive) :
 		entry_info_.emplace_back(
 			entry->path(true),
 			entry->exProps().getOr<string>("filePath", ""),
-			entry->type() == EntryType::folderType(),
+			entry->isFolderType(),
 			archive->fileModificationTime(entry));
 	}
 }
@@ -205,7 +251,7 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 
 	// Send changes via event
 	auto event = new wxThreadEvent(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED);
-	event->SetPayload<DirArchiveChangeList>(change_list_);
+	event->SetPayload<ChangeList>(change_list_);
 	wxQueueEvent(handler_, event);
 
 	return nullptr;
@@ -214,43 +260,47 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 
 // -----------------------------------------------------------------------------
 //
-// WMFileBrowser Class Functions
+// WMFileBrowser Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// WMFileBrowser class constructor
-// Note: wxWidgets 2.9.4 deprecated the wxDIRCTRL_SHOW_FILTERS flag; instead,
-// the filters are always shown if any are defined.
-// -----------------------------------------------------------------------------
-WMFileBrowser::WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id) :
-	wxGenericDirCtrl(parent, id, wxDirDialogDefaultFolderStr),
-	parent{ wm }
+namespace slade
 {
-	// Connect a custom event for when an item in the file tree is activated
-	auto tree_ctrl = wxGenericDirCtrl::GetTreeCtrl();
-	tree_ctrl->Connect(
-		tree_ctrl->GetId(), wxEVT_TREE_ITEM_ACTIVATED, wxTreeEventHandler(WMFileBrowser::onItemActivated));
-}
-
-// -----------------------------------------------------------------------------
-// Event called when an item in the tree is activated. Opens a file if one is
-// selected.
-// -----------------------------------------------------------------------------
-void WMFileBrowser::onItemActivated(wxTreeEvent& e)
+class WMFileBrowser : public wxGenericDirCtrl
 {
-	// Get related objects
-	auto tree    = dynamic_cast<wxTreeCtrl*>(e.GetEventObject());
-	auto browser = dynamic_cast<WMFileBrowser*>(tree->GetParent());
+public:
+	ArchiveManagerPanel* parent;
 
-	// If the selected item has no children (ie it's a file),
-	// open it in the archive manager
-	if (!tree->ItemHasChildren(e.GetItem()))
-		browser->parent->openFile(browser->GetPath());
+	// Note: wxWidgets 2.9.4 deprecated the wxDIRCTRL_SHOW_FILTERS flag; instead,
+	// the filters are always shown if any are defined.
+	WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id) :
+		wxGenericDirCtrl(parent, id, wxDirDialogDefaultFolderStr),
+		parent{ wm }
+	{
+		// Connect a custom event for when an item in the file tree is activated
+		auto tree_ctrl = wxGenericDirCtrl::GetTreeCtrl();
+		tree_ctrl->Connect(
+			tree_ctrl->GetId(), wxEVT_TREE_ITEM_ACTIVATED, wxTreeEventHandler(WMFileBrowser::onItemActivated));
+	}
 
-	e.Skip();
-}
+	~WMFileBrowser() override = default;
+
+	// Event called when an item in the tree is activated. Opens a file if one
+	// is selected
+	void onItemActivated(wxTreeEvent& e)
+	{
+		// Get related objects
+		auto tree    = dynamic_cast<wxTreeCtrl*>(e.GetEventObject());
+		auto browser = dynamic_cast<WMFileBrowser*>(tree->GetParent());
+
+		// If the selected item has no children (ie it's a file),
+		// open it in the archive manager
+		if (!tree->ItemHasChildren(e.GetItem()))
+			browser->parent->openFile(browser->GetPath());
+
+		e.Skip();
+	}
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -1961,10 +2011,10 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 	else
 		switch (entry->state())
 		{
-		case ArchiveEntry::State::Unmodified: list_bookmarks_->setItemStatus(index, ItemStatus::Normal); break;
-		case ArchiveEntry::State::Modified:   list_bookmarks_->setItemStatus(index, ItemStatus::Modified); break;
-		case ArchiveEntry::State::New:        list_bookmarks_->setItemStatus(index, ItemStatus::New); break;
-		default:                              list_bookmarks_->setItemStatus(index, ItemStatus::Error); break;
+		case EntryState::Unmodified: list_bookmarks_->setItemStatus(index, ItemStatus::Normal); break;
+		case EntryState::Modified:   list_bookmarks_->setItemStatus(index, ItemStatus::Modified); break;
+		case EntryState::New:        list_bookmarks_->setItemStatus(index, ItemStatus::New); break;
+		default:                     list_bookmarks_->setItemStatus(index, ItemStatus::Error); break;
 		}
 }
 
@@ -2081,6 +2131,8 @@ void ArchiveManagerPanel::goToBookmark(long index) const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the user selects an archive in the open files list.
@@ -2242,7 +2294,7 @@ void ArchiveManagerPanel::onArchiveTabClosed(wxAuiNotebookEvent& e)
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 {
-	auto change_list = e.GetPayload<DirArchiveChangeList>();
+	auto change_list = e.GetPayload<DirArchiveCheck::ChangeList>();
 
 	// Check the archive is still open
 	if (app::archiveManager().archiveIndex(change_list.archive) >= 0)

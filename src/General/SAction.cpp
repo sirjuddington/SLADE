@@ -34,6 +34,8 @@
 #include "Main.h"
 #include "General/SAction.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/KeyBind.h"
 #include "UI/WxUtils.h"

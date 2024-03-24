@@ -33,6 +33,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Wad2Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -118,7 +120,7 @@ bool Wad2Archive::open(const MemChunk& mc)
 		if (nlump->size() > 0)
 			nlump->importMemChunk(mc, info.offset, info.dsize);
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -126,10 +128,6 @@ bool Wad2Archive::open(const MemChunk& mc)
 
 	// Detect all entry types
 	detectAllEntryTypes();
-
-	// Detect maps (will detect map entry types)
-	ui::setSplashProgressMessage("Detecting maps");
-	detectMaps();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -198,7 +196,7 @@ bool Wad2Archive::write(MemChunk& mc)
 		mc.write(&info, 32);
 
 		entry->setSizeOnDisk();
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 	}
 
 	return true;

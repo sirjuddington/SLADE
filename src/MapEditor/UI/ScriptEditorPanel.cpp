@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ScriptEditorPanel.h"
+#include "Archive/ArchiveEntry.h"
 #include "Game/Configuration.h"
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/MapEditContext.h"
@@ -76,8 +77,8 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 // -----------------------------------------------------------------------------
 ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	wxPanel(parent, -1),
-	entry_script_{ new ArchiveEntry() },
-	entry_compiled_{ new ArchiveEntry() }
+	entry_script_{ new ArchiveEntry },
+	entry_compiled_{ new ArchiveEntry }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);

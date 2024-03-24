@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "SpecialPresetDialog.h"
 #include "Game/Configuration.h"
+#include "Game/SpecialPreset.h"
 #include "General/UI.h"
 #include "UI/WxUtils.h"
 

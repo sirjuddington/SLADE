@@ -4,8 +4,6 @@
 
 namespace slade
 {
-class MapSide;
-
 class SideList : public MapObjectList<MapSide>
 {
 public:

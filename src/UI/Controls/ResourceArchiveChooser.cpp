@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "ResourceArchiveChooser.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
 #include "UI/WxUtils.h"

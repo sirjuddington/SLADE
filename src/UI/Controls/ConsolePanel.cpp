@@ -36,6 +36,7 @@
 #include "General/UI.h"
 #include "TextEditor/TextStyle.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 
 using namespace slade;
 
@@ -116,15 +117,15 @@ void ConsolePanel::setupTextArea() const
 	text_log_->SetMarginWidth(1, 8);
 
 	// Message type colours
-	auto hsl = StyleSet::currentSet()->styleForeground("default").asHSL();
+	auto hsl = colour::rgbToHsl(StyleSet::currentSet()->styleForeground("default"));
 	if (hsl.l > 0.8)
 		hsl.l = 0.8;
 	if (hsl.l < 0.2)
 		hsl.l = 0.2;
-	text_log_->StyleSetForeground(200, ColHSL(0.99, 1., hsl.l).asRGB().toWx());
-	text_log_->StyleSetForeground(201, ColHSL(0.1, 1., hsl.l).asRGB().toWx());
-	text_log_->StyleSetForeground(202, ColHSL(0.5, 0.8, hsl.l).asRGB().toWx());
-	text_log_->StyleSetForeground(203, ColHSL(hsl.h, hsl.s, 0.5).asRGB().toWx());
+	text_log_->StyleSetForeground(200, ColHSL(0.99, 1., hsl.l).asRGB());
+	text_log_->StyleSetForeground(201, ColHSL(0.1, 1., hsl.l).asRGB());
+	text_log_->StyleSetForeground(202, ColHSL(0.5, 0.8, hsl.l).asRGB());
+	text_log_->StyleSetForeground(203, ColHSL(hsl.h, hsl.s, 0.5).asRGB());
 }
 
 // -----------------------------------------------------------------------------

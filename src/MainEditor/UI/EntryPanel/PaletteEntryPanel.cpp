@@ -34,14 +34,18 @@
 #include "PaletteEntryPanel.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -721,7 +725,7 @@ wxString PaletteEntryPanel::statusString()
 {
 	// Get current colour
 	ColRGBA col  = pal_canvas_->selectedColour();
-	ColHSL  col2 = col.asHSL();
+	ColHSL  col2 = colour::rgbToHsl(col);
 
 	return wxString::Format(
 		"Index %i\tR %d, G %d, B %d\tH %1.3f, S %1.3f, L %1.3f",
@@ -1437,7 +1441,7 @@ void PaletteEntryPanel::onPalCanvasMouseEvent(wxMouseEvent& e)
 		{
 			ColRGBA col = pal_canvas_->selectedColour();
 			// Open a colour dialog
-			wxColour cd = wxGetColourFromUser(GetParent(), col.toWx());
+			wxColour cd = wxGetColourFromUser(GetParent(), col);
 
 			if (cd.Ok())
 			{
@@ -1501,8 +1505,8 @@ void PaletteEntryPanel::analysePalettes() const
 		{
 			ColRGBA ref1 = palettes_[0]->colour(c);
 			ColRGBA cmp1 = palettes_[i]->colour(c);
-			ColHSL  ref2 = ref1.asHSL();
-			ColHSL  cmp2 = cmp1.asHSL();
+			ColHSL  ref2 = colour::rgbToHsl(ref1);
+			ColHSL  cmp2 = colour::rgbToHsl(cmp1);
 #ifdef GPALCOMPANALYSIS
 			int    r, g, b;
 			double h, s, l;

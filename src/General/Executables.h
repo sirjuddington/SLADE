@@ -5,7 +5,6 @@ class wxMenu;
 namespace slade
 {
 class Parser;
-class ParseTreeNode;
 
 namespace executables
 {

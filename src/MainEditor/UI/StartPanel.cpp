@@ -34,10 +34,13 @@
 #include "Main.h"
 #include "StartPanel.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 #include <wx/statbmp.h>
 
 using namespace slade;

@@ -7,7 +7,6 @@ class TextureXEditor;
 class TextureXList;
 class CTextureCanvas;
 class CTexture;
-class Palette;
 class SToolBar;
 namespace ui
 {

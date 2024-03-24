@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "ModifyOffsetsDialog.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/UI.h"
 #include "Graphics/GameFormats.h"
 #include "Graphics/Graphics.h"

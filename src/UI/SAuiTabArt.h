@@ -2,29 +2,30 @@
 
 namespace slade
 {
-class wxAuiCommandCapture : public wxEvtHandler
-{
-public:
-	wxAuiCommandCapture() { last_id_ = 0; }
-	int GetCommandId() const { return last_id_; }
-
-	bool ProcessEvent(wxEvent& evt) override
-	{
-		if (evt.GetEventType() == wxEVT_MENU)
-		{
-			last_id_ = evt.GetId();
-			return true;
-		}
-
-		if (GetNextHandler())
-			return GetNextHandler()->ProcessEvent(evt);
-
-		return false;
-	}
-
-private:
-	int last_id_;
-};
+// Unused?
+// class wxAuiCommandCapture : public wxEvtHandler
+//{
+// public:
+//	wxAuiCommandCapture() { last_id_ = 0; }
+//	int GetCommandId() const { return last_id_; }
+//
+//	bool ProcessEvent(wxEvent& evt) override
+//	{
+//		if (evt.GetEventType() == wxEVT_MENU)
+//		{
+//			last_id_ = evt.GetId();
+//			return true;
+//		}
+//
+//		if (GetNextHandler())
+//			return GetNextHandler()->ProcessEvent(evt);
+//
+//		return false;
+//	}
+//
+// private:
+//	int last_id_;
+// };
 
 class SAuiTabArt : public wxAuiGenericTabArt
 {

@@ -32,9 +32,12 @@
 #include "Main.h"
 #include "ArchiveOperations.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Archive/Formats/DirArchive.h"
 #include "Archive/Formats/WadArchive.h"
+#include "Archive/MapDesc.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/PatchTable.h"
@@ -163,7 +166,7 @@ bool archiveoperations::removeUnusedPatches(Archive* archive)
 		return false;
 
 	// Find PNAMES entry
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("pnames");
 	auto pnames    = archive->findLast(opt);
 
@@ -347,7 +350,7 @@ void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 	archive->putEntryTreeAsList(entries);
 
 	// Init search options
-	Archive::SearchOptions search;
+	ArchiveSearchOptions search;
 	ArchiveEntry*          other = nullptr;
 	wxString               dups  = "";
 	size_t                 count = 0;
@@ -415,7 +418,7 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 	archive->putEntryTreeAsList(entries);
 
 	// Init search options
-	Archive::SearchOptions search;
+	ArchiveSearchOptions search;
 	ArchiveEntry*          other     = nullptr;
 	wxString               overrides = "";
 	size_t                 count     = 0;
@@ -469,13 +472,13 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 	std::unordered_multimap<string, std::pair<ArchiveEntry*, ArchiveEntry*>> duplicate_texture_entries;
 	std::set<string>                                                         found_duplicate_textures;
 
-	Archive::SearchOptions pnamesopt;
+	ArchiveSearchOptions pnamesopt;
 	pnamesopt.match_type = EntryType::fromId("pnames");
 
-	Archive::SearchOptions texturexopt;
+	ArchiveSearchOptions texturexopt;
 	texturexopt.match_type = EntryType::fromId("texturex");
 
-	Archive::SearchOptions zdtexturesopt;
+	ArchiveSearchOptions zdtexturesopt;
 	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 
@@ -611,7 +614,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 	std::set<string>                               overiddenBraTexNames;
 
 	// Load BRA pnames
-	Archive::SearchOptions pnames_opt;
+	ArchiveSearchOptions pnames_opt;
 	pnames_opt.match_type = EntryType::fromId("pnames");
 
 	auto braPnames = bra->findLast(pnames_opt);
@@ -660,14 +663,14 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	// Find all textures
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "textures";
 		process_entries(archive->findAll(search_opt));
 	}
 
 	// Find all flats
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "flats";
 		process_entries(archive->findAll(search_opt));
 	}
@@ -687,7 +690,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		}
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : archive->findAll(texturexopt))
@@ -701,7 +704,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	// Load all zdtextures entries
 	{
-		Archive::SearchOptions zdtexturesopt;
+		ArchiveSearchOptions zdtexturesopt;
 		zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 		for (ArchiveEntry* texturesentry : archive->findAll(zdtexturesopt))
@@ -783,14 +786,14 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	// Find all textures
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "textures";
 		process_bra_entries(bra->findAll(search_opt));
 	}
 
 	// Find all flats
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "flats";
 		process_bra_entries(bra->findAll(search_opt));
 	}
@@ -804,7 +807,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		process_bra_patch_table(braPnames, ptable);
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : bra->findAll(texturexopt))
@@ -818,7 +821,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	// Load all zdtextures entries
 	{
-		Archive::SearchOptions zdtexturesopt;
+		ArchiveSearchOptions zdtexturesopt;
 		zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 		for (ArchiveEntry* texturesentry : bra->findAll(zdtexturesopt))
@@ -982,7 +985,7 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 	int        total_maps = 0;
 
 	// Get all SIDEDEFS entries
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("map_sidedefs");
 	auto sidedefs  = archive->findAll(opt);
 	total_maps += sidedefs.size();
@@ -1214,7 +1217,7 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 	int        total_maps = 0;
 
 	// Get all SECTORS entries
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("map_sectors");
 	auto sectors   = archive->findAll(opt);
 	total_maps += sectors.size();
@@ -1404,7 +1407,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	auto process_maps_in_archive_func = [&total_maps, &used_textures](Archive* archive)
 	{
 		// Get all SIDEDEFS entries
-		Archive::SearchOptions side_def_opt;
+		ArchiveSearchOptions side_def_opt;
 		side_def_opt.match_type = EntryType::fromId("map_sidedefs");
 		auto sidedefs           = archive->findAll(side_def_opt);
 		total_maps += sidedefs.size();
@@ -1434,7 +1437,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		}
 
 		// Get all SECTORS entries
-		Archive::SearchOptions sectors_opt;
+		ArchiveSearchOptions sectors_opt;
 		sectors_opt.match_type = EntryType::fromId("map_sectors");
 		auto sectors           = archive->findAll(sectors_opt);
 		total_maps += sectors.size();
@@ -1462,7 +1465,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		}
 
 		// Get all TEXTMAP entries
-		Archive::SearchOptions text_map_opt;
+		ArchiveSearchOptions text_map_opt;
 		text_map_opt.match_name = "TEXTMAP";
 		text_map_opt.match_type = EntryType::fromId("udmf_textmap");
 		auto udmfmaps           = archive->findAll(text_map_opt);
@@ -1526,7 +1529,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	process_maps_in_archive_func(archive);
 
 	// Get all wad entries and their maps
-	Archive::SearchOptions wad_opt;
+	ArchiveSearchOptions wad_opt;
 	wad_opt.match_type     = EntryType::fromId("wad");
 	wad_opt.search_subdirs = true;
 	auto wads              = archive->findAll(wad_opt);
@@ -1545,7 +1548,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	}
 
 	// Load all animdefs
-	Archive::SearchOptions anim_defs_opt;
+	ArchiveSearchOptions anim_defs_opt;
 	anim_defs_opt.match_type = EntryType::fromId("animdefs");
 	auto animdefs            = archive->findAll(anim_defs_opt);
 
@@ -1710,7 +1713,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	}
 
 	// Find all textures
-	Archive::SearchOptions tex_opt;
+	ArchiveSearchOptions tex_opt;
 	tex_opt.match_namespace = "textures";
 	auto textures           = archive->findAll(tex_opt);
 
@@ -1765,7 +1768,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	wxMessageBox(wxString::Format("Removed %d unused textures", n_removed));
 
 	// Find all flats
-	Archive::SearchOptions flat_opt;
+	ArchiveSearchOptions flat_opt;
 	flat_opt.match_namespace = "flats";
 	auto flats               = archive->findAll(flat_opt);
 
@@ -1891,7 +1894,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		}
 	};
 
-	Archive::SearchOptions pnames_opt;
+	ArchiveSearchOptions pnames_opt;
 	pnames_opt.match_type = EntryType::fromId("pnames");
 	auto pnames           = archive->findLast(pnames_opt);
 
@@ -1902,7 +1905,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		ptable.loadPNAMES(pnames);
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : archive->findAll(texturexopt))
@@ -1915,7 +1918,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	}
 
 	// Load all zdtextures entries
-	Archive::SearchOptions zdtexturesopt;
+	ArchiveSearchOptions zdtexturesopt;
 	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 	for (ArchiveEntry* texturesentry : archive->findAll(zdtexturesopt))
@@ -1999,19 +2002,19 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 
 	// Find all textures
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "textures";
 		process_entries(archive->findAll(search_opt));
 	}
 
 	// Find all flats
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "flats";
 		process_entries(archive->findAll(search_opt));
 	}
 
-	Archive::SearchOptions pnames_opt;
+	ArchiveSearchOptions pnames_opt;
 	pnames_opt.match_type = EntryType::fromId("pnames");
 	auto pnames           = archive->findLast(pnames_opt);
 
@@ -2024,7 +2027,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 		process_patch_table(pnames, ptable);
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : archive->findAll(texturexopt))
@@ -2038,7 +2041,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 
 	// Load all zdtextures entries
 	{
-		Archive::SearchOptions zdtexturesopt;
+		ArchiveSearchOptions zdtexturesopt;
 		zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 		for (ArchiveEntry* texturesentry : archive->findAll(zdtexturesopt))
@@ -2086,7 +2089,7 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 	std::unordered_multimap<string, ArchiveEntry*> found_entries;
 	std::set<string>                               found_duplicates;
 
-	Archive::SearchOptions pnames_opt;
+	ArchiveSearchOptions pnames_opt;
 	pnames_opt.match_type = EntryType::fromId("pnames");
 	auto pnames           = archive->findLast(pnames_opt);
 
@@ -2112,7 +2115,7 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 
 	// Find all patches
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "patches";
 
 		for (auto& archive_entry : archive->findAll(search_opt))

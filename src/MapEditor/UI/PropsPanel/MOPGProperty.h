@@ -9,7 +9,6 @@ namespace game
 	struct ArgSpec;
 	class UDMFProperty;
 } // namespace game
-class MapObject;
 class MapObjectPropsPanel;
 
 class MOPGProperty

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
@@ -256,7 +256,6 @@ private:
 	string special_;
 };
 
-class Palette;
 class Translation
 {
 public:

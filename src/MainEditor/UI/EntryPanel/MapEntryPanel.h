@@ -5,7 +5,6 @@
 namespace slade
 {
 class MapPreviewCanvas;
-class ArchiveEntry;
 
 class MapEntryPanel : public EntryPanel
 {

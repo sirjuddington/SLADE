@@ -1,16 +1,13 @@
 #pragma once
 
-#include "Graphics/CTexture/PatchTable.h"
 #include "UI/Controls/STabCtrl.h"
 
 namespace slade
 {
 class PatchBrowser;
 class TextureXPanel;
-class ArchiveEntry;
 class UndoManager;
 class PatchTable;
-class Archive;
 
 class TextureXEditor : public wxPanel
 {
@@ -19,7 +16,7 @@ public:
 	~TextureXEditor() override;
 
 	Archive*     archive() const { return archive_; }
-	PatchTable&  patchTable() { return patch_table_; }
+	PatchTable&  patchTable() const { return *patch_table_; }
 	void         pnamesModified(bool mod = true) { pnames_modified_ = mod; }
 	UndoManager* undoManager() const { return undo_manager_.get(); }
 
@@ -49,7 +46,7 @@ public:
 private:
 	Archive*                archive_ = nullptr;       // The archive this editor is handling
 	ArchiveEntry*           pnames_  = nullptr;       // The PNAMES entry to modify (can be null)
-	PatchTable              patch_table_;             // The patch table for TEXTURE1/2 (ie PNAMES)
+	unique_ptr<PatchTable>  patch_table_;             // The patch table for TEXTURE1/2 (ie PNAMES)
 	vector<TextureXPanel*>  texture_editors_;         // One panel per TEXTUREX list (ie TEXTURE1/TEXTURE2)
 	PatchBrowser*           patch_browser_ = nullptr; // The patch browser window
 	unique_ptr<UndoManager> undo_manager_;

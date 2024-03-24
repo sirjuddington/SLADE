@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
 #include "General/SAction.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
 
 namespace slade
 {
+class SToolBarButton;
+class SToolBar;
 class UndoManager;
 
 class EntryPanel : public wxPanel, protected SActionHandler

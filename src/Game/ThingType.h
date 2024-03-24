@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Args.h"
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
 class PropertyList;
-class ParseTreeNode;
 
 namespace game
 {

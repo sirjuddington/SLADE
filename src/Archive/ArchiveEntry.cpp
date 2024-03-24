@@ -35,6 +35,8 @@
 #include "Main.h"
 #include "ArchiveEntry.h"
 #include "Archive.h"
+#include "ArchiveDir.h"
+#include "EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
 
@@ -208,13 +210,13 @@ void ArchiveEntry::setName(string_view name)
 // Sets the entry's state. Won't change state if the change would be redundant
 // (eg new->modified, unmodified->unmodified)
 // -----------------------------------------------------------------------------
-void ArchiveEntry::setState(State state, bool silent)
+void ArchiveEntry::setState(EntryState state, bool silent)
 {
-	if (state_locked_ || (state == State::Unmodified && state_ == State::Unmodified))
+	if (state_locked_ || (state == EntryState::Unmodified && state_ == EntryState::Unmodified))
 		return;
 
-	if (state == State::Unmodified)
-		state_ = State::Unmodified;
+	if (state == EntryState::Unmodified)
+		state_ = EntryState::Unmodified;
 	else if (state > state_)
 		state_ = state;
 
@@ -290,7 +292,7 @@ bool ArchiveEntry::rename(string_view new_name)
 
 	// Update attributes
 	setName(new_name);
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	return true;
 }
@@ -316,7 +318,7 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 	}
 
 	// Update attributes
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	return data_.reSize(new_size, preserve_data);
 }
@@ -372,7 +374,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 
 	// Update attributes
 	setType(EntryType::unknownType());
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	return true;
 }
@@ -487,7 +489,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 	{
 		// Update attributes
 		setType(EntryType::unknownType());
-		setState(State::Modified);
+		setState(EntryState::Modified);
 
 		return true;
 	}
@@ -558,7 +560,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 	if (data_.write(data, size))
 	{
 		// Update attributes
-		setState(State::Modified);
+		setState(EntryState::Modified);
 
 		return true;
 	}
@@ -580,6 +582,14 @@ bool ArchiveEntry::read(void* buf, uint32_t size) const
 string ArchiveEntry::sizeString() const
 {
 	return misc::sizeAsString(size());
+}
+
+// -----------------------------------------------------------------------------
+// Returns the entry's type as a string
+// -----------------------------------------------------------------------------
+string ArchiveEntry::typeString() const
+{
+	return type_ ? type_->name() : "Unknown";
 }
 
 // -----------------------------------------------------------------------------
@@ -618,6 +628,14 @@ void ArchiveEntry::setExtensionByType()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the detection reliability of the entry's type
+// -----------------------------------------------------------------------------
+int ArchiveEntry::typeReliability() const
+{
+	return type_ ? type()->reliability() * reliability_ / 255 : 0;
+}
+
+// -----------------------------------------------------------------------------
 // Returns true if the entry is in the [ns] namespace within its parent, false
 // otherwise
 // -----------------------------------------------------------------------------
@@ -651,4 +669,12 @@ ArchiveEntry* ArchiveEntry::relativeEntry(string_view at_path, bool allow_absolu
 		include = parent_->archive()->entryAtPath(at_path);
 
 	return include;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the entry's type is the special 'folder' type
+// -----------------------------------------------------------------------------
+bool ArchiveEntry::isFolderType() const
+{
+	return type_ == EntryType::folderType();
 }

@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class ParseTreeNode;
-
 namespace game
 {
 	struct ArgValue

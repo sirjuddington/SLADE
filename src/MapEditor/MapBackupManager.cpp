@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "MapBackupManager.h"
 #include "App.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Misc.h"
 #include "MapEditor.h"

@@ -34,12 +34,14 @@
 #include "App.h"
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "Game/UDMFProperty.h"
 #include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
+#include "MapEditor/UI/ActionSpecialPanel.h"
+#include "MapEditor/UI/ArgsPanel.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
 #include "OpenGL/Drawing.h"
@@ -47,12 +49,42 @@
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+// AngleControl Class Definition
+//
+// Need this here due to a circular dependency below, and I don't want to put
+// this in the header since it isn't used outside this file
+// -----------------------------------------------------------------------------
+namespace slade
+{
+class AngleControl : public wxControl
+{
+public:
+	AngleControl(wxWindow* parent);
+	~AngleControl() override = default;
+
+	int  angle(int base = 0) const;
+	void setAngle(int angle, bool update_visual = true);
+	void updateAngle() const;
+	bool angleSet() const;
+
+private:
+	int             angle_      = 0;
+	ThingDirCanvas* dc_angle_   = nullptr;
+	NumberTextCtrl* text_angle_ = nullptr;
+
+	void onAngleTextChanged(wxCommandEvent& e);
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------

@@ -2,18 +2,15 @@
 
 namespace slade
 {
-struct ColRGBA;
-class MCAnimation;
 class ItemSelection;
-class MapThing;
-class MapObject;
+class MapRenderer2D;
+class MapRenderer3D;
+class MCAnimation;
+class MCOverlay;
 namespace gl
 {
 	class View;
 }
-class MapRenderer3D;
-class MapRenderer2D;
-class MCOverlay;
 
 namespace mapeditor
 {

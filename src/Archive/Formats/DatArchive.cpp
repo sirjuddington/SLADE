@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DatArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -150,10 +152,10 @@ bool DatArchive::open(const MemChunk& mc)
 		if (size > 0)
 			nlump->importMemChunk(mc, offset, size);
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		if (flags & 1)
-			nlump->setEncryption(ArchiveEntry::Encryption::SCRLE0);
+			nlump->setEncryption(EntryEncryption::SCRLE0);
 
 		// Check for markers
 		if (nlump->name() == "startflats")
@@ -474,14 +476,14 @@ bool DatArchive::write(MemChunk& mc)
 		uint32_t offset  = wxINT32_SWAP_ON_BE(entry->offsetOnDisk());
 		uint32_t size    = wxINT32_SWAP_ON_BE(entry->size());
 		uint16_t nameofs = wxINT16_SWAP_ON_BE(nameoffsets[l]);
-		uint16_t flags   = wxINT16_SWAP_ON_BE((entry->encryption() == ArchiveEntry::Encryption::SCRLE0) ? 1 : 0);
+		uint16_t flags   = wxINT16_SWAP_ON_BE((entry->encryption() == EntryEncryption::SCRLE0) ? 1 : 0);
 
 		mc.write(&offset, 4);  // Offset
 		mc.write(&size, 4);    // Size
 		mc.write(&nameofs, 2); // Name offset
 		mc.write(&flags, 2);   // Flags
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 	}
 
 	// Write the names

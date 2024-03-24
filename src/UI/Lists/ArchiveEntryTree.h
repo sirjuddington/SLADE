@@ -5,9 +5,6 @@
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
-class ArchiveDir;
 class UndoManager;
 class SToolBarButton;
 

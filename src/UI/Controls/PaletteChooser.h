@@ -2,10 +2,6 @@
 
 namespace slade
 {
-class Palette;
-class Archive;
-class ArchiveEntry;
-
 class PaletteChooser : public wxChoice
 {
 public:

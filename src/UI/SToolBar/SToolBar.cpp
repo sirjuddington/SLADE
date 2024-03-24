@@ -38,6 +38,7 @@
 #include "OpenGL/Drawing.h"
 #include "SToolBarButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -85,8 +86,8 @@ public:
 		// Get system colours needed
 		auto    col_background = GetBackgroundColour();
 		ColRGBA bg(col_background);
-		auto    col_light = bg.amp(90, 90, 90, 0).toWx();
-		auto    col_dark  = bg.amp(-90, -90, -90, 0).toWx();
+		auto    col_light = colour::toWx(bg.amp(90, 90, 90, 0));
+		auto    col_dark  = colour::toWx(bg.amp(-90, -90, -90, 0));
 
 		// Draw background
 		dc.SetBackground(wxBrush(col_background));
@@ -126,8 +127,8 @@ public:
 		// Get system colours needed
 		auto    col_background = GetBackgroundColour();
 		ColRGBA bg(col_background);
-		auto    col_light = bg.amp(90, 90, 90, 0).toWx();
-		auto    col_dark  = bg.amp(-90, -90, -90, 0).toWx();
+		auto    col_light = colour::toWx(bg.amp(90, 90, 90, 0));
+		auto    col_dark  = colour::toWx(bg.amp(-90, -90, -90, 0));
 
 		// Draw background
 		dc.SetBackground(wxBrush(col_background));

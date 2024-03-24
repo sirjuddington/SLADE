@@ -17,26 +17,6 @@ namespace game
 	class ThingType;
 }
 
-class AngleControl : public wxControl
-{
-public:
-	AngleControl(wxWindow* parent);
-	~AngleControl() override = default;
-
-	int  angle(int base = 0) const;
-	void setAngle(int angle, bool update_visual = true);
-	void updateAngle() const;
-	bool angleSet() const;
-
-private:
-	int             angle_      = 0;
-	ThingDirCanvas* dc_angle_   = nullptr;
-	NumberTextCtrl* text_angle_ = nullptr;
-
-	void onAngleTextChanged(wxCommandEvent& e);
-};
-
-
 class ThingPropsPanel : public PropsPanelBase
 {
 public:

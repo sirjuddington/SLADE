@@ -4,7 +4,6 @@
 
 namespace slade
 {
-class ArchiveDir;
 class Parser;
 class Tokenizer;
 

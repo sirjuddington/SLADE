@@ -4,8 +4,6 @@
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
 class ResourceManager;
 
 // This base class is probably not really needed

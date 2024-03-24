@@ -36,6 +36,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 
@@ -44,89 +45,95 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// CropCanvas Class Functions
+// CropCanvas Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// CropCanvas class constructor
-// -----------------------------------------------------------------------------
-CropCanvas::CropCanvas(wxWindow* parent, const SImage* image, Palette* palette) : OGLCanvas(parent, -1, false)
+namespace slade
 {
-	if (image && image->isValid())
+class CropCanvas : public OGLCanvas
+{
+public:
+	CropCanvas(wxWindow* parent, const SImage* image, Palette* palette) : OGLCanvas(parent, -1, false)
 	{
-		texture_ = gl::Texture::createFromImage(*image, palette);
-		crop_rect_.set(0, 0, image->width(), image->height());
+		if (image && image->isValid())
+		{
+			texture_ = gl::Texture::createFromImage(*image, palette);
+			crop_rect_.set(0, 0, image->width(), image->height());
+		}
+
+		int size = ui::scalePx(220);
+		SetInitialSize(wxSize(size, size));
 	}
 
-	int size = ui::scalePx(220);
-	SetInitialSize(wxSize(size, size));
-}
+	const Recti& cropRect() const { return crop_rect_; }
+	void         setCropRect(const Recti& rect) { crop_rect_.set(rect); }
 
-// -----------------------------------------------------------------------------
-// Draw the canvas contents
-// -----------------------------------------------------------------------------
-void CropCanvas::draw()
-{
-	// Setup for 2d
-	setup2D();
-
-	// Draw background
-	drawCheckeredBackground();
-
-	// Determine graphic position & scale
-	const wxSize size   = GetSize() * GetContentScaleFactor();
-	double       width  = size.x;
-	double       height = size.y;
-
-	// Get image dimensions
-	auto&  tex_info = gl::Texture::info(texture_);
-	double x_dim    = (double)tex_info.size.x;
-	double y_dim    = (double)tex_info.size.y;
-
-	// Get max scale for x and y (including padding)
-	double x_scale = ((double)width - ui::scalePx(24)) / x_dim;
-	double y_scale = ((double)height - ui::scalePx(24)) / y_dim;
-
-	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
-	double scale = std::min<double>(x_scale, y_scale);
-
-	glPushMatrix();
-	glTranslated(width * 0.5, height * 0.5, 0); // Translate to middle of area
-	glScaled(scale, scale, scale);              // Scale to fit within area
-
-	// Draw graphic
-	double hw = 0;
-	double hh = 0;
-	if (texture_)
+	void draw() override
 	{
-		glEnable(GL_TEXTURE_2D);
-		hw = x_dim * -0.5;
-		hh = y_dim * -0.5;
-		drawing::drawTexture(texture_, hw, hh);
+		// Setup for 2d
+		setup2D();
+
+		// Draw background
+		drawCheckeredBackground();
+
+		// Determine graphic position & scale
+		const wxSize size   = GetSize() * GetContentScaleFactor();
+		double       width  = size.x;
+		double       height = size.y;
+
+		// Get image dimensions
+		auto&  tex_info = gl::Texture::info(texture_);
+		double x_dim    = tex_info.size.x;
+		double y_dim    = tex_info.size.y;
+
+		// Get max scale for x and y (including padding)
+		double x_scale = (width - ui::scalePx(24)) / x_dim;
+		double y_scale = (height - ui::scalePx(24)) / y_dim;
+
+		// Set scale to smallest of the 2 (so that none of the texture will be clipped)
+		double scale = std::min<double>(x_scale, y_scale);
+
+		glPushMatrix();
+		glTranslated(width * 0.5, height * 0.5, 0); // Translate to middle of area
+		glScaled(scale, scale, scale);              // Scale to fit within area
+
+		// Draw graphic
+		double hw = 0;
+		double hh = 0;
+		if (texture_)
+		{
+			glEnable(GL_TEXTURE_2D);
+			hw = x_dim * -0.5;
+			hh = y_dim * -0.5;
+			drawing::drawTexture(texture_, hw, hh);
+		}
+
+		// Draw cropping rectangle
+		gl::setColour(0, 0, 0, 255, gl::Blend::Normal);
+		glDisable(GL_TEXTURE_2D);
+		glTranslated(hw, hh, 0);                                          // Translate to top-left of graphic
+		drawing::drawLine(crop_rect_.tl.x, -1000, crop_rect_.tl.x, 1000); // Left
+		drawing::drawLine(-1000, crop_rect_.tl.y, 1000, crop_rect_.tl.y); // Top
+		drawing::drawLine(crop_rect_.br.x, -1000, crop_rect_.br.x, 1000); // Right
+		drawing::drawLine(-1000, crop_rect_.br.y, 1000, crop_rect_.br.y); // Bottom
+
+		// Shade cropped-out area
+		gl::setColour(0, 0, 0, 100, gl::Blend::Normal);
+		drawing::drawFilledRect(-1000, -1000, crop_rect_.tl.x, 1000);                      // Left
+		drawing::drawFilledRect(crop_rect_.br.x, -1000, 1000, 1000);                       // Right
+		drawing::drawFilledRect(crop_rect_.tl.x, -1000, crop_rect_.br.x, crop_rect_.tl.y); // Top
+		drawing::drawFilledRect(crop_rect_.tl.x, crop_rect_.br.y, crop_rect_.br.x, 1000);  // Bottom
+
+		glPopMatrix();
+
+		SwapBuffers();
 	}
 
-	// Draw cropping rectangle
-	gl::setColour(0, 0, 0, 255, gl::Blend::Normal);
-	glDisable(GL_TEXTURE_2D);
-	glTranslated(hw, hh, 0);                                          // Translate to top-left of graphic
-	drawing::drawLine(crop_rect_.tl.x, -1000, crop_rect_.tl.x, 1000); // Left
-	drawing::drawLine(-1000, crop_rect_.tl.y, 1000, crop_rect_.tl.y); // Top
-	drawing::drawLine(crop_rect_.br.x, -1000, crop_rect_.br.x, 1000); // Right
-	drawing::drawLine(-1000, crop_rect_.br.y, 1000, crop_rect_.br.y); // Bottom
-
-	// Shade cropped-out area
-	gl::setColour(0, 0, 0, 100, gl::Blend::Normal);
-	drawing::drawFilledRect(-1000, -1000, crop_rect_.tl.x, 1000);                      // Left
-	drawing::drawFilledRect(crop_rect_.br.x, -1000, 1000, 1000);                       // Right
-	drawing::drawFilledRect(crop_rect_.tl.x, -1000, crop_rect_.br.x, crop_rect_.tl.y); // Top
-	drawing::drawFilledRect(crop_rect_.tl.x, crop_rect_.br.y, crop_rect_.br.x, 1000);  // Bottom
-
-	glPopMatrix();
-
-	SwapBuffers();
-}
+private:
+	unsigned texture_ = 0;
+	Recti    crop_rect_;
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------

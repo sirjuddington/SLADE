@@ -35,14 +35,17 @@
 #include "ArchiveEntryTree.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/ColourConfiguration.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 #include <wx/headerctrl.h>
 
 using namespace slade;
@@ -396,7 +399,7 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		}
 
 		wxString name = entry->name();
-		if (modified_indicator_ && entry->state() != ArchiveEntry::State::Unmodified)
+		if (modified_indicator_ && entry->state() != EntryState::Unmodified)
 			variant << wxDataViewIconText(entry->name() + " *", icon_cache[entry->type()->icon()]);
 		else
 			variant << wxDataViewIconText(entry->name(), icon_cache[entry->type()->icon()]);
@@ -453,7 +456,7 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 	}
 
 	// Status colour
-	if (entry->isLocked() || entry->state() != ArchiveEntry::State::Unmodified)
+	if (entry->isLocked() || entry->state() != EntryState::Unmodified)
 	{
 		// Init precalculated status text colours if necessary
 		if (col_text_modified.Alpha() == 0)
@@ -486,7 +489,7 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 		if (entry->isLocked())
 			attr.SetColour(col_text_locked);
 		else
-			attr.SetColour(entry->state() == ArchiveEntry::State::New ? col_text_new : col_text_modified);
+			attr.SetColour(entry->state() == EntryState::New ? col_text_new : col_text_modified);
 
 		has_attr = true;
 	}
@@ -507,7 +510,7 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 			bcol.b = (etype_colour.b * elist_type_bgcol_intensity)
 					 + (col_bg.Blue() * (1.0 - elist_type_bgcol_intensity));
 
-			attr.SetBackgroundColour(bcol.toWx());
+			attr.SetBackgroundColour(bcol);
 			has_attr = true;
 		}
 	}

@@ -31,8 +31,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive.h"
+#include "ArchiveDir.h"
+#include "ArchiveEntry.h"
+#include "EntryType/EntryType.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
+#include "MapDesc.h"
 #include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
@@ -139,11 +143,11 @@ public:
 	}
 
 private:
-	Archive*            archive_;
-	string              path_;
-	string              old_name_;
-	string              new_name_;
-	ArchiveEntry::State prev_state_;
+	Archive*   archive_;
+	string     path_;
+	string     old_name_;
+	string     new_name_;
+	EntryState prev_state_;
 };
 
 class EntrySwapUS : public UndoStep
@@ -249,8 +253,7 @@ public:
 				// Do merge
 				vector<shared_ptr<ArchiveEntry>> created_entries;
 				vector<shared_ptr<ArchiveDir>>   created_dirs;
-				ArchiveDir::merge(
-					dir, tree_.get(), 0, ArchiveEntry::State::Unmodified, &created_dirs, &created_entries);
+				ArchiveDir::merge(dir, tree_.get(), 0, EntryState::Unmodified, &created_dirs, &created_entries);
 
 				// Signal changes
 				for (const auto& cdir : created_dirs)
@@ -260,7 +263,7 @@ public:
 			}
 
 			if (dir)
-				dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
+				dir->dirEntry()->setState(EntryState::Unmodified);
 
 			return !!dir;
 		}
@@ -449,6 +452,14 @@ string Archive::filename(bool full) const
 	}
 
 	return full ? filename_ : string{ strutil::Path::fileNameOf(filename_) };
+}
+
+// -----------------------------------------------------------------------------
+// Returns the archive's parent archive (if it is embedded)
+// -----------------------------------------------------------------------------
+Archive* Archive::parentArchive() const
+{
+	return parent_.lock() ? parent_.lock()->parent() : nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -657,7 +668,7 @@ bool Archive::save(string_view filename)
 	if (auto parent = parent_.lock())
 	{
 		success = write(parent->data_);
-		parent->setState(ArchiveEntry::State::Modified);
+		parent->setState(EntryState::Modified);
 	}
 	else
 	{
@@ -739,7 +750,7 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 	signals_.entry_state_changed(*this, *entry);
 
 	// If entry was set to unmodified, don't set the archive to modified
-	if (entry->state() == ArchiveEntry::State::Unmodified)
+	if (entry->state() == EntryState::Unmodified)
 		return;
 
 	// Set the archive state to modified
@@ -799,7 +810,7 @@ bool Archive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> 
 	// Do merge
 	vector<shared_ptr<ArchiveEntry>> created_entries;
 	vector<shared_ptr<ArchiveDir>>   created_dirs;
-	if (!ArchiveDir::merge(base, tree, position, ArchiveEntry::State::New, &created_dirs, &created_entries))
+	if (!ArchiveDir::merge(base, tree, position, EntryState::New, &created_dirs, &created_entries))
 		return false;
 
 	// Signal changes
@@ -921,7 +932,7 @@ bool Archive::renameDir(ArchiveDir* dir, string_view new_name)
 			undoredo::currentManager()->recordUndoStep(std::make_unique<DirRenameUS>(dir, new_name));
 
 		dir->setName(new_name);
-		dir->dirEntry()->setState(ArchiveEntry::State::Modified);
+		dir->dirEntry()->setState(EntryState::Modified);
 	}
 	else
 		return true;
@@ -960,7 +971,7 @@ shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsig
 
 	// Update variables etc
 	setModified(true);
-	entry->state_ = ArchiveEntry::State::New;
+	entry->state_ = EntryState::New;
 
 	// Signal entry addition
 	signals_.entry_added(*this, *entry);
@@ -1053,7 +1064,7 @@ bool Archive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 	{
 		// Set state
 		if (set_deleted)
-			entry_shared->setState(ArchiveEntry::State::Deleted);
+			entry_shared->setState(EntryState::Deleted);
 
 		signals_.entry_removed(*this, *dir, *entry); // Signal entry removed
 		setModified(true);                           // Update variables etc
@@ -1233,7 +1244,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 	entry->formatName(fmt_desc);
 	if (!force && !fmt_desc.allow_duplicate_names)
 		entry->parentDir()->ensureUniqueName(entry);
-	entry->setState(ArchiveEntry::State::Modified, true);
+	entry->setState(EntryState::Modified, true);
 
 	// Announce modification
 	signals_.entry_renamed(*this, *entry, prev_name);
@@ -1300,8 +1311,8 @@ bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<Ar
 			log::error(global::error);
 
 		// Set unmodified
-		entry->setState(ArchiveEntry::State::Unmodified);
-		dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
+		dir->dirEntry()->setState(EntryState::Unmodified);
 	}
 
 	return true;
@@ -1323,7 +1334,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 		return false;
 
 	// No point if entry is unmodified or newly created
-	if (entry->state() != ArchiveEntry::State::Modified)
+	if (entry->state() != EntryState::Modified)
 		return true;
 
 	// Reload entry data from the archive on disk
@@ -1332,11 +1343,29 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 	{
 		entry->importMemChunk(entry_data);
 		EntryType::detectEntryType(*entry);
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		return true;
 	}
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the MapDesc information about the map beginning at [maphead].
+// To be implemented in Archive sub-classes.
+// -----------------------------------------------------------------------------
+MapDesc Archive::mapDesc(ArchiveEntry* maphead)
+{
+	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Returns the MapDesc information about all maps in the Archive.
+// To be implemented in Archive sub-classes.
+// -----------------------------------------------------------------------------
+vector<MapDesc> Archive::detectMaps()
+{
+	return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -1379,7 +1408,7 @@ string Archive::detectNamespace(ArchiveEntry* entry)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findFirst(SearchOptions& options)
+ArchiveEntry* Archive::findFirst(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1448,7 +1477,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findLast(SearchOptions& options)
+ArchiveEntry* Archive::findLast(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1516,7 +1545,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns a list of entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> Archive::findAll(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1599,7 +1628,7 @@ vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveDir* dir)
 		auto entry = dir->entryAt(a);
 
 		// Add new and modified entries
-		if (entry->state() != ArchiveEntry::State::Unmodified)
+		if (entry->state() != EntryState::Unmodified)
 			ret.push_back(entry);
 	}
 
@@ -1687,7 +1716,7 @@ void Archive::detectAllEntryTypes() const
 	{
 		ui::setSplashProgress(i, n_entries);
 		EntryType::detectEntryType(*entries[i]);
-		entries[i]->setState(ArchiveEntry::State::Unmodified);
+		entries[i]->setState(EntryState::Unmodified);
 	}
 }
 
@@ -1806,6 +1835,11 @@ ArchiveFormat* Archive::formatFromId(string_view id)
 //
 // -----------------------------------------------------------------------------
 
+
+unsigned TreelessArchive::numEntries()
+{
+	return rootDir()->numEntries();
+}
 
 // -----------------------------------------------------------------------------
 // Treeless version of Archive::paste.

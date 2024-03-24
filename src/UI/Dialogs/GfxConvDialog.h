@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "UI/SDialog.h"
 
@@ -25,10 +26,7 @@
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
 class CTexture;
-class Palette;
 class GfxCanvas;
 class PaletteChooser;
 class ColourBox;

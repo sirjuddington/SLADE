@@ -4,7 +4,6 @@
 
 namespace slade
 {
-class Palette;
 class OGLCanvas : public wxGLCanvas
 {
 public:

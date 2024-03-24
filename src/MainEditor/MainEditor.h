@@ -5,12 +5,9 @@ class wxWindow;
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
 class ArchivePanel;
 class EntryPanel;
 class MainWindow;
-class Palette;
 
 namespace maineditor
 {

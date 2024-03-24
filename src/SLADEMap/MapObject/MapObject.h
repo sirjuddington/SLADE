@@ -4,21 +4,11 @@
 #pragma clang diagnostic ignored "-Wundefined-bool-conversion"
 #endif
 
-#include "Utility/Property.h"
+#include "Utility/PropertyList.h"
 #include <array>
 
 namespace slade
 {
-class ParseTreeNode;
-class SLADEMap;
-
-// Forward declare map object types
-class MapVertex;
-class MapSide;
-class MapLine;
-class MapSector;
-class MapThing;
-
 class MapObject
 {
 	friend class SLADEMap;

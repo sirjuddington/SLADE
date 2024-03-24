@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "MapEditorWindow.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Game/Configuration.h"

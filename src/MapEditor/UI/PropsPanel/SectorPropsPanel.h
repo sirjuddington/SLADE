@@ -6,7 +6,6 @@
 namespace slade
 {
 class SectorSpecialPanel;
-class MapObject;
 class MapObjectPropsPanel;
 class NumberTextCtrl;
 class FlatTexCanvas;

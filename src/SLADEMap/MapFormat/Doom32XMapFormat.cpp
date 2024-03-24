@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Doom32XMapFormat.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"

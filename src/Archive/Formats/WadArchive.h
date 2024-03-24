@@ -49,27 +49,15 @@ public:
 	bool            hasFlatHack() override;
 
 	// Search
-	ArchiveEntry*         findFirst(SearchOptions& options) override;
-	ArchiveEntry*         findLast(SearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
+	ArchiveEntry*         findFirst(ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findLast(ArchiveSearchOptions& options) override;
+	vector<ArchiveEntry*> findAll(ArchiveSearchOptions& options) override;
 
 	// Static functions
 	static bool isWadArchive(const MemChunk& mc);
 	static bool isWadArchive(const string& filename);
 
-	static bool exportEntriesAsWad(string_view filename, const vector<ArchiveEntry*>& entries)
-	{
-		WadArchive wad;
-
-		// Add entries to wad archive
-		for (size_t a = 0; a < entries.size(); a++)
-		{
-			// Add each entry to the wad archive
-			wad.addEntry(std::make_shared<ArchiveEntry>(*entries[a]), entries.size(), nullptr);
-		}
-
-		return wad.save(filename);
-	}
+	static bool exportEntriesAsWad(string_view filename, const vector<ArchiveEntry*>& entries);
 
 	friend class WadJArchive;
 

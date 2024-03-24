@@ -33,6 +33,7 @@
 #include "SCallTip.h"
 #include "General/UI.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 
 using namespace slade;
 
@@ -219,7 +220,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	// Draw function qualifiers
 	if (!context.qualifiers.empty())
 	{
-		dc.SetTextForeground(col_keyword_.toWx());
+		dc.SetTextForeground(col_keyword_);
 		left = drawText(dc, context.qualifiers, left, top, &rect);
 	}
 
@@ -240,7 +241,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 
 	// Draw function name
 	wxString fname = function_->name();
-	dc.SetTextForeground(col_func_.toWx());
+	dc.SetTextForeground(col_func_);
 	left = drawText(dc, fname, left, top, &rect);
 
 	// Draw opening bracket
@@ -462,14 +463,14 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 
 	// Clear
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.SetBrush(wxBrush(col_bg_.toWx()));
+	dc.SetBrush(wxBrush(col_bg_));
 	dc.DrawRectangle(0, 0, 1000, 1000);
 
 	// Wx Colours (to avoid creating them multiple times)
-	wxcol_fg         = col_fg_.toWx();
-	wxcol_fg_hl      = col_fg_hl.toWx();
-	wxcol_type       = col_type_.toWx();
-	auto wxcol_faded = faded.toWx();
+	wxcol_fg         = col_fg_;
+	wxcol_fg_hl      = col_fg_hl;
+	wxcol_type       = col_type_;
+	auto wxcol_faded = faded;
 
 	if (function_)
 	{
@@ -528,10 +529,10 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		{
 			// Determine separator colour
 			wxColour col_sep;
-			if (col_bg_.greyscale().r < 128)
-				col_sep = col_bg_.amp(30, 30, 30, 0).toWx();
+			if (colour::greyscale(col_bg_).r < 128)
+				col_sep = col_bg_.amp(30, 30, 30, 0);
 			else
-				col_sep = col_bg_.amp(-30, -30, -30, 0).toWx();
+				col_sep = col_bg_.amp(-30, -30, -30, 0);
 
 			bool first = true;
 			auto num   = std::min<unsigned long>(function_->contexts().size(), 12u);
@@ -611,6 +612,8 @@ void SCallTip::updateBuffer()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the control is to be (re)painted
@@ -621,21 +624,21 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	wxAutoBufferedPaintDC dc(this);
 
 	// Determine border colours
-	wxColour bg = col_bg_.toWx();
+	wxColour bg = col_bg_;
 	wxColour border, border2;
-	if (col_bg_.greyscale().r < 128)
+	if (colour::greyscale(col_bg_).r < 128)
 	{
 		auto c  = col_bg_.amp(50, 50, 50, 0);
-		border  = c.toWx();
+		border  = c;
 		c       = col_bg_.amp(20, 20, 20, 0);
-		border2 = c.toWx();
+		border2 = c;
 	}
 	else
 	{
 		auto c  = col_bg_.amp(-50, -50, -50, 0);
-		border  = c.toWx();
+		border  = c;
 		c       = col_bg_.amp(-20, -20, -20, 0);
-		border2 = c.toWx();
+		border2 = c;
 	}
 
 	// Draw background

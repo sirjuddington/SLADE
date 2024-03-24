@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DoomMapFormat.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
 #include "General/UI.h"
 #include "SLADEMap/MapObject/MapLine.h"

@@ -42,10 +42,24 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// ThingTypeReplacePanel Class Functions
+// ThingTypeReplacePanel Class
 //
 // -----------------------------------------------------------------------------
+namespace slade
+{
+class ThingTypeReplacePanel : public wxPanel
+{
+public:
+	ThingTypeReplacePanel(wxWindow* parent);
+	~ThingTypeReplacePanel() override = default;
 
+	void doReplace(Archive* archive) const;
+
+private:
+	wxSpinCtrl* spin_from_ = nullptr;
+	wxSpinCtrl* spin_to_   = nullptr;
+};
+} // namespace slade
 
 // -----------------------------------------------------------------------------
 // ThingTypeReplacePanel class constructor
@@ -89,10 +103,29 @@ void ThingTypeReplacePanel::doReplace(Archive* archive) const
 
 // -----------------------------------------------------------------------------
 //
-// SpecialReplacePanel Class Functions
+// SpecialReplacePanel Class
 //
 // -----------------------------------------------------------------------------
+namespace slade
+{
+class SpecialReplacePanel : public wxPanel
+{
+public:
+	SpecialReplacePanel(wxWindow* parent);
+	~SpecialReplacePanel() override = default;
 
+	void doReplace(Archive* archive) const;
+
+private:
+	wxSpinCtrl* spin_from_         = nullptr;
+	wxSpinCtrl* spin_to_           = nullptr;
+	wxCheckBox* cb_line_specials_  = nullptr;
+	wxCheckBox* cb_thing_specials_ = nullptr;
+	wxSpinCtrl* spin_args_from_[5] = {};
+	wxSpinCtrl* spin_args_to_[5]   = {};
+	wxCheckBox* cb_args_[5]        = {};
+};
+} // namespace slade
 
 // -----------------------------------------------------------------------------
 // SpecialReplacePanel class constructor
@@ -192,10 +225,29 @@ void SpecialReplacePanel::doReplace(Archive* archive) const
 
 // -----------------------------------------------------------------------------
 //
-// TextureReplacePanel Class Functions
+// TextureReplacePanel Class
 //
 // -----------------------------------------------------------------------------
+namespace slade
+{
+class TextureReplacePanel : public wxPanel
+{
+public:
+	TextureReplacePanel(wxWindow* parent);
+	~TextureReplacePanel() override = default;
 
+	void doReplace(Archive* archive) const;
+
+private:
+	wxTextCtrl* text_from_  = nullptr;
+	wxTextCtrl* text_to_    = nullptr;
+	wxCheckBox* cb_floor_   = nullptr;
+	wxCheckBox* cb_ceiling_ = nullptr;
+	wxCheckBox* cb_lower_   = nullptr;
+	wxCheckBox* cb_middle_  = nullptr;
+	wxCheckBox* cb_upper_   = nullptr;
+};
+} // namespace slade
 
 // -----------------------------------------------------------------------------
 // TextureReplacePanel class constructor

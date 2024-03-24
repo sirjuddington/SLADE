@@ -33,6 +33,7 @@
 #include "MainWindow.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
@@ -646,6 +647,8 @@ bool MainWindow::handleAction(string_view id)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the window is closed

@@ -33,7 +33,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapEditorConfigDialog.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/Formats/WadArchive.h"
+#include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
 #include "General/UI.h"

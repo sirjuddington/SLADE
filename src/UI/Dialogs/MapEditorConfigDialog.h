@@ -1,19 +1,16 @@
 #pragma once
 
-// #include "Archive/Archive.h"
-// #include "UI/Lists/ListView.h"
 #include "UI/SDialog.h"
 
 class wxImageList;
 
 namespace slade
 {
-class ListView;
-struct MapDesc;
-class Archive;
-class MapPreviewCanvas;
 class BaseResourceChooser;
+class ListView;
+class MapPreviewCanvas;
 class ResourceArchiveChooser;
+struct MapDesc;
 
 class MapEditorConfigDialog : public SDialog
 {

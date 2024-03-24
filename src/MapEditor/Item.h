@@ -1,17 +1,5 @@
 #pragma once
 
-// Forward declarations
-namespace slade
-{
-class MapLine;
-class MapObject;
-class MapSector;
-class MapSide;
-class MapThing;
-class MapVertex;
-class SLADEMap;
-} // namespace slade
-
 namespace slade::mapeditor
 {
 enum class ItemType

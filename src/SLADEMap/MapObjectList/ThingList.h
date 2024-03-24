@@ -4,8 +4,6 @@
 
 namespace slade
 {
-class MapThing;
-
 class ThingList : public MapObjectList<MapThing>
 {
 public:

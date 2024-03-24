@@ -34,6 +34,7 @@
 #include "MapRenderer2D.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Edit/ObjectEdit.h"
 #include "MapEditor/MapEditContext.h"

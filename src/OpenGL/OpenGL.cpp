@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

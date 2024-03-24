@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SiNArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -115,7 +117,7 @@ bool SiNArchive::open(const MemChunk& mc)
 		if (entry->size() > 0)
 			entry->importMemChunk(mc, offset, size);
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 
 		// Add to directory
 		dir->addEntry(entry);
@@ -152,7 +154,7 @@ bool SiNArchive::write(MemChunk& mc)
 	for (auto& entry : entries)
 	{
 		// Ignore folder entries
-		if (entry->type() == EntryType::folderType())
+		if (entry->isFolderType())
 			continue;
 
 		// Increment directory offset and size
@@ -176,11 +178,11 @@ bool SiNArchive::write(MemChunk& mc)
 	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entry->type() == EntryType::folderType())
+		if (entry->isFolderType())
 			continue;
 
 		// Update entry
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setOffsetOnDisk(offset);
 		entry->setSizeOnDisk();
 
@@ -216,7 +218,7 @@ bool SiNArchive::write(MemChunk& mc)
 	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entry->type() == EntryType::folderType())
+		if (entry->isFolderType())
 			continue;
 
 		// Write data

@@ -42,6 +42,7 @@
 #include "OpenGL/GLTexture.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSide.h"
+#include "UI/Browser/BrowserItem.h"
 
 using namespace slade;
 

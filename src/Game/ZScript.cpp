@@ -33,6 +33,8 @@
 #include "ZScript.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "ThingType.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -1041,7 +1043,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 bool Definitions::parseZScript(Archive* archive)
 {
 	// Get base ZScript file
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_name      = "zscript";
 	opt.ignore_ext      = true;
 	auto zscript_enries = archive->findAll(opt);

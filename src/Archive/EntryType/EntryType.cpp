@@ -32,10 +32,13 @@
 #include "Main.h"
 #include "EntryType.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
+#include "EntryDataFormat.h"
 #include "General/Console.h"
 #include "MainEditor/MainEditor.h"
+#include "Utility/Colour.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
@@ -67,6 +70,18 @@ EntryType* etype_map     = nullptr; // Map marker type
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// EntryType class constructor
+// -----------------------------------------------------------------------------
+EntryType::EntryType(string_view id) : id_{ id }, colour_{ ColRGBA::WHITE }, format_{ EntryDataFormat::anyFormat() } {}
+
+// -----------------------------------------------------------------------------
+// Returns the id of the type's data format
+// -----------------------------------------------------------------------------
+const string& EntryType::formatId() const
+{
+	return format_->id();
+}
 
 // -----------------------------------------------------------------------------
 // Dumps entry type info to the log

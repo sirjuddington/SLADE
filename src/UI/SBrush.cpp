@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "SBrush.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Graphics/SImage/SImage.h"
 

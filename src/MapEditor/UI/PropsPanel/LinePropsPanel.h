@@ -5,7 +5,6 @@
 
 namespace slade
 {
-class MapObject;
 class MapObjectPropsPanel;
 class ActionSpecialPanel;
 class ArgsPanel;

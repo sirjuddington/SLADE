@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Archive/Archive.h"
-
 namespace slade
 {
 class MapObjectCollection;
+class PropertyList;
+enum class MapFormat;
+struct MapDesc;
 
 class MapFormatHandler
 {

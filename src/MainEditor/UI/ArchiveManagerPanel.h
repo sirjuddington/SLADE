@@ -4,76 +4,17 @@
 #include "General/Sigslot.h"
 #include "UI/Controls/DockPanel.h"
 
-wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
-
 namespace slade
 {
-class ListView;
-class ArchiveEntry;
-class DirArchive;
-struct DirEntryChange;
 class ArchiveManagerPanel;
 class ArchivePanel;
-class Archive;
+class DirArchive;
+class EntryPanel;
+class ListView;
 class STabCtrl;
 class TextureXEditor;
-class EntryPanel;
-
-struct DirArchiveChangeList
-{
-	Archive*               archive;
-	vector<DirEntryChange> changes;
-};
-
-class DirArchiveCheck : public wxThread
-{
-public:
-	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
-	~DirArchiveCheck() override = default;
-
-	ExitCode Entry() override;
-
-private:
-	struct EntryInfo
-	{
-		wxString entry_path;
-		wxString file_path;
-		bool     is_dir;
-		time_t   file_modified;
-
-		EntryInfo(
-			const wxString& entry_path    = "",
-			const wxString& file_path     = "",
-			bool            is_dir        = false,
-			time_t          file_modified = 0) :
-			entry_path{ entry_path },
-			file_path{ file_path },
-			is_dir{ is_dir },
-			file_modified{ file_modified }
-		{
-		}
-	};
-
-	wxEvtHandler*        handler_;
-	wxString             dir_path_;
-	vector<EntryInfo>    entry_info_;
-	vector<string>       removed_files_;
-	DirArchiveChangeList change_list_;
-	bool                 ignore_hidden_ = true;
-
-	void addChange(const DirEntryChange& change);
-};
-
-class WMFileBrowser : public wxGenericDirCtrl
-{
-public:
-	ArchiveManagerPanel* parent;
-
-	WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id);
-	~WMFileBrowser() override = default;
-
-	void onItemActivated(wxTreeEvent& e);
-};
+class WMFileBrowser;
+struct DirEntryChange;
 
 class ArchiveManagerPanel : public DockPanel, SActionHandler
 {

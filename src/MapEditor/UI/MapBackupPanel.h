@@ -3,9 +3,7 @@
 namespace slade
 {
 class MapPreviewCanvas;
-class Archive;
 class ZipArchive;
-class ArchiveDir;
 class ListView;
 
 class MapBackupPanel : public wxPanel

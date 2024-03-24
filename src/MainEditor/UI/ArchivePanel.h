@@ -15,9 +15,6 @@ namespace ui
 	class ArchiveEntryTree;
 } // namespace ui
 class ExternalEditManager;
-class ArchiveDir;
-class ArchiveEntry;
-class Archive;
 class EntryPanel;
 class SToolBar;
 } // namespace slade
@@ -27,7 +24,7 @@ namespace slade
 class ArchivePanel : public wxPanel, SActionHandler
 {
 public:
-	ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive);
+	ArchivePanel(wxWindow* parent, const shared_ptr<Archive>& archive);
 	~ArchivePanel() override = default;
 
 	Archive*     archive() const { return archive_.lock().get(); }

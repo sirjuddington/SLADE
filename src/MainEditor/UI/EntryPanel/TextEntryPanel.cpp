@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextEntryPanel.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
 #include "General/UI.h"
@@ -42,6 +44,7 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -204,8 +207,8 @@ bool TextEntryPanel::writeEntry(ArchiveEntry& entry)
 	MemChunk mc;
 	text_area_->getRawText(mc);
 	entry.importMemChunk(mc);
-	if (entry.state() == ArchiveEntry::State::Unmodified)
-		entry.setState(ArchiveEntry::State::Modified);
+	if (entry.state() == EntryState::Unmodified)
+		entry.setState(EntryState::Modified);
 
 	// Re-detect entry type
 	EntryType::detectEntryType(entry);

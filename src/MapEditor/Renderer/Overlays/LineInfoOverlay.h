@@ -3,7 +3,6 @@
 namespace slade
 {
 class TextBox;
-class MapLine;
 
 class LineInfoOverlay
 {

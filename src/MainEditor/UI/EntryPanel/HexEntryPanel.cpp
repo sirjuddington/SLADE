@@ -32,7 +32,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexEntryPanel.h"
+#include "Archive/ArchiveEntry.h"
 #include "UI/Controls/HexEditorPanel.h"
+#include "UI/SToolBar/SToolBar.h"
 
 using namespace slade;
 

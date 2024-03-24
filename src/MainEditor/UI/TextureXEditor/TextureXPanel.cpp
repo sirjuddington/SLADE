@@ -33,19 +33,25 @@
 #include "Main.h"
 #include "TextureXPanel.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
+#include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Dialogs/GfxConvDialog.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
+#include "UI/Lists/VirtualListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
@@ -301,185 +307,187 @@ private:
 
 // -----------------------------------------------------------------------------
 //
-// TextureXListView Class Functions
+// TextureXListView Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// TextureXListView class constructor
-// -----------------------------------------------------------------------------
-TextureXListView::TextureXListView(wxWindow* parent, TextureXList* texturex) :
-	VirtualListView{ parent },
-	texturex_{ texturex }
+namespace slade
 {
-	// Add columns
-	InsertColumn(0, "Name");
-	InsertColumn(1, "Size");
-
-	// Update
-	TextureXListView::updateList();
-}
-
-// -----------------------------------------------------------------------------
-// Returns the string for [item] at [column]
-// -----------------------------------------------------------------------------
-wxString TextureXListView::itemText(long item, long column, long index) const
+class TextureXListView : public VirtualListView
 {
-	// Check texture list exists
-	if (!texturex_)
-		return "INVALID INDEX";
-
-	// Check index is ok
-	if (index < 0 || static_cast<unsigned>(index) > texturex_->size())
-		return "INVALID INDEX";
-
-	// Get associated texture
-	auto tex = texturex_->texture(index);
-
-	if (column == 0) // Name column
-		return tex->name();
-	else if (column == 1) // Size column
-		return wxString::Format("%dx%d", tex->width(), tex->height());
-	else if (column == 2) // Type column
-		return tex->type();
-	else
-		return "INVALID COLUMN";
-}
-
-// -----------------------------------------------------------------------------
-// Called when widget requests the attributes
-// (text colour / background colour / font) for [item]
-// -----------------------------------------------------------------------------
-void TextureXListView::updateItemAttr(long item, long column, long index) const
-{
-	// Check texture list exists
-	if (!texturex_)
-		return;
-
-	// Check index is ok
-	if (index < 0 || static_cast<unsigned>(index) > texturex_->size())
-		return;
-
-	// Get associated texture
-	auto tex = texturex_->texture(index);
-
-	// Init attributes
-	item_attr_->SetTextColour(colourconfig::colour("error").toWx());
-
-	// If texture doesn't exist, return error colour
-	if (!tex)
-		return;
-
-	// Set colour depending on entry state
-	switch (tex->state())
+public:
+	TextureXListView(wxWindow* parent, TextureXList* texturex) : VirtualListView{ parent }, texturex_{ texturex }
 	{
-	case 1:  item_attr_->SetTextColour(colourconfig::colour("modified").toWx()); break;
-	case 2:  item_attr_->SetTextColour(colourconfig::colour("new").toWx()); break;
-	default: item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
-	}
-}
+		// Add columns
+		InsertColumn(0, "Name");
+		InsertColumn(1, "Size");
 
-// -----------------------------------------------------------------------------
-// Clears the list if [clear] is true, and refreshes it
-// -----------------------------------------------------------------------------
-void TextureXListView::updateList(bool clear)
-{
-	if (clear)
-		ClearAll();
-
-	// Set list size
-	items_.clear();
-	if (texturex_)
-	{
-		unsigned count = texturex_->size();
-		for (unsigned a = 0; a < count; a++)
-			items_.push_back(a);
-		applyFilter();
-		SetItemCount(items_.size());
-	}
-	else
-		SetItemCount(0);
-
-	sortItems();
-	updateWidth();
-	Refresh();
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if texture at index [left] is smaller than [right]
-// -----------------------------------------------------------------------------
-bool TextureXListView::sizeSort(long left, long right)
-{
-	auto tl = dynamic_cast<TextureXListView*>(lv_current_)->txList()->texture(left);
-	auto tr = dynamic_cast<TextureXListView*>(lv_current_)->txList()->texture(right);
-	int  s1 = tl->width() * tl->height();
-	int  s2 = tr->width() * tr->height();
-
-	if (s1 == s2)
-		return left < right;
-	else
-		return lv_current_->sortDescend() ? s1 > s2 : s2 > s1;
-}
-
-// -----------------------------------------------------------------------------
-// Sorts the list items depending on the current sorting column
-// -----------------------------------------------------------------------------
-void TextureXListView::sortItems()
-{
-	lv_current_ = this;
-	if (sort_column_ == 1)
-		std::sort(items_.begin(), items_.end(), &TextureXListView::sizeSort);
-	else
-		std::sort(items_.begin(), items_.end(), &VirtualListView::defaultSort);
-}
-
-// -----------------------------------------------------------------------------
-// Filters items by the current filter text string
-// -----------------------------------------------------------------------------
-void TextureXListView::applyFilter()
-{
-	// Show all if no filter
-	if (filter_text_.IsEmpty())
-		return;
-
-	// Split filter by ,
-	auto terms = wxSplit(filter_text_, ',');
-
-	// Process filter strings
-	for (auto& term : terms)
-	{
-		// Remove spaces
-		term.Replace(" ", "");
-
-		// Set to lowercase and add * to the end
-		if (!term.IsEmpty())
-			term = term.Lower() + "*";
+		// Update
+		TextureXListView::updateList();
 	}
 
-	// Go through filtered list
-	for (unsigned a = 0; a < items_.size(); a++)
-	{
-		auto tex = texturex_->texture(items_[a]);
+	~TextureXListView() override = default;
 
-		// Check for name match with filter
-		bool match = false;
+	TextureXList* txList() const { return texturex_; }
+
+	// Clears the list if [clear] is true, and refreshes it
+	void updateList(bool clear = false) override
+	{
+		if (clear)
+			ClearAll();
+
+		// Set list size
+		items_.clear();
+		if (texturex_)
+		{
+			unsigned count = texturex_->size();
+			for (unsigned a = 0; a < count; a++)
+				items_.push_back(a);
+			applyFilter();
+			SetItemCount(items_.size());
+		}
+		else
+			SetItemCount(0);
+
+		sortItems();
+		updateWidth();
+		Refresh();
+	}
+
+	// Sorts the list items depending on the current sorting column
+	void sortItems() override
+	{
+		lv_current_ = this;
+		if (sort_column_ == 1)
+			std::sort(items_.begin(), items_.end(), &TextureXListView::sizeSort);
+		else
+			std::sort(items_.begin(), items_.end(), &VirtualListView::defaultSort);
+	}
+
+	void setFilter(const wxString& filter)
+	{
+		filter_text_ = filter;
+		updateList();
+	}
+
+	// Filters items by the current filter text string
+	void applyFilter() override
+	{
+		// Show all if no filter
+		if (filter_text_.IsEmpty())
+			return;
+
+		// Split filter by ,
+		auto terms = wxSplit(filter_text_, ',');
+
+		// Process filter strings
 		for (auto& term : terms)
 		{
-			if (strutil::matchesCI(tex->name(), wxutil::strToView(term)))
-			{
-				match = true;
-				break;
-			}
-		}
-		if (match)
-			continue;
+			// Remove spaces
+			term.Replace(" ", "");
 
-		// No match, remove from filtered list
-		items_.erase(items_.begin() + a);
-		a--;
+			// Set to lowercase and add * to the end
+			if (!term.IsEmpty())
+				term = term.Lower() + "*";
+		}
+
+		// Go through filtered list
+		for (unsigned a = 0; a < items_.size(); a++)
+		{
+			auto tex = texturex_->texture(items_[a]);
+
+			// Check for name match with filter
+			bool match = false;
+			for (auto& term : terms)
+			{
+				if (strutil::matchesCI(tex->name(), wxutil::strToView(term)))
+				{
+					match = true;
+					break;
+				}
+			}
+			if (match)
+				continue;
+
+			// No match, remove from filtered list
+			items_.erase(items_.begin() + a);
+			a--;
+		}
 	}
-}
+
+	// Returns true if texture at index [left] is smaller than [right]
+	static bool sizeSort(long left, long right)
+	{
+		auto tl = dynamic_cast<TextureXListView*>(lv_current_)->txList()->texture(left);
+		auto tr = dynamic_cast<TextureXListView*>(lv_current_)->txList()->texture(right);
+		int  s1 = tl->width() * tl->height();
+		int  s2 = tr->width() * tr->height();
+
+		if (s1 == s2)
+			return left < right;
+		else
+			return lv_current_->sortDescend() ? s1 > s2 : s2 > s1;
+	}
+
+protected:
+	// Returns the string for [item] at [column]
+	wxString itemText(long item, long column, long index) const override
+	{
+		// Check texture list exists
+		if (!texturex_)
+			return "INVALID INDEX";
+
+		// Check index is ok
+		if (index < 0 || static_cast<unsigned>(index) > texturex_->size())
+			return "INVALID INDEX";
+
+		// Get associated texture
+		auto tex = texturex_->texture(index);
+
+		if (column == 0) // Name column
+			return tex->name();
+		else if (column == 1) // Size column
+			return wxString::Format("%dx%d", tex->width(), tex->height());
+		else if (column == 2) // Type column
+			return tex->type();
+		else
+			return "INVALID COLUMN";
+	}
+
+	// Called when widget requests the attributes
+	// (text colour / background colour / font) for [item]
+	void updateItemAttr(long item, long column, long index) const override
+	{
+		// Check texture list exists
+		if (!texturex_)
+			return;
+
+		// Check index is ok
+		if (index < 0 || static_cast<unsigned>(index) > texturex_->size())
+			return;
+
+		// Get associated texture
+		auto tex = texturex_->texture(index);
+
+		// Init attributes
+		item_attr_->SetTextColour(colourconfig::colour("error"));
+
+		// If texture doesn't exist, return error colour
+		if (!tex)
+			return;
+
+		// Set colour depending on entry state
+		switch (tex->state())
+		{
+		case 1:  item_attr_->SetTextColour(colourconfig::colour("modified")); break;
+		case 2:  item_attr_->SetTextColour(colourconfig::colour("new")); break;
+		default: item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
+		}
+	}
+
+private:
+	TextureXList* texturex_;
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -797,6 +805,14 @@ void TextureXPanel::applyChanges()
 		modified_ = true;
 		texture_editor_->openTexture(tex_current_, texturex_.get());
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Refreshes the texture list
+// -----------------------------------------------------------------------------
+void TextureXPanel::updateTextureList() const
+{
+	list_textures_->updateList();
 }
 
 // -----------------------------------------------------------------------------

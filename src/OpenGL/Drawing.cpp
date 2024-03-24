@@ -32,10 +32,13 @@
 #include "Main.h"
 #include "Drawing.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "GLTexture.h"
 #include "General/UI.h"
 #include "OpenGL.h"
+#include "Utility/Colour.h"
 #include "Utility/MathStuff.h"
 #include "Utility/StringUtils.h"
 #include <FTGL/ftgl.h>
@@ -861,7 +864,7 @@ wxColour drawing::lightColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	ColHSL hsl = ColRGBA(colour).asHSL();
+	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
 
 	// Increase luminance
 	hsl.l += static_cast<float>((percent * 5.0) / 100.0);
@@ -880,7 +883,7 @@ wxColour drawing::darkColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	ColHSL hsl = ColRGBA(colour).asHSL();
+	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
 
 	// Decrease luminance
 	hsl.l -= static_cast<float>((percent * 5.0) / 100.0);

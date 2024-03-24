@@ -39,6 +39,7 @@
 #include "OpenGL/OpenGL.h"
 
 using namespace slade;
+using namespace browser;
 
 
 // -----------------------------------------------------------------------------
@@ -72,6 +73,11 @@ BrowserCanvas::BrowserCanvas(wxWindow* parent) :
 	Bind(wxEVT_LEFT_DOWN, &BrowserCanvas::onMouseEvent, this);
 	Bind(wxEVT_KEY_DOWN, &BrowserCanvas::onKeyDown, this);
 }
+
+// -----------------------------------------------------------------------------
+// BrowserCanvas class destructor
+// -----------------------------------------------------------------------------
+BrowserCanvas::~BrowserCanvas() = default;
 
 // -----------------------------------------------------------------------------
 // Return the unfiltered index of the item currently in the middle of the

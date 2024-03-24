@@ -43,6 +43,7 @@
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
+#include "Game/ThingType.h"
 #include "General/Console.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"

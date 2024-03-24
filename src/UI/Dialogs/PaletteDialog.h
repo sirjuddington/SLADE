@@ -3,8 +3,6 @@
 namespace slade
 {
 class PaletteCanvas;
-class Palette;
-struct ColRGBA;
 
 class PaletteDialog : public wxDialog
 {

@@ -34,8 +34,11 @@
 #include "General/Misc.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
+#include "Utility/PropertyList.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -234,7 +237,7 @@ bool misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 	if (!playpal || playpal->size() < 768)
 	{
 		// Search archive for any palette
-		Archive::SearchOptions opt;
+		ArchiveSearchOptions opt;
 
 		// Search "PLAYPAL" first
 		opt.match_type     = EntryType::fromId("palette");

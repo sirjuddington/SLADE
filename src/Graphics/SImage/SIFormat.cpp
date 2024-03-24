@@ -31,7 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #undef BOOL
-#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryDataFormat.h"
+#include "Graphics/Palette/Palette.h"
 #include "SIFormat.h"
 #include <FreeImage.h>
 

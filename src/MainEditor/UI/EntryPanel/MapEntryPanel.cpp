@@ -33,8 +33,12 @@
 #include "Main.h"
 #include "MapEntryPanel.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Archive/MapDesc.h"
 #include "OpenGL/OpenGL.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;

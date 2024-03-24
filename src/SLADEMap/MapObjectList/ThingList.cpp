@@ -36,6 +36,7 @@
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
+#include "Game/ThingType.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"

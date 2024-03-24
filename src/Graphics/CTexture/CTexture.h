@@ -1,13 +1,12 @@
 #pragma once
 
-#include "Graphics/Translation.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
 class SImage;
 class Tokenizer;
+class Translation;
 
 // Basic patch
 class CTPatch
@@ -15,7 +14,8 @@ class CTPatch
 public:
 	CTPatch() = default;
 	CTPatch(string_view name, int16_t offset_x = 0, int16_t offset_y = 0);
-	virtual ~CTPatch() = default;
+	CTPatch(const CTPatch& copy) = default;
+	virtual ~CTPatch();
 
 	const string& name() const { return name_; }
 	Vec2<int16_t> offset() const { return offset_; }
@@ -54,9 +54,9 @@ public:
 
 	CTPatchEx() = default;
 	CTPatchEx(string_view name, int16_t offset_x = 0, int16_t offset_y = 0, Type type = Type::Patch);
-	CTPatchEx(const CTPatch& copy) : CTPatch{ copy } {}
+	CTPatchEx(const CTPatch& copy);
 	CTPatchEx(const CTPatchEx& copy);
-	~CTPatchEx() override = default;
+	~CTPatchEx() override;
 
 	bool         flipX() const { return flip_x_; }
 	bool         flipY() const { return flip_y_; }
@@ -66,7 +66,7 @@ public:
 	float        alpha() const { return alpha_; }
 	string       style() const { return style_; }
 	BlendType    blendType() const { return blendtype_; }
-	Translation& translation() { return translation_; }
+	Translation* translation() const { return translation_.get(); }
 
 	void setFlipX(bool flip) { flip_x_ = flip; }
 	void setFlipY(bool flip) { flip_y_ = flip; }
@@ -76,6 +76,9 @@ public:
 	void setAlpha(float a) { alpha_ = a; }
 	void setStyle(string_view style) { style_ = style; }
 	void setBlendType(BlendType type) { blendtype_ = type; }
+	void setTranslation(const Translation& translation);
+
+	bool hasTranslation() const;
 
 	ArchiveEntry* patchEntry(Archive* parent = nullptr) override;
 
@@ -83,21 +86,17 @@ public:
 	string asText();
 
 private:
-	Type        type_        = Type::Patch;
-	bool        flip_x_      = false;
-	bool        flip_y_      = false;
-	bool        use_offsets_ = false;
-	int16_t     rotation_    = 0;
-	Translation translation_;
-	ColRGBA     colour_;
-	float       alpha_     = 1.f;
-	string      style_     = "Copy";
-	BlendType   blendtype_ = BlendType::None; // 0=none, 1=translation, 2=blend, 3=tint
+	Type                    type_        = Type::Patch;
+	bool                    flip_x_      = false;
+	bool                    flip_y_      = false;
+	bool                    use_offsets_ = false;
+	int16_t                 rotation_    = 0;
+	unique_ptr<Translation> translation_;
+	ColRGBA                 colour_;
+	float                   alpha_     = 1.f;
+	string                  style_     = "Copy";
+	BlendType               blendtype_ = BlendType::None; // 0=none, 1=translation, 2=blend, 3=tint
 };
-
-class TextureXList;
-class SImage;
-class Palette;
 
 class CTexture
 {
@@ -116,7 +115,7 @@ public:
 
 	CTexture(bool extended = false) : extended_{ extended } {}
 	CTexture(string_view name, bool extended = false) : name_{ name }, extended_{ extended } {}
-	~CTexture() = default;
+	~CTexture();
 
 	void copyTexture(const CTexture& tex, bool keep_type = false);
 

@@ -67,6 +67,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "RffArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -191,11 +193,11 @@ bool RffArchive::open(const MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
 		nlump->setOffsetOnDisk(offset);
 		nlump->setSizeOnDisk();
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Is the entry encrypted?
 		if (lumps[d].Flags & 0x10)
-			nlump->setEncryption(ArchiveEntry::Encryption::Blood);
+			nlump->setEncryption(EntryEncryption::Blood);
 
 		// Read entry data if it isn't zero-sized
 		if (nlump->size() > 0)
@@ -204,7 +206,7 @@ bool RffArchive::open(const MemChunk& mc)
 			mc.exportMemChunk(edata, offset, size);
 
 			// If the entry is encrypted, decrypt it
-			if (nlump->encryption() != ArchiveEntry::Encryption::None)
+			if (nlump->encryption() != EntryEncryption::None)
 			{
 				uint8_t* cdata = new uint8_t[size];
 				memcpy(cdata, edata.data(), size);

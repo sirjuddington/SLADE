@@ -3,12 +3,8 @@
 namespace slade
 {
 // Forward declarations
-class MapLine;
-class MapVertex;
 class Polygon2D;
-class MapSector;
 class MapRenderer2D;
-class MapObject;
 class MapRenderer3D;
 namespace mapeditor
 {

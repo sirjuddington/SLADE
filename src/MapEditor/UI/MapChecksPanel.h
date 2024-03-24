@@ -6,7 +6,6 @@ class wxListBox;
 
 namespace slade
 {
-class SLADEMap;
 class MapCheck;
 
 class MapChecksPanel : public DockPanel

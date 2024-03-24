@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "UDMFProperty.h"
 #include "Utility/Parser.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

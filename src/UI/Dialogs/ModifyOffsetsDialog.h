@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class ArchiveEntry;
-
 class ModifyOffsetsDialog : public wxDialog
 {
 public:

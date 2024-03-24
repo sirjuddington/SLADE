@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "ANSICanvas.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"

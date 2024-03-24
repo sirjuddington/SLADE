@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class ArchiveEntry;
-
 namespace icons
 {
 	enum Type

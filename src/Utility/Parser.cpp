@@ -34,6 +34,9 @@
 #include "Main.h"
 #include "Parser.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "PropertyUtils.h"
 #include "StringUtils.h"
 #include "Utility/Tokenizer.h"
 

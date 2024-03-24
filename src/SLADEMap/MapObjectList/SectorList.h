@@ -4,8 +4,6 @@
 
 namespace slade
 {
-class MapSector;
-
 class SectorList : public MapObjectList<MapSector>
 {
 public:

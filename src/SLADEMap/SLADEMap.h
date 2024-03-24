@@ -6,7 +6,6 @@ namespace slade
 {
 class MapSpecials;
 struct MapDesc;
-class ParseTreeNode;
 enum class MapFormat;
 namespace Game
 {

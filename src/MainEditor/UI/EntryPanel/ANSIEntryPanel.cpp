@@ -31,7 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ANSIEntryPanel.h"
+#include "Archive/ArchiveEntry.h"
 #include "UI/Canvas/ANSICanvas.h"
+#include "UI/SToolBar/SToolBar.h"
 
 using namespace slade;
 

@@ -32,7 +32,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryDataFormat.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Game/Game.h"
 #include "Game/SpecialPreset.h"
 #include "General/Clipboard.h"

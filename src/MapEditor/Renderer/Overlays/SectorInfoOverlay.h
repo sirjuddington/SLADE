@@ -2,7 +2,6 @@
 
 namespace slade
 {
-class MapSector;
 class TextBox;
 
 class SectorInfoOverlay

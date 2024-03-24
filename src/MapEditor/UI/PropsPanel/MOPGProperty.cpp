@@ -36,6 +36,7 @@
 #include "MOPGProperty.h"
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "Game/UDMFProperty.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -50,7 +51,9 @@
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/Browser/BrowserItem.h"
 #include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
+#include "Utility/PropertyUtils.h"
 
 using namespace slade;
 using namespace mapeditor;

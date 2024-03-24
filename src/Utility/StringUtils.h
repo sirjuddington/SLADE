@@ -4,8 +4,6 @@
 
 namespace slade
 {
-class ArchiveEntry;
-
 namespace strutil
 {
 	// Static common strings

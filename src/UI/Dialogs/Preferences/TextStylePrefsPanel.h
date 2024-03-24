@@ -1,8 +1,6 @@
 #pragma once
 
 #include "PrefsPanelBase.h"
-// #include "TextEditor/TextLanguage.h"
-// #include "TextEditor/TextStyle.h"
 
 class wxListBox;
 

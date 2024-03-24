@@ -32,11 +32,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Graphics/Palette/Palette.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "Scripting/Lua.h"
+#include "Utility/Colour.h"
 #include "thirdparty/sol/sol.hpp"
 
 using namespace slade;
@@ -192,7 +194,7 @@ void registerMemChunkType(sol::state& lua)
 // -----------------------------------------------------------------------------
 std::tuple<double, double, double> colourAsHSL(ColRGBA& self)
 {
-	auto hsl = self.asHSL();
+	auto hsl = colour::rgbToHsl(self);
 	return std::make_tuple(hsl.h, hsl.s, hsl.l);
 }
 
@@ -201,7 +203,7 @@ std::tuple<double, double, double> colourAsHSL(ColRGBA& self)
 // -----------------------------------------------------------------------------
 std::tuple<double, double, double> colourAsLAB(ColRGBA& self)
 {
-	auto lab = self.asLAB();
+	auto lab = colour::rgbToLab(self);
 	return std::make_tuple(lab.l, lab.a, lab.b);
 }
 
@@ -215,10 +217,10 @@ void registerColourType(sol::state& lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_colour["FORMAT_RGB"]   = sol::property([]() { return ColRGBA::StringFormat::RGB; });
-	lua_colour["FORMAT_RGBA"]  = sol::property([]() { return ColRGBA::StringFormat::RGBA; });
-	lua_colour["FORMAT_HEX"]   = sol::property([]() { return ColRGBA::StringFormat::HEX; });
-	lua_colour["FORMAT_ZDOOM"] = sol::property([]() { return ColRGBA::StringFormat::ZDoom; });
+	lua_colour["FORMAT_RGB"]   = sol::property([] { return colour::StringFormat::RGB; });
+	lua_colour["FORMAT_RGBA"]  = sol::property([] { return colour::StringFormat::RGBA; });
+	lua_colour["FORMAT_HEX"]   = sol::property([] { return colour::StringFormat::HEX; });
+	lua_colour["FORMAT_ZDOOM"] = sol::property([] { return colour::StringFormat::ZDoom; });
 
 	// Properties
 	// -------------------------------------------------------------------------
@@ -235,8 +237,14 @@ void registerColourType(sol::state& lua)
 	// -------------------------------------------------------------------------
 	lua_colour["AsHSL"]    = &colourAsHSL;
 	lua_colour["AsLAB"]    = &colourAsLAB;
-	lua_colour["AsString"] = &ColRGBA::toString;
-	lua_colour["FromHSL"]  = sol::resolve<void(double, double, double)>(&ColRGBA::fromHSL);
+	lua_colour["AsString"] = [](ColRGBA& self, colour::StringFormat f) { return colour::toString(self, f); };
+	lua_colour["FromHSL"]  = [](ColRGBA& self, double h, double s, double l)
+	{
+		auto rgb = colour::hslToRgb({ h, s, l });
+		self.r   = rgb.r;
+		self.g   = rgb.g;
+		self.b   = rgb.b;
+	};
 }
 
 // -----------------------------------------------------------------------------
@@ -280,7 +288,7 @@ void registerAppNamespace(sol::state& lua)
 	app["CurrentArchive"]        = &maineditor::currentArchive;
 	app["CurrentEntry"]          = &maineditor::currentEntry;
 	app["CurrentEntrySelection"] = &maineditor::currentEntrySelection;
-	app["CurrentPalette"] = sol::overload(&maineditor::currentPalette, []() { return maineditor::currentPalette(); });
+	app["CurrentPalette"] = sol::overload(&maineditor::currentPalette, [] { return maineditor::currentPalette(); });
 	app["ShowArchive"]    = &showArchive;
 	app["ShowEntry"]      = &maineditor::openEntry;
 	app["MapEditor"]      = &mapeditor::editContext;

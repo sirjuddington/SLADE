@@ -32,6 +32,8 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/MapDesc.h"
 #include "Doom32XMapFormat.h"
 #include "Doom64MapFormat.h"
 #include "DoomMapFormat.h"

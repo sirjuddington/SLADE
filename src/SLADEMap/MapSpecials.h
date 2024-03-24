@@ -1,15 +1,10 @@
 #pragma once
 
 #include "SLADEMap/MapObject/MapSector.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
-class MapVertex;
-class MapThing;
-class MapLine;
-class SLADEMap;
-class ArchiveEntry;
-
 class MapSpecials
 {
 public:

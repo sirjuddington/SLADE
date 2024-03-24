@@ -12,16 +12,10 @@ class ThingInfoOverlay;
 class SectorInfoOverlay;
 class LineInfoOverlay;
 class VertexInfoOverlay;
-class MapSide;
 class UndoStep;
 class MCOverlay;
-class MapObject;
 class UndoManager;
-class MapThing;
-class MapLine;
-class MapSector;
 class ItemSelection;
-class SLADEMap;
 class MapCanvas;
 
 namespace ui

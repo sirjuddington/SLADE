@@ -1,10 +1,16 @@
 #pragma once
 
-#include "BrowserCanvas.h"
 #include "Utility/Tree.h"
 
 namespace slade
 {
+class BrowserCanvas;
+class BrowserItem;
+namespace browser
+{
+	enum class ItemView;
+	enum class NameType;
+} // namespace browser
 namespace drawing
 {
 	enum class Font;
@@ -13,8 +19,8 @@ namespace drawing
 class BrowserTreeNode : public STreeNode
 {
 public:
-	BrowserTreeNode(BrowserTreeNode* parent = nullptr) : STreeNode(parent) {}
-	~BrowserTreeNode() override { clearItems(); }
+	BrowserTreeNode(BrowserTreeNode* parent = nullptr);
+	~BrowserTreeNode() override;
 
 	const string&  name() const override { return name_; }
 	wxTreeListItem treeId() const { return tree_id_; }
@@ -22,7 +28,7 @@ public:
 	void           setTreeId(wxTreeListItem id) { tree_id_ = id; }
 
 	void         clearItems();
-	unsigned     nItems() const { return items_.size(); }
+	unsigned     nItems() const;
 	BrowserItem* item(unsigned index) const;
 	void         addItem(BrowserItem* item, unsigned index = 0xFFFFFFFF);
 
@@ -67,9 +73,9 @@ public:
 
 	// Canvas display options
 	void setFont(drawing::Font font) const;
-	void setItemNameType(BrowserCanvas::NameType type) const;
+	void setItemNameType(browser::NameType type) const;
 	void setItemSize(int size);
-	void setItemViewType(BrowserCanvas::ItemView type) const;
+	void setItemViewType(browser::ItemView type) const;
 
 protected:
 	BrowserTreeNode*     items_root_   = nullptr;

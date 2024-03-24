@@ -2,10 +2,6 @@
 
 namespace slade
 {
-class MapVertex;
-class MapLine;
-class MapThing;
-
 namespace mapeditor
 {
 	class MapEditContext;

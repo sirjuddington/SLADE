@@ -33,6 +33,7 @@
 #include "GLTexture.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL.h"
+#include "Utility/ColRGBA.h"
 
 using namespace slade;
 

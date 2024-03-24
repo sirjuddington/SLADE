@@ -2,8 +2,6 @@
 
 namespace slade
 {
-struct ColRGBA;
-
 class ListView : public wxListCtrl
 {
 public:

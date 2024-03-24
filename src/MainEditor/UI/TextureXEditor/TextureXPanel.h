@@ -1,44 +1,16 @@
 #pragma once
 
 #include "General/SAction.h"
-#include "UI/Lists/VirtualListView.h"
 
 namespace slade
 {
-class Palette;
 class CTexture;
-class ArchiveEntry;
-class TextureXList;
-class TextureXEditor;
-class TextureEditorPanel;
-class UndoManager;
 class SToolBar;
-
-class TextureXListView : public VirtualListView
-{
-public:
-	TextureXListView(wxWindow* parent, TextureXList* texturex);
-	~TextureXListView() override = default;
-
-	TextureXList* txList() const { return texturex_; }
-
-	void        updateList(bool clear = false) override;
-	static bool sizeSort(long left, long right);
-	void        sortItems() override;
-	void        setFilter(const wxString& filter)
-	{
-		filter_text_ = filter;
-		updateList();
-	}
-	void applyFilter() override;
-
-protected:
-	wxString itemText(long item, long column, long index) const override;
-	void     updateItemAttr(long item, long column, long index) const override;
-
-private:
-	TextureXList* texturex_;
-};
+class TextureEditorPanel;
+class TextureXEditor;
+class TextureXList;
+class TextureXListView;
+class UndoManager;
 
 class TextureXPanel : public wxPanel, SActionHandler
 {
@@ -56,7 +28,7 @@ public:
 	bool saveTEXTUREX();
 	void setPalette(const Palette* pal) const;
 	void applyChanges();
-	void updateTextureList() const { list_textures_->updateList(); }
+	void updateTextureList() const;
 
 	// Texture operations
 	unique_ptr<CTexture> newTextureFromPatch(const wxString& name, const wxString& patch);

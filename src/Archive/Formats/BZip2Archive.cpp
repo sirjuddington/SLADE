@@ -31,6 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BZip2Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Utility/Compression.h"
 #include "Utility/StringUtils.h"
 
@@ -80,7 +83,7 @@ bool BZip2Archive::open(const MemChunk& mc)
 		return false;
 	rootDir()->addEntry(entry);
 	EntryType::detectEntryType(*entry);
-	entry->setState(ArchiveEntry::State::Unmodified);
+	entry->setState(EntryState::Unmodified);
 
 	sig_blocker.unblock();
 	setModified(false);
@@ -137,7 +140,7 @@ bool BZip2Archive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 
 	// Set the lump to loaded
 	entry->setLoaded();
-	entry->setState(ArchiveEntry::State::Unmodified);
+	entry->setState(EntryState::Unmodified);
 
 	return true;
 #endif
@@ -147,7 +150,7 @@ bool BZip2Archive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // Returns the entry if it matches the search criteria in [options],
 // or null otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
+ArchiveEntry* BZip2Archive::findFirst(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	strutil::upperIP(options.match_name);
@@ -187,7 +190,7 @@ ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Same as findFirst since there's just one entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2Archive::findLast(SearchOptions& options)
+ArchiveEntry* BZip2Archive::findLast(ArchiveSearchOptions& options)
 {
 	return findFirst(options);
 }
@@ -195,7 +198,7 @@ ArchiveEntry* BZip2Archive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> BZip2Archive::findAll(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	vector<ArchiveEntry*> ret;

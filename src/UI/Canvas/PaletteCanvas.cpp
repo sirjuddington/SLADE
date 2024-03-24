@@ -34,6 +34,7 @@
 #include "PaletteCanvas.h"
 #include "Graphics/Palette/Palette.h"
 #include "OpenGL/OpenGL.h"
+#include "Utility/ColRGBA.h"
 
 using namespace slade;
 

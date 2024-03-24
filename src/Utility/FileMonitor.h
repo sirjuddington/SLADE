@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class Archive;
-
 class FileMonitor : public wxTimer
 {
 public:

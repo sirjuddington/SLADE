@@ -1,10 +1,5 @@
 #pragma once
 
-namespace slade
-{
-struct ColRGBA;
-}
-
 namespace slade::codepages
 {
 wxString fromASCII(uint8_t val);

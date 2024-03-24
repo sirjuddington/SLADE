@@ -1,11 +1,9 @@
 #pragma once
 
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
-class Palette;
-
 class ColourBox : public wxPanel
 {
 public:

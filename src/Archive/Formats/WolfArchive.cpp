@@ -31,6 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "WolfArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
@@ -546,7 +549,7 @@ bool WolfArchive::open(const MemChunk& mc)
 			if (size > 0)
 				nlump->importMemChunk(mc, pages[d].offset, size);
 
-			nlump->setState(ArchiveEntry::State::Unmodified);
+			nlump->setState(EntryState::Unmodified);
 
 			d = e;
 
@@ -699,7 +702,7 @@ bool WolfArchive::openAudio(MemChunk& head, const MemChunk& data)
 		EntryType::detectEntryType(*nlump);
 
 		// Add to entry list
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 		rootDir()->addEntry(nlump);
 	}
 
@@ -766,7 +769,7 @@ bool WolfArchive::openMaps(MemChunk& head, const MemChunk& data)
 		nlump->setSizeOnDisk();
 		if (size > 0)
 			nlump->importMemChunk(data, offset, size);
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -788,7 +791,7 @@ bool WolfArchive::openMaps(MemChunk& head, const MemChunk& data)
 			nlump2->setSizeOnDisk();
 			if (planelen[i] > 0)
 				nlump2->importMemChunk(data, planeofs[i], planelen[i]);
-			nlump2->setState(ArchiveEntry::State::Unmodified);
+			nlump2->setState(EntryState::Unmodified);
 			rootDir()->addEntry(nlump2);
 		}
 	}
@@ -902,7 +905,7 @@ bool WolfArchive::openGraph(const MemChunk& head, const MemChunk& data, MemChunk
 			addWolfPicHeader(nlump.get(), pictable[i], pictable[i + 1]);
 		}
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);

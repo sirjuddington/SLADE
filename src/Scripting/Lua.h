@@ -6,10 +6,6 @@ class wxWindow;
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
-class SLADEMap;
-
 namespace lua
 {
 	bool init();

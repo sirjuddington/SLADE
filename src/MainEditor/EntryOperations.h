@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
-
 class wxFrame;
 
 namespace slade

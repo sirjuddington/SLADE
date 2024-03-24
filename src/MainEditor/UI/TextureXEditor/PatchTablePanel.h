@@ -1,12 +1,11 @@
 #pragma once
 
 #include "General/SAction.h"
-#include "General/Sigslot.h"
-#include "UI/Lists/VirtualListView.h"
 
 namespace slade
 {
 class PatchTable;
+class PatchTableListView;
 class GfxCanvas;
 class TextureXEditor;
 class SToolBar;
@@ -15,29 +14,6 @@ namespace ui
 {
 	class ZoomControl;
 }
-
-class PatchTableListView : public VirtualListView
-{
-protected:
-	wxString itemText(long item, long column, long index) const override;
-	void     updateItemAttr(long item, long column, long index) const override;
-
-public:
-	PatchTableListView(wxWindow* parent, PatchTable* patch_table);
-	~PatchTableListView() override = default;
-
-	PatchTable* patchTable() const { return patch_table_; }
-
-	void        updateList(bool clear = false) override;
-	static bool usageSort(long left, long right);
-	void        sortItems() override;
-
-private:
-	PatchTable* patch_table_ = nullptr;
-
-	ScopedConnectionList signal_connections_;
-};
-
 
 class PatchTablePanel : public wxPanel, SActionHandler
 {

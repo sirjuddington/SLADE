@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Misc.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
@@ -39,6 +40,7 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
+#include "Graphics/Translation.h"
 #include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
@@ -703,7 +705,7 @@ void registerTextureXListType(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_txlist["Texture"]      = sol::resolve<CTexture*(string_view)>(&TextureXList::texture);
+	lua_txlist["Texture"]      = sol::resolve<CTexture*(string_view) const>(&TextureXList::texture);
 	lua_txlist["TextureIndex"] = &TextureXList::textureIndex;
 	lua_txlist["AddTexture"]   = sol::overload(
         &addTexture,

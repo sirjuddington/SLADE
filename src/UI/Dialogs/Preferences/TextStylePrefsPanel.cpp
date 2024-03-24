@@ -344,7 +344,7 @@ void TextStylePrefsPanel::updateStyleControls() const
 		col_foreground.set(style_default->foreground());
 		cb_override_foreground_->SetValue(false);
 	}
-	cp_foreground_->SetColour(col_foreground.toWx());
+	cp_foreground_->SetColour(col_foreground);
 
 	// Background
 	ColRGBA col_background;
@@ -355,7 +355,7 @@ void TextStylePrefsPanel::updateStyleControls() const
 		col_background.set(style_default->background());
 		cb_override_background_->SetValue(false);
 	}
-	cp_background_->SetColour(col_background.toWx());
+	cp_background_->SetColour(col_background);
 
 	// Apply font
 	fp_font_->SetSelectedFont(font);

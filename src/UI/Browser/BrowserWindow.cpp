@@ -33,8 +33,10 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "BrowserWindow.h"
+
+#include "BrowserCanvas.h"
 #include "BrowserItem.h"
+#include "BrowserWindow.h"
 #include "General/Misc.h"
 #include "Graphics/Palette/Palette.h"
 #include "UI/WxUtils.h"
@@ -105,11 +107,32 @@ int expandTree(wxTreeListCtrl* tree, const wxTreeListItem& item, bool expand, in
 
 
 // -----------------------------------------------------------------------------
+// BrowserTreeNode class constructor
+// -----------------------------------------------------------------------------
+BrowserTreeNode::BrowserTreeNode(BrowserTreeNode* parent) : STreeNode(parent) {}
+
+// -----------------------------------------------------------------------------
+// BrowserTreeNode class destructor
+// -----------------------------------------------------------------------------
+BrowserTreeNode::~BrowserTreeNode()
+{
+	clearItems();
+}
+
+// -----------------------------------------------------------------------------
 // Clears all items in the node
 // -----------------------------------------------------------------------------
 void BrowserTreeNode::clearItems()
 {
 	items_.clear();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the number of items
+// -----------------------------------------------------------------------------
+unsigned BrowserTreeNode::nItems() const
+{
+	return items_.size();
 }
 
 // -----------------------------------------------------------------------------
@@ -580,7 +603,7 @@ void BrowserWindow::setFont(drawing::Font font) const
 // -----------------------------------------------------------------------------
 // Sets the type of item names to show (in normal view mode)
 // -----------------------------------------------------------------------------
-void BrowserWindow::setItemNameType(BrowserCanvas::NameType type) const
+void BrowserWindow::setItemNameType(browser::NameType type) const
 {
 	canvas_->setItemNameType(type);
 }
@@ -604,7 +627,7 @@ void BrowserWindow::setItemSize(int size)
 // -----------------------------------------------------------------------------
 // Sets the item view type
 // -----------------------------------------------------------------------------
-void BrowserWindow::setItemViewType(BrowserCanvas::ItemView type) const
+void BrowserWindow::setItemViewType(browser::ItemView type) const
 {
 	canvas_->setItemViewType(type);
 }

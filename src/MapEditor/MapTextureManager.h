@@ -2,22 +2,20 @@
 
 namespace slade
 {
-class ArchiveDir;
-class Archive;
-class Palette;
+enum class MapTextureCategory
+{
+	// Texture categories
+	None = 0,
+	TextureX,
+	Tx,
+	ZDTextures,
+	HiRes
+};
 
 class MapTextureManager
 {
 public:
-	enum class Category
-	{
-		// Texture categories
-		None = 0,
-		TextureX,
-		Tx,
-		ZDTextures,
-		HiRes
-	};
+	using Category = MapTextureCategory;
 
 	struct Texture
 	{

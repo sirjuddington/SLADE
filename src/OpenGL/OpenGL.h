@@ -4,9 +4,6 @@
 
 namespace slade
 {
-// Forward declarations
-struct ColRGBA;
-
 namespace gl
 {
 	enum class Blend

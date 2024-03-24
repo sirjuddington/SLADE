@@ -1,12 +1,10 @@
 #pragma once
 
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
 class Tokenizer;
-class Archive;
-class ArchiveEntry;
 
 namespace game
 {

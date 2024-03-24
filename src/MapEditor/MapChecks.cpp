@@ -49,6 +49,7 @@
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/Browser/BrowserItem.h"
 #include "UI/Dialogs/MapTextureBrowser.h"
 #include "UI/Dialogs/ThingTypeBrowser.h"
 #include "Utility/MathStuff.h"

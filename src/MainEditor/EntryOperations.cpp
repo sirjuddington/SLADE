@@ -32,12 +32,18 @@
 #include "Main.h"
 #include "EntryOperations.h"
 #include "App.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryDataFormat.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Archive/Formats/WadArchive.h"
+#include "Archive/MapDesc.h"
 #include "BinaryControlLump.h"
 #include "General/Console.h"
 #include "General/Misc.h"
+#include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/SImage/SIFormat.h"
@@ -49,6 +55,7 @@
 #include "Utility/FileMonitor.h"
 #include "Utility/Memory.h"
 #include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
@@ -397,7 +404,7 @@ bool entryoperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 		return true;
 
 	// Find patch table in parent archive
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("pnames");
 	auto pnames    = parent->findLast(opt);
 
@@ -486,7 +493,7 @@ bool entryoperations::createTexture(const vector<ArchiveEntry*>& entries)
 		return false;
 
 	// Find texturex entry to add to
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("texturex");
 	auto texturex  = parent->findFirst(opt);
 
@@ -626,7 +633,7 @@ bool entryoperations::convertTextures(const vector<ArchiveEntry*>& entries)
 		return false;
 
 	// Find patch table in parent archive
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("pnames");
 	auto pnames    = parent->findLast(opt);
 
@@ -679,7 +686,7 @@ bool entryoperations::findTextureErrors(const vector<ArchiveEntry*>& entries)
 		return false;
 
 	// Find patch table in parent archive
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("pnames");
 	auto pnames    = parent->findLast(opt);
 
@@ -740,7 +747,7 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 	// Now load base resource archive textures into a single list
 	TextureXList bra_tx_list;
 
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type  = EntryType::fromId("pnames");
 	auto bra_pnames = bra->findLast(opt);
 
@@ -751,7 +758,7 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 		bra_ptable.loadPNAMES(bra_pnames);
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : bra->findAll(texturexopt))
@@ -761,7 +768,7 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 	}
 
 	// Load all zdtextures entries
-	Archive::SearchOptions zdtexturesopt;
+	ArchiveSearchOptions zdtexturesopt;
 	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 	for (ArchiveEntry* texturesentry : bra->findAll(zdtexturesopt))
@@ -999,7 +1006,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 
 	// Find/export any resource libraries
-	Archive::SearchOptions sopt;
+	ArchiveSearchOptions sopt;
 	sopt.match_type       = EntryType::fromId("acs");
 	sopt.search_subdirs   = true;
 	auto          entries = app::archiveManager().findAllResourceEntries(sopt);
@@ -1090,7 +1097,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				// Otherwise, treat it as a library
 
 				// See if the compiled library already exists as an entry
-				Archive::SearchOptions opt;
+				ArchiveSearchOptions opt;
 				opt.match_namespace = "acs";
 				opt.match_name      = entry->nameNoExt();
 				if (archive->formatDesc().names_extensions)
@@ -1421,7 +1428,7 @@ bool entryoperations::convertAnimated(const ArchiveEntry* entry, MemChunk* animd
 			log::error(1, "ANIMATED entry is corrupt");
 			return false;
 		}
-		animation = (AnimatedEntry*)cursor;
+		animation = reinterpret_cast<const AnimatedEntry*>(cursor);
 		cursor += sizeof(AnimatedEntry);
 
 		// Create animation string
@@ -1487,7 +1494,7 @@ bool entryoperations::convertSwitches(const ArchiveEntry* entry, MemChunk* animd
 			log::error(1, "SWITCHES entry is corrupt");
 			return false;
 		}
-		switches = (SwitchesEntry*)cursor;
+		switches = reinterpret_cast<const SwitchesEntry*>(cursor);
 		cursor += sizeof(SwitchesEntry);
 
 		// Create animation string
@@ -1560,10 +1567,10 @@ bool entryoperations::convertSwanTbls(const ArchiveEntry* entry, MemChunk* animd
 					buffer[10 + a] = first[a];
 
 				// Write animation duration
-				buffer[19] = (uint8_t)(speed % 256);
-				buffer[20] = (uint8_t)(speed >> 8) % 256;
-				buffer[21] = (uint8_t)(speed >> 16) % 256;
-				buffer[22] = (uint8_t)(speed >> 24) % 256;
+				buffer[19] = static_cast<uint8_t>(speed % 256);
+				buffer[20] = static_cast<uint8_t>(speed >> 8) % 256;
+				buffer[21] = static_cast<uint8_t>(speed >> 16) % 256;
+				buffer[22] = static_cast<uint8_t>(speed >> 24) % 256;
 
 				// Save buffer to MemChunk
 				if (!animdata->reSize(animdata->size() + 23, true))
@@ -1610,8 +1617,8 @@ bool entryoperations::convertSwanTbls(const ArchiveEntry* entry, MemChunk* animd
 					buffer[9 + a] = on[a];
 
 				// Write switch type
-				buffer[18] = (uint8_t)(type % 256);
-				buffer[19] = (uint8_t)(type >> 8) % 256;
+				buffer[18] = static_cast<uint8_t>(type % 256);
+				buffer[19] = static_cast<uint8_t>(type >> 8) % 256;
 
 				// Save buffer to MemChunk
 				if (!animdata->reSize(animdata->size() + 20, true))

@@ -3,8 +3,6 @@
 // Forward declarations
 namespace slade
 {
-class MapThing;
-class MapSide;
 class UndoManager;
 
 namespace mapeditor

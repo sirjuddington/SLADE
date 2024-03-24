@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class MapObject;
-
 template<class T> class MapObjectList
 {
 public:

@@ -2,18 +2,6 @@
 
 #include "General/Clipboard.h"
 
-// Forward declarations
-namespace slade
-{
-class MapThing;
-class MapSector;
-class MapSide;
-class SLADEMap;
-class MapVertex;
-class MapLine;
-} // namespace slade
-
-
 namespace slade::mapeditor
 {
 class MapArchClipboardItem : public ClipboardItem

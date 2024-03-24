@@ -47,6 +47,7 @@
 #include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Scripting/Lua.h"
+#include "Utility/ColRGBA.h"
 #include "thirdparty/sol/sol.hpp"
 
 using namespace slade;

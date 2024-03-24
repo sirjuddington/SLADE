@@ -32,12 +32,16 @@
 #include "Main.h"
 #include "GfxEntryPanel.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/Graphics.h"
+#include "Graphics/Translation.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
@@ -49,7 +53,10 @@
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/SBrush.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
 
@@ -77,13 +84,16 @@ EXTERN_CVAR(Int, last_tint_amount)
 // -----------------------------------------------------------------------------
 // GfxEntryPanel class constructor
 // -----------------------------------------------------------------------------
-GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
+GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
+	EntryPanel(parent, "gfx", true),
+	prev_translation_{ new Translation },
+	edit_translation_{ new Translation }
 {
 	namespace wx = wxutil;
 
 	// Init variables
-	prev_translation_.addRange(TransRange::Type::Palette, 0);
-	edit_translation_.addRange(TransRange::Type::Palette, 0);
+	prev_translation_->addRange(TransRange::Type::Palette, 0);
+	edit_translation_->addRange(TransRange::Type::Palette, 0);
 
 	// Add gfx canvas
 	gfx_canvas_ = new GfxCanvas(this, -1);
@@ -92,7 +102,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 	gfx_canvas_->allowDrag(true);
 	gfx_canvas_->allowScroll(true);
 	gfx_canvas_->setPalette(maineditor::currentPalette());
-	gfx_canvas_->setTranslation(&edit_translation_);
+	gfx_canvas_->setTranslation(edit_translation_.get());
 
 	// Offsets
 	const wxSize spinsize = { ui::px(ui::Size::SpinCtrlWidth), -1 };
@@ -751,14 +761,14 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			theMainWindow, *theMainWindow->paletteChooser()->selectedPalette(), " Colour Remap", image());
 
 		// Create translation to edit
-		ted.openTranslation(edit_translation_);
+		ted.openTranslation(*edit_translation_);
 
 		// Show the dialog
 		if (ted.ShowModal() == wxID_OK)
 		{
 			// Set the translation
-			edit_translation_.copy(ted.getTranslation());
-			gfx_canvas_->setTranslation(&edit_translation_);
+			edit_translation_->copy(ted.getTranslation());
+			gfx_canvas_->setTranslation(edit_translation_.get());
 		}
 	}
 
@@ -833,7 +843,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		TranslationEditorDialog ted(theMainWindow, *pal, " Colour Remap", &gfx_canvas_->image());
 
 		// Create translation to edit
-		ted.openTranslation(prev_translation_);
+		ted.openTranslation(*prev_translation_);
 
 		// Show the dialog
 		if (ted.ShowModal() == wxID_OK)
@@ -847,7 +857,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			// Update variables
 			image_data_modified_ = true;
 			setModified();
-			prev_translation_.copy(ted.getTranslation());
+			prev_translation_->copy(ted.getTranslation());
 		}
 	}
 
@@ -873,7 +883,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		last_colour = gcd.colour().toString(ColRGBA::StringFormat::RGB);
+		last_colour = colour::toString(gcd.colour(), colour::StringFormat::RGB);
 	}
 
 	// Tint
@@ -898,7 +908,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		last_tint_colour = gtd.colour().toString(ColRGBA::StringFormat::RGB);
+		last_tint_colour = colour::toString(gtd.colour(), colour::StringFormat::RGB);
 		last_tint_amount = static_cast<int>(gtd.amount() * 100.0);
 	}
 
@@ -1066,6 +1076,19 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the canvas image
+// -----------------------------------------------------------------------------
+SImage* GfxEntryPanel::image() const
+{
+	if (gfx_canvas_)
+		return &gfx_canvas_->image();
+	else
+		return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GfxEntryPanel::toolbarButtonClick(const wxString& action_id)
 {
 	if (action_id == "toggle_arc")

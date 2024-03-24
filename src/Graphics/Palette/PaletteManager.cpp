@@ -33,9 +33,12 @@
 #include "Main.h"
 #include "PaletteManager.h"
 #include "App.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Misc.h"
+#include "Palette.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
@@ -50,6 +53,15 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// PaletteManager class constructor
+// -----------------------------------------------------------------------------
+PaletteManager::PaletteManager() : pal_default_{ new Palette }, pal_global_{ new Palette } {}
+
+// -----------------------------------------------------------------------------
+// PaletteManager class destructor
+// -----------------------------------------------------------------------------
+PaletteManager::~PaletteManager() = default;
 
 // -----------------------------------------------------------------------------
 // Initialises the palette manager
@@ -88,25 +100,25 @@ bool PaletteManager::addPalette(unique_ptr<Palette> pal, string_view name)
 // This is the palette within the current base resource archive.
 // If no base resource archive is loaded, the default greyscale palette is used
 // -----------------------------------------------------------------------------
-Palette* PaletteManager::globalPalette()
+Palette* PaletteManager::globalPalette() const
 {
 	// Check if a base resource archive is open
 	if (!app::archiveManager().baseResourceArchive())
-		return &pal_default_;
+		return pal_default_.get();
 
 	// Return the palette contained in the base resource archive
-	misc::loadPaletteFromArchive(&pal_global_, app::archiveManager().baseResourceArchive());
-	return &pal_global_;
+	misc::loadPaletteFromArchive(pal_global_.get(), app::archiveManager().baseResourceArchive());
+	return pal_global_.get();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the palette at [index], or the default palette (greyscale) if index
 // is out of bounds
 // -----------------------------------------------------------------------------
-Palette* PaletteManager::palette(int index)
+Palette* PaletteManager::palette(int index) const
 {
 	if (index < 0 || index >= numPalettes())
-		return &pal_default_;
+		return pal_default_.get();
 	else
 		return palettes_[index].get();
 }
@@ -115,7 +127,7 @@ Palette* PaletteManager::palette(int index)
 // Returns the palette matching the given name, or the default palette
 // (greyscale) if no matching palette found
 // -----------------------------------------------------------------------------
-Palette* PaletteManager::palette(string_view name)
+Palette* PaletteManager::palette(string_view name) const
 {
 	for (uint32_t a = 0; a < pal_names_.size(); a++)
 	{
@@ -123,7 +135,7 @@ Palette* PaletteManager::palette(string_view name)
 			return palettes_[a].get();
 	}
 
-	return &pal_default_;
+	return pal_default_.get();
 }
 
 // -----------------------------------------------------------------------------

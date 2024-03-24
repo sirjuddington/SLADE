@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "SLADEWxApp.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Console.h"
 #include "General/Web.h"

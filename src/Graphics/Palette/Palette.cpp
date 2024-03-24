@@ -35,6 +35,7 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/Translation.h"
 #include "Utility/CIEDeltaEquations.h"
+#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -80,6 +81,27 @@ Palette::Palette(unsigned size) : colours_{ size }, colours_hsl_{ size }, colour
 }
 
 // -----------------------------------------------------------------------------
+// Palette class copy constructor
+// -----------------------------------------------------------------------------
+Palette::Palette(const Palette& pal) : Palette(pal.colours_.size())
+{
+	copyPalette(&pal);
+}
+
+// -----------------------------------------------------------------------------
+// Palette class destructor
+// -----------------------------------------------------------------------------
+Palette::~Palette() = default;
+
+// -----------------------------------------------------------------------------
+// Returns the colour at [index] in the palette
+// -----------------------------------------------------------------------------
+ColRGBA Palette::colour(uint8_t index) const
+{
+	return colours_[index];
+}
+
+// -----------------------------------------------------------------------------
 // Reads colour information from raw data (MemChunk)
 // -----------------------------------------------------------------------------
 bool Palette::loadMem(const MemChunk& mc)
@@ -101,8 +123,8 @@ bool Palette::loadMem(const MemChunk& mc)
 
 		// Set colour in palette
 		colours_[c].set(rgb[0], rgb[1], rgb[2], 255, -1, c);
-		colours_lab_[c] = colours_[c].asLAB();
-		colours_hsl_[c] = colours_[c].asHSL();
+		colours_lab_[c] = colour::rgbToLab(colours_[c]);
+		colours_hsl_[c] = colour::rgbToHsl(colours_[c]);
 
 		// If we have read 256 colours, finish
 		if (++c == 256)
@@ -128,8 +150,8 @@ bool Palette::loadMem(const uint8_t* data, uint32_t size)
 	{
 		// Set colour in palette
 		colours_[c].set(data[a], data[a + 1], data[a + 2], 255, -1, c);
-		colours_lab_[c] = colours_[c].asLAB();
-		colours_hsl_[c] = colours_[c].asHSL();
+		colours_lab_[c] = colour::rgbToLab(colours_[c]);
+		colours_hsl_[c] = colour::rgbToHsl(colours_[c]);
 
 		// If we have read 256 colours, finish
 		if (++c == 256)
@@ -460,8 +482,8 @@ void Palette::setColour(uint8_t index, const ColRGBA& col)
 {
 	colours_[index].set(col);
 	colours_[index].index = index;
-	colours_lab_[index]   = colours_[index].asLAB();
-	colours_hsl_[index]   = colours_[index].asHSL();
+	colours_lab_[index]   = colour::rgbToLab(colours_[index]);
+	colours_hsl_[index]   = colour::rgbToHsl(colours_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -470,8 +492,8 @@ void Palette::setColour(uint8_t index, const ColRGBA& col)
 void Palette::setColourR(uint8_t index, uint8_t val)
 {
 	colours_[index].r   = val;
-	colours_lab_[index] = colours_[index].asLAB();
-	colours_hsl_[index] = colours_[index].asHSL();
+	colours_lab_[index] = colour::rgbToLab(colours_[index]);
+	colours_hsl_[index] = colour::rgbToHsl(colours_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -480,8 +502,8 @@ void Palette::setColourR(uint8_t index, uint8_t val)
 void Palette::setColourG(uint8_t index, uint8_t val)
 {
 	colours_[index].g   = val;
-	colours_lab_[index] = colours_[index].asLAB();
-	colours_hsl_[index] = colours_[index].asHSL();
+	colours_lab_[index] = colour::rgbToLab(colours_[index]);
+	colours_hsl_[index] = colour::rgbToHsl(colours_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -490,8 +512,18 @@ void Palette::setColourG(uint8_t index, uint8_t val)
 void Palette::setColourB(uint8_t index, uint8_t val)
 {
 	colours_[index].b   = val;
-	colours_lab_[index] = colours_[index].asLAB();
-	colours_hsl_[index] = colours_[index].asHSL();
+	colours_lab_[index] = colour::rgbToLab(colours_[index]);
+	colours_hsl_[index] = colour::rgbToHsl(colours_[index]);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the colour at [index]'s alpha component
+// -----------------------------------------------------------------------------
+void Palette::setColourA(uint8_t index, uint8_t val)
+{
+	colours_[index].a         = val;
+	colours_lab_[index].alpha = static_cast<double>(val) / 255.0;
+	colours_hsl_[index].alpha = static_cast<double>(val) / 255.0;
 }
 
 // -----------------------------------------------------------------------------
@@ -610,8 +642,8 @@ short Palette::nearestColour(const ColRGBA& colour, ColourMatch match) const
 {
 	double min_d = 999999;
 	short  index = 0;
-	ColHSL chsl  = colour.asHSL();
-	ColLAB clab  = colour.asLAB();
+	ColHSL chsl  = colour::rgbToHsl(colour);
+	ColLAB clab  = colour::rgbToLab(colour);
 
 	// Be nice if there was an easier way to convert from int -> enum class,
 	// but then that's kind of the point of them I guess
@@ -669,7 +701,7 @@ size_t Palette::countColours() const
 // -----------------------------------------------------------------------------
 // Applies the translation [trans] to this palette
 // -----------------------------------------------------------------------------
-void Palette::applyTranslation(Translation* trans)
+void Palette::applyTranslation(const Translation* trans)
 {
 	// Check translation was given
 	if (!trans)
@@ -806,7 +838,7 @@ void Palette::saturate(float amount, int start, int end)
 		if (colours_hsl_[i].s > 1.)
 			colours_hsl_[i].s = 1.;
 		colours_[i]     = colours_hsl_[i].asRGB();
-		colours_lab_[i] = colours_[i].asLAB();
+		colours_lab_[i] = colour::rgbToLab(colours_[i]);
 	}
 }
 
@@ -834,7 +866,7 @@ void Palette::illuminate(float amount, int start, int end)
 		if (colours_hsl_[i].l > 1.)
 			colours_hsl_[i].l = 1.;
 		colours_[i]     = colours_hsl_[i].asRGB();
-		colours_lab_[i] = colours_[i].asLAB();
+		colours_lab_[i] = colour::rgbToLab(colours_[i]);
 	}
 }
 
@@ -862,7 +894,7 @@ void Palette::shift(float amount, int start, int end)
 		if (colours_hsl_[i].h >= 1.)
 			colours_hsl_[i].h -= 1.;
 		colours_[i]     = colours_hsl_[i].asRGB();
-		colours_lab_[i] = colours_[i].asLAB();
+		colours_lab_[i] = colour::rgbToLab(colours_[i]);
 	}
 }
 

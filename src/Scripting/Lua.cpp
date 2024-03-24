@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "Lua.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Export/Export.h"
 #include "General/Console.h"
 #include "General/Misc.h"

@@ -2,10 +2,6 @@
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
-class SLADEMap;
-
 namespace scriptmanager
 {
 	enum class ScriptType

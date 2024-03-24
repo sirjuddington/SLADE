@@ -34,8 +34,12 @@
 #include "Main.h"
 #include "ArchivePanel.h"
 #include "App.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Archive/Formats/ZipArchive.h"
+#include "Archive/MapDesc.h"
 #include "ArchiveManagerPanel.h"
 #include "EntryPanel/ANSIEntryPanel.h"
 #include "EntryPanel/AudioEntryPanel.h"
@@ -53,6 +57,7 @@
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/Palette/PaletteManager.h"
+#include "Graphics/Translation.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
 #include "MainEditor/EntryOperations.h"
@@ -76,7 +81,10 @@
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/Lists/ArchiveEntryTree.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -421,7 +429,7 @@ size_t getNamespaceNumber(const ArchiveEntry* entry, size_t index, vector<wxStri
 // -----------------------------------------------------------------------------
 // ArchivePanel class constructor
 // -----------------------------------------------------------------------------
-ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
+ArchivePanel::ArchivePanel(wxWindow* parent, const shared_ptr<Archive>& archive) :
 	wxPanel(parent, -1),
 	archive_{ archive },
 	undo_manager_{ new UndoManager() },
@@ -2115,7 +2123,7 @@ bool ArchivePanel::gfxColourise()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	last_colour = gcd.colour().toString(ColRGBA::StringFormat::RGB);
+	last_colour = colour::toString(gcd.colour(), colour::StringFormat::RGB);
 	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
@@ -2164,7 +2172,7 @@ bool ArchivePanel::gfxTint()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	last_tint_colour = gtd.colour().toString(ColRGBA::StringFormat::RGB);
+	last_tint_colour = colour::toString(gtd.colour(), colour::StringFormat::RGB);
 	last_tint_amount = static_cast<int>(gtd.amount() * 100.0f);
 	maineditor::currentEntryPanel()->callRefresh();
 
@@ -3769,7 +3777,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		}
 		if (!modified_selected)
 		{
-			if (entry->state() == ArchiveEntry::State::Modified)
+			if (entry->state() == EntryState::Modified)
 				modified_selected = true;
 		}
 		if (!map_selected)
@@ -4521,7 +4529,7 @@ vector<ArchiveEntry*> Console_SearchEntries(wxString name)
 
 	if (archive)
 	{
-		Archive::SearchOptions options;
+		ArchiveSearchOptions options;
 		options.search_subdirs = true;
 		if (panel)
 		{

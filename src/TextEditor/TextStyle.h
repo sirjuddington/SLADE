@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
-class ParseTreeNode;
 class TextEditorCtrl;
 class TextStyle
 {

@@ -5,12 +5,6 @@
 namespace slade
 {
 class MapCanvas;
-class MapLine;
-class MapObject;
-class MapSector;
-class MapThing;
-class MapVertex;
-class SLADEMap;
 namespace mapeditor
 {
 	enum class Mode;

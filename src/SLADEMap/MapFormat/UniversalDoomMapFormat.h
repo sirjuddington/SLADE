@@ -4,13 +4,6 @@
 
 namespace slade
 {
-class MapVertex;
-class MapSector;
-class MapSide;
-class MapLine;
-class MapThing;
-class ParseTreeNode;
-
 class UniversalDoomMapFormat : public MapFormatHandler
 {
 public:

@@ -31,6 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GZipArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "Utility/Compression.h"
 #include "Utility/StringUtils.h"
@@ -162,7 +165,7 @@ bool GZipArchive::open(const MemChunk& mc)
 		return false;
 	rootDir()->addEntry(entry);
 	EntryType::detectEntryType(*entry);
-	entry->setState(ArchiveEntry::State::Unmodified);
+	entry->setState(EntryState::Unmodified);
 
 	sig_blocker.unblock();
 	setModified(false);
@@ -200,7 +203,7 @@ bool GZipArchive::write(MemChunk& mc)
 			mc.write(header, 4);
 
 			// Update mtime if the file was modified
-			if (entryAt(0)->state() != ArchiveEntry::State::Unmodified)
+			if (entryAt(0)->state() != EntryState::Unmodified)
 			{
 				mtime_ = ::wxGetLocalTime();
 			}
@@ -284,7 +287,7 @@ bool GZipArchive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 // Returns the entry if it matches the search criteria in [options], or null
 // otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
+ArchiveEntry* GZipArchive::findFirst(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	strutil::upperIP(options.match_name);
@@ -325,7 +328,7 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* GZipArchive::findLast(SearchOptions& options)
+ArchiveEntry* GZipArchive::findLast(ArchiveSearchOptions& options)
 {
 	return findFirst(options);
 }
@@ -333,7 +336,7 @@ ArchiveEntry* GZipArchive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> GZipArchive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> GZipArchive::findAll(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	vector<ArchiveEntry*> ret;

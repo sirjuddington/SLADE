@@ -1,7 +1,5 @@
 #pragma once
 
-#include "UI/Canvas/OGLCanvas.h"
-
 class GradientBox;
 class wxListBox;
 class wxPanel;
@@ -9,12 +7,10 @@ class wxPanel;
 namespace slade
 {
 class ColourBox;
-struct ColRGBA;
-class Translation;
-class SImage;
 class GfxCanvas;
 class PaletteCanvas;
-class ArchiveEntry;
+class SImage;
+class Translation;
 
 class TranslationEditorDialog : public wxDialog
 {
@@ -23,8 +19,8 @@ public:
 		wxWindow*       parent,
 		const Palette&  pal,
 		const wxString& title         = "Edit Translation",
-		SImage*         preview_image = nullptr);
-	~TranslationEditorDialog() override = default;
+		const SImage*   preview_image = nullptr);
+	~TranslationEditorDialog() override;
 
 	Translation& getTranslation() const { return *translation_; }
 	bool         getTruecolor() const;

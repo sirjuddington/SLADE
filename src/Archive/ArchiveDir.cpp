@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "ArchiveDir.h"
 #include "Archive.h"
+#include "ArchiveEntry.h"
+#include "EntryType/EntryType.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
 
@@ -108,6 +110,14 @@ string ArchiveDir::path(bool include_name) const
 		return parent ? fmt::format("{}{}/", parent->path(), name()) : name() + "/";
 	else
 		return parent ? parent->path() : "/";
+}
+
+// -----------------------------------------------------------------------------
+// Sets the directory name to [new_name]
+// -----------------------------------------------------------------------------
+void ArchiveDir::setName(string_view new_name) const
+{
+	dir_entry_->setName(new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -687,7 +697,7 @@ bool ArchiveDir::merge(
 	shared_ptr<ArchiveDir>&           target,
 	const ArchiveDir*                 dir,
 	unsigned                          position,
-	ArchiveEntry::State               state,
+	EntryState                        state,
 	vector<shared_ptr<ArchiveDir>>*   created_dirs,
 	vector<shared_ptr<ArchiveEntry>>* created_entries)
 {

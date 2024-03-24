@@ -3,7 +3,6 @@
 namespace slade
 {
 enum class MapFormat;
-class ParseTreeNode;
 
 namespace game
 {

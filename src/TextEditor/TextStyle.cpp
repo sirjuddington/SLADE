@@ -36,9 +36,13 @@
 #include "Main.h"
 #include "TextStyle.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Lexer.h"
 #include "UI/TextEditorCtrl.h"
+#include "Utility/Colour.h"
 #include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
@@ -165,11 +169,11 @@ void TextStyle::applyTo(wxStyledTextCtrl* stc) const
 
 		// Set foreground
 		if (fg_defined_)
-			stc->StyleSetForeground(wx_style, foreground_.toWx());
+			stc->StyleSetForeground(wx_style, foreground_);
 
 		// Set background
 		if (bg_defined_)
-			stc->StyleSetBackground(wx_style, background_.toWx());
+			stc->StyleSetBackground(wx_style, background_);
 
 		// Set bold
 		if (bold_ > 0)
@@ -361,7 +365,7 @@ bool StyleSet::parseSet(const ParseTreeNode* root)
 				// No 'currentline' style defined, use the default background and darken/lighten it a little
 				int fgm = -20;
 				int bgm = -10;
-				if (ts_default_.background_.greyscale().r < 100)
+				if (colour::greyscale(ts_default_.background_).r < 100)
 				{
 					fgm = 30;
 					bgm = 15;
@@ -403,34 +407,32 @@ void StyleSet::applyToWx(wxStyledTextCtrl* stc)
 
 	// Set selection background if customised
 	if (ts_selection_.hasBackground())
-		stc->SetSelBackground(true, ts_selection_.background_.toWx());
+		stc->SetSelBackground(true, ts_selection_.background_);
 	else
 		stc->SetSelBackground(false, wxColour("red"));
 
 	// Set selection foreground if customised
 	if (ts_selection_.hasForeground())
-		stc->SetSelForeground(true, ts_selection_.foreground_.toWx());
+		stc->SetSelForeground(true, ts_selection_.foreground_);
 	else
 		stc->SetSelForeground(false, wxColour("red"));
 
 	// Set caret colour to text foreground colour
-	stc->SetCaretForeground(ts_default_.foreground_.toWx());
+	stc->SetCaretForeground(ts_default_.foreground_);
 
 	// Set indent and right margin line colour
-	stc->SetEdgeColour(style("guides")->foreground().toWx());
-	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, styleBackground("guides").toWx());
-	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, styleForeground("guides").toWx());
+	stc->SetEdgeColour(style("guides")->foreground());
+	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, styleBackground("guides"));
+	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, styleForeground("guides"));
 
 	// Set word match indicator colour
 	stc->SetIndicatorCurrent(8);
-	stc->IndicatorSetForeground(8, styleForeground("wordmatch").toWx());
+	stc->IndicatorSetForeground(8, styleForeground("wordmatch"));
 
 	// Set current line colour
-	stc->SetCaretLineBackground(styleBackground("current_line").toWx());
-	stc->MarkerDefine(
-		1, wxSTC_MARK_BACKGROUND, styleBackground("current_line").toWx(), styleBackground("current_line").toWx());
-	stc->MarkerDefine(
-		2, wxSTC_MARK_UNDERLINE, styleForeground("current_line").toWx(), styleForeground("current_line").toWx());
+	stc->SetCaretLineBackground(styleBackground("current_line"));
+	stc->MarkerDefine(1, wxSTC_MARK_BACKGROUND, styleBackground("current_line"), styleBackground("current_line"));
+	stc->MarkerDefine(2, wxSTC_MARK_UNDERLINE, styleForeground("current_line"), styleForeground("current_line"));
 }
 
 // -----------------------------------------------------------------------------

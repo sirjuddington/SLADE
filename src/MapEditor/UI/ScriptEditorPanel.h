@@ -6,7 +6,6 @@ class wxTreeListCtrl;
 
 namespace slade
 {
-class ArchiveEntry;
 class TextEditorCtrl;
 class FindReplacePanel;
 

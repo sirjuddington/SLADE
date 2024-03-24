@@ -33,8 +33,8 @@
 #include "Main.h"
 #include "TranslationEditorDialog.h"
 #include "App.h"
-#include "Archive/ArchiveManager.h"
 #include "General/UI.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
 #include "OpenGL/OpenGL.h"
@@ -137,7 +137,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	wxWindow*       parent,
 	const Palette&  pal,
 	const wxString& title,
-	SImage*         preview_image) :
+	const SImage*   preview_image) :
 	wxDialog(parent, -1, title),
 	palette_{ new Palette(pal) },
 	translation_{ new Translation },
@@ -407,6 +407,11 @@ TranslationEditorDialog::TranslationEditorDialog(
 	CenterOnParent();
 	list_translations_->SetSizeHints(list_translations_->GetSize(), list_translations_->GetSize());
 }
+
+// -----------------------------------------------------------------------------
+// TranslationEditorDialog class destructor
+// -----------------------------------------------------------------------------
+TranslationEditorDialog::~TranslationEditorDialog() = default;
 
 // -----------------------------------------------------------------------------
 // Opens the translation [trans] for preview/modification

@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexenMapFormat.h"
+#include "Archive/ArchiveEntry.h"
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"

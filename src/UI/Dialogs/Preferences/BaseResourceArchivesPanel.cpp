@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "BaseResourceArchivesPanel.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
 #include "UI/Controls/FileLocationPanel.h"

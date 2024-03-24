@@ -1,33 +1,11 @@
 #pragma once
 
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/MapTextureManager.h"
-#include "UI/Browser/BrowserItem.h"
 #include "UI/Browser/BrowserWindow.h"
 
 namespace slade
 {
-class SLADEMap;
-class Archive;
-
-class MapTexBrowserItem : public BrowserItem
-{
-public:
-	static const wxString TEXTURE;
-	static const wxString FLAT;
-
-	MapTexBrowserItem(const wxString& name, const wxString& type, unsigned index = 0);
-	~MapTexBrowserItem() override = default;
-
-	bool     loadImage() override;
-	wxString itemInfo() override;
-	int      usageCount() const { return usage_count_; }
-	void     setUsage(int count) { usage_count_ = count; }
-
-private:
-	int   usage_count_ = 0;
-	Vec2d scale_       = { 1., 1. };
-};
+enum class MapTextureCategory;
 
 class MapTextureBrowser : public BrowserWindow
 {
@@ -40,10 +18,10 @@ public:
 	~MapTextureBrowser() override = default;
 
 	wxString determineTexturePath(
-		const Archive*              archive,
-		MapTextureManager::Category category,
-		const wxString&             type,
-		const wxString&             path) const;
+		const Archive*     archive,
+		MapTextureCategory category,
+		const wxString&    type,
+		const wxString&    path) const;
 	void doSort(unsigned sort_type) override;
 	void updateUsage() const;
 

@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class MapSector;
-
 class Polygon2D
 {
 public:

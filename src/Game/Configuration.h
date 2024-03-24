@@ -2,29 +2,23 @@
 
 #include "Args.h"
 #include "General/Defs.h"
-#include "MapInfo.h"
 #include "SLADEMap/MapObject/MapObject.h"
-#include "ThingType.h"
 #include <array>
 
 // Forward declarations
 namespace slade
 {
-class ParseTreeNode;
-class ArchiveEntry;
-class Archive;
-class MapLine;
-class MapThing;
 namespace zscript
 {
 	class Definitions;
 }
 namespace game
 {
-	struct SpecialPreset;
-	class ThingType;
 	class ActionSpecial;
+	class MapInfo;
+	class ThingType;
 	class UDMFProperty;
+	struct SpecialPreset;
 } // namespace game
 } // namespace slade
 
@@ -80,7 +74,7 @@ public:
 	};
 
 	Configuration();
-	~Configuration() = default;
+	~Configuration();
 
 	void          setDefaults();
 	const string& currentGame() const { return current_game_; }
@@ -110,7 +104,7 @@ public:
 		ParseTreeNode*       node,
 		Arg::SpecialMap&     shared_args,
 		const ActionSpecial* group_defaults = nullptr);
-	void readThingTypes(ParseTreeNode* node, const ThingType& group_defaults = ThingType::unknown());
+	void readThingTypes(const ParseTreeNode* node, const ThingType* group_defaults = nullptr);
 	void readUDMFProperties(const ParseTreeNode* block, UDMFPropMap& plist) const;
 	void readGameSection(const ParseTreeNode* node_game, bool port_section = false);
 	bool readConfiguration(
@@ -148,8 +142,8 @@ public:
 	void importZScriptDefs(zscript::Definitions& defs);
 
 	// MapInfo
-	bool parseMapInfo(const Archive& archive);
-	void clearMapInfo() { map_info_.clear(); }
+	bool parseMapInfo(const Archive& archive) const;
+	void clearMapInfo() const;
 	void linkDoomEdNums();
 
 	// Line flags
@@ -245,8 +239,8 @@ private:
 	std::map<int, string> sector_types_;
 
 	// Map info
-	vector<MapConf> maps_;
-	MapInfo         map_info_;
+	vector<MapConf>     maps_;
+	unique_ptr<MapInfo> map_info_;
 
 	// UDMF properties
 	UDMFPropMap udmf_vertex_props_;

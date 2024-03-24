@@ -33,6 +33,10 @@
 #include "Main.h"
 
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "CTexture.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "PatchTable.h"
@@ -116,16 +120,28 @@ struct StrifeTexDef
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// TextureXList class constructor
+// -----------------------------------------------------------------------------
+TextureXList::TextureXList()
+{
+	tex_invalid_ = std::make_unique<CTexture>("INVALID_TEXTURE"); // Deliberately set the invalid name to >8 characters
+}
+
+// -----------------------------------------------------------------------------
+// TextureXList class destructor
+// -----------------------------------------------------------------------------
+TextureXList::~TextureXList() = default;
 
 // -----------------------------------------------------------------------------
 // Returns the texture at [index], or the 'invalid' texture if [index] is
 // out of range
 // -----------------------------------------------------------------------------
-CTexture* TextureXList::texture(size_t index)
+CTexture* TextureXList::texture(size_t index) const
 {
 	// Check index
 	if (index >= textures_.size())
-		return &tex_invalid_;
+		return tex_invalid_.get();
 
 	// Return texture at index
 	return textures_[index].get();
@@ -135,7 +151,7 @@ CTexture* TextureXList::texture(size_t index)
 // Returns the texture matching [name], or the 'invalid' texture if no match is
 // found
 // -----------------------------------------------------------------------------
-CTexture* TextureXList::texture(string_view name)
+CTexture* TextureXList::texture(string_view name) const
 {
 	// Search for texture by name
 	for (auto& texture : textures_)
@@ -145,7 +161,7 @@ CTexture* TextureXList::texture(string_view name)
 	}
 
 	// Not found
-	return &tex_invalid_;
+	return tex_invalid_.get();
 }
 
 // -----------------------------------------------------------------------------
@@ -1021,7 +1037,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 
 		// Check if the patch is in the patches directory
 		{
-			ArchiveDir* patch_parent_dir = patch_entry->parentDir();
+			auto patch_parent_dir = patch_entry->parentDir();
 
 			if (patch_parent_dir)
 			{
@@ -1102,7 +1118,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 	// Now load base resource archive textures into a single list
 	TextureXList archive_tx_list;
 
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("pnames");
 	auto pnames    = current_archive->findLast(opt);
 
@@ -1113,7 +1129,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		ptable.loadPNAMES(pnames);
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : current_archive->findAll(texturexopt))
@@ -1123,7 +1139,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 	}
 
 	// Load all zdtextures entries
-	Archive::SearchOptions zdtexturesopt;
+	ArchiveSearchOptions zdtexturesopt;
 	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 	for (ArchiveEntry* texturesentry : current_archive->findAll(zdtexturesopt))

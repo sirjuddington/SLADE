@@ -71,9 +71,9 @@ public:
 	vector<MapDesc> detectMaps() override;
 
 	// Search
-	ArchiveEntry*         findFirst(SearchOptions& options) override;
-	ArchiveEntry*         findLast(SearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
+	ArchiveEntry*         findFirst(ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findLast(ArchiveSearchOptions& options) override;
+	vector<ArchiveEntry*> findAll(ArchiveSearchOptions& options) override;
 
 	// DirArchive-specific
 	void ignoreChangedEntries(const vector<DirEntryChange>& changes);
@@ -93,39 +93,11 @@ private:
 class DirArchiveTraverser : public wxDirTraverser
 {
 public:
-	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist, bool ignore_hidden) :
-		paths_{ pathlist },
-		dirs_{ dirlist },
-		ignore_hidden_{ ignore_hidden }
-	{
-	}
+	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist, bool ignore_hidden);
 	~DirArchiveTraverser() override = default;
 
-	wxDirTraverseResult OnFile(const wxString& filename) override
-	{
-		auto path_str = filename.ToStdString();
-
-		if (ignore_hidden_ && strutil::startsWith(strutil::Path::fileNameOf(path_str), '.'))
-			return wxDIR_CONTINUE;
-
-		paths_.push_back(path_str);
-		return wxDIR_CONTINUE;
-	}
-
-	wxDirTraverseResult OnDir(const wxString& dirname) override
-	{
-		if (ignore_hidden_)
-		{
-			auto path_str = dirname.ToStdString();
-			std::replace(path_str.begin(), path_str.end(), '\\', '/');
-			auto dir = strutil::afterLastV(path_str, '/');
-			if (strutil::startsWith(dir, '.'))
-				return wxDIR_IGNORE;
-		}
-
-		dirs_.push_back(dirname.ToStdString());
-		return wxDIR_CONTINUE;
-	}
+	wxDirTraverseResult OnFile(const wxString& filename) override;
+	wxDirTraverseResult OnDir(const wxString& dirname) override;
 
 private:
 	vector<string>& paths_;

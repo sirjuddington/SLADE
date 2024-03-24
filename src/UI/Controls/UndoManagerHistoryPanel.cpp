@@ -36,7 +36,6 @@
 #include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "UI/WxUtils.h"
-#include "Utility/Colour.h"
 
 using namespace slade;
 
@@ -104,9 +103,9 @@ void UndoListView::updateItemAttr(long item, long column, long index) const
 	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 
 	if (item == manager_->currentIndex())
-		item_attr_->SetTextColour(ColRGBA(0, 170, 0).toWx());
+		item_attr_->SetTextColour({ 0, 170, 0 });
 	else if (item > manager_->currentIndex())
-		item_attr_->SetTextColour(ColRGBA(150, 150, 150).toWx());
+		item_attr_->SetTextColour({ 150, 150, 150 });
 }
 
 // -----------------------------------------------------------------------------

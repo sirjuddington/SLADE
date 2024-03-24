@@ -3,17 +3,9 @@
 // Forward declarations
 namespace slade
 {
-class Archive;
 class MapBackupManager;
 class MapEditorWindow;
-class MapObject;
-class MapVertex;
-class MapLine;
-class MapSide;
-class MapSector;
-class MapThing;
 class MapTextureManager;
-class SLADEMap;
 class UndoManager;
 
 namespace mapeditor

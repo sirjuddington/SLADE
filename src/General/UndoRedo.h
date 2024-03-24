@@ -37,7 +37,6 @@ private:
 	wxDateTime                   timestamp_;
 };
 
-class SLADEMap;
 class UndoManager
 {
 public:

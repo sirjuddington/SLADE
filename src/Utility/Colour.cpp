@@ -248,69 +248,129 @@ void hslToRgb(double h, double s, double l, double& r, double& g, double& b)
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
-// Converts the colour from RGB to HSL colourspace
+// Set the colour values
 // -----------------------------------------------------------------------------
-ColHSL ColRGBA::asHSL() const
+void ColRGBA::set(uint8_t r, uint8_t g, uint8_t b, uint8_t a, char blend, short index)
 {
-	ColHSL ret;
-	ret.alpha = static_cast<double>(a) / 255.0;
-	rgbToHsl(dr(), dg(), db(), ret.h, ret.s, ret.l);
-	return ret;
+	this->r     = r;
+	this->g     = g;
+	this->b     = b;
+	this->a     = a;
+	this->index = index;
 }
 
 // -----------------------------------------------------------------------------
-// Converts the colour from RGB to CIE-L*a*b colourspace
+// Set the colour values from another [colour]
 // -----------------------------------------------------------------------------
-ColLAB ColRGBA::asLAB() const
+void ColRGBA::set(const ColRGBA& colour)
 {
-	ColLAB ret;
-	rgbToLab(dr(), dg(), db(), ret.l, ret.a, ret.b);
-	ret.alpha = static_cast<double>(a) / 255.0;
-	return ret;
+	r     = colour.r;
+	g     = colour.g;
+	b     = colour.b;
+	a     = colour.a;
+	index = colour.index;
 }
 
 // -----------------------------------------------------------------------------
-// Sets the colour from [h][s][l] values
+// Set the colour values from a wx [colour]
 // -----------------------------------------------------------------------------
-void ColRGBA::fromHSL(double h, double s, double l)
+void ColRGBA::set(const wxColour& colour)
 {
-	double dr, dg, db;
-	hslToRgb(h, s, l, dr, dg, db);
-
-	// Now convert from 0f--1f to 0i--255i, rounding up
-	r = static_cast<uint8_t>(dr * 255. + 0.499999999);
-	g = static_cast<uint8_t>(dg * 255. + 0.499999999);
-	b = static_cast<uint8_t>(db * 255. + 0.499999999);
+	r = colour.Red();
+	g = colour.Green();
+	b = colour.Blue();
+	a = colour.Alpha();
 }
 
 // -----------------------------------------------------------------------------
-// Sets the colour from another HSL colour
+// Returns true if the colour is the same as [rhs]
 // -----------------------------------------------------------------------------
-void ColRGBA::fromHSL(const ColHSL& hsl, bool take_alpha)
+bool ColRGBA::equals(const ColRGBA& rhs, bool check_alpha, bool check_index) const
 {
-	fromHSL(hsl.h, hsl.s, hsl.l);
+	bool col_equal = (r == rhs.r && g == rhs.g && b == rhs.b);
 
-	if (take_alpha)
-		a = static_cast<uint8_t>(hsl.alpha * 255.);
+	if (check_index)
+		col_equal &= (this->index == rhs.index);
+	if (check_alpha)
+		return col_equal && (a == rhs.a);
+	else
+		return col_equal;
 }
 
 // -----------------------------------------------------------------------------
-// Returns a string representation of the colour, in the requested [format]
+// Amplify/fade colour components by given amounts
 // -----------------------------------------------------------------------------
-string ColRGBA::toString(StringFormat format) const
+ColRGBA ColRGBA::amp(int R, int G, int B, int A) const
 {
-	switch (format)
+	int nr = r + R;
+	int ng = g + G;
+	int nb = b + B;
+	int na = a + A;
+
+	if (nr > 255)
+		nr = 255;
+	if (nr < 0)
+		nr = 0;
+	if (ng > 255)
+		ng = 255;
+	if (ng < 0)
+		ng = 0;
+	if (nb > 255)
+		nb = 255;
+	if (nb < 0)
+		nb = 0;
+	if (na > 255)
+		na = 255;
+	if (na < 0)
+		na = 0;
+
+	return { static_cast<uint8_t>(nr), static_cast<uint8_t>(ng), static_cast<uint8_t>(nb), static_cast<uint8_t>(na) };
+}
+
+// -----------------------------------------------------------------------------
+// Amplify/fade colour components by factors
+// -----------------------------------------------------------------------------
+ColRGBA ColRGBA::ampf(float fr, float fg, float fb, float fa) const
+{
+	int nr = static_cast<int>(r * fr);
+	int ng = static_cast<int>(g * fg);
+	int nb = static_cast<int>(b * fb);
+	int na = static_cast<int>(a * fa);
+
+	if (nr > 255)
+		nr = 255;
+	if (nr < 0)
+		nr = 0;
+	if (ng > 255)
+		ng = 255;
+	if (ng < 0)
+		ng = 0;
+	if (nb > 255)
+		nb = 255;
+	if (nb < 0)
+		nb = 0;
+	if (na > 255)
+		na = 255;
+	if (na < 0)
+		na = 0;
+
+	return { static_cast<uint8_t>(nr), static_cast<uint8_t>(ng), static_cast<uint8_t>(nb), static_cast<uint8_t>(na) };
+}
+
+// -----------------------------------------------------------------------------
+// Writes the colour components to [ptr]
+// -----------------------------------------------------------------------------
+void ColRGBA::write(uint8_t* ptr) const
+{
+	if (ptr)
 	{
-	case StringFormat::RGB: return fmt::format("RGB({}, {}, {})", r, g, b);
-	case StringFormat::RGBA: return fmt::format("RGBA({}, {}, {}, {})", r, g, b, a);
-	case StringFormat::HEX: return fmt::format("#{:X}{:X}{:X}", r, g, b);
-	case StringFormat::ZDoom: return fmt::format("\"{:X} {:X} {:X}\"", r, g, b);
-	default: return {};
+		ptr[0] = r;
+		ptr[1] = g;
+		ptr[2] = b;
+		ptr[3] = a;
 	}
 }
-
 
 
 // -----------------------------------------------------------------------------
@@ -318,7 +378,6 @@ string ColRGBA::toString(StringFormat format) const
 // ColHSL Struct Functions
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Converts the colour from HSL to RGB colourspace
@@ -336,4 +395,78 @@ ColRGBA ColHSL::asRGB() const
 	ret.b = static_cast<uint8_t>(b * 255. + 0.499999999);
 
 	return ret;
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// Colour Namespace Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Returns a copy of [colour] as greyscale
+// (using 'common' component coefficients)
+// -----------------------------------------------------------------------------
+ColRGBA colour::greyscale(const ColRGBA& colour)
+{
+	uint8_t l = colour.r * 0.3 + colour.g * 0.59 + colour.b * 0.11;
+	return { l, l, l, colour.a };
+}
+
+// -----------------------------------------------------------------------------
+// Returns [rgb] in HSL colourspace
+// -----------------------------------------------------------------------------
+ColHSL colour::rgbToHsl(const ColRGBA& rgb)
+{
+	ColHSL ret;
+	ret.alpha = static_cast<double>(rgb.a) / 255.0;
+	::rgbToHsl(rgb.dr(), rgb.dg(), rgb.db(), ret.h, ret.s, ret.l);
+	return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Returns [rgb] in CIE-L*a*b colourspace
+// -----------------------------------------------------------------------------
+ColLAB colour::rgbToLab(const ColRGBA& rgb)
+{
+	ColLAB ret;
+	::rgbToLab(rgb.dr(), rgb.dg(), rgb.db(), ret.l, ret.a, ret.b);
+	ret.alpha = static_cast<double>(rgb.a) / 255.0;
+	return ret;
+}
+
+ColRGBA colour::hslToRgb(const ColHSL& hsl)
+{
+	double dr, dg, db;
+	::hslToRgb(hsl.h, hsl.s, hsl.l, dr, dg, db);
+
+	// Now convert from 0f--1f to 0i--255i, rounding up
+	return { static_cast<uint8_t>(dr * 255. + 0.499999999),
+			 static_cast<uint8_t>(dg * 255. + 0.499999999),
+			 static_cast<uint8_t>(db * 255. + 0.499999999) };
+}
+
+
+// -----------------------------------------------------------------------------
+// Returns a string representation of [colour], in the requested [format]
+// -----------------------------------------------------------------------------
+string colour::toString(const ColRGBA& colour, StringFormat format)
+{
+	switch (format)
+	{
+	case StringFormat::RGB:   return fmt::format("RGB({}, {}, {})", colour.r, colour.g, colour.b);
+	case StringFormat::RGBA:  return fmt::format("RGBA({}, {}, {}, {})", colour.r, colour.g, colour.b, colour.a);
+	case StringFormat::HEX:   return fmt::format("#{:X}{:X}{:X}", colour.r, colour.g, colour.b);
+	case StringFormat::ZDoom: return fmt::format("\"{:X} {:X} {:X}\"", colour.r, colour.g, colour.b);
+	default:                  return {};
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns [colour] as a wxColour
+// -----------------------------------------------------------------------------
+wxColour colour::toWx(const ColRGBA& colour)
+{
+	return { colour.r, colour.g, colour.b, colour.a };
 }

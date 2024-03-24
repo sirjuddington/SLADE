@@ -1,21 +1,16 @@
 #pragma once
 
-namespace slade
+namespace slade::ui
 {
-class Archive;
-
-namespace ui
+class NewArchiveDialog : public wxDialog
 {
-	class NewArchiveDialog : public wxDialog
-	{
-	public:
-		NewArchiveDialog(wxWindow* parent);
-		~NewArchiveDialog() override = default;
+public:
+	NewArchiveDialog(wxWindow* parent);
+	~NewArchiveDialog() override = default;
 
-		Archive* createdArchive() const;
+	Archive* createdArchive() const;
 
-	private:
-		Archive* archive_created_ = nullptr;
-	};
-} // namespace ui
-} // namespace slade
+private:
+	Archive* archive_created_ = nullptr;
+};
+} // namespace slade::ui

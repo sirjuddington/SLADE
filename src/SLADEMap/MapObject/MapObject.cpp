@@ -35,6 +35,7 @@
 #include "App.h"
 #include "Game/Configuration.h"
 #include "Game/UDMFProperty.h"
+#include "Utility/PropertyUtils.h"
 
 using namespace slade;
 

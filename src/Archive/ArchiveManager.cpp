@@ -33,6 +33,9 @@
 #include "Main.h"
 #include "ArchiveManager.h"
 #include "App.h"
+#include "ArchiveDir.h"
+#include "ArchiveEntry.h"
+#include "EntryType/EntryType.h"
 #include "Formats/All.h"
 #include "Formats/DirArchive.h"
 #include "General/Console.h"
@@ -956,7 +959,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, const Archive* 
 // -----------------------------------------------------------------------------
 // Searches for an entry matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options, const Archive* ignore) const
+ArchiveEntry* ArchiveManager::findResourceEntry(ArchiveSearchOptions& options, const Archive* ignore) const
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -984,7 +987,7 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options,
 // -----------------------------------------------------------------------------
 // Searches for entries matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOptions& options, const Archive* ignore)
+vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(ArchiveSearchOptions& options, const Archive* ignore)
 	const
 {
 	vector<ArchiveEntry*> ret;

@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "LfdArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -124,7 +126,7 @@ bool LfdArchive::open(const MemChunk& mc)
 		if (nlump->size() > 0)
 			nlump->importMemChunk(mc, offset, size);
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -163,7 +165,7 @@ bool LfdArchive::write(MemChunk& mc)
 	{
 		entry = entryAt(l);
 		total_size += 16;
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setOffsetOnDisk(total_size);
 		entry->setSizeOnDisk();
 		total_size += entry->size();

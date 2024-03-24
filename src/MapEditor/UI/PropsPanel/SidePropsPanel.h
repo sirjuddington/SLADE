@@ -2,7 +2,6 @@
 
 namespace slade
 {
-class MapSide;
 class NumberTextCtrl;
 class SideTexCanvas;
 class TextureComboBox;

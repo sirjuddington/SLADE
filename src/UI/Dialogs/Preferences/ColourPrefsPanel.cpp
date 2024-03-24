@@ -122,7 +122,7 @@ void ColourPrefsPanel::refreshPropGrid() const
 			group = pg_colours_->Append(new wxPropertyCategory(cdef.group));
 
 		// Add colour
-		auto colour = pg_colours_->AppendIn(group, new wxColourProperty(cdef.name, name, cdef.colour.toWx()));
+		auto colour = pg_colours_->AppendIn(group, new wxColourProperty(cdef.name, name, cdef.colour));
 
 		// Add extra colour properties
 		auto opacity = pg_colours_->AppendIn(colour, new wxIntProperty("Opacity (0-255)", "alpha", cdef.colour.a));

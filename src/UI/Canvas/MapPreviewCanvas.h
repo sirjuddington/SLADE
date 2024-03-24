@@ -4,9 +4,7 @@
 
 namespace slade
 {
-class Archive;
 enum class MapFormat;
-class ArchiveEntry;
 struct MapDesc;
 class GLTexture;
 

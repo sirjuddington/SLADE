@@ -2,11 +2,8 @@
 
 namespace slade
 {
-class Palette;
-class ArchiveEntry;
 class GfxCanvas;
 class ColourBox;
-struct ColRGBA;
 
 class GfxColouriseDialog : public wxDialog
 {

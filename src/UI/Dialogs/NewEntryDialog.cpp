@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "NewEntryDialog.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/WxUtils.h"

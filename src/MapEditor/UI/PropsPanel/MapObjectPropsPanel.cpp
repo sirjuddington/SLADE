@@ -40,6 +40,7 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

@@ -4,8 +4,6 @@
 
 namespace slade
 {
-class MapVertex;
-
 class VertexList : public MapObjectList<MapVertex>
 {
 public:

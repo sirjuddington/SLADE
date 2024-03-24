@@ -1,5 +1,7 @@
 #pragma once
 
+
+class JumpToCalculator;
 class wxButton;
 class wxCheckBox;
 class wxTextCtrl;
@@ -10,7 +12,6 @@ wxDECLARE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 
 namespace slade
 {
-class ArchiveEntry;
 class StyleSet;
 class TextStyle;
 class TLFunction;
@@ -18,27 +19,6 @@ class TextLanguage;
 class Lexer;
 class FindReplacePanel;
 class SCallTip;
-
-class JumpToCalculator : public wxThread
-{
-public:
-	JumpToCalculator(wxEvtHandler* handler, string_view text, vector<string> block_names, vector<string> ignore) :
-		handler_(handler),
-		text_(text),
-		block_names_(std::move(block_names)),
-		ignore_(std::move(ignore))
-	{
-	}
-	~JumpToCalculator() override = default;
-
-	ExitCode Entry() override;
-
-private:
-	wxEvtHandler*  handler_;
-	string         text_;
-	vector<string> block_names_;
-	vector<string> ignore_;
-};
 
 class TextEditorCtrl : public wxStyledTextCtrl
 {

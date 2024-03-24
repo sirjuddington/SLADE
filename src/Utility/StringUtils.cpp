@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "StringUtils.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Tokenizer.h"
 #include "UI/WxUtils.h"

@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HogArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -169,7 +171,7 @@ bool HogArchive::open(const MemChunk& mc)
 		// correct, but since we're not making a proper Descent editor this
 		// prevents needless complication on loading text data.
 		if (shouldEncodeTxb(nlump->name()))
-			nlump->setEncryption(ArchiveEntry::Encryption::TXB);
+			nlump->setEncryption(EntryEncryption::TXB);
 
 		// Read entry data if it isn't zero-sized
 		if (nlump->size() > 0)
@@ -178,13 +180,13 @@ bool HogArchive::open(const MemChunk& mc)
 			mc.exportMemChunk(edata, offset, size);
 
 			// Decode if needed
-			if (nlump->encryption() == ArchiveEntry::Encryption::TXB)
+			if (nlump->encryption() == EntryEncryption::TXB)
 				decodeTxb(edata);
 
 			nlump->importMemChunk(edata);
 		}
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -218,7 +220,7 @@ bool HogArchive::write(MemChunk& mc)
 	{
 		offset += 17;
 		entry = entryAt(l);
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setOffsetOnDisk(offset);
 		entry->setSizeOnDisk();
 		offset += entry->size();
@@ -245,7 +247,7 @@ bool HogArchive::write(MemChunk& mc)
 
 		mc.write(name, 13);
 		mc.write(&size, 4);
-		if (entry->encryption() == ArchiveEntry::Encryption::TXB)
+		if (entry->encryption() == EntryEncryption::TXB)
 		{
 			uint8_t* data = encodeTxb(entry->data());
 			mc.write(data, entry->size());
@@ -282,7 +284,7 @@ shared_ptr<ArchiveEntry> HogArchive::addEntry(shared_ptr<ArchiveEntry> entry, un
 		return nullptr;
 
 	if (shouldEncodeTxb(entry->name()))
-		entry->setEncryption(ArchiveEntry::Encryption::TXB);
+		entry->setEncryption(EntryEncryption::TXB);
 
 	// Do default entry addition (to root directory)
 	TreelessArchive::addEntry(entry, position);
@@ -308,9 +310,9 @@ bool HogArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 	{
 		// Update encode status
 		if (shouldEncodeTxb(entry->name()))
-			entry->setEncryption(ArchiveEntry::Encryption::TXB);
+			entry->setEncryption(EntryEncryption::TXB);
 		else
-			entry->setEncryption(ArchiveEntry::Encryption::None);
+			entry->setEncryption(EntryEncryption::None);
 
 		return true;
 	}

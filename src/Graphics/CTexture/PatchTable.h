@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class ArchiveEntry;
-class Archive;
 class CTexture;
 
 class PatchTable

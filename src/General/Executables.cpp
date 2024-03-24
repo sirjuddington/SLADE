@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "Executables.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"

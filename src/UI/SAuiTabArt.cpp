@@ -36,6 +36,7 @@
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
+#include "Utility/Colour.h"
 
 using namespace slade;
 
@@ -585,7 +586,7 @@ void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, 
 	// dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
 
 	wxColor sepCol;
-	int     l = ColRGBA(caption_back_colour_).greyscale().r;
+	int     l = colour::greyscale(ColRGBA(caption_back_colour_)).r;
 	if (l < 100)
 		sepCol = drawing::lightColour(caption_back_colour_, 2.0f);
 	else

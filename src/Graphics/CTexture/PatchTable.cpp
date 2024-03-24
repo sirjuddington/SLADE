@@ -34,6 +34,7 @@
 #include "PatchTable.h"
 #include "App.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "CTexture.h"
 #include "General/ResourceManager.h"
 #include "Utility/StringUtils.h"

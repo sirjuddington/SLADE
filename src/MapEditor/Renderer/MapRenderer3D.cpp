@@ -34,6 +34,7 @@
 #include "MapRenderer3D.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
 #include "General/ResourceManager.h"
 #include "MainEditor/MainEditor.h"

@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class MapVertex;
-
 class VertexInfoOverlay
 {
 public:

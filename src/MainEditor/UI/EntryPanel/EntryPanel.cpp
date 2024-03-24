@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "EntryPanel.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OGLCanvas.h"
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
@@ -14,25 +14,28 @@ namespace ui
 	class ZoomControl;
 }
 
+enum class GfxView
+{
+	Default,
+	Centered,
+	Sprite,
+	HUD,
+	Tiled
+};
+
+enum class GfxEditMode
+{
+	None,
+	Paint,
+	Erase,
+	Translate
+};
+
 class GfxCanvas : public OGLCanvas
 {
 public:
-	enum class View
-	{
-		Default,
-		Centered,
-		Sprite,
-		HUD,
-		Tiled
-	};
-
-	enum class EditMode
-	{
-		None,
-		Paint,
-		Erase,
-		Translate
-	};
+	using View     = GfxView;
+	using EditMode = GfxEditMode;
 
 	GfxCanvas(wxWindow* parent, int id);
 	~GfxCanvas() override = default;
