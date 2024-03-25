@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SLADEMap/MapObject/MapObject.h"
+#include "SLADEMap/Types.h"
 
 namespace slade
 {
@@ -54,38 +54,38 @@ public:
 	bool setupThingOverlay() const;
 	void renderThingOverlay(double x, double y, double radius, bool point) const;
 	void renderRoundThing(
-		double                   x,
-		double                   y,
-		double                   angle,
-		const game::ThingType&   type,
-		const MapObject::ArgSet& args,
-		float                    alpha       = 1.0f,
-		double                   radius_mult = 1.0) const;
+		double                 x,
+		double                 y,
+		double                 angle,
+		const game::ThingType& type,
+		const map::ArgSet&     args,
+		float                  alpha       = 1.0f,
+		double                 radius_mult = 1.0) const;
 	bool renderSpriteThing(
-		double                   x,
-		double                   y,
-		double                   angle,
-		const game::ThingType&   type,
-		const MapObject::ArgSet& args,
-		unsigned                 index,
-		float                    alpha     = 1.0f,
-		bool                     fitradius = false);
+		double                 x,
+		double                 y,
+		double                 angle,
+		const game::ThingType& type,
+		const map::ArgSet&     args,
+		unsigned               index,
+		float                  alpha     = 1.0f,
+		bool                   fitradius = false);
 	void renderSimpleSquareThing(
-		double                   x,
-		double                   y,
-		double                   angle,
-		const game::ThingType&   type,
-		const MapObject::ArgSet& args,
-		float                    alpha = 1.0f) const;
+		double                 x,
+		double                 y,
+		double                 angle,
+		const game::ThingType& type,
+		const map::ArgSet&     args,
+		float                  alpha = 1.0f) const;
 	bool renderSquareThing(
-		double                   x,
-		double                   y,
-		double                   angle,
-		const game::ThingType&   type,
-		const MapObject::ArgSet& args,
-		float                    alpha    = 1.0f,
-		bool                     showicon = true,
-		bool                     framed   = false) const;
+		double                 x,
+		double                 y,
+		double                 angle,
+		const game::ThingType& type,
+		const map::ArgSet&     args,
+		float                  alpha    = 1.0f,
+		bool                   showicon = true,
+		bool                   framed   = false) const;
 	void renderThings(float alpha = 1.0f, bool force_dir = false);
 	void renderThingsImmediate(float alpha);
 	void renderThingHilight(int index, float fade) const;

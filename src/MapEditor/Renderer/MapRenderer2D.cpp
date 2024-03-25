@@ -225,7 +225,7 @@ void MapRenderer2D::renderVertices(float alpha)
 void MapRenderer2D::renderVerticesImmediate()
 {
 	if (list_vertices_ > 0 && map_->nVertices() == n_vertices_ && map_->geometryUpdated() <= vertices_updated_
-		&& !map_->mapData().modifiedSince(vertices_updated_, MapObject::Type::Vertex))
+		&& !map_->mapData().modifiedSince(vertices_updated_, map::ObjectType::Vertex))
 		glCallList(list_vertices_);
 	else
 	{
@@ -410,7 +410,7 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 	// Use display list if it's built
 	if (list_lines_ > 0 && show_direction == lines_dirs_ && map_->nLines() == n_lines_
 		&& map_->geometryUpdated() <= lines_updated_
-		&& !map_->mapData().modifiedSince(lines_updated_, MapObject::Type::Line))
+		&& !map_->mapData().modifiedSince(lines_updated_, map::ObjectType::Line))
 	{
 		glCallList(list_lines_);
 		return;
@@ -451,7 +451,7 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 		// Direction tab
 		if (show_direction)
 		{
-			auto mid = line->getPoint(MapObject::Point::Mid);
+			auto mid = line->getPoint(map::ObjectPoint::Mid);
 			auto tab = line->dirTabPoint();
 			glVertex2d(mid.x, mid.y);
 			glVertex2d(tab.x, tab.y);
@@ -476,7 +476,7 @@ void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha)
 	// Update lines VBO if required
 	if (vbo_lines_ == 0 || show_direction != lines_dirs_ || map_->nLines() != n_lines_
 		|| map_->geometryUpdated() > lines_updated_
-		|| map_->mapData().modifiedSince(lines_updated_, MapObject::Type::Line))
+		|| map_->mapData().modifiedSince(lines_updated_, map::ObjectType::Line))
 		updateLinesVBO(show_direction, alpha);
 
 	// Disable any blending
@@ -538,7 +538,7 @@ void MapRenderer2D::renderLineHilight(int index, float fade) const
 	glEnd();
 
 	// Direction tab
-	auto mid = line->getPoint(MapObject::Point::Mid);
+	auto mid = line->getPoint(map::ObjectPoint::Mid);
 	auto tab = line->dirTabPoint();
 	glBegin(GL_LINES);
 	glVertex2d(mid.x, mid.y);
@@ -577,7 +577,7 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 			glVertex2d(line->x2(), line->y2());
 
 			// Direction tab
-			auto mid = line->getPoint(MapObject::Point::Mid);
+			auto mid = line->getPoint(map::ObjectPoint::Mid);
 			auto tab = line->dirTabPoint();
 			glVertex2d(mid.x, mid.y);
 			glVertex2d(tab.x, tab.y);
@@ -620,7 +620,7 @@ void MapRenderer2D::renderTaggedLines(const vector<MapLine*>& lines, float fade)
 		glEnd();
 
 		// Direction tab
-		auto mid = line->getPoint(MapObject::Point::Mid);
+		auto mid = line->getPoint(map::ObjectPoint::Mid);
 		auto tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
@@ -632,8 +632,8 @@ void MapRenderer2D::renderTaggedLines(const vector<MapLine*>& lines, float fade)
 		{
 			glLineWidth(line_width * 1.5f);
 			drawing::drawArrow(
-				line->getPoint(MapObject::Point::Within),
-				object->getPoint(MapObject::Point::Within),
+				line->getPoint(map::ObjectPoint::Within),
+				object->getPoint(map::ObjectPoint::Within),
 				col,
 				false,
 				arrowhead_angle,
@@ -677,7 +677,7 @@ void MapRenderer2D::renderTaggingLines(const vector<MapLine*>& lines, float fade
 		glEnd();
 
 		// Direction tab
-		auto mid = line->getPoint(MapObject::Point::Mid);
+		auto mid = line->getPoint(map::ObjectPoint::Mid);
 		auto tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
@@ -689,8 +689,8 @@ void MapRenderer2D::renderTaggingLines(const vector<MapLine*>& lines, float fade
 		{
 			glLineWidth(line_width * 1.5f);
 			drawing::drawArrow(
-				object->getPoint(MapObject::Point::Within),
-				line->getPoint(MapObject::Point::Within),
+				object->getPoint(map::ObjectPoint::Within),
+				line->getPoint(map::ObjectPoint::Within),
 				col,
 				false,
 				arrowhead_angle,
@@ -792,13 +792,13 @@ void MapRenderer2D::renderThingOverlay(double x, double y, double radius, bool p
 // Renders a round thing icon at [x,y]
 // -----------------------------------------------------------------------------
 void MapRenderer2D::renderRoundThing(
-	double                   x,
-	double                   y,
-	double                   angle,
-	const game::ThingType&   type,
-	const MapObject::ArgSet& args,
-	float                    alpha,
-	double                   radius_mult) const
+	double                 x,
+	double                 y,
+	double                 angle,
+	const game::ThingType& type,
+	const map::ArgSet&     args,
+	float                  alpha,
+	double                 radius_mult) const
 {
 	// --- Determine texture to use ---
 	unsigned tex    = 0;
@@ -890,14 +890,14 @@ void MapRenderer2D::renderRoundThing(
 // If [fitradius] is true, the sprite is drawn to fit within the thing's radius
 // -----------------------------------------------------------------------------
 bool MapRenderer2D::renderSpriteThing(
-	double                   x,
-	double                   y,
-	double                   angle,
-	const game::ThingType&   type,
-	const MapObject::ArgSet& args,
-	unsigned                 index,
-	float                    alpha,
-	bool                     fitradius)
+	double                 x,
+	double                 y,
+	double                 angle,
+	const game::ThingType& type,
+	const map::ArgSet&     args,
+	unsigned               index,
+	float                  alpha,
+	bool                   fitradius)
 {
 	// Refresh sprites list if needed
 	if (thing_sprites_.size() != map_->nThings())
@@ -1002,14 +1002,14 @@ bool MapRenderer2D::renderSpriteThing(
 // Renders a square thing icon at [x,y]
 // -----------------------------------------------------------------------------
 bool MapRenderer2D::renderSquareThing(
-	double                   x,
-	double                   y,
-	double                   angle,
-	const game::ThingType&   type,
-	const MapObject::ArgSet& args,
-	float                    alpha,
-	bool                     showicon,
-	bool                     framed) const
+	double                 x,
+	double                 y,
+	double                 angle,
+	const game::ThingType& type,
+	const map::ArgSet&     args,
+	float                  alpha,
+	bool                   showicon,
+	bool                   framed) const
 {
 	// --- Determine texture to use ---
 	unsigned tex = 0;
@@ -1135,12 +1135,12 @@ bool MapRenderer2D::renderSquareThing(
 // Renders a simple square thing icon at [x,y]
 // -----------------------------------------------------------------------------
 void MapRenderer2D::renderSimpleSquareThing(
-	double                   x,
-	double                   y,
-	double                   angle,
-	const game::ThingType&   type,
-	const MapObject::ArgSet& args,
-	float                    alpha) const
+	double                 x,
+	double                 y,
+	double                 angle,
+	const game::ThingType& type,
+	const map::ArgSet&     args,
+	float                  alpha) const
 {
 	// Get thing info
 	double radius = type.radius();
@@ -1620,12 +1620,12 @@ void MapRenderer2D::renderTaggedThings(const vector<MapThing*>& things, float fa
 	auto object = mapeditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
-		auto dst = object->getPoint(MapObject::Point::Within);
+		auto dst = object->getPoint(map::ObjectPoint::Within);
 		glLineWidth(line_width * 1.5f);
 		for (auto thing : things)
 		{
 			drawing::drawArrow(
-				thing->getPoint(MapObject::Point::Within), dst, col, false, arrowhead_angle, arrowhead_length);
+				thing->getPoint(map::ObjectPoint::Within), dst, col, false, arrowhead_angle, arrowhead_length);
 		}
 	}
 }
@@ -1675,12 +1675,12 @@ void MapRenderer2D::renderTaggingThings(const vector<MapThing*>& things, float f
 	auto object = mapeditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
-		auto src = object->getPoint(MapObject::Point::Within);
+		auto src = object->getPoint(map::ObjectPoint::Within);
 		glLineWidth(line_width * 1.5f);
 		for (auto thing : things)
 		{
 			drawing::drawArrow(
-				src, thing->getPoint(MapObject::Point::Within), col, false, arrowhead_angle, arrowhead_length);
+				src, thing->getPoint(map::ObjectPoint::Within), col, false, arrowhead_angle, arrowhead_length);
 		}
 	}
 }
@@ -1856,8 +1856,8 @@ void MapRenderer2D::renderPathedThings(const vector<MapThing*>& things)
 				continue;
 
 			drawing::drawArrow(
-				to->getPoint(MapObject::Point::Mid),
-				from->getPoint(MapObject::Point::Mid),
+				to->getPoint(map::ObjectPoint::Mid),
+				from->getPoint(map::ObjectPoint::Mid),
 				(thing_path.type == PathType::DragonBoth || thing_path.type == PathType::Dragon) ? dragoncol :
 																								   pathedcol,
 				(thing_path.type == PathType::NormalBoth || thing_path.type == PathType::DragonBoth),
@@ -2349,8 +2349,8 @@ void MapRenderer2D::renderFlatHilight(int index, float fade) const
 	//// TEST draw text point
 	// glPointSize(8.0f);
 	// glBegin(GL_POINTS);
-	// glVertex2d(map->getSector(index)->getPoint(MapObject::Point::Within).x,
-	// map->getSector(index)->getPoint(MapObject::Point::Within).y); glEnd();
+	// glVertex2d(map->getSector(index)->getPoint(map::ObjectPoint::Within).x,
+	// map->getSector(index)->getPoint(map::ObjectPoint::Within).y); glEnd();
 }
 
 // -----------------------------------------------------------------------------
@@ -2474,7 +2474,7 @@ void MapRenderer2D::renderTaggedFlats(const vector<MapSector*>& sectors, float f
 		if (object && action_lines)
 		{
 			// Skip if the tagged sector is adjacent
-			if (object->objType() == MapObject::Type::Line)
+			if (object->objType() == map::ObjectType::Line)
 			{
 				auto line = dynamic_cast<MapLine*>(object);
 				if (line->frontSector() == sector || line->backSector() == sector)
@@ -2483,8 +2483,8 @@ void MapRenderer2D::renderTaggedFlats(const vector<MapSector*>& sectors, float f
 
 			glLineWidth(line_width * 1.5f);
 			drawing::drawArrow(
-				sector->getPoint(MapObject::Point::Within),
-				object->getPoint(MapObject::Point::Within),
+				sector->getPoint(map::ObjectPoint::Within),
+				object->getPoint(map::ObjectPoint::Within),
 				col,
 				false,
 				arrowhead_angle,
@@ -3087,7 +3087,7 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 		// Direction tab if needed
 		if (show_direction)
 		{
-			auto mid       = line->getPoint(MapObject::Point::Mid);
+			auto mid       = line->getPoint(map::ObjectPoint::Mid);
 			auto tab       = line->dirTabPoint();
 			lines[v + 2].x = mid.x;
 			lines[v + 2].y = mid.y;

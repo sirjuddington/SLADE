@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MapObjectCollection.h"
+#include "Utility/PropertyList.h"
 
 namespace slade
 {
@@ -45,7 +46,7 @@ public:
 	MapLine*          line(unsigned index) const;
 	MapSector*        sector(unsigned index) const;
 	MapThing*         thing(unsigned index) const;
-	MapObject*        object(MapObject::Type type, unsigned index) const;
+	MapObject*        object(map::ObjectType type, unsigned index) const;
 	size_t            nVertices() const;
 	size_t            nLines() const;
 	size_t            nSides() const;
@@ -131,7 +132,7 @@ public:
 	// Misc. map data access
 	void rebuildConnectedLines() { data_.rebuildConnectedLines(); }
 	void rebuildConnectedSides() { data_.rebuildConnectedSides(); }
-	void restoreObjectIdList(MapObject::Type type, const vector<unsigned>& list)
+	void restoreObjectIdList(map::ObjectType type, const vector<unsigned>& list)
 	{
 		data_.restoreObjectIdList(type, list);
 	}

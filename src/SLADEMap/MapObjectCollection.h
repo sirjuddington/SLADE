@@ -1,7 +1,5 @@
 #pragma once
 
-#include "MapObject/MapObject.h"
-
 namespace slade
 {
 class ThingList;
@@ -9,6 +7,10 @@ class SectorList;
 class LineList;
 class SideList;
 class VertexList;
+namespace map
+{
+	enum class ObjectType;
+}
 
 class MapObjectCollection
 {
@@ -33,8 +35,8 @@ public:
 	void       addMapObject(unique_ptr<MapObject> object);
 	void       removeMapObject(const MapObject* object);
 	MapObject* getObjectById(unsigned id) const { return objects_[id].object.get(); }
-	void       putObjectIdList(MapObject::Type type, vector<unsigned>& list) const;
-	void       restoreObjectIdList(MapObject::Type type, const vector<unsigned>& list);
+	void       putObjectIdList(map::ObjectType type, vector<unsigned>& list) const;
+	void       restoreObjectIdList(map::ObjectType type, const vector<unsigned>& list);
 
 	void refreshIndices() const;
 	void clear();
@@ -62,10 +64,10 @@ public:
 	bool removeThing(unsigned index);
 
 	// Modified times
-	vector<MapObject*> modifiedObjects(long since, MapObject::Type type) const;
+	vector<MapObject*> modifiedObjects(long since, map::ObjectType type) const;
 	vector<MapObject*> allModifiedObjects(long since) const;
 	long               lastModifiedTime() const;
-	bool               modifiedSince(long since, MapObject::Type type) const;
+	bool               modifiedSince(long since, map::ObjectType type) const;
 
 	// Checks
 	int removeDetachedVertices();
@@ -84,7 +86,7 @@ private:
 		unique_ptr<MapObject> object;
 		bool                  in_map;
 
-		MapObjectHolder(unique_ptr<MapObject> object, bool in_map) : object{ std::move(object) }, in_map{ in_map } {}
+		MapObjectHolder(unique_ptr<MapObject> object, bool in_map);
 	};
 
 	SLADEMap*               parent_map_ = nullptr;

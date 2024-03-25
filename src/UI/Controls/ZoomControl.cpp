@@ -37,7 +37,6 @@
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/SToolBar/SToolBarButton.h"
-#include <array>
 
 using namespace slade;
 using namespace ui;

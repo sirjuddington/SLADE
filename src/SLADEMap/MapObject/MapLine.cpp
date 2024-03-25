@@ -52,7 +52,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // MapLine class constructor
 // -----------------------------------------------------------------------------
-MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, int special, int flags, const ArgSet& args) :
+MapLine::MapLine(
+	MapVertex*         v1,
+	MapVertex*         v2,
+	MapSide*           s1,
+	MapSide*           s2,
+	int                special,
+	int                flags,
+	const map::ArgSet& args) :
 	MapObject(Type::Line),
 	vertex1_{ v1 },
 	vertex2_{ v2 },

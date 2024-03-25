@@ -46,7 +46,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // MapThing class constructor
 // -----------------------------------------------------------------------------
-MapThing::MapThing(const Vec3d& pos, short type, short angle, short flags, const ArgSet& args, int id, int special) :
+MapThing::MapThing(
+	const Vec3d&       pos,
+	short              type,
+	short              angle,
+	short              flags,
+	const map::ArgSet& args,
+	int                id,
+	int                special) :
 	MapObject(Type::Thing),
 	type_{ type },
 	position_{ pos.x, pos.y },

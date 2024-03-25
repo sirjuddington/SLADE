@@ -813,3 +813,9 @@ void MapObjectCollection::rebuildConnectedSides()
 			side->sector()->connectSide(side);
 	}
 }
+
+MapObjectCollection::MapObjectHolder::MapObjectHolder(unique_ptr<MapObject> object, bool in_map) :
+	object{ std::move(object) },
+	in_map{ in_map }
+{
+}

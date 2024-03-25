@@ -38,6 +38,7 @@
 #include "MOPGProperty.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
+#include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/PropertyUtils.h"
@@ -67,6 +68,7 @@ CVAR(Bool, mobj_props_auto_apply, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	PropsPanelBase{ parent },
+	last_type_{ map::ObjectType::Object },
 	no_apply_{ no_apply }
 {
 	namespace wx = wxutil;
@@ -410,7 +412,7 @@ bool MapObjectPropsPanel::setBoolProperty(wxPGProperty* prop, bool value, bool f
 // -----------------------------------------------------------------------------
 void MapObjectPropsPanel::addUDMFProperty(
 	game::UDMFProperty& prop,
-	MapObject::Type     objtype,
+	map::ObjectType     objtype,
 	const wxString&     basegroup,
 	wxPropertyGrid*     grid)
 {
@@ -493,9 +495,9 @@ void MapObjectPropsPanel::addUDMFProperty(
 	else if (prop.type() == UDMFProperty::Type::ID)
 	{
 		MOPGTagProperty::IdType tagtype;
-		if (objtype == MapObject::Type::Line)
+		if (objtype == map::ObjectType::Line)
 			tagtype = MOPGTagProperty::IdType::Line;
-		else if (objtype == MapObject::Type::Thing)
+		else if (objtype == map::ObjectType::Thing)
 			tagtype = MOPGTagProperty::IdType::Thing;
 		else
 			tagtype = MOPGTagProperty::IdType::Sector;
@@ -511,7 +513,7 @@ void MapObjectPropsPanel::addUDMFProperty(
 // -----------------------------------------------------------------------------
 // Adds all relevant properties to the grid for [objtype]
 // -----------------------------------------------------------------------------
-void MapObjectPropsPanel::setupType(MapObject::Type objtype)
+void MapObjectPropsPanel::setupType(map::ObjectType objtype)
 {
 	// Nothing to do if it was already this type
 	if (last_type_ == objtype && !udmf_)
@@ -537,7 +539,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 	}
 
 	// Vertex properties
-	if (objtype == MapObject::Type::Vertex)
+	if (objtype == map::ObjectType::Vertex)
 	{
 		// Set main tab name
 		stc_sections_->SetPageText(0, "Vertex");
@@ -549,11 +551,11 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 		addIntProperty(g_basic, "X Position", "x");
 		addIntProperty(g_basic, "Y Position", "y");
 
-		last_type_ = MapObject::Type::Vertex;
+		last_type_ = map::ObjectType::Vertex;
 	}
 
 	// Line properties
-	else if (objtype == MapObject::Type::Line)
+	else if (objtype == map::ObjectType::Line)
 	{
 		// Set main tab name
 		stc_sections_->SetPageText(0, "Line");
@@ -667,7 +669,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 	}
 
 	// Sector properties
-	else if (objtype == MapObject::Type::Sector)
+	else if (objtype == map::ObjectType::Sector)
 	{
 		// Set main tab name
 		stc_sections_->SetPageText(0, "Sector");
@@ -723,7 +725,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 	}
 
 	// Thing properties
-	else if (objtype == MapObject::Type::Thing)
+	else if (objtype == map::ObjectType::Thing)
 	{
 		// Set main tab name
 		stc_sections_->SetPageText(0, "Thing");
@@ -812,7 +814,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 // -----------------------------------------------------------------------------
 // Adds all relevant UDMF properties to the grid for [objtype]
 // -----------------------------------------------------------------------------
-void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
+void MapObjectPropsPanel::setupTypeUDMF(map::ObjectType objtype)
 {
 	// Nothing to do if it was already this type
 	if (last_type_ == objtype && udmf_)
@@ -834,13 +836,13 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 	}
 
 	// Set main tab title
-	if (objtype == MapObject::Type::Vertex)
+	if (objtype == map::ObjectType::Vertex)
 		stc_sections_->SetPageText(0, "Vertex");
-	else if (objtype == MapObject::Type::Line)
+	else if (objtype == map::ObjectType::Line)
 		stc_sections_->SetPageText(0, "Line");
-	else if (objtype == MapObject::Type::Sector)
+	else if (objtype == map::ObjectType::Sector)
 		stc_sections_->SetPageText(0, "Sector");
-	else if (objtype == MapObject::Type::Thing)
+	else if (objtype == map::ObjectType::Thing)
 		stc_sections_->SetPageText(0, "Thing");
 
 	// Go through all possible properties for this type
@@ -860,7 +862,7 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 	}
 
 	// Add side properties if line type
-	if (objtype == MapObject::Type::Line)
+	if (objtype == map::ObjectType::Line)
 	{
 		// Add side tabs
 		pg_props_side1_->Show(true);
@@ -869,7 +871,7 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 		stc_sections_->AddPage(pg_props_side2_, "Back Side");
 
 		// Get side properties
-		auto& sprops = game::configuration().allUDMFProperties(MapObject::Type::Side);
+		auto& sprops = game::configuration().allUDMFProperties(map::ObjectType::Side);
 
 		// Front side
 		for (auto& i : sprops)
@@ -1017,7 +1019,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		property->openObjects(objects);
 
 	// Handle line sides
-	if (objects[0]->objType() == MapObject::Type::Line)
+	if (objects[0]->objType() == map::ObjectType::Line)
 	{
 		// Enable/disable side properties
 		auto prop = pg_properties_->GetProperty("sidefront");
@@ -1124,7 +1126,7 @@ void MapObjectPropsPanel::clearGrid()
 	pg_props_side2_->Show(false);
 
 	// Reset last type so the grid is rebuilt next time objects are opened
-	last_type_ = MapObject::Type::Object;
+	last_type_ = map::ObjectType::Object;
 }
 
 
@@ -1143,13 +1145,13 @@ void MapObjectPropsPanel::clearGrid()
 void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 {
 	string type;
-	if (last_type_ == MapObject::Type::Vertex)
+	if (last_type_ == map::ObjectType::Vertex)
 		type = "Vertex";
-	else if (last_type_ == MapObject::Type::Line)
+	else if (last_type_ == map::ObjectType::Line)
 		type = "Line";
-	else if (last_type_ == MapObject::Type::Sector)
+	else if (last_type_ == map::ObjectType::Sector)
 		type = "Sector";
-	else if (last_type_ == MapObject::Type::Thing)
+	else if (last_type_ == map::ObjectType::Thing)
 		type = "Thing";
 
 	// Apply changes
@@ -1293,13 +1295,13 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 		{
 			// Found, apply value
 			string type;
-			if (last_type_ == MapObject::Type::Vertex)
+			if (last_type_ == map::ObjectType::Vertex)
 				type = "Vertex";
-			else if (last_type_ == MapObject::Type::Line)
+			else if (last_type_ == map::ObjectType::Line)
 				type = "Line";
-			else if (last_type_ == MapObject::Type::Sector)
+			else if (last_type_ == map::ObjectType::Sector)
 				type = "Sector";
-			else if (last_type_ == MapObject::Type::Thing)
+			else if (last_type_ == map::ObjectType::Thing)
 				type = "Thing";
 
 			mapeditor::editContext().beginUndoRecordLocked(

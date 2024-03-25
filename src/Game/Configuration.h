@@ -2,12 +2,15 @@
 
 #include "Args.h"
 #include "General/Defs.h"
-#include "SLADEMap/MapObject/MapObject.h"
-#include <array>
+#include "Utility/PropertyList.h"
 
 // Forward declarations
 namespace slade
 {
+namespace map
+{
+	enum class ObjectType;
+}
 namespace zscript
 {
 	class Definitions;
@@ -165,8 +168,8 @@ public:
 	const string&  spacTriggerUDMFName(unsigned trigger_index);
 
 	// UDMF properties
-	UDMFProperty* getUDMFProperty(const string& name, MapObject::Type type);
-	UDMFPropMap&  allUDMFProperties(MapObject::Type type);
+	UDMFProperty* getUDMFProperty(const string& name, map::ObjectType type);
+	UDMFPropMap&  allUDMFProperties(map::ObjectType type);
 	void          cleanObjectUDMFProps(MapObject* object);
 
 	// Sector types
@@ -189,10 +192,10 @@ public:
 		   bool kill_grounded) const;
 
 	// Defaults
-	string defaultString(MapObject::Type type, const string& property) const;
-	int    defaultInt(MapObject::Type type, const string& property) const;
-	double defaultFloat(MapObject::Type type, const string& property) const;
-	bool   defaultBool(MapObject::Type type, const string& property) const;
+	string defaultString(map::ObjectType type, const string& property) const;
+	int    defaultInt(map::ObjectType type, const string& property) const;
+	double defaultFloat(map::ObjectType type, const string& property) const;
+	bool   defaultBool(map::ObjectType type, const string& property) const;
 	void   applyDefaults(MapObject* object, bool udmf = false) const;
 
 	// Special Presets

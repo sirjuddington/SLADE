@@ -42,7 +42,6 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
-#include "SLADEMap/MapObject/MapObject.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"

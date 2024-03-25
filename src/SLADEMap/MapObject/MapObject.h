@@ -4,43 +4,31 @@
 #pragma clang diagnostic ignored "-Wundefined-bool-conversion"
 #endif
 
+#include "SLADEMap/Types.h"
 #include "Utility/PropertyList.h"
-#include <array>
 
 namespace slade
 {
+namespace map
+{
+	struct ObjectBackup
+	{
+		PropertyList properties;
+		PropertyList props_internal;
+		unsigned     id   = 0;
+		ObjectType   type = ObjectType::Object;
+	};
+} // namespace map
+
 class MapObject
 {
 	friend class SLADEMap;
 	friend class MapObjectCollection;
 
 public:
-	enum class Type
-	{
-		Object = 0,
-		Vertex,
-		Line,
-		Side,
-		Sector,
-		Thing
-	};
-
-	enum class Point
-	{
-		Mid = 0,
-		Within,
-		Text
-	};
-
-	struct Backup
-	{
-		PropertyList properties;
-		PropertyList props_internal;
-		unsigned     id   = 0;
-		Type         type = Type::Object;
-	};
-
-	typedef std::array<int, 5> ArgSet;
+	using Type   = map::ObjectType;
+	using Point  = map::ObjectPoint;
+	using Backup = map::ObjectBackup;
 
 	MapObject(Type type = Type::Object, SLADEMap* parent = nullptr);
 	virtual ~MapObject() = default;

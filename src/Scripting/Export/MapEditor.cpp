@@ -35,7 +35,6 @@
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "SLADEMap/MapObject/MapLine.h"
-#include "SLADEMap/MapObject/MapObject.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"

@@ -157,10 +157,10 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 		return true;
 	}
 
-	auto              thng_data = reinterpret_cast<const Thing*>(entry->rawData());
-	unsigned          nt        = entry->size() / sizeof(Thing);
-	float             p         = ui::getSplashProgress();
-	MapObject::ArgSet args;
+	auto        thng_data = reinterpret_cast<const Thing*>(entry->rawData());
+	unsigned    nt        = entry->size() / sizeof(Thing);
+	float       p         = ui::getSplashProgress();
+	map::ArgSet args;
 	for (size_t a = 0; a < nt; a++)
 	{
 		ui::setSplashProgress(p + (static_cast<float>(a) / nt) * 0.2f);

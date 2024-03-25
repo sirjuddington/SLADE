@@ -37,7 +37,7 @@
 #include "MapEditor/MapChecks.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "SLADEMap/SLADEMap.h"
+#include "SLADEMap/MapObject/MapObject.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 

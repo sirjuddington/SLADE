@@ -43,6 +43,7 @@
 #include "MapEditor/UI/PropsPanel/SectorPropsPanel.h"
 #include "MapEditor/UI/PropsPanel/ThingPropsPanel.h"
 #include "MapTextureManager.h"
+#include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Browser/BrowserItem.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"

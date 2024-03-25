@@ -1,7 +1,11 @@
 #pragma once
 
 #include "General/UndoRedo.h"
-#include "SLADEMap/MapObject/MapObject.h"
+
+namespace slade::map
+{
+struct ObjectBackup;
+}
 
 namespace slade::mapeditor
 {
@@ -17,7 +21,7 @@ public:
 	bool doRedo() override;
 
 private:
-	unique_ptr<MapObject::Backup> backup_;
+	unique_ptr<map::ObjectBackup> backup_;
 };
 
 // UndoStep for when a MapObject is either created or deleted
@@ -55,6 +59,6 @@ public:
 	bool isOk() override { return !backups_.empty(); }
 
 private:
-	vector<unique_ptr<MapObject::Backup>> backups_;
+	vector<unique_ptr<map::ObjectBackup>> backups_;
 };
 } // namespace slade::mapeditor

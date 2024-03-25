@@ -343,10 +343,10 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	const auto        thng_data = reinterpret_cast<const Thing*>(entry->rawData());
-	const unsigned    nt        = entry->size() / sizeof(Thing);
-	const float       p         = ui::getSplashProgress();
-	MapObject::ArgSet args;
+	const auto     thng_data = reinterpret_cast<const Thing*>(entry->rawData());
+	const unsigned nt        = entry->size() / sizeof(Thing);
+	const float    p         = ui::getSplashProgress();
+	map::ArgSet    args;
 	for (size_t a = 0; a < nt; a++)
 	{
 		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(nt) * 0.2f);

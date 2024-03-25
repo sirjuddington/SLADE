@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PropsPanelBase.h"
-#include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Controls/STabCtrl.h"
 
 class wxPropertyGrid;
@@ -12,6 +11,10 @@ namespace slade
 class MOPGProperty;
 class MOPGIntWithArgsProperty;
 
+namespace map
+{
+	enum class ObjectType;
+}
 namespace mapeditor
 {
 	enum class TextureType;
@@ -46,7 +49,7 @@ private:
 	wxPropertyGrid*       pg_properties_  = nullptr;
 	wxPropertyGrid*       pg_props_side1_ = nullptr;
 	wxPropertyGrid*       pg_props_side2_ = nullptr;
-	MapObject::Type       last_type_      = MapObject::Type::Object;
+	map::ObjectType       last_type_;
 	wxString              last_config_;
 	vector<MOPGProperty*> properties_;
 	wxPGProperty*         args_[5]      = {};
@@ -117,14 +120,14 @@ private:
 		game::UDMFProperty*    udmf_prop = nullptr);
 	void addUDMFProperty(
 		game::UDMFProperty& prop,
-		MapObject::Type     objtype,
+		map::ObjectType     objtype,
 		const wxString&     basegroup = "",
 		wxPropertyGrid*     grid      = nullptr);
 
 	bool setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false) const;
 
-	void setupType(MapObject::Type objtype);
-	void setupTypeUDMF(MapObject::Type objtype);
+	void setupType(map::ObjectType objtype);
+	void setupTypeUDMF(map::ObjectType objtype);
 
 	// Events
 	void onBtnApply(wxCommandEvent& e);

@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "ShowItemDialog.h"
 #include "General/UI.h"
+#include "SLADEMap/Types.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -46,11 +47,11 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-vector obj_types{ MapObject::Type::Vertex,
-				  MapObject::Type::Line,
-				  MapObject::Type::Side,
-				  MapObject::Type::Sector,
-				  MapObject::Type::Thing };
+vector obj_types{ map::ObjectType::Vertex,
+				  map::ObjectType::Line,
+				  map::ObjectType::Side,
+				  map::ObjectType::Sector,
+				  map::ObjectType::Thing };
 }
 
 
@@ -99,7 +100,7 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 // -----------------------------------------------------------------------------
 // Returns the selected object type
 // -----------------------------------------------------------------------------
-MapObject::Type ShowItemDialog::type() const
+map::ObjectType ShowItemDialog::type() const
 {
 	return obj_types[choice_type_->GetSelection()];
 }
@@ -119,7 +120,7 @@ int ShowItemDialog::index() const
 // -----------------------------------------------------------------------------
 // Sets the object type dropdown to [type]
 // -----------------------------------------------------------------------------
-void ShowItemDialog::setType(MapObject::Type type) const
+void ShowItemDialog::setType(map::ObjectType type) const
 {
 	for (unsigned a = 0; a < obj_types.size(); ++a)
 		if (obj_types[a] == type)
