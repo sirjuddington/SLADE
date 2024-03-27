@@ -46,7 +46,7 @@ public:
 		Palette*                 palette    = nullptr,
 		Archive*                 archive    = nullptr,
 		bool                     force_rgba = false);
-	void updatePreviewGfx();
+	void updatePreviewGfx() const;
 	void updateControls() const;
 	void convertOptions(SIFormat::ConvertOptions& opt) const;
 

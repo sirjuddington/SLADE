@@ -32,12 +32,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GfxConvDialog.h"
-#include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Icons.h"
-#include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
@@ -437,7 +435,7 @@ void GfxConvDialog::openTextures(const vector<CTexture*>& textures, Palette* pal
 // -----------------------------------------------------------------------------
 // Updates the current and target preview windows
 // -----------------------------------------------------------------------------
-void GfxConvDialog::updatePreviewGfx()
+void GfxConvDialog::updatePreviewGfx() const
 {
 	// Check current item is valid
 	if (items_.size() <= current_item_)

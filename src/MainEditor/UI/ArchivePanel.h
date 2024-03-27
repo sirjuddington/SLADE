@@ -1,7 +1,6 @@
 #pragma once
 
 #include "General/SActionHandler.h"
-#include "General/UndoRedo.h"
 
 // Forward declarations
 class wxSplitterWindow;
@@ -9,14 +8,15 @@ class wxStaticText;
 class wxBitmapButton;
 namespace slade
 {
+class EntryPanel;
+class ExternalEditManager;
+class SToolBar;
+class UndoManager;
 namespace ui
 {
 	class ArchivePathPanel;
 	class ArchiveEntryTree;
 } // namespace ui
-class ExternalEditManager;
-class EntryPanel;
-class SToolBar;
 } // namespace slade
 
 namespace slade
@@ -46,7 +46,7 @@ public:
 	bool importDir();
 	bool convertArchiveTo() const;
 	bool cleanupArchive() const;
-	bool buildArchive();
+	bool buildArchive() const;
 
 	// Entry manipulation actions
 	bool renameEntry(bool each = false) const;
@@ -67,27 +67,13 @@ public:
 	bool openEntryExternal() const;
 
 	// Other entry actions
-	bool gfxConvert() const;
-	bool gfxRemap();
-	bool gfxColourise();
-	bool gfxTint();
-	bool gfxModifyOffsets() const;
-	bool gfxExportPNG();
-	bool voxelConvert() const;
 	bool swanConvert() const;
 	bool basConvert(bool animdefs = false);
 	bool palConvert() const;
 	bool reloadCurrentPanel();
-	bool wavDSndConvert() const;
-	bool dSndWavConvert() const;
 	bool musMidiConvert() const;
-	bool optimizePNG() const;
 	bool compileACS(bool hexen = false) const;
 	bool convertTextures() const;
-	bool findTextureErrors() const;
-	bool cleanTextureIwadDupes() const;
-	bool cleanZdTextureSinglePatch() const;
-	bool mapOpenDb2() const;
 	bool crc32() const;
 
 	// Needed for some console commands
@@ -185,21 +171,5 @@ private:
 	void     setup(const Archive* archive);
 	void     bindEvents(Archive* archive);
 	wxPanel* createEntryListPanel(wxWindow* parent);
-};
-
-class EntryDataUS : public UndoStep
-{
-public:
-	EntryDataUS(ArchiveEntry* entry);
-
-	bool swapData();
-	bool doUndo() override { return swapData(); }
-	bool doRedo() override { return swapData(); }
-
-private:
-	MemChunk data_;
-	wxString path_;
-	int      index_   = -1;
-	Archive* archive_ = nullptr;
 };
 } // namespace slade

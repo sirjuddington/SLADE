@@ -5,6 +5,8 @@ namespace slade::archiveoperations
 bool save(Archive& archive);
 bool saveAs(Archive& archive);
 
+bool buildArchive(string_view path);
+
 bool removeUnusedPatches(Archive* archive);
 bool checkDuplicateEntryNames(Archive* archive);
 bool checkDuplicateEntryContent(const Archive* archive);

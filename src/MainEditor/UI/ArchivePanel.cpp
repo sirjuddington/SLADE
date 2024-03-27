@@ -54,11 +54,11 @@
 #include "General/Clipboard.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
-#include "General/Misc.h"
 #include "General/SAction.h"
 #include "General/UI.h"
+#include "General/UndoRedo.h"
+#include "General/UndoSteps/EntryDataUS.h"
 #include "Graphics/Palette/PaletteManager.h"
-#include "Graphics/Translation.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
 #include "MainEditor/EntryOperations.h"
@@ -71,21 +71,16 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/Splitter.h"
-#include "UI/Dialogs/GfxColouriseDialog.h"
 #include "UI/Dialogs/GfxConvDialog.h"
-#include "UI/Dialogs/GfxTintDialog.h"
 #include "UI/Dialogs/MapEditorConfigDialog.h"
 #include "UI/Dialogs/MapReplaceDialog.h"
-#include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/NewEntryDialog.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/RunDialog.h"
-#include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/Lists/ArchiveEntryTree.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
-#include "Utility/Colour.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -101,15 +96,10 @@ namespace
 {
 wxMenu* menu_archive = nullptr;
 wxMenu* menu_entry   = nullptr;
-
-const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry %s, unsupported format for writing";
 } // namespace
 CVAR(Int, autosave_entry_changes, 2, CVar::Flag::Save) // 0=no, 1=yes, 2=ask
 CVAR(Bool, confirm_entry_delete, true, CVar::Flag::Save)
 CVAR(Bool, context_submenus, true, CVar::Flag::Save)
-CVAR(String, last_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
-CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
-CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
 CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
 CVAR(Int, ap_splitter_position_tree, 300, CVar::Flag::Save)
@@ -122,9 +112,6 @@ CVAR(Bool, elist_no_tree, false, CVar::Flag::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(String, path_pngout)
-EXTERN_CVAR(String, path_pngcrush)
-EXTERN_CVAR(String, path_deflopt)
 EXTERN_CVAR(Bool, confirm_entry_revert)
 EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 
@@ -329,95 +316,6 @@ public:
 private:
 	shared_ptr<ArchiveDir> tree_;
 };
-
-
-
-// -----------------------------------------------------------------------------
-//
-// Functions
-//
-// -----------------------------------------------------------------------------
-namespace
-{
-// -----------------------------------------------------------------------------
-// Creates a vector of namespaces in a predefined order
-// -----------------------------------------------------------------------------
-void initNamespaceVector(vector<wxString>& ns, bool flathack)
-{
-	ns.clear();
-	if (flathack)
-		ns.emplace_back("flats");
-	ns.emplace_back("global");
-	ns.emplace_back("colormaps");
-	ns.emplace_back("acs");
-	ns.emplace_back("maps");
-	ns.emplace_back("sounds");
-	ns.emplace_back("music");
-	ns.emplace_back("voices");
-	ns.emplace_back("voxels");
-	ns.emplace_back("graphics");
-	ns.emplace_back("sprites");
-	ns.emplace_back("patches");
-	ns.emplace_back("textures");
-	ns.emplace_back("hires");
-	if (!flathack)
-		ns.emplace_back("flats");
-}
-
-// -----------------------------------------------------------------------------
-// Checks through a MapDesc vector and returns which one, if any, the entry
-// index is in, -1 otherwise
-// -----------------------------------------------------------------------------
-int isInMap(size_t index, const vector<MapDesc>& maps)
-{
-	for (size_t m = 0; m < maps.size(); ++m)
-	{
-		// Get map header and ending entries
-		auto m_head = maps[m].head.lock();
-		auto m_end  = maps[m].end.lock();
-		if (!m_head || !m_end)
-			continue;
-
-		// Check indices
-		size_t head_index = m_head->index();
-		size_t end_index  = m_head->parentDir()->entryIndex(m_end.get(), head_index);
-		if (index >= head_index && index <= end_index)
-			return m;
-	}
-	return -1;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the position of the given entry's detected namespace in the
-// namespace vector. Also hacks around a bit to put less entries in the global
-// namespace and allow sorting a bit by categories.
-// -----------------------------------------------------------------------------
-size_t getNamespaceNumber(const ArchiveEntry* entry, size_t index, vector<wxString>& ns, const vector<MapDesc>& maps)
-{
-	auto ens = entry->parent()->detectNamespace(index);
-	if (strutil::equalCI(ens, "global"))
-	{
-		if (!maps.empty() && isInMap(index, maps) >= 0)
-			ens = "maps";
-		else if (strutil::equalCI(entry->type()->category(), "Graphics"))
-			ens = "graphics";
-		else if (strutil::equalCI(entry->type()->category(), "Audio"))
-		{
-			if (strutil::equalCI(entry->type()->icon(), "music"))
-				ens = "music";
-			else
-				ens = "sounds";
-		}
-	}
-	for (size_t n = 0; n < ns.size(); ++n)
-		if (S_CMPNOCASE(ns[n], ens))
-			return n;
-
-	ns.emplace_back(ens);
-	return ns.size();
-}
-
-} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -1070,7 +968,7 @@ bool ArchivePanel::cleanupArchive() const
 // -----------------------------------------------------------------------------
 // Build pk3/zip archive from the current directory
 // -----------------------------------------------------------------------------
-bool ArchivePanel::buildArchive()
+bool ArchivePanel::buildArchive() const
 {
 	// Check the archive is still open
 	auto archive = archive_.lock();
@@ -1083,44 +981,7 @@ bool ArchivePanel::buildArchive()
 		return false;
 	}
 
-	// Create temporary archive
-	ZipArchive zip;
-
-	// Create dialog
-	filedialog::FDInfo info;
-	if (filedialog::saveFile(info, "Build Archive", zip.fileExtensionString(), this))
-	{
-		ui::showSplash("Building " + info.filenames[0], true);
-		ui::setSplashProgress(0.0f);
-
-		// prevent for "archive in archive" when saving in the current directory
-		if (wxFileExists(info.filenames[0]))
-			wxRemoveFile(info.filenames[0]);
-
-		// Log
-		ui::setSplashProgressMessage("Importing files...");
-		ui::setSplashProgress(-1.0f);
-
-		// Import all files into new archive
-		zip.importDir(archive->filename(), archive_dir_ignore_hidden);
-		ui::setSplashProgress(1.0f);
-		ui::setSplashMessage("Saving archive...");
-		ui::setSplashProgressMessage("");
-
-		// Save the archive
-		if (!zip.save(info.filenames[0]))
-		{
-			ui::hideSplash();
-
-			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error:\n%s", global::error), "Error", wxICON_ERROR);
-			return false;
-		}
-	}
-
-	ui::hideSplash();
-
-	return true;
+	return archiveoperations::buildArchive(archive->filename());
 }
 
 // -----------------------------------------------------------------------------
@@ -1397,15 +1258,6 @@ bool ArchivePanel::moveDown() const
 // -----------------------------------------------------------------------------
 // Sorts all selected entries. If the selection is empty or only contains one
 // single entry, sort the entire archive instead.
-// Note that a simple sort is not desired for three reasons:
-// 1. Map lumps have to remain in sequence
-// 2. Namespaces should be respected
-// 3. Marker lumps used as separators should also be respected
-// The way we're doing that is more than a bit hacky, sorry.
-// The basic idea is to assign to each entry a sortkey (thanks to ExProps for
-// that) which is prefixed with namespace information. Also, the name of map
-// lumps is replaced by the map name so that they stay together. Finally, the
-// original index is appended so that duplicate names are disambiguated.
 // -----------------------------------------------------------------------------
 bool ArchivePanel::sort() const
 {
@@ -1420,230 +1272,12 @@ bool ArchivePanel::sort() const
 	if (!dir)
 		return false; // Must all be in the same dir
 
-	// Get vector of selected entry indices
-	vector<unsigned> selection;
-	for (const auto& entry : sel_entries)
-		selection.push_back(entry->index());
-
-	size_t start, stop;
-
-	// Without selection of multiple entries, sort everything instead
-	if (selection.size() < 2)
-	{
-		start = 0;
-		stop  = dir->numEntries();
-	}
-	// We need sorting to be contiguous, otherwise it'll destroy maps
-	else
-	{
-		start = selection[0];
-		stop  = selection[selection.size() - 1] + 1;
-	}
-
-	// Make sure everything in the range is selected
-	selection.clear();
-	selection.resize(stop - start);
-	for (size_t i = start; i < stop; ++i)
-		selection[i - start] = i;
-
-	// No sorting needed even after adding everything
-	if (selection.size() < 2)
-		return false;
-
-	vector<wxString> nspaces;
-	initNamespaceVector(nspaces, dir->archive()->hasFlatHack());
-	auto maps = dir->archive()->detectMaps();
-
-	wxString ns  = dir->archive()->detectNamespace(dir->entryAt(selection[0]));
-	size_t   nsn = 0, lnsn = 0;
-
-	// Fill a map with <entry name, entry index> pairs
-	std::map<wxString, size_t> emap;
-	emap.clear();
-	for (size_t i = 0; i < selection.size(); ++i)
-	{
-		bool     ns_changed = false;
-		int      mapindex   = isInMap(selection[i], maps);
-		wxString mapname;
-		auto     entry = dir->entryAt(selection[i]);
-		if (!entry)
-			continue;
-
-		// Ignore subdirectories
-		if (entry->type() == EntryType::folderType())
-			continue;
-
-		// If this is a map entry, deal with it
-		if (!maps.empty() && mapindex > -1)
-		{
-			auto head = maps[mapindex].head.lock();
-			if (!head)
-				return false;
-
-			// Keep track of the name
-			mapname = maps[mapindex].name;
-
-			// If part of a map is selected, make sure the rest is selected as well
-			size_t head_index = head->index();
-			size_t end_index  = head->parentDir()->entryIndex(maps[mapindex].end.lock().get(), head_index);
-			// Good thing we can rely on selection being contiguous
-			for (size_t a = head_index; a <= end_index; ++a)
-			{
-				bool selected = (a >= start && a < stop);
-				if (!selected)
-					selection.push_back(a);
-			}
-			if (head_index < start)
-				start = head_index;
-			if (end_index + 1 > stop)
-				stop = end_index + 1;
-		}
-		else if (dir->archive()->detectNamespace(selection[i]) != ns)
-		{
-			ns         = dir->archive()->detectNamespace(selection[i]);
-			nsn        = getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000;
-			ns_changed = true;
-		}
-		else if (mapindex < 0 && (entry->size() == 0))
-		{
-			nsn++;
-			ns_changed = true;
-		}
-
-		// Local namespace number is not necessarily computed namespace number.
-		// This is because the global namespace in wads is bloated and we want more
-		// categories than it actually has to offer.
-		lnsn = (nsn == 0 ? getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000 : nsn);
-		string name, ename = entry->upperName();
-		// Want to get another hack in this stuff? Yeah, of course you do!
-		// This here hack will sort Doom II songs by their associated map.
-		if (strutil::startsWith(ename, "D_") && strutil::equalCI(entry->type()->icon(), "music"))
-		{
-			if (ename == "D_RUNNIN")
-				ename = "D_MAP01";
-			else if (ename == "D_STALKS")
-				ename = "D_MAP02";
-			else if (ename == "D_COUNTD")
-				ename = "D_MAP03";
-			else if (ename == "D_BETWEE")
-				ename = "D_MAP04";
-			else if (ename == "D_DOOM")
-				ename = "D_MAP05";
-			else if (ename == "D_THE_DA")
-				ename = "D_MAP06";
-			else if (ename == "D_SHAWN")
-				ename = "D_MAP07";
-			else if (ename == "D_DDTBLU")
-				ename = "D_MAP08";
-			else if (ename == "D_IN_CIT")
-				ename = "D_MAP09";
-			else if (ename == "D_DEAD")
-				ename = "D_MAP10";
-			else if (ename == "D_STLKS2")
-				ename = "D_MAP11";
-			else if (ename == "D_THEDA2")
-				ename = "D_MAP12";
-			else if (ename == "D_DOOM2")
-				ename = "D_MAP13";
-			else if (ename == "D_DDTBL2")
-				ename = "D_MAP14";
-			else if (ename == "D_RUNNI2")
-				ename = "D_MAP15";
-			else if (ename == "D_DEAD2")
-				ename = "D_MAP16";
-			else if (ename == "D_STLKS3")
-				ename = "D_MAP17";
-			else if (ename == "D_ROMERO")
-				ename = "D_MAP18";
-			else if (ename == "D_SHAWN2")
-				ename = "D_MAP19";
-			else if (ename == "D_MESSAG")
-				ename = "D_MAP20";
-			else if (ename == "D_COUNT2")
-				ename = "D_MAP21";
-			else if (ename == "D_DDTBL3")
-				ename = "D_MAP22";
-			else if (ename == "D_AMPIE")
-				ename = "D_MAP23";
-			else if (ename == "D_THEDA3")
-				ename = "D_MAP24";
-			else if (ename == "D_ADRIAN")
-				ename = "D_MAP25";
-			else if (ename == "D_MESSG2")
-				ename = "D_MAP26";
-			else if (ename == "D_ROMER2")
-				ename = "D_MAP27";
-			else if (ename == "D_TENSE")
-				ename = "D_MAP28";
-			else if (ename == "D_SHAWN3")
-				ename = "D_MAP29";
-			else if (ename == "D_OPENIN")
-				ename = "D_MAP30";
-			else if (ename == "D_EVIL")
-				ename = "D_MAP31";
-			else if (ename == "D_ULTIMA")
-				ename = "D_MAP32";
-			else if (ename == "D_READ_M")
-				ename = "D_MAP33";
-			else if (ename == "D_DM2TTL")
-				ename = "D_MAP34";
-			else if (ename == "D_DM2INT")
-				ename = "D_MAP35";
-		}
-		// All map lumps have the same sortkey name so they stay grouped
-		if (mapindex > -1)
-		{
-			name = wxString::Format("%08d%-64s%8d", lnsn, mapname, selection[i]);
-		}
-		// Yet another hack! Make sure namespace start markers are first
-		else if (ns_changed)
-		{
-			name = wxString::Format("%08d%-64s%8d", lnsn, wxEmptyString, selection[i]);
-		}
-		// Generic case: actually use the entry name to sort
-		else
-		{
-			name = wxString::Format("%08d%-64s%8d", lnsn, ename, selection[i]);
-		}
-		// Let the entry remember how it was sorted this time
-		entry->exProp("sortkey") = name;
-		// Insert sortkey into entry map so it'll be sorted
-		emap[name] = selection[i];
-	}
-
-	// And now, sort the entries based on the map
-	undo_manager_->beginRecord("Sort Entries");
+	// Perform sort
 	entry_tree_->Freeze();
-	auto itr = emap.begin();
-	for (size_t i = start; i < stop; ++i, ++itr)
-	{
-		if (itr == emap.end())
-			break;
-
-		auto entry = dir->entryAt(i);
-
-		// Ignore subdirectories
-		if (entry->type() == EntryType::folderType())
-			continue;
-
-		// If the entry isn't in its sorted place already
-		if (i != (size_t)itr->second)
-		{
-			// Swap the entry in the spot with the sorted one
-			archive->swapEntries(i, itr->second, dir);
-
-			// Update the position of the displaced entry in the emap
-			auto name  = entry->exProp<string>("sortkey");
-			emap[name] = itr->second;
-		}
-	}
-	undo_manager_->endRecord(true);
-
-	// Refresh
+	auto success = entryoperations::sortEntries(*archive, sel_entries, *dir, undo_manager_.get());
 	entry_tree_->Thaw();
-	archive->setModified(true);
 
-	return true;
+	return success;
 }
 
 // -----------------------------------------------------------------------------
@@ -1973,344 +1607,6 @@ bool ArchivePanel::openEntryExternal() const
 }
 
 // -----------------------------------------------------------------------------
-// Opens the Gfx Conversion dialog and sends selected entries to it
-// -----------------------------------------------------------------------------
-bool ArchivePanel::gfxConvert() const
-{
-	// Create gfx conversion dialog
-	GfxConvDialog gcd(theMainWindow);
-
-	// Send selection to the gcd
-	auto selection = entry_tree_->selectedEntries();
-	gcd.openEntries(selection);
-
-	// Run the gcd
-	gcd.ShowModal();
-
-	// Show splash window
-	ui::showSplash("Writing converted image data...", true);
-
-	// Begin recording undo level
-	undo_manager_->beginRecord("Gfx Format Conversion");
-
-	// Write any changes
-	for (unsigned a = 0; a < selection.size(); a++)
-	{
-		// Update splash window
-		ui::setSplashProgressMessage(selection[a]->name());
-		ui::setSplashProgress(a, selection.size());
-
-		// Skip if the image wasn't converted
-		if (!gcd.itemModified(a))
-			continue;
-
-		// Get image and conversion info
-		auto image  = gcd.itemImage(a);
-		auto format = gcd.itemFormat(a);
-
-		// Write converted image back to entry
-		MemChunk mc;
-		format->saveImage(*image, mc, gcd.itemPalette(a));
-		selection[a]->importMemChunk(mc);
-		EntryType::detectEntryType(*selection[a]);
-		selection[a]->setExtensionByType();
-	}
-
-	// Finish recording undo level
-	undo_manager_->endRecord(true);
-
-	// Hide splash window
-	ui::hideSplash();
-	maineditor::currentEntryPanel()->callRefresh();
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Opens the Translation editor dialog to remap colours on selected gfx entries
-// -----------------------------------------------------------------------------
-bool ArchivePanel::gfxRemap()
-{
-	// Get selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	// Create preview image (just use first selected entry)
-	SImage image(SImage::Type::PalMask);
-	misc::loadImageFromEntry(&image, selection[0]);
-
-	// Create translation editor dialog
-	auto                    pal = theMainWindow->paletteChooser()->selectedPalette();
-	TranslationEditorDialog ted(this, *pal, "Colour Remap", &image);
-	ted.openTranslation(dynamic_cast<GfxEntryPanel*>(gfxArea())->prevTranslation());
-
-	// Run dialog
-	if (ted.ShowModal() == wxID_OK)
-	{
-		// Begin recording undo level
-		undo_manager_->beginRecord("Gfx Colour Remap");
-
-		// Apply translation to all entry images
-		SImage   temp;
-		MemChunk mc;
-
-		for (auto entry : selection)
-		{
-			if (misc::loadImageFromEntry(&temp, entry))
-			{
-				// Apply translation
-				temp.applyTranslation(&ted.getTranslation(), pal);
-
-				// Create undo step
-				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
-
-				// Write modified image data
-				if (!temp.format()->saveImage(temp, mc, pal))
-					log::error(1, wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
-				else
-					entry->importMemChunk(mc);
-			}
-		}
-
-		// Update variables
-		dynamic_cast<GfxEntryPanel*>(gfxArea())->prevTranslation().copy(ted.getTranslation());
-
-		// Finish recording undo level
-		undo_manager_->endRecord(true);
-	}
-	maineditor::currentEntryPanel()->callRefresh();
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Opens the Colourise dialog to batch-colour selected gfx entries
-// -----------------------------------------------------------------------------
-bool ArchivePanel::gfxColourise()
-{
-	// Get selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	// Create colourise dialog
-	auto               pal = theMainWindow->paletteChooser()->selectedPalette();
-	GfxColouriseDialog gcd(this, selection[0], *pal);
-	gcd.setColour(last_colour);
-
-	// Run dialog
-	if (gcd.ShowModal() == wxID_OK)
-	{
-		// Begin recording undo level
-		undo_manager_->beginRecord("Gfx Colourise");
-
-		// Apply translation to all entry images
-		SImage   temp;
-		MemChunk mc;
-		for (auto entry : selection)
-		{
-			if (misc::loadImageFromEntry(&temp, entry))
-			{
-				// Apply translation
-				temp.colourise(gcd.colour(), pal);
-
-				// Create undo step
-				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
-
-				// Write modified image data
-				if (!temp.format()->saveImage(temp, mc, pal))
-					log::error(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
-				else
-					entry->importMemChunk(mc);
-			}
-		}
-		// Finish recording undo level
-		undo_manager_->endRecord(true);
-	}
-	last_colour = colour::toString(gcd.colour(), colour::StringFormat::RGB);
-	maineditor::currentEntryPanel()->callRefresh();
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Opens the Tint dialog to batch-colour selected gfx entries
-// -----------------------------------------------------------------------------
-bool ArchivePanel::gfxTint()
-{
-	// Get selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	// Create colourise dialog
-	auto          pal = theMainWindow->paletteChooser()->selectedPalette();
-	GfxTintDialog gtd(this, selection[0], *pal);
-	gtd.setValues(last_tint_colour, last_tint_amount);
-
-	// Run dialog
-	if (gtd.ShowModal() == wxID_OK)
-	{
-		// Begin recording undo level
-		undo_manager_->beginRecord("Gfx Tint");
-
-		// Apply translation to all entry images
-		SImage   temp;
-		MemChunk mc;
-		for (auto entry : selection)
-		{
-			if (misc::loadImageFromEntry(&temp, entry))
-			{
-				// Apply translation
-				temp.tint(gtd.colour(), gtd.amount(), pal);
-
-				// Create undo step
-				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
-
-				// Write modified image data
-				if (!temp.format()->saveImage(temp, mc, pal))
-					log::info(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
-				else
-					entry->importMemChunk(mc);
-			}
-		}
-
-		// Finish recording undo level
-		undo_manager_->endRecord(true);
-	}
-	last_tint_colour = colour::toString(gtd.colour(), colour::StringFormat::RGB);
-	last_tint_amount = static_cast<int>(gtd.amount() * 100.0f);
-	maineditor::currentEntryPanel()->callRefresh();
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Opens the Modify Offsets dialog to mass-modify offsets of any selected,
-// offset-compatible gfx entries
-// -----------------------------------------------------------------------------
-bool ArchivePanel::gfxModifyOffsets() const
-{
-	// Create modify offsets dialog
-	ModifyOffsetsDialog mod;
-
-	// Run the dialog
-	if (mod.ShowModal() == wxID_CANCEL)
-		return false;
-
-	// Begin recording undo level
-	undo_manager_->beginRecord("Gfx Modify Offsets");
-
-	// Go through selected entries
-	auto selection = entry_tree_->selectedEntries();
-	for (auto& entry : selection)
-	{
-		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
-		mod.apply(*entry);
-	}
-	maineditor::currentEntryPanel()->callRefresh();
-
-	// Finish recording undo level
-	undo_manager_->endRecord(true);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Exports any selected gfx entries as png format images
-// -----------------------------------------------------------------------------
-bool ArchivePanel::gfxExportPNG()
-{
-	// Get a list of selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	// If we're just exporting 1 entry
-	if (selection.size() == 1)
-	{
-		wxString   name = misc::lumpNameToFileName(selection[0]->name());
-		wxFileName fn(name);
-
-		// Set extension
-		fn.SetExt("png");
-
-		// Run save file dialog
-		filedialog::FDInfo info;
-		if (filedialog::saveFile(
-				info,
-				"Export Entry \"" + selection[0]->name() + "\" as PNG",
-				"PNG Files (*.png)|*.png",
-				this,
-				fn.GetFullName().ToStdString()))
-		{
-			// If a filename was selected, export it
-			if (!entryoperations::exportAsPNG(selection[0], info.filenames[0]))
-			{
-				wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxOK | wxICON_ERROR);
-				return false;
-			}
-		}
-
-		return true;
-	}
-	else
-	{
-		// Run save files dialog
-		filedialog::FDInfo info;
-		if (filedialog::saveFiles(
-				info, "Export Entries as PNG (Filename will be ignored)", "PNG Files (*.png)|*.png", this))
-		{
-			// Go through the selection
-			for (auto& entry : selection)
-			{
-				// Setup entry filename
-				wxFileName fn(entry->name());
-				fn.SetPath(info.path);
-				fn.SetExt("png");
-
-				// Do export
-				entryoperations::exportAsPNG(entry, fn.GetFullPath());
-			}
-		}
-	}
-
-	return true;
-}
-
-bool ArchivePanel::voxelConvert() const
-{
-	// Get selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	// Begin recording undo level
-	undo_manager_->beginRecord("Convert .vox -> .kvx");
-
-	// Go through selection
-	bool errors = false;
-	for (auto* entry : selection)
-	{
-		if (entry->type()->formatId() == "voxel_vox")
-		{
-			MemChunk kvx;
-			// Attempt conversion
-			if (!conversion::voxToKvx(entry->data(), kvx))
-			{
-				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
-				errors = true;
-				continue;
-			}
-			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
-			entry->importMemChunk(kvx);                                          // Load doom sound data
-			EntryType::detectEntryType(*entry);                                  // Update entry type
-			entry->setExtensionByType();                                         // Update extension if necessary
-		}
-	}
-
-	// Finish recording undo level
-	undo_manager_->endRecord(true);
-
-	// Show message if errors occurred
-	if (errors)
-		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the entry currently open for editing
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchivePanel::currentEntry() const
@@ -2460,9 +1756,6 @@ bool ArchivePanel::basConvert(bool animdefs)
 		index,
 		lastEntry->parentDir());
 
-	// Finish recording undo level
-	undo_manager_->endRecord(true);
-
 	// Convert to ZDoom-compatible ANIMDEFS
 	if (output)
 	{
@@ -2502,6 +1795,9 @@ bool ArchivePanel::basConvert(bool animdefs)
 			output->setType(EntryType::fromId("animdefs"));
 	}
 
+	// Finish recording undo level
+	undo_manager_->endRecord(true);
+
 	// Force entrylist width update
 	Layout();
 
@@ -2522,109 +1818,6 @@ bool ArchivePanel::palConvert() const
 		dest[i] = ((dest[i] << 2) | (dest[i] >> 4));
 	pal6bit->importMem(dest.data(), pal6bit->size());
 	maineditor::currentEntryPanel()->callRefresh();
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Converts selected wav format entries to doom sound format
-// -----------------------------------------------------------------------------
-bool ArchivePanel::wavDSndConvert() const
-{
-	// Get selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	// Begin recording undo level
-	undo_manager_->beginRecord("Convert Wav -> Doom Sound");
-
-	// Go through selection
-	bool errors = false;
-	for (auto& entry : selection)
-	{
-		// Convert WAV -> Doom Sound if the entry is WAV format
-		if (entry->type()->formatId() == "snd_wav")
-		{
-			MemChunk dsnd;
-			// Attempt conversion
-			if (!conversion::wavToDoomSnd(entry->data(), dsnd))
-			{
-				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
-				errors = true;
-				continue;
-			}
-			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
-			entry->importMemChunk(dsnd);                                         // Load doom sound data
-			EntryType::detectEntryType(*entry);                                  // Update entry type
-			entry->setExtensionByType();                                         // Update extension if necessary
-		}
-	}
-
-	// Finish recording undo level
-	undo_manager_->endRecord(true);
-
-	// Show message if errors occurred
-	if (errors)
-		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Converts selected doom sound format entries to wav format
-// -----------------------------------------------------------------------------
-bool ArchivePanel::dSndWavConvert() const
-{
-	// Get selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	// Begin recording undo level
-	undo_manager_->beginRecord("Convert Doom Sound -> Wav");
-
-	// Go through selection
-	bool errors = false;
-	for (auto& entry : selection)
-	{
-		bool     worked = false;
-		MemChunk wav;
-		// Convert Doom Sound -> WAV if the entry is Doom Sound format
-		if (entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_doom_mac")
-			worked = conversion::doomSndToWav(entry->data(), wav);
-		// Or Doom Speaker sound format
-		else if (entry->type()->formatId() == "snd_speaker")
-			worked = conversion::spkSndToWav(entry->data(), wav);
-		// Or Jaguar Doom sound format
-		else if (entry->type()->formatId() == "snd_jaguar")
-			worked = conversion::jagSndToWav(entry->data(), wav);
-		// Or Wolfenstein 3D sound format
-		else if (entry->type()->formatId() == "snd_wolf")
-			worked = conversion::wolfSndToWav(entry->data(), wav);
-		// Or Creative Voice File format
-		else if (entry->type()->formatId() == "snd_voc")
-			worked = conversion::vocToWav(entry->data(), wav);
-		// Or Blood SFX format (this one needs to be given the entry, not just the mem chunk)
-		else if (entry->type()->formatId() == "snd_bloodsfx")
-			worked = conversion::bloodToWav(entry, wav);
-		// If successfully converted, update the entry
-		if (worked)
-		{
-			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
-			entry->importMemChunk(wav);                                          // Load wav data
-			EntryType::detectEntryType(*entry);                                  // Update entry type
-			entry->setExtensionByType();                                         // Update extension if necessary
-		}
-		else
-		{
-			log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
-			errors = true;
-		}
-	}
-
-	// Finish recording undo level
-	undo_manager_->endRecord(true);
-
-	// Show message if errors occurred
-	if (errors)
-		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
-
 	return true;
 }
 
@@ -2685,52 +1878,6 @@ bool ArchivePanel::compileACS(bool hexen) const
 }
 
 // -----------------------------------------------------------------------------
-// Compiles any selected text entries as ACS scripts
-// -----------------------------------------------------------------------------
-bool ArchivePanel::optimizePNG() const
-{
-	// Check if the PNG tools path are set up, at least one of them should be
-	wxString pngpathc = path_pngcrush;
-	wxString pngpatho = path_pngout;
-	wxString pngpathd = path_deflopt;
-	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) && (pngpatho.IsEmpty() || !wxFileExists(pngpatho))
-		&& (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
-	{
-		wxMessageBox(
-			"Error: PNG tool paths not defined or invalid, please configure in SLADE preferences",
-			"Error",
-			wxOK | wxCENTRE | wxICON_ERROR);
-		return false;
-	}
-
-	// Get selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	ui::showSplash("Running external programs, please wait...", true);
-
-	// Begin recording undo level
-	undo_manager_->beginRecord("Optimize PNG");
-
-	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++)
-	{
-		ui::setSplashProgressMessage(selection[a]->nameNoExt());
-		ui::setSplashProgress(a, selection.size());
-		if (selection[a]->type()->formatId() == "img_png")
-		{
-			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a]));
-			entryoperations::optimizePNG(selection[a]);
-		}
-	}
-	ui::hideSplash();
-
-	// Finish recording undo level
-	undo_manager_->endRecord(true);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Converts any selected TEXTUREx entries to a ZDoom TEXTURES entry
 // -----------------------------------------------------------------------------
 bool ArchivePanel::convertTextures() const
@@ -2744,10 +1891,6 @@ bool ArchivePanel::convertTextures() const
 	// Do conversion
 	if (entryoperations::convertTextures(selection))
 	{
-		// Select new TEXTURES entry
-		// entry_list_->clearSelection();
-		// entry_list_->selectItem(index);
-
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 
@@ -2758,39 +1901,6 @@ bool ArchivePanel::convertTextures() const
 	undo_manager_->endRecord(false);
 
 	return false;
-}
-
-// -----------------------------------------------------------------------------
-// Detect errors in a TEXTUREx entry
-// -----------------------------------------------------------------------------
-bool ArchivePanel::findTextureErrors() const
-{
-	return entryoperations::findTextureErrors(entry_tree_->selectedEntries());
-}
-
-// -----------------------------------------------------------------------------
-// Clean texture entries that are duplicates of entries in the iwad
-// -----------------------------------------------------------------------------
-bool ArchivePanel::cleanTextureIwadDupes() const
-{
-	return entryoperations::cleanTextureIwadDupes(entry_tree_->selectedEntries());
-}
-
-// -----------------------------------------------------------------------------
-// Clean ZDTEXTURES entries that are just a single patch
-// -----------------------------------------------------------------------------
-bool ArchivePanel::cleanZdTextureSinglePatch() const
-{
-	return entryoperations::cleanZdTextureSinglePatch(entry_tree_->selectedEntries());
-}
-
-// -----------------------------------------------------------------------------
-// Opens the currently selected entry in Doom Builder 2 if it is a valid map
-// entry (either a map header or archive in maps/)
-// -----------------------------------------------------------------------------
-bool ArchivePanel::mapOpenDb2() const
-{
-	return entryoperations::openMapDB2(entry_tree_->firstSelectedEntry());
 }
 
 // -----------------------------------------------------------------------------
@@ -3335,35 +2445,40 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_swan_convert")
 		swanConvert();
 	else if (id == "arch_gfx_convert")
-		gfxConvert();
+		entryoperations::convertGfxEntries(entry_tree_->selectedEntries(), undo_manager_.get());
 	else if (id == "arch_gfx_translate")
-		gfxRemap();
+	{
+		entryoperations::remapGfxEntries(
+			entry_tree_->selectedEntries(),
+			dynamic_cast<GfxEntryPanel*>(gfxArea())->prevTranslation(),
+			undo_manager_.get());
+	}
 	else if (id == "arch_gfx_colourise")
-		gfxColourise();
+		entryoperations::colourizeGfxEntries(entry_tree_->selectedEntries(), undo_manager_.get());
 	else if (id == "arch_gfx_tint")
-		gfxTint();
+		entryoperations::tintGfxEntries(entry_tree_->selectedEntries(), undo_manager_.get());
 	else if (id == "arch_gfx_offsets")
-		gfxModifyOffsets();
+		entryoperations::modifyOffsets(entry_tree_->selectedEntries(), undo_manager_.get());
 	else if (id == "arch_gfx_addptable")
 		entryoperations::addToPatchTable(entry_tree_->selectedEntries());
 	else if (id == "arch_gfx_addtexturex")
 		entryoperations::createTexture(entry_tree_->selectedEntries());
 	else if (id == "arch_gfx_exportpng")
-		gfxExportPNG();
+		entryoperations::exportEntriesAsPNG(entry_tree_->selectedEntries());
 	else if (id == "arch_gfx_pngopt")
-		optimizePNG();
+		entryoperations::optimizePNGEntries(entry_tree_->selectedEntries(), undo_manager_.get());
 	else if (id == "arch_view_text")
 		openEntryAsText(entry_tree_->firstSelectedEntry());
 	else if (id == "arch_view_hex")
 		openEntryAsHex(entry_tree_->firstSelectedEntry());
 	else if (id == "arch_audio_convertdw")
-		dSndWavConvert();
+		entryoperations::convertSoundToWav(entry_tree_->selectedEntries(), undo_manager_.get());
 	else if (id == "arch_audio_convertwd")
-		wavDSndConvert();
+		entryoperations::convertWavToDSound(entry_tree_->selectedEntries(), undo_manager_.get());
 	else if (id == "arch_audio_convertmus")
 		musMidiConvert();
 	else if (id == "arch_voxel_convertvox")
-		voxelConvert();
+		entryoperations::convertVoxelEntries(entry_tree_->selectedEntries(), undo_manager_.get());
 	else if (id == "arch_scripts_compileacs")
 		compileACS();
 	else if (id == "arch_scripts_compilehacs")
@@ -3371,13 +2486,13 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_texturex_convertzd")
 		convertTextures();
 	else if (id == "arch_texturex_finderrors")
-		findTextureErrors();
+		entryoperations::findTextureErrors(entry_tree_->selectedEntries());
 	else if (id == "arch_texture_clean_iwaddupes")
-		cleanTextureIwadDupes();
+		entryoperations::cleanTextureIwadDupes(entry_tree_->selectedEntries());
 	else if (id == "arch_zdtextures_clean_singlepatch")
-		cleanZdTextureSinglePatch();
+		entryoperations::cleanZdTextureSinglePatch(entry_tree_->selectedEntries());
 	else if (id == "arch_map_opendb2")
-		mapOpenDb2();
+		entryoperations::openMapDB2(entry_tree_->firstSelectedEntry());
 	else if (id == "arch_entry_setup_external")
 		PreferencesDialog::openPreferences(theMainWindow, "Editing", "external");
 
@@ -3665,6 +2780,8 @@ EntryPanel* ArchivePanel::dataArea()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the selection on the entry list is changed
@@ -4314,312 +3431,4 @@ void ArchivePanel::onChoiceCategoryChanged(wxCommandEvent& e)
 void ArchivePanel::onBtnClearFilter(wxCommandEvent& e)
 {
 	text_filter_->SetValue("");
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// EntryDataUS Class Functions
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// EntryDataUS class constructor
-// -----------------------------------------------------------------------------
-EntryDataUS::EntryDataUS(ArchiveEntry* entry) :
-	path_{ entry->path() },
-	index_{ entry->index() },
-	archive_{ entry->parent() }
-{
-	data_.importMem(entry->rawData(), entry->size());
-}
-
-// -----------------------------------------------------------------------------
-// Swaps data between the entry and the undo step
-// -----------------------------------------------------------------------------
-bool EntryDataUS::swapData()
-{
-	// log::info(1, "Entry data swap...");
-
-	// Get parent dir
-	auto dir = archive_->dirAtPath(path_.ToStdString());
-	if (dir)
-	{
-		// Get entry
-		auto entry = dir->entryAt(index_);
-		if (!entry)
-			return false;
-
-		// Backup data
-		MemChunk temp_data;
-		temp_data.importMem(entry->rawData(), entry->size());
-		// log::info(1, "Backup current data, size %d", entry->getSize());
-
-		// Restore entry data
-		if (data_.size() == 0)
-		{
-			entry->clearData();
-			// log::info(1, "Clear entry data");
-		}
-		else
-		{
-			entry->importMemChunk(data_);
-			// log::info(1, "Restored entry data, size %d", data.getSize());
-		}
-
-		// Store previous entry data
-		if (temp_data.size() > 0)
-			data_.importMem(temp_data.data(), temp_data.size());
-		else
-			data_.clear();
-
-		return true;
-	}
-
-	return false;
-}
-
-
-// -----------------------------------------------------------------------------
-// Console Commands
-//
-// I'd love to put them in their own file, but attempting to do so results in
-// a circular include nightmare and nothing works anymore.
-// TODO: Look at doing something else with these
-// -----------------------------------------------------------------------------
-
-#include "App.h"
-#include "General/Console.h"
-
-CONSOLE_COMMAND(palconv, 0, false)
-{
-	ArchivePanel* meep = maineditor::currentArchivePanel();
-	if (meep)
-	{
-		meep->palConvert();
-		meep->reloadCurrentPanel();
-	}
-}
-
-CONSOLE_COMMAND(palconv64, 0, false)
-{
-	ArchivePanel* meep = maineditor::currentArchivePanel();
-	if (meep)
-	{
-		// Get the entry index of the last selected list item
-		ArchiveEntry* pal    = meep->currentEntry();
-		auto&         source = pal->data();
-		uint8_t*      dest   = new uint8_t[(pal->size() / 2) * 3];
-		for (size_t i = 0; i < pal->size() / 2; ++i)
-		{
-			uint8_t  r, g, b;
-			uint16_t col      = source.readB16(2 * i);
-			r                 = (col & 0xF800) >> 8;
-			g                 = (col & 0x07C0) >> 3;
-			b                 = (col & 0x003E) << 2;
-			dest[(3 * i) + 0] = r;
-			dest[(3 * i) + 1] = g;
-			dest[(3 * i) + 2] = b;
-		}
-		pal->importMem(dest, (pal->size() / 2) * 3);
-		maineditor::currentEntryPanel()->callRefresh();
-		delete[] dest;
-	}
-}
-
-CONSOLE_COMMAND(palconvpsx, 0, false)
-{
-	ArchivePanel* meep = maineditor::currentArchivePanel();
-	if (meep)
-	{
-		// Get the entry index of the last selected list item
-		ArchiveEntry* pal    = meep->currentEntry();
-		auto&         source = pal->data();
-		uint8_t*      dest   = new uint8_t[(pal->size() / 2) * 3];
-		for (size_t i = 0; i < pal->size() / 2; ++i)
-		{
-			// A1 B5 G5 R5, LE
-			uint8_t  a, r, g, b;
-			uint16_t col      = source.readL16(2 * i);
-			a                 = (col & 0x8000) >> 15;
-			b                 = (col & 0x7C00) >> 10;
-			g                 = (col & 0x03E0) >> 5;
-			r                 = (col & 0x001F);
-			r                 = (r << 3) | (r >> 2);
-			g                 = (g << 3) | (g >> 2);
-			b                 = (b << 3) | (b >> 2);
-			dest[(3 * i) + 0] = r;
-			dest[(3 * i) + 1] = g;
-			dest[(3 * i) + 2] = b;
-		}
-		pal->importMem(dest, (pal->size() / 2) * 3);
-		maineditor::currentEntryPanel()->callRefresh();
-		delete[] dest;
-	}
-}
-
-CONSOLE_COMMAND(vertex32x, 0, false)
-{
-	ArchivePanel* meep = maineditor::currentArchivePanel();
-	if (meep)
-	{
-		// Get the entry index of the last selected list item
-		ArchiveEntry*  v32x   = meep->currentEntry();
-		const uint8_t* source = v32x->rawData();
-		uint8_t*       dest   = new uint8_t[v32x->size() / 2];
-		for (size_t i = 0; i < v32x->size() / 4; ++i)
-		{
-			dest[2 * i + 0] = source[4 * i + 1];
-			dest[2 * i + 1] = source[4 * i + 0];
-		}
-		v32x->importMem(dest, v32x->size() / 2);
-		maineditor::currentEntryPanel()->callRefresh();
-		delete[] dest;
-	}
-}
-
-CONSOLE_COMMAND(vertexpsx, 0, false)
-{
-	ArchivePanel* meep = maineditor::currentArchivePanel();
-	if (meep)
-	{
-		// Get the entry index of the last selected list item
-		ArchiveEntry*  vpsx   = meep->currentEntry();
-		const uint8_t* source = vpsx->rawData();
-		uint8_t*       dest   = new uint8_t[vpsx->size() / 2];
-		for (size_t i = 0; i < vpsx->size() / 4; ++i)
-		{
-			dest[2 * i + 0] = source[4 * i + 2];
-			dest[2 * i + 1] = source[4 * i + 3];
-		}
-		vpsx->importMem(dest, vpsx->size() / 2);
-		maineditor::currentEntryPanel()->callRefresh();
-		delete[] dest;
-	}
-}
-
-CONSOLE_COMMAND(lightspsxtopalette, 0, false)
-{
-	ArchivePanel* meep = maineditor::currentArchivePanel();
-	if (meep)
-	{
-		// Get the entry index of the last selected list item
-		ArchiveEntry*  lights  = meep->currentEntry();
-		const uint8_t* source  = lights->rawData();
-		size_t         entries = lights->size() / 4;
-		uint8_t*       dest    = new uint8_t[entries * 3];
-		for (size_t i = 0; i < entries; ++i)
-		{
-			dest[3 * i + 0] = source[4 * i + 0];
-			dest[3 * i + 1] = source[4 * i + 1];
-			dest[3 * i + 2] = source[4 * i + 2];
-		}
-		lights->importMem(dest, entries * 3);
-		maineditor::currentEntryPanel()->callRefresh();
-		delete[] dest;
-	}
-}
-
-
-vector<ArchiveEntry*> Console_SearchEntries(wxString name)
-{
-	vector<ArchiveEntry*> entries;
-	Archive*              archive = maineditor::currentArchive();
-	ArchivePanel*         panel   = maineditor::currentArchivePanel();
-
-	if (archive)
-	{
-		ArchiveSearchOptions options;
-		options.search_subdirs = true;
-		if (panel)
-		{
-			options.dir = panel->currentDir();
-		}
-		options.match_name = name;
-		entries            = archive->findAll(options);
-	}
-	return entries;
-}
-
-CONSOLE_COMMAND(find, 1, true)
-{
-	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
-
-	wxString message;
-	size_t   count = entries.size();
-	if (count > 0)
-	{
-		for (size_t i = 0; i < count; ++i)
-		{
-			message += entries[i]->path(true) + "\n";
-		}
-	}
-	log::info(wxString::Format("Found %i entr%s", count, count == 1 ? "y" : "ies\n") + message);
-}
-
-CONSOLE_COMMAND(ren, 2, true)
-{
-	Archive*              archive = maineditor::currentArchive();
-	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
-	if (!entries.empty())
-	{
-		size_t count = 0;
-		for (size_t i = 0; i < entries.size(); ++i)
-		{
-			// Rename filter logic
-			wxString newname = entries[i]->name();
-			for (unsigned c = 0; c < args[1].size(); c++)
-			{
-				// Check character
-				if (args[1][c] == '*')
-					continue; // Skip if *
-				else
-				{
-					// First check that we aren't past the end of the name
-					if (c >= newname.size())
-					{
-						// If we are, pad it with spaces
-						while (newname.size() <= c)
-							newname += " ";
-					}
-
-					// Replace character
-					newname[c] = args[1][c];
-				}
-			}
-
-			if (archive->renameEntry(entries[i], newname.ToStdString()))
-				++count;
-		}
-		log::info(wxString::Format("Renamed %i entr%s", count, count == 1 ? "y" : "ies"));
-	}
-}
-
-CONSOLE_COMMAND(cd, 1, true)
-{
-	Archive*      current = maineditor::currentArchive();
-	ArchivePanel* panel   = maineditor::currentArchivePanel();
-
-	if (current && panel)
-	{
-		ArchiveDir* dir    = panel->currentDir();
-		ArchiveDir* newdir = current->dirAtPath(args[0], dir);
-		if (newdir == nullptr)
-		{
-			if (args[0] == "..")
-				newdir = dir->parent().get();
-			else if (args[0] == "/" || args[0] == "\\")
-				newdir = current->rootDir().get();
-		}
-
-		if (newdir)
-		{
-			panel->openDir(ArchiveDir::getShared(newdir));
-		}
-		else
-		{
-			log::error(wxString::Format("Error: Trying to open nonexistant directory %s", args[0]));
-		}
-	}
 }

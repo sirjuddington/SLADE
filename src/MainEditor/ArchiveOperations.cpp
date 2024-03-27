@@ -37,9 +37,11 @@
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/Formats/DirArchive.h"
 #include "Archive/Formats/WadArchive.h"
+#include "Archive/Formats/ZipArchive.h"
 #include "Archive/MapDesc.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
+#include "General/UI.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
@@ -66,6 +68,14 @@ using namespace slade;
 typedef std::map<wxString, int>                   StrIntMap;
 typedef std::map<wxString, vector<ArchiveEntry*>> PathMap;
 typedef std::map<int, vector<ArchiveEntry*>>      CRCMap;
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 
 
 // -----------------------------------------------------------------------------
@@ -154,6 +164,51 @@ bool archiveoperations::saveAs(Archive& archive)
 	}
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Build pk3/zip archive from the directory [path]
+// -----------------------------------------------------------------------------
+bool archiveoperations::buildArchive(string_view path)
+{
+	// Create temporary archive
+	ZipArchive zip;
+
+	// Create dialog
+	filedialog::FDInfo info;
+	if (filedialog::saveFile(info, "Build Archive", zip.fileExtensionString(), maineditor::windowWx()))
+	{
+		ui::showSplash("Building " + info.filenames[0], true);
+		ui::setSplashProgress(0.0f);
+
+		// prevent for "archive in archive" when saving in the current directory
+		if (wxFileExists(info.filenames[0]))
+			wxRemoveFile(info.filenames[0]);
+
+		// Log
+		ui::setSplashProgressMessage("Importing files...");
+		ui::setSplashProgress(-1.0f);
+
+		// Import all files into new archive
+		zip.importDir(path, archive_dir_ignore_hidden);
+		ui::setSplashProgress(1.0f);
+		ui::setSplashMessage("Saving archive...");
+		ui::setSplashProgressMessage("");
+
+		// Save the archive
+		if (!zip.save(info.filenames[0]))
+		{
+			ui::hideSplash();
+
+			// If there was an error pop up a message box
+			wxMessageBox(wxString::Format("Error:\n%s", global::error), "Error", wxICON_ERROR);
+			return false;
+		}
+	}
+
+	ui::hideSplash();
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -351,9 +406,9 @@ void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 
 	// Init search options
 	ArchiveSearchOptions search;
-	ArchiveEntry*          other = nullptr;
-	wxString               dups  = "";
-	size_t                 count = 0;
+	ArchiveEntry*        other = nullptr;
+	wxString             dups  = "";
+	size_t               count = 0;
 
 	// Go through list
 	for (auto& entry : entries)
@@ -419,9 +474,9 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 
 	// Init search options
 	ArchiveSearchOptions search;
-	ArchiveEntry*          other     = nullptr;
-	wxString               overrides = "";
-	size_t                 count     = 0;
+	ArchiveEntry*        other     = nullptr;
+	wxString             overrides = "";
+	size_t               count     = 0;
 
 	// Go through list
 	for (auto& entry : entries)

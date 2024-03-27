@@ -40,20 +40,32 @@
 #include "Archive/Formats/WadArchive.h"
 #include "Archive/MapDesc.h"
 #include "BinaryControlLump.h"
-#include "General/Console.h"
+#include "Conversions.h"
 #include "General/Misc.h"
+#include "General/UI.h"
+#include "General/UndoRedo.h"
+#include "General/UndoSteps/EntryDataUS.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/SImage/SIFormat.h"
+#include "Graphics/Translation.h"
 #include "MainEditor/MainEditor.h"
 #include "SLADEWxApp.h"
+#include "UI/Controls/PaletteChooser.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
+#include "UI/Dialogs/GfxColouriseDialog.h"
+#include "UI/Dialogs/GfxConvDialog.h"
+#include "UI/Dialogs/GfxTintDialog.h"
+#include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/EntryPanel/EntryPanel.h"
+#include "UI/MainWindow.h"
 #include "UI/TextureXEditor/TextureXEditor.h"
+#include "Utility/Colour.h"
 #include "Utility/FileMonitor.h"
-#include "Utility/Memory.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -66,13 +78,107 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(String, path_acc, "", CVar::Flag::Save);
-CVAR(String, path_acc_libs, "", CVar::Flag::Save);
-CVAR(String, path_pngout, "", CVar::Flag::Save);
-CVAR(String, path_pngcrush, "", CVar::Flag::Save);
-CVAR(String, path_deflopt, "", CVar::Flag::Save);
+CVAR(String, path_acc, "", CVar::Flag::Save)
+CVAR(String, path_acc_libs, "", CVar::Flag::Save)
+CVAR(String, path_pngout, "", CVar::Flag::Save)
+CVAR(String, path_pngcrush, "", CVar::Flag::Save)
+CVAR(String, path_deflopt, "", CVar::Flag::Save)
 CVAR(String, path_db2, "", CVar::Flag::Save)
-CVAR(Bool, acc_always_show_output, false, CVar::Flag::Save);
+CVAR(Bool, acc_always_show_output, false, CVar::Flag::Save)
+CVAR(String, last_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
+CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
+CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
+namespace
+{
+const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry %s, unsupported format for writing";
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Creates a vector of namespaces in a predefined order
+// -----------------------------------------------------------------------------
+void initNamespaceVector(vector<wxString>& ns, bool flathack)
+{
+	ns.clear();
+	if (flathack)
+		ns.emplace_back("flats");
+	ns.emplace_back("global");
+	ns.emplace_back("colormaps");
+	ns.emplace_back("acs");
+	ns.emplace_back("maps");
+	ns.emplace_back("sounds");
+	ns.emplace_back("music");
+	ns.emplace_back("voices");
+	ns.emplace_back("voxels");
+	ns.emplace_back("graphics");
+	ns.emplace_back("sprites");
+	ns.emplace_back("patches");
+	ns.emplace_back("textures");
+	ns.emplace_back("hires");
+	if (!flathack)
+		ns.emplace_back("flats");
+}
+
+// -----------------------------------------------------------------------------
+// Checks through a MapDesc vector and returns which one, if any, the entry
+// index is in, -1 otherwise
+// -----------------------------------------------------------------------------
+int isInMap(size_t index, const vector<MapDesc>& maps)
+{
+	for (size_t m = 0; m < maps.size(); ++m)
+	{
+		// Get map header and ending entries
+		auto m_head = maps[m].head.lock();
+		auto m_end  = maps[m].end.lock();
+		if (!m_head || !m_end)
+			continue;
+
+		// Check indices
+		size_t head_index = m_head->index();
+		size_t end_index  = m_head->parentDir()->entryIndex(m_end.get(), head_index);
+		if (index >= head_index && index <= end_index)
+			return m;
+	}
+	return -1;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the position of the given entry's detected namespace in the
+// namespace vector. Also hacks around a bit to put less entries in the global
+// namespace and allow sorting a bit by categories.
+// -----------------------------------------------------------------------------
+size_t getNamespaceNumber(const ArchiveEntry* entry, size_t index, vector<wxString>& ns, const vector<MapDesc>& maps)
+{
+	auto ens = entry->parent()->detectNamespace(index);
+	if (strutil::equalCI(ens, "global"))
+	{
+		if (!maps.empty() && isInMap(index, maps) >= 0)
+			ens = "maps";
+		else if (strutil::equalCI(entry->type()->category(), "Graphics"))
+			ens = "graphics";
+		else if (strutil::equalCI(entry->type()->category(), "Audio"))
+		{
+			if (strutil::equalCI(entry->type()->icon(), "music"))
+				ens = "music";
+			else
+				ens = "sounds";
+		}
+	}
+	for (size_t n = 0; n < ns.size(); ++n)
+		if (S_CMPNOCASE(ns[n], ens))
+			return n;
+
+	ns.emplace_back(ens);
+	return ns.size();
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -266,6 +372,250 @@ bool entryoperations::exportEntries(const vector<ArchiveEntry*>& entries, const 
 		for (auto& dir : dirs)
 			dir->exportTo(string{ info.path + "/" + dir->name() });
 	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Sorts all given [entries]. If the vector is empty or only contains one
+// single entry, sort the entire [archive] instead.
+// Note that a simple sort is not desired for three reasons:
+// 1. Map lumps have to remain in sequence
+// 2. Namespaces should be respected
+// 3. Marker lumps used as separators should also be respected
+// The way we're doing that is more than a bit hacky, sorry.
+// The basic idea is to assign to each entry a sortkey (thanks to ExProps for
+// that) which is prefixed with namespace information. Also, the name of map
+// lumps is replaced by the map name so that they stay together. Finally, the
+// original index is appended so that duplicate names are disambiguated.
+// -----------------------------------------------------------------------------
+bool entryoperations::sortEntries(
+	Archive&                     archive,
+	const vector<ArchiveEntry*>& entries,
+	ArchiveDir&                  dir,
+	UndoManager*                 undo_manager)
+{
+	// Get vector of entry indices
+	vector<unsigned> indices;
+	for (const auto& entry : entries)
+		indices.push_back(entry->index());
+
+	size_t start, stop;
+
+	// Without selection of multiple entries, sort everything instead
+	if (indices.size() < 2)
+	{
+		start = 0;
+		stop  = dir.numEntries();
+	}
+	// We need sorting to be contiguous, otherwise it'll destroy maps
+	else
+	{
+		start = indices[0];
+		stop  = indices[indices.size() - 1] + 1;
+	}
+
+	// Make sure everything in the range is selected
+	indices.clear();
+	indices.resize(stop - start);
+	for (size_t i = start; i < stop; ++i)
+		indices[i - start] = i;
+
+	// No sorting needed even after adding everything
+	if (indices.size() < 2)
+		return false;
+
+	vector<wxString> nspaces;
+	initNamespaceVector(nspaces, dir.archive()->hasFlatHack());
+	auto maps = dir.archive()->detectMaps();
+
+	wxString ns  = dir.archive()->detectNamespace(dir.entryAt(indices[0]));
+	size_t   nsn = 0, lnsn = 0;
+
+	// Fill a map with <entry name, entry index> pairs
+	std::map<wxString, size_t> emap;
+	emap.clear();
+	for (size_t i = 0; i < indices.size(); ++i)
+	{
+		bool     ns_changed = false;
+		int      mapindex   = isInMap(indices[i], maps);
+		wxString mapname;
+		auto     entry = dir.entryAt(indices[i]);
+		if (!entry)
+			continue;
+
+		// Ignore subdirectories
+		if (entry->type() == EntryType::folderType())
+			continue;
+
+		// If this is a map entry, deal with it
+		if (!maps.empty() && mapindex > -1)
+		{
+			auto head = maps[mapindex].head.lock();
+			if (!head)
+				return false;
+
+			// Keep track of the name
+			mapname = maps[mapindex].name;
+
+			// If part of a map is selected, make sure the rest is selected as well
+			size_t head_index = head->index();
+			size_t end_index  = head->parentDir()->entryIndex(maps[mapindex].end.lock().get(), head_index);
+			// Good thing we can rely on selection being contiguous
+			for (size_t a = head_index; a <= end_index; ++a)
+			{
+				bool selected = (a >= start && a < stop);
+				if (!selected)
+					indices.push_back(a);
+			}
+			if (head_index < start)
+				start = head_index;
+			if (end_index + 1 > stop)
+				stop = end_index + 1;
+		}
+		else if (dir.archive()->detectNamespace(indices[i]) != ns)
+		{
+			ns         = dir.archive()->detectNamespace(indices[i]);
+			nsn        = getNamespaceNumber(entry, indices[i], nspaces, maps) * 1000;
+			ns_changed = true;
+		}
+		else if (mapindex < 0 && (entry->size() == 0))
+		{
+			nsn++;
+			ns_changed = true;
+		}
+
+		// Local namespace number is not necessarily computed namespace number.
+		// This is because the global namespace in wads is bloated and we want more
+		// categories than it actually has to offer.
+		lnsn = (nsn == 0 ? getNamespaceNumber(entry, indices[i], nspaces, maps) * 1000 : nsn);
+		string name, ename = entry->upperName();
+		// Want to get another hack in this stuff? Yeah, of course you do!
+		// This here hack will sort Doom II songs by their associated map.
+		if (strutil::startsWith(ename, "D_") && strutil::equalCI(entry->type()->icon(), "music"))
+		{
+			if (ename == "D_RUNNIN")
+				ename = "D_MAP01";
+			else if (ename == "D_STALKS")
+				ename = "D_MAP02";
+			else if (ename == "D_COUNTD")
+				ename = "D_MAP03";
+			else if (ename == "D_BETWEE")
+				ename = "D_MAP04";
+			else if (ename == "D_DOOM")
+				ename = "D_MAP05";
+			else if (ename == "D_THE_DA")
+				ename = "D_MAP06";
+			else if (ename == "D_SHAWN")
+				ename = "D_MAP07";
+			else if (ename == "D_DDTBLU")
+				ename = "D_MAP08";
+			else if (ename == "D_IN_CIT")
+				ename = "D_MAP09";
+			else if (ename == "D_DEAD")
+				ename = "D_MAP10";
+			else if (ename == "D_STLKS2")
+				ename = "D_MAP11";
+			else if (ename == "D_THEDA2")
+				ename = "D_MAP12";
+			else if (ename == "D_DOOM2")
+				ename = "D_MAP13";
+			else if (ename == "D_DDTBL2")
+				ename = "D_MAP14";
+			else if (ename == "D_RUNNI2")
+				ename = "D_MAP15";
+			else if (ename == "D_DEAD2")
+				ename = "D_MAP16";
+			else if (ename == "D_STLKS3")
+				ename = "D_MAP17";
+			else if (ename == "D_ROMERO")
+				ename = "D_MAP18";
+			else if (ename == "D_SHAWN2")
+				ename = "D_MAP19";
+			else if (ename == "D_MESSAG")
+				ename = "D_MAP20";
+			else if (ename == "D_COUNT2")
+				ename = "D_MAP21";
+			else if (ename == "D_DDTBL3")
+				ename = "D_MAP22";
+			else if (ename == "D_AMPIE")
+				ename = "D_MAP23";
+			else if (ename == "D_THEDA3")
+				ename = "D_MAP24";
+			else if (ename == "D_ADRIAN")
+				ename = "D_MAP25";
+			else if (ename == "D_MESSG2")
+				ename = "D_MAP26";
+			else if (ename == "D_ROMER2")
+				ename = "D_MAP27";
+			else if (ename == "D_TENSE")
+				ename = "D_MAP28";
+			else if (ename == "D_SHAWN3")
+				ename = "D_MAP29";
+			else if (ename == "D_OPENIN")
+				ename = "D_MAP30";
+			else if (ename == "D_EVIL")
+				ename = "D_MAP31";
+			else if (ename == "D_ULTIMA")
+				ename = "D_MAP32";
+			else if (ename == "D_READ_M")
+				ename = "D_MAP33";
+			else if (ename == "D_DM2TTL")
+				ename = "D_MAP34";
+			else if (ename == "D_DM2INT")
+				ename = "D_MAP35";
+		}
+		// All map lumps have the same sortkey name so they stay grouped
+		if (mapindex > -1)
+		{
+			name = wxString::Format("%08d%-64s%8d", lnsn, mapname, indices[i]);
+		}
+		// Yet another hack! Make sure namespace start markers are first
+		else if (ns_changed)
+		{
+			name = wxString::Format("%08d%-64s%8d", lnsn, wxEmptyString, indices[i]);
+		}
+		// Generic case: actually use the entry name to sort
+		else
+		{
+			name = wxString::Format("%08d%-64s%8d", lnsn, ename, indices[i]);
+		}
+		// Let the entry remember how it was sorted this time
+		entry->exProp("sortkey") = name;
+		// Insert sortkey into entry map so it'll be sorted
+		emap[name] = indices[i];
+	}
+
+	// And now, sort the entries based on the map
+	if (undo_manager)
+		undo_manager->beginRecord("Sort Entries");
+	auto itr = emap.begin();
+	for (size_t i = start; i < stop; ++i, ++itr)
+	{
+		if (itr == emap.end())
+			break;
+
+		auto entry = dir.entryAt(i);
+
+		// Ignore subdirectories
+		if (entry->type() == EntryType::folderType())
+			continue;
+
+		// If the entry isn't in its sorted place already
+		if (i != (size_t)itr->second)
+		{
+			// Swap the entry in the spot with the sorted one
+			archive.swapEntries(i, itr->second, &dir);
+
+			// Update the position of the displaced entry in the emap
+			auto name  = entry->exProp<string>("sortkey");
+			emap[name] = itr->second;
+		}
+	}
+	if (undo_manager)
+		undo_manager->endRecord(true);
+
+	archive.setModified(true);
 
 	return true;
 }
@@ -1187,7 +1537,7 @@ bool entryoperations::exportAsPNG(ArchiveEntry* entry, const wxString& filename)
 }
 
 // -----------------------------------------------------------------------------
-// Attempts to optimize [entry] using external PNG optimizers.
+// Attempts to optimize [entry] using external PNG optimizers
 // -----------------------------------------------------------------------------
 bool entryoperations::optimizePNG(ArchiveEntry* entry)
 {
@@ -1405,6 +1755,406 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 
 		return false;
 	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Exports multiple gfx [entries] as png format images
+// -----------------------------------------------------------------------------
+bool entryoperations::exportEntriesAsPNG(const vector<ArchiveEntry*>& entries)
+{
+	// If we're just exporting 1 entry
+	if (entries.size() == 1)
+	{
+		wxString   name = misc::lumpNameToFileName(entries[0]->name());
+		wxFileName fn(name);
+
+		// Set extension
+		fn.SetExt("png");
+
+		// Run save file dialog
+		filedialog::FDInfo info;
+		if (filedialog::saveFile(
+				info,
+				"Export Entry \"" + entries[0]->name() + "\" as PNG",
+				"PNG Files (*.png)|*.png",
+				maineditor::windowWx(),
+				fn.GetFullName().ToStdString()))
+		{
+			// If a filename was selected, export it
+			if (!exportAsPNG(entries[0], info.filenames[0]))
+			{
+				wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxOK | wxICON_ERROR);
+				return false;
+			}
+		}
+
+		return true;
+	}
+	else
+	{
+		// Run save files dialog
+		filedialog::FDInfo info;
+		if (filedialog::saveFiles(
+				info,
+				"Export Entries as PNG (Filename will be ignored)",
+				"PNG Files (*.png)|*.png",
+				maineditor::windowWx()))
+		{
+			// Go through the entries
+			for (auto& entry : entries)
+			{
+				// Setup entry filename
+				wxFileName fn(entry->name());
+				fn.SetPath(info.path);
+				fn.SetExt("png");
+
+				// Do export
+				exportAsPNG(entry, fn.GetFullPath());
+			}
+		}
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Attempts to optimize multiple PNG [entries] using external PNG optimizers
+// -----------------------------------------------------------------------------
+bool entryoperations::optimizePNGEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager)
+{
+	// Check if the PNG tools path are set up, at least one of them should be
+	wxString pngpathc = path_pngcrush;
+	wxString pngpatho = path_pngout;
+	wxString pngpathd = path_deflopt;
+	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) && (pngpatho.IsEmpty() || !wxFileExists(pngpatho))
+		&& (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
+	{
+		wxMessageBox(
+			"Error: PNG tool paths not defined or invalid, please configure in SLADE preferences",
+			"Error",
+			wxOK | wxCENTRE | wxICON_ERROR);
+		return false;
+	}
+
+	ui::showSplash("Running external programs, please wait...", true);
+
+	// Begin recording undo level
+	if (undo_manager)
+		undo_manager->beginRecord("Optimize PNG");
+
+	// Go through entries
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
+		ui::setSplashProgressMessage(entries[a]->nameNoExt());
+		ui::setSplashProgress(a, entries.size());
+		if (entries[a]->type()->formatId() == "img_png")
+		{
+			if (undo_manager)
+				undo_manager->recordUndoStep(std::make_unique<EntryDataUS>(entries[a]));
+
+			optimizePNG(entries[a]);
+		}
+	}
+	ui::hideSplash();
+
+	// Finish recording undo level
+	if (undo_manager)
+		undo_manager->endRecord(true);
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Opens a graphics conversion dialog for the given [entries]
+// -----------------------------------------------------------------------------
+bool entryoperations::convertGfxEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager)
+{
+	// Create gfx conversion dialog
+	GfxConvDialog gcd(maineditor::windowWx());
+
+	// Send entries to the gcd
+	gcd.openEntries(entries);
+
+	// Run the gcd
+	gcd.ShowModal();
+
+	// Show splash window
+	ui::showSplash("Writing converted image data...", true);
+
+	// Begin recording undo level
+	if (undo_manager)
+		undo_manager->beginRecord("Gfx Format Conversion");
+
+	// Write any changes
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
+		// Update splash window
+		ui::setSplashProgressMessage(entries[a]->name());
+		ui::setSplashProgress(a, entries.size());
+
+		// Skip if the image wasn't converted
+		if (!gcd.itemModified(a))
+			continue;
+
+		// Get image and conversion info
+		auto image  = gcd.itemImage(a);
+		auto format = gcd.itemFormat(a);
+
+		// Write converted image back to entry
+		MemChunk mc;
+		format->saveImage(*image, mc, gcd.itemPalette(a));
+		entries[a]->importMemChunk(mc);
+		EntryType::detectEntryType(*entries[a]);
+		entries[a]->setExtensionByType();
+	}
+
+	// Finish recording undo level
+	if (undo_manager)
+		undo_manager->endRecord(true);
+
+	// Hide splash window
+	ui::hideSplash();
+	maineditor::currentEntryPanel()->callRefresh();
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Opens a graphics translation dialog for the given [entries].
+// [translation] is used as the initial translation, and updated with the
+// selected translation on return.
+// -----------------------------------------------------------------------------
+bool entryoperations::remapGfxEntries(
+	const vector<ArchiveEntry*>& entries,
+	Translation&                 translation,
+	UndoManager*                 undo_manager)
+{
+	// Create preview image (just use first selected entry)
+	SImage image(SImage::Type::PalMask);
+	misc::loadImageFromEntry(&image, entries[0]);
+
+	// Create translation editor dialog
+	auto                    pal = maineditor::window()->paletteChooser()->selectedPalette();
+	TranslationEditorDialog ted(maineditor::windowWx(), *pal, "Colour Remap", &image);
+	ted.openTranslation(translation);
+
+	// Run dialog
+	if (ted.ShowModal() == wxID_OK)
+	{
+		// Begin recording undo level
+		if (undo_manager)
+			undo_manager->beginRecord("Gfx Colour Remap");
+
+		// Apply translation to all entry images
+		SImage   temp;
+		MemChunk mc;
+		for (auto entry : entries)
+		{
+			if (misc::loadImageFromEntry(&temp, entry))
+			{
+				// Apply translation
+				temp.applyTranslation(&ted.getTranslation(), pal);
+
+				// Create undo step
+				if (undo_manager)
+					undo_manager->recordUndoStep(std::make_unique<EntryDataUS>(entry));
+
+				// Write modified image data
+				if (!temp.format()->saveImage(temp, mc, pal))
+					log::error(1, wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+				else
+					entry->importMemChunk(mc);
+			}
+		}
+
+		// Update translation
+		translation.copy(ted.getTranslation());
+
+		// Finish recording undo level
+		if (undo_manager)
+			undo_manager->endRecord(true);
+	}
+
+	maineditor::currentEntryPanel()->callRefresh();
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Opens the Colourise dialog to batch-colour gfx [entries]
+// -----------------------------------------------------------------------------
+bool entryoperations::colourizeGfxEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager)
+{
+	// Create colourise dialog
+	auto               pal = theMainWindow->paletteChooser()->selectedPalette();
+	GfxColouriseDialog gcd(maineditor::windowWx(), entries[0], *pal);
+	gcd.setColour(last_colour);
+
+	// Run dialog
+	if (gcd.ShowModal() == wxID_OK)
+	{
+		// Begin recording undo level
+		if (undo_manager)
+			undo_manager->beginRecord("Gfx Colourise");
+
+		// Apply translation to all entry images
+		SImage   temp;
+		MemChunk mc;
+		for (auto entry : entries)
+		{
+			if (misc::loadImageFromEntry(&temp, entry))
+			{
+				// Apply translation
+				temp.colourise(gcd.colour(), pal);
+
+				// Create undo step
+				if (undo_manager)
+					undo_manager->recordUndoStep(std::make_unique<EntryDataUS>(entry));
+
+				// Write modified image data
+				if (!temp.format()->saveImage(temp, mc, pal))
+					log::error(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+				else
+					entry->importMemChunk(mc);
+			}
+		}
+
+		// Finish recording undo level
+		if (undo_manager)
+			undo_manager->endRecord(true);
+	}
+	last_colour = colour::toString(gcd.colour(), colour::StringFormat::RGB);
+	maineditor::currentEntryPanel()->callRefresh();
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Opens the Tint dialog to batch-tint gfx [entries]
+// -----------------------------------------------------------------------------
+bool entryoperations::tintGfxEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager)
+{
+	// Create colourise dialog
+	auto          pal = theMainWindow->paletteChooser()->selectedPalette();
+	GfxTintDialog gtd(maineditor::windowWx(), entries[0], *pal);
+	gtd.setValues(last_tint_colour, last_tint_amount);
+
+	// Run dialog
+	if (gtd.ShowModal() == wxID_OK)
+	{
+		// Begin recording undo level
+		if (undo_manager)
+			undo_manager->beginRecord("Gfx Tint");
+
+		// Apply translation to all entry images
+		SImage   temp;
+		MemChunk mc;
+		for (auto entry : entries)
+		{
+			if (misc::loadImageFromEntry(&temp, entry))
+			{
+				// Apply translation
+				temp.tint(gtd.colour(), gtd.amount(), pal);
+
+				// Create undo step
+				if (undo_manager)
+					undo_manager->recordUndoStep(std::make_unique<EntryDataUS>(entry));
+
+				// Write modified image data
+				if (!temp.format()->saveImage(temp, mc, pal))
+					log::info(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+				else
+					entry->importMemChunk(mc);
+			}
+		}
+
+		// Finish recording undo level
+		if (undo_manager)
+			undo_manager->endRecord(true);
+	}
+
+	last_tint_colour = colour::toString(gtd.colour(), colour::StringFormat::RGB);
+	last_tint_amount = static_cast<int>(gtd.amount() * 100.0f);
+
+	maineditor::currentEntryPanel()->callRefresh();
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Opens the Modify Offsets dialog to mass-modify offsets of any
+// offset-compatible gfx [entries]
+// -----------------------------------------------------------------------------
+bool entryoperations::modifyOffsets(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager)
+{
+	// Create modify offsets dialog
+	ModifyOffsetsDialog mod;
+
+	// Run the dialog
+	if (mod.ShowModal() == wxID_CANCEL)
+		return false;
+
+	// Begin recording undo level
+	if (undo_manager)
+		undo_manager->beginRecord("Gfx Modify Offsets");
+
+	// Go through selected entries
+	for (auto& entry : entries)
+	{
+		if (undo_manager)
+			undo_manager->recordUndoStep(std::make_unique<EntryDataUS>(entry));
+
+		mod.apply(*entry);
+	}
+	maineditor::currentEntryPanel()->callRefresh();
+
+	// Finish recording undo level
+	if (undo_manager)
+		undo_manager->endRecord(true);
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Convert the given vox-format [entries] to kvx format
+// -----------------------------------------------------------------------------
+bool entryoperations::convertVoxelEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager)
+{
+	// Begin recording undo level
+	if (undo_manager)
+		undo_manager->beginRecord("Convert .vox -> .kvx");
+
+	// Go through entries
+	bool errors = false;
+	for (auto* entry : entries)
+	{
+		if (entry->type()->formatId() == "voxel_vox")
+		{
+			MemChunk kvx;
+			// Attempt conversion
+			if (!conversion::voxToKvx(entry->data(), kvx))
+			{
+				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
+				errors = true;
+				continue;
+			}
+			if (undo_manager)
+				undo_manager->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
+			entry->importMemChunk(kvx);                                             // Load kvx data
+			EntryType::detectEntryType(*entry);                                     // Update entry type
+			entry->setExtensionByType();                                            // Update extension if necessary
+		}
+	}
+
+	// Finish recording undo level
+	if (undo_manager)
+		undo_manager->endRecord(true);
+
+	// Show message if errors occurred
+	if (errors)
+		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
 
 	return true;
 }
@@ -1635,79 +2385,105 @@ bool entryoperations::convertSwanTbls(const ArchiveEntry* entry, MemChunk* animd
 	// Note that we do not terminate the list here!
 }
 
-
-void fixpngsrc(ArchiveEntry* entry)
+// -----------------------------------------------------------------------------
+// Converts wav format [entries] to doom sound format
+// -----------------------------------------------------------------------------
+bool entryoperations::convertWavToDSound(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager)
 {
-	if (!entry)
-		return;
-	auto            source = entry->rawData();
-	vector<uint8_t> data(entry->size());
-	memcpy(data.data(), source, entry->size());
+	// Begin recording undo level
+	if (undo_manager)
+		undo_manager->beginRecord("Convert Wav -> Doom Sound");
 
-	// Last check that it's a PNG
-	uint32_t header1 = memory::readB32(data.data(), 0);
-	uint32_t header2 = memory::readB32(data.data(), 4);
-	if (header1 != 0x89504E47 || header2 != 0x0D0A1A0A)
-		return;
+	// Go through entries
+	bool errors = false;
+	for (auto& entry : entries)
+	{
+		// Convert WAV -> Doom Sound if the entry is WAV format
+		if (entry->type()->formatId() == "snd_wav")
+		{
+			MemChunk dsnd;
+			// Attempt conversion
+			if (!conversion::wavToDoomSnd(entry->data(), dsnd))
+			{
+				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
+				errors = true;
+				continue;
+			}
+			if (undo_manager)
+				undo_manager->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
+			entry->importMemChunk(dsnd);                                            // Load doom sound data
+			EntryType::detectEntryType(*entry);                                     // Update entry type
+			entry->setExtensionByType();                                            // Update extension if necessary
+		}
+	}
 
-	// Loop through each chunk and recompute CRC
-	uint32_t pointer      = 8;
-	bool     neededchange = false;
-	while (pointer < entry->size())
-	{
-		if (pointer + 12 > entry->size())
-		{
-			log::error(wxString::Format("Entry %s cannot be repaired.", entry->name()));
-			return;
-		}
-		uint32_t chsz = memory::readB32(data.data(), pointer);
-		if (pointer + 12 + chsz > entry->size())
-		{
-			log::error(wxString::Format("Entry %s cannot be repaired.", entry->name()));
-			return;
-		}
-		uint32_t crc = misc::crc(data.data() + pointer + 4, 4 + chsz);
-		if (crc != memory::readB32(data.data(), pointer + 8 + chsz))
-		{
-			log::error(wxString::Format(
-				"Chunk %c%c%c%c has bad CRC",
-				data[pointer + 4],
-				data[pointer + 5],
-				data[pointer + 6],
-				data[pointer + 7]));
-			neededchange              = true;
-			data[pointer + 8 + chsz]  = crc >> 24;
-			data[pointer + 9 + chsz]  = (crc & 0x00ffffff) >> 16;
-			data[pointer + 10 + chsz] = (crc & 0x0000ffff) >> 8;
-			data[pointer + 11 + chsz] = (crc & 0x000000ff);
-		}
-		pointer += (chsz + 12);
-	}
-	// Import new data with fixed CRC
-	if (neededchange)
-	{
-		entry->importMem(data.data(), entry->size());
-	}
+	// Finish recording undo level
+	if (undo_manager)
+		undo_manager->endRecord(true);
+
+	// Show message if errors occurred
+	if (errors)
+		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
+
+	return true;
 }
 
-
 // -----------------------------------------------------------------------------
-//
-// Console Commands
-//
+// Converts doom (or other game) sound format [entries] to wav format
 // -----------------------------------------------------------------------------
-
-CONSOLE_COMMAND(fixpngcrc, 0, true)
+bool entryoperations::convertSoundToWav(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager)
 {
-	auto selection = maineditor::currentEntrySelection();
-	if (selection.empty())
+	// Begin recording undo level
+	if (undo_manager)
+		undo_manager->beginRecord("Convert Doom Sound -> Wav");
+
+	// Go through entries
+	bool errors = false;
+	for (auto& entry : entries)
 	{
-		log::info(1, "No entry selected");
-		return;
+		bool     worked = false;
+		MemChunk wav;
+		// Convert Doom Sound -> WAV if the entry is Doom Sound format
+		if (entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_doom_mac")
+			worked = conversion::doomSndToWav(entry->data(), wav);
+		// Or Doom Speaker sound format
+		else if (entry->type()->formatId() == "snd_speaker")
+			worked = conversion::spkSndToWav(entry->data(), wav);
+		// Or Jaguar Doom sound format
+		else if (entry->type()->formatId() == "snd_jaguar")
+			worked = conversion::jagSndToWav(entry->data(), wav);
+		// Or Wolfenstein 3D sound format
+		else if (entry->type()->formatId() == "snd_wolf")
+			worked = conversion::wolfSndToWav(entry->data(), wav);
+		// Or Creative Voice File format
+		else if (entry->type()->formatId() == "snd_voc")
+			worked = conversion::vocToWav(entry->data(), wav);
+		// Or Blood SFX format (this one needs to be given the entry, not just the mem chunk)
+		else if (entry->type()->formatId() == "snd_bloodsfx")
+			worked = conversion::bloodToWav(entry, wav);
+		// If successfully converted, update the entry
+		if (worked)
+		{
+			if (undo_manager)
+				undo_manager->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
+			entry->importMemChunk(wav);                                             // Load wav data
+			EntryType::detectEntryType(*entry);                                     // Update entry type
+			entry->setExtensionByType();                                            // Update extension if necessary
+		}
+		else
+		{
+			log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
+			errors = true;
+		}
 	}
-	for (auto& entry : selection)
-	{
-		if (entry->type()->formatId() == "img_png")
-			fixpngsrc(entry);
-	}
+
+	// Finish recording undo level
+	if (undo_manager)
+		undo_manager->endRecord(true);
+
+	// Show message if errors occurred
+	if (errors)
+		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
+
+	return true;
 }
