@@ -30,11 +30,8 @@
 #include <wx/dcmemory.h>
 #include <wx/dialog.h>
 #include <wx/dir.h>
-#include <wx/dirdlg.h>
 #include <wx/display.h>
-#include <wx/dnd.h>
 #include <wx/event.h>
-#include <wx/ffile.h>
 #include <wx/file.h>
 #include <wx/filedlg.h>
 #include <wx/filefn.h>
@@ -45,11 +42,9 @@
 #include <wx/generic/textdlgg.h>
 #include <wx/graphics.h>
 #include <wx/grid.h>
-#include <wx/hashmap.h>
 #include <wx/image.h>
 #include <wx/imaglist.h>
 #include <wx/ipc.h>
-#include <wx/listbox.h>
 #include <wx/listctrl.h>
 #include <wx/log.h>
 #include <wx/menu.h>
@@ -63,7 +58,6 @@
 #include <wx/propgrid/property.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/protocol/http.h>
-#include <wx/ptr_scpd.h>
 #include <wx/radiobut.h>
 #include <wx/regex.h>
 #include <wx/renderer.h>
@@ -73,7 +67,6 @@
 #include <wx/slider.h>
 #include <wx/snglinst.h>
 #include <wx/spinctrl.h>
-#include <wx/sstream.h>
 #include <wx/stackwalk.h>
 #include <wx/statbox.h>
 #include <wx/statline.h>
@@ -93,7 +86,6 @@
 #include <wx/valnum.h>
 #include <wx/wfstream.h>
 #include <wx/wrapsizer.h>
-#include <wx/xrc/xmlres.h>
 #include <wx/zipstrm.h>
 
 #ifdef __WXMSW__

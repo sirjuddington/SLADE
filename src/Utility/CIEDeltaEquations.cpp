@@ -4,10 +4,8 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    PropertyList.cpp
-// Description: The PropertyList class. Contains a hash map with strings for
-//              keys and the 'Property' dynamic value class for values.
-//              Each property value can be a bool, int, double or string.
+// Filename:    CIEDeltaEquations.cpp
+// Description: Functions for CIE colour space conversions
 //
 // The CIEDE 2000 implementation and test data was taken from
 // "The CIEDE2000 Color-Difference Formula: Implementation Notes,
