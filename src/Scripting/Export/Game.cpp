@@ -53,21 +53,21 @@ void registerThingType(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_ttype["name"]        = sol::property(&game::ThingType::name);
-	lua_ttype["group"]       = sol::property(&game::ThingType::group);
-	lua_ttype["radius"]      = sol::property(&game::ThingType::radius);
-	lua_ttype["height"]      = sol::property(&game::ThingType::height);
-	lua_ttype["scaleY"]      = sol::property(&game::ThingType::scaleY);
-	lua_ttype["scaleX"]      = sol::property(&game::ThingType::scaleX);
-	lua_ttype["angled"]      = sol::property(&game::ThingType::angled);
-	lua_ttype["hanging"]     = sol::property(&game::ThingType::hanging);
-	lua_ttype["fullbright"]  = sol::property(&game::ThingType::fullbright);
-	lua_ttype["decoration"]  = sol::property(&game::ThingType::decoration);
-	lua_ttype["solid"]       = sol::property(&game::ThingType::solid);
-	lua_ttype["sprite"]      = sol::property(&game::ThingType::sprite);
-	lua_ttype["icon"]        = sol::property(&game::ThingType::icon);
-	lua_ttype["translation"] = sol::property(&game::ThingType::translation);
-	lua_ttype["palette"]     = sol::property(&game::ThingType::palette);
+	lua_ttype.set("name", sol::property(&game::ThingType::name));
+	lua_ttype.set("group", sol::property(&game::ThingType::group));
+	lua_ttype.set("radius", sol::property(&game::ThingType::radius));
+	lua_ttype.set("height", sol::property(&game::ThingType::height));
+	lua_ttype.set("scaleY", sol::property(&game::ThingType::scaleY));
+	lua_ttype.set("scaleX", sol::property(&game::ThingType::scaleX));
+	lua_ttype.set("angled", sol::property(&game::ThingType::angled));
+	lua_ttype.set("hanging", sol::property(&game::ThingType::hanging));
+	lua_ttype.set("fullbright", sol::property(&game::ThingType::fullbright));
+	lua_ttype.set("decoration", sol::property(&game::ThingType::decoration));
+	lua_ttype.set("solid", sol::property(&game::ThingType::solid));
+	lua_ttype.set("sprite", sol::property(&game::ThingType::sprite));
+	lua_ttype.set("icon", sol::property(&game::ThingType::icon));
+	lua_ttype.set("translation", sol::property(&game::ThingType::translation));
+	lua_ttype.set("palette", sol::property(&game::ThingType::palette));
 
 	// TODO: lua_ttype["tagged"] = sol::property(&Game::ThingType::needsTag);
 }
@@ -77,8 +77,8 @@ void registerThingType(sol::state& lua)
 // -----------------------------------------------------------------------------
 void registerGameNamespace(sol::state& lua)
 {
-	auto game         = lua.create_table("Game");
-	game["ThingType"] = [](int type) { return game::configuration().thingType(type); };
+	auto game = lua.create_table("Game");
+	game.set_function("ThingType", [](int type) { return game::configuration().thingType(type); });
 }
 
 // -----------------------------------------------------------------------------

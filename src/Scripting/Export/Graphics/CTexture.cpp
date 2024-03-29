@@ -52,9 +52,9 @@ void registerCTexturePatchTypes(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_ctpatch["name"]    = sol::property(&CTPatch::name, &CTPatch::setName);
-	lua_ctpatch["offsetX"] = sol::property(&CTPatch::xOffset, &CTPatch::setOffsetX);
-	lua_ctpatch["offsetY"] = sol::property(&CTPatch::yOffset, &CTPatch::setOffsetY);
+	lua_ctpatch.set("name", sol::property(&CTPatch::name, &CTPatch::setName));
+	lua_ctpatch.set("offsetX", sol::property(&CTPatch::xOffset, &CTPatch::setOffsetX));
+	lua_ctpatch.set("offsetY", sol::property(&CTPatch::yOffset, &CTPatch::setOffsetY));
 	/*lua_ctpatch["offset"] = sol::property(
 		[](CTPatch& self) { return Vec2d(self.xOffset(), self.yOffset()); },
 		[](CTPatch& self, double x, double y) {
@@ -64,8 +64,8 @@ void registerCTexturePatchTypes(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_ctpatch["PatchEntry"] = &CTPatch::patchEntry;
-	lua_ctpatch["AsExtended"] = [](CTPatch& self) { return dynamic_cast<CTPatchEx*>(&self); };
+	lua_ctpatch.set_function("PatchEntry", &CTPatch::patchEntry);
+	lua_ctpatch.set_function("AsExtended", [](CTPatch& self) { return dynamic_cast<CTPatchEx*>(&self); });
 
 
 	// -------------------------------------------------------------------------
@@ -76,28 +76,28 @@ void registerCTexturePatchTypes(sol::state& lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_ctpatch_ex["TYPE_PATCH"]            = sol::property([]() { return CTPatchEx::Type::Patch; });
-	lua_ctpatch_ex["TYPE_GRAPHIC"]          = sol::property([]() { return CTPatchEx::Type::Graphic; });
-	lua_ctpatch_ex["BLENDTYPE_NONE"]        = sol::property([]() { return CTPatchEx::BlendType::None; });
-	lua_ctpatch_ex["BLENDTYPE_TRANSLATION"] = sol::property([]() { return CTPatchEx::BlendType::Translation; });
-	lua_ctpatch_ex["BLENDTYPE_BLEND"]       = sol::property([]() { return CTPatchEx::BlendType::Blend; });
-	lua_ctpatch_ex["BLENDTYPE_TINT"]        = sol::property([]() { return CTPatchEx::BlendType::Tint; });
+	lua_ctpatch_ex.set("TYPE_PATCH", sol::property([]() { return CTPatchEx::Type::Patch; }));
+	lua_ctpatch_ex.set("TYPE_GRAPHIC", sol::property([]() { return CTPatchEx::Type::Graphic; }));
+	lua_ctpatch_ex.set("BLENDTYPE_NONE", sol::property([]() { return CTPatchEx::BlendType::None; }));
+	lua_ctpatch_ex.set("BLENDTYPE_TRANSLATION", sol::property([]() { return CTPatchEx::BlendType::Translation; }));
+	lua_ctpatch_ex.set("BLENDTYPE_BLEND", sol::property([]() { return CTPatchEx::BlendType::Blend; }));
+	lua_ctpatch_ex.set("BLENDTYPE_TINT", sol::property([]() { return CTPatchEx::BlendType::Tint; }));
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_ctpatch_ex["flipX"]       = sol::property(&CTPatchEx::flipX, &CTPatchEx::setFlipX);
-	lua_ctpatch_ex["flipY"]       = sol::property(&CTPatchEx::flipY, &CTPatchEx::setFlipY);
-	lua_ctpatch_ex["useOffsets"]  = sol::property(&CTPatchEx::useOffsets, &CTPatchEx::setUseOffsets);
-	lua_ctpatch_ex["rotation"]    = sol::property(&CTPatchEx::rotation, &CTPatchEx::setRotation);
-	lua_ctpatch_ex["colour"]      = sol::property(&CTPatchEx::colour, &CTPatchEx::setColour);
-	lua_ctpatch_ex["alpha"]       = sol::property(&CTPatchEx::alpha, &CTPatchEx::setAlpha);
-	lua_ctpatch_ex["style"]       = sol::property(&CTPatchEx::style, &CTPatchEx::setStyle);
-	lua_ctpatch_ex["blendType"]   = sol::property(&CTPatchEx::blendType, &CTPatchEx::setBlendType);
-	lua_ctpatch_ex["translation"] = &CTPatchEx::translation;
+	lua_ctpatch_ex.set("flipX", sol::property(&CTPatchEx::flipX, &CTPatchEx::setFlipX));
+	lua_ctpatch_ex.set("flipY", sol::property(&CTPatchEx::flipY, &CTPatchEx::setFlipY));
+	lua_ctpatch_ex.set("useOffsets", sol::property(&CTPatchEx::useOffsets, &CTPatchEx::setUseOffsets));
+	lua_ctpatch_ex.set("rotation", sol::property(&CTPatchEx::rotation, &CTPatchEx::setRotation));
+	lua_ctpatch_ex.set("colour", sol::property(&CTPatchEx::colour, &CTPatchEx::setColour));
+	lua_ctpatch_ex.set("alpha", sol::property(&CTPatchEx::alpha, &CTPatchEx::setAlpha));
+	lua_ctpatch_ex.set("style", sol::property(&CTPatchEx::style, &CTPatchEx::setStyle));
+	lua_ctpatch_ex.set("blendType", sol::property(&CTPatchEx::blendType, &CTPatchEx::setBlendType));
+	lua_ctpatch_ex.set("translation", &CTPatchEx::translation);
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_ctpatch_ex["AsText"] = &CTPatchEx::asText;
+	lua_ctpatch_ex.set_function("AsText", &CTPatchEx::asText);
 	// parse?
 }
 
@@ -110,37 +110,42 @@ void registerCTextureType(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_ctexture["patches"]      = sol::property(&CTexture::patches);
-	lua_ctexture["name"]         = sol::property(&CTexture::name, &CTexture::setName);
-	lua_ctexture["width"]        = sol::property(&CTexture::width, &CTexture::setWidth);
-	lua_ctexture["height"]       = sol::property(&CTexture::height, &CTexture::setHeight);
-	lua_ctexture["scaleX"]       = sol::property(&CTexture::scaleX, &CTexture::setScaleX);
-	lua_ctexture["scaleY"]       = sol::property(&CTexture::scaleY, &CTexture::setScaleY);
-	lua_ctexture["offsetX"]      = sol::property(&CTexture::offsetX, &CTexture::setOffsetX);
-	lua_ctexture["offsetY"]      = sol::property(&CTexture::offsetY, &CTexture::setOffsetY);
-	lua_ctexture["worldPanning"] = sol::property(&CTexture::worldPanning, &CTexture::setWorldPanning);
-	lua_ctexture["type"]         = sol::property(&CTexture::type, &CTexture::setType);
-	lua_ctexture["extended"]     = sol::property(&CTexture::isExtended, &CTexture::setExtended);
-	lua_ctexture["optional"]     = sol::property(&CTexture::isOptional, &CTexture::setOptional);
-	lua_ctexture["noDecals"]     = sol::property(&CTexture::noDecals, &CTexture::setNoDecals);
-	lua_ctexture["nullTexture"]  = sol::property(&CTexture::nullTexture, &CTexture::setNullTexture);
+	lua_ctexture.set("patches", sol::property(&CTexture::patches));
+	lua_ctexture.set("name", sol::property(&CTexture::name, &CTexture::setName));
+	lua_ctexture.set("width", sol::property(&CTexture::width, &CTexture::setWidth));
+	lua_ctexture.set("height", sol::property(&CTexture::height, &CTexture::setHeight));
+	lua_ctexture.set("scaleX", sol::property(&CTexture::scaleX, &CTexture::setScaleX));
+	lua_ctexture.set("scaleY", sol::property(&CTexture::scaleY, &CTexture::setScaleY));
+	lua_ctexture.set("offsetX", sol::property(&CTexture::offsetX, &CTexture::setOffsetX));
+	lua_ctexture.set("offsetY", sol::property(&CTexture::offsetY, &CTexture::setOffsetY));
+	lua_ctexture.set("worldPanning", sol::property(&CTexture::worldPanning, &CTexture::setWorldPanning));
+	lua_ctexture.set("type", sol::property(&CTexture::type, &CTexture::setType));
+	lua_ctexture.set("extended", sol::property(&CTexture::isExtended, &CTexture::setExtended));
+	lua_ctexture.set("optional", sol::property(&CTexture::isOptional, &CTexture::setOptional));
+	lua_ctexture.set("noDecals", sol::property(&CTexture::noDecals, &CTexture::setNoDecals));
+	lua_ctexture.set("nullTexture", sol::property(&CTexture::nullTexture, &CTexture::setNullTexture));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_ctexture["CopyTexture"] = sol::overload(
-		&CTexture::copyTexture, [](CTexture& self, const CTexture& tex) { return self.copyTexture(tex, false); });
-	lua_ctexture["Clear"]    = &CTexture::clear;
-	lua_ctexture["AddPatch"] = sol::overload(
-		&CTexture::addPatch,
-		[](CTexture& self, string_view patch) { return self.addPatch(patch, 0, 0, 0); },
-		[](CTexture& self, string_view patch, int x, int y) { return self.addPatch(patch, x, y, 0); });
-	lua_ctexture["RemovePatch"]    = [](CTexture& self, int index) { return self.removePatch(index); };
-	lua_ctexture["ReplacePatch"]   = &CTexture::replacePatch;
-	lua_ctexture["DuplicatePatch"] = sol::overload(
-		&CTexture::duplicatePatch, [](CTexture& self, int index) { self.duplicatePatch(index, 8, 8); });
-	lua_ctexture["SwapPatches"]     = &CTexture::swapPatches;
-	lua_ctexture["AsText"]          = &CTexture::asText;
-	lua_ctexture["ConvertExtended"] = &CTexture::convertExtended;
-	lua_ctexture["ConvertRegular"]  = &CTexture::convertRegular;
+	lua_ctexture.set_function(
+		"CopyTexture",
+		sol::overload(
+			&CTexture::copyTexture, [](CTexture& self, const CTexture& tex) { return self.copyTexture(tex, false); }));
+	lua_ctexture.set_function("Clear", &CTexture::clear);
+	lua_ctexture.set_function(
+		"AddPatch",
+		sol::overload(
+			&CTexture::addPatch,
+			[](CTexture& self, string_view patch) { return self.addPatch(patch, 0, 0, 0); },
+			[](CTexture& self, string_view patch, int x, int y) { return self.addPatch(patch, x, y, 0); }));
+	lua_ctexture.set_function("RemovePatch", [](CTexture& self, int index) { return self.removePatch(index); });
+	lua_ctexture.set_function("ReplacePatch", &CTexture::replacePatch);
+	lua_ctexture.set_function(
+		"DuplicatePatch",
+		sol::overload(&CTexture::duplicatePatch, [](CTexture& self, int index) { self.duplicatePatch(index, 8, 8); }));
+	lua_ctexture.set_function("SwapPatches", &CTexture::swapPatches);
+	lua_ctexture.set_function("AsText", &CTexture::asText);
+	lua_ctexture.set_function("ConvertExtended", &CTexture::convertExtended);
+	lua_ctexture.set_function("ConvertRegular", &CTexture::convertRegular);
 }
 } // namespace slade::lua

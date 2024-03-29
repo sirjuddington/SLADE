@@ -107,88 +107,115 @@ void registerImageType(sol::state& lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_image["TYPE_PALMASK"]      = sol::property([]() { return SImage::Type::PalMask; });
-	lua_image["TYPE_RGBA"]         = sol::property([]() { return SImage::Type::RGBA; });
-	lua_image["TYPE_ALPHAMAP"]     = sol::property([]() { return SImage::Type::AlphaMap; });
-	lua_image["SOURCE_BRIGHTNESS"] = sol::property([]() { return SImage::AlphaSource::Brightness; });
-	lua_image["SOURCE_ALPHA"]      = sol::property([]() { return SImage::AlphaSource::Alpha; });
+	lua_image.set("TYPE_PALMASK", sol::property([]() { return SImage::Type::PalMask; }));
+	lua_image.set("TYPE_RGBA", sol::property([]() { return SImage::Type::RGBA; }));
+	lua_image.set("TYPE_ALPHAMAP", sol::property([]() { return SImage::Type::AlphaMap; }));
+	lua_image.set("SOURCE_BRIGHTNESS", sol::property([]() { return SImage::AlphaSource::Brightness; }));
+	lua_image.set("SOURCE_ALPHA", sol::property([]() { return SImage::AlphaSource::Alpha; }));
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_image["type"]       = sol::property(&SImage::type);
-	lua_image["width"]      = sol::property(&SImage::width);
-	lua_image["height"]     = sol::property(&SImage::height);
-	lua_image["hasPalette"] = sol::property(&SImage::hasPalette);
-	lua_image["palette"]    = sol::property(&SImage::palette, &SImage::setPalette);
-	lua_image["offsetX"]    = sol::property([](SImage& self) { return self.offset().x; }, &SImage::setXOffset);
-	lua_image["offsetY"]    = sol::property([](SImage& self) { return self.offset().y; }, &SImage::setYOffset);
-	lua_image["stride"]     = sol::property(&SImage::stride);
-	lua_image["bpp"]        = sol::property(&SImage::bpp);
+	lua_image.set("type", sol::property(&SImage::type));
+	lua_image.set("width", sol::property(&SImage::width));
+	lua_image.set("height", sol::property(&SImage::height));
+	lua_image.set("hasPalette", sol::property(&SImage::hasPalette));
+	lua_image.set("palette", sol::property(&SImage::palette, &SImage::setPalette));
+	lua_image.set("offsetX", sol::property([](SImage& self) { return self.offset().x; }, &SImage::setXOffset));
+	lua_image.set("offsetY", sol::property([](SImage& self) { return self.offset().y; }, &SImage::setYOffset));
+	lua_image.set("stride", sol::property(&SImage::stride));
+	lua_image.set("bpp", sol::property(&SImage::bpp));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_image["IsValid"] = &SImage::isValid;
-	lua_image["PixelAt"] = sol::overload(
-		&SImage::pixelAt, [](SImage& self, unsigned x, unsigned y) { return self.pixelAt(x, y); });
-	lua_image["PixelIndexAt"]       = &SImage::pixelIndexAt;
-	lua_image["FindUnusedColour"]   = &SImage::findUnusedColour;
-	lua_image["CountUniqueColours"] = &SImage::countColours;
-	lua_image["Clear"]              = sol::resolve<void()>(&SImage::clear);
-	lua_image["Create"]             = sol::overload(
-        [](SImage& self, int w, int h, SImage::Type type, Palette* pal) { self.create(w, h, type, pal); },
-        [](SImage& self, int w, int h, SImage::Type type) { self.create(w, h, type); });
-	lua_image["Copy"]      = &SImage::copyImage;
-	lua_image["FillAlpha"] = &SImage::fillAlpha;
-	lua_image["LoadData"]  = sol::overload(
-        [](SImage& self, MemChunk& mc) { self.open(mc); },
-        [](SImage& self, MemChunk& mc, int index) { self.open(mc, index); },
-        &SImage::open);
-	lua_image["LoadEntry"] = sol::overload(
-		[](SImage& self, ArchiveEntry* entry) { return imageLoadEntry(self, entry, 0); }, &imageLoadEntry);
-	lua_image["WriteRGBAData"] = sol::overload(
-		&SImage::putRGBAData, [](SImage& self, MemChunk& mc) { return self.putRGBAData(mc); });
-	lua_image["WriteRGBData"] = sol::overload(
-		&SImage::putRGBData, [](SImage& self, MemChunk& mc) { return self.putRGBData(mc); });
-	lua_image["WriteIndexedData"] = &SImage::putIndexedData;
-	lua_image["ConvertRGBA"]    = sol::overload(&SImage::convertRGBA, [](SImage& self) { return self.convertRGBA(); });
-	lua_image["ConvertIndexed"] = sol::overload(
-		&SImage::convertPaletted, [](SImage& self, Palette* p) { return self.convertPaletted(p); });
-	lua_image["ConvertAlphaMap"] = sol::overload(
-		&SImage::convertAlphaMap,
-		[](SImage& self, SImage::AlphaSource source) { return self.convertAlphaMap(source); });
-	lua_image["MaskFromColour"]     = &SImage::maskFromColour;
-	lua_image["MaskFromBrightness"] = &SImage::maskFromBrightness;
-	lua_image["SetPixelColour"]     = sol::overload(
-        [](SImage& self, int x, int y, ColRGBA& col) { return imageSetPixelCol(self, x, y, col, nullptr); },
-        &imageSetPixelCol);
-	lua_image["SetPixelIndex"] = sol::overload(
-		[](SImage& self, int x, int y, int index) { return imageSetPixelIndex(self, x, y, index, 255); },
-		&imageSetPixelIndex);
-	lua_image["Rotate"]           = &SImage::rotate;
-	lua_image["MirrorVertical"]   = [](SImage& self) { return self.mirror(true); };
-	lua_image["MirrorHorizontal"] = [](SImage& self) { return self.mirror(false); };
-	lua_image["Crop"]             = &SImage::crop;
-	lua_image["Resize"]           = &SImage::resize;
-	lua_image["ApplyTranslation"] = sol::overload(
-		[](SImage& self, Translation* t) { return imageApplyTranslation(self, t, nullptr, false); },
-		[](SImage& self, Translation* t, Palette* p) { return imageApplyTranslation(self, t, p, false); },
-		&imageApplyTranslation);
-	lua_image["DrawPixel"] = sol::overload(
-		&SImage::drawPixel,
-		[](SImage& self, int x, int y, ColRGBA& col, SImage::DrawProps& props)
-		{ return self.drawPixel(x, y, col, props, nullptr); });
-	lua_image["DrawImage"] = sol::overload(
-		&imageDrawImage,
-		[](SImage& self, int x, int y, SImage& img, SImage::DrawProps& props, Palette* pal_src)
-		{ return imageDrawImage(self, x, y, img, props, pal_src, nullptr); },
-		[](SImage& self, int x, int y, SImage& img, SImage::DrawProps& props)
-		{ return imageDrawImage(self, x, y, img, props, nullptr, nullptr); });
-	lua_image["Colourise"] = sol::overload(
-		[](SImage& self, ColRGBA& col, Palette* pal) { self.colourise(col, pal); },
-		[](SImage& self, ColRGBA& col) { self.colourise(col); });
-	lua_image["Tint"] = sol::overload(
-		[](SImage& self, ColRGBA& col, float amount, Palette* pal) { self.tint(col, amount, pal); },
-		[](SImage& self, ColRGBA& col, float amount) { self.tint(col, amount); });
-	lua_image["Trim"] = &SImage::adjust;
+	lua_image.set_function("IsValid", &SImage::isValid);
+	lua_image.set_function(
+		"PixelAt",
+		sol::overload(&SImage::pixelAt, [](SImage& self, unsigned x, unsigned y) { return self.pixelAt(x, y); }));
+	lua_image.set_function("PixelIndexAt", &SImage::pixelIndexAt);
+	lua_image.set_function("FindUnusedColour", &SImage::findUnusedColour);
+	lua_image.set_function("CountUniqueColours", &SImage::countColours);
+	lua_image.set_function("Clear", sol::resolve<void()>(&SImage::clear));
+	lua_image.set_function(
+		"Create",
+		sol::overload(
+			[](SImage& self, int w, int h, SImage::Type type, Palette* pal) { self.create(w, h, type, pal); },
+			[](SImage& self, int w, int h, SImage::Type type) { self.create(w, h, type); }));
+	lua_image.set_function("Copy", &SImage::copyImage);
+	lua_image.set_function("FillAlpha", &SImage::fillAlpha);
+	lua_image.set_function(
+		"LoadData",
+		sol::overload(
+			[](SImage& self, MemChunk& mc) { self.open(mc); },
+			[](SImage& self, MemChunk& mc, int index) { self.open(mc, index); },
+			&SImage::open));
+	lua_image.set_function(
+		"LoadEntry",
+		sol::overload(
+			[](SImage& self, ArchiveEntry* entry) { return imageLoadEntry(self, entry, 0); }, &imageLoadEntry));
+	lua_image.set_function(
+		"WriteRGBAData",
+		sol::overload(&SImage::putRGBAData, [](SImage& self, MemChunk& mc) { return self.putRGBAData(mc); }));
+	lua_image.set_function(
+		"WriteRGBData",
+		sol::overload(&SImage::putRGBData, [](SImage& self, MemChunk& mc) { return self.putRGBData(mc); }));
+	lua_image.set_function("WriteIndexedData", &SImage::putIndexedData);
+	lua_image.set_function(
+		"ConvertRGBA", sol::overload(&SImage::convertRGBA, [](SImage& self) { return self.convertRGBA(); }));
+	lua_image.set_function(
+		"ConvertIndexed",
+		sol::overload(&SImage::convertPaletted, [](SImage& self, Palette* p) { return self.convertPaletted(p); }));
+	lua_image.set_function(
+		"ConvertAlphaMap",
+		sol::overload(
+			&SImage::convertAlphaMap,
+			[](SImage& self, SImage::AlphaSource source) { return self.convertAlphaMap(source); }));
+	lua_image.set_function("MaskFromColour", &SImage::maskFromColour);
+	lua_image.set_function("MaskFromBrightness", &SImage::maskFromBrightness);
+	lua_image.set_function(
+		"SetPixelColour",
+		sol::overload(
+			[](SImage& self, int x, int y, ColRGBA& col) { return imageSetPixelCol(self, x, y, col, nullptr); },
+			&imageSetPixelCol));
+	lua_image.set_function(
+		"SetPixelIndex",
+		sol::overload(
+			[](SImage& self, int x, int y, int index) { return imageSetPixelIndex(self, x, y, index, 255); },
+			&imageSetPixelIndex));
+	lua_image.set_function("Rotate", &SImage::rotate);
+	lua_image.set_function("MirrorVertical", [](SImage& self) { return self.mirror(true); });
+	lua_image.set_function("MirrorHorizontal", [](SImage& self) { return self.mirror(false); });
+	lua_image.set_function("Crop", &SImage::crop);
+	lua_image.set_function("Resize", &SImage::resize);
+	lua_image.set_function(
+		"ApplyTranslation",
+		sol::overload(
+			[](SImage& self, Translation* t) { return imageApplyTranslation(self, t, nullptr, false); },
+			[](SImage& self, Translation* t, Palette* p) { return imageApplyTranslation(self, t, p, false); },
+			&imageApplyTranslation));
+	lua_image.set_function(
+		"DrawPixel",
+		sol::overload(
+			&SImage::drawPixel,
+			[](SImage& self, int x, int y, ColRGBA& col, SImage::DrawProps& props)
+			{ return self.drawPixel(x, y, col, props, nullptr); }));
+	lua_image.set_function(
+		"DrawImage",
+		sol::overload(
+			&imageDrawImage,
+			[](SImage& self, int x, int y, SImage& img, SImage::DrawProps& props, Palette* pal_src)
+			{ return imageDrawImage(self, x, y, img, props, pal_src, nullptr); },
+			[](SImage& self, int x, int y, SImage& img, SImage::DrawProps& props)
+			{ return imageDrawImage(self, x, y, img, props, nullptr, nullptr); }));
+	lua_image.set_function(
+		"Colourise",
+		sol::overload(
+			[](SImage& self, ColRGBA& col, Palette* pal) { self.colourise(col, pal); },
+			[](SImage& self, ColRGBA& col) { self.colourise(col); }));
+	lua_image.set_function(
+		"Tint",
+		sol::overload(
+			[](SImage& self, ColRGBA& col, float amount, Palette* pal) { self.tint(col, amount, pal); },
+			[](SImage& self, ColRGBA& col, float amount) { self.tint(col, amount); }));
+	lua_image.set_function("Trim", &SImage::adjust);
 }
 } // namespace slade::lua

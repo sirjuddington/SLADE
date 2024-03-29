@@ -142,34 +142,39 @@ void registerUINamespace(sol::state& lua)
 {
 	auto ui = lua.create_named_table("UI");
 
-	// Functions
-	// -------------------------------------------------------------------------
-	ui["MessageBox"] = sol::overload(
-		&messageBox, [](const string& title, const string& message) { messageBox(title, message); });
-	ui["MessageBoxExt"]   = &messageBoxExtended;
-	ui["PromptString"]    = &promptString;
-	ui["PromptNumber"]    = &promptNumber;
-	ui["PromptYesNo"]     = &promptYesNo;
-	ui["PromptOpenFile"]  = &browseFile;
-	ui["PromptOpenFiles"] = &browseFiles;
-	ui["PromptSaveFile"]  = sol::overload(
-        &saveFile, [](string_view title, string_view extensions) { return saveFile(title, extensions); });
-	ui["PromptSaveFiles"] = &saveFiles;
-	ui["ShowSplash"]      = sol::overload(
-        [](const string& message) { ui::showSplash(message, false, currentWindow()); },
-        [](const string& message, bool progress) { ui::showSplash(message, progress, currentWindow()); });
-	ui["HideSplash"]               = &ui::hideSplash;
-	ui["UpdateSplash"]             = &ui::updateSplash;
-	ui["SplashProgress"]           = &ui::getSplashProgress;
-	ui["SetSplashMessage"]         = &ui::setSplashMessage;
-	ui["SetSplashProgressMessage"] = &ui::setSplashProgressMessage;
-	ui["SetSplashProgress"]        = sol::resolve<void(float)>(ui::setSplashProgress);
-
 	// Constants
 	// -------------------------------------------------------------------------
-	ui["MB_ICON_INFO"]     = sol::property([]() { return MessageBoxIcon::Info; });
-	ui["MB_ICON_QUESTION"] = sol::property([]() { return MessageBoxIcon::Question; });
-	ui["MB_ICON_WARNING"]  = sol::property([]() { return MessageBoxIcon::Warning; });
-	ui["MB_ICON_ERROR"]    = sol::property([]() { return MessageBoxIcon::Error; });
+	ui.set("MB_ICON_INFO", sol::property([]() { return MessageBoxIcon::Info; }));
+	ui.set("MB_ICON_QUESTION", sol::property([]() { return MessageBoxIcon::Question; }));
+	ui.set("MB_ICON_WARNING", sol::property([]() { return MessageBoxIcon::Warning; }));
+	ui.set("MB_ICON_ERROR", sol::property([]() { return MessageBoxIcon::Error; }));
+
+	// Functions
+	// -------------------------------------------------------------------------
+	ui.set_function(
+		"MessageBox",
+		sol::overload(&messageBox, [](const string& title, const string& message) { messageBox(title, message); }));
+	ui.set_function("MessageBoxExt", &messageBoxExtended);
+	ui.set_function("PromptString", &promptString);
+	ui.set_function("PromptNumber", &promptNumber);
+	ui.set_function("PromptYesNo", &promptYesNo);
+	ui.set_function("PromptOpenFile", &browseFile);
+	ui.set_function("PromptOpenFiles", &browseFiles);
+	ui.set_function(
+		"PromptSaveFile",
+		sol::overload(
+			&saveFile, [](string_view title, string_view extensions) { return saveFile(title, extensions); }));
+	ui.set_function("PromptSaveFiles", &saveFiles);
+	ui.set_function(
+		"ShowSplash",
+		sol::overload(
+			[](const string& message) { ui::showSplash(message, false, currentWindow()); },
+			[](const string& message, bool progress) { ui::showSplash(message, progress, currentWindow()); }));
+	ui.set_function("HideSplash", &ui::hideSplash);
+	ui.set_function("UpdateSplash", &ui::updateSplash);
+	ui.set_function("SplashProgress", &ui::getSplashProgress);
+	ui.set_function("SetSplashMessage", &ui::setSplashMessage);
+	ui.set_function("SetSplashProgressMessage", &ui::setSplashProgressMessage);
+	ui.set_function("SetSplashProgress", sol::resolve<void(float)>(ui::setSplashProgress));
 }
 } // namespace slade::lua

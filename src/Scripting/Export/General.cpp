@@ -141,52 +141,64 @@ void registerMemChunkType(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_mc["size"] = sol::property(&MemChunk::size);
-	lua_mc["crc"]  = sol::property(&MemChunk::crc);
+	lua_mc.set("size", sol::property(&MemChunk::size));
+	lua_mc.set("crc", sol::property(&MemChunk::crc));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_mc["AsString"] = &memChunkData;
-	lua_mc["SetData"]  = [](MemChunk& self, string_view data)
-	{ self.importMem(reinterpret_cast<const uint8_t*>(data.data()), data.size()); };
-	lua_mc["Clear"]  = &MemChunk::clear;
-	lua_mc["Resize"] = &MemChunk::reSize;
-	lua_mc["Copy"]   = sol::resolve<bool(const MemChunk&)>(&MemChunk::importMem);
-	lua_mc["CopyTo"] = sol::overload(
-		&MemChunk::exportMemChunk,
-		[](MemChunk& self, MemChunk& mc) { return self.exportMemChunk(mc); },
-		[](MemChunk& self, MemChunk& mc, int offset) { return self.exportMemChunk(mc, offset); });
-	lua_mc["ImportFile"] = sol::overload(
-		&MemChunk::importFile,
-		[](MemChunk& self, string_view fn) { self.importFile(fn); },
-		[](MemChunk& self, string_view fn, int offset) { self.importFile(fn, offset); });
-	lua_mc["ExportFile"] = sol::overload(
-		&MemChunk::exportFile,
-		[](MemChunk& self, string_view fn) { self.exportFile(fn); },
-		[](MemChunk& self, string_view fn, int offset) { self.exportFile(fn, offset); });
-	lua_mc["FillData"]    = &MemChunk::fillData;
-	lua_mc["WriteInt8"]   = &memChunkWrite<int8_t>;
-	lua_mc["WriteUInt8"]  = &memChunkWrite<uint8_t>;
-	lua_mc["WriteInt16"]  = &memChunkWrite<int16_t>;
-	lua_mc["WriteUInt16"] = &memChunkWrite<uint16_t>;
-	lua_mc["WriteInt32"]  = &memChunkWrite<int32_t>;
-	lua_mc["WriteUInt32"] = &memChunkWrite<uint32_t>;
-	lua_mc["WriteInt64"]  = &memChunkWrite<int64_t>;
-	lua_mc["WriteUInt64"] = &memChunkWrite<uint64_t>;
-	lua_mc["WriteString"] = [](MemChunk& self, int offset, string_view value, bool expand)
-	{ self.write(offset, value.data(), value.size(), expand); };
-	lua_mc["ReadInt8"]   = &memChunkRead<int8_t>;
-	lua_mc["ReadUInt8"]  = &memChunkRead<uint8_t>;
-	lua_mc["ReadInt16"]  = &memChunkRead<int16_t>;
-	lua_mc["ReadUInt16"] = &memChunkRead<uint16_t>;
-	lua_mc["ReadInt32"]  = &memChunkRead<int32_t>;
-	lua_mc["ReadUInt32"] = &memChunkRead<uint32_t>;
-	lua_mc["ReadInt64"]  = &memChunkRead<int64_t>;
-	lua_mc["ReadUInt64"] = &memChunkRead<uint64_t>;
-	lua_mc["ReadString"] = sol::overload(
-		&memChunkReadString,
-		[](MemChunk& self, unsigned offset, unsigned length)
-		{ return memChunkReadString(self, offset, length, false); });
+	lua_mc.set_function("AsString", &memChunkData);
+	lua_mc.set_function(
+		"SetData",
+		[](MemChunk& self, string_view data)
+		{ self.importMem(reinterpret_cast<const uint8_t*>(data.data()), data.size()); });
+	lua_mc.set_function("Clear", &MemChunk::clear);
+	lua_mc.set_function("Resize", &MemChunk::reSize);
+	lua_mc.set_function("Copy", sol::resolve<bool(const MemChunk&)>(&MemChunk::importMem));
+	lua_mc.set_function(
+		"CopyTo",
+		sol::overload(
+			&MemChunk::exportMemChunk,
+			[](MemChunk& self, MemChunk& mc) { return self.exportMemChunk(mc); },
+			[](MemChunk& self, MemChunk& mc, int offset) { return self.exportMemChunk(mc, offset); }));
+	lua_mc.set_function(
+		"ImportFile",
+		sol::overload(
+			&MemChunk::importFile,
+			[](MemChunk& self, string_view fn) { self.importFile(fn); },
+			[](MemChunk& self, string_view fn, int offset) { self.importFile(fn, offset); }));
+	lua_mc.set_function(
+		"ExportFile",
+		sol::overload(
+			&MemChunk::exportFile,
+			[](MemChunk& self, string_view fn) { self.exportFile(fn); },
+			[](MemChunk& self, string_view fn, int offset) { self.exportFile(fn, offset); }));
+	lua_mc.set_function("FillData", &MemChunk::fillData);
+	lua_mc.set_function("WriteInt8", &memChunkWrite<int8_t>);
+	lua_mc.set_function("WriteUInt8", &memChunkWrite<uint8_t>);
+	lua_mc.set_function("WriteInt16", &memChunkWrite<int16_t>);
+	lua_mc.set_function("WriteUInt16", &memChunkWrite<uint16_t>);
+	lua_mc.set_function("WriteInt32", &memChunkWrite<int32_t>);
+	lua_mc.set_function("WriteUInt32", &memChunkWrite<uint32_t>);
+	lua_mc.set_function("WriteInt64", &memChunkWrite<int64_t>);
+	lua_mc.set_function("WriteUInt64", &memChunkWrite<uint64_t>);
+	lua_mc.set_function(
+		"WriteString",
+		[](MemChunk& self, int offset, string_view value, bool expand)
+		{ self.write(offset, value.data(), value.size(), expand); });
+	lua_mc.set_function("ReadInt8", &memChunkRead<int8_t>);
+	lua_mc.set_function("ReadUInt8", &memChunkRead<uint8_t>);
+	lua_mc.set_function("ReadInt16", &memChunkRead<int16_t>);
+	lua_mc.set_function("ReadUInt16", &memChunkRead<uint16_t>);
+	lua_mc.set_function("ReadInt32", &memChunkRead<int32_t>);
+	lua_mc.set_function("ReadUInt32", &memChunkRead<uint32_t>);
+	lua_mc.set_function("ReadInt64", &memChunkRead<int64_t>);
+	lua_mc.set_function("ReadUInt64", &memChunkRead<uint64_t>);
+	lua_mc.set_function(
+		"ReadString",
+		sol::overload(
+			&memChunkReadString,
+			[](MemChunk& self, unsigned offset, unsigned length)
+			{ return memChunkReadString(self, offset, length, false); }));
 }
 
 // -----------------------------------------------------------------------------
@@ -217,34 +229,37 @@ void registerColourType(sol::state& lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_colour["FORMAT_RGB"]   = sol::property([] { return colour::StringFormat::RGB; });
-	lua_colour["FORMAT_RGBA"]  = sol::property([] { return colour::StringFormat::RGBA; });
-	lua_colour["FORMAT_HEX"]   = sol::property([] { return colour::StringFormat::HEX; });
-	lua_colour["FORMAT_ZDOOM"] = sol::property([] { return colour::StringFormat::ZDoom; });
+	lua_colour.set("FORMAT_RGB", sol::property([] { return colour::StringFormat::RGB; }));
+	lua_colour.set("FORMAT_RGBA", sol::property([] { return colour::StringFormat::RGBA; }));
+	lua_colour.set("FORMAT_HEX", sol::property([] { return colour::StringFormat::HEX; }));
+	lua_colour.set("FORMAT_ZDOOM", sol::property([] { return colour::StringFormat::ZDoom; }));
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_colour["r"]  = &ColRGBA::r;
-	lua_colour["g"]  = &ColRGBA::g;
-	lua_colour["b"]  = &ColRGBA::b;
-	lua_colour["a"]  = &ColRGBA::a;
-	lua_colour["fr"] = sol::property(&ColRGBA::fr);
-	lua_colour["fg"] = sol::property(&ColRGBA::fg);
-	lua_colour["fb"] = sol::property(&ColRGBA::fb);
-	lua_colour["fa"] = sol::property(&ColRGBA::fa);
+	lua_colour.set("r", &ColRGBA::r);
+	lua_colour.set("g", &ColRGBA::g);
+	lua_colour.set("b", &ColRGBA::b);
+	lua_colour.set("a", &ColRGBA::a);
+	lua_colour.set("fr", sol::property(&ColRGBA::fr));
+	lua_colour.set("fg", sol::property(&ColRGBA::fg));
+	lua_colour.set("fb", sol::property(&ColRGBA::fb));
+	lua_colour.set("fa", sol::property(&ColRGBA::fa));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_colour["AsHSL"]    = &colourAsHSL;
-	lua_colour["AsLAB"]    = &colourAsLAB;
-	lua_colour["AsString"] = [](ColRGBA& self, colour::StringFormat f) { return colour::toString(self, f); };
-	lua_colour["FromHSL"]  = [](ColRGBA& self, double h, double s, double l)
-	{
-		auto rgb = colour::hslToRgb({ h, s, l });
-		self.r   = rgb.r;
-		self.g   = rgb.g;
-		self.b   = rgb.b;
-	};
+	lua_colour.set_function("AsHSL", &colourAsHSL);
+	lua_colour.set_function("AsLAB", &colourAsLAB);
+	lua_colour.set_function(
+		"AsString", [](ColRGBA& self, colour::StringFormat f) { return colour::toString(self, f); });
+	lua_colour.set_function(
+		"FromHSL",
+		[](ColRGBA& self, double h, double s, double l)
+		{
+			auto rgb = colour::hslToRgb({ h, s, l });
+			self.r   = rgb.r;
+			self.g   = rgb.g;
+			self.b   = rgb.b;
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -254,8 +269,8 @@ void registerMiscTypes(sol::state& lua)
 {
 	// Point type
 	auto lua_vec2f = lua.new_usertype<Vec2d>("Point", sol::constructors<Vec2d(), Vec2d(double, double)>());
-	lua_vec2f["x"] = &Vec2d::x;
-	lua_vec2f["y"] = &Vec2d::y;
+	lua_vec2f.set("x", &Vec2d::x);
+	lua_vec2f.set("y", &Vec2d::y);
 
 	// Colour type
 	registerColourType(lua);
@@ -263,11 +278,11 @@ void registerMiscTypes(sol::state& lua)
 	// Plane type
 	auto lua_plane = lua.new_usertype<Plane>(
 		"Plane", sol::constructors<Plane(), Plane(double, double, double, double)>());
-	lua_plane["a"]        = &Plane::a;
-	lua_plane["b"]        = &Plane::b;
-	lua_plane["c"]        = &Plane::c;
-	lua_plane["d"]        = &Plane::d;
-	lua_plane["HeightAt"] = sol::resolve<double(const Vec2d&) const>(&Plane::heightAt);
+	lua_plane.set("a", &Plane::a);
+	lua_plane.set("b", &Plane::b);
+	lua_plane.set("c", &Plane::c);
+	lua_plane.set("d", &Plane::d);
+	lua_plane.set_function("HeightAt", sol::resolve<double(const Vec2d&) const>(&Plane::heightAt));
 
 	// MemChunk type
 	registerMemChunkType(lua);
@@ -282,16 +297,17 @@ void registerAppNamespace(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	app["LogMessage"]            = [](string_view message) { logMessage(message, log::MessageType::Script); };
-	app["LogWarning"]            = [](string_view message) { logMessage(message, log::MessageType::Warning); };
-	app["LogError"]              = [](string_view message) { logMessage(message, log::MessageType::Error); };
-	app["CurrentArchive"]        = &maineditor::currentArchive;
-	app["CurrentEntry"]          = &maineditor::currentEntry;
-	app["CurrentEntrySelection"] = &maineditor::currentEntrySelection;
-	app["CurrentPalette"] = sol::overload(&maineditor::currentPalette, [] { return maineditor::currentPalette(); });
-	app["ShowArchive"]    = &showArchive;
-	app["ShowEntry"]      = &maineditor::openEntry;
-	app["MapEditor"]      = &mapeditor::editContext;
+	app.set_function("LogMessage", [](string_view message) { logMessage(message, log::MessageType::Script); });
+	app.set_function("LogWarning", [](string_view message) { logMessage(message, log::MessageType::Warning); });
+	app.set_function("LogError", [](string_view message) { logMessage(message, log::MessageType::Error); });
+	app.set_function("CurrentArchive", &maineditor::currentArchive);
+	app.set_function("CurrentEntry", &maineditor::currentEntry);
+	app.set_function("CurrentEntrySelection", &maineditor::currentEntrySelection);
+	app.set_function(
+		"CurrentPalette", sol::overload(&maineditor::currentPalette, [] { return maineditor::currentPalette(); }));
+	app.set_function("ShowArchive", &showArchive);
+	app.set_function("ShowEntry", &maineditor::openEntry);
+	app.set_function("MapEditor", &mapeditor::editContext);
 }
 
 } // namespace slade::lua

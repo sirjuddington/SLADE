@@ -60,20 +60,20 @@ void registerImageConvertOptionsType(sol::state& lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_copt["MASK_NONE"]       = sol::property([]() { return SIFormat::Mask::None; });
-	lua_copt["MASK_COLOUR"]     = sol::property([]() { return SIFormat::Mask::Colour; });
-	lua_copt["MASK_ALPHA"]      = sol::property([]() { return SIFormat::Mask::Alpha; });
-	lua_copt["MASK_BRIGHTNESS"] = sol::property([]() { return SIFormat::Mask::Brightness; });
+	lua_copt.set("MASK_NONE", sol::property([]() { return SIFormat::Mask::None; }));
+	lua_copt.set("MASK_COLOUR", sol::property([]() { return SIFormat::Mask::Colour; }));
+	lua_copt.set("MASK_ALPHA", sol::property([]() { return SIFormat::Mask::Alpha; }));
+	lua_copt.set("MASK_BRIGHTNESS", sol::property([]() { return SIFormat::Mask::Brightness; }));
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_copt["paletteCurrent"] = &SIFormat::ConvertOptions::pal_current;
-	lua_copt["paletteTarget"]  = &SIFormat::ConvertOptions::pal_target;
-	lua_copt["maskSource"]     = &SIFormat::ConvertOptions::mask_source;
-	lua_copt["maskColour"]     = &SIFormat::ConvertOptions::mask_colour;
-	lua_copt["alphaThreshold"] = &SIFormat::ConvertOptions::alpha_threshold;
-	lua_copt["transparency"]   = &SIFormat::ConvertOptions::transparency;
-	lua_copt["pixelFormat"]    = &SIFormat::ConvertOptions::col_format;
+	lua_copt.set("paletteCurrent", &SIFormat::ConvertOptions::pal_current);
+	lua_copt.set("paletteTarget", &SIFormat::ConvertOptions::pal_target);
+	lua_copt.set("maskSource", &SIFormat::ConvertOptions::mask_source);
+	lua_copt.set("maskColour", &SIFormat::ConvertOptions::mask_colour);
+	lua_copt.set("alphaThreshold", &SIFormat::ConvertOptions::alpha_threshold);
+	lua_copt.set("transparency", &SIFormat::ConvertOptions::transparency);
+	lua_copt.set("pixelFormat", &SIFormat::ConvertOptions::col_format);
 }
 
 // -----------------------------------------------------------------------------
@@ -85,28 +85,32 @@ void registerImageFormatType(sol::state& lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_iformat["WRITABLE_NO"]               = sol::property([]() { return SIFormat::Writable::No; });
-	lua_iformat["WRITABLE_YES"]              = sol::property([]() { return SIFormat::Writable::Yes; });
-	lua_iformat["WRITABLE_NEEDS_CONVERSION"] = sol::property([]() { return SIFormat::Writable::Convert; });
+	lua_iformat.set("WRITABLE_NO", sol::property([]() { return SIFormat::Writable::No; }));
+	lua_iformat.set("WRITABLE_YES", sol::property([]() { return SIFormat::Writable::Yes; }));
+	lua_iformat.set("WRITABLE_NEEDS_CONVERSION", sol::property([]() { return SIFormat::Writable::Convert; }));
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_iformat["id"]        = sol::property(&SIFormat::id);
-	lua_iformat["name"]      = sol::property(&SIFormat::name);
-	lua_iformat["extension"] = sol::property(&SIFormat::extension);
+	lua_iformat.set("id", sol::property(&SIFormat::id));
+	lua_iformat.set("name", sol::property(&SIFormat::name));
+	lua_iformat.set("extension", sol::property(&SIFormat::extension));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_iformat["IsThisFormat"]        = &SIFormat::isThisFormat;
-	lua_iformat["CanWrite"]            = &SIFormat::canWrite;
-	lua_iformat["CanWritePixelFormat"] = &SIFormat::canWriteType;
-	lua_iformat["ConvertWritable"]     = &SIFormat::convertWritable;
-	lua_iformat["LoadImage"]           = sol::overload(
-        &SIFormat::loadImage, [](SIFormat& self, SImage& image, MemChunk& data) { self.loadImage(image, data); });
-	lua_iformat["SaveImage"] = sol::overload(
-		&SIFormat::saveImage,
-		[](SIFormat& self, SImage& image, MemChunk& out) { self.saveImage(image, out); },
-		[](SIFormat& self, SImage& image, MemChunk& out, Palette* pal) { self.saveImage(image, out, pal); });
+	lua_iformat.set_function("IsThisFormat", &SIFormat::isThisFormat);
+	lua_iformat.set_function("CanWrite", &SIFormat::canWrite);
+	lua_iformat.set_function("CanWritePixelFormat", &SIFormat::canWriteType);
+	lua_iformat.set_function("ConvertWritable", &SIFormat::convertWritable);
+	lua_iformat.set_function(
+		"LoadImage",
+		sol::overload(
+			&SIFormat::loadImage, [](SIFormat& self, SImage& image, MemChunk& data) { self.loadImage(image, data); }));
+	lua_iformat.set_function(
+		"SaveImage",
+		sol::overload(
+			&SIFormat::saveImage,
+			[](SIFormat& self, SImage& image, MemChunk& out) { self.saveImage(image, out); },
+			[](SIFormat& self, SImage& image, MemChunk& out, Palette* pal) { self.saveImage(image, out, pal); }));
 }
 
 // -----------------------------------------------------------------------------
@@ -118,9 +122,9 @@ void registerImageDrawOptionsType(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_idopt["blend"]           = &SImage::DrawProps::blend;
-	lua_idopt["alpha"]           = &SImage::DrawProps::alpha;
-	lua_idopt["keepSourceAlpha"] = &SImage::DrawProps::src_alpha;
+	lua_idopt.set("blend", &SImage::DrawProps::blend);
+	lua_idopt.set("alpha", &SImage::DrawProps::alpha);
+	lua_idopt.set("keepSourceAlpha", &SImage::DrawProps::src_alpha);
 }
 
 // -----------------------------------------------------------------------------
@@ -149,50 +153,56 @@ void registerPaletteType(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_palette["colourCount"] = sol::property([](Palette& self) { return self.colours().size(); });
+	lua_palette.set("colourCount", sol::property([](Palette& self) { return self.colours().size(); }));
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_palette["FORMAT_RAW"]    = sol::property([]() { return Palette::Format::Raw; });
-	lua_palette["FORMAT_IMAGE"]  = sol::property([]() { return Palette::Format::Image; });
-	lua_palette["FORMAT_CSV"]    = sol::property([]() { return Palette::Format::CSV; });
-	lua_palette["FORMAT_JASC"]   = sol::property([]() { return Palette::Format::JASC; });
-	lua_palette["FORMAT_GIMP"]   = sol::property([]() { return Palette::Format::GIMP; });
-	lua_palette["MATCH_DEFAULT"] = sol::property([]() { return Palette::ColourMatch::Default; });
-	lua_palette["MATCH_OLD"]     = sol::property([]() { return Palette::ColourMatch::Old; });
-	lua_palette["MATCH_RGB"]     = sol::property([]() { return Palette::ColourMatch::RGB; });
-	lua_palette["MATCH_HSL"]     = sol::property([]() { return Palette::ColourMatch::HSL; });
-	lua_palette["MATCH_C76"]     = sol::property([]() { return Palette::ColourMatch::C76; });
-	lua_palette["MATCH_C94"]     = sol::property([]() { return Palette::ColourMatch::C94; });
-	lua_palette["MATCH_C2K"]     = sol::property([]() { return Palette::ColourMatch::C2K; });
+	lua_palette.set("FORMAT_RAW", sol::property([]() { return Palette::Format::Raw; }));
+	lua_palette.set("FORMAT_IMAGE", sol::property([]() { return Palette::Format::Image; }));
+	lua_palette.set("FORMAT_CSV", sol::property([]() { return Palette::Format::CSV; }));
+	lua_palette.set("FORMAT_JASC", sol::property([]() { return Palette::Format::JASC; }));
+	lua_palette.set("FORMAT_GIMP", sol::property([]() { return Palette::Format::GIMP; }));
+	lua_palette.set("MATCH_DEFAULT", sol::property([]() { return Palette::ColourMatch::Default; }));
+	lua_palette.set("MATCH_OLD", sol::property([]() { return Palette::ColourMatch::Old; }));
+	lua_palette.set("MATCH_RGB", sol::property([]() { return Palette::ColourMatch::RGB; }));
+	lua_palette.set("MATCH_HSL", sol::property([]() { return Palette::ColourMatch::HSL; }));
+	lua_palette.set("MATCH_C76", sol::property([]() { return Palette::ColourMatch::C76; }));
+	lua_palette.set("MATCH_C94", sol::property([]() { return Palette::ColourMatch::C94; }));
+	lua_palette.set("MATCH_C2K", sol::property([]() { return Palette::ColourMatch::C2K; }));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_palette["Colour"]   = &Palette::colour;
-	lua_palette["LoadData"] = sol::overload(&paletteLoadData, &paletteLoadDataFormatted);
-	lua_palette["LoadFile"] = sol::overload(
-		&Palette::loadFile, [](Palette& self, string_view file) { return self.loadFile(file); });
-	lua_palette["SaveFile"] = sol::overload(
-		&Palette::saveFile, [](Palette& self, string_view file) { return self.saveFile(file); });
-	lua_palette["SetColour"]     = &Palette::setColour;
-	lua_palette["SetColourR"]    = &Palette::setColourR;
-	lua_palette["SetColourG"]    = &Palette::setColourG;
-	lua_palette["SetColourB"]    = &Palette::setColourB;
-	lua_palette["SetColourA"]    = &Palette::setColourA;
-	lua_palette["CopyColours"]   = &Palette::copyPalette;
-	lua_palette["FindColour"]    = &Palette::findColour;
-	lua_palette["NearestColour"] = sol::overload(
-		&Palette::nearestColour, [](Palette& self, const ColRGBA& col) { return self.nearestColour(col); });
-	lua_palette["CountUniqueColours"] = &Palette::countColours;
-	lua_palette["ApplyTranslation"]   = &Palette::applyTranslation;
-	lua_palette["Colourise"]          = &Palette::colourise;
-	lua_palette["Tint"]               = &Palette::tint;
-	lua_palette["Saturate"]           = &Palette::saturate;
-	lua_palette["Illuminate"]         = &Palette::illuminate;
-	lua_palette["Shift"]              = &Palette::shift;
-	lua_palette["Invert"]             = &Palette::invert;
-	lua_palette["Gradient"] = [](Palette& self, const ColRGBA& startC, const ColRGBA& endC, int startI, int endI)
-	{ self.setGradient(startI, endI, startC, endC); };
+	lua_palette.set_function("Colour", &Palette::colour);
+	lua_palette.set_function("LoadData", sol::overload(&paletteLoadData, &paletteLoadDataFormatted));
+	lua_palette.set_function(
+		"LoadFile",
+		sol::overload(&Palette::loadFile, [](Palette& self, string_view file) { return self.loadFile(file); }));
+	lua_palette.set_function(
+		"SaveFile",
+		sol::overload(&Palette::saveFile, [](Palette& self, string_view file) { return self.saveFile(file); }));
+	lua_palette.set_function("SetColour", &Palette::setColour);
+	lua_palette.set_function("SetColourR", &Palette::setColourR);
+	lua_palette.set_function("SetColourG", &Palette::setColourG);
+	lua_palette.set_function("SetColourB", &Palette::setColourB);
+	lua_palette.set_function("SetColourA", &Palette::setColourA);
+	lua_palette.set_function("CopyColours", &Palette::copyPalette);
+	lua_palette.set_function("FindColour", &Palette::findColour);
+	lua_palette.set_function(
+		"NearestColour",
+		sol::overload(
+			&Palette::nearestColour, [](Palette& self, const ColRGBA& col) { return self.nearestColour(col); }));
+	lua_palette.set_function("CountUniqueColours", &Palette::countColours);
+	lua_palette.set_function("ApplyTranslation", &Palette::applyTranslation);
+	lua_palette.set_function("Colourise", &Palette::colourise);
+	lua_palette.set_function("Tint", &Palette::tint);
+	lua_palette.set_function("Saturate", &Palette::saturate);
+	lua_palette.set_function("Illuminate", &Palette::illuminate);
+	lua_palette.set_function("Shift", &Palette::shift);
+	lua_palette.set_function("Invert", &Palette::invert);
+	lua_palette.set_function(
+		"Gradient",
+		[](Palette& self, const ColRGBA& startC, const ColRGBA& endC, int startI, int endI)
+		{ self.setGradient(startI, endI, startC, endC); });
 }
 
 // -----------------------------------------------------------------------------
@@ -247,23 +257,26 @@ void registerGraphicsNamespace(sol::state& lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	gfx["BLEND_NORMAL"]          = sol::property([]() { return SImage::BlendType::Normal; });
-	gfx["BLEND_ADD"]             = sol::property([]() { return SImage::BlendType::Add; });
-	gfx["BLEND_SUBTRACT"]        = sol::property([]() { return SImage::BlendType::Subtract; });
-	gfx["BLEND_REVERSESUBTRACT"] = sol::property([]() { return SImage::BlendType::ReverseSubtract; });
-	gfx["BLEND_MODULATE"]        = sol::property([]() { return SImage::BlendType::Modulate; });
+	gfx.set("BLEND_NORMAL", sol::property([]() { return SImage::BlendType::Normal; }));
+	gfx.set("BLEND_ADD", sol::property([]() { return SImage::BlendType::Add; }));
+	gfx.set("BLEND_SUBTRACT", sol::property([]() { return SImage::BlendType::Subtract; }));
+	gfx.set("BLEND_REVERSESUBTRACT", sol::property([]() { return SImage::BlendType::ReverseSubtract; }));
+	gfx.set("BLEND_MODULATE", sol::property([]() { return SImage::BlendType::Modulate; }));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	gfx["ImageFormat"]     = [](string_view id) { return SIFormat::getFormat(id); };
-	gfx["AllImageFormats"] = []()
-	{
-		vector<SIFormat*> formats;
-		SIFormat::putAllFormats(formats);
-		return formats;
-	};
-	gfx["DetectImageFormat"] = [](MemChunk& mc) { return SIFormat::determineFormat(mc); };
-	gfx["GetImageInfo"]      = sol::overload(&getImageInfo, [](MemChunk& data) { return getImageInfo(data, 0); });
+	gfx.set_function("ImageFormat", [](string_view id) { return SIFormat::getFormat(id); });
+	gfx.set_function(
+		"AllImageFormats",
+		[]()
+		{
+			vector<SIFormat*> formats;
+			SIFormat::putAllFormats(formats);
+			return formats;
+		});
+	gfx.set_function("DetectImageFormat", [](MemChunk& mc) { return SIFormat::determineFormat(mc); });
+	gfx.set_function(
+		"GetImageInfo", sol::overload(&getImageInfo, [](MemChunk& data) { return getImageInfo(data, 0); }));
 }
 
 } // namespace slade::lua

@@ -125,27 +125,29 @@ void registerArchive(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_archive["filename"] = sol::property([](Archive& self) { return self.filename(); });
-	lua_archive["entries"]  = sol::property(&archiveAllEntries);
-	lua_archive["rootDir"]  = sol::property(&Archive::rootDir);
-	lua_archive["format"]   = sol::property(&Archive::formatDesc);
+	lua_archive.set("filename", sol::property([](Archive& self) { return self.filename(); }));
+	lua_archive.set("entries", sol::property(&archiveAllEntries));
+	lua_archive.set("rootDir", sol::property(&Archive::rootDir));
+	lua_archive.set("format", sol::property(&Archive::formatDesc));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_archive["FilenameNoPath"]         = [](Archive& self) { return self.filename(false); };
-	lua_archive["EntryAtPath"]            = &Archive::entryAtPathShared;
-	lua_archive["DirAtPath"]              = [](Archive& self, const string& path) { return self.dirAtPath(path); };
-	lua_archive["CreateEntry"]            = &archiveCreateEntry;
-	lua_archive["CreateEntryInNamespace"] = &archiveCreateEntryInNamespace;
-	lua_archive["CreateDir"]              = &archiveCreateDir;
-	lua_archive["RemoveEntry"]            = [](Archive& self, ArchiveEntry* entry) { return self.removeEntry(entry); };
-	lua_archive["RenameEntry"]            = &Archive::renameEntry;
-	lua_archive["Save"]                   = sol::overload(
-        [](Archive& self) { return std::make_tuple(self.save(), global::error); },
-        [](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), global::error); });
-	lua_archive["FindFirst"] = &archiveFindFirst;
-	lua_archive["FindLast"]  = &archiveFindLast;
-	lua_archive["FindAll"]   = &archiveFindAll;
+	lua_archive.set_function("FilenameNoPath", [](Archive& self) { return self.filename(false); });
+	lua_archive.set_function("EntryAtPath", &Archive::entryAtPathShared);
+	lua_archive.set_function("DirAtPath", [](Archive& self, const string& path) { return self.dirAtPath(path); });
+	lua_archive.set_function("CreateEntry", &archiveCreateEntry);
+	lua_archive.set_function("CreateEntryInNamespace", &archiveCreateEntryInNamespace);
+	lua_archive.set_function("CreateDir", &archiveCreateDir);
+	lua_archive.set_function("RemoveEntry", [](Archive& self, ArchiveEntry* entry) { return self.removeEntry(entry); });
+	lua_archive.set_function("RenameEntry", &Archive::renameEntry);
+	lua_archive.set_function(
+		"Save",
+		sol::overload(
+			[](Archive& self) { return std::make_tuple(self.save(), global::error); },
+			[](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), global::error); }));
+	lua_archive.set_function("FindFirst", &archiveFindFirst);
+	lua_archive.set_function("FindLast", &archiveFindLast);
+	lua_archive.set_function("FindAll", &archiveFindAll);
 
 	// Register all subclasses
 	// (perhaps it'd be a good idea to make Archive not abstract and handle

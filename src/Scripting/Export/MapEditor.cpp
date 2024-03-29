@@ -70,13 +70,13 @@ void registerSLADEMap(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_map["name"]          = sol::property(&SLADEMap::mapName);
-	lua_map["udmfNamespace"] = sol::property(&SLADEMap::udmfNamespace);
-	lua_map["vertices"]      = sol::property([](SLADEMap& self) { return self.vertices().all(); });
-	lua_map["linedefs"]      = sol::property([](SLADEMap& self) { return self.lines().all(); });
-	lua_map["sidedefs"]      = sol::property([](SLADEMap& self) { return self.sides().all(); });
-	lua_map["sectors"]       = sol::property([](SLADEMap& self) { return self.sectors().all(); });
-	lua_map["things"]        = sol::property([](SLADEMap& self) { return self.things().all(); });
+	lua_map.set("name", sol::property(&SLADEMap::mapName));
+	lua_map.set("udmfNamespace", sol::property(&SLADEMap::udmfNamespace));
+	lua_map.set("vertices", sol::property([](SLADEMap& self) { return self.vertices().all(); }));
+	lua_map.set("linedefs", sol::property([](SLADEMap& self) { return self.lines().all(); }));
+	lua_map.set("sidedefs", sol::property([](SLADEMap& self) { return self.sides().all(); }));
+	lua_map.set("sectors", sol::property([](SLADEMap& self) { return self.sectors().all(); }));
+	lua_map.set("things", sol::property([](SLADEMap& self) { return self.things().all(); }));
 }
 
 // -----------------------------------------------------------------------------
@@ -111,43 +111,55 @@ void registerMapEditor(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_mapeditor["editMode"]       = sol::property(&MapEditContext::editMode);
-	lua_mapeditor["sectorEditMode"] = sol::property(&MapEditContext::sectorEditMode);
-	lua_mapeditor["gridSize"]       = sol::property(&MapEditContext::gridSize);
-	lua_mapeditor["map"]            = sol::property(&MapEditContext::map);
+	lua_mapeditor.set("editMode", sol::property(&MapEditContext::editMode));
+	lua_mapeditor.set("sectorEditMode", sol::property(&MapEditContext::sectorEditMode));
+	lua_mapeditor.set("gridSize", sol::property(&MapEditContext::gridSize));
+	lua_mapeditor.set("map", sol::property(&MapEditContext::map));
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_mapeditor["MODE_VERTICES"]      = sol::property([]() { return mapeditor::Mode::Vertices; });
-	lua_mapeditor["MODE_LINES"]         = sol::property([]() { return mapeditor::Mode::Lines; });
-	lua_mapeditor["MODE_SECTORS"]       = sol::property([]() { return mapeditor::Mode::Sectors; });
-	lua_mapeditor["MODE_THINGS"]        = sol::property([]() { return mapeditor::Mode::Things; });
-	lua_mapeditor["MODE_VISUAL"]        = sol::property([]() { return mapeditor::Mode::Visual; });
-	lua_mapeditor["SECTORMODE_BOTH"]    = sol::property([]() { return mapeditor::SectorMode::Both; });
-	lua_mapeditor["SECTORMODE_FLOOR"]   = sol::property([]() { return mapeditor::SectorMode::Floor; });
-	lua_mapeditor["SECTORMODE_CEILING"] = sol::property([]() { return mapeditor::SectorMode::Ceiling; });
+	lua_mapeditor.set("MODE_VERTICES", sol::property([]() { return mapeditor::Mode::Vertices; }));
+	lua_mapeditor.set("MODE_LINES", sol::property([]() { return mapeditor::Mode::Lines; }));
+	lua_mapeditor.set("MODE_SECTORS", sol::property([]() { return mapeditor::Mode::Sectors; }));
+	lua_mapeditor.set("MODE_THINGS", sol::property([]() { return mapeditor::Mode::Things; }));
+	lua_mapeditor.set("MODE_VISUAL", sol::property([]() { return mapeditor::Mode::Visual; }));
+	lua_mapeditor.set("SECTORMODE_BOTH", sol::property([]() { return mapeditor::SectorMode::Both; }));
+	lua_mapeditor.set("SECTORMODE_FLOOR", sol::property([]() { return mapeditor::SectorMode::Floor; }));
+	lua_mapeditor.set("SECTORMODE_CEILING", sol::property([]() { return mapeditor::SectorMode::Ceiling; }));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_mapeditor["SelectedVertices"] = sol::overload(
-		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedVertices(try_hilight); },
-		[](MapEditContext& self) { return self.selection().selectedVertices(false); });
-	lua_mapeditor["SelectedLines"] = sol::overload(
-		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedLines(try_hilight); },
-		[](MapEditContext& self) { return self.selection().selectedLines(false); });
-	lua_mapeditor["SelectedSectors"] = sol::overload(
-		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedSectors(try_hilight); },
-		[](MapEditContext& self) { return self.selection().selectedSectors(false); });
-	lua_mapeditor["SelectedThings"] = sol::overload(
-		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedThings(try_hilight); },
-		[](MapEditContext& self) { return self.selection().selectedThings(false); });
-	lua_mapeditor["ClearSelection"] = [](MapEditContext& self) { self.selection().clear(); };
-	lua_mapeditor["Select"]         = sol::overload(
-        &selectMapObject, [](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); });
-	lua_mapeditor["SetEditMode"] = sol::overload(
-		[](MapEditContext& self, mapeditor::Mode mode) { setEditMode(self, mode); },
-		[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode)
-		{ setEditMode(self, mode, sector_mode); });
+	lua_mapeditor.set_function(
+		"SelectedVertices",
+		sol::overload(
+			[](MapEditContext& self, bool try_hilight) { return self.selection().selectedVertices(try_hilight); },
+			[](MapEditContext& self) { return self.selection().selectedVertices(false); }));
+	lua_mapeditor.set_function(
+		"SelectedLines",
+		sol::overload(
+			[](MapEditContext& self, bool try_hilight) { return self.selection().selectedLines(try_hilight); },
+			[](MapEditContext& self) { return self.selection().selectedLines(false); }));
+	lua_mapeditor.set_function(
+		"SelectedSectors",
+		sol::overload(
+			[](MapEditContext& self, bool try_hilight) { return self.selection().selectedSectors(try_hilight); },
+			[](MapEditContext& self) { return self.selection().selectedSectors(false); }));
+	lua_mapeditor.set_function(
+		"SelectedThings",
+		sol::overload(
+			[](MapEditContext& self, bool try_hilight) { return self.selection().selectedThings(try_hilight); },
+			[](MapEditContext& self) { return self.selection().selectedThings(false); }));
+	lua_mapeditor.set_function("ClearSelection", [](MapEditContext& self) { self.selection().clear(); });
+	lua_mapeditor.set_function(
+		"Select",
+		sol::overload(
+			&selectMapObject, [](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); }));
+	lua_mapeditor.set_function(
+		"SetEditMode",
+		sol::overload(
+			[](MapEditContext& self, mapeditor::Mode mode) { setEditMode(self, mode); },
+			[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode)
+			{ setEditMode(self, mode, sector_mode); }));
 }
 
 // -----------------------------------------------------------------------------

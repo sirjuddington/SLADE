@@ -62,12 +62,12 @@ void registerArchiveFormat(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_archiveformat["id"]            = sol::readonly(&ArchiveFormat::id);
-	lua_archiveformat["name"]          = sol::readonly(&ArchiveFormat::name);
-	lua_archiveformat["supportsDirs"]  = sol::readonly(&ArchiveFormat::supports_dirs);
-	lua_archiveformat["hasExtensions"] = sol::readonly(&ArchiveFormat::names_extensions);
-	lua_archiveformat["maxNameLength"] = sol::readonly(&ArchiveFormat::max_name_length);
-	lua_archiveformat["entryFormat"]   = sol::readonly(&ArchiveFormat::entry_format);
+	lua_archiveformat.set("id", sol::readonly(&ArchiveFormat::id));
+	lua_archiveformat.set("name", sol::readonly(&ArchiveFormat::name));
+	lua_archiveformat.set("supportsDirs", sol::readonly(&ArchiveFormat::supports_dirs));
+	lua_archiveformat.set("hasExtensions", sol::readonly(&ArchiveFormat::names_extensions));
+	lua_archiveformat.set("maxNameLength", sol::readonly(&ArchiveFormat::max_name_length));
+	lua_archiveformat.set("entryFormat", sol::readonly(&ArchiveFormat::entry_format));
 	// TODO: extensions - need to export key_value_t or do something custom
 }
 
@@ -81,12 +81,12 @@ void registerArchiveSearchOptions(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_search_opt["matchName"]      = sol::property(&ArchiveSearchOptions::match_name);
-	lua_search_opt["matchType"]      = sol::property(&ArchiveSearchOptions::match_type);
-	lua_search_opt["matchNamespace"] = sol::property(&ArchiveSearchOptions::match_namespace);
-	lua_search_opt["dir"]            = sol::property(&ArchiveSearchOptions::dir);
-	lua_search_opt["ignoreExt"]      = sol::property(&ArchiveSearchOptions::ignore_ext);
-	lua_search_opt["searchSubdirs"]  = sol::property(&ArchiveSearchOptions::search_subdirs);
+	lua_search_opt.set("matchName", sol::property(&ArchiveSearchOptions::match_name));
+	lua_search_opt.set("matchType", sol::property(&ArchiveSearchOptions::match_type));
+	lua_search_opt.set("matchNamespace", sol::property(&ArchiveSearchOptions::match_namespace));
+	lua_search_opt.set("dir", sol::property(&ArchiveSearchOptions::dir));
+	lua_search_opt.set("ignoreExt", sol::property(&ArchiveSearchOptions::ignore_ext));
+	lua_search_opt.set("searchSubdirs", sol::property(&ArchiveSearchOptions::search_subdirs));
 }
 
 // -----------------------------------------------------------------------------
@@ -99,12 +99,12 @@ void registerArchiveDir(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_dir["name"]           = sol::property(&ArchiveDir::name);
-	lua_dir["archive"]        = sol::property(&ArchiveDir::archive);
-	lua_dir["entries"]        = sol::property(&ArchiveDir::entries);
-	lua_dir["parent"]         = sol::property(&ArchiveDir::parent);
-	lua_dir["path"]           = sol::property(&ArchiveDir::path);
-	lua_dir["subDirectories"] = sol::property(&ArchiveDir::subdirs);
+	lua_dir.set("name", sol::property(&ArchiveDir::name));
+	lua_dir.set("archive", sol::property(&ArchiveDir::archive));
+	lua_dir.set("entries", sol::property(&ArchiveDir::entries));
+	lua_dir.set("parent", sol::property(&ArchiveDir::parent));
+	lua_dir.set("path", sol::property(&ArchiveDir::path));
+	lua_dir.set("subDirectories", sol::property(&ArchiveDir::subdirs));
 }
 
 // -----------------------------------------------------------------------------
@@ -114,27 +114,35 @@ void registerArchivesNamespace(sol::state& lua)
 {
 	auto archives = lua.create_table("Archives");
 
-	archives["All"] = sol::overload(
-		[](bool res) { return app::archiveManager().allArchives(res); },
-		[]() { return app::archiveManager().allArchives(false); });
-	archives["Create"] = [](string_view format)
-	{ return std::make_tuple(app::archiveManager().newArchive(format), global::error); };
-	archives["OpenFile"] = [](string_view filename)
-	{ return std::make_tuple(app::archiveManager().openArchive(filename), global::error); };
-	archives["Close"] = sol::overload(
-		[](Archive* archive) { return app::archiveManager().closeArchive(archive); },
-		[](int index) { return app::archiveManager().closeArchive(index); });
-	archives["CloseAll"]             = []() { app::archiveManager().closeAll(); };
-	archives["FileExtensionsString"] = []() { return app::archiveManager().getArchiveExtensionsString(); };
-	archives["BaseResource"]         = []() { return app::archiveManager().baseResourceArchive(); };
-	archives["BaseResourcePaths"]    = []() { return app::archiveManager().baseResourcePaths(); };
-	archives["OpenBaseResource"]     = [](int index) { return app::archiveManager().openBaseResource(index); };
-	archives["ProgramResource"]      = []() { return app::archiveManager().programResourceArchive(); };
-	archives["RecentFiles"]          = []() { return app::archiveManager().recentFiles(); };
-	archives["Bookmarks"]            = []() { return app::archiveManager().bookmarks(); };
-	archives["AddBookmark"]    = [](ArchiveEntry* entry) { app::archiveManager().addBookmark(entry->getShared()); };
-	archives["RemoveBookmark"] = [](ArchiveEntry* entry) { app::archiveManager().deleteBookmark(entry); };
-	archives["EntryType"]      = &EntryType::fromId;
+	archives.set_function(
+		"All",
+		sol::overload(
+			[](bool res) { return app::archiveManager().allArchives(res); },
+			[]() { return app::archiveManager().allArchives(false); }));
+	archives.set_function(
+		"Create",
+		[](string_view format) { return std::make_tuple(app::archiveManager().newArchive(format), global::error); });
+	archives.set_function(
+		"OpenFile",
+		[](string_view filename)
+		{ return std::make_tuple(app::archiveManager().openArchive(filename), global::error); });
+	archives.set_function(
+		"Close",
+		sol::overload(
+			[](Archive* archive) { return app::archiveManager().closeArchive(archive); },
+			[](int index) { return app::archiveManager().closeArchive(index); }));
+	archives.set_function("CloseAll", []() { app::archiveManager().closeAll(); });
+	archives.set_function("FileExtensionsString", []() { return app::archiveManager().getArchiveExtensionsString(); });
+	archives.set_function("BaseResource", []() { return app::archiveManager().baseResourceArchive(); });
+	archives.set_function("BaseResourcePaths", []() { return app::archiveManager().baseResourcePaths(); });
+	archives.set_function("OpenBaseResource", [](int index) { return app::archiveManager().openBaseResource(index); });
+	archives.set_function("ProgramResource", []() { return app::archiveManager().programResourceArchive(); });
+	archives.set_function("RecentFiles", []() { return app::archiveManager().recentFiles(); });
+	archives.set_function("Bookmarks", []() { return app::archiveManager().bookmarks(); });
+	archives.set_function(
+		"AddBookmark", [](ArchiveEntry* entry) { app::archiveManager().addBookmark(entry->getShared()); });
+	archives.set_function("RemoveBookmark", [](ArchiveEntry* entry) { app::archiveManager().deleteBookmark(entry); });
+	archives.set_function("EntryType", &EntryType::fromId);
 }
 
 // -----------------------------------------------------------------------------

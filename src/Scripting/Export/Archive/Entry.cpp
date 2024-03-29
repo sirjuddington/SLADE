@@ -89,33 +89,41 @@ void registerArchiveEntry(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_entry["name"]  = sol::property([](ArchiveEntry& self) { return self.name(); });
-	lua_entry["path"]  = sol::property([](ArchiveEntry& self) { return self.path(); });
-	lua_entry["type"]  = sol::property(&ArchiveEntry::type);
-	lua_entry["size"]  = sol::property(&ArchiveEntry::size);
-	lua_entry["index"] = sol::property(&ArchiveEntry::index);
-	lua_entry["crc32"] = sol::property([](ArchiveEntry& self) { return misc::crc(self.rawData(), self.size()); });
-	lua_entry["data"]  = sol::property([](ArchiveEntry& self) { return &self.data(); });
-	lua_entry["parentArchive"] = sol::property(&entryParent);
-	lua_entry["parentDir"]     = sol::property(&entryDir);
+	lua_entry.set("name", sol::property([](ArchiveEntry& self) { return self.name(); }));
+	lua_entry.set("path", sol::property([](ArchiveEntry& self) { return self.path(); }));
+	lua_entry.set("type", sol::property(&ArchiveEntry::type));
+	lua_entry.set("size", sol::property(&ArchiveEntry::size));
+	lua_entry.set("index", sol::property(&ArchiveEntry::index));
+	lua_entry.set("crc32", sol::property([](ArchiveEntry& self) { return misc::crc(self.rawData(), self.size()); }));
+	lua_entry.set("data", sol::property([](ArchiveEntry& self) { return &self.data(); }));
+	lua_entry.set("parentArchive", sol::property(&entryParent));
+	lua_entry.set("parentDir", sol::property(&entryDir));
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_entry["FormattedName"] = sol::overload(
-		[](ArchiveEntry& self) { return formattedEntryName(self, true, true, false); },
-		[](ArchiveEntry& self, bool include_path) { return formattedEntryName(self, include_path, true, false); },
-		[](ArchiveEntry& self, bool include_path, bool include_extension)
-		{ return formattedEntryName(self, include_path, include_extension, false); },
-		&formattedEntryName);
-	lua_entry["FormattedSize"] = &ArchiveEntry::sizeString;
-	lua_entry["ImportFile"]    = [](ArchiveEntry& self, string_view filename)
-	{ return std::make_tuple(self.importFile(filename), global::error); };
-	lua_entry["ImportEntry"] = [](ArchiveEntry& self, ArchiveEntry* entry)
-	{ return std::make_tuple(self.importEntry(entry), global::error); };
-	lua_entry["ImportData"] = sol::overload(&entryImportString, &entryImportMC);
-	lua_entry["ExportFile"] = [](ArchiveEntry& self, string_view filename)
-	{ return std::make_tuple(self.exportFile(filename), global::error); };
-	lua_entry["Rename"] = &entryRename;
+	lua_entry.set_function(
+		"FormattedName",
+		sol::overload(
+			[](ArchiveEntry& self) { return formattedEntryName(self, true, true, false); },
+			[](ArchiveEntry& self, bool include_path) { return formattedEntryName(self, include_path, true, false); },
+			[](ArchiveEntry& self, bool include_path, bool include_extension)
+			{ return formattedEntryName(self, include_path, include_extension, false); },
+			&formattedEntryName));
+	lua_entry.set_function("FormattedSize", &ArchiveEntry::sizeString);
+	lua_entry.set_function(
+		"ImportFile",
+		[](ArchiveEntry& self, string_view filename)
+		{ return std::make_tuple(self.importFile(filename), global::error); });
+	lua_entry.set_function(
+		"ImportEntry",
+		[](ArchiveEntry& self, ArchiveEntry* entry)
+		{ return std::make_tuple(self.importEntry(entry), global::error); });
+	lua_entry.set_function("ImportData", sol::overload(&entryImportString, &entryImportMC));
+	lua_entry.set_function(
+		"ExportFile",
+		[](ArchiveEntry& self, string_view filename)
+		{ return std::make_tuple(self.exportFile(filename), global::error); });
+	lua_entry.set_function("Rename", &entryRename);
 }
 
 // -----------------------------------------------------------------------------
@@ -128,11 +136,11 @@ void registerEntryType(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_etype["id"]        = sol::property(&EntryType::id);
-	lua_etype["name"]      = sol::property(&EntryType::name);
-	lua_etype["extension"] = sol::property(&EntryType::extension);
-	lua_etype["formatId"]  = sol::property(&EntryType::formatId);
-	lua_etype["editor"]    = sol::property(&EntryType::editor);
-	lua_etype["category"]  = sol::property(&EntryType::category);
+	lua_etype.set("id", sol::property(&EntryType::id));
+	lua_etype.set("name", sol::property(&EntryType::name));
+	lua_etype.set("extension", sol::property(&EntryType::extension));
+	lua_etype.set("formatId", sol::property(&EntryType::formatId));
+	lua_etype.set("editor", sol::property(&EntryType::editor));
+	lua_etype.set("category", sol::property(&EntryType::category));
 }
 } // namespace slade::lua
