@@ -36,6 +36,7 @@ find_package(freeimage CONFIG REQUIRED)
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(SFML COMPONENTS system audio window network CONFIG REQUIRED)
+find_package(glm REQUIRED)
 
 
 # Include Search Paths ---------------------------------------------------------
@@ -95,6 +96,7 @@ target_link_libraries(slade
 	sfml-main
 	sfml-network
 	sfml-window
+	glm::glm
 )
 
 if (NOT NO_LUA)
