@@ -174,10 +174,10 @@ MapRenderer3D::~MapRenderer3D()
 bool MapRenderer3D::init()
 {
 	// Init camera
-	auto bbox = map_->bounds();
-	cam_position_.set(bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5, 64);
-	cam_direction_.set(0, 1);
-	cam_pitch_ = 0;
+	auto bbox      = map_->bounds();
+	cam_position_  = { bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5, 64 };
+	cam_direction_ = { 0, 1 };
+	cam_pitch_     = 0;
 	cameraUpdateVectors();
 
 	refresh();
@@ -273,7 +273,7 @@ void MapRenderer3D::buildSkyCircle()
 	double rot = 0;
 	for (auto& pos : sky_circle_)
 	{
-		pos.set(sin(rot), -cos(rot));
+		pos = { sin(rot), -cos(rot) };
 		rot -= (3.1415926535897932384626433832795 * 2) / 32.0;
 	}
 }
@@ -441,15 +441,15 @@ void MapRenderer3D::cameraPitch(double amount)
 void MapRenderer3D::cameraUpdateVectors()
 {
 	// Normalize direction
-	cam_direction_.normalize();
+	cam_direction_ = glm::normalize(cam_direction_);
 
 	// Calculate strafe vector
-	cam_strafe_ = Vec3d(cam_direction_, 0).cross(Vec3d(0, 0, 1));
-	cam_strafe_.normalize();
+	cam_strafe_ = glm::cross(Vec3d(cam_direction_, 0), Vec3d(0, 0, 1));
+	cam_strafe_ = glm::normalize(cam_strafe_);
 
 	// Calculate 3d direction vector
 	cam_dir3d_ = math::rotateVector3D(Vec3d(cam_direction_, 0), cam_strafe_, cam_pitch_);
-	cam_dir3d_.normalize();
+	cam_dir3d_ = glm::normalize(cam_dir3d_);
 }
 
 // -----------------------------------------------------------------------------
@@ -480,13 +480,13 @@ void MapRenderer3D::cameraSetPosition(const Vec3d& position)
 void MapRenderer3D::cameraApplyGravity(double mult)
 {
 	// Get current sector
-	auto sector = map_->sectors().atPos(cam_position_.get2d());
+	auto sector = map_->sectors().atPos(cam_position_.xy());
 	if (!sector)
 		return;
 
 	// Get target height from nearest floor down, including 3D floors
 	auto  view_height = game::configuration().playerEyeHeight();
-	Vec2d cam2d       = cam_position_.get2d();
+	Vec2d cam2d       = cam_position_.xy();
 	int   fheight     = static_cast<int>(sector->floor().plane.heightAt(cam2d)) + view_height;
 	for (const auto& extra : sector->extraFloors())
 	{
@@ -555,7 +555,7 @@ void MapRenderer3D::setupView(int width, int height) const
 	glLoadIdentity();
 
 	// Calculate up vector
-	auto up = cam_strafe_.cross(cam_dir3d_).normalized();
+	auto up = glm::normalize(glm::cross(cam_strafe_, cam_dir3d_));
 
 	// Setup camera view
 	gluLookAt(
@@ -1637,8 +1637,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	auto   light2      = line->s2()->light();
 	int    xoff2       = line->s2()->texOffsetX();
 	int    yoff2       = line->s2()->texOffsetY();
-	int    lowceil     = min(ceiling1, ceiling2);
-	int    highfloor   = max(floor1, floor2);
+	int    lowceil     = glm::min(ceiling1, ceiling2);
+	int    highfloor   = glm::max(floor1, floor2);
 	string sky_flat    = game::configuration().skyFlat();
 	string hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
 	bool   show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->flagSet(512));
@@ -2546,7 +2546,7 @@ void MapRenderer3D::renderThings()
 	uint8_t  light;
 	float    x1, y1, x2, y2;
 	unsigned update = 0;
-	Seg2d    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2d    strafe(cam_position_.xy(), (cam_position_ + cam_strafe_).xy());
 	for (unsigned a = 0; a < map_->nThings(); a++)
 	{
 		auto thing       = map_->thing(a);
@@ -2560,7 +2560,7 @@ void MapRenderer3D::renderThings()
 		}
 
 		// Check thing distance if needed
-		dist = math::distance(cam_position_.get2d(), thing->position());
+		dist = glm::distance(cam_position_.xy(), thing->position());
 		if (mdist > 0 && dist > mdist)
 			continue;
 
@@ -2922,9 +2922,9 @@ void MapRenderer3D::quickVisDiscard()
 		dist_sectors_.resize(map_->nSectors());
 
 	// Go through all sectors
-	auto   cam = cam_position_.get2d();
+	auto   cam = cam_position_.xy();
 	double min_dist, dist;
-	Seg2d  strafe(cam, cam + cam_strafe_.get2d());
+	Seg2d  strafe(cam, cam + cam_strafe_.xy());
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Get sector bbox
@@ -3009,7 +3009,7 @@ void MapRenderer3D::checkVisibleQuads()
 	float    distfade;
 	n_quads_     = 0;
 	bool  update = false;
-	Seg2d strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2d strafe(cam_position_.xy(), (cam_position_ + cam_strafe_).xy());
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
 		line = map_->line(a);
@@ -3027,7 +3027,7 @@ void MapRenderer3D::checkVisibleQuads()
 
 		// Check for distance fade
 		if (render_max_dist > 0)
-			distfade = calcDistFade(math::distanceToLine(cam_position_.get2d(), line->seg()), render_max_dist);
+			distfade = calcDistFade(math::distanceToLine(cam_position_.xy(), line->seg()), render_max_dist);
 		else
 			distfade = 1.0f;
 
@@ -3087,7 +3087,7 @@ void MapRenderer3D::checkVisibleQuads()
 			// Check we're on the right side of the quad
 			if (!(quad.flags & DRAWBOTH)
 				&& math::lineSide(
-					   cam_position_.get2d(),
+					   cam_position_.xy(),
 					   Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
 					   < 0)
 				continue;
@@ -3124,7 +3124,7 @@ void MapRenderer3D::checkVisibleFlats()
 	MapSector* sector;
 	float      alpha;
 	unsigned   flat_idx = 0;
-	auto       cam      = cam_position_.get2d();
+	auto       cam      = cam_position_.xy();
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		sector = map_->sector(a);
@@ -3188,7 +3188,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 	// Init
 	double          min_dist = 9999999;
 	mapeditor::Item current;
-	Seg2d           strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2d           strafe(cam_position_.xy(), (cam_position_ + cam_strafe_).xy());
 
 	// Check for required map structures
 	if (!map_ || lines_.size() != map_->nLines() || sector_flats_.size() != map_->nSectors()
@@ -3206,8 +3206,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 		auto line = map_->line(a);
 
 		// Find (2d) distance to line
-		dist = math::distanceRayLine(
-			cam_position_.get2d(), (cam_position_ + cam_dir3d_).get2d(), line->start(), line->end());
+		dist = math::distanceRayLine(cam_position_.xy(), (cam_position_ + cam_dir3d_).xy(), line->start(), line->end());
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)
@@ -3220,7 +3219,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 			// Check side of camera
 			if (!(quad.flags & DRAWBOTH)
 				&& math::lineSide(
-					   cam_position_.get2d(),
+					   cam_position_.xy(),
 					   Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
 					   < 0)
 				continue;
@@ -3230,10 +3229,9 @@ mapeditor::Item MapRenderer3D::determineHilight()
 			// the quad at the intersection point
 			Vec2d  seg_left           = Vec2d(quad.points[1].x, quad.points[1].y);
 			Vec2d  seg_right          = Vec2d(quad.points[2].x, quad.points[2].y);
-			double dist_along_segment = (intersection.get2d() - seg_left).magnitude()
-										/ (seg_right - seg_left).magnitude();
-			double top    = quad.points[0].z + (quad.points[3].z - quad.points[0].z) * dist_along_segment;
-			double bottom = quad.points[1].z + (quad.points[2].z - quad.points[1].z) * dist_along_segment;
+			double dist_along_segment = glm::length(intersection.xy() - seg_left) / glm::length(seg_right - seg_left);
+			double top                = quad.points[0].z + (quad.points[3].z - quad.points[0].z) * dist_along_segment;
+			double bottom             = quad.points[1].z + (quad.points[2].z - quad.points[1].z) * dist_along_segment;
 			if (bottom <= intersection.z && intersection.z <= top)
 			{
 				// Determine selected item from quad flags
@@ -3301,7 +3299,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 			}
 
 			// Check if intersection is within sector
-			if (!map_->sector(a)->containsPoint((cam_position_ + cam_dir3d_ * dist).get2d()))
+			if (!map_->sector(a)->containsPoint((cam_position_ + cam_dir3d_ * dist).xy()))
 				continue;
 
 			if (flat.extra_floor_index < 0)
@@ -3351,10 +3349,10 @@ mapeditor::Item MapRenderer3D::determineHilight()
 		if (things_[a].flags & ICON)
 			halfwidth = render_thing_icon_size * 0.5;
 		dist = math::distanceRayLine(
-			cam_position_.get2d(),
-			(cam_position_ + cam_dir3d_).get2d(),
-			thing->position() - cam_strafe_.get2d() * halfwidth,
-			thing->position() + cam_strafe_.get2d() * halfwidth);
+			cam_position_.xy(),
+			(cam_position_ + cam_dir3d_).xy(),
+			thing->position() - cam_strafe_.xy() * halfwidth,
+			thing->position() + cam_strafe_.xy() * halfwidth);
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)

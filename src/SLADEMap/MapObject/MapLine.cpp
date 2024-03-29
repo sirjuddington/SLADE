@@ -35,6 +35,7 @@
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Debuggable.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
@@ -662,8 +663,8 @@ Vec2d MapLine::frontVector()
 	// Check if vector needs to be recalculated
 	if (front_vec_.x == 0 && front_vec_.y == 0)
 	{
-		front_vec_.set(-(vertex2_->yPos() - vertex1_->yPos()), vertex2_->xPos() - vertex1_->xPos());
-		front_vec_.normalize();
+		front_vec_ = glm::normalize(
+			Vec2d{ -(vertex2_->yPos() - vertex1_->yPos()), vertex2_->xPos() - vertex1_->xPos() });
 	}
 
 	return front_vec_;
@@ -843,8 +844,8 @@ void MapLine::clearUnneededTextures() const
 void MapLine::resetInternals()
 {
 	// Reset line internals
-	length_ = -1;
-	front_vec_.set(0, 0);
+	length_    = -1;
+	front_vec_ = { 0, 0 };
 
 	// Reset front sector internals
 	auto s1 = frontSector();
@@ -1023,4 +1024,15 @@ void MapLine::writeUDMF(string& def)
 		def += properties_.toString(true, 3);
 
 	def += "}\n\n";
+}
+
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapLine::operator Debuggable() const
+{
+	if (!this)
+		return "<line NULL>";
+
+	return { fmt::format("<line {}>", index_) };
 }

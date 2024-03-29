@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Geometry/Plane.h"
+#include "Geometry/RectFwd.h"
+
 namespace slade
 {
 // Forward declarations

@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "MathStuff.h"
 #include "General/Console.h"
+#include "Geometry/Plane.h"
+#include "Geometry/Rect.h"
 #include "StringUtils.h"
 
 using namespace slade;
@@ -102,22 +104,6 @@ int math::round(double val)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the distance between [p1] and [p2]
-// -----------------------------------------------------------------------------
-double math::distance(const Vec2d& p1, const Vec2d& p2)
-{
-	return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
-}
-
-// -----------------------------------------------------------------------------
-// Returns the distance between [p1] and [p2]
-// -----------------------------------------------------------------------------
-double math::distance3d(const Vec3d& p1, const Vec3d& p2)
-{
-	return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y) + (p2.z - p1.z) * (p2.z - p1.z));
-}
-
-// -----------------------------------------------------------------------------
 // Returns the side of the [line] that the [point] lies on.
 // Positive is front, negative is back, zero is on the line
 // -----------------------------------------------------------------------------
@@ -162,7 +148,7 @@ double math::distanceToLine(const Vec2d& point, const Seg2d& line)
 
 	// Return distance between intersection and point
 	// which is the shortest distance to the line
-	return math::distance(i, point);
+	return glm::distance(i, point);
 }
 
 // -----------------------------------------------------------------------------
@@ -186,6 +172,9 @@ double math::distanceToLineFast(const Vec2d& point, const Seg2d& line)
 // -----------------------------------------------------------------------------
 bool math::linesIntersect(const Seg2d& l1, const Seg2d& l2, Vec2d& out)
 {
+	using glm::max;
+	using glm::min;
+
 	// First, simple check for two parallel horizontal or vertical lines
 	if ((l1.x1() == l1.x2() && l2.x1() == l2.x2()) || (l1.y1() == l1.y2() && l2.y1() == l2.y2()))
 		return false;
@@ -397,13 +386,13 @@ Vec2d math::vectorAngle(double angle_rad)
 double math::distanceRayPlane(const Vec3d& r_o, const Vec3d& r_v, const Plane& plane)
 {
 	Vec3d  p_normal = plane.normal();
-	double cos_a    = r_v.dot(p_normal);
+	double cos_a    = glm::dot(r_v, p_normal);
 
 	// parallel to the plane (alpha=90)
 	if (cos_a == 0)
 		return -1;
 
-	return ((plane.d - r_o.dot(p_normal)) / cos_a);
+	return (plane.d - glm::dot(r_o, p_normal)) / cos_a;
 }
 
 // -----------------------------------------------------------------------------
@@ -468,12 +457,9 @@ bool math::boxLineIntersect(const Rectf& box, const Seg2d& line)
 // -----------------------------------------------------------------------------
 Plane math::planeFromTriangle(const Vec3d& p1, const Vec3d& p2, const Vec3d& p3)
 {
-	auto v1 = p3 - p1;
-	auto v2 = p2 - p1;
-	v1.normalize();
-	v2.normalize();
-	auto normal = v1.cross(v2);
-	normal.normalize();
+	auto v1     = glm::normalize(p3 - p1);
+	auto v2     = glm::normalize(p2 - p1);
+	auto normal = glm::normalize(glm::cross(v1, v2));
 
 	Plane plane;
 	plane.a = normal.x;

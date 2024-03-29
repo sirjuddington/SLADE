@@ -243,8 +243,8 @@ bool ObjectEditGroup::nearestLineEndpoints(const Vec2d& pos, double min, Vec2d& 
 		if (d < min_dist)
 		{
 			min_dist = d;
-			v1.set(line.v1->position);
-			v2.set(line.v2->position);
+			v1       = line.v1->position;
+			v2       = line.v2->position;
 		}
 	}
 

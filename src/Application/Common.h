@@ -109,6 +109,10 @@
 // Sigslot
 #include "thirdparty/sigslot/signal.hpp"
 
+// GLM
+#define GLM_FORCE_SWIZZLE
+#include <glm/glm.hpp>
+
 
 // C++ -------------------------------------------------------------------------
 

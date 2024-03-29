@@ -38,6 +38,7 @@
 #include "Game/Game.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Debuggable.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;

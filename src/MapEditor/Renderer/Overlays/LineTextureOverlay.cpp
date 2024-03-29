@@ -192,7 +192,7 @@ void LineTextureOverlay::updateLayout(int width, int height)
 		rows = 2;
 	int middlex = width * 0.5;
 	int middley = height * 0.5;
-	int maxsize = min(width / 3, height / rows);
+	int maxsize = glm::min(width / 3, height / rows);
 	tex_size_   = maxsize - 64;
 	if (tex_size_ > 256)
 		tex_size_ = 256;

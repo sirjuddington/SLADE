@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Geometry/Plane.h"
+#include "Geometry/RectFwd.h"
 #include "MapEditor/Item.h"
 #include "Utility/ColRGBA.h"
 

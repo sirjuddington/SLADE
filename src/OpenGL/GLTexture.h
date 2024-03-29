@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Geometry/RectFwd.h"
+
 namespace slade
 {
 class SImage;

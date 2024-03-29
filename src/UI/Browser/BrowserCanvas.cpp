@@ -741,11 +741,11 @@ void BrowserCanvas::onKeyDown(wxKeyEvent& e)
 
 	// Page up
 	else if (e.GetKeyCode() == WXK_PAGEUP)
-		offset = -1 * num_cols * max(size.y / fullItemSizeY(), 1);
+		offset = -1 * num_cols * glm::max(size.y / fullItemSizeY(), 1);
 
 	// Page down
 	else if (e.GetKeyCode() == WXK_PAGEDOWN)
-		offset = num_cols * max(size.y / fullItemSizeY(), 1);
+		offset = num_cols * glm::max(size.y / fullItemSizeY(), 1);
 
 	else
 	{

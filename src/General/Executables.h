@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utility/StringPair.h"
+
 class wxMenu;
 
 namespace slade

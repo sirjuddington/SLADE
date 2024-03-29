@@ -1522,7 +1522,7 @@ void MapEditContext::swapPlayerStart3d()
 		return;
 
 	// Save existing player start pos+dir
-	player_start_pos_.set(pstart->position());
+	player_start_pos_ = pstart->position();
 	player_start_dir_ = pstart->angle();
 
 	auto campos = renderer_->cameraPos2D();
@@ -1547,7 +1547,7 @@ void MapEditContext::swapPlayerStart2d(const Vec2d& pos)
 		return;
 
 	// Save existing player start pos+dir
-	player_start_pos_.set(pstart->position());
+	player_start_pos_ = pstart->position();
 	player_start_dir_ = pstart->angle();
 
 	pstart->move(pos, false);
@@ -1895,7 +1895,7 @@ bool MapEditContext::handleAction(string_view id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		Vec3d pos    = input().mousePosMap();
+		Vec3d pos    = { input().mousePosMap(), 0 };
 		auto  sector = map_->sectors().atPos(input_->mousePosMap());
 		if (sector)
 			pos.z = sector->floor().plane.heightAt(pos.x, pos.y) + 40;

@@ -4,6 +4,7 @@
 
 namespace slade
 {
+class Debuggable;
 class VertexList;
 
 class MapVertex : public MapObject
@@ -47,13 +48,7 @@ public:
 
 	void writeUDMF(string& def) override;
 
-	operator Debuggable() const
-	{
-		if (!this)
-			return { "<vertex NULL>" };
-
-		return { fmt::format("<vertex {}>", index_) };
-	}
+	operator Debuggable() const;
 
 private:
 	// Basic data

@@ -948,7 +948,7 @@ bool MapRenderer2D::renderSpriteThing(
 	// Fit to radius if needed
 	if (fitradius)
 	{
-		double scale = (static_cast<double>(type.radius()) * 0.8) / max(hw, hh);
+		double scale = (static_cast<double>(type.radius()) * 0.8) / glm::max(hw, hh);
 		hw *= scale;
 		hh *= scale;
 	}
@@ -956,7 +956,7 @@ bool MapRenderer2D::renderSpriteThing(
 	// Shadow if needed
 	if (thing_shadow > 0.01f && alpha >= 0.9 && !fitradius)
 	{
-		double sz = (min(hw, hh)) * 0.1;
+		double sz = (glm::min(hw, hh)) * 0.1;
 		if (sz < 1)
 			sz = 1;
 		glColor4f(0.0f, 0.0f, 0.0f, alpha * (thing_shadow * 0.7));

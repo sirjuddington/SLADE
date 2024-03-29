@@ -1,9 +1,12 @@
 #pragma once
 
+#include "Geometry/BBox.h"
+#include "Geometry/Plane.h"
 #include "MapObject.h"
 
 namespace slade
 {
+class Debuggable;
 class Polygon2D;
 
 class MapSector : public MapObject
@@ -156,13 +159,7 @@ public:
 
 	void writeUDMF(string& def) override;
 
-	operator Debuggable() const
-	{
-		if (!this)
-			return { "<sector NULL>" };
-
-		return { fmt::format("<sector {}>", index_) };
-	}
+	operator Debuggable() const;
 
 private:
 	// Basic data
@@ -178,7 +175,7 @@ private:
 	unique_ptr<Polygon2D> polygon_;
 	bool                  poly_needsupdate_ = true;
 	long                  geometry_updated_ = 0;
-	Vec2d                 text_point_;
+	Vec2d                 text_point_       = {};
 	vector<ExtraFloor>    extra_floors_;
 
 	void setGeometryUpdated();

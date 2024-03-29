@@ -728,13 +728,13 @@ void Renderer::drawLineLength(const Vec2d& p1, const Vec2d& p2, ColRGBA col) con
 	// Determine line midpoint and front vector
 	Vec2d mid(p1.x + (p2.x - p1.x) * 0.5, p1.y + (p2.y - p1.y) * 0.5);
 	Vec2d vec(-(p2.y - p1.y), p2.x - p1.x);
-	vec.normalize();
+	vec = glm::normalize(vec);
 
 	// Determine point to place the text
 	Vec2d tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
-	auto   length = fmt::format("{}", math::round(math::distance(p1, p2)));
+	auto   length = fmt::format("{}", math::round(glm::distance(p1, p2)));
 	double hh     = drawing::textExtents(length).y * 0.5;
 
 	// Draw text
@@ -957,7 +957,7 @@ void Renderer::drawObjectEdit() const
 	if (group.nearestLineEndpoints(view_->canvasPos(context_->input().mousePos()), 128 / view_->scale(), nl_v1, nl_v2))
 	{
 		Vec2d mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
-		int   length = math::distance(nl_v1, nl_v2);
+		int   length = glm::distance(nl_v1, nl_v2);
 		int   x      = view_->canvasX(mid.x);
 		int   y      = view_->canvasY(mid.y) - 8;
 		view_->setOverlayCoords(true);
@@ -1638,7 +1638,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 			// Get quad points
 			Vec3f points[4];
 			for (unsigned a = 0; a < 4; a++)
-				points[a].set(quad->points[a].x, quad->points[a].y, quad->points[a].z);
+				points[a] = { quad->points[a].x, quad->points[a].y, quad->points[a].z };
 
 			// Start animation
 			animations_.push_back(std::make_unique<MCA3dWallSelection>(app::runTimer(), points, selected));

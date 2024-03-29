@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "View.h"
+#include "Geometry/BBox.h"
 #include "OpenGL/OpenGL.h"
 #include "Utility/MathStuff.h"
 

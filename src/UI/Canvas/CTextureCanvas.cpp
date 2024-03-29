@@ -910,5 +910,5 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		Refresh();
 
 	// Update 'previous' mouse coordinates
-	mouse_prev_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
+	mouse_prev_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
 }

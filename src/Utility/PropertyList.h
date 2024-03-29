@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Named.h"
 #include "Property.h"
 
 namespace slade

@@ -342,7 +342,7 @@ public:
 				double min_dist = 0.3;
 				for (unsigned a = 0; a < dir_points_.size(); a++)
 				{
-					double dist = math::distance(cursor_pos, dir_points_[a]);
+					double dist = glm::distance(cursor_pos, dir_points_[a]);
 					if (dist < min_dist)
 					{
 						point_hl_ = a;

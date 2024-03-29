@@ -18,7 +18,7 @@ public:
 
 	State                state() const { return state_current_; }
 	unsigned             nPoints() const { return draw_points_.size(); }
-	Vec2d                point(unsigned index);
+	Vec2d                point(unsigned index) const;
 	const vector<Vec2d>& points() const { return draw_points_; }
 
 	void setState(State new_state) { state_current_ = new_state; }

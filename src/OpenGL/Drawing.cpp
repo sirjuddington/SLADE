@@ -308,15 +308,14 @@ void drawing::drawLineTabbed(const Vec2d& start, const Vec2d& end, double tab, d
 	mid.y = start.y + ((end.y - start.y) * 0.5);
 
 	// Calculate tab length
-	double tablen = math::distance(start, end) * tab;
+	double tablen = glm::distance(start, end) * tab;
 	if (tablen > tab_max)
 		tablen = tab_max;
 	if (tablen < 2)
 		tablen = 2;
 
 	// Calculate tab endpoint
-	Vec2d invdir(-(end.y - start.y), end.x - start.x);
-	invdir.normalize();
+	Vec2d invdir = glm::normalize(Vec2d{ -(end.y - start.y), end.x - start.x });
 
 	// Draw tab
 	glBegin(GL_LINES);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Geometry/RectFwd.h"
 #include "Item.h"
 
 namespace slade

@@ -1221,8 +1221,8 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	target->putVertices(vertices);
 
 	Vec2d mid    = line->getPoint(MapObject::Point::Mid);
-	Vec2d v1_pos = (line->start() - mid).normalized();
-	Vec2d v2_pos = (line->end() - mid).normalized();
+	Vec2d v1_pos = glm::normalize(line->start() - mid);
+	Vec2d v2_pos = glm::normalize(line->end() - mid);
 
 	// Extend the line to the sector boundaries
 	double max_dot_1 = 0.0;
@@ -1231,7 +1231,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	{
 		Vec2d vert = vertex->position() - mid;
 
-		double dot = vert.dot(v1_pos);
+		double dot = glm::dot(vert, v1_pos);
 
 		double& max_dot = dot > 0 ? max_dot_1 : max_dot_2;
 

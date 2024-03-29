@@ -73,7 +73,7 @@ using u64 = uint64_t;
 // Global internal includes
 // clang-format off
 #include "General/CVar.h"
-#include "Utility/Structs.h"
+#include "Geometry/Vectors.h"
 #include "General/Log.h"
 #include "Utility/MemChunk.h"
 #include "OpenGL/GLHeaders.h"

@@ -48,6 +48,7 @@
 #include "MapObjectList/ThingList.h"
 #include "MapObjectList/VertexList.h"
 #include "MapSpecials.h"
+#include "Utility/Debuggable.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -726,7 +727,7 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 MapThing* SLADEMap::createThing(Vec2d pos, int type)
 {
 	// Create the thing
-	return data_.addThing(std::make_unique<MapThing>(pos, type));
+	return data_.addThing(std::make_unique<MapThing>(Vec3d{ pos, 0 }, type));
 }
 
 // -----------------------------------------------------------------------------

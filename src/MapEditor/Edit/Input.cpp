@@ -179,7 +179,7 @@ bool Input::mouseMove(int new_x, int new_y)
 
 	// Check if we want to start a selection box
 	if (mouse_drag_ == DragType::Selection
-		&& Vec2d(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 16)
+		&& glm::length(Vec2d(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y)) > 16)
 	{
 		mouse_state_ = MouseState::Selection;
 		mouse_drag_  = DragType::None;
@@ -187,7 +187,7 @@ bool Input::mouseMove(int new_x, int new_y)
 
 	// Check if we want to start moving
 	if (mouse_drag_ == DragType::Move
-		&& Vec2d(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 4)
+		&& glm::length(Vec2d(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y)) > 4)
 	{
 		mouse_state_ = MouseState::Move;
 		mouse_drag_  = DragType::None;
@@ -404,10 +404,10 @@ bool Input::mouseUp(MouseButton button)
 
 			// Select
 			context_->selection().selectWithin(
-				{ min(mouse_down_pos_map_.x, mouse_pos_map_.x),
-				  min(mouse_down_pos_map_.y, mouse_pos_map_.y),
-				  max(mouse_down_pos_map_.x, mouse_pos_map_.x),
-				  max(mouse_down_pos_map_.y, mouse_pos_map_.y) },
+				{ glm::min(mouse_down_pos_map_.x, mouse_pos_map_.x),
+				  glm::min(mouse_down_pos_map_.y, mouse_pos_map_.y),
+				  glm::max(mouse_down_pos_map_.x, mouse_pos_map_.x),
+				  glm::max(mouse_down_pos_map_.y, mouse_pos_map_.y) },
 				shift_down_);
 
 			// Begin selection box fade animation

@@ -723,7 +723,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	{
 		if (math::lineSide(vertices_[a], Seg2d(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
 		{
-			vertices_[a].distance = math::distance(vertices_[v2], vertices_[a]);
+			vertices_[a].distance = glm::distance(static_cast<Vec2d>(vertices_[v2]), static_cast<Vec2d>(vertices_[a]));
 			if (vertices_[a].distance < min_dist)
 			{
 				min_dist = vertices_[a].distance;

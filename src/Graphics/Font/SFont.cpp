@@ -183,12 +183,10 @@ void SFont::drawCharacter(char c, ColRGBA colour) const
 	// Draw it
 	Rectf tex_rect;
 	auto& tex_info = gl::Texture::info(texture_);
-	tex_rect.tl.set(
-		static_cast<double>(ch.tex_bounds_.x1()) / static_cast<double>(tex_info.size.x),
-		static_cast<double>(ch.tex_bounds_.y1()) / static_cast<double>(tex_info.size.y));
-	tex_rect.br.set(
-		static_cast<double>(ch.tex_bounds_.x2()) / static_cast<double>(tex_info.size.x),
-		static_cast<double>(ch.tex_bounds_.y2()) / static_cast<double>(tex_info.size.y));
+	tex_rect.tl    = { static_cast<double>(ch.tex_bounds_.x1()) / static_cast<double>(tex_info.size.x),
+					   static_cast<double>(ch.tex_bounds_.y1()) / static_cast<double>(tex_info.size.y) };
+	tex_rect.br    = { static_cast<double>(ch.tex_bounds_.x2()) / static_cast<double>(tex_info.size.x),
+					   static_cast<double>(ch.tex_bounds_.y2()) / static_cast<double>(tex_info.size.y) };
 	glBegin(GL_QUADS);
 	glTexCoord2d(tex_rect.x1(), tex_rect.y1());
 	glVertex2d(0, 0);
@@ -252,12 +250,10 @@ void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align) cons
 		// Draw it
 		Rectf tex_rect;
 		auto& tex_info = gl::Texture::info(texture_);
-		tex_rect.tl.set(
-			static_cast<double>(ch.tex_bounds_.x1()) / static_cast<double>(tex_info.size.x),
-			static_cast<double>(ch.tex_bounds_.y1()) / static_cast<double>(tex_info.size.y));
-		tex_rect.br.set(
-			static_cast<double>(ch.tex_bounds_.x2()) / static_cast<double>(tex_info.size.x),
-			static_cast<double>(ch.tex_bounds_.y2()) / static_cast<double>(tex_info.size.y));
+		tex_rect.tl    = { static_cast<double>(ch.tex_bounds_.x1()) / static_cast<double>(tex_info.size.x),
+						   static_cast<double>(ch.tex_bounds_.y1()) / static_cast<double>(tex_info.size.y) };
+		tex_rect.br    = { static_cast<double>(ch.tex_bounds_.x2()) / static_cast<double>(tex_info.size.x),
+						   static_cast<double>(ch.tex_bounds_.y2()) / static_cast<double>(tex_info.size.y) };
 		glBegin(GL_QUADS);
 		glTexCoord2d(tex_rect.x1(), tex_rect.y1());
 		glVertex2d(xoff, 0);

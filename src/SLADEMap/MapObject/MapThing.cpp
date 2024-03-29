@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapThing.h"
+#include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
 
 using namespace slade;
@@ -456,4 +457,15 @@ void MapThing::writeUDMF(string& def)
 		def += properties_.toString(true, 3);
 
 	def += "}\n\n";
+}
+
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapThing::operator Debuggable() const
+{
+	if (!this)
+		return { "<thing NULL>" };
+
+	return { fmt::format("<thing {}>", index_) };
 }

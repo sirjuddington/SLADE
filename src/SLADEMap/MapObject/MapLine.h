@@ -1,10 +1,13 @@
 #pragma once
 
+#include "Geometry/Rect.h"
 #include "MapObject.h"
 #include "SLADEMap/Types.h"
 
 namespace slade
 {
+class Debuggable;
+
 class MapLine : public MapObject
 {
 	friend class SLADEMap;
@@ -115,13 +118,7 @@ public:
 
 	void writeUDMF(string& def) override;
 
-	operator Debuggable() const
-	{
-		if (!this)
-			return "<line NULL>";
-
-		return { fmt::format("<line {}>", index_) };
-	}
+	operator Debuggable() const;
 
 private:
 	// Basic data

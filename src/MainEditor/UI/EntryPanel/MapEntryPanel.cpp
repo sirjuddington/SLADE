@@ -173,8 +173,8 @@ bool MapEntryPanel::createImage()
 	else
 		map_canvas_->createImage(
 			temp,
-			min<int>(map_image_width, map_canvas_->GetSize().x),
-			min<int>(map_image_height, map_canvas_->GetSize().y));
+			glm::min<int>(map_image_width, map_canvas_->GetSize().x),
+			glm::min<int>(map_image_height, map_canvas_->GetSize().y));
 
 	wxString   name = wxString::Format("%s_%s", entry->parent()->filename(false), entry->name());
 	wxFileName fn(name);

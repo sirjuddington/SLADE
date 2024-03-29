@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Geometry/BBox.h"
 #include "MapObjectCollection.h"
 #include "Utility/PropertyList.h"
 

@@ -30,10 +30,10 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-
-#include "MapLine.h"
 #include "MapVertex.h"
+#include "MapLine.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
 
 using namespace slade;
@@ -242,4 +242,15 @@ void MapVertex::writeUDMF(string& def)
 		def += properties_.toString(true, 3);
 
 	def += "}\n\n";
+}
+
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapVertex::operator Debuggable() const
+{
+	if (!this)
+		return { "<vertex NULL>" };
+
+	return { fmt::format("<vertex {}>", index_) };
 }

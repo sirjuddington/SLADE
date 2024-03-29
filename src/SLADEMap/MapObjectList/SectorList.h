@@ -4,6 +4,8 @@
 
 namespace slade
 {
+struct BBox;
+
 class SectorList : public MapObjectList<MapSector>
 {
 public:

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Geometry/BBox.h"
+
 namespace slade
 {
 namespace mapeditor

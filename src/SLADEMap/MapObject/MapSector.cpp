@@ -39,6 +39,7 @@
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Debuggable.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
 #include "Utility/Polygon2D.h"
@@ -70,7 +71,6 @@ MapSector::MapSector(
 	light_{ light },
 	special_{ special },
 	id_{ id },
-	polygon_{ new Polygon2D() },
 	geometry_updated_{ app::runTimer() }
 {
 }
@@ -385,7 +385,7 @@ void MapSector::updateBBox()
 		bbox_.extend(line->v2()->xPos(), line->v2()->yPos());
 	}
 
-	text_point_.set(0, 0);
+	text_point_ = { 0, 0 };
 	setGeometryUpdated();
 }
 
@@ -406,6 +406,9 @@ BBox MapSector::boundingBox()
 // -----------------------------------------------------------------------------
 Polygon2D* MapSector::polygon()
 {
+	if (!polygon_)
+		polygon_ = std::make_unique<Polygon2D>();
+
 	if (poly_needsupdate_)
 	{
 		polygon_->openSector(this);
@@ -837,7 +840,7 @@ void MapSector::findTextPoint()
 	auto r_o = mid_side_parent->getPoint(Point::Mid);
 	auto r_d = mid_side_parent->frontVector();
 	if (mid_side == mid_side_parent->s1())
-		r_d.set(-r_d.x, -r_d.y);
+		r_d = { -r_d.x, -r_d.y };
 
 	// Find nearest intersecting line
 	min_dist = 9999999999.0;
@@ -854,7 +857,7 @@ void MapSector::findTextPoint()
 	}
 
 	// Set text point to halfway between the two lines
-	text_point_.set(r_o.x + (r_d.x * min_dist * 0.5), r_o.y + (r_d.y * min_dist * 0.5));
+	text_point_ = { r_o.x + (r_d.x * min_dist * 0.5), r_o.y + (r_d.y * min_dist * 0.5) };
 }
 
 // -----------------------------------------------------------------------------
@@ -1041,4 +1044,15 @@ void MapSector::writeUDMF(string& def)
 	}
 
 	def += "}\n\n";
+}
+
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapSector::operator Debuggable() const
+{
+	if (!this)
+		return { "<sector NULL>" };
+
+	return { fmt::format("<sector {}>", index_) };
 }

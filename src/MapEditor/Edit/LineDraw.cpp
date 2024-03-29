@@ -68,7 +68,7 @@ CVAR(Int, shapedraw_sides, 16, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // Returns the line drawing point at [index]
 // -----------------------------------------------------------------------------
-Vec2d LineDraw::point(unsigned index)
+Vec2d LineDraw::point(unsigned index) const
 {
 	// Check index
 	if (index >= draw_points_.size())
@@ -209,8 +209,8 @@ void LineDraw::updateShape(Vec2d point)
 	}
 
 	// Get box from tl->br
-	Vec2d tl(min(origin.x, point.x), min(origin.y, point.y));
-	Vec2d br(max(origin.x, point.x), max(origin.y, point.y));
+	Vec2d tl(glm::min(origin.x, point.x), glm::min(origin.y, point.y));
+	Vec2d br(glm::max(origin.x, point.x), glm::max(origin.y, point.y));
 	width  = br.x - tl.x;
 	height = br.y - tl.y;
 

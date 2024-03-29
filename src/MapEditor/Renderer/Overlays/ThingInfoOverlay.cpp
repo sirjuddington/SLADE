@@ -233,7 +233,7 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 		double theight  = tex_info.size.y;
 		if (twidth > 128.0 || theight > 128.0)
 		{
-			double factor = max(twidth, theight) / 128.0;
+			double factor = glm::max(twidth, theight) / 128.0;
 			twidth /= factor;
 			theight /= factor;
 		}

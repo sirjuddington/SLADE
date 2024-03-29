@@ -1,5 +1,12 @@
 #pragma once
 
+#include "Geometry/Rect.h"
+
+namespace slade
+{
+struct BBox;
+}
+
 namespace slade::gl
 {
 class View
@@ -49,15 +56,15 @@ public:
 	void setOverlayCoords(bool set) const;
 
 private:
-	Vec2d  offset_;
-	Vec2d  offset_inter_;
-	bool   y_flipped_   = false; // If true, the Y-axis is flipped (ie. bottom is 0)
-	double scale_       = 0.;
-	double scale_inter_ = 0.;
-	double min_scale_   = 0.005;
-	double max_scale_   = 10.;
-	Vec2i  size_;
-	Rectd  visible_region_;
+	Vec2d  offset_         = {};
+	Vec2d  offset_inter_   = {};
+	bool   y_flipped_      = false; // If true, the Y-axis is flipped (ie. bottom is 0)
+	double scale_          = 0.;
+	double scale_inter_    = 0.;
+	double min_scale_      = 0.005;
+	double max_scale_      = 10.;
+	Vec2i  size_           = {};
+	Rectd  visible_region_ = {};
 
 	void updateVisibleRegion();
 };

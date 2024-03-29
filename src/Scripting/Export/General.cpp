@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Geometry/Plane.h"
 #include "Graphics/Palette/Palette.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"

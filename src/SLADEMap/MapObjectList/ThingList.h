@@ -4,6 +4,8 @@
 
 namespace slade
 {
+struct BBox;
+
 class ThingList : public MapObjectList<MapThing>
 {
 public:

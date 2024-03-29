@@ -5,6 +5,8 @@
 
 namespace slade
 {
+class Debuggable;
+
 class MapThing : public MapObject
 {
 	friend class SLADEMap;
@@ -76,13 +78,7 @@ public:
 
 	void writeUDMF(string& def) override;
 
-	operator Debuggable() const
-	{
-		if (!this)
-			return { "<thing NULL>" };
-
-		return { fmt::format("<thing {}>", index_) };
-	}
+	operator Debuggable() const;
 
 private:
 	// Basic data

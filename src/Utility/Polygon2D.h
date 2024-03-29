@@ -1,7 +1,11 @@
 #pragma once
 
+#include "Geometry/BBox.h"
+
 namespace slade
 {
+struct Plane;
+
 class Polygon2D
 {
 public:

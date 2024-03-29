@@ -36,7 +36,6 @@
 #include "Game/Configuration.h"
 #include "Game/Game.h"
 #include "Game/ThingType.h"
-#include "General/SAction.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapTextureManager.h"
@@ -1433,7 +1432,7 @@ public:
 
 			// Get distance to move
 			double r    = game::configuration().thingType(thing->type()).radius();
-			double dist = math::distance(Vec2d(), Vec2d(r, r));
+			double dist = glm::distance(Vec2d(), Vec2d(r, r));
 
 			editor->beginUndoRecord("Move Thing", true, false, false);
 

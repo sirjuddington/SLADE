@@ -145,16 +145,16 @@ void MoveObjects::update(const Vec2d& mouse_pos)
 
 		// Update move vector
 		if (auto vertex = items_[0].asVertex(context_->map()))
-			offset_.set(np - vertex->position());
+			offset_ = np - vertex->position();
 		else if (auto thing = items_[0].asThing(context_->map()))
-			offset_.set(np - thing->position());
+			offset_ = np - thing->position();
 
 		return;
 	}
 
 	// Update move vector
-	offset_.set(
-		context_->snapToGrid(mouse_pos.x - origin_.x, false), context_->snapToGrid(mouse_pos.y - origin_.y, false));
+	offset_ = { context_->snapToGrid(mouse_pos.x - origin_.x, false),
+				context_->snapToGrid(mouse_pos.y - origin_.y, false) };
 }
 
 // -----------------------------------------------------------------------------

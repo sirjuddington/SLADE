@@ -421,7 +421,7 @@ void GfxCanvas::endOffsetDrag()
 	}
 
 	// Stop drag
-	drag_origin_.set({ -1, -1 });
+	drag_origin_ = { -1, -1 };
 }
 
 // -----------------------------------------------------------------------------
@@ -567,8 +567,8 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 		// Begin drag if mouse is over image and dragging allowed
 		else if (allow_drag_)
 		{
-			drag_origin_.set(x, y);
-			drag_pos_.set(x, y);
+			drag_origin_ = { x, y };
+			drag_pos_    = { x, y };
 			Refresh();
 		}
 	}
@@ -654,8 +654,8 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 		}
 		else
 		{
-			drag_pos_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
-			refresh = true;
+			drag_pos_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
+			refresh   = true;
 		}
 	}
 	else if (e.MiddleIsDown())
@@ -673,7 +673,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	if (refresh)
 		Refresh();
 
-	mouse_prev_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
+	mouse_prev_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
 }
 
 // -----------------------------------------------------------------------------

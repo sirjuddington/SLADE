@@ -11,6 +11,7 @@ file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
 	Audio/*.cpp
 	Game/*.cpp
 	General/*.cpp
+	Geometry/*.cpp
 	Graphics/*.cpp
 	MainEditor/*.cpp
 	MapEditor/*.cpp

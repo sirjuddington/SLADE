@@ -47,8 +47,6 @@
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
-#include "UI/MapCanvas.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -162,7 +160,7 @@ bool ItemSelection::updateHilight(const Vec2d& mouse_pos, double dist_scale)
 		if (nearest.size() == 1)
 		{
 			auto& type = game::configuration().thingType(nearest[0]->type());
-			if (math::distance(mouse_pos, nearest[0]->position()) <= type.radius() + (32 / dist_scale))
+			if (glm::distance(mouse_pos, nearest[0]->position()) <= type.radius() + (32 / dist_scale))
 				hilight_.index = nearest[0]->index();
 		}
 		else
@@ -170,7 +168,7 @@ bool ItemSelection::updateHilight(const Vec2d& mouse_pos, double dist_scale)
 			for (auto& t : nearest)
 			{
 				auto& type = game::configuration().thingType(t->type());
-				if (math::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
+				if (glm::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
 					hilight_.index = t->index();
 			}
 		}

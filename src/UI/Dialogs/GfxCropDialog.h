@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Geometry/Rect.h"
+
 namespace slade
 {
 class CropCanvas;

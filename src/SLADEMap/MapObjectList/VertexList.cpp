@@ -33,6 +33,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "VertexList.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/Rect.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "Utility/MathStuff.h"
 
@@ -59,7 +61,7 @@ MapVertex* VertexList::nearest(const Vec2d& point, double min) const
 	for (const auto& vertex : objects_)
 	{
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicabDistanceTo(vertex->position());
+		dist = geometry::taxicabDistance(point, vertex->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -73,7 +75,7 @@ MapVertex* VertexList::nearest(const Vec2d& point, double min) const
 	// to check for minimum hilight distance
 	if (nearest)
 	{
-		double rdist = math::distance(nearest->position(), point);
+		double rdist = glm::distance(nearest->position(), point);
 		if (rdist > min)
 			return nullptr;
 	}
@@ -121,7 +123,7 @@ MapVertex* VertexList::firstCrossed(const Seg2d& line) const
 		if (math::distanceToLineFast(point, line) == 0)
 		{
 			// Check distance between line start and vertex
-			double dist = math::distance(line.start(), point);
+			double dist = glm::distance(line.start(), point);
 			if (dist < min_dist)
 			{
 				cv       = vertex;

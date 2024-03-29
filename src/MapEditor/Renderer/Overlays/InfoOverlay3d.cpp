@@ -269,10 +269,10 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 			auto floor2   = other_sector->floor().plane;
 			auto ceiling1 = this_sector->ceiling().plane;
 			auto ceiling2 = other_sector->ceiling().plane;
-			left_height   = min(ceiling1.heightAt(left_point), ceiling2.heightAt(left_point))
-						  - max(floor1.heightAt(left_point), floor2.heightAt(left_point));
-			right_height = min(ceiling1.heightAt(right_point), ceiling2.heightAt(right_point))
-						   - max(floor1.heightAt(right_point), floor2.heightAt(right_point));
+			left_height   = glm::min(ceiling1.heightAt(left_point), ceiling2.heightAt(left_point))
+						  - glm::max(floor1.heightAt(left_point), floor2.heightAt(left_point));
+			right_height = glm::min(ceiling1.heightAt(right_point), ceiling2.heightAt(right_point))
+						   - glm::max(floor1.heightAt(right_point), floor2.heightAt(right_point));
 		}
 		else
 		{

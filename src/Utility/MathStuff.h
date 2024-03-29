@@ -1,5 +1,12 @@
 #pragma once
 
+#include "Geometry/RectFwd.h"
+
+namespace slade
+{
+struct Plane;
+}
+
 namespace slade::math
 {
 constexpr double PI = 3.1415926535897932384;
@@ -8,8 +15,6 @@ double clamp(double val, double min, double max);
 int    floor(double val);
 int    ceil(double val);
 int    round(double val);
-double distance(const Vec2d& p1, const Vec2d& p2);
-double distance3d(const Vec3d& p1, const Vec3d& p2);
 double lineSide(const Vec2d& point, const Seg2d& line);
 Vec2d  closestPointOnLine(const Vec2d& point, const Seg2d& line);
 double distanceToLine(const Vec2d& point, const Seg2d& line);

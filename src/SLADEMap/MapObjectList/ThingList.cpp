@@ -37,9 +37,9 @@
 #include "Game/Configuration.h"
 #include "Game/Game.h"
 #include "Game/ThingType.h"
+#include "Geometry/Geometry.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 
@@ -64,7 +64,7 @@ MapThing* ThingList::nearest(const Vec2d& point, double min) const
 	for (const auto& thing : objects_)
 	{
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicabDistanceTo(thing->position());
+		dist = geometry::taxicabDistance(point, thing->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -78,7 +78,7 @@ MapThing* ThingList::nearest(const Vec2d& point, double min) const
 	// to check for minimum hilight distance
 	if (nearest)
 	{
-		double rdist = math::distance(nearest->position(), point);
+		double rdist = glm::distance(nearest->position(), point);
 		if (rdist > min)
 			return nullptr;
 	}
@@ -100,7 +100,7 @@ vector<MapThing*> ThingList::multiNearest(const Vec2d& point) const
 	for (const auto& thing : objects_)
 	{
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicabDistanceTo(thing->position());
+		dist = geometry::taxicabDistance(point, thing->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
