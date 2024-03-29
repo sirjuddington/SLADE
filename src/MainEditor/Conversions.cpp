@@ -33,8 +33,8 @@
 #include "Conversions.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
-#include "thirdparty/mus2mid/mus2mid.h"
-#include "thirdparty/zreaders/i_music.h"
+#include "Mus2Mid.h"
+#include "ZReaders/i_music.h"
 
 using namespace slade;
 

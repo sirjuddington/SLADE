@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Compression.h"
-#include "thirdparty/zreaders/files.h"
+#include "ZReaders/files.h"
 
 using namespace slade;
 
@@ -247,16 +247,9 @@ bool compression::bzip2Compress(const MemChunk& in, MemChunk& out)
 	{
 		// Ugly workaround to get const memchunk data as non-const char* required by the function below
 		auto c_data = reinterpret_cast<const char*>(in.data());
-		auto data = const_cast<char*>(c_data);
+		auto data   = const_cast<char*>(c_data);
 
-		ok = BZ2_bzBuffToBuffCompress(
-			buffer,
-			&bufferlen,
-			data,
-			in.size(),
-			9,
-			0,
-			0);
+		ok = BZ2_bzBuffToBuffCompress(buffer, &bufferlen, data, in.size(), 9, 0, 0);
 		out.write(buffer, bufferlen);
 		delete[] buffer;
 	}
