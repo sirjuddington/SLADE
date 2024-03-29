@@ -36,10 +36,10 @@
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
+#include "Geometry/Geometry.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Debuggable.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 
@@ -113,7 +113,7 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 	{
 		// Check for intersection
 		intersection = cutter.start();
-		if (math::linesIntersect(cutter, line->seg(), intersection))
+		if (geometry::linesIntersect(cutter, line->seg(), intersection))
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(intersection);

@@ -34,6 +34,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SectorBuilder.h"
+#include "Geometry/Geometry.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
@@ -99,7 +100,7 @@ SectorBuilder::Edge nextEdge(SectorBuilder::Edge edge, MapLineSet& visited_lines
 			continue;
 
 		// Determine angle between lines
-		double angle = math::angle2DRad(
+		double angle = geometry::angle2DRad(
 			{ vertex_prev->xPos(), vertex_prev->yPos() },
 			{ vertex->xPos(), vertex->yPos() },
 			{ vertex_next->xPos(), vertex_next->yPos() });
@@ -259,7 +260,7 @@ int SectorBuilder::nearestEdge(double x, double y) const
 	for (unsigned a = 0; a < o_edges_.size(); a++)
 	{
 		// Get distance to edge
-		dist = math::distanceToLineFast(point, o_edges_[a].line->seg());
+		dist = geometry::distanceToLineFast(point, o_edges_[a].line->seg());
 
 		// Check if minimum
 		if (dist < min_dist)
@@ -299,7 +300,7 @@ bool SectorBuilder::pointWithinOutline(double x, double y) const
 	if (nearest >= 0)
 	{
 		// Check what side of the edge the point is on
-		double side = math::lineSide(point, o_edges_[nearest].line->seg());
+		double side = geometry::lineSide(point, o_edges_[nearest].line->seg());
 
 		// Return true if it is on the correct side
 		if (side >= 0 && o_edges_[nearest].front)
@@ -383,8 +384,8 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 			// tiebreaker -- this fixes cases where the ray hits a vertex
 			// shared by two lines.  Choosing the further line would mean
 			// choosing an inner edge, which is clearly wrong.
-			double line_dist    = math::distanceToLineFast(vertex_right_->position(), line->seg());
-			double nearest_dist = math::distanceToLineFast(vertex_right_->position(), nearest->seg());
+			double line_dist    = geometry::distanceToLineFast(vertex_right_->position(), line->seg());
+			double nearest_dist = geometry::distanceToLineFast(vertex_right_->position(), nearest->seg());
 			if (line_dist < nearest_dist)
 			{
 				min_dist = dist;
@@ -399,7 +400,7 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 
 
 	// Determine the edge side
-	double side = math::lineSide(vertex_right_->position(), nearest->seg());
+	double side = geometry::lineSide(vertex_right_->position(), nearest->seg());
 	// LOG_DEBUG("Found next outer line", nearest, "on side", side);
 	if (side >= 0)
 		return Edge{ nearest, true };
@@ -458,7 +459,7 @@ SectorBuilder::Edge SectorBuilder::findInnerEdge()
 			opposite = line->v1();
 
 		// Determine angle
-		double angle = math::angle2DRad(
+		double angle = geometry::angle2DRad(
 			Vec2d(vertex_right_->xPos() + 32, vertex_right_->yPos()),
 			Vec2d(vertex_right_->xPos(), vertex_right_->yPos()),
 			Vec2d(opposite->xPos(), opposite->yPos()));

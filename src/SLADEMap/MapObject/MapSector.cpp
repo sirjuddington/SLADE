@@ -33,6 +33,8 @@
 #include "MapSector.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/Polygon2D.h"
 #include "MapLine.h"
 #include "MapSide.h"
 #include "MapVertex.h"
@@ -40,9 +42,7 @@
 #include "SLADEMap/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Debuggable.h"
-#include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
-#include "Utility/Polygon2D.h"
 
 using namespace slade;
 
@@ -449,7 +449,7 @@ bool MapSector::containsPoint(const Vec2d& point)
 		return false;
 
 	// Check the side of the nearest line
-	double side = math::lineSide(point, nline->seg());
+	double side = geometry::lineSide(point, nline->seg());
 	if (side >= 0 && nline->frontSector() == this)
 		return true;
 	else if (side < 0 && nline->backSector() == this)
@@ -471,16 +471,16 @@ double MapSector::distanceTo(const Vec2d& point, double maxdist)
 	if (!bbox_.isValid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist     = math::distanceToLine(point, bbox_.leftSide());
+	double dist     = geometry::distanceToLine(point, bbox_.leftSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = math::distanceToLine(point, bbox_.topSide());
+	dist = geometry::distanceToLine(point, bbox_.topSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = math::distanceToLine(point, bbox_.rightSide());
+	dist = geometry::distanceToLine(point, bbox_.rightSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = math::distanceToLine(point, bbox_.bottomSide());
+	dist = geometry::distanceToLine(point, bbox_.bottomSide());
 	if (dist < min_dist)
 		min_dist = dist;
 
@@ -826,7 +826,7 @@ void MapSector::findTextPoint()
 	for (auto& connected_side : connected_sides_)
 	{
 		auto   l    = connected_side->parentLine();
-		double dist = math::distanceToLineFast(text_point_, l->seg());
+		double dist = geometry::distanceToLineFast(text_point_, l->seg());
 
 		if (dist < min_dist)
 		{
@@ -850,7 +850,7 @@ void MapSector::findTextPoint()
 			continue;
 
 		auto   line = connected_side->parentLine();
-		double dist = math::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
+		double dist = geometry::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
 
 		if (dist > 0 && dist < min_dist)
 			min_dist = dist;

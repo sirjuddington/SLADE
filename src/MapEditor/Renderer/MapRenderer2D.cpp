@@ -36,6 +36,7 @@
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
+#include "Geometry/Polygon2D.h"
 #include "MapEditor/Edit/ObjectEdit.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -50,7 +51,6 @@
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/Polygon2D.h"
 
 using namespace slade;
 using namespace mapeditor;

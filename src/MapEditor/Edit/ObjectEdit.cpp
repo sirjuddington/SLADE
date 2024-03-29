@@ -36,6 +36,7 @@
 #include "ObjectEdit.h"
 #include "General/KeyBind.h"
 #include "General/UI.h"
+#include "Geometry/Geometry.h"
 #include "Input.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -47,7 +48,6 @@
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -238,7 +238,7 @@ bool ObjectEditGroup::nearestLineEndpoints(const Vec2d& pos, double min, Vec2d& 
 	double min_dist = min;
 	for (auto& line : lines_)
 	{
-		double d = math::distanceToLineFast(pos, { line.v1->position, line.v2->position });
+		double d = geometry::distanceToLineFast(pos, { line.v1->position, line.v2->position });
 
 		if (d < min_dist)
 		{
@@ -413,8 +413,8 @@ void ObjectEditGroup::doRotate(const Vec2d& p1, const Vec2d& p2, bool lock45)
 	Vec2d mid(old_bbox_.min.x + old_bbox_.width() * 0.5, old_bbox_.min.y + old_bbox_.height() * 0.5);
 
 	// Determine angle
-	double angle = math::angle2DRad(p1, mid, p2);
-	rotation_    = math::radToDeg(angle);
+	double angle = geometry::angle2DRad(p1, mid, p2);
+	rotation_    = geometry::radToDeg(angle);
 
 	// Lock to 45 degree increments if needed
 	if (lock45)
@@ -428,12 +428,12 @@ void ObjectEditGroup::doRotate(const Vec2d& p1, const Vec2d& p2, bool lock45)
 	for (auto& vertex : vertices_)
 	{
 		if (!vertex->ignored)
-			vertex->position = math::rotatePoint(mid, vertex->old_position, rotation_);
+			vertex->position = geometry::rotatePoint(mid, vertex->old_position, rotation_);
 	}
 
 	// Rotate things
 	for (auto& thing : things_)
-		thing.position = math::rotatePoint(mid, thing.old_position, rotation_);
+		thing.position = geometry::rotatePoint(mid, thing.old_position, rotation_);
 }
 
 // -----------------------------------------------------------------------------
@@ -495,7 +495,7 @@ void ObjectEditGroup::doAll(
 
 		// Rotate
 		if (rotation != 0)
-			vertex->position = math::rotatePoint(bbox_.mid(), vertex->position, rotation);
+			vertex->position = geometry::rotatePoint(bbox_.mid(), vertex->position, rotation);
 
 		vertex->old_position = vertex->position;
 	}
@@ -537,7 +537,7 @@ void ObjectEditGroup::doAll(
 
 		// Rotate
 		if (rotation != 0)
-			thing.position = math::rotatePoint(bbox_.mid(), thing.position, rotation);
+			thing.position = geometry::rotatePoint(bbox_.mid(), thing.position, rotation);
 
 		thing.old_position = thing.position;
 	}

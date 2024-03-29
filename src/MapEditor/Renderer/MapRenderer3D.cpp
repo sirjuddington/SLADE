@@ -37,6 +37,8 @@
 #include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
 #include "General/ResourceManager.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/Polygon2D.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditContext.h"
@@ -53,7 +55,6 @@
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "Utility/MathStuff.h"
-#include "Utility/Polygon2D.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
 
@@ -388,7 +389,7 @@ void MapRenderer3D::cameraTurn(double angle)
 {
 	// Find rotated view point
 	Vec2d cp2d(cam_position_.x, cam_position_.y);
-	Vec2d nd = math::rotatePoint(cp2d, cp2d + cam_direction_, angle);
+	Vec2d nd = geometry::rotatePoint(cp2d, cp2d + cam_direction_, angle);
 
 	// Update direction
 	cam_direction_.x = nd.x - cam_position_.x;
@@ -448,7 +449,7 @@ void MapRenderer3D::cameraUpdateVectors()
 	cam_strafe_ = glm::normalize(cam_strafe_);
 
 	// Calculate 3d direction vector
-	cam_dir3d_ = math::rotateVector3D(Vec3d(cam_direction_, 0), cam_strafe_, cam_pitch_);
+	cam_dir3d_ = geometry::rotateVector3D(Vec3d(cam_direction_, 0), cam_strafe_, cam_pitch_);
 	cam_dir3d_ = glm::normalize(cam_dir3d_);
 }
 
@@ -540,7 +541,7 @@ void MapRenderer3D::setupView(int width, int height) const
 {
 	// Calculate aspect ratio
 	float aspect = (1.6f / 1.333333f) * (static_cast<float>(width) / static_cast<float>(height));
-	float fovy   = 2 * math::radToDeg(atan(tan(math::degToRad(render_fov) / 2) / aspect));
+	float fovy   = 2 * geometry::radToDeg(atan(tan(geometry::degToRad(render_fov) / 2) / aspect));
 
 	// Setup projection
 	glMatrixMode(GL_PROJECTION);
@@ -2555,7 +2556,7 @@ void MapRenderer3D::renderThings()
 		// Check side of camera
 		if (cam_pitch_ > -0.9 && cam_pitch_ < 0.9)
 		{
-			if (math::lineSide(thing->position(), strafe) > 0)
+			if (geometry::lineSide(thing->position(), strafe) > 0)
 				continue;
 		}
 
@@ -2940,8 +2941,10 @@ void MapRenderer3D::quickVisDiscard()
 		// Check side of camera
 		if (cam_pitch_ > -0.9 && cam_pitch_ < 0.9)
 		{
-			if (math::lineSide(bbox.min, strafe) > 0 && math::lineSide(Vec2d(bbox.max.x, bbox.min.y), strafe) > 0
-				&& math::lineSide(bbox.max, strafe) > 0 && math::lineSide(Vec2d(bbox.min.x, bbox.max.y), strafe) > 0)
+			if (geometry::lineSide(bbox.min, strafe) > 0
+				&& geometry::lineSide(Vec2d(bbox.max.x, bbox.min.y), strafe) > 0
+				&& geometry::lineSide(bbox.max, strafe) > 0
+				&& geometry::lineSide(Vec2d(bbox.min.x, bbox.max.y), strafe) > 0)
 			{
 				// Behind camera, invisible
 				dist_sectors_[a] = -1.0f;
@@ -2953,16 +2956,16 @@ void MapRenderer3D::quickVisDiscard()
 		if (render_max_dist > 0)
 		{
 			min_dist = 9999999;
-			dist     = math::distanceToLine(cam, bbox.leftSide());
+			dist     = geometry::distanceToLine(cam, bbox.leftSide());
 			if (dist < min_dist)
 				min_dist = dist;
-			dist = math::distanceToLine(cam, bbox.topSide());
+			dist = geometry::distanceToLine(cam, bbox.topSide());
 			if (dist < min_dist)
 				min_dist = dist;
-			dist = math::distanceToLine(cam, bbox.rightSide());
+			dist = geometry::distanceToLine(cam, bbox.rightSide());
 			if (dist < min_dist)
 				min_dist = dist;
-			dist = math::distanceToLine(cam, bbox.bottomSide());
+			dist = geometry::distanceToLine(cam, bbox.bottomSide());
 			if (dist < min_dist)
 				min_dist = dist;
 
@@ -3021,13 +3024,13 @@ void MapRenderer3D::checkVisibleQuads()
 		// Check side of camera
 		if (cam_pitch_ > -0.9 && cam_pitch_ < 0.9)
 		{
-			if (math::lineSide(line->start(), strafe) > 0 && math::lineSide(line->end(), strafe) > 0)
+			if (geometry::lineSide(line->start(), strafe) > 0 && geometry::lineSide(line->end(), strafe) > 0)
 				continue;
 		}
 
 		// Check for distance fade
 		if (render_max_dist > 0)
-			distfade = calcDistFade(math::distanceToLine(cam_position_.xy(), line->seg()), render_max_dist);
+			distfade = calcDistFade(geometry::distanceToLine(cam_position_.xy(), line->seg()), render_max_dist);
 		else
 			distfade = 1.0f;
 
@@ -3086,7 +3089,7 @@ void MapRenderer3D::checkVisibleQuads()
 		{
 			// Check we're on the right side of the quad
 			if (!(quad.flags & DRAWBOTH)
-				&& math::lineSide(
+				&& geometry::lineSide(
 					   cam_position_.xy(),
 					   Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
 					   < 0)
@@ -3206,7 +3209,8 @@ mapeditor::Item MapRenderer3D::determineHilight()
 		auto line = map_->line(a);
 
 		// Find (2d) distance to line
-		dist = math::distanceRayLine(cam_position_.xy(), (cam_position_ + cam_dir3d_).xy(), line->start(), line->end());
+		dist = geometry::distanceRayLine(
+			cam_position_.xy(), (cam_position_ + cam_dir3d_).xy(), line->start(), line->end());
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)
@@ -3218,7 +3222,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 		{
 			// Check side of camera
 			if (!(quad.flags & DRAWBOTH)
-				&& math::lineSide(
+				&& geometry::lineSide(
 					   cam_position_.xy(),
 					   Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
 					   < 0)
@@ -3274,7 +3278,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 		{
 			const Flat& flat = sector_flats_[a][b];
 
-			dist = math::distanceRayPlane(cam_position_, cam_dir3d_, sector_flats_[a][b].plane);
+			dist = geometry::distanceRayPlane(cam_position_, cam_dir3d_, sector_flats_[a][b].plane);
 			if (dist < 0 || dist >= min_dist)
 				continue;
 
@@ -3336,7 +3340,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 
 		// Ignore if not visible
 		auto thing = map_->thing(a);
-		if (math::lineSide(thing->position(), strafe) > 0)
+		if (geometry::lineSide(thing->position(), strafe) > 0)
 			continue;
 
 		// Ignore if not shown
@@ -3348,7 +3352,7 @@ mapeditor::Item MapRenderer3D::determineHilight()
 		halfwidth      = tex_info.size.x * 0.5;
 		if (things_[a].flags & ICON)
 			halfwidth = render_thing_icon_size * 0.5;
-		dist = math::distanceRayLine(
+		dist = geometry::distanceRayLine(
 			cam_position_.xy(),
 			(cam_position_ + cam_dir3d_).xy(),
 			thing->position() - cam_strafe_.xy() * halfwidth,

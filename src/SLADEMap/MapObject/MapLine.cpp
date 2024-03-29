@@ -31,12 +31,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapLine.h"
+#include "Geometry/Geometry.h"
 #include "MapSector.h"
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Debuggable.h"
-#include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -805,7 +805,7 @@ bool MapLine::overlaps(const MapLine* other) const
 // -----------------------------------------------------------------------------
 bool MapLine::intersects(const MapLine* other, Vec2d& intersect_point) const
 {
-	return math::linesIntersect(seg(), other->seg(), intersect_point);
+	return geometry::linesIntersect(seg(), other->seg(), intersect_point);
 }
 
 // -----------------------------------------------------------------------------

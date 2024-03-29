@@ -36,6 +36,7 @@
 #include "Archive/Formats/WadArchive.h"
 #include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/SectorBuilder.h"
 #include "MapFormat/MapFormatHandler.h"
 #include "MapObject/MapLine.h"
@@ -356,7 +357,7 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 		if (s_line == line)
 			continue;
 
-		const double dist = math::distanceRayLine(mid, mid + vec, s_line->start(), s_line->end());
+		const double dist = geometry::distanceRayLine(mid, mid + vec, s_line->start(), s_line->end());
 
 		if (dist < min_dist && dist > 0)
 		{
@@ -507,7 +508,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 
 	// Rotate very slightly to avoid some common cases where
 	// the ray will cross a vertex exactly
-	dir = math::rotatePoint(mid, dir, 0.01);
+	dir = geometry::rotatePoint(mid, dir, 0.01);
 
 	// Find closest line intersecting front/back vector
 	double      dist;
@@ -519,7 +520,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 		if (lines[a] == line)
 			continue;
 
-		dist = math::distanceRayLine(mid, dir, lines[a]->start(), lines[a]->end());
+		dist = geometry::distanceRayLine(mid, dir, lines[a]->start(), lines[a]->end());
 		if (dist < min_dist && dist > 0)
 		{
 			min_dist = dist;
@@ -536,7 +537,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 
 		// Check side of line
 		MapSector* sector = nullptr;
-		if (math::lineSide(mid, l->seg()) >= 0)
+		if (geometry::lineSide(mid, l->seg()) >= 0)
 			sector = l->frontSector();
 		else
 			sector = l->backSector();
@@ -1149,7 +1150,7 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 
 			// Check for intersection
 			Vec2d intersection;
-			if (math::linesIntersect(seg1, line2->seg(), intersection))
+			if (geometry::linesIntersect(seg1, line2->seg(), intersection))
 			{
 				// Create split vertex
 				auto* nv = createVertex(intersection);

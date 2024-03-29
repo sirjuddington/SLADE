@@ -36,7 +36,6 @@
 #include "Geometry/Geometry.h"
 #include "Geometry/Rect.h"
 #include "SLADEMap/MapObject/MapVertex.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 
@@ -120,7 +119,7 @@ MapVertex* VertexList::firstCrossed(const Seg2d& line) const
 			continue;
 
 		// Check if on line
-		if (math::distanceToLineFast(point, line) == 0)
+		if (geometry::distanceToLineFast(point, line) == 0)
 		{
 			// Check distance between line start and vertex
 			double dist = glm::distance(line.start(), point);

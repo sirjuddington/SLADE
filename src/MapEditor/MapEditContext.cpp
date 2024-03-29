@@ -2200,7 +2200,7 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 	}
 }
 
-// #include "Utility/Polygon2D.h"
+// #include "Geometry/Polygon2D.h"
 // CONSOLE_COMMAND(m_n_polys, 0, false)
 //{
 //	SLADEMap& map   = mapeditor::editContext().map();

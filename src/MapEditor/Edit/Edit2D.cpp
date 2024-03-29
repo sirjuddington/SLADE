@@ -35,6 +35,7 @@
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/Clipboard.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/MapClipboardItems.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -49,7 +50,6 @@
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -232,7 +232,7 @@ void Edit2D::splitLine(double x, double y, double min_dist) const
 	context_->beginUndoRecord("Split Line", true, true, false);
 
 	// Get closest point on the line
-	auto closest = math::closestPointOnLine(point, line->seg());
+	auto closest = geometry::closestPointOnLine(point, line->seg());
 
 	// Create vertex there
 	auto vertex = context_->map().createVertex(closest);
@@ -916,7 +916,7 @@ void Edit2D::createSector(const Vec2d& pos) const
 		return;
 
 	// Determine side
-	double side = math::lineSide(pos, line->seg());
+	double side = geometry::lineSide(pos, line->seg());
 
 	// Get sector to copy if we're in sectors mode
 	MapSector* sector_copy = nullptr;

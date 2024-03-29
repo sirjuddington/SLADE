@@ -37,6 +37,7 @@
 #include "Game/ThingType.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
+#include "Geometry/Geometry.h"
 #include "MCAnimations.h"
 #include "MapEditor/Edit/Input.h"
 #include "MapEditor/Edit/LineDraw.h"
@@ -336,7 +337,7 @@ void Renderer::setCameraThing(const MapThing* thing) const
 		pos.z += sector->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction
-	renderer_3d_->cameraSet(pos, math::vectorAngle(math::degToRad(thing->angle())));
+	renderer_3d_->cameraSet(pos, geometry::vectorAngle(geometry::degToRad(thing->angle())));
 }
 
 // -----------------------------------------------------------------------------
@@ -879,10 +880,10 @@ void Renderer::drawObjectEdit() const
 
 		// Bbox
 		Vec2d mid(bbox.min.x + bbox.width() * 0.5, bbox.min.y + bbox.height() * 0.5);
-		auto  bl = math::rotatePoint(mid, bbox.min, group.rotation());
-		auto  tl = math::rotatePoint(mid, Vec2d(bbox.min.x, bbox.max.y), group.rotation());
-		auto  tr = math::rotatePoint(mid, bbox.max, group.rotation());
-		auto  br = math::rotatePoint(mid, Vec2d(bbox.max.x, bbox.min.y), group.rotation());
+		auto  bl = geometry::rotatePoint(mid, bbox.min, group.rotation());
+		auto  tl = geometry::rotatePoint(mid, Vec2d(bbox.min.x, bbox.max.y), group.rotation());
+		auto  tr = geometry::rotatePoint(mid, bbox.max, group.rotation());
+		auto  br = geometry::rotatePoint(mid, Vec2d(bbox.max.x, bbox.min.y), group.rotation());
 		glLineWidth(2.0f);
 		drawing::drawLine(tl, bl);
 		drawing::drawLine(bl, br);

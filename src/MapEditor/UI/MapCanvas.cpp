@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "MapCanvas.h"
 #include "App.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/Polygon2D.h"
 #include "MapEditor/Edit/Input.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -44,8 +46,6 @@
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
-#include "Utility/Polygon2D.h"
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Mouse.hpp>
@@ -250,6 +250,8 @@ void MapCanvas::onKeyBindPress(string_view name)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the canvas is resized
@@ -297,7 +299,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 				SectorBuilder sbuilder;
 
 				// Determine line side
-				double side = math::lineSide(context_->input().mousePosMap(), line->seg());
+				double side = geometry::lineSide(context_->input().mousePosMap(), line->seg());
 				if (side >= 0)
 					sbuilder.traceSector(&(context_->map()), line, true);
 				else

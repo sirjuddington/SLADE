@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MCAnimations.h"
 #include "General/ColourConfiguration.h"
+#include "Geometry/Polygon2D.h"
 #include "MapEditor/Item.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -43,7 +44,6 @@
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapVertex.h"
-#include "Utility/Polygon2D.h"
 
 using namespace slade;
 

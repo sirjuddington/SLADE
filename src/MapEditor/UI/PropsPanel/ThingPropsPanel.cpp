@@ -37,6 +37,7 @@
 #include "Game/ThingType.h"
 #include "Game/UDMFProperty.h"
 #include "General/UI.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -53,7 +54,6 @@
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 
@@ -294,7 +294,7 @@ public:
 		glLineWidth(2.0f);
 		if (parent_->angleSet())
 		{
-			auto tip = math::rotatePoint(Vec2d(0, 0), Vec2d(0.8, 0), -parent_->angle());
+			auto tip = geometry::rotatePoint(Vec2d(0, 0), Vec2d(0.8, 0), -parent_->angle());
 			drawing::drawArrow(tip, Vec2d(0, 0), col_fg_, false, 1.2, 0.2);
 		}
 

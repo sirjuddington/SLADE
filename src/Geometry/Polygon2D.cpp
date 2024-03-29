@@ -32,14 +32,16 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Polygon2D.h"
-#include "MathStuff.h"
+
+#include "Geometry.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "Polygon2D.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapVertex.h"
+#include "Utility/MathStuff.h"
 
 using namespace slade;
 
@@ -194,7 +196,7 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 			// Apply rotation if any
 			if (rotation != 0)
 			{
-				Vec2d np = math::rotatePoint(Vec2d(0, 0), Vec2d(x, y), rotation);
+				Vec2d np = geometry::rotatePoint(Vec2d(0, 0), Vec2d(x, y), rotation);
 				x        = np.x;
 				y        = np.y;
 			}
@@ -392,7 +394,7 @@ int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, 
 			continue;
 
 		// Determine angle between edges
-		double angle = math::angle2DRad(
+		double angle = geometry::angle2DRad(
 			Vec2d(v1.x, v1.y), Vec2d(v2.x, v2.y), Vec2d(vertices_[out.v2].x, vertices_[out.v2].y));
 		if (angle < min_angle)
 		{
@@ -721,7 +723,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	int    closest  = -1;
 	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
-		if (math::lineSide(vertices_[a], Seg2d(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
+		if (geometry::lineSide(vertices_[a], Seg2d(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
 		{
 			vertices_[a].distance = glm::distance(static_cast<Vec2d>(vertices_[v2]), static_cast<Vec2d>(vertices_[a]));
 			if (vertices_[a].distance < min_dist)
@@ -749,7 +751,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 			continue;
 
 		// Intersection test
-		if (math::linesIntersect(
+		if (geometry::linesIntersect(
 				Seg2d(vertices_[v2], vertices_[closest]), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 		{
 			intersect = true;
@@ -794,7 +796,8 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 				continue;
 
 			// Intersection test
-			if (math::linesIntersect(Seg2d(vertices_[v2], vert), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
+			if (geometry::linesIntersect(
+					Seg2d(vertices_[v2], vert), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 			{
 				intersect = true;
 				break;

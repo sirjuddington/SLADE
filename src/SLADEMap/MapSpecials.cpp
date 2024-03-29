@@ -34,6 +34,7 @@
 #include "MapSpecials.h"
 #include "Archive/ArchiveEntry.h"
 #include "Game/Configuration.h"
+#include "Geometry/Geometry.h"
 #include "MapObject/MapLine.h"
 #include "MapObject/MapSide.h"
 #include "MapObject/MapThing.h"
@@ -587,9 +588,11 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 			}
 
 			if (line->special() == 704 || line->special() == 714)
-				target->setPlane<SurfaceType::Floor>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+				target->setPlane<SurfaceType::Floor>(
+					geometry::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
 			else
-				target->setPlane<SurfaceType::Ceiling>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+				target->setPlane<SurfaceType::Ceiling>(
+					geometry::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
 		}
 		break;
 		default: break;
@@ -1251,9 +1254,9 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	Seg2d      seg(v1_pos, v2_pos);
 	for (auto& vertex : vertices)
 	{
-		double dist = math::distanceToLine(vertex->position(), seg);
+		double dist = geometry::distanceToLine(vertex->position(), seg);
 
-		if (!math::colinear(vertex->xPos(), vertex->yPos(), v1_pos.x, v1_pos.y, v2_pos.x, v2_pos.y)
+		if (!geometry::colinear(vertex->xPos(), vertex->yPos(), v1_pos.x, v1_pos.y, v2_pos.x, v2_pos.y)
 			&& dist > furthest_dist)
 		{
 			furthest_vertex = vertex;
@@ -1279,7 +1282,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	Vec3d p2(v2_pos, modelz);
 	Vec3d p3(furthest_vertex->position(), targetz);
 
-	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+	target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 }
 
 // -----------------------------------------------------------------------------
@@ -1302,7 +1305,7 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 	{
 		// Line slope things only affect the sector on the side of the line
 		// that faces the thing
-		double     side   = math::lineSide(thing->position(), line->seg());
+		double     side   = geometry::lineSide(thing->position(), line->seg());
 		MapSector* target = nullptr;
 		if (side < 0)
 			target = line->backSector();
@@ -1325,7 +1328,7 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 		Vec3d p1(line->x1(), line->y1(), target_plane.heightAt(line->start()));
 		Vec3d p2(line->x2(), line->y2(), target_plane.heightAt(line->end()));
 		Vec3d p3(thing->xPos(), thing->yPos(), thingz);
-		target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+		target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 	}
 }
 
@@ -1371,7 +1374,7 @@ template<SurfaceType T> void MapSpecials::applySectorTiltThing(SLADEMap* map, Ma
 	// and y by multiplying by cos and sin of the thing's facing angle.
 	Vec3d vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
 
-	target->setPlane<T>(math::planeFromTriangle(point, point + vec1, point + vec2));
+	target->setPlane<T>(geometry::planeFromTriangle(point, point + vec1, point + vec2));
 }
 
 // -----------------------------------------------------------------------------
@@ -1397,7 +1400,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 		// Vavoom things use the plane defined by the thing and its two
 		// endpoints, based on the sector's original (flat) plane and treating
 		// the thing's height as absolute
-		if (math::distanceToLineFast(thing->position(), lines[a]->seg()) == 0)
+		if (geometry::distanceToLineFast(thing->position(), lines[a]->seg()) == 0)
 		{
 			log::warning("Vavoom thing {} lies directly on its target line {}", thing->index(), a);
 			return;
@@ -1408,7 +1411,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 		Vec3d p2(lines[a]->x1(), lines[a]->y1(), height);
 		Vec3d p3(lines[a]->x2(), lines[a]->y2(), height);
 
-		target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+		target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 		return;
 	}
 
@@ -1453,7 +1456,7 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 	Vec3d p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
 	Vec3d p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
 	Vec3d p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
-	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+	target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 }
 
 // -----------------------------------------------------------------------------
@@ -1509,9 +1512,10 @@ void MapSpecials::applyRectangularVertexHeightSlope(
 				Seg2d      seg(v1->position(), v2->position());
 				for (auto& vertex : vertices)
 				{
-					double dist = math::distanceToLine(vertex->position(), seg);
+					double dist = geometry::distanceToLine(vertex->position(), seg);
 
-					if (!math::colinear(vertex->xPos(), vertex->yPos(), v1->xPos(), v1->yPos(), v2->xPos(), v2->yPos())
+					if (!geometry::colinear(
+							vertex->xPos(), vertex->yPos(), v1->xPos(), v1->yPos(), v2->xPos(), v2->yPos())
 						&& dist > furthest_dist)
 					{
 						furthest_vertex = vertex;
@@ -1531,7 +1535,7 @@ void MapSpecials::applyRectangularVertexHeightSlope(
 				Vec3d p2(v2->position(), modelz);
 				Vec3d p3(furthest_vertex->position(), targetz);
 
-				target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+				target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 			}
 		}
 	}

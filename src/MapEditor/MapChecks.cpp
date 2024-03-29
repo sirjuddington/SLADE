@@ -36,6 +36,7 @@
 #include "Game/Configuration.h"
 #include "Game/Game.h"
 #include "Game/ThingType.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapTextureManager.h"
@@ -51,7 +52,6 @@
 #include "UI/Browser/BrowserItem.h"
 #include "UI/Dialogs/MapTextureBrowser.h"
 #include "UI/Dialogs/ThingTypeBrowser.h"
-#include "Utility/MathStuff.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -1397,7 +1397,7 @@ public:
 				line = check_line;
 
 				// Check intersection
-				if (math::boxLineIntersect(bbox, line->seg()))
+				if (geometry::boxLineIntersect(bbox, line->seg()))
 				{
 					things_.push_back(thing);
 					lines_.push_back(line);
@@ -1428,7 +1428,7 @@ public:
 			auto line  = lines_[index];
 
 			// Get nearest line point to thing
-			auto np = math::closestPointOnLine(thing->position(), line->seg());
+			auto np = geometry::closestPointOnLine(thing->position(), line->seg());
 
 			// Get distance to move
 			double r    = game::configuration().thingType(thing->type()).radius();
