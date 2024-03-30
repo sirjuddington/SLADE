@@ -103,6 +103,7 @@
 
 // GLM
 #define GLM_FORCE_SWIZZLE
+#define GLM_FORCE_CTOR_INIT
 #include <glm/geometric.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
