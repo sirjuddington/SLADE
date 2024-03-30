@@ -5,16 +5,15 @@
 namespace slade
 {
 class ResourceArchiveChooser;
-class Archive;
 
 class RunDialog : public SDialog
 {
 public:
-	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false, bool run_map = false);
-	~RunDialog();
+	RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3d_cb = false, bool run_map = false);
+	~RunDialog() override;
 
 	void     openGameExe(unsigned index) const;
-	wxString selectedCommandLine(Archive* archive, const wxString& map_name, const wxString& map_file = "") const;
+	wxString selectedCommandLine(const Archive* archive, const wxString& map_name, const wxString& map_file = "") const;
 	wxString selectedResourceList() const;
 	wxString selectedExeDir() const;
 	wxString selectedExeId() const;

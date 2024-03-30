@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,8 +32,11 @@
 #include "Main.h"
 #include "SLADEWxApp.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Console.h"
+#include "General/SAction.h"
 #include "General/Web.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
@@ -71,7 +74,7 @@ string sc_rev;
 #ifdef DEBUG
 bool debug = true;
 #else
-bool   debug = false;
+bool debug = false;
 #endif
 
 int win_version_major = 0;
@@ -442,7 +445,7 @@ bool SLADEWxApp::OnInit()
 #ifdef __WINDOWS__
 	wxApp::SetAppName("SLADE3");
 #else
-    wxApp::SetAppName("slade3");
+	wxApp::SetAppName("slade3");
 #endif
 
 	// Handle exceptions using wxDebug stuff, but only in release mode
@@ -457,11 +460,11 @@ bool SLADEWxApp::OnInit()
 	// Should be constant, wxWidgets Cocoa backend scales everything under the hood
 	const double ui_scale = 1.0;
 #else  // !__APPLE__
-    // Calculate scaling factor (from system ppi)
-    wxMemoryDC dc;
-    double     ui_scale = static_cast<double>(dc.GetPPI().x) / 96.0;
-    if (ui_scale < 1.)
-        ui_scale = 1.;
+	// Calculate scaling factor (from system ppi)
+	wxMemoryDC dc;
+	double     ui_scale = static_cast<double>(dc.GetPPI().x) / 96.0;
+	if (ui_scale < 1.)
+		ui_scale = 1.;
 #endif // __APPLE__
 
 	// Get Windows version

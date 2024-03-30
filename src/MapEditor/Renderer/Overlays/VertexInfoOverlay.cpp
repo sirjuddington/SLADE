@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,11 +33,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "VertexInfoOverlay.h"
+#include "General/Defs.h"
+#include "Geometry/Rect.h"
 #include "OpenGL/Draw2D.h"
-#include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 

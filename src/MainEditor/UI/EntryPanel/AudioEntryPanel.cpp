@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,13 +32,17 @@
 #include "Main.h"
 #include "AudioEntryPanel.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Audio/AudioTags.h"
 #include "Audio/MIDIPlayer.h"
 #include "Audio/ModMusic.h"
 #include "Audio/Mp3Music.h"
 #include "Audio/Music.h"
+#include "General/UI.h"
 #include "MainEditor/Conversions.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -74,10 +78,12 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	mod_{ new audio::ModMusic() },
 	mp3_{ new audio::Mp3Music() }
 {
+	namespace wx = wxutil;
+
 	// Setup sizer
 	auto sizer_gb = new wxGridBagSizer(ui::pad(), ui::pad());
 	sizer_main_->AddStretchSpacer();
-	sizer_main_->Add(sizer_gb, 0, wxALIGN_CENTER);
+	sizer_main_->Add(sizer_gb, wxSizerFlags().Center());
 	sizer_main_->AddStretchSpacer();
 
 	// Add seekbar
@@ -368,14 +374,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
 		audio_type_ = Sound;
 
 		// Enable play controls
-#if (SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR < 2)
-		// SFML before 2.2 has a bug where it reports an incorrect value for long sounds, so compute it ourselves then
-		setAudioDuration(
-			(sound_buffer->getSampleCount() / sound_buffer->getSampleRate())
-			* (1000 / sound_buffer->getChannelCount()));
-#else
 		setAudioDuration(sound_buffer_->getDuration().asMilliseconds());
-#endif
 		btn_play_->Enable();
 		btn_pause_->Enable();
 		btn_stop_->Enable();
@@ -511,10 +510,10 @@ void AudioEntryPanel::startStream()
 	{
 	case Sound: sound_->play(); break;
 	case Music: music_->play(); break;
-	case Mod: mod_->play(); break;
-	case MIDI: audio::midiPlayer().play(); break;
-	case Mp3: mp3_->play(); break;
-	default: break;
+	case Mod:   mod_->play(); break;
+	case MIDI:  audio::midiPlayer().play(); break;
+	case Mp3:   mp3_->play(); break;
+	default:    break;
 	}
 }
 
@@ -527,10 +526,10 @@ void AudioEntryPanel::stopStream() const
 	{
 	case Sound: sound_->pause(); break;
 	case Music: music_->pause(); break;
-	case Mod: mod_->pause(); break;
-	case MIDI: audio::midiPlayer().pause(); break;
-	case Mp3: mp3_->pause(); break;
-	default: break;
+	case Mod:   mod_->pause(); break;
+	case MIDI:  audio::midiPlayer().pause(); break;
+	case Mp3:   mp3_->pause(); break;
+	default:    break;
 	}
 }
 
@@ -543,10 +542,10 @@ void AudioEntryPanel::resetStream() const
 	{
 	case Sound: sound_->stop(); break;
 	case Music: music_->stop(); break;
-	case Mod: mod_->stop(); break;
-	case MIDI: audio::midiPlayer().stop(); break;
-	case Mp3: mp3_->stop(); break;
-	default: break;
+	case Mod:   mod_->stop(); break;
+	case MIDI:  audio::midiPlayer().stop(); break;
+	case Mp3:   mp3_->stop(); break;
+	default:    break;
 	}
 }
 
@@ -568,17 +567,18 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 		{
 			size_t samplerate = mc.readL16(2);
 			size_t samples    = mc.readL16(4);
-			info += wxString::Format("%lu samples at %lu Hz", (unsigned long)samples, (unsigned long)samplerate);
+			info += wxString::Format(
+				"%lu samples at %lu Hz", static_cast<unsigned long>(samples), static_cast<unsigned long>(samplerate));
 		}
 		else if (entry.type() == EntryType::fromId("snd_speaker"))
 		{
 			size_t samples = mc.readL16(2);
-			info += wxString::Format("%lu samples", (unsigned long)samples);
+			info += wxString::Format("%lu samples", static_cast<unsigned long>(samples));
 		}
 		else if (entry.type() == EntryType::fromId("snd_audiot"))
 		{
 			size_t samples = mc.readL16(0);
-			info += wxString::Format("%lu samples", (unsigned long)samples);
+			info += wxString::Format("%lu samples", static_cast<unsigned long>(samples));
 		}
 		else if (entry.type() == EntryType::fromId("snd_sun"))
 			info += audio::getSunInfo(mc);
@@ -712,10 +712,10 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	{
 	case Sound: pos = sound_->getPlayingOffset().asMilliseconds(); break;
 	case Music: pos = music_->getPlayingOffset().asMilliseconds(); break;
-	case Mod: pos = mod_->getPlayingOffset().asMilliseconds(); break;
-	case MIDI: pos = audio::midiPlayer().position(); break;
-	case Mp3: pos = mp3_->getPlayingOffset().asMilliseconds(); break;
-	default: break;
+	case Mod:   pos = mod_->getPlayingOffset().asMilliseconds(); break;
+	case MIDI:  pos = audio::midiPlayer().position(); break;
+	case Mp3:   pos = mp3_->getPlayingOffset().asMilliseconds(); break;
+	default:    break;
 	}
 
 	// Set slider
@@ -742,10 +742,10 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 	{
 	case Sound: sound_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
 	case Music: music_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	case Mod: mod_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	case MIDI: audio::midiPlayer().setPosition(slider_seek_->GetValue()); break;
-	case Mp3: mp3_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	default: break;
+	case Mod:   mod_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
+	case MIDI:  audio::midiPlayer().setPosition(slider_seek_->GetValue()); break;
+	case Mp3:   mp3_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
+	default:    break;
 	}
 }
 
@@ -760,9 +760,9 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 	{
 	case Sound: sound_->setVolume(snd_volume); break;
 	case Music: music_->setVolume(snd_volume); break;
-	case MIDI: audio::midiPlayer().setVolume(snd_volume); break;
-	case Mp3: mp3_->setVolume(snd_volume); break;
-	case Mod: mod_->setVolume(snd_volume); break;
-	default: break;
+	case MIDI:  audio::midiPlayer().setVolume(snd_volume); break;
+	case Mp3:   mp3_->setVolume(snd_volume); break;
+	case Mod:   mod_->setVolume(snd_volume); break;
+	default:    break;
 	}
 }

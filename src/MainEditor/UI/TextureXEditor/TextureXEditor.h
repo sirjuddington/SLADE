@@ -1,41 +1,39 @@
 #pragma once
 
-#include "Archive/Archive.h"
-#include "General/UndoRedo.h"
-#include "Graphics/CTexture/PatchTable.h"
-#include "PatchBrowser.h"
-#include "PatchTablePanel.h"
-#include "TextureEditorPanel.h"
-#include "TextureXPanel.h"
 #include "UI/Controls/STabCtrl.h"
 
 namespace slade
 {
+class PatchBrowser;
+class TextureXPanel;
+class UndoManager;
+class PatchTable;
+
 class TextureXEditor : public wxPanel
 {
 public:
 	TextureXEditor(wxWindow* parent);
-	~TextureXEditor();
+	~TextureXEditor() override;
 
 	Archive*     archive() const { return archive_; }
-	PatchTable&  patchTable() { return patch_table_; }
+	PatchTable&  patchTable() const { return *patch_table_; }
 	void         pnamesModified(bool mod = true) { pnames_modified_ = mod; }
 	UndoManager* undoManager() const { return undo_manager_.get(); }
 
 	bool openArchive(Archive* archive);
-	void updateTexturePalette();
+	void updateTexturePalette() const;
 	void saveChanges();
 	bool close();
 	void showTextureMenu(bool show = true) const;
 	void setSelection(size_t index) const;
-	void setSelection(ArchiveEntry* entry) const;
+	void setSelection(const ArchiveEntry* entry) const;
 	void updateMenuStatus() const;
-	void undo();
-	void redo();
+	void undo() const;
+	void redo() const;
 
 	// Editing
-	void     setFullPath(bool enabled = false) const { patch_browser_->setFullPath(enabled); }
-	bool     removePatch(unsigned index, bool delete_entry = false);
+	void     setFullPath(bool enabled = false) const;
+	bool     removePatch(unsigned index, bool delete_entry = false) const;
 	int      browsePatchTable(const wxString& first = "") const;
 	wxString browsePatchEntry(const wxString& first = "");
 
@@ -48,10 +46,10 @@ public:
 private:
 	Archive*                archive_ = nullptr;       // The archive this editor is handling
 	ArchiveEntry*           pnames_  = nullptr;       // The PNAMES entry to modify (can be null)
-	PatchTable              patch_table_;             // The patch table for TEXTURE1/2 (ie PNAMES)
+	unique_ptr<PatchTable>  patch_table_;             // The patch table for TEXTURE1/2 (ie PNAMES)
 	vector<TextureXPanel*>  texture_editors_;         // One panel per TEXTUREX list (ie TEXTURE1/TEXTURE2)
 	PatchBrowser*           patch_browser_ = nullptr; // The patch browser window
-	unique_ptr<UndoManager> undo_manager_  = nullptr;
+	unique_ptr<UndoManager> undo_manager_;
 
 	// UI Stuff
 	TabControl* tabs_         = nullptr;

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "LineInfoOverlay.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditContext.h"
@@ -66,6 +67,11 @@ LineInfoOverlay::LineInfoOverlay()
 {
 	text_box_ = std::make_unique<draw2d::TextBox>("", 100.0f, draw2d::Font::Condensed);
 }
+
+// -----------------------------------------------------------------------------
+// LineInfoOverlay class destructor
+// -----------------------------------------------------------------------------
+LineInfoOverlay::~LineInfoOverlay() = default;
 
 // -----------------------------------------------------------------------------
 // Updates the overlay with info from [line]

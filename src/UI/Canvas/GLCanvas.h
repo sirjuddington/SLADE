@@ -23,10 +23,10 @@ public:
 	};
 
 	GLCanvas(
-		wxWindow*      parent,
-		BGStyle        bg_style  = BGStyle::Colour,
-		const ColRGBA& bg_colour = ColRGBA::BLACK,
-		gl::View       view      = {});
+		wxWindow*       parent,
+		BGStyle         bg_style  = BGStyle::Colour,
+		const ColRGBA&  bg_colour = ColRGBA::BLACK,
+		const gl::View& view      = {});
 	~GLCanvas() override;
 
 	const gl::View& view() const { return view_; }

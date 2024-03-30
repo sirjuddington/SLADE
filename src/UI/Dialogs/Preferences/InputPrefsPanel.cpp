@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "InputPrefsPanel.h"
+#include "General/KeyBind.h"
 #include "General/UI.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
@@ -66,7 +67,7 @@ public:
 // -----------------------------------------------------------------------------
 InputKeyCtrl::InputKeyCtrl(wxWindow* parent, const Keypress& init) :
 	wxTextCtrl(parent, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_TAB | wxTE_PROCESS_ENTER),
-	key_{ init }
+	key_{ new Keypress(init) }
 {
 	// Set initial value
 	wxTextCtrl::SetValue(init.asString());
@@ -82,6 +83,11 @@ InputKeyCtrl::InputKeyCtrl(wxWindow* parent, const Keypress& init) :
 }
 
 // -----------------------------------------------------------------------------
+// InputKeyCtrl class destructor
+// -----------------------------------------------------------------------------
+InputKeyCtrl::~InputKeyCtrl() = default;
+
+// -----------------------------------------------------------------------------
 // Called when a key is pressed in the control
 // -----------------------------------------------------------------------------
 void InputKeyCtrl::onKeyDown(wxKeyEvent& e)
@@ -94,8 +100,8 @@ void InputKeyCtrl::onKeyDown(wxKeyEvent& e)
 		return;
 	}
 
-	key_ = KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers());
-	SetValue(key_.asString());
+	*key_ = KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers());
+	SetValue(key_->asString());
 }
 
 // -----------------------------------------------------------------------------
@@ -105,29 +111,29 @@ void InputKeyCtrl::onMouseDown(wxMouseEvent& e)
 {
 	// Middle button
 	if (e.GetEventType() == wxEVT_MIDDLE_DOWN)
-		key_.key = "mouse3";
+		key_->key = "mouse3";
 
 	// Button 4
 	else if (e.GetEventType() == wxEVT_AUX1_DOWN)
-		key_.key = "mouse4";
+		key_->key = "mouse4";
 
 	// Button 5
 	else if (e.GetEventType() == wxEVT_AUX2_DOWN)
-		key_.key = "mouse5";
+		key_->key = "mouse5";
 
 	// Mouse wheel
 	else if (e.GetEventType() == wxEVT_MOUSEWHEEL)
 	{
 		if (e.GetWheelRotation() > 0)
-			key_.key = "mwheelup";
+			key_->key = "mwheelup";
 		else if (e.GetWheelRotation() < 0)
-			key_.key = "mwheeldown";
+			key_->key = "mwheeldown";
 	}
 
-	key_.alt   = e.AltDown();
-	key_.ctrl  = e.CmdDown();
-	key_.shift = e.ShiftDown();
-	SetValue(key_.asString());
+	key_->alt   = e.AltDown();
+	key_->ctrl  = e.CmdDown();
+	key_->shift = e.ShiftDown();
+	SetValue(key_->asString());
 }
 
 // -----------------------------------------------------------------------------
@@ -135,8 +141,8 @@ void InputKeyCtrl::onMouseDown(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void InputKeyCtrl::onEnter(wxCommandEvent& e)
 {
-	key_.key = "return";
-	SetValue(key_.asString());
+	key_->key = "return";
+	SetValue(key_->asString());
 }
 
 
@@ -158,7 +164,7 @@ InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Keybinds list
 	list_binds_ = new wxTreeListCtrl(this, -1);
-	sizer->Add(list_binds_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(list_binds_, wxutil::sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Buttons
 	wxutil::layoutHorizontally(
@@ -285,11 +291,11 @@ void InputPrefsPanel::changeKey(wxTreeListItem item)
 
 	// Add key input box
 	auto key_ctrl = new InputKeyCtrl(&dlg, bind->key);
-	sizer->Add(key_ctrl, 0, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(key_ctrl, wxutil::sfWithBorder().Expand());
 
 	// Add buttons
 	auto btnsizer = dlg.CreateButtonSizer(wxOK | wxCANCEL);
-	sizer->Add(btnsizer, 0, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(btnsizer, wxutil::sfWithBorder().Expand());
 
 	// Init dialog
 	dlg.SetInitialSize(wxSize(-1, -1));
@@ -434,6 +440,8 @@ void InputPrefsPanel::applyPreferences()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the panel is resized
@@ -530,7 +538,7 @@ void InputPrefsPanel::onBtnDefaults(wxCommandEvent& e)
 
 	// Go through default keys for the bind
 	for (int a = 1; a < bind->bind->nDefaults(); a++)
-		auto n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->bind->defaultKey(a)));
+		list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->bind->defaultKey(a)));
 
 	// Refresh list
 	updateBindsList();

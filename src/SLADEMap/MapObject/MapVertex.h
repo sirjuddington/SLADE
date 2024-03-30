@@ -4,6 +4,7 @@
 
 namespace slade
 {
+class Debuggable;
 class VertexList;
 
 class MapVertex : public MapObject
@@ -16,8 +17,8 @@ public:
 	inline static const string PROP_Y = "y";
 
 	MapVertex(const Vec2d& pos);
-	MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def);
-	~MapVertex() = default;
+	MapVertex(const Vec2d& pos, const ParseTreeNode* udmf_def);
+	~MapVertex() override = default;
 
 	double xPos() const { return position_.x; }
 	double yPos() const { return position_.y; }
@@ -34,9 +35,9 @@ public:
 	bool   scriptCanModifyProp(string_view key) override;
 
 	void     connectLine(MapLine* line);
-	void     disconnectLine(MapLine* line);
+	void     disconnectLine(const MapLine* line);
 	unsigned nConnectedLines() const { return connected_lines_.size(); }
-	MapLine* connectedLine(unsigned index);
+	MapLine* connectedLine(unsigned index) const;
 	void     clearConnectedLines() { connected_lines_.clear(); }
 	bool     isDetached() const { return connected_lines_.empty(); }
 
@@ -47,13 +48,7 @@ public:
 
 	void writeUDMF(string& def) override;
 
-	operator Debuggable() const
-	{
-		if (!this)
-			return { "<vertex NULL>" };
-
-		return { fmt::format("<vertex {}>", index_) };
-	}
+	operator Debuggable() const;
 
 private:
 	// Basic data

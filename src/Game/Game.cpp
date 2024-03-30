@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,11 +32,16 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Game.h"
+#include "ActionSpecial.h"
 #include "App.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "Configuration.h"
+#include "SpecialPreset.h"
 #include "TextEditor/TextLanguage.h"
+#include "ThingType.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"
@@ -53,7 +58,6 @@ using namespace game;
 // -----------------------------------------------------------------------------
 namespace slade::game
 {
-Configuration             config_current;
 std::map<string, GameDef> game_defs;
 GameDef                   game_def_unknown;
 std::map<string, PortDef> port_defs;
@@ -224,19 +228,13 @@ bool PortDef::parse(const MemChunk& mc)
 
 
 // -----------------------------------------------------------------------------
-// Returns the currently loaded game configuration
-// -----------------------------------------------------------------------------
-Configuration& game::configuration()
-{
-	return config_current;
-}
-
-// -----------------------------------------------------------------------------
 // Clears and re-parses custom definitions in all open archives
 // (DECORATE, *MAPINFO, ZScript etc.)
 // -----------------------------------------------------------------------------
 void game::updateCustomDefinitions()
 {
+	auto& config_current = configuration();
+
 	// Clear out all existing custom definitions
 	config_current.clearDecorateDefs();
 	config_current.clearMapInfo();
@@ -407,7 +405,7 @@ void game::init()
 
 	// Load last configuration if any
 	if (!game_configuration.value.empty())
-		config_current.openConfig(game_configuration, port_configuration);
+		configuration().openConfig(game_configuration, port_configuration);
 
 	// Load custom special presets
 	if (!loadCustomSpecialPresets())
@@ -440,7 +438,7 @@ void game::init()
 						lang->loadZScript(zscript_base);
 
 					// MapInfo
-					config_current.parseMapInfo(zdoom_pk3);
+					configuration().parseMapInfo(zdoom_pk3);
 				}
 			});
 		zscript_parse_thread->detach();

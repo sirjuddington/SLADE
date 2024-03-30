@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ResArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -116,7 +119,7 @@ bool ResArchive::readDirectory(const MemChunk& mc, size_t dir_offset, size_t num
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
 		nlump->setOffsetOnDisk(offset);
 		nlump->setSizeOnDisk();
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Read entry data if it isn't zero-sized
 		if (nlump->size() > 0)
@@ -126,14 +129,13 @@ bool ResArchive::readDirectory(const MemChunk& mc, size_t dir_offset, size_t num
 		size_t d_o, n_l;
 		if (isResArchive(nlump->data(), d_o, n_l))
 		{
-			auto ndir = createDir(name, parent);
-			if (ndir)
+			if (auto ndir = createDir(name, parent))
 			{
 				ui::setSplashProgressMessage(fmt::format("Reading res archive data: {} directory", name));
 				// Save offset to restore it once the recursion is done
 				size_t myoffset = mc.currentPos();
 				readDirectory(mc, d_o, n_l, ndir);
-				ndir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
+				ndir->dirEntry()->setState(EntryState::Unmodified);
 				// Restore offset and clean out the entry
 				mc.seek(myoffset, SEEK_SET);
 			}
@@ -149,7 +151,7 @@ bool ResArchive::readDirectory(const MemChunk& mc, size_t dir_offset, size_t num
 			EntryType::detectEntryType(*nlump);
 
 			// Set entry to unchanged
-			nlump->setState(ArchiveEntry::State::Unmodified);
+			nlump->setState(EntryState::Unmodified);
 		}
 	}
 	return true;
@@ -202,10 +204,6 @@ bool ResArchive::open(const MemChunk& mc)
 	ui::setSplashProgressMessage("Reading res archive data");
 	if (!readDirectory(mc, dir_offset, num_lumps, rootDir()))
 		return false;
-
-	// Detect maps (will detect map entry types)
-	ui::setSplashProgressMessage("Detecting maps");
-	detectMaps();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -263,7 +261,7 @@ bool ResArchive::write(MemChunk& mc)
 			mc.write(name, 8);
 
 			if (update) {
-				entry->setState(ArchiveEntry::State::Unmodified);
+				entry->setState(EntryState::Unmodified);
 				entry->exProp("Offset") = (int)offset;
 			}
 		}

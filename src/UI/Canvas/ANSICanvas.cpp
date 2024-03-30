@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,12 +33,12 @@
 #include "Main.h"
 #include "ANSICanvas.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "MainEditor/UI/TextureXEditor/TextureXEditor.h"
-#include "OpenGL/GLTexture.h"
 #include "OpenGL/Draw2D.h"
+#include "OpenGL/GLTexture.h"
 #include "Utility/CodePages.h"
-#include "General/UI.h"
 
 using namespace slade;
 
@@ -50,8 +50,8 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-const int NUMROWS = 25;
-const int NUMCOLS = 80;
+constexpr int NUMROWS = 25;
+constexpr int NUMCOLS = 80;
 } // namespace
 
 

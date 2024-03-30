@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,11 +34,15 @@
 #include "Main.h"
 #include "TextEditorCtrl.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "FindReplacePanel.h"
 #include "General/KeyBind.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "SCallTip.h"
 #include "SLADEWxApp.h"
+#include "TextEditor/Lexer.h"
+#include "TextEditor/TextStyle.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -106,83 +110,97 @@ int searchFlags()
 
 	return flags;
 }
-}
+} // namespace
 
 // -----------------------------------------------------------------------------
 //
-// JumpToCalculator Class Functions
+// JumpToCalculator Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// JumpToCalculator thread entry function
-// -----------------------------------------------------------------------------
-wxThread::ExitCode JumpToCalculator::Entry()
+class JumpToCalculator : public wxThread
 {
-	wxString jump_points;
-
-	Tokenizer tz;
-	tz.setSpecialCharacters(";,:|={}/()");
-	tz.openString(text_);
-
-	wxString token = tz.getToken();
-	while (!tz.atEnd())
+public:
+	JumpToCalculator(wxEvtHandler* handler, string_view text, vector<string> block_names, vector<string> ignore) :
+		handler_(handler),
+		text_(text),
+		block_names_(std::move(block_names)),
+		ignore_(std::move(ignore))
 	{
-		if (token == "{")
-		{
-			// Skip block
-			while (!tz.atEnd() && token != "}")
-				token = tz.getToken();
-		}
+	}
+	~JumpToCalculator() override = default;
 
-		for (auto block : block_names_)
+	ExitCode Entry() override
+	{
+		wxString jump_points;
+
+		Tokenizer tz;
+		tz.setSpecialCharacters(";,:|={}/()");
+		tz.openString(text_);
+
+		wxString token = tz.getToken();
+		while (!tz.atEnd())
 		{
-			// Get jump block keyword
-			long skip = 0;
-			if (strutil::contains(block, ':'))
+			if (token == "{")
 			{
-				auto sp = wxSplit(block, ':');
-				sp.back().ToLong(&skip);
-				block = sp[0];
+				// Skip block
+				while (!tz.atEnd() && token != "}")
+					token = tz.getToken();
 			}
 
-			if (S_CMPNOCASE(token, block))
+			for (auto block : block_names_)
 			{
-				wxString name = tz.getToken();
-				for (int s = 0; s < skip; s++)
-					name = tz.getToken();
+				// Get jump block keyword
+				long skip = 0;
+				if (strutil::contains(block, ':'))
+				{
+					auto sp = wxSplit(block, ':');
+					sp.back().ToLong(&skip);
+					block = sp[0];
+				}
 
-				for (const auto& i : ignore_)
-					if (S_CMPNOCASE(name, i))
+				if (S_CMPNOCASE(token, block))
+				{
+					wxString name = tz.getToken();
+					for (int s = 0; s < skip; s++)
 						name = tz.getToken();
 
-				// Numbered block, add block name
-				if (name.IsNumber())
-					name = wxString::Format("%s %s", block, name);
-				// Unnamed block, use block name
-				if (name == "{" || name == ";")
-					name = block;
+					for (const auto& i : ignore_)
+						if (S_CMPNOCASE(name, i))
+							name = tz.getToken();
 
-				// Add jump point
-				jump_points += wxString::Format("%d,%s,", tz.lineNo() - 1, name);
+					// Numbered block, add block name
+					if (name.IsNumber())
+						name = wxString::Format("%s %s", block, name);
+					// Unnamed block, use block name
+					if (name == "{" || name == ";")
+						name = block;
+
+					// Add jump point
+					jump_points += wxString::Format("%d,%s,", tz.lineNo() - 1, name);
+				}
 			}
+
+			token = tz.getToken();
 		}
 
-		token = tz.getToken();
+		// Remove ending comma
+		if (!jump_points.empty())
+			jump_points.RemoveLast(1);
+
+		// Send event
+		auto event = new wxThreadEvent(wxEVT_COMMAND_JTCALCULATOR_COMPLETED);
+		event->SetString(jump_points);
+		wxQueueEvent(handler_, event);
+
+		return nullptr;
 	}
 
-	// Remove ending comma
-	if (!jump_points.empty())
-		jump_points.RemoveLast(1);
-
-	// Send event
-	auto event = new wxThreadEvent(wxEVT_COMMAND_JTCALCULATOR_COMPLETED);
-	event->SetString(jump_points);
-	wxQueueEvent(handler_, event);
-
-	return nullptr;
-}
+private:
+	wxEvtHandler*  handler_;
+	string         text_;
+	vector<string> block_names_;
+	vector<string> ignore_;
+};
 
 
 // -----------------------------------------------------------------------------
@@ -303,7 +321,7 @@ void TextEditorCtrl::setup()
 		SetWhitespaceSize(3);
 
 		// TODO: separate colour
-		SetWhitespaceForeground(true, StyleSet::currentSet()->style("guides")->foreground().toWx());
+		SetWhitespaceForeground(true, StyleSet::currentSet()->style("guides")->foreground());
 	}
 	else
 		SetViewWhiteSpace(wxSTC_WS_INVISIBLE);
@@ -321,7 +339,7 @@ void TextEditorCtrl::setup()
 	StyleSetChangeable(wxSTC_STYLE_CALLTIP, true);
 	wxFont font_ct(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 	StyleSetFont(wxSTC_STYLE_CALLTIP, font_ct);
-	CallTipSetForegroundHighlight(StyleSet::currentSet()->style("calltip_hl")->foreground().toWx());
+	CallTipSetForegroundHighlight(StyleSet::currentSet()->style("calltip_hl")->foreground());
 
 	// Set folding options
 	setupFolding();
@@ -346,7 +364,7 @@ void TextEditorCtrl::setup()
 // -----------------------------------------------------------------------------
 // Sets up the code folding margin
 // -----------------------------------------------------------------------------
-void TextEditorCtrl::setupFoldMargin(TextStyle* margin_style)
+void TextEditorCtrl::setupFoldMargin(const TextStyle* margin_style)
 {
 	if (!txed_fold_enable)
 	{
@@ -357,13 +375,13 @@ void TextEditorCtrl::setupFoldMargin(TextStyle* margin_style)
 	wxColour col_fg, col_bg;
 	if (margin_style)
 	{
-		col_fg = margin_style->foreground().toWx();
-		col_bg = margin_style->background().toWx();
+		col_fg = margin_style->foreground();
+		col_bg = margin_style->background();
 	}
 	else
 	{
-		col_fg = StyleSet::currentSet()->style("foldmargin")->foreground().toWx();
-		col_bg = StyleSet::currentSet()->style("foldmargin")->background().toWx();
+		col_fg = StyleSet::currentSet()->style("foldmargin")->foreground();
+		col_bg = StyleSet::currentSet()->style("foldmargin")->background();
 	}
 
 	SetMarginType(1, wxSTC_MARGIN_SYMBOL);
@@ -453,7 +471,7 @@ bool TextEditorCtrl::applyStyleSet(StyleSet* style)
 // Reads the contents of [entry] into the text area, returns false if the given
 // entry is invalid
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
+bool TextEditorCtrl::loadEntry(const ArchiveEntry* entry)
 {
 	// Clear current text
 	ClearAll();
@@ -470,10 +488,10 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 		return true;
 
 	// Get character entry data
-	wxString text = wxString::FromUTF8((const char*)entry->rawData(), entry->size());
+	wxString text = wxString::FromUTF8(reinterpret_cast<const char*>(entry->rawData()), entry->size());
 	// If opening as UTF8 failed for some reason, try again as 8-bit data
 	if (text.length() == 0)
-		text = wxString::From8BitData((const char*)entry->rawData(), entry->size());
+		text = wxString::From8BitData(reinterpret_cast<const char*>(entry->rawData()), entry->size());
 
 	// Load text into editor
 	SetText(text);
@@ -493,7 +511,7 @@ void TextEditorCtrl::getRawText(MemChunk& mc) const
 {
 	mc.clear();
 	wxString text = GetText();
-	mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
+	mc.importMem(reinterpret_cast<const uint8_t*>(text.ToUTF8().data()), text.ToUTF8().length());
 }
 
 // -----------------------------------------------------------------------------
@@ -872,7 +890,7 @@ void TextEditorCtrl::showCalltip(int position)
 		call_tip_->setKeywordColour(ss_current->style("keyword")->foreground());
 	}
 	if (txed_calltips_use_font)
-		call_tip_->setFont(ss_current->defaultFontFace(), (int)round(ss_current->defaultFontSize() * 0.9));
+		call_tip_->setFont(ss_current->defaultFontFace(), static_cast<int>(round(ss_current->defaultFontSize() * 0.9)));
 	else
 		call_tip_->setFont("", 0);
 
@@ -1285,6 +1303,8 @@ void TextEditorCtrl::cycleComments() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
@@ -1315,7 +1335,7 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 				auto word = GetTextRange(WordStartPosition(GetCurrentPos(), true), GetCurrentPos()).ToStdString();
 
 				autocomp_list_ = language_->autocompletionList(word);
-				AutoCompShow((int)word.size(), autocomp_list_);
+				AutoCompShow(static_cast<int>(word.size()), autocomp_list_);
 			}
 
 			handled = true;
@@ -1656,7 +1676,7 @@ void TextEditorCtrl::onCalltipClicked(wxStyledTextEvent& e)
 	// Argset down
 	if (e.GetPosition() == 2)
 	{
-		if ((unsigned)ct_argset_ < ct_function_->contexts().size() - 1)
+		if (static_cast<unsigned>(ct_argset_) < ct_function_->contexts().size() - 1)
 		{
 			ct_argset_++;
 			updateCalltip();

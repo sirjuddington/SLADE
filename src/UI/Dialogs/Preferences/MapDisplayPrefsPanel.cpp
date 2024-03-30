@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapDisplayPrefsPanel.h"
+#include "General/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -93,7 +94,7 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 
 	// Create notebook
 	stc_pages_ = STabCtrl::createControl(this);
-	sizer->Add(stc_pages_, 1, wxEXPAND);
+	sizer->Add(stc_pages_, wxSizerFlags(1).Expand());
 
 	// Setup tabs
 	setupGeneralTab();
@@ -116,7 +117,7 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
 	int row = 0;
 
 	// Crosshair
@@ -185,7 +186,7 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	slider_vertex_size_ = new wxSlider(panel, -1, vertex_size, 2, 16, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	choice_vertices_always_ = new wxChoice(panel, -1);
@@ -211,7 +212,7 @@ void MapDisplayPrefsPanel::setupLinesTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	wxutil::layoutVertically(
 		sizer,
@@ -236,7 +237,7 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
 	int row = 0;
 
 	// Thing shape
@@ -300,7 +301,7 @@ void MapDisplayPrefsPanel::setupFlatsTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	wxutil::layoutVertically(
 		sizer,

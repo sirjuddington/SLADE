@@ -5,7 +5,7 @@ public:
 	PNGChunk(string_view name = "----") { memcpy(name_, name.data(), 4); }
 	~PNGChunk() = default;
 
-	string    name() const { return string(name_, 4); }
+	string    name() const { return { name_, 4 }; }
 	uint32_t  size() const { return size_; }
 	uint32_t  crc() const { return crc_; }
 	MemChunk& data() { return data_; }
@@ -233,7 +233,7 @@ protected:
 	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Create FreeImage bitmap from entry data
-		auto mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());
+		auto mem = FreeImage_OpenMemory(const_cast<BYTE*>(data.data()), data.size());
 		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
 		auto bm  = FreeImage_LoadFromMemory(fif, mem, 0);
 		FreeImage_CloseMemory(mem);
@@ -522,7 +522,7 @@ protected:
 			PNGChunk  grAb("grAb");
 			GrabChunk gc = { wxINT32_SWAP_ON_LE((int32_t)image.offset().x),
 							 wxINT32_SWAP_ON_LE((int32_t)image.offset().y) };
-			grAb.setData((const uint8_t*)&gc, 8);
+			grAb.setData(reinterpret_cast<const uint8_t*>(&gc), 8);
 			grAb.write(data);
 		}
 

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "TextStylePrefsPanel.h"
 #include "App.h"
 #include "General/UI.h"
+#include "TextEditor/TextLanguage.h"
+#include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/WxUtils.h"
 
@@ -59,11 +61,14 @@ EXTERN_CVAR(Int, txed_override_font_size)
 // -----------------------------------------------------------------------------
 // TextStylePrefsPanel class constructor
 // -----------------------------------------------------------------------------
-TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase{ parent }, language_preview_{ "preview" }
+TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) :
+	PrefsPanelBase{ parent },
+	ss_current_{ new StyleSet },
+	language_preview_{ new TextLanguage("preview") }
 {
 	// Init variables
-	ss_current_.copySet(StyleSet::currentSet());
-	ts_current_ = ss_current_.style("default");
+	ss_current_->copySet(StyleSet::currentSet());
+	ts_current_ = ss_current_->style("default");
 
 	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	SetSizer(sizer);
@@ -80,17 +85,17 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase{ par
 		choice_styleset_->Append(StyleSet::styleName(a));
 	btn_savestyleset_ = new wxButton(this, -1, "Save Set");
 	auto hbox         = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(this, -1, "Style Set:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-	hbox->Add(choice_styleset_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-	hbox->Add(btn_savestyleset_, 0, wxEXPAND);
+	hbox->Add(new wxStaticText(this, -1, "Style Set:"), wxutil::sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(choice_styleset_, wxutil::sfWithBorder(1, wxRIGHT).CenterVertical());
+	hbox->Add(btn_savestyleset_, wxSizerFlags().Expand());
 	sizer->Add(hbox, { 1, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Style list
 	list_styles_ = new wxListBox(this, -1);
 	list_styles_->Append("Default");
 	list_styles_->Append("Selection");
-	for (unsigned a = 0; a < ss_current_.nStyles(); a++)
-		list_styles_->Append(ss_current_.style(a)->description());
+	for (unsigned a = 0; a < ss_current_->nStyles(); a++)
+		list_styles_->Append(ss_current_->style(a)->description());
 	sizer->Add(list_styles_, { 2, 0 }, { 2, 1 }, wxEXPAND);
 
 	// Style properties
@@ -221,19 +226,19 @@ void TextStylePrefsPanel::init()
 		"\t}\n"
 		"}\n");
 
-	language_preview_.addWord(TextLanguage::WordType::Constant, "CONSTANT");
-	language_preview_.addWord(TextLanguage::WordType::Constant, "OTHER_CONSTANT");
-	language_preview_.addWord(TextLanguage::WordType::Type, "string");
-	language_preview_.addWord(TextLanguage::WordType::Type, "char");
-	language_preview_.addWord(TextLanguage::WordType::Keyword, "void");
-	language_preview_.addWord(TextLanguage::WordType::Keyword, "return");
-	language_preview_.addWord(TextLanguage::WordType::Type, "int");
-	language_preview_.addWord(TextLanguage::WordType::Keyword, "if");
-	language_preview_.addWord(TextLanguage::WordType::Type, "object");
-	language_preview_.addWord(TextLanguage::WordType::Property, "x_property");
-	language_preview_.addWord(TextLanguage::WordType::Property, "y_property");
-	language_preview_.addFunction("function", "int x, int y");
-	te_preview_->setLanguage(&language_preview_);
+	language_preview_->addWord(TextLanguage::WordType::Constant, "CONSTANT");
+	language_preview_->addWord(TextLanguage::WordType::Constant, "OTHER_CONSTANT");
+	language_preview_->addWord(TextLanguage::WordType::Type, "string");
+	language_preview_->addWord(TextLanguage::WordType::Type, "char");
+	language_preview_->addWord(TextLanguage::WordType::Keyword, "void");
+	language_preview_->addWord(TextLanguage::WordType::Keyword, "return");
+	language_preview_->addWord(TextLanguage::WordType::Type, "int");
+	language_preview_->addWord(TextLanguage::WordType::Keyword, "if");
+	language_preview_->addWord(TextLanguage::WordType::Type, "object");
+	language_preview_->addWord(TextLanguage::WordType::Property, "x_property");
+	language_preview_->addWord(TextLanguage::WordType::Property, "y_property");
+	language_preview_->addFunction("function", "int x, int y");
+	te_preview_->setLanguage(language_preview_.get());
 
 	te_preview_->SetReadOnly(true);
 	te_preview_->SetEdgeColumn(34);
@@ -243,13 +248,13 @@ void TextStylePrefsPanel::init()
 // Updates style-related controls to reflect the currently selected style in
 // the list
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateStyleControls()
+void TextStylePrefsPanel::updateStyleControls() const
 {
 	if (!ts_current_)
 		return;
 
 	// Get default style
-	auto style_default = ss_current_.style("default");
+	auto style_default = ss_current_->style("default");
 
 	// Reset UI stuff
 	cb_override_font_face_->SetValue(true);
@@ -339,7 +344,7 @@ void TextStylePrefsPanel::updateStyleControls()
 		col_foreground.set(style_default->foreground());
 		cb_override_foreground_->SetValue(false);
 	}
-	cp_foreground_->SetColour(col_foreground.toWx());
+	cp_foreground_->SetColour(col_foreground);
 
 	// Background
 	ColRGBA col_background;
@@ -350,7 +355,7 @@ void TextStylePrefsPanel::updateStyleControls()
 		col_background.set(style_default->background());
 		cb_override_background_->SetValue(false);
 	}
-	cp_background_->SetColour(col_background.toWx());
+	cp_background_->SetColour(col_background);
 
 	// Apply font
 	fp_font_->SetSelectedFont(font);
@@ -465,7 +470,7 @@ void TextStylePrefsPanel::updateBackground() const
 // -----------------------------------------------------------------------------
 // Updates the preview text editor
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updatePreview()
+void TextStylePrefsPanel::updatePreview() const
 {
 	// Save current font override options
 	string f_override = txed_override_font;
@@ -484,7 +489,7 @@ void TextStylePrefsPanel::updatePreview()
 	}
 
 	// Apply style to preview
-	ss_current_.applyTo(te_preview_);
+	ss_current_->applyTo(te_preview_);
 
 	// Restore font override options
 	txed_override_font      = f_override;
@@ -508,7 +513,7 @@ void TextStylePrefsPanel::applyPreferences()
 	}
 
 	// Apply styleset to global current
-	StyleSet::currentSet()->copySet(&ss_current_);
+	StyleSet::currentSet()->copySet(ss_current_.get());
 	StyleSet::applyCurrentToAll();
 }
 
@@ -519,6 +524,8 @@ void TextStylePrefsPanel::applyPreferences()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a style is selected in the style list
@@ -527,11 +534,11 @@ void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e)
 {
 	int sel = list_styles_->GetSelection();
 	if (sel == 0)
-		ts_current_ = ss_current_.style("default");
+		ts_current_ = ss_current_->style("default");
 	else if (sel == 1)
-		ts_current_ = ss_current_.style("selection");
+		ts_current_ = ss_current_->style("selection");
 	else
-		ts_current_ = ss_current_.style(sel - 2);
+		ts_current_ = ss_current_->style(sel - 2);
 
 	updateStyleControls();
 }
@@ -643,7 +650,7 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 
 	// Create temp styleset
 	StyleSet ss_temp(name);
-	ss_temp.copySet(&ss_current_);
+	ss_temp.copySet(ss_current_.get());
 
 	// Remove spaces from name (for filename)
 	std::replace(name.begin(), name.end(), ' ', '_');
@@ -673,7 +680,7 @@ void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e)
 		auto set = StyleSet::set(choice_styleset_->GetSelection());
 		if (set)
 		{
-			ss_current_.copySet(set);
+			ss_current_->copySet(set);
 			updateStyleControls();
 			updatePreview();
 		}

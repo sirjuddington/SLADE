@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GobArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -123,7 +125,7 @@ bool GobArchive::open(const MemChunk& mc)
 		if (nlump->size() > 0)
 			nlump->importMemChunk(mc, offset, size);
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -192,7 +194,7 @@ bool GobArchive::write(MemChunk& mc)
 		mc.write(&size, 4);
 		mc.write(name, 13);
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setOffsetOnDisk(offset);
 		entry->setSizeOnDisk();
 	}
@@ -278,7 +280,7 @@ bool GobArchive::isGobArchive(const string& filename)
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check size
-	if ((unsigned)file.Length() < (dir_offset + 4))
+	if (static_cast<unsigned>(file.Length()) < (dir_offset + 4))
 		return false;
 
 	// Get number of lumps
@@ -289,7 +291,7 @@ bool GobArchive::isGobArchive(const string& filename)
 
 	// Compute directory size
 	uint32_t dir_size = (num_lumps * 21) + 4;
-	if ((unsigned)file.Length() < (dir_offset + dir_size))
+	if (static_cast<unsigned>(file.Length()) < (dir_offset + dir_size))
 		return false;
 
 	// If it's passed to here it's probably a gob file

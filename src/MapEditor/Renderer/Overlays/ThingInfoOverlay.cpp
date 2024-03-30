@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,12 +32,16 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ThingInfoOverlay.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
+#include "Geometry/Rect.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Draw2D.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapThing.h"
 
@@ -68,6 +72,11 @@ ThingInfoOverlay::ThingInfoOverlay()
 }
 
 // -----------------------------------------------------------------------------
+// ThingInfoOverlay class destructor
+// -----------------------------------------------------------------------------
+ThingInfoOverlay::~ThingInfoOverlay() = default;
+
+// -----------------------------------------------------------------------------
 // Updates the overlay with info from [thing]
 // -----------------------------------------------------------------------------
 void ThingInfoOverlay::update(MapThing* thing)
@@ -93,9 +102,13 @@ void ThingInfoOverlay::update(MapThing* thing)
 	// Position
 	if (map_format != MapFormat::Doom)
 		info_text += fmt::format(
-			"Position: {}, {}, {}\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->zPos()));
+			"Position: {}, {}, {}\n",
+			static_cast<int>(thing->xPos()),
+			static_cast<int>(thing->yPos()),
+			static_cast<int>(thing->zPos()));
 	else
-		info_text += fmt::format("Position: {}, {}\n", (int)thing->xPos(), (int)thing->yPos());
+		info_text += fmt::format(
+			"Position: {}, {}\n", static_cast<int>(thing->xPos()), static_cast<int>(thing->yPos()));
 
 	// Direction
 	int  angle = thing->angle();
@@ -214,7 +227,7 @@ void ThingInfoOverlay::draw(gl::draw2d::Context& dc, float alpha)
 		float theight  = tex_info.size.y;
 		if (twidth > 128.0 || theight > 128.0)
 		{
-			float factor = max(twidth, theight) / 128.0;
+			float factor = glm::max(twidth, theight) / 128.0;
 			twidth /= factor;
 			theight /= factor;
 		}

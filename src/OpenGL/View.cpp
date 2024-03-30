@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "View.h"
-#include "OpenGL/OpenGL.h"
+#include "Geometry/BBox.h"
 #include "Shader.h"
 #include "Utility/MathStuff.h"
 #include <glm/ext/matrix_clip_space.hpp>

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -185,11 +185,14 @@ private:
 // -----------------------------------------------------------------------------
 // RunDialog class constructor
 // -----------------------------------------------------------------------------
-RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, bool run_map) :
-	SDialog(parent, "Run", "run", 500, 400), run_map_{ run_map }
+RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3d_cb, bool run_map) :
+	SDialog(parent, "Run", "run", 500, 400),
+	run_map_{ run_map }
 {
+	namespace wx = wxutil;
+
 	// Set dialog icon + title
-	wxutil::setWindowIcon(this, "run");
+	wx::setWindowIcon(this, "run");
 	if (run_map)
 		SetTitle("Run Map");
 	if (archive)
@@ -200,7 +203,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	SetSizer(sizer);
 
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
+	sizer->Add(gb_sizer, wx::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Game Executable
 	gb_sizer->Add(
@@ -245,18 +248,18 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	auto frame      = new wxStaticBox(this, -1, "Resources");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->AddSpacer(ui::padLarge());
-	sizer->Add(framesizer, 1, wxEXPAND | wxLEFT | wxRIGHT, ui::padLarge());
+	sizer->Add(framesizer, wx::sfWithLargeBorder(1, wxLEFT | wxRIGHT).Expand());
 	rac_resources_ = new ResourceArchiveChooser(this, archive);
-	framesizer->Add(rac_resources_, 1, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(rac_resources_, wx::sfWithBorder(1).Expand());
 
 	// Start from 3d mode camera
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->AddSpacer(ui::padLarge());
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->Add(hbox, wx::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	cb_start_3d_ = new wxCheckBox(this, -1, "Start from 3D mode camera position");
 	cb_start_3d_->SetValue(run_start_3d);
 	if (show_start_3d_cb)
-		hbox->Add(cb_start_3d_, 0, wxALIGN_CENTER_VERTICAL);
+		hbox->Add(cb_start_3d_, wxSizerFlags().CenterVertical());
 	else
 		cb_start_3d_->Show(false);
 
@@ -264,7 +267,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	btn_run_ = new wxButton(this, wxID_OK, "Run");
 	btn_run_->SetDefault();
 	btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
-	hbox->Add(wxutil::createDialogButtonBox(btn_run_, btn_cancel_), 1, wxEXPAND);
+	hbox->Add(wx::createDialogButtonBox(btn_run_, btn_cancel_), wxSizerFlags(1).Expand());
 
 	// Populate game executables dropdown
 	int last_index = -1;
@@ -276,7 +279,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 		if (exe->id == run_last_exe)
 			last_index = choice_game_exes_->GetCount() - 1;
 	}
-	if ((int)choice_game_exes_->GetCount() > last_index)
+	if (static_cast<int>(choice_game_exes_->GetCount()) > last_index)
 	{
 		choice_game_exes_->Select(last_index);
 		openGameExe(last_index);
@@ -346,7 +349,8 @@ void RunDialog::openGameExe(unsigned index) const
 // Returns a command line based on the currently selected run configuration and
 // resources
 // -----------------------------------------------------------------------------
-wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_name, const wxString& map_file) const
+wxString RunDialog::selectedCommandLine(const Archive* archive, const wxString& map_name, const wxString& map_file)
+	const
 {
 	auto exe = executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
@@ -478,6 +482,8 @@ bool RunDialog::start3dModeChecked() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the add game button is clicked
@@ -562,10 +568,10 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	RunConfigDialog dlg(this, "Edit Run Config", name, params, custom);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		wxString name         = dlg.name().IsEmpty() ? wxString(configs[index].first) : dlg.name();
-		configs[index].first  = name;
+		wxString newname      = dlg.name().IsEmpty() ? wxString(configs[index].first) : dlg.name();
+		configs[index].first  = newname;
 		configs[index].second = dlg.params();
-		choice_config_->SetString(index, name);
+		choice_config_->SetString(index, newname);
 	}
 }
 

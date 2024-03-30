@@ -4,9 +4,6 @@
 
 namespace slade
 {
-class MapLine;
-class MapSide;
-
 class LineTextureOverlay : public MCOverlay
 {
 public:

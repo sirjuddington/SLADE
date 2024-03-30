@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -71,7 +71,7 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	SetSizer(psizer);
 
 	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	psizer->Add(gbsizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	psizer->Add(gbsizer, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Render distance
 	gbsizer->Add(new wxStaticText(this, -1, "Render distance:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -101,13 +101,13 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	gbsizer->Add(label_fov_, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	psizer->Add(hbox, 0, wxEXPAND);
+	psizer->Add(hbox, wxSizerFlags().Expand());
 
 	// Adaptive render distance
 	cb_render_dist_adaptive_ = new wxCheckBox(this, -1, "Adaptive render distance");
-	hbox->Add(cb_render_dist_adaptive_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
+	hbox->Add(cb_render_dist_adaptive_, wxutil::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
-	hbox->Add(new wxStaticText(this, -1, "Target framerate:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(new wxStaticText(this, -1, "Target framerate:"), wxutil::sfWithBorder(0, wxRIGHT).CenterVertical());
 	spin_adaptive_fps_ = new wxSpinCtrl(
 		this,
 		-1,
@@ -118,9 +118,9 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 		10,
 		100,
 		30);
-	hbox->Add(spin_adaptive_fps_, 0, wxEXPAND);
+	hbox->Add(spin_adaptive_fps_, wxSizerFlags().Expand());
 
-	psizer->Add(new wxStaticLine(this, -1), 0, wxEXPAND | wxTOP | wxBOTTOM, ui::padLarge());
+	psizer->Add(new wxStaticLine(this, -1), wxutil::sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
 
 	wxutil::layoutVertically(
 		psizer,

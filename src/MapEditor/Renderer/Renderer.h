@@ -3,13 +3,10 @@
 namespace slade
 {
 // Forward declarations
-class MapThing;
-class MapObject;
 class ItemSelection;
 class MCAnimation;
 class MapRenderer2D;
 class MapRenderer3D;
-class MapEditContext;
 class MCOverlay;
 namespace gl
 {
@@ -25,6 +22,7 @@ namespace gl
 
 namespace mapeditor
 {
+	class MapEditContext;
 	struct Item;
 
 	class Renderer
@@ -62,13 +60,13 @@ namespace mapeditor
 		// Animation
 		bool animationsActive() const { return !animations_.empty() || animations_active_; }
 		void updateAnimations(double mult);
-		void animateSelectionChange(const mapeditor::Item& item, bool selected = true);
+		void animateSelectionChange(const Item& item, bool selected = true);
 		void animateSelectionChange(const ItemSelection& selection);
-		void animateHilightChange(const mapeditor::Item& old_item, MapObject* old_object = nullptr);
+		void animateHilightChange(const Item& old_item, MapObject* old_object = nullptr);
 		void addAnimation(unique_ptr<MCAnimation> animation);
 
 	private:
-		MapEditContext&           context_;
+		MapEditContext*           context_;
 		unique_ptr<MapRenderer2D> renderer_2d_;
 		unique_ptr<MapRenderer3D> renderer_3d_;
 		unique_ptr<gl::View>      view_;

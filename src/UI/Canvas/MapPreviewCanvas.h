@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Archive/Archive.h"
 #include "GLCanvas.h"
 
 namespace slade
 {
+enum class MapFormat;
+struct MapDesc;
 class GLTexture;
 namespace gl
 {
@@ -21,7 +22,7 @@ public:
 	void addVertex(double x, double y);
 	void addLine(unsigned v1, unsigned v2, bool twosided, bool special, bool macro = false);
 	void addThing(double x, double y);
-	bool openMap(Archive::MapDesc map);
+	bool openMap(MapDesc map);
 	bool readVertices(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format);
 	bool readLines(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format);
 	bool readThings(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format);

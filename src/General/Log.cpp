@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,9 +31,15 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
+#include <FreeImage.h>
+#include <SFML/System/Err.hpp>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
 #include <fstream>
+
+#ifndef _WIN32
+#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
+#endif
 
 using namespace slade;
 
@@ -54,25 +60,22 @@ CVAR(Int, log_verbosity, 1, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // Formatter for fmt so that log::MessageType can be written to a string
 // -----------------------------------------------------------------------------
-namespace fmt
-{
-template<> struct formatter<log::MessageType>
+template<> struct fmt::formatter<log::MessageType>
 {
 	template<typename ParseContext> constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
 	template<typename FormatContext> auto          format(const log::MessageType& type, FormatContext& ctx)
 	{
 		switch (type)
 		{
-		case log::MessageType::Info: return format_to(ctx.out(), " [Info]");
-		case log::MessageType::Warning: return format_to(ctx.out(), " [Warn]");
-		case log::MessageType::Error: return format_to(ctx.out(), "[Error]");
-		case log::MessageType::Debug: return format_to(ctx.out(), "[Debug]");
-		case log::MessageType::Script: return format_to(ctx.out(), "[Script]");
-		default: return format_to(ctx.out(), "  [Log]");
+		case log::MessageType::Info:    return format_to(ctx.out(), "  [Info]");
+		case log::MessageType::Warning: return format_to(ctx.out(), "  [Warn]");
+		case log::MessageType::Error:   return format_to(ctx.out(), " [Error]");
+		case log::MessageType::Debug:   return format_to(ctx.out(), " [Debug]");
+		case log::MessageType::Script:  return format_to(ctx.out(), "[Script]");
+		default:                        return format_to(ctx.out(), "   [Log]");
 		}
 	}
-};
-} // namespace fmt
+}; // namespace fmt
 
 
 // -----------------------------------------------------------------------------
@@ -136,7 +139,7 @@ void log::init()
 	info(fmt::format("Version {}", app::version().toString()));
 	if (!global::sc_rev.empty())
 		info(fmt::format("Git Revision {}", global::sc_rev));
-    if (app::platform() == app::Platform::Windows)
+	if (app::platform() == app::Platform::Windows)
 		info(fmt::format("{} Windows Build", app::isWin64Build() ? "64bit" : "32bit"));
 	info(fmt::format("Written by Simon Judd, 2008-{:%Y}", *tm));
 #ifdef SFML_VERSION_MAJOR
@@ -192,7 +195,8 @@ void log::message(MessageType type, string_view text)
 	log.emplace_back(text, type, *std::localtime(&t));
 
 	// Write to log file
-	if (log_file.is_open() && type != MessageType::Console) {
+	if (log_file.is_open() && type != MessageType::Console)
+	{
 		sf::err() << log.back().formattedMessageLine() << "\n";
 		sf::err().flush();
 	}

@@ -2,7 +2,6 @@
 
 namespace slade
 {
-class MapSector;
 namespace gl::draw2d
 {
 	struct Context;
@@ -13,7 +12,7 @@ class SectorInfoOverlay
 {
 public:
 	SectorInfoOverlay();
-	~SectorInfoOverlay() = default;
+	~SectorInfoOverlay();
 
 	void update(const MapSector* sector);
 	void draw(gl::draw2d::Context& dc, float alpha = 1.0f);

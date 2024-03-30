@@ -2,7 +2,6 @@
 
 namespace slade
 {
-class MapVertex;
 namespace gl::draw2d
 {
 	struct Context;

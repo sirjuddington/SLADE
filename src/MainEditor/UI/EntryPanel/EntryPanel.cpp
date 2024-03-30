@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,14 +33,18 @@
 #include "Main.h"
 #include "EntryPanel.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "General/SAction.h"
 #include "General/UI.h"
+#include "General/UndoSteps/EntryDataUS.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
-#include "MainEditor/UI/ArchivePanel.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -69,16 +73,17 @@ CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) : wxPanel(parent, -1), id_{ id }
 {
+	namespace wx = wxutil;
+
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	wxWindow::Show(false);
 
 	// Add toolbar
-	toolbar_     = new SToolBar(this);
-	auto pad_min = ui::px(ui::Size::PadMinimum);
-	sizer->Add(toolbar_, 0, wxEXPAND | wxLEFT, pad_min);
-	sizer->AddSpacer(pad_min);
+	toolbar_ = new SToolBar(this);
+	sizer->Add(toolbar_, wx::sfWithMinBorder(0, wxLEFT).Expand());
+	sizer->AddSpacer(ui::padMin());
 
 	// Default entry toolbar group
 	auto tb_group = new SToolBarGroup(toolbar_, "Entry");
@@ -97,13 +102,13 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) 
 	if (left_toolbar)
 	{
 		auto* hbox = new wxBoxSizer(wxHORIZONTAL);
-		hbox->Add(toolbar_left_, 0, wxEXPAND | wxRIGHT, pad_min);
-		hbox->Add(sizer_main_, 1, wxEXPAND);
-		sizer->Add(hbox, 1, wxEXPAND | wxLEFT, pad_min);
+		hbox->Add(toolbar_left_, wx::sfWithMinBorder(0, wxRIGHT).Expand());
+		hbox->Add(sizer_main_, wxSizerFlags(1).Expand());
+		sizer->Add(hbox, wx::sfWithMinBorder(1, wxLEFT).Expand());
 	}
 	else
-		sizer->Add(sizer_main_, 1, wxEXPAND | wxLEFT, pad_min);
-	sizer->Add(sizer_bottom_, 0, wxEXPAND | wxTOP | wxLEFT, ui::pad());
+		sizer->Add(sizer_main_, wx::sfWithMinBorder(1, wxLEFT).Expand());
+	sizer->Add(sizer_bottom_, wx::sfWithBorder(0, wxTOP | wxLEFT).Expand());
 
 	// Bind button events
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &EntryPanel::onToolbarButton, this, toolbar_->GetId());
@@ -147,8 +152,8 @@ void EntryPanel::addBorderPadding()
 	Freeze();
 	auto* sizer = GetSizer();
 	SetSizer(new wxBoxSizer(wxHORIZONTAL), false);
-	GetSizer()->AddSpacer(ui::px(ui::Size::PadMinimum));
-	GetSizer()->Add(sizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
+	GetSizer()->AddSpacer(ui::padMin());
+	GetSizer()->Add(sizer, wxutil::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 	Layout();
 	Thaw();
 }
@@ -156,7 +161,7 @@ void EntryPanel::addBorderPadding()
 // -----------------------------------------------------------------------------
 // 'Opens' the given entry (sets the frame label then loads it)
 // -----------------------------------------------------------------------------
-bool EntryPanel::openEntry(ArchiveEntry* entry)
+bool EntryPanel::openEntry(const ArchiveEntry* entry)
 {
 	return openEntry(entry ? entry->getShared() : nullptr);
 }
@@ -367,7 +372,7 @@ void EntryPanel::removeCustomMenu() const
 // return true if the panel is shown on any tab, even if it is not on the one
 // that is selected...
 // -----------------------------------------------------------------------------
-bool EntryPanel::isActivePanel()
+bool EntryPanel::isActivePanel() const
 {
 	return (IsShown() && maineditor::currentEntryPanel() == this);
 }
@@ -385,7 +390,7 @@ void EntryPanel::updateToolbar()
 // Handles an action from the 'standalone' Entry menu (when this EntryPanel is
 // in its own tab)
 // -----------------------------------------------------------------------------
-bool EntryPanel::handleStandaloneAction(string_view id)
+bool EntryPanel::handleStandaloneAction(const string_view id)
 {
 	// Save
 	if (id == "arch_entry_save")

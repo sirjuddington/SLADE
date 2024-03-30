@@ -18,8 +18,6 @@ set(EXTERNAL_SOURCES
 )
 file(GLOB_RECURSE EXTERNAL_SOURCES
 	lzma/C/LzmaDec.c
-	mus2mid/mus2mid.cpp
-	zreaders/*.cpp
 	glad/src/*.c
 	libdrawtext/*.c
 	${DUMB_SOURCES}

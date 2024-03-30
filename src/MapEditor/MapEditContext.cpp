@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,12 +40,17 @@
 #include "Edit/LineDraw.h"
 #include "Edit/MoveObjects.h"
 #include "Edit/ObjectEdit.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/Game.h"
+#include "Game/ThingType.h"
 #include "General/Console.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "ItemSelection.h"
 #include "MapChecks.h"
+#include "MapEditor.h"
 #include "MapEditor/Renderer/Overlays/InfoOverlay3d.h"
 #include "MapEditor/Renderer/Overlays/LineTextureOverlay.h"
 #include "MapEditor/Renderer/Overlays/QuickTextureOverlay3d.h"
@@ -62,17 +67,23 @@
 #include "Renderer/Overlays/ThingInfoOverlay.h"
 #include "Renderer/Overlays/VertexInfoOverlay.h"
 #include "Renderer/Renderer.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UndoSteps.h"
 #include "Utility/StringUtils.h"
+#include <SFML/System/Clock.hpp>
 
 using namespace slade;
-
-using mapeditor::Input;
-using mapeditor::Mode;
-using mapeditor::SectorMode;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -104,7 +115,6 @@ EXTERN_CVAR(Bool, thing_preview_lights)
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // MapEditContext class constructor
 // -----------------------------------------------------------------------------
@@ -113,7 +123,7 @@ MapEditContext::MapEditContext()
 	map_          = std::make_unique<SLADEMap>();
 	undo_manager_ = std::make_unique<UndoManager>(map_.get());
 	selection_    = std::make_unique<ItemSelection>(this);
-	renderer_     = std::make_unique<mapeditor::Renderer>(*this);
+	renderer_     = std::make_unique<Renderer>(*this);
 	edit_2d_      = std::make_unique<Edit2D>(*this);
 	edit_3d_      = std::make_unique<Edit3D>(*this);
 	input_        = std::make_unique<Input>(*this);
@@ -184,10 +194,10 @@ void MapEditContext::setEditMode(Mode mode)
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: addEditorMessage("Vertices mode"); break;
-	case Mode::Lines: addEditorMessage("Lines mode"); break;
-	case Mode::Sectors: addEditorMessage("Sectors mode (Normal)"); break;
-	case Mode::Things: addEditorMessage("Things mode"); break;
-	case Mode::Visual: addEditorMessage("3d mode"); break;
+	case Mode::Lines:    addEditorMessage("Lines mode"); break;
+	case Mode::Sectors:  addEditorMessage("Sectors mode (Normal)"); break;
+	case Mode::Things:   addEditorMessage("Things mode"); break;
+	case Mode::Visual:   addEditorMessage("3d mode"); break;
 	}
 
 	if (edit_mode_ != Mode::Visual)
@@ -268,9 +278,9 @@ void MapEditContext::cycleSectorEditMode()
 {
 	switch (sector_mode_)
 	{
-	case SectorMode::Both: setSectorEditMode(SectorMode::Floor); break;
+	case SectorMode::Both:  setSectorEditMode(SectorMode::Floor); break;
 	case SectorMode::Floor: setSectorEditMode(SectorMode::Ceiling); break;
-	default: setSectorEditMode(SectorMode::Both);
+	default:                setSectorEditMode(SectorMode::Both);
 	}
 }
 
@@ -309,10 +319,13 @@ bool MapEditContext::update(double frametime)
 
 		// Update status bar
 		auto pos = camera3d().position();
-		mapeditor::setStatusText(fmt::format("Position: ({}, {}, {})", (int)pos.x, (int)pos.y, (int)pos.z), 3);
+		mapeditor::setStatusText(
+			fmt::format(
+				"Position: ({}, {}, {})", static_cast<int>(pos.x), static_cast<int>(pos.y), static_cast<int>(pos.z)),
+			3);
 
 		// Update hilight
-		mapeditor::Item hl{ -1, mapeditor::ItemType::Any };
+		Item hl{ -1, ItemType::Any };
 		if (!selection_->hilightLocked())
 		{
 			auto old_hl = selection_->hilight();
@@ -339,7 +352,7 @@ bool MapEditContext::update(double frametime)
 	{
 		// Update hilight if needed
 		auto prev_hl = selection_->hilight();
-		if (input_->mouseState() == mapeditor::Input::MouseState::Normal /* && !mouse_movebegin*/)
+		if (input_->mouseState() == Input::MouseState::Normal /* && !mouse_movebegin*/)
 		{
 			auto old_hl = selection_->hilightedObject();
 			if (selection_->updateHilight(input_->mousePosMap(), renderer_->view().scale().x) && hilight_smooth)
@@ -347,7 +360,7 @@ bool MapEditContext::update(double frametime)
 		}
 
 		// Do item moving if needed
-		if (input_->mouseState() == mapeditor::Input::MouseState::Move)
+		if (input_->mouseState() == Input::MouseState::Move)
 			move_objects_->update(input_->mousePosMap());
 
 		// Check if we have to update the info overlay
@@ -372,7 +385,7 @@ bool MapEditContext::update(double frametime)
 // -----------------------------------------------------------------------------
 // Opens [map]
 // -----------------------------------------------------------------------------
-bool MapEditContext::openMap(const Archive::MapDesc& map)
+bool MapEditContext::openMap(const MapDesc& map)
 {
 	log::info("Opening map {}", map.name);
 	if (!map_->readMap(map))
@@ -427,7 +440,7 @@ void MapEditContext::clearMap()
 
 	// Reset state
 	edit_3d_->setLinked(true, true);
-	input_->setMouseState(mapeditor::Input::MouseState::Normal);
+	input_->setMouseState(Input::MouseState::Normal);
 	mapeditor::resetObjectPropertiesPanel();
 
 	// Clear undo manager
@@ -436,7 +449,7 @@ void MapEditContext::clearMap()
 
 	// Clear other data
 	updateTagged();
-	info_3d_.reset();
+	info_3d_->reset();
 
 	// Clear map
 	map_->clearMap();
@@ -457,24 +470,24 @@ void MapEditContext::showItem(int index) const
 	}
 
 	selection_->clear();
-	int                 max;
-	mapeditor::ItemType type;
+	int      max;
+	ItemType type;
 	switch (edit_mode_)
 	{
 	case Mode::Vertices:
-		type = mapeditor::ItemType::Vertex;
+		type = ItemType::Vertex;
 		max  = map_->nVertices();
 		break;
 	case Mode::Lines:
-		type = mapeditor::ItemType::Line;
+		type = ItemType::Line;
 		max  = map_->nLines();
 		break;
 	case Mode::Sectors:
-		type = mapeditor::ItemType::Sector;
+		type = ItemType::Sector;
 		max  = map_->nSectors();
 		break;
 	case Mode::Things:
-		type = mapeditor::ItemType::Thing;
+		type = ItemType::Thing;
 		max  = map_->nThings();
 		break;
 	default: return;
@@ -495,10 +508,10 @@ string MapEditContext::modeString(bool plural) const
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: return plural ? "Vertices" : "Vertex";
-	case Mode::Lines: return plural ? "Lines" : "Line";
-	case Mode::Sectors: return plural ? "Sectors" : "Sector";
-	case Mode::Things: return plural ? "Things" : "Thing";
-	case Mode::Visual: return "3D";
+	case Mode::Lines:    return plural ? "Lines" : "Line";
+	case Mode::Sectors:  return plural ? "Sectors" : "Sector";
+	case Mode::Things:   return plural ? "Things" : "Thing";
+	case Mode::Visual:   return "3D";
 	}
 
 	return plural ? "Items" : "Object";
@@ -525,7 +538,7 @@ void MapEditContext::setCursor(ui::MouseCursor cursor) const
 // -----------------------------------------------------------------------------
 // Forces a full refresh of the 2d/3d renderers
 // -----------------------------------------------------------------------------
-void MapEditContext::forceRefreshRenderer()
+void MapEditContext::forceRefreshRenderer() const
 {
 	// Update 3d mode info overlay if needed
 	if (edit_mode_ == Mode::Visual)
@@ -784,7 +797,7 @@ double MapEditContext::gridSize() const
 // -----------------------------------------------------------------------------
 // Returns the currently hilighted item
 // -----------------------------------------------------------------------------
-mapeditor::Item MapEditContext::hilightItem() const
+Item MapEditContext::hilightItem() const
 {
 	return selection_->hilight();
 }
@@ -798,7 +811,7 @@ void MapEditContext::incrementGrid()
 	if (grid_size_ > 20)
 		grid_size_ = 20;
 
-	addEditorMessage(fmt::format("Grid Size: {}x{}", (int)gridSize(), (int)gridSize()));
+	addEditorMessage(fmt::format("Grid Size: {}x{}", static_cast<int>(gridSize()), static_cast<int>(gridSize())));
 	updateStatusText();
 }
 
@@ -812,7 +825,7 @@ void MapEditContext::decrementGrid()
 	if (grid_size_ < mingrid)
 		grid_size_ = mingrid;
 
-	addEditorMessage(fmt::format("Grid Size: {}x{}", (int)gridSize(), (int)gridSize()));
+	addEditorMessage(fmt::format("Grid Size: {}x{}", static_cast<int>(gridSize()), static_cast<int>(gridSize())));
 	updateStatusText();
 }
 
@@ -962,7 +975,7 @@ void MapEditContext::endTagEdit(bool accept)
 const string& MapEditContext::editorMessage(int index)
 {
 	// Check index
-	if (index < 0 || index >= (int)editor_messages_.size())
+	if (index < 0 || index >= static_cast<int>(editor_messages_.size()))
 		return strutil::EMPTY;
 
 	return editor_messages_[index].message;
@@ -974,7 +987,7 @@ const string& MapEditContext::editorMessage(int index)
 long MapEditContext::editorMessageTime(int index) const
 {
 	// Check index
-	if (index < 0 || index >= (int)editor_messages_.size())
+	if (index < 0 || index >= static_cast<int>(editor_messages_.size()))
 		return -1;
 
 	return app::runTimer() - editor_messages_[index].act_time;
@@ -1305,24 +1318,24 @@ void MapEditContext::updateStatusText() const
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: mode += "Vertices"; break;
-	case Mode::Lines: mode += "Lines"; break;
-	case Mode::Sectors: mode += "Sectors"; break;
-	case Mode::Things: mode += "Things"; break;
-	case Mode::Visual: mode += "3D"; break;
+	case Mode::Lines:    mode += "Lines"; break;
+	case Mode::Sectors:  mode += "Sectors"; break;
+	case Mode::Things:   mode += "Things"; break;
+	case Mode::Visual:   mode += "3D"; break;
 	}
 
 	if (edit_mode_ == Mode::Sectors)
 	{
 		switch (sector_mode_)
 		{
-		case SectorMode::Both: mode += " (Normal)"; break;
-		case SectorMode::Floor: mode += " (Floors)"; break;
+		case SectorMode::Both:    mode += " (Normal)"; break;
+		case SectorMode::Floor:   mode += " (Floors)"; break;
 		case SectorMode::Ceiling: mode += " (Ceilings)"; break;
 		}
 	}
 
 	if (edit_mode_ != Mode::Visual && !selection_->empty())
-		mode += fmt::format(" ({} selected)", (int)selection_->size());
+		mode += fmt::format(" ({} selected)", static_cast<int>(selection_->size()));
 
 	mapeditor::setStatusText(mode, 1);
 
@@ -1366,7 +1379,7 @@ void MapEditContext::beginUndoRecord(string_view name, bool mod, bool create, bo
 	if (undo_modified_)
 		MapObject::beginPropBackup(app::runTimer());
 	if (undo_deleted_ || undo_created_)
-		us_create_delete_ = std::make_unique<mapeditor::MapObjectCreateDeleteUS>();
+		us_create_delete_ = std::make_unique<MapObjectCreateDeleteUS>();
 
 	// Make sure all modified objects will be picked up
 	wxMilliSleep(5);
@@ -1403,10 +1416,10 @@ void MapEditContext::endUndoRecord(bool success)
 		bool modified        = false;
 		bool created_deleted = false;
 		if (undo_modified_)
-			modified = manager->recordUndoStep(std::make_unique<mapeditor::MultiMapObjectPropertyChangeUS>());
+			modified = manager->recordUndoStep(std::make_unique<MultiMapObjectPropertyChangeUS>());
 		if (undo_created_ || undo_deleted_)
 		{
-			auto ustep = dynamic_cast<mapeditor::MapObjectCreateDeleteUS*>(us_create_delete_.get());
+			auto ustep = dynamic_cast<MapObjectCreateDeleteUS*>(us_create_delete_.get());
 			ustep->checkChanges();
 			created_deleted = manager->recordUndoStep(std::move(us_create_delete_));
 		}
@@ -1425,7 +1438,7 @@ void MapEditContext::endUndoRecord(bool success)
 void MapEditContext::recordPropertyChangeUndoStep(MapObject* object) const
 {
 	auto manager = (edit_mode_ == Mode::Visual) ? edit_3d_->undoManager() : undo_manager_.get();
-	manager->recordUndoStep(std::make_unique<mapeditor::PropertyChangeUS>(object));
+	manager->recordUndoStep(std::make_unique<PropertyChangeUS>(object));
 }
 
 // -----------------------------------------------------------------------------
@@ -1525,7 +1538,7 @@ void MapEditContext::swapPlayerStart3d()
 		return;
 
 	// Save existing player start pos+dir
-	player_start_pos_.set(pstart->position());
+	player_start_pos_ = pstart->position();
 	player_start_dir_ = pstart->angle();
 
 	auto campos = renderer_->cameraPos2D();
@@ -1550,7 +1563,7 @@ void MapEditContext::swapPlayerStart2d(const Vec2d& pos)
 		return;
 
 	// Save existing player start pos+dir
-	player_start_pos_.set(pstart->position());
+	player_start_pos_ = pstart->position();
 	player_start_dir_ = pstart->angle();
 
 	pstart->move(pos, false);
@@ -1642,10 +1655,10 @@ void MapEditContext::updateInfoOverlay() const
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: info_vertex_->update(selection_->hilightedVertex()); break;
-	case Mode::Lines: info_line_->update(selection_->hilightedLine()); break;
-	case Mode::Sectors: info_sector_->update(selection_->hilightedSector()); break;
-	case Mode::Things: info_thing_->update(selection_->hilightedThing()); break;
-	default: break;
+	case Mode::Lines:    info_line_->update(selection_->hilightedLine()); break;
+	case Mode::Sectors:  info_sector_->update(selection_->hilightedSector()); break;
+	case Mode::Things:   info_thing_->update(selection_->hilightedThing()); break;
+	default:             break;
 	}
 }
 
@@ -1658,10 +1671,10 @@ void MapEditContext::drawInfoOverlay(gl::draw2d::Context& dc, float alpha) const
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: info_vertex_->draw(dc, alpha); return;
-	case Mode::Lines: info_line_->draw(dc, alpha); return;
-	case Mode::Sectors: info_sector_->draw(dc, alpha); return;
-	case Mode::Things: info_thing_->draw(dc, alpha); return;
-	case Mode::Visual: info_3d_->draw(dc, alpha); return;
+	case Mode::Lines:    info_line_->draw(dc, alpha); return;
+	case Mode::Sectors:  info_sector_->draw(dc, alpha); return;
+	case Mode::Things:   info_thing_->draw(dc, alpha); return;
+	case Mode::Visual:   info_3d_->draw(dc, alpha); return;
 	}
 }
 
@@ -1813,10 +1826,10 @@ bool MapEditContext::handleAction(string_view id)
 		switch (editMode())
 		{
 		case Mode::Vertices: dlg.setType(MapObject::Type::Vertex); break;
-		case Mode::Lines: dlg.setType(MapObject::Type::Line); break;
-		case Mode::Sectors: dlg.setType(MapObject::Type::Sector); break;
-		case Mode::Things: dlg.setType(MapObject::Type::Thing); break;
-		default: return true;
+		case Mode::Lines:    dlg.setType(MapObject::Type::Line); break;
+		case Mode::Sectors:  dlg.setType(MapObject::Type::Sector); break;
+		case Mode::Things:   dlg.setType(MapObject::Type::Thing); break;
+		default:             return true;
 		}
 
 		// Show dialog
@@ -1832,14 +1845,14 @@ bool MapEditContext::handleAction(string_view id)
 			switch (dlg.type())
 			{
 			case MapObject::Type::Vertex: setEditMode(Mode::Vertices); break;
-			case MapObject::Type::Line: setEditMode(Mode::Lines); break;
+			case MapObject::Type::Line:   setEditMode(Mode::Lines); break;
 			case MapObject::Type::Side:
 				setEditMode(Mode::Lines);
 				side = true;
 				break;
 			case MapObject::Type::Sector: setEditMode(Mode::Sectors); break;
-			case MapObject::Type::Thing: setEditMode(Mode::Things); break;
-			default: break;
+			case MapObject::Type::Thing:  setEditMode(Mode::Things); break;
+			default:                      break;
 			}
 
 			// If side, get its parent line
@@ -1864,7 +1877,7 @@ bool MapEditContext::handleAction(string_view id)
 	else if (id == "mapw_mirror_y")
 	{
 		// Mirroring sectors breaks Edit Objects functionality
-		if (input_->mouseState() != mapeditor::Input::MouseState::ObjectEdit)
+		if (input_->mouseState() != Input::MouseState::ObjectEdit)
 		{
 			edit_2d_->mirror(false);
 			return true;
@@ -1875,7 +1888,7 @@ bool MapEditContext::handleAction(string_view id)
 	else if (id == "mapw_mirror_x")
 	{
 		// Mirroring sectors breaks Edit Objects functionality
-		if (input_->mouseState() != mapeditor::Input::MouseState::ObjectEdit)
+		if (input_->mouseState() != Input::MouseState::ObjectEdit)
 		{
 			edit_2d_->mirror(true);
 			return true;
@@ -1907,7 +1920,7 @@ bool MapEditContext::handleAction(string_view id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		Vec3d pos    = input().mousePosMap();
+		Vec3d pos    = { input().mousePosMap(), 0.0 };
 		auto  sector = map_->sectors().atPos(input_->mousePosMap());
 		if (sector)
 			pos.z = sector->floor().plane.heightAt(pos.x, pos.y) + 40;

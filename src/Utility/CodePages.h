@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Colour.h"
-
 namespace slade::codepages
 {
 wxString fromASCII(uint8_t val);

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,15 +35,13 @@
 #include "BrowserItem.h"
 #include "BrowserWindow.h"
 #include "General/UI.h"
+#include "Geometry/Rect.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
-#include "OpenGL/OpenGL.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
-using NameType = BrowserCanvas::NameType;
-using ItemView = BrowserCanvas::ItemView;
-
+using namespace browser;
 
 // -----------------------------------------------------------------------------
 //
@@ -56,7 +54,9 @@ using ItemView = BrowserCanvas::ItemView;
 // BrowserItem class constructor
 // -----------------------------------------------------------------------------
 BrowserItem::BrowserItem(const wxString& name, unsigned index, const wxString& type) :
-	type_{ type }, name_{ name }, index_{ index }
+	type_{ type },
+	name_{ name },
+	index_{ index }
 {
 }
 
@@ -78,11 +78,7 @@ bool BrowserItem::loadImage()
 // Draws the item in a [size]x[size] box, keeping the correct aspect ratio of
 // it's image
 // -----------------------------------------------------------------------------
-void BrowserItem::draw(
-	int                     size,
-	gl::draw2d::Context&    dc,
-	BrowserCanvas::NameType nametype,
-	BrowserCanvas::ItemView viewtype)
+void BrowserItem::draw(int size, gl::draw2d::Context& dc, NameType nametype, ItemView viewtype)
 {
 	auto sizef = static_cast<float>(size);
 

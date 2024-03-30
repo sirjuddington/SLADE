@@ -1,5 +1,6 @@
 #pragma once
-#include "Utility/Colour.h"
+
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
@@ -25,7 +26,7 @@ public:
 		uint8_t start = 0;
 		uint8_t end   = 0;
 
-		IndexRange(int start, int end) : start{ (uint8_t)start }, end{ (uint8_t)end } {}
+		IndexRange(int start, int end) : start{ static_cast<uint8_t>(start) }, end{ static_cast<uint8_t>(end) } {}
 
 		string asText() const { return fmt::format("{}:{}", start, end); }
 	};
@@ -238,7 +239,6 @@ private:
 	string special_;
 };
 
-class Palette;
 class Translation
 {
 public:

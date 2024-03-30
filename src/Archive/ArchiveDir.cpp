@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "ArchiveDir.h"
 #include "Archive.h"
+#include "ArchiveEntry.h"
+#include "EntryType/EntryType.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
 
@@ -71,7 +73,8 @@ void buildDirList(vector<shared_ptr<ArchiveDir>>& list, ArchiveDir const* dir)
 // ArchiveDir class constructor
 // -----------------------------------------------------------------------------
 ArchiveDir::ArchiveDir(string_view name, const shared_ptr<ArchiveDir>& parent, Archive* archive) :
-	archive_{ archive }, parent_dir_{ parent }
+	archive_{ archive },
+	parent_dir_{ parent }
 {
 	// Init dir entry
 	dir_entry_          = std::make_unique<ArchiveEntry>(name);
@@ -107,6 +110,14 @@ string ArchiveDir::path(bool include_name) const
 		return parent ? fmt::format("{}{}/", parent->path(), name()) : name() + "/";
 	else
 		return parent ? parent->path() : "/";
+}
+
+// -----------------------------------------------------------------------------
+// Sets the directory name to [new_name]
+// -----------------------------------------------------------------------------
+void ArchiveDir::setName(string_view new_name) const
+{
+	dir_entry_->setName(new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -261,7 +272,7 @@ shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(string_view name, bool cut_ext)
 // Returns a shared pointer to [entry] in this directory, or null if no entries
 // match
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(ArchiveEntry* entry) const
+shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(const ArchiveEntry* entry) const
 {
 	// Find entry
 	for (auto& e : entries_)
@@ -684,9 +695,9 @@ shared_ptr<ArchiveEntry> ArchiveDir::entryAtPath(const shared_ptr<ArchiveDir>& r
 // -----------------------------------------------------------------------------
 bool ArchiveDir::merge(
 	shared_ptr<ArchiveDir>&           target,
-	ArchiveDir*                       dir,
+	const ArchiveDir*                 dir,
 	unsigned                          position,
-	ArchiveEntry::State               state,
+	EntryState                        state,
 	vector<shared_ptr<ArchiveDir>>*   created_dirs,
 	vector<shared_ptr<ArchiveEntry>>* created_entries)
 {
@@ -755,7 +766,7 @@ shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(
 // added (directory entries for subdirs will still be added). It should only
 // really be set to false if [root] is an actual root directory and has no name
 // -----------------------------------------------------------------------------
-void ArchiveDir::entryTreeAsList(ArchiveDir* root, vector<shared_ptr<ArchiveEntry>>& list, bool include_dir_entry)
+void ArchiveDir::entryTreeAsList(const ArchiveDir* root, vector<shared_ptr<ArchiveEntry>>& list, bool include_dir_entry)
 {
 	if (include_dir_entry)
 		list.push_back(root->dir_entry_);
@@ -771,7 +782,7 @@ void ArchiveDir::entryTreeAsList(ArchiveDir* root, vector<shared_ptr<ArchiveEntr
 // Attempts to get a shared_ptr to [dir] via its parent or archive.
 // Will return nullptr if [dir] has no parent or archive
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveDir> ArchiveDir::getShared(ArchiveDir* dir)
+shared_ptr<ArchiveDir> ArchiveDir::getShared(const ArchiveDir* dir)
 {
 	if (!dir)
 		return nullptr;

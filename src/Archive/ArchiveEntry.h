@@ -1,13 +1,21 @@
 #pragma once
 
-#include "EntryType/EntryType.h"
-#include "Utility/Property.h"
+#include "EntryState.h"
+#include "Utility/PropertyList.h"
 
 namespace slade
 {
+class EntryType;
 struct ArchiveFormat;
-class ArchiveDir;
-class Archive;
+
+enum class EntryEncryption
+{
+	None = 0,
+	Jaguar,
+	Blood,
+	SCRLE0,
+	TXB,
+};
 
 class ArchiveEntry
 {
@@ -15,22 +23,6 @@ class ArchiveEntry
 	friend class Archive;
 
 public:
-	enum class Encryption
-	{
-		None = 0,
-		Jaguar,
-		Blood,
-		SCRLE0,
-		TXB,
-	};
-	enum class State
-	{
-		Unmodified,
-		Modified,
-		New,    // Newly created (not saved on disk yet)
-		Deleted // Deleted (in case we have a shared_ptr hanging around to a deleted entry)
-	};
-
 	// Constructor/Destructor
 	ArchiveEntry(string_view name = "", uint32_t size = 0);
 	ArchiveEntry(const ArchiveEntry& copy);
@@ -53,12 +45,12 @@ public:
 	const PropertyList&      exProps() const { return ex_props_; }
 	Property&                exProp(const string& key) { return ex_props_[key]; }
 	template<typename T> T   exProp(const string& key);
-	State                    state() const { return state_; }
+	EntryState               state() const { return state_; }
 	bool                     isLocked() const { return locked_; }
-	Encryption               encryption() const { return encrypted_; }
+	EntryEncryption          encryption() const { return encrypted_; }
 	ArchiveEntry*            nextEntry();
 	ArchiveEntry*            prevEntry();
-	shared_ptr<ArchiveEntry> getShared();
+	shared_ptr<ArchiveEntry> getShared() const;
 	int                      index();
 
 	// Modifiers (won't change entry state, except setState of course :P)
@@ -68,8 +60,8 @@ public:
 		type_        = type;
 		reliability_ = r;
 	}
-	void setState(State state, bool silent = false);
-	void setEncryption(Encryption enc) { encrypted_ = enc; }
+	void setState(EntryState state, bool silent = false);
+	void setEncryption(EntryEncryption enc) { encrypted_ = enc; }
 	void lock();
 	void unlock();
 	void lockState() { state_locked_ = true; }
@@ -95,8 +87,8 @@ public:
 
 	// Data access
 	bool     write(const void* data, uint32_t size);
-	bool     read(void* buf, uint32_t size);
-	bool     seek(uint32_t offset, uint32_t start) { return data_.seek(offset, start); }
+	bool     read(void* buf, uint32_t size) const;
+	bool     seek(uint32_t offset, uint32_t start) const { return data_.seek(offset, start); }
 	uint32_t currentPos() const { return data_.currentPos(); }
 
 	// Data on disk
@@ -108,12 +100,13 @@ public:
 
 	// Misc
 	string        sizeString() const;
-	string        typeString() const { return type_ ? type_->name() : "Unknown"; }
+	string        typeString() const;
 	void          stateChanged();
 	void          setExtensionByType();
-	int           typeReliability() const { return (type_ ? (type()->reliability() * reliability_ / 255) : 0); }
+	int           typeReliability() const;
 	bool          isInNamespace(string_view ns);
 	ArchiveEntry* relativeEntry(string_view path, bool allow_absolute_path = true) const;
+	bool          isFolderType() const;
 
 private:
 	// Entry Info
@@ -125,10 +118,10 @@ private:
 	PropertyList ex_props_;
 
 	// Entry status
-	State      state_        = State::New;
-	bool       state_locked_ = false;            // If true the entry state cannot be changed (used for initial loading)
-	bool       locked_       = false;            // If true the entry data+info cannot be changed
-	Encryption encrypted_    = Encryption::None; // Is there some encrypting on the archive?
+	EntryState      state_        = EntryState::New;
+	bool            state_locked_ = false; // If true the entry state cannot be changed (used for initial loading)
+	bool            locked_       = false; // If true the entry data+info cannot be changed
+	EntryEncryption encrypted_    = EntryEncryption::None; // Is there some encrypting on the archive?
 
 	// Misc stuff
 	int    reliability_ = 0; // The reliability of the entry's identification

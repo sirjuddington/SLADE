@@ -1,24 +1,19 @@
 #pragma once
 
-#include "Graphics/Palette/Palette.h"
-
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
-
 class PaletteChooser : public wxChoice
 {
 public:
 	PaletteChooser(wxWindow* parent, int id);
-	~PaletteChooser() = default;
+	~PaletteChooser() override;
 
 	void     setGlobalFromArchive(Archive* archive, int lump = 0);
-	Palette* selectedPalette(ArchiveEntry* entry = nullptr);
+	Palette* selectedPalette(const ArchiveEntry* entry = nullptr) const;
 	bool     globalSelected() const;
-	void     selectPalette(wxString name);
+	void     selectPalette(const wxString& name);
 	void     onPaletteChanged(wxCommandEvent& e);
-	void     addPalette(wxString name);
+	void     addPalette(const wxString& name);
 
 	// Signals
 	struct Signals
@@ -28,7 +23,7 @@ public:
 	Signals& signals() { return signals_; }
 
 private:
-	Palette pal_global_;
-	Signals signals_;
+	unique_ptr<Palette> pal_global_;
+	Signals             signals_;
 };
 } // namespace slade

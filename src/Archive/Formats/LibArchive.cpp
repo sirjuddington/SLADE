@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "LibArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -102,7 +104,7 @@ bool LibArchive::open(const MemChunk& mc)
 		if (nlump->size() > 0)
 			nlump->importMemChunk(mc, offset, size);
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -110,10 +112,6 @@ bool LibArchive::open(const MemChunk& mc)
 
 	// Detect all entry types
 	detectAllEntryTypes();
-
-	// Detect maps (will detect map entry types)
-	ui::setSplashProgressMessage("Detecting maps");
-	detectMaps();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -173,7 +171,7 @@ bool LibArchive::write(MemChunk& mc)
 		mc.write(&offset, 4); // Offset
 		mc.write(name, 13);   // Name
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 	}
 
 	// Write the footer

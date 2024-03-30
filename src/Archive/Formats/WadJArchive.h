@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Archive/Archive.h"
 #include "WadArchive.h"
 
 namespace slade

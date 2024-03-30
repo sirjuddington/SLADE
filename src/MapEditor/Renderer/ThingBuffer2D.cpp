@@ -2,10 +2,10 @@
 #include "Main.h"
 #include "ThingBuffer2D.h"
 #include "Game/ThingType.h"
+#include "Geometry/Geometry.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/View.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 using namespace gl;
@@ -81,7 +81,7 @@ ThingBuffer2D::ThingBuffer2D()
 
 void ThingBuffer2D::setup(const game::ThingType& type)
 {
-	colour_         = type.colour().asVec4();
+	colour_         = type.colour();
 	radius_         = type.radius();
 	arrow_          = type.angled();
 	shrink_on_zoom_ = type.shrinkOnZoom();
@@ -116,7 +116,7 @@ void ThingBuffer2D::setTexture(unsigned texture, bool sprite)
 
 void ThingBuffer2D::add(float x, float y, float angle, float alpha)
 {
-	auto dir = math::vectorAngle(math::degToRad(angle));
+	auto dir = geometry::vectorAngle(geometry::degToRad(angle));
 	things_.emplace_back(glm::vec2{ x, y }, glm::vec2{ dir.x, dir.y }, alpha);
 }
 

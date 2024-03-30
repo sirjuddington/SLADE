@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Geometry/RectFwd.h"
 #include "OpenGL.h"
 #include "Utility/Colour.h"
 

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -84,7 +84,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::padLarge());
 	auto row      = 0;
-	sizer->Add(gb_sizer, 0, wxEXPAND);
+	sizer->Add(gb_sizer, wxSizerFlags().Expand());
 
 	// --- Whitespace/indentation ---
 

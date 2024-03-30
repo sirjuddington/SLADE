@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,11 +33,13 @@
 #include "Main.h"
 #include "TranslationEditorDialog.h"
 #include "App.h"
-#include "Archive/ArchiveManager.h"
 #include "General/UI.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
+#include "Graphics/Translation.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Canvas/PaletteCanvas.h"
+#include "UI/Controls/ColourBox.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/MathStuff.h"
@@ -55,7 +57,7 @@ CVAR(Bool, translation_editor_condensed, false, CVar::Save)
 
 // -----------------------------------------------------------------------------
 //
-// GradientBox Class Functions
+// GradientBox Class
 //
 // -----------------------------------------------------------------------------
 
@@ -64,19 +66,21 @@ CVAR(Bool, translation_editor_condensed, false, CVar::Save)
 // GradientBox class constructor
 // -----------------------------------------------------------------------------
 GradientBox::GradientBox(wxWindow* parent, int steps) :
-	wxPanel(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE), steps_{ steps }
+	wxPanel(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE),
+	steps_{ steps }
 {
 	Bind(
 		wxEVT_PAINT,
 		[&](wxPaintEvent& e)
 		{
 			wxPaintDC dc(this);
-			dc.GradientFillLinear({ 0, 0, GetSize().x, GetSize().y }, col_start_.toWx(), col_end_.toWx());
+			dc.GradientFillLinear({ 0, 0, GetSize().x, GetSize().y }, col_start_, col_end_);
 		});
 
 	// Minimum height 16
 	SetInitialSize(wxSize(-1, ui::scalePx(16)));
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -93,15 +97,18 @@ TranslationEditorDialog::TranslationEditorDialog(
 	wxWindow*       parent,
 	const Palette&  pal,
 	const wxString& title,
-	SImage*         preview_image) :
-	wxDialog(parent, -1, title), palette_{ pal }
+	const SImage*   preview_image) :
+	wxDialog(parent, -1, title),
+	palette_{ new Palette(pal) },
+	translation_{ new Translation },
+	image_preview_{ new SImage }
 {
 	// Setup preview image
 	if (preview_image)
 	{
-		image_preview_.copyImage(preview_image);
+		image_preview_->copyImage(preview_image);
 		if (preview_image->hasPalette())
-			palette_.copyPalette(preview_image->palette());
+			palette_->copyPalette(preview_image->palette());
 	}
 
 	// Set dialog icon
@@ -153,7 +160,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	// Origin palette
 	pal_canvas_original_ = new PaletteCanvas(this);
 	pal_canvas_original_->doubleWidth(true);
-	pal_canvas_original_->setPalette(&palette_);
+	pal_canvas_original_->setPalette(palette_.get());
 	pal_canvas_original_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
 	pal_canvas_original_->setSelectionType(PaletteCanvas::SelectionType::Range);
 	framesizer->Add(pal_canvas_original_, 1, wxALL | wxEXPAND, ui::pad());
@@ -200,7 +207,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	// Target palette
 	pal_canvas_target_ = new PaletteCanvas(panel_target_palette_);
 	pal_canvas_target_->doubleWidth(true);
-	pal_canvas_target_->setPalette(&palette_);
+	pal_canvas_target_->setPalette(palette_.get());
 	pal_canvas_target_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
 	pal_canvas_target_->setSelectionType(PaletteCanvas::SelectionType::Range);
 	vbox->Add(pal_canvas_target_, 1, wxEXPAND);
@@ -222,14 +229,14 @@ TranslationEditorDialog::TranslationEditorDialog(
 
 	cb_range_begin_ = new ColourBox(panel_target_gradient_, -1, false, true);
 	cb_range_begin_->setColour(ColRGBA::BLACK);
-	cb_range_begin_->setPalette(&palette_);
+	cb_range_begin_->setPalette(palette_.get());
 	hbox->Add(cb_range_begin_, 0, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->Add(new wxStaticText(panel_target_gradient_, -1, "From"), 0, wxALIGN_CENTER_VERTICAL);
 
 	// End colour
 	cb_range_end_ = new ColourBox(panel_target_gradient_, -1, false, true);
 	cb_range_end_->setColour(ColRGBA::WHITE);
-	cb_range_end_->setPalette(&palette_);
+	cb_range_end_->setPalette(palette_.get());
 	hbox->AddStretchSpacer();
 	hbox->Add(new wxStaticText(panel_target_gradient_, -1, "To"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	hbox->Add(cb_range_end_, 0, wxEXPAND);
@@ -251,7 +258,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 
 	cb_target_tint_ = new ColourBox(panel_target_tint_, -1, false, true);
 	cb_target_tint_->setColour(ColRGBA::RED);
-	cb_target_tint_->setPalette(&palette_);
+	cb_target_tint_->setPalette(palette_.get());
 	hbox->Add(cb_target_tint_, 0, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->Add(new wxStaticText(panel_target_tint_, -1, "Colour"), 1, wxALIGN_CENTER_VERTICAL);
 
@@ -283,7 +290,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 		pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(320), ui::scalePx(80)));
 	else
 		pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(160), ui::scalePx(160)));
-	pal_canvas_preview_->setPalette(&palette_);
+	pal_canvas_preview_->setPalette(palette_.get());
 	framesizer->Add(pal_canvas_preview_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Image preview
@@ -292,9 +299,9 @@ TranslationEditorDialog::TranslationEditorDialog(
 	hbox->Add(framesizer, 1, wxEXPAND);
 
 	gfx_preview_ = new GfxCanvas(this);
-	gfx_preview_->setPalette(&palette_);
+	gfx_preview_->setPalette(palette_.get());
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
-	gfx_preview_->image().copyImage(&image_preview_);
+	gfx_preview_->image().copyImage(image_preview_.get());
 	framesizer->Add(gfx_preview_, 1, wxEXPAND | wxALL, ui::pad());
 
 
@@ -362,17 +369,22 @@ TranslationEditorDialog::TranslationEditorDialog(
 }
 
 // -----------------------------------------------------------------------------
+// TranslationEditorDialog class destructor
+// -----------------------------------------------------------------------------
+TranslationEditorDialog::~TranslationEditorDialog() = default;
+
+// -----------------------------------------------------------------------------
 // Opens the translation [trans] for preview/modification
 // -----------------------------------------------------------------------------
 void TranslationEditorDialog::openTranslation(const Translation& trans)
 {
 	// Read translation
-	translation_.copy(trans);
+	translation_->copy(trans);
 
 	// Update translation list
 	list_translations_->Clear();
-	for (unsigned a = 0; a < translation_.nRanges(); a++)
-		list_translations_->Append(translation_.range(a)->asText());
+	for (unsigned a = 0; a < translation_->nRanges(); a++)
+		list_translations_->Append(translation_->range(a)->asText());
 
 	// Select+open first range if it exists
 	if (list_translations_->GetCount() > 0)
@@ -391,11 +403,11 @@ void TranslationEditorDialog::openTranslation(const Translation& trans)
 void TranslationEditorDialog::openRange(int index)
 {
 	// Check index
-	if (index < 0 || index >= (int)translation_.nRanges())
+	if (index < 0 || index >= static_cast<int>(translation_->nRanges()))
 		return;
 
 	// Get translation range to open
-	auto tr = translation_.range(index);
+	auto tr = translation_->range(index);
 
 	// Set origin selection
 	pal_canvas_original_->setSelection(tr->start(), tr->end());
@@ -405,7 +417,7 @@ void TranslationEditorDialog::openRange(int index)
 	if (tr->type() == TransRange::Type::Palette)
 	{
 		// Palette range
-		auto tpr = (TransRangePalette*)tr;
+		auto tpr = dynamic_cast<TransRangePalette*>(tr);
 
 		// Select palette type radiobox
 		rb_type_palette_->SetValue(true);
@@ -427,7 +439,7 @@ void TranslationEditorDialog::openRange(int index)
 	else if (tr->type() == TransRange::Type::Colour)
 	{
 		// Colour gradient
-		auto tcr = (TransRangeColour*)tr;
+		auto tcr = dynamic_cast<TransRangeColour*>(tr);
 
 		// Select colour type radiobox
 		rb_type_colour_->SetValue(true);
@@ -447,7 +459,7 @@ void TranslationEditorDialog::openRange(int index)
 	else if (tr->type() == TransRange::Type::Desat)
 	{
 		// Desaturated colour gradient
-		auto tdr = (TransRangeDesat*)tr;
+		auto tdr = dynamic_cast<TransRangeDesat*>(tr);
 
 		// Select desaturated colour type radiobox
 		rb_type_desaturate_->SetValue(true);
@@ -474,7 +486,7 @@ void TranslationEditorDialog::openRange(int index)
 	else if (tr->type() == TransRange::Type::Blend)
 	{
 		// Colourise range
-		auto tcr = (TransRangeBlend*)tr;
+		auto tcr = dynamic_cast<TransRangeBlend*>(tr);
 
 		// Select colourise type radiobox
 		rb_type_colourise_->SetValue(true);
@@ -486,7 +498,7 @@ void TranslationEditorDialog::openRange(int index)
 	else if (tr->type() == TransRange::Type::Tint)
 	{
 		// Tint range
-		auto ttr = (TransRangeTint*)tr;
+		auto ttr = dynamic_cast<TransRangeTint*>(tr);
 
 		// Select colourise type radiobox
 		rb_type_tint_->SetValue(true);
@@ -504,14 +516,14 @@ void TranslationEditorDialog::openRange(int index)
 // -----------------------------------------------------------------------------
 // Updates the translation range [index] in the list
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::updateListItem(int index)
+void TranslationEditorDialog::updateListItem(int index) const
 {
 	// Check index
-	if (index < 0 || index >= (int)list_translations_->GetCount())
+	if (index < 0 || index >= static_cast<int>(list_translations_->GetCount()))
 		return;
 
 	// Get translation range
-	auto tr = translation_.range(index);
+	auto tr = translation_->range(index);
 
 	// Update list item text
 	if (tr)
@@ -525,16 +537,16 @@ void TranslationEditorDialog::updateListItem(int index)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's destination starting colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setStartColour(const ColRGBA& col)
+void TranslationEditorDialog::setStartColour(const ColRGBA& col) const
 {
 	// Get currently selected translation range
-	auto tr = translation_.range(list_translations_->GetSelection());
+	auto tr = translation_->range(list_translations_->GetSelection());
 
 	// Check its type
 	if (tr->type() == TransRange::Type::Colour)
 	{
 		// Colour range
-		auto tcr = (TransRangeColour*)tr;
+		auto tcr = dynamic_cast<TransRangeColour*>(tr);
 
 		// Set destination start colour
 		tcr->setStartColour(col);
@@ -542,7 +554,7 @@ void TranslationEditorDialog::setStartColour(const ColRGBA& col)
 	else if (tr->type() == TransRange::Type::Desat)
 	{
 		// Desaturated colour range
-		auto tdr = (TransRangeDesat*)tr;
+		auto tdr = dynamic_cast<TransRangeDesat*>(tr);
 
 		// Determine start colour
 		float sr = math::clamp(col.r / 127.0f, 0, 2);
@@ -565,16 +577,16 @@ void TranslationEditorDialog::setStartColour(const ColRGBA& col)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's destination ending colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setEndColour(const ColRGBA& col)
+void TranslationEditorDialog::setEndColour(const ColRGBA& col) const
 {
 	// Get currently selected translation range
-	auto tr = translation_.range(list_translations_->GetSelection());
+	auto tr = translation_->range(list_translations_->GetSelection());
 
 	// Check its type
 	if (tr->type() == TransRange::Type::Colour)
 	{
 		// Colour range
-		auto tcr = (TransRangeColour*)tr;
+		auto tcr = dynamic_cast<TransRangeColour*>(tr);
 
 		// Set destination end colour
 		tcr->setEndColour(col);
@@ -582,7 +594,7 @@ void TranslationEditorDialog::setEndColour(const ColRGBA& col)
 	else if (tr->type() == TransRange::Type::Desat)
 	{
 		// Desaturated colour range
-		auto tdr = (TransRangeDesat*)tr;
+		auto tdr = dynamic_cast<TransRangeDesat*>(tr);
 
 		// Determine end colour
 		float er = math::clamp(col.r / 127.0f, 0, 2);
@@ -605,16 +617,16 @@ void TranslationEditorDialog::setEndColour(const ColRGBA& col)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's tint colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setTintColour(const ColRGBA& col)
+void TranslationEditorDialog::setTintColour(const ColRGBA& col) const
 {
 	// Get currently selected translation range
-	auto tr = translation_.range(list_translations_->GetSelection());
+	auto tr = translation_->range(list_translations_->GetSelection());
 
 	// Check its type
 	if (tr->type() == TransRange::Type::Blend)
 	{
 		// Colour range
-		auto tcr = (TransRangeBlend*)tr;
+		auto tcr = dynamic_cast<TransRangeBlend*>(tr);
 
 		// Set destination end colour
 		tcr->setColour(col);
@@ -622,7 +634,7 @@ void TranslationEditorDialog::setTintColour(const ColRGBA& col)
 	else if (tr->type() == TransRange::Type::Tint)
 	{
 		// Desaturated colour range
-		auto ttr = (TransRangeTint*)tr;
+		auto ttr = dynamic_cast<TransRangeTint*>(tr);
 
 		// Set destination end colour
 		ttr->setColour(col);
@@ -636,17 +648,17 @@ void TranslationEditorDialog::setTintColour(const ColRGBA& col)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's tint colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setTintAmount(int amount)
+void TranslationEditorDialog::setTintAmount(int amount) const
 {
 	// Get currently selected translation range
-	auto tr = translation_.range(list_translations_->GetSelection());
+	auto tr = translation_->range(list_translations_->GetSelection());
 
 	// Check its type
 	if (tr->type() == TransRange::Type::Tint)
 
 	{
 		// Desaturated colour range
-		auto ttr = (TransRangeTint*)tr;
+		auto ttr = dynamic_cast<TransRangeTint*>(tr);
 
 		// Set destination end colour
 		ttr->setAmount(amount);
@@ -753,17 +765,17 @@ void TranslationEditorDialog::showTintTarget(bool tint)
 // Updates the image and resulting palette previews according to the current
 // translation
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::updatePreviews()
+void TranslationEditorDialog::updatePreviews() const
 {
 	// Update palette preview
-	Palette pal_translated{ palette_ };
-	pal_translated.applyTranslation(&translation_);
+	Palette pal_translated{ *palette_ };
+	pal_translated.applyTranslation(translation_.get());
 	pal_canvas_preview_->setPalette(&pal_translated);
 	pal_canvas_preview_->Refresh();
 
 	// Update image preview
-	gfx_preview_->image().copyImage(&image_preview_);
-	gfx_preview_->image().applyTranslation(&translation_, &palette_, cb_truecolor_->GetValue());
+	gfx_preview_->image().copyImage(image_preview_.get());
+	gfx_preview_->image().applyTranslation(translation_.get(), palette_.get(), cb_truecolor_->GetValue());
 
 	// Update UI
 	gfx_preview_->updateImageTexture();
@@ -774,11 +786,11 @@ void TranslationEditorDialog::updatePreviews()
 	{
 		// Create a palette image
 		SImage img(SImage::Type::PalMask);
-		img.create(256, 1, SImage::Type::PalMask, &palette_);
+		img.create(256, 1, SImage::Type::PalMask, palette_.get());
 		for (int i = 0; i < 256; ++i)
 			img.setPixel(i, 0, i);
 		// Apply translation to image
-		img.applyTranslation(&translation_, &palette_);
+		img.applyTranslation(translation_.get(), palette_.get());
 		// Create new translation from image data
 		Translation newtrans;
 		MemChunk    mc;
@@ -789,7 +801,7 @@ void TranslationEditorDialog::updatePreviews()
 		}
 	}
 	else
-		text_string_->SetValue(translation_.asText());
+		text_string_->SetValue(translation_->asText());
 }
 
 // -----------------------------------------------------------------------------
@@ -807,6 +819,8 @@ bool TranslationEditorDialog::getTruecolor() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the dialog is resized
@@ -841,11 +855,11 @@ void TranslationEditorDialog::onRBPaletteSelected(wxCommandEvent& e)
 	if (index >= 0)
 	{
 		// Remove it
-		translation_.removeRange(index);
+		translation_->removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Type::Palette, index);
-		auto tr = (TransRangePalette*)translation_.range(index);
+		translation_->addRange(TransRange::Type::Palette, index);
+		auto tr = dynamic_cast<TransRangePalette*>(translation_->range(index));
 		// Origin range
 		tr->setStart(pal_canvas_original_->selectionStart());
 		tr->setEnd(pal_canvas_original_->selectionEnd());
@@ -881,11 +895,11 @@ void TranslationEditorDialog::onRBColourSelected(wxCommandEvent& e)
 	if (index >= 0)
 	{
 		// Remove it
-		translation_.removeRange(index);
+		translation_->removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Type::Colour, index);
-		auto tr = (TransRangeColour*)translation_.range(index);
+		translation_->addRange(TransRange::Type::Colour, index);
+		auto tr = dynamic_cast<TransRangeColour*>(translation_->range(index));
 		// Origin range
 		tr->setStart(pal_canvas_original_->selectionStart());
 		tr->setEnd(pal_canvas_original_->selectionEnd());
@@ -914,11 +928,11 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 	if (index >= 0)
 	{
 		// Remove it
-		translation_.removeRange(index);
+		translation_->removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Type::Desat, index);
-		auto tr = (TransRangeDesat*)translation_.range(index);
+		translation_->addRange(TransRange::Type::Desat, index);
+		auto tr = dynamic_cast<TransRangeDesat*>(translation_->range(index));
 		// Origin range
 		tr->setStart(pal_canvas_original_->selectionStart());
 		tr->setEnd(pal_canvas_original_->selectionEnd());
@@ -926,13 +940,13 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 		auto sc = cb_range_begin_->colour();
 		auto ec = cb_range_end_->colour();
 		tr->setRGBStart(
-			math::clamp((double)sc.r / 127.0f, 0, 2),
-			math::clamp((double)sc.g / 127.0f, 0, 2),
-			math::clamp((double)sc.b / 127.0f, 0, 2));
+			math::clamp(static_cast<double>(sc.r) / 127.0f, 0, 2),
+			math::clamp(static_cast<double>(sc.g) / 127.0f, 0, 2),
+			math::clamp(static_cast<double>(sc.b) / 127.0f, 0, 2));
 		tr->setRGBEnd(
-			math::clamp((double)ec.r / 127.0f, 0, 2),
-			math::clamp((double)ec.g / 127.0f, 0, 2),
-			math::clamp((double)ec.b / 127.0f, 0, 2));
+			math::clamp(static_cast<double>(ec.r) / 127.0f, 0, 2),
+			math::clamp(static_cast<double>(ec.g) / 127.0f, 0, 2),
+			math::clamp(static_cast<double>(ec.b) / 127.0f, 0, 2));
 
 		// Update UI
 		updateListItem(index);
@@ -953,11 +967,11 @@ void TranslationEditorDialog::onRBColouriseSelected(wxCommandEvent& e)
 	if (index >= 0)
 	{
 		// Remove it
-		translation_.removeRange(index);
+		translation_->removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Type::Blend, index);
-		auto tr = (TransRangeBlend*)translation_.range(index);
+		translation_->addRange(TransRange::Type::Blend, index);
+		auto tr = dynamic_cast<TransRangeBlend*>(translation_->range(index));
 		// Origin range
 		tr->setStart(pal_canvas_original_->selectionStart());
 		tr->setEnd(pal_canvas_original_->selectionEnd());
@@ -984,11 +998,11 @@ void TranslationEditorDialog::onRBTintSelected(wxCommandEvent& e)
 	if (index >= 0)
 	{
 		// Remove it
-		translation_.removeRange(index);
+		translation_->removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Type::Tint, index);
-		auto tr = (TransRangeTint*)translation_.range(index);
+		translation_->addRange(TransRange::Type::Tint, index);
+		auto tr = dynamic_cast<TransRangeTint*>(translation_->range(index));
 		// Origin range
 		tr->setStart(pal_canvas_original_->selectionStart());
 		tr->setEnd(pal_canvas_original_->selectionEnd());
@@ -1045,7 +1059,7 @@ void TranslationEditorDialog::onTintAmountChanged(wxCommandEvent& e)
 void TranslationEditorDialog::onPalOriginLeftUp(wxMouseEvent& e)
 {
 	// Get current translation range
-	auto tr = translation_.range(list_translations_->GetSelection());
+	auto tr = translation_->range(list_translations_->GetSelection());
 
 	// Update its origin range
 	if (tr)
@@ -1066,12 +1080,12 @@ void TranslationEditorDialog::onPalOriginLeftUp(wxMouseEvent& e)
 void TranslationEditorDialog::onPalTargetLeftUp(wxMouseEvent& e)
 {
 	// Get current translation range
-	auto tr = translation_.range(list_translations_->GetSelection());
+	auto tr = translation_->range(list_translations_->GetSelection());
 
 	// Update its target range if it's a palette translation
 	if (tr && tr->type() == TransRange::Type::Palette)
 	{
-		auto tpr = (TransRangePalette*)tr;
+		auto tpr = dynamic_cast<TransRangePalette*>(tr);
 		if (cb_target_reverse_->GetValue())
 		{
 			tpr->setDEnd(pal_canvas_target_->selectionStart());
@@ -1099,18 +1113,18 @@ void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e)
 
 	// Add new range to translation depending on current type selection
 	if (rb_type_palette_->GetValue())
-		translation_.addRange(TransRange::Type::Palette, index);
+		translation_->addRange(TransRange::Type::Palette, index);
 	else if (rb_type_colour_->GetValue())
-		translation_.addRange(TransRange::Type::Colour, index);
+		translation_->addRange(TransRange::Type::Colour, index);
 	else if (rb_type_desaturate_->GetValue())
-		translation_.addRange(TransRange::Type::Desat, index);
+		translation_->addRange(TransRange::Type::Desat, index);
 	else if (rb_type_colourise_->GetValue())
-		translation_.addRange(TransRange::Type::Blend, index);
+		translation_->addRange(TransRange::Type::Blend, index);
 	else if (rb_type_tint_->GetValue())
-		translation_.addRange(TransRange::Type::Tint, index);
+		translation_->addRange(TransRange::Type::Tint, index);
 
 	// Add it to the list
-	list_translations_->Insert(translation_.range(index)->asText(), index);
+	list_translations_->Insert(translation_->range(index)->asText(), index);
 
 	// Update UI
 	list_translations_->SetSelection(index);
@@ -1124,20 +1138,20 @@ void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e)
 void TranslationEditorDialog::onBtnRemove(wxCommandEvent& e)
 {
 	// Do nothing if there is only one translation
-	if (translation_.nRanges() == 1)
+	if (translation_->nRanges() == 1)
 		return;
 
 	// Get index of range to remove
 	int index = list_translations_->GetSelection();
 
 	// Remove it from the translation
-	translation_.removeRange(index);
+	translation_->removeRange(index);
 
 	// Remove it from the list
 	list_translations_->Delete(index);
 
 	// Update UI
-	if (index >= (int)list_translations_->GetCount())
+	if (index >= static_cast<int>(list_translations_->GetCount()))
 		index--;
 	if (index >= 0)
 	{
@@ -1160,7 +1174,7 @@ void TranslationEditorDialog::onBtnUp(wxCommandEvent& e)
 		return;
 
 	// Swap item with above
-	translation_.swapRanges(index, index - 1);
+	translation_->swapRanges(index, index - 1);
 	updateListItem(index);
 	updateListItem(index - 1);
 
@@ -1181,11 +1195,11 @@ void TranslationEditorDialog::onBtnDown(wxCommandEvent& e)
 	int index = list_translations_->GetSelection();
 
 	// Check selection is valid
-	if (index >= (int)translation_.nRanges() - 1)
+	if (index >= static_cast<int>(translation_->nRanges()) - 1)
 		return;
 
 	// Swap item with above
-	translation_.swapRanges(index, index + 1);
+	translation_->swapRanges(index, index + 1);
 	updateListItem(index);
 	updateListItem(index + 1);
 
@@ -1263,7 +1277,7 @@ void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
 	if (dialog_save.ShowModal() == wxID_OK)
 	{
 		// Get translation as text string
-		wxString str = translation_.asText();
+		wxString str = translation_->asText();
 
 		// Open file for writing
 		wxFile file(dialog_save.GetPath(), wxFile::write);
@@ -1308,12 +1322,12 @@ void TranslationEditorDialog::onGfxPreviewMouseMotion(wxMouseEvent& e)
 void TranslationEditorDialog::onCBTargetReverse(wxCommandEvent& e)
 {
 	// Get current translation range
-	auto tr = translation_.range(list_translations_->GetSelection());
+	auto tr = translation_->range(list_translations_->GetSelection());
 
 	// Update its target range if it's a palette translation
 	if (tr && tr->type() == TransRange::Type::Palette)
 	{
-		auto tpr = (TransRangePalette*)tr;
+		auto tpr = dynamic_cast<TransRangePalette*>(tr);
 		if (cb_target_reverse_->GetValue())
 		{
 			tpr->setDEnd(pal_canvas_target_->selectionStart());

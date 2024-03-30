@@ -1,6 +1,8 @@
 
 #include "Main.h"
 #include "Camera.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/Rect.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -59,7 +61,7 @@ void Camera::set(const Vec3d& position, const Vec2d& direction)
 // -----------------------------------------------------------------------------
 Vec3d Camera::upVector() const
 {
-	return strafe_.cross(dir3d_).normalized();
+	return glm::normalize(glm::cross(strafe_, dir3d_));
 }
 
 // -----------------------------------------------------------------------------
@@ -68,7 +70,7 @@ Vec3d Camera::upVector() const
 // -----------------------------------------------------------------------------
 Seg2d Camera::strafeLine() const
 {
-	return { position_.get2d(), (position_ + strafe_).get2d() };
+	return { position_.xy(), (position_ + strafe_).xy() };
 }
 
 // -----------------------------------------------------------------------------
@@ -98,7 +100,7 @@ void Camera::turn(double angle)
 {
 	// Find rotated view point
 	Vec2d cp2d(position_.x, position_.y);
-	Vec2d nd = math::rotatePoint(cp2d, cp2d + direction_, angle);
+	Vec2d nd = geometry::rotatePoint(cp2d, cp2d + direction_, angle);
 
 	// Update direction
 	direction_.x = nd.x - position_.x;
@@ -184,13 +186,11 @@ void Camera::applyGravity(double floor_height, double mult)
 void Camera::updateVectors()
 {
 	// Normalize direction
-	direction_.normalize();
+	direction_ = glm::normalize(direction_);
 
 	// Calculate strafe vector
-	strafe_ = Vec3d(direction_, 0).cross(Vec3d(0, 0, 1));
-	strafe_.normalize();
+	strafe_ = glm::normalize(glm::cross(Vec3d(direction_, 0), Vec3d(0, 0, 1)));
 
 	// Calculate 3d direction vector
-	dir3d_ = math::rotateVector3D(Vec3d(direction_, 0), strafe_, pitch_);
-	dir3d_.normalize();
+	dir3d_ = glm::normalize(geometry::rotateVector3D(Vec3d(direction_, 0), strafe_, pitch_));
 }

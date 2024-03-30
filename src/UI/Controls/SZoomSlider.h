@@ -10,10 +10,10 @@ class SZoomSlider : public wxPanel
 public:
 	SZoomSlider(wxWindow* parent, GfxCanvas* linked_canvas = nullptr);
 	SZoomSlider(wxWindow* parent, CTextureCanvas* linked_canvas);
-	~SZoomSlider() {}
+	~SZoomSlider() override = default;
 
 	int    zoomPercent() const;
-	double zoomFactor() const { return (double)zoomPercent() * 0.01; }
+	double zoomFactor() const { return static_cast<double>(zoomPercent()) * 0.01; }
 
 	void setZoom(int percent) const;
 	void setZoom(double factor) const;

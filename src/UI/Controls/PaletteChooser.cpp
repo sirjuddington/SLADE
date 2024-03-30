@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,7 +34,9 @@
 #include "PaletteChooser.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Misc.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/Palette/PaletteManager.h"
 
 using namespace slade;
@@ -50,10 +52,10 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // PaletteChooser class constructor
 // -----------------------------------------------------------------------------
-PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id)
+PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id), pal_global_{ new Palette }
 {
 	// Init variables
-	pal_global_.copyPalette(app::paletteManager()->globalPalette());
+	pal_global_->copyPalette(app::paletteManager()->globalPalette());
 
 	// Add first 'existing' item
 	Append("Existing/Global");
@@ -73,6 +75,11 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id)
 }
 
 // -----------------------------------------------------------------------------
+// PaletteChooser class destructor
+// -----------------------------------------------------------------------------
+PaletteChooser::~PaletteChooser() = default;
+
+// -----------------------------------------------------------------------------
 // Called when the current image palette chooser is changed
 // -----------------------------------------------------------------------------
 void PaletteChooser::onPaletteChanged(wxCommandEvent& e)
@@ -87,22 +94,22 @@ void PaletteChooser::onPaletteChanged(wxCommandEvent& e)
 void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump)
 {
 	if (!archive)
-		pal_global_.copyPalette(app::paletteManager()->globalPalette());
+		pal_global_->copyPalette(app::paletteManager()->globalPalette());
 
-	else if (!misc::loadPaletteFromArchive(&pal_global_, archive, lump))
+	else if (!misc::loadPaletteFromArchive(pal_global_.get(), archive, lump))
 		setGlobalFromArchive(archive->parentArchive(), lump);
 }
 
 // -----------------------------------------------------------------------------
 // Returns the selected palette (from the PaletteManager)
 // -----------------------------------------------------------------------------
-Palette* PaletteChooser::selectedPalette(ArchiveEntry* entry)
+Palette* PaletteChooser::selectedPalette(const ArchiveEntry* entry) const
 {
 	if (GetSelection() > 0)
 		return app::paletteManager()->palette(GetSelection() - 1);
 	else if (entry)
-		misc::loadPaletteFromArchive(&pal_global_, entry->parent(), misc::detectPaletteHack(entry));
-	return &pal_global_;
+		misc::loadPaletteFromArchive(pal_global_.get(), entry->parent(), misc::detectPaletteHack(entry));
+	return pal_global_.get();
 }
 
 // -----------------------------------------------------------------------------
@@ -117,7 +124,7 @@ bool PaletteChooser::globalSelected() const
 // Selects the palette matching [name], or the default palette if no match was
 // found
 // -----------------------------------------------------------------------------
-void PaletteChooser::selectPalette(wxString name)
+void PaletteChooser::selectPalette(const wxString& name)
 {
 	// Go through palettes list
 	for (unsigned a = 0; a < GetCount(); a++)
@@ -140,7 +147,7 @@ void PaletteChooser::selectPalette(wxString name)
 // without this function, requires exiting and restarting the app to appear in
 // the list.
 // -----------------------------------------------------------------------------
-void PaletteChooser::addPalette(wxString name)
+void PaletteChooser::addPalette(const wxString& name)
 {
 	// We want it to be just before the "Greyscale" choice
 	if (GetCount() > 2)

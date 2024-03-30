@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,13 +33,13 @@
 #include "Main.h"
 #include "MCAnimations.h"
 #include "Game/Configuration.h"
-#include "Game/Game.h"
+#include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
-#include "MapEditor/MapEditor.h"
-#include "MapEditor/MapTextureManager.h"
+#include "MapEditor/Item.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/Draw2D.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 #include "OpenGL/PointSpriteBuffer.h"
 #include "OpenGL/Shader.h"
@@ -47,6 +47,7 @@
 #include "OpenGL/View.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 
 using namespace slade;
@@ -122,7 +123,9 @@ MCAThingSelection::MCAThingSelection(
 	float                    view_scale,
 	gl::PointSpriteType      ps_type,
 	bool                     select) :
-	MCAnimation(start), select_{ select }, ps_type_{ ps_type }
+	MCAnimation(start),
+	select_{ select },
+	ps_type_{ ps_type }
 {
 	buffer_ = std::make_unique<gl::PointSpriteBuffer>();
 
@@ -174,7 +177,7 @@ void MCAThingSelection::draw(gl::draw2d::Context& dc)
 	else
 	{
 		const auto& cdef = colourconfig::colDef("map_selection");
-		buffer_->setColour(cdef.colour.ampf(1.0f, 1.0f, 1.0f, thing_overlay_square ? fade_ * 0.5f : fade_).asVec4());
+		buffer_->setColour(cdef.colour.ampf(1.0f, 1.0f, 1.0f, thing_overlay_square ? fade_ * 0.5f : fade_));
 		gl::setBlend(cdef.blendMode());
 	}
 
@@ -216,7 +219,8 @@ float MCAThingSelection::scaledRadius(float radius, float view_scale)
 // MCALineSelection class constructor
 // -----------------------------------------------------------------------------
 MCALineSelection::MCALineSelection(long start, const vector<MapLine*>& lines, bool select) :
-	MCAnimation(start), select_{ select }
+	MCAnimation(start),
+	select_{ select }
 {
 	// Go through list of lines
 	for (auto& line : lines)
@@ -277,7 +281,9 @@ void MCALineSelection::draw(gl::draw2d::Context& dc)
 // MCAVertexSelection class constructor
 // -----------------------------------------------------------------------------
 MCAVertexSelection::MCAVertexSelection(long start, const vector<MapVertex*>& verts, float size, bool select) :
-	MCAnimation(start), size_{ size }, select_{ select }
+	MCAnimation(start),
+	size_{ size },
+	select_{ select }
 {
 	// Setup vertices list
 	for (auto& vertex : verts)
@@ -335,7 +341,9 @@ void MCAVertexSelection::draw(gl::draw2d::Context& dc)
 // MCASectorSelection class constructor
 // -----------------------------------------------------------------------------
 MCASectorSelection::MCASectorSelection(long start, const vector<MapSector*>& sectors, bool select) :
-	MCAnimation(start), select_{ select }, blend_{ gl::Blend::Normal }
+	MCAnimation(start),
+	select_{ select },
+	blend_{ gl::Blend::Normal }
 {
 	// Build vertex buffer from sector polygon vertices
 	vertex_buffer_ = std::make_unique<gl::VertexBuffer2D>();
@@ -353,7 +361,7 @@ MCASectorSelection::MCASectorSelection(long start, const vector<MapSector*>& sec
 	else
 	{
 		const auto& cdef = colourconfig::colDef("map_selection");
-		colour_          = cdef.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f).asVec4();
+		colour_          = cdef.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f);
 		blend_           = cdef.blendMode();
 	}
 }
@@ -410,7 +418,9 @@ void MCASectorSelection::draw(gl::draw2d::Context& dc)
 // MCA3dWallSelection class constructor
 // -----------------------------------------------------------------------------
 MCA3dWallSelection::MCA3dWallSelection(long start, Vec3f points[4], bool select) :
-	MCAnimation(start, true), points_{ points[0], points[1], points[2], points[3] }, select_{ select }
+	MCAnimation(start, true),
+	points_{ points[0], points[1], points[2], points[3] },
+	select_{ select }
 {
 }
 
@@ -432,25 +442,25 @@ bool MCA3dWallSelection::update(long time)
 void MCA3dWallSelection::draw()
 {
 	//// Setup colour
-	//if (select_)
+	// if (select_)
 	//	gl::setColour(255, 255, 255, 90 * fade_, gl::Blend::Additive);
-	//else
+	// else
 	//	colourconfig::setGLColour("map_3d_selection", fade_);
 
 	//// Draw quad outline
-	//glLineWidth(2.0f);
-	//glEnable(GL_LINE_SMOOTH);
-	//glBegin(GL_LINE_LOOP);
-	//for (auto& point : points_)
+	// glLineWidth(2.0f);
+	// glEnable(GL_LINE_SMOOTH);
+	// glBegin(GL_LINE_LOOP);
+	// for (auto& point : points_)
 	//	glVertex3d(point.x, point.y, point.z);
-	//glEnd();
+	// glEnd();
 
 	//// Draw quad fill
-	//colourconfig::setGLColour("map_3d_selection", fade_ * 0.5f);
-	//glBegin(GL_QUADS);
-	//for (auto& point : points_)
+	// colourconfig::setGLColour("map_3d_selection", fade_ * 0.5f);
+	// glBegin(GL_QUADS);
+	// for (auto& point : points_)
 	//	glVertex3d(point.x, point.y, point.z);
-	//glEnd();
+	// glEnd();
 }
 
 
@@ -465,7 +475,10 @@ void MCA3dWallSelection::draw()
 // MCA3dFlatSelection class constructor
 // -----------------------------------------------------------------------------
 MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, const Plane& plane, bool select) :
-	MCAnimation(start, true), sector_{ sector }, plane_{ plane }, select_{ select }
+	MCAnimation(start, true),
+	sector_{ sector },
+	plane_{ plane },
+	select_{ select }
 {
 }
 
@@ -486,15 +499,15 @@ bool MCA3dFlatSelection::update(long time)
 // -----------------------------------------------------------------------------
 void MCA3dFlatSelection::draw()
 {
-	//if (!sector_)
+	// if (!sector_)
 	//	return;
 
 	//// Setup colour
-	//if (select_)
+	// if (select_)
 	//	gl::setColour(255, 255, 255, 60 * fade_, gl::Blend::Additive);
-	//else
+	// else
 	//	colourconfig::setGLColour("map_3d_selection", fade_);
-	//glDisable(GL_CULL_FACE);
+	// glDisable(GL_CULL_FACE);
 
 	////// Set polygon to plane height
 	////sector_->polygon()->setZ(plane_);
@@ -505,7 +518,7 @@ void MCA3dFlatSelection::draw()
 	////// Reset polygon height
 	////sector_->polygon()->setZ(0);
 
-	//glEnable(GL_CULL_FACE);
+	// glEnable(GL_CULL_FACE);
 }
 
 
@@ -520,7 +533,11 @@ void MCA3dFlatSelection::draw()
 // MCAHilightFade class constructor
 // -----------------------------------------------------------------------------
 MCAHilightFade::MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init) :
-	MCAnimation(start), object_{ object }, fade_{ fade_init }, init_fade_{ fade_init }, renderer_{ renderer }
+	MCAnimation(start),
+	object_{ object },
+	fade_{ fade_init },
+	init_fade_{ fade_init },
+	renderer_{ renderer }
 {
 }
 
@@ -543,11 +560,11 @@ void MCAHilightFade::draw()
 {
 	switch (object_->objType())
 	{
-	case MapObject::Type::Line: break;   // renderer_->renderLineHilight(object_->index(), fade_); break;
+	case MapObject::Type::Line:   break; // renderer_->renderLineHilight(object_->index(), fade_); break;
 	case MapObject::Type::Sector: break; // renderer_->renderFlatHilight(object_->index(), fade_); break;
-	case MapObject::Type::Thing: break;  // renderer_->renderThingHilight(object_->index(), fade_); break;
+	case MapObject::Type::Thing:  break; // renderer_->renderThingHilight(object_->index(), fade_); break;
 	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->index(), fade_); break;
-	default: break;
+	default:                      break;
 	}
 }
 
@@ -555,11 +572,11 @@ void MCAHilightFade::draw(gl::draw2d::Context& dc)
 {
 	switch (object_->objType())
 	{
-	case MapObject::Type::Line: renderer_->renderLineHilight(dc, object_->index(), fade_); break;
+	case MapObject::Type::Line:   renderer_->renderLineHilight(dc, object_->index(), fade_); break;
 	case MapObject::Type::Sector: renderer_->renderFlatHilight(dc, object_->index(), fade_); break;
-	case MapObject::Type::Thing: renderer_->renderThingHilight(dc, object_->index(), fade_, false); break;
+	case MapObject::Type::Thing:  renderer_->renderThingHilight(dc, object_->index(), fade_, false); break;
 	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->index(), fade_); break;
-	default: break;
+	default:                      break;
 	}
 }
 

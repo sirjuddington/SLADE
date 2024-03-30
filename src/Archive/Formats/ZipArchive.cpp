@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,10 @@
 #include "Main.h"
 #include "ZipArchive.h"
 #include "App.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Archive/MapDesc.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "UI/WxUtils.h"
@@ -184,7 +188,7 @@ bool ZipArchive::open(string_view filename)
 	vector<ArchiveEntry*> entry_list;
 	putEntryTreeAsList(entry_list);
 	for (auto& entry : entry_list)
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 
 	// Enable announcements
 	sig_blocker.unblock();
@@ -325,7 +329,7 @@ bool ZipArchive::write(string_view filename)
 		{
 			// If the current entry is a folder, just write a directory entry and continue
 			zip.PutNextDirEntry(entries[a]->path(true));
-			entries[a]->setState(ArchiveEntry::State::Unmodified);
+			entries[a]->setState(EntryState::Unmodified);
 			continue;
 		}
 
@@ -335,8 +339,8 @@ bool ZipArchive::write(string_view filename)
 			index = entries[a]->exProp<int>("ZipIndex");
 
 		auto saname = misc::lumpNameToFileName(entries[a]->name());
-		if (!inzip || entries[a]->state() != ArchiveEntry::State::Unmodified || index < 0
-			|| index >= inzip->GetTotalEntries() || !c_entries[index])
+		if (!inzip || entries[a]->state() != EntryState::Unmodified || index < 0 || index >= inzip->GetTotalEntries()
+			|| !c_entries[index])
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
@@ -353,7 +357,7 @@ bool ZipArchive::write(string_view filename)
 		}
 
 		// Update entry info
-		entries[a]->setState(ArchiveEntry::State::Unmodified);
+		entries[a]->setState(EntryState::Unmodified);
 		entries[a]->exProp("ZipIndex") = static_cast<int>(a);
 	}
 
@@ -462,7 +466,7 @@ shared_ptr<ArchiveEntry> ZipArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
+MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -491,7 +495,7 @@ Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* maphead)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> ZipArchive::detectMaps()
+vector<MapDesc> ZipArchive::detectMaps()
 {
 	vector<MapDesc> ret;
 
@@ -534,7 +538,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
+ArchiveEntry* ZipArchive::findFirst(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = rootDir().get();
@@ -567,7 +571,7 @@ ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
+ArchiveEntry* ZipArchive::findLast(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = rootDir().get();
@@ -599,11 +603,10 @@ ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> ZipArchive::findAll(ArchiveSearchOptions& options)
 {
 	// Init search variables
-	auto                  dir = rootDir().get();
-	vector<ArchiveEntry*> ret;
+	auto dir = rootDir().get();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -617,7 +620,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
-			return ret;
+			return {};
 		else
 			options.search_subdirs = true; // Namespace search always includes namespace subdirs
 	}

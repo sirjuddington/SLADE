@@ -6,7 +6,7 @@ class SplashWindow : public wxMiniFrame
 {
 public:
 	SplashWindow();
-	~SplashWindow() = default;
+	~SplashWindow() override = default;
 
 	float progress() const { return progress_; }
 	void  setMessage(const wxString& message);

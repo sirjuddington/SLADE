@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Geometry/BBox.h"
+#include "Geometry/Plane.h"
 #include "MapObject.h"
 
 namespace slade
 {
-struct ColRGBA;
+class Debuggable;
 
 class MapSector : public MapObject
 {
@@ -90,7 +92,7 @@ public:
 		short       special  = 0,
 		short       id       = 0);
 	MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* udmf_def);
-	~MapSector() override = default;
+	~MapSector() override;
 
 	void copy(MapObject* obj) override;
 
@@ -129,8 +131,8 @@ public:
 	const vector<MapSide*>&  connectedSides() const { return connected_sides_; }
 	const vector<glm::vec2>& polygonVertices();
 	void                     resetPolygon() { poly_needsupdate_ = true; }
-	bool                     containsPoint(Vec2d point);
-	double                   distanceTo(Vec2d point, double maxdist = -1);
+	bool                     containsPoint(const Vec2d& point);
+	double                   distanceTo(const Vec2d& point, double maxdist = -1);
 	bool                     putLines(vector<MapLine*>& list) const;
 	bool                     putVertices(vector<MapVertex*>& list) const;
 	bool                     putVertices(vector<MapObject*>& list) const;
@@ -157,13 +159,7 @@ public:
 
 	void writeUDMF(string& def) override;
 
-	operator Debuggable() const
-	{
-		if (!this)
-			return { "<sector NULL>" };
-
-		return { fmt::format("<sector {}>", index_) };
-	}
+	operator Debuggable() const;
 
 private:
 	// Basic data
@@ -179,7 +175,7 @@ private:
 	vector<glm::vec2>  polygon_triangles_;
 	bool               poly_needsupdate_ = true;
 	long               geometry_updated_ = 0;
-	Vec2d              text_point_;
+	Vec2d              text_point_       = {};
 	vector<ExtraFloor> extra_floors_;
 
 	void setGeometryUpdated();

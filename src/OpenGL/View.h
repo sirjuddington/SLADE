@@ -1,5 +1,12 @@
 #pragma once
 
+#include "Geometry/Rect.h"
+
+namespace slade
+{
+struct BBox;
+}
+
 namespace slade::gl
 {
 class Shader;
@@ -9,7 +16,9 @@ class View
 public:
 	View() = default;
 	View(bool centered, bool y_flipped, bool interpolated = true) :
-		y_flipped_{ y_flipped }, centered_{ centered }, interpolated_{ interpolated }
+		y_flipped_{ y_flipped },
+		centered_{ centered },
+		interpolated_{ interpolated }
 	{
 	}
 

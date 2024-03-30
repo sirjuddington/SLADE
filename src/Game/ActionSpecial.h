@@ -4,8 +4,6 @@
 
 namespace slade
 {
-class ParseTreeNode;
-
 namespace game
 {
 	enum class TagType;

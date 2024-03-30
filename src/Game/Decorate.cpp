@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,9 +32,12 @@
 #include "Main.h"
 #include "Decorate.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Configuration.h"
 #include "Game.h"
 #include "ThingType.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -636,7 +639,7 @@ bool game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 		return false;
 
 	// Get base decorate file
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_name        = "decorate";
 	opt.ignore_ext        = true;
 	auto decorate_entries = archive->findAll(opt);

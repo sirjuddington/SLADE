@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,16 +36,19 @@
 #include "Main.h"
 #include "QuickTextureOverlay3d.h"
 #include "Game/Configuration.h"
+#include "Geometry/Rect.h"
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Draw2D.h"
-#include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -77,8 +80,8 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 			sel_walls_ = false;
 			for (unsigned a = 0; a < sel.size(); a++)
 			{
-				if (sel[a].type != mapeditor::ItemType::Thing && sel[a].type != mapeditor::ItemType::Ceiling
-					&& sel[a].type != mapeditor::ItemType::Floor)
+				if (sel[a].type != ItemType::Thing && sel[a].type != ItemType::Ceiling
+					&& sel[a].type != ItemType::Floor)
 				{
 					sel_walls_ = true;
 					initial    = a;
@@ -89,15 +92,15 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 
 		// Get initial texture
 		string tex_init;
-		if (sel[initial].type == mapeditor::ItemType::Ceiling)
+		if (sel[initial].type == ItemType::Ceiling)
 			tex_init = editor->map().sector(sel[initial].index)->ceiling().texture;
-		else if (sel[initial].type == mapeditor::ItemType::Floor)
+		else if (sel[initial].type == ItemType::Floor)
 			tex_init = editor->map().sector(sel[initial].index)->floor().texture;
-		else if (sel[initial].type == mapeditor::ItemType::WallTop)
+		else if (sel[initial].type == ItemType::WallTop)
 			tex_init = editor->map().side(sel[initial].index)->texUpper();
-		else if (sel[initial].type == mapeditor::ItemType::WallMiddle)
+		else if (sel[initial].type == ItemType::WallMiddle)
 			tex_init = editor->map().side(sel[initial].index)->texMiddle();
-		else if (sel[initial].type == mapeditor::ItemType::WallBottom)
+		else if (sel[initial].type == ItemType::WallBottom)
 			tex_init = editor->map().side(sel[initial].index)->texLower();
 
 		auto map_format = editor->map().currentFormat();
@@ -203,18 +206,18 @@ void QuickTextureOverlay3d::applyTexture() const
 		for (auto& item : selection)
 		{
 			// Thing (skip)
-			if (item.type == mapeditor::ItemType::Thing)
+			if (item.type == ItemType::Thing)
 				continue;
 
 			// Floor
-			if (item.type == mapeditor::ItemType::Floor && sel_flats_)
+			if (item.type == ItemType::Floor && sel_flats_)
 			{
 				if (auto sector = item.asSector(editor_->map()))
 					sector->setFloorTexture(textures_[current_index_].name);
 			}
 
 			// Ceiling
-			else if (item.type == mapeditor::ItemType::Ceiling && sel_flats_)
+			else if (item.type == ItemType::Ceiling && sel_flats_)
 			{
 				if (auto sector = item.asSector(editor_->map()))
 					sector->setCeilingTexture(textures_[current_index_].name);
@@ -226,13 +229,13 @@ void QuickTextureOverlay3d::applyTexture() const
 				if (auto side = item.asSide(editor_->map()))
 				{
 					// Upper
-					if (item.type == mapeditor::ItemType::WallTop)
+					if (item.type == ItemType::WallTop)
 						side->setTexUpper(textures_[current_index_].name);
 					// Middle
-					else if (item.type == mapeditor::ItemType::WallMiddle)
+					else if (item.type == ItemType::WallMiddle)
 						side->setTexMiddle(textures_[current_index_].name);
 					// Lower
-					else if (item.type == mapeditor::ItemType::WallBottom)
+					else if (item.type == ItemType::WallBottom)
 						side->setTexLower(textures_[current_index_].name);
 				}
 			}
@@ -246,7 +249,7 @@ void QuickTextureOverlay3d::applyTexture() const
 void QuickTextureOverlay3d::update(long frametime)
 {
 	double target = current_index_;
-	float  mult   = (float)frametime / 10.0f;
+	float  mult   = static_cast<float>(frametime) / 10.0f;
 	if (anim_offset_ < target - 0.01)
 		anim_offset_ += (target - anim_offset_) * (0.2 * mult);
 	else if (anim_offset_ > target + 0.01)
@@ -330,7 +333,7 @@ void QuickTextureOverlay3d::drawTexture(
 // -----------------------------------------------------------------------------
 double QuickTextureOverlay3d::determineSize(double x, int width) const
 {
-	double mid = (double)width * 0.5;
+	double mid = static_cast<double>(width) * 0.5;
 	if (x < mid - 384 || x > mid + 384)
 		return 1.0;
 
@@ -416,7 +419,7 @@ bool QuickTextureOverlay3d::ok(const ItemSelection& sel)
 	bool ok = false;
 	for (auto item : sel)
 	{
-		if (item.type != mapeditor::ItemType::Thing)
+		if (item.type != ItemType::Thing)
 		{
 			ok = true;
 			break;

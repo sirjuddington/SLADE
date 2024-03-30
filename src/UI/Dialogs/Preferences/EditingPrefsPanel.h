@@ -2,15 +2,15 @@
 
 #include "PrefsPanelBase.h"
 #include "UI/Controls/STabCtrl.h"
-#include "UI/Lists/VirtualListView.h"
 
 namespace slade
 {
+class VirtualListView;
 class EditingPrefsPanel : public PrefsPanelBase
 {
 public:
 	EditingPrefsPanel(wxWindow* parent);
-	~EditingPrefsPanel() = default;
+	~EditingPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;

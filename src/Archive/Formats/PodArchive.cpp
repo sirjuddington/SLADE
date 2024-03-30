@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PodArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Console.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
@@ -105,7 +107,7 @@ bool PodArchive::open(const MemChunk& mc)
 		// Read data
 		new_entry->importMemChunk(mc, files[a].offset, files[a].size);
 
-		new_entry->setState(ArchiveEntry::State::Unmodified);
+		new_entry->setState(EntryState::Unmodified);
 
 		log::info(5, "File size: {}, offset: {}, name: {}", files[a].size, files[a].offset, files[a].name);
 	}
@@ -137,7 +139,7 @@ bool PodArchive::write(MemChunk& mc)
 	uint32_t data_size = 0;
 	for (auto& entry : entries)
 	{
-		if (entry->type() == EntryType::folderType())
+		if (entry->isFolderType())
 			ndirs++;
 		else
 			data_size += entry->size();
@@ -162,7 +164,7 @@ bool PodArchive::write(MemChunk& mc)
 	fe.offset = 4 + 80 + (n_entries * 40);
 	for (auto& entry : entries)
 	{
-		if (entry->type() == EntryType::folderType())
+		if (entry->isFolderType())
 			continue;
 
 		// Name
@@ -193,7 +195,7 @@ bool PodArchive::write(MemChunk& mc)
 
 	// Write entry data
 	for (auto& entry : entries)
-		if (entry->type() != EntryType::folderType())
+		if (!entry->isFolderType())
 			mc.write(entry->rawData(), entry->size());
 
 	return true;

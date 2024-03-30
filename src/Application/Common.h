@@ -1,5 +1,6 @@
-#ifndef COMMON_H
-#define COMMON_H
+
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 // wxWidgets -------------------------------------------------------------------
 
@@ -29,11 +30,8 @@
 #include <wx/dcmemory.h>
 #include <wx/dialog.h>
 #include <wx/dir.h>
-#include <wx/dirdlg.h>
 #include <wx/display.h>
-#include <wx/dnd.h>
 #include <wx/event.h>
-#include <wx/ffile.h>
 #include <wx/file.h>
 #include <wx/filedlg.h>
 #include <wx/filefn.h>
@@ -44,11 +42,9 @@
 #include <wx/generic/textdlgg.h>
 #include <wx/graphics.h>
 #include <wx/grid.h>
-#include <wx/hashmap.h>
 #include <wx/image.h>
 #include <wx/imaglist.h>
 #include <wx/ipc.h>
-#include <wx/listbox.h>
 #include <wx/listctrl.h>
 #include <wx/log.h>
 #include <wx/menu.h>
@@ -62,7 +58,6 @@
 #include <wx/propgrid/property.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/protocol/http.h>
-#include <wx/ptr_scpd.h>
 #include <wx/radiobut.h>
 #include <wx/regex.h>
 #include <wx/renderer.h>
@@ -72,7 +67,6 @@
 #include <wx/slider.h>
 #include <wx/snglinst.h>
 #include <wx/spinctrl.h>
-#include <wx/sstream.h>
 #include <wx/stackwalk.h>
 #include <wx/statbox.h>
 #include <wx/statline.h>
@@ -92,7 +86,6 @@
 #include <wx/valnum.h>
 #include <wx/wfstream.h>
 #include <wx/wrapsizer.h>
-#include <wx/xrc/xmlres.h>
 #include <wx/zipstrm.h>
 
 #ifdef __WXMSW__
@@ -102,34 +95,25 @@
 
 // Other Libraries -------------------------------------------------------------
 
-// Fluidsynth
-#ifndef NO_FLUIDSYNTH
-#include <fluidsynth.h>
-#endif
-
-// SFML
-#include <SFML/System.hpp>
-
-// Freeimage
-#define FREEIMAGE_LIB
-#include <FreeImage.h>
-#ifndef _WIN32
-#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
-#endif
-
 // fmt
 #include <fmt/core.h>
 
 // Sigslot
 #include "thirdparty/sigslot/signal.hpp"
 
-// glm
-#include <glm/glm.hpp>
+// GLM
+#define GLM_FORCE_CTOR_INIT
+#define GLM_FORCE_SWIZZLE
+#include <glm/geometric.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 
 // C++ -------------------------------------------------------------------------
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <functional>
 #include <map>
@@ -137,6 +121,7 @@
 #include <optional>
 #include <set>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
-#endif // COMMON_H
+#endif // __COMMON_H__

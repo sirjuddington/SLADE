@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MapEditor/MapEditor.h"
+#include "MapEditor/Item.h"
 
 // Forward declarations
 namespace slade
@@ -8,10 +8,6 @@ namespace slade
 class SLADEMap;
 class MapObject;
 
-namespace mapeditor
-{
-	enum class ItemType;
-}
 namespace gl::draw2d
 {
 	struct Context;

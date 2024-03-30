@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 #include "SpecialPreset.h"
 #include "App.h"
 #include "Utility/Parser.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -59,7 +60,7 @@ vector<SpecialPreset> custom_presets;
 // -----------------------------------------------------------------------------
 // Reads a special preset definition from a parsed tree [node]
 // -----------------------------------------------------------------------------
-void SpecialPreset::parse(ParseTreeNode* node)
+void SpecialPreset::parse(const ParseTreeNode* node)
 {
 	name = node->name();
 
@@ -98,7 +99,7 @@ void SpecialPreset::parse(ParseTreeNode* node)
 // Writes the special preset to a new 'preset' ParseTreeNode under [parent] and
 // returns it
 // -----------------------------------------------------------------------------
-ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
+ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent) const
 {
 	auto node = new ParseTreeNode(parent, nullptr, nullptr, "preset");
 	node->setName(name);
@@ -172,7 +173,7 @@ bool game::loadCustomSpecialPresets()
 			auto child = node->childPTN(a);
 			if (strutil::equalCI(child->type(), "preset"))
 			{
-				custom_presets.push_back({});
+				custom_presets.emplace_back();
 				custom_presets.back().parse(child);
 
 				// Add 'Custom' to preset group

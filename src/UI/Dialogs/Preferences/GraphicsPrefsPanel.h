@@ -10,7 +10,7 @@ class GraphicsPrefsPanel : public PrefsPanelBase
 {
 public:
 	GraphicsPrefsPanel(wxWindow* parent);
-	~GraphicsPrefsPanel() = default;
+	~GraphicsPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;

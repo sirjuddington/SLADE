@@ -22,25 +22,28 @@ namespace gl
 	}
 }
 
+enum class GfxView
+{
+	Default,
+	Centered,
+	Sprite,
+	HUD,
+	Tiled
+};
+
+enum class GfxEditMode
+{
+	None,
+	Paint,
+	Erase,
+	Translate
+};
+
 class GfxCanvas : public GLCanvas
 {
 public:
-	enum class View
-	{
-		Default,
-		Centered,
-		Sprite,
-		HUD,
-		Tiled
-	};
-
-	enum class EditMode
-	{
-		None,
-		Paint,
-		Erase,
-		Translate
-	};
+	using View     = GfxView;
+	using EditMode = GfxEditMode;
 
 	GfxCanvas(wxWindow* parent);
 	~GfxCanvas() override = default;

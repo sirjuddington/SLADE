@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -1283,13 +1283,13 @@ wxString audio::getSunInfo(const MemChunk& mc)
 	wxString format = "Format: ";
 	switch (codec)
 	{
-	case 1: format += wxString::FromUTF8("\xCE\xBC-Law"); break;
+	case 1:  format += wxString::FromUTF8("\xCE\xBC-Law"); break;
 	case 2:
 	case 3:
 	case 4:
-	case 5: format += wxString::Format("PCM (signed)"); break;
+	case 5:  format += wxString::Format("PCM (signed)"); break;
 	case 6:
-	case 7: format += wxString::Format("PCM (float)"); break;
+	case 7:  format += wxString::Format("PCM (float)"); break;
 	case 27: format += wxString::Format("a-Law"); break;
 	default: format += wxString::Format("Unknown (%lu)", codec); break;
 	}
@@ -1389,15 +1389,15 @@ wxString audio::getVocInfo(const MemChunk& mc)
 	wxString format = "Format: ";
 	switch (codec)
 	{
-	case 0: format += wxString::Format("PCM (unsigned)"); break;
-	case 1: format += wxString::Format("4-to-8 ADPCM"); break;
-	case 2: format += wxString::Format("3-to-8 ADPCM"); break;
-	case 3: format += wxString::Format("2-to-8 ADPCM"); break;
-	case 4: format += wxString::Format("PCM (signed)"); break;
-	case 6: format += wxString::Format("a-Law"); break;
-	case 7: format += wxString::FromUTF8("\xCE\xBC-Law"); break;
+	case 0:     format += wxString::Format("PCM (unsigned)"); break;
+	case 1:     format += wxString::Format("4-to-8 ADPCM"); break;
+	case 2:     format += wxString::Format("3-to-8 ADPCM"); break;
+	case 3:     format += wxString::Format("2-to-8 ADPCM"); break;
+	case 4:     format += wxString::Format("PCM (signed)"); break;
+	case 6:     format += wxString::Format("a-Law"); break;
+	case 7:     format += wxString::FromUTF8("\xCE\xBC-Law"); break;
 	case 0x200: format += wxString::Format("4to-16 ADPCM"); break;
-	default: format += wxString::Format("Unknown (%u)", codec); break;
+	default:    format += wxString::Format("Unknown (%u)", codec); break;
 	}
 	wxString ret = "Mono";
 	if (fmtchunk.channels == 2)
@@ -1470,11 +1470,11 @@ wxString audio::getWavInfo(const MemChunk& mc)
 	}
 	switch (formnum)
 	{
-	case 1: format += wxString::Format("PCM"); break;
-	case 2: format += wxString::Format("Microsoft ADPCM"); break;
-	case 3: format += wxString::Format("IEEE754"); break;
-	case 6: format += wxString::Format("ITU G.711 a-Law"); break;
-	case 7: format += wxString::FromUTF8("ITU G.711 \xCE\xBC-Law"); break;
+	case 1:  format += wxString::Format("PCM"); break;
+	case 2:  format += wxString::Format("Microsoft ADPCM"); break;
+	case 3:  format += wxString::Format("IEEE754"); break;
+	case 6:  format += wxString::Format("ITU G.711 a-Law"); break;
+	case 7:  format += wxString::FromUTF8("ITU G.711 \xCE\xBC-Law"); break;
 	case 17: format += wxString::Format("IMA ADPCM"); break;
 	case 20: format += wxString::Format("ITU G.723 ADPCM"); break;
 	case 49: format += wxString::Format("GSM 6.10"); break;
@@ -1677,8 +1677,8 @@ size_t audio::checkForTags(const MemChunk& mc)
 		// Check for ID3 header (ID3v2). Version and revision numbers cannot be FF.
 		// Only the four upper flags are valid.
 		if (mc.size() > s + 14 && mc[s + 0] == 'I' && mc[s + 1] == 'D' && mc[s + 2] == '3' && mc[s + 3] != 0xFF
-			   && mc[s + 4] != 0xFF && ((mc[s + 5] & 0x0F) == 0) && mc[s + 6] < 0x80 && mc[s + 7] < 0x80
-			   && mc[s + 8] < 0x80 && mc[s + 9] < 0x80)
+			&& mc[s + 4] != 0xFF && ((mc[s + 5] & 0x0F) == 0) && mc[s + 6] < 0x80 && mc[s + 7] < 0x80
+			&& mc[s + 8] < 0x80 && mc[s + 9] < 0x80)
 		{
 			// Compute size. It is stored as a "synchsafe integer", that is to say,
 			// a big-endian value where the highest bit of each byte is not used.

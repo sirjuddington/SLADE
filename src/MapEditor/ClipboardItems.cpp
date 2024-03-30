@@ -7,10 +7,10 @@
 #include "Main.h"
 #include "ClipboardItems.h"
 #include "Game/Configuration.h"
-#include "Game/Game.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
 
@@ -150,7 +150,7 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 	// Determine midpoint
 	double mid_x = min_x + ((max_x - min_x) * 0.5);
 	double mid_y = min_y + ((max_y - min_y) * 0.5);
-	midpoint_.set(mid_x, mid_y);
+	midpoint_    = { mid_x, mid_y };
 
 	// Copy vertices
 	for (auto& vertex : copy_verts)
@@ -362,7 +362,7 @@ void MapThingsClipboardItem::addThings(const vector<MapThing*>& things)
 	// Get midpoint
 	double mid_x = min_x + ((max_x - min_x) * 0.5);
 	double mid_y = min_y + ((max_y - min_y) * 0.5);
-	midpoint_.set(mid_x, mid_y);
+	midpoint_    = { mid_x, mid_y };
 
 	// Adjust thing positions
 	for (auto& thing : things_)

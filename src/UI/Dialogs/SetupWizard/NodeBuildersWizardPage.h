@@ -9,7 +9,7 @@ class NodeBuildersWizardPage : public WizardPageBase
 {
 public:
 	NodeBuildersWizardPage(wxWindow* parent);
-	~NodeBuildersWizardPage() = default;
+	~NodeBuildersWizardPage() override = default;
 
 	bool     canGoNext() override { return true; }
 	void     applyChanges() override {}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Buffer.h"
+#include "Geometry/RectFwd.h"
 
 namespace slade::gl
 {

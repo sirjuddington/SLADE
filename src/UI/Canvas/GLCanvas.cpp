@@ -10,9 +10,9 @@
 
 using namespace slade;
 
-GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour, gl::View view) :
+GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour, const gl::View& view) :
 	wxGLCanvas(parent, gl::getWxGLAttribs(), -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
-	view_{ std::move(view) },
+	view_{ view },
 	bg_style_{ bg_style },
 	bg_colour_{ bg_colour }
 {
@@ -76,7 +76,7 @@ void GLCanvas::setupMousePanning()
 			else
 				e.Skip();
 
-			mouse_prev_.set(e.GetPosition().x, e.GetPosition().y);
+			mouse_prev_ = { e.GetPosition().x, e.GetPosition().y };
 		});
 }
 
@@ -115,19 +115,19 @@ void GLCanvas::draw()
 	testbuf.draw();
 
 	draw2d::Context dc(&view_);
-	string test = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz 1234567890 !@#$%^&*() :;[]{}-_=+`~/\\";
-	Vec2f pos = { 50.0f, 50.0f };
+	string          test = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz 1234567890 !@#$%^&*() :;[]{}-_=+`~/\\";
+	Vec2f           pos  = { 50.0f, 50.0f };
 
 	auto draw_font_test = [&](draw2d::Font font, string_view font_name)
 	{
-		dc.font = font;
+		dc.font       = font;
 		dc.text_style = draw2d::TextStyle::Normal;
 		dc.drawText(fmt::format("{} - {}", font_name, test), pos);
 		pos.y += dc.textLineHeight() * 1.1f;
 		dc.text_style = draw2d::TextStyle::Outline;
 		dc.drawText(fmt::format("{} - {}", font_name, test), pos);
 		pos.y += dc.textLineHeight() * 1.1f;
-		dc.text_style = draw2d::TextStyle::Normal;
+		dc.text_style      = draw2d::TextStyle::Normal;
 		dc.text_dropshadow = true;
 		dc.drawText(fmt::format("{} - {}", font_name, test), pos);
 		pos.y += dc.textLineHeight() * 1.1f;
@@ -142,19 +142,19 @@ void GLCanvas::draw()
 	draw_font_test(draw2d::Font::MonospaceBold, "MonospaceBold");
 
 	dc.text_style = draw2d::TextStyle::Outline;
-	dc.text_size = 24;
-	dc.font = draw2d::Font::Bold;
-	pos.x = static_cast<float>(view_.canvasX(0));
+	dc.text_size  = 24;
+	dc.font       = draw2d::Font::Bold;
+	pos.x         = static_cast<float>(view_.canvasX(0));
 	pos.y += dc.textLineHeight();
 	dc.drawText("Left Aligned", pos);
 
 	dc.text_alignment = draw2d::Align::Center;
-	pos.x = static_cast<float>(view_.canvasX(GetSize().x / 2));
+	pos.x             = static_cast<float>(view_.canvasX(GetSize().x / 2));
 	pos.y += dc.textLineHeight();
 	dc.drawText("Center Aligned", pos);
 
 	dc.text_alignment = draw2d::Align::Right;
-	pos.x = static_cast<float>(view_.canvasX(GetSize().x));
+	pos.x             = static_cast<float>(view_.canvasX(GetSize().x));
 	pos.y += dc.textLineHeight();
 	dc.drawText("Right Aligned", pos);
 }

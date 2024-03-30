@@ -2,7 +2,6 @@
 
 namespace slade
 {
-class MapLine;
 namespace gl::draw2d
 {
 	struct Context;
@@ -13,7 +12,7 @@ class LineInfoOverlay
 {
 public:
 	LineInfoOverlay();
-	~LineInfoOverlay() = default;
+	~LineInfoOverlay();
 
 	void update(MapLine* line);
 	void draw(gl::draw2d::Context& dc, float alpha = 1.0f);

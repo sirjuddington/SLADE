@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "MIDIPlayer.h"
 #include "App.h"
 #include "Utility/StringUtils.h"
+#include <SFML/System/Clock.hpp>
+#include <fluidsynth.h>
 
 using namespace slade;
 using namespace audio;
@@ -114,7 +116,7 @@ public:
 	// -------------------------------------------------------------------------
 	// FluidSynthMIDIPlayer class destructor
 	// -------------------------------------------------------------------------
-	virtual ~FluidSynthMIDIPlayer()
+	~FluidSynthMIDIPlayer() override
 	{
 		FluidSynthMIDIPlayer::stop();
 		delete_fluid_audio_driver(fs_adriver_);
@@ -230,7 +232,7 @@ public:
 	bool play() override
 	{
 		stop();
-		timer_.restart();
+		timer_->restart();
 
 		if (!fs_initialised_)
 			return false;
@@ -283,7 +285,7 @@ public:
 	int position() override
 	{
 		// We cannot query this information from fluidsynth, so we cheat by querying our own timer
-		return timer_.getElapsedTime().asMilliseconds();
+		return timer_->getElapsedTime().asMilliseconds();
 	}
 
 	// -------------------------------------------------------------------------
@@ -376,7 +378,7 @@ public:
 	// -------------------------------------------------------------------------
 	// TimidityMIDIPlayer class destructor
 	// -------------------------------------------------------------------------
-	virtual ~TimidityMIDIPlayer() { stop(); }
+	~TimidityMIDIPlayer() override { TimidityMIDIPlayer::stop(); }
 
 	// -------------------------------------------------------------------------
 	// Returns true if the MIDIPlayer has a soundfont loaded
@@ -421,12 +423,13 @@ public:
 	bool play() override
 	{
 		stop();
-		timer_.restart();
+		timer_->restart();
 
 		// Setup environment and command line to run
 		wxExecuteEnv env;
 		env.cwd          = string{ strutil::Path::pathOf(snd_timidity_path) };
-		auto commandline = fmt::format("\"{}\" \"{}\" {}", string(snd_timidity_path), file_, string(snd_timidity_options));
+		auto commandline = fmt::format(
+			"\"{}\" \"{}\" {}", string(snd_timidity_path), file_, string(snd_timidity_options));
 
 		// Execute program
 		pid_ = wxExecute(commandline, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, nullptr, &env);
@@ -486,7 +489,7 @@ public:
 	int position() override
 	{
 		// We cannot query this information from timidity, so we cheat by querying our own timer
-		return timer_.getElapsedTime().asMilliseconds();
+		return timer_->getElapsedTime().asMilliseconds();
 	}
 
 	// -------------------------------------------------------------------------
@@ -519,6 +522,16 @@ private:
 // -----------------------------------------------------------------------------
 namespace slade::audio
 {
+// -----------------------------------------------------------------------------
+// MIDIPlayer class constructor
+// -----------------------------------------------------------------------------
+MIDIPlayer::MIDIPlayer() : timer_{ new sf::Clock() } {}
+
+// -----------------------------------------------------------------------------
+// MIDIPlayer class destructor
+// -----------------------------------------------------------------------------
+MIDIPlayer::~MIDIPlayer() = default;
+
 // -----------------------------------------------------------------------------
 // Returns the current MIDIPlayer instance.
 // Creates one if there is no current instance, depending on what is configured
@@ -590,7 +603,7 @@ int midiLength(const MemChunk& data)
 		pos += 8;
 		size_t  chunk_end      = pos + chunk_size;
 		uint8_t running_status = 0;
-		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
+		if (chunk_name == static_cast<size_t>(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
 		{
 			format     = data.readB16(pos);
 			num_tracks = data.readB16(pos + 2);
@@ -603,7 +616,7 @@ int midiLength(const MemChunk& data)
 			if (time_div == 0) // Not a valid MIDI file
 				return 0;
 		}
-		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
+		else if (chunk_name == static_cast<size_t>(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
 		{
 			size_t tpos        = pos;
 			size_t tracklength = 0;
@@ -684,7 +697,7 @@ int midiLength(const MemChunk& data)
 		pos = chunk_end;
 	}
 	// MIDI durations are in microseconds
-	return (int)(microseconds / 1000);
+	return static_cast<int>(microseconds / 1000);
 }
 
 // -----------------------------------------------------------------------------
@@ -714,7 +727,7 @@ string midiInfo(const MemChunk& data)
 		pos += 8;
 		size_t  chunk_end      = pos + chunk_size;
 		uint8_t running_status = 0;
-		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
+		if (chunk_name == static_cast<size_t>(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
 		{
 			format            = data.readB16(pos);
 			num_tracks        = data.readB16(pos + 2);
@@ -725,7 +738,7 @@ string midiInfo(const MemChunk& data)
 				ret += fmt::format(
 					"MIDI format {} with {} tracks and time division {}\n", format, num_tracks, time_div);
 		}
-		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
+		else if (chunk_name == static_cast<size_t>(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
 		{
 			if (format == 2)
 				ret += fmt::format("\nTrack {}/{}\n", ++track_counter, num_tracks);
@@ -764,17 +777,17 @@ string midiInfo(const MemChunk& data)
 
 					string tmp;
 					if (evtype > 0 && evtype < 8 && evsize)
-						tmp.append((const char*)(&data[tpos]), evsize);
+						tmp.append(reinterpret_cast<const char*>(&data[tpos]), evsize);
 
 					switch (evtype)
 					{
-					case 1: ret += fmt::format("Text: {}\n", tmp); break;
-					case 2: ret += fmt::format("Copyright: {}\n", tmp); break;
-					case 3: ret += fmt::format("Title: {}\n", tmp); break;
-					case 4: ret += fmt::format("Instrument: {}\n", tmp); break;
-					case 5: ret += fmt::format("Lyrics: {}\n", tmp); break;
-					case 6: ret += fmt::format("Marker: {}\n", tmp); break;
-					case 7: ret += fmt::format("Cue point: {}\n", tmp); break;
+					case 1:  ret += fmt::format("Text: {}\n", tmp); break;
+					case 2:  ret += fmt::format("Copyright: {}\n", tmp); break;
+					case 3:  ret += fmt::format("Title: {}\n", tmp); break;
+					case 4:  ret += fmt::format("Instrument: {}\n", tmp); break;
+					case 5:  ret += fmt::format("Lyrics: {}\n", tmp); break;
+					case 6:  ret += fmt::format("Marker: {}\n", tmp); break;
+					case 7:  ret += fmt::format("Cue point: {}\n", tmp); break;
 					default: break;
 					}
 					tpos += evsize;

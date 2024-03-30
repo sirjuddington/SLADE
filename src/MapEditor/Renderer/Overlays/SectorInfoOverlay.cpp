@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,11 +34,11 @@
 #include "Main.h"
 #include "SectorInfoOverlay.h"
 #include "Game/Configuration.h"
-#include "General/ColourConfiguration.h"
+#include "Geometry/Rect.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Draw2D.h"
-#include "OpenGL/OpenGL.h"
+#include "OpenGL/GLTexture.h"
 #include "SLADEMap/MapObject/MapSector.h"
 
 using namespace slade;
@@ -58,6 +58,11 @@ SectorInfoOverlay::SectorInfoOverlay()
 {
 	text_box_ = std::make_unique<gl::draw2d::TextBox>("", 100.0f, gl::draw2d::Font::Condensed);
 }
+
+// -----------------------------------------------------------------------------
+// SectorInfoOverlay class destructor
+// -----------------------------------------------------------------------------
+SectorInfoOverlay::~SectorInfoOverlay() = default;
 
 // -----------------------------------------------------------------------------
 // Updates the overlay with info from [sector]

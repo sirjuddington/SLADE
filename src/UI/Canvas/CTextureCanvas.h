@@ -8,7 +8,6 @@ namespace slade
 {
 // Forward declarations
 class CTexture;
-class Archive;
 namespace ui
 {
 	class ZoomControl;

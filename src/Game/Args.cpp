@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -184,12 +184,12 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 	// Check for simple definition
 	if (node->isLeaf())
 	{
-		auto name = node->stringValue();
+		const auto node_name = node->stringValue();
 
 		// Names beginning with a dollar sign are references to predeclared args
-		if (shared_args && strutil::startsWith(name, '$'))
+		if (shared_args && strutil::startsWith(node_name, '$'))
 		{
-			auto it = shared_args->find(name.substr(1));
+			auto it = shared_args->find(node_name.substr(1));
 			if (it == shared_args->end())
 				// Totally bogus reference; silently ignore this arg
 				return;
@@ -199,7 +199,7 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		else
 		{
 			// Set name
-			this->name = node->stringValue();
+			name = node->stringValue();
 
 			// Set description (if specified)
 			if (node->nValues() > 1)

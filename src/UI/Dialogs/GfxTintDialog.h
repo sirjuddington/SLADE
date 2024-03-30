@@ -1,12 +1,9 @@
 #pragma once
 
-#include "Graphics/Palette/Palette.h"
-
 namespace slade
 {
 class ColourBox;
 class GfxCanvas;
-class ArchiveEntry;
 
 /*******************************************************************
  * GFXTINTDIALOG CLASS
@@ -21,15 +18,15 @@ public:
 
 	ColRGBA colour() const;
 	float   amount() const;
-	void    setValues(const wxString& col, int val);
+	void    setValues(const wxString& col, int val) const;
 
 private:
-	GfxCanvas*    gfx_preview_ = nullptr;
-	ArchiveEntry* entry_       = nullptr;
-	Palette       palette_;
-	ColourBox*    cb_colour_     = nullptr;
-	wxSlider*     slider_amount_ = nullptr;
-	wxStaticText* label_amount_  = nullptr;
+	GfxCanvas*          gfx_preview_ = nullptr;
+	ArchiveEntry*       entry_       = nullptr;
+	unique_ptr<Palette> palette_;
+	ColourBox*          cb_colour_     = nullptr;
+	wxSlider*           slider_amount_ = nullptr;
+	wxStaticText*       label_amount_  = nullptr;
 
 	// Events
 	void onColourChanged(wxEvent& e);

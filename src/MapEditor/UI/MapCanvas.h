@@ -3,14 +3,23 @@
 #include "General/KeyBind.h"
 #include "UI/Canvas/GLCanvas.h"
 
+namespace sf
+{
+class Clock;
+}
+
 namespace slade
 {
-class MapEditContext;
+namespace mapeditor
+{
+	class MapEditContext;
+}
+
 
 class MapCanvas : public GLCanvas, public KeyBindHandler
 {
 public:
-	MapCanvas(wxWindow* parent, MapEditContext* context);
+	MapCanvas(wxWindow* parent, mapeditor::MapEditContext* context);
 	~MapCanvas() override = default;
 
 	// Drawing
@@ -25,11 +34,11 @@ public:
 	void onKeyBindPress(string_view name) override;
 
 private:
-	MapEditContext* context_    = nullptr;
-	bool            mouse_warp_ = false;
-	vector<int>     fps_avg_;
-	sf::Clock       sf_clock_;
-	wxTimer         timer_;
+	mapeditor::MapEditContext* context_    = nullptr;
+	bool                       mouse_warp_ = false;
+	vector<int>                fps_avg_;
+	unique_ptr<sf::Clock>      sf_clock_;
+	wxTimer                    timer_;
 
 	void update();
 

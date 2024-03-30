@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,7 +34,9 @@
 #include "Main.h"
 #include "FileMonitor.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/Formats/WadArchive.h"
+#include "Archive/MapDesc.h"
 #include "FileUtils.h"
 #include "StringUtils.h"
 #include <filesystem>

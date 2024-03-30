@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ThingType.h"
+#include "Game.h"
 #include "Game/Configuration.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
@@ -58,7 +59,10 @@ ThingType ThingType::unknown_;
 // ThingType class constructor
 // -----------------------------------------------------------------------------
 ThingType::ThingType(string_view name, string_view group, string_view class_name) :
-	name_{ name }, group_{ group }, tagged_{ TagType::None }, class_name_{ class_name }
+	name_{ name },
+	group_{ group },
+	tagged_{ TagType::None },
+	class_name_{ class_name }
 {
 }
 
@@ -147,7 +151,7 @@ void ThingType::reset()
 // -----------------------------------------------------------------------------
 // Reads an thing type definition from a parsed tree [node]
 // -----------------------------------------------------------------------------
-void ThingType::parse(ParseTreeNode* node)
+void ThingType::parse(const ParseTreeNode* node)
 {
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
@@ -239,7 +243,7 @@ void ThingType::parse(ParseTreeNode* node)
 			do
 			{
 				translation_ += child->stringValue(v++);
-			} while ((v < child->nValues()) && ((translation_ += "\", \""), true));
+			} while ((v < child->nValues()) && (translation_ += "\", \"", true));
 			translation_ += "\"";
 		}
 
@@ -420,7 +424,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 			{ 0xDA, 0xA5, 0x20, 0xFF }, // Goldenrod		ARGB value of #FFDAA520
 		};
 
-		if (*color < (int)db2_colours.size())
+		if (*color < static_cast<int>(db2_colours.size()))
 			colour_ = db2_colours[*color];
 	}
 
@@ -447,7 +451,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 		translation_ = *val;
 	if (auto val = props.getIf<bool>("solid"))
 		solid_ = *val;
-	if (auto val = props.getIf<bool>("obsolete"))
+	if (props.getIf<bool>("obsolete"))
 		flags_ |= Obsolete;
 
 	// ZScript-only props

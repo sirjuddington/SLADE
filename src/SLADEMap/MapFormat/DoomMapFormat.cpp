@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,12 +31,21 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DoomMapFormat.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
 #include "General/UI.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/SideList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -52,7 +61,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // Reads the given Doom-format [map], populating [map_data]
 // -----------------------------------------------------------------------------
-bool DoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
+bool DoomMapFormat::readMap(MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
 {
 	log::info(2, "Reading Doom format map");
 
@@ -158,8 +167,9 @@ bool DoomMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_d
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nv) * 0.2f);
-		map_data.addVertex(std::make_unique<MapVertex>(Vec2d{ (double)vert_data[a].x, (double)vert_data[a].y }));
+		ui::setSplashProgress(p + (static_cast<float>(a) / nv) * 0.2f);
+		map_data.addVertex(std::make_unique<MapVertex>(
+			Vec2d{ static_cast<double>(vert_data[a].x), static_cast<double>(vert_data[a].y) }));
 	}
 
 	log::info(3, "Read {} vertices", map_data.vertices().size());
@@ -191,7 +201,7 @@ bool DoomMapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / ns) * 0.2f);
+		ui::setSplashProgress(p + (static_cast<float>(a) / ns) * 0.2f);
 
 		// Add side
 		map_data.addSide(std::make_unique<MapSide>(
@@ -231,7 +241,7 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nl) * 0.2f);
+		ui::setSplashProgress(p + (static_cast<float>(a) / nl) * 0.2f);
 		const auto& data = line_data[a];
 
 		// Check vertices exist
@@ -303,7 +313,7 @@ bool DoomMapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_da
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / ns) * 0.2f);
+		ui::setSplashProgress(p + (static_cast<float>(a) / ns) * 0.2f);
 		const auto& data = sect_data[a];
 
 		// Add sector
@@ -346,9 +356,9 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nt; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nt) * 0.2f);
+		ui::setSplashProgress(p + (static_cast<float>(a) / nt) * 0.2f);
 		MapThing* thing = map_data.addThing(std::make_unique<MapThing>(
-			Vec3d{ (double)thng_data[a].x, (double)thng_data[a].y, 0. },
+			Vec3d{ static_cast<double>(thng_data[a].x), static_cast<double>(thng_data[a].y), 0. },
 			thng_data[a].type,
 			thng_data[a].angle,
 			thng_data[a].flags));
@@ -356,7 +366,7 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 		if (game::configuration().currentGame() == "srb2") // Sonic robo blast 2
 		{
 			// Srb2 stores thing's z position at the upper 12-bit from the thing's flags
-			thing->setZ((unsigned)(thng_data[a].flags >> 4));
+			thing->setZ(static_cast<unsigned>(thng_data[a].flags >> 4));
 		}
 	}
 
@@ -527,7 +537,7 @@ unique_ptr<ArchiveEntry> DoomMapFormat::writeTHINGS(const ThingList& things) con
 		if (game::configuration().currentGame() == "srb2") // Sonic robo blast 2
 		{
 			// Srb2 stores thing's z position at the upper 12 bits from the thing's flags
-			data.flags = (data.flags & 0xf) | ((unsigned)thing->zPos() << 4);
+			data.flags = (data.flags & 0xf) | (static_cast<unsigned>(thing->zPos()) << 4);
 		}
 
 		entry->write(&data, 10);

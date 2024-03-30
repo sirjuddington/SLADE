@@ -1,19 +1,20 @@
 #pragma once
 
-#include "General/KeyBind.h"
 #include "PrefsPanelBase.h"
 
 namespace slade
 {
+struct Keypress;
 class InputKeyCtrl : public wxTextCtrl
 {
 public:
 	InputKeyCtrl(wxWindow* parent, const Keypress& init);
+	~InputKeyCtrl() override;
 
-	const Keypress& key() const { return key_; }
+	const Keypress& key() const { return *key_; }
 
 private:
-	Keypress key_;
+	unique_ptr<Keypress> key_;
 
 	// Events
 	void onKeyDown(wxKeyEvent& e);

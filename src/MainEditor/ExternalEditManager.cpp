@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,10 +36,13 @@
 #include "ExternalEditManager.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Conversions.h"
 #include "General/Executables.h"
 #include "General/Misc.h"
 #include "Graphics/Graphics.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor.h"
@@ -60,7 +63,10 @@ class ExternalEditFileMonitor : public FileMonitor
 {
 public:
 	ExternalEditFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) :
-		FileMonitor("", false), entry_(&entry), archive_{ entry.parent() }, manager_(manager)
+		FileMonitor("", false),
+		entry_(&entry),
+		archive_{ entry.parent() },
+		manager_(manager)
 	{
 		// Stop monitoring if the entry is removed
 		sc_entry_removed_ = archive_->signals().entry_removed.connect(
@@ -190,7 +196,6 @@ public:
 	}
 
 private:
-	string  gfx_format_;
 	Vec2i   offsets_;
 	Palette palette_;
 };
@@ -273,7 +278,8 @@ class SfxExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
 	SfxExternalFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) :
-		ExternalEditFileMonitor(entry, manager), doom_sound_(true)
+		ExternalEditFileMonitor(entry, manager),
+		doom_sound_(true)
 	{
 	}
 	~SfxExternalFileMonitor() override = default;
@@ -432,7 +438,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 	}
 
 	// Run external editor
-	auto command = fmt::format("\"{}\" \"{}\"", exe_path, monitor->filename());
+	auto command = fmt::format(R"("{}" "{}")", exe_path, monitor->filename());
 	long success = wxExecute(command, wxEXEC_ASYNC, monitor->process());
 	if (success == 0)
 	{

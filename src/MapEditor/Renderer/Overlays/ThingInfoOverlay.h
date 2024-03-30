@@ -2,7 +2,7 @@
 
 namespace slade
 {
-class MapThing;
+class TextBox;
 class GLTexture;
 namespace gl::draw2d
 {
@@ -14,7 +14,7 @@ class ThingInfoOverlay
 {
 public:
 	ThingInfoOverlay();
-	~ThingInfoOverlay() = default;
+	~ThingInfoOverlay();
 
 	void update(MapThing* thing);
 	void draw(gl::draw2d::Context& dc, float alpha = 1.0f);

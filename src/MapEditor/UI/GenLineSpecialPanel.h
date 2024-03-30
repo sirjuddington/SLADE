@@ -10,7 +10,7 @@ class GenLineSpecialPanel : public wxPanel
 {
 public:
 	GenLineSpecialPanel(wxWindow* parent);
-	~GenLineSpecialPanel() = default;
+	~GenLineSpecialPanel() override = default;
 
 	void setupForType(int type);
 	void setProp(int prop, int value);

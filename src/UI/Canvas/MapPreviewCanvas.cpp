@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,12 +32,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapPreviewCanvas.h"
-#include "Archive/ArchiveManager.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Archive/Formats/WadArchive.h"
+#include "Archive/MapDesc.h"
 #include "General/ColourConfiguration.h"
-#include "Graphics/SImage/SIFormat.h"
-#include "Graphics/SImage/SImage.h"
-#include "OpenGL/GLTexture.h"
+#include "Geometry/BBox.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/PointSpriteBuffer.h"
 #include "SLADEMap/MapFormat/Doom32XMapFormat.h"
@@ -106,9 +106,9 @@ void MapPreviewCanvas::addThing(double x, double y)
 }
 
 // -----------------------------------------------------------------------------
-// Opens a map from a mapdesc_t
+// Opens a map from a MapDesc
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::openMap(Archive::MapDesc map)
+bool MapPreviewCanvas::openMap(MapDesc map)
 {
 	auto m_head = map.head.lock();
 	if (!m_head)
@@ -459,7 +459,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, const ArchiveEntry* 
 				break;
 
 			// Add vertex
-			addVertex((double)v.x / 65536, (double)v.y / 65536);
+			addVertex(static_cast<double>(v.x) / 65536, static_cast<double>(v.y) / 65536);
 		}
 	}
 	else if (map_format == MapFormat::Doom32X)
@@ -472,7 +472,9 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, const ArchiveEntry* 
 				break;
 
 			// Add vertex
-			addVertex((double)wxINT32_SWAP_ON_LE(v.x) / 65536, (double)wxINT32_SWAP_ON_LE(v.y) / 65536);
+			addVertex(
+				static_cast<double>(wxINT32_SWAP_ON_LE(v.x)) / 65536,
+				static_cast<double>(wxINT32_SWAP_ON_LE(v.y)) / 65536);
 		}
 	}
 	else
@@ -723,7 +725,7 @@ void MapPreviewCanvas::draw()
 
 		// Draw things
 		things_buffer_->setPointRadius(20.0f);
-		things_buffer_->setColour(colourconfig::colour("map_view_thing").asVec4());
+		things_buffer_->setColour(colourconfig::colour("map_view_thing"));
 		things_buffer_->draw(gl::PointSpriteType::Circle, &view_);
 	}
 }
@@ -800,10 +802,10 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height) cons
 
 	// Clear
 	glClearColor(
-		((double)col_save_background.r) / 255.f,
-		((double)col_save_background.g) / 255.f,
-		((double)col_save_background.b) / 255.f,
-		((double)col_save_background.a) / 255.f);
+		static_cast<double>(col_save_background.r) / 255.f,
+		static_cast<double>(col_save_background.g) / 255.f,
+		static_cast<double>(col_save_background.b) / 255.f,
+		static_cast<double>(col_save_background.a) / 255.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
@@ -986,10 +988,10 @@ unsigned MapPreviewCanvas::height() const
 void MapPreviewCanvas::updateLinesBuffer()
 {
 	// Setup colours
-	auto col_view_line_1s      = colourconfig::colour("map_view_line_1s").asVec4();
-	auto col_view_line_2s      = colourconfig::colour("map_view_line_2s").asVec4();
-	auto col_view_line_special = colourconfig::colour("map_view_line_special").asVec4();
-	auto col_view_line_macro   = colourconfig::colour("map_view_line_macro").asVec4();
+	glm::vec4 col_view_line_1s      = colourconfig::colour("map_view_line_1s");
+	glm::vec4 col_view_line_2s      = colourconfig::colour("map_view_line_2s");
+	glm::vec4 col_view_line_special = colourconfig::colour("map_view_line_special");
+	glm::vec4 col_view_line_macro   = colourconfig::colour("map_view_line_macro");
 
 	if (!lines_buffer_)
 		lines_buffer_ = std::make_unique<gl::LineBuffer>();

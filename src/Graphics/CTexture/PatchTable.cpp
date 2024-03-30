@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "PatchTable.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "CTexture.h"
 #include "General/ResourceManager.h"
 #include "Utility/StringUtils.h"
@@ -93,7 +95,7 @@ const string& PatchTable::patchName(size_t index) const
 // Returns the entry associated with the patch at [index], or null if [index] is
 // invalid
 // -----------------------------------------------------------------------------
-ArchiveEntry* PatchTable::patchEntry(size_t index)
+ArchiveEntry* PatchTable::patchEntry(size_t index) const
 {
 	// Check index
 	if (index >= patches_.size())
@@ -111,7 +113,7 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 // Returns the entry associated with the patch matching [name], or null if no
 // match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* PatchTable::patchEntry(string_view name)
+ArchiveEntry* PatchTable::patchEntry(string_view name) const
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
@@ -144,7 +146,7 @@ int32_t PatchTable::patchIndex(string_view name) const
 // Returns the index of the patch associated with [entry], or null if no match
 // found
 // -----------------------------------------------------------------------------
-int32_t PatchTable::patchIndex(ArchiveEntry* entry) const
+int32_t PatchTable::patchIndex(const ArchiveEntry* entry) const
 {
 	// Search for patch by entry
 	for (size_t a = 0; a < patches_.size(); a++)
@@ -224,7 +226,7 @@ bool PatchTable::addPatch(string_view name, bool allow_dup)
 // -----------------------------------------------------------------------------
 // Loads a PNAMES entry, returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
+bool PatchTable::loadPNAMES(const ArchiveEntry* pnames, Archive* parent)
 {
 	// Check entry was given
 	if (!pnames)
@@ -280,7 +282,7 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 // Writes the patch table to the entry [pnames].
 // Returns false if no entry was given, true otherwise
 // -----------------------------------------------------------------------------
-bool PatchTable::writePNAMES(ArchiveEntry* pnames)
+bool PatchTable::writePNAMES(ArchiveEntry* pnames) const
 {
 	// Check entry was given
 	if (!pnames)
@@ -329,7 +331,7 @@ void PatchTable::clearPatchUsage()
 // -----------------------------------------------------------------------------
 // Updates patch usage data for [tex]
 // -----------------------------------------------------------------------------
-void PatchTable::updatePatchUsage(CTexture* tex)
+void PatchTable::updatePatchUsage(const CTexture* tex)
 {
 	// Remove texture from all patch usage tables
 	for (auto& patch : patches_)

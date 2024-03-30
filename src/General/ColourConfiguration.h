@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OpenGL/OpenGL.h"
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade::colourconfig
 {

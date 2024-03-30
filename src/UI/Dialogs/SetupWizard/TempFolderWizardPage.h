@@ -8,7 +8,7 @@ class TempFolderWizardPage : public WizardPageBase
 {
 public:
 	TempFolderWizardPage(wxWindow* parent);
-	~TempFolderWizardPage() = default;
+	~TempFolderWizardPage() override = default;
 
 	bool     canGoNext() override;
 	void     applyChanges() override;

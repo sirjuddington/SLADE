@@ -1,16 +1,13 @@
 #pragma once
 
-#include "MapEditor/Edit/Edit3D.h"
+#include "Geometry/Plane.h"
+#include "Geometry/RectFwd.h"
 
 namespace slade
 {
 // Forward declarations
-class MapLine;
-class MapVertex;
 class Polygon2D;
-class MapSector;
 class MapRenderer2D;
-class MapObject;
 class MapRenderer3D;
 namespace gl
 {
@@ -25,6 +22,10 @@ namespace gl
 		struct Context;
 	}
 } // namespace gl
+namespace mapeditor
+{
+	enum class ItemType;
+}
 
 class MCAnimation
 {
@@ -144,7 +145,7 @@ class MCA3dWallSelection : public MCAnimation
 {
 public:
 	MCA3dWallSelection(long start, Vec3f points[4], bool select = true);
-	~MCA3dWallSelection() = default;
+	~MCA3dWallSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -160,7 +161,7 @@ class MCA3dFlatSelection : public MCAnimation
 {
 public:
 	MCA3dFlatSelection(long start, MapSector* sector, const Plane& plane, bool select = true);
-	~MCA3dFlatSelection() = default;
+	~MCA3dFlatSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -177,7 +178,7 @@ class MCAHilightFade : public MCAnimation
 {
 public:
 	MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init);
-	~MCAHilightFade() = default;
+	~MCAHilightFade() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -200,7 +201,7 @@ public:
 		mapeditor::ItemType item_type,
 		MapRenderer3D*      renderer,
 		float               fade_init);
-	~MCAHilightFade3D() = default;
+	~MCAHilightFade3D() override = default;
 
 	bool update(long time) override;
 	void draw() override;

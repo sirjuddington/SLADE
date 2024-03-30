@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -186,7 +186,7 @@ void NumberTextCtrl::onChar(wxKeyEvent& e)
 {
 	// Don't try to validate non-printable characters
 	auto key = e.GetUnicodeKey();
-	if (key == WXK_NONE || key < 32)
+	if (key < 32)
 	{
 		e.Skip();
 		return;

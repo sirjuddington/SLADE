@@ -32,12 +32,15 @@
 #include "Main.h"
 #include "Draw2D.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "GLTexture.h"
 #include "General/ColourConfiguration.h"
 #include "LineBuffer.h"
 #include "PointSpriteBuffer.h"
 #include "Shader.h"
+#include "Utility/StringUtils.h"
 #include "VertexBuffer2D.h"
 #include "View.h"
 #include "thirdparty/libdrawtext/drawtext.h"
@@ -179,13 +182,13 @@ void initTextDrawing()
 void setupTextShader(const Shader& shader, const Context& dc, const ColRGBA& colour, float softness)
 {
 	shader.bind();
-	shader.setUniform("colour", colour.asVec4());
+	shader.setUniform("colour", colour);
 	shader.setUniform("mvp", dc.view ? dc.view->mvpMatrix(dc.model_matrix) : dc.model_matrix);
 	shader.setUniform("softness", softness);
 	if (dc.view)
 		shader.setUniform("viewport_size", glm::vec2(dc.view->size().x, dc.view->size().y));
 	if (dc.text_style == TextStyle::Outline)
-		shader.setUniform("outline_colour", dc.outline_colour.asVec4());
+		shader.setUniform("outline_colour", dc.outline_colour);
 }
 
 void drawPointSprites(const Context& dc)
@@ -199,7 +202,7 @@ void drawPointSprites(const Context& dc)
 		Texture::bind(dc.texture);
 
 	// Set buffer options
-	ps_buffer->setColour(dc.colour.asVec4());
+	ps_buffer->setColour(dc.colour);
 	ps_buffer->setPointRadius(dc.pointsprite_radius);
 	ps_buffer->setOutlineWidth(dc.pointsprite_outline_width);
 	ps_buffer->setFillOpacity(dc.pointsprite_fill_opacity);
@@ -252,7 +255,7 @@ void draw2d::Context::setupToDraw(const Shader& shader, bool mvp) const
 	Texture::bind(texture);
 
 	// Colour
-	shader.setUniform("colour", colour.asVec4());
+	shader.setUniform("colour", (glm::vec4)colour);
 
 	// Blending
 	if (blend != Blend::Ignore)
@@ -273,7 +276,7 @@ void draw2d::Context::drawRect(const Rectf& rect) const
 		Texture::bind(texture);
 
 	// Colour
-	shader.setUniform("colour", colour.asVec4());
+	shader.setUniform("colour", colour);
 
 	// Blending
 	if (blend != Blend::Ignore)
@@ -307,7 +310,7 @@ void draw2d::Context::drawRectOutline(const Rectf& rect) const
 		lb_rect.setAaRadius(line_aa_radius, line_aa_radius);
 	else
 		lb_rect.setAaRadius(0.0f, 0.0f);
-	lb_rect.draw(view, colour.asVec4(), model);
+	lb_rect.draw(view, colour, model);
 }
 
 void draw2d::Context::drawLines(const vector<Rectf>& lines) const
@@ -316,7 +319,7 @@ void draw2d::Context::drawLines(const vector<Rectf>& lines) const
 		line_buffer = std::make_unique<LineBuffer>();
 
 	// Build line buffer
-	auto col = colour.asVec4();
+	glm::vec4 col = colour;
 	for (const auto& line : lines)
 	{
 		if (line_arrow_length > 0.0f)
@@ -431,9 +434,9 @@ void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
 	// Setup shader
 	switch (text_style)
 	{
-	case TextStyle::Normal: shader = &shader_text; break;
+	case TextStyle::Normal:  shader = &shader_text; break;
 	case TextStyle::Outline: shader = &shader_text_outline; break;
-	default: shader = &shader_text; break;
+	default:                 shader = &shader_text; break;
 	}
 	setupTextShader(*shader, *this, colour, fdef->softness / full_scale);
 
@@ -467,7 +470,7 @@ void draw2d::Context::drawTextureTiled(const Rectf& rect) const
 	// Colour
 	const auto& shader = defaultShader(true);
 	shader.bind();
-	shader.setUniform("colour", colour.asVec4());
+	shader.setUniform("colour", colour);
 
 	// Blending
 	if (blend != Blend::Ignore)
@@ -591,7 +594,10 @@ void draw2d::Context::drawHud() const
 // TextBox class constructor
 // -----------------------------------------------------------------------------
 draw2d::TextBox::TextBox(string_view text, float width, Font font, int font_size, float line_height) :
-	font_{ font }, font_size_{ font_size }, width_{ width }, line_height_{ line_height }
+	font_{ font },
+	font_size_{ font_size },
+	width_{ width },
+	line_height_{ line_height }
 {
 	setText(text);
 }

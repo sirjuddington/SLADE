@@ -1,74 +1,20 @@
 #pragma once
 
-#include "Archive/Formats/DirArchive.h"
-#include "General/SAction.h"
+#include "General/SActionHandler.h"
 #include "General/Sigslot.h"
 #include "UI/Controls/DockPanel.h"
-#include "UI/Lists/ListView.h"
-
-wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
 
 namespace slade
 {
 class ArchiveManagerPanel;
 class ArchivePanel;
-class Archive;
+class DirArchive;
+class EntryPanel;
+class ListView;
 class STabCtrl;
 class TextureXEditor;
-class EntryPanel;
-
-struct DirArchiveChangeList
-{
-	Archive*               archive;
-	vector<DirEntryChange> changes;
-};
-
-class DirArchiveCheck : public wxThread
-{
-public:
-	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
-	~DirArchiveCheck() override = default;
-
-	ExitCode Entry() override;
-
-private:
-	struct EntryInfo
-	{
-		wxString entry_path;
-		wxString file_path;
-		bool     is_dir;
-		time_t   file_modified;
-
-		EntryInfo(
-			const wxString& entry_path    = "",
-			const wxString& file_path     = "",
-			bool            is_dir        = false,
-			time_t          file_modified = 0) :
-			entry_path{ entry_path }, file_path{ file_path }, is_dir{ is_dir }, file_modified{ file_modified }
-		{
-		}
-	};
-
-	wxEvtHandler*        handler_;
-	wxString             dir_path_;
-	vector<EntryInfo>    entry_info_;
-	vector<string>       removed_files_;
-	DirArchiveChangeList change_list_;
-	bool                 ignore_hidden_ = true;
-
-	void addChange(DirEntryChange change);
-};
-
-class WMFileBrowser : public wxGenericDirCtrl
-{
-public:
-	ArchiveManagerPanel* parent;
-
-	WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id);
-	~WMFileBrowser() override = default;
-
-	void onItemActivated(wxTreeEvent& e);
-};
+class WMFileBrowser;
+struct DirEntryChange;
 
 class ArchiveManagerPanel : public DockPanel, SActionHandler
 {
@@ -94,7 +40,7 @@ public:
 	void        updateRecentListItem(int index) const;
 	void        updateBookmarkListItem(int index) const;
 	void        updateArchiveTabTitle(int index) const;
-	void        updateEntryTabTitle(ArchiveEntry* entry) const;
+	void        updateEntryTabTitle(const ArchiveEntry* entry) const;
 	bool        isArchiveTab(int tab_index) const;
 	bool        isEntryTab(int tab_index) const;
 	bool        isTextureEditorTab(int tab_index) const;
@@ -109,20 +55,20 @@ public:
 	vector<ArchiveEntry*> currentEntrySelection() const;
 
 	void            openTab(int archive_index) const;
-	ArchivePanel*   tabForArchive(Archive* archive) const;
-	void            openTab(Archive* archive) const;
+	ArchivePanel*   tabForArchive(const Archive* archive) const;
+	void            openTab(const Archive* archive) const;
 	void            closeTab(int archive_index) const;
-	void            openTextureTab(int archive_index, ArchiveEntry* entry = nullptr) const;
+	void            openTextureTab(int archive_index, const ArchiveEntry* entry = nullptr) const;
 	TextureXEditor* textureTabForArchive(int archive_index) const;
 	void            closeTextureTab(int archive_index) const;
 	void            openEntryTab(ArchiveEntry* entry) const;
-	void            closeEntryTab(ArchiveEntry* entry) const;
-	void            closeEntryTabs(Archive* parent) const;
+	void            closeEntryTab(const ArchiveEntry* entry) const;
+	void            closeEntryTabs(const Archive* parent) const;
 	void            openFile(const wxString& filename) const;
 	void            openFiles(const wxArrayString& files) const;
 	void            openDirAsArchive(const wxString& dir) const;
-	bool            redirectToTab(ArchiveEntry* entry) const;
-	bool            entryIsOpenInTab(ArchiveEntry* entry) const;
+	bool            redirectToTab(const ArchiveEntry* entry) const;
+	bool            entryIsOpenInTab(const ArchiveEntry* entry) const;
 	void            closeCurrentTab();
 	bool            saveCurrentTab() const;
 
@@ -131,7 +77,7 @@ public:
 	bool redo() const;
 
 	// Single archive actions
-	bool saveEntryChanges(Archive* archive) const;
+	bool saveEntryChanges(const Archive* archive) const;
 	bool saveArchive(Archive* archive) const;
 	bool saveArchiveAs(Archive* archive) const;
 	bool beforeCloseArchive(Archive* archive);

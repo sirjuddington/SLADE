@@ -1,8 +1,11 @@
 #pragma once
 
-#define KPM_CTRL 0x01
-#define KPM_ALT 0x02
-#define KPM_SHIFT 0x04
+enum
+{
+	KPM_CTRL  = 0x01,
+	KPM_ALT   = 0x02,
+	KPM_SHIFT = 0x04
+};
 
 namespace slade
 {
@@ -39,7 +42,7 @@ public:
 	~KeyBind() = default;
 
 	// Operators
-	bool operator>(const KeyBind r) const
+	bool operator>(const KeyBind& r) const
 	{
 		if (priority_ == r.priority_)
 			return name_ < r.name_;
@@ -47,7 +50,7 @@ public:
 			return priority_ < r.priority_;
 	}
 
-	bool operator<(const KeyBind r) const
+	bool operator<(const KeyBind& r) const
 	{
 		if (priority_ == r.priority_)
 			return name_ > r.name_;
@@ -60,13 +63,13 @@ public:
 	string name() const { return name_; }
 	string group() const { return group_; }
 	string description() const { return description_; }
-	string keysAsString();
+	string keysAsString() const;
 
 	int      nKeys() const { return keys_.size(); }
 	Keypress key(unsigned index)
 	{
 		if (index >= keys_.size())
-			return Keypress();
+			return {};
 		else
 			return keys_[index];
 	}
@@ -75,7 +78,7 @@ public:
 
 	// Static functions
 	static KeyBind&       bind(string_view name);
-	static vector<string> bindsForKey(Keypress key);
+	static vector<string> bindsForKey(const Keypress& key);
 	static bool           isPressed(string_view name);
 	static bool           addBind(
 				  string_view     name,
@@ -86,7 +89,7 @@ public:
 				  int             priority     = -1);
 	static string   keyName(int key);
 	static string   mbName(int button);
-	static bool     keyPressed(Keypress key);
+	static bool     keyPressed(const Keypress& key);
 	static bool     keyReleased(string_view key);
 	static Keypress asKeyPress(int keycode, int modifiers);
 	static void     allKeyBinds(vector<KeyBind*>& list);

@@ -1,11 +1,8 @@
 #pragma once
 
-// Forward declarations
-#include "SLADEMap/SLADEMapFwd.h"
 namespace slade
 {
 class ItemSelection;
-class ObjectEditGroup;
 namespace game
 {
 	class ThingType;
@@ -26,7 +23,8 @@ namespace gl
 namespace mapeditor
 {
 	struct Item;
-}
+	class ObjectEditGroup;
+} // namespace mapeditor
 } // namespace slade
 
 
@@ -95,7 +93,7 @@ public:
 	void renderPasteThings(gl::draw2d::Context& dc, const vector<MapThing*>& things, const Vec2d& pos) const;
 
 	// Object Edit
-	void renderObjectEditGroup(gl::draw2d::Context& dc, ObjectEditGroup* group) const;
+	void renderObjectEditGroup(gl::draw2d::Context& dc, const mapeditor::ObjectEditGroup* group) const;
 
 	// Misc
 	void forceUpdate(bool flats_ceilings);

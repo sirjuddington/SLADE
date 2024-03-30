@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BrowserCanvas.h"
+#include "Browser.h"
 
 namespace slade
 {
@@ -24,10 +24,10 @@ public:
 
 	virtual bool loadImage();
 	void         draw(
-				int                     size,
-				gl::draw2d::Context&    dc,
-				BrowserCanvas::NameType nametype = BrowserCanvas::NameType::Normal,
-				BrowserCanvas::ItemView viewtype = BrowserCanvas::ItemView::Normal);
+				int                  size,
+				gl::draw2d::Context& dc,
+				browser::NameType    nametype = browser::NameType::Normal,
+				browser::ItemView    viewtype = browser::ItemView::Normal);
 	virtual void     clearImage() {}
 	virtual wxString itemInfo() { return ""; }
 

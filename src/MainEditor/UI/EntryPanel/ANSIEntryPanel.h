@@ -12,7 +12,7 @@ public:
 	ANSIEntryPanel(wxWindow* parent);
 	~ANSIEntryPanel() override = default;
 
-	static const int DATASIZE = 4000;
+	static constexpr int DATASIZE = 4000;
 
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;

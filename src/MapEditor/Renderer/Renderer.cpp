@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,6 +37,7 @@
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "General/UI.h"
+#include "Geometry/Geometry.h"
 #include "MCAnimations.h"
 #include "MapEditor/ClipboardItems.h"
 #include "MapEditor/Edit/Input.h"
@@ -45,6 +46,7 @@
 #include "MapEditor/Edit/ObjectEdit.h"
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/Draw2D.h"
@@ -54,8 +56,16 @@
 #include "OpenGL/VertexBuffer2D.h"
 #include "OpenGL/View.h"
 #include "Overlays/MCOverlay.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
+#include <SFML/System/Clock.hpp>
 #include <deque>
 #include <numeric>
 
@@ -108,7 +118,7 @@ EXTERN_CVAR(Int, thing_shape)
 // -----------------------------------------------------------------------------
 // Renderer class constructor
 // -----------------------------------------------------------------------------
-Renderer::Renderer(MapEditContext& context) : context_{ context }
+Renderer::Renderer(MapEditContext& context) : context_{ &context }
 {
 	view_              = std::make_unique<View>(true, true);
 	view_screen_       = std::make_unique<View>(false, false);
@@ -130,7 +140,7 @@ Renderer::~Renderer() = default;
 void Renderer::forceUpdate(bool update_2d, bool update_3d) const
 {
 	if (update_2d)
-		renderer_2d_->forceUpdate(context_.sectorEditMode() == SectorMode::Ceiling);
+		renderer_2d_->forceUpdate(context_->sectorEditMode() == SectorMode::Ceiling);
 	if (update_3d)
 		renderer_3d_->clearData();
 }
@@ -198,7 +208,7 @@ void Renderer::zoom(double amount, bool toward_cursor)
 	if (toward_cursor)
 	{
 		cursor_zoom_disabled_ = false;
-		view_->zoomToward(amount, context_.input().mousePos());
+		view_->zoomToward(amount, context_->input().mousePos());
 	}
 	else
 	{
@@ -217,7 +227,7 @@ void Renderer::viewFitToMap(bool snap)
 	cursor_zoom_disabled_ = true;
 
 	// Fit the view to the map bbox
-	view_->fitTo(context_.map().bounds());
+	view_->fitTo(context_->map().bounds());
 
 	// Don't animate if specified
 	if (snap)
@@ -287,7 +297,8 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 	auto anim_view_speed = view_speed;
 	if (smooth)
 	{
-		auto mouse_pos = Vec2d{ (double)context_.input().mousePos().x, (double)context_.input().mousePos().y };
+		auto mouse_pos = Vec2d{ static_cast<double>(context_->input().mousePos().x),
+								static_cast<double>(context_->input().mousePos().y) };
 
 		if (!view_->interpolate(mult * view_speed, cursor_zoom_disabled_ ? nullptr : &mouse_pos))
 		{
@@ -322,12 +333,12 @@ void Renderer::setCameraThing(const MapThing* thing) const
 {
 	// Determine position
 	Vec3d pos(thing->position(), 40);
-	auto  sector = context_.map().sectors().atPos(thing->position());
+	auto  sector = context_->map().sectors().atPos(thing->position());
 	if (sector)
 		pos.z += sector->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction
-	renderer_3d_->camera().set(pos, math::vectorAngle(math::degToRad(thing->angle())));
+	renderer_3d_->camera().set(pos, geometry::vectorAngle(geometry::degToRad(thing->angle())));
 }
 
 // -----------------------------------------------------------------------------
@@ -335,7 +346,7 @@ void Renderer::setCameraThing(const MapThing* thing) const
 // -----------------------------------------------------------------------------
 Vec2d Renderer::cameraPos2D() const
 {
-	return renderer_3d_->camera().position().get2d();
+	return renderer_3d_->camera().position().xy();
 }
 
 // -----------------------------------------------------------------------------
@@ -370,10 +381,10 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 
 	// Setup regular grid if it's not too small
 	auto shader   = grid_dashed ? &draw2d::lineStippleShader(0xAAAA, 2.0f) : &draw2d::defaultShader(false);
-	auto gridsize = static_cast<int>(context_.gridSize());
+	auto gridsize = static_cast<int>(context_->gridSize());
 	if (gridsize > grid_hidelevel)
 	{
-		auto col_grid = colourconfig::colour("map_grid").asVec4();
+		glm::vec4 col_grid = colourconfig::colour("map_grid");
 
 		// Vertical
 		int ofs = static_cast<int>(start_x) % gridsize;
@@ -401,8 +412,8 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	// Setup 64 grid if it's not too small and we're not on a larger grid size
 	if (64 > grid_hidelevel && gridsize < 64 && grid_64_style > 0)
 	{
-		auto col_64grid = colourconfig::colour("map_64grid").asVec4();
-		int  cross_size = 8;
+		glm::vec4 col_64grid = colourconfig::colour("map_64grid");
+		int       cross_size = 8;
 		if (gridsize < cross_size)
 			cross_size = gridsize;
 
@@ -466,18 +477,18 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	// Draw crosshair if needed
 	if (map_crosshair > 0)
 	{
-		auto   mouse_pos = context_.input().mousePos();
-		double x         = context_.snapToGrid(view_->canvasX(mouse_pos.x), false);
-		double y         = context_.snapToGrid(view_->canvasY(mouse_pos.y), false);
+		auto   mouse_pos = context_->input().mousePos();
+		double x         = context_->snapToGrid(view_->canvasX(mouse_pos.x), false);
+		double y         = context_->snapToGrid(view_->canvasY(mouse_pos.y), false);
 		auto&  def       = colourconfig::colDef("map_64grid");
 		auto   col       = def.colour;
 
 		// Small
 		if (map_crosshair == 1)
 		{
-			auto           col1  = col.ampf(1.0f, 1.0f, 1.0f, 2.0f).asVec4();
-			auto           col2  = col.ampf(1.0f, 1.0f, 1.0f, 0.0f).asVec4();
-			double         size  = context_.gridSize();
+			glm::vec4      col1  = col.ampf(1.0f, 1.0f, 1.0f, 2.0f);
+			glm::vec4      col2  = col.ampf(1.0f, 1.0f, 1.0f, 0.0f);
+			double         size  = context_->gridSize();
 			double         one   = 1.0 / view_->scale(true).x;
 			constexpr auto width = 4.0f;
 
@@ -494,8 +505,8 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		// Full
 		else if (map_crosshair == 2)
 		{
-			lb_crosshair_->add2d(x, start_y, x, end_y, col.asVec4(), 3.0f);
-			lb_crosshair_->add2d(start_x, y, end_x, y, col.asVec4(), 3.0f);
+			lb_crosshair_->add2d(x, start_y, x, end_y, col, 3.0f);
+			lb_crosshair_->add2d(start_x, y, end_x, y, col, 3.0f);
 		}
 
 		gl::setBlend(def.blendMode());
@@ -521,10 +532,10 @@ void Renderer::drawEditorMessages(draw2d::Context& dc) const
 	dc.text_alignment = draw2d::Align::Left;
 
 	// Go through editor messages
-	for (unsigned a = 0; a < context_.numEditorMessages(); a++)
+	for (unsigned a = 0; a < context_->numEditorMessages(); a++)
 	{
 		// Check message time
-		long time = context_.editorMessageTime(a);
+		long time = context_->editorMessageTime(a);
 		if (time > 2000)
 			continue;
 
@@ -548,7 +559,7 @@ void Renderer::drawEditorMessages(draw2d::Context& dc) const
 
 		// Draw message
 		dc.outline_colour = col_bg;
-		dc.drawText(context_.editorMessage(a), { 4.0f, yoff });
+		dc.drawText(context_->editorMessage(a), { 4.0f, yoff });
 
 		yoff += dc.textLineHeight();
 	}
@@ -560,7 +571,7 @@ void Renderer::drawEditorMessages(draw2d::Context& dc) const
 void Renderer::drawFeatureHelpText(draw2d::Context& dc) const
 {
 	// Check if any text
-	auto& help_lines = context_.featureHelpLines();
+	auto& help_lines = context_->featureHelpLines();
 	if (help_lines.empty() || !map_show_help)
 		return;
 
@@ -598,7 +609,7 @@ void Renderer::drawFeatureHelpText(draw2d::Context& dc) const
 void Renderer::drawSelectionNumbers(draw2d::Context& dc) const
 {
 	// Check if any selection exists
-	auto selection = context_.selection().selectedObjects();
+	auto selection = context_->selection().selectedObjects();
 	if (selection.empty())
 		return;
 
@@ -612,7 +623,7 @@ void Renderer::drawSelectionNumbers(draw2d::Context& dc) const
 	string text;
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (map_max_selection_numbers > 0 && (int)a > map_max_selection_numbers)
+		if (map_max_selection_numbers > 0 && static_cast<int>(a) > map_max_selection_numbers)
 			break;
 		if (!selection[a])
 			continue;
@@ -626,7 +637,7 @@ void Renderer::drawSelectionNumbers(draw2d::Context& dc) const
 		tp.x -= ts.x * 0.5;
 		tp.y -= ts.y * 0.5;
 
-		if (context_.editMode() == Mode::Vertices)
+		if (context_->editMode() == Mode::Vertices)
 		{
 			tp.x += 8;
 			tp.y += 8;
@@ -646,7 +657,7 @@ void Renderer::drawSelectionNumbers(draw2d::Context& dc) const
 void Renderer::drawThingQuickAngleLines(draw2d::Context& dc) const
 {
 	// Check if any selection exists
-	auto selection = context_.selection().selectedThings();
+	auto selection = context_->selection().selectedThings();
 	if (selection.empty())
 		return;
 
@@ -655,7 +666,7 @@ void Renderer::drawThingQuickAngleLines(draw2d::Context& dc) const
 	dc.line_thickness = 2.0f;
 
 	// Build lines list
-	auto          mouse_pos_m = view_->canvasPos(context_.input().mousePos());
+	auto          mouse_pos_m = view_->canvasPos(context_->input().mousePos());
 	vector<Rectf> lines;
 	for (auto& thing : selection)
 		lines.emplace_back(thing->xPos(), thing->yPos(), mouse_pos_m.x, mouse_pos_m.y);
@@ -675,13 +686,13 @@ void Renderer::drawLineLength(draw2d::Context& dc, const Vec2d& p1, const Vec2d&
 	// Determine line midpoint and front vector
 	Vec2d mid(p1.x + (p2.x - p1.x) * 0.5, p1.y + (p2.y - p1.y) * 0.5);
 	Vec2d vec(-(p2.y - p1.y), p2.x - p1.x);
-	vec.normalize();
+	vec = glm::normalize(vec);
 
 	// Determine point to place the text
 	Vec2d tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
-	auto   length = fmt::format("{}", math::round(math::distance(p1, p2)));
+	auto   length = fmt::format("{}", math::round(glm::distance(p1, p2)));
 	double hh     = draw2d::textExtents(length, dc.font).y * 0.5;
 
 	// Draw text
@@ -695,25 +706,25 @@ void Renderer::drawLineLength(draw2d::Context& dc, const Vec2d& p1, const Vec2d&
 void Renderer::drawLineDrawLines(draw2d::Context& dc, bool snap_nearest_vertex) const
 {
 	// Determine end point
-	auto end = view_->canvasPos(context_.input().mousePos());
+	auto end = view_->canvasPos(context_->input().mousePos());
 	if (snap_nearest_vertex)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
-		if (auto vertex = context_.map().vertices().nearest(end))
+		if (auto vertex = context_->map().vertices().nearest(end))
 		{
 			end.x = vertex->xPos();
 			end.y = vertex->yPos();
 		}
 	}
-	else if (context_.gridSnap())
+	else if (context_->gridSnap())
 	{
 		// Otherwise, snap to grid if needed
-		end.x = context_.snapToGrid(end.x);
-		end.y = context_.snapToGrid(end.y);
+		end.x = context_->snapToGrid(end.x);
+		end.y = context_->snapToGrid(end.y);
 	}
 
 	// Draw lines
-	auto& line_draw = context_.lineDraw();
+	auto& line_draw = context_->lineDraw();
 	int   npoints   = line_draw.nPoints();
 	dc.setColourFromConfig("map_linedraw");
 	dc.line_thickness = 2.0f;
@@ -723,13 +734,13 @@ void Renderer::drawLineDrawLines(draw2d::Context& dc, bool snap_nearest_vertex) 
 		for (int a = 0; a < npoints - 1; a++)
 		{
 			lines.emplace_back(line_draw.point(a), line_draw.point(a + 1));
-			lines.push_back(math::lineTab(lines.back()));
+			lines.push_back(geometry::lineTab(lines.back()));
 		}
 	}
-	if (npoints > 0 && context_.lineDraw().state() == LineDraw::State::Line)
+	if (npoints > 0 && context_->lineDraw().state() == LineDraw::State::Line)
 	{
 		lines.emplace_back(line_draw.point(npoints - 1), end);
-		lines.push_back(math::lineTab(lines.back()));
+		lines.push_back(geometry::lineTab(lines.back()));
 	}
 	dc.drawLines(lines);
 
@@ -741,7 +752,7 @@ void Renderer::drawLineDrawLines(draw2d::Context& dc, bool snap_nearest_vertex) 
 		for (int a = 0; a < npoints - 1; a++)
 			drawLineLength(dc, line_draw.point(a), line_draw.point(a + 1));
 	}
-	if (npoints > 0 && context_.lineDraw().state() == LineDraw::State::Line)
+	if (npoints > 0 && context_->lineDraw().state() == LineDraw::State::Line)
 		drawLineLength(dc, line_draw.point(npoints - 1), end);
 	dc.view = view_.get();
 
@@ -750,8 +761,8 @@ void Renderer::drawLineDrawLines(draw2d::Context& dc, bool snap_nearest_vertex) 
 	vector<Vec2f> points;
 	for (auto& point : line_draw.points())
 		points.emplace_back(point);
-	if (context_.lineDraw().state() == LineDraw::State::Line
-		|| context_.lineDraw().state() == LineDraw::State::ShapeOrigin)
+	if (context_->lineDraw().state() == LineDraw::State::Line
+		|| context_->lineDraw().state() == LineDraw::State::ShapeOrigin)
 		points.emplace_back(end);
 	dc.pointsprite_type   = ps_type;
 	dc.pointsprite_radius = vertex_size / view_->scale(true).x;
@@ -780,7 +791,7 @@ void Renderer::drawPasteLines(draw2d::Context& dc) const
 	// Get lines
 	vector<MapLine*> map_lines;
 	c->putLines(map_lines);
-	auto          pos = context_.relativeSnapToGrid(c->midpoint(), view_->canvasPos(context_.input().mousePos()));
+	auto          pos = context_->relativeSnapToGrid(c->midpoint(), view_->canvasPos(context_->input().mousePos()));
 	vector<Rectf> lines;
 	for (const auto& line : map_lines)
 		lines.emplace_back(pos.x + line->x1(), pos.y + line->y1(), pos.x + line->x2(), pos.y + line->y2());
@@ -798,8 +809,8 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 {
 	using State = ObjectEdit::State;
 
-	auto& group      = context_.objectEdit().group();
-	auto  edit_state = context_.objectEdit().state();
+	auto& group      = context_->objectEdit().group();
+	auto  edit_state = context_->objectEdit().state();
 
 	// Map objects
 	renderer_2d_->renderObjectEditGroup(dc, &group);
@@ -818,16 +829,16 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 	dc.line_thickness = 2.0f;
 	gl::setBlend(dc.blend);
 
-	if (context_.objectEdit().rotating())
+	if (context_->objectEdit().rotating())
 	{
 		// Rotate
 
 		// Bbox
 		Vec2d mid(bbox.min.x + bbox.width() * 0.5, bbox.min.y + bbox.height() * 0.5);
-		auto  bl = math::rotatePoint(mid, bbox.min, group.rotation());
-		auto  tl = math::rotatePoint(mid, Vec2d(bbox.min.x, bbox.max.y), group.rotation());
-		auto  tr = math::rotatePoint(mid, bbox.max, group.rotation());
-		auto  br = math::rotatePoint(mid, Vec2d(bbox.max.x, bbox.min.y), group.rotation());
+		auto  bl = geometry::rotatePoint(mid, bbox.min, group.rotation());
+		auto  tl = geometry::rotatePoint(mid, Vec2d(bbox.min.x, bbox.max.y), group.rotation());
+		auto  tr = geometry::rotatePoint(mid, bbox.max, group.rotation());
+		auto  br = geometry::rotatePoint(mid, Vec2d(bbox.max.x, bbox.min.y), group.rotation());
 		dc.drawLines({ { tl, bl }, { bl, br }, { br, tr }, { tr, tl } });
 
 		// Top Left
@@ -894,15 +905,16 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 		lb_objectedit_box_->add2d(bbox.max.x, bbox.max.y, bbox.min.x, bbox.max.y, glm::vec4{ 1.0f }, width);
 
 		lb_objectedit_box_->push();
-		lb_objectedit_box_->draw(dc.view, dc.colour.asVec4());
+		lb_objectedit_box_->draw(dc.view, dc.colour);
 	}
 
 	// Line length
 	Vec2d nl_v1, nl_v2;
-	if (group.nearestLineEndpoints(view_->canvasPos(context_.input().mousePos()), 128 / view_->scale().x, nl_v1, nl_v2))
+	if (group.nearestLineEndpoints(
+			view_->canvasPos(context_->input().mousePos()), 128 / view_->scale().x, nl_v1, nl_v2))
 	{
 		Vec2d mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
-		int   length = math::distance(nl_v1, nl_v2);
+		int   length = glm::distance(nl_v1, nl_v2);
 		auto  pos    = view_->screenPos(mid.x, mid.y);
 		pos.y -= 8.0f;
 
@@ -921,7 +933,7 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 // -----------------------------------------------------------------------------
 void Renderer::drawAnimations(gl::draw2d::Context& dc) const
 {
-	auto mode = context_.editMode();
+	auto mode = context_->editMode();
 	for (auto& animation : animations_)
 	{
 		if ((mode == Mode::Visual && animation->mode3d()) || (mode != Mode::Visual && !animation->mode3d()))
@@ -934,17 +946,17 @@ void Renderer::drawAnimations(gl::draw2d::Context& dc) const
 // -----------------------------------------------------------------------------
 void Renderer::drawMap2d(draw2d::Context& dc) const
 {
-	auto mouse_state = context_.input().mouseState();
+	auto mouse_state = context_->input().mouseState();
 
 	// Draw flats if needed
-	renderer_2d_->renderFlats(context_.sectorEditMode() == SectorMode::Ceiling, fade_flats_);
+	renderer_2d_->renderFlats(context_->sectorEditMode() == SectorMode::Ceiling, fade_flats_);
 
 	// Draw grid
 	drawGrid(dc);
 
 	// --- Draw map (depending on mode) ---
 	gl::resetBlend();
-	if (context_.editMode() == Mode::Vertices)
+	if (context_->editMode() == Mode::Vertices)
 	{
 		// Vertices mode
 		renderer_2d_->renderThings(fade_things_);                 // Things
@@ -957,15 +969,15 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 			renderer_2d_->renderVertices(fade_vertices_);
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
+		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_->renderVertexSelection(dc, context_.selection(), anim_flash_level_);
+			renderer_2d_->renderVertexSelection(dc, context_->selection(), anim_flash_level_);
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_->renderVertexHilight(context_.hilightItem().index, anim_flash_level_);
+		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+			renderer_2d_->renderVertexHilight(context_->hilightItem().index, anim_flash_level_);
 	}
-	else if (context_.editMode() == Mode::Lines)
+	else if (context_->editMode() == Mode::Lines)
 	{
 		// Lines mode
 		renderer_2d_->renderThings(fade_things_);     // Things
@@ -973,15 +985,15 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 		renderer_2d_->renderLines(true);              // Lines
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
+		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_->renderLineSelection(dc, context_.selection(), anim_flash_level_);
+			renderer_2d_->renderLineSelection(dc, context_->selection(), anim_flash_level_);
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_->renderLineHilight(dc, context_.hilightItem().index, anim_flash_level_);
+		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+			renderer_2d_->renderLineHilight(dc, context_->hilightItem().index, anim_flash_level_);
 	}
-	else if (context_.editMode() == Mode::Sectors)
+	else if (context_->editMode() == Mode::Sectors)
 	{
 		// Sectors mode
 		renderer_2d_->renderThings(fade_things_);                 // Things
@@ -989,17 +1001,17 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 		renderer_2d_->renderVertices(fade_vertices_);             // Vertices
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
+		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_->renderFlatSelection(dc, context_.selection(), anim_flash_level_);
+			renderer_2d_->renderFlatSelection(dc, context_->selection(), anim_flash_level_);
 
 		// splitter.testRender();	// Testing
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_->renderFlatHilight(dc, context_.hilightItem().index, anim_flash_level_);
+		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+			renderer_2d_->renderFlatHilight(dc, context_->hilightItem().index, anim_flash_level_);
 	}
-	else if (context_.editMode() == Mode::Things)
+	else if (context_->editMode() == Mode::Things)
 	{
 		// Check if we should force thing angles visible
 		bool force_dir = false;
@@ -1007,44 +1019,44 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 			force_dir = true;
 
 		// Things mode
-		auto hl_index = context_.hilightItem().index;
+		auto hl_index = context_->hilightItem().index;
 		renderer_2d_->renderLines(line_tabs_always, fade_lines_);           // Lines
 		renderer_2d_->renderVertices(fade_vertices_);                       // Vertices
 		renderer_2d_->renderPointLightPreviews(dc, fade_things_, hl_index); // Point light previews
 		renderer_2d_->renderThings(fade_things_, force_dir);                // Things
 
 		// Thing paths
-		renderer_2d_->renderPathedThings(dc, context_.pathedThings());
+		renderer_2d_->renderPathedThings(dc, context_->pathedThings());
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
+		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_->renderThingSelection(dc, context_.selection(), anim_flash_level_);
+			renderer_2d_->renderThingSelection(dc, context_->selection(), anim_flash_level_);
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
+		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
 			renderer_2d_->renderThingHilight(dc, hl_index, anim_flash_level_);
 	}
 
 	// Draw tagged sectors/lines/things if needed
-	if (!context_.overlayActive()
+	if (!context_->overlayActive()
 		&& (mouse_state == Input::MouseState::Normal || mouse_state == Input::MouseState::TagSectors
 			|| mouse_state == Input::MouseState::TagThings))
 	{
-		if (!context_.taggedSectors().empty())
-			renderer_2d_->renderTaggedFlats(dc, context_.taggedSectors(), anim_flash_level_);
-		if (!context_.taggedLines().empty())
-			renderer_2d_->renderTaggedLines(dc, context_.taggedLines(), anim_flash_level_);
-		if (!context_.taggedThings().empty())
-			renderer_2d_->renderTaggedThings(dc, context_.taggedThings(), anim_flash_level_);
-		if (!context_.taggingLines().empty())
-			renderer_2d_->renderTaggingLines(dc, context_.taggingLines(), anim_flash_level_);
-		if (!context_.taggingThings().empty())
-			renderer_2d_->renderTaggingThings(dc, context_.taggingThings(), anim_flash_level_);
+		if (!context_->taggedSectors().empty())
+			renderer_2d_->renderTaggedFlats(dc, context_->taggedSectors(), anim_flash_level_);
+		if (!context_->taggedLines().empty())
+			renderer_2d_->renderTaggedLines(dc, context_->taggedLines(), anim_flash_level_);
+		if (!context_->taggedThings().empty())
+			renderer_2d_->renderTaggedThings(dc, context_->taggedThings(), anim_flash_level_);
+		if (!context_->taggingLines().empty())
+			renderer_2d_->renderTaggingLines(dc, context_->taggingLines(), anim_flash_level_);
+		if (!context_->taggingThings().empty())
+			renderer_2d_->renderTaggingThings(dc, context_->taggingThings(), anim_flash_level_);
 	}
 
 	// Draw selection numbers if needed
-	if (!context_.selection().empty() && mouse_state == Input::MouseState::Normal && map_show_selection_numbers)
+	if (!context_->selection().empty() && mouse_state == Input::MouseState::Normal && map_show_selection_numbers)
 		drawSelectionNumbers(dc);
 
 	// Draw thing quick angle lines if needed
@@ -1053,7 +1065,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 
 	// Draw line drawing lines if needed
 	if (mouse_state == Input::MouseState::LineDraw)
-		drawLineDrawLines(dc, context_.input().shiftDown());
+		drawLineDrawLines(dc, context_->input().shiftDown());
 
 	// Draw object edit objects if needed
 	if (mouse_state == Input::MouseState::ObjectEdit)
@@ -1065,10 +1077,10 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 
 	// Draw selection box if active
 	Rectf sel_rect(
-		view_->canvasX(context_.input().mousePos().x),
-		view_->canvasY(context_.input().mousePos().y),
-		view_->canvasX(context_.input().mouseDownPos().x),
-		view_->canvasY(context_.input().mouseDownPos().y));
+		view_->canvasX(context_->input().mousePos().x),
+		view_->canvasY(context_->input().mousePos().y),
+		view_->canvasX(context_->input().mouseDownPos().x),
+		view_->canvasY(context_->input().mouseDownPos().y));
 	if (mouse_state == Input::MouseState::Selection)
 	{
 		// Outline
@@ -1088,9 +1100,10 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 	// Draw paste objects if needed
 	if (mouse_state == Input::MouseState::Paste)
 	{
-		if (context_.editMode() == Mode::Things)
+		if (context_->editMode() == Mode::Things)
 		{
-			Vec2d mpos{ view_->canvasX(context_.input().mousePos().x), view_->canvasY(context_.input().mousePos().y) };
+			Vec2d mpos{ view_->canvasX(context_->input().mousePos().x),
+						view_->canvasY(context_->input().mousePos().y) };
 
 			// Get clipboard item
 			for (unsigned a = 0; a < app::clipboard().size(); a++)
@@ -1101,7 +1114,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 					vector<MapThing*> things;
 					auto              p = dynamic_cast<MapThingsClipboardItem*>(item);
 					p->putThings(things);
-					auto pos(context_.relativeSnapToGrid(p->midpoint(), mpos));
+					auto pos(context_->relativeSnapToGrid(p->midpoint(), mpos));
 					renderer_2d_->renderPasteThings(dc, things, pos);
 				}
 			}
@@ -1113,15 +1126,15 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 	// Draw moving stuff if needed
 	if (mouse_state == Input::MouseState::Move)
 	{
-		auto& items  = context_.moveObjects().items();
-		auto  offset = context_.moveObjects().offset();
-		switch (context_.editMode())
+		auto& items  = context_->moveObjects().items();
+		auto  offset = context_->moveObjects().offset();
+		switch (context_->editMode())
 		{
 		case Mode::Vertices: renderer_2d_->renderMovingVertices(dc, items, offset); break;
-		case Mode::Lines: renderer_2d_->renderMovingLines(dc, items, offset); break;
-		case Mode::Sectors: renderer_2d_->renderMovingSectors(dc, items, offset); break;
-		case Mode::Things: renderer_2d_->renderMovingThings(dc, items, offset); break;
-		default: break;
+		case Mode::Lines:    renderer_2d_->renderMovingLines(dc, items, offset); break;
+		case Mode::Sectors:  renderer_2d_->renderMovingSectors(dc, items, offset); break;
+		case Mode::Things:   renderer_2d_->renderMovingThings(dc, items, offset); break;
+		default:             break;
 		}
 	}
 }
@@ -1138,14 +1151,14 @@ void Renderer::drawMap3d() const
 	renderer_3d_->renderMap();
 
 	// Draw selection if any
-	auto selection = context_.selection();
+	auto selection = context_->selection();
 	renderer_3d_->renderFlatSelection(selection);
 	renderer_3d_->renderWallSelection(selection);
 	renderer_3d_->renderThingSelection(selection);
 
 	// Draw hilight if any
-	if (context_.selection().hasHilight())
-		renderer_3d_->renderHilight(context_.selection().hilight(), anim_flash_level_);
+	if (context_->selection().hasHilight())
+		renderer_3d_->renderHilight(context_->selection().hilight(), anim_flash_level_);
 
 	// Draw animations
 	// drawAnimations();
@@ -1166,7 +1179,7 @@ void Renderer::draw() const
 	gl::resetDrawCallCount();
 
 	// Draw 2d or 3d map depending on mode
-	if (context_.editMode() == Mode::Visual)
+	if (context_->editMode() == Mode::Visual)
 		drawMap2d(dc); // drawMap3d();
 	else
 		drawMap2d(dc);
@@ -1184,14 +1197,14 @@ void Renderer::draw() const
 	dc.text_size  = 16 * ui::scaleFactor();
 	dc.text_style = draw2d::TextStyle::Normal;
 	dc.blend      = Blend::Normal;
-	context_.drawInfoOverlay(dc, anim_info_fade_);
+	context_->drawInfoOverlay(dc, anim_info_fade_);
 
 	// Draw current fullscreen overlay
-	if (context_.currentOverlay() && anim_overlay_fade_ > 0.01f)
-		context_.currentOverlay()->draw(dc, anim_overlay_fade_);
+	if (context_->currentOverlay() && anim_overlay_fade_ > 0.01f)
+		context_->currentOverlay()->draw(dc, anim_overlay_fade_);
 
 	//// Draw crosshair if 3d mode
-	// if (context_.editMode() == Mode::Visual)
+	// if (context_->editMode() == Mode::Visual)
 	//{
 	//	// Get crosshair colour
 	//	auto& def = colourconfig::colDef("map_3d_crosshair");
@@ -1232,7 +1245,7 @@ void Renderer::draw() const
 	//	glEnd();
 
 	//	// Draw item distance (if any)
-	//	if (context_.renderer().renderer3D().itemDistance() >= 0 && camera_3d_show_distance)
+	//	if (context_->renderer().renderer3D().itemDistance() >= 0 && camera_3d_show_distance)
 	//	{
 	//		gl::setColour(col);
 	//		drawing::drawText(
@@ -1270,7 +1283,8 @@ void Renderer::draw() const
 	drawFeatureHelpText(dc);
 
 	// TESTING: Render performance info
-	auto avg_frame    = std::accumulate(render_times.begin(), render_times.end(), (int64_t)0) / render_times.size();
+	auto avg_frame = std::accumulate(render_times.begin(), render_times.end(), static_cast<int64_t>(0))
+					 / render_times.size();
 	dc.text_alignment = draw2d::Align::Left;
 	dc.text_size      = 18;
 	dc.text_style     = draw2d::TextStyle::Normal;
@@ -1323,7 +1337,7 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// 2d mode animation
-	if (context_.editMode() != Mode::Visual)
+	if (context_->editMode() != Mode::Visual)
 	{
 		// Update 2d mode crossfade animation
 		if (update2dModeCrossfade(mult))
@@ -1362,7 +1376,7 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// Fader for info overlay
-	if (context_.infoOverlayActive() && !context_.overlayActive())
+	if (context_->infoOverlayActive() && !context_->overlayActive())
 	{
 		if (updateFade(anim_info_fade_, 0.1f * mult, 0.0f, 1.0f))
 			animations_active_ = true;
@@ -1374,7 +1388,7 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// Fader for fullscreen overlay
-	if (context_.overlayActive())
+	if (context_->overlayActive())
 	{
 		if (updateFade(anim_overlay_fade_, 0.1f * mult, 0.0f, 1.0f))
 			animations_active_ = true;
@@ -1386,7 +1400,7 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// Fader for help text
-	if (!context_.featureHelpLines().empty())
+	if (!context_->featureHelpLines().empty())
 	{
 		if (updateFade(anim_help_fade_, 0.07f * mult, 0.0f, 1.0f))
 			animations_active_ = true;
@@ -1439,7 +1453,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 	// Interpolate
 	bool  anim_mode_crossfade = false;
 	float mcs_speed           = 0.08f;
-	if (context_.editMode() == Mode::Vertices)
+	if (context_->editMode() == Mode::Vertices)
 	{
 		if (fade_vertices_ < 1.0f)
 		{
@@ -1458,7 +1472,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 			anim_mode_crossfade = true;
 		}
 	}
-	else if (context_.editMode() == Mode::Lines)
+	else if (context_->editMode() == Mode::Lines)
 	{
 		if (fade_vertices_ > fa_vertices)
 		{
@@ -1477,7 +1491,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 			anim_mode_crossfade = true;
 		}
 	}
-	else if (context_.editMode() == Mode::Sectors)
+	else if (context_->editMode() == Mode::Sectors)
 	{
 		if (fade_vertices_ > fa_vertices)
 		{
@@ -1496,7 +1510,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 			anim_mode_crossfade = true;
 		}
 	}
-	else if (context_.editMode() == Mode::Things)
+	else if (context_->editMode() == Mode::Things)
 	{
 		if (fade_vertices_ > fa_vertices)
 		{
@@ -1555,7 +1569,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 			// Get quad points
 			Vec3f points[4];
 			for (unsigned a = 0; a < 4; a++)
-				points[a].set(quad->points[a].x, quad->points[a].y, quad->points[a].z);
+				points[a] = { quad->points[a].x, quad->points[a].y, quad->points[a].z };
 
 			// Start animation
 			animations_.push_back(std::make_unique<MCA3dWallSelection>(app::runTimer(), points, selected));
@@ -1578,7 +1592,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	else if (item.type == ItemType::Thing)
 	{
 		// Get thing
-		auto t = item.asThing(context_.map());
+		auto t = item.asThing(context_->map());
 		if (!t)
 			return;
 
@@ -1595,7 +1609,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	else if (item.type == ItemType::Line)
 	{
 		// Get line
-		auto line = item.asLine(context_.map());
+		auto line = item.asLine(context_->map());
 		if (!line)
 			return;
 
@@ -1607,7 +1621,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	else if (item.type == ItemType::Vertex)
 	{
 		// Get vertex
-		auto vertex = item.asVertex(context_.map());
+		auto vertex = item.asVertex(context_->map());
 		if (!vertex)
 			return;
 
@@ -1620,7 +1634,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	else if (item.type == ItemType::Sector)
 	{
 		// Get sector polygon
-		auto sector = item.asSector(context_.map());
+		auto sector = item.asSector(context_->map());
 		if (!sector)
 			return;
 
@@ -1634,7 +1648,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 // -----------------------------------------------------------------------------
 void Renderer::animateSelectionChange(const ItemSelection& selection)
 {
-	const auto&        map = context_.map();
+	const auto&        map = context_->map();
 	vector<MapVertex*> vertices_selected;
 	vector<MapVertex*> vertices_deselected;
 	vector<MapLine*>   lines_selected;

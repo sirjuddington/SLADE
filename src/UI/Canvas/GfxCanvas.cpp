@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -168,9 +168,9 @@ void GfxCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 	{
 		if (!lb_sprite_)
 		{
-			auto colour = ColRGBA::BLACK.asVec4();
-			colour.a    = 0.75f;
-			lb_sprite_  = std::make_unique<gl::LineBuffer>();
+			glm::vec4 colour = ColRGBA::BLACK;
+			colour.a         = 0.75f;
+			lb_sprite_       = std::make_unique<gl::LineBuffer>();
 
 			lb_sprite_->add2d(-99999.0f, 0.0f, 99999.0f, 0.0f, colour, 1.5f);
 			lb_sprite_->add2d(0.0f, -99999.0f, 0.0f, 99999.0f, colour, 1.5f);
@@ -387,7 +387,7 @@ void GfxCanvas::endOffsetDrag()
 	}
 
 	// Stop drag
-	drag_origin_.set({ -1, -1 });
+	drag_origin_ = { -1, -1 };
 }
 
 // -----------------------------------------------------------------------------
@@ -509,6 +509,7 @@ void GfxCanvas::generateBrushShadow()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the left button is pressed within the canvas
@@ -532,8 +533,8 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 		// Begin drag if mouse is over image and dragging allowed
 		else if (allow_drag_)
 		{
-			drag_origin_.set(x, y);
-			drag_pos_.set(x, y);
+			drag_origin_ = { x, y };
+			drag_pos_    = { x, y };
 			Refresh();
 		}
 	}
@@ -624,8 +625,8 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 		}
 		else
 		{
-			drag_pos_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
-			refresh = true;
+			drag_pos_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
+			refresh   = true;
 		}
 	}
 
@@ -636,7 +637,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	if (refresh)
 		Refresh();
 
-	mouse_prev_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
+	mouse_prev_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
 
 	e.Skip();
 }
@@ -676,14 +677,14 @@ void GfxCanvas::onMouseWheel(wxMouseEvent& e)
 	if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 	{
 		// Zoom towards cursor
-		zoom_point_.set(e.GetPosition().x, e.GetPosition().y);
+		zoom_point_ = { e.GetPosition().x, e.GetPosition().y };
 
 		if (e.GetWheelRotation() > 0)
 			linked_zoom_control_->zoomIn(true);
 		else
 			linked_zoom_control_->zoomOut(true);
 
-		zoom_point_.set(-1, -1);
+		zoom_point_ = { -1, -1 };
 	}
 }
 

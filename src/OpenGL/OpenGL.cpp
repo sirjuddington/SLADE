@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -208,9 +208,9 @@ bool gl::init()
 	}
 
 	// Get OpenGL info
-	info.vendor   = (const char*)glGetString(GL_VENDOR);
-	info.renderer = (const char*)glGetString(GL_RENDERER);
-	info.version  = (const char*)glGetString(GL_VERSION);
+	info.vendor   = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+	info.renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	info.version  = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 
 	// Get OpenGL version
 	// string_view temp{ info.version.data(), 3 };

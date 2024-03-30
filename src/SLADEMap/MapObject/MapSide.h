@@ -22,14 +22,14 @@ public:
 	inline static const string PROP_OFFSETY   = "offsety";
 
 	MapSide(
-		MapSector*  sector     = nullptr,
-		string_view tex_upper  = TEX_NONE,
-		string_view tex_middle = TEX_NONE,
-		string_view tex_lower  = TEX_NONE,
-		Vec2i       tex_offset = { 0, 0 });
-	MapSide(MapSector* sector, ParseTreeNode* udmf_def);
+		MapSector*   sector     = nullptr,
+		string_view  tex_upper  = TEX_NONE,
+		string_view  tex_middle = TEX_NONE,
+		string_view  tex_lower  = TEX_NONE,
+		const Vec2i& tex_offset = { 0, 0 });
+	MapSide(MapSector* sector, const ParseTreeNode* udmf_def);
 	MapSide(MapSector* sector, MapSide* copy_side);
-	~MapSide() = default;
+	~MapSide() override = default;
 
 	void copy(MapObject* c) override;
 

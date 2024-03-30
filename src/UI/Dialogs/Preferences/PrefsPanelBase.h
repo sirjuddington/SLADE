@@ -8,7 +8,7 @@ class PrefsPanelBase : public wxPanel
 {
 public:
 	PrefsPanelBase(wxWindow* parent) : wxPanel(parent, -1) {}
-	~PrefsPanelBase() {}
+	~PrefsPanelBase() override = default;
 
 	virtual void     init() {}
 	virtual void     applyPreferences() {}

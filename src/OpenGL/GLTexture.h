@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Utility/Colour.h"
+#include "Geometry/RectFwd.h"
 
 namespace slade
 {
 class SImage;
-class Palette;
 
 namespace gl
 {
@@ -47,13 +46,13 @@ namespace gl
 			TexFilter      filter = TexFilter::Nearest,
 			bool           tiling = true);
 		static unsigned createFromImage(
-			const SImage& image,
-			Palette*      pal    = nullptr,
-			TexFilter     filter = TexFilter::Nearest,
-			bool          tiling = true);
+			const SImage&  image,
+			const Palette* pal    = nullptr,
+			TexFilter      filter = TexFilter::Nearest,
+			bool           tiling = true);
 		static bool loadData(unsigned id, const uint8_t* data, unsigned width, unsigned height);
 		static bool loadAlphaData(unsigned id, const uint8_t* data, unsigned width, unsigned height);
-		static bool loadImage(unsigned id, const SImage& image, Palette* pal = nullptr);
+		static bool loadImage(unsigned id, const SImage& image, const Palette* pal = nullptr);
 		static bool genChequeredTexture(unsigned id, uint8_t block_size, ColRGBA col1, ColRGBA col2);
 		static void clear(unsigned id);
 		static void clearAll();

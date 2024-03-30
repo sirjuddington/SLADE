@@ -1,10 +1,10 @@
 #pragma once
 
 #include "SImage.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
-class ArchiveEntry;
 class SIFormat
 {
 public:
@@ -89,7 +89,7 @@ public:
 	}
 
 	static void      initFormats();
-	static SIFormat* getFormat(string_view name);
+	static SIFormat* getFormat(string_view id);
 	static SIFormat* determineFormat(const MemChunk& mc);
 	static SIFormat* unknownFormat();
 	static SIFormat* rawFormat();
@@ -106,7 +106,7 @@ protected:
 	// Stuff to access protected image data
 	uint8_t* imageData(SImage& image) const { return image.data_.data(); }
 	uint8_t* imageMask(SImage& image) const { return image.mask_.data(); }
-	Palette& imagePalette(SImage& image) const { return image.palette_; }
+	Palette& imagePalette(const SImage& image) const { return *image.paletteToUse(static_cast<Palette*>(nullptr)); }
 
 	virtual bool readImage(SImage& image, const MemChunk& data, int index) = 0;
 	virtual bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) { return false; }

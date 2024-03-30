@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -34,18 +34,24 @@
 #include "MapCanvas.h"
 #include "App.h"
 #include "General/ColourConfiguration.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/Edit/Input.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/Renderer/Camera.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/SectorBuilder.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
+#include <SFML/System/Clock.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Mouse.hpp>
 
 using namespace slade;
-
-using mapeditor::Mode;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -67,7 +73,9 @@ CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
 // MapCanvas class constructor
 // -----------------------------------------------------------------------------
 MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
-	GLCanvas{ parent }, context_{ context }, timer_{ this }
+	GLCanvas{ parent },
+	context_{ context },
+	sf_clock_{ new sf::Clock }
 {
 	// Init variables
 	context_->setCanvas(this);
@@ -119,7 +127,8 @@ void MapCanvas::mouseToCenter()
 {
 	auto rect   = GetScreenRect();
 	mouse_warp_ = true;
-	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width * 0.5), rect.y + int(rect.height * 0.5)));
+	sf::Mouse::setPosition(
+		sf::Vector2i(rect.x + static_cast<int>(rect.width * 0.5), rect.y + static_cast<int>(rect.height * 0.5)));
 }
 
 // -----------------------------------------------------------------------------
@@ -241,12 +250,12 @@ void MapCanvas::update()
 	mouseLook3d();
 
 	// Get time since last redraw
-	auto frametime = sf_clock_.getElapsedTime().asSeconds() * 1000.0;
+	auto frametime = sf_clock_->getElapsedTime().asSeconds() * 1000.0;
 
 	if (context_->update(frametime))
 	{
 		Refresh(false);
-		sf_clock_.restart();
+		sf_clock_->restart();
 	}
 }
 
@@ -257,6 +266,8 @@ void MapCanvas::update()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the canvas is resized
@@ -282,7 +293,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	// Testing
 	if (global::debug)
 	{
-		//if (e.GetKeyCode() == WXK_F6)
+		// if (e.GetKeyCode() == WXK_F6)
 		//{
 		//	Polygon2D poly;
 		//	sf::Clock clock;
@@ -294,7 +305,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		//	}
 		//	// int ms = clock.GetElapsedTime() * 1000;
 		//	// log::info(1, "Polygon generation took %dms", ms);
-		//}
+		// }
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
@@ -304,7 +315,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 				SectorBuilder sbuilder;
 
 				// Determine line side
-				double side = math::lineSide(context_->input().mousePosMap(), line->seg());
+				double side = geometry::lineSide(context_->input().mousePosMap(), line->seg());
 				if (side >= 0)
 					sbuilder.traceSector(&(context_->map()), line, true);
 				else

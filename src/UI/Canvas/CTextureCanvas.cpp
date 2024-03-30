@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,8 +33,8 @@
 #include "Main.h"
 #include "CTextureCanvas.h"
 #include "GLCanvas.h"
-#include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
@@ -68,7 +68,7 @@ EXTERN_CVAR(Bool, gfx_show_border)
 // -----------------------------------------------------------------------------
 // CTextureCanvas class constructor
 // -----------------------------------------------------------------------------
-CTextureCanvas::CTextureCanvas(wxWindow* parent) : GLCanvas(parent, GLCanvas::BGStyle::Checkered)
+CTextureCanvas::CTextureCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 {
 	palette_ = std::make_unique<Palette>();
 	view_.setCentered(true);
@@ -300,7 +300,7 @@ void CTextureCanvas::draw()
 	if (hilight_patch_ >= 0 && hilight_patch_ < static_cast<int>(texture_->nPatches()))
 	{
 		dc.colour = { 255, 255, 255, 150 };
-		dc.blend = gl::Blend::Additive;
+		dc.blend  = gl::Blend::Additive;
 		drawPatchOutline(dc, hilight_patch_);
 	}
 }
@@ -463,7 +463,7 @@ void CTextureCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 	}
 	if (lb_border_->buffer().empty())
 	{
-		auto colour = ColRGBA::BLACK.asVec4();
+		glm::vec4 colour = ColRGBA::BLACK;
 
 		// Border
 		lb_border_->add2d(x1 - ext, y1 - ext, x1 - ext, y2 + ext, colour, 2.0f);
@@ -554,9 +554,9 @@ void CTextureCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 	{
 		if (!lb_sprite_)
 		{
-			auto colour = ColRGBA::BLACK.asVec4();
-			colour.a    = 0.75f;
-			lb_sprite_  = std::make_unique<gl::LineBuffer>();
+			glm::vec4 colour = ColRGBA::BLACK;
+			colour.a         = 0.75f;
+			lb_sprite_       = std::make_unique<gl::LineBuffer>();
 
 			lb_sprite_->add2d(-99999.0f, 0.0f, 99999.0f, 0.0f, colour, 1.5f);
 			lb_sprite_->add2d(0.0f, -99999.0f, 0.0f, 99999.0f, colour, 1.5f);
@@ -639,6 +639,8 @@ bool CTextureCanvas::swapPatches(size_t p1, size_t p2)
 	return texture_->swapPatches(p1, p2);
 }
 
+// ReSharper disable CppParameterMayBeConstPtrOrRef
+
 // -----------------------------------------------------------------------------
 // Called when and mouse event is generated (movement/clicking/etc)
 // -----------------------------------------------------------------------------
@@ -708,14 +710,14 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		}
 		if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 		{
-			zoom_point_.set(e.GetPosition().x, e.GetPosition().y);
+			zoom_point_ = { e.GetPosition().x, e.GetPosition().y };
 
 			if (e.GetWheelRotation() > 0)
 				linked_zoom_control_->zoomIn(true);
 			else
 				linked_zoom_control_->zoomOut(true);
 
-			zoom_point_.set(-1, -1);
+			zoom_point_ = { -1, -1 };
 		}
 	}
 
@@ -724,5 +726,5 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		Refresh();
 
 	// Update 'previous' mouse coordinates
-	mouse_prev_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
+	mouse_prev_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
 }

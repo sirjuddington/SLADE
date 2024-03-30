@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,7 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
+#include "General/UI.h"
 #include "NewArchiveDiaog.h"
 #include "UI/WxUtils.h"
 
@@ -87,9 +88,9 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	// Layout
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type), 0, wxEXPAND | wxALL, ui::padLarge());
+	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type), wxutil::sfWithLargeBorder().Expand());
 	auto* hbox = wxutil::createDialogButtonBox(btn_create, btn_cancel);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Create button click
 	btn_create->Bind(

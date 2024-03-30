@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -35,6 +35,7 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/Translation.h"
 #include "Utility/CIEDeltaEquations.h"
+#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -45,7 +46,7 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, col_match, (int)Palette::ColourMatch::Old, CVar::Flag::Save)
+CVAR(Int, col_match, static_cast<int>(Palette::ColourMatch::Old), CVar::Flag::Save)
 CVAR(Float, col_match_r, 1.0, CVar::Flag::Save)
 CVAR(Float, col_match_g, 1.0, CVar::Flag::Save)
 CVAR(Float, col_match_b, 1.0, CVar::Flag::Save)
@@ -72,11 +73,32 @@ Palette::Palette(unsigned size) : colours_{ size }, colours_hsl_{ size }, colour
 	// Init palette (to greyscale)
 	for (unsigned a = 0; a < size; a++)
 	{
-		double mult = (double)a / (double)size;
+		double mult = static_cast<double>(a) / static_cast<double>(size);
 		colours_[a].set(mult * 255, mult * 255, mult * 255, 255, -1, a);
 		colours_lab_[a].l = mult;
 		colours_hsl_[a].l = mult;
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Palette class copy constructor
+// -----------------------------------------------------------------------------
+Palette::Palette(const Palette& pal) : Palette(pal.colours_.size())
+{
+	copyPalette(&pal);
+}
+
+// -----------------------------------------------------------------------------
+// Palette class destructor
+// -----------------------------------------------------------------------------
+Palette::~Palette() = default;
+
+// -----------------------------------------------------------------------------
+// Returns the colour at [index] in the palette
+// -----------------------------------------------------------------------------
+ColRGBA Palette::colour(uint8_t index) const
+{
+	return colours_[index];
 }
 
 // -----------------------------------------------------------------------------
@@ -101,8 +123,8 @@ bool Palette::loadMem(const MemChunk& mc)
 
 		// Set colour in palette
 		colours_[c].set(rgb[0], rgb[1], rgb[2], 255, -1, c);
-		colours_lab_[c] = colours_[c].asLAB();
-		colours_hsl_[c] = colours_[c].asHSL();
+		colours_lab_[c] = colour::rgbToLab(colours_[c]);
+		colours_hsl_[c] = colour::rgbToHsl(colours_[c]);
 
 		// If we have read 256 colours, finish
 		if (++c == 256)
@@ -128,8 +150,8 @@ bool Palette::loadMem(const uint8_t* data, uint32_t size)
 	{
 		// Set colour in palette
 		colours_[c].set(data[a], data[a + 1], data[a + 2], 255, -1, c);
-		colours_lab_[c] = colours_[c].asLAB();
-		colours_hsl_[c] = colours_[c].asHSL();
+		colours_lab_[c] = colour::rgbToLab(colours_[c]);
+		colours_hsl_[c] = colour::rgbToHsl(colours_[c]);
 
 		// If we have read 256 colours, finish
 		if (++c == 256)
@@ -354,7 +376,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, string_view name)
 		string csv;
 		for (unsigned a = 0; a < 256; a++)
 			csv += fmt::format("{}, {}, {}\n", colours_[a].r, colours_[a].g, colours_[a].b);
-		mc.importMem((const uint8_t*)((const char*)csv.data()), csv.size());
+		mc.importMem(reinterpret_cast<const uint8_t*>(csv.data()), csv.size());
 	}
 
 	// JASC palette
@@ -363,7 +385,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, string_view name)
 		string jasc = "JASC-PAL\n0100\n256\n";
 		for (unsigned a = 0; a < 256; a++)
 			jasc += fmt::format("{} {} {}\n", colours_[a].r, colours_[a].g, colours_[a].b);
-		mc.importMem((const uint8_t*)((const char*)jasc.data()), jasc.size());
+		mc.importMem(reinterpret_cast<const uint8_t*>(jasc.data()), jasc.size());
 	}
 
 	// GIMP palette
@@ -372,7 +394,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, string_view name)
 		string gimp = fmt::format("GIMP Palette\nName: {}\n#\n", name);
 		for (unsigned a = 0; a < 256; a++)
 			gimp += fmt::format("{}\t{}\t{}\tIndex {}\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
-		mc.importMem((const uint8_t*)((const char*)gimp.data()), gimp.size());
+		mc.importMem(reinterpret_cast<const uint8_t*>(gimp.data()), gimp.size());
 	}
 
 	// Image
@@ -460,8 +482,8 @@ void Palette::setColour(uint8_t index, const ColRGBA& col)
 {
 	colours_[index].set(col);
 	colours_[index].index = index;
-	colours_lab_[index]   = colours_[index].asLAB();
-	colours_hsl_[index]   = colours_[index].asHSL();
+	colours_lab_[index]   = colour::rgbToLab(colours_[index]);
+	colours_hsl_[index]   = colour::rgbToHsl(colours_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -470,8 +492,8 @@ void Palette::setColour(uint8_t index, const ColRGBA& col)
 void Palette::setColourR(uint8_t index, uint8_t val)
 {
 	colours_[index].r   = val;
-	colours_lab_[index] = colours_[index].asLAB();
-	colours_hsl_[index] = colours_[index].asHSL();
+	colours_lab_[index] = colour::rgbToLab(colours_[index]);
+	colours_hsl_[index] = colour::rgbToHsl(colours_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -480,8 +502,8 @@ void Palette::setColourR(uint8_t index, uint8_t val)
 void Palette::setColourG(uint8_t index, uint8_t val)
 {
 	colours_[index].g   = val;
-	colours_lab_[index] = colours_[index].asLAB();
-	colours_hsl_[index] = colours_[index].asHSL();
+	colours_lab_[index] = colour::rgbToLab(colours_[index]);
+	colours_hsl_[index] = colour::rgbToHsl(colours_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -490,8 +512,18 @@ void Palette::setColourG(uint8_t index, uint8_t val)
 void Palette::setColourB(uint8_t index, uint8_t val)
 {
 	colours_[index].b   = val;
-	colours_lab_[index] = colours_[index].asLAB();
-	colours_hsl_[index] = colours_[index].asHSL();
+	colours_lab_[index] = colour::rgbToLab(colours_[index]);
+	colours_hsl_[index] = colour::rgbToHsl(colours_[index]);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the colour at [index]'s alpha component
+// -----------------------------------------------------------------------------
+void Palette::setColourA(uint8_t index, uint8_t val)
+{
+	colours_[index].a         = val;
+	colours_lab_[index].alpha = static_cast<double>(val) / 255.0;
+	colours_hsl_[index].alpha = static_cast<double>(val) / 255.0;
 }
 
 // -----------------------------------------------------------------------------
@@ -515,13 +547,13 @@ void Palette::setGradient(uint8_t startIndex, uint8_t endIndex, const ColRGBA& s
 		}
 		else
 		{
-			perc = (float)a / (float)range;
+			perc = static_cast<float>(a) / static_cast<float>(range);
 		}
 
 		gradCol.set(
-			(int)(((r_range * perc) + startCol.fr()) * 255.0f),
-			(int)(((g_range * perc) + startCol.fg()) * 255.0f),
-			(int)(((b_range * perc) + startCol.fb()) * 255.0f),
+			static_cast<int>(((r_range * perc) + startCol.fr()) * 255.0f),
+			static_cast<int>(((g_range * perc) + startCol.fg()) * 255.0f),
+			static_cast<int>(((b_range * perc) + startCol.fb()) * 255.0f),
 			255,
 			-1,
 			a + startIndex);
@@ -610,8 +642,8 @@ short Palette::nearestColour(const ColRGBA& colour, ColourMatch match) const
 {
 	double min_d = 999999;
 	short  index = 0;
-	ColHSL chsl  = colour.asHSL();
-	ColLAB clab  = colour.asLAB();
+	ColHSL chsl  = colour::rgbToHsl(colour);
+	ColLAB clab  = colour::rgbToLab(colour);
 
 	// Be nice if there was an easier way to convert from int -> enum class,
 	// but then that's kind of the point of them I guess
@@ -669,7 +701,7 @@ size_t Palette::countColours() const
 // -----------------------------------------------------------------------------
 // Applies the translation [trans] to this palette
 // -----------------------------------------------------------------------------
-void Palette::applyTranslation(Translation* trans)
+void Palette::applyTranslation(const Translation* trans)
 {
 	// Check translation was given
 	if (!trans)
@@ -705,9 +737,9 @@ void Palette::colourise(const ColRGBA& colour, int start, int end)
 		double  grey = (ncol.r * col_greyscale_r + ncol.g * col_greyscale_g + ncol.b * col_greyscale_b) / 255.0f;
 		if (grey > 1.0)
 			grey = 1.0;
-		ncol.r = (uint8_t)(colour.r * grey);
-		ncol.g = (uint8_t)(colour.g * grey);
-		ncol.b = (uint8_t)(colour.b * grey);
+		ncol.r = static_cast<uint8_t>(colour.r * grey);
+		ncol.g = static_cast<uint8_t>(colour.g * grey);
+		ncol.b = static_cast<uint8_t>(colour.b * grey);
 		setColour(i, ncol);
 	}
 }
@@ -806,7 +838,7 @@ void Palette::saturate(float amount, int start, int end)
 		if (colours_hsl_[i].s > 1.)
 			colours_hsl_[i].s = 1.;
 		colours_[i]     = colours_hsl_[i].asRGB();
-		colours_lab_[i] = colours_[i].asLAB();
+		colours_lab_[i] = colour::rgbToLab(colours_[i]);
 	}
 }
 
@@ -834,7 +866,7 @@ void Palette::illuminate(float amount, int start, int end)
 		if (colours_hsl_[i].l > 1.)
 			colours_hsl_[i].l = 1.;
 		colours_[i]     = colours_hsl_[i].asRGB();
-		colours_lab_[i] = colours_[i].asLAB();
+		colours_lab_[i] = colour::rgbToLab(colours_[i]);
 	}
 }
 
@@ -862,7 +894,7 @@ void Palette::shift(float amount, int start, int end)
 		if (colours_hsl_[i].h >= 1.)
 			colours_hsl_[i].h -= 1.;
 		colours_[i]     = colours_hsl_[i].asRGB();
-		colours_lab_[i] = colours_[i].asLAB();
+		colours_lab_[i] = colour::rgbToLab(colours_[i]);
 	}
 }
 

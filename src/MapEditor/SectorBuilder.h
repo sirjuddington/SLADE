@@ -1,14 +1,9 @@
 #pragma once
 
+#include "Geometry/BBox.h"
+
 namespace slade
 {
-// Forward declarations
-class MapLine;
-class MapVertex;
-class MapSector;
-class MapSide;
-class SLADEMap;
-
 class SectorBuilder
 {
 public:
@@ -26,25 +21,25 @@ public:
 
 	const string& error() const { return error_; }
 	unsigned      nEdges() const { return sector_edges_.size(); }
-	MapLine*      edgeLine(unsigned index);
-	bool          edgeIsFront(unsigned index);
-	bool          edgeSideCreated(unsigned index);
+	MapLine*      edgeLine(unsigned index) const;
+	bool          edgeIsFront(unsigned index) const;
+	bool          edgeSideCreated(unsigned index) const;
 
 	bool       traceOutline(MapLine* line, bool front = true);
-	int        nearestEdge(double x, double y);
-	bool       pointWithinOutline(double x, double y);
+	int        nearestEdge(double x, double y) const;
+	bool       pointWithinOutline(double x, double y) const;
 	void       discardOutsideVertices();
 	Edge       findOuterEdge() const;
 	Edge       findInnerEdge();
-	MapSector* findCopySector();
-	MapSector* findExistingSector(vector<MapSide*>& sides_ignore);
-	bool       isValidSector();
+	MapSector* findCopySector() const;
+	MapSector* findExistingSector(vector<MapSide*>& sides_ignore) const;
+	bool       isValidSector() const;
 
 	bool traceSector(SLADEMap* map, MapLine* line, bool front = true);
 	void createSector(MapSector* sector = nullptr, MapSector* sector_copy = nullptr);
 
 	// Testing
-	void drawResult();
+	void drawResult() const;
 
 private:
 	vector<bool> vertex_valid_;

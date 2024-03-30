@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "SToolBar.h"
 #include "General/SAction.h"
+#include "General/UI.h"
 #include "SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
@@ -84,8 +85,8 @@ public:
 		// Get system colours needed
 		auto    col_background = GetBackgroundColour();
 		ColRGBA bg(col_background);
-		auto    col_light = bg.amp(90, 90, 90, 0).toWx();
-		auto    col_dark  = bg.amp(-90, -90, -90, 0).toWx();
+		auto    col_light = colour::toWx(bg.amp(90, 90, 90, 0));
+		auto    col_dark  = colour::toWx(bg.amp(-90, -90, -90, 0));
 
 		// Draw background
 		dc.SetBackground(wxBrush(col_background));
@@ -125,8 +126,8 @@ public:
 		// Get system colours needed
 		auto    col_background = GetBackgroundColour();
 		ColRGBA bg(col_background);
-		auto    col_light = bg.amp(90, 90, 90, 0).toWx();
-		auto    col_dark  = bg.amp(-90, -90, -90, 0).toWx();
+		auto    col_light = colour::toWx(bg.amp(90, 90, 90, 0));
+		auto    col_dark  = colour::toWx(bg.amp(-90, -90, -90, 0));
 
 		// Draw background
 		dc.SetBackground(wxBrush(col_background));
@@ -153,7 +154,9 @@ public:
 // SToolBarGroup class constructor
 // -----------------------------------------------------------------------------
 SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_name) :
-	wxPanel(parent, -1), name_{ name }, orientation_{ parent->orientation() }
+	wxPanel(parent, -1),
+	name_{ name },
+	orientation_{ parent->orientation() }
 {
 	// Check if hidden
 	wxString tb_hidden = toolbars_hidden;
@@ -383,7 +386,7 @@ void SToolBarGroup::addToMenu(wxMenu& menu) const
 					button->action()->addToMenu(submenu);
 			break;
 		case GroupItem::Type::Separator: submenu->AppendSeparator(); break;
-		default: break;
+		default:                         break;
 		}
 	}
 
@@ -431,7 +434,9 @@ void SToolBarGroup::onButtonClicked(wxCommandEvent& e)
 // SToolBar class constructor
 // -----------------------------------------------------------------------------
 SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientation) :
-	wxPanel(parent, -1), main_toolbar_{ main_toolbar }, orientation_{ orientation }
+	wxPanel(parent, -1),
+	main_toolbar_{ main_toolbar },
+	orientation_{ orientation }
 {
 	// Enable double buffering to avoid flickering
 #ifdef __WXMSW__
@@ -931,11 +936,11 @@ void SToolBar::onContextMenu(wxCommandEvent& e)
 		return;
 
 	// 'Show group names' item
-	else if (e.GetId() == (int)groups_.size())
+	else if (e.GetId() == static_cast<int>(groups_.size()))
 		show_toolbar_names = !show_toolbar_names;
 
 	// Group toggle
-	else if ((unsigned)e.GetId() < groups_.size())
+	else if (static_cast<unsigned>(e.GetId()) < groups_.size())
 	{
 		// Toggle group hidden
 		groups_[e.GetId()]->hide(!groups_[e.GetId()]->hidden());

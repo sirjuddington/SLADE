@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
+#include "UI/Canvas/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 
@@ -43,93 +44,95 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// CropCanvas Class Functions
+// CropCanvas Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// CropCanvas class constructor
-// -----------------------------------------------------------------------------
-CropCanvas::CropCanvas(wxWindow* parent, SImage& image) : GLCanvas(parent, BGStyle::Checkered), image_{ &image }
+namespace slade
 {
-	view_.setCentered(true);
-	view_.setInterpolated(false);
-
-	crop_rect_.set(0, 0, image.width(), image.height());
-
-	int size = ui::scalePx(220);
-	SetInitialSize(wxSize(size, size));
-}
-
-// -----------------------------------------------------------------------------
-// CropCanvas class destructor
-// -----------------------------------------------------------------------------
-CropCanvas::~CropCanvas()
+class CropCanvas : public GLCanvas
 {
-	gl::Texture::clear(texture_);
-}
-
-// -----------------------------------------------------------------------------
-// Draw the canvas contents
-// -----------------------------------------------------------------------------
-void CropCanvas::draw()
-{
-	// Create texture if needed
-	if (!texture_)
+public:
+	CropCanvas(wxWindow* parent, SImage& image) : GLCanvas(parent, BGStyle::Checkered), image_{ &image }
 	{
-		if (image_ && image_->isValid())
+		view_.setCentered(true);
+		view_.setInterpolated(false);
+
+		crop_rect_.set(0, 0, image.width(), image.height());
+
+		int size = ui::scalePx(220);
+		SetInitialSize(wxSize(size, size));
+	}
+
+	~CropCanvas() override { gl::Texture::clear(texture_); }
+
+	const Recti& cropRect() const { return crop_rect_; }
+	void         setCropRect(const Recti& rect) { crop_rect_.set(rect); }
+
+	// Draw the canvas contents
+	void draw() override
+	{
+		// Create texture if needed
+		if (!texture_)
 		{
-			texture_ = gl::Texture::createFromImage(*image_, palette_.get(), gl::TexFilter::Nearest, false);
-			crop_rect_.set(0, 0, image_->width(), image_->height());
+			if (image_ && image_->isValid())
+			{
+				texture_ = gl::Texture::createFromImage(*image_, palette_.get(), gl::TexFilter::Nearest, false);
+				crop_rect_.set(0, 0, image_->width(), image_->height());
+			}
+			else
+				return;
 		}
-		else
-			return;
+
+		gl::draw2d::Context dc(&view_);
+
+		// Determine graphic position & scale
+
+		// Get image dimensions
+		auto& tex_info = gl::Texture::info(texture_);
+		auto  x_dim    = static_cast<double>(tex_info.size.x);
+		auto  y_dim    = static_cast<double>(tex_info.size.y);
+
+		// Get max scale for x and y (including padding)
+		auto x_scale = (static_cast<double>(view_.size().x) - ui::scalePx(24)) / x_dim;
+		auto y_scale = (static_cast<double>(view_.size().y) - ui::scalePx(24)) / y_dim;
+
+		// Set scale to smallest of the 2 (so that none of the texture will be clipped)
+		view_.setScale(std::min<double>(x_scale, y_scale));
+
+		// Draw graphic
+		Rectf tex_rect;
+		if (texture_)
+		{
+			tex_rect.set(x_dim * -0.5, y_dim * -0.5, x_dim * 0.5, y_dim * 0.5);
+			dc.texture = texture_;
+			dc.drawRect(tex_rect);
+		}
+
+		// Draw cropping rectangle
+		dc.colour.set(0, 0, 0, 255);
+		dc.texture = 0;
+		dc.translate(tex_rect.tl.x, tex_rect.tl.y); // Translate to top-left of graphic
+		dc.drawLines(vector<Rectf>{
+			{ crop_rect_.tl.x, -1000, crop_rect_.tl.x, 1000 }, // Left
+			{ -1000, crop_rect_.tl.y, 1000, crop_rect_.tl.y }, // Top
+			{ crop_rect_.br.x, -1000, crop_rect_.br.x, 1000 }, // Right
+			{ -1000, crop_rect_.br.y, 1000, crop_rect_.br.y }  // Bottom
+		});
+
+		// Shade cropped-out area
+		dc.colour.set(0, 0, 0, 100);
+		dc.drawRect({ -1000, -1000, crop_rect_.tl.x, 1000 });                      // Left
+		dc.drawRect({ crop_rect_.br.x, -1000, 1000, 1000 });                       // Right
+		dc.drawRect({ crop_rect_.tl.x, -1000, crop_rect_.br.x, crop_rect_.tl.y }); // Top
+		dc.drawRect({ crop_rect_.tl.x, crop_rect_.br.y, crop_rect_.br.x, 1000 });  // Bottom
 	}
 
-	gl::draw2d::Context dc(&view_);
-
-	// Determine graphic position & scale
-
-	// Get image dimensions
-	auto& tex_info = gl::Texture::info(texture_);
-	auto  x_dim    = static_cast<double>(tex_info.size.x);
-	auto  y_dim    = static_cast<double>(tex_info.size.y);
-
-	// Get max scale for x and y (including padding)
-	auto x_scale = (static_cast<double>(view_.size().x) - ui::scalePx(24)) / x_dim;
-	auto y_scale = (static_cast<double>(view_.size().y) - ui::scalePx(24)) / y_dim;
-
-	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
-	view_.setScale(std::min<double>(x_scale, y_scale));
-
-	// Draw graphic
-	Rectf tex_rect;
-	if (texture_)
-	{
-		tex_rect.set(x_dim * -0.5, y_dim * -0.5, x_dim * 0.5, y_dim * 0.5);
-		dc.texture = texture_;
-		dc.drawRect(tex_rect);
-	}
-
-	// Draw cropping rectangle
-	dc.colour.set(0, 0, 0, 255);
-	dc.texture = 0;
-	dc.translate(tex_rect.tl.x, tex_rect.tl.y); // Translate to top-left of graphic
-	dc.drawLines(vector<Rectf>{
-		{ crop_rect_.tl.x, -1000, crop_rect_.tl.x, 1000 }, // Left
-		{ -1000, crop_rect_.tl.y, 1000, crop_rect_.tl.y }, // Top
-		{ crop_rect_.br.x, -1000, crop_rect_.br.x, 1000 }, // Right
-		{ -1000, crop_rect_.br.y, 1000, crop_rect_.br.y }  // Bottom
-	});
-
-	// Shade cropped-out area
-	dc.colour.set(0, 0, 0, 100);
-	dc.drawRect({ -1000, -1000, crop_rect_.tl.x, 1000 });                      // Left
-	dc.drawRect({ crop_rect_.br.x, -1000, 1000, 1000 });                       // Right
-	dc.drawRect({ crop_rect_.tl.x, -1000, crop_rect_.br.x, crop_rect_.tl.y }); // Top
-	dc.drawRect({ crop_rect_.tl.x, crop_rect_.br.y, crop_rect_.br.x, 1000 });  // Bottom
-}
+private:
+	SImage*  image_   = nullptr;
+	unsigned texture_ = 0;
+	Recti    crop_rect_;
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -145,43 +148,45 @@ void CropCanvas::draw()
 GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage& image, const Palette* palette) :
 	wxDialog(parent, -1, "Crop", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
+	namespace wx = wxutil;
+
 	// Set max crop size
 	max_width_  = image.width();
 	max_height_ = image.height();
 	crop_rect_.set(0, 0, max_width_, max_height_);
 
 	// Set dialog icon
-	wxutil::setWindowIcon(this, "crop");
+	wx::setWindowIcon(this, "crop");
 
 	// Setup main sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	msizer->Add(sizer, wx::sfWithLargeBorder(1).Expand());
 
 	// Add preview
 	canvas_preview_ = new CropCanvas(this, image);
 	canvas_preview_->setPalette(palette);
-	sizer->Add(canvas_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(canvas_preview_, wx::sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add crop controls
 	auto frame      = new wxStaticBox(this, -1, "Crop Borders");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::padLarge());
+	sizer->Add(framesizer, wx::sfWithLargeBorder(0, wxBOTTOM).Expand());
 
 	// Absolute
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(hbox, wx::sfWithBorder().Expand());
 	rb_absolute_ = new wxRadioButton(frame, -1, "Absolute");
 	rb_absolute_->SetValue(true);
-	hbox->Add(rb_absolute_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(rb_absolute_, wx::sfWithBorder(0, wxRIGHT).Expand());
 
 	// Relative
 	rb_relative_ = new wxRadioButton(frame, -1, "Relative");
-	hbox->Add(rb_relative_, 0, wxEXPAND);
+	hbox->Add(rb_relative_, wxSizerFlags().Expand());
 
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(gb_sizer, wx::sfWithBorder(1).Expand());
 
 	// Left
 	gb_sizer->Add(new wxStaticText(frame, -1, "Left:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
@@ -214,13 +219,13 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage& image, const Palette* pal
 	gb_sizer->AddGrowableCol(1);
 
 	// Add buttons
-	sizer->Add(wxutil::createDialogButtonBox(this, "Crop", "Cancel"), 0, wxEXPAND);
+	sizer->Add(wx::createDialogButtonBox(this, "Crop", "Cancel"), wxSizerFlags().Expand());
 
 	bindEvents();
 
 	// Setup dialog size
 	SetInitialSize(wxSize(-1, -1));
-	const wxSize size = GetSize() * GetContentScaleFactor();
+	const wxSize size = GetSize() * wxWindowBase::GetContentScaleFactor();
 	wxTopLevelWindowBase::SetMinSize(size);
 	CenterOnParent();
 }
@@ -389,6 +394,8 @@ void GfxCropDialog::setBottom()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when enter is pressed in a text box

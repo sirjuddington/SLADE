@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,8 +39,10 @@
 #include "MapEditor/MapTextureManager.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Draw2D.h"
+#include "OpenGL/GLTexture.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSide.h"
+#include "UI/Browser/BrowserItem.h"
 
 using namespace slade;
 
@@ -190,7 +192,7 @@ void LineTextureOverlay::updateLayout(int width, int height)
 		rows = 2;
 	int middlex = width * 0.5;
 	int middley = height * 0.5;
-	int maxsize = min(width / 3, height / rows);
+	int maxsize = glm::min(width / 3, height / rows);
 	tex_size_   = maxsize - 64;
 	if (tex_size_ > 256)
 		tex_size_ = 256;

@@ -12,7 +12,7 @@ public:
 		SImage::Info info;
 
 		// Get width & height
-		auto header = (gfx::IMGZHeader*)mc.data();
+		auto header = reinterpret_cast<const gfx::IMGZHeader*>(mc.data());
 		info.width  = wxINT16_SWAP_ON_BE(header->width);
 		info.height = wxINT16_SWAP_ON_BE(header->height);
 
@@ -27,7 +27,7 @@ protected:
 	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Setup variables
-		auto header   = (gfx::IMGZHeader*)data.data();
+		auto header   = reinterpret_cast<const gfx::IMGZHeader*>(data.data());
 		int  width    = wxINT16_SWAP_ON_BE(header->width);
 		int  height   = wxINT16_SWAP_ON_BE(header->height);
 		int  offset_x = wxINT16_SWAP_ON_BE(header->left);

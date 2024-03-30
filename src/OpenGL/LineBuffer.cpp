@@ -1,8 +1,8 @@
 
 #include "Main.h"
 #include "LineBuffer.h"
+#include "Geometry/Geometry.h"
 #include "Shader.h"
-#include "Utility/MathStuff.h"
 #include "Utility/Vector.h"
 #include "View.h"
 
@@ -107,7 +107,7 @@ void LineBuffer::addArrow(
 	float        arrowhead_angle,
 	bool         arrowhead_both)
 {
-	for (const auto& l : math::arrowLines(line, arrowhead_length, arrowhead_angle, arrowhead_both))
+	for (const auto& l : geometry::arrowLines(line, arrowhead_length, arrowhead_angle, arrowhead_both))
 		add2d(l.x1(), l.y1(), l.x2(), l.y2(), colour, width);
 }
 

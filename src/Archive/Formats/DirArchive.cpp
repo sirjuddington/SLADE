@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,10 @@
 #include "Main.h"
 #include "DirArchive.h"
 #include "App.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Archive/MapDesc.h"
 #include "General/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -148,7 +152,7 @@ bool DirArchive::open(string_view filename)
 	vector<ArchiveEntry*> entry_list;
 	putEntryTreeAsList(entry_list);
 	for (auto& entry : entry_list)
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 
 	// Enable announcements
 	sig_blocker.unblock();
@@ -278,13 +282,13 @@ bool DirArchive::save(string_view filename)
 
 			// Set unmodified
 			entries[a]->exProp("filePath") = path;
-			entries[a]->setState(ArchiveEntry::State::Unmodified);
+			entries[a]->setState(EntryState::Unmodified);
 
 			continue;
 		}
 
 		// Check if entry needs to be (re)written
-		if (entries[a]->state() == ArchiveEntry::State::Unmodified && entries[a]->exProps().contains("filePath")
+		if (entries[a]->state() == EntryState::Unmodified && entries[a]->exProps().contains("filePath")
 			&& path == entries[a]->exProp<string>("filePath"))
 			continue;
 
@@ -298,7 +302,7 @@ bool DirArchive::save(string_view filename)
 			files_written.push_back(path);
 
 		// Set unmodified
-		entries[a]->setState(ArchiveEntry::State::Unmodified);
+		entries[a]->setState(EntryState::Unmodified);
 		entries[a]->exProp("filePath")       = path;
 		file_modification_times_[entries[a]] = fileutil::fileModifiedTime(path);
 	}
@@ -451,7 +455,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
+MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
 {
 	MapDesc map;
 
@@ -480,7 +484,7 @@ Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> DirArchive::detectMaps()
+vector<MapDesc> DirArchive::detectMaps()
 {
 	vector<MapDesc> ret;
 
@@ -523,7 +527,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
+ArchiveEntry* DirArchive::findFirst(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = rootDir().get();
@@ -556,7 +560,7 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchive::findLast(SearchOptions& options)
+ArchiveEntry* DirArchive::findLast(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = rootDir().get();
@@ -588,7 +592,7 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> DirArchive::findAll(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = rootDir().get();
@@ -649,9 +653,8 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		// Deleted Entries
 		else if (change.action == DirEntryChange::Action::DeletedFile)
 		{
-			const auto entry = entryAtPath(change.entry_path);
 			// If the parent directory was already removed, this entry no longer exists
-			if (entry)
+			if (const auto entry = entryAtPath(change.entry_path))
 				removeEntry(entry);
 		}
 
@@ -668,7 +671,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			std::replace(name.begin(), name.end(), '\\', '/');
 
 			const auto ndir = createDir(name);
-			ndir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
+			ndir->dirEntry()->setState(EntryState::Unmodified);
 			ndir->dirEntry()->exProp("filePath") = change.file_path;
 		}
 
@@ -701,7 +704,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			EntryType::detectEntryType(*new_entry);
 
 			// Set entry not modified
-			new_entry->setState(ArchiveEntry::State::Unmodified);
+			new_entry->setState(EntryState::Unmodified);
 		}
 	}
 
@@ -739,4 +742,53 @@ bool DirArchive::shouldIgnoreEntryChange(const DirEntryChange& change)
 	// /greater/, but this is more robust against changes to the system clock,
 	// and an unmodified file will never change mtime.)
 	return (old_change.mtime == change.mtime);
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// DirArchiveTraverser Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// DirArchiveTraverser class constructor
+// -----------------------------------------------------------------------------
+DirArchiveTraverser::DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist, bool ignore_hidden) :
+	paths_{ pathlist },
+	dirs_{ dirlist },
+	ignore_hidden_{ ignore_hidden }
+{
+}
+
+// -----------------------------------------------------------------------------
+// Called when a file is found during traversal
+// -----------------------------------------------------------------------------
+wxDirTraverseResult DirArchiveTraverser::OnFile(const wxString& filename)
+{
+	auto path_str = filename.ToStdString();
+
+	if (ignore_hidden_ && strutil::startsWith(strutil::Path::fileNameOf(path_str), '.'))
+		return wxDIR_CONTINUE;
+
+	paths_.push_back(path_str);
+	return wxDIR_CONTINUE;
+}
+
+// -----------------------------------------------------------------------------
+// Called when a directory is found during traversal
+// -----------------------------------------------------------------------------
+wxDirTraverseResult DirArchiveTraverser::OnDir(const wxString& dirname)
+{
+	if (ignore_hidden_)
+	{
+		auto path_str = dirname.ToStdString();
+		std::replace(path_str.begin(), path_str.end(), '\\', '/');
+		auto dir = strutil::afterLastV(path_str, '/');
+		if (strutil::startsWith(dir, '.'))
+			return wxDIR_IGNORE;
+	}
+
+	dirs_.push_back(dirname.ToStdString());
+	return wxDIR_CONTINUE;
 }

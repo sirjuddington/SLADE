@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,7 @@
 #include "MapRenderer2D.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Edit/ObjectEdit.h"
 #include "MapEditor/ItemSelection.h"
@@ -49,12 +50,21 @@
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
 #include "OpenGL/View.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "ThingBuffer2D.h"
 #include "Utility/Polygon.h"
 #include "Utility/Vector.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -180,7 +190,7 @@ const MapTextureManager::Texture& sectorTexture(const MapSector* sector, bool ce
 // -----------------------------------------------------------------------------
 glm::vec4 sectorColour(MapSector* sector, bool ceiling)
 {
-	return sector->colourAt(ceiling ? 2 : 1).ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f).asVec4();
+	return sector->colourAt(ceiling ? 2 : 1).ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -317,7 +327,7 @@ void MapRenderer2D::renderVertices(float alpha)
 		updateVerticesBuffer();
 
 	// Setup rendering options
-	vertices_buffer_->setColour(colourconfig::colour("map_vertex").ampf(1.0f, 1.0f, 1.0f, alpha).asVec4());
+	vertices_buffer_->setColour(colourconfig::colour("map_vertex").ampf(1.0f, 1.0f, 1.0f, alpha));
 	vertices_buffer_->setPointRadius(vertexRadius());
 	gl::setBlend(gl::Blend::Normal);
 
@@ -343,7 +353,7 @@ void MapRenderer2D::renderVertexHilight(int index, float fade) const
 		fade = 1.0f;
 
 	// Setup rendering options
-	vertices_buffer_->setColour(colourconfig::colour("map_hilight").ampf(1.0f, 1.0f, 1.0f, fade).asVec4());
+	vertices_buffer_->setColour(colourconfig::colour("map_hilight").ampf(1.0f, 1.0f, 1.0f, fade));
 	vertices_buffer_->setPointRadius(vertexRadius(1.8f + 0.6f * fade));
 	gl::setBlend(colourconfig::colDef("map_hilight").blendMode());
 
@@ -587,9 +597,9 @@ void MapRenderer2D::renderThingOverlays(
 
 	// Otherwise, setup the thing overlay buffer with values from the dc
 	gl::setBlend(dc.blend);
-	thing_overlay_buffer_->setColour(dc.colour.asVec4());
+	thing_overlay_buffer_->setColour(dc.colour);
 	thing_overlay_buffer_->setFillOpacity(0.25f);
-	thing_overlay_buffer_->setOutlineWidth(std::min(3.0f / (float)view_->scale().x, 4.0f));
+	thing_overlay_buffer_->setOutlineWidth(std::min(3.0f / static_cast<float>(view_->scale().x), 4.0f));
 	thing_overlay_buffer_->setPointRadius(dc.pointsprite_radius);
 
 	// Populate thing overlay buffer
@@ -1026,7 +1036,7 @@ void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float 
 	if (sector_hilight_fill)
 	{
 		const auto& shader = gl::draw2d::defaultShader(false);
-		shader.setUniform("colour", dc.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f).asVec4());
+		shader.setUniform("colour", dc.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f));
 		dc.view->setupShader(shader);
 		flats_buffer_->draw(
 			gl::Primitive::Triangles, nullptr, nullptr, flats_[index].buffer_offset, flats_[index].vertex_count);
@@ -1057,8 +1067,8 @@ void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float 
 	//// TEST draw text point
 	// glPointSize(8.0f);
 	// glBegin(GL_POINTS);
-	// glVertex2d(map->getSector(index)->getPoint(MapObject::Point::Within).x,
-	// map->getSector(index)->getPoint(MapObject::Point::Within).y); glEnd();
+	// glVertex2d(map->getSector(index)->getPoint(map::ObjectPoint::Within).x,
+	// map->getSector(index)->getPoint(map::ObjectPoint::Within).y); glEnd();
 }
 
 // -----------------------------------------------------------------------------
@@ -1068,7 +1078,7 @@ void MapRenderer2D::renderFlatOverlays(const gl::draw2d::Context& dc, const vect
 {
 	// Setup shader (for fill)
 	const auto& shader = gl::draw2d::defaultShader(false);
-	shader.setUniform("colour", dc.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f).asVec4());
+	shader.setUniform("colour", dc.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f));
 	dc.view->setupShader(shader);
 
 	// Go through selection, render fill (if needed) and build list of lines to render (for outline)
@@ -1155,7 +1165,7 @@ void MapRenderer2D::renderTaggedFlats(gl::draw2d::Context& dc, const vector<MapS
 		for (const auto sector : sectors)
 		{
 			// Skip if the tagged sector is adjacent
-			if (object->objType() == MapObject::Type::Line)
+			if (object->objType() == map::ObjectType::Line)
 			{
 				auto line = dynamic_cast<MapLine*>(object);
 				if (line->frontSector() == sector || line->backSector() == sector)
@@ -1218,7 +1228,7 @@ void MapRenderer2D::renderMovingVertices(
 								glm::vec2{ line->x2(), line->y2() };
 
 		// Add to buffer
-		temp_lines_buffer_->add2d(v1.x, v1.y, v2.x, v2.y, lineColour(line, true).asVec4());
+		temp_lines_buffer_->add2d(v1.x, v1.y, v2.x, v2.y, lineColour(line, true));
 	}
 	temp_lines_buffer_->push();
 
@@ -1302,7 +1312,7 @@ void MapRenderer2D::renderMovingLines(
 								glm::vec2{ line->x2(), line->y2() };
 
 		// Add to buffer
-		temp_lines_buffer_->add2d(v1.x, v1.y, v2.x, v2.y, lineColour(line, true).asVec4());
+		temp_lines_buffer_->add2d(v1.x, v1.y, v2.x, v2.y, lineColour(line, true));
 	}
 	temp_lines_buffer_->push();
 
@@ -1346,11 +1356,11 @@ void MapRenderer2D::renderMovingSectors(
 	}
 
 	// Build list of moving lines
-	vector<mapeditor::Item> lines;
+	vector<Item> lines;
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
 		if (lines_moved[a] > 0)
-			lines.emplace_back((int)a, mapeditor::ItemType::Line);
+			lines.emplace_back(static_cast<int>(a), ItemType::Line);
 	}
 
 	// Draw moving lines
@@ -1395,7 +1405,7 @@ void MapRenderer2D::renderPasteThings(gl::draw2d::Context& dc, const vector<MapT
 // -----------------------------------------------------------------------------
 // Renders object edit group overlay for [group]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, ObjectEditGroup* group) const
+void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, const ObjectEditGroup* group) const
 {
 	// Simple test
 	vector<Vec2d> vertex_points;
@@ -1413,7 +1423,7 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, ObjectEditGro
 			line.v1->position.y,
 			line.v2->position.x,
 			line.v2->position.y,
-			lineColour(line.map_line, true).asVec4());
+			lineColour(line.map_line, true));
 	}
 	temp_lines_buffer_->push();
 	temp_lines_buffer_->setWidthMult(line_width);
@@ -1478,9 +1488,9 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, ObjectEditGro
 			thing_overlay_buffer_->add({ item.position.x, item.position.y }, radius + 4.0f);
 		}
 		thing_overlay_buffer_->push();
-		thing_overlay_buffer_->setColour(colourconfig::colour("map_object_edit").asVec4());
+		thing_overlay_buffer_->setColour(colourconfig::colour("map_object_edit"));
 		thing_overlay_buffer_->setFillOpacity(0.25f);
-		thing_overlay_buffer_->setOutlineWidth(std::min(3.0f / (float)view_->scale().x, 4.0f));
+		thing_overlay_buffer_->setOutlineWidth(std::min(3.0f / static_cast<float>(view_->scale().x), 4.0f));
 		thing_overlay_buffer_->draw(
 			thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline, view_);
 	}
@@ -1520,11 +1530,11 @@ void MapRenderer2D::updateLinesBuffer(bool show_direction)
 		auto col = lineColour(line);
 
 		if (line_smooth)
-			lines_buffer_->add2d(line->x1(), line->y1(), line->x2(), line->y2(), col.asVec4(), 1.0f);
+			lines_buffer_->add2d(line->x1(), line->y1(), line->x2(), line->y2(), col, 1.0f);
 		else
 		{
-			lines_buffer_basic_->add(line->start().toGLM(), col.asVec4(), {});
-			lines_buffer_basic_->add(line->end().toGLM(), col.asVec4(), {});
+			lines_buffer_basic_->add(line->start(), col, {});
+			lines_buffer_basic_->add(line->end(), col, {});
 		}
 
 		// Direction tab if needed
@@ -1537,9 +1547,9 @@ void MapRenderer2D::updateLinesBuffer(bool show_direction)
 					mid.x, mid.y, tab.x, tab.y, { col.fr(), col.fg(), col.fb(), col.fa() * 0.6f }, 1.0f);
 			else
 			{
-				auto dcol = col.ampf(1.0f, 1.0f, 1.0f, 0.6f).asVec4();
-				lines_buffer_basic_->add(mid.toGLM(), dcol, {});
-				lines_buffer_basic_->add(tab.toGLM(), dcol, {});
+				auto dcol = col.ampf(1.0f, 1.0f, 1.0f, 0.6f);
+				lines_buffer_basic_->add(mid, dcol, {});
+				lines_buffer_basic_->add(tab, dcol, {});
 			}
 		}
 	}
@@ -1661,7 +1671,7 @@ void MapRenderer2D::updateFlatsBuffer(bool ceilings)
 
 			// Add flat group for texture
 			flat_groups_.emplace_back();
-			flat_groups_.back().texture = flats_[i].texture;
+			flat_groups_.back().texture      = flats_[i].texture;
 			flat_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
 			flat_groups_.back().index_buffer->upload(indices);
 

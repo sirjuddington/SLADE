@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "FindReplacePanel.h"
 #include "General/KeyBind.h"
+#include "General/UI.h"
 #include "TextEditorCtrl.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
@@ -60,12 +61,13 @@ EXTERN_CVAR(Bool, txed_fr_matchword_start)
 // FindReplacePanel class constructor
 // -----------------------------------------------------------------------------
 FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor) :
-	wxPanel(parent, -1), text_editor_(text_editor)
+	wxPanel(parent, -1),
+	text_editor_(text_editor)
 {
 	SetSizer(new wxBoxSizer(wxVERTICAL));
 
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	GetSizer()->Add(gb_sizer, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	GetSizer()->Add(gb_sizer, wxutil::sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Find
 	text_find_     = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
@@ -94,16 +96,16 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 	cb_search_regex_     = new wxCheckBox(this, -1, "Regular Expression");
 	cb_allow_escape_     = new wxCheckBox(this, -1, "Allow Backslash Expressions");
 	auto wsizer          = new wxWrapSizer(wxHORIZONTAL, wxREMOVE_LEADING_SPACES);
-	GetSizer()->Add(wsizer, 0, wxEXPAND);
-	wsizer->Add(cb_match_case_, 0, wxEXPAND);
+	GetSizer()->Add(wsizer, wxSizerFlags().Expand());
+	wsizer->Add(cb_match_case_, wxSizerFlags().Expand());
 	wsizer->AddSpacer(ui::pad());
-	wsizer->Add(cb_match_word_whole_, 0, wxEXPAND);
+	wsizer->Add(cb_match_word_whole_, wxSizerFlags().Expand());
 	wsizer->AddSpacer(ui::pad());
-	wsizer->Add(cb_match_word_start_, 0, wxEXPAND);
+	wsizer->Add(cb_match_word_start_, wxSizerFlags().Expand());
 	wsizer->AddSpacer(ui::pad());
-	wsizer->Add(cb_search_regex_, 0, wxEXPAND);
+	wsizer->Add(cb_search_regex_, wxSizerFlags().Expand());
 	wsizer->AddSpacer(ui::pad());
-	wsizer->Add(cb_allow_escape_, 0, wxEXPAND);
+	wsizer->Add(cb_allow_escape_, wxSizerFlags().Expand());
 	cb_match_case_->SetValue(txed_fr_matchcase);
 	cb_match_word_whole_->SetValue(txed_fr_matchword);
 	cb_match_word_start_->SetValue(txed_fr_matchword_start);
@@ -169,8 +171,8 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 	// Set tab order
 	text_replace_->MoveAfterInTabOrder(text_find_);
 
-	Layout();
-	Fit();
+	wxWindowBase::Layout();
+	wxWindowBase::Fit();
 }
 
 // -----------------------------------------------------------------------------
@@ -242,6 +244,8 @@ wxString FindReplacePanel::replaceText() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a key is pressed while the panel has focus

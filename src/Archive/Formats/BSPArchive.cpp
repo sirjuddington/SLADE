@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,6 +39,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BSPArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -204,7 +206,7 @@ bool BSPArchive::open(const MemChunk& mc)
 			nlump->setSizeOnDisk(lumpsize);
 			nlump->setOffsetOnDisk(offset + texoffset);
 			nlump->importMemChunk(mc, offset + texoffset, lumpsize);
-			nlump->setState(ArchiveEntry::State::Unmodified);
+			nlump->setState(EntryState::Unmodified);
 
 			// Add to entry list
 			rootDir()->addEntry(nlump);

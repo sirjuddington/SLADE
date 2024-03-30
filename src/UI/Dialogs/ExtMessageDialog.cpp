@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "ExtMessageDialog.h"
 #include "General/UI.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -57,16 +58,16 @@ ExtMessageDialog::ExtMessageDialog(wxWindow* parent, const wxString& caption) :
 
 	// Add message label
 	label_message_ = new wxStaticText(this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
-	sizer->Add(label_message_, 0, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(label_message_, wxutil::sfWithBorder().Expand());
 
 	// Add extended text box
 	text_ext_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
 	text_ext_->SetFont(wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-	sizer->Add(text_ext_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(text_ext_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(hbox, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	hbox->AddStretchSpacer(1);
 	auto btn_ok = new wxButton(this, wxID_OK, "OK");
 	btn_ok->SetDefault();

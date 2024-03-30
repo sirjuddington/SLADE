@@ -1,41 +1,47 @@
 #pragma once
 
-#include "Archive/Archive.h"
-#include "General/SAction.h"
-#include "MapEditor.h"
+#include "Archive/MapDesc.h"
+#include "General/SActionHandler.h"
 
+// Forward declarations
 namespace slade
 {
-class MCOverlay;
-class ItemSelection;
+class Camera;
 class InfoOverlay3D;
-class ThingInfoOverlay;
-class SectorInfoOverlay;
+class ItemSelection;
 class LineInfoOverlay;
-class VertexInfoOverlay;
-class Edit3D;
+class MapCanvas;
+class MCOverlay;
+class SectorInfoOverlay;
+class ThingInfoOverlay;
 class UndoManager;
 class UndoStep;
-class ObjectEdit;
-class MoveObjects;
-class LineDraw;
-class Edit2D;
-class Camera;
-class MapCanvas;
+class VertexInfoOverlay;
 namespace gl::draw2d
 {
 	struct Context;
 }
-namespace mapeditor
-{
-	class Renderer;
-	class Input;
-} // namespace mapeditor
 namespace ui
 {
 	enum class MouseCursor;
 }
+namespace mapeditor
+{
+	class Edit2D;
+	class Edit3D;
+	class Input;
+	class LineDraw;
+	class MoveObjects;
+	class ObjectEdit;
+	class Renderer;
+	enum class Mode;
+	enum class SectorMode;
+	struct Item;
+} // namespace mapeditor
+} // namespace slade
 
+namespace slade::mapeditor
+{
 class MapEditContext : public SActionHandler
 {
 public:
@@ -50,28 +56,29 @@ public:
 	MapEditContext();
 	~MapEditContext() override;
 
-	SLADEMap&             map() const { return *map_; }
-	mapeditor::Mode       editMode() const { return edit_mode_; }
-	mapeditor::SectorMode sectorEditMode() const { return sector_mode_; }
-	double                gridSize() const;
-	ItemSelection&        selection() const { return *selection_; }
-	vector<MapSector*>&   taggedSectors() { return tagged_sectors_; }
-	vector<MapLine*>&     taggedLines() { return tagged_lines_; }
-	vector<MapThing*>&    taggedThings() { return tagged_things_; }
-	vector<MapLine*>&     taggingLines() { return tagging_lines_; }
-	vector<MapThing*>&    taggingThings() { return tagging_things_; }
-	vector<MapThing*>&    pathedThings() { return pathed_things_; }
-	bool                  gridSnap() const { return grid_snap_; }
-	UndoManager*          undoManager() const { return undo_manager_.get(); }
-	Archive::MapDesc&     mapDesc() { return map_desc_; }
-	MapCanvas*            canvas() const { return canvas_; }
-	mapeditor::Renderer&  renderer() const { return *renderer_; }
-	mapeditor::Input&     input() const { return *input_; }
-	bool                  mouseLocked() const { return mouse_locked_; }
+	SLADEMap&           map() const { return *map_; }
+	Mode                editMode() const { return edit_mode_; }
+	SectorMode          sectorEditMode() const { return sector_mode_; }
+	double              gridSize() const;
+	ItemSelection&      selection() const { return *selection_; }
+	Item                hilightItem() const;
+	vector<MapSector*>& taggedSectors() { return tagged_sectors_; }
+	vector<MapLine*>&   taggedLines() { return tagged_lines_; }
+	vector<MapThing*>&  taggedThings() { return tagged_things_; }
+	vector<MapLine*>&   taggingLines() { return tagging_lines_; }
+	vector<MapThing*>&  taggingThings() { return tagging_things_; }
+	vector<MapThing*>&  pathedThings() { return pathed_things_; }
+	bool                gridSnap() const { return grid_snap_; }
+	UndoManager*        undoManager() const { return undo_manager_.get(); }
+	MapDesc&            mapDesc() { return map_desc_; }
+	MapCanvas*          canvas() const { return canvas_; }
+	Renderer&           renderer() const { return *renderer_; }
+	Input&              input() const { return *input_; }
+	bool                mouseLocked() const { return mouse_locked_; }
 
-	void setEditMode(mapeditor::Mode mode);
+	void setEditMode(Mode mode);
 	void setPrevEditMode() { setEditMode(edit_mode_prev_); }
-	void setSectorEditMode(mapeditor::SectorMode mode);
+	void setSectorEditMode(SectorMode mode);
 	void cycleSectorEditMode();
 	void setCanvas(MapCanvas* canvas) { canvas_ = canvas; }
 	void lockMouse(bool lock);
@@ -80,15 +87,14 @@ public:
 	bool update(double frametime);
 
 	// Map loading
-	bool openMap(const Archive::MapDesc& map);
+	bool openMap(const MapDesc& map);
 	void clearMap();
 
 	// Selection/hilight
-	mapeditor::Item hilightItem() const;
-	void            showItem(int index) const;
-	void            updateTagged();
-	void            selectionUpdated();
-	void            clearSelection() const;
+	void showItem(int index) const;
+	void updateTagged();
+	void selectionUpdated();
+	void clearSelection() const;
 
 	// Grid
 	void   incrementGrid();
@@ -153,7 +159,7 @@ public:
 	void   updateStatusText() const;
 	void   updateThingLists();
 	void   setCursor(ui::MouseCursor cursor) const;
-	void   forceRefreshRenderer();
+	void   forceRefreshRenderer() const;
 
 
 	// SAction handler
@@ -162,7 +168,7 @@ public:
 private:
 	unique_ptr<SLADEMap> map_;
 	MapCanvas*           canvas_ = nullptr;
-	Archive::MapDesc     map_desc_;
+	MapDesc              map_desc_;
 	long                 next_frame_length_ = 0;
 
 	// Undo/Redo stuff
@@ -170,11 +176,11 @@ private:
 	unique_ptr<UndoStep>    us_create_delete_;
 
 	// Editor state
-	mapeditor::Mode           edit_mode_      = mapeditor::Mode::Lines;
-	mapeditor::Mode           edit_mode_prev_ = mapeditor::Mode::Lines;
+	Mode                      edit_mode_;
+	Mode                      edit_mode_prev_;
 	unique_ptr<ItemSelection> selection_;
-	int                       grid_size_    = 9;
-	mapeditor::SectorMode     sector_mode_  = mapeditor::SectorMode::Both;
+	int                       grid_size_ = 9;
+	SectorMode                sector_mode_;
 	bool                      grid_snap_    = true;
 	int                       current_tag_  = 0;
 	bool                      mouse_locked_ = false;
@@ -222,10 +228,10 @@ private:
 	int   player_start_dir_ = 0;
 
 	// Renderer
-	unique_ptr<mapeditor::Renderer> renderer_;
+	unique_ptr<Renderer> renderer_;
 
 	// Input
-	unique_ptr<mapeditor::Input> input_;
+	unique_ptr<Input> input_;
 
 	// Full-Screen Overlay
 	unique_ptr<MCOverlay> overlay_current_;
@@ -238,4 +244,4 @@ private:
 	unique_ptr<ThingInfoOverlay>  info_thing_;
 	unique_ptr<InfoOverlay3D>     info_3d_;
 };
-} // namespace slade
+} // namespace slade::mapeditor

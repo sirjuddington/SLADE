@@ -1,41 +1,44 @@
 #pragma once
 
-#include "General/Defs.h"
-#include "MapObjectList/LineList.h"
-#include "MapObjectList/SectorList.h"
-#include "MapObjectList/SideList.h"
-#include "MapObjectList/ThingList.h"
-#include "MapObjectList/VertexList.h"
-
 namespace slade
 {
+class ThingList;
+class SectorList;
+class LineList;
+class SideList;
+class VertexList;
+namespace map
+{
+	enum class ObjectType;
+}
+
 class MapObjectCollection
 {
 public:
 	MapObjectCollection(SLADEMap* parent_map = nullptr);
 
 	SLADEMap*         parentMap() const { return parent_map_; }
-	VertexList&       vertices() { return vertices_; }
-	SideList&         sides() { return sides_; }
-	LineList&         lines() { return lines_; }
-	SectorList&       sectors() { return sectors_; }
-	ThingList&        things() { return things_; }
-	const VertexList& vertices() const { return vertices_; }
-	const SideList&   sides() const { return sides_; }
-	const LineList&   lines() const { return lines_; }
-	const SectorList& sectors() const { return sectors_; }
-	const ThingList&  things() const { return things_; }
+	VertexList&       vertices() { return *vertices_; }
+	SideList&         sides() { return *sides_; }
+	LineList&         lines() { return *lines_; }
+	SectorList&       sectors() { return *sectors_; }
+	ThingList&        things() { return *things_; }
+	const VertexList& vertices() const { return *vertices_; }
+	const SideList&   sides() const { return *sides_; }
+	const LineList&   lines() const { return *lines_; }
+	const SectorList& sectors() const { return *sectors_; }
+	const ThingList&  things() const { return *things_; }
 
 	void setParentMap(SLADEMap* map) { parent_map_ = map; }
 
 	// MapObject id stuff (used for undo/redo)
 	void       addMapObject(unique_ptr<MapObject> object);
-	void       removeMapObject(MapObject* object);
+	void       removeMapObject(const MapObject* object);
 	MapObject* getObjectById(unsigned id) const { return objects_[id].object.get(); }
-	void       putObjectIdList(MapObject::Type type, vector<unsigned>& list) const;
-	void       restoreObjectIdList(MapObject::Type type, vector<unsigned>& list);
+	void       putObjectIdList(map::ObjectType type, vector<unsigned>& list) const;
+	void       restoreObjectIdList(map::ObjectType type, const vector<unsigned>& list);
 
-	void refreshIndices();
+	void refreshIndices() const;
 	void clear();
 
 	// Object add
@@ -49,22 +52,22 @@ public:
 	MapSide* duplicateSide(MapSide* side);
 
 	// Object remove
-	bool removeVertex(MapVertex* vertex, bool merge_lines = false);
+	bool removeVertex(const MapVertex* vertex, bool merge_lines = false);
 	bool removeVertex(unsigned index, bool merge_lines = false);
-	bool removeLine(MapLine* line);
+	bool removeLine(const MapLine* line);
 	bool removeLine(unsigned index);
-	bool removeSide(MapSide* side, bool remove_from_line = true);
+	bool removeSide(const MapSide* side, bool remove_from_line = true);
 	bool removeSide(unsigned index, bool remove_from_line = true);
-	bool removeSector(MapSector* sector);
+	bool removeSector(const MapSector* sector);
 	bool removeSector(unsigned index);
-	bool removeThing(MapThing* thing);
+	bool removeThing(const MapThing* thing);
 	bool removeThing(unsigned index);
 
 	// Modified times
-	vector<MapObject*> modifiedObjects(long since, MapObject::Type type) const;
+	vector<MapObject*> modifiedObjects(long since, map::ObjectType type) const;
 	vector<MapObject*> allModifiedObjects(long since) const;
 	long               lastModifiedTime() const;
-	bool               modifiedSince(long since, MapObject::Type type) const;
+	bool               modifiedSince(long since, map::ObjectType type) const;
 
 	// Checks
 	int removeDetachedVertices();
@@ -83,15 +86,15 @@ private:
 		unique_ptr<MapObject> object;
 		bool                  in_map;
 
-		MapObjectHolder(unique_ptr<MapObject> object, bool in_map) : object{ std::move(object) }, in_map{ in_map } {}
+		MapObjectHolder(unique_ptr<MapObject> object, bool in_map);
 	};
 
 	SLADEMap*               parent_map_ = nullptr;
 	vector<MapObjectHolder> objects_;
-	VertexList              vertices_;
-	SideList                sides_;
-	LineList                lines_;
-	SectorList              sectors_;
-	ThingList               things_;
+	unique_ptr<VertexList>  vertices_;
+	unique_ptr<SideList>    sides_;
+	unique_ptr<LineList>    lines_;
+	unique_ptr<SectorList>  sectors_;
+	unique_ptr<ThingList>   things_;
 };
 } // namespace slade

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Utility/Colour.h"
+#include "Geometry/Plane.h"
+#include "Geometry/RectFwd.h"
+#include "MapEditor/Item.h"
+#include "Utility/ColRGBA.h"
 
 
 // Forward declarations
@@ -123,7 +126,7 @@ public:
 
 	Quad*                 getQuad(mapeditor::Item item);
 	Flat*                 getFlat(mapeditor::Item item);
-	vector<vector<Flat>>& getSectorFlats() { return sector_flats_; };
+	vector<vector<Flat>>& getSectorFlats() { return sector_flats_; }
 
 	// Camera
 	Camera& camera() const { return *camera_; }
@@ -155,8 +158,8 @@ public:
 	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f) const;
 
 	// Walls
-	void setupQuad(Quad* quad, Seg2d seg, double top, double bottom) const;
-	void setupQuad(Quad* quad, Seg2d seg, Plane top, Plane bottom) const;
+	void setupQuad(Quad* quad, const Seg2d& seg, double top, double bottom) const;
+	void setupQuad(Quad* quad, const Seg2d& seg, const Plane& top, const Plane& bottom) const;
 	void setupQuadTexCoords(
 		Quad*  quad,
 		int    length,

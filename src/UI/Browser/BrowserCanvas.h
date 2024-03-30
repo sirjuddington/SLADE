@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Browser.h"
 #include "UI/Canvas/GLCanvas.h"
 
 class wxScrollBar;
@@ -16,20 +17,7 @@ class BrowserCanvas : public GLCanvas
 {
 public:
 	BrowserCanvas(wxWindow* parent);
-	~BrowserCanvas() override = default;
-
-	enum class ItemView
-	{
-		Normal,
-		Tiles
-	};
-
-	enum class NameType
-	{
-		Normal,
-		Index,
-		None
-	};
+	~BrowserCanvas() override;
 
 	vector<BrowserItem*>& itemList() { return items_; }
 	int                   getViewedIndex() const;
@@ -50,9 +38,9 @@ public:
 	void                  showSelectedItem();
 	bool                  searchItemFrom(int from);
 	void                  setFont(gl::draw2d::Font font) { this->font_ = font; }
-	void                  setItemNameType(NameType type) { this->show_names_ = type; }
+	void                  setItemNameType(browser::NameType type) { this->show_names_ = type; }
 	void                  setItemSize(int size) { this->item_size_ = size; }
-	void                  setItemViewType(ItemView type) { this->item_type_ = type; }
+	void                  setItemViewType(browser::ItemView type) { this->item_type_ = type; }
 	int                   longestItemTextWidth() const;
 
 	// Events
@@ -74,15 +62,15 @@ private:
 	BrowserItem*         item_selected_ = nullptr;
 
 	// Display
-	int              yoff_        = 0;
-	int              item_border_ = 0;
-	gl::draw2d::Font font_;
-	NameType         show_names_ = NameType::Normal;
-	int              item_size_  = -1;
-	int              top_index_  = 0;
-	int              top_y_      = 0;
-	ItemView         item_type_  = ItemView::Normal;
-	int              num_cols_   = -1;
+	int               yoff_        = 0;
+	int               item_border_ = 0;
+	gl::draw2d::Font  font_;
+	browser::NameType show_names_ = browser::NameType::Normal;
+	int               item_size_  = -1;
+	int               top_index_  = 0;
+	int               top_y_      = 0;
+	browser::ItemView item_type_  = browser::ItemView::Normal;
+	int               num_cols_   = -1;
 };
 } // namespace slade
 

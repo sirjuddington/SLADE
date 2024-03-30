@@ -1,17 +1,14 @@
 #pragma once
 
-#include "Utility/Colour.h"
-
 namespace slade
 {
 class PaletteCanvas;
-class Palette;
 
 class PaletteDialog : public wxDialog
 {
 public:
 	PaletteDialog(const Palette* palette);
-	~PaletteDialog() = default;
+	~PaletteDialog() override = default;
 
 	ColRGBA selectedColour() const;
 
