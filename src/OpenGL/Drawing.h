@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Utility/Colour.h"
+#include "Geometry/Rect.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
@@ -35,21 +36,21 @@ namespace drawing
 	int fontSize();
 
 	// Basic drawing
-	void drawLine(Vec2d start, Vec2d end);
+	void drawLine(const Vec2d& start, const Vec2d& end);
 	void drawLine(double x1, double y1, double x2, double y2);
-	void drawLineTabbed(Vec2d start, Vec2d end, double tab = 0.1, double tab_max = 16);
+	void drawLineTabbed(const Vec2d& start, const Vec2d& end, double tab = 0.1, double tab_max = 16);
 	void drawArrow(
-		Vec2d          p1,
-		Vec2d          p2,
+		const Vec2d&   p1,
+		const Vec2d&   p2,
 		const ColRGBA& color            = ColRGBA::WHITE,
 		bool           twoway           = false,
 		double         arrowhead_angle  = 0.7854f,
 		double         arrowhead_length = 25.f);
-	void drawRect(Vec2d tl, Vec2d br);
+	void drawRect(const Vec2d& tl, const Vec2d& br);
 	void drawRect(double x1, double y1, double x2, double y2);
-	void drawFilledRect(Vec2d tl, Vec2d br);
+	void drawFilledRect(const Vec2d& tl, const Vec2d& br);
 	void drawFilledRect(double x1, double y1, double x2, double y2);
-	void drawBorderedRect(Vec2d tl, Vec2d br, const ColRGBA& colour, const ColRGBA& border_colour);
+	void drawBorderedRect(const Vec2d& tl, const Vec2d& br, const ColRGBA& colour, const ColRGBA& border_colour);
 	void drawBorderedRect(
 		double         x1,
 		double         y1,
@@ -57,8 +58,8 @@ namespace drawing
 		double         y2,
 		const ColRGBA& colour,
 		const ColRGBA& border_colour);
-	void drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour);
-	void drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour);
+	void drawEllipse(const Vec2d& mid, double radius_x, double radius_y, int sides, const ColRGBA& colour);
+	void drawFilledEllipse(const Vec2d& mid, double radius_x, double radius_y, int sides, const ColRGBA& colour);
 
 	// Texture drawing
 	void  drawTexture(unsigned id, double x = 0, double y = 0, bool flipx = false, bool flipy = false);
@@ -115,7 +116,8 @@ public:
 	void setText(string_view text);
 	void setSize(int width);
 	void setLineHeight(int height) { line_height_ = height; }
-	void draw(int x, int y, const ColRGBA& colour = ColRGBA::WHITE, drawing::Align alignment = drawing::Align::Left) const;
+	void draw(int x, int y, const ColRGBA& colour = ColRGBA::WHITE, drawing::Align alignment = drawing::Align::Left)
+		const;
 
 private:
 	string         text_;

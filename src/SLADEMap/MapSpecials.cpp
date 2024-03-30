@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,7 +32,17 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapSpecials.h"
+#include "Archive/ArchiveEntry.h"
 #include "Game/Configuration.h"
+#include "Geometry/Geometry.h"
+#include "MapObject/MapLine.h"
+#include "MapObject/MapSide.h"
+#include "MapObject/MapThing.h"
+#include "MapObject/MapVertex.h"
+#include "MapObjectList/LineList.h"
+#include "MapObjectList/SectorList.h"
+#include "MapObjectList/ThingList.h"
+#include "MapObjectList/VertexList.h"
 #include "SLADEMap.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Tokenizer.h"
@@ -77,7 +87,6 @@ void MapSpecials::reset()
 // -----------------------------------------------------------------------------
 void MapSpecials::processMapSpecials(SLADEMap* map)
 {
-
 	// Clear out all 3D floors, or every call to this function will create duplicates!
 	// TODO this isn't a very good solution, but we don't have incremental updates yet
 	for (unsigned a = 0; a < map->nSectors(); a++)
@@ -329,7 +338,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 			tagged.push_back(line);
 
 		// Get args
-		double alpha = (double)args[1] / 255.0;
+		double alpha = static_cast<double>(args[1]) / 255.0;
 		string type  = (args[2] == 0) ? "translucent" : "add";
 
 		// Set transparency
@@ -345,7 +354,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 // -----------------------------------------------------------------------------
 // Process 'OPEN' ACS scripts for various specials - sector colours, slopes, etc
 // -----------------------------------------------------------------------------
-void MapSpecials::processACSScripts(ArchiveEntry* entry)
+void MapSpecials::processACSScripts(const ArchiveEntry* entry)
 {
 	sector_colours_.clear();
 	sector_fadecolours_.clear();
@@ -579,11 +588,14 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 			}
 
 			if (line->special() == 704 || line->special() == 714)
-				target->setPlane<SurfaceType::Floor>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+				target->setPlane<SurfaceType::Floor>(
+					geometry::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
 			else
-				target->setPlane<SurfaceType::Ceiling>(math::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
+				target->setPlane<SurfaceType::Ceiling>(
+					geometry::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
 		}
 		break;
+		default: break;
 		}
 	}
 
@@ -630,6 +642,7 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 				front->setCeilingPlane(tagged->ceiling().plane);
 		}
 		break;
+		default: break;
 		}
 	}
 }
@@ -641,10 +654,10 @@ void MapSpecials::processSRB2FOFs(const SLADEMap* map) const
 {
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
-		MapLine* line = map->line(a);
+		MapLine*   line           = map->line(a);
 		MapSector* control_sector = line->frontSector();
 
-		if(!control_sector)
+		if (!control_sector)
 			continue;
 
 		ExtraFloor extra_floor;
@@ -652,93 +665,91 @@ void MapSpecials::processSRB2FOFs(const SLADEMap* map) const
 		auto special = line->special();
 		switch (special)
 		{
-
 		//
 		//	Solid
 		//
-		case 100: //Solid, Opaque, Shadowcasting
-		case 101: //Solid, Opaque, Non-Shadowcasting
-		case 102: //Solid, Translucent
-		case 103: //Solid, Sides Only
-		case 105: //Solid, Invisible
-		case 140: //Intangible from Bottom, Opaque
-		case 141: //Intangible from Bottom, Translucent
-		case 143: //Intangible from Top, Opaque
-		case 144: //Intangible from Top, Translucent
-		case 146: //Only Tangible from Sides
-		
+		case 100: // Solid, Opaque, Shadowcasting
+		case 101: // Solid, Opaque, Non-Shadowcasting
+		case 102: // Solid, Translucent
+		case 103: // Solid, Sides Only
+		case 105: // Solid, Invisible
+		case 140: // Intangible from Bottom, Opaque
+		case 141: // Intangible from Bottom, Translucent
+		case 143: // Intangible from Top, Opaque
+		case 144: // Intangible from Top, Translucent
+		case 146: // Only Tangible from Sides
+
 		//
 		//	Intangible
 		//
-		case 120: //Water, Opaque
-		case 121: //Water, Translucent
-		case 124: //Goo Water, Translucent
-		case 220: //Intangible, Opaque
-		case 221: //Intangible, Translucent
-		case 222: //Intangible, Sides Only
-		case 223: //Intangible, Invisible
+		case 120: // Water, Opaque
+		case 121: // Water, Translucent
+		case 124: // Goo Water, Translucent
+		case 220: // Intangible, Opaque
+		case 221: // Intangible, Translucent
+		case 222: // Intangible, Sides Only
+		case 223: // Intangible, Invisible
 
 		//
 		//	Moving
 		//
-		case 150: //Air bobbing
-		case 151: //Air bobbing (Adjustable)
-		case 152: //Reverse Air Bobbing (Adjustable)
-		case 153: //Dynamically Sinking Platform
-		case 160: //Floating, Bobbing
-		case 190: //Rising Platform, Solid, Opaque, Shadowcasting
-		case 191: //Rising Platform, Solid, Opaque, Non-Shadowcasting
-		case 192: //Rising Platform, Solid, Translucent
-		case 193: //Rising Platform, Solid, Invisible
-		case 194: //Rising Platform, Intangible from Bottom, Opaque
-		case 195: //Rising Platform, Intangible from Bottom, Translucent
+		case 150: // Air bobbing
+		case 151: // Air bobbing (Adjustable)
+		case 152: // Reverse Air Bobbing (Adjustable)
+		case 153: // Dynamically Sinking Platform
+		case 160: // Floating, Bobbing
+		case 190: // Rising Platform, Solid, Opaque, Shadowcasting
+		case 191: // Rising Platform, Solid, Opaque, Non-Shadowcasting
+		case 192: // Rising Platform, Solid, Translucent
+		case 193: // Rising Platform, Solid, Invisible
+		case 194: // Rising Platform, Intangible from Bottom, Opaque
+		case 195: // Rising Platform, Intangible from Bottom, Translucent
 
 		//
 		//	Crumbling
 		//
-		case 170: //Crumbling, Respawn
-		case 171: //Crumbling, No Respawn
-		case 172: //Crumbling, Respawn, Intangible from Bottom
-		case 173: //Crumbling, No Respawn, Intangible from Bottom
-		case 174: //Crumbling, Respawn, Intangible from Bottom Translucent
-		case 175: //Crumbling, Respawn, Intangible from Bottom,Translucent
-		case 176: //Crumbling, Respawn, Floating, Bobbing
-		case 177: //Crumbling, No Respawn, Floating, Bobbing
-		case 178: //Crumbling, Respawn, Floating
-		case 179: //Crumbling, No Respawn, Floating
-		case 180: //Crumbling, Respawn, Air Bobbing
+		case 170: // Crumbling, Respawn
+		case 171: // Crumbling, No Respawn
+		case 172: // Crumbling, Respawn, Intangible from Bottom
+		case 173: // Crumbling, No Respawn, Intangible from Bottom
+		case 174: // Crumbling, Respawn, Intangible from Bottom Translucent
+		case 175: // Crumbling, Respawn, Intangible from Bottom,Translucent
+		case 176: // Crumbling, Respawn, Floating, Bobbing
+		case 177: // Crumbling, No Respawn, Floating, Bobbing
+		case 178: // Crumbling, Respawn, Floating
+		case 179: // Crumbling, No Respawn, Floating
+		case 180: // Crumbling, Respawn, Air Bobbing
 
 		//
 		//	Special
 		//
-		case 200: //Light Block
-		case 201: //Half light Block
-		case 250: //Mario Block
-		case 251: //Thwomp Block
-		case 252: //Shatter Block
-		case 253: //Shatter Block, Translucent
-		case 254: //Bustable Block
-		case 255: //Spin-Bustable Block
-		case 256: //Spin-Bustable Block, Translucent
-		case 257: //Quicksand
-		//case 258: //Laser
-		case 259: //Custom FOF
+		case 200: // Light Block
+		case 201: // Half light Block
+		case 250: // Mario Block
+		case 251: // Thwomp Block
+		case 252: // Shatter Block
+		case 253: // Shatter Block, Translucent
+		case 254: // Bustable Block
+		case 255: // Spin-Bustable Block
+		case 256: // Spin-Bustable Block, Translucent
+		case 257: // Quicksand
+		// case 258: //Laser
+		case 259: // Custom FOF
 		{
-
 			extra_floor.floor_type = ExtraFloor::SOLID;
 
 			extra_floor.effective_height = control_sector->ceiling().height;
 
-			//Side only FOFs?
-			if(special != 103 && special != 222)
+			// Side only FOFs?
+			if (special != 103 && special != 222)
 			{
-				extra_floor.ceiling_plane    = control_sector->ceiling().plane;
-				extra_floor.floor_plane      = control_sector->floor().plane;
+				extra_floor.ceiling_plane = control_sector->ceiling().plane;
+				extra_floor.floor_plane   = control_sector->floor().plane;
 			}
 			else
 			{
-				extra_floor.ceiling_plane    = Plane();
-				extra_floor.floor_plane      = Plane();
+				extra_floor.ceiling_plane = Plane();
+				extra_floor.floor_plane   = Plane();
 			}
 
 			extra_floor.control_sector_index = control_sector->index();
@@ -746,55 +757,39 @@ void MapSpecials::processSRB2FOFs(const SLADEMap* map) const
 
 			int translucency = 255;
 
-			//Translucent FOF?
-			if (
-				special == 102 
-				|| special == 141 
-				|| special == 144
-				|| special == 121
-				|| special == 124
-				|| special == 221
-				|| special == 192
-				|| special == 195
-				|| special == 174
-				|| special == 175
-				|| special == 253
+			// Translucent FOF?
+			if (special == 102 || special == 141 || special == 144 || special == 121 || special == 124 || special == 221
+				|| special == 192 || special == 195 || special == 174 || special == 175 || special == 253
 				|| special == 256)
 			{
-				translucency = 128;
-				const string &texture = line->s1()->texUpper();
+				translucency          = 128;
+				const string& texture = line->s1()->texUpper();
 
 				if (texture.size() >= 4 && texture[0] == '#')
 				{
 					errno = 0;
-					int n = std::strtol(texture.c_str()+1, NULL, 10);
+					int n = std::strtol(texture.c_str() + 1, nullptr, 10);
 
 					if (errno == 0)
 						translucency = n;
 				}
-			} 
-			else if ( //Invisible FOF?
-				special == 105 
-				|| special == 223
-				|| special == 193
-				|| special == 200
-				|| special == 201
+			}
+			else if ( // Invisible FOF?
+				special == 105 || special == 223 || special == 193 || special == 200 || special == 201
 				|| special == 259)
 			{
 				translucency = 0;
 			}
 
 			extra_floor.flags = 0;
-			extra_floor.alpha = (translucency/255.f);
+			extra_floor.alpha = (translucency / 255.f);
 
-			//Only draw inside for water FOFs
+			// Only draw inside for water FOFs
 			extra_floor.draw_inside = (special >= 120 && special <= 125);
 		}
 		break;
 
-		default:
-			continue;
-		break;
+		default: continue;
 		}
 
 		for (auto& sector : map->sectors())
@@ -808,7 +803,7 @@ void MapSpecials::processSRB2FOFs(const SLADEMap* map) const
 // -----------------------------------------------------------------------------
 // Process EDGE-Classic slope specials
 // -----------------------------------------------------------------------------
-void MapSpecials::processEDGEClassicSlopes(SLADEMap* map) const
+void MapSpecials::processEDGEClassicSlopes(const SLADEMap* map) const
 {
 	// First things first: reset every sector to flat planes
 	for (unsigned a = 0; a < map->nSectors(); a++)
@@ -1071,22 +1066,22 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 		int  tag;
 		auto front = line->frontSector();
 		auto back  = line->backSector();
-		if ((tag = line->arg(0)) && front)
+		if (((tag = line->arg(0))) && front)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
 				front->setFloorPlane(sector->floor().plane);
 		}
-		if ((tag = line->arg(1)) && front)
+		if (((tag = line->arg(1))) && front)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
 				front->setCeilingPlane(sector->ceiling().plane);
 		}
-		if ((tag = line->arg(2)) && back)
+		if (((tag = line->arg(2))) && back)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
 				back->setFloorPlane(sector->floor().plane);
 		}
-		if ((tag = line->arg(3)) && back)
+		if (((tag = line->arg(3))) && back)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
 				back->setCeilingPlane(sector->ceiling().plane);
@@ -1174,22 +1169,22 @@ void MapSpecials::processEternitySlopes(const SLADEMap* map) const
 		int  tag;
 		auto front = line->frontSector();
 		auto back  = line->backSector();
-		if ((tag = line->arg(0)) && front)
+		if (((tag = line->arg(0))) && front)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
 				front->setFloorPlane(sector->floor().plane);
 		}
-		if ((tag = line->arg(1)) && front)
+		if (((tag = line->arg(1))) && front)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
 				front->setCeilingPlane(sector->ceiling().plane);
 		}
-		if ((tag = line->arg(2)) && back)
+		if (((tag = line->arg(2))) && back)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
 				back->setFloorPlane(sector->floor().plane);
 		}
-		if ((tag = line->arg(3)) && back)
+		if (((tag = line->arg(3))) && back)
 		{
 			if (auto sector = map->sectors().firstWithId(tag))
 				back->setCeilingPlane(sector->ceiling().plane);
@@ -1229,8 +1224,8 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	target->putVertices(vertices);
 
 	Vec2d mid    = line->getPoint(MapObject::Point::Mid);
-	Vec2d v1_pos = (line->start() - mid).normalized();
-	Vec2d v2_pos = (line->end() - mid).normalized();
+	Vec2d v1_pos = glm::normalize(line->start() - mid);
+	Vec2d v2_pos = glm::normalize(line->end() - mid);
 
 	// Extend the line to the sector boundaries
 	double max_dot_1 = 0.0;
@@ -1239,7 +1234,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	{
 		Vec2d vert = vertex->position() - mid;
 
-		double dot = vert.dot(v1_pos);
+		double dot = glm::dot(vert, v1_pos);
 
 		double& max_dot = dot > 0 ? max_dot_1 : max_dot_2;
 
@@ -1259,9 +1254,9 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	Seg2d      seg(v1_pos, v2_pos);
 	for (auto& vertex : vertices)
 	{
-		double dist = math::distanceToLine(vertex->position(), seg);
+		double dist = geometry::distanceToLine(vertex->position(), seg);
 
-		if (!math::colinear(vertex->xPos(), vertex->yPos(), v1_pos.x, v1_pos.y, v2_pos.x, v2_pos.y)
+		if (!geometry::colinear(vertex->xPos(), vertex->yPos(), v1_pos.x, v1_pos.y, v2_pos.x, v2_pos.y)
 			&& dist > furthest_dist)
 		{
 			furthest_vertex = vertex;
@@ -1287,7 +1282,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	Vec3d p2(v2_pos, modelz);
 	Vec3d p3(furthest_vertex->position(), targetz);
 
-	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+	target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 }
 
 // -----------------------------------------------------------------------------
@@ -1310,7 +1305,7 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 	{
 		// Line slope things only affect the sector on the side of the line
 		// that faces the thing
-		double     side   = math::lineSide(thing->position(), line->seg());
+		double     side   = geometry::lineSide(thing->position(), line->seg());
 		MapSector* target = nullptr;
 		if (side < 0)
 			target = line->backSector();
@@ -1333,7 +1328,7 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 		Vec3d p1(line->x1(), line->y1(), target_plane.heightAt(line->start()));
 		Vec3d p2(line->x2(), line->y2(), target_plane.heightAt(line->end()));
 		Vec3d p3(thing->xPos(), thing->yPos(), thingz);
-		target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+		target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 	}
 }
 
@@ -1379,7 +1374,7 @@ template<SurfaceType T> void MapSpecials::applySectorTiltThing(SLADEMap* map, Ma
 	// and y by multiplying by cos and sin of the thing's facing angle.
 	Vec3d vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
 
-	target->setPlane<T>(math::planeFromTriangle(point, point + vec1, point + vec2));
+	target->setPlane<T>(geometry::planeFromTriangle(point, point + vec1, point + vec2));
 }
 
 // -----------------------------------------------------------------------------
@@ -1405,7 +1400,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 		// Vavoom things use the plane defined by the thing and its two
 		// endpoints, based on the sector's original (flat) plane and treating
 		// the thing's height as absolute
-		if (math::distanceToLineFast(thing->position(), lines[a]->seg()) == 0)
+		if (geometry::distanceToLineFast(thing->position(), lines[a]->seg()) == 0)
 		{
 			log::warning("Vavoom thing {} lies directly on its target line {}", thing->index(), a);
 			return;
@@ -1416,7 +1411,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 		Vec3d p2(lines[a]->x1(), lines[a]->y1(), height);
 		Vec3d p3(lines[a]->x2(), lines[a]->y2(), height);
 
-		target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+		target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 		return;
 	}
 
@@ -1461,7 +1456,7 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 	Vec3d p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
 	Vec3d p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
 	Vec3d p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
-	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+	target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 }
 
 // -----------------------------------------------------------------------------
@@ -1469,15 +1464,17 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 // (EDGE-Classic rectangular sectors only; performs additional validation)
 // -----------------------------------------------------------------------------
 template<SurfaceType T>
-void MapSpecials::applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
-	const
+void MapSpecials::applyRectangularVertexHeightSlope(
+	MapSector*          target,
+	vector<MapVertex*>& vertices,
+	VertexHeightMap&    heights) const
 {
 	std::vector<int> height_verts;
-	string prop         = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
-	auto   v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
-	auto   v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
-	auto   v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
-	auto   v4_hasheight = heights.count(vertices[3]) || vertices[3]->hasProp(prop);
+	string           prop         = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	auto             v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
+	auto             v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
+	auto             v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
+	auto             v4_hasheight = heights.count(vertices[3]) || vertices[3]->hasProp(prop);
 	if (v1_hasheight)
 		height_verts.push_back(0);
 	if (v2_hasheight)
@@ -1488,8 +1485,8 @@ void MapSpecials::applyRectangularVertexHeightSlope(MapSector* target, vector<Ma
 		height_verts.push_back(3);
 	if (height_verts.size() == 2) // Must only have two out of the four verts assigned a zfloor/ceiling value
 	{
-		MapVertex *v1 = vertices[height_verts[0]];
-		MapVertex *v2 = vertices[height_verts[1]];
+		MapVertex* v1 = vertices[height_verts[0]];
+		MapVertex* v2 = vertices[height_verts[1]];
 		// Must be both verts of the same line
 		bool same_line = false;
 		for (const auto& line : v1->connectedLines())
@@ -1503,7 +1500,11 @@ void MapSpecials::applyRectangularVertexHeightSlope(MapSector* target, vector<Ma
 		if (same_line)
 		{
 			// The zfloor/zceiling values must be equal
-			if (fabs(heights.count(v1) ? heights[v1] : vertexHeight<T>(v1, target) - heights.count(v2) ? heights[v2] : vertexHeight<T>(v2, target)) < 0.001f)
+			if (fabs(
+					heights.count(v1)                               ? heights[v1] :
+					vertexHeight<T>(v1, target) - heights.count(v2) ? heights[v2] :
+																	  vertexHeight<T>(v2, target))
+				< 0.001f)
 			{
 				// Psuedo-Plane_Align routine
 				double     furthest_dist   = 0.0;
@@ -1511,9 +1512,10 @@ void MapSpecials::applyRectangularVertexHeightSlope(MapSector* target, vector<Ma
 				Seg2d      seg(v1->position(), v2->position());
 				for (auto& vertex : vertices)
 				{
-					double dist = math::distanceToLine(vertex->position(), seg);
+					double dist = geometry::distanceToLine(vertex->position(), seg);
 
-					if (!math::colinear(vertex->xPos(), vertex->yPos(), v1->xPos(), v1->yPos(), v2->xPos(), v2->yPos())
+					if (!geometry::colinear(
+							vertex->xPos(), vertex->yPos(), v1->xPos(), v1->yPos(), v2->xPos(), v2->yPos())
 						&& dist > furthest_dist)
 					{
 						furthest_vertex = vertex;
@@ -1533,7 +1535,7 @@ void MapSpecials::applyRectangularVertexHeightSlope(MapSector* target, vector<Ma
 				Vec3d p2(v2->position(), modelz);
 				Vec3d p3(furthest_vertex->position(), targetz);
 
-				target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
+				target->setPlane<T>(geometry::planeFromTriangle(p1, p2, p3));
 			}
 		}
 	}

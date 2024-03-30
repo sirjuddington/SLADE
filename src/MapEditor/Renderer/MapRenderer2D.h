@@ -1,22 +1,20 @@
 #pragma once
 
-#include "MapEditor/MapEditor.h"
-#include "SLADEMap/MapObject/MapObject.h"
-#include "Utility/Colour.h"
+#include "SLADEMap/Types.h"
 
 namespace slade
 {
 // Forward declarations
 class ItemSelection;
-class MapLine;
-class MapSector;
-class MapThing;
-class ObjectEditGroup;
-class SLADEMap;
 namespace game
 {
 	class ThingType;
 }
+namespace mapeditor
+{
+	struct Item;
+	class ObjectEditGroup;
+} // namespace mapeditor
 
 class MapRenderer2D
 {
@@ -56,38 +54,38 @@ public:
 	bool setupThingOverlay() const;
 	void renderThingOverlay(double x, double y, double radius, bool point) const;
 	void renderRoundThing(
-		double                   x,
-		double                   y,
-		double                   angle,
-		const game::ThingType&   type,
-		const MapObject::ArgSet& args,
-		float                    alpha       = 1.0f,
-		double                   radius_mult = 1.0) const;
+		double                 x,
+		double                 y,
+		double                 angle,
+		const game::ThingType& type,
+		const map::ArgSet&     args,
+		float                  alpha       = 1.0f,
+		double                 radius_mult = 1.0) const;
 	bool renderSpriteThing(
-		double                   x,
-		double                   y,
-		double                   angle,
-		const game::ThingType&   type,
-		const MapObject::ArgSet& args,
-		unsigned                 index,
-		float                    alpha     = 1.0f,
-		bool                     fitradius = false);
+		double                 x,
+		double                 y,
+		double                 angle,
+		const game::ThingType& type,
+		const map::ArgSet&     args,
+		unsigned               index,
+		float                  alpha     = 1.0f,
+		bool                   fitradius = false);
 	void renderSimpleSquareThing(
-		double                   x,
-		double                   y,
-		double                   angle,
-		const game::ThingType&   type,
-		const MapObject::ArgSet& args,
-		float                    alpha = 1.0f) const;
+		double                 x,
+		double                 y,
+		double                 angle,
+		const game::ThingType& type,
+		const map::ArgSet&     args,
+		float                  alpha = 1.0f) const;
 	bool renderSquareThing(
-		double                   x,
-		double                   y,
-		double                   angle,
-		const game::ThingType&   type,
-		const MapObject::ArgSet& args,
-		float                    alpha    = 1.0f,
-		bool                     showicon = true,
-		bool                     framed   = false) const;
+		double                 x,
+		double                 y,
+		double                 angle,
+		const game::ThingType& type,
+		const map::ArgSet&     args,
+		float                  alpha    = 1.0f,
+		bool                   showicon = true,
+		bool                   framed   = false) const;
 	void renderThings(float alpha = 1.0f, bool force_dir = false);
 	void renderThingsImmediate(float alpha);
 	void renderThingHilight(int index, float fade) const;
@@ -106,16 +104,16 @@ public:
 	void renderTaggedFlats(const vector<MapSector*>& sectors, float fade) const;
 
 	// Moving
-	void renderMovingVertices(const vector<mapeditor::Item>& vertices, Vec2d move_vec) const;
-	void renderMovingLines(const vector<mapeditor::Item>& lines, Vec2d move_vec) const;
-	void renderMovingSectors(const vector<mapeditor::Item>& sectors, Vec2d move_vec) const;
-	void renderMovingThings(const vector<mapeditor::Item>& things, Vec2d move_vec);
+	void renderMovingVertices(const vector<mapeditor::Item>& vertices, const Vec2d& move_vec) const;
+	void renderMovingLines(const vector<mapeditor::Item>& lines, const Vec2d& move_vec) const;
+	void renderMovingSectors(const vector<mapeditor::Item>& sectors, const Vec2d& move_vec) const;
+	void renderMovingThings(const vector<mapeditor::Item>& things, const Vec2d& move_vec);
 
 	// Paste
-	void renderPasteThings(const vector<MapThing*>& things, Vec2d pos);
+	void renderPasteThings(const vector<MapThing*>& things, const Vec2d& pos);
 
 	// Object Edit
-	void renderObjectEditGroup(ObjectEditGroup* group);
+	void renderObjectEditGroup(const mapeditor::ObjectEditGroup* group);
 
 	// VBOs
 	void updateVerticesVBO();
@@ -128,7 +126,7 @@ public:
 		view_scale_     = scale;
 		view_scale_inv_ = 1.0 / scale;
 	}
-	void   updateVisibility(Vec2d view_tl, Vec2d view_br);
+	void   updateVisibility(const Vec2d& view_tl, const Vec2d& view_br);
 	void   forceUpdate(float line_alpha = 1.0f);
 	double scaledRadius(int radius) const;
 	bool   visOK() const;
@@ -180,7 +178,6 @@ private:
 	bool     lines_dirs_     = false;
 	unsigned n_vertices_     = 0;
 	unsigned n_lines_        = 0;
-	unsigned n_things_       = 0;
 	double   view_scale_     = 0.;
 	double   view_scale_inv_ = 0.;
 	bool     things_angles_  = false;

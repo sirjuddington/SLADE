@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GrpArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -120,7 +122,7 @@ bool GrpArchive::open(const MemChunk& mc)
 		if (nlump->size() > 0)
 			nlump->importMemChunk(mc, offset, size);
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -169,7 +171,7 @@ bool GrpArchive::write(MemChunk& mc)
 		mc.write(name, 12);
 		mc.write(&size, 4);
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setOffsetOnDisk(offset);
 		entry->setSizeOnDisk();
 
@@ -317,7 +319,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	uint8_t numlookup = 0;
 	uint8_t dummy     = 0;
 	mc.read(&numlookup, 1);
-	if (mc.size() < (uint32_t)((numlookup * 256) + (5 * 768) + 1))
+	if (mc.size() < static_cast<uint32_t>((numlookup * 256) + (5 * 768) + 1))
 		return;
 
 	auto nentry = entry->parent()->addNewEntry("COLORMAP.DAT", index + 1, entry->parentDir());

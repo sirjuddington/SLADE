@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -63,7 +63,7 @@ AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS | wxPG_HIDE_MARGIN);
 	pg_cvars_->SetCaptionTextColour(inactiveTextColour);
 	pg_cvars_->SetCellDisabledTextColour(inactiveTextColour);
-	sizer->Add(pg_cvars_, 1, wxEXPAND);
+	sizer->Add(pg_cvars_, wxSizerFlags(1).Expand());
 
 	// Init property grid
 	refreshPropGrid();
@@ -105,7 +105,8 @@ void AdvancedPrefsPanel::refreshPropGrid() const
 		else if (cvar->type == CVar::Type::Float)
 			pg_cvars_->Append(new wxFloatProperty(name, name, cvar->getValue().Float));
 		else if (cvar->type == CVar::Type::String)
-			pg_cvars_->Append(new wxStringProperty(name, name, wxString::Format("%s", ((CStringCVar*)cvar)->value)));
+			pg_cvars_->Append(
+				new wxStringProperty(name, name, wxString::Format("%s", dynamic_cast<CStringCVar*>(cvar)->value)));
 	}
 
 	// Set all bool properties to use checkboxes
@@ -137,7 +138,8 @@ void AdvancedPrefsPanel::applyPreferences()
 			else if (cvar->type == CVar::Type::Float)
 				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Float);
 			else if (cvar->type == CVar::Type::String)
-				pg_cvars_->SetPropertyValue(wxString(name), wxString::Format("%s", ((CStringCVar*)cvar)->value));
+				pg_cvars_->SetPropertyValue(
+					wxString(name), wxString::Format("%s", dynamic_cast<CStringCVar*>(cvar)->value));
 
 			continue;
 		}
@@ -145,13 +147,13 @@ void AdvancedPrefsPanel::applyPreferences()
 		// Read value from grid depending on type
 		auto value = pg_cvars_->GetPropertyValue(wxString(name));
 		if (cvar->type == CVar::Type::Integer)
-			*((CIntCVar*)cvar) = value.GetInteger();
+			*dynamic_cast<CIntCVar*>(cvar) = value.GetInteger();
 		else if (cvar->type == CVar::Type::Boolean)
-			*((CBoolCVar*)cvar) = value.GetBool();
+			*dynamic_cast<CBoolCVar*>(cvar) = value.GetBool();
 		else if (cvar->type == CVar::Type::Float)
-			*((CFloatCVar*)cvar) = value.GetDouble();
+			*dynamic_cast<CFloatCVar*>(cvar) = value.GetDouble();
 		else if (cvar->type == CVar::Type::String)
-			*((CStringCVar*)cvar) = wxutil::strToView(value.GetString());
+			*dynamic_cast<CStringCVar*>(cvar) = wxutil::strToView(value.GetString());
 
 		pg_cvars_->GetProperty(name)->SetModifiedStatus(false);
 	}

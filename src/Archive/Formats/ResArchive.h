@@ -20,7 +20,7 @@ public:
 
 	// Static functions
 	static bool isResArchive(const MemChunk& mc);
-	static bool isResArchive(const MemChunk& mc, size_t& d_o, size_t& n_l);
+	static bool isResArchive(const MemChunk& mc, size_t& dir_offset, size_t& num_lumps);
 	static bool isResArchive(const string& filename);
 
 private:

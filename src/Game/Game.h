@@ -3,12 +3,9 @@
 namespace slade
 {
 enum class MapFormat;
-class ParseTreeNode;
 
 namespace game
 {
-	class Configuration;
-
 	// Structs
 	struct GameDef
 	{
@@ -91,9 +88,6 @@ namespace game
 	const PortDef&                   portDef(const string& id);
 
 	bool mapFormatSupported(MapFormat format, const string& game, const string& port = "");
-
-	// Full Game Configuration
-	Configuration& configuration();
 
 	// Tagging
 	TagType parseTagged(const ParseTreeNode* tagged);

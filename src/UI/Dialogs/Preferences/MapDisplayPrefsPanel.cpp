@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapDisplayPrefsPanel.h"
+#include "General/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -94,7 +95,7 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 
 	// Create notebook
 	stc_pages_ = STabCtrl::createControl(this);
-	sizer->Add(stc_pages_, 1, wxEXPAND);
+	sizer->Add(stc_pages_, wxSizerFlags(1).Expand());
 
 	// Setup tabs
 	setupGeneralTab();
@@ -117,7 +118,7 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
 	int row = 0;
 
 	// Crosshair
@@ -186,7 +187,7 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	slider_vertex_size_ = new wxSlider(panel, -1, vertex_size, 2, 16, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	choice_vertices_always_ = new wxChoice(panel, -1);
@@ -212,7 +213,7 @@ void MapDisplayPrefsPanel::setupLinesTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	wxutil::layoutVertically(
 		sizer,
@@ -237,7 +238,7 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
 	int row = 0;
 
 	// Thing style
@@ -308,7 +309,7 @@ void MapDisplayPrefsPanel::setupFlatsTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	sz_border->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	wxutil::layoutVertically(
 		sizer,
@@ -371,16 +372,16 @@ void MapDisplayPrefsPanel::applyPreferences()
 	grid_dashed           = cb_grid_dashed_->GetValue();
 	vertex_round          = cb_vertex_round_->GetValue();
 	vertex_size           = slider_vertex_size_->GetValue();
-	line_width            = (float)slider_line_width_->GetValue() * 0.1f;
+	line_width            = static_cast<float>(slider_line_width_->GetValue()) * 0.1f;
 	line_smooth           = cb_line_smooth_->GetValue();
 	line_tabs_always      = cb_line_tabs_always_->GetValue();
 	thing_drawtype        = choice_thing_drawtype_->GetSelection();
 	thing_force_dir       = cb_thing_force_dir_->GetValue();
 	thing_overlay_square  = cb_thing_overlay_square_->GetValue();
-	thing_shadow          = (float)slider_thing_shadow_->GetValue() * 0.1f;
+	thing_shadow          = static_cast<float>(slider_thing_shadow_->GetValue()) * 0.1f;
 	arrow_colour          = cb_thing_arrow_colour_->GetValue();
-	arrow_alpha           = (float)slider_thing_arrow_alpha_->GetValue() * 0.1f;
-	flat_brightness       = (float)slider_flat_brightness_->GetValue() * 0.1f;
+	arrow_alpha           = static_cast<float>(slider_thing_arrow_alpha_->GetValue()) * 0.1f;
+	flat_brightness       = static_cast<float>(slider_flat_brightness_->GetValue()) * 0.1f;
 	flat_ignore_light     = cb_flat_ignore_light_->GetValue();
 	sector_hilight_fill   = cb_sector_hilight_fill_->GetValue();
 	sector_selected_fill  = cb_sector_selected_fill_->GetValue();

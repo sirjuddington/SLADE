@@ -1,35 +1,21 @@
 #pragma once
 
-#include "UI/Canvas/OGLCanvas.h"
+#include "Geometry/Rect.h"
 
 namespace slade
 {
-class SImage;
+class CropCanvas;
 class NumberTextCtrl;
-
-class CropCanvas : public OGLCanvas
-{
-public:
-	CropCanvas(wxWindow* parent, SImage* image, Palette* palette);
-
-	const Recti& cropRect() const { return crop_rect_; }
-	void         setCropRect(Recti& rect) { crop_rect_.set(rect); }
-
-	void draw() override;
-
-private:
-	unsigned texture_ = 0;
-	Recti    crop_rect_;
-};
+class SImage;
 
 class GfxCropDialog : public wxDialog
 {
 public:
-	GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette);
-	~GfxCropDialog() = default;
+	GfxCropDialog(wxWindow* parent, const SImage* image, Palette* palette);
+	~GfxCropDialog() override = default;
 
 	const Recti& cropRect() const { return crop_rect_; }
-	void         updatePreview();
+	void         updatePreview() const;
 
 private:
 	CropCanvas*     canvas_preview_ = nullptr;

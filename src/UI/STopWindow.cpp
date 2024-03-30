@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -115,7 +115,7 @@ void STopWindow::addCustomMenu(wxMenu* menu, const wxString& title)
 // -----------------------------------------------------------------------------
 // Removes the menu matching [title] from the menu bar
 // -----------------------------------------------------------------------------
-void STopWindow::removeCustomMenu(wxMenu* menu)
+void STopWindow::removeCustomMenu(const wxMenu* menu)
 {
 	// Go through custom menus
 	for (unsigned a = 0; a < custom_menus_.size(); a++)
@@ -203,6 +203,8 @@ void STopWindow::populateToolbarsMenu() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a menu item is selected

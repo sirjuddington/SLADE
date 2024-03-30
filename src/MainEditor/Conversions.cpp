@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,8 +33,8 @@
 #include "Conversions.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
-#include "thirdparty/mus2mid/mus2mid.h"
-#include "thirdparty/zreaders/i_music.h"
+#include "Mus2Mid.h"
+#include "ZReaders/i_music.h"
 
 using namespace slade;
 
@@ -215,7 +215,7 @@ uint8_t stereoToMono(uint8_t left, uint8_t right)
 	val /= 2;
 	if (val > 255)
 		val = 255;
-	return (uint8_t)val;
+	return static_cast<uint8_t>(val);
 }
 
 // The following two functions are adapted from Sun Microsystem's g711.cpp code.
@@ -235,8 +235,8 @@ int16_t alawToLinear(uint8_t alaw)
 	seg = (alaw & SEG_MASK) >> SEG_SHIFT;
 	switch (seg)
 	{
-	case 0: t += 8; break;
-	case 1: t += 0x108; break;
+	case 0:  t += 8; break;
+	case 1:  t += 0x108; break;
 	default: t += 0x108; t <<= seg - 1;
 	}
 	return ((alaw & SIGN_BIT) ? t : -t);
@@ -430,11 +430,11 @@ bool conversion::wavToDoomSnd(const MemChunk& in, MemChunk& out)
 	// Warn
 	if (wavbps > 1 || wavfmt != WAV_PCM || fmtchunk.channels == 2)
 	{
-		if (!(wxMessageBox(
-				  "Warning: conversion will result in loss of metadata and audio quality. Do you wish to proceed?",
-				  "Conversion warning",
-				  wxOK | wxCANCEL)
-			  == wxOK))
+		if (wxMessageBox(
+				"Warning: conversion will result in loss of metadata and audio quality. Do you wish to proceed?",
+				"Conversion warning",
+				wxOK | wxCANCEL)
+			!= wxOK)
 		{
 			global::error = "Conversion aborted by user";
 			return false;
@@ -480,7 +480,7 @@ bool conversion::wavToDoomSnd(const MemChunk& in, MemChunk& out)
 			else if (wavbps == 3)
 				data[i] = pcm24to8bits(val);
 			else if (wavbps == 2)
-				data[i] = pcm16to8bits((int16_t)val);
+				data[i] = pcm16to8bits(static_cast<int16_t>(val));
 		}
 	}
 
@@ -647,6 +647,7 @@ bool conversion::vocToWav(const MemChunk& in, MemChunk& out)
 			}
 			datasize += blocksize - 12;
 			break;
+		default: break;
 		}
 		i += blocksize;
 	}
@@ -1262,6 +1263,7 @@ bool conversion::auSndToWav(const MemChunk& in, MemChunk& out)
 				samples[i * 4 + 2] = samples[i * 4 + 1];
 				samples[i * 4 + 1] = swapval;
 				break;
+			default: break;
 			}
 		}
 	}
@@ -1308,7 +1310,7 @@ bool conversion::auSndToWav(const MemChunk& in, MemChunk& out)
 
 bool conversion::voxToKvx(const MemChunk& in, MemChunk& out)
 {
-#define AT(x, y, z) (((x)*length + (y)) * height + (z))
+#define AT(x, y, z) (((x) * length + (y)) * height + (z))
 
 	constexpr uint8_t LEFT   = 1;
 	constexpr uint8_t RIGHT  = 2;

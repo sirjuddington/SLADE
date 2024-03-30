@@ -3,16 +3,14 @@
 namespace slade
 {
 class MapPreviewCanvas;
-class Archive;
 class ZipArchive;
-class ArchiveDir;
 class ListView;
 
 class MapBackupPanel : public wxPanel
 {
 public:
 	MapBackupPanel(wxWindow* parent);
-	~MapBackupPanel() = default;
+	~MapBackupPanel() override = default;
 
 	Archive* selectedMapData() const { return archive_mapdata_.get(); }
 

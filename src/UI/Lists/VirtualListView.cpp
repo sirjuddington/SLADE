@@ -1,7 +1,7 @@
 ﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -187,7 +187,7 @@ void VirtualListView::selectAll()
 	for (int a = 0; a < itemcount; a++)
 		SetItemState(a, 0xFFFF, wxLIST_STATE_SELECTED);
 
-	//sendSelectionChangedEvent();
+	// sendSelectionChangedEvent();
 }
 
 // -----------------------------------------------------------------------------
@@ -314,7 +314,7 @@ bool VirtualListView::defaultSort(long left, long right)
 // -----------------------------------------------------------------------------
 long VirtualListView::itemIndex(long item) const
 {
-	if (item < 0 || item >= (long)items_.size())
+	if (item < 0 || item >= static_cast<long>(items_.size()))
 		return item;
 	else
 		return items_[item];
@@ -381,7 +381,7 @@ void VirtualListView::focusOnIndex(long index)
 		selectItem(index);
 		focusItem(index);
 		EnsureVisible(index);
-		//sendSelectionChangedEvent();
+		// sendSelectionChangedEvent();
 	}
 }
 
@@ -391,9 +391,8 @@ void VirtualListView::focusOnIndex(long index)
 // -----------------------------------------------------------------------------
 bool VirtualListView::lookForSearchEntryFrom(long focus)
 {
-	long index    = focus;
-	bool looped   = false;
-	bool gotmatch = false;
+	long index  = focus;
+	bool looped = false;
 	while ((!looped && index < GetItemCount()) || (looped && index < focus))
 	{
 		auto name = itemText(index, col_search_, items_[index]);
@@ -423,6 +422,8 @@ bool VirtualListView::lookForSearchEntryFrom(long focus)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a column is resized
@@ -507,7 +508,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus - 1);
 				focusItem(focus - 1);
 				EnsureVisible(focus - 1);
-				//sendSelectionChangedEvent();
+				// sendSelectionChangedEvent();
 			}
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
@@ -522,7 +523,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus - 1);
 				focusItem(focus - 1);
 				EnsureVisible(focus - 1);
-				//sendSelectionChangedEvent();
+				// sendSelectionChangedEvent();
 			}
 		}
 		search_ = "";
@@ -540,7 +541,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus + 1);
 				focusItem(focus + 1);
 				EnsureVisible(focus + 1);
-				//sendSelectionChangedEvent();
+				// sendSelectionChangedEvent();
 			}
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
@@ -555,7 +556,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus + 1);
 				focusItem(focus + 1);
 				EnsureVisible(focus + 1);
-				//sendSelectionChangedEvent();
+				// sendSelectionChangedEvent();
 			}
 		}
 		search_ = "";
@@ -706,5 +707,5 @@ void VirtualListView::onIdle(wxIdleEvent& e)
 		CallAfter(&VirtualListView::sendSelectionChangedEvent);
 
 	prev_idle_selcount_ = GetSelectedItemCount();
-	prev_idle_index_ = firstSelected();
+	prev_idle_index_    = firstSelected();
 }

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,17 +33,20 @@
 #include "Main.h"
 #include "MapTextureManager.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "MapEditContext.h"
 #include "MapEditor.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "Utility/StringUtils.h"
@@ -65,15 +68,38 @@ CVAR(Int, map_tex_filter, 0, CVar::Flag::Save)
 
 // -----------------------------------------------------------------------------
 //
+// MapTextureManager::Texture Struct Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Texture Struct destructor
+// -----------------------------------------------------------------------------
+MapTextureManager::Texture::~Texture()
+{
+	gl::Texture::clear(gl_id);
+}
+
+
+// -----------------------------------------------------------------------------
+//
 // MapTextureManager Class Functions
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // MapTextureManager class constructor
 // -----------------------------------------------------------------------------
-MapTextureManager::MapTextureManager(shared_ptr<Archive> archive) : archive_{ archive }, palette_{ new Palette() } {}
+MapTextureManager::MapTextureManager(const shared_ptr<Archive>& archive) :
+	archive_{ archive },
+	palette_{ new Palette() }
+{
+}
+
+// -----------------------------------------------------------------------------
+// MapTextureManager class destructor
+// -----------------------------------------------------------------------------
+MapTextureManager::~MapTextureManager() = default;
 
 // -----------------------------------------------------------------------------
 // Initialises the texture manager
@@ -190,7 +216,8 @@ const MapTextureManager::Texture& MapTextureManager::texture(string_view name, b
 						sw                 = imgref.width();
 						sh                 = imgref.height();
 						mtex.world_panning = true;
-						mtex.scale         = { (double)sw / (double)w, (double)sh / (double)h };
+						mtex.scale         = { static_cast<double>(sw) / static_cast<double>(w),
+											   static_cast<double>(sh) / static_cast<double>(h) };
 					}
 				}
 			}
@@ -641,7 +668,7 @@ void MapTextureManager::buildTexInfoList()
 // -----------------------------------------------------------------------------
 // Sets the current archive to [archive], and refreshes all resources
 // -----------------------------------------------------------------------------
-void MapTextureManager::setArchive(shared_ptr<Archive> archive)
+void MapTextureManager::setArchive(const shared_ptr<Archive>& archive)
 {
 	archive_ = archive;
 	refreshResources();

@@ -1,22 +1,20 @@
 #pragma once
 
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
-class Palette;
-
 class ColourBox : public wxPanel
 {
 public:
 	ColourBox(wxWindow* parent, int id = -1, bool enable_alpha = false, bool mode = false);
 	ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha = false, bool mode = false, int size = -1);
-	~ColourBox() = default;
+	~ColourBox() override = default;
 
 	ColRGBA colour() const { return colour_; }
 
 	void setPalette(Palette* pal) { palette_ = pal; }
-	void setColour(ColRGBA col)
+	void setColour(const ColRGBA& col)
 	{
 		colour_ = col;
 		Refresh();

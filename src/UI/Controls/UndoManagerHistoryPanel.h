@@ -10,7 +10,7 @@ class UndoListView : public VirtualListView
 {
 public:
 	UndoListView(wxWindow* parent, UndoManager* manager);
-	~UndoListView() {}
+	~UndoListView() override = default;
 
 	void setManager(UndoManager* manager);
 
@@ -36,7 +36,7 @@ class UndoManagerHistoryPanel : public wxPanel
 {
 public:
 	UndoManagerHistoryPanel(wxWindow* parent, UndoManager* manager);
-	~UndoManagerHistoryPanel() {}
+	~UndoManagerHistoryPanel() override = default;
 
 	void setManager(UndoManager* manager);
 

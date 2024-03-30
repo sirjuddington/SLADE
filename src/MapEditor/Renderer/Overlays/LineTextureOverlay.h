@@ -4,16 +4,13 @@
 
 namespace slade
 {
-class MapLine;
-class MapSide;
-
 class LineTextureOverlay : public MCOverlay
 {
 public:
-	LineTextureOverlay()  = default;
-	~LineTextureOverlay() = default;
+	LineTextureOverlay()           = default;
+	~LineTextureOverlay() override = default;
 
-	void openLines(vector<MapLine*>& list);
+	void openLines(const vector<MapLine*>& list);
 	void close(bool cancel) override;
 	void update(long frametime) override;
 

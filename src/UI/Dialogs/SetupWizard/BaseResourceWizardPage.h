@@ -9,7 +9,7 @@ class BaseResourceWizardPage : public WizardPageBase
 {
 public:
 	BaseResourceWizardPage(wxWindow* parent);
-	~BaseResourceWizardPage() = default;
+	~BaseResourceWizardPage() override = default;
 
 	bool     canGoNext() override { return true; }
 	void     applyChanges() override;

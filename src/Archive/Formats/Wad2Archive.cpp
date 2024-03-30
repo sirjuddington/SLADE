@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Wad2Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -99,7 +101,7 @@ bool Wad2Archive::open(const MemChunk& mc)
 
 		// If the lump data goes past the end of the file,
 		// the wadfile is invalid
-		if ((unsigned)(info.offset + info.dsize) > mc.size())
+		if (static_cast<unsigned>(info.offset + info.dsize) > mc.size())
 		{
 			log::error("Wad2Archive::open: Wad2 archive is invalid or corrupt");
 			global::error = "Archive is invalid and/or corrupt";
@@ -118,7 +120,7 @@ bool Wad2Archive::open(const MemChunk& mc)
 		if (nlump->size() > 0)
 			nlump->importMemChunk(mc, info.offset, info.dsize);
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -126,10 +128,6 @@ bool Wad2Archive::open(const MemChunk& mc)
 
 	// Detect all entry types
 	detectAllEntryTypes();
-
-	// Detect maps (will detect map entry types)
-	ui::setSplashProgressMessage("Detecting maps");
-	detectMaps();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -198,7 +196,7 @@ bool Wad2Archive::write(MemChunk& mc)
 		mc.write(&info, 32);
 
 		entry->setSizeOnDisk();
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 	}
 
 	return true;
@@ -249,7 +247,7 @@ bool Wad2Archive::isWad2Archive(const MemChunk& mc)
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check directory offset is decent
-	if ((unsigned)(dir_offset + (num_lumps * 32)) > mc.size() || dir_offset < 12)
+	if (static_cast<unsigned>(dir_offset + (num_lumps * 32)) > mc.size() || dir_offset < 12)
 		return false;
 
 	// If it's passed to here it's probably a wad2 file

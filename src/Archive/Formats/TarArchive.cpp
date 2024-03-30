@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TarArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -112,7 +114,7 @@ int tarSum(const char* field, int size)
 bool tarWriteOctal(size_t sum, char* field, int size)
 {
 	// Check for overflow, which are possible on 8-byte fields
-	if (size < 11 && sum >= (unsigned)(1 << (3 * size)))
+	if (size < 11 && sum >= static_cast<unsigned>(1 << (3 * size)))
 	{
 		char errormessage[9] = "WOLFREVO";
 		for (int a = 1; a <= (size + 1); ++a)
@@ -144,8 +146,8 @@ bool tarChecksum(const TarHeader* header)
 	// to address it either as a tar header, as a block of signed char,
 	// or as a block of unsigned char.
 	int8_t*    sigblock = new int8_t[512];
-	uint8_t*   unsblock = (uint8_t*)sigblock;
-	TarHeader* block    = (TarHeader*)sigblock;
+	uint8_t*   unsblock = reinterpret_cast<uint8_t*>(sigblock);
+	TarHeader* block    = reinterpret_cast<TarHeader*>(sigblock);
 	memcpy(sigblock, header, 512);
 	int32_t checksum = 0;
 	// Blank out checksum
@@ -189,7 +191,7 @@ bool tarChecksum(const TarHeader* header)
 size_t tarMakeChecksum(TarHeader* header)
 {
 	size_t   checksum = 0;
-	uint8_t* h        = (uint8_t*)header;
+	uint8_t* h        = reinterpret_cast<uint8_t*>(header);
 	for (int a = 0; a < 512; ++a)
 		checksum += h[a];
 	return checksum;
@@ -315,7 +317,7 @@ bool TarArchive::open(const MemChunk& mc)
 		// Find size
 		size_t size = tarSum(header.size, 12);
 
-		if ((int)header.typeflag == AREGTYPE || (int)header.typeflag == REGTYPE)
+		if (static_cast<int>(header.typeflag) == AREGTYPE || static_cast<int>(header.typeflag) == REGTYPE)
 		{
 			// Create directory if needed
 			auto dir = createDir(strutil::Path::pathOf(name));
@@ -329,12 +331,12 @@ bool TarArchive::open(const MemChunk& mc)
 			if (entry->size() > 0)
 				entry->importMemChunk(mc, mc.currentPos(), size);
 
-			entry->setState(ArchiveEntry::State::Unmodified);
+			entry->setState(EntryState::Unmodified);
 
 			// Add to directory
 			dir->addEntry(entry);
 		}
-		else if ((int)header.typeflag == DIRTYPE)
+		else if (static_cast<int>(header.typeflag) == DIRTYPE)
 		{
 			// Directory
 			createDir(name);
@@ -400,7 +402,7 @@ bool TarArchive::write(MemChunk& mc)
 		memcpy(header.name, name.data(), name.size());
 
 		// Address folders
-		if (entries[a]->type() == EntryType::folderType())
+		if (entries[a]->isFolderType())
 		{
 			header.typeflag = DIRTYPE;
 			tarWriteOctal(tarMakeChecksum(&header), header.chksum, 7);

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -609,7 +609,7 @@ bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
 	if (offset + length > file.Length() || length == 0)
-		length = (size_t)file.Length() - offset;
+		length = static_cast<size_t>(file.Length()) - offset;
 
 	// Read the file portion
 	data_.resize((size_t)length, 0);
@@ -686,7 +686,7 @@ void Tokenizer::reset()
 // Checks if a comment begins at the current position and returns the comment
 // type if one does (0 otherwise)
 // -----------------------------------------------------------------------------
-unsigned Tokenizer::checkCommentBegin()
+unsigned Tokenizer::checkCommentBegin() const
 {
 	// C-Style comment (/*)
 	if (comment_types_ & CStyle && state_.position + 1 < state_.size && data_[state_.position] == '/'
@@ -894,10 +894,10 @@ bool Tokenizer::readNext(Token* target)
 		// Process current character depending on state
 		switch (state_.state)
 		{
-		case TokenizeState::State::Unknown: tokenizeUnknown(); break;
+		case TokenizeState::State::Unknown:    tokenizeUnknown(); break;
 		case TokenizeState::State::Whitespace: tokenizeWhitespace(); break;
-		case TokenizeState::State::Token: tokenizeToken(); break;
-		case TokenizeState::State::Comment: tokenizeComment(); break;
+		case TokenizeState::State::Token:      tokenizeToken(); break;
+		case TokenizeState::State::Comment:    tokenizeComment(); break;
 		}
 	}
 

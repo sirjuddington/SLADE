@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -53,7 +53,7 @@ bool Splitter::SashHitTest(int x, int y)
 #ifndef __WXMSW__
 	return wxSplitterWindow::SashHitTest(x, y);
 #else
-	if (m_windowTwo == NULL || m_sashPosition == 0)
+	if (m_windowTwo == nullptr || m_sashPosition == 0)
 		return false; // No sash
 
 	int z      = m_splitMode == wxSPLIT_VERTICAL ? x : y;
@@ -158,14 +158,14 @@ void Splitter::DrawSash(wxDC& dc)
 
 	// Background
 	auto bgcol = GetBackgroundColour();
-	auto size = GetClientSize();
+	auto size  = GetClientSize();
 	dc.SetBrush(wxBrush(bgcol));
 	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.DrawRectangle(m_sashPosition, 0, getSashSize(), size.y);
 
 	// Indicator
 	auto colour = (bgcol.GetLuminance() > 0.5) ? bgcol.ChangeLightness(m_isHot ? 50 : 80) :
-                                                 bgcol.ChangeLightness(m_isHot ? 150 : 120);
+												 bgcol.ChangeLightness(m_isHot ? 150 : 120);
 	dc.SetBrush(wxBrush(colour));
 	auto line_x   = m_sashPosition + getSashSize() / 2;
 	auto line_top = size.y / 2 - ui::scalePx(24);

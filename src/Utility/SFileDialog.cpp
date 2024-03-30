@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -106,9 +106,9 @@ bool filedialog::openFile(
 string filedialog::openFile(
 	string_view caption,
 	string_view extensions,
-	wxWindow* parent,
+	wxWindow*   parent,
 	string_view fn_default,
-	int ext_default)
+	int         ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
@@ -126,7 +126,7 @@ string filedialog::openFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		auto filename = fd.GetPath().ToStdString();
-		dir_last = strutil::Path::pathOf(filename);
+		dir_last      = strutil::Path::pathOf(filename);
 
 		return filename;
 	}
@@ -141,7 +141,7 @@ string filedialog::openFile(
 bool filedialog::openExecutableFile(FDInfo& info, string_view caption, wxWindow* parent, string_view fn_default)
 {
 	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat" :
-                                                                         wxFileSelectorDefaultWildcardStr;
+																		 wxFileSelectorDefaultWildcardStr;
 
 	return openFile(info, caption, extensions, parent, fn_default);
 }
@@ -154,7 +154,7 @@ bool filedialog::openExecutableFile(FDInfo& info, string_view caption, wxWindow*
 string filedialog::openExecutableFile(string_view caption, wxWindow* parent, string_view fn_default)
 {
 	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat" :
-                                                                         wxFileSelectorDefaultWildcardStr;
+																		 wxFileSelectorDefaultWildcardStr;
 
 	return openFile(caption, extensions, parent, fn_default);
 }
@@ -214,9 +214,9 @@ bool filedialog::openFiles(
 filedialog::FDInfo filedialog::openFiles(
 	string_view caption,
 	string_view extensions,
-	wxWindow* parent,
+	wxWindow*   parent,
 	string_view fn_default,
-	int ext_default)
+	int         ext_default)
 {
 	FDInfo info;
 	openFiles(info, caption, extensions, parent, fn_default, ext_default);
@@ -274,9 +274,9 @@ bool filedialog::saveFile(
 string filedialog::saveFile(
 	string_view caption,
 	string_view extensions,
-	wxWindow* parent,
+	wxWindow*   parent,
 	string_view fn_default,
-	int ext_default)
+	int         ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
@@ -294,7 +294,7 @@ string filedialog::saveFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		auto filename = fd.GetPath().ToStdString();
-		dir_last = strutil::Path::pathOf(filename);
+		dir_last      = strutil::Path::pathOf(filename);
 		return filename;
 	}
 
@@ -343,11 +343,7 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 // Returns an FDInfo struct with information about the selected files.
 // If the user cancelled, the FDInfo will contain no path
 // -----------------------------------------------------------------------------
-filedialog::FDInfo filedialog::saveFiles(
-	string_view caption,
-	string_view extensions,
-	wxWindow* parent,
-	int ext_default)
+filedialog::FDInfo filedialog::saveFiles(string_view caption, string_view extensions, wxWindow* parent, int ext_default)
 {
 	FDInfo info;
 	saveFiles(info, caption, extensions, parent, ext_default);

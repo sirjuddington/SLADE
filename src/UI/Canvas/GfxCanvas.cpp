@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,6 +37,7 @@
 #include "Graphics/Translation.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/OpenGL.h"
 #include "UI/Controls/ZoomControl.h"
 #include "UI/SBrush.h"
 #include "Utility/MathStuff.h"
@@ -67,10 +68,13 @@ CVAR(Bool, gfx_arc, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // GfxCanvas class constructor
 // -----------------------------------------------------------------------------
-GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), scale_{ ui::scaleFactor() }
+GfxCanvas::GfxCanvas(wxWindow* parent, int id) :
+	OGLCanvas(parent, id),
+	image_{ new SImage() },
+	scale_{ ui::scaleFactor() }
 {
 	// Update texture when the image changes
-	sc_image_changed_ = image_.signals().image_changed.connect(&GfxCanvas::updateImageTexture, this);
+	sc_image_changed_ = image_->signals().image_changed.connect(&GfxCanvas::updateImageTexture, this);
 
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN, &GfxCanvas::onMouseLeftDown, this);
@@ -179,7 +183,7 @@ void GfxCanvas::drawOffsetLines() const
 void GfxCanvas::drawImage()
 {
 	// Check image is valid
-	if (!image_.isValid())
+	if (!image_->isValid())
 		return;
 
 	// Save current matrix
@@ -191,13 +195,13 @@ void GfxCanvas::drawImage()
 
 	// Pan
 	if (view_type_ == View::Centered)
-		glTranslated(-(image_.width() * 0.5), -(image_.height() * 0.5), 0); // Pan to center image
+		glTranslated(-(image_->width() * 0.5), -(image_->height() * 0.5), 0); // Pan to center image
 	else if (view_type_ == View::Sprite)
-		glTranslated(-image_.offset().x, -image_.offset().y, 0); // Pan by offsets
+		glTranslated(-image_->offset().x, -image_->offset().y, 0); // Pan by offsets
 	else if (view_type_ == View::HUD)
 	{
-		glTranslated(-160, -100, 0);                             // Pan to hud 'top left'
-		glTranslated(-image_.offset().x, -image_.offset().y, 0); // Pan by offsets
+		glTranslated(-160, -100, 0);                               // Pan to hud 'top left'
+		glTranslated(-image_->offset().x, -image_->offset().y, 0); // Pan by offsets
 	}
 
 	// Enable textures
@@ -210,19 +214,19 @@ void GfxCanvas::drawImage()
 		if (!drawing_)
 		{
 			delete[] drawing_mask_;
-			drawing_mask_ = new bool[image_.width() * image_.height()];
-			memset(drawing_mask_, false, image_.width() * image_.height());
+			drawing_mask_ = new bool[image_->width() * image_->height()];
+			memset(drawing_mask_, false, image_->width() * image_->height());
 		}
 
 		gl::Texture::clear(tex_image_);
-		tex_image_ = gl::Texture::createFromImage(image_, &palette_);
+		tex_image_ = gl::Texture::createFromImage(*image_, palette_.get());
 
 		update_texture_ = false;
 	}
 
 	// Determine (texture)coordinates
-	const double x = image_.width();
-	const double y = image_.height();
+	const double x = image_->width();
+	const double y = image_->height();
 
 	// If tiled view
 	if (view_type_ == View::Tiled)
@@ -311,8 +315,8 @@ void GfxCanvas::zoomToFit(bool mag, double padding)
 	const double pad  = static_cast<double>(std::min<int>(size.x, size.y)) * padding;
 
 	// Get image dimensions
-	const double x_dim = image_.width();
-	const double y_dim = image_.height();
+	const double x_dim = image_->width();
+	const double y_dim = image_->height();
 
 	// Get max scale for x and y (including padding)
 	const double x_scale = (static_cast<double>(size.x) - pad) / x_dim;
@@ -359,25 +363,25 @@ Vec2i GfxCanvas::imageCoords(int x, int y) const
 	}
 	else if (view_type_ == View::Centered)
 	{
-		left -= static_cast<double>(image_.width()) * 0.5 * scale_;
-		top -= static_cast<double>(image_.height()) * 0.5 * yscale;
+		left -= static_cast<double>(image_->width()) * 0.5 * scale_;
+		top -= static_cast<double>(image_->height()) * 0.5 * yscale;
 	}
 	else if (view_type_ == View::Sprite)
 	{
-		left -= image_.offset().x * scale_;
-		top -= image_.offset().y * yscale;
+		left -= image_->offset().x * scale_;
+		top -= image_->offset().y * yscale;
 	}
 	else if (view_type_ == View::HUD)
 	{
 		left -= 160 * scale_;
 		top -= 100 * scale_ * (gfx_arc ? 1.2 : 1);
-		left -= image_.offset().x * scale_;
-		top -= image_.offset().y * yscale;
+		left -= image_->offset().x * scale_;
+		top -= image_->offset().y * yscale;
 	}
 
 	// Determine bottom-right coordinates of image in screen coords
-	const double right  = left + image_.width() * scale_;
-	const double bottom = top + image_.height() * yscale;
+	const double right  = left + image_->width() * scale_;
+	const double bottom = top + image_->height() * yscale;
 
 	// Check if the pointer is within the image
 	if (x >= left && x <= right && y >= top && y <= bottom)
@@ -388,7 +392,7 @@ Vec2i GfxCanvas::imageCoords(int x, int y) const
 		const double xpos = (x - left) / w;
 		const double ypos = (y - top) / h;
 
-		return { static_cast<int>(xpos * image_.width()), static_cast<int>(ypos * image_.height()) };
+		return { static_cast<int>(xpos * image_->width()), static_cast<int>(ypos * image_->height()) };
 	}
 	else
 		return { -1, -1 };
@@ -407,8 +411,8 @@ void GfxCanvas::endOffsetDrag()
 	if (x != 0 || y != 0)
 	{
 		// Set image offsets
-		image_.setXOffset(image_.offset().x - x);
-		image_.setYOffset(image_.offset().y - y);
+		image_->setXOffset(image_->offset().x - x);
+		image_->setYOffset(image_->offset().y - y);
 
 		// Generate event
 		wxNotifyEvent e(wxEVT_GFXCANVAS_OFFSET_CHANGED, GetId());
@@ -417,7 +421,7 @@ void GfxCanvas::endOffsetDrag()
 	}
 
 	// Stop drag
-	drag_origin_.set({ -1, -1 });
+	drag_origin_ = { -1, -1 };
 }
 
 // -----------------------------------------------------------------------------
@@ -427,7 +431,7 @@ void GfxCanvas::paintPixel(int x, int y)
 {
 	// With large brushes, it's very possible that some of the pixels
 	// are out of the image area; so don't process them.
-	if (x < 0 || y < 0 || x >= image_.width() || y >= image_.height())
+	if (x < 0 || y < 0 || x >= image_->width() || y >= image_->height())
 		return;
 
 	// Do not process pixels that were already modified in the
@@ -436,27 +440,27 @@ void GfxCanvas::paintPixel(int x, int y)
 	// of mouse events can happen while the mouse moves, leading
 	// to the same pixel being processed over and over, and that
 	// does not play well when applying translations.
-	const size_t pos = x + image_.width() * y;
+	const size_t pos = x + image_->width() * y;
 	if (drawing_mask_[pos])
 		return;
 
 	bool painted = false;
 	if (editing_mode_ == EditMode::Erase) // eraser
-		painted = image_.setPixel(x, y, 255, 0);
+		painted = image_->setPixel(x, y, 255, 0);
 	else if (editing_mode_ == EditMode::Translate) // translator
 	{
 		if (translation_ != nullptr)
 		{
-			const auto    ocol  = image_.pixelAt(x, y, &palette_);
+			const auto    ocol  = image_->pixelAt(x, y, palette_.get());
 			const uint8_t alpha = ocol.a;
-			auto          ncol  = (translation_->translate(ocol, &palette_));
+			auto          ncol  = (translation_->translate(ocol, palette_.get()));
 			ncol.a              = alpha;
 			if (!ocol.equals(ncol, false, true))
-				painted = image_.setPixel(x, y, ncol);
+				painted = image_->setPixel(x, y, ncol);
 		}
 	}
 	else
-		painted = image_.setPixel(x, y, paint_colour_);
+		painted = image_->setPixel(x, y, paint_colour_);
 
 	// Mark the modification, if any, and announce the modification
 	drawing_mask_[pos] = painted;
@@ -492,7 +496,7 @@ void GfxCanvas::pickColour(int x, int y)
 	const auto coord = imageCoords(x, y);
 
 	// Pick its colour
-	paint_colour_ = image_.pixelAt(coord.x, coord.y, &palette_);
+	paint_colour_ = image_->pixelAt(coord.x, coord.y, palette_.get());
 
 	// Announce it triumphantly to the world
 	wxNotifyEvent e(wxEVT_GFXCANVAS_COLOUR_PICKED, GetId());
@@ -510,7 +514,7 @@ void GfxCanvas::generateBrushShadow()
 
 	// Generate image
 	SImage img;
-	img.create(image_.width(), image_.height(), SImage::Type::RGBA);
+	img.create(image_->width(), image_->height(), SImage::Type::RGBA);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))
@@ -518,7 +522,7 @@ void GfxCanvas::generateBrushShadow()
 				auto col = paint_colour_;
 				if (editing_mode_ == EditMode::Translate && translation_)
 					col = translation_->translate(
-						image_.pixelAt(cursor_pos_.x + i, cursor_pos_.y + j, &palette_), &palette_);
+						image_->pixelAt(cursor_pos_.x + i, cursor_pos_.y + j, palette_.get()), palette_.get());
 				// Not sure what's the best way to preview cutting out
 				// Mimicking the checkerboard pattern perhaps?
 				// Cyan will do for now
@@ -539,6 +543,7 @@ void GfxCanvas::generateBrushShadow()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the left button is pressed within the canvas
@@ -562,8 +567,8 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 		// Begin drag if mouse is over image and dragging allowed
 		else if (allow_drag_)
 		{
-			drag_origin_.set(x, y);
-			drag_pos_.set(x, y);
+			drag_origin_ = { x, y };
+			drag_pos_    = { x, y };
 			Refresh();
 		}
 	}
@@ -595,7 +600,7 @@ void GfxCanvas::onMouseLeftUp(wxMouseEvent& e)
 	if (drawing_)
 	{
 		drawing_ = false;
-		memset(drawing_mask_, false, image_.width() * image_.height());
+		memset(drawing_mask_, false, image_->width() * image_->height());
 	}
 	// Stop dragging
 	if (drag_origin_.x >= 0)
@@ -649,8 +654,8 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 		}
 		else
 		{
-			drag_pos_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
-			refresh = true;
+			drag_pos_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
+			refresh   = true;
 		}
 	}
 	else if (e.MiddleIsDown())
@@ -668,7 +673,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	if (refresh)
 		Refresh();
 
-	mouse_prev_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
+	mouse_prev_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
 }
 
 // -----------------------------------------------------------------------------

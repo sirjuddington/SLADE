@@ -10,7 +10,7 @@ class MapEditorPrefsPanel : public PrefsPanelBase
 {
 public:
 	MapEditorPrefsPanel(wxWindow* parent);
-	~MapEditorPrefsPanel() = default;
+	~MapEditorPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;

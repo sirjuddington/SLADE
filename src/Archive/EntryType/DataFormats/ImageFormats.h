@@ -134,15 +134,15 @@ public:
 		for (size_t i = 74; i < 128; ++i)
 			if (mc[i] != 0)
 				return MATCH_FALSE;
-		int16_t offsx = (int16_t)mc.readL16(4);
-		int16_t limx  = (int16_t)mc.readL16(8);
+		int16_t offsx = static_cast<int16_t>(mc.readL16(4));
+		int16_t limx  = static_cast<int16_t>(mc.readL16(8));
 		int16_t width = 1 + limx - offsx;
 		// Compute number of bytes needed per scanline, and account for possible padding
 		int16_t bnpsl = (width * mc[3]) / 8;
 		if (bnpsl % 2)
 			bnpsl++;
 		// Bytes per scanline field is always an even number and should correspond to guessed value
-		int16_t bpsl = (int16_t)mc.readL16(66);
+		int16_t bpsl = static_cast<int16_t>(mc.readL16(66));
 		if (bpsl % 2 || bpsl != bnpsl)
 			return MATCH_FALSE;
 		// Passed all tests, so this seems to be a valid PCX
@@ -171,7 +171,7 @@ public:
 
 		// Let's have halfway "reasonable" limits on the compression ratio
 		// that can be expected from a TGA picture...
-		if ((unsigned)(5000u * mc.size()) < (unsigned)(height * width))
+		if ((unsigned)(5000u * mc.size()) < static_cast<unsigned>(height * width))
 			return MATCH_FALSE;
 
 		// Check image type, must be a value between 1 and 3 or 9 and 11
@@ -220,19 +220,19 @@ public:
 		// The value of 42 (0x2A) is present in the next two bytes,
 		// in the given endianness
 		if (42
-			!= (littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[2])) :
+			!= (littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[2])) :
 							   wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
 			return MATCH_FALSE;
 		// First offset must be on a word boundary (therefore, %2 == 0) and
 		// somewhere within the file, but not in the header of course.
 		size_t offset =
-			(littleendian ? wxUINT32_SWAP_ON_BE((const uint32_t)(mc[4])) :
+			(littleendian ? wxUINT32_SWAP_ON_BE(static_cast<const uint32_t>(mc[4])) :
 							wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
 		if (offset < 8 || offset >= size || offset % 2)
 			return MATCH_FALSE;
 		// Check the first IFD for validity
 		uint16_t numentries =
-			(littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[offset])) :
+			(littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[offset])) :
 							wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
 		if (offset + 6 + (numentries * 12) > size)
 			return MATCH_FALSE;
@@ -337,13 +337,13 @@ public:
 		// Check size
 		if (mc.size() > sizeof(gfx::PatchHeader))
 		{
-			const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
+			auto header = reinterpret_cast<const gfx::PatchHeader*>(data);
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 				&& header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000)
 			{
-				uint32_t* col_offsets = (uint32_t*)((const uint8_t*)data + sizeof(gfx::PatchHeader));
+				auto col_offsets = (uint32_t*)((const uint8_t*)data + sizeof(gfx::PatchHeader));
 
 				// Check there is room for needed column pointers
 				if (mc.size() < sizeof(gfx::PatchHeader) + (header->width * sizeof(uint32_t)))
@@ -389,7 +389,7 @@ public:
 			if (mc[mc.size() - 1] != 0xFF)
 				return MATCH_FALSE;
 
-			const gfx::OldPatchHeader* header = (const gfx::OldPatchHeader*)mc.data();
+			auto header = reinterpret_cast<const gfx::OldPatchHeader*>(mc.data());
 
 			// Check header values are 'sane'
 			if (header->width > 0 && header->height > 0)
@@ -459,13 +459,13 @@ public:
 			}
 		}
 
-		const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
+		auto header = reinterpret_cast<const gfx::PatchHeader*>(data);
 
 		// Check header values are 'sane'
 		if (header->height > 0 && header->height < 256 && header->width > 0 && header->width < 384 && header->top > -200
 			&& header->top < 200 && header->left > -200 && header->left < 200)
 		{
-			uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(gfx::PatchHeader));
+			auto col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(gfx::PatchHeader));
 
 			// Check there is room for needed column pointers
 			if (mc.size() < sizeof(gfx::PatchHeader) + (header->width * sizeof(uint16_t)))
@@ -550,8 +550,8 @@ public:
 		if (mc.size() < sizeof(gfx::PatchHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*          data   = mc.data();
-		const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
+		auto data   = mc.data();
+		auto header = reinterpret_cast<const gfx::PatchHeader*>(data);
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -572,19 +572,19 @@ public:
 	DoomJaguarDataFormat(int colmajor = 0, string_view id = "img_doom_jaguar") :
 		EntryDataFormat(id),
 		colmajor(colmajor){};
-	~DoomJaguarDataFormat() = default;
+	~DoomJaguarDataFormat() override = default;
 
 	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(gfx::JagPicHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*           data   = mc.data();
-		const gfx::JagPicHeader* header = (const gfx::JagPicHeader*)data;
-		int                      width  = wxINT16_SWAP_ON_LE(header->width);
-		int                      height = wxINT16_SWAP_ON_LE(header->height);
-		int                      depth  = wxINT16_SWAP_ON_LE(header->depth);
-		int                      flags  = wxINT16_SWAP_ON_LE(header->flags);
+		const uint8_t* data   = mc.data();
+		auto           header = reinterpret_cast<const gfx::JagPicHeader*>(data);
+		int            width  = wxINT16_SWAP_ON_LE(header->width);
+		int            height = wxINT16_SWAP_ON_LE(header->height);
+		int            depth  = wxINT16_SWAP_ON_LE(header->depth);
+		int            flags  = wxINT16_SWAP_ON_LE(header->flags);
 
 		if ((flags & 1) != colmajor)
 			return MATCH_FALSE;
@@ -611,7 +611,7 @@ class DoomJaguarColMajorDataFormat : public DoomJaguarDataFormat
 {
 public:
 	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor"){};
-	~DoomJaguarColMajorDataFormat() final = default;
+	~DoomJaguarColMajorDataFormat() override = default;
 };
 
 class DoomJagTexDataFormat : public EntryDataFormat
@@ -694,8 +694,8 @@ public:
 		if (mc.size() < sizeof(gfx::PSXPicHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*           data   = mc.data();
-		const gfx::PSXPicHeader* header = (const gfx::PSXPicHeader*)data;
+		const uint8_t* data   = mc.data();
+		auto           header = reinterpret_cast<const gfx::PSXPicHeader*>(data);
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -725,8 +725,8 @@ public:
 		if (size < sizeof(gfx::IMGZHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*         data   = mc.data();
-		const gfx::IMGZHeader* header = (const gfx::IMGZHeader*)data;
+		const uint8_t* data   = mc.data();
+		auto           header = reinterpret_cast<const gfx::IMGZHeader*>(data);
 
 		// Check signature
 		if (header->magic[0] != 'I' || header->magic[1] != 'M' || header->magic[2] != 'G' || header->magic[3] != 'Z')
@@ -737,8 +737,8 @@ public:
 			return MATCH_FALSE;
 
 		// The reserved values should all be null
-		for (uint8_t i = 0; i < 11; ++i)
-			if (header->reserved[i])
+		for (unsigned char i : header->reserved)
+			if (i)
 				return MATCH_FALSE;
 
 		// This is probably a genuine IMGZ
@@ -932,8 +932,8 @@ public:
 		if (mc.size() < sizeof(gfx::PatchHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*          data   = mc.data();
-		const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
+		const uint8_t* data   = mc.data();
+		auto           header = reinterpret_cast<const gfx::PatchHeader*>(data);
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -1194,7 +1194,7 @@ public:
 		// Check size
 		if (mc.size() > sizeof(gfx::ROTTPatchHeader))
 		{
-			const gfx::ROTTPatchHeader* header = (const gfx::ROTTPatchHeader*)data;
+			auto header = reinterpret_cast<const gfx::ROTTPatchHeader*>(data);
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -1244,7 +1244,7 @@ public:
 		// Check size
 		if (mc.size() > sizeof(gfx::ROTTPatchHeader))
 		{
-			const gfx::ROTTPatchHeader* header = (const gfx::ROTTPatchHeader*)data;
+			auto header = reinterpret_cast<const gfx::ROTTPatchHeader*>(data);
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -1319,8 +1319,8 @@ public:
 		if (mc.size() < sizeof(gfx::PatchHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*          data   = mc.data();
-		const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
+		const uint8_t* data   = mc.data();
+		auto           header = reinterpret_cast<const gfx::PatchHeader*>(data);
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -1520,7 +1520,7 @@ public:
 		if (mc.size() <= 0x302)
 			return MATCH_FALSE;
 
-		const uint16_t* gfx_data = (const uint16_t*)mc.data();
+		auto gfx_data = reinterpret_cast<const uint16_t*>(mc.data());
 
 		size_t height = wxINT16_SWAP_ON_BE(gfx_data[0]);
 
@@ -1609,7 +1609,7 @@ public:
 		if (mc.size() <= 0x302)
 			return MATCH_FALSE;
 
-		const uint16_t* gfx_data = (const uint16_t*)mc.data();
+		auto gfx_data = reinterpret_cast<const uint16_t*>(mc.data());
 
 		size_t height = wxINT16_SWAP_ON_BE(gfx_data[0]);
 

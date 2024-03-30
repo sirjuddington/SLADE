@@ -1,30 +1,34 @@
 #pragma once
 
-#include "Archive/Archive.h"
-#include "UI/Lists/ListView.h"
 #include "UI/SDialog.h"
 
 class wxImageList;
 
 namespace slade
 {
-class MapPreviewCanvas;
 class BaseResourceChooser;
+class ListView;
+class MapPreviewCanvas;
 class ResourceArchiveChooser;
+struct MapDesc;
 
 class MapEditorConfigDialog : public SDialog
 {
 public:
-	MapEditorConfigDialog(wxWindow* parent, Archive* archive = nullptr, bool show_maps = true, bool creating = false);
+	MapEditorConfigDialog(
+		wxWindow* parent,
+		Archive*  archive      = nullptr,
+		bool      show_maplist = true,
+		bool      creating     = false);
 	~MapEditorConfigDialog() override;
 
-	void             populateGameList();
-	void             populatePortList();
-	void             populateMapList();
-	Archive::MapDesc selectedMap();
-	bool             configMatchesMap(const Archive::MapDesc& map) const;
-	wxString         selectedGame();
-	wxString         selectedPort();
+	void     populateGameList();
+	void     populatePortList();
+	void     populateMapList();
+	MapDesc  selectedMap();
+	bool     configMatchesMap(const MapDesc& map) const;
+	wxString selectedGame();
+	wxString selectedPort();
 
 private:
 	wxChoice*               choice_game_config_   = nullptr;
@@ -41,10 +45,10 @@ private:
 	wxString                port_current_;
 	bool                    creating_ = false;
 
-	Archive*                 archive_ = nullptr;
-	vector<Archive::MapDesc> maps_;
-	vector<wxString>         games_list_;
-	vector<wxString>         ports_list_;
+	Archive*         archive_ = nullptr;
+	vector<MapDesc>  maps_;
+	vector<wxString> games_list_;
+	vector<wxString> ports_list_;
 
 	// Events
 	void onChoiceGameConfigChanged(wxCommandEvent& e);

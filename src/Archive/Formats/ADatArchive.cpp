@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ADatArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "Utility/Compression.h"
 #include "Utility/StringUtils.h"
@@ -134,7 +136,7 @@ bool ADatArchive::open(const MemChunk& mc)
 			}
 		}
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 
 		// Add to directory
 		dir->addEntry(entry);
@@ -182,7 +184,7 @@ bool ADatArchive::write(MemChunk& mc)
 	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entry->type() == EntryType::folderType())
+		if (entry->isFolderType())
 			continue;
 
 		// Create compressed version of the lump
@@ -199,7 +201,7 @@ bool ADatArchive::write(MemChunk& mc)
 
 		// Update entry
 		int offset = mc.currentPos();
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setOffsetOnDisk(offset);
 		entry->setSizeOnDisk(data->size());
 		entry->exProp("FullSize") = static_cast<int>(entry->size());
@@ -346,7 +348,7 @@ bool ADatArchive::isADatArchive(const MemChunk& mc)
 		return false;
 
 	// Check directory is sane
-	if (dir_offset < 16 || (unsigned)(dir_offset + dir_size) > mc.size())
+	if (dir_offset < 16 || static_cast<unsigned>(dir_offset + dir_size) > mc.size())
 		return false;
 
 	// That'll do

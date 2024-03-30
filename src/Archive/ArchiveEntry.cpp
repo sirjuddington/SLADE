@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,8 @@
 #include "Main.h"
 #include "ArchiveEntry.h"
 #include "Archive.h"
+#include "ArchiveDir.h"
+#include "EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
 
@@ -76,7 +78,10 @@ unsigned maxEntrySizeBytes()
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
-	name_{ name }, upper_name_{ name }, data_{ size }, type_{ EntryType::unknownType() }
+	name_{ name },
+	upper_name_{ name },
+	data_{ size },
+	type_{ EntryType::unknownType() }
 {
 	strutil::upperIP(upper_name_);
 }
@@ -178,7 +183,7 @@ ArchiveEntry* ArchiveEntry::prevEntry()
 // Returns the parent ArchiveDir's shared pointer to this entry, or
 // nullptr if this entry has no parent
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> ArchiveEntry::getShared()
+shared_ptr<ArchiveEntry> ArchiveEntry::getShared() const
 {
 	return parent_ ? parent_->sharedEntry(this) : nullptr;
 }
@@ -205,13 +210,13 @@ void ArchiveEntry::setName(string_view name)
 // Sets the entry's state. Won't change state if the change would be redundant
 // (eg new->modified, unmodified->unmodified)
 // -----------------------------------------------------------------------------
-void ArchiveEntry::setState(State state, bool silent)
+void ArchiveEntry::setState(EntryState state, bool silent)
 {
-	if (state_locked_ || (state == State::Unmodified && state_ == State::Unmodified))
+	if (state_locked_ || (state == EntryState::Unmodified && state_ == EntryState::Unmodified))
 		return;
 
-	if (state == State::Unmodified)
-		state_ = State::Unmodified;
+	if (state == EntryState::Unmodified)
+		state_ = EntryState::Unmodified;
 	else if (state > state_)
 		state_ = state;
 
@@ -262,7 +267,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 
 	// Remove \ or / if the format supports folders
 	if (format.supports_dirs && (name_.find('/') != string::npos || name_.find('\\') != string::npos))
-		name_   = misc::lumpNameToFileName(name_);
+		name_ = misc::lumpNameToFileName(name_);
 
 	// Remove extension if the format doesn't have them
 	if (!format.names_extensions)
@@ -287,7 +292,7 @@ bool ArchiveEntry::rename(string_view new_name)
 
 	// Update attributes
 	setName(new_name);
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	return true;
 }
@@ -313,7 +318,7 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 	}
 
 	// Update attributes
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	return data_.reSize(new_size, preserve_data);
 }
@@ -369,7 +374,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 
 	// Update attributes
 	setType(EntryType::unknownType());
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	return true;
 }
@@ -484,7 +489,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 	{
 		// Update attributes
 		setType(EntryType::unknownType());
-		setState(State::Modified);
+		setState(EntryState::Modified);
 
 		return true;
 	}
@@ -555,7 +560,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 	if (data_.write(data, size))
 	{
 		// Update attributes
-		setState(State::Modified);
+		setState(EntryState::Modified);
 
 		return true;
 	}
@@ -566,7 +571,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 // -----------------------------------------------------------------------------
 // Reads data from the entry MemChunk
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::read(void* buf, uint32_t size)
+bool ArchiveEntry::read(void* buf, uint32_t size) const
 {
 	return data_.read(buf, size);
 }
@@ -577,6 +582,14 @@ bool ArchiveEntry::read(void* buf, uint32_t size)
 string ArchiveEntry::sizeString() const
 {
 	return misc::sizeAsString(size());
+}
+
+// -----------------------------------------------------------------------------
+// Returns the entry's type as a string
+// -----------------------------------------------------------------------------
+string ArchiveEntry::typeString() const
+{
+	return type_ ? type_->name() : "Unknown";
 }
 
 // -----------------------------------------------------------------------------
@@ -615,6 +628,14 @@ void ArchiveEntry::setExtensionByType()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the detection reliability of the entry's type
+// -----------------------------------------------------------------------------
+int ArchiveEntry::typeReliability() const
+{
+	return type_ ? type()->reliability() * reliability_ / 255 : 0;
+}
+
+// -----------------------------------------------------------------------------
 // Returns true if the entry is in the [ns] namespace within its parent, false
 // otherwise
 // -----------------------------------------------------------------------------
@@ -648,4 +669,12 @@ ArchiveEntry* ArchiveEntry::relativeEntry(string_view at_path, bool allow_absolu
 		include = parent_->archive()->entryAtPath(at_path);
 
 	return include;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the entry's type is the special 'folder' type
+// -----------------------------------------------------------------------------
+bool ArchiveEntry::isFolderType() const
+{
+	return type_ == EntryType::folderType();
 }

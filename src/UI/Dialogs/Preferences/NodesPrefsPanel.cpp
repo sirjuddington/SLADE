@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NodesPrefsPanel.h"
+#include "General/UI.h"
 #include "MapEditor/NodeBuilders.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
@@ -57,7 +58,7 @@ EXTERN_CVAR(String, nodebuilder_options)
 // -----------------------------------------------------------------------------
 // NodesPrefsPanel class constructor
 // -----------------------------------------------------------------------------
-NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBase(parent)
+NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
 	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());

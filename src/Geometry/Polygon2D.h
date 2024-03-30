@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Geometry/BBox.h"
+
 namespace slade
 {
-class MapSector;
+struct Plane;
 
 class Polygon2D
 {
@@ -33,7 +35,7 @@ public:
 	bool hasPolygon() const { return !subpolys_.empty(); }
 	int  vboUpdate() const { return vbo_update_; }
 	void setZ(float z);
-	void setZ(Plane plane);
+	void setZ(const Plane& plane);
 
 	unsigned nSubPolys() const { return subpolys_.size(); }
 	void     addSubPoly();
@@ -100,7 +102,7 @@ public:
 
 	// Testing
 	void openSector(MapSector* sector);
-	void testRender();
+	void testRender() const;
 
 private:
 	// Structs

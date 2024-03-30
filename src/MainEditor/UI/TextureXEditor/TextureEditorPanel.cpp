@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,10 +32,14 @@
 #include "Main.h"
 #include "TextureEditorPanel.h"
 #include "General/KeyBind.h"
-#include "Graphics/CTexture/TextureXList.h"
+#include "General/SAction.h"
+#include "General/UI.h"
+#include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
@@ -77,7 +81,8 @@ EXTERN_CVAR(Bool, tx_arc)
 // TextureEditorPanel class constructor
 // -----------------------------------------------------------------------------
 TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor) :
-	wxPanel(parent, -1), tx_editor_{ tx_editor }
+	wxPanel(parent, -1),
+	tx_editor_{ tx_editor }
 {
 	// Create controls
 	tex_canvas_      = new CTextureCanvas(this, -1);
@@ -96,6 +101,8 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::setupLayout()
 {
+	namespace wx = wxutil;
+
 	// Init controls
 	cb_tex_scale_->SetValue(tx_apply_scale);
 	cb_tex_arc_->SetValue(tx_arc);
@@ -116,37 +123,37 @@ void TextureEditorPanel::setupLayout()
 
 	// Setup left section (view controls + texture canvas + texture controls)
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, 1, wxEXPAND | wxRIGHT, ui::pad());
+	sizer->Add(vbox, wx::sfWithBorder(1, wxRIGHT).Expand());
 
 	// Add view controls
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM | wxTOP, ui::px(ui::Size::PadMinimum));
-	hbox->Add(zc_zoom_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	vbox->Add(hbox, wx::sfWithMinBorder(0, wxBOTTOM | wxTOP).Expand());
+	hbox->Add(zc_zoom_, wx::sfWithBorder(0, wxRIGHT).Expand());
 	hbox->AddStretchSpacer();
-	hbox->Add(cb_tex_scale_, 0, wxEXPAND | wxRIGHT, ui::pad());
-	hbox->Add(cb_tex_arc_, 0, wxEXPAND | wxRIGHT, ui::pad());
-	hbox->Add(cb_draw_outside_, 0, wxEXPAND);
+	hbox->Add(cb_tex_scale_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(cb_tex_arc_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(cb_draw_outside_, wxSizerFlags().Expand());
 
 	// Add texture canvas
-	vbox->Add(tex_canvas_, 1, wxEXPAND);
+	vbox->Add(tex_canvas_, wxSizerFlags(1).Expand());
 
 	// Add extra view controls
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM | wxTOP, ui::pad());
-	hbox->Add(label_viewtype_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-	hbox->Add(choice_viewtype_, 0, wxEXPAND);
+	vbox->Add(hbox, wx::sfWithBorder(0, wxBOTTOM | wxTOP).Expand());
+	hbox->Add(label_viewtype_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(choice_viewtype_, wxSizerFlags().Expand());
 	hbox->AddStretchSpacer();
-	hbox->Add(cb_blend_rgba_, 0, wxEXPAND);
+	hbox->Add(cb_blend_rgba_, wxSizerFlags().Expand());
 
 	// Add texture controls
-	vbox->Add(createTextureControls(this), 0, wxEXPAND);
+	vbox->Add(createTextureControls(this), wxSizerFlags().Expand());
 
 	// Setup right section (patch controls)
 	vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, 0, wxEXPAND);
+	sizer->Add(vbox, wxSizerFlags().Expand());
 
 	// Add patch controls
-	vbox->Add(createPatchControls(this), 1, wxEXPAND);
+	vbox->Add(createPatchControls(this), wxSizerFlags(1).Expand());
 
 
 	// Bind events
@@ -201,10 +208,10 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	// "Texture Properties" frame
 	auto frame      = new wxStaticBox(panel, -1, "Texture Properties");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 1, wxEXPAND);
+	sizer->Add(framesizer, wxSizerFlags(1).Expand());
 
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, 1, wxALL, ui::pad());
+	framesizer->Add(gb_sizer, wxutil::sfWithBorder(1));
 
 	// Layout
 	gb_sizer->Add(new wxStaticText(panel, -1, "Name:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -276,6 +283,8 @@ void TextureEditorPanel::updateTextureScaleLabel()
 // -----------------------------------------------------------------------------
 wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 {
+	namespace wx = wxutil;
+
 	auto panel = new wxPanel(parent, -1);
 
 	// Setup panel sizer
@@ -285,7 +294,7 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	// -- Texture Patches frame --
 	auto frame      = new wxStaticBox(panel, -1, "Patches");
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(framesizer, wx::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Create patches list
 	list_patches_ = new ListView(panel, -1);
@@ -306,14 +315,14 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 
 	// Layout
 	list_patches_->SetInitialSize(wxutil::scaledSize(100, tb_patches_->group("_Patch")->GetBestSize().y));
-	framesizer->Add(list_patches_, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
-	framesizer->Add(tb_patches_, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
+	framesizer->Add(list_patches_, wx::sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
+	framesizer->Add(tb_patches_, wx::sfWithMinBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
 
 	// -- Patch Properties frame --
 	frame      = new wxStaticBox(panel, -1, "Patch Properties");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 1, wxEXPAND);
+	sizer->Add(framesizer, wxSizerFlags(1).Expand());
 
 	// X Position
 	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
@@ -321,14 +330,14 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	auto           hbox      = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
 	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, "X Position:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(new wxStaticText(panel, -1, "X Position:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(spin_patch_left_, 1);
 
 	// Y Position
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	spin_patch_top_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, "Y Position:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(new wxStaticText(panel, -1, "Y Position:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(spin_patch_top_, 1);
 
 	return panel;
@@ -462,7 +471,7 @@ void TextureEditorPanel::clearTexture()
 // -----------------------------------------------------------------------------
 // Sets the texture canvas' palette and refreshes it
 // -----------------------------------------------------------------------------
-void TextureEditorPanel::setPalette(Palette* pal) const
+void TextureEditorPanel::setPalette(const Palette* pal) const
 {
 	tex_canvas_->setPalette(pal);
 	tex_canvas_->updatePatchTextures();
@@ -739,6 +748,8 @@ bool TextureEditorPanel::handleSAction(string_view id)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the 'show outside' checkbox is changed
@@ -1077,7 +1088,7 @@ void TextureEditorPanel::onTexScaleXChanged(wxCommandEvent& e)
 {
 	// Set texture's x scale
 	if (tex_current_)
-		tex_current_->setScaleX((double)spin_tex_scalex_->GetValue() / 8.0);
+		tex_current_->setScaleX(static_cast<double>(spin_tex_scalex_->GetValue()) / 8.0);
 
 	// Update UI
 	updateTextureScaleLabel();
@@ -1092,7 +1103,7 @@ void TextureEditorPanel::onTexScaleYChanged(wxCommandEvent& e)
 {
 	// Set texture's y scale
 	if (tex_current_)
-		tex_current_->setScaleY((double)spin_tex_scaley_->GetValue() / 8.0);
+		tex_current_->setScaleY(static_cast<double>(spin_tex_scaley_->GetValue()) / 8.0);
 
 	// Update UI
 	updateTextureScaleLabel();

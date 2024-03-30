@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,7 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ANSIEntryPanel.h"
+#include "Archive/ArchiveEntry.h"
 #include "UI/Canvas/ANSICanvas.h"
+#include "UI/SToolBar/SToolBar.h"
 
 using namespace slade;
 
@@ -51,7 +53,7 @@ ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
 	// Get the VGA font
 	ansi_chardata_.assign(DATASIZE, 0);
 	ansi_canvas_ = new ANSICanvas(this, -1);
-	sizer_main_->Add(ansi_canvas_, 1, wxEXPAND, 0);
+	sizer_main_->Add(ansi_canvas_, wxSizerFlags(1).Expand());
 
 	// Hide toolbar (no reason for it on this panel, yet)
 	toolbar_->Show(false);

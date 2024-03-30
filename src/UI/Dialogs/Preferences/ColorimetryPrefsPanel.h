@@ -10,7 +10,7 @@ class ColorimetryPrefsPanel : public PrefsPanelBase
 {
 public:
 	ColorimetryPrefsPanel(wxWindow* parent);
-	~ColorimetryPrefsPanel() = default;
+	~ColorimetryPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;

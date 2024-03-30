@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -30,11 +30,13 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "MapSide.h"
+
 #include "Game/Configuration.h"
+#include "MapSector.h"
+#include "MapSide.h"
+#include "SLADEMap/MapObjectList/SideList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
-#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -50,11 +52,11 @@ using namespace slade;
 // MapSide class constructor
 // -----------------------------------------------------------------------------
 MapSide::MapSide(
-	MapSector*  sector,
-	string_view tex_upper,
-	string_view tex_middle,
-	string_view tex_lower,
-	Vec2i       tex_offset) :
+	MapSector*   sector,
+	string_view  tex_upper,
+	string_view  tex_middle,
+	string_view  tex_lower,
+	const Vec2i& tex_offset) :
 	MapObject{ Type::Side },
 	sector_{ sector },
 	tex_upper_{ tex_upper },
@@ -69,7 +71,7 @@ MapSide::MapSide(
 // -----------------------------------------------------------------------------
 // MapSide class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapSide::MapSide(MapSector* sector, ParseTreeNode* udmf_def) : MapObject{ Type::Side }, sector_{ sector }
+MapSide::MapSide(MapSector* sector, const ParseTreeNode* udmf_def) : MapObject{ Type::Side }, sector_{ sector }
 {
 	if (sector)
 		sector->connectSide(this);

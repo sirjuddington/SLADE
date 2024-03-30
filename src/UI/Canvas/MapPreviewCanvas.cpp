@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,16 +33,19 @@
 #include "Main.h"
 #include "MapPreviewCanvas.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Archive/Formats/WadArchive.h"
+#include "Archive/MapDesc.h"
 #include "General/ColourConfiguration.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/GLTexture.h"
+#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
-#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
 
@@ -90,9 +93,9 @@ void MapPreviewCanvas::addThing(double x, double y)
 }
 
 // -----------------------------------------------------------------------------
-// Opens a map from a mapdesc_t
+// Opens a map from a MapDesc
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::openMap(Archive::MapDesc map)
+bool MapPreviewCanvas::openMap(MapDesc map)
 {
 	auto m_head = map.head.lock();
 	if (!m_head)
@@ -403,7 +406,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 // -----------------------------------------------------------------------------
 // Reads non-UDMF vertex data
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format)
+bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format)
 {
 	// Find VERTEXES entry
 	ArchiveEntry* vertexes = nullptr;
@@ -441,7 +444,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 				break;
 
 			// Add vertex
-			addVertex((double)v.x / 65536, (double)v.y / 65536);
+			addVertex(static_cast<double>(v.x) / 65536, static_cast<double>(v.y) / 65536);
 		}
 	}
 	else if (map_format == MapFormat::Doom32X)
@@ -454,7 +457,9 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 				break;
 
 			// Add vertex
-			addVertex((double)wxINT32_SWAP_ON_LE(v.x) / 65536, (double)wxINT32_SWAP_ON_LE(v.y) / 65536);
+			addVertex(
+				static_cast<double>(wxINT32_SWAP_ON_LE(v.x)) / 65536,
+				static_cast<double>(wxINT32_SWAP_ON_LE(v.y)) / 65536);
 		}
 	}
 	else
@@ -477,7 +482,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 // -----------------------------------------------------------------------------
 // Reads non-UDMF line data
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format)
+bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format)
 {
 	// Find LINEDEFS entry
 	ArchiveEntry* linedefs = nullptr;
@@ -580,7 +585,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 // -----------------------------------------------------------------------------
 // Reads non-UDMF thing data
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format)
+bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, const ArchiveEntry* map_end, MapFormat map_format)
 {
 	// Find THINGS entry
 	ArchiveEntry* things = nullptr;
@@ -607,21 +612,21 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	// Read things data
 	if (map_format == MapFormat::Doom || map_format == MapFormat::Doom32X)
 	{
-		auto     thng_data = (DoomMapFormat::Thing*)things->rawData();
+		auto     thng_data = reinterpret_cast<const DoomMapFormat::Thing*>(things->rawData());
 		unsigned nt        = things->size() / sizeof(DoomMapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Doom64)
 	{
-		auto     thng_data = (Doom64MapFormat::Thing*)things->rawData();
+		auto     thng_data = reinterpret_cast<const Doom64MapFormat::Thing*>(things->rawData());
 		unsigned nt        = things->size() / sizeof(Doom64MapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Hexen)
 	{
-		auto     thng_data = (HexenMapFormat::Thing*)things->rawData();
+		auto     thng_data = reinterpret_cast<const HexenMapFormat::Thing*>(things->rawData());
 		unsigned nt        = things->size() / sizeof(HexenMapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
@@ -669,8 +674,8 @@ void MapPreviewCanvas::showMap()
 
 	// Zoom to fit whole map
 	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
-	double       x_scale    = ((double)ClientSize.x) / width;
-	double       y_scale    = ((double)ClientSize.y) / height;
+	double       x_scale    = static_cast<double>(ClientSize.x) / width;
+	double       y_scale    = static_cast<double>(ClientSize.y) / height;
 	zoom_                   = std::min<double>(x_scale, y_scale);
 	zoom_ *= 0.95;
 }
@@ -702,10 +707,10 @@ void MapPreviewCanvas::draw()
 
 	// Clear
 	glClearColor(
-		((double)col_view_background.r) / 255.f,
-		((double)col_view_background.g) / 255.f,
-		((double)col_view_background.b) / 255.f,
-		((double)col_view_background.a) / 255.f);
+		static_cast<double>(col_view_background.r) / 255.f,
+		static_cast<double>(col_view_background.g) / 255.f,
+		static_cast<double>(col_view_background.b) / 255.f,
+		static_cast<double>(col_view_background.a) / 255.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
@@ -889,10 +894,10 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 
 	// Clear
 	glClearColor(
-		((double)col_save_background.r) / 255.f,
-		((double)col_save_background.g) / 255.f,
-		((double)col_save_background.b) / 255.f,
-		((double)col_save_background.a) / 255.f);
+		static_cast<double>(col_save_background.r) / 255.f,
+		static_cast<double>(col_save_background.g) / 255.f,
+		static_cast<double>(col_save_background.b) / 255.f,
+		static_cast<double>(col_save_background.a) / 255.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
@@ -904,8 +909,8 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	offset_ = { m_min.x + (mapwidth * 0.5), m_min.y + (mapheight * 0.5) };
 
 	// Zoom to fit whole map
-	double x_scale = ((double)width) / mapwidth;
-	double y_scale = ((double)height) / mapheight;
+	double x_scale = static_cast<double>(width) / mapwidth;
+	double y_scale = static_cast<double>(height) / mapheight;
 	zoom_          = std::min<double>(x_scale, y_scale);
 	zoom_ *= 0.95;
 
@@ -1007,7 +1012,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 // -----------------------------------------------------------------------------
 // Returns the number of (attached) vertices in the map
 // -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::nVertices()
+unsigned MapPreviewCanvas::nVertices() const
 {
 	// Get list of used vertices
 	vector<bool> v_used;
@@ -1033,7 +1038,7 @@ unsigned MapPreviewCanvas::nVertices()
 // -----------------------------------------------------------------------------
 // Returns the width (in map units) of the map
 // -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::width()
+unsigned MapPreviewCanvas::width() const
 {
 	int min_x = wxINT32_MAX;
 	int max_x = wxINT32_MIN;
@@ -1052,7 +1057,7 @@ unsigned MapPreviewCanvas::width()
 // -----------------------------------------------------------------------------
 // Returns the height (in map units) of the map
 // -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::height()
+unsigned MapPreviewCanvas::height() const
 {
 	int min_y = wxINT32_MAX;
 	int max_y = wxINT32_MIN;

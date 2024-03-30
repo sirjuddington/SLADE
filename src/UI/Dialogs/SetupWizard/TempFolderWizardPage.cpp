@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -69,20 +69,20 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 
 	rb_use_system_ = new wxRadioButton(
 		this, -1, "Use system temp folder (Recommended)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	sizer->Add(rb_use_system_, 0, wxEXPAND | wxBOTTOM, pad_xl);
+	sizer->Add(rb_use_system_, wxutil::sfWithBorder(0, wxBOTTOM, pad_xl).Expand());
 
 	rb_use_slade_dir_ = new wxRadioButton(this, -1, "Use SLADE installation folder");
-	sizer->Add(rb_use_slade_dir_, 0, wxEXPAND | wxBOTTOM, pad_xl);
+	sizer->Add(rb_use_slade_dir_, wxutil::sfWithBorder(0, wxBOTTOM, pad_xl).Expand());
 
 	rb_use_custom_dir_ = new wxRadioButton(this, -1, "Use custom folder:");
-	sizer->Add(rb_use_custom_dir_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(rb_use_custom_dir_, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND);
+	sizer->Add(hbox, wxSizerFlags().Expand());
 	text_custom_dir_ = new wxTextCtrl(this, -1, "");
-	hbox->Add(text_custom_dir_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(text_custom_dir_, wxutil::sfWithBorder(1, wxRIGHT).CenterVertical());
 	btn_browse_dir_ = new wxButton(this, -1, "Browse...");
-	hbox->Add(btn_browse_dir_, 0, wxEXPAND);
+	hbox->Add(btn_browse_dir_, wxSizerFlags().Expand());
 	text_custom_dir_->Enable(false);
 	btn_browse_dir_->Enable(false);
 
@@ -161,6 +161,8 @@ wxString TempFolderWizardPage::description()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the radio button selection changes

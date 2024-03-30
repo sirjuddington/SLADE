@@ -8,7 +8,7 @@ class Map3DPrefsPanel : public PrefsPanelBase
 {
 public:
 	Map3DPrefsPanel(wxWindow* parent);
-	~Map3DPrefsPanel() = default;
+	~Map3DPrefsPanel() override = default;
 
 	void init() override;
 	void updateDistanceControls() const;

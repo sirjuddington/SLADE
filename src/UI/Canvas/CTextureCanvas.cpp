@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/OpenGL.h"
 #include "UI/Controls/ZoomControl.h"
 
 using namespace slade;
@@ -352,8 +353,8 @@ void CTextureCanvas::drawTexture()
 
 			// CTexture -> temp Image -> GLTexture
 			SImage temp(type);
-			texture_->toImage(temp, parent_, &palette_, blend_rgba_);
-			tex_preview_ = gl::Texture::createFromImage(temp, &palette_);
+			texture_->toImage(temp, parent_, palette_.get(), blend_rgba_);
+			tex_preview_ = gl::Texture::createFromImage(temp, palette_.get());
 		}
 
 		// Draw it
@@ -458,10 +459,10 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	if (!gl::Texture::isLoaded(patch_textures_[num]))
 	{
 		SImage temp(SImage::Type::PalMask);
-		if (texture_->loadPatchImage(num, temp, parent_, &palette_, blend_rgba_))
+		if (texture_->loadPatchImage(num, temp, parent_, palette_.get(), blend_rgba_))
 		{
 			// Load the image as a texture
-			patch_textures_[num] = gl::Texture::createFromImage(temp, &palette_);
+			patch_textures_[num] = gl::Texture::createFromImage(temp, palette_.get());
 		}
 		else
 			patch_textures_[num] = gl::Texture::missingTexture();
@@ -475,10 +476,10 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Setup extended features
-	bool         flipx = false;
-	bool         flipy = false;
-	const double alpha = 1.0;
-	const auto   col   = ColRGBA::WHITE;
+	bool             flipx = false;
+	bool             flipy = false;
+	constexpr double alpha = 1.0;
+	const auto       col   = ColRGBA::WHITE;
 	if (texture_->isExtended())
 	{
 		// Get extended patch
@@ -527,7 +528,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 void CTextureCanvas::drawTextureBorder() const
 {
 	// Draw the texture border
-	const double ext = 0.11;
+	constexpr double ext = 0.11;
 	glLineWidth(2.0f);
 	gl::setColour(ColRGBA::BLACK, gl::Blend::Normal);
 	glBegin(GL_LINE_LOOP);
@@ -769,7 +770,7 @@ Vec2i CTextureCanvas::texToScreenPosition(int x, int y) const
 // Returns the index of the patch at [x,y] on the texture, or -1 if no patch is
 // at that position
 // -----------------------------------------------------------------------------
-int CTextureCanvas::patchAt(int x, int y)
+int CTextureCanvas::patchAt(int x, int y) const
 {
 	// Check a texture is open
 	if (!texture_)
@@ -814,6 +815,8 @@ bool CTextureCanvas::swapPatches(size_t p1, size_t p2)
 	// Swap patches in the texture itself
 	return texture_->swapPatches(p1, p2);
 }
+
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when and mouse event is generated (movement/clicking/etc)
@@ -907,5 +910,5 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		Refresh();
 
 	// Update 'previous' mouse coordinates
-	mouse_prev_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
+	mouse_prev_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
 }

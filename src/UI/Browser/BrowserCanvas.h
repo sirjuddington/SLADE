@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenGL/Drawing.h"
+#include "Browser.h"
 #include "UI/Canvas/OGLCanvas.h"
 
 class wxScrollBar;
@@ -8,28 +8,19 @@ class wxScrollBar;
 namespace slade
 {
 class BrowserItem;
+namespace drawing
+{
+	enum class Font;
+}
 
 class BrowserCanvas : public OGLCanvas
 {
 public:
 	BrowserCanvas(wxWindow* parent);
-	~BrowserCanvas() = default;
-
-	enum class ItemView
-	{
-		Normal,
-		Tiles
-	};
-
-	enum class NameType
-	{
-		Normal,
-		Index,
-		None
-	};
+	~BrowserCanvas() override;
 
 	vector<BrowserItem*>& itemList() { return items_; }
-	int                   getViewedIndex();
+	int                   getViewedIndex() const;
 	void                  addItem(BrowserItem* item);
 	void                  clearItems();
 	int                   fullItemSizeX() const;
@@ -38,8 +29,8 @@ public:
 	void                  setScrollBar(wxScrollBar* scrollbar);
 	void                  updateLayout(int viewed_index = -1);
 	BrowserItem*          selectedItem() const;
-	BrowserItem*          itemAt(int index);
-	int                   itemIndex(BrowserItem* item);
+	BrowserItem*          itemAt(int index) const;
+	int                   itemIndex(const BrowserItem* item) const;
 	void                  selectItem(int index);
 	void                  selectItem(BrowserItem* item);
 	void                  filterItems(wxString filter);
@@ -47,9 +38,9 @@ public:
 	void                  showSelectedItem();
 	bool                  searchItemFrom(int from);
 	void                  setFont(drawing::Font font) { this->font_ = font; }
-	void                  setItemNameType(NameType type) { this->show_names_ = type; }
+	void                  setItemNameType(browser::NameType type) { this->show_names_ = type; }
 	void                  setItemSize(int size) { this->item_size_ = size; }
-	void                  setItemViewType(ItemView type) { this->item_type_ = type; }
+	void                  setItemViewType(browser::ItemView type) { this->item_type_ = type; }
 	int                   longestItemTextWidth() const;
 
 	// Events
@@ -71,15 +62,15 @@ private:
 	BrowserItem*         item_selected_ = nullptr;
 
 	// Display
-	int           yoff_        = 0;
-	int           item_border_ = 0;
-	drawing::Font font_        = drawing::Font::Normal;
-	NameType      show_names_  = NameType::Normal;
-	int           item_size_   = -1;
-	int           top_index_   = 0;
-	int           top_y_       = 0;
-	ItemView      item_type_   = ItemView::Normal;
-	int           num_cols_    = -1;
+	int               yoff_        = 0;
+	int               item_border_ = 0;
+	drawing::Font     font_;
+	browser::NameType show_names_ = browser::NameType::Normal;
+	int               item_size_  = -1;
+	int               top_index_  = 0;
+	int               top_y_      = 0;
+	browser::ItemView item_type_  = browser::ItemView::Normal;
+	int               num_cols_   = -1;
 };
 } // namespace slade
 

@@ -10,7 +10,7 @@ class AudioPrefsPanel : public PrefsPanelBase
 {
 public:
 	AudioPrefsPanel(wxWindow* parent);
-	~AudioPrefsPanel() = default;
+	~AudioPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;

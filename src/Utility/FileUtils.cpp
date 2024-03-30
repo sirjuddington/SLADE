@@ -137,7 +137,7 @@ bool fileutil::copyFile(string_view from, string_view to, bool overwrite)
 	auto                   options = overwrite ? fs::copy_options::overwrite_existing : fs::copy_options::none;
 	if (!fs::copy_file(from, to, options, ec))
 	{
-		log::warning("Unable to copy file from \"{}\" to \"{}\": {}", from, to, ec.message());
+		log::warning(R"(Unable to copy file from "{}" to "{}": {})", from, to, ec.message());
 		return false;
 	}
 
@@ -298,9 +298,9 @@ bool SFile::open(const string& path, Mode mode)
 	switch (mode)
 	{
 	case Mode::ReadOnly: handle_ = fopen(path.c_str(), "rb"); break;
-	case Mode::Write: handle_ = fopen(path.c_str(), "wb"); break;
+	case Mode::Write:    handle_ = fopen(path.c_str(), "wb"); break;
 	case Mode::ReadWite: handle_ = fopen(path.c_str(), "r+b"); break;
-	case Mode::Append: handle_ = fopen(path.c_str(), "ab"); break;
+	case Mode::Append:   handle_ = fopen(path.c_str(), "ab"); break;
 	}
 
 	if (handle_)
@@ -360,7 +360,7 @@ bool SFile::read(void* buffer, unsigned count) const
 // Reads [count] bytes from the file into a MemChunk [mc]
 // (replaces the existing contents of the MemChunk)
 // -----------------------------------------------------------------------------
-bool SFile::read(MemChunk& mc, unsigned count)
+bool SFile::read(MemChunk& mc, unsigned count) const
 {
 	return mc.importFileStream(*this, count);
 }
@@ -374,7 +374,7 @@ bool SFile::read(string& str, unsigned count) const
 	if (handle_)
 	{
 		str.resize(count);
-		auto c = fread(&str[0], 1, count, handle_);
+		auto c = fread(str.data(), 1, count, handle_);
 		str.push_back('\0');
 		return c > 0;
 	}

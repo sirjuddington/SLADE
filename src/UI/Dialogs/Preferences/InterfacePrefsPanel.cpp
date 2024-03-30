@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -188,7 +188,7 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer, 1, wxALL | wxEXPAND, ui::padLarge());
+	sizer->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	int row = 0;
 	gb_sizer->Add(cb_start_page_, { row++, 0 }, { 1, 2 }, wxEXPAND);
@@ -203,7 +203,7 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, ui::pad());
+	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), wxutil::sfWithBorder().Right());
 
 	return panel;
 }
@@ -242,7 +242,7 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer, 1, wxALL | wxEXPAND, ui::padLarge());
+	sizer->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	int row = 0;
 	gb_sizer->Add(cb_size_as_string_, { row++, 0 }, { 1, 4 }, wxEXPAND);
@@ -262,7 +262,7 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, ui::pad());
+	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), wxutil::sfWithBorder().Right());
 
 	return panel;
 }

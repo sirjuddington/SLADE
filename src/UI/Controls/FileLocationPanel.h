@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utility/SFileDialog.h"
-
 wxDECLARE_EVENT(wxEVT_COMMAND_FLP_LOCATION_CHANGED, wxCommandEvent);
 
 namespace slade

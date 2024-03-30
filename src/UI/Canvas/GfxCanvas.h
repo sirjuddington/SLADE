@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Graphics/SImage/SImage.h"
 #include "OGLCanvas.h"
-#include "OpenGL/GLTexture.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
@@ -15,30 +14,33 @@ namespace ui
 	class ZoomControl;
 }
 
+enum class GfxView
+{
+	Default,
+	Centered,
+	Sprite,
+	HUD,
+	Tiled
+};
+
+enum class GfxEditMode
+{
+	None,
+	Paint,
+	Erase,
+	Translate
+};
+
 class GfxCanvas : public OGLCanvas
 {
 public:
-	enum class View
-	{
-		Default,
-		Centered,
-		Sprite,
-		HUD,
-		Tiled
-	};
-
-	enum class EditMode
-	{
-		None,
-		Paint,
-		Erase,
-		Translate
-	};
+	using View     = GfxView;
+	using EditMode = GfxEditMode;
 
 	GfxCanvas(wxWindow* parent, int id);
 	~GfxCanvas() override = default;
 
-	SImage& image() { return image_; }
+	SImage& image() const { return *image_; }
 
 	void    setViewType(View type) { view_type_ = type; }
 	View    viewType() const { return view_type_; }
@@ -72,28 +74,28 @@ public:
 	Vec2i imageCoords(int x, int y) const;
 
 private:
-	SImage           image_;
-	View             view_type_ = View::Default;
-	double           scale_     = 1.;
-	Vec2d            offset_; // panning offsets (not image offsets)
-	unsigned         tex_image_      = 0;
-	bool             update_texture_ = false;
-	bool             image_hilight_  = false;
-	bool             allow_drag_     = false;
-	bool             allow_scroll_   = false;
-	Vec2i            drag_pos_       = { 0, 0 };
-	Vec2i            drag_origin_    = { -1, -1 };
-	Vec2i            mouse_prev_;
-	EditMode         editing_mode_        = EditMode::None;
-	ColRGBA          paint_colour_        = ColRGBA::BLACK; // the colour to apply to pixels in editing mode 1
-	Translation*     translation_         = nullptr;        // the translation to apply to pixels in editing mode 3
-	bool             drawing_             = false;          // true if a drawing operation is ongoing
-	bool*            drawing_mask_        = nullptr; // keeps track of which pixels were already modified in this pass
-	SBrush*          brush_               = nullptr; // the brush used to paint the image
-	Vec2i            cursor_pos_          = { -1, -1 }; // position of cursor, relative to image
-	Vec2i            prev_pos_            = { -1, -1 }; // previous position of cursor
-	unsigned         tex_brush_           = 0;          // preview the effect of the brush
-	ui::ZoomControl* linked_zoom_control_ = nullptr;
+	unique_ptr<SImage> image_;
+	View               view_type_ = View::Default;
+	double             scale_     = 1.;
+	Vec2d              offset_; // panning offsets (not image offsets)
+	unsigned           tex_image_      = 0;
+	bool               update_texture_ = false;
+	bool               image_hilight_  = false;
+	bool               allow_drag_     = false;
+	bool               allow_scroll_   = false;
+	Vec2i              drag_pos_       = { 0, 0 };
+	Vec2i              drag_origin_    = { -1, -1 };
+	Vec2i              mouse_prev_;
+	EditMode           editing_mode_        = EditMode::None;
+	ColRGBA            paint_colour_        = ColRGBA::BLACK; // the colour to apply to pixels in editing mode 1
+	Translation*       translation_         = nullptr;        // the translation to apply to pixels in editing mode 3
+	bool               drawing_             = false;          // true if a drawing operation is ongoing
+	bool*              drawing_mask_        = nullptr; // keeps track of which pixels were already modified in this pass
+	SBrush*            brush_               = nullptr; // the brush used to paint the image
+	Vec2i              cursor_pos_          = { -1, -1 }; // position of cursor, relative to image
+	Vec2i              prev_pos_            = { -1, -1 }; // previous position of cursor
+	unsigned           tex_brush_           = 0;          // preview the effect of the brush
+	ui::ZoomControl*   linked_zoom_control_ = nullptr;
 
 	// Signal connections
 	sigslot::scoped_connection sc_image_changed_;

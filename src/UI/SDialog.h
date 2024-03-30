@@ -13,7 +13,7 @@ public:
 		int             height = -1,
 		int             x      = -1,
 		int             y      = -1);
-	virtual ~SDialog();
+	~SDialog() override;
 
 	void setSavedSize(int def_width = -1, int def_height = -1);
 

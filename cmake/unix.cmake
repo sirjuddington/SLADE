@@ -110,6 +110,7 @@ if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
 endif()
 find_package(MPG123 REQUIRED)
+find_package(glm REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
 	${SFML_INCLUDE_DIR}
@@ -178,6 +179,7 @@ target_link_libraries(slade
 	${OPENGL_LIBRARIES}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
+	glm::glm
 )
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)
@@ -243,7 +245,7 @@ endif()
 
 if (NOT NO_COTIRE)
 	set_target_properties(slade PROPERTIES
-		COTIRE_CXX_PREFIX_HEADER_INIT "common.h"
+		COTIRE_CXX_PREFIX_HEADER_INIT "Application/Main.h"
 		# Enable multithreaded unity builds by default
 		# because otherwise probably no one would realize how
 		COTIRE_UNITY_SOURCE_MAXIMUM_NUMBER_OF_INCLUDES -j

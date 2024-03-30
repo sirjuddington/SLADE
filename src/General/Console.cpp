@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,7 +33,6 @@
 #include "Console.h"
 #include "App.h"
 #include "General/CVar.h"
-#include "MainEditor/MainEditor.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -50,7 +49,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // Adds a ConsoleCommand to the Console
 // -----------------------------------------------------------------------------
-void Console::addCommand(ConsoleCommand& c)
+void Console::addCommand(const ConsoleCommand& c)
 {
 	// Add the command to the list
 	commands_.push_back(c);
@@ -132,7 +131,7 @@ void Console::execute(string_view command)
 		else if (cvar->type == CVar::Type::Float)
 			value = fmt::format("{:1.4f}", cvar->getValue().Float);
 		else
-			value = ((CStringCVar*)cvar)->value;
+			value = dynamic_cast<CStringCVar*>(cvar)->value;
 
 		log::console(fmt::format(R"("{}" = "{}")", cmd_name, value));
 
@@ -170,7 +169,7 @@ string Console::lastCommand()
 string Console::prevCommand(int index)
 {
 	// Check index
-	if (index < 0 || (unsigned)index >= cmd_log_.size())
+	if (index < 0 || static_cast<unsigned>(index) >= cmd_log_.size())
 		return "";
 
 	return cmd_log_[index];
@@ -200,9 +199,9 @@ ConsoleCommand& Console::command(size_t index)
 // -----------------------------------------------------------------------------
 ConsoleCommand::ConsoleCommand(
 	string_view name,
-	void (*command_func)(const vector<string>&),
-	int  min_args = 0,
-	bool show_in_list)
+	void        (*command_func)(const vector<string>&),
+	int         min_args = 0,
+	bool        show_in_list)
 {
 	// Init variables
 	name_         = name;

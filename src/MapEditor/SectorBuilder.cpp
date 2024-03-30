@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,7 +34,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SectorBuilder.h"
+#include "Geometry/Geometry.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
@@ -96,7 +100,7 @@ SectorBuilder::Edge nextEdge(SectorBuilder::Edge edge, MapLineSet& visited_lines
 			continue;
 
 		// Determine angle between lines
-		double angle = math::angle2DRad(
+		double angle = geometry::angle2DRad(
 			{ vertex_prev->xPos(), vertex_prev->yPos() },
 			{ vertex->xPos(), vertex->yPos() },
 			{ vertex_next->xPos(), vertex_next->yPos() });
@@ -127,7 +131,7 @@ SectorBuilder::Edge nextEdge(SectorBuilder::Edge edge, MapLineSet& visited_lines
 // -----------------------------------------------------------------------------
 // Returns the line for the edge at [index]
 // -----------------------------------------------------------------------------
-MapLine* SectorBuilder::edgeLine(unsigned index)
+MapLine* SectorBuilder::edgeLine(unsigned index) const
 {
 	// Check index
 	if (index >= sector_edges_.size())
@@ -139,7 +143,7 @@ MapLine* SectorBuilder::edgeLine(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns true if the edge at [index] is on the front side of its line
 // -----------------------------------------------------------------------------
-bool SectorBuilder::edgeIsFront(unsigned index)
+bool SectorBuilder::edgeIsFront(unsigned index) const
 {
 	// Check index
 	if (index >= sector_edges_.size())
@@ -151,7 +155,7 @@ bool SectorBuilder::edgeIsFront(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns true if the MapSide for the edge at [index] has been created
 // -----------------------------------------------------------------------------
-bool SectorBuilder::edgeSideCreated(unsigned index)
+bool SectorBuilder::edgeSideCreated(unsigned index) const
 {
 	// Check index
 	if (index >= sector_edges_.size())
@@ -243,7 +247,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 // -----------------------------------------------------------------------------
 // Returns the index of the edge closest to [x,y]
 // -----------------------------------------------------------------------------
-int SectorBuilder::nearestEdge(double x, double y)
+int SectorBuilder::nearestEdge(double x, double y) const
 {
 	Vec2d point(x, y);
 
@@ -256,7 +260,7 @@ int SectorBuilder::nearestEdge(double x, double y)
 	for (unsigned a = 0; a < o_edges_.size(); a++)
 	{
 		// Get distance to edge
-		dist = math::distanceToLineFast(point, o_edges_[a].line->seg());
+		dist = geometry::distanceToLineFast(point, o_edges_[a].line->seg());
 
 		// Check if minimum
 		if (dist < min_dist)
@@ -273,7 +277,7 @@ int SectorBuilder::nearestEdge(double x, double y)
 // -----------------------------------------------------------------------------
 // Returns true if the point [x,y] is within the current outline
 // -----------------------------------------------------------------------------
-bool SectorBuilder::pointWithinOutline(double x, double y)
+bool SectorBuilder::pointWithinOutline(double x, double y) const
 {
 	Vec2d point(x, y);
 
@@ -296,7 +300,7 @@ bool SectorBuilder::pointWithinOutline(double x, double y)
 	if (nearest >= 0)
 	{
 		// Check what side of the edge the point is on
-		double side = math::lineSide(point, o_edges_[nearest].line->seg());
+		double side = geometry::lineSide(point, o_edges_[nearest].line->seg());
 
 		// Return true if it is on the correct side
 		if (side >= 0 && o_edges_[nearest].front)
@@ -380,8 +384,8 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 			// tiebreaker -- this fixes cases where the ray hits a vertex
 			// shared by two lines.  Choosing the further line would mean
 			// choosing an inner edge, which is clearly wrong.
-			double line_dist    = math::distanceToLineFast(vertex_right_->position(), line->seg());
-			double nearest_dist = math::distanceToLineFast(vertex_right_->position(), nearest->seg());
+			double line_dist    = geometry::distanceToLineFast(vertex_right_->position(), line->seg());
+			double nearest_dist = geometry::distanceToLineFast(vertex_right_->position(), nearest->seg());
 			if (line_dist < nearest_dist)
 			{
 				min_dist = dist;
@@ -396,7 +400,7 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 
 
 	// Determine the edge side
-	double side = math::lineSide(vertex_right_->position(), nearest->seg());
+	double side = geometry::lineSide(vertex_right_->position(), nearest->seg());
 	// LOG_DEBUG("Found next outer line", nearest, "on side", side);
 	if (side >= 0)
 		return Edge{ nearest, true };
@@ -455,7 +459,7 @@ SectorBuilder::Edge SectorBuilder::findInnerEdge()
 			opposite = line->v1();
 
 		// Determine angle
-		double angle = math::angle2DRad(
+		double angle = geometry::angle2DRad(
 			Vec2d(vertex_right_->xPos() + 32, vertex_right_->yPos()),
 			Vec2d(vertex_right_->xPos(), vertex_right_->yPos()),
 			Vec2d(opposite->xPos(), opposite->yPos()));
@@ -488,7 +492,7 @@ SectorBuilder::Edge SectorBuilder::findInnerEdge()
 // Finds an appropriate existing sector to copy properties from, for the new
 // sector being built
 // -----------------------------------------------------------------------------
-MapSector* SectorBuilder::findCopySector()
+MapSector* SectorBuilder::findCopySector() const
 {
 	// Go through new sector edges
 	MapSector* sector_copy = nullptr;
@@ -523,7 +527,7 @@ MapSector* SectorBuilder::findCopySector()
 // -----------------------------------------------------------------------------
 // Finds any existing sector that is already part of the traced new sector
 // -----------------------------------------------------------------------------
-MapSector* SectorBuilder::findExistingSector(vector<MapSide*>& sides_ignore)
+MapSector* SectorBuilder::findExistingSector(vector<MapSide*>& sides_ignore) const
 {
 	// Go through new sector edges
 	MapSector* sector          = nullptr;
@@ -561,7 +565,7 @@ MapSector* SectorBuilder::findExistingSector(vector<MapSide*>& sides_ignore)
 // Checks if the traced sector is valid (ie. all edges are currently the same
 // (existing) sector)
 // -----------------------------------------------------------------------------
-bool SectorBuilder::isValidSector()
+bool SectorBuilder::isValidSector() const
 {
 	if (sector_edges_.empty())
 		return false;
@@ -702,7 +706,7 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 // -----------------------------------------------------------------------------
 // Draws lines showing the currently traced edges
 // -----------------------------------------------------------------------------
-void SectorBuilder::drawResult()
+void SectorBuilder::drawResult() const
 {
 	glDisable(GL_TEXTURE_2D);
 	gl::setColour(255, 255, 255, 255, gl::Blend::Normal);

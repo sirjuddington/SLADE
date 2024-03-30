@@ -1,11 +1,14 @@
 #pragma once
 
+#include "Geometry/BBox.h"
+#include "Geometry/Plane.h"
 #include "MapObject.h"
-#include "Utility/Colour.h"
-#include "Utility/Polygon2D.h"
 
 namespace slade
 {
+class Debuggable;
+class Polygon2D;
+
 class MapSector : public MapObject
 {
 	friend class SLADEMap;
@@ -25,7 +28,9 @@ public:
 		Plane  plane  = { 0., 0., 1., 0. };
 
 		Surface(string_view texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
-			texture{ texture }, height{ height }, plane{ plane }
+			texture{ texture },
+			height{ height },
+			plane{ plane }
 		{
 		}
 	};
@@ -88,7 +93,7 @@ public:
 		short       special  = 0,
 		short       id       = 0);
 	MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* udmf_def);
-	~MapSector() override = default;
+	~MapSector() override;
 
 	void copy(MapObject* obj) override;
 
@@ -126,8 +131,8 @@ public:
 	vector<MapSide*>& connectedSides() { return connected_sides_; }
 	void              resetPolygon() { poly_needsupdate_ = true; }
 	Polygon2D*        polygon();
-	bool              containsPoint(Vec2d point);
-	double            distanceTo(Vec2d point, double maxdist = -1);
+	bool              containsPoint(const Vec2d& point);
+	double            distanceTo(const Vec2d& point, double maxdist = -1);
 	bool              putLines(vector<MapLine*>& list) const;
 	bool              putVertices(vector<MapVertex*>& list) const;
 	bool              putVertices(vector<MapObject*>& list) const;
@@ -154,13 +159,7 @@ public:
 
 	void writeUDMF(string& def) override;
 
-	operator Debuggable() const
-	{
-		if (!this)
-			return { "<sector NULL>" };
-
-		return { fmt::format("<sector {}>", index_) };
-	}
+	operator Debuggable() const;
 
 private:
 	// Basic data
@@ -171,13 +170,13 @@ private:
 	short   id_      = 0;
 
 	// Internal info
-	vector<MapSide*>   connected_sides_;
-	BBox               bbox_;
-	Polygon2D          polygon_;
-	bool               poly_needsupdate_ = true;
-	long               geometry_updated_ = 0;
-	Vec2d              text_point_;
-	vector<ExtraFloor> extra_floors_;
+	vector<MapSide*>      connected_sides_;
+	BBox                  bbox_;
+	unique_ptr<Polygon2D> polygon_;
+	bool                  poly_needsupdate_ = true;
+	long                  geometry_updated_ = 0;
+	Vec2d                 text_point_       = {};
+	vector<ExtraFloor>    extra_floors_;
 
 	void setGeometryUpdated();
 };

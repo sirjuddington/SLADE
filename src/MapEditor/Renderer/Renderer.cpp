@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,13 +34,32 @@
 #include "Renderer.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
+#include "Geometry/Geometry.h"
+#include "MCAnimations.h"
+#include "MapEditor/Edit/Input.h"
 #include "MapEditor/Edit/LineDraw.h"
+#include "MapEditor/Edit/MoveObjects.h"
+#include "MapEditor/Edit/ObjectEdit.h"
+#include "MapEditor/MapClipboardItems.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapRenderer2D.h"
+#include "MapRenderer3D.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
+#include "OpenGL/View.h"
 #include "Overlays/MCOverlay.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -92,57 +111,65 @@ EXTERN_CVAR(Int, vertex_size)
 // Renderer class constructor
 // -----------------------------------------------------------------------------
 Renderer::Renderer(MapEditContext& context) :
-	context_{ context }, renderer_2d_{ &context.map() }, renderer_3d_{ &context.map() }, view_{ true }
+	context_{ &context },
+	renderer_2d_{ new MapRenderer2D(&context.map()) },
+	renderer_3d_{ new MapRenderer3D(&context.map()) },
+	view_{ new gl::View(true) }
 {
 }
 
 // -----------------------------------------------------------------------------
+// Renderer class destructor
+// -----------------------------------------------------------------------------
+Renderer::~Renderer() = default;
+
+// -----------------------------------------------------------------------------
 // Updates/refreshes the 2d and 3d renderers
 // -----------------------------------------------------------------------------
-void Renderer::forceUpdate()
+void Renderer::forceUpdate() const
 {
-	renderer_2d_.forceUpdate(fade_lines_);
-	renderer_3d_.clearData();
+	renderer_2d_->forceUpdate(fade_lines_);
+	renderer_3d_->clearData();
 }
 
 // -----------------------------------------------------------------------------
 // Scrolls the view to be centered on map coordinates [x,y]
 // -----------------------------------------------------------------------------
-void Renderer::setView(double map_x, double map_y)
+void Renderer::setView(double map_x, double map_y) const
 {
 	// Set new view
-	view_.setOffset(map_x, map_y);
+	view_->setOffset(map_x, map_y);
 
 	// Update object visibility
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
 // Sets the view size to [width,height]
 // -----------------------------------------------------------------------------
-void Renderer::setViewSize(int width, int height)
+void Renderer::setViewSize(int width, int height) const
 {
 	// Set new size
-	view_.setSize(width, height);
+	view_->setSize(width, height);
 
 	// Update object visibility
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
 // Sets the view such that the map coordinate [y] is at the top of the canvas
 // -----------------------------------------------------------------------------
-void Renderer::setTopY(double map_y)
+void Renderer::setTopY(double map_y) const
 {
-	setView(view_.offset().x, view_.offset().y - (view_.canvasY(0) - map_y));
-	view_.resetInter(false, true, false);
+	setView(view_->offset().x, view_->offset().y - (view_->canvasY(0) - map_y));
+	view_->resetInter(false, true, false);
 }
 
 // -----------------------------------------------------------------------------
 // Scrolls the view relatively by [x,y].
 // If [scale] is true, [x,y] will be scaled by the current view scale
 // -----------------------------------------------------------------------------
-void Renderer::pan(double x, double y, bool scale)
+void Renderer::pan(double x, double y, bool scale) const
 {
 	if (scale)
 	{
@@ -150,7 +177,7 @@ void Renderer::pan(double x, double y, bool scale)
 		y /= view().scale();
 	}
 
-	setView(view_.offset().x + x, view_.offset().y + y);
+	setView(view_->offset().x + x, view_->offset().y + y);
 }
 
 // -----------------------------------------------------------------------------
@@ -164,17 +191,17 @@ void Renderer::zoom(double amount, bool toward_cursor)
 	if (toward_cursor)
 	{
 		cursor_zoom_disabled_ = false;
-		view_.zoomToward(amount, context_.input().mousePos());
+		view_->zoomToward(amount, context_->input().mousePos());
 	}
 	else
 	{
 		cursor_zoom_disabled_ = true;
-		view_.zoom(amount);
+		view_->zoom(amount);
 	}
 
 	// Update object visibility
-	renderer_2d_.setScale(view_.scale(true));
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->setScale(view_->scale(true));
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -187,16 +214,16 @@ void Renderer::viewFitToMap(bool snap)
 	cursor_zoom_disabled_ = true;
 
 	// Fit the view to the map bbox
-	view_.fitTo(context_.map().bounds());
+	view_->fitTo(context_->map().bounds());
 
 	// Don't animate if specified
 	if (snap)
-		view_.resetInter(true, true, true);
+		view_->resetInter(true, true, true);
 
 	// Update object visibility
-	renderer_2d_.setScale(view_.scale(true));
-	renderer_2d_.forceUpdate();
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->setScale(view_->scale(true));
+	renderer_2d_->forceUpdate();
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -250,12 +277,12 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 	}
 
 	// Fit the view to the bbox
-	view_.fitTo(bbox);
+	view_->fitTo(bbox);
 
 	// Update object visibility
-	renderer_2d_.setScale(view_.scale(true));
-	renderer_2d_.forceUpdate();
-	renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	renderer_2d_->setScale(view_->scale(true));
+	renderer_2d_->forceUpdate();
+	renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 }
 
 // -----------------------------------------------------------------------------
@@ -267,9 +294,10 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 	auto anim_view_speed = view_speed;
 	if (smooth)
 	{
-		auto mouse_pos = Vec2d{ (double)context_.input().mousePos().x, (double)context_.input().mousePos().y };
+		auto mouse_pos = Vec2d{ static_cast<double>(context_->input().mousePos().x),
+								static_cast<double>(context_->input().mousePos().y) };
 
-		if (!view_.interpolate(mult * view_speed, cursor_zoom_disabled_ ? nullptr : &mouse_pos))
+		if (!view_->interpolate(mult * view_speed, cursor_zoom_disabled_ ? nullptr : &mouse_pos))
 		{
 			cursor_zoom_disabled_ = false;
 			anim_view_speed       = 0.05;
@@ -282,7 +310,7 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 		}
 	}
 	else
-		view_.resetInter(true, true, true);
+		view_->resetInter(true, true, true);
 
 	return anim_view_speed;
 }
@@ -293,23 +321,23 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 bool Renderer::viewIsInterpolated() const
 {
 	return (
-		view_.scale(false) != view_.scale(true) || view_.offset(false).x != view_.offset(true).x
-		|| view_.offset(false).y != view_.offset(true).y);
+		view_->scale(false) != view_->scale(true) || view_->offset(false).x != view_->offset(true).x
+		|| view_->offset(false).y != view_->offset(true).y);
 }
 
 // -----------------------------------------------------------------------------
 // Sets the 3d camera to match [thing]
 // -----------------------------------------------------------------------------
-void Renderer::setCameraThing(const MapThing* thing)
+void Renderer::setCameraThing(const MapThing* thing) const
 {
 	// Determine position
 	Vec3d pos(thing->position(), 40);
-	auto  sector = context_.map().sectors().atPos(thing->position());
+	auto  sector = context_->map().sectors().atPos(thing->position());
 	if (sector)
 		pos.z += sector->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction
-	renderer_3d_.cameraSet(pos, math::vectorAngle(math::degToRad(thing->angle())));
+	renderer_3d_->cameraSet(pos, geometry::vectorAngle(geometry::degToRad(thing->angle())));
 }
 
 // -----------------------------------------------------------------------------
@@ -317,7 +345,7 @@ void Renderer::setCameraThing(const MapThing* thing)
 // -----------------------------------------------------------------------------
 Vec2d Renderer::cameraPos2D() const
 {
-	return { renderer_3d_.camPosition().x, renderer_3d_.camPosition().y };
+	return { renderer_3d_->camPosition().x, renderer_3d_->camPosition().y };
 }
 
 // -----------------------------------------------------------------------------
@@ -325,7 +353,7 @@ Vec2d Renderer::cameraPos2D() const
 // -----------------------------------------------------------------------------
 Vec2d Renderer::cameraDir2D() const
 {
-	return renderer_3d_.camDirection();
+	return renderer_3d_->camDirection();
 }
 
 // -----------------------------------------------------------------------------
@@ -334,7 +362,7 @@ Vec2d Renderer::cameraDir2D() const
 void Renderer::drawGrid() const
 {
 	// Get grid size
-	int gridsize = context_.gridSize();
+	int gridsize = context_->gridSize();
 
 	// Disable line smoothing (not needed for straight, 1.0-sized lines)
 	glDisable(GL_LINE_SMOOTH);
@@ -351,13 +379,13 @@ void Renderer::drawGrid() const
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Determine smallest grid size to bother drawing
-	int grid_hidelevel = 2.0 / view_.scale();
+	int grid_hidelevel = 2.0 / view_->scale();
 
 	// Determine canvas edges in map coordinates
-	int start_x = view_.canvasX(0, true);
-	int end_x   = view_.canvasX(view_.size().x, true);
-	int start_y = view_.canvasY(view_.size().y, true);
-	int end_y   = view_.canvasY(0, true);
+	int start_x = view_->canvasX(0, true);
+	int end_x   = view_->canvasX(view_->size().x, true);
+	int start_y = view_->canvasY(view_->size().y, true);
+	int end_y   = view_->canvasY(0, true);
 
 	// Draw regular grid if it's not too small
 	if (gridsize > grid_hidelevel)
@@ -473,9 +501,9 @@ void Renderer::drawGrid() const
 	// Draw crosshair if needed
 	if (map_crosshair > 0)
 	{
-		auto   mouse_pos = context_.input().mousePos();
-		double x         = context_.snapToGrid(view_.canvasX(mouse_pos.x), false);
-		double y         = context_.snapToGrid(view_.canvasY(mouse_pos.y), false);
+		auto   mouse_pos = context_->input().mousePos();
+		double x         = context_->snapToGrid(view_->canvasX(mouse_pos.x), false);
+		double y         = context_->snapToGrid(view_->canvasY(mouse_pos.y), false);
 		auto&  def       = colourconfig::colDef("map_64grid");
 		auto   col       = def.colour;
 
@@ -485,8 +513,8 @@ void Renderer::drawGrid() const
 		{
 			col         = col.ampf(1.0f, 1.0f, 1.0f, 2.0f);
 			auto   col2 = col.ampf(1.0f, 1.0f, 1.0f, 0.0f);
-			double size = context_.gridSize();
-			double one  = 1.0 / view_.scale(true);
+			double size = context_->gridSize();
+			double one  = 1.0 / view_->scale(true);
 
 			gl::setBlend(def.blendMode());
 
@@ -519,10 +547,10 @@ void Renderer::drawGrid() const
 			gl::setColour(col, def.blendMode());
 
 			glBegin(GL_LINES);
-			glVertex2d(x, view_.visibleRegion().tl.y);
-			glVertex2d(x, view_.visibleRegion().br.y);
-			glVertex2d(view_.visibleRegion().tl.x, y);
-			glVertex2d(view_.visibleRegion().br.x, y);
+			glVertex2d(x, view_->visibleRegion().tl.y);
+			glVertex2d(x, view_->visibleRegion().br.y);
+			glVertex2d(view_->visibleRegion().tl.x, y);
+			glVertex2d(view_->visibleRegion().br.x, y);
 			glEnd();
 		}
 	}
@@ -540,10 +568,10 @@ void Renderer::drawEditorMessages() const
 	auto col_bg = colourconfig::colour("map_editor_message_outline");
 
 	// Go through editor messages
-	for (unsigned a = 0; a < context_.numEditorMessages(); a++)
+	for (unsigned a = 0; a < context_->numEditorMessages(); a++)
 	{
 		// Check message time
-		long time = context_.editorMessageTime(a);
+		long time = context_->editorMessageTime(a);
 		if (time > 2000)
 			continue;
 
@@ -567,7 +595,7 @@ void Renderer::drawEditorMessages() const
 
 		// Draw message
 		drawing::setTextOutline(1.0f, col_bg);
-		drawing::drawText(context_.editorMessage(a), 0, yoff, col, drawing::Font::Bold);
+		drawing::drawText(context_->editorMessage(a), 0, yoff, col, drawing::Font::Bold);
 
 		yoff += 16;
 	}
@@ -580,7 +608,7 @@ void Renderer::drawEditorMessages() const
 void Renderer::drawFeatureHelpText() const
 {
 	// Check if any text
-	auto& help_lines = context_.featureHelpLines();
+	auto& help_lines = context_->featureHelpLines();
 	if (help_lines.empty() || !map_show_help)
 		return;
 
@@ -591,7 +619,7 @@ void Renderer::drawFeatureHelpText() const
 	col.a        = col.a * anim_help_fade_;
 	col_bg.a     = col_bg.a * anim_help_fade_;
 	drawing::setTextOutline(1.0f, col_bg);
-	drawing::drawText(help_lines[0], view_.size().x - 2, 2, col, drawing::Font::Bold, drawing::Align::Right, &bounds);
+	drawing::drawText(help_lines[0], view_->size().x - 2, 2, col, drawing::Font::Bold, drawing::Align::Right, &bounds);
 
 	// Draw underline
 	glDisable(GL_TEXTURE_2D);
@@ -609,7 +637,7 @@ void Renderer::drawFeatureHelpText() const
 	int yoff = 22;
 	for (unsigned a = 1; a < help_lines.size(); a++)
 	{
-		drawing::drawText(help_lines[a], view_.size().x - 2, yoff, col, drawing::Font::Bold, drawing::Align::Right);
+		drawing::drawText(help_lines[a], view_->size().x - 2, yoff, col, drawing::Font::Bold, drawing::Align::Right);
 		yoff += 16;
 	}
 	drawing::setTextOutline(0);
@@ -621,7 +649,7 @@ void Renderer::drawFeatureHelpText() const
 void Renderer::drawSelectionNumbers() const
 {
 	// Check if any selection exists
-	auto selection = context_.selection().selectedObjects();
+	auto selection = context_->selection().selectedObjects();
 	if (selection.empty())
 		return;
 
@@ -630,26 +658,26 @@ void Renderer::drawSelectionNumbers() const
 
 	// Go through selection
 	string text;
-	view_.setOverlayCoords(true);
-	if (context_.selection().size() <= map_max_selection_numbers * 0.5)
+	view_->setOverlayCoords(true);
+	if (context_->selection().size() <= map_max_selection_numbers * 0.5)
 		drawing::setTextOutline(1.0, ColRGBA::BLACK);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if ((int)a > map_max_selection_numbers)
+		if (static_cast<int>(a) > map_max_selection_numbers)
 			break;
 		if (!selection[a])
 			continue;
 
 		auto tp = selection[a]->getPoint(MapObject::Point::Text);
-		tp.x    = view_.screenX(tp.x);
-		tp.y    = view_.screenY(tp.y);
+		tp.x    = view_->screenX(tp.x);
+		tp.y    = view_->screenY(tp.y);
 
 		text    = fmt::format("{}", a + 1);
 		auto ts = drawing::textExtents(text, drawing::Font::Bold);
 		tp.x -= ts.x * 0.5;
 		tp.y -= ts.y * 0.5;
 
-		if (context_.editMode() == Mode::Vertices)
+		if (context_->editMode() == Mode::Vertices)
 		{
 			tp.x += 8;
 			tp.y += 8;
@@ -659,7 +687,7 @@ void Renderer::drawSelectionNumbers() const
 		drawing::drawText(fmt::format("{}", a + 1), tp.x, tp.y, col, drawing::Font::Bold);
 	}
 	drawing::setTextOutline(0);
-	view_.setOverlayCoords(false);
+	view_->setOverlayCoords(false);
 
 	glDisable(GL_TEXTURE_2D);
 }
@@ -670,7 +698,7 @@ void Renderer::drawSelectionNumbers() const
 void Renderer::drawThingQuickAngleLines() const
 {
 	// Check if any selection exists
-	auto selection = context_.selection().selectedThings();
+	auto selection = context_->selection().selectedThings();
 	if (selection.empty())
 		return;
 
@@ -679,7 +707,7 @@ void Renderer::drawThingQuickAngleLines() const
 	gl::setColour(col);
 
 	// Draw lines
-	auto mouse_pos_m = view_.canvasPos(context_.input().mousePos(), true);
+	auto mouse_pos_m = view_->canvasPos(context_->input().mousePos(), true);
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	for (auto& thing : selection)
@@ -693,26 +721,26 @@ void Renderer::drawThingQuickAngleLines() const
 // -----------------------------------------------------------------------------
 // Draws text showing the length from [p1] to [p2]
 // -----------------------------------------------------------------------------
-void Renderer::drawLineLength(Vec2d p1, Vec2d p2, ColRGBA col) const
+void Renderer::drawLineLength(const Vec2d& p1, const Vec2d& p2, ColRGBA col) const
 {
 	// Determine distance in screen scale
-	double tdist = 20 / view_.scale(true);
+	double tdist = 20 / view_->scale(true);
 
 	// Determine line midpoint and front vector
 	Vec2d mid(p1.x + (p2.x - p1.x) * 0.5, p1.y + (p2.y - p1.y) * 0.5);
 	Vec2d vec(-(p2.y - p1.y), p2.x - p1.x);
-	vec.normalize();
+	vec = glm::normalize(vec);
 
 	// Determine point to place the text
 	Vec2d tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
-	auto   length = fmt::format("{}", math::round(math::distance(p1, p2)));
+	auto   length = fmt::format("{}", math::round(glm::distance(p1, p2)));
 	double hh     = drawing::textExtents(length).y * 0.5;
 
 	// Draw text
 	drawing::drawText(
-		length, view_.screenX(tp.x), view_.screenY(tp.y) - hh, col, drawing::Font::Normal, drawing::Align::Center);
+		length, view_->screenX(tp.x), view_->screenY(tp.y) - hh, col, drawing::Font::Normal, drawing::Align::Center);
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -726,32 +754,32 @@ void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 	gl::setColour(col);
 
 	// Determine end point
-	auto end = view_.canvasPos(context_.input().mousePos(), true);
+	auto end = view_->canvasPos(context_->input().mousePos(), true);
 	if (snap_nearest_vertex)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
-		auto vertex = context_.map().vertices().nearest(end);
+		auto vertex = context_->map().vertices().nearest(end);
 		if (vertex)
 		{
 			end.x = vertex->xPos();
 			end.y = vertex->yPos();
 		}
-		else if (context_.gridSnap())
+		else if (context_->gridSnap())
 		{
 			// No nearest vertex, snap to grid if needed
-			end.x = context_.snapToGrid(end.x);
-			end.y = context_.snapToGrid(end.y);
+			end.x = context_->snapToGrid(end.x);
+			end.y = context_->snapToGrid(end.y);
 		}
 	}
-	else if (context_.gridSnap())
+	else if (context_->gridSnap())
 	{
 		// Otherwise, snap to grid if needed
-		end.x = context_.snapToGrid(end.x);
-		end.y = context_.snapToGrid(end.y);
+		end.x = context_->snapToGrid(end.x);
+		end.y = context_->snapToGrid(end.y);
 	}
 
 	// Draw lines
-	auto& line_draw = context_.lineDraw();
+	auto& line_draw = context_->lineDraw();
 	int   npoints   = line_draw.nPoints();
 	glLineWidth(2.0f);
 	if (npoints > 1)
@@ -759,19 +787,19 @@ void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 		for (int a = 0; a < npoints - 1; a++)
 			drawing::drawLineTabbed(line_draw.point(a), line_draw.point(a + 1));
 	}
-	if (npoints > 0 && context_.lineDraw().state() == LineDraw::State::Line)
+	if (npoints > 0 && context_->lineDraw().state() == LineDraw::State::Line)
 		drawing::drawLineTabbed(line_draw.point(npoints - 1), end);
 
 	// Draw line lengths
-	view_.setOverlayCoords(true);
+	view_->setOverlayCoords(true);
 	if (npoints > 1)
 	{
 		for (int a = 0; a < npoints - 1; a++)
 			drawLineLength(line_draw.point(a), line_draw.point(a + 1), col);
 	}
-	if (npoints > 0 && context_.lineDraw().state() == LineDraw::State::Line)
+	if (npoints > 0 && context_->lineDraw().state() == LineDraw::State::Line)
 		drawLineLength(line_draw.point(npoints - 1), end, col);
-	view_.setOverlayCoords(false);
+	view_->setOverlayCoords(false);
 
 	// Draw points
 	glPointSize(vertex_size);
@@ -780,8 +808,8 @@ void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 	glBegin(GL_POINTS);
 	for (auto& point : line_draw.points())
 		glVertex2d(point.x, point.y);
-	if (context_.lineDraw().state() == LineDraw::State::Line
-		|| context_.lineDraw().state() == LineDraw::State::ShapeOrigin)
+	if (context_->lineDraw().state() == LineDraw::State::Line
+		|| context_->lineDraw().state() == LineDraw::State::ShapeOrigin)
 		glVertex2d(end.x, end.y);
 	glEnd();
 }
@@ -814,7 +842,7 @@ void Renderer::drawPasteLines() const
 	gl::setColour(col);
 
 	// Draw
-	auto pos = context_.relativeSnapToGrid(c->midpoint(), view_.canvasPos(context_.input().mousePos(), true));
+	auto pos = context_->relativeSnapToGrid(c->midpoint(), view_->canvasPos(context_->input().mousePos(), true));
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	for (const auto& line : lines)
@@ -828,34 +856,34 @@ void Renderer::drawPasteLines() const
 // -----------------------------------------------------------------------------
 // Draws object edit objects, bounding box and text
 // -----------------------------------------------------------------------------
-void Renderer::drawObjectEdit()
+void Renderer::drawObjectEdit() const
 {
-	auto& group      = context_.objectEdit().group();
+	auto& group      = context_->objectEdit().group();
 	auto  col        = colourconfig::colour("map_object_edit");
-	auto  edit_state = context_.objectEdit().state();
+	auto  edit_state = context_->objectEdit().state();
 
 	// Map objects
-	renderer_2d_.renderObjectEditGroup(&group);
+	renderer_2d_->renderObjectEditGroup(&group);
 
 	// Bounding box
 	gl::setColour(ColRGBA::WHITE, gl::Blend::Normal);
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
 	auto bbox = group.bbox();
-	bbox.min.x -= 4 / view_.scale(true);
-	bbox.min.y -= 4 / view_.scale(true);
-	bbox.max.x += 4 / view_.scale(true);
-	bbox.max.y += 4 / view_.scale(true);
+	bbox.min.x -= 4 / view_->scale(true);
+	bbox.min.y -= 4 / view_->scale(true);
+	bbox.max.x += 4 / view_->scale(true);
+	bbox.max.y += 4 / view_->scale(true);
 
-	if (context_.objectEdit().rotating())
+	if (context_->objectEdit().rotating())
 	{
 		// Rotate
 
 		// Bbox
 		Vec2d mid(bbox.min.x + bbox.width() * 0.5, bbox.min.y + bbox.height() * 0.5);
-		auto  bl = math::rotatePoint(mid, bbox.min, group.rotation());
-		auto  tl = math::rotatePoint(mid, Vec2d(bbox.min.x, bbox.max.y), group.rotation());
-		auto  tr = math::rotatePoint(mid, bbox.max, group.rotation());
-		auto  br = math::rotatePoint(mid, Vec2d(bbox.max.x, bbox.min.y), group.rotation());
+		auto  bl = geometry::rotatePoint(mid, bbox.min, group.rotation());
+		auto  tl = geometry::rotatePoint(mid, Vec2d(bbox.min.x, bbox.max.y), group.rotation());
+		auto  tr = geometry::rotatePoint(mid, bbox.max, group.rotation());
+		auto  br = geometry::rotatePoint(mid, Vec2d(bbox.max.x, bbox.min.y), group.rotation());
 		glLineWidth(2.0f);
 		drawing::drawLine(tl, bl);
 		drawing::drawLine(bl, br);
@@ -863,7 +891,7 @@ void Renderer::drawObjectEdit()
 		drawing::drawLine(tr, tl);
 
 		// Top Left
-		double rad = 4 / view_.scale(true);
+		double rad = 4 / view_->scale(true);
 		glLineWidth(1.0f);
 		if (edit_state == ObjectEdit::State::TopLeft)
 			drawing::drawFilledRect(tl.x - rad, tl.y - rad, tl.x + rad, tl.y + rad);
@@ -927,17 +955,17 @@ void Renderer::drawObjectEdit()
 
 	// Line length
 	Vec2d nl_v1, nl_v2;
-	if (group.nearestLineEndpoints(view_.canvasPos(context_.input().mousePos()), 128 / view_.scale(), nl_v1, nl_v2))
+	if (group.nearestLineEndpoints(view_->canvasPos(context_->input().mousePos()), 128 / view_->scale(), nl_v1, nl_v2))
 	{
 		Vec2d mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
-		int   length = math::distance(nl_v1, nl_v2);
-		int   x      = view_.canvasX(mid.x);
-		int   y      = view_.canvasY(mid.y) - 8;
-		view_.setOverlayCoords(true);
+		int   length = glm::distance(nl_v1, nl_v2);
+		int   x      = view_->canvasX(mid.x);
+		int   y      = view_->canvasY(mid.y) - 8;
+		view_->setOverlayCoords(true);
 		drawing::setTextOutline(1.0f, ColRGBA::BLACK);
 		drawing::drawText(fmt::format("{}", length), x, y, ColRGBA::WHITE, drawing::Font::Bold, drawing::Align::Center);
 		drawing::setTextOutline(0);
-		view_.setOverlayCoords(false);
+		view_->setOverlayCoords(false);
 		glDisable(GL_TEXTURE_2D);
 	}
 }
@@ -947,7 +975,7 @@ void Renderer::drawObjectEdit()
 // -----------------------------------------------------------------------------
 void Renderer::drawAnimations() const
 {
-	auto mode = context_.editMode();
+	auto mode = context_->editMode();
 	for (auto& animation : animations_)
 	{
 		if ((mode == Mode::Visual && animation->mode3d()) || (mode != Mode::Visual && !animation->mode3d()))
@@ -958,14 +986,14 @@ void Renderer::drawAnimations() const
 // -----------------------------------------------------------------------------
 // Draws the 2d map
 // -----------------------------------------------------------------------------
-void Renderer::drawMap2d()
+void Renderer::drawMap2d() const
 {
 	// Apply the current 2d view
-	view_.apply();
+	view_->apply();
 
 	// Update visibility info if needed
-	if (!renderer_2d_.visOK())
-		renderer_2d_.updateVisibility(view_.visibleRegion().tl, view_.visibleRegion().br);
+	if (!renderer_2d_->visOK())
+		renderer_2d_->updateVisibility(view_->visibleRegion().tl, view_->visibleRegion().br);
 
 	// Draw flats if needed
 	gl::setColour(ColRGBA::WHITE, gl::Blend::Normal);
@@ -977,79 +1005,79 @@ void Renderer::drawMap2d()
 
 		// Adjust flat type depending on sector mode
 		int drawtype = 0;
-		if (context_.editMode() == Mode::Sectors)
+		if (context_->editMode() == Mode::Sectors)
 		{
-			if (context_.sectorEditMode() == SectorMode::Floor)
+			if (context_->sectorEditMode() == SectorMode::Floor)
 				drawtype = 1;
-			else if (context_.sectorEditMode() == SectorMode::Ceiling)
+			else if (context_->sectorEditMode() == SectorMode::Ceiling)
 				drawtype = 2;
 		}
 
-		renderer_2d_.renderFlats(drawtype, texture, fade_flats_);
+		renderer_2d_->renderFlats(drawtype, texture, fade_flats_);
 	}
 
 	// Draw grid
 	drawGrid();
 
 	// --- Draw map (depending on mode) ---
-	auto mouse_state = context_.input().mouseState();
+	auto mouse_state = context_->input().mouseState();
 	gl::resetBlend();
-	if (context_.editMode() == Mode::Vertices)
+	if (context_->editMode() == Mode::Vertices)
 	{
 		// Vertices mode
-		renderer_2d_.renderThings(fade_things_);                 // Things
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_); // Lines
+		renderer_2d_->renderThings(fade_things_);                 // Things
+		renderer_2d_->renderLines(line_tabs_always, fade_lines_); // Lines
 
 		// Vertices
 		if (mouse_state == Input::MouseState::Move)
-			renderer_2d_.renderVertices(0.25f);
+			renderer_2d_->renderVertices(0.25f);
 		else
-			renderer_2d_.renderVertices(fade_vertices_);
+			renderer_2d_->renderVertices(fade_vertices_);
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
+		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_.renderVertexSelection(context_.selection(), anim_flash_level_);
+			renderer_2d_->renderVertexSelection(context_->selection(), anim_flash_level_);
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_.renderVertexHilight(context_.hilightItem().index, anim_flash_level_);
+		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+			renderer_2d_->renderVertexHilight(context_->hilightItem().index, anim_flash_level_);
 	}
-	else if (context_.editMode() == Mode::Lines)
+	else if (context_->editMode() == Mode::Lines)
 	{
 		// Lines mode
-		renderer_2d_.renderThings(fade_things_);     // Things
-		renderer_2d_.renderVertices(fade_vertices_); // Vertices
-		renderer_2d_.renderLines(true);              // Lines
+		renderer_2d_->renderThings(fade_things_);     // Things
+		renderer_2d_->renderVertices(fade_vertices_); // Vertices
+		renderer_2d_->renderLines(true);              // Lines
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
+		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_.renderLineSelection(context_.selection(), anim_flash_level_);
+			renderer_2d_->renderLineSelection(context_->selection(), anim_flash_level_);
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_.renderLineHilight(context_.hilightItem().index, anim_flash_level_);
+		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+			renderer_2d_->renderLineHilight(context_->hilightItem().index, anim_flash_level_);
 	}
-	else if (context_.editMode() == Mode::Sectors)
+	else if (context_->editMode() == Mode::Sectors)
 	{
 		// Sectors mode
-		renderer_2d_.renderThings(fade_things_);                 // Things
-		renderer_2d_.renderVertices(fade_vertices_);             // Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_); // Lines
+		renderer_2d_->renderThings(fade_things_);                 // Things
+		renderer_2d_->renderVertices(fade_vertices_);             // Vertices
+		renderer_2d_->renderLines(line_tabs_always, fade_lines_); // Lines
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
+		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_.renderFlatSelection(context_.selection(), anim_flash_level_);
+			renderer_2d_->renderFlatSelection(context_->selection(), anim_flash_level_);
 
 		// splitter.testRender();	// Testing
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_.renderFlatHilight(context_.hilightItem().index, anim_flash_level_);
+		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+			renderer_2d_->renderFlatHilight(context_->hilightItem().index, anim_flash_level_);
 	}
-	else if (context_.editMode() == Mode::Things)
+	else if (context_->editMode() == Mode::Things)
 	{
 		// Check if we should force thing angles visible
 		bool force_dir = false;
@@ -1057,44 +1085,44 @@ void Renderer::drawMap2d()
 			force_dir = true;
 
 		// Things mode
-		auto hl_index = context_.hilightItem().index;
-		renderer_2d_.renderVertices(fade_vertices_);                   // Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);       // Lines
-		renderer_2d_.renderPointLightPreviews(fade_things_, hl_index); // Point light previews
-		renderer_2d_.renderThings(fade_things_, force_dir);            // Things
+		auto hl_index = context_->hilightItem().index;
+		renderer_2d_->renderVertices(fade_vertices_);                   // Vertices
+		renderer_2d_->renderLines(line_tabs_always, fade_lines_);       // Lines
+		renderer_2d_->renderPointLightPreviews(fade_things_, hl_index); // Point light previews
+		renderer_2d_->renderThings(fade_things_, force_dir);            // Things
 
 		// Thing paths
-		renderer_2d_.renderPathedThings(context_.pathedThings());
+		renderer_2d_->renderPathedThings(context_->pathedThings());
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_.overlayActive()
+		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
-			renderer_2d_.renderThingSelection(context_.selection(), anim_flash_level_);
+			renderer_2d_->renderThingSelection(context_->selection(), anim_flash_level_);
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_.renderThingHilight(hl_index, anim_flash_level_);
+		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+			renderer_2d_->renderThingHilight(hl_index, anim_flash_level_);
 	}
 
 	// Draw tagged sectors/lines/things if needed
-	if (!context_.overlayActive()
+	if (!context_->overlayActive()
 		&& (mouse_state == Input::MouseState::Normal || mouse_state == Input::MouseState::TagSectors
 			|| mouse_state == Input::MouseState::TagThings))
 	{
-		if (!context_.taggedSectors().empty())
-			renderer_2d_.renderTaggedFlats(context_.taggedSectors(), anim_flash_level_);
-		if (!context_.taggedLines().empty())
-			renderer_2d_.renderTaggedLines(context_.taggedLines(), anim_flash_level_);
-		if (!context_.taggedThings().empty())
-			renderer_2d_.renderTaggedThings(context_.taggedThings(), anim_flash_level_);
-		if (!context_.taggingLines().empty())
-			renderer_2d_.renderTaggingLines(context_.taggingLines(), anim_flash_level_);
-		if (!context_.taggingThings().empty())
-			renderer_2d_.renderTaggingThings(context_.taggingThings(), anim_flash_level_);
+		if (!context_->taggedSectors().empty())
+			renderer_2d_->renderTaggedFlats(context_->taggedSectors(), anim_flash_level_);
+		if (!context_->taggedLines().empty())
+			renderer_2d_->renderTaggedLines(context_->taggedLines(), anim_flash_level_);
+		if (!context_->taggedThings().empty())
+			renderer_2d_->renderTaggedThings(context_->taggedThings(), anim_flash_level_);
+		if (!context_->taggingLines().empty())
+			renderer_2d_->renderTaggingLines(context_->taggingLines(), anim_flash_level_);
+		if (!context_->taggingThings().empty())
+			renderer_2d_->renderTaggingThings(context_->taggingThings(), anim_flash_level_);
 	}
 
 	// Draw selection numbers if needed
-	if (!context_.selection().empty() && mouse_state == Input::MouseState::Normal && map_show_selection_numbers)
+	if (!context_->selection().empty() && mouse_state == Input::MouseState::Normal && map_show_selection_numbers)
 		drawSelectionNumbers();
 
 	// Draw thing quick angle lines if needed
@@ -1103,7 +1131,7 @@ void Renderer::drawMap2d()
 
 	// Draw line drawing lines if needed
 	if (mouse_state == Input::MouseState::LineDraw)
-		drawLineDrawLines(context_.input().shiftDown());
+		drawLineDrawLines(context_->input().shiftDown());
 
 	// Draw object edit objects if needed
 	if (mouse_state == Input::MouseState::ObjectEdit)
@@ -1114,10 +1142,10 @@ void Renderer::drawMap2d()
 
 
 	// Draw selection box if active
-	auto mx  = view_.canvasX(context_.input().mousePos().x, true);
-	auto my  = view_.canvasY(context_.input().mousePos().y, true);
-	auto mdx = view_.canvasX(context_.input().mouseDownPos().x, true);
-	auto mdy = view_.canvasY(context_.input().mouseDownPos().y, true);
+	auto mx  = view_->canvasX(context_->input().mousePos().x, true);
+	auto my  = view_->canvasY(context_->input().mousePos().y, true);
+	auto mdx = view_->canvasX(context_->input().mouseDownPos().x, true);
+	auto mdy = view_->canvasY(context_->input().mouseDownPos().y, true);
 	if (mouse_state == Input::MouseState::Selection)
 	{
 		// Outline
@@ -1146,7 +1174,7 @@ void Renderer::drawMap2d()
 	// Draw paste objects if needed
 	if (mouse_state == Input::MouseState::Paste)
 	{
-		if (context_.editMode() == Mode::Things)
+		if (context_->editMode() == Mode::Things)
 		{
 			// Get clipboard item
 			for (unsigned a = 0; a < app::clipboard().size(); a++)
@@ -1157,8 +1185,8 @@ void Renderer::drawMap2d()
 					vector<MapThing*> things;
 					auto              p = dynamic_cast<MapThingsClipboardItem*>(item);
 					p->putThings(things);
-					auto pos(context_.relativeSnapToGrid(p->midpoint(), { mx, my }));
-					renderer_2d_.renderPasteThings(things, pos);
+					auto pos(context_->relativeSnapToGrid(p->midpoint(), { mx, my }));
+					renderer_2d_->renderPasteThings(things, pos);
 				}
 			}
 		}
@@ -1169,15 +1197,15 @@ void Renderer::drawMap2d()
 	// Draw moving stuff if needed
 	if (mouse_state == Input::MouseState::Move)
 	{
-		auto& items  = context_.moveObjects().items();
-		auto  offset = context_.moveObjects().offset();
-		switch (context_.editMode())
+		auto& items  = context_->moveObjects().items();
+		auto  offset = context_->moveObjects().offset();
+		switch (context_->editMode())
 		{
-		case Mode::Vertices: renderer_2d_.renderMovingVertices(items, offset); break;
-		case Mode::Lines: renderer_2d_.renderMovingLines(items, offset); break;
-		case Mode::Sectors: renderer_2d_.renderMovingSectors(items, offset); break;
-		case Mode::Things: renderer_2d_.renderMovingThings(items, offset); break;
-		default: break;
+		case Mode::Vertices: renderer_2d_->renderMovingVertices(items, offset); break;
+		case Mode::Lines:    renderer_2d_->renderMovingLines(items, offset); break;
+		case Mode::Sectors:  renderer_2d_->renderMovingSectors(items, offset); break;
+		case Mode::Things:   renderer_2d_->renderMovingThings(items, offset); break;
+		default:             break;
 		}
 	}
 }
@@ -1185,23 +1213,23 @@ void Renderer::drawMap2d()
 // -----------------------------------------------------------------------------
 // Draws the 3d map
 // -----------------------------------------------------------------------------
-void Renderer::drawMap3d()
+void Renderer::drawMap3d() const
 {
 	// Setup 3d renderer view
-	renderer_3d_.setupView(view_.size().x, view_.size().y);
+	renderer_3d_->setupView(view_->size().x, view_->size().y);
 
 	// Render 3d map
-	renderer_3d_.renderMap();
+	renderer_3d_->renderMap();
 
 	// Draw selection if any
-	auto selection = context_.selection();
-	renderer_3d_.renderFlatSelection(selection);
-	renderer_3d_.renderWallSelection(selection);
-	renderer_3d_.renderThingSelection(selection);
+	auto selection = context_->selection();
+	renderer_3d_->renderFlatSelection(selection);
+	renderer_3d_->renderWallSelection(selection);
+	renderer_3d_->renderThingSelection(selection);
 
 	// Draw hilight if any
-	if (context_.selection().hasHilight())
-		renderer_3d_.renderHilight(context_.selection().hilight(), anim_flash_level_);
+	if (context_->selection().hasHilight())
+		renderer_3d_->renderHilight(context_->selection().hilight(), anim_flash_level_);
 
 	// Draw animations
 	drawAnimations();
@@ -1210,10 +1238,10 @@ void Renderer::drawMap3d()
 // -----------------------------------------------------------------------------
 // Draws the current map editor state
 // -----------------------------------------------------------------------------
-void Renderer::draw()
+void Renderer::draw() const
 {
 	// Setup the viewport
-	glViewport(0, 0, view_.size().x, view_.size().y);
+	glViewport(0, 0, view_->size().x, view_->size().y);
 
 	// Setup GL state
 	auto col_bg = colourconfig::colour("map_background");
@@ -1225,7 +1253,7 @@ void Renderer::draw()
 	glDisable(GL_TEXTURE_2D);
 
 	// Draw 2d or 3d map depending on mode
-	if (context_.editMode() == Mode::Visual)
+	if (context_->editMode() == Mode::Visual)
 		drawMap3d();
 	else
 		drawMap2d();
@@ -1235,7 +1263,7 @@ void Renderer::draw()
 	glDisable(GL_DEPTH_TEST);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, view_.size().x, view_.size().y, 0, -1, 1);
+	glOrtho(0, view_->size().x, view_->size().y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -1246,14 +1274,14 @@ void Renderer::draw()
 
 	// Draw current info overlay
 	glDisable(GL_TEXTURE_2D);
-	context_.drawInfoOverlay(view_.size(), anim_info_fade_);
+	context_->drawInfoOverlay(view_->size(), anim_info_fade_);
 
 	// Draw current fullscreen overlay
-	if (context_.currentOverlay() && anim_overlay_fade_ > 0.01f)
-		context_.currentOverlay()->draw(view_.size().x, view_.size().y, anim_overlay_fade_);
+	if (context_->currentOverlay() && anim_overlay_fade_ > 0.01f)
+		context_->currentOverlay()->draw(view_->size().x, view_->size().y, anim_overlay_fade_);
 
 	// Draw crosshair if 3d mode
-	if (context_.editMode() == Mode::Visual)
+	if (context_->editMode() == Mode::Visual)
 	{
 		// Get crosshair colour
 		auto& def = colourconfig::colDef("map_3d_crosshair");
@@ -1264,8 +1292,8 @@ void Renderer::draw()
 		glEnable(GL_LINE_SMOOTH);
 		glLineWidth(1.5f);
 
-		double midx = view_.size().x * 0.5;
-		double midy = view_.size().y * 0.5;
+		double midx = view_->size().x * 0.5;
+		double midy = view_->size().y * 0.5;
 		int    size = camera_3d_crosshair_size;
 
 		glBegin(GL_LINES);
@@ -1295,12 +1323,12 @@ void Renderer::draw()
 		glEnd();
 
 		// Draw item distance (if any)
-		if (context_.renderer().renderer3D().itemDistance() >= 0 && camera_3d_show_distance)
+		if (context_->renderer().renderer3D().itemDistance() >= 0 && camera_3d_show_distance)
 		{
 			glEnable(GL_TEXTURE_2D);
 			gl::setColour(col);
 			drawing::drawText(
-				fmt::format("{}", renderer_3d_.itemDistance()),
+				fmt::format("{}", renderer_3d_->itemDistance()),
 				midx + 5,
 				midy + 5,
 				ColRGBA(255, 255, 255, 200),
@@ -1378,7 +1406,7 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// 2d mode animation
-	if (context_.editMode() != Mode::Visual)
+	if (context_->editMode() != Mode::Visual)
 	{
 		// Update 2d mode crossfade animation
 		if (update2dModeCrossfade(mult))
@@ -1390,7 +1418,7 @@ void Renderer::updateAnimations(double mult)
 			animations_active_ = true;
 
 		// Update renderer scale
-		renderer_2d_.setScale(view_.scale(true));
+		renderer_2d_->setScale(view_->scale(true));
 	}
 
 	// Flashing animation for hilight
@@ -1418,7 +1446,7 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// Fader for info overlay
-	if (context_.infoOverlayActive() && !context_.overlayActive())
+	if (context_->infoOverlayActive() && !context_->overlayActive())
 	{
 		if (updateFade(anim_info_fade_, 0.1f * mult, 0.0f, 1.0f))
 			animations_active_ = true;
@@ -1430,7 +1458,7 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// Fader for fullscreen overlay
-	if (context_.overlayActive())
+	if (context_->overlayActive())
 	{
 		if (updateFade(anim_overlay_fade_, 0.1f * mult, 0.0f, 1.0f))
 			animations_active_ = true;
@@ -1442,7 +1470,7 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// Fader for help text
-	if (!context_.featureHelpLines().empty())
+	if (!context_->featureHelpLines().empty())
 	{
 		if (updateFade(anim_help_fade_, 0.07f * mult, 0.0f, 1.0f))
 			animations_active_ = true;
@@ -1495,7 +1523,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 	// Interpolate
 	bool  anim_mode_crossfade = false;
 	float mcs_speed           = 0.08f;
-	if (context_.editMode() == Mode::Vertices)
+	if (context_->editMode() == Mode::Vertices)
 	{
 		if (fade_vertices_ < 1.0f)
 		{
@@ -1514,7 +1542,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 			anim_mode_crossfade = true;
 		}
 	}
-	else if (context_.editMode() == Mode::Lines)
+	else if (context_->editMode() == Mode::Lines)
 	{
 		if (fade_vertices_ > fa_vertices)
 		{
@@ -1533,7 +1561,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 			anim_mode_crossfade = true;
 		}
 	}
-	else if (context_.editMode() == Mode::Sectors)
+	else if (context_->editMode() == Mode::Sectors)
 	{
 		if (fade_vertices_ > fa_vertices)
 		{
@@ -1552,7 +1580,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 			anim_mode_crossfade = true;
 		}
 	}
-	else if (context_.editMode() == Mode::Things)
+	else if (context_->editMode() == Mode::Things)
 	{
 		if (fade_vertices_ > fa_vertices)
 		{
@@ -1604,14 +1632,14 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	if (mapeditor::baseItemType(item.type) == ItemType::Side)
 	{
 		// Get quad
-		auto quad = renderer_3d_.getQuad(item);
+		auto quad = renderer_3d_->getQuad(item);
 
 		if (quad)
 		{
 			// Get quad points
 			Vec3f points[4];
 			for (unsigned a = 0; a < 4; a++)
-				points[a].set(quad->points[a].x, quad->points[a].y, quad->points[a].z);
+				points[a] = { quad->points[a].x, quad->points[a].y, quad->points[a].z };
 
 			// Start animation
 			animations_.push_back(std::make_unique<MCA3dWallSelection>(app::runTimer(), points, selected));
@@ -1622,7 +1650,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	else if (item.type == ItemType::Ceiling || item.type == ItemType::Floor)
 	{
 		// Get flat
-		auto flat = renderer_3d_.getFlat(item);
+		auto flat = renderer_3d_->getFlat(item);
 
 		// Start animation
 		if (flat)
@@ -1634,7 +1662,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	else if (item.type == ItemType::Thing)
 	{
 		// Get thing
-		auto t = item.asThing(context_.map());
+		auto t = item.asThing(context_->map());
 		if (!t)
 			return;
 
@@ -1644,16 +1672,16 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 		// Start animation
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom())
-			radius = renderer_2d_.scaledRadius(radius);
+			radius = renderer_2d_->scaledRadius(radius);
 		animations_.push_back(std::make_unique<MCAThingSelection>(
-			app::runTimer(), t->xPos(), t->yPos(), radius, renderer_2d_.viewScaleInv(), selected));
+			app::runTimer(), t->xPos(), t->yPos(), radius, renderer_2d_->viewScaleInv(), selected));
 	}
 
 	// 2d mode line
 	else if (item.type == ItemType::Line)
 	{
 		// Get line
-		auto line = item.asLine(context_.map());
+		auto line = item.asLine(context_->map());
 		if (!line)
 			return;
 
@@ -1665,14 +1693,14 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	else if (item.type == ItemType::Vertex)
 	{
 		// Get vertex
-		auto vertex = item.asVertex(context_.map());
+		auto vertex = item.asVertex(context_->map());
 		if (!vertex)
 			return;
 
 		// Determine current vertex size
 		float vs = vertex_size;
-		if (view_.scale() < 1.0)
-			vs *= view_.scale();
+		if (view_->scale() < 1.0)
+			vs *= view_->scale();
 		if (vs < 2.0)
 			vs = 2.0;
 
@@ -1685,7 +1713,7 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	else if (item.type == ItemType::Sector)
 	{
 		// Get sector polygon
-		auto sector = item.asSector(context_.map());
+		auto sector = item.asSector(context_->map());
 		if (!sector)
 			return;
 
@@ -1713,13 +1741,13 @@ void Renderer::animateHilightChange(const mapeditor::Item& old_item, MapObject* 
 	{
 		// 2d mode
 		animations_.push_back(
-			std::make_unique<MCAHilightFade>(app::runTimer(), old_object, &renderer_2d_, anim_flash_level_));
+			std::make_unique<MCAHilightFade>(app::runTimer(), old_object, renderer_2d_.get(), anim_flash_level_));
 	}
 	else
 	{
 		// 3d mode
 		animations_.push_back(std::make_unique<MCAHilightFade3D>(
-			app::runTimer(), old_item.index, old_item.type, &renderer_3d_, anim_flash_level_));
+			app::runTimer(), old_item.index, old_item.type, renderer_3d_.get(), anim_flash_level_));
 	}
 
 	// Reset hilight flash

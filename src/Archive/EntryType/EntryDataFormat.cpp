@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "EntryDataFormat.h"
 #include "Archive/Formats/All.h"
-#include "MainEditor/BinaryControlLump.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -184,6 +183,9 @@ public:
 	int isThisFormat(const MemChunk& mc) override { return MATCH_FALSE; }
 };
 
+// Required for below #includes
+#include "MainEditor/BinaryControlLump.h"
+
 // Format enumeration moved to separate files
 #include "DataFormats/ArchiveFormats.h"
 #include "DataFormats/AudioFormats.h"
@@ -191,6 +193,7 @@ public:
 #include "DataFormats/LumpFormats.h"
 #include "DataFormats/MiscFormats.h"
 #include "DataFormats/ModelFormats.h"
+
 
 // -----------------------------------------------------------------------------
 // Initialises all built-in data formats (this is currently all formats, as

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,9 +33,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ThingList.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/Game.h"
+#include "Game/ThingType.h"
+#include "Geometry/Geometry.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 
@@ -51,7 +55,7 @@ using namespace slade;
 // Returns the thing closest to the point, or null if none found.
 // Igonres any thing further away than [min]
 // -----------------------------------------------------------------------------
-MapThing* ThingList::nearest(Vec2d point, double min) const
+MapThing* ThingList::nearest(const Vec2d& point, double min) const
 {
 	// Go through things
 	double    dist;
@@ -60,7 +64,7 @@ MapThing* ThingList::nearest(Vec2d point, double min) const
 	for (const auto& thing : objects_)
 	{
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicabDistanceTo(thing->position());
+		dist = geometry::taxicabDistance(point, thing->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -74,7 +78,7 @@ MapThing* ThingList::nearest(Vec2d point, double min) const
 	// to check for minimum hilight distance
 	if (nearest)
 	{
-		double rdist = math::distance(nearest->position(), point);
+		double rdist = glm::distance(nearest->position(), point);
 		if (rdist > min)
 			return nullptr;
 	}
@@ -86,7 +90,7 @@ MapThing* ThingList::nearest(Vec2d point, double min) const
 // Same as 'nearest', but returns a list of things for the case where there are
 // multiple things at the same point
 // -----------------------------------------------------------------------------
-vector<MapThing*> ThingList::multiNearest(Vec2d point) const
+vector<MapThing*> ThingList::multiNearest(const Vec2d& point) const
 {
 	vector<MapThing*> ret;
 
@@ -96,7 +100,7 @@ vector<MapThing*> ThingList::multiNearest(Vec2d point) const
 	for (const auto& thing : objects_)
 	{
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicabDistanceTo(thing->position());
+		dist = geometry::taxicabDistance(point, thing->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -211,9 +215,9 @@ void ThingList::putAllTaggingWithId(int id, int type, vector<MapThing*>& list, i
 			case TagType::Sector:
 			case TagType::SectorOrBack:
 			case TagType::SectorAndBack: fits = (IDEQ(tag) && type == SLADEMap::SECTORS); break;
-			case TagType::LineNegative: tag = abs(tag);
-			case TagType::Line: fits = (IDEQ(tag) && type == SLADEMap::LINEDEFS); break;
-			case TagType::Thing: fits = (IDEQ(tag) && type == SLADEMap::THINGS); break;
+			case TagType::LineNegative:  tag = abs(tag);
+			case TagType::Line:          fits = (IDEQ(tag) && type == SLADEMap::LINEDEFS); break;
+			case TagType::Thing:         fits = (IDEQ(tag) && type == SLADEMap::THINGS); break;
 			case TagType::Thing1Sector2:
 				arg2 = thing->arg(1);
 				fits = (type == SLADEMap::THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SLADEMap::SECTORS));

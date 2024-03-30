@@ -1,49 +1,19 @@
 #pragma once
 
-#include "UI/Canvas/OGLCanvas.h"
-
 namespace slade
 {
-class MapSide;
 class NumberTextCtrl;
-
-class SideTexCanvas : public OGLCanvas
-{
-public:
-	SideTexCanvas(wxWindow* parent);
-	~SideTexCanvas() = default;
-
-	wxString texName() const { return texname_; }
-	void     setTexture(const wxString& texture);
-	void     draw() override;
-
-private:
-	unsigned texture_ = 0;
-	wxString texname_;
-};
-
-class TextureComboBox : public wxComboBox
-{
-public:
-	TextureComboBox(wxWindow* parent);
-	~TextureComboBox() = default;
-
-private:
-	bool list_down_ = false;
-
-	void onDropDown(wxCommandEvent& e);
-	void onCloseUp(wxCommandEvent& e);
-	void onKeyDown(wxKeyEvent& e);
-};
+class SideTexCanvas;
+class TextureComboBox;
 
 class SidePropsPanel : public wxPanel
 {
 public:
 	SidePropsPanel(wxWindow* parent);
-	~SidePropsPanel() = default;
+	~SidePropsPanel() override = default;
 
-	void openSides(vector<MapSide*>& sides) const;
-	void applyTo(vector<MapSide*>& sides) const;
+	void openSides(const vector<MapSide*>& sides) const;
+	void applyTo(const vector<MapSide*>& sides) const;
 
 private:
 	SideTexCanvas*   gfx_lower_    = nullptr;

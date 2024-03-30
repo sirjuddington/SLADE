@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -67,6 +67,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "RffArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 
 using namespace slade;
@@ -100,10 +102,10 @@ struct RFFLump
 // -----------------------------------------------------------------------------
 void bloodCrypt(void* data, int key, int len)
 {
-	int p = (uint8_t)key, i;
+	int p = static_cast<uint8_t>(key), i;
 
 	for (i = 0; i < len; ++i)
-		((uint8_t*)data)[i] ^= (unsigned char)(p + (i >> 1));
+		static_cast<uint8_t*>(data)[i] ^= static_cast<unsigned char>(p + (i >> 1));
 }
 } // namespace
 
@@ -191,11 +193,11 @@ bool RffArchive::open(const MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
 		nlump->setOffsetOnDisk(offset);
 		nlump->setSizeOnDisk();
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Is the entry encrypted?
 		if (lumps[d].Flags & 0x10)
-			nlump->setEncryption(ArchiveEntry::Encryption::Blood);
+			nlump->setEncryption(EntryEncryption::Blood);
 
 		// Read entry data if it isn't zero-sized
 		if (nlump->size() > 0)
@@ -204,7 +206,7 @@ bool RffArchive::open(const MemChunk& mc)
 			mc.exportMemChunk(edata, offset, size);
 
 			// If the entry is encrypted, decrypt it
-			if (nlump->encryption() != ArchiveEntry::Encryption::None)
+			if (nlump->encryption() != EntryEncryption::None)
 			{
 				uint8_t* cdata = new uint8_t[size];
 				memcpy(cdata, edata.data(), size);

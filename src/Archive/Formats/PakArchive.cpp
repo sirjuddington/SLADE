@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PakArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -95,7 +97,7 @@ bool PakArchive::open(const MemChunk& mc)
 		size   = wxINT32_SWAP_ON_BE(size);
 
 		// Check offset+size
-		if ((unsigned)(offset + size) > mc.size())
+		if (static_cast<unsigned>(offset + size) > mc.size())
 		{
 			log::error("PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
 			global::error = "Archive is invalid and/or corrupt";
@@ -114,7 +116,7 @@ bool PakArchive::open(const MemChunk& mc)
 		if (entry->size() > 0)
 			entry->importMemChunk(mc, offset, size);
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 
 		// Add to directory
 		dir->addEntry(entry);
@@ -151,7 +153,7 @@ bool PakArchive::write(MemChunk& mc)
 	for (auto& entry : entries)
 	{
 		// Ignore folder entries
-		if (entry->type() == EntryType::folderType())
+		if (entry->isFolderType())
 			continue;
 
 		// Increment directory offset and size
@@ -175,11 +177,11 @@ bool PakArchive::write(MemChunk& mc)
 	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entry->type() == EntryType::folderType())
+		if (entry->isFolderType())
 			continue;
 
 		// Update entry
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setOffsetOnDisk(offset);
 		entry->setSizeOnDisk();
 
@@ -216,7 +218,7 @@ bool PakArchive::write(MemChunk& mc)
 	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entry->type() == EntryType::folderType())
+		if (entry->isFolderType())
 			continue;
 
 		// Write data
@@ -270,7 +272,7 @@ bool PakArchive::isPakArchive(const MemChunk& mc)
 		return false;
 
 	// Check directory is sane
-	if (dir_offset < 12 || (unsigned)(dir_offset + dir_size) > mc.size())
+	if (dir_offset < 12 || static_cast<unsigned>(dir_offset + dir_size) > mc.size())
 		return false;
 
 	// That'll do

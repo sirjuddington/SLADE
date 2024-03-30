@@ -36,6 +36,7 @@ find_package(freeimage CONFIG REQUIRED)
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(SFML COMPONENTS system audio window network CONFIG REQUIRED)
+find_package(glm REQUIRED)
 
 
 # Include Search Paths ---------------------------------------------------------
@@ -78,7 +79,7 @@ set_target_properties(slade
 )
 
 # Precompiled Header
-target_precompile_headers(slade PRIVATE "common.h")
+target_precompile_headers(slade PRIVATE "Application/Main.h")
 
 # Link
 target_link_libraries(slade
@@ -95,6 +96,7 @@ target_link_libraries(slade
 	sfml-main
 	sfml-network
 	sfml-window
+	glm::glm
 )
 
 if (NOT NO_LUA)

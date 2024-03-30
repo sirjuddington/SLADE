@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "WadJArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/MapDesc.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -168,7 +171,7 @@ bool WadJArchive::open(const MemChunk& mc)
 
 		if (jaguarencrypt)
 		{
-			nlump->setEncryption(ArchiveEntry::Encryption::Jaguar);
+			nlump->setEncryption(EntryEncryption::Jaguar);
 			nlump->exProp("FullSize") = size;
 		}
 
@@ -178,9 +181,10 @@ bool WadJArchive::open(const MemChunk& mc)
 			// Read the entry data
 			edata.clear();
 			mc.exportMemChunk(edata, offset, size);
-			if (nlump->encryption() != ArchiveEntry::Encryption::None)
+			if (nlump->encryption() != EntryEncryption::None)
 			{
-				if (nlump->exProps().contains("FullSize") && (unsigned)(nlump->exProp<int>("FullSize")) > size)
+				if (nlump->exProps().contains("FullSize")
+					&& static_cast<unsigned>(nlump->exProp<int>("FullSize")) > size)
 					edata.reSize((nlump->exProp<int>("FullSize")), true);
 				if (!jaguarDecode(edata))
 					log::warning(
@@ -192,7 +196,7 @@ bool WadJArchive::open(const MemChunk& mc)
 			nlump->importMemChunk(edata);
 		}
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -273,7 +277,7 @@ bool WadJArchive::write(MemChunk& mc)
 		mc.write(&size, 4);
 		mc.write(name, 8);
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setSizeOnDisk();
 	}
 
@@ -378,7 +382,7 @@ bool WadJArchive::isWadJArchive(const string& filename)
 // -----------------------------------------------------------------------------
 bool WadJArchive::jaguarDecode(MemChunk& mc)
 {
-	static const int LENSHIFT = 4; /* this must be log2(LOOKAHEAD_SIZE) */
+	static constexpr int LENSHIFT = 4; /* this must be log2(LOOKAHEAD_SIZE) */
 
 	bool     okay      = false;
 	uint8_t  getidbyte = 0;

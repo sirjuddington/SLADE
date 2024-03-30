@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,9 +36,13 @@
 #include "Main.h"
 #include "TextStyle.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Lexer.h"
 #include "UI/TextEditorCtrl.h"
+#include "Utility/Colour.h"
 #include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
@@ -74,7 +78,8 @@ StyleSet*                    ss_current = nullptr;
 // TextStyle class constructor
 // -----------------------------------------------------------------------------
 TextStyle::TextStyle(string_view name, string_view description, int style_id) :
-	name_{ name }, description_{ description }
+	name_{ name },
+	description_{ description }
 {
 	// Init variables
 	if (style_id >= 0)
@@ -93,7 +98,7 @@ void TextStyle::addWxStyleId(int style)
 // -----------------------------------------------------------------------------
 // Reads text style information from a parse tree
 // -----------------------------------------------------------------------------
-bool TextStyle::parse(ParseTreeNode* node)
+bool TextStyle::parse(const ParseTreeNode* node)
 {
 	// Check any info was given
 	if (!node)
@@ -129,15 +134,15 @@ bool TextStyle::parse(ParseTreeNode* node)
 
 		// Bold
 		else if (strutil::equalCI(name, "bold"))
-			bold_ = (int)child->boolValue();
+			bold_ = static_cast<int>(child->boolValue());
 
 		// Italic
 		else if (strutil::equalCI(name, "italic"))
-			italic_ = (int)child->boolValue();
+			italic_ = static_cast<int>(child->boolValue());
 
 		// Underlined
 		else if (strutil::equalCI(name, "underlined"))
-			underlined_ = (int)child->boolValue();
+			underlined_ = static_cast<int>(child->boolValue());
 	}
 
 	return true;
@@ -146,7 +151,7 @@ bool TextStyle::parse(ParseTreeNode* node)
 // -----------------------------------------------------------------------------
 // Applies the style settings to the scintilla text control [stc]
 // -----------------------------------------------------------------------------
-void TextStyle::applyTo(wxStyledTextCtrl* stc)
+void TextStyle::applyTo(wxStyledTextCtrl* stc) const
 {
 	for (int wx_style : wx_styles_)
 	{
@@ -164,11 +169,11 @@ void TextStyle::applyTo(wxStyledTextCtrl* stc)
 
 		// Set foreground
 		if (fg_defined_)
-			stc->StyleSetForeground(wx_style, foreground_.toWx());
+			stc->StyleSetForeground(wx_style, foreground_);
 
 		// Set background
 		if (bg_defined_)
-			stc->StyleSetBackground(wx_style, background_.toWx());
+			stc->StyleSetBackground(wx_style, background_);
 
 		// Set bold
 		if (bold_ > 0)
@@ -193,7 +198,7 @@ void TextStyle::applyTo(wxStyledTextCtrl* stc)
 // -----------------------------------------------------------------------------
 // Copies style info from [copy]
 // -----------------------------------------------------------------------------
-bool TextStyle::copyStyle(TextStyle* copy)
+bool TextStyle::copyStyle(const TextStyle* copy)
 {
 	if (!copy)
 		return false;
@@ -264,7 +269,8 @@ string TextStyle::textDefinition(unsigned tabs) const
 // StyleSet class constructor
 // -----------------------------------------------------------------------------
 StyleSet::StyleSet(string_view name) :
-	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT), ts_selection_("selection", "Selected Text")
+	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT),
+	ts_selection_("selection", "Selected Text")
 {
 	// Init default style
 	wxFont f(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
@@ -311,7 +317,7 @@ StyleSet::StyleSet(string_view name) :
 // -----------------------------------------------------------------------------
 // Reads style set info from a parse tree
 // -----------------------------------------------------------------------------
-bool StyleSet::parseSet(ParseTreeNode* root)
+bool StyleSet::parseSet(const ParseTreeNode* root)
 {
 	if (!root)
 		return false;
@@ -359,7 +365,7 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 				// No 'currentline' style defined, use the default background and darken/lighten it a little
 				int fgm = -20;
 				int bgm = -10;
-				if (ts_default_.background_.greyscale().r < 100)
+				if (colour::greyscale(ts_default_.background_).r < 100)
 				{
 					fgm = 30;
 					bgm = 15;
@@ -401,40 +407,38 @@ void StyleSet::applyToWx(wxStyledTextCtrl* stc)
 
 	// Set selection background if customised
 	if (ts_selection_.hasBackground())
-		stc->SetSelBackground(true, ts_selection_.background_.toWx());
+		stc->SetSelBackground(true, ts_selection_.background_);
 	else
 		stc->SetSelBackground(false, wxColour("red"));
 
 	// Set selection foreground if customised
 	if (ts_selection_.hasForeground())
-		stc->SetSelForeground(true, ts_selection_.foreground_.toWx());
+		stc->SetSelForeground(true, ts_selection_.foreground_);
 	else
 		stc->SetSelForeground(false, wxColour("red"));
 
 	// Set caret colour to text foreground colour
-	stc->SetCaretForeground(ts_default_.foreground_.toWx());
+	stc->SetCaretForeground(ts_default_.foreground_);
 
 	// Set indent and right margin line colour
-	stc->SetEdgeColour(style("guides")->foreground().toWx());
-	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, styleBackground("guides").toWx());
-	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, styleForeground("guides").toWx());
+	stc->SetEdgeColour(style("guides")->foreground());
+	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, styleBackground("guides"));
+	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, styleForeground("guides"));
 
 	// Set word match indicator colour
 	stc->SetIndicatorCurrent(8);
-	stc->IndicatorSetForeground(8, styleForeground("wordmatch").toWx());
+	stc->IndicatorSetForeground(8, styleForeground("wordmatch"));
 
 	// Set current line colour
-	stc->SetCaretLineBackground(styleBackground("current_line").toWx());
-	stc->MarkerDefine(
-		1, wxSTC_MARK_BACKGROUND, styleBackground("current_line").toWx(), styleBackground("current_line").toWx());
-	stc->MarkerDefine(
-		2, wxSTC_MARK_UNDERLINE, styleForeground("current_line").toWx(), styleForeground("current_line").toWx());
+	stc->SetCaretLineBackground(styleBackground("current_line"));
+	stc->MarkerDefine(1, wxSTC_MARK_BACKGROUND, styleBackground("current_line"), styleBackground("current_line"));
+	stc->MarkerDefine(2, wxSTC_MARK_UNDERLINE, styleForeground("current_line"), styleForeground("current_line"));
 }
 
 // -----------------------------------------------------------------------------
 // Copies all styles in [copy] to this set
 // -----------------------------------------------------------------------------
-bool StyleSet::copySet(StyleSet* copy)
+bool StyleSet::copySet(const StyleSet* copy)
 {
 	if (!copy)
 		return false;
@@ -486,7 +490,7 @@ TextStyle* StyleSet::style(unsigned index)
 // -----------------------------------------------------------------------------
 // Writes this style set as a text definition to a file [filename]
 // -----------------------------------------------------------------------------
-bool StyleSet::writeFile(string_view filename)
+bool StyleSet::writeFile(string_view filename) const
 {
 	// Open file for writing
 	wxFile file(wxString{ filename.data(), filename.size() }, wxFile::write);
@@ -720,7 +724,7 @@ void StyleSet::addEditor(TextEditorCtrl* stc)
 // -----------------------------------------------------------------------------
 // Removes [stc] from the current list of text editors
 // -----------------------------------------------------------------------------
-void StyleSet::removeEditor(TextEditorCtrl* stc)
+void StyleSet::removeEditor(const TextEditorCtrl* stc)
 {
 	VECTOR_REMOVE(editors_, stc);
 }

@@ -4,54 +4,19 @@
 
 namespace slade
 {
-class Archive;
 class TextureXList;
 class PatchTable;
-
-class PatchBrowserItem : public BrowserItem
-{
-public:
-	enum class Type
-	{
-		Patch,
-		CTexture
-	};
-
-	PatchBrowserItem(
-		wxString name,
-		Archive* archive = nullptr,
-		Type     type    = Type::Patch,
-		wxString nspace  = "",
-		unsigned index   = 0) :
-		BrowserItem{ name, index, "patch" },
-		archive_{ archive },
-		type_{ type },
-		nspace_{ nspace }
-	{
-	}
-
-	~PatchBrowserItem();
-
-	bool     loadImage() override;
-	wxString itemInfo() override;
-	void     clearImage() override;
-
-private:
-	Archive* archive_ = nullptr;
-	Type     type_    = Type::Patch;
-	wxString nspace_;
-};
 
 class PatchBrowser : public BrowserWindow
 {
 public:
 	PatchBrowser(wxWindow* parent);
-	~PatchBrowser() = default;
+	~PatchBrowser() override = default;
 
 	bool openPatchTable(PatchTable* table);
 	bool openArchive(Archive* archive);
-	bool openTextureXList(TextureXList* texturex, Archive* parent);
-	int  selectedPatch();
+	bool openTextureXList(const TextureXList* texturex, Archive* parent);
+	int  selectedPatch() const;
 	void selectPatch(int pt_index);
 	void selectPatch(const wxString& name);
 	void setFullPath(bool enabled) { full_path_ = enabled; }

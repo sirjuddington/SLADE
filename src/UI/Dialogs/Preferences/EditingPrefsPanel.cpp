@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,7 @@
 #include "General/UI.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Lists/VirtualListView.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -81,7 +82,7 @@ public:
 
 	wxString itemText(long item, long column, long index) const override
 	{
-		if (item < 0 || item >= (long)exes_.size())
+		if (item < 0 || item >= static_cast<long>(exes_.size()))
 			return "";
 
 		if (column == 0)
@@ -106,14 +107,15 @@ class ExternalEditorDialog : public wxDialog
 {
 public:
 	ExternalEditorDialog(wxWindow* parent, bool browse_on_open, const wxString& name = "", const wxString& path = "") :
-		wxDialog(parent, -1, "External Editor"), browse_on_open_(browse_on_open)
+		wxDialog(parent, -1, "External Editor"),
+		browse_on_open_(browse_on_open)
 	{
 		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
 		// Name
 		auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-		sizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+		sizer->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
 		gb_sizer->Add(new wxStaticText(this, -1, "Name:"), { 0, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_name_ = new wxTextCtrl(this, -1, name);
 		gb_sizer->Add(text_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
@@ -130,9 +132,9 @@ public:
 		gb_sizer->Add(hbox, { 2, 0 }, { 1, 3 }, wxEXPAND);
 		hbox->AddStretchSpacer();
 		btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
-		hbox->Add(btn_cancel_, 0, wxEXPAND | wxRIGHT, ui::pad());
+		hbox->Add(btn_cancel_, wxutil::sfWithBorder(0, wxRIGHT).Expand());
 		btn_ok_ = new wxButton(this, wxID_OK, "OK");
-		hbox->Add(btn_ok_, 0, wxEXPAND);
+		hbox->Add(btn_ok_, wxSizerFlags().Expand());
 
 		gb_sizer->AddGrowableCol(1);
 
@@ -215,8 +217,9 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	// Bind events
 	choice_category_->Bind(
 		wxEVT_CHOICE,
-		[&](wxCommandEvent&) {
-			((ExternalEditorList*)lv_ext_editors_)
+		[&](wxCommandEvent&)
+		{
+			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)
 				->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
 		});
 	btn_add_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnAddClicked, this);
@@ -282,7 +285,7 @@ wxPanel* EditingPrefsPanel::setupExternalTab()
 	// Layout
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	panel->GetSizer()->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	panel->GetSizer()->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	sizer->Add(new wxStaticText(panel, -1, "Category: "), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_category_, { 0, 1 }, { 1, 2 }, wxEXPAND);
@@ -311,7 +314,8 @@ void EditingPrefsPanel::init()
 	choice_dir_mod_->SetSelection(dir_archive_change_action);
 
 	choice_category_->SetSelection(0);
-	((ExternalEditorList*)lv_ext_editors_)->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
+	dynamic_cast<ExternalEditorList*>(lv_ext_editors_)
+		->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
 }
 
 // -----------------------------------------------------------------------------
@@ -350,6 +354,8 @@ void EditingPrefsPanel::showSubSection(const wxString& subsection)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the 'Add' button is clicked
@@ -370,7 +376,7 @@ void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
 			executables::addExternalExe(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
 
 			// Refresh list
-			((ExternalEditorList*)lv_ext_editors_)->setCategory(category);
+			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
 
 			break;
 		}
@@ -393,7 +399,7 @@ void EditingPrefsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 	}
 
 	// Refresh list
-	static_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
+	dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
 }
 
 // -----------------------------------------------------------------------------
@@ -419,7 +425,7 @@ void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 			executables::setExternalExePath(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
 
 			// Refresh list
-			((ExternalEditorList*)lv_ext_editors_)->setCategory(category);
+			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
 
 			break;
 		}

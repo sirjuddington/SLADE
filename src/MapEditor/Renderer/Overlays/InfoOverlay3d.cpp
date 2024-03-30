@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,13 +35,20 @@
 #include "InfoOverlay3d.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/UI/MapEditorWindow.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/StringUtils.h"
 
@@ -132,7 +139,7 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 			strutil::removeLast(flags, 2);
 		info_.push_back(flags);
 
-		info_.push_back(fmt::format("Length: {}", (int)line->length()));
+		info_.push_back(fmt::format("Length: {}", static_cast<int>(line->length())));
 
 		// Other potential info: special, sector#
 
@@ -168,9 +175,10 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 			if (xoff_part == 0)
 				xoff_info = fmt::format("{}", xoff);
 			else if (xoff_part > 0)
-				xoff_info = fmt::format("{:1.2f} ({}+{:1.2f})", (double)xoff + xoff_part, xoff, xoff_part);
+				xoff_info = fmt::format("{:1.2f} ({}+{:1.2f})", static_cast<double>(xoff) + xoff_part, xoff, xoff_part);
 			else
-				xoff_info = fmt::format("{:1.2f} ({}-{:1.2f})", (double)xoff + xoff_part, xoff, -xoff_part);
+				xoff_info = fmt::format(
+					"{:1.2f} ({}-{:1.2f})", static_cast<double>(xoff) + xoff_part, xoff, -xoff_part);
 
 			// Get y offset info
 			int    yoff      = side->texOffsetY();
@@ -187,9 +195,10 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 			if (yoff_part == 0)
 				yoff_info = fmt::format("{}", yoff);
 			else if (yoff_part > 0)
-				yoff_info = fmt::format("{:1.2f} ({}+{:1.2f})", (double)yoff + yoff_part, yoff, yoff_part);
+				yoff_info = fmt::format("{:1.2f} ({}+{:1.2f})", static_cast<double>(yoff) + yoff_part, yoff, yoff_part);
 			else
-				yoff_info = fmt::format("{:1.2f} ({}-{:1.2f})", (double)yoff + yoff_part, yoff, -yoff_part);
+				yoff_info = fmt::format(
+					"{:1.2f} ({}-{:1.2f})", static_cast<double>(yoff) + yoff_part, yoff, -yoff_part);
 
 			info2_.push_back(fmt::format("Offsets: {}, {}", xoff_info, yoff_info));
 		}
@@ -260,10 +269,10 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 			auto floor2   = other_sector->floor().plane;
 			auto ceiling1 = this_sector->ceiling().plane;
 			auto ceiling2 = other_sector->ceiling().plane;
-			left_height   = min(ceiling1.heightAt(left_point), ceiling2.heightAt(left_point))
-						  - max(floor1.heightAt(left_point), floor2.heightAt(left_point));
-			right_height = min(ceiling1.heightAt(right_point), ceiling2.heightAt(right_point))
-						   - max(floor1.heightAt(right_point), floor2.heightAt(right_point));
+			left_height   = glm::min(ceiling1.heightAt(left_point), ceiling2.heightAt(left_point))
+						  - glm::max(floor1.heightAt(left_point), floor2.heightAt(left_point));
+			right_height = glm::min(ceiling1.heightAt(right_point), ceiling2.heightAt(right_point))
+						   - glm::max(floor1.heightAt(right_point), floor2.heightAt(right_point));
 		}
 		else
 		{
@@ -293,9 +302,10 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 			right_height = top_plane.heightAt(right_point) - bottom_plane.heightAt(right_point);
 		}
 		if (fabs(left_height - right_height) < 0.001)
-			info2_.push_back(fmt::format("Height: {}", (int)left_height));
+			info2_.push_back(fmt::format("Height: {}", static_cast<int>(left_height)));
 		else
-			info2_.push_back(fmt::format("Height: {} ~ {}", (int)left_height, (int)right_height));
+			info2_.push_back(
+				fmt::format("Height: {} ~ {}", static_cast<int>(left_height), static_cast<int>(right_height)));
 
 		// Texture
 		if (item_type == mapeditor::ItemType::WallBottom)
@@ -465,10 +475,14 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 		// Position
 		if (mapeditor::editContext().mapDesc().format == MapFormat::Hexen
 			|| mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
-			info_.push_back(
-				fmt::format("Position: {}, {}, {}", (int)thing->xPos(), (int)thing->yPos(), (int)thing->zPos()));
+			info_.push_back(fmt::format(
+				"Position: {}, {}, {}",
+				static_cast<int>(thing->xPos()),
+				static_cast<int>(thing->yPos()),
+				static_cast<int>(thing->zPos())));
 		else
-			info_.push_back(fmt::format("Position: {}, {}", (int)thing->xPos(), (int)thing->yPos()));
+			info_.push_back(
+				fmt::format("Position: {}, {}", static_cast<int>(thing->xPos()), static_cast<int>(thing->yPos())));
 
 
 		// Type
@@ -567,7 +581,6 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
-	int   bottom2   = bottom;
 	bottom += height * alpha_inv * alpha_inv;
 
 	// Draw overlay background
@@ -608,7 +621,6 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y) const
 	int    line_height  = 16 * scale;
 
 	// Get colours
-	ColRGBA col_bg = colourconfig::colour("map_3d_overlay_background");
 	ColRGBA col_fg = colourconfig::colour("map_3d_overlay_foreground");
 	col_fg.a       = col_fg.a * alpha;
 

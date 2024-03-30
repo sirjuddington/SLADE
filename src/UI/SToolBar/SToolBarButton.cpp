@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SToolBarButton.h"
+#include "General/SAction.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/WxUtils.h"
@@ -308,6 +310,8 @@ void SToolBarButton::updateSize()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the button needs to be (re)drawn

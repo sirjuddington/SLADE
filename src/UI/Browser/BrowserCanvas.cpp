@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,8 +36,10 @@
 #include "BrowserItem.h"
 #include "General/UI.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/OpenGL.h"
 
 using namespace slade;
+using namespace browser;
 
 
 // -----------------------------------------------------------------------------
@@ -73,23 +75,28 @@ BrowserCanvas::BrowserCanvas(wxWindow* parent) :
 }
 
 // -----------------------------------------------------------------------------
+// BrowserCanvas class destructor
+// -----------------------------------------------------------------------------
+BrowserCanvas::~BrowserCanvas() = default;
+
+// -----------------------------------------------------------------------------
 // Return the unfiltered index of the item currently in the middle of the
 // viewport, or -1 if no items are visible
 // -----------------------------------------------------------------------------
-int BrowserCanvas::getViewedIndex()
+int BrowserCanvas::getViewedIndex() const
 {
 	if (items_filter_.empty())
 		return -1;
 
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	int viewport_height = size.y;
-	int row_height      = fullItemSizeY();
-	int viewport_mid_y  = yoff_ + viewport_height / 2.0;
-	int viewed_row      = viewport_mid_y / row_height;
-	int viewed_item_id  = (viewed_row + 0.5) * num_cols_;
+	const wxSize size            = GetSize() * GetContentScaleFactor();
+	int          viewport_height = size.y;
+	int          row_height      = fullItemSizeY();
+	int          viewport_mid_y  = yoff_ + viewport_height / 2.0;
+	int          viewed_row      = viewport_mid_y / row_height;
+	int          viewed_item_id  = (viewed_row + 0.5) * num_cols_;
 	if (viewed_item_id < 0)
 		viewed_item_id = 0;
-	else if ((unsigned)viewed_item_id >= items_filter_.size())
+	else if (static_cast<unsigned>(viewed_item_id) >= items_filter_.size())
 		viewed_item_id = items_filter_.size() - 1;
 
 	return items_filter_[viewed_item_id];
@@ -326,7 +333,7 @@ void BrowserCanvas::updateLayout(int viewed_index)
 
 	// Determine number of columns
 	const wxSize size = GetSize() * GetContentScaleFactor();
-	num_cols_ = size.x / fullItemSizeX();
+	num_cols_         = size.x / fullItemSizeX();
 	if (num_cols_ == 0)
 		num_cols_ = 1;
 
@@ -348,7 +355,7 @@ void BrowserCanvas::updateLayout(int viewed_index)
 			filtered_viewed_index = items_filter_.size() - 1;
 
 		// Determine total height of all items
-		int rows            = (double)items_filter_.size() / (double)num_cols_ + 0.9999;
+		int rows            = static_cast<double>(items_filter_.size()) / static_cast<double>(num_cols_) + 0.9999;
 		int total_height    = rows * fullItemSizeY();
 		int viewport_height = size.y;
 
@@ -372,10 +379,10 @@ BrowserItem* BrowserCanvas::selectedItem() const
 // Returns the currently BrowserItem at [index], taking the current filter into
 // account
 // -----------------------------------------------------------------------------
-BrowserItem* BrowserCanvas::itemAt(int index)
+BrowserItem* BrowserCanvas::itemAt(int index) const
 {
 	// Check index
-	if (index < 0 || index >= (int)items_filter_.size())
+	if (index < 0 || index >= static_cast<int>(items_filter_.size()))
 		return nullptr;
 
 	return items_[items_filter_[index]];
@@ -384,12 +391,12 @@ BrowserItem* BrowserCanvas::itemAt(int index)
 // -----------------------------------------------------------------------------
 // Returns the index of [item] taking the current filter into account
 // -----------------------------------------------------------------------------
-int BrowserCanvas::itemIndex(BrowserItem* item)
+int BrowserCanvas::itemIndex(const BrowserItem* item) const
 {
 	// Search for the item in the current filtered list
 	for (unsigned a = 0; a < items_filter_.size(); a++)
 	{
-		if ((unsigned)items_filter_[a] < items_.size() && items_[items_filter_[a]] == item)
+		if (static_cast<unsigned>(items_filter_[a]) < items_.size() && items_[items_filter_[a]] == item)
 			return a;
 	}
 
@@ -427,7 +434,7 @@ void BrowserCanvas::selectItem(BrowserItem* item)
 void BrowserCanvas::selectItem(int index)
 {
 	// Check index
-	if (index < 0 || index >= (int)items_filter_.size())
+	if (index < 0 || index >= static_cast<int>(items_filter_.size()))
 		return;
 
 	item_selected_ = items_[items_filter_[index]];
@@ -483,12 +490,12 @@ void BrowserCanvas::filterItems(wxString filter)
 void BrowserCanvas::showItem(int item, int where)
 {
 	// Check item index
-	if (item < 0 || item >= (int)items_filter_.size())
+	if (item < 0 || item >= static_cast<int>(items_filter_.size()))
 		return;
 
 	// Determine y-position of item
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	int num_cols = size.x / fullItemSizeX();
+	const wxSize size     = GetSize() * GetContentScaleFactor();
+	int          num_cols = size.x / fullItemSizeX();
 	if (num_cols == 0)
 		return;
 	int y_top    = (item / num_cols) * fullItemSizeY();
@@ -533,7 +540,7 @@ bool BrowserCanvas::searchItemFrom(int from)
 {
 	int  index  = from;
 	bool looped = false;
-	while ((!looped && index < (int)items_filter_.size()) || (looped && index < from))
+	while ((!looped && index < static_cast<int>(items_filter_.size())) || (looped && index < from))
 	{
 		wxString name = items_[items_filter_[index]]->name();
 		if (name.Upper().StartsWith(search_))
@@ -546,7 +553,7 @@ bool BrowserCanvas::searchItemFrom(int from)
 
 		// No match, next item; look in the above entries
 		// if no matches were found below.
-		if (++index == (int)items_filter_.size() && !looped)
+		if (++index == static_cast<int>(items_filter_.size()) && !looped)
 		{
 			looped = true;
 			index  = 0;
@@ -672,7 +679,7 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
 	if (e.GetEventType() == wxEVT_MOUSEWHEEL)
 	{
 		// Detemine the scroll multiplier
-		float scroll_mult = (float)e.GetWheelRotation() / (float)e.GetWheelDelta();
+		float scroll_mult = static_cast<float>(e.GetWheelRotation()) / static_cast<float>(e.GetWheelDelta());
 
 		// Scrolling by 1.0 means by 1 row
 		int scroll_amount = (fullItemSizeY()) * -scroll_mult;
@@ -692,12 +699,12 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
 		item_selected_ = nullptr;
 
 		// Get column clicked & number of columns
-		const wxSize size = GetSize() * GetContentScaleFactor();
-		int col_width = size.x / num_cols_;
-		int col       = e.GetPosition().x * GetContentScaleFactor() / col_width;
+		const wxSize size      = GetSize() * GetContentScaleFactor();
+		int          col_width = size.x / num_cols_;
+		int          col       = e.GetPosition().x * GetContentScaleFactor() / col_width;
 
 		// Get row clicked
-		int row = (e.GetPosition().y * GetContentScaleFactor()  - top_y_) / (fullItemSizeY());
+		int row = (e.GetPosition().y * GetContentScaleFactor() - top_y_) / (fullItemSizeY());
 
 		// Select item
 		selectItem(top_index_ + (row * num_cols_) + col);
@@ -712,9 +719,9 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void BrowserCanvas::onKeyDown(wxKeyEvent& e)
 {
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	int num_cols = size.x / fullItemSizeX();
-	int offset;
+	const wxSize size     = GetSize() * GetContentScaleFactor();
+	int          num_cols = size.x / fullItemSizeX();
+	int          offset;
 
 	// Down arrow
 	if (e.GetKeyCode() == WXK_DOWN)
@@ -734,11 +741,11 @@ void BrowserCanvas::onKeyDown(wxKeyEvent& e)
 
 	// Page up
 	else if (e.GetKeyCode() == WXK_PAGEUP)
-		offset = -1 * num_cols * max(size.y / fullItemSizeY(), 1);
+		offset = -1 * num_cols * glm::max(size.y / fullItemSizeY(), 1);
 
 	// Page down
 	else if (e.GetKeyCode() == WXK_PAGEDOWN)
-		offset = num_cols * max(size.y / fullItemSizeY(), 1);
+		offset = num_cols * glm::max(size.y / fullItemSizeY(), 1);
 
 	else
 	{
@@ -750,8 +757,8 @@ void BrowserCanvas::onKeyDown(wxKeyEvent& e)
 	int selected = itemIndex(item_selected_) + offset;
 	if (selected < 0)
 		selected = 0;
-	else if (selected >= (int)items_filter_.size())
-		selected = (int)items_filter_.size() - 1;
+	else if (selected >= static_cast<int>(items_filter_.size()))
+		selected = static_cast<int>(items_filter_.size()) - 1;
 
 	selectItem(selected);
 	showItem(selected, -1 * offset);

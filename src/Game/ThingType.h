@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Args.h"
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
 class PropertyList;
-class ParseTreeNode;
 
 namespace game
 {
@@ -66,7 +65,7 @@ namespace game
 		void define(int number, string_view name, string_view group);
 
 		void   reset();
-		void   parse(ParseTreeNode* node);
+		void   parse(const ParseTreeNode* node);
 		string stringDesc() const;
 		void   loadProps(PropertyList& props, bool decorate = true, bool zscript = false);
 

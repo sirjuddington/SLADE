@@ -11,7 +11,7 @@ class ModMusic : public sf::SoundStream
 {
 public:
 	ModMusic() = default;
-	~ModMusic();
+	~ModMusic() override;
 
 	bool     openFromFile(const string& filename);
 	bool     loadFromMemory(const uint8_t* data, const uint32_t size);

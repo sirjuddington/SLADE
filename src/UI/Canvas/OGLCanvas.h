@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Graphics/Palette/Palette.h"
-#include "OpenGL/OpenGL.h"
-
-class wxWindow;
+#include "OpenGL/GLHeaders.h"
 
 namespace slade
 {
@@ -11,10 +8,10 @@ class OGLCanvas : public wxGLCanvas
 {
 public:
 	OGLCanvas(wxWindow* parent, int id, bool handle_timer = true, int timer_interval = 100);
-	~OGLCanvas() override = default;
+	~OGLCanvas() override;
 
-	virtual Palette& palette() { return palette_; }
-	void             setPalette(const Palette* pal) { palette_.copyPalette(pal); }
+	virtual Palette& palette() { return *palette_; }
+	void             setPalette(const Palette* pal) const;
 	bool             setContext();
 	void             init();
 	virtual void     draw() = 0;
@@ -24,10 +21,10 @@ public:
 	void             setup2D() const;
 
 protected:
-	bool    init_done_ = false;
-	Palette palette_;
-	wxTimer timer_;
-	long    last_time_ = 0;
+	bool                init_done_ = false;
+	unique_ptr<Palette> palette_;
+	wxTimer             timer_;
+	long                last_time_ = 0;
 
 	// Events
 	void onPaint(wxPaintEvent& e);

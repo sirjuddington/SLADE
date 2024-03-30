@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 #include "PNGPrefsPanel.h"
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/WxUtils.h"
+#include "Utility/SFileDialog.h"
 
 using namespace slade;
 

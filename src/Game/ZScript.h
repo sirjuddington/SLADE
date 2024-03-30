@@ -1,13 +1,14 @@
 #pragma once
 
-#include "ThingType.h"
-#include "Utility/Property.h"
+#include "Utility/PropertyList.h"
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
 class Tokenizer;
+namespace game
+{
+	class ThingType;
+}
 
 namespace zscript
 {
@@ -73,7 +74,9 @@ namespace zscript
 	{
 	public:
 		Function(string_view name = {}, string_view def_class = {}) :
-			Identifier(name), return_type_{ "void" }, base_class_{ def_class }
+			Identifier(name),
+			return_type_{ "void" },
+			base_class_{ def_class }
 		{
 		}
 
@@ -84,7 +87,7 @@ namespace zscript
 			string name;
 			string type;
 			string default_value;
-			Parameter() : name{ "<unknown>" }, type{ "<unknown>" }, default_value{ "" } {}
+			Parameter() : name{ "<unknown>" }, type{ "<unknown>" } {}
 
 			unsigned parse(const vector<string>& tokens, unsigned start_index);
 		};

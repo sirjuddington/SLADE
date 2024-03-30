@@ -4,21 +4,19 @@
 
 namespace slade
 {
-class MapSector;
-
 class SectorTextureOverlay : public MCOverlay
 {
 public:
-	SectorTextureOverlay()  = default;
-	~SectorTextureOverlay() = default;
+	SectorTextureOverlay()           = default;
+	~SectorTextureOverlay() override = default;
 
-	void openSectors(vector<MapSector*>& list);
+	void openSectors(const vector<MapSector*>& list);
 	void close(bool cancel) override;
 	void update(long frametime) override;
 
 	// Drawing
 	void draw(int width, int height, float fade) override;
-	void drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover) const;
+	void drawTexture(float alpha, int x, int y, int size, const vector<string>& textures, bool hover) const;
 
 	// Input
 	void mouseMotion(int x, int y) override;

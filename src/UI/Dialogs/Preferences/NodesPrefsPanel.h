@@ -9,8 +9,8 @@ namespace slade
 class NodesPrefsPanel : public PrefsPanelBase
 {
 public:
-	NodesPrefsPanel(wxWindow* parent, bool frame = true);
-	~NodesPrefsPanel() = default;
+	NodesPrefsPanel(wxWindow* parent);
+	~NodesPrefsPanel() override = default;
 
 	void init() override;
 	void populateOptions(const wxString& options) const;

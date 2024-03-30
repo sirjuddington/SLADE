@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,12 +32,18 @@
 #include "Main.h"
 #include "GfxEntryPanel.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "Graphics/Graphics.h"
+#include "Graphics/Translation.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/ZoomControl.h"
@@ -48,6 +54,10 @@
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/SBrush.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
 
@@ -75,11 +85,16 @@ EXTERN_CVAR(Int, last_tint_amount)
 // -----------------------------------------------------------------------------
 // GfxEntryPanel class constructor
 // -----------------------------------------------------------------------------
-GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
+GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
+	EntryPanel(parent, "gfx", true),
+	prev_translation_{ new Translation },
+	edit_translation_{ new Translation }
 {
+	namespace wx = wxutil;
+
 	// Init variables
-	prev_translation_.addRange(TransRange::Type::Palette, 0);
-	edit_translation_.addRange(TransRange::Type::Palette, 0);
+	prev_translation_->addRange(TransRange::Type::Palette, 0);
+	edit_translation_->addRange(TransRange::Type::Palette, 0);
 
 	// Add gfx canvas
 	gfx_canvas_ = new GfxCanvas(this, -1);
@@ -88,7 +103,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 	gfx_canvas_->allowDrag(true);
 	gfx_canvas_->allowScroll(true);
 	gfx_canvas_->setPalette(maineditor::currentPalette());
-	gfx_canvas_->setTranslation(&edit_translation_);
+	gfx_canvas_->setTranslation(edit_translation_.get());
 
 	// Offsets
 	const wxSize spinsize = { ui::px(ui::Size::SpinCtrlWidth), -1 };
@@ -114,19 +129,19 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 		0);
 	spin_xoffset_->SetMinSize(spinsize);
 	spin_yoffset_->SetMinSize(spinsize);
-	sizer_bottom_->Add(new wxStaticText(this, -1, "Offsets:"), 0, wxALIGN_CENTER_VERTICAL, 0);
-	sizer_bottom_->Add(spin_xoffset_, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::pad());
-	sizer_bottom_->Add(spin_yoffset_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	sizer_bottom_->Add(new wxStaticText(this, -1, "Offsets:"), wxSizerFlags().CenterVertical());
+	sizer_bottom_->Add(spin_xoffset_, wx::sfWithBorder(0, wxLEFT | wxRIGHT).CenterVertical());
+	sizer_bottom_->Add(spin_yoffset_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
 
 	// Gfx (offset) type
 	wxString offset_types[] = { "Auto", "Graphic", "Sprite", "HUD" };
 	choice_offset_type_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
 	choice_offset_type_->SetSelection(0);
-	sizer_bottom_->Add(choice_offset_type_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	sizer_bottom_->Add(choice_offset_type_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
 
 	// Auto offset
 	btn_auto_offset_ = new SIconButton(this, "offset", "Modify Offsets...");
-	sizer_bottom_->Add(btn_auto_offset_, 0, wxALIGN_CENTER_VERTICAL);
+	sizer_bottom_->Add(btn_auto_offset_, wxSizerFlags().CenterVertical());
 
 	sizer_bottom_->AddStretchSpacer();
 
@@ -144,9 +159,9 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
         1,
         0);
 	spin_curimg_->SetMinSize(spinsize);
-	sizer_bottom_->Add(text_imgnum_, 0, wxALIGN_CENTER, 0);
-	sizer_bottom_->Add(spin_curimg_, 0, wxSHRINK | wxALIGN_CENTER, ui::pad());
-	sizer_bottom_->Add(text_imgoutof_, 0, wxALIGN_CENTER | wxRIGHT, ui::padLarge());
+	sizer_bottom_->Add(text_imgnum_, wxSizerFlags().Center());
+	sizer_bottom_->Add(spin_curimg_, wxSizerFlags().Center()); // 0, wxSHRINK | wxALIGN_CENTER, ui::pad());
+	sizer_bottom_->Add(text_imgoutof_, wx::sfWithLargeBorder(0, wxRIGHT).Center());
 	text_imgnum_->Show(false);
 	spin_curimg_->Show(false);
 	text_imgoutof_->Show(false);
@@ -708,10 +723,10 @@ void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 		const int sel = choice_offset_type_->GetSelection();
 		switch (sel)
 		{
-		case 0: gfx_canvas_->setViewType(detectOffsetType(entry)); break;
-		case 1: gfx_canvas_->setViewType(GfxCanvas::View::Default); break;
-		case 2: gfx_canvas_->setViewType(GfxCanvas::View::Sprite); break;
-		case 3: gfx_canvas_->setViewType(GfxCanvas::View::HUD); break;
+		case 0:  gfx_canvas_->setViewType(detectOffsetType(entry)); break;
+		case 1:  gfx_canvas_->setViewType(GfxCanvas::View::Default); break;
+		case 2:  gfx_canvas_->setViewType(GfxCanvas::View::Sprite); break;
+		case 3:  gfx_canvas_->setViewType(GfxCanvas::View::HUD); break;
 		default: break;
 		}
 	}
@@ -747,14 +762,14 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			theMainWindow, *theMainWindow->paletteChooser()->selectedPalette(), " Colour Remap", image());
 
 		// Create translation to edit
-		ted.openTranslation(edit_translation_);
+		ted.openTranslation(*edit_translation_);
 
 		// Show the dialog
 		if (ted.ShowModal() == wxID_OK)
 		{
 			// Set the translation
-			edit_translation_.copy(ted.getTranslation());
-			gfx_canvas_->setTranslation(&edit_translation_);
+			edit_translation_->copy(ted.getTranslation());
+			gfx_canvas_->setTranslation(edit_translation_.get());
 		}
 	}
 
@@ -806,9 +821,9 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		// Rotate image
 		switch (choice)
 		{
-		case 0: image()->rotate(90); break;
-		case 1: image()->rotate(180); break;
-		case 2: image()->rotate(270); break;
+		case 0:  image()->rotate(90); break;
+		case 1:  image()->rotate(180); break;
+		case 2:  image()->rotate(270); break;
 		default: break;
 		}
 
@@ -829,7 +844,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		TranslationEditorDialog ted(theMainWindow, *pal, " Colour Remap", &gfx_canvas_->image());
 
 		// Create translation to edit
-		ted.openTranslation(prev_translation_);
+		ted.openTranslation(*prev_translation_);
 
 		// Show the dialog
 		if (ted.ShowModal() == wxID_OK)
@@ -843,7 +858,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			// Update variables
 			image_data_modified_ = true;
 			setModified();
-			prev_translation_.copy(ted.getTranslation());
+			prev_translation_->copy(ted.getTranslation());
 		}
 	}
 
@@ -869,7 +884,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		last_colour = gcd.colour().toString(ColRGBA::StringFormat::RGB);
+		last_colour = colour::toString(gcd.colour(), colour::StringFormat::RGB);
 	}
 
 	// Tint
@@ -894,7 +909,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		last_tint_colour = gtd.colour().toString(ColRGBA::StringFormat::RGB);
+		last_tint_colour = colour::toString(gtd.colour(), colour::StringFormat::RGB);
 		last_tint_amount = static_cast<int>(gtd.amount() * 100.0);
 	}
 
@@ -1062,6 +1077,19 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the canvas image
+// -----------------------------------------------------------------------------
+SImage* GfxEntryPanel::image() const
+{
+	if (gfx_canvas_)
+		return &gfx_canvas_->image();
+	else
+		return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GfxEntryPanel::toolbarButtonClick(const wxString& action_id)
 {
 	if (action_id == "toggle_arc")
@@ -1086,6 +1114,8 @@ void GfxEntryPanel::toolbarButtonClick(const wxString& action_id)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the colour box's value is changed
@@ -1306,7 +1336,7 @@ CONSOLE_COMMAND(rotate, 1, true)
 			return;
 		}
 	}
-	const int angle = (int)val;
+	const int angle = static_cast<int>(val);
 	if (angle % 90)
 	{
 		log::error(wxString::Format("Invalid parameter: %i is not a multiple of 90.", angle));

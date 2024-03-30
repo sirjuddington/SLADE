@@ -1,15 +1,13 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    Property.cpp
-// Description: Property system - a Property is just a dynamic type
-//              (std::variant) that can contain a boolean, int, unsigned int,
-//              float or string value. Also includes PropertyList which is a
-//              simple list of named properties.
+// Filename:    PropertyList.cpp
+// Description: PropertyList class - a simple list of named Property values with
+//              various utility functions
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -33,105 +31,100 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Property.h"
+#include "PropertyList.h"
+#include "PropertyUtils.h"
+#include "StringUtils.h"
 
 using namespace slade;
 
 
 // -----------------------------------------------------------------------------
 //
-// Property namespace functions
+// PropertyList Class Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::property
-{
+
 // -----------------------------------------------------------------------------
-// Returns [prop] as a boolean value
+// [] operator to get an existing property [key].
+// If no property with the key exists, one is added and returned
 // -----------------------------------------------------------------------------
-bool asBool(const Property& prop)
+Property& PropertyList::operator[](string_view key)
 {
-	switch (prop.index())
-	{
-	case 0: return std::get<bool>(prop);
-	case 1: return std::get<int>(prop) != 0;
-	case 2: return std::get<unsigned int>(prop) != 0;
-	case 3: return std::get<double>(prop) != 0.;
-	case 4: return strutil::asBoolean(std::get<string>(prop));
-	default: return false;
-	}
+	for (auto& prop : properties_)
+		if (strutil::equalCI(key, prop.name))
+			return prop.value;
+
+	properties_.emplace_back(key, Property{});
+	return properties_.back().value;
 }
 
 // -----------------------------------------------------------------------------
-// Returns [prop] as an integer value
+// Returns true if the list contains a property named [key]
 // -----------------------------------------------------------------------------
-int asInt(const Property& prop)
+bool PropertyList::contains(string_view key) const
 {
-	switch (prop.index())
-	{
-	case 0: return std::get<bool>(prop) ? 1 : 0;
-	case 1: return std::get<int>(prop);
-	case 2: return static_cast<int>(std::get<unsigned int>(prop));
-	case 3: return static_cast<int>(std::get<double>(prop));
-	case 4: return strutil::asInt(std::get<string>(prop));
-	default: return 0;
-	}
+	for (const auto& prop : properties_)
+		if (strutil::equalCI(key, prop.name))
+			return true;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
-// Returns [prop] as an unsigned integer value
+// Returns the property matching [key] if it exists, or an empty std::optional
+// if not
 // -----------------------------------------------------------------------------
-unsigned asUInt(const Property& prop)
+std::optional<Property> PropertyList::getIf(string_view key) const
 {
-	switch (prop.index())
-	{
-	case 0: return std::get<bool>(prop) ? 1 : 0;
-	case 1: return static_cast<unsigned int>(std::get<int>(prop));
-	case 2: return std::get<unsigned int>(prop);
-	case 3: return static_cast<unsigned int>(std::get<double>(prop));
-	case 4: return strutil::asUInt(std::get<string>(prop));
-	default: return 0;
-	}
+	for (const auto& prop : properties_)
+		if (strutil::equalCI(key, prop.name))
+			return prop.value;
+
+	return {};
 }
 
 // -----------------------------------------------------------------------------
-// Returns [prop] as a float value
+// Adds all properties to [list]
 // -----------------------------------------------------------------------------
-double asFloat(const Property& prop)
+void PropertyList::allProperties(vector<Property>& list) const
 {
-	switch (prop.index())
-	{
-	case 0: return std::get<bool>(prop) ? 1. : 0.;
-	case 1: return std::get<int>(prop);
-	case 2: return std::get<unsigned int>(prop);
-	case 3: return std::get<double>(prop);
-	case 4: return strutil::asDouble(std::get<string>(prop));
-	default: return 0.;
-	}
+	for (const auto& prop : properties_)
+		list.push_back(prop.value);
 }
 
 // -----------------------------------------------------------------------------
-// Returns [prop] as a string.
-// If [prop] is a float value, use [float_precision] decimal points
+// Adds all property names to [list]
 // -----------------------------------------------------------------------------
-string asString(const Property& prop, int float_precision)
+void PropertyList::allPropertyNames(vector<string>& list) const
 {
-	switch (prop.index())
-	{
-	case 0: return std::get<bool>(prop) ? "true" : "false";
-	case 1: return fmt::format("{}", std::get<int>(prop));
-	case 2: return fmt::format("{}", std::get<unsigned int>(prop));
-	case 3:
-	{
-		if (float_precision <= 0)
-			return fmt::format("{}", std::get<double>(prop));
-		else
-			return fmt::format("{:.{}f}", std::get<double>(prop), float_precision);
-	}
-	case 4: return std::get<string>(prop);
-	default: return {};
-	}
+	for (const auto& prop : properties_)
+		list.push_back(prop.name);
 }
-} // namespace slade::property
+
+// -----------------------------------------------------------------------------
+// Clears all properties in the list
+// -----------------------------------------------------------------------------
+void PropertyList::clear()
+{
+	properties_.clear();
+}
+
+// -----------------------------------------------------------------------------
+// Removes the property matching [key].
+// Returns true if the property existed and was removed, false otherwise
+// -----------------------------------------------------------------------------
+bool PropertyList::remove(string_view key)
+{
+	const auto count = properties_.size();
+	for (unsigned i = 0; i < count; ++i)
+		if (strutil::equalCI(key, properties_[i].name))
+		{
+			properties_.erase(properties_.begin() + i);
+			return true;
+		}
+
+	return false;
+}
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of the property list

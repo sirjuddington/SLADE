@@ -234,7 +234,7 @@ protected:
 		memset(img_mask, 255, width * height);
 
 		// Mark as transparent all pixels that are index 0
-		for (size_t i = 0; i < (unsigned)(width * height); ++i)
+		for (size_t i = 0; i < static_cast<unsigned>(width * height); ++i)
 			if (img_data[i] == 0)
 				img_mask[i] = 0;
 
@@ -286,7 +286,7 @@ protected:
 		// Determine width and height
 		int height = data[0] * 4;
 		int width  = 64;
-		if ((int)data.size() != width * height + HEADEROFFSET)
+		if (static_cast<int>(data.size()) != width * height + HEADEROFFSET)
 			return false;
 
 		// Create image
@@ -444,8 +444,8 @@ private:
 		}
 
 		// Get tile info
-		uint32_t firsttile = wxUINT32_SWAP_ON_BE(((uint32_t*)(mc.data() + headeroffset))[2]);
-		uint32_t lasttile  = wxUINT32_SWAP_ON_BE(((uint32_t*)(mc.data() + headeroffset))[3]);
+		uint32_t firsttile = wxUINT32_SWAP_ON_BE((reinterpret_cast<const uint32_t*>(mc.data() + headeroffset))[2]);
+		uint32_t lasttile  = wxUINT32_SWAP_ON_BE((reinterpret_cast<const uint32_t*>(mc.data() + headeroffset))[3]);
 
 		// Set number of images
 		info.numimages = 1 + lasttile - firsttile;
@@ -485,8 +485,8 @@ private:
 		info.format    = id_;
 
 		// Offsets are signed bytes, so they need a cast
-		info.offset_x = (int8_t)mc[o_offs + 1];
-		info.offset_y = (int8_t)mc[o_offs + 2];
+		info.offset_x = static_cast<int8_t>(mc[o_offs + 1]);
+		info.offset_y = static_cast<int8_t>(mc[o_offs + 2]);
 
 		// Offsets are not computed from the same reference point, so convert them
 		info.offset_x += (info.width >> 1);
@@ -672,7 +672,7 @@ protected:
 		auto info = this->info(data, index);
 
 		// Check data
-		if ((int)data.size() != 4 + info.width * info.height)
+		if (static_cast<int>(data.size()) != 4 + info.width * info.height)
 			return false;
 
 		// Create image
@@ -743,15 +743,15 @@ protected:
 		// Read data
 		auto     cmdptr = reinterpret_cast<const uint16_t*>(data.data() + 4);
 		uint32_t i, x, y;
-		for (x = 0; x < (unsigned)info.width; ++x)
+		for (x = 0; x < static_cast<unsigned>(info.width); ++x)
 		{
 			auto linecmds = reinterpret_cast<const int16_t*>(data.data() + wxINT16_SWAP_ON_BE(*cmdptr));
 			cmdptr++;
 			for (; wxINT16_SWAP_ON_BE(*linecmds); linecmds += 3)
 			{
 				i = (wxINT16_SWAP_ON_BE(linecmds[2]) >> 1) + wxINT16_SWAP_ON_BE(linecmds[1]);
-				for (y = (uint32_t)(wxINT16_SWAP_ON_BE(linecmds[2]) >> 1);
-					 y < (uint32_t)(wxINT16_SWAP_ON_BE(linecmds[0]) / 2);
+				for (y = static_cast<uint32_t>((wxINT16_SWAP_ON_BE(linecmds[2]) >> 1));
+					 y < static_cast<uint32_t>((wxINT16_SWAP_ON_BE(linecmds[0]) / 2));
 					 ++y, ++i)
 				{
 					img_data[y * info.width + x] = data[i];

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,7 +40,9 @@
 #include "MapEditor/MapTextureManager.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "UI/Browser/BrowserItem.h"
 
 using namespace slade;
 
@@ -58,7 +60,7 @@ using namespace slade;
 void SectorTextureOverlay::update(long frametime)
 {
 	// Get frame time multiplier
-	float mult = (float)frametime / 10.0f;
+	float mult = static_cast<float>(frametime) / 10.0f;
 
 	// Update animations
 	anim_floor_ += 0.1f * mult;
@@ -176,10 +178,10 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box for [textures]
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover) const
+void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, const vector<string>& textures, bool hover)
+	const
 {
 	// Get colours
-	auto col_bg  = colourconfig::colour("map_overlay_background");
 	auto col_fg  = colourconfig::colour("map_overlay_foreground");
 	auto col_sel = colourconfig::colour("map_hilight");
 	col_fg.a     = col_fg.a * alpha;
@@ -223,7 +225,7 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 // -----------------------------------------------------------------------------
 // 'Opens' all sectors in [list], adds both textures from each
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::openSectors(vector<MapSector*>& list)
+void SectorTextureOverlay::openSectors(const vector<MapSector*>& list)
 {
 	// Clear current sectors list (if any)
 	sectors_.clear();

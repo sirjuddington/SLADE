@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,7 +31,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "WadArchive.h"
-#include "General/Misc.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Archive/MapDesc.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -420,8 +423,8 @@ bool WadArchive::open(const MemChunk& mc)
 
 		if (jaguarencrypt)
 		{
-			nlump->setEncryption(ArchiveEntry::Encryption::Jaguar);
-			nlump->exProp("FullSize") = (int)size;
+			nlump->setEncryption(EntryEncryption::Jaguar);
+			nlump->exProp("FullSize") = static_cast<int>(size);
 		}
 
 		// Read entry data if it isn't zero-sized
@@ -429,7 +432,7 @@ bool WadArchive::open(const MemChunk& mc)
 		{
 			// Read the entry data
 			mc.exportMemChunk(edata, offset, size);
-			if (nlump->encryption() != ArchiveEntry::Encryption::None)
+			if (nlump->encryption() != EntryEncryption::None)
 			{
 				if (nlump->exProps().contains("FullSize")
 					&& static_cast<unsigned>(nlump->exProp<int>("FullSize")) > size)
@@ -444,7 +447,7 @@ bool WadArchive::open(const MemChunk& mc)
 			nlump->importMemChunk(edata);
 		}
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -538,7 +541,7 @@ bool WadArchive::write(MemChunk& mc)
 		mc.write(&size, 4);
 		mc.write(name, 8);
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setSizeOnDisk();
 	}
 
@@ -613,7 +616,7 @@ bool WadArchive::write(string_view filename)
 		file.Write(&size, 4);
 		file.Write(name, 8);
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setSizeOnDisk();
 	}
 
@@ -788,7 +791,7 @@ bool WadArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* d
 // If [maphead] is not really a map header entry, an invalid MapDesc will be
 // returned (MapDesc::head == nullptr)
 // -----------------------------------------------------------------------------
-Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
+MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -918,10 +921,9 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 	// Otherwise it's doom format
 	else
 	{
-		Archive::SearchOptions opt;
+		ArchiveSearchOptions opt;
 		opt.match_name = "playpals";
-		auto match     = findFirst(opt);
-		if (match)
+		if (findFirst(opt))
 			map.format = MapFormat::Doom32X;
 		else
 			map.format = MapFormat::Doom;
@@ -933,7 +935,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 // -----------------------------------------------------------------------------
 // Searches for any maps in the wad and adds them to the map list
 // -----------------------------------------------------------------------------
-vector<Archive::MapDesc> WadArchive::detectMaps()
+vector<MapDesc> WadArchive::detectMaps()
 {
 	vector<MapDesc> maps;
 
@@ -944,10 +946,9 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 	bool lastentryismapentry = false;
 	bool playpals            = false;
 
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_name = "playpals";
-	auto match     = findFirst(opt);
-	if (match)
+	if (findFirst(opt))
 		playpals = true;
 
 	while (entry)
@@ -1042,7 +1043,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				md.name = header_entry->name(); // Map title
 				md.end  = lastentryismapentry ? // End lump
                              entry :
-                              rootDir()->sharedEntryAt(--index);
+							  rootDir()->sharedEntryAt(--index);
 
 				// If BEHAVIOR lump exists, it's a hexen format map
 				if (existing_map_lumps[LUMP_BEHAVIOR])
@@ -1145,7 +1146,7 @@ void WadArchive::detectIncludes()
 	static const char* entrytypes[6] = { "decorate", "gldefslump", "sbarinfo", "xlat", "extradata", "edf" };
 	static const char* tokens[6]     = { "#include", "#include", "#include", "translator", "extradata", "lumpinclude" };
 
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.ignore_ext = true;
 	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
@@ -1170,8 +1171,7 @@ void WadArchive::detectIncludes()
 						if (i == 5) // skip ')'
 							tz.adv();
 						opt.match_name = name;
-						auto match     = findFirst(opt);
-						if (match)
+						if (auto match = findFirst(opt))
 							match->setType(EntryType::fromId(entrytypes[i]));
 						tz.adv();
 					}
@@ -1187,7 +1187,7 @@ void WadArchive::detectIncludes()
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
+ArchiveEntry* WadArchive::findFirst(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	unsigned index     = 0;
@@ -1256,7 +1256,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchive::findLast(SearchOptions& options)
+ArchiveEntry* WadArchive::findLast(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	int index       = numEntries() - 1;
@@ -1328,7 +1328,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
+vector<ArchiveEntry*> WadArchive::findAll(ArchiveSearchOptions& options)
 {
 	// Init search variables
 	unsigned index     = 0;
@@ -1473,4 +1473,21 @@ bool WadArchive::isWadArchive(const string& filename)
 
 	// If it's passed to here it's probably a wad file
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Saves [entries] to a Wad archive at [filename]
+// -----------------------------------------------------------------------------
+bool WadArchive::exportEntriesAsWad(string_view filename, const vector<ArchiveEntry*>& entries)
+{
+	WadArchive wad;
+
+	// Add entries to wad archive
+	for (size_t a = 0; a < entries.size(); a++)
+	{
+		// Add each entry to the wad archive
+		wad.addEntry(std::make_shared<ArchiveEntry>(*entries[a]), entries.size(), nullptr);
+	}
+
+	return wad.save(filename);
 }

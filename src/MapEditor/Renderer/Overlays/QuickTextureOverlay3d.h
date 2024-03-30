@@ -1,21 +1,23 @@
 #pragma once
 
 #include "MCOverlay.h"
-#include "MapEditor/Edit/Edit3D.h"
 
 namespace slade
 {
 class ItemSelection;
-class MapEditContext;
+namespace mapeditor
+{
+	class MapEditContext;
+}
 
 class QuickTextureOverlay3d : public MCOverlay
 {
 public:
-	QuickTextureOverlay3d(MapEditContext* editor);
-	~QuickTextureOverlay3d() = default;
+	QuickTextureOverlay3d(mapeditor::MapEditContext* editor);
+	~QuickTextureOverlay3d() override = default;
 
 	void setTexture(string_view name);
-	void applyTexture();
+	void applyTexture() const;
 
 	void update(long frametime) override;
 
@@ -38,12 +40,12 @@ private:
 		QTTex(string_view name) : texture{ 0 }, name{ name } {}
 	};
 
-	vector<QTTex>   textures_;
-	unsigned        current_index_ = 0;
-	string          search_;
-	double          anim_offset_ = 0.;
-	MapEditContext* editor_      = nullptr;
-	bool            sel_flats_   = true;
-	bool            sel_walls_   = true;
+	vector<QTTex>              textures_;
+	unsigned                   current_index_ = 0;
+	string                     search_;
+	double                     anim_offset_ = 0.;
+	mapeditor::MapEditContext* editor_      = nullptr;
+	bool                       sel_flats_   = true;
+	bool                       sel_walls_   = true;
 };
 } // namespace slade

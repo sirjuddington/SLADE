@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,8 +39,10 @@
 #include "MapEditor/MapTextureManager.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSide.h"
+#include "UI/Browser/BrowserItem.h"
 
 using namespace slade;
 
@@ -64,9 +66,9 @@ void LineTextureOverlay::addTexture(TexInfo& inf, string_view texture) const
 
 	// Add texture if it doesn't exist already
 	bool exists = false;
-	for (unsigned a = 0; a < inf.textures.size(); a++)
+	for (const auto& tex : inf.textures)
 	{
-		if (inf.textures[a] == texture)
+		if (tex == texture)
 		{
 			exists = true;
 			break;
@@ -79,28 +81,28 @@ void LineTextureOverlay::addTexture(TexInfo& inf, string_view texture) const
 // -----------------------------------------------------------------------------
 // 'Opens' all lines in [list], adds all textures from each
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::openLines(vector<MapLine*>& list)
+void LineTextureOverlay::openLines(const vector<MapLine*>& list)
 {
 	// Clear current lines
 	lines_.clear();
 	side1_         = false;
 	side2_         = false;
 	selected_side_ = 0;
-	for (unsigned a = 0; a < 6; a++)
+	for (auto& texture : textures_)
 	{
-		textures_[a].textures.clear();
-		textures_[a].hover   = false;
-		textures_[a].changed = false;
+		texture.textures.clear();
+		texture.hover   = false;
+		texture.changed = false;
 	}
 
 	// Go through list
-	for (unsigned a = 0; a < list.size(); a++)
+	for (auto line : list)
 	{
 		// Add to lines list
-		lines_.push_back(list[a]);
+		lines_.push_back(line);
 
 		// Process first side
-		auto side1 = list[a]->s1();
+		auto side1 = line->s1();
 		if (side1)
 		{
 			// Add textures
@@ -112,7 +114,7 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 		}
 
 		// Process second side
-		auto side2 = list[a]->s2();
+		auto side2 = line->s2();
 		if (side2)
 		{
 			// Add textures
@@ -190,7 +192,7 @@ void LineTextureOverlay::updateLayout(int width, int height)
 		rows = 2;
 	int middlex = width * 0.5;
 	int middley = height * 0.5;
-	int maxsize = min(width / 3, height / rows);
+	int maxsize = glm::min(width / 3, height / rows);
 	tex_size_   = maxsize - 64;
 	if (tex_size_ > 256)
 		tex_size_ = 256;
@@ -278,7 +280,6 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string_view position) const
 {
 	// Get colours
-	ColRGBA col_bg  = colourconfig::colour("map_overlay_background");
 	ColRGBA col_fg  = colourconfig::colour("map_overlay_foreground");
 	ColRGBA col_sel = colourconfig::colour("map_hilight");
 	col_fg.a        = col_fg.a * alpha;

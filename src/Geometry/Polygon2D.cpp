@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,11 +32,16 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Polygon2D.h"
-#include "MathStuff.h"
+
+#include "Geometry.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
-#include "SLADEMap/SLADEMap.h"
+#include "Polygon2D.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "Utility/MathStuff.h"
 
 using namespace slade;
 
@@ -75,7 +80,7 @@ void Polygon2D::setZ(float z)
 	}
 }
 
-void Polygon2D::setZ(Plane plane)
+void Polygon2D::setZ(const Plane& plane)
 {
 	// Go through all sub-polys
 	for (auto& subpoly : subpolys_)
@@ -191,7 +196,7 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 			// Apply rotation if any
 			if (rotation != 0)
 			{
-				Vec2d np = math::rotatePoint(Vec2d(0, 0), Vec2d(x, y), rotation);
+				Vec2d np = geometry::rotatePoint(Vec2d(0, 0), Vec2d(x, y), rotation);
 				x        = np.x;
 				y        = np.y;
 			}
@@ -389,7 +394,7 @@ int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, 
 			continue;
 
 		// Determine angle between edges
-		double angle = math::angle2DRad(
+		double angle = geometry::angle2DRad(
 			Vec2d(v1.x, v1.y), Vec2d(v2.x, v2.y), Vec2d(vertices_[out.v2].x, vertices_[out.v2].y));
 		if (angle < min_angle)
 		{
@@ -509,10 +514,10 @@ bool PolygonSplitter::detectUnclosed()
 		{
 			auto& edge = edges_[e];
 
-			bool flipped = false;
+			// bool flipped = false;
 			for (int start_vert : start_verts)
 			{
-				auto& sv = vertices_[start_vert];
+				// auto& sv = vertices_[start_vert];
 
 				if (edge.v1 == start_vert && edge.v2 == end_vert)
 					flipEdge(e); // Flip the edge
@@ -718,9 +723,9 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	int    closest  = -1;
 	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
-		if (math::lineSide(vertices_[a], Seg2d(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
+		if (geometry::lineSide(vertices_[a], Seg2d(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
 		{
-			vertices_[a].distance = math::distance(vertices_[v2], vertices_[a]);
+			vertices_[a].distance = glm::distance(static_cast<Vec2d>(vertices_[v2]), static_cast<Vec2d>(vertices_[a]));
 			if (vertices_[a].distance < min_dist)
 			{
 				min_dist = vertices_[a].distance;
@@ -746,7 +751,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 			continue;
 
 		// Intersection test
-		if (math::linesIntersect(
+		if (geometry::linesIntersect(
 				Seg2d(vertices_[v2], vertices_[closest]), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 		{
 			intersect = true;
@@ -791,7 +796,8 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 				continue;
 
 			// Intersection test
-			if (math::linesIntersect(Seg2d(vertices_[v2], vert), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
+			if (geometry::linesIntersect(
+					Seg2d(vertices_[v2], vert), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 			{
 				intersect = true;
 				break;
@@ -1046,7 +1052,7 @@ void PolygonSplitter::openSector(MapSector* sector)
 	}
 }
 
-void PolygonSplitter::testRender()
+void PolygonSplitter::testRender() const
 {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Draw vertices

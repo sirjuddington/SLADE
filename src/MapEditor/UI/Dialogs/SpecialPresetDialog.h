@@ -1,11 +1,14 @@
 #pragma once
 
-#include "Game/SpecialPreset.h"
 #include "UI/SDialog.h"
 
 namespace slade
 {
 class SpecialPresetTreeView;
+namespace game
+{
+	struct SpecialPreset;
+}
 
 class SpecialPresetDialog : public SDialog
 {

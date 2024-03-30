@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -217,7 +217,7 @@ wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const wxString& 
 // Returns a horizontal box sizer containing [widgets].
 // [widgets] can contain a combination of wxWindow and wxSizer objects
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
+wxSizer* wxutil::layoutHorizontally(const vector<wxObject*>& widgets, int expand_col)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 
@@ -231,7 +231,7 @@ wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 		{
 			hbox->Add(
 				dynamic_cast<wxWindow*>(widget),
-				expand_col == (int)a ? 1 : 0,
+				expand_col == static_cast<int>(a) ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
 				ui::pad());
 		}
@@ -241,7 +241,7 @@ wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 		{
 			hbox->Add(
 				dynamic_cast<wxSizer*>(widget),
-				expand_col == (int)a ? 1 : 0,
+				expand_col == static_cast<int>(a) ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
 				ui::pad());
 		}
@@ -263,7 +263,7 @@ void wxutil::layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSiz
 // Returns a vertical box sizer containing [widgets].
 // [widgets] can contain a combination of wxWindow and wxSizer objects
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
+wxSizer* wxutil::layoutVertically(const vector<wxObject*>& widgets, int expand_row)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 
@@ -277,7 +277,7 @@ wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
 		{
 			vbox->Add(
 				dynamic_cast<wxWindow*>(widget),
-				expand_row == (int)a ? 1 : 0,
+				expand_row == static_cast<int>(a) ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
 				ui::pad());
 		}
@@ -287,7 +287,7 @@ wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
 		{
 			vbox->Add(
 				dynamic_cast<wxSizer*>(widget),
-				expand_row == (int)a ? 1 : 0,
+				expand_row == static_cast<int>(a) ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
 				ui::pad());
 		}
@@ -306,9 +306,41 @@ void wxutil::layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizer
 }
 
 // -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a border at [direction] of
+// [size].
+// If [size] is negative, uses the default padding size (ui::pad()).
+// Equivalent to wxSizerFlags([proportion]).Border([direction], [size])
+// -----------------------------------------------------------------------------
+wxSizerFlags wxutil::sfWithBorder(int proportion, int direction, int size)
+{
+	if (size < 0)
+		size = ui::pad();
+
+	return wxSizerFlags(proportion).Border(direction, size);
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a large border at [direction].
+// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padLarge())
+// -----------------------------------------------------------------------------
+wxSizerFlags wxutil::sfWithLargeBorder(int proportion, int direction)
+{
+	return wxSizerFlags(proportion).Border(direction, ui::padLarge());
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a small border at [direction].
+// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padMin())
+// -----------------------------------------------------------------------------
+wxSizerFlags wxutil::sfWithMinBorder(int proportion, int direction)
+{
+	return wxSizerFlags(proportion).Border(direction, ui::padMin());
+}
+
+// -----------------------------------------------------------------------------
 // Returns a wxArrayString containing the (wx) strings in [vector]
 // -----------------------------------------------------------------------------
-wxArrayString wxutil::arrayString(vector<wxString> vector)
+wxArrayString wxutil::arrayString(const vector<wxString>& vector)
 {
 	return wxArrayString{ vector.size(), vector.data() };
 }

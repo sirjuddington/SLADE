@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,8 +33,15 @@
 #include "MapSector.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/Polygon2D.h"
+#include "MapLine.h"
+#include "MapSide.h"
+#include "MapVertex.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
+#include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
 
 using namespace slade;
@@ -72,7 +79,9 @@ MapSector::MapSector(
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
 MapSector::MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* udmf_def) :
-	MapObject(Type::Sector), floor_{ f_tex }, ceiling_{ c_tex }
+	MapObject(Type::Sector),
+	floor_{ f_tex },
+	ceiling_{ c_tex }
 {
 	// Set UDMF defaults
 	light_ = 160;
@@ -101,6 +110,11 @@ MapSector::MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* 
 			properties_[prop->name()] = prop->value();
 	}
 }
+
+// -----------------------------------------------------------------------------
+// MapSector class destructor
+// -----------------------------------------------------------------------------
+MapSector::~MapSector() = default;
 
 // -----------------------------------------------------------------------------
 // Copies another map object [s]
@@ -213,7 +227,7 @@ void MapSector::setFloatProperty(string_view key, double value)
 				&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
 			|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
 				&& (key == "rotationfloor" || key == "rotationceiling")))
-			polygon_.setTexture(0); // Clear texture to force update
+			polygon_->setTexture(0); // Clear texture to force update
 	}
 
 	MapObject::setFloatProperty(key, value);
@@ -371,7 +385,7 @@ void MapSector::updateBBox()
 		bbox_.extend(line->v2()->xPos(), line->v2()->yPos());
 	}
 
-	text_point_.set(0, 0);
+	text_point_ = { 0, 0 };
 	setGeometryUpdated();
 }
 
@@ -392,19 +406,22 @@ BBox MapSector::boundingBox()
 // -----------------------------------------------------------------------------
 Polygon2D* MapSector::polygon()
 {
+	if (!polygon_)
+		polygon_ = std::make_unique<Polygon2D>();
+
 	if (poly_needsupdate_)
 	{
-		polygon_.openSector(this);
+		polygon_->openSector(this);
 		poly_needsupdate_ = false;
 	}
 
-	return &polygon_;
+	return polygon_.get();
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the given [point] is inside the sector
 // -----------------------------------------------------------------------------
-bool MapSector::containsPoint(Vec2d point)
+bool MapSector::containsPoint(const Vec2d& point)
 {
 	// Check with bbox first
 	if (!boundingBox().contains(point))
@@ -432,7 +449,7 @@ bool MapSector::containsPoint(Vec2d point)
 		return false;
 
 	// Check the side of the nearest line
-	double side = math::lineSide(point, nline->seg());
+	double side = geometry::lineSide(point, nline->seg());
 	if (side >= 0 && nline->frontSector() == this)
 		return true;
 	else if (side < 0 && nline->backSector() == this)
@@ -444,7 +461,7 @@ bool MapSector::containsPoint(Vec2d point)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the closest line in the sector
 // -----------------------------------------------------------------------------
-double MapSector::distanceTo(Vec2d point, double maxdist)
+double MapSector::distanceTo(const Vec2d& point, double maxdist)
 {
 	// Init
 	if (maxdist < 0)
@@ -454,16 +471,16 @@ double MapSector::distanceTo(Vec2d point, double maxdist)
 	if (!bbox_.isValid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist     = math::distanceToLine(point, bbox_.leftSide());
+	double dist     = geometry::distanceToLine(point, bbox_.leftSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = math::distanceToLine(point, bbox_.topSide());
+	dist = geometry::distanceToLine(point, bbox_.topSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = math::distanceToLine(point, bbox_.rightSide());
+	dist = geometry::distanceToLine(point, bbox_.rightSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = math::distanceToLine(point, bbox_.bottomSide());
+	dist = geometry::distanceToLine(point, bbox_.bottomSide());
 	if (dist < min_dist)
 		min_dist = dist;
 
@@ -677,7 +694,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 				ll = 0;
 
 			// Calculate and return the colour
-			float lightmult = (float)ll / 255.0f;
+			float lightmult = static_cast<float>(ll) / 255.0f;
 			return col.ampf(lightmult, lightmult, lightmult, 1.0f);
 		}
 	}
@@ -735,7 +752,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 			ll = 0;
 
 		// Calculate and return the colour
-		float lightmult = (float)ll / 255.0f;
+		float lightmult = static_cast<float>(ll) / 255.0f;
 		return { static_cast<uint8_t>(wxcol.Blue() * lightmult),
 				 static_cast<uint8_t>(wxcol.Green() * lightmult),
 				 static_cast<uint8_t>(wxcol.Red() * lightmult),
@@ -809,7 +826,7 @@ void MapSector::findTextPoint()
 	for (auto& connected_side : connected_sides_)
 	{
 		auto   l    = connected_side->parentLine();
-		double dist = math::distanceToLineFast(text_point_, l->seg());
+		double dist = geometry::distanceToLineFast(text_point_, l->seg());
 
 		if (dist < min_dist)
 		{
@@ -823,7 +840,7 @@ void MapSector::findTextPoint()
 	auto r_o = mid_side_parent->getPoint(Point::Mid);
 	auto r_d = mid_side_parent->frontVector();
 	if (mid_side == mid_side_parent->s1())
-		r_d.set(-r_d.x, -r_d.y);
+		r_d = { -r_d.x, -r_d.y };
 
 	// Find nearest intersecting line
 	min_dist = 9999999999.0;
@@ -833,14 +850,14 @@ void MapSector::findTextPoint()
 			continue;
 
 		auto   line = connected_side->parentLine();
-		double dist = math::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
+		double dist = geometry::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
 
 		if (dist > 0 && dist < min_dist)
 			min_dist = dist;
 	}
 
 	// Set text point to halfway between the two lines
-	text_point_.set(r_o.x + (r_d.x * min_dist * 0.5), r_o.y + (r_d.y * min_dist * 0.5));
+	text_point_ = { r_o.x + (r_d.x * min_dist * 0.5), r_o.y + (r_d.y * min_dist * 0.5) };
 }
 
 // -----------------------------------------------------------------------------
@@ -1027,4 +1044,15 @@ void MapSector::writeUDMF(string& def)
 	}
 
 	def += "}\n\n";
+}
+
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapSector::operator Debuggable() const
+{
+	if (!this)
+		return { "<sector NULL>" };
+
+	return { fmt::format("<sector {}>", index_) };
 }

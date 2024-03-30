@@ -1,11 +1,7 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
-#include "TextEditor/Lexer.h"
-#include "TextEditor/TextLanguage.h"
-#include "TextEditor/TextStyle.h"
-#include <utility>
 
+class JumpToCalculator;
 class wxButton;
 class wxCheckBox;
 class wxTextCtrl;
@@ -16,35 +12,19 @@ wxDECLARE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 
 namespace slade
 {
+class StyleSet;
+class TextStyle;
+class TLFunction;
+class TextLanguage;
+class Lexer;
 class FindReplacePanel;
 class SCallTip;
-
-class JumpToCalculator : public wxThread
-{
-public:
-	JumpToCalculator(wxEvtHandler* handler, string_view text, vector<string> block_names, vector<string> ignore) :
-		handler_(handler),
-		text_(text),
-		block_names_(std::move(block_names)),
-		ignore_(std::move(ignore))
-	{
-	}
-	virtual ~JumpToCalculator() = default;
-
-	ExitCode Entry() override;
-
-private:
-	wxEvtHandler*  handler_;
-	string         text_;
-	vector<string> block_names_;
-	vector<string> ignore_;
-};
 
 class TextEditorCtrl : public wxStyledTextCtrl
 {
 public:
 	TextEditorCtrl(wxWindow* parent, int id);
-	~TextEditorCtrl();
+	~TextEditorCtrl() override;
 
 	TextLanguage* language() const { return language_; }
 	long          lastModified() const { return last_modified_; }
@@ -52,9 +32,9 @@ public:
 	bool setLanguage(TextLanguage* lang);
 
 	void setup();
-	void setupFoldMargin(TextStyle* margin_style = nullptr);
+	void setupFoldMargin(const TextStyle* margin_style = nullptr);
 	bool applyStyleSet(StyleSet* style);
-	bool loadEntry(ArchiveEntry* entry);
+	bool loadEntry(const ArchiveEntry* entry);
 	void getRawText(MemChunk& mc) const;
 
 	// Misc

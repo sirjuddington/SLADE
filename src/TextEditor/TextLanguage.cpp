@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,9 @@
 #include "Main.h"
 #include "TextLanguage.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/ZScript.h"
 #include "Utility/Parser.h"
@@ -130,7 +133,7 @@ void TLFunction::addContext(
 			tz.adv();
 		}
 
-		ctx.params.push_back({});
+		ctx.params.emplace_back();
 		ctx.params.back().parse(arg_tokens);
 		arg_tokens.clear();
 
@@ -463,6 +466,7 @@ vector<string> TextLanguage::wordListSorted(WordType type, bool include_custom) 
 {
 	// Get list
 	vector<string> list;
+	list.reserve(word_lists_[type].list.size());
 	for (auto& word : word_lists_[type].list)
 		list.push_back(word);
 
@@ -483,6 +487,7 @@ vector<string> TextLanguage::functionsSorted() const
 {
 	// Get list
 	vector<string> list;
+	list.reserve(functions_.size());
 	for (auto& func : functions_)
 		list.push_back(func.name());
 
@@ -974,6 +979,7 @@ vector<string> TextLanguage::languageNames()
 {
 	vector<string> ret;
 
+	ret.reserve(text_languages.size());
 	for (auto& text_language : text_languages)
 		ret.push_back(text_language->name_);
 

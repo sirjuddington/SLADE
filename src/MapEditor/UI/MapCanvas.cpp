@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -33,15 +33,25 @@
 #include "Main.h"
 #include "MapCanvas.h"
 #include "App.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/Polygon2D.h"
+#include "MapEditor/Edit/Input.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/Renderer/MapRenderer3D.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/SectorBuilder.h"
-#include "OpenGL/Drawing.h"
-#include "UI/WxUtils.h"
-#include "Utility/MathStuff.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/SLADEMap.h"
+#include <SFML/System/Clock.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Mouse.hpp>
 
 using namespace slade;
-
-using mapeditor::Mode;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -64,7 +74,8 @@ CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	OGLCanvas{ parent, id, false },
-	context_{ context }
+	context_{ context },
+	sf_clock_{ new sf::Clock }
 {
 	// Init variables
 	context_->setCanvas(this);
@@ -118,7 +129,8 @@ void MapCanvas::mouseToCenter()
 {
 	auto rect   = GetScreenRect();
 	mouse_warp_ = true;
-	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width * 0.5), rect.y + int(rect.height * 0.5)));
+	sf::Mouse::setPosition(
+		sf::Vector2i(rect.x + static_cast<int>(rect.width * 0.5), rect.y + static_cast<int>(rect.height * 0.5)));
 }
 
 // -----------------------------------------------------------------------------
@@ -158,9 +170,9 @@ void MapCanvas::mouseLook3d()
 		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
 			// Get relative mouse movement (scale with dpi on macOS and Linux)
-			const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux); 
-			const double scale = useScaleFactor ? GetContentScaleFactor() : 1.;
-			const double threshold = scale - 1.0;
+			const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux);
+			const double scale          = useScaleFactor ? GetContentScaleFactor() : 1.;
+			const double threshold      = scale - 1.0;
 
 			wxRealPoint mouse_pos = wxGetMousePosition();
 			mouse_pos.x *= scale;
@@ -238,6 +250,8 @@ void MapCanvas::onKeyBindPress(string_view name)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the canvas is resized
@@ -266,7 +280,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F6)
 		{
 			Polygon2D poly;
-			sf::Clock clock;
+			// sf::Clock clock;
 			log::info(1, "Generating polygons...");
 			for (unsigned a = 0; a < context_->map().nSectors(); a++)
 			{
@@ -285,7 +299,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 				SectorBuilder sbuilder;
 
 				// Determine line side
-				double side = math::lineSide(context_->input().mousePosMap(), line->seg());
+				double side = geometry::lineSide(context_->input().mousePosMap(), line->seg());
 				if (side >= 0)
 					sbuilder.traceSector(&(context_->map()), line, true);
 				else
@@ -481,11 +495,11 @@ void MapCanvas::onIdle(wxIdleEvent& e)
 	mouseLook3d();
 
 	// Get time since last redraw
-	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
+	long frametime = (sf_clock_->getElapsedTime().asMilliseconds()) - last_time_;
 
 	if (context_->update(frametime))
 	{
-		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
+		last_time_ = (sf_clock_->getElapsedTime().asMilliseconds());
 		Refresh();
 	}
 }
@@ -499,11 +513,11 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 	mouseLook3d();
 
 	// Get time since last redraw
-	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
+	long frametime = (sf_clock_->getElapsedTime().asMilliseconds()) - last_time_;
 
 	if (context_->update(frametime))
 	{
-		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
+		last_time_ = (sf_clock_->getElapsedTime().asMilliseconds());
 		Refresh();
 	}
 }

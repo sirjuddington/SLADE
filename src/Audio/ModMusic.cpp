@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -100,7 +100,7 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 	close();
 
 	// Load module file
-	dumb_module_ = dumb_read_any(dumbfile_open_memory((const char*)data, size), 0, 0);
+	dumb_module_ = dumb_read_any(dumbfile_open_memory(reinterpret_cast<const char*>(data), size), 0, 0);
 	if (dumb_module_ != nullptr)
 	{
 		initialize(2, 44100);
@@ -119,7 +119,7 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 // -----------------------------------------------------------------------------
 sf::Time ModMusic::duration() const
 {
-	return sf::seconds(static_cast<float>(duh_get_length(dumb_module_) / 65536.f));
+	return sf::seconds(static_cast<float>(duh_get_length(dumb_module_)) / 65536.f);
 }
 
 // -----------------------------------------------------------------------------

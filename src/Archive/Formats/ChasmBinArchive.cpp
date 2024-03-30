@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ChasmBinArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -139,7 +142,7 @@ bool ChasmBinArchive::open(const MemChunk& mc)
 		if (entry->size() > 0)
 			entry->importMemChunk(mc, offset, size);
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 
 		rootDir()->addEntry(entry);
 	}
@@ -165,7 +168,7 @@ bool ChasmBinArchive::open(const MemChunk& mc)
 		fixBrokenWave(entry);
 
 		// Set entry to unchanged
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 	}
 
 	// Setup variables
@@ -195,8 +198,7 @@ bool ChasmBinArchive::write(MemChunk& mc)
 
 	if (num_entries > MAX_ENTRY_COUNT)
 	{
-		log::error(
-			"ChasmBinArchive::write: Bin archive can contain no more than {} entries", (unsigned)MAX_ENTRY_COUNT);
+		log::error("ChasmBinArchive::write: Bin archive can contain no more than {} entries", MAX_ENTRY_COUNT);
 		global::error = "Maximum number of entries exceeded for Chasm: The Rift bin archive";
 		return false;
 	}
@@ -220,7 +222,7 @@ bool ChasmBinArchive::write(MemChunk& mc)
 		const auto entry = entries[i];
 
 		// Update entry
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 		entry->setOffsetOnDisk(offset);
 		entry->setSizeOnDisk(entry->size());
 

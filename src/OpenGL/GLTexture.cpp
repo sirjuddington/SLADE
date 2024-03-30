@@ -31,8 +31,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GLTexture.h"
+#include "Geometry/Rect.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL.h"
+#include "Utility/ColRGBA.h"
 
 using namespace slade;
 
@@ -271,7 +273,7 @@ bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, uns
 		glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 
-	tex_info.size = { (int)width, (int)height };
+	tex_info.size = { static_cast<int>(width), static_cast<int>(height) };
 
 	return true;
 }
@@ -279,7 +281,7 @@ bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, uns
 // -----------------------------------------------------------------------------
 // Loads [image] to the OpenGL texture [id], using [pal] if necessary
 // -----------------------------------------------------------------------------
-bool gl::Texture::loadImage(unsigned id, const SImage& image, Palette* pal)
+bool gl::Texture::loadImage(unsigned id, const SImage& image, const Palette* pal)
 {
 	// Check image dimensions
 	if (validTexDimension(image.width()) && validTexDimension(image.height()))

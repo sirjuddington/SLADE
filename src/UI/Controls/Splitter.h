@@ -15,9 +15,9 @@ public:
 	int getSashSize() const { return GetSashSize() * 2; }
 
 	// wxSplitterWindow Overrides
-	bool SashHitTest(int x, int y) override;
-	void SizeWindows() override;
-	void DrawSash(wxDC& dc) override;
+	bool   SashHitTest(int x, int y) override;
+	void   SizeWindows() override;
+	void   DrawSash(wxDC& dc) override;
 	wxSize DoGetBestSize() const override;
 };
 } // namespace slade::ui

@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class ArchiveEntry;
-
 namespace conversion
 {
 	bool wavToDoomSnd(const MemChunk& in, MemChunk& out);

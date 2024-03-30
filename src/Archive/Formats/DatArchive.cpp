@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DatArchive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
@@ -132,7 +134,7 @@ bool DatArchive::open(const MemChunk& mc)
 			{
 				++len;
 			}
-			myname.assign((const char*)mcdata + start, len);
+			myname.assign(reinterpret_cast<const char*>(mcdata) + start, len);
 			lastname  = myname;
 			namecount = 0;
 		}
@@ -150,10 +152,10 @@ bool DatArchive::open(const MemChunk& mc)
 		if (size > 0)
 			nlump->importMemChunk(mc, offset, size);
 
-		nlump->setState(ArchiveEntry::State::Unmodified);
+		nlump->setState(EntryState::Unmodified);
 
 		if (flags & 1)
-			nlump->setEncryption(ArchiveEntry::Encryption::SCRLE0);
+			nlump->setEncryption(EntryEncryption::SCRLE0);
 
 		// Check for markers
 		if (nlump->name() == "startflats")
@@ -199,15 +201,15 @@ string DatArchive::detectNamespace(ArchiveEntry* entry)
 string DatArchive::detectNamespace(unsigned index, ArchiveDir* dir)
 {
 	// Textures
-	if (index > (unsigned)walls_[0] && index < (unsigned)walls_[1])
+	if (index > static_cast<unsigned>(walls_[0]) && index < static_cast<unsigned>(walls_[1]))
 		return "textures";
 
 	// Flats
-	if (index > (unsigned)flats_[0] && index < (unsigned)flats_[1])
+	if (index > static_cast<unsigned>(flats_[0]) && index < static_cast<unsigned>(flats_[1]))
 		return "flats";
 
 	// Sprites
-	if (index > (unsigned)sprites_[0] && index < (unsigned)sprites_[1])
+	if (index > static_cast<unsigned>(sprites_[0]) && index < static_cast<unsigned>(sprites_[1]))
 		return "sprites";
 
 	return "global";
@@ -346,9 +348,7 @@ bool DatArchive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 		return false;
 
 	// Do default rename
-	bool ok = Archive::renameEntry(entry, name, force);
-
-	if (ok)
+	if (Archive::renameEntry(entry, name, force))
 	{
 		// Update namespaces if necessary
 		if (isNamespaceEntry(entry))
@@ -370,9 +370,7 @@ bool DatArchive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 		return false;
 
 	// Do default swap (force root dir)
-	bool ok = Archive::swapEntries(entry1, entry2);
-
-	if (ok)
+	if (Archive::swapEntries(entry1, entry2))
 	{
 		// Update namespaces if needed
 		if (isNamespaceEntry(entry1) || isNamespaceEntry(entry2))
@@ -478,14 +476,14 @@ bool DatArchive::write(MemChunk& mc)
 		uint32_t offset  = wxINT32_SWAP_ON_BE(entry->offsetOnDisk());
 		uint32_t size    = wxINT32_SWAP_ON_BE(entry->size());
 		uint16_t nameofs = wxINT16_SWAP_ON_BE(nameoffsets[l]);
-		uint16_t flags   = wxINT16_SWAP_ON_BE((entry->encryption() == ArchiveEntry::Encryption::SCRLE0) ? 1 : 0);
+		uint16_t flags   = wxINT16_SWAP_ON_BE((entry->encryption() == EntryEncryption::SCRLE0) ? 1 : 0);
 
 		mc.write(&offset, 4);  // Offset
 		mc.write(&size, 4);    // Size
 		mc.write(&nameofs, 2); // Name offset
 		mc.write(&flags, 2);   // Flags
 
-		entry->setState(ArchiveEntry::State::Unmodified);
+		entry->setState(EntryState::Unmodified);
 	}
 
 	// Write the names

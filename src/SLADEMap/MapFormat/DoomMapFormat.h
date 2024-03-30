@@ -60,7 +60,7 @@ public:
 		short flags;
 	};
 
-	bool readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) override;
+	bool readMap(MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) override;
 	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 

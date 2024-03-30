@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -79,26 +79,29 @@ void SZoomSlider::setup()
 
 	// Layout
 	SetSizer(new wxBoxSizer(wxHORIZONTAL));
-	GetSizer()->Add(wxutil::createLabelHBox(this, "Zoom:", slider_zoom_), 1, wxEXPAND | wxRIGHT, ui::pad());
-	GetSizer()->Add(label_zoom_amount_, 0, wxALIGN_CENTER_VERTICAL);
+	GetSizer()->Add(wxutil::createLabelHBox(this, "Zoom:", slider_zoom_), wxutil::sfWithBorder(1, wxRIGHT).Expand());
+	GetSizer()->Add(label_zoom_amount_, wxSizerFlags().CenterVertical());
 
 	// Slider change event
-	slider_zoom_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
-		// Update zoom label
-		label_zoom_amount_->SetLabel(wxString::Format("%d%%", zoomPercent()));
+	slider_zoom_->Bind(
+		wxEVT_SLIDER,
+		[&](wxCommandEvent&)
+		{
+			// Update zoom label
+			label_zoom_amount_->SetLabel(wxString::Format("%d%%", zoomPercent()));
 
-		// Zoom gfx/texture canvas and update
-		if (linked_gfx_canvas_)
-		{
-			linked_gfx_canvas_->setScale(zoomFactor());
-			linked_gfx_canvas_->Refresh();
-		}
-		if (linked_texture_canvas_)
-		{
-			linked_texture_canvas_->setScale(zoomFactor());
-			linked_texture_canvas_->redraw(false);
-		}
-	});
+			// Zoom gfx/texture canvas and update
+			if (linked_gfx_canvas_)
+			{
+				linked_gfx_canvas_->setScale(zoomFactor());
+				linked_gfx_canvas_->Refresh();
+			}
+			if (linked_texture_canvas_)
+			{
+				linked_texture_canvas_->setScale(zoomFactor());
+				linked_texture_canvas_->redraw(false);
+			}
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -132,5 +135,5 @@ void SZoomSlider::setZoom(int percent) const
 // -----------------------------------------------------------------------------
 void SZoomSlider::setZoom(double factor) const
 {
-	setZoom(int(factor * 100));
+	setZoom(static_cast<int>(factor * 100));
 }

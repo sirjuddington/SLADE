@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PaletteCanvas.h"
+#include "Graphics/Palette/Palette.h"
+#include "OpenGL/OpenGL.h"
+#include "Utility/ColRGBA.h"
 
 using namespace slade;
 
@@ -100,7 +103,7 @@ void PaletteCanvas::draw()
 		for (int x = 0; x < cols; x++)
 		{
 			// Set colour
-			gl::setColour(palette_.colour(c), gl::Blend::Normal);
+			gl::setColour(palette_->colour(c), gl::Blend::Normal);
 
 			// Draw square
 			glBegin(GL_QUADS);
@@ -184,7 +187,7 @@ void PaletteCanvas::draw()
 ColRGBA PaletteCanvas::selectedColour() const
 {
 	if (sel_begin_ >= 0)
-		return palette_.colour(sel_begin_);
+		return palette_->colour(sel_begin_);
 	else
 		return { 0, 0, 0, 0 };
 }
@@ -208,6 +211,7 @@ void PaletteCanvas::setSelection(int begin, int end)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the palette canvas is left clicked
@@ -226,11 +230,11 @@ void PaletteCanvas::onMouseLeftDown(wxMouseEvent& e)
 			cols = 32;
 		}
 		const wxSize contentSize = GetSize() * GetContentScaleFactor();
-		int x_size = contentSize.x / cols;
-		int y_size = contentSize.y / rows;
-		int size   = std::min<int>(x_size, y_size);
-		int x      = ( e.GetX() * GetContentScaleFactor() ) / size;
-		int y      = ( e.GetY() * GetContentScaleFactor() ) / size;
+		int          x_size      = contentSize.x / cols;
+		int          y_size      = contentSize.y / rows;
+		int          size        = std::min<int>(x_size, y_size);
+		int          x           = (e.GetX() * GetContentScaleFactor()) / size;
+		int          y           = (e.GetY() * GetContentScaleFactor()) / size;
 
 		// If it was within the palette box, select the cell
 		if (x >= 0 && x < cols && y >= 0 && y < rows)
@@ -272,11 +276,11 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 			cols = 32;
 		}
 		const wxSize contentSize = GetSize() * GetContentScaleFactor();
-		int x_size = contentSize.x / cols;
-		int y_size = contentSize.y / rows;
-		int size   = std::min<int>(x_size, y_size);
-		int x      = ( e.GetX() * GetContentScaleFactor() ) / size;
-		int y      = ( e.GetY() * GetContentScaleFactor() ) / size;
+		int          x_size      = contentSize.x / cols;
+		int          y_size      = contentSize.y / rows;
+		int          size        = std::min<int>(x_size, y_size);
+		int          x           = (e.GetX() * GetContentScaleFactor()) / size;
+		int          y           = (e.GetY() * GetContentScaleFactor()) / size;
 
 		// Set selection accordingly
 		if (x >= 0 && x < cols && y >= 0 && y < rows)

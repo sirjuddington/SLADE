@@ -1,11 +1,12 @@
 #pragma once
 
-#include "ArchiveDir.h"
-#include "ArchiveEntry.h"
-#include "General/Defs.h"
+#include "Utility/StringPair.h"
 
 namespace slade
 {
+class EntryType;
+struct MapDesc;
+
 struct ArchiveFormat
 {
 	string             id;
@@ -22,29 +23,29 @@ struct ArchiveFormat
 	ArchiveFormat(string_view id) : id{ id }, name{ id } {}
 };
 
+struct ArchiveSearchOptions
+{
+	string      match_name;      // Ignore if empty
+	EntryType*  match_type;      // Ignore if NULL
+	string      match_namespace; // Ignore if empty
+	ArchiveDir* dir;             // Root if NULL
+	bool        ignore_ext;      // Defaults true
+	bool        search_subdirs;  // Defaults false
+
+	ArchiveSearchOptions()
+	{
+		match_name      = "";
+		match_type      = nullptr;
+		match_namespace = "";
+		dir             = nullptr;
+		ignore_ext      = true;
+		search_subdirs  = false;
+	}
+};
+
 class Archive
 {
 public:
-	struct MapDesc
-	{
-		string                 name;
-		weak_ptr<ArchiveEntry> head;
-		weak_ptr<ArchiveEntry> end;     // The last entry of the map data
-		MapFormat              format;  // See MapTypes enum
-		bool                   archive; // True if head is an archive (for maps in zips)
-
-		vector<ArchiveEntry*> unk; // Unknown map lumps (must be preserved for UDMF compliance)
-
-		MapDesc()
-		{
-			archive = false;
-			format  = MapFormat::Unknown;
-		}
-
-		vector<ArchiveEntry*> entries(const Archive& parent, bool include_head = false) const;
-		void                  updateMapFormatHints() const;
-	};
-
 	static bool save_backup;
 
 	Archive(string_view format = "");
@@ -53,7 +54,7 @@ public:
 	string                 formatId() const { return format_; }
 	string                 filename(bool full = true) const;
 	ArchiveEntry*          parentEntry() const { return parent_.lock().get(); }
-	Archive*               parentArchive() const { return parent_.lock() ? parent_.lock()->parent() : nullptr; }
+	Archive*               parentArchive() const;
 	shared_ptr<ArchiveDir> rootDir() const { return dir_root_; }
 	bool                   isModified() const { return modified_; }
 	bool                   isOnDisk() const { return on_disk_; }
@@ -92,10 +93,10 @@ public:
 	virtual unsigned numEntries();
 	virtual void     close();
 	void             entryStateChanged(ArchiveEntry* entry);
-	void             putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr) const;
-	void             putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir* start = nullptr) const;
-	bool             canSave() const { return parent_.lock() || on_disk_; }
-	virtual bool     paste(ArchiveDir* tree, unsigned position = 0xFFFFFFFF, shared_ptr<ArchiveDir> base = nullptr);
+	void             putEntryTreeAsList(vector<ArchiveEntry*>& list, const ArchiveDir* start = nullptr) const;
+	void         putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, const ArchiveDir* start = nullptr) const;
+	bool         canSave() const { return parent_.lock() || on_disk_; }
+	virtual bool paste(ArchiveDir* tree, unsigned position = 0xFFFFFFFF, shared_ptr<ArchiveDir> base = nullptr);
 	virtual bool importDir(string_view directory, bool ignore_hidden = false, shared_ptr<ArchiveDir> base = nullptr);
 	virtual bool hasFlatHack() { return false; }
 
@@ -131,34 +132,15 @@ public:
 	virtual bool revertEntry(ArchiveEntry* entry);
 
 	// Detection
-	virtual MapDesc         mapDesc(ArchiveEntry* maphead) { return {}; }
-	virtual vector<MapDesc> detectMaps() { return {}; }
+	virtual MapDesc         mapDesc(ArchiveEntry* maphead);
+	virtual vector<MapDesc> detectMaps();
 	virtual string          detectNamespace(ArchiveEntry* entry);
 	virtual string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);
 
 	// Search
-	struct SearchOptions
-	{
-		string      match_name;      // Ignore if empty
-		EntryType*  match_type;      // Ignore if NULL
-		string      match_namespace; // Ignore if empty
-		ArchiveDir* dir;             // Root if NULL
-		bool        ignore_ext;      // Defaults true
-		bool        search_subdirs;  // Defaults false
-
-		SearchOptions()
-		{
-			match_name      = "";
-			match_type      = nullptr;
-			match_namespace = "";
-			dir             = nullptr;
-			ignore_ext      = true;
-			search_subdirs  = false;
-		}
-	};
-	virtual ArchiveEntry*         findFirst(SearchOptions& options);
-	virtual ArchiveEntry*         findLast(SearchOptions& options);
-	virtual vector<ArchiveEntry*> findAll(SearchOptions& options);
+	virtual ArchiveEntry*         findFirst(ArchiveSearchOptions& options);
+	virtual ArchiveEntry*         findLast(ArchiveSearchOptions& options);
+	virtual vector<ArchiveEntry*> findAll(ArchiveSearchOptions& options);
 	virtual vector<ArchiveEntry*> findModifiedEntries(ArchiveDir* dir = nullptr);
 
 	// Signals
@@ -225,7 +207,7 @@ public:
 	}
 
 	// Misc
-	unsigned numEntries() override { return rootDir()->numEntries(); }
+	unsigned numEntries() override;
 	void     getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr) const
 	{
 		return Archive::putEntryTreeAsList(list, nullptr);
