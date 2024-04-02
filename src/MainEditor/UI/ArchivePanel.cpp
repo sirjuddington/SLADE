@@ -34,11 +34,12 @@
 #include "Main.h"
 #include "ArchivePanel.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
-#include "Archive/Formats/ZipArchive.h"
 #include "Archive/MapDesc.h"
 #include "ArchiveManagerPanel.h"
 #include "EntryPanel/ANSIEntryPanel.h"
@@ -475,7 +476,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	tbg_entry->addActionButton("arch_entry_export");
 	tbg_entry->setAllButtonsEnabled(false);
 	toolbar_elist_->addGroup(tbg_entry);
-	if (archive->formatId() != "folder")
+	if (archive->formatId() != ArchiveFormat::Dir)
 	{
 		auto* tbg_moving = new SToolBarGroup(toolbar_elist_, "_Moving");
 		tbg_moving->addActionButton("arch_entry_moveup");
@@ -975,7 +976,7 @@ bool ArchivePanel::buildArchive() const
 	if (!archive)
 		return false;
 
-	if (archive->formatId() != "folder")
+	if (archive->formatId() != ArchiveFormat::Dir)
 	{
 		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
 		return false;
@@ -1703,7 +1704,7 @@ bool ArchivePanel::swanConvert() const
 			undo_manager_->beginRecord(fmt::format("Create {}", wadnames[e]));
 
 			auto output = archive->addNewEntry(
-				(archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, lastEntry->parentDir());
+				(archive->formatId() == ArchiveFormat::Wad ? wadnames[e] : zipnames[e]), index, lastEntry->parentDir());
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
@@ -1751,8 +1752,8 @@ bool ArchivePanel::basConvert(bool animdefs)
 
 	// Create new entry
 	auto output = archive->addNewEntry(
-		(animdefs ? (archive->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt") :
-					(archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
+		(animdefs ? (archive->formatId() == ArchiveFormat::Wad ? "ANIMDEFS" : "animdefs.txt") :
+					(archive->formatId() == ArchiveFormat::Wad ? "SWANTBLS" : "swantbls.dat")),
 		index,
 		lastEntry->parentDir());
 
@@ -2607,7 +2608,7 @@ bool ArchivePanel::canMoveEntries() const
 
 	// Can't move in directory archives
 	if (auto archive = archive_.lock())
-		if (archive->formatId() == "folder")
+		if (archive->formatId() == ArchiveFormat::Dir)
 			return false;
 
 	// Can't move if no entries selected (ie. only dirs)

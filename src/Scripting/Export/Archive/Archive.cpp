@@ -33,7 +33,6 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/Formats/All.h"
 #include "Utility/StringUtils.h"
 #include "thirdparty/sol/sol.hpp"
 
@@ -148,33 +147,5 @@ void registerArchive(sol::state& lua)
 	lua_archive.set_function("FindFirst", &archiveFindFirst);
 	lua_archive.set_function("FindLast", &archiveFindLast);
 	lua_archive.set_function("FindAll", &archiveFindAll);
-
-	// Register all subclasses
-	// (perhaps it'd be a good idea to make Archive not abstract and handle
-	//  the format-specific stuff somewhere else, rather than in subclasses)
-#define REGISTER_ARCHIVE(type) lua.new_usertype<type>(#type, sol::base_classes, sol::bases<Archive>())
-	REGISTER_ARCHIVE(WadArchive);
-	REGISTER_ARCHIVE(ZipArchive);
-	REGISTER_ARCHIVE(LibArchive);
-	REGISTER_ARCHIVE(DatArchive);
-	REGISTER_ARCHIVE(ResArchive);
-	REGISTER_ARCHIVE(PakArchive);
-	REGISTER_ARCHIVE(BSPArchive);
-	REGISTER_ARCHIVE(GrpArchive);
-	REGISTER_ARCHIVE(RffArchive);
-	REGISTER_ARCHIVE(GobArchive);
-	REGISTER_ARCHIVE(LfdArchive);
-	REGISTER_ARCHIVE(HogArchive);
-	REGISTER_ARCHIVE(ADatArchive);
-	REGISTER_ARCHIVE(Wad2Archive);
-	REGISTER_ARCHIVE(WadJArchive);
-	REGISTER_ARCHIVE(WolfArchive);
-	REGISTER_ARCHIVE(GZipArchive);
-	REGISTER_ARCHIVE(BZip2Archive);
-	REGISTER_ARCHIVE(TarArchive);
-	REGISTER_ARCHIVE(DiskArchive);
-	REGISTER_ARCHIVE(PodArchive);
-	REGISTER_ARCHIVE(ChasmBinArchive);
-#undef REGISTER_ARCHIVE
 }
 } // namespace slade::lua

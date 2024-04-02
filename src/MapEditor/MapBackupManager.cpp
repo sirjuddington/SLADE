@@ -32,9 +32,10 @@
 #include "Main.h"
 #include "MapBackupManager.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/Formats/ZipArchive.h"
+#include "Archive/ArchiveFormat.h"
 #include "General/Misc.h"
 #include "MapEditor.h"
 #include "UI/MapBackupPanel.h"
@@ -81,7 +82,7 @@ bool MapBackupManager::writeBackup(
 		wxMkdir(backup_dir);
 
 	// Open or create backup zip
-	shared_ptr<Archive> backup = std::make_shared<ZipArchive>();
+	shared_ptr<Archive> backup = std::make_shared<Archive>(ArchiveFormat::Zip);
 	string              fname{ archive_name };
 	std::replace(fname.begin(), fname.end(), '.', '_');
 	auto backup_file = fmt::format("{}/{}_backup.zip", backup_dir, fname);

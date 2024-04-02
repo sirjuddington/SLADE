@@ -3,7 +3,6 @@
 namespace slade
 {
 class MapPreviewCanvas;
-class ZipArchive;
 class ListView;
 
 class MapBackupPanel : public wxPanel
@@ -18,10 +17,10 @@ public:
 	void updateMapPreview();
 
 private:
-	MapPreviewCanvas*      canvas_map_   = nullptr;
-	ListView*              list_backups_ = nullptr;
-	unique_ptr<ZipArchive> archive_backups_;
-	unique_ptr<Archive>    archive_mapdata_;
-	ArchiveDir*            dir_current_ = nullptr;
+	MapPreviewCanvas*   canvas_map_   = nullptr;
+	ListView*           list_backups_ = nullptr;
+	unique_ptr<Archive> archive_backups_;
+	unique_ptr<Archive> archive_mapdata_;
+	ArchiveDir*         dir_current_ = nullptr;
 };
 } // namespace slade

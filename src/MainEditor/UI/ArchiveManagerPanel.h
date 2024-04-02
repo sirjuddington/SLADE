@@ -8,7 +8,6 @@ namespace slade
 {
 class ArchiveManagerPanel;
 class ArchivePanel;
-class DirArchive;
 class EntryPanel;
 class ListView;
 class STabCtrl;

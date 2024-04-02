@@ -34,7 +34,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DirArchiveUpdateDialog.h"
-#include "Archive/Formats/DirArchive.h"
+#include "Archive/Archive.h"
+#include "Archive/Formats/DirArchiveHandler.h"
 #include "General/UI.h"
 #include "UI/WxUtils.h"
 
@@ -53,7 +54,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 DirArchiveUpdateDialog::DirArchiveUpdateDialog(
 	wxWindow*                     parent,
-	DirArchive*                   archive,
+	Archive*                      archive,
 	const vector<DirEntryChange>& changes) :
 	SDialog(parent, "Directory Content Changed", "dir_archive_update"),
 	archive_{ archive },
@@ -139,8 +140,10 @@ void DirArchiveUpdateDialog::onBtnOKClicked(wxCommandEvent& e)
 		else
 			ignore_changes.push_back(changes_[a]);
 
-	archive_->ignoreChangedEntries(ignore_changes);
-	archive_->updateChangedEntries(apply_changes);
+	auto format_handler = dynamic_cast<DirArchiveHandler&>(archive_->formatHandler());
+
+	format_handler.ignoreChangedEntries(ignore_changes);
+	format_handler.updateChangedEntries(*archive_, apply_changes);
 
 	EndModal(wxID_OK);
 }

@@ -34,10 +34,11 @@
 #include "Main.h"
 #include "ArchiveManagerPanel.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
-#include "Archive/Formats/DirArchive.h"
+#include "Archive/Formats/DirArchiveHandler.h"
 #include "ArchivePanel.h"
 #include "EntryPanel/EntryPanel.h"
 #include "General/SAction.h"
@@ -94,8 +95,10 @@ public:
 		vector<DirEntryChange> changes;
 	};
 
-	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
+	DirArchiveCheck(wxEvtHandler* handler, Archive* archive);
 	~DirArchiveCheck() override = default;
+
+	bool isValid() const { return valid_; }
 
 	ExitCode Entry() override;
 
@@ -126,6 +129,7 @@ private:
 	vector<string>    removed_files_;
 	ChangeList        change_list_;
 	bool              ignore_hidden_ = true;
+	bool              valid_         = false;
 
 	void addChange(const DirEntryChange& change);
 };
@@ -133,13 +137,23 @@ private:
 // -----------------------------------------------------------------------------
 // DirArchiveCheck class constructor
 // -----------------------------------------------------------------------------
-DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive) :
+DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, Archive* archive) :
 	handler_{ handler },
 	dir_path_{ archive->filename() },
-	removed_files_{ archive->removedFiles() },
-	change_list_{ archive, {} },
-	ignore_hidden_{ archive->hiddenFilesIgnored() }
+	change_list_{ archive, {} }
 {
+	if (archive->formatId() != ArchiveFormat::Dir)
+	{
+		log::error("DirArchiveCheck requires a directory archive!");
+		return;
+	}
+
+	// Get Directory archive specific info
+	auto format_handler = dynamic_cast<DirArchiveHandler&>(archive->formatHandler());
+	removed_files_      = format_handler.removedFiles();
+	ignore_hidden_      = format_handler.hiddenFilesIgnored();
+	valid_              = true;
+
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
 	archive->putEntryTreeAsList(entries);
@@ -151,7 +165,7 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive) :
 			entry->path(true),
 			entry->exProps().getOr<string>("filePath", ""),
 			entry->isFolderType(),
-			archive->fileModificationTime(entry));
+			format_handler.fileModificationTime(entry));
 	}
 }
 
@@ -160,7 +174,7 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive) :
 // -----------------------------------------------------------------------------
 void DirArchiveCheck::addChange(const DirEntryChange& change)
 {
-	if (!dynamic_cast<DirArchive*>(change_list_.archive)->shouldIgnoreEntryChange(change))
+	if (!dynamic_cast<DirArchiveHandler*>(change_list_.archive)->shouldIgnoreEntryChange(change))
 		change_list_.changes.push_back(change);
 }
 
@@ -904,11 +918,11 @@ void ArchiveManagerPanel::openTab(const Archive* archive) const
 
 		// Determine icon
 		string icon = "archive";
-		if (archive->formatId() == "wad")
+		if (archive->formatId() == ArchiveFormat::Wad)
 			icon = "wad";
-		else if (archive->formatId() == "zip")
+		else if (archive->formatId() == ArchiveFormat::Zip)
 			icon = "zip";
-		else if (archive->formatId() == "folder")
+		else if (archive->formatId() == ArchiveFormat::Dir)
 			icon = "folder";
 
 		wp->SetName("archive");
@@ -1453,7 +1467,7 @@ void ArchiveManagerPanel::checkDirArchives()
 	for (int a = 0; a < app::archiveManager().numArchives(); a++)
 	{
 		auto archive = app::archiveManager().getArchive(a);
-		if (archive->formatId() != "folder")
+		if (archive->formatId() != ArchiveFormat::Dir)
 			continue;
 
 		if (VECTOR_EXISTS(checking_archives_, archive.get()))
@@ -1461,9 +1475,14 @@ void ArchiveManagerPanel::checkDirArchives()
 
 		log::info(2, "Checking {} for external changes...", archive->filename());
 		checking_archives_.push_back(archive.get());
-		auto check = new DirArchiveCheck(this, dynamic_cast<DirArchive*>(archive.get()));
-		check->Create();
-		check->Run();
+		auto check = new DirArchiveCheck(this, archive.get());
+		if (check->isValid())
+		{
+			check->Create();
+			check->Run();
+		}
+		else
+			delete check;
 	}
 }
 
@@ -1578,7 +1597,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 		return false;
 
 	// Check archive type
-	if (archive->formatId() == "folder")
+	if (archive->formatId() == ArchiveFormat::Dir)
 		return true; // Can't do save as for folder
 
 	// Check for unsaved entry changes
@@ -2306,16 +2325,16 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 		{
 			checked_dir_archive_changes_ = true;
 
-			auto archive = dynamic_cast<DirArchive*>(change_list.archive);
+			auto format_handler = dynamic_cast<DirArchiveHandler&>(change_list.archive->formatHandler());
 
 			// Auto apply if option set
 			if (dir_archive_change_action == 1)
-				archive->updateChangedEntries(change_list.changes);
+				format_handler.updateChangedEntries(*change_list.archive, change_list.changes);
 
 			// Otherwise show change/update dialog
 			else
 			{
-				DirArchiveUpdateDialog dlg(maineditor::windowWx(), archive, change_list.changes);
+				DirArchiveUpdateDialog dlg(maineditor::windowWx(), change_list.archive, change_list.changes);
 				dlg.ShowModal();
 			}
 

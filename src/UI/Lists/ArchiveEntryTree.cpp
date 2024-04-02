@@ -37,6 +37,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormatHandler.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/ColourConfiguration.h"
@@ -737,7 +738,7 @@ int ArchiveViewModel::Compare(
 		else
 		{
 			// Directory archives default to alphabetical order
-			if (const auto archive = archive_.lock(); archive->formatId() == "folder")
+			if (const auto archive = archive_.lock(); archive->formatId() == ArchiveFormat::Dir)
 				cmpval = e1->upperName().compare(e2->upperName());
 
 			// Everything else defaults to index order

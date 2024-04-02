@@ -33,9 +33,9 @@
 #include "Archive.h"
 #include "ArchiveDir.h"
 #include "ArchiveEntry.h"
+#include "ArchiveFormatHandler.h"
 #include "EntryType/EntryType.h"
 #include "General/UI.h"
-#include "General/UndoRedo.h"
 #include "MapDesc.h"
 #include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
@@ -52,237 +52,9 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Bool, backup_archives, true, CVar::Flag::Save)
-bool                  Archive::save_backup = true;
-vector<ArchiveFormat> Archive::formats_;
+bool                      Archive::save_backup = true;
+vector<ArchiveFormatDesc> Archive::formats_;
 
-
-// -----------------------------------------------------------------------------
-//
-// Undo Steps
-//
-// -----------------------------------------------------------------------------
-
-class EntryRenameUS : public UndoStep
-{
-public:
-	EntryRenameUS(ArchiveEntry* entry, string_view new_name) :
-		archive_{ entry->parent() },
-		entry_path_{ entry->path() },
-		entry_index_{ entry->index() },
-		old_name_{ entry->name() },
-		new_name_{ new_name }
-	{
-	}
-
-	bool doUndo() override
-	{
-		// Get entry parent dir
-		if (const auto dir = archive_->dirAtPath(entry_path_))
-		{
-			// Rename entry
-			const auto entry = dir->entryAt(entry_index_);
-			return archive_->renameEntry(entry, old_name_);
-		}
-
-		return false;
-	}
-
-	bool doRedo() override
-	{
-		// Get entry parent dir
-		if (const auto dir = archive_->dirAtPath(entry_path_))
-		{
-			// Rename entry
-			const auto entry = dir->entryAt(entry_index_);
-			return archive_->renameEntry(entry, new_name_);
-		}
-
-		return false;
-	}
-
-private:
-	Archive* archive_;
-	string   entry_path_;
-	int      entry_index_;
-	string   old_name_;
-	string   new_name_;
-};
-
-class DirRenameUS : public UndoStep
-{
-public:
-	DirRenameUS(const ArchiveDir* dir, string_view new_name) :
-		archive_{ dir->archive() },
-		old_name_{ dir->name() },
-		new_name_{ new_name },
-		prev_state_{ dir->dirEntry()->state() }
-	{
-		path_ = fmt::format("{}/{}", dir->path(false), new_name);
-	}
-
-	void swapNames()
-	{
-		const auto dir = archive_->dirAtPath(path_);
-		archive_->renameDir(dir, old_name_);
-		old_name_ = new_name_;
-		new_name_ = dir->name();
-		path_     = dir->path();
-	}
-
-	bool doUndo() override
-	{
-		swapNames();
-		archive_->dirAtPath(path_)->dirEntry()->setState(prev_state_);
-		return true;
-	}
-
-	bool doRedo() override
-	{
-		swapNames();
-		return true;
-	}
-
-private:
-	Archive*   archive_;
-	string     path_;
-	string     old_name_;
-	string     new_name_;
-	EntryState prev_state_;
-};
-
-class EntrySwapUS : public UndoStep
-{
-public:
-	EntrySwapUS(const ArchiveDir* dir, unsigned index1, unsigned index2) :
-		archive_{ dir->archive() },
-		path_{ dir->path() },
-		index1_{ index1 },
-		index2_{ index2 }
-	{
-	}
-
-	bool doSwap() const
-	{
-		// Get parent dir
-		if (const auto dir = archive_->dirAtPath(path_))
-			return dir->swapEntries(index1_, index2_);
-		return false;
-	}
-
-	bool doUndo() override { return doSwap(); }
-	bool doRedo() override { return doSwap(); }
-
-private:
-	Archive* archive_;
-	string   path_;
-	unsigned index1_;
-	unsigned index2_;
-};
-
-class EntryCreateDeleteUS : public UndoStep
-{
-public:
-	EntryCreateDeleteUS(bool created, ArchiveEntry* entry) :
-		created_{ created },
-		archive_{ entry->parent() },
-		entry_copy_{ new ArchiveEntry(*entry) },
-		path_{ entry->path() },
-		index_{ entry->index() }
-	{
-	}
-
-	bool deleteEntry() const
-	{
-		// Get parent dir
-		const auto dir = archive_->dirAtPath(path_);
-		return dir ? archive_->removeEntry(dir->entryAt(index_)) : false;
-	}
-
-	bool createEntry() const
-	{
-		// Get parent dir
-		if (const auto dir = archive_->dirAtPath(path_))
-		{
-			archive_->addEntry(std::make_shared<ArchiveEntry>(*entry_copy_), index_, dir);
-			return true;
-		}
-
-		return false;
-	}
-
-	bool doUndo() override { return created_ ? deleteEntry() : createEntry(); }
-
-	bool doRedo() override { return !created_ ? deleteEntry() : createEntry(); }
-
-private:
-	bool                     created_;
-	Archive*                 archive_;
-	unique_ptr<ArchiveEntry> entry_copy_;
-	string                   path_;
-	int                      index_;
-};
-
-
-class DirCreateDeleteUS : public UndoStep
-{
-public:
-	DirCreateDeleteUS(bool created, ArchiveDir* dir) :
-		created_{ created },
-		archive_{ dir->archive() },
-		path_{ dir->path() }
-	{
-		strutil::removePrefixIP(path_, '/');
-
-		// Backup child entries and subdirs if deleting
-		if (!created)
-			tree_ = dir->clone();
-	}
-
-	bool doUndo() override
-	{
-		if (created_)
-			return archive_->removeDir(path_) != nullptr;
-		else
-		{
-			// Create directory
-			auto dir = archive_->createDir(path_);
-
-			// Restore entries/subdirs if needed
-			if (dir && tree_)
-			{
-				// Do merge
-				vector<shared_ptr<ArchiveEntry>> created_entries;
-				vector<shared_ptr<ArchiveDir>>   created_dirs;
-				ArchiveDir::merge(dir, tree_.get(), 0, EntryState::Unmodified, &created_dirs, &created_entries);
-
-				// Signal changes
-				for (const auto& cdir : created_dirs)
-					archive_->signals().dir_added(*archive_, *cdir);
-				for (const auto& entry : created_entries)
-					archive_->signals().entry_added(*archive_, *entry);
-			}
-
-			if (dir)
-				dir->dirEntry()->setState(EntryState::Unmodified);
-
-			return !!dir;
-		}
-	}
-
-	bool doRedo() override
-	{
-		if (!created_)
-			return archive_->removeDir(path_) != nullptr;
-		else
-			return archive_->createDir(path_) != nullptr;
-	}
-
-private:
-	bool                   created_;
-	Archive*               archive_;
-	string                 path_;
-	shared_ptr<ArchiveDir> tree_;
-};
 
 
 // -----------------------------------------------------------------------------
@@ -365,9 +137,17 @@ void MapDesc::updateMapFormatHints() const
 // -----------------------------------------------------------------------------
 // Archive class constructor
 // -----------------------------------------------------------------------------
-Archive::Archive(string_view format) : format_{ format }, dir_root_{ new ArchiveDir("", nullptr, this) }
+Archive::Archive(string_view format) : dir_root_{ new ArchiveDir("", nullptr, this) }
 {
+	format_handler_ = ArchiveFormatHandler::getHandler(format);
 	dir_root_->allowDuplicateNames(formatDesc().allow_duplicate_names);
+	format_handler_->init(*this);
+}
+Archive::Archive(ArchiveFormat format) : dir_root_{ new ArchiveDir("", nullptr, this) }
+{
+	format_handler_ = ArchiveFormatHandler::getHandler(format);
+	dir_root_->allowDuplicateNames(formatDesc().allow_duplicate_names);
+	format_handler_->init(*this);
 }
 
 // -----------------------------------------------------------------------------
@@ -381,12 +161,12 @@ Archive::~Archive()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the ArchiveFormat descriptor for this archive
+// Returns the ArchiveFormatDesc descriptor for this archive
 // -----------------------------------------------------------------------------
-ArchiveFormat Archive::formatDesc() const
+ArchiveFormatDesc Archive::formatDesc() const
 {
 	for (auto fmt : formats_)
-		if (fmt.id == format_)
+		if (fmt.id == formatIdString())
 			return fmt;
 
 	return { "unknown" };
@@ -462,35 +242,37 @@ Archive* Archive::parentArchive() const
 	return parent_.lock() ? parent_.lock()->parent() : nullptr;
 }
 
+ArchiveFormat Archive::formatId() const
+{
+	return format_handler_->formatId();
+}
+string Archive::formatIdString() const
+{
+	return ArchiveFormatHandler::formatIdString(formatId());
+}
+
 // -----------------------------------------------------------------------------
 // Reads an archive from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
 bool Archive::open(string_view filename)
 {
-	// Read the file into a MemChunk
-	MemChunk mc;
-	if (!mc.importFile(filename))
-	{
-		global::error = "Unable to open file. Make sure it isn't in use by another program.";
-		return false;
-	}
-
 	// Update filename before opening
 	const auto backupname = filename_;
 	filename_             = filename;
-	file_modified_        = fileutil::fileModifiedTime(filename);
 
-	// Load from MemChunk
+	// Open via format handler
 	const sf::Clock timer;
-	if (open(mc))
+	if (format_handler_->open(*this, filename))
 	{
 		log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
-		on_disk_ = true;
+		file_modified_ = fileutil::fileModifiedTime(filename);
+		on_disk_       = true;
 		return true;
 	}
 	else
 	{
+		// Open failed, revert filename
 		filename_ = backupname;
 		return false;
 	}
@@ -502,16 +284,22 @@ bool Archive::open(string_view filename)
 // -----------------------------------------------------------------------------
 bool Archive::open(ArchiveEntry* entry)
 {
-	// Load from entry's data
-	auto sp_entry = entry->getShared();
-	if (sp_entry && open(sp_entry->data()))
-	{
-		// Update variables and return success
-		parent_ = sp_entry;
-		return true;
-	}
-	else
-		return false;
+	return format_handler_->open(*this, entry);
+}
+
+bool Archive::open(const MemChunk& mc)
+{
+	return format_handler_->open(*this, mc);
+}
+
+bool Archive::write(MemChunk& mc)
+{
+	return format_handler_->write(*this, mc);
+}
+
+bool Archive::isWritable() const
+{
+	return format_handler_->isWritable();
 }
 
 // -----------------------------------------------------------------------------
@@ -547,10 +335,10 @@ bool Archive::checkEntry(const ArchiveEntry* entry) const
 // Returns the entry matching [name] within [dir].
 // If no dir is given the root dir is used
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entry(string_view name, bool cut_ext, ArchiveDir* dir) const
+ArchiveEntry* Archive::entry(string_view name, bool cut_ext, const ArchiveDir* dir) const
 {
 	// Check if dir was given
-	if (!dir)
+	if (!dir || format_handler_->isTreeless())
 		dir = dir_root_.get(); // None given, use root
 
 	return dir->entry(name, cut_ext);
@@ -561,10 +349,10 @@ ArchiveEntry* Archive::entry(string_view name, bool cut_ext, ArchiveDir* dir) co
 // If no dir is given the  root dir is used.
 // Returns null if [index] is out of bounds
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entryAt(unsigned index, ArchiveDir* dir) const
+ArchiveEntry* Archive::entryAt(unsigned index, const ArchiveDir* dir) const
 {
 	// Check if dir was given
-	if (!dir)
+	if (!dir || format_handler_->isTreeless())
 		dir = dir_root_.get(); // None given, use root
 
 	return dir->entryAt(index);
@@ -575,10 +363,10 @@ ArchiveEntry* Archive::entryAt(unsigned index, ArchiveDir* dir) const
 // If no dir is given the root dir is used.
 // Returns -1 if [entry] doesn't exist within [dir]
 // -----------------------------------------------------------------------------
-int Archive::entryIndex(ArchiveEntry* entry, ArchiveDir* dir) const
+int Archive::entryIndex(ArchiveEntry* entry, const ArchiveDir* dir) const
 {
 	// Check if dir was given
-	if (!dir)
+	if (!dir || format_handler_->isTreeless())
 		dir = dir_root_.get(); // None given, use root
 
 	return dir->entryIndex(entry);
@@ -638,11 +426,7 @@ shared_ptr<ArchiveEntry> Archive::entryAtPathShared(string_view path) const
 // -----------------------------------------------------------------------------
 bool Archive::write(string_view filename)
 {
-	// Write to a MemChunk, then export it to a file
-	if (MemChunk mc; write(mc))
-		return mc.exportFile(filename);
-
-	return false;
+	return format_handler_->write(*this, filename);
 }
 
 // -----------------------------------------------------------------------------
@@ -655,73 +439,20 @@ bool Archive::write(string_view filename)
 // -----------------------------------------------------------------------------
 bool Archive::save(string_view filename)
 {
-	bool success = false;
+	return format_handler_->save(*this, filename);
+}
 
-	// Check if the archive is read-only
-	if (read_only_)
-	{
-		global::error = "Archive is read-only";
-		return false;
-	}
-
-	// If the archive has a parent ArchiveEntry, just write it to that
-	if (auto parent = parent_.lock())
-	{
-		success = write(parent->data_);
-		parent->setState(EntryState::Modified);
-	}
-	else
-	{
-		// Otherwise, file stuff
-		if (!filename.empty())
-		{
-			// New filename is given (ie 'save as'), write to new file and change archive filename accordingly
-			success = write(filename);
-			if (success)
-				filename_ = filename;
-
-			// Update variables
-			on_disk_       = true;
-			file_modified_ = fileutil::fileModifiedTime(filename_);
-		}
-		else if (!filename_.empty())
-		{
-			// No filename is given, but the archive has a filename, so overwrite it (and make a backup)
-
-			// Create backup
-			if (backup_archives && wxFileName::FileExists(filename_) && save_backup)
-			{
-				// Copy current file contents to new backup file
-				const auto bakfile = filename_ + ".bak";
-				log::info("Creating backup {}", bakfile);
-				wxCopyFile(filename_, bakfile, true);
-			}
-
-			// Write it to the file
-			success = write(filename_);
-
-			// Update variables
-			on_disk_       = true;
-			file_modified_ = fileutil::fileModifiedTime(filename_);
-		}
-	}
-
-	// If saving was successful, update variables and announce save
-	if (success)
-	{
-		setModified(false);
-		signals_.saved(*this);
-	}
-
-	return success;
+bool Archive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
+{
+	return format_handler_->loadEntryData(*this, entry, out);
 }
 
 // -----------------------------------------------------------------------------
 // Returns the total number of entries in the archive
 // -----------------------------------------------------------------------------
-unsigned Archive::numEntries()
+unsigned Archive::numEntries() const
 {
-	return dir_root_->numEntries(true);
+	return dir_root_->numEntries(!format_handler_->isTreeless());
 }
 
 // -----------------------------------------------------------------------------
@@ -792,13 +523,40 @@ void Archive::putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, const A
 // -----------------------------------------------------------------------------
 // 'Pastes' the [tree] into the archive, with its root entries starting at
 // [position] in [base] directory.
-// If [base] is null, the root directory is used
+// If [base] is null, the root directory is used.
+//
+// If the archive is treeless, pastes all entries in [tree] and its
+// subdirectories straight into the root dir at [position]
 // -----------------------------------------------------------------------------
 bool Archive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> base)
 {
 	// Check tree was given to paste
 	if (!tree)
 		return false;
+
+	// Treeless paste
+	if (format_handler_->isTreeless())
+	{
+		// Paste root entries only
+		for (unsigned a = 0; a < tree->numEntries(); a++)
+		{
+			// Add entry to archive
+			addEntry(std::make_shared<ArchiveEntry>(*tree->entryAt(a)), position, nullptr);
+
+			// Update [position] if needed
+			if (position < 0xFFFFFFFF)
+				position++;
+		}
+
+		// Go through paste tree subdirs and paste their entries recursively
+		for (unsigned a = 0; a < tree->numSubdirs(); a++)
+			paste(tree->subdirAt(a).get(), position);
+
+		// Set modified
+		setModified(true);
+
+		return true;
+	}
 
 	// Paste to root dir if none specified
 	if (!base)
@@ -843,37 +601,7 @@ ArchiveDir* Archive::dirAtPath(string_view path, ArchiveDir* base) const
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveDir> Archive::createDir(string_view path, shared_ptr<ArchiveDir> base)
 {
-	// Abort if read only
-	if (read_only_)
-		return dir_root_;
-
-	// If no base dir specified, set it to root
-	if (!base)
-		base = dir_root_;
-
-	if (strutil::startsWith(path, '/'))
-		path.remove_prefix(1);
-
-	if (path.empty())
-		return base;
-
-	// Create the directory
-	vector<shared_ptr<ArchiveDir>> created_dirs;
-	auto                           dir = ArchiveDir::getOrCreateSubdir(base, path, &created_dirs);
-
-	// Record undo step(s)
-	if (undoredo::currentlyRecording())
-		for (const auto& cdir : created_dirs)
-			undoredo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(true, cdir.get()));
-
-	// Set the archive state to modified
-	setModified(true);
-
-	// Signal directory addition
-	for (const auto& cdir : created_dirs)
-		signals_.dir_added(*this, *cdir);
-
-	return dir;
+	return format_handler_->createDir(*this, path, base);
 }
 
 // -----------------------------------------------------------------------------
@@ -883,32 +611,7 @@ shared_ptr<ArchiveDir> Archive::createDir(string_view path, shared_ptr<ArchiveDi
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveDir> Archive::removeDir(string_view path, ArchiveDir* base)
 {
-	// Abort if read only
-	if (read_only_)
-		return nullptr;
-
-	// Get the dir to remove
-	auto dir = dirAtPath(path, base);
-
-	// Check it exists (and that it isn't the root dir)
-	if (!dir || dir == dir_root_.get())
-		return nullptr;
-
-	// Record undo step
-	if (undoredo::currentlyRecording())
-		undoredo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(false, dir));
-
-	// Remove the dir from its parent
-	auto& parent  = *dir->parent_dir_.lock();
-	auto  removed = parent.removeSubdir(dir->name());
-
-	// Set the archive state to modified
-	setModified(true);
-
-	// Signal directory removal
-	signals_.dir_removed(*this, parent, *dir);
-
-	return removed;
+	return format_handler_->removeDir(*this, path, base);
 }
 
 // -----------------------------------------------------------------------------
@@ -917,30 +620,7 @@ shared_ptr<ArchiveDir> Archive::removeDir(string_view path, ArchiveDir* base)
 // -----------------------------------------------------------------------------
 bool Archive::renameDir(ArchiveDir* dir, string_view new_name)
 {
-	// Abort if read only
-	if (read_only_)
-		return false;
-
-	// Check the directory is part of this archive
-	if (!dir || dir->archive() != this)
-		return false;
-
-	// Rename the directory if needed
-	if (dir->name() != new_name)
-	{
-		if (undoredo::currentlyRecording())
-			undoredo::currentManager()->recordUndoStep(std::make_unique<DirRenameUS>(dir, new_name));
-
-		dir->setName(new_name);
-		dir->dirEntry()->setState(EntryState::Modified);
-	}
-	else
-		return true;
-
-	// Update variables etc
-	setModified(true);
-
-	return true;
+	return format_handler_->renameDir(*this, dir, new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -953,34 +633,7 @@ bool Archive::renameDir(ArchiveDir* dir, string_view new_name)
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsigned position, ArchiveDir* dir)
 {
-	// Abort if read only
-	if (read_only_)
-		return nullptr;
-
-	// Check valid entry
-	if (!entry)
-		return nullptr;
-
-	// If no dir given, set it to the root dir
-	if (!dir)
-		dir = dir_root_.get();
-
-	// Add the entry
-	dir->addEntry(entry, position);
-	entry->formatName(formatDesc());
-
-	// Update variables etc
-	setModified(true);
-	entry->state_ = EntryState::New;
-
-	// Signal entry addition
-	signals_.entry_added(*this, *entry);
-
-	// Create undo step
-	if (undoredo::currentlyRecording())
-		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(true, entry.get()));
-
-	return entry;
+	return format_handler_->addEntry(*this, entry, position, dir);
 }
 
 // -----------------------------------------------------------------------------
@@ -991,18 +644,7 @@ shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsig
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> Archive::addNewEntry(string_view name, unsigned position, ArchiveDir* dir)
 {
-	// Abort if read only
-	if (read_only_)
-		return nullptr;
-
-	// Create the new entry
-	auto entry = std::make_shared<ArchiveEntry>(name);
-
-	// Add it to the archive
-	addEntry(entry, position, dir);
-
-	// Return the newly created entry
-	return entry;
+	return format_handler_->addNewEntry(*this, name, position, dir);
 }
 
 // -----------------------------------------------------------------------------
@@ -1031,46 +673,7 @@ shared_ptr<ArchiveEntry> Archive::addNewEntry(string_view name, string_view add_
 // -----------------------------------------------------------------------------
 bool Archive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 {
-	// Abort if read only
-	if (read_only_)
-		return false;
-
-	// Check entry
-	if (!checkEntry(entry))
-		return false;
-
-	// Check if entry is locked
-	if (entry->isLocked())
-		return false;
-
-	// Get its directory
-	auto dir = entry->parentDir();
-
-	// Error if entry has no parent directory
-	if (!dir)
-		return false;
-
-	// Create undo step
-	if (undoredo::currentlyRecording())
-		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(false, entry));
-
-	// Remove the entry
-	const int  index        = dir->entryIndex(entry);
-	auto       entry_shared = entry->getShared();      // Ensure the entry is kept around until this function ends
-	const bool ok           = dir->removeEntry(index); // Remove it from its directory
-
-	// If it was removed ok
-	if (ok)
-	{
-		// Set state
-		if (set_deleted)
-			entry_shared->setState(EntryState::Deleted);
-
-		signals_.entry_removed(*this, *dir, *entry); // Signal entry removed
-		setModified(true);                           // Update variables etc
-	}
-
-	return ok;
+	return format_handler_->removeEntry(*this, entry, set_deleted);
 }
 
 // -----------------------------------------------------------------------------
@@ -1078,33 +681,18 @@ bool Archive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 // If [dir] is not specified, the root dir is used.
 // Returns true if the swap succeeded, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveDir* dir)
+bool Archive::swapEntries(unsigned index1, unsigned index2, const ArchiveDir* dir)
 {
 	// Get directory
 	if (!dir)
 		dir = dir_root_.get();
 
-	// Check if either entry is locked
-	if (dir->entryAt(index1)->isLocked() || dir->entryAt(index2)->isLocked())
-		return false;
+	// Get entries
+	auto e1 = dir->entryAt(index1);
+	auto e2 = dir->entryAt(index2);
 
-	// Create undo step
-	if (undoredo::currentlyRecording())
-		undoredo::currentManager()->recordUndoStep(std::make_unique<EntrySwapUS>(dir, index1, index2));
-
-	// Do swap
-	if (dir->swapEntries(index1, index2))
-	{
-		// Set modified
-		setModified(true);
-
-		// Signal
-		signals_.entries_swapped(*this, *dir, index1, index2);
-
-		return true;
-	}
-	else
-		return false;
+	// Swap
+	return format_handler_->swapEntries(*this, e1, e2);
 }
 
 // -----------------------------------------------------------------------------
@@ -1114,55 +702,7 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveDir* dir)
 // -----------------------------------------------------------------------------
 bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 {
-	// Abort if read only
-	if (read_only_)
-		return false;
-
-	// Check both entries
-	if (!checkEntry(entry1) || !checkEntry(entry2))
-		return false;
-
-	// Check neither entry is locked
-	if (entry1->isLocked() || entry2->isLocked())
-		return false;
-
-	// Get their directory
-	auto dir = entry1->parentDir();
-
-	// Error if no dir
-	if (!dir)
-		return false;
-
-	// Check they are both in the same directory
-	if (entry2->parentDir() != dir)
-	{
-		log::error("Can't swap two entries in different directories");
-		return false;
-	}
-
-	// Get entry indices
-	int i1 = dir->entryIndex(entry1);
-	int i2 = dir->entryIndex(entry2);
-
-	// Check indices
-	if (i1 < 0 || i2 < 0)
-		return false;
-
-	// Create undo step
-	if (undoredo::currentlyRecording())
-		undoredo::currentManager()->recordUndoStep(std::make_unique<EntrySwapUS>(dir, i1, i2));
-
-	// Swap entries
-	dir->swapEntries(i1, i2);
-
-	// Set modified
-	setModified(true);
-
-	// Signal
-	signals_.entries_swapped(*this, *dir, i1, i2);
-
-	// Return success
-	return true;
+	return format_handler_->swapEntries(*this, entry1, entry2);
 }
 
 // -----------------------------------------------------------------------------
@@ -1172,41 +712,7 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 // -----------------------------------------------------------------------------
 bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 {
-	// Abort if read only
-	if (read_only_)
-		return false;
-
-	// Check the entry
-	if (!checkEntry(entry))
-		return false;
-
-	// Check if the entry is locked
-	if (entry->isLocked())
-		return false;
-
-	// Get the entry's current directory
-	const auto cdir = entry->parentDir();
-
-	// Error if no dir
-	if (!cdir)
-		return false;
-
-	// If no destination dir specified, use root
-	if (!dir)
-		dir = dir_root_.get();
-
-	// Remove the entry from its current dir
-	const auto sptr = entry->getShared(); // Get a shared pointer so it isn't deleted
-	removeEntry(entry, false);
-
-	// Add it to the destination dir
-	addEntry(sptr, position, dir);
-
-	// Set modified
-	setModified(true);
-
-	// Return success
-	return true;
+	return format_handler_->moveEntry(*this, entry, position, dir);
 }
 
 // -----------------------------------------------------------------------------
@@ -1215,42 +721,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 // -----------------------------------------------------------------------------
 bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
-	// Abort if read only
-	if (read_only_)
-		return false;
-
-	// Check entry
-	if (!checkEntry(entry))
-		return false;
-
-	// Check if entry is locked
-	if (entry->isLocked())
-		return false;
-
-	// Check for directory
-	if (entry->type() == EntryType::folderType())
-		return renameDir(dirAtPath(entry->path(true)), name);
-
-	// Keep current name for renamed signal
-	const auto prev_name = entry->name();
-
-	// Create undo step
-	if (undoredo::currentlyRecording())
-		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
-
-	// Rename the entry
-	auto fmt_desc = formatDesc();
-	entry->setName(name);
-	entry->formatName(fmt_desc);
-	if (!force && !fmt_desc.allow_duplicate_names)
-		entry->parentDir()->ensureUniqueName(entry);
-	entry->setState(EntryState::Modified, true);
-
-	// Announce modification
-	signals_.entry_renamed(*this, *entry, prev_name);
-	entryStateChanged(entry);
-
-	return true;
+	return format_handler_->renameEntry(*this, entry, name, force);
 }
 
 // -----------------------------------------------------------------------------
@@ -1356,7 +827,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 MapDesc Archive::mapDesc(ArchiveEntry* maphead)
 {
-	return {};
+	return format_handler_->mapDesc(*this, maphead);
 }
 
 // -----------------------------------------------------------------------------
@@ -1365,7 +836,7 @@ MapDesc Archive::mapDesc(ArchiveEntry* maphead)
 // -----------------------------------------------------------------------------
 vector<MapDesc> Archive::detectMaps()
 {
-	return {};
+	return format_handler_->detectMaps(*this);
 }
 
 // -----------------------------------------------------------------------------
@@ -1373,10 +844,7 @@ vector<MapDesc> Archive::detectMaps()
 // -----------------------------------------------------------------------------
 string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
 {
-	if (dir && index < dir->numEntries())
-		return detectNamespace(dir->entryAt(index));
-
-	return "global";
+	return format_handler_->detectNamespace(*this, index, dir);
 }
 
 // -----------------------------------------------------------------------------
@@ -1384,24 +852,7 @@ string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
 // -----------------------------------------------------------------------------
 string Archive::detectNamespace(ArchiveEntry* entry)
 {
-	// Check entry
-	if (!checkEntry(entry))
-		return "global";
-
-	// If the entry is in the root dir, it's in the global namespace
-	if (entry->parentDir() == dir_root_.get())
-		return "global";
-
-	// Get the entry's *first* parent directory after root (ie <root>/namespace/)
-	auto dir = entry->parentDir();
-	while (dir && dir->parent() != dir_root_)
-		dir = dir->parent().get();
-
-	// Namespace is the directory's name (in lowercase)
-	if (dir)
-		return strutil::lower(dir->name());
-	else
-		return "global"; // Error, just return global
+	return format_handler_->detectNamespace(*this, entry);
 }
 
 // -----------------------------------------------------------------------------
@@ -1410,67 +861,7 @@ string Archive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 ArchiveEntry* Archive::findFirst(ArchiveSearchOptions& options)
 {
-	// Init search variables
-	auto dir = options.dir;
-	if (!dir)
-		dir = dir_root_.get();
-	strutil::upperIP(options.match_name); // Force case-insensitive
-
-	// Begin search
-
-	// Search entries
-	for (unsigned a = 0; a < dir->numEntries(); a++)
-	{
-		const auto entry = dir->entryAt(a);
-
-		// Check type
-		if (options.match_type)
-		{
-			if (entry->type() == EntryType::unknownType())
-			{
-				if (!options.match_type->isThisType(*entry))
-					continue;
-			}
-			else if (options.match_type != entry->type())
-				continue;
-		}
-
-		// Check name
-		if (!options.match_name.empty())
-		{
-			// Cut extension if ignoring
-			const auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
-			if (!strutil::matches(check_name, options.match_name))
-				continue;
-		}
-
-		// Check namespace
-		if (!options.match_namespace.empty())
-		{
-			if (!strutil::equalCI(detectNamespace(entry), options.match_namespace))
-				continue;
-		}
-
-		// Entry passed all checks so far, so we found a match
-		return entry;
-	}
-
-	// Search subdirectories (if needed)
-	if (options.search_subdirs)
-	{
-		for (unsigned a = 0; a < dir->numSubdirs(); a++)
-		{
-			auto opt = options;
-			opt.dir  = dir->subdirAt(a).get();
-
-			// If a match was found in this subdir, return it
-			if (const auto match = findFirst(opt))
-				return match;
-		}
-	}
-
-	// No matches found
-	return nullptr;
+	return format_handler_->findFirst(*this, options);
 }
 
 // -----------------------------------------------------------------------------
@@ -1479,67 +870,7 @@ ArchiveEntry* Archive::findFirst(ArchiveSearchOptions& options)
 // -----------------------------------------------------------------------------
 ArchiveEntry* Archive::findLast(ArchiveSearchOptions& options)
 {
-	// Init search variables
-	auto dir = options.dir;
-	if (!dir)
-		dir = dir_root_.get();
-	strutil::upperIP(options.match_name); // Force case-insensitive
-
-	// Begin search
-
-	// Search entries (bottom-up)
-	for (int a = static_cast<int>(dir->numEntries()) - 1; a >= 0; a--)
-	{
-		const auto entry = dir->entryAt(a);
-
-		// Check type
-		if (options.match_type)
-		{
-			if (entry->type() == EntryType::unknownType())
-			{
-				if (!options.match_type->isThisType(*entry))
-					continue;
-			}
-			else if (options.match_type != entry->type())
-				continue;
-		}
-
-		// Check name
-		if (!options.match_name.empty())
-		{
-			// Cut extension if ignoring
-			const auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
-			if (!strutil::matches(check_name, options.match_name))
-				continue;
-		}
-
-		// Check namespace
-		if (!options.match_namespace.empty())
-		{
-			if (!strutil::equalCI(detectNamespace(entry), options.match_namespace))
-				continue;
-		}
-
-		// Entry passed all checks so far, so we found a match
-		return entry;
-	}
-
-	// Search subdirectories (if needed) (bottom-up)
-	if (options.search_subdirs)
-	{
-		for (int a = static_cast<int>(dir->numSubdirs()) - 1; a >= 0; a--)
-		{
-			auto opt = options;
-			opt.dir  = dir->subdirAt(a).get();
-
-			// If a match was found in this subdir, return it
-			if (const auto match = findLast(opt))
-				return match;
-		}
-	}
-
-	// No matches found
-	return nullptr;
+	return format_handler_->findLast(*this, options);
 }
 
 // -----------------------------------------------------------------------------
@@ -1547,68 +878,7 @@ ArchiveEntry* Archive::findLast(ArchiveSearchOptions& options)
 // -----------------------------------------------------------------------------
 vector<ArchiveEntry*> Archive::findAll(ArchiveSearchOptions& options)
 {
-	// Init search variables
-	auto dir = options.dir;
-	if (!dir)
-		dir = dir_root_.get();
-	vector<ArchiveEntry*> ret;
-	strutil::upperIP(options.match_name); // Force case-insensitive
-
-	// Begin search
-
-	// Search entries
-	for (unsigned a = 0; a < dir->numEntries(); a++)
-	{
-		auto entry = dir->entryAt(a);
-
-		// Check type
-		if (options.match_type)
-		{
-			if (entry->type() == EntryType::unknownType())
-			{
-				if (!options.match_type->isThisType(*entry))
-					continue;
-			}
-			else if (options.match_type != entry->type())
-				continue;
-		}
-
-		// Check name
-		if (!options.match_name.empty())
-		{
-			// Cut extension if ignoring
-			const auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
-			if (!strutil::matches(check_name, options.match_name))
-				continue;
-		}
-
-		// Check namespace
-		if (!options.match_namespace.empty())
-		{
-			if (!strutil::equalCI(detectNamespace(entry), options.match_namespace))
-				continue;
-		}
-
-		// Entry passed all checks so far, so we found a match
-		ret.push_back(entry);
-	}
-
-	// Search subdirectories (if needed)
-	if (options.search_subdirs)
-	{
-		for (unsigned a = 0; a < dir->numSubdirs(); a++)
-		{
-			auto opt = options;
-			opt.dir  = dir->subdirAt(a).get();
-
-			// Add any matches to the list
-			auto vec = findAll(opt);
-			ret.insert(ret.end(), vec.begin(), vec.end());
-		}
-	}
-
-	// Return matches
-	return ret;
+	return format_handler_->findAll(*this, options);
 }
 
 // -----------------------------------------------------------------------------
@@ -1742,8 +1012,8 @@ bool Archive::loadFormats(const MemChunk& mc)
 	auto formats_node = root->child("archive_formats");
 	for (unsigned a = 0; a < formats_node->nChildren(); a++)
 	{
-		auto          fmt_desc = dynamic_cast<ParseTreeNode*>(formats_node->child(a));
-		ArchiveFormat fmt{ fmt_desc->name() };
+		auto              fmt_desc = dynamic_cast<ParseTreeNode*>(formats_node->child(a));
+		ArchiveFormatDesc fmt{ fmt_desc->name() };
 
 		for (unsigned p = 0; p < fmt_desc->nChildren(); p++)
 		{
@@ -1806,7 +1076,7 @@ bool Archive::loadFormats(const MemChunk& mc)
 	}
 
 	// Add builtin 'folder' format
-	ArchiveFormat fmt_folder("folder");
+	ArchiveFormatDesc fmt_folder("folder");
 	fmt_folder.name                  = "Folder";
 	fmt_folder.names_extensions      = true;
 	fmt_folder.supports_dirs         = true;
@@ -1817,58 +1087,13 @@ bool Archive::loadFormats(const MemChunk& mc)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the ArchiveFormat matching [id] or nullptr if not found
+// Returns the ArchiveFormatDesc matching [id] or nullptr if not found
 // -----------------------------------------------------------------------------
-ArchiveFormat* Archive::formatFromId(string_view id)
+ArchiveFormatDesc* Archive::formatFromId(string_view id)
 {
 	for (auto& format : formats_)
 		if (format.id == id)
 			return &format;
 
 	return nullptr;
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// TreelessArchive Class Functions
-//
-// -----------------------------------------------------------------------------
-
-
-unsigned TreelessArchive::numEntries()
-{
-	return rootDir()->numEntries();
-}
-
-// -----------------------------------------------------------------------------
-// Treeless version of Archive::paste.
-// Pastes all entries in [tree] and its subdirectories straight into the root
-// dir at [position]
-// -----------------------------------------------------------------------------
-bool TreelessArchive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> base)
-{
-	// Check tree was given to paste
-	if (!tree)
-		return false;
-
-	// Paste root entries only
-	for (unsigned a = 0; a < tree->numEntries(); a++)
-	{
-		// Add entry to archive
-		addEntry(std::make_shared<ArchiveEntry>(*tree->entryAt(a)), position, nullptr);
-
-		// Update [position] if needed
-		if (position < 0xFFFFFFFF)
-			position++;
-	}
-
-	// Go through paste tree subdirs and paste their entries recursively
-	for (unsigned a = 0; a < tree->numSubdirs(); a++)
-		paste(tree->subdirAt(a).get(), position);
-
-	// Set modified
-	setModified(true);
-
-	return true;
 }

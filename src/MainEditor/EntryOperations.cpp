@@ -32,12 +32,13 @@
 #include "Main.h"
 #include "EntryOperations.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/EntryType/EntryType.h"
-#include "Archive/Formats/WadArchive.h"
 #include "Archive/MapDesc.h"
 #include "BinaryControlLump.h"
 #include "Conversions.h"
@@ -682,8 +683,8 @@ bool entryoperations::openMapDB2(ArchiveEntry* entry)
 		// Write map entries to temporary wad archive
 		if (auto m_head = map.head.lock())
 		{
-			auto       m_end = map.end.lock();
-			WadArchive archive;
+			auto    m_end = map.end.lock();
+			Archive archive(ArchiveFormat::Wad);
 
 			// Add map entries to archive
 			auto parent = entry->parent();
@@ -710,9 +711,9 @@ bool entryoperations::openMapDB2(ArchiveEntry* entry)
 	auto base = app::archiveManager().baseResourceArchive();
 	if (base)
 	{
-		if (base->formatId() == "wad")
+		if (base->formatId() == ArchiveFormat::Wad)
 			cmd += wxString::Format(" -resource wad \"%s\"", base->filename());
-		else if (base->formatId() == "zip")
+		else if (base->formatId() == ArchiveFormat::Zip)
 			cmd += wxString::Format(" -resource pk3 \"%s\"", base->filename());
 	}
 
@@ -722,9 +723,9 @@ bool entryoperations::openMapDB2(ArchiveEntry* entry)
 		auto archive = app::archiveManager().getArchive(a);
 
 		// Check archive type (only wad and zip supported by db2)
-		if (archive->formatId() == "wad")
+		if (archive->formatId() == ArchiveFormat::Wad)
 			cmd += wxString::Format(" -resource wad \"%s\"", archive->filename());
-		else if (archive->formatId() == "zip")
+		else if (archive->formatId() == ArchiveFormat::Zip)
 			cmd += wxString::Format(" -resource pk3 \"%s\"", archive->filename());
 	}
 

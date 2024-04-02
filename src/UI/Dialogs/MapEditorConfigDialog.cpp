@@ -33,8 +33,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapEditorConfigDialog.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/Formats/WadArchive.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
@@ -109,8 +110,7 @@ public:
 		// Limit map name length if necessary
 		if (game::configuration().featureSupported(game::Feature::AnyMapName)
 			&& (!game::configuration().featureSupported(game::Feature::LongNames)
-				|| (archive && archive->formatId() != "zip" && archive->formatId() != "7z"
-					&& archive->formatId() != "folder")))
+				|| (archive && archive->formatId() != ArchiveFormat::Zip && archive->formatId() != ArchiveFormat::Dir)))
 			cbo_mapname_->SetMaxLength(8);
 
 		// Add possible map names to the combo box
@@ -610,7 +610,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			}
 
 		// Check archive type
-		if (archive_->formatId() == "wad")
+		if (archive_->formatId() == ArchiveFormat::Wad)
 		{
 			// Create new (empty) map at the end of the wad
 			shared_ptr<ArchiveEntry> head = archive_->addNewEntry(mapname.ToStdString());
@@ -648,10 +648,10 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			populateMapList();
 			list_maps_->selectItem(list_maps_->GetItemCount() - 1);
 		}
-		else if (archive_->formatId() == "zip" || archive_->formatId() == "folder")
+		else if (archive_->formatId() == ArchiveFormat::Zip || archive_->formatId() == ArchiveFormat::Dir)
 		{
 			// Create new wad archive for the map
-			Archive* wad = new WadArchive();
+			auto wad = std::make_unique<Archive>(ArchiveFormat::Wad);
 
 			// Create new (empty) map at the end of the wad
 			shared_ptr<ArchiveEntry> head = wad->addNewEntry(mapname.ToStdString());
@@ -688,9 +688,6 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			MemChunk mc;
 			wad->write(mc);
 			mapentry->importMemChunk(mc);
-
-			// Clean up
-			delete wad;
 
 			// Refresh map list
 			populateMapList();

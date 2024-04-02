@@ -32,12 +32,11 @@
 #include "Main.h"
 #include "ArchiveOperations.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
-#include "Archive/Formats/DirArchive.h"
-#include "Archive/Formats/WadArchive.h"
-#include "Archive/Formats/ZipArchive.h"
+#include "Archive/Formats/DirArchiveHandler.h"
 #include "Archive/MapDesc.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
@@ -49,7 +48,6 @@
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
-#include "SLADEMap/MapObject/MapSector.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
@@ -93,7 +91,8 @@ bool archiveoperations::save(Archive& archive)
 		return false;
 
 	// Check if the file has been modified on disk
-	if (archive.formatId() != "folder" && fileutil::fileModifiedTime(archive.filename()) > archive.fileModifiedTime())
+	if (archive.formatId() != ArchiveFormat::Dir
+		&& fileutil::fileModifiedTime(archive.filename()) > archive.fileModifiedTime())
 	{
 		if (wxMessageBox(
 				wxString::Format(
@@ -116,9 +115,9 @@ bool archiveoperations::save(Archive& archive)
 	}
 
 	// Check if there were issues saving directory
-	if (archive.formatId() == "folder")
+	if (archive.formatId() == ArchiveFormat::Dir)
 	{
-		auto* dir_archive = dynamic_cast<DirArchive*>(&archive);
+		auto* dir_archive = dynamic_cast<DirArchiveHandler*>(&archive);
 		if (dir_archive->saveErrorsOccurred())
 		{
 			auto   messages = log::since(time);
@@ -172,7 +171,7 @@ bool archiveoperations::saveAs(Archive& archive)
 bool archiveoperations::buildArchive(string_view path)
 {
 	// Create temporary archive
-	ZipArchive zip;
+	Archive zip(ArchiveFormat::Zip);
 
 	// Create dialog
 	filedialog::FDInfo info;
@@ -1450,7 +1449,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 	// must keep this smart pointer around or the archive gets dealloced immediately
 	// from the heap and we get huge memory issues while referencing a dangling pointer
-	auto ptr_archive = archive->formatId() == "folder" ?
+	auto ptr_archive = archive->formatId() == ArchiveFormat::Dir ?
 						   app::archiveManager().openDirArchive(archive->filename(), false, true) :
 						   app::archiveManager().openArchive(archive->filename(), false, true);
 	archive          = ptr_archive.get();
@@ -2368,7 +2367,7 @@ size_t archiveoperations::replaceThings(Archive* archive, int oldtype, int newty
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
-			auto temp_archive = std::make_shared<WadArchive>();
+			auto temp_archive = std::make_shared<Archive>(ArchiveFormat::Wad);
 			if (temp_archive->open(m_head->data()))
 			{
 				achanged = archiveoperations::replaceThings(temp_archive.get(), oldtype, newtype);
@@ -2739,11 +2738,11 @@ size_t archiveoperations::replaceSpecials(
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
-			Archive* temp_archive = new WadArchive();
+			auto temp_archive = std::make_unique<Archive>(ArchiveFormat::Wad);
 			if (temp_archive->open(m_head.get()))
 			{
 				achanged = archiveoperations::replaceSpecials(
-					temp_archive,
+					temp_archive.get(),
 					oldtype,
 					newtype,
 					lines,
@@ -2777,9 +2776,6 @@ size_t archiveoperations::replaceSpecials(
 					}
 				}
 			}
-
-			// Cleanup
-			delete temp_archive;
 		}
 		else
 		{
@@ -3191,11 +3187,11 @@ size_t archiveoperations::replaceTextures(
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
-			Archive* temp_archive = new WadArchive();
+			auto temp_archive = std::make_unique<Archive>(ArchiveFormat::Wad);
 			if (temp_archive->open(m_head.get()))
 			{
 				achanged = archiveoperations::replaceTextures(
-					temp_archive, oldtex, newtex, floor, ceiling, lower, middle, upper);
+					temp_archive.get(), oldtex, newtex, floor, ceiling, lower, middle, upper);
 				MemChunk mc;
 				if (!(temp_archive->write(mc)))
 				{
@@ -3210,9 +3206,6 @@ size_t archiveoperations::replaceTextures(
 					}
 				}
 			}
-
-			// Cleanup
-			delete temp_archive;
 		}
 		else
 		{

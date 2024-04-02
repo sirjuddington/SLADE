@@ -53,21 +53,21 @@ using namespace slade;
 namespace slade::lua
 {
 // -----------------------------------------------------------------------------
-// Registers the ArchiveFormat type with lua
+// Registers the ArchiveFormatDesc type with lua
 // -----------------------------------------------------------------------------
 void registerArchiveFormat(sol::state& lua)
 {
 	// Create ArchiveFormat type, no constructor
-	auto lua_archiveformat = lua.new_usertype<ArchiveFormat>("ArchiveFormat", "new", sol::no_constructor);
+	auto lua_archiveformat = lua.new_usertype<ArchiveFormatDesc>("ArchiveFormat", "new", sol::no_constructor);
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_archiveformat.set("id", sol::readonly(&ArchiveFormat::id));
-	lua_archiveformat.set("name", sol::readonly(&ArchiveFormat::name));
-	lua_archiveformat.set("supportsDirs", sol::readonly(&ArchiveFormat::supports_dirs));
-	lua_archiveformat.set("hasExtensions", sol::readonly(&ArchiveFormat::names_extensions));
-	lua_archiveformat.set("maxNameLength", sol::readonly(&ArchiveFormat::max_name_length));
-	lua_archiveformat.set("entryFormat", sol::readonly(&ArchiveFormat::entry_format));
+	lua_archiveformat.set("id", sol::readonly(&ArchiveFormatDesc::id));
+	lua_archiveformat.set("name", sol::readonly(&ArchiveFormatDesc::name));
+	lua_archiveformat.set("supportsDirs", sol::readonly(&ArchiveFormatDesc::supports_dirs));
+	lua_archiveformat.set("hasExtensions", sol::readonly(&ArchiveFormatDesc::names_extensions));
+	lua_archiveformat.set("maxNameLength", sol::readonly(&ArchiveFormatDesc::max_name_length));
+	lua_archiveformat.set("entryFormat", sol::readonly(&ArchiveFormatDesc::entry_format));
 	// TODO: extensions - need to export key_value_t or do something custom
 }
 
