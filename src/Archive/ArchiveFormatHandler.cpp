@@ -455,10 +455,34 @@ bool ArchiveFormatHandler::save(Archive& archive, string_view filename)
 // -----------------------------------------------------------------------------
 // Loads an [entry]'s data from the archive file on disk into [out]
 // Returns true if successful, false otherwise
+//
+// A generic version of loadEntryData that works for many different archive
+// formats, taking the offset and size of [entry] from exProps to read directly
+// from the archive file
 // -----------------------------------------------------------------------------
 bool ArchiveFormatHandler::loadEntryData(Archive& archive, const ArchiveEntry* entry, MemChunk& out)
 {
-	return archive.genericLoadEntryData(entry, out);
+	// Check if entry exists on disk
+	auto size   = entry->sizeOnDisk();
+	auto offset = entry->offsetOnDisk();
+	if (size < 0 || offset < 0)
+		return false;
+
+	// Open archive file
+	wxFile file(archive.filename_);
+
+	// Check it opened
+	if (!file.IsOpened())
+	{
+		log::error("loadEntryData: Unable to open archive file {}", archive.filename_);
+		return false;
+	}
+
+	// Seek to entry offset in file and read it in
+	file.Seek(offset, wxFromStart);
+	out.importFileStreamWx(file, size);
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -509,10 +533,6 @@ shared_ptr<ArchiveDir> ArchiveFormatHandler::createDir(Archive& archive, string_
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveDir> ArchiveFormatHandler::removeDir(Archive& archive, string_view path, ArchiveDir* base)
 {
-	// Abort if read only or treeless
-	if (archive.read_only_ || treeless_)
-		return nullptr;
-
 	// Get the dir to remove
 	auto dir = archive.dirAtPath(path, base);
 
@@ -543,14 +563,6 @@ shared_ptr<ArchiveDir> ArchiveFormatHandler::removeDir(Archive& archive, string_
 // -----------------------------------------------------------------------------
 bool ArchiveFormatHandler::renameDir(Archive& archive, ArchiveDir* dir, string_view new_name)
 {
-	// Abort if read only or treeless
-	if (archive.read_only_ || treeless_)
-		return false;
-
-	// Check the directory is part of this archive
-	if (!dir || dir->archive() != &archive)
-		return false;
-
 	// Rename the directory if needed
 	if (dir->name() != new_name)
 	{
@@ -583,14 +595,6 @@ shared_ptr<ArchiveEntry> ArchiveFormatHandler::addEntry(
 	unsigned                 position,
 	ArchiveDir*              dir)
 {
-	// Abort if read only
-	if (archive.read_only_)
-		return nullptr;
-
-	// Check valid entry
-	if (!entry)
-		return nullptr;
-
 	// If no dir given, set it to the root dir
 	if (!dir || treeless_)
 		dir = archive.dir_root_.get();
@@ -638,10 +642,6 @@ shared_ptr<ArchiveEntry> ArchiveFormatHandler::addNewEntry(
 	unsigned    position,
 	ArchiveDir* dir)
 {
-	// Abort if read only
-	if (archive.read_only_)
-		return nullptr;
-
 	// Create the new entry
 	auto entry = std::make_shared<ArchiveEntry>(name);
 
@@ -659,18 +659,6 @@ shared_ptr<ArchiveEntry> ArchiveFormatHandler::addNewEntry(
 // -----------------------------------------------------------------------------
 bool ArchiveFormatHandler::removeEntry(Archive& archive, ArchiveEntry* entry, bool set_deleted)
 {
-	// Abort if read only
-	if (archive.read_only_)
-		return false;
-
-	// Check entry
-	if (!archive.checkEntry(entry))
-		return false;
-
-	// Check if entry is locked
-	if (entry->isLocked())
-		return false;
-
 	// Get its directory
 	auto dir = entry->parentDir();
 
@@ -708,18 +696,6 @@ bool ArchiveFormatHandler::removeEntry(Archive& archive, ArchiveEntry* entry, bo
 // -----------------------------------------------------------------------------
 bool ArchiveFormatHandler::swapEntries(Archive& archive, ArchiveEntry* entry1, ArchiveEntry* entry2)
 {
-	// Abort if read only
-	if (archive.read_only_)
-		return false;
-
-	// Check both entries
-	if (!archive.checkEntry(entry1) || !archive.checkEntry(entry2))
-		return false;
-
-	// Check neither entry is locked
-	if (entry1->isLocked() || entry2->isLocked())
-		return false;
-
 	// Get their directory
 	auto dir = entry1->parentDir();
 
@@ -766,18 +742,6 @@ bool ArchiveFormatHandler::swapEntries(Archive& archive, ArchiveEntry* entry1, A
 // -----------------------------------------------------------------------------
 bool ArchiveFormatHandler::moveEntry(Archive& archive, ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 {
-	// Abort if read only
-	if (archive.read_only_)
-		return false;
-
-	// Check the entry
-	if (!archive.checkEntry(entry))
-		return false;
-
-	// Check if the entry is locked
-	if (entry->isLocked())
-		return false;
-
 	// Get the entry's current directory
 	const auto cdir = entry->parentDir();
 
@@ -809,22 +773,6 @@ bool ArchiveFormatHandler::moveEntry(Archive& archive, ArchiveEntry* entry, unsi
 // -----------------------------------------------------------------------------
 bool ArchiveFormatHandler::renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force)
 {
-	// Abort if read only
-	if (archive.read_only_)
-		return false;
-
-	// Check entry
-	if (!archive.checkEntry(entry))
-		return false;
-
-	// Check if entry is locked
-	if (entry->isLocked())
-		return false;
-
-	// Check for directory
-	if (entry->type() == EntryType::folderType())
-		return renameDir(archive, archive.dirAtPath(entry->path(true)), name);
-
 	// Keep current name for renamed signal
 	const auto prev_name = entry->name();
 

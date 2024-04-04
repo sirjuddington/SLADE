@@ -270,14 +270,6 @@ shared_ptr<ArchiveEntry> HogArchiveHandler::addEntry(
 	unsigned                 position,
 	ArchiveDir*              dir)
 {
-	// Check entry
-	if (!entry)
-		return nullptr;
-
-	// Check if read-only
-	if (archive.isReadOnly())
-		return nullptr;
-
 	if (shouldEncodeTxb(entry->name()))
 		entry->setEncryption(EntryEncryption::TXB);
 

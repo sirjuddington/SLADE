@@ -444,6 +444,10 @@ bool Archive::save(string_view filename)
 
 bool Archive::loadEntryData(const ArchiveEntry* entry, MemChunk& out)
 {
+	// Check entry is ok
+	if (!checkEntry(entry))
+		return false;
+
 	return format_handler_->loadEntryData(*this, entry, out);
 }
 
@@ -611,6 +615,10 @@ shared_ptr<ArchiveDir> Archive::createDir(string_view path, shared_ptr<ArchiveDi
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveDir> Archive::removeDir(string_view path, ArchiveDir* base)
 {
+	// Abort if read only or treeless
+	if (read_only_ || isTreeless())
+		return nullptr;
+
 	return format_handler_->removeDir(*this, path, base);
 }
 
@@ -620,6 +628,14 @@ shared_ptr<ArchiveDir> Archive::removeDir(string_view path, ArchiveDir* base)
 // -----------------------------------------------------------------------------
 bool Archive::renameDir(ArchiveDir* dir, string_view new_name)
 {
+	// Abort if read only or treeless
+	if (read_only_ || isTreeless())
+		return false;
+
+	// Check the directory is part of this archive
+	if (!dir || dir->archive() != this)
+		return false;
+
 	return format_handler_->renameDir(*this, dir, new_name);
 }
 
@@ -633,6 +649,14 @@ bool Archive::renameDir(ArchiveDir* dir, string_view new_name)
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsigned position, ArchiveDir* dir)
 {
+	// Abort if read only
+	if (read_only_)
+		return nullptr;
+
+	// Check valid entry
+	if (!entry)
+		return nullptr;
+
 	return format_handler_->addEntry(*this, entry, position, dir);
 }
 
@@ -644,6 +668,10 @@ shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsig
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> Archive::addNewEntry(string_view name, unsigned position, ArchiveDir* dir)
 {
+	// Abort if read only
+	if (read_only_)
+		return nullptr;
+
 	return format_handler_->addNewEntry(*this, name, position, dir);
 }
 
@@ -673,6 +701,18 @@ shared_ptr<ArchiveEntry> Archive::addNewEntry(string_view name, string_view add_
 // -----------------------------------------------------------------------------
 bool Archive::removeEntry(ArchiveEntry* entry, bool set_deleted)
 {
+	// Abort if read only
+	if (read_only_)
+		return false;
+
+	// Check entry
+	if (!checkEntry(entry))
+		return false;
+
+	// Check if entry is locked
+	if (entry->isLocked())
+		return false;
+
 	return format_handler_->removeEntry(*this, entry, set_deleted);
 }
 
@@ -702,6 +742,18 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, const ArchiveDir* di
 // -----------------------------------------------------------------------------
 bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 {
+	// Abort if read only
+	if (read_only_)
+		return false;
+
+	// Check both entries
+	if (!checkEntry(entry1) || !checkEntry(entry2))
+		return false;
+
+	// Check neither entry is locked
+	if (entry1->isLocked() || entry2->isLocked())
+		return false;
+
 	return format_handler_->swapEntries(*this, entry1, entry2);
 }
 
@@ -712,6 +764,18 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 // -----------------------------------------------------------------------------
 bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 {
+	// Abort if read only
+	if (read_only_)
+		return false;
+
+	// Check the entry
+	if (!checkEntry(entry))
+		return false;
+
+	// Check if the entry is locked
+	if (entry->isLocked())
+		return false;
+
 	return format_handler_->moveEntry(*this, entry, position, dir);
 }
 
@@ -721,6 +785,22 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 // -----------------------------------------------------------------------------
 bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 {
+	// Abort if read only
+	if (read_only_)
+		return false;
+
+	// Check entry
+	if (!checkEntry(entry))
+		return false;
+
+	// Check if entry is locked
+	if (entry->isLocked())
+		return false;
+
+	// Check for directory
+	if (entry->type() == EntryType::folderType())
+		return renameDir(dirAtPath(entry->path(true)), name);
+
 	return format_handler_->renameEntry(*this, entry, name, force);
 }
 
@@ -938,40 +1018,6 @@ void Archive::blockModificationSignals(bool block)
 		signals_.entry_state_changed.unblock();
 		signals_.entry_renamed.unblock();
 	}
-}
-
-// -----------------------------------------------------------------------------
-// A generic version of loadEntryData that works for many different archive
-// formats, taking the offset and size of [entry] from exProps to read directly
-// from the archive file
-// -----------------------------------------------------------------------------
-bool Archive::genericLoadEntryData(const ArchiveEntry* entry, MemChunk& out) const
-{
-	// Check entry is ok
-	if (!checkEntry(entry))
-		return false;
-
-	// Check if entry exists on disk
-	auto size   = entry->sizeOnDisk();
-	auto offset = entry->offsetOnDisk();
-	if (size < 0 || offset < 0)
-		return false;
-
-	// Open archive file
-	wxFile file(filename_);
-
-	// Check it opened
-	if (!file.IsOpened())
-	{
-		log::error("loadEntryData: Unable to open archive file {}", filename_);
-		return false;
-	}
-
-	// Seek to entry offset in file and read it in
-	file.Seek(offset, wxFromStart);
-	out.importFileStreamWx(file, size);
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------

@@ -917,42 +917,6 @@ bool WolfArchiveHandler::openGraph(Archive& archive, const MemChunk& head, const
 }
 
 // -----------------------------------------------------------------------------
-// Override of Archive::addEntry to force entry addition to the root directory,
-// and update namespaces if needed
-// -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> WolfArchiveHandler::addEntry(
-	Archive&                 archive,
-	shared_ptr<ArchiveEntry> entry,
-	unsigned                 position,
-	ArchiveDir*              dir)
-{
-	// Check entry
-	if (!entry)
-		return nullptr;
-
-	// Check if read-only
-	if (archive.isReadOnly())
-		return nullptr;
-
-	// Do default entry addition (to root directory)
-	ArchiveFormatHandler::addEntry(archive, entry, position);
-
-	return entry;
-}
-
-// -----------------------------------------------------------------------------
-// Since there are no namespaces, just give the hot potato to the other function
-// and call it a day.
-// -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> WolfArchiveHandler::addEntry(
-	Archive&                 archive,
-	shared_ptr<ArchiveEntry> entry,
-	string_view              add_namespace)
-{
-	return addEntry(archive, entry, 0xFFFFFFFF, nullptr);
-}
-
-// -----------------------------------------------------------------------------
 // Writes the dat archive to a MemChunk
 // Returns true if successful, false otherwise [Not implemented]
 // -----------------------------------------------------------------------------

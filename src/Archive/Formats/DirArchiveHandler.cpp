@@ -337,10 +337,6 @@ bool DirArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* entr
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveDir> DirArchiveHandler::removeDir(Archive& archive, string_view path, ArchiveDir* base)
 {
-	// Abort if read only
-	if (archive.isReadOnly())
-		return nullptr;
-
 	// Get the dir to remove
 	const auto dir = archive.dirAtPath(path, base);
 
@@ -378,7 +374,14 @@ bool DirArchiveHandler::renameDir(Archive& archive, ArchiveDir* dir, string_view
 	const StringPair rename(path + dir->name(), fmt::format("{}{}", path, new_name));
 	renamed_dirs_.push_back(rename);
 
-	return ArchiveFormatHandler::renameDir(archive, dir, new_name);
+	if (!ArchiveFormatHandler::renameDir(archive, dir, new_name))
+	{
+		// Rename failed (it can't currently but just to be sure)
+		renamed_dirs_.pop_back();
+		return false;
+	}
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -411,10 +414,6 @@ shared_ptr<ArchiveEntry> DirArchiveHandler::addEntry(
 // -----------------------------------------------------------------------------
 bool DirArchiveHandler::removeEntry(Archive& archive, ArchiveEntry* entry, bool set_deleted)
 {
-	// Check entry
-	if (!archive.checkEntry(entry))
-		return false;
-
 	if (entry->exProps().contains("filePath"))
 	{
 		// If it exists on disk we need to update removed_files_
@@ -434,10 +433,6 @@ bool DirArchiveHandler::removeEntry(Archive& archive, ArchiveEntry* entry, bool 
 // -----------------------------------------------------------------------------
 bool DirArchiveHandler::renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force)
 {
-	// Check entry
-	if (!archive.checkEntry(entry))
-		return false;
-
 	// Check if entry exists on disk
 	if (entry->exProps().contains("filePath"))
 	{

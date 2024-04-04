@@ -264,10 +264,6 @@ bool GZipArchiveHandler::write(Archive& archive, MemChunk& mc)
 // -----------------------------------------------------------------------------
 bool GZipArchiveHandler::renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force)
 {
-	// Check entry
-	if (!archive.checkEntry(entry))
-		return false;
-
 	// Do default rename
 	bool ok = ArchiveFormatHandler::renameEntry(archive, entry, name, force);
 	if (ok)

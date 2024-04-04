@@ -255,14 +255,6 @@ shared_ptr<ArchiveEntry> DatArchiveHandler::addEntry(
 	unsigned                 position,
 	ArchiveDir*              dir)
 {
-	// Check entry
-	if (!entry)
-		return nullptr;
-
-	// Check if read-only
-	if (archive.isReadOnly())
-		return nullptr;
-
 	// Do default entry addition (to root directory)
 	ArchiveFormatHandler::addEntry(archive, entry, position);
 
@@ -326,10 +318,6 @@ shared_ptr<ArchiveEntry> DatArchiveHandler::addEntry(
 // -----------------------------------------------------------------------------
 bool DatArchiveHandler::removeEntry(Archive& archive, ArchiveEntry* entry, bool set_deleted)
 {
-	// Check entry
-	if (!archive.checkEntry(entry))
-		return false;
-
 	// Get entry name (for later)
 	auto name = entry->upperName();
 
@@ -351,10 +339,6 @@ bool DatArchiveHandler::removeEntry(Archive& archive, ArchiveEntry* entry, bool 
 // -----------------------------------------------------------------------------
 bool DatArchiveHandler::renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force)
 {
-	// Check entry
-	if (!archive.checkEntry(entry))
-		return false;
-
 	// Do default rename
 	if (ArchiveFormatHandler::renameEntry(archive, entry, name, force))
 	{
@@ -373,10 +357,6 @@ bool DatArchiveHandler::renameEntry(Archive& archive, ArchiveEntry* entry, strin
 // -----------------------------------------------------------------------------
 bool DatArchiveHandler::swapEntries(Archive& archive, ArchiveEntry* entry1, ArchiveEntry* entry2)
 {
-	// Check entries
-	if (!archive.checkEntry(entry1) || !archive.checkEntry(entry2))
-		return false;
-
 	// Do default swap (force root dir)
 	if (ArchiveFormatHandler::swapEntries(archive, entry1, entry2))
 	{
@@ -395,10 +375,6 @@ bool DatArchiveHandler::swapEntries(Archive& archive, ArchiveEntry* entry1, Arch
 // -----------------------------------------------------------------------------
 bool DatArchiveHandler::moveEntry(Archive& archive, ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 {
-	// Check entry
-	if (!archive.checkEntry(entry))
-		return false;
-
 	// Do default move (force root dir)
 	if (ArchiveFormatHandler::moveEntry(archive, entry, position, nullptr))
 	{
