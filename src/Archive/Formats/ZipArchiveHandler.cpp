@@ -72,7 +72,7 @@ EXTERN_CVAR(Int, max_entry_size_mb)
 // -----------------------------------------------------------------------------
 // ZipArchiveHandler class constructor
 // -----------------------------------------------------------------------------
-ZipArchiveHandler::ZipArchiveHandler() : ArchiveFormatHandler(ArchiveFormat::Zip) {}
+ZipArchiveHandler::ZipArchiveHandler(ArchiveFormat format) : ArchiveFormatHandler(format) {}
 
 // -----------------------------------------------------------------------------
 // ZipArchiveHandler class destructor

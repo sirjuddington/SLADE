@@ -7,7 +7,7 @@ namespace slade
 class ZipArchiveHandler : public ArchiveFormatHandler
 {
 public:
-	ZipArchiveHandler();
+	ZipArchiveHandler(ArchiveFormat format = ArchiveFormat::Zip);
 	~ZipArchiveHandler() override;
 
 	void init(Archive& archive) override;

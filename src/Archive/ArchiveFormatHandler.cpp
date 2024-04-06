@@ -6,6 +6,7 @@
 #include "ArchiveEntry.h"
 #include "ArchiveFormat.h"
 #include "EntryType/EntryType.h"
+#include "Formats/7zArchiveHandler.h"
 #include "Formats/All.h"
 #include "General/UndoRedo.h"
 #include "Utility/FileUtils.h"
@@ -33,7 +34,8 @@ vector<Named<ArchiveFormat>> formats = { { "adat", ArchiveFormat::ADat }, { "bsp
 										 { "rff", ArchiveFormat::Rff },   { "sin", ArchiveFormat::SiN },
 										 { "tar", ArchiveFormat::Tar },   { "wad", ArchiveFormat::Wad },
 										 { "wadj", ArchiveFormat::WadJ }, { "wad2", ArchiveFormat::Wad2 },
-										 { "wolf", ArchiveFormat::Wolf }, { "zip", ArchiveFormat::Zip } };
+										 { "wolf", ArchiveFormat::Wolf }, { "zip", ArchiveFormat::Zip },
+										 { "7z", ArchiveFormat::Zip7 } };
 
 vector<unique_ptr<ArchiveFormatHandler>> all_handlers;
 } // namespace
@@ -1105,6 +1107,7 @@ unique_ptr<ArchiveFormatHandler> ArchiveFormatHandler::getHandler(ArchiveFormat 
 	case ArchiveFormat::Wad2:     return std::make_unique<Wad2ArchiveHandler>();
 	case ArchiveFormat::Wolf:     return std::make_unique<WolfArchiveHandler>();
 	case ArchiveFormat::Zip:      return std::make_unique<ZipArchiveHandler>();
+	case ArchiveFormat::Zip7:     return std::make_unique<Zip7ArchiveHandler>();
 	default:                      break;
 	}
 

@@ -35,6 +35,12 @@ public:
 	ZipDataFormat() : ArchiveDataFormat("archive_zip", ArchiveFormat::Zip) {}
 };
 
+class Zip7DataFormat : public ArchiveDataFormat
+{
+public:
+	Zip7DataFormat() : ArchiveDataFormat("archive_7z", ArchiveFormat::Zip7) {}
+};
+
 class LibDataFormat : public ArchiveDataFormat
 {
 public:

@@ -467,6 +467,8 @@ shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 		new_archive = std::make_shared<Archive>(ArchiveFormat::Grp);
 	else if (format == "pak")
 		new_archive = std::make_shared<Archive>(ArchiveFormat::Pak);
+	else if (format == "7z")
+		new_archive = std::make_shared<Archive>(ArchiveFormat::Zip7);
 	else
 	{
 		global::error = fmt::format("Can not create archive of format: {}", format);

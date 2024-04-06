@@ -28,6 +28,7 @@ enum class ArchiveFormat
 	Wad2,
 	Wolf,
 	Zip,
+	Zip7, // 7zip
 
 	Unknown
 };
