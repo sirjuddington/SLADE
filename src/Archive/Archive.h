@@ -1,29 +1,12 @@
 #pragma once
 
-#include "Utility/StringPair.h"
-
 namespace slade
 {
+struct ArchiveFormatInfo;
 class ArchiveFormatHandler;
 class EntryType;
 enum class ArchiveFormat;
 struct MapDesc;
-
-struct ArchiveFormatDesc
-{
-	string             id;
-	string             name;
-	bool               supports_dirs    = false;
-	bool               names_extensions = true;
-	int                max_name_length  = -1;
-	string             entry_format;
-	vector<StringPair> extensions;
-	bool               prefer_uppercase      = false;
-	bool               create                = false;
-	bool               allow_duplicate_names = true;
-
-	ArchiveFormatDesc(string_view id) : id{ id }, name{ id } {}
-};
 
 struct ArchiveSearchOptions
 {
@@ -78,14 +61,14 @@ public:
 	shared_ptr<ArchiveEntry> entryAtPathShared(string_view path) const;
 
 	// Archive type info
-	ArchiveFormatDesc formatDesc() const;
-	string            fileExtensionString() const;
-	bool              isTreeless() { return false; }
+	const ArchiveFormatInfo& formatInfo() const;
+	string                   fileExtensionString() const;
+	bool                     isTreeless() { return false; }
 
 	// Format Handler
 	ArchiveFormatHandler& formatHandler() const { return *format_handler_; }
-	ArchiveFormat         formatId() const;
-	string                formatIdString() const;
+	ArchiveFormat         format() const;
+	string                formatId() const;
 
 	// Opening
 	bool open(string_view filename); // Open from File
@@ -169,11 +152,6 @@ public:
 	Signals& signals() { return signals_; }
 	void     blockModificationSignals(bool block = true);
 
-	// Static functions
-	static bool                       loadFormats(const MemChunk& mc);
-	static vector<ArchiveFormatDesc>& allFormats() { return formats_; }
-	static ArchiveFormatDesc*         formatFromId(string_view id);
-
 protected:
 	string                 filename_;
 	weak_ptr<ArchiveEntry> parent_;
@@ -182,7 +160,6 @@ protected:
 	time_t file_modified_ = 0;
 
 	// Helpers
-	bool genericLoadEntryData(const ArchiveEntry* entry, MemChunk& out) const;
 	void detectAllEntryTypes() const;
 
 private:
@@ -190,8 +167,6 @@ private:
 	shared_ptr<ArchiveDir>           dir_root_;
 	Signals                          signals_;
 	unique_ptr<ArchiveFormatHandler> format_handler_;
-
-	static vector<ArchiveFormatDesc> formats_;
 };
 
 // Simple class that will block and unblock modification signals for an archive via RAII

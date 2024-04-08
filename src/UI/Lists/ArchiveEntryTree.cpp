@@ -175,7 +175,7 @@ void ArchiveViewModel::openArchive(const shared_ptr<Archive>& archive, UndoManag
 	archive_      = archive;
 	root_dir_     = archive->rootDir();
 	undo_manager_ = undo_manager;
-	view_type_    = archive->formatDesc().supports_dirs && !force_list ? ViewType::Tree : ViewType::List;
+	view_type_    = archive->formatInfo().supports_dirs && !force_list ? ViewType::Tree : ViewType::List;
 
 	// Refresh (will load all items)
 	Cleared();
@@ -738,7 +738,7 @@ int ArchiveViewModel::Compare(
 		else
 		{
 			// Directory archives default to alphabetical order
-			if (const auto archive = archive_.lock(); archive->formatId() == ArchiveFormat::Dir)
+			if (const auto archive = archive_.lock(); archive->format() == ArchiveFormat::Dir)
 				cmpval = e1->upperName().compare(e2->upperName());
 
 			// Everything else defaults to index order
@@ -1190,7 +1190,7 @@ vector<ArchiveDir*> ArchiveEntryTree::selectedDirectories() const
 		return {};
 
 	auto* archive = archive_.lock().get();
-	if (!archive || !archive->formatDesc().supports_dirs)
+	if (!archive || !archive->formatInfo().supports_dirs)
 		return {};
 
 	vector<ArchiveDir*> dirs;
@@ -1219,7 +1219,7 @@ ArchiveDir* ArchiveEntryTree::firstSelectedDirectory() const
 		return {};
 
 	auto* archive = archive_.lock().get();
-	if (!archive || !archive->formatDesc().supports_dirs)
+	if (!archive || !archive->formatInfo().supports_dirs)
 		return {};
 
 	// Get selected tree items
@@ -1246,7 +1246,7 @@ ArchiveDir* ArchiveEntryTree::lastSelectedDirectory() const
 		return {};
 
 	auto* archive = archive_.lock().get();
-	if (!archive || !archive->formatDesc().supports_dirs)
+	if (!archive || !archive->formatInfo().supports_dirs)
 		return {};
 
 	// Get selected tree items
@@ -1486,7 +1486,7 @@ void ArchiveEntryTree::EnsureVisible(const wxDataViewItem& item, const wxDataVie
 			return;
 
 		// Go to entry's parent dir if needed
-		if (archive->formatDesc().supports_dirs && model_->rootDir() != entry->parentDir())
+		if (archive->formatInfo().supports_dirs && model_->rootDir() != entry->parentDir())
 			model_->setRootDir(ArchiveDir::getShared(entry->parentDir()));
 	}
 

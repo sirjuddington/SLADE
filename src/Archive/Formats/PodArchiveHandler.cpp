@@ -306,7 +306,7 @@ bool PodArchiveHandler::isThisFormat(const string& filename)
 CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
 	auto archive = maineditor::currentArchive();
-	if (archive && archive->formatId() == ArchiveFormat::Pod)
+	if (archive && archive->format() == ArchiveFormat::Pod)
 		log::console(string{ dynamic_cast<PodArchiveHandler*>(&archive->formatHandler())->getId() });
 	else
 		log::console("Current tab is not a POD archive");
@@ -315,7 +315,7 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 CONSOLE_COMMAND(pod_set_id, 1, true)
 {
 	auto archive = maineditor::currentArchive();
-	if (archive && archive->formatId() == ArchiveFormat::Pod)
+	if (archive && archive->format() == ArchiveFormat::Pod)
 		dynamic_cast<PodArchiveHandler*>(&archive->formatHandler())->setId(strutil::truncate(args[0], 80));
 	else
 		log::console("Current tab is not a POD archive");

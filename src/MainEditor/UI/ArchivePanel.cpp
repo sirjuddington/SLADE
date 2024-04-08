@@ -165,7 +165,7 @@ public:
 			if (wxDirExists(filenames[a]))
 			{
 				// If the archive supports directories, create the directory and import its contents
-				if (archive->formatDesc().supports_dirs)
+				if (archive->formatInfo().supports_dirs)
 				{
 					strutil::Path fn(filenames[a].ToStdString());
 					auto          ndir = archive->createDir(fn.fileName(false), ArchiveDir::getShared(dir));
@@ -363,7 +363,7 @@ void ArchivePanel::setup(const Archive* archive)
 	splitter_->SetMinimumPaneSize(ui::scalePx(300));
 	m_hbox->Add(splitter_, wxutil::sfWithBorder(1).Expand());
 	int split_pos = ap_splitter_position_list;
-	if (archive && archive->formatDesc().supports_dirs)
+	if (archive && archive->formatInfo().supports_dirs)
 		split_pos = ap_splitter_position_tree;
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
@@ -394,7 +394,7 @@ void ArchivePanel::bindEvents(Archive* archive)
 		{
 			if (auto archive = archive_.lock().get())
 			{
-				if (archive->formatDesc().supports_dirs)
+				if (archive->formatInfo().supports_dirs)
 					ap_splitter_position_tree = e.GetSashPosition();
 				else
 					ap_splitter_position_list = e.GetSashPosition();
@@ -434,7 +434,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 {
 	auto* panel    = new wxPanel(parent);
 	auto  archive  = archive_.lock();
-	bool  has_dirs = archive->formatDesc().supports_dirs;
+	bool  has_dirs = archive->formatInfo().supports_dirs;
 
 	// Create & set sizer & border
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -476,7 +476,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	tbg_entry->addActionButton("arch_entry_export");
 	tbg_entry->setAllButtonsEnabled(false);
 	toolbar_elist_->addGroup(tbg_entry);
-	if (archive->formatId() != ArchiveFormat::Dir)
+	if (archive->format() != ArchiveFormat::Dir)
 	{
 		auto* tbg_moving = new SToolBarGroup(toolbar_elist_, "_Moving");
 		tbg_moving->addActionButton("arch_entry_moveup");
@@ -705,7 +705,7 @@ bool ArchivePanel::newEntry()
 
 	// Determine the directory to add the new entry to
 	auto* dir = archive->rootDir().get();
-	if (archive->formatDesc().supports_dirs)
+	if (archive->formatInfo().supports_dirs)
 	{
 		auto dir_path = dlg->parentDirPath().ToStdString();
 		strutil::replaceIP(dir_path, "\\", "/");
@@ -814,7 +814,7 @@ bool ArchivePanel::newDirectory()
 
 	// Determine the parent directory
 	auto* parent_dir = archive->rootDir().get();
-	if (archive->formatDesc().supports_dirs)
+	if (archive->formatInfo().supports_dirs)
 	{
 		auto dir_path = dlg->parentDirPath().ToStdString();
 		strutil::replaceIP(dir_path, "\\", "/");
@@ -976,7 +976,7 @@ bool ArchivePanel::buildArchive() const
 	if (!archive)
 		return false;
 
-	if (archive->formatId() != ArchiveFormat::Dir)
+	if (archive->format() != ArchiveFormat::Dir)
 	{
 		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
 		return false;
@@ -1704,7 +1704,7 @@ bool ArchivePanel::swanConvert() const
 			undo_manager_->beginRecord(fmt::format("Create {}", wadnames[e]));
 
 			auto output = archive->addNewEntry(
-				(archive->formatId() == ArchiveFormat::Wad ? wadnames[e] : zipnames[e]), index, lastEntry->parentDir());
+				(archive->format() == ArchiveFormat::Wad ? wadnames[e] : zipnames[e]), index, lastEntry->parentDir());
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
@@ -1752,8 +1752,8 @@ bool ArchivePanel::basConvert(bool animdefs)
 
 	// Create new entry
 	auto output = archive->addNewEntry(
-		(animdefs ? (archive->formatId() == ArchiveFormat::Wad ? "ANIMDEFS" : "animdefs.txt") :
-					(archive->formatId() == ArchiveFormat::Wad ? "SWANTBLS" : "swantbls.dat")),
+		(animdefs ? (archive->format() == ArchiveFormat::Wad ? "ANIMDEFS" : "animdefs.txt") :
+					(archive->format() == ArchiveFormat::Wad ? "SWANTBLS" : "swantbls.dat")),
 		index,
 		lastEntry->parentDir());
 
@@ -2608,7 +2608,7 @@ bool ArchivePanel::canMoveEntries() const
 
 	// Can't move in directory archives
 	if (auto archive = archive_.lock())
-		if (archive->formatId() == ArchiveFormat::Dir)
+		if (archive->format() == ArchiveFormat::Dir)
 			return false;
 
 	// Can't move if no entries selected (ie. only dirs)
@@ -2804,7 +2804,7 @@ void ArchivePanel::onEntryListSelectionChange(wxDataViewEvent& e)
 void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 {
 	auto archive  = archive_.lock();
-	bool has_dirs = archive->formatDesc().supports_dirs;
+	bool has_dirs = archive->formatInfo().supports_dirs;
 
 	// Get selected entries
 	auto selection = entry_tree_->selectedEntries();

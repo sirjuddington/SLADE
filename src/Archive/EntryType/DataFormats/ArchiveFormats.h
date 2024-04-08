@@ -15,7 +15,7 @@ public:
 
 	int isThisFormat(const MemChunk& mc) override
 	{
-		return ArchiveFormatHandler::isFormat(mc, format_) ? match_probability_ : MATCH_FALSE;
+		return archive::isFormat(mc, format_) ? match_probability_ : MATCH_FALSE;
 	}
 
 private:
