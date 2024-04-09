@@ -454,34 +454,30 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 // archives. Returns the created archive, or nullptr if an invalid archive type
 // was given
 // -----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
+shared_ptr<Archive> ArchiveManager::newArchive(ArchiveFormat format)
 {
-	// Create a new archive depending on the type specified
-	shared_ptr<Archive> new_archive;
-	if (format == "wad")
-		new_archive = std::make_shared<Archive>(ArchiveFormat::Wad);
-	else if (format == "zip")
-		new_archive = std::make_shared<Archive>(ArchiveFormat::Zip);
-	else if (format == "grp")
-		new_archive = std::make_shared<Archive>(ArchiveFormat::Grp);
-	else if (format == "pak")
-		new_archive = std::make_shared<Archive>(ArchiveFormat::Pak);
-	else
+	// Check if the format specified allows archive creation
+	auto format_info = archive::formatInfo(format);
+	if (!format_info.create)
 	{
-		global::error = fmt::format("Can not create archive of format: {}", format);
+		global::error = fmt::format("Can not create archive of format: {}", format_info.name);
 		log::error(global::error);
 		return nullptr;
 	}
 
-	// If the archive was created, set its filename and add it to the list
-	if (new_archive)
-	{
-		new_archive->setFilename(fmt::format("UNSAVED ({})", new_archive->formatInfo().name));
-		addArchive(new_archive);
-	}
+	// Create a new archive depending on the format specified
+	auto new_archive = std::make_shared<Archive>(format);
+
+	// Set its filename and add it to the list
+	new_archive->setFilename(fmt::format("UNSAVED ({})", new_archive->formatInfo().name));
+	addArchive(new_archive);
 
 	// Return the created archive, if any
 	return new_archive;
+}
+shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
+{
+	return newArchive(archive::formatFromId(format));
 }
 
 // -----------------------------------------------------------------------------
