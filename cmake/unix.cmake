@@ -221,9 +221,9 @@ if (BUILD_PK3)
 			)
 endif()
 
-		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/logo_icon.png"
-			DESTINATION share/icons/
-			RENAME net.mancubus.SLADE.png
+		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/icons/general/logo.svg"
+			DESTINATION share/icons/hicolor/scalable/apps/
+			RENAME net.mancubus.SLADE.svg
 			)
 
 		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.desktop"
