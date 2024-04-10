@@ -33,10 +33,11 @@
 #include "Main.h"
 #include "MapPreviewCanvas.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
-#include "Archive/Formats/WadArchive.h"
 #include "Archive/MapDesc.h"
 #include "General/ColourConfiguration.h"
 #include "Graphics/SImage/SIFormat.h"
@@ -46,7 +47,6 @@
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
-#include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
@@ -114,7 +114,7 @@ bool MapPreviewCanvas::openMap(MapDesc map)
 		map_archive = true;
 
 		// Attempt to open entry as wad archive
-		temp_archive_ = std::make_unique<WadArchive>();
+		temp_archive_ = std::make_unique<Archive>(ArchiveFormat::Wad);
 		if (!temp_archive_->open(m_head->data()))
 		{
 			temp_archive_.reset();

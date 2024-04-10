@@ -32,11 +32,10 @@
 #include "Main.h"
 #include "MapBackupPanel.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/Formats/WadArchive.h"
-#include "Archive/Formats/ZipArchive.h"
-#include "Archive/MapDesc.h"
+#include "Archive/ArchiveFormatHandler.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "UI/Lists/ListView.h"
 #include "UI/WxUtils.h"
@@ -54,7 +53,9 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // MapBackupPanel class constructor
 // -----------------------------------------------------------------------------
-MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel{ parent, -1 }, archive_backups_{ new ZipArchive() }
+MapBackupPanel::MapBackupPanel(wxWindow* parent) :
+	wxPanel{ parent, -1 },
+	archive_backups_{ new Archive(ArchiveFormat::Zip) }
 {
 	// Setup Sizer
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -131,7 +132,7 @@ void MapBackupPanel::updateMapPreview()
 	int selection = (list_backups_->GetItemCount() - 1) - list_backups_->selectedItems()[0];
 
 	// Load map data to temporary wad
-	archive_mapdata_ = std::make_unique<WadArchive>();
+	archive_mapdata_ = std::make_unique<Archive>(ArchiveFormat::Wad);
 	auto dir         = dir_current_->subdirAt(selection);
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		archive_mapdata_->addEntry(std::make_shared<ArchiveEntry>(*dir->entryAt(a)), "");

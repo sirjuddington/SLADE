@@ -139,7 +139,7 @@ void registerEntryType(sol::state& lua)
 	lua_etype.set("id", sol::property(&EntryType::id));
 	lua_etype.set("name", sol::property(&EntryType::name));
 	lua_etype.set("extension", sol::property(&EntryType::extension));
-	lua_etype.set("formatId", sol::property(&EntryType::formatId));
+	lua_etype.set("format", sol::property(&EntryType::formatId));
 	lua_etype.set("editor", sol::property(&EntryType::editor));
 	lua_etype.set("category", sol::property(&EntryType::category));
 }

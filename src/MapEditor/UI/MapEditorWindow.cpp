@@ -32,9 +32,10 @@
 #include "Main.h"
 #include "MapEditorWindow.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/Formats/WadArchive.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
 #include "General/Misc.h"
@@ -637,7 +638,7 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 		// Load map data
 		if (map.archive)
 		{
-			WadArchive temp;
+			Archive temp(ArchiveFormat::Wad);
 			temp.open(head->data());
 			for (unsigned a = 0; a < temp.numEntries(); a++)
 				map_data_.emplace_back(new ArchiveEntry(*(temp.entryAt(a))));
@@ -725,7 +726,7 @@ void MapEditorWindow::loadMapScripts(const MapDesc& map)
 	// Check for pk3 map
 	if (map.archive)
 	{
-		auto wad = new WadArchive();
+		auto wad = std::make_unique<Archive>(ArchiveFormat::Wad);
 		wad->open(head->data());
 		auto maps = wad->detectMaps();
 		if (!maps.empty())
@@ -734,8 +735,6 @@ void MapEditorWindow::loadMapScripts(const MapDesc& map)
 			wad->close();
 			return;
 		}
-
-		delete wad;
 	}
 
 	// Go through map entries
@@ -834,7 +833,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 // -----------------------------------------------------------------------------
 // Writes the current map as [name] to a wad archive and returns it
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::writeMap(WadArchive& wad, const wxString& name, bool nodes)
+bool MapEditorWindow::writeMap(Archive& wad, const wxString& name, bool nodes)
 {
 	auto& mdesc_current = mapeditor::editContext().mapDesc();
 	auto& map           = mapeditor::editContext().map();
@@ -906,7 +905,7 @@ bool MapEditorWindow::saveMap()
 		return saveMapAs();
 
 	// Write map to temp wad
-	WadArchive wad;
+	Archive wad(ArchiveFormat::Wad);
 	if (!writeMap(wad))
 		return false;
 
@@ -915,7 +914,7 @@ bool MapEditorWindow::saveMap()
 	auto                map = mdesc_current;
 	if (mdesc_current.archive && current_head)
 	{
-		tempwad = std::make_unique<WadArchive>();
+		tempwad = std::make_unique<Archive>(ArchiveFormat::Wad);
 		tempwad->open(current_head.get());
 		auto amaps = tempwad->detectMaps();
 		if (!amaps.empty())
@@ -974,7 +973,7 @@ bool MapEditorWindow::saveMapAs()
 		return false;
 
 	// Create new, empty wad
-	WadArchive               wad;
+	Archive                  wad(ArchiveFormat::Wad);
 	auto                     head = wad.addNewEntry(mdesc_current.name);
 	shared_ptr<ArchiveEntry> end;
 	if (mdesc_current.format == MapFormat::UDMF)
@@ -1374,7 +1373,7 @@ bool MapEditorWindow::handleAction(string_view id)
 				edit_context.swapPlayerStart3d();
 
 			// Write temp wad
-			WadArchive wad;
+			Archive wad(ArchiveFormat::Wad);
 			if (writeMap(wad, mdesc_current.name))
 				wad.save(app::path("sladetemp_run.wad", app::Dir::Temp));
 

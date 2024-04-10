@@ -32,9 +32,10 @@
 #include "Main.h"
 #include "EntryType.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/Formats/ZipArchive.h"
 #include "EntryDataFormat.h"
 #include "General/Console.h"
 #include "MainEditor/MainEditor.h"
@@ -170,7 +171,7 @@ int EntryType::isThisType(ArchiveEntry& entry) const
 		bool match = false;
 		for (const auto& a : match_archive_)
 		{
-			if (entry.parent() && entry.parent()->formatDesc().entry_format == a)
+			if (entry.parent() && entry.parent()->formatInfo().entry_format == a)
 			{
 				match = true;
 				break;

@@ -7,6 +7,7 @@ namespace slade
 class ArchiveDir
 {
 	friend class Archive;
+	friend class ArchiveFormatHandler;
 
 public:
 	ArchiveDir(string_view name, const shared_ptr<ArchiveDir>& parent = nullptr, Archive* archive = nullptr);
