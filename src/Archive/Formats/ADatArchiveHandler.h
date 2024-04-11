@@ -19,7 +19,7 @@ public:
 	// Misc
 	bool loadEntryData(Archive& archive, const ArchiveEntry* entry, MemChunk& out) override;
 
-	// Static functions
+	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;
 	bool isThisFormat(const string& filename) override;
 

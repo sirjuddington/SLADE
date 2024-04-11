@@ -19,7 +19,7 @@ public:
 	// Writing/Saving
 	bool write(Archive& archive, MemChunk& mc) override;
 
-	// Static functions
+	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;
 	bool isThisFormat(const string& filename) override;
 

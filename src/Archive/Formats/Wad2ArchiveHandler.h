@@ -26,9 +26,9 @@ public:
 	bool open(Archive& archive, const MemChunk& mc) override; // Open from MemChunk
 	bool write(Archive& archive, MemChunk& mc) override;      // Write to MemChunk
 
-	// Static functions
-	static bool isThisFormat(const MemChunk& mc);
-	static bool isThisFormat(const string& filename);
+	// Format detection
+	bool isThisFormat(const MemChunk& mc) override;
+	bool isThisFormat(const string& filename) override;
 
 private:
 	bool wad3_ = false;
