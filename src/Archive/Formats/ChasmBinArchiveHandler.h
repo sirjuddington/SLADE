@@ -13,7 +13,7 @@ public:
 	bool open(Archive& archive, const MemChunk& mc) override;
 	bool write(Archive& archive, MemChunk& mc) override;
 
-	// Static functions
+	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;
 	bool isThisFormat(const string& filename) override;
 

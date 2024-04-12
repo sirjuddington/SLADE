@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2024 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ArchiveFormatHandler.cpp
+// Description: Base class for handling format-specific archive functionality,
+//              eg. reading, writing, any custom logic for entries, etc.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveFormatHandler.h"
 #include "Archive.h"
@@ -10,7 +41,6 @@
 #include "Formats/All.h"
 #include "General/UndoRedo.h"
 #include "Utility/FileUtils.h"
-#include "Utility/Named.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -21,32 +51,11 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
+CVAR(Bool, backup_archives, true, CVar::Flag::Save)
 namespace
 {
-vector<Named<ArchiveFormat>> formats = { { "adat", ArchiveFormat::ADat }, { "bsp", ArchiveFormat::Bsp },
-										 { "bz2", ArchiveFormat::Bz2 },   { "chasm_bin", ArchiveFormat::ChasmBin },
-										 { "dat", ArchiveFormat::Dat },   { "folder", ArchiveFormat::Dir },
-										 { "disk", ArchiveFormat::Disk }, { "gob", ArchiveFormat::Gob },
-										 { "grp", ArchiveFormat::Grp },   { "gzip", ArchiveFormat::GZip },
-										 { "hog", ArchiveFormat::Hog },   { "lfd", ArchiveFormat::Lfd },
-										 { "lib", ArchiveFormat::Lib },   { "pak", ArchiveFormat::Pak },
-										 { "pod", ArchiveFormat::Pod },   { "res", ArchiveFormat::Res },
-										 { "rff", ArchiveFormat::Rff },   { "sin", ArchiveFormat::SiN },
-										 { "tar", ArchiveFormat::Tar },   { "wad", ArchiveFormat::Wad },
-										 { "wadj", ArchiveFormat::WadJ }, { "wad2", ArchiveFormat::Wad2 },
-										 { "wolf", ArchiveFormat::Wolf }, { "zip", ArchiveFormat::Zip },
-										 { "7z", ArchiveFormat::Zip7 } };
-
 vector<unique_ptr<ArchiveFormatHandler>> all_handlers;
 } // namespace
-
-
-// -----------------------------------------------------------------------------
-//
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, backup_archives)
 
 
 // -----------------------------------------------------------------------------
@@ -291,7 +300,7 @@ vector<unique_ptr<ArchiveFormatHandler>>& allFormatHandlers()
 	if (all_handlers.empty())
 	{
 		for (int i = 0; i < static_cast<int>(ArchiveFormat::Unknown); ++i)
-			all_handlers.push_back(ArchiveFormatHandler::getHandler(static_cast<ArchiveFormat>(i)));
+			all_handlers.push_back(archive::formatHandler(static_cast<ArchiveFormat>(i)));
 	}
 
 	return all_handlers;
@@ -308,8 +317,8 @@ vector<unique_ptr<ArchiveFormatHandler>>& allFormatHandlers()
 // -----------------------------------------------------------------------------
 // ArchiveFormatHandler class constructor
 // -----------------------------------------------------------------------------
-ArchiveFormatHandler::ArchiveFormatHandler(ArchiveFormat format_id, bool treeless) :
-	format_id_{ format_id },
+ArchiveFormatHandler::ArchiveFormatHandler(ArchiveFormat format, bool treeless) :
+	format_{ format },
 	treeless_{ treeless }
 {
 }
@@ -603,7 +612,7 @@ shared_ptr<ArchiveEntry> ArchiveFormatHandler::addEntry(
 
 	// Add the entry
 	dir->addEntry(entry, position);
-	entry->formatName(archive.formatDesc());
+	entry->formatName(archive.formatInfo());
 
 	// Update variables etc
 	archive.setModified(true);
@@ -783,7 +792,7 @@ bool ArchiveFormatHandler::renameEntry(Archive& archive, ArchiveEntry* entry, st
 		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
 
 	// Rename the entry
-	auto fmt_desc = archive.formatDesc();
+	auto fmt_desc = archive.formatInfo();
 	entry->setName(name);
 	entry->formatName(fmt_desc);
 	if (!force && !fmt_desc.allow_duplicate_names)
@@ -1058,15 +1067,27 @@ vector<ArchiveEntry*> ArchiveFormatHandler::findAll(Archive& archive, ArchiveSea
 	return ret;
 }
 
+// -----------------------------------------------------------------------------
+// Detects type for all entries in [archive]
+// (just here because it's a protected function in Archive, so subclasses can't
+// access it directly)
+// -----------------------------------------------------------------------------
 void ArchiveFormatHandler::detectAllEntryTypes(const Archive& archive)
 {
 	archive.detectAllEntryTypes();
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if data in [mc] is a <insert archive format here> file
+// -----------------------------------------------------------------------------
 bool ArchiveFormatHandler::isThisFormat(const MemChunk& mc)
 {
 	return false;
 }
+
+// -----------------------------------------------------------------------------
+// Returns true if [filename] is a <insert archive format here> file
+// -----------------------------------------------------------------------------
 bool ArchiveFormatHandler::isThisFormat(const string& filename)
 {
 	return false;
@@ -1075,11 +1096,14 @@ bool ArchiveFormatHandler::isThisFormat(const string& filename)
 
 // -----------------------------------------------------------------------------
 //
-// ArchiveFormatHandler Class Static Functions
+// Archive Namespace Functions
 //
 // -----------------------------------------------------------------------------
 
-unique_ptr<ArchiveFormatHandler> ArchiveFormatHandler::getHandler(ArchiveFormat format)
+// -----------------------------------------------------------------------------
+// Returns a new ArchiveFormatHandler for [format]
+// -----------------------------------------------------------------------------
+unique_ptr<ArchiveFormatHandler> archive::formatHandler(ArchiveFormat format)
 {
 	switch (format)
 	{
@@ -1115,48 +1139,42 @@ unique_ptr<ArchiveFormatHandler> ArchiveFormatHandler::getHandler(ArchiveFormat 
 	return std::make_unique<ArchiveFormatHandler>(ArchiveFormat::Unknown);
 }
 
-unique_ptr<ArchiveFormatHandler> ArchiveFormatHandler::getHandler(string_view format)
+// -----------------------------------------------------------------------------
+// Returns a new ArchiveFormatHandler for [format]
+// -----------------------------------------------------------------------------
+unique_ptr<ArchiveFormatHandler> archive::formatHandler(string_view format)
 {
-	return getHandler(formatIdFromString(format));
+	return formatHandler(formatFromId(format));
 }
 
-string ArchiveFormatHandler::formatIdString(ArchiveFormat format)
-{
-	for (const auto& [name, id] : formats)
-		if (id == format)
-			return name;
-
-	return "unknown";
-}
-
-ArchiveFormat ArchiveFormatHandler::formatIdFromString(string_view format_id_string)
-{
-	for (const auto& [name, id] : formats)
-		if (name == format_id_string)
-			return id;
-
-	return ArchiveFormat::Unknown;
-}
-
-ArchiveFormat ArchiveFormatHandler::detectArchiveFormat(const MemChunk& mc)
+// -----------------------------------------------------------------------------
+// Returns the detected archive format (if any) of the data in [mc]
+// -----------------------------------------------------------------------------
+ArchiveFormat archive::detectArchiveFormat(const MemChunk& mc)
 {
 	for (const auto& handler : allFormatHandlers())
 		if (handler->isThisFormat(mc))
-			return handler->formatId();
+			return handler->format();
 
 	return ArchiveFormat::Unknown;
 }
 
-ArchiveFormat ArchiveFormatHandler::detectArchiveFormat(const string& filename)
+// -----------------------------------------------------------------------------
+// Returns the detected archive format (if any) of the file [filename]
+// -----------------------------------------------------------------------------
+ArchiveFormat archive::detectArchiveFormat(const string& filename)
 {
 	for (const auto& handler : allFormatHandlers())
 		if (handler->isThisFormat(filename))
-			return handler->formatId();
+			return handler->format();
 
 	return ArchiveFormat::Unknown;
 }
 
-bool ArchiveFormatHandler::isFormat(const MemChunk& mc, ArchiveFormat format)
+// -----------------------------------------------------------------------------
+// Returns true if the data in [mc] is a valid [format] archive
+// -----------------------------------------------------------------------------
+bool archive::isFormat(const MemChunk& mc, ArchiveFormat format)
 {
 	auto index = static_cast<int>(format);
 	if (index < 0 || index >= static_cast<int>(ArchiveFormat::Unknown))
@@ -1165,7 +1183,10 @@ bool ArchiveFormatHandler::isFormat(const MemChunk& mc, ArchiveFormat format)
 	return allFormatHandlers()[index]->isThisFormat(mc);
 }
 
-bool ArchiveFormatHandler::isFormat(const string& filename, ArchiveFormat format)
+// -----------------------------------------------------------------------------
+// Returns true if the file [filename] is a valid [format] archive
+// -----------------------------------------------------------------------------
+bool archive::isFormat(const string& filename, ArchiveFormat format)
 {
 	auto index = static_cast<int>(format);
 	if (index < 0 || index >= static_cast<int>(ArchiveFormat::Unknown))

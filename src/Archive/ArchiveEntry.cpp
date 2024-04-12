@@ -253,7 +253,7 @@ void ArchiveEntry::unlock()
 // -----------------------------------------------------------------------------
 // Sanitizes the entry name so that it is valid for archive format [format]
 // -----------------------------------------------------------------------------
-void ArchiveEntry::formatName(const ArchiveFormatDesc& format)
+void ArchiveEntry::formatName(const ArchiveFormatInfo& format)
 {
 	// Perform character substitution if needed
 	name_ = misc::fileNameToLumpName(name_);
@@ -610,7 +610,7 @@ void ArchiveEntry::stateChanged()
 void ArchiveEntry::setExtensionByType()
 {
 	// Ignore if the parent archive doesn't support entry name extensions
-	if (parent() && !parent()->formatDesc().names_extensions)
+	if (parent() && !parent()->formatInfo().names_extensions)
 		return;
 
 	// Convert name to wxFileName for processing
@@ -647,7 +647,7 @@ bool ArchiveEntry::isInNamespace(string_view ns)
 		return false;
 
 	// Some special cases first
-	if (ns == "graphics" && parent()->formatId() == ArchiveFormat::Wad)
+	if (ns == "graphics" && parent()->format() == ArchiveFormat::Wad)
 		ns = "global"; // Graphics namespace doesn't exist in wad files, use global instead
 
 	return parent()->detectNamespace(this) == ns;

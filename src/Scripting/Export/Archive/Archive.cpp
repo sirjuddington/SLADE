@@ -33,6 +33,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Utility/StringUtils.h"
 #include "thirdparty/sol/sol.hpp"
 
@@ -43,7 +44,7 @@ namespace slade::lua
 // -----------------------------------------------------------------------------
 // Returns a vector of all entries in the archive [self]
 // -----------------------------------------------------------------------------
-vector<shared_ptr<ArchiveEntry>> archiveAllEntries(Archive& self)
+vector<shared_ptr<ArchiveEntry>> archiveAllEntries(const Archive& self)
 {
 	vector<shared_ptr<ArchiveEntry>> list;
 	self.putEntryTreeAsList(list);
@@ -56,7 +57,7 @@ vector<shared_ptr<ArchiveEntry>> archiveAllEntries(Archive& self)
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveDir> archiveCreateDir(Archive& self, string_view path)
 {
-	if (self.formatDesc().supports_dirs)
+	if (self.formatInfo().supports_dirs)
 		return self.createDir(path);
 	else
 		return {};
@@ -127,7 +128,7 @@ void registerArchive(sol::state& lua)
 	lua_archive.set("filename", sol::property([](Archive& self) { return self.filename(); }));
 	lua_archive.set("entries", sol::property(&archiveAllEntries));
 	lua_archive.set("rootDir", sol::property(&Archive::rootDir));
-	lua_archive.set("format", sol::property(&Archive::formatDesc));
+	lua_archive.set("format", sol::property(&Archive::formatInfo));
 
 	// Functions
 	// -------------------------------------------------------------------------

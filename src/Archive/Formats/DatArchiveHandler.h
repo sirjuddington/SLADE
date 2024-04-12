@@ -39,6 +39,7 @@ public:
 	string detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir = nullptr) override;
 	string detectNamespace(Archive& archive, ArchiveEntry* entry) override;
 
+	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;
 	bool isThisFormat(const string& filename) override;
 

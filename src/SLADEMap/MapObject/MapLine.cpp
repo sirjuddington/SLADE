@@ -1026,6 +1026,7 @@ void MapLine::writeUDMF(string& def)
 	def += "}\n\n";
 }
 
+#ifndef NDEBUG
 // -----------------------------------------------------------------------------
 // Debuggable operator
 // -----------------------------------------------------------------------------
@@ -1036,3 +1037,4 @@ MapLine::operator Debuggable() const
 
 	return { fmt::format("<line {}>", index_) };
 }
+#endif

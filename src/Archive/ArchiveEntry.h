@@ -6,7 +6,7 @@
 namespace slade
 {
 class EntryType;
-struct ArchiveFormatDesc;
+struct ArchiveFormatInfo;
 
 enum class EntryEncryption
 {
@@ -67,7 +67,7 @@ public:
 	void unlock();
 	void lockState() { state_locked_ = true; }
 	void unlockState() { state_locked_ = false; }
-	void formatName(const ArchiveFormatDesc& format);
+	void formatName(const ArchiveFormatInfo& format);
 
 	// Entry modification (will change entry state)
 	bool rename(string_view new_name);

@@ -2,7 +2,9 @@
 
 namespace slade
 {
+enum class ArchiveFormat;
 struct ArchiveSearchOptions;
+
 class ArchiveManager
 {
 public:
@@ -20,6 +22,7 @@ public:
 	shared_ptr<Archive>         openArchive(string_view filename, bool manage = true, bool silent = false);
 	shared_ptr<Archive>         openArchive(ArchiveEntry* entry, bool manage = true, bool silent = false);
 	shared_ptr<Archive>         openDirArchive(string_view dir, bool manage = true, bool silent = false);
+	shared_ptr<Archive>         newArchive(ArchiveFormat format);
 	shared_ptr<Archive>         newArchive(string_view format);
 	bool                        closeArchive(int index);
 	bool                        closeArchive(string_view filename);

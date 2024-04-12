@@ -459,6 +459,7 @@ void MapThing::writeUDMF(string& def)
 	def += "}\n\n";
 }
 
+#ifndef NDEBUG
 // -----------------------------------------------------------------------------
 // Debuggable operator
 // -----------------------------------------------------------------------------
@@ -469,3 +470,4 @@ MapThing::operator Debuggable() const
 
 	return { fmt::format("<thing {}>", index_) };
 }
+#endif

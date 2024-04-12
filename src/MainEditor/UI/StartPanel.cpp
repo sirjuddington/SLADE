@@ -36,6 +36,7 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SActionHandler.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -261,8 +262,8 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 		icon = "entry_list/folder.svg";
 
 	// Wad
-	static auto wad_fmt = Archive::formatFromId("wad");
-	for (const auto& fmt_ext : wad_fmt->extensions)
+	static auto wad_fmt = archive::formatInfo(ArchiveFormat::Wad);
+	for (const auto& fmt_ext : wad_fmt.extensions)
 		if (strutil::equalCI(path.extension(), fmt_ext.first))
 		{
 			icon = "entry_list/wad.svg";
@@ -270,8 +271,8 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 		}
 
 	// Zip
-	static auto zip_fmt = Archive::formatFromId("zip");
-	for (const auto& fmt_ext : zip_fmt->extensions)
+	static auto zip_fmt = archive::formatInfo(ArchiveFormat::Zip);
+	for (const auto& fmt_ext : zip_fmt.extensions)
 		if (strutil::equalCI(path.extension(), fmt_ext.first))
 		{
 			icon = "entry_list/zip.svg";

@@ -36,7 +36,7 @@ public:
 	ArchiveEntry*         findLast(Archive& archive, ArchiveSearchOptions& options) override;
 	vector<ArchiveEntry*> findAll(Archive& archive, ArchiveSearchOptions& options) override;
 
-	// Static functions
+	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;
 	bool isThisFormat(const string& filename) override;
 

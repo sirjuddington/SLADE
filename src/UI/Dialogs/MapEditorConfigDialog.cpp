@@ -110,7 +110,7 @@ public:
 		// Limit map name length if necessary
 		if (game::configuration().featureSupported(game::Feature::AnyMapName)
 			&& (!game::configuration().featureSupported(game::Feature::LongNames)
-				|| (archive && archive->formatId() != ArchiveFormat::Zip && archive->formatId() != ArchiveFormat::Dir)))
+				|| (archive && archive->format() != ArchiveFormat::Zip && archive->format() != ArchiveFormat::Dir)))
 			cbo_mapname_->SetMaxLength(8);
 
 		// Add possible map names to the combo box
@@ -610,7 +610,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			}
 
 		// Check archive type
-		if (archive_->formatId() == ArchiveFormat::Wad)
+		if (archive_->format() == ArchiveFormat::Wad)
 		{
 			// Create new (empty) map at the end of the wad
 			shared_ptr<ArchiveEntry> head = archive_->addNewEntry(mapname.ToStdString());
@@ -648,7 +648,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			populateMapList();
 			list_maps_->selectItem(list_maps_->GetItemCount() - 1);
 		}
-		else if (archive_->formatId() == ArchiveFormat::Zip || archive_->formatId() == ArchiveFormat::Dir)
+		else if (archive_->format() == ArchiveFormat::Zip || archive_->format() == ArchiveFormat::Dir)
 		{
 			// Create new wad archive for the map
 			auto wad = std::make_unique<Archive>(ArchiveFormat::Wad);

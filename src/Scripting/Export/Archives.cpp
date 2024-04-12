@@ -35,6 +35,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Export.h"
@@ -53,21 +54,21 @@ using namespace slade;
 namespace slade::lua
 {
 // -----------------------------------------------------------------------------
-// Registers the ArchiveFormatDesc type with lua
+// Registers the ArchiveFormatInfo type with lua
 // -----------------------------------------------------------------------------
 void registerArchiveFormat(sol::state& lua)
 {
 	// Create ArchiveFormat type, no constructor
-	auto lua_archiveformat = lua.new_usertype<ArchiveFormatDesc>("ArchiveFormat", "new", sol::no_constructor);
+	auto lua_archiveformat = lua.new_usertype<ArchiveFormatInfo>("ArchiveFormat", "new", sol::no_constructor);
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_archiveformat.set("id", sol::readonly(&ArchiveFormatDesc::id));
-	lua_archiveformat.set("name", sol::readonly(&ArchiveFormatDesc::name));
-	lua_archiveformat.set("supportsDirs", sol::readonly(&ArchiveFormatDesc::supports_dirs));
-	lua_archiveformat.set("hasExtensions", sol::readonly(&ArchiveFormatDesc::names_extensions));
-	lua_archiveformat.set("maxNameLength", sol::readonly(&ArchiveFormatDesc::max_name_length));
-	lua_archiveformat.set("entryFormat", sol::readonly(&ArchiveFormatDesc::entry_format));
+	lua_archiveformat.set("id", sol::readonly(&ArchiveFormatInfo::id));
+	lua_archiveformat.set("name", sol::readonly(&ArchiveFormatInfo::name));
+	lua_archiveformat.set("supportsDirs", sol::readonly(&ArchiveFormatInfo::supports_dirs));
+	lua_archiveformat.set("hasExtensions", sol::readonly(&ArchiveFormatInfo::names_extensions));
+	lua_archiveformat.set("maxNameLength", sol::readonly(&ArchiveFormatInfo::max_name_length));
+	lua_archiveformat.set("entryFormat", sol::readonly(&ArchiveFormatInfo::entry_format));
 	// TODO: extensions - need to export key_value_t or do something custom
 }
 

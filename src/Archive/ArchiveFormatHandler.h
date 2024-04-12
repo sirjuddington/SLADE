@@ -10,7 +10,7 @@ struct ArchiveSearchOptions;
 class ArchiveFormatHandler
 {
 public:
-	ArchiveFormatHandler(ArchiveFormat format_id, bool treeless = false);
+	ArchiveFormatHandler(ArchiveFormat format, bool treeless = false);
 	virtual ~ArchiveFormatHandler() = default;
 
 	virtual void init(Archive& archive) {}
@@ -19,7 +19,7 @@ public:
 	virtual bool  isWritable() { return true; }
 	bool          isTreeless() const { return treeless_; }
 	virtual bool  hasFlatHack() { return false; }
-	ArchiveFormat formatId() const { return format_id_; }
+	ArchiveFormat format() const { return format_; }
 
 	// Opening
 	virtual bool open(Archive& archive, string_view filename); // Open from File
@@ -82,22 +82,21 @@ public:
 	virtual bool isThisFormat(const MemChunk& mc);
 	virtual bool isThisFormat(const string& filename);
 
-
-	// Static functions
-	static unique_ptr<ArchiveFormatHandler> getHandler(ArchiveFormat format);
-	static unique_ptr<ArchiveFormatHandler> getHandler(string_view format);
-	static string                           formatIdString(ArchiveFormat format);
-	static ArchiveFormat                    formatIdFromString(string_view format_id_string);
-	static ArchiveFormat                    detectArchiveFormat(const MemChunk& mc);
-	static ArchiveFormat                    detectArchiveFormat(const string& filename);
-	static bool                             isFormat(const MemChunk& mc, ArchiveFormat format);
-	static bool                             isFormat(const string& filename, ArchiveFormat format);
-
 protected:
-	ArchiveFormat format_id_;
+	ArchiveFormat format_;
 	bool          treeless_ = false;
 
 	// Temp shortcuts
 	void detectAllEntryTypes(const Archive& archive);
 };
+
+namespace archive
+{
+	unique_ptr<ArchiveFormatHandler> formatHandler(ArchiveFormat format);
+	unique_ptr<ArchiveFormatHandler> formatHandler(string_view format);
+	ArchiveFormat                    detectArchiveFormat(const MemChunk& mc);
+	ArchiveFormat                    detectArchiveFormat(const string& filename);
+	bool                             isFormat(const MemChunk& mc, ArchiveFormat format);
+	bool                             isFormat(const string& filename, ArchiveFormat format);
+} // namespace archive
 } // namespace slade

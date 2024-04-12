@@ -165,7 +165,7 @@ bool ArchiveManager::init()
 // -----------------------------------------------------------------------------
 bool ArchiveManager::initArchiveFormats() const
 {
-	return Archive::loadFormats(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->data());
+	return archive::loadFormatInfo(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->data());
 }
 
 // -----------------------------------------------------------------------------
@@ -202,8 +202,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		app::resources().addArchive(archive.get());
 
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
-		if ((archive->formatId() == ArchiveFormat::Zip || archive->formatId() == ArchiveFormat::Dir)
-			&& auto_open_wads_root)
+		if ((archive->format() == ArchiveFormat::Zip || archive->format() == ArchiveFormat::Dir) && auto_open_wads_root)
 		{
 			for (const auto& entry : archive->rootDir()->entries())
 			{
@@ -294,7 +293,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 
 	// Determine file format
 	string std_fn{ filename };
-	auto   format_id = ArchiveFormatHandler::detectArchiveFormat(std_fn);
+	auto   format_id = archive::detectArchiveFormat(std_fn);
 	if (format_id == ArchiveFormat::Unknown)
 	{
 		// Unsupported/unknown format
@@ -356,7 +355,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	}
 
 	// Check entry type
-	auto format_id = ArchiveFormatHandler::detectArchiveFormat(entry->data());
+	auto format_id = archive::detectArchiveFormat(entry->data());
 	if (format_id == ArchiveFormat::Unknown)
 	{
 		// Unsupported/unknown format
@@ -455,36 +454,30 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 // archives. Returns the created archive, or nullptr if an invalid archive type
 // was given
 // -----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
+shared_ptr<Archive> ArchiveManager::newArchive(ArchiveFormat format)
 {
-	// Create a new archive depending on the type specified
-	shared_ptr<Archive> new_archive;
-	if (format == "wad")
-		new_archive = std::make_shared<Archive>(ArchiveFormat::Wad);
-	else if (format == "zip")
-		new_archive = std::make_shared<Archive>(ArchiveFormat::Zip);
-	else if (format == "grp")
-		new_archive = std::make_shared<Archive>(ArchiveFormat::Grp);
-	else if (format == "pak")
-		new_archive = std::make_shared<Archive>(ArchiveFormat::Pak);
-	else if (format == "7z")
-		new_archive = std::make_shared<Archive>(ArchiveFormat::Zip7);
-	else
+	// Check if the format specified allows archive creation
+	auto format_info = archive::formatInfo(format);
+	if (!format_info.create)
 	{
-		global::error = fmt::format("Can not create archive of format: {}", format);
+		global::error = fmt::format("Can not create archive of format: {}", format_info.name);
 		log::error(global::error);
 		return nullptr;
 	}
 
-	// If the archive was created, set its filename and add it to the list
-	if (new_archive)
-	{
-		new_archive->setFilename(fmt::format("UNSAVED ({})", new_archive->formatDesc().name));
-		addArchive(new_archive);
-	}
+	// Create a new archive depending on the format specified
+	auto new_archive = std::make_shared<Archive>(format);
+
+	// Set its filename and add it to the list
+	new_archive->setFilename(fmt::format("UNSAVED ({})", new_archive->formatInfo().name));
+	addArchive(new_archive);
 
 	// Return the created archive, if any
 	return new_archive;
+}
+shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
+{
+	return newArchive(archive::formatFromId(format));
 }
 
 // -----------------------------------------------------------------------------
@@ -647,7 +640,7 @@ vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(const Archive* 
 // -----------------------------------------------------------------------------
 string ArchiveManager::getArchiveExtensionsString() const
 {
-	auto           formats = Archive::allFormats();
+	auto           formats = archive::allFormatsInfo();
 	vector<string> ext_strings;
 	string         ext_all = "Any supported file|";
 	for (const auto& fmt : formats)
@@ -822,9 +815,9 @@ bool ArchiveManager::openBaseResource(int index)
 
 	// Create archive based on file type
 	auto filename = base_resource_paths_[index];
-	if (ArchiveFormatHandler::isFormat(filename, ArchiveFormat::Wad))
+	if (archive::isFormat(filename, ArchiveFormat::Wad))
 		base_resource_archive_ = std::make_unique<Archive>(ArchiveFormat::Wad);
-	else if (ArchiveFormatHandler::isFormat(filename, ArchiveFormat::Zip))
+	else if (archive::isFormat(filename, ArchiveFormat::Zip))
 		base_resource_archive_ = std::make_unique<Archive>(ArchiveFormat::Zip);
 	else
 		return false;

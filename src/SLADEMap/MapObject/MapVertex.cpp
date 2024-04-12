@@ -244,6 +244,7 @@ void MapVertex::writeUDMF(string& def)
 	def += "}\n\n";
 }
 
+#ifndef NDEBUG
 // -----------------------------------------------------------------------------
 // Debuggable operator
 // -----------------------------------------------------------------------------
@@ -254,3 +255,4 @@ MapVertex::operator Debuggable() const
 
 	return { fmt::format("<vertex {}>", index_) };
 }
+#endif

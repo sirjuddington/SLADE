@@ -142,7 +142,7 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, Archive* archive) :
 	dir_path_{ archive->filename() },
 	change_list_{ archive, {} }
 {
-	if (archive->formatId() != ArchiveFormat::Dir)
+	if (archive->format() != ArchiveFormat::Dir)
 	{
 		log::error("DirArchiveCheck requires a directory archive!");
 		return;
@@ -918,11 +918,11 @@ void ArchiveManagerPanel::openTab(const Archive* archive) const
 
 		// Determine icon
 		string icon = "archive";
-		if (archive->formatId() == ArchiveFormat::Wad)
+		if (archive->format() == ArchiveFormat::Wad)
 			icon = "wad";
-		else if (archive->formatId() == ArchiveFormat::Zip)
+		else if (archive->format() == ArchiveFormat::Zip)
 			icon = "zip";
-		else if (archive->formatId() == ArchiveFormat::Dir)
+		else if (archive->format() == ArchiveFormat::Dir)
 			icon = "folder";
 
 		wp->SetName("archive");
@@ -1467,7 +1467,7 @@ void ArchiveManagerPanel::checkDirArchives()
 	for (int a = 0; a < app::archiveManager().numArchives(); a++)
 	{
 		auto archive = app::archiveManager().getArchive(a);
-		if (archive->formatId() != ArchiveFormat::Dir)
+		if (archive->format() != ArchiveFormat::Dir)
 			continue;
 
 		if (VECTOR_EXISTS(checking_archives_, archive.get()))
@@ -1597,7 +1597,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 		return false;
 
 	// Check archive type
-	if (archive->formatId() == ArchiveFormat::Dir)
+	if (archive->format() == ArchiveFormat::Dir)
 		return true; // Can't do save as for folder
 
 	// Check for unsaved entry changes

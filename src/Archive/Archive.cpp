@@ -38,7 +38,6 @@
 #include "General/UI.h"
 #include "MapDesc.h"
 #include "Utility/FileUtils.h"
-#include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
 #include <filesystem>
@@ -51,10 +50,7 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, backup_archives, true, CVar::Flag::Save)
-bool                      Archive::save_backup = true;
-vector<ArchiveFormatDesc> Archive::formats_;
-
+bool Archive::save_backup = true;
 
 
 // -----------------------------------------------------------------------------
@@ -139,14 +135,14 @@ void MapDesc::updateMapFormatHints() const
 // -----------------------------------------------------------------------------
 Archive::Archive(string_view format) : dir_root_{ new ArchiveDir("", nullptr, this) }
 {
-	format_handler_ = ArchiveFormatHandler::getHandler(format);
-	dir_root_->allowDuplicateNames(formatDesc().allow_duplicate_names);
+	format_handler_ = archive::formatHandler(format);
+	dir_root_->allowDuplicateNames(formatInfo().allow_duplicate_names);
 	format_handler_->init(*this);
 }
 Archive::Archive(ArchiveFormat format) : dir_root_{ new ArchiveDir("", nullptr, this) }
 {
-	format_handler_ = ArchiveFormatHandler::getHandler(format);
-	dir_root_->allowDuplicateNames(formatDesc().allow_duplicate_names);
+	format_handler_ = archive::formatHandler(format);
+	dir_root_->allowDuplicateNames(formatInfo().allow_duplicate_names);
 	format_handler_->init(*this);
 }
 
@@ -161,15 +157,11 @@ Archive::~Archive()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the ArchiveFormatDesc descriptor for this archive
+// Returns the ArchiveFormatInfo descriptor for this archive
 // -----------------------------------------------------------------------------
-ArchiveFormatDesc Archive::formatDesc() const
+const ArchiveFormatInfo& Archive::formatInfo() const
 {
-	for (auto fmt : formats_)
-		if (fmt.id == formatIdString())
-			return fmt;
-
-	return { "unknown" };
+	return archive::formatInfo(format_handler_->format());
 }
 
 // -----------------------------------------------------------------------------
@@ -177,7 +169,7 @@ ArchiveFormatDesc Archive::formatDesc() const
 // -----------------------------------------------------------------------------
 string Archive::fileExtensionString() const
 {
-	auto fmt = formatDesc();
+	auto fmt = formatInfo();
 
 	// Multiple extensions
 	if (fmt.extensions.size() > 1)
@@ -242,13 +234,20 @@ Archive* Archive::parentArchive() const
 	return parent_.lock() ? parent_.lock()->parent() : nullptr;
 }
 
-ArchiveFormat Archive::formatId() const
+// -----------------------------------------------------------------------------
+// Returns the archive's format
+// -----------------------------------------------------------------------------
+ArchiveFormat Archive::format() const
 {
-	return format_handler_->formatId();
+	return format_handler_->format();
 }
-string Archive::formatIdString() const
+
+// -----------------------------------------------------------------------------
+// Returns the archive's format id string
+// -----------------------------------------------------------------------------
+string Archive::formatId() const
 {
-	return ArchiveFormatHandler::formatIdString(formatId());
+	return archive::formatId(format());
 }
 
 // -----------------------------------------------------------------------------
@@ -1034,112 +1033,4 @@ void Archive::detectAllEntryTypes() const
 		EntryType::detectEntryType(*entries[i]);
 		entries[i]->setState(EntryState::Unmodified);
 	}
-}
-
-
-
-// -----------------------------------------------------------------------------
-//
-// Archive Class Static Functions
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Reads archive formats configuration file from [mc]
-// -----------------------------------------------------------------------------
-bool Archive::loadFormats(const MemChunk& mc)
-{
-	Parser parser;
-	if (!parser.parseText(mc))
-		return false;
-
-	auto root         = parser.parseTreeRoot();
-	auto formats_node = root->child("archive_formats");
-	for (unsigned a = 0; a < formats_node->nChildren(); a++)
-	{
-		auto              fmt_desc = dynamic_cast<ParseTreeNode*>(formats_node->child(a));
-		ArchiveFormatDesc fmt{ fmt_desc->name() };
-
-		for (unsigned p = 0; p < fmt_desc->nChildren(); p++)
-		{
-			auto prop = fmt_desc->childPTN(p);
-
-			// Format name
-			if (prop->nameIsCI("name"))
-				fmt.name = prop->stringValue();
-
-			// Supports dirs
-			else if (prop->nameIsCI("supports_dirs"))
-				fmt.supports_dirs = prop->boolValue();
-
-			// Entry names have extensions
-			else if (prop->nameIsCI("names_extensions"))
-				fmt.names_extensions = prop->boolValue();
-
-			// Max entry name length
-			else if (prop->nameIsCI("max_name_length"))
-				fmt.max_name_length = prop->intValue();
-
-			// Entry format (id)
-			else if (prop->nameIsCI("entry_format"))
-				fmt.entry_format = prop->stringValue();
-
-			// Extensions
-			else if (prop->nameIsCI("extensions"))
-			{
-				for (unsigned e = 0; e < prop->nChildren(); e++)
-				{
-					auto ext = prop->childPTN(e);
-					fmt.extensions.emplace_back(ext->name(), ext->stringValue());
-				}
-			}
-
-			// Prefer uppercase entry names
-			else if (prop->nameIsCI("prefer_uppercase"))
-				fmt.prefer_uppercase = prop->boolValue();
-
-			// Can be created
-			else if (prop->nameIsCI("create"))
-				fmt.create = prop->boolValue();
-
-			// Allow duplicate entry names (within same directory)
-			else if (prop->nameIsCI("allow_duplicate_names"))
-				fmt.allow_duplicate_names = prop->boolValue();
-		}
-
-		log::info(3, wxString::Format("Read archive format %s: \"%s\"", fmt.id, fmt.name));
-		if (fmt.supports_dirs)
-			log::info(3, "  Supports folders");
-		if (fmt.names_extensions)
-			log::info(3, "  Entry names have extensions");
-		if (fmt.max_name_length >= 0)
-			log::info(3, wxString::Format("  Max entry name length: %d", fmt.max_name_length));
-		for (const auto& ext : fmt.extensions)
-			log::info(3, wxString::Format(R"(  Extension "%s" = "%s")", ext.first, ext.second));
-
-		formats_.push_back(fmt);
-	}
-
-	// Add builtin 'folder' format
-	ArchiveFormatDesc fmt_folder("folder");
-	fmt_folder.name                  = "Folder";
-	fmt_folder.names_extensions      = true;
-	fmt_folder.supports_dirs         = true;
-	fmt_folder.allow_duplicate_names = false;
-	formats_.push_back(fmt_folder);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the ArchiveFormatDesc matching [id] or nullptr if not found
-// -----------------------------------------------------------------------------
-ArchiveFormatDesc* Archive::formatFromId(string_view id)
-{
-	for (auto& format : formats_)
-		if (format.id == id)
-			return &format;
-
-	return nullptr;
 }

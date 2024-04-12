@@ -26,7 +26,7 @@ public:
 	// Entry modification
 	bool renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force = false) override;
 
-	// Static functions
+	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;
 	bool isThisFormat(const string& filename) override;
 };

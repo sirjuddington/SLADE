@@ -91,7 +91,7 @@ bool archiveoperations::save(Archive& archive)
 		return false;
 
 	// Check if the file has been modified on disk
-	if (archive.formatId() != ArchiveFormat::Dir
+	if (archive.format() != ArchiveFormat::Dir
 		&& fileutil::fileModifiedTime(archive.filename()) > archive.fileModifiedTime())
 	{
 		if (wxMessageBox(
@@ -115,7 +115,7 @@ bool archiveoperations::save(Archive& archive)
 	}
 
 	// Check if there were issues saving directory
-	if (archive.formatId() == ArchiveFormat::Dir)
+	if (archive.format() == ArchiveFormat::Dir)
 	{
 		auto* dir_archive = dynamic_cast<DirArchiveHandler*>(&archive);
 		if (dir_archive->saveErrorsOccurred())
@@ -1449,7 +1449,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 	// must keep this smart pointer around or the archive gets dealloced immediately
 	// from the heap and we get huge memory issues while referencing a dangling pointer
-	auto ptr_archive = archive->formatId() == ArchiveFormat::Dir ?
+	auto ptr_archive = archive->format() == ArchiveFormat::Dir ?
 						   app::archiveManager().openDirArchive(archive->filename(), false, true) :
 						   app::archiveManager().openArchive(archive->filename(), false, true);
 	archive          = ptr_archive.get();

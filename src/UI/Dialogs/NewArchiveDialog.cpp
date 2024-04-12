@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "Archive/Archive.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
 #include "NewArchiveDiaog.h"
@@ -72,7 +72,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 
 	// Fill formats list
 	long selected_index = 0;
-	for (const auto& format : Archive::allFormats())
+	for (const auto& format : archive::allFormatsInfo())
 		if (format.create)
 		{
 			if (format.id == archive_last_created_format)
@@ -97,7 +97,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 		wxEVT_BUTTON,
 		[this, choice_type](wxCommandEvent&)
 		{
-			for (const auto& format : Archive::allFormats())
+			for (const auto& format : archive::allFormatsInfo())
 				if (choice_type->GetString(choice_type->GetSelection()) == (format.name + " Archive"))
 				{
 					archive_created_            = app::archiveManager().newArchive(format.id).get();
