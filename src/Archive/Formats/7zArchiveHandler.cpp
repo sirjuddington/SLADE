@@ -52,8 +52,9 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-constexpr unsigned short default_perm = 0644;
-constexpr string         perm_key     = "7zPermissions";
+constexpr unsigned short default_perm     = 0644;
+constexpr unsigned short default_perm_dir = 0755;
+const string             perm_key         = "7zPermissions";
 } // namespace
 
 
@@ -201,7 +202,7 @@ bool Zip7ArchiveHandler::open(Archive& archive, string_view filename)
 	// Open file with libarchive
 	struct archive* archive_7z = archive_read_new();
 	archive_read_set_format(archive_7z, ARCHIVE_FORMAT_7ZIP); // Only 7z format
-	archive_read_support_compression_all(archive_7z);         // Any compression
+	archive_read_support_filter_all(archive_7z);              // Any compression
 	if (archive_read_open_filename(archive_7z, string{ filename }.c_str(), 10240) != ARCHIVE_OK)
 	{
 		global::error = "Unable to open 7zip file";
@@ -221,7 +222,7 @@ bool Zip7ArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	// Open 7z file data with libarchive
 	struct archive* archive_7z = archive_read_new();
 	archive_read_set_format(archive_7z, ARCHIVE_FORMAT_7ZIP); // Only 7z format
-	archive_read_support_compression_all(archive_7z);         // Any compression
+	archive_read_support_filter_all(archive_7z);              // Any compression
 	if (archive_read_open_memory(archive_7z, mc.data(), mc.size()) != ARCHIVE_OK)
 	{
 		global::error = "Unable to open 7zip file";
@@ -296,18 +297,16 @@ bool Zip7ArchiveHandler::write(Archive& archive, string_view filename)
 		auto path = entry->path().append(misc::lumpNameToFileName(entry->name()));
 		strutil::removePrefixIP(path, '/');
 
-		auto permissions = default_perm;
-		if (entry->exProps().contains(perm_key))
-			permissions = static_cast<unsigned short>(entry->exProp<int>(perm_key));
-
 		// Setup entry info
 		archive_entry_set_pathname_utf8(entry_7z, path.c_str());
 		archive_entry_set_size(entry_7z, entry->size());
+		archive_entry_set_filetype(entry_7z, entry->isFolderType() ? AE_IFDIR : AE_IFREG);
+
+		// Entry permissions
+		auto permissions = entry->isFolderType() ? default_perm_dir : default_perm;
+		if (entry->exProps().contains(perm_key))
+			permissions = static_cast<unsigned short>(entry->exProp<int>(perm_key));
 		archive_entry_set_perm(entry_7z, permissions);
-		if (entry->isFolderType())
-			archive_entry_set_filetype(entry_7z, AE_IFDIR);
-		else
-			archive_entry_set_filetype(entry_7z, AE_IFREG);
 
 		// Write to archive
 		archive_write_header(archive_7z, entry_7z);
@@ -318,6 +317,7 @@ bool Zip7ArchiveHandler::write(Archive& archive, string_view filename)
 		// Update entry info
 		entry->setState(EntryState::Unmodified);
 		entry->exProp("ZipIndex") = index++;
+		entry->exProp(perm_key)   = static_cast<int>(permissions);
 	}
 
 	// Clean up
@@ -350,7 +350,7 @@ bool Zip7ArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* ent
 	// Open file with libarchive
 	struct archive* archive_7z = archive_read_new();
 	archive_read_set_format(archive_7z, ARCHIVE_FORMAT_7ZIP); // Only 7z format
-	archive_read_support_compression_all(archive_7z);         // Any compression
+	archive_read_support_filter_all(archive_7z);              // Any compression
 	if (archive_read_open_filename(archive_7z, archive.filename().c_str(), 10240) != ARCHIVE_OK)
 	{
 		log::error("Zip7ArchiveHandler::loadEntryData: Unable to open 7zip file");
