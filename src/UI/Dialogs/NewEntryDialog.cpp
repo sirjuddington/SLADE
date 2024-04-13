@@ -35,6 +35,7 @@
 #include "NewEntryDialog.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveFormat.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/WxUtils.h"
@@ -88,7 +89,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 {
 	wxutil::setWindowIcon(this, new_dir ? "newfolder" : "newentry");
 
-	const auto&   archive_format = archive.formatDesc();
+	const auto&   archive_format = archive.formatInfo();
 	auto          types          = wxutil::arrayStringStd(type_names);
 	wxArrayString all_dirs;
 	allDirs(*archive.rootDir(), all_dirs);

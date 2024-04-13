@@ -34,10 +34,11 @@
 #include "Game.h"
 #include "ActionSpecial.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/Formats/ZipArchive.h"
 #include "Configuration.h"
 #include "SpecialPreset.h"
 #include "TextEditor/TextLanguage.h"
@@ -417,7 +418,7 @@ void game::init()
 		zscript_parse_thread = std::make_unique<std::thread>(
 			[=]()
 			{
-				ZipArchive zdoom_pk3;
+				Archive zdoom_pk3(ArchiveFormat::Zip);
 				if (!zdoom_pk3.open(zdoom_pk3_path))
 					return;
 

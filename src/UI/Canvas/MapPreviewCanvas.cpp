@@ -32,9 +32,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapPreviewCanvas.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/EntryType/EntryType.h"
-#include "Archive/Formats/WadArchive.h"
 #include "Archive/MapDesc.h"
 #include "General/ColourConfiguration.h"
 #include "Geometry/BBox.h"
@@ -127,7 +128,7 @@ bool MapPreviewCanvas::openMap(MapDesc map)
 		map_archive = true;
 
 		// Attempt to open entry as wad archive
-		temp_archive_ = std::make_unique<WadArchive>();
+		temp_archive_ = std::make_unique<Archive>(ArchiveFormat::Wad);
 		if (!temp_archive_->open(m_head->data()))
 		{
 			temp_archive_.reset();

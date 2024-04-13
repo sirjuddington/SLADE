@@ -1043,6 +1043,7 @@ void MapSector::writeUDMF(string& def)
 	def += "}\n\n";
 }
 
+#ifndef NDEBUG
 // -----------------------------------------------------------------------------
 // Debuggable operator
 // -----------------------------------------------------------------------------
@@ -1053,3 +1054,4 @@ MapSector::operator Debuggable() const
 
 	return { fmt::format("<sector {}>", index_) };
 }
+#endif

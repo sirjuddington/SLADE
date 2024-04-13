@@ -32,8 +32,9 @@
 #include "Main.h"
 #include "SLADEMap.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/Formats/WadArchive.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
 #include "Geometry/Geometry.h"
@@ -207,8 +208,8 @@ bool SLADEMap::readMap(const MapDesc& map)
 	auto omap = map;
 
 	// Check for map archive
-	WadArchive tempwad;
-	auto       m_head = map.head.lock();
+	Archive tempwad(ArchiveFormat::Wad);
+	auto    m_head = map.head.lock();
 	if (map.archive && m_head)
 	{
 		tempwad.open(m_head->data());

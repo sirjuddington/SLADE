@@ -35,10 +35,9 @@
 #include "FileMonitor.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/Formats/WadArchive.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/MapDesc.h"
 #include "FileUtils.h"
-#include "StringUtils.h"
 #include <filesystem>
 
 using namespace slade;
@@ -137,7 +136,7 @@ void DB2MapFileMonitor::fileModified()
 		return;
 
 	// Load file into temp archive
-	unique_ptr<Archive> wad = std::make_unique<WadArchive>();
+	auto wad = std::make_unique<Archive>(ArchiveFormat::Wad);
 	wad->open(filename_);
 
 	// Get map info for target archive

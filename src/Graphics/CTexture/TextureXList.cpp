@@ -35,6 +35,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/EntryType/EntryType.h"
 #include "CTexture.h"
 #include "Graphics/SImage/SImage.h"
@@ -981,7 +982,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		return false;
 	}
 
-	if (!current_archive->formatDesc().supports_dirs)
+	if (!current_archive->formatInfo().supports_dirs)
 	{
 		global::error = "Archive doesn't support directories";
 		return false;
