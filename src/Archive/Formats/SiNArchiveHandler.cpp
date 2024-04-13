@@ -229,14 +229,6 @@ bool SiNArchiveHandler::write(Archive& archive, MemChunk& mc)
 	return true;
 }
 
-
-// -----------------------------------------------------------------------------
-//
-// SiNArchiveHandler Class Static Functions
-//
-// -----------------------------------------------------------------------------
-
-
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Ritual Entertainment SiN archive
 // -----------------------------------------------------------------------------

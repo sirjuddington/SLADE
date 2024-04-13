@@ -2,8 +2,6 @@
 
 #include "ZipArchiveHandler.h"
 
-struct archive;
-
 namespace slade
 {
 // Inherit from ZipArchiveHandler as it works exactly the same, just with a different file format
@@ -26,8 +24,5 @@ public:
 	// Static functions
 	bool isThisFormat(const MemChunk& mc) override;
 	bool isThisFormat(const string& filename) override;
-
-private:
-	bool open7z(Archive& archive, struct archive* archive_7z);
 };
 } // namespace slade
