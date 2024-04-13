@@ -47,6 +47,18 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+constexpr unsigned short default_perm = 0644;
+constexpr string         perm_key     = "7zPermissions";
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
 // Functions
 //
 // -----------------------------------------------------------------------------
@@ -142,6 +154,7 @@ bool read7z(ArchiveFormatHandler& handler, Archive& archive, struct archive* arc
 
 			// Set entry info
 			new_entry->exProp("ZipIndex") = index;
+			new_entry->exProp(perm_key)   = static_cast<int>(archive_entry_perm(entry_7z));
 		}
 		else
 		{
@@ -283,9 +296,14 @@ bool Zip7ArchiveHandler::write(Archive& archive, string_view filename)
 		auto path = entry->path().append(misc::lumpNameToFileName(entry->name()));
 		strutil::removePrefixIP(path, '/');
 
+		auto permissions = default_perm;
+		if (entry->exProps().contains(perm_key))
+			permissions = static_cast<unsigned short>(entry->exProp<int>(perm_key));
+
 		// Setup entry info
 		archive_entry_set_pathname_utf8(entry_7z, path.c_str());
 		archive_entry_set_size(entry_7z, entry->size());
+		archive_entry_set_perm(entry_7z, permissions);
 		if (entry->isFolderType())
 			archive_entry_set_filetype(entry_7z, AE_IFDIR);
 		else
