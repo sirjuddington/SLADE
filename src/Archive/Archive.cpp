@@ -660,6 +660,23 @@ shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsig
 }
 
 // -----------------------------------------------------------------------------
+// Adds [entry] to the end of the namespace matching [add_namespace].
+// Returns the added entry or NULL if the entry is invalid
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
+{
+	// Abort if read only
+	if (read_only_)
+		return nullptr;
+
+	// Check valid entry
+	if (!entry)
+		return nullptr;
+
+	return format_handler_->addEntry(*this, entry, add_namespace);
+}
+
+// -----------------------------------------------------------------------------
 // Creates a new entry with [name] and adds it to [dir] at [position].
 // If [dir] is null it is added to the root dir.
 // If [position] is out of bounds, it is added tothe end of the dir.
