@@ -111,11 +111,11 @@ protected:
 	void DoLogText(const wxString& msg) override
 	{
 		if (msg.Lower().Contains("error"))
-			log::error(msg.Right(msg.size() - 10));
+			log::error("wxWidgets: " + msg.Right(msg.size() - 10));
 		else if (msg.Lower().Contains("warning"))
-			log::warning(msg.Right(msg.size() - 10));
+			log::warning("wxWidgets: " + msg.Right(msg.size() - 10));
 		else
-			log::info(msg.Right(msg.size() - 10));
+			log::info("wxWidgets: " + msg.Right(msg.size() - 10));
 	}
 
 public:

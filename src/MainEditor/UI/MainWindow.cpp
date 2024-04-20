@@ -695,10 +695,16 @@ void MainWindow::onSize(wxSizeEvent& e)
 	// Test creation of OpenGL context
 	if (!opengl_test_done && e.GetSize().x > 20 && e.GetSize().y > 20)
 	{
-		auto test_canvas = new GLCanvas(this);
-		test_canvas->Show();
+		auto mf = new wxMiniFrame(this, -1, "OpenGL Test", wxDefaultPosition, { 32, 32 });
+		mf->SetSizer(new wxBoxSizer(wxVERTICAL));
+
+		auto test_canvas = new GLCanvas(mf);
+		mf->GetSizer()->Add(test_canvas, wxSizerFlags(1).Expand());
+
+		mf->Show();
 		test_canvas->activateContext();
-		delete test_canvas;
+		mf->Close(true);
+
 		opengl_test_done = true;
 	}
 

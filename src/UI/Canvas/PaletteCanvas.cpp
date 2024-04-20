@@ -131,6 +131,10 @@ void PaletteCanvas::updateBuffer(bool force)
 	int  y_size      = height / rows;
 	auto square_size = std::min<int>(x_size, y_size);
 
+	// Check canvas is large enough to display the palette
+	if (square_size < 3)
+		return;
+
 	// If the size hasn't changed we don't need to update the buffer
 	if (!force && rows == rows_ && cols == cols_ && square_size == square_size_)
 		return;
