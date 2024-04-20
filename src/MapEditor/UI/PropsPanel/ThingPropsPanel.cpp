@@ -50,7 +50,7 @@
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
-#include "UI/Canvas/GLCanvas.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"

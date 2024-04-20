@@ -35,8 +35,8 @@
 #include "General/Misc.h"
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
-#include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
+#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -79,14 +79,14 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, co
 	hbox->Add(cb_colour_, wxSizerFlags().Expand());
 
 	// Add preview
-	gfx_preview_ = new GfxCanvas(this);
+	gfx_preview_ = new GfxGLCanvas(this);
 	sizer->Add(gfx_preview_, wx::sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add buttons
 	sizer->Add(wx::createDialogButtonBox(this, "Colourise", "Cancel"), wxSizerFlags().Expand());
 
 	// Setup preview
-	gfx_preview_->setViewType(GfxCanvas::View::Centered);
+	gfx_preview_->setViewType(GfxGLCanvas::View::Centered);
 	gfx_preview_->setPalette(palette_.get());
 	gfx_preview_->SetInitialSize(wxSize(192, 192));
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry);

@@ -38,9 +38,9 @@
 #include "Graphics/Translation.h"
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
-#include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/Canvas/GL/CTextureGLCanvas.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -58,9 +58,9 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-CTextureCanvas::View view_types[] = { CTextureCanvas::View::Normal,
-									  CTextureCanvas::View::Sprite,
-									  CTextureCanvas::View::HUD };
+CTextureGLCanvas::View view_types[] = { CTextureGLCanvas::View::Normal,
+										CTextureGLCanvas::View::Sprite,
+										CTextureGLCanvas::View::HUD };
 }
 CVAR(Bool, tx_truecolour, true, CVar::Flag::Save)
 CVAR(Int, tx_offset_type, 0, CVar::Flag::Save)

@@ -4,7 +4,7 @@
 
 namespace slade
 {
-class ANSICanvas;
+class AnsiCanvas;
 
 class ANSIEntryPanel : public EntryPanel
 {
@@ -19,7 +19,7 @@ protected:
 	bool writeEntry(ArchiveEntry& entry) override;
 
 private:
-	ANSICanvas*     ansi_canvas_ = nullptr;
+	AnsiCanvas*     ansi_canvas_ = nullptr;
 	vector<uint8_t> ansi_chardata_;
 };
 } // namespace slade

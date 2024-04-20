@@ -27,7 +27,7 @@
 namespace slade
 {
 class CTexture;
-class GfxCanvas;
+class GfxGLCanvas;
 class PaletteChooser;
 class ColourBox;
 
@@ -88,7 +88,10 @@ private:
 			const Palette* palette    = nullptr,
 			Archive*       archive    = nullptr,
 			bool           force_rgba = false) :
-			texture{ texture }, palette{ palette }, archive{ archive }, force_rgba{ force_rgba }
+			texture{ texture },
+			palette{ palette },
+			archive{ archive },
+			force_rgba{ force_rgba }
 		{
 		}
 	};
@@ -99,8 +102,8 @@ private:
 	ConvFormat         current_format_;
 
 	wxStaticText*   label_current_format_     = nullptr;
-	GfxCanvas*      gfx_current_              = nullptr;
-	GfxCanvas*      gfx_target_               = nullptr;
+	GfxGLCanvas*    gfx_current_              = nullptr;
+	GfxGLCanvas*    gfx_target_               = nullptr;
 	wxButton*       btn_convert_              = nullptr;
 	wxButton*       btn_convert_all_          = nullptr;
 	wxButton*       btn_skip_                 = nullptr;

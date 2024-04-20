@@ -36,10 +36,11 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
-#include "OpenGL/OpenGL.h"
-#include "UI/Canvas/MapPreviewCanvas.h"
+#include "General/MapPreviewData.h"
+#include "UI/Canvas/Canvas.h"
 #include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
+#include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -72,10 +73,10 @@ EXTERN_CVAR(Bool, map_view_things)
 // -----------------------------------------------------------------------------
 // MapEntryPanel class constructor
 // -----------------------------------------------------------------------------
-MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
+MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map"), map_data_{ new MapPreviewData }
 {
 	// Setup map canvas
-	map_canvas_ = new MapPreviewCanvas(this, true, true);
+	map_canvas_ = ui::createMapPreviewCanvas(this, map_data_.get(), true, true);
 	sizer_main_->Add(map_canvas_, wxSizerFlags(1).Expand());
 
 	// Setup map toolbar buttons
@@ -109,7 +110,7 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Clear current map data
-	map_canvas_->clearMap();
+	map_data_->clear();
 
 	// Find map definition for entry
 	auto    maps = entry->parent()->detectMaps();
@@ -134,25 +135,28 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	{
 		entry->setType(EntryType::unknownType());
 		EntryType::detectEntryType(*entry);
+		map_canvas_->Refresh();
 		return false;
 	}
 
 	// Load map into preview canvas
-	if (map_canvas_->openMap(thismap))
+	if (map_data_->openMap(thismap))
 	{
 		label_stats_->SetLabel(wxString::Format(
 			"Vertices: %d, Sides: %d, Lines: %d, Sectors: %d, Things: %d, Total Size: %dx%d",
-			map_canvas_->nVertices(),
-			map_canvas_->nSides(),
-			map_canvas_->nLines(),
-			map_canvas_->nSectors(),
-			map_canvas_->nThings(),
-			map_canvas_->width(),
-			map_canvas_->height()));
+			static_cast<int>(map_data_->vertices.size()),
+			map_data_->n_sides,
+			static_cast<int>(map_data_->lines.size()),
+			map_data_->n_sectors,
+			static_cast<int>(map_data_->things.size()),
+			static_cast<int>(map_data_->bounds.width()),
+			static_cast<int>(map_data_->bounds.height())));
+		map_canvas_->Refresh();
 		return true;
 	}
 
 	label_stats_->SetLabel("");
+	map_canvas_->Refresh();
 	return false;
 }
 
@@ -161,49 +165,22 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool MapEntryPanel::createImage()
 {
-	auto entry = entry_.lock();
-	if (!entry)
-		return false;
+	auto name = fmt::format("{}_{}", entry()->parent()->filename(false), entry()->name());
 
-	ArchiveEntry temp;
-
-	// Stupid OpenGL grumble grumble grumble
-	if (gl::fboSupport())
-		map_canvas_->createImage(temp, map_image_width, map_image_height);
-	else
-		map_canvas_->createImage(
-			temp,
-			glm::min<int>(map_image_width, map_canvas_->GetSize().x),
-			glm::min<int>(map_image_height, map_canvas_->GetSize().y));
-
-	wxString   name = wxString::Format("%s_%s", entry->parent()->filename(false), entry->name());
-	wxFileName fn(name);
-
-	// Create save file dialog
-	wxFileDialog dialog_save(
-		this,
-		wxString::Format("Save Map Preview \"%s\"", name),
-		dir_last,
-		fn.GetFullName(),
-		"PNG (*.PNG)|*.png",
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
-		wxDefaultPosition);
-
-	// Run the dialog & check that the user didn't cancel
-	if (dialog_save.ShowModal() == wxID_OK)
+	// Popup file save dialog
+	filedialog::FDInfo inf;
+	if (filedialog::saveFile(inf, fmt::format("Save Map Preview \"{}\"", name), "PNG (*.png)|*.png", this, name))
 	{
-		// If a filename was selected, export it
-		bool ret = temp.exportFile(dialog_save.GetPath().ToStdString());
-
-		// Save 'dir_last'
-		dir_last = wxutil::strToView(dialog_save.GetDirectory());
-
-		// Open the saved image
-		wxLaunchDefaultApplication(dialog_save.GetPath());
-
-		return ret;
+		// Save the map preview as a png image at the selected path
+		if (createMapImage(*map_data_, inf.filenames[0], map_image_width, map_image_height))
+		{
+			// Open the saved image
+			wxLaunchDefaultApplication(inf.filenames[0]);
+			return true;
+		}
 	}
-	return true;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

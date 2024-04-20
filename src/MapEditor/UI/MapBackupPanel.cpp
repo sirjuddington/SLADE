@@ -36,7 +36,8 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveFormatHandler.h"
-#include "UI/Canvas/MapPreviewCanvas.h"
+#include "General/MapPreviewData.h"
+#include "UI/Canvas/Canvas.h"
 #include "UI/Lists/ListView.h"
 #include "UI/WxUtils.h"
 
@@ -55,6 +56,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 MapBackupPanel::MapBackupPanel(wxWindow* parent) :
 	wxPanel{ parent, -1 },
+	map_data_{ new MapPreviewData },
 	archive_backups_{ new Archive(ArchiveFormat::Zip) }
 {
 	// Setup Sizer
@@ -65,7 +67,7 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) :
 	sizer->Add(list_backups_ = new ListView(this, -1), wxutil::sfWithBorder(0, wxRIGHT).Expand());
 
 	// Map preview
-	sizer->Add(canvas_map_ = new MapPreviewCanvas(this), 1, wxEXPAND);
+	sizer->Add(canvas_map_ = ui::createMapPreviewCanvas(this, map_data_.get()), 1, wxEXPAND);
 
 	// Bind events
 	list_backups_->Bind(wxEVT_LIST_ITEM_SELECTED, [&](wxListEvent&) { updateMapPreview(); });
@@ -124,7 +126,7 @@ bool MapBackupPanel::loadBackups(wxString archive_name, const wxString& map_name
 void MapBackupPanel::updateMapPreview()
 {
 	// Clear current preview
-	canvas_map_->clearMap();
+	map_data_->clear();
 
 	// Check for selection
 	if (list_backups_->selectedItems().IsEmpty())
@@ -140,5 +142,5 @@ void MapBackupPanel::updateMapPreview()
 	// Open map preview
 	auto maps = archive_mapdata_->detectMaps();
 	if (!maps.empty())
-		canvas_map_->openMap(maps[0]);
+		map_data_->openMap(maps[0]);
 }

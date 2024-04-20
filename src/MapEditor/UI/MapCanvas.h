@@ -1,7 +1,7 @@
 #pragma once
 
 #include "General/KeyBind.h"
-#include "UI/Canvas/GLCanvas.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 
 namespace sf
 {

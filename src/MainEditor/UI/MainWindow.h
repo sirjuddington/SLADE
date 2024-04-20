@@ -39,6 +39,7 @@ private:
 	STabCtrl*                stc_tabs_             = nullptr;
 	wxAuiManager*            aui_mgr_              = nullptr;
 	PaletteChooser*          palette_chooser_      = nullptr;
+	bool                     opengl_test_done      = false;
 
 	// Action handling
 	bool handleAction(string_view id) override;

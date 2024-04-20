@@ -5,7 +5,7 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    CTextureCanvas.cpp
+// Filename:    CTextureGLCanvas.cpp
 // Description: An OpenGL canvas that displays a composite texture
 //              (ie from doom's TEXTUREx)
 //
@@ -31,7 +31,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "CTextureCanvas.h"
+#include "CTextureGLCanvas.h"
 #include "GLCanvas.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Palette/Palette.h"
@@ -52,7 +52,7 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-unique_ptr<gl::Shader> CTextureCanvas::shader_;
+unique_ptr<gl::Shader> CTextureGLCanvas::shader_;
 wxDEFINE_EVENT(EVT_DRAG_END, wxCommandEvent);
 CVAR(Bool, tx_arc, false, CVar::Flag::Save)
 EXTERN_CVAR(Bool, gfx_show_border)
@@ -60,30 +60,30 @@ EXTERN_CVAR(Bool, gfx_show_border)
 
 // -----------------------------------------------------------------------------
 //
-// CTextureCanvas Class Functions
+// CTextureGLCanvas Class Functions
 //
 // -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
-// CTextureCanvas class constructor
+// CTextureGLCanvas class constructor
 // -----------------------------------------------------------------------------
-CTextureCanvas::CTextureCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
+CTextureGLCanvas::CTextureGLCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 {
 	palette_ = std::make_unique<Palette>();
 	view_.setCentered(true);
 
 	// Bind events
 	setupMousePanning();
-	Bind(wxEVT_MOTION, &CTextureCanvas::onMouseEvent, this);
-	Bind(wxEVT_LEFT_UP, &CTextureCanvas::onMouseEvent, this);
-	Bind(wxEVT_LEAVE_WINDOW, &CTextureCanvas::onMouseEvent, this);
-	Bind(wxEVT_MOUSEWHEEL, &CTextureCanvas::onMouseEvent, this);
+	Bind(wxEVT_MOTION, &CTextureGLCanvas::onMouseEvent, this);
+	Bind(wxEVT_LEFT_UP, &CTextureGLCanvas::onMouseEvent, this);
+	Bind(wxEVT_LEAVE_WINDOW, &CTextureGLCanvas::onMouseEvent, this);
+	Bind(wxEVT_MOUSEWHEEL, &CTextureGLCanvas::onMouseEvent, this);
 }
 
-CTextureCanvas::~CTextureCanvas() = default;
+CTextureGLCanvas::~CTextureGLCanvas() = default;
 
-void CTextureCanvas::setScale(double scale)
+void CTextureGLCanvas::setScale(double scale)
 {
 	if (zoom_point_.x < 0 && zoom_point_.y < 0)
 		view_.setScale(scale);
@@ -91,7 +91,7 @@ void CTextureCanvas::setScale(double scale)
 		view_.setScale(scale, zoom_point_);
 }
 
-void CTextureCanvas::setViewType(View type)
+void CTextureGLCanvas::setViewType(View type)
 {
 	bool changed = view_type_ != type;
 	view_type_   = type;
@@ -102,7 +102,7 @@ void CTextureCanvas::setViewType(View type)
 // -----------------------------------------------------------------------------
 // Selects the patch at [index]
 // -----------------------------------------------------------------------------
-void CTextureCanvas::selectPatch(int index)
+void CTextureGLCanvas::selectPatch(int index)
 {
 	// Check patch index is ok
 	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
@@ -115,7 +115,7 @@ void CTextureCanvas::selectPatch(int index)
 // -----------------------------------------------------------------------------
 // De-Selects the patch at [index]
 // -----------------------------------------------------------------------------
-void CTextureCanvas::deSelectPatch(int index)
+void CTextureGLCanvas::deSelectPatch(int index)
 {
 	// Check patch index is ok
 	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
@@ -128,7 +128,7 @@ void CTextureCanvas::deSelectPatch(int index)
 // -----------------------------------------------------------------------------
 // Returns true if the patch at [index] is selected, false otherwise
 // -----------------------------------------------------------------------------
-bool CTextureCanvas::patchSelected(int index) const
+bool CTextureGLCanvas::patchSelected(int index) const
 {
 	// Check index is ok
 	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
@@ -141,7 +141,7 @@ bool CTextureCanvas::patchSelected(int index) const
 // -----------------------------------------------------------------------------
 // Clears the current texture and the patch textures list
 // -----------------------------------------------------------------------------
-void CTextureCanvas::clearTexture()
+void CTextureGLCanvas::clearTexture()
 {
 	// Clear texture
 	sc_patches_modified_.disconnect();
@@ -171,7 +171,7 @@ void CTextureCanvas::clearTexture()
 // -----------------------------------------------------------------------------
 // Clears the patch textures list
 // -----------------------------------------------------------------------------
-void CTextureCanvas::clearPatches()
+void CTextureGLCanvas::clearPatches()
 {
 	patches_.clear();
 
@@ -182,7 +182,7 @@ void CTextureCanvas::clearPatches()
 // -----------------------------------------------------------------------------
 // Unloads all patch textures, so they are reloaded on next draw
 // -----------------------------------------------------------------------------
-void CTextureCanvas::updatePatchTextures()
+void CTextureGLCanvas::updatePatchTextures()
 {
 	// Unload single patch textures
 	for (auto& p : patches_)
@@ -199,7 +199,7 @@ void CTextureCanvas::updatePatchTextures()
 // -----------------------------------------------------------------------------
 // Unloads the full preview texture, so it is reloaded on next draw
 // -----------------------------------------------------------------------------
-void CTextureCanvas::updateTexturePreview()
+void CTextureGLCanvas::updateTexturePreview()
 {
 	// Unload full preview
 	gl::Texture::clear(tex_preview_);
@@ -209,7 +209,7 @@ void CTextureCanvas::updateTexturePreview()
 // -----------------------------------------------------------------------------
 // Loads a composite texture to be displayed
 // -----------------------------------------------------------------------------
-bool CTextureCanvas::openTexture(CTexture* tex, Archive* parent)
+bool CTextureGLCanvas::openTexture(CTexture* tex, Archive* parent)
 {
 	// Clear the current texture
 	clearTexture();
@@ -246,7 +246,7 @@ bool CTextureCanvas::openTexture(CTexture* tex, Archive* parent)
 // -----------------------------------------------------------------------------
 // Draws the canvas contents
 // -----------------------------------------------------------------------------
-void CTextureCanvas::draw()
+void CTextureGLCanvas::draw()
 {
 	if (!texture_)
 		return;
@@ -308,7 +308,7 @@ void CTextureCanvas::draw()
 // -----------------------------------------------------------------------------
 // Draws the currently opened composite texture
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm::vec2 offset, bool draw_patches)
+void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm::vec2 offset, bool draw_patches)
 {
 	auto width  = texture_->width();
 	auto height = texture_->height();
@@ -346,7 +346,7 @@ void CTextureCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm::
 // -----------------------------------------------------------------------------
 // Draws the patch at index [num] in the composite texture
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawPatch(int num, bool outside)
+void CTextureGLCanvas::drawPatch(int num, bool outside)
 {
 	// Get patch to draw
 	const auto patch = texture_->patch(num);
@@ -432,7 +432,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	vb_patch.draw(gl::Primitive::TriangleFan);
 }
 
-void CTextureCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) const
+void CTextureGLCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) const
 {
 	const auto&   rect = patches_[num].rect;
 	vector<Rectf> lines;
@@ -447,7 +447,7 @@ void CTextureCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) co
 // -----------------------------------------------------------------------------
 // Draws a black border around the texture
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
+void CTextureGLCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 {
 	constexpr float ext = 0.0f;
 	const auto      x1  = offset.x;
@@ -526,7 +526,7 @@ void CTextureCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 	}
 }
 
-void CTextureCanvas::initShader() const
+void CTextureGLCanvas::initShader() const
 {
 	if (!shader_)
 	{
@@ -535,7 +535,7 @@ void CTextureCanvas::initShader() const
 	}
 }
 
-void CTextureCanvas::resetViewOffsets()
+void CTextureGLCanvas::resetViewOffsets()
 {
 	if (view_type_ == View::HUD)
 		view_.setOffset(160, 100);
@@ -548,7 +548,7 @@ void CTextureCanvas::resetViewOffsets()
 // -----------------------------------------------------------------------------
 // Draws the offset center lines
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
+void CTextureGLCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 {
 	if (view_type_ == View::Sprite)
 	{
@@ -573,7 +573,7 @@ void CTextureCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 // -----------------------------------------------------------------------------
 // Redraws the texture, updating it if [update_texture] is true
 // -----------------------------------------------------------------------------
-void CTextureCanvas::redraw(bool update_texture)
+void CTextureGLCanvas::redraw(bool update_texture)
 {
 	if (update_texture)
 		updateTexturePreview();
@@ -581,12 +581,12 @@ void CTextureCanvas::redraw(bool update_texture)
 	Refresh();
 }
 
-Vec2i CTextureCanvas::screenToTexPosition(int x, int y) const
+Vec2i CTextureGLCanvas::screenToTexPosition(int x, int y) const
 {
 	return { static_cast<int>(view_.canvasX(x)), static_cast<int>(view_.canvasY(y)) };
 }
 
-Vec2i CTextureCanvas::texToScreenPosition(int x, int y) const
+Vec2i CTextureGLCanvas::texToScreenPosition(int x, int y) const
 {
 	return { view_.screenX(x), view_.screenY(y) };
 }
@@ -595,7 +595,7 @@ Vec2i CTextureCanvas::texToScreenPosition(int x, int y) const
 // Returns the index of the patch at [x,y] on the texture, or -1 if no patch is
 // at that position
 // -----------------------------------------------------------------------------
-int CTextureCanvas::patchAt(int x, int y) const
+int CTextureGLCanvas::patchAt(int x, int y) const
 {
 	// Check a texture is open
 	if (!texture_)
@@ -622,7 +622,7 @@ int CTextureCanvas::patchAt(int x, int y) const
 // Swaps patches at [p1] and [p2] in the texture.
 // Returns false if either index is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool CTextureCanvas::swapPatches(size_t p1, size_t p2)
+bool CTextureGLCanvas::swapPatches(size_t p1, size_t p2)
 {
 	// Check a texture is open
 	if (!texture_)
@@ -644,7 +644,7 @@ bool CTextureCanvas::swapPatches(size_t p1, size_t p2)
 // -----------------------------------------------------------------------------
 // Called when and mouse event is generated (movement/clicking/etc)
 // -----------------------------------------------------------------------------
-void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
+void CTextureGLCanvas::onMouseEvent(wxMouseEvent& e)
 {
 	bool refresh = false;
 

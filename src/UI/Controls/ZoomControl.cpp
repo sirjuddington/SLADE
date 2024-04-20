@@ -8,7 +8,7 @@
 // Filename:    ZoomControl.cpp
 // Description: A simple control for zooming, with +/- buttons to zoom in/out
 //              and a combobox to select or enter a zoom level (percent).
-//              Can also be linked to a GfxCanvas or CTextureCanvas
+//              Can also be linked to a GfxGLCanvas or CTextureGLCanvas
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -34,8 +34,8 @@
 #include "Main.h"
 #include "ZoomControl.h"
 #include "General/UI.h"
-#include "UI/Canvas/CTextureCanvas.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/GL/CTextureGLCanvas.h"
+#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/SToolBar/SToolBarButton.h"
 
 using namespace slade;
@@ -72,9 +72,9 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 }
 
 // -----------------------------------------------------------------------------
-// ZoomControl class constructor (linking GfxCanvas)
+// ZoomControl class constructor (linking GfxGLCanvas)
 // -----------------------------------------------------------------------------
-ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
+ZoomControl::ZoomControl(wxWindow* parent, GfxGLCanvas* linked_canvas) :
 	wxPanel(parent, -1),
 	linked_gfx_canvas_{ linked_canvas },
 	zoom_(zoom_gfx)
@@ -85,9 +85,9 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
 }
 
 // -----------------------------------------------------------------------------
-// ZoomControl class constructor (linking CTextureCanvas)
+// ZoomControl class constructor (linking CTextureGLCanvas)
 // -----------------------------------------------------------------------------
-ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
+ZoomControl::ZoomControl(wxWindow* parent, CTextureGLCanvas* linked_canvas) :
 	wxPanel(parent, -1),
 	linked_texture_canvas_{ linked_canvas },
 	zoom_(zoom_ctex)

@@ -42,6 +42,7 @@ namespace gl
 
 	wxGLContext*   getContext(wxGLCanvas* canvas = nullptr);
 	bool           init();
+	bool           contextCreationFailed();
 	bool           np2TexSupport();
 	bool           fboSupport();
 	bool           validTexDimension(unsigned dim);

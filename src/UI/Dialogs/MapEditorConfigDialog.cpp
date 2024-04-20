@@ -39,9 +39,10 @@
 #include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
+#include "General/MapPreviewData.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "UI/Canvas/MapPreviewCanvas.h"
+#include "UI/Canvas/Canvas.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
 #include "UI/Lists/ListView.h"
@@ -192,6 +193,7 @@ private:
 // -----------------------------------------------------------------------------
 MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist, bool creating) :
 	SDialog(parent, "Launch Map Editor", ""),
+	map_data_{ new MapPreviewData },
 	game_current_{ game::configuration().currentGame() },
 	port_current_{ game::configuration().currentPort() },
 	creating_{ creating },
@@ -277,7 +279,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 		mainsizer->Add(framesizer, wx::sfWithLargeBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 
 		// Add map preview
-		canvas_preview_ = new MapPreviewCanvas(this);
+		canvas_preview_ = ui::createMapPreviewCanvas(this, map_data_.get());
 		framesizer->Add(canvas_preview_, wx::sfWithBorder(1).Expand());
 		int size = ui::scalePx(400);
 		canvas_preview_->SetInitialSize(wxSize(size, size));
@@ -705,7 +707,8 @@ void MapEditorConfigDialog::onMapSelected(wxListEvent& e)
 		return;
 
 	auto map = selectedMap();
-	canvas_preview_->clearMap();
-	canvas_preview_->openMap(map);
+	map_data_->clear();
+	map_data_->openMap(map);
+	canvas_preview_->Refresh();
 	btn_ok_->Enable(configMatchesMap(map));
 }

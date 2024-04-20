@@ -37,7 +37,7 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/SIconButton.h"
@@ -298,9 +298,9 @@ TranslationEditorDialog::TranslationEditorDialog(
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 1, wxEXPAND);
 
-	gfx_preview_ = new GfxCanvas(this);
+	gfx_preview_ = new GfxGLCanvas(this);
 	gfx_preview_->setPalette(palette_.get());
-	gfx_preview_->setViewType(GfxCanvas::View::Centered);
+	gfx_preview_->setViewType(GfxGLCanvas::View::Centered);
 	gfx_preview_->image().copyImage(image_preview_.get());
 	framesizer->Add(gfx_preview_, 1, wxEXPAND | wxALL, ui::pad());
 

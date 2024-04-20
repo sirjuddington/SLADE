@@ -41,7 +41,7 @@
 #include "OpenGL/GLTexture.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "UI/Browser/BrowserItem.h"
-#include "UI/Canvas/GLCanvas.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"

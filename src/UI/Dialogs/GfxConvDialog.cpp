@@ -37,10 +37,10 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SIFormat.h"
-#include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -280,9 +280,9 @@ void GfxConvDialog::setupLayout()
 
 	// Current
 	gbsizer->Add(new wxStaticText(this, -1, "Current Graphic"), { 0, 0 }, { 1, 1 });
-	gfx_current_ = new GfxCanvas(this);
+	gfx_current_ = new GfxGLCanvas(this);
 	gfx_current_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
-	gfx_current_->setViewType(GfxCanvas::View::Centered);
+	gfx_current_->setViewType(GfxGLCanvas::View::Centered);
 	gbsizer->Add(gfx_current_, { 1, 0 }, { 1, 1 }, wxEXPAND);
 	pal_chooser_current_ = new PaletteChooser(this, -1);
 	pal_chooser_current_->selectPalette(current_palette_name_);
@@ -290,9 +290,9 @@ void GfxConvDialog::setupLayout()
 
 	// Converted
 	gbsizer->Add(new wxStaticText(this, -1, "Converted Graphic"), { 0, 1 }, { 1, 2 });
-	gfx_target_ = new GfxCanvas(this);
+	gfx_target_ = new GfxGLCanvas(this);
 	gfx_target_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
-	gfx_target_->setViewType(GfxCanvas::View::Centered);
+	gfx_target_->setViewType(GfxGLCanvas::View::Centered);
 	gbsizer->Add(gfx_target_, { 1, 1 }, { 1, 2 }, wxEXPAND);
 	pal_chooser_target_ = new PaletteChooser(this, -1);
 	pal_chooser_target_->selectPalette(target_palette_name_);

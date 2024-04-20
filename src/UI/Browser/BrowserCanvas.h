@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Browser.h"
-#include "UI/Canvas/GLCanvas.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 
 class wxScrollBar;
 

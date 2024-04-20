@@ -20,7 +20,7 @@ namespace gl
 	{
 		struct Context;
 	}
-}
+} // namespace gl
 
 enum class GfxView
 {
@@ -39,14 +39,14 @@ enum class GfxEditMode
 	Translate
 };
 
-class GfxCanvas : public GLCanvas
+class GfxGLCanvas : public GLCanvas
 {
 public:
 	using View     = GfxView;
 	using EditMode = GfxEditMode;
 
-	GfxCanvas(wxWindow* parent);
-	~GfxCanvas() override = default;
+	GfxGLCanvas(wxWindow* parent);
+	~GfxGLCanvas() override = default;
 
 	SImage& image() const { return *image_; }
 

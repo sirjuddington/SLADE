@@ -5,9 +5,8 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    PaletteDialog.cpp
-// Description: A simple dialog that contains a palette canvas, and OK/Cancel
-//              buttons, allowing the user to select a colour in the palette
+// Filename:    Canvas.cpp
+// Description: Canvas related helper functions
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -31,53 +30,38 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "PaletteDialog.h"
-#include "General/UI.h"
-#include "UI/Canvas/PaletteCanvas.h"
-#include "UI/WxUtils.h"
-#include "Utility/ColRGBA.h"
+#include "Canvas.h"
+#include "GL/MapPreviewGLCanvas.h"
+#include "MapPreviewCanvas.h"
+#include "OpenGL/OpenGL.h"
 
 using namespace slade;
 
 
 // -----------------------------------------------------------------------------
 //
-// PaletteDialog Class Functions
+// Variables
 //
 // -----------------------------------------------------------------------------
+CVAR(Bool, use_gl_canvas, true, CVar::Save)
 
 
 // -----------------------------------------------------------------------------
-// PaletteDialog class constructor
+//
+// UI Namespace Functions
+//
 // -----------------------------------------------------------------------------
-PaletteDialog::PaletteDialog(const Palette* palette) :
-	wxDialog(nullptr, -1, "Palette", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+namespace slade::ui
 {
-	int size = ui::scalePx(400);
-
-	auto m_vbox = new wxBoxSizer(wxVERTICAL);
-	SetSizer(m_vbox);
-
-	pal_canvas_ = new PaletteCanvas(this);
-	pal_canvas_->setPalette(palette);
-	pal_canvas_->SetInitialSize(wxSize(size, size));
-	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
-	m_vbox->Add(pal_canvas_, wxutil::sfWithLargeBorder(1).Expand());
-	m_vbox->Add(
-		wxutil::createDialogButtonBox(this), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
-
-	// Bind events
-	pal_canvas_->Bind(wxEVT_LEFT_DCLICK, [&](wxMouseEvent&) { EndModal(wxID_OK); });
-
-	// Autosize to fit contents (and set this as the minimum size)
-	SetInitialSize(wxSize(-1, -1));
-	wxTopLevelWindowBase::SetMinSize(GetSize());
-}
-
 // -----------------------------------------------------------------------------
-// Returns the currently selected coloir on the palette canvas
+// Creates a new MapPreviewGLCanvas if OpenGL is available, otherwise will fall
+// back to a software-rendered MapPreviewCanvas
 // -----------------------------------------------------------------------------
-ColRGBA PaletteDialog::selectedColour() const
+wxWindow* createMapPreviewCanvas(wxWindow* parent, MapPreviewData* data, bool allow_zoom, bool allow_pan)
 {
-	return pal_canvas_->selectedColour();
+	if (gl::contextCreationFailed() || !use_gl_canvas)
+		return new MapPreviewCanvas(parent, data);
+	else
+		return new MapPreviewGLCanvas(parent, data, allow_zoom, allow_pan);
 }
+} // namespace slade::ui

@@ -33,6 +33,7 @@
 #include "UI/WxUtils.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "Graphics/SImage/SImage.h"
 #include "Utility/Colour.h"
 #include "thirdparty/lunasvg/include/lunasvg.h"
 

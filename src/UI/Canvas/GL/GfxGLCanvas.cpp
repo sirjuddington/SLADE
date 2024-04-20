@@ -5,9 +5,9 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    GfxCanvas.cpp
-// Description: GfxCanvas class. An OpenGL canvas that displays an image and can
-//              take offsets into account etc
+// Filename:    GfxGLCanvas.cpp
+// Description: GfxGLCanvas class. An OpenGL canvas that displays an image and
+//              can take offsets into account etc
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -31,7 +31,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "GfxCanvas.h"
+#include "GfxGLCanvas.h"
 #include "GLCanvas.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
@@ -63,40 +63,40 @@ CVAR(Bool, gfx_arc, false, CVar::Flag::Save)
 
 // -----------------------------------------------------------------------------
 //
-// GfxCanvas Class Functions
+// GfxGLCanvas Class Functions
 //
 // -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
-// GfxCanvas class constructor
+// GfxGLCanvas class constructor
 // -----------------------------------------------------------------------------
-GfxCanvas::GfxCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered), image_{ new SImage() }
+GfxGLCanvas::GfxGLCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered), image_{ new SImage() }
 {
 	view_.setCentered(true);
 
 	// Update texture when the image changes
-	sc_image_changed_ = image_->signals().image_changed.connect(&GfxCanvas::updateImageTexture, this);
+	sc_image_changed_ = image_->signals().image_changed.connect(&GfxGLCanvas::updateImageTexture, this);
 
 	// Bind events
 	setupMousePanning();
-	Bind(wxEVT_LEFT_DOWN, &GfxCanvas::onMouseLeftDown, this);
-	Bind(wxEVT_RIGHT_DOWN, &GfxCanvas::onMouseRightDown, this);
-	Bind(wxEVT_LEFT_UP, &GfxCanvas::onMouseLeftUp, this);
-	Bind(wxEVT_MOTION, &GfxCanvas::onMouseMovement, this);
-	Bind(wxEVT_LEAVE_WINDOW, &GfxCanvas::onMouseLeaving, this);
-	Bind(wxEVT_MOUSEWHEEL, &GfxCanvas::onMouseWheel, this);
-	Bind(wxEVT_KEY_DOWN, &GfxCanvas::onKeyDown, this);
+	Bind(wxEVT_LEFT_DOWN, &GfxGLCanvas::onMouseLeftDown, this);
+	Bind(wxEVT_RIGHT_DOWN, &GfxGLCanvas::onMouseRightDown, this);
+	Bind(wxEVT_LEFT_UP, &GfxGLCanvas::onMouseLeftUp, this);
+	Bind(wxEVT_MOTION, &GfxGLCanvas::onMouseMovement, this);
+	Bind(wxEVT_LEAVE_WINDOW, &GfxGLCanvas::onMouseLeaving, this);
+	Bind(wxEVT_MOUSEWHEEL, &GfxGLCanvas::onMouseWheel, this);
+	Bind(wxEVT_KEY_DOWN, &GfxGLCanvas::onKeyDown, this);
 }
 
-void GfxCanvas::setPalette(const Palette* pal)
+void GfxGLCanvas::setPalette(const Palette* pal)
 {
 	GLCanvas::setPalette(pal);
 	update_texture_ = true;
 	Refresh();
 }
 
-void GfxCanvas::setViewType(View type)
+void GfxGLCanvas::setViewType(View type)
 {
 	bool changed = view_type_ != type;
 	view_type_   = type;
@@ -110,7 +110,7 @@ void GfxCanvas::setViewType(View type)
 // -----------------------------------------------------------------------------
 // Sets the gfx canvas [scale]
 // -----------------------------------------------------------------------------
-void GfxCanvas::setScale(double scale)
+void GfxGLCanvas::setScale(double scale)
 {
 	if (zoom_point_.x < 0 && zoom_point_.y < 0)
 		view_.setScale(scale);
@@ -121,7 +121,7 @@ void GfxCanvas::setScale(double scale)
 // -----------------------------------------------------------------------------
 // Draws the image/background/etc
 // -----------------------------------------------------------------------------
-void GfxCanvas::draw()
+void GfxGLCanvas::draw()
 {
 	// Aspect Ratio Correction
 	if (gfx_arc)
@@ -162,7 +162,7 @@ void GfxCanvas::draw()
 // -----------------------------------------------------------------------------
 // Draws the offset center lines
 // -----------------------------------------------------------------------------
-void GfxCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
+void GfxGLCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 {
 	if (view_type_ == View::Sprite)
 	{
@@ -188,7 +188,7 @@ void GfxCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 // Draws the image
 // (reloads the image as a texture each time, will change this later...)
 // -----------------------------------------------------------------------------
-void GfxCanvas::drawImage(gl::draw2d::Context& dc) const
+void GfxGLCanvas::drawImage(gl::draw2d::Context& dc) const
 {
 	// Check image is valid
 	if (!image_->isValid())
@@ -248,7 +248,7 @@ void GfxCanvas::drawImage(gl::draw2d::Context& dc) const
 	}
 }
 
-void GfxCanvas::drawImageTiled() const
+void GfxGLCanvas::drawImageTiled() const
 {
 	auto widthf    = static_cast<float>(view_.size().x / view_.scale().x);
 	auto heightf   = static_cast<float>(view_.size().y / view_.scale().y);
@@ -282,7 +282,7 @@ void GfxCanvas::drawImageTiled() const
 // -----------------------------------------------------------------------------
 // Forces (Re)Generation of the image texture
 // -----------------------------------------------------------------------------
-void GfxCanvas::updateImageTexture()
+void GfxGLCanvas::updateImageTexture()
 {
 	update_texture_ = true;
 	Refresh();
@@ -295,7 +295,7 @@ void GfxCanvas::updateImageTexture()
 // Leaves a border around the image if <padding> is specified
 // (0.0f = no border, 1.0f = border 100% of canvas size)
 // -----------------------------------------------------------------------------
-void GfxCanvas::zoomToFit(bool mag, double padding)
+void GfxGLCanvas::zoomToFit(bool mag, double padding)
 {
 	// Determine padding
 	const wxSize size = GetSize() * GetContentScaleFactor();
@@ -319,7 +319,7 @@ void GfxCanvas::zoomToFit(bool mag, double padding)
 	view_.setScale(scale);
 }
 
-void GfxCanvas::resetViewOffsets()
+void GfxGLCanvas::resetViewOffsets()
 {
 	if (view_type_ == View::HUD)
 		view_.setOffset(160, 100);
@@ -332,7 +332,7 @@ void GfxCanvas::resetViewOffsets()
 // -----------------------------------------------------------------------------
 // Returns true if the given coordinates are 'on' top of the image
 // -----------------------------------------------------------------------------
-bool GfxCanvas::onImage(int x, int y) const
+bool GfxGLCanvas::onImage(int x, int y) const
 {
 	// Don't disable in editing mode; it can be quite useful
 	// to have a live preview of how a graphic will tile.
@@ -347,7 +347,7 @@ bool GfxCanvas::onImage(int x, int y) const
 // Returns the image coordinates at [x,y] in screen coordinates, or [-1, -1] if
 // not on the image
 // -----------------------------------------------------------------------------
-Vec2i GfxCanvas::imageCoords(int x, int y) const
+Vec2i GfxGLCanvas::imageCoords(int x, int y) const
 {
 	auto canvas_pos = view_.canvasPos({ x, y });
 	auto image_pos  = canvas_pos;
@@ -367,7 +367,7 @@ Vec2i GfxCanvas::imageCoords(int x, int y) const
 // -----------------------------------------------------------------------------
 // Finishes an offset drag
 // -----------------------------------------------------------------------------
-void GfxCanvas::endOffsetDrag()
+void GfxGLCanvas::endOffsetDrag()
 {
 	// Get offset
 	const auto x = math::scaleInverse(drag_pos_.x - drag_origin_.x, view_.scale().x);
@@ -393,7 +393,7 @@ void GfxCanvas::endOffsetDrag()
 // -----------------------------------------------------------------------------
 // Paints a pixel from the image at the given image coordinates.
 // -----------------------------------------------------------------------------
-void GfxCanvas::paintPixel(int x, int y)
+void GfxGLCanvas::paintPixel(int x, int y)
 {
 	// With large brushes, it's very possible that some of the pixels
 	// are out of the image area; so don't process them.
@@ -442,7 +442,7 @@ void GfxCanvas::paintPixel(int x, int y)
 // -----------------------------------------------------------------------------
 // Finds all the pixels under the brush, and paints them.
 // -----------------------------------------------------------------------------
-void GfxCanvas::brushCanvas(int x, int y)
+void GfxGLCanvas::brushCanvas(int x, int y)
 {
 	if (brush_ == nullptr)
 		return;
@@ -456,7 +456,7 @@ void GfxCanvas::brushCanvas(int x, int y)
 // -----------------------------------------------------------------------------
 // Finds the pixel under the cursor, and picks its colour.
 // -----------------------------------------------------------------------------
-void GfxCanvas::pickColour(int x, int y)
+void GfxGLCanvas::pickColour(int x, int y)
 {
 	// Get the pixel
 	const auto coord = imageCoords(x, y);
@@ -473,7 +473,7 @@ void GfxCanvas::pickColour(int x, int y)
 // -----------------------------------------------------------------------------
 // Creates a mask texture of the brush to preview its effect
 // -----------------------------------------------------------------------------
-void GfxCanvas::generateBrushShadow()
+void GfxGLCanvas::generateBrushShadow()
 {
 	if (brush_ == nullptr)
 		return;
@@ -505,7 +505,7 @@ void GfxCanvas::generateBrushShadow()
 
 // -----------------------------------------------------------------------------
 //
-// GfxCanvas Class Events
+// GfxGLCanvas Class Events
 //
 // -----------------------------------------------------------------------------
 
@@ -514,7 +514,7 @@ void GfxCanvas::generateBrushShadow()
 // -----------------------------------------------------------------------------
 // Called when the left button is pressed within the canvas
 // -----------------------------------------------------------------------------
-void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
+void GfxGLCanvas::onMouseLeftDown(wxMouseEvent& e)
 {
 	const int  x        = e.GetPosition().x * GetContentScaleFactor();
 	const int  y        = e.GetPosition().y * GetContentScaleFactor();
@@ -545,7 +545,7 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the left button is pressed within the canvas
 // -----------------------------------------------------------------------------
-void GfxCanvas::onMouseRightDown(wxMouseEvent& e)
+void GfxGLCanvas::onMouseRightDown(wxMouseEvent& e)
 {
 	const int x = e.GetPosition().x * GetContentScaleFactor();
 	const int y = e.GetPosition().y * GetContentScaleFactor() - 2;
@@ -560,7 +560,7 @@ void GfxCanvas::onMouseRightDown(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the left button is released within the canvas
 // -----------------------------------------------------------------------------
-void GfxCanvas::onMouseLeftUp(wxMouseEvent& e)
+void GfxGLCanvas::onMouseLeftUp(wxMouseEvent& e)
 {
 	// Stop drawing
 	if (drawing_)
@@ -580,7 +580,7 @@ void GfxCanvas::onMouseLeftUp(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the mouse pointer is moved within the canvas
 // -----------------------------------------------------------------------------
-void GfxCanvas::onMouseMovement(wxMouseEvent& e)
+void GfxGLCanvas::onMouseMovement(wxMouseEvent& e)
 {
 	bool refresh = false;
 
@@ -645,7 +645,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the mouse pointer leaves the gfx canvas
 // -----------------------------------------------------------------------------
-void GfxCanvas::onMouseLeaving(wxMouseEvent& e)
+void GfxGLCanvas::onMouseLeaving(wxMouseEvent& e)
 {
 	image_hilight_ = false;
 	Refresh();
@@ -654,7 +654,7 @@ void GfxCanvas::onMouseLeaving(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the mouse wheel is scrolled
 // -----------------------------------------------------------------------------
-void GfxCanvas::onMouseWheel(wxMouseEvent& e)
+void GfxGLCanvas::onMouseWheel(wxMouseEvent& e)
 {
 	if (wxGetKeyState(WXK_CONTROL) && allow_scroll_)
 	{
@@ -691,7 +691,7 @@ void GfxCanvas::onMouseWheel(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 // Called when a key is pressed while the canvas has focus
 // -----------------------------------------------------------------------------
-void GfxCanvas::onKeyDown(wxKeyEvent& e)
+void GfxGLCanvas::onKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
 	{

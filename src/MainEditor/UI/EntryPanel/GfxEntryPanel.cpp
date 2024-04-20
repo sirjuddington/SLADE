@@ -42,7 +42,6 @@
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
@@ -53,6 +52,7 @@
 #include "UI/Dialogs/GfxTintDialog.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/SBrush.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -97,9 +97,9 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 	edit_translation_->addRange(TransRange::Type::Palette, 0);
 
 	// Add gfx canvas
-	gfx_canvas_ = new GfxCanvas(this);
+	gfx_canvas_ = new GfxGLCanvas(this);
 	sizer_main_->Add(gfx_canvas_, 1, wxEXPAND, 0);
-	gfx_canvas_->setViewType(GfxCanvas::View::Default);
+	gfx_canvas_->setViewType(GfxGLCanvas::View::Default);
 	gfx_canvas_->allowDrag(true);
 	gfx_canvas_->allowScroll(true);
 	gfx_canvas_->setPalette(maineditor::currentPalette());
@@ -578,7 +578,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 	applyViewType(entry);
 
 	// Reset display offsets in graphics mode
-	if (gfx_canvas_->viewType() != GfxCanvas::View::Sprite)
+	if (gfx_canvas_->viewType() != GfxGLCanvas::View::Sprite)
 		gfx_canvas_->resetViewOffsets();
 
 	// Setup custom menu
@@ -643,24 +643,24 @@ void GfxEntryPanel::updateImagePalette() const
 // -----------------------------------------------------------------------------
 // Detects the offset view type of the current entry
 // -----------------------------------------------------------------------------
-GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
+GfxGLCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 {
 	if (!entry)
-		return GfxCanvas::View::Default;
+		return GfxGLCanvas::View::Default;
 
 	if (!entry->parent())
-		return GfxCanvas::View::Default;
+		return GfxGLCanvas::View::Default;
 
 	// Check what section of the archive the entry is in -- only PNGs or images
 	// in the sprites section can be HUD or sprite
 	const bool is_sprite = ("sprites" == entry->parent()->detectNamespace(entry));
 	const bool is_png    = ("img_png" == entry->type()->formatId());
 	if (!is_sprite && !is_png)
-		return GfxCanvas::View::Default;
+		return GfxGLCanvas::View::Default;
 
 	auto* img = image();
 	if (is_png && img->offset().x == 0 && img->offset().y == 0)
-		return GfxCanvas::View::Default;
+		return GfxGLCanvas::View::Default;
 
 	const int width        = img->width();
 	const int height       = img->height();
@@ -703,9 +703,9 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 
 	// Sprites are more common than HUD, so in case of a tie, sprite wins
 	if (sprite_penalty > hud_penalty)
-		return GfxCanvas::View::HUD;
+		return GfxGLCanvas::View::HUD;
 	else
-		return GfxCanvas::View::Sprite;
+		return GfxGLCanvas::View::Sprite;
 }
 
 // -----------------------------------------------------------------------------
@@ -716,7 +716,7 @@ void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 {
 	// Tile checkbox overrides offset type selection
 	if (btn_tile_->isChecked())
-		gfx_canvas_->setViewType(GfxCanvas::View::Tiled);
+		gfx_canvas_->setViewType(GfxGLCanvas::View::Tiled);
 	else
 	{
 		// Set gfx canvas view type depending on the offset combobox selection
@@ -724,9 +724,9 @@ void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 		switch (sel)
 		{
 		case 0:  gfx_canvas_->setViewType(detectOffsetType(entry)); break;
-		case 1:  gfx_canvas_->setViewType(GfxCanvas::View::Default); break;
-		case 2:  gfx_canvas_->setViewType(GfxCanvas::View::Sprite); break;
-		case 3:  gfx_canvas_->setViewType(GfxCanvas::View::HUD); break;
+		case 1:  gfx_canvas_->setViewType(GfxGLCanvas::View::Default); break;
+		case 2:  gfx_canvas_->setViewType(GfxGLCanvas::View::Sprite); break;
+		case 3:  gfx_canvas_->setViewType(GfxGLCanvas::View::HUD); break;
 		default: break;
 		}
 	}
@@ -1252,7 +1252,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 	if (id == "tool_drag")
 	{
 		editing_ = false;
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::None);
+		gfx_canvas_->setEditingMode(GfxGLCanvas::EditMode::None);
 		toolbar_->group("Brush")->hide();
 		toolbar_left_->findActionButton("tool_drag")->setChecked(true);
 		toolbar_->updateLayout();
@@ -1264,7 +1264,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
 		toolbar_left_->findActionButton("tool_draw")->setChecked(true);
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Paint);
+		gfx_canvas_->setEditingMode(GfxGLCanvas::EditMode::Paint);
 		gfx_canvas_->setPaintColour(cb_colour_->colour());
 		toolbar_->updateLayout();
 	}
@@ -1275,7 +1275,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
 		toolbar_left_->findActionButton("tool_erase")->setChecked(true);
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Erase);
+		gfx_canvas_->setEditingMode(GfxGLCanvas::EditMode::Erase);
 		toolbar_->updateLayout();
 	}
 
@@ -1285,7 +1285,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
 		toolbar_left_->findActionButton("tool_translate")->setChecked(true);
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Translate);
+		gfx_canvas_->setEditingMode(GfxGLCanvas::EditMode::Translate);
 		toolbar_->updateLayout();
 	}
 }

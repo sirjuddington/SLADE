@@ -8,9 +8,9 @@ namespace slade
 {
 class BaseResourceChooser;
 class ListView;
-class MapPreviewCanvas;
 class ResourceArchiveChooser;
 struct MapDesc;
+struct MapPreviewData;
 
 class MapEditorConfigDialog : public SDialog
 {
@@ -31,19 +31,20 @@ public:
 	wxString selectedPort();
 
 private:
-	wxChoice*               choice_game_config_   = nullptr;
-	wxChoice*               choice_port_config_   = nullptr;
-	BaseResourceChooser*    choice_base_resource_ = nullptr;
-	ListView*               list_maps_            = nullptr;
-	ResourceArchiveChooser* rac_resources_        = nullptr;
-	wxButton*               btn_new_map_          = nullptr;
-	MapPreviewCanvas*       canvas_preview_       = nullptr;
-	wxImageList*            img_list_             = nullptr;
-	wxButton*               btn_ok_               = nullptr;
-	wxButton*               btn_cancel_           = nullptr;
-	wxString                game_current_;
-	wxString                port_current_;
-	bool                    creating_ = false;
+	wxChoice*                  choice_game_config_   = nullptr;
+	wxChoice*                  choice_port_config_   = nullptr;
+	BaseResourceChooser*       choice_base_resource_ = nullptr;
+	ListView*                  list_maps_            = nullptr;
+	ResourceArchiveChooser*    rac_resources_        = nullptr;
+	wxButton*                  btn_new_map_          = nullptr;
+	unique_ptr<MapPreviewData> map_data_;
+	wxWindow*                  canvas_preview_ = nullptr;
+	wxImageList*               img_list_       = nullptr;
+	wxButton*                  btn_ok_         = nullptr;
+	wxButton*                  btn_cancel_     = nullptr;
+	wxString                   game_current_;
+	wxString                   port_current_;
+	bool                       creating_ = false;
 
 	Archive*         archive_ = nullptr;
 	vector<MapDesc>  maps_;

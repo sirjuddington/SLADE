@@ -44,9 +44,9 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
-#include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
@@ -215,8 +215,8 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	label_dimensions_ = new wxStaticText(this, -1, "Size: N/A");
 	label_textures_   = new wxStaticText(
         this, -1, "In Textures: -", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
-	patch_canvas_ = new GfxCanvas(this);
-	patch_canvas_->setViewType(GfxCanvas::View::Centered);
+	patch_canvas_ = new GfxGLCanvas(this);
+	patch_canvas_->setViewType(GfxGLCanvas::View::Centered);
 	patch_canvas_->allowDrag(true);
 	patch_canvas_->allowScroll(true);
 	zc_zoom_ = new ui::ZoomControl(this, patch_canvas_);

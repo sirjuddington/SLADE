@@ -6,8 +6,8 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    PaletteCanvas.cpp
-// Description: PaletteCanvas class. An OpenGL canvas that displays a palette
-//              (256 colours max)
+// Description: PaletteCanvas class. A canvas that displays a palette
+//              (256 colours max) and optionally allows selection
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -33,9 +33,7 @@
 #include "Main.h"
 #include "PaletteCanvas.h"
 #include "Graphics/Palette/Palette.h"
-#include "OpenGL/Draw2D.h"
-#include "OpenGL/Shader.h"
-#include "OpenGL/VertexBuffer2D.h"
+#include "Utility/ColRGBA.h"
 
 using namespace slade;
 
@@ -46,27 +44,36 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // PaletteCanvas class constructor
 // -----------------------------------------------------------------------------
-PaletteCanvas::PaletteCanvas(wxWindow* parent) : GLCanvas(parent), vb_palette_{ new gl::VertexBuffer2D() }
+PaletteCanvas::PaletteCanvas(wxWindow* parent) : wxPanel(parent), palette_{ new Palette }, buffer_{ 1000, 1000, 32 }
 {
-	// Init with default palette
-	palette_ = std::make_unique<Palette>();
+	SetDoubleBuffered(true);
+	// SetBackgroundColour(wxutil::systemPanelBGColour());
 
-	// Bind events
+	// Bind Events
+	Bind(wxEVT_PAINT, &PaletteCanvas::onPaint, this);
 	Bind(wxEVT_LEFT_DOWN, &PaletteCanvas::onMouseLeftDown, this);
 	Bind(wxEVT_RIGHT_DOWN, &PaletteCanvas::onMouseRightDown, this);
 	Bind(wxEVT_MOTION, &PaletteCanvas::onMouseMotion, this);
 
-	// Update when resized
+	// Update on resize
 	Bind(
 		wxEVT_SIZE,
-		[this](wxSizeEvent& e)
+		[this](wxSizeEvent&)
 		{
-			vb_palette_->buffer().clear();
-			e.Skip();
+			// Update buffer
+			updateBuffer();
+
+			// Update offset
+			auto mid_x  = GetSize().x / 2;
+			auto mid_y  = GetSize().y / 2;
+			auto buf_hw = buffer_.GetWidth() / 2;
+			auto buf_hh = buffer_.GetHeight() / 2;
+			offset_     = { mid_x - buf_hw, mid_y - buf_hh };
+
+			Refresh();
 		});
 }
 
@@ -93,7 +100,8 @@ void PaletteCanvas::setSelection(int begin, int end)
 	else
 		sel_end_ = end;
 
-	vb_palette_->buffer().clear();
+	updateBuffer(true);
+	Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -101,82 +109,148 @@ void PaletteCanvas::setSelection(int begin, int end)
 // -----------------------------------------------------------------------------
 void PaletteCanvas::setPalette(const Palette* pal)
 {
-	GLCanvas::setPalette(pal);
-	vb_palette_->buffer().clear();
+	palette_->copyPalette(pal);
+	updateBuffer(true);
 	Refresh();
 }
 
 // -----------------------------------------------------------------------------
-// Draws the palette as 16x16 (or 32x8) coloured squares
+// Updates the buffer bitmap if the size has changed or [force] is true
 // -----------------------------------------------------------------------------
-void PaletteCanvas::draw()
+void PaletteCanvas::updateBuffer(bool force)
 {
-	if (vb_palette_->buffer().empty())
-		updatePaletteBuffer();
+	auto width  = GetSize().x;
+	auto height = GetSize().y;
+	if (width == 0 || height == 0)
+		return;
 
-	// Setup default 2d shader (untextured)
-	const auto& shader = gl::draw2d::defaultShader(false);
-	view_.setupShader(shader);
-	shader.setUniform("colour", glm::vec4{ 1.0f });
+	// Determine square size
+	auto rows        = double_width_ ? 8 : 16;
+	auto cols        = double_width_ ? 32 : 16;
+	int  x_size      = width / cols;
+	int  y_size      = height / rows;
+	auto square_size = std::min<int>(x_size, y_size);
 
-	// Draw palette
-	vb_palette_->draw(gl::Primitive::Triangles);
-}
+	// If the size hasn't changed we don't need to update the buffer
+	if (!force && rows == rows_ && cols == cols_ && square_size == square_size_)
+		return;
 
-// -----------------------------------------------------------------------------
-// Updates the palette vertex buffer
-// -----------------------------------------------------------------------------
-void PaletteCanvas::updatePaletteBuffer()
-{
 	// Update variables
-	rows_        = double_width_ ? 8 : 16;
-	cols_        = double_width_ ? 32 : 16;
-	int x_size   = (GetSize().x) / cols_;
-	int y_size   = (GetSize().y) / rows_;
-	square_size_ = std::min<int>(x_size, y_size);
+	rows_        = rows;
+	cols_        = cols;
+	square_size_ = square_size;
 
-	// Add vertices to buffer
-	int       index     = 0;
-	glm::vec4 colour    = { 1.f, 1.f, 1.f, 1.f };
-	glm::vec4 col_white = { 1.f, 1.f, 1.f, 1.f };
-	glm::vec4 col_black = { 0.f, 0.f, 0.f, 1.f };
-	float     x         = 1.f;
-	float     y         = 1.f;
-	float     sizef     = static_cast<float>(square_size_) - 2.f;
+	// Setup for drawing
+	buffer_.Create(square_size_ * cols_, square_size_ * rows_, 32);
+	auto       corner_size = square_size * 0.05;
+	Vec2i      sel_start{ -1, -1 };
+	Vec2i      sel_end{ -1, -1 };
+	wxMemoryDC dc(buffer_);
+	auto       gc = wxGraphicsContext::Create(dc);
+	gc->SetPen(wxPen(*wxBLACK, 2));
+
+	// Draw colour squares to buffer
+	int index = 0;
 	for (auto row = 0; row < rows_; row++)
 	{
 		for (auto col = 0; col < cols_; col++)
 		{
-			// Get colour
-			colour.r = palette_->colour(index).fr();
-			colour.g = palette_->colour(index).fg();
-			colour.b = palette_->colour(index).fb();
+			gc->SetBrush(wxBrush(palette_->colour(index)));
 
-			if (index >= sel_begin_ && index <= sel_end_)
-			{
-				// Selected: White -> Black -> Colour
-				vb_palette_->addQuadTriangles({ x, y }, { x + sizef, y + sizef }, col_white);
-				vb_palette_->addQuadTriangles(
-					{ x + 1.0f, y + 1.0f }, { x + sizef - 1.0f, y + sizef - 1.0f }, col_black);
-				vb_palette_->addQuadTriangles({ x + 2.0f, y + 2.0f }, { x + sizef - 2.0f, y + sizef - 2.0f }, colour);
-			}
-			else
-			{
-				// Not selected
-				vb_palette_->addQuadTriangles({ x, y }, { x + sizef, y + sizef }, colour);
-			}
+			if (index == sel_begin_)
+				sel_start = { col, row };
+			if (index == sel_end_)
+				sel_end = { col, row };
 
-			// Next column
+			gc->DrawRoundedRectangle(col * square_size, row * square_size, square_size, square_size, corner_size);
+
 			++index;
-			x += sizef + 2.f;
 		}
-
-		// Next row
-		y += sizef + 2.f;
-		x = 1.f;
 	}
 
-	vb_palette_->push();
+	// Draw selection outline
+	if (sel_start.x >= 0)
+	{
+		gc->SetBrush(*wxTRANSPARENT_BRUSH);
+
+		// Single-row selection
+		if (sel_start.y == sel_end.y)
+		{
+			// Black inner
+			gc->SetPen(wxPen(*wxBLACK, 2));
+			gc->DrawRoundedRectangle(
+				sel_start.x * square_size + 3,
+				sel_start.y * square_size + 3,
+				(sel_end.x + 1 - sel_start.x) * square_size - 6,
+				square_size - 6,
+				corner_size);
+
+			// White outer
+			gc->SetPen(wxPen(*wxWHITE, 2));
+			gc->DrawRoundedRectangle(
+				sel_start.x * square_size + 1,
+				sel_start.y * square_size + 1,
+				(sel_end.x + 1 - sel_start.x) * square_size - 2,
+				square_size - 2,
+				corner_size);
+		}
+
+		// Multi-row selection
+		else
+		{
+			// First row
+
+			// Black inner
+			gc->SetPen(wxPen(*wxBLACK, 2));
+			gc->DrawRoundedRectangle(
+				sel_start.x * square_size + 3,
+				sel_start.y * square_size + 3,
+				buffer_.GetWidth() + square_size,
+				square_size - 6,
+				corner_size);
+
+			// White outer
+			gc->SetPen(wxPen(*wxWHITE, 2));
+			gc->DrawRoundedRectangle(
+				sel_start.x * square_size + 1,
+				sel_start.y * square_size + 1,
+				buffer_.GetWidth() + square_size,
+				square_size - 2,
+				corner_size);
+
+			// Last row
+
+			// Black inner
+			gc->SetPen(wxPen(*wxBLACK, 2));
+			gc->DrawRoundedRectangle(
+				-square_size,
+				sel_end.y * square_size + 3,
+				(sel_end.x + 1) * square_size - 6 + square_size,
+				square_size - 6,
+				corner_size);
+
+			// White outer
+			gc->SetPen(wxPen(*wxWHITE, 2));
+			gc->DrawRoundedRectangle(
+				-square_size,
+				sel_end.y * square_size + 1,
+				(sel_end.x + 1) * square_size - 2 + square_size,
+				square_size - 2,
+				corner_size);
+
+			// Middle row(s)
+			for (int row = sel_start.y + 1; row <= sel_end.y - 1; ++row)
+			{
+				// Black inner
+				gc->SetPen(wxPen(*wxBLACK, 2));
+				gc->DrawRectangle(-10, row * square_size + 3, buffer_.GetWidth() + 20, square_size - 6);
+
+				// White outer
+				gc->SetPen(wxPen(*wxWHITE, 2));
+				gc->DrawRectangle(-10, row * square_size + 1, buffer_.GetWidth() + 20, square_size - 2);
+			}
+		}
+	}
 }
 
 
@@ -187,6 +261,15 @@ void PaletteCanvas::updatePaletteBuffer()
 // -----------------------------------------------------------------------------
 
 // ReSharper disable CppParameterMayBeConstPtrOrRef
+
+// -----------------------------------------------------------------------------
+// Called when the palette canvas requires redrawing
+// -----------------------------------------------------------------------------
+void PaletteCanvas::onPaint(wxPaintEvent& e)
+{
+	wxPaintDC dc(this);
+	dc.DrawBitmap(buffer_, offset_.x, offset_.y, true);
+}
 
 // -----------------------------------------------------------------------------
 // Called when the palette canvas is left clicked
@@ -204,21 +287,37 @@ void PaletteCanvas::onMouseLeftDown(wxMouseEvent& e)
 			rows = 8;
 			cols = 32;
 		}
-		const wxSize contentSize = GetSize() * GetContentScaleFactor();
-		int          x_size      = contentSize.x / cols;
-		int          y_size      = contentSize.y / rows;
-		int          size        = std::min<int>(x_size, y_size);
-		int          x           = (e.GetX() * GetContentScaleFactor()) / size;
-		int          y           = (e.GetY() * GetContentScaleFactor()) / size;
+		int x = ((e.GetX() - offset_.x) * GetContentScaleFactor()) / square_size_;
+		int y = ((e.GetY() - offset_.y) * GetContentScaleFactor()) / square_size_;
 
 		// If it was within the palette box, select the cell
 		if (x >= 0 && x < cols && y >= 0 && y < rows)
-			setSelection(y * cols + x);
+		{
+			auto index = y * cols + x;
+
+			if (e.GetModifiers() == wxMOD_SHIFT && allow_selection_ == SelectionType::Range && sel_base_ >= 0)
+			{
+				// Range select
+				if (sel_base_ < index)
+					setSelection(sel_base_, index);
+				else
+					setSelection(index, sel_base_);
+			}
+			else
+			{
+				// Single select
+				sel_base_ = index;
+				setSelection(sel_base_);
+			}
+		}
 		else
+		{
+			sel_base_ = -1;
 			setSelection(-1);
+		}
 
 		// Redraw
-		vb_palette_->buffer().clear();
+		updateBuffer(true);
 		Refresh();
 	}
 
@@ -251,12 +350,8 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 			rows = 8;
 			cols = 32;
 		}
-		const wxSize contentSize = GetSize() * GetContentScaleFactor();
-		int          x_size      = contentSize.x / cols;
-		int          y_size      = contentSize.y / rows;
-		int          size        = std::min<int>(x_size, y_size);
-		int          x           = (e.GetX() * GetContentScaleFactor()) / size;
-		int          y           = (e.GetY() * GetContentScaleFactor()) / size;
+		int x = ((e.GetX() - offset_.x) * GetContentScaleFactor()) / square_size_;
+		int y = ((e.GetY() - offset_.y) * GetContentScaleFactor()) / square_size_;
 
 		// Set selection accordingly
 		if (x >= 0 && x < cols && y >= 0 && y < rows)
@@ -265,7 +360,7 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 			if (sel > sel_begin_)
 				setSelection(sel_begin_, sel);
 
-			vb_palette_->buffer().clear();
+			updateBuffer(true);
 			Refresh();
 		}
 	}

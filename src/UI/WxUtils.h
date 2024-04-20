@@ -1,5 +1,10 @@
 #pragma once
 
+namespace slade
+{
+class SImage;
+}
+
 namespace slade::wxutil
 {
 wxMenuItem* createMenuItem(

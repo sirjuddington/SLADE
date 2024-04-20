@@ -22,7 +22,7 @@ namespace gl
 	}
 } // namespace gl
 
-class CTextureCanvas : public GLCanvas
+class CTextureGLCanvas : public GLCanvas
 {
 public:
 	enum class View
@@ -32,8 +32,8 @@ public:
 		HUD,
 	};
 
-	CTextureCanvas(wxWindow* parent);
-	~CTextureCanvas() override;
+	CTextureGLCanvas(wxWindow* parent);
+	~CTextureGLCanvas() override;
 
 	CTexture* texture() const { return texture_; }
 	View      viewType() const { return view_type_; }

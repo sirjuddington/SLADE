@@ -49,13 +49,14 @@ CVAR(Bool, gl_debug, false, CVar::Flag::Save)
 
 namespace slade::gl
 {
-wxGLContext*     context      = nullptr;
-bool             initialised  = false;
-double           version      = 0;
-unsigned         max_tex_size = 128;
-vector<unsigned> pow_two      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
-Blend            last_blend   = Blend::Normal;
-int              msaa         = -1;
+wxGLContext*     context        = nullptr;
+bool             initialised    = false;
+bool             context_failed = false;
+double           version        = 0;
+unsigned         max_tex_size   = 128;
+vector<unsigned> pow_two        = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
+Blend            last_blend     = Blend::Normal;
+int              msaa           = -1;
 Info             info;
 unsigned         vbo_current;
 unsigned         vao_current;
@@ -162,7 +163,8 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			{
 				log::error("Failed to setup the OpenGL context");
 				delete context;
-				context = nullptr;
+				context        = nullptr;
+				context_failed = true;
 				return nullptr;
 			}
 
@@ -171,7 +173,8 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			{
 				log::error("Failed to setup the OpenGL context");
 				delete context;
-				context = nullptr;
+				context        = nullptr;
+				context_failed = true;
 				return nullptr;
 			}
 
@@ -179,7 +182,8 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			if (!init())
 			{
 				delete context;
-				context = nullptr;
+				context        = nullptr;
+				context_failed = true;
 				return nullptr;
 			}
 		}
@@ -239,6 +243,14 @@ bool gl::init()
 
 	initialised = true;
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if creating the OpenGL context failed
+// -----------------------------------------------------------------------------
+bool gl::contextCreationFailed()
+{
+	return context_failed;
 }
 
 // -----------------------------------------------------------------------------
