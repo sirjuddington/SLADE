@@ -629,7 +629,6 @@ shared_ptr<ArchiveEntry> ArchiveFormatHandler::addEntry(
 
 // -----------------------------------------------------------------------------
 // Adds [entry] to the end of the namespace matching [add_namespace].
-// If [copy] is true a copy of the entry is added.
 // Returns the added entry or NULL if the entry is invalid
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> ArchiveFormatHandler::addEntry(

@@ -103,10 +103,7 @@ public:
 		shared_ptr<ArchiveEntry> entry,
 		unsigned                 position = 0xFFFFFFFF,
 		ArchiveDir*              dir      = nullptr);
-	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
-	{
-		return addEntry(entry, 0xFFFFFFFF, nullptr);
-	} // By default, add to the 'global' namespace (ie root dir)
+	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace);
 	shared_ptr<ArchiveEntry> addNewEntry(
 		string_view name     = "",
 		unsigned    position = 0xFFFFFFFF,
