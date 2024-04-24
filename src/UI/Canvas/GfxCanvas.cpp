@@ -135,6 +135,35 @@ void GfxCanvas::generateBrushShadow()
 }
 
 // -----------------------------------------------------------------------------
+// Updates the wx bitmap(s) for the image and other related data
+// -----------------------------------------------------------------------------
+void GfxCanvas::updateImage(bool hilight)
+{
+	// If the image change isn't caused by drawing, resize drawing mask
+	if (!drawing_)
+	{
+		delete[] drawing_mask_;
+		drawing_mask_ = new bool[image_->width() * image_->height()];
+		memset(drawing_mask_, false, image_->width() * image_->height());
+	}
+
+	// Create wx image
+	auto img = wxutil::createImageFromSImage(*image_, palette_.get());
+	if (hilight)
+		img.ChangeBrightness(0.25); // Hilight if needed
+
+	// Resize the image itself if we can't interpolate correctly (eg. wxGTK/Cairo renderer)
+	if (!nearest_interp_supported_)
+		img = img.Scale(img.GetWidth() * view_.scale().x, img.GetHeight() * view_.scale().y, wxIMAGE_QUALITY_NEAREST);
+
+	// Create wx bitmap from image
+	image_bitmap_ = wxBitmap(img);
+
+	update_image_    = false;
+	image_hilighted_ = hilight;
+}
+
+// -----------------------------------------------------------------------------
 // Draws the offset center/guide lines
 // -----------------------------------------------------------------------------
 void GfxCanvas::drawOffsetLines(wxGraphicsContext* gc)
@@ -211,31 +240,7 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 
 	// Load/update image if needed
 	if (update_image_ || hilight != image_hilighted_)
-	{
-		// If the image change isn't caused by drawing, resize drawing mask
-		if (!drawing_)
-		{
-			delete[] drawing_mask_;
-			drawing_mask_ = new bool[image_->width() * image_->height()];
-			memset(drawing_mask_, false, image_->width() * image_->height());
-		}
-
-		// Create wx image
-		auto img = wxutil::createImageFromSImage(*image_, palette_.get());
-		if (hilight)
-			img.ChangeBrightness(0.25); // Hilight if needed
-
-		// Resize the image itself if we can't interpolate correctly (eg. wxGTK/Cairo renderer)
-		if (!nearest_interp_supported_)
-			img = img.Scale(
-				img.GetWidth() * view_.scale().x, img.GetHeight() * view_.scale().y, wxIMAGE_QUALITY_NEAREST);
-
-		// Create wx bitmap from image
-		image_bitmap_ = wxBitmap(img);
-
-		update_image_    = false;
-		image_hilighted_ = hilight;
-	}
+		updateImage(hilight);
 
 	// Get top left coord to draw at
 	Vec2i tl;
@@ -278,6 +283,35 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Draws the image tiled to fill the canvas
+// -----------------------------------------------------------------------------
+void GfxCanvas::drawImageTiled(wxGraphicsContext* gc)
+{
+	nearest_interp_supported_ = gc->SetInterpolationQuality(wxINTERPOLATION_NONE);
+
+	// Load/update image if needed
+	if (update_image_ || image_hilighted_)
+		updateImage(false);
+
+	// Draw image multiple times to fill canvas
+	auto left   = view().canvasX(0);
+	auto y      = view().canvasY(0);
+	auto right  = view().canvasX(GetSize().x);
+	auto bottom = view().canvasY(GetSize().y);
+	while (y < bottom)
+	{
+		auto x = left;
+		while (x < right)
+		{
+			gc->DrawBitmap(image_bitmap_, x, y, image_->width(), image_->height());
+			x += image_->width();
+		}
+
+		y += image_->height();
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -311,7 +345,10 @@ void GfxCanvas::onPaint(wxPaintEvent& e)
 	gc->Translate(-view().offset().x, -view().offset().y);
 
 	drawOffsetLines(gc);
-	drawImage(gc);
+	if (editing_mode_ == GfxEditMode::None && view_type_ == View::Tiled)
+		drawImageTiled(gc);
+	else
+		drawImage(gc);
 
 	delete gc;
 }

@@ -34,8 +34,10 @@ private:
 	wxBitmap brush_bitmap_;
 
 	void generateBrushShadow() override;
+	void updateImage(bool hilight);
 	void drawOffsetLines(wxGraphicsContext* gc);
 	void drawImage(wxGraphicsContext* gc);
+	void drawImageTiled(wxGraphicsContext* gc);
 
 	// Events
 	void onPaint(wxPaintEvent& e);

@@ -130,7 +130,7 @@ void GfxGLCanvas::draw()
 		drawOffsetLines(dc);
 
 	// Draw the image
-	if (view_type_ == View::Tiled)
+	if (editing_mode_ == GfxEditMode::None && view_type_ == View::Tiled)
 		drawImageTiled();
 	else
 		drawImage(dc);
@@ -224,6 +224,9 @@ void GfxGLCanvas::drawImage(gl::draw2d::Context& dc) const
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Draws the image tiled to fill the canvas
+// -----------------------------------------------------------------------------
 void GfxGLCanvas::drawImageTiled() const
 {
 	auto widthf    = static_cast<float>(view_.size().x / view_.scale().x);
