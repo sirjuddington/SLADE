@@ -123,8 +123,15 @@ void GfxCanvas::generateBrushShadow()
 	SImage img;
 	generateBrushShadowImage(img);
 
+	// Create wx image
+	auto wx_img = wxutil::createImageFromSImage(img, palette_.get());
+
+	// Resize if nearest interpolation not supported
+	if (!nearest_interp_supported_)
+		wx_img = wx_img.Scale(img.width() * view_.scale().x, img.height() * view_.scale().y, wxIMAGE_QUALITY_NEAREST);
+
 	// Load it to the brush bitmap
-	brush_bitmap_ = wxBitmap(wxutil::createImageFromSImage(img, palette_.get()));
+	brush_bitmap_ = wxBitmap(wx_img);
 }
 
 // -----------------------------------------------------------------------------
@@ -140,8 +147,8 @@ void GfxCanvas::drawOffsetLines(wxGraphicsContext* gc)
 		gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
 
 		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(0, 0, 0, 190), psize_thick)));
-		gc->StrokeLine(-999999, 0, 999999, 0);
-		gc->StrokeLine(0, -999999, 0, 999999);
+		gc->StrokeLine(view().canvasX(0), 0, view().canvasX(GetSize().x), 0);
+		gc->StrokeLine(0, view().canvasY(0), 0, view().canvasY(GetSize().y));
 	}
 	else if (view_type_ == View::HUD)
 	{
@@ -198,8 +205,9 @@ void GfxCanvas::drawOffsetLines(wxGraphicsContext* gc)
 // -----------------------------------------------------------------------------
 void GfxCanvas::drawImage(wxGraphicsContext* gc)
 {
-	auto dragging = drag_origin_.x > 0;
-	auto hilight  = !dragging && image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None;
+	auto dragging             = drag_origin_.x > 0;
+	auto hilight              = !dragging && image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None;
+	nearest_interp_supported_ = gc->SetInterpolationQuality(wxINTERPOLATION_NONE);
 
 	// Load/update image if needed
 	if (update_image_ || hilight != image_hilighted_)
@@ -216,6 +224,11 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 		auto img = wxutil::createImageFromSImage(*image_, palette_.get());
 		if (hilight)
 			img.ChangeBrightness(0.25); // Hilight if needed
+
+		// Resize the image itself if we can't interpolate correctly (eg. wxGTK/Cairo renderer)
+		if (!nearest_interp_supported_)
+			img = img.Scale(
+				img.GetWidth() * view_.scale().x, img.GetHeight() * view_.scale().y, wxIMAGE_QUALITY_NEAREST);
 
 		// Create wx bitmap from image
 		image_bitmap_ = wxBitmap(img);
@@ -234,10 +247,9 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 	}
 
 	// Draw image
-	gc->SetInterpolationQuality(wxINTERPOLATION_NONE);
 	if (dragging)
 		gc->BeginLayer(0.5); // Semitransparent if dragging
-	gc->DrawBitmap(image_bitmap_, tl.x, tl.y, image_bitmap_.GetWidth(), image_bitmap_.GetHeight());
+	gc->DrawBitmap(image_bitmap_, tl.x, tl.y, image_->width(), image_->height());
 	if (dragging)
 		gc->EndLayer();
 
@@ -245,7 +257,7 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 	if (editing_mode_ != EditMode::None && brush_bitmap_.IsOk() && cursor_pos_ != Vec2i{ -1, -1 })
 	{
 		gc->BeginLayer(0.6);
-		gc->DrawBitmap(brush_bitmap_, tl.x, tl.y, brush_bitmap_.GetWidth(), brush_bitmap_.GetHeight());
+		gc->DrawBitmap(brush_bitmap_, tl.x, tl.y, image_->width(), image_->height());
 		gc->EndLayer();
 	}
 
@@ -254,7 +266,7 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 	{
 		tl.x += math::scaleInverse(drag_pos_.x - drag_origin_.x, view().scale().x);
 		tl.y += math::scaleInverse(drag_pos_.y - drag_origin_.y, view().scale().y);
-		gc->DrawBitmap(image_bitmap_, tl.x, tl.y, image_bitmap_.GetWidth(), image_bitmap_.GetHeight());
+		gc->DrawBitmap(image_bitmap_, tl.x, tl.y, image_->width(), image_->height());
 	}
 
 	// Draw outline
@@ -262,7 +274,7 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 	{
 		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(0, 0, 0, 64), 1.0 / view().scale().x)));
 		gc->SetBrush(*wxTRANSPARENT_BRUSH);
-		gc->DrawRectangle(tl.x, tl.y, image_bitmap_.GetWidth(), image_bitmap_.GetHeight());
+		gc->DrawRectangle(tl.x, tl.y, image_->width(), image_->height());
 	}
 }
 

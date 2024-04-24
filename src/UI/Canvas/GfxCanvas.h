@@ -25,8 +25,9 @@ public:
 private:
 	gl::View            view_;
 	unique_ptr<Palette> palette_;
-	bool                update_image_    = true;
-	bool                image_hilighted_ = false;
+	bool                update_image_             = true;
+	bool                image_hilighted_          = false;
+	bool                nearest_interp_supported_ = false;
 
 	wxBitmap background_bitmap_;
 	wxBitmap image_bitmap_;
