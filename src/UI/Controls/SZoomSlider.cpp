@@ -33,7 +33,7 @@
 #include "Main.h"
 #include "SZoomSlider.h"
 #include "UI/Canvas/GL/CTextureGLCanvas.h"
-#include "UI/Canvas/GL/GfxGLCanvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -49,7 +49,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // SZoomSlider class constructor (linking GfxGLCanvas)
 // -----------------------------------------------------------------------------
-SZoomSlider::SZoomSlider(wxWindow* parent, GfxGLCanvas* linked_canvas) :
+SZoomSlider::SZoomSlider(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 	wxPanel{ parent },
 	linked_gfx_canvas_{ linked_canvas }
 {
@@ -94,7 +94,7 @@ void SZoomSlider::setup()
 			if (linked_gfx_canvas_)
 			{
 				linked_gfx_canvas_->setScale(zoomFactor());
-				linked_gfx_canvas_->Refresh();
+				linked_gfx_canvas_->window()->Refresh();
 			}
 			if (linked_texture_canvas_)
 			{

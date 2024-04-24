@@ -44,9 +44,10 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/ZoomControl.h"
-#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
@@ -215,8 +216,8 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	label_dimensions_ = new wxStaticText(this, -1, "Size: N/A");
 	label_textures_   = new wxStaticText(
         this, -1, "In Textures: -", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
-	patch_canvas_ = new GfxGLCanvas(this);
-	patch_canvas_->setViewType(GfxGLCanvas::View::Centered);
+	patch_canvas_ = ui::createGfxCanvas(this);
+	patch_canvas_->setViewType(GfxView::Centered);
 	patch_canvas_->allowDrag(true);
 	patch_canvas_->allowScroll(true);
 	zc_zoom_ = new ui::ZoomControl(this, patch_canvas_);
@@ -254,7 +255,7 @@ void PatchTablePanel::setupLayout()
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 	framesizer->Add(zc_zoom_, wx::sfWithBorder());
-	framesizer->Add(patch_canvas_, wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(patch_canvas_->window(), wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	framesizer->Add(label_dimensions_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	framesizer->Add(label_textures_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 }
@@ -285,7 +286,8 @@ void PatchTablePanel::updateDisplay()
 		patch_canvas_->image().clear();
 		label_dimensions_->SetLabel("Size: ? x ?");
 	}
-	patch_canvas_->Refresh();
+	patch_canvas_->resetViewOffsets();
+	patch_canvas_->window()->Refresh();
 
 	// List which textures use this patch
 	if (!patch.used_in.empty())

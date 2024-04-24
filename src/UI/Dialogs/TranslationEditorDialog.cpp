@@ -301,7 +301,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 
 	gfx_preview_ = ui::createGfxCanvas(this);
 	gfx_preview_->setPalette(palette_.get());
-	gfx_preview_->setViewType(GfxGLCanvas::View::Centered);
+	gfx_preview_->setViewType(GfxView::Centered);
 	gfx_preview_->image().copyImage(image_preview_.get());
 	framesizer->Add(gfx_preview_->window(), 1, wxEXPAND | wxALL, ui::pad());
 

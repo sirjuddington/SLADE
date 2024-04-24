@@ -99,7 +99,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
 
 	// Setup preview
-	gfx_preview_->setViewType(GfxGLCanvas::View::Centered);
+	gfx_preview_->setViewType(GfxView::Centered);
 	gfx_preview_->setPalette(palette_.get());
 	gfx_preview_->window()->SetInitialSize(wxSize(256, 256));
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry);

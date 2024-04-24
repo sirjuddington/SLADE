@@ -139,6 +139,9 @@ void GfxCanvas::generateBrushShadow()
 // -----------------------------------------------------------------------------
 void GfxCanvas::updateImage(bool hilight)
 {
+	if (!image_->isValid())
+		return;
+
 	// If the image change isn't caused by drawing, resize drawing mask
 	if (!drawing_)
 	{
@@ -344,11 +347,17 @@ void GfxCanvas::onPaint(wxPaintEvent& e)
 	gc->Scale(view().scale().x, gfx_arc ? view().scale().y * 1.2 : view().scale().y);
 	gc->Translate(-view().offset().x, -view().offset().y);
 
+	// Offset/guide lines
 	drawOffsetLines(gc);
-	if (editing_mode_ == GfxEditMode::None && view_type_ == View::Tiled)
-		drawImageTiled(gc);
-	else
-		drawImage(gc);
+
+	// Image
+	if (image_->isValid())
+	{
+		if (editing_mode_ == GfxEditMode::None && view_type_ == View::Tiled)
+			drawImageTiled(gc);
+		else
+			drawImage(gc);
+	}
 
 	delete gc;
 }

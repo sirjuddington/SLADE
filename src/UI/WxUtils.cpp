@@ -457,13 +457,16 @@ wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height
 // -----------------------------------------------------------------------------
 wxImage wxutil::createImageFromSImage(const SImage& image, const Palette* palette)
 {
+	if (!image.isValid())
+		return {};
+
 	// Get image RGB and Alpha data separately because we can't create a wxImage straight from RGBA data
 	MemChunk rgb, alpha;
 	image.putRGBData(rgb, palette);
 	image.putAlphaData(alpha);
 
 	// Create wx bitmap
-	return wxImage(image.width(), image.height(), rgb.releaseData(), alpha.releaseData());
+	return { image.width(), image.height(), rgb.releaseData(), alpha.releaseData() };
 }
 
 // -----------------------------------------------------------------------------
