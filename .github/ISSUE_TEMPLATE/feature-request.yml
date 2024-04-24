@@ -27,7 +27,6 @@ body:
       description: "What exactly are you looking for in SLADE?"
       value: |
         I would like SLADE to ...
-      render: text
     validations:
       required: true
   - type: textarea
@@ -37,6 +36,5 @@ body:
       description: "If applicable ONLY, add mock-ups to help explain your feature request."
       value: |
         ![DESCRIPTION](LINK.png)
-      render: text
     validations:
       required: false
