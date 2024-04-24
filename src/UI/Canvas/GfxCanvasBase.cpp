@@ -173,6 +173,24 @@ Vec2i GfxCanvasBase::imageCoords(int x, int y) const
 }
 
 // -----------------------------------------------------------------------------
+// Sets/enables the cropping [rect]angle
+// -----------------------------------------------------------------------------
+void GfxCanvasBase::setCropRect(const Recti& rect)
+{
+	crop_rect_ = std::make_unique<Recti>(rect);
+	window()->Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Clears/disables the cropping rectangle
+// -----------------------------------------------------------------------------
+void GfxCanvasBase::clearCropRect()
+{
+	crop_rect_.reset();
+	window()->Refresh();
+}
+
+// -----------------------------------------------------------------------------
 // Finishes an offset drag
 // -----------------------------------------------------------------------------
 void GfxCanvasBase::endOffsetDrag()

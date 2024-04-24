@@ -34,12 +34,12 @@
 #include "GfxGLCanvas.h"
 #include "GLCanvas.h"
 #include "Graphics/SImage/SImage.h"
-#include "Graphics/Translation.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
+#include "Utility/ColRGBA.h"
 #include "Utility/MathStuff.h"
 #include <glm/ext/matrix_transform.hpp>
 
@@ -134,6 +134,10 @@ void GfxGLCanvas::draw()
 		drawImageTiled();
 	else
 		drawImage(dc);
+
+	// Draw cropping overlay
+	if (crop_rect_)
+		drawCropRect(dc);
 }
 
 // -----------------------------------------------------------------------------
@@ -159,6 +163,39 @@ void GfxGLCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 	}
 	else if (view_type_ == View::HUD)
 		dc.drawHud();
+}
+
+// -----------------------------------------------------------------------------
+// Draws the current cropping rectangle overlay
+// -----------------------------------------------------------------------------
+void GfxGLCanvas::drawCropRect(gl::draw2d::Context& dc) const
+{
+	float c_left   = crop_rect_->left();
+	float c_right  = crop_rect_->right();
+	float c_top    = crop_rect_->top();
+	float c_bottom = crop_rect_->bottom();
+	float s_left   = view_.visibleRegion().left();
+	float s_right  = view_.visibleRegion().right();
+	float s_top    = view_.visibleRegion().top();
+	float s_bottom = view_.visibleRegion().bottom();
+
+	// Draw cropping rectangle
+	dc.line_thickness = 1.0f;
+	dc.colour.set(0, 0, 0, 255);
+	dc.texture = 0;
+	dc.drawLines(vector<Rectf>{
+		{ c_left, s_top, c_left, s_bottom },    // Left
+		{ s_left, c_top, s_right, c_top },      // Top
+		{ c_right, s_top, c_right, s_bottom },  // Right
+		{ s_left, c_bottom, s_right, c_bottom } // Bottom
+	});
+
+	// Shade cropped-out area
+	dc.colour.set(0, 0, 0, 100);
+	dc.drawRect({ s_left, s_top, c_left, s_bottom });     // Left
+	dc.drawRect({ c_right, s_top, s_right, s_bottom });   // Right
+	dc.drawRect({ c_left, s_top, c_right, c_top });       // Top
+	dc.drawRect({ c_left, c_bottom, c_right, s_bottom }); // Bottom
 }
 
 // -----------------------------------------------------------------------------

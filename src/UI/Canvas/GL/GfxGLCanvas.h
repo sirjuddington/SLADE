@@ -49,5 +49,6 @@ private:
 	void drawImage(gl::draw2d::Context& dc) const;
 	void drawImageTiled() const;
 	void drawOffsetLines(const gl::draw2d::Context& dc);
+	void drawCropRect(gl::draw2d::Context& dc) const;
 };
 } // namespace slade

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Geometry/RectFwd.h"
 #include "Utility/ColRGBA.h"
 
 // Forward declarations
@@ -82,6 +83,9 @@ public:
 	bool  onImage(int x, int y) const;
 	Vec2i imageCoords(int x, int y) const;
 
+	void setCropRect(const Recti& rect);
+	void clearCropRect();
+
 protected:
 	unique_ptr<SImage> image_;
 	View               view_type_    = View::Default;
@@ -103,6 +107,7 @@ protected:
 	Vec2i              prev_pos_            = { -1, -1 }; // Previous position of cursor
 	ui::ZoomControl*   linked_zoom_control_ = nullptr;
 	Vec2i              zoom_point_          = { -1, -1 };
+	unique_ptr<Recti>  crop_rect_;
 
 	// Signal connections
 	sigslot::scoped_connection sc_image_changed_;

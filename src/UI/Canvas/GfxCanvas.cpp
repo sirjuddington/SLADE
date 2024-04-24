@@ -316,6 +316,30 @@ void GfxCanvas::drawImageTiled(wxGraphicsContext* gc)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Draws the current cropping rectangle overlay
+// -----------------------------------------------------------------------------
+void GfxCanvas::drawCropRect(wxGraphicsContext* gc) const
+{
+	auto vr = view_.visibleRegion();
+
+	// Draw cropping lines
+	gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(*wxBLACK, 1 / view_.scale().x)));
+	gc->StrokeLine(crop_rect_->left(), vr.top(), crop_rect_->left(), vr.bottom());     // Left
+	gc->StrokeLine(vr.left(), crop_rect_->top(), vr.right(), crop_rect_->top());       // Top
+	gc->StrokeLine(crop_rect_->right(), vr.top(), crop_rect_->right(), vr.bottom());   // Right
+	gc->StrokeLine(vr.left(), crop_rect_->bottom(), vr.right(), crop_rect_->bottom()); // Bottom
+
+	// Shade cropped-out area
+	gc->SetPen(*wxTRANSPARENT_PEN);
+	gc->SetBrush(wxBrush(wxColour(0, 0, 0, 100)));
+	gc->DrawRectangle(vr.left(), vr.top(), crop_rect_->left() - vr.left(), vr.height());                // Left
+	gc->DrawRectangle(crop_rect_->right(), vr.top(), vr.right() - crop_rect_->right(), vr.height());    // Right
+	gc->DrawRectangle(crop_rect_->left(), vr.top(), crop_rect_->width(), crop_rect_->top() - vr.top()); // Top
+	gc->DrawRectangle(
+		crop_rect_->left(), crop_rect_->bottom(), crop_rect_->width(), vr.bottom() - crop_rect_->bottom()); // Bottom
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -355,6 +379,10 @@ void GfxCanvas::onPaint(wxPaintEvent& e)
 		else
 			drawImage(gc);
 	}
+
+	// Cropping overlay
+	if (crop_rect_)
+		drawCropRect(gc);
 
 	delete gc;
 }

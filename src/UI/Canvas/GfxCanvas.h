@@ -38,6 +38,7 @@ private:
 	void drawOffsetLines(wxGraphicsContext* gc);
 	void drawImage(wxGraphicsContext* gc);
 	void drawImageTiled(wxGraphicsContext* gc);
+	void drawCropRect(wxGraphicsContext* gc) const;
 
 	// Events
 	void onPaint(wxPaintEvent& e);

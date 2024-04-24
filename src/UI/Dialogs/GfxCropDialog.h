@@ -4,21 +4,21 @@
 
 namespace slade
 {
-class CropCanvas;
+class GfxCanvasBase;
 class NumberTextCtrl;
 class SImage;
 
 class GfxCropDialog : public wxDialog
 {
 public:
-	GfxCropDialog(wxWindow* parent, SImage& image, const Palette* palette);
+	GfxCropDialog(wxWindow* parent, const SImage& image, const Palette* palette);
 	~GfxCropDialog() override = default;
 
 	const Recti& cropRect() const { return crop_rect_; }
 	void         updatePreview() const;
 
 private:
-	CropCanvas*     canvas_preview_ = nullptr;
+	GfxCanvasBase*  canvas_preview_ = nullptr;
 	NumberTextCtrl* text_left_      = nullptr;
 	NumberTextCtrl* text_top_       = nullptr;
 	NumberTextCtrl* text_right_     = nullptr;
