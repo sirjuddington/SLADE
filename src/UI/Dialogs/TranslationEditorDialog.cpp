@@ -37,8 +37,8 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
-#include "OpenGL/OpenGL.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/SIconButton.h"
@@ -61,66 +61,27 @@ CVAR(Bool, translation_editor_condensed, false, CVar::Save)
 // GradientBox Class
 //
 // -----------------------------------------------------------------------------
-class GradientBox : public OGLCanvas
+
+
+// -----------------------------------------------------------------------------
+// GradientBox class constructor
+// -----------------------------------------------------------------------------
+GradientBox::GradientBox(wxWindow* parent, int steps) :
+	wxPanel(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE),
+	steps_{ steps }
 {
-public:
-	GradientBox(wxWindow* parent, int steps = -1) : OGLCanvas(parent, -1), steps_{ steps }
-	{
-		// Minimum height 16
-		SetInitialSize(wxSize(-1, ui::scalePx(16)));
-	}
-
-	~GradientBox() override = default;
-
-	void setStartCol(ColRGBA col) { col_start_.set(col.r, col.g, col.b, 255); }
-	void setEndCol(ColRGBA col) { col_end_.set(col.r, col.g, col.b, 255); }
-	void setSteps(int steps) { steps_ = steps; }
-
-	void draw() override
-	{
-		// Setup the viewport
-		const wxSize size = GetSize() * GetContentScaleFactor();
-		glViewport(0, 0, size.x, size.y);
-
-		// Setup the screen projection
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, size.x, size.y, 0, -1, 1);
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		// Clear
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-		if (gl::accuracyTweak())
-			glTranslatef(0.375f, 0.375f, 0);
-
-		// Draw gradient
-		if (steps_ < 0)
+	Bind(
+		wxEVT_PAINT,
+		[&](wxPaintEvent& e)
 		{
-			// No steps defined, draw smooth gradient
-			glBegin(GL_QUADS);
-			gl::setColour(col_start_);
-			glVertex2d(0, 0);
-			glVertex2d(0, size.y);
-			gl::setColour(col_end_);
-			glVertex2d(size.x, size.y);
-			glVertex2d(size.x, 0);
-			glEnd();
-		}
+			wxPaintDC dc(this);
+			dc.GradientFillLinear({ 0, 0, GetSize().x, GetSize().y }, col_start_, col_end_);
+		});
 
-		// Swap buffers (ie show what was drawn)
-		SwapBuffers();
-	}
+	// Minimum height 16
+	SetInitialSize(wxSize(-1, ui::scalePx(16)));
+}
 
-private:
-	ColRGBA col_start_ = ColRGBA::BLACK;
-	ColRGBA col_end_   = ColRGBA::WHITE;
-	int     steps_     = 0;
-};
 
 
 // -----------------------------------------------------------------------------
@@ -198,7 +159,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	sizer->Add(framesizer, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 	// Origin palette
-	pal_canvas_original_ = new PaletteCanvas(this, -1);
+	pal_canvas_original_ = new PaletteCanvas(this);
 	pal_canvas_original_->doubleWidth(true);
 	pal_canvas_original_->setPalette(palette_.get());
 	pal_canvas_original_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
@@ -245,7 +206,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	panel_target_palette_->SetSizer(vbox);
 
 	// Target palette
-	pal_canvas_target_ = new PaletteCanvas(panel_target_palette_, -1);
+	pal_canvas_target_ = new PaletteCanvas(panel_target_palette_);
 	pal_canvas_target_->doubleWidth(true);
 	pal_canvas_target_->setPalette(palette_.get());
 	pal_canvas_target_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
@@ -324,7 +285,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 0, wxEXPAND | wxRIGHT, ui::pad());
 
-	pal_canvas_preview_ = new PaletteCanvas(this, -1);
+	pal_canvas_preview_ = new PaletteCanvas(this);
 	pal_canvas_preview_->doubleWidth(translation_editor_condensed);
 	if (translation_editor_condensed)
 		pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(320), ui::scalePx(80)));
@@ -338,11 +299,11 @@ TranslationEditorDialog::TranslationEditorDialog(
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 1, wxEXPAND);
 
-	gfx_preview_ = new GfxCanvas(this, -1);
+	gfx_preview_ = ui::createGfxCanvas(this);
 	gfx_preview_->setPalette(palette_.get());
-	gfx_preview_->setViewType(GfxCanvas::View::Centered);
+	gfx_preview_->setViewType(GfxView::Centered);
 	gfx_preview_->image().copyImage(image_preview_.get());
-	framesizer->Add(gfx_preview_, 1, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(gfx_preview_->window(), 1, wxEXPAND | wxALL, ui::pad());
 
 
 	// --- Translation string ---
@@ -395,7 +356,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	btn_down_->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnDown, this);
 	btn_load_->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnLoad, this);
 	btn_save_->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnSave, this);
-	gfx_preview_->Bind(wxEVT_MOTION, &TranslationEditorDialog::onGfxPreviewMouseMotion, this);
+	gfx_preview_->window()->Bind(wxEVT_MOTION, &TranslationEditorDialog::onGfxPreviewMouseMotion, this);
 	cb_target_reverse_->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBTargetReverse, this);
 	cb_truecolor_->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBTruecolor, this);
 	cb_paletteonly_->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBPaletteOnly, this);
@@ -808,8 +769,9 @@ void TranslationEditorDialog::showTintTarget(bool tint)
 void TranslationEditorDialog::updatePreviews() const
 {
 	// Update palette preview
-	pal_canvas_preview_->setPalette(palette_.get());
-	pal_canvas_preview_->palette().applyTranslation(translation_.get());
+	Palette pal_translated{ *palette_ };
+	pal_translated.applyTranslation(translation_.get());
+	pal_canvas_preview_->setPalette(&pal_translated);
 	pal_canvas_preview_->Refresh();
 
 	// Update image preview
@@ -817,8 +779,8 @@ void TranslationEditorDialog::updatePreviews() const
 	gfx_preview_->image().applyTranslation(translation_.get(), palette_.get(), cb_truecolor_->GetValue());
 
 	// Update UI
-	gfx_preview_->updateImageTexture();
-	gfx_preview_->Refresh();
+	gfx_preview_->resetViewOffsets();
+	gfx_preview_->window()->Refresh();
 
 	// Update text string
 	if (cb_paletteonly_->GetValue())

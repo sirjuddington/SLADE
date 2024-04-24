@@ -27,8 +27,6 @@ void          setColour(
 			 int           alpha          = -1,
 			 bool          blend_additive = false);
 
-void setGLColour(const string& name, float alpha_mult = 1.f);
-
 double lineHilightWidth();
 double lineSelectionWidth();
 double flatAlpha();

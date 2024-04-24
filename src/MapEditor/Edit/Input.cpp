@@ -39,10 +39,11 @@
 #include "General/SAction.h"
 #include "General/UI.h"
 #include "LineDraw.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "MapEditor/Renderer/Camera.h"
 #include "MapEditor/Renderer/MCAnimations.h"
-#include "MapEditor/Renderer/MapRenderer2D.h"
 #include "MapEditor/Renderer/MapRenderer3D.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/Renderer/Renderer.h"
@@ -192,7 +193,7 @@ bool Input::mouseMove(int new_x, int new_y)
 		mouse_state_ = MouseState::Move;
 		mouse_drag_  = DragType::None;
 		context_->moveObjects().begin(mouse_down_pos_map_);
-		context_->renderer().renderer2D().forceUpdate();
+		context_->renderer().forceUpdate(true, false);
 	}
 
 	// Check if we are in thing quick angle state
@@ -214,7 +215,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 {
 	// Update hilight
 	if (mouse_state_ == MouseState::Normal)
-		context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale());
+		context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale().x);
 
 	// Update mouse variables
 	mouse_down_pos_            = mouse_pos_;
@@ -429,7 +430,7 @@ bool Input::mouseUp(MouseButton button)
 		{
 			context_->moveObjects().end();
 			mouse_state_ = MouseState::Normal;
-			context_->renderer().renderer2D().forceUpdate();
+			context_->renderer().forceUpdate(true, false);
 		}
 
 		// Paste state, cancel paste
@@ -582,7 +583,7 @@ void Input::onKeyBindRelease(string_view name)
 	{
 		panning_ = false;
 		if (mouse_state_ == MouseState::Normal)
-			context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale());
+			context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale().x);
 		context_->setCursor(ui::MouseCursor::Normal);
 	}
 
@@ -590,7 +591,7 @@ void Input::onKeyBindRelease(string_view name)
 	{
 		mouse_state_ = MouseState::Normal;
 		context_->endUndoRecord(true);
-		context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale());
+		context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale().x);
 	}
 }
 
@@ -741,7 +742,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_->moveObjects().end();
 			mouse_state_ = MouseState::Normal;
-			context_->renderer().renderer2D().forceUpdate();
+			context_->renderer().forceUpdate(true, false);
 		}
 
 		// Accept move
@@ -749,7 +750,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_->moveObjects().end();
 			mouse_state_ = MouseState::Normal;
-			context_->renderer().renderer2D().forceUpdate();
+			context_->renderer().forceUpdate(true, false);
 		}
 
 		// Cancel move
@@ -757,7 +758,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_->moveObjects().end(false);
 			mouse_state_ = MouseState::Normal;
-			context_->renderer().renderer2D().forceUpdate();
+			context_->renderer().forceUpdate(true, false);
 		}
 	}
 
@@ -769,7 +770,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_->objectEdit().end(true);
 			mouse_state_ = MouseState::Normal;
-			context_->renderer().renderer2D().forceUpdate();
+			context_->renderer().forceUpdate(true, false);
 			context_->setCursor(ui::MouseCursor::Normal);
 		}
 
@@ -778,7 +779,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			context_->objectEdit().end(false);
 			mouse_state_ = MouseState::Normal;
-			context_->renderer().renderer2D().forceUpdate();
+			context_->renderer().forceUpdate(true, false);
 			context_->setCursor(ui::MouseCursor::Normal);
 		}
 	}
@@ -833,7 +834,7 @@ void Input::handleKeyBind2d(string_view name)
 			if (context_->moveObjects().begin(mouse_pos_map_))
 			{
 				mouse_state_ = MouseState::Move;
-				context_->renderer().renderer2D().forceUpdate();
+				context_->renderer().forceUpdate(true, false);
 			}
 		}
 
@@ -843,7 +844,8 @@ void Input::handleKeyBind2d(string_view name)
 
 		// Split line
 		else if (name == "me2d_split_line")
-			context_->edit2D().splitLine(mouse_pos_map_.x, mouse_pos_map_.y, 16 / context_->renderer().view().scale());
+			context_->edit2D().splitLine(
+				mouse_pos_map_.x, mouse_pos_map_.y, 16 / context_->renderer().view().scale().x);
 
 		// Begin line drawing
 		else if (name == "me2d_begin_linedraw")
@@ -1145,60 +1147,61 @@ bool Input::updateCamera3d(double mult) const
 	bool   moving = false;
 	double speed  = shift_down_ ? mult * 8 : mult * 4;
 	auto&  r3d    = context_->renderer().renderer3D();
+	auto&  camera = r3d.camera();
 
 	// Camera forward
 	if (KeyBind::isPressed("me3d_camera_forward"))
 	{
-		r3d.cameraMove(speed, !camera_3d_gravity);
+		camera.move(speed, !camera_3d_gravity);
 		moving = true;
 	}
 
 	// Camera backward
 	if (KeyBind::isPressed("me3d_camera_back"))
 	{
-		r3d.cameraMove(-speed, !camera_3d_gravity);
+		camera.move(-speed, !camera_3d_gravity);
 		moving = true;
 	}
 
 	// Camera left (strafe)
 	if (KeyBind::isPressed("me3d_camera_left"))
 	{
-		r3d.cameraStrafe(-speed);
+		camera.strafe(-speed);
 		moving = true;
 	}
 
 	// Camera right (strafe)
 	if (KeyBind::isPressed("me3d_camera_right"))
 	{
-		r3d.cameraStrafe(speed);
+		camera.strafe(speed);
 		moving = true;
 	}
 
 	// Camera up
 	if (KeyBind::isPressed("me3d_camera_up"))
 	{
-		r3d.cameraMoveUp(speed);
+		camera.moveUp(speed);
 		moving = true;
 	}
 
 	// Camera down
 	if (KeyBind::isPressed("me3d_camera_down"))
 	{
-		r3d.cameraMoveUp(-speed);
+		camera.moveUp(-speed);
 		moving = true;
 	}
 
 	// Camera turn left
 	if (KeyBind::isPressed("me3d_camera_turn_left"))
 	{
-		r3d.cameraTurn(shift_down_ ? mult * 2 : mult);
+		camera.turn(shift_down_ ? mult * 2 : mult);
 		moving = true;
 	}
 
 	// Camera turn right
 	if (KeyBind::isPressed("me3d_camera_turn_right"))
 	{
-		r3d.cameraTurn(shift_down_ ? -mult * 2 : -mult);
+		camera.turn(shift_down_ ? -mult * 2 : -mult);
 		moving = true;
 	}
 

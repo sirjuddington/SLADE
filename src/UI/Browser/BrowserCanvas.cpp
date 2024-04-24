@@ -35,8 +35,8 @@
 #include "BrowserCanvas.h"
 #include "BrowserItem.h"
 #include "General/UI.h"
-#include "OpenGL/Drawing.h"
-#include "OpenGL/OpenGL.h"
+#include "OpenGL/Draw2D.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 using namespace browser;
@@ -47,7 +47,7 @@ using namespace browser;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, browser_bg_type, false, CVar::Flag::Save)
+CVAR(Int, browser_bg_type, 0, CVar::Flag::Save)
 CVAR(Int, browser_item_size, 96, CVar::Flag::Save)
 DEFINE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED)
 
@@ -63,10 +63,20 @@ DEFINE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED)
 // BrowserCanvas class constructor
 // -----------------------------------------------------------------------------
 BrowserCanvas::BrowserCanvas(wxWindow* parent) :
-	OGLCanvas{ parent, -1 },
+	GLCanvas{ parent },
 	item_border_{ ui::scalePx(8) },
-	font_{ drawing::Font::Bold }
+	font_{ gl::draw2d::Font::Bold }
 {
+	// Init canvas background style/colour
+	ColRGBA col_bg = ColRGBA::BLACK;
+	if (browser_bg_type == 1)
+	{
+		// 'System' style, get system panel background colour
+		auto bgcolwx = wxutil::systemPanelBGColour();
+		col_bg.set(bgcolwx);
+	}
+	setBackground(browser_bg_type == 0 ? BGStyle::Checkered : BGStyle::Colour, col_bg);
+
 	// Bind events
 	Bind(wxEVT_SIZE, &BrowserCanvas::onSize, this);
 	Bind(wxEVT_MOUSEWHEEL, &BrowserCanvas::onMouseEvent, this);
@@ -155,27 +165,13 @@ int BrowserCanvas::fullItemSizeY() const
 // -----------------------------------------------------------------------------
 void BrowserCanvas::draw()
 {
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, size.x, size.y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	gl::draw2d::Context dc(&view_);
 
 	// Setup colours
-	ColRGBA col_bg, col_text;
+	ColRGBA col_text    = ColRGBA::WHITE;
 	bool    text_shadow = true;
-	if (browser_bg_type == 1)
+	if (browser_bg_type == 1) // 'System' background style
 	{
-		// Get system panel background colour
-		auto bgcolwx = drawing::systemPanelBGColour();
-		col_bg.set(bgcolwx);
-
 		// Get system text colour
 		auto textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 		col_text.set(textcol);
@@ -186,36 +182,15 @@ void BrowserCanvas::draw()
 		if (col_temp.r < 60)
 			text_shadow = false;
 	}
-	else
-	{
-		// Otherwise use black background
-		col_bg.set(0, 0, 0);
 
-		// And white text
-		col_text.set(255, 255, 255);
-	}
-
-	// Clear
-	glClearColor(col_bg.fr(), col_bg.fg(), col_bg.fb(), 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw background if required
-	if (browser_bg_type == 0)
-		drawCheckeredBackground();
-
-	// Init for texture drawing
-	glEnable(GL_TEXTURE_2D);
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	glLineWidth(2.0f);
+	// Selection rect
+	Rectf rect_selection{ 2.0f, 2.0f, fullItemSizeX() - 3.0f, fullItemSizeY() - 3.0f };
+	rect_selection.move(-item_border_, -item_border_);
 
 	// Draw items
 	int x         = item_border_;
 	int y         = item_border_;
-	int col_width = size.x / num_cols_;
+	int col_width = view_.size().x / num_cols_;
 	int col       = 0;
 	top_index_    = -1;
 	for (unsigned a = 0; a < items_filter_.size(); a++)
@@ -230,7 +205,7 @@ void BrowserCanvas::draw()
 				y += fullItemSizeY();
 
 				// Canvas is filled, stop drawing
-				if (y > yoff_ + size.y)
+				if (y > yoff_ + view_.size().y)
 					break;
 			}
 			continue;
@@ -247,46 +222,30 @@ void BrowserCanvas::draw()
 		int xgap = (col_width - fullItemSizeX()) * 0.5;
 		x        = item_border_ + xgap + (col * col_width);
 
+		// Move to item top-left
+		dc.resetModel();
+		dc.translate(x, y - yoff_);
+
 		// Draw selection box if selected
 		if (item_selected_ == items_[items_filter_[a]])
 		{
 			// Setup
-			glDisable(GL_TEXTURE_2D);
-			glColor4f(0.3f, 0.5f, 1.0f, 0.3f);
-			glPushMatrix();
-			glTranslated(x, y - yoff_, 0);
-			glTranslated(-item_border_, -item_border_, 0);
+			dc.texture = 0;
+			dc.colour  = { 76, 128, 255, 76 };
 
 			// Selection background
-			glBegin(GL_QUADS);
-			glVertex2i(2, 2);
-			glVertex2i(2, fullItemSizeY() - 3);
-			glVertex2i(fullItemSizeX() - 3, fullItemSizeY() - 3);
-			glVertex2i(fullItemSizeX() - 3, 2);
-			glEnd();
+			dc.drawRect(rect_selection);
 
 			// Selection border
-			glColor4f(0.6f, 0.8f, 1.0f, 1.0f);
-			glBegin(GL_LINE_LOOP);
-			glVertex2i(2, 2);
-			glVertex2i(2, fullItemSizeY() - 3);
-			glVertex2i(fullItemSizeX() - 3, fullItemSizeY() - 3);
-			glVertex2i(fullItemSizeX() - 3, 2);
-			glEnd();
-
-			// Finish
-			glPopMatrix();
-			glEnable(GL_TEXTURE_2D);
-			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			dc.line_thickness = 2.0f;
+			dc.drawRectOutline(rect_selection);
 		}
 
 		// Draw item
-		if (item_size_ <= 0)
-			items_[items_filter_[a]]->draw(
-				browser_item_size, x, y - yoff_, font_, show_names_, item_type_, col_text, text_shadow);
-		else
-			items_[items_filter_[a]]->draw(
-				item_size_, x, y - yoff_, font_, show_names_, item_type_, col_text, text_shadow);
+		dc.colour          = col_text;
+		dc.font            = font_;
+		dc.text_dropshadow = text_shadow;
+		items_[items_filter_[a]]->draw(item_size_ <= 0 ? browser_item_size : item_size_, dc, show_names_, item_type_);
 
 		// Move over for next item
 		col++;
@@ -296,13 +255,10 @@ void BrowserCanvas::draw()
 			y += fullItemSizeY();
 
 			// Canvas is filled, stop drawing
-			if (y > yoff_ + size.y)
+			if (y > yoff_ + view_.size().y)
 				break;
 		}
 	}
-
-	// Swap Buffers
-	SwapBuffers();
 }
 
 // -----------------------------------------------------------------------------
@@ -363,6 +319,16 @@ void BrowserCanvas::updateLayout(int viewed_index)
 		scrollbar_->SetScrollbar(scrollbar_->GetThumbPosition(), viewport_height, total_height, viewport_height);
 		showItem(filtered_viewed_index, 0);
 	}
+
+	// Update canvas background style/colour
+	ColRGBA col_bg = ColRGBA::BLACK;
+	if (browser_bg_type == 1)
+	{
+		// 'System' style, get system panel background colour
+		auto bgcolwx = wxutil::systemPanelBGColour();
+		col_bg.set(bgcolwx);
+	}
+	setBackground(browser_bg_type == 0 ? BGStyle::Checkered : BGStyle::Colour, col_bg);
 
 	Refresh();
 }

@@ -1,5 +1,6 @@
 
-colours {
+colours
+{
 	// General program colours
 	new
 	{
@@ -69,7 +70,7 @@ colours {
 	{
 		name = "Thing";
 		group = "Map Preview";
-		rgb = 200, 200, 200;
+		rgb = 211, 168, 86;
 	}
 
 	// Map image export colours
@@ -305,6 +306,20 @@ colours {
 		rgb = 220, 140, 0;
 		alpha = 170;
 		additive = true;
+	}
+
+	map_thing_path
+	{
+		name = "Pathed Thing Line";
+		group = "Map Editor";
+		rgb = 34, 255, 255;
+	}
+
+	map_thing_path_dragon
+	{
+		name = "Pathed Thing Line (Dragon)";
+		group = "Map Editor";
+		rgb = 255, 34, 34;
 	}
 }
 

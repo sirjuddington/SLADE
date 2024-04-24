@@ -102,9 +102,11 @@
 #include "thirdparty/sigslot/signal.hpp"
 
 // GLM
+#define GLM_FORCE_CTOR_INIT
 #define GLM_FORCE_SWIZZLE
 #define GLM_FORCE_CTOR_INIT
 #include <glm/geometric.hpp>
+#include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 

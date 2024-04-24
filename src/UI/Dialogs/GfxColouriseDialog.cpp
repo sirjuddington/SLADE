@@ -35,7 +35,8 @@
 #include "General/Misc.h"
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/WxUtils.h"
 
@@ -79,20 +80,19 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, co
 	hbox->Add(cb_colour_, wxSizerFlags().Expand());
 
 	// Add preview
-	gfx_preview_ = new GfxCanvas(this, -1);
-	sizer->Add(gfx_preview_, wx::sfWithBorder(1, wxBOTTOM).Expand());
+	gfx_preview_ = ui::createGfxCanvas(this);
+	sizer->Add(gfx_preview_->window(), wx::sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add buttons
 	sizer->Add(wx::createDialogButtonBox(this, "Colourise", "Cancel"), wxSizerFlags().Expand());
 
 	// Setup preview
-	gfx_preview_->setViewType(GfxCanvas::View::Centered);
 	gfx_preview_->setPalette(palette_.get());
-	gfx_preview_->SetInitialSize(wxSize(192, 192));
+	gfx_preview_->window()->SetInitialSize(wxSize(192, 192));
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry);
 	auto col = cb_colour_->colour();
 	gfx_preview_->image().colourise(col, palette_.get());
-	gfx_preview_->updateImageTexture();
+	gfx_preview_->setViewType(GfxView::Centered);
 
 	// Init layout
 	wxTopLevelWindowBase::Layout();
@@ -123,8 +123,7 @@ void GfxColouriseDialog::setColour(const wxString& col) const
 	auto rgba = ColRGBA(wxColour(col));
 	cb_colour_->setColour(rgba);
 	gfx_preview_->image().colourise(rgba, palette_.get());
-	gfx_preview_->updateImageTexture();
-	gfx_preview_->Refresh();
+	gfx_preview_->window()->Refresh();
 }
 
 
@@ -144,8 +143,7 @@ void GfxColouriseDialog::onColourChanged(wxEvent& e)
 {
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
 	gfx_preview_->image().colourise(cb_colour_->colour(), palette_.get());
-	gfx_preview_->updateImageTexture();
-	gfx_preview_->Refresh();
+	gfx_preview_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------

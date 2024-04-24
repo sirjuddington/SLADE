@@ -2,22 +2,25 @@
 
 #include "Archive/MapDesc.h"
 #include "General/SActionHandler.h"
-#include "ItemSelection.h"
 
 // Forward declarations
 namespace slade
 {
+class Camera;
 class InfoOverlay3D;
-class ThingInfoOverlay;
-class SectorInfoOverlay;
-class LineInfoOverlay;
-class VertexInfoOverlay;
-class UndoStep;
-class MCOverlay;
-class UndoManager;
 class ItemSelection;
+class LineInfoOverlay;
 class MapCanvas;
-
+class MCOverlay;
+class SectorInfoOverlay;
+class ThingInfoOverlay;
+class UndoManager;
+class UndoStep;
+class VertexInfoOverlay;
+namespace gl::draw2d
+{
+	struct Context;
+}
 namespace ui
 {
 	enum class MouseCursor;
@@ -26,10 +29,10 @@ namespace mapeditor
 {
 	class Edit2D;
 	class Edit3D;
-	class ObjectEdit;
+	class Input;
 	class LineDraw;
 	class MoveObjects;
-	class Input;
+	class ObjectEdit;
 	class Renderer;
 	enum class Mode;
 	enum class SectorMode;
@@ -57,8 +60,8 @@ public:
 	Mode                editMode() const { return edit_mode_; }
 	SectorMode          sectorEditMode() const { return sector_mode_; }
 	double              gridSize() const;
-	ItemSelection&      selection() { return selection_; }
-	Item                hilightItem() const { return selection_.hilight(); }
+	ItemSelection&      selection() const { return *selection_; }
+	Item                hilightItem() const;
 	vector<MapSector*>& taggedSectors() { return tagged_sectors_; }
 	vector<MapLine*>&   taggedLines() { return tagged_lines_; }
 	vector<MapThing*>&  taggedThings() { return tagged_things_; }
@@ -81,16 +84,17 @@ public:
 	void lockMouse(bool lock);
 
 	// General
-	bool update(long frametime);
+	bool update(double frametime);
 
 	// Map loading
 	bool openMap(const MapDesc& map);
 	void clearMap();
 
 	// Selection/hilight
-	void showItem(int index);
+	void showItem(int index) const;
 	void updateTagged();
 	void selectionUpdated();
+	void clearSelection() const;
 
 	// Grid
 	void   incrementGrid();
@@ -138,12 +142,15 @@ public:
 	void       openLineTextureOverlay();
 	bool       infoOverlayActive() const { return info_showing_; }
 	void       updateInfoOverlay() const;
-	void       drawInfoOverlay(const Vec2i& size, float alpha) const;
+	void       drawInfoOverlay(gl::draw2d::Context& dc, float alpha) const;
 
 	// Player start swapping
 	void swapPlayerStart3d();
 	void swapPlayerStart2d(const Vec2d& pos);
 	void resetPlayerStart() const;
+
+	// Renderer
+	Camera& camera3d() const;
 
 	// Misc
 	string modeString(bool plural = true) const;
@@ -169,14 +176,14 @@ private:
 	unique_ptr<UndoStep>    us_create_delete_;
 
 	// Editor state
-	Mode          edit_mode_;
-	Mode          edit_mode_prev_;
-	ItemSelection selection_ = ItemSelection(this);
-	int           grid_size_ = 9;
-	SectorMode    sector_mode_;
-	bool          grid_snap_    = true;
-	int           current_tag_  = 0;
-	bool          mouse_locked_ = false;
+	Mode                      edit_mode_;
+	Mode                      edit_mode_prev_;
+	unique_ptr<ItemSelection> selection_;
+	int                       grid_size_ = 9;
+	SectorMode                sector_mode_;
+	bool                      grid_snap_    = true;
+	int                       current_tag_  = 0;
+	bool                      mouse_locked_ = false;
 
 	// Undo/Redo
 	bool   undo_modified_ = false;
@@ -202,6 +209,13 @@ private:
 	unique_ptr<Edit2D>      edit_2d_;
 	unique_ptr<Edit3D>      edit_3d_;
 	unique_ptr<ObjectEdit>  object_edit_;
+
+	// Object properties and copy/paste
+	unique_ptr<MapThing>  copy_thing_;
+	unique_ptr<MapSector> copy_sector_;
+	unique_ptr<MapSide>   copy_side_front_;
+	unique_ptr<MapSide>   copy_side_back_;
+	unique_ptr<MapLine>   copy_line_;
 
 	// Editor messages
 	vector<EditorMessage> editor_messages_;

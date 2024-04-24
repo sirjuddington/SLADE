@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "PaletteDialog.h"
 #include "General/UI.h"
-#include "Graphics/Palette/Palette.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/WxUtils.h"
 #include "Utility/ColRGBA.h"
@@ -59,8 +58,8 @@ PaletteDialog::PaletteDialog(const Palette* palette) :
 	auto m_vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_vbox);
 
-	pal_canvas_ = new PaletteCanvas(this, -1);
-	pal_canvas_->palette().copyPalette(palette);
+	pal_canvas_ = new PaletteCanvas(this);
+	pal_canvas_->setPalette(palette);
 	pal_canvas_->SetInitialSize(wxSize(size, size));
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
 	m_vbox->Add(pal_canvas_, wxutil::sfWithLargeBorder(1).Expand());

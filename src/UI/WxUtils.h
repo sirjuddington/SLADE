@@ -1,5 +1,10 @@
 #pragma once
 
+namespace slade
+{
+class SImage;
+}
+
 namespace slade::wxutil
 {
 wxMenuItem* createMenuItem(
@@ -26,10 +31,10 @@ wxSizer* createDialogButtonBox(
 	const wxString& text_cancel = "Cancel");
 
 wxSizer* layoutHorizontally(const vector<wxObject*>& widgets, int expand_col = -1);
-void     layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_col = -1);
+void layoutHorizontally(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags = {}, int expand_col = -1);
 
 wxSizer* layoutVertically(const vector<wxObject*>& widgets, int expand_row = -1);
-void     layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_row = -1);
+void layoutVertically(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags = {}, int expand_row = -1);
 
 wxSizerFlags sfWithBorder(int proportion = 0, int direction = wxALL, int size = -1);
 wxSizerFlags sfWithLargeBorder(int proportion = 0, int direction = wxALL);
@@ -53,6 +58,17 @@ wxPoint scaledPoint(int x, int y);
 wxRect  scaledRect(int x, int y, int width, int height);
 
 // Misc
-void    setWindowIcon(wxTopLevelWindow* window, string_view icon);
+void setWindowIcon(wxTopLevelWindow* window, string_view icon);
+
+// Graphics/Images
 wxImage createImageFromSVG(const string& svg_text, int width, int height);
+wxImage createImageFromSImage(const SImage& image, const Palette* palette);
+void    generateCheckeredBackground(wxBitmap& bitmap, int width, int height);
+
+// From CodeLite
+wxColour systemPanelBGColour();
+wxColour systemMenuTextColour();
+wxColour systemMenuBarBGColour();
+wxColour lightColour(const wxColour& colour, float percent);
+wxColour darkColour(const wxColour& colour, float percent);
 } // namespace slade::wxutil

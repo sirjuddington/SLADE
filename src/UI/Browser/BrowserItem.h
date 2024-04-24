@@ -1,16 +1,15 @@
 #pragma once
 
 #include "Browser.h"
-#include "Utility/ColRGBA.h"
 
 namespace slade
 {
-class TextBox;
 class BrowserWindow;
-namespace drawing
+namespace gl::draw2d
 {
-	enum class Font;
-}
+	struct Context;
+	class TextBox;
+} // namespace gl::draw2d
 
 class BrowserItem
 {
@@ -25,24 +24,21 @@ public:
 
 	virtual bool loadImage();
 	void         draw(
-				int               size,
-				int               x,
-				int               y,
-				drawing::Font     font,
-				browser::NameType nametype    = browser::NameType::Normal,
-				browser::ItemView viewtype    = browser::ItemView::Normal,
-				const ColRGBA&    colour      = ColRGBA::WHITE,
-				bool              text_shadow = true);
+				int                  size,
+				gl::draw2d::Context& dc,
+				browser::NameType    nametype = browser::NameType::Normal,
+				browser::ItemView    viewtype = browser::ItemView::Normal);
 	virtual void     clearImage() {}
 	virtual wxString itemInfo() { return ""; }
 
 protected:
-	wxString            type_;
-	wxString            name_;
-	unsigned            index_     = 0;
-	unsigned            image_tex_ = 0;
-	BrowserWindow*      parent_    = nullptr;
-	bool                blank_     = false;
-	unique_ptr<TextBox> text_box_;
+	wxString       type_;
+	wxString       name_;
+	unsigned       index_     = 0;
+	unsigned       image_tex_ = 0;
+	BrowserWindow* parent_    = nullptr;
+	bool           blank_     = false;
+
+	unique_ptr<gl::draw2d::TextBox> text_box_;
 };
 } // namespace slade

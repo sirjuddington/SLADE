@@ -46,13 +46,12 @@ private:
 	wxCheckBox* cb_line_tabs_always_ = nullptr;
 	wxCheckBox* cb_line_fade_        = nullptr;
 
-	wxChoice*   choice_thing_drawtype_    = nullptr;
+	wxChoice*   choice_thing_shape_       = nullptr;
 	wxChoice*   choice_things_always_     = nullptr;
+	wxCheckBox* cb_thing_sprites_         = nullptr;
 	wxCheckBox* cb_thing_force_dir_       = nullptr;
 	wxCheckBox* cb_thing_overlay_square_  = nullptr;
-	wxCheckBox* cb_thing_arrow_colour_    = nullptr;
 	wxSlider*   slider_thing_shadow_      = nullptr;
-	wxSlider*   slider_thing_arrow_alpha_ = nullptr;
 	wxCheckBox* cb_use_zeth_icons_        = nullptr;
 	wxSlider*   slider_halo_width_        = nullptr;
 	wxSlider*   slider_light_intensity_   = nullptr;

@@ -39,14 +39,13 @@
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/SectorSpecialPanel.h"
 #include "MapObjectPropsPanel.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
-#include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Browser/BrowserItem.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
@@ -61,83 +60,68 @@ using namespace slade;
 // A simple opengl canvas to display a texture
 // (will have more advanced functionality later)
 // -----------------------------------------------------------------------------
-class slade::FlatTexCanvas : public OGLCanvas
+class slade::FlatTexCanvas : public GLCanvas
 {
 public:
-	FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
-	{
-		// Init variables
-		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-		SetInitialSize(wxutil::scaledSize(136, 136));
-	}
-
+	FlatTexCanvas(wxWindow* parent);
 	~FlatTexCanvas() override = default;
 
 	wxString texName() const { return texname_; }
-
-	// Sets the texture to display
-	void setTexture(const wxString& tex)
-	{
-		texname_ = tex;
-		if (tex.empty() || tex == "-")
-			texture_ = 0;
-		else
-			texture_ = mapeditor::textureManager()
-						   .flat(tex.ToStdString(), game::configuration().featureSupported(game::Feature::MixTexFlats))
-						   .gl_id;
-
-		Refresh();
-	}
-
-	// Draws the canvas content
-	void draw() override
-	{
-		// Setup the viewport
-		const wxSize size = GetSize() * GetContentScaleFactor();
-		glViewport(0, 0, size.x, size.y);
-
-		// Setup the screen projection
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, size.x, size.y, 0, -1, 1);
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		// Clear
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-		if (gl::accuracyTweak())
-			glTranslatef(0.375f, 0.375f, 0);
-
-		// Draw background
-		drawCheckeredBackground();
-
-		// Draw texture
-		if (texture_ && texture_ != gl::Texture::missingTexture())
-		{
-			glEnable(GL_TEXTURE_2D);
-			drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0, 100.0);
-		}
-		else if (texture_ == gl::Texture::missingTexture())
-		{
-			// Draw unknown icon
-			auto tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
-			glEnable(GL_TEXTURE_2D);
-			gl::setColour(180, 0, 0);
-			drawing::drawTextureWithin(tex, 0, 0, size.x, size.y, 0, 0.25);
-		}
-
-		// Swap buffers (ie show what was drawn)
-		SwapBuffers();
-	}
+	void     setTexture(const wxString& texture);
+	void     draw() override;
 
 private:
 	unsigned texture_ = 0;
 	wxString texname_;
 };
+
+// -----------------------------------------------------------------------------
+// FlatTexCanvas class constructor
+// -----------------------------------------------------------------------------
+FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
+{
+	// Init variables
+	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
+	SetInitialSize(wxutil::scaledSize(136, 136));
+}
+
+// -----------------------------------------------------------------------------
+// Sets the texture to display
+// -----------------------------------------------------------------------------
+void FlatTexCanvas::setTexture(const wxString& tex)
+{
+	texname_ = tex;
+	if (tex.empty() || tex == "-")
+		texture_ = 0;
+	else
+		texture_ = mapeditor::textureManager()
+					   .flat(tex.ToStdString(), game::configuration().featureSupported(game::Feature::MixTexFlats))
+					   .gl_id;
+
+	Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Draws the canvas content
+// -----------------------------------------------------------------------------
+void FlatTexCanvas::draw()
+{
+	gl::draw2d::Context dc(&view_);
+
+	// Draw texture
+	if (texture_ && texture_ != gl::Texture::missingTexture())
+	{
+		dc.texture = texture_;
+		dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 100.0f);
+	}
+	else if (texture_ == gl::Texture::missingTexture())
+	{
+		// Draw unknown icon
+		dc.texture = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
+		dc.colour.set(180, 0, 0);
+		dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 0.25f);
+	}
+}
 
 
 // -----------------------------------------------------------------------------

@@ -459,6 +459,78 @@ bool geometry::colinear(double x1, double y1, double x2, double y2, double x3, d
 	return a == 0;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the 'tab' line for the given [line], of length [line].length * [tab]
+// (to a max length of [tab_max])
+// -----------------------------------------------------------------------------
+Rectf geometry::lineTab(const Rectf& line, float tab, float tab_max)
+{
+	// Calculate tab length
+	auto tablen = line.length() * tab;
+	if (tablen > tab_max)
+		tablen = tab_max;
+	if (tablen < 2)
+		tablen = 2;
+
+	// Calculate tab endpoint
+	auto invdir = glm::normalize(Vec2f{ -(line.br.y - line.tl.y), line.br.x - line.tl.x });
+
+	auto mid = line.middle();
+	return { mid.x, mid.y, mid.x - invdir.x * tablen, mid.y - invdir.y * tablen };
+}
+
+// -----------------------------------------------------------------------------
+// Returns a list of lines making up an arrow-headed line based on the given
+// [line], [arrowhead_length] and [arrowhead_angle] (in degrees).
+// If [arrowhead_both] is true the returned list will include an arrowhead at
+// the beginning of the line as well as the end
+// -----------------------------------------------------------------------------
+vector<Rectf> geometry::arrowLines(
+	const Rectf& line,
+	float        arrowhead_length,
+	float        arrowhead_angle,
+	bool         arrowhead_both)
+{
+	vector<Rectf> lines;
+	lines.push_back(line);
+
+	if (arrowhead_length > 0.0f)
+	{
+		Vec2f vector  = line.br - line.tl;
+		auto  angle   = atan2(-vector.y, vector.x);
+		auto  ang_rad = degToRad(arrowhead_angle);
+
+		// Line end arrowhead
+		Vec2f a1r;
+		Vec2f a1l = a1r = line.br;
+		a1l.x += arrowhead_length * sin(angle - ang_rad);
+		a1l.y += arrowhead_length * cos(angle - ang_rad);
+		a1r.x -= arrowhead_length * sin(angle + ang_rad);
+		a1r.y -= arrowhead_length * cos(angle + ang_rad);
+		lines.emplace_back(line.tl.x, line.tl.y, line.br.x, line.br.y);
+		lines.emplace_back(line.br.x, line.br.y, a1l.x, a1l.y);
+		lines.emplace_back(line.br.x, line.br.y, a1r.x, a1r.y);
+
+		if (arrowhead_both)
+		{
+			// Line start arrowhead
+			vector = line.tl - line.br;
+			angle  = atan2(-vector.y, vector.x);
+
+			Vec2f a2r;
+			Vec2f a2l = a2r = line.tl;
+			a2l.x += arrowhead_length * sin(angle - ang_rad);
+			a2l.y += arrowhead_length * cos(angle - ang_rad);
+			a2r.x -= arrowhead_length * sin(angle + ang_rad);
+			a2r.y -= arrowhead_length * cos(angle + ang_rad);
+			lines.emplace_back(line.tl.x, line.tl.y, a2l.x, a2l.y);
+			lines.emplace_back(line.tl.x, line.tl.y, a2r.x, a2r.y);
+		}
+	}
+
+	return lines;
+}
+
 
 
 CONSOLE_COMMAND(angle2d, 6, false)

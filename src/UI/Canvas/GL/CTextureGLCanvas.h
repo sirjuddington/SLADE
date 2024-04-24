@@ -1,34 +1,44 @@
 #pragma once
 
-#include "OGLCanvas.h"
+#include "GLCanvas.h"
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 
 namespace slade
 {
+// Forward declarations
 class CTexture;
 namespace ui
 {
 	class ZoomControl;
 }
+namespace gl
+{
+	class LineBuffer;
+	class Shader;
+	namespace draw2d
+	{
+		struct Context;
+	}
+} // namespace gl
 
-class CTextureCanvas : public OGLCanvas
+class CTextureGLCanvas : public GLCanvas
 {
 public:
 	enum class View
 	{
 		Normal,
 		Sprite,
-		HUD
+		HUD,
 	};
 
-	CTextureCanvas(wxWindow* parent, int id);
-	~CTextureCanvas() override = default;
+	CTextureGLCanvas(wxWindow* parent);
+	~CTextureGLCanvas() override;
 
 	CTexture* texture() const { return texture_; }
 	View      viewType() const { return view_type_; }
-	void      setScale(double scale) { scale_ = scale; }
-	void      setViewType(View type) { view_type_ = type; }
+	void      setScale(double scale);
+	void      setViewType(View type);
 	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
 	Vec2i     mousePrevPos() const { return mouse_prev_; }
 	bool      isDragging() const { return dragging_; }
@@ -41,19 +51,15 @@ public:
 
 	void selectPatch(int index);
 	void deSelectPatch(int index);
-	bool patchSelected(int index);
+	bool patchSelected(int index) const;
 
 	void clearTexture();
-	void clearPatchTextures();
+	void clearPatches();
 	void updatePatchTextures();
 	void updateTexturePreview();
 	bool openTexture(CTexture* tex, Archive* parent);
 	void draw() override;
-	void drawTexture();
-	void drawPatch(int num, bool outside = false);
-	void drawTextureBorder() const;
-	void drawOffsetLines() const;
-	void resetOffsets() { offset_.x = offset_.y = 0; }
+	void resetViewOffsets();
 	void redraw(bool update_tex = false);
 
 	Vec2i screenToTexPosition(int x, int y) const;
@@ -65,15 +71,19 @@ public:
 	void linkZoomControl(ui::ZoomControl* zoom_control) { linked_zoom_control_ = zoom_control; }
 
 private:
+	struct Patch
+	{
+		unsigned texture;
+		bool     selected;
+		Rectf    rect;
+	};
+
 	CTexture*        texture_ = nullptr;
 	Archive*         parent_  = nullptr;
-	vector<unsigned> patch_textures_;
-	unsigned         tex_preview_ = 0;
-	vector<bool>     selected_patches_;
+	vector<Patch>    patches_;
+	unsigned         tex_preview_   = 0;
 	int              hilight_patch_ = -1;
-	Vec2d            offset_;
 	Vec2i            mouse_prev_;
-	double           scale_               = 1.;
 	bool             draw_outside_        = true;
 	bool             dragging_            = false;
 	bool             show_grid_           = false;
@@ -81,9 +91,25 @@ private:
 	bool             tex_scale_           = false;
 	View             view_type_           = View::Normal;
 	ui::ZoomControl* linked_zoom_control_ = nullptr;
+	Vec2i            zoom_point_          = { -1, -1 };
+
+	// OpenGL
+	unique_ptr<gl::LineBuffer>    lb_sprite_;
+	unique_ptr<gl::LineBuffer>    lb_border_;
+	unique_ptr<gl::LineBuffer>    lb_grid_;
+	unique_ptr<gl::LineBuffer>    lb_square_;
+	static unique_ptr<gl::Shader> shader_;
 
 	// Signal connections
 	sigslot::scoped_connection sc_patches_modified_;
+
+	// Private functions
+	void drawOffsetLines(const gl::draw2d::Context& dc);
+	void drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm::vec2 offset, bool draw_patches);
+	void drawPatch(int num, bool outside = false);
+	void drawPatchOutline(const gl::draw2d::Context& dc, int num) const;
+	void drawTextureBorder(glm::vec2 scale, glm::vec2 offset);
+	void initShader() const;
 
 	// Events
 	void onMouseEvent(wxMouseEvent& e);

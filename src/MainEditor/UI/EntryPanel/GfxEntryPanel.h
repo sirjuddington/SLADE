@@ -4,8 +4,8 @@
 
 namespace slade
 {
+class GfxCanvasBase;
 class ColourBox;
-class GfxCanvas;
 class SImage;
 class Translation;
 enum class GfxView;
@@ -53,7 +53,7 @@ private:
 	unique_ptr<Translation> prev_translation_;
 	unique_ptr<Translation> edit_translation_;
 
-	GfxCanvas*       gfx_canvas_         = nullptr;
+	GfxCanvasBase*   gfx_canvas_         = nullptr;
 	ColourBox*       cb_colour_          = nullptr;
 	wxChoice*        choice_offset_type_ = nullptr;
 	wxSpinCtrl*      spin_xoffset_       = nullptr;

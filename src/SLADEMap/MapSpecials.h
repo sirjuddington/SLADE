@@ -51,7 +51,6 @@ private:
 
 	void processZDoomSlopes(SLADEMap* map) const;
 	void processEternitySlopes(const SLADEMap* map) const;
-
 	void processSRB2Slopes(const SLADEMap* map) const;
 	void processSRB2FOFs(const SLADEMap* map) const;
 	void processEDGEClassicSlopes(const SLADEMap* map) const;

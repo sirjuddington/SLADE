@@ -38,7 +38,7 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -203,7 +203,7 @@ void LineTextureOverlay::updateLayout(int width, int height)
 	// Set texture positions
 	int ymid = middley;
 	if (rows == 2)
-		ymid = middley - (border * 0.5) - (tex_size_ * 0.5);
+		ymid = middley - ((border * 2) * 0.5) - (tex_size_ * 0.5);
 	if (side1_)
 	{
 		// Front side textures
@@ -219,7 +219,7 @@ void LineTextureOverlay::updateLayout(int width, int height)
 		textures_[FrontLower].position.x = xmid;
 		textures_[FrontLower].position.y = ymid;
 
-		ymid += border + tex_size_;
+		ymid += (border * 2) + tex_size_;
 	}
 	if (side2_)
 	{
@@ -242,42 +242,49 @@ void LineTextureOverlay::updateLayout(int width, int height)
 }
 
 // -----------------------------------------------------------------------------
-// Draws the overlay to [width],[height]
+// Draws the overlay
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::draw(int width, int height, float fade)
+void LineTextureOverlay::draw(gl::draw2d::Context& dc, float fade)
 {
+	int width  = dc.viewSize().x;
+	int height = dc.viewSize().y;
+
 	// Update layout if needed
 	if (width != last_width_ || height != last_height_)
 		updateLayout(width, height);
 
 	// Draw background
-	glDisable(GL_TEXTURE_2D);
-	colourconfig::setGLColour("map_overlay_background", fade);
-	drawing::drawFilledRect(0, 0, width, height);
+	dc.setColourFromConfig("map_overlay_background", fade);
+	dc.texture = 0;
+	dc.drawRect({ { 0.0f, 0.0f }, dc.viewSize() });
 
 	// Draw textures
-	glEnable(GL_LINE_SMOOTH);
 	int cur_size = tex_size_ * fade;
 	if (!active_)
 		cur_size = tex_size_;
 	if (side1_)
 	{
-		drawTexture(fade, cur_size, textures_[FrontLower], "Front Lower");
-		drawTexture(fade, cur_size, textures_[FrontMiddle], "Front Middle");
-		drawTexture(fade, cur_size, textures_[FrontUpper], "Front Upper");
+		drawTexture(dc, fade, cur_size, textures_[FrontLower], "Front Lower");
+		drawTexture(dc, fade, cur_size, textures_[FrontMiddle], "Front Middle");
+		drawTexture(dc, fade, cur_size, textures_[FrontUpper], "Front Upper");
 	}
 	if (side2_)
 	{
-		drawTexture(fade, cur_size, textures_[BackLower], "Back Lower");
-		drawTexture(fade, cur_size, textures_[BackMiddle], "Back Middle");
-		drawTexture(fade, cur_size, textures_[BackUpper], "Back Upper");
+		drawTexture(dc, fade, cur_size, textures_[BackLower], "Back Lower");
+		drawTexture(dc, fade, cur_size, textures_[BackMiddle], "Back Middle");
+		drawTexture(dc, fade, cur_size, textures_[BackUpper], "Back Upper");
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws the texture box from info in [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string_view position) const
+void LineTextureOverlay::drawTexture(
+	gl::draw2d::Context& dc,
+	float                alpha,
+	float                size,
+	TexInfo&             tex,
+	string_view          position) const
 {
 	// Get colours
 	ColRGBA col_fg  = colourconfig::colour("map_overlay_foreground");
@@ -285,75 +292,62 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 	col_fg.a        = col_fg.a * alpha;
 
 	// Draw background
-	int halfsize = size * 0.5;
-	glEnable(GL_TEXTURE_2D);
-	gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
-	glPushMatrix();
-	glTranslated(tex.position.x - halfsize, tex.position.y - halfsize, 0);
-	drawing::drawTextureTiled(gl::Texture::backgroundTexture(), size, size);
-	glPopMatrix();
+	auto halfsize = size * 0.5f;
+	dc.texture    = gl::Texture::backgroundTexture();
+	dc.colour.set(255, 255, 255, 255 * alpha);
+	dc.drawTextureTiled({ tex.position.x - halfsize, tex.position.y - halfsize, size, size, false });
 
 	unsigned tex_first = 0;
 	if (!tex.textures.empty())
 	{
+		auto mix_tex = game::configuration().featureSupported(game::Feature::MixTexFlats);
+
 		// Draw first texture
-		gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
-		tex_first = mapeditor::textureManager()
-						.texture(tex.textures[0], game::configuration().featureSupported(game::Feature::MixTexFlats))
-						.gl_id;
-		drawing::drawTextureWithin(
-			tex_first,
-			tex.position.x - halfsize,
-			tex.position.y - halfsize,
-			tex.position.x + halfsize,
-			tex.position.y + halfsize,
-			0,
-			2);
+		dc.texture = mapeditor::textureManager().texture(tex.textures[0], mix_tex).gl_id;
+		dc.drawTextureWithin(
+			{ tex.position.x - halfsize,
+			  tex.position.y - halfsize,
+			  tex.position.x + halfsize,
+			  tex.position.y + halfsize },
+			0.0f,
+			2.0f);
 
 		// Draw up to 4 subsequent textures (overlaid)
-		gl::setColour(255, 255, 255, 127 * alpha, gl::Blend::Normal);
+		dc.colour.set(255, 255, 255, 127 * alpha);
 		for (unsigned a = 1; a < tex.textures.size() && a < 5; a++)
 		{
-			auto gl_tex = mapeditor::textureManager()
-							  .texture(
-								  tex.textures[a], game::configuration().featureSupported(game::Feature::MixTexFlats))
-							  .gl_id;
-
-			drawing::drawTextureWithin(
-				gl_tex,
-				tex.position.x - halfsize,
-				tex.position.y - halfsize,
-				tex.position.x + halfsize,
-				tex.position.y + halfsize,
-				0,
-				2);
+			dc.texture = mapeditor::textureManager().texture(tex.textures[a], mix_tex).gl_id;
+			dc.drawTextureWithin(
+				{ tex.position.x - halfsize,
+				  tex.position.y - halfsize,
+				  tex.position.x + halfsize,
+				  tex.position.y + halfsize },
+				0.0f,
+				2.0f);
 		}
 	}
-
-	glDisable(GL_TEXTURE_2D);
 
 	// Draw outline
 	if (tex.hover)
 	{
-		gl::setColour(col_sel.r, col_sel.g, col_sel.b, 255 * alpha, gl::Blend::Normal);
-		glLineWidth(3.0f);
+		dc.colour.set(col_sel.r, col_sel.g, col_sel.b, 255 * alpha);
+		dc.line_thickness = 3.0f;
 	}
 	else
 	{
-		gl::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, gl::Blend::Normal);
-		glLineWidth(1.5f);
+		dc.colour.set(col_fg.r, col_fg.g, col_fg.b, 255 * alpha);
+		dc.line_thickness = 1.5f;
 	}
-	drawing::drawRect(
-		tex.position.x - halfsize, tex.position.y - halfsize, tex.position.x + halfsize, tex.position.y + halfsize);
+	dc.drawRectOutline(
+		{ tex.position.x - halfsize, tex.position.y - halfsize, tex.position.x + halfsize, tex.position.y + halfsize });
 
 	// Draw position text
-	drawing::drawText(
+	dc.font           = gl::draw2d::Font::Bold;
+	dc.text_alignment = gl::draw2d::Align::Center;
+	dc.colour         = col_fg;
+	dc.drawText(
 		fmt::format("{}:", position),
-		tex.position.x,
-		tex.position.y - halfsize - 18,
-		col_fg,
-		drawing::Font::Bold,
-		drawing::Align::Center);
+		{ static_cast<float>(tex.position.x), tex.position.y - halfsize - 2.0f - dc.textLineHeight() });
 
 	// Determine texture name text
 	string str_texture;
@@ -368,13 +362,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 		str_texture = "- (None)";
 
 	// Draw texture name
-	drawing::drawText(
-		str_texture,
-		tex.position.x,
-		tex.position.y + halfsize + 2,
-		col_fg,
-		drawing::Font::Bold,
-		drawing::Align::Center);
+	dc.drawText(str_texture, { static_cast<float>(tex.position.x), tex.position.y + halfsize + 2.0f });
 }
 
 // -----------------------------------------------------------------------------

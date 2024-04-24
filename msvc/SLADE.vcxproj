@@ -264,9 +264,9 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <ObjectFileName>$(IntDir)$(Configuration)\%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <ObjectFileName>$(IntDir)$(Configuration)\%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;dsound.lib;ThirdPartyLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -322,6 +322,16 @@
     <ClCompile Include="..\src\Audio\Mp3Music.cpp" />
     <ClCompile Include="..\src\General\Console.cpp" />
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
+    <ClCompile Include="..\src\MapEditor\ClipboardItems.cpp" />
+    <ClCompile Include="..\src\MapEditor\Renderer\Camera.cpp" />
+    <ClCompile Include="..\src\MapEditor\Renderer\ThingBuffer2D.cpp" />
+    <ClCompile Include="..\src\OpenGL\Draw2D.cpp" />
+    <ClCompile Include="..\src\OpenGL\IndexBuffer.cpp" />
+    <ClCompile Include="..\src\OpenGL\LineBuffer.cpp" />
+    <ClCompile Include="..\src\OpenGL\PointSpriteBuffer.cpp" />
+    <ClCompile Include="..\src\OpenGL\Shader.cpp" />
+    <ClCompile Include="..\src\OpenGL\VertexBuffer2D.cpp" />
+    <ClCompile Include="..\src\OpenGL\VertexBuffer3D.cpp" />
     <ClCompile Include="..\src\OpenGL\View.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Archive.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Game.cpp" />
@@ -330,6 +340,7 @@
     <ClCompile Include="..\src\Scripting\Export\MapEditor.cpp" />
     <ClCompile Include="..\src\Scripting\Export\UI.cpp" />
     <ClCompile Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.cpp" />
+    <ClCompile Include="..\src\UI\Canvas\GLCanvas.cpp" />
     <ClCompile Include="..\src\UI\Controls\Splitter.cpp" />
     <ClCompile Include="..\src\UI\Controls\ZoomControl.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\DirArchiveUpdateDialog.cpp" />
@@ -484,7 +495,6 @@
     <ClCompile Include="..\src\MapEditor\UI\ScriptEditorPanel.cpp" />
     <ClCompile Include="..\src\MapEditor\UI\ShapeDrawPanel.cpp" />
     <ClCompile Include="..\src\MapEditor\UndoSteps.cpp" />
-    <ClCompile Include="..\src\OpenGL\Drawing.cpp" />
     <ClCompile Include="..\src\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\src\OpenGL\OpenGL.cpp" />
     <ClCompile Include="..\src\Scripting\Lua.cpp" />
@@ -523,7 +533,6 @@
     <ClCompile Include="..\src\UI\Canvas\CTextureCanvas.cpp" />
     <ClCompile Include="..\src\UI\Canvas\GfxCanvas.cpp" />
     <ClCompile Include="..\src\UI\Canvas\MapPreviewCanvas.cpp" />
-    <ClCompile Include="..\src\UI\Canvas\OGLCanvas.cpp" />
     <ClCompile Include="..\src\UI\Canvas\PaletteCanvas.cpp" />
     <ClCompile Include="..\src\UI\Controls\BaseResourceChooser.cpp" />
     <ClCompile Include="..\src\UI\Controls\ColourBox.cpp" />
@@ -572,66 +581,21 @@
     <ClCompile Include="..\src\Utility\MathStuff.cpp" />
     <ClCompile Include="..\src\Utility\MemChunk.cpp" />
     <ClCompile Include="..\src\Utility\Parser.cpp" />
-    <ClCompile Include="..\src\Utility\Polygon2D.cpp" />
+    <ClCompile Include="..\src\Utility\Polygon.cpp" />
     <ClCompile Include="..\src\Utility\Property.cpp" />
     <ClCompile Include="..\src\Utility\SFileDialog.cpp" />
     <ClCompile Include="..\src\Utility\StringUtils.cpp" />
     <ClCompile Include="..\src\Utility\Tokenizer.cpp" />
     <ClCompile Include="..\src\Utility\Tree.cpp" />
-    <ClCompile Include="..\thirdparty\mus2mid\mus2mid.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\files.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\i_music.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_hmi_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_midistream.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_mus_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_smf_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_xmi_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\m_alloc.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="..\thirdparty\mus2mid\mus2mid.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\files.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\i_music.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_hmi_midiout.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_midistream.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_mus_midiout.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_smf_midiout.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\music_xmi_midiout.cpp" />
+    <ClCompile Include="..\thirdparty\zreaders\m_alloc.cpp" />
     <ClCompile Include="_CreatePCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -690,9 +654,22 @@
     <ClInclude Include="..\src\General\Console.h" />
     <ClInclude Include="..\src\General\Sigslot.h" />
     <ClInclude Include="..\src\Graphics\Graphics.h" />
+    <ClInclude Include="..\src\MapEditor\ClipboardItems.h" />
+    <ClInclude Include="..\src\MapEditor\Renderer\Camera.h" />
+    <ClInclude Include="..\src\MapEditor\Renderer\ThingBuffer2D.h" />
+    <ClInclude Include="..\src\OpenGL\Buffer.h" />
+    <ClInclude Include="..\src\OpenGL\Draw2D.h" />
+    <ClInclude Include="..\src\OpenGL\IndexBuffer.h" />
+    <ClInclude Include="..\src\OpenGL\LineBuffer.h" />
+    <ClInclude Include="..\src\OpenGL\PointSpriteBuffer.h" />
+    <ClInclude Include="..\src\OpenGL\Shader.h" />
+    <ClInclude Include="..\src\OpenGL\VertexBuffer2D.h" />
+    <ClInclude Include="..\src\OpenGL\VertexBuffer3D.h" />
     <ClInclude Include="..\src\OpenGL\View.h" />
     <ClInclude Include="..\src\Scripting\Export\Export.h" />
     <ClInclude Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.h" />
+    <ClInclude Include="..\src\SLADEMap\SLADEMapFwd.h" />
+    <ClInclude Include="..\src\UI\Canvas\GLCanvas.h" />
     <ClInclude Include="..\src\UI\Controls\Splitter.h" />
     <ClInclude Include="..\src\UI\Controls\ZoomControl.h" />
     <ClInclude Include="..\src\UI\Dialogs\DirArchiveUpdateDialog.h" />
@@ -738,6 +715,7 @@
     <ClInclude Include="..\src\UI\Dialogs\TranslationEditorDialog.h" />
     <ClInclude Include="..\src\UI\Lists\ArchiveEntryTree.h" />
     <ClInclude Include="..\src\Utility\FileUtils.h" />
+    <ClInclude Include="..\src\Utility\Polygon.h" />
     <ClInclude Include="..\src\Utility\Property.h" />
     <ClInclude Include="..\src\Utility\SeekableData.h" />
     <ClInclude Include="..\src\Game\ActionSpecial.h" />
@@ -859,7 +837,6 @@
     <ClInclude Include="..\src\MapEditor\UI\ScriptEditorPanel.h" />
     <ClInclude Include="..\src\MapEditor\UI\ShapeDrawPanel.h" />
     <ClInclude Include="..\src\MapEditor\UndoSteps.h" />
-    <ClInclude Include="..\src\OpenGL\Drawing.h" />
     <ClInclude Include="..\src\OpenGL\GLTexture.h" />
     <ClInclude Include="..\src\OpenGL\OpenGL.h" />
     <ClInclude Include="..\src\Scripting\Lua.h" />
@@ -899,7 +876,6 @@
     <ClInclude Include="..\src\UI\Canvas\CTextureCanvas.h" />
     <ClInclude Include="..\src\UI\Canvas\GfxCanvas.h" />
     <ClInclude Include="..\src\UI\Canvas\MapPreviewCanvas.h" />
-    <ClInclude Include="..\src\UI\Canvas\OGLCanvas.h" />
     <ClInclude Include="..\src\UI\Canvas\PaletteCanvas.h" />
     <ClInclude Include="..\src\UI\Controls\BaseResourceChooser.h" />
     <ClInclude Include="..\src\UI\Controls\ColourBox.h" />
@@ -935,12 +911,12 @@
     <ClInclude Include="..\src\Utility\MemChunk.h" />
     <ClInclude Include="..\src\Utility\Memory.h" />
     <ClInclude Include="..\src\Utility\Parser.h" />
-    <ClInclude Include="..\src\Utility\Polygon2D.h" />
     <ClInclude Include="..\src\Utility\SFileDialog.h" />
     <ClInclude Include="..\src\Utility\StringUtils.h" />
     <ClInclude Include="..\src\Utility\Structs.h" />
     <ClInclude Include="..\src\Utility\Tokenizer.h" />
     <ClInclude Include="..\src\Utility\Tree.h" />
+    <ClInclude Include="..\src\Utility\Vector.h" />
     <ClInclude Include="..\thirdparty\mus2mid\mus2mid.h" />
     <ClInclude Include="..\thirdparty\zreaders\files.h" />
     <ClInclude Include="..\thirdparty\zreaders\i_music.h" />

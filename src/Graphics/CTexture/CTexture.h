@@ -129,6 +129,7 @@ public:
 	double         scaleX() const { return scale_.x; }
 	double         scaleY() const { return scale_.y; }
 	Vec2d          scale() const { return scale_; }
+	Vec2d          scaleFactor() const;
 	int16_t        offsetX() const { return offset_.x; }
 	int16_t        offsetY() const { return offset_.y; }
 	bool           worldPanning() const { return world_panning_; }
@@ -177,12 +178,12 @@ public:
 	bool convertExtended();
 	bool convertRegular();
 	bool loadPatchImage(
-		unsigned pindex,
-		SImage&  image,
-		Archive* parent     = nullptr,
-		Palette* pal        = nullptr,
-		bool     force_rgba = false) const;
-	bool toImage(SImage& image, Archive* parent = nullptr, Palette* pal = nullptr, bool force_rgba = false);
+		unsigned       pindex,
+		SImage&        image,
+		Archive*       parent     = nullptr,
+		const Palette* pal        = nullptr,
+		bool           force_rgba = false) const;
+	bool toImage(SImage& image, Archive* parent = nullptr, const Palette* pal = nullptr, bool force_rgba = false);
 
 	// Signals
 	struct Signals

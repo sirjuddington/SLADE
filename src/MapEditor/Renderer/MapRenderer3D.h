@@ -5,16 +5,26 @@
 #include "MapEditor/Item.h"
 #include "Utility/ColRGBA.h"
 
+
+// Forward declarations
+#include "SLADEMap/SLADEMapFwd.h"
 namespace slade
 {
 class ItemSelection;
-class Polygon2D;
-
+class Camera;
 namespace game
 {
 	class ThingType;
 }
+namespace mapeditor
+{
+	struct Item;
+}
+} // namespace slade
 
+
+namespace slade
+{
 class MapRenderer3D
 {
 public:
@@ -119,20 +129,8 @@ public:
 	vector<vector<Flat>>& getSectorFlats() { return sector_flats_; }
 
 	// Camera
-	void cameraMove(double distance, bool z = true);
-	void cameraTurn(double angle);
-	void cameraMoveUp(double distance);
-	void cameraStrafe(double distance);
-	void cameraPitch(double amount);
-	void cameraUpdateVectors();
-	void cameraSet(const Vec3d& position, const Vec2d& direction);
-	void cameraSetPosition(const Vec3d& position);
-	void cameraApplyGravity(double mult);
-	void cameraLook(double xrel, double yrel);
-
-	double camPitch() const { return cam_pitch_; }
-	Vec3d  camPosition() const { return cam_position_; }
-	Vec2d  camDirection() const { return cam_direction_; }
+	Camera& camera() const { return *camera_; }
+	void    cameraApplyGravity(double mult) const;
 
 	// -- Rendering --
 	void setupView(int width, int height) const;
@@ -213,12 +211,8 @@ private:
 	vector<float> dist_sectors_;
 
 	// Camera
-	Vec3d  cam_position_;
-	Vec2d  cam_direction_;
-	double cam_pitch_ = 0.;
-	Vec3d  cam_dir3d_;
-	Vec3d  cam_strafe_;
-	int    item_dist_ = 0;
+	unique_ptr<Camera> camera_;
+	int                item_dist_ = 0;
 
 	// Map Structures
 	vector<Line>         lines_;

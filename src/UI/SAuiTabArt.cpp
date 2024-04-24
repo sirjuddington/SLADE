@@ -35,8 +35,8 @@
 #include "SAuiTabArt.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "OpenGL/Drawing.h"
 #include "Utility/Colour.h"
+#include "WxUtils.h"
 
 using namespace slade;
 
@@ -124,12 +124,12 @@ SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs) :
 	m_fixedTabWidth = ui::scalePx(100);
 	m_tabCtrlHeight = 0;
 
-	wxColor baseColour = drawing::systemPanelBGColour();
+	wxColor baseColour = wxutil::systemPanelBGColour();
 
 	m_activeColour       = baseColour;
 	m_baseColour         = baseColour;
 	wxColor borderColour = baseColour.ChangeLightness(75);
-	inactive_tab_colour_ = drawing::darkColour(m_baseColour, 0.95f);
+	inactive_tab_colour_ = wxutil::darkColour(m_baseColour, 0.95f);
 
 	m_borderPen       = wxPen(borderColour);
 	m_baseColourPen   = wxPen(m_baseColour);
@@ -434,8 +434,8 @@ void SAuiTabArt::DrawTab(
 
 		if (close_button_state == wxAUI_BUTTON_STATE_HOVER || close_button_state == wxAUI_BUTTON_STATE_PRESSED)
 		{
-			dc.SetPen(wxPen(drawing::darkColour(close_white ? bluetab_colour : bgcol, 2.0f)));
-			dc.SetBrush(wxBrush(drawing::lightColour(close_white ? bluetab_colour : bgcol, 1.0f)));
+			dc.SetPen(wxPen(wxutil::darkColour(close_white ? bluetab_colour : bgcol, 2.0f)));
+			dc.SetBrush(wxBrush(wxutil::lightColour(close_white ? bluetab_colour : bgcol, 1.0f)));
 			dc.DrawRectangle(rect.x, rect.y, rect.width, rect.width);
 
 			const auto& bmp = close_white ? close_bitmap_white_ : m_activeCloseBmp;
@@ -552,7 +552,7 @@ void SAuiTabArt::SetSelectedFont(const wxFont& font)
 
 SAuiDockArt::SAuiDockArt()
 {
-	caption_back_colour_ = drawing::darkColour(drawing::systemPanelBGColour(), 0.0f);
+	caption_back_colour_ = wxutil::darkColour(wxutil::systemPanelBGColour(), 0.0f);
 
 	wxColour textColour = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	float    r = static_cast<float>(textColour.Red()) * 0.2f + static_cast<float>(caption_back_colour_.Red()) * 0.8f;
@@ -582,15 +582,15 @@ void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, 
 	dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
 
 	// dc.SetPen(m_borderPen);
-	// dc.SetBrush(wxBrush(Drawing::darkColour(caption_back_colour_, 2.0f)));
+	// dc.SetBrush(wxBrush(wxutil::darkColour(caption_back_colour_, 2.0f)));
 	// dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
 
 	wxColor sepCol;
 	int     l = colour::greyscale(ColRGBA(caption_back_colour_)).r;
 	if (l < 100)
-		sepCol = drawing::lightColour(caption_back_colour_, 2.0f);
+		sepCol = wxutil::lightColour(caption_back_colour_, 2.0f);
 	else
-		sepCol = drawing::darkColour(caption_back_colour_, 2.0f);
+		sepCol = wxutil::darkColour(caption_back_colour_, 2.0f);
 
 	// dc.SetPen(wxPen(sepCol));
 	// dc.DrawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width, rect.y + rect.height - 1);
@@ -739,8 +739,8 @@ void SAuiDockArt::DrawPaneButton(
 
 	if (button_state == wxAUI_BUTTON_STATE_HOVER || button_state == wxAUI_BUTTON_STATE_PRESSED)
 	{
-		dc.SetPen(wxPen(drawing::darkColour(drawing::systemPanelBGColour(), 2.0f)));
-		dc.SetBrush(wxBrush(drawing::lightColour(drawing::systemPanelBGColour(), 1.0f)));
+		dc.SetPen(wxPen(wxutil::darkColour(wxutil::systemPanelBGColour(), 2.0f)));
+		dc.SetBrush(wxBrush(wxutil::lightColour(wxutil::systemPanelBGColour(), 1.0f)));
 		dc.DrawRectangle(rect.x, rect.y, rect.width + 1, rect.width + 1);
 
 		bmp    = m_activeCloseBitmap;

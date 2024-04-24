@@ -7,7 +7,7 @@ struct Plane;
 
 namespace slade::math
 {
-constexpr double PI = 3.1415926535897932384;
+constexpr double PI = 3.1415926535897932384626433832795;
 
 double clamp(double val, double min, double max);
 int    floor(double val);

@@ -44,6 +44,7 @@
 #include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
 #include "StartPanel.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/PaletteChooser.h"
@@ -690,6 +691,22 @@ void MainWindow::onSize(wxSizeEvent& e)
 
 	// Update maximized cvar
 	mw_maximized = IsMaximized();
+
+	// Test creation of OpenGL context
+	if (!opengl_test_done && e.GetSize().x > 20 && e.GetSize().y > 20)
+	{
+		auto mf = new wxMiniFrame(this, -1, "OpenGL Test", wxDefaultPosition, { 32, 32 });
+		mf->SetSizer(new wxBoxSizer(wxVERTICAL));
+
+		auto test_canvas = new GLCanvas(mf);
+		mf->GetSizer()->Add(test_canvas, wxSizerFlags(1).Expand());
+
+		mf->Show();
+		test_canvas->activateContext();
+		mf->Close(true);
+
+		opengl_test_done = true;
+	}
 
 	e.Skip();
 }

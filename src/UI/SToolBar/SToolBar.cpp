@@ -35,7 +35,6 @@
 #include "SToolBar.h"
 #include "General/SAction.h"
 #include "General/UI.h"
-#include "OpenGL/Drawing.h"
 #include "SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
@@ -195,7 +194,7 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_
 			showname.Remove(0, 1);
 
 		auto* label = new wxStaticText(this, -1, wxString::Format("%s:", showname));
-		label->SetForegroundColour(drawing::systemMenuTextColour());
+		label->SetForegroundColour(wxutil::systemMenuTextColour());
 		sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
 		sizer->AddSpacer(spacing);
 	}
@@ -450,7 +449,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 
 	// Set background colour
 	wxPanel::SetBackgroundColour(
-		(main_toolbar && global::win_version_major >= 10) ? wxColor(250, 250, 250) : drawing::systemPanelBGColour());
+		(main_toolbar && global::win_version_major >= 10) ? wxColor(250, 250, 250) : wxutil::systemPanelBGColour());
 
 	// Create sizer
 	auto* sizer = new wxBoxSizer(orientation);
@@ -869,7 +868,7 @@ void SToolBar::onPaint(wxPaintEvent& e)
 
 	// Get system colours needed
 	auto col_background = GetBackgroundColour();
-	auto col_light      = drawing::lightColour(col_background, 1.5f);
+	auto col_light      = wxutil::lightColour(col_background, 1.5f);
 	// wxColour col_dark = win10_theme ? *wxWHITE : Drawing::darkColour(col_background, 1.5f);
 
 	// Draw background

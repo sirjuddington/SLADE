@@ -46,6 +46,9 @@
     <ClInclude Include="..\thirdparty\fmt\include\fmt\xchar.h" />
     <ClInclude Include="..\thirdparty\glad\include\glad\glad.h" />
     <ClInclude Include="..\thirdparty\glad\include\KHR\khrplatform.h" />
+    <ClInclude Include="..\thirdparty\libdrawtext\drawtext.h" />
+    <ClInclude Include="..\thirdparty\libdrawtext\drawtext_impl.h" />
+    <ClInclude Include="..\thirdparty\libdrawtext\tpool.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-private.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_math.h" />
@@ -628,6 +631,12 @@
     <ClCompile Include="..\thirdparty\fmt\src\format.cc" />
     <ClCompile Include="..\thirdparty\fmt\src\os.cc" />
     <ClCompile Include="..\thirdparty\glad\src\glad.c" />
+    <ClCompile Include="..\thirdparty\libdrawtext\draw.c" />
+    <ClCompile Include="..\thirdparty\libdrawtext\drawgl.c" />
+    <ClCompile Include="..\thirdparty\libdrawtext\drawrast.c" />
+    <ClCompile Include="..\thirdparty\libdrawtext\font.c" />
+    <ClCompile Include="..\thirdparty\libdrawtext\tpool.c" />
+    <ClCompile Include="..\thirdparty\libdrawtext\utf8.c" />
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-blend.c" />
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-dash.c" />
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-geometry.c" />

@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Browser.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 
 class wxScrollBar;
 
 namespace slade
 {
 class BrowserItem;
-namespace drawing
+namespace gl::draw2d
 {
 	enum class Font;
 }
 
-class BrowserCanvas : public OGLCanvas
+class BrowserCanvas : public GLCanvas
 {
 public:
 	BrowserCanvas(wxWindow* parent);
@@ -37,7 +37,7 @@ public:
 	void                  showItem(int item, int where);
 	void                  showSelectedItem();
 	bool                  searchItemFrom(int from);
-	void                  setFont(drawing::Font font) { this->font_ = font; }
+	void                  setFont(gl::draw2d::Font font) { this->font_ = font; }
 	void                  setItemNameType(browser::NameType type) { this->show_names_ = type; }
 	void                  setItemSize(int size) { this->item_size_ = size; }
 	void                  setItemViewType(browser::ItemView type) { this->item_type_ = type; }
@@ -64,7 +64,7 @@ private:
 	// Display
 	int               yoff_        = 0;
 	int               item_border_ = 0;
-	drawing::Font     font_;
+	gl::draw2d::Font  font_;
 	browser::NameType show_names_ = browser::NameType::Normal;
 	int               item_size_  = -1;
 	int               top_index_  = 0;

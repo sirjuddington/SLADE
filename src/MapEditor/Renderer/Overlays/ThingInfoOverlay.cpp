@@ -36,10 +36,11 @@
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
+#include "Geometry/Rect.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapThing.h"
@@ -65,9 +66,9 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // -----------------------------------------------------------------------------
 // ThingInfoOverlay class constructor
 // -----------------------------------------------------------------------------
-ThingInfoOverlay::ThingInfoOverlay() :
-	text_box_{ new TextBox("", drawing::Font::Condensed, 100, static_cast<int>(16 * (drawing::fontSize() / 12.0))) }
+ThingInfoOverlay::ThingInfoOverlay()
 {
+	text_box_ = std::make_unique<gl::draw2d::TextBox>("", 100, gl::draw2d::Font::Condensed);
 }
 
 // -----------------------------------------------------------------------------
@@ -176,42 +177,35 @@ void ThingInfoOverlay::update(MapThing* thing)
 // -----------------------------------------------------------------------------
 // Draws the overlay at [bottom] from 0 to [right]
 // -----------------------------------------------------------------------------
-void ThingInfoOverlay::draw(int bottom, int right, float alpha)
+void ThingInfoOverlay::draw(gl::draw2d::Context& dc, float alpha)
 {
 	// Don't bother if invisible
 	if (alpha <= 0.0f)
 		return;
 
-	// Init GL stuff
-	glLineWidth(1.0f);
-	glDisable(GL_LINE_SMOOTH);
-
 	// Determine overlay height
+	auto right = dc.viewSize().x;
 	if (last_size_ != right)
 	{
 		last_size_ = right;
-		text_box_->setSize(right - 68);
+		text_box_->setWidth(right - 68.0f);
 	}
-	int height = text_box_->height() + 4;
+	text_box_->setFont(dc.font, dc.text_size);
+	auto height = text_box_->height() + 8.0f;
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
-	bottom += height * alpha_inv * alpha_inv;
-
-	// Get colours
-	auto col_bg = colourconfig::colour("map_overlay_background");
-	auto col_fg = colourconfig::colour("map_overlay_foreground");
-	col_fg.a    = col_fg.a * alpha;
-	col_bg.a    = col_bg.a * alpha;
-	ColRGBA col_border(0, 0, 0, 140);
+	auto  bottom    = dc.viewSize().y + height * alpha_inv * alpha_inv;
 
 	// Draw overlay background
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	drawing::drawBorderedRect(0, bottom - height - 4, right, bottom + 2, col_bg, col_border);
+	dc.setColourFromConfig("map_overlay_background");
+	dc.colour.a *= alpha;
+	dc.drawRect({ 0.0f, bottom - height, right, bottom });
 
 	// Draw info text lines
-	text_box_->setLineHeight(16 * (drawing::fontSize() / 12.0));
-	text_box_->draw(2, bottom - height, col_fg);
+	dc.setColourFromConfig("map_overlay_foreground");
+	dc.colour.a *= alpha;
+	text_box_->draw({ 4.0f, bottom - height + 4.0f }, dc);
 
 	// Draw sprite
 	bool isicon = false;
@@ -224,16 +218,16 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 			tex = mapeditor::textureManager().editorImage(fmt::format("thing/{}", icon_)).gl_id;
 		isicon = true;
 	}
-	glEnable(GL_TEXTURE_2D);
-	gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
+	dc.colour.set(255, 255, 255, 255 * alpha);
+	dc.blend = gl::Blend::Normal;
 	if (tex)
 	{
-		auto&  tex_info = gl::Texture::info(tex);
-		double twidth   = tex_info.size.x;
-		double theight  = tex_info.size.y;
+		auto& tex_info = gl::Texture::info(tex);
+		float twidth   = tex_info.size.x;
+		float theight  = tex_info.size.y;
 		if (twidth > 128.0 || theight > 128.0)
 		{
-			double factor = glm::max(twidth, theight) / 128.0;
+			float factor = glm::max(twidth, theight) / 128.0;
 			twidth /= factor;
 			theight /= factor;
 		}
@@ -242,20 +236,10 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 			twidth  = 64;
 			theight = 64;
 		}
-		gl::Texture::bind(tex);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f);
-		glVertex2d(right - 8 - twidth, bottom - 8 - theight);
-		glTexCoord2f(0.0f, 1.0f);
-		glVertex2d(right - 8 - twidth, bottom - 8);
-		glTexCoord2f(1.0f, 1.0f);
-		glVertex2d(right - 8, bottom - 8);
-		glTexCoord2f(1.0f, 0.0f);
-		glVertex2d(right - 8, bottom - 8 - theight);
-		glEnd();
+		dc.texture = tex;
+		dc.drawRect({ right - 8.0f - twidth, bottom - 8.0f - theight, right - 8.0f, bottom - 8.0f });
 	}
-	glDisable(GL_TEXTURE_2D);
 
 	// Done
-	glEnable(GL_LINE_SMOOTH);
+	dc.texture = 0;
 }

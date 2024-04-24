@@ -81,6 +81,7 @@ public:
 	bool      putRGBAData(MemChunk& mc, const Palette* pal = nullptr) const;
 	bool      putRGBData(MemChunk& mc, const Palette* pal = nullptr) const;
 	bool      putIndexedData(MemChunk& mc) const;
+	bool      putAlphaData(MemChunk& mc) const;
 	int       width() const { return width_; }
 	int       height() const { return height_; }
 	int       index() const { return imgindex_; }
@@ -145,8 +146,8 @@ public:
 	bool resize(int nwidth, int nheight);
 	bool setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight, Type ntype);
 	bool setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth, int nheight, Type ntype);
-	bool applyTranslation(const Translation* tr, Palette* pal = nullptr, bool truecolor = false);
-	bool applyTranslation(string_view tr, Palette* pal = nullptr, bool truecolor = false);
+	bool applyTranslation(const Translation* tr, const Palette* pal = nullptr, bool truecolor = false);
+	bool applyTranslation(string_view tr, const Palette* pal = nullptr, bool truecolor = false);
 	bool drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, const Palette* pal);
 	bool drawImage(
 		const SImage&    img,

@@ -7,7 +7,6 @@
 namespace slade
 {
 class Debuggable;
-class Polygon2D;
 
 class MapSector : public MapObject
 {
@@ -125,23 +124,24 @@ public:
 	template<SurfaceType p> Plane plane();
 	template<SurfaceType p> void  setPlane(const Plane& plane);
 
-	Vec2d             getPoint(Point point) override;
-	void              resetBBox() { bbox_.reset(); }
-	BBox              boundingBox();
-	vector<MapSide*>& connectedSides() { return connected_sides_; }
-	void              resetPolygon() { poly_needsupdate_ = true; }
-	Polygon2D*        polygon();
-	bool              containsPoint(const Vec2d& point);
-	double            distanceTo(const Vec2d& point, double maxdist = -1);
-	bool              putLines(vector<MapLine*>& list) const;
-	bool              putVertices(vector<MapVertex*>& list) const;
-	bool              putVertices(vector<MapObject*>& list) const;
-	uint8_t           lightAt(int where = 0, int extra_floor_index = -1);
-	void              changeLight(int amount, int where = 0);
-	ColRGBA           colourAt(int where = 0, bool fullbright = false);
-	ColRGBA           fogColour();
-	long              geometryUpdatedTime() const { return geometry_updated_; }
-	void              findTextPoint();
+	Vec2d                    getPoint(Point point) override;
+	void                     resetBBox() { bbox_.reset(); }
+	BBox                     boundingBox();
+	vector<MapSide*>&        connectedSides() { return connected_sides_; }
+	const vector<MapSide*>&  connectedSides() const { return connected_sides_; }
+	const vector<glm::vec2>& polygonVertices();
+	void                     resetPolygon() { poly_needsupdate_ = true; }
+	bool                     containsPoint(const Vec2d& point);
+	double                   distanceTo(const Vec2d& point, double maxdist = -1);
+	bool                     putLines(vector<MapLine*>& list) const;
+	bool                     putVertices(vector<MapVertex*>& list) const;
+	bool                     putVertices(vector<MapObject*>& list) const;
+	uint8_t                  lightAt(int where = 0, int extra_floor_index = -1);
+	void                     changeLight(int amount, int where = 0);
+	ColRGBA                  colourAt(int where = 0, bool fullbright = false);
+	ColRGBA                  fogColour();
+	long                     geometryUpdatedTime() const { return geometry_updated_; }
+	void                     findTextPoint();
 
 	void connectSide(MapSide* side);
 	void disconnectSide(const MapSide* side);
@@ -170,13 +170,13 @@ private:
 	short   id_      = 0;
 
 	// Internal info
-	vector<MapSide*>      connected_sides_;
-	BBox                  bbox_;
-	unique_ptr<Polygon2D> polygon_;
-	bool                  poly_needsupdate_ = true;
-	long                  geometry_updated_ = 0;
-	Vec2d                 text_point_       = {};
-	vector<ExtraFloor>    extra_floors_;
+	vector<MapSide*>   connected_sides_;
+	BBox               bbox_;
+	vector<glm::vec2>  polygon_triangles_;
+	bool               poly_needsupdate_ = true;
+	long               geometry_updated_ = 0;
+	Vec2d              text_point_       = {};
+	vector<ExtraFloor> extra_floors_;
 
 	void setGeometryUpdated();
 };

@@ -31,11 +31,129 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ANSIEntryPanel.h"
+#include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
-#include "UI/Canvas/ANSICanvas.h"
+#include "Archive/ArchiveManager.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "Utility/CodePages.h"
+#include "Utility/ColRGBA.h"
 
 using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+//
+// Constants
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+constexpr int NUMROWS = 25;
+constexpr int NUMCOLS = 80;
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+// AnsiCanvas Class
+//
+// A canvas that displays an ANSI screen using a VGA font
+// -----------------------------------------------------------------------------
+namespace slade
+{
+class AnsiCanvas : public wxPanel
+{
+public:
+	AnsiCanvas(wxWindow* parent) : wxPanel(parent)
+	{
+		// Get the all-important font data
+		auto res_archive = app::archiveManager().programResourceArchive();
+		if (!res_archive)
+			return;
+		auto ansi_font = res_archive->entryAtPath("vga-rom-font.16");
+		if (!ansi_font || ansi_font->size() % 256)
+			return;
+
+		fontdata_ = ansi_font->rawData();
+
+		// Init variables
+		char_width_  = 8;
+		char_height_ = ansi_font->size() / 256;
+		width_       = NUMCOLS * char_width_;
+		height_      = NUMROWS * char_height_;
+		picdata_     = new uint8_t[width_ * height_];
+
+		// Bind Events
+		Bind(wxEVT_PAINT, &AnsiCanvas::onPaint, this);
+	}
+
+	~AnsiCanvas() override { delete[] picdata_; }
+
+	// Loads ANSI data
+	void loadData(uint8_t* data)
+	{
+		ansidata_ = data;
+		image_.reset();
+	}
+
+	// Draws a single character. This is called from the parent ANSIPanel
+	void drawCharacter(size_t index) const
+	{
+		if (!ansidata_)
+			return;
+
+		// Setup some variables
+		uint8_t  chara = ansidata_[index << 1];       // Character
+		uint8_t  color = ansidata_[(index << 1) + 1]; // Colour
+		uint8_t* pic   = picdata_ + ((index / NUMCOLS) * width_ * char_height_)
+					   + ((index % NUMCOLS) * char_width_);      // Position on canvas to draw
+		const uint8_t* fnt = fontdata_ + (char_height_ * chara); // Position of character in font image
+
+		// Draw character (including background)
+		for (int y = 0; y < char_height_; ++y)
+			for (int x = 0; x < char_width_; ++x)
+				pic[x + (y * width_)] = (fnt[y] & (1 << (char_width_ - 1 - x))) ? (color & 15) : ((color & 112) >> 4);
+	}
+
+private:
+	size_t               width_    = 0;
+	size_t               height_   = 0;
+	uint8_t*             picdata_  = nullptr;
+	const uint8_t*       fontdata_ = nullptr;
+	uint8_t*             ansidata_ = nullptr;
+	unique_ptr<wxBitmap> image_;
+	int                  char_width_  = 8;
+	int                  char_height_ = 8;
+
+	void onPaint(wxPaintEvent& e)
+	{
+		wxPaintDC dc(this);
+
+		// Check image is valid
+		if (!picdata_)
+			return;
+
+		// Load wx image
+		if (!image_)
+		{
+			vector<uint8_t> rgb_data(width_ * height_ * 3);
+			auto            i = 0;
+			for (size_t p = 0; p < width_ * height_; ++p)
+			{
+				auto c        = codepages::ansiColor(picdata_[p]);
+				rgb_data[i++] = c.r;
+				rgb_data[i++] = c.g;
+				rgb_data[i++] = c.b;
+			}
+
+			wxImage img(width_, height_, rgb_data.data(), true);
+			image_ = std::make_unique<wxBitmap>(img);
+		}
+
+		dc.DrawBitmap(*image_, GetSize().x / 2 - image_->GetSize().x / 2, GetSize().y / 2 - image_->GetSize().y / 2);
+	}
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -52,7 +170,7 @@ ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
 {
 	// Get the VGA font
 	ansi_chardata_.assign(DATASIZE, 0);
-	ansi_canvas_ = new ANSICanvas(this, -1);
+	ansi_canvas_ = new AnsiCanvas(this);
 	sizer_main_->Add(ansi_canvas_, wxSizerFlags(1).Expand());
 
 	// Hide toolbar (no reason for it on this panel, yet)

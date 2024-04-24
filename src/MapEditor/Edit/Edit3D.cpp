@@ -33,6 +33,7 @@
 #include "Edit3D.h"
 #include "Game/Configuration.h"
 #include "General/UndoRedo.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"

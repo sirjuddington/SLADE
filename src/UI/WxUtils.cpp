@@ -33,7 +33,17 @@
 #include "UI/WxUtils.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "Graphics/SImage/SImage.h"
+#include "Utility/Colour.h"
 #include "thirdparty/lunasvg/include/lunasvg.h"
+
+#ifdef __WXGTK3__
+#include <gtk-3.0/gtk/gtk.h>
+#elif __WXGTK20__
+#define GSocket GlibGSocket
+#include <gtk-2.0/gtk/gtk.h>
+#undef GSocket
+#endif
 
 using namespace slade;
 
@@ -45,6 +55,15 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(String, font_monospace, "Consolas,Lucida Console", CVar::Flag::Save)
 CVAR(Int, tab_style, 1, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(String, bgtx_colour1)
+EXTERN_CVAR(String, bgtx_colour2)
 
 
 // -----------------------------------------------------------------------------
@@ -254,9 +273,9 @@ wxSizer* wxutil::layoutHorizontally(const vector<wxObject*>& widgets, int expand
 // Same as above, however instead of returning a new sizer, it adds it to the
 // given [sizer] with [flags]
 // -----------------------------------------------------------------------------
-void wxutil::layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_col)
+void wxutil::layoutHorizontally(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags, int expand_col)
 {
-	sizer->Add(layoutHorizontally(std::move(widgets), expand_col), flags);
+	sizer->Add(layoutHorizontally(widgets, expand_col), flags);
 }
 
 // -----------------------------------------------------------------------------
@@ -300,9 +319,9 @@ wxSizer* wxutil::layoutVertically(const vector<wxObject*>& widgets, int expand_r
 // Same as above, however instead of returning a new sizer, it adds it to the
 // given [sizer] with [flags]
 // -----------------------------------------------------------------------------
-void wxutil::layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_row)
+void wxutil::layoutVertically(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags, int expand_row)
 {
-	sizer->Add(layoutVertically(std::move(widgets), expand_row), flags);
+	sizer->Add(layoutVertically(widgets, expand_row), flags);
 }
 
 // -----------------------------------------------------------------------------
@@ -431,4 +450,158 @@ wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height
 
 	// Create wxImage
 	return { width, height, rgb_data, alpha_data, false };
+}
+
+// -----------------------------------------------------------------------------
+// Creates a wxImage from the given S[image] and [palette] (optional)
+// -----------------------------------------------------------------------------
+wxImage wxutil::createImageFromSImage(const SImage& image, const Palette* palette)
+{
+	if (!image.isValid())
+		return {};
+
+	// Get image RGB and Alpha data separately because we can't create a wxImage straight from RGBA data
+	MemChunk rgb, alpha;
+	image.putRGBData(rgb, palette);
+	image.putAlphaData(alpha);
+
+	// Create wx bitmap
+	return { image.width(), image.height(), rgb.releaseData(), alpha.releaseData() };
+}
+
+// -----------------------------------------------------------------------------
+// Generates a checkered pattern of [width]x[height] into [bitmap].
+// If the bitmap is already larger than the requested size, does nothing
+// -----------------------------------------------------------------------------
+void wxutil::generateCheckeredBackground(wxBitmap& bitmap, int width, int height)
+{
+	// Do nothing if the bitmap doesn't need updating
+	if (bitmap.IsOk() && bitmap.GetWidth() > width && bitmap.GetHeight() > height)
+		return;
+
+	wxColour col1(bgtx_colour1);
+	wxColour col2(bgtx_colour2);
+
+	bitmap.Create(width, height);
+	wxMemoryDC dc(bitmap);
+
+	// First colour
+	dc.SetBrush(wxBrush(col1));
+	dc.SetPen(*wxTRANSPARENT_PEN);
+	int  x       = 0;
+	int  y       = 0;
+	bool odd_row = false;
+	while (y < height)
+	{
+		x = odd_row ? 8 : 0;
+
+		while (x < width)
+		{
+			dc.DrawRectangle(x, y, 8, 8);
+			x += 16;
+		}
+
+		// Next row
+		y += 8;
+		odd_row = !odd_row;
+	}
+
+	// Second colour
+	dc.SetBrush(wxBrush(col2));
+	y       = 0;
+	odd_row = false;
+	while (y < height)
+	{
+		x = odd_row ? 0 : 8;
+
+		while (x < width)
+		{
+			dc.DrawRectangle(x, y, 8, 8);
+			x += 16;
+		}
+
+		// Next row
+		y += 8;
+		odd_row = !odd_row;
+	}
+}
+
+
+
+// The following functions are taken from CodeLite (http://codelite.org)
+
+wxColour wxutil::systemPanelBGColour()
+{
+#ifdef __WXGTK__
+	static bool     intitialized(false);
+	static wxColour bgColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
+
+	if (!intitialized)
+	{
+		// try to get the background colour from a menu
+		GtkWidget* menu = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		GtkStyle*  def  = gtk_rc_get_style(menu);
+		if (!def)
+			def = gtk_widget_get_default_style();
+
+		if (def)
+		{
+			GdkColor col = def->bg[GTK_STATE_NORMAL];
+			bgColour     = wxColour(col);
+		}
+		gtk_widget_destroy(menu);
+		intitialized = true;
+	}
+	return bgColour;
+#else
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
+#endif
+}
+
+wxColour wxutil::systemMenuTextColour()
+{
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
+}
+
+wxColour wxutil::systemMenuBarBGColour()
+{
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
+}
+
+wxColour wxutil::lightColour(const wxColour& colour, float percent)
+{
+	if (percent == 0)
+	{
+		return colour;
+	}
+
+	// Convert to HSL
+	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
+
+	// Increase luminance
+	hsl.l += static_cast<float>((percent * 5.0) / 100.0);
+	if (hsl.l > 1.0)
+		hsl.l = 1.0;
+
+	ColRGBA rgb = hsl.asRGB();
+	return { rgb.r, rgb.g, rgb.b };
+}
+
+wxColour wxutil::darkColour(const wxColour& colour, float percent)
+{
+	if (percent == 0)
+	{
+		return colour;
+	}
+
+	// Convert to HSL
+	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
+
+	// Decrease luminance
+	hsl.l -= static_cast<float>((percent * 5.0) / 100.0);
+	if (hsl.l < 0)
+		hsl.l = 0;
+
+	ColRGBA rgb = hsl.asRGB();
+	return { rgb.r, rgb.g, rgb.b };
 }

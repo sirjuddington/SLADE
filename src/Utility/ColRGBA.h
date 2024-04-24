@@ -25,6 +25,7 @@ struct ColRGBA
 	explicit ColRGBA(const wxColour& c) : r{ c.Red() }, g{ c.Green() }, b{ c.Blue() }, a{ c.Alpha() } {}
 
 	operator wxColour() const { return { r, g, b, a }; }
+	operator glm::vec4() const { return { fr(), fg(), fb(), fa() }; }
 
 	// Functions
 	void set(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, short index = -1);

@@ -48,6 +48,7 @@
 #include "General/SAction.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
+#include "ItemSelection.h"
 #include "MapChecks.h"
 #include "MapEditor.h"
 #include "MapEditor/Renderer/Overlays/InfoOverlay3d.h"
@@ -58,8 +59,8 @@
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ShowItemDialog.h"
 #include "MapTextureManager.h"
-#include "OpenGL/View.h"
-#include "Renderer/MapRenderer2D.h"
+#include "OpenGL/Draw2D.h"
+#include "Renderer/Camera.h"
 #include "Renderer/MapRenderer3D.h"
 #include "Renderer/Overlays/LineInfoOverlay.h"
 #include "Renderer/Overlays/SectorInfoOverlay.h"
@@ -114,29 +115,28 @@ EXTERN_CVAR(Bool, thing_preview_lights)
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // MapEditContext class constructor
 // -----------------------------------------------------------------------------
-MapEditContext::MapEditContext() :
-	map_{ new SLADEMap() },
-	edit_mode_{ Mode::Lines },
-	edit_mode_prev_{ Mode::Lines },
-	sector_mode_{ SectorMode::Both },
-	move_objects_{ new MoveObjects(*this) },
-	line_draw_{ new LineDraw(*this) },
-	edit_2d_{ new Edit2D(*this) },
-	edit_3d_{ new Edit3D(*this) },
-	object_edit_{ new ObjectEdit(*this) },
-	renderer_{ new Renderer(*this) },
-	input_{ new Input(*this) },
-	info_vertex_{ new VertexInfoOverlay() },
-	info_line_{ new LineInfoOverlay() },
-	info_sector_{ new SectorInfoOverlay() },
-	info_thing_{ new ThingInfoOverlay() },
-	info_3d_{ new InfoOverlay3D() }
+MapEditContext::MapEditContext()
 {
+	map_          = std::make_unique<SLADEMap>();
 	undo_manager_ = std::make_unique<UndoManager>(map_.get());
+	selection_    = std::make_unique<ItemSelection>(this);
+	renderer_     = std::make_unique<Renderer>(*this);
+	edit_2d_      = std::make_unique<Edit2D>(*this);
+	edit_3d_      = std::make_unique<Edit3D>(*this);
+	input_        = std::make_unique<Input>(*this);
+	line_draw_    = std::make_unique<LineDraw>(*this);
+	move_objects_ = std::make_unique<MoveObjects>(*this);
+	object_edit_  = std::make_unique<ObjectEdit>(*this);
+
+	// Info Overlays
+	info_vertex_ = std::make_unique<VertexInfoOverlay>();
+	info_line_   = std::make_unique<LineInfoOverlay>();
+	info_sector_ = std::make_unique<SectorInfoOverlay>();
+	info_thing_  = std::make_unique<ThingInfoOverlay>();
+	info_3d_     = std::make_unique<InfoOverlay3D>();
 }
 
 // -----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ void MapEditContext::setEditMode(Mode mode)
 	// Clear 3d mode undo manager etc on exiting 3d mode
 	if (edit_mode_ == Mode::Visual && mode != Mode::Visual)
 	{
-		info_3d_->reset();
+		info_3d_.reset();
 		undo_manager_->createMergedLevel(edit_3d_->undoManager(), "3D Mode Editing");
 		edit_3d_->undoManager()->clear();
 	}
@@ -181,14 +181,14 @@ void MapEditContext::setEditMode(Mode mode)
 	sector_mode_ = SectorMode::Both;
 
 	// Clear hilight and selection stuff
-	selection_.clearHilight();
+	selection_->clearHilight();
 	tagged_sectors_.clear();
 	tagged_lines_.clear();
 	tagged_things_.clear();
 	last_undo_level_ = "";
 
 	// Transfer selection to the new mode, if possible
-	selection_.migrate(edit_mode_prev_, edit_mode_);
+	selection_->migrate(edit_mode_prev_, edit_mode_);
 
 	// Add editor message
 	switch (edit_mode_)
@@ -198,7 +198,7 @@ void MapEditContext::setEditMode(Mode mode)
 	case Mode::Sectors:  addEditorMessage("Sectors mode (Normal)"); break;
 	case Mode::Things:   addEditorMessage("Things mode"); break;
 	case Mode::Visual:   addEditorMessage("3d mode"); break;
-	};
+	}
 
 	if (edit_mode_ != Mode::Visual)
 		updateDisplay();
@@ -297,18 +297,18 @@ void MapEditContext::lockMouse(bool lock)
 // -----------------------------------------------------------------------------
 // Updates the current map editor state (hilight, animations, etc.)
 // -----------------------------------------------------------------------------
-bool MapEditContext::update(long frametime)
+bool MapEditContext::update(double frametime)
 {
-	// Force an update if animations are active
-	if (renderer_->animationsActive() || selection_.hasHilight())
-		next_frame_length_ = 2;
+	//// Force an update if animations are active
+	// if (renderer_->animationsActive() || selection_->hasHilight())
+	//	next_frame_length_ = 2;
 
-	// Ignore if we aren't ready to update
-	if (frametime < next_frame_length_)
-		return false;
+	//// Ignore if we aren't ready to update
+	// if (frametime < next_frame_length_)
+	//	return false;
 
 	// Get frame time multiplier
-	double mult = static_cast<double>(frametime) / 10.0f;
+	double mult = frametime / 10.0;
 
 	// 3d mode
 	if (edit_mode_ == Mode::Visual && !overlayActive())
@@ -318,7 +318,7 @@ bool MapEditContext::update(long frametime)
 			next_frame_length_ = 2;
 
 		// Update status bar
-		auto pos = renderer_->renderer3D().camPosition();
+		auto pos = camera3d().position();
 		mapeditor::setStatusText(
 			fmt::format(
 				"Position: ({}, {}, {})", static_cast<int>(pos.x), static_cast<int>(pos.y), static_cast<int>(pos.z)),
@@ -326,16 +326,16 @@ bool MapEditContext::update(long frametime)
 
 		// Update hilight
 		Item hl{ -1, ItemType::Any };
-		if (!selection_.hilightLocked())
+		if (!selection_->hilightLocked())
 		{
-			auto old_hl = selection_.hilight();
+			auto old_hl = selection_->hilight();
 			hl          = renderer_->renderer3D().determineHilight();
-			if (selection_.setHilight(hl))
+			if (selection_->setHilight(hl))
 			{
 				// Update 3d info overlay
 				if (info_overlay_3d && hl.index >= 0)
 				{
-					info_3d_->update(hl, map_.get());
+					info_3d_->update({ hl.index, hl.type }, map_.get());
 					info_showing_ = true;
 				}
 				else
@@ -351,11 +351,11 @@ bool MapEditContext::update(long frametime)
 	else
 	{
 		// Update hilight if needed
-		auto prev_hl = selection_.hilight();
+		auto prev_hl = selection_->hilight();
 		if (input_->mouseState() == Input::MouseState::Normal /* && !mouse_movebegin*/)
 		{
-			auto old_hl = selection_.hilightedObject();
-			if (selection_.updateHilight(input_->mousePosMap(), renderer_->view().scale()) && hilight_smooth)
+			auto old_hl = selection_->hilightedObject();
+			if (selection_->updateHilight(input_->mousePosMap(), renderer_->view().scale().x) && hilight_smooth)
 				renderer_->animateHilightChange({}, old_hl);
 		}
 
@@ -364,11 +364,11 @@ bool MapEditContext::update(long frametime)
 			move_objects_->update(input_->mousePosMap());
 
 		// Check if we have to update the info overlay
-		if (selection_.hilight() != prev_hl)
+		if (selection_->hilight() != prev_hl)
 		{
 			// Update info overlay depending on edit mode
 			updateInfoOverlay();
-			info_showing_ = selection_.hasHilight();
+			info_showing_ = selection_->hasHilight();
 		}
 	}
 
@@ -435,8 +435,8 @@ bool MapEditContext::openMap(const MapDesc& map)
 void MapEditContext::clearMap()
 {
 	// Clear selection
-	selection_.clear();
-	selection_.clearHilight();
+	selection_->clear();
+	selection_->clearHilight();
 
 	// Reset state
 	edit_3d_->setLinked(true, true);
@@ -460,16 +460,16 @@ void MapEditContext::clearMap()
 // current edit mode. If [index] is negative, show the current selection or
 // hilight instead
 // -----------------------------------------------------------------------------
-void MapEditContext::showItem(int index)
+void MapEditContext::showItem(int index) const
 {
 	// Show current selection/hilight if index is not specified
 	if (index < 0)
 	{
-		renderer_->viewFitToObjects(selection_.selectedObjects());
+		renderer_->viewFitToObjects(selection_->selectedObjects());
 		return;
 	}
 
-	selection_.clear();
+	selection_->clear();
 	int      max;
 	ItemType type;
 	switch (edit_mode_)
@@ -495,8 +495,8 @@ void MapEditContext::showItem(int index)
 
 	if (index < max)
 	{
-		selection_.select({ index, type });
-		renderer_->viewFitToObjects(selection_.selectedObjects(false));
+		selection_->select({ index, type });
+		renderer_->viewFitToObjects(selection_->selectedObjects(false));
 	}
 }
 
@@ -512,7 +512,7 @@ string MapEditContext::modeString(bool plural) const
 	case Mode::Sectors:  return plural ? "Sectors" : "Sector";
 	case Mode::Things:   return plural ? "Things" : "Thing";
 	case Mode::Visual:   return "3D";
-	};
+	}
 
 	return plural ? "Items" : "Object";
 }
@@ -544,10 +544,10 @@ void MapEditContext::forceRefreshRenderer() const
 	if (edit_mode_ == Mode::Visual)
 	{
 		auto hl = renderer_->renderer3D().determineHilight();
-		info_3d_->update(hl, map_.get());
+		info_3d_->update({ hl.index, hl.type }, map_.get());
 	}
 
-	if (!canvas_->setActive())
+	if (!canvas_->activateContext())
 		return;
 
 	renderer_->forceUpdate();
@@ -569,7 +569,7 @@ void MapEditContext::updateTagged()
 	tagging_things_.clear();
 
 	// Special
-	int hilight_item = selection_.hilight().index;
+	int hilight_item = selection_->hilight().index;
 	if (hilight_item >= 0)
 	{
 		// Gather affecting objects
@@ -768,14 +768,22 @@ void MapEditContext::updateTagged()
 void MapEditContext::selectionUpdated()
 {
 	// Open selected objects in properties panel
-	auto selected = selection_.selectedObjects();
+	auto selected = selection_->selectedObjects();
 	mapeditor::openMultiObjectProperties(selected);
 
 	last_undo_level_ = "";
 
-	renderer_->animateSelectionChange(selection_);
+	renderer_->animateSelectionChange(*selection_);
 
 	updateStatusText();
+}
+
+// -----------------------------------------------------------------------------
+// Clears the current selection
+// -----------------------------------------------------------------------------
+void MapEditContext::clearSelection() const
+{
+	selection_->clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -784,6 +792,14 @@ void MapEditContext::selectionUpdated()
 double MapEditContext::gridSize() const
 {
 	return grid_sizes[grid_size_];
+}
+
+// -----------------------------------------------------------------------------
+// Returns the currently hilighted item
+// -----------------------------------------------------------------------------
+Item MapEditContext::hilightItem() const
+{
+	return selection_->hilight();
 }
 
 // -----------------------------------------------------------------------------
@@ -852,7 +868,7 @@ int MapEditContext::beginTagEdit()
 		return 0;
 
 	// Get selected lines
-	auto lines = selection_.selectedLines();
+	auto lines = selection_->selectedLines();
 	if (lines.empty())
 		return 0;
 
@@ -911,7 +927,7 @@ void MapEditContext::tagSectorAt(const Vec2d& pos)
 void MapEditContext::endTagEdit(bool accept)
 {
 	// Get selected lines
-	auto lines = selection_.selectedLines();
+	auto lines = selection_->selectedLines();
 
 	if (accept)
 	{
@@ -1034,12 +1050,12 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 
 		// Select all
 		else if (key == "select_all")
-			selection_.selectAll();
+			selection_->selectAll();
 
 		// Clear selection
 		else if (key == "me2d_clear_selection")
 		{
-			selection_.clear();
+			selection_->clear();
 			addEditorMessage("Selection cleared");
 		}
 
@@ -1047,10 +1063,10 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 		else if (key == "me2d_lock_hilight")
 		{
 			// Toggle lock
-			selection_.lockHilight(!selection_.hilightLocked());
+			selection_->lockHilight(!selection_->hilightLocked());
 
 			// Add editor message
-			if (selection_.hilightLocked())
+			if (selection_->hilightLocked())
 				addEditorMessage("Locked current hilight");
 			else
 				addEditorMessage("Unlocked hilight");
@@ -1125,7 +1141,7 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 		// Clear selection
 		if (key == "me3d_clear_selection")
 		{
-			selection_.clear();
+			selection_->clear();
 			addEditorMessage("Selection cleared");
 		}
 
@@ -1247,7 +1263,7 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 
 		// Auto-align
 		else if (key == "me3d_wall_autoalign_x")
-			edit_3d_->autoAlignX(selection_.hilight());
+			edit_3d_->autoAlignX(selection_->hilight());
 
 		// Reset wall offsets
 		else if (key == "me3d_wall_reset")
@@ -1281,7 +1297,7 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 void MapEditContext::updateDisplay() const
 {
 	// Update map object properties panel
-	auto selection = selection_.selectedObjects();
+	auto selection = selection_->selectedObjects();
 	mapeditor::openMultiObjectProperties(selection);
 
 	// Update canvas info overlay
@@ -1318,8 +1334,8 @@ void MapEditContext::updateStatusText() const
 		}
 	}
 
-	if (edit_mode_ != Mode::Visual && !selection_.empty())
-		mode += fmt::format(" ({} selected)", static_cast<int>(selection_.size()));
+	if (edit_mode_ != Mode::Visual && !selection_->empty())
+		mode += fmt::format(" ({} selected)", static_cast<int>(selection_->size()));
 
 	mapeditor::setStatusText(mode, 1);
 
@@ -1435,10 +1451,10 @@ void MapEditContext::doUndo()
 		return;
 
 	// Clear selection first, since part of it may become invalid
-	selection_.clear();
+	selection_->clear();
 
 	// Undo
-	auto time      = app::runTimer() - 1;
+	int  time      = app::runTimer() - 1;
 	auto manager   = (edit_mode_ == Mode::Visual) ? edit_3d_->undoManager() : undo_manager_.get();
 	auto undo_name = manager->undo();
 
@@ -1469,7 +1485,7 @@ void MapEditContext::doRedo()
 		return;
 
 	// Clear selection first, since part of it may become invalid
-	selection_.clear();
+	selection_->clear();
 
 	// Redo
 	int  time      = app::runTimer() - 1;
@@ -1574,6 +1590,14 @@ void MapEditContext::resetPlayerStart() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the 3d renderer's camera
+// -----------------------------------------------------------------------------
+Camera& MapEditContext::camera3d() const
+{
+	return renderer_->renderer3D().camera();
+}
+
+// -----------------------------------------------------------------------------
 // Opens the sector texture selection overlay
 // -----------------------------------------------------------------------------
 void MapEditContext::openSectorTextureOverlay(const vector<MapSector*>& sectors)
@@ -1587,13 +1611,13 @@ void MapEditContext::openSectorTextureOverlay(const vector<MapSector*>& sectors)
 // -----------------------------------------------------------------------------
 void MapEditContext::openQuickTextureOverlay()
 {
-	if (QuickTextureOverlay3d::ok(selection_))
+	if (QuickTextureOverlay3d::ok(*selection_))
 	{
 		overlay_current_ = std::make_unique<QuickTextureOverlay3d>(this);
 
 		renderer_->renderer3D().enableHilight(false);
 		renderer_->renderer3D().enableSelection(false);
-		selection_.lockHilight(true);
+		selection_->lockHilight(true);
 	}
 }
 
@@ -1603,7 +1627,7 @@ void MapEditContext::openQuickTextureOverlay()
 void MapEditContext::openLineTextureOverlay()
 {
 	// Get selection
-	auto lines = selection_.selectedLines();
+	auto lines = selection_->selectedLines();
 
 	// Open line texture overlay if anything is selected
 	if (!lines.empty())
@@ -1630,10 +1654,10 @@ void MapEditContext::updateInfoOverlay() const
 	// Update info overlay depending on edit mode
 	switch (edit_mode_)
 	{
-	case Mode::Vertices: info_vertex_->update(selection_.hilightedVertex()); break;
-	case Mode::Lines:    info_line_->update(selection_.hilightedLine()); break;
-	case Mode::Sectors:  info_sector_->update(selection_.hilightedSector()); break;
-	case Mode::Things:   info_thing_->update(selection_.hilightedThing()); break;
+	case Mode::Vertices: info_vertex_->update(selection_->hilightedVertex()); break;
+	case Mode::Lines:    info_line_->update(selection_->hilightedLine()); break;
+	case Mode::Sectors:  info_sector_->update(selection_->hilightedSector()); break;
+	case Mode::Things:   info_thing_->update(selection_->hilightedThing()); break;
 	default:             break;
 	}
 }
@@ -1641,15 +1665,16 @@ void MapEditContext::updateInfoOverlay() const
 // -----------------------------------------------------------------------------
 // Draws the current info overlay
 // -----------------------------------------------------------------------------
-void MapEditContext::drawInfoOverlay(const Vec2i& size, float alpha) const
+void MapEditContext::drawInfoOverlay(gl::draw2d::Context& dc, float alpha) const
 {
+	auto size = dc.view->size();
 	switch (edit_mode_)
 	{
-	case Mode::Vertices: info_vertex_->draw(size.y, size.x, alpha); return;
-	case Mode::Lines:    info_line_->draw(size.y, size.x, alpha); return;
-	case Mode::Sectors:  info_sector_->draw(size.y, size.x, alpha); return;
-	case Mode::Things:   info_thing_->draw(size.y, size.x, alpha); return;
-	case Mode::Visual:   info_3d_->draw(size.y, size.x, size.x * 0.5, alpha); return;
+	case Mode::Vertices: info_vertex_->draw(dc, alpha); return;
+	case Mode::Lines:    info_line_->draw(dc, alpha); return;
+	case Mode::Sectors:  info_sector_->draw(dc, alpha); return;
+	case Mode::Things:   info_thing_->draw(dc, alpha); return;
+	case Mode::Visual:   info_3d_->draw(dc, alpha); return;
 	}
 }
 
@@ -1761,7 +1786,7 @@ bool MapEditContext::handleAction(string_view id)
 	// Clear selection
 	else if (id == "mapw_clear_selection")
 	{
-		selection_.clear();
+		selection_->clear();
 		addEditorMessage("Selection cleared");
 	}
 
@@ -1895,11 +1920,11 @@ bool MapEditContext::handleAction(string_view id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		Vec3d pos    = { input().mousePosMap(), 0 };
+		Vec3d pos    = { input().mousePosMap(), 0.0 };
 		auto  sector = map_->sectors().atPos(input_->mousePosMap());
 		if (sector)
 			pos.z = sector->floor().plane.heightAt(pos.x, pos.y) + 40;
-		renderer_->renderer3D().cameraSetPosition(pos);
+		camera3d().setPosition(pos);
 		return true;
 	}
 
@@ -1929,7 +1954,7 @@ bool MapEditContext::handleAction(string_view id)
 	else if (id == "mapw_line_changespecial")
 	{
 		// Get selection
-		auto selection = selection_.selectedObjects();
+		auto selection = selection_->selectedObjects();
 
 		// Open action special selection dialog
 		if (!selection.empty())
@@ -1941,7 +1966,7 @@ bool MapEditContext::handleAction(string_view id)
 				beginUndoRecord("Change Line Special", true, false, false);
 				dlg.applyTo(selection, true);
 				endUndoRecord();
-				renderer_->renderer2D().forceUpdate();
+				renderer_->forceUpdate(true, false);
 			}
 		}
 
@@ -2010,7 +2035,7 @@ bool MapEditContext::handleAction(string_view id)
 	else if (id == "mapw_sector_changespecial")
 	{
 		// Get selection
-		auto selection = selection_.selectedSectors();
+		auto selection = selection_->selectedSectors();
 
 		// Open sector special selection dialog
 		if (!selection.empty())
@@ -2053,6 +2078,7 @@ bool MapEditContext::handleAction(string_view id)
 	// Not handled here
 	return false;
 }
+
 
 
 
@@ -2200,16 +2226,18 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 	}
 }
 
-// #include "Geometry/Polygon2D.h"
-// CONSOLE_COMMAND(m_n_polys, 0, false)
-//{
-//	SLADEMap& map   = mapeditor::editContext().map();
-//	int       npoly = 0;
-//	for (unsigned a = 0; a < map.nSectors(); a++)
-//		npoly += map.sector(a)->polygon()->nSubPolys();
-//
-//	log::console(fmt::format("{} polygons total", npoly));
-// }
+CONSOLE_COMMAND(m_n_polys, 0, false)
+{
+	SLADEMap& map   = mapeditor::editContext().map();
+	int       nvert = 0;
+	for (unsigned a = 0; a < map.nSectors(); a++)
+		nvert += map.sector(a)->polygonVertices().size();
+
+	auto bytes  = nvert * sizeof(glm::vec2);
+	auto mbytes = bytes / 1024.0 / 1024.0;
+
+	log::console(fmt::format("{} vertices total ({} bytes / {:1.2f}mb)", nvert, bytes, mbytes));
+}
 
 CONSOLE_COMMAND(mobj_info, 1, false)
 {

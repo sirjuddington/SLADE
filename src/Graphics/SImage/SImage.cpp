@@ -241,6 +241,52 @@ bool SImage::putIndexedData(MemChunk& mc) const
 }
 
 // -----------------------------------------------------------------------------
+// Loads the image alpha/mask data into [mc].
+// Returns false if image is invalid, true otherwise
+// -----------------------------------------------------------------------------
+bool SImage::putAlphaData(MemChunk& mc) const
+{
+	// Check the image is valid
+	if (!isValid())
+		return false;
+
+	// Init rgba data
+	mc.reSize(width_ * height_ * 4, false);
+
+	// If data is already in alpha map format just return a copy
+	if (type_ == Type::AlphaMap)
+	{
+		mc.importMem(data_);
+		return true;
+	}
+
+	// If paletted, return the mask or full opaque
+	else if (type_ == Type::PalMask)
+	{
+		if (mask_.data())
+			mc.importMem(mask_);
+		else
+		{
+			mc.reSize(width_ * height_, false);
+			mc.fillData(255);
+		}
+
+		return true;
+	}
+
+	// If RGBA, return the alpha channel
+	else if (type_ == Type::RGBA)
+	{
+		vector<uint8_t> alpha_map(width_ * height_);
+		for (int a = 0; a < width_ * height_; a++)
+			alpha_map[a] = data_[a * 4 + 3];
+		mc.importMem(alpha_map.data(), width_ * height_);
+	}
+
+	return false; // Invalid image type
+}
+
+// -----------------------------------------------------------------------------
 // Returns the number of bytes per image row
 // -----------------------------------------------------------------------------
 unsigned SImage::stride() const
@@ -1335,7 +1381,7 @@ bool SImage::setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth,
 // -----------------------------------------------------------------------------
 // Applies a palette translation to the image
 // -----------------------------------------------------------------------------
-bool SImage::applyTranslation(const Translation* tr, Palette* pal, bool truecolor)
+bool SImage::applyTranslation(const Translation* tr, const Palette* pal, bool truecolor)
 {
 	// Check image is ok
 	if (!data_.hasData())
@@ -1404,13 +1450,16 @@ bool SImage::applyTranslation(const Translation* tr, Palette* pal, bool truecolo
 		type_ = Type::RGBA;
 	}
 
+	// Announce change
+	signals_.image_changed();
+
 	return true;
 }
 
 // -----------------------------------------------------------------------------
 // Applies a palette translation to the image
 // -----------------------------------------------------------------------------
-bool SImage::applyTranslation(string_view tr, Palette* pal, bool truecolor)
+bool SImage::applyTranslation(string_view tr, const Palette* pal, bool truecolor)
 {
 	Translation trans;
 	trans.clear();
@@ -1658,6 +1707,9 @@ bool SImage::colourise(ColRGBA colour, const Palette* pal, int start, int stop)
 			data_[a] = palette->nearestColour(col);
 	}
 
+	// Announce change
+	signals_.image_changed();
+
 	return true;
 }
 
@@ -1707,6 +1759,9 @@ bool SImage::tint(ColRGBA colour, float amount, const Palette* pal, int start, i
 		else
 			data_[a] = palette->nearestColour(col);
 	}
+
+	// Announce change
+	signals_.image_changed();
 
 	return true;
 }

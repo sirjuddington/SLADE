@@ -13,7 +13,7 @@ public:
 
 	ColRGBA colour() const { return colour_; }
 
-	void setPalette(Palette* pal) { palette_ = pal; }
+	void setPalette(const Palette* pal) { palette_ = pal; }
 	void setColour(const ColRGBA& col)
 	{
 		colour_ = col;
@@ -25,10 +25,10 @@ public:
 	void popAlphaSlider();
 
 private:
-	ColRGBA  colour_  = ColRGBA::BLACK;
-	Palette* palette_ = nullptr;
-	bool     alpha_   = false;
-	bool     altmode_ = false;
+	ColRGBA        colour_  = ColRGBA::BLACK;
+	const Palette* palette_ = nullptr;
+	bool           alpha_   = false;
+	bool           altmode_ = false;
 
 	// Events
 	void onPaint(wxPaintEvent& e);

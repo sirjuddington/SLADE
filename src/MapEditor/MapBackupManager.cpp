@@ -82,8 +82,8 @@ bool MapBackupManager::writeBackup(
 		wxMkdir(backup_dir);
 
 	// Open or create backup zip
-	shared_ptr<Archive> backup = std::make_shared<Archive>(ArchiveFormat::Zip);
-	string              fname{ archive_name };
+	auto   backup = std::make_shared<Archive>(ArchiveFormat::Zip);
+	string fname{ archive_name };
 	std::replace(fname.begin(), fname.end(), '.', '_');
 	auto backup_file = fmt::format("{}/{}_backup.zip", backup_dir, fname);
 	if (!backup->open(backup_file))

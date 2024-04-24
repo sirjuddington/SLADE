@@ -38,9 +38,9 @@
 #include "Graphics/Translation.h"
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
-#include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/Canvas/GL/CTextureGLCanvas.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -58,9 +58,9 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-CTextureCanvas::View view_types[] = { CTextureCanvas::View::Normal,
-									  CTextureCanvas::View::Sprite,
-									  CTextureCanvas::View::HUD };
+CTextureGLCanvas::View view_types[] = { CTextureGLCanvas::View::Normal,
+										CTextureGLCanvas::View::Sprite,
+										CTextureGLCanvas::View::HUD };
 }
 CVAR(Bool, tx_truecolour, true, CVar::Flag::Save)
 CVAR(Int, tx_offset_type, 0, CVar::Flag::Save)
@@ -1052,10 +1052,10 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 
 	// Create patch image
 	SImage image(SImage::Type::PalMask);
-	tex_canvas_->texture()->loadPatchImage(selection[0], image, tx_editor_->archive(), &tex_canvas_->palette());
+	tex_canvas_->texture()->loadPatchImage(selection[0], image, tx_editor_->archive(), tex_canvas_->palette());
 
 	// Open translation editor dialog
-	TranslationEditorDialog ted(maineditor::windowWx(), tex_canvas_->palette(), "Edit Translation", &image);
+	TranslationEditorDialog ted(maineditor::windowWx(), *tex_canvas_->palette(), "Edit Translation", &image);
 	ted.openTranslation(trans);
 	if (ted.ShowModal() == wxID_OK)
 	{

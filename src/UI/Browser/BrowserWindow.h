@@ -11,7 +11,7 @@ namespace browser
 	enum class ItemView;
 	enum class NameType;
 } // namespace browser
-namespace drawing
+namespace gl::draw2d
 {
 	enum class Font;
 }
@@ -72,7 +72,7 @@ public:
 	void addItemTree(const BrowserTreeNode* node, const wxTreeListItem& item) const;
 
 	// Canvas display options
-	void setFont(drawing::Font font) const;
+	void setFont(gl::draw2d::Font font) const;
 	void setItemNameType(browser::NameType type) const;
 	void setItemSize(int size);
 	void setItemViewType(browser::ItemView type) const;

@@ -11,7 +11,7 @@ class SImage;
 class GfxCropDialog : public wxDialog
 {
 public:
-	GfxCropDialog(wxWindow* parent, const SImage* image, Palette* palette);
+	GfxCropDialog(wxWindow* parent, SImage& image, const Palette* palette);
 	~GfxCropDialog() override = default;
 
 	const Recti& cropRect() const { return crop_rect_; }

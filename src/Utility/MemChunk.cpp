@@ -582,6 +582,23 @@ string MemChunk::asString(uint32_t offset, uint32_t length) const
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// 'Releases' the MemChunk's data, returning a pointer to it and resetting the
+// MemChunk itself.
+// !! Don't use this unless absolutely necessary - the pointer returned must be
+//    deleted elsewhere or a memory leak will occur
+// -----------------------------------------------------------------------------
+uint8_t* MemChunk::releaseData()
+{
+	auto data = data_;
+
+	data_    = nullptr;
+	size_    = 0;
+	cur_ptr_ = 0;
+
+	return data;
+}
+
 
 // -----------------------------------------------------------------------------
 // Allocates [size] bytes of data and returns it, or null if the allocation

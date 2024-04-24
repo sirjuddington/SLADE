@@ -37,7 +37,8 @@
 #include "General/UI.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
+#include "UI/WxUtils.h"
 #include "UI/Browser/BrowserCanvas.h"
 #include "UI/Browser/BrowserItem.h"
 
@@ -160,13 +161,13 @@ void ThingTypeBrowser::setupViewOptions()
 {
 	if (browser_thing_tiles)
 	{
-		setFont(drawing::Font::Condensed);
+		setFont(gl::draw2d::Font::Condensed);
 		setItemSize(48);
 		setItemViewType(browser::ItemView::Tiles);
 	}
 	else
 	{
-		setFont(drawing::Font::Bold);
+		setFont(gl::draw2d::Font::Bold);
 		setItemSize(80);
 		setItemViewType(browser::ItemView::Normal);
 	}

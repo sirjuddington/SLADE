@@ -33,12 +33,12 @@
 #include "Main.h"
 #include "MapCanvas.h"
 #include "App.h"
+#include "General/ColourConfiguration.h"
 #include "Geometry/Geometry.h"
-#include "Geometry/Polygon2D.h"
 #include "MapEditor/Edit/Input.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/Renderer/MapRenderer3D.h"
+#include "MapEditor/Renderer/Camera.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/SectorBuilder.h"
@@ -72,14 +72,13 @@ CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // MapCanvas class constructor
 // -----------------------------------------------------------------------------
-MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
-	OGLCanvas{ parent, id, false },
+MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
+	GLCanvas{ parent },
 	context_{ context },
 	sf_clock_{ new sf::Clock }
 {
 	// Init variables
 	context_->setCanvas(this);
-	last_time_ = 0;
 
 	// Bind Events
 	Bind(wxEVT_SIZE, &MapCanvas::onSize, this);
@@ -103,6 +102,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	Bind(wxEVT_SET_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_KILL_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_TIMER, &MapCanvas::onRTimer, this);
+	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
 
 	timer_.Start(map_bg_ms);
 }
@@ -112,14 +112,12 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 // -----------------------------------------------------------------------------
 void MapCanvas::draw()
 {
-	if (!IsEnabled())
-		return;
+	// if (!IsEnabled())
+	//	return;
+
+	setBackground(BGStyle::Colour, colourconfig::colour("map_background"));
 
 	context_->renderer().draw();
-
-	SwapBuffers();
-
-	glFinish();
 }
 
 // -----------------------------------------------------------------------------
@@ -188,7 +186,7 @@ void MapCanvas::mouseLook3d()
 
 			if (fabs(xrel) > threshold || fabs(yrel) > threshold)
 			{
-				context_->renderer().renderer3D().cameraLook(xrel, yrel);
+				context_->camera3d().look(xrel, yrel);
 				mouseToCenter();
 			}
 		}
@@ -243,6 +241,24 @@ void MapCanvas::onKeyBindPress(string_view name)
 #endif
 }
 
+// -----------------------------------------------------------------------------
+// Update and redraw the canvas if necessary
+// -----------------------------------------------------------------------------
+void MapCanvas::update()
+{
+	// Handle 3d mode mouselook
+	mouseLook3d();
+
+	// Get time since last redraw
+	auto frametime = sf_clock_->getElapsedTime().asSeconds() * 1000.0;
+
+	if (context_->update(frametime))
+	{
+		Refresh(false);
+		sf_clock_->restart();
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -277,19 +293,19 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	// Testing
 	if (global::debug)
 	{
-		if (e.GetKeyCode() == WXK_F6)
-		{
-			Polygon2D poly;
-			// sf::Clock clock;
-			log::info(1, "Generating polygons...");
-			for (unsigned a = 0; a < context_->map().nSectors(); a++)
-			{
-				if (!poly.openSector(context_->map().sector(a)))
-					log::info(1, wxString::Format("Splitting failed for sector %d", a));
-			}
-			// int ms = clock.GetElapsedTime() * 1000;
-			// log::info(1, "Polygon generation took %dms", ms);
-		}
+		// if (e.GetKeyCode() == WXK_F6)
+		//{
+		//	Polygon2D poly;
+		//	sf::Clock clock;
+		//	log::info(1, "Generating polygons...");
+		//	for (unsigned a = 0; a < context_->map().nSectors(); a++)
+		//	{
+		//		if (!poly.openSector(context_->map().sector(a)))
+		//			log::info(1, wxString::Format("Splitting failed for sector %d", a));
+		//	}
+		//	// int ms = clock.GetElapsedTime() * 1000;
+		//	// log::info(1, "Polygon generation took %dms", ms);
+		// }
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
@@ -325,14 +341,14 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 
 			context_->addEditorMessage(fmt::format("Front {} Back {}", i1, i2));
 		}
-		if (e.GetKeyCode() == WXK_F5 && context_->editMode() == Mode::Sectors)
+		/*if (e.GetKeyCode() == WXK_F5 && context_->editMode() == Mode::Sectors)
 		{
 			PolygonSplitter splitter;
 			splitter.setVerbose(true);
 			splitter.openSector(context_->selection().hilightedSector());
 			Polygon2D temp;
 			splitter.doSplitting(&temp);
-		}
+		}*/
 	}
 
 	// Update cursor in object edit mode
@@ -491,17 +507,7 @@ void MapCanvas::onMouseEnter(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
-	// Handle 3d mode mouselook
-	mouseLook3d();
-
-	// Get time since last redraw
-	long frametime = (sf_clock_->getElapsedTime().asMilliseconds()) - last_time_;
-
-	if (context_->update(frametime))
-	{
-		last_time_ = (sf_clock_->getElapsedTime().asMilliseconds());
-		Refresh();
-	}
+	update();
 }
 
 // -----------------------------------------------------------------------------
@@ -509,17 +515,7 @@ void MapCanvas::onIdle(wxIdleEvent& e)
 // -----------------------------------------------------------------------------
 void MapCanvas::onRTimer(wxTimerEvent& e)
 {
-	// Handle 3d mode mouselook
-	mouseLook3d();
-
-	// Get time since last redraw
-	long frametime = (sf_clock_->getElapsedTime().asMilliseconds()) - last_time_;
-
-	if (context_->update(frametime))
-	{
-		last_time_ = (sf_clock_->getElapsedTime().asMilliseconds());
-		Refresh();
-	}
+	update();
 }
 
 // -----------------------------------------------------------------------------

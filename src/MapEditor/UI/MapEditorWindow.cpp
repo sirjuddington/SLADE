@@ -55,7 +55,6 @@
 #include "MapEditor/UI/PropsPanel/MapObjectPropsPanel.h"
 #include "MapEditor/UI/ScriptEditorPanel.h"
 #include "MapEditor/UI/ShapeDrawPanel.h"
-#include "OpenGL/View.h"
 #include "SLADEMap/SLADEMap.h"
 #include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
@@ -298,7 +297,7 @@ void MapEditorWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Map canvas
-	map_canvas_ = new MapCanvas(this, -1, &mapeditor::editContext());
+	map_canvas_ = new MapCanvas(this, &mapeditor::editContext());
 	p_inf.CenterPane();
 	m_mgr->AddPane(map_canvas_, p_inf);
 
@@ -1263,6 +1262,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	if (id == "mapw_preferences")
 	{
 		PreferencesDialog::openPreferences(this, "Map Editor");
+		mapeditor::forceRefresh(true);
 
 		return true;
 	}

@@ -16,7 +16,7 @@ public:
 
 	// Drawing
 	void updateLayout(int width, int height);
-	void draw(int width, int height, float fade) override;
+	void draw(gl::draw2d::Context& dc, float fade = 1.0f) override;
 
 	// Input
 	void mouseMotion(int x, int y) override;
@@ -72,7 +72,7 @@ private:
 
 	// Helper functions
 	void addTexture(TexInfo& inf, string_view texture) const;
-	void drawTexture(float alpha, int size, TexInfo& tex, string_view position) const;
+	void drawTexture(gl::draw2d::Context& dc, float alpha, float size, TexInfo& tex, string_view position) const;
 	void browseTexture(TexInfo& tex, string_view position);
 };
 } // namespace slade

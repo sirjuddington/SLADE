@@ -180,9 +180,6 @@
     <ClCompile Include="..\src\Audio\ModMusic.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\OpenGL\Drawing.cpp">
-      <Filter>OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\OpenGL\OpenGL.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
@@ -202,9 +199,6 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Utility\Parser.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Utility\Polygon2D.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Utility\SFileDialog.cpp">
@@ -256,9 +250,6 @@
       <Filter>UI\Canvas</Filter>
     </ClCompile>
     <ClCompile Include="..\src\UI\Canvas\MapPreviewCanvas.cpp">
-      <Filter>UI\Canvas</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\UI\Canvas\OGLCanvas.cpp">
       <Filter>UI\Canvas</Filter>
     </ClCompile>
     <ClCompile Include="..\src\UI\Canvas\PaletteCanvas.cpp">
@@ -1005,6 +996,42 @@
     <ClCompile Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.cpp">
       <Filter>SLADEMap\MapFormat</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\OpenGL\Shader.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\VertexBuffer2D.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\Draw2D.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\Canvas\GLCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\LineBuffer.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MapEditor\Renderer\ThingBuffer2D.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\PointSpriteBuffer.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\VertexBuffer3D.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MapEditor\Renderer\Camera.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MapEditor\ClipboardItems.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Utility\Polygon.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\IndexBuffer.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1034,9 +1061,6 @@
     <ClInclude Include="..\src\Audio\ModMusic.h">
       <Filter>Audio</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\OpenGL\Drawing.h">
-      <Filter>OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\OpenGL\OpenGL.h">
       <Filter>OpenGL</Filter>
     </ClInclude>
@@ -1056,9 +1080,6 @@
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Utility\Parser.h">
-      <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Utility\Polygon2D.h">
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Utility\SFileDialog.h">
@@ -1116,9 +1137,6 @@
       <Filter>UI\Canvas</Filter>
     </ClInclude>
     <ClInclude Include="..\src\UI\Canvas\MapPreviewCanvas.h">
-      <Filter>UI\Canvas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\UI\Canvas\OGLCanvas.h">
       <Filter>UI\Canvas</Filter>
     </ClInclude>
     <ClInclude Include="..\src\UI\Canvas\PaletteCanvas.h">
@@ -1933,6 +1951,51 @@
     </ClInclude>
     <ClInclude Include="..\src\Audio\Music.h">
       <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\Shader.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\VertexBuffer2D.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\Draw2D.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Canvas\GLCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\LineBuffer.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\Buffer.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MapEditor\Renderer\ThingBuffer2D.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\PointSpriteBuffer.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\VertexBuffer3D.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Utility\Vector.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MapEditor\Renderer\Camera.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MapEditor\ClipboardItems.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SLADEMap\SLADEMapFwd.h">
+      <Filter>SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Utility\Polygon.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\IndexBuffer.h">
+      <Filter>OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

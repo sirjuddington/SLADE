@@ -37,7 +37,8 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SIFormat.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
@@ -247,9 +248,6 @@ void GfxConvDialog::setupLayout()
 {
 	namespace wx = wxutil;
 
-	/*int px_inner        = ui::pad();
-	int px_outer        = ui::padLarge();
-	int px_pad          = ui::px(ui::Size::PadMinimum);*/
 	int px_preview_size = ui::scalePx(192);
 
 	auto msizer = new wxBoxSizer(wxVERTICAL);
@@ -280,20 +278,20 @@ void GfxConvDialog::setupLayout()
 
 	// Current
 	gbsizer->Add(new wxStaticText(this, -1, "Current Graphic"), { 0, 0 }, { 1, 1 });
-	gfx_current_ = new GfxCanvas(this, -1);
-	gfx_current_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
-	gfx_current_->setViewType(GfxCanvas::View::Centered);
-	gbsizer->Add(gfx_current_, { 1, 0 }, { 1, 1 }, wxEXPAND);
+	gfx_current_ = ui::createGfxCanvas(this);
+	gfx_current_->window()->SetInitialSize(wxSize(px_preview_size, px_preview_size));
+	gfx_current_->setViewType(GfxView::Centered);
+	gbsizer->Add(gfx_current_->window(), { 1, 0 }, { 1, 1 }, wxEXPAND);
 	pal_chooser_current_ = new PaletteChooser(this, -1);
 	pal_chooser_current_->selectPalette(current_palette_name_);
 	gbsizer->Add(pal_chooser_current_, { 2, 0 }, { 1, 1 }, wxEXPAND);
 
 	// Converted
 	gbsizer->Add(new wxStaticText(this, -1, "Converted Graphic"), { 0, 1 }, { 1, 2 });
-	gfx_target_ = new GfxCanvas(this, -1);
-	gfx_target_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
-	gfx_target_->setViewType(GfxCanvas::View::Centered);
-	gbsizer->Add(gfx_target_, { 1, 1 }, { 1, 2 }, wxEXPAND);
+	gfx_target_ = ui::createGfxCanvas(this);
+	gfx_target_->window()->SetInitialSize(wxSize(px_preview_size, px_preview_size));
+	gfx_target_->setViewType(GfxView::Centered);
+	gbsizer->Add(gfx_target_->window(), { 1, 1 }, { 1, 2 }, wxEXPAND);
 	pal_chooser_target_ = new PaletteChooser(this, -1);
 	pal_chooser_target_->selectPalette(target_palette_name_);
 	gbsizer->Add(pal_chooser_target_, { 2, 1 }, { 1, 1 }, wxEXPAND);
@@ -380,7 +378,7 @@ void GfxConvDialog::setupLayout()
 	rb_transparency_existing_->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
 	rb_transparency_brightness_->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
 	Bind(wxEVT_COLOURBOX_CHANGED, &GfxConvDialog::onTransColourChanged, this, colbox_transparent_->GetId());
-	gfx_current_->Bind(wxEVT_LEFT_DOWN, &GfxConvDialog::onPreviewCurrentMouseDown, this);
+	gfx_current_->window()->Bind(wxEVT_LEFT_DOWN, &GfxConvDialog::onPreviewCurrentMouseDown, this);
 	btn_colorimetry_settings_->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnColorimetrySettings, this);
 
 
@@ -420,7 +418,11 @@ void GfxConvDialog::openEntries(const vector<ArchiveEntry*>& entries)
 // -----------------------------------------------------------------------------
 // Opens a list of composite textures to be converted
 // -----------------------------------------------------------------------------
-void GfxConvDialog::openTextures(const vector<CTexture*>& textures, Palette* palette, Archive* archive, bool force_rgba)
+void GfxConvDialog::openTextures(
+	const vector<CTexture*>& textures,
+	const Palette*           palette,
+	Archive*                 archive,
+	bool                     force_rgba)
 {
 	// Add entries to item list
 	for (auto& texture : textures)
@@ -450,7 +452,7 @@ void GfxConvDialog::updatePreviewGfx() const
 	else
 		gfx_current_->setPalette(pal_chooser_current_->selectedPalette(item.entry));
 	if (pal_chooser_target_->globalSelected())
-		gfx_target_->setPalette(&gfx_current_->palette());
+		gfx_target_->setPalette(gfx_current_->palette());
 	else
 		gfx_target_->setPalette(pal_chooser_target_->selectedPalette(item.entry));
 
@@ -473,10 +475,12 @@ void GfxConvDialog::updatePreviewGfx() const
 
 
 	// Refresh
+	gfx_current_->resetViewOffsets();
 	gfx_current_->zoomToFit(true, 0.05);
-	gfx_current_->Refresh();
+	gfx_current_->window()->Refresh();
+	gfx_target_->resetViewOffsets();
 	gfx_target_->zoomToFit(true, 0.05);
-	gfx_target_->Refresh();
+	gfx_target_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -491,7 +495,7 @@ void GfxConvDialog::updateControls() const
 	// Set colourbox palette if source image has one
 	auto coltype = gfx_current_->image().type();
 	if (coltype == SImage::Type::PalMask)
-		colbox_transparent_->setPalette(&gfx_current_->palette());
+		colbox_transparent_->setPalette(gfx_current_->palette());
 	else
 		colbox_transparent_->setPalette(nullptr);
 
@@ -584,7 +588,7 @@ SIFormat* GfxConvDialog::itemFormat(int index) const
 // -----------------------------------------------------------------------------
 // Returns the palette for the item at [index]
 // -----------------------------------------------------------------------------
-Palette* GfxConvDialog::itemPalette(int index) const
+const Palette* GfxConvDialog::itemPalette(int index) const
 {
 	// Check index
 	if (index < 0 || index >= static_cast<int>(items_.size()))
@@ -753,7 +757,7 @@ void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 		return;
 
 	// Get the colour at that point
-	auto col = gfx_current_->image().pixelAt(imgcoord.x, imgcoord.y, &gfx_current_->palette());
+	auto col = gfx_current_->image().pixelAt(imgcoord.x, imgcoord.y, gfx_current_->palette());
 
 	// Set the background colour
 	colbox_transparent_->setColour(col);

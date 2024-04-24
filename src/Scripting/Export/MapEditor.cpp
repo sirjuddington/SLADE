@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "MapEditor/MapEditor.h"
 #include "Export.h"
+#include "MapEditor/Item.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
@@ -91,13 +93,10 @@ void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 // -----------------------------------------------------------------------------
 // Sets the map editor [mode] in the map editor [self]
 // -----------------------------------------------------------------------------
-void setEditMode(
-	MapEditContext&       self,
-	mapeditor::Mode       mode,
-	mapeditor::SectorMode sector_mode = mapeditor::SectorMode::Both)
+void setEditMode(MapEditContext& self, Mode mode, SectorMode sector_mode = SectorMode::Both)
 {
 	self.setEditMode(mode);
-	if (mode == mapeditor::Mode::Sectors)
+	if (mode == Mode::Sectors)
 		self.setSectorEditMode(sector_mode);
 }
 
@@ -118,14 +117,14 @@ void registerMapEditor(sol::state& lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_mapeditor.set("MODE_VERTICES", sol::property([]() { return mapeditor::Mode::Vertices; }));
-	lua_mapeditor.set("MODE_LINES", sol::property([]() { return mapeditor::Mode::Lines; }));
-	lua_mapeditor.set("MODE_SECTORS", sol::property([]() { return mapeditor::Mode::Sectors; }));
-	lua_mapeditor.set("MODE_THINGS", sol::property([]() { return mapeditor::Mode::Things; }));
-	lua_mapeditor.set("MODE_VISUAL", sol::property([]() { return mapeditor::Mode::Visual; }));
-	lua_mapeditor.set("SECTORMODE_BOTH", sol::property([]() { return mapeditor::SectorMode::Both; }));
-	lua_mapeditor.set("SECTORMODE_FLOOR", sol::property([]() { return mapeditor::SectorMode::Floor; }));
-	lua_mapeditor.set("SECTORMODE_CEILING", sol::property([]() { return mapeditor::SectorMode::Ceiling; }));
+	lua_mapeditor.set("MODE_VERTICES", sol::property([]() { return Mode::Vertices; }));
+	lua_mapeditor.set("MODE_LINES", sol::property([]() { return Mode::Lines; }));
+	lua_mapeditor.set("MODE_SECTORS", sol::property([]() { return Mode::Sectors; }));
+	lua_mapeditor.set("MODE_THINGS", sol::property([]() { return Mode::Things; }));
+	lua_mapeditor.set("MODE_VISUAL", sol::property([]() { return Mode::Visual; }));
+	lua_mapeditor.set("SECTORMODE_BOTH", sol::property([]() { return SectorMode::Both; }));
+	lua_mapeditor.set("SECTORMODE_FLOOR", sol::property([]() { return SectorMode::Floor; }));
+	lua_mapeditor.set("SECTORMODE_CEILING", sol::property([]() { return SectorMode::Ceiling; }));
 
 	// Functions
 	// -------------------------------------------------------------------------
@@ -157,9 +156,8 @@ void registerMapEditor(sol::state& lua)
 	lua_mapeditor.set_function(
 		"SetEditMode",
 		sol::overload(
-			[](MapEditContext& self, mapeditor::Mode mode) { setEditMode(self, mode); },
-			[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode)
-			{ setEditMode(self, mode, sector_mode); }));
+			[](MapEditContext& self, Mode mode) { setEditMode(self, mode); },
+			[](MapEditContext& self, Mode mode, SectorMode sector_mode) { setEditMode(self, mode, sector_mode); }));
 }
 
 // -----------------------------------------------------------------------------

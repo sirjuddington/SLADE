@@ -21,8 +21,8 @@ public:
 
 	void update(long frametime) override;
 
-	void   draw(int width, int height, float fade = 1.0f) override;
-	void   drawTexture(unsigned index, double x, double bottom, double size, float fade);
+	void   draw(gl::draw2d::Context& dc, float fade = 1.0f) override;
+	void   drawTexture(gl::draw2d::Context& dc, unsigned index, double x, double bottom, double size, float fade);
 	double determineSize(double x, int width) const;
 
 	void close(bool cancel = false) override;

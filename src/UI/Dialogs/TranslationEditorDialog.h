@@ -1,16 +1,34 @@
 #pragma once
 
-class GradientBox;
+#include "Graphics/SImage/SImage.h"
+#include "Graphics/Translation.h"
+#include "UI/Controls/ColourBox.h"
+
 class wxListBox;
 class wxPanel;
 
 namespace slade
 {
 class ColourBox;
-class GfxCanvas;
+class GfxCanvasBase;
 class PaletteCanvas;
-class SImage;
-class Translation;
+class ArchiveEntry;
+
+class GradientBox : public wxPanel
+{
+public:
+	GradientBox(wxWindow* parent, int steps = -1);
+	~GradientBox() override = default;
+
+	void setStartCol(ColRGBA col) { col_start_.set(col.r, col.g, col.b, 255); }
+	void setEndCol(ColRGBA col) { col_end_.set(col.r, col.g, col.b, 255); }
+	void setSteps(int steps) { steps_ = steps; }
+
+private:
+	ColRGBA col_start_ = ColRGBA::BLACK;
+	ColRGBA col_end_   = ColRGBA::WHITE;
+	int     steps_     = 0;
+};
 
 class TranslationEditorDialog : public wxDialog
 {
@@ -77,7 +95,7 @@ private:
 
 	// Preview
 	PaletteCanvas* pal_canvas_preview_ = nullptr;
-	GfxCanvas*     gfx_preview_        = nullptr;
+	GfxCanvasBase* gfx_preview_        = nullptr;
 
 	// Truecolor
 	wxCheckBox* cb_truecolor_   = nullptr;

@@ -708,28 +708,27 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 // -----------------------------------------------------------------------------
 void SectorBuilder::drawResult() const
 {
-	glDisable(GL_TEXTURE_2D);
-	gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
+	//gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 
-	// Go through sector edges
-	for (auto& edge : sector_edges_)
-	{
-		// Setup colour
-		if (edge.front)
-		{
-			glLineWidth(2.0f);
-			glColor3f(0.0f, 1.0f, 0.0f);
-		}
-		else
-		{
-			glLineWidth(3.0f);
-			glColor3f(0.0f, 0.0f, 1.0f);
-		}
+	//// Go through sector edges
+	//for (auto& edge : sector_edges_)
+	//{
+	//	// Setup colour
+	//	if (edge.front)
+	//	{
+	//		glLineWidth(2.0f);
+	//		glColor3f(0.0f, 1.0f, 0.0f);
+	//	}
+	//	else
+	//	{
+	//		glLineWidth(3.0f);
+	//		glColor3f(0.0f, 0.0f, 1.0f);
+	//	}
 
-		// Draw line
-		glBegin(GL_LINES);
-		glVertex2d(edge.line->x1(), edge.line->y1());
-		glVertex2d(edge.line->x2(), edge.line->y2());
-		glEnd();
-	}
+	//	// Draw line
+	//	glBegin(GL_LINES);
+	//	glVertex2d(edge.line->x1(), edge.line->y1());
+	//	glVertex2d(edge.line->x2(), edge.line->y2());
+	//	glEnd();
+	//}
 }

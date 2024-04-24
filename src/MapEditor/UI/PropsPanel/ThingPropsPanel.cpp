@@ -38,6 +38,7 @@
 #include "Game/UDMFProperty.h"
 #include "General/UI.h"
 #include "Geometry/Geometry.h"
+#include "Geometry/Rect.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -45,12 +46,11 @@
 #include "MapEditor/UI/ArgsPanel.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
-#include "OpenGL/Drawing.h"
-#include "OpenGL/OpenGL.h"
+#include "OpenGL/Draw2D.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
@@ -92,10 +92,10 @@ private:
 //
 // A simple opengl canvas to display a thing sprite
 // -----------------------------------------------------------------------------
-class slade::SpriteTexCanvas : public OGLCanvas
+class slade::SpriteTexCanvas : public GLCanvas
 {
 public:
-	SpriteTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+	SpriteTexCanvas(wxWindow* parent) : GLCanvas(parent)
 	{
 		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
 		SetInitialSize(wxutil::scaledSize(128, 128));
@@ -136,46 +136,15 @@ public:
 	// Draws the canvas content
 	void draw() override
 	{
-		// Setup the viewport
-		const wxSize size = GetSize() * GetContentScaleFactor();
-		glViewport(0, 0, size.x, size.y);
-
-		// Setup the screen projection
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, size.x, size.y, 0, -1, 1);
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		// Clear
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-		if (gl::accuracyTweak())
-			glTranslatef(0.375f, 0.375f, 0);
-
-		// Draw background
-		drawCheckeredBackground();
+		gl::draw2d::Context dc(&view_);
 
 		// Draw texture
-		gl::setColour(colour_);
+		dc.colour  = colour_;
+		dc.texture = texture_;
 		if (texture_ && !icon_)
-		{
-			// Sprite
-			glEnable(GL_TEXTURE_2D);
-			drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 4, 2);
-		}
+			dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 4.0f, 2.0f); // Sprite
 		else if (texture_ && icon_)
-		{
-			// Icon
-			glEnable(GL_TEXTURE_2D);
-			drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0, 0.25);
-		}
-
-		// Swap buffers (ie show what was drawn)
-		SwapBuffers();
+			dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 0.25f); // Icon
 	}
 
 private:
@@ -193,215 +162,227 @@ private:
 // 'standard' directions, clicking within one of the circles will set the
 // direction
 // -----------------------------------------------------------------------------
-class slade::ThingDirCanvas : public OGLCanvas
+namespace slade
+{
+class ThingDirCanvas : public wxPanel
 {
 public:
-	ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, true, 15), parent_{ parent }
-	{
-		// Get system panel background colour
-		auto bgcolwx = drawing::systemPanelBGColour();
-		col_bg_.set(bgcolwx);
-
-		// Get system text colour
-		auto textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-		col_fg_.set(textcol);
-
-		// Setup dir points
-		double rot = 0;
-		for (int a = 0; a < 8; a++)
-		{
-			dir_points_.emplace_back(sin(rot), 0 - cos(rot));
-			rot -= (3.1415926535897932384626433832795 * 2) / 8.0;
-		}
-
-		// Bind Events
-		Bind(wxEVT_MOTION, &ThingDirCanvas::onMouseEvent, this);
-		Bind(wxEVT_LEAVE_WINDOW, &ThingDirCanvas::onMouseEvent, this);
-		Bind(wxEVT_LEFT_DOWN, &ThingDirCanvas::onMouseEvent, this);
-
-		// Fixed size
-		auto size = ui::scalePx(128);
-		SetInitialSize(wxSize(size, size));
-		wxWindowBase::SetMaxSize(wxSize(size, size));
-	}
-
+	ThingDirCanvas(AngleControl* parent);
 	~ThingDirCanvas() override = default;
 
-	// Sets the selected angle point based on [angle]
-	void setAngle(int angle)
-	{
-		// Clamp angle
-		while (angle >= 360)
-			angle -= 360;
-		while (angle < 0)
-			angle += 360;
-
-		// Set selected dir point (if any)
-		if (!dir_points_.empty())
-		{
-			switch (angle)
-			{
-			case 0:   point_sel_ = 6; break;
-			case 45:  point_sel_ = 7; break;
-			case 90:  point_sel_ = 0; break;
-			case 135: point_sel_ = 1; break;
-			case 180: point_sel_ = 2; break;
-			case 225: point_sel_ = 3; break;
-			case 270: point_sel_ = 4; break;
-			case 315: point_sel_ = 5; break;
-			default:  point_sel_ = -1; break;
-			}
-		}
-
-		Refresh();
-	}
-
-	// Draws the control
-	void draw() override
-	{
-		// Setup the viewport
-		const wxSize size = GetSize() * GetContentScaleFactor();
-		glViewport(0, 0, size.x, size.y);
-
-		// Setup the screen projection
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(-1.2, 1.2, 1.2, -1.2, -1, 1);
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		// Clear
-		glClearColor(col_bg_.fr(), col_bg_.fg(), col_bg_.fb(), 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Draw angle ring
-		glDisable(GL_TEXTURE_2D);
-		glLineWidth(1.5f);
-		glEnable(GL_LINE_SMOOTH);
-		ColRGBA col_faded(
-			col_bg_.r * 0.6 + col_fg_.r * 0.4, col_bg_.g * 0.6 + col_fg_.g * 0.4, col_bg_.b * 0.6 + col_fg_.b * 0.4);
-		drawing::drawEllipse(Vec2d(0, 0), 1, 1, 48, col_faded);
-
-		// Draw dir points
-		for (auto dir_point : dir_points_)
-		{
-			drawing::drawFilledEllipse(dir_point, 0.12, 0.12, 8, col_bg_);
-			drawing::drawEllipse(dir_point, 0.12, 0.12, 16, col_fg_);
-		}
-
-		// Draw angle arrow
-		glLineWidth(2.0f);
-		if (parent_->angleSet())
-		{
-			auto tip = geometry::rotatePoint(Vec2d(0, 0), Vec2d(0.8, 0), -parent_->angle());
-			drawing::drawArrow(tip, Vec2d(0, 0), col_fg_, false, 1.2, 0.2);
-		}
-
-		// Draw hover point
-		glPointSize(8.0f);
-		glEnable(GL_POINT_SMOOTH);
-		if (point_hl_ >= 0 && point_hl_ < static_cast<int>(dir_points_.size()))
-		{
-			gl::setColour(col_faded);
-			glBegin(GL_POINTS);
-			glVertex2d(dir_points_[point_hl_].x, dir_points_[point_hl_].y);
-			glEnd();
-		}
-
-		// Draw selected point
-		if (parent_->angleSet() && point_sel_ >= 0 && point_sel_ < static_cast<int>(dir_points_.size()))
-		{
-			gl::setColour(col_fg_);
-			glBegin(GL_POINTS);
-			glVertex2d(dir_points_[point_sel_].x, dir_points_[point_sel_].y);
-			glEnd();
-		}
-
-		// Swap buffers (ie show what was drawn)
-		SwapBuffers();
-	}
-
-	// Called when a mouse event happens in the canvas
-	void onMouseEvent(wxMouseEvent& e)
-	{
-		// Motion
-		if (e.Moving())
-		{
-			auto last_point = point_hl_;
-			if (app::runTimer() > last_check_ + 15)
-			{
-				// Get cursor position in canvas coordinates
-				const wxSize size = GetSize();
-				double       x    = -1.2 + (static_cast<double>(e.GetX()) / static_cast<double>(size.x)) * 2.4;
-				double       y    = -1.2 + (static_cast<double>(e.GetY()) / static_cast<double>(size.y)) * 2.4;
-				Vec2d        cursor_pos(x, y);
-
-				// Find closest dir point to cursor
-				point_hl_       = -1;
-				double min_dist = 0.3;
-				for (unsigned a = 0; a < dir_points_.size(); a++)
-				{
-					double dist = glm::distance(cursor_pos, dir_points_[a]);
-					if (dist < min_dist)
-					{
-						point_hl_ = a;
-						min_dist  = dist;
-					}
-				}
-
-				last_check_ = app::runTimer();
-			}
-
-			if (last_point != point_hl_)
-				Refresh();
-		}
-
-		// Leaving
-		else if (e.Leaving())
-		{
-			point_hl_ = -1;
-			Refresh();
-		}
-
-		// Left click
-		else if (e.LeftDown())
-		{
-			if (point_hl_ >= 0)
-			{
-				point_sel_ = point_hl_;
-				int angle  = 0;
-				switch (point_sel_)
-				{
-				case 6:  angle = 0; break;
-				case 7:  angle = 45; break;
-				case 0:  angle = 90; break;
-				case 1:  angle = 135; break;
-				case 2:  angle = 180; break;
-				case 3:  angle = 225; break;
-				case 4:  angle = 270; break;
-				case 5:  angle = 315; break;
-				default: angle = 0; break;
-				}
-
-				parent_->setAngle(angle, false);
-				Refresh();
-			}
-		}
-
-		e.Skip();
-	}
+	void setAngle(int angle);
 
 private:
 	AngleControl* parent_ = nullptr;
 	vector<Vec2d> dir_points_;
-	ColRGBA       col_bg_;
-	ColRGBA       col_fg_;
 	int           point_hl_   = -1;
 	int           point_sel_  = -1;
 	long          last_check_ = 0;
+
+	void onMouseEvent(wxMouseEvent& e);
+	void onPaint(wxPaintEvent& e);
 };
 
+// -----------------------------------------------------------------------------
+// ThingDirCanvas class constructor
+// -----------------------------------------------------------------------------
+ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : wxPanel(parent), parent_{ parent }
+{
+	SetDoubleBuffered(true);
+
+	// Setup dir points
+	double rot = 0;
+	for (int a = 0; a < 8; a++)
+	{
+		dir_points_.emplace_back(sin(rot), 0 - cos(rot));
+		rot -= (3.1415926535897932384626433832795 * 2) / 8.0;
+	}
+
+	// Bind Events
+	Bind(wxEVT_MOTION, &ThingDirCanvas::onMouseEvent, this);
+	Bind(wxEVT_LEAVE_WINDOW, &ThingDirCanvas::onMouseEvent, this);
+	Bind(wxEVT_LEFT_DOWN, &ThingDirCanvas::onMouseEvent, this);
+	Bind(wxEVT_PAINT, &ThingDirCanvas::onPaint, this);
+
+	// Fixed size
+	auto size = ui::scalePx(128);
+	SetInitialSize(wxSize(size, size));
+	wxWindowBase::SetMaxSize(wxSize(size, size));
+}
+
+// -----------------------------------------------------------------------------
+// Sets the selected angle point based on [angle]
+// -----------------------------------------------------------------------------
+void ThingDirCanvas::setAngle(int angle)
+{
+	// Clamp angle
+	while (angle >= 360)
+		angle -= 360;
+	while (angle < 0)
+		angle += 360;
+
+	// Set selected dir point (if any)
+	if (!dir_points_.empty())
+	{
+		switch (angle)
+		{
+		case 0:   point_sel_ = 6; break;
+		case 45:  point_sel_ = 7; break;
+		case 90:  point_sel_ = 0; break;
+		case 135: point_sel_ = 1; break;
+		case 180: point_sel_ = 2; break;
+		case 225: point_sel_ = 3; break;
+		case 270: point_sel_ = 4; break;
+		case 315: point_sel_ = 5; break;
+		default:  point_sel_ = -1; break;
+		}
+	}
+
+	Refresh();
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// ThingDirCanvas Class Events
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Called when a mouse event happens in the canvas
+// -----------------------------------------------------------------------------
+void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
+{
+	// Motion
+	if (e.Moving())
+	{
+		auto last_point = point_hl_;
+		if (app::runTimer() > last_check_ + 15)
+		{
+			// Get cursor position in canvas coordinates
+			const wxSize size = GetSize();
+			double       x    = -1.2 + (static_cast<double>(e.GetX()) / static_cast<double>(size.x)) * 2.4;
+			double       y    = -1.2 + (static_cast<double>(e.GetY()) / static_cast<double>(size.y)) * 2.4;
+			Vec2d        cursor_pos(x, y);
+
+			// Find closest dir point to cursor
+			point_hl_       = -1;
+			double min_dist = 0.3;
+			for (unsigned a = 0; a < dir_points_.size(); a++)
+			{
+				double dist = glm::distance(cursor_pos, dir_points_[a]);
+				if (dist < min_dist)
+				{
+					point_hl_ = a;
+					min_dist  = dist;
+				}
+			}
+
+			last_check_ = app::runTimer();
+		}
+
+		if (last_point != point_hl_)
+			Refresh();
+	}
+
+	// Leaving
+	else if (e.Leaving())
+	{
+		point_hl_ = -1;
+		Refresh();
+	}
+
+	// Left click
+	else if (e.LeftDown())
+	{
+		if (point_hl_ >= 0)
+		{
+			point_sel_ = point_hl_;
+			int angle  = 0;
+			switch (point_sel_)
+			{
+			case 6:  angle = 0; break;
+			case 7:  angle = 45; break;
+			case 0:  angle = 90; break;
+			case 1:  angle = 135; break;
+			case 2:  angle = 180; break;
+			case 3:  angle = 225; break;
+			case 4:  angle = 270; break;
+			case 5:  angle = 315; break;
+			default: angle = 0; break;
+			}
+
+			parent_->setAngle(angle, false);
+			Refresh();
+		}
+	}
+
+	e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when the canvas needs to be (re)painted
+// -----------------------------------------------------------------------------
+void ThingDirCanvas::onPaint(wxPaintEvent& e)
+{
+	wxPaintDC dc(this);
+	auto      gc = wxGraphicsContext::Create(dc);
+
+	auto half_size    = GetSize().x / 2;
+	auto pad          = ui::scalePx(8);
+	auto radius       = half_size - pad;
+	auto point_radius = ui::scalePx(7);
+	auto col_bg       = wxutil::systemPanelBGColour();
+	auto col_fg       = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+	auto pi           = wxGraphicsPenInfo(wxColour(col_fg.Red(), col_fg.Green(), col_fg.Blue(), 80), 1.75);
+
+	// Draw angle ring
+	gc->SetPen(gc->CreatePen(pi));
+	gc->SetBrush(*wxTRANSPARENT_BRUSH);
+	gc->DrawEllipse(pad, pad, radius * 2, radius * 2);
+
+	// Draw dir points
+	pi.Colour(col_fg);
+	gc->SetPen(gc->CreatePen(pi));
+	gc->SetBrush(wxBrush(col_bg));
+	for (auto dir_point : dir_points_)
+	{
+		auto point = dir_point * static_cast<double>(radius);
+		gc->DrawEllipse(
+			half_size + point.x - point_radius, half_size + point.y - point_radius, point_radius * 2, point_radius * 2);
+	}
+
+	// Draw angle arrow
+	if (parent_->angleSet())
+	{
+		auto                    tip = geometry::rotatePoint(Vec2d(0, 0), Vec2d(radius * 0.8, 0), -parent_->angle());
+		vector<wxPoint2DDouble> points;
+		for (auto line : geometry::arrowLines({ 0.0, 0.0, tip.x, tip.y }, pad, 60.0f))
+		{
+			line.move(half_size, half_size);
+			gc->StrokeLine(line.x1(), line.y1(), line.x2(), line.y2());
+		}
+	}
+
+	// Draw hover point
+	gc->SetPen(*wxTRANSPARENT_PEN);
+	auto pr = static_cast<double>(point_radius) * 0.7;
+	if (point_hl_ >= 0 && point_hl_ < static_cast<int>(dir_points_.size()))
+	{
+		gc->SetBrush(wxBrush(wxColour(col_fg.Red(), col_fg.Green(), col_fg.Blue(), 80)));
+		auto point = dir_points_[point_hl_] * static_cast<double>(radius);
+		gc->DrawEllipse(half_size + point.x - pr, half_size + point.y - pr, pr * 2, pr * 2);
+	}
+
+	// Draw selected point
+	if (parent_->angleSet() && point_sel_ >= 0 && point_sel_ < static_cast<int>(dir_points_.size()))
+	{
+		gc->SetBrush(wxBrush(col_fg));
+		auto point = dir_points_[point_sel_] * static_cast<double>(radius);
+		gc->DrawEllipse(half_size + point.x - pr, half_size + point.y - pr, pr * 2, pr * 2);
+	}
+}
+} // namespace slade
 
 // -----------------------------------------------------------------------------
 //

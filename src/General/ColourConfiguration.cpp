@@ -106,15 +106,6 @@ void colourconfig::setColour(const string& name, int red, int green, int blue, i
 }
 
 // -----------------------------------------------------------------------------
-// Sets the current OpenGL colour and blend mode to match definition [name]
-// -----------------------------------------------------------------------------
-void colourconfig::setGLColour(const string& name, float alpha_mult)
-{
-	auto& col = cc_colours[name];
-	gl::setColour(col.colour.r, col.colour.g, col.colour.b, col.colour.a * alpha_mult, col.blendMode());
-}
-
-// -----------------------------------------------------------------------------
 // Returns the line hilight width multiplier
 // -----------------------------------------------------------------------------
 double colourconfig::lineHilightWidth()
@@ -411,7 +402,13 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		// Print colour
 		auto def = colourconfig::colDef(args[0]);
 		log::console(fmt::format(
-			"Colour \"{}\" = {} {} {} {} {}", args[0], def.colour.r, def.colour.g, def.colour.b, def.blend_additive));
+			"Colour \"{}\" = {} {} {} {} {}",
+			args[0],
+			def.colour.r,
+			def.colour.g,
+			def.colour.b,
+			def.colour.a,
+			def.blend_additive));
 	}
 }
 

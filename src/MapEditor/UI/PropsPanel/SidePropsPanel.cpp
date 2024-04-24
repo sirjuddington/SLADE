@@ -37,12 +37,11 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
-#include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "UI/Browser/BrowserItem.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
@@ -56,11 +55,10 @@ using namespace slade;
 // A simple opengl canvas to display a texture
 // (will have more advanced functionality later)
 // -----------------------------------------------------------------------------
-
-class slade::SideTexCanvas : public OGLCanvas
+class slade::SideTexCanvas : public GLCanvas
 {
 public:
-	SideTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+	SideTexCanvas(wxWindow* parent) : GLCanvas(parent)
 	{
 		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
 		SetInitialSize(wxutil::scaledSize(136, 136));
@@ -90,46 +88,21 @@ public:
 	// Draws the canvas content
 	void draw() override
 	{
-		// Setup the viewport
-		const wxSize size = GetSize() * GetContentScaleFactor();
-		glViewport(0, 0, size.x, size.y);
-
-		// Setup the screen projection
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, size.x, size.y, 0, -1, 1);
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		// Clear
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-		if (gl::accuracyTweak())
-			glTranslatef(0.375f, 0.375f, 0);
-
-		// Draw background
-		drawCheckeredBackground();
+		gl::draw2d::Context dc(&view_);
 
 		// Draw texture
 		if (texture_ && texture_ != gl::Texture::missingTexture())
 		{
-			glEnable(GL_TEXTURE_2D);
-			drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0);
+			dc.texture = texture_;
+			dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 100.0f);
 		}
 		else if (texture_ == gl::Texture::missingTexture())
 		{
 			// Draw unknown icon
-			auto tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
-			glEnable(GL_TEXTURE_2D);
-			gl::setColour(180, 0, 0);
-			drawing::drawTextureWithin(tex, 0, 0, size.x, size.y, 0, 0.25);
+			dc.texture = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
+			dc.colour.set(180, 0, 0);
+			dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 0.25f);
 		}
-
-		// Swap buffers (ie show what was drawn)
-		SwapBuffers();
 	}
 
 private:

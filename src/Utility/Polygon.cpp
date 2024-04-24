@@ -1,14 +1,12 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2023 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    Polygon2D.cpp
-// Description: Polygon2D and related classes for representing and handling a
-//              2-dimensional polygon, including PolygonSplitter class which
-//              splits a polygon into multiple convex sub-polygons
+// Filename:    Polygon.cpp
+// Description: Sector polygon triangulation and related functions
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -32,284 +30,125 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-
-#include "Geometry.h"
+#include "Polygon.h"
+#include "Geometry/Geometry.h"
+#include "MathStuff.h"
 #include "OpenGL/GLTexture.h"
-#include "OpenGL/OpenGL.h"
-#include "Polygon2D.h"
+#include "OpenGL/VertexBuffer2D.h"
+#include "OpenGL/VertexBuffer3D.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
-#include "SLADEMap/MapObject/MapVertex.h"
-#include "Utility/MathStuff.h"
+#include "Vector.h"
 
 using namespace slade;
+using namespace polygon;
 
 
 // -----------------------------------------------------------------------------
 //
-// Variables
+// Structs
 //
 // -----------------------------------------------------------------------------
-constexpr int VERTEX_SIZE = 20;
-
-
-// -----------------------------------------------------------------------------
-//
-// Polygon2D Class Functions
-//
-// -----------------------------------------------------------------------------
-
-
-void Polygon2D::setColour(float r, float g, float b, float a)
+namespace slade::polygon
 {
-	colour_[0] = r;
-	colour_[1] = g;
-	colour_[2] = b;
-	colour_[3] = a;
-}
-
-void Polygon2D::setZ(float z)
+struct VDist
 {
-	// Go through all sub-polys
-	for (auto& subpoly : subpolys_)
-	{
-		// Set all vertex z values
-		for (auto& v : subpoly.vertices)
-			v.z = z;
-	}
-}
+	int    index;
+	double distance;
 
-void Polygon2D::setZ(const Plane& plane)
-{
-	// Go through all sub-polys
-	for (auto& subpoly : subpolys_)
-	{
-		// Set all vertex z values
-		for (auto& v : subpoly.vertices)
-			v.z = plane.heightAt(v.x, v.y);
-	}
-}
-
-void Polygon2D::addSubPoly()
-{
-	subpolys_.emplace_back();
-	vbo_update_ = 2;
-}
-
-Polygon2D::SubPoly* Polygon2D::subPoly(unsigned index)
-{
-	return index >= subpolys_.size() ? nullptr : &subpolys_[index];
-}
-
-void Polygon2D::removeSubPoly(unsigned index)
-{
-	if (index >= subpolys_.size())
-		return;
-
-	subpolys_.erase(subpolys_.begin() + index);
-
-	vbo_update_ = 2;
-}
-
-void Polygon2D::clear()
-{
-	subpolys_.clear();
-	vbo_update_ = 2;
-	texture_    = 0;
-}
-
-unsigned Polygon2D::totalVertices() const
-{
-	unsigned total = 0;
-	for (auto& subpoly : subpolys_)
-		total += subpoly.vertices.size();
-	return total;
-}
-
-bool Polygon2D::openSector(MapSector* sector)
-{
-	// Check sector was given
-	if (!sector)
-		return false;
-
-	// Init
-	PolygonSplitter splitter;
-	clear();
-
-	// Get list of sides connected to this sector
-	auto& sides = sector->connectedSides();
-
-	// Go through sides
-	MapLine* line;
-	for (auto& side : sides)
-	{
-		line = side->parentLine();
-
-		// Ignore this side if its parent line has the same sector on both sides
-		if (!line || line->doubleSector())
-			continue;
-
-		// Add the edge to the splitter (direction depends on what side of the line this is)
-		if (line->s1() == side)
-			splitter.addEdge(line->v1()->xPos(), line->v1()->yPos(), line->v2()->xPos(), line->v2()->yPos());
-		else
-			splitter.addEdge(line->v2()->xPos(), line->v2()->yPos(), line->v1()->xPos(), line->v1()->yPos());
-	}
-
-	// Split the polygon into convex sub-polygons
-	return splitter.doSplitting(this);
-}
-
-void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offset_x, double offset_y, double rotation)
-{
-	// Can't do this if there is no texture
-	if (!texture_)
-		return;
-
-	// Check dimensions and scale
-	auto&  tex_info = gl::Texture::info(texture_);
-	double width    = tex_info.size.x;
-	double height   = tex_info.size.y;
-	if (scale_x == 0)
-		scale_x = 1;
-	if (scale_y == 0)
-		scale_y = 1;
-	if (width == 0)
-		width = 1;
-	if (height == 0)
-		height = 1;
-
-	// Get texture info
-	double owidth  = 1.0 / scale_x / width;
-	double oheight = 1.0 / scale_y / height;
-
-	// Set texture coordinates
-	double x, y;
-	for (auto& subpoly : subpolys_)
-	{
-		for (auto& v : subpoly.vertices)
-		{
-			x = v.x;
-			y = v.y;
-
-			// Apply rotation if any
-			if (rotation != 0)
-			{
-				Vec2d np = geometry::rotatePoint(Vec2d(0, 0), Vec2d(x, y), rotation);
-				x        = np.x;
-				y        = np.y;
-			}
-
-			x = (scale_x * offset_x) + x;
-			y = (scale_y * offset_y) - y;
-
-			// Set texture coordinate for vertex
-			v.tx = x * owidth;
-			v.ty = y * oheight;
-		}
-	}
-
-	// Update variables
-	vbo_update_ = 1;
-}
-
-unsigned Polygon2D::vboDataSize() const
-{
-	unsigned total = 0;
-	for (auto& subpoly : subpolys_)
-		total += subpoly.vertices.size() * VERTEX_SIZE;
-	return total;
-}
-
-unsigned Polygon2D::writeToVBO(unsigned offset)
-{
-	// Go through subpolys
-	for (auto& subpoly : subpolys_)
-	{
-		// Write subpoly data to VBO at the correct offset
-		unsigned length = subpoly.vertices.size() * VERTEX_SIZE;
-		glBufferSubData(GL_ARRAY_BUFFER, offset, length, subpoly.vertices.data());
-		offset += length;
-	}
-
-	// Update variables
-	vbo_update_ = 0;
-
-	// Return the offset to the end of the data
-	return offset;
-}
-
-void Polygon2D::render() const
-{
-	// Go through sub-polys
-	for (auto& poly : subpolys_)
-	{
-		glBegin(GL_TRIANGLE_FAN);
-		for (auto& v : poly.vertices)
-		{
-			glTexCoord2f(v.tx, v.ty);
-			glVertex3d(v.x, v.y, v.z);
-		}
-		glEnd();
-	}
-}
-
-void Polygon2D::renderWireframe() const
-{
-	// Go through sub-polys
-	for (auto& poly : subpolys_)
-	{
-		glBegin(GL_LINE_LOOP);
-		for (auto& v : poly.vertices)
-		{
-			glTexCoord2f(v.tx, v.ty);
-			glVertex2d(v.x, v.y);
-		}
-		glEnd();
-	}
-}
-
-void Polygon2D::renderVBO(unsigned offset) const
-{
-	// Render
-	unsigned index = offset / VERTEX_SIZE;
-	size_t   n_vertices;
-	for (auto& subpoly : subpolys_)
-	{
-		n_vertices = subpoly.vertices.size();
-		glDrawArrays(GL_TRIANGLE_FAN, index, n_vertices);
-		index += n_vertices;
-	}
-}
-
-void Polygon2D::renderWireframeVBO(bool colour) const {}
-
-void Polygon2D::setupVBOPointers()
-{
-	glVertexPointer(3, GL_FLOAT, 20, nullptr);
-	glTexCoordPointer(2, GL_FLOAT, 20, ((char*)nullptr + 12));
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-}
+	VDist(int index, double distance) : index{ index }, distance{ distance } {}
+	bool operator<(const VDist& right) const { return distance < right.distance; }
+};
+} // namespace slade::polygon
 
 
 // -----------------------------------------------------------------------------
 //
-// PolygonSplitter Class Functions
+// Triangulator Class
 //
 // -----------------------------------------------------------------------------
-
-
-void PolygonSplitter::clear()
+namespace slade::polygon
 {
-	vertices_.clear();
-	edges_.clear();
-	polygon_outlines_.clear();
-}
+class Triangulator
+{
+public:
+	Triangulator(bool verbose = false) : verbose_{ verbose } {}
+	~Triangulator() = default;
 
-int PolygonSplitter::addVertex(double x, double y)
+	int addEdge(double x1, double y1, double x2, double y2)
+	{
+		// Add edge vertices
+		int v1 = addVertex(x1, y1);
+		int v2 = addVertex(x2, y2);
+
+		// Add edge
+		return addEdge(v1, v2);
+	}
+
+	vector<glm::vec2> triangulate();
+
+private:
+	struct Edge
+	{
+		int  v1, v2;
+		bool ok     = true;
+		bool done   = false;
+		bool inpoly = false;
+		int  sister = -1;
+
+		Edge(int v1, int v2) : v1{ v1 }, v2{ v2 } {}
+	};
+
+	struct Vertex
+	{
+		double      x, y;
+		vector<int> edges_in;
+		vector<int> edges_out;
+		bool        ok       = true;
+		double      distance = 0;
+
+		Vertex(double x = 0, double y = 0) : x{ x }, y{ y } {}
+
+		operator Vec2d() const { return { x, y }; }
+	};
+
+	struct Outline
+	{
+		vector<int> edges;
+		BBox        bbox;
+		bool        clockwise;
+		bool        convex;
+	};
+
+	vector<Vertex>  vertices_;
+	vector<Edge>    edges_;
+	vector<int>     concave_edges_;
+	vector<Outline> polygon_outlines_;
+	int             split_edges_start_ = 0;
+	bool            verbose_           = false;
+	double          last_angle_        = 0.;
+
+	int  addVertex(double x, double y);
+	int  addEdge(int v1, int v2);
+	int  findNextEdge(int edge, bool ignore_done = true, bool only_convex = true, bool ignore_inpoly = false);
+	bool tracePolyOutline(int edge_start);
+	void detectConcavity();
+	bool splitFromEdge(int splitter_edge);
+	bool testTracePolyOutline(int edge_start);
+	vector<glm::vec2> buildConvexPolygon(int edge_start);
+};
+} // namespace slade::polygon
+
+
+// -----------------------------------------------------------------------------
+//
+// Triangulator Class Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade::polygon
+{
+int Triangulator::addVertex(double x, double y)
 {
 	// Check vertex doesn't exist
 	for (unsigned a = 0; a < vertices_.size(); a++)
@@ -324,17 +163,7 @@ int PolygonSplitter::addVertex(double x, double y)
 	return vertices_.size() - 1;
 }
 
-int PolygonSplitter::addEdge(double x1, double y1, double x2, double y2)
-{
-	// Add edge vertices
-	int v1 = addVertex(x1, y1);
-	int v2 = addVertex(x2, y2);
-
-	// Add edge
-	return addEdge(v1, v2);
-}
-
-int PolygonSplitter::addEdge(int v1, int v2)
+int Triangulator::addEdge(int v1, int v2)
 {
 	// Check for duplicate edge
 	for (unsigned a = 0; a < edges_.size(); a++)
@@ -343,17 +172,8 @@ int PolygonSplitter::addEdge(int v1, int v2)
 			return a;
 	}
 
-	// Create edge
-	Edge edge;
-	edge.v1     = v1;
-	edge.v2     = v2;
-	edge.ok     = true;
-	edge.done   = false;
-	edge.inpoly = false;
-	edge.sister = -1;
-
 	// Add edge to list
-	edges_.push_back(edge);
+	edges_.emplace_back(v1, v2);
 
 	// Add edge to its vertices' edge lists (heh)
 	int index = edges_.size() - 1;
@@ -364,7 +184,7 @@ int PolygonSplitter::addEdge(int v1, int v2)
 	return index;
 }
 
-int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, bool ignore_inpoly)
+int Triangulator::findNextEdge(int edge, bool ignore_done, bool only_convex, bool ignore_inpoly)
 {
 	auto& e  = edges_[edge];
 	auto& v2 = vertices_[e.v2];
@@ -407,181 +227,7 @@ int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, 
 	return only_convex && min_angle > math::PI ? -1 : next;
 }
 
-void PolygonSplitter::flipEdge(int edge)
-{
-	auto& e  = edges_[edge];
-	auto& v1 = vertices_[e.v1];
-	auto& v2 = vertices_[e.v2];
-
-	// Remove the edge from its vertices' edge lists
-	for (unsigned a = 0; a < v1.edges_out.size(); a++)
-	{
-		if (v1.edges_out[a] == edge)
-		{
-			v1.edges_out.erase(v1.edges_out.begin() + a);
-			break;
-		}
-	}
-	for (unsigned a = 0; a < v2.edges_in.size(); a++)
-	{
-		if (v2.edges_in[a] == edge)
-		{
-			v2.edges_in.erase(v2.edges_in.begin() + a);
-			break;
-		}
-	}
-
-	// Flip the edge
-	int temp = e.v2;
-	e.v2     = e.v1;
-	e.v1     = temp;
-
-	// Add the edge to its new vertices' edge lists
-	v1.edges_in.push_back(edge);
-	v2.edges_out.push_back(edge);
-}
-
-void PolygonSplitter::detectConcavity()
-{
-	concave_edges_.clear();
-
-	// Go through all edges
-	for (unsigned a = 0; a < edges_.size(); a++)
-	{
-		if (!edges_[a].ok)
-			continue;
-
-		// Find the next edge with the lowest angle (ignore edges with angle > 180)
-		int next = findNextEdge(a, false);
-		if (next < 0)
-		{
-			// If no edge with an angle < 180 was found, this edge is concave
-			concave_edges_.push_back(a);
-		}
-	}
-}
-
-bool PolygonSplitter::detectUnclosed()
-{
-	vector<int> end_verts;
-	vector<int> start_verts;
-
-	// Go through all vertices
-	for (unsigned a = 0; a < vertices_.size(); a++)
-	{
-		// If the vertex has no outgoing edges, we have an unclosed polygon
-		if (vertices_[a].edges_out.empty())
-			end_verts.push_back(a);
-		// Same if it has no incoming
-		else if (vertices_[a].edges_in.empty())
-			start_verts.push_back(a);
-	}
-
-	// If there are no end/start vertices, the polygon is closed
-	if (end_verts.empty() && start_verts.empty())
-		return false;
-	else if (verbose_)
-	{
-		// Print invalid vertices info if verbose
-		string info = "Vertices with no outgoing edges: ";
-		for (int end_vert : end_verts)
-		{
-			info += fmt::format("{:1.2f}", vertices_[end_vert].x);
-			info += ",";
-			info += fmt::format("{:1.2f}", vertices_[end_vert].y);
-			info += " ";
-		}
-		log::info(info);
-		info = "Vertices with no incoming edges: ";
-		for (int start_vert : start_verts)
-		{
-			info += fmt::format("{:1.2f}", vertices_[start_vert].x);
-			info += ",";
-			info += fmt::format("{:1.2f}", vertices_[start_vert].y);
-			info += " ";
-		}
-		log::info(info);
-	}
-
-	// Check if any of this is caused by flipped edges
-	for (int end_vert : end_verts)
-	{
-		auto& ev = vertices_[end_vert];
-
-		// Check all the edges coming out of this vertex,
-		// and see if any go into another 'unattacted' vertex
-		for (int e : ev.edges_in)
-		{
-			auto& edge = edges_[e];
-
-			// bool flipped = false;
-			for (int start_vert : start_verts)
-			{
-				// auto& sv = vertices_[start_vert];
-
-				if (edge.v1 == start_vert && edge.v2 == end_vert)
-					flipEdge(e); // Flip the edge
-			}
-		}
-	}
-
-	// Re-check vertices
-	end_verts.clear();
-	start_verts.clear();
-	for (unsigned a = 0; a < vertices_.size(); a++)
-	{
-		if (!vertices_[a].ok)
-			continue;
-
-		// If the vertex has no outgoing edges, we have an unclosed polygon
-		if (vertices_[a].edges_out.empty())
-			end_verts.push_back(a);
-		else if (vertices_[a].edges_in.empty())
-			start_verts.push_back(a);
-	}
-
-	// If there are no end/start vertices, the polygon is closed
-	if (end_verts.empty() && start_verts.empty())
-		return false;
-
-	// If it still isn't closed, check for completely detached edges and 'remove' them
-	for (auto& edge : edges_)
-	{
-		if (vertices_[edge.v1].edges_in.empty() && vertices_[edge.v2].edges_out.empty())
-		{
-			// Invalidate edge
-			edge.ok = false;
-
-			// Invalidate vertices
-			vertices_[edge.v1].ok = false;
-			vertices_[edge.v2].ok = false;
-		}
-	}
-
-	// Re-check vertices
-	end_verts.clear();
-	start_verts.clear();
-	for (unsigned a = 0; a < vertices_.size(); a++)
-	{
-		if (!vertices_[a].ok)
-			continue;
-
-		// If the vertex has no outgoing edges, we have an unclosed polygon
-		if (vertices_[a].edges_out.empty())
-			end_verts.push_back(a);
-		else if (vertices_[a].edges_in.empty())
-			start_verts.push_back(a);
-	}
-
-	// If there are no end/start vertices, the polygon is closed
-	if (end_verts.empty() && start_verts.empty())
-		return false;
-
-	// Not closed
-	return true;
-}
-
-bool PolygonSplitter::tracePolyOutline(int edge_start)
+bool Triangulator::tracePolyOutline(int edge_start)
 {
 	polygon_outlines_.emplace_back();
 	auto& poly      = polygon_outlines_.back();
@@ -665,54 +311,27 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 	return true;
 }
 
-bool PolygonSplitter::testTracePolyOutline(int edge_start)
+void Triangulator::detectConcavity()
 {
-	int      edge = edge_start;
-	int      v1, v2, next;
-	unsigned a = 0;
-	for (a = 0; a < 100000; a++)
+	concave_edges_.clear();
+
+	// Go through all edges
+	for (unsigned a = 0; a < edges_.size(); a++)
 	{
-		v1 = edges_[edge].v1;
-		v2 = edges_[edge].v2;
+		if (!edges_[a].ok)
+			continue;
 
-		// Find the next convex edge with the lowest angle
-		next = findNextEdge(edge, false, true);
-
-		// Abort if no next edge was found
+		// Find the next edge with the lowest angle (ignore edges with angle > 180)
+		int next = findNextEdge(a, false);
 		if (next < 0)
-			return false;
-
-		// Stop if we're back at the start
-		if (next == edge_start)
-			break;
-
-		// Continue loop
-		edge = next;
+		{
+			// If no edge with an angle < 180 was found, this edge is concave
+			concave_edges_.push_back(a);
+		}
 	}
-
-	if (a >= 99999)
-	{
-		if (verbose_)
-			log::info("Possible infinite loop in tracePolyOutline");
-		return false;
-	}
-
-	return true;
 }
 
-
-struct VDist
-{
-	int    index;
-	double distance;
-	VDist(int index, double distance)
-	{
-		this->index    = index;
-		this->distance = distance;
-	}
-	bool operator<(const VDist& right) const { return distance < right.distance; }
-};
-bool PolygonSplitter::splitFromEdge(int splitter_edge)
+bool Triangulator::splitFromEdge(int splitter_edge)
 {
 	// Get vertices
 	int v1 = edges_[splitter_edge].v1;
@@ -820,16 +439,47 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	return false;
 }
 
-bool PolygonSplitter::buildSubPoly(int edge_start, Polygon2D::SubPoly* poly)
+bool Triangulator::testTracePolyOutline(int edge_start)
 {
-	// Check polygon was given
-	if (!poly)
-		return false;
+	int      edge = edge_start;
+	int      v1, v2, next;
+	unsigned a = 0;
+	for (a = 0; a < 100000; a++)
+	{
+		v1 = edges_[edge].v1;
+		v2 = edges_[edge].v2;
 
+		// Find the next convex edge with the lowest angle
+		next = findNextEdge(edge, false, true);
+
+		// Abort if no next edge was found
+		if (next < 0)
+			return false;
+
+		// Stop if we're back at the start
+		if (next == edge_start)
+			break;
+
+		// Continue loop
+		edge = next;
+	}
+
+	if (a >= 99999)
+	{
+		if (verbose_)
+			log::info("Possible infinite loop in tracePolyOutline");
+		return false;
+	}
+
+	return true;
+}
+
+vector<glm::vec2> Triangulator::buildConvexPolygon(int edge_start)
+{
 	// Loop of death
-	int edge = edge_start;
-	// int v1 = edges[edge].v1;
-	// int v = 0;
+	int         edge = edge_start;
+	int         v1   = edges_[edge].v1;
+	int         v    = 0;
 	vector<int> verts;
 	for (unsigned a = 0; a < 1000; a++)
 	{
@@ -837,13 +487,11 @@ bool PolygonSplitter::buildSubPoly(int edge_start, Polygon2D::SubPoly* poly)
 		verts.push_back(edges_[edge].v1);
 
 		// Fill triangle
-		// (doesn't seem to be any kind of performance increase using triangles over
-		//	just rendering a GL_TRIANGLE_FAN polygon, not worth the memory usage increase)
-		// v++;
-		// if (v > 2) {
-		//	verts.push_back(v1);
-		//	verts.push_back(edges[edge].v1);
-		//}
+		if (++v > 2)
+		{
+			verts.push_back(v1);
+			verts.push_back(edges_[edge].v1);
+		}
 
 		// Add edge to 'valid' edges list, so it is ignored when building further polygons
 		if (edge != edge_start)
@@ -854,11 +502,18 @@ bool PolygonSplitter::buildSubPoly(int edge_start, Polygon2D::SubPoly* poly)
 
 		// If no next edge is found, something is wrong, so abort building the polygon
 		if (edge < 0)
-			return false;
+			return {};
 
 		// If we're back at the start, finish
 		if (edge == edge_start)
 			break;
+	}
+
+	// Remove last edge if there were multiple triangles
+	if (v > 2)
+	{
+		verts.pop_back();
+		verts.pop_back();
 	}
 
 	// Set starting edge to valid
@@ -868,22 +523,22 @@ bool PolygonSplitter::buildSubPoly(int edge_start, Polygon2D::SubPoly* poly)
 	if (verts.size() >= 3)
 	{
 		// Allocate polygon vertex data
-		poly->vertices.resize(verts.size());
+		vector<glm::vec2> vertices(verts.size());
 
 		// Add vertex data to polygon
 		for (unsigned a = 0; a < verts.size(); a++)
 		{
-			poly->vertices[a].x = vertices_[verts[a]].x;
-			poly->vertices[a].y = vertices_[verts[a]].y;
+			vertices[a].x = vertices_[verts[a]].x;
+			vertices[a].y = vertices_[verts[a]].y;
 		}
 
-		return true;
+		return vertices;
 	}
-	else
-		return false;
+
+	return {};
 }
 
-bool PolygonSplitter::doSplitting(Polygon2D* poly)
+vector<glm::vec2> Triangulator::triangulate()
 {
 	// Init
 	split_edges_start_ = edges_.size();
@@ -1009,36 +664,80 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		edge.done = false;
 
 	// Build polygons
+	vector<glm::vec2> triangles;
 	for (unsigned a = 0; a < edges_.size(); a++)
 	{
 		if (edges_[a].done || !edges_[a].ok)
 			continue;
 
-		poly->addSubPoly();
-		if (!buildSubPoly(a, poly->subPoly(poly->nSubPolys() - 1)))
-			poly->removeSubPoly(poly->nSubPolys() - 1);
+		auto poly_verts = buildConvexPolygon(a);
+		if (!poly_verts.empty())
+			vectorConcat(triangles, poly_verts);
 	}
 
-	return true;
+	return triangles;
+}
+} // namespace slade::polygon
+
+
+// -----------------------------------------------------------------------------
+//
+// Polygon Namespace Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade::polygon
+{
+glm::vec2 calculateTexCoords(
+	float x,
+	float y,
+	float tex_width,
+	float tex_height,
+	float scale_x,
+	float scale_y,
+	float offset_x,
+	float offset_y,
+	float rotation)
+{
+	// Check dimensions and scale
+	if (scale_x == 0)
+		scale_x = 1;
+	if (scale_y == 0)
+		scale_y = 1;
+	if (tex_width == 0)
+		tex_width = 1;
+	if (tex_height == 0)
+		tex_height = 1;
+
+	// Get texture info
+	auto owidth  = 1.0f / scale_x / tex_width;
+	auto oheight = 1.0f / scale_y / tex_height;
+
+	// Apply rotation if any
+	if (rotation != 0)
+	{
+		auto np = geometry::rotatePoint(Vec2d(0, 0), Vec2d(x, y), rotation);
+		x       = np.x;
+		y       = np.y;
+	}
+
+	x = (scale_x * offset_x) + x;
+	y = (scale_y * offset_y) - y;
+
+	// Set texture coordinate for vertex
+	return { x * owidth, y * oheight };
 }
 
-void PolygonSplitter::openSector(MapSector* sector)
+vector<glm::vec2> generateSectorTriangles(const MapSector& sector)
 {
-	// Check sector was given
-	if (!sector)
-		return;
-
-	// Init
-	clear();
+	Triangulator triangulator;
 
 	// Get list of sides connected to this sector
-	auto& sides = sector->connectedSides();
+	auto& sides = sector.connectedSides();
 
 	// Go through sides
-	MapLine* line;
 	for (auto& side : sides)
 	{
-		line = side->parentLine();
+		auto line = side->parentLine();
 
 		// Ignore this side if its parent line has the same sector on both sides
 		if (!line || line->doubleSector())
@@ -1046,39 +745,64 @@ void PolygonSplitter::openSector(MapSector* sector)
 
 		// Add the edge to the splitter (direction depends on what side of the line this is)
 		if (line->s1() == side)
-			addEdge(line->v1()->xPos(), line->v1()->yPos(), line->v2()->xPos(), line->v2()->yPos());
+			triangulator.addEdge(line->x1(), line->y1(), line->x2(), line->y2());
 		else
-			addEdge(line->v2()->xPos(), line->v2()->yPos(), line->v1()->xPos(), line->v1()->yPos());
+			triangulator.addEdge(line->x2(), line->y2(), line->x1(), line->y1());
 	}
+
+	// Split the sector polygon into triangles
+	return triangulator.triangulate();
 }
 
-void PolygonSplitter::testRender() const
+bool generateTextureCoords(
+	vector<gl::Vertex2D>& vertices,
+	unsigned              texture,
+	float                 scale_x,
+	float                 scale_y,
+	float                 offset_x,
+	float                 offset_y,
+	float                 rotation)
 {
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	// Draw vertices
-	gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
-	glBegin(GL_POINTS);
-	for (auto& vertex : vertices_)
-		glVertex2d(vertex.x, vertex.y);
-	glEnd();
+	// Can't do this if there is no texture
+	if (!texture)
+		return false;
 
-	// Draw original edges
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glBegin(GL_LINES);
-	for (int a = 0; a < split_edges_start_; a++)
-	{
-		glVertex2d(vertices_[edges_[a].v1].x, vertices_[edges_[a].v1].y);
-		glVertex2d(vertices_[edges_[a].v2].x, vertices_[edges_[a].v2].y);
-	}
-	glEnd();
+	// Get texture info
+	auto& tex_info = gl::Texture::info(texture);
+	auto  width    = static_cast<float>(tex_info.size.x);
+	auto  height   = static_cast<float>(tex_info.size.y);
 
-	// Draw split edges
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glBegin(GL_LINES);
-	for (unsigned a = split_edges_start_; a < edges_.size(); a++)
-	{
-		glVertex2d(vertices_[edges_[a].v1].x, vertices_[edges_[a].v1].y);
-		glVertex2d(vertices_[edges_[a].v2].x, vertices_[edges_[a].v2].y);
-	}
-	glEnd();
+	// Calculate texture coords
+	for (auto& v : vertices)
+		v.tex_coord = calculateTexCoords(
+			v.position.x, v.position.y, width, height, scale_x, scale_y, offset_x, offset_y, rotation);
+
+	return true;
 }
+
+bool generateTextureCoords(
+	vector<gl::Vertex3D>& vertices,
+	unsigned              texture,
+	float                 scale_x,
+	float                 scale_y,
+	float                 offset_x,
+	float                 offset_y,
+	float                 rotation)
+{
+	// Can't do this if there is no texture
+	if (!texture)
+		return false;
+
+	// Get texture info
+	auto& tex_info = gl::Texture::info(texture);
+	auto  width    = static_cast<float>(tex_info.size.x);
+	auto  height   = static_cast<float>(tex_info.size.y);
+
+	// Calculate texture coords
+	for (auto& v : vertices)
+		v.uv = calculateTexCoords(
+			v.position.x, v.position.y, width, height, scale_x, scale_y, offset_x, offset_y, rotation);
+
+	return true;
+}
+} // namespace slade::polygon

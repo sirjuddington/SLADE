@@ -37,8 +37,8 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "TextureXEditor.h"
-#include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/Canvas/GL/CTextureGLCanvas.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -85,7 +85,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 	tx_editor_{ tx_editor }
 {
 	// Create controls
-	tex_canvas_      = new CTextureCanvas(this, -1);
+	tex_canvas_      = new CTextureGLCanvas(this);
 	zc_zoom_         = new ui::ZoomControl(this, tex_canvas_);
 	cb_tex_scale_    = new wxCheckBox(this, -1, "Apply Scale");
 	cb_tex_arc_      = new wxCheckBox(this, -1, "Aspect Ratio Correction");
@@ -108,7 +108,7 @@ void TextureEditorPanel::setupLayout()
 	cb_tex_arc_->SetValue(tx_arc);
 	cb_draw_outside_->SetValue(tx_show_outside);
 	choice_viewtype_->SetSelection(0);
-	tex_canvas_->setViewType(CTextureCanvas::View::Normal);
+	tex_canvas_->setViewType(CTextureGLCanvas::View::Normal);
 	cb_blend_rgba_->SetValue(false);
 	choice_viewtype_->Set(wxutil::arrayString({ "None", "Sprite", "HUD" }));
 
@@ -481,9 +481,9 @@ void TextureEditorPanel::setPalette(const Palette* pal) const
 // -----------------------------------------------------------------------------
 // Returns the texture canvas' palette
 // -----------------------------------------------------------------------------
-Palette* TextureEditorPanel::palette() const
+const Palette* TextureEditorPanel::palette() const
 {
-	return &tex_canvas_->palette();
+	return tex_canvas_->palette();
 }
 
 // -----------------------------------------------------------------------------
@@ -880,7 +880,7 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				tex_canvas_->redraw(false);
 			}
 			else if (
-				tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureCanvas::View::Normal)
+				tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureGLCanvas::View::Normal)
 			{
 				// Get drag amount according to texture
 				Vec2i tex_cur = tex_canvas_->screenToTexPosition(
