@@ -35,7 +35,7 @@
 #include "ZoomControl.h"
 #include "General/UI.h"
 #include "UI/Canvas/GL/CTextureGLCanvas.h"
-#include "UI/Canvas/GL/GfxGLCanvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/SToolBar/SToolBarButton.h"
 
 using namespace slade;
@@ -74,7 +74,7 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 // ZoomControl class constructor (linking GfxGLCanvas)
 // -----------------------------------------------------------------------------
-ZoomControl::ZoomControl(wxWindow* parent, GfxGLCanvas* linked_canvas) :
+ZoomControl::ZoomControl(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 	wxPanel(parent, -1),
 	linked_gfx_canvas_{ linked_canvas },
 	zoom_(zoom_gfx)
@@ -110,7 +110,7 @@ void ZoomControl::setZoomPercent(int percent)
 	if (linked_gfx_canvas_)
 	{
 		linked_gfx_canvas_->setScale(zoomScale());
-		linked_gfx_canvas_->Refresh();
+		linked_gfx_canvas_->window()->Refresh();
 		zoom_gfx = zoom_;
 	}
 	if (linked_texture_canvas_)

@@ -36,8 +36,9 @@
 #include "General/Misc.h"
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
-#include "UI/Controls/ColourBox.h"
+#include "UI/Canvas/Canvas.h"
 #include "UI/Canvas/GL/GfxGLCanvas.h"
+#include "UI/Controls/ColourBox.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -91,8 +92,8 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 	hbox->Add(label_amount_, wxSizerFlags().CenterVertical());
 
 	// Add preview
-	gfx_preview_ = new GfxGLCanvas(this);
-	sizer->Add(gfx_preview_, wx::sfWithBorder(1, wxBOTTOM).Expand());
+	gfx_preview_ = ui::createGfxCanvas(this);
+	sizer->Add(gfx_preview_->window(), wx::sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add buttons
 	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
@@ -100,10 +101,10 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 	// Setup preview
 	gfx_preview_->setViewType(GfxGLCanvas::View::Centered);
 	gfx_preview_->setPalette(palette_.get());
-	gfx_preview_->SetInitialSize(wxSize(256, 256));
+	gfx_preview_->window()->SetInitialSize(wxSize(256, 256));
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry);
 	gfx_preview_->image().tint(colour(), amount(), palette_.get());
-	gfx_preview_->updateImageTexture();
+	gfx_preview_->resetViewOffsets();
 
 	// Init layout
 	wxTopLevelWindowBase::Layout();
@@ -148,8 +149,7 @@ void GfxTintDialog::setValues(const wxString& col, int val) const
 	slider_amount_->SetValue(val);
 	label_amount_->SetLabel(wxString::Format("%d%% ", slider_amount_->GetValue()));
 	gfx_preview_->image().tint(colour(), amount(), palette_.get());
-	gfx_preview_->updateImageTexture();
-	gfx_preview_->Refresh();
+	gfx_preview_->window()->Refresh();
 }
 
 
@@ -169,8 +169,7 @@ void GfxTintDialog::onColourChanged(wxEvent& e)
 {
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
 	gfx_preview_->image().tint(colour(), amount(), palette_.get());
-	gfx_preview_->updateImageTexture();
-	gfx_preview_->Refresh();
+	gfx_preview_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -180,8 +179,7 @@ void GfxTintDialog::onAmountChanged(wxCommandEvent& e)
 {
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
 	gfx_preview_->image().tint(colour(), amount(), palette_.get());
-	gfx_preview_->updateImageTexture();
-	gfx_preview_->Refresh();
+	gfx_preview_->window()->Refresh();
 	label_amount_->SetLabel(wxString::Format("%d%% ", slider_amount_->GetValue()));
 }
 

@@ -81,6 +81,7 @@ public:
 	bool      putRGBAData(MemChunk& mc, const Palette* pal = nullptr) const;
 	bool      putRGBData(MemChunk& mc, const Palette* pal = nullptr) const;
 	bool      putIndexedData(MemChunk& mc) const;
+	bool      putAlphaData(MemChunk& mc) const;
 	int       width() const { return width_; }
 	int       height() const { return height_; }
 	int       index() const { return imgindex_; }

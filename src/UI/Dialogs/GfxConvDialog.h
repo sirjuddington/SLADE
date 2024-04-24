@@ -27,7 +27,7 @@
 namespace slade
 {
 class CTexture;
-class GfxGLCanvas;
+class GfxCanvasBase;
 class PaletteChooser;
 class ColourBox;
 
@@ -102,8 +102,8 @@ private:
 	ConvFormat         current_format_;
 
 	wxStaticText*   label_current_format_     = nullptr;
-	GfxGLCanvas*    gfx_current_              = nullptr;
-	GfxGLCanvas*    gfx_target_               = nullptr;
+	GfxCanvasBase*  gfx_current_              = nullptr;
+	GfxCanvasBase*  gfx_target_               = nullptr;
 	wxButton*       btn_convert_              = nullptr;
 	wxButton*       btn_convert_all_          = nullptr;
 	wxButton*       btn_skip_                 = nullptr;

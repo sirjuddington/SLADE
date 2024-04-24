@@ -26,6 +26,7 @@ public:
 	const Vec2d& scale(bool inter = false) const { return inter ? scale_inter_ : scale_; }
 	const Vec2i& size() const { return size_; }
 	const Rectd& visibleRegion() const { return visible_region_; }
+	bool         centered() const { return centered_; }
 	bool         yFlipped() const { return y_flipped_; }
 	bool         interpolated() const { return interpolated_; }
 	glm::mat4    projectionMatrix() const { return projection_matrix_; }

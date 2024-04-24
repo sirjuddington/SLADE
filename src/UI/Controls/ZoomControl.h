@@ -2,8 +2,8 @@
 
 namespace slade
 {
+class GfxCanvasBase;
 class SToolBarButton;
-class GfxGLCanvas;
 class CTextureGLCanvas;
 
 namespace ui
@@ -12,7 +12,7 @@ namespace ui
 	{
 	public:
 		ZoomControl(wxWindow* parent);
-		ZoomControl(wxWindow* parent, GfxGLCanvas* linked_canvas);
+		ZoomControl(wxWindow* parent, GfxCanvasBase* linked_canvas);
 		ZoomControl(wxWindow* parent, CTextureGLCanvas* linked_canvas);
 
 		int    zoomPercent() const { return zoom_; }
@@ -27,7 +27,7 @@ namespace ui
 		wxComboBox*       cb_zoom_               = nullptr;
 		SToolBarButton*   btn_zoom_out_          = nullptr;
 		SToolBarButton*   btn_zoom_in_           = nullptr;
-		GfxGLCanvas*      linked_gfx_canvas_     = nullptr;
+		GfxCanvasBase*    linked_gfx_canvas_     = nullptr;
 		CTextureGLCanvas* linked_texture_canvas_ = nullptr;
 
 		int zoom_ = 100;

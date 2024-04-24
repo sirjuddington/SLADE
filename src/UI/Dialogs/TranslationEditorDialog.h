@@ -10,7 +10,7 @@ class wxPanel;
 namespace slade
 {
 class ColourBox;
-class GfxGLCanvas;
+class GfxCanvasBase;
 class PaletteCanvas;
 class ArchiveEntry;
 
@@ -95,7 +95,7 @@ private:
 
 	// Preview
 	PaletteCanvas* pal_canvas_preview_ = nullptr;
-	GfxGLCanvas*   gfx_preview_        = nullptr;
+	GfxCanvasBase* gfx_preview_        = nullptr;
 
 	// Truecolor
 	wxCheckBox* cb_truecolor_   = nullptr;

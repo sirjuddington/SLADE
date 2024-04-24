@@ -31,7 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Canvas.h"
+#include "GL/GfxGLCanvas.h"
 #include "GL/MapPreviewGLCanvas.h"
+#include "GfxCanvas.h"
 #include "MapPreviewCanvas.h"
 #include "OpenGL/OpenGL.h"
 
@@ -63,5 +65,17 @@ wxWindow* createMapPreviewCanvas(wxWindow* parent, MapPreviewData* data, bool al
 		return new MapPreviewCanvas(parent, data);
 	else
 		return new MapPreviewGLCanvas(parent, data, allow_zoom, allow_pan);
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new GfxGLCanvas if OpenGL is available, otherwise will fall back to
+// a software-rendered GfxCanvas
+// -----------------------------------------------------------------------------
+GfxCanvasBase* createGfxCanvas(wxWindow* parent)
+{
+	if (gl::contextCreationFailed() || !use_gl_canvas)
+		return new GfxCanvas(parent);
+	else
+		return new GfxGLCanvas(parent);
 }
 } // namespace slade::ui

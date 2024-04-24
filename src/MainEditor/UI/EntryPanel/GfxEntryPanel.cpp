@@ -42,6 +42,8 @@
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
@@ -52,7 +54,6 @@
 #include "UI/Dialogs/GfxTintDialog.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
-#include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/SBrush.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -97,9 +98,9 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 	edit_translation_->addRange(TransRange::Type::Palette, 0);
 
 	// Add gfx canvas
-	gfx_canvas_ = new GfxGLCanvas(this);
-	sizer_main_->Add(gfx_canvas_, 1, wxEXPAND, 0);
-	gfx_canvas_->setViewType(GfxGLCanvas::View::Default);
+	gfx_canvas_ = ui::createGfxCanvas(this);
+	sizer_main_->Add(gfx_canvas_->window(), 1, wxEXPAND, 0);
+	gfx_canvas_->setViewType(GfxView::Default);
 	gfx_canvas_->allowDrag(true);
 	gfx_canvas_->allowScroll(true);
 	gfx_canvas_->setPalette(maineditor::currentPalette());
@@ -175,7 +176,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 		[this]()
 		{
 			updateImagePalette();
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 		});
 
 	// Custom menu
@@ -197,9 +198,9 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 	spin_xoffset_->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onXOffsetChanged, this);
 	spin_yoffset_->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onYOffsetChanged, this);
 	choice_offset_type_->Bind(wxEVT_CHOICE, &GfxEntryPanel::onOffsetTypeChanged, this);
-	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas_->GetId());
-	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas_->GetId());
-	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas_->GetId());
+	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas_->window()->GetId());
+	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas_->window()->GetId());
+	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas_->window()->GetId());
 	spin_curimg_->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onCurImgChanged, this);
 	btn_auto_offset_->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnAutoOffset, this);
 
@@ -578,7 +579,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 	applyViewType(entry);
 
 	// Reset display offsets in graphics mode
-	if (gfx_canvas_->viewType() != GfxGLCanvas::View::Sprite)
+	if (gfx_canvas_->viewType() != GfxView::Sprite)
 		gfx_canvas_->resetViewOffsets();
 
 	// Setup custom menu
@@ -588,7 +589,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 		menu_custom_->Enable(menu_gfxep_translate, true);
 
 	// Refresh the canvas
-	gfx_canvas_->Refresh();
+	gfx_canvas_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -637,30 +638,29 @@ void GfxEntryPanel::refreshPanel()
 void GfxEntryPanel::updateImagePalette() const
 {
 	gfx_canvas_->setPalette(maineditor::currentPalette());
-	gfx_canvas_->updateImageTexture();
 }
 
 // -----------------------------------------------------------------------------
 // Detects the offset view type of the current entry
 // -----------------------------------------------------------------------------
-GfxGLCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
+GfxView GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 {
 	if (!entry)
-		return GfxGLCanvas::View::Default;
+		return GfxView::Default;
 
 	if (!entry->parent())
-		return GfxGLCanvas::View::Default;
+		return GfxView::Default;
 
 	// Check what section of the archive the entry is in -- only PNGs or images
 	// in the sprites section can be HUD or sprite
 	const bool is_sprite = ("sprites" == entry->parent()->detectNamespace(entry));
 	const bool is_png    = ("img_png" == entry->type()->formatId());
 	if (!is_sprite && !is_png)
-		return GfxGLCanvas::View::Default;
+		return GfxView::Default;
 
 	auto* img = image();
 	if (is_png && img->offset().x == 0 && img->offset().y == 0)
-		return GfxGLCanvas::View::Default;
+		return GfxView::Default;
 
 	const int width        = img->width();
 	const int height       = img->height();
@@ -703,9 +703,9 @@ GfxGLCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 
 	// Sprites are more common than HUD, so in case of a tie, sprite wins
 	if (sprite_penalty > hud_penalty)
-		return GfxGLCanvas::View::HUD;
+		return GfxView::HUD;
 	else
-		return GfxGLCanvas::View::Sprite;
+		return GfxView::Sprite;
 }
 
 // -----------------------------------------------------------------------------
@@ -716,7 +716,7 @@ void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 {
 	// Tile checkbox overrides offset type selection
 	if (btn_tile_->isChecked())
-		gfx_canvas_->setViewType(GfxGLCanvas::View::Tiled);
+		gfx_canvas_->setViewType(GfxView::Tiled);
 	else
 	{
 		// Set gfx canvas view type depending on the offset combobox selection
@@ -724,15 +724,15 @@ void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 		switch (sel)
 		{
 		case 0:  gfx_canvas_->setViewType(detectOffsetType(entry)); break;
-		case 1:  gfx_canvas_->setViewType(GfxGLCanvas::View::Default); break;
-		case 2:  gfx_canvas_->setViewType(GfxGLCanvas::View::Sprite); break;
-		case 3:  gfx_canvas_->setViewType(GfxGLCanvas::View::HUD); break;
+		case 1:  gfx_canvas_->setViewType(GfxView::Default); break;
+		case 2:  gfx_canvas_->setViewType(GfxView::Sprite); break;
+		case 3:  gfx_canvas_->setViewType(GfxView::HUD); break;
 		default: break;
 		}
 	}
 
 	// Refresh
-	gfx_canvas_->Refresh();
+	gfx_canvas_->window()->Refresh();
 }
 
 // ----------------------------------------------------------------------------
@@ -788,8 +788,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		image()->mirror(false);
 
 		// Update UI
-		gfx_canvas_->updateImageTexture();
-		gfx_canvas_->Refresh();
+		gfx_canvas_->window()->Refresh();
 
 		// Update variables
 		image_data_modified_ = true;
@@ -803,8 +802,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		image()->mirror(true);
 
 		// Update UI
-		gfx_canvas_->updateImageTexture();
-		gfx_canvas_->Refresh();
+		gfx_canvas_->window()->Refresh();
 
 		// Update variables
 		image_data_modified_ = true;
@@ -828,8 +826,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		}
 
 		// Update UI
-		gfx_canvas_->updateImageTexture();
-		gfx_canvas_->Refresh();
+		gfx_canvas_->window()->Refresh();
 
 		// Update variables
 		image_data_modified_ = true;
@@ -853,7 +850,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			image()->applyTranslation(&ted.getTranslation(), pal);
 
 			// Update UI
-			gfx_canvas_->updateImageTexture();
+			gfx_canvas_->window()->Refresh();
 
 			// Update variables
 			image_data_modified_ = true;
@@ -876,8 +873,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			image()->colourise(gcd.colour(), pal);
 
 			// Update UI
-			gfx_canvas_->updateImageTexture();
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 
 			// Update variables
 			image_data_modified_ = true;
@@ -901,8 +897,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			image()->tint(gtd.colour(), gtd.amount(), pal);
 
 			// Update UI
-			gfx_canvas_->updateImageTexture();
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 
 			// Update variables
 			image_data_modified_ = true;
@@ -945,8 +940,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			image->crop(crop.x1(), crop.y1(), crop.x2(), crop.y2());
 
 			// Update UI
-			gfx_canvas_->updateImageTexture();
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 
 			// Update variables
 			image_data_modified_ = true;
@@ -1033,7 +1027,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 
 			// Refresh
 			this->image()->open(entry_data_, 0, format->id());
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 		}
 	}
 
@@ -1096,7 +1090,7 @@ void GfxEntryPanel::toolbarButtonClick(const wxString& action_id)
 	{
 		btn_arc_->setChecked(!btn_arc_->isChecked());
 		gfx_arc = btn_arc_->isChecked();
-		gfx_canvas_->Refresh();
+		gfx_canvas_->window()->Refresh();
 	}
 
 	else if (action_id == "toggle_tile")
@@ -1138,7 +1132,7 @@ void GfxEntryPanel::onXOffsetChanged(wxCommandEvent& e)
 	// Update offset & refresh
 	image()->setXOffset(offset);
 	setModified();
-	gfx_canvas_->Refresh();
+	gfx_canvas_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -1154,7 +1148,7 @@ void GfxEntryPanel::onYOffsetChanged(wxCommandEvent& e)
 	// Update offset & refresh
 	image()->setYOffset(offset);
 	setModified();
-	gfx_canvas_->Refresh();
+	gfx_canvas_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -1252,7 +1246,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 	if (id == "tool_drag")
 	{
 		editing_ = false;
-		gfx_canvas_->setEditingMode(GfxGLCanvas::EditMode::None);
+		gfx_canvas_->setEditingMode(GfxEditMode::None);
 		toolbar_->group("Brush")->hide();
 		toolbar_left_->findActionButton("tool_drag")->setChecked(true);
 		toolbar_->updateLayout();
@@ -1264,7 +1258,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
 		toolbar_left_->findActionButton("tool_draw")->setChecked(true);
-		gfx_canvas_->setEditingMode(GfxGLCanvas::EditMode::Paint);
+		gfx_canvas_->setEditingMode(GfxEditMode::Paint);
 		gfx_canvas_->setPaintColour(cb_colour_->colour());
 		toolbar_->updateLayout();
 	}
@@ -1275,7 +1269,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
 		toolbar_left_->findActionButton("tool_erase")->setChecked(true);
-		gfx_canvas_->setEditingMode(GfxGLCanvas::EditMode::Erase);
+		gfx_canvas_->setEditingMode(GfxEditMode::Erase);
 		toolbar_->updateLayout();
 	}
 
@@ -1285,7 +1279,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
 		toolbar_left_->findActionButton("tool_translate")->setChecked(true);
-		gfx_canvas_->setEditingMode(GfxGLCanvas::EditMode::Translate);
+		gfx_canvas_->setEditingMode(GfxEditMode::Translate);
 		toolbar_->updateLayout();
 	}
 }

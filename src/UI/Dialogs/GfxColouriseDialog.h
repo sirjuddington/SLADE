@@ -2,7 +2,7 @@
 
 namespace slade
 {
-class GfxGLCanvas;
+class GfxCanvasBase;
 class ColourBox;
 
 class GfxColouriseDialog : public wxDialog
@@ -14,7 +14,7 @@ public:
 	void    setColour(const wxString& col) const;
 
 private:
-	GfxGLCanvas*        gfx_preview_ = nullptr;
+	GfxCanvasBase*      gfx_preview_ = nullptr;
 	ArchiveEntry*       entry_       = nullptr;
 	unique_ptr<Palette> palette_;
 	ColourBox*          cb_colour_ = nullptr;

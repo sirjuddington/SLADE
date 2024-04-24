@@ -59,6 +59,15 @@ CVAR(Int, tab_style, 1, CVar::Flag::Save)
 
 // -----------------------------------------------------------------------------
 //
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(String, bgtx_colour1)
+EXTERN_CVAR(String, bgtx_colour2)
+
+
+// -----------------------------------------------------------------------------
+//
 // WxUtils Namespace Functions
 //
 // -----------------------------------------------------------------------------
@@ -441,6 +450,77 @@ wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height
 
 	// Create wxImage
 	return { width, height, rgb_data, alpha_data, false };
+}
+
+// -----------------------------------------------------------------------------
+// Creates a wxImage from the given S[image] and [palette] (optional)
+// -----------------------------------------------------------------------------
+wxImage wxutil::createImageFromSImage(const SImage& image, const Palette* palette)
+{
+	// Get image RGB and Alpha data separately because we can't create a wxImage straight from RGBA data
+	MemChunk rgb, alpha;
+	image.putRGBData(rgb, palette);
+	image.putAlphaData(alpha);
+
+	// Create wx bitmap
+	return wxImage(image.width(), image.height(), rgb.releaseData(), alpha.releaseData());
+}
+
+// -----------------------------------------------------------------------------
+// Generates a checkered pattern of [width]x[height] into [bitmap].
+// If the bitmap is already larger than the requested size, does nothing
+// -----------------------------------------------------------------------------
+void wxutil::generateCheckeredBackground(wxBitmap& bitmap, int width, int height)
+{
+	// Do nothing if the bitmap doesn't need updating
+	if (bitmap.IsOk() && bitmap.GetWidth() > width && bitmap.GetHeight() > height)
+		return;
+
+	wxColour col1(bgtx_colour1);
+	wxColour col2(bgtx_colour2);
+
+	bitmap.Create(width, height);
+	wxMemoryDC dc(bitmap);
+
+	// First colour
+	dc.SetBrush(wxBrush(col1));
+	dc.SetPen(*wxTRANSPARENT_PEN);
+	int  x       = 0;
+	int  y       = 0;
+	bool odd_row = false;
+	while (y < height)
+	{
+		x = odd_row ? 8 : 0;
+
+		while (x < width)
+		{
+			dc.DrawRectangle(x, y, 8, 8);
+			x += 16;
+		}
+
+		// Next row
+		y += 8;
+		odd_row = !odd_row;
+	}
+
+	// Second colour
+	dc.SetBrush(wxBrush(col2));
+	y       = 0;
+	odd_row = false;
+	while (y < height)
+	{
+		x = odd_row ? 0 : 8;
+
+		while (x < width)
+		{
+			dc.DrawRectangle(x, y, 8, 8);
+			x += 16;
+		}
+
+		// Next row
+		y += 8;
+		odd_row = !odd_row;
+	}
 }
 
 

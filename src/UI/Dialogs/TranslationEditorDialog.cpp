@@ -37,6 +37,7 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
+#include "UI/Canvas/Canvas.h"
 #include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/ColourBox.h"
@@ -298,11 +299,11 @@ TranslationEditorDialog::TranslationEditorDialog(
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 1, wxEXPAND);
 
-	gfx_preview_ = new GfxGLCanvas(this);
+	gfx_preview_ = ui::createGfxCanvas(this);
 	gfx_preview_->setPalette(palette_.get());
 	gfx_preview_->setViewType(GfxGLCanvas::View::Centered);
 	gfx_preview_->image().copyImage(image_preview_.get());
-	framesizer->Add(gfx_preview_, 1, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(gfx_preview_->window(), 1, wxEXPAND | wxALL, ui::pad());
 
 
 	// --- Translation string ---
@@ -355,7 +356,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	btn_down_->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnDown, this);
 	btn_load_->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnLoad, this);
 	btn_save_->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnSave, this);
-	gfx_preview_->Bind(wxEVT_MOTION, &TranslationEditorDialog::onGfxPreviewMouseMotion, this);
+	gfx_preview_->window()->Bind(wxEVT_MOTION, &TranslationEditorDialog::onGfxPreviewMouseMotion, this);
 	cb_target_reverse_->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBTargetReverse, this);
 	cb_truecolor_->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBTruecolor, this);
 	cb_paletteonly_->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBPaletteOnly, this);
@@ -778,8 +779,8 @@ void TranslationEditorDialog::updatePreviews() const
 	gfx_preview_->image().applyTranslation(translation_.get(), palette_.get(), cb_truecolor_->GetValue());
 
 	// Update UI
-	gfx_preview_->updateImageTexture();
-	gfx_preview_->Refresh();
+	gfx_preview_->resetViewOffsets();
+	gfx_preview_->window()->Refresh();
 
 	// Update text string
 	if (cb_paletteonly_->GetValue())

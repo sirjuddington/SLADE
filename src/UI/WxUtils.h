@@ -58,8 +58,12 @@ wxPoint scaledPoint(int x, int y);
 wxRect  scaledRect(int x, int y, int width, int height);
 
 // Misc
-void    setWindowIcon(wxTopLevelWindow* window, string_view icon);
+void setWindowIcon(wxTopLevelWindow* window, string_view icon);
+
+// Graphics/Images
 wxImage createImageFromSVG(const string& svg_text, int width, int height);
+wxImage createImageFromSImage(const SImage& image, const Palette* palette);
+void    generateCheckeredBackground(wxBitmap& bitmap, int width, int height);
 
 // From CodeLite
 wxColour systemPanelBGColour();

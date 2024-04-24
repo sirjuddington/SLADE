@@ -50,7 +50,6 @@ using namespace slade;
 PaletteCanvas::PaletteCanvas(wxWindow* parent) : wxPanel(parent), palette_{ new Palette }, buffer_{ 1000, 1000, 32 }
 {
 	SetDoubleBuffered(true);
-	// SetBackgroundColour(wxutil::systemPanelBGColour());
 
 	// Bind Events
 	Bind(wxEVT_PAINT, &PaletteCanvas::onPaint, this);
@@ -267,7 +266,7 @@ void PaletteCanvas::updateBuffer(bool force)
 // ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
-// Called when the palette canvas requires redrawing
+// Called when the canvas requires redrawing
 // -----------------------------------------------------------------------------
 void PaletteCanvas::onPaint(wxPaintEvent& e)
 {

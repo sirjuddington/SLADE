@@ -2,6 +2,7 @@
 
 namespace slade
 {
+class GfxCanvasBase;
 struct MapPreviewData;
 
 namespace ui
@@ -11,5 +12,7 @@ namespace ui
 		MapPreviewData* data,
 		bool            allow_zoom = false,
 		bool            allow_pan  = false);
-}
+
+	GfxCanvasBase* createGfxCanvas(wxWindow* parent);
+} // namespace ui
 } // namespace slade
