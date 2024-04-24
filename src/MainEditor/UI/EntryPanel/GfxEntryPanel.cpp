@@ -408,7 +408,7 @@ void GfxEntryPanel::setupToolbars()
 	auto* g_tool = new SToolBarGroup(toolbar_left_, "Tool");
 	g_tool->addActionButton("tool_drag", "Drag offsets", "gfx_drag", "Drag image to change its offsets")
 		->setChecked(true);
-	g_tool->addActionButton("tool_draw", "Drag pixels", "gfx_draw", "Draw on the image");
+	g_tool->addActionButton("tool_draw", "Draw pixels", "gfx_draw", "Draw on the image");
 	g_tool->addActionButton("tool_erase", "Erase pixels", "gfx_erase", "Erase pixels from the image");
 	g_tool->addActionButton(
 		"tool_translate", "Translate pixels", "gfx_translate", "Apply a translation to pixels of the image");

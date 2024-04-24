@@ -257,7 +257,8 @@ z_mapinfo {
 		e2m8special, e3m8special, e4m6special, e4m8special, disableshadowmap, enableshadowmap,
 		avoidmelee, compat_avoidhazards, compat_stayonlift, compat_nombf21, compat_vileghosts,
 		attenuatelights, intro, outro, lightblendmode, cvar_redirect, compat_voodoozombies,
-		nopassover, passover,
+		nopassover, passover, colormap, nogravity, lightningsound, isocam_pitch, isometricmode,
+		isometricsprites, iso_dist, orthographic,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -359,13 +360,13 @@ z_modeldef {
 		MODEL, PATH, SKIN, SCALE, FRAME, FRAMEINDEX,
 		Rotation-Speed, Rotation-Vector, Rotation-Center, 
 		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin,
-		Animation
+		Animation, BaseFrame
 	}
 
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
 		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL, DONTCULLBACKFACES,
-		SCALEWEAPONFOV, MODELSAREATTACHMENTS, CORRECTPIXELSTRETCH
+		SCALEWEAPONFOV, MODELSAREATTACHMENTS, CORRECTPIXELSTRETCH, FORCECULLBACKFACES
 	}
 }
 

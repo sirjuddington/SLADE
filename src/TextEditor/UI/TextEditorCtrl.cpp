@@ -79,6 +79,7 @@ CVAR(Int, txed_line_extra_height, 0, CVar::Flag::Save)
 CVAR(Bool, txed_tab_spaces, false, CVar::Flag::Save)
 CVAR(Int, txed_show_whitespace, 0, CVar::Flag::Save)
 CVAR(Bool, txed_calltips_argset_kb, true, CVar::Flag::Save)
+CVAR(Bool, txed_use_directwrite, true, CVar::Flag::Save)
 CVAR(Int, txed_font_quality, wxSTC_EFF_QUALITY_DEFAULT, CVar::Flag::Save)
 CVAR(Bool, txed_fr_matchcase, false, CVar::Save)
 CVAR(Bool, txed_fr_matchword, false, CVar::Save)
@@ -291,7 +292,8 @@ void TextEditorCtrl::setup()
 	SetDoubleBuffered(true);
 	SetBufferedDraw(true);
 	SetUseAntiAliasing(true);
-	SetTechnology(wxSTC_TECHNOLOGY_DIRECTWRITE);
+	if (txed_use_directwrite)
+		SetTechnology(wxSTC_TECHNOLOGY_DIRECTWRITE);
 	SetFontQuality(txed_font_quality);
 	SetMultipleSelection(true);
 	SetAdditionalSelectionTyping(true);

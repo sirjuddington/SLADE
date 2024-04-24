@@ -216,11 +216,11 @@ private:
 
 	// Map Structures
 	vector<Line>         lines_;
-	Quad**               quads_ = nullptr;
+	vector<Quad*>        quads_;
 	vector<Quad*>        quads_transparent_;
 	vector<Thing>        things_;
 	vector<vector<Flat>> sector_flats_;
-	Flat**               flats_ = nullptr;
+	vector<Flat*>        flats_;
 
 	// VBOs
 	unsigned vbo_flats_ = 0;

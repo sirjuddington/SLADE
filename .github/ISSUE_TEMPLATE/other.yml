@@ -25,6 +25,5 @@ body:
     id: repro
     attributes:
       label: Issue Details
-      render: text
     validations:
       required: true
