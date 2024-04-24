@@ -199,7 +199,7 @@ void GfxGLCanvas::drawImage(gl::draw2d::Context& dc) const
 		dc.drawRect(img_rect);
 
 		// Hilight if needed
-		if (image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None)
+		if (show_hilight_ && image_hover_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None)
 		{
 			gl::setBlend(gl::Blend::Additive);
 			dc.colour.a = 50;
@@ -217,7 +217,7 @@ void GfxGLCanvas::drawImage(gl::draw2d::Context& dc) const
 	}
 
 	// Draw outline
-	if (gfx_show_border)
+	if (show_border_ && gfx_show_border)
 	{
 		dc.colour.set(0, 0, 0, 64);
 		dc.drawRectOutline(img_rect);

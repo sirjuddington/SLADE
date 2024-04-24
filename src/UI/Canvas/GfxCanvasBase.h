@@ -64,6 +64,10 @@ public:
 	void    allowDrag(bool allow) { allow_drag_ = allow; }
 	bool    allowScroll() const { return allow_scroll_; }
 	void    allowScroll(bool allow) { allow_scroll_ = allow; }
+	bool    showBorder() const { return show_border_; }
+	void    showBorder(bool show) { show_border_ = show; }
+	bool    showHilight() const { return show_hilight_; }
+	void    showHilight(bool show) { show_hilight_ = show; }
 	void    setPaintColour(const ColRGBA& col) { paint_colour_.set(col); }
 	void    setEditingMode(EditMode mode) { editing_mode_ = mode; }
 	void    setTranslation(Translation* tr) { translation_ = tr; }
@@ -80,21 +84,23 @@ public:
 
 protected:
 	unique_ptr<SImage> image_;
-	View               view_type_     = View::Default;
-	bool               image_hilight_ = false;
-	bool               allow_drag_    = false;
-	bool               allow_scroll_  = false;
-	Vec2i              drag_pos_      = { 0, 0 };
-	Vec2i              drag_origin_   = { -1, -1 };
+	View               view_type_    = View::Default;
+	bool               image_hover_  = false; // True if the cursor is currently on the image
+	bool               allow_drag_   = false;
+	bool               allow_scroll_ = false;
+	bool               show_border_  = false;
+	bool               show_hilight_ = false;
+	Vec2i              drag_pos_     = { 0, 0 };
+	Vec2i              drag_origin_  = { -1, -1 };
 	Vec2i              mouse_prev_;
 	EditMode           editing_mode_        = EditMode::None;
-	ColRGBA            paint_colour_        = ColRGBA::BLACK; // the colour to apply to pixels in editing mode 1
-	Translation*       translation_         = nullptr;        // the translation to apply to pixels in editing mode 3
-	bool               drawing_             = false;          // true if a drawing operation is ongoing
-	bool*              drawing_mask_        = nullptr; // keeps track of which pixels were already modified in this pass
-	SBrush*            brush_               = nullptr; // the brush used to paint the image
-	Vec2i              cursor_pos_          = { -1, -1 }; // position of cursor, relative to image
-	Vec2i              prev_pos_            = { -1, -1 }; // previous position of cursor
+	ColRGBA            paint_colour_        = ColRGBA::BLACK; // The colour to apply to pixels in editing mode 1
+	Translation*       translation_         = nullptr;        // The translation to apply to pixels in editing mode 3
+	bool               drawing_             = false;          // True if a drawing operation is ongoing
+	bool*              drawing_mask_        = nullptr; // Keeps track of which pixels were already modified in this pass
+	SBrush*            brush_               = nullptr; // The brush used to paint the image
+	Vec2i              cursor_pos_          = { -1, -1 }; // Position of cursor, relative to image
+	Vec2i              prev_pos_            = { -1, -1 }; // Previous position of cursor
 	ui::ZoomControl*   linked_zoom_control_ = nullptr;
 	Vec2i              zoom_point_          = { -1, -1 };
 

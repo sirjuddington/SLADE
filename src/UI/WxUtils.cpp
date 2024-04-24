@@ -34,6 +34,7 @@
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
+#include "OpenGL/View.h"
 #include "Utility/Colour.h"
 #include "thirdparty/lunasvg/include/lunasvg.h"
 
@@ -524,6 +525,30 @@ void wxutil::generateCheckeredBackground(wxBitmap& bitmap, int width, int height
 		y += 8;
 		odd_row = !odd_row;
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Creates a platform-appropriate wxGraphicsContext for [dc]
+// -----------------------------------------------------------------------------
+wxGraphicsContext* wxutil::createGraphicsContext(wxWindowDC& dc)
+{
+#ifdef WIN32
+	// Use Direct2d on Windows instead of GDI+
+	return wxGraphicsRenderer::GetDirect2DRenderer()->CreateContext(dc);
+#else
+	return wxGraphicsContext::Create(dc);
+#endif
+}
+
+// -----------------------------------------------------------------------------
+// Applies the given [view] (scale and offset/translation) to [gc]
+// -----------------------------------------------------------------------------
+void wxutil::applyViewToGC(const gl::View& view, wxGraphicsContext* gc)
+{
+	if (view.centered())
+		gc->Translate(view.size().x * 0.5, view.size().y * 0.5);
+	gc->Scale(view.scale().x, view.scale().y);
+	gc->Translate(-view.offset().x, -view.offset().y);
 }
 
 

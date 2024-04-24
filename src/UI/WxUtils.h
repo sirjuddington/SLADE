@@ -2,8 +2,12 @@
 
 namespace slade
 {
-class SImage;
+namespace gl
+{
+	class View;
 }
+class SImage;
+} // namespace slade
 
 namespace slade::wxutil
 {
@@ -61,9 +65,11 @@ wxRect  scaledRect(int x, int y, int width, int height);
 void setWindowIcon(wxTopLevelWindow* window, string_view icon);
 
 // Graphics/Images
-wxImage createImageFromSVG(const string& svg_text, int width, int height);
-wxImage createImageFromSImage(const SImage& image, const Palette* palette);
-void    generateCheckeredBackground(wxBitmap& bitmap, int width, int height);
+wxImage            createImageFromSVG(const string& svg_text, int width, int height);
+wxImage            createImageFromSImage(const SImage& image, const Palette* palette);
+void               generateCheckeredBackground(wxBitmap& bitmap, int width, int height);
+wxGraphicsContext* createGraphicsContext(wxWindowDC& dc);
+void               applyViewToGC(const gl::View& view, wxGraphicsContext* gc);
 
 // From CodeLite
 wxColour systemPanelBGColour();

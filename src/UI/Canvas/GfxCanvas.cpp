@@ -237,8 +237,9 @@ void GfxCanvas::drawOffsetLines(wxGraphicsContext* gc)
 // -----------------------------------------------------------------------------
 void GfxCanvas::drawImage(wxGraphicsContext* gc)
 {
-	auto dragging             = drag_origin_.x > 0;
-	auto hilight              = !dragging && image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None;
+	auto dragging = drag_origin_.x > 0;
+	auto hilight  = show_hilight_ && !dragging && image_hover_ && gfx_hilight_mouseover
+				   && editing_mode_ == EditMode::None;
 	nearest_interp_supported_ = gc->SetInterpolationQuality(wxINTERPOLATION_NONE);
 
 	// Load/update image if needed
@@ -278,7 +279,7 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 	}
 
 	// Draw outline
-	if (gfx_show_border)
+	if (gfx_show_border && show_border_)
 	{
 		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(0, 0, 0, 64), 1.0 / view().scale().x)));
 		gc->SetBrush(*wxTRANSPARENT_BRUSH);
@@ -328,24 +329,20 @@ void GfxCanvas::drawImageTiled(wxGraphicsContext* gc)
 void GfxCanvas::onPaint(wxPaintEvent& e)
 {
 	auto dc = wxPaintDC(this);
-
-#ifdef WIN32
-	// Use Direct2d on Windows instead of GDI+
-	auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-	auto gc       = renderer->CreateContext(dc);
-#else
-	auto gc = wxGraphicsContext::Create(dc);
-#endif
+	auto gc = wxutil::createGraphicsContext(dc);
 
 	// Background
 	wxutil::generateCheckeredBackground(background_bitmap_, GetSize().x, GetSize().y);
 	gc->DrawBitmap(background_bitmap_, 0, 0, background_bitmap_.GetWidth(), background_bitmap_.GetHeight());
 
+	// Aspect Ratio Correction
+	if (gfx_arc)
+		view_.setScale({ view_.scale().x, view_.scale().x * 1.2 });
+	else
+		view_.setScale(view_.scale().x);
+
 	// Apply view to wxGraphicsContext
-	if (view().centered())
-		gc->Translate(GetSize().x * 0.5, GetSize().y * 0.5);
-	gc->Scale(view().scale().x, gfx_arc ? view().scale().y * 1.2 : view().scale().y);
-	gc->Translate(-view().offset().x, -view().offset().y);
+	wxutil::applyViewToGC(view_, gc);
 
 	// Offset/guide lines
 	drawOffsetLines(gc);

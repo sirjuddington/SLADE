@@ -372,7 +372,7 @@ void GfxCanvasBase::onMouseLeftUp(wxMouseEvent& e)
 	if (drag_origin_.x >= 0)
 	{
 		endOffsetDrag();
-		image_hilight_ = true;
+		image_hover_ = true;
 		window()->Refresh();
 	}
 }
@@ -400,10 +400,10 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 
 		prev_pos_ = cursor_pos_;
 	}
-	if (on_image != image_hilight_)
+	if (on_image != image_hover_)
 	{
-		image_hilight_ = on_image;
-		refresh        = true;
+		image_hover_ = on_image;
+		refresh      = true;
 
 		// Update cursor if drag allowed
 		if (on_image)
@@ -459,7 +459,7 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void GfxCanvasBase::onMouseLeaving(wxMouseEvent& e)
 {
-	image_hilight_ = false;
+	image_hover_ = false;
 	window()->Refresh();
 }
 

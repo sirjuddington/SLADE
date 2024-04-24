@@ -100,9 +100,13 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 	// Add gfx canvas
 	gfx_canvas_ = ui::createGfxCanvas(this);
 	sizer_main_->Add(gfx_canvas_->window(), 1, wxEXPAND, 0);
+
+	// Setup gfx canvas
 	gfx_canvas_->setViewType(GfxView::Default);
 	gfx_canvas_->allowDrag(true);
 	gfx_canvas_->allowScroll(true);
+	gfx_canvas_->showBorder(true);
+	gfx_canvas_->showHilight(true);
 	gfx_canvas_->setPalette(maineditor::currentPalette());
 	gfx_canvas_->setTranslation(edit_translation_.get());
 
