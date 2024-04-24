@@ -32,8 +32,6 @@
 /win_installer/Output
 /cmake-build-*
 /.idea/
-/msvc/.vs
-/msvc/x64/
 /.vs
 /out/
 
@@ -41,5 +39,11 @@
 !/dist/res
 !/dist/CMakeLists.txt
 !/dist/makebuild.ps1
+
+/msvc/*
+!/msvc/resource.h
+!/msvc/slade.ico
+!/msvc/SLADE.manifest
+!/msvc/SLADE.rc
 
 CMakeSettings.json

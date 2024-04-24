@@ -409,7 +409,7 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 		if (on_image)
 		{
 			if (editing_mode_ != EditMode::None)
-				window()->SetCursor(wxCursor(wxCURSOR_PAINT_BRUSH));
+				window()->SetCursor(wxCursor(wxCURSOR_PENCIL));
 			else if (allow_drag_)
 				window()->SetCursor(wxCursor(wxCURSOR_SIZING));
 		}
