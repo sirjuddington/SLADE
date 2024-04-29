@@ -162,7 +162,7 @@ protected:
 		else if (column == 1) // Name column
 			return patch.name;
 		else if (column == 2) // Usage count column
-			return wxString::Format("%lu", patch.used_in.size());
+			return wxString::Format("%lu", static_cast<unsigned>(patch.used_in.size()));
 		else if (column == 3) // Archive column
 		{
 			// Get patch entry

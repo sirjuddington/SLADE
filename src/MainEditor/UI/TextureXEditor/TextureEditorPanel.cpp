@@ -36,9 +36,11 @@
 #include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
+#include "OpenGL/View.h"
 #include "TextureXEditor.h"
+#include "UI/Canvas/CTextureCanvasBase.h"
+#include "UI/Canvas/Canvas.h"
 #include "UI/Controls/ZoomControl.h"
-#include "UI/Canvas/GL/CTextureGLCanvas.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -85,7 +87,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 	tx_editor_{ tx_editor }
 {
 	// Create controls
-	tex_canvas_      = new CTextureGLCanvas(this);
+	tex_canvas_      = ui::createCTextureCanvas(this);
 	zc_zoom_         = new ui::ZoomControl(this, tex_canvas_);
 	cb_tex_scale_    = new wxCheckBox(this, -1, "Apply Scale");
 	cb_tex_arc_      = new wxCheckBox(this, -1, "Aspect Ratio Correction");
@@ -108,7 +110,7 @@ void TextureEditorPanel::setupLayout()
 	cb_tex_arc_->SetValue(tx_arc);
 	cb_draw_outside_->SetValue(tx_show_outside);
 	choice_viewtype_->SetSelection(0);
-	tex_canvas_->setViewType(CTextureGLCanvas::View::Normal);
+	tex_canvas_->setViewType(CTextureView::Normal);
 	cb_blend_rgba_->SetValue(false);
 	choice_viewtype_->Set(wxutil::arrayString({ "None", "Sprite", "HUD" }));
 
@@ -135,7 +137,7 @@ void TextureEditorPanel::setupLayout()
 	hbox->Add(cb_draw_outside_, wxSizerFlags().Expand());
 
 	// Add texture canvas
-	vbox->Add(tex_canvas_, wxSizerFlags(1).Expand());
+	vbox->Add(tex_canvas_->window(), wxSizerFlags(1).Expand());
 
 	// Add extra view controls
 	hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -158,13 +160,13 @@ void TextureEditorPanel::setupLayout()
 
 	// Bind events
 	cb_draw_outside_->Bind(wxEVT_CHECKBOX, &TextureEditorPanel::onDrawOutsideChanged, this);
-	tex_canvas_->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(wxEVT_LEFT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(wxEVT_RIGHT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(wxEVT_MOTION, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
-	tex_canvas_->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
+	tex_canvas_->window()->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_LEFT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_RIGHT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_MOTION, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
+	tex_canvas_->window()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
 	text_tex_name_->Bind(wxEVT_TEXT, &TextureEditorPanel::onTexNameChanged, this);
 	spin_tex_width_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexWidthChanged, this);
 	spin_tex_height_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexHeightChanged, this);
@@ -474,8 +476,8 @@ void TextureEditorPanel::clearTexture()
 void TextureEditorPanel::setPalette(const Palette* pal) const
 {
 	tex_canvas_->setPalette(pal);
-	tex_canvas_->updatePatchTextures();
-	tex_canvas_->Refresh();
+	tex_canvas_->refreshTexturePreview();
+	tex_canvas_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -770,7 +772,8 @@ void TextureEditorPanel::onDrawOutsideChanged(wxCommandEvent& e)
 void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 {
 	// Get mouse position relative to texture
-	auto pos = tex_canvas_->screenToTexPosition(e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
+	auto pos = tex_canvas_->view().canvasPos(
+		{ e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() });
 
 	// Get patch that the mouse is over (if any)
 	int patch = tex_canvas_->patchAt(pos.x, pos.y);
@@ -855,10 +858,10 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 			if (list_patches_->GetSelectedItemCount() > 0)
 			{
 				// Get drag amount according to texture
-				Vec2i tex_cur = tex_canvas_->screenToTexPosition(
-					e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
-				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
-					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
+				Vec2i tex_cur = tex_canvas_->view().canvasPos(
+					{ e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() });
+				Vec2i tex_prev = tex_canvas_->view().canvasPos(
+					{ tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y });
 				Vec2i diff = tex_cur - tex_prev;
 
 				// Move any selected patches
@@ -879,14 +882,13 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				tex_canvas_->showGrid(true);
 				tex_canvas_->redraw(false);
 			}
-			else if (
-				tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureGLCanvas::View::Normal)
+			else if (tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureView::Normal)
 			{
 				// Get drag amount according to texture
-				Vec2i tex_cur = tex_canvas_->screenToTexPosition(
-					e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
-				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
-					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
+				Vec2i tex_cur = tex_canvas_->view().canvasPos(
+					{ e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() });
+				Vec2i tex_prev = tex_canvas_->view().canvasPos(
+					{ tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y });
 				Vec2i diff = tex_cur - tex_prev;
 
 				// Modify offsets

@@ -38,9 +38,9 @@
 #include "Graphics/Translation.h"
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
+#include "UI/Canvas/GL/CTextureGLCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
-#include "UI/Canvas/GL/CTextureGLCanvas.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -734,9 +734,13 @@ void ZTextureEditorPanel::onPatchFlipXChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
+		auto index = list_patches_->selectedItems()[a];
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(index));
 		if (patch)
+		{
 			patch->setFlipX(cb_flipx_->GetValue());
+			tex_canvas_->refreshPatch(index);
+		}
 	}
 
 	// Update UI
@@ -757,9 +761,13 @@ void ZTextureEditorPanel::onPatchFlipYChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
+		auto index = list_patches_->selectedItems()[a];
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(index));
 		if (patch)
+		{
 			patch->setFlipY(cb_flipy_->GetValue());
+			tex_canvas_->refreshPatch(index);
+		}
 	}
 
 	// Update UI
@@ -813,9 +821,13 @@ void ZTextureEditorPanel::onPatchRotationChanged(wxCommandEvent& e)
 	// Go through selected patches
 	for (unsigned a = 0; a < list_patches_->selectedItems().size(); a++)
 	{
-		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
+		auto index = list_patches_->selectedItems()[a];
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(index));
 		if (patch)
+		{
 			patch->setRotation(rot);
+			tex_canvas_->refreshPatch(index);
+		}
 	}
 
 	// Update UI

@@ -34,7 +34,7 @@
 #include "GfxCanvas.h"
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
-#include "UI/WxUtils.h"
+#include "Graphics/WxGfx.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -48,10 +48,6 @@ using namespace slade;
 EXTERN_CVAR(Bool, gfx_arc)
 EXTERN_CVAR(Bool, gfx_hilight_mouseover)
 EXTERN_CVAR(Bool, gfx_show_border)
-EXTERN_CVAR(Bool, hud_statusbar)
-EXTERN_CVAR(Bool, hud_center)
-EXTERN_CVAR(Bool, hud_wide)
-EXTERN_CVAR(Bool, hud_bob)
 
 
 // -----------------------------------------------------------------------------
@@ -124,10 +120,10 @@ void GfxCanvas::generateBrushShadow()
 	generateBrushShadowImage(img);
 
 	// Create wx image
-	auto wx_img = wxutil::createImageFromSImage(img, palette_.get());
+	auto wx_img = wxgfx::createImageFromSImage(img, palette_.get());
 
 	// Resize if nearest interpolation not supported
-	if (!nearest_interp_supported_)
+	if (!wxgfx::nearestInterpolationSupported())
 		wx_img = wx_img.Scale(img.width() * view_.scale().x, img.height() * view_.scale().y, wxIMAGE_QUALITY_NEAREST);
 
 	// Load it to the brush bitmap
@@ -151,12 +147,12 @@ void GfxCanvas::updateImage(bool hilight)
 	}
 
 	// Create wx image
-	auto img = wxutil::createImageFromSImage(*image_, palette_.get());
+	auto img = wxgfx::createImageFromSImage(*image_, palette_.get());
 	if (hilight)
 		img.ChangeBrightness(0.25); // Hilight if needed
 
 	// Resize the image itself if we can't interpolate correctly (eg. wxGTK/Cairo renderer)
-	if (!nearest_interp_supported_)
+	if (!wxgfx::nearestInterpolationSupported())
 		img = img.Scale(img.GetWidth() * view_.scale().x, img.GetHeight() * view_.scale().y, wxIMAGE_QUALITY_NEAREST);
 
 	// Create wx bitmap from image
@@ -167,72 +163,6 @@ void GfxCanvas::updateImage(bool hilight)
 }
 
 // -----------------------------------------------------------------------------
-// Draws the offset center/guide lines
-// -----------------------------------------------------------------------------
-void GfxCanvas::drawOffsetLines(wxGraphicsContext* gc)
-{
-	auto psize_thick  = 1.51 / view().scale().x;
-	auto psize_normal = 1.0 / view().scale().x;
-
-	if (view_type_ == View::Sprite)
-	{
-		gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
-
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(0, 0, 0, 190), psize_thick)));
-		gc->StrokeLine(view().canvasX(0), 0, view().canvasX(GetSize().x), 0);
-		gc->StrokeLine(0, view().canvasY(0), 0, view().canvasY(GetSize().y));
-	}
-	else if (view_type_ == View::HUD)
-	{
-		gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
-
-		// (320/354)x200 screen outline
-		auto right  = hud_wide ? 337.0 : 320.0;
-		auto left   = hud_wide ? -17.0 : 0.0;
-		auto top    = 0;
-		auto bottom = 200;
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(0, 0, 0, 190), psize_thick)));
-		gc->StrokeLine(left, top, left, bottom);
-		gc->StrokeLine(left, bottom, right, bottom);
-		gc->StrokeLine(right, bottom, right, top);
-		gc->StrokeLine(right, top, left, top);
-
-		// Statusbar line(s)
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(0, 0, 0, 128), psize_normal)));
-		if (hud_statusbar)
-		{
-			gc->StrokeLine(left, 168, right, 168); // Doom's status bar: 32 pixels tall
-			gc->StrokeLine(left, 162, right, 162); // Hexen: 38 pixels
-			gc->StrokeLine(left, 158, right, 158); // Heretic: 42 pixels
-		}
-
-		// Center lines
-		if (hud_center)
-		{
-			gc->StrokeLine(left, 100, right, 100);
-			gc->StrokeLine(160, top, 160, bottom);
-		}
-
-		// Normal screen edge guides if widescreen
-		if (hud_wide)
-		{
-			gc->StrokeLine(0, top, 0, bottom);
-			gc->StrokeLine(320, top, 320, bottom);
-		}
-
-		// Weapon bobbing guides
-		if (hud_bob)
-		{
-			gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(0, 0, 0, 128), psize_normal)));
-			gc->StrokeLine(left - 16.0, top - 16.0, left - 16.0, bottom + 16.0);
-			gc->StrokeLine(left - 16.0, bottom + 16.0, right + 16.0, bottom + 16.0);
-			gc->StrokeLine(right + 16.0, bottom + 16.0, right + 16.0, top - 16.0);
-			gc->StrokeLine(right + 16.0, top - 16.0, left - 16.0, top - 16.0);
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Draws the image (and offset drag preview if needed)
 // -----------------------------------------------------------------------------
 void GfxCanvas::drawImage(wxGraphicsContext* gc)
@@ -240,7 +170,6 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 	auto dragging = drag_origin_.x > 0;
 	auto hilight  = show_hilight_ && !dragging && image_hover_ && gfx_hilight_mouseover
 				   && editing_mode_ == EditMode::None;
-	nearest_interp_supported_ = gc->SetInterpolationQuality(wxINTERPOLATION_NONE);
 
 	// Load/update image if needed
 	if (update_image_ || hilight != image_hilighted_)
@@ -292,8 +221,6 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 // -----------------------------------------------------------------------------
 void GfxCanvas::drawImageTiled(wxGraphicsContext* gc)
 {
-	nearest_interp_supported_ = gc->SetInterpolationQuality(wxINTERPOLATION_NONE);
-
 	// Load/update image if needed
 	if (update_image_ || image_hilighted_)
 		updateImage(false);
@@ -353,10 +280,10 @@ void GfxCanvas::drawCropRect(wxGraphicsContext* gc) const
 void GfxCanvas::onPaint(wxPaintEvent& e)
 {
 	auto dc = wxPaintDC(this);
-	auto gc = wxutil::createGraphicsContext(dc);
+	auto gc = wxgfx::createGraphicsContext(dc);
 
 	// Background
-	wxutil::generateCheckeredBackground(background_bitmap_, GetSize().x, GetSize().y);
+	wxgfx::generateCheckeredBackground(background_bitmap_, GetSize().x, GetSize().y);
 	gc->DrawBitmap(background_bitmap_, 0, 0, background_bitmap_.GetWidth(), background_bitmap_.GetHeight());
 
 	// Aspect Ratio Correction
@@ -366,23 +293,22 @@ void GfxCanvas::onPaint(wxPaintEvent& e)
 		view_.setScale(view_.scale().x);
 
 	// Apply view to wxGraphicsContext
-	wxutil::applyViewToGC(view_, gc);
+	wxgfx::applyViewToGC(view_, gc.get());
 
 	// Offset/guide lines
-	drawOffsetLines(gc);
+	wxgfx::drawOffsetLines(gc.get(), view(), view_type_);
 
 	// Image
 	if (image_->isValid())
 	{
+		gc->SetInterpolationQuality(wxINTERPOLATION_NONE);
 		if (editing_mode_ == GfxEditMode::None && view_type_ == View::Tiled)
-			drawImageTiled(gc);
+			drawImageTiled(gc.get());
 		else
-			drawImage(gc);
+			drawImage(gc.get());
 	}
 
 	// Cropping overlay
 	if (crop_rect_)
-		drawCropRect(gc);
-
-	delete gc;
+		drawCropRect(gc.get());
 }

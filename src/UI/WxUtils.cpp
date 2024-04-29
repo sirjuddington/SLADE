@@ -33,8 +33,6 @@
 #include "UI/WxUtils.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "Graphics/SImage/SImage.h"
-#include "OpenGL/View.h"
 #include "Utility/Colour.h"
 #include "thirdparty/lunasvg/include/lunasvg.h"
 
@@ -56,15 +54,6 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(String, font_monospace, "Consolas,Lucida Console", CVar::Flag::Save)
 CVAR(Int, tab_style, 1, CVar::Flag::Save)
-
-
-// -----------------------------------------------------------------------------
-//
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(String, bgtx_colour1)
-EXTERN_CVAR(String, bgtx_colour2)
 
 
 // -----------------------------------------------------------------------------
@@ -416,141 +405,6 @@ void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 
 	window->SetIcon(wx_icon);
 }
-
-// -----------------------------------------------------------------------------
-// Creates a wxImage from the given [svg_text] data, sized to [width x height].
-// Returns an invalid (empty) wxImage if the SVG data was invalid
-// -----------------------------------------------------------------------------
-wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height)
-{
-	// Load SVG
-	const auto svg = lunasvg::Document::loadFromData(svg_text);
-	if (!svg)
-		return {};
-
-	// Render SVG
-	const auto bmp = svg->renderToBitmap(width, height);
-	if (!bmp.valid())
-		return {};
-
-	// Split image data to separate rgb + alpha channels
-	const auto bmp_data    = bmp.data();
-	const auto n_pixels    = width * height;
-	const auto rgb_data    = new uint8_t[n_pixels * 3]; // wxImage below will take ownership
-	const auto alpha_data  = new uint8_t[n_pixels];     // ^
-	auto       data_index  = 0;
-	auto       rgb_index   = 0;
-	auto       alpha_index = 0;
-	for (auto p = 0; p < n_pixels; ++p)
-	{
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		alpha_data[alpha_index++] = bmp_data[data_index++];
-	}
-
-	// Create wxImage
-	return { width, height, rgb_data, alpha_data, false };
-}
-
-// -----------------------------------------------------------------------------
-// Creates a wxImage from the given S[image] and [palette] (optional)
-// -----------------------------------------------------------------------------
-wxImage wxutil::createImageFromSImage(const SImage& image, const Palette* palette)
-{
-	if (!image.isValid())
-		return {};
-
-	// Get image RGB and Alpha data separately because we can't create a wxImage straight from RGBA data
-	MemChunk rgb, alpha;
-	image.putRGBData(rgb, palette);
-	image.putAlphaData(alpha);
-
-	// Create wx bitmap
-	return { image.width(), image.height(), rgb.releaseData(), alpha.releaseData() };
-}
-
-// -----------------------------------------------------------------------------
-// Generates a checkered pattern of [width]x[height] into [bitmap].
-// If the bitmap is already larger than the requested size, does nothing
-// -----------------------------------------------------------------------------
-void wxutil::generateCheckeredBackground(wxBitmap& bitmap, int width, int height)
-{
-	// Do nothing if the bitmap doesn't need updating
-	if (bitmap.IsOk() && bitmap.GetWidth() > width && bitmap.GetHeight() > height)
-		return;
-
-	wxColour col1(bgtx_colour1);
-	wxColour col2(bgtx_colour2);
-
-	bitmap.Create(width, height);
-	wxMemoryDC dc(bitmap);
-
-	// First colour
-	dc.SetBrush(wxBrush(col1));
-	dc.SetPen(*wxTRANSPARENT_PEN);
-	int  x       = 0;
-	int  y       = 0;
-	bool odd_row = false;
-	while (y < height)
-	{
-		x = odd_row ? 8 : 0;
-
-		while (x < width)
-		{
-			dc.DrawRectangle(x, y, 8, 8);
-			x += 16;
-		}
-
-		// Next row
-		y += 8;
-		odd_row = !odd_row;
-	}
-
-	// Second colour
-	dc.SetBrush(wxBrush(col2));
-	y       = 0;
-	odd_row = false;
-	while (y < height)
-	{
-		x = odd_row ? 0 : 8;
-
-		while (x < width)
-		{
-			dc.DrawRectangle(x, y, 8, 8);
-			x += 16;
-		}
-
-		// Next row
-		y += 8;
-		odd_row = !odd_row;
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Creates a platform-appropriate wxGraphicsContext for [dc]
-// -----------------------------------------------------------------------------
-wxGraphicsContext* wxutil::createGraphicsContext(wxWindowDC& dc)
-{
-#ifdef WIN32
-	// Use Direct2d on Windows instead of GDI+
-	return wxGraphicsRenderer::GetDirect2DRenderer()->CreateContext(dc);
-#else
-	return wxGraphicsContext::Create(dc);
-#endif
-}
-
-// -----------------------------------------------------------------------------
-// Applies the given [view] (scale and offset/translation) to [gc]
-// -----------------------------------------------------------------------------
-void wxutil::applyViewToGC(const gl::View& view, wxGraphicsContext* gc)
-{
-	if (view.centered())
-		gc->Translate(view.size().x * 0.5, view.size().y * 0.5);
-	gc->Scale(view.scale().x, view.scale().y);
-	gc->Translate(-view.offset().x, -view.offset().y);
-}
-
 
 
 // The following functions are taken from CodeLite (http://codelite.org)

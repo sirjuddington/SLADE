@@ -117,7 +117,7 @@ bool archiveoperations::save(Archive& archive)
 	// Check if there were issues saving directory
 	if (archive.format() == ArchiveFormat::Dir)
 	{
-		auto* dir_archive = dynamic_cast<DirArchiveHandler*>(&archive);
+		auto* dir_archive = dynamic_cast<DirArchiveHandler*>(&archive.formatHandler());
 		if (dir_archive->saveErrorsOccurred())
 		{
 			auto   messages = log::since(time);

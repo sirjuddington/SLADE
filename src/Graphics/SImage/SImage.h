@@ -161,6 +161,13 @@ public:
 	bool adjust();
 	bool mirrorpad();
 
+	// Generation
+	void generateCheckeredPattern(
+		int            square_size,
+		const ColRGBA& col1,
+		const ColRGBA& col2,
+		const Palette* pal = nullptr);
+
 	// Signals
 	struct Signals
 	{

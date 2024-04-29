@@ -36,8 +36,8 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "UI/WxUtils.h"
 #include "Utility/Parser.h"
+#include "WxGfx.h"
 #include <wx/mstream.h>
 
 using namespace slade;
@@ -283,7 +283,7 @@ void parseGeneralBlock(const ParseTreeNode& node, const Archive& res_archive)
 // -----------------------------------------------------------------------------
 wxBitmap loadSVGIcon(const string& svg_data, int size, const Point2i& padding)
 {
-	const auto img = wxutil::createImageFromSVG(svg_data, size, size);
+	const auto img = wxgfx::createImageFromSVG(svg_data, size, size);
 
 	// Add padding if needed
 	if (padding.x > 0 || padding.y > 0)

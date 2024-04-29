@@ -1940,6 +1940,78 @@ bool SImage::mirrorpad()
 	return success;
 }
 
+// -----------------------------------------------------------------------------
+// Generates a checkered pattern of [square_size] squares, alternating between
+// [col1] and [col2] (or the nearest colours in the palette)
+// -----------------------------------------------------------------------------
+void SImage::generateCheckeredPattern(int square_size, const ColRGBA& col1, const ColRGBA& col2, const Palette* pal)
+{
+	if (type_ == Type::AlphaMap || type_ == Type::Unknown)
+		return;
+
+	// Get nearest palette colours for non-RGBA image
+	int  pal_c1  = 0;
+	int  pal_c2  = 0;
+	auto palette = paletteToUse(pal);
+	if (type_ == Type::PalMask)
+	{
+		pal_c1 = palette->nearestColour(col1);
+		pal_c2 = palette->nearestColour(col2);
+	}
+
+	// Quick and dirty lambda to 'draw' a square
+	auto drawSquare = [this, square_size](int x, int y, const ColRGBA& col, int p_index)
+	{
+		for (auto yp = y; yp < y + square_size; ++yp)
+		{
+			for (auto xp = x; xp < x + square_size; ++xp)
+			{
+				if (type_ == Type::PalMask)
+					setPixel(xp, yp, p_index);
+				else
+					setPixel(xp, yp, col);
+			}
+		}
+	};
+
+	// First colour
+	int  x       = 0;
+	int  y       = 0;
+	bool odd_row = false;
+	while (y < height_)
+	{
+		x = odd_row ? square_size : 0;
+
+		while (x < width_)
+		{
+			drawSquare(x, y, col1, pal_c1);
+			x += square_size * 2;
+		}
+
+		// Next row
+		y += square_size;
+		odd_row = !odd_row;
+	}
+
+	// Second colour
+	y       = 0;
+	odd_row = false;
+	while (y < height_)
+	{
+		x = odd_row ? 0 : square_size;
+
+		while (x < width_)
+		{
+			drawSquare(x, y, col2, pal_c2);
+			x += square_size * 2;
+		}
+
+		// Next row
+		y += square_size;
+		odd_row = !odd_row;
+	}
+}
+
 const Palette* SImage::paletteToUse(const Palette* pal) const
 {
 	auto palette = palette_ ? palette_.get() : pal;

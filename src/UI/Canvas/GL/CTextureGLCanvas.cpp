@@ -41,8 +41,8 @@
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
-#include "UI/Controls/ZoomControl.h"
 #include <glm/ext/matrix_transform.hpp>
+#include <wx/unichar.h>
 
 using namespace slade;
 
@@ -53,7 +53,6 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 unique_ptr<gl::Shader> CTextureGLCanvas::shader_;
-wxDEFINE_EVENT(EVT_DRAG_END, wxCommandEvent);
 CVAR(Bool, tx_arc, false, CVar::Flag::Save)
 EXTERN_CVAR(Bool, gfx_show_border)
 
@@ -81,61 +80,18 @@ CTextureGLCanvas::CTextureGLCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle:
 	Bind(wxEVT_MOUSEWHEEL, &CTextureGLCanvas::onMouseEvent, this);
 }
 
-CTextureGLCanvas::~CTextureGLCanvas() = default;
-
-void CTextureGLCanvas::setScale(double scale)
+// -----------------------------------------------------------------------------
+// CTextureGLCanvas class destructor
+// -----------------------------------------------------------------------------
+CTextureGLCanvas::~CTextureGLCanvas()
 {
-	if (zoom_point_.x < 0 && zoom_point_.y < 0)
-		view_.setScale(scale);
-	else
-		view_.setScale(scale, zoom_point_);
-}
+	// Cleanup patch GL textures
+	for (auto& id : patch_gl_textures_)
+		gl::Texture::clear(id);
 
-void CTextureGLCanvas::setViewType(View type)
-{
-	bool changed = view_type_ != type;
-	view_type_   = type;
-	if (changed)
-		resetViewOffsets();
-}
-
-// -----------------------------------------------------------------------------
-// Selects the patch at [index]
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::selectPatch(int index)
-{
-	// Check patch index is ok
-	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
-		return;
-
-	// Select the patch
-	patches_[index].selected = true;
-}
-
-// -----------------------------------------------------------------------------
-// De-Selects the patch at [index]
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::deSelectPatch(int index)
-{
-	// Check patch index is ok
-	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
-		return;
-
-	// De-Select the patch
-	patches_[index].selected = false;
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the patch at [index] is selected, false otherwise
-// -----------------------------------------------------------------------------
-bool CTextureGLCanvas::patchSelected(int index) const
-{
-	// Check index is ok
-	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
-		return false;
-
-	// Return if patch index is selected
-	return patches_[index].selected;
+	// Cleanup preview GL texture
+	if (gl_tex_preview_ > 0)
+		gl::Texture::clear(gl_tex_preview_);
 }
 
 // -----------------------------------------------------------------------------
@@ -143,13 +99,7 @@ bool CTextureGLCanvas::patchSelected(int index) const
 // -----------------------------------------------------------------------------
 void CTextureGLCanvas::clearTexture()
 {
-	// Clear texture
-	sc_patches_modified_.disconnect();
-	texture_ = nullptr;
-
-	// Clear patch info
-	clearPatches();
-	hilight_patch_ = -1;
+	CTextureCanvasBase::clearTexture();
 
 	// Clear buffers
 	if (lb_border_)
@@ -157,12 +107,9 @@ void CTextureGLCanvas::clearTexture()
 	if (lb_grid_)
 		lb_grid_->buffer().clear();
 
-	// Reset view offset
-	resetViewOffsets();
-
 	// Clear full preview
-	gl::Texture::clear(tex_preview_);
-	tex_preview_ = 0;
+	gl::Texture::clear(gl_tex_preview_);
+	gl_tex_preview_ = 0;
 
 	// Refresh canvas
 	Refresh();
@@ -173,74 +120,29 @@ void CTextureGLCanvas::clearTexture()
 // -----------------------------------------------------------------------------
 void CTextureGLCanvas::clearPatches()
 {
-	patches_.clear();
+	CTextureCanvasBase::clearPatches();
+
+	for (auto& id : patch_gl_textures_)
+		gl::Texture::clear(id);
+
+	patch_gl_textures_.clear();
 
 	// Refresh canvas
 	Refresh();
 }
 
 // -----------------------------------------------------------------------------
-// Unloads all patch textures, so they are reloaded on next draw
+// Clear the patch at [index]'s image data so it is reloaded next draw
 // -----------------------------------------------------------------------------
-void CTextureGLCanvas::updatePatchTextures()
+void CTextureGLCanvas::refreshPatch(unsigned index)
 {
-	// Unload single patch textures
-	for (auto& p : patches_)
+	CTextureCanvasBase::refreshPatch(index);
+
+	if (index < patch_gl_textures_.size())
 	{
-		gl::Texture::clear(p.texture);
-		p.texture = 0;
+		gl::Texture::clear(patch_gl_textures_[index]);
+		patch_gl_textures_[index] = 0;
 	}
-
-	// Unload full preview
-	gl::Texture::clear(tex_preview_);
-	tex_preview_ = 0;
-}
-
-// -----------------------------------------------------------------------------
-// Unloads the full preview texture, so it is reloaded on next draw
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::updateTexturePreview()
-{
-	// Unload full preview
-	gl::Texture::clear(tex_preview_);
-	tex_preview_ = 0;
-}
-
-// -----------------------------------------------------------------------------
-// Loads a composite texture to be displayed
-// -----------------------------------------------------------------------------
-bool CTextureGLCanvas::openTexture(CTexture* tex, Archive* parent)
-{
-	// Clear the current texture
-	clearTexture();
-
-	// Set texture
-	texture_ = tex;
-	parent_  = parent;
-
-	// Init patches
-	clearPatches();
-	for (uint32_t a = 0; a < tex->nPatches(); a++)
-		patches_.push_back({ gl::Texture::create(), false, {} });
-
-	// Update when texture patches are modified
-	sc_patches_modified_ = tex->signals().patches_modified.connect(
-		[this](CTexture&)
-		{
-			// Reload patches
-			clearPatches();
-			hilight_patch_ = -1;
-			for (uint32_t a = 0; a < texture_->nPatches(); a++)
-				patches_.push_back({ gl::Texture::create(), false, {} });
-
-			redraw(true);
-		});
-
-	// Redraw
-	resetViewOffsets();
-	Refresh();
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -250,6 +152,12 @@ void CTextureGLCanvas::draw()
 {
 	if (!texture_)
 		return;
+
+	// Aspect Ratio Correction
+	if (tx_arc)
+		view_.setScale({ view_.scale().x, view_.scale().x * 1.2 });
+	else
+		view_.setScale(view_.scale().x);
 
 	// Draw offset guides if needed
 	gl::draw2d::Context dc(&view_);
@@ -283,6 +191,11 @@ void CTextureGLCanvas::draw()
 	shader_->setUniform("outside_colour", draw_outside_ ? glm::vec4{ 0.8f, 0.2f, 0.2f, 0.3f } : glm::vec4{ 0.0f });
 	shader_->setUniform("colour", glm::vec4{ 1.0f });
 	view_.setupShader(*shader_);
+
+	// Load patch images
+	for (unsigned i = 0; i < patches_.size(); ++i)
+		if (!patches_[i].image)
+			loadPatchImage(i);
 
 	// Draw the texture
 	drawTexture(dc, scale, offset, draw_outside_ || dragging_);
@@ -324,21 +237,14 @@ void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm
 	if (!dragging_)
 	{
 		// Generate if needed
-		if (!tex_preview_)
+		if (!tex_preview_ || gl_tex_preview_ == 0)
 		{
-			// Determine image type
-			auto type = SImage::Type::PalMask;
-			if (blend_rgba_)
-				type = SImage::Type::RGBA;
-
-			// CTexture -> temp Image -> GLTexture
-			SImage temp(type);
-			texture_->toImage(temp, parent_, palette_.get(), blend_rgba_);
-			tex_preview_ = gl::Texture::createFromImage(temp, palette_.get());
+			loadTexturePreview();
+			gl_tex_preview_ = gl::Texture::createFromImage(*tex_preview_, palette_.get());
 		}
 
 		// Draw the texture
-		dc.texture = tex_preview_;
+		dc.texture = gl_tex_preview_;
 		dc.drawRect({ offset.x, offset.y, offset.x + width * scale.x, offset.y + height * scale.y, false });
 	}
 }
@@ -346,106 +252,67 @@ void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm
 // -----------------------------------------------------------------------------
 // Draws the patch at index [num] in the composite texture
 // -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawPatch(int num, bool outside)
+void CTextureGLCanvas::drawPatch(int num)
 {
 	// Get patch to draw
 	const auto patch = texture_->patch(num);
-
-	// Check it exists
 	if (!patch)
 		return;
 
+	// Init Patch GLTexture list if needed
+	if (patch_gl_textures_.empty())
+		patch_gl_textures_.resize(texture_->nPatches());
+
 	// Load the patch as an opengl texture if it isn't already
-	if (!gl::Texture::isLoaded(patches_[num].texture))
+	if (!patches_[num].image || !gl::Texture::isLoaded(patch_gl_textures_[num]))
 	{
-		SImage temp(SImage::Type::PalMask);
-		if (texture_->loadPatchImage(num, temp, parent_, palette_.get(), blend_rgba_))
-		{
-			// Load the image as a texture
-			patches_[num].texture = gl::Texture::createFromImage(temp, palette_.get());
-		}
-		else
-			patches_[num].texture = gl::Texture::missingTexture();
+		loadPatchImage(num);
+		patch_gl_textures_[num] = gl::Texture::createFromImage(*patches_[num].image, palette_.get());
 	}
 
-	// Determine rotation/flip (if extended)
-	auto rotation = 0;
-	bool flipx    = false;
-	bool flipy    = false;
-	if (texture_->isExtended())
-	{
-		const auto epatch = dynamic_cast<CTPatchEx*>(patch);
-		flipx             = epatch->flipX();
-		flipy             = epatch->flipY();
-		rotation          = epatch->rotation();
-		if (rotation < 0)
-			rotation = 360 - rotation;
-	}
+	auto xoff   = static_cast<float>(patch->xOffset());
+	auto yoff   = static_cast<float>(patch->yOffset());
+	auto width  = static_cast<float>(patches_[num].image->width());
+	auto height = static_cast<float>(patches_[num].image->height());
+	auto colour = glm::vec4{ 1.0f };
 
 	gl::VertexBuffer2D vb_patch;
+	vb_patch.add({ xoff, yoff }, colour, { 0.0f, 0.0f });
+	vb_patch.add({ xoff, yoff + height }, colour, { 0.0f, 1.0f });
+	vb_patch.add({ xoff + width, yoff + height }, colour, { 1.0f, 1.0f });
+	vb_patch.add({ xoff + width, yoff }, colour, { 1.0f, 0.0f });
 
-	auto& tex_info = gl::Texture::info(patches_[num].texture);
-	auto  xoff     = static_cast<float>(patch->xOffset());
-	auto  yoff     = static_cast<float>(patch->yOffset());
-	auto  width    = static_cast<float>(tex_info.size.x);
-	auto  height   = static_cast<float>(tex_info.size.y);
-	auto  tx1      = flipx ? 1.0f : 0.0f;
-	auto  ty1      = flipy ? 1.0f : 0.0f;
-	auto  tx2      = 1.0f - tx1;
-	auto  ty2      = 1.0f - ty1;
-	auto  colour   = glm::vec4{ 1.0f };
-	if (rotation == 90)
-	{
-		patches_[num].rect.set(xoff, yoff, xoff + height, yoff + width);
-		vb_patch.add({ xoff, yoff }, colour, { tx1, ty2 });
-		vb_patch.add({ xoff, yoff + width }, colour, { tx2, ty2 });
-		vb_patch.add({ xoff + height, yoff + width }, colour, { tx2, ty1 });
-		vb_patch.add({ xoff + height, yoff }, colour, { tx1, ty1 });
-	}
-	else if (rotation == 180)
-	{
-		patches_[num].rect.set(xoff, yoff, xoff + width, yoff + height);
-		vb_patch.add({ xoff, yoff }, colour, { tx2, ty2 });
-		vb_patch.add({ xoff, yoff + height }, colour, { tx2, ty1 });
-		vb_patch.add({ xoff + width, yoff + height }, colour, { tx1, ty1 });
-		vb_patch.add({ xoff + width, yoff }, colour, { tx1, ty2 });
-	}
-	else if (rotation == 270)
-	{
-		patches_[num].rect.set(xoff, yoff, xoff + height, yoff + width);
-		vb_patch.add({ xoff, yoff }, colour, { tx2, ty1 });
-		vb_patch.add({ xoff, yoff + width }, colour, { tx1, ty1 });
-		vb_patch.add({ xoff + height, yoff + width }, colour, { tx1, ty2 });
-		vb_patch.add({ xoff + height, yoff }, colour, { tx2, ty2 });
-	}
-	else
-	{
-		// No rotation
-		patches_[num].rect.set(xoff, yoff, xoff + width, yoff + height);
-		vb_patch.add({ xoff, yoff }, colour, { tx1, ty1 });
-		vb_patch.add({ xoff, yoff + height }, colour, { tx1, ty2 });
-		vb_patch.add({ xoff + width, yoff + height }, colour, { tx2, ty2 });
-		vb_patch.add({ xoff + width, yoff }, colour, { tx2, ty1 });
-	}
-
-	gl::Texture::bind(patches_[num].texture);
+	gl::Texture::bind(patch_gl_textures_[num]);
+	vb_patch.push();
 	vb_patch.draw(gl::Primitive::TriangleFan);
 }
 
+// -----------------------------------------------------------------------------
+// Draws the outline of the patch at index [num] in the composite texture
+// -----------------------------------------------------------------------------
 void CTextureGLCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) const
 {
-	const auto&   rect = patches_[num].rect;
+	// Get patch
+	const auto patch = texture_->patch(num);
+	if (!patch)
+		return;
+
+	auto x1 = static_cast<float>(patch->xOffset());
+	auto y1 = static_cast<float>(patch->yOffset());
+	auto x2 = x1 + static_cast<float>(patches_[num].image->width());
+	auto y2 = y1 + static_cast<float>(patches_[num].image->height());
+
 	vector<Rectf> lines;
-	lines.emplace_back(rect.tl.x, rect.tl.y, rect.tl.x, rect.br.y);
-	lines.emplace_back(rect.tl.x, rect.br.y, rect.br.x, rect.br.y);
-	lines.emplace_back(rect.br.x, rect.br.y, rect.br.x, rect.tl.y);
-	lines.emplace_back(rect.br.x, rect.tl.y, rect.tl.x, rect.tl.y);
+	lines.emplace_back(x1, y1, x1, y2);
+	lines.emplace_back(x1, y2, x2, y2);
+	lines.emplace_back(x2, y2, x2, y1);
+	lines.emplace_back(x2, y1, x1, y1);
 
 	dc.drawLines(lines);
 }
 
 // -----------------------------------------------------------------------------
-// Draws a black border around the texture
+// Draws a black border around the texture w/ticks, and a grid if dragging
 // -----------------------------------------------------------------------------
 void CTextureGLCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 {
@@ -526,6 +393,9 @@ void CTextureGLCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Initialises the composite texture shader
+// -----------------------------------------------------------------------------
 void CTextureGLCanvas::initShader() const
 {
 	if (!shader_)
@@ -533,16 +403,6 @@ void CTextureGLCanvas::initShader() const
 		shader_ = std::make_unique<gl::Shader>("composite_texture");
 		shader_->loadResourceEntries("default2d.vert", "ctex.frag");
 	}
-}
-
-void CTextureGLCanvas::resetViewOffsets()
-{
-	if (view_type_ == View::HUD)
-		view_.setOffset(160, 100);
-	else if (view_type_ == View::Normal && texture_)
-		view_.setOffset(texture_->width() / 2., texture_->height() / 2.);
-	else
-		view_.setOffset(0, 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -568,163 +428,4 @@ void CTextureGLCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 	}
 	else if (view_type_ == View::HUD)
 		dc.drawHud();
-}
-
-// -----------------------------------------------------------------------------
-// Redraws the texture, updating it if [update_texture] is true
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::redraw(bool update_texture)
-{
-	if (update_texture)
-		updateTexturePreview();
-
-	Refresh();
-}
-
-Vec2i CTextureGLCanvas::screenToTexPosition(int x, int y) const
-{
-	return { static_cast<int>(view_.canvasX(x)), static_cast<int>(view_.canvasY(y)) };
-}
-
-Vec2i CTextureGLCanvas::texToScreenPosition(int x, int y) const
-{
-	return { view_.screenX(x), view_.screenY(y) };
-}
-
-// -----------------------------------------------------------------------------
-// Returns the index of the patch at [x,y] on the texture, or -1 if no patch is
-// at that position
-// -----------------------------------------------------------------------------
-int CTextureGLCanvas::patchAt(int x, int y) const
-{
-	// Check a texture is open
-	if (!texture_)
-		return -1;
-
-	// Go through texture patches backwards (ie from frontmost to back)
-	for (int a = static_cast<int>(texture_->nPatches()) - 1; a >= 0; a--)
-	{
-		// Check if x,y is within patch bounds
-		const auto patch    = texture_->patch(a);
-		auto&      tex_info = gl::Texture::info(patches_[a].texture);
-		if (x >= patch->xOffset() && x < patch->xOffset() + tex_info.size.x && y >= patch->yOffset()
-			&& y < patch->yOffset() + tex_info.size.y)
-		{
-			return a;
-		}
-	}
-
-	// No patch at x,y
-	return -1;
-}
-
-// -----------------------------------------------------------------------------
-// Swaps patches at [p1] and [p2] in the texture.
-// Returns false if either index is invalid, true otherwise
-// -----------------------------------------------------------------------------
-bool CTextureGLCanvas::swapPatches(size_t p1, size_t p2)
-{
-	// Check a texture is open
-	if (!texture_)
-		return false;
-
-	// Check indices
-	if (p1 >= texture_->nPatches() || p2 >= texture_->nPatches())
-		return false;
-
-	// Swap patch gl textures
-	std::swap(patches_[p1].texture, patches_[p2].texture);
-
-	// Swap patches in the texture itself
-	return texture_->swapPatches(p1, p2);
-}
-
-// ReSharper disable CppParameterMayBeConstPtrOrRef
-
-// -----------------------------------------------------------------------------
-// Called when and mouse event is generated (movement/clicking/etc)
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::onMouseEvent(wxMouseEvent& e)
-{
-	bool refresh = false;
-
-	// MOUSE MOVEMENT
-	if (e.Moving() || e.Dragging())
-	{
-		dragging_ = e.LeftIsDown();
-
-		// Check if patch hilight changes
-		const auto pos   = view_.canvasPos({ e.GetX(), e.GetY() });
-		const int  patch = patchAt(pos.x, pos.y);
-		if (hilight_patch_ != patch)
-		{
-			hilight_patch_ = patch;
-			refresh        = true;
-		}
-
-		e.Skip();
-	}
-
-	// LEFT BUTTON UP
-	else if (e.LeftUp())
-	{
-		// If we were dragging, generate end drag event
-		if (dragging_)
-		{
-			dragging_ = false;
-			updateTexturePreview();
-			refresh = true;
-			wxCommandEvent evt(EVT_DRAG_END, GetId());
-			evt.SetInt(wxMOUSE_BTN_LEFT);
-			ProcessWindowEvent(evt);
-		}
-	}
-
-	// LEAVING
-	if (e.Leaving())
-	{
-		// Set no hilighted patch
-		hilight_patch_ = -1;
-		refresh        = true;
-	}
-
-	// MOUSEWHEEL
-	if (e.GetWheelRotation() != 0)
-	{
-		if (wxGetKeyState(WXK_CONTROL))
-		{
-			if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL || wxGetKeyState(WXK_SHIFT))
-			{
-				if (e.GetWheelRotation() > 0)
-					view_.pan(8 * view_.scale().x, 0);
-				else
-					view_.pan(-8 * view_.scale().x, 0);
-			}
-			else if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
-			{
-				if (e.GetWheelRotation() > 0)
-					view_.pan(0, 8 * view_.scale().y);
-				else
-					view_.pan(0, -8 * view_.scale().y);
-			}
-		}
-		if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
-		{
-			zoom_point_ = { e.GetPosition().x, e.GetPosition().y };
-
-			if (e.GetWheelRotation() > 0)
-				linked_zoom_control_->zoomIn(true);
-			else
-				linked_zoom_control_->zoomOut(true);
-
-			zoom_point_ = { -1, -1 };
-		}
-	}
-
-	// Refresh is needed
-	if (refresh)
-		Refresh();
-
-	// Update 'previous' mouse coordinates
-	mouse_prev_ = { e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor() };
 }

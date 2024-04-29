@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Canvas.h"
+#include "CTextureCanvas.h"
+#include "GL/CTextureGLCanvas.h"
 #include "GL/GfxGLCanvas.h"
 #include "GL/MapPreviewGLCanvas.h"
 #include "GfxCanvas.h"
@@ -77,5 +79,17 @@ GfxCanvasBase* createGfxCanvas(wxWindow* parent)
 		return new GfxCanvas(parent);
 	else
 		return new GfxGLCanvas(parent);
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new CTextureGLCanvas if OpenGL is available, otherwise will fall
+// back to a software-rendered CTextureCanvas
+// -----------------------------------------------------------------------------
+CTextureCanvasBase* createCTextureCanvas(wxWindow* parent)
+{
+	if (gl::contextCreationFailed() || !use_gl_canvas)
+		return new CTextureCanvas(parent);
+	else
+		return new CTextureGLCanvas(parent);
 }
 } // namespace slade::ui

@@ -34,7 +34,7 @@
 #include "Main.h"
 #include "ZoomControl.h"
 #include "General/UI.h"
-#include "UI/Canvas/GL/CTextureGLCanvas.h"
+#include "UI/Canvas/CTextureCanvasBase.h"
 #include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/SToolBar/SToolBarButton.h"
 
@@ -72,7 +72,7 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 }
 
 // -----------------------------------------------------------------------------
-// ZoomControl class constructor (linking GfxGLCanvas)
+// ZoomControl class constructor (linking GfxCanvas)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 	wxPanel(parent, -1),
@@ -85,9 +85,9 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 }
 
 // -----------------------------------------------------------------------------
-// ZoomControl class constructor (linking CTextureGLCanvas)
+// ZoomControl class constructor (linking CTextureCanvas)
 // -----------------------------------------------------------------------------
-ZoomControl::ZoomControl(wxWindow* parent, CTextureGLCanvas* linked_canvas) :
+ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvasBase* linked_canvas) :
 	wxPanel(parent, -1),
 	linked_texture_canvas_{ linked_canvas },
 	zoom_(zoom_ctex)
