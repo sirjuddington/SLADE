@@ -39,6 +39,7 @@
 !/dist/res
 !/dist/CMakeLists.txt
 !/dist/makebuild.ps1
+!/dist/7z_command.cmake
 
 /msvc/*
 !/msvc/resource.h
