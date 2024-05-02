@@ -5,7 +5,6 @@
 namespace slade
 {
 class ResourceArchiveChooser;
-class Archive;
 
 class RunDialog : public SDialog
 {

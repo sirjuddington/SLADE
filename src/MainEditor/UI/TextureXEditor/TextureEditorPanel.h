@@ -1,15 +1,13 @@
 #pragma once
 
-#include "UI/Lists/ListView.h"
-
 namespace slade
 {
+class CTexture;
+class CTextureCanvasBase;
+class ListView;
+class SToolBar;
 class TextureXEditor;
 class TextureXList;
-class CTextureCanvas;
-class CTexture;
-class Palette;
-class SToolBar;
 namespace ui
 {
 	class ZoomControl;
@@ -36,10 +34,10 @@ public:
 
 	bool openTexture(const CTexture* tex, TextureXList* list);
 	void clearTexture();
-	void setPalette(Palette* pal) const;
+	void setPalette(const Palette* pal) const;
 
-	Palette* palette() const;
-	bool     blendRGBA() const;
+	const Palette* palette() const;
+	bool           blendRGBA() const;
 
 	// Editing
 	virtual void addPatch();
@@ -76,14 +74,14 @@ protected:
 	bool                 tex_modified_ = false;
 
 	// View controls
-	ui::ZoomControl* zc_zoom_         = nullptr;
-	wxCheckBox*      cb_draw_outside_ = nullptr;
-	wxCheckBox*      cb_blend_rgba_   = nullptr;
-	wxCheckBox*      cb_tex_scale_    = nullptr;
-	wxCheckBox*      cb_tex_arc_      = nullptr;
-	wxStaticText*    label_viewtype_  = nullptr;
-	wxChoice*        choice_viewtype_ = nullptr;
-	CTextureCanvas*  tex_canvas_      = nullptr;
+	ui::ZoomControl*    zc_zoom_         = nullptr;
+	wxCheckBox*         cb_draw_outside_ = nullptr;
+	wxCheckBox*         cb_blend_rgba_   = nullptr;
+	wxCheckBox*         cb_tex_scale_    = nullptr;
+	wxCheckBox*         cb_tex_arc_      = nullptr;
+	wxStaticText*       label_viewtype_  = nullptr;
+	wxChoice*           choice_viewtype_ = nullptr;
+	CTextureCanvasBase* tex_canvas_      = nullptr;
 
 	// Texture controls
 	wxTextCtrl*   text_tex_name_        = nullptr;

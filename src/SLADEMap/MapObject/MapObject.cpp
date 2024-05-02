@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,7 +34,8 @@
 #include "MapObject.h"
 #include "App.h"
 #include "Game/Configuration.h"
-#include "SLADEMap/SLADEMap.h"
+#include "Game/UDMFProperty.h"
+#include "Utility/PropertyUtils.h"
 
 using namespace slade;
 
@@ -61,7 +62,9 @@ long prop_backup_time = -1;
 // MapObject class constructor
 // -----------------------------------------------------------------------------
 MapObject::MapObject(Type type, SLADEMap* parent) :
-	parent_map_{ parent }, modified_time_{ app::runTimer() }, type_{ type }
+	parent_map_{ parent },
+	modified_time_{ app::runTimer() },
+	type_{ type }
 {
 }
 
@@ -81,11 +84,11 @@ string MapObject::typeName() const
 	switch (type_)
 	{
 	case Type::Vertex: return "Vertex";
-	case Type::Side: return "Side";
-	case Type::Line: return "Line";
+	case Type::Side:   return "Side";
+	case Type::Line:   return "Line";
 	case Type::Sector: return "Sector";
-	case Type::Thing: return "Thing";
-	default: return "Unknown";
+	case Type::Thing:  return "Thing";
+	default:           return "Unknown";
 	}
 }
 
@@ -343,7 +346,7 @@ void MapObject::endPropBackup()
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiBoolProperty(vector<MapObject*>& objects, string_view prop, bool& value)
+bool MapObject::multiBoolProperty(const vector<MapObject*>& objects, string_view prop, bool& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -368,7 +371,7 @@ bool MapObject::multiBoolProperty(vector<MapObject*>& objects, string_view prop,
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiIntProperty(vector<MapObject*>& objects, string_view prop, int& value)
+bool MapObject::multiIntProperty(const vector<MapObject*>& objects, string_view prop, int& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -393,7 +396,7 @@ bool MapObject::multiIntProperty(vector<MapObject*>& objects, string_view prop, 
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiFloatProperty(vector<MapObject*>& objects, string_view prop, double& value)
+bool MapObject::multiFloatProperty(const vector<MapObject*>& objects, string_view prop, double& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -418,7 +421,7 @@ bool MapObject::multiFloatProperty(vector<MapObject*>& objects, string_view prop
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiStringProperty(vector<MapObject*>& objects, string_view prop, string& value)
+bool MapObject::multiStringProperty(const vector<MapObject*>& objects, string_view prop, string& value)
 {
 	// Check objects given
 	if (objects.empty())

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Colour.h"
+namespace slade
+{
+struct ColLAB;
+}
 
 namespace slade::cie
 {

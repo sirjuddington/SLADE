@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,13 +32,22 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MCAnimations.h"
+#include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
-#include "MapEditor/MapEditor.h"
-#include "MapEditor/MapTextureManager.h"
+#include "MapEditor/Item.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
+#include "OpenGL/Draw2D.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "OpenGL/PointSpriteBuffer.h"
+#include "OpenGL/Shader.h"
+#include "OpenGL/VertexBuffer2D.h"
+#include "OpenGL/View.h"
 #include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 
 using namespace slade;
@@ -51,8 +60,6 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, thing_overlay_square)
 EXTERN_CVAR(Int, thing_drawtype)
-EXTERN_CVAR(Bool, vertex_round)
-EXTERN_CVAR(Float, line_width)
 EXTERN_CVAR(Int, halo_width)
 EXTERN_CVAR(Bool, sector_selected_fill)
 
@@ -67,7 +74,9 @@ EXTERN_CVAR(Bool, sector_selected_fill)
 // -----------------------------------------------------------------------------
 // MCASelboxFader class constructor
 // -----------------------------------------------------------------------------
-MCASelboxFader::MCASelboxFader(long start, Vec2d tl, Vec2d br) : MCAnimation(start), tl_{ tl }, br_{ br } {}
+MCASelboxFader::MCASelboxFader(long start, const Vec2d& tl, const Vec2d& br) : MCAnimation(start), tl_{ tl }, br_{ br }
+{
+}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -84,28 +93,17 @@ bool MCASelboxFader::update(long time)
 // -----------------------------------------------------------------------------
 // Draws the animation
 // -----------------------------------------------------------------------------
-void MCASelboxFader::draw()
+void MCASelboxFader::draw(gl::draw2d::Context& dc)
 {
-	glDisable(GL_TEXTURE_2D);
-
 	// Outline
-	colourconfig::setGLColour("map_selbox_outline", fade_);
-	glLineWidth(2.0f);
-	glBegin(GL_LINE_LOOP);
-	glVertex2d(tl_.x, tl_.y);
-	glVertex2d(tl_.x, br_.y);
-	glVertex2d(br_.x, br_.y);
-	glVertex2d(br_.x, tl_.y);
-	glEnd();
+	dc.texture        = 0;
+	dc.line_thickness = 2.0f;
+	dc.setColourFromConfig("map_selbox_outline", fade_);
+	dc.drawRectOutline({ tl_, br_ });
 
 	// Fill
-	colourconfig::setGLColour("map_selbox_fill", fade_);
-	glBegin(GL_QUADS);
-	glVertex2d(tl_.x, tl_.y);
-	glVertex2d(tl_.x, br_.y);
-	glVertex2d(br_.x, br_.y);
-	glVertex2d(br_.x, tl_.y);
-	glEnd();
+	dc.setColourFromConfig("map_selbox_fill", fade_);
+	dc.drawRect({ tl_, br_ });
 }
 
 
@@ -119,18 +117,39 @@ void MCASelboxFader::draw()
 // -----------------------------------------------------------------------------
 // MCAThingSelection class constructor
 // -----------------------------------------------------------------------------
-MCAThingSelection::MCAThingSelection(long start, double x, double y, double radius, double scale_inv, bool select) :
+MCAThingSelection::MCAThingSelection(
+	long                     start,
+	const vector<MapThing*>& things,
+	float                    view_scale,
+	gl::PointSpriteType      ps_type,
+	bool                     select) :
 	MCAnimation(start),
-	x_{ x },
-	y_{ y },
-	radius_{ radius },
-	select_{ select }
+	select_{ select },
+	ps_type_{ ps_type }
 {
-	// Adjust radius
-	if (!thing_overlay_square)
-		radius_ += 8;
-	radius_ += halo_width * scale_inv;
+	buffer_ = std::make_unique<gl::PointSpriteBuffer>();
+
+	for (const auto* thing : things)
+	{
+		auto& tt = game::configuration().thingType(thing->type());
+
+		float radius = tt.radius();
+		if (tt.shrinkOnZoom())
+			radius = scaledRadius(radius, view_scale);
+		radius += 4.0f;
+
+		buffer_->add(glm::vec2{ thing->xPos(), thing->yPos() }, radius);
+	}
+	buffer_->push();
+
+	buffer_->setOutlineWidth(std::min(3.0f / view_scale, 4.0f));
+	buffer_->setFillOpacity(0.25f);
 }
+
+// -----------------------------------------------------------------------------
+// MCAThingSelection class destructor
+// -----------------------------------------------------------------------------
+slade::MCAThingSelection::~MCAThingSelection() = default;
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -147,49 +166,45 @@ bool MCAThingSelection::update(long time)
 // -----------------------------------------------------------------------------
 // Draws the animation
 // -----------------------------------------------------------------------------
-void MCAThingSelection::draw()
+void MCAThingSelection::draw(gl::draw2d::Context& dc)
 {
-	// Setup colour
+	// Colour
 	if (select_)
-		gl::setColour(255, 255, 255, 255 * fade_, gl::Blend::Additive);
-	else
-		colourconfig::setGLColour("map_selection", fade_);
-
-	// Get texture if needed
-	if (!thing_overlay_square)
 	{
-		// Get thing selection texture
-		unsigned tex;
-		if (thing_drawtype == MapRenderer2D::ThingDrawType::Round
-			|| thing_drawtype == MapRenderer2D::ThingDrawType::Sprite)
-			tex = mapeditor::textureManager().editorImage("thing/hilight").gl_id;
-		else
-			tex = mapeditor::textureManager().editorImage("thing/square/hilight").gl_id;
-
-		if (!tex)
-			return;
-
-		// Bind the texture
-		glEnable(GL_TEXTURE_2D);
-		gl::Texture::bind(tex);
+		buffer_->setColour({ 1.0f, 1.0f, 1.0f, fade_ * 0.4f });
+		gl::setBlend(gl::Blend::Additive);
+	}
+	else
+	{
+		const auto& cdef = colourconfig::colDef("map_selection");
+		buffer_->setColour(cdef.colour.ampf(1.0f, 1.0f, 1.0f, thing_overlay_square ? fade_ * 0.5f : fade_));
+		gl::setBlend(cdef.blendMode());
 	}
 
 	// Animate radius
-	double r = radius_;
-	if (select_)
-		r += radius_ * 0.2 * fade_;
+	if (select_ && !thing_overlay_square)
+		buffer_->setPointRadius(1.0f + 0.2f * fade_);
+
+	// No texture if square overlay
+	if (thing_overlay_square)
+	{
+		gl::Texture::bind(gl::Texture::whiteTexture());
+		buffer_->setPointRadius(0.8f);
+	}
 
 	// Draw
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f);
-	glVertex2d(x_ - r, y_ - r);
-	glTexCoord2f(0.0f, 1.0f);
-	glVertex2d(x_ - r, y_ + r);
-	glTexCoord2f(1.0f, 1.0f);
-	glVertex2d(x_ + r, y_ + r);
-	glTexCoord2f(1.0f, 0.0f);
-	glVertex2d(x_ + r, y_ - r);
-	glEnd();
+	buffer_->draw(thing_overlay_square ? gl::PointSpriteType::Textured : ps_type_, dc.view);
+}
+
+float MCAThingSelection::scaledRadius(float radius, float view_scale)
+{
+	if (radius > 16.0f)
+		radius = 16.0f;
+
+	if (view_scale > 1.0)
+		return radius / view_scale;
+	else
+		return radius;
 }
 
 
@@ -239,25 +254,19 @@ bool MCALineSelection::update(long time)
 // -----------------------------------------------------------------------------
 // Draws the animation
 // -----------------------------------------------------------------------------
-void MCALineSelection::draw()
+void MCALineSelection::draw(gl::draw2d::Context& dc)
 {
-	// Setup colour
+	// Set colour
 	if (select_)
-		gl::setColour(255, 255, 255, 255 * fade_, gl::Blend::Additive);
+	{
+		dc.colour.set(255, 255, 255, 255 * fade_);
+		dc.blend = gl::Blend::Additive;
+	}
 	else
-		colourconfig::setGLColour("map_selection", fade_);
+		dc.setColourFromConfig("map_selection", fade_);
 
 	// Draw lines
-	glLineWidth(line_width * colourconfig::lineSelectionWidth());
-	glBegin(GL_LINES);
-	for (unsigned a = 0; a < lines_.size(); a++)
-	{
-		glVertex2d(lines_[a].tl.x, lines_[a].tl.y);
-		glVertex2d(lines_[a].br.x, lines_[a].br.y);
-		glVertex2d(tabs_[a].tl.x, tabs_[a].tl.y);
-		glVertex2d(tabs_[a].br.x, tabs_[a].br.y);
-	}
-	glEnd();
+	dc.drawLines(lines_);
 }
 
 
@@ -271,7 +280,7 @@ void MCALineSelection::draw()
 // -----------------------------------------------------------------------------
 // MCAVertexSelection class constructor
 // -----------------------------------------------------------------------------
-MCAVertexSelection::MCAVertexSelection(long start, const vector<MapVertex*>& verts, double size, bool select) :
+MCAVertexSelection::MCAVertexSelection(long start, const vector<MapVertex*>& verts, float size, bool select) :
 	MCAnimation(start),
 	size_{ size },
 	select_{ select }
@@ -303,73 +312,21 @@ bool MCAVertexSelection::update(long time)
 // -----------------------------------------------------------------------------
 // Draws the animation
 // -----------------------------------------------------------------------------
-void MCAVertexSelection::draw()
+void MCAVertexSelection::draw(gl::draw2d::Context& dc)
 {
 	// Setup colour
 	if (select_)
-		gl::setColour(255, 255, 255, 255 * fade_, gl::Blend::Additive);
+	{
+		dc.colour.set(255, 255, 255, 255 * fade_);
+		dc.blend = gl::Blend::Additive;
+	}
 	else
-		colourconfig::setGLColour("map_selection", fade_);
+		dc.setColourFromConfig("map_selection", fade_);
 
-	// Setup point sprites if supported
-	bool point = false;
-	if (gl::pointSpriteSupport())
-	{
-		// Get appropriate vertex texture
-		unsigned tex;
-		// if (vertex_round) tex = MapEditor::textureManager().getEditorImage("vertex_r");
-		// else tex = MapEditor::textureManager().getEditorImage("vertex_s");
-
-		if (select_)
-		{
-			if (vertex_round)
-				tex = mapeditor::textureManager().editorImage("vertex/round").gl_id;
-			else
-				tex = mapeditor::textureManager().editorImage("vertex/square").gl_id;
-		}
-		else
-		{
-			if (vertex_round)
-				tex = mapeditor::textureManager().editorImage("vertex/hilight_r").gl_id;
-			else
-				tex = mapeditor::textureManager().editorImage("vertex/hilight_s").gl_id;
-		}
-
-		// If it was found, enable point sprites
-		if (tex)
-		{
-			glEnable(GL_TEXTURE_2D);
-			gl::Texture::bind(tex);
-			glEnable(GL_POINT_SPRITE);
-			glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
-			point = true;
-		}
-	}
-
-	// No point sprites, use regular points
-	if (!point)
-	{
-		if (vertex_round)
-			glEnable(GL_POINT_SMOOTH);
-		else
-			glDisable(GL_POINT_SMOOTH);
-	}
-
-	// Draw points
-	if (select_)
-		glPointSize(size_ + (size_ * fade_));
-	else
-		glPointSize(size_);
-	glBegin(GL_POINTS);
-	for (auto& v : vertices_)
-		glVertex2d(v.x, v.y);
-	glEnd();
-
-	if (point)
-	{
-		glDisable(GL_POINT_SPRITE);
-		glDisable(GL_TEXTURE_2D);
-	}
+	dc.texture            = MapRenderer2D::vertexTexture(!select_);
+	dc.pointsprite_type   = gl::PointSpriteType::Textured;
+	dc.pointsprite_radius = select_ ? size_ + (size_ * fade_) : size_;
+	dc.drawPointSprites(vertices_);
 }
 
 
@@ -383,14 +340,36 @@ void MCAVertexSelection::draw()
 // -----------------------------------------------------------------------------
 // MCASectorSelection class constructor
 // -----------------------------------------------------------------------------
-MCASectorSelection::MCASectorSelection(long start, const vector<Polygon2D*>& polys, bool select) :
+MCASectorSelection::MCASectorSelection(long start, const vector<MapSector*>& sectors, bool select) :
 	MCAnimation(start),
-	select_{ select }
+	select_{ select },
+	blend_{ gl::Blend::Normal }
 {
-	// Copy polygon list
-	for (auto poly : polys)
-		polygons_.push_back(poly);
+	// Build vertex buffer from sector polygon vertices
+	vertex_buffer_ = std::make_unique<gl::VertexBuffer2D>();
+	constexpr glm::vec4 white{ 1.0f };
+	for (auto& sector : sectors)
+		for (const auto& vertex : sector->polygonVertices())
+			vertex_buffer_->add(vertex, white, glm::vec2{ 0.0f });
+
+	// Set colour
+	if (select_)
+	{
+		colour_ = glm::vec4{ 1.0f, 1.0f, 1.0f, 0.1f };
+		blend_  = gl::Blend::Additive;
+	}
+	else
+	{
+		const auto& cdef = colourconfig::colDef("map_selection");
+		colour_          = cdef.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f);
+		blend_           = cdef.blendMode();
+	}
 }
+
+// -----------------------------------------------------------------------------
+// MCASectorSelection class destructor
+// -----------------------------------------------------------------------------
+MCASectorSelection::~MCASectorSelection() = default;
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -398,7 +377,7 @@ MCASectorSelection::MCASectorSelection(long start, const vector<Polygon2D*>& pol
 bool MCASectorSelection::update(long time)
 {
 	// Determine fade amount (0.0-1.0 over 150ms)
-	fade_ = 1.0f - ((time - starttime_) * 0.004f);
+	fade_ = 1.0f - (time - starttime_) * 0.004f;
 
 	// Check if animation is finished
 	return !(fade_ < 0.0f || fade_ > 1.0f);
@@ -407,21 +386,24 @@ bool MCASectorSelection::update(long time)
 // -----------------------------------------------------------------------------
 // Draws the animation
 // -----------------------------------------------------------------------------
-void MCASectorSelection::draw()
+void MCASectorSelection::draw(gl::draw2d::Context& dc)
 {
 	// Don't draw if no fill
 	if (!sector_selected_fill)
 		return;
 
-	// Setup colour
-	if (select_)
-		gl::setColour(255, 255, 255, 180 * fade_, gl::Blend::Additive);
-	else
-		colourconfig::setGLColour("map_selection", fade_);
+	// Setup shader
+	const auto& shader = gl::draw2d::defaultShader(false);
+	dc.view->setupShader(shader);
+	gl::setBlend(blend_);
+	auto colour = colour_;
+	colour.a *= fade_;
+	shader.setUniform("colour", colour);
 
-	// Draw polygons
-	for (auto& polygon : polygons_)
-		polygon->render();
+	// Draw
+	if (vertex_buffer_->buffer().empty())
+		vertex_buffer_->push();
+	vertex_buffer_->draw(gl::Primitive::Triangles);
 }
 
 
@@ -459,26 +441,26 @@ bool MCA3dWallSelection::update(long time)
 // -----------------------------------------------------------------------------
 void MCA3dWallSelection::draw()
 {
-	// Setup colour
-	if (select_)
-		gl::setColour(255, 255, 255, 90 * fade_, gl::Blend::Additive);
-	else
-		colourconfig::setGLColour("map_3d_selection", fade_);
+	//// Setup colour
+	// if (select_)
+	//	gl::setColour(255, 255, 255, 90 * fade_, gl::Blend::Additive);
+	// else
+	//	colourconfig::setGLColour("map_3d_selection", fade_);
 
-	// Draw quad outline
-	glLineWidth(2.0f);
-	glEnable(GL_LINE_SMOOTH);
-	glBegin(GL_LINE_LOOP);
-	for (auto& point : points_)
-		glVertex3d(point.x, point.y, point.z);
-	glEnd();
+	//// Draw quad outline
+	// glLineWidth(2.0f);
+	// glEnable(GL_LINE_SMOOTH);
+	// glBegin(GL_LINE_LOOP);
+	// for (auto& point : points_)
+	//	glVertex3d(point.x, point.y, point.z);
+	// glEnd();
 
-	// Draw quad fill
-	colourconfig::setGLColour("map_3d_selection", fade_ * 0.5f);
-	glBegin(GL_QUADS);
-	for (auto& point : points_)
-		glVertex3d(point.x, point.y, point.z);
-	glEnd();
+	//// Draw quad fill
+	// colourconfig::setGLColour("map_3d_selection", fade_ * 0.5f);
+	// glBegin(GL_QUADS);
+	// for (auto& point : points_)
+	//	glVertex3d(point.x, point.y, point.z);
+	// glEnd();
 }
 
 
@@ -492,7 +474,7 @@ void MCA3dWallSelection::draw()
 // -----------------------------------------------------------------------------
 // MCA3dFlatSelection class constructor
 // -----------------------------------------------------------------------------
-MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, Plane plane, bool select) :
+MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, const Plane& plane, bool select) :
 	MCAnimation(start, true),
 	sector_{ sector },
 	plane_{ plane },
@@ -517,26 +499,26 @@ bool MCA3dFlatSelection::update(long time)
 // -----------------------------------------------------------------------------
 void MCA3dFlatSelection::draw()
 {
-	if (!sector_)
-		return;
+	// if (!sector_)
+	//	return;
 
-	// Setup colour
-	if (select_)
-		gl::setColour(255, 255, 255, 60 * fade_, gl::Blend::Additive);
-	else
-		colourconfig::setGLColour("map_3d_selection", fade_);
-	glDisable(GL_CULL_FACE);
+	//// Setup colour
+	// if (select_)
+	//	gl::setColour(255, 255, 255, 60 * fade_, gl::Blend::Additive);
+	// else
+	//	colourconfig::setGLColour("map_3d_selection", fade_);
+	// glDisable(GL_CULL_FACE);
 
-	// Set polygon to plane height
-	sector_->polygon()->setZ(plane_);
+	////// Set polygon to plane height
+	////sector_->polygon()->setZ(plane_);
 
-	// Render flat
-	sector_->polygon()->render();
+	////// Render flat
+	////sector_->polygon()->render();
 
-	// Reset polygon height
-	sector_->polygon()->setZ(0);
+	////// Reset polygon height
+	////sector_->polygon()->setZ(0);
 
-	glEnable(GL_CULL_FACE);
+	// glEnable(GL_CULL_FACE);
 }
 
 
@@ -578,11 +560,23 @@ void MCAHilightFade::draw()
 {
 	switch (object_->objType())
 	{
-	case MapObject::Type::Line: renderer_->renderLineHilight(object_->index(), fade_); break;
-	case MapObject::Type::Sector: renderer_->renderFlatHilight(object_->index(), fade_); break;
-	case MapObject::Type::Thing: renderer_->renderThingHilight(object_->index(), fade_); break;
+	case MapObject::Type::Line:   break; // renderer_->renderLineHilight(object_->index(), fade_); break;
+	case MapObject::Type::Sector: break; // renderer_->renderFlatHilight(object_->index(), fade_); break;
+	case MapObject::Type::Thing:  break; // renderer_->renderThingHilight(object_->index(), fade_); break;
 	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->index(), fade_); break;
-	default: break;
+	default:                      break;
+	}
+}
+
+void MCAHilightFade::draw(gl::draw2d::Context& dc)
+{
+	switch (object_->objType())
+	{
+	case MapObject::Type::Line:   renderer_->renderLineHilight(dc, object_->index(), fade_); break;
+	case MapObject::Type::Sector: renderer_->renderFlatHilight(dc, object_->index(), fade_); break;
+	case MapObject::Type::Thing:  renderer_->renderThingHilight(dc, object_->index(), fade_, false); break;
+	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->index(), fade_); break;
+	default:                      break;
 	}
 }
 

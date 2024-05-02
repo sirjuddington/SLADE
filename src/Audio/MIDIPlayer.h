@@ -1,11 +1,17 @@
 #pragma once
 
+namespace sf
+{
+class Clock;
+}
+
 namespace slade::audio
 {
 class MIDIPlayer
 {
 public:
-	virtual ~MIDIPlayer() = default;
+	MIDIPlayer();
+	virtual ~MIDIPlayer();
 
 	virtual bool isSoundfontLoaded() = 0;
 	virtual bool reloadSoundfont() { return true; }
@@ -26,9 +32,9 @@ public:
 	virtual bool setVolume(int volume) = 0;
 
 protected:
-	string    file_;
-	MemChunk  data_;
-	sf::Clock timer_;
+	string                file_;
+	MemChunk              data_;
+	unique_ptr<sf::Clock> timer_;
 };
 
 class NullMIDIPlayer : public MIDIPlayer

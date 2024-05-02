@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Property.h"
 #include "Tree.h"
 
 namespace slade
 {
-class ArchiveDir;
 class Parser;
 class Tokenizer;
+
+using Property = std::variant<bool, int, unsigned int, double, string>;
 
 class ParseTreeNode : public STreeNode
 {

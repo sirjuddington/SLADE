@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 #include "FileLocationPanel.h"
 #include "SIconButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/SFileDialog.h"
 
 using namespace slade;
 
@@ -66,7 +67,7 @@ FileLocationPanel::FileLocationPanel(
 	sizer->Add(text_path_, wxSizerFlags(1).Expand());
 
 	btn_browse_ = new SIconButton(this, "open", browse_caption);
-	sizer->Add(btn_browse_, wxSizerFlags(0).Expand().Border(wxLEFT, ui::px(ui::Size::PadMinimum)));
+	sizer->Add(btn_browse_, wxutil::sfWithMinBorder(0, wxLEFT).Expand());
 
 	btn_browse_->Bind(
 		wxEVT_BUTTON,

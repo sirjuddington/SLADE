@@ -1,24 +1,30 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
-#include "General/SAction.h"
-#include "General/UndoRedo.h"
-#include "MainEditor/ExternalEditManager.h"
-#include "UI/Lists/ArchiveEntryTree.h"
-#include <wx/splitter.h>
+#include "General/SActionHandler.h"
 
+// Forward declarations
+class wxSplitterWindow;
 class wxStaticText;
 class wxBitmapButton;
-
 namespace slade
 {
 class EntryPanel;
+class ExternalEditManager;
 class SToolBar;
+class UndoManager;
+namespace ui
+{
+	class ArchivePathPanel;
+	class ArchiveEntryTree;
+} // namespace ui
+} // namespace slade
 
+namespace slade
+{
 class ArchivePanel : public wxPanel, SActionHandler
 {
 public:
-	ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive);
+	ArchivePanel(wxWindow* parent, const shared_ptr<Archive>& archive);
 	~ArchivePanel() override = default;
 
 	Archive*     archive() const { return archive_.lock().get(); }
@@ -40,7 +46,7 @@ public:
 	bool importDir();
 	bool convertArchiveTo() const;
 	bool cleanupArchive() const;
-	bool buildArchive();
+	bool buildArchive() const;
 
 	// Entry manipulation actions
 	bool renameEntry(bool each = false) const;
@@ -61,27 +67,13 @@ public:
 	bool openEntryExternal() const;
 
 	// Other entry actions
-	bool gfxConvert() const;
-	bool gfxRemap();
-	bool gfxColourise();
-	bool gfxTint();
-	bool gfxModifyOffsets() const;
-	bool gfxExportPNG();
-	bool voxelConvert() const;
 	bool swanConvert() const;
 	bool basConvert(bool animdefs = false);
 	bool palConvert() const;
 	bool reloadCurrentPanel();
-	bool wavDSndConvert() const;
-	bool dSndWavConvert() const;
 	bool musMidiConvert() const;
-	bool optimizePNG() const;
 	bool compileACS(bool hexen = false) const;
 	bool convertTextures() const;
-	bool findTextureErrors() const;
-	bool cleanTextureIwadDupes() const;
-	bool cleanZdTextureSinglePatch() const;
-	bool mapOpenDb2() const;
 	bool crc32() const;
 
 	// Needed for some console commands
@@ -93,11 +85,11 @@ public:
 	// UI related
 	bool    openDir(const shared_ptr<ArchiveDir>& dir) const;
 	bool    openEntry(ArchiveEntry* entry, bool force = false);
-	bool    openEntryAsText(ArchiveEntry* entry);
-	bool    openEntryAsHex(ArchiveEntry* entry);
+	bool    openEntryAsText(const ArchiveEntry* entry);
+	bool    openEntryAsHex(const ArchiveEntry* entry);
 	bool    showEntryPanel(EntryPanel* new_area, bool ask_save = true);
 	void    focusOnEntry(ArchiveEntry* entry) const;
-	void    focusEntryList() const { entry_tree_->SetFocus(); }
+	void    focusEntryList() const;
 	void    refreshPanel();
 	void    closeCurrentEntry();
 	wxMenu* createEntryOpenMenu(const wxString& category);
@@ -131,17 +123,17 @@ protected:
 	wxSplitterWindow*     splitter_         = nullptr;
 
 	// Entry panels
-	EntryPanel* cur_area_      = nullptr;
-	EntryPanel* entry_area_    = nullptr;
-	EntryPanel* default_area_  = nullptr;
-	EntryPanel* text_area_     = nullptr;
-	EntryPanel* ansi_area_     = nullptr;
-	EntryPanel* gfx_area_      = nullptr;
-	EntryPanel* pal_area_      = nullptr;
-	EntryPanel* hex_area_      = nullptr;
-	EntryPanel* map_area_      = nullptr;
-	EntryPanel* audio_area_    = nullptr;
-	EntryPanel* data_area_     = nullptr;
+	EntryPanel* cur_area_     = nullptr;
+	EntryPanel* entry_area_   = nullptr;
+	EntryPanel* default_area_ = nullptr;
+	EntryPanel* text_area_    = nullptr;
+	EntryPanel* ansi_area_    = nullptr;
+	EntryPanel* gfx_area_     = nullptr;
+	EntryPanel* pal_area_     = nullptr;
+	EntryPanel* hex_area_     = nullptr;
+	EntryPanel* map_area_     = nullptr;
+	EntryPanel* audio_area_   = nullptr;
+	EntryPanel* data_area_    = nullptr;
 
 	// Signal connections
 	sigslot::scoped_connection sc_archive_saved_;
@@ -179,24 +171,5 @@ private:
 	void     setup(const Archive& archive);
 	void     bindEvents(Archive* archive);
 	wxPanel* createEntryListPanel(wxWindow* parent);
-};
-
-class EntryDataUS : public UndoStep
-{
-public:
-	EntryDataUS(ArchiveEntry* entry) : path_{ entry->path() }, index_{ entry->index() }, archive_{ entry->parent() }
-	{
-		data_.importMem(entry->rawData(), entry->size());
-	}
-
-	bool swapData();
-	bool doUndo() override { return swapData(); }
-	bool doRedo() override { return swapData(); }
-
-private:
-	MemChunk data_;
-	wxString path_;
-	int      index_   = -1;
-	Archive* archive_ = nullptr;
 };
 } // namespace slade

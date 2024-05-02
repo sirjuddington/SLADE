@@ -13,7 +13,7 @@ class BaseResourceArchivesPanel : public PrefsPanelBase
 {
 public:
 	BaseResourceArchivesPanel(wxWindow* parent);
-	~BaseResourceArchivesPanel() = default;
+	~BaseResourceArchivesPanel() override = default;
 
 	int  selectedPathIndex() const;
 	void autodetect() const;
@@ -34,6 +34,5 @@ private:
 	// Events
 	void onBtnAdd(wxCommandEvent& e);
 	void onBtnRemove(wxCommandEvent& e);
-	void onBtnDetect(wxCommandEvent& e);
 };
 } // namespace slade

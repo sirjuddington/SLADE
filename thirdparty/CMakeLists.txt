@@ -22,9 +22,8 @@ set(EXTERNAL_SOURCES
 )
 file(GLOB_RECURSE EXTERNAL_SOURCES
 	lzma/C/LzmaDec.c
-	mus2mid/mus2mid.cpp
-	zreaders/*.cpp
 	glad/src/*.c
+	libdrawtext/*.c
 	${DUMB_SOURCES}
 	${SLADE_HEADERS}
 	)
@@ -48,6 +47,11 @@ add_subdirectory(lunasvg/3rdparty/plutovg)
 
 # Add SQLiteCpp
 add_subdirectory(SQLiteCpp)
+
+# Required for libdrawtext or we get multiple definition linker errors
+if (NOT MSVC)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fcommon")
+endif ()
 
 add_library(external STATIC ${EXTERNAL_SOURCES})
 target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt::fmt ${CMAKE_DL_LIBS} SQLiteCpp)

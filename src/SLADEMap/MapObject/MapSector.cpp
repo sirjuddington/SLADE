@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,9 +33,16 @@
 #include "MapSector.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "Geometry/Geometry.h"
+#include "MapLine.h"
+#include "MapSide.h"
+#include "MapVertex.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
+#include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
+#include "Utility/Polygon.h"
 
 using namespace slade;
 
@@ -71,7 +78,7 @@ MapSector::MapSector(
 // -----------------------------------------------------------------------------
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapSector::MapSector(string_view f_tex, string_view c_tex, ParseTreeNode* udmf_def) :
+MapSector::MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* udmf_def) :
 	MapObject(Type::Sector),
 	floor_{ f_tex },
 	ceiling_{ c_tex }
@@ -103,6 +110,11 @@ MapSector::MapSector(string_view f_tex, string_view c_tex, ParseTreeNode* udmf_d
 			properties_[prop->name()] = prop->value();
 	}
 }
+
+// -----------------------------------------------------------------------------
+// MapSector class destructor
+// -----------------------------------------------------------------------------
+MapSector::~MapSector() = default;
 
 // -----------------------------------------------------------------------------
 // Copies another map object [s]
@@ -206,17 +218,17 @@ void MapSector::setFloatProperty(string_view key, double value)
 {
 	using game::UDMFFeature;
 
-	// Check if flat offset/scale/rotation is changing (if UDMF)
-	if (parent_map_->currentFormat() == MapFormat::UDMF)
-	{
-		if ((game::configuration().featureSupported(UDMFFeature::FlatPanning)
-			 && (key == "xpanningfloor" || key == "ypanningfloor"))
-			|| (game::configuration().featureSupported(UDMFFeature::FlatScaling)
-				&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
-			|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
-				&& (key == "rotationfloor" || key == "rotationceiling")))
-			polygon_.setTexture(0); // Clear texture to force update
-	}
+	//// Check if flat offset/scale/rotation is changing (if UDMF)
+	// if (parent_map_->currentFormat() == MapFormat::UDMF)
+	//{
+	//	if ((game::configuration().featureSupported(UDMFFeature::FlatPanning)
+	//		 && (key == "xpanningfloor" || key == "ypanningfloor"))
+	//		|| (game::configuration().featureSupported(UDMFFeature::FlatScaling)
+	//			&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
+	//		|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
+	//			&& (key == "rotationfloor" || key == "rotationceiling")))
+	//		polygon_.setTexture(0); // Clear texture to force update
+	// }
 
 	MapObject::setFloatProperty(key, value);
 }
@@ -373,7 +385,7 @@ void MapSector::updateBBox()
 		bbox_.extend(line->v2()->xPos(), line->v2()->yPos());
 	}
 
-	text_point_.set(0, 0);
+	text_point_ = { 0, 0 };
 	setGeometryUpdated();
 }
 
@@ -390,23 +402,23 @@ BBox MapSector::boundingBox()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the sector polygon, updating it if necessary
+// Returns the sector polygon vertices (as triangles), updating if necessary
 // -----------------------------------------------------------------------------
-Polygon2D* MapSector::polygon()
+const vector<glm::vec2>& MapSector::polygonVertices()
 {
 	if (poly_needsupdate_)
 	{
-		polygon_.openSector(this);
-		poly_needsupdate_ = false;
+		polygon_triangles_ = polygon::generateSectorTriangles(*this);
+		poly_needsupdate_  = false;
 	}
 
-	return &polygon_;
+	return polygon_triangles_;
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the given [point] is inside the sector
 // -----------------------------------------------------------------------------
-bool MapSector::containsPoint(Vec2d point)
+bool MapSector::containsPoint(const Vec2d& point)
 {
 	// Check with bbox first
 	if (!boundingBox().contains(point))
@@ -434,7 +446,7 @@ bool MapSector::containsPoint(Vec2d point)
 		return false;
 
 	// Check the side of the nearest line
-	double side = math::lineSide(point, nline->seg());
+	double side = geometry::lineSide(point, nline->seg());
 	if (side >= 0 && nline->frontSector() == this)
 		return true;
 	else if (side < 0 && nline->backSector() == this)
@@ -446,7 +458,7 @@ bool MapSector::containsPoint(Vec2d point)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the closest line in the sector
 // -----------------------------------------------------------------------------
-double MapSector::distanceTo(Vec2d point, double maxdist)
+double MapSector::distanceTo(const Vec2d& point, double maxdist)
 {
 	// Init
 	if (maxdist < 0)
@@ -456,16 +468,16 @@ double MapSector::distanceTo(Vec2d point, double maxdist)
 	if (!bbox_.isValid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist     = math::distanceToLine(point, bbox_.leftSide());
+	double dist     = geometry::distanceToLine(point, bbox_.leftSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = math::distanceToLine(point, bbox_.topSide());
+	dist = geometry::distanceToLine(point, bbox_.topSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = math::distanceToLine(point, bbox_.rightSide());
+	dist = geometry::distanceToLine(point, bbox_.rightSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = math::distanceToLine(point, bbox_.bottomSide());
+	dist = geometry::distanceToLine(point, bbox_.bottomSide());
 	if (dist < min_dist)
 		min_dist = dist;
 
@@ -492,7 +504,7 @@ double MapSector::distanceTo(Vec2d point, double maxdist)
 // -----------------------------------------------------------------------------
 // Adds all lines that are part of the sector to [list]
 // -----------------------------------------------------------------------------
-bool MapSector::putLines(vector<MapLine*>& list)
+bool MapSector::putLines(vector<MapLine*>& list) const
 {
 	// Go through connected sides
 	for (auto& connected_side : connected_sides_)
@@ -508,7 +520,7 @@ bool MapSector::putLines(vector<MapLine*>& list)
 // -----------------------------------------------------------------------------
 // Adds all vertices that are part of the sector to [list]
 // -----------------------------------------------------------------------------
-bool MapSector::putVertices(vector<MapVertex*>& list)
+bool MapSector::putVertices(vector<MapVertex*>& list) const
 {
 	for (auto& connected_side : connected_sides_)
 	{
@@ -527,7 +539,7 @@ bool MapSector::putVertices(vector<MapVertex*>& list)
 // -----------------------------------------------------------------------------
 // Adds all vertices that are part of the sector to [list]
 // -----------------------------------------------------------------------------
-bool MapSector::putVertices(vector<MapObject*>& list)
+bool MapSector::putVertices(vector<MapObject*>& list) const
 {
 	for (auto& connected_side : connected_sides_)
 	{
@@ -546,16 +558,35 @@ bool MapSector::putVertices(vector<MapObject*>& list)
 // -----------------------------------------------------------------------------
 // Returns the light level of the sector at [where] - 1 = floor, 2 = ceiling
 // -----------------------------------------------------------------------------
-uint8_t MapSector::lightAt(int where)
+uint8_t MapSector::lightAt(int where, int extra_floor_index)
 {
 	// Check for UDMF + flat lighting
 	if (parent_map_->currentFormat() == MapFormat::UDMF
 		&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting))
 	{
+		// 3D floors cast their light downwards to the next floor down, so we
+		// need to know which floor this plane is below.
+		// The floor plane is on the bottom of the 3D floor, so no change is
+		// necessary -- unless we're being asked for the light of the sector
+		// itself, which is below the bottommost floor.
+		// Ceilings are below the next 3D floor up, so subtract 1.
+		int floor_gap = extra_floor_index;
+		if (where == 2)
+			floor_gap--;
+		else if (where == 1 && floor_gap < 0)
+			floor_gap = extra_floors_.size() - 1;
+		auto* control_sector = this;
+		if (floor_gap >= 0 && floor_gap < extra_floors_.size() && !extra_floors_[floor_gap].disableLighting()
+			&& !extra_floors_[floor_gap].lightingInsideOnly())
+		{
+			control_sector = parent_map_->sector(extra_floors_[floor_gap].control_sector_index);
+		}
+
 		// Get general light level
-		int l = light_;
+		int l = control_sector->lightLevel();
 
 		// Get specific light level
+		// TODO unclear how 3D floors work here -- what wins? what sector does it come from?
 		if (where == 1)
 		{
 			// Floor
@@ -660,7 +691,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 				ll = 0;
 
 			// Calculate and return the colour
-			float lightmult = (float)ll / 255.0f;
+			float lightmult = static_cast<float>(ll) / 255.0f;
 			return col.ampf(lightmult, lightmult, lightmult, 1.0f);
 		}
 	}
@@ -683,7 +714,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 
 		// Ignore light level if fullbright
 		if (fullbright)
-			return ColRGBA(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255);
+			return { wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255 };
 
 		// Get sector light level
 		int ll = light_;
@@ -718,13 +749,16 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 			ll = 0;
 
 		// Calculate and return the colour
-		float lightmult = (float)ll / 255.0f;
-		return ColRGBA(wxcol.Blue() * lightmult, wxcol.Green() * lightmult, wxcol.Red() * lightmult, 255);
+		float lightmult = static_cast<float>(ll) / 255.0f;
+		return { static_cast<uint8_t>(wxcol.Blue() * lightmult),
+				 static_cast<uint8_t>(wxcol.Green() * lightmult),
+				 static_cast<uint8_t>(wxcol.Red() * lightmult),
+				 255 };
 	}
 
 	// Other format, simply return the light level
 	if (fullbright)
-		return ColRGBA(255, 255, 255, 255);
+		return { 255, 255, 255, 255 };
 	else
 	{
 		int l = light_;
@@ -735,7 +769,9 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 		if (l < 0)
 			l = 0;
 
-		return ColRGBA(l, l, l, 255);
+		auto l8 = static_cast<uint8_t>(l);
+
+		return { l8, l8, l8, 255 };
 	}
 }
 
@@ -746,14 +782,14 @@ ColRGBA MapSector::fogColour()
 {
 	ColRGBA color(0, 0, 0, 0);
 
-	// map specials/scripts
+	// Map specials/scripts
 	if (parent_map_->mapSpecials()->tagFadeColoursSet())
 	{
 		if (parent_map_->mapSpecials()->tagFadeColour(id_, &color))
 			return color;
 	}
 
-	// udmf
+	// UDMF
 	if (parent_map_->currentFormat() == MapFormat::UDMF
 		&& game::configuration().featureSupported(game::UDMFFeature::SectorFog))
 	{
@@ -787,7 +823,7 @@ void MapSector::findTextPoint()
 	for (auto& connected_side : connected_sides_)
 	{
 		auto   l    = connected_side->parentLine();
-		double dist = math::distanceToLineFast(text_point_, l->seg());
+		double dist = geometry::distanceToLineFast(text_point_, l->seg());
 
 		if (dist < min_dist)
 		{
@@ -801,7 +837,7 @@ void MapSector::findTextPoint()
 	auto r_o = mid_side_parent->getPoint(Point::Mid);
 	auto r_d = mid_side_parent->frontVector();
 	if (mid_side == mid_side_parent->s1())
-		r_d.set(-r_d.x, -r_d.y);
+		r_d = { -r_d.x, -r_d.y };
 
 	// Find nearest intersecting line
 	min_dist = 9999999999.0;
@@ -811,14 +847,14 @@ void MapSector::findTextPoint()
 			continue;
 
 		auto   line = connected_side->parentLine();
-		double dist = math::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
+		double dist = geometry::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
 
 		if (dist > 0 && dist < min_dist)
 			min_dist = dist;
 	}
 
 	// Set text point to halfway between the two lines
-	text_point_.set(r_o.x + (r_d.x * min_dist * 0.5), r_o.y + (r_d.y * min_dist * 0.5));
+	text_point_ = { r_o.x + (r_d.x * min_dist * 0.5), r_o.y + (r_d.y * min_dist * 0.5) };
 }
 
 // -----------------------------------------------------------------------------
@@ -837,7 +873,7 @@ void MapSector::connectSide(MapSide* side)
 // -----------------------------------------------------------------------------
 // Removes [side] from the list of connected sides
 // -----------------------------------------------------------------------------
-void MapSector::disconnectSide(MapSide* side)
+void MapSector::disconnectSide(const MapSide* side)
 {
 	setModified();
 	for (unsigned a = 0; a < connected_sides_.size(); a++)
@@ -852,6 +888,23 @@ void MapSector::disconnectSide(MapSide* side)
 	poly_needsupdate_ = true;
 	bbox_.reset();
 	setGeometryUpdated();
+}
+
+void MapSector::addExtraFloor(const ExtraFloor& extra_floor, const MapSector& control_sector)
+{
+	extra_floors_.emplace_back(extra_floor);
+
+	// Sort extra floors from top down
+	std::sort(
+		extra_floors_.begin(),
+		extra_floors_.end(),
+		[](const ExtraFloor& a, const ExtraFloor& b) { return b.effective_height < a.effective_height; });
+
+	// Mark the sector as updated if the control sector has been; this is a sort of very rudimentary dependency graph
+	if (control_sector.geometry_updated_ > geometry_updated_)
+		setGeometryUpdated();
+	if (control_sector.modifiedTime() > modifiedTime())
+		setModified();
 }
 
 // -----------------------------------------------------------------------------
@@ -989,3 +1042,16 @@ void MapSector::writeUDMF(string& def)
 
 	def += "}\n\n";
 }
+
+#ifndef NDEBUG
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapSector::operator Debuggable() const
+{
+	if (!this)
+		return { "<sector NULL>" };
+
+	return { fmt::format("<sector {}>", index_) };
+}
+#endif

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,8 +32,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "Archive/Archive.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
+#include "General/UI.h"
 #include "NewArchiveDiaog.h"
 #include "UI/State.h"
 #include "UI/WxUtils.h"
@@ -65,7 +66,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	// Fill formats list
 	long selected_index = 0;
 	auto last_format    = ui::getStateString("ArchiveLastCreatedFormat");
-	for (const auto& format : Archive::allFormats())
+	for (const auto& format : archive::allFormatsInfo())
 		if (format.create)
 		{
 			if (format.id == last_format)
@@ -81,16 +82,16 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	// Layout
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type), 0, wxEXPAND | wxALL, ui::padLarge());
+	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type), wxutil::sfWithLargeBorder().Expand());
 	auto* hbox = wxutil::createDialogButtonBox(btn_create, btn_cancel);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Create button click
 	btn_create->Bind(
 		wxEVT_BUTTON,
 		[this, choice_type](wxCommandEvent&)
 		{
-			for (const auto& format : Archive::allFormats())
+			for (const auto& format : archive::allFormatsInfo())
 				if (choice_type->GetString(choice_type->GetSelection()) == (format.name + " Archive"))
 				{
 					archive_created_ = app::archiveManager().newArchive(format.id).get();

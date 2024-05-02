@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "ArchiveDir.h"
 #include "Archive.h"
+#include "ArchiveEntry.h"
+#include "EntryType/EntryType.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
 
@@ -71,7 +73,8 @@ void buildDirList(vector<shared_ptr<ArchiveDir>>& list, ArchiveDir const* dir)
 // ArchiveDir class constructor
 // -----------------------------------------------------------------------------
 ArchiveDir::ArchiveDir(string_view name, const shared_ptr<ArchiveDir>& parent, Archive* archive) :
-	archive_{ archive }, parent_dir_{ parent }
+	archive_{ archive },
+	parent_dir_{ parent }
 {
 	// Init dir entry
 	dir_entry_          = std::make_unique<ArchiveEntry>(name);
@@ -107,6 +110,14 @@ string ArchiveDir::path(bool include_name) const
 		return parent ? fmt::format("{}{}/", parent->path(), name()) : name() + "/";
 	else
 		return parent ? parent->path() : "/";
+}
+
+// -----------------------------------------------------------------------------
+// Sets the directory name to [new_name]
+// -----------------------------------------------------------------------------
+void ArchiveDir::setName(string_view new_name) const
+{
+	dir_entry_->setName(new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -686,7 +697,7 @@ bool ArchiveDir::merge(
 	shared_ptr<ArchiveDir>&           target,
 	const ArchiveDir*                 dir,
 	unsigned                          position,
-	ArchiveEntry::State               state,
+	EntryState                        state,
 	vector<shared_ptr<ArchiveDir>>*   created_dirs,
 	vector<shared_ptr<ArchiveEntry>>* created_entries)
 {

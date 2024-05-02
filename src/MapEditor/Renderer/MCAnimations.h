@@ -1,17 +1,31 @@
 #pragma once
 
-#include "MapEditor/Edit/Edit3D.h"
+#include "Geometry/Plane.h"
+#include "Geometry/RectFwd.h"
 
 namespace slade
 {
 // Forward declarations
-class MapLine;
-class MapVertex;
 class Polygon2D;
-class MapSector;
 class MapRenderer2D;
-class MapObject;
 class MapRenderer3D;
+namespace gl
+{
+	enum class Blend;
+	enum class PointSpriteType;
+
+	class PointSpriteBuffer;
+	class VertexBuffer2D;
+
+	namespace draw2d
+	{
+		struct Context;
+	}
+} // namespace gl
+namespace mapeditor
+{
+	enum class ItemType;
+}
 
 class MCAnimation
 {
@@ -23,6 +37,7 @@ public:
 
 	virtual bool update(long time) { return false; }
 	virtual void draw() {}
+	virtual void draw(gl::draw2d::Context& dc) {}
 
 protected:
 	long starttime_;
@@ -33,11 +48,11 @@ protected:
 class MCASelboxFader : public MCAnimation
 {
 public:
-	MCASelboxFader(long start, Vec2d tl, Vec2d br);
-	~MCASelboxFader() = default;
+	MCASelboxFader(long start, const Vec2d& tl, const Vec2d& br);
+	~MCASelboxFader() override = default;
 
 	bool update(long time) override;
-	void draw() override;
+	void draw(gl::draw2d::Context& dc) override;
 
 private:
 	Vec2d tl_;
@@ -49,18 +64,28 @@ private:
 class MCAThingSelection : public MCAnimation
 {
 public:
-	MCAThingSelection(long start, double x, double y, double radius, double scale_inv, bool select = true);
-	~MCAThingSelection() = default;
+	MCAThingSelection(
+		long                     start,
+		const vector<MapThing*>& things,
+		float                    view_scale,
+		gl::PointSpriteType      ps_type,
+		bool                     select = true);
+	~MCAThingSelection() override;
 
 	bool update(long time) override;
-	void draw() override;
+	void draw(gl::draw2d::Context& dc) override;
 
 private:
-	double x_      = 0.;
-	double y_      = 0.;
-	double radius_ = 0.;
-	bool   select_ = true;
-	float  fade_   = 1.f;
+	double              x_      = 0.;
+	double              y_      = 0.;
+	double              radius_ = 0.;
+	bool                select_ = true;
+	float               fade_   = 1.f;
+	gl::PointSpriteType ps_type_;
+
+	unique_ptr<gl::PointSpriteBuffer> buffer_;
+
+	float scaledRadius(float radius, float view_scale);
 };
 
 // Selection/deselection animation for lines
@@ -68,10 +93,10 @@ class MCALineSelection : public MCAnimation
 {
 public:
 	MCALineSelection(long start, const vector<MapLine*>& lines, bool select = true);
-	~MCALineSelection() = default;
+	~MCALineSelection() override = default;
 
 	bool update(long time) override;
-	void draw() override;
+	void draw(gl::draw2d::Context& dc) override;
 
 private:
 	vector<Rectf> lines_;
@@ -84,15 +109,15 @@ private:
 class MCAVertexSelection : public MCAnimation
 {
 public:
-	MCAVertexSelection(long start, const vector<MapVertex*>& verts, double size, bool select = true);
-	~MCAVertexSelection() = default;
+	MCAVertexSelection(long start, const vector<MapVertex*>& verts, float size, bool select = true);
+	~MCAVertexSelection() override = default;
 
 	bool update(long time) override;
-	void draw() override;
+	void draw(gl::draw2d::Context& dc) override;
 
 private:
-	vector<Vec2d> vertices_;
-	double        size_   = 0.;
+	vector<Vec2f> vertices_;
+	float         size_   = 0.;
 	bool          select_ = true;
 	float         fade_   = 1.f;
 };
@@ -101,16 +126,18 @@ private:
 class MCASectorSelection : public MCAnimation
 {
 public:
-	MCASectorSelection(long start, const vector<Polygon2D*>& polys, bool select = true);
-	~MCASectorSelection() = default;
+	MCASectorSelection(long start, const vector<MapSector*>& sectors, bool select = true);
+	~MCASectorSelection() override;
 
 	bool update(long time) override;
-	void draw() override;
+	void draw(gl::draw2d::Context& dc) override;
 
 private:
-	vector<Polygon2D*> polygons_;
-	bool               select_ = true;
-	float              fade_   = 1.f;
+	unique_ptr<gl::VertexBuffer2D> vertex_buffer_;
+	bool                           select_ = true;
+	float                          fade_   = 1.f;
+	glm::vec4                      colour_;
+	gl::Blend                      blend_;
 };
 
 // Selection/deselection animation for 3d mode walls
@@ -118,7 +145,7 @@ class MCA3dWallSelection : public MCAnimation
 {
 public:
 	MCA3dWallSelection(long start, Vec3f points[4], bool select = true);
-	~MCA3dWallSelection() = default;
+	~MCA3dWallSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -133,8 +160,8 @@ private:
 class MCA3dFlatSelection : public MCAnimation
 {
 public:
-	MCA3dFlatSelection(long start, MapSector* sector, Plane plane, bool select = true);
-	~MCA3dFlatSelection() = default;
+	MCA3dFlatSelection(long start, MapSector* sector, const Plane& plane, bool select = true);
+	~MCA3dFlatSelection() override = default;
 
 	bool update(long time) override;
 	void draw() override;
@@ -151,10 +178,11 @@ class MCAHilightFade : public MCAnimation
 {
 public:
 	MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init);
-	~MCAHilightFade() = default;
+	~MCAHilightFade() override = default;
 
 	bool update(long time) override;
 	void draw() override;
+	void draw(gl::draw2d::Context& dc) override;
 
 private:
 	MapObject*     object_    = nullptr;
@@ -173,7 +201,7 @@ public:
 		mapeditor::ItemType item_type,
 		MapRenderer3D*      renderer,
 		float               fade_init);
-	~MCAHilightFade3D() = default;
+	~MCAHilightFade3D() override = default;
 
 	bool update(long time) override;
 	void draw() override;

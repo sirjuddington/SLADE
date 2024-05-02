@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,9 +33,11 @@
 #include "Main.h"
 #include "ArchiveManager.h"
 #include "App.h"
-#include "Formats/DirArchive.h"
-#include "Formats/WadArchive.h"
-#include "Formats/ZipArchive.h"
+#include "Archive.h"
+#include "ArchiveDir.h"
+#include "ArchiveEntry.h"
+#include "ArchiveFormatHandler.h"
+#include "EntryType/EntryType.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
@@ -176,7 +178,7 @@ bool ArchiveManager::validResDir(string_view dir) const
 // -----------------------------------------------------------------------------
 bool ArchiveManager::init()
 {
-	program_resource_archive_ = std::make_unique<ZipArchive>();
+	program_resource_archive_ = std::make_unique<Archive>(ArchiveFormat::Zip);
 
 #ifdef __WXOSX__
 	// Use Resources dir within bundle on mac
@@ -227,7 +229,7 @@ bool ArchiveManager::init()
 // -----------------------------------------------------------------------------
 bool ArchiveManager::initArchiveFormats() const
 {
-	return Archive::loadFormats(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->data());
+	return archive::loadFormatInfo(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->data());
 }
 
 // -----------------------------------------------------------------------------
@@ -279,7 +281,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		app::resources().addArchive(archive.get());
 
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
-		if ((archive->formatId() == "zip" || archive->formatId() == "folder") && auto_open_wads_root)
+		if ((archive->format() == ArchiveFormat::Zip || archive->format() == ArchiveFormat::Dir) && auto_open_wads_root)
 		{
 			for (const auto& entry : archive->rootDir()->entries())
 			{
@@ -305,7 +307,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 shared_ptr<Archive> ArchiveManager::getArchive(int index)
 {
 	// Check that index is valid
-	if (index < 0 || index >= (int)open_archives_.size())
+	if (index < 0 || index >= static_cast<int>(open_archives_.size()))
 		return nullptr;
 	else
 		return open_archives_[index].archive;
@@ -368,14 +370,18 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		return new_archive;
 	}
 
-	// Check if file is a known archive format
-	new_archive = archive::createIfArchive(string{ filename });
-	if (!new_archive)
+	// Determine file format
+	string std_fn{ filename };
+	auto   format_id = archive::detectArchiveFormat(std_fn);
+	if (format_id == ArchiveFormat::Unknown)
 	{
-		// Unsupported format
+		// Unsupported/unknown format
 		global::error = "Unsupported or invalid Archive format";
 		return nullptr;
 	}
+
+	// Create archive
+	new_archive = std::make_shared<Archive>(format_id);
 
 	// Attempt to open archive
 	if (!new_archive->open(filename, false))
@@ -432,13 +438,16 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	}
 
 	// Check entry type
-	auto new_archive = archive::createIfArchive(entry->data(), entry->name());
-	if (!new_archive)
+	auto format_id = archive::detectArchiveFormat(entry->data());
+	if (format_id == ArchiveFormat::Unknown)
 	{
-		// Unsupported format
+		// Unsupported/unknown format
 		global::error = "Unsupported or invalid Archive format";
 		return nullptr;
 	}
+
+	// Create archive
+	auto new_archive = std::make_shared<Archive>(format_id);
 
 	// Attempt to open archive
 	if (!new_archive->open(entry, false))
@@ -498,7 +507,7 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 		return new_archive;
 	}
 
-	new_archive = std::make_shared<DirArchive>();
+	new_archive = std::make_shared<Archive>(ArchiveFormat::Dir);
 
 	// Attempt to open archive
 	if (!new_archive->open(dir, false))
@@ -537,26 +546,30 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 // archives. Returns the created archive, or nullptr if an invalid archive type
 // was given
 // -----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
+shared_ptr<Archive> ArchiveManager::newArchive(ArchiveFormat format)
 {
-	// Create a new archive depending on the type specified
-	auto new_archive = archive::create(format);
-	if (!new_archive)
+	// Check if the format specified allows archive creation
+	auto format_info = archive::formatInfo(format);
+	if (!format_info.create)
 	{
-		global::error = fmt::format("Can not create archive of format: {}", format);
+		global::error = fmt::format("Can not create archive of format: {}", format_info.name);
 		log::error(global::error);
 		return nullptr;
 	}
 
-	// If the archive was created, set its filename and add it to the list
-	if (new_archive)
-	{
-		new_archive->setFilename(fmt::format("UNSAVED ({})", new_archive->formatDesc().name));
-		addArchive(new_archive);
-	}
+	// Create a new archive depending on the format specified
+	auto new_archive = std::make_shared<Archive>(format);
+
+	// Set its filename and add it to the list
+	new_archive->setFilename(fmt::format("UNSAVED ({})", new_archive->formatInfo().name));
+	addArchive(new_archive);
 
 	// Return the created archive, if any
 	return new_archive;
+}
+shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
+{
+	return newArchive(archive::formatFromId(format));
 }
 
 // -----------------------------------------------------------------------------
@@ -566,7 +579,7 @@ shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 bool ArchiveManager::closeArchive(int index)
 {
 	// Check for invalid index
-	if (index < 0 || index >= (int)open_archives_.size())
+	if (index < 0 || index >= static_cast<int>(open_archives_.size()))
 		return false;
 
 	// Announce archive closing
@@ -591,11 +604,9 @@ bool ArchiveManager::closeArchive(int index)
 	}
 
 	// Remove ourselves from our parent's open-child list
-	auto parent = open_archives_[index].archive->parentEntry();
-	if (parent)
+	if (auto parent = open_archives_[index].archive->parentEntry())
 	{
-		auto gp = parent->parent();
-		if (gp)
+		if (auto gp = parent->parent())
 		{
 			int pi = archiveIndex(gp);
 			if (pi >= 0)
@@ -643,7 +654,7 @@ bool ArchiveManager::closeArchive(int index)
 bool ArchiveManager::closeArchive(string_view filename)
 {
 	// Go through all open archives
-	for (int a = 0; a < (int)open_archives_.size(); a++)
+	for (int a = 0; a < static_cast<int>(open_archives_.size()); a++)
 	{
 		// If the filename matches, remove it
 		if (open_archives_[a].archive->filename() == filename)
@@ -661,7 +672,7 @@ bool ArchiveManager::closeArchive(string_view filename)
 bool ArchiveManager::closeArchive(const Archive* archive)
 {
 	// Go through all open archives
-	for (int a = 0; a < (int)open_archives_.size(); a++)
+	for (int a = 0; a < static_cast<int>(open_archives_.size()); a++)
 	{
 		// If the archive exists in the list, remove it
 		if (open_archives_[a].archive.get() == archive)
@@ -693,7 +704,7 @@ int ArchiveManager::archiveIndex(const Archive* archive) const
 	{
 		// If the archive we're looking for is this one, return the index
 		if (open_archives_[a].archive.get() == archive)
-			return (int)a;
+			return static_cast<int>(a);
 	}
 
 	// If we get to here the archive wasn't found, so return -1
@@ -730,7 +741,7 @@ vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(const Archive* 
 // -----------------------------------------------------------------------------
 string ArchiveManager::getArchiveExtensionsString() const
 {
-	auto           formats = Archive::allFormats();
+	auto           formats = archive::allFormatsInfo();
 	vector<string> ext_strings;
 	string         ext_all = "Any supported file|";
 	for (const auto& fmt : formats)
@@ -853,11 +864,11 @@ void ArchiveManager::removeBaseResourcePath(unsigned index)
 		return;
 
 	// Unload base resource if removed is open
-	if (index == (unsigned)base_resource)
+	if (index == static_cast<unsigned>(base_resource))
 		openBaseResource(-1);
 
 	// Modify base_resource cvar if needed
-	else if (base_resource > (signed)index)
+	else if (base_resource > static_cast<signed>(index))
 		base_resource = base_resource - 1;
 
 	// Remove the path
@@ -904,7 +915,7 @@ bool ArchiveManager::openBaseResource(int index)
 	}
 
 	// Check index
-	if (index < 0 || (unsigned)index >= base_resource_paths_.size())
+	if (index < 0 || static_cast<unsigned>(index) >= base_resource_paths_.size())
 	{
 		base_resource = -1;
 		signals_.base_res_current_cleared();
@@ -913,10 +924,10 @@ bool ArchiveManager::openBaseResource(int index)
 
 	// Create archive based on file type
 	auto filename = base_resource_paths_[index];
-	if (WadArchive::isWadArchive(filename))
-		base_resource_archive_ = std::make_unique<WadArchive>();
-	else if (ZipArchive::isZipArchive(filename))
-		base_resource_archive_ = std::make_unique<ZipArchive>();
+	if (archive::isFormat(filename, ArchiveFormat::Wad))
+		base_resource_archive_ = std::make_unique<Archive>(ArchiveFormat::Wad);
+	else if (archive::isFormat(filename, ArchiveFormat::Zip))
+		base_resource_archive_ = std::make_unique<Archive>(ArchiveFormat::Zip);
 	else
 		return false;
 
@@ -955,8 +966,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, const Archive* 
 			continue;
 
 		// Try to find the entry in the archive
-		auto entry = open_archive.archive->entry(name);
-		if (entry)
+		if (auto entry = open_archive.archive->entry(name))
 			return entry;
 	}
 
@@ -970,7 +980,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, const Archive* 
 // -----------------------------------------------------------------------------
 // Searches for an entry matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options, const Archive* ignore) const
+ArchiveEntry* ArchiveManager::findResourceEntry(ArchiveSearchOptions& options, const Archive* ignore) const
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -984,8 +994,7 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options,
 			continue;
 
 		// Try to find the entry in the archive
-		auto entry = open_archive.archive->findLast(options);
-		if (entry)
+		if (auto entry = open_archive.archive->findLast(options))
 			return entry;
 	}
 
@@ -999,8 +1008,7 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options,
 // -----------------------------------------------------------------------------
 // Searches for entries matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOptions& options, const Archive* ignore)
-	const
+vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(ArchiveSearchOptions& options, const Archive* ignore) const
 {
 	vector<ArchiveEntry*> ret;
 

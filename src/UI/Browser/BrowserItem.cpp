@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,15 +35,13 @@
 #include "BrowserItem.h"
 #include "BrowserWindow.h"
 #include "General/UI.h"
-#include "OpenGL/Drawing.h"
+#include "Geometry/Rect.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
-#include "OpenGL/OpenGL.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
-using NameType = BrowserCanvas::NameType;
-using ItemView = BrowserCanvas::ItemView;
-
+using namespace browser;
 
 // -----------------------------------------------------------------------------
 //
@@ -63,6 +61,11 @@ BrowserItem::BrowserItem(const wxString& name, unsigned index, const wxString& t
 }
 
 // -----------------------------------------------------------------------------
+// BrowserItem class destructor
+// -----------------------------------------------------------------------------
+BrowserItem::~BrowserItem() = default;
+
+// -----------------------------------------------------------------------------
 // Loads the item image (base class does nothing, must be overridden by child
 // classes to be useful at all)
 // -----------------------------------------------------------------------------
@@ -75,16 +78,10 @@ bool BrowserItem::loadImage()
 // Draws the item in a [size]x[size] box, keeping the correct aspect ratio of
 // it's image
 // -----------------------------------------------------------------------------
-void BrowserItem::draw(
-	int            size,
-	int            x,
-	int            y,
-	drawing::Font  font,
-	NameType       nametype,
-	ItemView       viewtype,
-	const ColRGBA& colour,
-	bool           text_shadow)
+void BrowserItem::draw(int size, gl::draw2d::Context& dc, NameType nametype, ItemView viewtype)
 {
+	auto sizef = static_cast<float>(size);
+
 	// Determine item name string (for normal viewtype)
 	string draw_name;
 	if (nametype == NameType::Normal)
@@ -116,24 +113,20 @@ void BrowserItem::draw(
 	// Item name
 	if (viewtype == ItemView::Normal)
 	{
-		if (text_shadow)
-			drawing::drawText(
-				draw_name, x + (size * 0.5 + 1), y + size + 5, ColRGBA::BLACK, font, drawing::Align::Center);
-		drawing::drawText(draw_name, x + (size * 0.5), y + size + 4, colour, font, drawing::Align::Center);
+		dc.text_alignment = gl::draw2d::Align::Center;
+		dc.drawText(draw_name, { sizef * 0.5f, sizef + 4.0f });
 	}
 	else if (viewtype == ItemView::Tiles)
 	{
 		// Create text box if needed
 		if (!text_box_)
-			text_box_ = std::make_unique<TextBox>(
-				fmt::format("{}\n{}", index_, name_.mb_str().data()), font, ui::scalePx(144), ui::scalePx(16));
+			text_box_ = std::make_unique<gl::draw2d::TextBox>(
+				fmt::format("{}\n{}", index_, name_.mb_str().data()), ui::scalePx(144), dc.font, ui::scalePx(16));
 
-		int top = y;
-		top += ((size - text_box_->height()) * 0.5);
-
-		if (text_shadow)
-			text_box_->draw(x + size + 9, top + 1, ColRGBA::BLACK);
-		text_box_->draw(x + size + 8, top, colour);
+		Vec2f pos;
+		pos.x = sizef + 8.0f;
+		pos.y = (sizef - text_box_->height()) * 0.5f;
+		text_box_->draw(pos, dc);
 	}
 
 	// If the item is blank don't bother with the image
@@ -147,41 +140,33 @@ void BrowserItem::draw(
 	// If it still isn't just draw a red box with an X
 	if (!image_tex_ || (image_tex_ && !gl::Texture::isLoaded(image_tex_)))
 	{
-		glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
+		static vector<Rectf> lines_box_x;
+		if (lines_box_x.empty())
+		{
+			lines_box_x.emplace_back(0.0f, 0.0f, 0.0f, sizef);
+			lines_box_x.emplace_back(0.0f, sizef, sizef, sizef);
+			lines_box_x.emplace_back(sizef, sizef, sizef, 0.0f);
+			lines_box_x.emplace_back(sizef, 0.0f, 0.0f, 0.0f);
+			lines_box_x.emplace_back(0.0f, 0.0f, sizef, sizef);
+			lines_box_x.emplace_back(0.0f, sizef, sizef, 0.0f);
+		}
 
-		glColor3f(1, 0, 0);
-		glDisable(GL_TEXTURE_2D);
-
-		// Outline
-		glBegin(GL_LINE_LOOP);
-		glVertex2i(x, y);
-		glVertex2i(x, y + size);
-		glVertex2i(x + size, y + size);
-		glVertex2i(x + size, y);
-		glEnd();
-
-		// X
-		glBegin(GL_LINES);
-		glVertex2i(x, y);
-		glVertex2i(x + size, y + size);
-		glVertex2i(x, y + size);
-		glVertex2i(x + size, y);
-		glEnd();
-
-		glPopAttrib();
+		dc.line_thickness = 2.0f;
+		dc.colour         = ColRGBA::RED;
+		dc.drawLines(lines_box_x);
 
 		return;
 	}
 
 	// Determine texture dimensions
-	auto&  tex_info = gl::Texture::info(image_tex_);
-	double width    = tex_info.size.x;
-	double height   = tex_info.size.y;
+	auto& tex_info = gl::Texture::info(image_tex_);
+	float width    = tex_info.size.x;
+	float height   = tex_info.size.y;
 
 	// Scale up if size > 128
 	if (size > 128)
 	{
-		double scale = (double)size / 128.0;
+		float scale = sizef / 128.0;
 		width *= scale;
 		height *= scale;
 	}
@@ -189,9 +174,9 @@ void BrowserItem::draw(
 	if (width > height)
 	{
 		// Scale down by width
-		if (width > size)
+		if (width > sizef)
 		{
-			double scale = (double)size / width;
+			float scale = sizef / width;
 			width *= scale;
 			height *= scale;
 		}
@@ -199,30 +184,29 @@ void BrowserItem::draw(
 	else
 	{
 		// Scale down by height
-		if (height > size)
+		if (height > sizef)
 		{
-			double scale = (double)size / height;
+			float scale = sizef / height;
 			width *= scale;
 			height *= scale;
 		}
 	}
 
 	// Determine draw coords
-	double top  = y + ((double)size * 0.5) - (height * 0.5);
-	double left = x + ((double)size * 0.5) - (width * 0.5);
+	float top  = sizef * 0.5 - height * 0.5;
+	float left = sizef * 0.5 - width * 0.5;
+
+	// Disable tiling for texture
+	bool tiling = tex_info.tiling;
+	if (tiling)
+		gl::Texture::setTiling(image_tex_, false);
 
 	// Draw
-	gl::Texture::bind(image_tex_);
-	gl::setColour(ColRGBA::WHITE);
+	dc.texture = image_tex_;
+	dc.colour  = ColRGBA::WHITE;
+	dc.drawRect({ left, top, left + width, top + height });
 
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f);
-	glVertex2d(left, top);
-	glTexCoord2f(0.0f, 1.0f);
-	glVertex2d(left, top + height);
-	glTexCoord2f(1.0f, 1.0f);
-	glVertex2d(left + width, top + height);
-	glTexCoord2f(1.0f, 0.0f);
-	glVertex2d(left + width, top);
-	glEnd();
+	// Re-enable tiling for texture if needed
+	if (tiling)
+		gl::Texture::setTiling(image_tex_, true);
 }

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,9 @@
 #include "Main.h"
 #include "NewEntryDialog.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveFormat.h"
+#include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/WxUtils.h"
 
@@ -86,7 +89,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 {
 	wxutil::setWindowIcon(this, new_dir ? "newfolder" : "newentry");
 
-	const auto&   archive_format = archive.formatDesc();
+	const auto&   archive_format = archive.formatInfo();
 	auto          types          = wxutil::arrayStringStd(type_names);
 	wxArrayString all_dirs;
 	allDirs(*archive.rootDir(), all_dirs);
@@ -112,7 +115,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	auto* m_sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_sizer);
 	auto* sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	m_sizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	m_sizer->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
 
 	// New entry options
 	int row = 0;
@@ -137,9 +140,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	// Dialog buttons
 	m_sizer->Add(
 		wxutil::createDialogButtonBox(this, "Create", "Cancel"),
-		0,
-		wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
-		ui::padLarge());
+		wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 
 	// --- Bind events ---

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,15 +33,19 @@
 #include "MainWindow.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
+#include "General/SAction.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "Library/UI/LibraryPanel.h"
 #include "MapEditor/MapEditor.h"
 #include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
 #include "StartPanel.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/PaletteChooser.h"
@@ -674,6 +678,8 @@ bool MainWindow::handleAction(string_view id)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the window is closed
@@ -714,6 +720,22 @@ void MainWindow::onSize(wxSizeEvent& e)
 
 	// Update maximized cvar
 	ui::saveStateBool("MainWindowMaximized", IsMaximized());
+
+	// Test creation of OpenGL context
+	if (!opengl_test_done && e.GetSize().x > 20 && e.GetSize().y > 20)
+	{
+		auto mf = new wxMiniFrame(this, -1, "OpenGL Test", wxDefaultPosition, { 32, 32 });
+		mf->SetSizer(new wxBoxSizer(wxVERTICAL));
+
+		auto test_canvas = new GLCanvas(mf);
+		mf->GetSizer()->Add(test_canvas, wxSizerFlags(1).Expand());
+
+		mf->Show();
+		test_canvas->activateContext();
+		mf->Close(true);
+
+		opengl_test_done = true;
+	}
 
 	e.Skip();
 }

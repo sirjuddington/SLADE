@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Archive.h"
-
 namespace slade
 {
+enum class ArchiveFormat;
+struct ArchiveSearchOptions;
+
 class ArchiveManager
 {
 public:
@@ -21,12 +22,13 @@ public:
 	shared_ptr<Archive>         openArchive(string_view filename, bool manage = true, bool silent = false);
 	shared_ptr<Archive>         openArchive(ArchiveEntry* entry, bool manage = true, bool silent = false);
 	shared_ptr<Archive>         openDirArchive(string_view dir, bool manage = true, bool silent = false);
+	shared_ptr<Archive>         newArchive(ArchiveFormat format);
 	shared_ptr<Archive>         newArchive(string_view format);
 	bool                        closeArchive(int index);
 	bool                        closeArchive(string_view filename);
 	bool                        closeArchive(const Archive* archive);
 	void                        closeAll();
-	int                         numArchives() const { return (int)open_archives_.size(); }
+	int                         numArchives() const { return static_cast<int>(open_archives_.size()); }
 	int                         archiveIndex(const Archive* archive) const;
 	vector<shared_ptr<Archive>> getDependentArchives(const Archive* archive);
 	Archive*                    programResourceArchive() const { return program_resource_archive_.get(); }
@@ -51,9 +53,8 @@ public:
 
 	// Resource entry get/search
 	ArchiveEntry*         getResourceEntry(string_view name, const Archive* ignore = nullptr) const;
-	ArchiveEntry*         findResourceEntry(Archive::SearchOptions& options, const Archive* ignore = nullptr) const;
-	vector<ArchiveEntry*> findAllResourceEntries(Archive::SearchOptions& options, const Archive* ignore = nullptr)
-		const;
+	ArchiveEntry*         findResourceEntry(ArchiveSearchOptions& options, const Archive* ignore = nullptr) const;
+	vector<ArchiveEntry*> findAllResourceEntries(ArchiveSearchOptions& options, const Archive* ignore = nullptr) const;
 
 	// Bookmarks
 	void          addBookmark(const shared_ptr<ArchiveEntry>& entry);

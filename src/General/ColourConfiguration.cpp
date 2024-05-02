@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,9 @@
 #include "Main.h"
 #include "ColourConfiguration.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Console.h"
 #include "Utility/Parser.h"
@@ -100,15 +103,6 @@ void colourconfig::setColour(const string& name, int red, int green, int blue, i
 
 	col.blend_additive = blend_additive;
 	col.exists         = true;
-}
-
-// -----------------------------------------------------------------------------
-// Sets the current OpenGL colour and blend mode to match definition [name]
-// -----------------------------------------------------------------------------
-void colourconfig::setGLColour(const string& name, float alpha_mult)
-{
-	auto& col = cc_colours[name];
-	gl::setColour(col.colour.r, col.colour.g, col.colour.b, col.colour.a * alpha_mult, col.blendMode());
 }
 
 // -----------------------------------------------------------------------------
@@ -408,7 +402,13 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		// Print colour
 		auto def = colourconfig::colDef(args[0]);
 		log::console(fmt::format(
-			"Colour \"{}\" = {} {} {} {} {}", args[0], def.colour.r, def.colour.g, def.colour.b, def.blend_additive));
+			"Colour \"{}\" = {} {} {} {} {}",
+			args[0],
+			def.colour.r,
+			def.colour.g,
+			def.colour.b,
+			def.colour.a,
+			def.blend_additive));
 	}
 }
 

@@ -35,12 +35,16 @@
 #include "Library.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
+#include "Archive/ArchiveFormatHandler.h"
 #include "ArchiveEntry.h"
 #include "ArchiveFile.h"
 #include "ArchiveMap.h"
 #include "ArchiveUIConfig.h"
 #include "General/Database.h"
 #include "Utility/FileUtils.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
@@ -234,7 +238,7 @@ int64_t library::writeArchiveInfo(const Archive& archive)
 		// Create archive_ui_config row if needed
 		if (new_archive_row)
 		{
-			ArchiveUIConfigRow ui_config{ archive_file.id, archive.formatDesc().supports_dirs };
+			ArchiveUIConfigRow ui_config{ archive_file.id, archive.formatInfo().supports_dirs };
 			ui_config.insert();
 		}
 
@@ -440,9 +444,12 @@ void library::scanArchivesInDir(string_view path, const vector<string>& ignore_e
 		}
 
 		// Check if file is a known archive format
-		if (auto archive = archive::createIfArchive(filename))
+		auto format = archive::detectArchiveFormat(filename);
+		if (format != ArchiveFormat::Unknown)
 		{
-			log::info("Library Scan: Scanning file \"{}\" (detected as {})", filename, archive->formatDesc().name);
+			auto archive = std::make_unique<Archive>(format);
+
+			log::info("Library Scan: Scanning file \"{}\" (detected as {})", filename, archive->formatInfo().name);
 
 			if (!archive->open(filename, true))
 			{

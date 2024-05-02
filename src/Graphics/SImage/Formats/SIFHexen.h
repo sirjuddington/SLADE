@@ -138,7 +138,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override
 	{
 		// Is there really any point to being able to write this format?
 		// Answer: yeah, no other tool can do it. :p
@@ -328,7 +328,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override
 	{
 		// Again, don't see much point
 		if (!gfx_extraconv)

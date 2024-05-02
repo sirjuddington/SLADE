@@ -8,7 +8,7 @@ class TextEditorPrefsPanel : public PrefsPanelBase
 {
 public:
 	TextEditorPrefsPanel(wxWindow* parent);
-	~TextEditorPrefsPanel() = default;
+	~TextEditorPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;

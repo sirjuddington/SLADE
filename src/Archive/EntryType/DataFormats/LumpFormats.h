@@ -15,7 +15,7 @@ public:
 		// Not the best test in the world. But a text-based texture lump ought
 		// to fail it every time; as it would be interpreted as too high a number.
 		uint32_t ntex = mc.readL32(0);
-		if ((int32_t)ntex < 0)
+		if (static_cast<int32_t>(ntex) < 0)
 			return MATCH_FALSE;
 		if (mc.size() < (ntex * 24))
 			return MATCH_FALSE;
@@ -33,7 +33,7 @@ public:
 	{
 		// It's a pretty simple format alright
 		uint32_t number = mc.readL32(0);
-		if ((int32_t)number < 0)
+		if (static_cast<int32_t>(number) < 0)
 			return MATCH_FALSE;
 		if (mc.size() != (4 + number * 8))
 			return MATCH_FALSE;

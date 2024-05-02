@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,22 +32,29 @@
 #include "Main.h"
 #include "MapEditorWindow.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/Formats/WadArchive.h"
 #include "Game/Configuration.h"
+#include "Game/Game.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
+#include "MapEditor/Edit/Input.h"
 #include "MapEditor/MapBackupManager.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "MapEditor/NodeBuilders.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/UI/MapCanvas.h"
 #include "MapEditor/UI/MapChecksPanel.h"
 #include "MapEditor/UI/ObjectEditPanel.h"
 #include "MapEditor/UI/PropsPanel/MapObjectPropsPanel.h"
 #include "MapEditor/UI/ScriptEditorPanel.h"
 #include "MapEditor/UI/ShapeDrawPanel.h"
+#include "SLADEMap/SLADEMap.h"
 #include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
 #include "UI/Controls/ConsolePanel.h"
@@ -62,6 +69,7 @@
 #include "Utility/SFileDialog.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -183,6 +191,8 @@ void MapEditorWindow::setupMenu()
 	menu_map->AppendSeparator();
 	SAction::fromId("mapw_run_map")->addToMenu(menu_map);
 	SAction::fromId("mapw_quick_run_map")->addToMenu(menu_map);
+	menu_map->AppendSeparator();
+	SAction::fromId("mapw_close")->addToMenu(menu_map);
 	menu->Append(menu_map, "&Map");
 
 	// Edit menu
@@ -248,7 +258,7 @@ void MapEditorWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Map canvas
-	map_canvas_ = new MapCanvas(this, -1, &mapeditor::editContext());
+	map_canvas_ = new MapCanvas(this, &mapeditor::editContext());
 	p_inf.CenterPane();
 	m_mgr->AddPane(map_canvas_, p_inf);
 
@@ -557,7 +567,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 // -----------------------------------------------------------------------------
 // Opens [map] in the editor
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::openMap(const Archive::MapDesc& map)
+bool MapEditorWindow::openMap(const MapDesc& map)
 {
 	// If a map is currently open and modified, prompt to save changes
 	if (mapeditor::editContext().map().isModified())
@@ -593,7 +603,7 @@ bool MapEditorWindow::openMap(const Archive::MapDesc& map)
 		// Load map data
 		if (map.archive)
 		{
-			WadArchive temp;
+			Archive temp(ArchiveFormat::Wad);
 			temp.open(head->data(), true);
 			for (unsigned a = 0; a < temp.numEntries(); a++)
 				map_data_.emplace_back(new ArchiveEntry(*(temp.entryAt(a))));
@@ -657,7 +667,7 @@ bool MapEditorWindow::openMap(const Archive::MapDesc& map)
 // -----------------------------------------------------------------------------
 // Loads any scripts from [map] into the script editor
 // -----------------------------------------------------------------------------
-void MapEditorWindow::loadMapScripts(const Archive::MapDesc& map)
+void MapEditorWindow::loadMapScripts(const MapDesc& map)
 {
 	// Don't bother if no scripting language specified
 	if (game::configuration().scriptLanguage().empty())
@@ -681,7 +691,7 @@ void MapEditorWindow::loadMapScripts(const Archive::MapDesc& map)
 	// Check for pk3 map
 	if (map.archive)
 	{
-		auto wad = new WadArchive();
+		auto wad = std::make_unique<Archive>(ArchiveFormat::Wad);
 		wad->open(head->data(), true);
 		auto maps = wad->detectMaps();
 		if (!maps.empty())
@@ -690,8 +700,6 @@ void MapEditorWindow::loadMapScripts(const Archive::MapDesc& map)
 			wad->close();
 			return;
 		}
-
-		delete wad;
 	}
 
 	// Go through map entries
@@ -790,7 +798,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 // -----------------------------------------------------------------------------
 // Writes the current map as [name] to a wad archive and returns it
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::writeMap(WadArchive& wad, const wxString& name, bool nodes)
+bool MapEditorWindow::writeMap(Archive& wad, const wxString& name, bool nodes)
 {
 	auto& mdesc_current = mapeditor::editContext().mapDesc();
 	auto& map           = mapeditor::editContext().map();
@@ -862,7 +870,7 @@ bool MapEditorWindow::saveMap()
 		return saveMapAs();
 
 	// Write map to temp wad
-	WadArchive wad;
+	Archive wad(ArchiveFormat::Wad);
 	if (!writeMap(wad))
 		return false;
 
@@ -871,7 +879,7 @@ bool MapEditorWindow::saveMap()
 	auto                map = mdesc_current;
 	if (mdesc_current.archive && current_head)
 	{
-		tempwad = std::make_unique<WadArchive>();
+		tempwad = std::make_unique<Archive>(ArchiveFormat::Wad);
 		tempwad->open(current_head.get(), true);
 		auto amaps = tempwad->detectMaps();
 		if (!amaps.empty())
@@ -930,7 +938,7 @@ bool MapEditorWindow::saveMapAs()
 		return false;
 
 	// Create new, empty wad
-	WadArchive               wad;
+	Archive                  wad(ArchiveFormat::Wad);
 	auto                     head = wad.addNewEntry(mdesc_current.name);
 	shared_ptr<ArchiveEntry> end;
 	if (mdesc_current.format == MapFormat::UDMF)
@@ -1184,6 +1192,13 @@ bool MapEditorWindow::handleAction(string_view id)
 		return true;
 	}
 
+	// Map->Close
+	if (id == "mapw_close")
+	{
+		wxWindow::Close();
+		return true;
+	}
+
 	// Edit->Undo
 	if (id == "mapw_undo")
 	{
@@ -1210,6 +1225,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	if (id == "mapw_preferences")
 	{
 		PreferencesDialog::openPreferences(this, "Map Editor");
+		mapeditor::forceRefresh(true);
 
 		return true;
 	}
@@ -1329,7 +1345,7 @@ bool MapEditorWindow::handleAction(string_view id)
 				edit_context.swapPlayerStart3d();
 
 			// Write temp wad
-			WadArchive wad;
+			Archive wad(ArchiveFormat::Wad);
 			if (writeMap(wad, mdesc_current.name))
 				wad.save(app::path("sladetemp_run.wad", app::Dir::Temp));
 

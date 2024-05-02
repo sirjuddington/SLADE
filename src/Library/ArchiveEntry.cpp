@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "Archive/ArchiveEntry.h"
 #include "App.h"
+#include "Archive/EntryType/EntryType.h"
 #include "ArchiveEntry.h"
 #include "General/Database.h"
 
@@ -375,11 +376,11 @@ void writeEntryProperties(SQLite::Statement* sql, int64_t archive_id, const Arch
 			sql->bind(4, static_cast<unsigned>(prop.value.index()));
 			switch (prop.value.index())
 			{
-			case 0: sql->bind(5, std::get<bool>(prop.value)); break;
-			case 1: sql->bind(5, std::get<int>(prop.value)); break;
-			case 2: sql->bind(5, std::get<unsigned int>(prop.value)); break;
-			case 3: sql->bind(5, std::get<double>(prop.value)); break;
-			case 4: sql->bind(5, std::get<string>(prop.value)); break;
+			case 0:  sql->bind(5, std::get<bool>(prop.value)); break;
+			case 1:  sql->bind(5, std::get<int>(prop.value)); break;
+			case 2:  sql->bind(5, std::get<unsigned int>(prop.value)); break;
+			case 3:  sql->bind(5, std::get<double>(prop.value)); break;
+			case 4:  sql->bind(5, std::get<string>(prop.value)); break;
 			default: sql->bind(5, 0); break; // Shouldn't happen
 			}
 			sql->exec();
@@ -400,11 +401,11 @@ void readEntryProperties(int64_t archive_id, ArchiveEntry* entry)
 			auto key = sql->getColumn(0).getString();
 			switch (sql->getColumn(1).getInt())
 			{
-			case 0: entry->exProp(key) = sql->getColumn(2).getInt() > 0; break;
-			case 1: entry->exProp(key) = sql->getColumn(2).getInt(); break;
-			case 2: entry->exProp(key) = sql->getColumn(2).getUInt(); break;
-			case 3: entry->exProp(key) = sql->getColumn(2).getDouble(); break;
-			case 4: entry->exProp(key) = sql->getColumn(2).getString(); break;
+			case 0:  entry->exProp(key) = sql->getColumn(2).getInt() > 0; break;
+			case 1:  entry->exProp(key) = sql->getColumn(2).getInt(); break;
+			case 2:  entry->exProp(key) = sql->getColumn(2).getUInt(); break;
+			case 3:  entry->exProp(key) = sql->getColumn(2).getDouble(); break;
+			case 4:  entry->exProp(key) = sql->getColumn(2).getString(); break;
 			default: break; // Shouldn't happen
 			}
 		}
@@ -540,7 +541,7 @@ void library::readEntryInfo(int64_t archive_id, const vector<ArchiveEntry*>& ent
 			{
 				entry->setLibraryId(existing_rows[i].id);
 				entry->exProp("TypeHint") = existing_rows[i].type_id;
-				existing_rows[i].id = -1;
+				existing_rows[i].id       = -1;
 				break;
 			}
 		}
@@ -636,9 +637,9 @@ void library::readEntryInfo(int64_t archive_id, const vector<ArchiveEntry*>& ent
 				switch (match_score)
 				{
 				case 10: match_desc = "entry renamed"; break;
-				case 9: match_desc = "entry moved"; break;
-				case 8: match_desc = "entry modified (same type)"; break;
-				case 7: match_desc = "entry moved & renamed"; break;
+				case 9:  match_desc = "entry moved"; break;
+				case 8:  match_desc = "entry modified (same type)"; break;
+				case 7:  match_desc = "entry moved & renamed"; break;
 				default: match_desc = "unknown match"; break;
 				}
 

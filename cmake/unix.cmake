@@ -110,6 +110,7 @@ if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
 endif()
 find_package(MPG123 REQUIRED)
+find_package(glm REQUIRED)
 find_package(SQLite3 REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
@@ -179,6 +180,7 @@ target_link_libraries(slade
 	${OPENGL_LIBRARIES}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
+	glm::glm
 	sqlite3
 )
 
@@ -217,9 +219,9 @@ if (BUILD_PK3)
 			)
 endif()
 
-		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/logo_icon.png"
-			DESTINATION share/icons/
-			RENAME net.mancubus.SLADE.png
+		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/icons/general/logo.svg"
+			DESTINATION share/icons/hicolor/scalable/apps/
+			RENAME net.mancubus.SLADE.svg
 			)
 
 		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.desktop"
@@ -245,7 +247,7 @@ endif()
 
 if (NOT NO_COTIRE)
 	set_target_properties(slade PROPERTIES
-		COTIRE_CXX_PREFIX_HEADER_INIT "common.h"
+		COTIRE_CXX_PREFIX_HEADER_INIT "Application/Main.h"
 		# Enable multithreaded unity builds by default
 		# because otherwise probably no one would realize how
 		COTIRE_UNITY_SOURCE_MAXIMUM_NUMBER_OF_INCLUDES -j

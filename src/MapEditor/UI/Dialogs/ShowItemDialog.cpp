@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -33,6 +33,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ShowItemDialog.h"
+#include "General/UI.h"
+#include "SLADEMap/Types.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -45,11 +47,11 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-vector<MapObject::Type> obj_types{ MapObject::Type::Vertex,
-								   MapObject::Type::Line,
-								   MapObject::Type::Side,
-								   MapObject::Type::Sector,
-								   MapObject::Type::Thing };
+vector obj_types{ map::ObjectType::Vertex,
+				  map::ObjectType::Line,
+				  map::ObjectType::Side,
+				  map::ObjectType::Sector,
+				  map::ObjectType::Thing };
 }
 
 
@@ -69,7 +71,7 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
+	sizer->Add(gb_sizer, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Object type
 	wxString types[] = { "Vertex", "Line", "Side", "Sector", "Thing" };
@@ -84,13 +86,13 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 
 	// Dialog buttons
 	sizer->AddSpacer(ui::pad());
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Init layout
 	gb_sizer->AddGrowableCol(1, 1);
 	SetInitialSize(wxutil::scaledSize(300, -1));
 	CenterOnParent();
-	wxWindowBase::Layout();
+	wxTopLevelWindowBase::Layout();
 	text_index_->SetFocus();
 	text_index_->SetFocusFromKbd();
 }
@@ -98,7 +100,7 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 // -----------------------------------------------------------------------------
 // Returns the selected object type
 // -----------------------------------------------------------------------------
-MapObject::Type ShowItemDialog::type() const
+map::ObjectType ShowItemDialog::type() const
 {
 	return obj_types[choice_type_->GetSelection()];
 }
@@ -118,7 +120,7 @@ int ShowItemDialog::index() const
 // -----------------------------------------------------------------------------
 // Sets the object type dropdown to [type]
 // -----------------------------------------------------------------------------
-void ShowItemDialog::setType(MapObject::Type type) const
+void ShowItemDialog::setType(map::ObjectType type) const
 {
 	for (unsigned a = 0; a < obj_types.size(); ++a)
 		if (obj_types[a] == type)

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,10 +32,14 @@
 #include "Main.h"
 #include "EntryType.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/Formats/ZipArchive.h"
+#include "EntryDataFormat.h"
 #include "General/Console.h"
 #include "MainEditor/MainEditor.h"
+#include "Utility/Colour.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
@@ -67,6 +71,18 @@ EntryType* etype_map     = nullptr; // Map marker type
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// EntryType class constructor
+// -----------------------------------------------------------------------------
+EntryType::EntryType(string_view id) : id_{ id }, colour_{ ColRGBA::WHITE }, format_{ EntryDataFormat::anyFormat() } {}
+
+// -----------------------------------------------------------------------------
+// Returns the id of the type's data format
+// -----------------------------------------------------------------------------
+const string& EntryType::formatId() const
+{
+	return format_->id();
+}
 
 // -----------------------------------------------------------------------------
 // Dumps entry type info to the log
@@ -155,7 +171,7 @@ int EntryType::isThisType(ArchiveEntry& entry) const
 		bool match = false;
 		for (const auto& a : match_archive_)
 		{
-			if (entry.parent() && entry.parent()->formatDesc().entry_format == a)
+			if (entry.parent() && entry.parent()->formatInfo().entry_format == a)
 			{
 				match = true;
 				break;
@@ -223,14 +239,15 @@ int EntryType::isThisType(ArchiveEntry& entry) const
 
 	// If both names and extensions are defined, and the type only needs one
 	// of the two, not both, take it into account.
-	bool extorname   = false;
-	bool matchedname = false;
+	bool extorname = false;
 	if (match_ext_or_name_ && !match_name_.empty() && !match_extension_.empty())
 		extorname = true;
 
 	// Entry name related stuff
 	if (!match_name_.empty() || !match_extension_.empty())
 	{
+		bool matchedname = false;
+
 		// Get entry name (lowercase), find extension separator
 		const string_view fn      = entry.upperName();
 		const size_t      ext_sep = fn.find_last_of('.');

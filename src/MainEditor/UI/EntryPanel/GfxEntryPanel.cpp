@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,12 +32,19 @@
 #include "Main.h"
 #include "GfxEntryPanel.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "Graphics/Graphics.h"
+#include "Graphics/Translation.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
+#include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/ZoomControl.h"
@@ -48,7 +55,11 @@
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/SBrush.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/State.h"
+#include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
 
@@ -73,20 +84,29 @@ EXTERN_CVAR(Bool, gfx_arc)
 // -----------------------------------------------------------------------------
 // GfxEntryPanel class constructor
 // -----------------------------------------------------------------------------
-GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
+GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
+	EntryPanel(parent, "gfx", true),
+	prev_translation_{ new Translation },
+	edit_translation_{ new Translation }
 {
+	namespace wx = wxutil;
+
 	// Init variables
-	prev_translation_.addRange(TransRange::Type::Palette, 0);
-	edit_translation_.addRange(TransRange::Type::Palette, 0);
+	prev_translation_->addRange(TransRange::Type::Palette, 0);
+	edit_translation_->addRange(TransRange::Type::Palette, 0);
 
 	// Add gfx canvas
-	gfx_canvas_ = new GfxCanvas(this, -1);
-	sizer_main_->Add(gfx_canvas_, 1, wxEXPAND, 0);
-	gfx_canvas_->setViewType(GfxCanvas::View::Default);
+	gfx_canvas_ = ui::createGfxCanvas(this);
+	sizer_main_->Add(gfx_canvas_->window(), 1, wxEXPAND, 0);
+
+	// Setup gfx canvas
+	gfx_canvas_->setViewType(GfxView::Default);
 	gfx_canvas_->allowDrag(true);
 	gfx_canvas_->allowScroll(true);
+	gfx_canvas_->showBorder(true);
+	gfx_canvas_->showHilight(true);
 	gfx_canvas_->setPalette(maineditor::currentPalette());
-	gfx_canvas_->setTranslation(&edit_translation_);
+	gfx_canvas_->setTranslation(edit_translation_.get());
 
 	// Offsets
 	const wxSize spinsize = { ui::px(ui::Size::SpinCtrlWidth), -1 };
@@ -112,19 +132,19 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 		0);
 	spin_xoffset_->SetMinSize(spinsize);
 	spin_yoffset_->SetMinSize(spinsize);
-	sizer_bottom_->Add(new wxStaticText(this, -1, "Offsets:"), 0, wxALIGN_CENTER_VERTICAL, 0);
-	sizer_bottom_->Add(spin_xoffset_, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::pad());
-	sizer_bottom_->Add(spin_yoffset_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	sizer_bottom_->Add(new wxStaticText(this, -1, "Offsets:"), wxSizerFlags().CenterVertical());
+	sizer_bottom_->Add(spin_xoffset_, wx::sfWithBorder(0, wxLEFT | wxRIGHT).CenterVertical());
+	sizer_bottom_->Add(spin_yoffset_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
 
 	// Gfx (offset) type
 	wxString offset_types[] = { "Auto", "Graphic", "Sprite", "HUD" };
 	choice_offset_type_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
 	choice_offset_type_->SetSelection(0);
-	sizer_bottom_->Add(choice_offset_type_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	sizer_bottom_->Add(choice_offset_type_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
 
 	// Auto offset
 	btn_auto_offset_ = new SIconButton(this, "offset", "Modify Offsets...");
-	sizer_bottom_->Add(btn_auto_offset_, 0, wxALIGN_CENTER_VERTICAL);
+	sizer_bottom_->Add(btn_auto_offset_, wxSizerFlags().CenterVertical());
 
 	sizer_bottom_->AddStretchSpacer();
 
@@ -142,9 +162,9 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
         1,
         0);
 	spin_curimg_->SetMinSize(spinsize);
-	sizer_bottom_->Add(text_imgnum_, 0, wxALIGN_CENTER, 0);
-	sizer_bottom_->Add(spin_curimg_, 0, wxSHRINK | wxALIGN_CENTER, ui::pad());
-	sizer_bottom_->Add(text_imgoutof_, 0, wxALIGN_CENTER | wxRIGHT, ui::padLarge());
+	sizer_bottom_->Add(text_imgnum_, wxSizerFlags().Center());
+	sizer_bottom_->Add(spin_curimg_, wxSizerFlags().Center()); // 0, wxSHRINK | wxALIGN_CENTER, ui::pad());
+	sizer_bottom_->Add(text_imgoutof_, wx::sfWithLargeBorder(0, wxRIGHT).Center());
 	text_imgnum_->Show(false);
 	spin_curimg_->Show(false);
 	text_imgoutof_->Show(false);
@@ -158,7 +178,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 		[this]()
 		{
 			updateImagePalette();
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 		});
 
 	// Custom menu
@@ -180,9 +200,9 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 	spin_xoffset_->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onXOffsetChanged, this);
 	spin_yoffset_->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onYOffsetChanged, this);
 	choice_offset_type_->Bind(wxEVT_CHOICE, &GfxEntryPanel::onOffsetTypeChanged, this);
-	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas_->GetId());
-	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas_->GetId());
-	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas_->GetId());
+	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas_->window()->GetId());
+	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas_->window()->GetId());
+	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas_->window()->GetId());
 	spin_curimg_->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onCurImgChanged, this);
 	btn_auto_offset_->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnAutoOffset, this);
 
@@ -270,7 +290,7 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 				log::info("Image converted for writing");
 			}
 
-			if (format->saveImage(*image, data, &gfx_canvas_->palette()))
+			if (format->saveImage(*image, data, gfx_canvas_->palette()))
 				ok = true;
 			else
 				error = "Error writing image";
@@ -346,7 +366,7 @@ void GfxEntryPanel::setupToolbars()
 	auto* g_brush = new SToolBarGroup(toolbar_, "Brush", true);
 	button_brush_ = g_brush->addActionButton("pgfx_setbrush");
 	cb_colour_    = new ColourBox(g_brush, -1, ColRGBA::BLACK, false, true, SToolBar::scaledButtonSize());
-	cb_colour_->setPalette(&gfx_canvas_->palette());
+	cb_colour_->setPalette(gfx_canvas_->palette());
 	cb_colour_->SetToolTip("Set brush colour");
 	g_brush->addCustomControl(cb_colour_);
 	g_brush->addActionButton("pgfx_settrans", "");
@@ -390,7 +410,7 @@ void GfxEntryPanel::setupToolbars()
 	auto* g_tool = new SToolBarGroup(toolbar_left_, "Tool");
 	g_tool->addActionButton("tool_drag", "Drag offsets", "gfx_drag", "Drag image to change its offsets")
 		->setChecked(true);
-	g_tool->addActionButton("tool_draw", "Drag pixels", "gfx_draw", "Draw on the image");
+	g_tool->addActionButton("tool_draw", "Draw pixels", "gfx_draw", "Draw on the image");
 	g_tool->addActionButton("tool_erase", "Erase pixels", "gfx_erase", "Erase pixels from the image");
 	g_tool->addActionButton(
 		"tool_translate", "Translate pixels", "gfx_translate", "Apply a translation to pixels of the image");
@@ -467,7 +487,7 @@ bool GfxEntryPanel::extractAll() const
 		if (image()->width() && image()->height())
 		{
 			MemChunk img_data;
-			SIFormat::getFormat("png")->saveImage(*image(), img_data, &gfx_canvas_->palette());
+			SIFormat::getFormat("png")->saveImage(*image(), img_data, gfx_canvas_->palette());
 
 			auto newimg = parent->addNewEntry(newname.ToStdString(), index + pos + 1, entry->parentDir());
 			if (newimg == nullptr)
@@ -561,8 +581,8 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 	applyViewType(entry);
 
 	// Reset display offsets in graphics mode
-	if (gfx_canvas_->viewType() != GfxCanvas::View::Sprite)
-		gfx_canvas_->resetOffsets();
+	if (gfx_canvas_->viewType() != GfxView::Sprite)
+		gfx_canvas_->resetViewOffsets();
 
 	// Setup custom menu
 	if (image()->type() == SImage::Type::RGBA)
@@ -571,7 +591,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 		menu_custom_->Enable(menu_gfxep_translate, true);
 
 	// Refresh the canvas
-	gfx_canvas_->Refresh();
+	gfx_canvas_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -620,30 +640,29 @@ void GfxEntryPanel::refreshPanel()
 void GfxEntryPanel::updateImagePalette() const
 {
 	gfx_canvas_->setPalette(maineditor::currentPalette());
-	gfx_canvas_->updateImageTexture();
 }
 
 // -----------------------------------------------------------------------------
 // Detects the offset view type of the current entry
 // -----------------------------------------------------------------------------
-GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
+GfxView GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 {
 	if (!entry)
-		return GfxCanvas::View::Default;
+		return GfxView::Default;
 
 	if (!entry->parent())
-		return GfxCanvas::View::Default;
+		return GfxView::Default;
 
 	// Check what section of the archive the entry is in -- only PNGs or images
 	// in the sprites section can be HUD or sprite
 	const bool is_sprite = ("sprites" == entry->parent()->detectNamespace(entry));
 	const bool is_png    = ("img_png" == entry->type()->formatId());
 	if (!is_sprite && !is_png)
-		return GfxCanvas::View::Default;
+		return GfxView::Default;
 
 	auto* img = image();
 	if (is_png && img->offset().x == 0 && img->offset().y == 0)
-		return GfxCanvas::View::Default;
+		return GfxView::Default;
 
 	const int width        = img->width();
 	const int height       = img->height();
@@ -686,9 +705,9 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 
 	// Sprites are more common than HUD, so in case of a tie, sprite wins
 	if (sprite_penalty > hud_penalty)
-		return GfxCanvas::View::HUD;
+		return GfxView::HUD;
 	else
-		return GfxCanvas::View::Sprite;
+		return GfxView::Sprite;
 }
 
 // -----------------------------------------------------------------------------
@@ -699,23 +718,23 @@ void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 {
 	// Tile checkbox overrides offset type selection
 	if (btn_tile_->isChecked())
-		gfx_canvas_->setViewType(GfxCanvas::View::Tiled);
+		gfx_canvas_->setViewType(GfxView::Tiled);
 	else
 	{
 		// Set gfx canvas view type depending on the offset combobox selection
 		const int sel = choice_offset_type_->GetSelection();
 		switch (sel)
 		{
-		case 0: gfx_canvas_->setViewType(detectOffsetType(entry)); break;
-		case 1: gfx_canvas_->setViewType(GfxCanvas::View::Default); break;
-		case 2: gfx_canvas_->setViewType(GfxCanvas::View::Sprite); break;
-		case 3: gfx_canvas_->setViewType(GfxCanvas::View::HUD); break;
+		case 0:  gfx_canvas_->setViewType(detectOffsetType(entry)); break;
+		case 1:  gfx_canvas_->setViewType(GfxView::Default); break;
+		case 2:  gfx_canvas_->setViewType(GfxView::Sprite); break;
+		case 3:  gfx_canvas_->setViewType(GfxView::HUD); break;
 		default: break;
 		}
 	}
 
 	// Refresh
-	gfx_canvas_->Refresh();
+	gfx_canvas_->window()->Refresh();
 }
 
 // ----------------------------------------------------------------------------
@@ -745,14 +764,14 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			theMainWindow, *theMainWindow->paletteChooser()->selectedPalette(), " Colour Remap", image());
 
 		// Create translation to edit
-		ted.openTranslation(edit_translation_);
+		ted.openTranslation(*edit_translation_);
 
 		// Show the dialog
 		if (ted.ShowModal() == wxID_OK)
 		{
 			// Set the translation
-			edit_translation_.copy(ted.getTranslation());
-			gfx_canvas_->setTranslation(&edit_translation_);
+			edit_translation_->copy(ted.getTranslation());
+			gfx_canvas_->setTranslation(edit_translation_.get());
 		}
 	}
 
@@ -771,8 +790,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		image()->mirror(false);
 
 		// Update UI
-		gfx_canvas_->updateImageTexture();
-		gfx_canvas_->Refresh();
+		gfx_canvas_->window()->Refresh();
 
 		// Update variables
 		image_data_modified_ = true;
@@ -786,8 +804,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		image()->mirror(true);
 
 		// Update UI
-		gfx_canvas_->updateImageTexture();
-		gfx_canvas_->Refresh();
+		gfx_canvas_->window()->Refresh();
 
 		// Update variables
 		image_data_modified_ = true;
@@ -804,15 +821,14 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		// Rotate image
 		switch (choice)
 		{
-		case 0: image()->rotate(90); break;
-		case 1: image()->rotate(180); break;
-		case 2: image()->rotate(270); break;
+		case 0:  image()->rotate(90); break;
+		case 1:  image()->rotate(180); break;
+		case 2:  image()->rotate(270); break;
 		default: break;
 		}
 
 		// Update UI
-		gfx_canvas_->updateImageTexture();
-		gfx_canvas_->Refresh();
+		gfx_canvas_->window()->Refresh();
 
 		// Update variables
 		image_data_modified_ = true;
@@ -827,7 +843,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		TranslationEditorDialog ted(theMainWindow, *pal, " Colour Remap", &gfx_canvas_->image());
 
 		// Create translation to edit
-		ted.openTranslation(prev_translation_);
+		ted.openTranslation(*prev_translation_);
 
 		// Show the dialog
 		if (ted.ShowModal() == wxID_OK)
@@ -836,12 +852,12 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			image()->applyTranslation(&ted.getTranslation(), pal);
 
 			// Update UI
-			gfx_canvas_->updateImageTexture();
+			gfx_canvas_->window()->Refresh();
 
 			// Update variables
 			image_data_modified_ = true;
 			setModified();
-			prev_translation_.copy(ted.getTranslation());
+			prev_translation_->copy(ted.getTranslation());
 		}
 	}
 
@@ -859,15 +875,14 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			image()->colourise(gcd.colour(), pal);
 
 			// Update UI
-			gfx_canvas_->updateImageTexture();
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 
 			// Update variables
 			image_data_modified_ = true;
 			Refresh();
 			setModified();
 		}
-		ui::saveStateString("ColouriseDialogLastColour", gcd.colour().toString(ColRGBA::StringFormat::RGB));
+		ui::saveStateString("ColouriseDialogLastColour", colour::toString(gcd.colour(), colour::StringFormat::RGB));
 	}
 
 	// Tint
@@ -884,15 +899,14 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			image()->tint(gtd.colour(), gtd.amount(), pal);
 
 			// Update UI
-			gfx_canvas_->updateImageTexture();
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 
 			// Update variables
 			image_data_modified_ = true;
 			Refresh();
 			setModified();
 		}
-		ui::saveStateString("TintDialogLastColour", gtd.colour().toString(ColRGBA::StringFormat::RGB));
+		ui::saveStateString("TintDialogLastColour", colour::toString(gtd.colour(), colour::StringFormat::RGB));
 		ui::saveStateInt("TintDialogLastAmount", static_cast<int>(gtd.amount() * 100.0f));
 	}
 
@@ -901,7 +915,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	{
 		auto*         image = this->image();
 		auto*         pal   = maineditor::currentPalette();
-		GfxCropDialog gcd(theMainWindow, image, pal);
+		GfxCropDialog gcd(theMainWindow, *image, pal);
 
 		// Show crop dialog
 		if (gcd.ShowModal() == wxID_OK)
@@ -928,8 +942,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			image->crop(crop.x1(), crop.y1(), crop.x2(), crop.y2());
 
 			// Update UI
-			gfx_canvas_->updateImageTexture();
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 
 			// Update variables
 			image_data_modified_ = true;
@@ -1016,7 +1029,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 
 			// Refresh
 			this->image()->open(entry_data_, 0, format->id());
-			gfx_canvas_->Refresh();
+			gfx_canvas_->window()->Refresh();
 		}
 	}
 
@@ -1060,13 +1073,26 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the canvas image
+// -----------------------------------------------------------------------------
+SImage* GfxEntryPanel::image() const
+{
+	if (gfx_canvas_)
+		return &gfx_canvas_->image();
+	else
+		return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GfxEntryPanel::toolbarButtonClick(const wxString& action_id)
 {
 	if (action_id == "toggle_arc")
 	{
 		btn_arc_->setChecked(!btn_arc_->isChecked());
 		gfx_arc = btn_arc_->isChecked();
-		gfx_canvas_->Refresh();
+		gfx_canvas_->window()->Refresh();
 	}
 
 	else if (action_id == "toggle_tile")
@@ -1084,6 +1110,8 @@ void GfxEntryPanel::toolbarButtonClick(const wxString& action_id)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the colour box's value is changed
@@ -1106,7 +1134,7 @@ void GfxEntryPanel::onXOffsetChanged(wxCommandEvent& e)
 	// Update offset & refresh
 	image()->setXOffset(offset);
 	setModified();
-	gfx_canvas_->Refresh();
+	gfx_canvas_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -1122,7 +1150,7 @@ void GfxEntryPanel::onYOffsetChanged(wxCommandEvent& e)
 	// Update offset & refresh
 	image()->setYOffset(offset);
 	setModified();
-	gfx_canvas_->Refresh();
+	gfx_canvas_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -1220,7 +1248,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 	if (id == "tool_drag")
 	{
 		editing_ = false;
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::None);
+		gfx_canvas_->setEditingMode(GfxEditMode::None);
 		toolbar_->group("Brush")->hide();
 		toolbar_left_->findActionButton("tool_drag")->setChecked(true);
 		toolbar_->updateLayout();
@@ -1232,7 +1260,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
 		toolbar_left_->findActionButton("tool_draw")->setChecked(true);
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Paint);
+		gfx_canvas_->setEditingMode(GfxEditMode::Paint);
 		gfx_canvas_->setPaintColour(cb_colour_->colour());
 		toolbar_->updateLayout();
 	}
@@ -1243,7 +1271,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
 		toolbar_left_->findActionButton("tool_erase")->setChecked(true);
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Erase);
+		gfx_canvas_->setEditingMode(GfxEditMode::Erase);
 		toolbar_->updateLayout();
 	}
 
@@ -1253,7 +1281,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
 		toolbar_left_->findActionButton("tool_translate")->setChecked(true);
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Translate);
+		gfx_canvas_->setEditingMode(GfxEditMode::Translate);
 		toolbar_->updateLayout();
 	}
 }
@@ -1304,7 +1332,7 @@ CONSOLE_COMMAND(rotate, 1, true)
 			return;
 		}
 	}
-	const int angle = (int)val;
+	const int angle = static_cast<int>(val);
 	if (angle % 90)
 	{
 		log::error(wxString::Format("Invalid parameter: %i is not a multiple of 90.", angle));

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,10 +33,14 @@
 #include "Main.h"
 #include "ThingTypeBrowser.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
+#include "General/UI.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
 #include "UI/WxUtils.h"
+#include "UI/Browser/BrowserCanvas.h"
+#include "UI/Browser/BrowserItem.h"
 
 using namespace slade;
 
@@ -52,42 +56,59 @@ CVAR(Bool, use_zeth_icons, false, CVar::Flag::Save)
 
 // -----------------------------------------------------------------------------
 //
-// ThingBrowserItem Class Functions
+// ThingBrowserItem Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Loads the item image
-// -----------------------------------------------------------------------------
-bool ThingBrowserItem::loadImage()
+namespace slade
 {
-	// Get sprite
-	auto tex = mapeditor::textureManager().sprite(type_.sprite(), type_.translation(), type_.palette()).gl_id;
-	if (!tex && use_zeth_icons && type_.zethIcon() >= 0)
+class ThingBrowserItem : public BrowserItem
+{
+public:
+	ThingBrowserItem(const wxString& name, const game::ThingType& type, unsigned index) :
+		BrowserItem{ name, index },
+		thing_type_{ &type }
 	{
-		// Sprite not found, try the Zeth icon
-		tex = mapeditor::textureManager().editorImage(fmt::format("zethicons/zeth{:02d}", type_.zethIcon())).gl_id;
 	}
-	if (!tex)
+	~ThingBrowserItem() override = default;
+
+	// Loads the item image
+	bool loadImage() override
 	{
-		// Sprite not found, try an icon
-		tex = mapeditor::textureManager().editorImage(fmt::format("thing/{}", type_.icon())).gl_id;
-	}
-	if (!tex)
-	{
-		// Icon not found either, use unknown icon
-		tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
+		// Get sprite
+		auto tex = mapeditor::textureManager()
+					   .sprite(thing_type_->sprite(), thing_type_->translation(), thing_type_->palette())
+					   .gl_id;
+		if (!tex && use_zeth_icons && thing_type_->zethIcon() >= 0)
+		{
+			// Sprite not found, try the Zeth icon
+			tex = mapeditor::textureManager()
+					  .editorImage(fmt::format("zethicons/zeth{:02d}", thing_type_->zethIcon()))
+					  .gl_id;
+		}
+		if (!tex)
+		{
+			// Sprite not found, try an icon
+			tex = mapeditor::textureManager().editorImage(fmt::format("thing/{}", thing_type_->icon())).gl_id;
+		}
+		if (!tex)
+		{
+			// Icon not found either, use unknown icon
+			tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
+		}
+
+		if (tex)
+		{
+			image_tex_ = tex;
+			return true;
+		}
+		else
+			return false;
 	}
 
-	if (tex)
-	{
-		image_tex_ = tex;
-		return true;
-	}
-	else
-		return false;
-}
+private:
+	game::ThingType const* thing_type_;
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -117,7 +138,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	populateItemTree();
 
 	// Set browser options
-	canvas_->setItemNameType(BrowserCanvas::NameType::Index);
+	canvas_->setItemNameType(browser::NameType::Index);
 	setupViewOptions();
 
 	// Select initial item if any
@@ -140,15 +161,15 @@ void ThingTypeBrowser::setupViewOptions()
 {
 	if (browser_thing_tiles)
 	{
-		setFont(drawing::Font::Condensed);
+		setFont(gl::draw2d::Font::Condensed);
 		setItemSize(48);
-		setItemViewType(BrowserCanvas::ItemView::Tiles);
+		setItemViewType(browser::ItemView::Tiles);
 	}
 	else
 	{
-		setFont(drawing::Font::Bold);
+		setFont(gl::draw2d::Font::Bold);
 		setItemSize(80);
-		setItemViewType(BrowserCanvas::ItemView::Normal);
+		setItemViewType(browser::ItemView::Normal);
 	}
 
 	canvas_->updateLayout();

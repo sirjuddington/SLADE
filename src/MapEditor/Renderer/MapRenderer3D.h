@@ -1,18 +1,30 @@
 #pragma once
 
-#include "MapEditor/Edit/Edit3D.h"
-#include "SLADEMap/SLADEMap.h"
+#include "Geometry/Plane.h"
+#include "Geometry/RectFwd.h"
+#include "MapEditor/Item.h"
+#include "Utility/ColRGBA.h"
 
+
+// Forward declarations
+#include "SLADEMap/SLADEMapFwd.h"
 namespace slade
 {
 class ItemSelection;
-class Polygon2D;
-
+class Camera;
 namespace game
 {
 	class ThingType;
 }
+namespace mapeditor
+{
+	struct Item;
+}
+} // namespace slade
 
+
+namespace slade
+{
 class MapRenderer3D
 {
 public:
@@ -23,7 +35,8 @@ public:
 		TRANSADD = 2,
 
 		// Quad/flat flags
-		SKY = 4,
+		SKY      = 4,
+		DRAWBOTH = 128,
 
 		// Quad flags
 		BACK   = 8,
@@ -32,7 +45,8 @@ public:
 		MIDTEX = 64,
 
 		// Flat flags
-		CEIL = 8,
+		CEIL     = 8,
+		FLATFLIP = 16,
 
 		// Thing flags
 		ICON  = 4,
@@ -49,10 +63,12 @@ public:
 		GLVertex points[4] = { {}, {}, {}, {} };
 		ColRGBA  colour;
 		ColRGBA  fogcolour;
-		uint8_t  light   = 0;
-		unsigned texture = 0;
-		uint8_t  flags   = 0;
-		float    alpha   = 1.f;
+		uint8_t  light        = 0;
+		unsigned texture      = 0;
+		uint8_t  flags        = 0;
+		float    alpha        = 1.f;
+		int      control_line = -1;
+		int      control_side = -1;
 
 		Quad() : colour{ 255, 255, 255, 255, 0 } {}
 	};
@@ -82,9 +98,13 @@ public:
 		unsigned   texture = 0;
 		Vec2d      scale;
 		Plane      plane;
-		float      alpha        = 1.f;
-		MapSector* sector       = nullptr;
-		long       updated_time = 0;
+		float      base_alpha        = 1.f;
+		float      alpha             = 1.f;
+		MapSector* sector            = nullptr;
+		MapSector* control_sector    = nullptr;
+		int        extra_floor_index = -1;
+		long       updated_time      = 0;
+		unsigned   vbo_offset        = 0;
 	};
 
 	MapRenderer3D(SLADEMap* map = nullptr);
@@ -104,29 +124,18 @@ public:
 	void clearData();
 	void buildSkyCircle();
 
-	Quad* getQuad(mapeditor::Item item);
-	Flat* getFlat(mapeditor::Item item);
+	Quad*                 getQuad(mapeditor::Item item);
+	Flat*                 getFlat(mapeditor::Item item);
+	vector<vector<Flat>>& getSectorFlats() { return sector_flats_; }
 
 	// Camera
-	void cameraMove(double distance, bool z = true);
-	void cameraTurn(double angle);
-	void cameraMoveUp(double distance);
-	void cameraStrafe(double distance);
-	void cameraPitch(double amount);
-	void cameraUpdateVectors();
-	void cameraSet(Vec3d position, Vec2d direction);
-	void cameraSetPosition(Vec3d position);
-	void cameraApplyGravity(double mult);
-	void cameraLook(double xrel, double yrel);
-
-	double camPitch() const { return cam_pitch_; }
-	Vec3d  camPosition() const { return cam_position_; }
-	Vec2d  camDirection() const { return cam_direction_; }
+	Camera& camera() const { return *camera_; }
+	void    cameraApplyGravity(double mult) const;
 
 	// -- Rendering --
-	void setupView(int width, int height);
-	void setLight(ColRGBA& colour, uint8_t light, float alpha = 1.0f) const;
-	void setFog(ColRGBA& fogcol, uint8_t light);
+	void setupView(int width, int height) const;
+	void setLight(const ColRGBA& colour, uint8_t light, float alpha = 1.0f) const;
+	void setFog(const ColRGBA& fogcol, uint8_t light);
 	void renderMap();
 	void renderSkySlice(
 		float top,
@@ -139,15 +148,18 @@ public:
 	void renderSky();
 
 	// Flats
-	void updateFlatTexCoords(unsigned index, bool floor);
+	void updateFlatTexCoords(unsigned index, unsigned flat_index) const;
 	void updateSector(unsigned index);
-	void renderFlat(Flat* flat);
+	void updateSectorFlats(unsigned index);
+	void updateSectorVBOs(unsigned index) const;
+	bool isSectorStale(unsigned index) const;
+	void renderFlat(const Flat* flat);
 	void renderFlats();
 	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f) const;
 
 	// Walls
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, double top, double bottom) const;
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, Plane top, Plane bottom) const;
+	void setupQuad(Quad* quad, const Seg2d& seg, double top, double bottom) const;
+	void setupQuad(Quad* quad, const Seg2d& seg, const Plane& top, const Plane& bottom) const;
 	void setupQuadTexCoords(
 		Quad*  quad,
 		int    length,
@@ -159,13 +171,13 @@ public:
 		double sx        = 1,
 		double sy        = 1) const;
 	void updateLine(unsigned index);
-	void renderQuad(Quad* quad, float alpha = 1.0f);
+	void renderQuad(const Quad* quad, float alpha = 1.0f);
 	void renderWalls();
 	void renderTransparentWalls();
 	void renderWallSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// Things
-	void updateThing(unsigned index, MapThing* thing);
+	void updateThing(unsigned index, const MapThing* thing);
 	void renderThings();
 	void renderThingSelection(const ItemSelection& selection, float alpha = 1.0f);
 
@@ -199,28 +211,20 @@ private:
 	vector<float> dist_sectors_;
 
 	// Camera
-	Vec3d  cam_position_;
-	Vec2d  cam_direction_;
-	double cam_pitch_ = 0.;
-	double cam_angle_ = 0.;
-	Vec3d  cam_dir3d_;
-	Vec3d  cam_strafe_;
-	double gravity_   = 0.5;
-	int    item_dist_ = 0;
+	unique_ptr<Camera> camera_;
+	int                item_dist_ = 0;
 
 	// Map Structures
-	vector<Line>  lines_;
-	Quad**        quads_ = nullptr;
-	vector<Quad*> quads_transparent_;
-	vector<Thing> things_;
-	vector<Flat>  floors_;
-	vector<Flat>  ceilings_;
-	Flat**        flats_ = nullptr;
+	vector<Line>         lines_;
+	vector<Quad*>        quads_;
+	vector<Quad*>        quads_transparent_;
+	vector<Thing>        things_;
+	vector<vector<Flat>> sector_flats_;
+	vector<Flat*>        flats_;
 
 	// VBOs
-	unsigned vbo_floors_   = 0;
-	unsigned vbo_ceilings_ = 0;
-	unsigned vbo_walls_    = 0;
+	unsigned vbo_flats_ = 0;
+	unsigned vbo_walls_ = 0;
 
 	// Sky
 	struct GLVertexEx

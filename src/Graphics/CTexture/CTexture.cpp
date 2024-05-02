@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,9 +33,11 @@
 #include "Main.h"
 #include "CTexture.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/SImage/SImage.h"
+#include "Graphics/Translation.h"
 #include "TextureXList.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -54,6 +56,11 @@ using namespace slade;
 // CTPatch class constructor w/initial values
 // -----------------------------------------------------------------------------
 CTPatch::CTPatch(string_view name, int16_t offset_x, int16_t offset_y) : name_{ name }, offset_{ offset_x, offset_y } {}
+
+// -----------------------------------------------------------------------------
+// CTPatch class destructor
+// -----------------------------------------------------------------------------
+CTPatch::~CTPatch() = default;
 
 // -----------------------------------------------------------------------------
 // Returns the entry (if any) associated with this patch via the resource
@@ -88,9 +95,15 @@ ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 // CTPatchEx class constructor w/basic initial values
 // -----------------------------------------------------------------------------
 CTPatchEx::CTPatchEx(string_view name, int16_t offset_x, int16_t offset_y, Type type) :
-	CTPatch{ name, offset_x, offset_y }, type_{ type }
+	CTPatch{ name, offset_x, offset_y },
+	type_{ type }
 {
 }
+
+// -----------------------------------------------------------------------------
+// CTPatchEx class constructor copying another CTPatch (non-extended)
+// -----------------------------------------------------------------------------
+CTPatchEx::CTPatchEx(const CTPatch& copy) : CTPatch{ copy } {}
 
 // -----------------------------------------------------------------------------
 // CTPatchEx class constructor copying another CTPatchEx
@@ -107,7 +120,35 @@ CTPatchEx::CTPatchEx(const CTPatchEx& copy) :
 	style_{ copy.style_ },
 	blendtype_{ copy.blendtype_ }
 {
-	translation_.copy(copy.translation_);
+	if (copy.translation_)
+	{
+		translation_ = std::make_unique<Translation>();
+		translation_->copy(*copy.translation_);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// CTPatchEx class destructor
+// -----------------------------------------------------------------------------
+CTPatchEx::~CTPatchEx() = default;
+
+// -----------------------------------------------------------------------------
+// Sets the patch's [translation] (but not blend type)
+// -----------------------------------------------------------------------------
+void CTPatchEx::setTranslation(const Translation& translation)
+{
+	if (!translation_)
+		translation_ = std::make_unique<Translation>();
+
+	translation_->copy(translation);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the patch has a translation defined
+// -----------------------------------------------------------------------------
+bool CTPatchEx::hasTranslation() const
+{
+	return translation_ && !translation_->isEmpty();
 }
 
 // -----------------------------------------------------------------------------
@@ -195,7 +236,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 					translate += temp;
 				}
 				// Parse whole string
-				translation_.parse(translate);
+				translation_ = std::make_unique<Translation>();
+				translation_->parse(translate);
 				blendtype_ = BlendType::Translation;
 			}
 
@@ -293,10 +335,10 @@ string CTPatchEx::asText()
 		text += "\t\tUseOffsets\n";
 	if (rotation_ != 0)
 		text += fmt::format("\t\tRotate {}\n", rotation_);
-	if (blendtype_ == BlendType::Translation && !translation_.isEmpty())
+	if (blendtype_ == BlendType::Translation && translation_ && !translation_->isEmpty())
 	{
 		text += "\t\tTranslation ";
-		text += translation_.asText();
+		text += translation_->asText();
 		text += "\n";
 	}
 	if (blendtype_ == BlendType::Blend || blendtype_ == BlendType::Tint)
@@ -327,6 +369,10 @@ string CTPatchEx::asText()
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// CTexture class destructor
+// -----------------------------------------------------------------------------
+CTexture::~CTexture() = default;
 
 // -----------------------------------------------------------------------------
 // Copies the texture [tex] to this texture.
@@ -386,6 +432,24 @@ void CTexture::copyTexture(const CTexture& tex, bool keep_type)
 		else
 			addPatch(patch->name(), patch->xOffset(), patch->yOffset());
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns the texture's scale as a multiplication factor
+// -----------------------------------------------------------------------------
+Vec2d CTexture::scaleFactor() const
+{
+	Vec2d scale = scale_;
+	if (scale.x == 0.0)
+		scale.x = 1.0;
+	else
+		scale.x = 1.0 / scale.x;
+	if (scale.y == 0.0)
+		scale.y = 1.0;
+	else
+		scale.y = 1.0 / scale.y;
+
+	return scale;
 }
 
 // -----------------------------------------------------------------------------
@@ -810,7 +874,7 @@ bool CTexture::convertRegular()
 // Generates a SImage representation of this texture, using patches from
 // [parent] primarily, and the palette [pal]
 // -----------------------------------------------------------------------------
-bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_rgba)
+bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool force_rgba)
 {
 	// Init image
 	image.clear();
@@ -858,8 +922,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 			}
 
 			// Apply translation before anything in case we're forcing rgba (can't translate rgba images)
-			if (patch->blendType() == CTPatchEx::BlendType::Translation)
-				p_img.applyTranslation(&(patch->translation()), pal, force_rgba);
+			if (patch->blendType() == CTPatchEx::BlendType::Translation && patch->hasTranslation())
+				p_img.applyTranslation(patch->translation(), pal, force_rgba);
 
 			// Convert to RGBA if forced
 			if (force_rgba)
@@ -932,7 +996,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 // Loads the image for the patch at [pindex] into [image].
 // Can deal with textures-as-patches
 // -----------------------------------------------------------------------------
-bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal, bool force_rgba) const
+bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, const Palette* pal, bool force_rgba) const
 {
 	// Check patch index
 	if (pindex >= patches_.size())

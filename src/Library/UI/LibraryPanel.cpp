@@ -3,9 +3,11 @@
 #include "LibraryPanel.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Database.h"
 #include "General/Misc.h"
+#include "General/SAction.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "Library/ArchiveFile.h"
@@ -16,6 +18,7 @@
 #include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/DateTime.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace ui;
@@ -152,7 +155,7 @@ wxString LibraryViewModel::GetColumnType(unsigned col) const
 	switch (static_cast<Column>(col))
 	{
 	case Column::Name: return "wxDataViewIconText";
-	default: return "string";
+	default:           return "string";
 	}
 }
 
@@ -179,7 +182,7 @@ void LibraryViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		if (!icon_cache.isCached(icon))
 		{
 			// Not found, add to cache
-			const auto pad = Point2i{ 1, 1 };
+			constexpr auto pad = Point2i{ 1, 1 };
 			icon_cache.cacheIcon(icons::Type::Entry, icon, 16, pad);
 		}
 
@@ -194,9 +197,9 @@ void LibraryViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	case Column::Type:
 	{
 		auto fn_ext = strutil::Path::extensionOf(row->path);
-		auto desc   = archive::formatDesc(row->format_id);
+		auto desc   = archive::formatInfoFromId(row->format_id);
 
-		variant = archive::formatDesc(row->format_id).name;
+		variant = desc.name;
 
 		for (const auto& ext : desc.extensions)
 			if (strutil::equalCI(fn_ext, ext.first))
@@ -217,8 +220,8 @@ void LibraryViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 			variant = datetime::toString(row->last_modified, datetime::Format::Local);
 		break;
 	case Column::EntryCount: variant = wxString::Format("%d", row->entry_count); break;
-	case Column::MapCount: variant = row->map_count > 0 ? wxString ::Format("%d", row->map_count) : ""; break;
-	default: break;
+	case Column::MapCount:   variant = row->map_count > 0 ? wxString ::Format("%d", row->map_count) : ""; break;
+	default:                 break;
 	}
 }
 
@@ -341,12 +344,12 @@ void LibraryPanel::setup()
 
 	// Toolbar
 	setupToolbar();
-	sizer->Add(toolbar_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, pad());
+	sizer->Add(toolbar_, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
 	sizer->AddSpacer(px(Size::Pad));
 
 	// Archive list
 	list_archives_ = new SDataViewCtrl{ this, wxDV_MULTIPLE };
-	sizer->Add(list_archives_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, pad());
+	sizer->Add(list_archives_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Init archive list
 	model_library_ = new LibraryViewModel();
@@ -485,16 +488,16 @@ void LibraryPanel::bindEvents()
 			string toggle_column;
 			switch (static_cast<Column>(e.GetId()))
 			{
-			case Column::Name: break;
-			case Column::Path: toggle_column = "LibraryPanelPathVisible"; break;
-			case Column::Size: toggle_column = "LibraryPanelSizeVisible"; break;
-			case Column::Type: toggle_column = "LibraryPanelTypeVisible"; break;
-			case Column::LastOpened: toggle_column = "LibraryPanelLastOpenedVisible"; break;
+			case Column::Name:         break;
+			case Column::Path:         toggle_column = "LibraryPanelPathVisible"; break;
+			case Column::Size:         toggle_column = "LibraryPanelSizeVisible"; break;
+			case Column::Type:         toggle_column = "LibraryPanelTypeVisible"; break;
+			case Column::LastOpened:   toggle_column = "LibraryPanelLastOpenedVisible"; break;
 			case Column::FileModified: toggle_column = "LibraryPanelFileModifiedVisible"; break;
-			case Column::EntryCount: toggle_column = "LibraryPanelEntryCountVisible"; break;
-			case Column::MapCount: toggle_column = "LibraryPanelMapCountVisible"; break;
-			case Column::__Count: list_archives_->resetSorting(); break;
-			default: e.Skip(); break;
+			case Column::EntryCount:   toggle_column = "LibraryPanelEntryCountVisible"; break;
+			case Column::MapCount:     toggle_column = "LibraryPanelMapCountVisible"; break;
+			case Column::__Count:      list_archives_->resetSorting(); break;
+			default:                   e.Skip(); break;
 			}
 
 			if (!toggle_column.empty())
@@ -515,15 +518,15 @@ void LibraryPanel::bindEvents()
 
 			switch (col)
 			{
-			case Column::Name: saveStateInt("LibraryPanelFilenameWidth", width); break;
-			case Column::Path: saveStateInt("LibraryPanelPathWidth", width); break;
-			case Column::Size: saveStateInt("LibraryPanelSizeWidth", width); break;
-			case Column::Type: saveStateInt("LibraryPanelTypeWidth", width); break;
-			case Column::LastOpened: saveStateInt("LibraryPanelLastOpenedWidth", width); break;
+			case Column::Name:         saveStateInt("LibraryPanelFilenameWidth", width); break;
+			case Column::Path:         saveStateInt("LibraryPanelPathWidth", width); break;
+			case Column::Size:         saveStateInt("LibraryPanelSizeWidth", width); break;
+			case Column::Type:         saveStateInt("LibraryPanelTypeWidth", width); break;
+			case Column::LastOpened:   saveStateInt("LibraryPanelLastOpenedWidth", width); break;
 			case Column::FileModified: saveStateInt("LibraryPanelFileModifiedWidth", width); break;
-			case Column::EntryCount: saveStateInt("LibraryPanelEntryCountWidth", width); break;
-			case Column::MapCount: saveStateInt("LibraryPanelMapCountWidth", width); break;
-			default: break;
+			case Column::EntryCount:   saveStateInt("LibraryPanelEntryCountWidth", width); break;
+			case Column::MapCount:     saveStateInt("LibraryPanelMapCountWidth", width); break;
+			default:                   break;
 			}
 		});
 

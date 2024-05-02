@@ -1,25 +1,27 @@
 #pragma once
 
-#include "Archive/Formats/DirArchive.h"
 #include "UI/SDialog.h"
 
 class wxDataViewListCtrl;
 
 namespace slade
 {
+class Archive;
+struct DirEntryChange;
+
 class DirArchiveUpdateDialog : public SDialog
 {
 public:
-	DirArchiveUpdateDialog(wxWindow* parent, DirArchive* archive, vector<DirEntryChange>& changes);
-	~DirArchiveUpdateDialog() = default;
+	DirArchiveUpdateDialog(wxWindow* parent, Archive* archive, const vector<DirEntryChange>& changes);
+	~DirArchiveUpdateDialog() override = default;
 
-	void populateChangeList();
+	void populateChangeList() const;
 
 	// Events
 	void onBtnOKClicked(wxCommandEvent& e);
 
 private:
-	DirArchive*            archive_ = nullptr;
+	Archive*               archive_ = nullptr;
 	vector<DirEntryChange> changes_;
 	wxDataViewListCtrl*    list_changes_ = nullptr;
 };

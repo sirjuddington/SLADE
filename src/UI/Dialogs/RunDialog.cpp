@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -581,6 +581,9 @@ void RunDialog::setup(Archive* archive, int64_t archive_lib_id, bool show_start_
 // RunDialog Class Events
 //
 // -----------------------------------------------------------------------------
+
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the add game button is clicked

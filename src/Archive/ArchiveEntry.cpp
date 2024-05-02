@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,9 @@
 #include "Main.h"
 #include "ArchiveEntry.h"
 #include "Archive.h"
+#include "ArchiveDir.h"
+#include "ArchiveFormatHandler.h"
+#include "EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
 
@@ -76,7 +79,10 @@ unsigned maxEntrySizeBytes()
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
-	name_{ name }, upper_name_{ name }, data_{ size }, type_{ EntryType::unknownType() }
+	name_{ name },
+	upper_name_{ name },
+	data_{ size },
+	type_{ EntryType::unknownType() }
 {
 	strutil::upperIP(upper_name_);
 }
@@ -217,13 +223,13 @@ void ArchiveEntry::setName(string_view name)
 // Sets the entry's state. Won't change state if the change would be redundant
 // (eg new->modified, unmodified->unmodified)
 // -----------------------------------------------------------------------------
-void ArchiveEntry::setState(State state, bool silent)
+void ArchiveEntry::setState(EntryState state, bool silent)
 {
-	if (state_locked_ || (state == State::Unmodified && state_ == State::Unmodified))
+	if (state_locked_ || (state == EntryState::Unmodified && state_ == EntryState::Unmodified))
 		return;
 
-	if (state == State::Unmodified)
-		state_ = State::Unmodified;
+	if (state == EntryState::Unmodified)
+		state_ = EntryState::Unmodified;
 	else if (state > state_)
 		state_ = state;
 
@@ -259,7 +265,7 @@ void ArchiveEntry::unlock()
 // -----------------------------------------------------------------------------
 // Sanitizes the entry name so that it is valid for archive format [format]
 // -----------------------------------------------------------------------------
-void ArchiveEntry::formatName(const ArchiveFormat& format)
+void ArchiveEntry::formatName(const ArchiveFormatInfo& format)
 {
 	// Perform character substitution if needed
 	name_ = misc::fileNameToLumpName(name_);
@@ -274,7 +280,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 
 	// Remove \ or / if the format supports folders
 	if (format.supports_dirs && (name_.find('/') != string::npos || name_.find('\\') != string::npos))
-		name_   = misc::lumpNameToFileName(name_);
+		name_ = misc::lumpNameToFileName(name_);
 
 	// Remove extension if the format doesn't have them
 	if (!format.names_extensions)
@@ -299,7 +305,7 @@ bool ArchiveEntry::rename(string_view new_name)
 
 	// Update attributes
 	setName(new_name);
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	return true;
 }
@@ -325,7 +331,7 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 	}
 
 	// Update attributes
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	// Resize the data
 	if (data_.reSize(new_size, preserve_data))
@@ -390,7 +396,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	// Update attributes
 	data_hash_ = data_.hash();
 	setType(EntryType::unknownType());
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	return true;
 }
@@ -506,7 +512,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 		// Update attributes
 		data_hash_ = data_.hash();
 		setType(EntryType::unknownType());
-		setState(State::Modified);
+		setState(EntryState::Modified);
 
 		return true;
 	}
@@ -578,7 +584,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 	{
 		// Update attributes
 		data_hash_.clear();
-		setState(State::Modified);
+		setState(EntryState::Modified);
 
 		return true;
 	}
@@ -603,6 +609,14 @@ string ArchiveEntry::sizeString() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the entry's type as a string
+// -----------------------------------------------------------------------------
+string ArchiveEntry::typeString() const
+{
+	return type_ ? type_->name() : "Unknown";
+}
+
+// -----------------------------------------------------------------------------
 // ArchiveEntry::stateChanged
 //
 // Notifies the entry's parent archive that the entry has been modified
@@ -619,7 +633,7 @@ void ArchiveEntry::stateChanged()
 void ArchiveEntry::setExtensionByType()
 {
 	// Ignore if the parent archive doesn't support entry name extensions
-	if (parent() && !parent()->formatDesc().names_extensions)
+	if (parent() && !parent()->formatInfo().names_extensions)
 		return;
 
 	// Convert name to wxFileName for processing
@@ -638,6 +652,14 @@ void ArchiveEntry::setExtensionByType()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the detection reliability of the entry's type
+// -----------------------------------------------------------------------------
+int ArchiveEntry::typeReliability() const
+{
+	return type_ ? type()->reliability() * reliability_ / 255 : 0;
+}
+
+// -----------------------------------------------------------------------------
 // Returns true if the entry is in the [ns] namespace within its parent, false
 // otherwise
 // -----------------------------------------------------------------------------
@@ -648,7 +670,7 @@ bool ArchiveEntry::isInNamespace(string_view ns)
 		return false;
 
 	// Some special cases first
-	if (ns == "graphics" && parent()->formatId() == "wad")
+	if (ns == "graphics" && parent()->format() == ArchiveFormat::Wad)
 		ns = "global"; // Graphics namespace doesn't exist in wad files, use global instead
 
 	return parent()->detectNamespace(this) == ns;
@@ -671,4 +693,12 @@ ArchiveEntry* ArchiveEntry::relativeEntry(string_view path, bool allow_absolute_
 		include = parent_->archive()->entryAtPath(path);
 
 	return include;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the entry's type is the special 'folder' type
+// -----------------------------------------------------------------------------
+bool ArchiveEntry::isFolderType() const
+{
+	return type_ == EntryType::folderType();
 }

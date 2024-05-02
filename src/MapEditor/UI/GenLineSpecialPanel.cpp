@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
 #include "Game/GenLineSpecial.h"
+#include "General/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -57,10 +58,10 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	choice_type_ = new wxChoice(this, -1);
 	choice_type_->Set(wxutil::arrayString({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
 	choice_type_->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoiceTypeChanged, this);
-	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type_), 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type_), wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 
 	gb_sizer_ = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer_, 1, wxEXPAND);
+	sizer->Add(gb_sizer_, wxSizerFlags(1).Expand());
 
 	// Trigger
 	label_props_[0]  = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
@@ -466,6 +467,8 @@ int GenLineSpecialPanel::special() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the special type dropdown is changed

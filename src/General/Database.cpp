@@ -36,6 +36,8 @@
 #include "Database.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Console.h"
 #include "General/UI.h"
 #include "UI/State.h"
@@ -287,7 +289,7 @@ bool createMissingTables(SQLite::Database& db)
 			continue;
 
 		// Doesn't exist, create table
-		string sql{ (const char*)entry->data().data(), entry->data().size() };
+		string sql{ reinterpret_cast<const char*>(entry->data().data()), entry->data().size() };
 		try
 		{
 			db.exec(sql);
@@ -312,7 +314,7 @@ bool createMissingTables(SQLite::Database& db)
 				continue;
 
 			// Doesn't exist, create view
-			string sql{ (const char*)entry->data().data(), entry->data().size() };
+			string sql{ reinterpret_cast<const char*>(entry->data().data()), entry->data().size() };
 			try
 			{
 				db.exec(sql);
@@ -763,7 +765,7 @@ void           c_db(const vector<string>& args)
 					return;
 				}
 
-				string sql{ (const char*)sql_entry->data().data(), sql_entry->data().size() };
+				string sql{ reinterpret_cast<const char*>(sql_entry->data().data()), sql_entry->data().size() };
 				db->exec(fmt::format("DROP TABLE IF EXISTS {}", table));
 				db->exec(sql);
 				log::console("Table {} recreated and reset to default", table);

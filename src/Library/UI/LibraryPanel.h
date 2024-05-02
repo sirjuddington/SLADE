@@ -1,6 +1,6 @@
 #pragma once
 
-#include "General/SAction.h"
+#include "General/SActionHandler.h"
 #include "General/Sigslot.h"
 #include "Library/ArchiveFile.h"
 #include "UI/Lists/SDataViewCtrl.h"

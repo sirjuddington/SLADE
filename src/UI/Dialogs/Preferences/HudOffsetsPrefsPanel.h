@@ -8,7 +8,7 @@ class HudOffsetsPrefsPanel : public PrefsPanelBase
 {
 public:
 	HudOffsetsPrefsPanel(wxWindow* parent);
-	~HudOffsetsPrefsPanel() = default;
+	~HudOffsetsPrefsPanel() override = default;
 
 	void init() override;
 	void applyPreferences() override;

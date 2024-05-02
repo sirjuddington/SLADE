@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "Main.h"
 #include "SFont.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/GLTexture.h"
@@ -163,38 +165,40 @@ bool SFont::loadBMF(MemChunk& mc)
 // -----------------------------------------------------------------------------
 void SFont::drawCharacter(char c, ColRGBA colour) const
 {
-	// Check texture is loaded
-	if (!gl::Texture::isLoaded(texture_))
-		return;
+	// TODO: Reimplement (maybe? is unused)
 
-	// Bind texture
-	gl::Texture::bind(texture_);
+	//// Check texture is loaded
+	//if (!gl::Texture::isLoaded(texture_))
+	//	return;
 
-	// Set colour
-	gl::setColour(colour);
+	//// Bind texture
+	//gl::Texture::bind(texture_);
 
-	// Get character to draw
-	auto& ch = characters_[(uint8_t)c];
-	if (ch.width_ == 0 && ch.height_ == 0)
-		return;
+	//// Set colour
+	//gl::setColour(colour);
 
-	// Draw it
-	Rectf tex_rect;
-	auto& tex_info = gl::Texture::info(texture_);
-	tex_rect.tl.set(
-		(double)ch.tex_bounds_.x1() / (double)tex_info.size.x, (double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
-	tex_rect.br.set(
-		(double)ch.tex_bounds_.x2() / (double)tex_info.size.x, (double)ch.tex_bounds_.y2() / (double)tex_info.size.y);
-	glBegin(GL_QUADS);
-	glTexCoord2d(tex_rect.x1(), tex_rect.y1());
-	glVertex2d(0, 0);
-	glTexCoord2d(tex_rect.x1(), tex_rect.y2());
-	glVertex2d(0, ch.height_);
-	glTexCoord2d(tex_rect.x2(), tex_rect.y2());
-	glVertex2d(ch.width_, ch.height_);
-	glTexCoord2d(tex_rect.x2(), tex_rect.y1());
-	glVertex2d(ch.width_, 0);
-	glEnd();
+	//// Get character to draw
+	//auto& ch = characters_[(uint8_t)c];
+	//if (ch.width_ == 0 && ch.height_ == 0)
+	//	return;
+
+	//// Draw it
+	//Rectf tex_rect;
+	//auto& tex_info = gl::Texture::info(texture_);
+	//tex_rect.tl.set(
+	//	(double)ch.tex_bounds_.x1() / (double)tex_info.size.x, (double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
+	//tex_rect.br.set(
+	//	(double)ch.tex_bounds_.x2() / (double)tex_info.size.x, (double)ch.tex_bounds_.y2() / (double)tex_info.size.y);
+	//glBegin(GL_QUADS);
+	//glTexCoord2d(tex_rect.x1(), tex_rect.y1());
+	//glVertex2d(0, 0);
+	//glTexCoord2d(tex_rect.x1(), tex_rect.y2());
+	//glVertex2d(0, ch.height_);
+	//glTexCoord2d(tex_rect.x2(), tex_rect.y2());
+	//glVertex2d(ch.width_, ch.height_);
+	//glTexCoord2d(tex_rect.x2(), tex_rect.y1());
+	//glVertex2d(ch.width_, 0);
+	//glEnd();
 }
 
 // -----------------------------------------------------------------------------
@@ -202,74 +206,76 @@ void SFont::drawCharacter(char c, ColRGBA colour) const
 // -----------------------------------------------------------------------------
 void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align) const
 {
-	// Check texture is loaded
-	if (!gl::Texture::isLoaded(texture_))
-		return;
+	// TODO: Reimplement (again maybe, unused)
 
-	// Bind texture
-	gl::Texture::bind(texture_);
+	//// Check texture is loaded
+	//if (!gl::Texture::isLoaded(texture_))
+	//	return;
 
-	// Set colour
-	gl::setColour(colour);
+	//// Bind texture
+	//gl::Texture::bind(texture_);
 
-	// Determine string length (for alignment)
-	int total_width = 0;
-	for (char c : str)
-	{
-		// Get character
-		auto& ch = characters_[static_cast<uint8_t>(c)];
+	//// Set colour
+	//gl::setColour(colour);
 
-		// Increment total width
-		if (ch.width_ > 0 || ch.height_ > 0)
-			total_width += ch.width_ + spacing_;
-		else
-			total_width += spacing_;
-	}
+	//// Determine string length (for alignment)
+	//int total_width = 0;
+	//for (char c : str)
+	//{
+	//	// Get character
+	//	auto& ch = characters_[static_cast<uint8_t>(c)];
 
-	// Translate for alignment
-	glPushMatrix();
-	if (align == Align::Right)
-		glTranslated(-total_width, 0, 0);
-	else if (align == Align::Center)
-		glTranslated(-(total_width * 0.5), 0, 0);
+	//	// Increment total width
+	//	if (ch.width_ > 0 || ch.height_ > 0)
+	//		total_width += ch.width_ + spacing_;
+	//	else
+	//		total_width += spacing_;
+	//}
 
-	// Draw the string
-	unsigned xoff = 0;
-	for (char c : str)
-	{
-		// Get character
-		auto& ch = characters_[static_cast<uint8_t>(c)];
-		if (ch.width_ == 0 && ch.height_ == 0)
-		{
-			xoff += spacing_;
-			continue;
-		}
+	//// Translate for alignment
+	//glPushMatrix();
+	//if (align == Align::Right)
+	//	glTranslated(-total_width, 0, 0);
+	//else if (align == Align::Center)
+	//	glTranslated(-(total_width * 0.5), 0, 0);
 
-		// Draw it
-		Rectf tex_rect;
-		auto& tex_info = gl::Texture::info(texture_);
-		tex_rect.tl.set(
-			(double)ch.tex_bounds_.x1() / (double)tex_info.size.x,
-			(double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
-		tex_rect.br.set(
-			(double)ch.tex_bounds_.x2() / (double)tex_info.size.x,
-			(double)ch.tex_bounds_.y2() / (double)tex_info.size.y);
-		glBegin(GL_QUADS);
-		glTexCoord2d(tex_rect.x1(), tex_rect.y1());
-		glVertex2d(xoff, 0);
-		glTexCoord2d(tex_rect.x1(), tex_rect.y2());
-		glVertex2d(xoff, ch.height_);
-		glTexCoord2d(tex_rect.x2(), tex_rect.y2());
-		glVertex2d(xoff + ch.width_, ch.height_);
-		glTexCoord2d(tex_rect.x2(), tex_rect.y1());
-		glVertex2d(xoff + ch.width_, 0);
-		glEnd();
+	//// Draw the string
+	//unsigned xoff = 0;
+	//for (char c : str)
+	//{
+	//	// Get character
+	//	auto& ch = characters_[static_cast<uint8_t>(c)];
+	//	if (ch.width_ == 0 && ch.height_ == 0)
+	//	{
+	//		xoff += spacing_;
+	//		continue;
+	//	}
 
-		// Increment x to next character (1 pixel spacing)
-		xoff += ch.width_ + spacing_;
-	}
+	//	// Draw it
+	//	Rectf tex_rect;
+	//	auto& tex_info = gl::Texture::info(texture_);
+	//	tex_rect.tl.set(
+	//		(double)ch.tex_bounds_.x1() / (double)tex_info.size.x,
+	//		(double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
+	//	tex_rect.br.set(
+	//		(double)ch.tex_bounds_.x2() / (double)tex_info.size.x,
+	//		(double)ch.tex_bounds_.y2() / (double)tex_info.size.y);
+	//	glBegin(GL_QUADS);
+	//	glTexCoord2d(tex_rect.x1(), tex_rect.y1());
+	//	glVertex2d(xoff, 0);
+	//	glTexCoord2d(tex_rect.x1(), tex_rect.y2());
+	//	glVertex2d(xoff, ch.height_);
+	//	glTexCoord2d(tex_rect.x2(), tex_rect.y2());
+	//	glVertex2d(xoff + ch.width_, ch.height_);
+	//	glTexCoord2d(tex_rect.x2(), tex_rect.y1());
+	//	glVertex2d(xoff + ch.width_, 0);
+	//	glEnd();
 
-	glPopMatrix();
+	//	// Increment x to next character (1 pixel spacing)
+	//	xoff += ch.width_ + spacing_;
+	//}
+
+	//glPopMatrix();
 }
 
 

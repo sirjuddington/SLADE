@@ -6,7 +6,7 @@ class WizardPageBase : public wxPanel
 {
 public:
 	WizardPageBase(wxWindow* parent) : wxPanel(parent, -1) {}
-	~WizardPageBase() {}
+	~WizardPageBase() override = default;
 
 	virtual bool     canGoNext() { return true; }
 	virtual void     applyChanges() {}

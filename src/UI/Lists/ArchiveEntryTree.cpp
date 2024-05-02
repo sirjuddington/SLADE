@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,15 +35,20 @@
 #include "ArchiveEntryTree.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormatHandler.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/ColourConfiguration.h"
+#include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "Library/ArchiveUIConfig.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/State.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 #include <wx/headerctrl.h>
 
 using namespace slade;
@@ -60,10 +65,6 @@ wxColour         col_text_modified(0, 0, 0, 0);
 wxColour         col_text_new(0, 0, 0, 0);
 wxColour         col_text_locked(0, 0, 0, 0);
 icons::IconCache icon_cache;
-// vector<int>      elist_chars = {
-//     '.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
-//     ']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
-// };
 } // namespace slade::ui
 
 #ifdef __WXGTK__
@@ -73,6 +74,14 @@ CVAR(Bool, elist_rename_inplace, false, CVar::Save)
 #else
 CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 #endif
+CVAR(Bool, elist_colsize_show, true, CVar::Flag::Save)
+CVAR(Bool, elist_coltype_show, true, CVar::Flag::Save)
+CVAR(Bool, elist_colindex_show, false, CVar::Flag::Save)
+CVAR(Bool, elist_filter_dirs, false, CVar::Flag::Save)
+CVAR(Bool, elist_type_bgcol, false, CVar::Flag::Save)
+CVAR(Float, elist_type_bgcol_intensity, 0.18, CVar::Flag::Save)
+CVAR(Int, elist_icon_size, 16, CVar::Flag::Save)
+CVAR(Int, elist_icon_padding, 1, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -80,12 +89,7 @@ CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Int, elist_icon_size)
-EXTERN_CVAR(Int, elist_icon_padding)
-EXTERN_CVAR(Bool, elist_filter_dirs)
 EXTERN_CVAR(Bool, list_font_monospace)
-EXTERN_CVAR(Bool, elist_type_bgcol)
-EXTERN_CVAR(Float, elist_type_bgcol_intensity)
 
 
 // -----------------------------------------------------------------------------
@@ -155,18 +159,21 @@ void ArchivePathPanel::setCurrentPath(const ArchiveDir* dir) const
 // Associates [archive] with this model, connecting to its signals and
 // populating the root node with the archive's root directory
 // -----------------------------------------------------------------------------
-void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager, bool force_list)
+void ArchiveViewModel::openArchive(const shared_ptr<Archive>& archive, UndoManager* undo_manager, bool force_list)
 {
 	archive_      = archive;
 	root_dir_     = archive->rootDir();
 	undo_manager_ = undo_manager;
-	view_type_    = archive->formatDesc().supports_dirs && !force_list ? ViewType::Tree : ViewType::List;
+	view_type_    = archive->formatInfo().supports_dirs && !force_list ? ViewType::Tree : ViewType::List;
 
 	// Refresh (will load all items)
 	Cleared();
 
 
 	// --- Connect to Archive/ArchiveManager signals ---
+
+	// ReSharper disable CppMemberFunctionMayBeConst
+	// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 	// Entry added
 	connections_ += archive->signals().entry_added.connect(
@@ -251,6 +258,9 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 					items.push_back(wxDataViewItem{ entry });
 			ItemsChanged(items);
 		});
+
+	// ReSharper enable CppMemberFunctionMayBeConst
+	// ReSharper enable CppParameterMayBeConstPtrOrRef
 }
 
 // -----------------------------------------------------------------------------
@@ -288,7 +298,7 @@ void ArchiveViewModel::setFilter(string_view name, string_view category)
 // -----------------------------------------------------------------------------
 // Sets the root directory
 // -----------------------------------------------------------------------------
-void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
+void ArchiveViewModel::setRootDir(const shared_ptr<ArchiveDir>& dir)
 {
 	// Check given dir is part of archive
 	if (dir->archive() != archive_.lock().get())
@@ -338,10 +348,10 @@ wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 {
 	switch (col)
 	{
-	case 0: return "wxDataViewIconText";
-	case 1: return "string";
-	case 2: return "string";
-	case 3: return "string"; // Index is a number technically, but will need to be blank for folders
+	case 0:  return "wxDataViewIconText";
+	case 1:  return "string";
+	case 2:  return "string";
+	case 3:  return "string"; // Index is a number technically, but will need to be blank for folders
 	default: return "string";
 	}
 }
@@ -368,7 +378,7 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		}
 
 		wxString name = entry->name();
-		if (modified_indicator_ && entry->state() != ArchiveEntry::State::Unmodified)
+		if (modified_indicator_ && entry->state() != EntryState::Unmodified)
 			variant << wxDataViewIconText(entry->name() + " *", icon_cache.icons[entry->type()->icon()]);
 		else
 			variant << wxDataViewIconText(entry->name(), icon_cache.icons[entry->type()->icon()]);
@@ -425,7 +435,7 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 	}
 
 	// Status colour
-	if (entry->isLocked() || entry->state() != ArchiveEntry::State::Unmodified)
+	if (entry->isLocked() || entry->state() != EntryState::Unmodified)
 	{
 		// Init precalculated status text colours if necessary
 		if (col_text_modified.Alpha() == 0)
@@ -458,7 +468,7 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 		if (entry->isLocked())
 			attr.SetColour(col_text_locked);
 		else
-			attr.SetColour(entry->state() == ArchiveEntry::State::New ? col_text_new : col_text_modified);
+			attr.SetColour(entry->state() == EntryState::New ? col_text_new : col_text_modified);
 
 		has_attr = true;
 	}
@@ -479,7 +489,7 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 			bcol.b = (etype_colour.b * elist_type_bgcol_intensity)
 					 + (col_bg.Blue() * (1.0 - elist_type_bgcol_intensity));
 
-			attr.SetBackgroundColour(bcol.toWx());
+			attr.SetBackgroundColour(bcol);
 			has_attr = true;
 		}
 	}
@@ -810,7 +820,7 @@ bool ArchiveViewModel::dirIsInList(const ArchiveDir& dir) const
 	switch (view_type_)
 	{
 	case ViewType::List: return dir.parent() == root_dir_.lock();
-	default: return true;
+	default:             return true;
 	}
 }
 
@@ -840,11 +850,12 @@ ArchiveDir* ArchiveViewModel::dirForDirItem(const wxDataViewItem& item) const
 // ArchiveEntryTree class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntryTree::ArchiveEntryTree(
-	wxWindow*           parent,
-	shared_ptr<Archive> archive,
-	UndoManager*        undo_manager,
-	bool                force_list) :
-	SDataViewCtrl{ parent, wxDV_MULTIPLE }, archive_{ archive }
+	wxWindow*                  parent,
+	const shared_ptr<Archive>& archive,
+	UndoManager*               undo_manager,
+	bool                       force_list) :
+	SDataViewCtrl{ parent, wxDV_MULTIPLE },
+	archive_{ archive }
 {
 	// Init settings
 	SetRowHeight(ui::scalePx(elist_icon_size + (elist_icon_padding * 2) + 2));
@@ -1085,7 +1096,7 @@ vector<ArchiveDir*> ArchiveEntryTree::selectedDirectories() const
 		return {};
 
 	auto* archive = archive_.lock().get();
-	if (!archive || !archive->formatDesc().supports_dirs)
+	if (!archive || !archive->formatInfo().supports_dirs)
 		return {};
 
 	vector<ArchiveDir*> dirs;
@@ -1114,7 +1125,7 @@ ArchiveDir* ArchiveEntryTree::firstSelectedDirectory() const
 		return {};
 
 	auto* archive = archive_.lock().get();
-	if (!archive || !archive->formatDesc().supports_dirs)
+	if (!archive || !archive->formatInfo().supports_dirs)
 		return {};
 
 	// Get selected tree items
@@ -1141,7 +1152,7 @@ ArchiveDir* ArchiveEntryTree::lastSelectedDirectory() const
 		return {};
 
 	auto* archive = archive_.lock().get();
-	if (!archive || !archive->formatDesc().supports_dirs)
+	if (!archive || !archive->formatInfo().supports_dirs)
 		return {};
 
 	// Get selected tree items
@@ -1381,7 +1392,7 @@ void ArchiveEntryTree::EnsureVisible(const wxDataViewItem& item, const wxDataVie
 			return;
 
 		// Go to entry's parent dir if needed
-		if (archive->formatDesc().supports_dirs && model_->rootDir() != entry->parentDir())
+		if (archive->formatInfo().supports_dirs && model_->rootDir() != entry->parentDir())
 			model_->setRootDir(ArchiveDir::getShared(entry->parentDir()));
 	}
 
@@ -1409,7 +1420,7 @@ void ArchiveEntryTree::setupColumns()
 	// If no config exists for the archive, create one from the cvars
 	if (config.archive_id < 0)
 	{
-		config = library::ArchiveUIConfigRow{ archive->libraryId(), archive->formatDesc().supports_dirs };
+		config = library::ArchiveUIConfigRow{ archive->libraryId(), archive->formatInfo().supports_dirs };
 		library::saveArchiveUIConfig(config);
 	}
 
@@ -1560,7 +1571,7 @@ void ArchiveEntryTree::onAnyColumnResized()
 	{
 		config.elist_name_width = col_name_->GetWidth();
 		saveStateInt(
-			archive->formatDesc().supports_dirs ? "EntryListNameWidthTree" : "EntryListNameWidthList",
+			archive->formatInfo().supports_dirs ? "EntryListNameWidthTree" : "EntryListNameWidthList",
 			config.elist_name_width);
 	}
 
@@ -1584,7 +1595,7 @@ void ArchiveEntryTree::onAnyColumnResized()
 // -----------------------------------------------------------------------------
 // Sets the root directory to [dir] and updates UI accordingly
 // -----------------------------------------------------------------------------
-void ArchiveEntryTree::goToDir(shared_ptr<ArchiveDir> dir, bool expand)
+void ArchiveEntryTree::goToDir(const shared_ptr<ArchiveDir>& dir, bool expand)
 {
 	if (const auto archive = archive_.lock())
 	{

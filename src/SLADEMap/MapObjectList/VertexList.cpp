@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,7 +33,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "VertexList.h"
-#include "Utility/MathStuff.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/Rect.h"
+#include "SLADEMap/MapObject/MapVertex.h"
 
 using namespace slade;
 
@@ -49,7 +51,7 @@ using namespace slade;
 // Returns the vertex closest to the point, or null if none found.
 // Igonres any vertices further away than [min]
 // -----------------------------------------------------------------------------
-MapVertex* VertexList::nearest(Vec2d point, double min) const
+MapVertex* VertexList::nearest(const Vec2d& point, double min) const
 {
 	// Go through vertices
 	double     dist;
@@ -58,7 +60,7 @@ MapVertex* VertexList::nearest(Vec2d point, double min) const
 	for (const auto& vertex : objects_)
 	{
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicabDistanceTo(vertex->position());
+		dist = geometry::taxicabDistance(point, vertex->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -72,7 +74,7 @@ MapVertex* VertexList::nearest(Vec2d point, double min) const
 	// to check for minimum hilight distance
 	if (nearest)
 	{
-		double rdist = math::distance(nearest->position(), point);
+		double rdist = glm::distance(nearest->position(), point);
 		if (rdist > min)
 			return nullptr;
 	}
@@ -117,10 +119,10 @@ MapVertex* VertexList::firstCrossed(const Seg2d& line) const
 			continue;
 
 		// Check if on line
-		if (math::distanceToLineFast(point, line) == 0)
+		if (geometry::distanceToLineFast(point, line) == 0)
 		{
 			// Check distance between line start and vertex
-			double dist = math::distance(line.start(), point);
+			double dist = glm::distance(line.start(), point);
 			if (dist < min_dist)
 			{
 				cv       = vertex;

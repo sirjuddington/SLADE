@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,8 +31,20 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Doom64MapFormat.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/MapDesc.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/SideList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
 
 using namespace slade;
@@ -41,7 +53,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // Reads the given Doom64-format [map], populating [map_data]
 // -----------------------------------------------------------------------------
-bool Doom64MapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
+bool Doom64MapFormat::readMap(MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
 {
 	log::info(2, "Reading Doom64 format map");
 
@@ -331,10 +343,10 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	const auto        thng_data = reinterpret_cast<const Thing*>(entry->rawData());
-	const unsigned    nt        = entry->size() / sizeof(Thing);
-	const float       p         = ui::getSplashProgress();
-	MapObject::ArgSet args;
+	const auto     thng_data = reinterpret_cast<const Thing*>(entry->rawData());
+	const unsigned nt        = entry->size() / sizeof(Thing);
+	const float    p         = ui::getSplashProgress();
+	map::ArgSet    args;
 	for (size_t a = 0; a < nt; a++)
 	{
 		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(nt) * 0.2f);

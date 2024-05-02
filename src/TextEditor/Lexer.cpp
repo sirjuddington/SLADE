@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Lexer.h"
+#include "TextLanguage.h"
 #include "UI/TextEditorCtrl.h"
 #include "Utility/StringUtils.h"
 
@@ -95,7 +96,8 @@ void Lexer::loadLanguage(TextLanguage* language)
 		addWord(word, Lexer::Style::Keyword);
 
 	// Load language info
-	preprocessor_char_ = language->preprocessor().empty() ? (char)0 : (char)language->preprocessor()[0];
+	preprocessor_char_ = language->preprocessor().empty() ? static_cast<char>(0) :
+															static_cast<char>(language->preprocessor()[0]);
 }
 
 // -----------------------------------------------------------------------------
@@ -132,11 +134,11 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 		switch (state.state)
 		{
 		case State::Whitespace: done = processWhitespace(state); break;
-		case State::String: done = processString(state); break;
-		case State::Char: done = processChar(state); break;
-		case State::Word: done = processWord(state); break;
-		case State::Operator: done = processOperator(state); break;
-		default: done = processUnknown(state); break;
+		case State::String:     done = processString(state); break;
+		case State::Char:       done = processChar(state); break;
+		case State::Word:       done = processWord(state); break;
+		case State::Operator:   done = processOperator(state); break;
+		default:                done = processUnknown(state); break;
 		}
 	}
 
@@ -149,7 +151,7 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 // Updates and styles comments in [editor], for characters from [start] to
 // [end].
 // ----------------------------------------------------------------------------
-void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
+void Lexer::updateComments(const TextEditorCtrl* editor, int start, int end)
 {
 	if (!language_)
 		return;
@@ -231,7 +233,7 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 // -----------------------------------------------------------------------------
 void Lexer::addWord(string_view word, int style)
 {
-	word_list_[language_->caseSensitive() ? string{ word } : strutil::lower(word)].style = (char)style;
+	word_list_[language_->caseSensitive() ? string{ word } : strutil::lower(word)].style = static_cast<char>(style);
 }
 
 // -----------------------------------------------------------------------------
@@ -265,7 +267,7 @@ void Lexer::setWordChars(string_view chars)
 {
 	word_chars_.clear();
 	for (auto&& a : chars)
-		word_chars_.push_back((unsigned char)a);
+		word_chars_.push_back(static_cast<unsigned char>(a));
 }
 
 // -----------------------------------------------------------------------------
@@ -275,7 +277,7 @@ void Lexer::setOperatorChars(string_view chars)
 {
 	operator_chars_.clear();
 	for (auto&& a : chars)
-		operator_chars_.push_back((unsigned char)a);
+		operator_chars_.push_back(static_cast<unsigned char>(a));
 }
 
 // -----------------------------------------------------------------------------
@@ -345,7 +347,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Preprocessor
-		else if (c == (unsigned char)language_->preprocessor()[0])
+		else if (c == static_cast<unsigned char>(language_->preprocessor()[0]))
 		{
 			pp = true;
 			u_length++;
@@ -411,7 +413,7 @@ bool Lexer::processWord(LexerState& state)
 	bool         end = false;
 
 	// Add first letter
-	word.push_back((char)state.editor->GetCharAt(state.position++));
+	word.push_back(static_cast<char>(state.editor->GetCharAt(state.position++)));
 
 	while (true)
 	{
@@ -422,7 +424,7 @@ bool Lexer::processWord(LexerState& state)
 			break;
 		}
 
-		char c = (char)state.editor->GetCharAt(state.position);
+		char c = static_cast<char>(state.editor->GetCharAt(state.position));
 		if (VECTOR_EXISTS(word_chars_, c))
 		{
 			word.push_back(c);
@@ -481,7 +483,7 @@ bool Lexer::processString(LexerState& state)
 		}
 
 		// End of string
-		char c = (char)state.editor->GetCharAt(state.position);
+		char c = static_cast<char>(state.editor->GetCharAt(state.position));
 		if (c == '"')
 		{
 			state.length++;
@@ -520,7 +522,7 @@ bool Lexer::processChar(LexerState& state)
 		}
 
 		// End of string
-		char c = (char)state.editor->GetCharAt(state.position);
+		char c = static_cast<char>(state.editor->GetCharAt(state.position));
 		if (c == '\'')
 		{
 			state.length++;
@@ -558,7 +560,7 @@ bool Lexer::processOperator(LexerState& state)
 			break;
 		}
 
-		char c = (char)state.editor->GetCharAt(state.position);
+		char c = static_cast<char>(state.editor->GetCharAt(state.position));
 		if (VECTOR_EXISTS(operator_chars_, c))
 		{
 			state.length++;
@@ -596,7 +598,7 @@ bool Lexer::processWhitespace(LexerState& state)
 			break;
 		}
 
-		char c = (char)state.editor->GetCharAt(state.position);
+		char c = static_cast<char>(state.editor->GetCharAt(state.position));
 		if (VECTOR_EXISTS(whitespace_chars_, c))
 		{
 			state.length++;
@@ -620,14 +622,14 @@ bool Lexer::processWhitespace(LexerState& state)
 // -----------------------------------------------------------------------------
 // Checks if the text in [editor] starting from [pos] matches [token]
 // ----------------------------------------------------------------------------
-bool Lexer::checkToken(TextEditorCtrl* editor, int pos, string_view token) const
+bool Lexer::checkToken(const TextEditorCtrl* editor, int pos, string_view token) const
 {
 	if (!token.empty())
 	{
 		unsigned long token_size = token.size();
 		for (unsigned i = 0; i < token_size; i++)
 		{
-			if (editor->GetCharAt(pos + i) != (int)token[i])
+			if (editor->GetCharAt(pos + i) != static_cast<int>(token[i]))
 				return false;
 		}
 		return true;
@@ -640,7 +642,7 @@ bool Lexer::checkToken(TextEditorCtrl* editor, int pos, string_view token) const
 // Writes the fitst index that matched to [found_index] if a valid pointer
 // is passed. Returns true if there's a match, false if not.
 // ----------------------------------------------------------------------------
-bool Lexer::checkToken(TextEditorCtrl* editor, int pos, const vector<string>& tokens, int* found_idx) const
+bool Lexer::checkToken(const TextEditorCtrl* editor, int pos, const vector<string>& tokens, int* found_idx) const
 {
 	if (!tokens.empty())
 	{
@@ -666,7 +668,7 @@ bool Lexer::checkToken(TextEditorCtrl* editor, int pos, const vector<string>& to
 // Checks if [pos] is within a block comment, and returns the index for
 // comment_blocks_ if it is (-1 otherwise)
 // ----------------------------------------------------------------------------
-int Lexer::isWithinComment(int pos)
+int Lexer::isWithinComment(int pos) const
 {
 	for (unsigned i = 0; i < comment_blocks_.size(); ++i)
 		if (pos >= comment_blocks_[i].start_pos && pos < comment_blocks_[i].end_pos)
@@ -718,7 +720,7 @@ bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 	auto word = editor->GetTextRange(start_pos, end_pos).ToStdString();
 	if (!language_->caseSensitive())
 		strutil::lowerIP(word);
-	return word_list_[word].style == (int)Style::Function;
+	return word_list_[word].style == static_cast<int>(Style::Function);
 }
 
 

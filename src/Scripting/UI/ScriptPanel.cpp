@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,7 +34,9 @@
 #include "ScriptPanel.h"
 #include "App.h"
 #include "General/SAction.h"
+#include "General/UI.h"
 #include "Scripting/ScriptManager.h"
+#include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/SToolBar/SToolBar.h"
@@ -63,20 +65,20 @@ ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPa
 
 	// Toolbar
 	auto toolbar = setupToolbar();
-	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
-	sizer->Add(toolbar, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
-	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
+	sizer->AddSpacer(ui::padMin());
+	sizer->Add(toolbar, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
+	sizer->AddSpacer(ui::padMin());
 
 	// Text Editor
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
 		text_editor_->SetText(script_->text);
-	sizer->Add(text_editor_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(text_editor_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Find+Replace panel
 	find_replace_panel_ = new FindReplacePanel(this, *text_editor_);
-	sizer->Add(find_replace_panel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(find_replace_panel_, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	find_replace_panel_->Show(false);
 
 	text_editor_->setFindReplacePanel(find_replace_panel_);

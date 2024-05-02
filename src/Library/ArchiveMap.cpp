@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveMap.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/MapDesc.h"
 #include "General/Database.h"
 
 using namespace slade;
@@ -87,7 +89,7 @@ ArchiveMapRow::ArchiveMapRow(database::Context& db, int64_t archive_id, int64_t 
 // ArchiveMapRow constructor
 // Initializes the row with info from [map_desc]
 // -----------------------------------------------------------------------------
-ArchiveMapRow::ArchiveMapRow(int64_t archive_id, const Archive::MapDesc& map_desc) : archive_id{ archive_id }
+ArchiveMapRow::ArchiveMapRow(int64_t archive_id, const MapDesc& map_desc) : archive_id{ archive_id }
 {
 	auto* head_entry = map_desc.head.lock().get();
 	if (!head_entry)

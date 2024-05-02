@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utility/StringPair.h"
+
 namespace slade::ui
 {
 // General

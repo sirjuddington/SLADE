@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,6 +40,7 @@
 #include "UI/WxUtils.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -93,7 +94,7 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 // -----------------------------------------------------------------------------
 // Initialises the panel with values from [group]
 // -----------------------------------------------------------------------------
-void ObjectEditPanel::init(ObjectEditGroup* group)
+void ObjectEditPanel::init(const ObjectEditGroup* group)
 {
 	// Check group was given
 	if (!group)
@@ -119,7 +120,7 @@ void ObjectEditPanel::init(ObjectEditGroup* group)
 // -----------------------------------------------------------------------------
 // Updates the panel with values from [group]
 // -----------------------------------------------------------------------------
-void ObjectEditPanel::update(ObjectEditGroup* group, bool lock_rotation) const
+void ObjectEditPanel::update(const ObjectEditGroup* group, bool lock_rotation) const
 {
 	auto   bbox   = group->bbox();
 	int    xoff   = bbox.midX() - old_x_;
@@ -129,8 +130,8 @@ void ObjectEditPanel::update(ObjectEditGroup* group, bool lock_rotation) const
 
 	text_xoff_->SetValue(wxString::Format("%d", xoff));
 	text_yoff_->SetValue(wxString::Format("%d", yoff));
-	text_scalex_->SetValue(wxString::Format("%d", int(100 * xscale)));
-	text_scaley_->SetValue(wxString::Format("%d", int(100 * yscale)));
+	text_scalex_->SetValue(wxString::Format("%d", static_cast<int>(100 * xscale)));
+	text_scaley_->SetValue(wxString::Format("%d", static_cast<int>(100 * yscale)));
 	combo_rotation_->SetValue(wxString::Format("%1.2f", group->rotation()));
 }
 
@@ -139,50 +140,39 @@ void ObjectEditPanel::update(ObjectEditGroup* group, bool lock_rotation) const
 // -----------------------------------------------------------------------------
 void ObjectEditPanel::setupLayout()
 {
+	namespace wx = wxutil;
+
 	// Init sizer
 	SetSizer(new wxBoxSizer(wxVERTICAL));
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
-	GetSizer()->Add(sizer, 1, wxEXPAND | wxALL, ui::pad());
+	GetSizer()->Add(sizer, wx::sfWithBorder(1).Expand());
 
 	// X offset
-	sizer->Add(
-		wxutil::createLabelHBox(this, "X Offset:", text_xoff_), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
+	sizer->Add(wx::createLabelHBox(this, "X Offset:", text_xoff_), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Y offset
-	sizer->Add(
-		wxutil::createLabelHBox(this, "Y Offset:", text_yoff_), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
+	sizer->Add(wx::createLabelHBox(this, "Y Offset:", text_yoff_), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// X scale
-	sizer->Add(
-		wxutil::createLabelHBox(this, "X Scale:", text_scalex_),
-		0,
-		wxALIGN_CENTER_VERTICAL | wxRIGHT,
-		ui::px(ui::Size::PadMinimum));
-	sizer->Add(new wxStaticText(this, -1, "%"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
+	sizer->Add(wx::createLabelHBox(this, "X Scale:", text_scalex_), wx::sfWithMinBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(new wxStaticText(this, -1, "%"), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Y scale
-	sizer->Add(
-		wxutil::createLabelHBox(this, "Y Scale:", text_scaley_),
-		0,
-		wxALIGN_CENTER_VERTICAL | wxRIGHT,
-		ui::px(ui::Size::PadMinimum));
-	sizer->Add(new wxStaticText(this, -1, "%"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
+	sizer->Add(wx::createLabelHBox(this, "Y Scale:", text_scaley_), wx::sfWithMinBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(new wxStaticText(this, -1, "%"), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Rotation
 	sizer->Add(
-		wxutil::createLabelHBox(this, "Rotation:", combo_rotation_),
-		0,
-		wxALIGN_CENTER_VERTICAL | wxRIGHT,
-		ui::padLarge());
+		wx::createLabelHBox(this, "Rotation:", combo_rotation_), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Mirror x/y
-	sizer->Add(cb_mirror_x_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
-	sizer->Add(cb_mirror_y_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
+	sizer->Add(cb_mirror_x_, wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(cb_mirror_y_, wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Buttons
-	sizer->Add(btn_preview_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-	sizer->Add(btn_cancel_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-	sizer->Add(btn_apply_, 0, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(btn_preview_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(btn_cancel_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(btn_apply_, wxSizerFlags().CenterVertical());
 }
 
 

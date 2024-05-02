@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,10 +32,25 @@
 #include "Main.h"
 #include "SLADEMap.h"
 #include "App.h"
-#include "Archive/Formats/WadArchive.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
+#include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/SectorBuilder.h"
 #include "MapFormat/MapFormatHandler.h"
+#include "MapObject/MapLine.h"
+#include "MapObject/MapSide.h"
+#include "MapObject/MapThing.h"
+#include "MapObject/MapVertex.h"
+#include "MapObjectList/LineList.h"
+#include "MapObjectList/SectorList.h"
+#include "MapObjectList/SideList.h"
+#include "MapObjectList/ThingList.h"
+#include "MapObjectList/VertexList.h"
+#include "MapSpecials.h"
+#include "Utility/Debuggable.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -59,7 +74,7 @@ CVAR(Bool, map_split_auto_offset, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // SLADEMap class constructor
 // -----------------------------------------------------------------------------
-SLADEMap::SLADEMap() : data_{ this }
+SLADEMap::SLADEMap() : data_{ this }, current_format_{ MapFormat::Unknown }, map_specials_{ new MapSpecials() }
 {
 	// Init opened time so it's not random leftover garbage values
 	setOpenedTime();
@@ -74,19 +89,99 @@ SLADEMap::~SLADEMap()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the object of [type] at [index], or NULL if [index] is invalid
+// Returns the vertex at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapVertex* SLADEMap::vertex(unsigned index) const
+{
+	return data_.vertices().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the side at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapSide* SLADEMap::side(unsigned index) const
+{
+	return data_.sides().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the line at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapLine* SLADEMap::line(unsigned index) const
+{
+	return data_.lines().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the sector at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapSector* SLADEMap::sector(unsigned index) const
+{
+	return data_.sectors().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the thing at [index], or nullptr if [index] is invalid
+// -----------------------------------------------------------------------------
+MapThing* SLADEMap::thing(unsigned index) const
+{
+	return data_.things().at(index);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the object of [type] at [index], or nullptr if [index] is invalid
 // -----------------------------------------------------------------------------
 MapObject* SLADEMap::object(MapObject::Type type, unsigned index) const
 {
 	switch (type)
 	{
 	case MapObject::Type::Vertex: return vertex(index);
-	case MapObject::Type::Line: return line(index);
-	case MapObject::Type::Side: return side(index);
+	case MapObject::Type::Line:   return line(index);
+	case MapObject::Type::Side:   return side(index);
 	case MapObject::Type::Sector: return sector(index);
-	case MapObject::Type::Thing: return thing(index);
-	default: return nullptr;
+	case MapObject::Type::Thing:  return thing(index);
+	default:                      return nullptr;
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of vertices in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nVertices() const
+{
+	return data_.vertices().size();
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of lines in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nLines() const
+{
+	return data_.lines().size();
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of sides in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nSides() const
+{
+	return data_.sides().size();
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of sectors in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nSectors() const
+{
+	return data_.sectors().size();
+}
+
+// -----------------------------------------------------------------------------
+// Returns number of things in the map
+// -----------------------------------------------------------------------------
+size_t SLADEMap::nThings() const
+{
+	return data_.things().size();
 }
 
 // -----------------------------------------------------------------------------
@@ -108,13 +203,13 @@ void SLADEMap::setThingsUpdated()
 // -----------------------------------------------------------------------------
 // Reads map data using info in [map]
 // -----------------------------------------------------------------------------
-bool SLADEMap::readMap(const Archive::MapDesc& map)
+bool SLADEMap::readMap(const MapDesc& map)
 {
 	auto omap = map;
 
 	// Check for map archive
-	WadArchive tempwad;
-	auto       m_head = map.head.lock();
+	Archive tempwad(ArchiveFormat::Wad);
+	auto    m_head = map.head.lock();
 	if (map.archive && m_head)
 	{
 		tempwad.open(m_head->data(), true);
@@ -170,7 +265,7 @@ bool SLADEMap::readMap(const Archive::MapDesc& map)
 // -----------------------------------------------------------------------------
 void SLADEMap::clearMap()
 {
-	map_specials_.reset();
+	map_specials_->reset();
 
 	// Clear map objects
 	data_.clear();
@@ -263,7 +358,7 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 		if (s_line == line)
 			continue;
 
-		const double dist = math::distanceRayLine(mid, mid + vec, s_line->start(), s_line->end());
+		const double dist = geometry::distanceRayLine(mid, mid + vec, s_line->start(), s_line->end());
 
 		if (dist < min_dist && dist > 0)
 		{
@@ -332,7 +427,7 @@ void SLADEMap::putDragonTargets(MapThing* first, vector<MapThing*>& list)
 // -----------------------------------------------------------------------------
 // Returns the first texture at [tex_part] found on lines connected to [vertex]
 // -----------------------------------------------------------------------------
-string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
+string SLADEMap::adjacentLineTexture(const MapVertex* vertex, int tex_part) const
 {
 	// Go through adjacent lines
 	auto tex = MapSide::TEX_NONE;
@@ -414,7 +509,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 
 	// Rotate very slightly to avoid some common cases where
 	// the ray will cross a vertex exactly
-	dir = math::rotatePoint(mid, dir, 0.01);
+	dir = geometry::rotatePoint(mid, dir, 0.01);
 
 	// Find closest line intersecting front/back vector
 	double      dist;
@@ -426,7 +521,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 		if (lines[a] == line)
 			continue;
 
-		dist = math::distanceRayLine(mid, dir, lines[a]->start(), lines[a]->end());
+		dist = geometry::distanceRayLine(mid, dir, lines[a]->start(), lines[a]->end());
 		if (dist < min_dist && dist > 0)
 		{
 			min_dist = dist;
@@ -443,7 +538,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 
 		// Check side of line
 		MapSector* sector = nullptr;
-		if (math::lineSide(mid, l->seg()) >= 0)
+		if (geometry::lineSide(mid, l->seg()) >= 0)
 			sector = l->frontSector();
 		else
 			sector = l->backSector();
@@ -495,7 +590,7 @@ void SLADEMap::setOpenedTime()
 // -----------------------------------------------------------------------------
 void SLADEMap::recomputeSpecials()
 {
-	map_specials_.processMapSpecials(this);
+	map_specials_->processMapSpecials(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -634,7 +729,7 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 MapThing* SLADEMap::createThing(Vec2d pos, int type)
 {
 	// Create the thing
-	return data_.addThing(std::make_unique<MapThing>(pos, type));
+	return data_.addThing(std::make_unique<MapThing>(Vec3d{ pos, 0 }, type));
 }
 
 // -----------------------------------------------------------------------------
@@ -1056,7 +1151,7 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 
 			// Check for intersection
 			Vec2d intersection;
-			if (math::linesIntersect(seg1, line2->seg(), intersection))
+			if (geometry::linesIntersect(seg1, line2->seg(), intersection))
 			{
 				// Create split vertex
 				auto* nv = createVertex(intersection);

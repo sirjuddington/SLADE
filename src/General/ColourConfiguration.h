@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OpenGL/OpenGL.h"
-#include "Utility/Colour.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade::colourconfig
 {
@@ -26,8 +26,6 @@ void          setColour(
 			 int           blue           = -1,
 			 int           alpha          = -1,
 			 bool          blend_additive = false);
-
-void setGLColour(const string& name, float alpha_mult = 1.f);
 
 double lineHilightWidth();
 double lineSelectionWidth();

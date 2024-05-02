@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,7 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SCallTip.h"
+#include "General/UI.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 
 using namespace slade;
 
@@ -60,8 +62,11 @@ CVAR(Bool, txed_calltips_dim_optional, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // SCallTip class constructor
 // -----------------------------------------------------------------------------
-SCallTip::SCallTip(wxWindow* parent) : wxPopupWindow(parent),
-	scratch_{ 1000, 1000, 32 }, buffer_{ 1, 1, 32 }, font_{ GetFont() }
+SCallTip::SCallTip(wxWindow* parent) :
+	wxPopupWindow(parent),
+	scratch_{ 1000, 1000, 32 },
+	buffer_{ 1, 1, 32 },
+	font_{ GetFont() }
 {
 	wxPopupWindow::Show(false);
 
@@ -159,7 +164,7 @@ void SCallTip::updateSize()
 	SetSize(buffer_.GetWidth() + ui::scalePx(24), buffer_.GetHeight() + ui::scalePx(16));
 
 	// Get screen bounds and window bounds
-	auto      index = (unsigned)wxDisplay::GetFromWindow(this->GetParent());
+	auto      index = static_cast<unsigned>(wxDisplay::GetFromWindow(this->GetParent()));
 	wxDisplay display(index);
 	auto      screen_area = display.GetClientArea();
 	auto      ct_area     = GetScreenRect();
@@ -215,7 +220,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	// Draw function qualifiers
 	if (!context.qualifiers.empty())
 	{
-		dc.SetTextForeground(col_keyword_.toWx());
+		dc.SetTextForeground(col_keyword_);
 		left = drawText(dc, context.qualifiers, left, top, &rect);
 	}
 
@@ -236,7 +241,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 
 	// Draw function name
 	wxString fname = function_->name();
-	dc.SetTextForeground(col_func_.toWx());
+	dc.SetTextForeground(col_func_);
 	left = drawText(dc, fname, left, top, &rect);
 
 	// Draw opening bracket
@@ -255,8 +260,8 @@ wxRect SCallTip::drawArgs(
 	const TLFunction::Context& context,
 	int                        left,
 	int                        top,
-	wxColour&                  col_faded,
-	wxFont&                    bold) const
+	const wxColour&            col_faded,
+	const wxFont&              bold) const
 {
 	wxRect rect{ left, top, 0, 0 };
 
@@ -292,7 +297,7 @@ wxRect SCallTip::drawArgs(
 
 	bool long_params = (args_left + params_lenght) > MAX_WIDTH;
 
-	for (int a = 0; a < (int)context.params.size(); a++)
+	for (int a = 0; a < static_cast<int>(context.params.size()); a++)
 	{
 		auto& arg = context.params[a];
 
@@ -339,7 +344,7 @@ wxRect SCallTip::drawArgs(
 		// Comma (if needed)
 		dc.SetFont(font_);
 		dc.SetTextForeground(wxcol_fg);
-		if (a < (int)context.params.size() - 1)
+		if (a < static_cast<int>(context.params.size()) - 1)
 			left = drawText(dc, ", ", left, top, &rect);
 
 		// Update max width
@@ -362,8 +367,8 @@ wxRect SCallTip::drawFunctionContext(
 	const TLFunction::Context& context,
 	int                        left,
 	int                        top,
-	wxColour&                  col_faded,
-	wxFont&                    bold) const
+	const wxColour&            col_faded,
+	const wxFont&              bold) const
 {
 	auto rect_func = drawFunctionSpec(dc, context, left, top);
 	auto rect_args = drawArgs(dc, context, rect_func.GetRight() + 1, rect_func.GetTop(), col_faded, bold);
@@ -398,12 +403,12 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, const wxString& desc, int lef
 				if (extents[a] > MAX_WIDTH)
 				{
 					// Try to split in phrases first.
-					size_t eol = (size_t)line.SubString(0, a).Last('.') + 1;
+					size_t eol = static_cast<size_t>(line.SubString(0, a).Last('.')) + 1;
 					eol        = line[eol] == ' ' ? eol : -1;
 					if (eol <= 0 || eol > MAX_WIDTH)
-						eol = (size_t)line.SubString(0, a).Last(',') + 1;
+						eol = static_cast<size_t>(line.SubString(0, a).Last(',')) + 1;
 					if (eol <= 0 || eol > MAX_WIDTH)
-						eol = (size_t)line.SubString(0, a).Last(' ');
+						eol = static_cast<size_t>(line.SubString(0, a).Last(' '));
 					desc_lines.push_back(line.SubString(0, eol));
 					line  = line.SubString(eol + 1, line.Length());
 					split = true;
@@ -450,22 +455,22 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 	ColRGBA faded;
 	if (txed_calltips_dim_optional)
 		faded = ColRGBA(
-			(uint8_t)round((col_fg_.r + col_bg_.r) * 0.5),
-			(uint8_t)round((col_fg_.g + col_bg_.g) * 0.5),
-			(uint8_t)round((col_fg_.b + col_bg_.b) * 0.5));
+			static_cast<uint8_t>(round((col_fg_.r + col_bg_.r) * 0.5)),
+			static_cast<uint8_t>(round((col_fg_.g + col_bg_.g) * 0.5)),
+			static_cast<uint8_t>(round((col_fg_.b + col_bg_.b) * 0.5)));
 	else
 		faded = col_fg_;
 
 	// Clear
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.SetBrush(wxBrush(col_bg_.toWx()));
+	dc.SetBrush(wxBrush(col_bg_));
 	dc.DrawRectangle(0, 0, 1000, 1000);
 
 	// Wx Colours (to avoid creating them multiple times)
-	wxcol_fg         = col_fg_.toWx();
-	wxcol_fg_hl      = col_fg_hl.toWx();
-	wxcol_type       = col_type_.toWx();
-	auto wxcol_faded = faded.toWx();
+	wxcol_fg         = col_fg_;
+	wxcol_fg_hl      = col_fg_hl;
+	wxcol_type       = col_type_;
+	auto wxcol_faded = faded;
 
 	if (function_)
 	{
@@ -524,10 +529,10 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		{
 			// Determine separator colour
 			wxColour col_sep;
-			if (col_bg_.greyscale().r < 128)
-				col_sep = col_bg_.amp(30, 30, 30, 0).toWx();
+			if (colour::greyscale(col_bg_).r < 128)
+				col_sep = col_bg_.amp(30, 30, 30, 0);
 			else
-				col_sep = col_bg_.amp(-30, -30, -30, 0).toWx();
+				col_sep = col_bg_.amp(-30, -30, -30, 0);
 
 			bool first = true;
 			auto num   = std::min<unsigned long>(function_->contexts().size(), 12u);
@@ -543,7 +548,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 
 				rect = drawFunctionContext(
 					dc, context, xoff, bottom + (first ? 0 : ui::scalePx(11)), wxcol_faded, bold);
-				bottom    = (int)round(rect.GetBottom() + ui::scaleFactor());
+				bottom    = static_cast<int>(round(rect.GetBottom() + ui::scaleFactor()));
 				max_right = std::max(max_right, rect.GetRight());
 				first     = false;
 			}
@@ -558,7 +563,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 					xoff,
 					bottom + ui::scalePx(11),
 					&rect);
-				bottom = (int)round(rect.GetBottom() + ui::scaleFactor());
+				bottom = static_cast<int>(round(rect.GetBottom() + ui::scaleFactor()));
 			}
 
 			if (num > 1)
@@ -573,8 +578,8 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		}
 
 		// Size buffer bitmap to fit
-		ct_size.SetWidth((int)round(max_right + ui::scaleFactor()));
-		ct_size.SetHeight((int)round(bottom + ui::scaleFactor()));
+		ct_size.SetWidth(static_cast<int>(round(max_right + ui::scaleFactor())));
+		ct_size.SetHeight(static_cast<int>(round(bottom + ui::scaleFactor())));
 	}
 	else
 	{
@@ -592,7 +597,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 // -----------------------------------------------------------------------------
 void SCallTip::updateBuffer()
 {
-	wxSize     size;
+	wxSize size;
 	{
 		wxMemoryDC dc(scratch_);
 		size = drawCallTip(dc);
@@ -607,6 +612,8 @@ void SCallTip::updateBuffer()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the control is to be (re)painted
@@ -617,21 +624,21 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	wxAutoBufferedPaintDC dc(this);
 
 	// Determine border colours
-	wxColour bg = col_bg_.toWx();
+	wxColour bg = col_bg_;
 	wxColour border, border2;
-	if (col_bg_.greyscale().r < 128)
+	if (colour::greyscale(col_bg_).r < 128)
 	{
 		auto c  = col_bg_.amp(50, 50, 50, 0);
-		border  = c.toWx();
+		border  = c;
 		c       = col_bg_.amp(20, 20, 20, 0);
-		border2 = c.toWx();
+		border2 = c;
 	}
 	else
 	{
 		auto c  = col_bg_.amp(-50, -50, -50, 0);
-		border  = c.toWx();
+		border  = c;
 		c       = col_bg_.amp(-20, -20, -20, 0);
-		border2 = c.toWx();
+		border2 = c;
 	}
 
 	// Draw background
@@ -731,7 +738,7 @@ void SCallTip::onShow(wxShowEvent& e)
 	{
 		// Get screen bounds and window bounds
 		int       index = wxDisplay::GetFromWindow(this->GetParent());
-		wxDisplay display((unsigned)index);
+		wxDisplay display(static_cast<unsigned>(index));
 		auto      screen_area = display.GetClientArea();
 		auto      ct_area     = GetScreenRect();
 

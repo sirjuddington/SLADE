@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -608,6 +608,23 @@ string MemChunk::hash() const
 
 	auto hash = XXH3_128bits(data_, size_);
 	return fmt::format("{:x}{:x}", hash.high64, hash.low64);
+}
+
+// -----------------------------------------------------------------------------
+// 'Releases' the MemChunk's data, returning a pointer to it and resetting the
+// MemChunk itself.
+// !! Don't use this unless absolutely necessary - the pointer returned must be
+//    deleted elsewhere or a memory leak will occur
+// -----------------------------------------------------------------------------
+uint8_t* MemChunk::releaseData()
+{
+	auto data = data_;
+
+	data_    = nullptr;
+	size_    = 0;
+	cur_ptr_ = 0;
+
+	return data;
 }
 
 

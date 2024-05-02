@@ -1,23 +1,23 @@
 #pragma once
 
-#include "EntryDataFormat.h"
-#include "Utility/Colour.h"
-#include "Utility/Property.h"
+#include "Utility/ColRGBA.h"
+#include "Utility/PropertyList.h"
 
 namespace slade
 {
-class ArchiveEntry;
+class EntryDataFormat;
+
 class EntryType
 {
 public:
-	EntryType(string_view id = "Unknown") : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
+	EntryType(string_view id = "Unknown");
 	~EntryType() = default;
 
 	// Getters
 	const string& id() const { return id_; }
 	const string& name() const { return name_; }
 	const string& extension() const { return extension_; }
-	const string& formatId() const { return format_->id(); }
+	const string& formatId() const;
 	const string& editor() const { return editor_; }
 	const string& category() const { return category_; }
 	const string& icon() const { return icon_; }

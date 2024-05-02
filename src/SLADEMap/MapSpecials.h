@@ -1,15 +1,10 @@
 #pragma once
 
 #include "SLADEMap/MapObject/MapSector.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {
-class MapVertex;
-class MapThing;
-class MapLine;
-class SLADEMap;
-class ArchiveEntry;
-
 class MapSpecials
 {
 public:
@@ -27,7 +22,7 @@ public:
 	// ZDoom
 	void   processZDoomMapSpecials(SLADEMap* map);
 	void   processZDoomLineSpecial(MapLine* line);
-	void   processACSScripts(ArchiveEntry* entry);
+	void   processACSScripts(const ArchiveEntry* entry);
 	void   setModified(const SLADEMap* map, int tag) const;
 	bool   lineIsTranslucent(const MapLine* line) const;
 	double translucentLineAlpha(const MapLine* line) const;
@@ -57,7 +52,8 @@ private:
 	void processZDoomSlopes(SLADEMap* map) const;
 	void processEternitySlopes(const SLADEMap* map) const;
 	void processSRB2Slopes(const SLADEMap* map) const;
-	void processEDGEClassicSlopes(SLADEMap* map) const;
+	void processSRB2FOFs(const SLADEMap* map) const;
+	void processEDGEClassicSlopes(const SLADEMap* map) const;
 
 	template<MapSector::SurfaceType>
 	void applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model_sector) const;
@@ -68,6 +64,7 @@ private:
 	template<MapSector::SurfaceType>
 	void applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights) const;
 	template<MapSector::SurfaceType>
-	void applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights) const;
+	void applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
+		const;
 };
 } // namespace slade

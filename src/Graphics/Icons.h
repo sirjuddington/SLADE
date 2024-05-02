@@ -1,9 +1,9 @@
 #pragma once
 
+#include <unordered_map>
+
 namespace slade
 {
-class ArchiveEntry;
-
 namespace icons
 {
 	enum Type
@@ -24,7 +24,7 @@ namespace icons
 	bool loadIcons();
 
 #if wxCHECK_VERSION(3, 1, 6)
-	wxBitmapBundle getIcon(Type type, string_view name, int size = -1, Point2i padding = { 0, 0 });
+	wxBitmapBundle getIcon(Type type, string_view name, int size = -1, const Point2i& padding = { 0, 0 });
 	wxBitmapBundle getInterfaceIcon(string_view name, int size = -1, InterfaceTheme theme = System);
 #else
 	wxBitmap getIcon(Type type, string_view name, int size = -1, Point2i padding = { 0, 0 });

@@ -3,6 +3,7 @@
 #include "State.h"
 #include "General/Database.h"
 #include "General/UI.h"
+#include "Utility/Named.h"
 #include "Utility/Property.h"
 
 using namespace slade;
@@ -63,11 +64,11 @@ void ui::initStateProps()
 			sql->bind(1, prop.name);
 			switch (prop.value.index())
 			{
-			case 0: sql->bind(2, std::get<bool>(prop.value)); break;
-			case 1: sql->bind(2, std::get<int>(prop.value)); break;
-			case 2: sql->bind(2, std::get<unsigned>(prop.value)); break;
-			case 3: sql->bind(2, std::get<double>(prop.value)); break;
-			case 4: sql->bind(2, std::get<string>(prop.value)); break;
+			case 0:  sql->bind(2, std::get<bool>(prop.value)); break;
+			case 1:  sql->bind(2, std::get<int>(prop.value)); break;
+			case 2:  sql->bind(2, std::get<unsigned>(prop.value)); break;
+			case 3:  sql->bind(2, std::get<double>(prop.value)); break;
+			case 4:  sql->bind(2, std::get<string>(prop.value)); break;
 			default: sql->clearBindings(); continue;
 			}
 

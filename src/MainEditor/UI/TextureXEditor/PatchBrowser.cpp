@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,15 +36,19 @@
 #include "Main.h"
 #include "PatchBrowser.h"
 #include "App.h"
-#include "Archive/ArchiveManager.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "OpenGL/GLTexture.h"
+#include "UI/Browser/BrowserItem.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "Utility/StringUtils.h"
 
@@ -53,99 +57,116 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// PatchBrowserItem Class Functions
+// PatchBrowserItem Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// PatchBrowserItem class destructor
-// -----------------------------------------------------------------------------
-PatchBrowserItem::~PatchBrowserItem()
+namespace slade
 {
-	gl::Texture::clear(image_tex_);
-}
-
-// -----------------------------------------------------------------------------
-// Loads the item's image from its associated entry (if any)
-// -----------------------------------------------------------------------------
-bool PatchBrowserItem::loadImage()
+class PatchBrowserItem : public BrowserItem
 {
-	SImage img;
-
-	// Load patch image
-	if (type_ == Type::Patch)
+public:
+	enum class Type
 	{
-		// Find patch entry
-		auto entry = app::resources().getPatchEntry(name_.ToStdString(), nspace_.ToStdString(), archive_);
+		Patch,
+		CTexture
+	};
 
-		// Load entry to image, if it exists
-		if (entry)
-			misc::loadImageFromEntry(&img, entry);
+	PatchBrowserItem(
+		const wxString& name,
+		Archive*        archive = nullptr,
+		Type            type    = Type::Patch,
+		const wxString& nspace  = "",
+		unsigned        index   = 0) :
+		BrowserItem{ name, index, "patch" },
+		archive_{ archive },
+		patch_type_{ type },
+		nspace_{ nspace }
+	{
+	}
+
+	~PatchBrowserItem() override { gl::Texture::clear(image_tex_); }
+
+	// Loads the item's image from its associated entry (if any)
+	bool loadImage() override
+	{
+		SImage img;
+
+		// Load patch image
+		if (patch_type_ == Type::Patch)
+		{
+			// Find patch entry
+			auto entry = app::resources().getPatchEntry(name_.ToStdString(), nspace_.ToStdString(), archive_);
+
+			// Load entry to image, if it exists
+			if (entry)
+				misc::loadImageFromEntry(&img, entry);
+			else
+				return false;
+		}
+
+		// Or, load texture image
+		if (patch_type_ == Type::CTexture)
+		{
+			// Find texture
+			auto tex = app::resources().getTexture(name_.ToStdString(), "", archive_);
+
+			// Load texture to image, if it exists
+			if (tex)
+				tex->toImage(img, archive_, parent_->palette());
+			else
+				return false;
+		}
+
+		// Create gl texture from image
+		gl::Texture::clear(image_tex_);
+		image_tex_ = gl::Texture::createFromImage(img, parent_->palette());
+		return image_tex_ > 0;
+	}
+
+	// Returns a string with extra information about the patch
+	wxString itemInfo() override
+	{
+		wxString info;
+
+		// Add dimensions if known
+		if (image_tex_)
+		{
+			auto& tex_info = gl::Texture::info(image_tex_);
+			info += wxString::Format("%dx%d", tex_info.size.x, tex_info.size.y);
+		}
 		else
-			return false;
-	}
+			info += "Unknown size";
 
-	// Or, load texture image
-	if (type_ == Type::CTexture)
-	{
-		// Find texture
-		auto tex = app::resources().getTexture(name_.ToStdString(), "", archive_);
-
-		// Load texture to image, if it exists
-		if (tex)
-			tex->toImage(img, archive_, parent_->palette());
+		// Add patch type
+		if (patch_type_ == Type::Patch)
+			info += ", Patch";
 		else
-			return false;
+			info += ", Texture";
+
+		// Add namespace if it exists
+		if (!nspace_.IsEmpty())
+		{
+			info += ", ";
+			info += nspace_.Capitalize();
+			info += " namespace";
+		}
+
+		return info;
 	}
 
-	// Create gl texture from image
-	gl::Texture::clear(image_tex_);
-	image_tex_ = gl::Texture::createFromImage(img, parent_->palette());
-	return image_tex_ > 0;
-}
-
-// -----------------------------------------------------------------------------
-// Returns a string with extra information about the patch
-// -----------------------------------------------------------------------------
-wxString PatchBrowserItem::itemInfo()
-{
-	wxString info;
-
-	// Add dimensions if known
-	if (image_tex_)
+	// Clears the item image
+	void clearImage() override
 	{
-		auto& tex_info = gl::Texture::info(image_tex_);
-		info += wxString::Format("%dx%d", tex_info.size.x, tex_info.size.y);
-	}
-	else
-		info += "Unknown size";
-
-	// Add patch type
-	if (type_ == Type::Patch)
-		info += ", Patch";
-	else
-		info += ", Texture";
-
-	// Add namespace if it exists
-	if (!nspace_.IsEmpty())
-	{
-		info += ", ";
-		info += nspace_.Capitalize();
-		info += " namespace";
+		gl::Texture::clear(image_tex_);
+		image_tex_ = 0;
 	}
 
-	return info;
-}
-
-// -----------------------------------------------------------------------------
-// Clears the item image
-// -----------------------------------------------------------------------------
-void PatchBrowserItem::clearImage()
-{
-	gl::Texture::clear(image_tex_);
-	image_tex_ = 0;
-}
+private:
+	Archive* archive_    = nullptr;
+	Type     patch_type_ = Type::Patch;
+	wxString nspace_;
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -166,14 +187,16 @@ PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 	items_root_->addChild("Unknown");
 
 	// Update when main palette changed
-	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]() {
-		// Update palette
-		palette_.copyPalette(theMainWindow->paletteChooser()->selectedPalette());
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+		[this]
+		{
+			// Update palette
+			palette_->copyPalette(theMainWindow->paletteChooser()->selectedPalette());
 
-		// Reload all items
-		reloadItems();
-		Refresh();
-	});
+			// Reload all items
+			reloadItems();
+			Refresh();
+		});
 
 	// Set dialog title
 	wxTopLevelWindow::SetTitle("Browse Patches");
@@ -416,7 +439,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 // Adds all textures in [texturex] to the browser, in the tree at
 // 'Textures/[parent archive filename]'
 // -----------------------------------------------------------------------------
-bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
+bool PatchBrowser::openTextureXList(const TextureXList* texturex, Archive* parent)
 {
 	// Check tx list was given
 	if (!texturex)
@@ -443,15 +466,12 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 // -----------------------------------------------------------------------------
 // Returns the index of the currently selected patch, or -1 if none are selected
 // -----------------------------------------------------------------------------
-int PatchBrowser::selectedPatch()
+int PatchBrowser::selectedPatch() const
 {
 	// Get selected item
 	auto item = dynamic_cast<PatchBrowserItem*>(selectedItem());
 
-	if (item)
-		return item->index();
-	else
-		return -1;
+	return item ? item->index() : -1;
 }
 
 // -----------------------------------------------------------------------------
@@ -464,7 +484,7 @@ void PatchBrowser::selectPatch(int pt_index)
 		return;
 
 	// Check index
-	if (pt_index < 0 || pt_index >= (int)patch_table_->nPatches())
+	if (pt_index < 0 || pt_index >= static_cast<int>(patch_table_->nPatches()))
 		return;
 
 	// Select by patch name

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -60,6 +60,8 @@ EXTERN_CVAR(Bool, shapedraw_lockratio)
 // -----------------------------------------------------------------------------
 ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 {
+	namespace wx = wxutil;
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -68,16 +70,16 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 	wxString shapes[] = { "Rectangle", "Ellipse" };
 	choice_shape_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 2, shapes);
 	sizer_main_       = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(sizer_main_, 0, wxEXPAND | wxALL, ui::pad());
-	sizer_main_->Add(wxutil::createLabelHBox(this, "Shape:", choice_shape_), 0, wxEXPAND | wxRIGHT, ui::padLarge());
+	sizer->Add(sizer_main_, wx::sfWithBorder().Expand());
+	sizer_main_->Add(wx::createLabelHBox(this, "Shape:", choice_shape_), wx::sfWithLargeBorder(0, wxRIGHT).Expand());
 
 	// Centered
 	cb_centered_ = new wxCheckBox(this, -1, "Centered");
-	sizer_main_->Add(cb_centered_, 0, wxEXPAND | wxRIGHT, ui::padLarge());
+	sizer_main_->Add(cb_centered_, wx::sfWithLargeBorder(0, wxRIGHT).Expand());
 
 	// Lock ratio (1:1)
 	cb_lockratio_ = new wxCheckBox(this, -1, "1:1 Size");
-	sizer_main_->Add(cb_lockratio_, 0, wxEXPAND | wxRIGHT, ui::padLarge());
+	sizer_main_->Add(cb_lockratio_, wx::sfWithLargeBorder(0, wxRIGHT).Expand());
 
 	// Sides
 	panel_sides_ = new wxPanel(this, -1);
@@ -92,7 +94,7 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 		wxSP_ARROW_KEYS | wxALIGN_LEFT | wxTE_PROCESS_ENTER,
 		3,
 		1000);
-	hbox2->Add(wxutil::createLabelHBox(panel_sides_, "Sides:", spin_sides_), 1, wxEXPAND);
+	hbox2->Add(wx::createLabelHBox(panel_sides_, "Sides:", spin_sides_), wxSizerFlags(1).Expand());
 
 	// Set control values
 	choice_shape_->SetSelection(shapedraw_shape);
@@ -108,10 +110,13 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 	showShapeOptions(shapedraw_shape);
 
 	// Bind events
-	choice_shape_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
-		shapedraw_shape = choice_shape_->GetSelection();
-		showShapeOptions(shapedraw_shape);
-	});
+	choice_shape_->Bind(
+		wxEVT_CHOICE,
+		[&](wxCommandEvent&)
+		{
+			shapedraw_shape = choice_shape_->GetSelection();
+			showShapeOptions(shapedraw_shape);
+		});
 	cb_centered_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { shapedraw_centered = cb_centered_->GetValue(); });
 	cb_lockratio_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { shapedraw_lockratio = cb_lockratio_->GetValue(); });
 	spin_sides_->Bind(wxEVT_SPINCTRL, [&](wxCommandEvent&) { shapedraw_sides = spin_sides_->GetValue(); });
@@ -131,7 +136,7 @@ void ShapeDrawPanel::showShapeOptions(int shape)
 	if (shape == 1)
 	{
 		// Sides
-		sizer_main_->Add(panel_sides_, 0, wxEXPAND | wxRIGHT, ui::padLarge());
+		sizer_main_->Add(panel_sides_, wxutil::sfWithLargeBorder(0, wxRIGHT).Expand());
 		panel_sides_->Show(true);
 	}
 

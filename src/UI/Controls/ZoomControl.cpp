@@ -1,14 +1,14 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    ZoomControl.cpp
 // Description: A simple control for zooming, with +/- buttons to zoom in/out
 //              and a combobox to select or enter a zoom level (percent).
-//              Can also be linked to a GfxCanvas or CTextureCanvas
+//              Can also be linked to a GfxGLCanvas or CTextureGLCanvas
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -34,8 +34,8 @@
 #include "Main.h"
 #include "ZoomControl.h"
 #include "General/UI.h"
-#include "UI/Canvas/CTextureCanvas.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/CTextureCanvasBase.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/State.h"
 #include <array>
@@ -74,8 +74,9 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 // ZoomControl class constructor (linking GfxCanvas)
 // -----------------------------------------------------------------------------
-ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_gfx_canvas_{ linked_canvas }
+ZoomControl::ZoomControl(wxWindow* parent, GfxCanvasBase* linked_canvas) :
+	wxPanel(parent, -1),
+	linked_gfx_canvas_{ linked_canvas }
 {
 	zoom_ = getStateInt("ZoomGfxCanvas");
 	linked_canvas->linkZoomControl(this);
@@ -86,8 +87,9 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
 // -----------------------------------------------------------------------------
 // ZoomControl class constructor (linking CTextureCanvas)
 // -----------------------------------------------------------------------------
-ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_texture_canvas_{ linked_canvas }
+ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvasBase* linked_canvas) :
+	wxPanel(parent, -1),
+	linked_texture_canvas_{ linked_canvas }
 {
 	zoom_ = getStateInt("ZoomCTextureCanvas");
 	linked_canvas->linkZoomControl(this);
@@ -108,7 +110,7 @@ void ZoomControl::setZoomPercent(int percent)
 	if (linked_gfx_canvas_)
 	{
 		linked_gfx_canvas_->setScale(zoomScale());
-		linked_gfx_canvas_->Refresh();
+		linked_gfx_canvas_->window()->Refresh();
 		saveStateInt("ZoomGfxCanvas", zoom_);
 	}
 	if (linked_texture_canvas_)
@@ -216,6 +218,9 @@ void ZoomControl::setup()
 	hbox->Add(btn_zoom_in_, 0, wxALIGN_CENTER_VERTICAL);
 
 	// --- Events ---
+
+	// ReSharper disable CppMemberFunctionMayBeConst
+	// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 	// Zoom level selected in dropdown
 	cb_zoom_->Bind(

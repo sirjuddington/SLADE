@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -134,7 +134,7 @@ string filedialog::openFile(
 bool filedialog::openExecutableFile(FDInfo& info, string_view caption, wxWindow* parent, string_view fn_default)
 {
 	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat" :
-                                                                         wxFileSelectorDefaultWildcardStr;
+																		 wxFileSelectorDefaultWildcardStr;
 
 	return openFile(info, caption, extensions, parent, fn_default);
 }
@@ -147,7 +147,7 @@ bool filedialog::openExecutableFile(FDInfo& info, string_view caption, wxWindow*
 string filedialog::openExecutableFile(string_view caption, wxWindow* parent, string_view fn_default)
 {
 	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat" :
-                                                                         wxFileSelectorDefaultWildcardStr;
+																		 wxFileSelectorDefaultWildcardStr;
 
 	return openFile(caption, extensions, parent, fn_default);
 }

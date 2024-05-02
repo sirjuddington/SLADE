@@ -15,11 +15,11 @@ public:
 		int             ypos   = 0,
 		int             width  = 1024,
 		int             height = 768);
-	~STopWindow();
+	~STopWindow() override;
 
 	// Custom menu
 	void addCustomMenu(wxMenu* menu, const wxString& title);
-	void removeCustomMenu(wxMenu* menu);
+	void removeCustomMenu(const wxMenu* menu);
 	void removeAllCustomMenus();
 
 	// Toolbars

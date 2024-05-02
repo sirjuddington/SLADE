@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Utility/Colour.h"
-#include <array>
+#include "Geometry/Rect.h"
+#include "Utility/ColRGBA.h"
 
 namespace slade
 {

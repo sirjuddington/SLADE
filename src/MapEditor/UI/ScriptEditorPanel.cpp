@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,10 +32,14 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ScriptEditorPanel.h"
+#include "Archive/ArchiveEntry.h"
 #include "Game/Configuration.h"
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "SLADEMap/MapSpecials.h"
+#include "SLADEMap/SLADEMap.h"
+#include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/SToolBar/SToolBar.h"
@@ -72,7 +76,9 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 // ScriptEditorPanel class constructor
 // -----------------------------------------------------------------------------
 ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
-	wxPanel(parent, -1), entry_script_{ new ArchiveEntry() }, entry_compiled_{ new ArchiveEntry() }
+	wxPanel(parent, -1),
+	entry_script_{ new ArchiveEntry },
+	entry_compiled_{ new ArchiveEntry }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -80,7 +86,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 
 	// Toolbar
 	auto toolbar = new SToolBar(this);
-	sizer->Add(toolbar, 0, wxEXPAND);
+	sizer->Add(toolbar, wxSizerFlags().Expand());
 
 	wxArrayString actions;
 	toolbar->addActionGroup("Scripts", { "mapw_script_save", "mapw_script_compile", "mapw_script_togglelanguage" });
@@ -93,13 +99,13 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 
 	// Add text editor
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 1, wxEXPAND);
+	sizer->Add(hbox, wxSizerFlags(1).Expand());
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	hbox->Add(vbox, 1, wxEXPAND);
+	hbox->Add(vbox, wxSizerFlags(1).Expand());
 
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setJumpToControl(choice_jump_to_);
-	vbox->Add(text_editor_, 1, wxEXPAND | wxALL, ui::pad());
+	vbox->Add(text_editor_, wxutil::sfWithBorder(1).Expand());
 
 	// Set language
 	wxString lang = game::configuration().scriptLanguage();
@@ -121,13 +127,13 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	// Add Find+Replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_editor_);
 	text_editor_->setFindReplacePanel(panel_fr_);
-	vbox->Add(panel_fr_, 0, wxEXPAND | wxALL, ui::pad());
+	vbox->Add(panel_fr_, wxutil::sfWithBorder().Expand());
 	panel_fr_->Hide();
 
 	// Add function/constants list
 	list_words_ = new wxTreeListCtrl(this, -1);
 	list_words_->SetInitialSize(wxutil::scaledSize(200, -10));
-	hbox->Add(list_words_, 0, wxEXPAND | wxALL, ui::pad());
+	hbox->Add(list_words_, wxutil::sfWithBorder().Expand());
 	populateWordList();
 	list_words_->Show(script_show_language_list);
 
@@ -139,7 +145,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 // Opens script text from entry [scripts], and compiled script data from
 // [compiled]
 // -----------------------------------------------------------------------------
-bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled) const
+bool ScriptEditorPanel::openScripts(const ArchiveEntry* script, const ArchiveEntry* compiled) const
 {
 	// Clear current script data
 	entry_script_->clearData();
@@ -277,7 +283,6 @@ bool ScriptEditorPanel::handleAction(string_view name)
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // Called when a word list entry is activated (double-clicked)
 // -----------------------------------------------------------------------------
@@ -305,8 +310,6 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 	int pos = text_editor_->GetCurrentPos();
 	if (language->isFunction(word))
 	{
-		auto func = language->function(word);
-
 		// Add function + ()
 		word += "()";
 		text_editor_->InsertText(pos, word);

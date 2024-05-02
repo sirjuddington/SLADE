@@ -1,6 +1,6 @@
 #pragma once
 
-#include "General/SAction.h"
+#include "General/SActionHandler.h"
 #include "UI/STopWindow.h"
 
 class wxAuiManager;
@@ -42,6 +42,7 @@ private:
 	STabCtrl*                stc_tabs_             = nullptr;
 	wxAuiManager*            aui_mgr_              = nullptr;
 	PaletteChooser*          palette_chooser_      = nullptr;
+	bool                     opengl_test_done      = false;
 
 	// Action handling
 	bool handleAction(string_view id) override;

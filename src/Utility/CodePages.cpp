@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "CodePages.h"
+#include "Colour.h"
 
 using namespace slade;
 
@@ -166,7 +167,7 @@ wxString codepages::fromASCII(uint8_t val)
 
 wxString codepages::fromCP437(uint8_t val)
 {
-	return wxString::FromUTF8((const char*)cp437table[val], cp437len[val]);
+	return wxString::FromUTF8(reinterpret_cast<const char*>(cp437table[val]), cp437len[val]);
 }
 
 ColRGBA codepages::ansiColor(uint8_t val)

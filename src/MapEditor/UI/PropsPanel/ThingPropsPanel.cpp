@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -32,137 +32,163 @@
 #include "Main.h"
 #include "ThingPropsPanel.h"
 #include "App.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
+#include "Game/UDMFProperty.h"
+#include "General/UI.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/Rect.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
+#include "MapEditor/UI/ActionSpecialPanel.h"
+#include "MapEditor/UI/ArgsPanel.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/SLADEMap.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 
 
 // -----------------------------------------------------------------------------
-// SpriteTexCanvas Class Functions
+// AngleControl Class Definition
+//
+// Need this here due to a circular dependency below, and I don't want to put
+// this in the header since it isn't used outside this file
+// -----------------------------------------------------------------------------
+namespace slade
+{
+class AngleControl : public wxControl
+{
+public:
+	AngleControl(wxWindow* parent);
+	~AngleControl() override = default;
+
+	int  angle(int base = 0) const;
+	void setAngle(int angle, bool update_visual = true);
+	void updateAngle() const;
+	bool angleSet() const;
+
+private:
+	int             angle_      = 0;
+	ThingDirCanvas* dc_angle_   = nullptr;
+	NumberTextCtrl* text_angle_ = nullptr;
+
+	void onAngleTextChanged(wxCommandEvent& e);
+};
+} // namespace slade
+
+
+// -----------------------------------------------------------------------------
+// SpriteTexCanvas Class
 //
 // A simple opengl canvas to display a thing sprite
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// SpriteTexCanvas class constructor
-// -----------------------------------------------------------------------------
-SpriteTexCanvas::SpriteTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+class slade::SpriteTexCanvas : public GLCanvas
 {
-	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-	SetInitialSize(wxutil::scaledSize(128, 128));
-}
-
-// -----------------------------------------------------------------------------
-// Sets the texture to display
-// -----------------------------------------------------------------------------
-void SpriteTexCanvas::setSprite(const game::ThingType& type)
-{
-	texname_ = type.sprite();
-	icon_    = false;
-	colour_  = ColRGBA::WHITE;
-
-	// Sprite
-	texture_ = mapeditor::textureManager().sprite(texname_.ToStdString(), type.translation(), type.palette()).gl_id;
-
-	// Icon
-	if (!texture_)
+public:
+	SpriteTexCanvas(wxWindow* parent) : GLCanvas(parent)
 	{
-		texture_ = mapeditor::textureManager().editorImage(fmt::format("thing/{}", type.icon())).gl_id;
-		colour_  = type.colour();
-		icon_    = true;
+		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
+		SetInitialSize(wxutil::scaledSize(128, 128));
 	}
 
-	// Unknown
-	if (!texture_)
+	~SpriteTexCanvas() override = default;
+
+	wxString texName() const { return texname_; }
+
+	// Sets the texture to display
+	void setSprite(const game::ThingType& type)
 	{
-		texture_ = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
-		icon_    = true;
-	}
+		texname_ = type.sprite();
+		icon_    = false;
+		colour_  = ColRGBA::WHITE;
 
-	Refresh();
-}
-
-// -----------------------------------------------------------------------------
-// Draws the canvas content
-// -----------------------------------------------------------------------------
-void SpriteTexCanvas::draw()
-{
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, size.x, size.y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw background
-	drawCheckeredBackground();
-
-	// Draw texture
-	gl::setColour(colour_);
-	if (texture_ && !icon_)
-	{
 		// Sprite
-		glEnable(GL_TEXTURE_2D);
-		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 4, 2);
-	}
-	else if (texture_ && icon_)
-	{
+		texture_ = mapeditor::textureManager().sprite(texname_.ToStdString(), type.translation(), type.palette()).gl_id;
+
 		// Icon
-		glEnable(GL_TEXTURE_2D);
-		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0, 0.25);
+		if (!texture_)
+		{
+			texture_ = mapeditor::textureManager().editorImage(fmt::format("thing/{}", type.icon())).gl_id;
+			colour_  = type.colour();
+			icon_    = true;
+		}
+
+		// Unknown
+		if (!texture_)
+		{
+			texture_ = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
+			icon_    = true;
+		}
+
+		Refresh();
 	}
 
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
-}
+	// Draws the canvas content
+	void draw() override
+	{
+		gl::draw2d::Context dc(&view_);
+
+		// Draw texture
+		dc.colour  = colour_;
+		dc.texture = texture_;
+		if (texture_ && !icon_)
+			dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 4.0f, 2.0f); // Sprite
+		else if (texture_ && icon_)
+			dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 0.25f); // Icon
+	}
+
+private:
+	unsigned texture_ = 0;
+	wxString texname_;
+	ColRGBA  colour_ = ColRGBA::WHITE;
+	bool     icon_   = false;
+};
 
 
 // -----------------------------------------------------------------------------
-// ThingDirCanvas Class Functions
+// ThingDirCanvas Class
 //
 // An OpenGL canvas that shows a direction and circles for each of the 8
 // 'standard' directions, clicking within one of the circles will set the
 // direction
 // -----------------------------------------------------------------------------
+namespace slade
+{
+class ThingDirCanvas : public wxPanel
+{
+public:
+	ThingDirCanvas(AngleControl* parent);
+	~ThingDirCanvas() override = default;
 
+	void setAngle(int angle);
+
+private:
+	AngleControl* parent_ = nullptr;
+	vector<Vec2d> dir_points_;
+	int           point_hl_   = -1;
+	int           point_sel_  = -1;
+	long          last_check_ = 0;
+
+	void onMouseEvent(wxMouseEvent& e);
+	void onPaint(wxPaintEvent& e);
+};
 
 // -----------------------------------------------------------------------------
 // ThingDirCanvas class constructor
 // -----------------------------------------------------------------------------
-ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, true, 15), parent_{ parent }
+ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : wxPanel(parent), parent_{ parent }
 {
-	// Get system panel background colour
-	auto bgcolwx = drawing::systemPanelBGColour();
-	col_bg_.set(bgcolwx);
-
-	// Get system text colour
-	auto textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-	col_fg_.set(textcol);
+	SetDoubleBuffered(true);
 
 	// Setup dir points
 	double rot = 0;
@@ -176,6 +202,7 @@ ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, tru
 	Bind(wxEVT_MOTION, &ThingDirCanvas::onMouseEvent, this);
 	Bind(wxEVT_LEAVE_WINDOW, &ThingDirCanvas::onMouseEvent, this);
 	Bind(wxEVT_LEFT_DOWN, &ThingDirCanvas::onMouseEvent, this);
+	Bind(wxEVT_PAINT, &ThingDirCanvas::onPaint, this);
 
 	// Fixed size
 	auto size = ui::scalePx(128);
@@ -199,87 +226,19 @@ void ThingDirCanvas::setAngle(int angle)
 	{
 		switch (angle)
 		{
-		case 0: point_sel_ = 6; break;
-		case 45: point_sel_ = 7; break;
-		case 90: point_sel_ = 0; break;
+		case 0:   point_sel_ = 6; break;
+		case 45:  point_sel_ = 7; break;
+		case 90:  point_sel_ = 0; break;
 		case 135: point_sel_ = 1; break;
 		case 180: point_sel_ = 2; break;
 		case 225: point_sel_ = 3; break;
 		case 270: point_sel_ = 4; break;
 		case 315: point_sel_ = 5; break;
-		default: point_sel_ = -1; break;
+		default:  point_sel_ = -1; break;
 		}
 	}
 
 	Refresh();
-}
-
-// -----------------------------------------------------------------------------
-// Draws the control
-// -----------------------------------------------------------------------------
-void ThingDirCanvas::draw()
-{
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-1.2, 1.2, 1.2, -1.2, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(col_bg_.fr(), col_bg_.fg(), col_bg_.fb(), 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Draw angle ring
-	glDisable(GL_TEXTURE_2D);
-	glLineWidth(1.5f);
-	glEnable(GL_LINE_SMOOTH);
-	ColRGBA col_faded(
-		col_bg_.r * 0.6 + col_fg_.r * 0.4, col_bg_.g * 0.6 + col_fg_.g * 0.4, col_bg_.b * 0.6 + col_fg_.b * 0.4);
-	drawing::drawEllipse(Vec2d(0, 0), 1, 1, 48, col_faded);
-
-	// Draw dir points
-	for (auto dir_point : dir_points_)
-	{
-		drawing::drawFilledEllipse(dir_point, 0.12, 0.12, 8, col_bg_);
-		drawing::drawEllipse(dir_point, 0.12, 0.12, 16, col_fg_);
-	}
-
-	// Draw angle arrow
-	glLineWidth(2.0f);
-	if (parent_->angleSet())
-	{
-		auto tip = math::rotatePoint(Vec2d(0, 0), Vec2d(0.8, 0), -parent_->angle());
-		drawing::drawArrow(tip, Vec2d(0, 0), col_fg_, false, 1.2, 0.2);
-	}
-
-	// Draw hover point
-	glPointSize(8.0f);
-	glEnable(GL_POINT_SMOOTH);
-	if (point_hl_ >= 0 && point_hl_ < (int)dir_points_.size())
-	{
-		gl::setColour(col_faded);
-		glBegin(GL_POINTS);
-		glVertex2d(dir_points_[point_hl_].x, dir_points_[point_hl_].y);
-		glEnd();
-	}
-
-	// Draw selected point
-	if (parent_->angleSet() && point_sel_ >= 0 && point_sel_ < (int)dir_points_.size())
-	{
-		gl::setColour(col_fg_);
-		glBegin(GL_POINTS);
-		glVertex2d(dir_points_[point_sel_].x, dir_points_[point_sel_].y);
-		glEnd();
-	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 
@@ -288,7 +247,6 @@ void ThingDirCanvas::draw()
 // ThingDirCanvas Class Events
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Called when a mouse event happens in the canvas
@@ -303,16 +261,16 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 		{
 			// Get cursor position in canvas coordinates
 			const wxSize size = GetSize();
-			double x = -1.2 + ((double)e.GetX() / (double)size.x) * 2.4;
-			double y = -1.2 + ((double)e.GetY() / (double)size.y) * 2.4;
-			Vec2d  cursor_pos(x, y);
+			double       x    = -1.2 + (static_cast<double>(e.GetX()) / static_cast<double>(size.x)) * 2.4;
+			double       y    = -1.2 + (static_cast<double>(e.GetY()) / static_cast<double>(size.y)) * 2.4;
+			Vec2d        cursor_pos(x, y);
 
 			// Find closest dir point to cursor
 			point_hl_       = -1;
 			double min_dist = 0.3;
 			for (unsigned a = 0; a < dir_points_.size(); a++)
 			{
-				double dist = math::distance(cursor_pos, dir_points_[a]);
+				double dist = glm::distance(cursor_pos, dir_points_[a]);
 				if (dist < min_dist)
 				{
 					point_hl_ = a;
@@ -343,14 +301,14 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 			int angle  = 0;
 			switch (point_sel_)
 			{
-			case 6: angle = 0; break;
-			case 7: angle = 45; break;
-			case 0: angle = 90; break;
-			case 1: angle = 135; break;
-			case 2: angle = 180; break;
-			case 3: angle = 225; break;
-			case 4: angle = 270; break;
-			case 5: angle = 315; break;
+			case 6:  angle = 0; break;
+			case 7:  angle = 45; break;
+			case 0:  angle = 90; break;
+			case 1:  angle = 135; break;
+			case 2:  angle = 180; break;
+			case 3:  angle = 225; break;
+			case 4:  angle = 270; break;
+			case 5:  angle = 315; break;
 			default: angle = 0; break;
 			}
 
@@ -362,6 +320,69 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 	e.Skip();
 }
 
+// -----------------------------------------------------------------------------
+// Called when the canvas needs to be (re)painted
+// -----------------------------------------------------------------------------
+void ThingDirCanvas::onPaint(wxPaintEvent& e)
+{
+	wxPaintDC dc(this);
+	auto      gc = wxGraphicsContext::Create(dc);
+
+	auto half_size    = GetSize().x / 2;
+	auto pad          = ui::scalePx(8);
+	auto radius       = half_size - pad;
+	auto point_radius = ui::scalePx(7);
+	auto col_bg       = wxutil::systemPanelBGColour();
+	auto col_fg       = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+	auto pi           = wxGraphicsPenInfo(wxColour(col_fg.Red(), col_fg.Green(), col_fg.Blue(), 80), 1.75);
+
+	// Draw angle ring
+	gc->SetPen(gc->CreatePen(pi));
+	gc->SetBrush(*wxTRANSPARENT_BRUSH);
+	gc->DrawEllipse(pad, pad, radius * 2, radius * 2);
+
+	// Draw dir points
+	pi.Colour(col_fg);
+	gc->SetPen(gc->CreatePen(pi));
+	gc->SetBrush(wxBrush(col_bg));
+	for (auto dir_point : dir_points_)
+	{
+		auto point = dir_point * static_cast<double>(radius);
+		gc->DrawEllipse(
+			half_size + point.x - point_radius, half_size + point.y - point_radius, point_radius * 2, point_radius * 2);
+	}
+
+	// Draw angle arrow
+	if (parent_->angleSet())
+	{
+		auto                    tip = geometry::rotatePoint(Vec2d(0, 0), Vec2d(radius * 0.8, 0), -parent_->angle());
+		vector<wxPoint2DDouble> points;
+		for (auto line : geometry::arrowLines({ 0.0, 0.0, tip.x, tip.y }, pad, 60.0f))
+		{
+			line.move(half_size, half_size);
+			gc->StrokeLine(line.x1(), line.y1(), line.x2(), line.y2());
+		}
+	}
+
+	// Draw hover point
+	gc->SetPen(*wxTRANSPARENT_PEN);
+	auto pr = static_cast<double>(point_radius) * 0.7;
+	if (point_hl_ >= 0 && point_hl_ < static_cast<int>(dir_points_.size()))
+	{
+		gc->SetBrush(wxBrush(wxColour(col_fg.Red(), col_fg.Green(), col_fg.Blue(), 80)));
+		auto point = dir_points_[point_hl_] * static_cast<double>(radius);
+		gc->DrawEllipse(half_size + point.x - pr, half_size + point.y - pr, pr * 2, pr * 2);
+	}
+
+	// Draw selected point
+	if (parent_->angleSet() && point_sel_ >= 0 && point_sel_ < static_cast<int>(dir_points_.size()))
+	{
+		gc->SetBrush(wxBrush(col_fg));
+		auto point = dir_points_[point_sel_] * static_cast<double>(radius);
+		gc->DrawEllipse(half_size + point.x - pr, half_size + point.y - pr, pr * 2, pr * 2);
+	}
+}
+} // namespace slade
 
 // -----------------------------------------------------------------------------
 //
@@ -379,11 +400,10 @@ AngleControl::AngleControl(wxWindow* parent) : wxControl(parent, -1, wxDefaultPo
 	SetSizer(sizer);
 
 	// Angle visual control
-	sizer->Add(dc_angle_ = new ThingDirCanvas(this), 1, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(dc_angle_ = new ThingDirCanvas(this), wxutil::sfWithBorder(1).Expand());
 
 	// Angle text box
-	text_angle_ = new NumberTextCtrl(this);
-	sizer->Add(text_angle_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(text_angle_ = new NumberTextCtrl(this), wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Bind events
 	text_angle_->Bind(wxEVT_TEXT, &AngleControl::onAngleTextChanged, this);
@@ -462,7 +482,7 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 
 	// Tabs
 	stc_tabs_ = STabCtrl::createControl(this);
-	sizer->Add(stc_tabs_, 1, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(stc_tabs_, wxutil::sfWithBorder(1).Expand());
 
 	// General tab
 	stc_tabs_->AddPage(setupGeneralTab(), "General");
@@ -512,6 +532,8 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 // -----------------------------------------------------------------------------
 wxPanel* ThingPropsPanel::setupGeneralTab()
 {
+	namespace wx = wxutil;
+
 	auto map_format = mapeditor::editContext().mapDesc().format;
 
 	// Create panel
@@ -524,11 +546,11 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	// --- Flags ---
 	auto frame      = new wxStaticBox(panel, -1, "Flags");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(framesizer, wx::sfWithBorder().Expand());
 
 	// Init flags
 	auto gb_sizer = new wxGridBagSizer(ui::pad() / 2, ui::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(gb_sizer, wx::sfWithBorder(1).Expand());
 	int row = 0;
 	int col = 0;
 
@@ -546,11 +568,11 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 			{
 				if (i.second.showAlways())
 				{
-					flags.push_back(i.second.name());
-					udmf_flags_.push_back(i.second.propName());
+					flags.emplace_back(i.second.name());
+					udmf_flags_.emplace_back(i.second.propName());
 				}
 				else
-					udmf_flags_extra_.push_back(i.second.propName());
+					udmf_flags_extra_.emplace_back(i.second.propName());
 			}
 		}
 
@@ -600,29 +622,25 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 
 	// Type
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(hbox, wx::sfWithBorder().Expand());
 	frame      = new wxStaticBox(panel, -1, "Type");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	hbox->Add(framesizer, 1, wxEXPAND | wxRIGHT, ui::pad());
-	framesizer->Add(gfx_sprite_ = new SpriteTexCanvas(panel), 1, wxEXPAND | wxALL, ui::pad());
+	hbox->Add(framesizer, wx::sfWithBorder(1, wxRIGHT).Expand());
+	framesizer->Add(gfx_sprite_ = new SpriteTexCanvas(panel), wx::sfWithBorder(1).Expand());
 	framesizer->Add(
-		label_type_ = new wxStaticText(panel, -1, ""), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+		label_type_ = new wxStaticText(panel, -1, ""), wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Direction
 	frame      = new wxStaticBox(panel, -1, "Direction");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 0, wxEXPAND);
-	framesizer->Add(ac_direction_ = new AngleControl(panel), 1, wxEXPAND);
-
-#ifdef __WXMSW__
-	// ac_direction->SetBackgroundColour(stc_tabs->GetThemeBackgroundColour());
-#endif
+	framesizer->Add(ac_direction_ = new AngleControl(panel), wxSizerFlags(1).Expand());
 
 	if (map_format != MapFormat::Doom)
 	{
 		// Id
 		gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-		sizer->Add(gb_sizer, 0, wxEXPAND | wxALL, ui::pad());
+		sizer->Add(gb_sizer, wx::sfWithBorder().Expand());
 		gb_sizer->Add(new wxStaticText(panel, -1, "TID:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(text_id_ = new NumberTextCtrl(panel), { 0, 1 }, { 1, 1 }, wxEXPAND | wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(btn_new_id_ = new wxButton(panel, -1, "New TID"), { 0, 2 }, { 1, 1 });
@@ -636,9 +654,9 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 		gb_sizer->AddGrowableCol(1, 1);
 
 		// 'New TID' button event
-		btn_new_id_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
-			text_id_->setNumber(mapeditor::editContext().map().things().firstFreeId());
-		});
+		btn_new_id_->Bind(
+			wxEVT_BUTTON,
+			[&](wxCommandEvent&) { text_id_->setNumber(mapeditor::editContext().map().things().firstFreeId()); });
 	}
 
 	return panel;
@@ -658,7 +676,7 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 
 	// Init flags
 	auto gb_sizer_flags = new wxGridBagSizer(ui::pad() / 2, ui::pad());
-	sizer->Add(gb_sizer_flags, 1, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(gb_sizer_flags, wxutil::sfWithBorder(1).Expand());
 	int row = 0;
 	int col = 0;
 
@@ -667,7 +685,7 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	for (const auto& a : udmf_flags_extra_)
 	{
 		auto prop = game::configuration().getUDMFProperty(a.ToStdString(), MapObject::Type::Thing);
-		flags.push_back(prop->name());
+		flags.emplace_back(prop->name());
 	}
 
 	// Add flag checkboxes
@@ -723,13 +741,14 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		for (int a = 0; a < game::configuration().nThingFlags(); a++)
 		{
 			// Set initial flag checked value
-			cb_flags_[a]->SetValue(game::configuration().thingFlagSet(a, (MapThing*)objects[0]));
+			cb_flags_[a]->SetValue(game::configuration().thingFlagSet(a, dynamic_cast<MapThing*>(objects[0])));
 
 			// Go through subsequent things
 			for (unsigned b = 1; b < objects.size(); b++)
 			{
 				// Check for mismatch
-				if (cb_flags_[a]->GetValue() != game::configuration().thingFlagSet(a, (MapThing*)objects[b]))
+				if (cb_flags_[a]->GetValue()
+					!= game::configuration().thingFlagSet(a, dynamic_cast<MapThing*>(objects[b])))
 				{
 					// Set undefined
 					cb_flags_[a]->Set3StateValue(wxCHK_UNDETERMINED);
@@ -822,7 +841,7 @@ void ThingPropsPanel::applyChanges()
 			for (int f = 0; f < game::configuration().nThingFlags(); f++)
 			{
 				if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					game::configuration().setThingFlag(f, (MapThing*)object, cb_flags_[f]->GetValue());
+					game::configuration().setThingFlag(f, dynamic_cast<MapThing*>(object), cb_flags_[f]->GetValue());
 			}
 		}
 

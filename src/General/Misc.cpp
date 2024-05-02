@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,8 +34,11 @@
 #include "General/Misc.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
+#include "Utility/PropertyList.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -148,7 +151,7 @@ bool misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 // Detects the few known cases where a picture does not use PLAYPAL as its
 // default palette.
 // -----------------------------------------------------------------------------
-int misc::detectPaletteHack(ArchiveEntry* entry)
+int misc::detectPaletteHack(const ArchiveEntry* entry)
 {
 	if (entry == nullptr || entry->type() == nullptr)
 		return palhack::NONE;
@@ -229,7 +232,7 @@ bool misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 	if (!playpal || playpal->size() < 768)
 	{
 		// Search archive for any palette
-		Archive::SearchOptions opt;
+		ArchiveSearchOptions opt;
 
 		// Search "PLAYPAL" first
 		opt.match_type     = EntryType::fromId("palette");
@@ -294,12 +297,12 @@ string misc::sizeAsString(uint32_t size)
 	}
 	else if (size < 1024 * 1024)
 	{
-		double kb = (double)size / 1024;
+		double kb = static_cast<double>(size) / 1024;
 		return fmt::format("{:1.2f}kb", kb);
 	}
 	else
 	{
-		double mb = (double)size / (1024 * 1024);
+		double mb = static_cast<double>(size) / (1024 * 1024);
 		return fmt::format("{:1.2f}mb", mb);
 	}
 }
@@ -371,7 +374,7 @@ string misc::fileNameToLumpName(string_view file)
 // -----------------------------------------------------------------------------
 // Creates a mass rename filter string from [names]
 // -----------------------------------------------------------------------------
-string misc::massRenameFilter(vector<string>& names)
+string misc::massRenameFilter(const vector<string>& names)
 {
 	// Check any names were given
 	if (names.empty())
@@ -452,14 +455,14 @@ uint32_t crc_table[256];
 int crc_table_computed = 0;
 
 /* Make the table for a fast CRC. */
-void make_crc_table(void)
+void make_crc_table()
 {
 	uint32_t c;
 	int      n, k;
 
 	for (n = 0; n < 256; n++)
 	{
-		c = (uint32_t)n;
+		c = static_cast<uint32_t>(n);
 
 		for (k = 0; k < 8; k++)
 		{
@@ -504,7 +507,7 @@ uint32_t misc::crc(const uint8_t* buf, uint32_t len)
 // the dimensions.
 // In case the texture is not found, the dimensions returned are null
 // -----------------------------------------------------------------------------
-Vec2i misc::findJaguarTextureDimensions(ArchiveEntry* entry, string_view name)
+Vec2i misc::findJaguarTextureDimensions(const ArchiveEntry* entry, string_view name)
 {
 	Vec2i dimensions;
 	dimensions.x = 0;

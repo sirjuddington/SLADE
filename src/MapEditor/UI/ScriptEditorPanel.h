@@ -1,12 +1,11 @@
 #pragma once
 
-#include "General/SAction.h"
+#include "General/SActionHandler.h"
 
 class wxTreeListCtrl;
 
 namespace slade
 {
-class ArchiveEntry;
 class TextEditorCtrl;
 class FindReplacePanel;
 
@@ -14,12 +13,12 @@ class ScriptEditorPanel : public wxPanel, SActionHandler
 {
 public:
 	ScriptEditorPanel(wxWindow* parent);
-	~ScriptEditorPanel() = default;
+	~ScriptEditorPanel() override = default;
 
 	ArchiveEntry* scriptEntry() const { return entry_script_.get(); }
 	ArchiveEntry* compiledEntry() const { return entry_compiled_.get(); }
 
-	bool openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = nullptr) const;
+	bool openScripts(const ArchiveEntry* scripts, const ArchiveEntry* compiled = nullptr) const;
 	void populateWordList() const;
 	void saveScripts() const;
 	void updateUI() const;

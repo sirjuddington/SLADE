@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,10 +31,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapLine.h"
+#include "Geometry/Geometry.h"
+#include "MapSector.h"
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
+#include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -51,7 +53,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // MapLine class constructor
 // -----------------------------------------------------------------------------
-MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, int special, int flags, ArgSet args) :
+MapLine::MapLine(
+	MapVertex*         v1,
+	MapVertex*         v2,
+	MapSide*           s1,
+	MapSide*           s2,
+	int                special,
+	int                flags,
+	const map::ArgSet& args) :
 	MapObject(Type::Line),
 	vertex1_{ v1 },
 	vertex2_{ v2 },
@@ -77,7 +86,7 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, int spe
 // -----------------------------------------------------------------------------
 // MapLine class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTreeNode* udmf_def) :
+MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, const ParseTreeNode* udmf_def) :
 	MapObject(Type::Line),
 	vertex1_{ v1 },
 	vertex2_{ v2 },
@@ -654,8 +663,8 @@ Vec2d MapLine::frontVector()
 	// Check if vector needs to be recalculated
 	if (front_vec_.x == 0 && front_vec_.y == 0)
 	{
-		front_vec_.set(-(vertex2_->yPos() - vertex1_->yPos()), vertex2_->xPos() - vertex1_->xPos());
-		front_vec_.normalize();
+		front_vec_ = glm::normalize(
+			Vec2d{ -(vertex2_->yPos() - vertex1_->yPos()), vertex2_->xPos() - vertex1_->xPos() });
 	}
 
 	return front_vec_;
@@ -689,7 +698,7 @@ Vec2d MapLine::dirTabPoint(double tab_length)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the line
 // -----------------------------------------------------------------------------
-double MapLine::distanceTo(Vec2d point)
+double MapLine::distanceTo(const Vec2d& point)
 {
 	// Update length data if needed
 	if (length_ < 0)
@@ -717,7 +726,7 @@ double MapLine::distanceTo(Vec2d point)
 }
 
 // Minimum gap between planes for a texture to be considered missing
-static const float EPSILON = 0.001f;
+static constexpr float EPSILON = 0.001f;
 
 // -----------------------------------------------------------------------------
 // Returns a flag set of any parts of the line that require a texture
@@ -783,7 +792,7 @@ int MapLine::needsTexture() const
 // Returns true if this line overlaps with [other]
 // (ie. both lines share the same vertices)
 // -----------------------------------------------------------------------------
-bool MapLine::overlaps(MapLine* other) const
+bool MapLine::overlaps(const MapLine* other) const
 {
 	return other != this
 		   && (vertex1_ == other->vertex1_ && vertex2_ == other->vertex2_
@@ -794,9 +803,9 @@ bool MapLine::overlaps(MapLine* other) const
 // Returns true if this line intersects with [other].
 // If an intersection occurs, [intersect_point] is set to the intersection point
 // -----------------------------------------------------------------------------
-bool MapLine::intersects(MapLine* other, Vec2d& intersect_point) const
+bool MapLine::intersects(const MapLine* other, Vec2d& intersect_point) const
 {
-	return math::linesIntersect(seg(), other->seg(), intersect_point);
+	return geometry::linesIntersect(seg(), other->seg(), intersect_point);
 }
 
 // -----------------------------------------------------------------------------
@@ -835,8 +844,8 @@ void MapLine::clearUnneededTextures() const
 void MapLine::resetInternals()
 {
 	// Reset line internals
-	length_ = -1;
-	front_vec_.set(0, 0);
+	length_    = -1;
+	front_vec_ = { 0, 0 };
 
 	// Reset front sector internals
 	auto s1 = frontSector();
@@ -893,11 +902,11 @@ void MapLine::writeBackup(Backup* backup)
 	if (side1_)
 		backup->props_internal["s1"] = side1_->objId();
 	else
-		backup->props_internal["s1"] = (unsigned)0;
+		backup->props_internal["s1"] = static_cast<unsigned>(0);
 	if (side2_)
 		backup->props_internal["s2"] = side2_->objId();
 	else
-		backup->props_internal["s2"] = (unsigned)0;
+		backup->props_internal["s2"] = static_cast<unsigned>(0);
 
 	// Flags
 	backup->props_internal[PROP_FLAGS] = flags_;
@@ -1016,3 +1025,16 @@ void MapLine::writeUDMF(string& def)
 
 	def += "}\n\n";
 }
+
+#ifndef NDEBUG
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapLine::operator Debuggable() const
+{
+	if (!this)
+		return "<line NULL>";
+
+	return { fmt::format("<line {}>", index_) };
+}
+#endif

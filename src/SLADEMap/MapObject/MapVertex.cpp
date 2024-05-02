@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,7 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapVertex.h"
+#include "MapLine.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
 
 using namespace slade;
@@ -52,7 +54,7 @@ MapVertex::MapVertex(const Vec2d& pos) : MapObject(Type::Vertex), position_{ pos
 // -----------------------------------------------------------------------------
 // MapVertex class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapVertex::MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def) : MapObject(Type::Vertex), position_{ pos }
+MapVertex::MapVertex(const Vec2d& pos, const ParseTreeNode* udmf_def) : MapObject(Type::Vertex), position_{ pos }
 {
 	// Set properties from UDMF definition
 	ParseTreeNode* prop;
@@ -100,9 +102,9 @@ void MapVertex::move(double nx, double ny)
 int MapVertex::intProperty(string_view key)
 {
 	if (key == PROP_X)
-		return (int)position_.x;
+		return static_cast<int>(position_.x);
 	else if (key == PROP_Y)
-		return (int)position_.y;
+		return static_cast<int>(position_.y);
 	else
 		return MapObject::intProperty(key);
 }
@@ -182,7 +184,7 @@ void MapVertex::connectLine(MapLine* line)
 // -----------------------------------------------------------------------------
 // Removes [line] from the list of lines connected to this vertex
 // -----------------------------------------------------------------------------
-void MapVertex::disconnectLine(MapLine* line)
+void MapVertex::disconnectLine(const MapLine* line)
 {
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
 	{
@@ -197,7 +199,7 @@ void MapVertex::disconnectLine(MapLine* line)
 // -----------------------------------------------------------------------------
 // Returns the connected line at [index]
 // -----------------------------------------------------------------------------
-MapLine* MapVertex::connectedLine(unsigned index)
+MapLine* MapVertex::connectedLine(unsigned index) const
 {
 	if (index >= connected_lines_.size())
 		return nullptr;
@@ -241,3 +243,16 @@ void MapVertex::writeUDMF(string& def)
 
 	def += "}\n\n";
 }
+
+#ifndef NDEBUG
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapVertex::operator Debuggable() const
+{
+	if (!this)
+		return { "<vertex NULL>" };
+
+	return { fmt::format("<vertex {}>", index_) };
+}
+#endif

@@ -9,27 +9,11 @@ namespace game
 	class ThingType;
 }
 
-class ThingBrowserItem : public BrowserItem
-{
-public:
-	ThingBrowserItem(const wxString& name, const game::ThingType& type, unsigned index) :
-		BrowserItem{ name, index },
-		type_{ type }
-	{
-	}
-	~ThingBrowserItem() = default;
-
-	bool loadImage() override;
-
-private:
-	game::ThingType const& type_;
-};
-
 class ThingTypeBrowser : public BrowserWindow
 {
 public:
 	ThingTypeBrowser(wxWindow* parent, int type = -1);
-	~ThingTypeBrowser() = default;
+	~ThingTypeBrowser() override = default;
 
 	void setupViewOptions();
 	int  selectedType() const;

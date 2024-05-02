@@ -55,20 +55,8 @@
     <Filter Include="GLAD\KHR">
       <UniqueIdentifier>{0e4647fd-d90e-4525-af41-4acc15174c1d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SQLiteCpp">
-      <UniqueIdentifier>{b3cd45ed-9b0d-4ad6-a8f0-5b73a830f36b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SQLiteCpp\include">
-      <UniqueIdentifier>{da5df457-86bf-4f4e-93cf-f2a37480ef45}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SQLiteCpp\include\SQLiteCpp">
-      <UniqueIdentifier>{40a3996f-a42d-4337-8bc9-82eb55e9158a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SQLiteCpp\src">
-      <UniqueIdentifier>{7034e015-ffda-41cb-90d9-56f180104866}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SQLiteCpp\sqlite3">
-      <UniqueIdentifier>{7ff67964-0b31-4c7b-9514-2a25dcec860f}</UniqueIdentifier>
+    <Filter Include="LibDrawText">
+      <UniqueIdentifier>{5cf06cfb-94fc-42f3-bbe9-2a24daf78a66}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -336,44 +324,14 @@
     <ClInclude Include="..\thirdparty\glad\include\KHR\khrplatform.h">
       <Filter>GLAD\KHR</Filter>
     </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Assertion.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
+    <ClInclude Include="..\thirdparty\libdrawtext\drawtext.h">
+      <Filter>LibDrawText</Filter>
     </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Backup.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
+    <ClInclude Include="..\thirdparty\libdrawtext\drawtext_impl.h">
+      <Filter>LibDrawText</Filter>
     </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Column.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Database.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Exception.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\ExecuteMany.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Savepoint.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\SQLiteCpp.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Statement.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Transaction.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Utils.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\VariadicBind.h">
-      <Filter>SQLiteCpp\include\SQLiteCpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\sqlitecpp\sqlite3\sqlite3.h">
-      <Filter>SQLiteCpp\sqlite3</Filter>
+    <ClInclude Include="..\thirdparty\libdrawtext\tpool.h">
+      <Filter>LibDrawText</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -839,29 +797,23 @@
     <ClCompile Include="..\thirdparty\glad\src\glad.c">
       <Filter>GLAD</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\sqlitecpp\src\Backup.cpp">
-      <Filter>SQLiteCpp\src</Filter>
+    <ClCompile Include="..\thirdparty\libdrawtext\draw.c">
+      <Filter>LibDrawText</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\sqlitecpp\src\Column.cpp">
-      <Filter>SQLiteCpp\src</Filter>
+    <ClCompile Include="..\thirdparty\libdrawtext\drawgl.c">
+      <Filter>LibDrawText</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\sqlitecpp\src\Database.cpp">
-      <Filter>SQLiteCpp\src</Filter>
+    <ClCompile Include="..\thirdparty\libdrawtext\drawrast.c">
+      <Filter>LibDrawText</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\sqlitecpp\src\Exception.cpp">
-      <Filter>SQLiteCpp\src</Filter>
+    <ClCompile Include="..\thirdparty\libdrawtext\font.c">
+      <Filter>LibDrawText</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\sqlitecpp\src\Savepoint.cpp">
-      <Filter>SQLiteCpp\src</Filter>
+    <ClCompile Include="..\thirdparty\libdrawtext\tpool.c">
+      <Filter>LibDrawText</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\sqlitecpp\src\Statement.cpp">
-      <Filter>SQLiteCpp\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\sqlitecpp\src\Transaction.cpp">
-      <Filter>SQLiteCpp\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\sqlitecpp\sqlite3\sqlite3.c">
-      <Filter>SQLiteCpp\sqlite3</Filter>
+    <ClCompile Include="..\thirdparty\libdrawtext\utf8.c">
+      <Filter>LibDrawText</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

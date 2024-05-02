@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "SectorList.h"
 #include "General/UI.h"
+#include "SLADEMap/MapObject/MapSector.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -85,7 +86,7 @@ void SectorList::remove(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the sector at the given [point], or null if not within a sector
 // -----------------------------------------------------------------------------
-MapSector* SectorList::atPos(Vec2d point) const
+MapSector* SectorList::atPos(const Vec2d& point) const
 {
 	// Go through sectors
 	for (const auto& sector : objects_)
@@ -132,14 +133,14 @@ BBox SectorList::allSectorBounds() const
 // -----------------------------------------------------------------------------
 // Forces building of polygons for all sectors in the list
 // -----------------------------------------------------------------------------
-void SectorList::initPolygons()
+void SectorList::initPolygons() const
 {
 	ui::setSplashProgressMessage("Building sector polygons");
 	ui::setSplashProgress(0.0f);
 	for (unsigned i = 0; i < count_; ++i)
 	{
 		ui::setSplashProgress(i, count_);
-		objects_[i]->polygon();
+		objects_[i]->polygonVertices();
 	}
 	ui::setSplashProgress(1.0f);
 }
@@ -147,7 +148,7 @@ void SectorList::initPolygons()
 // -----------------------------------------------------------------------------
 // Forces update of bounding boxes for all sectors in the list
 // -----------------------------------------------------------------------------
-void SectorList::initBBoxes()
+void SectorList::initBBoxes() const
 {
 	for (auto& sector : objects_)
 		sector->updateBBox();

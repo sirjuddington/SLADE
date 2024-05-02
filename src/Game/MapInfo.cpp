@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,8 +32,11 @@
 #include "Main.h"
 #include "MapInfo.h"
 #include "Archive/Archive.h"
-#include "UI/WxUtils.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Utility/StringUtils.h"
+#include "Utility/Tokenizer.h"
 
 using namespace slade;
 using namespace game;
@@ -76,7 +79,7 @@ MapInfo::Map& MapInfo::getMap(string_view name)
 // -----------------------------------------------------------------------------
 // Adds [map] info, or updates the existing map info if it exists
 // -----------------------------------------------------------------------------
-bool MapInfo::addOrUpdateMap(Map& map)
+bool MapInfo::addOrUpdateMap(const Map& map)
 {
 	for (auto& m : maps_)
 		if (m.entry_name == map.entry_name)
@@ -92,7 +95,7 @@ bool MapInfo::addOrUpdateMap(Map& map)
 // -----------------------------------------------------------------------------
 // Returns the DoomEdNum for the ZScript/DECORATE class [actor_class]
 // -----------------------------------------------------------------------------
-int MapInfo::doomEdNumForClass(string_view actor_class)
+int MapInfo::doomEdNumForClass(string_view actor_class) const
 {
 	// Find DoomEdNum def with matching class
 	for (auto& i : editor_nums_)
@@ -125,11 +128,10 @@ bool MapInfo::readMapInfo(const Archive& archive)
 			switch (detectMapInfoType(entry.get()))
 			{
 			case Format::Hexen:
-			case Format::ZDoomOld: log::info("MAPINFO (Hexen/Old ZDoom) parsing not yet implemented"); break;
-			case Format::ZDoomNew: return parseZMapInfo(entry.get());
-			case Format::Eternity: log::info("EMAPINFO parsing not yet implemented"); break;
+			case Format::ZDoomOld:  log::info("MAPINFO (Hexen/Old ZDoom) parsing not yet implemented"); break;
+			case Format::ZDoomNew:  return parseZMapInfo(entry.get());
+			case Format::Eternity:  log::info("EMAPINFO parsing not yet implemented"); break;
 			case Format::Universal: log::info("UMAPINFO parsing not yet implemented"); break;
-			default: break;
 			}
 		}
 	}
@@ -144,7 +146,7 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, string_view parsing) const
 {
 	if (tz.next() != "=")
 	{
-		log::error("Error Parsing {}: Expected \"=\", got \"{}\" at line {}", parsing, tz.current().text, tz.lineNo());
+		log::error(R"(Error Parsing {}: Expected "=", got "{}" at line {})", parsing, tz.current().text, tz.lineNo());
 		return false;
 	}
 
@@ -184,7 +186,7 @@ bool MapInfo::strToCol(const string& str, ColRGBA& col) const
 // -----------------------------------------------------------------------------
 // Parses ZMAPINFO-format definitions in [entry]
 // -----------------------------------------------------------------------------
-bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
+bool MapInfo::parseZMapInfo(const ArchiveEntry* entry)
 {
 	Tokenizer tz;
 	tz.setReadLowerCase(true);
@@ -530,7 +532,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 // Attempts to detect the port-specific MAPINFO format of [entry]
 // -----------------------------------------------------------------------------
-MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry) const
+MapInfo::Format MapInfo::detectMapInfoType(const ArchiveEntry* entry) const
 {
 	Tokenizer tz;
 	tz.openMem(entry->data(), entry->name());
@@ -570,7 +572,7 @@ MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry) const
 // -----------------------------------------------------------------------------
 // Dumps all parsed DoomEdNums to the log
 // -----------------------------------------------------------------------------
-void MapInfo::dumpDoomEdNums()
+void MapInfo::dumpDoomEdNums() const
 {
 	for (auto& num : editor_nums_)
 	{

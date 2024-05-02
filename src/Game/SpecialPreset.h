@@ -2,8 +2,6 @@
 
 namespace slade
 {
-class ParseTreeNode;
-
 namespace game
 {
 	struct SpecialPreset
@@ -14,8 +12,8 @@ namespace game
 		int            args[5] = { 0, 0, 0, 0, 0 };
 		vector<string> flags;
 
-		void           parse(ParseTreeNode* node);
-		ParseTreeNode* write(ParseTreeNode* parent);
+		void           parse(const ParseTreeNode* node);
+		ParseTreeNode* write(ParseTreeNode* parent) const;
 	};
 
 	const vector<SpecialPreset>& customSpecialPresets();

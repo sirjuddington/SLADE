@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,14 +35,20 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
+#include "General/Sigslot.h"
+#include "General/UI.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/Lists/VirtualListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
@@ -52,132 +58,131 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// PatchTableListView Class Functions
+// PatchTableListView Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// PatchTableListView class constructor
-// -----------------------------------------------------------------------------
-PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table) :
-	VirtualListView(parent), patch_table_{ patch_table }
+namespace slade
 {
-	// Add columns
-	InsertColumn(0, "#");
-	InsertColumn(1, "Patch Name");
-	InsertColumn(2, "Use Count");
-	InsertColumn(3, "In Archive");
-
-	// Update list
-	PatchTableListView::updateList();
-
-	// Update the list when an archive is added/closed/modified or the patch table is modified
-	auto& am_signals = app::archiveManager().signals();
-	signal_connections_ += am_signals.archive_added.connect([this](unsigned) { updateList(); });
-	signal_connections_ += am_signals.archive_closed.connect([this](unsigned) { updateList(); });
-	signal_connections_ += am_signals.archive_modified.connect([this](unsigned, bool) { updateList(); });
-	signal_connections_ += patch_table_->signals().modified.connect([this]() { updateList(); });
-}
-
-// -----------------------------------------------------------------------------
-// Returns the string for [item] at [column]
-// -----------------------------------------------------------------------------
-wxString PatchTableListView::itemText(long item, long column, long index) const
+class PatchTableListView : public VirtualListView
 {
-	// Check patch table exists
-	if (!patch_table_)
-		return "INVALID INDEX";
-
-	// Check index is ok
-	if (index < 0 || (unsigned)index > patch_table_->nPatches())
-		return "INVALID INDEX";
-
-	// Get associated patch
-	auto& patch = patch_table_->patch(index);
-
-	if (column == 0) // Index column
-		return wxString::Format("%04ld", index);
-	else if (column == 1) // Name column
-		return patch.name;
-	else if (column == 2) // Usage count column
-		return wxString::Format("%lu", patch.used_in.size());
-	else if (column == 3) // Archive column
+public:
+	PatchTableListView(wxWindow* parent, PatchTable* patch_table) : VirtualListView(parent), patch_table_{ patch_table }
 	{
-		// Get patch entry
-		auto entry = patch_table_->patchEntry(index);
+		// Add columns
+		InsertColumn(0, "#");
+		InsertColumn(1, "Patch Name");
+		InsertColumn(2, "Use Count");
+		InsertColumn(3, "In Archive");
 
-		// If patch entry can't be found return invalid
-		if (entry)
-			return entry->parent()->filename(false);
+		// Update list
+		PatchTableListView::updateList();
+
+		// Update the list when an archive is added/closed/modified or the patch table is modified
+		auto& am_signals = app::archiveManager().signals();
+		signal_connections_ += am_signals.archive_added.connect([this](unsigned) { updateList(); });
+		signal_connections_ += am_signals.archive_closed.connect([this](unsigned) { updateList(); });
+		signal_connections_ += am_signals.archive_modified.connect([this](unsigned, bool) { updateList(); });
+		signal_connections_ += patch_table_->signals().modified.connect([this]() { updateList(); });
+	}
+
+	~PatchTableListView() override = default;
+
+	PatchTable* patchTable() const { return patch_table_; }
+
+	// Updates + refreshes the patch list
+	void updateList(bool clear = false) override
+	{
+		if (clear)
+			ClearAll();
+
+		// Set list size
+		items_.clear();
+		if (patch_table_)
+		{
+			size_t count = patch_table_->nPatches();
+			SetItemCount(count);
+			for (unsigned a = 0; a < count; a++)
+				items_.push_back(a);
+		}
 		else
-			return "(!) NOT FOUND";
+			SetItemCount(0);
+
+		sortItems();
+		updateWidth();
+		Refresh();
 	}
-	else // Invalid column
-		return "INVALID COLUMN";
-}
 
-// -----------------------------------------------------------------------------
-// Updates the item attributes for [item] (red text if patch entry not found,
-// default otherwise)
-// -----------------------------------------------------------------------------
-void PatchTableListView::updateItemAttr(long item, long column, long index) const
-{
-	// Just set normal text colour
-	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
-}
-
-// -----------------------------------------------------------------------------
-// Updates + refreshes the patch list
-// -----------------------------------------------------------------------------
-void PatchTableListView::updateList(bool clear)
-{
-	if (clear)
-		ClearAll();
-
-	// Set list size
-	items_.clear();
-	if (patch_table_)
+	// Sorts the list items depending on the current sorting column
+	void sortItems() override
 	{
-		size_t count = patch_table_->nPatches();
-		SetItemCount(count);
-		for (unsigned a = 0; a < count; a++)
-			items_.push_back(a);
+		lv_current_ = this;
+		if (sort_column_ == 2)
+			std::sort(items_.begin(), items_.end(), &PatchTableListView::usageSort);
+		else
+			std::sort(items_.begin(), items_.end(), &VirtualListView::defaultSort);
 	}
-	else
-		SetItemCount(0);
 
-	sortItems();
-	updateWidth();
-	Refresh();
-}
+	// Returns true if patch at index [left] is used less than [right]
+	static bool usageSort(long left, long right)
+	{
+		auto& p1 = dynamic_cast<PatchTableListView*>(lv_current_)->patchTable()->patch(left);
+		auto& p2 = dynamic_cast<PatchTableListView*>(lv_current_)->patchTable()->patch(right);
 
-// -----------------------------------------------------------------------------
-// Returns true if patch at index [left] is used less than [right]
-// -----------------------------------------------------------------------------
-bool PatchTableListView::usageSort(long left, long right)
-{
-	auto& p1 = dynamic_cast<PatchTableListView*>(lv_current_)->patchTable()->patch(left);
-	auto& p2 = dynamic_cast<PatchTableListView*>(lv_current_)->patchTable()->patch(right);
+		if (p1.used_in.size() == p2.used_in.size())
+			return left < right;
+		else
+			return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
+												p1.used_in.size() < p2.used_in.size();
+	}
 
-	if (p1.used_in.size() == p2.used_in.size())
-		return left < right;
-	else
-		return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
-                                            p1.used_in.size() < p2.used_in.size();
-}
+protected:
+	// Returns the string for [item] at [column]
+	wxString itemText(long item, long column, long index) const override
+	{
+		// Check patch table exists
+		if (!patch_table_)
+			return "INVALID INDEX";
 
-// -----------------------------------------------------------------------------
-// Sorts the list items depending on the current sorting column
-// -----------------------------------------------------------------------------
-void PatchTableListView::sortItems()
-{
-	lv_current_ = this;
-	if (sort_column_ == 2)
-		std::sort(items_.begin(), items_.end(), &PatchTableListView::usageSort);
-	else
-		std::sort(items_.begin(), items_.end(), &VirtualListView::defaultSort);
-}
+		// Check index is ok
+		if (index < 0 || static_cast<unsigned>(index) > patch_table_->nPatches())
+			return "INVALID INDEX";
+
+		// Get associated patch
+		auto& patch = patch_table_->patch(index);
+
+		if (column == 0) // Index column
+			return wxString::Format("%04ld", index);
+		else if (column == 1) // Name column
+			return patch.name;
+		else if (column == 2) // Usage count column
+			return wxString::Format("%lu", static_cast<unsigned>(patch.used_in.size()));
+		else if (column == 3) // Archive column
+		{
+			// Get patch entry
+			auto entry = patch_table_->patchEntry(index);
+
+			// If patch entry can't be found return invalid
+			if (entry)
+				return entry->parent()->filename(false);
+			else
+				return "(!) NOT FOUND";
+		}
+		else // Invalid column
+			return "INVALID COLUMN";
+	}
+
+	// Updates the item attributes for [item]
+	void updateItemAttr(long item, long column, long index) const override
+	{
+		// Just set normal text colour
+		item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
+	}
+
+private:
+	PatchTable*          patch_table_ = nullptr;
+	ScopedConnectionList signal_connections_;
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -191,7 +196,9 @@ void PatchTableListView::sortItems()
 // PatchTablePanel class constructor
 // -----------------------------------------------------------------------------
 PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor) :
-	wxPanel(parent, -1), patch_table_{ patch_table }, parent_{ tx_editor }
+	wxPanel(parent, -1),
+	patch_table_{ patch_table },
+	parent_{ tx_editor }
 {
 	// Create controls
 	list_patches_ = new PatchTableListView(this, patch_table);
@@ -202,8 +209,8 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	label_dimensions_ = new wxStaticText(this, -1, "Size: N/A");
 	label_textures_   = new wxStaticText(
         this, -1, "In Textures: -", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
-	patch_canvas_ = new GfxCanvas(this, -1);
-	patch_canvas_->setViewType(GfxCanvas::View::Centered);
+	patch_canvas_ = ui::createGfxCanvas(this);
+	patch_canvas_->setViewType(GfxView::Centered);
 	patch_canvas_->allowDrag(true);
 	patch_canvas_->allowScroll(true);
 	zc_zoom_ = new ui::ZoomControl(this, patch_canvas_);
@@ -214,7 +221,7 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
 
 	// Update when main palette changed
-	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]()
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]
 																							 { updateDisplay(); });
 }
 
@@ -223,25 +230,27 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 // -----------------------------------------------------------------------------
 void PatchTablePanel::setupLayout()
 {
+	namespace wx = wxutil;
+
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
 	// Patches List + actions
 	auto frame      = new wxStaticBox(this, -1, "Patch List (PNAMES)");
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
-	framesizer->Add(toolbar_, 0, wxEXPAND | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
-	framesizer->AddSpacer(ui::px(ui::Size::PadMinimum));
-	framesizer->Add(list_patches_, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(framesizer, wx::sfWithBorder().Expand());
+	framesizer->Add(toolbar_, wx::sfWithMinBorder(0, wxTOP | wxBOTTOM).Expand());
+	framesizer->AddSpacer(ui::padMin());
+	framesizer->Add(list_patches_, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 
 	// Patch preview & info
 	frame      = new wxStaticBox(this, -1, "Patch Preview && Info");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
-	framesizer->Add(zc_zoom_, 0, wxALL, ui::pad());
-	framesizer->Add(patch_canvas_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
-	framesizer->Add(label_dimensions_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
-	framesizer->Add(label_textures_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(framesizer, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(zc_zoom_, wx::sfWithBorder());
+	framesizer->Add(patch_canvas_->window(), wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(label_dimensions_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(label_textures_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 }
 
 // -----------------------------------------------------------------------------
@@ -270,7 +279,8 @@ void PatchTablePanel::updateDisplay()
 		patch_canvas_->image().clear();
 		label_dimensions_->SetLabel("Size: ? x ?");
 	}
-	patch_canvas_->Refresh();
+	patch_canvas_->resetViewOffsets();
+	patch_canvas_->window()->Refresh();
 
 	// List which textures use this patch
 	if (!patch.used_in.empty())

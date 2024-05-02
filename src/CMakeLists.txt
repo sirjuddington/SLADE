@@ -11,6 +11,7 @@ file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
 	Audio/*.cpp
 	Game/*.cpp
 	General/*.cpp
+	Geometry/*.cpp
 	Graphics/*.cpp
 	Library/*.cpp
 	MainEditor/*.cpp
@@ -20,6 +21,7 @@ file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
 	TextEditor/*.cpp
 	UI/*.cpp
 	Utility/*.cpp
+	ZReaders/*.cpp
 )
 
 # Lua/Scripting sources if not excluded

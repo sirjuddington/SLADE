@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ColorimetryPrefsPanel.h"
+#include "General/UI.h"
 #include "Graphics/Palette/Palette.h"
 #include "UI/WxUtils.h"
 
@@ -150,7 +151,8 @@ void ColorimetryPrefsPanel::init()
 	spin_grey_r_->SetValue(col_greyscale_r);
 	spin_grey_g_->SetValue(col_greyscale_g);
 	spin_grey_b_->SetValue(col_greyscale_b);
-	if (col_match > (int)Palette::ColourMatch::Default && col_match < (int)Palette::ColourMatch::Stop)
+	if (col_match > static_cast<int>(Palette::ColourMatch::Default)
+		&& col_match < static_cast<int>(Palette::ColourMatch::Stop))
 		choice_colmatch_->SetSelection(col_match - 1);
 	spin_factor_r_->SetValue(col_match_r);
 	spin_factor_g_->SetValue(col_match_g);
@@ -271,7 +273,7 @@ void ColorimetryPrefsPanel::onChoiceGreyscalePresetSelected(wxCommandEvent& e)
 		spin_grey_b_->SetValue(0.0820);
 		break;
 	default: break;
-	};
+	}
 
 	applyPreferences();
 }
@@ -372,7 +374,7 @@ void ColorimetryPrefsPanel::onChoiceTristimPresetSelected(wxCommandEvent& e)
 		spin_tristim_z_->SetValue(35.21);
 		break;
 	default: break;
-	};
+	}
 
 	applyPreferences();
 }

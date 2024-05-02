@@ -1,17 +1,18 @@
 #pragma once
 
-#include "Archive/Archive.h"
-
 namespace slade
 {
 class MapObjectCollection;
+class PropertyList;
+enum class MapFormat;
+struct MapDesc;
 
 class MapFormatHandler
 {
 public:
 	virtual ~MapFormatHandler() = default;
 
-	virtual bool readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) = 0;
+	virtual bool readMap(MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) = 0;
 	virtual vector<unique_ptr<ArchiveEntry>> writeMap(
 		const MapObjectCollection& map_data,
 		const PropertyList&        map_extra_props) = 0;

@@ -1,20 +1,23 @@
 #pragma once
 
 #include "PrefsPanelBase.h"
-#include "TextEditor/TextLanguage.h"
-#include "TextEditor/TextStyle.h"
 
 class wxListBox;
 
 namespace slade
 {
+class TextLanguage;
+class StyleSet;
+class TextEditorCtrl;
+class TextStyle;
+
 class TextStylePrefsPanel : public PrefsPanelBase
 {
 public:
 	TextStylePrefsPanel(wxWindow* parent);
-	~TextStylePrefsPanel() = default;
+	~TextStylePrefsPanel() override = default;
 
-	void updateStyleControls();
+	void updateStyleControls() const;
 
 	void updateFontFace() const;
 	void updateFontSize() const;
@@ -23,7 +26,7 @@ public:
 	void updateFontUnderlined() const;
 	void updateForeground() const;
 	void updateBackground() const;
-	void updatePreview();
+	void updatePreview() const;
 
 	void init() override;
 	void applyPreferences() override;
@@ -31,14 +34,14 @@ public:
 	wxString pageTitle() override { return "Text Editor Fonts && Colours"; }
 
 private:
-	bool              init_done_        = false;
-	wxChoice*         choice_styleset_  = nullptr;
-	wxButton*         btn_savestyleset_ = nullptr;
-	wxListBox*        list_styles_      = nullptr;
-	StyleSet          ss_current_;
-	TextStyle*        ts_current_       = nullptr;
-	wxCheckBox*       cb_font_override_ = nullptr;
-	wxFontPickerCtrl* fp_font_override_ = nullptr;
+	bool                 init_done_        = false;
+	wxChoice*            choice_styleset_  = nullptr;
+	wxButton*            btn_savestyleset_ = nullptr;
+	wxListBox*           list_styles_      = nullptr;
+	unique_ptr<StyleSet> ss_current_;
+	TextStyle*           ts_current_       = nullptr;
+	wxCheckBox*          cb_font_override_ = nullptr;
+	wxFontPickerCtrl*    fp_font_override_ = nullptr;
 
 	wxColourPickerCtrl* cp_foreground_               = nullptr;
 	wxColourPickerCtrl* cp_background_               = nullptr;
@@ -51,8 +54,8 @@ private:
 	wxCheckBox*         cb_override_foreground_      = nullptr;
 	wxCheckBox*         cb_override_background_      = nullptr;
 
-	TextLanguage    language_preview_;
-	TextEditorCtrl* te_preview_ = nullptr;
+	unique_ptr<TextLanguage> language_preview_;
+	TextEditorCtrl*          te_preview_ = nullptr;
 
 	wxPanel* createStylePanel();
 

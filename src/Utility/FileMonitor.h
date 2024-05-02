@@ -2,13 +2,11 @@
 
 namespace slade
 {
-class Archive;
-
 class FileMonitor : public wxTimer
 {
 public:
 	FileMonitor(string_view filename, bool start = true);
-	virtual ~FileMonitor() = default;
+	~FileMonitor() override = default;
 
 	wxProcess*    process() const { return process_.get(); }
 	const string& filename() const { return filename_; }
@@ -31,7 +29,7 @@ class DB2MapFileMonitor : public FileMonitor
 {
 public:
 	DB2MapFileMonitor(string_view filename, Archive* archive, string_view map_name);
-	~DB2MapFileMonitor() = default;
+	~DB2MapFileMonitor() override = default;
 
 	void fileModified() override;
 	void processTerminated() override;

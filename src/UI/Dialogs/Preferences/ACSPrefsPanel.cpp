@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -117,30 +117,33 @@ void ACSPrefsPanel::applyPreferences()
 // -----------------------------------------------------------------------------
 void ACSPrefsPanel::setupLayout()
 {
+	namespace wx = wxutil;
+
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// ACC.exe path
 	sizer->Add(
-		wxutil::createLabelVBox(this, "Location of acc executable:", flp_acc_path_), 0, wxEXPAND | wxBOTTOM, ui::pad());
+		wx::createLabelVBox(this, "Location of acc executable:", flp_acc_path_),
+		wx::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Include paths
-	sizer->Add(new wxStaticText(this, -1, "Include Paths:"), 0, wxEXPAND, ui::pad());
+	sizer->Add(new wxStaticText(this, -1, "Include Paths:"), wxSizerFlags().Expand());
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 1, wxEXPAND | wxBOTTOM, ui::pad());
-	hbox->Add(list_inc_paths_, 1, wxEXPAND | wxRIGHT, ui::pad());
+	sizer->Add(hbox, wx::sfWithBorder(1, wxBOTTOM).Expand());
+	hbox->Add(list_inc_paths_, wx::sfWithBorder(1, wxRIGHT).Expand());
 
 	// Add include path
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	hbox->Add(vbox, 0, wxEXPAND);
-	vbox->Add(btn_incpath_add_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	hbox->Add(vbox, wxSizerFlags().Expand());
+	vbox->Add(btn_incpath_add_, wx::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Remove include path
-	vbox->Add(btn_incpath_remove_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	vbox->Add(btn_incpath_remove_, wx::sfWithBorder(0, wxBOTTOM).Expand());
 
 	// 'Always Show Output' checkbox
-	sizer->Add(cb_always_show_output_, 0, wxEXPAND);
+	sizer->Add(cb_always_show_output_, wxSizerFlags().Expand());
 }
 
 
@@ -150,6 +153,8 @@ void ACSPrefsPanel::setupLayout()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the 'Add' include path button is clicked

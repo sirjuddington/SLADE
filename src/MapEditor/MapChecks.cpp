@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,19 +31,31 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapChecks.h"
+#include "Edit/Edit2D.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/Game.h"
 #include "Game/ThingType.h"
-#include "General/SAction.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapTextureManager.h"
+#include "OpenGL/GLTexture.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/Browser/BrowserItem.h"
 #include "UI/Dialogs/MapTextureBrowser.h"
 #include "UI/Dialogs/ThingTypeBrowser.h"
-#include "Utility/MathStuff.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -165,12 +177,13 @@ public:
 	{
 		switch (part)
 		{
-		case MapLine::Part::FrontUpper: return "front upper texture";
+		case MapLine::Part::FrontUpper:  return "front upper texture";
 		case MapLine::Part::FrontMiddle: return "front middle texture";
-		case MapLine::Part::FrontLower: return "front lower texture";
-		case MapLine::Part::BackUpper: return "back upper texture";
-		case MapLine::Part::BackMiddle: return "back middle texture";
-		case MapLine::Part::BackLower: return "back lower texture";
+		case MapLine::Part::FrontLower:  return "front lower texture";
+		case MapLine::Part::BackUpper:   return "back upper texture";
+		case MapLine::Part::BackMiddle:  return "back middle texture";
+		case MapLine::Part::BackLower:   return "back lower texture";
+		default:                         break;
 		}
 
 		return "";
@@ -206,10 +219,10 @@ public:
 					lines_[index]->setStringProperty("side1.texturemiddle", texture);
 					break;
 				case MapLine::Part::FrontLower: lines_[index]->setStringProperty("side1.texturebottom", texture); break;
-				case MapLine::Part::BackUpper: lines_[index]->setStringProperty("side2.texturetop", texture); break;
+				case MapLine::Part::BackUpper:  lines_[index]->setStringProperty("side2.texturetop", texture); break;
 				case MapLine::Part::BackMiddle: lines_[index]->setStringProperty("side2.texturemiddle", texture); break;
-				case MapLine::Part::BackLower: lines_[index]->setStringProperty("side2.texturebottom", texture); break;
-				default: return false;
+				case MapLine::Part::BackLower:  lines_[index]->setStringProperty("side2.texturebottom", texture); break;
+				default:                        return false;
 				}
 
 				editor->endUndoRecord();
@@ -387,7 +400,7 @@ public:
 			// Ignore the Heresiarch which does not have a real special
 			if (thingmode)
 			{
-				auto& tt = game::configuration().thingType(((MapThing*)mo)->type());
+				auto& tt = game::configuration().thingType(dynamic_cast<MapThing*>(mo)->type());
 				if (tt.flags() & game::ThingType::Flags::Script)
 					continue;
 			}
@@ -493,7 +506,7 @@ class LinesIntersectCheck : public MapCheck
 public:
 	LinesIntersectCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void checkIntersections(vector<MapLine*> lines)
+	void checkIntersections(const vector<MapLine*>& lines)
 	{
 		Vec2d    pos;
 		MapLine* line1;
@@ -620,9 +633,7 @@ private:
 		Vec2d    intersect_point;
 
 		Intersection(MapLine* line1, MapLine* line2, double x, double y) :
-			line1{ line1 },
-			line2{ line2 },
-			intersect_point{ x, y }
+			line1{ line1 }, line2{ line2 }, intersect_point{ x, y }
 		{
 		}
 	};
@@ -1111,10 +1122,10 @@ public:
 					lines_[index]->setStringProperty("side1.texturemiddle", texture);
 					break;
 				case MapLine::Part::FrontLower: lines_[index]->setStringProperty("side1.texturebottom", texture); break;
-				case MapLine::Part::BackUpper: lines_[index]->setStringProperty("side2.texturetop", texture); break;
+				case MapLine::Part::BackUpper:  lines_[index]->setStringProperty("side2.texturetop", texture); break;
 				case MapLine::Part::BackMiddle: lines_[index]->setStringProperty("side2.texturemiddle", texture); break;
-				case MapLine::Part::BackLower: lines_[index]->setStringProperty("side2.texturebottom", texture); break;
-				default: return false;
+				case MapLine::Part::BackLower:  lines_[index]->setStringProperty("side2.texturebottom", texture); break;
+				default:                        return false;
 				}
 
 				editor->endUndoRecord();
@@ -1376,7 +1387,7 @@ public:
 				continue;
 
 			radius = tt.radius() - 1;
-			Rectf bbox(thing->xPos(), thing->yPos(), radius * 2, radius * 2, 1);
+			Rectf bbox(thing->xPos(), thing->yPos(), radius * 2, radius * 2, true);
 
 			// Go through lines
 			for (auto& check_line : check_lines)
@@ -1384,7 +1395,7 @@ public:
 				line = check_line;
 
 				// Check intersection
-				if (math::boxLineIntersect(bbox, line->seg()))
+				if (geometry::boxLineIntersect(bbox, line->seg()))
 				{
 					things_.push_back(thing);
 					lines_.push_back(line);
@@ -1415,11 +1426,11 @@ public:
 			auto line  = lines_[index];
 
 			// Get nearest line point to thing
-			auto np = math::closestPointOnLine(thing->position(), line->seg());
+			auto np = geometry::closestPointOnLine(thing->position(), line->seg());
 
 			// Get distance to move
 			double r    = game::configuration().thingType(thing->type()).radius();
-			double dist = math::distance(Vec2d(), Vec2d(r, r));
+			double dist = glm::distance(Vec2d(), Vec2d(r, r));
 
 			editor->beginUndoRecord("Move Thing", true, false, false);
 
@@ -1736,7 +1747,6 @@ public:
 		for (unsigned a = 0; a < map_->nSectors(); a++)
 		{
 			int special = map_->sector(a)->special();
-			int base    = game::configuration().baseSectorType(special);
 			if (game::configuration().sectorTypeName(special) == "Unknown")
 				sectors_.push_back(a);
 		}
@@ -1909,7 +1919,6 @@ public:
 
 	string problemDesc(unsigned index) override
 	{
-		bool special = (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF);
 		if (index >= things_.size())
 			return "No obsolete things found";
 
@@ -1971,22 +1980,22 @@ unique_ptr<MapCheck> MapCheck::standardCheck(StandardCheck type, SLADEMap* map, 
 {
 	switch (type)
 	{
-	case MissingTexture: return std::make_unique<MissingTextureCheck>(map);
-	case SpecialTag: return std::make_unique<SpecialTagsCheck>(map);
+	case MissingTexture:   return std::make_unique<MissingTextureCheck>(map);
+	case SpecialTag:       return std::make_unique<SpecialTagsCheck>(map);
 	case IntersectingLine: return std::make_unique<LinesIntersectCheck>(map);
-	case OverlappingLine: return std::make_unique<LinesOverlapCheck>(map);
+	case OverlappingLine:  return std::make_unique<LinesOverlapCheck>(map);
 	case OverlappingThing: return std::make_unique<ThingsOverlapCheck>(map);
-	case UnknownTexture: return std::make_unique<UnknownTexturesCheck>(map, texman);
-	case UnknownFlat: return std::make_unique<UnknownFlatsCheck>(map, texman);
+	case UnknownTexture:   return std::make_unique<UnknownTexturesCheck>(map, texman);
+	case UnknownFlat:      return std::make_unique<UnknownFlatsCheck>(map, texman);
 	case UnknownThingType: return std::make_unique<UnknownThingTypesCheck>(map);
-	case StuckThing: return std::make_unique<StuckThingsCheck>(map);
-	case SectorReference: return std::make_unique<SectorReferenceCheck>(map);
-	case InvalidLine: return std::make_unique<InvalidLineCheck>(map);
-	case MissingTagged: return std::make_unique<MissingTaggedCheck>(map);
-	case UnknownSector: return std::make_unique<UnknownSectorCheck>(map);
-	case UnknownSpecial: return std::make_unique<UnknownSpecialCheck>(map);
-	case ObsoleteThing: return std::make_unique<ObsoleteThingCheck>(map);
-	default: return std::make_unique<MissingTextureCheck>(map);
+	case StuckThing:       return std::make_unique<StuckThingsCheck>(map);
+	case SectorReference:  return std::make_unique<SectorReferenceCheck>(map);
+	case InvalidLine:      return std::make_unique<InvalidLineCheck>(map);
+	case MissingTagged:    return std::make_unique<MissingTaggedCheck>(map);
+	case UnknownSector:    return std::make_unique<UnknownSectorCheck>(map);
+	case UnknownSpecial:   return std::make_unique<UnknownSpecialCheck>(map);
+	case ObsoleteThing:    return std::make_unique<ObsoleteThingCheck>(map);
+	default:               return std::make_unique<MissingTextureCheck>(map);
 	}
 }
 

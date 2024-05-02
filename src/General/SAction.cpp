@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,10 +32,13 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "General/SAction.h"
+#include "SAction.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/KeyBind.h"
+#include "SActionHandler.h"
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
@@ -108,10 +111,10 @@ string SAction::shortcutText() const
 }
 
 // -----------------------------------------------------------------------------
-// Sets the toggled state of the action to [toggle], and updates the value of
+// Sets the toggled state of the action to [checked], and updates the value of
 // the linked cvar (if any) to match
 // -----------------------------------------------------------------------------
-void SAction::setChecked(bool toggle)
+void SAction::setChecked(bool checked)
 {
 	if (type_ == Type::Normal)
 	{
@@ -120,7 +123,7 @@ void SAction::setChecked(bool toggle)
 	}
 
 	// If toggling a radio action, un-toggle others in the group
-	if (toggle && type_ == Type::Radio && group_ >= 0)
+	if (checked && type_ == Type::Radio && group_ >= 0)
 	{
 		// Go through and toggle off all other actions in the same group
 		for (auto& action : actions_)
@@ -132,7 +135,7 @@ void SAction::setChecked(bool toggle)
 		checked_ = true;
 	}
 	else
-		checked_ = toggle; // Otherwise just set toggled state
+		checked_ = checked; // Otherwise just set toggled state
 
 	// Update linked CVar
 	if (linked_cvar_)

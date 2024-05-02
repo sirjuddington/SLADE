@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PropsPanelBase.h"
-#include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
 namespace slade
@@ -10,76 +9,19 @@ class NumberTextCtrl;
 class MapObjectPropsPanel;
 class ArgsPanel;
 class ActionSpecialPanel;
+class AngleControl;
+class SpriteTexCanvas;
+class ThingDirCanvas;
 namespace game
 {
 	class ThingType;
 }
 
-class SpriteTexCanvas : public OGLCanvas
-{
-public:
-	SpriteTexCanvas(wxWindow* parent);
-	~SpriteTexCanvas() = default;
-
-	wxString texName() const { return texname_; }
-	void     setSprite(const game::ThingType& type);
-	void     draw() override;
-
-private:
-	unsigned texture_ = 0;
-	wxString texname_;
-	ColRGBA  colour_ = ColRGBA::WHITE;
-	bool     icon_   = false;
-};
-
-class AngleControl;
-class ThingDirCanvas : public OGLCanvas
-{
-public:
-	ThingDirCanvas(AngleControl* parent);
-	~ThingDirCanvas() = default;
-
-	void setAngle(int angle);
-	void draw() override;
-
-	void onMouseEvent(wxMouseEvent& e);
-
-private:
-	AngleControl* parent_ = nullptr;
-	vector<Vec2d> dir_points_;
-	ColRGBA       col_bg_;
-	ColRGBA       col_fg_;
-	int           point_hl_   = -1;
-	int           point_sel_  = -1;
-	long          last_check_ = 0;
-};
-
-
-class AngleControl : public wxControl
-{
-public:
-	AngleControl(wxWindow* parent);
-	~AngleControl() = default;
-
-	int  angle(int base = 0) const;
-	void setAngle(int angle, bool update_visual = true);
-	void updateAngle() const;
-	bool angleSet() const;
-
-private:
-	int             angle_      = 0;
-	ThingDirCanvas* dc_angle_   = nullptr;
-	NumberTextCtrl* text_angle_ = nullptr;
-
-	void onAngleTextChanged(wxCommandEvent& e);
-};
-
-
 class ThingPropsPanel : public PropsPanelBase
 {
 public:
 	ThingPropsPanel(wxWindow* parent);
-	~ThingPropsPanel() = default;
+	~ThingPropsPanel() override = default;
 
 	void openObjects(vector<MapObject*>& objects) override;
 	void applyChanges() override;

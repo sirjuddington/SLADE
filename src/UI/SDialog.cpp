@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -47,7 +47,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // SDialog class constructor
 // -----------------------------------------------------------------------------
-SDialog::SDialog(wxWindow* parent, const wxString& title, const wxString& id, int x, int y, int width, int height) :
+SDialog::SDialog(wxWindow* parent, const wxString& title, const wxString& id, int width, int height, int x, int y) :
 	wxDialog(parent, -1, title, wxPoint(x, y), wxSize(width, height), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 	id_{ id }
 {
@@ -109,6 +109,8 @@ void SDialog::setSavedSize(int def_width, int def_height)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the dialog is resized

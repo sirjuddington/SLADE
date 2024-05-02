@@ -8,7 +8,7 @@ class Map3DPrefsPanel : public PrefsPanelBase
 {
 public:
 	Map3DPrefsPanel(wxWindow* parent);
-	~Map3DPrefsPanel() = default;
+	~Map3DPrefsPanel() override = default;
 
 	void init() override;
 	void updateDistanceControls() const;
@@ -31,5 +31,6 @@ private:
 	wxCheckBox*   cb_shade_orthogonal_     = nullptr;
 	wxSlider*     slider_fov_              = nullptr;
 	wxStaticText* label_fov_               = nullptr;
+	wxCheckBox*   cb_enable_3d_floors_     = nullptr;
 };
 } // namespace slade

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,12 +33,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "VertexInfoOverlay.h"
-#include "General/ColourConfiguration.h"
-#include "OpenGL/Drawing.h"
-#include "OpenGL/OpenGL.h"
+#include "General/Defs.h"
+#include "Geometry/Rect.h"
+#include "OpenGL/Draw2D.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 
@@ -62,7 +61,7 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 	bool udmf = vertex->parentMap()->currentFormat() == MapFormat::UDMF;
 
 	// Update info string
-	auto pos = vertex->position();
+	auto pos  = vertex->position();
 	auto line = fmt::format("Vertex {}: (", vertex->index());
 	if (pos.x == static_cast<int>(pos.x))
 		line += fmt::format("{}, ", static_cast<int>(pos.x));
@@ -72,7 +71,7 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 		line += fmt::format("{})", static_cast<int>(pos.y));
 	else
 		line += fmt::format("{:1.4f})", pos.y);
-	
+
 	if (global::debug)
 		line += fmt::format(" ({})", vertex->objId());
 
@@ -89,40 +88,32 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 // -----------------------------------------------------------------------------
 // Draws the overlay at [bottom] from 0 to [right]
 // -----------------------------------------------------------------------------
-void VertexInfoOverlay::draw(int bottom, int right, float alpha) const
+void VertexInfoOverlay::draw(gl::draw2d::Context& dc, float alpha) const
 {
 	// Don't bother if completely faded
 	if (alpha <= 0.0f)
 		return;
 
-	// Init GL stuff
-	glLineWidth(1.0f);
-	glDisable(GL_LINE_SMOOTH);
-
-	// Get colours
-	auto col_bg = colourconfig::colour("map_overlay_background");
-	auto col_fg = colourconfig::colour("map_overlay_foreground");
-	col_fg.a    = col_fg.a * alpha;
-	col_bg.a    = col_bg.a * alpha;
-	ColRGBA col_border(0, 0, 0, 140);
+	// Calculate height
+	auto line_height = dc.textLineHeight();
+	auto height      = line_height * info_.size() + 8.0f;
 
 	// Slide in/out animation
-	float alpha_inv = 1.0f - alpha;
-	bottom += 16 * alpha_inv * alpha_inv;
+	auto alpha_inv = 1.0f - alpha;
+	auto bottom    = dc.viewSize().y + 16.0f * alpha_inv * alpha_inv;
 
 	// Draw overlay background
-	int line_height = 16 * (drawing::fontSize() / 12.0);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	drawing::drawBorderedRect(0, bottom - (line_height * info_.size()) - 8, right, bottom + 2, col_bg, col_border);
+	dc.setColourFromConfig("map_overlay_background");
+	dc.colour.a *= alpha;
+	dc.drawRect({ 0.0f, bottom - height, dc.viewSize().x, bottom });
 
 	// Draw text
-	int y = bottom - (line_height * info_.size()) - 4;
+	auto y = bottom - height + 4.0f;
+	dc.setColourFromConfig("map_overlay_foreground");
+	dc.colour.a *= alpha;
 	for (const auto& line : info_)
 	{
-		drawing::drawText(line, 2, y, col_fg, drawing::Font::Condensed);
+		dc.drawText(line, { 4.0f, y });
 		y += line_height;
 	}
-
-	// Done
-	glEnable(GL_LINE_SMOOTH);
 }

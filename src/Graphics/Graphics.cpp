@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,13 +32,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Graphics.h"
-#include "Archive/ArchiveEntry.h"
 #include "General/Misc.h"
 #include "Graphics/GameFormats.h"
 #include "SImage/SIFormat.h"
 #include "Utility/Memory.h"
 
 using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -98,8 +98,8 @@ bool setOffsetsDoomGfx(SeekableData& data, int xoff, int yoff)
 		return false;
 
 	// Apply new offsets
-	header.left = wxINT16_SWAP_ON_BE((int16_t)xoff);
-	header.top  = wxINT16_SWAP_ON_BE((int16_t)yoff);
+	header.left = wxINT16_SWAP_ON_BE(static_cast<int16_t>(xoff));
+	header.top  = wxINT16_SWAP_ON_BE(static_cast<int16_t>(yoff));
 
 	// Write new header to entry
 	data.seekFromStart(0);
@@ -122,8 +122,8 @@ bool setOffsetsDoomAlphaGfx(SeekableData& data, int xoff, int yoff)
 		return false;
 
 	// Apply new offsets
-	header.left = (int8_t)xoff;
-	header.top  = (int8_t)yoff;
+	header.left = static_cast<int8_t>(xoff);
+	header.top  = static_cast<int8_t>(yoff);
 
 	// Write new header to entry
 	data.seekFromStart(0);
@@ -150,9 +150,9 @@ Vec2i gfx::pngGetSize(const MemChunk& png_data)
 		return { 0, 0 };
 
 	// Read width and height from IHDR chunk
-	const Ihdr* ihdr = (Ihdr*)(png_data.data() + 12);
-	uint32_t    w    = wxINT32_SWAP_ON_LE(ihdr->width);
-	uint32_t    h    = wxINT32_SWAP_ON_LE(ihdr->height);
+	auto     ihdr = reinterpret_cast<const Ihdr*>(png_data.data() + 12);
+	uint32_t w    = wxINT32_SWAP_ON_LE(ihdr->width);
+	uint32_t h    = wxINT32_SWAP_ON_LE(ihdr->height);
 
 	return { static_cast<int>(w), static_cast<int>(h) };
 }
@@ -200,7 +200,7 @@ bool gfx::pngSetgrAb(MemChunk& png_data, int xoff, int yoff)
 		if (data[a] == 'g' && data[a + 1] == 'r' && data[a + 2] == 'A' && data[a + 3] == 'b')
 		{
 			grab_start = a - 4;
-			auto grab  = (const GrabChunk*)(data + a);
+			auto grab  = reinterpret_cast<const GrabChunk*>(data + a);
 			ox         = wxINT32_SWAP_ON_LE(grab->xoff);
 			oy         = wxINT32_SWAP_ON_LE(grab->yoff);
 			break;
@@ -303,7 +303,6 @@ bool gfx::pngSettRNS(MemChunk& png_data, bool value)
 		if (png_data[a] == 't' && png_data[a + 1] == 'R' && png_data[a + 2] == 'N' && png_data[a + 3] == 'S')
 		{
 			trns_start = a - 4;
-			auto trns  = (TransChunk*)(png_data.data() + a);
 			trns_size  = 12 + memory::readB32(png_data.data(), a - 4);
 		}
 
@@ -502,15 +501,16 @@ Vec2i gfx::calculateOffsets(int width, int height, OffsetType type)
 {
 	switch (type)
 	{
-	case OffsetType::Monster: return { static_cast<int>(width * 0.5), height - 4 };
-	case OffsetType::MonsterGL: return { static_cast<int>(width * 0.5), height };
-	case OffsetType::Projectile: return { static_cast<int>(width * 0.5), static_cast<int>(height * 0.5) };
-	case OffsetType::WeaponFull: return { -160 + static_cast<int>(width * 0.5), -200 + height };
-	case OffsetType::WeaponDoom: return { -160 + static_cast<int>(width * 0.5), -200 + 32 + height };
+	case OffsetType::Monster:       return { static_cast<int>(width * 0.5), height - 4 };
+	case OffsetType::MonsterGL:     return { static_cast<int>(width * 0.5), height };
+	case OffsetType::Projectile:    return { static_cast<int>(width * 0.5), static_cast<int>(height * 0.5) };
+	case OffsetType::WeaponFull:    return { -160 + static_cast<int>(width * 0.5), -200 + height };
+	case OffsetType::WeaponDoom:    return { -160 + static_cast<int>(width * 0.5), -200 + 32 + height };
 	case OffsetType::WeaponHeretic: return { -160 + static_cast<int>(width * 0.5), -200 + 42 + height };
-	case OffsetType::WeaponHexen: return { -160 + static_cast<int>(width * 0.5), -200 + 38 + height };
-	default: return { 0, 0 };
-	};
+	case OffsetType::WeaponHexen:   return { -160 + static_cast<int>(width * 0.5), -200 + 38 + height };
+	}
+
+	return { 0, 0 };
 }
 
 // -----------------------------------------------------------------------------

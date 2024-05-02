@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,7 +33,16 @@
 #include "UI/WxUtils.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "Utility/Colour.h"
 #include "thirdparty/lunasvg/include/lunasvg.h"
+
+#ifdef __WXGTK3__
+#include <gtk-3.0/gtk/gtk.h>
+#elif __WXGTK20__
+#define GSocket GlibGSocket
+#include <gtk-2.0/gtk/gtk.h>
+#undef GSocket
+#endif
 
 using namespace slade;
 
@@ -217,7 +226,7 @@ wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const wxString& 
 // Returns a horizontal box sizer containing [widgets].
 // [widgets] can contain a combination of wxWindow and wxSizer objects
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
+wxSizer* wxutil::layoutHorizontally(const vector<wxObject*>& widgets, int expand_col)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 
@@ -231,7 +240,7 @@ wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 		{
 			hbox->Add(
 				dynamic_cast<wxWindow*>(widget),
-				expand_col == (int)a ? 1 : 0,
+				expand_col == static_cast<int>(a) ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
 				ui::pad());
 		}
@@ -241,7 +250,7 @@ wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 		{
 			hbox->Add(
 				dynamic_cast<wxSizer*>(widget),
-				expand_col == (int)a ? 1 : 0,
+				expand_col == static_cast<int>(a) ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
 				ui::pad());
 		}
@@ -254,16 +263,16 @@ wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 // Same as above, however instead of returning a new sizer, it adds it to the
 // given [sizer] with [flags]
 // -----------------------------------------------------------------------------
-void wxutil::layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_col)
+void wxutil::layoutHorizontally(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags, int expand_col)
 {
-	sizer->Add(layoutHorizontally(std::move(widgets), expand_col), flags);
+	sizer->Add(layoutHorizontally(widgets, expand_col), flags);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a vertical box sizer containing [widgets].
 // [widgets] can contain a combination of wxWindow and wxSizer objects
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
+wxSizer* wxutil::layoutVertically(const vector<wxObject*>& widgets, int expand_row)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 
@@ -277,7 +286,7 @@ wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
 		{
 			vbox->Add(
 				dynamic_cast<wxWindow*>(widget),
-				expand_row == (int)a ? 1 : 0,
+				expand_row == static_cast<int>(a) ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
 				ui::pad());
 		}
@@ -287,7 +296,7 @@ wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
 		{
 			vbox->Add(
 				dynamic_cast<wxSizer*>(widget),
-				expand_row == (int)a ? 1 : 0,
+				expand_row == static_cast<int>(a) ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
 				ui::pad());
 		}
@@ -300,15 +309,47 @@ wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
 // Same as above, however instead of returning a new sizer, it adds it to the
 // given [sizer] with [flags]
 // -----------------------------------------------------------------------------
-void wxutil::layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_row)
+void wxutil::layoutVertically(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags, int expand_row)
 {
-	sizer->Add(layoutVertically(std::move(widgets), expand_row), flags);
+	sizer->Add(layoutVertically(widgets, expand_row), flags);
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a border at [direction] of
+// [size].
+// If [size] is negative, uses the default padding size (ui::pad()).
+// Equivalent to wxSizerFlags([proportion]).Border([direction], [size])
+// -----------------------------------------------------------------------------
+wxSizerFlags wxutil::sfWithBorder(int proportion, int direction, int size)
+{
+	if (size < 0)
+		size = ui::pad();
+
+	return wxSizerFlags(proportion).Border(direction, size);
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a large border at [direction].
+// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padLarge())
+// -----------------------------------------------------------------------------
+wxSizerFlags wxutil::sfWithLargeBorder(int proportion, int direction)
+{
+	return wxSizerFlags(proportion).Border(direction, ui::padLarge());
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a small border at [direction].
+// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padMin())
+// -----------------------------------------------------------------------------
+wxSizerFlags wxutil::sfWithMinBorder(int proportion, int direction)
+{
+	return wxSizerFlags(proportion).Border(direction, ui::padMin());
 }
 
 // -----------------------------------------------------------------------------
 // Returns a wxArrayString containing the (wx) strings in [vector]
 // -----------------------------------------------------------------------------
-wxArrayString wxutil::arrayString(vector<wxString> vector)
+wxArrayString wxutil::arrayString(const vector<wxString>& vector)
 {
 	return wxArrayString{ vector.size(), vector.data() };
 }
@@ -365,38 +406,81 @@ void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 	window->SetIcon(wx_icon);
 }
 
-// -----------------------------------------------------------------------------
-// Creates a wxImage from the given [svg_text] data, sized to [width x height].
-// Returns an invalid (empty) wxImage if the SVG data was invalid
-// -----------------------------------------------------------------------------
-wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height)
+
+// The following functions are taken from CodeLite (http://codelite.org)
+
+wxColour wxutil::systemPanelBGColour()
 {
-	// Load SVG
-	const auto svg = lunasvg::Document::loadFromData(svg_text);
-	if (!svg)
-		return {};
+#ifdef __WXGTK__
+	static bool     intitialized(false);
+	static wxColour bgColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
 
-	// Render SVG
-	const auto bmp = svg->renderToBitmap(width, height);
-	if (!bmp.valid())
-		return {};
-
-	// Split image data to separate rgb + alpha channels
-	const auto bmp_data    = bmp.data();
-	const auto n_pixels    = width * height;
-	const auto rgb_data    = new uint8_t[n_pixels * 3]; // wxImage below will take ownership
-	const auto alpha_data  = new uint8_t[n_pixels];     // ^
-	auto       data_index  = 0;
-	auto       rgb_index   = 0;
-	auto       alpha_index = 0;
-	for (auto p = 0; p < n_pixels; ++p)
+	if (!intitialized)
 	{
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		alpha_data[alpha_index++] = bmp_data[data_index++];
+		// try to get the background colour from a menu
+		GtkWidget* menu = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		GtkStyle*  def  = gtk_rc_get_style(menu);
+		if (!def)
+			def = gtk_widget_get_default_style();
+
+		if (def)
+		{
+			GdkColor col = def->bg[GTK_STATE_NORMAL];
+			bgColour     = wxColour(col);
+		}
+		gtk_widget_destroy(menu);
+		intitialized = true;
+	}
+	return bgColour;
+#else
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
+#endif
+}
+
+wxColour wxutil::systemMenuTextColour()
+{
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
+}
+
+wxColour wxutil::systemMenuBarBGColour()
+{
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
+}
+
+wxColour wxutil::lightColour(const wxColour& colour, float percent)
+{
+	if (percent == 0)
+	{
+		return colour;
 	}
 
-	// Create wxImage
-	return { width, height, rgb_data, alpha_data, false };
+	// Convert to HSL
+	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
+
+	// Increase luminance
+	hsl.l += static_cast<float>((percent * 5.0) / 100.0);
+	if (hsl.l > 1.0)
+		hsl.l = 1.0;
+
+	ColRGBA rgb = hsl.asRGB();
+	return { rgb.r, rgb.g, rgb.b };
+}
+
+wxColour wxutil::darkColour(const wxColour& colour, float percent)
+{
+	if (percent == 0)
+	{
+		return colour;
+	}
+
+	// Convert to HSL
+	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
+
+	// Decrease luminance
+	hsl.l -= static_cast<float>((percent * 5.0) / 100.0);
+	if (hsl.l < 0)
+		hsl.l = 0;
+
+	ColRGBA rgb = hsl.asRGB();
+	return { rgb.r, rgb.g, rgb.b };
 }
