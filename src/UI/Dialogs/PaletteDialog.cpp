@@ -35,7 +35,6 @@
 #include "General/UI.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/WxUtils.h"
-#include "Utility/ColRGBA.h"
 
 using namespace slade;
 

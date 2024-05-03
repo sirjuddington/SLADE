@@ -1,7 +1,6 @@
 #pragma once
 
 #include "TextEditor/TextLanguage.h"
-#include "Utility/ColRGBA.h"
 
 namespace slade
 {

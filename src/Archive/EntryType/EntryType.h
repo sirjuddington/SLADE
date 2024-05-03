@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Utility/ColRGBA.h"
 #include "Utility/PropertyList.h"
 
 namespace slade

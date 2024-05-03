@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "PaletteCanvas.h"
 #include "Graphics/Palette/Palette.h"
-#include "Utility/ColRGBA.h"
 
 using namespace slade;
 

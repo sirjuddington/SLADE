@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Args.h"
-#include "Utility/ColRGBA.h"
 
 namespace slade
 {
