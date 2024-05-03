@@ -77,6 +77,7 @@ using u64 = uint64_t;
 #include "General/Log.h"
 #include "Utility/MemChunk.h"
 #include "OpenGL/GLHeaders.h"
+#include "Utility/ColRGBA.h"
 // clang-format on
 
 #endif // __MAIN_H__

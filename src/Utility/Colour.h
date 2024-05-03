@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ColRGBA.h"
-
 namespace slade
 {
 // ColHSL: Represents a colour in HSL format, generally used for calculations

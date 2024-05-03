@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Geometry/RectFwd.h"
-#include "Utility/ColRGBA.h"
 
 // Forward declarations
 namespace slade

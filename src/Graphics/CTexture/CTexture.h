@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utility/ColRGBA.h"
-
 namespace slade
 {
 class SImage;

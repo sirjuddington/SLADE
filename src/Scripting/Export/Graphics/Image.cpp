@@ -33,7 +33,6 @@
 #include "General/Misc.h"
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
-#include "Utility/ColRGBA.h"
 #include "thirdparty/sol/sol.hpp"
 
 using namespace slade;

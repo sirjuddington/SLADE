@@ -9,7 +9,6 @@
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Scripting/Lua.h"
-#include "Utility/ColRGBA.h"
 #include "thirdparty/sol/sol.hpp"
 
 using namespace slade;

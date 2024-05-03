@@ -39,7 +39,6 @@
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
-#include "Utility/ColRGBA.h"
 #include "Utility/MathStuff.h"
 #include <glm/ext/matrix_transform.hpp>
 

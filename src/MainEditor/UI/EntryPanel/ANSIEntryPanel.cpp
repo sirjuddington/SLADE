@@ -37,7 +37,6 @@
 #include "Archive/ArchiveManager.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "Utility/CodePages.h"
-#include "Utility/ColRGBA.h"
 
 using namespace slade;
 
