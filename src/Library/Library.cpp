@@ -192,7 +192,7 @@ void library::setArchiveLastOpenedTime(int64_t archive_id, time_t last_opened)
 		if (auto sql = db::cacheQuery(
 				"lib_set_archive_last_opened", "UPDATE archive_file SET last_opened = ? WHERE id = ?", true))
 		{
-			sql->bind(1, last_opened);
+			sql->bindDateTime(1, last_opened);
 			sql->bind(2, archive_id);
 			sql->exec();
 			sql->reset();

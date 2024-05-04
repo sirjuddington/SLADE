@@ -158,8 +158,8 @@ int64_t ArchiveFileRow::insert()
 		sql->bind(2, size);
 		sql->bind(3, hash);
 		sql->bind(4, format_id);
-		sql->bind(5, last_opened);
-		sql->bind(6, last_modified);
+		sql->bindDateTime(5, last_opened);
+		sql->bindDateTime(6, last_modified);
 		sql->bind(7, parent_id);
 
 		if (sql->exec() > 0)
@@ -195,8 +195,8 @@ bool ArchiveFileRow::update() const
 		sql->bind(2, size);
 		sql->bind(3, hash);
 		sql->bind(4, format_id);
-		sql->bind(5, last_opened);
-		sql->bind(6, last_modified);
+		sql->bindDateTime(5, last_opened);
+		sql->bindDateTime(6, last_modified);
 		sql->bind(7, parent_id);
 		sql->bind(8, id);
 

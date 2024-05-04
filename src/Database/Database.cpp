@@ -214,7 +214,7 @@ bool beginSession()
 								   "version_revision, version_beta) "
 								   "VALUES (?,?,?,?,?,?)" };
 
-		sql_new_session.bind(1, datetime::now());
+		sql_new_session.bindDateTime(1, datetime::now());
 		sql_new_session.bind(2); // NULL closed time
 		sql_new_session.bind(3, static_cast<int32_t>(app::version().major));
 		sql_new_session.bind(4, static_cast<int32_t>(app::version().minor));
@@ -247,7 +247,7 @@ bool endSession()
 	try
 	{
 		Statement sql_close_session{ *connectionRW(), "UPDATE session SET closed_time = ? WHERE id = ?" };
-		sql_close_session.bind(1, datetime::now());
+		sql_close_session.bindDateTime(1, datetime::now());
 		sql_close_session.bind(2, session_id);
 		sql_close_session.exec();
 
