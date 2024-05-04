@@ -38,7 +38,7 @@ find_package(OpenGL REQUIRED)
 find_package(SFML COMPONENTS system audio window network CONFIG REQUIRED)
 find_package(glm REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
-find_package(xxHash CONFIG REQUIRED)
+#find_package(xxHash CONFIG REQUIRED)
 
 
 # Include Search Paths ---------------------------------------------------------
@@ -101,7 +101,7 @@ target_link_libraries(slade
 	sfml-window
 	glm::glm
 	unofficial::sqlite3::sqlite3
-	xxHash::xxhash
+#	xxHash::xxhash
 )
 
 if (NOT NO_LUA)

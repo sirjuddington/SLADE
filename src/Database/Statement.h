@@ -24,7 +24,7 @@ public:
 	void bind(int index) { SQLite::Statement::bind(index); }
 
 	// Needed to avoid ambiguous call error on some systems for time_t
-	void bindDateTime(int index, time_t value) { SQLite::Statement::bind(index, value); }
+	void bindDateTime(int index, time_t value) { SQLite::Statement::bind(index, static_cast<int64_t>(value)); }
 
 	void bindNoCopy(int index, const string& value) { SQLite::Statement::bindNoCopy(index, value); }
 	void bindNoCopy(int index, const char* value) { SQLite::Statement::bindNoCopy(index, value); }

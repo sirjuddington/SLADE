@@ -36,9 +36,9 @@
 #include "App.h"
 #include "MD5.h"
 #include "StringUtils.h"
+#include "thirdparty/xxhash/xxhash.h"
 #include <filesystem>
 #include <fstream>
-#include <xxhash.h>
 
 using namespace slade;
 namespace fs = std::filesystem;

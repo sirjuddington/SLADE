@@ -35,7 +35,7 @@
 #include "FileUtils.h"
 #include "General/Misc.h"
 #include "MD5.h"
-#include <xxhash.h>
+#include "thirdparty/xxhash/xxhash.h"
 
 using namespace slade;
 

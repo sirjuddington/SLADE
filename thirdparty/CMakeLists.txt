@@ -24,6 +24,7 @@ file(GLOB_RECURSE EXTERNAL_SOURCES
 	lzma/C/LzmaDec.c
 	glad/src/*.c
 	libdrawtext/*.c
+	xxhash/xxhash.c
 	${DUMB_SOURCES}
 	${SLADE_HEADERS}
 	)
