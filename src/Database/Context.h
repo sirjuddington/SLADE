@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Statement.h"
+#include <thread>
 
 namespace SQLite
 {

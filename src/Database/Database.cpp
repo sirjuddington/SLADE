@@ -43,8 +43,8 @@
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include "thirdparty/sqlitecpp/sqlite3/sqlite3.h"
 #include <SQLiteCpp/Database.h>
+#include <sqlite3.h>
 
 using namespace slade;
 

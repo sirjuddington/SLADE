@@ -229,7 +229,7 @@ void SDataViewCtrl::appendColumnToggleItem(wxMenu& menu, int col_model) const
 // -----------------------------------------------------------------------------
 void SDataViewCtrl::toggleColumnVisibility(int col_model, string_view state_prop) const
 {
-	auto* column = GetColumn(GetModelColumnIndex(col_model));
+	auto* column = GetColumn(modelColumnIndex(col_model));
 
 	column->SetHidden(!column->IsHidden());
 
@@ -238,7 +238,7 @@ void SDataViewCtrl::toggleColumnVisibility(int col_model, string_view state_prop
 }
 
 // -----------------------------------------------------------------------------
-// Sets [column]'s [width]
+// Sets [column]'s [width] (column index in view)
 // -----------------------------------------------------------------------------
 void SDataViewCtrl::setColumnWidth(wxDataViewColumn* column, int width) const
 {
@@ -246,6 +246,29 @@ void SDataViewCtrl::setColumnWidth(wxDataViewColumn* column, int width) const
 		return;
 
 	column->SetWidth(column == lastVisibleColumn() ? 0 : width);
+}
+
+// -----------------------------------------------------------------------------
+// Sets [col_model]'s [width] (column index in model)
+// -----------------------------------------------------------------------------
+void SDataViewCtrl::setColumnWidth(int col_model, int width) const
+{
+	setColumnWidth(GetColumn(modelColumnIndex(col_model)), width);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the index of the column for model column index [model_column]
+// -----------------------------------------------------------------------------
+int SDataViewCtrl::modelColumnIndex(int model_column) const
+{
+	const int count = GetColumnCount();
+	for (int index = 0; index < count; index++)
+	{
+		wxDataViewColumn* column = GetColumn(index);
+		if (column->GetModelColumn() == model_column)
+			return index;
+	}
+	return wxNOT_FOUND;
 }
 
 #ifdef __WXMSW__

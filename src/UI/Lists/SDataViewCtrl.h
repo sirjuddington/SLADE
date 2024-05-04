@@ -20,10 +20,8 @@ public:
 	void appendColumnToggleItem(wxMenu& menu, int col_model) const;
 	void toggleColumnVisibility(int col_model, string_view state_prop) const;
 	void setColumnWidth(wxDataViewColumn* column, int width) const;
-	void setColumnWidth(int col_model, int width) const
-	{
-		setColumnWidth(GetColumn(GetModelColumnIndex(col_model)), width);
-	}
+	void setColumnWidth(int col_model, int width) const;
+	int  modelColumnIndex(int model_column) const;
 
 protected:
 	mutable std::array<int, 50> column_widths_; // Doubt we'll ever need more than 50 columns

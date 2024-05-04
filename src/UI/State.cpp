@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "State.h"
 #include "Database/Database.h"
+#include "Database/DbUtils.h"
 #include "Database/Statement.h"
 #include "General/UI.h"
 #include "Utility/Named.h"

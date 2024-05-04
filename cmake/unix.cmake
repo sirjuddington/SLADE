@@ -182,6 +182,7 @@ target_link_libraries(slade
 	${MPG123_LIBRARIES}
 	glm::glm
 	sqlite3
+	xxhash
 )
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)

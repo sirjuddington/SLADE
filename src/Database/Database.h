@@ -27,15 +27,6 @@ int64_t sessionId();
 bool    init();
 void    close();
 void    migrateConfigs();
-
-
-template<typename T> bool rowExists(SQLite::Database& connection, string_view table_name, string_view col_name, T value)
-{
-	Statement sql(connection, fmt::format("SELECT * FROM {} WHERE {} = ?", table_name, col_name));
-	sql.bind(1, value);
-	return sql.executeStep();
-}
-
 } // namespace slade::database
 
 // Shortcut alias for database namespace

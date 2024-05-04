@@ -102,7 +102,7 @@ namespace ui
 
 		wxDataViewColumn* modelColumn(LibraryViewModel::Column column) const
 		{
-			return list_archives_->GetColumn(list_archives_->GetModelColumnIndex(static_cast<int>(column)));
+			return list_archives_->GetColumn(list_archives_->modelColumnIndex(static_cast<int>(column)));
 		}
 	};
 } // namespace ui
