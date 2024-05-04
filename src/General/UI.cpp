@@ -32,11 +32,14 @@
 #include "Main.h"
 #include "UI.h"
 #include "App.h"
+#include "Database/Context.h"
+#include "Database/Transaction.h"
 #include "General/Console.h"
-#include "General/Database.h"
 #include "UI/SplashWindow.h"
 #include "UI/State.h"
 #include "Utility/StringUtils.h"
+#include <SQLiteCpp/Column.h>
+#include <SQLiteCpp/Exception.h>
 
 using namespace slade;
 

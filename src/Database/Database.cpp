@@ -1,15 +1,12 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2020 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    Database.cpp
-// Description: Functions for working with the SLADE program database.
-//              The Context class keeps connections open to a database, since
-//              opening a new connection is expensive. It can also keep cached
-//              sql queries (for frequent reuse)
+// Description: Functions for working with the SLADE program database
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -38,6 +35,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Context.h"
 #include "General/Console.h"
 #include "General/UI.h"
 #include "UI/State.h"
@@ -46,7 +44,7 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "thirdparty/sqlitecpp/sqlite3/sqlite3.h"
-#include <shared_mutex>
+#include <SQLiteCpp/Database.h>
 
 using namespace slade;
 
@@ -58,182 +56,9 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::database
 {
-Context           db_global;
-int               db_version = 1;
-int64_t           session_id = -1;
-vector<Context*>  thread_contexts;
-std::shared_mutex mutex_thread_contexts;
+int     db_version = 1;
+int64_t session_id = -1;
 } // namespace slade::database
-
-
-// -----------------------------------------------------------------------------
-//
-// database::Transaction Class Functions
-//
-// -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// Begins the transaction if there are no currently active transactions on the
-// connection
-// -----------------------------------------------------------------------------
-void database::Transaction::beginIfNoActiveTransaction()
-{
-	if (!isTransactionActive(connection_))
-		begin();
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// database::Context Class Functions
-//
-// -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// Context class constructor
-// -----------------------------------------------------------------------------
-database::Context::Context(string_view file_path)
-{
-	thread_id_ = std::this_thread::get_id();
-
-	if (!file_path.empty())
-		open(file_path);
-}
-
-// -----------------------------------------------------------------------------
-// Context class destructor
-// -----------------------------------------------------------------------------
-database::Context::~Context()
-{
-	close();
-
-	for (int i = static_cast<int>(thread_contexts.size()) - 1; i >= 0; i--)
-		if (thread_contexts[i] == this)
-			thread_contexts.erase(thread_contexts.begin() + i);
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the context was created on the current thread
-// -----------------------------------------------------------------------------
-bool database::Context::isForThisThread() const
-{
-	return thread_id_ == std::this_thread::get_id();
-}
-
-// -----------------------------------------------------------------------------
-// Opens connections to the database file at [file_path].
-// Returns false if any existing connections couldn't be closed, true otherwise
-// -----------------------------------------------------------------------------
-bool database::Context::open(string_view file_path)
-{
-	if (!close())
-		return false;
-
-	file_path_     = file_path;
-	connection_ro_ = std::make_unique<SQLite::Database>(file_path_, SQLite::OPEN_READONLY, 100);
-	connection_rw_ = std::make_unique<SQLite::Database>(file_path_, SQLite::OPEN_READWRITE, 100);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Closes the context's connections to its database
-// -----------------------------------------------------------------------------
-bool database::Context::close()
-{
-	if (!connection_ro_)
-		return true;
-
-	try
-	{
-		cached_queries_.clear();
-		connection_ro_ = nullptr;
-		connection_rw_ = nullptr;
-	}
-	catch (std::exception& ex)
-	{
-		log::error("Error closing connections for database {}: {}", file_path_, ex.what());
-		return false;
-	}
-
-	file_path_.clear();
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the cached query [id] or nullptr if not found
-// -----------------------------------------------------------------------------
-database::Statement* database::Context::cachedQuery(string_view id)
-{
-	auto i = cached_queries_.find(id);
-	if (i != cached_queries_.end())
-	{
-		i->second->tryReset();
-		return i->second.get();
-	}
-
-	return nullptr;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the cached query [id] if it exists, otherwise creates a new cached
-// query from the given [sql] string and returns it.
-// If [writes] is true, the created query will use the read+write connection.
-// -----------------------------------------------------------------------------
-database::Statement* database::Context::cacheQuery(string_view id, string_view sql, bool writes)
-{
-	// Check for existing cached query [id]
-	auto i = cached_queries_.find(id);
-	if (i != cached_queries_.end())
-	{
-		i->second->tryReset();
-		return i->second.get();
-	}
-
-	// Check connection
-	if (!connection_ro_)
-		return nullptr;
-
-	// Create & add cached query
-	auto& db        = writes ? *connection_rw_ : *connection_ro_;
-	auto  statement = std::make_unique<Statement>(db, sql);
-	auto  ptr       = statement.get();
-	cached_queries_.emplace(id, std::move(statement));
-
-	return ptr;
-}
-
-// -----------------------------------------------------------------------------
-// Executes an sql [query] on the database.
-// Returns the number of rows modified/created by the query, or 0 if the context
-// is not connected
-// -----------------------------------------------------------------------------
-int database::Context::exec(const string& query) const
-{
-	return connection_rw_ ? connection_rw_->exec(query) : 0;
-}
-int database::Context::exec(const char* query) const
-{
-	return connection_rw_ ? connection_rw_->exec(query) : 0;
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if a row exists in [table_name] where [id_col] = [id].
-// The column must be an integer column for this to work correctly
-// -----------------------------------------------------------------------------
-bool database::Context::rowIdExists(string_view table_name, int64_t id, string_view id_col) const
-{
-	auto query = fmt::format("SELECT EXISTS(SELECT 1 FROM {} WHERE {} = {})", table_name, id_col, id);
-	return connection_ro_->execAndGet(query).getInt() > 0;
-}
-
-// -----------------------------------------------------------------------------
-// Begins a transaction and returns a Transaction object to encapsulate it
-// -----------------------------------------------------------------------------
-database::Transaction database::Context::beginTransaction(bool write) const
-{
-	return { write ? connection_rw_.get() : connection_ro_.get(), true };
-}
 
 
 // -----------------------------------------------------------------------------
@@ -241,7 +66,6 @@ database::Transaction database::Context::beginTransaction(bool write) const
 // Database Namespace Functions
 //
 // -----------------------------------------------------------------------------
-
 namespace slade::database
 {
 void migrateWindowLayout(string_view filename, const char* window_id)
@@ -367,11 +191,11 @@ bool updateDatabase(int prev_version)
 	log::info("Updating database from v{} to v{}...", prev_version, db_version);
 
 	// Create missing tables
-	if (!createMissingTables(*db_global.connectionRW()))
+	if (!createMissingTables(*connectionRW()))
 		return false;
 
 	// Update db_info.version
-	db_global.exec(fmt::format("UPDATE db_info SET version = {}", db_version));
+	exec(fmt::format("UPDATE db_info SET version = {}", db_version));
 
 	// Done
 	log::info("Database updated to v{} successfully", db_version);
@@ -385,7 +209,7 @@ bool beginSession()
 {
 	try
 	{
-		Statement sql_new_session{ *db_global.connectionRW(),
+		Statement sql_new_session{ *connectionRW(),
 								   "INSERT INTO session (opened_time, closed_time, version_major, version_minor, "
 								   "version_revision, version_beta) "
 								   "VALUES (?,?,?,?,?,?)" };
@@ -403,7 +227,7 @@ bool beginSession()
 			return false;
 		}
 
-		session_id = db_global.connectionRO()->execAndGet("SELECT MAX(id) FROM session").getInt64();
+		session_id = connectionRO()->execAndGet("SELECT MAX(id) FROM session").getInt64();
 
 		return true;
 	}
@@ -422,7 +246,7 @@ bool endSession()
 {
 	try
 	{
-		Statement sql_close_session{ *db_global.connectionRW(), "UPDATE session SET closed_time = ? WHERE id = ?" };
+		Statement sql_close_session{ *connectionRW(), "UPDATE session SET closed_time = ? WHERE id = ?" };
 		sql_close_session.bind(1, datetime::now());
 		sql_close_session.bind(2, session_id);
 		sql_close_session.exec();
@@ -438,34 +262,6 @@ bool endSession()
 	}
 }
 } // namespace slade::database
-
-// -----------------------------------------------------------------------------
-// Returns the 'global' database connection context for this thread.
-//
-// If this isn't being called from the main thread, it will first look for a
-// context that has previously been registered for the current thread via
-// registerThreadContext. If no context has been registered for the thread, the
-// main thread's context will be returned and a warning logged
-// -----------------------------------------------------------------------------
-database::Context& database::global()
-{
-	// Check if we are not on the main thread
-	if (std::this_thread::get_id() != app::mainThreadId())
-	{
-		std::shared_lock lock(mutex_thread_contexts);
-
-		// Find context for this thread
-		for (auto* thread_context : thread_contexts)
-			if (thread_context->isForThisThread())
-				return *thread_context;
-
-		// No context available for this thread, warn and use main thread context
-		// (should this throw an exception?)
-		log::warning("A non-main thread is requesting the global database connection context");
-	}
-
-	return db_global;
-}
 
 // -----------------------------------------------------------------------------
 // Executes an sql [query] on the database using the given [connection].
@@ -504,34 +300,46 @@ bool database::viewExists(string_view view_name, const SQLite::Database& connect
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if a row exists in [table_name] where [id_col] = [id].
+// The column must be an integer column for this to work correctly
+// -----------------------------------------------------------------------------
+bool database::rowIdExists(string_view table_name, int64_t id, string_view id_col)
+{
+	return global().rowIdExists(table_name, id, id_col);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the cached query [id] if it exists, otherwise creates a new cached
+// query from the given [sql] string and returns it.
+// If [writes] is true, the created query will use the read+write connection.
+// -----------------------------------------------------------------------------
+database::Statement* database::cacheQuery(string_view id, string_view sql, bool writes)
+{
+	return global().cacheQuery(id, sql, writes);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the read-only connection to the database (for the calling thread)
+// -----------------------------------------------------------------------------
+SQLite::Database* database::connectionRO()
+{
+	return global().connectionRO();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the read+write connection to the database (for the calling thread)
+// -----------------------------------------------------------------------------
+SQLite::Database* database::connectionRW()
+{
+	return global().connectionRW();
+}
+
+// -----------------------------------------------------------------------------
 // Returns true if the program database file exists
 // -----------------------------------------------------------------------------
 bool database::fileExists()
 {
 	return fileutil::fileExists(app::path("slade.sqlite", app::Dir::User));
-}
-
-// -----------------------------------------------------------------------------
-// Sets [context] as the database connection context to use for the current
-// thread when calling database::global()
-// -----------------------------------------------------------------------------
-void database::registerThreadContext(Context& context)
-{
-	std::unique_lock lock(mutex_thread_contexts);
-
-	thread_contexts.push_back(&context);
-}
-
-// -----------------------------------------------------------------------------
-// Clears all contexts registered for the current thread
-// -----------------------------------------------------------------------------
-void database::deregisterThreadContexts()
-{
-	std::unique_lock lock(mutex_thread_contexts);
-
-	for (int i = static_cast<int>(thread_contexts.size()) - 1; i >= 0; i--)
-		if (thread_contexts[i]->isForThisThread())
-			thread_contexts.erase(thread_contexts.begin() + i);
 }
 
 // -----------------------------------------------------------------------------
@@ -580,7 +388,7 @@ bool database::init()
 	}
 
 	// Open global connections to database (for main thread usage only)
-	if (!db_global.open(db_path))
+	if (!global().open(db_path))
 	{
 		global::error = "Unable to open global database connections";
 		return false;
@@ -591,7 +399,7 @@ bool database::init()
 		migrateConfigs();
 
 	// Update the database if needed
-	auto existing_version = db_global.connectionRO()->execAndGet("SELECT version FROM db_info").getInt();
+	auto existing_version = connectionRO()->execAndGet("SELECT version FROM db_info").getInt();
 	if (existing_version < db_version)
 		return updateDatabase(existing_version);
 
@@ -608,8 +416,8 @@ bool database::init()
 void database::close()
 {
 	endSession();
-	db_global.vacuum(); // Shrink size on disk
-	db_global.close();
+	global().vacuum(); // Shrink size on disk
+	global().close();
 }
 
 // -----------------------------------------------------------------------------
@@ -705,6 +513,13 @@ void database::migrateConfigs()
 #undef MIGRATE_CVAR_INT
 #undef MIGRATE_CVAR_STRING
 }
+
+
+// -----------------------------------------------------------------------------
+//
+// Console Commands
+//
+// -----------------------------------------------------------------------------
 
 
 void           c_db(const vector<string>& args);

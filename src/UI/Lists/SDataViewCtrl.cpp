@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2022 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -108,7 +108,7 @@ SDataViewCtrl::SDataViewCtrl(wxWindow* parent, long style) : wxDataViewCtrl(pare
 				switch (e.GetKeyCode())
 				{
 				case WXK_DOWN: to_row = GetRowByItem(GetCurrentItem()) + 1; break;
-				case WXK_UP: to_row = GetRowByItem(GetCurrentItem()) - 1; break;
+				case WXK_UP:   to_row = GetRowByItem(GetCurrentItem()) - 1; break;
 				default:
 					// Not up or down arrow, do default handling
 					e.Skip();

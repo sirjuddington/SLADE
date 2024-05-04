@@ -5,8 +5,9 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    DateTime.cpp
-// Description: Date/Time utility functions
+// Filename:    Transaction.cpp
+// Description: Encapsulates a single SQL transaction, ensuring it's closed off
+//              properly etc. via RAII
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -30,59 +31,93 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "DateTime.h"
-#include "thirdparty/fmt/include/fmt/chrono.h"
-#include <chrono>
-#include <ctime>
+#include "Transaction.h"
+#include "Database.h"
+#include <SQLiteCpp/Database.h>
 
 using namespace slade;
-using namespace datetime;
+using namespace database;
 
 
 // -----------------------------------------------------------------------------
 //
-// DateTime Namespace Functions
+// Transaction Class Functions
 //
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
-// Returns the current time (local)
+// Transaction class constructor
 // -----------------------------------------------------------------------------
-time_t datetime::now()
+Transaction::Transaction(SQLite::Database* connection, bool begin) : connection_{ connection }, has_begun_{ begin }
 {
-	using clock = std::chrono::system_clock;
-	return clock::to_time_t(clock::now());
+	if (begin)
+		connection->exec("BEGIN");
 }
 
 // -----------------------------------------------------------------------------
-// Returns [time_utc] in the local timezone
+// Transaction class move constructor
 // -----------------------------------------------------------------------------
-time_t datetime::toLocalTime(time_t time_utc)
+Transaction::Transaction(Transaction&& other) noexcept :
+	connection_{ other.connection_ },
+	has_begun_{ other.has_begun_ },
+	has_ended_{ other.has_ended_ }
 {
-	return mktime(std::localtime(&time_utc));
+	other.connection_ = nullptr;
+	other.has_begun_  = true;
+	other.has_ended_  = true;
 }
 
 // -----------------------------------------------------------------------------
-// Returns [time_local] in the UTC timezone
+// Transaction class destructor
 // -----------------------------------------------------------------------------
-time_t datetime::toUniversalTime(time_t time_local)
+Transaction::~Transaction()
 {
-	return mktime(std::gmtime(&time_local));
+	if (has_begun_ && !has_ended_)
+		connection_->exec("ROLLBACK");
 }
 
 // -----------------------------------------------------------------------------
-// Returns [time] as a formatted string
+// Begins the transaction if it isn't active already
 // -----------------------------------------------------------------------------
-string datetime::toString(time_t time, Format format, string_view custom_format)
+void Transaction::begin()
 {
-	auto as_tm = *std::localtime(&time);
+	if (has_begun_)
+		return;
 
-	switch (format)
-	{
-	case Format::ISO:    return fmt::format("{:%F %T}", as_tm);
-	case Format::Local:  return fmt::format("{:%c}", as_tm);
-	case Format::Custom: return fmt::format(fmt::format("{{:{}}}", custom_format), as_tm);
-	}
+	connection_->exec("BEGIN");
+	has_begun_ = true;
+}
 
-	return {};
+// -----------------------------------------------------------------------------
+// Begins the transaction if there are no currently active transactions on the
+// connection
+// -----------------------------------------------------------------------------
+void Transaction::beginIfNoActiveTransaction()
+{
+	if (!isTransactionActive(connection_))
+		begin();
+}
+
+// -----------------------------------------------------------------------------
+// Commits the transaction
+// -----------------------------------------------------------------------------
+void Transaction::commit()
+{
+	if (!has_begun_ || has_ended_)
+		return;
+
+	connection_->exec("COMMIT");
+	has_ended_ = true;
+}
+
+// -----------------------------------------------------------------------------
+// Rolls the transaction back
+// -----------------------------------------------------------------------------
+void Transaction::rollback()
+{
+	if (!has_begun_ || has_ended_)
+		return;
+
+	connection_->exec("ROLLBACK");
+	has_ended_ = true;
 }

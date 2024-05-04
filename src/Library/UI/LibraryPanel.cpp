@@ -5,7 +5,8 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Database.h"
+#include "Database/Context.h"
+#include "Database/Database.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
 #include "General/UI.h"
@@ -19,6 +20,7 @@
 #include "UI/WxUtils.h"
 #include "Utility/DateTime.h"
 #include "Utility/StringUtils.h"
+#include <SQLiteCpp/Column.h>
 
 using namespace slade;
 using namespace ui;

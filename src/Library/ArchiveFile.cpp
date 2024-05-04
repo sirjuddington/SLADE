@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2020 Simon Judd
+// Copyright(C) 2008 - 2024 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,10 +32,12 @@
 #include "Main.h"
 #include "ArchiveFile.h"
 #include "ArchiveEntry.h"
-#include "General/Database.h"
+#include "Database/Context.h"
+#include "Database/Database.h"
 #include "Library.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
+#include <SQLiteCpp/Database.h>
 
 using namespace slade;
 using namespace library;
