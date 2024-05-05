@@ -37,16 +37,19 @@ public:
 
 	void push();
 
-	void draw(PointSpriteType type, const View* view, unsigned first = 0, unsigned count = 0) const;
+	void draw(PointSpriteType type, const View* view, unsigned count = 0) const;
 
 private:
-	vector<PointSprite> sprites_;
-	unsigned            vao_ = 0;
-	Buffer<PointSprite> buffer_;
+	vector<PointSprite>           sprites_;
+	unsigned                      vao_ = 0;
+	Buffer<PointSprite>           buffer_;
+	unique_ptr<Buffer<glm::vec2>> buffer_square_;
 
 	glm::vec4 colour_;
 	float     radius_        = 1.0f;
 	float     outline_width_ = 0.05f; // For outline types
 	float     fill_opacity_  = 0.0f;  // For outline types
+
+	void initVAO();
 };
 } // namespace slade::gl

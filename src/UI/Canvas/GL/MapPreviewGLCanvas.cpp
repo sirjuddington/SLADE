@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapPreviewGLCanvas.h"
-#include "Archive/EntryType/EntryType.h"
 #include "General/ColourConfiguration.h"
 #include "General/MapPreviewData.h"
 #include "OpenGL/LineBuffer.h"

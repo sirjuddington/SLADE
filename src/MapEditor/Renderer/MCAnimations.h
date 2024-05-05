@@ -181,7 +181,6 @@ public:
 	~MCAHilightFade() override = default;
 
 	bool update(long time) override;
-	void draw() override;
 	void draw(gl::draw2d::Context& dc) override;
 
 private:

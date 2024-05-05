@@ -40,7 +40,7 @@ public:
 	static unsigned vertexTexture(bool overlay = false);
 	float           vertexRadius(float scale = 1.0f) const;
 	void            renderVertices(float alpha = 1.0f);
-	void            renderVertexHilight(int index, float fade) const;
+	void            renderVertexHilight(gl::draw2d::Context& dc, int index, float fade) const;
 	void renderVertexSelection(gl::draw2d::Context& dc, const ItemSelection& selection, float fade = 1.0f) const;
 
 	// Lines

@@ -556,18 +556,6 @@ bool MCAHilightFade::update(long time)
 // -----------------------------------------------------------------------------
 // Draws the animation
 // -----------------------------------------------------------------------------
-void MCAHilightFade::draw()
-{
-	switch (object_->objType())
-	{
-	case MapObject::Type::Line:   break; // renderer_->renderLineHilight(object_->index(), fade_); break;
-	case MapObject::Type::Sector: break; // renderer_->renderFlatHilight(object_->index(), fade_); break;
-	case MapObject::Type::Thing:  break; // renderer_->renderThingHilight(object_->index(), fade_); break;
-	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->index(), fade_); break;
-	default:                      break;
-	}
-}
-
 void MCAHilightFade::draw(gl::draw2d::Context& dc)
 {
 	switch (object_->objType())
@@ -575,7 +563,7 @@ void MCAHilightFade::draw(gl::draw2d::Context& dc)
 	case MapObject::Type::Line:   renderer_->renderLineHilight(dc, object_->index(), fade_); break;
 	case MapObject::Type::Sector: renderer_->renderFlatHilight(dc, object_->index(), fade_); break;
 	case MapObject::Type::Thing:  renderer_->renderThingHilight(dc, object_->index(), fade_, false); break;
-	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->index(), fade_); break;
+	case MapObject::Type::Vertex: renderer_->renderVertexHilight(dc, object_->index(), fade_); break;
 	default:                      break;
 	}
 }

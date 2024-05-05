@@ -27,7 +27,7 @@ namespace gl
 		void setTexture(unsigned texture, bool sprite);
 		void setShadowOpacity(float opacity) { shadow_opacity_ = opacity; }
 
-			void add(float x, float y, float angle, float alpha = 1.0f);
+		void add(float x, float y, float angle, float alpha = 1.0f);
 
 		void push();
 
@@ -44,7 +44,9 @@ namespace gl
 			glm::vec2 direction;
 			float     alpha;
 			ThingInstance(const glm::vec2& pos, const glm::vec2& dir, float alpha) :
-				position{ pos }, direction{ dir }, alpha{ alpha }
+				position{ pos },
+				direction{ dir },
+				alpha{ alpha }
 			{
 			}
 		};

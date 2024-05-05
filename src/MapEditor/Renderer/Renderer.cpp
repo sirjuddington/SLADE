@@ -975,7 +975,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 
 		// Hilight if needed
 		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
-			renderer_2d_->renderVertexHilight(context_->hilightItem().index, anim_flash_level_);
+			renderer_2d_->renderVertexHilight(dc, context_->hilightItem().index, anim_flash_level_);
 	}
 	else if (context_->editMode() == Mode::Lines)
 	{

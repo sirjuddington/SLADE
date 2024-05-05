@@ -21,21 +21,21 @@ void loadShaders()
 {
 	shader_ps_textured = std::make_unique<Shader>("ps_textured");
 	shader_ps_textured->define("TEXTURED");
-	shader_ps_textured->loadResourceEntries("point_sprite.vert", "default2d.frag", "point_sprite.geom");
+	shader_ps_textured->loadResourceEntries("point_sprite.vert", "default2d.frag");
 
 	shader_ps_circle = std::make_unique<Shader>("ps_circle");
-	shader_ps_circle->loadResourceEntries("point_sprite.vert", "circle.frag", "point_sprite.geom");
+	shader_ps_circle->loadResourceEntries("point_sprite.vert", "circle.frag");
 
 	shader_ps_circle_outline = std::make_unique<Shader>("ps_circle_outline");
 	shader_ps_circle_outline->define("OUTLINE");
-	shader_ps_circle_outline->loadResourceEntries("point_sprite.vert", "circle.frag", "point_sprite.geom");
+	shader_ps_circle_outline->loadResourceEntries("point_sprite.vert", "circle.frag");
 
 	shader_ps_rsquare = std::make_unique<Shader>("ps_rsquare");
-	shader_ps_rsquare->loadResourceEntries("point_sprite.vert", "rounded_square.frag", "point_sprite.geom");
+	shader_ps_rsquare->loadResourceEntries("point_sprite.vert", "rounded_square.frag");
 
 	shader_ps_rsquare_outline = std::make_unique<Shader>("ps_rsquare_outline");
 	shader_ps_rsquare_outline->define("OUTLINE");
-	shader_ps_rsquare_outline->loadResourceEntries("point_sprite.vert", "rounded_square.frag", "point_sprite.geom");
+	shader_ps_rsquare_outline->loadResourceEntries("point_sprite.vert", "rounded_square.frag");
 }
 
 Shader* pointSpriteShader(PointSpriteType type)
@@ -45,31 +45,13 @@ Shader* pointSpriteShader(PointSpriteType type)
 
 	switch (type)
 	{
-	case PointSpriteType::Textured: return shader_ps_textured.get();
-	case PointSpriteType::Circle: return shader_ps_circle.get();
-	case PointSpriteType::CircleOutline: return shader_ps_circle_outline.get();
-	case PointSpriteType::RoundedSquare: return shader_ps_rsquare.get();
+	case PointSpriteType::Textured:             return shader_ps_textured.get();
+	case PointSpriteType::Circle:               return shader_ps_circle.get();
+	case PointSpriteType::CircleOutline:        return shader_ps_circle_outline.get();
+	case PointSpriteType::RoundedSquare:        return shader_ps_rsquare.get();
 	case PointSpriteType::RoundedSquareOutline: return shader_ps_rsquare_outline.get();
-	default: return shader_ps_textured.get();
+	default:                                    return shader_ps_textured.get();
 	}
-}
-
-unsigned initVAO(Buffer<PointSpriteBuffer::PointSprite>& buffer)
-{
-	auto vao = createVAO();
-	bindVAO(vao);
-
-	buffer.bind();
-
-	// Position
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	// Radius
-	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	return vao;
 }
 } // namespace
 
@@ -92,13 +74,13 @@ void PointSpriteBuffer::add(const vector<glm::vec2>& positions, float radius)
 void PointSpriteBuffer::push()
 {
 	if (!vao_)
-		vao_ = initVAO(buffer_);
+		initVAO();
 
 	buffer_.upload(sprites_);
 	sprites_.clear();
 }
 
-void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned first, unsigned count) const
+void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned count) const
 {
 	if (!getContext())
 		return;
@@ -109,8 +91,8 @@ void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned fi
 
 	// Check valid parameters
 	if (count == 0)
-		count = buffer_.size() - first;
-	if (first >= buffer_.size() || first + count > buffer_.size())
+		count = buffer_.size();
+	if (count > buffer_.size())
 		return;
 
 	// Setup shader
@@ -127,6 +109,44 @@ void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned fi
 
 	// Draw
 	gl::bindVAO(vao_);
-	gl::drawArrays(Primitive::Points, first, count);
+	gl::drawArraysInstanced(Primitive::Triangles, 0, 6, count);
+	gl::bindVAO(0);
+}
+
+void PointSpriteBuffer::initVAO()
+{
+	vao_ = createVAO();
+	bindVAO(vao_);
+
+	// -------------------------------------------------------------------------
+
+	// Create+init square buffer
+	buffer_square_ = std::make_unique<Buffer<glm::vec2>>();
+	buffer_square_->bind();
+	buffer_square_->upload(vector<glm::vec2>{
+		{ -1.0f, -1.0f }, { -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, -1.0f }, { -1.0f, -1.0f } });
+
+	// Setup vertex attributes for square
+
+	// Position
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// -------------------------------------------------------------------------
+
+	// Setup vertex attributes for sprite instances
+
+	buffer_.bind();
+
+	// Position
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribDivisor(1, 1);
+
+	// Radius
+	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(2 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribDivisor(2, 1);
+
 	gl::bindVAO(0);
 }

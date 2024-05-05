@@ -341,7 +341,7 @@ void MapRenderer2D::renderVertices(float alpha)
 // -----------------------------------------------------------------------------
 // Renders the vertex hilight overlay for vertex [index]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderVertexHilight(int index, float fade) const
+void MapRenderer2D::renderVertexHilight(gl::draw2d::Context& dc, int index, float fade) const
 {
 	// Check hilight
 	auto vertex = map_->vertex(index);
@@ -352,16 +352,12 @@ void MapRenderer2D::renderVertexHilight(int index, float fade) const
 	if (!map_animate_hilight)
 		fade = 1.0f;
 
-	// Setup rendering options
-	vertices_buffer_->setColour(colourconfig::colour("map_hilight").ampf(1.0f, 1.0f, 1.0f, fade));
-	vertices_buffer_->setPointRadius(vertexRadius(1.8f + 0.6f * fade));
-	gl::setBlend(colourconfig::colDef("map_hilight").blendMode());
-
-	// Set texture
-	gl::Texture::bind(vertexTexture(true));
-
-	// Render
-	vertices_buffer_->draw(gl::PointSpriteType::Textured, view_, index, 1);
+	// Draw as point sprite
+	dc.setColourFromConfig("map_hilight", fade);
+	dc.texture            = vertexTexture(true);
+	dc.pointsprite_type   = gl::PointSpriteType::Textured;
+	dc.pointsprite_radius = 1.8f * vertexRadius();
+	dc.drawPointSprites(vector{ vertex->position() });
 }
 
 // -----------------------------------------------------------------------------
