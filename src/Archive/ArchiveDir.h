@@ -34,7 +34,7 @@ public:
 	shared_ptr<ArchiveEntry>         sharedEntry(string_view name, bool cut_ext = false) const;
 	shared_ptr<ArchiveEntry>         sharedEntry(const ArchiveEntry* entry) const;
 	unsigned                         numEntries(bool inc_subdirs = false) const;
-	int                              entryIndex(ArchiveEntry* entry, size_t startfrom = 0) const;
+	int                              entryIndex(const ArchiveEntry* entry, size_t startfrom = 0) const;
 	vector<shared_ptr<ArchiveEntry>> allEntries() const;
 	vector<shared_ptr<ArchiveDir>>   allDirectories() const;
 

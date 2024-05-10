@@ -148,10 +148,6 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	if (!text_area_->loadEntry(entry))
 		return false;
 
-	// Scroll to previous position (if any)
-	if (auto pos = entry->exProps().getIf<int>("TextPosition"))
-		text_area_->GotoPos(*pos);
-
 	// --- Attempt to determine text language ---
 	TextLanguage* tl = nullptr;
 
@@ -188,6 +184,10 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 
 	// Prevent undoing loading the entry
 	text_area_->EmptyUndoBuffer();
+
+	// Scroll to previous position (if any)
+	if (auto pos = entry->exProps().getIf<int>("TextPosition"))
+		text_area_->GotoPos(*pos);
 
 	// Update variables
 	setModified(false);
@@ -250,7 +250,13 @@ void TextEntryPanel::closeEntry()
 		return;
 
 	// Save current caret position
-	entry->exProp("TextPosition") = text_area_->GetCurrentPos();
+	auto text_pos = text_area_->GetCurrentPos();
+	if (text_pos > 0)
+		entry->exProp("TextPosition") = text_pos;
+	else
+		entry->exProps().remove("TextPosition");
+
+	EntryPanel::closeEntry();
 }
 
 // -----------------------------------------------------------------------------

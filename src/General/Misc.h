@@ -36,19 +36,5 @@ namespace misc
 	// Mass Rename
 	string massRenameFilter(const vector<string>& names);
 	void   doMassRename(vector<string>& names, string_view name_filter);
-
-	// Dialog/Window sizes
-	struct WindowInfo
-	{
-		string id;
-		int    width, height, left, top;
-		WindowInfo(string_view id, int w, int h, int l, int t) : id{ id }, width{ w }, height{ h }, left{ l }, top{ t }
-		{
-		}
-	};
-	WindowInfo getWindowInfo(string_view id);
-	void       setWindowInfo(string_view id, int width, int height, int left, int top);
-	void       readWindowInfo(Tokenizer& tz);
-	void       writeWindowInfo(wxFile& file);
 } // namespace misc
 } // namespace slade

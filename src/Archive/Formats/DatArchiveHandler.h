@@ -14,8 +14,8 @@ public:
 	void updateNamespaces(Archive& archive);
 
 	// Opening/writing
-	bool open(Archive& archive, const MemChunk& mc) override; // Open from MemChunk
-	bool write(Archive& archive, MemChunk& mc) override;      // Write to MemChunk
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override; // Open from MemChunk
+	bool write(Archive& archive, MemChunk& mc) override;                         // Write to MemChunk
 
 	// Entry addition/removal
 	shared_ptr<ArchiveEntry> addEntry(
@@ -36,8 +36,8 @@ public:
 	bool renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force = false) override;
 
 	// Detection
-	string detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir = nullptr) override;
-	string detectNamespace(Archive& archive, ArchiveEntry* entry) override;
+	string detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir = nullptr) override;
+	string detectNamespace(const Archive& archive, ArchiveEntry* entry) override;
 
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;

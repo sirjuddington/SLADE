@@ -154,9 +154,6 @@ bool ResArchiveHandler::readDirectory(
 		{
 			parent->addEntry(nlump);
 
-			// Detect entry type
-			EntryType::detectEntryType(*nlump);
-
 			// Set entry to unchanged
 			nlump->setState(EntryState::Unmodified);
 		}
@@ -168,7 +165,7 @@ bool ResArchiveHandler::readDirectory(
 // Reads res format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ResArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool ResArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -211,6 +208,14 @@ bool ResArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	ui::setSplashProgressMessage("Reading res archive data");
 	if (!readDirectory(archive, mc, dir_offset, num_lumps, archive.rootDir()))
 		return false;
+
+	// Detect maps (will detect map entry types)
+	ui::setSplashProgressMessage("Detecting maps");
+	detectMaps(archive);
+
+	// Detect all entry types
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

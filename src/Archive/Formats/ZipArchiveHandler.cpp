@@ -93,7 +93,7 @@ void ZipArchiveHandler::init(Archive& archive)
 // Reads zip data from a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchiveHandler::open(Archive& archive, string_view filename)
+bool ZipArchiveHandler::open(Archive& archive, string_view filename, bool detect_types)
 {
 	// Check the file exists
 	if (!fileutil::fileExists(filename))
@@ -162,9 +162,6 @@ bool ZipArchiveHandler::open(Archive& archive, string_view filename)
 					zip.Read(data.data(), ze_size); // Note: this is where exceedingly large files cause an exception.
 					new_entry->importMem(data.data(), static_cast<uint32_t>(ze_size));
 				}
-
-				// Determine its type
-				EntryType::detectEntryType(*new_entry);
 			}
 			else
 			{
@@ -192,6 +189,10 @@ bool ZipArchiveHandler::open(Archive& archive, string_view filename)
 	for (auto& entry : entry_list)
 		entry->setState(EntryState::Unmodified);
 
+	// Detect all entry types
+	if (detect_types)
+		archive.detectAllEntryTypes();
+
 	// Enable announcements
 	sig_blocker.unblock();
 
@@ -206,14 +207,14 @@ bool ZipArchiveHandler::open(Archive& archive, string_view filename)
 // Reads zip format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool ZipArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Write the MemChunk to a temp file
 	const auto tempfile = app::path("slade-temp-open.zip", app::Dir::Temp);
 	mc.exportFile(tempfile);
 
 	// Load the file
-	const bool success = open(archive, tempfile);
+	const bool success = open(archive, tempfile, true);
 
 	// Clean up
 	fileutil::removeFile(tempfile);
@@ -468,7 +469,7 @@ shared_ptr<ArchiveEntry> ZipArchiveHandler::addEntry(
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-MapDesc ZipArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
+MapDesc ZipArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -484,11 +485,20 @@ MapDesc ZipArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 	if (maphead->parentDir()->parent() != archive.rootDir() || maphead->parentDir()->name() != "maps")
 		return map;
 
+	// Detect map format
+	auto    format = MapFormat::Unknown;
+	Archive tempwad(ArchiveFormat::Wad);
+	tempwad.open(maphead->data(), true);
+	auto emaps = tempwad.detectMaps();
+	if (!emaps.empty())
+		format = emaps[0].format;
+
 	// Setup map info
 	map.archive = true;
 	map.head    = maphead->getShared();
 	map.end     = maphead->getShared();
 	map.name    = maphead->upperNameNoExt();
+	map.format  = format;
 
 	return map;
 }
@@ -497,7 +507,7 @@ MapDesc ZipArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<MapDesc> ZipArchiveHandler::detectMaps(Archive& archive)
+vector<MapDesc> ZipArchiveHandler::detectMaps(const Archive& archive)
 {
 	vector<MapDesc> ret;
 
@@ -518,7 +528,7 @@ vector<MapDesc> ZipArchiveHandler::detectMaps(Archive& archive)
 		// Detect map format (probably kinda slow but whatever, no better way to do it really)
 		auto    format = MapFormat::Unknown;
 		Archive tempwad(ArchiveFormat::Wad);
-		tempwad.open(entry->data());
+		tempwad.open(entry->data(), true);
 		auto emaps = tempwad.detectMaps();
 		if (!emaps.empty())
 			format = emaps[0].format;
@@ -540,7 +550,7 @@ vector<MapDesc> ZipArchiveHandler::detectMaps(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -573,7 +583,7 @@ ArchiveEntry* ZipArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ZipArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -605,7 +615,7 @@ ArchiveEntry* ZipArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ZipArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> ZipArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();

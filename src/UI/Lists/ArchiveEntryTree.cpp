@@ -44,7 +44,9 @@
 #include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
+#include "Library/ArchiveUIConfig.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include <wx/headerctrl.h>
@@ -59,25 +61,12 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-wxColour col_text_modified(0, 0, 0, 0);
-wxColour col_text_new(0, 0, 0, 0);
-wxColour col_text_locked(0, 0, 0, 0);
-#if wxCHECK_VERSION(3, 1, 6)
-std::unordered_map<string, wxBitmapBundle> icon_cache;
-#else
-std::unordered_map<string, wxIcon> icon_cache;
-#endif
-vector<int> elist_chars = {
-	'.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
-	']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
-};
+wxColour         col_text_modified(0, 0, 0, 0);
+wxColour         col_text_new(0, 0, 0, 0);
+wxColour         col_text_locked(0, 0, 0, 0);
+icons::IconCache icon_cache;
 } // namespace slade::ui
 
-CVAR(Int, elist_colsize_name_tree, 150, CVar::Save)
-CVAR(Int, elist_colsize_name_list, 150, CVar::Save)
-CVAR(Int, elist_colsize_size, 80, CVar::Save)
-CVAR(Int, elist_colsize_type, 150, CVar::Save)
-CVAR(Int, elist_colsize_index, 50, CVar::Save)
 #ifdef __WXGTK__
 // Disable by default in GTK because double-click seems to trigger it, which interferes
 // with double-click to expand folders or open entries
@@ -381,29 +370,18 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	if (col == 0)
 	{
 		// Find icon in cache
-		if (icon_cache.find(entry->type()->icon()) == icon_cache.end())
+		if (!icon_cache.isCached(entry->type()->icon()))
 		{
 			// Not found, add to cache
 			const auto pad = Point2i{ 1, elist_icon_padding };
-
-#if wxCHECK_VERSION(3, 1, 6)
-			const auto bundle = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
-			icon_cache[entry->type()->icon()] = bundle;
-#else
-			const auto size = scalePx(elist_icon_size);
-			const auto bmp  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), size, pad);
-
-			wxIcon icon;
-			icon.CopyFromBitmap(bmp);
-			icon_cache[entry->type()->icon()] = icon;
-#endif
+			icon_cache.cacheIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
 		}
 
 		wxString name = entry->name();
 		if (modified_indicator_ && entry->state() != EntryState::Unmodified)
-			variant << wxDataViewIconText(entry->name() + " *", icon_cache[entry->type()->icon()]);
+			variant << wxDataViewIconText(entry->name() + " *", icon_cache.icons[entry->type()->icon()]);
 		else
-			variant << wxDataViewIconText(entry->name(), icon_cache[entry->type()->icon()]);
+			variant << wxDataViewIconText(entry->name(), icon_cache.icons[entry->type()->icon()]);
 	}
 
 	// Size column
@@ -738,7 +716,7 @@ int ArchiveViewModel::Compare(
 		else
 		{
 			// Directory archives default to alphabetical order
-			if (const auto archive = archive_.lock(); archive->format() == ArchiveFormat::Dir)
+			if (const auto archive = archive_.lock(); archive->formatId() == "folder")
 				cmpval = e1->upperName().compare(e2->upperName());
 
 			// Everything else defaults to index order
@@ -876,7 +854,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 	const shared_ptr<Archive>& archive,
 	UndoManager*               undo_manager,
 	bool                       force_list) :
-	wxDataViewCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE),
+	SDataViewCtrl{ parent, wxDV_MULTIPLE },
 	archive_{ archive }
 {
 	// Init settings
@@ -926,9 +904,6 @@ ArchiveEntryTree::ArchiveEntryTree(
 				e.Skip();
 		});
 
-	// Update column width cvars when we can
-	Bind(wxEVT_IDLE, [this](wxIdleEvent&) { saveColumnWidths(); });
-
 	// Disable modified indicator (" *" after name) when in-place editing entry names
 	Bind(
 		wxEVT_DATAVIEW_ITEM_EDITING_STARTED,
@@ -952,6 +927,15 @@ ArchiveEntryTree::ArchiveEntryTree(
 				model_->showModifiedIndicators(true);
 		});
 
+	// Header left click (ie. sorting change)
+	Bind(
+		wxEVT_DATAVIEW_COLUMN_HEADER_CLICK,
+		[this](wxDataViewEvent& e)
+		{
+			CallAfter(&ArchiveEntryTree::saveColumnConfig);
+			e.Skip();
+		});
+
 	// Header right click
 	Bind(
 		wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK,
@@ -961,9 +945,9 @@ ArchiveEntryTree::ArchiveEntryTree(
 			wxMenu context;
 			context.Append(0, "Reset Sorting");
 			context.AppendSeparator();
-			context.AppendCheckItem(1, "Index", "Show the Index column")->Check(elist_colindex_show);
-			context.AppendCheckItem(2, "Size", "Show the Size column")->Check(elist_colsize_show);
-			context.AppendCheckItem(3, "Type", "Show the Type column")->Check(elist_coltype_show);
+			appendColumnToggleItem(context, 3); // Index
+			appendColumnToggleItem(context, 1); // Size
+			appendColumnToggleItem(context, 2); // Type
 			PopupMenu(&context);
 			e.Skip();
 		});
@@ -989,114 +973,36 @@ ArchiveEntryTree::ArchiveEntryTree(
 					col_index_->UnsetAsSortKey();
 #endif
 				model_->Resort();
+				saveColumnConfig();
+
 				wxDataViewEvent de;
 				de.SetEventType(wxEVT_DATAVIEW_COLUMN_SORTED);
 				ProcessWindowEvent(de);
 			}
-			else if (e.GetId() == 1)
+			else if (e.GetId() == 3)
 			{
 				// Toggle index column
-				elist_colindex_show = !elist_colindex_show;
-				col_index_->SetHidden(!elist_colindex_show);
+				toggleColumnVisibility(3, "EntryListIndexVisible");
 				updateColumnWidths();
+				saveColumnConfig();
+			}
+			else if (e.GetId() == 1)
+			{
+				// Toggle size column
+				toggleColumnVisibility(1, "EntryListSizeVisible");
+				updateColumnWidths();
+				saveColumnConfig();
 			}
 			else if (e.GetId() == 2)
 			{
-				// Toggle size column
-				elist_colsize_show = !elist_colsize_show;
-				col_size_->SetHidden(!elist_colsize_show);
-				updateColumnWidths();
-			}
-			else if (e.GetId() == 3)
-			{
 				// Toggle type column
-				elist_coltype_show = !elist_coltype_show;
-				col_type_->SetHidden(!elist_coltype_show);
+				toggleColumnVisibility(2, "EntryListTypeVisible");
 				updateColumnWidths();
+				saveColumnConfig();
 			}
 			else
 				e.Skip();
 		});
-
-#ifdef __WXMSW__
-	// Keypress event
-	Bind(
-		wxEVT_CHAR,
-		[this](wxKeyEvent& e)
-		{
-			// Custom handling for shift+up/down
-			if (e.ShiftDown())
-			{
-				int from_row = multi_select_base_index_;
-
-				// Get row to select to
-				// TODO: Handle PgUp/PgDn as well?
-				int to_row;
-				switch (e.GetKeyCode())
-				{
-				case WXK_DOWN: to_row = GetRowByItem(GetCurrentItem()) + 1; break;
-				case WXK_UP:   to_row = GetRowByItem(GetCurrentItem()) - 1; break;
-				default:
-					// Not up or down arrow, do default handling
-					e.Skip();
-					return;
-				}
-
-				// Get new item to focus
-				auto new_current_item = GetItemByRow(to_row);
-				if (!new_current_item.IsOk())
-				{
-					e.Skip();
-					return;
-				}
-
-				// Ensure valid range
-				if (from_row > to_row)
-					std::swap(from_row, to_row);
-
-				// Get items to select
-				wxDataViewItemArray items;
-				for (int i = from_row; i <= to_row; ++i)
-					items.Add(GetItemByRow(i));
-
-				// Set new selection
-				SetSelections(items);
-				SetCurrentItem(new_current_item);
-
-				// Trigger selection change event
-				wxDataViewEvent de;
-				de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
-				ProcessWindowEvent(de);
-
-				return;
-			}
-
-			// Search
-			if (e.GetModifiers() == 0)
-			{
-				if (searchChar(e.GetKeyCode()))
-					return;
-			}
-
-			e.Skip();
-		});
-
-	Bind(
-		wxEVT_DATAVIEW_SELECTION_CHANGED,
-		[this](wxDataViewEvent& e)
-		{
-			if (GetSelectedItemsCount() == 1)
-				multi_select_base_index_ = GetRowByItem(GetSelection());
-
-			// Clear search string if selection change wasn't a result of searching
-			if (e.GetString().Cmp("search"))
-				search_.clear();
-
-			e.Skip();
-		});
-
-	Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& e) { search_.clear(); });
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -1502,78 +1408,75 @@ void ArchiveEntryTree::setupColumns()
 	if (!archive)
 		return;
 
+	// Name column for searching
+	setSearchColumn(0);
+
 	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
 	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
+
+	// Get entry list config from library for the archive
+	auto config = library::getArchiveUIConfig(archive->libraryId());
+
+	// If no config exists for the archive, create one from the cvars
+	if (config.archive_id < 0)
+	{
+		config = library::ArchiveUIConfigRow{ archive->libraryId(), archive->formatInfo().supports_dirs };
+		library::saveArchiveUIConfig(config);
+	}
 
 	// Add Columns
 	col_index_ = AppendTextColumn(
 		"#",
 		3,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_index,
+		config.elist_index_width,
 		wxALIGN_NOT,
-		elist_colindex_show ? colstyle_visible : colstyle_hidden);
+		config.elist_index_visible ? colstyle_visible : colstyle_hidden);
 	col_name_ = AppendIconTextColumn(
 		"Name",
 		0,
 		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
-		model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree : elist_colsize_name_list,
+		config.elist_name_width,
 		wxALIGN_NOT,
 		colstyle_visible);
 	col_size_ = AppendTextColumn(
 		"Size",
 		1,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_size,
+		config.elist_size_width,
 		wxALIGN_NOT,
-		elist_colsize_show ? colstyle_visible : colstyle_hidden);
+		config.elist_size_visible ? colstyle_visible : colstyle_hidden);
 	col_type_ = AppendTextColumn(
 		"Type",
 		2,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_type,
+		config.elist_type_width,
 		wxALIGN_NOT,
-		elist_coltype_show ? colstyle_visible : colstyle_hidden);
+		config.elist_type_visible ? colstyle_visible : colstyle_hidden);
 	SetExpanderColumn(col_name_);
 
 	// Last column will expand anyway, this ensures we don't get unnecessary horizontal scrollbars
 	GetColumn(GetColumnCount() - 1)->SetWidth(0);
-}
 
-// -----------------------------------------------------------------------------
-// Saves the current column widths to their respective cvars
-// -----------------------------------------------------------------------------
-void ArchiveEntryTree::saveColumnWidths() const
-{
-	// Get the last visible column (we don't want to save the width of this column since it stretches)
-	wxDataViewColumn* last_col = nullptr;
-	for (int i = static_cast<int>(GetColumnCount()) - 1; i >= 0; --i)
-		if (!GetColumn(i)->IsHidden())
-		{
-			last_col = GetColumn(i);
-			break;
-		}
-
-	if (last_col != col_name_)
+	// Load sorting config
+	if (!config.elist_sort_column.empty())
 	{
-		if (model_->viewType() == ArchiveViewModel::ViewType::Tree)
-			elist_colsize_name_tree = col_name_->GetWidth();
-		else
-			elist_colsize_name_list = col_name_->GetWidth();
+		if (config.elist_sort_column == "index")
+			col_index_->SetSortOrder(!config.elist_sort_descending);
+		else if (config.elist_sort_column == "name")
+			col_name_->SetSortOrder(!config.elist_sort_descending);
+		else if (config.elist_sort_column == "size")
+			col_size_->SetSortOrder(!config.elist_sort_descending);
+		else if (config.elist_sort_column == "type")
+			col_type_->SetSortOrder(!config.elist_sort_descending);
+
+		model_->Resort();
 	}
-
-	if (last_col != col_size_ && !col_size_->IsHidden())
-		elist_colsize_size = col_size_->GetWidth();
-
-	if (last_col != col_type_ && !col_type_->IsHidden())
-		elist_colsize_type = col_type_->GetWidth();
-
-	if (!col_index_->IsHidden())
-		elist_colsize_index = col_index_->GetWidth();
 }
 
 // -----------------------------------------------------------------------------
-// Updates the currently visible columns' widths from their respective cvars
+// Updates the currently visible columns' widths from their respective cvars or
+// the config in the library
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::updateColumnWidths()
 {
@@ -1590,122 +1493,104 @@ void ArchiveEntryTree::updateColumnWidths()
 			break;
 		}
 
+	auto config = library::getArchiveUIConfig(archive->libraryId());
+
 	Freeze();
-	col_index_->SetWidth(elist_colsize_index);
-	col_name_->SetWidth(
-		model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree : elist_colsize_name_list);
-	col_size_->SetWidth(col_size_ == last_col ? 0 : elist_colsize_size);
-	col_type_->SetWidth(col_type_ == last_col ? 0 : elist_colsize_type);
+	col_index_->SetWidth(config.elist_index_width);
+	col_name_->SetWidth(col_name_ == last_col ? 0 : config.elist_name_width);
+	col_size_->SetWidth(col_size_ == last_col ? 0 : config.elist_size_width);
+	col_type_->SetWidth(col_type_ == last_col ? 0 : config.elist_type_width);
 	Thaw();
 }
 
-#ifdef __WXMSW__
-// -----------------------------------------------------------------------------
-// Beginning from [index_start], finds and selects the first entry with a name
-// matching the internal search_ string.
-// Returns true if a match was found
-// -----------------------------------------------------------------------------
-bool ArchiveEntryTree::lookForSearchEntryFrom(int index_start)
+void ArchiveEntryTree::saveColumnConfig() // (can't be made const - is called from wx event handler)
 {
-	long      index = index_start;
-	wxVariant value;
+	const auto archive = archive_.lock();
+	if (!archive)
+		return;
 
-	while (true)
+	auto config = library::getArchiveUIConfig(archive->libraryId());
+	if (config.archive_id < 0)
+		return;
+
+	// Visible columns
+	config.elist_index_visible = col_index_->IsShown();
+	config.elist_size_visible  = col_size_->IsShown();
+	config.elist_type_visible  = col_type_->IsShown();
+
+	// Sorting
+	config.elist_sort_descending = false;
+	if (col_index_->IsSortKey())
 	{
-		auto item = GetItemByRow(index);
-
-		if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
-		{
-			if (strutil::startsWithCI(entry->name(), search_))
-			{
-				// Matches, update selection+focus
-				wxDataViewItemArray items;
-				items.Add(item);
-				SetSelections(items);
-				SetCurrentItem(item);
-				EnsureVisible(item);
-				return true;
-			}
-
-			++index;
-		}
-		else
-			break;
+		config.elist_sort_column     = "index";
+		config.elist_sort_descending = !col_index_->IsSortOrderAscending();
 	}
-
-	// Didn't get any match
-	return false;
-}
-
-// -----------------------------------------------------------------------------
-// Adds [key_code] to the current internal search string (if valid) and performs
-// quick search.
-// Returns false if the key was not a 'real' character usable for searching
-// -----------------------------------------------------------------------------
-bool ArchiveEntryTree::searchChar(int key_code)
-{
-	// Check the key pressed is actually a character (a-z, 0-9 etc)
-	bool real_char = false;
-	if (key_code >= 'a' && key_code <= 'z') // Lowercase
-		real_char = true;
-	else if (key_code >= 'A' && key_code <= 'Z') // Uppercase
-		real_char = true;
-	else if (key_code >= '0' && key_code <= '9') // Number
-		real_char = true;
+	else if (col_name_->IsSortKey())
+	{
+		config.elist_sort_column     = "name";
+		config.elist_sort_descending = !col_name_->IsSortOrderAscending();
+	}
+	else if (col_size_->IsSortKey())
+	{
+		config.elist_sort_column     = "size";
+		config.elist_sort_descending = !col_size_->IsSortOrderAscending();
+	}
+	else if (col_type_->IsSortKey())
+	{
+		config.elist_sort_column     = "type";
+		config.elist_sort_descending = !col_type_->IsSortOrderAscending();
+	}
 	else
-	{
-		for (int elist_char : elist_chars)
-		{
-			if (key_code == elist_char)
-			{
-				real_char = true;
-				break;
-			}
-		}
-	}
+		config.elist_sort_column = {};
 
-	if (!real_char)
-	{
-		search_.clear();
-		return false;
-	}
-
-	// Get currently focused item (or first if nothing is focused)
-	auto index = GetRowByItem(GetCurrentItem());
-	if (index < 0)
-		index = 0;
-
-	// Build search string
-	search_ += static_cast<char>(key_code);
-
-	// Find matching entry/dir, beginning from current item
-	// If no match found, try again from the top
-	auto found = true;
-	if (!lookForSearchEntryFrom(index))
-		found = lookForSearchEntryFrom(0);
-
-	// No match, continue from next item with fresh search string
-	if (!found)
-	{
-		search_.clear();
-		search_ += static_cast<char>(key_code);
-		found = lookForSearchEntryFrom(index + 1);
-		if (!found)
-			found = lookForSearchEntryFrom(0);
-	}
-
-	if (found)
-	{
-		// Trigger selection change event
-		wxDataViewEvent de;
-		de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
-		de.SetString("search");
-		ProcessWindowEvent(de);
-	}
-
-	return true;
+	library::saveArchiveUIConfig(config);
 }
-#endif
+
+void ArchiveEntryTree::onAnyColumnResized()
+{
+	const auto archive = archive_.lock();
+	if (!archive)
+		return;
+
+	auto config = library::getArchiveUIConfig(archive->libraryId());
+	if (config.archive_id < 0)
+		return;
+
+	// Get the last visible column (we don't want to save the width of this column since it stretches)
+	auto last_col = lastVisibleColumn();
+
+	// Index
+	if (col_index_->IsShown())
+	{
+		config.elist_index_width = col_index_->GetWidth();
+		saveStateInt("EntryListIndexWidth", config.elist_index_width);
+	}
+
+	// Name
+	if (col_name_ != last_col)
+	{
+		config.elist_name_width = col_name_->GetWidth();
+		saveStateInt(
+			archive->formatInfo().supports_dirs ? "EntryListNameWidthTree" : "EntryListNameWidthList",
+			config.elist_name_width);
+	}
+
+	// Size
+	if (col_size_ != last_col && col_size_->IsShown())
+	{
+		config.elist_size_width = col_size_->GetWidth();
+		saveStateInt("EntryListSizeWidth", config.elist_size_width);
+	}
+
+	// Type
+	if (col_type_ != last_col && col_type_->IsShown())
+	{
+		config.elist_type_width = col_type_->GetWidth();
+		saveStateInt("EntryListTypeWidth", config.elist_type_width);
+	}
+
+	library::saveArchiveUIConfig(config);
+}
 
 // -----------------------------------------------------------------------------
 // Sets the root directory to [dir] and updates UI accordingly

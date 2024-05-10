@@ -137,7 +137,7 @@ void DB2MapFileMonitor::fileModified()
 
 	// Load file into temp archive
 	auto wad = std::make_unique<Archive>(ArchiveFormat::Wad);
-	wad->open(filename_);
+	wad->open(filename_, true);
 
 	// Get map info for target archive
 	for (auto& map : archive_->detectMaps())

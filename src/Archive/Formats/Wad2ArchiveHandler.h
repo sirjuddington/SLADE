@@ -23,7 +23,7 @@ public:
 	~Wad2ArchiveHandler() override = default;
 
 	// Opening/writing
-	bool open(Archive& archive, const MemChunk& mc) override; // Open from MemChunk
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override; // Open from MemChunk
 	bool write(Archive& archive, MemChunk& mc) override;      // Write to MemChunk
 
 	// Format detection

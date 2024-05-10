@@ -41,6 +41,7 @@ public:
 	static EntryType*         fromId(string_view id);
 	static EntryType*         unknownType();
 	static EntryType*         folderType();
+	static EntryType*         markerType();
 	static EntryType*         mapMarkerType();
 	static vector<string>     iconList();
 	static vector<EntryType*> allTypes();

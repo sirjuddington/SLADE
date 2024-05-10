@@ -37,6 +37,8 @@ find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(SFML COMPONENTS system audio window network CONFIG REQUIRED)
 find_package(glm REQUIRED)
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
+#find_package(xxHash CONFIG REQUIRED)
 
 
 # Include Search Paths ---------------------------------------------------------
@@ -46,6 +48,7 @@ include_directories(
 	.
 	..
 	../thirdparty/glad/include
+	../thirdparty/SQLiteCpp/include
 	./Application
 )
 
@@ -97,6 +100,8 @@ target_link_libraries(slade
 	sfml-network
 	sfml-window
 	glm::glm
+	unofficial::sqlite3::sqlite3
+#	xxHash::xxhash
 )
 
 if (NOT NO_LUA)

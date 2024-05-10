@@ -39,7 +39,6 @@ public:
 	shared_ptr<Archive>         shareArchive(const Archive* archive);
 
 	// General access
-	const vector<string>&                 recentFiles() const { return recent_files_; }
 	const vector<string>&                 baseResourcePaths() const { return base_resource_paths_; }
 	const vector<weak_ptr<ArchiveEntry>>& bookmarks() const { return bookmarks_; }
 
@@ -49,6 +48,7 @@ public:
 	void     removeBaseResourcePath(unsigned index);
 	unsigned numBaseResourcePaths() const { return base_resource_paths_.size(); }
 	string   getBaseResourcePath(unsigned index);
+	string   currentBaseResourcePath();
 	bool     openBaseResource(int index);
 
 	// Resource entry get/search
@@ -56,18 +56,11 @@ public:
 	ArchiveEntry*         findResourceEntry(ArchiveSearchOptions& options, const Archive* ignore = nullptr) const;
 	vector<ArchiveEntry*> findAllResourceEntries(ArchiveSearchOptions& options, const Archive* ignore = nullptr) const;
 
-	// Recent files
-	string   recentFile(unsigned index);
-	unsigned numRecentFiles() const { return recent_files_.size(); }
-	void     addRecentFile(string_view path);
-	void     addRecentFiles(const vector<string>& paths);
-	void     removeRecentFile(string_view path);
-
 	// Bookmarks
 	void          addBookmark(const shared_ptr<ArchiveEntry>& entry);
 	bool          deleteBookmark(ArchiveEntry* entry);
 	bool          deleteBookmark(unsigned index);
-	bool          deleteBookmarksInArchive(const Archive* archive);
+	bool          deleteBookmarksInArchive(const Archive* archive, bool remove_from_library = true);
 	bool          deleteBookmarksInDir(const ArchiveDir* node);
 	void          deleteAllBookmarks();
 	ArchiveEntry* getBookmark(unsigned index) const;
@@ -87,7 +80,6 @@ public:
 		sigslot::signal<unsigned>                     base_res_path_removed;
 		sigslot::signal<unsigned>                     base_res_current_changed;
 		sigslot::signal<>                             base_res_current_cleared;
-		sigslot::signal<>                             recent_files_changed;
 		sigslot::signal<ArchiveEntry*>                bookmark_added;
 		sigslot::signal<const vector<ArchiveEntry*>&> bookmarks_removed;
 	};
@@ -98,7 +90,7 @@ private:
 	{
 		shared_ptr<Archive>       archive;
 		vector<weak_ptr<Archive>> open_children; // A list of currently open archives that are within this archive
-		bool                      resource;
+		bool                      resource = true;
 	};
 
 	vector<OpenArchive>            open_archives_;
@@ -106,13 +98,14 @@ private:
 	shared_ptr<Archive>            base_resource_archive_;
 	bool                           res_archive_open_ = false;
 	vector<string>                 base_resource_paths_;
-	vector<string>                 recent_files_;
 	vector<weak_ptr<ArchiveEntry>> bookmarks_;
 
 	// Signals
 	Signals signals_;
 
-	bool initArchiveFormats() const;
-	void getDependentArchivesInternal(const Archive* archive, vector<shared_ptr<Archive>>& vec);
+	bool        initArchiveFormats() const;
+	void        getDependentArchivesInternal(const Archive* archive, vector<shared_ptr<Archive>>& vec);
+	inline void removeBookmark(unsigned index);
+	void        addBookmarksFromLibrary(const Archive& archive);
 };
 } // namespace slade

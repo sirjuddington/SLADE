@@ -116,7 +116,7 @@ bool shouldEncodeTxb(string_view name)
 // Reads hog format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool HogArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool HogArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -196,7 +196,8 @@ bool HogArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

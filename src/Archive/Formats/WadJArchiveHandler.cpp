@@ -65,7 +65,7 @@ WadJArchiveHandler::WadJArchiveHandler() : WadArchiveHandler(ArchiveFormat::WadJ
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadJArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool WadJArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -204,7 +204,8 @@ bool WadJArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	updateNamespaces(archive);
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Detect maps (will detect map entry types)
 	ui::setSplashProgressMessage("Detecting maps");
@@ -284,14 +285,14 @@ bool WadJArchiveHandler::write(Archive& archive, MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Hack to account for Jaguar Doom's silly sprite scheme
 // -----------------------------------------------------------------------------
-string WadJArchiveHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string WadJArchiveHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	auto nextentry = archive.entryAt(index + 1);
 	if (nextentry && strutil::equalCI(nextentry->name(), "."))
 		return "sprites";
 	return WadArchiveHandler::detectNamespace(archive, index);
 }
-string WadJArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string WadJArchiveHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	size_t index     = archive.entryIndex(entry);
 	auto   nextentry = archive.entryAt(index + 1);

@@ -39,6 +39,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Export.h"
+#include "Library/Library.h"
 #include "thirdparty/sol/sol.hpp"
 
 using namespace slade;
@@ -138,7 +139,7 @@ void registerArchivesNamespace(sol::state& lua)
 	archives.set_function("BaseResourcePaths", []() { return app::archiveManager().baseResourcePaths(); });
 	archives.set_function("OpenBaseResource", [](int index) { return app::archiveManager().openBaseResource(index); });
 	archives.set_function("ProgramResource", []() { return app::archiveManager().programResourceArchive(); });
-	archives.set_function("RecentFiles", []() { return app::archiveManager().recentFiles(); });
+	archives.set_function("RecentFiles", []() { return library::recentFiles(); });
 	archives.set_function("Bookmarks", []() { return app::archiveManager().bookmarks(); });
 	archives.set_function(
 		"AddBookmark", [](ArchiveEntry* entry) { app::archiveManager().addBookmark(entry->getShared()); });

@@ -10,7 +10,7 @@ public:
 	ChasmBinArchiveHandler() : ArchiveFormatHandler(ArchiveFormat::ChasmBin) {}
 
 	// Opening/writing
-	bool open(Archive& archive, const MemChunk& mc) override;
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override;
 	bool write(Archive& archive, MemChunk& mc) override;
 
 	// Format detection

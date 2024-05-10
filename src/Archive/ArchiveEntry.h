@@ -49,10 +49,12 @@ public:
 	EntryState               state() const { return state_; }
 	bool                     isLocked() const { return locked_; }
 	EntryEncryption          encryption() const { return encrypted_; }
-	ArchiveEntry*            nextEntry();
-	ArchiveEntry*            prevEntry();
+	ArchiveEntry*            nextEntry() const;
+	ArchiveEntry*            prevEntry() const;
 	shared_ptr<ArchiveEntry> getShared() const;
-	int                      index();
+	int                      index() const;
+	const string&            hash() const;
+	int64_t                  libraryId() const { return library_id_; }
 
 	// Modifiers (won't change entry state, except setState of course :P)
 	void setName(string_view name);
@@ -63,6 +65,7 @@ public:
 	}
 	void setState(EntryState state, bool silent = false);
 	void setEncryption(EntryEncryption enc) { encrypted_ = enc; }
+	void setLibraryId(int64_t id) const { library_id_ = id; }
 	void lock();
 	void unlock();
 	void lockState() { state_locked_ = true; }
@@ -111,12 +114,13 @@ public:
 
 private:
 	// Entry Info
-	string       name_;
-	string       upper_name_;
-	MemChunk     data_;
-	EntryType*   type_   = nullptr;
-	ArchiveDir*  parent_ = nullptr;
-	PropertyList ex_props_;
+	string         name_;
+	string         upper_name_;
+	MemChunk       data_;
+	EntryType*     type_   = nullptr;
+	ArchiveDir*    parent_ = nullptr;
+	PropertyList   ex_props_;
+	mutable string data_hash_;
 
 	// Entry status
 	EntryState      state_        = EntryState::New;
@@ -125,8 +129,9 @@ private:
 	EntryEncryption encrypted_    = EntryEncryption::None; // Is there some encrypting on the archive?
 
 	// Misc stuff
-	int    reliability_ = 0; // The reliability of the entry's identification
-	size_t index_guess_ = 0; // for speed
+	int             reliability_ = 0;  // The reliability of the entry's identification
+	mutable size_t  index_guess_ = 0;  // for speed
+	mutable int64_t library_id_  = -1; // The id of this entry in the library
 };
 
 template<typename T> T ArchiveEntry::exProp(const string& key)

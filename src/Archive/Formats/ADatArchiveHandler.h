@@ -11,7 +11,7 @@ public:
 	~ADatArchiveHandler() override = default;
 
 	// Opening
-	bool open(Archive& archive, const MemChunk& mc) override; // Open from MemChunk
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override; // Open from MemChunk
 
 	// Writing/Saving
 	bool write(Archive& archive, MemChunk& mc) override; // Write to MemChunk

@@ -52,7 +52,7 @@ using namespace slade;
 // Reads dat format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ADatArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool ADatArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check given data is valid
 	if (mc.size() < 16)
@@ -144,7 +144,8 @@ bool ADatArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

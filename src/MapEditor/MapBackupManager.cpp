@@ -86,7 +86,7 @@ bool MapBackupManager::writeBackup(
 	string fname{ archive_name };
 	std::replace(fname.begin(), fname.end(), '.', '_');
 	auto backup_file = fmt::format("{}/{}_backup.zip", backup_dir, fname);
-	if (!backup->open(backup_file))
+	if (!backup->open(backup_file, true))
 		backup->setFilename(backup_file);
 
 	// Filter ignored entries

@@ -60,6 +60,7 @@
 #include "General/UndoRedo.h"
 #include "General/UndoSteps/EntryDataUS.h"
 #include "Graphics/Palette/PaletteManager.h"
+#include "Library/ArchiveUIConfig.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
 #include "MainEditor/EntryOperations.h"
@@ -81,6 +82,7 @@
 #include "UI/Lists/ArchiveEntryTree.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
@@ -103,8 +105,6 @@ CVAR(Bool, confirm_entry_delete, true, CVar::Flag::Save)
 CVAR(Bool, context_submenus, true, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
 CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
-CVAR(Int, ap_splitter_position_tree, 300, CVar::Flag::Save)
-CVAR(Int, ap_splitter_position_list, 300, CVar::Flag::Save)
 CVAR(Bool, elist_no_tree, false, CVar::Flag::Save)
 
 
@@ -335,14 +335,17 @@ ArchivePanel::ArchivePanel(wxWindow* parent, const shared_ptr<Archive>& archive)
 	undo_manager_{ new UndoManager() },
 	ee_manager_{ new ExternalEditManager }
 {
-	setup(archive.get());
-	bindEvents(archive.get());
+	if (archive)
+	{
+		setup(*archive);
+		bindEvents(archive.get());
+	}
 }
 
 // -----------------------------------------------------------------------------
 // Setup the panel controls and layout
 // -----------------------------------------------------------------------------
-void ArchivePanel::setup(const Archive* archive)
+void ArchivePanel::setup(const Archive& archive)
 {
 	// Create controls
 	splitter_         = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
@@ -361,10 +364,11 @@ void ArchivePanel::setup(const Archive* archive)
 
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(ui::scalePx(300));
-	m_hbox->Add(splitter_, wxutil::sfWithBorder(1).Expand());
-	int split_pos = ap_splitter_position_list;
-	if (archive && archive->formatInfo().supports_dirs)
-		split_pos = ap_splitter_position_tree;
+	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
+	auto split_pos = library::archiveUIConfigSplitterPos(archive.libraryId());
+	if (split_pos < 0)
+		split_pos = ui::getStateInt(
+			archive.formatInfo().supports_dirs ? "ArchivePanelSplitPosTree" : "ArchivePanelSplitPosList");
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
 	// Update size+layout
@@ -395,9 +399,11 @@ void ArchivePanel::bindEvents(Archive* archive)
 			if (auto archive = archive_.lock().get())
 			{
 				if (archive->formatInfo().supports_dirs)
-					ap_splitter_position_tree = e.GetSashPosition();
+					ui::saveStateInt("ArchivePanelSplitPosTree", e.GetSashPosition());
 				else
-					ap_splitter_position_list = e.GetSashPosition();
+					ui::saveStateInt("ArchivePanelSplitPosList", e.GetSashPosition());
+
+				library::saveArchiveUIConfigSplitterPos(archive->libraryId(), e.GetSashPosition());
 			}
 		});
 
@@ -2514,21 +2520,7 @@ bool ArchivePanel::handleAction(string_view id)
 	{
 		RunDialog dlg(this, archive.get());
 		if (dlg.ShowModal() == wxID_OK)
-		{
-			wxString command = dlg.selectedCommandLine(archive.get(), "");
-			if (!command.IsEmpty())
-			{
-				// Set working directory
-				wxString wd = wxGetCwd();
-				wxSetWorkingDirectory(dlg.selectedExeDir());
-
-				// Run
-				wxExecute(command, wxEXEC_ASYNC);
-
-				// Restore working directory
-				wxSetWorkingDirectory(wd);
-			}
-		}
+			dlg.run(RunDialog::Config{ archive->filename() }, archive->libraryId());
 
 		return true;
 	}
@@ -3349,7 +3341,10 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 
 				// Attempt to open map
 				if (mapeditor::window()->openMap(info))
+				{
+					dlg.saveConfigToDatabase();
 					mapeditor::window()->Show();
+				}
 				else
 				{
 					mapeditor::window()->Hide();

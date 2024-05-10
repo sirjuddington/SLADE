@@ -11,11 +11,11 @@ public:
 	~WadJArchiveHandler() override = default;
 
 	// Opening/writing
-	bool open(Archive& archive, const MemChunk& mc) override; // Open from MemChunk
-	bool write(Archive& archive, MemChunk& mc) override;      // Write to MemChunk
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override; // Open from MemChunk
+	bool write(Archive& archive, MemChunk& mc) override;                         // Write to MemChunk
 
-	string detectNamespace(Archive& archive, ArchiveEntry* entry) override;
-	string detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir = nullptr) override;
+	string detectNamespace(const Archive& archive, ArchiveEntry* entry) override;
+	string detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir = nullptr) override;
 
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;

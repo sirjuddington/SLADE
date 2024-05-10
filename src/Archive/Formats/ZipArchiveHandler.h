@@ -13,8 +13,8 @@ public:
 	void init(Archive& archive) override;
 
 	// Opening
-	bool open(Archive& archive, string_view filename) override; // Open from File
-	bool open(Archive& archive, const MemChunk& mc) override;   // Open from MemChunk
+	bool open(Archive& archive, string_view filename, bool detect_types) override; // Open from File
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override;   // Open from MemChunk
 
 	// Writing/Saving
 	bool write(Archive& archive, MemChunk& mc) override;         // Write to MemChunk
@@ -28,13 +28,13 @@ public:
 		override;
 
 	// Detection
-	MapDesc         mapDesc(Archive& archive, ArchiveEntry* maphead) override;
-	vector<MapDesc> detectMaps(Archive& archive) override;
+	MapDesc         mapDesc(const Archive& archive, ArchiveEntry* maphead) override;
+	vector<MapDesc> detectMaps(const Archive& archive) override;
 
 	// Search
-	ArchiveEntry*         findFirst(Archive& archive, ArchiveSearchOptions& options) override;
-	ArchiveEntry*         findLast(Archive& archive, ArchiveSearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(Archive& archive, ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findFirst(const Archive& archive, ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findLast(const Archive& archive, ArchiveSearchOptions& options) override;
+	vector<ArchiveEntry*> findAll(const Archive& archive, ArchiveSearchOptions& options) override;
 
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;

@@ -11,12 +11,12 @@ public:
 	~WolfArchiveHandler() override = default;
 
 	// Opening
-	bool open(Archive& archive, string_view filename) override; // Open from File
-	bool open(Archive& archive, const MemChunk& mc) override;   // Open from MemChunk
+	bool open(Archive& archive, string_view filename, bool detect_types) override; // Open from File
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override;   // Open from MemChunk
 
-	bool openAudio(Archive& archive, MemChunk& head, const MemChunk& data);
-	bool openGraph(Archive& archive, const MemChunk& head, const MemChunk& data, MemChunk& dict);
-	bool openMaps(Archive& archive, MemChunk& head, const MemChunk& data);
+	bool openAudio(Archive& archive, MemChunk& head, const MemChunk& data, bool detect_types);
+	bool openGraph(Archive& archive, const MemChunk& head, const MemChunk& data, MemChunk& dict, bool detect_types);
+	bool openMaps(Archive& archive, MemChunk& head, const MemChunk& data, bool detect_types);
 
 	// Writing/Saving
 	bool write(Archive& archive, MemChunk& mc) override; // Write to MemChunk

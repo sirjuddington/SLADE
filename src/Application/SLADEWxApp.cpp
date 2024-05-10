@@ -83,7 +83,6 @@ int win_version_minor = 0;
 
 string current_action;
 bool   update_check_message_box = false;
-CVAR(String, dir_last, "", CVar::Flag::Save)
 CVAR(Bool, update_check, true, CVar::Flag::Save)
 CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
 
@@ -485,7 +484,10 @@ bool SLADEWxApp::OnInit()
 	try
 	{
 		if (!app::init(args, ui_scale))
+		{
+			wxMessageBox(global::error, "SLADE Initialization Error", wxICON_ERROR);
 			return false;
+		}
 	}
 	catch (const std::exception& ex)
 	{

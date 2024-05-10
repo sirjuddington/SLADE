@@ -48,9 +48,11 @@ public:
 	bool                   isReadOnly() const { return read_only_; }
 	bool                   isWritable() const;
 	time_t                 fileModifiedTime() const { return file_modified_; }
+	int64_t                libraryId() const { return library_id_; }
 
 	void setModified(bool modified);
 	void setFilename(string_view filename) { filename_ = filename; }
+	void setLibraryId(int64_t library_id) const { library_id_ = library_id; }
 
 	// Entry retrieval/info
 	bool                     checkEntry(const ArchiveEntry* entry) const;
@@ -71,9 +73,9 @@ public:
 	string                formatId() const;
 
 	// Opening
-	bool open(string_view filename); // Open from File
-	bool open(ArchiveEntry* entry);  // Open from ArchiveEntry
-	bool open(const MemChunk& mc);   // Open from MemChunk
+	bool open(string_view filename, bool detect_types); // Open from File
+	bool open(ArchiveEntry* entry, bool detect_types);  // Open from ArchiveEntry
+	bool open(const MemChunk& mc, bool detect_types);   // Open from MemChunk
 
 	// Writing/Saving
 	bool write(MemChunk& mc);             // Write to MemChunk
@@ -122,9 +124,10 @@ public:
 
 	// Detection
 	MapDesc         mapDesc(ArchiveEntry* maphead);
-	vector<MapDesc> detectMaps();
-	string          detectNamespace(ArchiveEntry* entry);
-	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);
+	vector<MapDesc> detectMaps() const;
+	string          detectNamespace(ArchiveEntry* entry) const;
+	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const;
+	void            detectAllEntryTypes(bool show_in_splash_window = true) const;
 
 	// Search
 	ArchiveEntry*         findFirst(ArchiveSearchOptions& options);
@@ -156,14 +159,12 @@ protected:
 	bool   read_only_     = false; // If true, the archive cannot be modified
 	time_t file_modified_ = 0;
 
-	// Helpers
-	void detectAllEntryTypes() const;
-
 private:
 	bool                             modified_ = true;
 	shared_ptr<ArchiveDir>           dir_root_;
 	Signals                          signals_;
 	unique_ptr<ArchiveFormatHandler> format_handler_;
+	mutable int64_t                  library_id_ = -1;
 };
 
 // Simple class that will block and unblock modification signals for an archive via RAII
@@ -178,5 +179,4 @@ public:
 private:
 	Archive* archive_;
 };
-
 } // namespace slade

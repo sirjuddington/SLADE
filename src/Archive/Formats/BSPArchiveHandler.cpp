@@ -57,7 +57,7 @@ using namespace slade;
 // Reads BSP format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool BSPArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool BSPArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// If size is less than 64, there's not even enough room for a full header
 	size_t size = mc.size();
@@ -218,7 +218,8 @@ bool BSPArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

@@ -39,6 +39,8 @@
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SActionHandler.h"
+#include "General/UI.h"
+#include "Library/Library.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
@@ -144,6 +146,7 @@ wxSizer* createActionsSizer(wxWindow* parent)
 	sizer->Add(createActionButton(parent, "aman_opendir", "Open Directory", "opendir"), sflags);
 	sizer->Add(createActionButton(parent, "aman_newarchive", "Create New Archive", "newarchive"), sflags);
 	sizer->Add(createActionButton(parent, "aman_newmap", "Create New Map", "mapeditor"), sflags);
+	sizer->Add(createActionButton(parent, "main_showlibrary", "View Archive Library", "library"), sflags);
 
 	return sizer;
 }
@@ -168,8 +171,8 @@ StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Setup Recent Files panel
 	recent_files_panel_      = new wxPanel(this);
-	sc_recent_files_updated_ = app::archiveManager().signals().recent_files_changed.connect_scoped(
-		[this] { updateRecentFilesPanel(); }); // Update panel when recent files list changes
+	sc_recent_files_updated_ = library::signals().archive_file_updated.connect_scoped(
+		[this](int64_t) { updateRecentFilesPanel(); }); // Update panel when recent files list changes
 	recent_files_panel_->SetBackgroundColour(wxColour(background_colour));
 	recent_files_panel_->SetForegroundColour(wxColour(foreground_colour));
 	updateRecentFilesPanel();
@@ -224,7 +227,7 @@ void StartPanel::updateRecentFilesPanel()
 	title_label->SetFont(title_label->GetFont().Bold().Scale(1.25f));
 	sizer->Add(title_label, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
 
-	auto recent_files = app::archiveManager().recentFiles();
+	auto recent_files = library::recentFiles(12);
 	if (recent_files.empty())
 	{
 		auto no_recent_label = new wxStaticText(recent_files_panel_, -1, "No recently opened files");

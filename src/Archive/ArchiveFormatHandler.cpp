@@ -66,7 +66,7 @@ vector<unique_ptr<ArchiveFormatHandler>> all_handlers;
 class EntryRenameUS : public UndoStep
 {
 public:
-	EntryRenameUS(ArchiveEntry* entry, string_view new_name) :
+	EntryRenameUS(const ArchiveEntry* entry, string_view new_name) :
 		archive_{ entry->parent() },
 		entry_path_{ entry->path() },
 		entry_index_{ entry->index() },
@@ -183,7 +183,7 @@ private:
 class EntryCreateDeleteUS : public UndoStep
 {
 public:
-	EntryCreateDeleteUS(bool created, ArchiveEntry* entry) :
+	EntryCreateDeleteUS(bool created, const ArchiveEntry* entry) :
 		created_{ created },
 		archive_{ entry->parent() },
 		entry_copy_{ new ArchiveEntry(*entry) },
@@ -326,7 +326,7 @@ ArchiveFormatHandler::ArchiveFormatHandler(ArchiveFormat format, bool treeless) 
 // Reads an archive from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveFormatHandler::open(Archive& archive, string_view filename)
+bool ArchiveFormatHandler::open(Archive& archive, string_view filename, bool detect_types)
 {
 	// Read the file into a MemChunk
 	MemChunk mc;
@@ -337,18 +337,18 @@ bool ArchiveFormatHandler::open(Archive& archive, string_view filename)
 	}
 
 	// Load from MemChunk
-	return open(archive, mc);
+	return open(archive, mc, detect_types);
 }
 
 // -----------------------------------------------------------------------------
 // Reads an archive from an ArchiveEntry
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveFormatHandler::open(Archive& archive, ArchiveEntry* entry)
+bool ArchiveFormatHandler::open(Archive& archive, ArchiveEntry* entry, bool detect_types)
 {
 	// Load from entry's data
 	auto sp_entry = entry->getShared();
-	if (sp_entry && open(archive, sp_entry->data()))
+	if (sp_entry && open(archive, sp_entry->data(), detect_types))
 	{
 		// Update variables and return success
 		archive.parent_ = sp_entry;
@@ -362,7 +362,7 @@ bool ArchiveFormatHandler::open(Archive& archive, ArchiveEntry* entry)
 // Reads an archive from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveFormatHandler::open(Archive& archive, const MemChunk& mc)
+bool ArchiveFormatHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Invalid
 	return false;
@@ -808,7 +808,7 @@ bool ArchiveFormatHandler::renameEntry(Archive& archive, ArchiveEntry* entry, st
 // Returns the MapDesc information about the map beginning at [maphead].
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-MapDesc ArchiveFormatHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
+MapDesc ArchiveFormatHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead)
 {
 	return {};
 }
@@ -817,7 +817,7 @@ MapDesc ArchiveFormatHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 // Returns the MapDesc information about all maps in the Archive.
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-vector<MapDesc> ArchiveFormatHandler::detectMaps(Archive& archive)
+vector<MapDesc> ArchiveFormatHandler::detectMaps(const Archive& archive)
 {
 	return {};
 }
@@ -825,7 +825,7 @@ vector<MapDesc> ArchiveFormatHandler::detectMaps(Archive& archive)
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-string ArchiveFormatHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string ArchiveFormatHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	if (dir && index < dir->numEntries())
 		return detectNamespace(archive, dir->entryAt(index));
@@ -836,7 +836,7 @@ string ArchiveFormatHandler::detectNamespace(Archive& archive, unsigned index, A
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string ArchiveFormatHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string ArchiveFormatHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	// Check entry
 	if (!archive.checkEntry(entry))
@@ -862,7 +862,7 @@ string ArchiveFormatHandler::detectNamespace(Archive& archive, ArchiveEntry* ent
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveFormatHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ArchiveFormatHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -931,7 +931,7 @@ ArchiveEntry* ArchiveFormatHandler::findFirst(Archive& archive, ArchiveSearchOpt
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveFormatHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ArchiveFormatHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -999,7 +999,7 @@ ArchiveEntry* ArchiveFormatHandler::findLast(Archive& archive, ArchiveSearchOpti
 // -----------------------------------------------------------------------------
 // Returns a list of entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveFormatHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> ArchiveFormatHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1063,16 +1063,6 @@ vector<ArchiveEntry*> ArchiveFormatHandler::findAll(Archive& archive, ArchiveSea
 
 	// Return matches
 	return ret;
-}
-
-// -----------------------------------------------------------------------------
-// Detects type for all entries in [archive]
-// (just here because it's a protected function in Archive, so subclasses can't
-// access it directly)
-// -----------------------------------------------------------------------------
-void ArchiveFormatHandler::detectAllEntryTypes(const Archive& archive)
-{
-	archive.detectAllEntryTypes();
 }
 
 // -----------------------------------------------------------------------------

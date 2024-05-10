@@ -14,7 +14,7 @@ public:
 	void        setId(string_view id);
 
 	// Opening
-	bool open(Archive& archive, const MemChunk& mc) override;
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override;
 
 	// Writing/Saving
 	bool write(Archive& archive, MemChunk& mc) override;

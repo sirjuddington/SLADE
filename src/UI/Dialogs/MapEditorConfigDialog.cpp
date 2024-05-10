@@ -42,6 +42,7 @@
 #include "General/MapPreviewData.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "Library/ArchiveMapConfig.h"
 #include "UI/Canvas/Canvas.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
@@ -200,6 +201,17 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	archive_{ archive }
 {
 	namespace wx = wxutil;
+
+	// Check for saved game/port configuration for archive
+	if (archive)
+	{
+		if (auto archive_map_config = library::getArchiveMapConfig(archive->libraryId());
+			archive_map_config.archive_id >= 0)
+		{
+			game_current_ = archive_map_config.game;
+			port_current_ = archive_map_config.port;
+		}
+	}
 
 	// Setup main sizer
 	auto mainsizer = new wxBoxSizer(wxHORIZONTAL);
@@ -523,6 +535,21 @@ wxString MapEditorConfigDialog::selectedPort()
 		return "";
 
 	return ports_list_[choice_port_config_->GetSelection() - 1];
+}
+
+// -----------------------------------------------------------------------------
+// Saves the current selected configuration to the SLADE program database
+// -----------------------------------------------------------------------------
+void MapEditorConfigDialog::saveConfigToDatabase() const
+{
+	if (!archive_)
+		return;
+
+	library::ArchiveMapConfigRow row{ archive_->libraryId() };
+	row.game = game_current_;
+	row.port = port_current_;
+
+	library::saveArchiveMapConfig(row);
 }
 
 

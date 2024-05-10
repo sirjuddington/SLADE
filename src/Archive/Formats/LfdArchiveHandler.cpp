@@ -50,7 +50,7 @@ using namespace slade;
 // Reads lfd format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool LfdArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool LfdArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -140,7 +140,8 @@ bool LfdArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		log::warning("Computed {} lumps, but actually {} entries", num_lumps, archive.numEntries());
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

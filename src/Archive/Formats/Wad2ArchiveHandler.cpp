@@ -51,7 +51,7 @@ using namespace slade;
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Wad2ArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool Wad2ArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -128,7 +128,12 @@ bool Wad2ArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
+
+	// Detect maps (will detect map entry types)
+	ui::setSplashProgressMessage("Detecting maps");
+	detectMaps(archive);
 
 	// Setup variables
 	sig_blocker.unblock();

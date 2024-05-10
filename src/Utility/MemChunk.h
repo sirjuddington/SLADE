@@ -62,6 +62,8 @@ public:
 	bool     fillData(uint8_t val) const;
 	uint32_t crc() const;
 	string   asString(uint32_t offset = 0, uint32_t length = 0) const;
+	string   md5() const;
+	string   hash() const;
 	uint8_t* releaseData();
 
 	// Platform-independent functions to read values in little (L##) or big (B##) endian

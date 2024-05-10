@@ -51,7 +51,7 @@ using namespace slade;
 // Reads SiN format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool SiNArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool SiNArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check given data is valid
 	if (mc.size() < 12)
@@ -125,7 +125,8 @@ bool SiNArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

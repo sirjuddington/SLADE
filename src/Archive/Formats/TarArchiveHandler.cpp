@@ -259,7 +259,7 @@ void tarDefaultHeader(TarHeader* header)
 // Reads tar format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool TarArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool TarArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check given data is valid
 	if (mc.size() < 1024)
@@ -356,7 +356,8 @@ bool TarArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

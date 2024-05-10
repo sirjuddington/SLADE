@@ -59,7 +59,6 @@ CVAR(Int, map_image_height, -5, CVar::Flag::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Bool, map_view_things)
 
 

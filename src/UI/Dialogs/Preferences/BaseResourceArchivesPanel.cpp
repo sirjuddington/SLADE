@@ -40,6 +40,7 @@
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
+#include "Utility/SFileDialog.h"
 
 using namespace slade;
 
@@ -50,7 +51,6 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, base_resource)
-EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(String, zdoom_pk3_path)
 
 
@@ -310,34 +310,18 @@ void BaseResourceArchivesPanel::applyPreferences()
 void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 {
 	// Create extensions string
-	wxString extensions = app::archiveManager().getArchiveExtensionsString();
+	auto extensions = app::archiveManager().getArchiveExtensionsString();
 
 	// Open a file browser dialog that allows multiple selection
-	wxFileDialog dialog_open(
-		this,
-		"Choose file(s) to open",
-		dir_last,
-		wxEmptyString,
-		extensions,
-		wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST,
-		wxDefaultPosition);
-
-	// Run the dialog & check that the user didn't cancel
-	if (dialog_open.ShowModal() == wxID_OK)
+	filedialog::FDInfo inf;
+	if (filedialog::openFiles(inf, "Choose file(s) to open", extensions, this))
 	{
-		// Get an array of selected filenames
-		wxArrayString files;
-		dialog_open.GetPaths(files);
-
-		// Add each to the paths list
-		for (const auto& file : files)
+		// Add each file to the paths list
+		for (const auto& file : inf.filenames)
 		{
-			if (app::archiveManager().addBaseResourcePath(file.ToStdString()))
+			if (app::archiveManager().addBaseResourcePath(file))
 				list_base_archive_paths_->Append(file);
 		}
-
-		// Save 'dir_last'
-		dir_last = wxutil::strToView(dialog_open.GetDirectory());
 	}
 }
 

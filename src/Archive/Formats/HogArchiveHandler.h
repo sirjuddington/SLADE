@@ -11,8 +11,8 @@ public:
 	~HogArchiveHandler() override = default;
 
 	// Opening/writing
-	bool open(Archive& archive, const MemChunk& mc) override; // Open from MemChunk
-	bool write(Archive& archive, MemChunk& mc) override;      // Write to MemChunk
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override; // Open from MemChunk
+	bool write(Archive& archive, MemChunk& mc) override;                         // Write to MemChunk
 
 	// Entry addition/removal
 	shared_ptr<ArchiveEntry> addEntry(

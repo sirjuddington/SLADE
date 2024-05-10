@@ -36,6 +36,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
+#include "Library/Library.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -156,16 +157,14 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 {
-	// Build list of recent wad filename strings
-	wxArrayString recent;
-	for (unsigned a = 0; a < app::archiveManager().numRecentFiles(); a++)
-		recent.Add(app::archiveManager().recentFile(a));
+	// Get list of recent filename strings
+	auto recent = wxutil::arrayStringStd(library::recentFiles());
 
 	// Show dialog
 	wxSingleChoiceDialog dlg(this, "Select a recent Archive to open", "Open Recent", recent);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		auto na = app::archiveManager().openArchive(app::archiveManager().recentFile(dlg.GetSelection()), true, true);
+		auto na = app::archiveManager().openArchive(wxutil::strToView(recent[dlg.GetSelection()]), true, true);
 		if (na)
 		{
 			list_resources_->Append(na->filename(false));

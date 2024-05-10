@@ -34,7 +34,6 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/EntryType/EntryType.h"
 #include "General/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -372,7 +371,7 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 // Reads a Wolf format file from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchiveHandler::open(Archive& archive, string_view filename)
+bool WolfArchiveHandler::open(Archive& archive, string_view filename, bool detect_types)
 {
 	// Find wolf archive type
 	strutil::Path fn1(filename);
@@ -395,7 +394,7 @@ bool WolfArchiveHandler::open(Archive& archive, string_view filename)
 		MemChunk data, head;
 		head.importFile(findFileCasing(fn1));
 		data.importFile(findFileCasing(fn2));
-		opened = openMaps(archive, head, data);
+		opened = openMaps(archive, head, data, detect_types);
 	}
 	else if (fn1_name == "AUDIOHED" || fn1_name == "AUDIOT")
 	{
@@ -405,7 +404,7 @@ bool WolfArchiveHandler::open(Archive& archive, string_view filename)
 		MemChunk data, head;
 		head.importFile(findFileCasing(fn1));
 		data.importFile(findFileCasing(fn2));
-		opened = openAudio(archive, head, data);
+		opened = openAudio(archive, head, data, detect_types);
 	}
 	else if (fn1_name == "VGAHEAD" || fn1_name == "VGAGRAPH" || fn1_name == "VGADICT")
 	{
@@ -418,7 +417,7 @@ bool WolfArchiveHandler::open(Archive& archive, string_view filename)
 		head.importFile(findFileCasing(fn1));
 		data.importFile(findFileCasing(fn2));
 		dict.importFile(findFileCasing(fn3));
-		opened = openGraph(archive, head, data, dict);
+		opened = openGraph(archive, head, data, dict, detect_types);
 	}
 	else
 	{
@@ -430,17 +429,26 @@ bool WolfArchiveHandler::open(Archive& archive, string_view filename)
 			return false;
 		}
 		// Load from MemChunk
-		opened = open(archive, mc);
+		opened = open(archive, mc, detect_types);
 	}
 
-	return opened;
+	if (opened)
+	{
+		// Detect all entry types
+		if (detect_types)
+			archive.detectAllEntryTypes();
+
+		return true;
+	}
+	else
+		return false;
 }
 
 // -----------------------------------------------------------------------------
 // Reads VSWAP Wolf format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool WolfArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -552,7 +560,8 @@ bool WolfArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -567,7 +576,7 @@ bool WolfArchiveHandler::open(Archive& archive, const MemChunk& mc)
 // Reads Wolf AUDIOT/AUDIOHEAD format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchiveHandler::openAudio(Archive& archive, MemChunk& head, const MemChunk& data)
+bool WolfArchiveHandler::openAudio(Archive& archive, MemChunk& head, const MemChunk& data, bool detect_types)
 {
 	// Check data was given
 	if (!head.hasData() || !data.hasData())
@@ -689,15 +698,18 @@ bool WolfArchiveHandler::openAudio(Archive& archive, MemChunk& head, const MemCh
 		nlump->setOffsetOnDisk(offset);
 		nlump->setSizeOnDisk();
 
-		// Detect entry type
+		// Load data
 		if (size > 0)
 			nlump->importMemChunk(edata);
-		EntryType::detectEntryType(*nlump);
 
 		// Add to entry list
 		nlump->setState(EntryState::Unmodified);
 		archive.rootDir()->addEntry(nlump);
 	}
+
+	// Detect all entry types
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -712,7 +724,7 @@ bool WolfArchiveHandler::openAudio(Archive& archive, MemChunk& head, const MemCh
 // Reads Wolf GAMEMAPS/MAPHEAD format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchiveHandler::openMaps(Archive& archive, MemChunk& head, const MemChunk& data)
+bool WolfArchiveHandler::openMaps(Archive& archive, MemChunk& head, const MemChunk& data, bool detect_types)
 {
 	// Check data was given
 	if (!head.hasData() || !data.hasData())
@@ -790,7 +802,8 @@ bool WolfArchiveHandler::openMaps(Archive& archive, MemChunk& head, const MemChu
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -806,7 +819,12 @@ bool WolfArchiveHandler::openMaps(Archive& archive, MemChunk& head, const MemChu
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
 #define WC(a) WolfConstant(a, num_lumps)
-bool WolfArchiveHandler::openGraph(Archive& archive, const MemChunk& head, const MemChunk& data, MemChunk& dict)
+bool WolfArchiveHandler::openGraph(
+	Archive&        archive,
+	const MemChunk& head,
+	const MemChunk& data,
+	MemChunk&       dict,
+	bool            detect_types)
 {
 	// Check data was given
 	if (!head.hasData() || !data.hasData() || !dict.hasData())
@@ -905,7 +923,8 @@ bool WolfArchiveHandler::openGraph(Archive& archive, const MemChunk& head, const
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

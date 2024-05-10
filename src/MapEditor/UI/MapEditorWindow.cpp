@@ -38,7 +38,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
-#include "General/Misc.h"
 #include "General/SAction.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
@@ -65,9 +64,9 @@
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
-#include "Utility/Tokenizer.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -108,7 +107,7 @@ EXTERN_CVAR(Int, flat_drawtype);
 // -----------------------------------------------------------------------------
 MapEditorWindow::MapEditorWindow() : STopWindow{ "SLADE", "map" }
 {
-	if (mew_maximized)
+	if (ui::getStateBool("MapEditorWindowMaximized"))
 		wxTopLevelWindow::Maximize();
 	setupLayout();
 	wxTopLevelWindow::Show(false);
@@ -138,27 +137,12 @@ MapEditorWindow::~MapEditorWindow()
 // -----------------------------------------------------------------------------
 void MapEditorWindow::loadLayout()
 {
-	// Open layout file
-	Tokenizer tz;
-	if (!tz.openFile(app::path("mapwindow.layout", app::Dir::User)))
-		return;
+	auto* aui_mgr = wxAuiManager::GetManager(this);
+	auto  layout  = ui::getWindowLayout(id_.c_str());
 
-	// Parse layout
-	auto m_mgr = wxAuiManager::GetManager(this);
-	while (true)
-	{
-		// Read component+layout pair
-		wxString component = tz.getToken();
-		wxString layout    = tz.getToken();
-
-		// Load layout to component
-		if (!component.IsEmpty() && !layout.IsEmpty())
-			m_mgr->LoadPaneInfo(layout, m_mgr->GetPane(component));
-
-		// Check if we're done
-		if (tz.peekToken().empty())
-			break;
-	}
+	for (const auto& component : layout)
+		if (!component.first.empty() && !component.second.empty())
+			aui_mgr->LoadPaneInfo(component.second, aui_mgr->GetPane(component.first));
 }
 
 // -----------------------------------------------------------------------------
@@ -166,39 +150,16 @@ void MapEditorWindow::loadLayout()
 // -----------------------------------------------------------------------------
 void MapEditorWindow::saveLayout()
 {
-	// Open layout file
-	wxFile file(app::path("mapwindow.layout", app::Dir::User), wxFile::write);
+	vector<StringPair> layout;
+	auto*              aui_mgr = wxAuiManager::GetManager(this);
 
-	// Write component layout
-	auto m_mgr = wxAuiManager::GetManager(this);
+	layout.emplace_back("console", aui_mgr->SavePaneInfo(aui_mgr->GetPane("console")).ToStdString());
+	layout.emplace_back("item_props", aui_mgr->SavePaneInfo(aui_mgr->GetPane("item_props")).ToStdString());
+	layout.emplace_back("script_editor", aui_mgr->SavePaneInfo(aui_mgr->GetPane("script_editor")).ToStdString());
+	layout.emplace_back("map_checks", aui_mgr->SavePaneInfo(aui_mgr->GetPane("map_checks")).ToStdString());
+	layout.emplace_back("undo_history", aui_mgr->SavePaneInfo(aui_mgr->GetPane("undo_history")).ToStdString());
 
-	// Console pane
-	file.Write("\"console\" ");
-	wxString pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Item info pane
-	file.Write("\"item_props\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("item_props"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Script editor pane
-	file.Write("\"script_editor\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("script_editor"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Map checks pane
-	file.Write("\"map_checks\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("map_checks"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Undo history pane
-	file.Write("\"undo_history\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("undo_history"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Close file
-	file.Close();
+	ui::setWindowLayout(id_.c_str(), layout);
 }
 
 // -----------------------------------------------------------------------------
@@ -594,9 +555,12 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 				wxICON_ERROR);
 			return false;
 		}
-		else
-			return true;
+
+		dlg.saveConfigToDatabase();
+
+		return true;
 	}
+
 	return false;
 }
 
@@ -640,7 +604,7 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 		if (map.archive)
 		{
 			Archive temp(ArchiveFormat::Wad);
-			temp.open(head->data());
+			temp.open(head->data(), true);
 			for (unsigned a = 0; a < temp.numEntries(); a++)
 				map_data_.emplace_back(new ArchiveEntry(*(temp.entryAt(a))));
 		}
@@ -728,7 +692,7 @@ void MapEditorWindow::loadMapScripts(const MapDesc& map)
 	if (map.archive)
 	{
 		auto wad = std::make_unique<Archive>(ArchiveFormat::Wad);
-		wad->open(head->data());
+		wad->open(head->data(), true);
 		auto maps = wad->detectMaps();
 		if (!maps.empty())
 		{
@@ -825,7 +789,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 
 		// Re-load wad
 		wad->close();
-		wad->open(filename);
+		wad->open(filename, true);
 	}
 	else if (nb_warned)
 		log::info(1, "Nodebuilder path not set up, no nodes were built");
@@ -916,7 +880,7 @@ bool MapEditorWindow::saveMap()
 	if (mdesc_current.archive && current_head)
 	{
 		tempwad = std::make_unique<Archive>(ArchiveFormat::Wad);
-		tempwad->open(current_head.get());
+		tempwad->open(current_head.get(), true);
 		auto amaps = tempwad->detectMaps();
 		if (!amaps.empty())
 			map = amaps[0];
@@ -1000,7 +964,6 @@ bool MapEditorWindow::saveMapAs()
 	// Write wad to file
 	wad.save(info.filenames[0]);
 	auto archive = app::archiveManager().openArchive(info.filenames[0], true, true);
-	app::archiveManager().addRecentFile(info.filenames[0]);
 
 	// Update current map description
 	auto maps = archive->detectMaps();
@@ -1390,19 +1353,10 @@ bool MapEditorWindow::handleAction(string_view id)
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
 				mapeditor::editContext().resetPlayerStart();
 
-			wxString command = dlg.selectedCommandLine(archive, mdesc_current.name, wad.filename());
-			if (!command.IsEmpty())
-			{
-				// Set working directory
-				wxString wd = wxGetCwd();
-				wxSetWorkingDirectory(dlg.selectedExeDir());
-
-				// Run
-				wxExecute(command, wxEXEC_ASYNC);
-
-				// Restore working directory
-				wxSetWorkingDirectory(wd);
-			}
+			RunDialog::Config cfg{ archive->filename() };
+			cfg.map_name = mdesc_current.name;
+			cfg.map_file = wad.filename();
+			dlg.run(cfg, archive->libraryId());
 		}
 
 		return true;
@@ -1457,8 +1411,12 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 	saveLayout();
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(
-			id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
+		ui::setWindowInfo(
+			id_.c_str(),
+			size.x,
+			size.y,
+			GetPosition().x * GetContentScaleFactor(),
+			GetPosition().y * GetContentScaleFactor());
 
 	Show(false);
 	closeMap();
@@ -1470,7 +1428,7 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 void MapEditorWindow::onSize(wxSizeEvent& e)
 {
 	// Update maximized cvar
-	mew_maximized = IsMaximized();
+	ui::saveStateBool("MapEditorWindowMaximized", IsMaximized());
 
 	e.Skip();
 }

@@ -49,7 +49,7 @@ using namespace slade;
 // Reads grp format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool GrpArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool GrpArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -69,7 +69,7 @@ bool GrpArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (string_view{ ken_magic } != "KenSilverman")
+	if (string{ ken_magic } != "KenSilverman")
 	{
 		log::error("GrpArchiveHandler::openFile: File {} has invalid header", archive.filename());
 		global::error = "Invalid grp header";
@@ -129,7 +129,8 @@ bool GrpArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	}
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();
@@ -211,7 +212,7 @@ bool GrpArchiveHandler::isThisFormat(const MemChunk& mc)
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (string_view{ ken_magic } != "KenSilverman")
+	if (string{ ken_magic } != "KenSilverman")
 		return false;
 
 	// Compute total size
@@ -262,7 +263,7 @@ bool GrpArchiveHandler::isThisFormat(const string& filename)
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (string_view{ ken_magic } != "KenSilverman")
+	if (string{ ken_magic } != "KenSilverman")
 		return false;
 
 	// Compute total size

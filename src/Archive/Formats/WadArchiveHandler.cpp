@@ -151,8 +151,6 @@ void WadArchiveHandler::updateNamespaces(Archive& archive)
 		// Check for namespace begin
 		if (strutil::endsWith(entry->upperName(), "_START"))
 		{
-			log::debug("Found namespace start marker {} at index {}", entry->name(), archive.entryIndex(entry));
-
 			// Create new namespace
 			NSPair      ns(entry, nullptr);
 			string_view name = entry->name();
@@ -170,8 +168,6 @@ void WadArchiveHandler::updateNamespaces(Archive& archive)
 			if (ns.name == "tt")
 				ns.name = "t";
 
-			log::debug("Added namespace {}", ns.name);
-
 			// Add to namespace list
 			namespaces_.push_back(ns);
 		}
@@ -179,8 +175,6 @@ void WadArchiveHandler::updateNamespaces(Archive& archive)
 		// else if (strutil::matches(entry->upperName(), "?_END") || strutil::matches(entry->upperName(), "??_END"))
 		else if (strutil::endsWith(entry->upperName(), "_END"))
 		{
-			log::debug("Found namespace end marker {} at index {}", entry->name(), archive.entryIndex(entry));
-
 			// Get namespace 'name'
 			auto ns_name = strutil::lower(entry->name());
 			strutil::removeLastIP(ns_name, 4);
@@ -194,8 +188,6 @@ void WadArchiveHandler::updateNamespaces(Archive& archive)
 				ns_name = "s";
 			if (ns_name == "tt")
 				ns_name = "t";
-
-			log::debug("Namespace name {}", ns_name);
 
 			// Check if it's the end of an existing namespace
 			// Remember entry is getEntry(a)? index is 'a'
@@ -290,7 +282,7 @@ bool WadArchiveHandler::hasFlatHack()
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool WadArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -459,7 +451,8 @@ bool WadArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	updateNamespaces(archive);
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Identify #included lumps (DECORATE, GLDEFS, etc.)
 	detectIncludes(archive);
@@ -766,7 +759,7 @@ bool WadArchiveHandler::moveEntry(Archive& archive, ArchiveEntry* entry, unsigne
 // If [maphead] is not really a map header entry, an invalid MapDesc will be
 // returned (MapDesc::head == nullptr)
 // -----------------------------------------------------------------------------
-MapDesc WadArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
+MapDesc WadArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -910,7 +903,7 @@ MapDesc WadArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 // -----------------------------------------------------------------------------
 // Searches for any maps in the wad and adds them to the map list
 // -----------------------------------------------------------------------------
-vector<MapDesc> WadArchiveHandler::detectMaps(Archive& archive)
+vector<MapDesc> WadArchiveHandler::detectMaps(const Archive& archive)
 {
 	vector<MapDesc> maps;
 
@@ -1043,8 +1036,8 @@ vector<MapDesc> WadArchiveHandler::detectMaps(Archive& archive)
 		if (entry->type()->formatId() == "archive_wad")
 		{
 			// Detect map format (probably kinda slow but whatever, no better way to do it really)
-			Archive tempwad("wad");
-			tempwad.open(entry->data());
+			Archive tempwad(ArchiveFormat::Wad);
+			tempwad.open(entry->data(), true);
 			auto emaps = tempwad.detectMaps();
 			if (!emaps.empty())
 			{
@@ -1078,7 +1071,7 @@ vector<MapDesc> WadArchiveHandler::detectMaps(Archive& archive)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string WadArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string WadArchiveHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	return detectNamespace(archive, archive.entryIndex(entry));
 }
@@ -1086,7 +1079,7 @@ string WadArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string WadArchiveHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string WadArchiveHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	// Go through namespaces
 	for (auto& ns : namespaces_)
@@ -1162,7 +1155,7 @@ void WadArchiveHandler::detectIncludes(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* WadArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	unsigned index     = 0;
@@ -1231,7 +1224,7 @@ ArchiveEntry* WadArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* WadArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	int index       = archive.numEntries() - 1;
@@ -1303,7 +1296,7 @@ ArchiveEntry* WadArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> WadArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> WadArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	unsigned index     = 0;

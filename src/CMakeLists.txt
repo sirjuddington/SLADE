@@ -9,10 +9,12 @@ file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
 	Application/*.cpp
 	Archive/*.cpp
 	Audio/*.cpp
+	Database/*.cpp
 	Game/*.cpp
 	General/*.cpp
 	Geometry/*.cpp
 	Graphics/*.cpp
+	Library/*.cpp
 	MainEditor/*.cpp
 	MapEditor/*.cpp
 	OpenGL/*.cpp

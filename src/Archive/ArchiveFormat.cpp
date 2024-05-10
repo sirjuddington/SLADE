@@ -34,6 +34,7 @@
 #include "ArchiveFormat.h"
 #include "Utility/Named.h"
 #include "Utility/Parser.h"
+#include "Utility/PropertyList.h"
 
 using namespace slade;
 using namespace archive;
@@ -226,4 +227,17 @@ ArchiveFormat archive::formatFromId(string_view format_id_string)
 			return id;
 
 	return ArchiveFormat::Unknown;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [file_ext] is a known archive file extension
+// -----------------------------------------------------------------------------
+bool archive::isKnownExtension(string_view file_ext)
+{
+	for (auto& [format, info] : format_info)
+		for (const auto& ext : info.extensions)
+			if (strutil::equalCI(ext.first, file_ext))
+				return true;
+
+	return false;
 }

@@ -52,7 +52,7 @@ using namespace slade;
 // Reads bzip2 format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool BZip2ArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool BZip2ArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	size_t size = mc.size();
 	if (size < 14)
@@ -151,7 +151,7 @@ bool BZip2ArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* en
 // Returns the entry if it matches the search criteria in [options],
 // or null otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2ArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* BZip2ArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	strutil::upperIP(options.match_name);
@@ -191,7 +191,7 @@ ArchiveEntry* BZip2ArchiveHandler::findFirst(Archive& archive, ArchiveSearchOpti
 // -----------------------------------------------------------------------------
 // Same as findFirst since there's just one entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2ArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* BZip2ArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	return findFirst(archive, options);
 }
@@ -199,7 +199,7 @@ ArchiveEntry* BZip2ArchiveHandler::findLast(Archive& archive, ArchiveSearchOptio
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> BZip2ArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> BZip2ArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	vector<ArchiveEntry*> ret;

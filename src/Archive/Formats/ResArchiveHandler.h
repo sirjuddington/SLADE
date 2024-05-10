@@ -17,8 +17,8 @@ public:
 		size_t                 dir_offset,
 		size_t                 num_lumps,
 		shared_ptr<ArchiveDir> parent);
-	bool open(Archive& archive, const MemChunk& mc) override; // Open from MemChunk
-	bool write(Archive& archive, MemChunk& mc) override;      // Write to MemChunk
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override; // Open from MemChunk
+	bool write(Archive& archive, MemChunk& mc) override;                         // Write to MemChunk
 
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;

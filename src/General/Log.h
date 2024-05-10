@@ -112,6 +112,15 @@ template<typename... Args> void error(string_view text, const Args&... args)
 	message(MessageType::Error, text, fmt::make_format_args(args...));
 }
 
+template<typename... Args> void console(int level, string_view text, const Args&... args)
+{
+	message(MessageType::Console, level, text, fmt::make_format_args(args...));
+}
+template<typename... Args> void console(string_view text, const Args&... args)
+{
+	message(MessageType::Console, text, fmt::make_format_args(args...));
+}
+
 template<typename... Args> void debug(int level, string_view text, const Args&... args)
 {
 	if (global::debug)

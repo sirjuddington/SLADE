@@ -88,7 +88,7 @@ DirArchiveHandler::DirArchiveHandler() :
 // Reads files from the directory [filename] into the archive
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DirArchiveHandler::open(Archive& archive, string_view filename)
+bool DirArchiveHandler::open(Archive& archive, string_view filename, bool detect_types)
 {
 	ui::setSplashProgressMessage("Reading directory structure");
 	ui::setSplashProgress(0);
@@ -131,9 +131,6 @@ bool DirArchiveHandler::open(Archive& archive, string_view filename)
 			return false;
 
 		file_modification_times_[new_entry.get()] = fileutil::fileModifiedTime(files[a]);
-
-		// Detect entry type
-		EntryType::detectEntryType(*new_entry);
 	}
 
 	// Add empty directories
@@ -154,6 +151,10 @@ bool DirArchiveHandler::open(Archive& archive, string_view filename)
 	for (auto& entry : entry_list)
 		entry->setState(EntryState::Unmodified);
 
+	// Detect all entry types
+	if (detect_types)
+		archive.detectAllEntryTypes();
+
 	// Enable announcements
 	sig_blocker.unblock();
 
@@ -167,7 +168,7 @@ bool DirArchiveHandler::open(Archive& archive, string_view filename)
 // -----------------------------------------------------------------------------
 // Reads an archive from an ArchiveEntry (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchiveHandler::open(Archive& archive, ArchiveEntry* entry)
+bool DirArchiveHandler::open(Archive& archive, ArchiveEntry* entry, bool detect_types)
 {
 	global::error = "Cannot open Folder Archive from entry";
 	return false;
@@ -176,7 +177,7 @@ bool DirArchiveHandler::open(Archive& archive, ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Reads data from a MemChunk (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool DirArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	global::error = "Cannot open Folder Archive from memory";
 	return false;
@@ -450,7 +451,7 @@ bool DirArchiveHandler::renameEntry(Archive& archive, ArchiveEntry* entry, strin
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-MapDesc DirArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* entry)
+MapDesc DirArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* entry)
 {
 	MapDesc map;
 
@@ -466,11 +467,20 @@ MapDesc DirArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* entry)
 	if (entry->parentDir()->parent() != archive.rootDir() || entry->parentDir()->name() != "maps")
 		return map;
 
+	// Detect map format
+	auto    format = MapFormat::Unknown;
+	Archive tempwad(ArchiveFormat::Wad);
+	tempwad.open(entry->data(), true);
+	auto emaps = tempwad.detectMaps();
+	if (!emaps.empty())
+		format = emaps[0].format;
+
 	// Setup map info
 	map.archive = true;
 	map.head    = entry->getShared();
 	map.end     = entry->getShared();
 	map.name    = entry->upperNameNoExt();
+	map.format  = format;
 
 	return map;
 }
@@ -479,7 +489,7 @@ MapDesc DirArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* entry)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<MapDesc> DirArchiveHandler::detectMaps(Archive& archive)
+vector<MapDesc> DirArchiveHandler::detectMaps(const Archive& archive)
 {
 	vector<MapDesc> ret;
 
@@ -500,7 +510,7 @@ vector<MapDesc> DirArchiveHandler::detectMaps(Archive& archive)
 		// Detect map format (probably kinda slow but whatever, no better way to do it really)
 		auto    format = MapFormat::Unknown;
 		Archive tempwad(ArchiveFormat::Wad);
-		tempwad.open(entry->data());
+		tempwad.open(entry->data(), true);
 		auto emaps = tempwad.detectMaps();
 		if (!emaps.empty())
 			format = emaps[0].format;
@@ -522,7 +532,7 @@ vector<MapDesc> DirArchiveHandler::detectMaps(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* DirArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -555,7 +565,7 @@ ArchiveEntry* DirArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* DirArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -587,7 +597,7 @@ ArchiveEntry* DirArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> DirArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> DirArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "General/Sigslot.h"
-#include <wx/dataview.h>
+#include "SDataViewCtrl.h"
 
 namespace slade
 {
@@ -84,7 +84,7 @@ namespace ui
 		bool dirIsInList(const ArchiveDir& dir) const;
 	};
 
-	class ArchiveEntryTree : public wxDataViewCtrl
+	class ArchiveEntryTree : public SDataViewCtrl
 	{
 	public:
 		ArchiveEntryTree(
@@ -102,6 +102,7 @@ namespace ui
 		bool isSortedBySize() const { return GetSortingColumn() == col_size_; }
 		bool isSortedByType() const { return GetSortingColumn() == col_type_; }
 		bool isDefaultSorted() const;
+		bool isTreeView() const { return model_ ? model_->viewType() == ArchiveViewModel::ViewType::Tree : false; }
 
 		vector<ArchiveEntry*> selectedEntries(bool include_dirs = false) const;
 		ArchiveEntry*         firstSelectedEntry(bool include_dirs = false) const;
@@ -132,22 +133,16 @@ namespace ui
 
 	private:
 		weak_ptr<Archive> archive_;
-		ArchiveViewModel* model_                   = nullptr;
-		wxDataViewColumn* col_name_                = nullptr;
-		wxDataViewColumn* col_size_                = nullptr;
-		wxDataViewColumn* col_type_                = nullptr;
-		wxDataViewColumn* col_index_               = nullptr;
-		int               multi_select_base_index_ = -1;
-		string            search_;
+		ArchiveViewModel* model_     = nullptr;
+		wxDataViewColumn* col_name_  = nullptr;
+		wxDataViewColumn* col_size_  = nullptr;
+		wxDataViewColumn* col_type_  = nullptr;
+		wxDataViewColumn* col_index_ = nullptr;
 
 		void setupColumns();
-		void saveColumnWidths() const;
 		void updateColumnWidths();
-
-#ifdef __WXMSW__
-		bool lookForSearchEntryFrom(int index_start);
-		bool searchChar(int key_code);
-#endif
+		void saveColumnConfig();
+		void onAnyColumnResized() override;
 	};
 
 } // namespace ui

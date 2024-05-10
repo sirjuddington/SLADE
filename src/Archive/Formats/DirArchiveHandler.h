@@ -46,9 +46,9 @@ public:
 	bool                  saveErrorsOccurred() const { return save_errors_; }
 
 	// Opening
-	bool open(Archive& archive, string_view filename) override; // Open from File
-	bool open(Archive& archive, ArchiveEntry* entry) override;  // Open from ArchiveEntry
-	bool open(Archive& archive, const MemChunk& mc) override;   // Open from MemChunk
+	bool open(Archive& archive, string_view filename, bool detect_types) override; // Open from File
+	bool open(Archive& archive, ArchiveEntry* entry, bool detect_types) override;  // Open from ArchiveEntry
+	bool open(Archive& archive, const MemChunk& mc, bool detect_types) override;   // Open from MemChunk
 
 	// Writing/Saving
 	bool write(Archive& archive, MemChunk& mc) override;             // Write to MemChunk
@@ -69,13 +69,13 @@ public:
 	bool renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force = false) override;
 
 	// Detection
-	MapDesc         mapDesc(Archive& archive, ArchiveEntry* entry) override;
-	vector<MapDesc> detectMaps(Archive& archive) override;
+	MapDesc         mapDesc(const Archive& archive, ArchiveEntry* entry) override;
+	vector<MapDesc> detectMaps(const Archive& archive) override;
 
 	// Search
-	ArchiveEntry*         findFirst(Archive& archive, ArchiveSearchOptions& options) override;
-	ArchiveEntry*         findLast(Archive& archive, ArchiveSearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(Archive& archive, ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findFirst(const Archive& archive, ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findLast(const Archive& archive, ArchiveSearchOptions& options) override;
+	vector<ArchiveEntry*> findAll(const Archive& archive, ArchiveSearchOptions& options) override;
 
 	// DirArchiveHandler-specific
 	void ignoreChangedEntries(const vector<DirEntryChange>& changes);

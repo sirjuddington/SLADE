@@ -110,6 +110,19 @@
     <ClInclude Include="..\thirdparty\sol\config.hpp" />
     <ClInclude Include="..\thirdparty\sol\forward.hpp" />
     <ClInclude Include="..\thirdparty\sol\sol.hpp" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Assertion.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Backup.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Column.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Database.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Exception.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\ExecuteMany.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Savepoint.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\SQLiteCpp.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Statement.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Transaction.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\Utils.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\include\SQLiteCpp\VariadicBind.h" />
+    <ClInclude Include="..\thirdparty\sqlitecpp\sqlite3\sqlite3.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\thirdparty\dumb\core\atexit.c">
@@ -702,6 +715,14 @@
     <ClCompile Include="..\thirdparty\lzma\C\XzDec.c" />
     <ClCompile Include="..\thirdparty\lzma\C\XzEnc.c" />
     <ClCompile Include="..\thirdparty\lzma\C\XzIn.c" />
+    <ClCompile Include="..\thirdparty\sqlitecpp\sqlite3\sqlite3.c" />
+    <ClCompile Include="..\thirdparty\sqlitecpp\src\Backup.cpp" />
+    <ClCompile Include="..\thirdparty\sqlitecpp\src\Column.cpp" />
+    <ClCompile Include="..\thirdparty\sqlitecpp\src\Database.cpp" />
+    <ClCompile Include="..\thirdparty\sqlitecpp\src\Exception.cpp" />
+    <ClCompile Include="..\thirdparty\sqlitecpp\src\Savepoint.cpp" />
+    <ClCompile Include="..\thirdparty\sqlitecpp\src\Statement.cpp" />
+    <ClCompile Include="..\thirdparty\sqlitecpp\src\Transaction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\thirdparty\dumb\helpers\resamp2.inc" />
@@ -764,25 +785,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\sqlite3;$(ProjectDir)..\thirdparty\sqlitecpp\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\sqlite3;$(ProjectDir)..\thirdparty\sqlitecpp\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\sqlite3;$(ProjectDir)..\thirdparty\sqlitecpp\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include;$(ProjectDir)..\thirdparty\glad\include;$(ProjectDir)..\thirdparty\sqlitecpp\sqlite3;$(ProjectDir)..\thirdparty\sqlitecpp\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>

@@ -37,8 +37,9 @@
 #include "BrowserCanvas.h"
 #include "BrowserItem.h"
 #include "BrowserWindow.h"
-#include "General/Misc.h"
+#include "General/UI.h"
 #include "Graphics/Palette/Palette.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -200,14 +201,14 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	namespace wx = wxutil;
 
 	// Init size/pos
-	auto info = misc::getWindowInfo("browser");
+	auto info = ui::getWindowInfo("browser");
 	if (!info.id.empty())
 	{
 		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		misc::setWindowInfo("browser", 768, 600, 0, 0);
+		ui::setWindowInfo("browser", 768, 600, 0, 0);
 
 	// Init variables
 	items_root_ = new BrowserTreeNode();
@@ -287,7 +288,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	wxWindowBase::Layout();
 	wxTopLevelWindowBase::SetMinSize(wxutil::scaledSize(540, 400));
 
-	if (browser_maximised)
+	if (ui::getStateBool("BrowserWindowMaximized"))
 		wxTopLevelWindow::Maximize();
 	else
 		CenterOnParent();
@@ -301,11 +302,15 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 // -----------------------------------------------------------------------------
 BrowserWindow::~BrowserWindow()
 {
-	auto scale              = wxWindowBase::GetContentScaleFactor();
-	browser_maximised       = wxTopLevelWindow::IsMaximized();
-	const wxSize ClientSize = GetClientSize() * scale;
+	ui::saveStateBool("BrowserWindowMaximized", wxTopLevelWindow::IsMaximized());
+	const wxSize client_size = GetClientSize() * GetContentScaleFactor();
 	if (!wxTopLevelWindow::IsMaximized())
-		misc::setWindowInfo("browser", ClientSize.x, ClientSize.y, GetPosition().x * scale, GetPosition().y * scale);
+		ui::setWindowInfo(
+			"browser",
+			client_size.x,
+			client_size.y,
+			GetPosition().x * GetContentScaleFactor(),
+			GetPosition().y * GetContentScaleFactor());
 }
 
 // -----------------------------------------------------------------------------

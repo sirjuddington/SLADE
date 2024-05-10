@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utility/StringPair.h"
+
 namespace slade::ui
 {
 // General
@@ -46,5 +48,16 @@ int    scalePxU(int px);
 int    pad();      // Shortcut for ui::px(UI::Size::Pad)
 int    padLarge(); // Shortcut for ui::px(UI::Size::PadLarge)
 int    padMin();   // Shortcut for ui::px(ui::Size::PadMinimum)
+
+// Window size, position & layout persistence
+struct WindowInfo
+{
+	string id;
+	int    left, top, width, height;
+};
+WindowInfo         getWindowInfo(const char* id);
+void               setWindowInfo(const char* id, int width, int height, int left, int top);
+vector<StringPair> getWindowLayout(const char* id);
+void               setWindowLayout(const char* id, const vector<StringPair>& layout);
 
 } // namespace slade::ui

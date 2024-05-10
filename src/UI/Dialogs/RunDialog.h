@@ -9,15 +9,27 @@ class ResourceArchiveChooser;
 class RunDialog : public SDialog
 {
 public:
-	RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3d_cb = false, bool run_map = false);
+	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false, bool run_map = false);
+	RunDialog(wxWindow* parent, int64_t archive_lib_id);
 	~RunDialog() override;
 
+	struct Config
+	{
+		wxString archive_path;
+		wxString iwad_path;
+		wxString map_name;
+		wxString map_file;
+
+		Config(const string& archive_path) : archive_path{ archive_path } {}
+	};
+
 	void     openGameExe(unsigned index) const;
-	wxString selectedCommandLine(const Archive* archive, const wxString& map_name, const wxString& map_file = "") const;
+	wxString selectedCommandLine(const Config& cfg) const;
 	wxString selectedResourceList() const;
 	wxString selectedExeDir() const;
 	wxString selectedExeId() const;
 	bool     start3dModeChecked() const;
+	void     run(const Config& cfg, int64_t archive_lib_id = -1) const;
 
 private:
 	wxChoice*               choice_game_exes_  = nullptr;
@@ -34,7 +46,14 @@ private:
 	ResourceArchiveChooser* rac_resources_     = nullptr;
 	wxTextCtrl*             text_extra_params_ = nullptr;
 	wxCheckBox*             cb_start_3d_       = nullptr;
+	wxWindow*               isp_iwad_          = nullptr;
 	bool                    run_map_           = false;
+
+	void setup(
+		Archive* archive          = nullptr,
+		int64_t  archive_lib_id   = -1,
+		bool     show_start_3d_cb = false,
+		bool     run_map          = false);
 
 	// Events
 	void onBtnAddGame(wxCommandEvent& e);

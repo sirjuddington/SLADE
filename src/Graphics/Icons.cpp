@@ -576,7 +576,7 @@ wxBitmap icons::getInterfaceIcon(string_view name, int size, InterfaceTheme them
 	}
 
 	// Get icon definition
-	auto&    icon_set = dark ? iconset_ui_dark : iconset_ui_light;
+	auto& icon_set = dark ? iconset_ui_dark : iconset_ui_light;
 	IconDef* icon_def = nullptr;
 	if (auto i = icon_set.icons.find(name); i != icon_set.icons.end())
 		icon_def = &i->second;
@@ -622,4 +622,27 @@ vector<string> icons::iconSets(Type type)
 bool icons::iconExists(Type type, string_view name)
 {
 	return iconDef(type, name) != nullptr;
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// IconCache Struct Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Adds an icon to the cache
+// -----------------------------------------------------------------------------
+void icons::IconCache::cacheIcon(Type type, const string& name, int size, Point2i padding)
+{
+#if wxCHECK_VERSION(3, 1, 6)
+	const auto bundle = getIcon(type, name, size, padding);
+	icons[name]       = bundle;
+#else
+	const auto bmp = icons::getIcon(type, name, ui::scalePx(size), padding);
+	wxIcon icon;
+	icon.CopyFromBitmap(bmp);
+	icons[name] = icon;
+#endif
 }

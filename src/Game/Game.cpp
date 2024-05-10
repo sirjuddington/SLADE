@@ -419,7 +419,7 @@ void game::init()
 			[=]()
 			{
 				Archive zdoom_pk3(ArchiveFormat::Zip);
-				if (!zdoom_pk3.open(zdoom_pk3_path))
+				if (!zdoom_pk3.open(zdoom_pk3_path, true))
 					return;
 
 				// ZScript

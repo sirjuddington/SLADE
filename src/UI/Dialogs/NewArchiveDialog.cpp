@@ -36,18 +36,11 @@
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
 #include "NewArchiveDiaog.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
 using namespace ui;
-
-
-// -----------------------------------------------------------------------------
-//
-// Variables
-//
-// -----------------------------------------------------------------------------
-CVAR(String, archive_last_created_format, "wad", CVar::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -72,10 +65,11 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 
 	// Fill formats list
 	long selected_index = 0;
+	auto last_format    = ui::getStateString("ArchiveLastCreatedFormat");
 	for (const auto& format : archive::allFormatsInfo())
 		if (format.create)
 		{
-			if (format.id == archive_last_created_format)
+			if (format.id == last_format)
 				selected_index = choice_type->GetCount();
 
 			choice_type->AppendString(format.name + " Archive");
@@ -100,8 +94,8 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 			for (const auto& format : archive::allFormatsInfo())
 				if (choice_type->GetString(choice_type->GetSelection()) == (format.name + " Archive"))
 				{
-					archive_created_            = app::archiveManager().newArchive(format.id).get();
-					archive_last_created_format = format.id;
+					archive_created_ = app::archiveManager().newArchive(format.id).get();
+					ui::saveStateString("ArchiveLastCreatedFormat", format.id);
 					EndModal(wxID_OK);
 				}
 		});

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 namespace slade
 {
 namespace icons
@@ -31,5 +33,17 @@ namespace icons
 
 	vector<string> iconSets(Type type);
 	bool           iconExists(Type type, string_view name);
+
+	struct IconCache
+	{
+#if wxCHECK_VERSION(3, 1, 6)
+		std::unordered_map<string, wxBitmapBundle> icons;
+#else
+		std::unordered_map<string, wxIcon> icons;
+#endif
+
+		bool isCached(const string& name) { return icons.find(name) != icons.end(); }
+		void cacheIcon(Type type, const string& name, int size, Point2i padding = {});
+	};
 } // namespace icons
 } // namespace slade

@@ -36,6 +36,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/EntryType/EntryType.h"
+#include "Database/Database.h"
 #include "Game/Game.h"
 #include "Game/SpecialPreset.h"
 #include "General/Clipboard.h"
@@ -43,13 +44,13 @@
 #include "General/Console.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
-#include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/SAction.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
+#include "Library/Library.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/NodeBuilders.h"
 #include "OpenGL/GLTexture.h"
@@ -60,6 +61,7 @@
 #include "TextEditor/TextStyle.h"
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -115,7 +117,6 @@ ResourceManager resource_manager;
 
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
 CVAR(String, temp_location_custom, "", CVar::Flag::Save)
-CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 
 
 // ----------------------------------------------------------------------------
@@ -214,7 +215,7 @@ bool initDirectories()
 	{
 		if (!wxMkdir(dir_user))
 		{
-			wxMessageBox(wxString::Format("Unable to create user directory \"%s\"", dir_user), "Error", wxICON_ERROR);
+			global::error = fmt::format("Unable to create user directory \"{}\"", dir_user);
 			return false;
 		}
 	}
@@ -225,7 +226,7 @@ bool initDirectories()
 	{
 		if (!wxMkdir(dir_temp))
 		{
-			wxMessageBox(wxString::Format("Unable to create temp directory \"%s\"", dir_temp), "Error", wxICON_ERROR);
+			global::error = fmt::format("Unable to create temp directory \"{}\"", dir_temp);
 			return false;
 		}
 	}
@@ -288,18 +289,9 @@ void readConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
-		// Read recent files list
+		// Read (pre-3.3.0) recent files list
 		if (tz.advIf("recent_files", 2))
-		{
-			while (!tz.checkOrEnd("}"))
-			{
-				auto path = wxString::FromUTF8(tz.current().text.c_str());
-				archive_manager.addRecentFile(wxutil::strToView(path));
-				tz.adv();
-			}
-
-			tz.adv(); // Skip ending }
-		}
+			library::readPre330RecentFiles(tz);
 
 		// Read keybinds
 		if (tz.advIf("keys", 2))
@@ -330,10 +322,6 @@ void readConfigFile()
 
 			tz.adv(); // Skip ending }
 		}
-
-		// Read window size/position info
-		if (tz.advIf("window_info", 2))
-			misc::readWindowInfo(tz);
 
 		// Next token
 		tz.adv();
@@ -423,6 +411,14 @@ ResourceManager& app::resources()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the program resource archive (ie. slade.pk3)
+// -----------------------------------------------------------------------------
+Archive* app::programResource()
+{
+	return archive_manager.programResourceArchive();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the number of ms elapsed since the application was started
 // -----------------------------------------------------------------------------
 long app::runTimer()
@@ -479,13 +475,16 @@ bool app::init(const vector<string>& args, double ui_scale)
 	archive_manager.init();
 	if (!archive_manager.resArchiveOK())
 	{
-		wxMessageBox(
-			"Unable to find slade.pk3, make sure it exists in the same directory as the "
-			"SLADE executable",
-			"Error",
-			wxICON_ERROR);
+		global::error = "Unable to find slade.pk3, make sure it exists in the same directory as the SLADE executable";
 		return false;
 	}
+
+	// Init database
+	if (!database::init())
+		return false;
+
+	// Init library
+	library::init();
 
 	// Init SActions
 	SAction::setBaseWxId(26000);
@@ -575,11 +574,11 @@ bool app::init(const vector<string>& args, double ui_scale)
 	log::info("SLADE Initialisation OK");
 
 	// Show Setup Wizard if needed
-	if (!setup_wizard_run)
+	if (!ui::getStateBool("SetupWizardRun"))
 	{
 		SetupWizardDialog dlg(maineditor::windowWx());
 		dlg.ShowModal();
-		setup_wizard_run = true;
+		ui::saveStateBool("SetupWizardRun", true);
 		maineditor::windowWx()->Update();
 		maineditor::windowWx()->Refresh();
 	}
@@ -615,10 +614,10 @@ void app::saveConfigFile()
 		return;
 
 	// Write cfg header
-	file.Write("/*****************************************************\n");
-	file.Write(" * SLADE Configuration File\n");
-	file.Write(" * Don't edit this unless you know what you're doing\n");
-	file.Write(" *****************************************************/\n\n");
+	file.Write("// ----------------------------------------------------\n");
+	file.Write(wxString::Format("// SLADE v%s Configuration File\n", version_num.toString()));
+	file.Write("// Don't edit this unless you know what you're doing\n");
+	file.Write("// ----------------------------------------------------\n\n");
 
 	// Write cvars
 	file.Write(CVar::writeAll(), wxConvUTF8);
@@ -633,11 +632,14 @@ void app::saveConfigFile()
 	}
 	file.Write("}\n");
 
-	// Write recent files list (in reverse to keep proper order when reading back)
-	file.Write("\nrecent_files\n{\n");
-	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
+	// Write recent files
+	// This isn't used in 3.3.0+, but we'll write them anyway for backwards-compatibility with previous versions
+	// (will be removed eventually, perhaps in 3.4.0)
+	auto recent_files = library::recentFiles();
+	file.Write("\n// Recent Files (for backwards compatibility with pre-3.3.0 SLADE)\nrecent_files\n{\n");
+	for (int i = recent_files.size() - 1; i >= 0; --i)
 	{
-		auto path = archive_manager.recentFile(a);
+		auto path = recent_files[i];
 		std::replace(path.begin(), path.end(), '\\', '/');
 		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
 	}
@@ -657,13 +659,10 @@ void app::saveConfigFile()
 	file.Write(executables::writePaths());
 	file.Write("}\n");
 
-	// Write window info
-	file.Write("\nwindow_info\n{\n");
-	misc::writeWindowInfo(file);
-	file.Write("}\n");
-
 	// Close configuration file
-	file.Write("\n// End Configuration File\n\n");
+	file.Write("\n// ----------------------------------------------------\n");
+	file.Write("// End Configuration File\n");
+	file.Write("// ----------------------------------------------------\n");
 }
 
 // -----------------------------------------------------------------------------
@@ -726,6 +725,9 @@ void app::exit(bool save_config)
 
 	// Close DUMB
 	dumb_exit();
+
+	// Close program database
+	database::close();
 
 	// Exit wx Application
 	wxGetApp().Exit();

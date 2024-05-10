@@ -120,7 +120,7 @@ void bloodCrypt(void* data, int key, int len)
 // Reads rff format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool RffArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool RffArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -226,7 +226,8 @@ bool RffArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	delete[] lumps;
 
 	// Detect all entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

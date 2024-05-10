@@ -38,6 +38,7 @@
 #include "UI/ArchivePanel.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/MainWindow.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -124,6 +125,14 @@ void maineditor::openTextureEditor(const Archive* archive, const ArchiveEntry* e
 void maineditor::openMapEditor(Archive* archive)
 {
 	mapeditor::chooseMap(archive);
+}
+
+// -----------------------------------------------------------------------------
+// Opens the archive file at [filename]
+// -----------------------------------------------------------------------------
+void maineditor::openArchiveFile(string_view filename)
+{
+	main_window->archiveManagerPanel()->openFile(wxutil::strFromView(filename));
 }
 
 // -----------------------------------------------------------------------------

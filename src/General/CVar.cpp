@@ -199,7 +199,7 @@ string CVar::writeAll()
 		}
 	}
 
-	format_to(buf, "}}\n\n");
+	format_to(buf, "}}\n");
 
 	return to_string(mem_buf);
 }

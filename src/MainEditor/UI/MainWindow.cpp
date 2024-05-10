@@ -37,9 +37,10 @@
 #include "Archive/ArchiveManager.h"
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
-#include "General/Misc.h"
 #include "General/SAction.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "Library/UI/LibraryPanel.h"
 #include "MapEditor/MapEditor.h"
 #include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
@@ -54,9 +55,9 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
-#include "Utility/Tokenizer.h"
 
 using namespace slade;
 
@@ -115,7 +116,7 @@ MainWindow::MainWindow() : STopWindow("SLADE", "main")
 {
 	custom_menus_begin_ = 2;
 
-	if (mw_maximized)
+	if (ui::getStateBool("MainWindowMaximized"))
 		wxTopLevelWindow::Maximize();
 
 	setupLayout();
@@ -136,26 +137,11 @@ MainWindow::~MainWindow()
 // -----------------------------------------------------------------------------
 void MainWindow::loadLayout() const
 {
-	// Open layout file
-	Tokenizer tz;
-	if (!tz.openFile(app::path("mainwindow.layout", app::Dir::User)))
-		return;
+	auto layout = ui::getWindowLayout(id_.c_str());
 
-	// Parse layout
-	while (true)
-	{
-		// Read component+layout pair
-		wxString component = tz.getToken();
-		wxString layout    = tz.getToken();
-
-		// Load layout to component
-		if (!component.IsEmpty() && !layout.IsEmpty())
-			aui_mgr_->LoadPaneInfo(layout, aui_mgr_->GetPane(component));
-
-		// Check if we're done
-		if (tz.peekToken().empty())
-			break;
-	}
+	for (const auto& component : layout)
+		if (!component.first.empty() && !component.second.empty())
+			aui_mgr_->LoadPaneInfo(component.second, aui_mgr_->GetPane(component.first));
 }
 
 // -----------------------------------------------------------------------------
@@ -163,28 +149,13 @@ void MainWindow::loadLayout() const
 // -----------------------------------------------------------------------------
 void MainWindow::saveLayout() const
 {
-	// Open layout file
-	wxFile file(app::path("mainwindow.layout", app::Dir::User), wxFile::write);
+	vector<StringPair> layout;
 
-	// Write component layout
+	layout.emplace_back("console", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("console")).ToStdString());
+	layout.emplace_back("archive_manager", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("archive_manager")).ToStdString());
+	layout.emplace_back("undo_history", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("undo_history")).ToStdString());
 
-	// Console pane
-	file.Write("\"console\" ");
-	wxString pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("console"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Archive Manager pane
-	file.Write("\"archive_manager\" ");
-	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("archive_manager"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Undo History pane
-	file.Write("\"undo_history\" ");
-	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("undo_history"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Close file
-	file.Close();
+	ui::setWindowLayout(id_.c_str(), layout);
 }
 
 // -----------------------------------------------------------------------------
@@ -305,6 +276,7 @@ void MainWindow::setupLayout()
 
 	// Tools menu
 	auto tools_menu = new wxMenu("");
+	SAction::fromId("main_showlibrary")->addToMenu(tools_menu);
 	SAction::fromId("main_runscript")->addToMenu(tools_menu);
 	menu->Append(tools_menu, "&Tools");
 
@@ -350,7 +322,14 @@ void MainWindow::setupLayout()
 	b_maint->setMenu(ArchivePanel::createMaintenanceMenu());
 	toolbar_->addGroup(tbg_archive);
 
-	// Create Boomkarks toolbar
+	// Create General toolbar
+	auto* tbg_general = new SToolBarGroup(toolbar_, "_General");
+	tbg_general->addActionButton("main_showlibrary");
+	tbg_general->addActionButton("main_runscript");
+	tbg_general->addActionButton("main_preferences");
+	toolbar_->addGroup(tbg_general);
+
+	// Create Bookmarks toolbar
 	auto* tbg_bookmarks = new SToolBarGroup(toolbar_, "_Bookmarks");
 	auto* b_bookmarks   = tbg_bookmarks->addActionButton(
         "bookmarks", "Bookmarks", "bookmark", "Go to a bookmarked entry");
@@ -445,11 +424,15 @@ bool MainWindow::exitProgram()
 	// Save current layout
 	// main_window_layout = aui_mgr_->SavePerspective();
 	saveLayout();
-	mw_maximized      = IsMaximized();
+	ui::saveStateBool("MainWindowMaximized", IsMaximized());
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(
-			id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
+		ui::setWindowInfo(
+			id_.c_str(),
+			size.x,
+			size.y,
+			GetPosition().x * GetContentScaleFactor(),
+			GetPosition().y * GetContentScaleFactor());
 
 	// Save selected palette
 	global_palette = wxutil::strToView(palette_chooser_->GetStringSelection());
@@ -491,6 +474,42 @@ void MainWindow::openStartPageTab() const
 
 	// Not found, create start page tab
 	stc_tabs_->AddPage(new ui::StartPanel(stc_tabs_), "Start Page", true, icons::getIcon(icons::General, "logo"));
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the Archive Library tab is currently open
+// -----------------------------------------------------------------------------
+bool MainWindow::libraryTabOpen() const
+{
+	for (unsigned a = 0; a < stc_tabs_->GetPageCount(); a++)
+	{
+		if (stc_tabs_->GetPage(a)->GetName() == "library")
+			return true;
+	}
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Switches to the Archive Library tab, or (re)creates it if it has been closed
+// -----------------------------------------------------------------------------
+void MainWindow::openLibraryTab() const
+{
+	// Find existing tab
+	for (unsigned a = 0; a < stc_tabs_->GetPageCount(); a++)
+	{
+		if (stc_tabs_->GetPage(a)->GetName() == "library")
+		{
+			stc_tabs_->SetSelection(a);
+			return;
+		}
+	}
+
+	// Not found, create library tab
+	auto lib_tab = new ui::LibraryPanel(stc_tabs_);
+	lib_tab->SetName("library");
+	stc_tabs_->AddPage(lib_tab, "Archive Library", true);
+	stc_tabs_->SetPageBitmap(stc_tabs_->GetPageIndex(lib_tab), icons::getIcon(icons::General, "library"));
 }
 
 // -----------------------------------------------------------------------------
@@ -573,7 +592,10 @@ bool MainWindow::handleAction(string_view id)
 
 	// View->Show Start Page
 	if (id == "main_showstartpage")
+	{
 		openStartPageTab();
+		return true;
+	}
 
 #ifndef NO_LUA
 	// Tools->Run Script
@@ -583,6 +605,13 @@ bool MainWindow::handleAction(string_view id)
 		return true;
 	}
 #endif
+
+	// Tools->Archive Library
+	if (id == "main_showlibrary")
+	{
+		openLibraryTab();
+		return true;
+	}
 
 	// Help->About
 	if (id == "main_about")
@@ -690,7 +719,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 #endif
 
 	// Update maximized cvar
-	mw_maximized = IsMaximized();
+	ui::saveStateBool("MainWindowMaximized", IsMaximized());
 
 	// Test creation of OpenGL context
 	if (!opengl_test_done && e.GetSize().x > 20 && e.GetSize().y > 20)

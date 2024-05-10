@@ -22,9 +22,9 @@ public:
 	ArchiveFormat format() const { return format_; }
 
 	// Opening
-	virtual bool open(Archive& archive, string_view filename); // Open from File
-	virtual bool open(Archive& archive, ArchiveEntry* entry);  // Open from ArchiveEntry
-	virtual bool open(Archive& archive, const MemChunk& mc);   // Open from MemChunk
+	virtual bool open(Archive& archive, string_view filename, bool detect_types); // Open from File
+	virtual bool open(Archive& archive, ArchiveEntry* entry, bool detect_types);  // Open from ArchiveEntry
+	virtual bool open(Archive& archive, const MemChunk& mc, bool detect_types);   // Open from MemChunk
 
 	// Writing/Saving
 	virtual bool write(Archive& archive, MemChunk& mc);             // Write to MemChunk
@@ -68,15 +68,15 @@ public:
 	virtual bool renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force = false);
 
 	// Detection
-	virtual MapDesc         mapDesc(Archive& archive, ArchiveEntry* maphead);
-	virtual vector<MapDesc> detectMaps(Archive& archive);
-	virtual string          detectNamespace(Archive& archive, ArchiveEntry* entry);
-	virtual string          detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir = nullptr);
+	virtual MapDesc         mapDesc(const Archive& archive, ArchiveEntry* maphead);
+	virtual vector<MapDesc> detectMaps(const Archive& archive);
+	virtual string          detectNamespace(const Archive& archive, ArchiveEntry* entry);
+	virtual string          detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir = nullptr);
 
 	// Search
-	virtual ArchiveEntry*         findFirst(Archive& archive, ArchiveSearchOptions& options);
-	virtual ArchiveEntry*         findLast(Archive& archive, ArchiveSearchOptions& options);
-	virtual vector<ArchiveEntry*> findAll(Archive& archive, ArchiveSearchOptions& options);
+	virtual ArchiveEntry*         findFirst(const Archive& archive, ArchiveSearchOptions& options);
+	virtual ArchiveEntry*         findLast(const Archive& archive, ArchiveSearchOptions& options);
+	virtual vector<ArchiveEntry*> findAll(const Archive& archive, ArchiveSearchOptions& options);
 
 	// Format detection
 	virtual bool isThisFormat(const MemChunk& mc);
@@ -85,9 +85,6 @@ public:
 protected:
 	ArchiveFormat format_;
 	bool          treeless_ = false;
-
-	// Temp shortcuts
-	void detectAllEntryTypes(const Archive& archive);
 };
 
 namespace archive

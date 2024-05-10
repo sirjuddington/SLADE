@@ -220,7 +220,7 @@ string Archive::filename(bool full) const
 		if (parentArchive())
 			parent_archive = parentArchive()->filename(false) + "/";
 
-		return parent_archive.append(strutil::Path::fileNameOf(parent->name(), false));
+		return parent_archive.append(strutil::Path::fileNameOf(parent->name()));
 	}
 
 	return full ? filename_ : string{ strutil::Path::fileNameOf(filename_) };
@@ -254,7 +254,7 @@ string Archive::formatId() const
 // Reads an archive from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::open(string_view filename)
+bool Archive::open(string_view filename, bool detect_types)
 {
 	// Update filename before opening
 	const auto backupname = filename_;
@@ -262,7 +262,7 @@ bool Archive::open(string_view filename)
 
 	// Open via format handler
 	const sf::Clock timer;
-	if (format_handler_->open(*this, filename))
+	if (format_handler_->open(*this, filename, detect_types))
 	{
 		log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
 		file_modified_ = fileutil::fileModifiedTime(filename);
@@ -281,14 +281,14 @@ bool Archive::open(string_view filename)
 // Reads an archive from an ArchiveEntry
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::open(ArchiveEntry* entry)
+bool Archive::open(ArchiveEntry* entry, bool detect_types)
 {
-	return format_handler_->open(*this, entry);
+	return format_handler_->open(*this, entry, detect_types);
 }
 
-bool Archive::open(const MemChunk& mc)
+bool Archive::open(const MemChunk& mc, bool detect_types)
 {
-	return format_handler_->open(*this, mc);
+	return format_handler_->open(*this, mc, detect_types);
 }
 
 bool Archive::write(MemChunk& mc)
@@ -930,7 +930,7 @@ MapDesc Archive::mapDesc(ArchiveEntry* maphead)
 // Returns the MapDesc information about all maps in the Archive.
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-vector<MapDesc> Archive::detectMaps()
+vector<MapDesc> Archive::detectMaps() const
 {
 	return format_handler_->detectMaps(*this);
 }
@@ -938,7 +938,7 @@ vector<MapDesc> Archive::detectMaps()
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
+string Archive::detectNamespace(unsigned index, ArchiveDir* dir) const
 {
 	return format_handler_->detectNamespace(*this, index, dir);
 }
@@ -946,7 +946,7 @@ string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(ArchiveEntry* entry)
+string Archive::detectNamespace(ArchiveEntry* entry) const
 {
 	return format_handler_->detectNamespace(*this, entry);
 }
@@ -1039,14 +1039,16 @@ void Archive::blockModificationSignals(bool block)
 // -----------------------------------------------------------------------------
 // Detects the type of all entries in the archive
 // -----------------------------------------------------------------------------
-void Archive::detectAllEntryTypes() const
+void Archive::detectAllEntryTypes(bool show_in_splash_window) const
 {
 	auto entries   = dir_root_->allEntries();
 	auto n_entries = entries.size();
-	ui::setSplashProgressMessage("Detecting entry types");
+	if (show_in_splash_window)
+		ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t i = 0; i < n_entries; i++)
 	{
-		ui::setSplashProgress(i, n_entries);
+		if (show_in_splash_window)
+			ui::setSplashProgress(i, n_entries);
 		EntryType::detectEntryType(*entries[i]);
 		entries[i]->setState(EntryState::Unmodified);
 	}

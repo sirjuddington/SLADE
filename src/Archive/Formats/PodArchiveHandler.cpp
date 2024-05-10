@@ -70,7 +70,7 @@ void PodArchiveHandler::setId(string_view id)
 // Reads pod format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool PodArchiveHandler::open(Archive& archive, const MemChunk& mc)
+bool PodArchiveHandler::open(Archive& archive, const MemChunk& mc, bool detect_types)
 {
 	// Check data was given
 	if (!mc.hasData())
@@ -113,7 +113,8 @@ bool PodArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	}
 
 	// Detect entry types
-	detectAllEntryTypes(archive);
+	if (detect_types)
+		archive.detectAllEntryTypes();
 
 	// Setup variables
 	sig_blocker.unblock();

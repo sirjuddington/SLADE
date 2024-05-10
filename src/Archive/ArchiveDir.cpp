@@ -134,7 +134,7 @@ void ArchiveDir::setArchive(Archive* archive)
 // Returns the index of [entry] within this directory, or -1 if the entry
 // doesn't exist
 // -----------------------------------------------------------------------------
-int ArchiveDir::entryIndex(ArchiveEntry* entry, size_t startfrom) const
+int ArchiveDir::entryIndex(const ArchiveEntry* entry, size_t startfrom) const
 {
 	// Check entry was given
 	if (!entry)

@@ -344,7 +344,7 @@ bool MapPreviewData::openMap(MapDesc map)
 
 		// Attempt to open entry as wad archive
 		temp_archive = std::make_unique<Archive>(ArchiveFormat::Wad);
-		if (!temp_archive->open(m_head->data()))
+		if (!temp_archive->open(m_head->data(), true))
 		{
 			return false;
 		}
