@@ -104,7 +104,7 @@ bool PodArchive::open(MemChunk& mc)
 	{
 		// Create entry
 		auto new_entry = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(files[a].name), files[a].size);
-		new_entry->exProp("Offset") = files[a].offset;
+		new_entry->exProp("Offset") = static_cast<int>(files[a].offset);
 		new_entry->setLoaded(false);
 
 		// Add entry and directory to directory tree
@@ -217,12 +217,7 @@ bool PodArchive::write(MemChunk& mc, bool update)
 		mc.write(&fe.size, 4);
 		mc.write(&fe.offset, 4);
 		log::info(
-			5,
-			"entry {}: old={} new={} size={}",
-			fe.name,
-			entry->exProp<int>("Offset"),
-			fe.offset,
-			entry->size());
+			5, "entry {}: old={} new={} size={}", fe.name, entry->exProp<int>("Offset"), fe.offset, entry->size());
 
 		// Next offset
 		fe.offset += fe.size;
