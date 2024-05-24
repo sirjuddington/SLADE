@@ -158,13 +158,7 @@ void ConsolePanel::update()
 		text_log_->MarginSetStyle(line_no, wxSTC_STYLE_LINENUMBER);
 
 		// Set line colour depending on message type
-#if !wxCHECK_VERSION(3, 1, 1)
-		// Prior to wxWidgets 3.1.1 StartStyling took 2 arguments, no overload exists for compatibility
-		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no), 0);
-#else
 		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no));
-#endif
-
 		switch (log[a].type)
 		{
 		case log::MessageType::Error:   text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;
@@ -183,6 +177,15 @@ void ConsolePanel::update()
 
 	// Check again in 100ms
 	timer_update_.Start(100);
+}
+
+// -----------------------------------------------------------------------------
+// Focus the command input text box
+// -----------------------------------------------------------------------------
+void ConsolePanel::focusInput() const
+{
+	text_command_->SetFocus();
+	text_command_->SetInsertionPointEnd();
 }
 
 

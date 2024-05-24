@@ -11,6 +11,7 @@ public:
 	void initLayout();
 	void setupTextArea() const;
 	void update();
+	void focusInput() const;
 
 private:
 	wxStyledTextCtrl* text_log_      = nullptr;
