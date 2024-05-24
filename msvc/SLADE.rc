@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+﻿// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -50,9 +50,13 @@ END
 // Version
 //
 
+#define SLADE_VERSION 3,2,5,0
+#define SLADE_VERSION_STR "3.2.5"
+#define SLADE_COPYRIGHT "Copyright (C) 2008-2024"
+
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,2,5
- PRODUCTVERSION 3,2,5
+ FILEVERSION SLADE_VERSION
+ PRODUCTVERSION SLADE_VERSION
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -68,12 +72,12 @@ BEGIN
         BLOCK "0c0904b0"
         BEGIN
             VALUE "FileDescription", "SLADE"
-            VALUE "FileVersion", "3.2.5"
+            VALUE "FileVersion", SLADE_VERSION_STR
             VALUE "InternalName", "SLADE.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2023"
+            VALUE "LegalCopyright", SLADE_COPYRIGHT
             VALUE "OriginalFilename", "SLADE.exe"
             VALUE "ProductName", "SLADE"
-            VALUE "ProductVersion", "3.2.5"
+            VALUE "ProductVersion", SLADE_VERSION_STR
         END
     END
     BLOCK "VarFileInfo"
