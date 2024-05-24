@@ -39,8 +39,8 @@
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
-#include "Scripting/ScriptManager.h"
 #include "SLADEWxApp.h"
+#include "Scripting/ScriptManager.h"
 #include "StartPage.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ConsolePanel.h"
@@ -627,6 +627,7 @@ bool MainWindow::handleAction(string_view id)
 		auto& p_inf = m_mgr->GetPane("console");
 		p_inf.Show(!p_inf.IsShown());
 		p_inf.MinSize(wxutil::scaledSize(200, 128));
+		dynamic_cast<ConsolePanel*>(p_inf.window)->focusInput();
 		m_mgr->Update();
 		return true;
 	}

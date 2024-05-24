@@ -6,11 +6,12 @@ class ConsolePanel : public wxPanel
 {
 public:
 	ConsolePanel(wxWindow* parent, int id);
-	~ConsolePanel() = default;
+	~ConsolePanel() override = default;
 
 	void initLayout();
 	void setupTextArea() const;
 	void update();
+	void focusInput() const;
 
 private:
 	wxStyledTextCtrl* text_log_      = nullptr;
