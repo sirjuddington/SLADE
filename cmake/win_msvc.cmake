@@ -75,12 +75,16 @@ if(NOT SLADE_EXE_NAME)
 set(SLADE_EXE_NAME SLADE)
 endif()
 
+if(NOT SLADE_EXE_DIR)
+set(SLADE_EXE_DIR dist)
+endif()
+
 # Properties
 set_target_properties(slade
 	PROPERTIES
 	LINK_FLAGS "/subsystem:windows"
 	OUTPUT_NAME "${SLADE_EXE_NAME}"
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/dist"
+	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/${SLADE_EXE_DIR}"
 )
 
 # Precompiled Header
