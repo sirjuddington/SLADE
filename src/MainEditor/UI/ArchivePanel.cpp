@@ -280,7 +280,8 @@ class EntryTreeClipboardItem : public ClipboardItem
 {
 public:
 	EntryTreeClipboardItem(const vector<ArchiveEntry*>& entries, const vector<ArchiveDir*>& dirs) :
-		ClipboardItem(Type::EntryTree), tree_{ new ArchiveDir("") }
+		ClipboardItem(Type::EntryTree),
+		tree_{ new ArchiveDir("") }
 	{
 		// Copy entries
 		for (auto& entry : entries)
@@ -424,7 +425,10 @@ size_t getNamespaceNumber(
 // ArchivePanel class constructor
 // -----------------------------------------------------------------------------
 ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
-	wxPanel(parent, -1), archive_{ archive }, undo_manager_{ new UndoManager() }, ee_manager_{ new ExternalEditManager }
+	wxPanel(parent, -1),
+	archive_{ archive },
+	undo_manager_{ new UndoManager() },
+	ee_manager_{ new ExternalEditManager }
 {
 	setup(archive.get());
 	bindEvents(archive.get());
@@ -1733,6 +1737,7 @@ bool ArchivePanel::importEntry()
 	undo_manager_->beginRecord("Import Entry");
 
 	// Go through the list
+	bool entry_type_changed = false;
 	for (auto& entry : selection)
 	{
 		// Run open file dialog
@@ -1748,6 +1753,9 @@ bool ArchivePanel::importEntry()
 				si.open(entry->data());
 				offset = si.offset();
 			}
+
+			// Get current entry type
+			auto cur_type = entry->type();
 
 			// Create undo step
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
@@ -1803,12 +1811,30 @@ bool ArchivePanel::importEntry()
 						entry->name()));
 			}
 
-			// Set extension by type
-			entry->setExtensionByType();
+			// Check if the entry type changed
+			if (entry->type() != cur_type)
+				entry_type_changed = true;
 
 			// If the entry is currently open, refresh the entry panel
 			if (cur_area_->entry() == entry)
 				openEntry(entry, true);
+		}
+	}
+
+	// Prompt to update entry extensions
+	if (entry_type_changed && archive_.lock()->formatDesc().names_extensions)
+	{
+		auto multi_select = selection.size() > 1;
+
+		if (wxMessageBox(
+				multi_select ? "One or more entry types were changed. Update entry extensions?" :
+							   "The entry type has changed. Update it's extension?",
+				"Update Entry Extension(s)",
+				wxYES_NO | wxICON_QUESTION)
+			== wxYES)
+		{
+			for (auto& entry : selection)
+				entry->setExtensionByType();
 		}
 	}
 
