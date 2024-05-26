@@ -464,20 +464,25 @@ void SImage::fillAlpha(uint8_t alpha)
 // -----------------------------------------------------------------------------
 // Returns the first unused palette index, or -1 if the image is not paletted or
 // uses all 256 colours
+// If [preferred] is > 0, it will be returned if it's not already in use,
+// instead of the first unused colour
 // -----------------------------------------------------------------------------
-short SImage::findUnusedColour() const
+short SImage::findUnusedColour(short preferred) const
 {
 	// Only for paletted images
 	if (type_ != Type::PalMask)
 		return -1;
 
 	// Init used colours list
-	uint8_t used[256];
-	memset(used, 0, 256);
+	uint8_t used[256] = {};
 
 	// Go through image data and mark used colours
 	for (int a = 0; a < width_ * height_; a++)
 		used[data_[a]] = 1;
+
+	// Check if preferred colour is unused
+	if (preferred >= 0 && !used[preferred])
+		return preferred;
 
 	// Find first unused
 	for (int a = 0; a < 256; a++)
@@ -1269,7 +1274,7 @@ bool SImage::setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight,
 {
 	if (ndata.empty())
 		return false;
-	
+
 	clearData();
 	type_   = ntype;
 	width_  = nwidth;
@@ -1285,7 +1290,7 @@ bool SImage::setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth,
 {
 	if (!ndata)
 		return false;
-	
+
 	clearData();
 	type_   = ntype;
 	width_  = nwidth;

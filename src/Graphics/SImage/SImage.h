@@ -114,7 +114,7 @@ public:
 	void   create(int width, int height, Type type, Palette* pal = nullptr, int index = 0, int numimages = 1);
 	void   create(Info info, Palette* pal = nullptr);
 	void   fillAlpha(uint8_t alpha = 0);
-	short  findUnusedColour() const;
+	short  findUnusedColour(short preferred = -1) const;
 	size_t countColours() const;
 	void   shrinkPalette(Palette* pal = nullptr);
 	bool   copyImage(SImage* image);

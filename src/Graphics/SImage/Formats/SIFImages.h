@@ -440,7 +440,7 @@ protected:
 				if (usepal.transIndex() < 0)
 				{
 					// Find unused colour (for transparency)
-					short unused = image.findUnusedColour();
+					short unused = image.findUnusedColour(255);
 
 					// Set any transparent pixels to this colour (if we found an unused colour)
 					bool has_trans = false;
