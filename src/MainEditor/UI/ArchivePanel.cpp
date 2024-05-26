@@ -1457,16 +1457,27 @@ bool ArchivePanel::sort() const
 	emap.clear();
 	for (size_t i = 0; i < selection.size(); ++i)
 	{
-		bool     ns_changed = false;
-		int      mapindex   = isInMap(selection[i], maps);
-		wxString mapname;
-		auto     entry = dir->entryAt(selection[i]);
+		auto entry = dir->entryAt(selection[i]);
 		if (!entry)
 			continue;
 
 		// Ignore subdirectories
 		if (entry->type() == EntryType::folderType())
 			continue;
+
+		// If not a WAD, do basic alphabetical sorting
+		if (archive->formatId() != "wad" && archive->formatId() != "wadj")
+		{
+			auto sortkey             = wxString::Format("%-64s%8d", entry->upperName(), selection[i]);
+			emap[sortkey]            = selection[i];
+			entry->exProp("sortkey") = sortkey.ToStdString();
+
+			continue;
+		}
+
+		bool     ns_changed = false;
+		int      mapindex   = isInMap(selection[i], maps);
+		wxString mapname;
 
 		// If this is a map entry, deal with it
 		if (!maps.empty() && mapindex > -1)
