@@ -77,7 +77,8 @@ EXTERN_CVAR(Bool, tx_arc)
 // TextureEditorPanel class constructor
 // -----------------------------------------------------------------------------
 TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor) :
-	wxPanel(parent, -1), tx_editor_{ tx_editor }
+	wxPanel(parent, -1),
+	tx_editor_{ tx_editor }
 {
 	// Create controls
 	tex_canvas_      = new CTextureCanvas(this, -1);
@@ -129,6 +130,10 @@ void TextureEditorPanel::setupLayout()
 
 	// Add texture canvas
 	vbox->Add(tex_canvas_, 1, wxEXPAND);
+
+	// Apply texture canvas options
+	tex_canvas_->applyTexScale(tx_apply_scale);
+	tex_canvas_->drawOutside(tx_show_outside);
 
 	// Add extra view controls
 	hbox = new wxBoxSizer(wxHORIZONTAL);
