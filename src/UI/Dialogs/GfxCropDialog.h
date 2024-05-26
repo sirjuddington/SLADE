@@ -18,6 +18,7 @@ public:
 	void draw() override;
 
 private:
+	SImage*  image_   = nullptr;
 	unsigned texture_ = 0;
 	Recti    crop_rect_;
 };

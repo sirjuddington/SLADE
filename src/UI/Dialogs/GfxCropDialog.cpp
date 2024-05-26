@@ -51,13 +51,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // CropCanvas class constructor
 // -----------------------------------------------------------------------------
-CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) : OGLCanvas(parent, -1, false)
+CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) :
+	OGLCanvas(parent, -1, false),
+	image_{ image }
 {
 	if (image && image->isValid())
-	{
-		texture_ = gl::Texture::createFromImage(*image, palette);
 		crop_rect_.set(0, 0, image->width(), image->height());
-	}
+
+	setPalette(palette);
 
 	int size = ui::scalePx(220);
 	SetInitialSize(wxSize(size, size));
@@ -73,6 +74,10 @@ void CropCanvas::draw()
 
 	// Draw background
 	drawCheckeredBackground();
+
+	// Load texture
+	if (!texture_ && image_ && image_->isValid())
+		texture_ = gl::Texture::createFromImage(*image_, &palette_);
 
 	// Determine graphic position & scale
 	const wxSize size   = GetSize() * GetContentScaleFactor();
