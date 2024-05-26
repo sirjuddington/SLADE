@@ -49,12 +49,12 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::drawing
 {
-FTFont* font_normal        = nullptr;
-FTFont* font_condensed     = nullptr;
-FTFont* font_bold          = nullptr;
-FTFont* font_boldcondensed = nullptr;
-FTFont* font_mono          = nullptr;
-FTFont* font_small         = nullptr;
+unique_ptr<FTFont> font_normal;
+unique_ptr<FTFont> font_condensed;
+unique_ptr<FTFont> font_bold;
+unique_ptr<FTFont> font_boldcondensed;
+unique_ptr<FTFont> font_mono;
+unique_ptr<FTFont> font_small;
 } // namespace slade::drawing
 
 
@@ -86,50 +86,23 @@ int initFonts()
 	// --- Load general fonts ---
 	int ret = 0;
 
-	if (font_normal)
-	{
-		delete font_normal;
-		font_normal = nullptr;
-	}
-	if (font_condensed)
-	{
-		delete font_condensed;
-		font_condensed = nullptr;
-	}
-	if (font_bold)
-	{
-		delete font_bold;
-		font_bold = nullptr;
-	}
-	if (font_boldcondensed)
-	{
-		delete font_boldcondensed;
-		font_boldcondensed = nullptr;
-	}
-	if (font_mono)
-	{
-		delete font_mono;
-		font_mono = nullptr;
-	}
-	if (font_small)
-	{
-		delete font_small;
-		font_small = nullptr;
-	}
+	font_normal.reset();
+	font_condensed.reset();
+	font_bold.reset();
+	font_boldcondensed.reset();
+	font_mono.reset();
+	font_small.reset();
 
 	// Normal
 	auto entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
-		font_normal = new FTTextureFont(entry->rawData(), entry->size());
+		font_normal = std::make_unique<FTTextureFont>(entry->rawData(), entry->size());
 		font_normal->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_normal->Error())
-		{
-			delete font_normal;
-			font_normal = nullptr;
-		}
+			font_normal.reset();
 		else
 			++ret;
 	}
@@ -138,15 +111,12 @@ int initFonts()
 	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
 	if (entry)
 	{
-		font_condensed = new FTTextureFont(entry->rawData(), entry->size());
+		font_condensed = std::make_unique<FTTextureFont>(entry->rawData(), entry->size());
 		font_condensed->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_condensed->Error())
-		{
-			delete font_condensed;
-			font_condensed = nullptr;
-		}
+			font_condensed.reset();
 		else
 			++ret;
 	}
@@ -155,15 +125,12 @@ int initFonts()
 	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
 	if (entry)
 	{
-		font_bold = new FTTextureFont(entry->rawData(), entry->size());
+		font_bold = std::make_unique<FTTextureFont>(entry->rawData(), entry->size());
 		font_bold->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_bold->Error())
-		{
-			delete font_bold;
-			font_bold = nullptr;
-		}
+			font_bold.reset();
 		else
 			++ret;
 	}
@@ -172,15 +139,12 @@ int initFonts()
 	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
 	if (entry)
 	{
-		font_boldcondensed = new FTTextureFont(entry->rawData(), entry->size());
+		font_boldcondensed = std::make_unique<FTTextureFont>(entry->rawData(), entry->size());
 		font_boldcondensed->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_boldcondensed->Error())
-		{
-			delete font_boldcondensed;
-			font_boldcondensed = nullptr;
-		}
+			font_boldcondensed.reset();
 		else
 			++ret;
 	}
@@ -189,15 +153,12 @@ int initFonts()
 	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
 	if (entry)
 	{
-		font_mono = new FTTextureFont(entry->rawData(), entry->size());
+		font_mono = std::make_unique<FTTextureFont>(entry->rawData(), entry->size());
 		font_mono->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_mono->Error())
-		{
-			delete font_mono;
-			font_mono = nullptr;
-		}
+			font_mono.reset();
 		else
 			++ret;
 	}
@@ -206,15 +167,12 @@ int initFonts()
 	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
-		font_small = new FTTextureFont(entry->rawData(), entry->size());
+		font_small = std::make_unique<FTTextureFont>(entry->rawData(), entry->size());
 		font_small->FaceSize((ui::scalePx(gl_font_size) * 0.6) + 1);
 
 		// Check it loaded ok
 		if (font_small->Error())
-		{
-			delete font_small;
-			font_small = nullptr;
-		}
+			font_small.reset();
 		else
 			++ret;
 	}
@@ -227,12 +185,12 @@ int initFonts()
 // -----------------------------------------------------------------------------
 void cleanupFonts()
 {
-	delete font_normal;
-	delete font_condensed;
-	delete font_bold;
-	delete font_boldcondensed;
-	delete font_mono;
-	delete font_small;
+	font_normal.reset();
+	font_condensed.reset();
+	font_bold.reset();
+	font_boldcondensed.reset();
+	font_mono.reset();
+	font_small.reset();
 }
 
 // -----------------------------------------------------------------------------
@@ -242,14 +200,14 @@ FTFont* getFont(Font font)
 {
 	switch (font)
 	{
-	case Font::Normal: return font_normal;
-	case Font::Condensed: return font_condensed;
-	case Font::Bold: return font_bold;
-	case Font::BoldCondensed: return font_boldcondensed;
-	case Font::Monospace: return font_mono;
-	case Font::Small: return font_small;
-	default: return font_normal;
-	};
+	case Font::Normal: return font_normal.get();
+	case Font::Condensed: return font_condensed.get();
+	case Font::Bold: return font_bold.get();
+	case Font::BoldCondensed: return font_boldcondensed.get();
+	case Font::Monospace: return font_mono.get();
+	case Font::Small: return font_small.get();
+	default: return font_normal.get();
+	}
 }
 } // namespace slade::drawing
 

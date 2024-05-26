@@ -453,7 +453,7 @@ void MainWindow::createStartPage(bool newtip) const
 bool MainWindow::exitProgram()
 {
 	// Confirm exit
-	if (confirm_exit && !panel_archivemanager_->askedSaveUnchanged())
+	if (!wxGetApp().isSessionEnding() && confirm_exit && !panel_archivemanager_->askedSaveUnchanged())
 	{
 		if (wxMessageBox("Are you sure you want to exit SLADE?", "SLADE", wxICON_QUESTION | wxYES_NO, this) != wxYES)
 			return false;
