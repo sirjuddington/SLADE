@@ -124,8 +124,8 @@ wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 
 	auto panel = new wxPanel(parent);
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
-	panel->GetSizer()->Add(control, 1, wxEXPAND | wxALL, pad);
 	control->Reparent(panel);
+	panel->GetSizer()->Add(control, 1, wxEXPAND | wxALL, pad);
 
 	return panel;
 }
