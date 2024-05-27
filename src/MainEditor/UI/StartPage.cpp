@@ -37,9 +37,8 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
-#include "General/Web.h"
-#include "Graphics/Icons.h"
 #include "Utility/Tokenizer.h"
+#include <wx/webrequest.h>
 
 using namespace slade;
 
@@ -112,16 +111,22 @@ void SStartPage::init()
 	}
 
 	Bind(
-		wxEVT_THREAD_WEBGET_COMPLETED,
-		[&](wxThreadEvent& e)
+		wxEVT_WEBREQUEST_STATE,
+		[&](wxWebRequestEvent& e)
 		{
-			latest_news_ = e.GetString();
-			latest_news_.Trim();
-
-			if (latest_news_ == "connect_failed" || latest_news_.empty())
+			switch (e.GetState())
+			{
+			case wxWebRequest::State_Failed:
+			case wxWebRequest::State_Unauthorized:
 				latest_news_ = "<center>Unable to load latest SLADE news</center>";
-
-			load(false);
+				load(false);
+				break;
+			case wxWebRequest::State_Completed:
+				latest_news_ = e.GetResponse().AsString().Trim();
+				load(false);
+				break;
+			default: break;
+			}
 		});
 
 #else
@@ -177,7 +182,10 @@ void SStartPage::load(bool new_tip)
 {
 	// Get latest news post
 	if (latest_news_.empty())
-		web::getHttpAsync("slade.mancubus.net", "/news-latest.php", this);
+	{
+		auto request = wxWebSession::GetDefault().CreateRequest(this, "https://slade.mancubus.net/news-latest.php");
+		request.Start();
+	}
 
 	// Can't do anything without html entry
 	if (!entry_base_html_)
@@ -329,7 +337,7 @@ void SStartPage::load(bool new_tip)
 		}
 
 		last_tip_index_ = tipindex;
-		tip = tips_[tipindex];
+		tip             = tips_[tipindex];
 		// log::debug(wxString::Format("Tip index %d/%lu", last_tip_index_, (int)tips_.size()));
 	}
 
@@ -482,15 +490,15 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 // -----------------------------------------------------------------------------
 void SStartPage::onHTMLLinkClicked(wxEvent& e)
 {
-	wxHtmlLinkEvent& ev = (wxHtmlLinkEvent&)e;
-	wxString href = ev.GetLinkInfo().GetHref();
+	wxHtmlLinkEvent& ev   = (wxHtmlLinkEvent&)e;
+	wxString         href = ev.GetLinkInfo().GetHref();
 
 	if (href.StartsWith("http://") || href.StartsWith("https://"))
 		wxLaunchDefaultBrowser(ev.GetLinkInfo().GetHref());
 	else if (href.StartsWith("recent://"))
 	{
 		// Recent file
-		wxString rs = href.Mid(9);
+		wxString      rs    = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
 		SActionHandler::setWxIdOffset(index);

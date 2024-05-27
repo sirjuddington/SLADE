@@ -1,5 +1,6 @@
 #pragma once
 
+class wxWebRequestEvent;
 class wxSingleInstanceChecker;
 class MainAppFileListener;
 class SLADECrashDialog;
@@ -24,7 +25,7 @@ public:
 	void checkForUpdates(bool message_box);
 
 	void onMenu(wxCommandEvent& e);
-	void onVersionCheckCompleted(wxThreadEvent& e);
+	void onVersionCheckCompleted(wxWebRequestEvent& e);
 	void onActivate(wxActivateEvent& e);
 	void onEndSession(wxCloseEvent& e);
 
