@@ -139,6 +139,10 @@ void TextureEditorPanel::setupLayout()
 	// Add texture canvas
 	vbox->Add(tex_canvas_->window(), wxSizerFlags(1).Expand());
 
+	// Apply texture canvas options
+	tex_canvas_->applyTexScale(tx_apply_scale);
+	tex_canvas_->drawOutside(tx_show_outside);
+
 	// Add extra view controls
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	vbox->Add(hbox, wx::sfWithBorder(0, wxBOTTOM | wxTOP).Expand());

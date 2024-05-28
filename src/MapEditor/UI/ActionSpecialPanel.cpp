@@ -224,7 +224,7 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
 
 		if (!found)
 		{
-			current = AppendContainer(current, path[p], -1, 1);
+			current = AppendContainer(current, path[p]);
 			groups_.emplace_back(current, fullpath);
 		}
 	}

@@ -37,7 +37,6 @@
 #include "Archive/ArchiveManager.h"
 #include "General/Console.h"
 #include "General/SAction.h"
-#include "General/Web.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
 #include "MainEditor/UI/MainWindow.h"
@@ -48,6 +47,7 @@
 #include <wx/filefn.h>
 #include <wx/statbmp.h>
 #include <wx/url.h>
+#include <wx/webrequest.h>
 #undef BOOL
 #ifdef UPDATEREVISION
 #include "gitinfo.h"
@@ -510,8 +510,9 @@ bool SLADEWxApp::OnInit()
 
 	// Bind events
 	Bind(wxEVT_MENU, &SLADEWxApp::onMenu, this);
-	Bind(wxEVT_THREAD_WEBGET_COMPLETED, &SLADEWxApp::onVersionCheckCompleted, this);
+	Bind(wxEVT_WEBREQUEST_STATE, &SLADEWxApp::onVersionCheckCompleted, this);
 	Bind(wxEVT_ACTIVATE_APP, &SLADEWxApp::onActivate, this);
+	Bind(wxEVT_QUERY_END_SESSION, &SLADEWxApp::onEndSession, this);
 
 	return true;
 }
@@ -560,7 +561,8 @@ void SLADEWxApp::checkForUpdates(bool message_box)
 #ifdef __WXMSW__
 	update_check_message_box = message_box;
 	log::info(1, "Checking for updates...");
-	web::getHttpAsync("slade.mancubus.net", "/version_win.txt", this);
+	auto request = wxWebSession::GetDefault().CreateRequest(this, "https://slade.mancubus.net/version_win.txt");
+	request.Start();
 #endif
 }
 
@@ -611,10 +613,10 @@ void SLADEWxApp::onMenu(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the version check thread completes
 // -----------------------------------------------------------------------------
-void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
+void SLADEWxApp::onVersionCheckCompleted(wxWebRequestEvent& e)
 {
 	// Check failed
-	if (e.GetString() == "connect_failed")
+	if (e.GetState() == wxWebRequest::State_Failed || e.GetState() == wxWebRequest::State_Unauthorized)
 	{
 		log::error("Version check failed, unable to connect");
 		if (update_check_message_box)
@@ -626,11 +628,16 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 		return;
 	}
 
+	// If not completed, ignore
+	if (e.GetState() != wxWebRequest::State_Completed)
+		return;
+
 	// Parse version info
 	app::Version stable, beta;
 	string       bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
 	Parser       parser;
-	if (parser.parseText(e.GetString().ToStdString()))
+	auto         response_string = e.GetResponse().AsString();
+	if (parser.parseText(response_string.ToStdString()))
 	{
 		// Stable
 		if (auto node_stable = parser.parseTreeRoot()->childPTN("stable"))
@@ -677,7 +684,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	if (stable.major == 0 || beta.major == 0)
 	{
 		log::warning("Version check failed, received invalid version info");
-		log::debug("Received version text:\n\n%s", wxutil::strToView(e.GetString()));
+		log::debug("Received version text:\n\n%s", wxutil::strToView(response_string));
 		if (update_check_message_box)
 			wxMessageBox("Update check failed: received invalid version info.", "Check for Updates");
 		return;
@@ -742,6 +749,16 @@ void SLADEWxApp::onActivate(wxActivateEvent& e)
 	if (theMainWindow && theMainWindow->archiveManagerPanel())
 		theMainWindow->archiveManagerPanel()->checkDirArchives();
 
+	e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when the system is ending the session (shutdown/restart)
+// -----------------------------------------------------------------------------
+void SLADEWxApp::onEndSession(wxCloseEvent& e)
+{
+	session_ending_ = true;
+	maineditor::windowWx()->Close();
 	e.Skip();
 }
 

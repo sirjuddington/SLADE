@@ -109,7 +109,7 @@ public:
 	void   create(int width, int height, Type type, const Palette* pal = nullptr, int index = 0, int numimages = 1);
 	void   create(const Info& info, const Palette* pal = nullptr);
 	void   fillAlpha(uint8_t alpha = 0);
-	short  findUnusedColour() const;
+	short  findUnusedColour(short preferred = -1) const;
 	size_t countColours() const;
 	void   shrinkPalette(Palette* pal = nullptr) const;
 	bool   copyImage(const SImage* image);

@@ -449,6 +449,16 @@ bool entryoperations::sortEntries(
 		if (entry->type() == EntryType::folderType())
 			continue;
 
+		// If not a WAD, do basic alphabetical sorting
+		if (archive.formatId() != "wad" && archive.formatId() != "wadj")
+		{
+			auto sortkey             = wxString::Format("%-64s%8d", entry->upperName(), indices[i]);
+			emap[sortkey]            = indices[i];
+			entry->exProp("sortkey") = sortkey.ToStdString();
+
+			continue;
+		}
+
 		// If this is a map entry, deal with it
 		if (!maps.empty() && mapindex > -1)
 		{

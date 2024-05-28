@@ -1462,7 +1462,7 @@ bool ArchivePanel::importEntry()
 	}
 
 	// Prompt to update entry extensions
-	if (entry_type_changed && archive_.lock()->formatDesc().names_extensions)
+	if (entry_type_changed && archive_.lock()->formatInfo().names_extensions)
 	{
 		auto multi_select = selection.size() > 1;
 

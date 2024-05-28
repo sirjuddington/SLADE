@@ -17,9 +17,8 @@ add_compile_options(/bigobj)
 find_package(wxWidgets CONFIG REQUIRED)
 set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net)
 
-# FTGL
+# FreeType
 find_package(Freetype REQUIRED)
-find_package(FTGL REQUIRED)
 
 # Lua
 if (NOT NO_LUA)
@@ -90,7 +89,6 @@ target_link_libraries(slade
 	${BZIP2_LIBRARIES}
 	${EXTERNAL_LIBRARIES}
 	${FREETYPE_LIBRARIES}
-	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${WX_LIBS}
 	${ZLIB_LIBRARY}

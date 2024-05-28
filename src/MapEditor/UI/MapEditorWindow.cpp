@@ -1298,6 +1298,7 @@ bool MapEditorWindow::handleAction(string_view id)
 		{
 			p_inf.Show(true);
 			p_inf.window->SetFocus();
+			dynamic_cast<ConsolePanel*>(p_inf.window)->focusInput();
 		}
 
 		p_inf.MinSize(wxutil::scaledSize(200, 128));
