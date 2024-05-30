@@ -27,7 +27,7 @@ public:
 	void setChecked(bool checked);
 	void setMenu(wxMenu* menu, bool delete_existing = false);
 
-	bool updateState();
+	bool updateState(int mouse_event = 0);
 
 	static int pixelHeight();
 

@@ -484,7 +484,7 @@ bool SLADEWxApp::OnInit()
 	// Init application
 	try
 	{
-		if (!app::init(args, ui_scale))
+		if (!app::init(args, 1.))
 			return false;
 	}
 	catch (const std::exception& ex)
