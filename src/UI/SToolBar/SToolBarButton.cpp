@@ -206,16 +206,26 @@ void SToolBarButton::setExactFit(bool fit)
 // Checks if the mouseover state of the button needs updating.
 // If it does, the button is refreshed and this returns true
 // -----------------------------------------------------------------------------
-bool SToolBarButton::updateState()
+bool SToolBarButton::updateState(int mouse_event)
 {
 	auto prev_state = state_;
 
-	if (IsShownOnScreen() && IsEnabled() && GetScreenRect().Contains(wxGetMousePosition()))
+	if (mouse_event == 1) // Enter or motion
+		state_ = State::MouseOver;
+	else if (mouse_event == 2) // Leave
+		state_ = State::Normal;
+	else if (IsShownOnScreen() && IsEnabled())
 	{
-		if (wxGetMouseState().LeftIsDown())
-			state_ = State::MouseDown;
-		else
-			state_ = State::MouseOver;
+		auto mousePos = ScreenToClient(wxGetMousePosition());
+		auto rect     = wxRect(GetSize());
+
+		if (rect.Contains(mousePos))
+		{
+			if (wxGetMouseState().LeftIsDown())
+				state_ = State::MouseDown;
+			else
+				state_ = State::MouseOver;
+		}
 	}
 	else
 		state_ = State::Normal;
@@ -268,6 +278,7 @@ void SToolBarButton::setup(bool show_name, string_view icon)
 	Bind(wxEVT_LEFT_UP, &SToolBarButton::onMouseEvent, this);
 	Bind(wxEVT_KILL_FOCUS, &SToolBarButton::onFocus, this);
 	Bind(wxEVT_LEFT_DCLICK, &SToolBarButton::onMouseEvent, this);
+	Bind(wxEVT_MOTION, &SToolBarButton::onMouseEvent, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBarButton::onEraseBackground, this);
 	Bind(wxEVT_IDLE, [this](wxIdleEvent&) { updateState(); });
 }
@@ -446,6 +457,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 {
 	auto parent_window = dynamic_cast<wxFrame*>(wxGetTopLevelParent(this));
+	int  mouse_event   = 0;
 
 	// Mouse enter
 	if (e.GetEventType() == wxEVT_ENTER_WINDOW)
@@ -453,6 +465,8 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		// Set status bar help text
 		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText(help_text_);
+
+		mouse_event = 1;
 	}
 
 	// Mouse leave
@@ -461,6 +475,8 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		// Clear status bar help text
 		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText("");
+
+		mouse_event = 2;
 	}
 
 	// Left button down
@@ -488,7 +504,11 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 			parent_window->SetStatusText("");
 	}
 
-	updateState();
+	// Motion
+	if (e.GetEventType() == wxEVT_MOTION)
+		mouse_event = 1;
+
+	updateState(mouse_event);
 
 	// e.Skip();
 }

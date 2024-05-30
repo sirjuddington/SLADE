@@ -2798,7 +2798,7 @@ void MapRenderer3D::quickVisDiscard()
 			if (dist < min_dist)
 				min_dist = dist;
 
-			dist_sectors_[a] = dist;
+			dist_sectors_[a] = min_dist;
 		}
 	}
 
@@ -2948,6 +2948,10 @@ void MapRenderer3D::checkVisibleFlats()
 		if (dist_sectors_[a] < 0)
 			continue;
 
+		// Update sector info if needed
+		if (isSectorStale(a))
+			updateSector(a);
+
 		n_flats_ += sector_flats_[a].size();
 	}
 	flats_.resize(n_flats_);
@@ -2978,10 +2982,6 @@ void MapRenderer3D::checkVisibleFlats()
 				continue;
 			}
 		}
-
-		// Update sector info if needed
-		if (isSectorStale(a))
-			updateSector(a);
 
 		// Set distance fade alpha
 		if (render_max_dist > 0)

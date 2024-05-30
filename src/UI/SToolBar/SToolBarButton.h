@@ -30,7 +30,7 @@ public:
 	void setPadding(int inner, int outer = 1);
 	void setExactFit(bool fit);
 
-	bool updateState();
+	bool updateState(int mouse_event = 0);
 
 	static int pixelHeight();
 
