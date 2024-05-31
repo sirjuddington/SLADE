@@ -123,8 +123,8 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 
 	// 64 is an arbitrary fudge factor -- should be at least the width of a
 	// scrollbar plus the expand icons plus any extra padding
-	int min_width = textsize.GetWidth() + GetIndent() + ui::scalePx(64);
-	wxWindowBase::SetMinSize({ min_width, ui::scalePx(200) });
+	int min_width = textsize.GetWidth() + GetIndent() + 64;
+	wxWindowBase::SetMinSize(FromDIP(wxSize{ min_width, 200 }));
 }
 
 // -----------------------------------------------------------------------------

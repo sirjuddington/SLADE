@@ -36,7 +36,6 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
@@ -120,7 +119,7 @@ public:
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(FromDIP(wxSize(384, 384)));
 		redraw();
 
 		// Init layout
@@ -207,7 +206,7 @@ public:
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(FromDIP(wxSize(384, 384)));
 		redraw();
 
 		// Init layout
@@ -331,7 +330,7 @@ public:
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(FromDIP(wxSize(384, 384)));
 		redraw();
 
 		// Init layout
@@ -434,7 +433,7 @@ public:
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(FromDIP(wxSize(384, 384)));
 		redraw();
 
 		// Init layout
@@ -574,7 +573,7 @@ public:
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(FromDIP(wxSize(384, 384)));
 		redraw();
 
 		// Init layout

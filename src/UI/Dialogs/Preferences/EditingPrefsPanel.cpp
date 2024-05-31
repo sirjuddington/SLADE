@@ -122,7 +122,7 @@ public:
 
 		// Path
 		gb_sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxSize(ui::scalePx(300), -1));
+		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxSize(FromDIP(300), -1));
 		gb_sizer->Add(text_path_, { 1, 1 }, wxDefaultSpan, wxEXPAND);
 		btn_browse_ = new SIconButton(this, icons::General, "open");
 		gb_sizer->Add(btn_browse_, { 1, 2 }, wxDefaultSpan);

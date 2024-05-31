@@ -191,7 +191,7 @@ void ZoomControl::setup()
 
 		// Combobox size
 #ifdef WIN32
-	wxSize cbsize(ui::scalePx(64), -1);
+	wxSize cbsize(FromDIP(64), -1);
 #else
 	auto cbsize = wxDefaultSize;
 #endif
@@ -205,7 +205,7 @@ void ZoomControl::setup()
 #ifdef __WXGTK__
 	// wxWidgets doesn't leave space for the dropdown arrow in gtk3 for whatever reason
 	cbsize = cb_zoom_->GetBestSize();
-	cbsize.x += ui::scalePx(20);
+	cbsize.x += 20;
 	cb_zoom_->SetInitialSize(cbsize);
 #endif
 

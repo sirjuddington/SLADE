@@ -34,7 +34,6 @@
 #include "App.h"
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
 #include "NewArchiveDiaog.h"
 #include "UI/WxUtils.h"
 
@@ -109,7 +108,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	// Cancel button click
 	btn_cancel->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_CANCEL); });
 
-	SetInitialSize({ ui::scalePx(250), -1 });
+	SetInitialSize({ FromDIP(250), -1 });
 	wxWindowBase::Layout();
 	wxWindowBase::Fit();
 	wxTopLevelWindowBase::SetMinSize(GetBestSize());

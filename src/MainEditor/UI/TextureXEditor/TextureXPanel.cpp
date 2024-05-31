@@ -247,7 +247,7 @@ public:
 			});
 
 		// Setup dialog size
-		SetInitialSize({ ui::scalePx(400), -1 });
+		SetInitialSize({ FromDIP(400), -1 });
 		wxTopLevelWindowBase::Layout();
 		wxWindowBase::Fit();
 		wxTopLevelWindowBase::SetMinSize(GetBestSize());

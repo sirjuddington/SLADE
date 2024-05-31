@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "SectorSpecialPanel.h"
 #include "Game/Configuration.h"
-#include "General/UI.h"
 #include "UI/Lists/ListView.h"
 #include "UI/WxUtils.h"
 
@@ -93,7 +92,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	lv_specials_->updateSize();
 
 	// Boom Flags
-	int width = ui::scalePx(300);
+	int width = FromDIP(300);
 	if (game::configuration().supportsSectorFlags())
 	{
 		frame      = new wxStaticBox(this, -1, "Flags");

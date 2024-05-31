@@ -54,7 +54,7 @@ using namespace slade;
 ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	wxDialog(nullptr, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
 {
-	int      width      = ui::scalePx(40);
+	int      width      = FromDIP(40);
 	wxString offtypes[] = {
 		"Monster",           "Monster (GL-friendly)", "Projectile",         "Hud/Weapon",
 		"Hud/Weapon (Doom)", "Hud/Weapon (Heretic)",  "Hud/Weapon (Hexen)",

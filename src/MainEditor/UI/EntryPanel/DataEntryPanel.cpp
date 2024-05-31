@@ -36,7 +36,6 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/ColourConfiguration.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/SToolBar/SToolBar.h"
@@ -951,7 +950,7 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 	combo_cell_value_->Clear();
 
 	// Set column widths
-	grid_data_->SetColMinimalAcceptableWidth(ui::scalePx(64));
+	grid_data_->SetColMinimalAcceptableWidth(FromDIP(64));
 	for (int a = 0; a < table_data_->GetNumberCols(); a++)
 		grid_data_->AutoSizeColLabelSize(a);
 	grid_data_->ForceRefresh();

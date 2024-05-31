@@ -37,7 +37,6 @@
 #include "Archive/ArchiveEntry.h"
 #include "FindReplacePanel.h"
 #include "General/KeyBind.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "SCallTip.h"
 #include "SLADEWxApp.h"
@@ -232,7 +231,7 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	SetMarginWidth(2, 4);
 
 	// Register icons for autocompletion list
-	auto size = wxSize{ ui::scalePx(16), ui::scalePx(16) };
+	auto size = FromDIP(wxSize{ 16, 16 });
 	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }).GetBitmap(size));

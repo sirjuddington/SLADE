@@ -866,7 +866,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 	archive_{ archive }
 {
 	// Init settings
-	SetRowHeight(ui::scalePx(elist_icon_size + (elist_icon_padding * 2) + 2));
+	SetRowHeight(FromDIP(elist_icon_size + (elist_icon_padding * 2) + 2));
 	if (list_font_monospace)
 		SetFont(wxutil::monospaceFont(GetFont()));
 

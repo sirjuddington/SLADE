@@ -76,7 +76,7 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(
 	list_changes_->AppendToggleColumn("", wxDATAVIEW_CELL_ACTIVATABLE, wxDVC_DEFAULT_MINWIDTH, wxALIGN_CENTER);
 	list_changes_->AppendTextColumn("Change");
 	list_changes_->AppendTextColumn("Filename", wxDATAVIEW_CELL_INERT, -2);
-	list_changes_->SetMinSize(wxSize(0, ui::scalePx(200)));
+	list_changes_->SetMinSize(wxSize(0, FromDIP(200)));
 	sizer->Add(list_changes_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT).Expand());
 
 	// OK button

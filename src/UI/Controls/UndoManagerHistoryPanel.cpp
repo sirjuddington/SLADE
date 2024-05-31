@@ -33,7 +33,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UndoManagerHistoryPanel.h"
-#include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "UI/WxUtils.h"
 
@@ -180,7 +179,7 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 	list_levels_ = new UndoListView(this, manager);
 	sizer->Add(list_levels_, wxutil::sfWithBorder(1).Expand());
 
-	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, ui::scalePx(160));
+	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, FromDIP(160));
 	list_levels_->AppendColumn("Time", wxLIST_FORMAT_RIGHT);
 	list_levels_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
 	Bind(wxEVT_MENU, &UndoManagerHistoryPanel::onMenu, this);

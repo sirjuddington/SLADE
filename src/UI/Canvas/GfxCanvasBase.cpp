@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GfxCanvasBase.h"
-#include "General/UI.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
 #include "OpenGL/View.h"
@@ -488,7 +487,7 @@ void GfxCanvasBase::onMouseWheel(wxMouseEvent& e)
 {
 	if (wxGetKeyState(WXK_CONTROL) && allow_scroll_)
 	{
-		auto scroll_amount = ui::scalePx(24);
+		auto scroll_amount = window()->FromDIP(24);
 
 		if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL || wxGetKeyState(WXK_SHIFT))
 		{

@@ -205,7 +205,7 @@ ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : wxPanel(parent), parent_{
 	Bind(wxEVT_PAINT, &ThingDirCanvas::onPaint, this);
 
 	// Fixed size
-	auto size = ui::scalePx(128);
+	auto size = FromDIP(128);
 	SetInitialSize(wxSize(size, size));
 	wxWindowBase::SetMaxSize(wxSize(size, size));
 }
@@ -329,9 +329,9 @@ void ThingDirCanvas::onPaint(wxPaintEvent& e)
 	auto      gc = wxGraphicsContext::Create(dc);
 
 	auto half_size    = GetSize().x / 2;
-	auto pad          = ui::scalePx(8);
+	auto pad          = FromDIP(8);
 	auto radius       = half_size - pad;
-	auto point_radius = ui::scalePx(7);
+	auto point_radius = FromDIP(7);
 	auto col_bg       = wxutil::systemPanelBGColour();
 	auto col_fg       = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	auto pi           = wxGraphicsPenInfo(wxColour(col_fg.Red(), col_fg.Green(), col_fg.Blue(), 80), 1.75);

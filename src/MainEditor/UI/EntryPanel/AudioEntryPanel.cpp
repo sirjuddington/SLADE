@@ -115,7 +115,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 		-1,
 		wxEmptyString,
 		wxDefaultPosition,
-		{ -1, ui::scalePx(200) },
+		{ -1, FromDIP(200) },
 		wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
 	sizer_gb->Add(txt_info_, wxGBPosition(4, 0), wxGBSpan(1, 9), wxEXPAND | wxHORIZONTAL);
 
@@ -132,7 +132,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 
 	// Add volume slider
 	sizer_gb->Add(new wxStaticText(this, -1, "Volume:"), wxGBPosition(1, 7), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, wxSize(ui::scalePx(128), -1));
+	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, wxSize(FromDIP(128), -1));
 	slider_volume_->SetValue(snd_volume);
 	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8), { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 

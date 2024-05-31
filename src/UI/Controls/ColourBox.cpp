@@ -196,17 +196,17 @@ void ColourBox::onPaint(wxPaintEvent& e)
 	wxPaintDC dc(this);
 
 	dc.SetBrush(wxBrush(wxColour(colour_.r, colour_.g, colour_.b)));
-	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
-	dc.DrawRectangle(0, 0, ClientSize.x, ClientSize.y);
+	const wxSize client_size = GetClientSize() * GetContentScaleFactor();
+	dc.DrawRectangle(0, 0, client_size.x, client_size.y);
 
 	if (alpha_)
 	{
-		int a_height       = ui::scalePx(4);
-		int a_border_width = 1;
-		int a_point        = colour_.fa() * (ClientSize.x - (2 * a_border_width));
+		int a_height       = FromDIP(4);
+		int a_border_width = FromDIP(1);
+		int a_point        = colour_.fa() * (client_size.x - (2 * a_border_width));
 
 		dc.SetBrush(wxBrush(wxColour(0, 0, 0)));
-		dc.DrawRectangle(0, 0, ClientSize.x, a_height);
+		dc.DrawRectangle(0, 0, client_size.x, a_height);
 
 		dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
 		dc.SetPen(*wxTRANSPARENT_PEN);

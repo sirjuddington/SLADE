@@ -34,7 +34,6 @@
 #include "SpecialPresetDialog.h"
 #include "Game/Configuration.h"
 #include "Game/SpecialPreset.h"
-#include "General/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -98,8 +97,8 @@ public:
 
 		// 64 is an arbitrary fudge factor -- should be at least the width of a
 		// scrollbar plus the expand icons plus any extra padding
-		int min_width = textsize.GetWidth() + GetIndent() + ui::scalePx(64);
-		wxWindowBase::SetMinSize(wxSize(min_width, ui::scalePx(200)));
+		int min_width = textsize.GetWidth() + GetIndent() + 64;
+		wxWindowBase::SetMinSize(FromDIP(wxSize(min_width, 200)));
 	}
 
 	game::SpecialPreset selectedPreset() const
@@ -160,7 +159,7 @@ private:
 
 			if (!found)
 			{
-				current = AppendContainer(current, path[p], -1, 1);
+				current = AppendContainer(current, path[p]);
 				groups_.emplace_back(current, fullpath);
 			}
 		}
@@ -213,6 +212,9 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "S
 	auto btn_cancel = new wxButton(this, -1, "Cancel");
 	hbox->Add(btn_cancel, wxSizerFlags().Expand());
 	btn_cancel->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_CANCEL); });
+
+	wxWindowBase::SetMinClientSize(sizer->GetMinSize());
+	CenterOnParent();
 }
 
 // -----------------------------------------------------------------------------

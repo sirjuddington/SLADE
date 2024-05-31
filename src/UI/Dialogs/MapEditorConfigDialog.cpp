@@ -168,7 +168,7 @@ public:
 		sizer->AddGrowableCol(1);
 
 		wxDialog::Layout();
-		SetInitialSize({ ui::scalePx(250), -1 });
+		SetInitialSize({ FromDIP(250), -1 });
 		CenterOnParent();
 	}
 
@@ -281,7 +281,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 		// Add map preview
 		canvas_preview_ = ui::createMapPreviewCanvas(this, map_data_.get());
 		framesizer->Add(canvas_preview_, wx::sfWithBorder(1).Expand());
-		int size = ui::scalePx(400);
+		int size = FromDIP(400);
 		canvas_preview_->SetInitialSize(wxSize(size, size));
 	}
 

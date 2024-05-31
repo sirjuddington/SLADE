@@ -167,7 +167,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 
 
 	// Init dialog size
-	SetInitialSize({ ui::scalePx(400), -1 });
+	SetInitialSize({ FromDIP(400), -1 });
 	wxDialog::Layout();
 	wxDialog::Fit();
 	wxDialog::SetMinSize(GetBestSize());

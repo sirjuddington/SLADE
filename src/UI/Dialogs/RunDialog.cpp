@@ -161,7 +161,7 @@ public:
 		label_help->SetLabel(
 			"%i - Base resource archive\n%r - Resource archive(s)\n%a - Current archive\n%mn - Map name\n"
 			"%mw - Map number (eg. E1M1 = 1 1, MAP02 = 02)");
-		label_help->Wrap(ui::scalePx(300));
+		label_help->Wrap(FromDIP(300));
 		text_params_->SetInsertionPoint(0);
 	}
 	~RunConfigDialog() override = default;
@@ -299,7 +299,7 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	choice_config_->Bind(wxEVT_CHOICE, &RunDialog::onChoiceConfig, this);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	wxTopLevelWindowBase::SetMinSize(wxSize(ui::scalePx(500), ui::scalePx(400)));
+	wxTopLevelWindowBase::SetMinSize(FromDIP(wxSize(500, 400)));
 	wxWindowBase::Layout();
 	CenterOnParent();
 	btn_run_->SetFocusFromKbd();

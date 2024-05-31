@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ACSPrefsPanel.h"
-#include "General/UI.h"
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
@@ -69,7 +68,7 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 		"Browse For ACC Executable",
 		filedialog::executableExtensionString(),
 		filedialog::executableFileName("acc") + ";" + filedialog::executableFileName("bcc"));
-	list_inc_paths_        = new wxListBox(this, -1, wxDefaultPosition, wxSize(-1, ui::scalePx(200)));
+	list_inc_paths_        = new wxListBox(this, -1, wxDefaultPosition, wxSize(-1, FromDIP(200)));
 	btn_incpath_add_       = new wxButton(this, -1, "Add");
 	btn_incpath_remove_    = new wxButton(this, -1, "Remove");
 	cb_always_show_output_ = new wxCheckBox(this, -1, "Always Show Compiler Output");

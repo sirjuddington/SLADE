@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "InputPrefsPanel.h"
 #include "General/KeyBind.h"
-#include "General/UI.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "UI/WxUtils.h"
@@ -232,7 +231,7 @@ void InputPrefsPanel::initBindsList() const
 
 	// Create columns
 	list_binds_->AppendColumn("Control", wxCOL_WIDTH_AUTOSIZE);
-	list_binds_->AppendColumn("Bound Keys", ui::scalePx(150));
+	list_binds_->AppendColumn("Bound Keys", FromDIP(150));
 
 	// Add binds to list
 	for (auto& bind : binds)

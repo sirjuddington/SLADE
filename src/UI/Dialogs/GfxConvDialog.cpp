@@ -248,7 +248,7 @@ void GfxConvDialog::setupLayout()
 {
 	namespace wx = wxutil;
 
-	int px_preview_size = ui::scalePx(192);
+	int px_preview_size = FromDIP(192);
 
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);

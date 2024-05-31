@@ -34,7 +34,6 @@
 #include "Main.h"
 #include "BrowserCanvas.h"
 #include "BrowserItem.h"
-#include "General/UI.h"
 #include "OpenGL/Draw2D.h"
 #include "UI/WxUtils.h"
 
@@ -62,10 +61,7 @@ DEFINE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED)
 // -----------------------------------------------------------------------------
 // BrowserCanvas class constructor
 // -----------------------------------------------------------------------------
-BrowserCanvas::BrowserCanvas(wxWindow* parent) :
-	GLCanvas{ parent },
-	item_border_{ ui::scalePx(8) },
-	font_{ gl::draw2d::Font::Bold }
+BrowserCanvas::BrowserCanvas(wxWindow* parent) : GLCanvas{ parent }, item_border_{ 8 }, font_{ gl::draw2d::Font::Bold }
 {
 	// Init canvas background style/colour
 	ColRGBA col_bg = ColRGBA::BLACK;

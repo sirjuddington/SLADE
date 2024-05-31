@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PaletteDialog.h"
-#include "General/UI.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/WxUtils.h"
 
@@ -52,7 +51,7 @@ using namespace slade;
 PaletteDialog::PaletteDialog(const Palette* palette) :
 	wxDialog(nullptr, -1, "Palette", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
-	int size = ui::scalePx(400);
+	int size = FromDIP(400);
 
 	auto m_vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_vbox);

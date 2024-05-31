@@ -360,7 +360,7 @@ void ArchivePanel::setup(const Archive* archive)
 	cur_area_->setUndoManager(undo_manager_.get());
 
 	// Setup splitter
-	splitter_->SetMinimumPaneSize(ui::scalePx(300));
+	splitter_->SetMinimumPaneSize(FromDIP(300));
 	m_hbox->Add(splitter_, wxutil::sfWithBorder(1).Expand());
 	int split_pos = ap_splitter_position_list;
 	if (archive && archive->formatInfo().supports_dirs)

@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "TempFolderWizardPage.h"
 #include "App.h"
-#include "General/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -59,7 +58,7 @@ EXTERN_CVAR(String, temp_location_custom)
 // -----------------------------------------------------------------------------
 TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(parent)
 {
-	auto pad_xl = ui::scalePx(16);
+	auto pad_xl = FromDIP(16);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);

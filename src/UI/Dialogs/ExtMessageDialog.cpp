@@ -33,7 +33,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ExtMessageDialog.h"
-#include "General/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -73,7 +72,7 @@ ExtMessageDialog::ExtMessageDialog(wxWindow* parent, const wxString& caption) :
 	btn_ok->SetDefault();
 	hbox->Add(btn_ok);
 
-	int size = ui::scalePx(500);
+	int size = FromDIP(500);
 	SetInitialSize(wxSize(size, size));
 
 	// Bind events

@@ -218,24 +218,6 @@ int ui::px(Size size)
 }
 
 // -----------------------------------------------------------------------------
-// Returns [px] scaled by the current scaling factor (in pixels).
-// Will use the lower bound when converting to int
-// -----------------------------------------------------------------------------
-int ui::scalePx(int px)
-{
-	return px;
-}
-
-// -----------------------------------------------------------------------------
-// Returns [px] scaled by the current scaling factor (in pixels)
-// Will use the upper bound when converting to int
-// -----------------------------------------------------------------------------
-int ui::scalePxU(int px)
-{
-	return static_cast<int>(std::ceil(static_cast<double>(px)));
-}
-
-// -----------------------------------------------------------------------------
 // Returns the standard padding size in pixels
 // -----------------------------------------------------------------------------
 int ui::pad()

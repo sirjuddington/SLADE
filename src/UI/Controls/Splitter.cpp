@@ -33,7 +33,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Splitter.h"
-#include "General/UI.h"
 
 using namespace slade;
 using namespace ui;
@@ -168,13 +167,13 @@ void Splitter::DrawSash(wxDC& dc)
 												 bgcol.ChangeLightness(m_isHot ? 150 : 120);
 	dc.SetBrush(wxBrush(colour));
 	auto line_x   = m_sashPosition + getSashSize() / 2;
-	auto line_top = size.y / 2 - ui::scalePx(24);
+	auto line_top = size.y / 2 - FromDIP(24);
 	if (line_top < 0)
 		line_top = 0;
-	auto line_height = ui::scalePx(48);
+	auto line_height = FromDIP(48);
 	if (line_top + line_height > size.y)
 		line_height = size.y - line_top;
-	dc.DrawRoundedRectangle(line_x - ui::scalePx(1), line_top, ui::scalePx(2), line_height, ui::scalePx(1));
+	dc.DrawRoundedRectangle(line_x - FromDIP(1), line_top, FromDIP(2), line_height, FromDIP(1));
 #endif
 }
 

@@ -79,7 +79,7 @@ GradientBox::GradientBox(wxWindow* parent, int steps) :
 		});
 
 	// Minimum height 16
-	SetInitialSize(wxSize(-1, ui::scalePx(16)));
+	SetInitialSize(wxSize(-1, FromDIP(16)));
 }
 
 
@@ -162,7 +162,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	pal_canvas_original_ = new PaletteCanvas(this);
 	pal_canvas_original_->doubleWidth(true);
 	pal_canvas_original_->setPalette(palette_.get());
-	pal_canvas_original_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
+	pal_canvas_original_->SetInitialSize(FromDIP(wxSize(448, 112)));
 	pal_canvas_original_->setSelectionType(PaletteCanvas::SelectionType::Range);
 	framesizer->Add(pal_canvas_original_, 1, wxALL | wxEXPAND, ui::pad());
 
@@ -209,7 +209,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	pal_canvas_target_ = new PaletteCanvas(panel_target_palette_);
 	pal_canvas_target_->doubleWidth(true);
 	pal_canvas_target_->setPalette(palette_.get());
-	pal_canvas_target_->SetInitialSize(wxSize(ui::scalePx(448), ui::scalePx(112)));
+	pal_canvas_target_->SetInitialSize(FromDIP(wxSize(448, 112)));
 	pal_canvas_target_->setSelectionType(PaletteCanvas::SelectionType::Range);
 	vbox->Add(pal_canvas_target_, 1, wxEXPAND);
 
@@ -288,9 +288,9 @@ TranslationEditorDialog::TranslationEditorDialog(
 	pal_canvas_preview_ = new PaletteCanvas(this);
 	pal_canvas_preview_->doubleWidth(translation_editor_condensed);
 	if (translation_editor_condensed)
-		pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(320), ui::scalePx(80)));
+		pal_canvas_preview_->SetInitialSize(FromDIP(wxSize(320, 80)));
 	else
-		pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(160), ui::scalePx(160)));
+		pal_canvas_preview_->SetInitialSize(FromDIP(wxSize(160, 160)));
 	pal_canvas_preview_->setPalette(palette_.get());
 	framesizer->Add(pal_canvas_preview_, 1, wxEXPAND | wxALL, ui::pad());
 

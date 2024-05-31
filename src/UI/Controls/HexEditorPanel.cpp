@@ -33,7 +33,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexEditorPanel.h"
-#include "General/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/CodePages.h"
 
@@ -268,8 +267,8 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 	btn_go_to_offset_ = new wxButton(this, -1, "Go to Offset...");
 
 	// Setup hex grid
-	auto cellsize      = ui::scalePx(28);
-	auto scrollbarsize = wxSystemSettings::GetMetric(wxSystemMetric::wxSYS_VSCROLL_X);
+	auto cellsize      = FromDIP(28);
+	auto scrollbarsize = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
 	grid_hex_->SetDefaultRowSize(cellsize, true);
 	grid_hex_->SetDefaultColSize(cellsize, true);
 	grid_hex_->HideColLabels();

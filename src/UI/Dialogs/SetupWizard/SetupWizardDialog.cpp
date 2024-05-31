@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "SetupWizardDialog.h"
 #include "BaseResourceWizardPage.h"
-#include "General/UI.h"
 #include "NodeBuildersWizardPage.h"
 #include "UI/WxUtils.h"
 
@@ -75,7 +74,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 	wxutil::setWindowIcon(this, "logo");
 
 	// Setup layout
-	SetInitialSize(wxSize(ui::scalePx(600), ui::scalePx(500)));
+	SetInitialSize(FromDIP(wxSize(600, 500)));
 	wxTopLevelWindowBase::Layout();
 	wxWindowBase::Fit();
 	wxTopLevelWindowBase::SetMinSize(GetBestSize());
@@ -94,7 +93,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 void SetupWizardDialog::setupLayout()
 {
 	namespace wx = wxutil;
-	auto pad_xl  = ui::scalePx(16);
+	auto pad_xl  = FromDIP(16);
 
 	// Setup main sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
