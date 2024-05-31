@@ -3,7 +3,7 @@
 namespace slade::ui
 {
 // General
-void init(double scale = 1.);
+void init();
 
 // Splash Window
 void  enableSplash(bool enable);
@@ -39,12 +39,11 @@ enum class Size
 	Splitter,
 	SpinCtrlWidth
 };
-double scaleFactor();
-int    px(Size size);
-int    scalePx(int px);
-int    scalePxU(int px);
-int    pad();      // Shortcut for ui::px(UI::Size::Pad)
-int    padLarge(); // Shortcut for ui::px(UI::Size::PadLarge)
-int    padMin();   // Shortcut for ui::px(ui::Size::PadMinimum)
+int px(Size size);
+int scalePx(int px);
+int scalePxU(int px);
+int pad();      // Shortcut for ui::px(UI::Size::Pad)
+int padLarge(); // Shortcut for ui::px(UI::Size::PadLarge)
+int padMin();   // Shortcut for ui::px(ui::Size::PadMinimum)
 
 } // namespace slade::ui

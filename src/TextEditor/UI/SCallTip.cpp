@@ -548,7 +548,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 
 				rect = drawFunctionContext(
 					dc, context, xoff, bottom + (first ? 0 : ui::scalePx(11)), wxcol_faded, bold);
-				bottom    = static_cast<int>(round(rect.GetBottom() + ui::scaleFactor()));
+				bottom    = static_cast<int>(round(rect.GetBottom()));
 				max_right = std::max(max_right, rect.GetRight());
 				first     = false;
 			}
@@ -563,7 +563,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 					xoff,
 					bottom + ui::scalePx(11),
 					&rect);
-				bottom = static_cast<int>(round(rect.GetBottom() + ui::scaleFactor()));
+				bottom = static_cast<int>(round(rect.GetBottom()));
 			}
 
 			if (num > 1)
@@ -578,8 +578,8 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		}
 
 		// Size buffer bitmap to fit
-		ct_size.SetWidth(static_cast<int>(round(max_right + ui::scaleFactor())));
-		ct_size.SetHeight(static_cast<int>(round(bottom + ui::scaleFactor())));
+		ct_size.SetWidth(static_cast<int>(round(max_right)));
+		ct_size.SetHeight(static_cast<int>(round(bottom)));
 	}
 	else
 	{

@@ -358,7 +358,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	auto width_inner  = width - (2. * pad_outer_);
 	auto height       = GetSize().y;
 	auto height_inner = height - (2. * pad_outer_);
-	auto scale_px     = ui::scaleFactor();
+	auto scale_px     = 1;
 
 	// Draw toggled border/background
 	if (isChecked())

@@ -50,12 +50,11 @@ unique_ptr<SplashWindow> splash_window;
 bool                     splash_enabled = true;
 
 // Pixel sizes/scale
-double scale = 1.;
-int    px_pad_small;
-int    px_pad;
-int    px_pad_min;
-int    px_splitter;
-int    px_spin_width;
+int px_pad_small = 8;
+int px_pad       = 12;
+int px_pad_min   = 3;
+int px_splitter  = 10;
+int px_spin_width;
 
 } // namespace slade::ui
 
@@ -79,23 +78,14 @@ bool isMainThread()
 // -----------------------------------------------------------------------------
 // Initialises UI metric values based on [scale]
 // -----------------------------------------------------------------------------
-void ui::init(double scale)
+void ui::init()
 {
 	splash_window = std::make_unique<SplashWindow>();
 
-#ifdef __WXMSW__
-	scale = splash_window->GetDPIScaleFactor();
-#endif
-
-	ui::scale    = scale;
-	px_pad_small = 8 * scale;
-	px_pad       = 12 * scale;
-	px_pad_min   = 3 * scale;
-	px_splitter  = 10 * scale;
 	if (app::platform() == app::Platform::Linux)
 		px_spin_width = -1;
 	else
-		px_spin_width = 64 * scale;
+		px_spin_width = 64;
 
 	SplashWindow::init();
 }
@@ -209,14 +199,6 @@ void ui::setCursor(wxWindow* window, MouseCursor cursor)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the UI scaling factor
-// -----------------------------------------------------------------------------
-double ui::scaleFactor()
-{
-	return scale;
-}
-
-// -----------------------------------------------------------------------------
 // Returns a UI metric size (eg. padding).
 // Use this for UI sizes like padding, spin control widths etc. to keep things
 // consistent
@@ -241,7 +223,7 @@ int ui::px(Size size)
 // -----------------------------------------------------------------------------
 int ui::scalePx(int px)
 {
-	return px * scale;
+	return px;
 }
 
 // -----------------------------------------------------------------------------
@@ -250,7 +232,7 @@ int ui::scalePx(int px)
 // -----------------------------------------------------------------------------
 int ui::scalePxU(int px)
 {
-	return static_cast<int>(std::ceil(static_cast<double>(px) * scale));
+	return static_cast<int>(std::ceil(static_cast<double>(px)));
 }
 
 // -----------------------------------------------------------------------------

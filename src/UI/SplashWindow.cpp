@@ -130,8 +130,8 @@ void SplashWindow::init()
 
 		wxImage img;
 		img.LoadFile(tempfile, wxBITMAP_TYPE_PNG);
-		if (ui::scaleFactor() != 1.)
-			img = img.Scale(ui::scalePx(img.GetWidth()), ui::scalePx(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
+		// if (ui::scaleFactor() != 1.)
+		//	img = img.Scale(ui::scalePx(img.GetWidth()), ui::scalePx(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
 
 		bm_logo = wxBitmap(img);
 	}

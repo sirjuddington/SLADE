@@ -196,7 +196,7 @@ void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* WXUNUSED(wnd), const wxRect&
 	wxColor bottom_color = main_tabs_ && global::win_version_major >= 10 ? col_w10_bg : m_baseColour;
 	wxRect  r;
 
-	auto px1 = static_cast<int>(ui::scaleFactor());
+	auto px1 = 1;
 	auto px2 = ui::scalePx(2);
 	auto px4 = ui::scalePx(4);
 

@@ -21,7 +21,7 @@ namespace app
 	Clipboard&       clipboard();
 	ResourceManager& resources();
 
-	bool init(const vector<string>& args, double ui_scale = 1.);
+	bool init(const vector<string>& args);
 	void saveConfigFile();
 	void exit(bool save_config);
 

@@ -107,8 +107,7 @@ wxFont wxutil::monospaceFont(wxFont base)
 // -----------------------------------------------------------------------------
 wxImageList* wxutil::createSmallImageList()
 {
-	const auto icon_size = ui::scalePx(16);
-	return new wxImageList(icon_size, icon_size, false, 0);
+	return new wxImageList(16, 16, false, 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -371,7 +370,9 @@ wxArrayString wxutil::arrayStringStd(const vector<string>& vector)
 // -----------------------------------------------------------------------------
 wxSize wxutil::scaledSize(int x, int y)
 {
-	return { x < 0 ? -1 : ui::scalePx(x), y < 0 ? -1 : ui::scalePx(y) };
+	// TODO: Remove
+	return { x, y };
+	// return { x < 0 ? -1 : ui::scalePx(x), y < 0 ? -1 : ui::scalePx(y) };
 }
 
 // -----------------------------------------------------------------------------
@@ -379,7 +380,9 @@ wxSize wxutil::scaledSize(int x, int y)
 // -----------------------------------------------------------------------------
 wxPoint wxutil::scaledPoint(int x, int y)
 {
-	return { ui::scalePx(x), ui::scalePx(y) };
+	// TODO: Remove
+	return { x, y };
+	// return { ui::scalePx(x), ui::scalePx(y) };
 }
 
 // -----------------------------------------------------------------------------
@@ -388,7 +391,10 @@ wxPoint wxutil::scaledPoint(int x, int y)
 // -----------------------------------------------------------------------------
 wxRect wxutil::scaledRect(int x, int y, int width, int height)
 {
-	return { ui::scalePx(x), ui::scalePx(y), ui::scalePx(width), ui::scalePx(height) };
+	// TODO: Remove
+	return { x, y, width, height };
+
+	// return { ui::scalePx(x), ui::scalePx(y), ui::scalePx(width), ui::scalePx(height) };
 }
 
 // -----------------------------------------------------------------------------

@@ -441,7 +441,7 @@ bool app::isExiting()
 // -----------------------------------------------------------------------------
 // Application initialisation
 // -----------------------------------------------------------------------------
-bool app::init(const vector<string>& args, double ui_scale)
+bool app::init(const vector<string>& args)
 {
 	// Get the id of the current thread (should be the main one)
 	main_thread_id = std::this_thread::get_id();
@@ -497,7 +497,7 @@ bool app::init(const vector<string>& args, double ui_scale)
 #endif
 
 	// Init UI
-	ui::init(ui_scale);
+	ui::init();
 
 	// Show splash screen
 	ui::showSplash("Starting up...");

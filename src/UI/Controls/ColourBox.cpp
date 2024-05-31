@@ -202,7 +202,7 @@ void ColourBox::onPaint(wxPaintEvent& e)
 	if (alpha_)
 	{
 		int a_height       = ui::scalePx(4);
-		int a_border_width = static_cast<int>(ui::scaleFactor());
+		int a_border_width = 1;
 		int a_point        = colour_.fa() * (ClientSize.x - (2 * a_border_width));
 
 		dc.SetBrush(wxBrush(wxColour(0, 0, 0)));
