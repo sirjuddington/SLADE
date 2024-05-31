@@ -36,7 +36,6 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 
 using namespace slade;
@@ -116,7 +115,7 @@ void SplashWindow::setProgress(float progress)
 // -----------------------------------------------------------------------------
 // Sets up the splash window
 // -----------------------------------------------------------------------------
-void SplashWindow::init()
+void SplashWindow::init() const
 {
 	if (init_done)
 		return;
@@ -130,14 +129,15 @@ void SplashWindow::init()
 
 		wxImage img;
 		img.LoadFile(tempfile, wxBITMAP_TYPE_PNG);
-		// if (ui::scaleFactor() != 1.)
-		//	img = img.Scale(ui::scalePx(img.GetWidth()), ui::scalePx(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
+#ifndef wxHAS_DPI_INDEPENDENT_PIXELS
+		img = img.Scale(FromDIP(img.GetWidth()), FromDIP(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
+#endif
 
 		bm_logo = wxBitmap(img);
 	}
 
-	img_width  = ui::scalePx(300);
-	img_height = ui::scalePx(204);
+	img_width  = FromDIP(300);
+	img_height = FromDIP(204);
 
 	// Clean up
 	wxRemoveFile(tempfile);
@@ -156,7 +156,7 @@ void SplashWindow::show(const wxString& message, bool progress, wxWindow* parent
 	{
 		show_progress_ = true;
 		setProgress(0.0f);
-		rheight += ui::scalePx(10);
+		rheight += FromDIP(10);
 	}
 	else
 		show_progress_ = false;
@@ -171,7 +171,7 @@ void SplashWindow::show(const wxString& message, bool progress, wxWindow* parent
 #ifndef __WXGTK__
 	SetInitialSize({ img_width, rheight });
 #else
-	SetInitialSize({ img_width + ui::scalePx(6), rheight + ui::scalePx(6) });
+	SetInitialSize({ img_width + FromDIP(6), rheight + FromDIP(6) });
 #endif
 	setMessage(message);
 	Show();
@@ -230,8 +230,8 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	// Draw version
 	wxString vers      = "v" + app::version().toString();
 	auto     text_size = dc.GetTextExtent(vers);
-	auto     x         = img_width - text_size.GetWidth() - ui::scalePx(8);
-	auto     y         = ui::scalePx(190) - text_size.GetHeight();
+	auto     x         = img_width - text_size.GetWidth() - FromDIP(8);
+	auto     y         = FromDIP(190) - text_size.GetHeight();
 	dc.DrawText(vers, x, y);
 
 	// Draw message
@@ -247,7 +247,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	if (show_progress_)
 	{
 		// Setup progress bar
-		wxRect rect_pbar(0, img_height - ui::scalePx(4), img_width, ui::scalePx(14));
+		wxRect rect_pbar(0, img_height - FromDIP(4), img_width, FromDIP(14));
 
 		// Draw background
 		dc.SetBrush(wxBrush(wxColour(40, 40, 56)));
@@ -289,7 +289,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 		dc.SetFont(font);
 		text_size = dc.GetTextExtent(message_progress_);
 		x         = (img_width * 0.5) - static_cast<int>(static_cast<double>(text_size.GetWidth()) * 0.5);
-		y         = img_height - ui::scalePx(4);
+		y         = img_height - FromDIP(4);
 		dc.SetTextForeground(wxColour(200, 210, 255));
 		dc.DrawText(message_progress_, x, y);
 	}

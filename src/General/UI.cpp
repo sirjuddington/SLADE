@@ -87,7 +87,7 @@ void ui::init()
 	else
 		px_spin_width = 64;
 
-	SplashWindow::init();
+	splash_window->init();
 }
 
 // -----------------------------------------------------------------------------
@@ -109,8 +109,8 @@ void ui::showSplash(string_view message, bool progress, wxWindow* parent)
 
 	if (!splash_window)
 	{
-		SplashWindow::init();
 		splash_window = std::make_unique<SplashWindow>();
+		splash_window->init();
 	}
 
 	splash_window->show(wxString{ message.data(), message.size() }, progress, parent);
