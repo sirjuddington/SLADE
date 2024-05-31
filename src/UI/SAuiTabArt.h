@@ -50,7 +50,6 @@ public:
 		wxRect*                  outButtonRect,
 		int*                     xExtent) override;
 
-#if wxCHECK_VERSION(3, 1, 6)
 	wxSize GetTabSize(
 		wxDC&                 dc,
 		wxWindow*             wnd,
@@ -59,16 +58,6 @@ public:
 		bool                  active,
 		int                   closeButtonState,
 		int*                  xExtent) override;
-#else
-	wxSize GetTabSize(
-		wxDC&           dc,
-		wxWindow*       wnd,
-		const wxString& caption,
-		const wxBitmap& bitmap,
-		bool            active,
-		int             closeButtonState,
-		int*            xExtent) override;
-#endif
 
 	int GetIndentSize() override { return 2; }
 
@@ -78,11 +67,7 @@ protected:
 	bool     main_tabs_;
 	int      padding_;
 
-#if wxCHECK_VERSION(3, 1, 6)
 	wxBitmapBundle close_bitmap_white_;
-#else
-	wxBitmap close_bitmap_white_;
-#endif
 };
 
 class SAuiDockArt : public wxAuiDefaultDockArt

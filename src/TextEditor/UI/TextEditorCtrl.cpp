@@ -232,20 +232,12 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	SetMarginWidth(2, 4);
 
 	// Register icons for autocompletion list
-#if wxCHECK_VERSION(3, 1, 6)
 	auto size = wxSize{ ui::scalePx(16), ui::scalePx(16) };
 	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(4, icons::getIcon(icons::TextEditor, "property", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(5, icons::getIcon(icons::TextEditor, "function", -1, { 1, 3 }).GetBitmap(size));
-#else
-	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }));
-	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }));
-	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }));
-	RegisterImage(4, icons::getIcon(icons::TextEditor, "property", -1, { 1, 3 }));
-	RegisterImage(5, icons::getIcon(icons::TextEditor, "function", -1, { 1, 3 }));
-#endif
 
 	// Init w/no language
 	setLanguage(nullptr);

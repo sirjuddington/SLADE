@@ -115,11 +115,7 @@ wxImageList* wxutil::createSmallImageList()
 // -----------------------------------------------------------------------------
 int wxutil::addImageListIcon(wxImageList* list, int icon_type, string_view icon)
 {
-#if wxCHECK_VERSION(3, 1, 6)
 	return list->Add(icons::getIcon(static_cast<icons::Type>(icon_type), icon).GetBitmap(list->GetSize()));
-#else
-	return list->Add(icons::getIcon(static_cast<icons::Type>(icon_type), icon));
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -402,13 +398,7 @@ wxRect wxutil::scaledRect(int x, int y, int width, int height)
 // -----------------------------------------------------------------------------
 void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 {
-#if wxCHECK_VERSION(3, 1, 6)
 	auto wx_icon = icons::getIcon(icons::General, icon).GetIconFor(window);
-#else
-	wxIcon wx_icon;
-	wx_icon.CopyFromBitmap(icons::getIcon(icons::General, icon));
-#endif
-
 	window->SetIcon(wx_icon);
 }
 

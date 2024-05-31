@@ -396,12 +396,8 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, 1);
 	}
 
-#if wxCHECK_VERSION(3, 1, 6)
 	auto icon_size = FromDIP(wxSize{ icon_size_, icon_size_ });
 	auto icon      = icon_.GetBitmap(icon_size);
-#else
-	const auto& icon = icon_;
-#endif
 
 	if (icon.IsOk())
 	{
@@ -445,12 +441,8 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 	if (menu_dropdown_)
 	{
-#if wxCHECK_VERSION(3, 1, 6)
 		static auto arrow_down = icons::getInterfaceIcon("arrow-down", FromDIP(icon_size_ * 0.75))
 									 .GetBitmap(wxDefaultSize);
-#else
-		static auto arrow_down = icons::getInterfaceIcon("arrow-down", icon_size_ * 0.75);
-#endif
 
 		gc->DrawBitmap(
 			arrow_down,

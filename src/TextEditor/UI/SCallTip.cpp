@@ -91,11 +91,7 @@ void SCallTip::setFont(const wxString& face, int size)
 	if (face.empty())
 	{
 		font_.SetFaceName(GetFont().GetFaceName());
-#if wxCHECK_VERSION(3, 1, 6)
 		font_.SetPointSize(FromDIP(GetFont().GetPointSize()));
-#else
-		font_.SetPointSize(GetFont().GetPointSize());
-#endif
 	}
 	else
 	{
