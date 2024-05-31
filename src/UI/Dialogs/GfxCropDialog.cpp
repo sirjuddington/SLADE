@@ -77,7 +77,7 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, const SImage& image, const Palett
 	canvas_preview_->setPalette(palette);
 	canvas_preview_->image().copyImage(&image);
 	canvas_preview_->setCropRect(crop_rect_);
-	canvas_preview_->window()->SetInitialSize(wxutil::scaledSize(220, 220));
+	canvas_preview_->window()->SetInitialSize(FromDIP(wxSize(220, 220)));
 	sizer->Add(canvas_preview_->window(), wx::sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add crop controls

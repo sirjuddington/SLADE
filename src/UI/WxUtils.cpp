@@ -361,39 +361,6 @@ wxArrayString wxutil::arrayStringStd(const vector<string>& vector)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the size [x]x[y] as a wxSize, scaled by the DPI factor.
-// Will keep any -1 value
-// -----------------------------------------------------------------------------
-wxSize wxutil::scaledSize(int x, int y)
-{
-	// TODO: Remove
-	return { x, y };
-	// return { x < 0 ? -1 : ui::scalePx(x), y < 0 ? -1 : ui::scalePx(y) };
-}
-
-// -----------------------------------------------------------------------------
-// Returns the position [x],[y] as a wxPoint, scaled by the DPI factor
-// -----------------------------------------------------------------------------
-wxPoint wxutil::scaledPoint(int x, int y)
-{
-	// TODO: Remove
-	return { x, y };
-	// return { ui::scalePx(x), ui::scalePx(y) };
-}
-
-// -----------------------------------------------------------------------------
-// Returns the rect at [x],[y] of size [width]x[height] as a wxRect, scaled by
-// the DPI factor
-// -----------------------------------------------------------------------------
-wxRect wxutil::scaledRect(int x, int y, int width, int height)
-{
-	// TODO: Remove
-	return { x, y, width, height };
-
-	// return { ui::scalePx(x), ui::scalePx(y), ui::scalePx(width), ui::scalePx(height) };
-}
-
-// -----------------------------------------------------------------------------
 // Sets the given [window]'s [icon]
 // -----------------------------------------------------------------------------
 void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)

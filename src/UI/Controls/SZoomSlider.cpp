@@ -72,7 +72,7 @@ SZoomSlider::SZoomSlider(wxWindow* parent, CTextureGLCanvas* linked_canvas) :
 void SZoomSlider::setup()
 {
 	// Create controls
-	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, wxutil::scaledSize(150, -1));
+	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, FromDIP(wxSize(150, -1)));
 	slider_zoom_->SetLineSize(10);
 	slider_zoom_->SetPageSize(100);
 	label_zoom_amount_ = new wxStaticText(this, -1, "100%");

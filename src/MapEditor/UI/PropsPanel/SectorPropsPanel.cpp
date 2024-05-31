@@ -82,7 +82,7 @@ FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Check
 {
 	// Init variables
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-	SetInitialSize(wxutil::scaledSize(136, 136));
+	SetInitialSize(FromDIP(wxSize(136, 136)));
 }
 
 // -----------------------------------------------------------------------------

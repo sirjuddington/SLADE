@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SCallTip.h"
-#include "UI/WxUtils.h"
 #include "Utility/Colour.h"
 
 using namespace slade;
@@ -510,8 +509,8 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				&rect_btn_down_);
 
 			left = rect_btn_down_.GetRight() + FromDIP(8);
-			rect_btn_up_.Offset(wxutil::scaledPoint(12, 8));
-			rect_btn_down_.Offset(wxutil::scaledPoint(12, 8));
+			rect_btn_up_.Offset(FromDIP(wxPoint(12, 8)));
+			rect_btn_down_.Offset(FromDIP(wxPoint(12, 8)));
 
 			// Draw function (current context)
 			rect      = drawFunctionContext(dc, context_, left, yoff, wxcol_faded, bold);

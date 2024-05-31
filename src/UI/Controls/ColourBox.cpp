@@ -36,7 +36,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ColourBox.h"
-#include "General/UI.h"
 #include "Graphics/Palette/Palette.h"
 #include "UI/Dialogs/PaletteDialog.h"
 #include "UI/WxUtils.h"
@@ -63,7 +62,7 @@ DEFINE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED)
 // ColourBox class constructor
 // -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
-	wxPanel{ parent, id, wxDefaultPosition, wxutil::scaledSize(32, 22), wxNO_BORDER },
+	wxPanel{ parent, id, wxDefaultPosition, FromDIP(wxSize(32, 22)), wxNO_BORDER },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
 {
@@ -83,9 +82,9 @@ ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, b
 	altmode_{ mode }
 {
 	if (size > 0)
-		SetInitialSize({ size, size });
+		SetInitialSize(FromDIP(wxSize{ size, size }));
 	else
-		SetInitialSize(wxutil::scaledSize(32, 22));
+		SetInitialSize(FromDIP(wxSize(32, 22)));
 
 	// Bind events
 	Bind(wxEVT_PAINT, &ColourBox::onPaint, this);

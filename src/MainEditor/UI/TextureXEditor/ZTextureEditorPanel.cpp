@@ -249,7 +249,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	tb_patches_->findActionButton("txed_patch_add")->Enable();
 
 	// Layout
-	list_patches_->SetInitialSize(wxutil::scaledSize(100, tb_patches_->group("_Patch")->GetBestSize().y));
+	list_patches_->SetInitialSize({ FromDIP(100), tb_patches_->group("_Patch")->GetBestSize().y });
 	framesizer->Add(list_patches_, wx::sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
 	framesizer->Add(tb_patches_, wx::sfWithMinBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 

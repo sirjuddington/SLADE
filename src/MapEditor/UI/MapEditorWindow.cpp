@@ -65,7 +65,6 @@
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/Tokenizer.h"
 
@@ -384,10 +383,10 @@ void MapEditorWindow::setupLayout()
 	p_inf.DefaultPane();
 	p_inf.Bottom();
 	p_inf.Dock();
-	p_inf.BestSize(wxutil::scaledSize(480, 192));
-	p_inf.FloatingSize(wxutil::scaledSize(600, 400));
+	p_inf.BestSize(FromDIP(wxSize(480, 192)));
+	p_inf.FloatingSize(FromDIP(wxSize(600, 400)));
 	p_inf.FloatingPosition(100, 100);
-	p_inf.MinSize(wxutil::scaledSize(-1, 192));
+	p_inf.MinSize(FromDIP(wxSize(-1, 192)));
 	p_inf.Show(false);
 	p_inf.Caption("Console");
 	p_inf.Name("console");
@@ -399,10 +398,10 @@ void MapEditorWindow::setupLayout()
 
 	// Setup panel info & add panel
 	p_inf.Right();
-	p_inf.BestSize(wxutil::scaledSize(256, 256));
-	p_inf.FloatingSize(wxutil::scaledSize(400, 600));
+	p_inf.BestSize(FromDIP(wxSize(256, 256)));
+	p_inf.FloatingSize(FromDIP(wxSize(400, 600)));
 	p_inf.FloatingPosition(120, 120);
-	p_inf.MinSize(wxutil::scaledSize(256, 256));
+	p_inf.MinSize(FromDIP(wxSize(256, 256)));
 	p_inf.Show(true);
 	p_inf.Caption("Item Properties");
 	p_inf.Name("item_props");
@@ -414,10 +413,10 @@ void MapEditorWindow::setupLayout()
 
 	// Setup panel info & add panel
 	p_inf.Float();
-	p_inf.BestSize(wxutil::scaledSize(300, 300));
-	p_inf.FloatingSize(wxutil::scaledSize(500, 400));
+	p_inf.BestSize(FromDIP(wxSize(300, 300)));
+	p_inf.FloatingSize(FromDIP(wxSize(500, 400)));
 	p_inf.FloatingPosition(150, 150);
-	p_inf.MinSize(wxutil::scaledSize(300, 300));
+	p_inf.MinSize(FromDIP(wxSize(300, 300)));
 	p_inf.Show(false);
 	p_inf.Caption("Script Editor");
 	p_inf.Name("script_editor");
@@ -493,7 +492,7 @@ void MapEditorWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Right();
-	p_inf.BestSize(wxutil::scaledSize(128, 480));
+	p_inf.BestSize(FromDIP(wxSize(128, 480)));
 	p_inf.Caption("Undo History");
 	p_inf.Name("undo_history");
 	p_inf.Show(false);
@@ -1277,7 +1276,7 @@ bool MapEditorWindow::handleAction(string_view id)
 		p_inf.Show(!p_inf.IsShown());
 		map_canvas_->SetFocus();
 
-		p_inf.MinSize(wxutil::scaledSize(256, 256));
+		p_inf.MinSize(FromDIP(wxSize(256, 256)));
 		m_mgr->Update();
 		return true;
 	}
@@ -1301,7 +1300,7 @@ bool MapEditorWindow::handleAction(string_view id)
 			dynamic_cast<ConsolePanel*>(p_inf.window)->focusInput();
 		}
 
-		p_inf.MinSize(wxutil::scaledSize(200, 128));
+		p_inf.MinSize(FromDIP(wxSize(200, 128)));
 		m_mgr->Update();
 		return true;
 	}
@@ -1325,7 +1324,7 @@ bool MapEditorWindow::handleAction(string_view id)
 			dynamic_cast<ScriptEditorPanel*>(p_inf.window)->updateUI();
 		}
 
-		p_inf.MinSize(wxutil::scaledSize(200, 128));
+		p_inf.MinSize(FromDIP(wxSize(200, 128)));
 		m_mgr->Update();
 		return true;
 	}

@@ -92,7 +92,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	lv_specials_->updateSize();
 
 	// Boom Flags
-	int width = FromDIP(300);
+	int width = 300;
 	if (game::configuration().supportsSectorFlags())
 	{
 		frame      = new wxStaticBox(this, -1, "Flags");
@@ -134,7 +134,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 		width = -1;
 	}
 
-	wxWindowBase::SetMinSize(wx::scaledSize(width, 300));
+	wxWindowBase::SetMinSize(FromDIP(wxSize(width, 300)));
 }
 
 // -----------------------------------------------------------------------------

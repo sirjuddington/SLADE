@@ -33,7 +33,6 @@
 #include "ArgsPanel.h"
 #include "Game/Args.h"
 #include "General/UI.h"
-#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -74,7 +73,7 @@ class ArgsTextControl : public ArgsControl
 public:
 	ArgsTextControl(wxWindow* parent, const game::Arg& arg, bool limit_byte) : ArgsControl(parent, arg)
 	{
-		text_control_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxutil::scaledSize(40, -1));
+		text_control_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, FromDIP(wxSize(40, -1)));
 		if (limit_byte)
 			text_control_->SetValidator(wxIntegerValidator<unsigned char>());
 		else
@@ -147,7 +146,7 @@ class ArgsChoiceControl : public ArgsControl
 public:
 	ArgsChoiceControl(wxWindow* parent, const game::Arg& arg) : ArgsControl(parent, arg)
 	{
-		choice_control_ = new wxComboBox(this, -1, "", wxDefaultPosition, wxutil::scaledSize(100, -1));
+		choice_control_ = new wxComboBox(this, -1, "", wxDefaultPosition, FromDIP(wxSize(100, -1)));
 		choice_control_->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
 
 		for (const auto& custom_value : arg.custom_values)
@@ -494,7 +493,7 @@ ArgsPanel::ArgsPanel(wxWindow* parent) : wxScrolled<wxPanel>{ parent, -1, wxDefa
 	{
 		label_args_[a]      = new wxStaticText(this, -1, "");
 		control_args_[a]    = nullptr;
-		label_args_desc_[a] = new wxStaticText(this, -1, "", wxDefaultPosition, wxutil::scaledSize(100, -1));
+		label_args_desc_[a] = new wxStaticText(this, -1, "", wxDefaultPosition, FromDIP(wxSize(100, -1)));
 	}
 
 	// Set up vertical scrollbar

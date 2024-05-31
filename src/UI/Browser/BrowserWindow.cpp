@@ -285,7 +285,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	canvas_->Bind(wxEVT_CHAR, &BrowserWindow::onCanvasKeyChar, this);
 
 	wxWindowBase::Layout();
-	wxTopLevelWindowBase::SetMinSize(wxutil::scaledSize(540, 400));
+	wxTopLevelWindowBase::SetMinSize(FromDIP(wxSize(540, 400)));
 
 	if (browser_maximised)
 		wxTopLevelWindow::Maximize();

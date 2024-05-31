@@ -301,7 +301,7 @@ void ScriptManagerWindow::setupLayout()
 	// -- Scripts Panel --
 	p_inf.DefaultPane();
 	p_inf.Left();
-	p_inf.BestSize(wxutil::scaledSize(256, 480));
+	p_inf.BestSize(FromDIP(wxSize(256, 480)));
 	p_inf.Caption("Scripts");
 	p_inf.Name("scripts_area");
 	p_inf.Show(true);
@@ -314,9 +314,9 @@ void ScriptManagerWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Float();
-	p_inf.FloatingSize(wxutil::scaledSize(600, 400));
+	p_inf.FloatingSize(FromDIP(wxSize(600, 400)));
 	p_inf.FloatingPosition(100, 100);
-	p_inf.MinSize(wxutil::scaledSize(-1, 192));
+	p_inf.MinSize(FromDIP(wxSize(-1, 192)));
 	p_inf.Show(false);
 	p_inf.Caption("Console");
 	p_inf.Name("console");
@@ -510,7 +510,7 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 		panel,
 		-1,
 		wxDefaultPosition,
-		wxutil::scaledSize(200, -1),
+		FromDIP(wxSize(200, -1)),
 		wxTR_DEFAULT_STYLE | wxTR_NO_LINES | wxTR_HIDE_ROOT | wxTR_FULL_ROW_HIGHLIGHT);
 	tree_scripts_->EnableSystemTheme(true);
 	tree_scripts_->SetImageList(createTreeImageList());

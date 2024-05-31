@@ -98,7 +98,7 @@ public:
 	SpriteTexCanvas(wxWindow* parent) : GLCanvas(parent)
 	{
 		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-		SetInitialSize(wxutil::scaledSize(128, 128));
+		SetInitialSize(FromDIP(wxSize(128, 128)));
 	}
 
 	~SpriteTexCanvas() override = default;

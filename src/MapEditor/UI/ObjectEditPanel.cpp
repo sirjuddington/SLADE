@@ -58,7 +58,7 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	wxIntegerValidator<int>          val_int(nullptr, wxNUM_VAL_DEFAULT);
 	wxIntegerValidator<unsigned int> val_uint(nullptr, wxNUM_VAL_DEFAULT);
 	wxFloatingPointValidator<double> val_double(2, nullptr, wxNUM_VAL_DEFAULT);
-	auto                             tb_size = wxutil::scaledSize(64, -1);
+	auto                             tb_size = FromDIP(wxSize(64, -1));
 
 	// Create controls
 	text_xoff_      = new wxTextCtrl(this, -1, "", wxDefaultPosition, tb_size, 0, val_int);

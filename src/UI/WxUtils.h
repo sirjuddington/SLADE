@@ -47,11 +47,6 @@ inline wxString strFromView(string_view view)
 wxArrayString arrayString(const vector<wxString>& vector);
 wxArrayString arrayStringStd(const vector<string>& vector);
 
-// Scaling
-wxSize  scaledSize(int x, int y);
-wxPoint scaledPoint(int x, int y);
-wxRect  scaledRect(int x, int y, int width, int height);
-
 // Misc
 void setWindowIcon(wxTopLevelWindow* window, string_view icon);
 

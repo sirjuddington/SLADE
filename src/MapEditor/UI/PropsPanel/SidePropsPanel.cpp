@@ -61,7 +61,7 @@ public:
 	SideTexCanvas(wxWindow* parent) : GLCanvas(parent)
 	{
 		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-		SetInitialSize(wxutil::scaledSize(136, 136));
+		SetInitialSize(FromDIP(wxSize(136, 136)));
 	}
 
 	~SideTexCanvas() override = default;
@@ -123,7 +123,7 @@ public:
 	TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 	{
 		// Init
-		SetInitialSize(wxutil::scaledSize(136, -1));
+		SetInitialSize({ FromDIP(136), -1 });
 		wxArrayString list;
 		list.Add("-");
 

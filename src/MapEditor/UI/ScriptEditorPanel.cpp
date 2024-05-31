@@ -93,7 +93,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 
 	// Jump To toolbar group
 	auto group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxutil::scaledSize(200, -1));
+	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, FromDIP(wxSize(200, -1)));
 	group_jump_to->addCustomControl(choice_jump_to_);
 	toolbar->addGroup(group_jump_to);
 
@@ -132,7 +132,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 
 	// Add function/constants list
 	list_words_ = new wxTreeListCtrl(this, -1);
-	list_words_->SetInitialSize(wxutil::scaledSize(200, -10));
+	list_words_->SetInitialSize(FromDIP(wxSize(200, -1)));
 	hbox->Add(list_words_, wxutil::sfWithBorder().Expand());
 	populateWordList();
 	list_words_->Show(script_show_language_list);

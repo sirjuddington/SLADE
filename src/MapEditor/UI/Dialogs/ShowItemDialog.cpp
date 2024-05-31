@@ -90,7 +90,7 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 
 	// Init layout
 	gb_sizer->AddGrowableCol(1, 1);
-	SetInitialSize(wxutil::scaledSize(300, -1));
+	SetInitialSize({ FromDIP(300), -1 });
 	CenterOnParent();
 	wxTopLevelWindowBase::Layout();
 	text_index_->SetFocus();

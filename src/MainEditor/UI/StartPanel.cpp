@@ -76,7 +76,7 @@ namespace
 wxBitmapBundle getIconBitmapBundle(string_view icon, int size)
 {
 	auto svg_entry = app::archiveManager().programResourceArchive()->entryAtPath(fmt::format("icons/{}", icon));
-	return wxBitmapBundle::FromSVG(reinterpret_cast<const char*>(svg_entry->rawData()), wxutil::scaledSize(size, size));
+	return wxBitmapBundle::FromSVG(reinterpret_cast<const char*>(svg_entry->rawData()), { size, size });
 }
 
 // -----------------------------------------------------------------------------

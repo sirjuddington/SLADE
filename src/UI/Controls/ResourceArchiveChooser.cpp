@@ -61,7 +61,7 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, const Archive* 
 	// Resource archive list
 	list_resources_ = new wxCheckListBox(this, -1);
 	sizer->Add(list_resources_, wxutil::sfWithBorder(1, wxBOTTOM).Expand());
-	list_resources_->SetInitialSize(wxutil::scaledSize(350, 100));
+	list_resources_->SetInitialSize(FromDIP(wxSize(350, 100)));
 
 	// Populate resource archive list
 	int index = 0;
