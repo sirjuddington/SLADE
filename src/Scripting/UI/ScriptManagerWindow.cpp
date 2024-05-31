@@ -253,7 +253,7 @@ void ScriptManagerWindow::loadLayout()
 	file.Close();
 
 	// Force calculated toolbar size
-	wxAuiManager::GetManager(this)->GetPane("toolbar").MinSize(-1, SToolBar::getBarHeight());
+	wxAuiManager::GetManager(this)->GetPane("toolbar").MinSize(-1, SToolBar::getBarHeight(this));
 }
 
 // -----------------------------------------------------------------------------
@@ -425,7 +425,7 @@ void ScriptManagerWindow::setupToolbar()
 		wxAuiPaneInfo()
 			.Top()
 			.CaptionVisible(false)
-			.MinSize(-1, SToolBar::getBarHeight())
+			.MinSize(-1, SToolBar::getBarHeight(this))
 			.Resizable(false)
 			.PaneBorder(false)
 			.Name("toolbar"));

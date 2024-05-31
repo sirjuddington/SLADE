@@ -367,7 +367,7 @@ void GfxEntryPanel::setupToolbars()
 	// Brush options
 	auto* g_brush = new SToolBarGroup(toolbar_, "Brush", true);
 	button_brush_ = g_brush->addActionButton("pgfx_setbrush");
-	cb_colour_    = new ColourBox(g_brush, -1, ColRGBA::BLACK, false, true, SToolBar::scaledButtonSize());
+	cb_colour_    = new ColourBox(g_brush, -1, ColRGBA::BLACK, false, true, SToolBar::scaledButtonSize(this));
 	cb_colour_->setPalette(gfx_canvas_->palette());
 	cb_colour_->SetToolTip("Set brush colour");
 	g_brush->addCustomControl(cb_colour_);

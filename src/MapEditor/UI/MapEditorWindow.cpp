@@ -362,7 +362,7 @@ void MapEditorWindow::setupLayout()
 		wxAuiPaneInfo()
 			.Top()
 			.CaptionVisible(false)
-			.MinSize(-1, SToolBar::getBarHeight())
+			.MinSize(-1, SToolBar::getBarHeight(this))
 			.Resizable(false)
 			.PaneBorder(false)
 			.Name("toolbar"));

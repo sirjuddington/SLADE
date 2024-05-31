@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "SToolBarButton.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/WxUtils.h"
@@ -74,9 +73,9 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const w
 	action_id_{ action_->id() },
 	action_name_{ action_->text() },
 	help_text_{ action_->helpText() },
-	pad_outer_{ ui::scalePx(1) },
-	pad_inner_{ ui::scalePx(2) },
-	icon_size_{ ui::scalePx(toolbar_size) }
+	pad_outer_{ 1 },
+	pad_inner_{ 2 },
+	icon_size_{ toolbar_size }
 {
 	setup(show_name, icon.IsEmpty() ? action_->iconName() : wxutil::strToView(icon));
 
@@ -114,9 +113,9 @@ SToolBarButton::SToolBarButton(
 	action_id_{ action_id },
 	action_name_{ action_name },
 	help_text_{ help_text },
-	pad_outer_{ ui::scalePx(1) },
-	pad_inner_{ ui::scalePx(2) },
-	icon_size_{ ui::scalePx(icon_size < 0 ? toolbar_size : icon_size) }
+	pad_outer_{ 1 },
+	pad_inner_{ 2 },
+	icon_size_{ icon_size < 0 ? toolbar_size : icon_size }
 {
 	setup(show_name, wxutil::strToView(icon));
 
@@ -187,8 +186,8 @@ void SToolBarButton::setFontSize(float scale)
 // -----------------------------------------------------------------------------
 void SToolBarButton::setPadding(int inner, int outer)
 {
-	pad_inner_ = ui::scalePx(inner);
-	pad_outer_ = ui::scalePx(outer);
+	pad_inner_ = inner;
+	pad_outer_ = outer;
 	updateSize();
 }
 
@@ -245,7 +244,7 @@ bool SToolBarButton::updateState(int mouse_event)
 // -----------------------------------------------------------------------------
 int SToolBarButton::pixelHeight()
 {
-	return ui::scalePx(toolbar_size + 8);
+	return toolbar_size + 8;
 }
 
 // -----------------------------------------------------------------------------
@@ -261,7 +260,7 @@ void SToolBarButton::setup(bool show_name, string_view icon)
 	{
 		wxString name = action_name_;
 		name.Replace("&", "");
-		text_width_ = GetTextExtent(name).GetWidth() + pad_inner_ * 2;
+		text_width_ = ToDIP(GetTextExtent(name).GetWidth()) + pad_inner_ * 2;
 	}
 
 	// Set size
@@ -307,7 +306,9 @@ void SToolBarButton::updateSize()
 	if (menu_dropdown_)
 		min_width += icon_size_ * 0.6;
 
-	auto width = exact_fit_ ? min_width : -1;
+	auto width = FromDIP(exact_fit_ ? min_width : -1);
+	min_width  = FromDIP(min_width);
+	height     = FromDIP(height);
 
 	wxWindowBase::SetSizeHints(min_width, height, width, height);
 	wxWindowBase::SetMinSize(wxSize(min_width, height));
@@ -375,7 +376,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		// col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 		gc->SetBrush(*wxTRANSPARENT_BRUSH);
 		gc->SetPen(wxPen(col_hilight, scale_px));
-		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, ui::scalePxU(1));
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, 1);
 	}
 
 	// Draw border on mouseover
@@ -392,11 +393,12 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		// Draw border
 		gc->SetBrush(col_trans);
 		gc->SetPen(*wxTRANSPARENT_PEN);
-		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, ui::scalePxU(1));
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, 1);
 	}
 
 #if wxCHECK_VERSION(3, 1, 6)
-	auto icon = icon_.GetBitmap(wxDefaultSize);
+	auto icon_size = FromDIP(wxSize{ icon_size_, icon_size_ });
+	auto icon      = icon_.GetBitmap(icon_size);
 #else
 	const auto& icon = icon_;
 #endif
@@ -417,25 +419,35 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 			// Draw disabled icon
 			gc->DrawBitmap(
-				icon.ConvertToDisabled(r), pad_outer_ + pad_inner_, pad_outer_ + pad_inner_, icon_size_, icon_size_);
+				icon.ConvertToDisabled(r),
+				FromDIP(pad_outer_ + pad_inner_),
+				FromDIP(pad_outer_ + pad_inner_),
+				icon.GetWidth(),
+				icon.GetHeight());
 		}
 
 		// Otherwise draw normal icon
 		else
-			gc->DrawBitmap(icon, pad_outer_ + pad_inner_, pad_outer_ + pad_inner_, icon_size_, icon_size_);
+			gc->DrawBitmap(
+				icon,
+				FromDIP(pad_outer_ + pad_inner_),
+				FromDIP(pad_outer_ + pad_inner_),
+				icon.GetWidth(),
+				icon.GetHeight());
 	}
 
 	if (show_name_)
 	{
 		int top  = (static_cast<double>(GetSize().y) * 0.5) - (static_cast<double>(name_height) * 0.5);
 		int left = pad_outer_ + pad_inner_ * 2 + icon_size_;
-		dc.DrawText(name, left, top);
+		dc.DrawText(name, FromDIP(left), top);
 	}
 
 	if (menu_dropdown_)
 	{
 #if wxCHECK_VERSION(3, 1, 6)
-		static auto arrow_down = icons::getInterfaceIcon("arrow-down", icon_size_ * 0.75).GetBitmap(wxDefaultSize);
+		static auto arrow_down = icons::getInterfaceIcon("arrow-down", FromDIP(icon_size_ * 0.75))
+									 .GetBitmap(wxDefaultSize);
 #else
 		static auto arrow_down = icons::getInterfaceIcon("arrow-down", icon_size_ * 0.75);
 #endif

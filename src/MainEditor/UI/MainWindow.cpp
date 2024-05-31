@@ -381,7 +381,7 @@ void MainWindow::setupLayout()
 		wxAuiPaneInfo()
 			.Top()
 			.CaptionVisible(false)
-			.MinSize(-1, SToolBar::getBarHeight())
+			.MinSize(-1, SToolBar::getBarHeight(this))
 			.Resizable(false)
 			.PaneBorder(false)
 			.Name("toolbar"));
@@ -718,7 +718,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 {
 	// Update toolbar size
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, SToolBar::getBarHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, SToolBar::getBarHeight(this));
 	aui_mgr_->Update();
 }
 
