@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "STabCtrl.h"
-#include "General/UI.h"
 #include "UI/SAuiTabArt.h"
 
 using namespace slade;
@@ -75,8 +74,8 @@ STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int h
 	wxAuiNotebook::Create(parent, -1, wxDefaultPosition, wxDefaultSize, style);
 
 	// Setup tabs
-	SetArtProvider(new SAuiTabArt(close_buttons, main_tabs));
-	wxAuiNotebook::SetTabCtrlHeight(ui::scalePx(height));
+	SetArtProvider(new SAuiTabArt(this, close_buttons, main_tabs));
+	wxAuiNotebook::SetTabCtrlHeight(FromDIP(height));
 }
 
 // -----------------------------------------------------------------------------

@@ -30,7 +30,7 @@ namespace slade
 class SAuiTabArt : public wxAuiGenericTabArt
 {
 public:
-	SAuiTabArt(bool close_buttons = false, bool main_tabs = false);
+	SAuiTabArt(const wxWindow* window, bool close_buttons = false, bool main_tabs = false);
 	~SAuiTabArt() override;
 
 	wxAuiTabArt* Clone() override;
@@ -88,7 +88,7 @@ protected:
 class SAuiDockArt : public wxAuiDefaultDockArt
 {
 public:
-	SAuiDockArt();
+	SAuiDockArt(const wxWindow* window);
 	~SAuiDockArt() override;
 
 	void DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, const wxRect& rect, wxAuiPaneInfo& pane)
