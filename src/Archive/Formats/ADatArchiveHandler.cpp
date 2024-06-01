@@ -34,7 +34,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Utility/Compression.h"
 #include "Utility/StringUtils.h"
 

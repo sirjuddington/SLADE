@@ -36,7 +36,7 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/Translation.h"
 #include "MainEditor/EntryOperations.h"

@@ -42,7 +42,6 @@
 #include "General/KeyBind.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
@@ -56,6 +55,7 @@
 #include "UI/Lists/VirtualListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
@@ -175,7 +175,7 @@ public:
 		wxutil::setWindowIcon(this, "tex_new");
 
 		SetSizer(new wxBoxSizer(wxVERTICAL));
-		auto* sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+		auto* sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 		GetSizer()->Add(sizer, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 		// Name
@@ -656,14 +656,14 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	toolbar_->group("_Texture")->setAllButtonsEnabled(false);
 	toolbar_->group("_Sorting")->setAllButtonsEnabled(false);
 	toolbar_->findActionButton("txed_sort")->Enable();
-	framesizer->Add(toolbar_, lh.sfWithMinBorder(0, wxTOP | wxBOTTOM).Expand());
+	framesizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxTOP | wxBOTTOM).Expand());
 
 	// Textures list + filter
 	list_textures_    = new TextureXListView(this, texturex_.get());
 	text_filter_      = new wxTextCtrl(this, -1);
 	btn_clear_filter_ = new SIconButton(this, "close", "Clear Filter");
 	auto* vbox        = new wxBoxSizer(wxVERTICAL);
-	framesizer->AddSpacer(ui::padMin());
+	framesizer->AddSpacer(lh.padSmall());
 	framesizer->Add(vbox, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 	vbox->Add(list_textures_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 	vbox->Add(

@@ -93,7 +93,7 @@ void ConsolePanel::initLayout()
 
 	// Create and add the command entry textbox
 	text_command_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	vbox->AddSpacer(lh.padMin());
+	vbox->AddSpacer(lh.padSmall());
 	vbox->Add(text_command_, lh.sfWithBorder(0, wxBOTTOM | wxLEFT | wxRIGHT).Expand());
 
 	Layout();

@@ -46,7 +46,7 @@
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/SAction.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"

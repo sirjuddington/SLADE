@@ -35,7 +35,7 @@
 #include "Main.h"
 #include "ObjectEdit.h"
 #include "General/KeyBind.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Geometry/Geometry.h"
 #include "Input.h"
 #include "MapEditor/ItemSelection.h"

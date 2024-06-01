@@ -36,7 +36,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "WadJArchiveHandler.h"

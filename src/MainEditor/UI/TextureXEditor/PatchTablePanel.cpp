@@ -246,8 +246,8 @@ void PatchTablePanel::setupLayout()
 	auto frame      = new wxStaticBox(this, -1, "Patch List (PNAMES)");
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, lh.sfWithBorder().Expand());
-	framesizer->Add(toolbar_, lh.sfWithMinBorder(0, wxTOP | wxBOTTOM).Expand());
-	framesizer->AddSpacer(lh.padMin());
+	framesizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxTOP | wxBOTTOM).Expand());
+	framesizer->AddSpacer(lh.padSmall());
 	framesizer->Add(list_patches_, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 
 	// Patch preview & info

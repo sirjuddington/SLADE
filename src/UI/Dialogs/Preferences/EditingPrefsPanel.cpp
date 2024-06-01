@@ -33,7 +33,7 @@
 #include "EditingPrefsPanel.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/Executables.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"

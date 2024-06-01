@@ -158,12 +158,12 @@ void ObjectEditPanel::setupLayout()
 
 	// X scale
 	sizer->Add(
-		wxutil::createLabelHBox(this, "X Scale:", text_scalex_), lh.sfWithMinBorder(0, wxRIGHT).CenterVertical());
+		wxutil::createLabelHBox(this, "X Scale:", text_scalex_), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
 	sizer->Add(new wxStaticText(this, -1, "%"), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Y scale
 	sizer->Add(
-		wxutil::createLabelHBox(this, "Y Scale:", text_scaley_), lh.sfWithMinBorder(0, wxRIGHT).CenterVertical());
+		wxutil::createLabelHBox(this, "Y Scale:", text_scaley_), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
 	sizer->Add(new wxStaticText(this, -1, "%"), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Rotation

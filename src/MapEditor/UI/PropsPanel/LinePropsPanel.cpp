@@ -34,7 +34,7 @@
 #include "LinePropsPanel.h"
 #include "Game/Configuration.h"
 #include "Game/UDMFProperty.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/ActionSpecialPanel.h"

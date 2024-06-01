@@ -33,7 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SectorList.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "Utility/StringUtils.h"
 

@@ -1,6 +1,6 @@
 
 #include "Main.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Export.h"
 #include "Scripting/Lua.h"
 #include "UI/Dialogs/ExtMessageDialog.h"

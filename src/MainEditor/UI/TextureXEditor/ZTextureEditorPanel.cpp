@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZTextureEditorPanel.h"
-#include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
@@ -255,7 +254,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	// Layout
 	list_patches_->SetInitialSize({ FromDIP(100), tb_patches_->group("_Patch")->GetBestSize().y });
 	framesizer->Add(list_patches_, lh.sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
-	framesizer->Add(tb_patches_, lh.sfWithMinBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
+	framesizer->Add(tb_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
 
 	// -- Patch Properties frame --
@@ -313,7 +312,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, lh.sfWithBorder(0, wxTOP).Expand());
 
-	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 
 	// 'Normal' colour

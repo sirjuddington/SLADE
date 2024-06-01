@@ -68,7 +68,7 @@ FileLocationPanel::FileLocationPanel(
 	sizer->Add(text_path_, wxSizerFlags(1).Expand());
 
 	btn_browse_ = new SIconButton(this, "open", browse_caption);
-	sizer->Add(btn_browse_, ui::LayoutHelper(this).sfWithMinBorder(0, wxLEFT).Expand());
+	sizer->Add(btn_browse_, ui::LayoutHelper(this).sfWithSmallBorder(0, wxLEFT).Expand());
 
 	btn_browse_->Bind(
 		wxEVT_BUTTON,

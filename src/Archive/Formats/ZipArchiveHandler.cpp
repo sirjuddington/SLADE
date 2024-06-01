@@ -38,7 +38,7 @@
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
 #include "General/Misc.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"

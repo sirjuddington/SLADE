@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SIconButton.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 
 using namespace slade;
 

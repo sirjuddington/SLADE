@@ -33,9 +33,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZoomControl.h"
-#include "General/UI.h"
 #include "UI/Canvas/CTextureCanvasBase.h"
 #include "UI/Canvas/GfxCanvasBase.h"
+#include "UI/Layout.h"
 #include "UI/SToolBar/SToolBarButton.h"
 
 using namespace slade;
@@ -210,12 +210,13 @@ void ZoomControl::setup()
 #endif
 
 	// Layout
+	auto  lh   = LayoutHelper(this);
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(hbox);
-	hbox->Add(new wxStaticText(this, -1, "Zoom:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::px(ui::Size::PadMinimum));
-	hbox->Add(btn_zoom_out_, 0, wxALIGN_CENTER_VERTICAL);
-	hbox->Add(cb_zoom_, 1, wxEXPAND);
-	hbox->Add(btn_zoom_in_, 0, wxALIGN_CENTER_VERTICAL);
+	hbox->Add(new wxStaticText(this, -1, "Zoom:"), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(btn_zoom_out_, wxSizerFlags().CenterVertical());
+	hbox->Add(cb_zoom_, wxSizerFlags(1).Expand());
+	hbox->Add(btn_zoom_in_, wxSizerFlags().CenterVertical());
 
 	// --- Events ---
 

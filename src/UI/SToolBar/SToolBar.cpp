@@ -34,8 +34,8 @@
 #include "Main.h"
 #include "SToolBar.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "SToolBarButton.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
@@ -173,7 +173,7 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_
 	SetSizer(sizer);
 
 	// Add group separator (hidden by default)
-	auto spacing = FromDIP(ui::px(ui::Size::PadMinimum) + 2);
+	auto spacing = ui::padSmall(this) + FromDIP(2);
 	if (orientation_ == wxHORIZONTAL)
 	{
 		separator_ = static_cast<wxWindow*>(new SToolBarHSeparator(this));
@@ -297,10 +297,9 @@ void SToolBarGroup::addCustomControl(wxWindow* control)
 
 	// Add it to the group
 	if (orientation_ == wxHORIZONTAL)
-		GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(ui::px(ui::Size::PadMinimum)));
+		GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::padSmall(this));
 	else
-		GetSizer()->Add(
-			control, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM, FromDIP(ui::px(ui::Size::PadMinimum)));
+		GetSizer()->Add(control, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM, ui::padSmall(this));
 
 	items_.push_back({ GroupItem::Type::CustomControl, control });
 }
@@ -316,9 +315,9 @@ void SToolBarGroup::addSeparator()
 							 static_cast<wxWindow*>(new SToolBarVSeparator(this));
 
 	if (horizontal)
-		GetSizer()->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(ui::px(ui::Size::PadMinimum)));
+		GetSizer()->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::padSmall(this));
 	else
-		GetSizer()->Add(sep, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, FromDIP(ui::px(ui::Size::PadMinimum)));
+		GetSizer()->Add(sep, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, ui::padSmall(this));
 
 	items_.push_back({ GroupItem::Type::Separator, sep });
 }
@@ -589,7 +588,7 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 
 	// Add start padding if needed
 	if (main_toolbar_)
-		sizer->AddSpacer(FromDIP(ui::px(ui::Size::PadMinimum)));
+		sizer->AddSpacer(ui::padSmall(this));
 
 	// Go through 'start' groups
 	int  current_size = 0;
@@ -652,7 +651,7 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 
 	// Add end padding if needed
 	if (main_toolbar_ && !groups_end_.empty())
-		sizer->AddSpacer(FromDIP(ui::px(ui::Size::PadMinimum)));
+		sizer->AddSpacer(ui::padSmall(this));
 
 	// Apply layout
 	Layout();
@@ -797,7 +796,7 @@ int SToolBar::calculateNumRows(int width) const
 	int  current_size = 0;
 	int  groups_line  = 0;
 	int  rows         = 0;
-	auto pad          = FromDIP(ui::pad());
+	auto pad          = FromDIP(ui::pad(this));
 	for (auto& group : groups_)
 	{
 		// Skip if group is hidden

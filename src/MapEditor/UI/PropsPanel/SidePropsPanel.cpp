@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "SidePropsPanel.h"
 #include "Game/Configuration.h"
-#include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -44,6 +43,7 @@
 #include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -219,19 +219,19 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Upper
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Upper:"), lh.sfWithMinBorder(0, wxBOTTOM).Center());
+	vbox->Add(new wxStaticText(this, -1, "Upper:"), lh.sfWithSmallBorder(0, wxBOTTOM).Center());
 	vbox->Add(gfx_upper_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_upper_ = new TextureComboBox(this), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Middle
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 1 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Middle:"), lh.sfWithMinBorder(0, wxBOTTOM).Center());
+	vbox->Add(new wxStaticText(this, -1, "Middle:"), lh.sfWithSmallBorder(0, wxBOTTOM).Center());
 	vbox->Add(gfx_middle_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_middle_ = new TextureComboBox(this), { 1, 1 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Lower
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Lower:"), lh.sfWithMinBorder(0, wxBOTTOM).Center());
+	vbox->Add(new wxStaticText(this, -1, "Lower:"), lh.sfWithSmallBorder(0, wxBOTTOM).Center());
 	vbox->Add(gfx_lower_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_lower_ = new TextureComboBox(this), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER);
 

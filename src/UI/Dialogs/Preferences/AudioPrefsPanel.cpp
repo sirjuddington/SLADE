@@ -156,7 +156,7 @@ void AudioPrefsPanel::setupLayout()
 		lh.sfWithLargeBorder(0, wxBOTTOM | wxTOP).Expand());
 
 	// MIDI Playback (fluidsynth/timidity)
-	auto gbsizer = new wxGridBagSizer(lh.padMin(), lh.pad());
+	auto gbsizer = new wxGridBagSizer(lh.padSmall(), lh.pad());
 	gbsizer->Add(new wxStaticText(this, -1, "MIDI Playback:"), { 0, 0 }, { 1, 2 }, wxEXPAND | wxBOTTOM, lh.pad());
 	gbsizer->Add(rb_fluidsynth_, { 1, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
 	gbsizer->Add(new wxStaticText(this, -1, "Location of MIDI soundfont:"), { 2, 0 }, { 1, 1 }, wxEXPAND);

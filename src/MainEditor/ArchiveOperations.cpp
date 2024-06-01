@@ -40,7 +40,7 @@
 #include "Archive/MapDesc.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"

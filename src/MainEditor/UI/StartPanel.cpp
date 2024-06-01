@@ -239,7 +239,7 @@ void StartPanel::updateRecentFilesPanel()
 		auto index = 0;
 		for (const auto& path : recent_files)
 		{
-			sizer->Add(createRecentFileSizer(path, index), lh.sfWithMinBorder(0, wxBOTTOM));
+			sizer->Add(createRecentFileSizer(path, index), lh.sfWithSmallBorder(0, wxBOTTOM));
 
 			if (index++ > 10)
 				break;

@@ -40,7 +40,6 @@
 #include "Game/Game.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/Edit/Input.h"
 #include "MapEditor/MapBackupManager.h"
@@ -65,6 +64,7 @@
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/UI.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/Tokenizer.h"
 

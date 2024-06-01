@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Layout.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 
 using namespace slade;
 using namespace ui;
@@ -158,12 +158,21 @@ wxSizerFlags LayoutHelper::sfWithLargeBorder(int proportion, int direction) cons
 }
 
 // -----------------------------------------------------------------------------
-// Returns a wxSizerFlags of [proportion], with a small border at [direction].
-// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padMin())
+// Returns a wxSizerFlags of [proportion], with a large border at [direction].
+// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padXLarge())
 // -----------------------------------------------------------------------------
-wxSizerFlags LayoutHelper::sfWithMinBorder(int proportion, int direction) const
+wxSizerFlags LayoutHelper::sfWithXLargeBorder(int proportion, int direction) const
 {
-	return wxSizerFlags(proportion).Border(direction, window->FromDIP(ui::padMin()));
+	return wxSizerFlags(proportion).Border(direction, window->FromDIP(ui::padXLarge()));
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a small border at [direction].
+// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padSmall())
+// -----------------------------------------------------------------------------
+wxSizerFlags LayoutHelper::sfWithSmallBorder(int proportion, int direction) const
+{
+	return wxSizerFlags(proportion).Border(direction, window->FromDIP(ui::padSmall()));
 }
 
 int LayoutHelper::px(int size) const
@@ -195,13 +204,17 @@ int LayoutHelper::padLarge() const
 {
 	return window->FromDIP(ui::padLarge());
 }
-
-int LayoutHelper::padMin() const
+int LayoutHelper::padXLarge() const
 {
-	return window->FromDIP(ui::padMin());
+	return window->FromDIP(16); // TODO: Add to size enum
+}
+
+int LayoutHelper::padSmall() const
+{
+	return window->FromDIP(ui::padSmall());
 }
 
 wxSize LayoutHelper::spinSize() const
 {
-	return window->FromDIP(wxSize(ui::px(Size::SpinCtrlWidth), -1));
+	return window->FromDIP(wxSize(ui::sizePx(Size::SpinCtrlWidth), -1));
 }

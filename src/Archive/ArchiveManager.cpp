@@ -40,7 +40,7 @@
 #include "EntryType/EntryType.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 

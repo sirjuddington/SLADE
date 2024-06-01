@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "SectorPropsPanel.h"
 #include "Game/Configuration.h"
-#include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -49,7 +48,6 @@
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
-#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -309,7 +307,7 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	frame      = new wxStaticBox(panel, -1, "General");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, lh.sfWithBorder().Expand());
-	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 
 	// Light level

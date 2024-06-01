@@ -42,7 +42,6 @@
 #include "ArchivePanel.h"
 #include "EntryPanel/EntryPanel.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/MainEditor.h"
@@ -55,6 +54,7 @@
 #include "UI/Dialogs/NewArchiveDiaog.h"
 #include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -424,7 +424,7 @@ void ArchiveManagerPanel::createArchivesPanel(const ui::LayoutHelper& lh)
 	panel_archives_->SetSizer(vbox);
 	vbox->Add(new wxStaticText(panel_archives_, -1, "Open Archives:"), wxSizerFlags().Expand());
 	list_archives_ = new ListView(panel_archives_, -1);
-	vbox->Add(list_archives_, lh.sfWithMinBorder(1, wxTOP).Expand());
+	vbox->Add(list_archives_, lh.sfWithSmallBorder(1, wxTOP).Expand());
 }
 
 // -----------------------------------------------------------------------------
@@ -437,7 +437,7 @@ void ArchiveManagerPanel::createRecentPanel(const ui::LayoutHelper& lh)
 	panel_rf_->SetSizer(vbox);
 	vbox->Add(new wxStaticText(panel_rf_, -1, "Recent Files:"), wxSizerFlags().Expand());
 	list_recent_ = new ListView(panel_rf_, -1);
-	vbox->Add(list_recent_, lh.sfWithMinBorder(1, wxTOP).Expand());
+	vbox->Add(list_recent_, lh.sfWithSmallBorder(1, wxTOP).Expand());
 
 	// Setup image list
 	auto list = wxutil::createSmallImageList();

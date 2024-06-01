@@ -31,8 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UI/WxUtils.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "UI/UI.h"
 #include "Utility/Colour.h"
 #include "thirdparty/lunasvg/include/lunasvg.h"
 
@@ -144,7 +144,7 @@ wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max
 		-1,
 		"",
 		wxDefaultPosition,
-		parent->FromDIP(wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 }),
+		parent->FromDIP(wxSize{ ui::sizePx(ui::Size::SpinCtrlWidth), -1 }),
 		wxSP_ARROW_KEYS,
 		min,
 		max,
@@ -178,7 +178,7 @@ wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxSize
 wxSizer* ::wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padMin()));
+	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
 	vbox->Add(widget, 1, wxEXPAND);
 	return vbox;
 }
@@ -186,7 +186,7 @@ wxSizer* ::wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxWi
 wxSizer* wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxSizer* sizer)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padMin()));
+	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
 	vbox->Add(sizer, 1, wxEXPAND);
 	return vbox;
 }
@@ -203,10 +203,10 @@ wxSizer* wxutil::createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel)
 	hbox->AddStretchSpacer(1);
 
 #ifdef __WXMSW__
-	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, btn_ok->FromDIP(ui::pad()));
+	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad(btn_ok));
 	hbox->Add(btn_cancel, 0, wxEXPAND);
 #else
-	hbox->Add(btn_cancel, 0, wxEXPAND | wxRIGHT, btn_ok->FromDIP(ui::pad()));
+	hbox->Add(btn_cancel, 0, wxEXPAND | wxRIGHT, ui::pad(btn_ok));
 	hbox->Add(btn_ok, 0, wxEXPAND);
 #endif
 

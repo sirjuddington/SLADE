@@ -33,7 +33,7 @@
 #include "Main.h"
 #include "TextStylePrefsPanel.h"
 #include "App.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/TextEditorCtrl.h"

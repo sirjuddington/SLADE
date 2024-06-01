@@ -129,7 +129,7 @@ void TextureEditorPanel::setupLayout()
 
 	// Add view controls
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, lh.sfWithMinBorder(0, wxBOTTOM | wxTOP).Expand());
+	vbox->Add(hbox, lh.sfWithSmallBorder(0, wxBOTTOM | wxTOP).Expand());
 	hbox->Add(zc_zoom_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->AddStretchSpacer();
 	hbox->Add(cb_tex_scale_, lh.sfWithBorder(0, wxRIGHT).Expand());
@@ -327,7 +327,7 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	// Layout
 	list_patches_->SetInitialSize({ FromDIP(100), tb_patches_->group("_Patch")->GetBestSize().y });
 	framesizer->Add(list_patches_, lh.sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
-	framesizer->Add(tb_patches_, lh.sfWithMinBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
+	framesizer->Add(tb_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
 
 	// -- Patch Properties frame --

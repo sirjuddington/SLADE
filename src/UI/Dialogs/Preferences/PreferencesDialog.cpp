@@ -100,7 +100,7 @@ wxSizer* createTitleSizer(wxWindow* parent, const wxString& title, const wxStrin
 		sizer->Add(new wxStaticText(parent, -1, description), wxSizerFlags().Expand());
 
 	// Separator
-	sizer->AddSpacer(lh.padMin());
+	sizer->AddSpacer(lh.padSmall());
 	sizer->Add(new wxStaticLine(parent), lh.sfWithLargeBorder(0, wxBOTTOM).Expand());
 
 	return sizer;

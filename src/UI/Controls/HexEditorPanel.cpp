@@ -325,7 +325,7 @@ void HexEditorPanel::setupLayout()
 	lh.layoutHorizontally(
 		vbox,
 		vector<wxObject*>{ new wxStaticText(this, -1, "View As:"), rb_view_hex_, rb_view_dec_, rb_view_ascii_ },
-		lh.sfWithMinBorder(0, wxBOTTOM));
+		lh.sfWithSmallBorder(0, wxBOTTOM));
 
 	// Hex grid
 	vbox->Add(grid_hex_, wxSizerFlags().Expand());

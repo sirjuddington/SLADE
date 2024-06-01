@@ -23,7 +23,8 @@ struct LayoutHelper
 
 	wxSizerFlags sfWithBorder(int proportion = 0, int direction = wxALL, int size = -1) const;
 	wxSizerFlags sfWithLargeBorder(int proportion = 0, int direction = wxALL) const;
-	wxSizerFlags sfWithMinBorder(int proportion = 0, int direction = wxALL) const;
+	wxSizerFlags sfWithXLargeBorder(int proportion = 0, int direction = wxALL) const;
+	wxSizerFlags sfWithSmallBorder(int proportion = 0, int direction = wxALL) const;
 
 	int     px(int size) const;
 	wxSize  size(int width, int height) const;
@@ -32,7 +33,9 @@ struct LayoutHelper
 
 	int    pad() const;
 	int    padLarge() const;
-	int    padMin() const;
+	int    padXLarge() const;
+	int    padSmall() const;
 	wxSize spinSize() const;
 };
+
 } // namespace slade::ui

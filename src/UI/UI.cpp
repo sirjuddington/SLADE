@@ -50,10 +50,11 @@ unique_ptr<SplashWindow> splash_window;
 bool                     splash_enabled = true;
 
 // Pixel sizes/scale
-int px_pad_small = 8;
-int px_pad       = 12;
-int px_pad_min   = 3;
-int px_splitter  = 10;
+int px_pad        = 8;
+int px_pad_large  = 12;
+int px_pad_xlarge = 16;
+int px_pad_small  = 3;
+int px_splitter   = 10;
 int px_spin_width;
 
 } // namespace slade::ui
@@ -199,46 +200,65 @@ void ui::setCursor(wxWindow* window, MouseCursor cursor)
 }
 
 // -----------------------------------------------------------------------------
-// Returns a UI metric size (eg. padding).
+// Returns a UI metric size (eg. padding) in DPI-independent pixels.
 // Use this for UI sizes like padding, spin control widths etc. to keep things
-// consistent
+// consistent.
+// If [window] is given, the size is converted to wxWidgets logical pixels based
+// on the window's DPI
 // -----------------------------------------------------------------------------
-int ui::px(Size size)
+int ui::sizePx(Size size, const wxWindow* window)
 {
 	switch (size)
 	{
-	case Size::PadLarge:      return px_pad;
-	case Size::Pad:           return px_pad_small;
-	case Size::PadMinimum:    return px_pad_min;
-	case Size::Splitter:      return px_splitter;
-	case Size::SpinCtrlWidth: return px_spin_width;
+	case Size::PadSmall:      return window ? window->FromDIP(px_pad_small) : px_pad_small;
+	case Size::Pad:           return window ? window->FromDIP(px_pad) : px_pad;
+	case Size::PadLarge:      return window ? window->FromDIP(px_pad_large) : px_pad_large;
+	case Size::PadXLarge:     return window ? window->FromDIP(px_pad_xlarge) : px_pad_xlarge;
+	case Size::Splitter:      return window ? window->FromDIP(px_splitter) : px_splitter;
+	case Size::SpinCtrlWidth: return window ? window->FromDIP(px_spin_width) : px_spin_width;
 	}
 
 	return 0;
 }
 
 // -----------------------------------------------------------------------------
-// Returns the standard padding size in pixels
+// Returns the standard padding size in DPI-independent pixels.
+// If [window] is given, the size is converted to wxWidgets logical pixels based
+// on the window's DPI
 // -----------------------------------------------------------------------------
-int ui::pad()
+int ui::pad(const wxWindow* window)
 {
-	return px_pad_small;
+	return window ? window->FromDIP(px_pad) : px_pad;
 }
 
 // -----------------------------------------------------------------------------
-// Returns the standard large padding size in pixels
+// Returns the standard large padding size in DPI-independent pixels.
+// If [window] is given, the size is converted to wxWidgets logical pixels based
+// on the window's DPI
 // -----------------------------------------------------------------------------
-int ui::padLarge()
+int ui::padLarge(const wxWindow* window)
 {
-	return px_pad;
+	return window ? window->FromDIP(px_pad_large) : px_pad_large;
 }
 
 // -----------------------------------------------------------------------------
-// Returns the standard 'minimum' padding size in pixels
+// Returns the standard extra-large padding size in DPI-independent pixels.
+// If [window] is given, the size is converted to wxWidgets logical pixels based
+// on the window's DPI
 // -----------------------------------------------------------------------------
-int ui::padMin()
+int ui::padXLarge(const wxWindow* window)
 {
-	return px_pad_min;
+	return window ? window->FromDIP(px_pad_xlarge) : px_pad_xlarge;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the standard small padding size in DPI-independent pixels.
+// If [window] is given, the size is converted to wxWidgets logical pixels based
+// on the window's DPI
+// -----------------------------------------------------------------------------
+int ui::padSmall(const wxWindow* window)
+{
+	return window ? window->FromDIP(px_pad_small) : px_pad_small;
 }
 
 

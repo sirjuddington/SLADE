@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "ArgsPanel.h"
 #include "Game/Args.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -424,7 +424,7 @@ public:
 
 		GetSizer()->Detach(choice_control_);
 		row->Add(choice_control_, wxSizerFlags(0).Expand());
-		row->AddSpacer(ui::pad());
+		row->AddSpacer(ui::pad(this));
 		row->Add(slider_control_, wxSizerFlags(1).Align(wxALIGN_CENTER_VERTICAL));
 		GetSizer()->Add(row, wxSizerFlags(1).Expand());
 		GetSizer()->Add(speed_label_, wxSizerFlags(1).Expand());
@@ -485,7 +485,7 @@ ArgsPanel::ArgsPanel(wxWindow* parent) : wxScrolled<wxPanel>{ parent, -1, wxDefa
 	SetSizer(sizer);
 
 	// Add arg controls
-	fg_sizer_ = new wxFlexGridSizer(2, ui::pad(), ui::pad());
+	fg_sizer_ = new wxFlexGridSizer(2, ui::pad(this), ui::pad(this));
 	fg_sizer_->AddGrowableCol(1);
 	sizer->Add(fg_sizer_, 1, wxEXPAND);
 

@@ -81,8 +81,8 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) 
 
 	// Add toolbar
 	toolbar_ = new SToolBar(this);
-	sizer->Add(toolbar_, lh.sfWithMinBorder(0, wxLEFT).Expand());
-	sizer->AddSpacer(lh.padMin());
+	sizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxLEFT).Expand());
+	sizer->AddSpacer(lh.padSmall());
 
 	// Default entry toolbar group
 	auto tb_group = new SToolBarGroup(toolbar_, "Entry");
@@ -101,12 +101,12 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) 
 	if (left_toolbar)
 	{
 		auto* hbox = new wxBoxSizer(wxHORIZONTAL);
-		hbox->Add(toolbar_left_, lh.sfWithMinBorder(0, wxRIGHT).Expand());
+		hbox->Add(toolbar_left_, lh.sfWithSmallBorder(0, wxRIGHT).Expand());
 		hbox->Add(sizer_main_, wxSizerFlags(1).Expand());
-		sizer->Add(hbox, lh.sfWithMinBorder(1, wxLEFT).Expand());
+		sizer->Add(hbox, lh.sfWithSmallBorder(1, wxLEFT).Expand());
 	}
 	else
-		sizer->Add(sizer_main_, lh.sfWithMinBorder(1, wxLEFT).Expand());
+		sizer->Add(sizer_main_, lh.sfWithSmallBorder(1, wxLEFT).Expand());
 	sizer->Add(sizer_bottom_, lh.sfWithBorder(0, wxTOP | wxLEFT).Expand());
 
 	// Bind button events
@@ -152,7 +152,7 @@ void EntryPanel::addBorderPadding()
 	auto* sizer = GetSizer();
 	auto  lh    = ui::LayoutHelper(this);
 	SetSizer(new wxBoxSizer(wxHORIZONTAL), false);
-	GetSizer()->AddSpacer(lh.padMin());
+	GetSizer()->AddSpacer(lh.padSmall());
 	GetSizer()->Add(sizer, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 	Layout();
 	Thaw();

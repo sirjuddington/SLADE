@@ -35,7 +35,7 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 
 using namespace slade;
 

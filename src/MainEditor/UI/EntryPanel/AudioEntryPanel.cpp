@@ -39,11 +39,10 @@
 #include "Audio/ModMusic.h"
 #include "Audio/Mp3Music.h"
 #include "Audio/Music.h"
-#include "General/UI.h"
 #include "MainEditor/Conversions.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Layout.h"
 #include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -78,10 +77,10 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	mod_{ new audio::ModMusic() },
 	mp3_{ new audio::Mp3Music() }
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Setup sizer
-	auto sizer_gb = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto sizer_gb = new wxGridBagSizer(lh.pad(), lh.pad());
 	sizer_main_->AddStretchSpacer();
 	sizer_main_->Add(sizer_gb, wxSizerFlags().Center());
 	sizer_main_->AddStretchSpacer();
@@ -103,7 +102,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	sizer_gb->Add(btn_next_, wxGBPosition(1, 4));
 
 	// Separator
-	sizer_gb->Add(new wxStaticLine(this), { 2, 0 }, { 1, 9 }, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
+	sizer_gb->Add(new wxStaticLine(this), { 2, 0 }, { 1, 9 }, wxEXPAND | wxTOP | wxBOTTOM, lh.pad());
 
 	// Add title
 	txt_title_ = new wxStaticText(this, -1, wxEmptyString);
@@ -111,12 +110,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 
 	// Add info
 	txt_info_ = new wxTextCtrl(
-		this,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		{ -1, FromDIP(200) },
-		wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
+		this, -1, wxEmptyString, wxDefaultPosition, lh.size(-1, 200), wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
 	sizer_gb->Add(txt_info_, wxGBPosition(4, 0), wxGBSpan(1, 9), wxEXPAND | wxHORIZONTAL);
 
 	// Add track number
@@ -132,7 +126,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 
 	// Add volume slider
 	sizer_gb->Add(new wxStaticText(this, -1, "Volume:"), wxGBPosition(1, 7), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, wxSize(FromDIP(128), -1));
+	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, lh.size(128, -1));
 	slider_volume_->SetValue(snd_volume);
 	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8), { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 

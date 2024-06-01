@@ -59,8 +59,7 @@ EXTERN_CVAR(String, temp_location_custom)
 // -----------------------------------------------------------------------------
 TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(parent)
 {
-	auto lh     = ui::LayoutHelper(this);
-	auto pad_xl = 16;
+	auto lh = ui::LayoutHelper(this);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -70,10 +69,10 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 
 	rb_use_system_ = new wxRadioButton(
 		this, -1, "Use system temp folder (Recommended)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	sizer->Add(rb_use_system_, lh.sfWithBorder(0, wxBOTTOM, pad_xl).Expand());
+	sizer->Add(rb_use_system_, lh.sfWithXLargeBorder(0, wxBOTTOM).Expand());
 
 	rb_use_slade_dir_ = new wxRadioButton(this, -1, "Use SLADE installation folder");
-	sizer->Add(rb_use_slade_dir_, lh.sfWithBorder(0, wxBOTTOM, pad_xl).Expand());
+	sizer->Add(rb_use_slade_dir_, lh.sfWithXLargeBorder(0, wxBOTTOM).Expand());
 
 	rb_use_custom_dir_ = new wxRadioButton(this, -1, "Use custom folder:");
 	sizer->Add(rb_use_custom_dir_, lh.sfWithBorder(0, wxBOTTOM).Expand());

@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "GfxConvDialog.h"
 #include "General/Misc.h"
-#include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SIFormat.h"
@@ -43,6 +42,7 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -263,7 +263,7 @@ void GfxConvDialog::setupLayout()
 	// Add 'Convert To' combo box
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	m_vbox->Add(hbox, lh.sfWithLargeBorder(0, wxBOTTOM).Expand());
-	hbox->Add(new wxStaticText(this, -1, "Convert to:"), lh.sfWithMinBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, "Convert to:"), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
 	combo_target_format_ = new wxChoice(this, -1);
 	hbox->Add(combo_target_format_, wxSizerFlags(1).Expand());
 

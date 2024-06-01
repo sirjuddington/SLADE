@@ -34,13 +34,12 @@
 #include "ThingTypeBrowser.h"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
-#include "General/UI.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Draw2D.h"
-#include "UI/WxUtils.h"
 #include "UI/Browser/BrowserCanvas.h"
 #include "UI/Browser/BrowserItem.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -127,9 +126,10 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	wxTopLevelWindow::SetTitle("Browse Thing Types");
 
 	// Add 'Details view' checkbox
+	auto lh        = ui::LayoutHelper(this);
 	cb_view_tiles_ = new wxCheckBox(this, -1, "Details view");
 	cb_view_tiles_->SetValue(browser_thing_tiles);
-	sizer_bottom_->Add(cb_view_tiles_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	sizer_bottom_->Add(cb_view_tiles_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Populate tree
 	auto& types = game::configuration().allThingTypes();

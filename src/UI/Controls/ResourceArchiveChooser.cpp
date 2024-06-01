@@ -35,7 +35,7 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "UI/Layout.h"
 #include "Utility/SFileDialog.h"
 

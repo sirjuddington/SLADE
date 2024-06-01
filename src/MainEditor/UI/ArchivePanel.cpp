@@ -56,7 +56,6 @@
 #include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "General/UndoSteps/EntryDataUS.h"
 #include "Graphics/Palette/PaletteManager.h"
@@ -82,6 +81,7 @@
 #include "UI/Lists/ArchiveEntryTree.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
@@ -365,9 +365,9 @@ void ArchivePanel::setup(const Archive* archive)
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(FromDIP(300));
 	m_hbox->Add(splitter_, ui::LayoutHelper(this).sfWithBorder(1).Expand());
-	int split_pos = ap_splitter_position_list;
+	int split_pos = FromDIP(ap_splitter_position_list);
 	if (archive && archive->formatInfo().supports_dirs)
-		split_pos = ap_splitter_position_tree;
+		split_pos = FromDIP(ap_splitter_position_tree);
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
 	// Update size+layout
@@ -398,9 +398,9 @@ void ArchivePanel::bindEvents(Archive* archive)
 			if (auto archive = archive_.lock().get())
 			{
 				if (archive->formatInfo().supports_dirs)
-					ap_splitter_position_tree = e.GetSashPosition();
+					ap_splitter_position_tree = ToDIP(e.GetSashPosition());
 				else
-					ap_splitter_position_list = e.GetSashPosition();
+					ap_splitter_position_list = ToDIP(e.GetSashPosition());
 			}
 		});
 
@@ -527,13 +527,13 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 
 	// Layout entry list
 	hbox->Add(toolbar_elist_, wxSizerFlags().Expand());
-	hbox->AddSpacer(lh.padMin());
+	hbox->AddSpacer(lh.padSmall());
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
-	hbox->Add(vbox, lh.sfWithMinBorder(1, wxRIGHT).Expand());
+	hbox->Add(vbox, lh.sfWithSmallBorder(1, wxRIGHT).Expand());
 	if (etree_path_)
 	{
 		vbox->Add(etree_path_, wxSizerFlags().Expand());
-		vbox->AddSpacer(lh.padMin());
+		vbox->AddSpacer(lh.padSmall());
 		vbox->Add(entry_tree_, wxSizerFlags(1).Expand());
 	}
 	else

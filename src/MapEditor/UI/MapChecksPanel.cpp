@@ -33,12 +33,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapChecksPanel.h"
-#include "General/UI.h"
 #include "MapEditor/MapChecks.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -261,7 +261,7 @@ void MapChecksPanel::layoutVertical()
 
 	// Results
 	sizer->Add(label_status_, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
-	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
+	sizer->AddSpacer(ui::padSmall(this));
 	sizer->Add(lb_errors_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Result actions

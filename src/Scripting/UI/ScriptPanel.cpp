@@ -65,9 +65,9 @@ ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPa
 
 	// Toolbar
 	auto toolbar = setupToolbar();
-	sizer->AddSpacer(lh.padMin());
+	sizer->AddSpacer(lh.padSmall());
 	sizer->Add(toolbar, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
-	sizer->AddSpacer(lh.padMin());
+	sizer->AddSpacer(lh.padSmall());
 
 	// Text Editor
 	text_editor_ = new TextEditorCtrl(this, -1);
