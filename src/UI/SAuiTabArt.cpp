@@ -448,14 +448,14 @@ wxSize SAuiTabArt::GetTabSize(
 
 	// if close buttons are enabled, add space for one
 	if (close_buttons_)
-		tab_width += m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).x + padding_;
+		tab_width += wnd->FromPhys(m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).x) + padding_;
 
 	// if there's a bitmap, add space for it
 	if (bitmap.IsOk())
 	{
-		tab_width += bitmap.GetPreferredBitmapSizeFor(wnd).x;
+		tab_width += wnd->FromPhys(bitmap.GetPreferredBitmapSizeFor(wnd).x);
 		tab_width += padding_; // right side bitmap padding
-		tab_height = wxMax(tab_height, bitmap.GetPreferredBitmapSizeFor(wnd).y);
+		tab_height = wxMax(tab_height, wnd->FromPhys(bitmap.GetPreferredBitmapSizeFor(wnd).y));
 	}
 	else if (tabs_condensed)
 		tab_width += padding_ * 2; // a bit extra padding if there isn't an icon in condensed mode

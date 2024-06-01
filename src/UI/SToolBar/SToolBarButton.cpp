@@ -443,14 +443,17 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	if (menu_dropdown_)
 	{
 		static auto arrow_down = icons::getInterfaceIcon("arrow-down", FromDIP(icon_size_ * 0.75))
-									 .GetBitmap(wxDefaultSize);
+									 .GetBitmapFor(this);
+
+		auto a_width = FromPhys(arrow_down.GetWidth());
+		auto a_height = FromPhys(arrow_down.GetHeight());
 
 		gc->DrawBitmap(
 			arrow_down,
-			width - arrow_down.GetWidth() - pad_outer_,
-			height / 2. - arrow_down.GetHeight() / 2.,
-			arrow_down.GetWidth(),
-			arrow_down.GetHeight());
+			width - a_width - pad_outer_,
+			height / 2. - a_height / 2.,
+			a_width,
+			a_height);
 	}
 
 	delete gc;
