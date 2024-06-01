@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "OpenGLPrefsPanel.h"
 #include "UI/Controls/NumberTextCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -42,9 +43,9 @@ using namespace slade;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-//EXTERN_CVAR(Bool, gl_point_sprite)
-//EXTERN_CVAR(Bool, gl_vbo)
-//EXTERN_CVAR(Int, gl_font_size)
+// EXTERN_CVAR(Bool, gl_point_sprite)
+// EXTERN_CVAR(Bool, gl_vbo)
+// EXTERN_CVAR(Int, gl_font_size)
 
 
 // -----------------------------------------------------------------------------
@@ -57,13 +58,13 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // OpenGLPrefsPanel class constructor
 // -----------------------------------------------------------------------------
-OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)//, last_font_size_{ gl_font_size }
+OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) //, last_font_size_{ gl_font_size }
 {
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	wxutil::layoutVertically(
+	ui::LayoutHelper(this).layoutVertically(
 		sizer,
 		vector<wxObject*>{ cb_gl_point_sprite_ = new wxCheckBox(this, -1, "Enable point sprites if supported"),
 						   cb_gl_use_vbo_      = new wxCheckBox(this, -1, "Use Vertex Buffer Objects if supported"),
@@ -80,9 +81,9 @@ OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)//,
 // -----------------------------------------------------------------------------
 void OpenGLPrefsPanel::init()
 {
-	//cb_gl_point_sprite_->SetValue(gl_point_sprite);
-	//cb_gl_use_vbo_->SetValue(gl_vbo);
-	//ntc_font_size_->setNumber(gl_font_size);
+	// cb_gl_point_sprite_->SetValue(gl_point_sprite);
+	// cb_gl_use_vbo_->SetValue(gl_vbo);
+	// ntc_font_size_->setNumber(gl_font_size);
 }
 
 // -----------------------------------------------------------------------------
@@ -90,9 +91,9 @@ void OpenGLPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void OpenGLPrefsPanel::applyPreferences()
 {
-	//gl_point_sprite = cb_gl_point_sprite_->GetValue();
-	//gl_vbo          = cb_gl_use_vbo_->GetValue();
-	//gl_font_size    = ntc_font_size_->number();
+	// gl_point_sprite = cb_gl_point_sprite_->GetValue();
+	// gl_vbo          = cb_gl_use_vbo_->GetValue();
+	// gl_font_size    = ntc_font_size_->number();
 
-	//last_font_size_ = gl_font_size;
+	// last_font_size_ = gl_font_size;
 }

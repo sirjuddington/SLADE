@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "MapEditorPrefsPanel.h"
 #include "UI/Controls/NumberTextCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -70,7 +71,7 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	wxutil::layoutVertically(
+	ui::LayoutHelper(this).layoutVertically(
 		sizer,
 		vector<wxObject*>{
 			cb_scroll_smooth_         = new wxCheckBox(this, -1, "Enable smooth scrolling"),

@@ -37,6 +37,10 @@ using namespace slade;
 using namespace ui;
 
 
+// -----------------------------------------------------------------------------
+// Returns a horizontal box sizer containing [widgets].
+// [widgets] can contain a combination of wxWindow and wxSizer objects
+// -----------------------------------------------------------------------------
 wxSizer* LayoutHelper::layoutHorizontally(const vector<wxObject*>& widgets, int expand_col) const
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -69,6 +73,11 @@ wxSizer* LayoutHelper::layoutHorizontally(const vector<wxObject*>& widgets, int 
 
 	return hbox;
 }
+
+// -----------------------------------------------------------------------------
+// Overload of layoutHorizontally which, instead of returning the new sizer,
+// adds it to the given [sizer] with [flags]
+// -----------------------------------------------------------------------------
 void LayoutHelper::layoutHorizontally(
 	wxSizer*                 sizer,
 	const vector<wxObject*>& widgets,
@@ -78,6 +87,10 @@ void LayoutHelper::layoutHorizontally(
 	sizer->Add(layoutHorizontally(widgets, expand_col), flags);
 }
 
+// -----------------------------------------------------------------------------
+// Returns a vertical box sizer containing [widgets].
+// [widgets] can contain a combination of wxWindow and wxSizer objects
+// -----------------------------------------------------------------------------
 wxSizer* LayoutHelper::layoutVertically(const vector<wxObject*>& widgets, int expand_row) const
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
@@ -110,6 +123,11 @@ wxSizer* LayoutHelper::layoutVertically(const vector<wxObject*>& widgets, int ex
 
 	return vbox;
 }
+
+// -----------------------------------------------------------------------------
+// Overload of layoutVertically which, instead of returning the new sizer,
+// adds it to the given [sizer] with [flags]
+// -----------------------------------------------------------------------------
 void LayoutHelper::layoutVertically(
 	wxSizer*                 sizer,
 	const vector<wxObject*>& widgets,
