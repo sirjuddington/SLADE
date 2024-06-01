@@ -38,7 +38,6 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "General/Sigslot.h"
-#include "General/UI.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
@@ -48,6 +47,7 @@
 #include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/Layout.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
@@ -237,7 +237,7 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 // -----------------------------------------------------------------------------
 void PatchTablePanel::setupLayout()
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
@@ -245,19 +245,19 @@ void PatchTablePanel::setupLayout()
 	// Patches List + actions
 	auto frame      = new wxStaticBox(this, -1, "Patch List (PNAMES)");
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	sizer->Add(framesizer, wx::sfWithBorder().Expand());
-	framesizer->Add(toolbar_, wx::sfWithMinBorder(0, wxTOP | wxBOTTOM).Expand());
-	framesizer->AddSpacer(ui::padMin());
-	framesizer->Add(list_patches_, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(framesizer, lh.sfWithBorder().Expand());
+	framesizer->Add(toolbar_, lh.sfWithMinBorder(0, wxTOP | wxBOTTOM).Expand());
+	framesizer->AddSpacer(lh.padMin());
+	framesizer->Add(list_patches_, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 
 	// Patch preview & info
 	frame      = new wxStaticBox(this, -1, "Patch Preview && Info");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
-	framesizer->Add(zc_zoom_, wx::sfWithBorder());
-	framesizer->Add(patch_canvas_->window(), wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
-	framesizer->Add(label_dimensions_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
-	framesizer->Add(label_textures_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(framesizer, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(zc_zoom_, lh.sfWithBorder());
+	framesizer->Add(patch_canvas_->window(), lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(label_dimensions_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(label_textures_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 }
 
 // -----------------------------------------------------------------------------

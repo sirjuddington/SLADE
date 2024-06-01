@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapDisplayPrefsPanel.h"
-#include "General/UI.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -97,11 +97,12 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	sizer->Add(stc_pages_, wxSizerFlags(1).Expand());
 
 	// Setup tabs
-	setupGeneralTab();
-	setupVerticesTab();
-	setupLinesTab();
-	setupThingsTab();
-	setupFlatsTab();
+	auto lh = ui::LayoutHelper(this);
+	setupGeneralTab(lh);
+	setupVerticesTab(lh);
+	setupLinesTab(lh);
+	setupThingsTab(lh);
+	setupFlatsTab(lh);
 
 	wxWindowBase::Layout();
 }
@@ -109,15 +110,15 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 // -----------------------------------------------------------------------------
 // Sets up the general tab
 // -----------------------------------------------------------------------------
-void MapDisplayPrefsPanel::setupGeneralTab()
+void MapDisplayPrefsPanel::setupGeneralTab(const ui::LayoutHelper& lh)
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
 	stc_pages_->AddPage(panel, "General", true);
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sz_border->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sz_border->Add(gb_sizer, lh.sfWithLargeBorder(1).Expand());
 	int row = 0;
 
 	// Crosshair
@@ -178,7 +179,7 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 // -----------------------------------------------------------------------------
 // Sets up the vertices tab
 // -----------------------------------------------------------------------------
-void MapDisplayPrefsPanel::setupVerticesTab()
+void MapDisplayPrefsPanel::setupVerticesTab(const ui::LayoutHelper& lh)
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
@@ -186,14 +187,14 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
+	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	slider_vertex_size_ = new wxSlider(panel, -1, vertex_size, 2, 16, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	choice_vertices_always_ = new wxChoice(panel, -1);
 	choice_vertices_always_->Set(wxutil::arrayString({ "Hide", "Show", "Fade" }));
 	cb_vertex_round_ = new wxCheckBox(panel, -1, "Round vertices");
 
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		sizer,
 		{ wxutil::createLabelHBox(panel, "Vertex Size:", slider_vertex_size_),
 		  wxutil::createLabelHBox(panel, "When not in vertices mode:", choice_vertices_always_),
@@ -204,7 +205,7 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 // -----------------------------------------------------------------------------
 // Sets up the lines tab
 // -----------------------------------------------------------------------------
-void MapDisplayPrefsPanel::setupLinesTab()
+void MapDisplayPrefsPanel::setupLinesTab(const ui::LayoutHelper& lh)
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
@@ -212,9 +213,9 @@ void MapDisplayPrefsPanel::setupLinesTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
+	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		sizer,
 		{ wxutil::createLabelHBox(
 			  panel,
@@ -229,15 +230,15 @@ void MapDisplayPrefsPanel::setupLinesTab()
 // -----------------------------------------------------------------------------
 // Sets up the things tab
 // -----------------------------------------------------------------------------
-void MapDisplayPrefsPanel::setupThingsTab()
+void MapDisplayPrefsPanel::setupThingsTab(const ui::LayoutHelper& lh)
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
 	stc_pages_->AddPage(panel, "Things");
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sz_border->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sz_border->Add(gb_sizer, lh.sfWithLargeBorder(1).Expand());
 	int row = 0;
 
 	// Thing shape
@@ -293,7 +294,7 @@ void MapDisplayPrefsPanel::setupThingsTab()
 // -----------------------------------------------------------------------------
 // Sets up the sectors tab
 // -----------------------------------------------------------------------------
-void MapDisplayPrefsPanel::setupFlatsTab()
+void MapDisplayPrefsPanel::setupFlatsTab(const ui::LayoutHelper& lh)
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
@@ -301,9 +302,9 @@ void MapDisplayPrefsPanel::setupFlatsTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
+	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		sizer,
 		{ wxutil::createLabelHBox(
 			  panel,

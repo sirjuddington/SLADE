@@ -48,6 +48,7 @@
 #include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -255,7 +256,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 // -----------------------------------------------------------------------------
 wxPanel* SectorPropsPanel::setupGeneralPanel()
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Create panel
 	auto panel = new wxPanel(stc_tabs_);
@@ -266,14 +267,14 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 
 	// --- Floor ---
 	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(m_hbox, wx::sfWithBorder().Expand());
+	sizer->Add(m_hbox, lh.sfWithBorder().Expand());
 	auto frame      = new wxStaticBox(panel, -1, "Floor");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_hbox->Add(framesizer, wx::sfWithBorder(1, wxRIGHT).Center());
+	m_hbox->Add(framesizer, lh.sfWithBorder(1, wxRIGHT).Center());
 
 	// Texture
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, wx::sfWithBorder(1).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 	gb_sizer->Add(gfx_floor_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_floor_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
@@ -291,8 +292,8 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	m_hbox->Add(framesizer, wxSizerFlags(1).Center());
 
 	// Texture
-	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, wx::sfWithBorder(1).Expand());
+	gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 	gb_sizer->Add(gfx_ceiling_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_ceiling_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
@@ -307,9 +308,9 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	// -- General ---
 	frame      = new wxStaticBox(panel, -1, "General");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, wx::sfWithBorder().Expand());
+	sizer->Add(framesizer, lh.sfWithBorder().Expand());
 	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, wx::sfWithBorder(1).Expand());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 
 	// Light level
 	gb_sizer->Add(new wxStaticText(panel, -1, "Light Level:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -332,18 +333,19 @@ wxPanel* SectorPropsPanel::setupSpecialPanel()
 {
 	// Create panel
 	auto panel = new wxPanel(stc_tabs_);
+	auto lh    = ui::LayoutHelper(panel);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// Add special panel
-	sizer->Add(panel_special_ = new SectorSpecialPanel(panel), wxutil::sfWithBorder(1).Expand());
+	sizer->Add(panel_special_ = new SectorSpecialPanel(panel), lh.sfWithBorder(1).Expand());
 
 	// Add override checkbox
 	sizer->Add(
 		cb_override_special_ = new wxCheckBox(panel, -1, "Override Special"),
-		wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	cb_override_special_->SetToolTip(
 		"Differing specials detected, tick this to set the special for all selected sectors");
 

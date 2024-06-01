@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
 #include "Game/GenLineSpecial.h"
-#include "General/UI.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -50,6 +50,8 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// --- Setup layout ---
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -58,9 +60,9 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	choice_type_ = new wxChoice(this, -1);
 	choice_type_->Set(wxutil::arrayString({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
 	choice_type_->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoiceTypeChanged, this);
-	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type_), wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type_), lh.sfWithBorder(0, wxBOTTOM).Expand());
 
-	gb_sizer_ = new wxGridBagSizer(ui::pad(), ui::pad());
+	gb_sizer_ = new wxGridBagSizer(lh.pad(), lh.pad());
 	sizer->Add(gb_sizer_, wxSizerFlags(1).Expand());
 
 	// Trigger

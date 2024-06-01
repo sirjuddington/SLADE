@@ -33,6 +33,7 @@
 #include "GraphicsPrefsPanel.h"
 #include "MainEditor/MainEditor.h"
 #include "OpenGL/GLTexture.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -135,12 +136,14 @@ void GraphicsPrefsPanel::applyPreferences()
 // -----------------------------------------------------------------------------
 void GraphicsPrefsPanel::setupLayout()
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Transparent background colours
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		sizer,
 		{ new wxStaticText(this, -1, "Transparent background colours:"),
 		  cp_colour1_,
@@ -148,10 +151,10 @@ void GraphicsPrefsPanel::setupLayout()
 		  wxutil::createLabelHBox(this, "Preset:", choice_presets_) },
 		wxSizerFlags(0).Expand());
 
-	sizer->Add(new wxStaticLine(this, -1), wxutil::sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
+	sizer->Add(new wxStaticLine(this, -1), lh.sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
 
 	// Other gfx options
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		sizer,
 		{ wxutil::createLabelHBox(this, "Browser Background:", choice_browser_bg_),
 		  cb_show_border_,

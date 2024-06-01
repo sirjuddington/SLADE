@@ -37,7 +37,6 @@
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
@@ -46,6 +45,7 @@
 #include "Scripting/ScriptManager.h"
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Layout.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
@@ -80,11 +80,12 @@ class NewEditorScriptDialog : public wxDialog
 public:
 	NewEditorScriptDialog(wxWindow* parent) : wxDialog(parent, -1, "New Editor Script")
 	{
+		auto lh    = ui::LayoutHelper(this);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
-		auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-		sizer->Add(gbsizer, wxutil::sfWithLargeBorder(1).Expand());
+		auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
+		sizer->Add(gbsizer, lh.sfWithLargeBorder(1).Expand());
 		gbsizer->AddGrowableCol(1, 1);
 
 		// Script type
@@ -102,11 +103,11 @@ public:
 
 		// Dialog buttons
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxBOTTOM).Expand());
+		sizer->Add(hbox, lh.sfWithLargeBorder(0, wxBOTTOM).Expand());
 		hbox->AddStretchSpacer(1);
 
 		// OK
-		hbox->Add(new wxButton(this, wxID_OK, "OK"), wxutil::sfWithLargeBorder(0, wxRIGHT).Expand());
+		hbox->Add(new wxButton(this, wxID_OK, "OK"), lh.sfWithLargeBorder(0, wxRIGHT).Expand());
 
 		SetEscapeId(wxID_CANCEL);
 		wxWindowBase::Layout();
@@ -502,6 +503,7 @@ void ScriptManagerWindow::bindEvents()
 wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 {
 	auto panel = new wxPanel(this);
+	auto lh    = ui::LayoutHelper(panel);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
@@ -510,12 +512,12 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 		panel,
 		-1,
 		wxDefaultPosition,
-		FromDIP(wxSize(200, -1)),
+		lh.size(200, -1),
 		wxTR_DEFAULT_STYLE | wxTR_NO_LINES | wxTR_HIDE_ROOT | wxTR_FULL_ROW_HIGHLIGHT);
 	tree_scripts_->EnableSystemTheme(true);
 	tree_scripts_->SetImageList(createTreeImageList());
 	populateScriptsTree();
-	sizer->Add(tree_scripts_, 1, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(tree_scripts_, lh.sfWithBorder(1).Expand());
 
 	return panel;
 }

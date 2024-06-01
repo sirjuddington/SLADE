@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "ACSPrefsPanel.h"
 #include "UI/Controls/FileLocationPanel.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -116,7 +117,7 @@ void ACSPrefsPanel::applyPreferences()
 // -----------------------------------------------------------------------------
 void ACSPrefsPanel::setupLayout()
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -124,22 +125,22 @@ void ACSPrefsPanel::setupLayout()
 
 	// ACC.exe path
 	sizer->Add(
-		wx::createLabelVBox(this, "Location of acc executable:", flp_acc_path_),
-		wx::sfWithBorder(0, wxBOTTOM).Expand());
+		wxutil::createLabelVBox(this, "Location of acc executable:", flp_acc_path_),
+		lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Include paths
 	sizer->Add(new wxStaticText(this, -1, "Include Paths:"), wxSizerFlags().Expand());
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wx::sfWithBorder(1, wxBOTTOM).Expand());
-	hbox->Add(list_inc_paths_, wx::sfWithBorder(1, wxRIGHT).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(1, wxBOTTOM).Expand());
+	hbox->Add(list_inc_paths_, lh.sfWithBorder(1, wxRIGHT).Expand());
 
 	// Add include path
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, wxSizerFlags().Expand());
-	vbox->Add(btn_incpath_add_, wx::sfWithBorder(0, wxBOTTOM).Expand());
+	vbox->Add(btn_incpath_add_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Remove include path
-	vbox->Add(btn_incpath_remove_, wx::sfWithBorder(0, wxBOTTOM).Expand());
+	vbox->Add(btn_incpath_remove_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// 'Always Show Output' checkbox
 	sizer->Add(cb_always_show_output_, wxSizerFlags().Expand());

@@ -43,6 +43,7 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Layout.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "Utility/StringUtils.h"
 
@@ -77,7 +78,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
-	sizer_main_->Add(panel_fr_, wxutil::sfWithLargeBorder(0, wxTOP).Expand());
+	sizer_main_->Add(panel_fr_, ui::LayoutHelper(this).sfWithLargeBorder(0, wxTOP).Expand());
 
 	// Add 'Text Language' choice to toolbar
 	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);

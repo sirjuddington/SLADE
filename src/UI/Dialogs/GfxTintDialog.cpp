@@ -39,6 +39,7 @@
 #include "UI/Canvas/Canvas.h"
 #include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/Controls/ColourBox.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -59,41 +60,41 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 	entry_{ entry },
 	palette_{ new Palette(pal) }
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Set dialog icon
-	wx::setWindowIcon(this, "tint");
+	wxutil::setWindowIcon(this, "tint");
 
 	// Setup main sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(sizer, wx::sfWithLargeBorder(1).Expand());
+	msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// Add colour chooser
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wx::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	cb_colour_ = new ColourBox(this, -1, false, true);
 	cb_colour_->setColour(ColRGBA::RED);
 	cb_colour_->setPalette(palette_.get());
-	hbox->Add(new wxStaticText(this, -1, "Colour:"), wx::sfWithBorder(1, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, "Colour:"), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 	hbox->Add(cb_colour_, wxSizerFlags().CenterVertical());
 
 	// Add 'amount' slider
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wx::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	slider_amount_ = new wxSlider(this, -1, 50, 0, 100);
 	label_amount_  = new wxStaticText(this, -1, "100%");
 	label_amount_->SetInitialSize(label_amount_->GetBestSize());
-	hbox->Add(new wxStaticText(this, -1, "Amount:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
-	hbox->Add(slider_amount_, wx::sfWithBorder(1, wxRIGHT).Expand());
+	hbox->Add(new wxStaticText(this, -1, "Amount:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(slider_amount_, lh.sfWithBorder(1, wxRIGHT).Expand());
 	hbox->Add(label_amount_, wxSizerFlags().CenterVertical());
 
 	// Add preview
 	gfx_preview_ = ui::createGfxCanvas(this);
-	sizer->Add(gfx_preview_->window(), wx::sfWithBorder(1, wxBOTTOM).Expand());
+	sizer->Add(gfx_preview_->window(), lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add buttons
 	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
@@ -101,7 +102,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 	// Setup preview
 	gfx_preview_->setViewType(GfxView::Centered);
 	gfx_preview_->setPalette(palette_.get());
-	gfx_preview_->window()->SetInitialSize(wxSize(256, 256));
+	gfx_preview_->window()->SetInitialSize(lh.size(256, 256));
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry);
 	gfx_preview_->image().tint(colour(), amount(), palette_.get());
 	gfx_preview_->resetViewOffsets();

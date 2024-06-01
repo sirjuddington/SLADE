@@ -33,9 +33,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapReplaceDialog.h"
-#include "General/UI.h"
 #include "MainEditor/ArchiveOperations.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -66,13 +65,15 @@ private:
 // -----------------------------------------------------------------------------
 ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	sizer->AddStretchSpacer();
-	sizer->Add(gbsizer, wxutil::sfWithLargeBorder().Center());
+	sizer->Add(gbsizer, lh.sfWithLargeBorder().Center());
 	sizer->AddStretchSpacer();
 
 	// From type
@@ -132,13 +133,15 @@ private:
 // -----------------------------------------------------------------------------
 SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	sizer->AddStretchSpacer();
-	sizer->Add(gbsizer, wxutil::sfWithLargeBorder().Center());
+	sizer->Add(gbsizer, lh.sfWithLargeBorder().Center());
 
 	// From special
 	gbsizer->Add(
@@ -162,11 +165,11 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	sizer->Add(
 		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL),
-		wxutil::sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
+		lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
 
 	// Args
-	gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gbsizer, wxutil::sfWithLargeBorder().Center());
+	gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gbsizer, lh.sfWithLargeBorder().Center());
 	for (int a = 0; a < 5; a++)
 	{
 		// Create controls
@@ -254,13 +257,15 @@ private:
 // -----------------------------------------------------------------------------
 TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	sizer->AddStretchSpacer();
-	sizer->Add(gbsizer, wxutil::sfWithBorder().Center());
+	sizer->Add(gbsizer, lh.sfWithBorder().Center());
 
 	// From texture
 	gbsizer->Add(
@@ -274,11 +279,10 @@ TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	text_to_ = new wxTextCtrl(this, -1);
 	gbsizer->Add(text_to_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
-	sizer->Add(
-		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), wxutil::sfWithBorder().Expand());
+	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), lh.sfWithBorder().Expand());
 
-	gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gbsizer, wxutil::sfWithBorder().Center());
+	gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gbsizer, lh.sfWithBorder().Center());
 
 	// Upper
 	cb_upper_ = new wxCheckBox(this, -1, "Upper Textures");
@@ -342,6 +346,8 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive) :
 	wxDialog(parent, -1, "Replace In Maps", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 	archive_{ archive }
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Init variables
 	archive_ = archive;
 
@@ -351,7 +357,7 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive) :
 
 	// Add tabs
 	stc_tabs_ = STabCtrl::createControl(this);
-	sizer->Add(stc_tabs_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+	sizer->Add(stc_tabs_, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Thing type tab
 	panel_thing_ = new ThingTypeReplacePanel(stc_tabs_);
@@ -370,10 +376,10 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive) :
 	btn_done_    = new wxButton(this, wxID_CANCEL, "Close");
 	auto hbox    = new wxBoxSizer(wxHORIZONTAL);
 	hbox->AddStretchSpacer();
-	hbox->Add(btn_replace_, wxutil::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_replace_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->Add(btn_done_, wxSizerFlags().Expand());
-	sizer->AddSpacer(ui::pad());
-	sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->AddSpacer(lh.pad());
+	sizer->Add(hbox, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Setup dialog layout
 	SetInitialSize(wxSize(-1, -1));

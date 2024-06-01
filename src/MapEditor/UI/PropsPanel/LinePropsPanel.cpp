@@ -46,6 +46,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "SidePropsPanel.h"
 #include "UI/Controls/NumberTextCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -128,7 +129,7 @@ LinePropsPanel::~LinePropsPanel()
 // -----------------------------------------------------------------------------
 wxPanel* LinePropsPanel::setupGeneralTab()
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	auto panel_flags = new wxPanel(stc_tabs_, -1);
 	auto map_format  = mapeditor::editContext().mapDesc().format;
@@ -139,11 +140,11 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 
 	// Flags
 	auto sizer_flags = new wxStaticBoxSizer(wxVERTICAL, panel_flags, "Flags");
-	sizer->Add(sizer_flags, wx::sfWithBorder().Expand());
+	sizer->Add(sizer_flags, lh.sfWithBorder().Expand());
 
 	// Init flags
-	auto gb_sizer_flags = new wxGridBagSizer(ui::pad() / 2, ui::pad());
-	sizer_flags->Add(gb_sizer_flags, wx::sfWithBorder(1).Expand());
+	auto gb_sizer_flags = new wxGridBagSizer(lh.pad() / 2, lh.pad());
+	sizer_flags->Add(gb_sizer_flags, lh.sfWithBorder(1).Expand());
 	unsigned row = 0;
 	unsigned col = 0;
 
@@ -216,10 +217,10 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	if (map_format == MapFormat::Doom)
 	{
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
-		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
-		hbox->Add(text_tag_ = new NumberTextCtrl(panel_flags), wx::sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		hbox->Add(text_tag_ = new NumberTextCtrl(panel_flags), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 		btn_new_tag_ = new wxButton(panel_flags, -1, "New Tag");
 		hbox->Add(btn_new_tag_, wxSizerFlags().Expand());
 
@@ -233,10 +234,10 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	if (map_format == MapFormat::UDMF)
 	{
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
-		hbox->Add(new wxStaticText(panel_flags, -1, "Line ID:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
-		hbox->Add(text_id_ = new NumberTextCtrl(panel_flags), wx::sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(new wxStaticText(panel_flags, -1, "Line ID:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		hbox->Add(text_id_ = new NumberTextCtrl(panel_flags), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 		hbox->Add(btn_new_id_ = new wxButton(panel_flags, -1, "New ID"), wxSizerFlags().Expand());
 
 		// Bind event
@@ -258,6 +259,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 wxPanel* LinePropsPanel::setupSpecialTab()
 {
 	auto panel = new wxPanel(stc_tabs_, -1);
+	auto lh    = ui::LayoutHelper(panel);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -265,13 +267,13 @@ wxPanel* LinePropsPanel::setupSpecialTab()
 
 	// Action special panel
 	panel_special_ = new ActionSpecialPanel(panel);
-	sizer->Add(panel_special_, wxutil::sfWithBorder(1).Expand());
+	sizer->Add(panel_special_, lh.sfWithBorder(1).Expand());
 
 	// 'Override Special' checkbox
 	cb_override_special_ = new wxCheckBox(panel, -1, "Override Action Special");
 	cb_override_special_->SetToolTip(
 		"Differing action specials detected, tick this to set the action special for all selected lines");
-	sizer->Add(cb_override_special_, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(cb_override_special_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	return panel;
 }

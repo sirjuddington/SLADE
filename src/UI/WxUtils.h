@@ -31,10 +31,6 @@ void layoutHorizontally(wxSizer* sizer, const vector<wxObject*>& widgets, wxSize
 wxSizer* layoutVertically(const vector<wxObject*>& widgets, int expand_row = -1);
 void layoutVertically(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags = {}, int expand_row = -1);
 
-wxSizerFlags sfWithBorder(int proportion = 0, int direction = wxALL, int size = -1);
-wxSizerFlags sfWithLargeBorder(int proportion = 0, int direction = wxALL);
-wxSizerFlags sfWithMinBorder(int proportion = 0, int direction = wxALL);
-
 // Strings
 inline string_view strToView(const wxString& str)
 {

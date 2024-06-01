@@ -54,10 +54,10 @@
 #include "UI/Dialogs/GfxTintDialog.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/Layout.h"
 #include "UI/SBrush.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
-#include "UI/WxUtils.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
@@ -91,7 +91,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 	prev_translation_{ new Translation },
 	edit_translation_{ new Translation }
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Init variables
 	prev_translation_->addRange(TransRange::Type::Palette, 0);
@@ -111,17 +111,16 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 	gfx_canvas_->setTranslation(edit_translation_.get());
 
 	// Offsets
-	const wxSize spinsize = { ui::px(ui::Size::SpinCtrlWidth), -1 };
-	spin_xoffset_         = new wxSpinCtrl(
-        this,
-        -1,
-        wxEmptyString,
-        wxDefaultPosition,
-        wxDefaultSize,
-        wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
-        SHRT_MIN,
-        SHRT_MAX,
-        0);
+	spin_xoffset_ = new wxSpinCtrl(
+		this,
+		-1,
+		wxEmptyString,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
+		SHRT_MIN,
+		SHRT_MAX,
+		0);
 	spin_yoffset_ = new wxSpinCtrl(
 		this,
 		-1,
@@ -132,17 +131,17 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 		SHRT_MIN,
 		SHRT_MAX,
 		0);
-	spin_xoffset_->SetMinSize(spinsize);
-	spin_yoffset_->SetMinSize(spinsize);
+	spin_xoffset_->SetMinSize(lh.spinSize());
+	spin_yoffset_->SetMinSize(lh.spinSize());
 	sizer_bottom_->Add(new wxStaticText(this, -1, "Offsets:"), wxSizerFlags().CenterVertical());
-	sizer_bottom_->Add(spin_xoffset_, wx::sfWithBorder(0, wxLEFT | wxRIGHT).CenterVertical());
-	sizer_bottom_->Add(spin_yoffset_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	sizer_bottom_->Add(spin_xoffset_, lh.sfWithBorder(0, wxLEFT | wxRIGHT).CenterVertical());
+	sizer_bottom_->Add(spin_yoffset_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 
 	// Gfx (offset) type
 	wxString offset_types[] = { "Auto", "Graphic", "Sprite", "HUD" };
 	choice_offset_type_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
 	choice_offset_type_->SetSelection(0);
-	sizer_bottom_->Add(choice_offset_type_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	sizer_bottom_->Add(choice_offset_type_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 
 	// Auto offset
 	btn_auto_offset_ = new SIconButton(this, "offset", "Modify Offsets...");
@@ -163,10 +162,10 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
         1,
         1,
         0);
-	spin_curimg_->SetMinSize(spinsize);
+	spin_curimg_->SetMinSize(lh.spinSize());
 	sizer_bottom_->Add(text_imgnum_, wxSizerFlags().Center());
 	sizer_bottom_->Add(spin_curimg_, wxSizerFlags().Center()); // 0, wxSHRINK | wxALIGN_CENTER, ui::pad());
-	sizer_bottom_->Add(text_imgoutof_, wx::sfWithLargeBorder(0, wxRIGHT).Center());
+	sizer_bottom_->Add(text_imgoutof_, lh.sfWithLargeBorder(0, wxRIGHT).Center());
 	text_imgnum_->Show(false);
 	spin_curimg_->Show(false);
 	text_imgoutof_->Show(false);

@@ -32,10 +32,9 @@
 #include "Main.h"
 #include "FindReplacePanel.h"
 #include "General/KeyBind.h"
-#include "General/UI.h"
 #include "TextEditorCtrl.h"
 #include "UI/Controls/SIconButton.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -66,8 +65,9 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 {
 	SetSizer(new wxBoxSizer(wxVERTICAL));
 
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	GetSizer()->Add(gb_sizer, wxutil::sfWithBorder(1, wxBOTTOM).Expand());
+	auto lh       = ui::LayoutHelper(this);
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	GetSizer()->Add(gb_sizer, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Find
 	text_find_     = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
@@ -98,13 +98,13 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 	auto wsizer          = new wxWrapSizer(wxHORIZONTAL, wxREMOVE_LEADING_SPACES);
 	GetSizer()->Add(wsizer, wxSizerFlags().Expand());
 	wsizer->Add(cb_match_case_, wxSizerFlags().Expand());
-	wsizer->AddSpacer(ui::pad());
+	wsizer->AddSpacer(lh.pad());
 	wsizer->Add(cb_match_word_whole_, wxSizerFlags().Expand());
-	wsizer->AddSpacer(ui::pad());
+	wsizer->AddSpacer(lh.pad());
 	wsizer->Add(cb_match_word_start_, wxSizerFlags().Expand());
-	wsizer->AddSpacer(ui::pad());
+	wsizer->AddSpacer(lh.pad());
 	wsizer->Add(cb_search_regex_, wxSizerFlags().Expand());
-	wsizer->AddSpacer(ui::pad());
+	wsizer->AddSpacer(lh.pad());
 	wsizer->Add(cb_allow_escape_, wxSizerFlags().Expand());
 	cb_match_case_->SetValue(txed_fr_matchcase);
 	cb_match_word_whole_->SetValue(txed_fr_matchword);

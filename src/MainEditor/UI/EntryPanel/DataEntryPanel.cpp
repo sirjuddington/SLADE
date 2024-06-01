@@ -38,6 +38,7 @@
 #include "General/SAction.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/Layout.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
 
@@ -915,15 +916,17 @@ void DataEntryTable::pasteRows(int row)
 // -----------------------------------------------------------------------------
 DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), table_data_{ new DataEntryTable(this) }
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Cell value combo box
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer_main_->Add(vbox, 1, wxEXPAND);
 	combo_cell_value_ = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxTE_PROCESS_ENTER);
-	vbox->Add(combo_cell_value_, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+	vbox->Add(combo_cell_value_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Create grid
 	grid_data_ = new wxGrid(this, -1);
-	vbox->Add(grid_data_, wxutil::sfWithBorder(1, wxBOTTOM).Expand());
+	vbox->Add(grid_data_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add actions to toolbar
 	wxArrayString actions;
@@ -1135,8 +1138,9 @@ void DataEntryPanel::changeValue() const
 
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(vbox);
-	vbox->Add(combo, wxutil::sfWithLargeBorder(0).Expand());
-	vbox->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0).Expand());
+	auto lh = ui::LayoutHelper(&dlg);
+	vbox->Add(combo, lh.sfWithLargeBorder(0).Expand());
+	vbox->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0).Expand());
 
 	// Show dialog
 	dlg.Fit();

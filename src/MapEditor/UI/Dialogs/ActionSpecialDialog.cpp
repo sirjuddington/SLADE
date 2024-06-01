@@ -34,11 +34,11 @@
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "General/Defs.h"
-#include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/ActionSpecialPanel.h"
 #include "MapEditor/UI/ArgsPanel.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -58,6 +58,7 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 	SDialog{ parent, "Select Action Special", "actionspecial", 400, 500 }
 {
 	panel_args_ = nullptr;
+	auto lh     = ui::LayoutHelper(this);
 	auto sizer  = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
@@ -65,14 +66,14 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 	if (mapeditor::editContext().mapDesc().format == MapFormat::Doom || !show_args)
 	{
 		panel_special_ = new ActionSpecialPanel(this, false);
-		sizer->Add(panel_special_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+		sizer->Add(panel_special_, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 	}
 
 	// Args (use tabs)
 	else
 	{
 		stc_tabs_ = STabCtrl::createControl(this);
-		sizer->Add(stc_tabs_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+		sizer->Add(stc_tabs_, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 		// Special panel
 		panel_special_ = new ActionSpecialPanel(stc_tabs_);
@@ -85,8 +86,8 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 	}
 
 	// Add buttons
-	sizer->AddSpacer(ui::pad());
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->AddSpacer(lh.pad());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Init
 	SetSizerAndFit(sizer);

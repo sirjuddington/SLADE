@@ -78,6 +78,7 @@
 #include "UI/Dialogs/NewEntryDialog.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/RunDialog.h"
+#include "UI/Layout.h"
 #include "UI/Lists/ArchiveEntryTree.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -241,6 +242,8 @@ public:
 				  wxDefaultSize,
 				  wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER }
 	{
+		auto lh = ui::LayoutHelper(this);
+
 		// Set dialog icon
 		wxutil::setWindowIcon(this, "palette");
 
@@ -250,9 +253,9 @@ public:
 
 		// Add choose
 		pal_chooser_ = new PaletteChooser(this, -1);
-		sizer->Add(pal_chooser_, wxutil::sfWithBorder().Expand());
+		sizer->Add(pal_chooser_, lh.sfWithBorder().Expand());
 
-		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 		// Init layout
 		wxDialog::Layout();
@@ -361,7 +364,7 @@ void ArchivePanel::setup(const Archive* archive)
 
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(FromDIP(300));
-	m_hbox->Add(splitter_, wxutil::sfWithBorder(1).Expand());
+	m_hbox->Add(splitter_, ui::LayoutHelper(this).sfWithBorder(1).Expand());
 	int split_pos = ap_splitter_position_list;
 	if (archive && archive->formatInfo().supports_dirs)
 		split_pos = ap_splitter_position_tree;
@@ -435,6 +438,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	auto* panel    = new wxPanel(parent);
 	auto  archive  = archive_.lock();
 	bool  has_dirs = archive->formatInfo().supports_dirs;
+	auto  lh       = ui::LayoutHelper(panel);
 
 	// Create & set sizer & border
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -442,7 +446,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 
 	// Create entry list
 	entry_tree_ = new ui::ArchiveEntryTree(panel, archive, undo_manager_.get(), elist_no_tree);
-	entry_tree_->SetInitialSize({ 400, -1 });
+	entry_tree_->SetInitialSize(lh.size(400, -1));
 	entry_tree_->SetDropTarget(new APEntryListDropTarget(this, entry_tree_));
 
 	// Create path controls if needed
@@ -495,7 +499,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 
 	// Entry List filter controls
 	panel_filter_ = new wxPanel(panel, -1);
-	auto* gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto* gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	panel_filter_->SetSizer(gbsizer);
 
 	// Create category selector
@@ -523,18 +527,18 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 
 	// Layout entry list
 	hbox->Add(toolbar_elist_, wxSizerFlags().Expand());
-	hbox->AddSpacer(ui::padMin());
+	hbox->AddSpacer(lh.padMin());
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
-	hbox->Add(vbox, wxutil::sfWithMinBorder(1, wxRIGHT).Expand());
+	hbox->Add(vbox, lh.sfWithMinBorder(1, wxRIGHT).Expand());
 	if (etree_path_)
 	{
 		vbox->Add(etree_path_, wxSizerFlags().Expand());
-		vbox->AddSpacer(ui::padMin());
+		vbox->AddSpacer(lh.padMin());
 		vbox->Add(entry_tree_, wxSizerFlags(1).Expand());
 	}
 	else
 		vbox->Add(entry_tree_, wxSizerFlags(1).Expand());
-	vbox->Add(panel_filter_, wxutil::sfWithBorder(0, wxTOP).Expand());
+	vbox->Add(panel_filter_, lh.sfWithBorder(0, wxTOP).Expand());
 
 	return panel;
 }

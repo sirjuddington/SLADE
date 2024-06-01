@@ -34,7 +34,7 @@
 #include "General/KeyBind.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -157,16 +157,18 @@ void InputKeyCtrl::onEnter(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Keybinds list
 	list_binds_ = new wxTreeListCtrl(this, -1);
-	sizer->Add(list_binds_, wxutil::sfWithBorder(1, wxBOTTOM).Expand());
+	sizer->Add(list_binds_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Buttons
-	wxutil::layoutHorizontally(
+	lh.layoutHorizontally(
 		sizer,
 		{ btn_change_   = new wxButton(this, -1, "Set Key"),
 		  btn_add_      = new wxButton(this, -1, "Add Key"),
@@ -289,12 +291,13 @@ void InputPrefsPanel::changeKey(wxTreeListItem item)
 	dlg.SetSizer(sizer);
 
 	// Add key input box
+	auto lh       = ui::LayoutHelper(&dlg);
 	auto key_ctrl = new InputKeyCtrl(&dlg, bind->key);
-	sizer->Add(key_ctrl, wxutil::sfWithBorder().Expand());
+	sizer->Add(key_ctrl, lh.sfWithBorder().Expand());
 
 	// Add buttons
 	auto btnsizer = dlg.CreateButtonSizer(wxOK | wxCANCEL);
-	sizer->Add(btnsizer, wxutil::sfWithBorder().Expand());
+	sizer->Add(btnsizer, lh.sfWithBorder().Expand());
 
 	// Init dialog
 	dlg.SetInitialSize(wxSize(-1, -1));

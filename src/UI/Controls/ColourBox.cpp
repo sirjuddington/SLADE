@@ -38,7 +38,7 @@
 #include "ColourBox.h"
 #include "Graphics/Palette/Palette.h"
 #include "UI/Dialogs/PaletteDialog.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -163,12 +163,12 @@ void ColourBox::popAlphaSlider()
 
 	// Popup a dialog with a slider control for alpha
 	wxDialog dlg(nullptr, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
+	auto     lh  = ui::LayoutHelper(&dlg);
 	auto     box = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(box);
 	auto slider = new wxSlider(&dlg, -1, colour_.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-	box->Add(slider, wxutil::sfWithLargeBorder(1).Expand());
-	box->Add(
-		dlg.CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	box->Add(slider, lh.sfWithLargeBorder(1).Expand());
+	box->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	dlg.SetInitialSize();
 
 	if (dlg.ShowModal() == wxID_OK)

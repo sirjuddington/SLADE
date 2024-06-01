@@ -34,7 +34,7 @@
 #include "SpecialPresetDialog.h"
 #include "Game/Configuration.h"
 #include "Game/SpecialPreset.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -192,20 +192,21 @@ private:
 // -----------------------------------------------------------------------------
 SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "Special Presets", "special_presets" }
 {
+	auto lh    = ui::LayoutHelper(this);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Presets tree
 	tree_presets_ = new SpecialPresetTreeView(this);
 	tree_presets_->setParentDialog(this);
-	sizer->Add(tree_presets_, wxutil::sfWithLargeBorder(1).Expand());
+	sizer->Add(tree_presets_, lh.sfWithLargeBorder(1).Expand());
 
 	// OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	hbox->AddStretchSpacer(1);
 	auto btn_ok = new wxButton(this, -1, "OK");
-	hbox->Add(btn_ok, wxutil::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_ok, lh.sfWithBorder(0, wxRIGHT).Expand());
 	btn_ok->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_OK); });
 
 	// Cancel button

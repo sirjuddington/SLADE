@@ -33,7 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ExtMessageDialog.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -51,29 +51,30 @@ using namespace slade;
 ExtMessageDialog::ExtMessageDialog(wxWindow* parent, const wxString& caption) :
 	wxDialog(parent, -1, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create and set sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add message label
 	label_message_ = new wxStaticText(this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
-	sizer->Add(label_message_, wxutil::sfWithBorder().Expand());
+	sizer->Add(label_message_, lh.sfWithBorder().Expand());
 
 	// Add extended text box
 	text_ext_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
 	text_ext_->SetFont(wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-	sizer->Add(text_ext_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(text_ext_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	hbox->AddStretchSpacer(1);
 	auto btn_ok = new wxButton(this, wxID_OK, "OK");
 	btn_ok->SetDefault();
 	hbox->Add(btn_ok);
 
-	int size = FromDIP(500);
-	SetInitialSize(wxSize(size, size));
+	SetInitialSize(lh.size(500, 500));
 
 	// Bind events
 	Bind(wxEVT_SIZE, &ExtMessageDialog::onSize, this);

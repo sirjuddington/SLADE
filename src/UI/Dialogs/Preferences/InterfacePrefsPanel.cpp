@@ -31,9 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "InterfacePrefsPanel.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -173,6 +173,7 @@ void InterfacePrefsPanel::applyPreferences()
 wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 {
 	auto panel = new wxPanel(stc_tabs, -1);
+	auto lh    = ui::LayoutHelper(panel);
 
 	// Create controls
 	cb_start_page_          = new wxCheckBox(panel, -1, "Show Start Page on Startup");
@@ -187,8 +188,8 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gb_sizer, lh.sfWithLargeBorder(1).Expand());
 
 	int row = 0;
 	gb_sizer->Add(cb_start_page_, { row++, 0 }, { 1, 2 }, wxEXPAND);
@@ -203,7 +204,7 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), wxutil::sfWithBorder().Right());
+	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), lh.sfWithBorder().Right());
 
 	return panel;
 }
@@ -214,6 +215,7 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 {
 	auto panel = new wxPanel(stc_tabs, -1);
+	auto lh    = ui::LayoutHelper(panel);
 
 	// Create controls
 	cb_size_as_string_      = new wxCheckBox(panel, -1, "Show entry size as a string with units");
@@ -225,15 +227,7 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	wxString icon_sizes[]   = { "16x16", "24x24", "32x32" };
 	choice_elist_icon_size_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, icon_sizes);
 	spin_elist_icon_pad_    = new wxSpinCtrl(
-        panel,
-        -1,
-        "1",
-        wxDefaultPosition,
-        { ui::px(ui::Size::SpinCtrlWidth), -1 },
-        wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
-        0,
-        4,
-        1);
+        panel, -1, "1", wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 1);
 	wxString tree_styles[]   = { "Tree", "Flat List" };
 	choice_elist_tree_style_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 2, tree_styles);
 	choice_elist_tree_style_->SetToolTip("The list style to use when the archive supports folders");
@@ -241,8 +235,8 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gb_sizer, lh.sfWithLargeBorder(1).Expand());
 
 	int row = 0;
 	gb_sizer->Add(cb_size_as_string_, { row++, 0 }, { 1, 4 }, wxEXPAND);
@@ -262,7 +256,7 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), wxutil::sfWithBorder().Right());
+	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), lh.sfWithBorder().Right());
 
 	return panel;
 }

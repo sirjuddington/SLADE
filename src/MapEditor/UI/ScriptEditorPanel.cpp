@@ -42,6 +42,7 @@
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
+#include "UI/Layout.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
 
@@ -80,6 +81,8 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	entry_script_{ new ArchiveEntry },
 	entry_compiled_{ new ArchiveEntry }
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -93,7 +96,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 
 	// Jump To toolbar group
 	auto group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, FromDIP(wxSize(200, -1)));
+	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, lh.size(200, -1));
 	group_jump_to->addCustomControl(choice_jump_to_);
 	toolbar->addGroup(group_jump_to);
 
@@ -105,7 +108,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setJumpToControl(choice_jump_to_);
-	vbox->Add(text_editor_, wxutil::sfWithBorder(1).Expand());
+	vbox->Add(text_editor_, lh.sfWithBorder(1).Expand());
 
 	// Set language
 	wxString lang = game::configuration().scriptLanguage();
@@ -127,13 +130,13 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	// Add Find+Replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_editor_);
 	text_editor_->setFindReplacePanel(panel_fr_);
-	vbox->Add(panel_fr_, wxutil::sfWithBorder().Expand());
+	vbox->Add(panel_fr_, lh.sfWithBorder().Expand());
 	panel_fr_->Hide();
 
 	// Add function/constants list
 	list_words_ = new wxTreeListCtrl(this, -1);
-	list_words_->SetInitialSize(FromDIP(wxSize(200, -1)));
-	hbox->Add(list_words_, wxutil::sfWithBorder().Expand());
+	list_words_->SetInitialSize(lh.size(200, -1));
+	hbox->Add(list_words_, lh.sfWithBorder().Expand());
 	populateWordList();
 	list_words_->Show(script_show_language_list);
 

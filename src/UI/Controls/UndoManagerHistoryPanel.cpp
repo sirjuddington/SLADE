@@ -34,7 +34,7 @@
 #include "Main.h"
 #include "UndoManagerHistoryPanel.h"
 #include "General/UndoRedo.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -177,7 +177,7 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 
 	// Add undo levels list
 	list_levels_ = new UndoListView(this, manager);
-	sizer->Add(list_levels_, wxutil::sfWithBorder(1).Expand());
+	sizer->Add(list_levels_, ui::LayoutHelper(this).sfWithBorder(1).Expand());
 
 	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, FromDIP(160));
 	list_levels_->AppendColumn("Time", wxLIST_FORMAT_RIGHT);

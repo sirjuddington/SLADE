@@ -34,6 +34,7 @@
 #include "SetupWizardDialog.h"
 #include "BaseResourceWizardPage.h"
 #include "NodeBuildersWizardPage.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -92,8 +93,8 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 void SetupWizardDialog::setupLayout()
 {
-	namespace wx = wxutil;
-	auto pad_xl  = FromDIP(16);
+	auto lh     = ui::LayoutHelper(this);
+	auto pad_xl = 16;
 
 	// Setup main sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -103,23 +104,23 @@ void SetupWizardDialog::setupLayout()
 	label_page_title_ = new wxStaticText(
 		this, -1, pages_[0]->title(), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
 	label_page_title_->SetFont(label_page_title_->GetFont().MakeLarger().MakeBold());
-	sizer->Add(label_page_title_, wx::sfWithBorder(0, wxALL, pad_xl).Expand());
+	sizer->Add(label_page_title_, lh.sfWithBorder(0, wxALL, pad_xl).Expand());
 
 	// Page description
 	label_page_description_ = new wxStaticText(this, -1, "");
-	sizer->Add(label_page_description_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM, pad_xl).Expand());
+	sizer->Add(label_page_description_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM, pad_xl).Expand());
 
 	// Main page area
-	sizer->Add(pages_[0], wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM, pad_xl).Expand());
+	sizer->Add(pages_[0], lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM, pad_xl).Expand());
 
 	// Bottom buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->AddStretchSpacer();
-	sizer->Add(hbox, wx::sfWithBorder(0, wxALL, pad_xl).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxALL, pad_xl).Expand());
 
 	// Previous button
 	btn_prev_ = new wxButton(this, -1, "Previous");
-	hbox->Add(btn_prev_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_prev_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Next button
 	btn_next_ = new wxButton(this, -1, "Next");

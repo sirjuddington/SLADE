@@ -32,11 +32,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SectorSpecialDialog.h"
-#include "Game/Configuration.h"
-#include "General/UI.h"
 #include "MapEditor/UI/SectorSpecialPanel.h"
+#include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
-#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -53,17 +51,19 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent) : SDialog(parent, "Select Sector Special", "sectorspecial")
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Special panel
 	panel_special_ = new SectorSpecialPanel(this);
-	sizer->Add(panel_special_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+	sizer->Add(panel_special_, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Dialog buttons
-	sizer->AddSpacer(ui::pad());
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->AddSpacer(lh.pad());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Bind Events
 	panel_special_->getSpecialsList()->Bind(wxEVT_LIST_ITEM_ACTIVATED, [&](wxListEvent& e) { EndModal(wxID_OK); });

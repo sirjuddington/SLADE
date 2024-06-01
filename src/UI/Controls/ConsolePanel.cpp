@@ -33,8 +33,8 @@
 #include "ConsolePanel.h"
 #include "App.h"
 #include "General/Console.h"
-#include "General/UI.h"
 #include "TextEditor/TextStyle.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
 
@@ -70,6 +70,8 @@ ConsolePanel::ConsolePanel(wxWindow* parent, int id) : wxPanel(parent, id)
 // -----------------------------------------------------------------------------
 void ConsolePanel::initLayout()
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create and set the sizer for the panel
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(vbox);
@@ -87,12 +89,12 @@ void ConsolePanel::initLayout()
 	text_log_->SetWrapMode(wxSTC_WRAP_WORD);
 #endif
 	text_log_->SetSizeHints(wxSize(-1, 0));
-	vbox->Add(text_log_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+	vbox->Add(text_log_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Create and add the command entry textbox
 	text_command_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	vbox->AddSpacer(ui::padMin());
-	vbox->Add(text_command_, wxutil::sfWithBorder(0, wxBOTTOM | wxLEFT | wxRIGHT).Expand());
+	vbox->AddSpacer(lh.padMin());
+	vbox->Add(text_command_, lh.sfWithBorder(0, wxBOTTOM | wxLEFT | wxRIGHT).Expand());
 
 	Layout();
 

@@ -36,9 +36,9 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Executables.h"
-#include "General/UI.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
@@ -131,12 +131,14 @@ public:
 		bool            custom = true) :
 		wxDialog(parent, -1, title)
 	{
+		auto lh = ui::LayoutHelper(this);
+
 		// Setup sizer
 		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
-		auto gb_sizer = new wxGridBagSizer(ui::padLarge(), ui::pad());
-		sizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+		auto gb_sizer = new wxGridBagSizer(lh.padLarge(), lh.pad());
+		sizer->Add(gb_sizer, 1, wxEXPAND | wxALL, lh.padLarge());
 
 		// Config name
 		gb_sizer->Add(
@@ -189,10 +191,10 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	SDialog(parent, "Run", "run", 500, 400),
 	run_map_{ run_map }
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Set dialog icon + title
-	wx::setWindowIcon(this, "run");
+	wxutil::setWindowIcon(this, "run");
 	if (run_map)
 		SetTitle("Run Map");
 	if (archive)
@@ -202,8 +204,8 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer, wx::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gb_sizer, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Game Executable
 	gb_sizer->Add(
@@ -247,15 +249,15 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	// Resources
 	auto frame      = new wxStaticBox(this, -1, "Resources");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->AddSpacer(ui::padLarge());
-	sizer->Add(framesizer, wx::sfWithLargeBorder(1, wxLEFT | wxRIGHT).Expand());
+	sizer->AddSpacer(lh.padLarge());
+	sizer->Add(framesizer, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT).Expand());
 	rac_resources_ = new ResourceArchiveChooser(this, archive);
-	framesizer->Add(rac_resources_, wx::sfWithBorder(1).Expand());
+	framesizer->Add(rac_resources_, lh.sfWithBorder(1).Expand());
 
 	// Start from 3d mode camera
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->AddSpacer(ui::padLarge());
-	sizer->Add(hbox, wx::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->AddSpacer(lh.padLarge());
+	sizer->Add(hbox, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	cb_start_3d_ = new wxCheckBox(this, -1, "Start from 3D mode camera position");
 	cb_start_3d_->SetValue(run_start_3d);
 	if (show_start_3d_cb)
@@ -267,7 +269,7 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	btn_run_ = new wxButton(this, wxID_OK, "Run");
 	btn_run_->SetDefault();
 	btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
-	hbox->Add(wx::createDialogButtonBox(btn_run_, btn_cancel_), wxSizerFlags(1).Expand());
+	hbox->Add(wxutil::createDialogButtonBox(btn_run_, btn_cancel_), wxSizerFlags(1).Expand());
 
 	// Populate game executables dropdown
 	int last_index = -1;
@@ -299,7 +301,7 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	choice_config_->Bind(wxEVT_CHOICE, &RunDialog::onChoiceConfig, this);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	wxTopLevelWindowBase::SetMinSize(FromDIP(wxSize(500, 400)));
+	wxTopLevelWindowBase::SetMinSize(lh.size(500, 400));
 	wxWindowBase::Layout();
 	CenterOnParent();
 	btn_run_->SetFocusFromKbd();

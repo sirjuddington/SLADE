@@ -37,6 +37,7 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -140,38 +141,42 @@ void ObjectEditPanel::update(const ObjectEditGroup* group, bool lock_rotation) c
 // -----------------------------------------------------------------------------
 void ObjectEditPanel::setupLayout()
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Init sizer
 	SetSizer(new wxBoxSizer(wxVERTICAL));
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
-	GetSizer()->Add(sizer, wx::sfWithBorder(1).Expand());
+	GetSizer()->Add(sizer, lh.sfWithBorder(1).Expand());
 
 	// X offset
-	sizer->Add(wx::createLabelHBox(this, "X Offset:", text_xoff_), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(
+		wxutil::createLabelHBox(this, "X Offset:", text_xoff_), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Y offset
-	sizer->Add(wx::createLabelHBox(this, "Y Offset:", text_yoff_), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(
+		wxutil::createLabelHBox(this, "Y Offset:", text_yoff_), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// X scale
-	sizer->Add(wx::createLabelHBox(this, "X Scale:", text_scalex_), wx::sfWithMinBorder(0, wxRIGHT).CenterVertical());
-	sizer->Add(new wxStaticText(this, -1, "%"), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(
+		wxutil::createLabelHBox(this, "X Scale:", text_scalex_), lh.sfWithMinBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(new wxStaticText(this, -1, "%"), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Y scale
-	sizer->Add(wx::createLabelHBox(this, "Y Scale:", text_scaley_), wx::sfWithMinBorder(0, wxRIGHT).CenterVertical());
-	sizer->Add(new wxStaticText(this, -1, "%"), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(
+		wxutil::createLabelHBox(this, "Y Scale:", text_scaley_), lh.sfWithMinBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(new wxStaticText(this, -1, "%"), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Rotation
 	sizer->Add(
-		wx::createLabelHBox(this, "Rotation:", combo_rotation_), wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+		wxutil::createLabelHBox(this, "Rotation:", combo_rotation_), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Mirror x/y
-	sizer->Add(cb_mirror_x_, wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
-	sizer->Add(cb_mirror_y_, wx::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(cb_mirror_x_, lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(cb_mirror_y_, lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Buttons
-	sizer->Add(btn_preview_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
-	sizer->Add(btn_cancel_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(btn_preview_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(btn_cancel_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	sizer->Add(btn_apply_, wxSizerFlags().CenterVertical());
 }
 

@@ -38,11 +38,11 @@
 #include "Game/SpecialPreset.h"
 #include "Game/UDMFProperty.h"
 #include "GenLineSpecialPanel.h"
-#include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "UI/Controls/NumberTextCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -247,6 +247,7 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	panel_args_     = nullptr;
 	choice_trigger_ = nullptr;
 	show_trigger_   = trigger;
+	auto lh         = ui::LayoutHelper(this);
 
 	// Setup layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -255,9 +256,9 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	{
 		// Action Special radio button
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 		rb_special_ = new wxRadioButton(this, -1, "Action Special", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		hbox->Add(rb_special_, wxutil::sfWithBorder(0, wxRIGHT).Expand());
+		hbox->Add(rb_special_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 		// Generalised Special radio button
 		rb_generalised_ = new wxRadioButton(this, -1, "Generalised Special");
@@ -291,10 +292,11 @@ void ActionSpecialPanel::setupSpecialPanel()
 	// Create panel
 	panel_action_special_ = new wxPanel(this, -1);
 	auto sizer            = new wxBoxSizer(wxVERTICAL);
+	auto lh               = ui::LayoutHelper(panel_action_special_);
 
 	// Special box
 	text_special_ = new NumberTextCtrl(panel_action_special_);
-	sizer->Add(text_special_, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(text_special_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 	text_special_->Bind(
 		wxEVT_TEXT, [&](wxCommandEvent& e) { tree_specials_->showSpecial(text_special_->number(), false); });
 
@@ -323,13 +325,13 @@ void ActionSpecialPanel::setupSpecialPanel()
 				{
 					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
 					auto sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
-					sizer->Add(sizer_triggers, wxutil::sfWithBorder(0, wxTOP).Expand());
+					sizer->Add(sizer_triggers, lh.sfWithBorder(0, wxTOP).Expand());
 
-					frame_sizer = new wxFlexGridSizer(3, ui::pad() / 2, ui::pad());
+					frame_sizer = new wxFlexGridSizer(3, lh.pad() / 2, lh.pad());
 					frame_sizer->AddGrowableCol(0, 1);
 					frame_sizer->AddGrowableCol(1, 1);
 					frame_sizer->AddGrowableCol(2, 1);
-					sizer_triggers->Add(frame_sizer, wxutil::sfWithBorder(1).Expand());
+					sizer_triggers->Add(frame_sizer, lh.sfWithBorder(1).Expand());
 
 					named_flexgrids.find(group)->second = frame_sizer;
 				}
@@ -347,19 +349,19 @@ void ActionSpecialPanel::setupSpecialPanel()
 		{
 			auto frame_trigger = new wxStaticBox(panel_action_special_, -1, "Special Trigger");
 			auto sizer_trigger = new wxStaticBoxSizer(frame_trigger, wxVERTICAL);
-			sizer->Add(sizer_trigger, wxutil::sfWithBorder().Expand());
+			sizer->Add(sizer_trigger, lh.sfWithBorder().Expand());
 
 			// Add triggers dropdown
 			auto spac_triggers = wxutil::arrayStringStd(game::configuration().allSpacTriggers());
 			choice_trigger_ = new wxChoice(panel_action_special_, -1, wxDefaultPosition, wxDefaultSize, spac_triggers);
-			sizer_trigger->Add(choice_trigger_, wxutil::sfWithBorder().Expand());
+			sizer_trigger->Add(choice_trigger_, lh.sfWithBorder().Expand());
 
 			// Add activation-related flags
-			auto fg_sizer = new wxFlexGridSizer(3, ui::pad() / 2, ui::pad());
+			auto fg_sizer = new wxFlexGridSizer(3, lh.pad() / 2, lh.pad());
 			fg_sizer->AddGrowableCol(0, 1);
 			fg_sizer->AddGrowableCol(1, 1);
 			fg_sizer->AddGrowableCol(2, 1);
-			sizer_trigger->Add(fg_sizer, wxutil::sfWithBorder().Expand());
+			sizer_trigger->Add(fg_sizer, lh.sfWithBorder().Expand());
 			for (unsigned a = 0; a < game::configuration().nLineFlags(); a++)
 			{
 				if (game::configuration().lineFlag(a).activation)
@@ -375,7 +377,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 		// Preset button
 		btn_preset_ = new wxButton(panel_action_special_, -1, "Preset...");
-		sizer->Add(btn_preset_, wxutil::sfWithBorder(0, wxTOP).Right());
+		sizer->Add(btn_preset_, lh.sfWithBorder(0, wxTOP).Right());
 		btn_preset_->Bind(wxEVT_BUTTON, &ActionSpecialPanel::onSpecialPresetClicked, this);
 	}
 

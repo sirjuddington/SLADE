@@ -33,9 +33,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ShowItemDialog.h"
-#include "General/UI.h"
 #include "SLADEMap/Types.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -67,11 +66,13 @@ vector obj_types{ map::ObjectType::Vertex,
 // -----------------------------------------------------------------------------
 ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show Item")
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gb_sizer, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Object type
 	wxString types[] = { "Vertex", "Line", "Side", "Sector", "Thing" };
@@ -85,12 +86,12 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 	gb_sizer->Add(text_index_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
 	// Dialog buttons
-	sizer->AddSpacer(ui::pad());
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->AddSpacer(lh.pad());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Init layout
 	gb_sizer->AddGrowableCol(1, 1);
-	SetInitialSize({ FromDIP(300), -1 });
+	SetInitialSize(lh.size(300, -1));
 	CenterOnParent();
 	wxTopLevelWindowBase::Layout();
 	text_index_->SetFocus();

@@ -1,0 +1,189 @@
+
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2024 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    LayoutHelper.cpp
+// Description: Struct for helping with layout of wxWidgets controls
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
+#include "Main.h"
+#include "Layout.h"
+#include "General/UI.h"
+
+using namespace slade;
+using namespace ui;
+
+
+wxSizer* LayoutHelper::layoutHorizontally(const vector<wxObject*>& widgets, int expand_col) const
+{
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+
+	// Add widgets/sizers
+	for (auto a = 0u; a < widgets.size(); ++a)
+	{
+		const auto widget = widgets[a];
+
+		// Widget
+		if (widget->IsKindOf(&wxWindow::ms_classInfo))
+		{
+			hbox->Add(
+				dynamic_cast<wxWindow*>(widget),
+				expand_col == static_cast<int>(a) ? 1 : 0,
+				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
+				window->FromDIP(ui::pad()));
+		}
+
+		// Sizer
+		else if (widget->IsKindOf(&wxSizer::ms_classInfo))
+		{
+			hbox->Add(
+				dynamic_cast<wxSizer*>(widget),
+				expand_col == static_cast<int>(a) ? 1 : 0,
+				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
+				window->FromDIP(ui::pad()));
+		}
+	}
+
+	return hbox;
+}
+void LayoutHelper::layoutHorizontally(
+	wxSizer*                 sizer,
+	const vector<wxObject*>& widgets,
+	wxSizerFlags             flags,
+	int                      expand_col) const
+{
+	sizer->Add(layoutHorizontally(widgets, expand_col), flags);
+}
+
+wxSizer* LayoutHelper::layoutVertically(const vector<wxObject*>& widgets, int expand_row) const
+{
+	auto vbox = new wxBoxSizer(wxVERTICAL);
+
+	// Add widgets/sizers
+	for (auto a = 0u; a < widgets.size(); ++a)
+	{
+		const auto widget = widgets[a];
+
+		// Widget
+		if (widget->IsKindOf(&wxWindow::ms_classInfo))
+		{
+			vbox->Add(
+				dynamic_cast<wxWindow*>(widget),
+				expand_row == static_cast<int>(a) ? 1 : 0,
+				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
+				window->FromDIP(ui::pad()));
+		}
+
+		// Sizer
+		else if (widget->IsKindOf(&wxSizer::ms_classInfo))
+		{
+			vbox->Add(
+				dynamic_cast<wxSizer*>(widget),
+				expand_row == static_cast<int>(a) ? 1 : 0,
+				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
+				window->FromDIP(ui::pad()));
+		}
+	}
+
+	return vbox;
+}
+void LayoutHelper::layoutVertically(
+	wxSizer*                 sizer,
+	const vector<wxObject*>& widgets,
+	wxSizerFlags             flags,
+	int                      expand_row) const
+{
+	sizer->Add(layoutVertically(widgets, expand_row), flags);
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a border at [direction] of
+// [size].
+// If [size] is negative, uses the default padding size.
+// Equivalent to wxSizerFlags([proportion]).Border([direction], [size])
+// -----------------------------------------------------------------------------
+wxSizerFlags LayoutHelper::sfWithBorder(int proportion, int direction, int size) const
+{
+	return wxSizerFlags(proportion).Border(direction, window->FromDIP(size < 0 ? ui::pad() : size));
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a large border at [direction].
+// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padLarge())
+// -----------------------------------------------------------------------------
+wxSizerFlags LayoutHelper::sfWithLargeBorder(int proportion, int direction) const
+{
+	return wxSizerFlags(proportion).Border(direction, window->FromDIP(ui::padLarge()));
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxSizerFlags of [proportion], with a small border at [direction].
+// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padMin())
+// -----------------------------------------------------------------------------
+wxSizerFlags LayoutHelper::sfWithMinBorder(int proportion, int direction) const
+{
+	return wxSizerFlags(proportion).Border(direction, window->FromDIP(ui::padMin()));
+}
+
+int LayoutHelper::px(int size) const
+{
+	return window->FromDIP(size);
+}
+
+wxSize LayoutHelper::size(int width, int height) const
+{
+	return window->FromDIP(wxSize(width, height));
+}
+
+wxPoint LayoutHelper::point(int x, int y) const
+{
+	return window->FromDIP(wxPoint(x, y));
+}
+
+wxRect LayoutHelper::rect(int x, int y, int width, int height) const
+{
+	return { window->FromDIP(wxPoint(x, y)), window->FromDIP(wxSize(width, height)) };
+}
+
+int LayoutHelper::pad() const
+{
+	return window->FromDIP(ui::pad());
+}
+
+int LayoutHelper::padLarge() const
+{
+	return window->FromDIP(ui::padLarge());
+}
+
+int LayoutHelper::padMin() const
+{
+	return window->FromDIP(ui::padMin());
+}
+
+wxSize LayoutHelper::spinSize() const
+{
+	return window->FromDIP(wxSize(ui::px(Size::SpinCtrlWidth), -1));
+}

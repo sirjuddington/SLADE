@@ -129,7 +129,7 @@ wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 	auto panel = new wxPanel(parent);
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 	control->Reparent(panel);
-	panel->GetSizer()->Add(control, 1, wxEXPAND | wxALL, pad);
+	panel->GetSizer()->Add(control, 1, wxEXPAND | wxALL, parent->FromDIP(pad));
 
 	return panel;
 }
@@ -140,7 +140,15 @@ wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max)
 {
 	return new wxSpinCtrl(
-		parent, -1, "", wxDefaultPosition, { ui::px(ui::Size::SpinCtrlWidth), -1 }, wxSP_ARROW_KEYS, min, max, value);
+		parent,
+		-1,
+		"",
+		wxDefaultPosition,
+		parent->FromDIP(wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 }),
+		wxSP_ARROW_KEYS,
+		min,
+		max,
+		value);
 }
 
 // -----------------------------------------------------------------------------
@@ -150,7 +158,7 @@ wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max
 wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxWindow* widget)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, parent->FromDIP(ui::pad()));
 	hbox->Add(widget, 1, wxEXPAND);
 	return hbox;
 }
@@ -158,7 +166,7 @@ wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxWind
 wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxSizer* sizer)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, parent->FromDIP(ui::pad()));
 	hbox->Add(sizer, 1, wxEXPAND);
 	return hbox;
 }
@@ -170,7 +178,7 @@ wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxSize
 wxSizer* ::wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, ui::px(ui::Size::PadMinimum));
+	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padMin()));
 	vbox->Add(widget, 1, wxEXPAND);
 	return vbox;
 }
@@ -178,7 +186,7 @@ wxSizer* ::wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxWi
 wxSizer* wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxSizer* sizer)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, ui::px(ui::Size::PadMinimum));
+	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padMin()));
 	vbox->Add(sizer, 1, wxEXPAND);
 	return vbox;
 }
@@ -195,10 +203,10 @@ wxSizer* wxutil::createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel)
 	hbox->AddStretchSpacer(1);
 
 #ifdef __WXMSW__
-	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, btn_ok->FromDIP(ui::pad()));
 	hbox->Add(btn_cancel, 0, wxEXPAND);
 #else
-	hbox->Add(btn_cancel, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_cancel, 0, wxEXPAND | wxRIGHT, btn_ok->FromDIP(ui::pad()));
 	hbox->Add(btn_ok, 0, wxEXPAND);
 #endif
 
@@ -307,38 +315,6 @@ wxSizer* wxutil::layoutVertically(const vector<wxObject*>& widgets, int expand_r
 void wxutil::layoutVertically(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags, int expand_row)
 {
 	sizer->Add(layoutVertically(widgets, expand_row), flags);
-}
-
-// -----------------------------------------------------------------------------
-// Returns a wxSizerFlags of [proportion], with a border at [direction] of
-// [size].
-// If [size] is negative, uses the default padding size (ui::pad()).
-// Equivalent to wxSizerFlags([proportion]).Border([direction], [size])
-// -----------------------------------------------------------------------------
-wxSizerFlags wxutil::sfWithBorder(int proportion, int direction, int size)
-{
-	if (size < 0)
-		size = ui::pad();
-
-	return wxSizerFlags(proportion).Border(direction, size);
-}
-
-// -----------------------------------------------------------------------------
-// Returns a wxSizerFlags of [proportion], with a large border at [direction].
-// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padLarge())
-// -----------------------------------------------------------------------------
-wxSizerFlags wxutil::sfWithLargeBorder(int proportion, int direction)
-{
-	return wxSizerFlags(proportion).Border(direction, ui::padLarge());
-}
-
-// -----------------------------------------------------------------------------
-// Returns a wxSizerFlags of [proportion], with a small border at [direction].
-// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padMin())
-// -----------------------------------------------------------------------------
-wxSizerFlags wxutil::sfWithMinBorder(int proportion, int direction)
-{
-	return wxSizerFlags(proportion).Border(direction, ui::padMin());
 }
 
 // -----------------------------------------------------------------------------

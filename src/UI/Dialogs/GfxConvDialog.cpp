@@ -42,6 +42,7 @@
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -246,24 +247,23 @@ void GfxConvDialog::updateButtons() const
 // -----------------------------------------------------------------------------
 void GfxConvDialog::setupLayout()
 {
-	namespace wx = wxutil;
-
-	int px_preview_size = FromDIP(192);
+	auto lh              = ui::LayoutHelper(this);
+	auto px_preview_size = lh.size(192, 192);
 
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 
 	auto m_vbox = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(m_vbox, wx::sfWithLargeBorder(1).Expand());
+	msizer->Add(m_vbox, lh.sfWithLargeBorder(1).Expand());
 
 	// Add current format label
 	label_current_format_ = new wxStaticText(this, -1, "Current Format:");
-	m_vbox->Add(label_current_format_, wx::sfWithBorder(0, wxBOTTOM));
+	m_vbox->Add(label_current_format_, lh.sfWithBorder(0, wxBOTTOM));
 
 	// Add 'Convert To' combo box
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, wx::sfWithLargeBorder(0, wxBOTTOM).Expand());
-	hbox->Add(new wxStaticText(this, -1, "Convert to:"), wx::sfWithMinBorder(0, wxRIGHT).CenterVertical());
+	m_vbox->Add(hbox, lh.sfWithLargeBorder(0, wxBOTTOM).Expand());
+	hbox->Add(new wxStaticText(this, -1, "Convert to:"), lh.sfWithMinBorder(0, wxRIGHT).CenterVertical());
 	combo_target_format_ = new wxChoice(this, -1);
 	hbox->Add(combo_target_format_, wxSizerFlags(1).Expand());
 
@@ -271,15 +271,15 @@ void GfxConvDialog::setupLayout()
 	// Add Gfx previews
 	auto frame      = new wxStaticBox(this, -1, "Colour Options");
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	m_vbox->Add(framesizer, wx::sfWithLargeBorder(1, wxBOTTOM).Expand());
+	m_vbox->Add(framesizer, lh.sfWithLargeBorder(1, wxBOTTOM).Expand());
 
-	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gbsizer, wx::sfWithBorder(1).Expand());
+	auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gbsizer, lh.sfWithBorder(1).Expand());
 
 	// Current
 	gbsizer->Add(new wxStaticText(this, -1, "Current Graphic"), { 0, 0 }, { 1, 1 });
 	gfx_current_ = ui::createGfxCanvas(this);
-	gfx_current_->window()->SetInitialSize(wxSize(px_preview_size, px_preview_size));
+	gfx_current_->window()->SetInitialSize(px_preview_size);
 	gfx_current_->setViewType(GfxView::Centered);
 	gbsizer->Add(gfx_current_->window(), { 1, 0 }, { 1, 1 }, wxEXPAND);
 	pal_chooser_current_ = new PaletteChooser(this, -1);
@@ -289,7 +289,7 @@ void GfxConvDialog::setupLayout()
 	// Converted
 	gbsizer->Add(new wxStaticText(this, -1, "Converted Graphic"), { 0, 1 }, { 1, 2 });
 	gfx_target_ = ui::createGfxCanvas(this);
-	gfx_target_->window()->SetInitialSize(wxSize(px_preview_size, px_preview_size));
+	gfx_target_->window()->SetInitialSize(px_preview_size);
 	gfx_target_->setViewType(GfxView::Centered);
 	gbsizer->Add(gfx_target_->window(), { 1, 1 }, { 1, 2 }, wxEXPAND);
 	pal_chooser_target_ = new PaletteChooser(this, -1);
@@ -307,10 +307,10 @@ void GfxConvDialog::setupLayout()
 	// Add transparency options
 	frame      = new wxStaticBox(this, -1, "Transparency Options");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_vbox->Add(framesizer, wx::sfWithLargeBorder(0, wxBOTTOM).Expand());
+	m_vbox->Add(framesizer, lh.sfWithLargeBorder(0, wxBOTTOM).Expand());
 
-	gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gbsizer, wx::sfWithBorder(1).Expand());
+	gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gbsizer, lh.sfWithBorder(1).Expand());
 
 	// 'Enable transparency' checkbox
 	cb_enable_transparency_ = new wxCheckBox(this, -1, "Enable Transparency");
@@ -357,9 +357,9 @@ void GfxConvDialog::setupLayout()
 	btn_skip_all_    = new wxButton(this, -1, "Skip All");
 
 	hbox->AddStretchSpacer(1);
-	hbox->Add(btn_convert_, wx::sfWithBorder(0, wxRIGHT).Expand());
-	hbox->Add(btn_convert_all_, wx::sfWithBorder(0, wxRIGHT).Expand());
-	hbox->Add(btn_skip_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_convert_, lh.sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_convert_all_, lh.sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_skip_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->Add(btn_skip_all_, wxSizerFlags().Expand());
 
 

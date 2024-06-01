@@ -33,13 +33,12 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-
+#include "BrowserWindow.h"
 #include "BrowserCanvas.h"
 #include "BrowserItem.h"
-#include "BrowserWindow.h"
 #include "General/Misc.h"
 #include "Graphics/Palette/Palette.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -197,7 +196,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	palette_{ new Palette },
 	truncate_names_{ truncate_names }
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Init size/pos
 	auto info = misc::getWindowInfo("browser");
@@ -207,7 +206,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		misc::setWindowInfo("browser", 768, 600, 0, 0);
+		misc::setWindowInfo("browser", FromDIP(768), FromDIP(600), 0, 0);
 
 	// Init variables
 	items_root_ = new BrowserTreeNode();
@@ -218,11 +217,11 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	SetSizer(m_vbox);
 
 	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(m_hbox, wx::sfWithLargeBorder(1).Expand());
+	m_vbox->Add(m_hbox, lh.sfWithLargeBorder(1).Expand());
 
 	// Browser tree
 	tree_items_ = new wxTreeListCtrl(this, -1, wxDefaultPosition, wxDefaultSize, wxTL_SINGLE | wxDV_ROW_LINES);
-	m_hbox->Add(tree_items_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	m_hbox->Add(tree_items_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Browser area
 	auto vbox = new wxBoxSizer(wxVERTICAL);
@@ -230,22 +229,22 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 
 	// Zoom
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, wx::sfWithBorder(0, wxBOTTOM).Expand());
+	vbox->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 	slider_zoom_ = new wxSlider(this, -1, browser_item_size, 64, 256);
 	slider_zoom_->SetLineSize(16);
 	slider_zoom_->SetPageSize(32);
-	hbox->Add(new wxStaticText(this, -1, "Zoom:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, "Zoom:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(slider_zoom_, wxSizerFlags(1).Expand());
 
 	// Sorting
 	choice_sort_ = new wxChoice(this, -1);
 	hbox->AddStretchSpacer();
-	hbox->Add(new wxStaticText(this, -1, "Sort:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
-	hbox->Add(choice_sort_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(new wxStaticText(this, -1, "Sort:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(choice_sort_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Filter
 	text_filter_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-	hbox->Add(new wxStaticText(this, -1, "Filter:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, "Filter:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(text_filter_, wxSizerFlags().Expand());
 
 	// Browser canvas
@@ -261,14 +260,14 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 
 	// Bottom sizer
 	sizer_bottom_ = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(sizer_bottom_, wx::sfWithBorder(0, wxBOTTOM).Expand());
+	vbox->Add(sizer_bottom_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Buttons and info label
 	label_info_      = new wxStaticText(this, -1, "");
 	auto buttonsizer = CreateButtonSizer(wxOK | wxCANCEL);
-	buttonsizer->Insert(0, label_info_, wx::sfWithBorder(1, wxLEFT | wxRIGHT).CenterVertical());
+	buttonsizer->Insert(0, label_info_, lh.sfWithBorder(1, wxLEFT | wxRIGHT).CenterVertical());
 
-	m_vbox->Add(buttonsizer, wx::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	m_vbox->Add(buttonsizer, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Setup sorting options
 	addSortType("Index");
@@ -285,7 +284,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	canvas_->Bind(wxEVT_CHAR, &BrowserWindow::onCanvasKeyChar, this);
 
 	wxWindowBase::Layout();
-	wxTopLevelWindowBase::SetMinSize(FromDIP(wxSize(540, 400)));
+	wxTopLevelWindowBase::SetMinSize(lh.size(540, 400));
 
 	if (browser_maximised)
 		wxTopLevelWindow::Maximize();
