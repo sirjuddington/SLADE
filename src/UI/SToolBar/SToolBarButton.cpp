@@ -396,8 +396,9 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, 1);
 	}
 
-	auto icon_size = FromDIP(wxSize{ icon_size_, icon_size_ });
-	auto icon      = icon_.GetBitmap(icon_size);
+	//auto icon_size = FromDIP(wxSize{ icon_size_, icon_size_ });
+	//auto icon      = icon_.GetBitmap(icon_size);
+	auto icon = icon_.GetBitmapFor(this);
 
 	if (icon.IsOk())
 	{
@@ -418,8 +419,8 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 				icon.ConvertToDisabled(r),
 				FromDIP(pad_outer_ + pad_inner_),
 				FromDIP(pad_outer_ + pad_inner_),
-				icon.GetWidth(),
-				icon.GetHeight());
+				FromPhys(icon.GetWidth()),
+				FromPhys(icon.GetHeight()));
 		}
 
 		// Otherwise draw normal icon
@@ -428,8 +429,8 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 				icon,
 				FromDIP(pad_outer_ + pad_inner_),
 				FromDIP(pad_outer_ + pad_inner_),
-				icon.GetWidth(),
-				icon.GetHeight());
+				FromPhys(icon.GetWidth()),
+				FromPhys(icon.GetHeight()));
 	}
 
 	if (show_name_)

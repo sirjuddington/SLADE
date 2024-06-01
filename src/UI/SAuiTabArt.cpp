@@ -372,7 +372,7 @@ void SAuiTabArt::DrawTab(
 	if (page.bitmap.IsOk())
 	{
 		const auto& bmp = page.bitmap.GetBitmapFor(wnd);
-		dc.DrawBitmap(bmp, tab_x + padding_, drawn_tab_yoff + drawn_tab_height / 2 - bmp.GetHeight() / 2, true);
+		dc.DrawBitmap(bmp, tab_x + padding_, drawn_tab_yoff + drawn_tab_height / 2 - bmp.GetLogicalSize().y / 2, true);
 	}
 
 	// draw tab text
@@ -390,8 +390,8 @@ void SAuiTabArt::DrawTab(
 		if (m_flags & wxAUI_NB_BOTTOM)
 			offsetY = 1;
 
-		int close_button_width  = m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).x;
-		int close_button_height = m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).y;
+		int close_button_width  = m_activeCloseBmp.GetPreferredLogicalSizeFor(wnd).x;
+		int close_button_height = m_activeCloseBmp.GetPreferredLogicalSizeFor(wnd).y;
 
 		wxRect rect(
 			tab_x + tab_width - close_button_width - padding_,
@@ -647,7 +647,7 @@ void SAuiDockArt::DrawPaneButton(
 	wxRect rect = _rect;
 
 	int old_y   = rect.y;
-	rect.y      = rect.y + rect.height / 2 - bmp.GetPreferredBitmapSizeFor(window).y / 2;
+	rect.y      = rect.y + rect.height / 2 - bmp.GetPreferredLogicalSizeFor(window).y / 2;
 	rect.height = old_y + rect.height - rect.y - 1;
 
 
