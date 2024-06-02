@@ -126,7 +126,6 @@ public:
 	bool loadJediFONT(const uint8_t* gfx_data, int size);
 	bool loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t* gfx_data, int size);
 	bool loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, int i_height);
-	bool loadSVG(const string& svg_text, int width, int height);
 
 	// Conversion stuff
 	bool convertRGBA(const Palette* pal = nullptr);

@@ -34,20 +34,13 @@ else()
 	#target_include_directories(fmt INTERFACE ${CMAKE_CURRENT_LIST_DIR}/fmt/include)
 endif()
 
-# Add lunasvg
-add_library(lunasvg STATIC)
-add_subdirectory(lunasvg/include)
-add_subdirectory(lunasvg/source)
-add_subdirectory(lunasvg/3rdparty/software)
-add_subdirectory(lunasvg/3rdparty/plutovg)
-
 # Required for libdrawtext or we get multiple definition linker errors
 if (NOT MSVC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fcommon")
 endif ()
 
 add_library(external STATIC ${EXTERNAL_SOURCES})
-target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt::fmt ${CMAKE_DL_LIBS})
+target_link_libraries(external ${ZLIB_LIBRARY} fmt::fmt ${CMAKE_DL_LIBS})
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
 
 if(USE_SYSTEM_DUMB)

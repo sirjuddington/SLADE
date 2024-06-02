@@ -34,7 +34,6 @@
 #include "OpenGL/View.h"
 #include "SImage/SImage.h"
 #include "UI/Canvas/GfxCanvasBase.h"
-#include "lunasvg.h"
 
 using namespace slade;
 using namespace wxgfx;
@@ -70,34 +69,8 @@ EXTERN_CVAR(Bool, hud_bob)
 // -----------------------------------------------------------------------------
 wxImage wxgfx::createImageFromSVG(const string& svg_text, int width, int height)
 {
-	// Load SVG
-	const auto svg = lunasvg::Document::loadFromData(svg_text);
-	if (!svg)
-		return {};
-
-	// Render SVG
-	const auto bmp = svg->renderToBitmap(width, height);
-	if (!bmp.valid())
-		return {};
-
-	// Split image data to separate rgb + alpha channels
-	const auto bmp_data    = bmp.data();
-	const auto n_pixels    = width * height;
-	const auto rgb_data    = new uint8_t[n_pixels * 3]; // wxImage below will take ownership
-	const auto alpha_data  = new uint8_t[n_pixels];     // ^
-	auto       data_index  = 0;
-	auto       rgb_index   = 0;
-	auto       alpha_index = 0;
-	for (auto p = 0; p < n_pixels; ++p)
-	{
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		alpha_data[alpha_index++] = bmp_data[data_index++];
-	}
-
-	// Create wxImage
-	return { width, height, rgb_data, alpha_data, false };
+	auto bundle = wxBitmapBundle::FromSVG(svg_text.c_str(), { width, height });
+	return bundle.GetBitmap({ width, height }).ConvertToImage();
 }
 
 // -----------------------------------------------------------------------------

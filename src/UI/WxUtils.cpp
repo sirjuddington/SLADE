@@ -34,7 +34,6 @@
 #include "Graphics/Icons.h"
 #include "UI/UI.h"
 #include "Utility/Colour.h"
-#include "thirdparty/lunasvg/include/lunasvg.h"
 
 using namespace slade;
 
