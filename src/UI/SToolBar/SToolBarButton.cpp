@@ -364,16 +364,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	// Draw toggled border/background
 	if (isChecked())
 	{
-		//// Use greyscale version of hilight colour
-		// uint8_t r = col_hilight.Red();
-		// uint8_t g = col_hilight.Green();
-		// uint8_t b = col_hilight.Blue();
-		// wxColour::MakeGrey(&r, &g, &b);
-		// wxColour col_toggle(r, g, b, 255);
-		// wxColour col_trans(r, g, b, 150);
-
 		// Draw border
-		// col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 		gc->SetBrush(*wxTRANSPARENT_BRUSH);
 		gc->SetPen(wxPen(col_hilight, scale_px));
 		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, 1);
@@ -396,8 +387,6 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, 1);
 	}
 
-	//auto icon_size = FromDIP(wxSize{ icon_size_, icon_size_ });
-	//auto icon      = icon_.GetBitmap(icon_size);
 	auto icon = icon_.GetBitmapFor(this);
 
 	if (icon.IsOk())
@@ -442,18 +431,12 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 	if (menu_dropdown_)
 	{
-		static auto arrow_down = icons::getInterfaceIcon("arrow-down", FromDIP(icon_size_ * 0.75))
-									 .GetBitmapFor(this);
+		static auto arrow_down = icons::getInterfaceIcon("arrow-down", icon_size_ * 0.75).GetBitmapFor(this);
 
-		auto a_width = FromPhys(arrow_down.GetWidth());
+		auto a_width  = FromPhys(arrow_down.GetWidth());
 		auto a_height = FromPhys(arrow_down.GetHeight());
 
-		gc->DrawBitmap(
-			arrow_down,
-			width - a_width - pad_outer_,
-			height / 2. - a_height / 2.,
-			a_width,
-			a_height);
+		gc->DrawBitmap(arrow_down, width - a_width - pad_outer_, height / 2. - a_height / 2., a_width, a_height);
 	}
 
 	delete gc;
