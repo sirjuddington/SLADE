@@ -36,14 +36,6 @@
 #include "Utility/Colour.h"
 #include "thirdparty/lunasvg/include/lunasvg.h"
 
-#ifdef __WXGTK3__
-#include <gtk-3.0/gtk/gtk.h>
-#elif __WXGTK20__
-#define GSocket GlibGSocket
-#include <gtk-2.0/gtk/gtk.h>
-#undef GSocket
-#endif
-
 using namespace slade;
 
 
@@ -258,30 +250,7 @@ void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 
 wxColour wxutil::systemPanelBGColour()
 {
-#ifdef __WXGTK__
-	static bool     intitialized(false);
-	static wxColour bgColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
-
-	if (!intitialized)
-	{
-		// try to get the background colour from a menu
-		GtkWidget* menu = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		GtkStyle*  def  = gtk_rc_get_style(menu);
-		if (!def)
-			def = gtk_widget_get_default_style();
-
-		if (def)
-		{
-			GdkColor col = def->bg[GTK_STATE_NORMAL];
-			bgColour     = wxColour(col);
-		}
-		gtk_widget_destroy(menu);
-		intitialized = true;
-	}
-	return bgColour;
-#else
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
-#endif
 }
 
 wxColour wxutil::systemMenuTextColour()
