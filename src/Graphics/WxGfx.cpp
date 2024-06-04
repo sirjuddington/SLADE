@@ -63,6 +63,186 @@ EXTERN_CVAR(Bool, hud_wide)
 EXTERN_CVAR(Bool, hud_bob)
 
 
+Context::Context(wxWindowDC& dc, gl::View* view) : view{ view }
+{
+	gc = createGraphicsContext(dc);
+}
+
+void Context::applyView() const
+{
+	if (view && gc)
+		applyViewToGC(*view, gc.get());
+}
+
+void Context::setPen(const ColRGBA& colour, double width) const
+{
+	if (gc)
+		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo{ colour, width / (view ? view->scale().x : 1.0) }));
+}
+
+void Context::setBrush(const ColRGBA& colour) const
+{
+	if (gc)
+		gc->SetBrush(wxBrush{ colour });
+}
+
+void Context::setTransparentBrush() const
+{
+	if (gc)
+		gc->SetBrush(*wxTRANSPARENT_BRUSH);
+}
+
+void Context::setTransparentPen() const
+{
+	if (gc)
+		gc->SetPen(*wxTRANSPARENT_PEN);
+}
+
+void Context::drawLine(const Seg2i& line) const
+{
+	drawLine(line.x1(), line.y1(), line.x2(), line.y2());
+}
+
+void Context::drawLine(int x1, int y1, int x2, int y2) const
+{
+	if (!gc)
+		return;
+
+	const auto w = gc->GetWindow();
+	gc->StrokeLine(w->FromPhys(x1), w->FromPhys(y1), w->FromPhys(x2), w->FromPhys(y2));
+}
+
+void Context::drawLines(const vector<Seg2i>& lines) const
+{
+	if (!gc)
+		return;
+
+	vector<wxPoint2DDouble> begin_points;
+	vector<wxPoint2DDouble> end_points;
+	const auto              w = gc->GetWindow();
+
+	for (const auto& line : lines)
+	{
+		begin_points.emplace_back(w->FromPhys(line.x1()), w->FromPhys(line.y1()));
+		end_points.emplace_back(w->FromPhys(line.x2()), w->FromPhys(line.y2()));
+	}
+
+	gc->StrokeLines(lines.size(), begin_points.data(), end_points.data());
+}
+
+void Context::drawRect(const Recti& rect) const
+{
+	drawRect(rect.tl.x, rect.tl.y, rect.width(), rect.height());
+}
+
+void Context::drawRect(int x, int y, int width, int height) const
+{
+	if (!gc)
+		return;
+
+	const auto w = gc->GetWindow();
+	gc->DrawRectangle(w->FromPhys(x), w->FromPhys(y), w->FromPhys(width), w->FromPhys(height));
+}
+
+void Context::drawBitmap(const wxBitmap& bitmap, int x, int y, double alpha, int width, int height) const
+{
+	if (!gc)
+		return;
+
+	const auto w = gc->GetWindow();
+
+	if (alpha < 1.)
+		gc->BeginLayer(alpha);
+
+	if (width < 0)
+		width = bitmap.GetWidth();
+	if (height < 0)
+		height = bitmap.GetHeight();
+
+	gc->DrawBitmap(bitmap, w->FromPhys(x), w->FromPhys(y), w->FromPhys(width), w->FromPhys(height));
+
+	if (alpha < 1.)
+		gc->EndLayer();
+}
+
+void Context::drawOffsetLines(GfxView view_type) const
+{
+	if (!gc || !view)
+		return;
+
+	auto psize_thick  = 1.51;
+	auto psize_normal = 1.0;
+	auto iq           = gc->GetInterpolationQuality();
+
+	if (view_type == GfxView::Sprite)
+	{
+		gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
+		setPen({ 0, 0, 0, 150 }, psize_thick);
+		drawLine(view->visibleRegion().left(), 0, view->visibleRegion().right(), 0);
+		drawLine(0, view->visibleRegion().top(), 0, view->visibleRegion().bottom());
+	}
+	else if (view_type == GfxView::HUD)
+	{
+		gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
+
+		// (320/354)x200 screen outline
+		auto right  = hud_wide ? 337 : 320;
+		auto left   = hud_wide ? -17 : 0;
+		auto top    = 0;
+		auto bottom = 200;
+		setPen({ 0, 0, 0, 190 }, psize_thick);
+		drawLine(left, top, left, bottom);
+		drawLine(left, bottom, right, bottom);
+		drawLine(right, bottom, right, top);
+		drawLine(right, top, left, top);
+
+		// Statusbar line(s)
+		setPen({ 0, 0, 0, 128 }, psize_normal);
+		if (hud_statusbar)
+		{
+			drawLine(left, 168, right, 168); // Doom's status bar: 32 pixels tall
+			drawLine(left, 162, right, 162); // Hexen: 38 pixels
+			drawLine(left, 158, right, 158); // Heretic: 42 pixels
+		}
+
+		// Center lines
+		if (hud_center)
+		{
+			drawLine(left, 100, right, 100);
+			drawLine(160, top, 160, bottom);
+		}
+
+		// Normal screen edge guides if widescreen
+		if (hud_wide)
+		{
+			drawLine(0, top, 0, bottom);
+			drawLine(320, top, 320, bottom);
+		}
+
+		// Weapon bobbing guides
+		if (hud_bob)
+		{
+			setPen({ 0, 0, 0, 128 }, psize_normal);
+			drawLine(left - 16.0, top - 16.0, left - 16.0, bottom + 16.0);
+			drawLine(left - 16.0, bottom + 16.0, right + 16.0, bottom + 16.0);
+			drawLine(right + 16.0, bottom + 16.0, right + 16.0, top - 16.0);
+			drawLine(right + 16.0, top - 16.0, left - 16.0, top - 16.0);
+		}
+	}
+
+	// Restore gc state
+	gc->SetInterpolationQuality(iq);
+}
+
+
+
+
+
+
+
+
+
+
 // -----------------------------------------------------------------------------
 // Creates a wxImage from the given [svg_text] data, sized to [width x height].
 // Returns an invalid (empty) wxImage if the SVG data was invalid

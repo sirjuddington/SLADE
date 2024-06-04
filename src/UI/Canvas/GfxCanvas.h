@@ -5,6 +5,11 @@
 
 namespace slade
 {
+namespace wxgfx
+{
+	struct Context;
+}
+
 class GfxCanvas : public wxPanel, public GfxCanvasBase
 {
 public:
@@ -34,9 +39,9 @@ private:
 
 	void generateBrushShadow() override;
 	void updateImage(bool hilight);
-	void drawImage(wxGraphicsContext* gc);
-	void drawImageTiled(wxGraphicsContext* gc);
-	void drawCropRect(wxGraphicsContext* gc) const;
+	void drawImage(const wxgfx::Context& ctx);
+	void drawImageTiled(const wxgfx::Context& ctx);
+	void drawCropRect(const wxgfx::Context& ctx) const;
 
 	// Events
 	void onPaint(wxPaintEvent& e);
