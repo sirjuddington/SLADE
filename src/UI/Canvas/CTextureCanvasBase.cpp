@@ -347,6 +347,8 @@ void CTextureCanvasBase::loadTexturePreview()
 void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 {
 	bool refresh = false;
+	auto p_x     = e.GetX() * window()->GetContentScaleFactor();
+	auto p_y     = e.GetY() * window()->GetContentScaleFactor();
 
 	// MOUSE MOVEMENT
 	if (e.Moving() || e.Dragging())
@@ -354,7 +356,7 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 		dragging_ = e.LeftIsDown();
 
 		// Check if patch hilight changes
-		const auto pos   = view().canvasPos({ e.GetX(), e.GetY() });
+		const auto pos   = view().canvasPos({ p_x, p_y });
 		const int  patch = patchAt(pos.x, pos.y);
 		if (hilight_patch_ != patch)
 		{
@@ -410,7 +412,7 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 		}
 		if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 		{
-			zoom_point_ = { e.GetPosition().x, e.GetPosition().y };
+			zoom_point_ = { p_x, p_y };
 
 			if (e.GetWheelRotation() > 0)
 				linked_zoom_control_->zoomIn(true);
@@ -426,6 +428,5 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 		window()->Refresh();
 
 	// Update 'previous' mouse coordinates
-	mouse_prev_ = { e.GetPosition().x * window()->GetContentScaleFactor(),
-					e.GetPosition().y * window()->GetContentScaleFactor() };
+	mouse_prev_ = { p_x, p_y };
 }

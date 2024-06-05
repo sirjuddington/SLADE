@@ -402,9 +402,9 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 	bool refresh = false;
 
 	// Check if the mouse is over the image
-	auto       scalefactor = window()->GetContentScaleFactor();
-	const int  x           = e.GetPosition().x * scalefactor;
-	const int  y           = e.GetPosition().y * scalefactor - 2;
+	const auto p_pos       = window()->ToPhys(e.GetPosition());
+	const int  x           = window()->ToPhys(e.GetPosition().x);
+	const int  y           = window()->ToPhys(e.GetPosition().y);
 	const bool on_image    = onImage(x, y);
 	cursor_pos_            = imageCoords(x, y);
 	if (on_image && editing_mode_ != EditMode::None)
@@ -443,7 +443,7 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 		}
 		else
 		{
-			drag_pos_ = { e.GetPosition().x * scalefactor, e.GetPosition().y * scalefactor };
+			drag_pos_ = { p_pos.x, p_pos.y };
 			refresh   = true;
 		}
 	}
@@ -455,7 +455,7 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 	// Middle mouse down (pan view)
 	if (e.MiddleIsDown())
 	{
-		auto cpos_current = view().canvasPos({ e.GetPosition().x, e.GetPosition().y });
+		auto cpos_current = view().canvasPos({ p_pos.x, p_pos.y });
 		auto cpos_prev    = view().canvasPos(mouse_prev_);
 
 		view().pan(cpos_prev.x - cpos_current.x, cpos_prev.y - cpos_current.y);
@@ -466,7 +466,7 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 	if (refresh)
 		window()->Refresh();
 
-	mouse_prev_ = { e.GetPosition().x * scalefactor, e.GetPosition().y * scalefactor };
+	mouse_prev_ = { p_pos.x, p_pos.y };
 
 	e.Skip();
 }
@@ -512,7 +512,7 @@ void GfxCanvasBase::onMouseWheel(wxMouseEvent& e)
 	if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 	{
 		// Zoom towards cursor
-		zoom_point_ = { e.GetPosition().x, e.GetPosition().y };
+		zoom_point_ = { window()->ToPhys(e.GetPosition().x), window()->ToPhys(e.GetPosition().y) };
 
 		if (e.GetWheelRotation() > 0)
 			linked_zoom_control_->zoomIn(true);

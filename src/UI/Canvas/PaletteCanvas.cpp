@@ -289,8 +289,8 @@ void PaletteCanvas::onMouseLeftDown(wxMouseEvent& e)
 			rows = 8;
 			cols = 32;
 		}
-		int x = ((e.GetX() - offset_.x) * GetContentScaleFactor()) / square_size_;
-		int y = ((e.GetY() - offset_.y) * GetContentScaleFactor()) / square_size_;
+		int x = (e.GetX() - offset_.x) / square_size_;
+		int y = (e.GetY() - offset_.y) / square_size_;
 
 		// If it was within the palette box, select the cell
 		if (x >= 0 && x < cols && y >= 0 && y < rows)
@@ -352,8 +352,8 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 			rows = 8;
 			cols = 32;
 		}
-		int x = ((e.GetX() - offset_.x) * GetContentScaleFactor()) / square_size_;
-		int y = ((e.GetY() - offset_.y) * GetContentScaleFactor()) / square_size_;
+		int x = (e.GetX() - offset_.x) / square_size_;
+		int y = (e.GetY() - offset_.y) / square_size_;
 
 		// Set selection accordingly
 		if (x >= 0 && x < cols && y >= 0 && y < rows)

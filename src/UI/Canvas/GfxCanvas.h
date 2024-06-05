@@ -38,6 +38,7 @@ private:
 	wxBitmap brush_bitmap_;
 
 	void generateBrushShadow() override;
+	bool shouldUpdateImage() const;
 	void updateImage(bool hilight);
 	void drawImage(const wxgfx::Context& ctx);
 	void drawImageTiled(const wxgfx::Context& ctx);

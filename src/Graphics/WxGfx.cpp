@@ -77,7 +77,11 @@ void Context::applyView() const
 void Context::setPen(const ColRGBA& colour, double width) const
 {
 	if (gc)
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo{ colour, width / (view ? view->scale().x : 1.0) }));
+	{
+		auto w       = gc->GetWindow();
+		auto p_width = (width / (view ? view->scale().x : 1.0)) / w->GetContentScaleFactor();
+		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo{ colour, p_width }));
+	}
 }
 
 void Context::setBrush(const ColRGBA& colour) const
@@ -140,8 +144,8 @@ void Context::drawRect(int x, int y, int width, int height) const
 	if (!gc)
 		return;
 
-	const auto w = gc->GetWindow();
-	gc->DrawRectangle(w->FromPhys(x), w->FromPhys(y), w->FromPhys(width), w->FromPhys(height));
+	const auto scale = gc->GetContentScaleFactor();
+	gc->DrawRectangle(x / scale, y / scale, width / scale, height / scale);
 }
 
 void Context::drawBitmap(const wxBitmap& bitmap, int x, int y, double alpha, int width, int height) const
@@ -149,7 +153,7 @@ void Context::drawBitmap(const wxBitmap& bitmap, int x, int y, double alpha, int
 	if (!gc)
 		return;
 
-	const auto w = gc->GetWindow();
+	const auto scale = gc->GetContentScaleFactor();
 
 	if (alpha < 1.)
 		gc->BeginLayer(alpha);
@@ -159,7 +163,7 @@ void Context::drawBitmap(const wxBitmap& bitmap, int x, int y, double alpha, int
 	if (height < 0)
 		height = bitmap.GetHeight();
 
-	gc->DrawBitmap(bitmap, w->FromPhys(x), w->FromPhys(y), w->FromPhys(width), w->FromPhys(height));
+	gc->DrawBitmap(bitmap, x / scale, y / scale, width / scale, height / scale);
 
 	if (alpha < 1.)
 		gc->EndLayer();
@@ -297,10 +301,11 @@ unique_ptr<wxGraphicsContext> wxgfx::createGraphicsContext(wxWindowDC& dc)
 // -----------------------------------------------------------------------------
 void wxgfx::applyViewToGC(const gl::View& view, wxGraphicsContext* gc)
 {
+	auto scale = gc->GetContentScaleFactor();
 	if (view.centered())
-		gc->Translate(view.size().x * 0.5, view.size().y * 0.5);
+		gc->Translate((view.size().x * 0.5) / scale, (view.size().y * 0.5) / scale);
 	gc->Scale(view.scale().x, view.scale().y);
-	gc->Translate(-view.offset().x, -view.offset().y);
+	gc->Translate(-view.offset().x / scale, -view.offset().y / scale);
 }
 
 bool wxgfx::nearestInterpolationSupported()

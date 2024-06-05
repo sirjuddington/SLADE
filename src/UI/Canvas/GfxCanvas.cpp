@@ -81,7 +81,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent) : wxPanel(parent)
 		wxEVT_SIZE,
 		[this](wxSizeEvent&)
 		{
-			view_.setSize(GetSize().x, GetSize().y);
+			view_.setSize(ToPhys(GetSize().x), ToPhys(GetSize().y));
 			Refresh();
 		});
 
@@ -131,6 +131,22 @@ void GfxCanvas::generateBrushShadow()
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the image bitmap needs to be updated
+// -----------------------------------------------------------------------------
+bool GfxCanvas::shouldUpdateImage() const
+{
+	if (update_image_)
+		return true;
+
+	// Check if resize required
+	if (!wxgfx::nearestInterpolationSupported() && image_bitmap_.GetWidth() != image_->width() * view_.scale().x
+		|| image_bitmap_.GetHeight() != image_->height() * view_.scale().y)
+		return true;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Updates the wx bitmap(s) for the image and other related data
 // -----------------------------------------------------------------------------
 void GfxCanvas::updateImage(bool hilight)
@@ -172,7 +188,7 @@ void GfxCanvas::drawImage(const wxgfx::Context& ctx)
 				   && editing_mode_ == EditMode::None;
 
 	// Load/update image if needed
-	if (update_image_ || hilight != image_hilighted_)
+	if (shouldUpdateImage() || hilight != image_hilighted_)
 		updateImage(hilight);
 
 	// Get top left coord to draw at
@@ -185,7 +201,7 @@ void GfxCanvas::drawImage(const wxgfx::Context& ctx)
 	}
 
 	// Draw image
-	ctx.drawBitmap(image_bitmap_, tl.x, tl.y, dragging ? 0.5 : 1.0);
+	ctx.drawBitmap(image_bitmap_, tl.x, tl.y, dragging ? 0.5 : 1.0, image_->width(), image_->height());
 
 	// Draw brush shadow when in editing mode
 	if (editing_mode_ != EditMode::None && brush_bitmap_.IsOk() && cursor_pos_ != Vec2i{ -1, -1 })
@@ -196,7 +212,7 @@ void GfxCanvas::drawImage(const wxgfx::Context& ctx)
 	{
 		tl.x += math::scaleInverse(drag_pos_.x - drag_origin_.x, view().scale().x);
 		tl.y += math::scaleInverse(drag_pos_.y - drag_origin_.y, view().scale().y);
-		ctx.drawBitmap(image_bitmap_, tl.x, tl.y);
+		ctx.drawBitmap(image_bitmap_, tl.x, tl.y, 1.0, image_->width(), image_->height());
 	}
 
 	// Draw outline
@@ -214,14 +230,14 @@ void GfxCanvas::drawImage(const wxgfx::Context& ctx)
 void GfxCanvas::drawImageTiled(const wxgfx::Context& ctx)
 {
 	// Load/update image if needed
-	if (update_image_ || image_hilighted_)
+	if (shouldUpdateImage() || image_hilighted_)
 		updateImage(false);
 
 	// Draw image multiple times to fill canvas
 	auto left   = view().canvasX(0);
 	auto y      = view().canvasY(0);
-	auto right  = view().canvasX(GetSize().x);
-	auto bottom = view().canvasY(GetSize().y);
+	auto right  = view().canvasX(ToPhys(GetSize().x));
+	auto bottom = view().canvasY(ToPhys(GetSize().y));
 	while (y < bottom)
 	{
 		auto x = left;
@@ -240,8 +256,13 @@ void GfxCanvas::drawImageTiled(const wxgfx::Context& ctx)
 // -----------------------------------------------------------------------------
 void GfxCanvas::drawCropRect(const wxgfx::Context& ctx) const
 {
-	// Recti vr = view_.visibleRegion();
-	const Recti vr{ view_.visibleRegion().tl, view_.visibleRegion().br };
+	Recti vr{ view_.visibleRegion().tl, view_.visibleRegion().br };
+
+	// Expand visible region by 1 pixel to ensure everything is drawn right to the edges
+	vr.tl.x--;
+	vr.tl.y--;
+	vr.br.x++;
+	vr.br.y++;
 
 	// Draw cropping lines
 	ctx.setPen(ColRGBA::BLACK);
@@ -276,7 +297,7 @@ void GfxCanvas::onPaint(wxPaintEvent& e)
 	auto ctx = wxgfx::Context{ dc, &view_ };
 
 	// Background
-	wxgfx::generateCheckeredBackground(background_bitmap_, GetSize().x, GetSize().y);
+	wxgfx::generateCheckeredBackground(background_bitmap_, view_.size().x, view_.size().y);
 	ctx.drawBitmap(background_bitmap_, 0, 0);
 
 	// Aspect Ratio Correction

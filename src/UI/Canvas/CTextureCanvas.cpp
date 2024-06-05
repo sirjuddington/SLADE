@@ -96,7 +96,7 @@ CTextureCanvas::CTextureCanvas(wxWindow* parent) : wxPanel(parent), palette_{ ne
 		wxEVT_SIZE,
 		[this](wxSizeEvent&)
 		{
-			view_.setSize(GetSize().x, GetSize().y);
+			view_.setSize(ToPhys(GetSize().x), ToPhys(GetSize().y));
 			Refresh();
 		});
 }
@@ -219,7 +219,7 @@ void CTextureCanvas::drawPatch(const wxgfx::Context& ctx, int index)
 	}
 
 	// Draw patch
-	ctx.drawBitmap(patch_bitmaps_[index], patch->xOffset(), patch->yOffset());
+	ctx.drawBitmap(patch_bitmaps_[index], patch->xOffset(), patch->yOffset(), 1.0, patch_image->width(), patch_image->height());
 }
 
 
@@ -241,7 +241,7 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 	auto ctx = wxgfx::Context(dc, &view_);
 
 	// Background
-	wxgfx::generateCheckeredBackground(background_bitmap_, GetSize().x, GetSize().y);
+	wxgfx::generateCheckeredBackground(background_bitmap_, view_.size().x, view_.size().y);
 	ctx.drawBitmap(background_bitmap_, 0, 0);
 
 	// Aspect Ratio Correction
