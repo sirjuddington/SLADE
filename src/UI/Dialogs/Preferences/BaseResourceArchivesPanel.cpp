@@ -36,8 +36,8 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
 #include "UI/Controls/FileLocationPanel.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
 
@@ -114,7 +114,7 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent) : PrefsPa
 // -----------------------------------------------------------------------------
 void BaseResourceArchivesPanel::setupLayout()
 {
-	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto sizer = new wxGridBagSizer(ui::pad(this), ui::pad(this));
 	SetSizer(sizer);
 
 	// Paths list + buttons

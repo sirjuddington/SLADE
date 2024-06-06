@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "PNGPrefsPanel.h"
 #include "UI/Controls/FileLocationPanel.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -65,7 +66,7 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	wxutil::layoutVertically(
+	ui::LayoutHelper(this).layoutVertically(
 		sizer,
 		vector<wxObject*>{ wxutil::createLabelVBox(
 							   this,

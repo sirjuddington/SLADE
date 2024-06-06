@@ -31,8 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Map3DPrefsPanel.h"
-#include "General/UI.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -70,8 +69,9 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	auto psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
-	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	psizer->Add(gbsizer, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+	auto lh      = ui::LayoutHelper(this);
+	auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	psizer->Add(gbsizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Render distance
 	gbsizer->Add(new wxStaticText(this, -1, "Render distance:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -105,24 +105,16 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Adaptive render distance
 	cb_render_dist_adaptive_ = new wxCheckBox(this, -1, "Adaptive render distance");
-	hbox->Add(cb_render_dist_adaptive_, wxutil::sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(cb_render_dist_adaptive_, lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
-	hbox->Add(new wxStaticText(this, -1, "Target framerate:"), wxutil::sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, "Target framerate:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	spin_adaptive_fps_ = new wxSpinCtrl(
-		this,
-		-1,
-		"30",
-		wxDefaultPosition,
-		{ ui::px(ui::Size::SpinCtrlWidth), -1 },
-		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
-		10,
-		100,
-		30);
+		this, -1, "30", wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 10, 100, 30);
 	hbox->Add(spin_adaptive_fps_, wxSizerFlags().Expand());
 
-	psizer->Add(new wxStaticLine(this, -1), wxutil::sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
+	psizer->Add(new wxStaticLine(this, -1), lh.sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
 
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		psizer,
 		{ cb_render_sky_       = new wxCheckBox(this, -1, "Render sky preview"),
 		  cb_show_distance_    = new wxCheckBox(this, -1, "Show distance under crosshair"),

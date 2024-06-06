@@ -34,6 +34,7 @@
 #include "General/ColourConfiguration.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditor.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -61,7 +62,9 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	choice_configs_ = new wxChoice(this, -1);
 	for (const auto& cname : cnames)
 		choice_configs_->Append(cname);
-	sizer->Add(wxutil::createLabelHBox(this, "Preset:", choice_configs_), wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(
+		wxutil::createLabelHBox(this, "Preset:", choice_configs_),
+		ui::LayoutHelper(this).sfWithBorder(0, wxBOTTOM).Expand());
 
 	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 

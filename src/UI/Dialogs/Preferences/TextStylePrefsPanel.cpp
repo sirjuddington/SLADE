@@ -33,10 +33,11 @@
 #include "Main.h"
 #include "TextStylePrefsPanel.h"
 #include "App.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -70,14 +71,15 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) :
 	ss_current_->copySet(StyleSet::currentSet());
 	ts_current_ = ss_current_->style("default");
 
-	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto lh    = ui::LayoutHelper(this);
+	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	SetSizer(sizer);
 
 	// Styleset font override
 	cb_font_override_ = new wxCheckBox(this, -1, "Override Default Font:");
 	cb_font_override_->SetToolTip("Always use the selected font in the text editor, instead of the style's font below");
 	fp_font_override_ = new wxFontPickerCtrl(this, -1);
-	sizer->Add(wxutil::layoutHorizontally({ cb_font_override_, fp_font_override_ }, 1), { 0, 0 }, { 1, 2 }, wxEXPAND);
+	sizer->Add(lh.layoutHorizontally({ cb_font_override_, fp_font_override_ }, 1), { 0, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Styleset selector
 	choice_styleset_ = new wxChoice(this, -1);
@@ -85,8 +87,8 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) :
 		choice_styleset_->Append(StyleSet::styleName(a));
 	btn_savestyleset_ = new wxButton(this, -1, "Save Set");
 	auto hbox         = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(this, -1, "Style Set:"), wxutil::sfWithBorder(0, wxRIGHT).CenterVertical());
-	hbox->Add(choice_styleset_, wxutil::sfWithBorder(1, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, "Style Set:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(choice_styleset_, lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 	hbox->Add(btn_savestyleset_, wxSizerFlags().Expand());
 	sizer->Add(hbox, { 1, 0 }, { 1, 2 }, wxEXPAND);
 
@@ -159,7 +161,8 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) :
 wxPanel* TextStylePrefsPanel::createStylePanel()
 {
 	auto panel = new wxPanel(this);
-	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	panel->SetSizer(sizer);
 
 	// Font
@@ -170,7 +173,7 @@ wxPanel* TextStylePrefsPanel::createStylePanel()
 		wxEXPAND);
 
 	// Override properties
-	auto override_props_sizer = wxutil::layoutHorizontally(
+	auto override_props_sizer = lh.layoutHorizontally(
 		vector<wxObject*>{ cb_override_font_face_       = new wxCheckBox(panel, -1, "Face"),
 						   cb_override_font_size_       = new wxCheckBox(panel, -1, "Size"),
 						   cb_override_font_bold_       = new wxCheckBox(panel, -1, "Bold"),

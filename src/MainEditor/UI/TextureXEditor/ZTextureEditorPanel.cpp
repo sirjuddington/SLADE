@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZTextureEditorPanel.h"
-#include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
@@ -41,6 +40,7 @@
 #include "UI/Canvas/GL/CTextureGLCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -78,6 +78,8 @@ CVAR(Int, tx_offset_type, 0, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 {
+	auto lh = ui::LayoutHelper(parent);
+
 	auto panel = new wxScrolledWindow(parent, -1);
 	panel->SetScrollRate(4, 0);
 
@@ -90,8 +92,8 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, wxSizerFlags().Expand());
 
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, wxutil::sfWithBorder(1).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 
 	// Name
 	text_tex_name_ = new wxTextCtrl(panel, -1);
@@ -100,19 +102,20 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Size
-	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
 	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	spin_tex_width_  = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
-	spin_tex_height_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
+	spin_tex_width_          = new wxSpinCtrl(
+        panel, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, 0, SHRT_MAX);
+	spin_tex_height_ = new wxSpinCtrl(
+		panel, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, 0, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Size:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_width_, { 1, 1 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_height_, { 1, 2 }, { 1, 1 });
 
 	// Scale
 	spin_tex_scalex_ = new wxSpinCtrlDouble(
-		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
+		panel, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, 0.1, 100, 1, 0.1);
 	spin_tex_scaley_ = new wxSpinCtrlDouble(
-		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
+		panel, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, 0.1, 100, 1, 0.1);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex_, { 2, 1 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_scaley_, { 2, 2 }, { 1, 1 });
@@ -128,8 +131,8 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(choice_type_, { 0, 4 }, { 1, 2 }, wxEXPAND);
 
 	// Offsets
-	spin_tex_offsetx_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, INT_MIN, INT_MAX);
-	spin_tex_offsety_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, INT_MIN, INT_MAX);
+	spin_tex_offsetx_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, lh.spinSize(), spinflags, INT_MIN, INT_MAX);
+	spin_tex_offsety_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, lh.spinSize(), spinflags, INT_MIN, INT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Offsets:"), { 1, 3 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_offsetx_, { 1, 4 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_offsety_, { 1, 5 }, { 1, 1 });
@@ -217,7 +220,7 @@ void ZTextureEditorPanel::updateTextureControls()
 // -----------------------------------------------------------------------------
 wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(parent);
 
 	auto panel = new wxScrolledWindow(parent, -1);
 	panel->SetScrollRate(0, 4);
@@ -249,28 +252,27 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	tb_patches_->findActionButton("txed_patch_add")->Enable();
 
 	// Layout
-	list_patches_->SetInitialSize(wxutil::scaledSize(100, tb_patches_->group("_Patch")->GetBestSize().y));
-	framesizer->Add(list_patches_, wx::sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
-	framesizer->Add(tb_patches_, wx::sfWithMinBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
+	list_patches_->SetInitialSize({ FromDIP(100), tb_patches_->group("_Patch")->GetBestSize().y });
+	framesizer->Add(list_patches_, lh.sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
+	framesizer->Add(tb_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
 
 	// -- Patch Properties frame --
 	frame      = new wxStaticBox(panel, -1, "Patch Properties");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, wx::sfWithBorder(0, wxTOP).Expand());
+	sizer->Add(framesizer, lh.sfWithBorder(0, wxTOP).Expand());
 
-	auto* gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, wx::sfWithBorder(1).Expand());
+	auto* gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 
 	// X Position
-	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
 	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
+	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "X Position:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_patch_left_, { 0, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Y Position
-	spin_patch_top_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
+	spin_patch_top_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Y Position:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_patch_top_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
@@ -294,7 +296,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	gb_sizer->Add(choice_rotation_, { 4, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Alpha
-	spin_alpha_ = new wxSpinCtrlDouble(panel, -1, "", wxDefaultPosition, spinsize, spinflags, 0, 1, 1, 0.1);
+	spin_alpha_ = new wxSpinCtrlDouble(panel, -1, "", wxDefaultPosition, lh.spinSize(), spinflags, 0, 1, 1, 0.1);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Alpha:"), { 5, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_alpha_, { 5, 1 }, { 1, 1 }, wxEXPAND);
 
@@ -308,10 +310,10 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 
 	frame      = new wxStaticBox(panel, -1, "Patch Colour");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, wx::sfWithBorder(0, wxTOP).Expand());
+	sizer->Add(framesizer, lh.sfWithBorder(0, wxTOP).Expand());
 
-	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, wx::sfWithBorder(1).Expand());
+	gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 
 	// 'Normal' colour
 	rb_pc_normal_ = new wxRadioButton(panel, -1, "Normal", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
@@ -332,7 +334,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	gb_sizer->Add(cb_blend_col_, { 3, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 
 	// Tint amount
-	spin_tint_amount_ = new wxSpinCtrlDouble(panel, 01, "", wxDefaultPosition, spinsize, spinflags, 0, 1, 0, 0.1);
+	spin_tint_amount_ = new wxSpinCtrlDouble(panel, 01, "", wxDefaultPosition, lh.spinSize(), spinflags, 0, 1, 0, 0.1);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Amount:"), { 4, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tint_amount_, { 4, 1 }, { 1, 1 }, wxEXPAND);
 
@@ -347,7 +349,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 
 	// Translation text entry
 	text_translation_ = new wxTextCtrl(panel, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	hbox->Add(text_translation_, wx::sfWithBorder(1, wxRIGHT).Expand());
+	hbox->Add(text_translation_, lh.sfWithBorder(1, wxRIGHT).Expand());
 
 	// Translation edit button
 	btn_edit_translation_ = new wxButton(panel, -1, "Edit", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);

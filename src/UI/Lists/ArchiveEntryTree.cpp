@@ -40,11 +40,10 @@
 #include "Archive/ArchiveFormatHandler.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
-#include "General/ColourConfiguration.h"
-#include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include <wx/headerctrl.h>
@@ -59,17 +58,13 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-wxColour col_text_modified(0, 0, 0, 0);
-wxColour col_text_new(0, 0, 0, 0);
-wxColour col_text_locked(0, 0, 0, 0);
-#if wxCHECK_VERSION(3, 1, 6)
+wxColour                                   col_text_modified(0, 0, 0, 0);
+wxColour                                   col_text_new(0, 0, 0, 0);
+wxColour                                   col_text_locked(0, 0, 0, 0);
 std::unordered_map<string, wxBitmapBundle> icon_cache;
-#else
-std::unordered_map<string, wxIcon> icon_cache;
-#endif
-vector<int> elist_chars = {
-	'.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
-	']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
+vector<int>                                elist_chars = {
+    '.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
+    ']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
 };
 } // namespace slade::ui
 
@@ -121,7 +116,7 @@ ArchivePathPanel::ArchivePathPanel(wxWindow* parent) : wxPanel{ parent }
 
 	text_path_ = new wxStaticText(
 		this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
-	GetSizer()->Add(text_path_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	GetSizer()->Add(text_path_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad(this));
 
 	btn_updir_ = new SToolBarButton(this, "arch_elist_updir");
 	GetSizer()->Add(btn_updir_, 0, wxEXPAND);
@@ -384,19 +379,9 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		if (icon_cache.find(entry->type()->icon()) == icon_cache.end())
 		{
 			// Not found, add to cache
-			const auto pad = Point2i{ 1, elist_icon_padding };
-
-#if wxCHECK_VERSION(3, 1, 6)
+			const auto pad    = Point2i{ 1, elist_icon_padding };
 			const auto bundle = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
 			icon_cache[entry->type()->icon()] = bundle;
-#else
-			const auto size = scalePx(elist_icon_size);
-			const auto bmp  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), size, pad);
-
-			wxIcon icon;
-			icon.CopyFromBitmap(bmp);
-			icon_cache[entry->type()->icon()] = icon;
-#endif
 		}
 
 		wxString name = entry->name();
@@ -880,7 +865,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 	archive_{ archive }
 {
 	// Init settings
-	SetRowHeight(ui::scalePx(elist_icon_size + (elist_icon_padding * 2) + 2));
+	SetRowHeight(FromDIP(elist_icon_size + (elist_icon_padding * 2) + 2));
 	if (list_font_monospace)
 		SetFont(wxutil::monospaceFont(GetFont()));
 
@@ -1510,28 +1495,29 @@ void ArchiveEntryTree::setupColumns()
 		"#",
 		3,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_index,
+		FromDIP(elist_colsize_index),
 		wxALIGN_NOT,
 		elist_colindex_show ? colstyle_visible : colstyle_hidden);
 	col_name_ = AppendIconTextColumn(
 		"Name",
 		0,
 		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
-		model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree : elist_colsize_name_list,
+		FromDIP(
+			model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree : elist_colsize_name_list),
 		wxALIGN_NOT,
 		colstyle_visible);
 	col_size_ = AppendTextColumn(
 		"Size",
 		1,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_size,
+		FromDIP(elist_colsize_size),
 		wxALIGN_NOT,
 		elist_colsize_show ? colstyle_visible : colstyle_hidden);
 	col_type_ = AppendTextColumn(
 		"Type",
 		2,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_type,
+		FromDIP(elist_colsize_type),
 		wxALIGN_NOT,
 		elist_coltype_show ? colstyle_visible : colstyle_hidden);
 	SetExpanderColumn(col_name_);
@@ -1557,19 +1543,19 @@ void ArchiveEntryTree::saveColumnWidths() const
 	if (last_col != col_name_)
 	{
 		if (model_->viewType() == ArchiveViewModel::ViewType::Tree)
-			elist_colsize_name_tree = col_name_->GetWidth();
+			elist_colsize_name_tree = ToDIP(col_name_->GetWidth());
 		else
-			elist_colsize_name_list = col_name_->GetWidth();
+			elist_colsize_name_list = ToDIP(col_name_->GetWidth());
 	}
 
 	if (last_col != col_size_ && !col_size_->IsHidden())
-		elist_colsize_size = col_size_->GetWidth();
+		elist_colsize_size = ToDIP(col_size_->GetWidth());
 
 	if (last_col != col_type_ && !col_type_->IsHidden())
-		elist_colsize_type = col_type_->GetWidth();
+		elist_colsize_type = ToDIP(col_type_->GetWidth());
 
 	if (!col_index_->IsHidden())
-		elist_colsize_index = col_index_->GetWidth();
+		elist_colsize_index = ToDIP(col_index_->GetWidth());
 }
 
 // -----------------------------------------------------------------------------

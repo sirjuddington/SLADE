@@ -34,12 +34,13 @@
 #include "MapObjectPropsPanel.h"
 #include "Game/Configuration.h"
 #include "Game/UDMFProperty.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "MOPGProperty.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
@@ -71,7 +72,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	last_type_{ map::ObjectType::Object },
 	no_apply_{ no_apply }
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper{ this };
 
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -80,11 +81,11 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	// Add item label
 	cb_show_all_ = new wxCheckBox(this, -1, "Show All");
 	cb_show_all_->SetValue(mobj_props_show_all);
-	sizer->Add(cb_show_all_, wx::sfWithBorder().Expand());
+	sizer->Add(cb_show_all_, lh.sfWithBorder().Expand());
 
 	// Add tabs
 	stc_sections_ = STabCtrl::createControl(this);
-	sizer->Add(stc_sections_, wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(stc_sections_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
@@ -107,16 +108,16 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 
 	// Add buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add button
 	btn_add_ = new SIconButton(this, "plus", "Add Property");
-	hbox->Add(btn_add_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_add_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->AddStretchSpacer(1);
 
 	// Reset button
 	btn_reset_ = new SIconButton(this, "close", "Discard Changes");
-	hbox->Add(btn_reset_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_reset_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Apply button
 	btn_apply_ = new SIconButton(this, "tick", "Apply Changes");
@@ -1193,12 +1194,13 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 {
 	wxDialog dlg(this, -1, "Add UDMF Property");
+	auto     lh = ui::LayoutHelper(&dlg);
 
 	// Setup dialog sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(msizer);
-	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	msizer->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
+	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// Name
 	auto text_name = new wxTextCtrl(&dlg, -1, "");

@@ -33,7 +33,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SAuiTabArt.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "Utility/Colour.h"
 #include "WxUtils.h"
@@ -112,16 +111,16 @@ void IndentPressedBitmap(wxRect* rect, int button_state)
 //
 // -----------------------------------------------------------------------------
 
-SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs) :
+SAuiTabArt::SAuiTabArt(const wxWindow* window, bool close_buttons, bool main_tabs) :
 	close_buttons_{ close_buttons },
 	main_tabs_{ main_tabs },
-	padding_(tabs_condensed ? ui::scalePx(4) : ui::scalePx(8))
+	padding_(tabs_condensed ? window->FromDIP(4) : window->FromDIP(8))
 {
 	m_normalFont   = *wxNORMAL_FONT;
 	m_selectedFont = *wxNORMAL_FONT;
 
 	m_measuringFont = m_selectedFont;
-	m_fixedTabWidth = ui::scalePx(100);
+	m_fixedTabWidth = window->FromDIP(100);
 	m_tabCtrlHeight = 0;
 
 	wxColor baseColour = wxutil::systemPanelBGColour();
@@ -135,7 +134,6 @@ SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs) :
 	m_baseColourPen   = wxPen(m_baseColour);
 	m_baseColourBrush = wxBrush(m_baseColour);
 
-#if wxCHECK_VERSION(3, 1, 6)
 	m_activeCloseBmp    = icons::getInterfaceIcon("cross");
 	close_bitmap_white_ = icons::getInterfaceIcon("cross", -1, icons::Dark);
 	m_disabledCloseBmp  = icons::getInterfaceIcon("cross");
@@ -148,20 +146,6 @@ SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs) :
 
 	m_activeWindowListBmp   = icons::getInterfaceIcon("arrow-down");
 	m_disabledWindowListBmp = icons::getInterfaceIcon("arrow-down");
-#else
-	m_activeCloseBmp    = icons::getInterfaceIcon("cross");
-	close_bitmap_white_ = icons::getInterfaceIcon("cross", -1, icons::Dark);
-	m_disabledCloseBmp  = icons::getInterfaceIcon("cross").ConvertToDisabled();
-
-	m_activeLeftBmp   = icons::getInterfaceIcon("arrow-left");
-	m_disabledLeftBmp = icons::getInterfaceIcon("arrow-left").ConvertToDisabled();
-
-	m_activeRightBmp   = icons::getInterfaceIcon("arrow-right");
-	m_disabledRightBmp = icons::getInterfaceIcon("arrow-right").ConvertToDisabled();
-
-	m_activeWindowListBmp   = icons::getInterfaceIcon("arrow-down");
-	m_disabledWindowListBmp = icons::getInterfaceIcon("arrow-down").ConvertToDisabled();
-#endif
 
 	m_flags = 0;
 }
@@ -189,16 +173,16 @@ void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 	dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);
 }
 
-void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* WXUNUSED(wnd), const wxRect& rect)
+void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 {
 	// draw background
 	wxColor top_color    = main_tabs_ && global::win_version_major >= 10 ? col_w10_bg : m_baseColour;
 	wxColor bottom_color = main_tabs_ && global::win_version_major >= 10 ? col_w10_bg : m_baseColour;
 	wxRect  r;
 
-	auto px1 = static_cast<int>(ui::scaleFactor());
-	auto px2 = ui::scalePx(2);
-	auto px4 = ui::scalePx(4);
+	auto px1 = wnd->FromDIP(1);
+	auto px2 = wnd->FromDIP(2);
+	auto px4 = wnd->FromDIP(4);
 
 	if (m_flags & wxAUI_NB_BOTTOM)
 		r = wxRect(rect.x, rect.y, rect.width + px2, rect.height);
@@ -273,9 +257,9 @@ void SAuiTabArt::DrawTab(
 
 	// I know :P This stuff should probably be completely rewritten,
 	// but this will do for now
-	auto px2 = ui::scalePxU(2);
-	auto px3 = ui::scalePxU(3);
-	auto px4 = ui::scalePxU(4);
+	auto px2 = wnd->FromDIP(2);
+	auto px3 = wnd->FromDIP(3);
+	auto px4 = wnd->FromDIP(4);
 
 	wxCoord tab_height = m_tabCtrlHeight + px2;
 	wxCoord tab_width  = tab_size.x;
@@ -387,16 +371,8 @@ void SAuiTabArt::DrawTab(
 	// draw icon if set
 	if (page.bitmap.IsOk())
 	{
-#if wxCHECK_VERSION(3, 1, 6)
 		const auto& bmp = page.bitmap.GetBitmapFor(wnd);
-		dc.DrawBitmap(bmp, tab_x + padding_, drawn_tab_yoff + drawn_tab_height / 2 - bmp.GetHeight() / 2, true);
-#else
-		dc.DrawBitmap(
-			page.bitmap,
-			tab_x + padding_,
-			drawn_tab_yoff + (drawn_tab_height / 2) - (page.bitmap.GetHeight() / 2),
-			true);
-#endif
+		dc.DrawBitmap(bmp, tab_x + padding_, drawn_tab_yoff + drawn_tab_height / 2 - bmp.GetLogicalSize().y / 2, true);
 	}
 
 	// draw tab text
@@ -414,13 +390,8 @@ void SAuiTabArt::DrawTab(
 		if (m_flags & wxAUI_NB_BOTTOM)
 			offsetY = 1;
 
-#if wxCHECK_VERSION(3, 1, 6)
-		int close_button_width  = m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).x;
-		int close_button_height = m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).y;
-#else
-		int close_button_width  = m_activeCloseBmp.GetWidth();
-		int close_button_height = m_activeCloseBmp.GetHeight();
-#endif
+		int close_button_width  = m_activeCloseBmp.GetPreferredLogicalSizeFor(wnd).x;
+		int close_button_height = m_activeCloseBmp.GetPreferredLogicalSizeFor(wnd).y;
 
 		wxRect rect(
 			tab_x + tab_width - close_button_width - padding_,
@@ -439,20 +410,12 @@ void SAuiTabArt::DrawTab(
 			dc.DrawRectangle(rect.x, rect.y, rect.width, rect.width);
 
 			const auto& bmp = close_white ? close_bitmap_white_ : m_activeCloseBmp;
-#if wxCHECK_VERSION(3, 1, 6)
 			dc.DrawBitmap(bmp.GetBitmapFor(wnd), rect.x, rect.y);
-#else
-			dc.DrawBitmap(bmp, rect.x, rect.y);
-#endif
 		}
 		else
 		{
 			const auto& bmp = close_white ? close_bitmap_white_ : m_disabledCloseBmp;
-#if wxCHECK_VERSION(3, 1, 6)
 			dc.DrawBitmap(bmp.GetBitmapFor(wnd).ConvertToDisabled(), rect.x, rect.y);
-#else
-			dc.DrawBitmap(bmp, rect.x, rect.y);
-#endif
 		}
 
 		*out_button_rect = rect;
@@ -463,7 +426,6 @@ void SAuiTabArt::DrawTab(
 	dc.DestroyClippingRegion();
 }
 
-#if wxCHECK_VERSION(3, 1, 6)
 wxSize SAuiTabArt::GetTabSize(
 	wxDC&                 dc,
 	wxWindow*             wnd,
@@ -472,16 +434,6 @@ wxSize SAuiTabArt::GetTabSize(
 	bool                  WXUNUSED(active),
 	int                   close_button_state,
 	int*                  x_extent)
-#else
-wxSize SAuiTabArt::GetTabSize(
-	wxDC&           dc,
-	wxWindow*       WXUNUSED(wnd),
-	const wxString& caption,
-	const wxBitmap& bitmap,
-	bool            WXUNUSED(active),
-	int             close_button_state,
-	int*            x_extent)
-#endif
 {
 	wxCoord measured_textx, measured_texty, tmp;
 
@@ -494,42 +446,26 @@ wxSize SAuiTabArt::GetTabSize(
 	wxCoord tab_width  = measured_textx;
 	wxCoord tab_height = measured_texty;
 
-#if wxCHECK_VERSION(3, 1, 6)
 	// if close buttons are enabled, add space for one
 	if (close_buttons_)
-		tab_width += m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).x + padding_;
+		tab_width += wnd->FromPhys(m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).x) + padding_;
 
 	// if there's a bitmap, add space for it
 	if (bitmap.IsOk())
 	{
-		tab_width += bitmap.GetPreferredBitmapSizeFor(wnd).x;
+		tab_width += wnd->FromPhys(bitmap.GetPreferredBitmapSizeFor(wnd).x);
 		tab_width += padding_; // right side bitmap padding
-		tab_height = wxMax(tab_height, bitmap.GetPreferredBitmapSizeFor(wnd).y);
+		tab_height = wxMax(tab_height, wnd->FromPhys(bitmap.GetPreferredBitmapSizeFor(wnd).y));
 	}
 	else if (tabs_condensed)
 		tab_width += padding_ * 2; // a bit extra padding if there isn't an icon in condensed mode
-#else
-	// if close buttons are enabled, add space for one
-	if (close_buttons_)
-		tab_width += m_activeCloseBmp.GetWidth() + padding_;
-
-	// if there's a bitmap, add space for it
-	if (bitmap.IsOk())
-	{
-		tab_width += bitmap.GetWidth();
-		tab_width += padding_; // right side bitmap padding
-		tab_height = wxMax(tab_height, bitmap.GetHeight());
-	}
-	else if (tabs_condensed)
-		tab_width += (padding_ * 2); // a bit extra padding if there isn't an icon in condensed mode
-#endif
 
 	// add padding
 	tab_width += padding_ * 2;
-	tab_height += ui::scalePx(10);
+	tab_height += 10;
 
 	// minimum width
-	int min_width = tabs_condensed ? ui::scalePx(48) : ui::scalePx(64);
+	int min_width = tabs_condensed ? 48 : 64;
 	if (tab_width < min_width)
 		tab_width = min_width;
 
@@ -550,7 +486,7 @@ void SAuiTabArt::SetSelectedFont(const wxFont& font)
 //
 // -----------------------------------------------------------------------------
 
-SAuiDockArt::SAuiDockArt()
+SAuiDockArt::SAuiDockArt(const wxWindow* window)
 {
 	caption_back_colour_ = wxutil::darkColour(wxutil::systemPanelBGColour(), 0.0f);
 
@@ -566,9 +502,9 @@ SAuiDockArt::SAuiDockArt()
 	if (global::win_version_major >= 10)
 		m_sashBrush = wxBrush(col_w10_bg);
 
-	m_captionSize = ui::scalePxU(19);
-	m_sashSize    = ui::scalePxU(4);
-	m_buttonSize  = ui::scalePx(16);
+	m_captionSize = window->FromDIP(19);
+	m_sashSize    = window->FromDIP(4);
+	m_buttonSize  = window->FromDIP(16);
 }
 
 SAuiDockArt::~SAuiDockArt() = default;
@@ -595,23 +531,18 @@ void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, 
 	// dc.SetPen(wxPen(sepCol));
 	// dc.DrawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width, rect.y + rect.height - 1);
 
-	auto px2 = ui::scalePx(2);
-	auto px3 = ui::scalePx(3);
-	auto px5 = ui::scalePx(5);
+	auto px2 = window->FromDIP(2);
+	auto px3 = window->FromDIP(3);
+	auto px5 = window->FromDIP(5);
 
 	dc.SetBrush(wxBrush(sepCol));
 	dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height + 1);
 
-#if wxCHECK_VERSION(3, 1, 6)
 	const auto& icon = pane.icon.GetBitmap(wxDefaultSize);
-#else
-	const auto& icon = pane.icon;
-#endif
 
 	int caption_offset = 0;
 	if (icon.IsOk())
 	{
-#if wxCHECK_VERSION(3, 1, 0)
 		// Ensure the icon fits into the title bar.
 		wxSize iconSize = icon.GetSize();
 		if (iconSize.y > rect.height)
@@ -622,9 +553,6 @@ void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, 
 		// Draw the icon centered vertically
 		int xOffset = window->FromDIP(2);
 		dc.DrawBitmap(icon, rect.x + xOffset, rect.y + (rect.height - icon.GetHeight()) / 2, true);
-#else
-		DrawIcon(dc, rect, pane);
-#endif
 		caption_offset += icon.GetWidth() + px3;
 	}
 
@@ -667,11 +595,7 @@ void SAuiDockArt::DrawPaneButton(
 	const wxRect&  _rect,
 	wxAuiPaneInfo& pane)
 {
-#if wxCHECK_VERSION(3, 1, 6)
 	wxBitmapBundle bmp;
-#else
-	wxBitmap bmp;
-#endif
 
 	bool active = true;
 	switch (button)
@@ -722,12 +646,8 @@ void SAuiDockArt::DrawPaneButton(
 
 	wxRect rect = _rect;
 
-	int old_y = rect.y;
-#if wxCHECK_VERSION(3, 1, 6)
-	rect.y = rect.y + rect.height / 2 - bmp.GetPreferredBitmapSizeFor(window).y / 2;
-#else
-	rect.y = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2);
-#endif
+	int old_y   = rect.y;
+	rect.y      = rect.y + rect.height / 2 - bmp.GetPreferredLogicalSizeFor(window).y / 2;
 	rect.height = old_y + rect.height - rect.y - 1;
 
 
@@ -749,10 +669,6 @@ void SAuiDockArt::DrawPaneButton(
 
 
 	// draw the button itself
-#if wxCHECK_VERSION(3, 1, 6)
 	dc.DrawBitmap(
 		active ? bmp.GetBitmapFor(window) : bmp.GetBitmapFor(window).ConvertToDisabled(), rect.x, rect.y, true);
-#else
-	dc.DrawBitmap(bmp, rect.x, rect.y, true);
-#endif
 }

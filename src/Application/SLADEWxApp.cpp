@@ -456,17 +456,6 @@ bool SLADEWxApp::OnInit()
 	// Load image handlers
 	wxInitAllImageHandlers();
 
-#ifdef __APPLE__
-	// Should be constant, wxWidgets Cocoa backend scales everything under the hood
-	const double ui_scale = 1.0;
-#else  // !__APPLE__
-	// Calculate scaling factor (from system ppi)
-	wxMemoryDC dc;
-	double     ui_scale = static_cast<double>(dc.GetPPI().x) / 96.0;
-	if (ui_scale < 1.)
-		ui_scale = 1.;
-#endif // __APPLE__
-
 	// Get Windows version
 #ifdef __WXMSW__
 	wxGetOsVersion(&global::win_version_major, &global::win_version_minor);
@@ -484,7 +473,7 @@ bool SLADEWxApp::OnInit()
 	// Init application
 	try
 	{
-		if (!app::init(args, 1.))
+		if (!app::init(args))
 			return false;
 	}
 	catch (const std::exception& ex)

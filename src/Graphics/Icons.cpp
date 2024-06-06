@@ -443,7 +443,6 @@ bool icons::loadIcons()
 	return true;
 }
 
-#if wxCHECK_VERSION(3, 1, 6)
 // -----------------------------------------------------------------------------
 // Loads the icon [name] of [type] into a wxBitmapBundle of minimum [size], with
 // optional [padding] (png icons only).
@@ -483,41 +482,7 @@ wxBitmapBundle icons::getIcon(Type type, string_view name, int size, const Point
 
 	return wxNullBitmap;
 }
-#else
-// -----------------------------------------------------------------------------
-// Loads the icon [name] of [type] into a wxBitmap of [size], with optional
-// [padding].
-//
-// NOTE: this does not use any kind of caching and will generate/load the icon
-// from svg/png data each time
-// -----------------------------------------------------------------------------
-wxBitmap icons::getIcon(Type type, string_view name, int size, Point2i padding)
-{
-	// Get icon definition
-	const auto* icon_def = iconDef(type, name);
-	if (!icon_def)
-	{
-		log::warning("Unknown icon \"{}\"", name);
-		return wxNullBitmap;
-	}
 
-	// Check size
-	if (size <= 0)
-		size = ui::scalePx(16);
-
-	// If there is SVG data use that
-	if (!icon_def->svg_data.empty())
-		return loadSVGIcon(icon_def->svg_data, size, padding);
-
-	// Otherwise load from png
-	if (icon_def->entry_png16 || icon_def->entry_png32)
-		return loadPNGIcon(*icon_def, size, padding);
-
-	return wxNullBitmap;
-}
-#endif
-
-#if wxCHECK_VERSION(3, 1, 6)
 // -----------------------------------------------------------------------------
 // Loads the interface icon [name] from [theme] into a wxBitmapBundle of minimum
 // [size].
@@ -557,46 +522,6 @@ wxBitmapBundle icons::getInterfaceIcon(string_view name, int size, InterfaceThem
 
 	return wxNullBitmap;
 }
-#else
-// -----------------------------------------------------------------------------
-// Loads the interface icon [name] from [theme] into a wxBitmap of [size].
-//
-// NOTE: this does not use any kind of caching and will generate/load the icon
-// from svg/png data each time
-// -----------------------------------------------------------------------------
-wxBitmap icons::getInterfaceIcon(string_view name, int size, InterfaceTheme theme)
-{
-	// Get theme to use
-	bool dark = false;
-	switch (theme)
-	{
-	case System: dark = ui_icons_dark; break;
-	case Light:  dark = false; break;
-	case Dark:   dark = true; break;
-	}
-
-	// Get icon definition
-	auto&    icon_set = dark ? iconset_ui_dark : iconset_ui_light;
-	IconDef* icon_def = nullptr;
-	if (auto i = icon_set.icons.find(name); i != icon_set.icons.end())
-		icon_def = &i->second;
-	if (!icon_def)
-	{
-		log::warning("Unknown interface icon \"{}\"", name);
-		return wxNullBitmap;
-	}
-
-	// Check size
-	if (size <= 0)
-		size = ui::scalePx(16);
-
-	// If there is SVG data use that
-	if (!icon_def->svg_data.empty())
-		return loadSVGIcon(icon_def->svg_data, size, {});
-
-	return wxNullBitmap;
-}
-#endif
 
 // -----------------------------------------------------------------------------
 // Returns a list of all defined icon sets for [type]

@@ -117,6 +117,7 @@ void MapCanvas::draw()
 
 	setBackground(BGStyle::Colour, colourconfig::colour("map_background"));
 
+	context_->renderer().setUIScale(GetDPIScaleFactor());
 	context_->renderer().draw();
 }
 

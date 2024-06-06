@@ -96,7 +96,7 @@ CTextureCanvas::CTextureCanvas(wxWindow* parent) : wxPanel(parent), palette_{ ne
 		wxEVT_SIZE,
 		[this](wxSizeEvent&)
 		{
-			view_.setSize(GetSize().x, GetSize().y);
+			view_.setSize(ToPhys(GetSize().x), ToPhys(GetSize().y));
 			Refresh();
 		});
 }
@@ -128,13 +128,13 @@ void CTextureCanvas::refreshPatch(unsigned index)
 // -----------------------------------------------------------------------------
 // Draws the currently opened composite texture
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawTexture(wxGraphicsContext* gc, Vec2d scale, Vec2d offset, bool draw_patches)
+void CTextureCanvas::drawTexture(wxgfx::Context& ctx, Vec2d scale, Vec2i offset, bool draw_patches)
 {
 	// Draw all individual patches if needed (eg. while dragging or 'draw outside' is enabled)
 	if (draw_patches)
 	{
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
-			drawPatch(gc, a);
+			drawPatch(ctx, a);
 	}
 
 	// If we aren't currently dragging a patch, draw the fully generated texture
@@ -148,14 +148,14 @@ void CTextureCanvas::drawTexture(wxGraphicsContext* gc, Vec2d scale, Vec2d offse
 		}
 
 		// Draw the texture
-		gc->DrawBitmap(tex_bitmap_, offset.x, offset.y, texture_->width() * scale.x, texture_->height() * scale.y);
+		ctx.drawBitmap(tex_bitmap_, offset.x, offset.y, 1.0, texture_->width() * scale.x, texture_->height() * scale.y);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws a black border around the texture w/ticks, and a grid if dragging
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawTextureBorder(wxGraphicsContext* gc, Vec2d scale, Vec2d offset) const
+void CTextureCanvas::drawTextureBorder(wxgfx::Context& ctx, Vec2d scale, Vec2i offset) const
 {
 	constexpr float ext = 0.0f;
 	const auto      x1  = offset.x;
@@ -164,45 +164,45 @@ void CTextureCanvas::drawTextureBorder(wxGraphicsContext* gc, Vec2d scale, Vec2d
 	const auto      y2  = offset.y + texture_->height() * scale.y;
 
 	// Border
-	gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(*wxBLACK, 2.0 / view_.scale().x)));
-	gc->StrokeLine(x1 - ext, y1 - ext, x1 - ext, y2 + ext);
-	gc->StrokeLine(x1 - ext, y2 + ext, x2 + ext, y2 + ext);
-	gc->StrokeLine(x2 + ext, y2 + ext, x2 + ext, y1 - ext);
-	gc->StrokeLine(x2 + ext, y1 - ext, x1 - ext, y1 - ext);
+	ctx.setPen({ 0, 0, 0 }, 2.0);
+	ctx.drawLine(x1 - ext, y1 - ext, x1 - ext, y2 + ext);
+	ctx.drawLine(x1 - ext, y2 + ext, x2 + ext, y2 + ext);
+	ctx.drawLine(x2 + ext, y2 + ext, x2 + ext, y1 - ext);
+	ctx.drawLine(x2 + ext, y1 - ext, x1 - ext, y1 - ext);
 
 	// Vertical ticks
-	gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(0, 0, 0, 150), 1.0 / view_.scale().x)));
+	ctx.setPen({ 0, 0, 0, 150 });
 	for (auto y = y1; y <= y2; y += 8.0)
 	{
-		gc->StrokeLine(x1 - 4, y, x1, y);
-		gc->StrokeLine(x2, y, x2 + 4, y);
+		ctx.drawLine(x1 - 4, y, x1, y);
+		ctx.drawLine(x2, y, x2 + 4, y);
 	}
 
 	// Horizontal ticks
 	for (auto x = x1; x <= x2; x += 8.0)
 	{
-		gc->StrokeLine(x, y1 - 4, x, y1);
-		gc->StrokeLine(x, y2, x, y2 + 4);
+		ctx.drawLine(x, y1 - 4, x, y1);
+		ctx.drawLine(x, y2, x, y2 + 4);
 	}
 
 	// Grid
 	if (show_grid_)
 	{
-		auto cm = gc->GetCompositionMode();
-		gc->SetCompositionMode(wxCOMPOSITION_XOR);
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(255, 255, 255, 128), 1.0 / view_.scale().x)));
+		auto cm = ctx.gc->GetCompositionMode();
+		ctx.gc->SetCompositionMode(wxCOMPOSITION_XOR);
+		ctx.setPen({ 255, 255, 255, 128 });
 		for (auto y = y1 + 8; y <= y2 - 8; y += 8)
-			gc->StrokeLine(x1, y, x2, y);
+			ctx.drawLine(x1, y, x2, y);
 		for (auto x = x1 + 8; x <= x2 - 8; x += 8)
-			gc->StrokeLine(x, y1, x, y2);
-		gc->SetCompositionMode(cm);
+			ctx.drawLine(x, y1, x, y2);
+		ctx.gc->SetCompositionMode(cm);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws the patch at index [num] in the composite texture
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawPatch(wxGraphicsContext* gc, int index)
+void CTextureCanvas::drawPatch(const wxgfx::Context& ctx, int index)
 {
 	// Get patch to draw
 	const auto patch = texture_->patch(index);
@@ -219,8 +219,7 @@ void CTextureCanvas::drawPatch(wxGraphicsContext* gc, int index)
 	}
 
 	// Draw patch
-	gc->DrawBitmap(
-		patch_bitmaps_[index], patch->xOffset(), patch->yOffset(), patch_image->width(), patch_image->height());
+	ctx.drawBitmap(patch_bitmaps_[index], patch->xOffset(), patch->yOffset(), 1.0, patch_image->width(), patch_image->height());
 }
 
 
@@ -238,12 +237,12 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 	if (GetSize().x <= 0 || GetSize().y <= 0)
 		return;
 
-	auto dc = wxPaintDC(this);
-	auto gc = wxgfx::createGraphicsContext(dc);
+	auto dc  = wxPaintDC(this);
+	auto ctx = wxgfx::Context(dc, &view_);
 
 	// Background
-	wxgfx::generateCheckeredBackground(background_bitmap_, GetSize().x, GetSize().y);
-	gc->DrawBitmap(background_bitmap_, 0, 0, background_bitmap_.GetWidth(), background_bitmap_.GetHeight());
+	wxgfx::generateCheckeredBackground(background_bitmap_, view_.size().x, view_.size().y);
+	ctx.drawBitmap(background_bitmap_, 0, 0);
 
 	// Aspect Ratio Correction
 	if (tx_arc)
@@ -252,11 +251,11 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 		view_.setScale(view_.scale().x);
 
 	// Apply view
-	wxgfx::applyViewToGC(view_, gc.get());
+	ctx.applyView();
 
 	// Draw offset guides if needed
 	if (view_type_ != View::Normal)
-		wxgfx::drawOffsetLines(gc.get(), view(), view_type_ == View::Sprite ? GfxView::Sprite : GfxView::HUD);
+		ctx.drawOffsetLines(view_type_ == View::Sprite ? GfxView::Sprite : GfxView::HUD);
 
 	if (!texture_)
 		return;
@@ -294,31 +293,30 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 		}
 
 	// Draw the texture
-	drawTexture(gc.get(), scale, offset, draw_outside_ || dragging_);
-	drawTextureBorder(gc.get(), scale, offset);
+	drawTexture(ctx, scale, offset, draw_outside_ || dragging_);
+	drawTextureBorder(ctx, scale, offset);
 
 	// Draw selected patch outlines
-	gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(70, 210, 220), 2.0 / view_.scale().x)));
+	ctx.setPen({ 70, 210, 220 }, 2.0);
 	for (unsigned a = 0; a < patches_.size(); a++)
 		if (patches_[a].selected)
 		{
 			auto patch = texture_->patch(a);
-			gc->DrawRectangle(
-				patch->xOffset(), patch->yOffset(), patches_[a].image->width(), patches_[a].image->height());
+			ctx.drawRect(patch->xOffset(), patch->yOffset(), patches_[a].image->width(), patches_[a].image->height());
 		}
 
 	// Draw hilighted patch outline
 	if (hilight_patch_ >= 0 && hilight_patch_ < static_cast<int>(texture_->nPatches()))
 	{
-		auto cm = gc->GetCompositionMode();
-		gc->SetCompositionMode(wxCOMPOSITION_ADD);
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(255, 255, 255, 150), 2.0 / view_.scale().x)));
+		auto cm = ctx.gc->GetCompositionMode();
+		ctx.gc->SetCompositionMode(wxCOMPOSITION_ADD);
+		ctx.setPen({ 255, 255, 255, 150 }, 2.0);
 		auto patch = texture_->patch(hilight_patch_);
-		gc->DrawRectangle(
+		ctx.drawRect(
 			patch->xOffset(),
 			patch->yOffset(),
 			patches_[hilight_patch_].image->width(),
 			patches_[hilight_patch_].image->height());
-		gc->SetCompositionMode(cm);
+		ctx.gc->SetCompositionMode(cm);
 	}
 }

@@ -5,6 +5,11 @@
 
 namespace slade
 {
+namespace wxgfx
+{
+	struct Context;
+}
+
 class CTextureCanvas : public wxPanel, public CTextureCanvasBase
 {
 public:
@@ -29,9 +34,9 @@ private:
 	wxBitmap         background_bitmap_;
 	wxBitmap         tex_bitmap_;
 
-	void drawTexture(wxGraphicsContext* gc, Vec2d scale, Vec2d offset, bool draw_patches);
-	void drawTextureBorder(wxGraphicsContext* gc, Vec2d scale, Vec2d offset) const;
-	void drawPatch(wxGraphicsContext* gc, int index);
+	void drawTexture(wxgfx::Context& ctx, Vec2d scale, Vec2i offset, bool draw_patches);
+	void drawTextureBorder(wxgfx::Context& ctx, Vec2d scale, Vec2i offset) const;
+	void drawPatch(const wxgfx::Context& ctx, int index);
 
 	// Events
 	void onPaint(wxPaintEvent& e);

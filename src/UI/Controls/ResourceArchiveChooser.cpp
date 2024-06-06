@@ -35,8 +35,8 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
-#include "UI/WxUtils.h"
+#include "UI/UI.h"
+#include "UI/Layout.h"
 #include "Utility/SFileDialog.h"
 
 using namespace slade;
@@ -54,14 +54,16 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, const Archive* archive) : wxPanel(parent, -1)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Resource archive list
 	list_resources_ = new wxCheckListBox(this, -1);
-	sizer->Add(list_resources_, wxutil::sfWithBorder(1, wxBOTTOM).Expand());
-	list_resources_->SetInitialSize(wxutil::scaledSize(350, 100));
+	sizer->Add(list_resources_, lh.sfWithBorder(1, wxBOTTOM).Expand());
+	list_resources_->SetInitialSize(lh.size(350, 100));
 
 	// Populate resource archive list
 	int index = 0;
@@ -80,9 +82,9 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, const Archive* 
 
 	// 'Open Resource' button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wxutil::sfWithBorder(0, wxRIGHT).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxRIGHT).Expand());
 	btn_open_resource_ = new wxButton(this, -1, "Open Archive");
-	hbox->Add(btn_open_resource_, wxutil::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_open_resource_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// 'Open Recent' button
 	btn_recent_ = new wxButton(this, -1, "Open Recent");

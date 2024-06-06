@@ -51,7 +51,7 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -68,7 +68,7 @@ class CreateTextureXDialog : public wxDialog
 public:
 	CreateTextureXDialog(wxWindow* parent) : wxDialog(parent, -1, "Create Texture Definitions")
 	{
-		namespace wx = wxutil;
+		auto lh = ui::LayoutHelper(this);
 
 		// Setup layout
 		auto m_vbox = new wxBoxSizer(wxVERTICAL);
@@ -77,32 +77,32 @@ public:
 		// --- Format options ---
 		auto frame      = new wxStaticBox(this, -1, "Format");
 		auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		m_vbox->Add(framesizer, wx::sfWithBorder().Expand());
+		m_vbox->Add(framesizer, lh.sfWithBorder().Expand());
 
 		// Doom format
 		rb_format_doom_ = new wxRadioButton(
 			this, -1, "Doom (TEXTURE1 + PNAMES)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 		rb_format_strife_   = new wxRadioButton(this, -1, "Strife (TEXTURE1 + PNAMES)");
 		rb_format_textures_ = new wxRadioButton(this, -1, "ZDoom (TEXTURES)");
-		wx::layoutVertically(
-			framesizer, { rb_format_doom_, rb_format_strife_, rb_format_textures_ }, wx::sfWithBorder(1).Expand());
+		lh.layoutVertically(
+			framesizer, { rb_format_doom_, rb_format_strife_, rb_format_textures_ }, lh.sfWithBorder(1).Expand());
 
 
 		// --- Source options ---
 		frame      = new wxStaticBox(this, -1, "Source");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		m_vbox->Add(framesizer, wx::sfWithBorder().Expand());
+		m_vbox->Add(framesizer, lh.sfWithBorder().Expand());
 
 		// New list
 		rb_new_ = new wxRadioButton(this, -1, "Create New (Empty)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		framesizer->Add(rb_new_, wx::sfWithBorder().Expand());
+		framesizer->Add(rb_new_, lh.sfWithBorder().Expand());
 
 		// Import from Base Resource Archive
 		rb_import_bra_ = new wxRadioButton(this, -1, "Import from Base Resource Archive:");
-		framesizer->Add(rb_import_bra_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		framesizer->Add(rb_import_bra_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 		// Add buttons
-		m_vbox->Add(CreateButtonSizer(wxOK | wxCANCEL), wx::sfWithBorder().Expand());
+		m_vbox->Add(CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithBorder().Expand());
 
 		// Bind events
 		rb_new_->Bind(wxEVT_RADIOBUTTON, &CreateTextureXDialog::onRadioNewSelected, this);
@@ -212,7 +212,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1), patch_ta
 
 	// Add tabs
 	tabs_ = STabCtrl::createControl(this);
-	sizer->Add(tabs_, wxutil::sfWithBorder(1).Expand());
+	sizer->Add(tabs_, ui::LayoutHelper(this).sfWithBorder(1).Expand());
 
 	// Bind events
 	Bind(wxEVT_SHOW, &TextureXEditor::onShow, this);

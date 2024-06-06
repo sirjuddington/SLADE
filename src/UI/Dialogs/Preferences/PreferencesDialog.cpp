@@ -41,7 +41,6 @@
 #include "ColorimetryPrefsPanel.h"
 #include "ColourPrefsPanel.h"
 #include "EditingPrefsPanel.h"
-#include "General/UI.h"
 #include "GeneralPrefsPanel.h"
 #include "GraphicsPrefsPanel.h"
 #include "HudOffsetsPrefsPanel.h"
@@ -58,6 +57,7 @@
 #include "PNGPrefsPanel.h"
 #include "TextEditorPrefsPanel.h"
 #include "TextStylePrefsPanel.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -86,6 +86,7 @@ namespace
 wxSizer* createTitleSizer(wxWindow* parent, const wxString& title, const wxString& description)
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
+	auto lh    = ui::LayoutHelper(parent);
 
 	// Title
 	auto title_label = new wxStaticText(parent, -1, title);
@@ -99,8 +100,8 @@ wxSizer* createTitleSizer(wxWindow* parent, const wxString& title, const wxStrin
 		sizer->Add(new wxStaticText(parent, -1, description), wxSizerFlags().Expand());
 
 	// Separator
-	sizer->AddSpacer(ui::padMin());
-	sizer->Add(new wxStaticLine(parent), wxutil::sfWithLargeBorder(0, wxBOTTOM).Expand());
+	sizer->AddSpacer(lh.padSmall());
+	sizer->Add(new wxStaticLine(parent), lh.sfWithLargeBorder(0, wxBOTTOM).Expand());
 
 	return sizer;
 }
@@ -119,6 +120,8 @@ wxSizer* createTitleSizer(wxWindow* parent, const wxString& title, const wxStrin
 // -----------------------------------------------------------------------------
 PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE Settings", "prefs")
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup main sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -132,7 +135,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 
 	// Setup preferences TreeBook
 	addPrefsPage<GeneralPrefsPanel>("General", false, true);
-	//addPrefsPage<OpenGLPrefsPanel>("OpenGL", true);
+	// addPrefsPage<OpenGLPrefsPanel>("OpenGL", true);
 	addPrefsPage<InterfacePrefsPanel>("Interface");
 	addPrefsPage<ColourPrefsPanel>("Colours & Theme", true);
 	addPrefsPage<InputPrefsPanel>("Keyboard Shortcuts");
@@ -158,10 +161,10 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 		tree_prefs_->ExpandNode(page);
 
 	// Add preferences treebook
-	sizer->Add(tree_prefs_, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+	sizer->Add(tree_prefs_, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Add buttons
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL | wxAPPLY), wxutil::sfWithLargeBorder().Expand());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL | wxAPPLY), lh.sfWithLargeBorder().Expand());
 
 	// Bind events
 	Bind(wxEVT_BUTTON, &PreferencesDialog::onButtonClicked, this);
@@ -170,8 +173,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 	wxTopLevelWindowBase::Layout();
 	const wxSize size = GetSize() * wxWindowBase::GetContentScaleFactor();
 	SetInitialSize(size);
-	// Fit();
-	wxTopLevelWindowBase::SetMinSize(wxSize(ui::scalePx(800), ui::scalePx(600)));
+	wxTopLevelWindowBase::SetMinSize(GetBestSize());
 	CenterOnParent();
 
 	// Collapse all tree nodes
@@ -189,6 +191,7 @@ void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const wxString& title
 	// Create a panel to put the preferences page in
 	// (since we want some extra padding between the tree and the page)
 	auto panel = new wxPanel(tree_prefs_, -1);
+	auto lh    = ui::LayoutHelper(panel);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
@@ -196,11 +199,11 @@ void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const wxString& title
 	sizer->Add(
 		createTitleSizer(
 			panel, page->pageTitle().empty() ? title + " Settings" : page->pageTitle(), page->pageDescription()),
-		wxutil::sfWithBorder(0, wxLEFT).Expand());
+		lh.sfWithBorder(0, wxLEFT).Expand());
 
 	// Add prefs page to panel
 	page->Reparent(panel);
-	panel->GetSizer()->Add(page, wxutil::sfWithBorder(1, wxLEFT).Expand());
+	panel->GetSizer()->Add(page, lh.sfWithBorder(1, wxLEFT).Expand());
 
 	// Add panel to treebook
 	if (sub_page)
@@ -220,15 +223,16 @@ wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
 {
 	// Create panel
 	auto panel  = new wxPanel(tree_prefs_, -1);
+	auto lh     = ui::LayoutHelper(panel);
 	auto psizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(psizer);
 
 	// Add page title section
-	psizer->Add(createTitleSizer(panel, "Base Resource Archive", ""), wxutil::sfWithBorder(0, wxLEFT).Expand());
+	psizer->Add(createTitleSizer(panel, "Base Resource Archive", ""), lh.sfWithBorder(0, wxLEFT).Expand());
 
 	// Add BRA panel
 	panel_bra_ = new BaseResourceArchivesPanel(panel);
-	psizer->Add(panel_bra_, wxutil::sfWithBorder(1, wxLEFT).Expand());
+	psizer->Add(panel_bra_, lh.sfWithBorder(1, wxLEFT).Expand());
 
 	return panel;
 }
@@ -240,6 +244,7 @@ wxPanel* PreferencesDialog::setupAdvancedPanel()
 {
 	// Create panel
 	auto panel  = new wxPanel(tree_prefs_, -1);
+	auto lh     = ui::LayoutHelper(panel);
 	auto psizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(psizer);
 
@@ -250,11 +255,11 @@ wxPanel* PreferencesDialog::setupAdvancedPanel()
 			"Advanced Settings",
 			"Warning: Only modify these values if you know what you are doing!\n"
 			"Most of these settings can be changed more safely from the other sections."),
-		wxutil::sfWithBorder(0, wxLEFT).Expand());
+		lh.sfWithBorder(0, wxLEFT).Expand());
 
 	// Add advanced settings panel
 	prefs_advanced_ = new AdvancedPrefsPanel(panel);
-	psizer->Add(prefs_advanced_, wxutil::sfWithBorder(1, wxLEFT).Expand());
+	psizer->Add(prefs_advanced_, lh.sfWithBorder(1, wxLEFT).Expand());
 
 	return panel;
 }

@@ -34,6 +34,8 @@ namespace mapeditor
 		MapRenderer2D& renderer2D() const { return *renderer_2d_; }
 		MapRenderer3D& renderer3D() const { return *renderer_3d_; }
 		gl::View&      view() const { return *view_; }
+		float          uiScale() const { return ui_scale_; }
+		void           setUIScale(float scale) { ui_scale_ = scale; }
 
 		void forceUpdate(bool update_2d = true, bool update_3d = true) const;
 		void clearTextureCache() const;
@@ -71,6 +73,7 @@ namespace mapeditor
 		unique_ptr<MapRenderer3D> renderer_3d_;
 		unique_ptr<gl::View>      view_;
 		unique_ptr<gl::View>      view_screen_;
+		float                     ui_scale_ = 1.0f;
 
 		// OpenGL
 		unique_ptr<gl::VertexBuffer2D> vb_grid_;

@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HudOffsetsPrefsPanel.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -64,7 +64,7 @@ HudOffsetsPrefsPanel::HudOffsetsPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	wxutil::layoutVertically(
+	ui::LayoutHelper(this).layoutVertically(
 		sizer,
 		{ cb_hud_bob_       = new wxCheckBox(this, -1, "Show weapon bob outline"),
 		  cb_hud_center_    = new wxCheckBox(this, -1, "Show center line"),

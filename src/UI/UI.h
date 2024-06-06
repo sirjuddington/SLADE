@@ -3,7 +3,7 @@
 namespace slade::ui
 {
 // General
-void init(double scale = 1.);
+void init();
 
 // Splash Window
 void  enableSplash(bool enable);
@@ -30,21 +30,20 @@ enum class MouseCursor
 };
 void setCursor(wxWindow* window, MouseCursor cursor);
 
-// Pixel spacing and scaling
+// Standard sizes and padding (in DIP, "DPI Independent Pixels")
 enum class Size
 {
-	PadLarge,
+	PadSmall,
 	Pad,
-	PadMinimum,
+	PadLarge,
+	PadXLarge,
 	Splitter,
 	SpinCtrlWidth
 };
-double scaleFactor();
-int    px(Size size);
-int    scalePx(int px);
-int    scalePxU(int px);
-int    pad();      // Shortcut for ui::px(UI::Size::Pad)
-int    padLarge(); // Shortcut for ui::px(UI::Size::PadLarge)
-int    padMin();   // Shortcut for ui::px(ui::Size::PadMinimum)
+int sizePx(Size size, const wxWindow* window = nullptr);
+int pad(const wxWindow* window = nullptr);
+int padLarge(const wxWindow* window = nullptr);
+int padXLarge(const wxWindow* window = nullptr);
+int padSmall(const wxWindow* window = nullptr);
 
 } // namespace slade::ui

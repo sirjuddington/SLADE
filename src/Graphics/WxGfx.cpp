@@ -34,7 +34,6 @@
 #include "OpenGL/View.h"
 #include "SImage/SImage.h"
 #include "UI/Canvas/GfxCanvasBase.h"
-#include "lunasvg.h"
 
 using namespace slade;
 using namespace wxgfx;
@@ -65,39 +64,240 @@ EXTERN_CVAR(Bool, hud_bob)
 
 
 // -----------------------------------------------------------------------------
+//
+// wxgfx::Context Struct Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Context Struct Constructor
+// -----------------------------------------------------------------------------
+Context::Context(wxWindowDC& dc, gl::View* view) : view{ view }
+{
+	gc = createGraphicsContext(dc);
+}
+
+// -----------------------------------------------------------------------------
+// Applies the view to the graphics context
+// -----------------------------------------------------------------------------
+void Context::applyView() const
+{
+	if (view && gc)
+		applyViewToGC(*view, gc.get());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the pen [colour] and [width]
+// -----------------------------------------------------------------------------
+void Context::setPen(const ColRGBA& colour, double width) const
+{
+	if (gc)
+	{
+		auto w       = gc->GetWindow();
+		auto p_width = (width / (view ? view->scale().x : 1.0)) / w->GetContentScaleFactor();
+		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo{ colour, p_width }));
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Sets the brush [colour]
+// -----------------------------------------------------------------------------
+void Context::setBrush(const ColRGBA& colour) const
+{
+	if (gc)
+		gc->SetBrush(wxBrush{ colour });
+}
+
+// -----------------------------------------------------------------------------
+// Sets the brush to be transparent
+// -----------------------------------------------------------------------------
+void Context::setTransparentBrush() const
+{
+	if (gc)
+		gc->SetBrush(*wxTRANSPARENT_BRUSH);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the pen to be transparent
+// -----------------------------------------------------------------------------
+void Context::setTransparentPen() const
+{
+	if (gc)
+		gc->SetPen(*wxTRANSPARENT_PEN);
+}
+
+// -----------------------------------------------------------------------------
+// Draws a [line] using the current pen
+// -----------------------------------------------------------------------------
+void Context::drawLine(const Seg2i& line) const
+{
+	drawLine(line.x1(), line.y1(), line.x2(), line.y2());
+}
+
+// -----------------------------------------------------------------------------
+// Draws a line from [x1,y1] to [x2,y2] using the current pen
+// -----------------------------------------------------------------------------
+void Context::drawLine(int x1, int y1, int x2, int y2) const
+{
+	if (!gc)
+		return;
+
+	const auto w = gc->GetWindow();
+	gc->StrokeLine(w->FromPhys(x1), w->FromPhys(y1), w->FromPhys(x2), w->FromPhys(y2));
+}
+
+// -----------------------------------------------------------------------------
+// Draws multiple [lines] using the current pen
+// -----------------------------------------------------------------------------
+void Context::drawLines(const vector<Seg2i>& lines) const
+{
+	if (!gc)
+		return;
+
+	vector<wxPoint2DDouble> begin_points;
+	vector<wxPoint2DDouble> end_points;
+	const auto              w = gc->GetWindow();
+
+	for (const auto& line : lines)
+	{
+		begin_points.emplace_back(w->FromPhys(line.x1()), w->FromPhys(line.y1()));
+		end_points.emplace_back(w->FromPhys(line.x2()), w->FromPhys(line.y2()));
+	}
+
+	gc->StrokeLines(lines.size(), begin_points.data(), end_points.data());
+}
+
+// -----------------------------------------------------------------------------
+// Draws a [rect] using the current pen (outline) and brush (fill)
+// -----------------------------------------------------------------------------
+void Context::drawRect(const Recti& rect) const
+{
+	drawRect(rect.tl.x, rect.tl.y, rect.width(), rect.height());
+}
+
+// -----------------------------------------------------------------------------
+// Draws a rectangle at [x,y] with [width] and [height]
+// -----------------------------------------------------------------------------
+void Context::drawRect(int x, int y, int width, int height) const
+{
+	if (!gc)
+		return;
+
+	const auto scale = gc->GetContentScaleFactor();
+	gc->DrawRectangle(x / scale, y / scale, width / scale, height / scale);
+}
+
+// -----------------------------------------------------------------------------
+// Draws [bitmap] at [x,y] with optional [alpha], [width] and [height]
+// -----------------------------------------------------------------------------
+void Context::drawBitmap(const wxBitmap& bitmap, int x, int y, double alpha, int width, int height) const
+{
+	if (!gc)
+		return;
+
+	const auto scale = gc->GetContentScaleFactor();
+
+	if (alpha < 1.)
+		gc->BeginLayer(alpha);
+
+	if (width < 0)
+		width = bitmap.GetWidth();
+	if (height < 0)
+		height = bitmap.GetHeight();
+
+	gc->DrawBitmap(bitmap, x / scale, y / scale, width / scale, height / scale);
+
+	if (alpha < 1.)
+		gc->EndLayer();
+}
+
+// -----------------------------------------------------------------------------
+// Draws offset guidelines for [view_type] (Sprite or HUD)
+// -----------------------------------------------------------------------------
+void Context::drawOffsetLines(GfxView view_type) const
+{
+	if (!gc || !view)
+		return;
+
+	auto psize_thick  = 1.51;
+	auto psize_normal = 1.0;
+	auto iq           = gc->GetInterpolationQuality();
+
+	if (view_type == GfxView::Sprite)
+	{
+		gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
+		setPen({ 0, 0, 0, 150 }, psize_thick);
+		drawLine(view->visibleRegion().left(), 0, view->visibleRegion().right(), 0);
+		drawLine(0, view->visibleRegion().top(), 0, view->visibleRegion().bottom());
+	}
+	else if (view_type == GfxView::HUD)
+	{
+		gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
+
+		// (320/354)x200 screen outline
+		auto right  = hud_wide ? 337 : 320;
+		auto left   = hud_wide ? -17 : 0;
+		auto top    = 0;
+		auto bottom = 200;
+		setPen({ 0, 0, 0, 190 }, psize_thick);
+		drawLine(left, top, left, bottom);
+		drawLine(left, bottom, right, bottom);
+		drawLine(right, bottom, right, top);
+		drawLine(right, top, left, top);
+
+		// Statusbar line(s)
+		setPen({ 0, 0, 0, 128 }, psize_normal);
+		if (hud_statusbar)
+		{
+			drawLine(left, 168, right, 168); // Doom's status bar: 32 pixels tall
+			drawLine(left, 162, right, 162); // Hexen: 38 pixels
+			drawLine(left, 158, right, 158); // Heretic: 42 pixels
+		}
+
+		// Center lines
+		if (hud_center)
+		{
+			drawLine(left, 100, right, 100);
+			drawLine(160, top, 160, bottom);
+		}
+
+		// Normal screen edge guides if widescreen
+		if (hud_wide)
+		{
+			drawLine(0, top, 0, bottom);
+			drawLine(320, top, 320, bottom);
+		}
+
+		// Weapon bobbing guides
+		if (hud_bob)
+		{
+			setPen({ 0, 0, 0, 128 }, psize_normal);
+			drawLine(left - 16.0, top - 16.0, left - 16.0, bottom + 16.0);
+			drawLine(left - 16.0, bottom + 16.0, right + 16.0, bottom + 16.0);
+			drawLine(right + 16.0, bottom + 16.0, right + 16.0, top - 16.0);
+			drawLine(right + 16.0, top - 16.0, left - 16.0, top - 16.0);
+		}
+	}
+
+	// Restore gc state
+	gc->SetInterpolationQuality(iq);
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// wxgfx Namespace Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 // Creates a wxImage from the given [svg_text] data, sized to [width x height].
 // Returns an invalid (empty) wxImage if the SVG data was invalid
 // -----------------------------------------------------------------------------
 wxImage wxgfx::createImageFromSVG(const string& svg_text, int width, int height)
 {
-	// Load SVG
-	const auto svg = lunasvg::Document::loadFromData(svg_text);
-	if (!svg)
-		return {};
-
-	// Render SVG
-	const auto bmp = svg->renderToBitmap(width, height);
-	if (!bmp.valid())
-		return {};
-
-	// Split image data to separate rgb + alpha channels
-	const auto bmp_data    = bmp.data();
-	const auto n_pixels    = width * height;
-	const auto rgb_data    = new uint8_t[n_pixels * 3]; // wxImage below will take ownership
-	const auto alpha_data  = new uint8_t[n_pixels];     // ^
-	auto       data_index  = 0;
-	auto       rgb_index   = 0;
-	auto       alpha_index = 0;
-	for (auto p = 0; p < n_pixels; ++p)
-	{
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		alpha_data[alpha_index++] = bmp_data[data_index++];
-	}
-
-	// Create wxImage
-	return { width, height, rgb_data, alpha_data, false };
+	auto bundle = wxBitmapBundle::FromSVG(svg_text.c_str(), { width, height });
+	return bundle.GetBitmap({ width, height }).ConvertToImage();
 }
 
 // -----------------------------------------------------------------------------
@@ -144,10 +344,11 @@ unique_ptr<wxGraphicsContext> wxgfx::createGraphicsContext(wxWindowDC& dc)
 // -----------------------------------------------------------------------------
 void wxgfx::applyViewToGC(const gl::View& view, wxGraphicsContext* gc)
 {
+	auto scale = gc->GetContentScaleFactor();
 	if (view.centered())
-		gc->Translate(view.size().x * 0.5, view.size().y * 0.5);
+		gc->Translate((view.size().x * 0.5) / scale, (view.size().y * 0.5) / scale);
 	gc->Scale(view.scale().x, view.scale().y);
-	gc->Translate(-view.offset().x, -view.offset().y);
+	gc->Translate(-view.offset().x / scale, -view.offset().y / scale);
 }
 
 bool wxgfx::nearestInterpolationSupported()

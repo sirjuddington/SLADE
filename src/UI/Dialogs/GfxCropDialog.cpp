@@ -31,12 +31,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GfxCropDialog.h"
-#include "General/UI.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/View.h"
 #include "UI/Canvas/Canvas.h"
 #include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Controls/NumberTextCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -55,7 +55,7 @@ using namespace slade;
 GfxCropDialog::GfxCropDialog(wxWindow* parent, const SImage& image, const Palette* palette) :
 	wxDialog(parent, -1, "Crop", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Set max crop size
 	max_width_  = image.width();
@@ -63,13 +63,13 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, const SImage& image, const Palett
 	crop_rect_.set(0, 0, max_width_, max_height_);
 
 	// Set dialog icon
-	wx::setWindowIcon(this, "crop");
+	wxutil::setWindowIcon(this, "crop");
 
 	// Setup main sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(sizer, wx::sfWithLargeBorder(1).Expand());
+	msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// Add preview
 	canvas_preview_ = ui::createGfxCanvas(this);
@@ -77,27 +77,27 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, const SImage& image, const Palett
 	canvas_preview_->setPalette(palette);
 	canvas_preview_->image().copyImage(&image);
 	canvas_preview_->setCropRect(crop_rect_);
-	canvas_preview_->window()->SetInitialSize(wxutil::scaledSize(220, 220));
-	sizer->Add(canvas_preview_->window(), wx::sfWithBorder(1, wxBOTTOM).Expand());
+	canvas_preview_->window()->SetInitialSize(lh.size(220, 220));
+	sizer->Add(canvas_preview_->window(), lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add crop controls
 	auto frame      = new wxStaticBox(this, -1, "Crop Borders");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, wx::sfWithLargeBorder(0, wxBOTTOM).Expand());
+	sizer->Add(framesizer, lh.sfWithLargeBorder(0, wxBOTTOM).Expand());
 
 	// Absolute
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, wx::sfWithBorder().Expand());
+	framesizer->Add(hbox, lh.sfWithBorder().Expand());
 	rb_absolute_ = new wxRadioButton(frame, -1, "Absolute");
 	rb_absolute_->SetValue(true);
-	hbox->Add(rb_absolute_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(rb_absolute_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Relative
 	rb_relative_ = new wxRadioButton(frame, -1, "Relative");
 	hbox->Add(rb_relative_, wxSizerFlags().Expand());
 
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, wx::sfWithBorder(1).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 
 	// Left
 	gb_sizer->Add(new wxStaticText(frame, -1, "Left:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
@@ -130,7 +130,7 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, const SImage& image, const Palett
 	gb_sizer->AddGrowableCol(1);
 
 	// Add buttons
-	sizer->Add(wx::createDialogButtonBox(this, "Crop", "Cancel"), wxSizerFlags().Expand());
+	sizer->Add(wxutil::createDialogButtonBox(this, "Crop", "Cancel"), wxSizerFlags().Expand());
 
 	bindEvents();
 

@@ -34,8 +34,8 @@
 #include "App.h"
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
 #include "NewArchiveDiaog.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -62,6 +62,8 @@ CVAR(String, archive_last_created_format, "wad", CVar::Save)
 // -----------------------------------------------------------------------------
 NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Create New Archive")
 {
+	auto lh = LayoutHelper(this);
+
 	// Set dialog icon
 	wxutil::setWindowIcon(this, "newarchive");
 
@@ -88,9 +90,9 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	// Layout
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type), wxutil::sfWithLargeBorder().Expand());
+	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type), lh.sfWithLargeBorder().Expand());
 	auto* hbox = wxutil::createDialogButtonBox(btn_create, btn_cancel);
-	sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Create button click
 	btn_create->Bind(
@@ -109,7 +111,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	// Cancel button click
 	btn_cancel->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_CANCEL); });
 
-	SetInitialSize({ ui::scalePx(250), -1 });
+	SetInitialSize(lh.size(250, -1));
 	wxWindowBase::Layout();
 	wxWindowBase::Fit();
 	wxTopLevelWindowBase::SetMinSize(GetBestSize());

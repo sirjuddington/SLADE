@@ -6,6 +6,10 @@
 namespace slade
 {
 class STabCtrl;
+namespace ui
+{
+	struct LayoutHelper;
+}
 
 class MapDisplayPrefsPanel : public PrefsPanelBase
 {
@@ -13,11 +17,11 @@ public:
 	MapDisplayPrefsPanel(wxWindow* parent);
 	~MapDisplayPrefsPanel() override = default;
 
-	void setupGeneralTab();
-	void setupVerticesTab();
-	void setupLinesTab();
-	void setupThingsTab();
-	void setupFlatsTab();
+	void setupGeneralTab(const ui::LayoutHelper& lh);
+	void setupVerticesTab(const ui::LayoutHelper& lh);
+	void setupLinesTab(const ui::LayoutHelper& lh);
+	void setupThingsTab(const ui::LayoutHelper& lh);
+	void setupFlatsTab(const ui::LayoutHelper& lh);
 	void init() override;
 	void applyPreferences() override;
 
@@ -46,15 +50,15 @@ private:
 	wxCheckBox* cb_line_tabs_always_ = nullptr;
 	wxCheckBox* cb_line_fade_        = nullptr;
 
-	wxChoice*   choice_thing_shape_       = nullptr;
-	wxChoice*   choice_things_always_     = nullptr;
-	wxCheckBox* cb_thing_sprites_         = nullptr;
-	wxCheckBox* cb_thing_force_dir_       = nullptr;
-	wxCheckBox* cb_thing_overlay_square_  = nullptr;
-	wxSlider*   slider_thing_shadow_      = nullptr;
-	wxCheckBox* cb_use_zeth_icons_        = nullptr;
-	wxSlider*   slider_halo_width_        = nullptr;
-	wxSlider*   slider_light_intensity_   = nullptr;
+	wxChoice*   choice_thing_shape_      = nullptr;
+	wxChoice*   choice_things_always_    = nullptr;
+	wxCheckBox* cb_thing_sprites_        = nullptr;
+	wxCheckBox* cb_thing_force_dir_      = nullptr;
+	wxCheckBox* cb_thing_overlay_square_ = nullptr;
+	wxSlider*   slider_thing_shadow_     = nullptr;
+	wxCheckBox* cb_use_zeth_icons_       = nullptr;
+	wxSlider*   slider_halo_width_       = nullptr;
+	wxSlider*   slider_light_intensity_  = nullptr;
 
 	wxSlider*   slider_flat_brightness_  = nullptr;
 	wxCheckBox* cb_flat_ignore_light_    = nullptr;

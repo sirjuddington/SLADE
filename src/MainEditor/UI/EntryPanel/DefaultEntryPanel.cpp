@@ -41,8 +41,8 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
+#include "UI/Layout.h"
 #include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -59,39 +59,39 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "default")
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	sizer_main_->AddStretchSpacer(1);
 
 	// Add index label
 	label_index_ = new wxStaticText(this, -1, "Index");
-	sizer_main_->Add(label_index_, wx::sfWithBorder().Center());
+	sizer_main_->Add(label_index_, lh.sfWithBorder().Center());
 
 	// Add type label
 	label_type_ = new wxStaticText(this, -1, "Type");
-	sizer_main_->Add(label_type_, wx::sfWithBorder().Center());
+	sizer_main_->Add(label_type_, lh.sfWithBorder().Center());
 
 	// Add size label
 	label_size_ = new wxStaticText(this, -1, "Size");
-	sizer_main_->Add(label_size_, wx::sfWithBorder().Center());
+	sizer_main_->Add(label_size_, lh.sfWithBorder().Center());
 
 	// Add actions frame
 	frame_actions_  = new wxStaticBox(this, -1, "Actions");
 	auto framesizer = new wxStaticBoxSizer(frame_actions_, wxVERTICAL);
-	sizer_main_->Add(framesizer, wx::sfWithBorder().Center());
+	sizer_main_->Add(framesizer, lh.sfWithBorder().Center());
 
 	// Add 'Convert Gfx' button
 	btn_gfx_convert_ = new wxButton(this, -1, "Convert Gfx To...");
-	framesizer->AddSpacer(4);
-	framesizer->Add(btn_gfx_convert_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->AddSpacer(lh.px(4));
+	framesizer->Add(btn_gfx_convert_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Modify Gfx Offsets' button
 	btn_gfx_modify_offsets_ = new wxButton(this, -1, "Modify Gfx Offsets");
-	framesizer->Add(btn_gfx_modify_offsets_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(btn_gfx_modify_offsets_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Edit Textures' button
 	btn_texture_edit_ = new wxButton(this, -1, "Edit Textures");
-	framesizer->Add(btn_texture_edit_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(btn_texture_edit_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	sizer_main_->AddStretchSpacer(1);
 

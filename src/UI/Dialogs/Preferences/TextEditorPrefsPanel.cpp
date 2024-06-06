@@ -31,7 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextEditorPrefsPanel.h"
-#include "General/UI.h"
+#include "UI/Layout.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -78,11 +79,13 @@ EXTERN_CVAR(Bool, txed_calltips_argset_kb)
 // -----------------------------------------------------------------------------
 TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create main sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::padLarge());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.padLarge());
 	auto row      = 0;
 	sizer->Add(gb_sizer, wxSizerFlags().Expand());
 
@@ -120,7 +123,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		{ ++row, 0 },
 		{ 1, 4 },
 		wxEXPAND | wxTOP | wxBOTTOM,
-		8);
+		lh.pad());
 
 	// --- Display ---
 
@@ -189,7 +192,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		{ ++row, 0 },
 		{ 1, 4 },
 		wxEXPAND | wxTOP | wxBOTTOM,
-		8);
+		lh.pad());
 
 	// --- Calltips ---
 
@@ -224,7 +227,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		{ ++row, 0 },
 		{ 1, 4 },
 		wxEXPAND | wxTOP | wxBOTTOM,
-		8);
+		lh.pad());
 
 	// --- Folding ---
 

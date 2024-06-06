@@ -194,7 +194,7 @@ void MainWindow::setupLayout()
 {
 	// Create the wxAUI manager & related things
 	aui_mgr_ = new wxAuiManager(this);
-	aui_mgr_->SetArtProvider(new SAuiDockArt());
+	aui_mgr_->SetArtProvider(new SAuiDockArt(this));
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
@@ -223,9 +223,9 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Float();
-	p_inf.FloatingSize(wxutil::scaledSize(600, 400));
-	p_inf.FloatingPosition(wxutil::scaledPoint(100, 100));
-	p_inf.MinSize(wxutil::scaledSize(-1, 192));
+	p_inf.FloatingSize(FromDIP(wxSize(600, 400)));
+	p_inf.FloatingPosition(FromDIP(wxPoint(100, 100)));
+	p_inf.MinSize(FromDIP(wxSize(-1, 192)));
 	p_inf.Show(false);
 	p_inf.Caption("Console");
 	p_inf.Name("console");
@@ -238,7 +238,7 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Left();
-	p_inf.BestSize(wxutil::scaledSize(192, 480));
+	p_inf.BestSize(FromDIP(wxSize(192, 480)));
 	p_inf.Caption("Archive Manager");
 	p_inf.Name("archive_manager");
 	p_inf.Show(true);
@@ -252,7 +252,7 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Right();
-	p_inf.BestSize(wxutil::scaledSize(128, 480));
+	p_inf.BestSize(FromDIP(wxSize(128, 480)));
 	p_inf.Caption("Undo History");
 	p_inf.Name("undo_history");
 	p_inf.Show(false);
@@ -381,7 +381,7 @@ void MainWindow::setupLayout()
 		wxAuiPaneInfo()
 			.Top()
 			.CaptionVisible(false)
-			.MinSize(-1, SToolBar::getBarHeight())
+			.MinSize(-1, SToolBar::getBarHeight(this))
 			.Resizable(false)
 			.PaneBorder(false)
 			.Name("toolbar"));
@@ -556,7 +556,7 @@ bool MainWindow::handleAction(string_view id)
 		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
 		auto& p_inf = m_mgr->GetPane("console");
 		p_inf.Show(!p_inf.IsShown());
-		p_inf.MinSize(wxutil::scaledSize(200, 128));
+		p_inf.MinSize(FromDIP(wxSize(200, 128)));
 		dynamic_cast<ConsolePanel*>(p_inf.window)->focusInput();
 		m_mgr->Update();
 		return true;
@@ -686,7 +686,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 	// Update toolbar layout (if needed)
 	toolbar_->updateLayout();
 #ifndef __WXMSW__
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight(this));
 	aui_mgr_->Update();
 #endif
 
@@ -718,7 +718,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 {
 	// Update toolbar size
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, SToolBar::getBarHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, SToolBar::getBarHeight(this));
 	aui_mgr_->Update();
 }
 

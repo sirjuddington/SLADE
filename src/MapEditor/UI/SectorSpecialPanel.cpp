@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "SectorSpecialPanel.h"
 #include "Game/Configuration.h"
-#include "General/UI.h"
+#include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
 #include "UI/WxUtils.h"
 
@@ -65,7 +65,7 @@ wxString alt_damage_types[] = { "Instantly Kill Player w/o Radsuit or Invuln",
 // -----------------------------------------------------------------------------
 SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -75,7 +75,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	auto frame      = new wxStaticBox(this, -1, "Special");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	lv_specials_    = new ListView(this, -1);
-	framesizer->Add(lv_specials_, wx::sfWithBorder(1).Expand());
+	framesizer->Add(lv_specials_, lh.sfWithBorder(1).Expand());
 	sizer->Add(framesizer, wxSizerFlags(1).Expand());
 
 	lv_specials_->enableSizeUpdate(false);
@@ -93,36 +93,36 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	lv_specials_->updateSize();
 
 	// Boom Flags
-	int width = ui::scalePx(300);
+	int width = 300;
 	if (game::configuration().supportsSectorFlags())
 	{
 		frame      = new wxStaticBox(this, -1, "Flags");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		sizer->Add(framesizer, wx::sfWithBorder(0, wxTOP).Expand());
+		sizer->Add(framesizer, lh.sfWithBorder(0, wxTOP).Expand());
 
 		// Damage
 		choice_damage_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
 		choice_damage_->Select(0);
-		framesizer->Add(wx::createLabelHBox(this, "Damage:", choice_damage_), wx::sfWithBorder().Expand());
+		framesizer->Add(wxutil::createLabelHBox(this, "Damage:", choice_damage_), lh.sfWithBorder().Expand());
 
 		// Secret | Friction | Pusher/Puller
 		cb_secret_   = new wxCheckBox(this, -1, "Secret");
 		cb_friction_ = new wxCheckBox(this, -1, "Friction Enabled");
 		cb_pushpull_ = new wxCheckBox(this, -1, "Pushers/Pullers Enabled");
-		wx::layoutHorizontally(
+		lh.layoutHorizontally(
 			framesizer,
 			{ cb_secret_, cb_friction_, cb_pushpull_ },
-			wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+			lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 		// MBF21 Flags: Alternative Damage Mode | Kill Grounded Monsters
 		cb_alt_damage_    = new wxCheckBox(this, -1, "Alternate Damage Mode");
 		cb_kill_grounded_ = new wxCheckBox(this, -1, "Kill Grounded Monsters");
 		if (game::configuration().featureSupported(game::Feature::MBF21))
 		{
-			wx::layoutHorizontally(
+			lh.layoutHorizontally(
 				framesizer,
 				{ cb_alt_damage_, cb_kill_grounded_ },
-				wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+				lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 			cb_alt_damage_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDamageDropdown(); });
 		}
@@ -135,7 +135,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 		width = -1;
 	}
 
-	wxWindowBase::SetMinSize(wx::scaledSize(width, 300));
+	wxWindowBase::SetMinSize(lh.size(width, 300));
 }
 
 // -----------------------------------------------------------------------------

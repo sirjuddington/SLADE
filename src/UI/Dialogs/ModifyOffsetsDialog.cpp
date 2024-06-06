@@ -33,9 +33,9 @@
 #include "ModifyOffsetsDialog.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
-#include "General/UI.h"
 #include "Graphics/GameFormats.h"
 #include "Graphics/Graphics.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -54,7 +54,7 @@ using namespace slade;
 ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	wxDialog(nullptr, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
 {
-	int      width      = ui::scalePx(40);
+	auto     lh         = ui::LayoutHelper(this);
 	wxString offtypes[] = {
 		"Monster",           "Monster (GL-friendly)", "Projectile",         "Hud/Weapon",
 		"Hud/Weapon (Doom)", "Hud/Weapon (Heretic)",  "Hud/Weapon (Hexen)",
@@ -67,8 +67,8 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	opt_auto_        = new wxRadioButton(this, -1, "Automatic Offsets", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	combo_aligntype_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 7, offtypes);
 	opt_set_         = new wxRadioButton(this, -1, "Set Offsets");
-	entry_xoff_      = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
-	entry_yoff_      = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
+	entry_xoff_      = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, lh.size(40, -1));
+	entry_yoff_      = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, lh.size(40, -1));
 	cbox_relative_   = new wxCheckBox(this, wxID_ANY, "Relative");
 
 	// Setup controls
@@ -80,8 +80,8 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	// Setup layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	auto* gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gbsizer, wxutil::sfWithLargeBorder(1).Expand());
+	auto* gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gbsizer, lh.sfWithLargeBorder(1).Expand());
 	gbsizer->Add(opt_auto_, { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gbsizer->Add(combo_aligntype_, { 0, 1 }, { 1, 3 }, wxEXPAND);
 	gbsizer->Add(opt_set_, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -92,7 +92,7 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	// Add default dialog buttons
 	sizer->Add(
 		wxutil::createDialogButtonBox(this, "OK", "Cancel"),
-		wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 
 	// Bind events

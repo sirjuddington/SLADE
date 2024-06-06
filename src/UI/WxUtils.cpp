@@ -31,18 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UI/WxUtils.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "UI/UI.h"
 #include "Utility/Colour.h"
-#include "thirdparty/lunasvg/include/lunasvg.h"
-
-#ifdef __WXGTK3__
-#include <gtk-3.0/gtk/gtk.h>
-#elif __WXGTK20__
-#define GSocket GlibGSocket
-#include <gtk-2.0/gtk/gtk.h>
-#undef GSocket
-#endif
 
 using namespace slade;
 
@@ -107,8 +98,7 @@ wxFont wxutil::monospaceFont(wxFont base)
 // -----------------------------------------------------------------------------
 wxImageList* wxutil::createSmallImageList()
 {
-	const auto icon_size = ui::scalePx(16);
-	return new wxImageList(icon_size, icon_size, false, 0);
+	return new wxImageList(16, 16, false, 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -116,11 +106,7 @@ wxImageList* wxutil::createSmallImageList()
 // -----------------------------------------------------------------------------
 int wxutil::addImageListIcon(wxImageList* list, int icon_type, string_view icon)
 {
-#if wxCHECK_VERSION(3, 1, 6)
 	return list->Add(icons::getIcon(static_cast<icons::Type>(icon_type), icon).GetBitmap(list->GetSize()));
-#else
-	return list->Add(icons::getIcon(static_cast<icons::Type>(icon_type), icon));
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -134,7 +120,7 @@ wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 	auto panel = new wxPanel(parent);
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 	control->Reparent(panel);
-	panel->GetSizer()->Add(control, 1, wxEXPAND | wxALL, pad);
+	panel->GetSizer()->Add(control, 1, wxEXPAND | wxALL, parent->FromDIP(pad));
 
 	return panel;
 }
@@ -145,7 +131,15 @@ wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max)
 {
 	return new wxSpinCtrl(
-		parent, -1, "", wxDefaultPosition, { ui::px(ui::Size::SpinCtrlWidth), -1 }, wxSP_ARROW_KEYS, min, max, value);
+		parent,
+		-1,
+		"",
+		wxDefaultPosition,
+		parent->FromDIP(wxSize{ ui::sizePx(ui::Size::SpinCtrlWidth), -1 }),
+		wxSP_ARROW_KEYS,
+		min,
+		max,
+		value);
 }
 
 // -----------------------------------------------------------------------------
@@ -155,7 +149,7 @@ wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max
 wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxWindow* widget)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, parent->FromDIP(ui::pad()));
 	hbox->Add(widget, 1, wxEXPAND);
 	return hbox;
 }
@@ -163,7 +157,7 @@ wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxWind
 wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxSizer* sizer)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, parent->FromDIP(ui::pad()));
 	hbox->Add(sizer, 1, wxEXPAND);
 	return hbox;
 }
@@ -175,7 +169,7 @@ wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxSize
 wxSizer* ::wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, ui::px(ui::Size::PadMinimum));
+	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
 	vbox->Add(widget, 1, wxEXPAND);
 	return vbox;
 }
@@ -183,7 +177,7 @@ wxSizer* ::wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxWi
 wxSizer* wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxSizer* sizer)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, ui::px(ui::Size::PadMinimum));
+	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
 	vbox->Add(sizer, 1, wxEXPAND);
 	return vbox;
 }
@@ -200,10 +194,10 @@ wxSizer* wxutil::createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel)
 	hbox->AddStretchSpacer(1);
 
 #ifdef __WXMSW__
-	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad(btn_ok));
 	hbox->Add(btn_cancel, 0, wxEXPAND);
 #else
-	hbox->Add(btn_cancel, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_cancel, 0, wxEXPAND | wxRIGHT, ui::pad(btn_ok));
 	hbox->Add(btn_ok, 0, wxEXPAND);
 #endif
 
@@ -220,130 +214,6 @@ wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const wxString& 
 	btn_ok->SetDefault();
 	auto* btn_cancel = new wxButton(parent, wxID_CANCEL, text_cancel);
 	return createDialogButtonBox(btn_ok, btn_cancel);
-}
-
-// -----------------------------------------------------------------------------
-// Returns a horizontal box sizer containing [widgets].
-// [widgets] can contain a combination of wxWindow and wxSizer objects
-// -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutHorizontally(const vector<wxObject*>& widgets, int expand_col)
-{
-	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-
-	// Add widgets/sizers
-	for (auto a = 0u; a < widgets.size(); ++a)
-	{
-		const auto widget = widgets[a];
-
-		// Widget
-		if (widget->IsKindOf(&wxWindow::ms_classInfo))
-		{
-			hbox->Add(
-				dynamic_cast<wxWindow*>(widget),
-				expand_col == static_cast<int>(a) ? 1 : 0,
-				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
-				ui::pad());
-		}
-
-		// Sizer
-		else if (widget->IsKindOf(&wxSizer::ms_classInfo))
-		{
-			hbox->Add(
-				dynamic_cast<wxSizer*>(widget),
-				expand_col == static_cast<int>(a) ? 1 : 0,
-				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
-				ui::pad());
-		}
-	}
-
-	return hbox;
-}
-
-// -----------------------------------------------------------------------------
-// Same as above, however instead of returning a new sizer, it adds it to the
-// given [sizer] with [flags]
-// -----------------------------------------------------------------------------
-void wxutil::layoutHorizontally(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags, int expand_col)
-{
-	sizer->Add(layoutHorizontally(widgets, expand_col), flags);
-}
-
-// -----------------------------------------------------------------------------
-// Returns a vertical box sizer containing [widgets].
-// [widgets] can contain a combination of wxWindow and wxSizer objects
-// -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutVertically(const vector<wxObject*>& widgets, int expand_row)
-{
-	auto vbox = new wxBoxSizer(wxVERTICAL);
-
-	// Add widgets/sizers
-	for (auto a = 0u; a < widgets.size(); ++a)
-	{
-		const auto widget = widgets[a];
-
-		// Widget
-		if (widget->IsKindOf(&wxWindow::ms_classInfo))
-		{
-			vbox->Add(
-				dynamic_cast<wxWindow*>(widget),
-				expand_row == static_cast<int>(a) ? 1 : 0,
-				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
-				ui::pad());
-		}
-
-		// Sizer
-		else if (widget->IsKindOf(&wxSizer::ms_classInfo))
-		{
-			vbox->Add(
-				dynamic_cast<wxSizer*>(widget),
-				expand_row == static_cast<int>(a) ? 1 : 0,
-				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
-				ui::pad());
-		}
-	}
-
-	return vbox;
-}
-
-// -----------------------------------------------------------------------------
-// Same as above, however instead of returning a new sizer, it adds it to the
-// given [sizer] with [flags]
-// -----------------------------------------------------------------------------
-void wxutil::layoutVertically(wxSizer* sizer, const vector<wxObject*>& widgets, wxSizerFlags flags, int expand_row)
-{
-	sizer->Add(layoutVertically(widgets, expand_row), flags);
-}
-
-// -----------------------------------------------------------------------------
-// Returns a wxSizerFlags of [proportion], with a border at [direction] of
-// [size].
-// If [size] is negative, uses the default padding size (ui::pad()).
-// Equivalent to wxSizerFlags([proportion]).Border([direction], [size])
-// -----------------------------------------------------------------------------
-wxSizerFlags wxutil::sfWithBorder(int proportion, int direction, int size)
-{
-	if (size < 0)
-		size = ui::pad();
-
-	return wxSizerFlags(proportion).Border(direction, size);
-}
-
-// -----------------------------------------------------------------------------
-// Returns a wxSizerFlags of [proportion], with a large border at [direction].
-// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padLarge())
-// -----------------------------------------------------------------------------
-wxSizerFlags wxutil::sfWithLargeBorder(int proportion, int direction)
-{
-	return wxSizerFlags(proportion).Border(direction, ui::padLarge());
-}
-
-// -----------------------------------------------------------------------------
-// Returns a wxSizerFlags of [proportion], with a small border at [direction].
-// Equivalent to wxSizerFlags([proportion]).Border([direction], ui::padMin())
-// -----------------------------------------------------------------------------
-wxSizerFlags wxutil::sfWithMinBorder(int proportion, int direction)
-{
-	return wxSizerFlags(proportion).Border(direction, ui::padMin());
 }
 
 // -----------------------------------------------------------------------------
@@ -366,43 +236,11 @@ wxArrayString wxutil::arrayStringStd(const vector<string>& vector)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the size [x]x[y] as a wxSize, scaled by the DPI factor.
-// Will keep any -1 value
-// -----------------------------------------------------------------------------
-wxSize wxutil::scaledSize(int x, int y)
-{
-	return { x < 0 ? -1 : ui::scalePx(x), y < 0 ? -1 : ui::scalePx(y) };
-}
-
-// -----------------------------------------------------------------------------
-// Returns the position [x],[y] as a wxPoint, scaled by the DPI factor
-// -----------------------------------------------------------------------------
-wxPoint wxutil::scaledPoint(int x, int y)
-{
-	return { ui::scalePx(x), ui::scalePx(y) };
-}
-
-// -----------------------------------------------------------------------------
-// Returns the rect at [x],[y] of size [width]x[height] as a wxRect, scaled by
-// the DPI factor
-// -----------------------------------------------------------------------------
-wxRect wxutil::scaledRect(int x, int y, int width, int height)
-{
-	return { ui::scalePx(x), ui::scalePx(y), ui::scalePx(width), ui::scalePx(height) };
-}
-
-// -----------------------------------------------------------------------------
 // Sets the given [window]'s [icon]
 // -----------------------------------------------------------------------------
 void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 {
-#if wxCHECK_VERSION(3, 1, 6)
 	auto wx_icon = icons::getIcon(icons::General, icon).GetIconFor(window);
-#else
-	wxIcon wx_icon;
-	wx_icon.CopyFromBitmap(icons::getIcon(icons::General, icon));
-#endif
-
 	window->SetIcon(wx_icon);
 }
 
@@ -411,30 +249,7 @@ void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 
 wxColour wxutil::systemPanelBGColour()
 {
-#ifdef __WXGTK__
-	static bool     intitialized(false);
-	static wxColour bgColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
-
-	if (!intitialized)
-	{
-		// try to get the background colour from a menu
-		GtkWidget* menu = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		GtkStyle*  def  = gtk_rc_get_style(menu);
-		if (!def)
-			def = gtk_widget_get_default_style();
-
-		if (def)
-		{
-			GdkColor col = def->bg[GTK_STATE_NORMAL];
-			bgColour     = wxColour(col);
-		}
-		gtk_widget_destroy(menu);
-		intitialized = true;
-	}
-	return bgColour;
-#else
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
-#endif
 }
 
 wxColour wxutil::systemMenuTextColour()

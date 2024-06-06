@@ -42,7 +42,6 @@
 #include "General/KeyBind.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
@@ -52,9 +51,11 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Dialogs/GfxConvDialog.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
+#include "UI/Layout.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
@@ -169,13 +170,13 @@ public:
 		editor_{ editor },
 		texturex_{ texturex }
 	{
-		namespace wx = wxutil;
+		auto lh = ui::LayoutHelper(this);
 
-		wx::setWindowIcon(this, "tex_new");
+		wxutil::setWindowIcon(this, "tex_new");
 
 		SetSizer(new wxBoxSizer(wxVERTICAL));
-		auto* sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-		GetSizer()->Add(sizer, wx::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+		auto* sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+		GetSizer()->Add(sizer, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 		// Name
 		text_name_ = new wxTextCtrl(this, -1);
@@ -185,8 +186,8 @@ public:
 		// Blank
 		rb_blank_ = new wxRadioButton(this, -1, "Blank");
 		rb_blank_->SetValue(true);
-		spin_width_  = wx::createSpinCtrl(this, 64, 0, 4096);
-		spin_height_ = wx::createSpinCtrl(this, 128, 0, 4096);
+		spin_width_  = wxutil::createSpinCtrl(this, 64, 0, 4096);
+		spin_height_ = wxutil::createSpinCtrl(this, 128, 0, 4096);
 		sizer->Add(rb_blank_, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 		sizer->Add(new wxStaticText(this, -1, "Size:"), { 1, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 		sizer->Add(spin_width_, { 1, 2 }, { 1, 1 }, wxEXPAND);
@@ -207,7 +208,7 @@ public:
 		// Separator
 		GetSizer()->Add(
 			new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL),
-			wx::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
+			lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 		// Dialog buttons
 		auto* btn_create = new wxButton(this, -1, "Create");
@@ -215,9 +216,9 @@ public:
 		btn_create->SetDefault();
 		auto* hbox = new wxBoxSizer(wxHORIZONTAL);
 		hbox->AddStretchSpacer(1);
-		hbox->Add(btn_create, wx::sfWithBorder(0, wxRIGHT).Expand());
+		hbox->Add(btn_create, lh.sfWithBorder(0, wxRIGHT).Expand());
 		hbox->Add(btn_cancel, wxSizerFlags().Expand());
-		GetSizer()->Add(hbox, wx::sfWithLargeBorder().Expand());
+		GetSizer()->Add(hbox, lh.sfWithLargeBorder().Expand());
 
 		// Bind events
 		rb_blank_->Bind(
@@ -247,7 +248,7 @@ public:
 			});
 
 		// Setup dialog size
-		SetInitialSize({ ui::scalePx(400), -1 });
+		SetInitialSize({ FromDIP(400), -1 });
 		wxTopLevelWindowBase::Layout();
 		wxWindowBase::Fit();
 		wxTopLevelWindowBase::SetMinSize(GetBestSize());
@@ -635,7 +636,7 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	tx_editor_{ &tx_editor },
 	undo_manager_{ tx_editor.undoManager() }
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -644,7 +645,7 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	// Frame
 	frame_textures_ = new wxStaticBox(this, -1, "Textures");
 	auto framesizer = new wxStaticBoxSizer(frame_textures_, wxHORIZONTAL);
-	sizer->Add(framesizer, wx::sfWithBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
+	sizer->Add(framesizer, lh.sfWithBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
 	// Toolbar
 	toolbar_ = new SToolBar(this, false, wxVERTICAL);
@@ -655,18 +656,18 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	toolbar_->group("_Texture")->setAllButtonsEnabled(false);
 	toolbar_->group("_Sorting")->setAllButtonsEnabled(false);
 	toolbar_->findActionButton("txed_sort")->Enable();
-	framesizer->Add(toolbar_, wx::sfWithMinBorder(0, wxTOP | wxBOTTOM).Expand());
+	framesizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxTOP | wxBOTTOM).Expand());
 
 	// Textures list + filter
 	list_textures_    = new TextureXListView(this, texturex_.get());
 	text_filter_      = new wxTextCtrl(this, -1);
 	btn_clear_filter_ = new SIconButton(this, "close", "Clear Filter");
 	auto* vbox        = new wxBoxSizer(wxVERTICAL);
-	framesizer->AddSpacer(ui::padMin());
-	framesizer->Add(vbox, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
-	vbox->Add(list_textures_, wx::sfWithBorder(1, wxBOTTOM).Expand());
+	framesizer->AddSpacer(lh.padSmall());
+	framesizer->Add(vbox, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
+	vbox->Add(list_textures_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 	vbox->Add(
-		wx::layoutHorizontally({ wx::createLabelHBox(this, "Filter:", text_filter_), btn_clear_filter_ }, 0),
+		lh.layoutHorizontally({ wxutil::createLabelHBox(this, "Filter:", text_filter_), btn_clear_filter_ }, 0),
 		wxSizerFlags().Expand());
 
 	// Bind events
@@ -728,7 +729,7 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 	tx_entry_ = entry;
 
 	// Add texture editor area
-	GetSizer()->Add(texture_editor_, wxutil::sfWithBorder(1).Expand());
+	GetSizer()->Add(texture_editor_, ui::LayoutHelper(this).sfWithBorder(1).Expand());
 	texture_editor_->setupLayout();
 
 	// Update format label

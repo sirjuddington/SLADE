@@ -28,7 +28,7 @@ GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour,
 		wxEVT_SIZE,
 		[this](wxSizeEvent& e)
 		{
-			view_.setSize(GetSize().x, GetSize().y);
+			view_.setSize(ToPhys(GetSize().x), ToPhys(GetSize().y));
 			if (vb_background_)
 				vb_background_->buffer().clear();
 		});
@@ -50,10 +50,12 @@ void GLCanvas::setupMousewheelZoom()
 		wxEVT_MOUSEWHEEL,
 		[&](wxMouseEvent& e)
 		{
+			auto phys_pos = ToPhys(e.GetPosition());
+
 			if (e.GetWheelRotation() < 0)
-				view_.zoomToward(0.8, { e.GetPosition().x, e.GetPosition().y });
+				view_.zoomToward(0.8, { phys_pos.x, phys_pos.y });
 			else if (e.GetWheelRotation() > 0)
-				view_.zoomToward(1.25, { e.GetPosition().x, e.GetPosition().y });
+				view_.zoomToward(1.25, { phys_pos.x, phys_pos.y });
 
 			Refresh();
 		});
@@ -65,9 +67,11 @@ void GLCanvas::setupMousePanning()
 		wxEVT_MOTION,
 		[&](wxMouseEvent& e)
 		{
+			auto phys_pos = ToPhys(e.GetPosition());
+
 			if (e.MiddleIsDown())
 			{
-				auto cpos_current = view_.canvasPos({ e.GetPosition().x, e.GetPosition().y });
+				auto cpos_current = view_.canvasPos({ phys_pos.x, phys_pos.y });
 				auto cpos_prev    = view_.canvasPos(mouse_prev_);
 
 				view_.pan(cpos_prev.x - cpos_current.x, cpos_prev.y - cpos_current.y);
@@ -77,7 +81,7 @@ void GLCanvas::setupMousePanning()
 			else
 				e.Skip();
 
-			mouse_prev_ = { e.GetPosition().x, e.GetPosition().y };
+			mouse_prev_ = { phys_pos.x, phys_pos.y };
 		});
 }
 
@@ -184,8 +188,8 @@ void GLCanvas::updateBackgroundVB()
 	if (!vb_background_)
 		vb_background_ = std::make_unique<gl::VertexBuffer2D>();
 
-	auto widthf  = static_cast<float>(GetSize().x);
-	auto heightf = static_cast<float>(GetSize().y);
+	auto widthf  = static_cast<float>(ToPhys(GetSize().x));
+	auto heightf = static_cast<float>(ToPhys(GetSize().y));
 
 	vb_background_->add({ { 0.f, 0.f }, { 1.f, 1.f, 1.f, 1.f }, { 0.f, 0.f } });
 	vb_background_->add({ { 0.f, heightf }, { 1.f, 1.f, 1.f, 1.f }, { 0.f, heightf / 16.f } });
@@ -228,7 +232,7 @@ void GLCanvas::onPaint(wxPaintEvent& e)
 		init();
 
 	// Set viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	glViewport(0, 0, ToPhys(GetSize().x), ToPhys(GetSize().y));
 
 	// Clear
 	glClearColor(bg_colour_.fr(), bg_colour_.fg(), bg_colour_.fb(), 1.f);

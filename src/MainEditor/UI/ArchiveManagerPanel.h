@@ -6,6 +6,10 @@
 
 namespace slade
 {
+namespace ui
+{
+	struct LayoutHelper;
+}
 class ArchiveManagerPanel;
 class ArchivePanel;
 class EntryPanel;
@@ -25,8 +29,8 @@ public:
 	wxMenu* bookmarksMenu() const { return menu_bookmarks_; }
 
 	// DockPanel layout
-	void createArchivesPanel();
-	void createRecentPanel();
+	void createArchivesPanel(const ui::LayoutHelper& lh);
+	void createRecentPanel(const ui::LayoutHelper& lh);
 	void layoutNormal() override;
 	void layoutHorizontal() override;
 

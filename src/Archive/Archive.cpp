@@ -35,7 +35,7 @@
 #include "ArchiveEntry.h"
 #include "ArchiveFormatHandler.h"
 #include "EntryType/EntryType.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "MapDesc.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"

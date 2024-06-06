@@ -33,11 +33,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapChecksPanel.h"
-#include "General/UI.h"
 #include "MapEditor/MapChecks.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "SLADEMap/MapObject/MapObject.h"
+#include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -249,29 +250,29 @@ void MapChecksPanel::reset()
 // -----------------------------------------------------------------------------
 void MapChecksPanel::layoutVertical()
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Checks
-	sizer->Add(wx::createLabelVBox(this, "Check for:", clb_active_checks_), wx::sfWithBorder().Expand());
-	sizer->Add(btn_check_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Right());
+	sizer->Add(wxutil::createLabelVBox(this, "Check for:", clb_active_checks_), lh.sfWithBorder().Expand());
+	sizer->Add(btn_check_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Right());
 
 	// Results
-	sizer->Add(label_status_, wx::sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
-	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
-	sizer->Add(lb_errors_, wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(label_status_, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
+	sizer->AddSpacer(ui::padSmall(this));
+	sizer->Add(lb_errors_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Result actions
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
-	hbox->Add(btn_edit_object_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	hbox->Add(btn_edit_object_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->AddStretchSpacer();
 	hbox->Add(btn_export_, wxSizerFlags().Expand());
 	sizer->Add(
-		wx::layoutHorizontally(vector<wxObject*>{ btn_fix1_, btn_fix2_ }),
-		wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM));
+		lh.layoutHorizontally(vector<wxObject*>{ btn_fix1_, btn_fix2_ }),
+		lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM));
 }
 
 // -----------------------------------------------------------------------------
@@ -280,9 +281,11 @@ void MapChecksPanel::layoutVertical()
 // -----------------------------------------------------------------------------
 void MapChecksPanel::layoutHorizontal()
 {
+	auto lh = ui::LayoutHelper(this);
+
 	SetSizer(new wxBoxSizer(wxVERTICAL));
-	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	GetSizer()->Add(sizer, wxutil::sfWithBorder(1).Expand());
+	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	GetSizer()->Add(sizer, lh.sfWithBorder(1).Expand());
 
 	// Checks
 	sizer->Add(new wxStaticText(this, -1, "Check for:"), { 0, 0 }, { 1, 1 }, wxEXPAND);
@@ -294,7 +297,7 @@ void MapChecksPanel::layoutHorizontal()
 	sizer->Add(lb_errors_, { 1, 1 }, { 2, 1 }, wxEXPAND);
 
 	// Result actions
-	auto layout = wxutil::layoutVertically(vector<wxObject*>{ btn_export_, btn_edit_object_, btn_fix1_, btn_fix2_ });
+	auto layout = lh.layoutVertically(vector<wxObject*>{ btn_export_, btn_edit_object_, btn_fix1_, btn_fix2_ });
 	sizer->Add(layout, { 1, 2 }, { 2, 1 }, wxEXPAND);
 
 	sizer->AddGrowableCol(1, 1);

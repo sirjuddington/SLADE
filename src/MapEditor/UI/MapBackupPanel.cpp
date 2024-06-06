@@ -38,8 +38,8 @@
 #include "Archive/ArchiveFormatHandler.h"
 #include "General/MapPreviewData.h"
 #include "UI/Canvas/Canvas.h"
+#include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
-#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -64,7 +64,7 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) :
 	SetSizer(sizer);
 
 	// Backups list
-	sizer->Add(list_backups_ = new ListView(this, -1), wxutil::sfWithBorder(0, wxRIGHT).Expand());
+	sizer->Add(list_backups_ = new ListView(this, -1), ui::LayoutHelper(this).sfWithBorder(0, wxRIGHT).Expand());
 
 	// Map preview
 	sizer->Add(canvas_map_ = ui::createMapPreviewCanvas(this, map_data_.get()), 1, wxEXPAND);

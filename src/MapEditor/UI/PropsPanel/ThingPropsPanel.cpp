@@ -36,7 +36,6 @@
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "Game/UDMFProperty.h"
-#include "General/UI.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/Rect.h"
 #include "MapEditor/MapEditContext.h"
@@ -53,6 +52,7 @@
 #include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -98,7 +98,7 @@ public:
 	SpriteTexCanvas(wxWindow* parent) : GLCanvas(parent)
 	{
 		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-		SetInitialSize(wxutil::scaledSize(128, 128));
+		SetInitialSize(FromDIP(wxSize(128, 128)));
 	}
 
 	~SpriteTexCanvas() override = default;
@@ -205,7 +205,7 @@ ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : wxPanel(parent), parent_{
 	Bind(wxEVT_PAINT, &ThingDirCanvas::onPaint, this);
 
 	// Fixed size
-	auto size = ui::scalePx(128);
+	auto size = FromDIP(128);
 	SetInitialSize(wxSize(size, size));
 	wxWindowBase::SetMaxSize(wxSize(size, size));
 }
@@ -329,9 +329,9 @@ void ThingDirCanvas::onPaint(wxPaintEvent& e)
 	auto      gc = wxGraphicsContext::Create(dc);
 
 	auto half_size    = GetSize().x / 2;
-	auto pad          = ui::scalePx(8);
+	auto pad          = FromDIP(8);
 	auto radius       = half_size - pad;
-	auto point_radius = ui::scalePx(7);
+	auto point_radius = FromDIP(7);
 	auto col_bg       = wxutil::systemPanelBGColour();
 	auto col_fg       = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	auto pi           = wxGraphicsPenInfo(wxColour(col_fg.Red(), col_fg.Green(), col_fg.Blue(), 80), 1.75);
@@ -396,14 +396,15 @@ void ThingDirCanvas::onPaint(wxPaintEvent& e)
 // -----------------------------------------------------------------------------
 AngleControl::AngleControl(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 {
+	auto lh    = ui::LayoutHelper(this);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Angle visual control
-	sizer->Add(dc_angle_ = new ThingDirCanvas(this), wxutil::sfWithBorder(1).Expand());
+	sizer->Add(dc_angle_ = new ThingDirCanvas(this), lh.sfWithBorder(1).Expand());
 
 	// Angle text box
-	sizer->Add(text_angle_ = new NumberTextCtrl(this), wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(text_angle_ = new NumberTextCtrl(this), lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Bind events
 	text_angle_->Bind(wxEVT_TEXT, &AngleControl::onAngleTextChanged, this);
@@ -476,13 +477,15 @@ void AngleControl::onAngleTextChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Tabs
 	stc_tabs_ = STabCtrl::createControl(this);
-	sizer->Add(stc_tabs_, wxutil::sfWithBorder(1).Expand());
+	sizer->Add(stc_tabs_, lh.sfWithBorder(1).Expand());
 
 	// General tab
 	stc_tabs_->AddPage(setupGeneralTab(), "General");
@@ -532,8 +535,7 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 // -----------------------------------------------------------------------------
 wxPanel* ThingPropsPanel::setupGeneralTab()
 {
-	namespace wx = wxutil;
-
+	auto lh         = ui::LayoutHelper(this);
 	auto map_format = mapeditor::editContext().mapDesc().format;
 
 	// Create panel
@@ -546,11 +548,11 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	// --- Flags ---
 	auto frame      = new wxStaticBox(panel, -1, "Flags");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, wx::sfWithBorder().Expand());
+	sizer->Add(framesizer, lh.sfWithBorder().Expand());
 
 	// Init flags
-	auto gb_sizer = new wxGridBagSizer(ui::pad() / 2, ui::pad());
-	framesizer->Add(gb_sizer, wx::sfWithBorder(1).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad() / 2, lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 	int row = 0;
 	int col = 0;
 
@@ -622,13 +624,13 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 
 	// Type
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wx::sfWithBorder().Expand());
+	sizer->Add(hbox, lh.sfWithBorder().Expand());
 	frame      = new wxStaticBox(panel, -1, "Type");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	hbox->Add(framesizer, wx::sfWithBorder(1, wxRIGHT).Expand());
-	framesizer->Add(gfx_sprite_ = new SpriteTexCanvas(panel), wx::sfWithBorder(1).Expand());
+	hbox->Add(framesizer, lh.sfWithBorder(1, wxRIGHT).Expand());
+	framesizer->Add(gfx_sprite_ = new SpriteTexCanvas(panel), lh.sfWithBorder(1).Expand());
 	framesizer->Add(
-		label_type_ = new wxStaticText(panel, -1, ""), wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		label_type_ = new wxStaticText(panel, -1, ""), lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Direction
 	frame      = new wxStaticBox(panel, -1, "Direction");
@@ -639,8 +641,8 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	if (map_format != MapFormat::Doom)
 	{
 		// Id
-		gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-		sizer->Add(gb_sizer, wx::sfWithBorder().Expand());
+		gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+		sizer->Add(gb_sizer, lh.sfWithBorder().Expand());
 		gb_sizer->Add(new wxStaticText(panel, -1, "TID:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(text_id_ = new NumberTextCtrl(panel), { 0, 1 }, { 1, 1 }, wxEXPAND | wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(btn_new_id_ = new wxButton(panel, -1, "New TID"), { 0, 2 }, { 1, 1 });
@@ -675,8 +677,9 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	panel->SetSizer(sizer);
 
 	// Init flags
-	auto gb_sizer_flags = new wxGridBagSizer(ui::pad() / 2, ui::pad());
-	sizer->Add(gb_sizer_flags, wxutil::sfWithBorder(1).Expand());
+	auto lh             = ui::LayoutHelper(panel);
+	auto gb_sizer_flags = new wxGridBagSizer(lh.pad() / 2, lh.pad());
+	sizer->Add(gb_sizer_flags, lh.sfWithBorder(1).Expand());
 	int row = 0;
 	int col = 0;
 

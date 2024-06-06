@@ -36,8 +36,8 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveFormat.h"
-#include "General/UI.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -87,6 +87,8 @@ void allDirs(const ArchiveDir& dir, wxArrayString& list)
 NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveDir* current_dir, bool new_dir) :
 	wxDialog(parent, -1, new_dir ? "New Directory" : "New Entry")
 {
+	auto lh = LayoutHelper(this);
+
 	wxutil::setWindowIcon(this, new_dir ? "newfolder" : "newentry");
 
 	const auto&   archive_format = archive.formatInfo();
@@ -114,8 +116,8 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	// --- Layout controls ---
 	auto* m_sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_sizer);
-	auto* sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	m_sizer->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
+	auto* sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	m_sizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// New entry options
 	int row = 0;
@@ -140,7 +142,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	// Dialog buttons
 	m_sizer->Add(
 		wxutil::createDialogButtonBox(this, "Create", "Cancel"),
-		wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 
 	// --- Bind events ---
@@ -167,7 +169,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 
 
 	// Init dialog size
-	SetInitialSize({ ui::scalePx(400), -1 });
+	SetInitialSize(lh.size(400, -1));
 	wxDialog::Layout();
 	wxDialog::Fit();
 	wxDialog::SetMinSize(GetBestSize());

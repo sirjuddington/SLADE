@@ -34,6 +34,7 @@
 #include "SZoomSlider.h"
 #include "UI/Canvas/GL/CTextureGLCanvas.h"
 #include "UI/Canvas/GfxCanvasBase.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -71,15 +72,17 @@ SZoomSlider::SZoomSlider(wxWindow* parent, CTextureGLCanvas* linked_canvas) :
 // -----------------------------------------------------------------------------
 void SZoomSlider::setup()
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create controls
-	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, wxutil::scaledSize(150, -1));
+	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, lh.size(150, -1));
 	slider_zoom_->SetLineSize(10);
 	slider_zoom_->SetPageSize(100);
 	label_zoom_amount_ = new wxStaticText(this, -1, "100%");
 
 	// Layout
 	SetSizer(new wxBoxSizer(wxHORIZONTAL));
-	GetSizer()->Add(wxutil::createLabelHBox(this, "Zoom:", slider_zoom_), wxutil::sfWithBorder(1, wxRIGHT).Expand());
+	GetSizer()->Add(wxutil::createLabelHBox(this, "Zoom:", slider_zoom_), lh.sfWithBorder(1, wxRIGHT).Expand());
 	GetSizer()->Add(label_zoom_amount_, wxSizerFlags().CenterVertical());
 
 	// Slider change event

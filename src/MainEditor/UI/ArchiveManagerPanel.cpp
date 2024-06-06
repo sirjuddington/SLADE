@@ -42,7 +42,6 @@
 #include "ArchivePanel.h"
 #include "EntryPanel/EntryPanel.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/MainEditor.h"
@@ -53,7 +52,9 @@
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Dialogs/DirArchiveUpdateDialog.h"
 #include "UI/Dialogs/NewArchiveDiaog.h"
+#include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -332,26 +333,28 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	DockPanel(parent),
 	stc_archives_{ nb_archives }
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create main sizer
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(vbox);
 
 	// Create/setup tabs
 	stc_tabs_ = new STabCtrl(this, false);
-	stc_tabs_->SetInitialSize(wxSize(ui::scalePx(224), -1));
-	vbox->Add(stc_tabs_, wxutil::sfWithBorder(1).Expand());
+	stc_tabs_->SetInitialSize(wxSize(FromDIP(224), -1));
+	vbox->Add(stc_tabs_, lh.sfWithBorder(1).Expand());
 
 	// Open archives tab
 	panel_am_ = new wxPanel(stc_tabs_);
 	stc_tabs_->AddPage(panel_am_, "Archives", true);
 
 	// Create/setup archive list
-	createArchivesPanel();
+	createArchivesPanel(lh);
 	refreshArchiveList();
 
 	// Create/setup recent files list and menu
 	menu_recent_ = new wxMenu();
-	createRecentPanel();
+	createRecentPanel(lh);
 	refreshRecentFileList();
 
 	// Create/setup bookmarks tab
@@ -369,7 +372,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	}
 	list_bookmarks_->SetImageList(bm_image_list, wxIMAGE_LIST_SMALL);
 	menu_bookmarks_ = new wxMenu();
-	panel_bm->GetSizer()->Add(list_bookmarks_, wxutil::sfWithBorder(1).Expand());
+	panel_bm->GetSizer()->Add(list_bookmarks_, lh.sfWithBorder(1).Expand());
 	refreshBookmarkList();
 	stc_tabs_->AddPage(panel_bm, "Bookmarks", true);
 
@@ -381,7 +384,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 		auto panel = new wxPanel(stc_tabs_);
 		panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 		file_browser_ = new WMFileBrowser(panel, this, -1);
-		panel->GetSizer()->Add(file_browser_, wxutil::sfWithBorder(1).Expand());
+		panel->GetSizer()->Add(file_browser_, lh.sfWithBorder(1).Expand());
 		stc_tabs_->AddPage(panel, "File Browser");
 	}
 
@@ -408,33 +411,33 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 
 	// Init layout
 	wxWindowBase::Layout();
-	SetInitialSize(wxSize(ui::scalePx(256), -1));
+	SetInitialSize(lh.size(256, -1));
 }
 
 // -----------------------------------------------------------------------------
 // Creates the 'Open Archives' panel
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::createArchivesPanel()
+void ArchiveManagerPanel::createArchivesPanel(const ui::LayoutHelper& lh)
 {
 	panel_archives_ = new wxPanel(panel_am_, -1);
 	auto vbox       = new wxBoxSizer(wxVERTICAL);
 	panel_archives_->SetSizer(vbox);
 	vbox->Add(new wxStaticText(panel_archives_, -1, "Open Archives:"), wxSizerFlags().Expand());
 	list_archives_ = new ListView(panel_archives_, -1);
-	vbox->Add(list_archives_, wxutil::sfWithMinBorder(1, wxTOP).Expand());
+	vbox->Add(list_archives_, lh.sfWithSmallBorder(1, wxTOP).Expand());
 }
 
 // -----------------------------------------------------------------------------
 // Creates the 'Recent Files' panel
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::createRecentPanel()
+void ArchiveManagerPanel::createRecentPanel(const ui::LayoutHelper& lh)
 {
 	panel_rf_ = new wxPanel(panel_am_, -1);
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	panel_rf_->SetSizer(vbox);
 	vbox->Add(new wxStaticText(panel_rf_, -1, "Recent Files:"), wxSizerFlags().Expand());
 	list_recent_ = new ListView(panel_rf_, -1);
-	vbox->Add(list_recent_, wxutil::sfWithMinBorder(1, wxTOP).Expand());
+	vbox->Add(list_recent_, lh.sfWithSmallBorder(1, wxTOP).Expand());
 
 	// Setup image list
 	auto list = wxutil::createSmallImageList();
@@ -454,8 +457,9 @@ void ArchiveManagerPanel::layoutNormal()
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	panel_am_->SetSizer(vbox);
 
-	vbox->Add(panel_archives_, wxutil::sfWithBorder(1).Expand());
-	vbox->Add(panel_rf_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	auto lh = ui::LayoutHelper(this);
+	vbox->Add(panel_archives_, lh.sfWithBorder(1).Expand());
+	vbox->Add(panel_rf_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 }
 
 // -----------------------------------------------------------------------------
@@ -467,8 +471,9 @@ void ArchiveManagerPanel::layoutHorizontal()
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	panel_am_->SetSizer(hbox);
 
-	hbox->Add(panel_archives_, wxutil::sfWithBorder(1).Expand());
-	hbox->Add(panel_rf_, wxutil::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
+	auto lh = ui::LayoutHelper(this);
+	hbox->Add(panel_archives_, lh.sfWithBorder(1).Expand());
+	hbox->Add(panel_rf_, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 }
 
 // -----------------------------------------------------------------------------

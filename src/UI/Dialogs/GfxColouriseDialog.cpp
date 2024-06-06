@@ -38,6 +38,7 @@
 #include "UI/Canvas/Canvas.h"
 #include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Controls/ColourBox.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -58,37 +59,37 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, co
 	entry_{ entry },
 	palette_{ new Palette(pal) }
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Set dialog icon
-	wx::setWindowIcon(this, "colourise");
+	wxutil::setWindowIcon(this, "colourise");
 
 	// Setup main sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(sizer, wx::sfWithLargeBorder(1).Expand());
+	msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// Add colour chooser
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wx::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	cb_colour_ = new ColourBox(this, -1, false, true);
 	cb_colour_->setColour(ColRGBA::RED);
 	cb_colour_->setPalette(palette_.get());
-	hbox->Add(new wxStaticText(this, -1, "Colour:"), wx::sfWithBorder(1, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, "Colour:"), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 	hbox->Add(cb_colour_, wxSizerFlags().Expand());
 
 	// Add preview
 	gfx_preview_ = ui::createGfxCanvas(this);
-	sizer->Add(gfx_preview_->window(), wx::sfWithBorder(1, wxBOTTOM).Expand());
+	sizer->Add(gfx_preview_->window(), lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add buttons
-	sizer->Add(wx::createDialogButtonBox(this, "Colourise", "Cancel"), wxSizerFlags().Expand());
+	sizer->Add(wxutil::createDialogButtonBox(this, "Colourise", "Cancel"), wxSizerFlags().Expand());
 
 	// Setup preview
 	gfx_preview_->setPalette(palette_.get());
-	gfx_preview_->window()->SetInitialSize(wxSize(192, 192));
+	gfx_preview_->window()->SetInitialSize(lh.size(192, 192));
 	misc::loadImageFromEntry(&gfx_preview_->image(), entry);
 	auto col = cb_colour_->colour();
 	gfx_preview_->image().colourise(col, palette_.get());

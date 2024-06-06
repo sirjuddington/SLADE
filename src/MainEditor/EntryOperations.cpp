@@ -43,7 +43,7 @@
 #include "BinaryControlLump.h"
 #include "Conversions.h"
 #include "General/Misc.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "General/UndoRedo.h"
 #include "General/UndoSteps/EntryDataUS.h"
 #include "Graphics/CTexture/CTexture.h"

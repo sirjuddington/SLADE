@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "SidePropsPanel.h"
 #include "Game/Configuration.h"
-#include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -43,6 +42,8 @@
 #include "UI/Browser/BrowserItem.h"
 #include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
+#include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -61,7 +62,7 @@ public:
 	SideTexCanvas(wxWindow* parent) : GLCanvas(parent)
 	{
 		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-		SetInitialSize(wxutil::scaledSize(136, 136));
+		SetInitialSize(FromDIP(wxSize(136, 136)));
 	}
 
 	~SideTexCanvas() override = default;
@@ -123,7 +124,7 @@ public:
 	TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 	{
 		// Init
-		SetInitialSize(wxutil::scaledSize(136, -1));
+		SetInitialSize({ FromDIP(136), -1 });
 		wxArrayString list;
 		list.Add("-");
 
@@ -201,7 +202,7 @@ private:
 // -----------------------------------------------------------------------------
 SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	wxBoxSizer* vbox;
 
@@ -213,24 +214,24 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	auto sizer_tex = new wxStaticBoxSizer(wxVERTICAL, this, "Textures");
 	sizer->Add(sizer_tex, wxSizerFlags().Expand());
 
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer_tex->Add(gb_sizer, wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer_tex->Add(gb_sizer, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Upper
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Upper:"), wx::sfWithMinBorder(0, wxBOTTOM).Center());
+	vbox->Add(new wxStaticText(this, -1, "Upper:"), lh.sfWithSmallBorder(0, wxBOTTOM).Center());
 	vbox->Add(gfx_upper_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_upper_ = new TextureComboBox(this), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Middle
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 1 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Middle:"), wx::sfWithMinBorder(0, wxBOTTOM).Center());
+	vbox->Add(new wxStaticText(this, -1, "Middle:"), lh.sfWithSmallBorder(0, wxBOTTOM).Center());
 	vbox->Add(gfx_middle_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_middle_ = new TextureComboBox(this), { 1, 1 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Lower
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Lower:"), wx::sfWithMinBorder(0, wxBOTTOM).Center());
+	vbox->Add(new wxStaticText(this, -1, "Lower:"), lh.sfWithSmallBorder(0, wxBOTTOM).Center());
 	vbox->Add(gfx_lower_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_lower_ = new TextureComboBox(this), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER);
 
@@ -241,10 +242,10 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 
 	// --- Offsets ---
-	auto layout_offsets = wx::layoutVertically(
-		vector<wxObject*>{ wx::createLabelHBox(this, "X Offset:", text_offsetx_ = new NumberTextCtrl(this)),
-						   wx::createLabelHBox(this, "Y Offset:", text_offsety_ = new NumberTextCtrl(this)) });
-	sizer->Add(layout_offsets, wx::sfWithBorder(0, wxTOP).Expand());
+	auto layout_offsets = lh.layoutVertically(
+		vector<wxObject*>{ wxutil::createLabelHBox(this, "X Offset:", text_offsetx_ = new NumberTextCtrl(this)),
+						   wxutil::createLabelHBox(this, "Y Offset:", text_offsety_ = new NumberTextCtrl(this)) });
+	sizer->Add(layout_offsets, lh.sfWithBorder(0, wxTOP).Expand());
 
 	// Bind events
 	tcb_upper_->Bind(wxEVT_TEXT, &SidePropsPanel::onTextureChanged, this);

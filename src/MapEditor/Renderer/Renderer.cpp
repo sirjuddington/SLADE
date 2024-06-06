@@ -36,7 +36,6 @@
 #include "Camera.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
-#include "General/UI.h"
 #include "Geometry/Geometry.h"
 #include "MCAnimations.h"
 #include "MapEditor/ClipboardItems.h"
@@ -527,7 +526,7 @@ void Renderer::drawEditorMessages(draw2d::Context& dc) const
 	auto col_bg = colourconfig::colour("map_editor_message_outline");
 
 	dc.font           = draw2d::Font::Bold;
-	dc.text_size      = 20 * ui::scaleFactor();
+	dc.text_size      = 20 * ui_scale_;
 	dc.text_style     = draw2d::TextStyle::Outline;
 	dc.text_alignment = draw2d::Align::Left;
 
@@ -577,7 +576,7 @@ void Renderer::drawFeatureHelpText(draw2d::Context& dc) const
 
 	// Title
 	dc.font           = draw2d::Font::Bold;
-	dc.text_size      = 20 * ui::scaleFactor();
+	dc.text_size      = 20 * ui_scale_;
 	dc.text_style     = draw2d::TextStyle::Outline;
 	dc.text_alignment = draw2d::Align::Right;
 	dc.colour         = colourconfig::colour("map_editor_message").ampf(1.0f, 1.0f, 1.0f, anim_help_fade_);
@@ -589,7 +588,7 @@ void Renderer::drawFeatureHelpText(draw2d::Context& dc) const
 	// Help Text
 	auto yoff            = 4.0f + dc.textLineHeight() + 8.0f;
 	auto underline_width = dc.textExtents(help_lines[0]).x;
-	dc.text_size         = 18 * ui::scaleFactor();
+	dc.text_size         = 18 * ui_scale_;
 	for (unsigned a = 1; a < help_lines.size(); a++)
 	{
 		dc.drawText(help_lines[a], { x, yoff });
@@ -1194,7 +1193,7 @@ void Renderer::draw() const
 
 	// Draw info overlay
 	dc.font       = draw2d::Font::Condensed;
-	dc.text_size  = 16 * ui::scaleFactor();
+	dc.text_size  = 16 * ui_scale_;
 	dc.text_style = draw2d::TextStyle::Normal;
 	dc.blend      = Blend::Normal;
 	context_->drawInfoOverlay(dc, anim_info_fade_);

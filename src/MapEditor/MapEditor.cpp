@@ -33,7 +33,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "ItemSelection.h"
 #include "MapBackupManager.h"
 #include "MapEditContext.h"
@@ -45,6 +44,7 @@
 #include "MapTextureManager.h"
 #include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Browser/BrowserItem.h"
+#include "UI/Layout.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UI/PropsPanel/MapObjectPropsPanel.h"
@@ -368,6 +368,7 @@ bool mapeditor::editObjectProperties(vector<MapObject*>& list)
 	dlg.SetSizer(sizer);
 
 	// Create/add properties panel
+	auto            lh          = ui::LayoutHelper(&dlg);
 	PropsPanelBase* panel_props = nullptr;
 	switch (edit_context->editMode())
 	{
@@ -376,12 +377,11 @@ bool mapeditor::editObjectProperties(vector<MapObject*>& list)
 	case Mode::Things:  panel_props = new ThingPropsPanel(&dlg); break;
 	default:            panel_props = new MapObjectPropsPanel(&dlg, true);
 	}
-	sizer->Add(panel_props, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+	sizer->Add(panel_props, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Add dialog buttons
-	sizer->AddSpacer(ui::pad());
-	sizer->Add(
-		dlg.CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->AddSpacer(lh.pad());
+	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Open current selection
 	panel_props->openObjects(list);

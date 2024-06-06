@@ -31,8 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ColorimetryPrefsPanel.h"
-#include "General/UI.h"
 #include "Graphics/Palette/Palette.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -197,8 +197,10 @@ void ColorimetryPrefsPanel::applyPreferences()
 // -----------------------------------------------------------------------------
 void ColorimetryPrefsPanel::setupLayout()
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create sizer
-	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	SetSizer(gbsizer);
 
 	// RGB weights for greyscale luminance
@@ -208,7 +210,7 @@ void ColorimetryPrefsPanel::setupLayout()
 	gbsizer->Add(wxutil::createLabelHBox(this, "B:", spin_grey_b_), { 1, 2 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(wxutil::createLabelHBox(this, "Presets:", choice_presets_grey_), { 2, 0 }, { 1, 3 }, wxEXPAND);
 
-	gbsizer->Add(new wxStaticLine(this, -1), { 3, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
+	gbsizer->Add(new wxStaticLine(this, -1), { 3, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, lh.pad());
 
 	// Color matching method
 	gbsizer->Add(wxutil::createLabelHBox(this, "Colour matching:", choice_colmatch_), { 4, 0 }, { 1, 3 }, wxEXPAND);
@@ -221,7 +223,7 @@ void ColorimetryPrefsPanel::setupLayout()
 	gbsizer->Add(wxutil::createLabelHBox(this, "S:", spin_factor_s_), { 6, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(wxutil::createLabelHBox(this, "L:", spin_factor_l_), { 6, 2 }, { 1, 1 }, wxALIGN_RIGHT);
 
-	gbsizer->Add(new wxStaticLine(this, -1), { 7, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
+	gbsizer->Add(new wxStaticLine(this, -1), { 7, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, lh.pad());
 
 	// CIE Lab funkiness: tristimulus values for RGB->Lab conversion,
 	// and KL, KC, KH, K1 and K2 factors for CIE94 and CIEDE2000 equations
@@ -230,7 +232,7 @@ void ColorimetryPrefsPanel::setupLayout()
 	gbsizer->Add(wxutil::createLabelHBox(this, "Z:", spin_tristim_z_), { 9, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(choice_presets_tristim_, { 9, 2 }, { 1, 1 }, wxEXPAND);
 
-	gbsizer->Add(new wxStaticLine(this, -1), { 10, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
+	gbsizer->Add(new wxStaticLine(this, -1), { 10, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, lh.pad());
 
 	// CIE equation factors
 	gbsizer->Add(new wxStaticText(this, -1, "CIE 94 and CIEDE 2000 Factors:"), { 11, 0 }, { 1, 3 }, wxEXPAND);

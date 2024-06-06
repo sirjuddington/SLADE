@@ -33,9 +33,10 @@
 #include "EditingPrefsPanel.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/Executables.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Layout.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
@@ -110,19 +111,20 @@ public:
 		wxDialog(parent, -1, "External Editor"),
 		browse_on_open_(browse_on_open)
 	{
+		auto lh    = ui::LayoutHelper(this);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
 		// Name
-		auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-		sizer->Add(gb_sizer, wxutil::sfWithLargeBorder(1).Expand());
+		auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+		sizer->Add(gb_sizer, lh.sfWithLargeBorder(1).Expand());
 		gb_sizer->Add(new wxStaticText(this, -1, "Name:"), { 0, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_name_ = new wxTextCtrl(this, -1, name);
 		gb_sizer->Add(text_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 		// Path
 		gb_sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxSize(ui::scalePx(300), -1));
+		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, lh.size(300, -1));
 		gb_sizer->Add(text_path_, { 1, 1 }, wxDefaultSpan, wxEXPAND);
 		btn_browse_ = new SIconButton(this, icons::General, "open");
 		gb_sizer->Add(btn_browse_, { 1, 2 }, wxDefaultSpan);
@@ -132,7 +134,7 @@ public:
 		gb_sizer->Add(hbox, { 2, 0 }, { 1, 3 }, wxEXPAND);
 		hbox->AddStretchSpacer();
 		btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
-		hbox->Add(btn_cancel_, wxutil::sfWithBorder(0, wxRIGHT).Expand());
+		hbox->Add(btn_cancel_, lh.sfWithBorder(0, wxRIGHT).Expand());
 		btn_ok_ = new wxButton(this, wxID_OK, "OK");
 		hbox->Add(btn_ok_, wxSizerFlags().Expand());
 
@@ -250,8 +252,9 @@ wxPanel* EditingPrefsPanel::setupGeneralTab()
 	choice_dir_mod_->Set(wxutil::arrayString({ "Ignore Changes", "Apply Changes", "Ask" }));
 
 	// Layout
+	auto lh = ui::LayoutHelper(panel);
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		panel->GetSizer(),
 		vector<wxObject*>{ cb_wad_force_uppercase_,
 						   cb_zip_percent_encoding_,
@@ -261,7 +264,7 @@ wxPanel* EditingPrefsPanel::setupGeneralTab()
 						   cb_confirm_entry_revert_,
 						   wxutil::createLabelHBox(panel, "Action on unsaved entry changes:", choice_entry_mod_),
 						   wxutil::createLabelHBox(panel, "Action on external directory changes:", choice_dir_mod_) },
-		wxSizerFlags(0).Expand().Border(wxALL, ui::padLarge()));
+		lh.sfWithLargeBorder().Expand());
 
 	return panel;
 }
@@ -272,6 +275,7 @@ wxPanel* EditingPrefsPanel::setupGeneralTab()
 wxPanel* EditingPrefsPanel::setupExternalTab()
 {
 	auto panel = new wxPanel(stc_tabs_, -1);
+	auto lh    = ui::LayoutHelper(panel);
 
 	// Create controls
 	auto categories  = wxutil::arrayStringStd(EntryType::allCategories());
@@ -284,8 +288,8 @@ wxPanel* EditingPrefsPanel::setupExternalTab()
 
 	// Layout
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
-	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	panel->GetSizer()->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
+	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	panel->GetSizer()->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	sizer->Add(new wxStaticText(panel, -1, "Category: "), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_category_, { 0, 1 }, { 1, 2 }, wxEXPAND);

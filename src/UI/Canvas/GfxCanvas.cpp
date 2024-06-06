@@ -81,7 +81,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent) : wxPanel(parent)
 		wxEVT_SIZE,
 		[this](wxSizeEvent&)
 		{
-			view_.setSize(GetSize().x, GetSize().y);
+			view_.setSize(ToPhys(GetSize().x), ToPhys(GetSize().y));
 			Refresh();
 		});
 
@@ -131,6 +131,22 @@ void GfxCanvas::generateBrushShadow()
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the image bitmap needs to be updated
+// -----------------------------------------------------------------------------
+bool GfxCanvas::shouldUpdateImage() const
+{
+	if (update_image_)
+		return true;
+
+	// Check if resize required
+	if (!wxgfx::nearestInterpolationSupported() && image_bitmap_.GetWidth() != image_->width() * view_.scale().x
+		|| image_bitmap_.GetHeight() != image_->height() * view_.scale().y)
+		return true;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Updates the wx bitmap(s) for the image and other related data
 // -----------------------------------------------------------------------------
 void GfxCanvas::updateImage(bool hilight)
@@ -165,14 +181,14 @@ void GfxCanvas::updateImage(bool hilight)
 // -----------------------------------------------------------------------------
 // Draws the image (and offset drag preview if needed)
 // -----------------------------------------------------------------------------
-void GfxCanvas::drawImage(wxGraphicsContext* gc)
+void GfxCanvas::drawImage(const wxgfx::Context& ctx)
 {
 	auto dragging = drag_origin_.x > 0;
 	auto hilight  = show_hilight_ && !dragging && image_hover_ && gfx_hilight_mouseover
 				   && editing_mode_ == EditMode::None;
 
 	// Load/update image if needed
-	if (update_image_ || hilight != image_hilighted_)
+	if (shouldUpdateImage() || hilight != image_hilighted_)
 		updateImage(hilight);
 
 	// Get top left coord to draw at
@@ -185,57 +201,49 @@ void GfxCanvas::drawImage(wxGraphicsContext* gc)
 	}
 
 	// Draw image
-	if (dragging)
-		gc->BeginLayer(0.5); // Semitransparent if dragging
-	gc->DrawBitmap(image_bitmap_, tl.x, tl.y, image_->width(), image_->height());
-	if (dragging)
-		gc->EndLayer();
+	ctx.drawBitmap(image_bitmap_, tl.x, tl.y, dragging ? 0.5 : 1.0, image_->width(), image_->height());
 
 	// Draw brush shadow when in editing mode
 	if (editing_mode_ != EditMode::None && brush_bitmap_.IsOk() && cursor_pos_ != Vec2i{ -1, -1 })
-	{
-		gc->BeginLayer(0.6);
-		gc->DrawBitmap(brush_bitmap_, tl.x, tl.y, image_->width(), image_->height());
-		gc->EndLayer();
-	}
+		ctx.drawBitmap(brush_bitmap_, tl.x, tl.y, 0.6);
 
 	// Draw dragging image
 	if (dragging)
 	{
 		tl.x += math::scaleInverse(drag_pos_.x - drag_origin_.x, view().scale().x);
 		tl.y += math::scaleInverse(drag_pos_.y - drag_origin_.y, view().scale().y);
-		gc->DrawBitmap(image_bitmap_, tl.x, tl.y, image_->width(), image_->height());
+		ctx.drawBitmap(image_bitmap_, tl.x, tl.y, 1.0, image_->width(), image_->height());
 	}
 
 	// Draw outline
 	if (gfx_show_border && show_border_)
 	{
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(wxColour(0, 0, 0, 64), 1.0 / view().scale().x)));
-		gc->SetBrush(*wxTRANSPARENT_BRUSH);
-		gc->DrawRectangle(tl.x, tl.y, image_->width(), image_->height());
+		ctx.setPen({ 0, 0, 0, 64 });
+		ctx.setTransparentBrush();
+		ctx.drawRect({ tl.x, tl.y, image_->width(), image_->height(), false });
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws the image tiled to fill the canvas
 // -----------------------------------------------------------------------------
-void GfxCanvas::drawImageTiled(wxGraphicsContext* gc)
+void GfxCanvas::drawImageTiled(const wxgfx::Context& ctx)
 {
 	// Load/update image if needed
-	if (update_image_ || image_hilighted_)
+	if (shouldUpdateImage() || image_hilighted_)
 		updateImage(false);
 
 	// Draw image multiple times to fill canvas
 	auto left   = view().canvasX(0);
 	auto y      = view().canvasY(0);
-	auto right  = view().canvasX(GetSize().x);
-	auto bottom = view().canvasY(GetSize().y);
+	auto right  = view().canvasX(ToPhys(GetSize().x));
+	auto bottom = view().canvasY(ToPhys(GetSize().y));
 	while (y < bottom)
 	{
 		auto x = left;
 		while (x < right)
 		{
-			gc->DrawBitmap(image_bitmap_, x, y, image_->width(), image_->height());
+			ctx.drawBitmap(image_bitmap_, x, y);
 			x += image_->width();
 		}
 
@@ -246,24 +254,30 @@ void GfxCanvas::drawImageTiled(wxGraphicsContext* gc)
 // -----------------------------------------------------------------------------
 // Draws the current cropping rectangle overlay
 // -----------------------------------------------------------------------------
-void GfxCanvas::drawCropRect(wxGraphicsContext* gc) const
+void GfxCanvas::drawCropRect(const wxgfx::Context& ctx) const
 {
-	auto vr = view_.visibleRegion();
+	Recti vr{ view_.visibleRegion().tl, view_.visibleRegion().br };
+
+	// Expand visible region by 1 pixel to ensure everything is drawn right to the edges
+	vr.tl.x--;
+	vr.tl.y--;
+	vr.br.x++;
+	vr.br.y++;
 
 	// Draw cropping lines
-	gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(*wxBLACK, 1 / view_.scale().x)));
-	gc->StrokeLine(crop_rect_->left(), vr.top(), crop_rect_->left(), vr.bottom());     // Left
-	gc->StrokeLine(vr.left(), crop_rect_->top(), vr.right(), crop_rect_->top());       // Top
-	gc->StrokeLine(crop_rect_->right(), vr.top(), crop_rect_->right(), vr.bottom());   // Right
-	gc->StrokeLine(vr.left(), crop_rect_->bottom(), vr.right(), crop_rect_->bottom()); // Bottom
+	ctx.setPen(ColRGBA::BLACK);
+	ctx.drawLine(crop_rect_->left(), vr.top(), crop_rect_->left(), vr.bottom());     // Left
+	ctx.drawLine(vr.left(), crop_rect_->top(), vr.right(), crop_rect_->top());       // Top
+	ctx.drawLine(crop_rect_->right(), vr.top(), crop_rect_->right(), vr.bottom());   // Right
+	ctx.drawLine(vr.left(), crop_rect_->bottom(), vr.right(), crop_rect_->bottom()); // Bottom
 
 	// Shade cropped-out area
-	gc->SetPen(*wxTRANSPARENT_PEN);
-	gc->SetBrush(wxBrush(wxColour(0, 0, 0, 100)));
-	gc->DrawRectangle(vr.left(), vr.top(), crop_rect_->left() - vr.left(), vr.height());                // Left
-	gc->DrawRectangle(crop_rect_->right(), vr.top(), vr.right() - crop_rect_->right(), vr.height());    // Right
-	gc->DrawRectangle(crop_rect_->left(), vr.top(), crop_rect_->width(), crop_rect_->top() - vr.top()); // Top
-	gc->DrawRectangle(
+	ctx.setTransparentPen();
+	ctx.setBrush({ 0, 0, 0, 100 });
+	ctx.drawRect(vr.left(), vr.top(), crop_rect_->left() - vr.left(), vr.height());                // Left
+	ctx.drawRect(crop_rect_->right(), vr.top(), vr.right() - crop_rect_->right(), vr.height());    // Right
+	ctx.drawRect(crop_rect_->left(), vr.top(), crop_rect_->width(), crop_rect_->top() - vr.top()); // Top
+	ctx.drawRect(
 		crop_rect_->left(), crop_rect_->bottom(), crop_rect_->width(), vr.bottom() - crop_rect_->bottom()); // Bottom
 }
 
@@ -279,12 +293,12 @@ void GfxCanvas::drawCropRect(wxGraphicsContext* gc) const
 // -----------------------------------------------------------------------------
 void GfxCanvas::onPaint(wxPaintEvent& e)
 {
-	auto dc = wxPaintDC(this);
-	auto gc = wxgfx::createGraphicsContext(dc);
+	auto dc  = wxPaintDC(this);
+	auto ctx = wxgfx::Context{ dc, &view_ };
 
 	// Background
-	wxgfx::generateCheckeredBackground(background_bitmap_, GetSize().x, GetSize().y);
-	gc->DrawBitmap(background_bitmap_, 0, 0, background_bitmap_.GetWidth(), background_bitmap_.GetHeight());
+	wxgfx::generateCheckeredBackground(background_bitmap_, view_.size().x, view_.size().y);
+	ctx.drawBitmap(background_bitmap_, 0, 0);
 
 	// Aspect Ratio Correction
 	if (gfx_arc)
@@ -293,22 +307,22 @@ void GfxCanvas::onPaint(wxPaintEvent& e)
 		view_.setScale(view_.scale().x);
 
 	// Apply view to wxGraphicsContext
-	wxgfx::applyViewToGC(view_, gc.get());
+	ctx.applyView();
 
 	// Offset/guide lines
-	wxgfx::drawOffsetLines(gc.get(), view(), view_type_);
+	ctx.drawOffsetLines(view_type_);
 
 	// Image
 	if (image_->isValid())
 	{
-		gc->SetInterpolationQuality(wxINTERPOLATION_NONE);
+		ctx.gc->SetInterpolationQuality(wxINTERPOLATION_NONE);
 		if (editing_mode_ == GfxEditMode::None && view_type_ == View::Tiled)
-			drawImageTiled(gc.get());
+			drawImageTiled(ctx);
 		else
-			drawImage(gc.get());
+			drawImage(ctx);
 	}
 
 	// Cropping overlay
 	if (crop_rect_)
-		drawCropRect(gc.get());
+		drawCropRect(ctx);
 }

@@ -36,10 +36,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ColourBox.h"
-#include "General/UI.h"
 #include "Graphics/Palette/Palette.h"
 #include "UI/Dialogs/PaletteDialog.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -63,7 +62,7 @@ DEFINE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED)
 // ColourBox class constructor
 // -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
-	wxPanel{ parent, id, wxDefaultPosition, wxutil::scaledSize(32, 22), wxNO_BORDER },
+	wxPanel{ parent, id, wxDefaultPosition, parent->FromDIP(wxSize(32, 22)), wxNO_BORDER },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
 {
@@ -83,9 +82,9 @@ ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, b
 	altmode_{ mode }
 {
 	if (size > 0)
-		SetInitialSize({ size, size });
+		SetInitialSize(FromDIP(wxSize{ size, size }));
 	else
-		SetInitialSize(wxutil::scaledSize(32, 22));
+		SetInitialSize(FromDIP(wxSize(32, 22)));
 
 	// Bind events
 	Bind(wxEVT_PAINT, &ColourBox::onPaint, this);
@@ -164,12 +163,12 @@ void ColourBox::popAlphaSlider()
 
 	// Popup a dialog with a slider control for alpha
 	wxDialog dlg(nullptr, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
+	auto     lh  = ui::LayoutHelper(&dlg);
 	auto     box = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(box);
 	auto slider = new wxSlider(&dlg, -1, colour_.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-	box->Add(slider, wxutil::sfWithLargeBorder(1).Expand());
-	box->Add(
-		dlg.CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	box->Add(slider, lh.sfWithLargeBorder(1).Expand());
+	box->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	dlg.SetInitialSize();
 
 	if (dlg.ShowModal() == wxID_OK)
@@ -196,17 +195,17 @@ void ColourBox::onPaint(wxPaintEvent& e)
 	wxPaintDC dc(this);
 
 	dc.SetBrush(wxBrush(wxColour(colour_.r, colour_.g, colour_.b)));
-	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
-	dc.DrawRectangle(0, 0, ClientSize.x, ClientSize.y);
+	const wxSize client_size = GetClientSize() * GetContentScaleFactor();
+	dc.DrawRectangle(0, 0, client_size.x, client_size.y);
 
 	if (alpha_)
 	{
-		int a_height       = ui::scalePx(4);
-		int a_border_width = static_cast<int>(ui::scaleFactor());
-		int a_point        = colour_.fa() * (ClientSize.x - (2 * a_border_width));
+		int a_height       = FromDIP(4);
+		int a_border_width = FromDIP(1);
+		int a_point        = colour_.fa() * (client_size.x - (2 * a_border_width));
 
 		dc.SetBrush(wxBrush(wxColour(0, 0, 0)));
-		dc.DrawRectangle(0, 0, ClientSize.x, a_height);
+		dc.DrawRectangle(0, 0, client_size.x, a_height);
 
 		dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
 		dc.SetPen(*wxTRANSPARENT_PEN);

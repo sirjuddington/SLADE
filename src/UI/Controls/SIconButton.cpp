@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SIconButton.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -54,21 +54,7 @@ SIconButton::SIconButton(
 	int             icon_size) :
 	wxBitmapButton{ parent, -1, wxNullBitmap }
 {
-#if wxCHECK_VERSION(3, 1, 6)
 	auto bmp = icons::getIcon(icon_type, icon.ToStdString(), icon_size);
-#else
-	// Create icon
-	auto size = ui::scalePx(icon_size);
-	auto bmp  = icons::getIcon(icon_type, icon.ToStdString(), size);
-
-	// Scale icon if required
-	if (bmp.GetWidth() != size)
-	{
-		auto img = bmp.ConvertToImage();
-		img.Rescale(size, size, wxIMAGE_QUALITY_BICUBIC);
-		bmp = wxBitmap(img);
-	}
-#endif
 
 	// Set button image and tooltip
 	SetBitmap(bmp);

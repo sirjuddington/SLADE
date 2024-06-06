@@ -34,14 +34,13 @@
 #include "ScriptPanel.h"
 #include "App.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "Scripting/ScriptManager.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
+#include "UI/Layout.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
-#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -59,26 +58,27 @@ using namespace slade;
 ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPanel(parent, -1), script_{ script }
 {
 	wxPanel::SetName("script");
+	auto lh = ui::LayoutHelper(this);
 
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Toolbar
 	auto toolbar = setupToolbar();
-	sizer->AddSpacer(ui::padMin());
-	sizer->Add(toolbar, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
-	sizer->AddSpacer(ui::padMin());
+	sizer->AddSpacer(lh.padSmall());
+	sizer->Add(toolbar, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
+	sizer->AddSpacer(lh.padSmall());
 
 	// Text Editor
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
 		text_editor_->SetText(script_->text);
-	sizer->Add(text_editor_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(text_editor_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Find+Replace panel
 	find_replace_panel_ = new FindReplacePanel(this, *text_editor_);
-	sizer->Add(find_replace_panel_, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(find_replace_panel_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	find_replace_panel_->Show(false);
 
 	text_editor_->setFindReplacePanel(find_replace_panel_);

@@ -34,7 +34,7 @@
 #include "Main.h"
 #include "BrowserItem.h"
 #include "BrowserWindow.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Geometry/Rect.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
@@ -121,7 +121,7 @@ void BrowserItem::draw(int size, gl::draw2d::Context& dc, NameType nametype, Ite
 		// Create text box if needed
 		if (!text_box_)
 			text_box_ = std::make_unique<gl::draw2d::TextBox>(
-				fmt::format("{}\n{}", index_, name_.mb_str().data()), ui::scalePx(144), dc.font, ui::scalePx(16));
+				fmt::format("{}\n{}", index_, name_.mb_str().data()), 144, dc.font, 16);
 
 		Vec2f pos;
 		pos.x = sizef + 8.0f;

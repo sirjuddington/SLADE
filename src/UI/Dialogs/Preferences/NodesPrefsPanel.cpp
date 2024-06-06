@@ -31,8 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NodesPrefsPanel.h"
-#include "General/UI.h"
 #include "MapEditor/NodeBuilders.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -61,7 +61,7 @@ EXTERN_CVAR(String, nodebuilder_options)
 NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto sizer = new wxGridBagSizer(ui::pad(this), ui::pad(this));
 	SetSizer(sizer);
 
 	// Nodebuilder list

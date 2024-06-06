@@ -33,7 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexEditorPanel.h"
-#include "General/UI.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/CodePages.h"
 
@@ -268,8 +268,8 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 	btn_go_to_offset_ = new wxButton(this, -1, "Go to Offset...");
 
 	// Setup hex grid
-	auto cellsize      = ui::scalePx(28);
-	auto scrollbarsize = wxSystemSettings::GetMetric(wxSystemMetric::wxSYS_VSCROLL_X);
+	auto cellsize      = FromDIP(28);
+	auto scrollbarsize = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
 	grid_hex_->SetDefaultRowSize(cellsize, true);
 	grid_hex_->SetDefaultColSize(cellsize, true);
 	grid_hex_->HideColLabels();
@@ -321,45 +321,46 @@ void HexEditorPanel::setupLayout()
 	GetSizer()->Add(vbox, wxSizerFlags().Expand());
 
 	// View type
-	wxutil::layoutHorizontally(
+	auto lh = ui::LayoutHelper(this);
+	lh.layoutHorizontally(
 		vbox,
 		vector<wxObject*>{ new wxStaticText(this, -1, "View As:"), rb_view_hex_, rb_view_dec_, rb_view_ascii_ },
-		wxutil::sfWithMinBorder(0, wxBOTTOM));
+		lh.sfWithSmallBorder(0, wxBOTTOM));
 
 	// Hex grid
 	vbox->Add(grid_hex_, wxSizerFlags().Expand());
 
 	// Right side
 	vbox = new wxBoxSizer(wxVERTICAL);
-	GetSizer()->Add(vbox, wxutil::sfWithBorder(1, wxLEFT).Expand());
+	GetSizer()->Add(vbox, lh.sfWithBorder(1, wxLEFT).Expand());
 
 	// Values
 	auto frame      = new wxStaticBox(this, -1, "Values (General)");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	wxutil::layoutVertically(
-		framesizer, { label_offset_, label_byte_, label_ubyte_, label_ascii_ }, wxutil::sfWithBorder(1).Expand());
-	vbox->Add(framesizer, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+	lh.layoutVertically(
+		framesizer, { label_offset_, label_byte_, label_ubyte_, label_ascii_ }, lh.sfWithBorder(1).Expand());
+	vbox->Add(framesizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Little endian values
 	frame      = new wxStaticBox(this, -1, "Values (Little Endian)");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		framesizer,
 		{ label_short_le_, label_ushort_le_, label_int32_le_, label_uint32_le_ },
-		wxutil::sfWithBorder(1).Expand());
-	vbox->Add(framesizer, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+		lh.sfWithBorder(1).Expand());
+	vbox->Add(framesizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Big endian values
 	frame      = new wxStaticBox(this, -1, "Values (Big Endian)");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		framesizer,
 		{ label_short_be_, label_ushort_be_, label_int32_be_, label_uint32_be_ },
-		wxutil::sfWithBorder(1).Expand());
-	vbox->Add(framesizer, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+		lh.sfWithBorder(1).Expand());
+	vbox->Add(framesizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// 'Go to Offset' button
-	vbox->Add(btn_go_to_offset_, wxutil::sfWithBorder(0, wxBOTTOM));
+	vbox->Add(btn_go_to_offset_, lh.sfWithBorder(0, wxBOTTOM));
 }
 
 

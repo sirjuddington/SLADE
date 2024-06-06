@@ -39,6 +39,7 @@
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SActionHandler.h"
+#include "UI/Layout.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
@@ -76,7 +77,7 @@ namespace
 wxBitmapBundle getIconBitmapBundle(string_view icon, int size)
 {
 	auto svg_entry = app::archiveManager().programResourceArchive()->entryAtPath(fmt::format("icons/{}", icon));
-	return wxBitmapBundle::FromSVG(reinterpret_cast<const char*>(svg_entry->rawData()), wxutil::scaledSize(size, size));
+	return wxBitmapBundle::FromSVG(reinterpret_cast<const char*>(svg_entry->rawData()), { size, size });
 }
 
 // -----------------------------------------------------------------------------
@@ -98,11 +99,12 @@ SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, co
 // -----------------------------------------------------------------------------
 wxSizer* createLogoSizer(wxWindow* parent)
 {
+	auto lh    = LayoutHelper(parent);
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 
 	// Logo
 	auto logo_bitmap = new wxStaticBitmap(parent, -1, getIconBitmapBundle("general/logo.svg", 112));
-	sizer->Add(logo_bitmap, wxutil::sfWithLargeBorder(1, wxRIGHT).CenterVertical());
+	sizer->Add(logo_bitmap, lh.sfWithLargeBorder(1, wxRIGHT).CenterVertical());
 
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(vbox, wxSizerFlags(1).Expand());
@@ -119,7 +121,7 @@ wxSizer* createLogoSizer(wxWindow* parent)
 	auto tagline_label = new wxStaticText(parent, -1, "It's a Doom Editor");
 	tagline_label->SetFont(tagline_label->GetFont().Bold().Italic().Scale(1.2f));
 	tagline_label->SetForegroundColour(wxColour(blue_dark_colour));
-	vbox->Add(tagline_label, wxutil::sfWithBorder(0, wxBOTTOM).CenterHorizontal());
+	vbox->Add(tagline_label, lh.sfWithBorder(0, wxBOTTOM).CenterHorizontal());
 
 	// Version
 	auto version_label = new wxStaticText(parent, -1, "v" + app::version().toString());
@@ -138,7 +140,7 @@ wxSizer* createLogoSizer(wxWindow* parent)
 wxSizer* createActionsSizer(wxWindow* parent)
 {
 	auto sizer  = new wxBoxSizer(wxVERTICAL);
-	auto sflags = wxutil::sfWithBorder(0, wxBOTTOM).Expand();
+	auto sflags = LayoutHelper(parent).sfWithBorder(0, wxBOTTOM).Expand();
 
 	sizer->Add(createActionButton(parent, "aman_open", "Open Archive", "open"), sflags);
 	sizer->Add(createActionButton(parent, "aman_opendir", "Open Directory", "opendir"), sflags);
@@ -182,13 +184,13 @@ StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 void StartPanel::setupLayout()
 {
-	namespace wx = wxutil;
+	auto lh = LayoutHelper(this);
 
 	auto main_sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(main_sizer);
 
 	// Blue strip at the top
-	auto top_panel = new wxPanel(this, -1, wxDefaultPosition, { -1, 4 });
+	auto top_panel = new wxPanel(this, -1, wxDefaultPosition, lh.size(-1, 4));
 	top_panel->SetBackgroundColour(wxColour(116, 135, 175));
 	main_sizer->Add(top_panel, wxSizerFlags().Expand());
 
@@ -197,12 +199,12 @@ void StartPanel::setupLayout()
 	left_sizer->Add(createActionsSizer(this), wxSizerFlags(1).Right());
 
 	auto content_sizer = new wxBoxSizer(wxHORIZONTAL);
-	content_sizer->Add(left_sizer, wx::sfWithLargeBorder(1, wxRIGHT).CenterVertical());
-	content_sizer->Add(recent_files_panel_, wx::sfWithLargeBorder(1, wxLEFT).CenterVertical());
+	content_sizer->Add(left_sizer, lh.sfWithLargeBorder(1, wxRIGHT).CenterVertical());
+	content_sizer->Add(recent_files_panel_, lh.sfWithLargeBorder(1, wxLEFT).CenterVertical());
 
 	main_sizer->AddStretchSpacer();
-	main_sizer->Add(createLogoSizer(this), wx::sfWithLargeBorder(0, wxBOTTOM).Center());
-	main_sizer->Add(content_sizer, wx::sfWithBorder(1, wxLEFT | wxRIGHT).Center());
+	main_sizer->Add(createLogoSizer(this), lh.sfWithLargeBorder(0, wxBOTTOM).Center());
+	main_sizer->Add(content_sizer, lh.sfWithBorder(1, wxLEFT | wxRIGHT).Center());
 	main_sizer->AddStretchSpacer();
 }
 
@@ -211,6 +213,7 @@ void StartPanel::setupLayout()
 // -----------------------------------------------------------------------------
 void StartPanel::updateRecentFilesPanel()
 {
+	auto lh    = LayoutHelper(recent_files_panel_);
 	auto sizer = recent_files_panel_->GetSizer();
 	if (!sizer)
 	{
@@ -222,7 +225,7 @@ void StartPanel::updateRecentFilesPanel()
 
 	auto title_label = new wxStaticText(recent_files_panel_, -1, "Recent Files");
 	title_label->SetFont(title_label->GetFont().Bold().Scale(1.25f));
-	sizer->Add(title_label, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(title_label, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	auto recent_files = app::archiveManager().recentFiles();
 	if (recent_files.empty())
@@ -236,7 +239,7 @@ void StartPanel::updateRecentFilesPanel()
 		auto index = 0;
 		for (const auto& path : recent_files)
 		{
-			sizer->Add(createRecentFileSizer(path, index), wxutil::sfWithMinBorder(0, wxBOTTOM));
+			sizer->Add(createRecentFileSizer(path, index), lh.sfWithSmallBorder(0, wxBOTTOM));
 
 			if (index++ > 10)
 				break;
@@ -251,6 +254,7 @@ void StartPanel::updateRecentFilesPanel()
 // -----------------------------------------------------------------------------
 wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) const
 {
+	auto lh    = LayoutHelper(recent_files_panel_);
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 
 	// Icon --------------------------------------------------------------------
@@ -279,8 +283,7 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 			break;
 		}
 
-	sizer->Add(
-		new wxStaticBitmap(recent_files_panel_, -1, getIconBitmapBundle(icon, 16)), wxutil::sfWithBorder(0, wxRIGHT));
+	sizer->Add(new wxStaticBitmap(recent_files_panel_, -1, getIconBitmapBundle(icon, 16)), lh.sfWithBorder(0, wxRIGHT));
 
 
 	// Text --------------------------------------------------------------------
@@ -296,7 +299,7 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 	filename_label->SetDoubleBuffered(true);
 	if (path.fileName().length() > 24)
 		filename_label->SetToolTip(wxutil::strFromView(path.fileName()));
-	sizer->Add(filename_label, wxutil::sfWithLargeBorder(0, wxRIGHT).Bottom());
+	sizer->Add(filename_label, lh.sfWithLargeBorder(0, wxRIGHT).Bottom());
 
 	auto path_label = new wxStaticText(recent_files_panel_, -1, wxutil::strFromView(path.path(false)));
 	sizer->Add(path_label, wxSizerFlags().Bottom());

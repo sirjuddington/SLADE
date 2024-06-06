@@ -17,7 +17,7 @@ public:
 	void hide();
 	void forceRedraw();
 
-	static void init();
+	void init() const;
 
 	// Events
 	void onPaint(wxPaintEvent& e);

@@ -42,16 +42,12 @@ private:
 		MouseDown,
 	};
 
-	SAction* action_ = nullptr;
-#if wxCHECK_VERSION(3, 1, 6)
+	SAction*       action_ = nullptr;
 	wxBitmapBundle icon_;
-#else
-	wxBitmap icon_;
-#endif
-	State   state_             = State::Normal;
-	bool    show_name_         = false;
-	wxMenu* menu_dropdown_     = nullptr;
-	bool    last_draw_enabled_ = true; // True if the button was enabled last time it was drawn
+	State          state_             = State::Normal;
+	bool           show_name_         = false;
+	wxMenu*        menu_dropdown_     = nullptr;
+	bool           last_draw_enabled_ = true; // True if the button was enabled last time it was drawn
 
 	// For non-SAction buttons
 	wxString action_id_;

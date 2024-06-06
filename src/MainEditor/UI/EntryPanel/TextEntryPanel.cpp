@@ -33,10 +33,8 @@
 #include "TextEntryPanel.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
-#include "Game/Configuration.h"
 #include "Game/Game.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "TextEditor/TextLanguage.h"
@@ -45,6 +43,7 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Layout.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "Utility/StringUtils.h"
 
@@ -79,7 +78,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
-	sizer_main_->Add(panel_fr_, wxutil::sfWithLargeBorder(0, wxTOP).Expand());
+	sizer_main_->Add(panel_fr_, ui::LayoutHelper(this).sfWithLargeBorder(0, wxTOP).Expand());
 
 	// Add 'Text Language' choice to toolbar
 	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
@@ -93,7 +92,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 
 	// Add 'Jump To' choice to toolbar
 	auto group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(ui::scalePx(200), -1));
+	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(FromDIP(200), -1));
 	group_jump_to->addCustomControl(choice_jump_to_);
 	toolbar_->addGroup(group_jump_to);
 	text_area_->setJumpToControl(choice_jump_to_);

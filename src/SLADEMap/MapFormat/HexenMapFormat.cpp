@@ -37,7 +37,7 @@
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
