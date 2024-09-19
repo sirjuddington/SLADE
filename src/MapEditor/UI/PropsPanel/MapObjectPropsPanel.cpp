@@ -174,6 +174,9 @@ T* MapObjectPropsPanel::addProperty(
 	prop->setParent(this);
 	prop->setUDMFProp(udmf_prop);
 
+	if (udmf_prop)
+		prop->SetHelpString(wxString::Format("%s\n(%s)", udmf_prop->name(), udmf_prop->propName()));
+
 	// Add it
 	properties_.push_back(prop);
 	if (!grid)
