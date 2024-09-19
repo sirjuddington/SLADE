@@ -28,6 +28,7 @@ private:
 	bool            mouse_warp_ = false;
 	vector<int>     fps_avg_;
 	sf::Clock       sf_clock_;
+	long            last_wheel_timestamp_ = -1;
 
 	// Events
 	void onSize(wxSizeEvent& e);
