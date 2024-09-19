@@ -30,6 +30,8 @@
 // Includes
 //
 // -----------------------------------------------------------------------------
+#include <wx/app.h>
+
 #include "Main.h"
 #include "SplashWindow.h"
 #include "App.h"
@@ -194,6 +196,9 @@ void SplashWindow::forceRedraw()
 {
 	Refresh();
 	Update();
+
+	// Spin the event loop once, to ensure we get our paint events.
+	wxTheApp->SafeYieldFor(nullptr, wxEVT_CATEGORY_UI);
 }
 
 
