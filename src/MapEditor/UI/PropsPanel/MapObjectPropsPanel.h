@@ -59,6 +59,13 @@ private:
 	bool             hide_triggers_ = false;
 	vector<wxString> hide_props_;
 
+	template<typename T>
+	T* addProperty(
+		wxPGProperty*       group,
+		T*                  prop,
+		bool                readonly  = false,
+		wxPropertyGrid*     grid      = nullptr,
+		game::UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty* addBoolProperty(
 		wxPGProperty*       group,
 		const wxString&     label,
