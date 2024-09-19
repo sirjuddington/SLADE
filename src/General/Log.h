@@ -112,19 +112,21 @@ class Debuggable
 	wxString repr;
 
 public:
-	Debuggable(wxString v) { repr = v; }
+	Debuggable(const wxString v) { repr = v; }
+	Debuggable(const string v) { repr = v; }
 	Debuggable(const char* v) { repr = v; }
-	Debuggable(bool v) { repr = v ? "true" : "false"; }
-	Debuggable(int v) { repr = wxString::Format("%d", v); }
-	Debuggable(unsigned int v) { repr = wxString::Format("%u", v); }
-	Debuggable(long v) { repr = wxString::Format("%ld", v); }
-	Debuggable(unsigned long v) { repr = wxString::Format("%lu", v); }
-	Debuggable(double v) { repr = wxString::Format("%g", v); }
+	Debuggable(const bool v) { repr = v ? "true" : "false"; }
+	Debuggable(const int v) { repr = wxString::Format("%d", v); }
+	Debuggable(const unsigned int v) { repr = wxString::Format("%u", v); }
+	Debuggable(const long v) { repr = wxString::Format("%ld", v); }
+	Debuggable(const unsigned long v) { repr = wxString::Format("%lu", v); }
+	Debuggable(const double v) { repr = wxString::Format("%g", v); }
 
-	Debuggable(Vec2d v) { repr = wxString::Format("(%0.6f, %0.6f)", v.x, v.y); }
-	Debuggable(Vec3f v) { repr = wxString::Format("(%0.6f, %0.6f, %0.6f)", v.x, v.y, v.z); }
-	Debuggable(Rectf v) { repr = wxString::Format("(%0.6f, %0.6f to %0.6f, %0.6f)", v.x1(), v.y1(), v.x2(), v.y2()); }
+	Debuggable(const Vec2d v) { repr = wxString::Format("(%0.6f, %0.6f)", v.x, v.y); }
+	Debuggable(const Vec3f v) { repr = wxString::Format("(%0.6f, %0.6f, %0.6f)", v.x, v.y, v.z); }
+	Debuggable(const Rectf v) { repr = wxString::Format("(%0.6f, %0.6f to %0.6f, %0.6f)", v.x1(), v.y1(), v.x2(), v.y2()); }
 
+	Debuggable(const void* v) { repr = wxString::Format("%08p", v); }
 	template<typename T> Debuggable(T* v) { repr = Debuggable(*v).repr; }
 
 	template<typename T> Debuggable(vector<T> v)
