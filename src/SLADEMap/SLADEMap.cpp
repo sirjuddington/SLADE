@@ -1067,8 +1067,6 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 				splitLine(line2, nv);
 				connected_lines.push_back(lines().last());
 
-				LOG_DEBUG("Lines", line1, "and", line2, "intersect");
-
 				a--;
 				break;
 			}
