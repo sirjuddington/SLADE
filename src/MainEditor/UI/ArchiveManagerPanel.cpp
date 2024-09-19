@@ -2261,7 +2261,16 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 			// Otherwise show change/update dialog
 			else
 			{
-				DirArchiveUpdateDialog dlg(maineditor::windowWx(), archive, change_list.changes);
+				// Show on top of the focused top-level window
+				// (There's a wxGetActiveWindow, but it doesn't work on Mac.)
+				wxWindow* focused = wxWindow::FindFocus();
+				if (focused) {
+					focused = wxGetTopLevelParent(focused);
+				}
+				if (! focused) {
+					focused = maineditor::windowWx();
+				}
+				DirArchiveUpdateDialog dlg(focused, archive, change_list.changes);
 				dlg.ShowModal();
 			}
 
