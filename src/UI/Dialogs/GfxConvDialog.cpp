@@ -39,6 +39,7 @@
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
+#include "MainEditor/MainEditor.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
@@ -646,7 +647,7 @@ void GfxConvDialog::onBtnConvert(wxCommandEvent& e)
 void GfxConvDialog::onBtnConvertAll(wxCommandEvent& e)
 {
 	// Show splash window
-	ui::showSplash("Converting Gfx...", true);
+	ui::showSplash("Converting Gfx...", true, maineditor::windowWx());
 
 	// Convert all images
 	for (size_t a = current_item_; a < items_.size(); a++)

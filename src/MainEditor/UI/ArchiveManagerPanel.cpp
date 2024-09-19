@@ -1189,7 +1189,7 @@ void ArchiveManagerPanel::closeEntryTabs(Archive* parent) const
 void ArchiveManagerPanel::openFile(const wxString& filename) const
 {
 	// Show splash screen
-	ui::showSplash("Opening Archive...", true);
+	ui::showSplash("Opening Archive...", true, maineditor::windowWx());
 
 	// test
 	wxStopWatch sw;
@@ -1231,7 +1231,7 @@ void ArchiveManagerPanel::openFiles(const wxArrayString& files) const
 void ArchiveManagerPanel::openDirAsArchive(const wxString& dir) const
 {
 	// Show splash screen
-	ui::showSplash("Opening Directory...", true);
+	ui::showSplash("Opening Directory...", true, maineditor::windowWx());
 
 	// test
 	wxStopWatch sw;

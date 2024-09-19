@@ -66,8 +66,10 @@ bool     init_done  = false;
 // -----------------------------------------------------------------------------
 // SplashWindow class constructor
 // -----------------------------------------------------------------------------
-SplashWindow::SplashWindow() :
-	wxMiniFrame{ nullptr, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE }
+SplashWindow::SplashWindow(wxWindow* parent) :
+	wxMiniFrame{
+		parent, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+		wxBORDER_NONE | (parent ? wxFRAME_FLOAT_ON_PARENT : 0) }
 {
 	// Init
 	wxMiniFrame::SetBackgroundStyle(wxBG_STYLE_PAINT);
@@ -148,7 +150,7 @@ void SplashWindow::init()
 // Shows the splash window with [message].
 // If [progress] is true, a progress bar will also be shown
 // -----------------------------------------------------------------------------
-void SplashWindow::show(const wxString& message, bool progress, wxWindow* parent)
+void SplashWindow::show(const wxString& message, bool progress)
 {
 	// Setup progress bar
 	int rheight = img_height;
@@ -161,13 +163,7 @@ void SplashWindow::show(const wxString& message, bool progress, wxWindow* parent
 	else
 		show_progress_ = false;
 
-	// Set parent
-	if (!parent && app::isInitialised())
-		SetParent(maineditor::windowWx());
-	else
-		SetParent(parent);
-
-		// Show & init window
+	// Show & init window
 #ifndef __WXGTK__
 	SetInitialSize({ img_width, rheight });
 #else
