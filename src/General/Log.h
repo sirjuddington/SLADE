@@ -105,10 +105,7 @@ namespace log
 
 
 // Debug helper type
-// Note: NDEBUG is a standard C macro indicating that assert()s should be
-// disabled, but it's also the only macro cmake defines differently between
-// debug and release builds, so we co-opt it just for this.
-#ifndef NDEBUG
+#ifdef SLADE_DEBUG
 #include <typeinfo>
 class Debuggable
 {
@@ -173,16 +170,16 @@ inline void LOG_DEBUG(
 	message << a11.get() << " ";
 	message << a12.get();
 	message.Trim();
-	log::debug(0, wxString::Format("%s", message));
+	log::message(log::MessageType::Debug, 0, message.ToStdString());
 }
 
 #define LOG_DEBUG_VAR(name) LOG_DEBUG(#name ": ", name)
-#else // not NDEBUG
+#else // SLADE_DEBUG
 struct Debuggable
 {
 	template<typename T> Debuggable(T _unused) {}
 };
 #define LOG_DEBUG(...)
 #define LOG_DEBUG_VAR(name)
-#endif // DEBUG
+#endif // SLADE_DEBUG
 } // namespace slade
