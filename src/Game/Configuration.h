@@ -167,6 +167,8 @@ namespace game
 		// UDMF properties
 		UDMFProperty* getUDMFProperty(const string& name, MapObject::Type type);
 		UDMFPropMap&  allUDMFProperties(MapObject::Type type);
+		vector<std::pair<const string, UDMFProperty>*>
+		              sortedUDMFProperties(MapObject::Type type);
 		void          cleanObjectUDMFProps(MapObject* object);
 
 		// Sector types

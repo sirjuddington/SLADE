@@ -1792,6 +1792,26 @@ UDMFPropMap& Configuration::allUDMFProperties(MapObject::Type type)
 }
 
 // -----------------------------------------------------------------------------
+// Returns all defined UDMF properties for MapObject type [type], in the order
+// they were defined in the configuration
+// -----------------------------------------------------------------------------
+vector<std::pair<const string, UDMFProperty>*>
+Configuration::sortedUDMFProperties(MapObject::Type type)
+{
+	auto& all_props = allUDMFProperties(type);
+	vector<std::pair<const string, UDMFProperty>*> sorted_props;
+	sorted_props.reserve(all_props.size());
+	for (auto& prop : all_props)
+	{
+		sorted_props.push_back(&prop);
+	}
+	std::sort(sorted_props.begin(), sorted_props.end(), [](const auto& a, const auto& b) {
+		return a->second.order() < b->second.order();
+	});
+	return sorted_props;
+}
+
+// -----------------------------------------------------------------------------
 // Removes any UDMF properties in [object] that have default values
 // (so they are not written to the UDMF map unnecessarily)
 // -----------------------------------------------------------------------------

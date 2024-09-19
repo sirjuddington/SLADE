@@ -837,20 +837,20 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 	else if (objtype == MapObject::Type::Thing)
 		stc_sections_->SetPageText(0, "Thing");
 
-	// Go through all possible properties for this type
-	auto& props = game::configuration().allUDMFProperties(objtype);
+	// Go through all possible properties for this type, in configuration order
+	auto props = game::configuration().sortedUDMFProperties(objtype);
 	for (auto& i : props)
 	{
 		// Skip if hidden
-		if ((hide_flags_ && i.second.isFlag()) || (hide_triggers_ && i.second.isTrigger()))
+		if ((hide_flags_ && i->second.isFlag()) || (hide_triggers_ && i->second.isTrigger()))
 		{
-			hide_props_.emplace_back(i.second.propName());
+			hide_props_.emplace_back(i->second.propName());
 			continue;
 		}
-		if (VECTOR_EXISTS(hide_props_, i.second.propName()))
+		if (VECTOR_EXISTS(hide_props_, i->second.propName()))
 			continue;
 
-		addUDMFProperty(i.second, objtype);
+		addUDMFProperty(i->second, objtype);
 	}
 
 	// Add side properties if line type
@@ -863,36 +863,22 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 		stc_sections_->AddPage(pg_props_side2_, "Back Side");
 
 		// Get side properties
-		auto& sprops = game::configuration().allUDMFProperties(MapObject::Type::Side);
+		auto sprops = game::configuration().sortedUDMFProperties(MapObject::Type::Side);
 
-		// Front side
+		// Add to both sides
 		for (auto& i : sprops)
 		{
 			// Skip if hidden
-			if ((hide_flags_ && i.second.isFlag()) || (hide_triggers_ && i.second.isTrigger()))
+			if ((hide_flags_ && i->second.isFlag()) || (hide_triggers_ && i->second.isTrigger()))
 			{
-				hide_props_.emplace_back(i.second.propName());
+				hide_props_.emplace_back(i->second.propName());
 				continue;
 			}
-			if (VECTOR_EXISTS(hide_props_, i.second.propName()))
+			if (VECTOR_EXISTS(hide_props_, i->second.propName()))
 				continue;
 
-			addUDMFProperty(i.second, objtype, "side1", pg_props_side1_);
-		}
-
-		// Back side
-		for (auto& i : sprops)
-		{
-			// Skip if hidden
-			if ((hide_flags_ && i.second.isFlag()) || (hide_triggers_ && i.second.isTrigger()))
-			{
-				hide_props_.emplace_back(i.second.propName());
-				continue;
-			}
-			if (VECTOR_EXISTS(hide_props_, i.second.propName()))
-				continue;
-
-			addUDMFProperty(i.second, objtype, "side2", pg_props_side2_);
+			addUDMFProperty(i->second, objtype, "side1", pg_props_side1_);
+			addUDMFProperty(i->second, objtype, "side2", pg_props_side2_);
 		}
 	}
 
