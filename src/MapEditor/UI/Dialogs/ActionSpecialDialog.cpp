@@ -876,8 +876,10 @@ void ActionSpecialPanel::setupSpecialPanel()
 	// Special box
 	text_special_ = new NumberTextCtrl(panel_action_special_);
 	sizer->Add(text_special_, 0, wxEXPAND | wxBOTTOM, ui::pad());
-	text_special_->Bind(
-		wxEVT_TEXT, [&](wxCommandEvent& e) { tree_specials_->showSpecial(text_special_->number(), false); });
+	text_special_->Bind(wxEVT_TEXT, [&](wxCommandEvent& e) {
+		tree_specials_->showSpecial(text_special_->number(), false);
+		updateArgsPanel();
+	});
 
 	// Action specials tree
 	tree_specials_ = new ActionSpecialTreeView(panel_action_special_);
@@ -987,12 +989,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	tree_specials_->showSpecial(special, false);
 	text_special_->SetValue(wxString::Format("%d", special));
 
-	// Setup args if any
-	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
-	}
+	updateArgsPanel();
 }
 
 // -----------------------------------------------------------------------------
@@ -1240,6 +1237,18 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Update the arg names/types on the args panel
+// -----------------------------------------------------------------------------
+void ActionSpecialPanel::updateArgsPanel()
+{
+	if (panel_args_)
+	{
+		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
+		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -1272,11 +1281,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 	// Set special # text box
 	text_special_->SetValue(wxString::Format("%d", selectedSpecial()));
 
-	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
-	}
+	updateArgsPanel();
 }
 
 // -----------------------------------------------------------------------------
@@ -1293,12 +1298,9 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent& e)
 	}
 
 	// Jump to args tab, if there is one
+	updateArgsPanel();
 	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
 		panel_args_->SetFocus();
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1385,11 +1387,6 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 void ActionSpecialDialog::setSpecial(int special) const
 {
 	panel_special_->setSpecial(special);
-	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(special).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
-	}
 }
 
 // -----------------------------------------------------------------------------

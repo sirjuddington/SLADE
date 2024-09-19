@@ -80,6 +80,7 @@ public:
 	void showGeneralised(bool show = true);
 	void applyTo(vector<MapObject*>& lines, bool apply_special);
 	void openLines(vector<MapObject*>& lines);
+	void updateArgsPanel();
 
 	void onRadioButtonChanged(wxCommandEvent& e);
 	void onSpecialSelectionChanged(wxDataViewEvent& e);
