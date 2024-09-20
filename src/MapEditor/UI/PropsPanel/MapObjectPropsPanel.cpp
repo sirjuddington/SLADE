@@ -78,27 +78,13 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	stc_sections_ = STabCtrl::createControl(this);
 	sizer->Add(stc_sections_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
-	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
-
 	// Add main property grid
-	pg_properties_ = new wxPropertyGrid(
-		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
-	pg_properties_->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS);
-	pg_properties_->SetCaptionTextColour(inactiveTextColour);
-	pg_properties_->SetCellDisabledTextColour(inactiveTextColour);
+	pg_properties_ = createPropGrid();
 	stc_sections_->AddPage(pg_properties_, "Properties");
 
 	// Create side property grids
-	pg_props_side1_ = new wxPropertyGrid(
-		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
-	pg_props_side1_->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS);
-	pg_props_side1_->SetCaptionTextColour(inactiveTextColour);
-	pg_props_side1_->SetCellDisabledTextColour(inactiveTextColour);
-	pg_props_side2_ = new wxPropertyGrid(
-		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
-	pg_props_side2_->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS);
-	pg_props_side2_->SetCaptionTextColour(inactiveTextColour);
-	pg_props_side2_->SetCellDisabledTextColour(inactiveTextColour);
+	pg_props_side1_ = createPropGrid();
+	pg_props_side2_ = createPropGrid();
 
 	// Add buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -145,6 +131,29 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	}
 
 	wxWindowBase::Layout();
+}
+
+// -----------------------------------------------------------------------------
+// Create and set up a property grid
+// -----------------------------------------------------------------------------
+wxPropertyGrid* MapObjectPropsPanel::createPropGrid()
+{
+	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+
+	auto propgrid = new wxPropertyGrid(
+		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
+	propgrid->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS);
+	propgrid->SetCaptionTextColour(inactiveTextColour);
+	propgrid->SetCellDisabledTextColour(inactiveTextColour);
+
+	// wxPropertyGrid is very conservative about not stealing focus, and won't do it even if you
+	// explicitly click on the category column, which doesn't make sense
+	propgrid->Bind(wxEVT_LEFT_DOWN, [propgrid](wxMouseEvent& e) {
+		propgrid->SetFocus();
+		e.Skip();
+	});
+
+	return propgrid;
 }
 
 // -----------------------------------------------------------------------------

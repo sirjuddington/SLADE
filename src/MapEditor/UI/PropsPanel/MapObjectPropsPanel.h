@@ -59,6 +59,8 @@ private:
 	bool             hide_triggers_ = false;
 	vector<wxString> hide_props_;
 
+	wxPropertyGrid* createPropGrid();
+
 	template<typename T>
 	T* addProperty(
 		wxPGProperty*       group,
