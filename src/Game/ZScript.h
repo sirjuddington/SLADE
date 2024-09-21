@@ -175,6 +175,7 @@ namespace zscript
 
 		vector<std::pair<string, string>> db_properties_;
 
+		void parseEditorComment(string_view token);
 		bool parseClassBlock(vector<ParsedStatement>& block);
 		bool parseDefaults(vector<ParsedStatement>& defaults);
 	};
