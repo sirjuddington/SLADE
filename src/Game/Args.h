@@ -23,6 +23,8 @@ namespace game
 			Choice,
 			Flags,
 			Speed,
+			Tics,
+			Octics,
 		};
 
 		typedef std::map<string, Arg> SpecialMap;
