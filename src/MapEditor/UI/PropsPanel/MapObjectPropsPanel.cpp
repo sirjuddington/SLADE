@@ -862,13 +862,15 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_properties_->EnableProperty(pg_properties_->GetGrid()->GetRoot());
 
 	// Setup property grid for the object type
-	if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
+	bool is_udmf = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
+	bool type_changed = ! (last_type_ == objects[0]->objType() && udmf_ == is_udmf);
+	if (is_udmf)
 		setupTypeUDMF(objects[0]->objType());
 	else
 		setupType(objects[0]->objType());
 
 	// Find any custom properties (UDMF only)
-	if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
+	if (is_udmf)
 	{
 		for (auto& object : objects)
 		{
@@ -954,6 +956,10 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	pg_properties_->Thaw();
 	pg_props_side1_->Thaw();
 	pg_props_side2_->Thaw();
+
+	// After changing types, the scroll position is meaningless, so scroll back to the top
+	if (type_changed)
+		pg_properties_->Scroll(0, 0);
 }
 
 // -----------------------------------------------------------------------------

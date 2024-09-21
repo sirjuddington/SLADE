@@ -1759,16 +1759,23 @@ UDMFProperty* Configuration::getUDMFProperty(const string& name, MapObject::Type
 {
 	using Type = MapObject::Type;
 
+	UDMFPropMap* udmf_props = nullptr;
+
 	if (type == Type::Vertex)
-		return &udmf_vertex_props_[name];
+		udmf_props = &udmf_vertex_props_;
 	else if (type == Type::Line)
-		return &udmf_linedef_props_[name];
+		udmf_props = &udmf_linedef_props_;
 	else if (type == Type::Side)
-		return &udmf_sidedef_props_[name];
+		udmf_props = &udmf_sidedef_props_;
 	else if (type == Type::Sector)
-		return &udmf_sector_props_[name];
+		udmf_props = &udmf_sector_props_;
 	else if (type == Type::Thing)
-		return &udmf_thing_props_[name];
+		udmf_props = &udmf_thing_props_;
+	else
+		return nullptr;
+
+	if (udmf_props->count(name) == 1)
+		return &(*udmf_props)[name];
 	else
 		return nullptr;
 }
