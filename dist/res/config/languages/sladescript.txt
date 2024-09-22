@@ -149,12 +149,12 @@ sladescript : lua
 					MapEditor.ClearSelection;
 					MapEditor.Select = "MapObject object, [boolean add]";
 					MapEditor.SetEditMode = "integer mode, [integer sectorMode]";
-		
+
 		// MapLine type
 		boolean	MapLine.Flag = "string flagName";
 				MapLine.Flip = "[boolean swapSides]";
 		table	MapLine.VisibleTextures;
-		
+
 		// MapObject type
 		boolean	MapObject.HasProperty = "string name";
 		boolean	MapObject.BoolProperty = "string name";
@@ -165,14 +165,14 @@ sladescript : lua
 				MapObject.SetIntProperty = "string name, integer value";
 				MapObject.SetFloatProperty = "string name, float value";
 				MapObject.SetStringProperty = "string name, string value";
-		
+
 		// MapSector type
 		boolean	MapSector.ContainsPoint = "Point position";
 
 		// MapThing type
 		boolean	MapThing.Flag = "string flagName";
 				MapThing.SetAnglePoint = "Point position";
-		
+
 		// Plane type
 		float	Plane.HeightAt = "Point position";
 
@@ -241,7 +241,7 @@ sladescript : lua
 				Palette.Shift = "float amount, integer firstIndex, integer lastIndex";
 				Palette.Invert = "integer firstIndex, integer lastIndex";
 				Palette.Gradient = "Colour startColour, Colour endColour, integer firstIndex, integer lastIndex";
-		
+
 		// Translation type
 		string				Translation.AsText;
 							Translation.Clear;
@@ -260,7 +260,7 @@ sladescript : lua
 							Translation.ReadTable = "string data";
 							Translation.RemoveRange = "integer index";
 							Translation.SwapRanges = "integer index1, integer index2";
-		
+
 		// TransRange type
 		string				TransRange.AsText;
 		TransRangePalette	TransRange.AsPaletteRange;
@@ -321,7 +321,7 @@ sladescript : lua
 		"float, float, float"	Colour.AsLAB;
 		string					Colour.AsString = "integer format";
 								Colour.FromHSL = "float hue, float saturation, float lightness";
-		
+
 		// DataBlock type
 		string	DataBlock.AsString;
 				DataBlock.SetData = "string data";
