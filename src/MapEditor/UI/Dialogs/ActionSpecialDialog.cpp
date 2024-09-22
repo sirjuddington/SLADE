@@ -66,13 +66,23 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	wxSize textsize;
 
 	// Populate tree
-	for (auto& i : game::configuration().allActionSpecials())
+	vector<const game::ActionSpecial*> sorted_specials;
+	sorted_specials.reserve(game::configuration().allActionSpecials().size());
+	for (const auto& i : game::configuration().allActionSpecials())
 	{
 		if (!i.second.defined())
 			continue;
 
-		wxString label = wxString::Format("%d: %s", i.second.number(), i.second.name());
-		AppendItem(getGroup(i.second.group()), label);
+		sorted_specials.push_back(&i.second);
+	}
+	std::sort(sorted_specials.begin(), sorted_specials.end(), [](const auto& a, const auto& b) {
+		return a->order() < b->order();
+	});
+
+	for (const auto& i : sorted_specials)
+	{
+		wxString label = wxString::Format("%d: %s", i->number(), i->name());
+		AppendItem(getGroup(i->group()), label);
 		textsize.IncTo(dc.GetTextExtent(label));
 	}
 	Expand(root_);
