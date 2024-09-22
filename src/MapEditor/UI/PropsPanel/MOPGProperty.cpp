@@ -152,6 +152,21 @@ void MOPGBoolProperty::applyValue()
 		object->setBoolProperty(GetName().ToStdString(), m_value.GetBool());
 }
 
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGBoolProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	bool def = false;
+	if (udmf_prop_)
+		def = property::asBool(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, def);
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -234,6 +249,21 @@ void MOPGIntProperty::applyValue()
 		object->setIntProperty(GetName().ToStdString(), m_value.GetInteger());
 }
 
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGIntProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	int def = 0;
+	if (udmf_prop_)
+		def = property::asInt(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, def);
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -314,6 +344,21 @@ void MOPGFloatProperty::applyValue()
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
 		object->setFloatProperty(GetName().ToStdString(), m_value.GetDouble());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGFloatProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	double def = 0.;
+	if (udmf_prop_)
+		def = property::asFloat(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, def);
 }
 
 
@@ -418,6 +463,21 @@ void MOPGStringProperty::applyValue()
 	vector<MapObject*>& objects = parent_->objects();
 	for (auto& object : objects)
 		object->setStringProperty(GetName().ToStdString(), m_value.GetString().ToStdString());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGStringProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	string def;
+	if (udmf_prop_)
+		def = property::asString(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, def);
 }
 
 
@@ -882,6 +942,21 @@ void MOPGAngleProperty::applyValue()
 }
 
 // -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGAngleProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	int def = 0;
+	if (udmf_prop_)
+		def = property::asInt(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, def);
+}
+
+// -----------------------------------------------------------------------------
 // Returns the angle value as a string
 // -----------------------------------------------------------------------------
 wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
@@ -985,6 +1060,23 @@ void MOPGColourProperty::applyValue()
 	col.Set(col.Blue(), col.Green(), col.Red());
 	for (auto& object : objects)
 		object->setIntProperty(GetName().ToStdString(), col.GetRGB());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGColourProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	wxColour def;
+	if (udmf_prop_)
+		def.SetRGB(property::asInt(udmf_prop_->defaultValue()));
+	wxVariant var;
+	var << def;
+	GetGrid()->ChangePropertyValue(this, var);
 }
 
 
@@ -1151,6 +1243,19 @@ void MOPGSPACTriggerProperty::applyValue()
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
 		game::configuration().setLineSpacTrigger(GetChoiceSelection(), dynamic_cast<MapLine*>(object));
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default (whatever's first)
+// -----------------------------------------------------------------------------
+void MOPGSPACTriggerProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	int def = 0;
+	GetGrid()->ChangePropertyValue(this, 0);
 }
 
 

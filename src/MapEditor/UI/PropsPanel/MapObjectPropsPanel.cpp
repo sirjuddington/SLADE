@@ -142,7 +142,7 @@ wxPropertyGrid* MapObjectPropsPanel::createPropGrid()
 
 	auto propgrid = new wxPropertyGrid(
 		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
-	propgrid->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS);
+	propgrid->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS | wxPG_EX_MULTIPLE_SELECTION);
 	propgrid->SetCaptionTextColour(inactiveTextColour);
 	propgrid->SetCellDisabledTextColour(inactiveTextColour);
 
@@ -151,6 +151,9 @@ wxPropertyGrid* MapObjectPropsPanel::createPropGrid()
 	propgrid->Bind(wxEVT_LEFT_DOWN, [propgrid](wxMouseEvent& e) {
 		propgrid->SetFocus();
 		e.Skip();
+	});
+	propgrid->Bind(wxEVT_KEY_DOWN, [this, propgrid](wxKeyEvent& e) {
+		onPropGridKeyDown(e, propgrid);
 	});
 
 	return propgrid;
@@ -1215,4 +1218,30 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 			return;
 		}
 	}
+}
+
+
+// -----------------------------------------------------------------------------
+// Handle a keypress on a propgrid itself (not a property editor)
+// -----------------------------------------------------------------------------
+void MapObjectPropsPanel::onPropGridKeyDown(wxKeyEvent& e, wxPropertyGrid* propgrid)
+{
+	if (e.GetKeyCode() == WXK_DELETE)
+	{
+		if (objects_.empty())
+			return;
+
+		// Clear the selected properties, and remove them entirely if custom
+		auto selection = propgrid->GetSelectedProperties();
+		propgrid->Freeze();
+		for (auto& prop : selection)
+		{
+			auto mopg_prop = dynamic_cast<MOPGProperty*>(prop);
+			if (mopg_prop)
+				mopg_prop->clearValue();
+		}
+		propgrid->Thaw();
+	}
+	else
+		e.Skip();
 }
