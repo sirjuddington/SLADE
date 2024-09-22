@@ -48,6 +48,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(Bool, map_split_auto_offset, true, CVar::Flag::Save)
 
+static const double MERGE_ARCH_SPLIT_DIST = 0.1;
 
 // -----------------------------------------------------------------------------
 //
@@ -721,7 +722,7 @@ MapVertex* SLADEMap::mergeVerticesPoint(const Vec2d& pos)
 	for (unsigned a = 0; a < vertices().size(); a++)
 	{
 		// Skip if vertex isn't on the point
-		if (vertex(a)->position_.x != pos.x || vertex(a)->position_.y != pos.y)
+		if (! vertex(a)->position_.closerThan(pos, MERGE_ARCH_SPLIT_DIST))
 			continue;
 
 		// Set as the merge target vertex if we don't have one already
@@ -1011,11 +1012,9 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 		for (auto* connected_line : vertex->connected_lines_)
 			VECTOR_ADD_UNIQUE(connected_lines, connected_line);
 
-	// Split lines (by vertices)
-	constexpr double split_dist = 0.1;
 	// Split existing lines that vertices moved onto
 	for (auto* merged : merged_vertices)
-		splitLinesAt(merged, split_dist);
+		splitLinesAt(merged, MERGE_ARCH_SPLIT_DIST);
 
 	// Split lines that moved onto existing vertices
 	for (unsigned a = 0; a < connected_lines.size(); a++)
@@ -1029,7 +1028,7 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 			if (connected_lines[a]->v1() == vertex || connected_lines[a]->v2() == vertex)
 				continue;
 
-			if (connected_lines[a]->distanceTo(vertex->position()) < split_dist)
+			if (connected_lines[a]->distanceTo(vertex->position()) < MERGE_ARCH_SPLIT_DIST)
 			{
 				connected_lines.push_back(splitLine(connected_lines[a], vertex));
 				VECTOR_ADD_UNIQUE(merged_vertices, vertex);
