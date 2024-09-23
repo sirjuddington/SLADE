@@ -1548,11 +1548,11 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 		sizer->Add(stc_tabs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
 
 		// Special panel
-		panel_special_ = new ActionSpecialPanel(stc_tabs_);
+		panel_special_ = new ActionSpecialPanel(this);
 		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_special_), "Special");
 
 		// Args panel
-		panel_args_ = new ArgsPanel(stc_tabs_);
+		panel_args_ = new ArgsPanel(this);
 		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), "Args");
 		panel_special_->setArgsPanel(panel_args_);
 	}
