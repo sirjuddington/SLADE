@@ -77,7 +77,7 @@ bool ModMusic::openFromFile(const string& filename)
 	dumb_module_ = dumb_load_any(filename.c_str(), 0, 0);
 	if (dumb_module_ != nullptr)
 	{
-		initialize(2, 44100);
+		initialize(2, 44100, getChannelMap());
 		return true;
 	}
 	else
@@ -103,7 +103,7 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 	dumb_module_ = dumb_read_any(dumbfile_open_memory((const char*)data, size), 0, 0);
 	if (dumb_module_ != nullptr)
 	{
-		initialize(2, 44100);
+		initialize(2, 44100, getChannelMap());
 		dumb_player_ = duh_start_sigrenderer(dumb_module_, 0, 2, 0);
 		return true;
 	}

@@ -130,7 +130,7 @@ bool Mp3Music::openFromFile(const std::string& filename)
 		return false;
 	}
 
-	initialize(channels, rate);
+	initialize(channels, rate, getChannelMap());
 
 	return true;
 }
@@ -181,7 +181,7 @@ bool Mp3Music::loadFromMemory(void* data, size_t size_in_bytes)
 
 	log::info("rate {}, channels {}", rate, channels);
 
-	initialize(channels, rate);
+	initialize(channels, rate, getChannelMap());
 
 	return true;
 }
@@ -201,7 +201,7 @@ sf::Time Mp3Music::duration() const
 
 bool Mp3Music::onGetData(Chunk& data)
 {
-	sf::Lock lock(mutex_);
+	std::lock_guard lock(mutex_);
 
 	if (handle_)
 	{
@@ -219,7 +219,7 @@ bool Mp3Music::onGetData(Chunk& data)
 
 void Mp3Music::onSeek(sf::Time time_offset)
 {
-	sf::Lock lock(mutex_);
+	std::lock_guard lock(mutex_);
 
 	// tschumacher: sampleoff must be (seconds * samplingRate) to make this working correctly
 	if (handle_)
