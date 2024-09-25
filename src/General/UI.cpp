@@ -117,13 +117,21 @@ void ui::showSplash(string_view message, bool progress, wxWindow* parent)
 	if (!splash_enabled || !isMainThread())
 		return;
 
+	// The splash window uses wxFRAME_FLOAT_ON_PARENT, which can't be added or removed dynamically
+	// on all platforms, so if the parent changes the splash window must be recreated
+	if (splash_window && splash_window->GetParent() != parent)
+	{
+		splash_window->Destroy();
+		splash_window = nullptr;
+	}
+
 	if (!splash_window)
 	{
 		SplashWindow::init();
-		splash_window = std::make_unique<SplashWindow>();
+		splash_window = std::make_unique<SplashWindow>(parent);
 	}
 
-	splash_window->show(wxString{ message.data(), message.size() }, progress, parent);
+	splash_window->show(wxString{ message.data(), message.size() }, progress);
 }
 
 // -----------------------------------------------------------------------------

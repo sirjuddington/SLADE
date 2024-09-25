@@ -1464,7 +1464,7 @@ void TextureXPanel::exportTexture()
 	gcd.ShowModal();
 
 	// Show splash window
-	ui::showSplash("Writing converted image data...", true);
+	ui::showSplash("Writing converted image data...", true, maineditor::windowWx());
 
 	// Write any changes
 	for (unsigned a = 0; a < selection.size(); a++)
@@ -1583,7 +1583,7 @@ void TextureXPanel::extractTexture()
 				info, "Export Textures as PNG (Filename will be ignored)", "PNG Files (*.png)|*.png", this))
 		{
 			// Show splash window
-			ui::showSplash("Saving converted image data...", true);
+			ui::showSplash("Saving converted image data...", true, maineditor::windowWx());
 
 			// Go through the selection
 			for (size_t a = 0; a < selection.size(); a++)

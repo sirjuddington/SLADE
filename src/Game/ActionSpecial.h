@@ -15,6 +15,7 @@ namespace game
 	public:
 		ActionSpecial(string_view name = "Unknown", string_view group = "");
 
+		int            order() const { return order_; }
 		const string&  name() const { return name_; }
 		const string&  group() const { return group_; }
 		TagType        needsTag() const { return tagged_; }
@@ -37,6 +38,9 @@ namespace game
 		static void                 initGlobal();
 
 	private:
+		static int next_order_;
+
+		int     order_;
 		string  name_;
 		string  group_;
 		TagType tagged_;

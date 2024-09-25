@@ -2108,8 +2108,6 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 	using game::Feature;
 	using game::UDMFFeature;
 
-	bool vbo_updated = false;
-
 	if (flat_ignore_light)
 		glColor4f(flat_brightness, flat_brightness, flat_brightness, alpha);
 
@@ -2130,22 +2128,23 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		last_flat_type_ = type;
 	}
 
-	// First, check if any polygon vertex data has changed (in this case we need to refresh the entire vbo)
-	for (unsigned a = 0; a < map_->nSectors(); a++)
-	{
-		auto poly = map_->sector(a)->polygon();
-		if (poly && poly->vboUpdate() > 1)
-		{
-			updateFlatsVBO();
-			vbo_updated = true;
-		}
-	}
-
 	// Create VBO if necessary
-	if (!vbo_updated && vbo_flats_ == 0)
+	if (vbo_flats_ == 0)
 	{
 		updateFlatsVBO();
-		vbo_updated = true;
+	}
+	// If any polygon vertex data has changed, we need to refresh the entire vbo
+	else
+	{
+		for (unsigned a = 0; a < map_->nSectors(); a++)
+		{
+			auto poly = map_->sector(a)->polygon();
+			if (poly && poly->vboUpdate() > 1)
+			{
+				updateFlatsVBO();
+				break;
+			}
+		}
 	}
 
 	// Setup opengl state

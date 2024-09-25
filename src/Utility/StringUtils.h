@@ -90,8 +90,8 @@ namespace strutil
 	string_view         beforeLastV(string_view str, char chr);
 	string              beforeFirst(string_view str, char chr);
 	string_view         beforeFirstV(string_view str, char chr);
-	vector<string>      split(string_view str, char separator);
-	vector<string_view> splitV(string_view str, char separator);
+	vector<string>      split(string_view str, char separator, bool skip_duplicates = false);
+	vector<string_view> splitV(string_view str, char separator, bool skip_duplicates = false);
 	string              truncate(string_view str, unsigned length);
 	string&             truncateIP(string& str, unsigned length);
 	string              removeLast(string_view str, unsigned n);

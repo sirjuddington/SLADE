@@ -28,9 +28,10 @@ namespace game
 			Unknown
 		};
 
-		UDMFProperty()  = default;
+		UDMFProperty() : order_(next_order_++) {}
 		~UDMFProperty() = default;
 
+		int                       order() const { return order_; }
 		const string&             propName() const { return property_; }
 		const string&             name() const { return name_; }
 		const string&             group() const { return group_; }
@@ -53,6 +54,8 @@ namespace game
 		string getStringRep();
 
 	private:
+		static int       next_order_;
+		int              order_;
 		string           property_;
 		string           name_;
 		string           group_;

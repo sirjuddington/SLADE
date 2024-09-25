@@ -37,6 +37,8 @@
 using namespace slade;
 using namespace game;
 
+int UDMFProperty::next_order_ = 0;
+
 
 // -----------------------------------------------------------------------------
 //

@@ -4,7 +4,7 @@ umapinfo
 	case_sensitive = false;
 	blocks = "map";
 
-	keywords = 
+	keywords =
 	{
 		map, true, false, clear, levelname, label, author, levelpic, next, nextsecret, skytexture, music, exitpic, enterpic,
 		partime, endgame, endpic, endbunny, endcast, nointermission, intertext, intertextsecret, interbackdrop,
@@ -30,7 +30,7 @@ umapinfo
 		HangNoGuts, HangBNoBrain, HangTLookingDown, HangTSkull, HangTLookingUp, HangTNoBrain, ColonGibs, SmallBloodPool,
 		BrainStem, PointPusher, PointPuller, MBFHelperDog, PlasmaBall1, PlasmaBall2, EvilSceptre, UnholyBible,
 		MusicChanger
-		
+
 		// Deh_Actor_145 ... Deh_Actor_249
 	}
 }
