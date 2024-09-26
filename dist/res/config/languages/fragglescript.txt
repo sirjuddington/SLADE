@@ -9,117 +9,117 @@ fragglescript : cstyle {
 
 	keywords = {
 		// Level info
-		consolecmd, creator, drown, gravity, ignore, interpic, 
+		consolecmd, creator, drown, gravity, ignore, interpic,
 		levelname, music, nextlevel, nextsecret, partime, skyname,
 
 		// Console commands
 		allowjump, gimme, gravity, gr_fogcolor, gr_fogdensity, viewheight, map,
-		
+
 		// Variable types
 		string, int, mobj, fixed, float, const, hud,
-		
+
 		// Default variables
 		consoleplayer, displayplayer, zoom, fov, trigger
 	}
 
 	constants = {
-		PLAYER, TROOPER, SHOTGUY, ARCHVILE, VILEFIRE, REVENANT, REVENANTMISL, SMOKE, 
-		MANCUBUS, MANCUBUSSHOT, CHAINGUY, IMP, DEMON, SPECTRE, CACODEMON, BARONOFHELL, 
-		BARONSHOT, HELLKNIGHT, LOSTSOUL, SPIDERMASTERMIND, ARACHNOTRON, CYBERDEMON, 
-		PAINELEMENTAL, WOLFSS, KEEN, BOSSBRAIN, BOSSSPIT, BOSSTARGET, SPAWNSHOT, 
-		SPAWNFIRE, BARREL, IMPSHOT, CACOSHOT, FLYINGROCKET, FLYINGPLASMA, FLYINGBFG, 
-		ARACHPLAZ, PUFF, BLOOD, TFOG, IFOG, TELEPORTMAN, EXTRABFG, GREENARMOR, 
-		BLUEARMOR, HEALTHPOTION, ARMORHELMET, BLUEKEYCARD, REDKEYCARD, YELLOWKEYCARD, 
-		YELLOWSKULLKEY, REDSKULLKEY, BLUESKULLKEY,STIMPACK, MEDIKIT, SUPERCHARGE, 
-		INVULNERABILITY, BESERKPACK, INVISIBILITY, RADSUIT, AUTOMAP, LITEAMP, 
-		MEGASPHERE, CLIP, BULLETBOX, ROCKET, ROCKETBOX, ECELL, ECELLPACK, SHELLS, 
-		SHELLBOX, BACKPACK, BFG, CHAINGUN, CHAINSAW, RLAUNCHER, PLASMAGUN, SHOTGUN, 
-		SUPERSHOTGUN, TALLTECHLAMP, SHORTTECHLAMP, FLOORLAMP, TALLGRNPILLAR, 
-		SHRTGRNPILLAR, TALLREDPILLAR, SHRTREDPILLAR, SKULLCOLUMN, HEARTCOLUMN, 
-		EVILEYE, SKULLROCK, GRAYTREE, TALLBLUFIRESTICK, TALLGRNFIRESTICK, 
-		TALLREDFIRESTICK, SHRTBLUFIRESTICK, SHRTGRNFIRESTICK, SHRTREDFIRESTICK, 
-		STALAGMITE, TALLTECHPILLAR, CANDLE, CANDELABRA, TWITCHCORPSE1, TWITCHCORPSE2, 
-		HANGINGMAN1, HANGINGMAN2, HANGINGMAN3, HANGINGMAN4, HANGINGMAN5, HANGINGMAN6, 
-		HANGINGMAN7, HANGINGMAN8, DEADCACO, DEADPLAYER, DEADTROOPER, DEADDEMON, 
-		DEADLOSTSOUL, DEADIMP, DEADSERGEANT, SLOP, SLOP2, SKULLPOLE1, BLOODPOOL1, 
-		SKULLPOLE2, SKULLPILE, DEADCORPSE1, TWITCHCORPSE3, TREE, BURNINGBARREL, 
-		HANGINGMAN9, HANGINGMAN10, HANGINGMAN11, HANGINGMAN12, HANGINGMAN13, 
+		PLAYER, TROOPER, SHOTGUY, ARCHVILE, VILEFIRE, REVENANT, REVENANTMISL, SMOKE,
+		MANCUBUS, MANCUBUSSHOT, CHAINGUY, IMP, DEMON, SPECTRE, CACODEMON, BARONOFHELL,
+		BARONSHOT, HELLKNIGHT, LOSTSOUL, SPIDERMASTERMIND, ARACHNOTRON, CYBERDEMON,
+		PAINELEMENTAL, WOLFSS, KEEN, BOSSBRAIN, BOSSSPIT, BOSSTARGET, SPAWNSHOT,
+		SPAWNFIRE, BARREL, IMPSHOT, CACOSHOT, FLYINGROCKET, FLYINGPLASMA, FLYINGBFG,
+		ARACHPLAZ, PUFF, BLOOD, TFOG, IFOG, TELEPORTMAN, EXTRABFG, GREENARMOR,
+		BLUEARMOR, HEALTHPOTION, ARMORHELMET, BLUEKEYCARD, REDKEYCARD, YELLOWKEYCARD,
+		YELLOWSKULLKEY, REDSKULLKEY, BLUESKULLKEY,STIMPACK, MEDIKIT, SUPERCHARGE,
+		INVULNERABILITY, BESERKPACK, INVISIBILITY, RADSUIT, AUTOMAP, LITEAMP,
+		MEGASPHERE, CLIP, BULLETBOX, ROCKET, ROCKETBOX, ECELL, ECELLPACK, SHELLS,
+		SHELLBOX, BACKPACK, BFG, CHAINGUN, CHAINSAW, RLAUNCHER, PLASMAGUN, SHOTGUN,
+		SUPERSHOTGUN, TALLTECHLAMP, SHORTTECHLAMP, FLOORLAMP, TALLGRNPILLAR,
+		SHRTGRNPILLAR, TALLREDPILLAR, SHRTREDPILLAR, SKULLCOLUMN, HEARTCOLUMN,
+		EVILEYE, SKULLROCK, GRAYTREE, TALLBLUFIRESTICK, TALLGRNFIRESTICK,
+		TALLREDFIRESTICK, SHRTBLUFIRESTICK, SHRTGRNFIRESTICK, SHRTREDFIRESTICK,
+		STALAGMITE, TALLTECHPILLAR, CANDLE, CANDELABRA, TWITCHCORPSE1, TWITCHCORPSE2,
+		HANGINGMAN1, HANGINGMAN2, HANGINGMAN3, HANGINGMAN4, HANGINGMAN5, HANGINGMAN6,
+		HANGINGMAN7, HANGINGMAN8, DEADCACO, DEADPLAYER, DEADTROOPER, DEADDEMON,
+		DEADLOSTSOUL, DEADIMP, DEADSERGEANT, SLOP, SLOP2, SKULLPOLE1, BLOODPOOL1,
+		SKULLPOLE2, SKULLPILE, DEADCORPSE1, TWITCHCORPSE3, TREE, BURNINGBARREL,
+		HANGINGMAN9, HANGINGMAN10, HANGINGMAN11, HANGINGMAN12, HANGINGMAN13,
 		HANGINGMAN14, BLOODPOOL2, BLOODPOOL3, BLOODPOOL4, PUSH, PULL,
-		
-		Armor, Berserk, BFG, Chaingun, Chainsaw, Fullmap, Map, Plasma, Rocket, 
+
+		Armor, Berserk, BFG, Chaingun, Chainsaw, Fullmap, Map, Plasma, Rocket,
 		Shotgun, SuperShotgun, Health, Ammo, Keys, Weapons
 	}
-	
+
 	functions {
 		Abs = "value";
 		ACos = "value";
-		AmbientSound = "name"; 
+		AmbientSound = "name";
 		ASin = "value";
 		ATan = "value";
-		Beep; 
-		Break; 
-		CeilHeight = "tag_number, [set_height], [crush]"; 
-		CeilingHeight = "tag_number, [set_height], [crush]"; 
-		CeilingTexture = "tag_number, [set_tex]"; 
-		CeilText = "tag_number, [set_tex]"; 
+		Beep;
+		Break;
+		CeilHeight = "tag_number, [set_height], [crush]";
+		CeilingHeight = "tag_number, [set_height], [crush]";
+		CeilingTexture = "tag_number, [set_tex]";
+		CeilText = "tag_number, [set_tex]";
 		ChangeHubLevel;
-		ChangeMusic = "name"; 
-		ChangeTag = "tag_num, new_tag"; 
-		CheckCVar = "cvar"; 
-		CheckInventory = "player_num, item"; 
-		ClearCamera; 
-		Clock; 
-		CloseDoor = "tag_num, [speed]"; 
-		Colormap = "tag_num, color"; 
-		Continue; 
+		ChangeMusic = "name";
+		ChangeTag = "tag_num, new_tag";
+		CheckCVar = "cvar";
+		CheckInventory = "player_num, item";
+		ClearCamera;
+		Clock;
+		CloseDoor = "tag_num, [speed]";
+		Colormap = "tag_num, color";
+		Continue;
 		Cos = "value";
 		CreatePic = "texture, xpos, ypos";
-		DamageObj = "[target], amount"; 
-		DeleteHUPic = "handle"; 
+		DamageObj = "[target], amount";
+		DeleteHUPic = "handle";
 		ExitLevel;
 		ExitSecret;
 		Exp = "value";
-		FadeLight = "tag_num, level, [speed]"; 
+		FadeLight = "tag_num, level, [speed]";
 		FixedValue = "value";
 		Floor  = "value";
-		FloorHeight = "tag_number, [set_height], [crush]"; 
-		FloorText = "tag_number, [set_tex]"; 
-		FloorTexture = "tag_number, [set_tex]"; 
-		Gamemode; 
-		Gameskill; 
-		GiveInventory = "player, item, [count]"; 
-		Goto = "label"; 
-		HealObj = "[target], amount"; 
-		Include = "lumpname"; 
-		Input; 
+		FloorHeight = "tag_number, [set_height], [crush]";
+		FloorText = "tag_number, [set_tex]";
+		FloorTexture = "tag_number, [set_tex]";
+		Gamemode;
+		Gameskill;
+		GiveInventory = "player, item, [count]";
+		Goto = "label";
+		HealObj = "[target], amount";
+		Include = "lumpname";
+		Input;
 		IntValue = "value";
-		IsObjPlayer = "[object]"; 
-		IsPlayerObj = "[object]"; 
-		Kill = "[target]"; 
-		KillInSector = "tag"; 
-		KillObj = "[target]"; 
-		LevelNum; 
-		LightLevel = "tag_number, [set_level]"; 
-		LineAttack = "shooter, angle, damage"; 
-		LineFlag = "linenum, flag, [set]"; 
-		LineTrigger = "type, [tag]"; 
+		IsObjPlayer = "[object]";
+		IsPlayerObj = "[object]";
+		Kill = "[target]";
+		KillInSector = "tag";
+		KillObj = "[target]";
+		LevelNum;
+		LightLevel = "tag_number, [set_level]";
+		LineAttack = "shooter, angle, damage";
+		LineFlag = "linenum, flag, [set]";
+		LineTrigger = "type, [tag]";
 		Log = "value";
-		Ls = "special, [arg0], [arg1], [arg2], [arg3], [arg4]"; 
-		MapThingNumExist = "number"; 
-		MapThings; 
+		Ls = "special, [arg0], [arg1], [arg2], [arg3], [arg4]";
+		MapThingNumExist = "number";
+		MapThings;
 		Max = "value1, value2";
-		MaxPlayerAmmo = "player, int/ammo_type, [value]"; 
-		Message = "text"; 
+		MaxPlayerAmmo = "player, int/ammo_type, [value]";
+		Message = "text";
 		Min = "value1, value2";
-		MobjHeight = "target, [value]"; 
-		MobjMomx = "target, [value]"; 
+		MobjHeight = "target, [value]";
+		MobjMomx = "target, [value]";
 		MobjMomy = "target, [value]";
 		MobjMomz = "target, [value]";
-		MobjRadius = "target, [value]"; 
-		MobjTarget = "m1, [m2]"; 
+		MobjRadius = "target, [value]";
+		MobjTarget = "m1, [m2]";
 		MobjValue = "value";
-		ModifyHUPic = "handle, texture, xpos, ypos"; 
-		ModifyPic = "handle, texture, xpos, ypos"; 
+		ModifyHUPic = "handle, texture, xpos, ypos";
+		ModifyPic = "handle, texture, xpos, ypos";
 		MoveCamera = "camera, targetobj, targetheight, movespeed, targetangle, anglespeed";
 		MoveCeil = "tag_num, dest_height, [speed], [crush], [silent]";
 		MoveCeiling = "tag_num, dest_height, [speed], [crush], [silent]";
@@ -130,15 +130,15 @@ fragglescript : cstyle {
 		ObjDead = "[target]";
 		ObjFlag = "[target], flag_num, [set]";
 		ObjHealth = "[target]";
-		ObjHeight = "target, [value]"; 
-		ObjMomx = "target, [value]"; 
+		ObjHeight = "target, [value]";
+		ObjMomx = "target, [value]";
 		ObjMomy = "target, [value]";
 		ObjMomz = "target, [value]";
-		ObjRadius = "target, [value]"; 
-		ObjReactionTime = "target, [duration]"; 
+		ObjRadius = "target, [value]";
+		ObjReactionTime = "target, [duration]";
 		ObjSector = "[target]";
 		ObjState = "[target], state_code";
-		ObjTarget = "m1, [m2]"; 
+		ObjTarget = "m1, [m2]";
 		ObjType = "[target]";
 		ObjX = "[target]";
 		ObjY = "[target]";
@@ -161,56 +161,56 @@ fragglescript : cstyle {
 		PointToDist = "x1, y1, x2, y2";
 		Pow = "value, power";
 		Print = "message";
-		PRnd; 
-		PushObj = "target, angle, force"; 
-		PushThing = "target, angle, force"; 
-		RadiusAttack = "spot, source, damage"; 
-		ReactionTime = "target, [duration]"; 
-		RemoveObj = "target"; 
-		Resurrect = "target"; 
-		Return; 
-		Rnd; 
-		RunCommand = "command"; 
-		ScriptRunning = "script_num"; 
-		ScriptWait = "script_num"; 
-		ScriptWaitPre = "script_num"; 
-		SectorColormap = "tag_num, color"; 
-		SectorType = "tag_num, [new_type]"; 
-		SetCamera = "target, [angle], [height], [pitch]"; 
+		PRnd;
+		PushObj = "target, angle, force";
+		PushThing = "target, angle, force";
+		RadiusAttack = "spot, source, damage";
+		ReactionTime = "target, [duration]";
+		RemoveObj = "target";
+		Resurrect = "target";
+		Return;
+		Rnd;
+		RunCommand = "command";
+		ScriptRunning = "script_num";
+		ScriptWait = "script_num";
+		ScriptWaitPre = "script_num";
+		SectorColormap = "tag_num, color";
+		SectorType = "tag_num, [new_type]";
+		SetCamera = "target, [angle], [height], [pitch]";
 		SetColor = "tag_num, color", "tag_num, r, g, b";
-		SetCorona = "corona_num, whattochange, float value"; 
-		SetHUPicDisplay = "handle, visible"; 
-		SetLineBlocking = "num_tag, blocking"; 
-		SetLineMnBlock = "num_tag, blocking"; 
-		SetLineMonsterBlocking = "num_tag, blocking"; 
-		SetLineTexture = "tag, side, position, texture", "tag, texture, side, sections"; 
-		SetLineTrigger = "tag, type"; 
-		SetObjPosition = "target, x, [y], [z]"; 
-		SetPicVisible = "handle, visible"; 
-		SetWeapon = "player, weapon"; 
-		SilentTeleport = "[target], tag"; 
+		SetCorona = "corona_num, whattochange, float value";
+		SetHUPicDisplay = "handle, visible";
+		SetLineBlocking = "num_tag, blocking";
+		SetLineMnBlock = "num_tag, blocking";
+		SetLineMonsterBlocking = "num_tag, blocking";
+		SetLineTexture = "tag, side, position, texture", "tag, texture, side, sections";
+		SetLineTrigger = "tag, type";
+		SetObjPosition = "target, x, [y], [z]";
+		SetPicVisible = "handle, visible";
+		SetWeapon = "player, weapon";
+		SilentTeleport = "[target], tag";
 		Sin = "value";
-		SkinColor = "player, [color]"; 
-		Spawn = "type, x, y, [angle], [z], [bool zrel]"; 
-		SpawnExplosion = "type, x, y, [z]"; 
-		SpawnMissile = "source, dest, type"; 
-		SpawnShot2 = "type, source, [zofs]"; 
+		SkinColor = "player, [color]";
+		Spawn = "type, x, y, [angle], [z], [bool zrel]";
+		SpawnExplosion = "type, x, y, [z]";
+		SpawnMissile = "source, dest, type";
+		SpawnShot2 = "type, source, [zofs]";
 		Sqrt = "value";
 		StartAmbiantSound = "name"; // Legacy can't spell
-		StartScript = "script_num"; 
-		StartSectorSound = "tag_num, sound"; 
-		StartSkill = "skill_level"; 
-		StartSound = "source, sound"; 
+		StartScript = "script_num";
+		StartSectorSound = "tag_num, sound";
+		StartSkill = "skill_level";
+		StartSound = "source, sound";
 		StringValue = "value";
-		TagWait = "tag_num"; 
-		TakeInventory = "player, item, [amount]"; 
+		TagWait = "tag_num";
+		TakeInventory = "player, item, [amount]";
 		Tan = "value";
-		Teleport = "[target], tag"; 
-		TestLocation = "[target]"; 
-		ThingCount = "type"; 
-		TimedTip = "duration, message"; 
-		Tip = "message"; 
-		Wait = "duration"; 
-		WallGlow; 
+		Teleport = "[target], tag";
+		TestLocation = "[target]";
+		ThingCount = "type";
+		TimedTip = "duration, message";
+		Tip = "message";
+		Wait = "duration";
+		WallGlow;
 	}
 }

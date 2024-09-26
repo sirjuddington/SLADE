@@ -10,6 +10,9 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 # Enable big objects
 add_compile_options(/bigobj)
 
+# Define a SLADE_DEBUG macro
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
+
 
 # Dependencies -----------------------------------------------------------------
 

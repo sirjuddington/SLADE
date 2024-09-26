@@ -24,9 +24,10 @@ public:
 		Unknown
 	};
 
-	UDMFProperty()  = default;
+	UDMFProperty();
 	~UDMFProperty() = default;
 
+	int                       order() const { return order_; }
 	const string&             propName() const { return property_; }
 	const string&             name() const { return name_; }
 	const string&             group() const { return group_; }
@@ -46,6 +47,7 @@ public:
 	string getStringRep();
 
 private:
+	int              order_;
 	string           property_;
 	string           name_;
 	string           group_;

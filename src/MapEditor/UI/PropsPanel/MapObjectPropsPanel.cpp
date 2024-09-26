@@ -34,13 +34,13 @@
 #include "MapObjectPropsPanel.h"
 #include "Game/Configuration.h"
 #include "Game/UDMFProperty.h"
-#include "UI/UI.h"
 #include "MOPGProperty.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
@@ -87,24 +87,13 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	stc_sections_ = STabCtrl::createControl(this);
 	sizer->Add(stc_sections_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
-	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
-
 	// Add main property grid
-	pg_properties_ = new wxPropertyGrid(
-		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
-	pg_properties_->SetCaptionTextColour(inactiveTextColour);
-	pg_properties_->SetCellDisabledTextColour(inactiveTextColour);
+	pg_properties_ = createPropGrid();
 	stc_sections_->AddPage(pg_properties_, "Properties");
 
 	// Create side property grids
-	pg_props_side1_ = new wxPropertyGrid(
-		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
-	pg_props_side1_->SetCaptionTextColour(inactiveTextColour);
-	pg_props_side1_->SetCellDisabledTextColour(inactiveTextColour);
-	pg_props_side2_ = new wxPropertyGrid(
-		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
-	pg_props_side2_->SetCaptionTextColour(inactiveTextColour);
-	pg_props_side2_->SetCellDisabledTextColour(inactiveTextColour);
+	pg_props_side1_ = createPropGrid();
+	pg_props_side2_ = createPropGrid();
 
 	// Add buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -154,11 +143,74 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 }
 
 // -----------------------------------------------------------------------------
+// Create and set up a property grid
+// -----------------------------------------------------------------------------
+wxPropertyGrid* MapObjectPropsPanel::createPropGrid()
+{
+	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+
+	auto propgrid = new wxPropertyGrid(
+		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
+	propgrid->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS | wxPG_EX_MULTIPLE_SELECTION);
+	propgrid->SetCaptionTextColour(inactiveTextColour);
+	propgrid->SetCellDisabledTextColour(inactiveTextColour);
+
+	// wxPropertyGrid is very conservative about not stealing focus, and won't do it even if you
+	// explicitly click on the category column, which doesn't make sense
+	propgrid->Bind(
+		wxEVT_LEFT_DOWN,
+		[propgrid](wxMouseEvent& e)
+		{
+			propgrid->SetFocus();
+			e.Skip();
+		});
+	propgrid->Bind(wxEVT_KEY_DOWN, [this, propgrid](wxKeyEvent& e) { onPropGridKeyDown(e, propgrid); });
+
+	return propgrid;
+}
+
+// -----------------------------------------------------------------------------
 // Returns true if 'Show All' is ticked
 // -----------------------------------------------------------------------------
 bool MapObjectPropsPanel::showAll() const
 {
 	return cb_show_all_->IsChecked();
+}
+
+// -----------------------------------------------------------------------------
+// Add an existing property to the grid.  Helper function for the following.
+// Returns the same property, for convenience.
+// -----------------------------------------------------------------------------
+// We have a strange inheritance problem where every MOPGProperty subclass
+// inherits from a wxPGProperty subclass, but MOPGProperty itself doesn't
+// inherit from wxPGProperty, so we can't take a MOPGProperty* and call
+// wxPGProperty methods on it.  So template it and let god sort 'em out
+template<typename T>
+T* MapObjectPropsPanel::addProperty(
+	const wxPGProperty* group,
+	T*                  prop,
+	bool                readonly,
+	wxPropertyGrid*     grid,
+	game::UDMFProperty* udmf_prop)
+{
+	prop->setParent(this);
+	prop->setUDMFProp(udmf_prop);
+
+	if (udmf_prop)
+		prop->SetHelpString(wxString::Format("%s\n(%s)", udmf_prop->name(), udmf_prop->propName()));
+
+	// Add it
+	properties_.push_back(prop);
+	if (!grid)
+		pg_properties_->AppendIn(group, prop);
+	else
+		grid->AppendIn(group, prop);
+
+	// Set read-only if specified
+	if (readonly)
+		prop->ChangeFlag(wxPG_PROP_READONLY, true);
+
+	return prop;
 }
 
 // -----------------------------------------------------------------------------
@@ -173,23 +225,7 @@ MOPGProperty* MapObjectPropsPanel::addBoolProperty(
 	wxPropertyGrid*     grid,
 	game::UDMFProperty* udmf_prop)
 {
-	// Create property
-	auto prop = new MOPGBoolProperty(label, propname);
-	prop->setParent(this);
-	prop->setUDMFProp(udmf_prop);
-
-	// Add it
-	properties_.push_back(prop);
-	if (!grid)
-		pg_properties_->AppendIn(group, prop);
-	else
-		grid->AppendIn(group, prop);
-
-	// Set read-only if specified
-	if (readonly)
-		prop->ChangeFlag(wxPG_PROP_READONLY, true);
-
-	return prop;
+	return addProperty(group, new MOPGBoolProperty(label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -205,22 +241,7 @@ MOPGProperty* MapObjectPropsPanel::addIntProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	auto prop = new MOPGIntProperty(label, propname);
-	prop->setParent(this);
-	prop->setUDMFProp(udmf_prop);
-
-	// Add it
-	properties_.push_back(prop);
-	if (!grid)
-		pg_properties_->AppendIn(group, prop);
-	else
-		grid->AppendIn(group, prop);
-
-	// Set read-only if specified
-	if (readonly)
-		prop->ChangeFlag(wxPG_PROP_READONLY, true);
-
-	return prop;
+	return addProperty(group, new MOPGIntProperty(label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -236,22 +257,7 @@ MOPGProperty* MapObjectPropsPanel::addFloatProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	auto prop = new MOPGFloatProperty(label, propname);
-	prop->setParent(this);
-	prop->setUDMFProp(udmf_prop);
-
-	// Add it
-	properties_.push_back(prop);
-	if (!grid)
-		pg_properties_->AppendIn(group, prop);
-	else
-		grid->AppendIn(group, prop);
-
-	// Set read-only if specified
-	if (readonly)
-		prop->ChangeFlag(wxPG_PROP_READONLY, true);
-
-	return prop;
+	return addProperty(group, new MOPGFloatProperty(label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -267,22 +273,7 @@ MOPGProperty* MapObjectPropsPanel::addStringProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	auto prop = new MOPGStringProperty(label, propname);
-	prop->setParent(this);
-	prop->setUDMFProp(udmf_prop);
-
-	// Add it
-	properties_.push_back(prop);
-	if (!grid)
-		pg_properties_->AppendIn(group, prop);
-	else
-		grid->AppendIn(group, prop);
-
-	// Set read-only if specified
-	if (readonly)
-		prop->ChangeFlag(wxPG_PROP_READONLY, true);
-
-	return prop;
+	return addProperty(group, new MOPGStringProperty(label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -299,22 +290,7 @@ MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	auto prop = new MOPGLineFlagProperty(label, propname, index);
-	prop->setParent(this);
-	prop->setUDMFProp(udmf_prop);
-
-	// Add it
-	properties_.push_back(prop);
-	if (!grid)
-		pg_properties_->AppendIn(group, prop);
-	else
-		grid->AppendIn(group, prop);
-
-	// Set read-only if specified
-	if (readonly)
-		prop->ChangeFlag(wxPG_PROP_READONLY, true);
-
-	return prop;
+	return addProperty(group, new MOPGLineFlagProperty(label, propname, index), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -331,22 +307,7 @@ MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	auto prop = new MOPGThingFlagProperty(label, propname, index);
-	prop->setParent(this);
-	prop->setUDMFProp(udmf_prop);
-
-	// Add it
-	properties_.push_back(prop);
-	if (!grid)
-		pg_properties_->AppendIn(group, prop);
-	else
-		grid->AppendIn(group, prop);
-
-	// Set read-only if specified
-	if (readonly)
-		prop->ChangeFlag(wxPG_PROP_READONLY, true);
-
-	return prop;
+	return addProperty(group, new MOPGThingFlagProperty(label, propname, index), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -363,22 +324,7 @@ MOPGProperty* MapObjectPropsPanel::addTextureProperty(
 	game::UDMFProperty*    udmf_prop)
 {
 	// Create property
-	auto prop = new MOPGTextureProperty(textype, label, propname);
-	prop->setParent(this);
-	prop->setUDMFProp(udmf_prop);
-
-	// Add it
-	properties_.push_back(prop);
-	if (!grid)
-		pg_properties_->AppendIn(group, prop);
-	else
-		grid->AppendIn(group, prop);
-
-	// Set read-only if specified
-	if (readonly)
-		prop->ChangeFlag(wxPG_PROP_READONLY, true);
-
-	return prop;
+	return addProperty(group, new MOPGTextureProperty(textype, label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -450,45 +396,15 @@ void MapObjectPropsPanel::addUDMFProperty(
 	else if (prop.type() == UDMFProperty::Type::String)
 		addStringProperty(group, prop.name(), propname, false, grid, &prop);
 	else if (prop.type() == UDMFProperty::Type::Colour)
-	{
-		auto prop_col = new MOPGColourProperty(prop.name(), propname);
-		prop_col->setParent(this);
-		prop_col->setUDMFProp(&prop);
-		properties_.push_back(prop_col);
-		grid->AppendIn(group, prop_col);
-	}
+		addProperty(group, new MOPGColourProperty(prop.name(), propname), false, grid, &prop);
 	else if (prop.type() == UDMFProperty::Type::ActionSpecial)
-	{
-		auto prop_as = new MOPGActionSpecialProperty(prop.name(), propname);
-		prop_as->setParent(this);
-		prop_as->setUDMFProp(&prop);
-		properties_.push_back(prop_as);
-		grid->AppendIn(group, prop_as);
-	}
+		addProperty(group, new MOPGActionSpecialProperty(prop.name(), propname), false, grid, &prop);
 	else if (prop.type() == UDMFProperty::Type::SectorSpecial)
-	{
-		auto prop_ss = new MOPGSectorSpecialProperty(prop.name(), propname);
-		prop_ss->setParent(this);
-		prop_ss->setUDMFProp(&prop);
-		properties_.push_back(prop_ss);
-		grid->AppendIn(group, prop_ss);
-	}
+		addProperty(group, new MOPGSectorSpecialProperty(prop.name(), propname), false, grid, &prop);
 	else if (prop.type() == UDMFProperty::Type::ThingType)
-	{
-		auto prop_tt = new MOPGThingTypeProperty(prop.name(), propname);
-		prop_tt->setParent(this);
-		prop_tt->setUDMFProp(&prop);
-		properties_.push_back(prop_tt);
-		grid->AppendIn(group, prop_tt);
-	}
+		addProperty(group, new MOPGThingTypeProperty(prop.name(), propname), false, grid, &prop);
 	else if (prop.type() == UDMFProperty::Type::Angle)
-	{
-		auto prop_angle = new MOPGAngleProperty(prop.name(), propname);
-		prop_angle->setParent(this);
-		prop_angle->setUDMFProp(&prop);
-		properties_.push_back(prop_angle);
-		grid->AppendIn(group, prop_angle);
-	}
+		addProperty(group, new MOPGAngleProperty(prop.name(), propname), false, grid, &prop);
 	else if (prop.type() == UDMFProperty::Type::TextureWall)
 		addTextureProperty(group, prop.name(), propname, mapeditor::TextureType::Texture, false, grid, &prop);
 	else if (prop.type() == UDMFProperty::Type::TextureFlat)
@@ -503,11 +419,7 @@ void MapObjectPropsPanel::addUDMFProperty(
 		else
 			tagtype = MOPGTagProperty::IdType::Sector;
 
-		auto prop_id = new MOPGTagProperty(tagtype, prop.name(), propname);
-		prop_id->setParent(this);
-		prop_id->setUDMFProp(&prop);
-		properties_.push_back(prop_id);
-		grid->AppendIn(group, prop_id);
+		addProperty(group, new MOPGTagProperty(tagtype, prop.name(), propname), false, grid, &prop);
 	}
 }
 
@@ -846,20 +758,20 @@ void MapObjectPropsPanel::setupTypeUDMF(map::ObjectType objtype)
 	else if (objtype == map::ObjectType::Thing)
 		stc_sections_->SetPageText(0, "Thing");
 
-	// Go through all possible properties for this type
-	auto& props = game::configuration().allUDMFProperties(objtype);
+	// Go through all possible properties for this type, in configuration order
+	auto props = game::configuration().sortedUDMFProperties(objtype);
 	for (auto& i : props)
 	{
 		// Skip if hidden
-		if ((hide_flags_ && i.second.isFlag()) || (hide_triggers_ && i.second.isTrigger()))
+		if ((hide_flags_ && i->second.isFlag()) || (hide_triggers_ && i->second.isTrigger()))
 		{
-			hide_props_.emplace_back(i.second.propName());
+			hide_props_.emplace_back(i->second.propName());
 			continue;
 		}
-		if (VECTOR_EXISTS(hide_props_, i.second.propName()))
+		if (VECTOR_EXISTS(hide_props_, i->second.propName()))
 			continue;
 
-		addUDMFProperty(i.second, objtype);
+		addUDMFProperty(i->second, objtype);
 	}
 
 	// Add side properties if line type
@@ -872,36 +784,22 @@ void MapObjectPropsPanel::setupTypeUDMF(map::ObjectType objtype)
 		stc_sections_->AddPage(pg_props_side2_, "Back Side");
 
 		// Get side properties
-		auto& sprops = game::configuration().allUDMFProperties(map::ObjectType::Side);
+		auto sprops = game::configuration().sortedUDMFProperties(MapObject::Type::Side);
 
-		// Front side
+		// Add to both sides
 		for (auto& i : sprops)
 		{
 			// Skip if hidden
-			if ((hide_flags_ && i.second.isFlag()) || (hide_triggers_ && i.second.isTrigger()))
+			if ((hide_flags_ && i->second.isFlag()) || (hide_triggers_ && i->second.isTrigger()))
 			{
-				hide_props_.emplace_back(i.second.propName());
+				hide_props_.emplace_back(i->second.propName());
 				continue;
 			}
-			if (VECTOR_EXISTS(hide_props_, i.second.propName()))
+			if (VECTOR_EXISTS(hide_props_, i->second.propName()))
 				continue;
 
-			addUDMFProperty(i.second, objtype, "side1", pg_props_side1_);
-		}
-
-		// Back side
-		for (auto& i : sprops)
-		{
-			// Skip if hidden
-			if ((hide_flags_ && i.second.isFlag()) || (hide_triggers_ && i.second.isTrigger()))
-			{
-				hide_props_.emplace_back(i.second.propName());
-				continue;
-			}
-			if (VECTOR_EXISTS(hide_props_, i.second.propName()))
-				continue;
-
-			addUDMFProperty(i.second, objtype, "side2", pg_props_side2_);
+			addUDMFProperty(i->second, objtype, "side1", pg_props_side1_);
+			addUDMFProperty(i->second, objtype, "side2", pg_props_side2_);
 		}
 	}
 
@@ -963,13 +861,15 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_properties_->EnableProperty(pg_properties_->GetGrid()->GetRoot());
 
 	// Setup property grid for the object type
-	if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
+	bool is_udmf      = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
+	bool type_changed = !(last_type_ == objects[0]->objType() && udmf_ == is_udmf);
+	if (is_udmf)
 		setupTypeUDMF(objects[0]->objType());
 	else
 		setupType(objects[0]->objType());
 
 	// Find any custom properties (UDMF only)
-	if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
+	if (is_udmf)
 	{
 		for (auto& object : objects)
 		{
@@ -1055,6 +955,10 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	pg_properties_->Thaw();
 	pg_props_side1_->Thaw();
 	pg_props_side2_->Thaw();
+
+	// After changing types, the scroll position is meaningless, so scroll back to the top
+	if (type_changed)
+		pg_properties_->Scroll(0, 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -1313,4 +1217,30 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 			return;
 		}
 	}
+}
+
+
+// -----------------------------------------------------------------------------
+// Handle a keypress on a propgrid itself (not a property editor)
+// -----------------------------------------------------------------------------
+void MapObjectPropsPanel::onPropGridKeyDown(wxKeyEvent& e, wxPropertyGrid* propgrid)
+{
+	if (e.GetKeyCode() == WXK_DELETE)
+	{
+		if (objects_.empty())
+			return;
+
+		// Clear the selected properties, and remove them entirely if custom
+		auto selection = propgrid->GetSelectedProperties();
+		propgrid->Freeze();
+		for (auto& prop : selection)
+		{
+			auto mopg_prop = dynamic_cast<MOPGProperty*>(prop);
+			if (mopg_prop)
+				mopg_prop->clearValue();
+		}
+		propgrid->Thaw();
+	}
+	else
+		e.Skip();
 }

@@ -44,6 +44,7 @@ public:
 	virtual void updateVisibility()                       = 0;
 	virtual void applyValue() {}
 	virtual void resetValue();
+	virtual void clearValue() = 0;
 
 protected:
 	MapObjectPropsPanel* parent_    = nullptr;
@@ -61,6 +62,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGIntProperty : public MOPGProperty, public wxIntProperty
@@ -72,6 +74,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGFloatProperty : public MOPGProperty, public wxFloatProperty
@@ -83,6 +86,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGStringProperty : public MOPGProperty, public wxStringProperty
@@ -96,6 +100,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGIntWithArgsProperty : public MOPGIntProperty
@@ -185,6 +190,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 
 	// wxPGProperty overrides
 	wxString ValueToString(wxVariant& value, int arg_flags = 0) const override;
@@ -199,6 +205,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGTextureProperty : public MOPGStringProperty
@@ -228,6 +235,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGTagProperty : public MOPGIntProperty

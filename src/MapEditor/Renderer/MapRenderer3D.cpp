@@ -122,8 +122,8 @@ void applyZDoomPerSectionOffsets(
 	if (side->hasProp("scaley_" + section_name))
 		*sy = 1.0 / side->floatProperty("scaley_" + section_name);
 
-	*xoff *= *sx;
-	*yoff *= *sy;
+	*xoff *= fabs(*sx);
+	*yoff *= fabs(*sy);
 }
 } // namespace
 
@@ -1430,13 +1430,13 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		if (!tex.world_panning)
 		{
-			xoff *= sx;
-			yoff *= sy;
+			xoff *= fabs(sx);
+			yoff *= fabs(sy);
 		}
 		sx *= lsx;
 		sy *= lsy;
-		xoff *= lsx;
-		yoff *= lsy;
+		xoff *= fabs(lsx);
+		yoff *= fabs(lsy);
 
 		// Create quad
 		setupQuad(&quad, line->seg(), cp1, fp1);
@@ -1523,13 +1523,13 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		if (!tex.world_panning)
 		{
-			xoff *= sx;
-			yoff *= sy;
+			xoff *= fabs(sx);
+			yoff *= fabs(sy);
 		}
 		sx *= lsx;
 		sy *= lsy;
-		xoff *= lsx;
-		yoff *= lsy;
+		xoff *= fabs(lsx);
+		yoff *= fabs(lsy);
 
 		if (lpeg) // Lower unpegged
 			yoff += (ceiling1 - floor2);
@@ -1584,13 +1584,13 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		if (!tex.world_panning)
 		{
-			xoff *= sx;
-			yoff *= sy;
+			xoff *= fabs(sx);
+			yoff *= fabs(sy);
 		}
 		sx *= lsx;
 		sy *= lsy;
-		xoff *= lsx;
-		yoff *= lsy;
+		xoff *= fabs(lsx);
+		yoff *= fabs(lsy);
 
 		// Setup quad coordinates
 		double top, bottom;
@@ -1680,13 +1680,13 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		if (!tex.world_panning)
 		{
-			xoff *= sx;
-			yoff *= sy;
+			xoff *= fabs(sx);
+			yoff *= fabs(sy);
 		}
 		sx *= lsx;
 		sy *= lsy;
-		xoff *= lsx;
-		yoff *= lsy;
+		xoff *= fabs(lsx);
+		yoff *= fabs(lsy);
 
 		// Create quad
 		setupQuad(&quad, line->seg(), cp1, cp2);
@@ -1739,13 +1739,13 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		if (!tex.world_panning)
 		{
-			xoff *= sx;
-			yoff *= sy;
+			xoff *= fabs(sx);
+			yoff *= fabs(sy);
 		}
 		sx *= lsx;
 		sy *= lsy;
-		xoff *= lsx;
-		yoff *= lsy;
+		xoff *= fabs(lsx);
+		yoff *= fabs(lsy);
 
 		if (lpeg) // Lower unpegged
 			yoff += (ceiling2 - floor1);
@@ -1803,13 +1803,13 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		if (!tex.world_panning)
 		{
-			xoff *= sx;
-			yoff *= sy;
+			xoff *= fabs(sx);
+			yoff *= fabs(sy);
 		}
 		sx *= lsx;
 		sy *= lsy;
-		xoff *= lsx;
-		yoff *= lsy;
+		xoff *= fabs(lsx);
+		yoff *= fabs(lsy);
 
 		// Setup quad coordinates
 		double top, bottom;
@@ -1899,13 +1899,13 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		if (!tex.world_panning)
 		{
-			xoff *= sx;
-			yoff *= sy;
+			xoff *= fabs(sx);
+			yoff *= fabs(sy);
 		}
 		sx *= lsx;
 		sy *= lsy;
-		xoff *= lsx;
-		yoff *= lsy;
+		xoff *= fabs(lsx);
+		yoff *= fabs(lsy);
 
 		// Create quad
 		setupQuad(&quad, line->seg().flip(), cp2, cp1);

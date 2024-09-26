@@ -48,6 +48,10 @@ using namespace game;
 ActionSpecial ActionSpecial::unknown_;
 ActionSpecial ActionSpecial::gen_switched_;
 ActionSpecial ActionSpecial::gen_manual_;
+namespace
+{
+int next_order = 0;
+}
 
 
 // -----------------------------------------------------------------------------
@@ -61,6 +65,7 @@ ActionSpecial ActionSpecial::gen_manual_;
 // ActionSpecial class constructor
 // -----------------------------------------------------------------------------
 ActionSpecial::ActionSpecial(string_view name, string_view group) :
+	order_{ next_order++ },
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
@@ -95,6 +100,8 @@ void ActionSpecial::reset()
 // -----------------------------------------------------------------------------
 void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 {
+	order_ = next_order++;
+
 	// Check for simple definition
 	if (node->isLeaf())
 	{

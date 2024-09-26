@@ -268,12 +268,11 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 	else
 		tz.next().toInt(ednum);
 
-	PropertyList found_props;
-	bool         available       = false;
-	bool         filters_present = false;
-	bool         sprite_given    = false;
-	bool         title_given     = false;
-	string       group;
+	PropertyList                      found_props;
+	bool                              available       = false;
+	bool                              filters_present = false;
+	string                            group;
+	vector<std::pair<string, string>> editor_properties;
 
 	// Skip "native" keyword if present
 	tz.advIfNextNC("native");
@@ -283,18 +282,19 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 	{
 		while (!tz.check("}") && !tz.atEnd())
 		{
+			auto token = tz.peekToken();
+			if (strutil::startsWith(token, "//$"))
+			{
+				// Doom Builder magic editor comment
+				editor_properties.emplace_back(Tokenizer::parseEditorComment(token));
+				tz.advToNextLine();
+				continue;
+			}
+
 			// Check for subsection
 			if (tz.advIf("{"))
 			{
 				tz.skipSection("{", "}");
-				continue;
-			}
-
-			// Title
-			else if (tz.checkNC("//$Title"))
-			{
-				name        = tz.getLine();
-				title_given = true;
 				continue;
 			}
 
@@ -307,22 +307,8 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			}
 
 			// Tag
-			else if (!title_given && tz.checkNC("tag"))
+			else if (tz.checkNC("tag"))
 				name = tz.next().text;
-
-			// Category
-			else if (tz.checkNC("//$Group") || tz.checkNC("//$Category"))
-			{
-				group = tz.getLine();
-				continue;
-			}
-
-			// Sprite
-			else if (tz.checkNC("//$EditorSprite") || tz.checkNC("//$Sprite"))
-			{
-				found_props["sprite"] = tz.next().text;
-				sprite_given          = true;
-			}
 
 			// Radius
 			else if (tz.checkNC("radius"))
@@ -344,12 +330,6 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			else if (tz.checkNC("yscale"))
 				found_props["scaley"] = tz.next().asFloat();
 
-			// Angled
-			else if (tz.checkNC("//$Angled"))
-				found_props["angled"] = true;
-			else if (tz.checkNC("//$NotAngled"))
-				found_props["angled"] = false;
-
 			// Monster
 			else if (tz.checkNC("monster"))
 			{
@@ -364,30 +344,6 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			// Fullbright
 			else if (tz.checkNC("+bright"))
 				found_props["bright"] = true;
-
-			// Is Decoration
-			else if (tz.checkNC("//$IsDecoration"))
-				found_props["decoration"] = true;
-
-			// Icon
-			else if (tz.checkNC("//$Icon"))
-				found_props["icon"] = tz.next().text;
-
-			// DB2 Color
-			else if (tz.checkNC("//$Color"))
-				found_props["color"] = tz.next().text;
-
-			// SLADE 3 Colour (overrides DB2 color)
-			// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
-			else if (tz.checkNC("//$Colour"))
-			{
-				found_props["colour"] = tz.getLine();
-				continue;
-			}
-
-			// Obsolete thing
-			else if (tz.checkNC("//$Obsolete"))
-				found_props["obsolete"] = true;
 
 			// Translation
 			else if (tz.checkNC("translation"))
@@ -407,15 +363,8 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			else if (tz.checkNC("+solid"))
 				found_props["solid"] = true;
 
-			// Unrecognised DB comment prop
-			else if (strutil::startsWith(tz.current().text, "//$"))
-			{
-				tz.advToNextLine();
-				continue;
-			}
-
 			// States
-			if (!sprite_given && tz.checkNC("states"))
+			if (tz.checkNC("states"))
 			{
 				tz.adv(2); // Skip past {
 				parseStates(tz, found_props);
@@ -423,6 +372,49 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 
 			tz.adv();
 		}
+
+		for (auto& i : editor_properties)
+		{
+			// Title
+			if (i.first == "title")
+				name = i.second;
+
+			// Category
+			else if (i.first == "group" || i.first == "category")
+				group = i.second;
+
+			// Sprite
+			else if (i.first == "sprite" || i.first == "editorsprite")
+				found_props["sprite"] = i.second;
+
+			// Angled
+			else if (i.first == "angled")
+				found_props["angled"] = true;
+			else if (i.first == "notangled")
+				found_props["angled"] = false;
+
+			// Is Decoration
+			else if (i.first == "isdecoration")
+				found_props["decoration"] = true;
+
+			// Icon
+			else if (i.first == "icon")
+				found_props["icon"] = i.second;
+
+			// DB2 Color
+			else if (i.first == "color")
+				found_props["color"] = i.second;
+
+			// SLADE 3 Colour (overrides DB2 color)
+			// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
+			else if (i.first == "colour")
+				found_props["colour"] = i.second;
+
+			// Obsolete thing
+			else if (i.first == "obsolete")
+				found_props["obsolete"] = true;
+		}
+		editor_properties.clear();
 
 		log::info(3, "Parsed actor {}: {}", name, ednum);
 	}
@@ -521,7 +513,7 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		{
 			auto     frames = tz.next().text;
 			unsigned pos    = 0;
-			if (frames.length() > 0)
+			if (!frames.empty())
 			{
 				if ((frames[0] < 'a' || frames[0] > 'z') && (frames[0] < 'A' || frames[0] > ']'))
 				{
@@ -565,10 +557,10 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		// Set parsed properties
 		types[type].loadProps(found_props);
 
-		log::info(3, "Parsed {} {}: {}", group.length() ? group : "decoration", name, type);
+		log::info(3, "Parsed {} {}: {}", group.empty() ? "decoration" : group, name, type);
 	}
 	else
-		log::info(3, "Not adding {} {}, no editor number", group.length() ? group : "decoration", name);
+		log::info(3, "Not adding {} {}, no editor number", group.empty() ? "decoration" : group, name);
 }
 
 // -----------------------------------------------------------------------------
@@ -579,7 +571,6 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 	// Init tokenizer
 	Tokenizer tz;
 	tz.setSpecialCharacters(":,{}");
-	tz.enableDecorate(true);
 	tz.openMem(entry->data(), entry->name());
 
 	// --- Parse ---

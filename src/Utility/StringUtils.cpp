@@ -599,7 +599,7 @@ string_view strutil::beforeFirstV(string_view str, char chr)
 	return str;
 }
 
-vector<string> strutil::split(string_view str, char separator)
+vector<string> strutil::split(string_view str, char separator, bool skip_duplicates)
 {
 	unsigned       start = 0;
 	const auto     size  = str.size();
@@ -608,7 +608,8 @@ vector<string> strutil::split(string_view str, char separator)
 	{
 		if (str[c] == separator)
 		{
-			split.emplace_back(str.substr(start, c - start));
+			if (!skip_duplicates || c > start)
+				split.emplace_back(str.substr(start, c - start));
 			start = c + 1;
 		}
 	}
@@ -618,7 +619,7 @@ vector<string> strutil::split(string_view str, char separator)
 	return split;
 }
 
-vector<string_view> strutil::splitV(string_view str, char separator)
+vector<string_view> strutil::splitV(string_view str, char separator, bool skip_duplicates)
 {
 	unsigned            start = 0;
 	const auto          size  = str.size();
@@ -627,7 +628,8 @@ vector<string_view> strutil::splitV(string_view str, char separator)
 	{
 		if (str[c] == separator)
 		{
-			split.push_back(str.substr(start, c - start));
+			if (!skip_duplicates || c > start)
+				split.push_back(str.substr(start, c - start));
 			start = c + 1;
 		}
 	}

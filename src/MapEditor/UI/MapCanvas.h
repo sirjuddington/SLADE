@@ -39,6 +39,7 @@ private:
 	vector<int>                fps_avg_;
 	unique_ptr<sf::Clock>      sf_clock_;
 	wxTimer                    timer_;
+	long                       last_wheel_timestamp_ = -1;
 
 	void update();
 

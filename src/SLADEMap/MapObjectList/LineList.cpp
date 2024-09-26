@@ -117,11 +117,6 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(intersection);
-			LOG_DEBUG("Intersection point", intersection, "valid with", line);
-		}
-		else if (intersection != cutter.start())
-		{
-			LOG_DEBUG("Intersection point", intersection, "invalid");
 		}
 	}
 

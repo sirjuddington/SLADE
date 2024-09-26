@@ -134,6 +134,9 @@ if(HAVE_SSE)
 	add_definitions(-D_USE_SSE)
 endif()
 
+# Define a SLADE_DEBUG macro
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
+
 # Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 

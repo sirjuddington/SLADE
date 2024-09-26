@@ -347,8 +347,6 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 	double   min_dist = 999999999;
 	MapLine* nearest  = nullptr;
 
-	// LOG_DEBUG("Finding outer edge from vertex", vertex_right, "at", vertex_right->point());
-
 	// Fire a ray east from the vertex and find the first line it crosses
 	MapLine* line = nullptr;
 	for (unsigned a = 0; a < map_->nLines(); a++)
@@ -401,7 +399,6 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 
 	// Determine the edge side
 	double side = geometry::lineSide(vertex_right_->position(), nearest->seg());
-	// LOG_DEBUG("Found next outer line", nearest, "on side", side);
 	if (side >= 0)
 		return Edge{ nearest, true };
 	else

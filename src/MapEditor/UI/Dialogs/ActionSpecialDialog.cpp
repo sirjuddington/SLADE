@@ -76,11 +76,11 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 		sizer->Add(stc_tabs_, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 		// Special panel
-		panel_special_ = new ActionSpecialPanel(stc_tabs_);
+		panel_special_ = new ActionSpecialPanel(this);
 		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_special_), "Special");
 
 		// Args panel
-		panel_args_ = new ArgsPanel(stc_tabs_);
+		panel_args_ = new ArgsPanel(this);
 		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), "Args");
 		panel_special_->setArgsPanel(panel_args_);
 	}
@@ -100,11 +100,6 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 void ActionSpecialDialog::setSpecial(int special) const
 {
 	panel_special_->setSpecial(special);
-	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(special).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
-	}
 }
 
 // -----------------------------------------------------------------------------

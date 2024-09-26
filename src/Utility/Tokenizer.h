@@ -70,6 +70,8 @@ public:
 		bool     done = false;
 	};
 
+	static std::pair<string, string> parseEditorComment(string_view token);
+
 	// Constructors
 	Tokenizer(int comments = CommentTypes::Default, const string& special_characters = DEFAULT_SPECIAL_CHARACTERS);
 

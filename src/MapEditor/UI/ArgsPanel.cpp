@@ -111,7 +111,7 @@ protected:
 // -----------------------------------------------------------------------------
 // ComboBoxAwareIntegerValidator
 //
-// Helper for the combo box.  wxIntegerValidator, by default, will erase the
+// Helper for the combo box. wxIntegerValidator, by default, will erase the
 // entire combo box if one of the labeled numbers is selected, because the
 // label isn't a valid number.
 // -----------------------------------------------------------------------------
@@ -416,7 +416,7 @@ public:
 		slider_control_ = new wxSlider(this, -1, 0, 0, 255);
 		slider_control_->SetLineSize(2);
 		slider_control_->SetPageSize(8);
-		// Add a tic for every predefined value
+		// Add a tick for every predefined value
 		for (const auto& custom_flag : arg.custom_flags)
 			slider_control_->SetTick(custom_flag.value);
 		slider_control_->Bind(wxEVT_SLIDER, &ArgsSpeedControl::onSlide, this);
@@ -427,6 +427,7 @@ public:
 		row->AddSpacer(ui::pad(this));
 		row->Add(slider_control_, wxSizerFlags(1).Align(wxALIGN_CENTER_VERTICAL));
 		GetSizer()->Add(row, wxSizerFlags(1).Expand());
+		GetSizer()->AddSpacer(ui::pad(this));
 		GetSizer()->Add(speed_label_, wxSizerFlags(1).Expand());
 
 		// The label has its longest value at 0, which makes for an appropriate
@@ -463,6 +464,73 @@ protected:
 				value / 8.0,
 				// A tic is 28ms, slightly less than 1/35 of a second
 				value / 8.0 * 1000.0 / 28.0));
+		}
+	}
+};
+
+
+// -----------------------------------------------------------------------------
+// ArgsDelayControl Class
+//
+// Arg control that shows a slider for selecting an amount of time, and also
+// converts it to seconds.
+// -----------------------------------------------------------------------------
+class ArgsDelayControl : public ArgsChoiceControl
+{
+public:
+	ArgsDelayControl(wxWindow* parent, const game::Arg& arg, int units_per_sec) :
+		ArgsChoiceControl(parent, arg),
+		units_per_sec_(units_per_sec)
+	{
+		auto row = new wxBoxSizer(wxHORIZONTAL);
+
+		slider_control_ = new wxSlider(this, -1, 0, 0, 255);
+		slider_control_->SetLineSize(2);
+		slider_control_->SetPageSize(8);
+		// Add a tick for every predefined value
+		for (const auto& custom_flag : arg.custom_flags)
+			slider_control_->SetTick(custom_flag.value);
+		slider_control_->Bind(wxEVT_SLIDER, &ArgsDelayControl::onSlide, this);
+		delay_label_ = new wxStaticText(this, -1, "");
+
+		GetSizer()->Detach(choice_control_);
+		row->Add(choice_control_, wxSizerFlags(0).Center());
+		row->AddSpacer(ui::pad(this));
+		row->Add(slider_control_, wxSizerFlags(1).Center());
+		GetSizer()->Add(row, wxSizerFlags(1).Expand());
+		GetSizer()->AddSpacer(ui::pad(this));
+		GetSizer()->Add(delay_label_, wxSizerFlags(1).Expand());
+
+		// The label has its longest value at 0, which makes for an appropriate
+		// minimum size
+		syncControls(0);
+
+		wxWindowBase::Fit();
+	}
+
+	// Set the value in the textbox
+	void setArgValue(long val) override { syncControls(val); }
+
+protected:
+	wxSlider*     slider_control_;
+	wxStaticText* delay_label_;
+	int           units_per_sec_;
+
+	void onSlide(wxCommandEvent& event) { syncControls(slider_control_->GetValue()); }
+
+	void syncControls(int value)
+	{
+		ArgsChoiceControl::setArgValue(value);
+
+		if (value < 0)
+		{
+			slider_control_->SetValue(0);
+			delay_label_->SetLabel("");
+		}
+		else
+		{
+			slider_control_->SetValue(value);
+			delay_label_->SetLabel(fmt::format("{:.2f} seconds", static_cast<float>(value) / units_per_sec_));
 		}
 	}
 };
@@ -543,6 +611,10 @@ void ArgsPanel::setup(const game::ArgSpec& args, bool udmf)
 				control_args_[a] = new ArgsFlagsControl(this, arg, !udmf);
 			else if (arg.type == Arg::Type::Speed)
 				control_args_[a] = new ArgsSpeedControl(this, arg);
+			else if (arg.type == Arg::Type::Tics)
+				control_args_[a] = new ArgsDelayControl(this, arg, 35);
+			else if (arg.type == Arg::Type::Octics)
+				control_args_[a] = new ArgsDelayControl(this, arg, 8);
 			else
 				control_args_[a] = new ArgsTextControl(this, arg, !udmf);
 		}
@@ -612,9 +684,7 @@ void ArgsPanel::setup(const game::ArgSpec& args, bool udmf)
 void ArgsPanel::setValues(int args[5]) const
 {
 	for (unsigned a = 0; a < 5; a++)
-	{
 		control_args_[a]->setArgValue(args[a]);
-	}
 }
 
 // -----------------------------------------------------------------------------

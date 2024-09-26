@@ -1261,7 +1261,7 @@ void ArchiveManagerPanel::closeEntryTabs(const Archive* parent) const
 void ArchiveManagerPanel::openFile(const wxString& filename) const
 {
 	// Show splash screen
-	ui::showSplash("Opening Archive...", true);
+	ui::showSplash("Opening Archive...", true, maineditor::windowWx());
 
 	// test
 	wxStopWatch sw;
@@ -1303,7 +1303,7 @@ void ArchiveManagerPanel::openFiles(const wxArrayString& files) const
 void ArchiveManagerPanel::openDirAsArchive(const wxString& dir) const
 {
 	// Show splash screen
-	ui::showSplash("Opening Directory...", true);
+	ui::showSplash("Opening Directory...", true, maineditor::windowWx());
 
 	// test
 	wxStopWatch sw;
@@ -2339,7 +2339,14 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 			// Otherwise show change/update dialog
 			else
 			{
-				DirArchiveUpdateDialog dlg(maineditor::windowWx(), change_list.archive, change_list.changes);
+				// Show on top of the focused top-level window
+				// (There's a wxGetActiveWindow, but it doesn't work on Mac.)
+				wxWindow* focused = wxWindow::FindFocus();
+				if (focused)
+					focused = wxGetTopLevelParent(focused);
+				if (!focused)
+					focused = maineditor::windowWx();
+				DirArchiveUpdateDialog dlg(focused, change_list.archive, change_list.changes);
 				dlg.ShowModal();
 			}
 

@@ -1799,16 +1799,20 @@ UDMFProperty* Configuration::getUDMFProperty(const string& name, MapObject::Type
 {
 	using Type = MapObject::Type;
 
-	if (type == Type::Vertex)
-		return &udmf_vertex_props_[name];
-	else if (type == Type::Line)
-		return &udmf_linedef_props_[name];
-	else if (type == Type::Side)
-		return &udmf_sidedef_props_[name];
-	else if (type == Type::Sector)
-		return &udmf_sector_props_[name];
-	else if (type == Type::Thing)
-		return &udmf_thing_props_[name];
+	UDMFPropMap* udmf_props;
+
+	switch (type)
+	{
+	case Type::Vertex: udmf_props = &udmf_vertex_props_; break;
+	case Type::Line:   udmf_props = &udmf_linedef_props_; break;
+	case Type::Side:   udmf_props = &udmf_sidedef_props_; break;
+	case Type::Sector: udmf_props = &udmf_sector_props_; break;
+	case Type::Thing:  udmf_props = &udmf_thing_props_; break;
+	default:           return nullptr;
+	}
+
+	if (udmf_props->count(name) == 1)
+		return &(*udmf_props)[name];
 	else
 		return nullptr;
 }
@@ -1832,6 +1836,26 @@ UDMFPropMap& Configuration::allUDMFProperties(MapObject::Type type)
 }
 
 // -----------------------------------------------------------------------------
+// Returns all defined UDMF properties for MapObject type [type], in the order
+// they were defined in the configuration
+// -----------------------------------------------------------------------------
+vector<std::pair<const string, UDMFProperty>*> Configuration::sortedUDMFProperties(MapObject::Type type)
+{
+	auto&                                          all_props = allUDMFProperties(type);
+	vector<std::pair<const string, UDMFProperty>*> sorted_props;
+	sorted_props.reserve(all_props.size());
+	for (auto& prop : all_props)
+	{
+		sorted_props.push_back(&prop);
+	}
+	std::sort(
+		sorted_props.begin(),
+		sorted_props.end(),
+		[](const auto& a, const auto& b) { return a->second.order() < b->second.order(); });
+	return sorted_props;
+}
+
+// -----------------------------------------------------------------------------
 // Removes any UDMF properties in [object] that have default values
 // (so they are not written to the UDMF map unnecessarily)
 // -----------------------------------------------------------------------------
@@ -1840,20 +1864,16 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 	using namespace property;
 
 	// Get UDMF properties list for type
-	UDMFPropMap* map  = nullptr;
-	auto         type = object->objType();
-	if (type == MapObject::Type::Vertex)
-		map = &udmf_vertex_props_;
-	else if (type == MapObject::Type::Line)
-		map = &udmf_linedef_props_;
-	else if (type == MapObject::Type::Side)
-		map = &udmf_sidedef_props_;
-	else if (type == MapObject::Type::Sector)
-		map = &udmf_sector_props_;
-	else if (type == MapObject::Type::Thing)
-		map = &udmf_thing_props_;
-	else
-		return;
+	UDMFPropMap* map;
+	switch (object->objType())
+	{
+	case MapObject::Type::Vertex: map = &udmf_vertex_props_; break;
+	case MapObject::Type::Line:   map = &udmf_linedef_props_; break;
+	case MapObject::Type::Side:   map = &udmf_sidedef_props_; break;
+	case MapObject::Type::Sector: map = &udmf_sector_props_; break;
+	case MapObject::Type::Thing:  map = &udmf_thing_props_; break;
+	default:                      return;
+	}
 
 	// Go through properties
 	for (const auto& i : *map)

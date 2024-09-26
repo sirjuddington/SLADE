@@ -168,9 +168,10 @@ public:
 	const string&  spacTriggerUDMFName(unsigned trigger_index);
 
 	// UDMF properties
-	UDMFProperty* getUDMFProperty(const string& name, map::ObjectType type);
-	UDMFPropMap&  allUDMFProperties(map::ObjectType type);
-	void          cleanObjectUDMFProps(MapObject* object);
+	UDMFProperty*                                  getUDMFProperty(const string& name, map::ObjectType type);
+	UDMFPropMap&                                   allUDMFProperties(map::ObjectType type);
+	vector<std::pair<const string, UDMFProperty>*> sortedUDMFProperties(map::ObjectType type);
+	void                                           cleanObjectUDMFProps(MapObject* object);
 
 	// Sector types
 	string sectorTypeName(int type);

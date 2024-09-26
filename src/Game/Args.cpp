@@ -143,6 +143,12 @@ string Arg::valueString(int value) const
 			return fmt::format("{} ({})", value, speed_label);
 	}
 
+	case Tics:
+		return fmt::format("{:.2f} seconds", value / 35.0);
+
+	case Octics:
+		return fmt::format("{:.2f} seconds", value / 8.0);
+
 	default: break;
 	}
 
@@ -237,6 +243,10 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 			type = Flags;
 		else if (strutil::equalCI(atype, "speed"))
 			type = Speed;
+		else if (strutil::equalCI(atype, "tics"))
+			type = Tics;
+		else if (strutil::equalCI(atype, "octics"))
+			type = Octics;
 		else
 			type = Number;
 

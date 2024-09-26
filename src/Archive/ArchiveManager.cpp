@@ -40,6 +40,7 @@
 #include "EntryType/EntryType.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
+#include "MainEditor/MainEditor.h"
 #include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -823,7 +824,7 @@ bool ArchiveManager::openBaseResource(int index)
 		return false;
 
 	// Attempt to open the file
-	ui::showSplash(fmt::format("Opening {}...", filename), true);
+	ui::showSplash(fmt::format("Opening {}...", filename), true, maineditor::windowWx());
 	if (base_resource_archive_->open(filename))
 	{
 		base_resource = index;

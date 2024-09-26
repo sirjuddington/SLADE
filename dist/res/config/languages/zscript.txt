@@ -29,7 +29,45 @@ zscript
 
 	properties =
 	{
-		// Actor flags (as variables accessible from scripts)
+		// Actor properties --------------------------------------------------------------------------------
+
+		// Actor
+		Skip_Super, DefaultStateUsage, Tag, PainChance, DefThreshold, Threshold, Damage, DamageFunction,
+		Scale, FloatBobPhase, FloatBobStrength, Args, DropItem, RenderStyle, DefaultAlpha, Translation,
+		StencilColor, BloodColor, BloodType, BounceType, BounceFactor, WallBounceFactor, DamageType,
+		PainType, DeathType, DamageFactor, Decal, PoisonDamage, Gravity, SpriteAngle, Friction,	ClearFlags,
+		Monster, Projectile, Activation, DesignatedTeam, VisibleToTeam, VisibleToPlayerClass, DistanceCheck,
+
+		// Actor (MBF21)
+		InfightingGroup, ProjectileGroup, SplashGroup,
+
+		// Inventory
+		RestrictedTo, ForbiddenTo, Icon, AltHudIcon, DefMaxAmount,
+
+		// Weapon
+		DefaultKickback, BobStyle, PreferredSkin,
+
+		// Powerup/PowerupGiver
+		Color, Colormap, Duration,
+
+		// PowerupGiver
+		Type,
+
+		// PlayerPawn
+		DisplayName, SoundClass, Face, ColorRange, ColorSet, ColorSetFile, ClearColorSet, SpawnClass,
+		ForwardMove, SideMove, ScoreIcon, CrouchSprite, DamageScreenColor, StartItem, HexenArmor,
+		WeaponSlot,
+
+		// MorphProjectile
+		PlayerClass, MonsterClass, /* Duration, */ MorphStyle, MorphFlash, UnmorphFlash,
+
+		// PowerMorph
+		/* PlayerClass, MonsterClass, MorphStyle, MorphFlash, UnmorphFlash, */
+
+		// DynamicLight
+		/* Type, */
+
+		// Actor flags (as variables accessible from scripts) ----------------------------------------------
 
 		// Internal flags
 		bINCHASE, bUNMORPHED, bFLY, bONMOBJ, bARGSDEFINED, bNOSIGHTCHECK, bCRASHED,
@@ -44,7 +82,7 @@ zscript
 		bMISSILE, bDROPPED, bSHADOW, bNOBLOOD, bCORPSE, bINFLOAT, bCOUNTKILL, bCOUNTITEM,
 		bSKULLFLY, bNOTDMATCH, bSPAWNSOUNDSOURCE, bFRIENDLY, bNOLIFTDROP, bSTEALTH,
 		bICECORPSE,
- 
+
 		// MF2
 		bDONTREFLECT, bWINDTHRUST, bDONTSEEKINVISIBLE, bBLASTED, bFLOORCLIP, bSPAWNFLOAT,
 		bNOTELEPORT, bRIPPER, bPUSHABLE, bSLIDESONWALLS, bCANPASS, bCANNOTPUSH, bTHRUGHOST,
@@ -107,14 +145,15 @@ zscript
 		bMASKROTATION, bABSMASKANGLE, bABSMASKPITCH, bXFLIP, bYFLIP, bINTERPOLATEANGLES,
 		bDONTINTERPOLATE, bSPRITEFLIP, bZDOOMTRANS, bCASTSPRITESHADOW, bNOSPRITESHADOW,
 		bINVISIBLEINMIRRORS, bONLYVISIBLEINMIRRORS, bBILLBOARDFACECAMERA,
-		bBILLBOARDNOFACECAMERA, bFLIPSPRITEOFFSETX, bFLIPSPRITEOFFSETY,
+		bBILLBOARDNOFACECAMERA, bFLIPSPRITEOFFSETX, bFLIPSPRITEOFFSETY, bCAMFOLLOWSPLAYER,
+		bNOMIPMAP, bISOMETRICSPRITES,
 
 		// Bounce flags
 		bBOUNCEONWALLS, bBOUNCEONFLOORS, bBOUNCEONCEILINGS, bALLOWBOUNCEONACTORS,
 		bBOUNCEAUTOOFF, bBOUNCELIKEHERETIC, bCANBOUNCEWATER, bNOWALLBOUNCESND,
 		bNOBOUNCESOUND, bBOUNCEONACTORS, bEXPLODEONWATER, bMBFBOUNCER, bBOUNCEAUTOOFFFLOORONLY,
 		bUSEBOUNCESTATE, bDONTBOUNCEONSHOOTABLES, bBOUNCEONUNRIPPABLES, bDONTBOUNCEONSKY,
- 
+
 		// Misc
 		bNOSAVEGAME
 	}
@@ -129,7 +168,7 @@ zscript
 		MISSILE, DROPPED, SHADOW, NOBLOOD, CORPSE, INFLOAT, COUNTKILL, COUNTITEM,
 		SKULLFLY, NOTDMATCH, SPAWNSOUNDSOURCE, FRIENDLY, NOLIFTDROP, STEALTH,
 		ICECORPSE,
- 
+
 		// MF2
 		DONTREFLECT, WINDTHRUST, DONTSEEKINVISIBLE, BLASTED, FLOORCLIP, SPAWNFLOAT,
 		NOTELEPORT, RIPPER, PUSHABLE, SLIDESONWALLS, CANPASS, CANNOTPUSH, THRUGHOST,
@@ -192,14 +231,15 @@ zscript
 		MASKROTATION, ABSMASKANGLE, ABSMASKPITCH, XFLIP, YFLIP, INTERPOLATEANGLES,
 		DONTINTERPOLATE, SPRITEFLIP, ZDOOMTRANS, CASTSPRITESHADOW, NOSPRITESHADOW,
 		INVISIBLEINMIRRORS, ONLYVISIBLEINMIRRORS, BILLBOARDFACECAMERA,
-		BILLBOARDNOFACECAMERA, FLIPSPRITEOFFSETX, FLIPSPRITEOFFSETY,
+		BILLBOARDNOFACECAMERA, FLIPSPRITEOFFSETX, FLIPSPRITEOFFSETY, CAMFOLLOWSPLAYER,
+		NOMIPMAP, ISOMETRICSPRITES,
 
 		// Bounce flags
 		BOUNCEONWALLS, BOUNCEONFLOORS, BOUNCEONCEILINGS, ALLOWBOUNCEONACTORS,
 		BOUNCEAUTOOFF, BOUNCELIKEHERETIC, CANBOUNCEWATER, NOWALLBOUNCESND,
 		NOBOUNCESOUND, BOUNCEONACTORS, EXPLODEONWATER, MBFBOUNCER, BOUNCEAUTOOFFFLOORONLY,
 		USEBOUNCESTATE, DONTBOUNCEONSHOOTABLES, BOUNCEONUNRIPPABLES, DONTBOUNCEONSKY,
- 
+
 		// Misc
 		NOSAVEGAME
 	}

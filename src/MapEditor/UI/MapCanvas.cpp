@@ -468,6 +468,13 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void MapCanvas::onMouseWheel(wxMouseEvent& e)
 {
+	// wxGTK has a bug causing duplicate wheel events, but the duplicates have
+	// exactly the same timestamp, which makes them easy to detect
+	if (e.GetTimestamp() == last_wheel_timestamp_)
+		return;
+	else
+		last_wheel_timestamp_ = e.GetTimestamp();
+
 #ifdef __WXOSX__
 	double mwheel_rotation = (double)e.GetWheelRotation() / (double)e.GetWheelDelta();
 	if (mwheel_rotation < 0)

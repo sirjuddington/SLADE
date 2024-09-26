@@ -5,7 +5,7 @@ namespace slade
 class SplashWindow : public wxMiniFrame
 {
 public:
-	SplashWindow();
+	SplashWindow(wxWindow* parent = nullptr);
 	~SplashWindow() override = default;
 
 	float progress() const { return progress_; }
@@ -13,7 +13,7 @@ public:
 	void  setProgressMessage(const wxString& message);
 	void  setProgress(float progress);
 
-	void show(const wxString& message, bool progress = false, wxWindow* parent = nullptr);
+	void show(const wxString& message, bool progress = false);
 	void hide();
 	void forceRedraw();
 

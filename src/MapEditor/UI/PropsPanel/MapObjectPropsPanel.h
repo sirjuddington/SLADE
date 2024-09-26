@@ -66,6 +66,15 @@ private:
 	bool             hide_triggers_ = false;
 	vector<wxString> hide_props_;
 
+	wxPropertyGrid* createPropGrid();
+
+	template<typename T>
+	T* addProperty(
+		const wxPGProperty* group,
+		T*                  prop,
+		bool                readonly  = false,
+		wxPropertyGrid*     grid      = nullptr,
+		game::UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty* addBoolProperty(
 		const wxPGProperty* group,
 		const wxString&     label,
@@ -135,5 +144,6 @@ private:
 	void onShowAllToggled(wxCommandEvent& e);
 	void onBtnAdd(wxCommandEvent& e);
 	void onPropertyChanged(wxPropertyGridEvent& e);
+	void onPropGridKeyDown(wxKeyEvent& e, wxPropertyGrid* propgrid);
 };
 } // namespace slade

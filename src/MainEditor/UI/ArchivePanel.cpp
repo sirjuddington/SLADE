@@ -874,7 +874,7 @@ bool ArchivePanel::importFiles()
 		// Go through the list of files
 		bool ok = true;
 		entry_tree_->Freeze();
-		ui::showSplash("Importing Files...", true);
+		ui::showSplash("Importing Files...", true, maineditor::windowWx());
 		for (size_t a = 0; a < info.filenames.size(); a++)
 		{
 			// Get filename
@@ -935,7 +935,7 @@ bool ArchivePanel::importDir()
 		undo_manager_->beginRecord("Import Directory");
 
 		entry_tree_->Freeze();
-		ui::showSplash("Importing Files...", true);
+		ui::showSplash("Importing Files...", true, maineditor::windowWx());
 
 		// Import the directory
 		auto ok = archive->importDir(path, archive_dir_ignore_hidden, dir);

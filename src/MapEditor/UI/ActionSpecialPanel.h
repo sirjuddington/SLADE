@@ -23,6 +23,7 @@ public:
 	void showGeneralised(bool show = true);
 	void applyTo(const vector<MapObject*>& lines, bool apply_special) const;
 	void openLines(const vector<MapObject*>& lines);
+	void updateArgsPanel() const;
 
 	void onRadioButtonChanged(wxCommandEvent& e);
 	void onSpecialSelectionChanged(wxDataViewEvent& e);
@@ -37,9 +38,10 @@ private:
 	wxRadioButton*         rb_generalised_       = nullptr;
 	ArgsPanel*             panel_args_           = nullptr;
 	wxChoice*              choice_trigger_       = nullptr;
-	NumberTextCtrl*        text_special_         = nullptr;
-	wxButton*              btn_preset_           = nullptr;
 	bool                   show_trigger_         = false;
+	wxTextCtrl*            text_special_         = nullptr;
+	wxButton*              btn_preset_           = nullptr;
+	bool                   ignore_select_event_  = false;
 
 	struct FlagHolder
 	{

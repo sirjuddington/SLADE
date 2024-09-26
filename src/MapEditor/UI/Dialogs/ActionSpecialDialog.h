@@ -15,6 +15,7 @@ class GenLineSpecialPanel;
 class NumberTextCtrl;
 namespace game
 {
+	class ActionSpecial;
 	struct ArgSpec;
 }
 

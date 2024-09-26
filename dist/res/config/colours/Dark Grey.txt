@@ -151,14 +151,14 @@ colours {
 		group = "Map Editor";
 		rgb = 0, 0, 0;
 	}
-	
+
 	map_linedraw
 	{
 		name = "Line Drawing";
 		group = "Map Editor";
 		rgb = 0, 150, 50;
 	}
-	
+
 	map_3d_crosshair
 	{
 		name = "3D Crosshair";
@@ -167,7 +167,7 @@ colours {
 		alpha = 255;
 		additive = true;
 	}
-	
+
 	map_3d_hilight
 	{
 		name = "3D Hilight";
@@ -175,7 +175,7 @@ colours {
 		rgb = 0, 180, 255;
 		alpha = 180;
 	}
-	
+
 	map_3d_selection
 	{
 		name = "3D Selection";

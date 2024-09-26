@@ -25,110 +25,113 @@ decorate : cstyle {
 		$override,
 
 		// Actor properties
-		
+
 		// Generic
-		Game, SpawnID, ConversationID, 
-		
+		Game, SpawnID, ConversationID,
+
 		// Text
-		Obituary, HitObituary, Tag, 
-		
+		Obituary, HitObituary, Tag,
+
 		// Health and Pain
-		Health, GibHealth, WoundHealth, PainChance, PainThreshold, PainType, DeathType, 
+		Health, GibHealth, WoundHealth, PainChance, PainThreshold, PainType, DeathType,
 
 		// Combat
 		Accuracy, Stamina, ReactionTime,
-		Damage, DamageFactor, DamageMultiply, DamageType, PoisonDamage, PoisonDamageType, 
-		ExplosionRadius, ExplosionDamage, SelfDamageFactor, RadiusDamageFactor, DontHurtShooter, 
+		Damage, DamageFactor, DamageMultiply, DamageType, PoisonDamage, PoisonDamageType,
+		ExplosionRadius, ExplosionDamage, SelfDamageFactor, RadiusDamageFactor, DontHurtShooter,
 		MeleeDamage, MeleeThreshold, MeleeRange, MaxTargetRange, FriendlySeeBlocks,
-		MissileType, MissileHeight, MinMissileChance, 
-		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack, 
+		MissileType, MissileHeight, MinMissileChance,
+		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack,
 		RipperLevel, RipLevelMin, RipLevelMax,
 		Threshold, DefThreshold,
 		ShadowAimFactor, ShadowPenaltyFactor,
-		
+
 		// Physics
 		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
 		DeathHeight, BurnHeight, ProjectilePassHeight, CameraHeight, MaxStepHeight, MaxDropOffHeight, 
-		Speed, VSpeed, FastSpeed, FloatSpeed, Friction, MaxSlopeSteepness, ThruBits,
-		
+		Speed, VSpeed, FastSpeed, FloatSpeed, Friction, MaxSlopeSteepness, ThruBits, LandingSpeed,
+
 		// Rendering
-		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
+		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded,
 		AddShaded, Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
 		BloodColor, BloodType, Decal, FloatBobPhase, DistanceCheck, SpriteAngle, SpriteRotation, VisibleAngles,
 		VisiblePitch, StealthAlpha, FloatBobStrength, RenderRadius, CameraFOV, LightLevel,
-		
+
 		// Sounds
 		SeeSound, AttackSound, PainSound, BounceSound, CrushPainSound,
 		DeathSound, ActiveSound, MeleeSound, HowlSound, PainSound, WallBounceSound, RipSound, PushSound,
-		
+
 		// Multiplayer weirdness
-		DesignatedTeam, VisibleToTeam, VisibleToPlayerClass, 
-		
+		DesignatedTeam, VisibleToTeam, VisibleToPlayerClass,
+
 		// Scripting
 		Args, ClearFlags, Species, Activation, DropItem, Skip_Super, DynamicLight,
 
 		// Player-specific properties
-		Player, DisplayName, SoundClass, Face, ColorRange, ColorSet, ColorSetFile, ClearColorSet, 
-		AttackZOffset, JumpZ, SpawnClass, ViewHeight, ForwardMove, SideMove, MaxHealth, MugshotMaxHealth, 
-		RunHealth, MorphWeapon, FlechetteType, ScoreIcon, CrouchSprite, DamageScreenColor, StartItem, 
+		Player, DisplayName, SoundClass, Face, ColorRange, ColorSet, ColorSetFile, ClearColorSet,
+		AttackZOffset, JumpZ, SpawnClass, ViewHeight, ForwardMove, SideMove, MaxHealth, MugshotMaxHealth,
+		RunHealth, MorphWeapon, FlechetteType, ScoreIcon, CrouchSprite, DamageScreenColor, StartItem,
 		InvulnerabilityMode, HealRadiusType, HexenArmor, Portrait, WeaponSlot, FallingScreamSpeed, GruntSpeed,
 		AirCapacity, UseRange, ViewBob, TeleportFreezeTime, FlyBob, WaterClimbSpeed, ViewBobSpeed,
-		
+
 		// Inventory-specific properties
-		Inventory, RestrictedTo, ForbiddenTo, Amount, Icon, InterHubAmount, MaxAmount, 
+		Inventory, RestrictedTo, ForbiddenTo, Amount, Icon, InterHubAmount, MaxAmount,
 		DefMaxAmount, PickupFlash, PickupMessage, PickupSound, PickupAnnouncerEntry,
 		Respawntics, UseSound, GiveQuest, AltHUDIcon,
-		
+
 		// Fake Inventory
 		FakeInventory, Respawns,
-		
+
 		// Health
 		Health, LowMessage,
-		
+
 		// Health pickup
 		HealthPickup, AutoUse,
-		
+
 		// Armor-specific properties
 		Armor, SaveAmount, SavePercent, MaxAbsorb, MaxFullAbsorb, MaxSaveAmount, MaxBonus, MaxBonusMax,
 
 		// Powerup-specific properties
 		Powerup, Color, Colormap, Duration, Mode, Strength, Type,
-		
+
 		// Predefined powerup colors
 		BlueMap, GoldMap, GreenMap, InverseMap, RedMap,
-		
+
 		// Morph powerup
-		PowerMorph, PlayerClass, MorphStyle, MorphFlash, UnmorphFlash,
-		
+		PowerMorph, PlayerClass, MorphStyle, MorphFlash, UnmorphFlash, MonsterClass,
+
 		// Morph projectile
 		MorphProjectile, PlayerClass, MonsterClass, Duration, MorphStyle, MorphFlash, UnmorphFlash,
-		
+
 		// Weapon-specific properties
-		Weapon, Kickback, DefaultKickback, ReadySound, SelectionOrder, SisterWeapon, UpSound, YAdjust, 
+		Weapon, Kickback, DefaultKickback, ReadySound, SelectionOrder, SisterWeapon, UpSound, YAdjust,
 		AmmoGive, AmmoGive1, AmmoGive2, AmmoType, AmmoType1, AmmoType2, AmmoUse, AmmoUse1, AmmoUse2,
 		BobStyle, BobSpeed, BobRangeX, BobRangeY, SlotNumber, SlotPriority, PreferredSkin,
 		MinSelectionAmmo1, MinSelectionAmmo2, WeaponScaleX, WeaponScaleY, LookScale,
-		
+
 		// Weapon piece
-		WeaponPiece, Number, Weapon, 
-		
+		WeaponPiece, Number, Weapon,
+
 		// Ammo-specific properties
 		Ammo, BackpackAmount, BackpackMaxAmount, DropAmount,
-		
+
 		// Puzzle items
 		PuzzleItem, Number, FailMessage, FailSound,
+
+		// Spectator camera
+		SpectatorCamera, ChaseMode, ChasingTracer, LagDistance,
 
 		// Combos
 		Monster, Projectile,
 
 		// DECORATE expressions
-		x, y, z, angle, momx, momy, momz, velx, vely, velz, pitch, tid, tidtohate, 
+		x, y, z, angle, momx, momy, momz, velx, vely, velz, pitch, tid, tidtohate,
 		ceilingz, floorz, scalex, scaley, score, special, waterlevel, var, int,
 		roll, visibleendangle, visibleendpitch, visiblestartangle, visiblestartpitch,
 
 		// Anonymous functions
 		bool, state, if, else, return, for, while, do, break, continue,
-		
+
 		// Damage type properties
 		NoArmor, Factor, ReplaceFactor,
 
@@ -139,7 +142,7 @@ decorate : cstyle {
 	constants = {
 		// General constants
 		TRUE, FALSE,
-		
+
 		// Flags
 		ABSMASKANGLE, ABSMASKPITCH, ACTIVATEIMPACT, ACTIVATEMCROSS, ACTIVATEPCROSS, ACTLIKEBRIDGE, ADDITIVEPOISONDAMAGE,
 		ADDITIVEPOISONDURATION, AIMREFLECT, ALLOWBOUNCEONACTORS, ALLOWPAIN, ALLOWPARTICLES, ALLOWTHRUFLAGS, ALWAYSFAST,
@@ -152,20 +155,20 @@ decorate : cstyle {
 		DONTHARMSPECIES, DONTHURTSPECIES, DONTMORPH, DONTOVERLAP, DONTREFLECT, DONTRIP, DONTSEEKINVISIBLE,
 		DONTSPLASH, DONTSQUASH, DONTTHRUST, DONTTRANSLATE, DOOMBOUNCE, DORMANT, DROPOFF, DROPPED, EXPLOCOUNT,
 		EXPLODEONWATER, EXTREMEDEATH, FASTER, FASTMELEE, FIREDAMAGE, FIRERESIST, FIXMAPTHINGPOS, FLOAT,
-		FLOATBOB, FLOORCLIP, FLOORHUGGER, FOILBUDDHA, FOILINVUL, FORCEDECAL, FORCEPAIN, FORCERADIUSDMG, FORCEXYBILLBOARD, 
+		FLOATBOB, FLOORCLIP, FLOORHUGGER, FOILBUDDHA, FOILINVUL, FORCEDECAL, FORCEPAIN, FORCERADIUSDMG, FORCEXYBILLBOARD,
 		FORCEYBILLBOARD, FRIENDLY, FRIGHTENED, FULLVOLACTIVE, FULLVOLDEATH, GETOWNER, GHOST, GRENADETRAIL, HARMFRIENDS,
 		HERETICBOUNCE, HEXENBOUNCE, HITMASTER, HITTARGET, HITTRACER, ICECORPSE, ICEDAMAGE, ICESHATTER, INCOMBAT, INVISIBLE,
-		INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LAXTELEFRAGDMG, LONGMELEERANGE, LOOKALLAROUND, LOWGRAVITY, 
-		MASKROTATION, MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MIRRORREFLECT, MOVEWITHSECTOR, MTHRUSPECIES, NEVERFAST, 
-		NEVERRESPAWN, NEVERTARGET, NOBLOCKMAP, NOBLOCKMONST, NOBLOOD, NOBLOODDECALS, NOBOSSRIP, NOBOUNCESOUND, 
-		NOCLIP, NODAMAGE, NODAMAGETHRUST, NODECAL, NODROPOFF, NOEXPLODEFLOOR, NOEXTREMEDEATH, NOFEAR, NOFORWARDFALL, 
-		NOGRAVITY, NOICEDEATH, NOINFIGHTING, NOINTERACTION, NOKILLSCRIPTS, NOLIFTDROP, NOMENU, NONSHOOTABLE, NOPAIN, 
-		NORADIUSDMG, NOSECTOR, NOSKIN, NOSPLASHALERT, NOTARGET, NOTARGETSWITCH, NOTAUTOAIMED, NOTDMATCH, 
+		INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LAXTELEFRAGDMG, LONGMELEERANGE, LOOKALLAROUND, LOWGRAVITY,
+		MASKROTATION, MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MIRRORREFLECT, MOVEWITHSECTOR, MTHRUSPECIES, NEVERFAST,
+		NEVERRESPAWN, NEVERTARGET, NOBLOCKMAP, NOBLOCKMONST, NOBLOOD, NOBLOODDECALS, NOBOSSRIP, NOBOUNCESOUND,
+		NOCLIP, NODAMAGE, NODAMAGETHRUST, NODECAL, NODROPOFF, NOEXPLODEFLOOR, NOEXTREMEDEATH, NOFEAR, NOFORWARDFALL,
+		NOGRAVITY, NOICEDEATH, NOINFIGHTING, NOINTERACTION, NOKILLSCRIPTS, NOLIFTDROP, NOMENU, NONSHOOTABLE, NOPAIN,
+		NORADIUSDMG, NOSECTOR, NOSKIN, NOSPLASHALERT, NOTARGET, NOTARGETSWITCH, NOTAUTOAIMED, NOTDMATCH,
 		NOTELEFRAG, NOTELEOTHER, NOTELEPORT, NOTELESTOMP, NOTIMEFREEZE, NOTONAUTOMAP, NOTRIGGER,
 		NOVERTICALMELEERANGE, NOWALLBOUNCESND, OLDRADIUSDMG, PAINLESS, PICKUP, PIERCEARMOR, PUFFGETSOWNER,
 		PUFFONACTORS, PUSHABLE, QUARTERGRAVITY, QUICKTORETALIATE, RANDOMIZE, REFLECTIVE, RELATIVETOFLOOR,
 		RIPPER, ROCKETTRAIL, SCREENSEEKER, SEEINVISIBLE, SEEKERMISSILE, SEESDAGGERS, SHADOW, SHIELDREFLECT,
-		SHOOTABLE, SHORTMISSILERANGE, SKULLFLY, SKYEXPLODE, SLIDESONWALLS, SOLID, SPAWNCEILING, SPAWNFLOAT, 
+		SHOOTABLE, SHORTMISSILERANGE, SKULLFLY, SKYEXPLODE, SLIDESONWALLS, SOLID, SPAWNCEILING, SPAWNFLOAT,
 		SPAWNSOUNDSOURCE, SPECIAL, SPECIALFIREDAMAGE, SPECIALFLOORCLIP, SPECTRAL, SPRITEANGLE, STANDSTILL, STAYMORPHED,
 		STEALTH, STEPMISSILE, STRIFEDAMAGE, SUMMONEDMONSTER, SYNCHRONIZED, TELEPORT, TELESTOMP, TERRAIN,
 		THRUACTORS, THRUGHOST, THRUREFLECT, THRUSPECIES, TOUCHY, USEBOUNCESTATE, USEKILLSCRIPTS, USESPECIAL,
@@ -177,23 +180,23 @@ decorate : cstyle {
 		E3M8BOSS, E4M6BOSS, E4M8BOSS, MAP07BOSS1, MAP07BOSS2, HIGHERMPROB, DONTFOLLOWPLAYERS, SEEFRIENDLYMONSTERS,
 		ADDLIGHTLEVEL, CROSSLINECHECK, MASTERNOSEE, INVISIBLEINMIRRORS, ONLYVISIBLEINMIRRORS, ONLYSLAMSOLID,
 		SHADOWAIM, DOSHADOWBLOCK, SHADOWBLOCK, SHADOWAIMVERT, NOSAVEGAME, DECOUPLEDANIMATIONS, BILLBOARDFACECAMERA,
-		BILLBOARDNOFACECAMERA, FLIPSPRITEOFFSETX, FLIPSPRITEOFFSETY,
+		BILLBOARDNOFACECAMERA, FLIPSPRITEOFFSETX, FLIPSPRITEOFFSETY, CAMFOLLOWSPLAYER, NOMIPMAP, ISOMETRICSPRITES,
 
 		// INVENTORY.
 		INVENTORY,
 		QUIET, AUTOACTIVATE, UNDROPPABLE, INVBAR, HUBPOWER, PERSISTENTPOWER, INTERHUBSTRIP,
-		PICKUPFLASH, ALWAYSPICKUP, FANCYPICKUPSOUND, BIGPOWERUP, KEEPDEPLETED, IGNORESKILL, 
+		PICKUPFLASH, ALWAYSPICKUP, FANCYPICKUPSOUND, BIGPOWERUP, KEEPDEPLETED, IGNORESKILL,
 		ADDITIVETIME, UNTOSSABLE, RESTRICTABSOLUTELY, NEVERRESPAWN, NOSCREENFLASH,
 		NOATTENPICKUPSOUND, TOSSED, TRANSFER, NOTELEPORTFREEZE, UNCLEARABLE, NOSCREENBLINK,
-		ISHEALTH, ISARMOR,
-		
+		ISHEALTH, ISARMOR, NEVERLOCAL, ISKEYITEM,
+
 		// PLAYERPAWN.
-		PLAYERPAWN, 
+		PLAYERPAWN,
 		CANSUPERMORPH,
 		CROUCHABLEMORPH,
 		NOTHRUSTWHENINVUL,
 		WEAPONLEVEL2ENDED,
-		
+
 		// POWERSPEED.
 		POWERSPEED,
 		NOTRAIL,
@@ -224,7 +227,7 @@ decorate : cstyle {
 		//constants, source: gzdoom.pk3
 		AAPTR_DEFAULT, AAPTR_FRIENDPLAYER, AAPTR_LINETARGET, AAPTR_MASTER, AAPTR_NULL, AAPTR_PLAYER_GETCONVERSATION,
 		AAPTR_PLAYER_GETTARGET, AAPTR_PLAYER1, AAPTR_PLAYER2, AAPTR_PLAYER3, AAPTR_PLAYER4, AAPTR_PLAYER5,
-		AAPTR_PLAYER6, AAPTR_PLAYER7, AAPTR_PLAYER8, AAPTR_TARGET, AAPTR_TRACER, 
+		AAPTR_PLAYER6, AAPTR_PLAYER7, AAPTR_PLAYER8, AAPTR_TARGET, AAPTR_TRACER,
 		AF_ClearSpecial, AF_Default, AF_MissileTrigger, AF_MonsterTrigger, AF_NoDeathSpecial, AF_ThingActs,
 		AF_ThingTargets, AF_TriggerActs, AF_TriggerTargets,
 		AMF_TARGETEMITTER, AMF_TARGETNONPLAYER, AMF_EMITFROMTARGET,
@@ -328,7 +331,7 @@ decorate : cstyle {
 		BT_MOVEDOWN, BT_SHOWSCORES, BT_USER1, BT_USER2, BT_USER3, BT_USER4,
 
 		// Flags for A_JumpIfTargetInLOS and A_JumpIfInTargetLOS
-		JLOSF_ALLYNOJUMP, JLOSF_CHECKMASTER, JLOSF_CHECKTRACER, JLOSF_CLOSENOFOV, JLOSF_CLOSENOJUMP, JLOSF_CLOSENOSIGHT, 
+		JLOSF_ALLYNOJUMP, JLOSF_CHECKMASTER, JLOSF_CHECKTRACER, JLOSF_CLOSENOFOV, JLOSF_CLOSENOJUMP, JLOSF_CLOSENOSIGHT,
 		JLOSF_COMBATANTONLY, JLOSF_DEADNOJUMP, JLOSF_FLIPFOV, JLOSF_NOSIGHT, JLOSF_PROJECTILE, JLOSF_TARGETLOS,
 		JLOSF_NOAUTOAIM,
 
@@ -336,7 +339,7 @@ decorate : cstyle {
 		KILS_FOILBUDDHA, KILS_FOILINVUL, KILS_KILLMISSILES, KILS_NOMONSTERS, KILS_EXFILTER, KILS_EXSPECIES, KILS_EITHER,
 
 		LOF_DONTCHASEGOAL, LOF_FULLVOLSEESOUND, LOF_NOJUMP, LOF_NOSEESOUND, LOF_NOSIGHTCHECK, LOF_NOSOUNDCHECK,
-		MRF_ADDSTAMINA, MRF_FAILNOLAUGH, MRF_FAILNOTELEFRAG, MRF_FULLHEALTH, MRF_LOSEACTUALWEAPON, 
+		MRF_ADDSTAMINA, MRF_FAILNOLAUGH, MRF_FAILNOTELEFRAG, MRF_FULLHEALTH, MRF_LOSEACTUALWEAPON,
 		MRF_NEWTIDBEHAVIOUR, MRF_UNDOBYCHAOSDEVICE, MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES,
 		MRF_UNDOBYTOMEOFPOWER, MRF_WHENINVULNERABLE, MRF_UNDOALWAYS, MRF_TRANSFERTRANSLATION,
 		MSF_Classic, MSF_DontHurt, MSF_Standard,
@@ -389,7 +392,8 @@ decorate : cstyle {
 
 		// A_SpawnParticle flags
 		SPF_FULLBRIGHT, SPF_RELACCEL, SPF_RELANG, SPF_RELATIVE, SPF_RELPOS, SPF_RELVEL, SPF_NOTIMEFREEZE,
-		SPF_ROLL, SPF_REPLACE, SPF_NO_XY_BILLBOARD, SPF_LOCAL_ANIM,
+		SPF_ROLL, SPF_REPLACE, SPF_NO_XY_BILLBOARD, SPF_LOCAL_ANIM, SPF_NEGATIVE_FADESTEP, SPF_FACECAMERA,
+		SPF_NOFACECAMERA, SPF_ROLLCENTER, SPF_NOMIPMAP, 
 
 		// Render styles
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_OptFuzzy, STYLE_Stencil, STYLE_Translucent,
@@ -402,7 +406,7 @@ decorate : cstyle {
 		// A_SpawnItemEx flags
 		SXF_ABSOLUTEANGLE, SXF_ABSOLUTEMOMENTUM, SXF_ABSOLUTEPOSITION, SXF_ABSOLUTEVELOCITY, SXF_CLIENTSIDE,
 		SXF_NOCHECKPOSITION, SXF_SETMASTER, SXF_TELEFRAG, SXF_TRANSFERAMBUSHFLAG, SXF_TRANSFERPITCH,
-		SXF_TRANSFERPOINTERS, SXF_TRANSFERTRANSLATION, SXF_USEBLOODCOLOR, SXF_CLEARCALLERTID, SXF_MULTIPLYSPEED, 
+		SXF_TRANSFERPOINTERS, SXF_TRANSFERTRANSLATION, SXF_USEBLOODCOLOR, SXF_CLEARCALLERTID, SXF_MULTIPLYSPEED,
 		SXF_TRANSFERSCALE, SXF_TRANSFERSPECIAL, SXF_CLEARCALLERSPECIAL, SXF_TRANSFERSTENCILCOL, SXF_TRANSFERALPHA,
 		SXF_TRANSFERRENDERSTYLE, SXF_SETTARGET, SXF_SETTRACER, SXF_NOPOINTERS, SXF_ORIGINATOR, SXF_TRANSFERSPRITEFRAME,
 		SXF_TRANSFERROLL, SXF_ISTARGET, SXF_ISMASTER, SXF_ISTRACER,
@@ -424,7 +428,7 @@ decorate : cstyle {
 		WAF_NORANDOM, WAF_USEPUFF,
 
 		// A_Warp flags
-		WARPF_ABSOLUTEANGLE, WARPF_ABSOLUTEOFFSET, WARPF_COPYINTERPOLATION, WARPF_INTERPOLATE,WARPF_NOCHECKPOSITION, 
+		WARPF_ABSOLUTEANGLE, WARPF_ABSOLUTEOFFSET, WARPF_COPYINTERPOLATION, WARPF_INTERPOLATE,WARPF_NOCHECKPOSITION,
 		WARPF_STOP, WARPF_TESTONLY, WARPF_TOFLOOR, WARPF_USECALLERANGLE, WARPF_WARPINTERPOLATION, WARPF_ABSOLUTEPOSITION,
 		WARPF_BOB, WARPF_MOVEPTR, WARPF_USETID, WARPF_COPYPITCH, WARPF_COPYVELOCITY,
 
@@ -437,16 +441,16 @@ decorate : cstyle {
 
 		// A_Explode
 		XF_HURTSOURCE, XF_NOTMISSILE, XF_EXPLICITDAMAGETYPE, XF_NOSPLASH, XF_THRUSTZ, XF_THRUSTLESS, XF_NOALLIES, XF_CIRCULAR,
-		
+
 		// A_ZoomFactor constants (not in constants.txt)
 		ZOOM_INSTANT, ZOOM_NOSCALETURNING,
-		
+
 		// Some additional constants
-		ChunkFlags, 
-		BeastAttack, BeastPuff, ClinkAttack, ImpMeAttack, TeleGlitter, TeleGlitter2, 
+		ChunkFlags,
+		BeastAttack, BeastPuff, ClinkAttack, ImpMeAttack, TeleGlitter, TeleGlitter2,
 		StaffAttack, BoltSpark, MummyAttack, MummyAttack2,
 		CentaurDrop, DemonAttack1, EttinAttack, DropMace, PigAttack,
-		SpectreMelee, PeasantAttack, spectrespawn, ReaverMelee, 
+		SpectreMelee, PeasantAttack, spectrespawn, ReaverMelee,
 	}
 
 	functions {
@@ -523,14 +527,14 @@ decorate : cstyle {
 		A_BulletAttack;
 		A_MonsterRail;
 		A_Blast = "[int flags], [float strength], [float radius], [float speed], [class blasteffect], [sound blastsound]";
-		A_Explode = "[int dmg], [int radius], [int flags], [bool alert], [int fulldmgradius], [int nails], [int naildmg], [string pufftype], [string damagetype]";
+		A_Explode = "[int dmg], [float radius], [int flags], [bool alert], [float fulldmgradius], [int nails], [int naildmg], [string pufftype], [string damagetype]";
 		A_RadiusDamageSelf = "[int damage], [float distance], [int flags], [string flashtype]";
-		A_RadiusThrust = "[int thrust], [int radius], [int flags], [int fullthrustdistance]";
+		A_RadiusThrust = "[int thrust], [float radius], [int flags], [float fullthrustdistance]";
 		A_RadiusGive = "class itemtype, float distance, int flags, [int amount], [class filter], [string species], [float mindist], [int limit]";
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
-		A_Quake = "float intensity, int duration, int damrad, int tremrad, [sound sfx]";
-		A_QuakeEx = "float intensityX, float intensityY, float intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ], [int falloff], [int highpoint], [float rollIntensity], [float rollWave], [float damageMultiplier], [float thrustMultiplier], [int damage]";
+		A_Quake = "float intensity, int duration, float damrad, float tremrad, [sound sfx]";
+		A_QuakeEx = "float intensityX, float intensityY, float intensityZ, int duration, float damrad, float tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ], [float falloff], [int highpoint], [float rollIntensity], [float rollWave], [float damageMultiplier], [float thrustMultiplier], [int damage]";
 		A_SetTics = "int tics";
 
 		A_FreezeDeath;
@@ -780,7 +784,7 @@ decorate : cstyle {
 		A_FireRailgunLeft;
 		A_FireRailgunRight;
 		A_RailWait;
-		
+
 		A_RestoreSpecialPosition;
 		A_RestoreSpecialDoomThing;
 		A_RestoreSpecialThing1;
@@ -831,11 +835,11 @@ decorate : cstyle {
 		A_FireCrackle;
 		A_BFGSpray = "[string flashtype], [int numrays], [int damage], [float angle], [float distance], [float vrange], [int explict_damage], [int flags]";
 		A_BarrelDestroy;
-		
+
 		// Restricted functions
 		A_IceSetTics; A_BridgeOrbit; A_BridgeInit = "[class ball]";
 		A_SpawnSingleItem = "class type, [int fail_single], [int fail_coop], [int fail_dm]";
-		
+
 		// Scripted marines have some
 		A_M_Refire = "[bool ignoremissile]";
 		A_M_CheckAttack;
@@ -853,7 +857,7 @@ decorate : cstyle {
 		A_M_FireRailgun;
 		A_M_BFGsound;
 		A_M_FireBFG;
-		
+
 		// Heretic has a lot of them
 		A_BeakRaise; A_BeakAttackPL1; A_BeakAttackPL2;
 		A_Sor1Pain; A_Sor1Chase; A_Srcr1Attack; A_SorcererRise;
@@ -876,14 +880,14 @@ decorate : cstyle {
 		A_MinotaurDecide; A_MinotaurAtk1; A_MinotaurAtk2; A_MinotaurAtk3; A_MinotaurCharge;
 		A_MinotaurLook; A_MinotaurRoam; A_MinotaurChase; A_MinotaurDeath; A_MntrFloorFire;
 
-		A_KnightAttack; A_DripBlood;		
+		A_KnightAttack; A_DripBlood;
 		A_GhostOff; A_WizAtk1; A_WizAtk2; A_WizAtk3;
 
 		// Hexen has a bunch of them, too
 		A_BatSpawnInit; A_BatSpawn; A_BatMove;
 		A_BishopChase; A_BishopDecide; A_BishopDoBlur;
 		A_BishopSpawnBlur; A_BishopPainBlur; A_BishopAttack; A_BishopAttack2;
-		A_ClericAttack; A_FighterAttack; 
+		A_ClericAttack; A_FighterAttack;
 		A_CFlameAttack; A_CFlameRotate; A_CFlamePuff; A_CFlameMissile;
 		A_CHolyAttack; A_CHolyPalette; A_CHolyAttack2; A_CHolySeek; A_CHolyCheckScream; A_CHolyTail;
 		A_CMaceAttack;
@@ -917,12 +921,12 @@ decorate : cstyle {
 		A_Summon;
 		A_TeloSpawnA; A_TeloSpawnB; A_TeloSpawnC; A_TeloSpawnD; A_CheckTeleRing;
 		A_WraithInit; A_WraithChase; A_WraithMelee; A_WraithRaiseInit; A_WraithRaise; A_WraithFX2; A_WraithFX3;
-		
+
 		// Strife is the last with these
 		A_BeShadowyFoe; A_AcolyteBits; A_AcolyteDie; A_HideDecepticon;
 		A_AlienSpectreDeath;
 		A_CrusaderChoose; A_CrusaderSweepLeft; A_CrusaderSweepRight; A_CrusaderRefire; A_CrusaderDeath;
-		A_SpawnEntity; A_EntityAttack; A_EntityDeath; A_SubEntityDeath;	
+		A_SpawnEntity; A_EntityAttack; A_EntityDeath; A_SubEntityDeath;
 		A_InquisitorWalk; A_InquisitorDecide; A_InquisitorAttack; A_InquisitorJump;
 		A_InquisitorCheckLand; A_TossArm; A_ReaverRanged;
 		A_LoremasterChain;
@@ -998,7 +1002,7 @@ decorate : cstyle {
 		OverlayID;
 		OverlayX = "[int layer]";
 		OverlayY = "[int layer]";
-		
+
 		// Internal use only, normally
 		A_Turn = "[float angle]";
 		A_LineEffect = "[int boomspecial], [int tag]";
@@ -1046,7 +1050,7 @@ decorate : cstyle {
 		Door_CloseWaitOpen = "int tag, int speed, int delay, [int lighttag]";
 		Door_LockedRaise = "int tag, int speed, int delay, int lock, [int lighttag]";
 		Door_Open = "int tag, int speed, [int lighttag]";
-		Door_Raise = "int tag, int speed, int delay, [int lighttag]";		
+		Door_Raise = "int tag, int speed, int delay, [int lighttag]";
 		Elevator_LowerToNearest = "int tag, int speed";
 		Elevator_MoveToFloor = "int tag, int speed";
 		Elevator_RaiseToNearest = "int tag, int speed";

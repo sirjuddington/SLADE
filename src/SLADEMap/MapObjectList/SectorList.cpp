@@ -33,8 +33,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SectorList.h"
-#include "UI/UI.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -81,6 +81,11 @@ void SectorList::remove(unsigned index)
 	usage_tex_[strutil::upper(objects_[index]->ceiling().texture)] -= 1;
 
 	MapObjectList::remove(index);
+
+	// The last sector just moved into the deleted sector's space.  Its geometry didn't change, but
+	// because its index did, its vertices are completely invalid now
+	if (index < objects_.size())
+		objects_[index]->resetPolygon();
 }
 
 // -----------------------------------------------------------------------------
