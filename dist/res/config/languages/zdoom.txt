@@ -36,7 +36,7 @@ z_cvarinfo {
 		// Types
 		bool, color, float, int, string
 	}
-	
+
 	constants = {
 		//Boolean values
 		TRUE, FALSE
@@ -58,8 +58,8 @@ z_decaldef {
 	keywords = {
 		pic, shade, x, scale, y, scale, flipx, flipy, randomflipx, randomflipy, solid,
 		translucent, add, fuzzy, fullbright, lowerdecal, colors, animator, decal,
-		decalgroup, generator, stretcher, GoalX, GoalY, StretchStart, StretchTime, 
-		fader, DecayStart, DecayTime, Combiner, slider, DistX, DistY, SlideStart, 
+		decalgroup, generator, stretcher, GoalX, GoalY, StretchStart, StretchTime,
+		fader, DecayStart, DecayTime, Combiner, slider, DistX, DistY, SlideStart,
 		SlideTime, colorchanger, FadeStart, FadeTime, Color, optional
 	}
 }
@@ -99,7 +99,7 @@ z_gldefs {
 	keyword_link = "http://zdoom.org/wiki/GLDEFS";
 	constant_link = "http://zdoom.org/wiki/GLDEFS";
 	function_link = "http://zdoom.org/wiki/GLDEFS";
-	blocks = "pointlight", "pulselight", "flickerlight", "flickerlight2", "sectorlight", 
+	blocks = "pointlight", "pulselight", "flickerlight", "flickerlight2", "sectorlight",
 				"object", "detail", "skybox", "brightmap", "glow", "hardwareshader";
 
 	keywords = {
@@ -119,7 +119,7 @@ z_iwadinfo
 {
 	name = "ZDoom IWAD Info";
 	case_sensitive = false;
-	
+
 	keywords =
 	{
 		IWad, Order, Names
@@ -157,8 +157,8 @@ z_language {
 	blocks = "default";
 
 	keywords = {
-		default, csy, dan, de, dea, des, deu, ell, en, ena, enc, eng, eni, enu, enz, esm, 
-		esn, esp, eti, fin, fr, fra, frb, frc, frs, hun, isl, ita, its, nlb, nld, non, nor, 
+		default, csy, dan, de, dea, des, deu, ell, en, ena, enc, eng, eni, enu, enz, esm,
+		esn, esp, eti, fin, fr, fra, frb, frc, frs, hun, isl, ita, its, nlb, nld, non, nor,
 		plk, ptb, ptg, rus, sky, sv, trk
 	}
 }
@@ -204,15 +204,15 @@ z_mapinfo {
 		clear, delete, fps, function, sound, soundid, video,
 
 		// Cluster
-		Cluster, ClusterDef, EnterText, ExitText, ExitTextIsLump, Music, Flat, Pic, Hub, 
+		Cluster, ClusterDef, EnterText, ExitText, ExitTextIsLump, Music, Flat, Pic, Hub,
 		AllowIntermission, entertextislump, gameover, intro, outro,
-		
+
 		// Episode
 		ClearEpisodes, Episode, Name, PicName, Key, Remove, NoSkillMenu, Optional, Extended,
 		teaser, intro,
-		
+
 		// Map
-		Map, DefaultMap, AddDefaultMap, GameDefaults, 
+		Map, DefaultMap, AddDefaultMap, GameDefaults,
 		ActivateOwnDeathSpecials, AirControl, AirSupply, AllowCrouch, AllowFreelook,
 		AllowJump, AllowMonsterTelefrags, AllowRespawn, AutoSequences, BaronSpecial,
 		BorderTexture, CDId, CDTrack, CheckSwitchRange, ClipMidTextures,
@@ -221,16 +221,16 @@ z_mapinfo {
 		FadeTable, FallingDamage, FilterStarts, ForceNoSkyStretch, ForgetState,
 		Gravity, Grinding_Polyobj, HorizWallShade, InfiniteFlightPowerup,
 		InterMusic, IronlichSpecial, KeepFullInventory, LaxMonsterActivation,
-		LevelNum, Lightning, Map07Special, MapBackground, MinotaurSpecial, 
+		LevelNum, Lightning, Map07Special, MapBackground, MinotaurSpecial,
 		MissilesActivateImpactLines, MissileShootersActivateImpactLines,
-		MonsterFallingDamage, Music, Next, No_Grinding_Polyobj, NoAllies, 
-		NoAutosaveHint, NoAutoSequences, NoCheckSwitchRange, NoCrouch, 
+		MonsterFallingDamage, Music, Next, No_Grinding_Polyobj, NoAllies,
+		NoAutosaveHint, NoAutoSequences, NoCheckSwitchRange, NoCrouch,
 		NoFallingDamage, NoFreelook, NoInfighting, NoIntermission, NoInventoryBar,
-		NoJump, NormalInfighting, NoSoundClipping, OldFallingDamage, 
-		ForceFallingDamage, OutsideFog, Par, PrecacheSounds, RandomPlayerStarts, 
+		NoJump, NormalInfighting, NoSoundClipping, OldFallingDamage,
+		ForceFallingDamage, OutsideFog, Par, PrecacheSounds, RandomPlayerStarts,
 		Redirect, RememberState, ResetHealth, ResetInventory, Secret, SecretNext,
 		Sky1, Sky2, Skybox, SkyStretch, Slideshow, SmoothLighting,
-		SpawnWithWeaponRaised, SpecialAction, SpecialAction_ExitLevel, 
+		SpawnWithWeaponRaised, SpecialAction, SpecialAction_ExitLevel,
 		SpecialAction_OpenDoor, SpecialAction_LowerFloor, SpecialAction_KillMonsters,
 		SpiderMastermindSpecial, StrictMonsterActivation, StrifeFallingDamage,
 		SuckTime, TeamDamage, TeamPlayOff, TeamPlayOn, TitlePatch, TotalInfighting,
@@ -326,12 +326,12 @@ z_menudef {
 	constant_link = "http://zdoom.org/wiki/MENUDEF";
 	function_link = "http://zdoom.org/wiki/MENUDEF";
 	blocks = "listmenu", "addlistmenu", "optionmenu", addoptionmenu, "optionvalue", "optionstring";
-	
-	keywords = { 
-		ListMenu, AddListMenu, OptionMenu, AddOptionMenu, OptionValue, OptionString, 
-		DefaultListMenu, DefaultOptionMenu, OptionMenuSettings, 
-		Font, Linespacing, LabelOffset, PlayerDisplay, Position, Selector, StaticText, 
-		StaticTextSwitchable, ScrollTop, SafeCommand, ColorPicker, Class, ScreenResolution, 
+
+	keywords = {
+		ListMenu, AddListMenu, OptionMenu, AddOptionMenu, OptionValue, OptionString,
+		DefaultListMenu, DefaultOptionMenu, OptionMenuSettings,
+		Font, Linespacing, LabelOffset, PlayerDisplay, Position, Selector, StaticText,
+		StaticTextSwitchable, ScrollTop, SafeCommand, ColorPicker, Class, ScreenResolution,
 		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command,
 		NetgameMessage, StaticPatchCentered, StaticTextCentered, MouseWindow, CenterMenu,
 		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField,
@@ -341,12 +341,12 @@ z_menudef {
 		PlayerSkinItem, PlayerGenderItem, AutoaimSlider, PlayerSwitchOnPickupItem, Indent,
 		LabeledSubMenu, SliderReverbEditOption, ReverbOption, ReverbSelect
 	}
-	
+
 	functions { ifgame = "game, [...]"; ifoption = "option, [...]"; }
-	
-	constants = { 
+
+	constants = {
 		doom, heretic, hexen, strife, chex, readthis, swapmenu, windows, unix, mac,
-		openal, swrender, mmx, LoadMenu, SaveMenu, PlayerMenu, JoystickConfigMenu, 
+		openal, swrender, mmx, LoadMenu, SaveMenu, PlayerMenu, JoystickConfigMenu,
 		GameplayMenu, CompatibilityMenu, VideoModeMenu,
 	}
 }
@@ -361,7 +361,7 @@ z_modeldef {
 
 	keywords = {
 		MODEL, PATH, SKIN, SCALE, FRAME, FRAMEINDEX,
-		Rotation-Speed, Rotation-Vector, Rotation-Center, 
+		Rotation-Speed, Rotation-Vector, Rotation-Center,
 		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin,
 		Animation, BaseFrame
 	}
@@ -569,7 +569,7 @@ z_textures {
 	}
 
 	constants = {
-		Inverse, Gold, Red, Green, Ice, Desaturate, Copy, Translucent, 
+		Inverse, Gold, Red, Green, Ice, Desaturate, Copy, Translucent,
 		Add, Subtract, ReverseSubtract, Modulate, CopyAlpha, Overlay,
 		CopyNewAlpha
 	}
@@ -598,13 +598,13 @@ z_xlat {
 		P_SLOW, P_NORMAL, P_FAST, P_TURBO,
 		F_SLOW, F_NORMAL, F_FAST, F_TURBO,
 		VDOORWAIT, PLATWAIT, DORATE, ELEVATORSPEED, SCROLL_UNIT, CEILWAIT,
-		
+
 		Init_Gravity, Init_Color, Init_Damage, Init_TransferSky
 	}
 
 	functions {
 		unsupported;
-		
+
 		ACS_Execute = "int script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
 		ACS_ExecuteAlways = "int script, [int mapnum], [int arg1], [int arg2], [int arg3]";
 		ACS_ExecuteWithResult = "int script, [int s_arg1], [int s_arg2], [int s_arg3]";
@@ -646,7 +646,7 @@ z_xlat {
 		Door_CloseWaitOpen = "int tag, int speed, int delay, [int lighttag]";
 		Door_LockedRaise = "int tag, int speed, int delay, int lock, [int lighttag]";
 		Door_Open = "int tag, int speed, [int lighttag]";
-		Door_Raise = "int tag, int speed, int delay, [int lighttag]";		
+		Door_Raise = "int tag, int speed, int delay, [int lighttag]";
 		Elevator_LowerToNearest = "int tag, int speed";
 		Elevator_MoveToFloor = "int tag, int speed";
 		Elevator_RaiseToNearest = "int tag, int speed";

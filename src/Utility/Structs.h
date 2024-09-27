@@ -82,6 +82,14 @@ template<typename T> struct Vec2
 		return std::sqrt((dist_x * dist_x) + (dist_y * dist_y));
 	}
 
+	bool closerThan(const Vec2<T> other, T max_dist) const
+	{
+		T dist_x = other.x - x;
+		T dist_y = other.y - y;
+
+		return (dist_x * dist_x) + (dist_y * dist_y) < max_dist * max_dist;
+	}
+
 	// aka "Manhattan" distance -- just the sum of the vertical and horizontal
 	// distance, and an upper bound on the true distance
 	T taxicabDistanceTo(const Vec2<T>& other) const

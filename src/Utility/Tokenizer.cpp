@@ -69,6 +69,41 @@ bool isWhitespace(char p)
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// Parses a magic editor comment, as introduced by Doom Builder.
+// Token should be of the form "//$Key ...".
+// Returns a pair of the key (lowercased) and any value, or "true" if none.
+// See also: https://zdoom.org/wiki/Editor_keys
+// -----------------------------------------------------------------------------
+
+// These aren't documented very well, and it's not really clear what the argument format is intended
+// to be, but none of them seem to take more than one argument.  So take the whole rest of the line,
+// strip whitespace, and drop the quotes if any.
+std::pair<string, string> Tokenizer::parseEditorComment(string_view token)
+{
+	// Find the first space
+	size_t spos = token.find(" \t");
+	if (spos == string_view::npos)
+	{
+		string key(token.substr(3));
+		strutil::lowerIP(key);
+		return std::pair{ key, "true" };
+	}
+
+	string key(token.substr(3, spos - 3));
+	strutil::lowerIP(key);
+
+	string value(token.substr(spos));
+	strutil::trimIP(value);
+
+	// Strip quotes, if present
+	if (value.front() == '"' && value.back() == '"')
+	{
+		value.erase(value.back());
+		value.erase(value.front());
+	}
+	return std::pair{ key, value };
+}
 
 // -----------------------------------------------------------------------------
 // Returns true if the token is a valid integer. If [allow_hex] is true, can

@@ -63,7 +63,9 @@ bool dump_parsed_blocks    = false;
 bool dump_parsed_states    = false;
 bool dump_parsed_functions = false;
 
-string db_comment = "//$";
+// Doom Builder's magic comment indicator
+// Only documentation seems to be: https://zdoom.org/wiki/Editor_keys
+string editor_comment_prefix = "//$";
 } // namespace slade::zscript
 
 
@@ -191,7 +193,6 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 {
 	Tokenizer tz;
 	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.<>");
-	tz.enableDecorate(true);
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.openMem(entry->data(), "ZScript");
 
@@ -855,13 +856,8 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 			states_.parse(statement);
 
 		// DB property comment
-		else if (strutil::startsWith(first_token, db_comment))
-		{
-			if (statement.tokens.size() > 1)
-				db_properties_.emplace_back(first_token.substr(3), statement.tokens[1]);
-			else
-				db_properties_.emplace_back(first_token.substr(3), "true");
-		}
+		else if (strutil::startsWith(first_token, editor_comment_prefix))
+			db_properties_.emplace_back(Tokenizer::parseEditorComment(first_token));
 
 		// Function
 		else if (Function::isFunction(statement))
@@ -890,14 +886,9 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 			continue;
 
 		// DB property comment
-		if (strutil::startsWith(statement.tokens[0], db_comment))
+		if (strutil::startsWith(statement.tokens[0], editor_comment_prefix))
 		{
-			string_view prop = statement.tokens[0];
-			prop.remove_prefix(3);
-			if (statement.tokens.size() > 1)
-				db_properties_.emplace_back(prop, statement.tokens[1]);
-			else
-				db_properties_.emplace_back(prop, "true");
+			db_properties_.emplace_back(Tokenizer::parseEditorComment(statement.tokens[0]));
 			continue;
 		}
 
@@ -1116,14 +1107,6 @@ bool ParsedStatement::parse(Tokenizer& tz)
 		// End of statement (;)
 		if (tz.advIf(';'))
 			return true;
-
-		// DB comment
-		if (strutil::startsWith(tz.current().text, db_comment))
-		{
-			tokens.emplace_back(tz.current().text);
-			tokens.emplace_back(tz.getLine());
-			return true;
-		}
 
 		if (tz.check('}'))
 		{

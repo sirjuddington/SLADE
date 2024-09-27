@@ -39,6 +39,7 @@
 #include "SpecialPresetDialog.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
+#include <charconv>
 #include <utility>
 
 using namespace slade;
@@ -65,16 +66,22 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	dc.SetFont(GetFont());
 	wxSize textsize;
 
-	// Populate tree
-	for (auto& i : game::configuration().allActionSpecials())
+	// Sort specials in config order
+	sorted_specials_.reserve(game::configuration().allActionSpecials().size());
+	for (const auto& i : game::configuration().allActionSpecials())
 	{
 		if (!i.second.defined())
 			continue;
 
 		wxString label = wxString::Format("%d: %s", i.second.number(), i.second.name());
-		AppendItem(getGroup(i.second.group()), label);
 		textsize.IncTo(dc.GetTextExtent(label));
+		sorted_specials_.push_back({ &i.second, label, {} });
 	}
+	std::sort(sorted_specials_.begin(), sorted_specials_.end(), [](const auto& a, const auto& b) {
+		return a.special->order() < b.special->order();
+	});
+
+	filterSpecials();
 	Expand(root_);
 
 	// Bind events
@@ -117,23 +124,17 @@ void ActionSpecialTreeView::showSpecial(int special, bool focus)
 		return;
 	}
 
-	// Go through item groups
-	for (auto& group : groups_)
+	// Go through every item
+	for (const auto& i : sorted_specials_)
 	{
-		// Go through group items
-		for (int b = 0; b < GetChildCount(group.item); b++)
+		// Select+show if match
+		if (i.special->number() == special)
 		{
-			auto item = GetNthChild(group.item, b);
-
-			// Select+show if match
-			if (specialNumber(item) == special)
-			{
-				EnsureVisible(item);
-				Select(item);
-				if (focus)
-					SetFocus();
-				return;
-			}
+			EnsureVisible(i.item);
+			Select(i.item);
+			if (focus)
+				SetFocus();
+			return;
 		}
 	}
 }
@@ -148,6 +149,107 @@ int ActionSpecialTreeView::selectedSpecial() const
 		return specialNumber(item);
 	else
 		return -1;
+}
+
+// -----------------------------------------------------------------------------
+// Limit the visible specials, based on a filter string.  If it's blank or
+// numeric, show everything and select that special; otherwise, split it on
+// whitespace, only show specials whose names contain each word, and select the
+// first visible special
+// -----------------------------------------------------------------------------
+void ActionSpecialTreeView::filterSpecials(string filter)
+{
+	// Unfortunately, there's no filtering on a wxDataViewTreeCtrl, so we must empty the tree (of
+	// leaves only, not groups) and then repopulate it
+	for (auto& i : sorted_specials_)
+	{
+		if (i.item.IsOk())
+		{
+			DeleteItem(i.item);
+			i.item = wxDataViewItem(nullptr);
+		}
+	}
+
+	const int current_special = selectedSpecial();
+	bool current_visible = false;
+	bool show_everything = false;
+	int typed_special = -1;
+	vector<string_view> filter_words;
+	if (current_special == 0)
+		current_visible = true;
+
+	// Check what kind of filter we have: nothing, a number, or text
+	strutil::trimIP(filter);
+	if (filter.empty())
+		show_everything = true;
+	else
+	{
+		// See if it's a number first
+		const auto result = std::from_chars(filter.data(), filter.data() + filter.size(), typed_special, 10);
+		// This is a weird API
+		if (result.ec == std::errc())
+			show_everything = true;
+	}
+
+	if (! show_everything)
+		// Split on spaces and filter by name
+		filter_words = strutil::splitV(filter, ' ', true);
+
+	// Now add the items back to the tree, skipping any that don't match the filter
+	for (auto& i : sorted_specials_)
+	{
+		bool show = true;
+		for (const auto& word : filter_words)
+		{
+			if (! strutil::containsCI(i.special->name(), word))
+			{
+				show = false;
+				break;
+			}
+		}
+		if (! show)
+			continue;
+
+		if (i.special->number() == current_special)
+			current_visible = true;
+		i.item = AppendItem(getGroup(i.special->group()), i.label);
+	}
+
+	// If we're filtering, expand all the groups
+	if (! show_everything)
+	{
+		for (const auto& g : groups_)
+		{
+			Expand(g.item);
+		}
+	}
+
+	// If a number was typed, select that
+	if (typed_special >= 0)
+		showSpecial(typed_special, false);
+	// If not, but the previous selection is still visible, re-select it
+	else if (current_special != 0 && current_visible)
+		showSpecial(current_special, false);
+	// Otherwise, select the first available special
+	else
+	{
+		for (const auto& i : sorted_specials_)
+		{
+			if (i.item.IsOk())
+			{
+				Select(i.item);
+				EnsureVisible(i.item);
+				break;
+			}
+		}
+	}
+
+	// If nothing was a viable selection, fall back to 0
+	if (! GetSelection().IsOk())
+	{
+		Select(item_none_);
+		EnsureVisible(item_none_);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -575,17 +677,18 @@ public:
 		slider_control_ = new wxSlider(this, -1, 0, 0, 255);
 		slider_control_->SetLineSize(2);
 		slider_control_->SetPageSize(8);
-		// Add a tic for every predefined value
+		// Add a tick for every predefined value
 		for (const auto& custom_flag : arg.custom_flags)
 			slider_control_->SetTick(custom_flag.value);
 		slider_control_->Bind(wxEVT_SLIDER, &ArgsSpeedControl::onSlide, this);
 		speed_label_ = new wxStaticText(this, -1, "");
 
 		GetSizer()->Detach(choice_control_);
-		row->Add(choice_control_, wxSizerFlags(0).Expand());
+		row->Add(choice_control_, wxSizerFlags(0).Center());
 		row->AddSpacer(ui::pad());
-		row->Add(slider_control_, wxSizerFlags(1).Align(wxALIGN_CENTER_VERTICAL));
+		row->Add(slider_control_, wxSizerFlags(1).Center());
 		GetSizer()->Add(row, wxSizerFlags(1).Expand());
+		GetSizer()->AddSpacer(ui::pad());
 		GetSizer()->Add(speed_label_, wxSizerFlags(1).Expand());
 
 		// The label has its longest value at 0, which makes for an appropriate
@@ -622,6 +725,71 @@ protected:
 				value / 8.0,
 				// A tic is 28ms, slightly less than 1/35 of a second
 				value / 8.0 * 1000.0 / 28.0));
+		}
+	}
+};
+
+// -----------------------------------------------------------------------------
+// ArgsDelayControl Class
+//
+// Arg control that shows a slider for selecting an amount of time, and also
+// converts it to seconds.
+// -----------------------------------------------------------------------------
+class ArgsDelayControl : public ArgsChoiceControl
+{
+public:
+	ArgsDelayControl(wxWindow* parent, const game::Arg& arg, int units_per_sec)
+		: ArgsChoiceControl(parent, arg), units_per_sec_(units_per_sec)
+	{
+		auto row = new wxBoxSizer(wxHORIZONTAL);
+
+		slider_control_ = new wxSlider(this, -1, 0, 0, 255);
+		slider_control_->SetLineSize(2);
+		slider_control_->SetPageSize(8);
+		// Add a tick for every predefined value
+		for (const auto& custom_flag : arg.custom_flags)
+			slider_control_->SetTick(custom_flag.value);
+		slider_control_->Bind(wxEVT_SLIDER, &ArgsDelayControl::onSlide, this);
+		delay_label_ = new wxStaticText(this, -1, "");
+
+		GetSizer()->Detach(choice_control_);
+		row->Add(choice_control_, wxSizerFlags(0).Center());
+		row->AddSpacer(ui::pad());
+		row->Add(slider_control_, wxSizerFlags(1).Center());
+		GetSizer()->Add(row, wxSizerFlags(1).Expand());
+		GetSizer()->AddSpacer(ui::pad());
+		GetSizer()->Add(delay_label_, wxSizerFlags(1).Expand());
+
+		// The label has its longest value at 0, which makes for an appropriate
+		// minimum size
+		syncControls(0);
+
+		wxWindowBase::Fit();
+	}
+
+	// Set the value in the textbox
+	void setArgValue(long val) override { syncControls(val); }
+
+protected:
+	wxSlider*     slider_control_;
+	wxStaticText* delay_label_;
+	int           units_per_sec_;
+
+	void onSlide(wxCommandEvent& event) { syncControls(slider_control_->GetValue()); }
+
+	void syncControls(int value)
+	{
+		ArgsChoiceControl::setArgValue(value);
+
+		if (value < 0)
+		{
+			slider_control_->SetValue(0);
+			delay_label_->SetLabel("");
+		}
+		else
+		{
+			slider_control_->SetValue(value);
+			delay_label_->SetLabel(fmt::format("{:.2f} seconds", (float)value / units_per_sec_));
 		}
 	}
 };
@@ -704,6 +872,10 @@ void ArgsPanel::setup(const game::ArgSpec& args, bool udmf)
 				control_args_[a] = new ArgsFlagsControl(this, arg, !udmf);
 			else if (arg.type == Arg::Type::Speed)
 				control_args_[a] = new ArgsSpeedControl(this, arg);
+			else if (arg.type == Arg::Type::Tics)
+				control_args_[a] = new ArgsDelayControl(this, arg, 35);
+			else if (arg.type == Arg::Type::Octics)
+				control_args_[a] = new ArgsDelayControl(this, arg, 8);
 			else
 				control_args_[a] = new ArgsTextControl(this, arg, !udmf);
 		}
@@ -874,10 +1046,25 @@ void ActionSpecialPanel::setupSpecialPanel()
 	auto sizer            = new wxBoxSizer(wxVERTICAL);
 
 	// Special box
-	text_special_ = new NumberTextCtrl(panel_action_special_);
+	text_special_ = new wxTextCtrl(panel_action_special_, wxID_ANY);
 	sizer->Add(text_special_, 0, wxEXPAND | wxBOTTOM, ui::pad());
-	text_special_->Bind(
-		wxEVT_TEXT, [&](wxCommandEvent& e) { tree_specials_->showSpecial(text_special_->number(), false); });
+	// Typing in the box acts as a filter
+	text_special_->Bind(wxEVT_TEXT, [&](wxCommandEvent& e) {
+		// This method calls Select on itself, but we don't want to treat that as a real selection
+		// change, or we'll alter the text and recurse into it.  Disable the event while calling it
+		auto selection = selectedSpecial();
+		ignore_select_event_ = true;
+		tree_specials_->filterSpecials(text_special_->GetValue().ToStdString());
+		ignore_select_event_ = false;
+
+		if (selection != selectedSpecial())
+			updateArgsPanel();
+	});
+	// Focusing the text also select-alls; if you leave and return you probably want to start over,
+	// not make small edits
+	text_special_->Bind(wxEVT_SET_FOCUS, [&](wxFocusEvent& e) {
+		text_special_->SetSelection(-1, -1);
+	});
 
 	// Action specials tree
 	tree_specials_ = new ActionSpecialTreeView(panel_action_special_);
@@ -987,12 +1174,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	tree_specials_->showSpecial(special, false);
 	text_special_->SetValue(wxString::Format("%d", special));
 
-	// Setup args if any
-	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
-	}
+	updateArgsPanel();
 }
 
 // -----------------------------------------------------------------------------
@@ -1240,6 +1422,18 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Update the arg names/types on the args panel
+// -----------------------------------------------------------------------------
+void ActionSpecialPanel::updateArgsPanel()
+{
+	if (panel_args_)
+	{
+		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
+		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -1262,8 +1456,8 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 {
-	if ((game::configuration().featureSupported(game::Feature::Boom) && rb_generalised_->GetValue())
-		|| selectedSpecial() < 0)
+	if (ignore_select_event_ || selectedSpecial() < 0 ||
+		(game::configuration().featureSupported(game::Feature::Boom) && rb_generalised_->GetValue()))
 	{
 		e.Skip();
 		return;
@@ -1272,11 +1466,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 	// Set special # text box
 	text_special_->SetValue(wxString::Format("%d", selectedSpecial()));
 
-	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
-	}
+	updateArgsPanel();
 }
 
 // -----------------------------------------------------------------------------
@@ -1293,12 +1483,9 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent& e)
 	}
 
 	// Jump to args tab, if there is one
+	updateArgsPanel();
 	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
 		panel_args_->SetFocus();
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1361,11 +1548,11 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 		sizer->Add(stc_tabs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
 
 		// Special panel
-		panel_special_ = new ActionSpecialPanel(stc_tabs_);
+		panel_special_ = new ActionSpecialPanel(this);
 		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_special_), "Special");
 
 		// Args panel
-		panel_args_ = new ArgsPanel(stc_tabs_);
+		panel_args_ = new ArgsPanel(this);
 		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), "Args");
 		panel_special_->setArgsPanel(panel_args_);
 	}
@@ -1385,11 +1572,6 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 void ActionSpecialDialog::setSpecial(int special) const
 {
 	panel_special_->setSpecial(special);
-	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(special).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
-	}
 }
 
 // -----------------------------------------------------------------------------

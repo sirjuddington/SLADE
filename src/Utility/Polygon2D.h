@@ -32,6 +32,7 @@ public:
 	void setColour(float r, float g, float b, float a);
 	bool hasPolygon() const { return !subpolys_.empty(); }
 	int  vboUpdate() const { return vbo_update_; }
+	void invalidateVBO() { vbo_update_ = 2; }
 	void setZ(float z);
 	void setZ(Plane plane);
 

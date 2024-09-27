@@ -9,6 +9,7 @@ namespace slade
 {
 namespace game
 {
+	class ActionSpecial;
 	struct ArgSpec;
 }
 
@@ -29,11 +30,21 @@ public:
 	int  specialNumber(wxDataViewItem item) const;
 	void showSpecial(int special, bool focus = true);
 	int  selectedSpecial() const;
+	void filterSpecials(string filter = "");
 
 private:
 	wxDataViewItem root_;
 	wxDataViewItem item_none_;
 	wxDialog*      parent_dialog_ = nullptr;
+	bool           is_filtered_ = false;
+
+	struct ASTVRow
+	{
+		const game::ActionSpecial* special;
+		wxString                   label;
+		wxDataViewItem             item;
+	};
+	vector<ASTVRow> sorted_specials_ = {};
 
 	struct ASTVGroup
 	{
@@ -80,6 +91,7 @@ public:
 	void showGeneralised(bool show = true);
 	void applyTo(vector<MapObject*>& lines, bool apply_special);
 	void openLines(vector<MapObject*>& lines);
+	void updateArgsPanel();
 
 	void onRadioButtonChanged(wxCommandEvent& e);
 	void onSpecialSelectionChanged(wxDataViewEvent& e);
@@ -95,8 +107,9 @@ private:
 	ArgsPanel*             panel_args_           = nullptr;
 	wxChoice*              choice_trigger_       = nullptr;
 	bool                   show_trigger_         = false;
-	NumberTextCtrl*        text_special_         = nullptr;
+	wxTextCtrl*            text_special_         = nullptr;
 	wxButton*              btn_preset_           = nullptr;
+	bool                   ignore_select_event_  = false;
 
 	struct FlagHolder
 	{

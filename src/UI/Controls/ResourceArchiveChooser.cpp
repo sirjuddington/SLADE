@@ -34,6 +34,7 @@
 #include "ResourceArchiveChooser.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "MainEditor/MainEditor.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -135,7 +136,7 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 	filedialog::FDInfo info;
 	if (filedialog::openFile(info, "Open Resource Archive", app::archiveManager().getArchiveExtensionsString(), this))
 	{
-		ui::showSplash("Opening Resource Archive", true);
+		ui::showSplash("Opening Resource Archive", true, maineditor::windowWx());
 		auto na = app::archiveManager().openArchive(info.filenames[0], true, true);
 		ui::hideSplash();
 		if (na)

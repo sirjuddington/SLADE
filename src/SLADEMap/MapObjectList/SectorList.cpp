@@ -80,6 +80,15 @@ void SectorList::remove(unsigned index)
 	usage_tex_[strutil::upper(objects_[index]->ceiling().texture)] -= 1;
 
 	MapObjectList::remove(index);
+
+	// The last sector just moved into the deleted sector's space.  Its geometry didn't change, but
+	// because its index did, its VBO is completely invalid now
+	if (index < objects_.size())
+	{
+		auto poly = objects_[index]->polygon();
+		if (poly)
+			poly->invalidateVBO();
+	}
 }
 
 // -----------------------------------------------------------------------------

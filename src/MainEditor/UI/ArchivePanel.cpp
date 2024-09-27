@@ -966,7 +966,7 @@ bool ArchivePanel::importFiles()
 		// Go through the list of files
 		bool ok = true;
 		entry_tree_->Freeze();
-		ui::showSplash("Importing Files...", true);
+		ui::showSplash("Importing Files...", true, maineditor::windowWx());
 		for (size_t a = 0; a < info.filenames.size(); a++)
 		{
 			// Get filename
@@ -1027,7 +1027,7 @@ bool ArchivePanel::importDir()
 		undo_manager_->beginRecord("Import Directory");
 
 		entry_tree_->Freeze();
-		ui::showSplash("Importing Files...", true);
+		ui::showSplash("Importing Files...", true, maineditor::windowWx());
 
 		// Import the directory
 		auto ok = archive->importDir(path, archive_dir_ignore_hidden, dir);
@@ -1085,7 +1085,7 @@ bool ArchivePanel::buildArchive()
 	filedialog::FDInfo info;
 	if (filedialog::saveFile(info, "Build Archive", zip.fileExtensionString(), this))
 	{
-		ui::showSplash("Building " + info.filenames[0], true);
+		ui::showSplash("Building " + info.filenames[0], true, maineditor::windowWx());
 		ui::setSplashProgress(0.0f);
 
 		// prevent for "archive in archive" when saving in the current directory
@@ -2016,7 +2016,7 @@ bool ArchivePanel::gfxConvert() const
 	gcd.ShowModal();
 
 	// Show splash window
-	ui::showSplash("Writing converted image data...", true);
+	ui::showSplash("Writing converted image data...", true, maineditor::windowWx());
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Gfx Format Conversion");
@@ -2734,7 +2734,7 @@ bool ArchivePanel::optimizePNG() const
 	// Get selected entries
 	auto selection = entry_tree_->selectedEntries();
 
-	ui::showSplash("Running external programs, please wait...", true);
+	ui::showSplash("Running external programs, please wait...", true, maineditor::windowWx());
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Optimize PNG");
