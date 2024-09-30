@@ -136,7 +136,7 @@ void log::init()
 	info(fmt::format("Version {}", app::version().toString()));
 	if (!global::sc_rev.empty())
 		info(fmt::format("Git Revision {}", global::sc_rev));
-    if (app::platform() == app::Platform::Windows)
+	if (app::platform() == app::Platform::Windows)
 		info(fmt::format("{} Windows Build", app::isWin64Build() ? "64bit" : "32bit"));
 	info(fmt::format("Written by Simon Judd, 2008-{:%Y}", *tm));
 #ifdef SFML_VERSION_MAJOR
@@ -192,7 +192,8 @@ void log::message(MessageType type, string_view text)
 	log.emplace_back(text, type, *std::localtime(&t));
 
 	// Write to log file
-	if (log_file.is_open() && type != MessageType::Console) {
+	if (log_file.is_open() && type != MessageType::Console)
+	{
 		sf::err() << log.back().formattedMessageLine() << "\n";
 		sf::err().flush();
 	}

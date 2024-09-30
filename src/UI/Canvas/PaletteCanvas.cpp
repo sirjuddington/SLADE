@@ -226,11 +226,11 @@ void PaletteCanvas::onMouseLeftDown(wxMouseEvent& e)
 			cols = 32;
 		}
 		const wxSize contentSize = GetSize() * GetContentScaleFactor();
-		int x_size = contentSize.x / cols;
-		int y_size = contentSize.y / rows;
-		int size   = std::min<int>(x_size, y_size);
-		int x      = ( e.GetX() * GetContentScaleFactor() ) / size;
-		int y      = ( e.GetY() * GetContentScaleFactor() ) / size;
+		int          x_size      = contentSize.x / cols;
+		int          y_size      = contentSize.y / rows;
+		int          size        = std::min<int>(x_size, y_size);
+		int          x           = (e.GetX() * GetContentScaleFactor()) / size;
+		int          y           = (e.GetY() * GetContentScaleFactor()) / size;
 
 		// If it was within the palette box, select the cell
 		if (x >= 0 && x < cols && y >= 0 && y < rows)
@@ -272,11 +272,11 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 			cols = 32;
 		}
 		const wxSize contentSize = GetSize() * GetContentScaleFactor();
-		int x_size = contentSize.x / cols;
-		int y_size = contentSize.y / rows;
-		int size   = std::min<int>(x_size, y_size);
-		int x      = ( e.GetX() * GetContentScaleFactor() ) / size;
-		int y      = ( e.GetY() * GetContentScaleFactor() ) / size;
+		int          x_size      = contentSize.x / cols;
+		int          y_size      = contentSize.y / rows;
+		int          size        = std::min<int>(x_size, y_size);
+		int          x           = (e.GetX() * GetContentScaleFactor()) / size;
+		int          y           = (e.GetY() * GetContentScaleFactor()) / size;
 
 		// Set selection accordingly
 		if (x >= 0 && x < cols && y >= 0 && y < rows)

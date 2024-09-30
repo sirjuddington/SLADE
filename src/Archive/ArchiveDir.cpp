@@ -71,7 +71,8 @@ void buildDirList(vector<shared_ptr<ArchiveDir>>& list, ArchiveDir const* dir)
 // ArchiveDir class constructor
 // -----------------------------------------------------------------------------
 ArchiveDir::ArchiveDir(string_view name, const shared_ptr<ArchiveDir>& parent, Archive* archive) :
-	archive_{ archive }, parent_dir_{ parent }
+	archive_{ archive },
+	parent_dir_{ parent }
 {
 	// Init dir entry
 	dir_entry_          = std::make_unique<ArchiveEntry>(name);

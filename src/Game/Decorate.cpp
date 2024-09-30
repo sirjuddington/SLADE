@@ -265,10 +265,10 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 	else
 		tz.next().toInt(ednum);
 
-	PropertyList found_props;
-	bool         available       = false;
-	bool         filters_present = false;
-	string       group;
+	PropertyList                      found_props;
+	bool                              available       = false;
+	bool                              filters_present = false;
+	string                            group;
 	vector<std::pair<string, string>> editor_properties;
 
 	// Skip "native" keyword if present
@@ -280,7 +280,8 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 		while (!tz.check("}") && !tz.atEnd())
 		{
 			auto token = tz.peekToken();
-			if (strutil::startsWith(token, "//$")) {
+			if (strutil::startsWith(token, "//$"))
+			{
 				// Doom Builder magic editor comment
 				editor_properties.emplace_back(Tokenizer::parseEditorComment(token));
 				tz.advToNextLine();

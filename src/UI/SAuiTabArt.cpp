@@ -112,7 +112,9 @@ void IndentPressedBitmap(wxRect* rect, int button_state)
 // -----------------------------------------------------------------------------
 
 SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs) :
-	close_buttons_{ close_buttons }, main_tabs_{ main_tabs }, padding_(tabs_condensed ? ui::scalePx(4) : ui::scalePx(8))
+	close_buttons_{ close_buttons },
+	main_tabs_{ main_tabs },
+	padding_(tabs_condensed ? ui::scalePx(4) : ui::scalePx(8))
 {
 	m_normalFont   = *wxNORMAL_FONT;
 	m_selectedFont = *wxNORMAL_FONT;
@@ -471,13 +473,13 @@ wxSize SAuiTabArt::GetTabSize(
 	int*                  x_extent)
 #else
 wxSize SAuiTabArt::GetTabSize(
-	wxDC& dc,
-	wxWindow* WXUNUSED(wnd),
+	wxDC&           dc,
+	wxWindow*       WXUNUSED(wnd),
 	const wxString& caption,
 	const wxBitmap& bitmap,
-	bool WXUNUSED(active),
-	int close_button_state,
-	int* x_extent)
+	bool            WXUNUSED(active),
+	int             close_button_state,
+	int*            x_extent)
 #endif
 {
 	wxCoord measured_textx, measured_texty, tmp;

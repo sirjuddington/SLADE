@@ -88,7 +88,8 @@ class TextureClipboardItem : public ClipboardItem
 {
 public:
 	TextureClipboardItem(const CTexture& texture, Archive* parent) :
-		ClipboardItem(Type::CompositeTexture), texture_{ new CTexture() }
+		ClipboardItem(Type::CompositeTexture),
+		texture_{ new CTexture() }
 	{
 		// Create/copy texture
 		texture_->copyTexture(texture);
@@ -157,7 +158,9 @@ class NewTextureDialog : public wxDialog
 {
 public:
 	NewTextureDialog(wxWindow* parent, TextureXEditor* editor, TextureXList* texturex) :
-		wxDialog(parent, -1, "New Texture"), editor_{ editor }, texturex_{ texturex }
+		wxDialog(parent, -1, "New Texture"),
+		editor_{ editor },
+		texturex_{ texturex }
 	{
 		wxutil::setWindowIcon(this, "tex_new");
 
@@ -307,7 +310,8 @@ private:
 // TextureXListView class constructor
 // -----------------------------------------------------------------------------
 TextureXListView::TextureXListView(wxWindow* parent, TextureXList* texturex) :
-	VirtualListView{ parent }, texturex_{ texturex }
+	VirtualListView{ parent },
+	texturex_{ texturex }
 {
 	// Add columns
 	InsertColumn(0, "Name");
@@ -488,7 +492,9 @@ class TextureSwapUS : public UndoStep
 {
 public:
 	TextureSwapUS(TextureXList& texturex, int index1, int index2) :
-		texturex_(texturex), index1_(index1), index2_(index2)
+		texturex_(texturex),
+		index1_(index1),
+		index2_(index2)
 	{
 	}
 	~TextureSwapUS() override = default;
@@ -519,7 +525,10 @@ public:
 
 	// Texture Deleted
 	TextureCreateDeleteUS(TextureXPanel* tx_panel, unique_ptr<CTexture> tex_removed, int removed_index) :
-		tx_panel_{ tx_panel }, tex_removed_{ std::move(tex_removed) }, index_{ removed_index }, created_{ false }
+		tx_panel_{ tx_panel },
+		tex_removed_{ std::move(tex_removed) },
+		index_{ removed_index },
+		created_{ false }
 	{
 	}
 
@@ -612,7 +621,9 @@ private:
 // TextureXPanel class constructor
 // -----------------------------------------------------------------------------
 TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
-	wxPanel{ parent, -1 }, tx_editor_{ &tx_editor }, undo_manager_{ tx_editor.undoManager() }
+	wxPanel{ parent, -1 },
+	tx_editor_{ &tx_editor },
+	undo_manager_{ tx_editor.undoManager() }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);

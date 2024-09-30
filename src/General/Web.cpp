@@ -73,12 +73,14 @@ string web::getHttp(const string& host, const string& uri)
 // -----------------------------------------------------------------------------
 void web::getHttpAsync(const string& host, const string& uri, wxEvtHandler* event_handler)
 {
-	std::thread thread([=]() {
-		// Queue wx event with http request response
-		auto event = new wxThreadEvent(wxEVT_THREAD_WEBGET_COMPLETED);
-		event->SetString(getHttp(host, uri));
-		wxQueueEvent(event_handler, event);
-	});
+	std::thread thread(
+		[=]()
+		{
+			// Queue wx event with http request response
+			auto event = new wxThreadEvent(wxEVT_THREAD_WEBGET_COMPLETED);
+			event->SetString(getHttp(host, uri));
+			wxQueueEvent(event_handler, event);
+		});
 
 	thread.detach();
 }

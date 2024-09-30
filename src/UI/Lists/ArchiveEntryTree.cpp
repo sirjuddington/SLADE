@@ -865,7 +865,8 @@ ArchiveEntryTree::ArchiveEntryTree(
 	shared_ptr<Archive> archive,
 	UndoManager*        undo_manager,
 	bool                force_list) :
-	wxDataViewCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE), archive_{ archive }
+	wxDataViewCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE),
+	archive_{ archive }
 {
 	// Init settings
 	SetRowHeight(ui::scalePx(elist_icon_size + (elist_icon_padding * 2) + 2));

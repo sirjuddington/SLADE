@@ -108,10 +108,13 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 	showShapeOptions(shapedraw_shape);
 
 	// Bind events
-	choice_shape_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
-		shapedraw_shape = choice_shape_->GetSelection();
-		showShapeOptions(shapedraw_shape);
-	});
+	choice_shape_->Bind(
+		wxEVT_CHOICE,
+		[&](wxCommandEvent&)
+		{
+			shapedraw_shape = choice_shape_->GetSelection();
+			showShapeOptions(shapedraw_shape);
+		});
 	cb_centered_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { shapedraw_centered = cb_centered_->GetValue(); });
 	cb_lockratio_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { shapedraw_lockratio = cb_lockratio_->GetValue(); });
 	spin_sides_->Bind(wxEVT_SPINCTRL, [&](wxCommandEvent&) { shapedraw_sides = spin_sides_->GetValue(); });

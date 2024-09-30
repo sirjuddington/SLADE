@@ -171,9 +171,9 @@ void MapCanvas::mouseLook3d()
 		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
 			// Get relative mouse movement (scale with dpi on macOS and Linux)
-			const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux); 
-			const double scale = useScaleFactor ? GetContentScaleFactor() : 1.;
-			const double threshold = scale - 1.0;
+			const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux);
+			const double scale          = useScaleFactor ? GetContentScaleFactor() : 1.;
+			const double threshold      = scale - 1.0;
 
 			wxRealPoint mouse_pos = wxGetMousePosition();
 			mouse_pos.x *= scale;

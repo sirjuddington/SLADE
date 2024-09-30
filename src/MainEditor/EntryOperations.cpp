@@ -1135,8 +1135,8 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		{
 			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
 			dlg.setMessage(
-				success ? "The following errors were encountered while compiling, please fix them and recompile:" :
-						  "Compiler output shown below: ");
+				success ? "The following errors were encountered while compiling, please fix them and recompile:"
+						: "Compiler output shown below: ");
 			dlg.setExt(errors);
 			dlg.ShowModal();
 		}

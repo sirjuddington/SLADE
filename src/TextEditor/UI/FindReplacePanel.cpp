@@ -60,7 +60,8 @@ EXTERN_CVAR(Bool, txed_fr_matchword_start)
 // FindReplacePanel class constructor
 // -----------------------------------------------------------------------------
 FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor) :
-	wxPanel(parent, -1), text_editor_(text_editor)
+	wxPanel(parent, -1),
+	text_editor_(text_editor)
 {
 	SetSizer(new wxBoxSizer(wxVERTICAL));
 

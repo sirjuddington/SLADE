@@ -73,7 +73,9 @@ namespace zscript
 	{
 	public:
 		Function(string_view name = {}, string_view def_class = {}) :
-			Identifier(name), return_type_{ "void" }, base_class_{ def_class }
+			Identifier(name),
+			return_type_{ "void" },
+			base_class_{ def_class }
 		{
 		}
 

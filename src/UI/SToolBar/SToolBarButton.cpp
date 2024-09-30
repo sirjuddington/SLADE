@@ -227,7 +227,7 @@ bool SToolBarButton::updateState(int mouse_event)
 	else if (IsShownOnScreen() && IsEnabled())
 	{
 		auto mousePos = ScreenToClient(wxGetMousePosition());
-		auto rect = wxRect(GetSize());
+		auto rect     = wxRect(GetSize());
 
 		if (rect.Contains(mousePos))
 		{
@@ -433,7 +433,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 {
 	auto parent_window = dynamic_cast<wxFrame*>(wxGetTopLevelParent(this));
-	int  mouse_event = 0;
+	int  mouse_event   = 0;
 
 	// Mouse enter
 	if (e.GetEventType() == wxEVT_ENTER_WINDOW)

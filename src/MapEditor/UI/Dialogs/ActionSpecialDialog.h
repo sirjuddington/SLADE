@@ -11,7 +11,7 @@ namespace game
 {
 	class ActionSpecial;
 	struct ArgSpec;
-}
+} // namespace game
 
 class ArgsControl;
 class GenLineSpecialPanel;
@@ -36,7 +36,7 @@ private:
 	wxDataViewItem root_;
 	wxDataViewItem item_none_;
 	wxDialog*      parent_dialog_ = nullptr;
-	bool           is_filtered_ = false;
+	bool           is_filtered_   = false;
 
 	struct ASTVRow
 	{

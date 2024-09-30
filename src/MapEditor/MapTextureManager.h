@@ -46,7 +46,12 @@ public:
 			string_view path,
 			unsigned    index     = 0,
 			string_view long_name = "") :
-			short_name(short_name), category(category), archive(archive), path(path), index(index), long_name(long_name)
+			short_name(short_name),
+			category(category),
+			archive(archive),
+			path(path),
+			index(index),
+			long_name(long_name)
 		{
 		}
 	};

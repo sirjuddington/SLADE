@@ -153,7 +153,9 @@ public:
 // SToolBarGroup class constructor
 // -----------------------------------------------------------------------------
 SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_name) :
-	wxPanel(parent, -1), name_{ name }, orientation_{ parent->orientation() }
+	wxPanel(parent, -1),
+	name_{ name },
+	orientation_{ parent->orientation() }
 {
 	// Check if hidden
 	wxString tb_hidden = toolbars_hidden;
@@ -308,8 +310,8 @@ void SToolBarGroup::addSeparator()
 {
 	bool horizontal = orientation_ == wxHORIZONTAL;
 
-	auto* sep = horizontal ? static_cast<wxWindow*>(new SToolBarHSeparator(this)) :
-							 static_cast<wxWindow*>(new SToolBarVSeparator(this));
+	auto* sep = horizontal ? static_cast<wxWindow*>(new SToolBarHSeparator(this))
+						   : static_cast<wxWindow*>(new SToolBarVSeparator(this));
 
 	if (horizontal)
 		GetSizer()->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::px(ui::Size::PadMinimum));
@@ -431,7 +433,9 @@ void SToolBarGroup::onButtonClicked(wxCommandEvent& e)
 // SToolBar class constructor
 // -----------------------------------------------------------------------------
 SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientation) :
-	wxPanel(parent, -1), main_toolbar_{ main_toolbar }, orientation_{ orientation }
+	wxPanel(parent, -1),
+	main_toolbar_{ main_toolbar },
+	orientation_{ orientation }
 {
 	// Enable double buffering to avoid flickering
 #ifdef __WXMSW__

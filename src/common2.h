@@ -6,8 +6,7 @@
 //
 
 // SFML
-#include <SFML/Window.hpp>
 #include <SFML/Audio.hpp>
+#include <SFML/Window.hpp>
 
 #endif // COMMON2_H
-

@@ -128,7 +128,8 @@ TranslationEditorDialog::TranslationEditorDialog(
 	const Palette&  pal,
 	const wxString& title,
 	SImage*         preview_image) :
-	wxDialog(parent, -1, title), palette_{ pal }
+	wxDialog(parent, -1, title),
+	palette_{ pal }
 {
 	// Setup preview image
 	if (preview_image)

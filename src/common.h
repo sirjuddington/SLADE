@@ -57,8 +57,8 @@
 #include <wx/panel.h>
 #include <wx/popupwin.h>
 #include <wx/process.h>
-#include <wx/propgrid/property.h>
 #include <wx/propgrid/advprops.h>
+#include <wx/propgrid/property.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/protocol/http.h>
 #include <wx/ptr_scpd.h>
@@ -135,15 +135,14 @@
 #include "thirdparty/sigslot/signal.hpp"
 
 // C++
-#include <map>
-#include <vector>
-#include <functional>
 #include <algorithm>
-#include <set>
 #include <cmath>
+#include <functional>
+#include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <unordered_map>
+#include <vector>
 
 #endif // COMMON_H
-

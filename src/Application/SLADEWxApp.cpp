@@ -304,8 +304,8 @@ public:
 	void onBtnPostReport(wxCommandEvent& e)
 	{
 		auto url_base = "https://github.com/sirjuddington/SLADE/issues/new?labels=crash+bug&template=crash.yml";
-		auto version  = global::sc_rev.empty() ? app::version().toString() :
-												 app::version().toString() + " " + global::sc_rev;
+		auto version  = global::sc_rev.empty() ? app::version().toString()
+											   : app::version().toString() + " " + global::sc_rev;
 
 		wxURL url(wxString::Format("%s&version=%s&crashinfo=%s", url_base, version, trace_));
 

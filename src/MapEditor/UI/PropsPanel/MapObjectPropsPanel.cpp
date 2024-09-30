@@ -63,7 +63,8 @@ CVAR(Bool, mobj_props_auto_apply, false, CVar::Flag::Save)
 // MapObjectPropsPanel class constructor
 // -----------------------------------------------------------------------------
 MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
-	PropsPanelBase{ parent }, no_apply_{ no_apply }
+	PropsPanelBase{ parent },
+	no_apply_{ no_apply }
 {
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -148,13 +149,14 @@ wxPropertyGrid* MapObjectPropsPanel::createPropGrid()
 
 	// wxPropertyGrid is very conservative about not stealing focus, and won't do it even if you
 	// explicitly click on the category column, which doesn't make sense
-	propgrid->Bind(wxEVT_LEFT_DOWN, [propgrid](wxMouseEvent& e) {
-		propgrid->SetFocus();
-		e.Skip();
-	});
-	propgrid->Bind(wxEVT_KEY_DOWN, [this, propgrid](wxKeyEvent& e) {
-		onPropGridKeyDown(e, propgrid);
-	});
+	propgrid->Bind(
+		wxEVT_LEFT_DOWN,
+		[propgrid](wxMouseEvent& e)
+		{
+			propgrid->SetFocus();
+			e.Skip();
+		});
+	propgrid->Bind(wxEVT_KEY_DOWN, [this, propgrid](wxKeyEvent& e) { onPropGridKeyDown(e, propgrid); });
 
 	return propgrid;
 }
@@ -215,9 +217,7 @@ MOPGProperty* MapObjectPropsPanel::addBoolProperty(
 	wxPropertyGrid*     grid,
 	game::UDMFProperty* udmf_prop)
 {
-	return addProperty(
-		group, new MOPGBoolProperty(label, propname),
-		readonly, grid, udmf_prop);
+	return addProperty(group, new MOPGBoolProperty(label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -233,9 +233,7 @@ MOPGProperty* MapObjectPropsPanel::addIntProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	return addProperty(
-		group, new MOPGIntProperty(label, propname),
-		readonly, grid, udmf_prop);
+	return addProperty(group, new MOPGIntProperty(label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -251,9 +249,7 @@ MOPGProperty* MapObjectPropsPanel::addFloatProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	return addProperty(
-		group, new MOPGFloatProperty(label, propname),
-		readonly, grid, udmf_prop);
+	return addProperty(group, new MOPGFloatProperty(label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -269,9 +265,7 @@ MOPGProperty* MapObjectPropsPanel::addStringProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	return addProperty(
-		group, new MOPGStringProperty(label, propname),
-		readonly, grid, udmf_prop);
+	return addProperty(group, new MOPGStringProperty(label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -288,9 +282,7 @@ MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	return addProperty(
-		group, new MOPGLineFlagProperty(label, propname, index),
-		readonly, grid, udmf_prop);
+	return addProperty(group, new MOPGLineFlagProperty(label, propname, index), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -307,9 +299,7 @@ MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(
 	game::UDMFProperty* udmf_prop)
 {
 	// Create property
-	return addProperty(
-		group, new MOPGThingFlagProperty(label, propname, index),
-		readonly, grid, udmf_prop);
+	return addProperty(group, new MOPGThingFlagProperty(label, propname, index), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -326,9 +316,7 @@ MOPGProperty* MapObjectPropsPanel::addTextureProperty(
 	game::UDMFProperty*    udmf_prop)
 {
 	// Create property
-	return addProperty(
-		group, new MOPGTextureProperty(textype, label, propname),
-		readonly, grid, udmf_prop);
+	return addProperty(group, new MOPGTextureProperty(textype, label, propname), readonly, grid, udmf_prop);
 }
 
 // -----------------------------------------------------------------------------
@@ -865,8 +853,8 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_properties_->EnableProperty(pg_properties_->GetGrid()->GetRoot());
 
 	// Setup property grid for the object type
-	bool is_udmf = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
-	bool type_changed = ! (last_type_ == objects[0]->objType() && udmf_ == is_udmf);
+	bool is_udmf      = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
+	bool type_changed = !(last_type_ == objects[0]->objType() && udmf_ == is_udmf);
 	if (is_udmf)
 		setupTypeUDMF(objects[0]->objType());
 	else

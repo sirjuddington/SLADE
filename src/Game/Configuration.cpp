@@ -317,9 +317,8 @@ void Configuration::readUDMFProperties(const ParseTreeNode* block, UDMFPropMap& 
 // Reads a game or port definition from a parsed tree [node]. If [port_section]
 // is true it is a port definition
 // -----------------------------------------------------------------------------
-#define SET_UDMF_FEATURE(feature, field)              \
-	else if (strutil::equalCI(node->name(), #field))( \
-		udmf_features_[static_cast<unsigned>(feature)]) = node->boolValue()
+#define SET_UDMF_FEATURE(feature, field) \
+	else if (strutil::equalCI(node->name(), #field))(udmf_features_[static_cast<unsigned>(feature)]) = node->boolValue()
 #define SET_FEATURE(feature, value) supported_features_[static_cast<unsigned>(feature)] = value
 void Configuration::readGameSection(const ParseTreeNode* node_game, bool port_section)
 {
@@ -1802,19 +1801,19 @@ UDMFPropMap& Configuration::allUDMFProperties(MapObject::Type type)
 // Returns all defined UDMF properties for MapObject type [type], in the order
 // they were defined in the configuration
 // -----------------------------------------------------------------------------
-vector<std::pair<const string, UDMFProperty>*>
-Configuration::sortedUDMFProperties(MapObject::Type type)
+vector<std::pair<const string, UDMFProperty>*> Configuration::sortedUDMFProperties(MapObject::Type type)
 {
-	auto& all_props = allUDMFProperties(type);
+	auto&                                          all_props = allUDMFProperties(type);
 	vector<std::pair<const string, UDMFProperty>*> sorted_props;
 	sorted_props.reserve(all_props.size());
 	for (auto& prop : all_props)
 	{
 		sorted_props.push_back(&prop);
 	}
-	std::sort(sorted_props.begin(), sorted_props.end(), [](const auto& a, const auto& b) {
-		return a->second.order() < b->second.order();
-	});
+	std::sort(
+		sorted_props.begin(),
+		sorted_props.end(),
+		[](const auto& a, const auto& b) { return a->second.order() < b->second.order(); });
 	return sorted_props;
 }
 

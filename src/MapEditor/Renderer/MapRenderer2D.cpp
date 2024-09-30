@@ -1850,8 +1850,8 @@ void MapRenderer2D::renderPathedThings(const vector<MapThing*>& things)
 			drawing::drawArrow(
 				to->getPoint(MapObject::Point::Mid),
 				from->getPoint(MapObject::Point::Mid),
-				(thing_path.type == PathType::DragonBoth || thing_path.type == PathType::Dragon) ? dragoncol :
-                                                                                                   pathedcol,
+				(thing_path.type == PathType::DragonBoth || thing_path.type == PathType::Dragon) ? dragoncol
+																								 : pathedcol,
 				(thing_path.type == PathType::NormalBoth || thing_path.type == PathType::DragonBoth),
 				arrowhead_angle,
 				arrowhead_length);

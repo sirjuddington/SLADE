@@ -44,7 +44,10 @@ private:
 			const wxString& file_path     = "",
 			bool            is_dir        = false,
 			time_t          file_modified = 0) :
-			entry_path{ entry_path }, file_path{ file_path }, is_dir{ is_dir }, file_modified{ file_modified }
+			entry_path{ entry_path },
+			file_path{ file_path },
+			is_dir{ is_dir },
+			file_modified{ file_modified }
 		{
 		}
 	};

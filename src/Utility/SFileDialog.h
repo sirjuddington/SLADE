@@ -67,11 +67,7 @@ bool saveFiles(
 	wxWindow*   parent      = nullptr,
 	int         ext_default = 0);
 
-FDInfo saveFiles(
-	string_view caption,
-	string_view extensions,
-	wxWindow*   parent      = nullptr,
-	int         ext_default = 0);
+FDInfo saveFiles(string_view caption, string_view extensions, wxWindow* parent = nullptr, int ext_default = 0);
 
 string openDirectory(string_view caption, wxWindow* parent = nullptr);
 

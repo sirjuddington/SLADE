@@ -1,7 +1,7 @@
 #pragma once
 
-#include "MapFormatHandler.h"
 #include "DoomMapFormat.h"
+#include "MapFormatHandler.h"
 
 namespace slade
 {

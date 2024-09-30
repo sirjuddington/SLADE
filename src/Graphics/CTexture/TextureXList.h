@@ -69,6 +69,7 @@ public:
 private:
 	vector<unique_ptr<CTexture>> textures_;
 	Format                       txformat_ = Format::Normal;
-	CTexture tex_invalid_{ static_cast<string_view>("INVALID_TEXTURE") }; // Deliberately set the invalid name to >8 characters
+	CTexture                     tex_invalid_{ static_cast<string_view>(
+        "INVALID_TEXTURE") }; // Deliberately set the invalid name to >8 characters
 };
 } // namespace slade

@@ -416,31 +416,33 @@ void game::init()
 	// Load zdoom.pk3 stuff
 	if (wxFileExists(zdoom_pk3_path))
 	{
-		zscript_parse_thread = std::make_unique<std::thread>([=]() {
-			ZipArchive zdoom_pk3;
-			if (!zdoom_pk3.open(zdoom_pk3_path))
-				return;
-
-			// ZScript
-			auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
-
-			if (!zscript_entry)
+		zscript_parse_thread = std::make_unique<std::thread>(
+			[=]()
 			{
-				// Bail out if no entry is found.
-				log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path);
-			}
-			else
-			{
-				zscript_base.parseZScript(zscript_entry);
+				ZipArchive zdoom_pk3;
+				if (!zdoom_pk3.open(zdoom_pk3_path))
+					return;
 
-				auto lang = TextLanguage::fromId("zscript");
-				if (lang)
-					lang->loadZScript(zscript_base);
+				// ZScript
+				auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
 
-				// MapInfo
-				config_current.parseMapInfo(zdoom_pk3);
-			}
-		});
+				if (!zscript_entry)
+				{
+					// Bail out if no entry is found.
+					log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path);
+				}
+				else
+				{
+					zscript_base.parseZScript(zscript_entry);
+
+					auto lang = TextLanguage::fromId("zscript");
+					if (lang)
+						lang->loadZScript(zscript_base);
+
+					// MapInfo
+					config_current.parseMapInfo(zdoom_pk3);
+				}
+			});
 		zscript_parse_thread->detach();
 	}
 

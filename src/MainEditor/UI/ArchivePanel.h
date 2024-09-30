@@ -131,17 +131,17 @@ protected:
 	wxSplitterWindow*     splitter_         = nullptr;
 
 	// Entry panels
-	EntryPanel* cur_area_      = nullptr;
-	EntryPanel* entry_area_    = nullptr;
-	EntryPanel* default_area_  = nullptr;
-	EntryPanel* text_area_     = nullptr;
-	EntryPanel* ansi_area_     = nullptr;
-	EntryPanel* gfx_area_      = nullptr;
-	EntryPanel* pal_area_      = nullptr;
-	EntryPanel* hex_area_      = nullptr;
-	EntryPanel* map_area_      = nullptr;
-	EntryPanel* audio_area_    = nullptr;
-	EntryPanel* data_area_     = nullptr;
+	EntryPanel* cur_area_     = nullptr;
+	EntryPanel* entry_area_   = nullptr;
+	EntryPanel* default_area_ = nullptr;
+	EntryPanel* text_area_    = nullptr;
+	EntryPanel* ansi_area_    = nullptr;
+	EntryPanel* gfx_area_     = nullptr;
+	EntryPanel* pal_area_     = nullptr;
+	EntryPanel* hex_area_     = nullptr;
+	EntryPanel* map_area_     = nullptr;
+	EntryPanel* audio_area_   = nullptr;
+	EntryPanel* data_area_    = nullptr;
 
 	// Signal connections
 	sigslot::scoped_connection sc_archive_saved_;
