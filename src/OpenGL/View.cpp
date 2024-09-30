@@ -54,8 +54,8 @@ using namespace gl;
 // -----------------------------------------------------------------------------
 glm::mat4 View::projectionMatrix(bool y_flipped) const
 {
-	return y_flipped ? glm::ortho(0.0f, static_cast<float>(size_.x), 0.0f, static_cast<float>(size_.y), -1.0f, 1.0f) :
-					   glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f, -1.0f, 1.0f);
+	return y_flipped ? glm::ortho(0.0f, static_cast<float>(size_.x), 0.0f, static_cast<float>(size_.y), -1.0f, 1.0f)
+					 : glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f, -1.0f, 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -275,8 +275,8 @@ bool View::interpolate(double mult, const Vec2d* towards)
 // -----------------------------------------------------------------------------
 double View::canvasX(int screen_x) const
 {
-	return centered_ ? screen_x / scale_inter_.x + offset_inter_.x - size_.x * 0.5 / scale_inter_.x :
-					   screen_x / scale_inter_.x + offset_inter_.x;
+	return centered_ ? screen_x / scale_inter_.x + offset_inter_.x - size_.x * 0.5 / scale_inter_.x
+					 : screen_x / scale_inter_.x + offset_inter_.x;
 }
 
 // -----------------------------------------------------------------------------
@@ -288,8 +288,8 @@ double View::canvasY(int screen_y) const
 	if (y_flipped_)
 		screen_y = size_.y - screen_y;
 
-	return centered_ ? screen_y / scale_inter_.y + offset_inter_.y - size_.y * 0.5 / scale_inter_.y :
-					   screen_y / scale_inter_.y + offset_inter_.y;
+	return centered_ ? screen_y / scale_inter_.y + offset_inter_.y - size_.y * 0.5 / scale_inter_.y
+					 : screen_y / scale_inter_.y + offset_inter_.y;
 }
 
 // -----------------------------------------------------------------------------
@@ -297,8 +297,8 @@ double View::canvasY(int screen_y) const
 // -----------------------------------------------------------------------------
 int View::screenX(double canvas_x) const
 {
-	return centered_ ? math::round((size_.x * 0.5) + ((canvas_x - offset_inter_.x) * scale_inter_.x)) :
-					   math::round((canvas_x - offset_inter_.x) * scale_inter_.x);
+	return centered_ ? math::round((size_.x * 0.5) + ((canvas_x - offset_inter_.x) * scale_inter_.x))
+					 : math::round((canvas_x - offset_inter_.x) * scale_inter_.x);
 }
 
 // -----------------------------------------------------------------------------
@@ -306,8 +306,8 @@ int View::screenX(double canvas_x) const
 // -----------------------------------------------------------------------------
 int View::screenY(double canvas_y) const
 {
-	auto y = centered_ ? math::round((size_.y * 0.5) + ((canvas_y - offset_inter_.y) * scale_inter_.y)) :
-						 math::round((canvas_y - offset_inter_.y) * scale_inter_.y);
+	auto y = centered_ ? math::round((size_.y * 0.5) + ((canvas_y - offset_inter_.y) * scale_inter_.y))
+					   : math::round((canvas_y - offset_inter_.y) * scale_inter_.y);
 
 	return y_flipped_ ? size_.y - y : y;
 }

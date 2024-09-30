@@ -32,10 +32,10 @@
 #include "Main.h"
 #include "Doom32XMapFormat.h"
 #include "Archive/ArchiveEntry.h"
-#include "UI/UI.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
+#include "UI/UI.h"
 
 using namespace slade;
 

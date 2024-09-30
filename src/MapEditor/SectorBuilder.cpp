@@ -705,10 +705,10 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 // -----------------------------------------------------------------------------
 void SectorBuilder::drawResult() const
 {
-	//gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
+	// gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 
 	//// Go through sector edges
-	//for (auto& edge : sector_edges_)
+	// for (auto& edge : sector_edges_)
 	//{
 	//	// Setup colour
 	//	if (edge.front)

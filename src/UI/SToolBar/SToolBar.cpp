@@ -311,8 +311,8 @@ void SToolBarGroup::addSeparator()
 {
 	bool horizontal = orientation_ == wxHORIZONTAL;
 
-	auto* sep = horizontal ? static_cast<wxWindow*>(new SToolBarHSeparator(this)) :
-							 static_cast<wxWindow*>(new SToolBarVSeparator(this));
+	auto* sep = horizontal ? static_cast<wxWindow*>(new SToolBarHSeparator(this))
+						   : static_cast<wxWindow*>(new SToolBarVSeparator(this));
 
 	if (horizontal)
 		GetSizer()->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::padSmall(this));

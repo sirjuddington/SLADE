@@ -138,8 +138,8 @@ public:
 		if (p1.used_in.size() == p2.used_in.size())
 			return left < right;
 		else
-			return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
-												p1.used_in.size() < p2.used_in.size();
+			return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size()
+											  : p1.used_in.size() < p2.used_in.size();
 	}
 
 protected:

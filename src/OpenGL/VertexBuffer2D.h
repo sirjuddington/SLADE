@@ -17,7 +17,9 @@ struct Vertex2D
 	Vertex2D(glm::vec2 position) : position{ position }, colour{}, tex_coord{} {}
 	Vertex2D(glm::vec2 position, glm::vec4 colour) : position{ position }, colour{ colour }, tex_coord{} {}
 	Vertex2D(glm::vec2 position, glm::vec4 colour, glm::vec2 tex_coord) :
-		position{ position }, colour{ colour }, tex_coord{ tex_coord }
+		position{ position },
+		colour{ colour },
+		tex_coord{ tex_coord }
 	{
 	}
 };

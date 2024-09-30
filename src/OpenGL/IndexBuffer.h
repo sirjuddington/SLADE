@@ -7,7 +7,7 @@ namespace slade::gl
 class IndexBuffer
 {
 public:
-	IndexBuffer()  = default;
+	IndexBuffer() = default;
 	~IndexBuffer();
 
 	unsigned ebo() const { return ebo_; }

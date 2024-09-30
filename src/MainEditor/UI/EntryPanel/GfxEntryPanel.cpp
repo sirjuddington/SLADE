@@ -36,7 +36,6 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
-#include "UI/UI.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/Translation.h"
 #include "MainEditor/EntryOperations.h"
@@ -58,6 +57,7 @@
 #include "UI/SBrush.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/UI.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 

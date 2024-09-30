@@ -1,8 +1,8 @@
 
 #include "Main.h"
 #include "VertexBuffer3D.h"
-#include "View.h"
 #include "Utility/Vector.h"
+#include "View.h"
 
 using namespace slade;
 using namespace gl;
@@ -51,10 +51,7 @@ void VertexBuffer3D::add(const vector<Vertex3D>& vertices)
 	vectorConcat(vertices_, vertices);
 }
 
-void VertexBuffer3D::add(
-	const glm::vec3& position,
-	const glm::vec2& uv,
-	const glm::vec3& normal)
+void VertexBuffer3D::add(const glm::vec3& position, const glm::vec2& uv, const glm::vec3& normal)
 {
 	vertices_.emplace_back(position, uv, normal);
 }

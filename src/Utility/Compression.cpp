@@ -124,8 +124,8 @@ bool compression::genericDeflate(const MemChunk& in, MemChunk& out, int level, i
 			out.write(bout, have);
 		} while (strm.avail_out == 0);
 		assert(strm.avail_in == 0); /* all input will be used */
-	} while (flush != Z_FINISH);    /* done when last data in file processed */
-	assert(ret == Z_STREAM_END);    /* stream will be complete */
+	} while (flush != Z_FINISH); /* done when last data in file processed */
+	assert(ret == Z_STREAM_END); /* stream will be complete */
 
 	/* clean up and return */
 	deflateEnd(&strm);

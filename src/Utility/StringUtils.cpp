@@ -716,8 +716,8 @@ string_view strutil::Path::path(bool include_end_sep) const
 	if (filename_start_ == 0 || filename_start_ == string::npos)
 		return {};
 
-	return include_end_sep ? string_view{ full_path_.data(), filename_start_ } :
-							 string_view{ full_path_.data(), filename_start_ - 1 };
+	return include_end_sep ? string_view{ full_path_.data(), filename_start_ }
+						   : string_view{ full_path_.data(), filename_start_ - 1 };
 }
 
 string_view strutil::Path::fileName(bool include_extension) const
@@ -725,8 +725,8 @@ string_view strutil::Path::fileName(bool include_extension) const
 	if (filename_start_ == string::npos)
 		return {};
 
-	return include_extension ? string_view{ full_path_.data() + filename_start_ } :
-							   string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
+	return include_extension ? string_view{ full_path_.data() + filename_start_ }
+							 : string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
 }
 
 string_view strutil::Path::extension() const
@@ -864,8 +864,8 @@ string_view strutil::Path::extensionOf(string_view full_path)
 string_view strutil::Path::pathOf(string_view full_path, bool include_end_sep)
 {
 	const auto last_sep_pos = full_path.find_last_of("/\\");
-	return last_sep_pos == string_view::npos ? string_view{} :
-											   full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
+	return last_sep_pos == string_view::npos ? string_view{}
+											 : full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
 }
 
 bool strutil::Path::filePathsMatch(string_view left, string_view right)

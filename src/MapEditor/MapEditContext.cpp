@@ -46,7 +46,6 @@
 #include "Game/ThingType.h"
 #include "General/Console.h"
 #include "General/SAction.h"
-#include "UI/UI.h"
 #include "General/UndoRedo.h"
 #include "ItemSelection.h"
 #include "MapChecks.h"
@@ -78,6 +77,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
+#include "UI/UI.h"
 #include "UndoSteps.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
@@ -677,9 +677,9 @@ void MapEditContext::updateTagged()
 				case TagType::Sector1Thing2:
 				{
 					int thingtag = (needs_tag == TagType::Sector1Thing2) ? arg2 : tag;
-					int sectag   = (needs_tag == TagType::Sector1Thing2) ? tag :
-								   (needs_tag == TagType::Thing1Sector2) ? arg2 :
-																		   arg3;
+					int sectag   = (needs_tag == TagType::Sector1Thing2)   ? tag
+								   : (needs_tag == TagType::Thing1Sector2) ? arg2
+																		   : arg3;
 					if ((thingtag | sectag) == 0)
 						break;
 					else if (thingtag == 0)

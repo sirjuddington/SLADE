@@ -1501,9 +1501,9 @@ void MapSpecials::applyRectangularVertexHeightSlope(
 		{
 			// The zfloor/zceiling values must be equal
 			if (fabs(
-					heights.count(v1)                               ? heights[v1] :
-					vertexHeight<T>(v1, target) - heights.count(v2) ? heights[v2] :
-																	  vertexHeight<T>(v2, target))
+					heights.count(v1)                                 ? heights[v1]
+					: vertexHeight<T>(v1, target) - heights.count(v2) ? heights[v2]
+																	  : vertexHeight<T>(v2, target))
 				< 0.001f)
 			{
 				// Psuedo-Plane_Align routine

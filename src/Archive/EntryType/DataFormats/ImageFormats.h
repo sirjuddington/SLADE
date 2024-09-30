@@ -220,20 +220,20 @@ public:
 		// The value of 42 (0x2A) is present in the next two bytes,
 		// in the given endianness
 		if (42
-			!= (littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[2])) :
-							   wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
+			!= (littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[2]))
+							 : wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
 			return MATCH_FALSE;
 		// First offset must be on a word boundary (therefore, %2 == 0) and
 		// somewhere within the file, but not in the header of course.
 		size_t offset =
-			(littleendian ? wxUINT32_SWAP_ON_BE(static_cast<const uint32_t>(mc[4])) :
-							wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
+			(littleendian ? wxUINT32_SWAP_ON_BE(static_cast<const uint32_t>(mc[4]))
+						  : wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
 		if (offset < 8 || offset >= size || offset % 2)
 			return MATCH_FALSE;
 		// Check the first IFD for validity
 		uint16_t numentries =
-			(littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[offset])) :
-							wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
+			(littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[offset]))
+						  : wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
 		if (offset + 6 + (numentries * 12) > size)
 			return MATCH_FALSE;
 		// Okay, it seems valid so far
@@ -571,7 +571,7 @@ class DoomJaguarDataFormat : public EntryDataFormat
 public:
 	DoomJaguarDataFormat(int colmajor = 0, string_view id = "img_doom_jaguar") :
 		EntryDataFormat(id),
-		colmajor(colmajor){};
+		colmajor(colmajor) {};
 	~DoomJaguarDataFormat() override = default;
 
 	int isThisFormat(const MemChunk& mc) override
@@ -610,7 +610,7 @@ private:
 class DoomJaguarColMajorDataFormat : public DoomJaguarDataFormat
 {
 public:
-	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor"){};
+	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor") {};
 	~DoomJaguarColMajorDataFormat() override = default;
 };
 
@@ -673,9 +673,9 @@ public:
 		for (size_t w = 0; w < width; ++w)
 			col_offsets[w] = mc.readB16(8 + 2 * w);
 
-		const int result = size < static_cast<unsigned>(4 + col_offsets[width - 1]) ?
-							   MATCH_FALSE :
-							   MATCH_TRUE; // We can't test validity of pixel data here
+		const int result = size < static_cast<unsigned>(4 + col_offsets[width - 1])
+							   ? MATCH_FALSE
+							   : MATCH_TRUE; // We can't test validity of pixel data here
 
 		delete[] col_offsets;
 

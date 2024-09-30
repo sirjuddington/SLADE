@@ -34,7 +34,6 @@
 #include "LinePropsPanel.h"
 #include "Game/Configuration.h"
 #include "Game/UDMFProperty.h"
-#include "UI/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/ActionSpecialPanel.h"
@@ -47,6 +46,7 @@
 #include "SidePropsPanel.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;

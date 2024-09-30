@@ -35,7 +35,6 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
-#include "UI/UI.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -48,6 +47,7 @@
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/UI.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 

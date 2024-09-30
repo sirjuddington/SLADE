@@ -34,7 +34,6 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
-#include "UI/UI.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -46,6 +45,7 @@
 #include "SLADEMap/MapObjectList/SideList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

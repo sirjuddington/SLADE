@@ -35,7 +35,9 @@ public:
 		Context() = default;
 
 		Context(string_view context, string_view return_type, string_view description) :
-			context{ context }, return_type{ return_type }, description{ description }
+			context{ context },
+			return_type{ return_type },
+			description{ description }
 		{
 		}
 

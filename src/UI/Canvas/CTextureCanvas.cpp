@@ -219,7 +219,8 @@ void CTextureCanvas::drawPatch(const wxgfx::Context& ctx, int index)
 	}
 
 	// Draw patch
-	ctx.drawBitmap(patch_bitmaps_[index], patch->xOffset(), patch->yOffset(), 1.0, patch_image->width(), patch_image->height());
+	ctx.drawBitmap(
+		patch_bitmaps_[index], patch->xOffset(), patch->yOffset(), 1.0, patch_image->width(), patch_image->height());
 }
 
 

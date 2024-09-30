@@ -34,10 +34,10 @@
 #include "Main.h"
 #include "BrowserItem.h"
 #include "BrowserWindow.h"
-#include "UI/UI.h"
 #include "Geometry/Rect.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

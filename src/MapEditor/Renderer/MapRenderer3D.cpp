@@ -2957,9 +2957,9 @@ void MapRenderer3D::checkVisibleFlats()
 	flats_.resize(n_flats_);
 
 	// Go through sectors
-	float      alpha;
-	unsigned   flat_idx = 0;
-	auto       cam      = camera_->position().xy();
+	float    alpha;
+	unsigned flat_idx = 0;
+	auto     cam      = camera_->position().xy();
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		const auto sector = map_->sector(a);

@@ -35,8 +35,8 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "General/Console.h"
-#include "UI/UI.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

@@ -41,4 +41,4 @@ private:
 	vector<unique_ptr<MapThing>> things_;
 	Vec2d                        midpoint_;
 };
-}
+} // namespace slade

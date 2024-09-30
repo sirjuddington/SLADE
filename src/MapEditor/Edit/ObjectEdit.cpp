@@ -35,7 +35,6 @@
 #include "Main.h"
 #include "ObjectEdit.h"
 #include "General/KeyBind.h"
-#include "UI/UI.h"
 #include "Geometry/Geometry.h"
 #include "Input.h"
 #include "MapEditor/ItemSelection.h"
@@ -48,6 +47,7 @@
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/UI.h"
 
 using namespace slade;
 using namespace mapeditor;

@@ -996,7 +996,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool 
 // Loads the image for the patch at [pindex] into [image].
 // Can deal with textures-as-patches
 // -----------------------------------------------------------------------------
-bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, const Palette* pal, bool force_rgba) const
+bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, const Palette* pal, bool force_rgba)
+	const
 {
 	// Check patch index
 	if (pindex >= patches_.size())

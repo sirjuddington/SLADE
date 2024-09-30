@@ -33,11 +33,11 @@
 #include "Main.h"
 #include "TextStylePrefsPanel.h"
 #include "App.h"
-#include "UI/UI.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;

@@ -43,7 +43,6 @@
 #include "BinaryControlLump.h"
 #include "Conversions.h"
 #include "General/Misc.h"
-#include "UI/UI.h"
 #include "General/UndoRedo.h"
 #include "General/UndoSteps/EntryDataUS.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -65,6 +64,7 @@
 #include "UI/EntryPanel/EntryPanel.h"
 #include "UI/MainWindow.h"
 #include "UI/TextureXEditor/TextureXEditor.h"
+#include "UI/UI.h"
 #include "Utility/Colour.h"
 #include "Utility/FileMonitor.h"
 #include "Utility/SFileDialog.h"
@@ -1504,8 +1504,8 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		{
 			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
 			dlg.setMessage(
-				success ? "The following errors were encountered while compiling, please fix them and recompile:" :
-						  "Compiler output shown below: ");
+				success ? "The following errors were encountered while compiling, please fix them and recompile:"
+						: "Compiler output shown below: ");
 			dlg.setExt(errors);
 			dlg.ShowModal();
 		}

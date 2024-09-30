@@ -35,8 +35,8 @@
 #include "ArchiveEntry.h"
 #include "ArchiveFormatHandler.h"
 #include "EntryType/EntryType.h"
-#include "UI/UI.h"
 #include "MapDesc.h"
+#include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>

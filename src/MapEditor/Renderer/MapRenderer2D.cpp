@@ -401,8 +401,8 @@ void MapRenderer2D::renderLines(bool show_direction, float alpha)
 		return;
 
 	// Update lines buffer if needed
-	auto buffer_empty = line_smooth ? !lines_buffer_ || lines_buffer_->buffer().empty() :
-									  !lines_buffer_basic_ || lines_buffer_basic_->buffer().empty();
+	auto buffer_empty = line_smooth ? !lines_buffer_ || lines_buffer_->buffer().empty()
+									: !lines_buffer_basic_ || lines_buffer_basic_->buffer().empty();
 	if (buffer_empty || show_direction != lines_dirs_ || map_->nLines() != n_lines_
 		|| map_->geometryUpdated() > lines_updated_
 		|| map_->mapData().modifiedSince(lines_updated_, MapObject::Type::Line))
@@ -1216,12 +1216,12 @@ void MapRenderer2D::renderMovingVertices(
 			continue;
 
 		// First vertex
-		auto v1 = (drawn & 1) ? glm::vec2{ line->x1() + move_vec.x, line->y1() + move_vec.y } :
-								glm::vec2{ line->x1(), line->y1() };
+		auto v1 = (drawn & 1) ? glm::vec2{ line->x1() + move_vec.x, line->y1() + move_vec.y }
+							  : glm::vec2{ line->x1(), line->y1() };
 
 		// Second vertex
-		auto v2 = (drawn & 2) ? glm::vec2{ line->x2() + move_vec.x, line->y2() + move_vec.y } :
-								glm::vec2{ line->x2(), line->y2() };
+		auto v2 = (drawn & 2) ? glm::vec2{ line->x2() + move_vec.x, line->y2() + move_vec.y }
+							  : glm::vec2{ line->x2(), line->y2() };
 
 		// Add to buffer
 		temp_lines_buffer_->add2d(v1.x, v1.y, v2.x, v2.y, lineColour(line, true));
@@ -1300,12 +1300,12 @@ void MapRenderer2D::renderMovingLines(
 			continue;
 
 		// First vertex
-		auto v1 = (drawn & 1) ? glm::vec2{ line->x1() + move_vec.x, line->y1() + move_vec.y } :
-								glm::vec2{ line->x1(), line->y1() };
+		auto v1 = (drawn & 1) ? glm::vec2{ line->x1() + move_vec.x, line->y1() + move_vec.y }
+							  : glm::vec2{ line->x1(), line->y1() };
 
 		// Second vertex
-		auto v2 = (drawn & 2) ? glm::vec2{ line->x2() + move_vec.x, line->y2() + move_vec.y } :
-								glm::vec2{ line->x2(), line->y2() };
+		auto v2 = (drawn & 2) ? glm::vec2{ line->x2() + move_vec.x, line->y2() + move_vec.y }
+							  : glm::vec2{ line->x2(), line->y2() };
 
 		// Add to buffer
 		temp_lines_buffer_->add2d(v1.x, v1.y, v2.x, v2.y, lineColour(line, true));

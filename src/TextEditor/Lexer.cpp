@@ -96,8 +96,8 @@ void Lexer::loadLanguage(TextLanguage* language)
 		addWord(word, Lexer::Style::Keyword);
 
 	// Load language info
-	preprocessor_char_ = language->preprocessor().empty() ? static_cast<char>(0) :
-															static_cast<char>(language->preprocessor()[0]);
+	preprocessor_char_ = language->preprocessor().empty() ? static_cast<char>(0)
+														  : static_cast<char>(language->preprocessor()[0]);
 }
 
 // -----------------------------------------------------------------------------

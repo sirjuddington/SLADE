@@ -1,7 +1,7 @@
 
 #include "Main.h"
-#include "IndexBuffer.h"
 #include "VertexBuffer2D.h"
+#include "IndexBuffer.h"
 #include "Utility/Vector.h"
 #include "View.h"
 
@@ -110,10 +110,10 @@ void VertexBuffer2D::draw(Primitive primitive, const Shader* shader, const View*
 }
 
 void VertexBuffer2D::drawElements(
-	IndexBuffer& index_buffer,
-	Primitive primitive,
+	IndexBuffer&  index_buffer,
+	Primitive     primitive,
 	const Shader* shader,
-	const View* view) const
+	const View*   view) const
 {
 	if (!getContext())
 		return;

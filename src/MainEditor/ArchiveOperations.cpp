@@ -40,15 +40,16 @@
 #include "Archive/MapDesc.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
-#include "UI/UI.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
@@ -1449,9 +1450,9 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 	// must keep this smart pointer around or the archive gets dealloced immediately
 	// from the heap and we get huge memory issues while referencing a dangling pointer
-	auto ptr_archive = archive->format() == ArchiveFormat::Dir ?
-						   app::archiveManager().openDirArchive(archive->filename(), false, true) :
-						   app::archiveManager().openArchive(archive->filename(), false, true);
+	auto ptr_archive = archive->format() == ArchiveFormat::Dir
+						   ? app::archiveManager().openDirArchive(archive->filename(), false, true)
+						   : app::archiveManager().openArchive(archive->filename(), false, true);
 	archive          = ptr_archive.get();
 
 	// --- Build list of used textures ---

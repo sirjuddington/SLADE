@@ -143,13 +143,11 @@ string Arg::valueString(int value) const
 			return fmt::format("{} ({})", value, speed_label);
 	}
 
-	case Tics:
-		return fmt::format("{:.2f} seconds", value / 35.0);
+	case Tics:   return fmt::format("{:.2f} seconds", value / 35.0);
 
-	case Octics:
-		return fmt::format("{:.2f} seconds", value / 8.0);
+	case Octics: return fmt::format("{:.2f} seconds", value / 8.0);
 
-	default: break;
+	default:     break;
 	}
 
 	// Any other type

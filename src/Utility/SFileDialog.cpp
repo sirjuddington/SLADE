@@ -140,8 +140,8 @@ string filedialog::openFile(
 // -----------------------------------------------------------------------------
 bool filedialog::openExecutableFile(FDInfo& info, string_view caption, wxWindow* parent, string_view fn_default)
 {
-	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat" :
-																		 wxFileSelectorDefaultWildcardStr;
+	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat"
+																	   : wxFileSelectorDefaultWildcardStr;
 
 	return openFile(info, caption, extensions, parent, fn_default);
 }
@@ -153,8 +153,8 @@ bool filedialog::openExecutableFile(FDInfo& info, string_view caption, wxWindow*
 // -----------------------------------------------------------------------------
 string filedialog::openExecutableFile(string_view caption, wxWindow* parent, string_view fn_default)
 {
-	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat" :
-																		 wxFileSelectorDefaultWildcardStr;
+	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat"
+																	   : wxFileSelectorDefaultWildcardStr;
 
 	return openFile(caption, extensions, parent, fn_default);
 }

@@ -37,7 +37,6 @@
 #include "General/Clipboard.h"
 #include "General/KeyBind.h"
 #include "General/SAction.h"
-#include "UI/UI.h"
 #include "LineDraw.h"
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
@@ -53,6 +52,7 @@
 #include "ObjectEdit.h"
 #include "OpenGL/View.h"
 #include "SLADEMap/MapObject/MapThing.h"
+#include "UI/UI.h"
 
 using namespace slade;
 using namespace mapeditor;

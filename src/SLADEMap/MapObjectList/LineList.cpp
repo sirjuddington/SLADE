@@ -242,9 +242,9 @@ void LineList::putAllTaggingWithId(int id, int type, vector<MapLine*>& list) con
 				arg3 = line->arg(2);
 				arg5 = line->arg(4);
 				fits =
-					(type == SLADEMap::SECTORS ?
-						 (IDEQ(tag)) :
-						 (type == SLADEMap::THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
+					(type == SLADEMap::SECTORS
+						 ? (IDEQ(tag))
+						 : (type == SLADEMap::THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
 			case TagType::LineId1Line2:
 				arg2 = line->arg(1);

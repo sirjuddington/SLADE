@@ -402,11 +402,11 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 	bool refresh = false;
 
 	// Check if the mouse is over the image
-	const auto p_pos       = window()->ToPhys(e.GetPosition());
-	const int  x           = window()->ToPhys(e.GetPosition().x);
-	const int  y           = window()->ToPhys(e.GetPosition().y);
-	const bool on_image    = onImage(x, y);
-	cursor_pos_            = imageCoords(x, y);
+	const auto p_pos    = window()->ToPhys(e.GetPosition());
+	const int  x        = window()->ToPhys(e.GetPosition().x);
+	const int  y        = window()->ToPhys(e.GetPosition().y);
+	const bool on_image = onImage(x, y);
+	cursor_pos_         = imageCoords(x, y);
 	if (on_image && editing_mode_ != EditMode::None)
 	{
 		if (cursor_pos_ != prev_pos_)

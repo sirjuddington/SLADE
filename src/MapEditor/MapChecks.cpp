@@ -633,7 +633,9 @@ private:
 		Vec2d    intersect_point;
 
 		Intersection(MapLine* line1, MapLine* line2, double x, double y) :
-			line1{ line1 }, line2{ line2 }, intersect_point{ x, y }
+			line1{ line1 },
+			line2{ line2 },
+			intersect_point{ x, y }
 		{
 		}
 	};

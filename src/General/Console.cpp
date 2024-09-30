@@ -199,9 +199,9 @@ ConsoleCommand& Console::command(size_t index)
 // -----------------------------------------------------------------------------
 ConsoleCommand::ConsoleCommand(
 	string_view name,
-	void        (*command_func)(const vector<string>&),
-	int         min_args = 0,
-	bool        show_in_list)
+	void (*command_func)(const vector<string>&),
+	int  min_args = 0,
+	bool show_in_list)
 {
 	// Init variables
 	name_         = name;

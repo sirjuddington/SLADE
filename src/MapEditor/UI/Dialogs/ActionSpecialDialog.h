@@ -17,7 +17,7 @@ namespace game
 {
 	class ActionSpecial;
 	struct ArgSpec;
-}
+} // namespace game
 
 class ActionSpecialDialog : public SDialog
 {

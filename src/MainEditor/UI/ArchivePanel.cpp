@@ -1471,8 +1471,8 @@ bool ArchivePanel::importEntry()
 		auto multi_select = selection.size() > 1;
 
 		if (wxMessageBox(
-				multi_select ? "One or more entry types were changed. Update entry extensions?" :
-							   "The entry type has changed. Update it's extension?",
+				multi_select ? "One or more entry types were changed. Update entry extensions?"
+							 : "The entry type has changed. Update it's extension?",
 				"Update Entry Extension(s)",
 				wxYES_NO | wxICON_QUESTION)
 			== wxYES)
@@ -1778,8 +1778,8 @@ bool ArchivePanel::basConvert(bool animdefs)
 
 	// Create new entry
 	auto output = archive->addNewEntry(
-		(animdefs ? (archive->format() == ArchiveFormat::Wad ? "ANIMDEFS" : "animdefs.txt") :
-					(archive->format() == ArchiveFormat::Wad ? "SWANTBLS" : "swantbls.dat")),
+		(animdefs ? (archive->format() == ArchiveFormat::Wad ? "ANIMDEFS" : "animdefs.txt")
+				  : (archive->format() == ArchiveFormat::Wad ? "SWANTBLS" : "swantbls.dat")),
 		index,
 		lastEntry->parentDir());
 

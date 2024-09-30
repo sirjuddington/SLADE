@@ -1014,11 +1014,9 @@ vector<MapDesc> WadArchiveHandler::detectMaps(Archive& archive)
 			{
 				// Get map info
 				MapDesc md;
-				md.head = header_entry;         // Header lump
-				md.name = header_entry->name(); // Map title
-				md.end  = lastentryismapentry ? // End lump
-                             entry :
-							  archive.rootDir()->sharedEntryAt(--index);
+				md.head = header_entry;                                                            // Header lump
+				md.name = header_entry->name();                                                    // Map title
+				md.end  = lastentryismapentry ? entry : archive.rootDir()->sharedEntryAt(--index); // End lump
 
 				// If BEHAVIOR lump exists, it's a hexen format map
 				if (existing_map_lumps[LUMP_BEHAVIOR])
