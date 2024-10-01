@@ -146,7 +146,7 @@ const MapTextureManager::Texture& MapTextureManager::texture(string_view name, b
 	auto& mtex = textures_[strutil::upper(name)];
 
 	// Get desired filter type
-	auto filter = gl::TexFilter::Linear;
+	auto filter = gl::TexFilter::NearestLinearMin;
 	if (map_tex_filter == 0)
 		filter = gl::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
@@ -257,7 +257,7 @@ const MapTextureManager::Texture& MapTextureManager::flat(string_view name, bool
 	auto& mtex = flats_[strutil::upper(name)];
 
 	// Get desired filter type
-	auto filter = gl::TexFilter::Linear;
+	auto filter = gl::TexFilter::NearestLinearMin;
 	if (map_tex_filter == 0)
 		filter = gl::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
@@ -378,7 +378,7 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 	auto& mtex = sprites_[hashname];
 
 	// Get desired filter type
-	auto filter = gl::TexFilter::Linear;
+	auto filter = gl::TexFilter::NearestLinearMin;
 	if (map_tex_filter == 0)
 		filter = gl::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)

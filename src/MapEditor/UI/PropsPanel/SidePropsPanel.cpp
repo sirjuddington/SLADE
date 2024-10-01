@@ -59,7 +59,7 @@ using namespace slade;
 class slade::SideTexCanvas : public GLCanvas
 {
 public:
-	SideTexCanvas(wxWindow* parent) : GLCanvas(parent)
+	SideTexCanvas(wxWindow* parent, string_view title) : GLCanvas(parent, BGStyle::Checkered), title_{ title }
 	{
 		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
 		SetInitialSize(FromDIP(wxSize(136, 136)));
@@ -72,6 +72,8 @@ public:
 	// Sets the texture to display
 	void setTexture(const wxString& tex)
 	{
+		activateContext();
+
 		texname_ = tex;
 		if (tex.empty() || tex == "-")
 			texture_ = 0;
@@ -83,6 +85,7 @@ public:
 			texture_ = texture.gl_id;
 		}
 
+		Update();
 		Refresh();
 	}
 

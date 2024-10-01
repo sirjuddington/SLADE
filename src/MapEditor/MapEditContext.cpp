@@ -118,7 +118,10 @@ EXTERN_CVAR(Bool, thing_preview_lights)
 // -----------------------------------------------------------------------------
 // MapEditContext class constructor
 // -----------------------------------------------------------------------------
-MapEditContext::MapEditContext()
+MapEditContext::MapEditContext() :
+	edit_mode_{ Mode::Lines },
+	edit_mode_prev_{ Mode::Lines },
+	sector_mode_{ SectorMode::Both }
 {
 	map_          = std::make_unique<SLADEMap>();
 	undo_manager_ = std::make_unique<UndoManager>(map_.get());

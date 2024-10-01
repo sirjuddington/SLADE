@@ -722,6 +722,7 @@ void BrowserWindow::onCanvasSelectionChanged(wxEvent& e)
 	}
 
 	// Build info string
+	canvas_->activateContext(); // Need to do this as itemInfo() may use the GL context
 	wxString info       = item->name();
 	wxString info_extra = item->itemInfo();
 	if (!info_extra.IsEmpty())

@@ -156,8 +156,16 @@ unsigned gl::Texture::create(TexFilter filter, bool tiling)
 		return 0;
 
 	// Generate the texture id
-	unsigned id;
+	unsigned id = 0;
 	glGenTextures(1, &id);
+
+	// Check it generated ok
+	if (id == 0)
+	{
+		wxFAIL_MSG("Failed to generate GL texture id - most likely because there is no active context");
+		log::error("Failed to generate OpenGL texture id");
+		return 0;
+	}
 
 	// Set texture info
 	textures[id].id     = id;
