@@ -54,7 +54,7 @@ string web::getHttp(const string& host, const string& uri)
 	// Setup connection & request
 	sf::Http          http(host);
 	sf::Http::Request request;
-	request.setMethod(sf::Http::Request::Get);
+	request.setMethod(sf::Http::Request::Method::Get);
 	request.setUri(uri);
 
 	// Send HTTP request
@@ -62,7 +62,7 @@ string web::getHttp(const string& host, const string& uri)
 
 	switch (response.getStatus())
 	{
-	case sf::Http::Response::Ok: return response.getBody();
+	case sf::Http::Response::Status::Ok: return response.getBody();
 	default: return "connect_failed";
 	}
 }

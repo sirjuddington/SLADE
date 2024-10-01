@@ -23,7 +23,7 @@ private:
 	mpg123_handle* handle_      = nullptr;
 	size_t         buffer_size_ = 0;
 	unsigned char* buffer_      = nullptr;
-	sf::Mutex      mutex_;
+	std::mutex     mutex_;
 	long           sampling_rate_ = 0;
 };
 } // namespace slade::audio

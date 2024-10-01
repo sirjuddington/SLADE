@@ -24,7 +24,7 @@ private:
 	bool onGetData(Chunk& data) override;
 	void onSeek(sf::Time timeOffset) override;
 
-	sf::Int16        samples_[44100]{};
+	int16_t          samples_[44100]{};
 	DUH*             dumb_module_ = nullptr;
 	DUH_SIGRENDERER* dumb_player_ = nullptr;
 
