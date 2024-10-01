@@ -181,9 +181,8 @@ void registerMapEditor(sol::state& lua)
         &selectMapObject, [](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); });
 	lua_mapeditor["SetEditMode"] = sol::overload(
 		[](MapEditContext& self, mapeditor::Mode mode) { setEditMode(self, mode); },
-		[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode) {
-			setEditMode(self, mode, sector_mode);
-		});
+		[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode)
+		{ setEditMode(self, mode, sector_mode); });
 }
 
 // -----------------------------------------------------------------------------

@@ -49,39 +49,42 @@ using namespace slade;
 DockPanel::DockPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Size event
-	Bind(wxEVT_SIZE, [&](wxSizeEvent& e) {
-		// Get parent's AUI manager (if it exists)
-		auto mgr = wxAuiManager::GetManager(GetParent());
-		if (!mgr)
+	Bind(
+		wxEVT_SIZE,
+		[&](wxSizeEvent& e)
 		{
-			e.Skip();
-			return;
-		}
-
-		// Check if floating
-		if (mgr->GetPane(this).IsFloating())
-		{
-			if (current_layout_ != Orient::Normal)
-				layoutNormal();
-			current_layout_ = Orient::Normal;
-		}
-		else
-		{
-			// Not floating, layout horizontally or vertically depending on size
-			if (GetSize().x >= GetSize().y)
+			// Get parent's AUI manager (if it exists)
+			auto mgr = wxAuiManager::GetManager(GetParent());
+			if (!mgr)
 			{
-				if (current_layout_ != Orient::Horizontal)
-					layoutHorizontal();
-				current_layout_ = Orient::Horizontal;
+				e.Skip();
+				return;
+			}
+
+			// Check if floating
+			if (mgr->GetPane(this).IsFloating())
+			{
+				if (current_layout_ != Orient::Normal)
+					layoutNormal();
+				current_layout_ = Orient::Normal;
 			}
 			else
 			{
-				if (current_layout_ != Orient::Vertical)
-					layoutVertical();
-				current_layout_ = Orient::Vertical;
+				// Not floating, layout horizontally or vertically depending on size
+				if (GetSize().x >= GetSize().y)
+				{
+					if (current_layout_ != Orient::Horizontal)
+						layoutHorizontal();
+					current_layout_ = Orient::Horizontal;
+				}
+				else
+				{
+					if (current_layout_ != Orient::Vertical)
+						layoutVertical();
+					current_layout_ = Orient::Vertical;
+				}
 			}
-		}
 
-		e.Skip();
-	});
+			e.Skip();
+		});
 }

@@ -76,12 +76,15 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	refreshPropGrid();
 
 	// Bind events
-	choice_configs_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
-		auto config = choice_configs_->GetStringSelection().ToStdString();
-		colourconfig::readConfiguration(config);
-		refreshPropGrid();
-		mapeditor::forceRefresh(true);
-	});
+	choice_configs_->Bind(
+		wxEVT_CHOICE,
+		[&](wxCommandEvent&)
+		{
+			auto config = choice_configs_->GetStringSelection().ToStdString();
+			colourconfig::readConfiguration(config);
+			refreshPropGrid();
+			mapeditor::forceRefresh(true);
+		});
 
 	wxWindowBase::Layout();
 }

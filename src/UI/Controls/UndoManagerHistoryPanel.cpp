@@ -169,7 +169,8 @@ void UndoListView::connectManagerSignals()
 // UndoManagerHistoryPanel class constructor
 // -----------------------------------------------------------------------------
 UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* manager) :
-	wxPanel{ parent, -1 }, manager_{ manager }
+	wxPanel{ parent, -1 },
+	manager_{ manager }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);

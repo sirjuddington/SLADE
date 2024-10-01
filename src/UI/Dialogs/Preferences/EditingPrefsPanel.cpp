@@ -106,7 +106,8 @@ class ExternalEditorDialog : public wxDialog
 {
 public:
 	ExternalEditorDialog(wxWindow* parent, bool browse_on_open, const wxString& name = "", const wxString& path = "") :
-		wxDialog(parent, -1, "External Editor"), browse_on_open_(browse_on_open)
+		wxDialog(parent, -1, "External Editor"),
+		browse_on_open_(browse_on_open)
 	{
 		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);

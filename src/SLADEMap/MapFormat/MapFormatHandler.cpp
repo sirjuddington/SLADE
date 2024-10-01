@@ -32,10 +32,10 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Doom32XMapFormat.h"
 #include "Doom64MapFormat.h"
 #include "DoomMapFormat.h"
 #include "HexenMapFormat.h"
-#include "Doom32XMapFormat.h"
 #include "UniversalDoomMapFormat.h"
 
 using namespace slade;

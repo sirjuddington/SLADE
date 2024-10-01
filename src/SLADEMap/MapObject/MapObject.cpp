@@ -61,7 +61,9 @@ long prop_backup_time = -1;
 // MapObject class constructor
 // -----------------------------------------------------------------------------
 MapObject::MapObject(Type type, SLADEMap* parent) :
-	parent_map_{ parent }, modified_time_{ app::runTimer() }, type_{ type }
+	parent_map_{ parent },
+	modified_time_{ app::runTimer() },
+	type_{ type }
 {
 }
 

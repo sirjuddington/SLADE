@@ -273,10 +273,15 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 // -----------------------------------------------------------------------------
 BrowserWindow::~BrowserWindow()
 {
-	browser_maximised = wxTopLevelWindow::IsMaximized();
+	browser_maximised       = wxTopLevelWindow::IsMaximized();
 	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
 	if (!wxTopLevelWindow::IsMaximized())
-		misc::setWindowInfo("browser", ClientSize.x, ClientSize.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
+		misc::setWindowInfo(
+			"browser",
+			ClientSize.x,
+			ClientSize.y,
+			GetPosition().x * GetContentScaleFactor(),
+			GetPosition().y * GetContentScaleFactor());
 }
 
 // -----------------------------------------------------------------------------

@@ -68,7 +68,10 @@ namespace mapeditor
 		int      control_line;
 
 		Item(int index = -1, ItemType type = ItemType::Any) :
-			index{ index }, type{ type }, real_index{ -1 }, control_line{ -1 }
+			index{ index },
+			type{ type },
+			real_index{ -1 },
+			control_line{ -1 }
 		{
 		}
 

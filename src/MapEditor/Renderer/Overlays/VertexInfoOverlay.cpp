@@ -62,7 +62,7 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 	bool udmf = vertex->parentMap()->currentFormat() == MapFormat::UDMF;
 
 	// Update info string
-	auto pos = vertex->position();
+	auto pos  = vertex->position();
 	auto line = fmt::format("Vertex {}: (", vertex->index());
 	if (pos.x == static_cast<int>(pos.x))
 		line += fmt::format("{}, ", static_cast<int>(pos.x));
@@ -72,7 +72,7 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 		line += fmt::format("{})", static_cast<int>(pos.y));
 	else
 		line += fmt::format("{:1.4f})", pos.y);
-	
+
 	if (global::debug)
 		line += fmt::format(" ({})", vertex->objId());
 

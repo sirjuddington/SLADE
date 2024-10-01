@@ -87,7 +87,8 @@ CIntCVar::CIntCVar(string_view name, int defval, uint16_t flags) : CVar{ Type::I
 // CBoolCVar class constructor
 // -----------------------------------------------------------------------------
 CBoolCVar::CBoolCVar(string_view name, bool defval, uint16_t flags) :
-	CVar{ Type::Boolean, flags, name }, value{ defval }
+	CVar{ Type::Boolean, flags, name },
+	value{ defval }
 {
 	addCVarList(this);
 }
@@ -96,7 +97,8 @@ CBoolCVar::CBoolCVar(string_view name, bool defval, uint16_t flags) :
 // CFloatCVar class constructor
 // -----------------------------------------------------------------------------
 CFloatCVar::CFloatCVar(string_view name, double defval, uint16_t flags) :
-	CVar{ Type::Float, flags, name }, value{ defval }
+	CVar{ Type::Float, flags, name },
+	value{ defval }
 {
 	addCVarList(this);
 }
@@ -105,7 +107,8 @@ CFloatCVar::CFloatCVar(string_view name, double defval, uint16_t flags) :
 // CStringCVar class constructor
 // -----------------------------------------------------------------------------
 CStringCVar::CStringCVar(string_view name, string_view defval, uint16_t flags) :
-	CVar{ Type::String, flags, name }, value{ defval }
+	CVar{ Type::String, flags, name },
+	value{ defval }
 {
 	addCVarList(this);
 }
@@ -166,7 +169,7 @@ string CVar::writeAll()
 	}
 
 	fmt::memory_buffer mem_buf;
-	auto buf = fmt::appender(mem_buf);
+	auto               buf = fmt::appender(mem_buf);
 	format_to(buf, "cvars\n{{\n");
 
 	for (auto* cvar : all_cvars)

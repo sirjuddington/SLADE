@@ -142,9 +142,8 @@ void registerMemChunkType(sol::state& lua)
 	// Functions
 	// -------------------------------------------------------------------------
 	lua_mc["AsString"] = &memChunkData;
-	lua_mc["SetData"]  = [](MemChunk& self, string_view data) {
-        self.importMem((const uint8_t*)data.data(), data.size());
-	};
+	lua_mc["SetData"]  = [](MemChunk& self, string_view data)
+	{ self.importMem((const uint8_t*)data.data(), data.size()); };
 	lua_mc["Clear"]  = &MemChunk::clear;
 	lua_mc["Resize"] = &MemChunk::reSize;
 	lua_mc["Copy"]   = sol::resolve<bool(const MemChunk&)>(&MemChunk::importMem);
@@ -169,9 +168,8 @@ void registerMemChunkType(sol::state& lua)
 	lua_mc["WriteUInt32"] = &memChunkWrite<uint32_t>;
 	lua_mc["WriteInt64"]  = &memChunkWrite<int64_t>;
 	lua_mc["WriteUInt64"] = &memChunkWrite<uint64_t>;
-	lua_mc["WriteString"] = [](MemChunk& self, int offset, string_view value, bool expand) {
-		self.write(offset, value.data(), value.size(), expand);
-	};
+	lua_mc["WriteString"] = [](MemChunk& self, int offset, string_view value, bool expand)
+	{ self.write(offset, value.data(), value.size(), expand); };
 	lua_mc["ReadInt8"]   = &memChunkRead<int8_t>;
 	lua_mc["ReadUInt8"]  = &memChunkRead<uint8_t>;
 	lua_mc["ReadInt16"]  = &memChunkRead<int16_t>;
@@ -180,9 +178,10 @@ void registerMemChunkType(sol::state& lua)
 	lua_mc["ReadUInt32"] = &memChunkRead<uint32_t>;
 	lua_mc["ReadInt64"]  = &memChunkRead<int64_t>;
 	lua_mc["ReadUInt64"] = &memChunkRead<uint64_t>;
-	lua_mc["ReadString"] = sol::overload(&memChunkReadString, [](MemChunk& self, unsigned offset, unsigned length) {
-		return memChunkReadString(self, offset, length, false);
-	});
+	lua_mc["ReadString"] = sol::overload(
+		&memChunkReadString,
+		[](MemChunk& self, unsigned offset, unsigned length)
+		{ return memChunkReadString(self, offset, length, false); });
 }
 
 // -----------------------------------------------------------------------------

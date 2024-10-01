@@ -60,8 +60,11 @@ CVAR(Bool, txed_calltips_dim_optional, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // SCallTip class constructor
 // -----------------------------------------------------------------------------
-SCallTip::SCallTip(wxWindow* parent) : wxPopupWindow(parent),
-	scratch_{ 1000, 1000, 32 }, buffer_{ 1, 1, 32 }, font_{ GetFont() }
+SCallTip::SCallTip(wxWindow* parent) :
+	wxPopupWindow(parent),
+	scratch_{ 1000, 1000, 32 },
+	buffer_{ 1, 1, 32 },
+	font_{ GetFont() }
 {
 	wxPopupWindow::Show(false);
 
@@ -592,7 +595,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 // -----------------------------------------------------------------------------
 void SCallTip::updateBuffer()
 {
-	wxSize     size;
+	wxSize size;
 	{
 		wxMemoryDC dc(scratch_);
 		size = drawCallTip(dc);

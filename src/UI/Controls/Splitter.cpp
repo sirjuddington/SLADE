@@ -158,14 +158,14 @@ void Splitter::DrawSash(wxDC& dc)
 
 	// Background
 	auto bgcol = GetBackgroundColour();
-	auto size = GetClientSize();
+	auto size  = GetClientSize();
 	dc.SetBrush(wxBrush(bgcol));
 	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.DrawRectangle(m_sashPosition, 0, getSashSize(), size.y);
 
 	// Indicator
-	auto colour = (bgcol.GetLuminance() > 0.5) ? bgcol.ChangeLightness(m_isHot ? 50 : 80) :
-                                                 bgcol.ChangeLightness(m_isHot ? 150 : 120);
+	auto colour = (bgcol.GetLuminance() > 0.5) ? bgcol.ChangeLightness(m_isHot ? 50 : 80)
+											   : bgcol.ChangeLightness(m_isHot ? 150 : 120);
 	dc.SetBrush(wxBrush(colour));
 	auto line_x   = m_sashPosition + getSashSize() / 2;
 	auto line_top = size.y / 2 - ui::scalePx(24);

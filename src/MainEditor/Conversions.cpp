@@ -1308,7 +1308,7 @@ bool conversion::auSndToWav(MemChunk& in, MemChunk& out)
 
 bool conversion::voxToKvx(MemChunk& in, MemChunk& out)
 {
-#define AT(x, y, z) (((x)*length + (y)) * height + (z))
+#define AT(x, y, z) (((x) * length + (y)) * height + (z))
 
 	const uint8_t LEFT   = 1;
 	const uint8_t RIGHT  = 2;

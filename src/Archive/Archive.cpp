@@ -151,7 +151,10 @@ class EntrySwapUS : public UndoStep
 {
 public:
 	EntrySwapUS(const ArchiveDir* dir, unsigned index1, unsigned index2) :
-		archive_{ dir->archive() }, path_{ dir->path() }, index1_{ index1 }, index2_{ index2 }
+		archive_{ dir->archive() },
+		path_{ dir->path() },
+		index1_{ index1 },
+		index2_{ index2 }
 	{
 	}
 
@@ -223,7 +226,9 @@ class DirCreateDeleteUS : public UndoStep
 {
 public:
 	DirCreateDeleteUS(bool created, ArchiveDir* dir) :
-		created_{ created }, archive_{ dir->archive() }, path_{ dir->path() }
+		created_{ created },
+		archive_{ dir->archive() },
+		path_{ dir->path() }
 	{
 		strutil::removePrefixIP(path_, '/');
 

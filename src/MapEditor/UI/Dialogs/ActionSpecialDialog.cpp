@@ -77,19 +77,23 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 		textsize.IncTo(dc.GetTextExtent(label));
 		sorted_specials_.push_back({ &i.second, label, {} });
 	}
-	std::sort(sorted_specials_.begin(), sorted_specials_.end(), [](const auto& a, const auto& b) {
-		return a.special->order() < b.special->order();
-	});
+	std::sort(
+		sorted_specials_.begin(),
+		sorted_specials_.end(),
+		[](const auto& a, const auto& b) { return a.special->order() < b.special->order(); });
 
 	filterSpecials();
 	Expand(root_);
 
 	// Bind events
 	Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, [&](wxDataViewEvent& e) { e.Veto(); });
-	Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [&](wxDataViewEvent&) {
-		if (parent_dialog_)
-			parent_dialog_->EndModal(wxID_OK);
-	});
+	Bind(
+		wxEVT_DATAVIEW_ITEM_ACTIVATED,
+		[&](wxDataViewEvent&)
+		{
+			if (parent_dialog_)
+				parent_dialog_->EndModal(wxID_OK);
+		});
 
 	// 64 is an arbitrary fudge factor -- should be at least the width of a
 	// scrollbar plus the expand icons plus any extra padding
@@ -170,10 +174,10 @@ void ActionSpecialTreeView::filterSpecials(string filter)
 		}
 	}
 
-	const int current_special = selectedSpecial();
-	bool current_visible = false;
-	bool show_everything = false;
-	int typed_special = -1;
+	const int           current_special = selectedSpecial();
+	bool                current_visible = false;
+	bool                show_everything = false;
+	int                 typed_special   = -1;
 	vector<string_view> filter_words;
 	if (current_special == 0)
 		current_visible = true;
@@ -191,7 +195,7 @@ void ActionSpecialTreeView::filterSpecials(string filter)
 			show_everything = true;
 	}
 
-	if (! show_everything)
+	if (!show_everything)
 		// Split on spaces and filter by name
 		filter_words = strutil::splitV(filter, ' ', true);
 
@@ -201,13 +205,13 @@ void ActionSpecialTreeView::filterSpecials(string filter)
 		bool show = true;
 		for (const auto& word : filter_words)
 		{
-			if (! strutil::containsCI(i.special->name(), word))
+			if (!strutil::containsCI(i.special->name(), word))
 			{
 				show = false;
 				break;
 			}
 		}
-		if (! show)
+		if (!show)
 			continue;
 
 		if (i.special->number() == current_special)
@@ -216,7 +220,7 @@ void ActionSpecialTreeView::filterSpecials(string filter)
 	}
 
 	// If we're filtering, expand all the groups
-	if (! show_everything)
+	if (!show_everything)
 	{
 		for (const auto& g : groups_)
 		{
@@ -245,7 +249,7 @@ void ActionSpecialTreeView::filterSpecials(string filter)
 	}
 
 	// If nothing was a viable selection, fall back to 0
-	if (! GetSelection().IsOk())
+	if (!GetSelection().IsOk())
 	{
 		Select(item_none_);
 		EnsureVisible(item_none_);
@@ -738,8 +742,9 @@ protected:
 class ArgsDelayControl : public ArgsChoiceControl
 {
 public:
-	ArgsDelayControl(wxWindow* parent, const game::Arg& arg, int units_per_sec)
-		: ArgsChoiceControl(parent, arg), units_per_sec_(units_per_sec)
+	ArgsDelayControl(wxWindow* parent, const game::Arg& arg, int units_per_sec) :
+		ArgsChoiceControl(parent, arg),
+		units_per_sec_(units_per_sec)
 	{
 		auto row = new wxBoxSizer(wxHORIZONTAL);
 
@@ -1049,22 +1054,23 @@ void ActionSpecialPanel::setupSpecialPanel()
 	text_special_ = new wxTextCtrl(panel_action_special_, wxID_ANY);
 	sizer->Add(text_special_, 0, wxEXPAND | wxBOTTOM, ui::pad());
 	// Typing in the box acts as a filter
-	text_special_->Bind(wxEVT_TEXT, [&](wxCommandEvent& e) {
-		// This method calls Select on itself, but we don't want to treat that as a real selection
-		// change, or we'll alter the text and recurse into it.  Disable the event while calling it
-		auto selection = selectedSpecial();
-		ignore_select_event_ = true;
-		tree_specials_->filterSpecials(text_special_->GetValue().ToStdString());
-		ignore_select_event_ = false;
+	text_special_->Bind(
+		wxEVT_TEXT,
+		[&](wxCommandEvent& e)
+		{
+			// This method calls Select on itself, but we don't want to treat that as a real selection
+			// change, or we'll alter the text and recurse into it.  Disable the event while calling it
+			auto selection       = selectedSpecial();
+			ignore_select_event_ = true;
+			tree_specials_->filterSpecials(text_special_->GetValue().ToStdString());
+			ignore_select_event_ = false;
 
-		if (selection != selectedSpecial())
-			updateArgsPanel();
-	});
+			if (selection != selectedSpecial())
+				updateArgsPanel();
+		});
 	// Focusing the text also select-alls; if you leave and return you probably want to start over,
 	// not make small edits
-	text_special_->Bind(wxEVT_SET_FOCUS, [&](wxFocusEvent& e) {
-		text_special_->SetSelection(-1, -1);
-	});
+	text_special_->Bind(wxEVT_SET_FOCUS, [&](wxFocusEvent& e) { text_special_->SetSelection(-1, -1); });
 
 	// Action specials tree
 	tree_specials_ = new ActionSpecialTreeView(panel_action_special_);
@@ -1456,8 +1462,8 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 {
-	if (ignore_select_event_ || selectedSpecial() < 0 ||
-		(game::configuration().featureSupported(game::Feature::Boom) && rb_generalised_->GetValue()))
+	if (ignore_select_event_ || selectedSpecial() < 0
+		|| (game::configuration().featureSupported(game::Feature::Boom) && rb_generalised_->GetValue()))
 	{
 		e.Skip();
 		return;

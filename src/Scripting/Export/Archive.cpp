@@ -311,21 +311,17 @@ void registerArchiveEntry(sol::state& lua)
 	lua_entry["FormattedName"] = sol::overload(
 		[](ArchiveEntry& self) { return formattedEntryName(self, true, true, false); },
 		[](ArchiveEntry& self, bool include_path) { return formattedEntryName(self, include_path, true, false); },
-		[](ArchiveEntry& self, bool include_path, bool include_extension) {
-			return formattedEntryName(self, include_path, include_extension, false);
-		},
+		[](ArchiveEntry& self, bool include_path, bool include_extension)
+		{ return formattedEntryName(self, include_path, include_extension, false); },
 		&formattedEntryName);
 	lua_entry["FormattedSize"] = &ArchiveEntry::sizeString;
-	lua_entry["ImportFile"]    = [](ArchiveEntry& self, string_view filename) {
-        return std::make_tuple(self.importFile(filename), global::error);
-	};
-	lua_entry["ImportEntry"] = [](ArchiveEntry& self, ArchiveEntry* entry) {
-		return std::make_tuple(self.importEntry(entry), global::error);
-	};
+	lua_entry["ImportFile"]    = [](ArchiveEntry& self, string_view filename)
+	{ return std::make_tuple(self.importFile(filename), global::error); };
+	lua_entry["ImportEntry"] = [](ArchiveEntry& self, ArchiveEntry* entry)
+	{ return std::make_tuple(self.importEntry(entry), global::error); };
 	lua_entry["ImportData"] = sol::overload(&entryImportString, &entryImportMC);
-	lua_entry["ExportFile"] = [](ArchiveEntry& self, string_view filename) {
-		return std::make_tuple(self.exportFile(filename), global::error);
-	};
+	lua_entry["ExportFile"] = [](ArchiveEntry& self, string_view filename)
+	{ return std::make_tuple(self.exportFile(filename), global::error); };
 	lua_entry["Rename"] = &entryRename;
 }
 
@@ -375,12 +371,10 @@ void registerArchivesNamespace(sol::state& lua)
 	archives["All"] = sol::overload(
 		[](bool res) { return app::archiveManager().allArchives(res); },
 		[]() { return app::archiveManager().allArchives(false); });
-	archives["Create"] = [](string_view format) {
-		return std::make_tuple(app::archiveManager().newArchive(format), global::error);
-	};
-	archives["OpenFile"] = [](string_view filename) {
-		return std::make_tuple(app::archiveManager().openArchive(filename), global::error);
-	};
+	archives["Create"] = [](string_view format)
+	{ return std::make_tuple(app::archiveManager().newArchive(format), global::error); };
+	archives["OpenFile"] = [](string_view filename)
+	{ return std::make_tuple(app::archiveManager().openArchive(filename), global::error); };
 	archives["Close"] = sol::overload(
 		[](Archive* archive) { return app::archiveManager().closeArchive(archive); },
 		[](int index) { return app::archiveManager().closeArchive(index); });

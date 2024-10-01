@@ -1128,8 +1128,8 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				md.head = header_entry;         // Header lump
 				md.name = header_entry->name(); // Map title
 				md.end  = lastentryismapentry ? // End lump
-							 entry :
-							 rootDir()->sharedEntryAt(--index);
+                             entry
+											  : rootDir()->sharedEntryAt(--index);
 
 				// If BEHAVIOR lump exists, it's a hexen format map
 				if (existing_map_lumps[LUMP_BEHAVIOR])

@@ -665,9 +665,9 @@ void MapEditContext::updateTagged()
 				case TagType::Sector1Thing2:
 				{
 					int thingtag = (needs_tag == TagType::Sector1Thing2) ? arg2 : tag;
-					int sectag   = (needs_tag == TagType::Sector1Thing2) ? tag :
-								   (needs_tag == TagType::Thing1Sector2) ? arg2 :
-																		   arg3;
+					int sectag   = (needs_tag == TagType::Sector1Thing2)   ? tag
+								   : (needs_tag == TagType::Thing1Sector2) ? arg2
+																		   : arg3;
 					if ((thingtag | sectag) == 0)
 						break;
 					else if (thingtag == 0)

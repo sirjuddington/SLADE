@@ -83,16 +83,19 @@ public:
 
 		// Bind events
 		Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, [&](wxDataViewEvent& e) { e.Veto(); });
-		Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [&](wxDataViewEvent& e) {
-			if (GetChildCount(e.GetItem()) > 0)
+		Bind(
+			wxEVT_DATAVIEW_ITEM_ACTIVATED,
+			[&](wxDataViewEvent& e)
 			{
-				// Expand if group node
-				Expand(e.GetItem());
-				e.Skip();
-			}
-			else if (parent_dialog_)
-				parent_dialog_->EndModal(wxID_OK);
-		});
+				if (GetChildCount(e.GetItem()) > 0)
+				{
+					// Expand if group node
+					Expand(e.GetItem());
+					e.Skip();
+				}
+				else if (parent_dialog_)
+					parent_dialog_->EndModal(wxID_OK);
+			});
 
 		// 64 is an arbitrary fudge factor -- should be at least the width of a
 		// scrollbar plus the expand icons plus any extra padding

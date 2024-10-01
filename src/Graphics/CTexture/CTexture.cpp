@@ -88,7 +88,8 @@ ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 // CTPatchEx class constructor w/basic initial values
 // -----------------------------------------------------------------------------
 CTPatchEx::CTPatchEx(string_view name, int16_t offset_x, int16_t offset_y, Type type) :
-	CTPatch{ name, offset_x, offset_y }, type_{ type }
+	CTPatch{ name, offset_x, offset_y },
+	type_{ type }
 {
 }
 

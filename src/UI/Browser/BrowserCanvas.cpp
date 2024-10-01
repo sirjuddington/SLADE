@@ -81,12 +81,12 @@ int BrowserCanvas::getViewedIndex()
 	if (items_filter_.empty())
 		return -1;
 
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	int viewport_height = size.y;
-	int row_height      = fullItemSizeY();
-	int viewport_mid_y  = yoff_ + viewport_height / 2.0;
-	int viewed_row      = viewport_mid_y / row_height;
-	int viewed_item_id  = (viewed_row + 0.5) * num_cols_;
+	const wxSize size            = GetSize() * GetContentScaleFactor();
+	int          viewport_height = size.y;
+	int          row_height      = fullItemSizeY();
+	int          viewport_mid_y  = yoff_ + viewport_height / 2.0;
+	int          viewed_row      = viewport_mid_y / row_height;
+	int          viewed_item_id  = (viewed_row + 0.5) * num_cols_;
 	if (viewed_item_id < 0)
 		viewed_item_id = 0;
 	else if ((unsigned)viewed_item_id >= items_filter_.size())
@@ -326,7 +326,7 @@ void BrowserCanvas::updateLayout(int viewed_index)
 
 	// Determine number of columns
 	const wxSize size = GetSize() * GetContentScaleFactor();
-	num_cols_ = size.x / fullItemSizeX();
+	num_cols_         = size.x / fullItemSizeX();
 	if (num_cols_ == 0)
 		num_cols_ = 1;
 
@@ -487,8 +487,8 @@ void BrowserCanvas::showItem(int item, int where)
 		return;
 
 	// Determine y-position of item
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	int num_cols = size.x / fullItemSizeX();
+	const wxSize size     = GetSize() * GetContentScaleFactor();
+	int          num_cols = size.x / fullItemSizeX();
 	if (num_cols == 0)
 		return;
 	int y_top    = (item / num_cols) * fullItemSizeY();
@@ -692,12 +692,12 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
 		item_selected_ = nullptr;
 
 		// Get column clicked & number of columns
-		const wxSize size = GetSize() * GetContentScaleFactor();
-		int col_width = size.x / num_cols_;
-		int col       = e.GetPosition().x * GetContentScaleFactor() / col_width;
+		const wxSize size      = GetSize() * GetContentScaleFactor();
+		int          col_width = size.x / num_cols_;
+		int          col       = e.GetPosition().x * GetContentScaleFactor() / col_width;
 
 		// Get row clicked
-		int row = (e.GetPosition().y * GetContentScaleFactor()  - top_y_) / (fullItemSizeY());
+		int row = (e.GetPosition().y * GetContentScaleFactor() - top_y_) / (fullItemSizeY());
 
 		// Select item
 		selectItem(top_index_ + (row * num_cols_) + col);
@@ -712,9 +712,9 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void BrowserCanvas::onKeyDown(wxKeyEvent& e)
 {
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	int num_cols = size.x / fullItemSizeX();
-	int offset;
+	const wxSize size     = GetSize() * GetContentScaleFactor();
+	int          num_cols = size.x / fullItemSizeX();
+	int          offset;
 
 	// Down arrow
 	if (e.GetKeyCode() == WXK_DOWN)

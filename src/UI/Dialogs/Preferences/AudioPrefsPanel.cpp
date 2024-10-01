@@ -81,10 +81,13 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	setupLayout();
 
 	// Bind events
-	btn_reset_player_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
-		audio::resetMIDIPlayer();
-		audio::midiPlayer().setVolume(snd_volume);
-	});
+	btn_reset_player_->Bind(
+		wxEVT_BUTTON,
+		[&](wxCommandEvent&)
+		{
+			audio::resetMIDIPlayer();
+			audio::midiPlayer().setVolume(snd_volume);
+		});
 	rb_fluidsynth_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent&) { updateControls(); });
 	rb_timidity_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent&) { updateControls(); });
 

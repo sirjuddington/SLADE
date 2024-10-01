@@ -606,7 +606,7 @@ vector<string> strutil::split(string_view str, char separator, bool skip_duplica
 	{
 		if (str[c] == separator)
 		{
-			if (! skip_duplicates || c > start)
+			if (!skip_duplicates || c > start)
 				split.emplace_back(str.substr(start, c - start));
 			start = c + 1;
 		}
@@ -626,7 +626,7 @@ vector<string_view> strutil::splitV(string_view str, char separator, bool skip_d
 	{
 		if (str[c] == separator)
 		{
-			if (! skip_duplicates || c > start)
+			if (!skip_duplicates || c > start)
 				split.push_back(str.substr(start, c - start));
 			start = c + 1;
 		}
@@ -714,8 +714,8 @@ string_view strutil::Path::path(bool include_end_sep) const
 	if (filename_start_ == 0 || filename_start_ == string::npos)
 		return {};
 
-	return include_end_sep ? string_view{ full_path_.data(), filename_start_ } :
-                             string_view{ full_path_.data(), filename_start_ - 1 };
+	return include_end_sep ? string_view{ full_path_.data(), filename_start_ }
+						   : string_view{ full_path_.data(), filename_start_ - 1 };
 }
 
 string_view strutil::Path::fileName(bool include_extension) const
@@ -723,8 +723,8 @@ string_view strutil::Path::fileName(bool include_extension) const
 	if (filename_start_ == string::npos)
 		return {};
 
-	return include_extension ? string_view{ full_path_.data() + filename_start_ } :
-                               string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
+	return include_extension ? string_view{ full_path_.data() + filename_start_ }
+							 : string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
 }
 
 string_view strutil::Path::extension() const
@@ -862,8 +862,8 @@ string_view strutil::Path::extensionOf(string_view full_path)
 string_view strutil::Path::pathOf(string_view full_path, bool include_end_sep)
 {
 	const auto last_sep_pos = full_path.find_last_of("/\\");
-	return last_sep_pos == string_view::npos ? string_view{} :
-                                               full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
+	return last_sep_pos == string_view::npos ? string_view{}
+											 : full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
 }
 
 bool strutil::Path::filePathsMatch(string_view left, string_view right)
@@ -1310,7 +1310,7 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 		}
 
 		// Whitespace
-		//if (current == ' ' || current == '\t' || current == '\r' || current == '\f' || current == '\v')
+		// if (current == ' ' || current == '\t' || current == '\r' || current == '\f' || current == '\v')
 		if (options.whitespace_characters.find(current) != string::npos)
 		{
 			// Add current token if needed

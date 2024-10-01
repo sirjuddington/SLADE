@@ -33,11 +33,11 @@
 #include <wx/app.h>
 
 #include "Main.h"
-#include "SplashWindow.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
+#include "SplashWindow.h"
 
 using namespace slade;
 
@@ -67,9 +67,9 @@ bool     init_done  = false;
 // SplashWindow class constructor
 // -----------------------------------------------------------------------------
 SplashWindow::SplashWindow(wxWindow* parent) :
-	wxMiniFrame{
-		parent, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-		wxBORDER_NONE | (parent ? wxFRAME_FLOAT_ON_PARENT : 0) }
+	wxMiniFrame{ parent,        -1,
+				 wxEmptyString, wxDefaultPosition,
+				 wxDefaultSize, wxBORDER_NONE | (parent ? wxFRAME_FLOAT_ON_PARENT : 0) }
 {
 	// Init
 	wxMiniFrame::SetBackgroundStyle(wxBG_STYLE_PAINT);
@@ -163,7 +163,7 @@ void SplashWindow::show(const wxString& message, bool progress)
 	else
 		show_progress_ = false;
 
-	// Show & init window
+		// Show & init window
 #ifndef __WXGTK__
 	SetInitialSize({ img_width, rheight });
 #else

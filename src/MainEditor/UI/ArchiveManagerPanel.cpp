@@ -225,7 +225,8 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 // the filters are always shown if any are defined.
 // -----------------------------------------------------------------------------
 WMFileBrowser::WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id) :
-	wxGenericDirCtrl(parent, id, wxDirDialogDefaultFolderStr), parent{ wm }
+	wxGenericDirCtrl(parent, id, wxDirDialogDefaultFolderStr),
+	parent{ wm }
 {
 	// Connect a custom event for when an item in the file tree is activated
 	auto tree_ctrl = wxGenericDirCtrl::GetTreeCtrl();
@@ -263,7 +264,8 @@ void WMFileBrowser::onItemActivated(wxTreeEvent& e)
 // ArchiveManagerPanel class constructor
 // -----------------------------------------------------------------------------
 ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives) :
-	DockPanel(parent), stc_archives_{ nb_archives }
+	DockPanel(parent),
+	stc_archives_{ nb_archives }
 {
 	// Create main sizer
 	auto vbox = new wxBoxSizer(wxVERTICAL);
@@ -2264,10 +2266,12 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 				// Show on top of the focused top-level window
 				// (There's a wxGetActiveWindow, but it doesn't work on Mac.)
 				wxWindow* focused = wxWindow::FindFocus();
-				if (focused) {
+				if (focused)
+				{
 					focused = wxGetTopLevelParent(focused);
 				}
-				if (! focused) {
+				if (!focused)
+				{
 					focused = maineditor::windowWx();
 				}
 				DirArchiveUpdateDialog dlg(focused, archive, change_list.changes);

@@ -722,7 +722,7 @@ MapVertex* SLADEMap::mergeVerticesPoint(const Vec2d& pos)
 	for (unsigned a = 0; a < vertices().size(); a++)
 	{
 		// Skip if vertex isn't on the point
-		if (! vertex(a)->position_.closerThan(pos, MERGE_ARCH_SPLIT_DIST))
+		if (!vertex(a)->position_.closerThan(pos, MERGE_ARCH_SPLIT_DIST))
 			continue;
 
 		// Set as the merge target vertex if we don't have one already

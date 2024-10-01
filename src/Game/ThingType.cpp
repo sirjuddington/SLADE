@@ -58,7 +58,10 @@ ThingType ThingType::unknown_;
 // ThingType class constructor
 // -----------------------------------------------------------------------------
 ThingType::ThingType(string_view name, string_view group, string_view class_name) :
-	name_{ name }, group_{ group }, tagged_{ TagType::None }, class_name_{ class_name }
+	name_{ name },
+	group_{ group },
+	tagged_{ TagType::None },
+	class_name_{ class_name }
 {
 }
 

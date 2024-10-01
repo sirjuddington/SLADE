@@ -85,7 +85,7 @@ ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, b
 		SetInitialSize({ size, size });
 	else
 		SetInitialSize(wxutil::scaledSize(32, 22));
-	
+
 	// Bind events
 	Bind(wxEVT_PAINT, &ColourBox::onPaint, this);
 	Bind(wxEVT_LEFT_DOWN, &ColourBox::onMouseLeftDown, this);

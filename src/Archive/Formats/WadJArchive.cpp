@@ -200,8 +200,7 @@ bool WadJArchive::open(MemChunk& mc)
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			if (entry->encryption() != ArchiveEntry::Encryption::None)
 			{
-				if (entry->exProps().contains("FullSize")
-					&& (unsigned)(entry->exProp<int>("FullSize")) > entry->size())
+				if (entry->exProps().contains("FullSize") && (unsigned)(entry->exProp<int>("FullSize")) > entry->size())
 					edata.reSize((entry->exProp<int>("FullSize")), true);
 				if (!jaguarDecode(edata))
 					log::warning(

@@ -74,7 +74,8 @@ StyleSet*                    ss_current = nullptr;
 // TextStyle class constructor
 // -----------------------------------------------------------------------------
 TextStyle::TextStyle(string_view name, string_view description, int style_id) :
-	name_{ name }, description_{ description }
+	name_{ name },
+	description_{ description }
 {
 	// Init variables
 	if (style_id >= 0)
@@ -264,7 +265,8 @@ string TextStyle::textDefinition(unsigned tabs) const
 // StyleSet class constructor
 // -----------------------------------------------------------------------------
 StyleSet::StyleSet(string_view name) :
-	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT), ts_selection_("selection", "Selected Text")
+	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT),
+	ts_selection_("selection", "Selected Text")
 {
 	// Init default style
 	wxFont f(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);

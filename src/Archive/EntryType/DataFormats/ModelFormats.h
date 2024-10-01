@@ -3,7 +3,7 @@
 class DMDModelDataFormat : public EntryDataFormat
 {
 public:
-	DMDModelDataFormat() : EntryDataFormat("mesh_dmd"){};
+	DMDModelDataFormat() : EntryDataFormat("mesh_dmd") {};
 	~DMDModelDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -22,7 +22,7 @@ public:
 class MDLModelDataFormat : public EntryDataFormat
 {
 public:
-	MDLModelDataFormat() : EntryDataFormat("mesh_mdl"){};
+	MDLModelDataFormat() : EntryDataFormat("mesh_mdl") {};
 	~MDLModelDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -41,7 +41,7 @@ public:
 class MD2ModelDataFormat : public EntryDataFormat
 {
 public:
-	MD2ModelDataFormat() : EntryDataFormat("mesh_md2"){};
+	MD2ModelDataFormat() : EntryDataFormat("mesh_md2") {};
 	~MD2ModelDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -60,7 +60,7 @@ public:
 class MD3ModelDataFormat : public EntryDataFormat
 {
 public:
-	MD3ModelDataFormat() : EntryDataFormat("mesh_md3"){};
+	MD3ModelDataFormat() : EntryDataFormat("mesh_md3") {};
 	~MD3ModelDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -79,7 +79,7 @@ public:
 class VOXVoxelDataFormat : public EntryDataFormat
 {
 public:
-	VOXVoxelDataFormat() : EntryDataFormat("voxel_vox"){};
+	VOXVoxelDataFormat() : EntryDataFormat("voxel_vox") {};
 	~VOXVoxelDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -106,7 +106,7 @@ public:
 class KVXVoxelDataFormat : public EntryDataFormat
 {
 public:
-	KVXVoxelDataFormat() : EntryDataFormat("voxel_kvx"){};
+	KVXVoxelDataFormat() : EntryDataFormat("voxel_kvx") {};
 	~KVXVoxelDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override

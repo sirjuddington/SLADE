@@ -51,7 +51,10 @@ using namespace slade;
 // ParseTreeNode class constructor
 // -----------------------------------------------------------------------------
 ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveDir* archive_dir, string_view type) :
-	STreeNode{ parent }, type_{ type }, parser_{ parser }, archive_dir_{ archive_dir }
+	STreeNode{ parent },
+	type_{ type },
+	parser_{ parser },
+	archive_dir_{ archive_dir }
 {
 	allowDup(true);
 }

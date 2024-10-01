@@ -61,7 +61,7 @@ struct CIntCVar : CVar
 	~CIntCVar() override = default;
 
 	// Operators so the cvar name can be used like a normal variable
-		operator int() const { return value; }
+	operator int() const { return value; }
 	int operator*() const { return value; }
 
 	int operator=(int val)
@@ -85,7 +85,7 @@ struct CBoolCVar : CVar
 	CBoolCVar(string_view name, bool defval, uint16_t flags);
 	~CBoolCVar() override = default;
 
-		 operator bool() const { return value; }
+	operator bool() const { return value; }
 	bool operator*() const { return value; }
 
 	bool operator=(bool val)
@@ -109,7 +109,7 @@ struct CFloatCVar : CVar
 	CFloatCVar(string_view name, double defval, uint16_t flags);
 	~CFloatCVar() override = default;
 
-		   operator double() const { return value; }
+	operator double() const { return value; }
 	double operator*() const { return value; }
 
 	double operator=(double val)
@@ -135,10 +135,10 @@ struct CStringCVar : CVar
 
 	bool empty() const { return value.empty(); }
 
-		   operator string() const { return value; }
+	operator string() const { return value; }
 	string operator*() const { return value; }
-		   operator string_view() const { return value; }
-		   operator wxString() const { return value; }
+	operator string_view() const { return value; }
+	operator wxString() const { return value; }
 
 	CStringCVar& operator=(string_view val)
 	{

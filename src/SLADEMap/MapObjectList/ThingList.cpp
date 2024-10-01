@@ -240,9 +240,9 @@ void ThingList::putAllTaggingWithId(int id, int type, vector<MapThing*>& list, i
 				arg3 = thing->arg(2);
 				arg5 = thing->arg(4);
 				fits =
-					(type == SLADEMap::SECTORS ?
-						 (IDEQ(tag)) :
-						 (type == SLADEMap::THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
+					(type == SLADEMap::SECTORS
+						 ? (IDEQ(tag))
+						 : (type == SLADEMap::THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
 			case TagType::LineId1Line2:
 				arg2 = thing->arg(1);

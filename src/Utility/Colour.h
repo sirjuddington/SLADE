@@ -14,7 +14,11 @@ struct ColRGBA
 	// Constructors
 	ColRGBA() = default;
 	ColRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, short index = -1) :
-		r{ r }, g{ g }, b{ b }, a{ a }, index{ index }
+		r{ r },
+		g{ g },
+		b{ b },
+		a{ a },
+		index{ index }
 	{
 	}
 	ColRGBA(const ColRGBA& c) = default;

@@ -72,7 +72,9 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 // ScriptEditorPanel class constructor
 // -----------------------------------------------------------------------------
 ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
-	wxPanel(parent, -1), entry_script_{ new ArchiveEntry() }, entry_compiled_{ new ArchiveEntry() }
+	wxPanel(parent, -1),
+	entry_script_{ new ArchiveEntry() },
+	entry_compiled_{ new ArchiveEntry() }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);

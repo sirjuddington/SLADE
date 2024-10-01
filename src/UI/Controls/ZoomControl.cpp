@@ -76,7 +76,9 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 // ZoomControl class constructor (linking GfxCanvas)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_gfx_canvas_{ linked_canvas }, zoom_(zoom_gfx)
+	wxPanel(parent, -1),
+	linked_gfx_canvas_{ linked_canvas },
+	zoom_(zoom_gfx)
 {
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
@@ -87,7 +89,9 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
 // ZoomControl class constructor (linking CTextureCanvas)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
-	wxPanel(parent, -1), linked_texture_canvas_{ linked_canvas }, zoom_(zoom_ctex)
+	wxPanel(parent, -1),
+	linked_texture_canvas_{ linked_canvas },
+	zoom_(zoom_ctex)
 {
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
@@ -186,7 +190,7 @@ void ZoomControl::setup()
 	for (const auto& pct : zoom_percents)
 		values.Add(fmt::format("{}%", pct));
 
-	// Combobox size
+		// Combobox size
 #ifdef WIN32
 	wxSize cbsize(ui::scalePx(64), -1);
 #else

@@ -143,7 +143,13 @@ void drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
 // Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
 // If [twoway] is true, an arrowhead is also drawn at the [p2] end
 // -----------------------------------------------------------------------------
-void drawing::drawArrow(Vec2d p1, Vec2d p2, const ColRGBA& color, bool twoway, double arrowhead_angle, double arrowhead_length)
+void drawing::drawArrow(
+	Vec2d          p1,
+	Vec2d          p2,
+	const ColRGBA& color,
+	bool           twoway,
+	double         arrowhead_angle,
+	double         arrowhead_length)
 {
 	Vec2d  a1l, a1r, a2l, a2r;
 	Vec2d  vector = p1 - p2;

@@ -42,12 +42,12 @@ namespace drawing
 	void drawLine(double x1, double y1, double x2, double y2);
 	void drawLineTabbed(Vec2d start, Vec2d end, double tab = 0.1, double tab_max = 16);
 	void drawArrow(
-		Vec2d   p1,
-		Vec2d   p2,
+		Vec2d          p1,
+		Vec2d          p2,
 		const ColRGBA& color            = ColRGBA::WHITE,
-		bool    twoway           = false,
-		double  arrowhead_angle  = 0.7854f,
-		double  arrowhead_length = 25.f);
+		bool           twoway           = false,
+		double         arrowhead_angle  = 0.7854f,
+		double         arrowhead_length = 25.f);
 	void drawRect(Vec2d tl, Vec2d br);
 	void drawRect(double x1, double y1, double x2, double y2);
 	void drawFilledRect(Vec2d tl, Vec2d br);
