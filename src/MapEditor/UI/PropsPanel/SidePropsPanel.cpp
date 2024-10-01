@@ -43,7 +43,6 @@
 #include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Layout.h"
-#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -107,11 +106,23 @@ public:
 			dc.colour.set(180, 0, 0);
 			dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 0.25f);
 		}
+
+		// Draw title
+		if (!title_.empty())
+		{
+			dc.colour.set(255, 255, 255);
+			dc.outline_colour.set(0, 0, 0);
+			dc.text_alignment = gl::draw2d::Align::Center;
+			dc.text_style     = gl::draw2d::TextStyle::Outline;
+			dc.font           = gl::draw2d::Font::Condensed;
+			dc.drawText(title_, { dc.viewSize().x * 0.5f, 2.0f });
+		}
 	}
 
 private:
 	unsigned texture_ = 0;
 	wxString texname_;
+	string   title_;
 };
 
 
@@ -214,41 +225,39 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	SetSizer(sizer);
 
 	// --- Textures ---
-	auto sizer_tex = new wxStaticBoxSizer(wxVERTICAL, this, "Textures");
-	sizer->Add(sizer_tex, wxSizerFlags().Expand());
-
 	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
-	sizer_tex->Add(gb_sizer, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(gb_sizer, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Upper
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Upper:"), lh.sfWithSmallBorder(0, wxBOTTOM).Center());
-	vbox->Add(gfx_upper_ = new SideTexCanvas(this), 1, wxEXPAND);
+	vbox->Add(gfx_upper_ = new SideTexCanvas(this, "Upper"), 1, wxEXPAND);
 	gb_sizer->Add(tcb_upper_ = new TextureComboBox(this), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Middle
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 1 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Middle:"), lh.sfWithSmallBorder(0, wxBOTTOM).Center());
-	vbox->Add(gfx_middle_ = new SideTexCanvas(this), 1, wxEXPAND);
+	vbox->Add(gfx_middle_ = new SideTexCanvas(this, "Middle"), 1, wxEXPAND);
 	gb_sizer->Add(tcb_middle_ = new TextureComboBox(this), { 1, 1 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Lower
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Lower:"), lh.sfWithSmallBorder(0, wxBOTTOM).Center());
-	vbox->Add(gfx_lower_ = new SideTexCanvas(this), 1, wxEXPAND);
+	vbox->Add(gfx_lower_ = new SideTexCanvas(this, "Lower"), 1, wxEXPAND);
 	gb_sizer->Add(tcb_lower_ = new TextureComboBox(this), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER);
+
+	// --- Offsets ---
+	text_offsetx_ = new NumberTextCtrl(this);
+	text_offsetx_->SetInitialSize(lh.size(64, -1));
+	text_offsety_ = new NumberTextCtrl(this);
+	text_offsety_->SetInitialSize(lh.size(64, -1));
+	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 3 }, { 2, 1 }, wxALIGN_TOP);
+	vbox->Add(new wxStaticText(this, -1, "Offset"), lh.sfWithSmallBorder(0, wxBOTTOM));
+	vbox->Add(wxutil::createLabelHBox(this, "X", text_offsetx_));
+	vbox->AddSpacer(lh.pad());
+	vbox->Add(wxutil::createLabelHBox(this, "Y", text_offsety_));
 
 	gb_sizer->AddGrowableCol(0, 1);
 	gb_sizer->AddGrowableCol(1, 1);
 	gb_sizer->AddGrowableCol(2, 1);
 	gb_sizer->AddGrowableRow(0, 1);
-
-
-	// --- Offsets ---
-	auto layout_offsets = lh.layoutVertically(
-		vector<wxObject*>{ wxutil::createLabelHBox(this, "X Offset:", text_offsetx_ = new NumberTextCtrl(this)),
-						   wxutil::createLabelHBox(this, "Y Offset:", text_offsety_ = new NumberTextCtrl(this)) });
-	sizer->Add(layout_offsets, lh.sfWithBorder(0, wxTOP).Expand());
 
 	// Bind events
 	tcb_upper_->Bind(wxEVT_TEXT, &SidePropsPanel::onTextureChanged, this);

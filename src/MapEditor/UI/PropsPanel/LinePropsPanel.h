@@ -17,10 +17,8 @@ public:
 	LinePropsPanel(wxWindow* parent);
 	~LinePropsPanel() override;
 
-	wxPanel* setupGeneralTab();
-	wxPanel* setupSpecialTab();
-	void     openObjects(vector<MapObject*>& lines) override;
-	void     applyChanges() override;
+	void openObjects(vector<MapObject*>& lines) override;
+	void applyChanges() override;
 
 private:
 	TabControl*          stc_tabs_            = nullptr;
@@ -42,5 +40,9 @@ private:
 		wxString    udmf;
 	};
 	vector<FlagHolder> flags_;
+
+	wxPanel* setupGeneralTab();
+	wxPanel* setupSpecialTab();
+	wxPanel* setupTexturesTab();
 };
 } // namespace slade
