@@ -40,22 +40,22 @@ decorate : cstyle {
 		Damage, DamageFactor, DamageMultiply, DamageType, PoisonDamage, PoisonDamageType,
 		ExplosionRadius, ExplosionDamage, SelfDamageFactor, RadiusDamageFactor, DontHurtShooter,
 		MeleeDamage, MeleeThreshold, MeleeRange, MaxTargetRange, FriendlySeeBlocks,
-		MissileType, MissileHeight, MinMissileChance,
+		MissileType, MissileHeight, MinMissileChance, MissileChanceMult,
 		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack,
 		RipperLevel, RipLevelMin, RipLevelMax,
 		Threshold, DefThreshold,
 		ShadowAimFactor, ShadowPenaltyFactor,
 
 		// Physics
-		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
-		DeathHeight, BurnHeight, ProjectilePassHeight, CameraHeight, MaxStepHeight, MaxDropOffHeight, 
+		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor,
+		DeathHeight, BurnHeight, ProjectilePassHeight, CameraHeight, MaxStepHeight, MaxDropOffHeight,
 		Speed, VSpeed, FastSpeed, FloatSpeed, Friction, MaxSlopeSteepness, ThruBits, LandingSpeed,
 
 		// Rendering
 		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded,
 		AddShaded, Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
 		BloodColor, BloodType, Decal, FloatBobPhase, DistanceCheck, SpriteAngle, SpriteRotation, VisibleAngles,
-		VisiblePitch, StealthAlpha, FloatBobStrength, RenderRadius, CameraFOV, LightLevel,
+		VisiblePitch, StealthAlpha, FloatBobStrength, RenderRadius, CameraFOV, LightLevel, FloatBobFactor,
 
 		// Sounds
 		SeeSound, AttackSound, PainSound, BounceSound, CrushPainSound,
@@ -181,6 +181,7 @@ decorate : cstyle {
 		ADDLIGHTLEVEL, CROSSLINECHECK, MASTERNOSEE, INVISIBLEINMIRRORS, ONLYVISIBLEINMIRRORS, ONLYSLAMSOLID,
 		SHADOWAIM, DOSHADOWBLOCK, SHADOWBLOCK, SHADOWAIMVERT, NOSAVEGAME, DECOUPLEDANIMATIONS, BILLBOARDFACECAMERA,
 		BILLBOARDNOFACECAMERA, FLIPSPRITEOFFSETX, FLIPSPRITEOFFSETY, CAMFOLLOWSPLAYER, NOMIPMAP, ISOMETRICSPRITES,
+		SQUAREPIXELS, NOSECTORDAMAGE, ISPUFF, FORCESECTORDAMAGE,
 
 		// INVENTORY.
 		INVENTORY,
@@ -378,7 +379,7 @@ decorate : cstyle {
 		RSF_FOG, RSF_KEEPTARGET, RSF_TELEFRAG,
 
 		// A_RadiusThrust flags
-		RTF_AFFECTSOURCE, RTF_NOIMPACTDAMAGE, RTF_NOTMISSILE, RTF_THRUSTZ,
+		RTF_AFFECTSOURCE, RTF_NOIMPACTDAMAGE, RTF_NOTMISSILE, RTF_THRUSTZ, RTF_CIRCULARTHRUST,
 
 		// A_Saw flags
 		SF_NOPULLIN, SF_NORANDOM, SF_NOTURN, SF_NOUSEAMMO, SF_NOUSEAMMOMISS, SF_RANDOMLIGHTBOTH,
@@ -393,7 +394,7 @@ decorate : cstyle {
 		// A_SpawnParticle flags
 		SPF_FULLBRIGHT, SPF_RELACCEL, SPF_RELANG, SPF_RELATIVE, SPF_RELPOS, SPF_RELVEL, SPF_NOTIMEFREEZE,
 		SPF_ROLL, SPF_REPLACE, SPF_NO_XY_BILLBOARD, SPF_LOCAL_ANIM, SPF_NEGATIVE_FADESTEP, SPF_FACECAMERA,
-		SPF_NOFACECAMERA, SPF_ROLLCENTER, SPF_NOMIPMAP, 
+		SPF_NOFACECAMERA, SPF_ROLLCENTER, SPF_NOMIPMAP,
 
 		// Render styles
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_OptFuzzy, STYLE_Stencil, STYLE_Translucent,
@@ -441,6 +442,7 @@ decorate : cstyle {
 
 		// A_Explode
 		XF_HURTSOURCE, XF_NOTMISSILE, XF_EXPLICITDAMAGETYPE, XF_NOSPLASH, XF_THRUSTZ, XF_THRUSTLESS, XF_NOALLIES, XF_CIRCULAR,
+		XF_CIRCULARTHRUST,
 
 		// A_ZoomFactor constants (not in constants.txt)
 		ZOOM_INSTANT, ZOOM_NOSCALETURNING,
