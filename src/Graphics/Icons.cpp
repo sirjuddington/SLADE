@@ -89,7 +89,7 @@ const IconSet& currentIconSet(Type type)
 	if (type == General || type == Any)
 	{
 		for (const auto& set : iconsets_general)
-			if (set.name == iconset_general)
+			if (set.name == iconset_general.value)
 				return set;
 
 		return iconsets_general[0];
@@ -98,7 +98,7 @@ const IconSet& currentIconSet(Type type)
 	if (type == Entry)
 	{
 		for (const auto& set : iconsets_entry)
-			if (set.name == iconset_entry_list)
+			if (set.name == iconset_entry_list.value)
 				return set;
 
 		return iconsets_entry[0];
