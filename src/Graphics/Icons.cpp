@@ -373,7 +373,7 @@ wxBitmap loadPNGIcon(const IconDef& icon, int size, Point2i padding)
 bool icons::loadIcons()
 {
 	// Check for dark mode
-#if defined(__WXMSW__)
+#if defined(__WXMSW__) && !wxCHECK_VERSION(3, 3, 0)
 	ui_icons_dark = false; // Force light theme icons in windows
 #elif wxCHECK_VERSION(3, 1, 0)
 	ui_icons_dark = wxSystemSettings::GetAppearance().IsDark();
