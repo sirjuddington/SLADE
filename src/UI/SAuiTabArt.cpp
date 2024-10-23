@@ -32,9 +32,10 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "SAuiTabArt.h"
+#include "App.h"
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
+#include "SAuiTabArt.h"
 #include "WxUtils.h"
 
 using namespace slade;
@@ -182,7 +183,8 @@ void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 		theRect.x + theRect.width - 1, theRect.y + height, theRect.x + theRect.width - 1, theRect.y + theRect.height);
 	dc.DrawLine(theRect.x, theRect.y + theRect.height - 1, theRect.x + theRect.width, theRect.y + theRect.height - 1);
 
-	dc.SetPen(wxPen((main_tabs_ && global::win_version_major >= 10) ? col_w10_bg : m_baseColour));
+	dc.SetPen(wxPen(
+		(main_tabs_ && global::win_version_major >= 10 && !app::isWindowsDarkMode()) ? col_w10_bg : m_baseColour));
 	dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + height);
 	dc.DrawLine(theRect.x + theRect.width - 1, theRect.y, theRect.x + theRect.width - 1, theRect.y + height);
 	dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);
@@ -191,8 +193,9 @@ void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* WXUNUSED(wnd), const wxRect& rect)
 {
 	// draw background
-	wxColor top_color    = (main_tabs_ && global::win_version_major >= 10) ? col_w10_bg : m_baseColour;
-	wxColor bottom_color = (main_tabs_ && global::win_version_major >= 10) ? col_w10_bg : m_baseColour;
+	bool    w10light     = main_tabs_ && global::win_version_major >= 10 && !app::isWindowsDarkMode();
+	wxColor top_color    = w10light ? col_w10_bg : m_baseColour;
+	wxColor bottom_color = w10light ? col_w10_bg : m_baseColour;
 	wxRect  r;
 
 	auto px1 = static_cast<int>(ui::scaleFactor());
@@ -437,7 +440,7 @@ void SAuiTabArt::DrawTab(
 			dc.SetBrush(wxBrush(drawing::lightColour(close_white ? bluetab_colour : bgcol, 1.0f)));
 			dc.DrawRectangle(rect.x, rect.y, rect.width, rect.width);
 
-			const auto& bmp = close_white ? close_bitmap_white_ : m_activeCloseBmp;
+			const auto& bmp = close_white || app::isWindowsDarkMode() ? close_bitmap_white_ : m_activeCloseBmp;
 #if wxCHECK_VERSION(3, 1, 6)
 			dc.DrawBitmap(bmp.GetBitmapFor(wnd), rect.x, rect.y);
 #else
@@ -446,7 +449,7 @@ void SAuiTabArt::DrawTab(
 		}
 		else
 		{
-			const auto& bmp = close_white ? close_bitmap_white_ : m_disabledCloseBmp;
+			const auto& bmp = close_white || app::isWindowsDarkMode() ? close_bitmap_white_ : m_disabledCloseBmp;
 #if wxCHECK_VERSION(3, 1, 6)
 			dc.DrawBitmap(bmp.GetBitmapFor(wnd).ConvertToDisabled(), rect.x, rect.y);
 #else
@@ -462,7 +465,16 @@ void SAuiTabArt::DrawTab(
 	dc.DestroyClippingRegion();
 }
 
-#if wxCHECK_VERSION(3, 1, 6)
+#if wxCHECK_VERSION(3, 3, 0)
+wxSize SAuiTabArt::GetTabSize(
+	wxReadOnlyDC&         dc,
+	wxWindow*             wnd,
+	const wxString&       caption,
+	const wxBitmapBundle& bitmap,
+	bool                  WXUNUSED(active),
+	int                   close_button_state,
+	int*                  x_extent)
+#elif wxCHECK_VERSION(3, 1, 6)
 wxSize SAuiTabArt::GetTabSize(
 	wxDC&                 dc,
 	wxWindow*             wnd,
@@ -562,7 +574,7 @@ SAuiDockArt::SAuiDockArt()
 	m_activeCloseBitmap   = icons::getInterfaceIcon("cross");
 	m_inactiveCloseBitmap = icons::getInterfaceIcon("cross"); //.ConvertToDisabled();
 
-	if (global::win_version_major >= 10)
+	if (global::win_version_major >= 10 && !app::isWindowsDarkMode())
 		m_sashBrush = wxBrush(col_w10_bg);
 
 	m_captionSize = ui::scalePxU(19);
@@ -750,7 +762,10 @@ void SAuiDockArt::DrawPaneButton(
 	// draw the button itself
 #if wxCHECK_VERSION(3, 1, 6)
 	dc.DrawBitmap(
-		active ? bmp.GetBitmapFor(window) : bmp.GetBitmapFor(window).ConvertToDisabled(), rect.x, rect.y, true);
+		active && !app::isWindowsDarkMode() ? bmp.GetBitmapFor(window) : bmp.GetBitmapFor(window).ConvertToDisabled(),
+		rect.x,
+		rect.y,
+		true);
 #else
 	dc.DrawBitmap(bmp, rect.x, rect.y, true);
 #endif

@@ -45,7 +45,7 @@ if ($build32.ToLower() -eq "y")
 
 	# Configure
 	Write-Host "`nConfiguring 32bit build..." -foregroundcolor blue
-	cmake -G Ninja $buildtype -DBUILD_PK3=OFF $targettriplet $toolchainfile $outputdir .. -B "build32"
+	cmake -G Ninja $buildtype -DBUILD_PK3=OFF -DBUILD_WX=ON $targettriplet $toolchainfile $outputdir .. -B "build32"
 
 	# Build
 	Write-Host "`nBuilding 32bit executable..." -foregroundcolor blue
@@ -53,7 +53,7 @@ if ($build32.ToLower() -eq "y")
 
 	# Clean up
 	Remove-Item -Recurse -Force "build32"
-	Remove-Item -Force ${env::temp}\vcvars32.txt
+	Remove-Item -Force "$env:temp\vcvars32.txt"
 }
 
 
@@ -84,7 +84,7 @@ if ($build64.ToLower() -eq "y")
 
 	# Configure
 	Write-Host "`nConfiguring 64bit build..." -foregroundcolor blue
-	cmake -G Ninja $buildtype -DBUILD_PK3=OFF $targettriplet $toolchainfile $outputdir .. -B "build64"
+	cmake -G Ninja $buildtype -DBUILD_PK3=OFF -DBUILD_WX=ON $targettriplet $toolchainfile $outputdir .. -B "build64"
 
 	# Build
 	Write-Host "`nBuilding 64bit executable..." -foregroundcolor blue
@@ -92,7 +92,7 @@ if ($build64.ToLower() -eq "y")
 
 	# Clean up
 	Remove-Item -Recurse -Force "build64"
-	Remove-Item -Force ${env::temp}\vcvars64.txt
+	Remove-Item -Force "$env:temp\vcvars64.txt"
 }
 
 Write-Host "`nDone!" -foregroundcolor green

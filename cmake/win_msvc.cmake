@@ -14,7 +14,9 @@ add_compile_options(/bigobj)
 # Dependencies -----------------------------------------------------------------
 
 # wxWidgets
-find_package(wxWidgets CONFIG REQUIRED)
+if (NOT BUILD_WX)
+	find_package(wxWidgets CONFIG REQUIRED)
+endif ()
 set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net)
 if (NO_WEBVIEW)
 	SET(WX_LIBS ${WX_LIBS} wx::html)
@@ -47,7 +49,7 @@ find_package(SFML COMPONENTS system audio window network CONFIG REQUIRED)
 # Include Search Paths ---------------------------------------------------------
 
 include_directories(
-	${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
+#	${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
 	.
 	..
 	../thirdparty/glad/include

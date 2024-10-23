@@ -18,6 +18,7 @@ file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
 	TextEditor/*.cpp
 	UI/*.cpp
 	Utility/*.cpp
+	ZReaders/*.cpp
 )
 
 # Lua/Scripting sources if not excluded
