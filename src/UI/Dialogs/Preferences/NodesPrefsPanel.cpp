@@ -70,7 +70,7 @@ NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	for (unsigned a = 0; a < nodebuilders::nNodeBuilders(); a++)
 	{
 		builders.Add(nodebuilders::builder(a).name);
-		if (nodebuilder_id == nodebuilders::builder(a).id)
+		if (nodebuilder_id.value == nodebuilders::builder(a).id)
 			sel = a;
 	}
 	choice_nodebuilder_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, builders);
@@ -110,7 +110,7 @@ void NodesPrefsPanel::init()
 	unsigned sel = 0;
 	for (unsigned a = 0; a < nodebuilders::nNodeBuilders(); a++)
 	{
-		if (nodebuilder_id == nodebuilders::builder(a).id)
+		if (nodebuilder_id.value == nodebuilders::builder(a).id)
 		{
 			sel = a;
 			break;

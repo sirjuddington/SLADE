@@ -77,7 +77,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	for (const auto& format : archive::allFormatsInfo())
 		if (format.create)
 		{
-			if (format.id == archive_last_created_format)
+			if (format.id == archive_last_created_format.value)
 				selected_index = choice_type->GetCount();
 
 			choice_type->AppendString(format.name + " Archive");

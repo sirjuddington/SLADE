@@ -9,9 +9,9 @@ z_animdefs {
 	case_sensitive = false;
 
 	keywords = {
-		texture, flat, tics, rand, range, fit, switch, sound, animateddoor,
+		texture, flat, tics, rand, range, fit, switch, sound, animateddoor, firetexture,
 		pic, warp, warp2, on, off, opensound, closesound, cameratexture, worldpanning,
-		notrim, canvastexture, hdr
+		notrim, canvastexture, hdr, color, palette
 	}
 
 	constants = {
@@ -130,7 +130,7 @@ z_iwadinfo
 		Name, AutoName, Game, Config, IWADName, MapInfo, MustContain, BannerColors,
 		StartupType, StartupSong, Compatibility, Required, Load, IgnoreTitlePatches,
 		DeleteLumps, NoKeyboardCheats, LoadLights, LoadBrightmaps, LoadWidescreen,
-		DiscordAppId, SteamAppId, SkipBexStringsIfLanguage
+		DiscordAppId, SteamAppId, SkipBexStringsIfLanguage, SupportWAD
 	}
 }
 
@@ -258,7 +258,7 @@ z_mapinfo {
 		avoidmelee, compat_avoidhazards, compat_stayonlift, compat_nombf21, compat_vileghosts,
 		attenuatelights, intro, outro, lightblendmode, cvar_redirect, compat_voodoozombies,
 		nopassover, passover, colormap, nogravity, lightningsound, compat_noacsargcheck,
-		nofogofwar,
+		nofogofwar, label, enteranim, exitanim,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -269,7 +269,7 @@ z_mapinfo {
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
 		FastMonsters, SlowMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain,
 		DefaultSkill, ArmorFactor, EasyKey, HealthFactor, KickbackFactor, NoMenu, baby, easy, hard, nightmare, normal,
-		playerrespawn, SpawnMulti, InstantReaction,
+		playerrespawn, SpawnMulti, SpawnMultiCoopOnly, InstantReaction,
 
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
@@ -469,15 +469,35 @@ z_sndinfo {
 	function_link = "http://zdoom.org/wiki/SNDINFO";
 
 	keywords = {
-		random, alias, limit, pitchshift, pitchshiftrange, playerreserve, playersound, playersounddup,
-		playeralias, playercompat, ambient, ifdoom, ifheretic, ifhexen, ifstrife, map, musicvolume,
-		registered, archivepath, point, surround, world, continuous, periodic, random,
-		volume, rolloff, mididevice, attenuation, edfoverride, musicalias, singular, endif, pitchset
+
+		// Commands
+		ambient, random, playersound, playersounddup, playercompat, playeralias,
+		alias, limit, singular, pitchshift, pitchshiftrange, map, registered,
+		archivepath, musicvolume, /* replaygain, */ mididevice, ifdoom, ifheretic,
+		ifhexen, ifstrife, rolloff, volume, musicalias, edfoverride, attenuation,
+		pitchset, modplayer,
+
+		// Used with $if<game> commands
+		endif
 	}
 
 	constants = {
-		custom, linear, log,
-		male, female, other
+
+		// $ambient
+		point, surround, world, continuous, random, periodic,
+
+		// $playersound/$playersounddup/$playercompat/$playeralias
+		male, female, neutral, neuter, other, object, cyborg,
+
+		// $mididevice
+		timidity, fmod, sndsys, standard, opl, default, fluidsynth, gus, wildmidi,
+		adl, opn,
+
+		// $rolloff
+		linear, log, custom,
+
+		// $modplayer
+		xmp, libxmp, dumb, libdumb
 	}
 }
 

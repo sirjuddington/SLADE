@@ -261,7 +261,7 @@ public:
 		if (fs_initialised_)
 		{
 			fluid_player_stop(fs_player_);
-			fluid_synth_system_reset(fs_synth_);
+			// fluid_synth_system_reset(fs_synth_); // Breaks soundfont on play/pause/stop
 			stopped = true;
 		}
 

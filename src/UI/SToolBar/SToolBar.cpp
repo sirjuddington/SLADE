@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SToolBar.h"
+#include "App.h"
 #include "General/SAction.h"
 #include "SToolBarButton.h"
 #include "UI/UI.h"
@@ -447,9 +448,18 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 	SetDoubleBuffered(true);
 #endif
 
-	// Set background colour
-	wxPanel::SetBackgroundColour(
-		(main_toolbar && global::win_version_major >= 10) ? wxColor(250, 250, 250) : wxutil::systemPanelBGColour());
+		// Set background colour
+#ifdef __WXMSW__
+	if (main_toolbar)
+	{
+		if (app::isWindowsDarkMode())
+			wxWindowBase::SetBackgroundColour(wxColor(0x262626));
+		else if (global::win_version_major >= 10)
+			wxWindowBase::SetBackgroundColour(wxColor(250, 250, 250));
+		else
+			wxWindowBase::SetBackgroundColour(wxutil::systemPanelBGColour());
+	}
+#endif
 
 	// Create sizer
 	auto* sizer = new wxBoxSizer(orientation);

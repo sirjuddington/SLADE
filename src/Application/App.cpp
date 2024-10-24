@@ -89,6 +89,7 @@ int             temp_fail_count = 0;
 bool            init_ok         = false;
 bool            exiting         = false;
 std::thread::id main_thread_id;
+bool            win_darkmode_enabled = false;
 
 // Version
 Version version_num{ 3, 3, 0, 1000 };
@@ -116,6 +117,7 @@ ResourceManager resource_manager;
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
 CVAR(String, temp_location_custom, "", CVar::Flag::Save)
 CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
+CVAR(Int, win_darkmode, 1, CVar::Flag::Save)
 
 
 // ----------------------------------------------------------------------------
@@ -496,6 +498,15 @@ bool app::init(const vector<string>& args)
 	lua::init();
 #endif
 
+	// Enable dark mode in Windows if requested and supported
+#if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
+	if (win_darkmode > 0)
+	{
+		win_darkmode_enabled = wxTheApp->MSWEnableDarkMode(
+			win_darkmode > 1 ? wxApp::DarkMode_Always : wxApp::DarkMode_Auto);
+	}
+#endif
+
 	// Init UI
 	ui::init();
 
@@ -787,6 +798,11 @@ bool app::isWin64Build()
 #else
 	return false;
 #endif
+}
+
+bool app::isWindowsDarkMode()
+{
+	return win_darkmode_enabled;
 }
 
 std::thread::id app::mainThreadId()

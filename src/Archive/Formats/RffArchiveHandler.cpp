@@ -98,14 +98,16 @@ struct RFFLump
 };
 
 // -----------------------------------------------------------------------------
-// From ZDoom: decrypts RFF data
+// Decrypt RFF data
 // -----------------------------------------------------------------------------
-void bloodCrypt(void* data, int key, int len)
+void bloodCrypt(uint32_t key, void* buffer, size_t len)
 {
-	int p = static_cast<uint8_t>(key), i;
-
-	for (i = 0; i < len; ++i)
-		static_cast<uint8_t*>(data)[i] ^= static_cast<unsigned char>(p + (i >> 1));
+	uint8_t* data = static_cast<uint8_t*>(buffer);
+	while (len > 0)
+	{
+		*data++ ^= key++ >> 1;
+		--len;
+	}
 }
 } // namespace
 
@@ -126,26 +128,41 @@ bool RffArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	if (!mc.hasData())
 		return false;
 
-	// Read grp header
-	uint8_t  magic[4];
-	uint32_t version, dir_offset, num_lumps;
+	// Read rff header
+	uint32_t magic, dir_offset, num_lumps;
+	uint16_t version;
 
 	mc.seek(0, SEEK_SET);
-	mc.read(magic, 4);       // Should be "RFF\x18"
-	mc.read(&version, 4);    // 0x01 0x03 \x00 \x00
-	mc.read(&dir_offset, 4); // Offset to directory
-	mc.read(&num_lumps, 4);  // No. of lumps in rff
-
-	// Byteswap values for big endian if needed
-	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
-	num_lumps  = wxINT32_SWAP_ON_BE(num_lumps);
-	version    = wxINT32_SWAP_ON_BE(version);
+	mc.read(&magic, 4);
+	mc.read(&version, 2);
+	mc.seek(2, SEEK_CUR);
+	mc.read(&dir_offset, 4); // Absolute offset to directory
+	mc.read(&num_lumps, 4);  // Number of lumps in rff
 
 	// Check the header
-	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
+	if (magic != wxUINT32_SWAP_ON_LE(0x5246461A)) // 'RFF\x1A'
 	{
 		log::error("RffArchiveHandler::openFile: File {} has invalid header", archive.filename());
 		global::error = "Invalid rff header";
+		return false;
+	}
+
+	// Byteswap values for big endian if needed
+	dir_offset = wxUINT32_SWAP_ON_BE(dir_offset);
+	num_lumps  = wxUINT32_SWAP_ON_BE(num_lumps);
+	version    = wxUINT16_SWAP_ON_BE(version);
+
+	// Check the version and select the key if needed
+	uint32_t key;
+	switch (version)
+	{
+	case 0x200: break;
+	case 0x300: key = dir_offset; break;
+	case 0x301: key = dir_offset << 1; break;
+
+	default:
+		log::error("RffArchive::open: File {} has unknown version {}", archive.filename(), version);
+		global::error = "Unknown rff version";
 		return false;
 	}
 
@@ -158,16 +175,29 @@ bool RffArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	mc.seek(dir_offset, SEEK_SET);
 	ui::setSplashProgressMessage("Reading rff archive data");
 	mc.read(lumps, num_lumps * sizeof(RFFLump));
-	bloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
-	for (uint32_t d = 0; d < num_lumps; d++)
+
+	// Decrypt if there is an encryption
+	if (version >= 0x300)
+		bloodCrypt(key, lumps, num_lumps * sizeof(RFFLump));
+
+	for (uint32_t d = 0; d < num_lumps; ++d)
 	{
 		// Update splash window progress
 		ui::setSplashProgress(d, num_lumps);
 
 		// Read lump info
-		char     name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		uint32_t offset   = wxINT32_SWAP_ON_BE(lumps[d].FilePos);
-		uint32_t size     = wxINT32_SWAP_ON_BE(lumps[d].Size);
+		char     name[13] = {};
+		uint32_t offset   = wxUINT32_SWAP_ON_BE(lumps[d].FilePos);
+		uint32_t size     = wxUINT32_SWAP_ON_BE(lumps[d].Size);
+
+		// If the lump data goes past the end of the file,
+		// the rff file is invalid
+		if (offset + size >= mc.size())
+		{
+			log::error("RffArchive::open: rff archive is invalid or corrupt");
+			global::error = "Archive is invalid and/or corrupt";
+			return false;
+		}
 
 		// Reconstruct name
 		int i, j = 0;
@@ -179,15 +209,6 @@ bool RffArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		}
 		for (name[i++] = '.'; j < 3; ++j)
 			name[i + j] = lumps[d].Extension[j];
-
-		// If the lump data goes past the end of the file,
-		// the rfffile is invalid
-		if (offset + size > mc.size())
-		{
-			log::error("RffArchiveHandler::open: rff archive is invalid or corrupt");
-			global::error = "Archive is invalid and/or corrupt";
-			return false;
-		}
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
@@ -211,7 +232,7 @@ bool RffArchiveHandler::open(Archive& archive, const MemChunk& mc)
 				uint8_t* cdata = new uint8_t[size];
 				memcpy(cdata, edata.data(), size);
 				int cryptlen = size < 256 ? size : 256;
-				bloodCrypt(cdata, 0, cryptlen);
+				bloodCrypt(0, cdata, cryptlen);
 				edata.importMem(cdata, size);
 				delete[] cdata;
 			}
@@ -248,57 +269,68 @@ bool RffArchiveHandler::write(Archive& archive, MemChunk& mc)
 }
 
 // -----------------------------------------------------------------------------
-// Checks if the given data is a valid Duke Nukem 3D grp archive
+// Checks if the given data is a valid Blood rff archive
 // -----------------------------------------------------------------------------
 bool RffArchiveHandler::isThisFormat(const MemChunk& mc)
 {
 	// Check size
-	if (mc.size() < 12)
+	if (mc.size() < 16)
 		return false;
 
-	// Read grp header
-	uint8_t  magic[4];
-	uint32_t version, dir_offset, num_lumps;
+	// Read rff header
+	uint32_t magic, dir_offset, num_lumps;
+	uint16_t version;
 
 	mc.seek(0, SEEK_SET);
-	mc.read(magic, 4);       // Should be "RFF\x18"
-	mc.read(&version, 4);    // 0x01 0x03 \x00 \x00
-	mc.read(&dir_offset, 4); // Offset to directory
-	mc.read(&num_lumps, 4);  // No. of lumps in rff
-
-	// Byteswap values for big endian if needed
-	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
-	num_lumps  = wxINT32_SWAP_ON_BE(num_lumps);
-	version    = wxINT32_SWAP_ON_BE(version);
+	mc.read(&magic, 4);
+	mc.read(&version, 2);
+	mc.seek(2, SEEK_CUR);
+	mc.read(&dir_offset, 4); // Absolute offset to directory
+	mc.read(&num_lumps, 4);  // Number of lumps in rff
 
 	// Check the header
-	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
+	if (magic != wxUINT32_SWAP_ON_LE(0x5246461A)) // 'RFF\x1A'
 		return false;
 
+	// Byteswap values for big endian if needed
+	dir_offset = wxUINT32_SWAP_ON_BE(dir_offset);
+	num_lumps  = wxUINT32_SWAP_ON_BE(num_lumps);
+	version    = wxUINT16_SWAP_ON_BE(version);
+
+	// Check the version and select the key if needed
+	uint32_t key;
+	switch (version)
+	{
+	case 0x200: break;
+	case 0x300: key = dir_offset; break;
+	case 0x301: key = dir_offset << 1; break;
+	default:    return false;
+	};
 
 	// Compute total size
 	auto lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
 	ui::setSplashProgressMessage("Reading rff archive data");
 	mc.read(lumps, num_lumps * sizeof(RFFLump));
-	bloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
-	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
-	uint32_t size      = 0;
-	for (uint32_t a = 0; a < num_lumps; ++a)
-	{
-		totalsize += lumps[a].Size;
-	}
+
+	// Decrypt if there is an encryption
+	if (version >= 0x300)
+		bloodCrypt(key, lumps, num_lumps * sizeof(RFFLump));
+
+	uint32_t totalsize = 16 + num_lumps * sizeof(RFFLump);
+	for (uint32_t d = 0; d < num_lumps; ++d)
+		totalsize += wxUINT32_SWAP_ON_BE(lumps[d].Size);
 
 	// Check if total size is correct
 	if (totalsize > mc.size())
 		return false;
 
-	// If it's passed to here it's probably a grp file
+	// If it's passed to here it's probably a rff file
 	return true;
 }
 
 // -----------------------------------------------------------------------------
-// Checks if the file at [filename] is a valid DN3D grp archive
+// Checks if the file at [filename] is a valid BLOOD rff archive
 // -----------------------------------------------------------------------------
 bool RffArchiveHandler::isThisFormat(const string& filename)
 {
@@ -310,43 +342,57 @@ bool RffArchiveHandler::isThisFormat(const string& filename)
 		return false;
 
 	// Check size
-	if (file.Length() < 12)
+	if (file.Length() < 16)
 		return false;
 
-	// Read grp header
-	uint8_t  magic[4];
-	uint32_t version, dir_offset, num_lumps;
+	// Read rff header
+	uint32_t magic, dir_offset, num_lumps;
+	uint16_t version;
 
 	file.Seek(0, wxFromStart);
-	file.Read(magic, 4);       // Should be "RFF\x18"
-	file.Read(&version, 4);    // 0x01 0x03 \x00 \x00
-	file.Read(&dir_offset, 4); // Offset to directory
-	file.Read(&num_lumps, 4);  // No. of lumps in rff
-
-	// Byteswap values for big endian if needed
-	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
-	num_lumps  = wxINT32_SWAP_ON_BE(num_lumps);
-	version    = wxINT32_SWAP_ON_BE(version);
+	file.Read(&magic, 4);
+	file.Read(&version, 2);
+	file.Seek(2, wxFromCurrent);
+	file.Read(&dir_offset, 4); // Absolute offset to directory
+	file.Read(&num_lumps, 4);  // Number of lumps in rff
 
 	// Check the header
-	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
+	if (magic != wxUINT32_SWAP_ON_LE(0x5246461A)) // 'RFF\x1A'
 		return false;
 
+	// Byteswap values for big endian if needed
+	dir_offset = wxUINT32_SWAP_ON_BE(dir_offset);
+	num_lumps  = wxUINT32_SWAP_ON_BE(num_lumps);
+	version    = wxUINT16_SWAP_ON_BE(version);
+
+	// Check the version and select the key if needed
+	uint32_t key;
+	switch (version)
+	{
+	case 0x200: break;
+	case 0x300: key = dir_offset; break;
+	case 0x301: key = dir_offset << 1; break;
+	default:    return false;
+	};
 
 	// Compute total size
 	auto lumps = new RFFLump[num_lumps];
 	file.Seek(dir_offset, wxFromStart);
 	ui::setSplashProgressMessage("Reading rff archive data");
 	file.Read(lumps, num_lumps * sizeof(RFFLump));
-	bloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
-	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
-	for (uint32_t a = 0; a < num_lumps; ++a)
-		totalsize += lumps[a].Size;
+
+	// Decrypt if there is an encryption
+	if (version >= 0x300)
+		bloodCrypt(key, lumps, num_lumps * sizeof(RFFLump));
+
+	uint32_t totalsize = 16 + num_lumps * sizeof(RFFLump);
+	for (uint32_t d = 0; d < num_lumps; ++d)
+		totalsize += wxUINT32_SWAP_ON_BE(lumps[d].Size);
 
 	// Check if total size is correct
 	if (totalsize > file.Length())
 		return false;
 
-	// If it's passed to here it's probably a grp file
+	// If it's passed to here it's probably a rff file
 	return true;
 }

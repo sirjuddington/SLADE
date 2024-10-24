@@ -59,6 +59,7 @@ EXTERN_CVAR(Bool, tabs_condensed)
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
 EXTERN_CVAR(Bool, elist_no_tree)
+EXTERN_CVAR(Int, win_darkmode)
 
 
 // -----------------------------------------------------------------------------
@@ -130,6 +131,8 @@ void InterfacePrefsPanel::init()
 		choice_elist_icon_size_->Select(2);
 
 	choice_elist_tree_style_->Select(elist_no_tree ? 1 : 0);
+
+	choice_windows_darkmode_->SetSelection(win_darkmode);
 }
 
 // -----------------------------------------------------------------------------
@@ -165,6 +168,8 @@ void InterfacePrefsPanel::applyPreferences()
 		elist_icon_size = 32;
 
 	elist_no_tree = choice_elist_tree_style_->GetSelection() == 1;
+
+	win_darkmode = choice_windows_darkmode_->GetSelection();
 }
 
 // -----------------------------------------------------------------------------
@@ -176,7 +181,10 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	auto lh    = ui::LayoutHelper(panel);
 
 	// Create controls
-	cb_start_page_          = new wxCheckBox(panel, -1, "Show Start Page on Startup");
+	cb_start_page_           = new wxCheckBox(panel, -1, "Show Start Page on Startup");
+	wxString darkmodes[]     = { "Off", "Use System Setting", "On" };
+	choice_windows_darkmode_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, darkmodes);
+	choice_windows_darkmode_->SetToolTip("Only supported on Windows 10 20H1 or later");
 	cb_file_browser_        = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
 	cb_list_monospace_      = new wxCheckBox(panel, -1, "Use monospaced font for lists");
 	cb_condensed_tabs_      = new wxCheckBox(panel, -1, "Condensed tabs *");
@@ -193,6 +201,14 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 
 	int row = 0;
 	gb_sizer->Add(cb_start_page_, { row++, 0 }, { 1, 2 }, wxEXPAND);
+#if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, "Use dark UI theme if supported:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(choice_windows_darkmode_, { row, 1 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+#else
+	choice_windows_darkmode_->Show(false);
+#endif
 	gb_sizer->Add(cb_file_browser_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 	gb_sizer->Add(cb_list_monospace_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 	gb_sizer->Add(cb_condensed_tabs_, { row++, 0 }, { 1, 2 }, wxEXPAND);

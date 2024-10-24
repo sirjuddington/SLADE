@@ -92,7 +92,7 @@ const IconSet& currentIconSet(Type type)
 	if (type == General || type == Any)
 	{
 		for (const auto& set : iconsets_general)
-			if (set.name == iconset_general)
+			if (set.name == iconset_general.value)
 				return set;
 
 		return iconsets_general[0];
@@ -101,7 +101,7 @@ const IconSet& currentIconSet(Type type)
 	if (type == Entry)
 	{
 		for (const auto& set : iconsets_entry)
-			if (set.name == iconset_entry_list)
+			if (set.name == iconset_entry_list.value)
 				return set;
 
 		return iconsets_entry[0];
@@ -376,7 +376,7 @@ wxBitmap loadPNGIcon(const IconDef& icon, int size, Point2i padding)
 bool icons::loadIcons()
 {
 	// Check for dark mode
-#if defined(__WXMSW__)
+#if defined(__WXMSW__) && !wxCHECK_VERSION(3, 3, 0)
 	ui_icons_dark = false; // Force light theme icons in windows
 #elif wxCHECK_VERSION(3, 1, 3)
 	ui_icons_dark = wxSystemSettings::GetAppearance().IsDark();

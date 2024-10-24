@@ -569,9 +569,9 @@ public:
 class DoomJaguarDataFormat : public EntryDataFormat
 {
 public:
-	DoomJaguarDataFormat(int colmajor = 0, string_view id = "img_doom_jaguar") :
-		EntryDataFormat(id),
-		colmajor(colmajor) {};
+	DoomJaguarDataFormat(int colmajor = 0, string_view id = "img_doom_jaguar") : EntryDataFormat(id), colmajor(colmajor)
+	{
+	}
 	~DoomJaguarDataFormat() override = default;
 
 	int isThisFormat(const MemChunk& mc) override
@@ -610,7 +610,7 @@ private:
 class DoomJaguarColMajorDataFormat : public DoomJaguarDataFormat
 {
 public:
-	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor") {};
+	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor") {}
 	~DoomJaguarColMajorDataFormat() override = default;
 };
 

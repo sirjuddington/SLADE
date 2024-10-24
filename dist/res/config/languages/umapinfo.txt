@@ -6,8 +6,8 @@ umapinfo
 
 	keywords =
 	{
-		map, true, false, clear, levelname, label, author, levelpic, next, nextsecret, skytexture, music, exitpic, enterpic,
-		partime, endgame, endpic, endbunny, endcast, nointermission, intertext, intertextsecret, interbackdrop,
+		map, true, false, clear, levelname, label, author, levelpic, next, nextsecret, skytexture, music, exitpic, enterpic, exitanim,
+		enteranim, partime, endgame, endpic, endbunny, endcast, nointermission, intertext, intertextsecret, interbackdrop,
 		intermusic, episode, bossaction
 	}
 

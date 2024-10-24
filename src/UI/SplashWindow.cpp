@@ -225,6 +225,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	// Setup text
 	wxFont font(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Calibri");
 	dc.SetFont(font);
+	dc.SetTextForeground(*wxBLACK);
 
 	// Draw version
 	wxString vers      = "v" + app::version().toString();

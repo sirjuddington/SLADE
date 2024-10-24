@@ -1201,10 +1201,10 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 
 		// Currently only supporting converting patch to texture in archives that support directories so just move
 		// things from patches to textures
-		string::size_type patch_extension_pos = patch_entry->name().find_last_of('.');
-		string            patch_extension     = patch_extension_pos != string::npos
-													? patch_entry->name().substr(patch_extension_pos, patch_entry->name().size())
-													: "";
+		auto patch_extension_pos = patch_entry->name().find_last_of('.');
+		auto patch_extension     = patch_extension_pos != string::npos
+									   ? patch_entry->name().substr(patch_extension_pos, patch_entry->name().size())
+									   : "";
 
 		string texture_file_name = texture->name();
 		texture_file_name.append(patch_extension);

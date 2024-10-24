@@ -17,7 +17,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
 # Dependencies -----------------------------------------------------------------
 
 # wxWidgets
-find_package(wxWidgets CONFIG REQUIRED)
+if (NOT BUILD_WX)
+	find_package(wxWidgets CONFIG REQUIRED)
+endif ()
 set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net)
 
 # FreeType
