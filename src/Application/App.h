@@ -68,8 +68,8 @@ namespace app
 	Platform      platform();
 	const string& iconFile();
 	bool          isWin64Build();
-	bool          isWindowsDarkMode();
 
 	std::thread::id mainThreadId();
+	bool            isDarkTheme();
 } // namespace app
 } // namespace slade

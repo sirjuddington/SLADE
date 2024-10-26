@@ -1,3 +1,4 @@
+#include "App.h"
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
@@ -69,6 +70,9 @@
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
 #endif
+#if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
+#include <wx/msw/darkmode.h>
+#endif
 
 #ifndef _WIN32
 #undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
@@ -89,7 +93,6 @@ int             temp_fail_count = 0;
 bool            init_ok         = false;
 bool            exiting         = false;
 std::thread::id main_thread_id;
-bool            win_darkmode_enabled = false;
 
 // Version
 Version version_num{ 3, 3, 0, 1000 };
@@ -118,6 +121,30 @@ CVAR(Int, temp_location, 0, CVar::Flag::Save)
 CVAR(String, temp_location_custom, "", CVar::Flag::Save)
 CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 CVAR(Int, win_darkmode, 1, CVar::Flag::Save)
+
+
+#if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
+namespace slade::app
+{
+// ----------------------------------------------------------------------------
+// SLADEDarkModeSettings Class
+//
+// Custom wxDarkModeSettings class to tweak some colours in dark mode
+// ----------------------------------------------------------------------------
+class SLADEDarkModeSettings : public wxDarkModeSettings
+{
+public:
+	wxColour GetColour(wxSystemColour index) override
+	{
+		switch (index)
+		{
+		case wxSYS_COLOUR_HIGHLIGHT: return wxColour("#4D6FB3");
+		default:                     return wxDarkModeSettings::GetColour(index);
+		}
+	}
+};
+} // namespace slade::app
+#endif
 
 
 // ----------------------------------------------------------------------------
@@ -501,10 +528,8 @@ bool app::init(const vector<string>& args)
 	// Enable dark mode in Windows if requested and supported
 #if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
 	if (win_darkmode > 0)
-	{
-		win_darkmode_enabled = wxTheApp->MSWEnableDarkMode(
-			win_darkmode > 1 ? wxApp::DarkMode_Always : wxApp::DarkMode_Auto);
-	}
+		wxTheApp->MSWEnableDarkMode(
+			win_darkmode > 1 ? wxApp::DarkMode_Always : wxApp::DarkMode_Auto, new SLADEDarkModeSettings());
 #endif
 
 	// Init UI
@@ -800,14 +825,14 @@ bool app::isWin64Build()
 #endif
 }
 
-bool app::isWindowsDarkMode()
-{
-	return win_darkmode_enabled;
-}
-
 std::thread::id app::mainThreadId()
 {
 	return main_thread_id;
+}
+
+bool app::isDarkTheme()
+{
+	return wxSystemSettings::GetAppearance().IsDark();
 }
 
 

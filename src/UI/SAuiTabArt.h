@@ -70,7 +70,7 @@ public:
 		int*                  xExtent) override;
 #endif
 
-	int GetIndentSize() override { return 2; }
+	int GetIndentSize() override { return -1; }
 
 protected:
 	bool     close_buttons_;

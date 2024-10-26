@@ -30,9 +30,11 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "UI/WxUtils.h"
+
+#include "App.h"
 #include "Graphics/Icons.h"
 #include "UI/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/Colour.h"
 
 using namespace slade;
@@ -249,7 +251,10 @@ void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 
 wxColour wxutil::systemPanelBGColour()
 {
-	return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
+	if (app::platform() == app::Windows && app::isDarkTheme())
+		return wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+	else
+		return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
 }
 
 wxColour wxutil::systemMenuTextColour()
