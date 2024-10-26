@@ -3,6 +3,7 @@
 #include "General/SActionHandler.h"
 #include "General/Sigslot.h"
 #include "UI/Controls/DockPanel.h"
+#include "UI/Controls/STabCtrl.h"
 
 namespace slade
 {
@@ -14,7 +15,6 @@ class ArchiveManagerPanel;
 class ArchivePanel;
 class EntryPanel;
 class ListView;
-class STabCtrl;
 class TextureXEditor;
 class WMFileBrowser;
 struct DirEntryChange;
@@ -122,7 +122,7 @@ public:
 	void onDirArchiveCheckCompleted(wxThreadEvent& e);
 
 private:
-	STabCtrl*        stc_tabs_                    = nullptr;
+	TabControl*      stc_tabs_                    = nullptr;
 	STabCtrl*        stc_archives_                = nullptr;
 	wxPanel*         panel_am_                    = nullptr;
 	wxPanel*         panel_archives_              = nullptr;

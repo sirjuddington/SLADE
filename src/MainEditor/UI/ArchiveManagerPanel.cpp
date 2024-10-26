@@ -340,7 +340,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	SetSizer(vbox);
 
 	// Create/setup tabs
-	stc_tabs_ = new STabCtrl(this, false);
+	stc_tabs_ = new TabControl(this, false);
 	stc_tabs_->SetInitialSize(wxSize(FromDIP(224), -1));
 	vbox->Add(stc_tabs_, lh.sfWithBorder(1).Expand());
 
