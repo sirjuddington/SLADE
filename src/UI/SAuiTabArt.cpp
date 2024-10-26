@@ -509,7 +509,17 @@ SAuiDockArt::SAuiDockArt(const wxWindow* window)
 	if (global::win_version_major >= 10 && !app::isDarkTheme())
 		m_sashBrush = wxBrush(col_w10_bg);
 
+#ifdef __WXMSW__
 	m_captionSize = window->FromDIP(16);
+#else
+	{
+		// Get line height of the system font
+		wxClientDC dc(const_cast<wxWindow*>(window));
+		dc.SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+		m_captionSize = dc.GetCharHeight() + window->FromDIP(4);
+	}
+#endif
+
 	m_sashSize    = window->FromDIP(4);
 	m_buttonSize  = window->FromDIP(16);
 	m_captionFont = wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
