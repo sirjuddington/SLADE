@@ -1,0 +1,24 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24">
+    <rect
+        x="1"
+        y="1"
+        width="22"
+        height="22"
+        fill="#237F32"
+        stroke="#B2FFBF"
+        stroke-width="1.5"
+        rx="5"
+        ry="12"
+    />
+    <g transform="scale(1.2,1.2)">
+        <path
+            d="M9 7a2 2 0 0 0 -2 2v8h2V9h2v7h2V9h2v8h2V9a2 2 0 0 0 -2 -2H9z"
+            fill="#FFFFFF"
+            transform="translate(-2,-2)"
+        />
+    </g>
+</svg>

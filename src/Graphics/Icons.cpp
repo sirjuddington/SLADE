@@ -56,6 +56,7 @@ namespace slade::icons
 struct IconDef
 {
 	string        svg_data;
+	string        svg_data_dark;
 	ArchiveEntry* entry_png16 = nullptr;
 	ArchiveEntry* entry_png32 = nullptr;
 };
@@ -164,11 +165,43 @@ IconDef parseIconDefinition(const ParseTreeNode& node, const Archive& res_archiv
 	// SVG icon
 	if (node.typeIs("icon_svg"))
 	{
-		auto* entry = res_archive.entryAtPath(node.stringValue());
-		if (entry)
-			idef.svg_data = entry->data().asString();
+		if (node.nChildren() > 0)
+		{
+			// Light and dark theme definitions
+
+			if (auto* c_light = node.childPTN("light"))
+			{
+				auto* entry = res_archive.entryAtPath(c_light->stringValue());
+				if (entry)
+					idef.svg_data = entry->data().asString();
+				else
+					log::error("Icon entry \"{}\" does not exist in slade.pk3", c_light->stringValue());
+			}
+
+			if (auto* c_dark = node.childPTN("dark"))
+			{
+				auto* entry = res_archive.entryAtPath(c_dark->stringValue());
+				if (entry)
+					idef.svg_data_dark = entry->data().asString();
+				else
+					log::error("Icon entry \"{}\" does not exist in slade.pk3", c_dark->stringValue());
+			}
+		}
 		else
-			log::error("Icon entry \"{}\" does not exist in slade.pk3", node.stringValue());
+		{
+			// Simple definition
+			auto* entry = res_archive.entryAtPath(node.stringValue());
+			if (entry)
+				idef.svg_data = entry->data().asString();
+			else
+				log::error("Icon entry \"{}\" does not exist in slade.pk3", node.stringValue());
+		}
+
+		// If only one svg entry is provided, use it for both light and dark
+		if (idef.svg_data.empty() && !idef.svg_data_dark.empty())
+			idef.svg_data = idef.svg_data_dark;
+		if (idef.svg_data_dark.empty() && !idef.svg_data.empty())
+			idef.svg_data_dark = idef.svg_data;
 	}
 
 	// PNG icon
@@ -466,7 +499,8 @@ wxBitmapBundle icons::getIcon(Type type, string_view name, int size, const Point
 
 	// If there is SVG data use that
 	if (!icon_def->svg_data.empty())
-		return wxBitmapBundle::FromSVG(icon_def->svg_data.c_str(), { size, size });
+		return wxBitmapBundle::FromSVG(
+			ui_icons_dark ? icon_def->svg_data_dark.c_str() : icon_def->svg_data.c_str(), { size, size });
 
 	// Otherwise load from png
 	if (icon_def->entry_png16 || icon_def->entry_png32)

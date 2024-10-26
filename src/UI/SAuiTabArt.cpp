@@ -584,11 +584,7 @@ void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, 
 	dc.GetTextExtent(draw_text, &w, &h);
 
 	dc.SetClippingRegion(clip_rect);
-	// #ifdef __WXMSW__
 	dc.DrawText(draw_text, rect.x + px5 + caption_offset, rect.y + rect.height - h);
-	// #else
-	//	dc.DrawText(draw_text, rect.x + px5 + caption_offset, rect.y + (rect.height / 2) - (h / 2) + 1);
-	// #endif
 
 	dc.DestroyClippingRegion();
 }
