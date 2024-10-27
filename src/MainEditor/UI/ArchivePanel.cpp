@@ -2005,6 +2005,12 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 			new_area = default_area_;
 		else if (entry->type() == EntryType::mapMarkerType())
 			new_area = mapArea();
+		else if (entry->isArchive())
+		{
+			// Check for archive that is a map (eg. maps/ in a zip)
+			if (archive->mapDesc(entry).head.lock().get() == entry)
+				new_area = mapArea();
+		}
 		else if (entry->type()->editor() == "gfx")
 			new_area = gfxArea();
 		else if (entry->type()->editor() == "palette")
@@ -2533,6 +2539,12 @@ bool ArchivePanel::handleAction(string_view id)
 
 		// Open in text editor
 		openEntryAsText(entry);
+	}
+	else if (id == "pmap_open_archive")
+	{
+		// Open map archive (eg. wad in zip)
+		ArchiveEntry* entry = mapArea()->entry();
+		app::archiveManager().openArchive(entry);
 	}
 
 	// Run archive
@@ -3344,9 +3356,16 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 	if (!entry)
 		return;
 
+	bool is_map = false;
+
 	// Archive
-	if (entry->type()->formatId().substr(0, 8) == "archive_")
-		app::archiveManager().openArchive(entry);
+	if (entry->isArchive())
+	{
+		if (archive->mapDesc(entry).head.lock().get() == entry)
+			is_map = true;
+		else
+			app::archiveManager().openArchive(entry);
+	}
 
 	// Texture list
 	else if (
@@ -3355,14 +3374,32 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 		maineditor::openTextureEditor(archive.get(), entry);
 
 	// Map
-	// TODO: Needs to filter the game/port lists in the dialog by the map format
 	else if (entry->type() == EntryType::mapMarkerType())
+		is_map = true;
+
+	// Other entry
+	else if (entry->type() != EntryType::folderType())
+		maineditor::openEntry(entry);
+
+	// Launch map editor if map
+	if (is_map)
 	{
+		// TODO: Needs to filter the game/port lists in the dialog by the map format
+
 		// Open map editor config dialog
 		MapEditorConfigDialog dlg(this, archive.get(), false);
 		if (dlg.ShowModal() == wxID_OK)
 		{
+			// Get map info
 			auto info = archive->mapDesc(entry);
+			if (entry->isArchive() && info.format == MapFormat::Unknown)
+			{
+				auto tmp_archive = std::make_unique<Archive>(ArchiveFormat::Wad);
+				tmp_archive->open(entry);
+				auto maps = tmp_archive->detectMaps();
+				if (!maps.empty())
+					info.format = maps[0].format;
+			}
 
 			// Check selected game configuration is ok
 			if (!dlg.configMatchesMap(info))
@@ -3387,10 +3424,6 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 			}
 		}
 	}
-
-	// Other entry
-	else if (entry->type() != EntryType::folderType())
-		maineditor::openEntry(entry);
 
 	e.Skip();
 }

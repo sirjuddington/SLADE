@@ -20,9 +20,10 @@ protected:
 
 private:
 	unique_ptr<MapPreviewData> map_data_;
-	wxWindow*                  map_canvas_     = nullptr;
-	wxCheckBox*                cb_show_things_ = nullptr;
-	wxStaticText*              label_stats_    = nullptr;
+	wxWindow*                  map_canvas_       = nullptr;
+	wxCheckBox*                cb_show_things_   = nullptr;
+	wxStaticText*              label_stats_      = nullptr;
+	SToolBarButton*            tbb_open_archive_ = nullptr;
 
 	void onCBShowThings(wxCommandEvent& e);
 };

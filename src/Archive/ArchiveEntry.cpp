@@ -679,3 +679,12 @@ bool ArchiveEntry::isFolderType() const
 {
 	return type_ == EntryType::folderType();
 }
+
+// -----------------------------------------------------------------------------
+// Returns true if the entry's type is an archive type (eg. wad)
+// -----------------------------------------------------------------------------
+bool ArchiveEntry::isArchive() const
+{
+	// TODO: Should probably add an is_archive flag to EntryType but this will do for now
+	return type()->category() == "Archives";
+}

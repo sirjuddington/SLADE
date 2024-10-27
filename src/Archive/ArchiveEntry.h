@@ -108,6 +108,7 @@ public:
 	bool          isInNamespace(string_view ns);
 	ArchiveEntry* relativeEntry(string_view path, bool allow_absolute_path = true) const;
 	bool          isFolderType() const;
+	bool          isArchive() const;
 
 private:
 	// Entry Info

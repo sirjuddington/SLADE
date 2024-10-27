@@ -34,11 +34,13 @@
 #include "MapEntryPanel.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
 #include "General/MapPreviewData.h"
 #include "UI/Canvas/Canvas.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -83,6 +85,7 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map"), map_
 	auto group = new SToolBarGroup(toolbar_, "Map");
 	group->addActionButton("save_image", "Save Map Image", "export", "Save map overview to an image", true);
 	group->addActionButton("pmap_open_text", "", true);
+	tbb_open_archive_ = group->addActionButton("pmap_open_archive", "", true);
 	toolbar_->addGroup(group);
 
 	// Remove save/revert buttons
@@ -112,18 +115,37 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	// Clear current map data
 	map_data_->clear();
 
-	// Find map definition for entry
-	auto    maps = entry->parent()->detectMaps();
 	MapDesc thismap;
 	bool    found = false;
-	for (auto& map : maps)
+
+	// Check for wad archive (map in zip)
+	unique_ptr<Archive> tmp_archive;
+	if (entry->type()->formatId() == "archive_wad")
 	{
-		if (map.head.lock().get() == entry)
+		tmp_archive = std::make_unique<Archive>(ArchiveFormat::Wad);
+		tmp_archive->open(entry);
+		auto maps = tmp_archive->detectMaps();
+		if (!maps.empty())
 		{
-			thismap = map;
+			thismap = maps[0];
 			found   = true;
-			break;
 		}
+		tbb_open_archive_->Show(true);
+	}
+	else // Normal map entry
+	{
+		// Find map definition for entry
+		auto maps = entry->parent()->detectMaps();
+		for (auto& map : maps)
+		{
+			if (map.head.lock().get() == entry)
+			{
+				thismap = map;
+				found   = true;
+				break;
+			}
+		}
+		tbb_open_archive_->Show(false);
 	}
 
 	// All errors = invalid map
