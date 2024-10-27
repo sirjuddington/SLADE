@@ -171,8 +171,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 
 	// Setup layout
 	wxTopLevelWindowBase::Layout();
-	const wxSize size = GetSize() * wxWindowBase::GetContentScaleFactor();
-	SetInitialSize(size);
+	SetInitialSize(GetBestSize());
 	wxTopLevelWindowBase::SetMinSize(GetBestSize());
 	CenterOnParent();
 
