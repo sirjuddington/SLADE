@@ -72,6 +72,8 @@ public:
 		wxWindowBase::SetMinSize(wxSize(width, height));
 		SetSize(width, height);
 
+		SetBackgroundColour(parent->GetBackgroundColour());
+
 		// Set window name
 		wxWindowBase::SetName("tb_sep");
 
@@ -112,6 +114,8 @@ public:
 		wxWindowBase::SetSizeHints(width, height, width, height);
 		wxWindowBase::SetMinSize(wxSize(width, height));
 		SetSize(width, height);
+
+		SetBackgroundColour(parent->GetBackgroundColour());
 
 		// Set window name
 		wxWindowBase::SetName("tb_sep");
@@ -450,7 +454,8 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 
 	// Set background colour
 	if (app::platform() == app::Windows && main_toolbar)
-		wxWindowBase::SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENU));
+		wxWindowBase::SetBackgroundColour(
+			wxSystemSettings::GetColour(app::isDarkTheme() ? wxSYS_COLOUR_MENU : wxSYS_COLOUR_WINDOW));
 
 	// Create sizer
 	auto* sizer = new wxBoxSizer(orientation);

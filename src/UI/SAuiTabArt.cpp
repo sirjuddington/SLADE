@@ -320,7 +320,7 @@ void SAuiTabArt::DrawTab(
 	if (page.active)
 	{
 		// draw active tab
-		bgcol = m_activeColour;
+		bgcol = bluetab ? bluetab_colour : m_activeColour;
 
 		// draw base background color
 		wxRect r(tab_x, tab_y, tab_width, tab_height);
@@ -334,7 +334,7 @@ void SAuiTabArt::DrawTab(
 			wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 			dc.SetPen(*wxTRANSPARENT_PEN);
 			dc.SetBrush(wxBrush(col_hilight));
-			dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, px2);
+			dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, px3);
 		}
 	}
 	else
@@ -342,7 +342,6 @@ void SAuiTabArt::DrawTab(
 		bgcol = inactive_tab_colour_;
 
 		wxRect r(tab_x, tab_y, tab_width, tab_height);
-		// wxPoint mouse = wnd->ScreenToClient(wxGetMousePosition());
 		dc.SetPen(wxPen(inactive_tab_colour_));
 		dc.SetBrush(wxBrush(page.hover ? m_baseColour : inactive_tab_colour_));
 		dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, r.height - px4);
@@ -397,20 +396,28 @@ void SAuiTabArt::DrawTab(
 
 		IndentPressedBitmap(&rect, close_button_state);
 
-		bool close_white = bluetab && page.active;
+		bool close_white = bluetab && page.active || app::isDarkTheme();
 
 		if (close_button_state == wxAUI_BUTTON_STATE_HOVER || close_button_state == wxAUI_BUTTON_STATE_PRESSED)
 		{
-			dc.SetPen(wxPen(wxutil::darkColour(close_white ? bluetab_colour : bgcol, 2.0f)));
-			dc.SetBrush(wxBrush(wxutil::lightColour(close_white ? bluetab_colour : bgcol, 1.0f)));
-			dc.DrawRectangle(rect.x, rect.y, rect.width, rect.width);
+			if (close_white)
+			{
+				dc.SetPen(wxPen(bgcol.ChangeLightness(160)));
+				dc.SetBrush(wxBrush(bgcol.ChangeLightness(125)));
+			}
+			else
+			{
+				dc.SetPen(wxPen(bgcol.ChangeLightness(60)));
+				dc.SetBrush(wxBrush(bgcol.ChangeLightness(90)));
+			}
+			dc.DrawRoundedRectangle(rect.x, rect.y, rect.width, rect.width, wnd->FromDIP(1));
 
-			const auto& bmp = close_white || app::isDarkTheme() ? close_bitmap_white_ : m_activeCloseBmp;
+			const auto& bmp = close_white ? close_bitmap_white_ : m_activeCloseBmp;
 			dc.DrawBitmap(bmp.GetBitmapFor(wnd), rect.x, rect.y);
 		}
 		else
 		{
-			const auto& bmp = close_white || app::isDarkTheme() ? close_bitmap_white_ : m_disabledCloseBmp;
+			const auto& bmp = close_white ? close_bitmap_white_ : m_disabledCloseBmp;
 			dc.DrawBitmap(bmp.GetBitmapFor(wnd).ConvertToDisabled(), rect.x, rect.y);
 		}
 
@@ -658,15 +665,15 @@ void SAuiDockArt::DrawPaneButton(
 	{
 		if (app::isDarkTheme())
 		{
-			dc.SetPen(wxPen(caption_back_colour_.ChangeLightness(140)));
-			dc.SetBrush(wxBrush(caption_back_colour_.ChangeLightness(115)));
+			dc.SetPen(wxPen(caption_back_colour_.ChangeLightness(160)));
+			dc.SetBrush(wxBrush(caption_back_colour_.ChangeLightness(125)));
 		}
 		else
 		{
 			dc.SetPen(wxPen(caption_back_colour_.ChangeLightness(60)));
 			dc.SetBrush(wxBrush(caption_back_colour_.ChangeLightness(90)));
 		}
-		dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
+		dc.DrawRoundedRectangle(rect.x, rect.y, rect.width, rect.height, window->FromDIP(1));
 	}
 
 	dc.DrawBitmap(bmp.GetBitmapFor(window), rect.x, rect.y, true);
