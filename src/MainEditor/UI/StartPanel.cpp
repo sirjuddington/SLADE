@@ -207,6 +207,7 @@ StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	wxPanel::SetName("startpage");
 
+	wxWindow::SetDoubleBuffered(true);
 	wxWindowBase::SetBackgroundColour(backgroundColour());
 	wxWindowBase::SetForegroundColour(wxColour(app::isDarkTheme() ? foreground_colour_dark : "#000000"));
 

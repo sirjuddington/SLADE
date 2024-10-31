@@ -482,7 +482,11 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 				SActionHandler::doAction(action_->id());
 			}
 			else
+#ifdef __WXMSW__
 				CallAfter(&SToolBarButton::sendClickedEvent);
+#else
+				sendClickedEvent();
+#endif
 
 			pressed_ = false;
 			refresh  = true;
