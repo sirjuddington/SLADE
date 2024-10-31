@@ -30,24 +30,15 @@ public:
 	void setPadding(int inner, int outer = 1);
 	void setExactFit(bool fit);
 
-	bool updateState(int mouse_event = 0);
-
 	static int pixelHeight();
 
 private:
-	enum class State
-	{
-		Normal,
-		MouseOver,
-		MouseDown,
-	};
-
 	SAction*       action_ = nullptr;
 	wxBitmapBundle icon_;
-	State          state_             = State::Normal;
-	bool           show_name_         = false;
-	wxMenu*        menu_dropdown_     = nullptr;
-	bool           last_draw_enabled_ = true; // True if the button was enabled last time it was drawn
+	bool           pressed_       = false;
+	bool           show_name_     = false;
+	wxMenu*        menu_dropdown_ = nullptr;
+	bool           menu_open_     = false;
 
 	// For non-SAction buttons
 	wxString action_id_;
@@ -69,7 +60,6 @@ private:
 	// Events
 	void onPaint(wxPaintEvent& e);
 	void onMouseEvent(wxMouseEvent& e);
-	void onFocus(wxFocusEvent& e);
 	void onEraseBackground(wxEraseEvent& e);
 };
 } // namespace slade

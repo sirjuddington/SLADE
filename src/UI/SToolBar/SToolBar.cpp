@@ -351,7 +351,11 @@ void SToolBarGroup::refreshButtons() const
 {
 	for (const auto& item : items_)
 		if (item.type == GroupItem::Type::Button)
-			dynamic_cast<SToolBarButton*>(item.control)->updateState();
+		{
+			auto* button = dynamic_cast<SToolBarButton*>(item.control);
+			button->Update();
+			button->Refresh();
+		}
 }
 
 // -----------------------------------------------------------------------------
