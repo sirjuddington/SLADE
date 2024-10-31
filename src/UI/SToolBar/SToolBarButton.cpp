@@ -75,7 +75,8 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const w
 	help_text_{ action_->helpText() },
 	pad_outer_{ 1 },
 	pad_inner_{ 2 },
-	icon_size_{ toolbar_size }
+	icon_size_{ toolbar_size },
+	text_offset_{ parent->FromDIP(2) }
 {
 	setup(show_name, icon.IsEmpty() ? action_->iconName() : wxutil::strToView(icon));
 
@@ -115,7 +116,8 @@ SToolBarButton::SToolBarButton(
 	help_text_{ help_text },
 	pad_outer_{ 1 },
 	pad_inner_{ 2 },
-	icon_size_{ icon_size < 0 ? toolbar_size : icon_size }
+	icon_size_{ icon_size < 0 ? toolbar_size : icon_size },
+	text_offset_{ parent->FromDIP(2) }
 {
 	setup(show_name, wxutil::strToView(icon));
 
@@ -213,6 +215,15 @@ void SToolBarButton::setExactFit(bool fit)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the text offset (space between icon and text)
+// -----------------------------------------------------------------------------
+void SToolBarButton::setTextOffset(int offset)
+{
+	text_offset_ = offset;
+	updateSize();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the pixel height of all SToolBarButtons
 // -----------------------------------------------------------------------------
 int SToolBarButton::pixelHeight()
@@ -272,7 +283,7 @@ void SToolBarButton::updateSize()
 	int height    = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
 	int min_width = height + text_width_;
 	if (text_width_ > 0)
-		min_width += pad_inner_;
+		min_width += pad_inner_ + text_offset_;
 	if (menu_dropdown_)
 		min_width += icon_size_ * 0.6;
 
@@ -397,7 +408,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	if (show_name_)
 	{
 		int top  = (static_cast<double>(GetSize().y) * 0.5) - (static_cast<double>(name_height) * 0.5);
-		int left = pad_outer_ + pad_inner_ * 2 + icon_size_;
+		int left = pad_outer_ + pad_inner_ * 2 + icon_size_ + text_offset_;
 		dc.DrawText(name, FromDIP(left), top);
 	}
 
@@ -471,7 +482,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 				SActionHandler::doAction(action_->id());
 			}
 			else
-				sendClickedEvent();
+				CallAfter(&SToolBarButton::sendClickedEvent);
 
 			pressed_ = false;
 			refresh  = true;

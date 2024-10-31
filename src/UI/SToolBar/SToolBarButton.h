@@ -29,6 +29,7 @@ public:
 	void setFontSize(float scale);
 	void setPadding(int inner, int outer = 1);
 	void setExactFit(bool fit);
+	void setTextOffset(int offset);
 
 	static int pixelHeight();
 
@@ -47,11 +48,12 @@ private:
 	bool     checked_ = false;
 
 	// Layout
-	int  pad_outer_  = 3;
-	int  pad_inner_  = 1;
-	int  icon_size_  = 16;
-	int  text_width_ = 0;
-	bool exact_fit_  = true;
+	int  pad_outer_   = 3;
+	int  pad_inner_   = 1;
+	int  icon_size_   = 16;
+	int  text_width_  = 0;
+	int  text_offset_ = 0; // Space between icon and text
+	bool exact_fit_   = true;
 
 	void setup(bool show_name, string_view icon);
 	void sendClickedEvent();

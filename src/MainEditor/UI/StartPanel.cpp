@@ -159,6 +159,38 @@ wxSizer* createActionsSizer(wxWindow* parent)
 
 	return sizer;
 }
+
+// -----------------------------------------------------------------------------
+// Returns the icon for an archive at [path]
+// -----------------------------------------------------------------------------
+string getArchiveIcon(const strutil::Path& path)
+{
+	string icon = "archive";
+
+	// Dir
+	if (!path.hasExtension())
+		icon = "folder";
+
+	// Wad
+	static auto wad_fmt = archive::formatInfo(ArchiveFormat::Wad);
+	for (const auto& fmt_ext : wad_fmt.extensions)
+		if (strutil::equalCI(path.extension(), fmt_ext.first))
+		{
+			icon = "wad";
+			break;
+		}
+
+	// Zip
+	static auto zip_fmt = archive::formatInfo(ArchiveFormat::Zip);
+	for (const auto& fmt_ext : zip_fmt.extensions)
+		if (strutil::equalCI(path.extension(), fmt_ext.first))
+		{
+			icon = "zip";
+			break;
+		}
+
+	return icon;
+}
 } // namespace
 
 
@@ -249,7 +281,7 @@ void StartPanel::updateRecentFilesPanel()
 		auto index = 0;
 		for (const auto& path : recent_files)
 		{
-			sizer->Add(createRecentFileSizer(path, index), lh.sfWithSmallBorder(0, wxBOTTOM));
+			sizer->Add(createRecentFileSizer(path, index), wxSizerFlags());
 
 			if (index++ > 10)
 				break;
@@ -267,79 +299,30 @@ wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) con
 	auto lh    = LayoutHelper(recent_files_panel_);
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	// Icon --------------------------------------------------------------------
-	auto   path = strutil::Path(full_path);
-	string icon = "entry_list/archive.svg";
+	// File button
+	auto path   = strutil::Path(full_path);
+	auto button = new SToolBarButton(
+		recent_files_panel_, "aman_recent", wxutil::strFromView(path.fileName()), getArchiveIcon(path), "", true, 16);
+	button->SetBackgroundColour(backgroundColour());
+	button->SetFont(button->GetFont().Bold());
+	button->SetForegroundColour(wxColour(app::isDarkTheme() ? link_colour_dark : link_colour_light));
+	button->SetCursor(wxCURSOR_HAND);
+	button->setExactFit(false);
+	button->setPadding(FromDIP(2), 0);
+	button->setTextOffset(FromDIP(4));
+	sizer->Add(button, lh.sfWithLargeBorder(0, wxRIGHT));
 
-	// Dir
-	if (!path.hasExtension())
-		icon = "entry_list/folder.svg";
-
-	// Wad
-	static auto wad_fmt = archive::formatInfo(ArchiveFormat::Wad);
-	for (const auto& fmt_ext : wad_fmt.extensions)
-		if (strutil::equalCI(path.extension(), fmt_ext.first))
-		{
-			icon = "entry_list/wad.svg";
-			break;
-		}
-
-	// Zip
-	static auto zip_fmt = archive::formatInfo(ArchiveFormat::Zip);
-	for (const auto& fmt_ext : zip_fmt.extensions)
-		if (strutil::equalCI(path.extension(), fmt_ext.first))
-		{
-			icon = "entry_list/zip.svg";
-			break;
-		}
-
-	sizer->Add(new wxStaticBitmap(recent_files_panel_, -1, getIconBitmapBundle(icon, 16)), lh.sfWithBorder(0, wxRIGHT));
-
-
-	// Text --------------------------------------------------------------------
-	auto filename = wxutil::strFromView(path.fileName());
-	if (filename.length() > 24)
-		filename = filename.SubString(0, 18) + "..." + wxutil::strFromView(path.extension());
-	if (!path.hasExtension())
-		filename += "/";
-	auto filename_label = new wxStaticText(recent_files_panel_, -1, filename);
-	filename_label->SetFont(filename_label->GetFont().Bold());
-	filename_label->SetForegroundColour(wxColour(app::isDarkTheme() ? link_colour_dark : link_colour_light));
-	filename_label->SetCursor(wxCURSOR_HAND);
-	filename_label->SetDoubleBuffered(true);
-	if (path.fileName().length() > 24)
-		filename_label->SetToolTip(wxutil::strFromView(path.fileName()));
-	sizer->Add(filename_label, lh.sfWithLargeBorder(0, wxRIGHT).Bottom());
-
+	// Path label
 	auto path_label = new wxStaticText(recent_files_panel_, -1, wxutil::strFromView(path.path(false)));
-	sizer->Add(path_label, wxSizerFlags().Bottom());
+	sizer->Add(path_label, wxSizerFlags().CenterVertical());
 
-	// Open on filename click
-	filename_label->Bind(
-		wxEVT_LEFT_DOWN,
-		[this, index](wxMouseEvent&)
+	// Open recent file on button click
+	button->Bind(
+		wxEVT_STOOLBAR_BUTTON_CLICKED,
+		[index](wxCommandEvent&)
 		{
 			SActionHandler::setWxIdOffset(index);
 			SActionHandler::doAction("aman_recent");
-		});
-
-	// Underline filename on mouseover
-	filename_label->Bind(
-		wxEVT_IDLE,
-		[filename_label](wxIdleEvent&)
-		{
-			auto font      = filename_label->GetFont();
-			auto mouseover = filename_label->GetScreenRect().Contains(wxGetMousePosition());
-			if (!mouseover && font.GetUnderlined())
-			{
-				font.SetUnderlined(false);
-				filename_label->SetFont(font);
-			}
-			else if (mouseover && !font.GetUnderlined())
-			{
-				font.SetUnderlined(true);
-				filename_label->SetFont(font);
-			}
 		});
 
 	return sizer;
