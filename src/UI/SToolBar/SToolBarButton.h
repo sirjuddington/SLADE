@@ -33,13 +33,14 @@ public:
 
 	static int pixelHeight();
 
-private:
+protected:
 	SAction*       action_ = nullptr;
 	wxBitmapBundle icon_;
-	bool           pressed_       = false;
-	bool           show_name_     = false;
-	wxMenu*        menu_dropdown_ = nullptr;
-	bool           menu_open_     = false;
+	bool           pressed_             = false;
+	bool           show_name_           = false;
+	wxMenu*        menu_dropdown_       = nullptr;
+	bool           menu_open_           = false;
+	int            action_wx_id_offset_ = 0;
 
 	// For non-SAction buttons
 	wxString action_id_;
@@ -55,9 +56,10 @@ private:
 	int  text_offset_ = 0; // Space between icon and text
 	bool exact_fit_   = true;
 
-	void setup(bool show_name, string_view icon);
-	void sendClickedEvent();
-	void updateSize();
+	void         setup(bool show_name, string_view icon);
+	void         sendClickedEvent();
+	void         updateSize();
+	virtual void drawContent(wxGraphicsContext* gc, bool mouse_over);
 
 	// Events
 	void onPaint(wxPaintEvent& e);

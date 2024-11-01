@@ -296,39 +296,15 @@ void SToolBarButton::updateSize()
 	SetSize(width, height);
 }
 
-
 // -----------------------------------------------------------------------------
-//
-// SToolBarButton Class Events
-//
+// Draws the button content using [gc].
+// If [mouse_over] is true, the button is being hovered over
 // -----------------------------------------------------------------------------
-
-// ReSharper disable CppMemberFunctionMayBeConst
-// ReSharper disable CppParameterMayBeConstPtrOrRef
-
-// -----------------------------------------------------------------------------
-// Called when the button needs to be (re)drawn
-// -----------------------------------------------------------------------------
-void SToolBarButton::onPaint(wxPaintEvent& e)
+void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 {
-	wxPaintDC dc(this);
-
-	// Check if the mouse is within the button
-	auto mouse_pos  = wxGetMousePosition();
-	bool mouse_over = GetClientRect().Contains(ScreenToClient(mouse_pos));
-
 	// Get system colours needed
 	auto col_background = GetBackgroundColour();
 	auto col_hilight    = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
-
-	// Draw background
-	dc.SetBackground(wxBrush(col_background));
-	dc.Clear();
-
-	// Create graphics context
-	auto gc = wxGraphicsContext::Create(dc);
-	if (!gc)
-		return;
 
 	// Get width of name text if shown
 	int      name_height = 0;
@@ -409,7 +385,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	{
 		int top  = (static_cast<double>(GetSize().y) * 0.5) - (static_cast<double>(name_height) * 0.5);
 		int left = pad_outer_ + pad_inner_ * 2 + icon_size_ + text_offset_;
-		dc.DrawText(name, FromDIP(left), top);
+		gc->DrawText(name, FromDIP(left), top);
 	}
 
 	if (menu_dropdown_)
@@ -421,6 +397,41 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 		gc->DrawBitmap(arrow_down, width - a_width - pad_outer_, height / 2. - a_height / 2., a_width, a_height);
 	}
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// SToolBarButton Class Events
+//
+// -----------------------------------------------------------------------------
+
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
+
+// -----------------------------------------------------------------------------
+// Called when the button needs to be (re)drawn
+// -----------------------------------------------------------------------------
+void SToolBarButton::onPaint(wxPaintEvent& e)
+{
+	wxPaintDC dc(this);
+
+	// Check if the mouse is within the button
+	auto mouse_pos  = wxGetMousePosition();
+	bool mouse_over = GetClientRect().Contains(ScreenToClient(mouse_pos));
+
+	// Draw background
+	dc.SetBackground(wxBrush(GetBackgroundColour()));
+	dc.Clear();
+
+	// Create graphics context
+	auto gc = wxGraphicsContext::Create(dc);
+	if (!gc)
+		return;
+
+	// Draw button content
+	gc->SetFont(GetFont(), GetForegroundColour());
+	drawContent(gc, mouse_over);
 
 	delete gc;
 }
@@ -479,14 +490,11 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 				if (action_->isRadio())
 					GetParent()->Refresh();
 
+				SActionHandler::setWxIdOffset(action_wx_id_offset_);
 				SActionHandler::doAction(action_->id());
 			}
 			else
-#ifdef __WXMSW__
-				CallAfter(&SToolBarButton::sendClickedEvent);
-#else
 				sendClickedEvent();
-#endif
 
 			pressed_ = false;
 			refresh  = true;
@@ -497,7 +505,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 			parent_window->SetStatusText("");
 	}
 
-	if (refresh)
+	if (refresh && !IsBeingDeleted())
 	{
 		Update();
 		Refresh();
