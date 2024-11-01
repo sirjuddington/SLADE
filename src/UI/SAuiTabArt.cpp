@@ -170,7 +170,7 @@ void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 	dc.DrawLine(theRect.x, theRect.y + theRect.height - 1, theRect.x + theRect.width, theRect.y + theRect.height - 1);
 	dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + height);
 
-	dc.SetPen(wxPen(wnd->GetBackgroundColour()));
+	dc.SetPen(wxPen(wnd->GetBackgroundColour(), wnd->FromDIP(2)));
 	dc.DrawLine(theRect.x + theRect.width - 1, theRect.y, theRect.x + theRect.width - 1, theRect.y + height);
 	dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);
 	dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + wnd->FromDIP(4));
