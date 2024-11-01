@@ -320,7 +320,7 @@ void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 	auto width_inner  = width - (2. * pad_outer_);
 	auto height       = GetSize().y;
 	auto height_inner = height - (2. * pad_outer_);
-	auto scale_px     = 1;
+	auto scale_px     = FromDIP(2);
 
 	// Draw toggled border/background
 	if (isChecked())
@@ -328,7 +328,7 @@ void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 		// Draw border
 		gc->SetBrush(*wxTRANSPARENT_BRUSH);
 		gc->SetPen(wxPen(col_hilight, scale_px));
-		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, 1);
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, FromDIP(2));
 	}
 
 	// Draw border on mouseover
@@ -345,7 +345,7 @@ void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 		// Draw border
 		gc->SetBrush(col_trans);
 		gc->SetPen(*wxTRANSPARENT_PEN);
-		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, 1);
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, FromDIP(2));
 	}
 
 	auto icon = icon_.GetBitmapFor(this);
@@ -496,6 +496,9 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 			else
 				sendClickedEvent();
 
+			if (click_can_delete_)
+				return;
+
 			pressed_ = false;
 			refresh  = true;
 		}
@@ -505,7 +508,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 			parent_window->SetStatusText("");
 	}
 
-	if (refresh && !IsBeingDeleted())
+	if (refresh)
 	{
 		Update();
 		Refresh();

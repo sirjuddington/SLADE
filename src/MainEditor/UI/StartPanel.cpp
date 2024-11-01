@@ -210,6 +210,7 @@ public:
 		filename_{ path.fileName() }
 	{
 		action_wx_id_offset_ = index;
+		click_can_delete_    = true;
 
 		wxWindow::SetBackgroundColour(backgroundColour());
 		wxWindow::SetForegroundColour(wxColour(app::isDarkTheme() ? LINK_COLOUR_DARK : LINK_COLOUR_LIGHT));

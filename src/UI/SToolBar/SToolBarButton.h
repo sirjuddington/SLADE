@@ -56,6 +56,12 @@ protected:
 	int  text_offset_ = 0; // Space between icon and text
 	bool exact_fit_   = true;
 
+	// Recent file buttons on the start page can potentially be deleted after
+	// being clicked (as the recent file list is updated). This is needed to
+	// avoid crashes due to the button being deleted while still executing the
+	// mouse event handler.
+	bool click_can_delete_ = false;
+
 	void         setup(bool show_name, string_view icon);
 	void         sendClickedEvent();
 	void         updateSize();
