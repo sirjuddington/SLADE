@@ -81,22 +81,24 @@ EXTERN_CVAR(Bool, txed_calltips_argset_kb)
 // -----------------------------------------------------------------------------
 TextEditorSettingsPanel::TextEditorSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
-	auto lh    = LayoutHelper(this);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createSettingsPanel(), "General");
-	tabs->AddPage(style_panel_ = new TextEditorStylePanel(this), "Fonts & Colours");
+	tabs->AddPage(createSettingsPanel(tabs), "General");
+	tabs->AddPage(style_panel_ = new TextEditorStylePanel(tabs), "Fonts && Colours");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
 	init();
 }
 
-wxPanel* TextEditorSettingsPanel::createSettingsPanel()
+// -----------------------------------------------------------------------------
+// Creates the main text editor settings panel
+// -----------------------------------------------------------------------------
+wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 {
-	auto panel = new wxPanel(this);
-	auto lh    = ui::LayoutHelper(panel);
+	auto panel = new wxPanel(parent);
+	auto lh    = LayoutHelper(panel);
 
 	// Create main sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);

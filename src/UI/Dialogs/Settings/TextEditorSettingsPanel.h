@@ -40,7 +40,7 @@ private:
 
 	TextEditorStylePanel* style_panel_ = nullptr;
 
-	wxPanel* createSettingsPanel();
+	wxPanel* createSettingsPanel(wxWindow* parent);
 	void     init() const;
 };
 } // namespace slade::ui

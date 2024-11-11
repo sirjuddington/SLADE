@@ -77,26 +77,21 @@ EXTERN_CVAR(Bool, hud_wide)
 // -----------------------------------------------------------------------------
 GraphicsSettingsPanel::GraphicsSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
-	Hide();
-	Freeze();
-
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Create tabs
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createGeneralPanel(), "General");
-	tabs->AddPage(createPngPanel(), "PNG Tools");
-	tabs->AddPage(colorimetry_panel_ = new ColorimetrySettingsPanel(this), "Colorimetry");
+	tabs->AddPage(createGeneralPanel(tabs), "General");
+	tabs->AddPage(createPngPanel(tabs), "PNG Tools");
+	tabs->AddPage(colorimetry_panel_ = new ColorimetrySettingsPanel(tabs), "Colorimetry");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
 	init();
 
 	// Bind events
 	choice_presets_->Bind(wxEVT_CHOICE, &GraphicsSettingsPanel::onChoicePresetSelected, this);
-
-	Thaw();
 }
 
 // -----------------------------------------------------------------------------
@@ -159,9 +154,9 @@ void GraphicsSettingsPanel::applySettings()
 	colorimetry_panel_->apply();
 }
 
-wxPanel* GraphicsSettingsPanel::createGeneralPanel()
+wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 {
-	auto panel = new wxPanel(this);
+	auto panel = new wxPanel(parent);
 	auto lh    = ui::LayoutHelper(panel);
 
 	// Create controls
@@ -234,9 +229,9 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel()
 	return panel;
 }
 
-wxPanel* GraphicsSettingsPanel::createPngPanel()
+wxPanel* GraphicsSettingsPanel::createPngPanel(wxWindow* parent)
 {
-	auto panel = new wxPanel(this);
+	auto panel = new wxPanel(parent);
 	auto lh    = ui::LayoutHelper(panel);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);

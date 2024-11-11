@@ -238,6 +238,9 @@ void SAuiTabArt::DrawTab(
 	if (caption.empty())
 		caption = wxT("Xj");
 
+	// Regular tab control titles require double ampersands to show a single one, emulate that here
+	caption.Replace("&&", "&");
+
 	dc.SetFont(m_selectedFont);
 	dc.GetTextExtent(caption, &selected_textx, &selected_texty);
 
@@ -249,7 +252,7 @@ void SAuiTabArt::DrawTab(
 		bluetab = true;
 
 	// figure out the size of the tab
-	wxSize tab_size = GetTabSize(dc, wnd, page.caption, page.bitmap, page.active, close_button_state, x_extent);
+	wxSize tab_size = GetTabSize(dc, wnd, caption, page.bitmap, page.active, close_button_state, x_extent);
 
 	// I know :P This stuff should probably be completely rewritten,
 	// but this will do for now
@@ -269,7 +272,8 @@ void SAuiTabArt::DrawTab(
 		tab_y += px2;
 	}
 
-	caption = page.caption;
+	if (page.caption.empty())
+		caption = page.caption;
 
 
 	// select pen, brush and font for the tab to be drawn

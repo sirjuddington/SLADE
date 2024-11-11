@@ -1,15 +1,16 @@
 
 #include "Main.h"
-#include "SettingsDialog.h"
+
+#include "AdvancedSettingsPanel.h"
 #include "App.h"
 #include "AudioSettingsPanel.h"
 #include "GeneralSettingsPanel.h"
 #include "GraphicsSettingsPanel.h"
+#include "InputSettingsPanel.h"
 #include "InterfaceSettingsPanel.h"
 #include "ScriptSettingsPanel.h"
+#include "SettingsDialog.h"
 #include "TextEditorSettingsPanel.h"
-#include "UI/Dialogs/Preferences/AdvancedPrefsPanel.h"
-#include "UI/Dialogs/Preferences/InputPrefsPanel.h"
 #include "UI/Layout.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
@@ -41,6 +42,17 @@ SToolBarButton* createSectionButton(wxWindow* parent, const string& action, cons
 	return btn;
 }
 
+void updateMinSize(const wxWindow* window, int& min_width, int& min_height)
+{
+	auto size  = window->GetBestSize();
+	min_width  = std::max(min_width, size.GetWidth());
+	min_height = std::max(min_height, size.GetHeight());
+}
+
+
+
+
+
 SettingsDialog::SettingsDialog(wxWindow* parent) : SDialog(parent, "SLADE Settings", "settings")
 {
 	auto lh = LayoutHelper(this);
@@ -53,7 +65,8 @@ SettingsDialog::SettingsDialog(wxWindow* parent) : SDialog(parent, "SLADE Settin
 	SetSizer(sizer);
 
 	// Sections
-	sizer->Add(createSectionsPanel(), wxSizerFlags(0).Expand());
+	auto sections_panel = createSectionsPanel();
+	sizer->Add(sections_panel, wxSizerFlags(0).Expand());
 
 	content_sizer_ = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(content_sizer_, wxSizerFlags(1).Expand());
@@ -68,8 +81,17 @@ SettingsDialog::SettingsDialog(wxWindow* parent) : SDialog(parent, "SLADE Settin
 	content_sizer_->Add(title_panel, wxSizerFlags().Expand());
 
 	// Settings page
+	general_page_   = new GeneralSettingsPanel(this);
+	interface_page_ = new InterfaceSettingsPanel(this);
+	input_page_     = new InputSettingsPanel(this);
+	graphics_page_  = new GraphicsSettingsPanel(this);
+	audio_page_     = new AudioSettingsPanel(this);
+	text_page_      = new TextEditorSettingsPanel(this);
+	scripts_page_   = new ScriptSettingsPanel(this);
+	advanced_page_  = new AdvancedSettingsPanel(this);
 	tbb_general_->setChecked(true);
-	content_sizer_->Add(general_page_ = new GeneralSettingsPanel(this), lh.sfWithLargeBorder(1).Expand());
+	content_sizer_->Add(general_page_, lh.sfWithLargeBorder(1).Expand());
+	general_page_->Show();
 	current_page_ = general_page_;
 
 	// Buttons
@@ -82,7 +104,14 @@ SettingsDialog::SettingsDialog(wxWindow* parent) : SDialog(parent, "SLADE Settin
 
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SettingsDialog::onSectionButtonClicked, this);
 
-	SetMinSize(FromDIP(wxSize(960, 600)));
+	// Determine best minimum size based on larger pages
+	int min_width  = 0;
+	int min_height = 0;
+	updateMinSize(interface_page_, min_width, min_height);
+	updateMinSize(graphics_page_, min_width, min_height);
+	updateMinSize(text_page_, min_width, min_height);
+	SetMinSize({ sections_panel->GetBestSize().x + min_width,
+				 min_height + button_sizer->CalcMin().y + title_panel->GetBestSize().y + FromDIP(100) });
 }
 
 wxPanel* SettingsDialog::createSectionsPanel()
@@ -163,9 +192,6 @@ void SettingsDialog::onSectionButtonClicked(wxCommandEvent& e)
 	}
 	else if (btn == tbb_interface_)
 	{
-		if (!interface_page_)
-			interface_page_ = new InterfaceSettingsPanel(this);
-
 		new_page = interface_page_;
 		title_text_->SetLabel("Interface Settings");
 	}
@@ -179,49 +205,31 @@ void SettingsDialog::onSectionButtonClicked(wxCommandEvent& e)
 	}*/
 	else if (btn == tbb_keybinds_)
 	{
-		if (!input_page_)
-			input_page_ = new InputPrefsPanel(this);
-
 		new_page = input_page_;
 		title_text_->SetLabel("Keyboard Shortcuts");
 	}
 	else if (btn == tbb_gfx_)
 	{
-		if (!graphics_page_)
-			graphics_page_ = new GraphicsSettingsPanel(this);
-
 		new_page = graphics_page_;
 		title_text_->SetLabel("Graphics Settings");
 	}
 	else if (btn == tbb_audio_)
 	{
-		if (!audio_page_)
-			audio_page_ = new AudioSettingsPanel(this);
-
 		new_page = audio_page_;
 		title_text_->SetLabel("Audio Settings");
 	}
 	else if (btn == tbb_text_)
 	{
-		if (!text_page_)
-			text_page_ = new TextEditorSettingsPanel(this);
-
 		new_page = text_page_;
 		title_text_->SetLabel("Text Editor Settings");
 	}
 	else if (btn == tbb_scripting_)
 	{
-		if (!scripts_page_)
-			scripts_page_ = new ScriptSettingsPanel(this);
-
 		new_page = scripts_page_;
 		title_text_->SetLabel("ACS Script Settings");
 	}
 	else if (btn == tbb_advanced_)
 	{
-		if (!advanced_page_)
-			advanced_page_ = new AdvancedPrefsPanel(this);
-
 		new_page = advanced_page_;
 		title_text_->SetLabel("Advanced Settings");
 	}

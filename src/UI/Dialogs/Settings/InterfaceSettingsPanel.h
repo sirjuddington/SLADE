@@ -27,7 +27,7 @@ private:
 	wxChoice*            choice_elist_tree_style_ = nullptr;
 	ColourSettingsPanel* colour_panel_            = nullptr;
 
-	wxPanel* createInterfacePanel();
+	wxPanel* createInterfacePanel(wxWindow* parent);
 	wxSizer* layoutAppearanceSettings(wxWindow* panel) const;
 	wxSizer* layoutEntryListSettings(wxWindow* panel) const;
 };

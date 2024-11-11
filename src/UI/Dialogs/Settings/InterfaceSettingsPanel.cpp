@@ -1,9 +1,8 @@
 
 #include "Main.h"
-
+#include "InterfaceSettingsPanel.h"
 #include "ColourSettingsPanel.h"
 #include "Graphics/Icons.h"
-#include "InterfaceSettingsPanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
 #include "UI/UI.h"
@@ -19,8 +18,8 @@ InterfaceSettingsPanel::InterfaceSettingsPanel(wxWindow* parent) : SettingsPanel
 	SetSizer(sizer);
 
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createInterfacePanel(), "Interface");
-	tabs->AddPage(colour_panel_ = new ColourSettingsPanel(this), "Colours & Theme");
+	tabs->AddPage(createInterfacePanel(tabs), "Interface");
+	tabs->AddPage(colour_panel_ = new ColourSettingsPanel(tabs), "Colours && Theme");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 
@@ -29,9 +28,9 @@ void InterfaceSettingsPanel::applySettings()
 	colour_panel_->apply();
 }
 
-wxPanel* InterfaceSettingsPanel::createInterfacePanel()
+wxPanel* InterfaceSettingsPanel::createInterfacePanel(wxWindow* parent)
 {
-	auto panel = new wxPanel(this, -1);
+	auto panel = new wxPanel(parent, -1);
 	auto lh    = LayoutHelper(panel);
 
 	// Create controls

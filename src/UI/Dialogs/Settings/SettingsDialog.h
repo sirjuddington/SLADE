@@ -5,8 +5,6 @@
 namespace slade
 {
 class SToolBarButton;
-class AdvancedPrefsPanel;
-class InputPrefsPanel;
 namespace ui
 {
 	class SettingsPanel;
@@ -33,16 +31,16 @@ private:
 	wxSizer*        content_sizer_ = nullptr;
 	wxStaticText*   title_text_    = nullptr;
 
-	wxWindow*           current_page_   = nullptr;
-	wxPanel*            blank_page_     = nullptr;
-	SettingsPanel*      general_page_   = nullptr;
-	SettingsPanel*      interface_page_ = nullptr;
-	SettingsPanel*      graphics_page_  = nullptr;
-	SettingsPanel*      audio_page_     = nullptr;
-	SettingsPanel*      text_page_      = nullptr;
-	SettingsPanel*      scripts_page_   = nullptr;
-	InputPrefsPanel*    input_page_     = nullptr;
-	AdvancedPrefsPanel* advanced_page_  = nullptr;
+	wxWindow*      current_page_   = nullptr;
+	wxPanel*       blank_page_     = nullptr;
+	SettingsPanel* general_page_   = nullptr;
+	SettingsPanel* interface_page_ = nullptr;
+	SettingsPanel* graphics_page_  = nullptr;
+	SettingsPanel* audio_page_     = nullptr;
+	SettingsPanel* text_page_      = nullptr;
+	SettingsPanel* scripts_page_   = nullptr;
+	SettingsPanel* input_page_     = nullptr;
+	SettingsPanel* advanced_page_  = nullptr;
 
 	wxPanel* createSectionsPanel();
 

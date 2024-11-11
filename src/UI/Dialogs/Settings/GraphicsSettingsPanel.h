@@ -47,8 +47,8 @@ private:
 
 	void init() const;
 
-	wxPanel* createGeneralPanel();
-	wxPanel* createPngPanel();
+	wxPanel* createGeneralPanel(wxWindow* parent);
+	wxPanel* createPngPanel(wxWindow* parent);
 
 	// Events
 	void onChoicePresetSelected(wxCommandEvent& e);
