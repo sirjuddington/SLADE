@@ -20,6 +20,7 @@ public:
 
 	SAction*        action() const { return action_; }
 	const wxString& actionId() const { return action_id_; }
+	const wxString& actionName() const { return action_name_; }
 	bool            isChecked() const;
 	wxMenu*         menu() const { return menu_dropdown_; }
 
@@ -30,6 +31,7 @@ public:
 	void setPadding(int inner, int outer = 1);
 	void setExactFit(bool fit);
 	void setTextOffset(int offset);
+	void setFillChecked(bool fill) { fill_checked_ = fill; }
 
 	static int pixelHeight();
 
@@ -41,6 +43,7 @@ protected:
 	wxMenu*        menu_dropdown_       = nullptr;
 	bool           menu_open_           = false;
 	int            action_wx_id_offset_ = 0;
+	bool           fill_checked_        = false;
 
 	// For non-SAction buttons
 	wxString action_id_;

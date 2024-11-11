@@ -46,4 +46,33 @@ int padLarge(const wxWindow* window = nullptr);
 int padXLarge(const wxWindow* window = nullptr);
 int padSmall(const wxWindow* window = nullptr);
 
+// Message Boxes
+enum class MessageBoxType : u8
+{
+	Info,
+	Warning,
+	Error,
+	Question
+};
+enum class MessageBoxButtons : u8
+{
+	Ok,
+	OkCancel,
+	YesNo,
+	YesNoCancel
+};
+enum class MessageBoxResult : u8
+{
+	Ok,
+	Cancel,
+	Yes,
+	No
+};
+MessageBoxResult messageBox(
+	MessageBoxType    type,
+	string_view       title,
+	string_view       message,
+	MessageBoxButtons buttons = MessageBoxButtons::Ok,
+	wxWindow*         parent  = nullptr);
+
 } // namespace slade::ui

@@ -51,6 +51,7 @@
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Dialogs/Settings/SettingsDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -535,7 +536,10 @@ bool MainWindow::handleAction(string_view id)
 	// Edit->Preferences
 	if (id == "main_preferences")
 	{
-		PreferencesDialog::openPreferences(this);
+		// PreferencesDialog::openPreferences(this);
+
+		ui::SettingsDialog settings(this);
+		settings.ShowModal();
 
 		return true;
 	}

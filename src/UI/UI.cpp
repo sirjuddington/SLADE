@@ -33,6 +33,7 @@
 #include "UI.h"
 #include "App.h"
 #include "General/Console.h"
+#include "MainEditor/MainEditor.h"
 #include "UI/SplashWindow.h"
 #include "Utility/StringUtils.h"
 
@@ -270,6 +271,54 @@ int ui::padSmall(const wxWindow* window)
 }
 
 
+ui::MessageBoxResult ui::messageBox(
+	MessageBoxType    type,
+	string_view       title,
+	string_view       message,
+	MessageBoxButtons buttons,
+	wxWindow*         parent)
+{
+	wxString wx_title{ title.data(), title.size() };
+	wxString wx_message{ message.data(), message.size() };
+
+	auto* parent_window = parent ? parent : maineditor::windowWx();
+	int   icon          = 0;
+	int   buttons_wx    = 0;
+
+	switch (type)
+	{
+	case MessageBoxType::Info:     icon = wxICON_INFORMATION; break;
+	case MessageBoxType::Warning:  icon = wxICON_WARNING; break;
+	case MessageBoxType::Error:    icon = wxICON_ERROR; break;
+	case MessageBoxType::Question: icon = wxICON_QUESTION; break;
+	}
+
+	switch (buttons)
+	{
+	case MessageBoxButtons::Ok:          buttons_wx = wxOK; break;
+	case MessageBoxButtons::OkCancel:    buttons_wx = wxOK | wxCANCEL; break;
+	case MessageBoxButtons::YesNo:       buttons_wx = wxYES_NO; break;
+	case MessageBoxButtons::YesNoCancel: buttons_wx = wxYES_NO | wxCANCEL; break;
+	}
+
+#ifdef __WXMSW__
+	auto dlg    = wxGenericMessageDialog(parent_window, wx_message, wx_title, icon | buttons_wx);
+	auto result = dlg.ShowModal();
+#else
+	int result = wxMessageBox(wx_message, wx_title, icon | buttons_wx, parent_window);
+#endif
+
+	switch (result)
+	{
+	case wxID_OK:     return MessageBoxResult::Ok;
+	case wxID_CANCEL: return MessageBoxResult::Cancel;
+	case wxID_YES:    return MessageBoxResult::Yes;
+	case wxID_NO:     return MessageBoxResult::No;
+	default:          return MessageBoxResult::Ok;
+	}
+}
+
+
 // -----------------------------------------------------------------------------
 //
 // Console Commands
@@ -294,4 +343,42 @@ CONSOLE_COMMAND(splash, 0, false)
 		ui::setSplashProgress(prog);
 		ui::setSplashProgressMessage(fmt::format("Progress {}", args[1]));
 	}
+}
+
+CONSOLE_COMMAND(messagebox, 0, false)
+{
+	ui::MessageBoxType    type;
+	ui::MessageBoxButtons buttons;
+
+	auto message = args.empty() ? "This is a message box with a message that is pretty long it goes on for a while. "
+								  "Here is another sentence that has words. Please click a button below."
+								: args[0];
+
+	type = ui::MessageBoxType::Info;
+	if (args.size() > 1)
+	{
+		if (args[1] == "info")
+			type = ui::MessageBoxType::Info;
+		else if (args[1] == "warning")
+			type = ui::MessageBoxType::Warning;
+		else if (args[1] == "error")
+			type = ui::MessageBoxType::Error;
+		else if (args[1] == "question")
+			type = ui::MessageBoxType::Question;
+	}
+
+	buttons = ui::MessageBoxButtons::Ok;
+	if (args.size() > 2)
+	{
+		if (args[2] == "ok")
+			buttons = ui::MessageBoxButtons::Ok;
+		else if (args[2] == "okcancel")
+			buttons = ui::MessageBoxButtons::OkCancel;
+		else if (args[2] == "yesno")
+			buttons = ui::MessageBoxButtons::YesNo;
+		else if (args[2] == "yesnocancel")
+			buttons = ui::MessageBoxButtons::YesNoCancel;
+	}
+
+	ui::messageBox(type, "Message Box", message, buttons);
 }
