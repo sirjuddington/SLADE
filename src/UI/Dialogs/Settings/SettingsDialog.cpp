@@ -1,15 +1,15 @@
 
 #include "Main.h"
-
+#include "SettingsDialog.h"
 #include "AdvancedSettingsPanel.h"
 #include "App.h"
 #include "AudioSettingsPanel.h"
+#include "EditingSettingsPanel.h"
 #include "GeneralSettingsPanel.h"
 #include "GraphicsSettingsPanel.h"
 #include "InputSettingsPanel.h"
 #include "InterfaceSettingsPanel.h"
 #include "ScriptSettingsPanel.h"
-#include "SettingsDialog.h"
 #include "TextEditorSettingsPanel.h"
 #include "UI/Layout.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -19,27 +19,12 @@ using namespace slade;
 using namespace ui;
 
 
+namespace
+{
 wxColour sidePanelColour()
 {
 	auto bgcol = wxutil::systemPanelBGColour();
 	return app::isDarkTheme() ? bgcol.ChangeLightness(105) : bgcol.ChangeLightness(95);
-}
-
-wxColour titlePanelColour()
-{
-	auto bgcol = wxutil::systemPanelBGColour();
-	return app::isDarkTheme() ? bgcol.ChangeLightness(130) : bgcol.ChangeLightness(70);
-}
-
-SToolBarButton* createSectionButton(wxWindow* parent, const string& action, const string& text, const string& icon)
-{
-	auto btn = new SToolBarButton(parent, action, text, icon, text, true, 24);
-	btn->setPadding(8, 0);
-	btn->setExactFit(false);
-	btn->setFontSize(1.1f);
-	btn->SetBackgroundColour(sidePanelColour());
-	btn->setFillChecked(true);
-	return btn;
 }
 
 void updateMinSize(const wxWindow* window, int& min_width, int& min_height)
@@ -48,7 +33,7 @@ void updateMinSize(const wxWindow* window, int& min_width, int& min_height)
 	min_width  = std::max(min_width, size.GetWidth());
 	min_height = std::max(min_height, size.GetHeight());
 }
-
+} // namespace
 
 
 
@@ -75,24 +60,26 @@ SettingsDialog::SettingsDialog(wxWindow* parent) : SDialog(parent, "SLADE Settin
 	auto title_panel = new wxPanel(this);
 	auto title_sizer = new wxBoxSizer(wxHORIZONTAL);
 	title_panel->SetSizer(title_sizer);
-	title_text_ = new wxStaticText(title_panel, -1, "General");
+	title_text_ = new wxStaticText(title_panel, -1, "General Settings");
 	title_text_->SetFont(GetFont().MakeLarger().MakeLarger().Bold());
 	title_sizer->Add(title_text_, lh.sfWithLargeBorder(1, wxLEFT | wxTOP).Expand());
 	content_sizer_->Add(title_panel, wxSizerFlags().Expand());
 
-	// Settings page
-	general_page_   = new GeneralSettingsPanel(this);
-	interface_page_ = new InterfaceSettingsPanel(this);
-	input_page_     = new InputSettingsPanel(this);
-	graphics_page_  = new GraphicsSettingsPanel(this);
-	audio_page_     = new AudioSettingsPanel(this);
-	text_page_      = new TextEditorSettingsPanel(this);
-	scripts_page_   = new ScriptSettingsPanel(this);
-	advanced_page_  = new AdvancedSettingsPanel(this);
-	tbb_general_->setChecked(true);
-	content_sizer_->Add(general_page_, lh.sfWithLargeBorder(1).Expand());
-	general_page_->Show();
-	current_page_ = general_page_;
+	// Settings pages
+	settings_pages_[static_cast<size_t>(SettingsPage::General)]   = new GeneralSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Interface)] = new InterfaceSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Keybinds)]  = new InputSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Editing)]   = new EditingSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Text)]      = new TextEditorSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Graphics)]  = new GraphicsSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Audio)]     = new AudioSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Scripting)] = new ScriptSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Advanced)]  = new AdvancedSettingsPanel(this);
+	auto general_panel                                            = settings_pages_[0];
+	section_buttons_[0]->setChecked(true);
+	content_sizer_->Add(general_panel, lh.sfWithLargeBorder(1).Expand());
+	general_panel->Show();
+	current_page_ = general_panel;
 
 	// Buttons
 	auto button_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -107,11 +94,27 @@ SettingsDialog::SettingsDialog(wxWindow* parent) : SDialog(parent, "SLADE Settin
 	// Determine best minimum size based on larger pages
 	int min_width  = 0;
 	int min_height = 0;
-	updateMinSize(interface_page_, min_width, min_height);
-	updateMinSize(graphics_page_, min_width, min_height);
-	updateMinSize(text_page_, min_width, min_height);
-	SetMinSize({ sections_panel->GetBestSize().x + min_width,
+	for (const auto* page : settings_pages_)
+		updateMinSize(page, min_width, min_height);
+	SetMinSize({ sections_panel->GetBestSize().x + min_width + FromDIP(100),
 				 min_height + button_sizer->CalcMin().y + title_panel->GetBestSize().y + FromDIP(100) });
+}
+
+void SettingsDialog::createSectionButton(
+	wxWindow*     parent,
+	SettingsPage  page,
+	const string& action,
+	const string& text,
+	const string& icon)
+{
+	auto btn = new SToolBarButton(parent, action, text, icon, text, true, 24);
+	btn->setPadding(8, 0);
+	btn->setExactFit(false);
+	btn->setFontSize(1.1f);
+	btn->SetBackgroundColour(sidePanelColour());
+	btn->setFillChecked(true);
+
+	section_buttons_[static_cast<size_t>(page)] = btn;
 }
 
 wxPanel* SettingsDialog::createSectionsPanel()
@@ -124,38 +127,32 @@ wxPanel* SettingsDialog::createSectionsPanel()
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());
 
-	tbb_general_   = createSectionButton(panel, "general", "General", "logo");
-	tbb_interface_ = createSectionButton(panel, "interface", "Interface", "settings");
-	tbb_keybinds_  = createSectionButton(panel, "keybinds", "Keyboard Shortcuts", "settings");
-	tbb_editing_   = createSectionButton(panel, "editing", "Editing", "wrench");
-	tbb_text_      = createSectionButton(panel, "text", "Text Editor", "text");
-	tbb_gfx_       = createSectionButton(panel, "gfx", "Graphics", "gfx");
-	tbb_audio_     = createSectionButton(panel, "audio", "Audio", "sound");
-	tbb_scripting_ = createSectionButton(panel, "scripts", "ACS Scripts", "script");
-	tbb_advanced_  = createSectionButton(panel, "advanced", "Advanced", "settings");
+	// Create section buttons
+	createSectionButton(panel, SettingsPage::General, "general", "General", "logo");
+	createSectionButton(panel, SettingsPage::Interface, "interface", "Interface", "settings");
+	createSectionButton(panel, SettingsPage::Keybinds, "keybinds", "Keyboard Shortcuts", "settings");
+	createSectionButton(panel, SettingsPage::Editing, "editing", "Editing", "wrench");
+	createSectionButton(panel, SettingsPage::Text, "text", "Text Editor", "text");
+	createSectionButton(panel, SettingsPage::Graphics, "gfx", "Graphics", "gfx");
+	createSectionButton(panel, SettingsPage::Audio, "audio", "Audio", "sound");
+	createSectionButton(panel, SettingsPage::Scripting, "scripts", "ACS Scripts", "script");
+	createSectionButton(panel, SettingsPage::Advanced, "advanced", "Advanced", "settings");
 
 	// Set all to width of 'Keyboard Shortcuts' button since it's the widest
-	tbb_keybinds_->setExactFit(true);
-	auto width = tbb_keybinds_->GetMinSize().GetWidth();
-	tbb_general_->SetSize(wxSize(width, -1));
-	tbb_interface_->SetSize(wxSize(width, -1));
-	tbb_editing_->SetSize(wxSize(width, -1));
-	tbb_text_->SetSize(wxSize(width, -1));
-	tbb_gfx_->SetSize(wxSize(width, -1));
-	tbb_audio_->SetSize(wxSize(width, -1));
-	tbb_scripting_->SetSize(wxSize(width, -1));
-	tbb_advanced_->SetSize(wxSize(width, -1));
+	auto keybinds_button = sectionButton(SettingsPage::Keybinds);
+	keybinds_button->setExactFit(true);
+	auto width = keybinds_button->GetMinSize().GetWidth();
+	for (auto* btn : section_buttons_)
+		if (btn != keybinds_button)
+			btn->SetSize(wxSize(width, -1));
 
-	vbox->Add(tbb_general_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
-	vbox->Add(tbb_interface_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
-	vbox->Add(tbb_keybinds_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
-	vbox->Add(tbb_editing_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
-	vbox->Add(tbb_text_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
-	vbox->Add(tbb_gfx_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
-	vbox->Add(tbb_audio_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
-	vbox->Add(tbb_scripting_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
+	// Layout buttons
+	auto advanced_button = sectionButton(SettingsPage::Advanced);
+	for (auto* btn : section_buttons_)
+		if (btn != advanced_button)
+			vbox->Add(btn, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
 	vbox->AddStretchSpacer();
-	vbox->Add(tbb_advanced_, wxSizerFlags().Expand());
+	vbox->Add(advanced_button, wxSizerFlags().Expand());
 
 	panel->SetBackgroundColour(sidePanelColour());
 
@@ -170,77 +167,18 @@ void SettingsDialog::onSectionButtonClicked(wxCommandEvent& e)
 		return;
 
 	// Uncheck all buttons
-	tbb_general_->setChecked(false);
-	tbb_interface_->setChecked(false);
-	tbb_keybinds_->setChecked(false);
-	tbb_editing_->setChecked(false);
-	tbb_text_->setChecked(false);
-	tbb_gfx_->setChecked(false);
-	tbb_audio_->setChecked(false);
-	tbb_scripting_->setChecked(false);
-	tbb_advanced_->setChecked(false);
+	for (auto* b : section_buttons_)
+		b->setChecked(false);
 
 	// Check the clicked button
 	btn->setChecked(true);
 
 	// Show the appropriate panel
-	wxWindow* new_page;
-	if (btn == tbb_general_)
-	{
-		new_page = general_page_;
-		title_text_->SetLabel("General Settings");
-	}
-	else if (btn == tbb_interface_)
-	{
-		new_page = interface_page_;
-		title_text_->SetLabel("Interface Settings");
-	}
-	/*else if (btn == tbb_editing_)
-	{
-		if (!editing_page_)
-			editing_page_ = new EditingSettingsPanel(this);
-
-		new_page = editing_page_;
-		title_text_->SetLabel("Editing Settings");
-	}*/
-	else if (btn == tbb_keybinds_)
-	{
-		new_page = input_page_;
-		title_text_->SetLabel("Keyboard Shortcuts");
-	}
-	else if (btn == tbb_gfx_)
-	{
-		new_page = graphics_page_;
-		title_text_->SetLabel("Graphics Settings");
-	}
-	else if (btn == tbb_audio_)
-	{
-		new_page = audio_page_;
-		title_text_->SetLabel("Audio Settings");
-	}
-	else if (btn == tbb_text_)
-	{
-		new_page = text_page_;
-		title_text_->SetLabel("Text Editor Settings");
-	}
-	else if (btn == tbb_scripting_)
-	{
-		new_page = scripts_page_;
-		title_text_->SetLabel("ACS Script Settings");
-	}
-	else if (btn == tbb_advanced_)
-	{
-		new_page = advanced_page_;
-		title_text_->SetLabel("Advanced Settings");
-	}
-	else
-	{
-		if (!blank_page_)
-			blank_page_ = new wxPanel(this);
-
-		new_page = blank_page_;
-		title_text_->SetLabel(btn->actionName());
-	}
+	SettingsPanel* new_page;
+	auto           index = std::distance(
+        section_buttons_.begin(), std::find(section_buttons_.begin(), section_buttons_.end(), btn));
+	new_page = settings_pages_[index];
+	title_text_->SetLabel(new_page->title());
 
 	new_page->Hide();
 	content_sizer_->Replace(current_page_, new_page);

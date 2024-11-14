@@ -18,6 +18,8 @@ public:
 	GraphicsSettingsPanel(wxWindow* parent);
 	~GraphicsSettingsPanel() override = default;
 
+	string title() const override { return "Graphics Settings"; }
+
 	void applySettings() override;
 
 private:

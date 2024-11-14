@@ -153,27 +153,25 @@ void AudioSettingsPanel::setupLayout()
 	// DMX Padding
 	sizer->Add(cb_dmx_padding_, wxSizerFlags().Expand());
 
-	sizer->Add(
-		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL),
-		lh.sfWithLargeBorder(0, wxBOTTOM | wxTOP).Expand());
+	sizer->AddSpacer(lh.padXLarge());
+	sizer->Add(wxutil::createSectionSeparator(this, "MIDI Playback"), lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// MIDI Playback (fluidsynth/timidity)
 	auto gbsizer = new wxGridBagSizer(lh.padSmall(), lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, "MIDI Playback:"), { 0, 0 }, { 1, 2 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(rb_fluidsynth_, { 1, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, "Location of MIDI soundfont:"), { 2, 0 }, { 1, 1 }, wxEXPAND);
-	gbsizer->Add(flp_soundfont_, { 3, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(rb_timidity_, { 1, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, "Location of Timidity executable:"), { 2, 1 }, { 1, 1 }, wxEXPAND);
-	gbsizer->Add(flp_timidity_, { 3, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, "Timidity command line options:"), { 4, 1 }, { 1, 1 }, wxEXPAND);
-	gbsizer->Add(text_timidity_options_, { 5, 1 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(rb_fluidsynth_, { 0, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
+	gbsizer->Add(new wxStaticText(this, -1, "Location of MIDI soundfont:"), { 1, 0 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(flp_soundfont_, { 2, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
+	gbsizer->Add(rb_timidity_, { 0, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
+	gbsizer->Add(new wxStaticText(this, -1, "Location of Timidity executable:"), { 1, 1 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(flp_timidity_, { 2, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
+	gbsizer->Add(new wxStaticText(this, -1, "Timidity command line options:"), { 3, 1 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(text_timidity_options_, { 4, 1 }, { 1, 1 }, wxEXPAND);
 	gbsizer->AddGrowableCol(0, 1);
 	gbsizer->AddGrowableCol(1, 1);
-	sizer->Add(gbsizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(gbsizer, lh.sfWithBorder(0, wxLEFT).Expand());
 
 	// Reset MIDI player
-	sizer->Add(btn_reset_player_, wxSizerFlags().Expand());
+	sizer->Add(btn_reset_player_, lh.sfWithBorder(0, wxTOP | wxLEFT));
 }
 
 // -----------------------------------------------------------------------------

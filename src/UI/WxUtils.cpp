@@ -218,6 +218,14 @@ wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const wxString& 
 	return createDialogButtonBox(btn_ok, btn_cancel);
 }
 
+wxSizer* wxutil::createSectionSeparator(wxWindow* parent, const wxString& text)
+{
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox->Add(new wxStaticText(parent, -1, text), wxSizerFlags().CenterVertical().Border(wxRIGHT, ui::pad(parent)));
+	hbox->Add(new wxStaticLine(parent), wxSizerFlags(1).CenterVertical());
+	return hbox;
+}
+
 // -----------------------------------------------------------------------------
 // Returns a wxArrayString containing the (wx) strings in [vector]
 // -----------------------------------------------------------------------------

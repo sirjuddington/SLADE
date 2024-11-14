@@ -8,6 +8,7 @@ public:
 	SettingsPanel(wxWindow* parent) : wxPanel(parent) { Hide(); }
 	~SettingsPanel() override = default;
 
-	virtual void applySettings() = 0;
+	virtual string title() const   = 0;
+	virtual void   applySettings() = 0;
 };
 } // namespace slade::ui

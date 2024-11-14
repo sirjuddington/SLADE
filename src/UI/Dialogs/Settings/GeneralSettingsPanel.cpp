@@ -32,6 +32,7 @@
 #include "GeneralSettingsPanel.h"
 #include "UI/Layout.h"
 #include "UI/UI.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 using namespace ui;
@@ -39,31 +40,29 @@ using namespace ui;
 GeneralSettingsPanel::GeneralSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
 	auto lh    = LayoutHelper(this);
-	auto sizer = new wxGridBagSizer(padLarge(), padLarge());
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	// Program group
-	auto group = new wxStaticBoxSizer(wxVERTICAL, this, "Program");
-	group->Add(
-		lh.layoutVertically({ new wxCheckBox(this, -1, "Show the Start Page on startup"),
-							  new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
-							  new wxCheckBox(this, -1, "Check for updates on startup"),
-							  new wxCheckBox(this, -1, "Include beta versions when checking for updates") }),
-		lh.sfWithBorder(1).Expand());
-	sizer->Add(group, { 0, 0 }, { 1, 1 }, wxEXPAND);
+	// Program
+	sizer->Add(wxutil::createSectionSeparator(this, "Program"), lh.sfWithBorder(0, wxBOTTOM).Expand());
+	lh.layoutVertically(
+		sizer,
+		{ new wxCheckBox(this, -1, "Show the Start Page on startup"),
+		  new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
+		  new wxCheckBox(this, -1, "Check for updates on startup"),
+		  new wxCheckBox(this, -1, "Include beta versions when checking for updates") },
+		lh.sfWithBorder(0, wxLEFT));
 
-	// Archive group
-	group = new wxStaticBoxSizer(wxVERTICAL, this, "Archives");
-	group->Add(
-		lh.layoutVertically({ new wxCheckBox(this, -1, "Close archive when its tab is closed"),
-							  new wxCheckBox(this, -1, "Automatically open nested WAD archives"),
-							  new wxCheckBox(this, -1, "Backup archives before saving"),
-							  new wxCheckBox(this, -1, "Ignore hidden files in directories") }),
-		lh.sfWithBorder(1).Expand());
-	sizer->Add(group, { 0, 1 }, { 1, 1 }, wxEXPAND);
-
-	sizer->AddGrowableCol(0);
-	sizer->AddGrowableCol(1);
+	// Archive
+	sizer->AddSpacer(lh.padXLarge());
+	sizer->Add(wxutil::createSectionSeparator(this, "Archives"), lh.sfWithBorder(0, wxBOTTOM).Expand());
+	lh.layoutVertically(
+		sizer,
+		{ new wxCheckBox(this, -1, "Close archive when its tab is closed"),
+		  new wxCheckBox(this, -1, "Automatically open nested WAD archives"),
+		  new wxCheckBox(this, -1, "Backup archives before saving"),
+		  new wxCheckBox(this, -1, "Ignore hidden files in directories") },
+		lh.sfWithBorder(0, wxLEFT));
 }
 
 void GeneralSettingsPanel::applySettings() {}

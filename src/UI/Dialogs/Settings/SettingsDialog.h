@@ -13,35 +13,42 @@ namespace ui
 
 namespace slade::ui
 {
+enum class SettingsPage : u8
+{
+	General,
+	Interface,
+	Keybinds,
+	Editing,
+	Text,
+	Graphics,
+	Audio,
+	Scripting,
+	Advanced
+};
+constexpr unsigned SETTINGS_PAGE_COUNT = static_cast<unsigned>(SettingsPage::Advanced) + 1;
+
 class SettingsDialog : public SDialog
 {
 public:
 	SettingsDialog(wxWindow* parent);
 
 private:
-	SToolBarButton* tbb_general_   = nullptr;
-	SToolBarButton* tbb_interface_ = nullptr;
-	SToolBarButton* tbb_keybinds_  = nullptr;
-	SToolBarButton* tbb_editing_   = nullptr;
-	SToolBarButton* tbb_text_      = nullptr;
-	SToolBarButton* tbb_gfx_       = nullptr;
-	SToolBarButton* tbb_audio_     = nullptr;
-	SToolBarButton* tbb_scripting_ = nullptr;
-	SToolBarButton* tbb_advanced_  = nullptr;
-	wxSizer*        content_sizer_ = nullptr;
-	wxStaticText*   title_text_    = nullptr;
+	std::array<SToolBarButton*, SETTINGS_PAGE_COUNT> section_buttons_;
+	std::array<SettingsPanel*, SETTINGS_PAGE_COUNT>  settings_pages_;
 
-	wxWindow*      current_page_   = nullptr;
-	wxPanel*       blank_page_     = nullptr;
-	SettingsPanel* general_page_   = nullptr;
-	SettingsPanel* interface_page_ = nullptr;
-	SettingsPanel* graphics_page_  = nullptr;
-	SettingsPanel* audio_page_     = nullptr;
-	SettingsPanel* text_page_      = nullptr;
-	SettingsPanel* scripts_page_   = nullptr;
-	SettingsPanel* input_page_     = nullptr;
-	SettingsPanel* advanced_page_  = nullptr;
+	wxSizer*      content_sizer_ = nullptr;
+	wxStaticText* title_text_    = nullptr;
+	wxWindow*     current_page_  = nullptr;
 
+	SToolBarButton* sectionButton(SettingsPage page) const { return section_buttons_[static_cast<size_t>(page)]; }
+	SettingsPanel*  settingsPanel(SettingsPage page) const { return settings_pages_[static_cast<size_t>(page)]; }
+
+	void createSectionButton(
+		wxWindow*     parent,
+		SettingsPage  page,
+		const string& action,
+		const string& text,
+		const string& icon);
 	wxPanel* createSectionsPanel();
 
 	// Events

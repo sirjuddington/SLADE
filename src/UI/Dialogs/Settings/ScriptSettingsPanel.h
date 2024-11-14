@@ -16,6 +16,8 @@ namespace ui
 		ScriptSettingsPanel(wxWindow* parent);
 		~ScriptSettingsPanel() override = default;
 
+		string title() const override { return "Scripting Settings"; }
+
 		void applySettings() override;
 
 	private:

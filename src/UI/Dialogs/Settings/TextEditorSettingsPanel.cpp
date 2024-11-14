@@ -32,8 +32,10 @@
 #include "Main.h"
 #include "TextEditorSettingsPanel.h"
 #include "TextEditorStylePanel.h"
+#include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 using namespace ui;
@@ -86,6 +88,7 @@ TextEditorSettingsPanel::TextEditorSettingsPanel(wxWindow* parent) : SettingsPan
 
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createSettingsPanel(tabs), "General");
+	tabs->AddPage(createCodePanel(tabs), "Code && Language");
 	tabs->AddPage(style_panel_ = new TextEditorStylePanel(tabs), "Fonts && Colours");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
@@ -100,175 +103,109 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 	auto panel = new wxPanel(parent);
 	auto lh    = LayoutHelper(panel);
 
+	// Create controls
+	spin_tab_width_       = wxutil::createSpinCtrl(panel, txed_tab_width, 1, 100);
+	cb_tab_spaces_        = new wxCheckBox(panel, -1, "Indent With Spaces");
+	cb_auto_indent_       = new wxCheckBox(panel, -1, "Enable Auto-Indent");
+	cb_trim_whitespace_   = new wxCheckBox(panel, -1, "Trim Whitespace on Save");
+	cb_brace_match_       = new wxCheckBox(panel, -1, "Hilight Matching Braces");
+	spin_right_margin_    = wxutil::createSpinCtrl(panel, txed_edge_column, 0, 1000);
+	spin_line_spacing_    = wxutil::createSpinCtrl(panel, txed_line_extra_height, 0, 10);
+	cb_indent_guides_     = new wxCheckBox(panel, -1, "Show Indentation Guides");
+	cb_match_cursor_word_ = new wxCheckBox(panel, -1, "Hilight Matching Words");
+	rbp_line_hilight_     = new RadioButtonPanel(
+        panel, { "Off", "Background", "Background+Underline" }, "Current Line Hilight:");
+	rbp_show_whitespace_ = new RadioButtonPanel(
+		panel, { "Off", "After Indentation Only", "Always" }, "Show Whitespace:");
+
+
 	// Create main sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
-	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.padLarge());
-	auto row      = 0;
-	sizer->Add(gb_sizer, lh.sfWithLargeBorder(1).Expand());
+	auto vbox = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());
 
 	// --- Whitespace/indentation ---
-
-	// Tab width
-	spin_tab_width_ = new wxSpinCtrl(
-		panel,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
-		1,
-		100,
-		txed_tab_width);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Indentation Width: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(spin_tab_width_, { row, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-
-	// Tabs as spaces
-	cb_tab_spaces_ = new wxCheckBox(panel, -1, "Indent With Spaces");
-	gb_sizer->Add(cb_tab_spaces_, { row, 2 }, { 1, 2 }, wxEXPAND);
-
-	// Auto indent
-	cb_auto_indent_ = new wxCheckBox(panel, -1, "Enable Auto-Indent");
-	gb_sizer->Add(cb_auto_indent_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
-
-	// Trim whitespace
-	cb_trim_whitespace_ = new wxCheckBox(panel, -1, "Trim Whitespace on Save");
-	gb_sizer->Add(cb_trim_whitespace_, { row, 2 }, { 1, 2 }, wxEXPAND);
-
-	// Separator
-	gb_sizer->Add(
-		new wxStaticLine(panel, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL),
-		{ ++row, 0 },
-		{ 1, 4 },
-		wxEXPAND | wxTOP | wxBOTTOM,
-		lh.pad());
+	vbox->Add(wxutil::createSectionSeparator(panel, "Whitespace/Indentation"), lh.sfWithBorder(0, wxBOTTOM).Expand());
+	lh.layoutVertically(
+		vbox,
+		{ cb_auto_indent_,
+		  cb_trim_whitespace_,
+		  cb_tab_spaces_,
+		  wxutil::createLabelHBox(panel, "Indentation Width: ", spin_tab_width_) },
+		lh.sfWithBorder(0, wxLEFT));
 
 	// --- Display ---
+	vbox->AddSpacer(lh.padXLarge());
+	vbox->Add(wxutil::createSectionSeparator(panel, "Display"), lh.sfWithBorder(0, wxBOTTOM).Expand());
 
-	// Right margin
-	spin_right_margin_ = new wxSpinCtrl(
-		panel,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
-		0,
-		1000,
-		txed_edge_column);
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.padLarge());
+	vbox->Add(gb_sizer, lh.sfWithBorder(0, wxLEFT));
+
+	int row = 0;
+	gb_sizer->Add(cb_indent_guides_, { row++, 0 }, { 1, 3 });
+	gb_sizer->Add(cb_brace_match_, { row++, 0 }, { 1, 3 });
+	gb_sizer->Add(cb_match_cursor_word_, { row++, 0 }, { 1, 3 });
 	gb_sizer->Add(
-		new wxStaticText(panel, -1, "Right Margin at Column: "), { ++row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(spin_right_margin_, { row, 1 }, { 1, 1 }, wxEXPAND);
+		new wxStaticText(panel, -1, "Right Margin at Column:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(spin_right_margin_, { row++, 1 }, { 1, 1 });
+	gb_sizer->Add(new wxStaticText(panel, -1, "Extra Line Spacing:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(spin_line_spacing_, { row++, 1 }, { 1, 1 });
+	gb_sizer->Add(rbp_line_hilight_, { row++, 0 }, { 1, 3 });
+	gb_sizer->Add(rbp_show_whitespace_, { row++, 0 }, { 1, 3 });
 
-	// Indentation guides
-	cb_indent_guides_ = new wxCheckBox(panel, -1, "Show Indentation Guides");
-	gb_sizer->Add(cb_indent_guides_, { row, 2 }, { 1, 2 }, wxEXPAND);
+	return panel;
+}
+
+wxPanel* TextEditorSettingsPanel::createCodePanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+
+	// Create controls
+	cb_syntax_hilight_        = new wxCheckBox(panel, -1, "Show Syntax Hilighting");
+	cb_calltips_mouse_        = new wxCheckBox(panel, -1, "Show calltips on mouse hover");
+	cb_calltips_parenthesis_  = new wxCheckBox(panel, -1, "Show calltips on opening parenthesis");
+	cb_calltips_colourise_    = new wxCheckBox(panel, -1, "Colourise calltip text");
+	cb_calltips_dim_optional_ = new wxCheckBox(panel, -1, "Dim optional function parameters");
+	cb_calltips_use_font_     = new wxCheckBox(panel, -1, "Use the text editor font in calltips");
+	cb_calltips_argset_kb_    = new wxCheckBox(panel, -1, "Use up/down keys to cycle function signatures");
+	cb_fold_enable_           = new wxCheckBox(panel, -1, "Enable Code Folding");
+	cb_fold_comments_         = new wxCheckBox(panel, -1, "Fold comment blocks");
+	cb_fold_preprocessor_     = new wxCheckBox(panel, -1, "Fold preprocessor regions");
+	cb_fold_lines_            = new wxCheckBox(panel, -1, "Show lines at contracted code folding regions");
+	cb_calltips_dim_optional_->SetToolTip("If disabled, optional parameters will be shown between [] brackets");
+
+	auto vbox = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());
 
 	// Syntax Hilighting
-	cb_syntax_hilight_ = new wxCheckBox(panel, -1, "Show Syntax Hilighting");
-	gb_sizer->Add(cb_syntax_hilight_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
+	vbox->Add(cb_syntax_hilight_, wxSizerFlags().Expand());
 
-	// Hilight current line
-	wxString hl_line_choices[] = { "Off", "Background", "Background+Underline" };
-	choice_line_hilight_       = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, hl_line_choices);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Current Line Hilight: "), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(choice_line_hilight_, { row, 3 }, { 1, 1 }, wxEXPAND);
+	// Calltips
+	vbox->AddSpacer(lh.padXLarge());
+	vbox->Add(wxutil::createSectionSeparator(panel, "Calltips"), lh.sfWithBorder(0, wxBOTTOM).Expand());
+	lh.layoutVertically(
+		vbox,
+		{ cb_calltips_mouse_,
+		  cb_calltips_colourise_,
+		  cb_calltips_parenthesis_,
+		  cb_calltips_dim_optional_,
+		  cb_calltips_use_font_,
+		  cb_calltips_argset_kb_ },
+		lh.sfWithBorder(0, wxLEFT));
 
-	// Brace matching
-	cb_brace_match_ = new wxCheckBox(panel, -1, "Hilight Matching Braces");
-	gb_sizer->Add(cb_brace_match_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
+	// Code Folding
+	vbox->AddSpacer(lh.padXLarge());
+	vbox->Add(wxutil::createSectionSeparator(panel, "Code Folding"), lh.sfWithBorder(0, wxBOTTOM).Expand());
+	lh.layoutVertically(
+		vbox,
+		{ cb_fold_enable_, cb_fold_comments_, cb_fold_lines_, cb_fold_preprocessor_ },
+		lh.sfWithBorder(0, wxLEFT));
 
-	// Line extra spacing
-	spin_line_spacing_ = new wxSpinCtrl(
-		panel,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
-		0,
-		10,
-		txed_edge_column);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Extra Line Spacing: "), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(spin_line_spacing_, { row, 3 }, { 1, 1 }, wxEXPAND);
-
-	// Word matching
-	cb_match_cursor_word_ = new wxCheckBox(panel, -1, "Hilight Matching Words");
-	cb_match_cursor_word_->SetToolTip(
-		"When enabled, any words matching the word at the current cursor position or selection will be hilighted");
-	gb_sizer->Add(cb_match_cursor_word_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
-
-	// Show whitespace
-	wxString show_ws_choices[] = { "Off", "After Indentation Only", "Always" };
-	choice_show_whitespace_    = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, show_ws_choices);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Show Whitespace: "), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(choice_show_whitespace_, { row, 3 }, { 1, 1 }, wxEXPAND);
-
-	// Separator
-	gb_sizer->Add(
-		new wxStaticLine(panel, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL),
-		{ ++row, 0 },
-		{ 1, 4 },
-		wxEXPAND | wxTOP | wxBOTTOM,
-		lh.pad());
-
-	// --- Calltips ---
-
-	// Calltips on mouse hover
-	cb_calltips_mouse_ = new wxCheckBox(panel, -1, "Show calltips on mouse hover");
-	gb_sizer->Add(cb_calltips_mouse_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
-
-	// Colourise calltips
-	cb_calltips_colourise_ = new wxCheckBox(panel, -1, "Colourise calltip text");
-	gb_sizer->Add(cb_calltips_colourise_, { row, 2 }, { 1, 2 }, wxEXPAND);
-
-	// Calltips on parenthesis
-	cb_calltips_parenthesis_ = new wxCheckBox(panel, -1, "Show calltips on opening parenthesis");
-	gb_sizer->Add(cb_calltips_parenthesis_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
-
-	// Dim optional calltip parameters
-	cb_calltips_dim_optional_ = new wxCheckBox(panel, -1, "Dim optional function parameters");
-	cb_calltips_dim_optional_->SetToolTip("If disabled, optional parameters will be shown between [] brackets");
-	gb_sizer->Add(cb_calltips_dim_optional_, { row, 2 }, { 1, 2 }, wxEXPAND);
-
-	// Use text editor font in calltips
-	cb_calltips_use_font_ = new wxCheckBox(panel, -1, "Use the text editor font in calltips");
-	gb_sizer->Add(cb_calltips_use_font_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
-
-	// Up/down keys to change between multiple function signatures
-	cb_calltips_argset_kb_ = new wxCheckBox(panel, -1, "Use up/down keys to cycle function signatures");
-	gb_sizer->Add(cb_calltips_argset_kb_, { row, 2 }, { 1, 2 }, wxEXPAND);
-
-	// Separator
-	gb_sizer->Add(
-		new wxStaticLine(panel, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL),
-		{ ++row, 0 },
-		{ 1, 4 },
-		wxEXPAND | wxTOP | wxBOTTOM,
-		lh.pad());
-
-	// --- Folding ---
-
-	// Enable Code Folding
-	cb_fold_enable_ = new wxCheckBox(panel, -1, "Enable Code Folding");
-	gb_sizer->Add(cb_fold_enable_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
-
-	// Fold Comments
-	cb_fold_comments_ = new wxCheckBox(panel, -1, "Fold comment blocks");
-	gb_sizer->Add(cb_fold_comments_, { row, 2 }, { 1, 2 }, wxEXPAND);
-
-	// Fold Lines
-	cb_fold_lines_ = new wxCheckBox(panel, -1, "Show lines at contracted code folding regions");
-	gb_sizer->Add(cb_fold_lines_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
-
-	// Fold Preprcessor
-	cb_fold_preprocessor_ = new wxCheckBox(panel, -1, "Fold preprocessor regions");
-	cb_fold_preprocessor_->SetToolTip("Enable folding for preprocessor regions, eg. #if/#endif, #region/#endregion");
-	gb_sizer->Add(cb_fold_preprocessor_, { row, 2 }, { 1, 2 }, wxEXPAND);
-
-	gb_sizer->AddGrowableCol(0, 1);
-	gb_sizer->AddGrowableCol(2, 1);
 
 	return panel;
 }
@@ -296,10 +233,10 @@ void TextEditorSettingsPanel::init() const
 	cb_fold_comments_->SetValue(txed_fold_comments);
 	cb_fold_preprocessor_->SetValue(txed_fold_preprocessor);
 	cb_fold_lines_->SetValue(txed_fold_lines);
-	choice_line_hilight_->SetSelection(txed_hilight_current_line);
+	rbp_line_hilight_->setSelection(txed_hilight_current_line);
 	spin_line_spacing_->SetValue(txed_line_extra_height);
 	cb_tab_spaces_->SetValue(txed_tab_spaces);
-	choice_show_whitespace_->SetSelection(txed_show_whitespace);
+	rbp_show_whitespace_->setSelection(txed_show_whitespace);
 
 	style_panel_->init();
 }
@@ -327,10 +264,10 @@ void TextEditorSettingsPanel::applySettings()
 	txed_fold_comments         = cb_fold_comments_->GetValue();
 	txed_fold_preprocessor     = cb_fold_preprocessor_->GetValue();
 	txed_fold_lines            = cb_fold_lines_->GetValue();
-	txed_hilight_current_line  = choice_line_hilight_->GetSelection();
+	txed_hilight_current_line  = rbp_line_hilight_->getSelection();
 	txed_line_extra_height     = spin_line_spacing_->GetValue();
 	txed_tab_spaces            = cb_tab_spaces_->GetValue();
-	txed_show_whitespace       = choice_show_whitespace_->GetSelection();
+	txed_show_whitespace       = rbp_show_whitespace_->getSelection();
 
 	style_panel_->apply();
 }

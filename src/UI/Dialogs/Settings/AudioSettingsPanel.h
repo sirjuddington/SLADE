@@ -14,6 +14,8 @@ namespace ui
 		AudioSettingsPanel(wxWindow* parent);
 		~AudioSettingsPanel() override = default;
 
+		string title() const override { return "Audio Settings"; }
+
 		void init() const;
 		void applySettings() override;
 

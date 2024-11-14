@@ -12,6 +12,8 @@ public:
 	AdvancedSettingsPanel(wxWindow* parent);
 	~AdvancedSettingsPanel() override = default;
 
+	string title() const override { return "Advanced Settings"; }
+
 	void applySettings() override;
 
 private:

@@ -17,6 +17,8 @@ public:
 	void           addKey();
 	void           removeKey(wxTreeListItem item) const;
 
+	string title() const override { return "Keyboard Shortcuts"; }
+
 	void applySettings() override;
 
 private:

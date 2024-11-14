@@ -157,7 +157,7 @@ void GraphicsSettingsPanel::applySettings()
 wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);
-	auto lh    = ui::LayoutHelper(panel);
+	auto lh    = LayoutHelper(panel);
 
 	// Create controls
 	auto cp_flags   = wxCLRP_SHOW_LABEL | wxCLRP_USE_TEXTCTRL;
@@ -199,32 +199,32 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());
 
+	// General
+	lh.layoutVertically(
+		vbox,
+		{ cb_show_border_, cb_hilight_mouseover_, cb_extra_gfxconv_, cb_condensed_trans_edit_ },
+		wxSizerFlags().Expand());
+
 	// Transparent background colours
-	lh.layoutVertically(
-		vbox,
-		{ new wxStaticText(panel, -1, "Transparent background colours:"),
-		  cp_colour1_,
-		  cp_colour2_,
-		  wxutil::createLabelHBox(panel, "Preset:", choice_presets_) },
-		wxSizerFlags(0).Expand());
+	vbox->AddSpacer(lh.padXLarge());
+	vbox->Add(
+		wxutil::createSectionSeparator(panel, "Transparent Background Colours"), lh.sfWithBorder(0, wxBOTTOM).Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.padLarge());
+	vbox->Add(gb_sizer, lh.sfWithBorder(0, wxLEFT));
+	auto row = 0;
+	gb_sizer->Add(new wxStaticText(panel, -1, "Preset:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(choice_presets_, { row++, 1 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Colours:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(cp_colour1_, { row, 1 }, { 1, 1 });
+	gb_sizer->Add(cp_colour2_, { row++, 2 }, { 1, 1 });
+	gb_sizer->Add(new wxStaticText(panel, -1, "Browser Background:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(choice_browser_bg_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
-	vbox->Add(new wxStaticLine(panel, -1), lh.sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
-
-	// Other gfx options
+	// Hud Offsets View
+	vbox->AddSpacer(lh.padXLarge());
+	vbox->Add(wxutil::createSectionSeparator(panel, "Hud Offsets View"), lh.sfWithBorder(0, wxBOTTOM).Expand());
 	lh.layoutVertically(
-		vbox,
-		{ wxutil::createLabelHBox(panel, "Browser Background:", choice_browser_bg_),
-		  cb_show_border_,
-		  cb_hilight_mouseover_,
-		  cb_extra_gfxconv_,
-		  cb_condensed_trans_edit_,
-		  new wxStaticLine(panel, -1),
-		  new wxStaticText(panel, -1, "Hud Offsets View:"),
-		  cb_hud_bob_,
-		  cb_hud_center_,
-		  cb_hud_statusbar_,
-		  cb_hud_wide_ },
-		wxSizerFlags(0).Expand());
+		vbox, { cb_hud_bob_, cb_hud_center_, cb_hud_statusbar_, cb_hud_wide_ }, lh.sfWithBorder(0, wxLEFT).Expand());
 
 	return panel;
 }
@@ -232,47 +232,42 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 wxPanel* GraphicsSettingsPanel::createPngPanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);
-	auto lh    = ui::LayoutHelper(panel);
+	auto lh    = LayoutHelper(panel);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
-	// Create sizer
+	// Create controls
+	flp_pngout_ = new FileLocationPanel(
+		panel,
+		path_pngout,
+		true,
+		"Browse for PNGout Executable",
+		filedialog::executableExtensionString(),
+		filedialog::executableFileName("pngout"));
+	flp_pngcrush_ = new FileLocationPanel(
+		panel,
+		path_pngcrush,
+		true,
+		"Browse for PNGCrush Executable",
+		filedialog::executableExtensionString(),
+		filedialog::executableFileName("pngcrush"));
+	flp_deflopt_ = new FileLocationPanel(
+		panel,
+		path_deflopt,
+		true,
+		"Browse for DeflOpt Executable",
+		filedialog::executableExtensionString(),
+		filedialog::executableFileName("deflopt"));
+
+	// Layout
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());
-
 	lh.layoutVertically(
 		vbox,
-		vector<wxObject*>{ wxutil::createLabelVBox(
-							   panel,
-							   "Location of PNGout:",
-							   flp_pngout_ = new FileLocationPanel(
-								   panel,
-								   path_pngout,
-								   true,
-								   "Browse for PNGout Executable",
-								   filedialog::executableExtensionString(),
-								   filedialog::executableFileName("pngout"))),
-						   wxutil::createLabelVBox(
-							   panel,
-							   "Location of PNGCrush:",
-							   flp_pngcrush_ = new FileLocationPanel(
-								   panel,
-								   path_pngcrush,
-								   true,
-								   "Browse for PNGCrush Executable",
-								   filedialog::executableExtensionString(),
-								   filedialog::executableFileName("pngcrush"))),
-						   wxutil::createLabelVBox(
-							   panel,
-							   "Location of DeflOpt:",
-							   flp_deflopt_ = new FileLocationPanel(
-								   panel,
-								   path_deflopt,
-								   true,
-								   "Browse for DeflOpt Executable",
-								   filedialog::executableExtensionString(),
-								   filedialog::executableFileName("deflopt"))) },
-		wxSizerFlags(0).Expand());
+		vector<wxObject*>{ wxutil::createLabelVBox(panel, "Location of PNGout:", flp_pngout_),
+						   wxutil::createLabelVBox(panel, "Location of PNGCrush:", flp_pngcrush_),
+						   wxutil::createLabelVBox(panel, "Location of DeflOpt:", flp_deflopt_) },
+		wxSizerFlags().Expand());
 
 	return panel;
 }
