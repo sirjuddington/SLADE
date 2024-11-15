@@ -122,7 +122,7 @@ void AdvancedSettingsPanel::applySettings()
 		auto cvar = CVar::get(name);
 
 		// Check if cvar value was even modified
-		if (!pg_cvars_->GetProperty(name)->HasFlag(wxPGPropertyFlags::Modified))
+		if (!pg_cvars_->GetProperty(name)->HasFlag(wxPG_PROP_MODIFIED))
 		{
 			// If unmodified, it might still have been changed in another panel, so refresh it
 			if (cvar->type == CVar::Type::Boolean)

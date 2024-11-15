@@ -83,6 +83,8 @@ wxSizer* InterfaceSettingsPanel::layoutAppearanceSettings(wxWindow* panel) const
 	int row = 0;
 #ifdef __WXMSW__
 	sizer->Add(rbp_windows_darkmode_, { row++, 0 }, { 1, 3 }, wxEXPAND);
+#else
+	rbp_windows_darkmode_->Hide();
 #endif
 	sizer->Add(new wxStaticText(panel, -1, "Toolbar icon set:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_toolbar_iconset_, { row, 1 }, { 1, 1 }, wxEXPAND);
