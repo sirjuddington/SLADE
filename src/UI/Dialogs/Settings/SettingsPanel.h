@@ -9,6 +9,7 @@ public:
 	~SettingsPanel() override = default;
 
 	virtual string title() const   = 0;
+	virtual void   loadSettings()  = 0;
 	virtual void   applySettings() = 0;
 };
 } // namespace slade::ui

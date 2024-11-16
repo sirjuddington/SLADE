@@ -15,6 +15,7 @@ public:
 
 	string title() const override { return "Text Editor Settings"; }
 
+	void loadSettings() override;
 	void applySettings() override;
 
 private:
@@ -45,6 +46,5 @@ private:
 
 	wxPanel* createSettingsPanel(wxWindow* parent);
 	wxPanel* createCodePanel(wxWindow* parent);
-	void     init() const;
 };
 } // namespace slade::ui

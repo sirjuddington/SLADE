@@ -212,14 +212,6 @@ InputSettingsPanel::InputSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
-// -----------------------------------------------------------------------------
-void InputSettingsPanel::init() const
-{
-	updateBindsList();
-}
-
-// -----------------------------------------------------------------------------
 // Returns the wxTreeListItem for keybind group [group]
 // -----------------------------------------------------------------------------
 wxTreeListItem InputSettingsPanel::getListGroupItem(const wxString& group) const

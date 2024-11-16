@@ -17,6 +17,22 @@ using namespace ui;
 
 // -----------------------------------------------------------------------------
 //
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Bool, wad_force_uppercase)
+EXTERN_CVAR(Int, autosave_entry_changes)
+EXTERN_CVAR(Bool, percent_encoding)
+EXTERN_CVAR(Bool, auto_entry_replace)
+EXTERN_CVAR(Bool, elist_filter_dirs)
+EXTERN_CVAR(Bool, save_archive_with_map) // move
+EXTERN_CVAR(Bool, confirm_entry_delete)
+EXTERN_CVAR(Bool, confirm_entry_revert)
+EXTERN_CVAR(Int, dir_archive_change_action)
+
+
+// -----------------------------------------------------------------------------
+//
 // ExternalEditorList Class
 //
 // -----------------------------------------------------------------------------
@@ -159,7 +175,33 @@ EditingSettingsPanel::EditingSettingsPanel(wxWindow* parent) : SettingsPanel(par
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 
-void EditingSettingsPanel::applySettings() {}
+void EditingSettingsPanel::loadSettings()
+{
+	cb_wad_force_uppercase_->SetValue(wad_force_uppercase);
+	cb_zip_percent_encoding_->SetValue(percent_encoding);
+	cb_auto_entry_replace_->SetValue(auto_entry_replace);
+	cb_filter_dirs_->SetValue(elist_filter_dirs);
+	cb_confirm_entry_delete_->SetValue(confirm_entry_delete);
+	cb_confirm_entry_revert_->SetValue(confirm_entry_revert);
+	rbp_entry_mod_->setSelection(autosave_entry_changes);
+	rbp_dir_mod_->setSelection(dir_archive_change_action);
+
+	choice_category_->SetSelection(0);
+	dynamic_cast<ExternalEditorList*>(lv_ext_editors_)
+		->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
+}
+
+void EditingSettingsPanel::applySettings()
+{
+	wad_force_uppercase       = cb_wad_force_uppercase_->GetValue();
+	percent_encoding          = cb_zip_percent_encoding_->GetValue();
+	auto_entry_replace        = cb_auto_entry_replace_->GetValue();
+	elist_filter_dirs         = cb_filter_dirs_->GetValue();
+	confirm_entry_delete      = cb_confirm_entry_delete_->GetValue();
+	confirm_entry_revert      = cb_confirm_entry_revert_->GetValue();
+	autosave_entry_changes    = rbp_entry_mod_->getSelection();
+	dir_archive_change_action = rbp_dir_mod_->getSelection();
+}
 
 wxPanel* EditingSettingsPanel::createArchiveEditorPanel(wxWindow* parent)
 {

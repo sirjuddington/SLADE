@@ -18,6 +18,7 @@ namespace ui
 
 		string title() const override { return "Scripting Settings"; }
 
+		void loadSettings() override;
 		void applySettings() override;
 
 	private:
@@ -28,7 +29,6 @@ namespace ui
 		wxCheckBox*        cb_always_show_output_ = nullptr;
 
 		void setupLayout();
-		void init() const;
 
 		// Events
 		void onBtnAddIncPath(wxCommandEvent& e);

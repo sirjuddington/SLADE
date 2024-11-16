@@ -16,7 +16,7 @@ namespace ui
 
 		string title() const override { return "Audio Settings"; }
 
-		void init() const;
+		void loadSettings() override;
 		void applySettings() override;
 
 	private:

@@ -20,6 +20,7 @@ public:
 
 	string title() const override { return "Graphics Settings"; }
 
+	void loadSettings() override;
 	void applySettings() override;
 
 private:
@@ -46,8 +47,6 @@ private:
 
 	// Colorimetry
 	ColorimetrySettingsPanel* colorimetry_panel_ = nullptr;
-
-	void init() const;
 
 	wxPanel* createGeneralPanel(wxWindow* parent);
 	wxPanel* createPngPanel(wxWindow* parent);

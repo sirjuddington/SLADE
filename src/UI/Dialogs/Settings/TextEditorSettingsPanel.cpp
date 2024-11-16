@@ -91,8 +91,6 @@ TextEditorSettingsPanel::TextEditorSettingsPanel(wxWindow* parent) : SettingsPan
 	tabs->AddPage(createCodePanel(tabs), "Code && Language");
 	tabs->AddPage(style_panel_ = new TextEditorStylePanel(tabs), "Fonts && Colours");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
-
-	init();
 }
 
 // -----------------------------------------------------------------------------
@@ -213,7 +211,7 @@ wxPanel* TextEditorSettingsPanel::createCodePanel(wxWindow* parent)
 // -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
-void TextEditorSettingsPanel::init() const
+void TextEditorSettingsPanel::loadSettings()
 {
 	cb_auto_indent_->SetValue(txed_auto_indent);
 	cb_trim_whitespace_->SetValue(txed_trim_whitespace);

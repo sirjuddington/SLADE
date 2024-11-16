@@ -85,7 +85,7 @@ ScriptSettingsPanel::ScriptSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 // -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
-void ScriptSettingsPanel::init() const
+void ScriptSettingsPanel::loadSettings()
 {
 	flp_acc_path_->setLocation(path_acc);
 	cb_always_show_output_->SetValue(acc_always_show_output);

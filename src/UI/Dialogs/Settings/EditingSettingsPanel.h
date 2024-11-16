@@ -20,6 +20,7 @@ public:
 
 	string title() const override { return "Editing Settings"; }
 
+	void loadSettings() override;
 	void applySettings() override;
 
 private:

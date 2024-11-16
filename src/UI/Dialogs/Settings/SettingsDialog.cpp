@@ -81,15 +81,29 @@ SettingsDialog::SettingsDialog(wxWindow* parent) : SDialog(parent, "SLADE Settin
 	general_panel->Show();
 	current_page_ = general_panel;
 
-	// Buttons
+	// Load settings
+	for (auto* page : settings_pages_)
+		page->loadSettings();
+
+	// Dialog Buttons
 	auto button_sizer = new wxBoxSizer(wxHORIZONTAL);
-	button_sizer->Add(new wxButton(this, -1, "Apply"), wxSizerFlags(0).Expand());
+	button_sizer->Add(btn_apply_ = new wxButton(this, -1, "Apply"), wxSizerFlags(0).Expand());
 	button_sizer->AddStretchSpacer();
-	button_sizer->Add(new wxButton(this, -1, "OK"), lh.sfWithBorder(0, wxRIGHT).Expand());
-	button_sizer->Add(new wxButton(this, -1, "Cancel"), wxSizerFlags(0).Expand());
+	button_sizer->Add(btn_ok_ = new wxButton(this, -1, "OK"), lh.sfWithBorder(0, wxRIGHT).Expand());
+	button_sizer->Add(btn_cancel_ = new wxButton(this, -1, "Cancel"), wxSizerFlags(0).Expand());
 	content_sizer_->Add(button_sizer, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
+	// Bind events
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SettingsDialog::onSectionButtonClicked, this);
+	btn_apply_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { applySettings(); });
+	btn_ok_->Bind(
+		wxEVT_BUTTON,
+		[&](wxCommandEvent&)
+		{
+			applySettings();
+			EndModal(wxID_OK);
+		});
+	btn_cancel_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { EndModal(wxID_CANCEL); });
 
 	// Determine best minimum size based on larger pages
 	int min_width  = 0;
@@ -100,6 +114,24 @@ SettingsDialog::SettingsDialog(wxWindow* parent) : SDialog(parent, "SLADE Settin
 				 min_height + button_sizer->CalcMin().y + title_panel->GetBestSize().y + FromDIP(100) });
 }
 
+void SettingsDialog::applySettings() const
+{
+	// Apply settings from all pages (except advanced)
+	auto advanced_page = settingsPanel(SettingsPage::Advanced);
+	for (auto* page : settings_pages_)
+		if (page != advanced_page)
+			page->applySettings();
+
+	// Apply advanced settings last
+	advanced_page->applySettings();
+}
+
+void SettingsDialog::reloadSettings() const
+{
+	for (auto* page : settings_pages_)
+		page->loadSettings();
+}
+
 void SettingsDialog::createSectionButton(
 	wxWindow*     parent,
 	SettingsPage  page,
@@ -107,8 +139,9 @@ void SettingsDialog::createSectionButton(
 	const string& text,
 	const string& icon)
 {
-	auto btn = new SToolBarButton(parent, action, text, icon, text, true, 24);
-	btn->setPadding(8, 0);
+	auto btn = new SToolBarButton(parent, action, text, icon, text, true, 28);
+	btn->setPadding(6, 0);
+	btn->setTextOffset(8);
 	btn->setExactFit(false);
 	btn->setFontSize(1.1f);
 	btn->SetBackgroundColour(sidePanelColour());
@@ -129,8 +162,8 @@ wxPanel* SettingsDialog::createSectionsPanel()
 
 	// Create section buttons
 	createSectionButton(panel, SettingsPage::General, "general", "General", "logo");
-	createSectionButton(panel, SettingsPage::Interface, "interface", "Interface", "settings");
-	createSectionButton(panel, SettingsPage::Keybinds, "keybinds", "Keyboard Shortcuts", "settings");
+	createSectionButton(panel, SettingsPage::Interface, "interface", "Interface", "sliders");
+	createSectionButton(panel, SettingsPage::Keybinds, "keybinds", "Keyboard Shortcuts", "keyboard");
 	createSectionButton(panel, SettingsPage::Editing, "editing", "Editing", "wrench");
 	createSectionButton(panel, SettingsPage::Text, "text", "Text Editor", "text");
 	createSectionButton(panel, SettingsPage::Graphics, "gfx", "Graphics", "gfx");

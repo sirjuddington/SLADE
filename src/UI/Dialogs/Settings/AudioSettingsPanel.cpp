@@ -105,7 +105,7 @@ AudioSettingsPanel::AudioSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 // -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
-void AudioSettingsPanel::init() const
+void AudioSettingsPanel::loadSettings()
 {
 	bool midi_fsynth = strutil::equalCI(snd_midi_player, "fluidsynth");
 

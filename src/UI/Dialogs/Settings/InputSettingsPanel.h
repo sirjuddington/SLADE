@@ -19,6 +19,7 @@ public:
 
 	string title() const override { return "Keyboard Shortcuts"; }
 
+	void loadSettings() override { updateBindsList(); }
 	void applySettings() override;
 
 private:
@@ -27,8 +28,6 @@ private:
 	wxButton*       btn_remove_   = nullptr;
 	wxButton*       btn_change_   = nullptr;
 	wxButton*       btn_defaults_ = nullptr;
-
-	void init() const;
 
 	// Events
 	void onSize(wxSizeEvent& e);

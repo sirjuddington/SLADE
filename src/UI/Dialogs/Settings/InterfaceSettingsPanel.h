@@ -14,6 +14,7 @@ public:
 
 	string title() const override { return "Interface Settings"; }
 
+	void loadSettings() override;
 	void applySettings() override;
 
 private:

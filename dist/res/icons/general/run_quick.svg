@@ -4,13 +4,20 @@
     width="16px"
     height="16px"
     viewBox="0 0 24 24">
-    <g transform="scale(1.6, 1.5)">
+    <g transform="scale(1, 1.5) translate(0, 0)">
         <path
             d="M10 8.64L15.27 12L10 15.36V8.64M8 5v14l11-7L8 5z"
-            fill="#A8009B"
-            stroke="#A8009B"
+            fill="#21A800"
+            stroke="#21A800"
             stroke-width="0.5"
             transform="translate(-5, -4)"
+        />
+		<path
+            d="M10 8.64L15.27 12L10 15.36V8.64M8 5v14l11-7L8 5z"
+            fill="#21A800"
+            stroke="#21A800"
+            stroke-width="0.5"
+            transform="translate(4, -4)"
         />
     </g>
 </svg>

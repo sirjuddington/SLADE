@@ -14,6 +14,7 @@ public:
 
 	string title() const override { return "Advanced Settings"; }
 
+	void loadSettings() override { refreshPropGrid(); }
 	void applySettings() override;
 
 private:

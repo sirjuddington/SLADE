@@ -44,6 +44,33 @@ using namespace slade;
 using namespace ui;
 
 
+
+namespace
+{
+struct BackgroundPreset
+{
+	wxString name;
+	wxColour colour1;
+	wxColour colour2;
+};
+vector<BackgroundPreset> bg_presets = {
+	{ "Default", wxColour(64, 64, 80), wxColour(80, 80, 96) },
+	{ "Default (Dark)", wxColour(44, 44, 58), wxColour(61, 61, 73) },
+	{ "Black", wxColour(0, 0, 0), wxColour(0, 0, 0) },
+	{ "Black (Checkered)", wxColour(0, 0, 0), wxColour(30, 30, 30) },
+	{ "Cyan", wxColour(0, 255, 255), wxColour(0, 255, 255) },
+	{ "Cyan (Checkered)", wxColour(0, 255, 255), wxColour(20, 225, 225) },
+	{ "Magenta", wxColour(255, 0, 255), wxColour(255, 0, 255) },
+	{ "Magenta (Checkered)", wxColour(255, 0, 255), wxColour(225, 20, 225) },
+	{ "White", wxColour(255, 255, 255), wxColour(255, 255, 255) },
+	{ "White (Checkered)", wxColour(255, 255, 255), wxColour(225, 225, 225) },
+	{ "Yellow", wxColour(255, 255, 0), wxColour(255, 255, 0) },
+	{ "Yellow (Checkered)", wxColour(255, 255, 0), wxColour(225, 225, 20) },
+	{ "Vintage Id Software", wxColour(167, 107, 107), wxColour(167, 107, 107) },
+};
+} // namespace
+
+
 // -----------------------------------------------------------------------------
 //
 // External Variables
@@ -88,8 +115,6 @@ GraphicsSettingsPanel::GraphicsSettingsPanel(wxWindow* parent) : SettingsPanel(p
 	tabs->AddPage(colorimetry_panel_ = new ColorimetrySettingsPanel(tabs), "Colorimetry");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
-	init();
-
 	// Bind events
 	choice_presets_->Bind(wxEVT_CHOICE, &GraphicsSettingsPanel::onChoicePresetSelected, this);
 }
@@ -97,7 +122,7 @@ GraphicsSettingsPanel::GraphicsSettingsPanel(wxWindow* parent) : SettingsPanel(p
 // -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
-void GraphicsSettingsPanel::init() const
+void GraphicsSettingsPanel::loadSettings()
 {
 	// General
 	cp_colour1_->SetColour(wxColour(bgtx_colour1));
@@ -107,6 +132,16 @@ void GraphicsSettingsPanel::init() const
 	choice_browser_bg_->SetSelection(browser_bg_type);
 	cb_hilight_mouseover_->SetValue(gfx_hilight_mouseover);
 	cb_condensed_trans_edit_->SetValue(translation_editor_condensed);
+
+	// Set preset choice if it matches current colours
+	for (size_t i = 0; i < bg_presets.size(); i++)
+	{
+		if (bg_presets[i].colour1 == cp_colour1_->GetColour() && bg_presets[i].colour2 == cp_colour2_->GetColour())
+		{
+			choice_presets_->SetSelection(i);
+			break;
+		}
+	}
 
 	// PNG
 	flp_pngout_->setLocation(path_pngout);
@@ -164,18 +199,8 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 	cp_colour1_     = new wxColourPickerCtrl(panel, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, cp_flags);
 	cp_colour2_     = new wxColourPickerCtrl(panel, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, cp_flags);
 	choice_presets_ = new wxChoice(panel, -1);
-	choice_presets_->Append(wxutil::arrayString({ "Default",
-												  "Black",
-												  "Black (Checkered)",
-												  "Cyan",
-												  "Cyan (Checkered)",
-												  "Magenta",
-												  "Magenta (Checkered)",
-												  "White",
-												  "White (Checkered)",
-												  "Yellow",
-												  "Yellow (Checkered)",
-												  "Vintage Id Software" }));
+	for (auto& preset : bg_presets)
+		choice_presets_->Append(preset.name);
 	choice_browser_bg_ = new wxChoice(panel, -1);
 	choice_browser_bg_->Append(
 		wxutil::arrayString({ "Transparent background (as above)", "System background", "Black background" }));
@@ -215,8 +240,7 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 	gb_sizer->Add(new wxStaticText(panel, -1, "Preset:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_presets_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Colours:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(cp_colour1_, { row, 1 }, { 1, 1 });
-	gb_sizer->Add(cp_colour2_, { row++, 2 }, { 1, 1 });
+	gb_sizer->Add(lh.layoutHorizontally({ cp_colour1_, cp_colour2_ }), { row++, 1 }, { 1, 2 });
 	gb_sizer->Add(new wxStaticText(panel, -1, "Browser Background:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_browser_bg_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
@@ -278,57 +302,10 @@ wxPanel* GraphicsSettingsPanel::createPngPanel(wxWindow* parent)
 void GraphicsSettingsPanel::onChoicePresetSelected(wxCommandEvent& e)
 {
 	int preset = choice_presets_->GetSelection();
-
-	switch (preset)
+	if (preset >= 0 && preset < static_cast<int>(bg_presets.size()))
 	{
-	case 1: // Black
-		cp_colour1_->SetColour(wxColour(0, 0, 0));
-		cp_colour2_->SetColour(wxColour(0, 0, 0));
-		break;
-	case 2: // Black (checkered)
-		cp_colour1_->SetColour(wxColour(0, 0, 0));
-		cp_colour2_->SetColour(wxColour(30, 30, 30));
-		break;
-	case 3: // Cyan
-		cp_colour1_->SetColour(wxColour(0, 255, 255));
-		cp_colour2_->SetColour(wxColour(0, 255, 255));
-		break;
-	case 4: // Cyan (checkered)
-		cp_colour1_->SetColour(wxColour(0, 255, 255));
-		cp_colour2_->SetColour(wxColour(20, 225, 225));
-		break;
-	case 5: // Magenta
-		cp_colour1_->SetColour(wxColour(255, 0, 255));
-		cp_colour2_->SetColour(wxColour(255, 0, 255));
-		break;
-	case 6: // Magenta (checkered)
-		cp_colour1_->SetColour(wxColour(255, 0, 255));
-		cp_colour2_->SetColour(wxColour(225, 20, 225));
-		break;
-	case 7: // White
-		cp_colour1_->SetColour(wxColour(255, 255, 255));
-		cp_colour2_->SetColour(wxColour(255, 255, 255));
-		break;
-	case 8: // White (checkered)
-		cp_colour1_->SetColour(wxColour(255, 255, 255));
-		cp_colour2_->SetColour(wxColour(225, 225, 225));
-		break;
-	case 9: // Yellow
-		cp_colour1_->SetColour(wxColour(255, 255, 0));
-		cp_colour2_->SetColour(wxColour(255, 255, 0));
-		break;
-	case 10: // Yellow (checkered)
-		cp_colour1_->SetColour(wxColour(255, 255, 0));
-		cp_colour2_->SetColour(wxColour(225, 225, 20));
-		break;
-	case 11: // Vintage Id Software (aka Doom PLAYPAL index 255)
-		cp_colour1_->SetColour(wxColour(167, 107, 107));
-		cp_colour2_->SetColour(wxColour(167, 107, 107));
-		break;
-	default: // Default
-		cp_colour1_->SetColour(wxColour(64, 64, 80));
-		cp_colour2_->SetColour(wxColour(80, 80, 96));
-		break;
+		cp_colour1_->SetColour(bg_presets[preset].colour1);
+		cp_colour2_->SetColour(bg_presets[preset].colour2);
 	}
 
 	applySettings();
