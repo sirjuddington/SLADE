@@ -160,7 +160,8 @@ wxAuiTabArt* SAuiTabArt::Clone()
 
 void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 {
-	int    height = dynamic_cast<wxAuiNotebook*>(wnd)->GetTabCtrlHeight(); // -3;
+	auto   notebook = dynamic_cast<wxAuiNotebook*>(wnd);
+	int    height   = notebook->GetTabCtrlHeight(); // -3;
 	wxRect theRect(rect);
 
 	dc.SetPen(m_borderPen);
@@ -173,7 +174,7 @@ void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 	dc.SetPen(wxPen(wnd->GetBackgroundColour(), wnd->FromDIP(2)));
 	dc.DrawLine(theRect.x + theRect.width - 1, theRect.y, theRect.x + theRect.width - 1, theRect.y + height);
 	dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);
-	dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + wnd->FromDIP(4));
+	dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + wnd->FromDIP(3));
 }
 
 void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect)

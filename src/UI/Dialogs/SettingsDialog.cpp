@@ -1,18 +1,18 @@
 
 #include "Main.h"
 #include "SettingsDialog.h"
-#include "AdvancedSettingsPanel.h"
 #include "App.h"
-#include "AudioSettingsPanel.h"
-#include "EditingSettingsPanel.h"
-#include "GeneralSettingsPanel.h"
-#include "GraphicsSettingsPanel.h"
-#include "InputSettingsPanel.h"
-#include "InterfaceSettingsPanel.h"
-#include "ScriptSettingsPanel.h"
-#include "TextEditorSettingsPanel.h"
 #include "UI/Layout.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/Settings/AdvancedSettingsPanel.h"
+#include "UI/Settings/AudioSettingsPanel.h"
+#include "UI/Settings/EditingSettingsPanel.h"
+#include "UI/Settings/GeneralSettingsPanel.h"
+#include "UI/Settings/GraphicsSettingsPanel.h"
+#include "UI/Settings/InputSettingsPanel.h"
+#include "UI/Settings/InterfaceSettingsPanel.h"
+#include "UI/Settings/ScriptSettingsPanel.h"
+#include "UI/Settings/TextEditorSettingsPanel.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -140,7 +140,7 @@ void SettingsDialog::createSectionButton(
 	const string& icon)
 {
 	auto btn = new SToolBarButton(parent, action, text, icon, text, true, 28);
-	btn->setPadding(6, 0);
+	btn->setPadding(6, 1);
 	btn->setTextOffset(8);
 	btn->setExactFit(false);
 	btn->setFontSize(1.1f);

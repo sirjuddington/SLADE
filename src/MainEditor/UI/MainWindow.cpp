@@ -51,7 +51,7 @@
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
-#include "UI/Dialogs/Settings/SettingsDialog.h"
+#include "UI/Dialogs/SettingsDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
