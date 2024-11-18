@@ -30,5 +30,6 @@ private:
 	BaseResourceArchiveSettingsPanel* base_resource_panel_ = nullptr;
 
 	wxPanel* createProgramSettingsPanel(wxWindow* parent);
+	wxPanel* createBaseResourceArchivePanel(wxWindow* parent);
 };
 } // namespace slade::ui

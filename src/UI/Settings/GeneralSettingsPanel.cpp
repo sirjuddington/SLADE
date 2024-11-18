@@ -59,9 +59,7 @@ GeneralSettingsPanel::GeneralSettingsPanel(wxWindow* parent) : SettingsPanel(par
 
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createProgramSettingsPanel(tabs), "Program");
-	tabs->AddPage(
-		wxutil::createPadPanel(tabs, base_resource_panel_ = new BaseResourceArchiveSettingsPanel(tabs), lh.pad()),
-		"Base Resource Archive");
+	tabs->AddPage(createBaseResourceArchivePanel(tabs), "Base Resource Archive");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
 	base_resource_panel_->Show();
@@ -130,6 +128,20 @@ wxPanel* GeneralSettingsPanel::createProgramSettingsPanel(wxWindow* parent)
 	cb_update_check_->Hide();
 	cb_update_check_beta_->Hide();
 #endif
+
+	return panel;
+}
+
+wxPanel* GeneralSettingsPanel::createBaseResourceArchivePanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = LayoutHelper(panel);
+
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+
+	base_resource_panel_ = new BaseResourceArchiveSettingsPanel(panel);
+	sizer->Add(base_resource_panel_, lh.sfWithLargeBorder(1).Expand());
 
 	return panel;
 }
