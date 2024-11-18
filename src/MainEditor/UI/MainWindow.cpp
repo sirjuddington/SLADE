@@ -50,11 +50,11 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
-#include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/SettingsDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/Settings/BaseResourceArchiveSettingsPanel.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -528,16 +528,13 @@ bool MainWindow::handleAction(string_view id)
 	// Edit->Set Base Resource Archive
 	if (id == "main_setbra")
 	{
-		PreferencesDialog::openPreferences(this, "Base Resource Archive");
-
+		ui::BaseResourceArchiveSettingsPanel::popupDialog(this);
 		return true;
 	}
 
 	// Edit->Preferences
 	if (id == "main_preferences")
 	{
-		// PreferencesDialog::openPreferences(this);
-
 		ui::SettingsDialog settings(this);
 		settings.ShowModal();
 

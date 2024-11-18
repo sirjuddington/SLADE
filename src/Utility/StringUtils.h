@@ -143,6 +143,7 @@ namespace strutil
 		string_view         extension() const;
 		vector<string_view> pathParts() const;
 		bool                hasExtension() const;
+		bool                extensionIs(string_view ext) const;
 
 		void set(string_view full_path);
 		void setPath(string_view path);

@@ -59,5 +59,6 @@ namespace archive
 	const ArchiveFormatInfo&   formatInfoFromId(string_view id);
 	string                     formatId(ArchiveFormat format);
 	ArchiveFormat              formatFromId(string_view format_id_string);
+	ArchiveFormat              formatFromExtension(string_view extension);
 } // namespace archive
 } // namespace slade

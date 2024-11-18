@@ -250,7 +250,7 @@ wxArrayString wxutil::arrayStringStd(const vector<string>& vector)
 // -----------------------------------------------------------------------------
 void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 {
-	auto wx_icon = icons::getIcon(icons::General, icon).GetIconFor(window);
+	auto wx_icon = icons::getIcon(icons::Any, icon).GetIconFor(window);
 	window->SetIcon(wx_icon);
 }
 

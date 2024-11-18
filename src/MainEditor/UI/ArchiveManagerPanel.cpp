@@ -53,6 +53,7 @@
 #include "UI/Dialogs/DirArchiveUpdateDialog.h"
 #include "UI/Dialogs/NewArchiveDiaog.h"
 #include "UI/Layout.h"
+#include "UI/Lists/ArchiveListView.h"
 #include "UI/Lists/ListView.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
@@ -423,7 +424,7 @@ void ArchiveManagerPanel::createArchivesPanel(const ui::LayoutHelper& lh)
 	auto vbox       = new wxBoxSizer(wxVERTICAL);
 	panel_archives_->SetSizer(vbox);
 	vbox->Add(new wxStaticText(panel_archives_, -1, "Open Archives:"), wxSizerFlags().Expand());
-	list_archives_ = new ListView(panel_archives_, -1);
+	list_archives_ = new ui::ArchiveListView(panel_archives_);
 	vbox->Add(list_archives_, lh.sfWithSmallBorder(1, wxTOP).Expand());
 }
 
@@ -436,7 +437,7 @@ void ArchiveManagerPanel::createRecentPanel(const ui::LayoutHelper& lh)
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	panel_rf_->SetSizer(vbox);
 	vbox->Add(new wxStaticText(panel_rf_, -1, "Recent Files:"), wxSizerFlags().Expand());
-	list_recent_ = new ListView(panel_rf_, -1);
+	list_recent_ = new ui::ArchiveListView(panel_rf_);
 	vbox->Add(list_recent_, lh.sfWithSmallBorder(1, wxTOP).Expand());
 
 	// Setup image list
@@ -482,7 +483,7 @@ void ArchiveManagerPanel::layoutHorizontal()
 void ArchiveManagerPanel::refreshRecentFileList() const
 {
 	// Clear the list
-	list_recent_->ClearAll();
+	list_recent_->DeleteAllItems();
 
 	// Get first recent file menu id
 	auto a_recent        = SAction::fromId("aman_recent");
@@ -493,16 +494,11 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 	for (unsigned a = menu_recent_->GetMenuItemCount(); a > 0; a--)
 		menu_recent_->Destroy(id_recent_start + a - 1);
 
-	// Add columns
-	list_recent_->InsertColumn(0, "Filename");
-	list_recent_->InsertColumn(1, "Path");
-
 	// Add each recent archive (same logic as the recent files submenu)
 	list_recent_->enableSizeUpdate(false);
 	for (unsigned a = 0; a < app::archiveManager().numRecentFiles(); a++)
 	{
-		list_recent_->addItem(a, wxEmptyString);
-		updateRecentListItem(a);
+		list_recent_->append(app::archiveManager().recentFile(a));
 
 		if (a < 8)
 		{
@@ -518,9 +514,6 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 
 			// Create and add menu item
 			a_recent->addToMenu(menu_recent_, 0, fn, icon, a);
-			// wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
-			// mi->SetBitmap(Icons::getIcon(Icons::ENTRY, icon));
-			// menu_recent->Append(mi);
 		}
 	}
 
@@ -543,19 +536,12 @@ void ArchiveManagerPanel::disableArchiveListUpdate() const
 void ArchiveManagerPanel::refreshArchiveList() const
 {
 	// Clear the list
-	list_archives_->ClearAll();
-
-	// Add columns
-	list_archives_->InsertColumn(0, "Filename");
-	list_archives_->InsertColumn(1, "Path");
+	list_archives_->DeleteAllItems();
 
 	// Add each archive that is opened in the ArchiveManager
 	list_archives_->enableSizeUpdate(false);
 	for (int a = 0; a < app::archiveManager().numArchives(); a++)
-	{
-		list_archives_->addItem(a, wxEmptyString);
-		updateOpenListItem(a);
-	}
+		list_archives_->append(app::archiveManager().getArchive(a).get());
 
 	// Update size
 	list_archives_->enableSizeUpdate(true);
@@ -583,30 +569,7 @@ void ArchiveManagerPanel::refreshAllTabs() const
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::updateOpenListItem(int index) const
 {
-	auto archive = app::archiveManager().getArchive(index);
-
-	if (!archive)
-		return;
-
-	// Get path as wxFileName for processing
-	wxFileName fn(archive->filename());
-
-	// Set item name
-
-	list_archives_->setItemText(index, 0, fn.GetFullName());
-	list_archives_->setItemText(index, 1, fn.GetPath());
-
-	// Set item status colour
-	using ItemStatus = ListView::ItemStatus;
-	if (archive->canSave())
-	{
-		if (archive->isModified())
-			list_archives_->setItemStatus(index, ItemStatus::Modified);
-		else
-			list_archives_->setItemStatus(index, ItemStatus::Normal);
-	}
-	else
-		list_archives_->setItemStatus(index, ItemStatus::New);
+	list_archives_->setItem(index, app::archiveManager().getArchive(index).get());
 }
 
 // -----------------------------------------------------------------------------
@@ -2365,11 +2328,7 @@ void ArchiveManagerPanel::connectSignals()
 
 	// Update the archives list if an archive is added/closed/modified
 	signal_connections += signals.archive_added.connect(
-		[this](unsigned index)
-		{
-			list_archives_->addItem(index, wxEmptyString);
-			updateOpenListItem(index);
-		});
+		[this](unsigned index) { list_archives_->insert(index, app::archiveManager().getArchive(index).get()); });
 	signal_connections += signals.archive_closed.connect([this](unsigned index) { list_archives_->DeleteItem(index); });
 	signal_connections += signals.archive_saved.connect(
 		[this](unsigned index)

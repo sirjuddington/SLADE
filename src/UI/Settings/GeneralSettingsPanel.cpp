@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
 //
@@ -21,7 +21,8 @@
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 
 // -----------------------------------------------------------------------------
 //
@@ -30,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GeneralSettingsPanel.h"
+#include "BaseResourceArchiveSettingsPanel.h"
+#include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
@@ -54,35 +57,14 @@ GeneralSettingsPanel::GeneralSettingsPanel(wxWindow* parent) : SettingsPanel(par
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	// Create controls
-	cb_show_start_page_           = new wxCheckBox(this, -1, "Show the Start Page on startup");
-	cb_confirm_exit_              = new wxCheckBox(this, -1, "Show confirmation dialog on exit");
-	cb_update_check_              = new wxCheckBox(this, -1, "Check for updates on startup");
-	cb_update_check_beta_         = new wxCheckBox(this, -1, "Include beta versions when checking for updates");
-	cb_close_archive_with_tab_    = new wxCheckBox(this, -1, "Close archive when its tab is closed");
-	cb_auto_open_wads_root_       = new wxCheckBox(this, -1, "Automatically open nested Wad Archives");
-	cb_backup_archives_           = new wxCheckBox(this, -1, "Backup archives before saving");
-	cb_archive_dir_ignore_hidden_ = new wxCheckBox(this, -1, "Ignore hidden files in directories");
+	auto tabs = STabCtrl::createControl(this);
+	tabs->AddPage(createProgramSettingsPanel(tabs), "Program");
+	tabs->AddPage(
+		wxutil::createPadPanel(tabs, base_resource_panel_ = new BaseResourceArchiveSettingsPanel(tabs), lh.pad()),
+		"Base Resource Archive");
+	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
-	// Program
-	sizer->Add(wxutil::createSectionSeparator(this, "Program"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		sizer,
-		{ cb_show_start_page_, cb_confirm_exit_, cb_update_check_, cb_update_check_beta_ },
-		lh.sfWithBorder(0, wxLEFT));
-
-	// Archive
-	sizer->AddSpacer(lh.padXLarge());
-	sizer->Add(wxutil::createSectionSeparator(this, "Archives"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		sizer,
-		{ cb_close_archive_with_tab_, cb_auto_open_wads_root_, cb_backup_archives_, cb_archive_dir_ignore_hidden_ },
-		lh.sfWithBorder(0, wxLEFT));
-
-#ifndef __WXMSW__
-	cb_update_check_->Hide();
-	cb_update_check_beta_->Hide();
-#endif
+	base_resource_panel_->Show();
 }
 
 void GeneralSettingsPanel::loadSettings()
@@ -95,6 +77,8 @@ void GeneralSettingsPanel::loadSettings()
 	cb_auto_open_wads_root_->SetValue(auto_open_wads_root);
 	cb_backup_archives_->SetValue(backup_archives);
 	cb_archive_dir_ignore_hidden_->SetValue(archive_dir_ignore_hidden);
+
+	base_resource_panel_->loadSettings();
 }
 
 void GeneralSettingsPanel::applySettings()
@@ -107,4 +91,45 @@ void GeneralSettingsPanel::applySettings()
 	auto_open_wads_root       = cb_auto_open_wads_root_->GetValue();
 	backup_archives           = cb_backup_archives_->GetValue();
 	archive_dir_ignore_hidden = cb_archive_dir_ignore_hidden_->GetValue();
+
+	base_resource_panel_->applySettings();
+}
+
+wxPanel* GeneralSettingsPanel::createProgramSettingsPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = LayoutHelper(panel);
+
+	// Create controls
+	cb_show_start_page_           = new wxCheckBox(panel, -1, "Show the Start Page on startup");
+	cb_confirm_exit_              = new wxCheckBox(panel, -1, "Show confirmation dialog on exit");
+	cb_update_check_              = new wxCheckBox(panel, -1, "Check for updates on startup");
+	cb_update_check_beta_         = new wxCheckBox(panel, -1, "Include beta versions when checking for updates");
+	cb_close_archive_with_tab_    = new wxCheckBox(panel, -1, "Close archive when its tab is closed");
+	cb_auto_open_wads_root_       = new wxCheckBox(panel, -1, "Automatically open nested Wad Archives");
+	cb_backup_archives_           = new wxCheckBox(panel, -1, "Backup archives before saving");
+	cb_archive_dir_ignore_hidden_ = new wxCheckBox(panel, -1, "Ignore hidden files in directories");
+
+	// Layout
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+	auto vbox = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());
+
+	lh.layoutVertically(vbox, { cb_show_start_page_, cb_confirm_exit_, cb_update_check_, cb_update_check_beta_ });
+
+	// Archive
+	vbox->AddSpacer(lh.padXLarge());
+	vbox->Add(wxutil::createSectionSeparator(panel, "Archives"), lh.sfWithBorder(0, wxBOTTOM).Expand());
+	lh.layoutVertically(
+		vbox,
+		{ cb_close_archive_with_tab_, cb_auto_open_wads_root_, cb_backup_archives_, cb_archive_dir_ignore_hidden_ },
+		lh.sfWithBorder(0, wxLEFT));
+
+#ifndef __WXMSW__
+	cb_update_check_->Hide();
+	cb_update_check_beta_->Hide();
+#endif
+
+	return panel;
 }

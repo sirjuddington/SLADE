@@ -4,6 +4,8 @@
 
 namespace slade::ui
 {
+class BaseResourceArchiveSettingsPanel;
+
 class GeneralSettingsPanel : public SettingsPanel
 {
 public:
@@ -24,5 +26,9 @@ private:
 	wxCheckBox* cb_auto_open_wads_root_       = nullptr;
 	wxCheckBox* cb_backup_archives_           = nullptr;
 	wxCheckBox* cb_archive_dir_ignore_hidden_ = nullptr;
+
+	BaseResourceArchiveSettingsPanel* base_resource_panel_ = nullptr;
+
+	wxPanel* createProgramSettingsPanel(wxWindow* parent);
 };
 } // namespace slade::ui

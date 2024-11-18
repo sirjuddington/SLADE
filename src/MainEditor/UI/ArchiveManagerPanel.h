@@ -9,8 +9,10 @@ namespace slade
 {
 namespace ui
 {
+	class ArchiveListView;
 	struct LayoutHelper;
-}
+} // namespace ui
+
 class ArchiveManagerPanel;
 class ArchivePanel;
 class EntryPanel;
@@ -122,22 +124,22 @@ public:
 	void onDirArchiveCheckCompleted(wxThreadEvent& e);
 
 private:
-	TabControl*      stc_tabs_                    = nullptr;
-	STabCtrl*        stc_archives_                = nullptr;
-	wxPanel*         panel_am_                    = nullptr;
-	wxPanel*         panel_archives_              = nullptr;
-	wxPanel*         panel_rf_                    = nullptr;
-	ListView*        list_archives_               = nullptr;
-	ListView*        list_recent_                 = nullptr;
-	ListView*        list_bookmarks_              = nullptr;
-	WMFileBrowser*   file_browser_                = nullptr;
-	wxMenu*          menu_recent_                 = nullptr;
-	wxMenu*          menu_bookmarks_              = nullptr;
-	Archive*         current_maps_                = nullptr;
-	Archive*         pending_closed_archive_      = nullptr;
-	bool             asked_save_unchanged_        = false;
-	bool             checked_dir_archive_changes_ = false;
-	vector<Archive*> checking_archives_;
+	TabControl*          stc_tabs_                    = nullptr;
+	STabCtrl*            stc_archives_                = nullptr;
+	wxPanel*             panel_am_                    = nullptr;
+	wxPanel*             panel_archives_              = nullptr;
+	wxPanel*             panel_rf_                    = nullptr;
+	ui::ArchiveListView* list_archives_               = nullptr;
+	ui::ArchiveListView* list_recent_                 = nullptr;
+	ListView*            list_bookmarks_              = nullptr;
+	WMFileBrowser*       file_browser_                = nullptr;
+	wxMenu*              menu_recent_                 = nullptr;
+	wxMenu*              menu_bookmarks_              = nullptr;
+	Archive*             current_maps_                = nullptr;
+	Archive*             pending_closed_archive_      = nullptr;
+	bool                 asked_save_unchanged_        = false;
+	bool                 checked_dir_archive_changes_ = false;
+	vector<Archive*>     checking_archives_;
 
 	// Signal connections
 	ScopedConnectionList signal_connections;
