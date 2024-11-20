@@ -29,7 +29,7 @@ private:
 	RadioButtonPanel* rbp_crosshair_        = nullptr;
 	wxCheckBox*       cb_action_lines_      = nullptr;
 	wxCheckBox*       cb_show_help_         = nullptr;
-	wxChoice*         choice_tex_filter_    = nullptr;
+	RadioButtonPanel* rbp_tex_filter_       = nullptr;
 
 	NumberSlider*     slider_vertex_size_  = nullptr;
 	wxCheckBox*       cb_vertex_round_     = nullptr;
@@ -47,7 +47,6 @@ private:
 	wxCheckBox*       cb_thing_overlay_square_ = nullptr;
 	NumberSlider*     slider_thing_shadow_     = nullptr;
 	wxCheckBox*       cb_use_zeth_icons_       = nullptr;
-	wxSlider*         slider_halo_width_       = nullptr;
 	NumberSlider*     slider_light_intensity_  = nullptr;
 
 	NumberSlider* slider_flat_brightness_  = nullptr;

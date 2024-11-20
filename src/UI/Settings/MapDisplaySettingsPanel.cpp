@@ -121,26 +121,25 @@ wxPanel* MapDisplaySettingsPanel::createGeneralPanel(wxWindow* parent, const Lay
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
-	// int row = 0;
 
 	// Create controls
 	rbp_crosshair_        = new RadioButtonPanel(panel, { "None", "Small", "Full" }, "Cursor crosshair:");
 	rbp_grid_64_          = new RadioButtonPanel(panel, { "None", "Full", "Crosses" }, "64x64 grid:");
 	cb_grid_dashed_       = new wxCheckBox(panel, -1, "Dashed grid");
 	cb_grid_show_origin_  = new wxCheckBox(panel, -1, "Hilight origin (0,0) on grid");
-	cb_line_tabs_always_  = new wxCheckBox(panel, -1, "Always show line direction tabs");
 	cb_animate_hilight_   = new wxCheckBox(panel, -1, "Animated hilight");
 	cb_animate_selection_ = new wxCheckBox(panel, -1, "Animated selection");
 	cb_animate_tagged_    = new wxCheckBox(panel, -1, "Animated tag indicator");
 	cb_action_lines_      = new wxCheckBox(panel, -1, "Show action lines");
 	cb_show_help_         = new wxCheckBox(panel, -1, "Show help text");
+	rbp_tex_filter_       = new RadioButtonPanel(panel, { "None", "Linear", "Mipmapped" }, "Texture filter:");
 
 	cb_action_lines_->SetToolTip(
 		"Show lines from an object with an action special to the tagged object(s) when highlighted");
 
 	// General
 	lh.layoutVertically(
-		sizer, { rbp_crosshair_, cb_line_tabs_always_, cb_action_lines_, cb_show_help_ }, wxSizerFlags(0).Expand());
+		sizer, { rbp_crosshair_, rbp_tex_filter_, cb_action_lines_, cb_show_help_ }, wxSizerFlags(0).Expand());
 
 	// Grid
 	sizer->AddSpacer(lh.padXLarge());
@@ -195,8 +194,9 @@ wxPanel* MapDisplaySettingsPanel::createLinesPanel(wxWindow* parent, const Layou
 		sizer,
 		{ wxutil::createLabelHBox(
 			  panel, "Line thickness:", slider_line_width_ = new NumberSlider(panel, 10, 30, 1, true, 10)),
-		  cb_line_smooth_ = new wxCheckBox(panel, -1, "Smooth lines"),
-		  cb_line_fade_   = new wxCheckBox(panel, -1, "Fade when not in lines mode") },
+		  cb_line_smooth_      = new wxCheckBox(panel, -1, "Smooth lines"),
+		  cb_line_tabs_always_ = new wxCheckBox(panel, -1, "Always show line direction tabs"),
+		  cb_line_fade_        = new wxCheckBox(panel, -1, "Fade when not in lines mode") },
 		wxSizerFlags());
 
 	return panel;
@@ -298,7 +298,7 @@ void MapDisplaySettingsPanel::loadSettings()
 	rbp_crosshair_->setSelection(map_crosshair);
 	cb_action_lines_->SetValue(action_lines);
 	cb_show_help_->SetValue(map_show_help);
-	// choice_tex_filter_->Select(map_tex_filter);
+	rbp_tex_filter_->setSelection(map_tex_filter);
 	cb_use_zeth_icons_->SetValue(use_zeth_icons);
 	// slider_halo_width_->SetValue(halo_width);
 	rbp_grid_64_->setSelection(grid_64_style);
@@ -336,8 +336,8 @@ void MapDisplaySettingsPanel::applySettings()
 	map_crosshair         = rbp_crosshair_->getSelection();
 	action_lines          = cb_action_lines_->GetValue();
 	map_show_help         = cb_show_help_->GetValue();
-	// map_tex_filter        = choice_tex_filter_->GetSelection();
-	use_zeth_icons = cb_use_zeth_icons_->GetValue();
+	map_tex_filter        = rbp_tex_filter_->getSelection();
+	use_zeth_icons        = cb_use_zeth_icons_->GetValue();
 	// halo_width            = slider_halo_width_->GetValue();
 	grid_64_style         = rbp_grid_64_->getSelection();
 	grid_show_origin      = cb_grid_show_origin_->GetValue();

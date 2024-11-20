@@ -29,7 +29,7 @@ if(BUILD_WX)
 	FetchContent_Declare(
 	   wxWidgets
 	   GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-	   GIT_TAG 210e8a7a1c1e12237c475d1c0b59dbe6ba38d1c1 # master (3.3.0) as of 2024-10-20
+	   GIT_TAG dc83c4ca0eaa247950aaa9a9e114a21b46b6ae17 # master (3.3.0) as of 2024-11-20
 	)
 	FetchContent_GetProperties(wxwidgets)
 	if(NOT wxwidgets_POPULATED)
