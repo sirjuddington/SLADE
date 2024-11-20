@@ -36,6 +36,7 @@ struct LayoutHelper
 	int    padXLarge() const;
 	int    padSmall() const;
 	wxSize spinSize() const;
+	wxSize sliderSize() const;
 };
 
 } // namespace slade::ui

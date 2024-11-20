@@ -57,6 +57,7 @@ int px_pad_xlarge = 16;
 int px_pad_small  = 3;
 int px_splitter   = 10;
 int px_spin_width;
+int px_slider_width;
 
 } // namespace slade::ui
 
@@ -85,9 +86,15 @@ void ui::init()
 	splash_window = std::make_unique<SplashWindow>();
 
 	if (app::platform() == app::Platform::Linux)
-		px_spin_width = -1;
+	{
+		px_spin_width   = -1;
+		px_slider_width = -1;
+	}
 	else
-		px_spin_width = 64;
+	{
+		px_spin_width   = 64;
+		px_slider_width = 200;
+	}
 
 	splash_window->init();
 }
@@ -225,6 +232,7 @@ int ui::sizePx(Size size, const wxWindow* window)
 	case Size::PadXLarge:     return window ? window->FromDIP(px_pad_xlarge) : px_pad_xlarge;
 	case Size::Splitter:      return window ? window->FromDIP(px_splitter) : px_splitter;
 	case Size::SpinCtrlWidth: return window ? window->FromDIP(px_spin_width) : px_spin_width;
+	case Size::SliderWidth:   return window ? window->FromDIP(px_slider_width) : px_slider_width;
 	}
 
 	return 0;

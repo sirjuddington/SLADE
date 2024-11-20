@@ -23,6 +23,8 @@ enum class SettingsPage : u8
 	Graphics,
 	Audio,
 	Scripting,
+	MapGeneral,
+	MapDisplay,
 	Advanced
 };
 constexpr unsigned SETTINGS_PAGE_COUNT = static_cast<unsigned>(SettingsPage::Advanced) + 1;

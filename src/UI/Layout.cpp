@@ -218,3 +218,8 @@ wxSize LayoutHelper::spinSize() const
 {
 	return window->FromDIP(wxSize(ui::sizePx(Size::SpinCtrlWidth), -1));
 }
+
+wxSize LayoutHelper::sliderSize() const
+{
+	return window->FromDIP(wxSize(ui::sizePx(Size::SliderWidth), -1));
+}

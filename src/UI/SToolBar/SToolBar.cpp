@@ -459,7 +459,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 	// Set background colour
 	if (app::platform() == app::Windows && main_toolbar)
 		wxWindowBase::SetBackgroundColour(
-			wxSystemSettings::GetColour(app::isDarkTheme() ? wxSYS_COLOUR_MENU : wxSYS_COLOUR_WINDOW));
+			app::isDarkTheme() ? wxSystemSettings::GetColour(wxSYS_COLOUR_MENU) : wxColour(250, 250, 250));
 
 	// Create sizer
 	auto* sizer = new wxBoxSizer(orientation);

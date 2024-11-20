@@ -11,6 +11,8 @@
 #include "UI/Settings/GraphicsSettingsPanel.h"
 #include "UI/Settings/InputSettingsPanel.h"
 #include "UI/Settings/InterfaceSettingsPanel.h"
+#include "UI/Settings/MapDisplaySettingsPanel.h"
+#include "UI/Settings/MapGeneralSettingsPanel.h"
 #include "UI/Settings/ScriptSettingsPanel.h"
 #include "UI/Settings/TextEditorSettingsPanel.h"
 #include "UI/WxUtils.h"
@@ -66,16 +68,20 @@ SettingsDialog::SettingsDialog(wxWindow* parent) : SDialog(parent, "SLADE Settin
 	content_sizer_->Add(title_panel, wxSizerFlags().Expand());
 
 	// Settings pages
-	settings_pages_[static_cast<size_t>(SettingsPage::General)]   = new GeneralSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Interface)] = new InterfaceSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Keybinds)]  = new InputSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Editing)]   = new EditingSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Text)]      = new TextEditorSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Graphics)]  = new GraphicsSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Audio)]     = new AudioSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Scripting)] = new ScriptSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Advanced)]  = new AdvancedSettingsPanel(this);
-	auto general_panel                                            = settings_pages_[0];
+	settings_pages_[static_cast<size_t>(SettingsPage::General)]    = new GeneralSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Interface)]  = new InterfaceSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Keybinds)]   = new InputSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Editing)]    = new EditingSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Text)]       = new TextEditorSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Graphics)]   = new GraphicsSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Audio)]      = new AudioSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Scripting)]  = new ScriptSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::MapGeneral)] = new MapGeneralSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::MapDisplay)] = new MapDisplaySettingsPanel(this);
+	// settings_pages_[static_cast<size_t>(SettingsPage::Map3dMode)]       = new GeneralSettingsPanel(this);
+	// settings_pages_[static_cast<size_t>(SettingsPage::MapNodeBuilders)] = new GeneralSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Advanced)] = new AdvancedSettingsPanel(this);
+	auto general_panel                                           = settings_pages_[0];
 	section_buttons_[0]->setChecked(true);
 	content_sizer_->Add(general_panel, lh.sfWithLargeBorder(1).Expand());
 	general_panel->Show();
@@ -139,8 +145,8 @@ void SettingsDialog::createSectionButton(
 	const string& text,
 	const string& icon)
 {
-	auto btn = new SToolBarButton(parent, action, text, icon, text, true, 28);
-	btn->setPadding(6, 1);
+	auto btn = new SToolBarButton(parent, action, text, icon, text, true, 24);
+	btn->setPadding(4, 1);
 	btn->setTextOffset(8);
 	btn->setExactFit(false);
 	btn->setFontSize(1.1f);
@@ -169,6 +175,10 @@ wxPanel* SettingsDialog::createSectionsPanel()
 	createSectionButton(panel, SettingsPage::Graphics, "gfx", "Graphics", "gfx");
 	createSectionButton(panel, SettingsPage::Audio, "audio", "Audio", "sound");
 	createSectionButton(panel, SettingsPage::Scripting, "scripts", "ACS Scripts", "script");
+	createSectionButton(panel, SettingsPage::MapGeneral, "map_general", "Map Editor", "mapeditor");
+	createSectionButton(panel, SettingsPage::MapDisplay, "map_display", "Map Editor Display", "flat_t");
+	// createSectionButton(panel, SettingsPage::Map3dMode, "map_3d", "3D Mode", "3d");
+	// createSectionButton(panel, SettingsPage::MapNodeBuilders, "map_node_builders", "Node Builders", "compile");
 	createSectionButton(panel, SettingsPage::Advanced, "advanced", "Advanced", "settings");
 
 	// Set all to width of 'Keyboard Shortcuts' button since it's the widest

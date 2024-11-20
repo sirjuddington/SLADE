@@ -183,13 +183,15 @@ void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 	auto px2 = wnd->FromDIP(2);
 	auto px4 = wnd->FromDIP(4);
 
+	bool w10_light_bg = main_tabs_ && !app::isDarkTheme() && app::platform() == app::Windows;
+
 	// Background
 	wxRect r;
 	if (m_flags & wxAUI_NB_BOTTOM)
 		r = wxRect(rect.x, rect.y, rect.width + px2, rect.height);
 	else
 		r = wxRect(rect.x, rect.y, rect.width + px2, rect.height);
-	dc.SetBrush(wxBrush(wnd->GetBackgroundColour()));
+	dc.SetBrush(wxBrush(w10_light_bg ? col_w10_bg : wnd->GetBackgroundColour()));
 	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.DrawRectangle(r);
 
