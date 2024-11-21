@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NodeBuildersWizardPage.h"
-#include "UI/Dialogs/Preferences/NodesPrefsPanel.h"
+#include "UI/Settings/NodeBuildersSettingsPanel.h"
 
 using namespace slade;
 
@@ -53,8 +53,10 @@ NodeBuildersWizardPage::NodeBuildersWizardPage(wxWindow* parent) : WizardPageBas
 	SetSizer(sizer);
 
 	// Add Base Resource Archive panel
-	panel_nodes_ = new NodesPrefsPanel(this);
+	panel_nodes_ = new ui::NodeBuildersSettingsPanel(this);
 	sizer->Add(panel_nodes_, wxSizerFlags(1).Expand());
+	panel_nodes_->loadSettings();
+	panel_nodes_->Show();
 }
 
 // -----------------------------------------------------------------------------

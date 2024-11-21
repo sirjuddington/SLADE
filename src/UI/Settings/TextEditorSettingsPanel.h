@@ -5,7 +5,7 @@
 namespace slade::ui
 {
 class RadioButtonPanel;
-class TextEditorStylePanel;
+class TextEditorStyleSettingsPanel;
 
 class TextEditorSettingsPanel : public SettingsPanel
 {
@@ -42,7 +42,7 @@ private:
 	RadioButtonPanel* rbp_line_hilight_         = nullptr;
 	RadioButtonPanel* rbp_show_whitespace_      = nullptr;
 
-	TextEditorStylePanel* style_panel_ = nullptr;
+	TextEditorStyleSettingsPanel* style_panel_ = nullptr;
 
 	wxPanel* createSettingsPanel(wxWindow* parent);
 	wxPanel* createCodePanel(wxWindow* parent);

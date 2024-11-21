@@ -50,6 +50,7 @@ private:
 
 	wxPanel* createGeneralPanel(wxWindow* parent);
 	wxPanel* createPngPanel(wxWindow* parent);
+	wxPanel* createColorimetryPanel(wxWindow* parent);
 
 	// Events
 	void onChoicePresetSelected(wxCommandEvent& e);

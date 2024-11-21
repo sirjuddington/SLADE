@@ -25,16 +25,26 @@ enum class SettingsPage : u8
 	Scripting,
 	MapGeneral,
 	MapDisplay,
-	Advanced
+	Advanced,
+
+	BaseResource,
+	Colour,
+	Colorimetry,
+	TextStyle,
+	Map3d,
+	NodeBuilders,
+	ExternalEditors,
 };
 constexpr unsigned SETTINGS_PAGE_COUNT = static_cast<unsigned>(SettingsPage::Advanced) + 1;
 
 class SettingsDialog : public SDialog
 {
 public:
-	SettingsDialog(wxWindow* parent);
+	SettingsDialog(wxWindow* parent, SettingsPage initial_page = SettingsPage::General);
 
 	void applySettings() const;
+
+	static bool popupSettingsPage(wxWindow* parent, SettingsPage page = SettingsPage::General);
 
 private:
 	std::array<SToolBarButton*, SETTINGS_PAGE_COUNT> section_buttons_;
@@ -52,13 +62,10 @@ private:
 	SToolBarButton* sectionButton(SettingsPage page) const { return section_buttons_[static_cast<size_t>(page)]; }
 	SettingsPanel*  settingsPanel(SettingsPage page) const { return settings_pages_[static_cast<size_t>(page)]; }
 
-	void createSectionButton(
-		wxWindow*     parent,
-		SettingsPage  page,
-		const string& action,
-		const string& text,
-		const string& icon);
+	void     createSectionButton(wxWindow* parent, SettingsPage page, const string& text, const string& icon);
 	wxPanel* createSectionsPanel();
+
+	static string pageId(SettingsPage page);
 
 	// Events
 	void onSectionButtonClicked(wxCommandEvent& e);

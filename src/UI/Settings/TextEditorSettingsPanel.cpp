@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextEditorSettingsPanel.h"
-#include "TextEditorStylePanel.h"
+#include "TextEditorStyleSettingsPanel.h"
 #include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
@@ -89,7 +89,7 @@ TextEditorSettingsPanel::TextEditorSettingsPanel(wxWindow* parent) : SettingsPan
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createSettingsPanel(tabs), "General");
 	tabs->AddPage(createCodePanel(tabs), "Code && Language");
-	tabs->AddPage(style_panel_ = new TextEditorStylePanel(tabs), "Fonts && Colours");
+	tabs->AddPage(style_panel_ = new TextEditorStyleSettingsPanel(tabs), "Fonts && Colours");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 
@@ -237,7 +237,7 @@ void TextEditorSettingsPanel::loadSettings()
 	cb_tab_spaces_->SetValue(txed_tab_spaces);
 	rbp_show_whitespace_->setSelection(txed_show_whitespace);
 
-	style_panel_->init();
+	style_panel_->loadSettings();
 }
 
 // -----------------------------------------------------------------------------
@@ -268,5 +268,5 @@ void TextEditorSettingsPanel::applySettings()
 	txed_tab_spaces            = cb_tab_spaces_->GetValue();
 	txed_show_whitespace       = rbp_show_whitespace_->getSelection();
 
-	style_panel_->apply();
+	style_panel_->applySettings();
 }

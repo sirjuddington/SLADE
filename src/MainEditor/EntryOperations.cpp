@@ -59,7 +59,7 @@
 #include "UI/Dialogs/GfxConvDialog.h"
 #include "UI/Dialogs/GfxTintDialog.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
-#include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Dialogs/SettingsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/EntryPanel/EntryPanel.h"
 #include "UI/MainWindow.h"
@@ -1347,7 +1347,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			"Error: ACC path not defined, please configure in SLADE preferences",
 			"Error",
 			wxOK | wxCENTRE | wxICON_ERROR);
-		PreferencesDialog::openPreferences(parent, "ACS");
+		ui::SettingsDialog::popupSettingsPage(parent, ui::SettingsPage::Scripting);
 		return false;
 	}
 

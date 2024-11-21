@@ -19,14 +19,14 @@ public:
 	BaseResourceArchiveSettingsPanel(wxWindow* parent);
 	~BaseResourceArchiveSettingsPanel() override = default;
 
+	string title() const override { return "Base Resource Archive"; }
+	string icon() const override { return "archive"; }
+
 	int  selectedPathIndex() const;
 	void autodetect() const;
 
-	void   loadSettings() override;
-	void   applySettings() override;
-	string title() const override { return "Base Resource Archive"; }
-
-	static bool popupDialog(wxWindow* parent = nullptr);
+	void loadSettings() override;
+	void applySettings() override;
 
 private:
 	ArchiveListView*   list_base_archive_paths_ = nullptr;

@@ -304,37 +304,6 @@ void BaseResourceArchiveSettingsPanel::applySettings()
 	zdoom_pk3_path = wxutil::strToView(flp_zdoom_pk3_->location());
 }
 
-// -----------------------------------------------------------------------------
-// Opens a dialog containing the panel and OK/Cancel buttons. Clicking OK will
-// apply the settings and return true, clicking Cancel will return false
-// -----------------------------------------------------------------------------
-bool BaseResourceArchiveSettingsPanel::popupDialog(wxWindow* parent)
-{
-	if (!parent)
-		parent = maineditor::windowWx();
-
-	SDialog dlg(parent, "Set Base Resource Archive", "base_resource");
-	auto    lh    = LayoutHelper(&dlg);
-	auto    panel = new BaseResourceArchiveSettingsPanel(&dlg);
-	auto    sizer = new wxBoxSizer(wxVERTICAL);
-	dlg.SetSizer(sizer);
-	wxutil::setWindowIcon(&dlg, "archive");
-	sizer->Add(panel, lh.sfWithLargeBorder(1).Expand());
-	sizer->Add(wxutil::createDialogButtonBox(&dlg), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
-	panel->loadSettings();
-	panel->Show();
-
-	dlg.SetMinSize(dlg.GetBestSize().Scale(1.2, 1.1));
-	dlg.CenterOnParent();
-	if (dlg.ShowModal() == wxID_OK)
-	{
-		panel->applySettings();
-		return true;
-	}
-
-	return false;
-}
-
 
 // -----------------------------------------------------------------------------
 //

@@ -51,7 +51,7 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 // ColourSettingsPanel class constructor
 // -----------------------------------------------------------------------------
-ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : wxPanel(parent)
+ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
 	auto lh = LayoutHelper(this);
 
@@ -94,14 +94,12 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : wxPanel(parent)
 		});
 
 	wxWindowBase::Layout();
-
-	init();
 }
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
-void ColourSettingsPanel::init() const
+void ColourSettingsPanel::loadSettings()
 {
 	refreshPropGrid();
 }
@@ -161,7 +159,7 @@ void ColourSettingsPanel::refreshPropGrid() const
 // -----------------------------------------------------------------------------
 // Applies preferences from the panel controls
 // -----------------------------------------------------------------------------
-void ColourSettingsPanel::apply() const
+void ColourSettingsPanel::applySettings()
 {
 	// Get list of all colours
 	vector<string> colours;

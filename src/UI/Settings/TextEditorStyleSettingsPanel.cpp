@@ -5,7 +5,7 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    TextStylePrefsPanel.cpp
+// Filename:    TextEditorStyleSettingsPanel.cpp
 // Description: Panel containing text style controls, to change the fonts and
 //              colours used in the text editor
 //
@@ -31,16 +31,16 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "TextStylePrefsPanel.h"
+#include "TextEditorStyleSettingsPanel.h"
 #include "App.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Layout.h"
-#include "UI/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
+using namespace ui;
 
 
 // -----------------------------------------------------------------------------
@@ -54,16 +54,16 @@ EXTERN_CVAR(Int, txed_override_font_size)
 
 // -----------------------------------------------------------------------------
 //
-// TextStylePrefsPanel Class Functions
+// TextEditorStyleSettingsPanel Class Functions
 //
 // -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
-// TextStylePrefsPanel class constructor
+// TextEditorStyleSettingsPanel class constructor
 // -----------------------------------------------------------------------------
-TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) :
-	PrefsPanelBase{ parent },
+TextEditorStyleSettingsPanel::TextEditorStyleSettingsPanel(wxWindow* parent) :
+	SettingsPanel{ parent },
 	ss_current_{ new StyleSet },
 	language_preview_{ new TextLanguage("preview") }
 {
@@ -72,14 +72,17 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) :
 	ts_current_ = ss_current_->style("default");
 
 	auto lh    = ui::LayoutHelper(this);
-	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
+
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gb_sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// Styleset font override
 	cb_font_override_ = new wxCheckBox(this, -1, "Override Default Font:");
 	cb_font_override_->SetToolTip("Always use the selected font in the text editor, instead of the style's font below");
 	fp_font_override_ = new wxFontPickerCtrl(this, -1);
-	sizer->Add(lh.layoutHorizontally({ cb_font_override_, fp_font_override_ }, 1), { 0, 0 }, { 1, 2 }, wxEXPAND);
+	gb_sizer->Add(lh.layoutHorizontally({ cb_font_override_, fp_font_override_ }, 1), { 0, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Styleset selector
 	choice_styleset_ = new wxChoice(this, -1);
@@ -90,7 +93,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) :
 	hbox->Add(new wxStaticText(this, -1, "Style Set:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(choice_styleset_, lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 	hbox->Add(btn_savestyleset_, wxSizerFlags().Expand());
-	sizer->Add(hbox, { 1, 0 }, { 1, 2 }, wxEXPAND);
+	gb_sizer->Add(hbox, { 1, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Style list
 	list_styles_ = new wxListBox(this, -1);
@@ -98,35 +101,35 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) :
 	list_styles_->Append("Selection");
 	for (unsigned a = 0; a < ss_current_->nStyles(); a++)
 		list_styles_->Append(ss_current_->style(a)->description());
-	sizer->Add(list_styles_, { 2, 0 }, { 2, 1 }, wxEXPAND);
+	gb_sizer->Add(list_styles_, { 2, 0 }, { 2, 1 }, wxEXPAND);
 
 	// Style properties
 	auto style_props_panel = createStylePanel();
-	sizer->Add(style_props_panel, { 2, 1 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(style_props_panel, { 2, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Preview
 	te_preview_ = new TextEditorCtrl(this, -1);
-	sizer->Add(te_preview_, { 3, 1 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(te_preview_, { 3, 1 }, { 1, 1 }, wxEXPAND);
 
-	sizer->AddGrowableCol(1, 1);
-	sizer->AddGrowableRow(3, 1);
+	gb_sizer->AddGrowableCol(1, 1);
+	gb_sizer->AddGrowableRow(3, 1);
 
 	// Bind events
-	list_styles_->Bind(wxEVT_LISTBOX, &TextStylePrefsPanel::onStyleSelected, this);
-	cb_override_font_face_->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontFace, this);
-	cb_override_font_size_->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontSize, this);
-	cb_override_font_bold_->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontBold, this);
-	cb_override_font_italic_->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontItalic, this);
-	cb_override_font_underlined_->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontUnderlined, this);
-	cb_override_foreground_->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideForeground, this);
-	cb_override_background_->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideBackground, this);
-	fp_font_->Bind(wxEVT_FONTPICKER_CHANGED, &TextStylePrefsPanel::onFontChanged, this);
-	cp_foreground_->Bind(wxEVT_COLOURPICKER_CHANGED, &TextStylePrefsPanel::onForegroundChanged, this);
-	cp_background_->Bind(wxEVT_COLOURPICKER_CHANGED, &TextStylePrefsPanel::onBackgroundChanged, this);
-	btn_savestyleset_->Bind(wxEVT_BUTTON, &TextStylePrefsPanel::onBtnSaveStyleSet, this);
-	choice_styleset_->Bind(wxEVT_CHOICE, &TextStylePrefsPanel::onStyleSetSelected, this);
-	cb_font_override_->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFont, this);
-	fp_font_override_->Bind(wxEVT_FONTPICKER_CHANGED, &TextStylePrefsPanel::onFontOverrideChanged, this);
+	list_styles_->Bind(wxEVT_LISTBOX, &TextEditorStyleSettingsPanel::onStyleSelected, this);
+	cb_override_font_face_->Bind(wxEVT_CHECKBOX, &TextEditorStyleSettingsPanel::onCBOverrideFontFace, this);
+	cb_override_font_size_->Bind(wxEVT_CHECKBOX, &TextEditorStyleSettingsPanel::onCBOverrideFontSize, this);
+	cb_override_font_bold_->Bind(wxEVT_CHECKBOX, &TextEditorStyleSettingsPanel::onCBOverrideFontBold, this);
+	cb_override_font_italic_->Bind(wxEVT_CHECKBOX, &TextEditorStyleSettingsPanel::onCBOverrideFontItalic, this);
+	cb_override_font_underlined_->Bind(wxEVT_CHECKBOX, &TextEditorStyleSettingsPanel::onCBOverrideFontUnderlined, this);
+	cb_override_foreground_->Bind(wxEVT_CHECKBOX, &TextEditorStyleSettingsPanel::onCBOverrideForeground, this);
+	cb_override_background_->Bind(wxEVT_CHECKBOX, &TextEditorStyleSettingsPanel::onCBOverrideBackground, this);
+	fp_font_->Bind(wxEVT_FONTPICKER_CHANGED, &TextEditorStyleSettingsPanel::onFontChanged, this);
+	cp_foreground_->Bind(wxEVT_COLOURPICKER_CHANGED, &TextEditorStyleSettingsPanel::onForegroundChanged, this);
+	cp_background_->Bind(wxEVT_COLOURPICKER_CHANGED, &TextEditorStyleSettingsPanel::onBackgroundChanged, this);
+	btn_savestyleset_->Bind(wxEVT_BUTTON, &TextEditorStyleSettingsPanel::onBtnSaveStyleSet, this);
+	choice_styleset_->Bind(wxEVT_CHOICE, &TextEditorStyleSettingsPanel::onStyleSetSelected, this);
+	cb_font_override_->Bind(wxEVT_CHECKBOX, &TextEditorStyleSettingsPanel::onCBOverrideFont, this);
+	fp_font_override_->Bind(wxEVT_FONTPICKER_CHANGED, &TextEditorStyleSettingsPanel::onFontOverrideChanged, this);
 
 	// Init controls
 	if (!txed_override_font.value.empty())
@@ -158,7 +161,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 // Creates and returns a panel containing text style controls
 // -----------------------------------------------------------------------------
-wxPanel* TextStylePrefsPanel::createStylePanel()
+wxPanel* TextEditorStyleSettingsPanel::createStylePanel()
 {
 	auto panel = new wxPanel(this);
 	auto lh    = ui::LayoutHelper(panel);
@@ -207,7 +210,7 @@ wxPanel* TextStylePrefsPanel::createStylePanel()
 // -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::init()
+void TextEditorStyleSettingsPanel::loadSettings()
 {
 	te_preview_->SetText(
 		"#include \"include.txt\"\n"
@@ -251,7 +254,7 @@ void TextStylePrefsPanel::init()
 // Updates style-related controls to reflect the currently selected style in
 // the list
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateStyleControls() const
+void TextEditorStyleSettingsPanel::updateStyleControls() const
 {
 	if (!ts_current_)
 		return;
@@ -367,7 +370,7 @@ void TextStylePrefsPanel::updateStyleControls() const
 // -----------------------------------------------------------------------------
 // Updates the font face property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontFace() const
+void TextEditorStyleSettingsPanel::updateFontFace() const
 {
 	// Update current style
 	if (cb_override_font_face_->GetValue())
@@ -379,7 +382,7 @@ void TextStylePrefsPanel::updateFontFace() const
 // -----------------------------------------------------------------------------
 // Updates the font size property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontSize() const
+void TextEditorStyleSettingsPanel::updateFontSize() const
 {
 	if (cb_override_font_size_->GetValue())
 		ts_current_->setFontSize(fp_font_->GetSelectedFont().GetPointSize());
@@ -390,7 +393,7 @@ void TextStylePrefsPanel::updateFontSize() const
 // -----------------------------------------------------------------------------
 // Updates the font bold property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontBold() const
+void TextEditorStyleSettingsPanel::updateFontBold() const
 {
 	if (cb_override_font_bold_->GetValue())
 	{
@@ -407,7 +410,7 @@ void TextStylePrefsPanel::updateFontBold() const
 // -----------------------------------------------------------------------------
 // Updates the font italic property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontItalic() const
+void TextEditorStyleSettingsPanel::updateFontItalic() const
 {
 	if (cb_override_font_italic_->GetValue())
 	{
@@ -424,7 +427,7 @@ void TextStylePrefsPanel::updateFontItalic() const
 // -----------------------------------------------------------------------------
 // Updates the font underline property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontUnderlined() const
+void TextEditorStyleSettingsPanel::updateFontUnderlined() const
 {
 	if (cb_override_font_underlined_->GetValue())
 	{
@@ -441,7 +444,7 @@ void TextStylePrefsPanel::updateFontUnderlined() const
 // -----------------------------------------------------------------------------
 // Updates the foreground colour property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateForeground() const
+void TextEditorStyleSettingsPanel::updateForeground() const
 {
 	if (cb_override_foreground_->GetValue())
 	{
@@ -457,7 +460,7 @@ void TextStylePrefsPanel::updateForeground() const
 // -----------------------------------------------------------------------------
 // Updates the background colour property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateBackground() const
+void TextEditorStyleSettingsPanel::updateBackground() const
 {
 	if (cb_override_background_->GetValue())
 	{
@@ -473,7 +476,7 @@ void TextStylePrefsPanel::updateBackground() const
 // -----------------------------------------------------------------------------
 // Updates the preview text editor
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updatePreview() const
+void TextEditorStyleSettingsPanel::updatePreview() const
 {
 	// Save current font override options
 	string f_override = txed_override_font;
@@ -502,7 +505,7 @@ void TextStylePrefsPanel::updatePreview() const
 // -----------------------------------------------------------------------------
 // Applies the current style properties to the current set
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::applyPreferences()
+void TextEditorStyleSettingsPanel::applySettings()
 {
 	if (cb_font_override_->GetValue())
 	{
@@ -523,7 +526,7 @@ void TextStylePrefsPanel::applyPreferences()
 
 // -----------------------------------------------------------------------------
 //
-// TextStylePrefsPanel Class Events
+// TextEditorStyleSettingsPanel Class Events
 //
 // -----------------------------------------------------------------------------
 
@@ -533,7 +536,7 @@ void TextStylePrefsPanel::applyPreferences()
 // -----------------------------------------------------------------------------
 // Called when a style is selected in the style list
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onStyleSelected(wxCommandEvent& e)
 {
 	int sel = list_styles_->GetSelection();
 	if (sel == 0)
@@ -549,7 +552,7 @@ void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Override' font face checkbox is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onCBOverrideFontFace(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onCBOverrideFontFace(wxCommandEvent& e)
 {
 	updateFontFace();
 	updatePreview();
@@ -558,7 +561,7 @@ void TextStylePrefsPanel::onCBOverrideFontFace(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Override' font size checkbox is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onCBOverrideFontSize(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onCBOverrideFontSize(wxCommandEvent& e)
 {
 	updateFontSize();
 	updatePreview();
@@ -567,7 +570,7 @@ void TextStylePrefsPanel::onCBOverrideFontSize(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Override' font bold checkbox is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onCBOverrideFontBold(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onCBOverrideFontBold(wxCommandEvent& e)
 {
 	updateFontBold();
 	updatePreview();
@@ -576,7 +579,7 @@ void TextStylePrefsPanel::onCBOverrideFontBold(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Override' font italic checkbox is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onCBOverrideFontItalic(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onCBOverrideFontItalic(wxCommandEvent& e)
 {
 	updateFontItalic();
 	updatePreview();
@@ -585,7 +588,7 @@ void TextStylePrefsPanel::onCBOverrideFontItalic(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Override' font underlined checkbox is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onCBOverrideFontUnderlined(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onCBOverrideFontUnderlined(wxCommandEvent& e)
 {
 	updateFontUnderlined();
 	updatePreview();
@@ -594,7 +597,7 @@ void TextStylePrefsPanel::onCBOverrideFontUnderlined(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Override' foreground colour checkbox is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onCBOverrideForeground(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onCBOverrideForeground(wxCommandEvent& e)
 {
 	updateForeground();
 	updatePreview();
@@ -603,7 +606,7 @@ void TextStylePrefsPanel::onCBOverrideForeground(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Override' background colour checkbox is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onCBOverrideBackground(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onCBOverrideBackground(wxCommandEvent& e)
 {
 	updateBackground();
 	updatePreview();
@@ -612,7 +615,7 @@ void TextStylePrefsPanel::onCBOverrideBackground(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the font chooser font is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onFontChanged(wxFontPickerEvent& e)
+void TextEditorStyleSettingsPanel::onFontChanged(wxFontPickerEvent& e)
 {
 	// Update relevant style properties
 	updateFontFace();
@@ -626,7 +629,7 @@ void TextStylePrefsPanel::onFontChanged(wxFontPickerEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the foreground colour is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onForegroundChanged(wxColourPickerEvent& e)
+void TextEditorStyleSettingsPanel::onForegroundChanged(wxColourPickerEvent& e)
 {
 	updateForeground();
 	updatePreview();
@@ -635,7 +638,7 @@ void TextStylePrefsPanel::onForegroundChanged(wxColourPickerEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the background colour is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onBackgroundChanged(wxColourPickerEvent& e)
+void TextEditorStyleSettingsPanel::onBackgroundChanged(wxColourPickerEvent& e)
 {
 	updateBackground();
 	updatePreview();
@@ -644,7 +647,7 @@ void TextStylePrefsPanel::onBackgroundChanged(wxColourPickerEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Save' style set button is clicked
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 {
 	// Get name for set
 	auto name = wxGetTextFromUser("Enter Style Set name:", "Save Style Set").ToStdString();
@@ -675,7 +678,7 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the style set selection is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onStyleSetSelected(wxCommandEvent& e)
 {
 	if (init_done_)
 	{
@@ -693,7 +696,7 @@ void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Override Default Font' checkbox is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onCBOverrideFont(wxCommandEvent& e)
+void TextEditorStyleSettingsPanel::onCBOverrideFont(wxCommandEvent& e)
 {
 	fp_font_override_->Enable(cb_font_override_->GetValue());
 	updatePreview();
@@ -702,7 +705,7 @@ void TextStylePrefsPanel::onCBOverrideFont(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'Override Default Font' font is changed
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::onFontOverrideChanged(wxFontPickerEvent& e)
+void TextEditorStyleSettingsPanel::onFontOverrideChanged(wxFontPickerEvent& e)
 {
 	updatePreview();
 }

@@ -4,7 +4,11 @@
 
 namespace slade
 {
-class BaseResourceArchivesPanel;
+namespace ui
+{
+	class BaseResourceArchiveSettingsPanel;
+}
+
 class BaseResourceWizardPage : public WizardPageBase
 {
 public:
@@ -17,6 +21,6 @@ public:
 	wxString description() override;
 
 private:
-	BaseResourceArchivesPanel* bra_panel_ = nullptr;
+	ui::BaseResourceArchiveSettingsPanel* bra_panel_ = nullptr;
 };
 } // namespace slade

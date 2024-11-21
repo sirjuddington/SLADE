@@ -1,3 +1,4 @@
+#include "GraphicsSettingsPanel.h"
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
@@ -30,8 +31,8 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "GraphicsSettingsPanel.h"
 #include "ColorimetrySettingsPanel.h"
+#include "GraphicsSettingsPanel.h"
 #include "MainEditor/MainEditor.h"
 #include "OpenGL/GLTexture.h"
 #include "UI/Controls/FileLocationPanel.h"
@@ -112,7 +113,7 @@ GraphicsSettingsPanel::GraphicsSettingsPanel(wxWindow* parent) : SettingsPanel(p
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createGeneralPanel(tabs), "General");
 	tabs->AddPage(createPngPanel(tabs), "PNG Tools");
-	tabs->AddPage(colorimetry_panel_ = new ColorimetrySettingsPanel(tabs), "Colorimetry");
+	tabs->AddPage(createColorimetryPanel(tabs), "Colorimetry");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
 	// Bind events
@@ -154,7 +155,7 @@ void GraphicsSettingsPanel::loadSettings()
 	cb_hud_statusbar_->SetValue(hud_statusbar);
 	cb_hud_wide_->SetValue(hud_wide);
 
-	colorimetry_panel_->init();
+	colorimetry_panel_->loadSettings();
 }
 
 // -----------------------------------------------------------------------------
@@ -186,7 +187,7 @@ void GraphicsSettingsPanel::applySettings()
 	hud_statusbar = cb_hud_statusbar_->GetValue();
 	hud_wide      = cb_hud_wide_->GetValue();
 
-	colorimetry_panel_->apply();
+	colorimetry_panel_->applySettings();
 }
 
 wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
@@ -292,6 +293,19 @@ wxPanel* GraphicsSettingsPanel::createPngPanel(wxWindow* parent)
 						   wxutil::createLabelVBox(panel, "Location of PNGCrush:", flp_pngcrush_),
 						   wxutil::createLabelVBox(panel, "Location of DeflOpt:", flp_deflopt_) },
 		wxSizerFlags().Expand());
+
+	return panel;
+}
+
+wxPanel* GraphicsSettingsPanel::createColorimetryPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+
+	colorimetry_panel_ = new ColorimetrySettingsPanel(panel);
+	sizer->Add(colorimetry_panel_, LayoutHelper(panel).sfWithLargeBorder(1).Expand());
+	colorimetry_panel_->Show();
 
 	return panel;
 }

@@ -100,7 +100,7 @@ wxSpinCtrlDouble* createSpin(wxWindow* parent, const wxString& name, double min,
 // -----------------------------------------------------------------------------
 // ColorimetrySettingsPanel class constructor
 // -----------------------------------------------------------------------------
-ColorimetrySettingsPanel::ColorimetrySettingsPanel(wxWindow* parent) : wxPanel(parent)
+ColorimetrySettingsPanel::ColorimetrySettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
 	// Create controls
 	spin_grey_r_          = createSpin(this, "GreyscaleRed", 0.0, 1.0, 0.001, 0.001);
@@ -156,7 +156,7 @@ ColorimetrySettingsPanel::ColorimetrySettingsPanel(wxWindow* parent) : wxPanel(p
 // -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
-void ColorimetrySettingsPanel::init() const
+void ColorimetrySettingsPanel::loadSettings()
 {
 	spin_grey_r_->SetValue(col_greyscale_r);
 	spin_grey_g_->SetValue(col_greyscale_g);
@@ -182,7 +182,7 @@ void ColorimetrySettingsPanel::init() const
 // -----------------------------------------------------------------------------
 // Applies preferences from the panel controls
 // -----------------------------------------------------------------------------
-void ColorimetrySettingsPanel::apply() const
+void ColorimetrySettingsPanel::applySettings()
 {
 	col_greyscale_r   = spin_grey_r_->GetValue();
 	col_greyscale_g   = spin_grey_g_->GetValue();
@@ -210,10 +210,8 @@ void ColorimetrySettingsPanel::setupLayout()
 	auto lh = LayoutHelper(this);
 
 	// Create sizer
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
 	auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
-	sizer->Add(gbsizer, lh.sfWithLargeBorder(1).Expand());
+	SetSizer(gbsizer);
 
 	// RGB weights for greyscale luminance
 	auto cols = 7;
@@ -332,8 +330,6 @@ void ColorimetrySettingsPanel::onChoiceGreyscalePresetSelected(wxCommandEvent& e
 		break;
 	default: break;
 	}
-
-	apply();
 }
 
 // -----------------------------------------------------------------------------
@@ -433,6 +429,4 @@ void ColorimetrySettingsPanel::onChoiceTristimPresetSelected(wxCommandEvent& e)
 		break;
 	default: break;
 	}
-
-	apply();
 }

@@ -17,6 +17,7 @@ namespace ui
 		~ScriptSettingsPanel() override = default;
 
 		string title() const override { return "Scripting Settings"; }
+		string icon() const override { return "script"; }
 
 		void loadSettings() override;
 		void applySettings() override;

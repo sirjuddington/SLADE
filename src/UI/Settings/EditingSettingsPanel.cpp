@@ -2,6 +2,7 @@
 #include "Main.h"
 #include "EditingSettingsPanel.h"
 #include "Archive/EntryType/EntryType.h"
+#include "ExternalEditorsSettingsPanel.h"
 #include "General/Executables.h"
 #include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/SIconButton.h"
@@ -186,9 +187,7 @@ void EditingSettingsPanel::loadSettings()
 	rbp_entry_mod_->setSelection(autosave_entry_changes);
 	rbp_dir_mod_->setSelection(dir_archive_change_action);
 
-	choice_category_->SetSelection(0);
-	dynamic_cast<ExternalEditorList*>(lv_ext_editors_)
-		->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
+	ext_editors_panel_->loadSettings();
 }
 
 void EditingSettingsPanel::applySettings()
@@ -201,6 +200,8 @@ void EditingSettingsPanel::applySettings()
 	confirm_entry_revert      = cb_confirm_entry_revert_->GetValue();
 	autosave_entry_changes    = rbp_entry_mod_->getSelection();
 	dir_archive_change_action = rbp_dir_mod_->getSelection();
+
+	ext_editors_panel_->applySettings();
 }
 
 wxPanel* EditingSettingsPanel::createArchiveEditorPanel(wxWindow* parent)
@@ -251,119 +252,11 @@ wxPanel* EditingSettingsPanel::createExternalEditorsPanel(wxWindow* parent)
 	auto panel = new wxPanel(parent, -1);
 	auto lh    = LayoutHelper(panel);
 
-	// Create controls
-	auto categories  = wxutil::arrayStringStd(EntryType::allCategories());
-	choice_category_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, categories);
-	lv_ext_editors_  = new ExternalEditorList(panel);
-	btn_add_exe_     = new SIconButton(panel, icons::General, "plus");
-	btn_add_exe_->SetToolTip("Add External Editor");
-	btn_remove_exe_ = new SIconButton(panel, icons::General, "minus");
-	btn_remove_exe_->SetToolTip("Remove Selected External Editors");
-
 	// Layout
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
-	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
-	panel->GetSizer()->Add(sizer, lh.sfWithLargeBorder(1).Expand());
-
-	sizer->Add(new wxStaticText(panel, -1, "Category: "), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	sizer->Add(choice_category_, { 0, 1 }, { 1, 2 }, wxEXPAND);
-	sizer->Add(lv_ext_editors_, { 1, 0 }, { 3, 2 }, wxEXPAND);
-	sizer->Add(btn_add_exe_, { 1, 2 }, { 1, 1 });
-	sizer->Add(btn_remove_exe_, { 2, 2 }, { 1, 1 });
-
-	sizer->AddGrowableRow(3, 1);
-	sizer->AddGrowableCol(1, 1);
-
-	// Bind events
-	choice_category_->Bind(
-		wxEVT_CHOICE,
-		[&](wxCommandEvent&)
-		{
-			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)
-				->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
-		});
-	btn_add_exe_->Bind(wxEVT_BUTTON, &EditingSettingsPanel::onBtnAddClicked, this);
-	btn_remove_exe_->Bind(wxEVT_BUTTON, &EditingSettingsPanel::onBtnRemoveClicked, this);
-	lv_ext_editors_->Bind(wxEVT_LIST_ITEM_ACTIVATED, &EditingSettingsPanel::onExternalExeActivated, this);
+	panel->GetSizer()->Add(
+		ext_editors_panel_ = new ExternalEditorsSettingsPanel(panel), lh.sfWithLargeBorder(1).Expand());
+	ext_editors_panel_->Show();
 
 	return panel;
-}
-
-
-// ReSharper disable CppMemberFunctionMayBeConst
-// ReSharper disable CppParameterMayBeConstPtrOrRef
-
-// -----------------------------------------------------------------------------
-// Called when the 'Add' button is clicked
-// -----------------------------------------------------------------------------
-void EditingSettingsPanel::onBtnAddClicked(wxCommandEvent& e)
-{
-	ExternalEditorDialog dlg(this, true);
-	while (dlg.ShowModal() == wxID_OK)
-	{
-		if (dlg.getName().empty())
-			wxMessageBox("Please enter a name for the editor", "Name Required");
-		else if (dlg.getPath().empty())
-			wxMessageBox("Please enter or select an executable", "Path Required");
-		else
-		{
-			// Add executable
-			auto category = choice_category_->GetStringSelection().ToStdString();
-			executables::addExternalExe(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
-
-			// Refresh list
-			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
-
-			break;
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Remove' button is clicked
-// -----------------------------------------------------------------------------
-void EditingSettingsPanel::onBtnRemoveClicked(wxCommandEvent& e)
-{
-	auto selection = lv_ext_editors_->selection();
-	auto category  = choice_category_->GetStringSelection().ToStdString();
-
-	// Remove selected editors
-	for (long item : selection)
-	{
-		wxString name = lv_ext_editors_->GetItemText(item);
-		executables::removeExternalExe(wxutil::strToView(name), category);
-	}
-
-	// Refresh list
-	dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
-}
-
-// -----------------------------------------------------------------------------
-// Called when an item in the external editors list is activated
-// -----------------------------------------------------------------------------
-void EditingSettingsPanel::onExternalExeActivated(wxListEvent& e)
-{
-	auto name     = lv_ext_editors_->GetItemText(e.GetIndex()).ToStdString();
-	auto category = choice_category_->GetStringSelection().ToStdString();
-	auto exe      = executables::externalExe(name, category);
-
-	ExternalEditorDialog dlg(this, false, name, exe.path);
-	while (dlg.ShowModal() == wxID_OK)
-	{
-		if (dlg.getName().empty())
-			wxMessageBox("Please enter a name for the editor", "Name Required");
-		else if (dlg.getPath().empty())
-			wxMessageBox("Please enter or select an executable", "Path Required");
-		else
-		{
-			// Update executable
-			executables::setExternalExeName(name, dlg.getName().ToStdString(), category);
-			executables::setExternalExePath(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
-
-			// Refresh list
-			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
-
-			break;
-		}
-	}
 }

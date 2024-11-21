@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SettingsPanel.h"
+
 class wxListBox;
 
 namespace slade
@@ -11,25 +13,16 @@ class TextStyle;
 
 namespace ui
 {
-	class TextEditorStylePanel : public wxPanel
+	class TextEditorStyleSettingsPanel : public SettingsPanel
 	{
 	public:
-		TextEditorStylePanel(wxWindow* parent);
-		~TextEditorStylePanel() override = default;
+		TextEditorStyleSettingsPanel(wxWindow* parent);
+		~TextEditorStyleSettingsPanel() override = default;
 
-		void updateStyleControls() const;
+		string title() const override { return "Text Editor Fonts & Colours"; }
 
-		void updateFontFace() const;
-		void updateFontSize() const;
-		void updateFontBold() const;
-		void updateFontItalic() const;
-		void updateFontUnderlined() const;
-		void updateForeground() const;
-		void updateBackground() const;
-		void updatePreview() const;
-
-		void init();
-		void apply() const;
+		void loadSettings() override;
+		void applySettings() override;
 
 	private:
 		bool                 init_done_        = false;
@@ -56,6 +49,16 @@ namespace ui
 		TextEditorCtrl*          te_preview_ = nullptr;
 
 		wxPanel* createStylePanel();
+
+		void updateStyleControls() const;
+		void updateFontFace() const;
+		void updateFontSize() const;
+		void updateFontBold() const;
+		void updateFontItalic() const;
+		void updateFontUnderlined() const;
+		void updateForeground() const;
+		void updateBackground() const;
+		void updatePreview() const;
 
 		// Events
 		void onStyleSelected(wxCommandEvent& e);

@@ -1,17 +1,21 @@
 #pragma once
 
+#include "SettingsPanel.h"
+
 class wxSpinCtrlDouble;
 
 namespace slade::ui
 {
-class ColorimetrySettingsPanel : public wxPanel
+class ColorimetrySettingsPanel : public SettingsPanel
 {
 public:
 	ColorimetrySettingsPanel(wxWindow* parent);
 	~ColorimetrySettingsPanel() override = default;
 
-	void init() const;
-	void apply() const;
+	string title() const override { return "Colorimetry Settings"; }
+
+	void loadSettings() override;
+	void applySettings() override;
 
 private:
 	wxSpinCtrlDouble* spin_grey_r_            = nullptr;

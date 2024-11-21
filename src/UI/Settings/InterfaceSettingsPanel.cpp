@@ -124,6 +124,8 @@ void InterfaceSettingsPanel::loadSettings()
 	rbp_elist_tree_style_->setSelection(elist_no_tree ? 1 : 0);
 
 	rbp_windows_darkmode_->setSelection(win_darkmode);
+
+	colour_panel_->loadSettings();
 }
 
 // ----------------------------------------------------------------------------
@@ -156,7 +158,7 @@ void InterfaceSettingsPanel::applySettings()
 	elist_type_bgcol = cb_elist_bgcol_->GetValue();
 	elist_no_tree    = rbp_elist_tree_style_->getSelection() == 1;
 
-	colour_panel_->apply();
+	colour_panel_->applySettings();
 }
 
 // ----------------------------------------------------------------------------

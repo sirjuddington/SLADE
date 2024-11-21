@@ -54,7 +54,6 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
-#include "UI/Settings/BaseResourceArchiveSettingsPanel.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -528,7 +527,7 @@ bool MainWindow::handleAction(string_view id)
 	// Edit->Set Base Resource Archive
 	if (id == "main_setbra")
 	{
-		ui::BaseResourceArchiveSettingsPanel::popupDialog(this);
+		ui::SettingsDialog::popupSettingsPage(this, ui::SettingsPage::BaseResource);
 		return true;
 	}
 

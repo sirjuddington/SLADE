@@ -37,11 +37,11 @@
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
+#include "SettingsDialog.h"
 #include "UI/Canvas/Canvas.h"
 #include "UI/Canvas/GL/GfxGLCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
-#include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Layout.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
@@ -770,6 +770,6 @@ void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void GfxConvDialog::onBtnColorimetrySettings(wxCommandEvent& e)
 {
-	PreferencesDialog::openPreferences(this, "Colorimetry");
+	ui::SettingsDialog::popupSettingsPage(this, ui::SettingsPage::Colorimetry);
 	updatePreviewGfx();
 }
