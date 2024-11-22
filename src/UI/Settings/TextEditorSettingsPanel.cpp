@@ -35,6 +35,7 @@
 #include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -86,10 +87,12 @@ TextEditorSettingsPanel::TextEditorSettingsPanel(wxWindow* parent) : SettingsPan
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
+	style_panel_ = new TextEditorStyleSettingsPanel(this);
+
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createSettingsPanel(tabs), "General");
 	tabs->AddPage(createCodePanel(tabs), "Code && Language");
-	tabs->AddPage(style_panel_ = new TextEditorStyleSettingsPanel(tabs), "Fonts && Colours");
+	tabs->AddPage(wxutil::createPadPanel(tabs, style_panel_, padLarge()), "Fonts && Colours");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 

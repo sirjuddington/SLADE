@@ -117,7 +117,7 @@ int wxutil::addImageListIcon(wxImageList* list, int icon_type, string_view icon)
 wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 {
 	if (pad < 0)
-		pad = ui::pad();
+		pad = ui::pad(parent);
 
 	auto panel = new wxPanel(parent);
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));

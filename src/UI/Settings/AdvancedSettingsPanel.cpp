@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "AdvancedSettingsPanel.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -55,6 +56,15 @@ AdvancedSettingsPanel::AdvancedSettingsPanel(wxWindow* parent) : SettingsPanel(p
 	SetSizer(sizer);
 
 	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+
+	// Disclaimer
+	sizer->Add(
+		new wxStaticText(
+			this,
+			-1,
+			"Warning: Only modify these values if you know what you are doing!\n"
+			"Most of these settings can be changed more safely from the other sections."),
+		LayoutHelper(this).sfWithLargeBorder(0, wxBOTTOM).Expand());
 
 	// Add property grid
 	pg_cvars_ = new wxPropertyGrid(

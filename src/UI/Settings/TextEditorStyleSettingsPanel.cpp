@@ -71,12 +71,9 @@ TextEditorStyleSettingsPanel::TextEditorStyleSettingsPanel(wxWindow* parent) :
 	ss_current_->copySet(StyleSet::currentSet());
 	ts_current_ = ss_current_->style("default");
 
-	auto lh    = ui::LayoutHelper(this);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
-
+	auto lh       = LayoutHelper(this);
 	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
-	sizer->Add(gb_sizer, lh.sfWithLargeBorder(1).Expand());
+	SetSizer(gb_sizer);
 
 	// Styleset font override
 	cb_font_override_ = new wxCheckBox(this, -1, "Override Default Font:");

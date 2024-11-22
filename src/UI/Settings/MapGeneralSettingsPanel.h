@@ -35,12 +35,11 @@ private:
 	wxCheckBox*     cb_merge_lines_vertex_delete_ = nullptr;
 	wxCheckBox*     cb_split_auto_offset_         = nullptr;
 	NumberTextCtrl* text_max_backups_             = nullptr;
+	wxCheckBox*     cb_save_archive_with_map_     = nullptr;
 
 	NodeBuildersSettingsPanel* nodebuilders_panel_ = nullptr;
 	Map3DSettingsPanel*        map3d_panel_        = nullptr;
 
 	wxPanel* createGeneralPanel(wxWindow* parent);
-	wxPanel* createNodeBuildersPanel(wxWindow* parent);
-	wxPanel* create3dModePanel(wxWindow* parent);
 };
 } // namespace slade::ui

@@ -90,6 +90,11 @@ SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 	settings_pages_[static_cast<size_t>(SettingsPage::MapDisplay)] = new MapDisplaySettingsPanel(this);
 	settings_pages_[static_cast<size_t>(SettingsPage::Advanced)]   = new AdvancedSettingsPanel(this);
 
+	// Hide all pages initially
+	for (auto* page : settings_pages_)
+		if (page)
+			page->Hide();
+
 	// Show initial settings panel
 	auto init_panel = settingsPanel(initial_page);
 	sectionButton(initial_page)->setChecked(true);

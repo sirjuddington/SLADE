@@ -34,6 +34,7 @@
 #include "BaseResourceArchiveSettingsPanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -53,13 +54,14 @@ EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 
 GeneralSettingsPanel::GeneralSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
-	auto lh    = LayoutHelper(this);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
+	base_resource_panel_ = new BaseResourceArchiveSettingsPanel(this);
+
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createProgramSettingsPanel(tabs), "Program");
-	tabs->AddPage(createBaseResourceArchivePanel(tabs), "Base Resource Archive");
+	tabs->AddPage(wxutil::createPadPanel(tabs, base_resource_panel_, padLarge()), "Base Resource Archive");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
 	base_resource_panel_->Show();

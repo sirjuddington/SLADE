@@ -7,6 +7,7 @@
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -28,6 +29,7 @@ EXTERN_CVAR(Bool, map_remove_invalid_lines)
 EXTERN_CVAR(Int, max_map_backups)
 EXTERN_CVAR(Bool, map_merge_lines_on_delete_vertex)
 EXTERN_CVAR(Bool, map_split_auto_offset)
+EXTERN_CVAR(Bool, save_archive_with_map)
 
 
 
@@ -36,14 +38,14 @@ MapGeneralSettingsPanel::MapGeneralSettingsPanel(wxWindow* parent) : SettingsPan
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
+	nodebuilders_panel_ = new NodeBuildersSettingsPanel(this);
+	map3d_panel_        = new Map3DSettingsPanel(this);
+
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createGeneralPanel(tabs), "General");
-	tabs->AddPage(create3dModePanel(tabs), "3D Mode");
-	tabs->AddPage(createNodeBuildersPanel(tabs), "Node Builders");
+	tabs->AddPage(wxutil::createPadPanel(tabs, map3d_panel_, padLarge()), "3D Mode");
+	tabs->AddPage(wxutil::createPadPanel(tabs, nodebuilders_panel_, padLarge()), "Node Builders");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
-
-	nodebuilders_panel_->Show();
-	map3d_panel_->Show();
 }
 
 void MapGeneralSettingsPanel::loadSettings()
@@ -57,6 +59,7 @@ void MapGeneralSettingsPanel::loadSettings()
 	cb_merge_lines_vertex_delete_->SetValue(map_merge_lines_on_delete_vertex);
 	cb_split_auto_offset_->SetValue(map_split_auto_offset);
 	text_max_backups_->setNumber(max_map_backups);
+	cb_save_archive_with_map_->SetValue(save_archive_with_map);
 
 	nodebuilders_panel_->loadSettings();
 	map3d_panel_->loadSettings();
@@ -73,6 +76,7 @@ void MapGeneralSettingsPanel::applySettings()
 	map_merge_lines_on_delete_vertex = cb_merge_lines_vertex_delete_->GetValue();
 	map_split_auto_offset            = cb_split_auto_offset_->GetValue();
 	max_map_backups                  = text_max_backups_->number();
+	save_archive_with_map            = cb_save_archive_with_map_->GetValue();
 
 	nodebuilders_panel_->applySettings();
 	map3d_panel_->applySettings();
@@ -86,6 +90,7 @@ wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 	panel->SetSizer(sz_border);
 
 	// Create controls
+	cb_save_archive_with_map_ = new wxCheckBox(panel, -1, "When saving a map, also save its parent archive");
 	cb_selection_clear_click_ = new wxCheckBox(panel, -1, "Clear selection when nothing is clicked");
 	cb_selection_clear_move_  = new wxCheckBox(panel, -1, "Clear selection after moving (dragging) map elements");
 	cb_property_edit_dclick_  = new wxCheckBox(panel, -1, "Double-click to edit properties");
@@ -99,6 +104,8 @@ wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
+
+	sizer->Add(cb_save_archive_with_map_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Selection
 	sizer->Add(wxutil::createSectionSeparator(panel, "Selection"), lh.sfWithBorder(0, wxBOTTOM).Expand());
@@ -124,32 +131,6 @@ wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 		sizer,
 		{ wxutil::createLabelHBox(panel, "Max backups to keep:", text_max_backups_) },
 		lh.sfWithBorder(0, wxLEFT));
-
-	return panel;
-}
-
-wxPanel* MapGeneralSettingsPanel::createNodeBuildersPanel(wxWindow* parent)
-{
-	auto panel = new wxPanel(parent);
-	auto lh    = LayoutHelper(panel);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sizer);
-
-	nodebuilders_panel_ = new NodeBuildersSettingsPanel(panel);
-	sizer->Add(nodebuilders_panel_, lh.sfWithLargeBorder(1).Expand());
-
-	return panel;
-}
-
-wxPanel* MapGeneralSettingsPanel::create3dModePanel(wxWindow* parent)
-{
-	auto panel = new wxPanel(parent);
-	auto lh    = LayoutHelper(panel);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sizer);
-
-	map3d_panel_ = new Map3DSettingsPanel(panel);
-	sizer->Add(map3d_panel_, lh.sfWithLargeBorder(1).Expand());
 
 	return panel;
 }

@@ -75,9 +75,11 @@ InterfaceSettingsPanel::InterfaceSettingsPanel(wxWindow* parent) : SettingsPanel
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
+	colour_panel_ = new ColourSettingsPanel(this);
+
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createInterfacePanel(tabs), "Interface");
-	tabs->AddPage(colour_panel_ = new ColourSettingsPanel(tabs), "Colours && Theme");
+	tabs->AddPage(wxutil::createPadPanel(tabs, colour_panel_, padLarge()), "Colours && Theme");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 

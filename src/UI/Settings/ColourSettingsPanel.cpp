@@ -65,9 +65,7 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 	choice_configs_ = new wxChoice(this, -1);
 	for (const auto& cname : cnames)
 		choice_configs_->Append(cname);
-	sizer->Add(
-		wxutil::createLabelHBox(this, "Preset:", choice_configs_),
-		lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
+	sizer->Add(wxutil::createLabelHBox(this, "Preset:", choice_configs_), wxSizerFlags().Expand());
 	sizer->AddSpacer(lh.pad());
 
 	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
@@ -77,7 +75,7 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 		this, -1, wxDefaultPosition, wxDefaultSize, wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS);
 	pg_colours_->SetCaptionTextColour(inactiveTextColour);
 	pg_colours_->SetCellDisabledTextColour(inactiveTextColour);
-	sizer->Add(pg_colours_, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(pg_colours_, wxSizerFlags(1).Expand());
 
 	// Load colour config into grid
 	refreshPropGrid();

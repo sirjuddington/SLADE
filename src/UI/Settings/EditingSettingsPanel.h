@@ -37,6 +37,5 @@ private:
 	ExternalEditorsSettingsPanel* ext_editors_panel_ = nullptr;
 
 	wxPanel* createArchiveEditorPanel(wxWindow* parent);
-	wxPanel* createExternalEditorsPanel(wxWindow* parent);
 };
 } // namespace slade::ui

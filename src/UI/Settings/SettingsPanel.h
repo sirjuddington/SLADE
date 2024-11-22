@@ -5,7 +5,7 @@ namespace slade::ui
 class SettingsPanel : public wxPanel
 {
 public:
-	SettingsPanel(wxWindow* parent) : wxPanel(parent) { Hide(); }
+	SettingsPanel(wxWindow* parent) : wxPanel(parent) {}
 	~SettingsPanel() override = default;
 
 	virtual string title() const = 0;
@@ -14,4 +14,5 @@ public:
 	virtual void loadSettings()  = 0;
 	virtual void applySettings() = 0;
 };
+
 } // namespace slade::ui

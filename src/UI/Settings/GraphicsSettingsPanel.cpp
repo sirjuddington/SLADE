@@ -32,12 +32,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ColorimetrySettingsPanel.h"
-#include "GraphicsSettingsPanel.h"
 #include "MainEditor/MainEditor.h"
 #include "OpenGL/GLTexture.h"
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
@@ -109,11 +109,13 @@ GraphicsSettingsPanel::GraphicsSettingsPanel(wxWindow* parent) : SettingsPanel(p
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
+	colorimetry_panel_ = new ColorimetrySettingsPanel(this);
+
 	// Create tabs
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createGeneralPanel(tabs), "General");
 	tabs->AddPage(createPngPanel(tabs), "PNG Tools");
-	tabs->AddPage(createColorimetryPanel(tabs), "Colorimetry");
+	tabs->AddPage(wxutil::createPadPanel(tabs, colorimetry_panel_, padLarge()), "Colorimetry");
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
 	// Bind events
@@ -293,19 +295,6 @@ wxPanel* GraphicsSettingsPanel::createPngPanel(wxWindow* parent)
 						   wxutil::createLabelVBox(panel, "Location of PNGCrush:", flp_pngcrush_),
 						   wxutil::createLabelVBox(panel, "Location of DeflOpt:", flp_deflopt_) },
 		wxSizerFlags().Expand());
-
-	return panel;
-}
-
-wxPanel* GraphicsSettingsPanel::createColorimetryPanel(wxWindow* parent)
-{
-	auto panel = new wxPanel(parent);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sizer);
-
-	colorimetry_panel_ = new ColorimetrySettingsPanel(panel);
-	sizer->Add(colorimetry_panel_, LayoutHelper(panel).sfWithLargeBorder(1).Expand());
-	colorimetry_panel_->Show();
 
 	return panel;
 }
