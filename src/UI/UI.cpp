@@ -51,13 +51,13 @@ unique_ptr<SplashWindow> splash_window;
 bool                     splash_enabled = true;
 
 // Pixel sizes/scale
-int px_pad        = 8;
-int px_pad_large  = 12;
-int px_pad_xlarge = 16;
-int px_pad_small  = 3;
-int px_splitter   = 10;
+int px_pad          = 8;
+int px_pad_large    = 12;
+int px_pad_xlarge   = 16;
+int px_pad_small    = 3;
+int px_splitter     = 10;
+int px_slider_width = 200;
 int px_spin_width;
-int px_slider_width;
 
 } // namespace slade::ui
 
@@ -86,15 +86,9 @@ void ui::init()
 	splash_window = std::make_unique<SplashWindow>();
 
 	if (app::platform() == app::Platform::Linux)
-	{
-		px_spin_width   = -1;
-		px_slider_width = -1;
-	}
+		px_spin_width = -1;
 	else
-	{
-		px_spin_width   = 64;
-		px_slider_width = 200;
-	}
+		px_spin_width = 64;
 
 	splash_window->init();
 }
