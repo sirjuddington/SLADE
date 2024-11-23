@@ -1,4 +1,3 @@
-#include "GraphicsSettingsPanel.h"
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
@@ -31,6 +30,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "GraphicsSettingsPanel.h"
 #include "ColorimetrySettingsPanel.h"
 #include "MainEditor/MainEditor.h"
 #include "OpenGL/GLTexture.h"
@@ -45,7 +45,11 @@ using namespace slade;
 using namespace ui;
 
 
-
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 struct BackgroundPreset
@@ -123,7 +127,7 @@ GraphicsSettingsPanel::GraphicsSettingsPanel(wxWindow* parent) : SettingsPanel(p
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
+// Loads settings from cvars into the controls
 // -----------------------------------------------------------------------------
 void GraphicsSettingsPanel::loadSettings()
 {
@@ -161,7 +165,7 @@ void GraphicsSettingsPanel::loadSettings()
 }
 
 // -----------------------------------------------------------------------------
-// Applies preferences from the panel controls
+// Applies settings from the panel controls to cvars
 // -----------------------------------------------------------------------------
 void GraphicsSettingsPanel::applySettings()
 {
@@ -192,6 +196,9 @@ void GraphicsSettingsPanel::applySettings()
 	colorimetry_panel_->applySettings();
 }
 
+// -----------------------------------------------------------------------------
+// Creates the general settings panel
+// -----------------------------------------------------------------------------
 wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);
@@ -256,6 +263,9 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 	return panel;
 }
 
+// -----------------------------------------------------------------------------
+// Creates the PNG tools panel
+// -----------------------------------------------------------------------------
 wxPanel* GraphicsSettingsPanel::createPngPanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);

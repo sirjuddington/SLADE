@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2024 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    NumberSlider.cpp
+// Description: Control that combines a slider and a spin control for selecting
+//              a numeric value
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NumberSlider.h"
 #include "UI/Layout.h"
@@ -7,6 +38,15 @@ using namespace slade;
 using namespace ui;
 
 
+// -----------------------------------------------------------------------------
+//
+// NumberSlider Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// NumberSlider class constructor
+// -----------------------------------------------------------------------------
 NumberSlider::NumberSlider(wxWindow* parent, int min, int max, int interval, bool decimal, int scale) :
 	wxPanel(parent),
 	scale_{ scale }
@@ -64,6 +104,9 @@ NumberSlider::NumberSlider(wxWindow* parent, int min, int max, int interval, boo
 		[&](wxCommandEvent&) { slider_->SetValue(static_cast<int>(spin_double_->GetValue() * scale_)); });
 }
 
+// -----------------------------------------------------------------------------
+// Sets the value of the slider and spin control
+// -----------------------------------------------------------------------------
 void NumberSlider::setValue(int value) const
 {
 	slider_->SetValue(value);
@@ -74,6 +117,9 @@ void NumberSlider::setValue(int value) const
 		spin_->SetValue(value);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the decimal value of the slider and spin control
+// -----------------------------------------------------------------------------
 void NumberSlider::setDecimalValue(double value) const
 {
 	slider_->SetValue(value * scale_);

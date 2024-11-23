@@ -276,7 +276,7 @@ void BaseResourceArchiveSettingsPanel::autodetect() const
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
+// Loads settings from cvars into the controls
 // -----------------------------------------------------------------------------
 void BaseResourceArchiveSettingsPanel::loadSettings()
 {
@@ -293,7 +293,7 @@ void BaseResourceArchiveSettingsPanel::loadSettings()
 }
 
 // -----------------------------------------------------------------------------
-// Applies preferences from the panel controls
+// Applies settings from the panel controls to cvars
 // -----------------------------------------------------------------------------
 void BaseResourceArchiveSettingsPanel::applySettings()
 {

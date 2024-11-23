@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    MapDisplaySettingsPanel.cpp
-// Description: Panel containing preference controls for the map editor 2d mode
+// Description: Panel containing settings controls for the map editor 2d mode
 //              display
 //
 // This program is free software; you can redistribute it and/or modify it
@@ -213,9 +213,6 @@ wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const Layo
 	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
-	auto dp = wxDefaultPosition;
-	auto ds = wxDefaultSize;
-
 	// Create controls
 	rbp_thing_shape_         = new RadioButtonPanel(panel, { "Round", "Square" });
 	cb_thing_sprites_        = new wxCheckBox(panel, -1, "Show Sprites");
@@ -269,7 +266,7 @@ wxPanel* MapDisplaySettingsPanel::createSectorsPanel(wxWindow* parent, const Lay
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
+// Loads settings from cvars into the controls
 // -----------------------------------------------------------------------------
 void MapDisplaySettingsPanel::loadSettings()
 {
@@ -300,14 +297,13 @@ void MapDisplaySettingsPanel::loadSettings()
 	cb_show_help_->SetValue(map_show_help);
 	rbp_tex_filter_->setSelection(map_tex_filter);
 	cb_use_zeth_icons_->SetValue(use_zeth_icons);
-	// slider_halo_width_->SetValue(halo_width);
 	rbp_grid_64_->setSelection(grid_64_style);
 	cb_grid_show_origin_->SetValue(grid_show_origin);
 	slider_light_intensity_->setDecimalValue(thing_light_intensity);
 }
 
 // -----------------------------------------------------------------------------
-// Applies preference values from the controls to CVARs
+// Applies settings from the panel controls to cvars
 // -----------------------------------------------------------------------------
 void MapDisplaySettingsPanel::applySettings()
 {
@@ -338,7 +334,6 @@ void MapDisplaySettingsPanel::applySettings()
 	map_show_help         = cb_show_help_->GetValue();
 	map_tex_filter        = rbp_tex_filter_->getSelection();
 	use_zeth_icons        = cb_use_zeth_icons_->GetValue();
-	// halo_width            = slider_halo_width_->GetValue();
 	grid_64_style         = rbp_grid_64_->getSelection();
 	grid_show_origin      = cb_grid_show_origin_->GetValue();
 	thing_light_intensity = slider_light_intensity_->decimalValue();

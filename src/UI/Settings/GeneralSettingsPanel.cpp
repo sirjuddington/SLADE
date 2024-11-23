@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    GeneralSettingsPanel.cpp
-// Description: Panel containing general preference controls
+// Description: Panel containing general settings controls
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -41,6 +41,11 @@ using namespace slade;
 using namespace ui;
 
 
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, show_start_page)
 EXTERN_CVAR(Bool, close_archive_with_tab)
 EXTERN_CVAR(Bool, auto_open_wads_root)
@@ -51,7 +56,15 @@ EXTERN_CVAR(Bool, backup_archives)
 EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 
 
+// -----------------------------------------------------------------------------
+//
+// GeneralSettingsPanel Class Functions
+//
+// -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// GeneralSettingsPanel class constructor
+// -----------------------------------------------------------------------------
 GeneralSettingsPanel::GeneralSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -67,6 +80,9 @@ GeneralSettingsPanel::GeneralSettingsPanel(wxWindow* parent) : SettingsPanel(par
 	base_resource_panel_->Show();
 }
 
+// -----------------------------------------------------------------------------
+// Loads settings from cvars into the controls
+// -----------------------------------------------------------------------------
 void GeneralSettingsPanel::loadSettings()
 {
 	cb_show_start_page_->SetValue(show_start_page);
@@ -81,6 +97,9 @@ void GeneralSettingsPanel::loadSettings()
 	base_resource_panel_->loadSettings();
 }
 
+// -----------------------------------------------------------------------------
+// Applies settings from the panel controls to cvars
+// -----------------------------------------------------------------------------
 void GeneralSettingsPanel::applySettings()
 {
 	show_start_page           = cb_show_start_page_->GetValue();
@@ -95,6 +114,9 @@ void GeneralSettingsPanel::applySettings()
 	base_resource_panel_->applySettings();
 }
 
+// -----------------------------------------------------------------------------
+// Creates the program settings panel
+// -----------------------------------------------------------------------------
 wxPanel* GeneralSettingsPanel::createProgramSettingsPanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);
@@ -134,6 +156,9 @@ wxPanel* GeneralSettingsPanel::createProgramSettingsPanel(wxWindow* parent)
 	return panel;
 }
 
+// -----------------------------------------------------------------------------
+// Creates the base resource archive settings panel
+// -----------------------------------------------------------------------------
 wxPanel* GeneralSettingsPanel::createBaseResourceArchivePanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);

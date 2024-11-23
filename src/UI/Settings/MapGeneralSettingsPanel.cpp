@@ -1,8 +1,37 @@
 
-#include "Main.h"
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2024 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MapGeneralSettingsPanel.cpp
+// Description: Panel containing general map editor settings controls
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
-#include "Map3DSettingsPanel.h"
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
+#include "Main.h"
 #include "MapGeneralSettingsPanel.h"
+#include "Map3DSettingsPanel.h"
 #include "NodeBuildersSettingsPanel.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
@@ -19,7 +48,6 @@ using namespace ui;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-// EXTERN_CVAR(Bool, scroll_smooth)
 EXTERN_CVAR(Bool, selection_clear_click)
 EXTERN_CVAR(Bool, selection_clear_move)
 EXTERN_CVAR(Bool, property_edit_dclick)
@@ -32,7 +60,15 @@ EXTERN_CVAR(Bool, map_split_auto_offset)
 EXTERN_CVAR(Bool, save_archive_with_map)
 
 
+// -----------------------------------------------------------------------------
+//
+// MapGeneralSettingsPanel Class Functions
+//
+// -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// MapGeneralSettingsPanel class constructor
+// -----------------------------------------------------------------------------
 MapGeneralSettingsPanel::MapGeneralSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -48,6 +84,9 @@ MapGeneralSettingsPanel::MapGeneralSettingsPanel(wxWindow* parent) : SettingsPan
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 
+// -----------------------------------------------------------------------------
+// Loads settings from cvars into the controls
+// -----------------------------------------------------------------------------
 void MapGeneralSettingsPanel::loadSettings()
 {
 	cb_selection_clear_click_->SetValue(selection_clear_click);
@@ -65,6 +104,9 @@ void MapGeneralSettingsPanel::loadSettings()
 	map3d_panel_->loadSettings();
 }
 
+// -----------------------------------------------------------------------------
+// Applies settings from the panel controls to cvars
+// -----------------------------------------------------------------------------
 void MapGeneralSettingsPanel::applySettings()
 {
 	selection_clear_click            = cb_selection_clear_click_->GetValue();
@@ -82,6 +124,9 @@ void MapGeneralSettingsPanel::applySettings()
 	map3d_panel_->applySettings();
 }
 
+// -----------------------------------------------------------------------------
+// Creates the general tab panel
+// -----------------------------------------------------------------------------
 wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 {
 	auto panel     = new wxPanel(parent);

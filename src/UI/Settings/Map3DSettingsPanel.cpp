@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    Map3DSettingsPanel.cpp
-// Description: Panel containing preference controls for the map editor 3d mode
+// Description: Panel containing settings controls for the map editor 3d mode
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -79,9 +79,6 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	gbsizer->Add(new wxStaticText(this, -1, "Render distance:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_max_render_dist_ = new NumberSlider(this, 500, 20 * 500, 500);
 	gbsizer->Add(slider_max_render_dist_, { 0, 1 }, { 1, 2 }, wxEXPAND);
-	// label_render_dist_ = new wxStaticText(this, -1, "00000");
-	// label_render_dist_->SetInitialSize(wxSize(label_render_dist_->GetSize().x, -1));
-	// gbsizer->Add(label_render_dist_, { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	cb_distance_unlimited_ = new wxCheckBox(this, -1, "Unlimited");
 	gbsizer->Add(cb_distance_unlimited_, { 0, 3 }, { 1, 1 }, wxEXPAND);
 
@@ -89,8 +86,6 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	gbsizer->Add(new wxStaticText(this, -1, "Thing render distance:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_max_thing_dist_ = new NumberSlider(this, 500, 20 * 500, 500);
 	gbsizer->Add(slider_max_thing_dist_, { 1, 1 }, { 1, 2 }, wxEXPAND);
-	// label_thing_dist_ = new wxStaticText(this, -1, "00000");
-	// gbsizer->Add(label_thing_dist_, { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	cb_max_thing_dist_lock_ = new wxCheckBox(this, -1, "Lock");
 	gbsizer->Add(cb_max_thing_dist_lock_, { 1, 3 }, { 1, 1 }, wxEXPAND);
 	gbsizer->AddGrowableCol(1, 1);
@@ -99,8 +94,6 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	gbsizer->Add(new wxStaticText(this, -1, "FOV:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_fov_ = new NumberSlider(this, 70, 120, 5);
 	gbsizer->Add(slider_fov_, { 2, 1 }, { 1, 2 }, wxEXPAND);
-	// label_fov_ = new wxStaticText(this, -1, "00000");
-	// gbsizer->Add(label_fov_, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	psizer->Add(hbox, wxSizerFlags().Expand());
@@ -165,7 +158,7 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
+// Loads settings from cvars into the controls
 // -----------------------------------------------------------------------------
 void Map3DSettingsPanel::loadSettings()
 {
@@ -207,36 +200,20 @@ void Map3DSettingsPanel::loadSettings()
 void Map3DSettingsPanel::updateDistanceControls() const
 {
 	// Render distance
-	if (cb_distance_unlimited_->GetValue())
-	{
-		// label_render_dist_->SetLabel("");
-		slider_max_render_dist_->Enable(false);
-	}
-	else
-	{
-		// label_render_dist_->SetLabel(wxString::Format("%d", slider_max_render_dist_->GetValue() * 500));
-		slider_max_render_dist_->Enable();
-	}
+	slider_max_render_dist_->Enable(!cb_distance_unlimited_->GetValue());
 
 	// Thing distance
 	if (cb_max_thing_dist_lock_->GetValue())
 	{
-		// label_thing_dist_->SetLabel("");
 		slider_max_thing_dist_->Enable(false);
 		slider_max_thing_dist_->setValue(slider_max_render_dist_->value());
 	}
 	else
-	{
-		// label_thing_dist_->SetLabel(wxString::Format("%d", slider_max_thing_dist_->GetValue() * 500));
 		slider_max_thing_dist_->Enable();
-	}
-
-	// FOV
-	// label_fov_->SetLabel(wxString::Format("%d", slider_fov_->GetValue() * 10));
 }
 
 // -----------------------------------------------------------------------------
-// Applies preference values from the controls to CVARs
+// Applies settings from the panel controls to cvars
 // -----------------------------------------------------------------------------
 void Map3DSettingsPanel::applySettings()
 {

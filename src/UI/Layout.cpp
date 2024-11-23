@@ -175,51 +175,82 @@ wxSizerFlags LayoutHelper::sfWithSmallBorder(int proportion, int direction) cons
 	return wxSizerFlags(proportion).Border(direction, window->FromDIP(ui::padSmall()));
 }
 
+// -----------------------------------------------------------------------------
+// Converts a size in pixels to DIP
+// -----------------------------------------------------------------------------
 int LayoutHelper::px(int size) const
 {
 	return window->FromDIP(size);
 }
 
+// -----------------------------------------------------------------------------
+// Converts a wxSize in pixels to DIP
+// -----------------------------------------------------------------------------
 wxSize LayoutHelper::size(int width, int height) const
 {
 	return window->FromDIP(wxSize(width, height));
 }
 
+// -----------------------------------------------------------------------------
+// Converts a wxPoint in pixels to DIP
+// -----------------------------------------------------------------------------
 wxPoint LayoutHelper::point(int x, int y) const
 {
 	return window->FromDIP(wxPoint(x, y));
 }
 
+// -----------------------------------------------------------------------------
+// Converts a wxRect in pixels to DIP
+// -----------------------------------------------------------------------------
 wxRect LayoutHelper::rect(int x, int y, int width, int height) const
 {
 	return { window->FromDIP(wxPoint(x, y)), window->FromDIP(wxSize(width, height)) };
 }
 
+// -----------------------------------------------------------------------------
+// Returns the default padding size in DIP
+// -----------------------------------------------------------------------------
 int LayoutHelper::pad() const
 {
-	return window->FromDIP(ui::pad());
+	return ui::pad(window);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the large padding size in DIP
+// -----------------------------------------------------------------------------
 int LayoutHelper::padLarge() const
 {
-	return window->FromDIP(ui::padLarge());
+	return ui::padLarge(window);
 }
+
+// -----------------------------------------------------------------------------
+// Returns the extra large padding size in DIP
+// -----------------------------------------------------------------------------
 int LayoutHelper::padXLarge() const
 {
-	return window->FromDIP(16); // TODO: Add to size enum
+	return ui::padXLarge(window);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the small padding size in DIP
+// -----------------------------------------------------------------------------
 int LayoutHelper::padSmall() const
 {
-	return window->FromDIP(ui::padSmall());
+	return ui::padSmall(window);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the default size for a spin control in DIP
+// -----------------------------------------------------------------------------
 wxSize LayoutHelper::spinSize() const
 {
-	return window->FromDIP(wxSize(ui::sizePx(Size::SpinCtrlWidth), -1));
+	return window->FromDIP(wxSize(sizePx(Size::SpinCtrlWidth), -1));
 }
 
+// -----------------------------------------------------------------------------
+// Returns the default size for a slider control in DIP
+// -----------------------------------------------------------------------------
 wxSize LayoutHelper::sliderSize() const
 {
-	return window->FromDIP(wxSize(ui::sizePx(Size::SliderWidth), -1));
+	return window->FromDIP(wxSize(sizePx(Size::SliderWidth), -1));
 }

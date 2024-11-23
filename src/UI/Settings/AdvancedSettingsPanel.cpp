@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    AdvancedSettingsPanel.cpp
-// Description: Panel containing 'advanced' preference controls, basically a
+// Description: Panel containing 'advanced' settings controls, basically a
 //              way to edit raw cvar values outside the slade.cfg file
 //
 // This program is free software; you can redistribute it and/or modify it
@@ -118,7 +118,7 @@ void AdvancedSettingsPanel::refreshPropGrid() const
 }
 
 // -----------------------------------------------------------------------------
-// Applies preferences from the panel controls
+// Applies settings from the panel controls to cvars
 // -----------------------------------------------------------------------------
 void AdvancedSettingsPanel::applySettings()
 {

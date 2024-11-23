@@ -84,7 +84,7 @@ InterfaceSettingsPanel::InterfaceSettingsPanel(wxWindow* parent) : SettingsPanel
 }
 
 // ----------------------------------------------------------------------------
-// Loads settings from CVARs into the controls
+// Loads settings from cvars into the controls
 // ----------------------------------------------------------------------------
 void InterfaceSettingsPanel::loadSettings()
 {
@@ -131,7 +131,7 @@ void InterfaceSettingsPanel::loadSettings()
 }
 
 // ----------------------------------------------------------------------------
-// Applies settings from the controls to the CVARs
+// Applies settings from the controls to cvars
 // ----------------------------------------------------------------------------
 void InterfaceSettingsPanel::applySettings()
 {

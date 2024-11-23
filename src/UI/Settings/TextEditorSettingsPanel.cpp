@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    TextEditorSettingsPanel.cpp
-// Description: Panel containing text editor preference controls
+// Description: Panel containing text editor settings controls
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -77,7 +77,6 @@ EXTERN_CVAR(Bool, txed_calltips_argset_kb)
 // TextEditorSettingsPanel Class Functions
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // TextEditorSettingsPanel class constructor
@@ -160,6 +159,9 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 	return panel;
 }
 
+// -----------------------------------------------------------------------------
+// Creates the code settings panel
+// -----------------------------------------------------------------------------
 wxPanel* TextEditorSettingsPanel::createCodePanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);
@@ -213,7 +215,7 @@ wxPanel* TextEditorSettingsPanel::createCodePanel(wxWindow* parent)
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
+// Loads settings from cvars into the controls
 // -----------------------------------------------------------------------------
 void TextEditorSettingsPanel::loadSettings()
 {
@@ -244,7 +246,7 @@ void TextEditorSettingsPanel::loadSettings()
 }
 
 // -----------------------------------------------------------------------------
-// Applies preference values from the controls to CVARs
+// Applies settings from the panel controls to cvars
 // -----------------------------------------------------------------------------
 void TextEditorSettingsPanel::applySettings()
 {

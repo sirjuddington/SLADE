@@ -1,4 +1,34 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2024 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ExternalEditorsSettingsPanel.cpp
+// Description: Panel containing configuration controls for external editors
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ExternalEditorsSettingsPanel.h"
 #include "Archive/EntryType/EntryType.h"
@@ -144,7 +174,15 @@ private:
 };
 
 
+// -----------------------------------------------------------------------------
+//
+// ExternalEditorsSettingsPanel Class Functions
+//
+// -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// ExternalEditorsSettingsPanel class constructor
+// -----------------------------------------------------------------------------
 ExternalEditorsSettingsPanel::ExternalEditorsSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
 	auto lh = LayoutHelper(this);
@@ -184,6 +222,9 @@ ExternalEditorsSettingsPanel::ExternalEditorsSettingsPanel(wxWindow* parent) : S
 	lv_ext_editors_->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ExternalEditorsSettingsPanel::onExternalExeActivated, this);
 }
 
+// -----------------------------------------------------------------------------
+// Loads settings from cvars into the controls
+// -----------------------------------------------------------------------------
 void ExternalEditorsSettingsPanel::loadSettings()
 {
 	choice_category_->SetSelection(0);
@@ -191,9 +232,17 @@ void ExternalEditorsSettingsPanel::loadSettings()
 		->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
 }
 
+// -----------------------------------------------------------------------------
+// Applies settings from the panel controls to cvars
+// -----------------------------------------------------------------------------
 void ExternalEditorsSettingsPanel::applySettings() {}
 
 
+// -----------------------------------------------------------------------------
+//
+// ExternalEditorsSettingsPanel Events
+//
+// -----------------------------------------------------------------------------
 
 // ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppParameterMayBeConstPtrOrRef

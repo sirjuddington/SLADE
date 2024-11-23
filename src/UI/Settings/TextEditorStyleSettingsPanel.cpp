@@ -58,7 +58,6 @@ EXTERN_CVAR(Int, txed_override_font_size)
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // TextEditorStyleSettingsPanel class constructor
 // -----------------------------------------------------------------------------
@@ -205,7 +204,7 @@ wxPanel* TextEditorStyleSettingsPanel::createStylePanel()
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
+// Loads settings from cvars into the controls
 // -----------------------------------------------------------------------------
 void TextEditorStyleSettingsPanel::loadSettings()
 {
@@ -500,7 +499,7 @@ void TextEditorStyleSettingsPanel::updatePreview() const
 }
 
 // -----------------------------------------------------------------------------
-// Applies the current style properties to the current set
+// Applies settings from the controls to cvars
 // -----------------------------------------------------------------------------
 void TextEditorStyleSettingsPanel::applySettings()
 {

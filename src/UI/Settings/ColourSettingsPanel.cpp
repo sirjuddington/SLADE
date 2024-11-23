@@ -95,7 +95,7 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
+// Loads settings from cvars into the controls
 // -----------------------------------------------------------------------------
 void ColourSettingsPanel::loadSettings()
 {
@@ -155,7 +155,7 @@ void ColourSettingsPanel::refreshPropGrid() const
 }
 
 // -----------------------------------------------------------------------------
-// Applies preferences from the panel controls
+// Applies settings from the panel controls to cvars
 // -----------------------------------------------------------------------------
 void ColourSettingsPanel::applySettings()
 {

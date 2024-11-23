@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    AudioSettingsPanel.cpp
-// Description: Panel containing Audio preference controls
+// Description: Panel containing Audio settings controls
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -103,7 +103,7 @@ AudioSettingsPanel::AudioSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
+// Loads settings from cvars into the controls
 // -----------------------------------------------------------------------------
 void AudioSettingsPanel::loadSettings()
 {
@@ -121,7 +121,7 @@ void AudioSettingsPanel::loadSettings()
 }
 
 // -----------------------------------------------------------------------------
-// Applies preferences from the panel controls
+// Applies settings from the panel controls to cvars
 // -----------------------------------------------------------------------------
 void AudioSettingsPanel::applySettings()
 {

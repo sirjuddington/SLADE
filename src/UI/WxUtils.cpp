@@ -218,6 +218,10 @@ wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const wxString& 
 	return createDialogButtonBox(btn_ok, btn_cancel);
 }
 
+// -----------------------------------------------------------------------------
+// Creates a section separator (a label on the left and a line on the right)
+// with the given [text]
+// -----------------------------------------------------------------------------
 wxSizer* wxutil::createSectionSeparator(wxWindow* parent, const wxString& text)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);

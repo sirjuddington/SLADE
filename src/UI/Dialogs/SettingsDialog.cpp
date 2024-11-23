@@ -1,4 +1,34 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2024 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SettingsDialog.cpp
+// Description: Dialog for SLADE settings
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SettingsDialog.h"
 #include "App.h"
@@ -30,6 +60,11 @@ using namespace slade;
 using namespace ui;
 
 
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 wxColour sidePanelColour()
@@ -47,8 +82,15 @@ void updateMinSize(const wxWindow* window, int& min_width, int& min_height)
 } // namespace
 
 
+// -----------------------------------------------------------------------------
+//
+// SettingsDialog Class Functions
+//
+// -----------------------------------------------------------------------------
 
-
+// -----------------------------------------------------------------------------
+// SettingsDialog class constructor
+// -----------------------------------------------------------------------------
 SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 	SDialog(parent, "SLADE Settings", "settings")
 {
@@ -136,6 +178,9 @@ SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 				 min_height + button_sizer->CalcMin().y + title_panel->GetBestSize().y + FromDIP(100) });
 }
 
+// -----------------------------------------------------------------------------
+// Applies settings from all pages
+// -----------------------------------------------------------------------------
 void SettingsDialog::applySettings() const
 {
 	// Apply settings from all pages (except advanced)
@@ -208,12 +253,18 @@ bool SettingsDialog::popupSettingsPage(wxWindow* parent, SettingsPage page)
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Reloads settings from cvars to all pages
+// -----------------------------------------------------------------------------
 void SettingsDialog::reloadSettings() const
 {
 	for (auto* page : settings_pages_)
 		page->loadSettings();
 }
 
+// -----------------------------------------------------------------------------
+// Creates a section button for the side panel
+// -----------------------------------------------------------------------------
 void SettingsDialog::createSectionButton(wxWindow* parent, SettingsPage page, const string& text, const string& icon)
 {
 	auto btn = new SToolBarButton(parent, pageId(page), text, icon, text, true, 24);
@@ -227,6 +278,9 @@ void SettingsDialog::createSectionButton(wxWindow* parent, SettingsPage page, co
 	section_buttons_[static_cast<size_t>(page)] = btn;
 }
 
+// -----------------------------------------------------------------------------
+// Creates the side panel with section buttons
+// -----------------------------------------------------------------------------
 wxPanel* SettingsDialog::createSectionsPanel()
 {
 	auto panel = new wxPanel(this);
@@ -271,33 +325,48 @@ wxPanel* SettingsDialog::createSectionsPanel()
 	return panel;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the ID string for a settings [page]
+// -----------------------------------------------------------------------------
 string SettingsDialog::pageId(SettingsPage page)
 {
 	switch (page)
 	{
-	case SettingsPage::General:      return "general";
-	case SettingsPage::Interface:    return "interface";
-	case SettingsPage::Keybinds:     return "keybinds";
-	case SettingsPage::Editing:      return "editing";
-	case SettingsPage::Text:         return "text";
-	case SettingsPage::Graphics:     return "gfx";
-	case SettingsPage::Audio:        return "audio";
-	case SettingsPage::Scripting:    return "scripts";
-	case SettingsPage::MapGeneral:   return "map_general";
-	case SettingsPage::MapDisplay:   return "map_display";
-	case SettingsPage::Advanced:     return "advanced";
-	case SettingsPage::BaseResource: return "base_resource";
-	case SettingsPage::Colour:       return "colour_theme";
-	case SettingsPage::Colorimetry:  return "colorimetry";
-	case SettingsPage::TextStyle:    return "text_style";
-	case SettingsPage::Map3d:        return "map_3d";
-	case SettingsPage::NodeBuilders: return "node_builders";
+	case SettingsPage::General:         return "general";
+	case SettingsPage::Interface:       return "interface";
+	case SettingsPage::Keybinds:        return "keybinds";
+	case SettingsPage::Editing:         return "editing";
+	case SettingsPage::Text:            return "text";
+	case SettingsPage::Graphics:        return "gfx";
+	case SettingsPage::Audio:           return "audio";
+	case SettingsPage::Scripting:       return "scripts";
+	case SettingsPage::MapGeneral:      return "map_general";
+	case SettingsPage::MapDisplay:      return "map_display";
+	case SettingsPage::Advanced:        return "advanced";
+	case SettingsPage::BaseResource:    return "base_resource";
+	case SettingsPage::Colour:          return "colour_theme";
+	case SettingsPage::Colorimetry:     return "colorimetry";
+	case SettingsPage::TextStyle:       return "text_style";
+	case SettingsPage::Map3d:           return "map_3d";
+	case SettingsPage::NodeBuilders:    return "node_builders";
+	case SettingsPage::ExternalEditors: return "ext_editors";
 	}
 
 	return "";
 }
 
+
+// -----------------------------------------------------------------------------
+//
+// SettingsDialog Class Events
+//
+// -----------------------------------------------------------------------------
+
 // ReSharper disable CppParameterMayBeConstPtrOrRef
+
+// -----------------------------------------------------------------------------
+// Called when a section button is clicked
+// -----------------------------------------------------------------------------
 void SettingsDialog::onSectionButtonClicked(wxCommandEvent& e)
 {
 	auto btn = dynamic_cast<SToolBarButton*>(e.GetEventObject());

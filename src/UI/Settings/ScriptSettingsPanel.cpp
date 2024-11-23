@@ -83,7 +83,7 @@ ScriptSettingsPanel::ScriptSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 }
 
 // -----------------------------------------------------------------------------
-// Initialises panel controls
+// Loads settings from cvars into the controls
 // -----------------------------------------------------------------------------
 void ScriptSettingsPanel::loadSettings()
 {
@@ -95,7 +95,7 @@ void ScriptSettingsPanel::loadSettings()
 }
 
 // -----------------------------------------------------------------------------
-// Applies preferences from the panel controls
+// Applies settings from the panel controls to cvars
 // -----------------------------------------------------------------------------
 void ScriptSettingsPanel::applySettings()
 {
