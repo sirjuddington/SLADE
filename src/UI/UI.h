@@ -38,7 +38,8 @@ enum class Size
 	PadLarge,
 	PadXLarge,
 	Splitter,
-	SpinCtrlWidth
+	SpinCtrlWidth,
+	SliderWidth,
 };
 int sizePx(Size size, const wxWindow* window = nullptr);
 int pad(const wxWindow* window = nullptr);

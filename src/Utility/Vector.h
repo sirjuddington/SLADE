@@ -32,4 +32,11 @@ template<typename T> constexpr auto vectorConcat(vector<T>& v1, const vector<T>&
 {
 	return v1.insert(v1.end(), v2.begin(), v2.end());
 }
+
+// Return the index of the first item matching [val] in a vector, or -1 if not found
+template<typename T> constexpr auto vectorIndexOf(const vector<T>& vec, T val)
+{
+	auto it = find(vec.begin(), vec.end(), val);
+	return it == vec.end() ? -1 : it - vec.begin();
+}
 } // namespace slade

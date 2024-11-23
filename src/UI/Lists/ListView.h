@@ -22,6 +22,7 @@ public:
 	void showIcons(bool show) { icons_ = show; }
 	bool enableSizeUpdate() const { return update_width_; }
 	void enableSizeUpdate(bool update) { update_width_ = update; }
+	void setColumnSpacing(int spacing) { column_spacing_ = spacing; }
 
 	bool addItem(int index, const wxString& text);
 	bool addItem(int index, wxArrayString text);
@@ -44,7 +45,8 @@ public:
 	bool updateSize();
 
 private:
-	bool icons_        = true;
-	bool update_width_ = true;
+	bool icons_          = true;
+	bool update_width_   = true;
+	int  column_spacing_ = 0;
 };
 } // namespace slade

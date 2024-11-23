@@ -389,6 +389,10 @@ bool ListView::updateSize()
 			// Minimum size of 24
 			if (GetColumnWidth(a) < 24)
 				SetColumnWidth(a, 24);
+
+			// Add spacing if any
+			if (column_spacing_ > 0)
+				SetColumnWidth(a, GetColumnWidth(a) + column_spacing_);
 		}
 
 		// Add extra width to the first column in linux as wxLIST_AUTOSIZE seems to ignore listitem images on wxGTK

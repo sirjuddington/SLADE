@@ -41,10 +41,10 @@
 #include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
-#include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
-#include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Dialogs/SettingsDialog.h"
 #include "UI/Layout.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -362,7 +362,7 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 
 	// Other colour scheme
 	else if (id == "ptxt_theme_other")
-		PreferencesDialog::openPreferences(maineditor::windowWx(), "Fonts & Colours");
+		ui::SettingsDialog::popupSettingsPage(maineditor::windowWx(), ui::SettingsPage::TextStyle);
 
 	// Not handled
 	else

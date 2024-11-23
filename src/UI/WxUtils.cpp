@@ -117,7 +117,7 @@ int wxutil::addImageListIcon(wxImageList* list, int icon_type, string_view icon)
 wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 {
 	if (pad < 0)
-		pad = ui::pad();
+		pad = ui::pad(parent);
 
 	auto panel = new wxPanel(parent);
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
@@ -219,6 +219,18 @@ wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const wxString& 
 }
 
 // -----------------------------------------------------------------------------
+// Creates a section separator (a label on the left and a line on the right)
+// with the given [text]
+// -----------------------------------------------------------------------------
+wxSizer* wxutil::createSectionSeparator(wxWindow* parent, const wxString& text)
+{
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox->Add(new wxStaticText(parent, -1, text), wxSizerFlags().CenterVertical().Border(wxRIGHT, ui::pad(parent)));
+	hbox->Add(new wxStaticLine(parent), wxSizerFlags(1).CenterVertical());
+	return hbox;
+}
+
+// -----------------------------------------------------------------------------
 // Returns a wxArrayString containing the (wx) strings in [vector]
 // -----------------------------------------------------------------------------
 wxArrayString wxutil::arrayString(const vector<wxString>& vector)
@@ -242,7 +254,7 @@ wxArrayString wxutil::arrayStringStd(const vector<string>& vector)
 // -----------------------------------------------------------------------------
 void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 {
-	auto wx_icon = icons::getIcon(icons::General, icon).GetIconFor(window);
+	auto wx_icon = icons::getIcon(icons::Any, icon).GetIconFor(window);
 	window->SetIcon(wx_icon);
 }
 

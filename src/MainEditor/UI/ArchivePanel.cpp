@@ -75,8 +75,8 @@
 #include "UI/Dialogs/MapEditorConfigDialog.h"
 #include "UI/Dialogs/MapReplaceDialog.h"
 #include "UI/Dialogs/NewEntryDialog.h"
-#include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/RunDialog.h"
+#include "UI/Dialogs/SettingsDialog.h"
 #include "UI/Layout.h"
 #include "UI/Lists/ArchiveEntryTree.h"
 #include "UI/SToolBar/SToolBar.h"
@@ -2527,7 +2527,7 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_map_opendb2")
 		entryoperations::openMapDB2(entry_tree_->firstSelectedEntry());
 	else if (id == "arch_entry_setup_external")
-		PreferencesDialog::openPreferences(theMainWindow, "Editing", "external");
+		ui::SettingsDialog::popupSettingsPage(theMainWindow, ui::SettingsPage::ExternalEditors);
 
 	// Map Editor Panel
 	else if (id == "pmap_open_text")

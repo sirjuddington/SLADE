@@ -190,7 +190,7 @@ void SToolBarButton::setFontSize(float scale)
 	SetFont(GetFont().Scale(scale));
 	wxString name = action_name_;
 	name.Replace("&", "");
-	text_width_ = GetTextExtent(name).GetWidth() + pad_inner_ * 2;
+	text_width_ = ToDIP(GetTextExtent(name).GetWidth()) + pad_inner_ * 2;
 	updateSize();
 }
 
@@ -320,23 +320,22 @@ void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 	auto width_inner  = width - (2. * pad_outer_);
 	auto height       = GetSize().y;
 	auto height_inner = height - (2. * pad_outer_);
-	auto scale_px     = FromDIP(2);
 
 	// Draw toggled border/background
 	if (isChecked())
 	{
 		// Draw border
 		gc->SetBrush(*wxTRANSPARENT_BRUSH);
-		gc->SetPen(wxPen(col_hilight, scale_px));
+		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(col_hilight, 1.5)));
 		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width_inner, height_inner, FromDIP(2));
 	}
 
 	// Draw border on mouseover
-	if (mouse_over || pressed_ || menu_open_)
+	if (mouse_over || pressed_ || menu_open_ || (isChecked() && fill_checked_))
 	{
 		// Determine transparency level
 		int trans = 80;
-		if (pressed_ || menu_open_)
+		if (pressed_ || menu_open_ || isChecked())
 			trans = 160;
 
 		// Create semitransparent hilight colour

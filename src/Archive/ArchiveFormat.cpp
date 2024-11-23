@@ -34,6 +34,7 @@
 #include "ArchiveFormat.h"
 #include "Utility/Named.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace archive;
@@ -224,6 +225,23 @@ ArchiveFormat archive::formatFromId(string_view format_id_string)
 	for (const auto& [name, id] : formats)
 		if (name == format_id_string)
 			return id;
+
+	return ArchiveFormat::Unknown;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the format that uses the given [extension]
+// -----------------------------------------------------------------------------
+ArchiveFormat archive::formatFromExtension(string_view extension)
+{
+	for (const auto& [format, info] : format_info)
+	{
+		for (const auto& ext : info.extensions)
+		{
+			if (strutil::equalCI(ext.first, extension))
+				return format;
+		}
+	}
 
 	return ArchiveFormat::Unknown;
 }

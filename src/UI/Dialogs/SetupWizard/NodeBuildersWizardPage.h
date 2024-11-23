@@ -4,7 +4,11 @@
 
 namespace slade
 {
-class NodesPrefsPanel;
+namespace ui
+{
+	class NodeBuildersSettingsPanel;
+}
+
 class NodeBuildersWizardPage : public WizardPageBase
 {
 public:
@@ -17,6 +21,6 @@ public:
 	wxString description() override;
 
 private:
-	NodesPrefsPanel* panel_nodes_ = nullptr;
+	ui::NodeBuildersSettingsPanel* panel_nodes_ = nullptr;
 };
 } // namespace slade

@@ -25,6 +25,8 @@ wxSizer* createDialogButtonBox(
 	const wxString& text_ok     = "OK",
 	const wxString& text_cancel = "Cancel");
 
+wxSizer* createSectionSeparator(wxWindow* parent, const wxString& text);
+
 // Strings
 inline string_view strToView(const wxString& str)
 {

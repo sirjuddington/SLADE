@@ -60,8 +60,8 @@
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/MapEditorConfigDialog.h"
-#include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/RunDialog.h"
+#include "UI/Dialogs/SettingsDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UI.h"
@@ -788,7 +788,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	if (!wxFileExists(builder.path) && !nb_warned)
 	{
 		// Open nodebuilder preferences
-		PreferencesDialog::openPreferences(this, "Node Builders");
+		ui::SettingsDialog::popupSettingsPage(this, ui::SettingsPage::NodeBuilders);
 
 		// Get new builder if one was selected
 		builder = nodebuilders::builder(nodebuilder_id);
@@ -1252,7 +1252,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	// Editor->Set Base Resource Archive
 	if (id == "mapw_setbra")
 	{
-		PreferencesDialog::openPreferences(this, "Base Resource Archive");
+		ui::SettingsDialog::popupSettingsPage(this, ui::SettingsPage::BaseResource);
 
 		return true;
 	}
@@ -1260,7 +1260,8 @@ bool MapEditorWindow::handleAction(string_view id)
 	// Editor->Preferences
 	if (id == "mapw_preferences")
 	{
-		PreferencesDialog::openPreferences(this, "Map Editor");
+		ui::SettingsDialog dlg(this, ui::SettingsPage::MapGeneral);
+		dlg.ShowModal();
 		mapeditor::forceRefresh(true);
 
 		return true;

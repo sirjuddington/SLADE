@@ -160,7 +160,8 @@ wxAuiTabArt* SAuiTabArt::Clone()
 
 void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 {
-	int    height = dynamic_cast<wxAuiNotebook*>(wnd)->GetTabCtrlHeight(); // -3;
+	auto   notebook = dynamic_cast<wxAuiNotebook*>(wnd);
+	int    height   = notebook->GetTabCtrlHeight(); // -3;
 	wxRect theRect(rect);
 
 	dc.SetPen(m_borderPen);
@@ -173,7 +174,7 @@ void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 	dc.SetPen(wxPen(wnd->GetBackgroundColour(), wnd->FromDIP(2)));
 	dc.DrawLine(theRect.x + theRect.width - 1, theRect.y, theRect.x + theRect.width - 1, theRect.y + height);
 	dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);
-	dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + wnd->FromDIP(4));
+	dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + wnd->FromDIP(3));
 }
 
 void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect)
@@ -182,13 +183,15 @@ void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 	auto px2 = wnd->FromDIP(2);
 	auto px4 = wnd->FromDIP(4);
 
+	bool w10_light_bg = main_tabs_ && !app::isDarkTheme() && app::platform() == app::Windows;
+
 	// Background
 	wxRect r;
 	if (m_flags & wxAUI_NB_BOTTOM)
 		r = wxRect(rect.x, rect.y, rect.width + px2, rect.height);
 	else
 		r = wxRect(rect.x, rect.y, rect.width + px2, rect.height);
-	dc.SetBrush(wxBrush(wnd->GetBackgroundColour()));
+	dc.SetBrush(wxBrush(w10_light_bg ? col_w10_bg : wnd->GetBackgroundColour()));
 	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.DrawRectangle(r);
 
@@ -238,6 +241,9 @@ void SAuiTabArt::DrawTab(
 	if (caption.empty())
 		caption = wxT("Xj");
 
+	// Regular tab control titles require double ampersands to show a single one, emulate that here
+	caption.Replace("&&", "&");
+
 	dc.SetFont(m_selectedFont);
 	dc.GetTextExtent(caption, &selected_textx, &selected_texty);
 
@@ -249,7 +255,7 @@ void SAuiTabArt::DrawTab(
 		bluetab = true;
 
 	// figure out the size of the tab
-	wxSize tab_size = GetTabSize(dc, wnd, page.caption, page.bitmap, page.active, close_button_state, x_extent);
+	wxSize tab_size = GetTabSize(dc, wnd, caption, page.bitmap, page.active, close_button_state, x_extent);
 
 	// I know :P This stuff should probably be completely rewritten,
 	// but this will do for now
@@ -269,7 +275,8 @@ void SAuiTabArt::DrawTab(
 		tab_y += px2;
 	}
 
-	caption = page.caption;
+	if (page.caption.empty())
+		caption = page.caption;
 
 
 	// select pen, brush and font for the tab to be drawn
@@ -331,7 +338,11 @@ void SAuiTabArt::DrawTab(
 		// highlight top of tab
 		if (!bluetab)
 		{
+#ifdef __WXMSW__
+			auto col_hilight = wxColour(app::isDarkTheme() ? "#6696FF" : "#476DBD");
+#else
 			wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
+#endif
 			dc.SetPen(*wxTRANSPARENT_PEN);
 			dc.SetBrush(wxBrush(col_hilight));
 			dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, px3);

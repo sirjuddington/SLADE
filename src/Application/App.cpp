@@ -138,7 +138,7 @@ public:
 	{
 		switch (index)
 		{
-		case wxSYS_COLOUR_HIGHLIGHT: return wxColour("#4D6FB3");
+		case wxSYS_COLOUR_HIGHLIGHT: return { "#374F80" };
 		default:                     return wxDarkModeSettings::GetColour(index);
 		}
 	}

@@ -750,6 +750,11 @@ bool strutil::Path::hasExtension() const
 	return filename_start_ != string::npos && filename_end_ < full_path_.size();
 }
 
+bool strutil::Path::extensionIs(string_view ext) const
+{
+	return equalCI(extension(), ext);
+}
+
 void strutil::Path::set(string_view full_path)
 {
 	full_path_ = full_path;

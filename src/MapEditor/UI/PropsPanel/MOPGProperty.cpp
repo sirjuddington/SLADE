@@ -52,7 +52,7 @@
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Browser/BrowserItem.h"
-#include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
+#include "UI/WxUtils.h"
 #include "Utility/PropertyUtils.h"
 
 using namespace slade;
