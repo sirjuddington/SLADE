@@ -623,7 +623,11 @@ const game::ArgSpec& MOPGActionSpecialProperty::argSpec()
 // -----------------------------------------------------------------------------
 // Returns the action special value as a string (contains the special name)
 // -----------------------------------------------------------------------------
+#if wxCHECK_VERSION(3, 3, 0)
+wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
+#else
 wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags) const
+#endif
 {
 	// Get value as integer
 	int special = value.GetInteger();
@@ -674,7 +678,11 @@ const game::ArgSpec& MOPGThingTypeProperty::argSpec()
 // -----------------------------------------------------------------------------
 // Returns the thing type value as a string (contains the thing type name)
 // -----------------------------------------------------------------------------
+#if wxCHECK_VERSION(3, 3, 0)
+wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
+#else
 wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) const
+#endif
 {
 	// Get value as integer
 	int type = value.GetInteger();
@@ -976,7 +984,11 @@ void MOPGAngleProperty::clearValue()
 // -----------------------------------------------------------------------------
 // Returns the angle value as a string
 // -----------------------------------------------------------------------------
-wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
+#if wxCHECK_VERSION(3, 3, 0)
+wxString MOPGAngleProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
+#else
+wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
+#endif
 {
 	int angle = value.GetInteger();
 
@@ -1416,7 +1428,11 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 // Returns the sector special value as a string
 // -----------------------------------------------------------------------------
+#if wxCHECK_VERSION(3, 3, 0)
+wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
+#else
 wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, int argFlags) const
+#endif
 {
 	int type = value.GetInteger();
 
