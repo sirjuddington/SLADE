@@ -77,8 +77,8 @@ public:
 	int removeInvalidSides();
 
 	// Cleanup/Extra
-	void rebuildConnectedLines();
-	void rebuildConnectedSides();
+	void rebuildConnectedLines() const;
+	void rebuildConnectedSides() const;
 
 private:
 	struct MapObjectHolder

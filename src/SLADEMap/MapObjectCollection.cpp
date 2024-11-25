@@ -143,7 +143,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 {
 	if (type == MapObject::Type::Vertex)
 	{
-		auto vertices = *vertices_;
+		auto& vertices = *vertices_;
 
 		// Clear
 		for (auto& vertex : vertices)
@@ -160,7 +160,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 	}
 	else if (type == MapObject::Type::Line)
 	{
-		auto lines = *lines_;
+		auto& lines = *lines_;
 
 		// Clear
 		for (auto& line : lines)
@@ -177,7 +177,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 	}
 	else if (type == MapObject::Type::Side)
 	{
-		auto sides = *sides_;
+		auto& sides = *sides_;
 
 		// Clear
 		for (auto& side : sides)
@@ -194,7 +194,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 	}
 	else if (type == MapObject::Type::Sector)
 	{
-		auto sectors = *sectors_;
+		auto& sectors = *sectors_;
 
 		// Clear
 		for (auto& sector : sectors)
@@ -211,7 +211,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 	}
 	else if (type == MapObject::Type::Thing)
 	{
-		auto things = *things_;
+		auto& things = *things_;
 
 		// Clear
 		for (auto& thing : things)
@@ -290,7 +290,7 @@ bool MapObjectCollection::removeVertex(const MapVertex* vertex, bool merge_lines
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 {
-	auto vertices = *vertices_;
+	auto& vertices = *vertices_;
 
 	// Check index
 	if (index >= vertices.size())
@@ -338,7 +338,7 @@ bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 	if (!merged)
 	{
 		// Remove all connected lines
-		auto clines = vertex->connectedLines();
+		auto& clines = vertex->connectedLines();
 		for (auto& line : clines)
 			removeLine(line);
 	}
@@ -370,7 +370,7 @@ bool MapObjectCollection::removeLine(const MapLine* line)
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeLine(unsigned index)
 {
-	auto lines = *lines_;
+	auto& lines = *lines_;
 
 	// Check index
 	if (index >= lines.size())
@@ -419,7 +419,7 @@ bool MapObjectCollection::removeSide(const MapSide* side, bool remove_from_line)
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 {
-	auto sides = *sides_;
+	auto& sides = *sides_;
 
 	// Check index
 	if (index >= sides.size())
@@ -487,7 +487,7 @@ bool MapObjectCollection::removeSector(const MapSector* sector)
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeSector(unsigned index)
 {
-	auto sectors = *sectors_;
+	auto& sectors = *sectors_;
 
 	// Check index
 	if (index >= sectors.size())
@@ -517,7 +517,7 @@ bool MapObjectCollection::removeThing(const MapThing* thing)
 // -----------------------------------------------------------------------------
 bool MapObjectCollection::removeThing(unsigned index)
 {
-	auto things = *things_;
+	auto& things = *things_;
 
 	// Check index
 	if (index >= things.size())
@@ -679,8 +679,8 @@ bool MapObjectCollection::modifiedSince(long since, MapObject::Type type) const
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeDetachedVertices()
 {
-	auto vertices = *vertices_;
-	int  count    = 0;
+	auto& vertices = *vertices_;
+	int   count    = 0;
 	for (int a = vertices.size() - 1; a >= 0; a--)
 	{
 		if (vertices[a]->nConnectedLines() == 0)
@@ -701,8 +701,8 @@ int MapObjectCollection::removeDetachedVertices()
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeDetachedSides()
 {
-	auto sides = *sides_;
-	int  count = 0;
+	auto& sides = *sides_;
+	int   count = 0;
 	for (int a = sides.size() - 1; a >= 0; a--)
 	{
 		if (!sides[a]->parentLine())
@@ -723,8 +723,8 @@ int MapObjectCollection::removeDetachedSides()
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeDetachedSectors()
 {
-	auto sectors = *sectors_;
-	int  count   = 0;
+	auto& sectors = *sectors_;
+	int   count   = 0;
 	for (int a = sectors.size() - 1; a >= 0; a--)
 	{
 		if (sectors[a]->connectedSides().empty())
@@ -745,8 +745,8 @@ int MapObjectCollection::removeDetachedSectors()
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeZeroLengthLines()
 {
-	auto lines = *lines_;
-	int  count = 0;
+	auto& lines = *lines_;
+	int   count = 0;
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		if (lines[a]->v1() == lines[a]->v2())
@@ -765,8 +765,8 @@ int MapObjectCollection::removeZeroLengthLines()
 // -----------------------------------------------------------------------------
 int MapObjectCollection::removeInvalidSides()
 {
-	auto sides = *sides_;
-	int  count = 0;
+	auto& sides = *sides_;
+	int   count = 0;
 	for (unsigned a = 0; a < sides.size(); a++)
 	{
 		if (!sides[a]->sector())
@@ -783,7 +783,7 @@ int MapObjectCollection::removeInvalidSides()
 // -----------------------------------------------------------------------------
 // Rebuilds the connected lines lists for all map vertices
 // -----------------------------------------------------------------------------
-void MapObjectCollection::rebuildConnectedLines()
+void MapObjectCollection::rebuildConnectedLines() const
 {
 	// Clear vertex connected lines lists
 	for (auto& vertex : *vertices_)
@@ -800,7 +800,7 @@ void MapObjectCollection::rebuildConnectedLines()
 // -----------------------------------------------------------------------------
 // Rebuilds the connected sides lists for all map sectors
 // -----------------------------------------------------------------------------
-void MapObjectCollection::rebuildConnectedSides()
+void MapObjectCollection::rebuildConnectedSides() const
 {
 	// Clear sector connected sides lists
 	for (auto& sector : *sectors_)
