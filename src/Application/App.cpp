@@ -812,9 +812,9 @@ bool app::isWin64Build()
 #endif
 }
 
-bool app::isWindowsDarkMode()
+bool app::isDarkTheme()
 {
-	return win_darkmode_enabled;
+	return wxSystemSettings::GetAppearance().IsDark();
 }
 
 std::thread::id app::mainThreadId()

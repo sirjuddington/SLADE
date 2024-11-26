@@ -30,9 +30,9 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Drawing.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Drawing.h"
 #include "GLTexture.h"
 #include "General/Misc.h"
 #include "General/UI.h"
@@ -582,7 +582,7 @@ wxColour drawing::systemPanelBGColour()
 	}
 	return bgColour;
 #else
-	return wxSystemSettings::GetColour(app::isWindowsDarkMode() ? wxSYS_COLOUR_WINDOW : wxSYS_COLOUR_3DFACE);
+	return wxSystemSettings::GetColour(app::isDarkTheme() ? wxSYS_COLOUR_WINDOW : wxSYS_COLOUR_3DFACE);
 #endif
 }
 

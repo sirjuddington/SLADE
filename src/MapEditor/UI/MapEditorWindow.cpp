@@ -286,7 +286,7 @@ void MapEditorWindow::setupLayout()
 {
 	// Create the wxAUI manager & related things
 	auto m_mgr = new wxAuiManager(this);
-	m_mgr->SetArtProvider(new SAuiDockArt());
+	m_mgr->SetArtProvider(new SAuiDockArt(this));
 	wxAuiPaneInfo p_inf;
 
 	// Map canvas

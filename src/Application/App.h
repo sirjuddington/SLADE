@@ -70,7 +70,7 @@ namespace app
 	bool          useSFMLRenderWindow();
 	const string& iconFile();
 	bool          isWin64Build();
-	bool          isWindowsDarkMode();
+	bool          isDarkTheme();
 
 	std::thread::id mainThreadId();
 } // namespace app

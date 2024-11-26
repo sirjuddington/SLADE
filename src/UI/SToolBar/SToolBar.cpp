@@ -451,7 +451,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 #ifdef __WXMSW__
 	if (main_toolbar)
 	{
-		if (app::isWindowsDarkMode())
+		if (app::isDarkTheme())
 			wxWindowBase::SetBackgroundColour(wxColor(0x262626));
 		else if (global::win_version_major >= 10)
 			wxWindowBase::SetBackgroundColour(wxColor(250, 250, 250));

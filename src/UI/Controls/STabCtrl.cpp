@@ -75,7 +75,7 @@ STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int h
 	wxAuiNotebook::Create(parent, -1, wxDefaultPosition, wxDefaultSize, style);
 
 	// Setup tabs
-	SetArtProvider(new SAuiTabArt(close_buttons, main_tabs));
+	SetArtProvider(new SAuiTabArt(this, close_buttons, main_tabs));
 	wxAuiNotebook::SetTabCtrlHeight(ui::scalePx(height));
 }
 
