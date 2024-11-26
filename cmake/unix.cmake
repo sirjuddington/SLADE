@@ -94,15 +94,6 @@ if (CMAKE_INSTALL_PREFIX)
 ADD_DEFINITIONS(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 endif(CMAKE_INSTALL_PREFIX)
 
-if (NOT APPLE)
-	find_package (PkgConfig REQUIRED)
-if (WX_GTK3)
-	pkg_check_modules (GTK3 REQUIRED gtk+-3.0)
-else (WX_GTK3)
-	pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
-endif (WX_GTK3)
-endif (NOT APPLE)
-
 if(NOT NO_FLUIDSYNTH)
 	find_package(FluidSynth REQUIRED)
 else(NO_FLUIDSYNTH)
@@ -128,12 +119,6 @@ include_directories(
 	../thirdparty/glad/include
 	./Application
 	)
-
-if (WX_GTK3)
-	include_directories(${GTK3_INCLUDE_DIRS})
-else (WX_GTK3)
-	include_directories(${GTK2_INCLUDE_DIRS})
-endif (WX_GTK3)
 
 if (NOT NO_FLUIDSYNTH)
 	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
@@ -192,12 +177,6 @@ target_link_libraries(slade
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)
 	target_link_libraries(slade -lstdc++fs)
 endif()
-
-if (WX_GTK3)
-	target_link_libraries(slade ${GTK3_LIBRARIES})
-else(WX_GTK3)
-	target_link_libraries(slade ${GTK2_LIBRARIES})
-endif(WX_GTK3)
 
 if (NOT NO_FLUIDSYNTH)
 	target_link_libraries(slade ${FLUIDSYNTH_LIBRARIES})

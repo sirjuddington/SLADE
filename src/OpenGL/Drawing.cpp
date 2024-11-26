@@ -32,21 +32,11 @@
 #include "Main.h"
 #include "Drawing.h"
 #include "App.h"
-#include "Archive/ArchiveManager.h"
 #include "GLTexture.h"
-#include "General/Misc.h"
 #include "General/UI.h"
 #include "OpenGL.h"
 #include "Utility/MathStuff.h"
 #include "Utility/StringUtils.h"
-
-#ifdef __WXGTK3__
-#include <gtk-3.0/gtk/gtk.h>
-#elif __WXGTK20__
-#define GSocket GlibGSocket
-#include <gtk-2.0/gtk/gtk.h>
-#undef GSocket
-#endif
 
 using namespace slade;
 
@@ -560,30 +550,10 @@ void drawing::drawHud()
 
 wxColour drawing::systemPanelBGColour()
 {
-#ifdef __WXGTK__
-	static bool     intitialized(false);
-	static wxColour bgColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
-
-	if (!intitialized)
-	{
-		// try to get the background colour from a menu
-		GtkWidget* menu = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		GtkStyle*  def  = gtk_rc_get_style(menu);
-		if (!def)
-			def = gtk_widget_get_default_style();
-
-		if (def)
-		{
-			GdkColor col = def->bg[GTK_STATE_NORMAL];
-			bgColour     = wxColour(col);
-		}
-		gtk_widget_destroy(menu);
-		intitialized = true;
-	}
-	return bgColour;
-#else
-	return wxSystemSettings::GetColour(app::isDarkTheme() ? wxSYS_COLOUR_WINDOW : wxSYS_COLOUR_3DFACE);
-#endif
+	if (app::platform() == app::Windows && app::isDarkTheme())
+		return wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+	else
+		return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
 }
 
 wxColour drawing::systemMenuTextColour()
