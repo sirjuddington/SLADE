@@ -1037,12 +1037,17 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName().ToStdString());
+	auto prop_name   = GetName().ToStdString();
+	int  first       = objects[0]->intProperty(prop_name);
+	object_has_prop_ = objects[0]->hasProp(prop_name);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName().ToStdString()) != first)
+		if (!object_has_prop_ && objects[a]->hasProp(prop_name))
+			object_has_prop_ = true;
+
+		if (objects[a]->intProperty(prop_name) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1062,11 +1067,14 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 }
 
 // -----------------------------------------------------------------------------
-// Colours have no default and are always visible.
+// Colours have no default and are only visible if they have a value
 // -----------------------------------------------------------------------------
 void MOPGColourProperty::updateVisibility()
 {
-	Hide(false);
+	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways() && !object_has_prop_)
+		Hide(true);
+	else
+		Hide(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -1090,6 +1098,8 @@ void MOPGColourProperty::applyValue()
 	col.Set(col.Blue(), col.Green(), col.Red());
 	for (auto& object : objects)
 		object->setIntProperty(GetName().ToStdString(), col.GetRGB());
+
+	object_has_prop_ = true;
 }
 
 // -----------------------------------------------------------------------------

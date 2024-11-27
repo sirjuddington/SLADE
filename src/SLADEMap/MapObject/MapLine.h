@@ -74,6 +74,7 @@ public:
 	int s1Index() const;
 	int s2Index() const;
 
+	bool   hasProp(string_view key) const override;
 	bool   boolProperty(string_view key) override;
 	int    intProperty(string_view key) override;
 	double floatProperty(string_view key) override;

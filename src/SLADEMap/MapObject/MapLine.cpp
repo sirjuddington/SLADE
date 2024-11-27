@@ -217,6 +217,20 @@ int MapLine::s2Index() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the line has a property named [key].
+// Can be prefixed with 'side1.' or 'side2.' to check properties from the
+// front and back sides respectively
+// -----------------------------------------------------------------------------
+bool MapLine::hasProp(string_view key) const
+{
+	if (strutil::startsWith(key, "side1.") && side1_)
+		return side1_->hasProp(key.substr(6));
+	if (strutil::startsWith(key, "side2.") && side2_)
+		return side2_->hasProp(key.substr(6));
+	return MapObject::hasProp(key);
+}
+
+// -----------------------------------------------------------------------------
 // Returns the value of the boolean property matching [key].
 // Can be prefixed with 'side1.' or 'side2.' to get bool properties from the
 // front and back sides respectively

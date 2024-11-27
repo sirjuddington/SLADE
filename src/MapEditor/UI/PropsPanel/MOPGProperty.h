@@ -51,6 +51,7 @@ protected:
 	bool                 noupdate_  = false;
 	game::UDMFProperty*  udmf_prop_ = nullptr;
 	wxString             propname_;
+	bool                 object_has_prop_ = false;
 };
 
 class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty

@@ -150,7 +150,11 @@ wxPropertyGrid* MapObjectPropsPanel::createPropGrid()
 	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
 	auto propgrid = new wxPropertyGrid(
-		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
+		stc_sections_,
+		-1,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER | wxPG_BOLD_MODIFIED);
 	propgrid->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS | wxPG_EX_MULTIPLE_SELECTION);
 	propgrid->SetCaptionTextColour(inactiveTextColour);
 	propgrid->SetCellDisabledTextColour(inactiveTextColour);
@@ -932,8 +936,11 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Generic properties
-	for (auto& property : properties_)
+	for (auto property : properties_)
+	{
 		property->openObjects(objects);
+		dynamic_cast<wxPGProperty*>(property)->SetModifiedStatus(false);
+	}
 
 	// Handle line sides
 	if (objects[0]->objType() == map::ObjectType::Line)
@@ -1018,8 +1025,19 @@ void MapObjectPropsPanel::updateArgs(MOPGIntWithArgsProperty* source)
 void MapObjectPropsPanel::applyChanges()
 {
 	// Go through all current properties and apply the current value
-	for (auto& property : properties_)
+	for (auto property : properties_)
+	{
+		auto wxprop = dynamic_cast<wxPGProperty*>(property);
+		if (!wxprop->HasFlag(wxPG_PROP_MODIFIED))
+			continue;
+
 		property->applyValue();
+		wxprop->SetModifiedStatus(false);
+	}
+
+	pg_properties_->Refresh();
+	pg_props_side1_->Refresh();
+	pg_props_side2_->Refresh();
 }
 
 // -----------------------------------------------------------------------------
