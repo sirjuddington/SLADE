@@ -30,12 +30,12 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-
+#include "UI/WxUtils.h"
 #include "App.h"
 #include "Graphics/Icons.h"
 #include "UI/UI.h"
-#include "UI/WxUtils.h"
 #include "Utility/Colour.h"
+#include <algorithm>
 
 using namespace slade;
 
@@ -168,7 +168,7 @@ wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxSize
 // Creates a simple vertical box sizer with a [label] on the top and [widget]
 // on the bottom
 // -----------------------------------------------------------------------------
-wxSizer* ::wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget)
+wxSizer* wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
@@ -210,7 +210,7 @@ wxSizer* wxutil::createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel)
 // Shortcut function for createDialogButtonBox that creates ok/cancel buttons
 // with the given [text_ok] and [text_cancel]
 // -----------------------------------------------------------------------------
-wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const wxString& text_ok, const wxString& text_cancel)
+wxSizer* wxutil::createDialogButtonBox(wxWindow* parent, const wxString& text_ok, const wxString& text_cancel)
 {
 	auto* btn_ok = new wxButton(parent, wxID_OK, text_ok);
 	btn_ok->SetDefault();
@@ -258,9 +258,9 @@ void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 	window->SetIcon(wx_icon);
 }
 
-
-// The following functions are taken from CodeLite (http://codelite.org)
-
+// -----------------------------------------------------------------------------
+// Returns the system background colour for panels
+// -----------------------------------------------------------------------------
 wxColour wxutil::systemPanelBGColour()
 {
 	if (app::platform() == app::Windows && app::isDarkTheme())
@@ -269,49 +269,39 @@ wxColour wxutil::systemPanelBGColour()
 		return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
 }
 
-wxColour wxutil::systemMenuTextColour()
-{
-	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
-}
-
-wxColour wxutil::systemMenuBarBGColour()
-{
-	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
-}
-
+// -----------------------------------------------------------------------------
+// Returns a lightened version of the given [colour] by [percent]
+// -----------------------------------------------------------------------------
 wxColour wxutil::lightColour(const wxColour& colour, float percent)
 {
 	if (percent == 0)
-	{
 		return colour;
-	}
 
 	// Convert to HSL
 	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
 
 	// Increase luminance
 	hsl.l += static_cast<float>((percent * 5.0) / 100.0);
-	if (hsl.l > 1.0)
-		hsl.l = 1.0;
+	hsl.l = std::min(hsl.l, 1.0);
 
 	ColRGBA rgb = hsl.asRGB();
 	return { rgb.r, rgb.g, rgb.b };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a darkened version of the given [colour] by [percent]
+// -----------------------------------------------------------------------------
 wxColour wxutil::darkColour(const wxColour& colour, float percent)
 {
 	if (percent == 0)
-	{
 		return colour;
-	}
 
 	// Convert to HSL
 	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
 
 	// Decrease luminance
 	hsl.l -= static_cast<float>((percent * 5.0) / 100.0);
-	if (hsl.l < 0)
-		hsl.l = 0;
+	hsl.l = std::max<double>(hsl.l, 0);
 
 	ColRGBA rgb = hsl.asRGB();
 	return { rgb.r, rgb.g, rgb.b };

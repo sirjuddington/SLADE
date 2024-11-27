@@ -85,8 +85,8 @@ public:
 
 	void drawBorder(bool draw = true) { draw_border_ = draw; }
 
-	static int getBarHeight(wxWindow* window);
-	static int scaledButtonSize(wxWindow* window);
+	static int getBarHeight(const wxWindow* window);
+	static int scaledButtonSize(const wxWindow* window);
 
 private:
 	vector<SToolBarGroup*> groups_;

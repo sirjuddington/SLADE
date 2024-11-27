@@ -378,7 +378,10 @@ void MapObjectPropsPanel::addUDMFProperty(
 	// Get group to add
 	auto group = grid->GetProperty(groupname);
 	if (!group)
+	{
 		group = grid->Append(new wxPropertyCategory(prop.group(), groupname));
+		groups_.push_back(group);
+	}
 
 	// Determine property name
 	wxString propname;
@@ -820,6 +823,15 @@ void MapObjectPropsPanel::setupTypeUDMF(map::ObjectType objtype)
 }
 
 // -----------------------------------------------------------------------------
+// Hides groups with no visible children and vice/versa
+// -----------------------------------------------------------------------------
+void MapObjectPropsPanel::updateGroupVisibility() const
+{
+	for (auto group : groups_)
+		group->Hide(!group->HasVisibleChildren(), wxPGPropertyValuesFlags::DontRecurse);
+}
+
+// -----------------------------------------------------------------------------
 // Populates the grid with properties for [object]
 // -----------------------------------------------------------------------------
 void MapObjectPropsPanel::openObject(MapObject* object)
@@ -859,6 +871,10 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	}
 	else
 		pg_properties_->EnableProperty(pg_properties_->GetGrid()->GetRoot());
+
+	// Show all groups initially
+	for (auto group : groups_)
+		group->Hide(false, wxPGPropertyValuesFlags::DontRecurse);
 
 	// Setup property grid for the object type
 	bool is_udmf      = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
@@ -952,6 +968,9 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Possibly update the argument names and visibility
 	updateArgs(nullptr);
 
+	// Hide empty groups
+	updateGroupVisibility();
+
 	pg_properties_->Thaw();
 	pg_props_side1_->Thaw();
 	pg_props_side2_->Thaw();
@@ -1017,6 +1036,7 @@ void MapObjectPropsPanel::clearGrid()
 	group_custom_ = nullptr;
 	properties_.clear();
 	btn_add_->Show();
+	groups_.clear();
 
 	// Remove side1/2 tabs if they exist
 	// Calling RemovePage() changes the focus for no good reason; this is a
@@ -1090,6 +1110,7 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 		property->updateVisibility();
 
 	updateArgs(nullptr);
+	updateGroupVisibility();
 }
 
 // -----------------------------------------------------------------------------

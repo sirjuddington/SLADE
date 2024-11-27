@@ -182,12 +182,12 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_
 	if (orientation_ == wxHORIZONTAL)
 	{
 		separator_ = static_cast<wxWindow*>(new SToolBarHSeparator(this));
-		sizer->Add(separator_, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, spacing);
+		sizer->Add(separator_, wxSizerFlags().CenterVertical().Border(wxLEFT | wxRIGHT, spacing));
 	}
 	else
 	{
 		separator_ = static_cast<wxWindow*>(new SToolBarVSeparator(this));
-		sizer->Add(separator_, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, spacing);
+		sizer->Add(separator_, wxSizerFlags().Center().Border(wxTOP | wxBOTTOM, spacing));
 	}
 	separator_->Show(false);
 
@@ -199,7 +199,7 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_
 			showname.Remove(0, 1);
 
 		auto* label = new wxStaticText(this, -1, wxString::Format("%s:", showname));
-		label->SetForegroundColour(wxutil::systemMenuTextColour());
+		label->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT));
 		sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
 		sizer->AddSpacer(spacing);
 	}
@@ -252,7 +252,7 @@ SToolBarButton* SToolBarGroup::addActionButton(const wxString& action, const wxS
 	// Add it to the group
 	if (toolbar_size > 16)
 		sizer->AddSpacer(FromDIP(static_cast<int>(toolbar_size * 0.1)));
-	sizer->Add(button, 0, wxALIGN_CENTER | wxALL, FromDIP(1));
+	sizer->Add(button, wxSizerFlags().Center().Border(wxALL, FromDIP(1)));
 	if (toolbar_size > 16)
 		sizer->AddSpacer(FromDIP(static_cast<int>(toolbar_size * 0.1)));
 
@@ -283,7 +283,7 @@ SToolBarButton* SToolBarGroup::addActionButton(
 	// Add it to the group
 	if (toolbar_size > 16)
 		sizer->AddSpacer(FromDIP(static_cast<int>(toolbar_size * 0.1)));
-	sizer->Add(button, 0, wxALIGN_CENTER | wxALL, FromDIP(1));
+	sizer->Add(button, wxSizerFlags().Center().Border(wxALL, FromDIP(1)));
 	if (toolbar_size > 16)
 		sizer->AddSpacer(FromDIP(static_cast<int>(toolbar_size * 0.1)));
 
@@ -302,9 +302,9 @@ void SToolBarGroup::addCustomControl(wxWindow* control)
 
 	// Add it to the group
 	if (orientation_ == wxHORIZONTAL)
-		GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::padSmall(this));
+		GetSizer()->Add(control, wxSizerFlags().CenterVertical().Border(wxLEFT | wxRIGHT, ui::padSmall(this)));
 	else
-		GetSizer()->Add(control, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM, ui::padSmall(this));
+		GetSizer()->Add(control, wxSizerFlags().CenterHorizontal().Border(wxTOP | wxBOTTOM, ui::padSmall(this)));
 
 	items_.push_back({ GroupItem::Type::CustomControl, control });
 }
@@ -320,9 +320,9 @@ void SToolBarGroup::addSeparator()
 						   : static_cast<wxWindow*>(new SToolBarVSeparator(this));
 
 	if (horizontal)
-		GetSizer()->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::padSmall(this));
+		GetSizer()->Add(sep, wxSizerFlags().CenterVertical().Border(wxLEFT | wxRIGHT, ui::padSmall(this)));
 	else
-		GetSizer()->Add(sep, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, ui::padSmall(this));
+		GetSizer()->Add(sep, wxSizerFlags().Center().Border(wxTOP | wxBOTTOM, ui::padSmall(this)));
 
 	items_.push_back({ GroupItem::Type::Separator, sep });
 }
@@ -989,7 +989,7 @@ void SToolBar::onEraseBackground(wxEraseEvent& e) {}
 // -----------------------------------------------------------------------------
 // Returns the height for all toolbars
 // -----------------------------------------------------------------------------
-int SToolBar::getBarHeight(wxWindow* window)
+int SToolBar::getBarHeight(const wxWindow* window)
 {
 	return window->FromDIP(toolbar_size + 14);
 }
@@ -997,7 +997,7 @@ int SToolBar::getBarHeight(wxWindow* window)
 // -----------------------------------------------------------------------------
 // Returns the scaled pixel size for SToolBar buttons
 // -----------------------------------------------------------------------------
-int SToolBar::scaledButtonSize(wxWindow* window)
+int SToolBar::scaledButtonSize(const wxWindow* window)
 {
 	return window->FromDIP(toolbar_size);
 }

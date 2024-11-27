@@ -60,6 +60,7 @@ private:
 	wxPGProperty*         group_custom_ = nullptr;
 	bool                  no_apply_     = false;
 	bool                  udmf_         = false;
+	vector<wxPGProperty*> groups_;
 
 	// Hide properties
 	bool             hide_flags_    = false;
@@ -137,6 +138,8 @@ private:
 
 	void setupType(map::ObjectType objtype);
 	void setupTypeUDMF(map::ObjectType objtype);
+
+	void updateGroupVisibility() const;
 
 	// Events
 	void onBtnApply(wxCommandEvent& e);

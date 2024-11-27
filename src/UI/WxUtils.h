@@ -44,8 +44,6 @@ void setWindowIcon(wxTopLevelWindow* window, string_view icon);
 
 // From CodeLite
 wxColour systemPanelBGColour();
-wxColour systemMenuTextColour();
-wxColour systemMenuBarBGColour();
 wxColour lightColour(const wxColour& colour, float percent);
 wxColour darkColour(const wxColour& colour, float percent);
 } // namespace slade::wxutil
