@@ -73,6 +73,7 @@ SplashWindow::SplashWindow(wxWindow* parent) :
 	// Init
 	wxMiniFrame::SetBackgroundStyle(wxBG_STYLE_PAINT);
 	wxMiniFrame::SetBackgroundColour(wxColour(180, 186, 200));
+	wxMiniFrame::SetDoubleBuffered(true);
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SplashWindow::onPaint, this);
