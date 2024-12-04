@@ -34,8 +34,9 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveFormat.h"
+#include "Scripting/Export/Export.h"
+#include "Scripting/LuaBridge.h"
 #include "Utility/StringUtils.h"
-#include "thirdparty/sol/sol.hpp"
 
 using namespace slade;
 
@@ -44,7 +45,7 @@ namespace slade::lua
 // -----------------------------------------------------------------------------
 // Returns a vector of all entries in the archive [self]
 // -----------------------------------------------------------------------------
-vector<shared_ptr<ArchiveEntry>> archiveAllEntries(const Archive& self)
+static vector<shared_ptr<ArchiveEntry>> archiveAllEntries(const Archive& self)
 {
 	vector<shared_ptr<ArchiveEntry>> list;
 	self.putEntryTreeAsList(list);
@@ -55,7 +56,7 @@ vector<shared_ptr<ArchiveEntry>> archiveAllEntries(const Archive& self)
 // Creates a new directory in archive [self] at [path].
 // Returns the created directory or nullptr if the archive doesn't support them
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveDir> archiveCreateDir(Archive& self, string_view path)
+static shared_ptr<ArchiveDir> archiveCreateDir(Archive& self, string_view path)
 {
 	if (self.formatInfo().supports_dirs)
 		return self.createDir(path);
@@ -67,7 +68,7 @@ shared_ptr<ArchiveDir> archiveCreateDir(Archive& self, string_view path)
 // Creates a new entry in archive [self] at [full_path],[position].
 // Returns the created entry
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> archiveCreateEntry(Archive& self, string_view full_path, int position)
+static shared_ptr<ArchiveEntry> archiveCreateEntry(Archive& self, string_view full_path, int position)
 {
 	auto dir = self.dirAtPath(strutil::beforeLast(full_path, '/'));
 	return self.addNewEntry(strutil::afterLast(full_path, '/'), position, dir)->getShared();
@@ -77,7 +78,7 @@ shared_ptr<ArchiveEntry> archiveCreateEntry(Archive& self, string_view full_path
 // Creates a new entry in archive [self] with [name] in namespace [ns].
 // Returns the created entry
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> archiveCreateEntryInNamespace(Archive& self, string_view name, string_view ns)
+static shared_ptr<ArchiveEntry> archiveCreateEntryInNamespace(Archive& self, string_view name, string_view ns)
 {
 	return self.addNewEntry(name, ns)->getShared();
 }
@@ -85,7 +86,7 @@ shared_ptr<ArchiveEntry> archiveCreateEntryInNamespace(Archive& self, string_vie
 // -----------------------------------------------------------------------------
 // Wrapper for Archive::findFirst that returns a shared pointer
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> archiveFindFirst(Archive& self, ArchiveSearchOptions& opt)
+static shared_ptr<ArchiveEntry> archiveFindFirst(Archive& self, ArchiveSearchOptions& opt)
 {
 	auto found = self.findFirst(opt);
 	return found ? found->getShared() : nullptr;
@@ -94,7 +95,7 @@ shared_ptr<ArchiveEntry> archiveFindFirst(Archive& self, ArchiveSearchOptions& o
 // -----------------------------------------------------------------------------
 // Wrapper for Archive::findLast that returns a shared pointer
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> archiveFindLast(Archive& self, ArchiveSearchOptions& opt)
+static shared_ptr<ArchiveEntry> archiveFindLast(Archive& self, ArchiveSearchOptions& opt)
 {
 	auto found = self.findLast(opt);
 	return found ? found->getShared() : nullptr;
@@ -103,7 +104,7 @@ shared_ptr<ArchiveEntry> archiveFindLast(Archive& self, ArchiveSearchOptions& op
 // -----------------------------------------------------------------------------
 // Wrapper for Archive::findAll that returns shared pointers
 // -----------------------------------------------------------------------------
-vector<shared_ptr<ArchiveEntry>> archiveFindAll(Archive& self, ArchiveSearchOptions& opt)
+static vector<shared_ptr<ArchiveEntry>> archiveFindAll(Archive& self, ArchiveSearchOptions& opt)
 {
 	auto found = self.findAll(opt);
 
@@ -118,35 +119,35 @@ vector<shared_ptr<ArchiveEntry>> archiveFindAll(Archive& self, ArchiveSearchOpti
 // -----------------------------------------------------------------------------
 // Registers the Archive type with lua
 // -----------------------------------------------------------------------------
-void registerArchive(sol::state& lua)
+void registerArchive(lua_State* lua)
 {
 	// Create Archive type, no constructor
-	auto lua_archive = lua.new_usertype<Archive>("Archive", "new", sol::no_constructor);
+	auto lua_archive = luabridge::getGlobalNamespace(lua).beginClass<Archive>("Archive", luabridge::visibleMetatables);
+	lua_archive.addConstructorFrom<shared_ptr<Archive>, void(string_view)>();
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_archive.set("filename", sol::property([](Archive& self) { return self.filename(); }));
-	lua_archive.set("entries", sol::property(&archiveAllEntries));
-	lua_archive.set("rootDir", sol::property(&Archive::rootDir));
-	lua_archive.set("format", sol::property(&Archive::formatInfo));
+	lua_archive.addProperty("filename", [](const Archive& self) { return self.filename(); });
+	lua_archive.addProperty("entries", archiveAllEntries);
+	lua_archive.addProperty("rootDir", &Archive::rootDir);
+	lua_archive.addProperty("format", &Archive::formatInfo);
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_archive.set_function("FilenameNoPath", [](Archive& self) { return self.filename(false); });
-	lua_archive.set_function("EntryAtPath", &Archive::entryAtPathShared);
-	lua_archive.set_function("DirAtPath", [](Archive& self, const string& path) { return self.dirAtPath(path); });
-	lua_archive.set_function("CreateEntry", &archiveCreateEntry);
-	lua_archive.set_function("CreateEntryInNamespace", &archiveCreateEntryInNamespace);
-	lua_archive.set_function("CreateDir", &archiveCreateDir);
-	lua_archive.set_function("RemoveEntry", [](Archive& self, ArchiveEntry* entry) { return self.removeEntry(entry); });
-	lua_archive.set_function("RenameEntry", &Archive::renameEntry);
-	lua_archive.set_function(
+	lua_archive.addFunction("FilenameNoPath", [](const Archive& self) { return self.filename(false); });
+	lua_archive.addFunction("EntryAtPath", &Archive::entryAtPathShared);
+	lua_archive.addFunction("DirAtPath", [](const Archive& self, const string& path) { return self.dirAtPath(path); });
+	lua_archive.addFunction("CreateEntry", &archiveCreateEntry);
+	lua_archive.addFunction("CreateEntryInNamespace", &archiveCreateEntryInNamespace);
+	lua_archive.addFunction("CreateDir", &archiveCreateDir);
+	lua_archive.addFunction("RemoveEntry", [](Archive& self, ArchiveEntry* entry) { return self.removeEntry(entry); });
+	lua_archive.addFunction("RenameEntry", &Archive::renameEntry);
+	lua_archive.addFunction(
 		"Save",
-		sol::overload(
-			[](Archive& self) { return std::make_tuple(self.save(), global::error); },
-			[](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), global::error); }));
-	lua_archive.set_function("FindFirst", &archiveFindFirst);
-	lua_archive.set_function("FindLast", &archiveFindLast);
-	lua_archive.set_function("FindAll", &archiveFindAll);
+		[](Archive& self) { return std::make_tuple(self.save(), global::error); },
+		[](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), global::error); });
+	lua_archive.addFunction("FindFirst", &archiveFindFirst);
+	lua_archive.addFunction("FindLast", &archiveFindLast);
+	lua_archive.addFunction("FindAll", &archiveFindAll);
 }
 } // namespace slade::lua

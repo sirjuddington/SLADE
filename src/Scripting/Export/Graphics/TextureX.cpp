@@ -30,12 +30,12 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
-#include "thirdparty/sol/sol.hpp"
+#include "Scripting/Export/Export.h"
+#include "Scripting/LuaBridge.h"
 
 using namespace slade;
 
@@ -50,7 +50,7 @@ namespace slade::lua
 // -----------------------------------------------------------------------------
 // Returns all the patches in PatchTable [self] as a vector of strings
 // -----------------------------------------------------------------------------
-vector<string> patchTablePatches(PatchTable& self)
+static vector<string> patchTablePatches(const PatchTable& self)
 {
 	vector<string> patches;
 	for (const auto& patch : self.patches())
@@ -61,37 +61,37 @@ vector<string> patchTablePatches(PatchTable& self)
 // -----------------------------------------------------------------------------
 // Registers the PatchTable type with lua
 // -----------------------------------------------------------------------------
-void registerPatchTableType(sol::state& lua)
+void registerPatchTableType(lua_State* lua)
 {
-	auto lua_ptable = lua.new_usertype<PatchTable>("PatchTable", "new", sol::constructors<PatchTable()>());
+	auto lua_ptable = luabridge::getGlobalNamespace(lua).beginClass<PatchTable>("PatchTable");
+	lua_ptable.addConstructor<void()>();
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_ptable.set("patches", sol::property(&patchTablePatches));
-	lua_ptable.set("parent", sol::property(&PatchTable::parent));
+	lua_ptable.addProperty("patches", [](const PatchTable& self) { return patchTablePatches(self); });
+	lua_ptable.addProperty("parent", &PatchTable::parent);
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_ptable.set_function("Patch", [](PatchTable& self, unsigned index) { return self.patch(index).name; });
-	lua_ptable.set_function(
+	lua_ptable.addFunction("Patch", [](PatchTable& self, unsigned index) { return self.patch(index).name; });
+	lua_ptable.addFunction(
 		"PatchEntry",
-		sol::overload(
-			[](PatchTable& self, int index) { return self.patchEntry(index); },
-			sol::resolve<ArchiveEntry*(string_view) const>(&PatchTable::patchEntry)));
-	lua_ptable.set_function("RemovePatch", [](PatchTable& self, int index) { self.removePatch(index); });
-	lua_ptable.set_function(
+		[](PatchTable& self, int index) { return self.patchEntry(index); },
+		luabridge::constOverload<string_view>(&PatchTable::patchEntry));
+	lua_ptable.addFunction("RemovePatch", [](PatchTable& self, int index) { self.removePatch(index); });
+	lua_ptable.addFunction(
 		"ReplacePatch", [](PatchTable& self, int index, string_view name) { self.replacePatch(index, name); });
-	lua_ptable.set_function("AddPatch", &PatchTable::addPatch);
-	lua_ptable.set_function(
+	lua_ptable.addFunction("AddPatch", &PatchTable::addPatch);
+	lua_ptable.addFunction(
 		"LoadPNAMES", [](PatchTable& self, ArchiveEntry* pnames) { return self.loadPNAMES(pnames); });
-	lua_ptable.set_function("WritePNAMES", &PatchTable::writePNAMES);
+	lua_ptable.addFunction("WritePNAMES", &PatchTable::writePNAMES);
 }
 
 // -----------------------------------------------------------------------------
 // Wrapper for TextureXList::addTexture that returns a pointer to the added
 // texture
 // -----------------------------------------------------------------------------
-CTexture* addTexture(TextureXList& self, string_view name, bool extended, int position)
+static CTexture* addTexture(TextureXList& self, string_view name, bool extended, int position)
 {
 	auto       tex     = std::make_unique<CTexture>(name, extended);
 	const auto tex_ptr = tex.get();
@@ -102,44 +102,43 @@ CTexture* addTexture(TextureXList& self, string_view name, bool extended, int po
 // -----------------------------------------------------------------------------
 // Registers the TextureXList type with lua
 // -----------------------------------------------------------------------------
-void registerTextureXListType(sol::state& lua)
+void registerTextureXListType(lua_State* lua)
 {
-	auto lua_txlist = lua.new_usertype<TextureXList>(
-		"TextureXList", "new", sol::constructors<TextureXList(), TextureXList(TextureXList::Format)>());
+	auto lua_txlist = luabridge::getGlobalNamespace(lua).beginClass<TextureXList>("TextureXList");
+	lua_txlist.addConstructor<void(), void(TextureXList::Format)>();
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_txlist.set("FORMAT_NORMAL", sol::property([]() { return TextureXList::Format::Normal; }));
-	lua_txlist.set("FORMAT_STRIFE11", sol::property([]() { return TextureXList::Format::Strife11; }));
-	lua_txlist.set("FORMAT_NAMELESS", sol::property([]() { return TextureXList::Format::Nameless; }));
-	lua_txlist.set("FORMAT_TEXTURES", sol::property([]() { return TextureXList::Format::Textures; }));
-	lua_txlist.set("FORMAT_JAGUAR", sol::property([]() { return TextureXList::Format::Jaguar; }));
+	ADD_CLASS_CONSTANT(lua_txlist, "FORMAT_NORMAL", TextureXList::Format::Normal);
+	ADD_CLASS_CONSTANT(lua_txlist, "FORMAT_STRIFE11", TextureXList::Format::Strife11);
+	ADD_CLASS_CONSTANT(lua_txlist, "FORMAT_NAMELESS", TextureXList::Format::Nameless);
+	ADD_CLASS_CONSTANT(lua_txlist, "FORMAT_TEXTURES", TextureXList::Format::Textures);
+	ADD_CLASS_CONSTANT(lua_txlist, "FORMAT_JAGUAR", TextureXList::Format::Jaguar);
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_txlist.set("textures", sol::property(&TextureXList::textures));
-	lua_txlist.set("format", sol::property(&TextureXList::format));
-	lua_txlist.set("formatString", sol::property(&TextureXList::textureXFormatString));
+	// lua_txlist.addProperty("textures", &TextureXList::textures);
+	lua_txlist.addProperty("format", &TextureXList::format);
+	lua_txlist.addProperty("formatString", &TextureXList::textureXFormatString);
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_txlist.set_function("Texture", sol::resolve<CTexture*(string_view) const>(&TextureXList::texture));
-	lua_txlist.set_function("TextureIndex", &TextureXList::textureIndex);
-	lua_txlist.set_function(
+	lua_txlist.addFunction("Texture", luabridge::constOverload<string_view>(&TextureXList::texture));
+	lua_txlist.addFunction("TextureIndex", &TextureXList::textureIndex);
+	lua_txlist.addFunction(
 		"AddTexture",
-		sol::overload(
-			&addTexture,
-			[](TextureXList& self, string_view name) { return addTexture(self, name, false, 0); },
-			[](TextureXList& self, string_view name, bool extended) { return addTexture(self, name, extended, 0); }));
-	lua_txlist.set_function("RemoveTexture", [](TextureXList& self, int index) { self.removeTexture(index); });
-	lua_txlist.set_function("SwapTextures", &TextureXList::swapTextures);
-	lua_txlist.set_function("Clear", [](TextureXList& self) { self.clear(); });
-	lua_txlist.set_function("RemovePatch", &TextureXList::removePatch);
-	lua_txlist.set_function("ReadTEXTUREXData", &TextureXList::readTEXTUREXData);
-	lua_txlist.set_function("WriteTEXTUREXData", &TextureXList::writeTEXTUREXData);
-	lua_txlist.set_function("ReadTEXTURESData", &TextureXList::readTEXTURESData);
-	lua_txlist.set_function("WriteTEXTURESData", &TextureXList::writeTEXTURESData);
-	lua_txlist.set_function("ConvertToTEXTURES", &TextureXList::convertToTEXTURES);
-	lua_txlist.set_function("FindErrors", &TextureXList::findErrors);
+		&addTexture,
+		[](TextureXList& self, string_view name) { return addTexture(self, name, false, 0); },
+		[](TextureXList& self, string_view name, bool extended) { return addTexture(self, name, extended, 0); });
+	lua_txlist.addFunction("RemoveTexture", [](TextureXList& self, int index) { self.removeTexture(index); });
+	lua_txlist.addFunction("SwapTextures", &TextureXList::swapTextures);
+	lua_txlist.addFunction("Clear", [](TextureXList& self) { self.clear(); });
+	lua_txlist.addFunction("RemovePatch", &TextureXList::removePatch);
+	lua_txlist.addFunction("ReadTEXTUREXData", &TextureXList::readTEXTUREXData);
+	lua_txlist.addFunction("WriteTEXTUREXData", &TextureXList::writeTEXTUREXData);
+	lua_txlist.addFunction("ReadTEXTURESData", &TextureXList::readTEXTURESData);
+	lua_txlist.addFunction("WriteTEXTURESData", &TextureXList::writeTEXTURESData);
+	lua_txlist.addFunction("ConvertToTEXTURES", &TextureXList::convertToTEXTURES);
+	lua_txlist.addFunction("FindErrors", &TextureXList::findErrors);
 }
 } // namespace slade::lua

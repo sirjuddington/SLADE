@@ -3,9 +3,9 @@
 #include "UI/UI.h"
 #include "Export.h"
 #include "Scripting/Lua.h"
+#include "Scripting/LuaBridge.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "Utility/SFileDialog.h"
-#include "thirdparty/sol/sol.hpp"
 
 using namespace slade;
 
@@ -37,7 +37,7 @@ namespace slade::lua
 // -----------------------------------------------------------------------------
 // Shows a message box with a [title] and [message]
 // -----------------------------------------------------------------------------
-void messageBox(const string& title, const string& message, MessageBoxIcon icon = MessageBoxIcon::Info)
+static void messageBox(const string& title, const string& message, MessageBoxIcon icon = MessageBoxIcon::Info)
 {
 	long style = 4 | wxCENTRE;
 	switch (icon)
@@ -55,7 +55,7 @@ void messageBox(const string& title, const string& message, MessageBoxIcon icon 
 // Shows an extended message box with a [title], [message] and [extra] in a
 // scrollable text view
 // -----------------------------------------------------------------------------
-void messageBoxExtended(const string& title, const string& message, const string& extra)
+static void messageBoxExtended(const string& title, const string& message, const string& extra)
 {
 	ExtMessageDialog dlg(currentWindow(), title);
 	dlg.setMessage(message);
@@ -67,7 +67,7 @@ void messageBoxExtended(const string& title, const string& message, const string
 // -----------------------------------------------------------------------------
 // Prompts for a string and returns what was entered
 // -----------------------------------------------------------------------------
-string promptString(const string& title, const string& message, const string& default_value)
+static string promptString(const string& title, const string& message, const string& default_value)
 {
 	return wxGetTextFromUser(message, title, default_value, currentWindow()).ToStdString();
 }
@@ -75,7 +75,7 @@ string promptString(const string& title, const string& message, const string& de
 // -----------------------------------------------------------------------------
 // Prompt for a number (int) and returns what was entered
 // -----------------------------------------------------------------------------
-int promptNumber(const string& title, const string& message, int default_value, int min, int max)
+static int promptNumber(const string& title, const string& message, int default_value, int min, int max)
 {
 	return static_cast<int>(wxGetNumberFromUser(message, "", title, default_value, min, max));
 }
@@ -83,7 +83,7 @@ int promptNumber(const string& title, const string& message, int default_value, 
 // -----------------------------------------------------------------------------
 // Prompts for a yes/no answer and returns true if yes
 // -----------------------------------------------------------------------------
-bool promptYesNo(const string& title, const string& message)
+static bool promptYesNo(const string& title, const string& message)
 {
 	return (wxMessageBox(message, title, wxYES_NO | wxICON_QUESTION) == wxYES);
 }
@@ -91,7 +91,7 @@ bool promptYesNo(const string& title, const string& message)
 // -----------------------------------------------------------------------------
 // Opens the file browser to select a single file
 // -----------------------------------------------------------------------------
-string browseFile(string_view title, string_view extensions, string_view filename)
+static string browseFile(string_view title, string_view extensions, string_view filename)
 {
 	filedialog::FDInfo inf;
 	filedialog::openFile(inf, title, extensions, currentWindow(), filename);
@@ -101,7 +101,7 @@ string browseFile(string_view title, string_view extensions, string_view filenam
 // -----------------------------------------------------------------------------
 // Opens the file browser to select multiple files
 // -----------------------------------------------------------------------------
-vector<string> browseFiles(string_view title, string_view extensions)
+static vector<string> browseFiles(string_view title, string_view extensions)
 {
 	filedialog::FDInfo inf;
 	vector<string>     filenames;
@@ -114,7 +114,7 @@ vector<string> browseFiles(string_view title, string_view extensions)
 // -----------------------------------------------------------------------------
 // Opens the file browser to save a single file
 // -----------------------------------------------------------------------------
-string saveFile(string_view title, string_view extensions, string_view fn_default = {})
+static string saveFile(string_view title, string_view extensions, string_view fn_default = {})
 {
 	filedialog::FDInfo inf;
 	if (filedialog::saveFile(inf, title, extensions, currentWindow(), fn_default))
@@ -126,7 +126,7 @@ string saveFile(string_view title, string_view extensions, string_view fn_defaul
 // -----------------------------------------------------------------------------
 // Opens the file browser to save multiple files
 // -----------------------------------------------------------------------------
-std::tuple<string, string> saveFiles(string_view title, string_view extensions)
+static std::tuple<string, string> saveFiles(string_view title, string_view extensions)
 {
 	filedialog::FDInfo inf;
 	if (filedialog::saveFiles(inf, title, extensions, currentWindow()))
@@ -138,43 +138,41 @@ std::tuple<string, string> saveFiles(string_view title, string_view extensions)
 // -----------------------------------------------------------------------------
 // Registers the UI namespace with lua
 // -----------------------------------------------------------------------------
-void registerUINamespace(sol::state& lua)
+void registerUINamespace(lua_State* lua)
 {
-	auto ui = lua.create_named_table("UI");
+	auto ui = luabridge::getGlobalNamespace(lua).beginNamespace("UI");
 
 	// Constants
 	// -------------------------------------------------------------------------
-	ui.set("MB_ICON_INFO", sol::property([]() { return MessageBoxIcon::Info; }));
-	ui.set("MB_ICON_QUESTION", sol::property([]() { return MessageBoxIcon::Question; }));
-	ui.set("MB_ICON_WARNING", sol::property([]() { return MessageBoxIcon::Warning; }));
-	ui.set("MB_ICON_ERROR", sol::property([]() { return MessageBoxIcon::Error; }));
+	ui.addProperty("MB_ICON_INFO", [] { return static_cast<int>(MessageBoxIcon::Info); });
+	ui.addProperty("MB_ICON_QUESTION", [] { return static_cast<int>(MessageBoxIcon::Question); });
+	ui.addProperty("MB_ICON_WARNING", [] { return static_cast<int>(MessageBoxIcon::Warning); });
+	ui.addProperty("MB_ICON_ERROR", [] { return static_cast<int>(MessageBoxIcon::Error); });
 
 	// Functions
 	// -------------------------------------------------------------------------
-	ui.set_function(
-		"MessageBox",
-		sol::overload(&messageBox, [](const string& title, const string& message) { messageBox(title, message); }));
-	ui.set_function("MessageBoxExt", &messageBoxExtended);
-	ui.set_function("PromptString", &promptString);
-	ui.set_function("PromptNumber", &promptNumber);
-	ui.set_function("PromptYesNo", &promptYesNo);
-	ui.set_function("PromptOpenFile", &browseFile);
-	ui.set_function("PromptOpenFiles", &browseFiles);
-	ui.set_function(
+	ui.addFunction(
+		"MessageBox", &messageBox, [](const string& title, const string& message) { messageBox(title, message); });
+	ui.addFunction("MessageBoxExt", &messageBoxExtended);
+	ui.addFunction("PromptString", &promptString);
+	ui.addFunction("PromptNumber", &promptNumber);
+	ui.addFunction("PromptYesNo", &promptYesNo);
+	ui.addFunction("PromptOpenFile", &browseFile);
+	ui.addFunction("PromptOpenFiles", &browseFiles);
+	ui.addFunction(
 		"PromptSaveFile",
-		sol::overload(
-			&saveFile, [](string_view title, string_view extensions) { return saveFile(title, extensions); }));
-	ui.set_function("PromptSaveFiles", &saveFiles);
-	ui.set_function(
+		&saveFile,
+		[](string_view title, string_view extensions) { return saveFile(title, extensions); });
+	ui.addFunction("PromptSaveFiles", &saveFiles);
+	ui.addFunction(
 		"ShowSplash",
-		sol::overload(
-			[](const string& message) { ui::showSplash(message, false, currentWindow()); },
-			[](const string& message, bool progress) { ui::showSplash(message, progress, currentWindow()); }));
-	ui.set_function("HideSplash", &ui::hideSplash);
-	ui.set_function("UpdateSplash", &ui::updateSplash);
-	ui.set_function("SplashProgress", &ui::getSplashProgress);
-	ui.set_function("SetSplashMessage", &ui::setSplashMessage);
-	ui.set_function("SetSplashProgressMessage", &ui::setSplashProgressMessage);
-	ui.set_function("SetSplashProgress", sol::resolve<void(float)>(ui::setSplashProgress));
+		[](const string& message) { ui::showSplash(message, false, currentWindow()); },
+		[](const string& message, bool progress) { ui::showSplash(message, progress, currentWindow()); });
+	ui.addFunction("HideSplash", &ui::hideSplash);
+	ui.addFunction("UpdateSplash", &ui::updateSplash);
+	ui.addFunction("SplashProgress", &ui::getSplashProgress);
+	ui.addFunction("SetSplashMessage", &ui::setSplashMessage);
+	ui.addFunction("SetSplashProgressMessage", &ui::setSplashProgressMessage);
+	ui.addFunction("SetSplashProgress", luabridge::overload<float>(ui::setSplashProgress));
 }
 } // namespace slade::lua

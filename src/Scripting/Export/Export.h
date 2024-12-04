@@ -1,45 +1,42 @@
 #pragma once
 
-#include "thirdparty/sol/forward.hpp"
+struct lua_State;
 
 namespace slade::lua
 {
 // Namespaces ------------------------------------------------------------------
-void registerAppNamespace(sol::state& lua);
-void registerGameNamespace(sol::state& lua);
-void registerArchivesNamespace(sol::state& lua);
-void registerUINamespace(sol::state& lua);
-void registerGraphicsNamespace(sol::state& lua);
+void registerAppNamespace(lua_State* lua);
+void registerGameNamespace(lua_State* lua);
+void registerArchivesNamespace(lua_State* lua);
+void registerUINamespace(lua_State* lua);
+void registerGraphicsNamespace(lua_State* lua);
 
 
 // Types -----------------------------------------------------------------------
-void registerMiscTypes(sol::state& lua);
-void registerGameTypes(sol::state& lua);
+void registerMiscTypes(lua_State* lua);
+void registerGameTypes(lua_State* lua);
 
 // Archive
-void registerArchive(sol::state& lua);
-void registerArchiveEntry(sol::state& lua);
-void registerEntryType(sol::state& lua);
-void registerArchiveTypes(sol::state& lua);
+void registerArchive(lua_State* lua);
+void registerArchiveEntry(lua_State* lua);
+void registerEntryType(lua_State* lua);
+void registerArchiveTypes(lua_State* lua);
 
 // Graphics
-void registerImageConvertOptionsType(sol::state& lua);
-void registerImageFormatType(sol::state& lua);
-void registerImageDrawOptionsType(sol::state& lua);
-void registerImageType(sol::state& lua);
-void registerCTexturePatchTypes(sol::state& lua);
-void registerCTextureType(sol::state& lua);
-void registerPatchTableType(sol::state& lua);
-void registerTextureXListType(sol::state& lua);
-void registerTranslationType(sol::state& lua);
-void registerGraphicsTypes(sol::state& lua);
+void registerImageType(lua_State* lua);
+void registerCTexturePatchTypes(lua_State* lua);
+void registerCTextureType(lua_State* lua);
+void registerPatchTableType(lua_State* lua);
+void registerTextureXListType(lua_State* lua);
+void registerTranslationType(lua_State* lua);
+void registerGraphicsTypes(lua_State* lua);
 
 // MapEditor
-void registerMapObject(sol::state& lua);
-void registerMapVertex(sol::state& lua);
-void registerMapLine(sol::state& lua);
-void registerMapSide(sol::state& lua);
-void registerMapSector(sol::state& lua);
-void registerMapThing(sol::state& lua);
-void registerMapEditorTypes(sol::state& lua);
+void registerMapObject(lua_State* lua);
+void registerMapVertex(lua_State* lua);
+void registerMapLine(lua_State* lua);
+void registerMapSide(lua_State* lua);
+void registerMapSector(lua_State* lua);
+void registerMapThing(lua_State* lua);
+void registerMapEditorTypes(lua_State* lua);
 } // namespace slade::lua

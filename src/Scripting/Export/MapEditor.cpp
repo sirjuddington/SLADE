@@ -36,18 +36,14 @@
 #include "MapEditor/Item.h"
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
-#include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
-#include "SLADEMap/MapObject/MapSide.h"
-#include "SLADEMap/MapObject/MapThing.h"
-#include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapObjectList/SideList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
-#include "thirdparty/sol/sol.hpp"
+#include "Scripting/LuaBridge.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -65,26 +61,26 @@ namespace slade::lua
 // -----------------------------------------------------------------------------
 // Registers the Map type with lua
 // -----------------------------------------------------------------------------
-void registerSLADEMap(sol::state& lua)
+static void registerSLADEMap(lua_State* lua)
 {
 	// Create ArchiveFormat type, no constructor
-	auto lua_map = lua.new_usertype<SLADEMap>("Map", "new", sol::no_constructor);
+	auto lua_map = luabridge::getGlobalNamespace(lua).beginClass<SLADEMap>("Map");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_map.set("name", sol::property(&SLADEMap::mapName));
-	lua_map.set("udmfNamespace", sol::property(&SLADEMap::udmfNamespace));
-	lua_map.set("vertices", sol::property([](SLADEMap& self) { return self.vertices().all(); }));
-	lua_map.set("linedefs", sol::property([](SLADEMap& self) { return self.lines().all(); }));
-	lua_map.set("sidedefs", sol::property([](SLADEMap& self) { return self.sides().all(); }));
-	lua_map.set("sectors", sol::property([](SLADEMap& self) { return self.sectors().all(); }));
-	lua_map.set("things", sol::property([](SLADEMap& self) { return self.things().all(); }));
+	lua_map.addProperty("name", &SLADEMap::mapName);
+	lua_map.addProperty("udmfNamespace", &SLADEMap::udmfNamespace);
+	lua_map.addProperty("vertices", [](SLADEMap& self) { return self.vertices().all(); });
+	lua_map.addProperty("linedefs", [](SLADEMap& self) { return self.lines().all(); });
+	lua_map.addProperty("sidedefs", [](SLADEMap& self) { return self.sides().all(); });
+	lua_map.addProperty("sectors", [](SLADEMap& self) { return self.sectors().all(); });
+	lua_map.addProperty("things", [](SLADEMap& self) { return self.things().all(); });
 }
 
 // -----------------------------------------------------------------------------
 // Selects or deselects [object] in the map editor [self]
 // -----------------------------------------------------------------------------
-void selectMapObject(MapEditContext& self, MapObject* object, bool select)
+static void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 {
 	if (object)
 		self.selection().select({ static_cast<int>(object->index()), mapeditor::itemTypeFromObject(object) }, select);
@@ -93,7 +89,7 @@ void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 // -----------------------------------------------------------------------------
 // Sets the map editor [mode] in the map editor [self]
 // -----------------------------------------------------------------------------
-void setEditMode(MapEditContext& self, Mode mode, SectorMode sector_mode = SectorMode::Both)
+static void setEditMode(MapEditContext& self, Mode mode, SectorMode sector_mode = SectorMode::Both)
 {
 	self.setEditMode(mode);
 	if (mode == Mode::Sectors)
@@ -103,67 +99,62 @@ void setEditMode(MapEditContext& self, Mode mode, SectorMode sector_mode = Secto
 // -----------------------------------------------------------------------------
 // Registers the MapEditor type with lua
 // -----------------------------------------------------------------------------
-void registerMapEditor(sol::state& lua)
+static void registerMapEditor(lua_State* lua)
 {
 	// Create MapEditor type, no constructor
-	auto lua_mapeditor = lua.new_usertype<MapEditContext>("MapEditor", "new", sol::no_constructor);
+	auto lua_mapeditor = luabridge::getGlobalNamespace(lua).beginClass<MapEditContext>("MapEditor");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_mapeditor.set("editMode", sol::property(&MapEditContext::editMode));
-	lua_mapeditor.set("sectorEditMode", sol::property(&MapEditContext::sectorEditMode));
-	lua_mapeditor.set("gridSize", sol::property(&MapEditContext::gridSize));
-	lua_mapeditor.set("map", sol::property(&MapEditContext::map));
+	lua_mapeditor.addProperty("editMode", &MapEditContext::editMode);
+	lua_mapeditor.addProperty("sectorEditMode", &MapEditContext::sectorEditMode);
+	lua_mapeditor.addProperty("gridSize", &MapEditContext::gridSize);
+	lua_mapeditor.addProperty("map", &MapEditContext::map);
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_mapeditor.set("MODE_VERTICES", sol::property([]() { return Mode::Vertices; }));
-	lua_mapeditor.set("MODE_LINES", sol::property([]() { return Mode::Lines; }));
-	lua_mapeditor.set("MODE_SECTORS", sol::property([]() { return Mode::Sectors; }));
-	lua_mapeditor.set("MODE_THINGS", sol::property([]() { return Mode::Things; }));
-	lua_mapeditor.set("MODE_VISUAL", sol::property([]() { return Mode::Visual; }));
-	lua_mapeditor.set("SECTORMODE_BOTH", sol::property([]() { return SectorMode::Both; }));
-	lua_mapeditor.set("SECTORMODE_FLOOR", sol::property([]() { return SectorMode::Floor; }));
-	lua_mapeditor.set("SECTORMODE_CEILING", sol::property([]() { return SectorMode::Ceiling; }));
+	lua_mapeditor.addStaticProperty("MODE_VERTICES", [] { return static_cast<int>(Mode::Vertices); });
+	lua_mapeditor.addStaticProperty("MODE_LINES", [] { return static_cast<int>(Mode::Lines); });
+	lua_mapeditor.addStaticProperty("MODE_SECTORS", [] { return static_cast<int>(Mode::Sectors); });
+	lua_mapeditor.addStaticProperty("MODE_THINGS", [] { return static_cast<int>(Mode::Things); });
+	lua_mapeditor.addStaticProperty("MODE_VISUAL", [] { return static_cast<int>(Mode::Visual); });
+	lua_mapeditor.addStaticProperty("SECTORMODE_BOTH", [] { return static_cast<int>(SectorMode::Both); });
+	lua_mapeditor.addStaticProperty("SECTORMODE_FLOOR", [] { return static_cast<int>(SectorMode::Floor); });
+	lua_mapeditor.addStaticProperty("SECTORMODE_CEILING", [] { return static_cast<int>(SectorMode::Ceiling); });
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_mapeditor.set_function(
+	lua_mapeditor.addFunction(
 		"SelectedVertices",
-		sol::overload(
-			[](MapEditContext& self, bool try_hilight) { return self.selection().selectedVertices(try_hilight); },
-			[](MapEditContext& self) { return self.selection().selectedVertices(false); }));
-	lua_mapeditor.set_function(
+		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedVertices(try_hilight); },
+		[](MapEditContext& self) { return self.selection().selectedVertices(false); });
+	lua_mapeditor.addFunction(
 		"SelectedLines",
-		sol::overload(
-			[](MapEditContext& self, bool try_hilight) { return self.selection().selectedLines(try_hilight); },
-			[](MapEditContext& self) { return self.selection().selectedLines(false); }));
-	lua_mapeditor.set_function(
+		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedLines(try_hilight); },
+		[](MapEditContext& self) { return self.selection().selectedLines(false); });
+	lua_mapeditor.addFunction(
 		"SelectedSectors",
-		sol::overload(
-			[](MapEditContext& self, bool try_hilight) { return self.selection().selectedSectors(try_hilight); },
-			[](MapEditContext& self) { return self.selection().selectedSectors(false); }));
-	lua_mapeditor.set_function(
+		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedSectors(try_hilight); },
+		[](MapEditContext& self) { return self.selection().selectedSectors(false); });
+	lua_mapeditor.addFunction(
 		"SelectedThings",
-		sol::overload(
-			[](MapEditContext& self, bool try_hilight) { return self.selection().selectedThings(try_hilight); },
-			[](MapEditContext& self) { return self.selection().selectedThings(false); }));
-	lua_mapeditor.set_function("ClearSelection", [](MapEditContext& self) { self.selection().clear(); });
-	lua_mapeditor.set_function(
+		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedThings(try_hilight); },
+		[](MapEditContext& self) { return self.selection().selectedThings(false); });
+	lua_mapeditor.addFunction("ClearSelection", [](MapEditContext& self) { self.selection().clear(); });
+	lua_mapeditor.addFunction(
 		"Select",
-		sol::overload(
-			&selectMapObject, [](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); }));
-	lua_mapeditor.set_function(
+		&selectMapObject,
+		[](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); });
+	lua_mapeditor.addFunction(
 		"SetEditMode",
-		sol::overload(
-			[](MapEditContext& self, Mode mode) { setEditMode(self, mode); },
-			[](MapEditContext& self, Mode mode, SectorMode sector_mode) { setEditMode(self, mode, sector_mode); }));
+		[](MapEditContext& self, Mode mode) { setEditMode(self, mode); },
+		[](MapEditContext& self, Mode mode, SectorMode sector_mode) { setEditMode(self, mode, sector_mode); });
 }
 
 // -----------------------------------------------------------------------------
 // Registers various MapEditor-related types with lua
 // -----------------------------------------------------------------------------
-void registerMapEditorTypes(sol::state& lua)
+void registerMapEditorTypes(lua_State* lua)
 {
 	registerMapEditor(lua);
 	registerSLADEMap(lua);

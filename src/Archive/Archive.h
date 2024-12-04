@@ -28,7 +28,7 @@ struct ArchiveSearchOptions
 	}
 };
 
-class Archive
+class Archive : public std::enable_shared_from_this<Archive>
 {
 	friend class ArchiveFormatHandler;
 

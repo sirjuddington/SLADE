@@ -1,7 +1,6 @@
 #pragma once
 
-#include "thirdparty/sol/forward.hpp"
-
+struct lua_State;
 class wxWindow;
 
 namespace slade
@@ -29,7 +28,7 @@ namespace lua
 	bool runEntryScript(const string& script, vector<ArchiveEntry*>& entries);
 	bool runMapScript(const string& script, SLADEMap* map);
 
-	sol::state& state();
+	lua_State* state();
 
 	wxWindow* currentWindow();
 	void      setCurrentWindow(wxWindow* window);

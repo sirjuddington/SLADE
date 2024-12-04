@@ -32,7 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Graphics/Translation.h"
-#include "thirdparty/sol/sol.hpp"
+#include "Scripting/Export/Export.h"
+#include "Scripting/LuaBridge.h"
 
 using namespace slade;
 
@@ -47,131 +48,124 @@ namespace slade::lua
 // -----------------------------------------------------------------------------
 // Registers the TransRange type (and TransRange* sub-types) with lua
 // -----------------------------------------------------------------------------
-void registerTranslationRangeTypes(sol::state& lua)
+static void registerTranslationRangeTypes(lua_State* lua)
 {
 	// -------------------------------------------------------------------------
 	// TransRange
 	// -------------------------------------------------------------------------
-	auto lua_trange = lua.new_usertype<TransRange>("TransRange", "new", sol::no_constructor);
+	auto lua_trange = luabridge::getGlobalNamespace(lua).beginClass<TransRange>("TransRange");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_trange.set("type", sol::property(&TransRange::type));
-	lua_trange.set("rangeStart", sol::property(&TransRange::start, &TransRange::setStart));
-	lua_trange.set("rangeEnd", sol::property(&TransRange::end, &TransRange::setEnd));
+	lua_trange.addProperty("type", &TransRange::type);
+	lua_trange.addProperty("rangeStart", &TransRange::start, &TransRange::setStart);
+	lua_trange.addProperty("rangeEnd", &TransRange::end, &TransRange::setEnd);
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_trange.set_function("AsText", &TransRange::asText);
-	lua_trange.set_function("AsPaletteRange", [](TransRange& self) { return dynamic_cast<TransRangePalette*>(&self); });
-	lua_trange.set_function("AsColourRange", [](TransRange& self) { return dynamic_cast<TransRangeColour*>(&self); });
-	lua_trange.set_function("AsDesatRange", [](TransRange& self) { return dynamic_cast<TransRangeDesat*>(&self); });
-	lua_trange.set_function("AsBlendRange", [](TransRange& self) { return dynamic_cast<TransRangeBlend*>(&self); });
-	lua_trange.set_function("AsTintRange", [](TransRange& self) { return dynamic_cast<TransRangeTint*>(&self); });
-	lua_trange.set_function("AsSpecialRange", [](TransRange& self) { return dynamic_cast<TransRangeSpecial*>(&self); });
+	lua_trange.addFunction("AsText", &TransRange::asText);
+	lua_trange.addFunction("AsPaletteRange", [](TransRange& self) { return dynamic_cast<TransRangePalette*>(&self); });
+	lua_trange.addFunction("AsColourRange", [](TransRange& self) { return dynamic_cast<TransRangeColour*>(&self); });
+	lua_trange.addFunction("AsDesatRange", [](TransRange& self) { return dynamic_cast<TransRangeDesat*>(&self); });
+	lua_trange.addFunction("AsBlendRange", [](TransRange& self) { return dynamic_cast<TransRangeBlend*>(&self); });
+	lua_trange.addFunction("AsTintRange", [](TransRange& self) { return dynamic_cast<TransRangeTint*>(&self); });
+	lua_trange.addFunction("AsSpecialRange", [](TransRange& self) { return dynamic_cast<TransRangeSpecial*>(&self); });
 
 
 	// -------------------------------------------------------------------------
 	// TransRangePalette
 	// -------------------------------------------------------------------------
-	auto lua_trange_pal = lua.new_usertype<TransRangePalette>(
-		"TransRangePalette", "new", sol::no_constructor, sol::base_classes, sol::bases<TransRange>());
+	auto lua_trange_pal = luabridge::getGlobalNamespace(lua).deriveClass<TransRangePalette, TransRange>(
+		"TransRangePalette");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_trange_pal.set("destStart", sol::property(&TransRangePalette::dStart, &TransRangePalette::setDStart));
-	lua_trange_pal.set("destEnd", sol::property(&TransRangePalette::dEnd, &TransRangePalette::setDEnd));
+	lua_trange_pal.addProperty("destStart", &TransRangePalette::dStart, &TransRangePalette::setDStart);
+	lua_trange_pal.addProperty("destEnd", &TransRangePalette::dEnd, &TransRangePalette::setDEnd);
 
 
 	// -------------------------------------------------------------------------
 	// TransRangeColour
 	// -------------------------------------------------------------------------
-	auto lua_trange_col = lua.new_usertype<TransRangeColour>(
-		"TransRangeColour", "new", sol::no_constructor, sol::base_classes, sol::bases<TransRange>());
+	auto lua_trange_col = luabridge::getGlobalNamespace(lua).deriveClass<TransRangeColour, TransRange>(
+		"TransRangeColour");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_trange_col.set("startColour", sol::property(&TransRangeColour::startColour, &TransRangeColour::setStartColour));
-	lua_trange_col.set("endColour", sol::property(&TransRangeColour::endColour, &TransRangeColour::setEndColour));
+	lua_trange_col.addProperty("startColour", &TransRangeColour::startColour, &TransRangeColour::setStartColour);
+	lua_trange_col.addProperty("endColour", &TransRangeColour::endColour, &TransRangeColour::setEndColour);
 
 
 	// -------------------------------------------------------------------------
 	// TransRangeDesat
 	// -------------------------------------------------------------------------
-	auto lua_trange_desat = lua.new_usertype<TransRangeDesat>(
-		"TransRangeDesat", "new", sol::no_constructor, sol::base_classes, sol::bases<TransRange>());
+	auto lua_trange_desat = luabridge::getGlobalNamespace(lua).deriveClass<TransRangeDesat, TransRange>(
+		"TransRangeDesat");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_trange_desat.set(
+	lua_trange_desat.addProperty(
 		"startR",
-		sol::property(
-			[](TransRangeDesat& self) { return self.rgbStart().r; },
-			[](TransRangeDesat& self, float r) { self.setRGBStart(r, self.rgbStart().g, self.rgbStart().b); }));
-	lua_trange_desat.set(
+		[](TransRangeDesat& self) { return self.rgbStart().r; },
+		[](TransRangeDesat& self, float r) { self.setRGBStart(r, self.rgbStart().g, self.rgbStart().b); });
+	lua_trange_desat.addProperty(
 		"startG",
-		sol::property(
-			[](TransRangeDesat& self) { return self.rgbStart().g; },
-			[](TransRangeDesat& self, float g) { self.setRGBStart(self.rgbStart().r, g, self.rgbStart().b); }));
-	lua_trange_desat.set(
+		[](TransRangeDesat& self) { return self.rgbStart().g; },
+		[](TransRangeDesat& self, float g) { self.setRGBStart(self.rgbStart().r, g, self.rgbStart().b); });
+	lua_trange_desat.addProperty(
 		"startB",
-		sol::property(
-			[](TransRangeDesat& self) { return self.rgbStart().b; },
-			[](TransRangeDesat& self, float b) { self.setRGBStart(self.rgbStart().r, self.rgbStart().g, b); }));
-	lua_trange_desat.set(
+		[](TransRangeDesat& self) { return self.rgbStart().b; },
+		[](TransRangeDesat& self, float b) { self.setRGBStart(self.rgbStart().r, self.rgbStart().g, b); });
+	lua_trange_desat.addProperty(
 		"endR",
-		sol::property(
-			[](TransRangeDesat& self) { return self.rgbEnd().r; },
-			[](TransRangeDesat& self, float r) { self.setRGBEnd(r, self.rgbEnd().g, self.rgbEnd().b); }));
-	lua_trange_desat.set(
+		[](TransRangeDesat& self) { return self.rgbEnd().r; },
+		[](TransRangeDesat& self, float r) { self.setRGBEnd(r, self.rgbEnd().g, self.rgbEnd().b); });
+	lua_trange_desat.addProperty(
 		"endG",
-		sol::property(
-			[](TransRangeDesat& self) { return self.rgbEnd().g; },
-			[](TransRangeDesat& self, float g) { self.setRGBEnd(self.rgbEnd().r, g, self.rgbEnd().b); }));
-	lua_trange_desat.set(
+		[](TransRangeDesat& self) { return self.rgbEnd().g; },
+		[](TransRangeDesat& self, float g) { self.setRGBEnd(self.rgbEnd().r, g, self.rgbEnd().b); });
+	lua_trange_desat.addProperty(
 		"endB",
-		sol::property(
-			[](TransRangeDesat& self) { return self.rgbEnd().b; },
-			[](TransRangeDesat& self, float b) { self.setRGBEnd(self.rgbEnd().r, self.rgbEnd().g, b); }));
+		[](TransRangeDesat& self) { return self.rgbEnd().b; },
+		[](TransRangeDesat& self, float b) { self.setRGBEnd(self.rgbEnd().r, self.rgbEnd().g, b); });
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_trange_desat.set_function("SetStartRGB", &TransRangeDesat::setRGBStart);
-	lua_trange_desat.set_function("SetEndRGB", &TransRangeDesat::setRGBEnd);
+	lua_trange_desat.addFunction("SetStartRGB", &TransRangeDesat::setRGBStart);
+	lua_trange_desat.addFunction("SetEndRGB", &TransRangeDesat::setRGBEnd);
 
 
 	// -------------------------------------------------------------------------
 	// TransRangeBlend
 	// -------------------------------------------------------------------------
-	auto lua_trange_blend = lua.new_usertype<TransRangeBlend>(
-		"TransRangeBlend", "new", sol::no_constructor, sol::base_classes, sol::bases<TransRange>());
+	auto lua_trange_blend = luabridge::getGlobalNamespace(lua).deriveClass<TransRangeBlend, TransRange>(
+		"TransRangeBlend");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_trange_blend.set("colour", sol::property(&TransRangeBlend::colour, &TransRangeBlend::setColour));
+	lua_trange_blend.addProperty("colour", &TransRangeBlend::colour, &TransRangeBlend::setColour);
 
 
 	// -------------------------------------------------------------------------
 	// TransRangeTint
 	// -------------------------------------------------------------------------
-	auto lua_trange_tint = lua.new_usertype<TransRangeTint>(
-		"TransRangeTint", "new", sol::no_constructor, sol::base_classes, sol::bases<TransRange>());
+	auto lua_trange_tint = luabridge::getGlobalNamespace(lua).deriveClass<TransRangeTint, TransRange>("TransRangeTint");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_trange_tint.set("colour", sol::property(&TransRangeTint::colour, &TransRangeTint::setColour));
-	lua_trange_tint.set("amount", sol::property(&TransRangeTint::amount, &TransRangeTint::setAmount));
+	lua_trange_tint.addProperty("colour", &TransRangeTint::colour, &TransRangeTint::setColour);
+	lua_trange_tint.addProperty("amount", &TransRangeTint::amount, &TransRangeTint::setAmount);
 
 
 	// -------------------------------------------------------------------------
 	// TransRangeSpecial
 	// -------------------------------------------------------------------------
-	auto lua_trange_special = lua.new_usertype<TransRangeSpecial>(
-		"TransRangeSpecial", "new", sol::no_constructor, sol::base_classes, sol::bases<TransRange>());
+	auto lua_trange_special = luabridge::getGlobalNamespace(lua).deriveClass<TransRangeSpecial, TransRange>(
+		"TransRangeSpecial");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_trange_special.set("special", sol::property(&TransRangeSpecial::special, &TransRangeSpecial::setSpecial));
+	lua_trange_special.addProperty("special", &TransRangeSpecial::special, &TransRangeSpecial::setSpecial);
 }
 
 // -----------------------------------------------------------------------------
@@ -179,75 +173,90 @@ void registerTranslationRangeTypes(sol::state& lua)
 // initial range being from [range_start] to [range_end].
 // Returns the TransRange that was added (cast to type T)
 // -----------------------------------------------------------------------------
-template<typename T> T* addTranslationRange(Translation& self, TransRange::Type type, int range_start, int range_end)
+template<typename T>
+static T* addTranslationRange(Translation& self, TransRange::Type type, int range_start, int range_end)
 {
 	return dynamic_cast<T*>(self.addRange(type, -1, range_start, range_end));
 }
 
 // -----------------------------------------------------------------------------
+// Returns all the translation ranges in Translation [self] as a vector of
+// raw pointers (luabridge doesn't support unique_ptr in vectors)
+// -----------------------------------------------------------------------------
+static vector<TransRange*> translationRanges(const Translation& self)
+{
+	vector<TransRange*> ranges;
+	for (const auto& range : self.ranges())
+		ranges.push_back(range.get());
+	return ranges;
+}
+
+// -----------------------------------------------------------------------------
 // Registers the Translation type with lua
 // -----------------------------------------------------------------------------
-void registerTranslationType(sol::state& lua)
+void registerTranslationType(lua_State* lua)
 {
-	auto lua_translation = lua.new_usertype<Translation>("Translation", "new", sol::constructors<Translation()>());
+	auto lua_translation = luabridge::getGlobalNamespace(lua).beginClass<Translation>("Translation");
+	lua_translation.addConstructor<void()>();
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_translation.set("ranges", sol::property(&Translation::ranges));
-	lua_translation.set("rangeCount", sol::property(&Translation::nRanges));
-	lua_translation.set("standardName", sol::property(&Translation::builtInName, &Translation::setBuiltInName));
-	lua_translation.set(
-		"desatAmount", sol::property(&Translation::desaturationAmount, &Translation::setDesaturationAmount));
+	lua_translation.addProperty("ranges", translationRanges);
+	lua_translation.addProperty("rangeCount", &Translation::nRanges);
+	lua_translation.addProperty("standardName", &Translation::builtInName, &Translation::setBuiltInName);
+	lua_translation.addProperty("desatAmount", &Translation::desaturationAmount, &Translation::setDesaturationAmount);
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_translation.set("RANGE_PALETTE", sol::property([]() { return TransRange::Type::Palette; }));
-	lua_translation.set("RANGE_COLOUR", sol::property([]() { return TransRange::Type::Colour; }));
-	lua_translation.set("RANGE_DESAT", sol::property([]() { return TransRange::Type::Desat; }));
-	lua_translation.set("RANGE_BLEND", sol::property([]() { return TransRange::Type::Blend; }));
-	lua_translation.set("RANGE_TINT", sol::property([]() { return TransRange::Type::Tint; }));
-	lua_translation.set("RANGE_SPECIAL", sol::property([]() { return TransRange::Type::Special; }));
+	ADD_CLASS_CONSTANT(lua_translation, "RANGE_PALETTE", TransRange::Type::Palette);
+	ADD_CLASS_CONSTANT(lua_translation, "RANGE_COLOUR", TransRange::Type::Colour);
+	ADD_CLASS_CONSTANT(lua_translation, "RANGE_DESAT", TransRange::Type::Desat);
+	ADD_CLASS_CONSTANT(lua_translation, "RANGE_BLEND", TransRange::Type::Blend);
+	ADD_CLASS_CONSTANT(lua_translation, "RANGE_TINT", TransRange::Type::Tint);
+	ADD_CLASS_CONSTANT(lua_translation, "RANGE_SPECIAL", TransRange::Type::Special);
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_translation.set_function("Range", &Translation::range);
-	lua_translation.set_function("Parse", &Translation::parse);
-	lua_translation.set_function("AddRange", &Translation::parseRange);
-	lua_translation.set_function(
+	lua_translation.addFunction("Range", &Translation::range);
+	lua_translation.addFunction("Parse", &Translation::parse);
+	lua_translation.addFunction("AddRange", &Translation::parseRange);
+	lua_translation.addFunction(
 		"AddPaletteRange",
 		[](Translation& self, int range_start, int range_end)
 		{ return addTranslationRange<TransRangePalette>(self, TransRange::Type::Palette, range_start, range_end); });
-	lua_translation.set_function(
+	lua_translation.addFunction(
 		"AddColourRange",
 		[](Translation& self, int range_start, int range_end)
 		{ return addTranslationRange<TransRangeColour>(self, TransRange::Type::Colour, range_start, range_end); });
-	lua_translation.set_function(
+	lua_translation.addFunction(
 		"AddDesatRange",
 		[](Translation& self, int range_start, int range_end)
 		{ return addTranslationRange<TransRangeDesat>(self, TransRange::Type::Desat, range_start, range_end); });
-	lua_translation.set_function(
+	lua_translation.addFunction(
 		"AddBlendRange",
 		[](Translation& self, int range_start, int range_end)
 		{ return addTranslationRange<TransRangeBlend>(self, TransRange::Type::Blend, range_start, range_end); });
-	lua_translation.set_function(
+	lua_translation.addFunction(
 		"AddTintRange",
 		[](Translation& self, int range_start, int range_end)
 		{ return addTranslationRange<TransRangeTint>(self, TransRange::Type::Tint, range_start, range_end); });
-	lua_translation.set_function(
+	lua_translation.addFunction(
 		"AddSpecialRange",
 		[](Translation& self, int range_start, int range_end)
 		{ return addTranslationRange<TransRangeSpecial>(self, TransRange::Type::Special, range_start, range_end); });
-	lua_translation.set_function("ReadTable", &Translation::read);
-	lua_translation.set_function("AsText", &Translation::asText);
-	lua_translation.set_function("Clear", &Translation::clear);
-	lua_translation.set_function("Copy", &Translation::copy);
-	lua_translation.set_function("IsEmpty", &Translation::isEmpty);
-	lua_translation.set_function(
+	lua_translation.addFunction(
+		"ReadTable",
+		[](Translation& self, const string& data) { self.read(reinterpret_cast<const uint8_t*>(data.data())); });
+	lua_translation.addFunction("AsText", &Translation::asText);
+	lua_translation.addFunction("Clear", &Translation::clear);
+	lua_translation.addFunction("Copy", &Translation::copy);
+	lua_translation.addFunction("IsEmpty", &Translation::isEmpty);
+	lua_translation.addFunction(
 		"Translate",
-		sol::overload(
-			&Translation::translate, [](Translation& self, const ColRGBA& col) { return self.translate(col); }));
-	lua_translation.set_function("RemoveRange", &Translation::removeRange);
-	lua_translation.set_function("SwapRanges", &Translation::swapRanges);
+		&Translation::translate,
+		[](Translation& self, const ColRGBA& col) { return self.translate(col); });
+	lua_translation.addFunction("RemoveRange", &Translation::removeRange);
+	lua_translation.addFunction("SwapRanges", &Translation::swapRanges);
 
 	registerTranslationRangeTypes(lua);
 }

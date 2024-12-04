@@ -8,8 +8,9 @@
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Scripting/Export/Export.h"
 #include "Scripting/Lua.h"
-#include "thirdparty/sol/sol.hpp"
+#include "Scripting/LuaBridge.h"
 
 using namespace slade;
 
@@ -19,7 +20,7 @@ namespace slade::lua
 // Sets a boolean property [key] on the MapObject [self] to [value].
 // Also checks if the property [key] is allowed to be modified by scripts
 // -----------------------------------------------------------------------------
-void objectSetBoolProperty(MapObject& self, string_view key, bool value)
+static void objectSetBoolProperty(MapObject& self, string_view key, bool value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setBoolProperty(key, value);
@@ -31,7 +32,7 @@ void objectSetBoolProperty(MapObject& self, string_view key, bool value)
 // Sets an int property [key] on the MapObject [self] to [value].
 // Also checks if the property [key] is allowed to be modified by scripts
 // -----------------------------------------------------------------------------
-void objectSetIntProperty(MapObject& self, string_view key, int value)
+static void objectSetIntProperty(MapObject& self, string_view key, int value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setIntProperty(key, value);
@@ -43,7 +44,7 @@ void objectSetIntProperty(MapObject& self, string_view key, int value)
 // Sets a float property [key] on the MapObject [self] to [value].
 // Also checks if the property [key] is allowed to be modified by scripts
 // -----------------------------------------------------------------------------
-void objectSetFloatProperty(MapObject& self, string_view key, double value)
+static void objectSetFloatProperty(MapObject& self, string_view key, double value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setFloatProperty(key, value);
@@ -55,7 +56,7 @@ void objectSetFloatProperty(MapObject& self, string_view key, double value)
 // Sets a string property [key] on the MapObject [self] to [value].
 // Also checks if the property [key] is allowed to be modified by scripts
 // -----------------------------------------------------------------------------
-void objectSetStringProperty(MapObject& self, string_view key, string_view value)
+static void objectSetStringProperty(MapObject& self, string_view key, string_view value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setStringProperty(key, value);
@@ -66,44 +67,40 @@ void objectSetStringProperty(MapObject& self, string_view key, string_view value
 // -----------------------------------------------------------------------------
 // Registers the MapVertex type with lua
 // -----------------------------------------------------------------------------
-void registerMapVertex(sol::state& lua)
+void registerMapVertex(lua_State* lua)
 {
 	// Create MapVertex type, MapObject base class, no constructor
-	auto lua_vertex = lua.new_usertype<MapVertex>(
-		"MapVertex", sol::base_classes, sol::bases<MapObject>(), "new", sol::no_constructor);
+	auto lua_vertex = luabridge::getGlobalNamespace(lua).deriveClass<MapVertex, MapObject>("MapVertex");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_vertex.set("x", &MapVertex::xPos);
-	lua_vertex.set("y", &MapVertex::yPos);
-	lua_vertex.set("connectedLines", &MapVertex::connectedLines);
+	lua_vertex.addProperty("x", &MapVertex::xPos);
+	lua_vertex.addProperty("y", &MapVertex::yPos);
+	lua_vertex.addProperty("connectedLines", &MapVertex::connectedLines);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a table of needed textures for map line [self]
 // -----------------------------------------------------------------------------
-sol::table lineVisibleTextures(MapLine& self)
+static luabridge::LuaRef lineVisibleTextures(MapLine& self)
 {
 	auto needs_tex = self.needsTexture();
-	return lua::state().create_table_with(
-		"frontUpper",
-		(needs_tex & MapLine::Part::FrontUpper) != 0,
-		"frontMiddle",
-		(needs_tex & MapLine::Part::FrontMiddle) != 0,
-		"frontLower",
-		(needs_tex & MapLine::Part::FrontLower) != 0,
-		"backUpper",
-		(needs_tex & MapLine::Part::BackUpper) != 0,
-		"backMiddle",
-		(needs_tex & MapLine::Part::BackMiddle) != 0,
-		"backLower",
-		(needs_tex & MapLine::Part::BackLower) != 0);
+
+	auto table           = luabridge::newTable(lua::state());
+	table["frontUpper"]  = (needs_tex & MapLine::Part::FrontUpper) != 0;
+	table["frontMiddle"] = (needs_tex & MapLine::Part::FrontMiddle) != 0;
+	table["frontLower"]  = (needs_tex & MapLine::Part::FrontLower) != 0;
+	table["backUpper"]   = (needs_tex & MapLine::Part::BackUpper) != 0;
+	table["backMiddle"]  = (needs_tex & MapLine::Part::BackMiddle) != 0;
+	table["backLower"]   = (needs_tex & MapLine::Part::BackLower) != 0;
+
+	return table;
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the [flag] on map line [self] is set
 // -----------------------------------------------------------------------------
-bool lineFlag(MapLine& self, const string& flag)
+static bool lineFlag(MapLine& self, const string& flag)
 {
 	if (game::configuration().lineBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
@@ -114,86 +111,83 @@ bool lineFlag(MapLine& self, const string& flag)
 // -----------------------------------------------------------------------------
 // Registers the MapLine type with lua
 // -----------------------------------------------------------------------------
-void registerMapLine(sol::state& lua)
+void registerMapLine(lua_State* lua)
 {
 	// Create MapLine type, MapObject base class, no constructor
-	auto lua_line = lua.new_usertype<MapLine>(
-		"MapLine", sol::base_classes, sol::bases<MapObject>(), "new", sol::no_constructor);
+	auto lua_line = luabridge::getGlobalNamespace(lua).deriveClass<MapLine, MapObject>("MapLine");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_line.set("x1", sol::property(&MapLine::x1));
-	lua_line.set("y1", sol::property(&MapLine::y1));
-	lua_line.set("x2", sol::property(&MapLine::x2));
-	lua_line.set("y2", sol::property(&MapLine::y2));
-	lua_line.set("vertex1", sol::property(&MapLine::v1));
-	lua_line.set("vertex2", sol::property(&MapLine::v2));
-	lua_line.set("side1", sol::property(&MapLine::s1));
-	lua_line.set("side2", sol::property(&MapLine::s2));
-	lua_line.set("special", sol::property(&MapLine::special));
-	lua_line.set("length", sol::property(&MapLine::length));
+	lua_line.addProperty("x1", &MapLine::x1);
+	lua_line.addProperty("y1", &MapLine::y1);
+	lua_line.addProperty("x2", &MapLine::x2);
+	lua_line.addProperty("y2", &MapLine::y2);
+	lua_line.addProperty("vertex1", &MapLine::v1);
+	lua_line.addProperty("vertex2", &MapLine::v2);
+	lua_line.addProperty("side1", &MapLine::s1);
+	lua_line.addProperty("side2", &MapLine::s2);
+	lua_line.addProperty("special", &MapLine::special);
+	lua_line.addProperty("length", [](MapLine& self) { return self.length(); });
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_line.set_function("Flag", &lineFlag);
-	lua_line.set_function("Flip", sol::overload(&MapLine::flip, [](MapLine& self) { self.flip(true); }));
-	lua_line.set_function("VisibleTextures", &lineVisibleTextures);
+	lua_line.addFunction("Flag", &lineFlag);
+	lua_line.addFunction("Flip", &MapLine::flip, [](MapLine& self) { self.flip(true); });
+	lua_line.addFunction("VisibleTextures", &lineVisibleTextures);
 }
 
 // -----------------------------------------------------------------------------
 // Registers the MapSide type with lua
 // -----------------------------------------------------------------------------
-void registerMapSide(sol::state& lua)
+void registerMapSide(lua_State* lua)
 {
 	// Create MapSide type, MapObject base class, no constructor
-	auto lua_side = lua.new_usertype<MapSide>(
-		"MapSide", sol::base_classes, sol::bases<MapObject>(), "new", sol::no_constructor);
+	auto lua_side = luabridge::getGlobalNamespace(lua).deriveClass<MapSide, MapObject>("MapSide");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_side.set("sector", sol::property(&MapSide::sector));
-	lua_side.set("line", sol::property(&MapSide::parentLine));
-	lua_side.set("textureBottom", sol::property(&MapSide::texLower));
-	lua_side.set("textureMiddle", sol::property(&MapSide::texMiddle));
-	lua_side.set("textureTop", sol::property(&MapSide::texUpper));
-	lua_side.set("offsetX", sol::property(&MapSide::texOffsetX));
-	lua_side.set("offsetY", sol::property(&MapSide::texOffsetY));
+	lua_side.addProperty("sector", &MapSide::sector);
+	lua_side.addProperty("line", &MapSide::parentLine);
+	lua_side.addProperty("textureBottom", &MapSide::texLower);
+	lua_side.addProperty("textureMiddle", &MapSide::texMiddle);
+	lua_side.addProperty("textureTop", &MapSide::texUpper);
+	lua_side.addProperty("offsetX", &MapSide::texOffsetX);
+	lua_side.addProperty("offsetY", &MapSide::texOffsetY);
 }
 
 // -----------------------------------------------------------------------------
 // Registers the MapSector type with lua
 // -----------------------------------------------------------------------------
-void registerMapSector(sol::state& lua)
+void registerMapSector(lua_State* lua)
 {
 	// Create MapSector type, MapObject base class, no constructor
-	auto lua_sector = lua.new_usertype<MapSector>(
-		"MapSector", sol::base_classes, sol::bases<MapObject>(), "new", sol::no_constructor);
+	auto lua_sector = luabridge::getGlobalNamespace(lua).deriveClass<MapSector, MapObject>("MapSector");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_sector.set("textureFloor", sol::property([](MapSector& self) { return self.floor().texture; }));
-	lua_sector.set("textureCeiling", sol::property([](MapSector& self) { return self.ceiling().texture; }));
-	lua_sector.set("heightFloor", sol::property([](MapSector& self) { return self.floor().height; }));
-	lua_sector.set("heightCeiling", sol::property([](MapSector& self) { return self.ceiling().height; }));
-	lua_sector.set("lightLevel", sol::property(&MapSector::lightLevel));
-	lua_sector.set("special", sol::property(&MapSector::special));
-	lua_sector.set("id", sol::property(&MapSector::tag));
-	lua_sector.set("connectedSides", sol::property([](MapSector& self) { return self.connectedSides(); }));
-	lua_sector.set("colour", sol::property(&MapSector::colourAt));
-	lua_sector.set("fogColour", sol::property(&MapSector::fogColour));
-	lua_sector.set("planeFloor", sol::property([](MapSector& self) { return self.floor().plane; }));
-	lua_sector.set("planeCeiling", sol::property([](MapSector& self) { return self.ceiling().plane; }));
+	lua_sector.addProperty("textureFloor", [](MapSector& self) { return self.floor().texture; });
+	lua_sector.addProperty("textureCeiling", [](MapSector& self) { return self.ceiling().texture; });
+	lua_sector.addProperty("heightFloor", [](MapSector& self) { return self.floor().height; });
+	lua_sector.addProperty("heightCeiling", [](MapSector& self) { return self.ceiling().height; });
+	lua_sector.addProperty("lightLevel", &MapSector::lightLevel);
+	lua_sector.addProperty("special", &MapSector::special);
+	lua_sector.addProperty("id", &MapSector::tag);
+	lua_sector.addProperty("connectedSides", [](MapSector& self) { return self.connectedSides(); });
+	lua_sector.addProperty("colour", [](MapSector& self) { return self.colourAt(); });
+	lua_sector.addProperty("fogColour", [](MapSector& self) { return self.fogColour(); });
+	lua_sector.addProperty("planeFloor", [](MapSector& self) { return self.floor().plane; });
+	lua_sector.addProperty("planeCeiling", [](MapSector& self) { return self.ceiling().plane; });
 	// TODO: bbox (need to export BBox struct first)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_sector.set_function("ContainsPoint", &MapSector::containsPoint);
+	lua_sector.addFunction("ContainsPoint", &MapSector::containsPoint);
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if [flag] is set on map thing [self]
 // -----------------------------------------------------------------------------
-bool thingFlag(MapThing& self, const string& flag)
+static bool thingFlag(MapThing& self, const string& flag)
 {
 	if (game::configuration().thingBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
@@ -204,59 +198,58 @@ bool thingFlag(MapThing& self, const string& flag)
 // -----------------------------------------------------------------------------
 // Registers the MapThing type with lua
 // -----------------------------------------------------------------------------
-void registerMapThing(sol::state& lua)
+void registerMapThing(lua_State* lua)
 {
-	auto lua_thing = lua.new_usertype<MapThing>(
-		"MapThing", sol::base_classes, sol::bases<MapObject>(), "new", sol::no_constructor);
+	auto lua_thing = luabridge::getGlobalNamespace(lua).deriveClass<MapThing, MapObject>("MapThing");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_thing.set("x", sol::property(&MapThing::xPos));
-	lua_thing.set("y", sol::property(&MapThing::yPos));
-	lua_thing.set("type", sol::property(&MapThing::type));
-	lua_thing.set("angle", sol::property(&MapThing::angle));
+	lua_thing.addProperty("x", &MapThing::xPos);
+	lua_thing.addProperty("y", &MapThing::yPos);
+	lua_thing.addProperty("type", &MapThing::type);
+	lua_thing.addProperty("angle", &MapThing::angle);
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_thing.set_function("Flag", &thingFlag);
-	lua_thing.set_function("SetAnglePoint", &MapThing::setAnglePoint);
+	lua_thing.addFunction("Flag", &thingFlag);
+	lua_thing.addFunction("SetAnglePoint", &MapThing::setAnglePoint);
 }
 
 // -----------------------------------------------------------------------------
 // Registers the MapObject type with lua
 // -----------------------------------------------------------------------------
-void registerMapObject(sol::state& lua)
+void registerMapObject(lua_State* lua)
 {
-	auto lua_mapobject = lua.new_usertype<MapObject>("MapObject", "new", sol::no_constructor);
+	auto lua_mapobject = luabridge::getGlobalNamespace(lua).beginClass<MapObject>("MapObject");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_mapobject.set("index", sol::property(&MapObject::index));
-	lua_mapobject.set("type", sol::property(&MapObject::objType));
-	lua_mapobject.set("typeName", sol::property(&MapObject::typeName));
+	lua_mapobject.addProperty("index", &MapObject::index);
+	lua_mapobject.addProperty("type", &MapObject::objType);
+	lua_mapobject.addProperty("typeName", &MapObject::typeName);
 	// lua_mapobject["properties"] = sol::property(&MapObject::props); // TODO: Need to export MobjPropertyList first
 
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_mapobject.set("TYPE_OBJECT", sol::property([]() { return MapObject::Type::Object; }));
-	lua_mapobject.set("TYPE_VERTEX", sol::property([]() { return MapObject::Type::Vertex; }));
-	lua_mapobject.set("TYPE_LINE", sol::property([]() { return MapObject::Type::Line; }));
-	lua_mapobject.set("TYPE_SIDE", sol::property([]() { return MapObject::Type::Side; }));
-	lua_mapobject.set("TYPE_SECTOR", sol::property([]() { return MapObject::Type::Sector; }));
-	lua_mapobject.set("TYPE_THING", sol::property([]() { return MapObject::Type::Thing; }));
+	lua_mapobject.addStaticProperty("TYPE_OBJECT", [] { return static_cast<int>(MapObject::Type::Object); });
+	lua_mapobject.addStaticProperty("TYPE_VERTEX", [] { return static_cast<int>(MapObject::Type::Vertex); });
+	lua_mapobject.addStaticProperty("TYPE_LINE", [] { return static_cast<int>(MapObject::Type::Line); });
+	lua_mapobject.addStaticProperty("TYPE_SIDE", [] { return static_cast<int>(MapObject::Type::Side); });
+	lua_mapobject.addStaticProperty("TYPE_SECTOR", [] { return static_cast<int>(MapObject::Type::Sector); });
+	lua_mapobject.addStaticProperty("TYPE_THING", [] { return static_cast<int>(MapObject::Type::Thing); });
 
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_mapobject.set_function("HasProperty", &MapObject::hasProp);
-	lua_mapobject.set_function("BoolProperty", &MapObject::boolProperty);
-	lua_mapobject.set_function("IntProperty", &MapObject::intProperty);
-	lua_mapobject.set_function("FloatProperty", &MapObject::floatProperty);
-	lua_mapobject.set_function("StringProperty", &MapObject::stringProperty);
-	lua_mapobject.set_function("SetBoolProperty", &objectSetBoolProperty);
-	lua_mapobject.set_function("SetIntProperty", &objectSetIntProperty);
-	lua_mapobject.set_function("SetFloatProperty", &objectSetFloatProperty);
-	lua_mapobject.set_function("SetStringProperty", &objectSetStringProperty);
+	lua_mapobject.addFunction("HasProperty", &MapObject::hasProp);
+	lua_mapobject.addFunction("BoolProperty", &MapObject::boolProperty);
+	lua_mapobject.addFunction("IntProperty", &MapObject::intProperty);
+	lua_mapobject.addFunction("FloatProperty", &MapObject::floatProperty);
+	lua_mapobject.addFunction("StringProperty", &MapObject::stringProperty);
+	lua_mapobject.addFunction("SetBoolProperty", &objectSetBoolProperty);
+	lua_mapobject.addFunction("SetIntProperty", &objectSetIntProperty);
+	lua_mapobject.addFunction("SetFloatProperty", &objectSetFloatProperty);
+	lua_mapobject.addFunction("SetStringProperty", &objectSetStringProperty);
 }
 } // namespace slade::lua
