@@ -337,6 +337,8 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		new_archive = std::make_shared<ChasmBinArchive>();
 	else if (SiNArchive::isSiNArchive(std_fn))
 		new_archive = std::make_shared<SiNArchive>();
+	else if (VWadArchive::isVWadArchive(std_fn))
+		new_archive = std::make_shared<VWadArchive>();
 	else
 	{
 		// Unsupported format
@@ -442,6 +444,8 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 		new_archive = std::make_shared<ChasmBinArchive>();
 	else if (SiNArchive::isSiNArchive(entry->data()))
 		new_archive = std::make_shared<SiNArchive>();
+	else if (VWadArchive::isVWadArchive(entry->data()))
+		new_archive = std::make_shared<VWadArchive>();
 	else
 	{
 		// Unsupported format
@@ -549,6 +553,8 @@ shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 		new_archive = std::make_shared<GrpArchive>();
 	else if (format == "pak")
 		new_archive = std::make_shared<PakArchive>();
+	else if (format == "vwad")
+		new_archive = std::make_shared<VWadArchive>();
 	else
 	{
 		global::error = fmt::format("Can not create archive of format: {}", format);

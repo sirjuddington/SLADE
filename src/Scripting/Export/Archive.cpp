@@ -216,6 +216,7 @@ void registerArchive(sol::state& lua)
 #define REGISTER_ARCHIVE(type) lua.new_usertype<type>(#type, sol::base_classes, sol::bases<Archive>())
 	REGISTER_ARCHIVE(WadArchive);
 	REGISTER_ARCHIVE(ZipArchive);
+	REGISTER_ARCHIVE(VWadArchive);
 	REGISTER_ARCHIVE(LibArchive);
 	REGISTER_ARCHIVE(DatArchive);
 	REGISTER_ARCHIVE(ResArchive);
@@ -389,6 +390,16 @@ void registerArchivesNamespace(sol::state& lua)
 	archives["AddBookmark"]    = [](ArchiveEntry* entry) { app::archiveManager().addBookmark(entry->getShared()); };
 	archives["RemoveBookmark"] = [](ArchiveEntry* entry) { app::archiveManager().deleteBookmark(entry); };
 	archives["EntryType"]      = &EntryType::fromId;
+
+	// Create a VWad namespace within the Archives namespace
+	auto vwad = archives.create_named("VWad");
+	vwad["CreatePrivateKey"] = []() { return vwad::generatePrivateKey(); };
+	vwad["DerivePublicKey"] = [](string_view privkey) { return vwad::derivePublicKey(privkey); };
+	vwad["GetAuthor"] = [](Archive& archive) { VWadArchive &vwad = (VWadArchive &)archive; return vwad.getAuthor(); };
+	vwad["GetTitle"] = [](Archive& archive) { VWadArchive &vwad = (VWadArchive &)archive; return vwad.getTitle(); };
+	vwad["GetComment"] = [](Archive& archive) { VWadArchive &vwad = (VWadArchive &)archive; return vwad.getComment(); };
+	vwad["GetPublicKey"] = [](Archive& archive) { VWadArchive &vwad = (VWadArchive &)archive; return vwad.getPublicKey(); };
+	vwad["IsSigned"] = [](Archive& archive) { VWadArchive &vwad = (VWadArchive &)archive; return vwad.isSigned(); };
 }
 
 // -----------------------------------------------------------------------------

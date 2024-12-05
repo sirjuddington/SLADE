@@ -18,6 +18,15 @@ public:
 	int isThisFormat(MemChunk& mc) override { return ZipArchive::isZipArchive(mc) ? MATCH_TRUE : MATCH_FALSE; }
 };
 
+class VWadDataFormat : public EntryDataFormat
+{
+public:
+	VWadDataFormat() : EntryDataFormat("archive_vwad") {}
+	~VWadDataFormat() = default;
+
+	int isThisFormat(MemChunk& mc) override { return VWadArchive::isVWadArchive(mc) ? MATCH_TRUE : MATCH_FALSE; }
+};
+
 class LibDataFormat : public EntryDataFormat
 {
 public:

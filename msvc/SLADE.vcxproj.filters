@@ -336,6 +336,9 @@
     <ClCompile Include="..\src\Archive\Formats\TarArchive.cpp">
       <Filter>Archive\Formats</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Archive\Formats\VWadArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\Archive\Formats\Wad2Archive.cpp">
       <Filter>Archive\Formats</Filter>
     </ClCompile>
@@ -1224,6 +1227,9 @@
       <Filter>Archive\Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Archive\Formats\TarArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Archive\Formats\VWadArchive.h">
       <Filter>Archive\Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Archive\Formats\Wad2Archive.h">
