@@ -40,6 +40,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -61,6 +62,70 @@ time_t     script_start_time;
 
 // -----------------------------------------------------------------------------
 //
+// LuaException Class
+//
+// -----------------------------------------------------------------------------
+namespace slade::lua
+{
+class LuaException : public std::runtime_error
+{
+public:
+	LuaException(string_view type, const string& message) : std::runtime_error(message), error_type_{ type } {}
+
+	const string& errorType() const { return error_type_; }
+
+private:
+	string error_type_;
+};
+} // namespace slade::lua
+
+
+// -----------------------------------------------------------------------------
+//
+// Environment Struct Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Environment constructor
+// -----------------------------------------------------------------------------
+lua::Environment::Environment(lua_State* state)
+{
+	if (state)
+		apply(state);
+}
+
+// -----------------------------------------------------------------------------
+// Environment destructor
+// -----------------------------------------------------------------------------
+lua::Environment::~Environment()
+{
+	if (state)
+	{
+		// Revert back to the global environment if this was applied
+		lua_pushglobaltable(state);
+		lua_setglobal(state, "_ENV");
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new environment table inheriting from global and applies it to the
+// given lua [state_to_apply]
+// -----------------------------------------------------------------------------
+void lua::Environment::apply(lua_State* state_to_apply)
+{
+	if (state)
+		return; // Can't apply twice
+
+	luaL_dostring(state_to_apply, "return setmetatable({}, {__index = _G}); ");
+	lua_setupvalue(state_to_apply, -2, 1);
+
+	state = state_to_apply;
+}
+
+
+// -----------------------------------------------------------------------------
+//
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
@@ -69,65 +134,88 @@ namespace slade::lua
 // -----------------------------------------------------------------------------
 // Resets error information
 // -----------------------------------------------------------------------------
-void resetError()
+static void resetError()
 {
-	script_error.type    = "No";
-	script_error.message = "No error(s) occurred";
-	script_error.line_no = 0;
+	script_error.type    = "Unknown";
+	script_error.message = "An unknown error occurred";
+	script_error.line_no = -1;
 }
 
 // -----------------------------------------------------------------------------
 // Logs the given [error]
 // -----------------------------------------------------------------------------
-void logError(const Error& error)
+static void logError(const Error& error)
 {
-	if (error.line_no >= 0)
-		log::error("{} Error running Lua script: {}: {}", error.type, error.line_no, error.message);
-	else
+	auto error_lines = strutil::splitV(error.message, '\n');
+	if (error_lines.empty())
+	{
 		log::error("{} Error running Lua script: {}", error.type, error.message);
+		return;
+	}
+
+	if (error.line_no >= 0)
+		log::error("{} Error running Lua script: {}: {}", error.type, error.line_no, error_lines[0]);
+	else
+		log::error("{} Error running Lua script: {}", error.type, error_lines[0]);
+
+	if (error_lines.size() > 1)
+	{
+		for (size_t a = 1; a < error_lines.size(); a++)
+			log::error("{}", error_lines[a]);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Removes the source string from an error message
+// -----------------------------------------------------------------------------
+static string removeSourceStringFromError(string_view error_message, string_view source = "script")
+{
+	auto begin = error_message.find("[string");
+	auto end   = error_message.find(']', begin);
+
+	if (begin != string_view::npos && end != string_view::npos)
+	{
+		auto result = fmt::format("{}[{}]{}", error_message.substr(0, begin), source, error_message.substr(end + 1));
+		return removeSourceStringFromError(result);
+	}
+
+	return string{ error_message };
 }
 
 // -----------------------------------------------------------------------------
 // Processes error information from [result]
 // -----------------------------------------------------------------------------
-// void processError(const sol::protected_function_result& result)
-//{
-//	// Error Type
-//	script_error.type = sol::to_string(result.status());
-//	strutil::capitalizeIP(script_error.type);
-//
-//	// Error Message
-//	sol::error  error     = result;
-//	string_view error_msg = error.what();
-//
-//	// Find Line No.
-//	if (auto pos = error_msg.find("]:"); pos != string_view::npos)
-//	{
-//		auto pos_ln_end      = error_msg.find(':', pos + 2);
-//		script_error.line_no = strutil::asInt(error_msg.substr(pos + 2, pos_ln_end - pos + 2)); // Line No.
-//		script_error.message = error_msg.substr(pos_ln_end + 2);                                // Actual error message
-//	}
-//	else
-//	{
-//		// No line number in error message
-//		script_error.line_no = -1;
-//		script_error.message = error_msg;
-//	}
-//}
+static void processError(string_view type, string_view message)
+{
+	// Error Type
+	script_error.type = type;
+	strutil::capitalizeIP(script_error.type);
+
+	// Cut out [string ...] from error message
+	script_error.message = removeSourceStringFromError(message);
+
+	// Find Line No.
+	if (auto pos = script_error.message.find("]:"); pos != string_view::npos)
+	{
+		auto pos_ln_end      = script_error.message.find(':', pos + 2);
+		script_error.line_no = strutil::asInt(script_error.message.substr(pos + 2, pos_ln_end - pos + 2)); // Line No.
+		if (script_error.message[0] == '[')
+			script_error.message = script_error.message.substr(pos_ln_end + 2); // Actual error message
+	}
+	else
+	{
+		// No line number in error message
+		script_error.line_no = -1;
+	}
+}
 
 // -----------------------------------------------------------------------------
-// Handles a lua error from a sol2 protected_function_result [pfr]
-// -----------------------------------------------------------------------------
-// sol::protected_function_result handleError(lua_State* L, sol::protected_function_result pfr)
-//{
-//	processError(pfr);
-//	logError(script_error);
+// Taken from the luabridge tests
 //
-//	return pfr;
-//}
-
-// Traceback function, when a runtime error occurs, this will append the call stack to the error message
-int traceback(lua_State* L)
+// Traceback function, when a runtime error occurs, this will append the call
+// stack to the error message
+// -----------------------------------------------------------------------------
+static int traceback(lua_State* L)
 {
 	// look up Lua's 'debug.traceback' function
 	lua_getglobal(L, "debug");
@@ -148,7 +236,7 @@ int traceback(lua_State* L)
 	lua_pushinteger(L, 2);
 	lua_call(L, 2, 1);
 
-	lua_getglobal(L, "print");
+	/*lua_getglobal(L, "print");
 	if (!lua_isfunction(L, -1))
 	{
 		lua_pop(L, 1);
@@ -156,12 +244,17 @@ int traceback(lua_State* L)
 	}
 
 	lua_pushvalue(L, 1);
-	lua_call(L, 1, 0);
+	lua_call(L, 1, 0);*/
 
 	return 1;
 }
 
-bool runLua(const std::string& script, lua_State* state = nullptr)
+// -----------------------------------------------------------------------------
+// Runs the given [script] in the given lua [state] with the given (optional)
+// [environment].
+// If [state] is nullptr, the global lua state is used
+// -----------------------------------------------------------------------------
+static bool runLua(const std::string& script, lua_State* state = nullptr, Environment* environment = nullptr)
 {
 	if (!state)
 		state = lua;
@@ -174,14 +267,17 @@ bool runLua(const std::string& script, lua_State* state = nullptr)
 	{
 		auto error_string = lua_tostring(state, -1);
 
-		throw std::runtime_error(error_string ? error_string : "Unknown lua compilation error");
+		throw LuaException("Syntax", error_string ? error_string : "Unknown lua compilation error");
 	}
 
-	if (lua_pcall(state, 0, 0, -2) != LUABRIDGE_LUA_OK)
+	if (environment)
+		environment->apply(state);
+
+	if (lua_pcall(state, 0, LUA_MULTRET, -2) != LUABRIDGE_LUA_OK)
 	{
 		auto error_string = lua_tostring(state, -1);
 
-		throw std::runtime_error(error_string ? error_string : "Unknown lua runtime error");
+		throw LuaException("Runtime", error_string ? error_string : "Unknown lua runtime error");
 	}
 
 	return true;
@@ -189,38 +285,43 @@ bool runLua(const std::string& script, lua_State* state = nullptr)
 
 // -----------------------------------------------------------------------------
 // Template function for Lua::run*Script functions.
-// Loads [script] and runs the 'Execute' function in the script, passing
+// Loads [script] and runs the function returned from the script, passing
 // [param] to the function
 // -----------------------------------------------------------------------------
-template<class T> bool runEditorScript(const string& script, T param)
+template<class T> static bool runEditorScript(const string& script, T param)
 {
-	// resetError();
-	// script_start_time = wxDateTime::Now().GetTicks();
+	resetError();
+	script_start_time = wxDateTime::Now().GetTicks();
 
-	//// Load script
-	// sol::environment sandbox(lua, sol::create, lua.globals());
-	// auto             load_result = lua.script(script, sandbox, handleError);
-	// if (!load_result.valid())
-	//{
-	//	processError(load_result);
-	//	logError(script_error);
-	//	return false;
-	// }
+	bool        success = true;
+	Environment env;
+	try
+	{
+		runLua(script, lua, &env);
 
-	//// Run script execute function
-	// sol::protected_function        func(sandbox["Execute"]);
-	// sol::protected_function_result exec_result = func(param);
-	// if (!exec_result.valid())
-	//{
-	//	sol::error error = exec_result;
-	//	processError(exec_result);
-	//	logError(script_error);
-	//	return false;
-	// }
+		auto exec_func = luabridge::LuaRef::fromStack(lua);
+		if (exec_func.isFunction())
+		{
+			exec_func(param);
+		}
+		else
+		{
+			script_error.type    = "Runtime";
+			script_error.message = "Editor script must return a function";
+			script_error.line_no = -1;
+			logError(script_error);
+			success = false;
+		}
+	}
+	catch (const LuaException& ex)
+	{
+		processError(ex.errorType(), ex.what());
+		logError(script_error);
+		success = false;
+	}
 
-	return true;
+	return success;
 }
-
 } // namespace slade::lua
 
 // -----------------------------------------------------------------------------
@@ -228,6 +329,12 @@ template<class T> bool runEditorScript(const string& script, T param)
 // -----------------------------------------------------------------------------
 bool lua::init()
 {
+	if (lua)
+	{
+		lua_close(lua);
+		lua = nullptr;
+	}
+
 	// Create global lua state
 	lua = luaL_newstate();
 
@@ -260,12 +367,12 @@ bool lua::init()
 	// Override default lua print to redirect it to the script log
 	auto new_print =
 		"function  print (...)\
-        local line = ''\
-        for i,v in ipairs({...}) do\
-           line = line .. tostring(v) .. ' '\
-        end\
-        App.LogMessage(line)\
-     end";
+		local line = ''\
+		for i,v in ipairs({...}) do\
+		   line = line .. tostring(v) .. ' '\
+		end\
+		App.LogMessage(line)\
+	 end";
 	runLua(new_print, lua);
 
 	return true;
@@ -313,32 +420,25 @@ void lua::showErrorDialog(wxWindow* parent, string_view title, string_view messa
 // -----------------------------------------------------------------------------
 bool lua::run(const string& program)
 {
-	/*resetError();
+	resetError();
 	script_start_time = wxDateTime::Now().GetTicks();
 
-	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto             result = lua.script(program, sandbox, handleError);
-	lua.collect_garbage();
-
-	if (!result.valid())
-	{
-		processError(result);
-		logError(script_error);
-		return false;
-	}*/
-
-	auto thread = lua_newthread(lua);
-
+	bool        success = true;
+	Environment env;
 	try
 	{
-		runLua(program, thread);
+		runLua(program, lua);
 	}
-	catch (const std::exception& ex)
+	catch (const LuaException& ex)
 	{
-		log::error(ex.what());
+		processError(ex.errorType(), ex.what());
+		logError(script_error);
+		success = false;
 	}
 
-	return true;
+	lua_gc(lua, LUA_GCCOLLECT);
+
+	return success;
 }
 
 // -----------------------------------------------------------------------------
@@ -346,25 +446,16 @@ bool lua::run(const string& program)
 // -----------------------------------------------------------------------------
 bool lua::runFile(const string& filename)
 {
-	/*resetError();
-	script_start_time = wxDateTime::Now().GetTicks();
+	string script;
 
-	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto             result = lua.script_file(filename, sandbox, handleError);
-	lua.collect_garbage();
+	if (fileutil::readFileToString(filename, script))
+		return run(script);
 
-	if (!result.valid())
-	{
-		processError(result);
-		logError(script_error);
-		return false;
-	}*/
-
-	return true;
+	return false;
 }
 
 // -----------------------------------------------------------------------------
-// Runs the 'Execute(archive)' function in the given [script], passing [archive]
+// Runs the function returned from the given [script], passing [archive]
 // as the parameter
 // -----------------------------------------------------------------------------
 bool lua::runArchiveScript(const string& script, Archive* archive)
@@ -373,7 +464,7 @@ bool lua::runArchiveScript(const string& script, Archive* archive)
 }
 
 // -----------------------------------------------------------------------------
-// Runs the 'Execute(entries)' function in the given [script], passing [entries]
+// Runs the function returned from the given [script], passing [entries]
 // as the parameter
 // -----------------------------------------------------------------------------
 bool lua::runEntryScript(const string& script, vector<ArchiveEntry*>& entries)
@@ -382,7 +473,7 @@ bool lua::runEntryScript(const string& script, vector<ArchiveEntry*>& entries)
 }
 
 // -----------------------------------------------------------------------------
-// Runs the 'Execute(map)' function in the given [script], passing [map] as the
+// Runs the function returned from the given [script], passing [map] as the
 // parameter
 // -----------------------------------------------------------------------------
 bool lua::runMapScript(const string& script, SLADEMap* map)
@@ -446,6 +537,9 @@ CONSOLE_COMMAND(script_file, 1, true)
 
 CONSOLE_COMMAND(lua_mem, 0, false)
 {
-	// auto mem = lua::state().memory_used();
-	// log::console(fmt::format("Lua state using {} memory", misc::sizeAsString(mem)));
+	auto mem = lua_gc(lua::state(), LUA_GCCOUNT);
+	if (mem < 1024)
+		log::console(fmt::format("Lua state using {} bytes memory", mem));
+	else
+		log::console(fmt::format("Lua state using {} memory", misc::sizeAsString(mem)));
 }

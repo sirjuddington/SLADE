@@ -10,6 +10,16 @@ namespace lua
 	bool init();
 	void close();
 
+	struct Environment
+	{
+		lua_State* state = nullptr;
+
+		Environment(lua_State* state = nullptr);
+		~Environment();
+
+		void apply(lua_State* state_to_apply);
+	};
+
 	struct Error
 	{
 		string type;
