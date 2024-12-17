@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Compression.h"
-#include "thirdparty/zreaders/files.h"
+#include "ZReaders/files.h"
 
 using namespace slade;
 

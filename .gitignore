@@ -43,13 +43,3 @@
 !/dist/makebuild.ps1
 
 CMakeSettings.json
-CMakeFiles/
-Makefile
-src/CMakeFiles/
-src/Makefile
-src/external/CMakeFiles/
-src/external/Makefile
-src/external/lunasvg/3rdparty/plutovg/CMakeFiles/
-src/external/lunasvg/3rdparty/plutovg/Makefile
-src/external/fmt/CMakeFiles/
-src/external/fmt/Makefile

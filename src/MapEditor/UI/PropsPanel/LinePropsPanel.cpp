@@ -214,9 +214,9 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		hbox->Add(btn_new_tag_, 0, wxEXPAND);
 
 		// Bind event
-		btn_new_tag_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e) {
-			text_tag_->setNumber(mapeditor::editContext().map().sectors().firstFreeId());
-		});
+		btn_new_tag_->Bind(
+			wxEVT_COMMAND_BUTTON_CLICKED,
+			[&](wxCommandEvent& e) { text_tag_->setNumber(mapeditor::editContext().map().sectors().firstFreeId()); });
 	}
 
 	// Id
@@ -230,10 +230,13 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		hbox->Add(btn_new_id_ = new wxButton(panel_flags, -1, "New ID"), 0, wxEXPAND);
 
 		// Bind event
-		btn_new_id_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e) {
-			auto& map = mapeditor::editContext().map();
-			text_id_->setNumber(map.lines().firstFreeId(map.currentFormat()));
-		});
+		btn_new_id_->Bind(
+			wxEVT_COMMAND_BUTTON_CLICKED,
+			[&](wxCommandEvent& e)
+			{
+				auto& map = mapeditor::editContext().map();
+				text_id_->setNumber(map.lines().firstFreeId(map.currentFormat()));
+			});
 	}
 
 	return panel_flags;

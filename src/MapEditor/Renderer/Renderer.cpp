@@ -92,7 +92,10 @@ EXTERN_CVAR(Int, vertex_size)
 // Renderer class constructor
 // -----------------------------------------------------------------------------
 Renderer::Renderer(MapEditContext& context) :
-	context_{ context }, renderer_2d_{ &context.map() }, renderer_3d_{ &context.map() }, view_{ true }
+	context_{ context },
+	renderer_2d_{ &context.map() },
+	renderer_3d_{ &context.map() },
+	view_{ true }
 {
 }
 

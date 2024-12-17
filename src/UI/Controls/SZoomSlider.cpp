@@ -83,22 +83,25 @@ void SZoomSlider::setup()
 	GetSizer()->Add(label_zoom_amount_, 0, wxALIGN_CENTER_VERTICAL);
 
 	// Slider change event
-	slider_zoom_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
-		// Update zoom label
-		label_zoom_amount_->SetLabel(wxString::Format("%d%%", zoomPercent()));
+	slider_zoom_->Bind(
+		wxEVT_SLIDER,
+		[&](wxCommandEvent&)
+		{
+			// Update zoom label
+			label_zoom_amount_->SetLabel(wxString::Format("%d%%", zoomPercent()));
 
-		// Zoom gfx/texture canvas and update
-		if (linked_gfx_canvas_)
-		{
-			linked_gfx_canvas_->setScale(zoomFactor());
-			linked_gfx_canvas_->Refresh();
-		}
-		if (linked_texture_canvas_)
-		{
-			linked_texture_canvas_->setScale(zoomFactor());
-			linked_texture_canvas_->redraw(false);
-		}
-	});
+			// Zoom gfx/texture canvas and update
+			if (linked_gfx_canvas_)
+			{
+				linked_gfx_canvas_->setScale(zoomFactor());
+				linked_gfx_canvas_->Refresh();
+			}
+			if (linked_texture_canvas_)
+			{
+				linked_texture_canvas_->setScale(zoomFactor());
+				linked_texture_canvas_->redraw(false);
+			}
+		});
 }
 
 // -----------------------------------------------------------------------------

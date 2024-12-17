@@ -70,6 +70,7 @@ private:
 	template<MapSector::SurfaceType>
 	void applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights) const;
 	template<MapSector::SurfaceType>
-	void applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights) const;
+	void applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
+		const;
 };
 } // namespace slade

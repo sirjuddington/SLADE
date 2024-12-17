@@ -34,12 +34,12 @@
 #include "Game/Configuration.h"
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
+#include "MainEditor/MainEditor.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "Utility/StringUtils.h"
-#include "MainEditor/MainEditor.h"
 
 using namespace slade;
 
@@ -128,7 +128,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	menu_custom_->AppendSeparator();
 	SAction::fromId("ptxt_wrap")->addToMenu(menu_custom_);
 
-	
+
 	custom_menu_name_ = "Text";
 
 

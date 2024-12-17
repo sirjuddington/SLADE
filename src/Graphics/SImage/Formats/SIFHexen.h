@@ -72,7 +72,8 @@ protected:
 		int     width  = 640;
 		int     height = 480;
 
-		union {
+		union
+		{
 			RGBQUAD  color;
 			uint32_t quad;
 		};

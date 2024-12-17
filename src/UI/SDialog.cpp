@@ -76,7 +76,12 @@ SDialog::SDialog(wxWindow* parent, const wxString& title, const wxString& id, in
 SDialog::~SDialog()
 {
 	if (!id_.empty())
-		misc::setWindowInfo(id_, GetClientSize().x * GetContentScaleFactor(), GetClientSize().y * GetContentScaleFactor(), GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
+		misc::setWindowInfo(
+			id_,
+			GetClientSize().x * GetContentScaleFactor(),
+			GetClientSize().y * GetContentScaleFactor(),
+			GetPosition().x * GetContentScaleFactor(),
+			GetPosition().y * GetContentScaleFactor());
 }
 
 // -----------------------------------------------------------------------------

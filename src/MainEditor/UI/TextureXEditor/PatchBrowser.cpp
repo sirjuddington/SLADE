@@ -166,14 +166,16 @@ PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 	items_root_->addChild("Unknown");
 
 	// Update when main palette changed
-	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]() {
-		// Update palette
-		palette_.copyPalette(theMainWindow->paletteChooser()->selectedPalette());
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+		[this]()
+		{
+			// Update palette
+			palette_.copyPalette(theMainWindow->paletteChooser()->selectedPalette());
 
-		// Reload all items
-		reloadItems();
-		Refresh();
-	});
+			// Reload all items
+			reloadItems();
+			Refresh();
+		});
 
 	// Set dialog title
 	wxTopLevelWindow::SetTitle("Browse Patches");

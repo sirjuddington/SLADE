@@ -29,7 +29,7 @@
 // consistently return true on success and false if there were a problem.
 
 
-#include "mus2mid.h"
+#include "Mus2Mid.h"
 
 using namespace slade;
 

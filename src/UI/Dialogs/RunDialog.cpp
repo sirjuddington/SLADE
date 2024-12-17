@@ -186,7 +186,8 @@ private:
 // RunDialog class constructor
 // -----------------------------------------------------------------------------
 RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, bool run_map) :
-	SDialog(parent, "Run", "run", 500, 400), run_map_{ run_map }
+	SDialog(parent, "Run", "run", 500, 400),
+	run_map_{ run_map }
 {
 	// Set dialog icon + title
 	wxutil::setWindowIcon(this, "run");
@@ -273,7 +274,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 		auto exe = executables::gameExe(a);
 		choice_game_exes_->AppendString(exe->name);
 
-		if (exe->id == run_last_exe)
+		if (exe->id == run_last_exe.value)
 			last_index = choice_game_exes_->GetCount() - 1;
 	}
 	if ((int)choice_game_exes_->GetCount() > last_index)

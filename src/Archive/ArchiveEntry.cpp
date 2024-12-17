@@ -62,7 +62,7 @@ unsigned maxEntrySizeBytes()
 	constexpr unsigned MB_TO_BYTES = 1024 * 1024;
 	return max_entry_size_mb * MB_TO_BYTES;
 }
-}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -76,7 +76,10 @@ unsigned maxEntrySizeBytes()
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
-	name_{ name }, upper_name_{ name }, size_{ size }, type_{ EntryType::unknownType() }
+	name_{ name },
+	upper_name_{ name },
+	size_{ size },
+	type_{ EntryType::unknownType() }
 {
 	strutil::upperIP(upper_name_);
 }
@@ -315,7 +318,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 
 	// Remove \ or / if the format supports folders
 	if (format.supports_dirs && (name_.find('/') != string::npos || name_.find('\\') != string::npos))
-		name_   = misc::lumpNameToFileName(name_);
+		name_ = misc::lumpNameToFileName(name_);
 
 	// Remove extension if the format doesn't have them
 	if (!format.names_extensions)

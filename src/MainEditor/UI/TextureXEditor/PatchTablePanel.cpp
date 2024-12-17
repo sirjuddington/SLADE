@@ -68,7 +68,8 @@ EXTERN_CVAR(String, dir_last)
 // PatchTableListView class constructor
 // -----------------------------------------------------------------------------
 PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table) :
-	VirtualListView(parent), patch_table_{ patch_table }
+	VirtualListView(parent),
+	patch_table_{ patch_table }
 {
 	// Add columns
 	InsertColumn(0, "#");
@@ -170,8 +171,8 @@ bool PatchTableListView::usageSort(long left, long right)
 	if (p1.used_in.size() == p2.used_in.size())
 		return left < right;
 	else
-		return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
-                                            p1.used_in.size() < p2.used_in.size();
+		return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size()
+										  : p1.used_in.size() < p2.used_in.size();
 }
 
 // -----------------------------------------------------------------------------
@@ -198,7 +199,9 @@ void PatchTableListView::sortItems()
 // PatchTablePanel class constructor
 // -----------------------------------------------------------------------------
 PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor) :
-	wxPanel(parent, -1), patch_table_{ patch_table }, parent_{ tx_editor }
+	wxPanel(parent, -1),
+	patch_table_{ patch_table },
+	parent_{ tx_editor }
 {
 	// Create controls
 	list_patches_ = new PatchTableListView(this, patch_table);

@@ -198,7 +198,7 @@ void MainWindow::setupLayout()
 {
 	// Create the wxAUI manager & related things
 	aui_mgr_ = new wxAuiManager(this);
-	aui_mgr_->SetArtProvider(new SAuiDockArt());
+	aui_mgr_->SetArtProvider(new SAuiDockArt(this));
 	wxAuiPaneInfo p_inf;
 
 	// Set icon

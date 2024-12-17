@@ -22,7 +22,10 @@ struct DirEntryChange
 	time_t mtime;
 
 	DirEntryChange(Action action = Action::Updated, string_view file = "", string_view entry = "", time_t mtime = 0) :
-		entry_path{ entry }, file_path{ file }, action{ action }, mtime{ mtime }
+		entry_path{ entry },
+		file_path{ file },
+		action{ action },
+		mtime{ mtime }
 	{
 	}
 };
@@ -91,7 +94,9 @@ class DirArchiveTraverser : public wxDirTraverser
 {
 public:
 	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist, bool ignore_hidden) :
-		paths_{ pathlist }, dirs_{ dirlist }, ignore_hidden_{ ignore_hidden }
+		paths_{ pathlist },
+		dirs_{ dirlist },
+		ignore_hidden_{ ignore_hidden }
 	{
 	}
 	~DirArchiveTraverser() override = default;

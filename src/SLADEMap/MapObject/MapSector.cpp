@@ -72,7 +72,9 @@ MapSector::MapSector(
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
 MapSector::MapSector(string_view f_tex, string_view c_tex, const ParseTreeNode* udmf_def) :
-	MapObject(Type::Sector), floor_{ f_tex }, ceiling_{ c_tex }
+	MapObject(Type::Sector),
+	floor_{ f_tex },
+	ceiling_{ c_tex }
 {
 	// Set UDMF defaults
 	light_ = 160;

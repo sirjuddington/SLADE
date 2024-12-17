@@ -840,7 +840,8 @@ class SIFDoomJaguar : public SIFormat
 {
 public:
 	SIFDoomJaguar(int colmajor = 0, string_view id = "doom_jaguar", string_view name = "Doom Jaguar") :
-		SIFormat(id, name, "lmp", 85), colmajor(colmajor)
+		SIFormat(id, name, "lmp", 85),
+		colmajor(colmajor)
 	{
 	}
 	~SIFDoomJaguar() = default;

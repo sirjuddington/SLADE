@@ -253,17 +253,15 @@ void registerImageType(sol::state& lua)
 		[](SImage& self, Translation* t, Palette* p) { return imageApplyTranslation(self, t, p, false); },
 		&imageApplyTranslation);
 	lua_image["DrawPixel"] = sol::overload(
-		&SImage::drawPixel, [](SImage& self, int x, int y, ColRGBA& col, SImage::DrawProps& props) {
-			return self.drawPixel(x, y, col, props, nullptr);
-		});
+		&SImage::drawPixel,
+		[](SImage& self, int x, int y, ColRGBA& col, SImage::DrawProps& props)
+		{ return self.drawPixel(x, y, col, props, nullptr); });
 	lua_image["DrawImage"] = sol::overload(
 		&imageDrawImage,
-		[](SImage& self, int x, int y, SImage& img, SImage::DrawProps& props, Palette* pal_src) {
-			return imageDrawImage(self, x, y, img, props, pal_src, nullptr);
-		},
-		[](SImage& self, int x, int y, SImage& img, SImage::DrawProps& props) {
-			return imageDrawImage(self, x, y, img, props, nullptr, nullptr);
-		});
+		[](SImage& self, int x, int y, SImage& img, SImage::DrawProps& props, Palette* pal_src)
+		{ return imageDrawImage(self, x, y, img, props, pal_src, nullptr); },
+		[](SImage& self, int x, int y, SImage& img, SImage::DrawProps& props)
+		{ return imageDrawImage(self, x, y, img, props, nullptr, nullptr); });
 	lua_image["Colourise"] = sol::overload(
 		[](SImage& self, ColRGBA& col, Palette* pal) { self.colourise(col, pal); },
 		[](SImage& self, ColRGBA& col) { self.colourise(col); });
@@ -341,9 +339,8 @@ void registerPaletteType(sol::state& lua)
 	lua_palette["Illuminate"]         = &Palette::illuminate;
 	lua_palette["Shift"]              = &Palette::shift;
 	lua_palette["Invert"]             = &Palette::invert;
-	lua_palette["Gradient"] = [](Palette& self, const ColRGBA& startC, const ColRGBA& endC, int startI, int endI) {
-		self.setGradient(startI, endI, startC, endC);
-	};
+	lua_palette["Gradient"] = [](Palette& self, const ColRGBA& startC, const ColRGBA& endC, int startI, int endI)
+	{ self.setGradient(startI, endI, startC, endC); };
 }
 
 // -----------------------------------------------------------------------------
@@ -503,24 +500,18 @@ void registerTranslationType(sol::state& lua)
 	lua_translation["Range"]           = &Translation::range;
 	lua_translation["Parse"]           = &Translation::parse;
 	lua_translation["AddRange"]        = &Translation::parseRange;
-	lua_translation["AddPaletteRange"] = [](Translation& self, int range_start, int range_end) {
-		return addTranslationRange<TransRangePalette>(self, TransRange::Type::Palette, range_start, range_end);
-	};
-	lua_translation["AddColourRange"] = [](Translation& self, int range_start, int range_end) {
-		return addTranslationRange<TransRangeColour>(self, TransRange::Type::Colour, range_start, range_end);
-	};
-	lua_translation["AddDesatRange"] = [](Translation& self, int range_start, int range_end) {
-		return addTranslationRange<TransRangeDesat>(self, TransRange::Type::Desat, range_start, range_end);
-	};
-	lua_translation["AddBlendRange"] = [](Translation& self, int range_start, int range_end) {
-		return addTranslationRange<TransRangeBlend>(self, TransRange::Type::Blend, range_start, range_end);
-	};
-	lua_translation["AddTintRange"] = [](Translation& self, int range_start, int range_end) {
-		return addTranslationRange<TransRangeTint>(self, TransRange::Type::Tint, range_start, range_end);
-	};
-	lua_translation["AddSpecialRange"] = [](Translation& self, int range_start, int range_end) {
-		return addTranslationRange<TransRangeSpecial>(self, TransRange::Type::Special, range_start, range_end);
-	};
+	lua_translation["AddPaletteRange"] = [](Translation& self, int range_start, int range_end)
+	{ return addTranslationRange<TransRangePalette>(self, TransRange::Type::Palette, range_start, range_end); };
+	lua_translation["AddColourRange"] = [](Translation& self, int range_start, int range_end)
+	{ return addTranslationRange<TransRangeColour>(self, TransRange::Type::Colour, range_start, range_end); };
+	lua_translation["AddDesatRange"] = [](Translation& self, int range_start, int range_end)
+	{ return addTranslationRange<TransRangeDesat>(self, TransRange::Type::Desat, range_start, range_end); };
+	lua_translation["AddBlendRange"] = [](Translation& self, int range_start, int range_end)
+	{ return addTranslationRange<TransRangeBlend>(self, TransRange::Type::Blend, range_start, range_end); };
+	lua_translation["AddTintRange"] = [](Translation& self, int range_start, int range_end)
+	{ return addTranslationRange<TransRangeTint>(self, TransRange::Type::Tint, range_start, range_end); };
+	lua_translation["AddSpecialRange"] = [](Translation& self, int range_start, int range_end)
+	{ return addTranslationRange<TransRangeSpecial>(self, TransRange::Type::Special, range_start, range_end); };
 	lua_translation["ReadTable"] = &Translation::read;
 	lua_translation["AsText"]    = &Translation::asText;
 	lua_translation["Clear"]     = &Translation::clear;
@@ -789,7 +780,8 @@ void registerGraphicsNamespace(sol::state& lua)
 	// Functions
 	// -------------------------------------------------------------------------
 	gfx["ImageFormat"]     = [](string_view id) { return SIFormat::getFormat(id); };
-	gfx["AllImageFormats"] = []() {
+	gfx["AllImageFormats"] = []()
+	{
 		vector<SIFormat*> formats;
 		SIFormat::putAllFormats(formats);
 		return formats;

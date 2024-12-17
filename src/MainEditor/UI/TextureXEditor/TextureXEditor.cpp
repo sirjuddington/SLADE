@@ -208,14 +208,18 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	Bind(wxEVT_SHOW, &TextureXEditor::onShow, this);
 
 	// Update patch browser & palette when resources are updated or the patch table is modified
-	sc_resources_updated_ = app::resources().signals().resources_updated.connect([this]() {
-		pb_update_ = true;
-		updateTexturePalette();
-	});
-	sc_ptable_modified_   = patch_table_.signals().modified.connect([this]() {
-        pb_update_ = true;
-        updateTexturePalette();
-    });
+	sc_resources_updated_ = app::resources().signals().resources_updated.connect(
+		[this]()
+		{
+			pb_update_ = true;
+			updateTexturePalette();
+		});
+	sc_ptable_modified_ = patch_table_.signals().modified.connect(
+		[this]()
+		{
+			pb_update_ = true;
+			updateTexturePalette();
+		});
 
 	// Update the editor palette if the main palette is changed
 	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(

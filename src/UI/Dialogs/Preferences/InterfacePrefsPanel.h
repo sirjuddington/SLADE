@@ -30,6 +30,7 @@ private:
 	wxChoice*   choice_elist_icon_size_  = nullptr;
 	wxSpinCtrl* spin_elist_icon_pad_     = nullptr;
 	wxChoice*   choice_elist_tree_style_ = nullptr;
+	wxChoice*   choice_windows_darkmode_ = nullptr;
 
 	wxPanel* setupGeneralTab(wxWindow* stc_tabs);
 	wxPanel* setupEntryListTab(wxWindow* stc_tabs);

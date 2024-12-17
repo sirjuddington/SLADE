@@ -26,7 +26,7 @@ public:
 class BMPDataFormat : public EntryDataFormat
 {
 public:
-	BMPDataFormat() : EntryDataFormat("img_bmp"){};
+	BMPDataFormat() : EntryDataFormat("img_bmp") {};
 	~BMPDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -58,7 +58,7 @@ public:
 class GIFDataFormat : public EntryDataFormat
 {
 public:
-	GIFDataFormat() : EntryDataFormat("img_gif"){};
+	GIFDataFormat() : EntryDataFormat("img_gif") {};
 	~GIFDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -79,7 +79,7 @@ public:
 class PCXDataFormat : public EntryDataFormat
 {
 public:
-	PCXDataFormat() : EntryDataFormat("img_pcx"){};
+	PCXDataFormat() : EntryDataFormat("img_pcx") {};
 	~PCXDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -153,7 +153,7 @@ public:
 class TGADataFormat : public EntryDataFormat
 {
 public:
-	TGADataFormat() : EntryDataFormat("img_tga"){};
+	TGADataFormat() : EntryDataFormat("img_tga") {};
 	~TGADataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -201,7 +201,7 @@ public:
 class TIFFDataFormat : public EntryDataFormat
 {
 public:
-	TIFFDataFormat() : EntryDataFormat("img_tiff"){};
+	TIFFDataFormat() : EntryDataFormat("img_tiff") {};
 	~TIFFDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -220,20 +220,20 @@ public:
 		// The value of 42 (0x2A) is present in the next two bytes,
 		// in the given endianness
 		if (42
-			!= (littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[2])) :
-							   wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
+			!= (littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[2]))
+							 : wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
 			return MATCH_FALSE;
 		// First offset must be on a word boundary (therefore, %2 == 0) and
 		// somewhere within the file, but not in the header of course.
 		size_t offset =
-			(littleendian ? wxUINT32_SWAP_ON_BE((const uint32_t)(mc[4])) :
-							wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
+			(littleendian ? wxUINT32_SWAP_ON_BE((const uint32_t)(mc[4]))
+						  : wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
 		if (offset < 8 || offset >= size || offset % 2)
 			return MATCH_FALSE;
 		// Check the first IFD for validity
 		uint16_t numentries =
-			(littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[offset])) :
-							wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
+			(littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[offset]))
+						  : wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
 		if (offset + 6 + (numentries * 12) > size)
 			return MATCH_FALSE;
 		// Okay, it seems valid so far
@@ -244,7 +244,7 @@ public:
 class JPEGDataFormat : public EntryDataFormat
 {
 public:
-	JPEGDataFormat() : EntryDataFormat("img_jpeg"){};
+	JPEGDataFormat() : EntryDataFormat("img_jpeg") {};
 	~JPEGDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -270,7 +270,7 @@ public:
 class ILBMDataFormat : public EntryDataFormat
 {
 public:
-	ILBMDataFormat() : EntryDataFormat("img_ilbm"){};
+	ILBMDataFormat() : EntryDataFormat("img_ilbm") {};
 	~ILBMDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -327,7 +327,7 @@ public:
 class DoomGfxDataFormat : public EntryDataFormat
 {
 public:
-	DoomGfxDataFormat() : EntryDataFormat("img_doom"){};
+	DoomGfxDataFormat() : EntryDataFormat("img_doom") {};
 	~DoomGfxDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -377,7 +377,7 @@ public:
 class DoomGfxAlphaDataFormat : public EntryDataFormat
 {
 public:
-	DoomGfxAlphaDataFormat() : EntryDataFormat("img_doom_alpha"){};
+	DoomGfxAlphaDataFormat() : EntryDataFormat("img_doom_alpha") {};
 	~DoomGfxAlphaDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -433,7 +433,7 @@ public:
 class DoomGfxBetaDataFormat : public EntryDataFormat
 {
 public:
-	DoomGfxBetaDataFormat() : EntryDataFormat("img_doom_beta"){};
+	DoomGfxBetaDataFormat() : EntryDataFormat("img_doom_beta") {};
 	~DoomGfxBetaDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -498,7 +498,7 @@ public:
 class DoomSneaDataFormat : public EntryDataFormat
 {
 public:
-	DoomSneaDataFormat() : EntryDataFormat("img_doom_snea"){};
+	DoomSneaDataFormat() : EntryDataFormat("img_doom_snea") {};
 	~DoomSneaDataFormat() = default;
 
 	/* The following is the documentation about sneas from
@@ -534,7 +534,7 @@ public:
 class DoomArahDataFormat : public EntryDataFormat
 {
 public:
-	DoomArahDataFormat() : EntryDataFormat("img_doom_arah"){};
+	DoomArahDataFormat() : EntryDataFormat("img_doom_arah") {};
 	~DoomArahDataFormat() = default;
 
 	/* This format is used in Doom alpha 0.2. DeuTex doesn't know it,
@@ -571,7 +571,7 @@ class DoomJaguarDataFormat : public EntryDataFormat
 public:
 	DoomJaguarDataFormat(int colmajor = 0, string_view id = "img_doom_jaguar") :
 		EntryDataFormat(id),
-		colmajor(colmajor){};
+		colmajor(colmajor) {};
 	~DoomJaguarDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -610,14 +610,14 @@ private:
 class DoomJaguarColMajorDataFormat : public DoomJaguarDataFormat
 {
 public:
-	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor"){};
+	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor") {};
 	~DoomJaguarColMajorDataFormat() final = default;
 };
 
 class DoomJagTexDataFormat : public EntryDataFormat
 {
 public:
-	DoomJagTexDataFormat() : EntryDataFormat("img_jaguar_texture"){};
+	DoomJagTexDataFormat() : EntryDataFormat("img_jaguar_texture") {};
 	~DoomJagTexDataFormat() = default;
 
 	/* This format is used in the Jaguar Doom IWAD. It can be recognized by the fact the last 320 bytes are a copy of
@@ -645,7 +645,7 @@ public:
 class DoomJagSpriteDataFormat : public EntryDataFormat
 {
 public:
-	DoomJagSpriteDataFormat() : EntryDataFormat("img_jaguar_sprite"){};
+	DoomJagSpriteDataFormat() : EntryDataFormat("img_jaguar_sprite") {};
 	~DoomJagSpriteDataFormat() = default;
 
 	/* This format is used in the Jaguar Doom IWAD. It is an annoying format.
@@ -673,9 +673,9 @@ public:
 		for (size_t w = 0; w < width; ++w)
 			col_offsets[w] = mc.readB16(8 + 2 * w);
 
-		const int result = size < unsigned(4 + col_offsets[width - 1]) ?
-							   MATCH_FALSE :
-							   MATCH_TRUE; // We can't test validity of pixel data here
+		const int result = size < unsigned(4 + col_offsets[width - 1])
+							   ? MATCH_FALSE
+							   : MATCH_TRUE; // We can't test validity of pixel data here
 
 		delete[] col_offsets;
 
@@ -686,7 +686,7 @@ public:
 class DoomPSXDataFormat : public EntryDataFormat
 {
 public:
-	DoomPSXDataFormat() : EntryDataFormat("img_doom_psx"){};
+	DoomPSXDataFormat() : EntryDataFormat("img_doom_psx") {};
 	~DoomPSXDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -714,7 +714,7 @@ public:
 class IMGZDataFormat : public EntryDataFormat
 {
 public:
-	IMGZDataFormat() : EntryDataFormat("img_imgz"){};
+	IMGZDataFormat() : EntryDataFormat("img_imgz") {};
 	~IMGZDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -749,7 +749,7 @@ public:
 class QuakeGfxDataFormat : public EntryDataFormat
 {
 public:
-	QuakeGfxDataFormat() : EntryDataFormat("img_quake"){};
+	QuakeGfxDataFormat() : EntryDataFormat("img_quake") {};
 	~QuakeGfxDataFormat() = default;
 
 	// A data format found while rifling through some Legacy mods,
@@ -776,7 +776,7 @@ public:
 class QuakeSpriteDataFormat : public EntryDataFormat
 {
 public:
-	QuakeSpriteDataFormat() : EntryDataFormat("img_qspr"){};
+	QuakeSpriteDataFormat() : EntryDataFormat("img_qspr") {};
 	~QuakeSpriteDataFormat() = default;
 
 	// A Quake sprite can contain several frames and each frame may contain several pictures.
@@ -851,7 +851,7 @@ public:
 class QuakeTexDataFormat : public EntryDataFormat
 {
 public:
-	QuakeTexDataFormat() : EntryDataFormat("img_quaketex"){};
+	QuakeTexDataFormat() : EntryDataFormat("img_quaketex") {};
 	~QuakeTexDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -877,7 +877,7 @@ public:
 class QuakeIIWalDataFormat : public EntryDataFormat
 {
 public:
-	QuakeIIWalDataFormat() : EntryDataFormat("img_quake2wal"){};
+	QuakeIIWalDataFormat() : EntryDataFormat("img_quake2wal") {};
 	~QuakeIIWalDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -921,7 +921,7 @@ public:
 class ShadowCasterGfxFormat : public EntryDataFormat
 {
 public:
-	ShadowCasterGfxFormat() : EntryDataFormat("img_scgfx"){};
+	ShadowCasterGfxFormat() : EntryDataFormat("img_scgfx") {};
 	~ShadowCasterGfxFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -951,7 +951,7 @@ public:
 class ShadowCasterSpriteFormat : public EntryDataFormat
 {
 public:
-	ShadowCasterSpriteFormat() : EntryDataFormat("img_scsprite"){};
+	ShadowCasterSpriteFormat() : EntryDataFormat("img_scsprite") {};
 	~ShadowCasterSpriteFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1006,7 +1006,7 @@ public:
 class ShadowCasterWallFormat : public EntryDataFormat
 {
 public:
-	ShadowCasterWallFormat() : EntryDataFormat("img_scwall"){};
+	ShadowCasterWallFormat() : EntryDataFormat("img_scwall") {};
 	~ShadowCasterWallFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1023,7 +1023,7 @@ public:
 class AnaMipImageFormat : public EntryDataFormat
 {
 public:
-	AnaMipImageFormat() : EntryDataFormat("img_mipimage"){};
+	AnaMipImageFormat() : EntryDataFormat("img_mipimage") {};
 	~AnaMipImageFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1043,7 +1043,7 @@ public:
 class BuildTileFormat : public EntryDataFormat
 {
 public:
-	BuildTileFormat() : EntryDataFormat("img_arttile"){};
+	BuildTileFormat() : EntryDataFormat("img_arttile") {};
 	~BuildTileFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1085,7 +1085,7 @@ public:
 class Heretic2M8Format : public EntryDataFormat
 {
 public:
-	Heretic2M8Format() : EntryDataFormat("img_m8"){};
+	Heretic2M8Format() : EntryDataFormat("img_m8") {};
 	~Heretic2M8Format() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1117,7 +1117,7 @@ public:
 class Heretic2M32Format : public EntryDataFormat
 {
 public:
-	Heretic2M32Format() : EntryDataFormat("img_m32"){};
+	Heretic2M32Format() : EntryDataFormat("img_m32") {};
 	~Heretic2M32Format() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1149,7 +1149,7 @@ public:
 class HalfLifeTextureFormat : public EntryDataFormat
 {
 public:
-	HalfLifeTextureFormat() : EntryDataFormat("img_hlt"){};
+	HalfLifeTextureFormat() : EntryDataFormat("img_hlt") {};
 	~HalfLifeTextureFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1184,7 +1184,7 @@ public:
 class RottGfxDataFormat : public EntryDataFormat
 {
 public:
-	RottGfxDataFormat() : EntryDataFormat("img_rott"){};
+	RottGfxDataFormat() : EntryDataFormat("img_rott") {};
 	~RottGfxDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1234,7 +1234,7 @@ public:
 class RottTransGfxDataFormat : public EntryDataFormat
 {
 public:
-	RottTransGfxDataFormat() : EntryDataFormat("img_rottmask"){};
+	RottTransGfxDataFormat() : EntryDataFormat("img_rottmask") {};
 	~RottTransGfxDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1285,7 +1285,7 @@ public:
 class RottLBMDataFormat : public EntryDataFormat
 {
 public:
-	RottLBMDataFormat() : EntryDataFormat("img_rottlbm"){};
+	RottLBMDataFormat() : EntryDataFormat("img_rottlbm") {};
 	~RottLBMDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1308,7 +1308,7 @@ public:
 class RottRawDataFormat : public EntryDataFormat
 {
 public:
-	RottRawDataFormat() : EntryDataFormat("img_rottraw"){};
+	RottRawDataFormat() : EntryDataFormat("img_rottraw") {};
 	~RottRawDataFormat() = default;
 
 	/* How many format does ROTT need? This is just like the raw data plus header
@@ -1338,7 +1338,7 @@ public:
 class RottPicDataFormat : public EntryDataFormat
 {
 public:
-	RottPicDataFormat() : EntryDataFormat("img_rottpic"){};
+	RottPicDataFormat() : EntryDataFormat("img_rottpic") {};
 	~RottPicDataFormat() = default;
 
 	// Yet another ROTT image format. Cheesus.
@@ -1358,7 +1358,7 @@ public:
 class WolfPicDataFormat : public EntryDataFormat
 {
 public:
-	WolfPicDataFormat() : EntryDataFormat("img_wolfpic"){};
+	WolfPicDataFormat() : EntryDataFormat("img_wolfpic") {};
 	~WolfPicDataFormat() = default;
 
 	// Wolf picture format
@@ -1377,7 +1377,7 @@ public:
 class WolfSpriteDataFormat : public EntryDataFormat
 {
 public:
-	WolfSpriteDataFormat() : EntryDataFormat("img_wolfsprite"){};
+	WolfSpriteDataFormat() : EntryDataFormat("img_wolfsprite") {};
 	~WolfSpriteDataFormat() = default;
 
 	// Wolf picture format
@@ -1397,7 +1397,7 @@ public:
 class JediBMFormat : public EntryDataFormat
 {
 public:
-	JediBMFormat() : EntryDataFormat("img_jedi_bm"){};
+	JediBMFormat() : EntryDataFormat("img_jedi_bm") {};
 	~JediBMFormat() = default;
 
 	// Jedi engine bitmap format
@@ -1424,7 +1424,7 @@ public:
 class JediFMEFormat : public EntryDataFormat
 {
 public:
-	JediFMEFormat() : EntryDataFormat("img_jedi_fme"){};
+	JediFMEFormat() : EntryDataFormat("img_jedi_fme") {};
 	~JediFMEFormat() = default;
 
 	// Jedi engine frame format
@@ -1477,7 +1477,7 @@ public:
 class JediWAXFormat : public EntryDataFormat
 {
 public:
-	JediWAXFormat() : EntryDataFormat("img_jedi_wax"){};
+	JediWAXFormat() : EntryDataFormat("img_jedi_wax") {};
 	~JediWAXFormat() = default;
 
 	// Jedi engine wax format
@@ -1512,7 +1512,7 @@ public:
 class Font0DataFormat : public EntryDataFormat
 {
 public:
-	Font0DataFormat() : EntryDataFormat("font_doom_alpha"){};
+	Font0DataFormat() : EntryDataFormat("font_doom_alpha") {};
 	~Font0DataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1544,7 +1544,7 @@ public:
 class Font1DataFormat : public EntryDataFormat
 {
 public:
-	Font1DataFormat() : EntryDataFormat("font_zd_console"){};
+	Font1DataFormat() : EntryDataFormat("font_zd_console") {};
 	~Font1DataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1563,7 +1563,7 @@ public:
 class Font2DataFormat : public EntryDataFormat
 {
 public:
-	Font2DataFormat() : EntryDataFormat("font_zd_big"){};
+	Font2DataFormat() : EntryDataFormat("font_zd_big") {};
 	~Font2DataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1582,7 +1582,7 @@ public:
 class BMFontDataFormat : public EntryDataFormat
 {
 public:
-	BMFontDataFormat() : EntryDataFormat("font_bmf"){};
+	BMFontDataFormat() : EntryDataFormat("font_bmf") {};
 	~BMFontDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1601,7 +1601,7 @@ public:
 class FontWolfDataFormat : public EntryDataFormat
 {
 public:
-	FontWolfDataFormat() : EntryDataFormat("font_wolf"){};
+	FontWolfDataFormat() : EntryDataFormat("font_wolf") {};
 	~FontWolfDataFormat() = default;
 
 	int isThisFormat(MemChunk& mc) override
@@ -1633,7 +1633,7 @@ public:
 class JediFNTFormat : public EntryDataFormat
 {
 public:
-	JediFNTFormat() : EntryDataFormat("font_jedi_fnt"){};
+	JediFNTFormat() : EntryDataFormat("font_jedi_fnt") {};
 	~JediFNTFormat() = default;
 
 	// Jedi engine fnt format
@@ -1661,7 +1661,7 @@ public:
 class JediFONTFormat : public EntryDataFormat
 {
 public:
-	JediFONTFormat() : EntryDataFormat("font_jedi_font"){};
+	JediFONTFormat() : EntryDataFormat("font_jedi_font") {};
 	~JediFONTFormat() = default;
 
 	// Jedi engine font format

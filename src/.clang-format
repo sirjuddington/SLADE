@@ -20,7 +20,7 @@ BinPackParameters: false
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Allman
 BreakBeforeInheritanceComma: false
-BreakBeforeTernaryOperators: false
+BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
 BreakStringLiterals: true
 ColumnLimit: 120

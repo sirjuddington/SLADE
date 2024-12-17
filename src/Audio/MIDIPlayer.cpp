@@ -259,7 +259,7 @@ public:
 		if (fs_initialised_)
 		{
 			fluid_player_stop(fs_player_);
-			fluid_synth_system_reset(fs_synth_);
+			// fluid_synth_system_reset(fs_synth_); // Breaks soundfont on play/pause/stop
 			stopped = true;
 		}
 
@@ -426,7 +426,8 @@ public:
 		// Setup environment and command line to run
 		wxExecuteEnv env;
 		env.cwd          = string{ strutil::Path::pathOf(snd_timidity_path) };
-		auto commandline = fmt::format("\"{}\" \"{}\" {}", string(snd_timidity_path), file_, string(snd_timidity_options));
+		auto commandline = fmt::format(
+			"\"{}\" \"{}\" {}", string(snd_timidity_path), file_, string(snd_timidity_options));
 
 		// Execute program
 		pid_ = wxExecute(commandline, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, nullptr, &env);

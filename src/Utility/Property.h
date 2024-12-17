@@ -21,7 +21,10 @@ namespace property
 	};
 
 	// Returns the ValueType of the value currently held in [prop]
-	inline ValueType valueType(const Property& prop) { return static_cast<ValueType>(prop.index()); }
+	inline ValueType valueType(const Property& prop)
+	{
+		return static_cast<ValueType>(prop.index());
+	}
 
 	// Returns the value of [prop] if it is of type T, otherwise an empty std::optional
 	template<typename T> std::optional<T> value(const Property& prop)
@@ -54,7 +57,7 @@ class PropertyList
 {
 public:
 	const vector<Named<Property>>& properties() const { return properties_; }
-	
+
 	Property& operator[](string_view key)
 	{
 		for (auto& prop : properties_)
@@ -84,7 +87,7 @@ public:
 
 		return T{};
 	}
-	
+
 	std::optional<Property> getIf(string_view key) const
 	{
 		for (const auto& prop : properties_)

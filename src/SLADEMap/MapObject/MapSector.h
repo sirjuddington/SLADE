@@ -25,7 +25,9 @@ public:
 		Plane  plane  = { 0., 0., 1., 0. };
 
 		Surface(string_view texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
-			texture{ texture }, height{ height }, plane{ plane }
+			texture{ texture },
+			height{ height },
+			plane{ plane }
 		{
 		}
 	};

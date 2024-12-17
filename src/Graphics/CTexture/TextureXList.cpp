@@ -889,7 +889,7 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
 
 	for (unsigned a = 0; a < textures_.size(); a++)
 	{
-		CTexture* this_texture       = textures_[a].get();
+		CTexture* this_texture        = textures_[a].get();
 		int       other_texture_index = texture_list.textureIndex(this_texture->name());
 
 		if (other_texture_index < 0)
@@ -1178,16 +1178,16 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 	for (auto iter : single_patch_textures)
 	{
 		ArchiveEntry* patch_entry = iter.first;
-		CTexture*     texture    = textures_[iter.second].get();
+		CTexture*     texture     = textures_[iter.second].get();
 
 		indices_to_remove.push_back(iter.second);
 
 		// Currently only supporting converting patch to texture in archives that support directories so just move
 		// things from patches to textures
-		string::size_type patch_extension_pos = patch_entry->name().find_last_of('.');
-		string            patch_extension    = patch_extension_pos != string::npos ?
-												  patch_entry->name().substr(patch_extension_pos, patch_entry->name().size()) :
-                                                  "";
+		auto patch_extension_pos = patch_entry->name().find_last_of('.');
+		auto patch_extension     = patch_extension_pos != string::npos
+									   ? patch_entry->name().substr(patch_extension_pos, patch_entry->name().size())
+									   : "";
 
 		string texture_file_name = texture->name();
 		texture_file_name.append(patch_extension);

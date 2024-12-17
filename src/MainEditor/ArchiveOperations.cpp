@@ -40,10 +40,10 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
-#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
@@ -402,7 +402,7 @@ void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 // Checks entries of the same name from the base resource archive. Also checks
 // texture definitions. This helps know what your archive overrides.
 // -----------------------------------------------------------------------------
-bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive) 
+bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 {
 	// Do nothing if there is no base resource archive,
 	// or if the archive *is* the base resource archive.
@@ -416,9 +416,9 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 
 	// Init search options
 	Archive::SearchOptions search;
-	ArchiveEntry*          other = nullptr;
-	wxString               overrides  = "";
-	size_t                 count = 0;
+	ArchiveEntry*          other     = nullptr;
+	wxString               overrides = "";
+	size_t                 count     = 0;
 
 	// Go through list
 	for (auto& entry : entries)
@@ -465,9 +465,9 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 
 
 	// Find all texture entries
-	std::unordered_map<ArchiveEntry*, TextureXList> braTextureEntries;
-	std::unordered_multimap<string, std::pair<ArchiveEntry*, ArchiveEntry*>>  duplicate_texture_entries;
-	std::set<string>                                found_duplicate_textures;
+	std::unordered_map<ArchiveEntry*, TextureXList>                          braTextureEntries;
+	std::unordered_multimap<string, std::pair<ArchiveEntry*, ArchiveEntry*>> duplicate_texture_entries;
+	std::set<string>                                                         found_duplicate_textures;
 
 	Archive::SearchOptions pnamesopt;
 	pnamesopt.match_type = EntryType::fromId("pnames");
@@ -515,9 +515,8 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 	if (pnames)
 		ptable.loadPNAMES(pnames);
 
-	auto processTextureList = [&found_duplicate_textures, 
-		&duplicate_texture_entries, 
-		&braTextureEntries](ArchiveEntry* textureEntry, TextureXList& textureList)
+	auto processTextureList = [&found_duplicate_textures, &duplicate_texture_entries, &braTextureEntries](
+								  ArchiveEntry* textureEntry, TextureXList& textureList)
 	{
 		for (unsigned a = 0; a < textureList.textures().size(); a++)
 		{
@@ -569,8 +568,9 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 				 ++entry_iter)
 			{
 				ArchiveEntry* duplicated_entry = entry_iter->second.first;
-				ArchiveEntry* bra_entry = entry_iter->second.second;
-				dups += wxString::Format("\n\tThis Archive Asset Path: %s%s", duplicated_entry->path(), duplicated_entry->name());
+				ArchiveEntry* bra_entry        = entry_iter->second.second;
+				dups += wxString::Format(
+					"\n\tThis Archive Asset Path: %s%s", duplicated_entry->path(), duplicated_entry->name());
 				dups += wxString::Format("\n\tIwad Asset Path: %s%s", bra_entry->path(), bra_entry->name());
 			}
 		}
@@ -595,10 +595,10 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 // -----------------------------------------------------------------------------
 // Checks entries of the same name from the base resource archive. Also checks
 // texture definitions. This helps know what your archive overrides.
-// This is a ZDoom version that has additional behavior for checking across 
+// This is a ZDoom version that has additional behavior for checking across
 // flats, patches, and other assets.
 // -----------------------------------------------------------------------------
-bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive) 
+bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 {
 	// Do nothing if there is no base resource archive,
 	// or if the archive *is* the base resource archive.
@@ -632,7 +632,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	auto process_patch_table = [&archiveTexEntries](ArchiveEntry* pnames_entry, const PatchTable& patch_table)
 	{
-		for (int patchIndex = 0; patchIndex < patch_table.nPatches(); ++patchIndex) 
+		for (int patchIndex = 0; patchIndex < patch_table.nPatches(); ++patchIndex)
 		{
 			string patch_name = string(patch_table.patchName(patchIndex));
 			patch_name        = strutil::upperIP(patch_name);
@@ -641,8 +641,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		}
 	};
 
-	auto process_texture_list =
-		[&archiveTexEntries](ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
+	auto process_texture_list = [&archiveTexEntries](ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
 	{
 		for (unsigned texture_index = 0; texture_index < texture_list.size(); texture_index++)
 		{
@@ -673,7 +672,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		process_entries(archive->findAll(search_opt));
 	}
 
-	auto pnames           = archive->findLast(pnames_opt);
+	auto pnames = archive->findLast(pnames_opt);
 
 	// Load patch table
 	if (pnames)
@@ -682,7 +681,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		ptable.loadPNAMES(pnames);
 
 		// Don't process the patch table if we loaded it from the iWad
-		if (pnames != braPnames) 
+		if (pnames != braPnames)
 		{
 			process_patch_table(pnames, ptable);
 		}
@@ -774,8 +773,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 			auto iter = archiveTexEntries.find(texture_name);
 
 			// If the duplicate is the bra pnames, don't mark it as overridden
-			if (iter != archiveTexEntries.end()
-				&& iter->second != braPnames)
+			if (iter != archiveTexEntries.end() && iter->second != braPnames)
 			{
 				overiddenBraTexEntries.emplace(texture_name, texture_archive_entry);
 				overiddenBraTexNames.insert(texture_name);
@@ -1394,9 +1392,9 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 	// must keep this smart pointer around or the archive gets dealloced immediately
 	// from the heap and we get huge memory issues while referencing a dangling pointer
-	auto ptr_archive = archive->formatId() == "folder" ?
-						   app::archiveManager().openDirArchive(archive->filename(), false, true) :
-                           app::archiveManager().openArchive(archive->filename(), false, true);
+	auto ptr_archive = archive->formatId() == "folder"
+						   ? app::archiveManager().openDirArchive(archive->filename(), false, true)
+						   : app::archiveManager().openArchive(archive->filename(), false, true);
 	archive          = ptr_archive.get();
 
 	// --- Build list of used textures ---
@@ -1934,10 +1932,10 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	app::archiveManager().closeArchive(archive);
 }
 
-bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive) 
+bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 {
 	std::unordered_multimap<string, ArchiveEntry*> found_entries;
-	std::set<string> found_duplicates;
+	std::set<string>                               found_duplicates;
 
 	auto process_entries = [&found_entries, &found_duplicates](const vector<ArchiveEntry*> archive_entries)
 	{
@@ -1947,7 +1945,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 			if (archive_entry->size() == 0)
 				continue;
 
-			string entry_name{archive_entry->upperNameNoExt()};
+			string entry_name{ archive_entry->upperNameNoExt() };
 
 			if (found_entries.find(entry_name) != found_entries.end())
 			{
@@ -1975,8 +1973,8 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 		}
 	};
 
-	auto process_texture_list = [&found_entries, &found_duplicates](
-									ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
+	auto process_texture_list =
+		[&found_entries, &found_duplicates](ArchiveEntry* texture_archive_entry, TextureXList& texture_list)
 	{
 		for (unsigned texture_index = 0; texture_index < texture_list.size(); texture_index++)
 		{
@@ -1987,7 +1985,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 			auto texture = texture_list.texture(texture_index);
 
 			string texture_name = string(texture->name());
-			texture_name = strutil::upperIP(texture_name);
+			texture_name        = strutil::upperIP(texture_name);
 
 			if (found_entries.find(texture_name) != found_entries.end())
 			{
@@ -1999,7 +1997,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 	};
 
 	// Find all textures
-	{ 
+	{
 		Archive::SearchOptions search_opt;
 		search_opt.match_namespace = "textures";
 		process_entries(archive->findAll(search_opt));
@@ -2016,7 +2014,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 	pnames_opt.match_type = EntryType::fromId("pnames");
 	auto pnames           = archive->findLast(pnames_opt);
 
-	// Load patch table	
+	// Load patch table
 	if (pnames)
 	{
 		PatchTable ptable;
@@ -2051,7 +2049,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 		}
 	}
 
-	if (found_duplicates.empty()) 
+	if (found_duplicates.empty())
 	{
 		wxMessageBox("No duplicated textures exist");
 		return false;
@@ -2059,14 +2057,14 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 
 	wxString dups = "";
 
-	for (string duplicate_entry : found_duplicates) 
+	for (string duplicate_entry : found_duplicates)
 	{
 		dups += wxString::Format("\n%s", duplicate_entry);
 
 		auto duplicated_entries_range = found_entries.equal_range(duplicate_entry);
 
 		for (auto entry_iter = duplicated_entries_range.first; entry_iter != duplicated_entries_range.second;
-			 ++entry_iter) 
+			 ++entry_iter)
 		{
 			ArchiveEntry* duplicated_entry = entry_iter->second;
 			dups += wxString::Format("\n\t%s%s", duplicated_entry->path(), duplicated_entry->name());
@@ -2100,7 +2098,7 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 		for (const PatchTable::Patch& patch_entry : ptable.patches())
 		{
 			string entry_name = string(patch_entry.name);
-			entry_name = strutil::upperIP(entry_name);
+			entry_name        = strutil::upperIP(entry_name);
 
 			if (found_entries.find(entry_name) != found_entries.end())
 			{
@@ -2407,7 +2405,7 @@ CONSOLE_COMMAND(convertmapchex1to3, 0, false)
         { 54, 9058 }, // 10	ChexBananaTree			==>	TreeBanana				(PropSpaceship -- must go before its own
                       // replacement)
         { 48,
-          54 },       // 11	ChexSpaceship			==>	PropSpaceship			(PropTechPillar -- must go after banana tree
+			  54 },       // 11	ChexSpaceship			==>	PropSpaceship			(PropTechPillar -- must go after banana tree
                       // replacement)
         { 55, 42 },   // 12	ChexLightColumn			==>	LabCoil					(PropShortBlueTorch)
         { 56, 26 },   // 13	ChexCivilian2			==>	PropCaptive2			(PropShortGreenTorch)
@@ -2415,7 +2413,7 @@ CONSOLE_COMMAND(convertmapchex1to3, 0, false)
         { 3002, 58 }, // 15	F.CycloptisCommonus		==>	F.CycloptisCommonusV3	(FlemoidusStridicus)
         { 3003, 69 }, // 16	Flembrane				==>	FlembraneV3				(FlemoidusMaximus)
         { 33,
-          53 },     // 17	ChexMineCart			==> PropBazoikCart			(none, but the sprite is modified otherwise)
+			  53 },     // 17	ChexMineCart			==> PropBazoikCart			(none, but the sprite is modified otherwise)
         { 27, 81 }, // 18	"HeadOnAStick"			==> PropSmallBrush
         { 53, 75 }, // 19	"Meat5"					==> PropStalagtite2
         { 49, 63 }, // 20	Redundant bats
