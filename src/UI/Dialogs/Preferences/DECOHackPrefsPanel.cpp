@@ -75,7 +75,7 @@ DECOHackPrefsPanel::DECOHackPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 		path_decohack,
 		true,
 		"Browse For DoomTools Jar",
-		"Jar Files *.jar",
+		"Jar Files|*.jar",
 		"doomtools.jar");
 	list_inc_paths_        = new wxListBox(this, -1, wxDefaultPosition, wxSize(-1, ui::scalePx(200)));
 	btn_incpath_add_       = new wxButton(this, -1, "Add");
