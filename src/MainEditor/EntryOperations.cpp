@@ -62,7 +62,6 @@ CVAR(String, path_acc, "", CVar::Flag::Save);
 CVAR(String, path_acc_libs, "", CVar::Flag::Save);
 CVAR(String, path_java, "", CVar::Flag::Save);
 CVAR(String, path_decohack, "", CVar::Flag::Save);
-CVAR(String, path_decohack_libs, "", CVar::Flag::Save);
 CVAR(String, path_pngout, "", CVar::Flag::Save);
 CVAR(String, path_pngcrush, "", CVar::Flag::Save);
 CVAR(String, path_deflopt, "", CVar::Flag::Save);
@@ -1172,58 +1171,57 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 		return false;
 	}
 
-	// Check if the ACC path is set up
-	wxString accpath = path_acc;
-	if (accpath.IsEmpty() || !wxFileExists(accpath))
+	// Check if the DoomTools path is set up
+	wxString decohackpath = path_decohack;
+	if (decohackpath.IsEmpty() || !wxFileExists(decohackpath))
 	{
 		wxMessageBox(
 			"Error: DoomTools path not defined, please configure in SLADE preferences",
 			"Error",
 			wxOK | wxCENTRE | wxICON_ERROR);
-		PreferencesDialog::openPreferences(parent, "ACS");
+		PreferencesDialog::openPreferences(parent, "DECOHack");
+		return false;
+	}
+
+	// Check if the Java path is set up
+	wxString javapath = path_java;
+	if (javapath.IsEmpty() || !wxFileExists(javapath))
+	{
+		wxMessageBox(
+			"Error: Java path not defined, please configure in SLADE preferences",
+			"Error",
+			wxOK | wxCENTRE | wxICON_ERROR);
+		PreferencesDialog::openPreferences(parent, "DECOHack");
 		return false;
 	}
 
 	// Setup some path strings
-	auto srcfile       = app::path(fmt::format("{}.acs", entry->nameNoExt()), app::Dir::Temp);
-	auto ofile         = app::path(fmt::format("{}.o", entry->nameNoExt()), app::Dir::Temp);
-	auto include_paths = wxSplit(path_acc_libs, ';');
-
-	// Setup command options
-	wxString opt;
-	if (!include_paths.IsEmpty())
-	{
-		for (const auto& include_path : include_paths)
-			opt += wxString::Format(" -i \"%s\"", include_path);
-	}
+	auto srcfile       = app::path(fmt::format("{}.dh", entry->nameNoExt()), app::Dir::Temp);
+	auto dehfile       = app::path(fmt::format("{}.deh", entry->nameNoExt()), app::Dir::Temp);
 
 	// Find/export any resource libraries
 	Archive::SearchOptions sopt;
-	sopt.match_type       = EntryType::fromId("acs");
+	sopt.match_type       = EntryType::fromId("decohack");
 	sopt.search_subdirs   = true;
 	auto          entries = app::archiveManager().findAllResourceEntries(sopt);
 	wxArrayString lib_paths;
 	for (auto& res_entry : entries)
 	{
-		// Ignore SCRIPTS
-		if (res_entry->upperNameNoExt() == "SCRIPTS")
-			continue;
-
 		// Ignore entries from other archives
 		if (archive && (archive->filename(true) != res_entry->parent()->filename(true)))
 			continue;
 
-		auto path = app::path(fmt::format("{}.acs", res_entry->nameNoExt()), app::Dir::Temp);
+		auto path = app::path(fmt::format("{}.dh", res_entry->nameNoExt()), app::Dir::Temp);
 		res_entry->exportFile(path);
 		lib_paths.Add(path);
-		log::info(2, "Exporting ACS library {}", res_entry->name());
+		log::info(2, "Exporting DECOHack file {}", res_entry->name());
 	}
 
 	// Export script to file
 	entry->exportFile(srcfile);
 
-	// Execute acc
-	wxString      command = "\"" + path_acc + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
+	// Execute DECOHack
+	wxString      command = "\"" + path_java + "\" -cp \"" + path_decohack + "\"" + " -Xms64M -Xmx4G net.mtrop.doom.tools.DecoHackMain \"" + srcfile + "\" -o \"" + dehfile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
 	wxGetApp().SetTopWindow(parent);
@@ -1265,75 +1263,35 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 		wxRemoveFile(lib_path);
 
 	// Check it compiled successfully
-	bool success = wxFileExists(ofile);
+	bool success = wxFileExists(dehfile);
 	if (success)
 	{
 		// If no target entry was given, find one
 		if (!target)
 		{
-			// Check if the script is a map script (BEHAVIOR)
-			if (entry->upperName() == "SCRIPTS")
-			{
-				// Get entry before SCRIPTS
-				auto prev = archive->entryAt(archive->entryIndex(entry) - 1);
+			// Get entry before DECOHACK
+			auto prev = archive->entryAt(archive->entryIndex(entry) - 1);
 
-				// Create a new entry there if it isn't BEHAVIOR
-				if (!prev || prev->upperName() != "BEHAVIOR")
-					prev = archive->addNewEntry("BEHAVIOR", archive->entryIndex(entry)).get();
+			// Create a new entry there
+			prev = archive->addNewEntry("DEHACKED", archive->entryIndex(entry)).get();
 
-				// Import compiled script
-				prev->importFile(ofile);
-			}
-			else
-			{
-				// Otherwise, treat it as a library
-
-				// See if the compiled library already exists as an entry
-				Archive::SearchOptions opt;
-				opt.match_namespace = "acs";
-				opt.match_name      = entry->nameNoExt();
-				if (archive->formatDesc().names_extensions)
-				{
-					opt.match_name += ".o";
-					opt.ignore_ext = false;
-				}
-				auto lib = archive->findLast(opt);
-
-				// If it doesn't exist, create it
-				if (!lib)
-				{
-					auto new_lib = std::make_shared<ArchiveEntry>(fmt::format("{}.o", entry->nameNoExt()));
-					lib          = archive->addEntry(new_lib, "acs").get();
-				}
-
-				// Import compiled script
-				lib->importFile(ofile);
-			}
+			// Import compiled dehacked
+			prev->importFile(dehfile);
 		}
 		else
-			target->importFile(ofile);
+			target->importFile(dehfile);
 
 		// Delete compiled script file
-		wxRemoveFile(ofile);
+		wxRemoveFile(dehfile);
 	}
 
-	if (!success || acc_always_show_output)
+	if (!success || decohack_always_show_output)
 	{
-		wxString errors;
-		if (wxFileExists(app::path("acs.err", app::Dir::Temp)))
-		{
-			// Read acs.err to string
-			wxFile       file(app::path("acs.err", app::Dir::Temp));
-			vector<char> buf(file.Length());
-			file.Read(buf.data(), file.Length());
-			errors = wxString::From8BitData(buf.data(), file.Length());
-		}
-		else
-			errors = output_log;
+		wxString errors = output_log;
 
 		if (!errors.empty() || !success)
 		{
-			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
+			ExtMessageDialog dlg(nullptr, success ? "DECOHack Output" : "Error Compiling");
 			dlg.setMessage(
 				success ? "The following errors were encountered while compiling, please fix them and recompile:"
 						: "Compiler output shown below: ");
