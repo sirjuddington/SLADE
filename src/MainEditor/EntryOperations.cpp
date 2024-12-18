@@ -60,11 +60,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(String, path_acc, "", CVar::Flag::Save);
 CVAR(String, path_acc_libs, "", CVar::Flag::Save);
+CVAR(String, path_decohack, "", CVar::Flag::Save);
+CVAR(String, path_decohack_libs, "", CVar::Flag::Save);
 CVAR(String, path_pngout, "", CVar::Flag::Save);
 CVAR(String, path_pngcrush, "", CVar::Flag::Save);
 CVAR(String, path_deflopt, "", CVar::Flag::Save);
 CVAR(String, path_db2, "", CVar::Flag::Save)
 CVAR(Bool, acc_always_show_output, false, CVar::Flag::Save);
+CVAR(Bool, decohack_always_show_output, false, CVar::Flag::Save);
 
 
 // -----------------------------------------------------------------------------
@@ -1032,6 +1035,202 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 	// Log output
 	log::console("ACS compiler output:");
+	wxString output_log;
+	if (!output.IsEmpty())
+	{
+		const char* title1 = "=== Log: ===\n";
+		log::console(title1);
+		output_log += title1;
+		for (const auto& line : output)
+		{
+			log::console(line);
+			output_log += line;
+		}
+	}
+
+	if (!errout.IsEmpty())
+	{
+		const char* title2 = "\n=== Error log: ===\n";
+		log::console(title2);
+		output_log += title2;
+		for (const auto& line : errout)
+		{
+			log::console(line);
+			output_log += line + "\n";
+		}
+	}
+
+	// Delete source file
+	wxRemoveFile(srcfile);
+
+	// Delete library files
+	for (const auto& lib_path : lib_paths)
+		wxRemoveFile(lib_path);
+
+	// Check it compiled successfully
+	bool success = wxFileExists(ofile);
+	if (success)
+	{
+		// If no target entry was given, find one
+		if (!target)
+		{
+			// Check if the script is a map script (BEHAVIOR)
+			if (entry->upperName() == "SCRIPTS")
+			{
+				// Get entry before SCRIPTS
+				auto prev = archive->entryAt(archive->entryIndex(entry) - 1);
+
+				// Create a new entry there if it isn't BEHAVIOR
+				if (!prev || prev->upperName() != "BEHAVIOR")
+					prev = archive->addNewEntry("BEHAVIOR", archive->entryIndex(entry)).get();
+
+				// Import compiled script
+				prev->importFile(ofile);
+			}
+			else
+			{
+				// Otherwise, treat it as a library
+
+				// See if the compiled library already exists as an entry
+				Archive::SearchOptions opt;
+				opt.match_namespace = "acs";
+				opt.match_name      = entry->nameNoExt();
+				if (archive->formatDesc().names_extensions)
+				{
+					opt.match_name += ".o";
+					opt.ignore_ext = false;
+				}
+				auto lib = archive->findLast(opt);
+
+				// If it doesn't exist, create it
+				if (!lib)
+				{
+					auto new_lib = std::make_shared<ArchiveEntry>(fmt::format("{}.o", entry->nameNoExt()));
+					lib          = archive->addEntry(new_lib, "acs").get();
+				}
+
+				// Import compiled script
+				lib->importFile(ofile);
+			}
+		}
+		else
+			target->importFile(ofile);
+
+		// Delete compiled script file
+		wxRemoveFile(ofile);
+	}
+
+	if (!success || acc_always_show_output)
+	{
+		wxString errors;
+		if (wxFileExists(app::path("acs.err", app::Dir::Temp)))
+		{
+			// Read acs.err to string
+			wxFile       file(app::path("acs.err", app::Dir::Temp));
+			vector<char> buf(file.Length());
+			file.Read(buf.data(), file.Length());
+			errors = wxString::From8BitData(buf.data(), file.Length());
+		}
+		else
+			errors = output_log;
+
+		if (!errors.empty() || !success)
+		{
+			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
+			dlg.setMessage(
+				success ? "The following errors were encountered while compiling, please fix them and recompile:"
+						: "Compiler output shown below: ");
+			dlg.setExt(errors);
+			dlg.ShowModal();
+		}
+
+		return success;
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Attempts to compile [entry] as DECOHack.
+// -----------------------------------------------------------------------------
+bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target, wxFrame* parent)
+{
+	// Check entry was given
+	if (!entry)
+		return false;
+
+	// Check entry has a parent (this is useless otherwise)
+	auto* archive = entry->parent();
+	if (!target && !archive)
+		return false;
+
+	// Check entry is text
+	if (!EntryDataFormat::format("text")->isThisFormat(entry->data()))
+	{
+		wxMessageBox("Error: Entry does not appear to be text", "Error", wxOK | wxCENTRE | wxICON_ERROR);
+		return false;
+	}
+
+	// Check if the ACC path is set up
+	wxString accpath = path_acc;
+	if (accpath.IsEmpty() || !wxFileExists(accpath))
+	{
+		wxMessageBox(
+			"Error: DoomTools path not defined, please configure in SLADE preferences",
+			"Error",
+			wxOK | wxCENTRE | wxICON_ERROR);
+		PreferencesDialog::openPreferences(parent, "ACS");
+		return false;
+	}
+
+	// Setup some path strings
+	auto srcfile       = app::path(fmt::format("{}.acs", entry->nameNoExt()), app::Dir::Temp);
+	auto ofile         = app::path(fmt::format("{}.o", entry->nameNoExt()), app::Dir::Temp);
+	auto include_paths = wxSplit(path_acc_libs, ';');
+
+	// Setup command options
+	wxString opt;
+	if (!include_paths.IsEmpty())
+	{
+		for (const auto& include_path : include_paths)
+			opt += wxString::Format(" -i \"%s\"", include_path);
+	}
+
+	// Find/export any resource libraries
+	Archive::SearchOptions sopt;
+	sopt.match_type       = EntryType::fromId("acs");
+	sopt.search_subdirs   = true;
+	auto          entries = app::archiveManager().findAllResourceEntries(sopt);
+	wxArrayString lib_paths;
+	for (auto& res_entry : entries)
+	{
+		// Ignore SCRIPTS
+		if (res_entry->upperNameNoExt() == "SCRIPTS")
+			continue;
+
+		// Ignore entries from other archives
+		if (archive && (archive->filename(true) != res_entry->parent()->filename(true)))
+			continue;
+
+		auto path = app::path(fmt::format("{}.acs", res_entry->nameNoExt()), app::Dir::Temp);
+		res_entry->exportFile(path);
+		lib_paths.Add(path);
+		log::info(2, "Exporting ACS library {}", res_entry->name());
+	}
+
+	// Export script to file
+	entry->exportFile(srcfile);
+
+	// Execute acc
+	wxString      command = "\"" + path_acc + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
+	wxArrayString output;
+	wxArrayString errout;
+	wxGetApp().SetTopWindow(parent);
+	wxExecute(command, output, errout, wxEXEC_SYNC);
+	wxGetApp().SetTopWindow(maineditor::windowWx());
+
+	// Log output
+	log::console("DECOHack compiler output:");
 	wxString output_log;
 	if (!output.IsEmpty())
 	{

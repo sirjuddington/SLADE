@@ -4,6 +4,7 @@
 #include "Scripting/Lua.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/Dialogs/Preferences/ACSPrefsPanel.h"
+#include "UI/Dialogs/Preferences/DECOHackPrefsPanel.h"
 #include "Utility/SFileDialog.h"
 #include "thirdparty/sol/sol.hpp"
 

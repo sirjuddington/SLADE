@@ -23,6 +23,7 @@ namespace entryoperations
 	bool cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries);
 	bool cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& entries);
 	bool compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
+	bool compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
 	bool exportAsPNG(ArchiveEntry* entry, const wxString& filename);
 	bool optimizePNG(ArchiveEntry* entry);
 

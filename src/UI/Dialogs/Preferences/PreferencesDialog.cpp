@@ -40,6 +40,7 @@
 #include "BaseResourceArchivesPanel.h"
 #include "ColorimetryPrefsPanel.h"
 #include "ColourPrefsPanel.h"
+#include "DECOHackPrefsPanel.h"
 #include "EditingPrefsPanel.h"
 #include "General/UI.h"
 #include "GeneralPrefsPanel.h"
@@ -153,6 +154,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 	addPrefsPage<MapDisplayPrefsPanel>("Display", true);
 	addPrefsPage<Map3DPrefsPanel>("3D Mode", true);
 	addPrefsPage<NodesPrefsPanel>("Node Builder", true);
+	addPrefsPage<DECOHackPrefsPanel>("DECOHack", false);
 	tree_prefs_->AddPage(setupAdvancedPanel(), "Advanced");
 
 	// Expand all tree nodes (so it gets sized properly)

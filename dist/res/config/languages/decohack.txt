@@ -1,0 +1,26 @@
+
+decohack : cstyle {
+	name = "DoomTools DECOHack";
+	keyword_link = "http://zdoom.org/wiki/Special:Search/%s";
+	constant_link = "http://zdoom.org/wiki/Special:Search/%s";
+	function_link = "http://zdoom.org/wiki/%s";
+	case_sensitive = false;
+	blocks = "Actor", "DamageType";
+	comment_doc = "//$";
+
+	keywords = {
+		$override,
+	}
+
+	properties = {
+		$override,
+	}
+
+	constants = {
+
+	}
+
+	functions {
+		
+	}
+}
