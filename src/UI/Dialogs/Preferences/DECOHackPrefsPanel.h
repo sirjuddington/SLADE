@@ -21,6 +21,7 @@ public:
 
 private:
 	FileLocationPanel* flp_decohack_path_     = nullptr;
+	FileLocationPanel* flp_java_path_   	  = nullptr;
 	wxButton*          btn_incpath_add_       = nullptr;
 	wxButton*          btn_incpath_remove_    = nullptr;
 	wxListBox*         list_inc_paths_        = nullptr;

@@ -2713,6 +2713,24 @@ bool ArchivePanel::compileACS(bool hexen) const
 }
 
 // -----------------------------------------------------------------------------
+// Compiles any selected text entries as DECOHack code
+// -----------------------------------------------------------------------------
+bool ArchivePanel::compileDECOHack() const
+{
+	// Get selected entries
+	auto selection = entry_tree_->selectedEntries();
+
+	// Go through selection
+	for (auto& entry : selection)
+	{
+		// Compile
+		entryoperations::compileDECOHack(entry, nullptr, theMainWindow);
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
 // Compiles any selected text entries as ACS scripts
 // -----------------------------------------------------------------------------
 bool ArchivePanel::optimizePNG() const
@@ -3384,6 +3402,8 @@ bool ArchivePanel::handleAction(string_view id)
 		musMidiConvert();
 	else if (id == "arch_voxel_convertvox")
 		voxelConvert();
+	else if (id == "arch_scripts_compileDECOHack")
+		compileDECOHack();
 	else if (id == "arch_scripts_compileacs")
 		compileACS();
 	else if (id == "arch_scripts_compilehacs")
@@ -4021,6 +4041,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		}
 		SAction::fromId("arch_scripts_compileacs")->addToMenu(scripts, true);
 		SAction::fromId("arch_scripts_compilehacs")->addToMenu(scripts, true);
+		SAction::fromId("arch_scripts_compiledecohack")->addToMenu(&context, true);
 	}
 
 	if (voxel_selected)

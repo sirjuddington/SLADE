@@ -77,6 +77,7 @@ public:
 	bool musMidiConvert() const;
 	bool optimizePNG() const;
 	bool compileACS(bool hexen = false) const;
+	bool compileDECOHack() const;
 	bool convertTextures() const;
 	bool findTextureErrors() const;
 	bool cleanTextureIwadDupes() const;

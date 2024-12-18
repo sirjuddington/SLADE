@@ -45,6 +45,7 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(String, path_decohack)
+EXTERN_CVAR(String, path_java)
 EXTERN_CVAR(String, path_decohack_libs)
 EXTERN_CVAR(Bool, decohack_always_show_output)
 
@@ -62,6 +63,13 @@ EXTERN_CVAR(Bool, decohack_always_show_output)
 DECOHackPrefsPanel::DECOHackPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create controls
+	flp_java_path_ = new FileLocationPanel(
+		this,
+		path_decohack,
+		true,
+		"Browse For Java Executable",
+		filedialog::executableExtensionString(),
+		filedialog::executableFileName("java"));
 	flp_decohack_path_ = new FileLocationPanel(
 		this,
 		path_decohack,
@@ -87,6 +95,7 @@ DECOHackPrefsPanel::DECOHackPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 void DECOHackPrefsPanel::init()
 {
 	flp_decohack_path_->setLocation(path_decohack);
+	flp_java_path_->setLocation(path_java);
 	cb_always_show_output_->SetValue(decohack_always_show_output);
 
 	// Populate include paths list
@@ -99,6 +108,7 @@ void DECOHackPrefsPanel::init()
 void DECOHackPrefsPanel::applyPreferences()
 {
 	path_decohack = wxutil::strToView(flp_decohack_path_->location());
+	path_java = wxutil::strToView(flp_java_path_->location());
 
 	// Build include paths string
 	wxString paths_string;
@@ -120,6 +130,10 @@ void DECOHackPrefsPanel::setupLayout()
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
+
+	// java path
+	sizer->Add(
+		wxutil::createLabelVBox(this, "Location of Java executable:", flp_java_path_), 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// doomtools.jar path
 	sizer->Add(

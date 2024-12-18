@@ -60,6 +60,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(String, path_acc, "", CVar::Flag::Save);
 CVAR(String, path_acc_libs, "", CVar::Flag::Save);
+CVAR(String, path_java, "", CVar::Flag::Save);
 CVAR(String, path_decohack, "", CVar::Flag::Save);
 CVAR(String, path_decohack_libs, "", CVar::Flag::Save);
 CVAR(String, path_pngout, "", CVar::Flag::Save);

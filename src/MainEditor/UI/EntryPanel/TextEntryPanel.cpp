@@ -95,6 +95,9 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	// Add 'Compile ACS' to end of toolbar
 	toolbar_->addActionGroup("Compile", { "arch_scripts_compileacs" }, true);
 
+	// Add 'Compile DECOHack' to end of toolbar
+	toolbar_->addActionGroup("Compile DECOHack", { "arch_scripts_compiledecohack" }, true);
+
 	// Bind events
 	choice_text_language_->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);
 	text_area_->Bind(wxEVT_TEXT_CHANGED, &TextEntryPanel::onTextModified, this);
@@ -117,6 +120,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	menu_custom_->AppendSubMenu(menu_scripts, "Compile");
 	SAction::fromId("arch_scripts_compileacs")->addToMenu(menu_scripts);
 	SAction::fromId("arch_scripts_compilehacs")->addToMenu(menu_scripts);
+	SAction::fromId("arch_scripts_compiledecohack")->addToMenu(menu_scripts);
 
 	// 'Colour Scheme' submenu
 	auto menu_colour = new wxMenu();
@@ -342,6 +346,9 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 
 	else if (id == "arch_scripts_compilehacs" && entry)
 		entryoperations::compileACS(entry.get(), true, nullptr, nullptr);
+
+	else if (id == "arch_scripts_compiledecohack" && entry)
+		entryoperations::compileDECOHack(entry.get(), nullptr, nullptr);
 
 	// Light colour scheme
 	else if (id == "ptxt_theme_light")
