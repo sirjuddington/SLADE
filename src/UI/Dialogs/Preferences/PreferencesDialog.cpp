@@ -150,11 +150,11 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 	addPrefsPage<AudioPrefsPanel>("Audio");
 	tree_prefs_->AddPage(new wxPanel(tree_prefs_, -1), "Scripting");
 	addPrefsPage<ACSPrefsPanel>("ACS", true);
+	addPrefsPage<DECOHackPrefsPanel>("DECOHack", true);
 	addPrefsPage<MapEditorPrefsPanel>("Map Editor");
 	addPrefsPage<MapDisplayPrefsPanel>("Display", true);
 	addPrefsPage<Map3DPrefsPanel>("3D Mode", true);
 	addPrefsPage<NodesPrefsPanel>("Node Builder", true);
-	addPrefsPage<DECOHackPrefsPanel>("DECOHack", false);
 	tree_prefs_->AddPage(setupAdvancedPanel(), "Advanced");
 
 	// Expand all tree nodes (so it gets sized properly)

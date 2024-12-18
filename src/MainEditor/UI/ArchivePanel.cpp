@@ -4041,7 +4041,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		}
 		SAction::fromId("arch_scripts_compileacs")->addToMenu(scripts, true);
 		SAction::fromId("arch_scripts_compilehacs")->addToMenu(scripts, true);
-		SAction::fromId("arch_scripts_compiledecohack")->addToMenu(&context, true);
+		SAction::fromId("arch_scripts_compiledecohack")->addToMenu(scripts, true);
 	}
 
 	if (voxel_selected)

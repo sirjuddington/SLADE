@@ -93,7 +93,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	text_area_->setJumpToControl(choice_jump_to_);
 
 	// Add 'Compile ACS' to end of toolbar
-	toolbar_->addActionGroup("Compile", { "arch_scripts_compileacs" }, true);
+	toolbar_->addActionGroup("Compile ACS", { "arch_scripts_compileacs" }, true);
 
 	// Add 'Compile DECOHack' to end of toolbar
 	toolbar_->addActionGroup("Compile DECOHack", { "arch_scripts_compiledecohack" }, true);
@@ -347,6 +347,7 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 	else if (id == "arch_scripts_compilehacs" && entry)
 		entryoperations::compileACS(entry.get(), true, nullptr, nullptr);
 
+	// compileDECOHack
 	else if (id == "arch_scripts_compiledecohack" && entry)
 		entryoperations::compileDECOHack(entry.get(), nullptr, nullptr);
 
