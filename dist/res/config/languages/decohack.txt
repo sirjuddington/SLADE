@@ -6,7 +6,7 @@ decohack : cstyle {
 
 	keywords = {
 		$override,
-		include, define, undefine, ifdef, ifndef, else, endif, using,
+		include, define, undefine, ifdef, ifndef, else, endif, using, mbf21flags,
 		wait, stop, goto, loop, from, to, clear, free, properties, swap, in, with, each, alias, next, auto, index, custom, property, protect, fill, null,
 		spawn, see, melee, missile, pain, death, xdeath, raise, ready, select, fire, flash, deselect, lightdone, thing, weapon, misc, sound, ammo, pars,
 		pointer, bool, byte, ubyte, short, ushort, int, uint, angleint, angleuint, anglefixed, fixed, thingmissile, string, true, false, boom, mbf, mbf21
@@ -241,6 +241,70 @@ decohack : cstyle {
 	}
 
 	functions {
+		// doom 1.9 weapon pointers
+		A_Light0; A_Light1; A_Light2; A_GunFlash;
+		A_WeaponReady; A_Lower; A_Raise; A_Punch; A_Refire; A_CheckReload;
+		A_Saw; A_FirePistol; A_FireCGun; A_FireMissile; A_FirePlasma; A_FireBFG; A_BFGsound;
+		A_FireShotgun; A_FireShotgun2; A_OpenShotgun2; A_CloseShotgun2;
+
+		// doom 1.9 thing pointers
+		A_BFGSpray;
+		A_Explode; A_Pain; A_PlayerScream; A_Fall; A_XScream; A_Look; A_Chase; A_FaceTarget; A_PosAttack; A_Scream;
+		A_VileChase; A_VileStart; A_VileTarget; A_VileAttack; A_StartFire; A_Fire; A_FireCrackle;
+		A_Tracer; A_SkelWhoosh; A_SkelFist; A_SkelMissile;
+		A_FatRaise; A_FatAttack1; A_FatAttack2; A_FatAttack3;
+		A_BossDeath; A_CPosAttack; A_CPosRefire;
+		A_TroopAttack; A_SargAttack; A_HeadAttack; A_BruisAttack; A_SkullAttack;
+		A_Metal; A_SPosAttack; A_SpidRefire; A_BabyMetal; A_PainAttack; A_PainDie;
+		A_KeenDie; A_BrainPain; A_BrainDie; A_BrainAwake; A_BrainSpit; A_SpawnSound; A_SpawnFly; A_BrainExplode;
+
+		// mbf weapons pointers
+		A_FireOldBFG;
+
+		// mbf thing pointers
+		A_Detonate;
+		A_Mushroom = "anglefixed vangle, fixed speed";
+		A_Spawn = "thing thingId, short zpos";
+		A_Turn = "angleint angle";
+		A_Face = "angleuint angle";
+		A_Scratch = "short damage, sound sound";
+		A_PlaySound = "sound sound, bool fullvolume";
+		A_RandomJump = "state state, uint chance";
+		A_LineEffect = "short special, short tag";
+		A_Die;
+		A_BetaSkullAttack;
+		A_Stop;
+
+		// mbf21 weapons pointers
+		A_WeaponProjectile = "thingmissile thingId, anglefixed angle, anglefixed pitch, fixed hoffset, fixed zoffset";
+		A_WeaponBulletAttack = "anglefixed hspread, anglefixed vspread, uint numBullets, ushort damageBase, uint damageDice";
+		A_WeaponMeleeAttack = "ushort damageBase, uint damageDice, sound sound, fixed range";
+		A_WeaponSound = "sound sound, bool fullvolume";
+		A_WeaponAlert;
+		A_WeaponJump = "state state, uint chance";
+		A_ConsumeAmmo = "int ammount";
+		A_CheckAmmo = "state state, ushort amount";
+		A_RefireTo = "state state, bool noAmmoCheck";
+		A_GunFlashTo = "state state, bool noThirdPerson";
+
+		// mbf21 thing pointers
 		A_SpawnObject = "thing thingId, anglefixed angle, fixed xoffset, fixed yoffset, fixed zoffset, fixed xvel, fixed yvel, fixed zvel";
+		A_MonsterProjectile = "thingmissile thingId, anglefixed angle, anglefixed pitch, fixed hoffset, fixed zoffset";
+		A_MonsterBulletAttack = "anglefixed hspread, anglefixed vspread, uint numBullets, ushort damageBase, uint damageDice";
+		A_MonsterMeleeAttack = "ushort damageBase, uint damageDice, sound sound, fixed range";
+		A_RadiusDamage = "uint damage, uint radius";
+		A_NoiseAlert;
+		A_HealChase = "state state, sound sound";
+		A_SeekTracer = "anglefixed threshold, anglefixed maxTurnAngle";
+		A_FindTracer = "anglefixed fov, uint rangeBlocks";
+		A_ClearTracer;
+		A_JumpIfHealthBelow = "state state, int health";
+		A_JumpIfTargetInSight = "state state, anglefixed fov";
+		A_JumpIfTargetCloser = "state state, fixed distance";
+		A_JumpIfTracerInSight = "state state, anglefixed fov";
+		A_JumpIfTracerCloser = "state state, fixed distance";
+		A_JumpIfFlagsSet = "state state, flags flags, mbf21flags mbf21flags";
+		A_AddFlags = "flags flags, mbf21flags mbf21flags";
+		A_RemoveFlags = "flags flags, mbf21flags mbf21flags";
 	}
 }
