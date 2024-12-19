@@ -19,6 +19,7 @@ set(EXTERNAL_SOURCES
 file(GLOB_RECURSE EXTERNAL_SOURCES
 	lzma/C/LzmaDec.c
 	glad/src/*.c
+	libvwad/*.c
 	${DUMB_SOURCES}
 	${SLADE_HEADERS}
 	)
@@ -49,3 +50,6 @@ if(USE_SYSTEM_DUMB)
 else()
 	target_include_directories(external PUBLIC ${CMAKE_CURRENT_LIST_DIR}/dumb)
 endif()
+
+# Expose libvwad headers
+target_include_directories(external PUBLIC ${CMAKE_CURRENT_LIST_DIR}/libvwad)

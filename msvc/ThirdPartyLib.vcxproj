@@ -46,6 +46,10 @@
     <ClInclude Include="..\thirdparty\fmt\include\fmt\xchar.h" />
     <ClInclude Include="..\thirdparty\glad\include\glad\glad.h" />
     <ClInclude Include="..\thirdparty\glad\include\KHR\khrplatform.h" />
+    <ClInclude Include="..\thirdparty\libvwad\vwadprng.h" />
+    <ClInclude Include="..\thirdparty\libvwad\vwadvfs.h" />
+    <ClInclude Include="..\thirdparty\libvwad\vwadwrite.h" />
+    <ClInclude Include="..\thirdparty\libvwad\vwadprng.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-private.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_math.h" />

@@ -797,4 +797,15 @@
       <Filter>DUMB\helpers</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\thirdparty\libvwad\vwadprng.c">
+      <Filter>libvwad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\libvwad\vwadvfs.c">
+      <Filter>libvwad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\libvwad\vwadwrite.c">
+      <Filter>libvwad</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>
