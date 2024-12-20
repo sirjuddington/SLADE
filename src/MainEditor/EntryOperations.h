@@ -22,6 +22,7 @@ namespace entryoperations
 		UndoManager*                 undo_manager);
 	bool openMapDB2(ArchiveEntry* entry);
 	bool compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
+	bool compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
 
 	// TEXTUREx
 	bool addToPatchTable(const vector<ArchiveEntry*>& entries);
