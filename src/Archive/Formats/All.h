@@ -17,6 +17,7 @@
 #include "RffArchive.h"
 #include "SiNArchive.h"
 #include "TarArchive.h"
+#include "VWadArchive.h"
 #include "Wad2Archive.h"
 #include "WadArchive.h"
 #include "WadJArchive.h"
