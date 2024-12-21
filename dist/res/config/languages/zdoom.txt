@@ -111,7 +111,7 @@ z_gldefs {
 	constants = {
 		color, size, offset, subtractive, secondarySize, interval, chance, dontlightself,
 		scale, map, iwad, thiswad, disablefullbright, Texture, Shader, speed, attenuate,
-		dontlightothers, dontlightmap
+		dontlightothers, dontlightmap, nomipmap
 	}
 }
 
@@ -426,7 +426,7 @@ z_sbarinfo {
 		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
 		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
 		IfHealth, InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
-		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel, IfCVarInt, Protrusion
+		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel, IfCVarInt, Protrusion, AppendStatusBar
 	}
 
 	constants = {
@@ -545,18 +545,30 @@ z_terrain {
 	keyword_link = "http://zdoom.org/wiki/TERRAIN";
 	constant_link = "http://zdoom.org/wiki/TERRAIN";
 	function_link = "http://zdoom.org/wiki/TERRAIN";
-	blocks = "splash", "terrain", "floor";
+	blocks = "splash", "terrain";
 
 	keywords = {
-		splash,
-		smallclass, smallclip, smallsound,
-		baseclass, chunkclass, chunkxvelshift, chunkyvelshift, chunkzvelshift, chunkbasezvel, sound,
-		terrain, footclip, liquid, friction, damagetype, damageamount, damagetimemask, allowprotection,
-		floor, defaultterrain, noalert, optional
+
+		// Top-level keywords
+		splash, terrain, floor, ifdoom, ifheretic, ifhexen, ifstrife, endif, defaultterrain,
+
+		// Splash and terrain definitions
+		modify,
+
+		// Floor command
+		optional, null, none
 	}
 
-	constants = {
-		ifdoom, ifheretic, ifhexen, ifstrife, endif
+	properties = {
+
+		// Splash properties
+		smallsound, smallclip, sound, smallclass, baseclass, chunkclass, chunkxvelshift,
+		chunkyvelshift, chunkzvelshift, chunkbasezvel, noalert,
+
+		// Terrain properties
+		splash, damageamount, damagetype, damagetimemask, footclip, stepvolume,
+		walksteptics, runsteptics, leftstepsounds, rightstepsounds, liquid, friction,
+		allowprotection, damageonland, stepsounds, stepdistance, stepdistanceminvel
 	}
 }
 
