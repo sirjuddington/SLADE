@@ -69,11 +69,11 @@ CVAR(Bool, snd_autoplay, false, CVar::Flag::Save)
 AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	EntryPanel(parent, "audio"),
 	timer_seek_{ new wxTimer(this) },
-	#if (SFML_VERSION_MAJOR > 2)
+#if (SFML_VERSION_MAJOR > 2)
 	sound_{ new sf::Sound(*sound_buffer_) },
-	#else
+#else
 	sound_{ new sf::Sound() },
-	#endif
+#endif
 	music_{ new audio::Music() },
 	mod_{ new audio::ModMusic() },
 	mp3_{ new audio::Mp3Music() }
@@ -725,20 +725,20 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	// Set slider
 	slider_seek_->SetValue(pos);
 
-	// Stop the timer if playback has reached the end
-	#if (SFML_VERSION_MAJOR > 2)
+// Stop the timer if playback has reached the end
+#if (SFML_VERSION_MAJOR > 2)
 	if (pos >= slider_seek_->GetMax() || (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Status::Stopped)
 		|| (audio_type_ == Music && music_->getStatus() == sf::Sound::Status::Stopped)
 		|| (audio_type_ == Mod && mod_->getStatus() == sf::Sound::Status::Stopped)
 		|| (audio_type_ == Mp3 && mp3_->getStatus() == sf::Sound::Status::Stopped)
 		|| (audio_type_ == MIDI && !audio::midiPlayer().isPlaying()))
-	#else
+#else
 	if (pos >= slider_seek_->GetMax() || (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Music && music_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Mod && mod_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Mp3 && mp3_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == MIDI && !audio::midiPlayer().isPlaying()))
-	#endif
+#endif
 	{
 		timer_seek_->Stop();
 		slider_seek_->SetValue(0);
