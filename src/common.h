@@ -129,7 +129,7 @@
 #endif
 
 // fmt
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 // Sigslot
 #include "thirdparty/sigslot/signal.hpp"
