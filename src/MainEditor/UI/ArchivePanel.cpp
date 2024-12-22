@@ -4138,6 +4138,12 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 		else if (bind == "select_all")
 		{
 			entry_tree_->SelectAll();
+
+			// Trigger selection change event (since SelectAll doesn't trigger it)
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+			entry_tree_->ProcessWindowEvent(de);
+
 			return;
 		}
 
