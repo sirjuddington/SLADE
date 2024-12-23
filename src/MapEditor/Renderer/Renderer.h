@@ -49,6 +49,7 @@ namespace mapeditor
 		void animateSelectionChange(const ItemSelection& selection);
 		void animateHilightChange(const mapeditor::Item& old_item, MapObject* old_object = nullptr);
 		void addAnimation(unique_ptr<MCAnimation> animation);
+		void clearAnimations();
 
 	private:
 		MapEditContext& context_;
