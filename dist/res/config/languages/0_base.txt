@@ -49,3 +49,17 @@ lua
 		false, true, nil
 	}
 }
+
+json
+{
+	name = "JSON";
+	comment_line = "//";
+	case_sensitive = true;
+	block_begin = "{";
+	block_end = "}";
+
+	keywords =
+	{
+		true, false, null
+	}
+}
