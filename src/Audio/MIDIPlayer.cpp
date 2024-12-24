@@ -247,7 +247,7 @@ public:
 		if (!isPlaying())
 			return false;
 
-		elapsed_ms_ = timer_.getElapsedTime().asMilliseconds();
+		elapsed_ms_ += timer_.getElapsedTime().asMilliseconds();
 
 		return fluid_player_stop(fs_player_) == FLUID_OK;
 	}
