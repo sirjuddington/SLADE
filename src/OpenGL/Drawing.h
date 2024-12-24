@@ -1,8 +1,5 @@
 #pragma once
 
-#ifdef USE_SFML_RENDERWINDOW
-#include <SFML/Graphics.hpp>
-#endif
 #include "Utility/Colour.h"
 
 namespace slade
@@ -99,12 +96,6 @@ namespace drawing
 
 	// Specific
 	void drawHud();
-
-// Implementation-specific
-#ifdef USE_SFML_RENDERWINDOW
-	void setRenderTarget(sf::RenderWindow* target);
-#endif
-
 
 	// From CodeLite
 	wxColour systemPanelBGColour();

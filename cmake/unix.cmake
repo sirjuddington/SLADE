@@ -76,14 +76,9 @@ find_package(wxWidgets ${WX_VERSION} COMPONENTS ${WX_LIBS} REQUIRED)
 include(${wxWidgets_USE_FILE})
 
 # SFML
-if (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window graphics network)
-ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
-else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window network)
 find_package(Freetype REQUIRED)
 find_package(FTGL REQUIRED)
-endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
 if (NO_FLUIDSYNTH)

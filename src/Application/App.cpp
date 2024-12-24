@@ -790,11 +790,7 @@ bool app::useWebView()
 
 bool app::useSFMLRenderWindow()
 {
-#ifdef USE_SFML_RENDERWINDOW
-	return true;
-#else
 	return false;
-#endif
 }
 
 const string& app::iconFile()

@@ -114,11 +114,6 @@
 // SFML
 #include <SFML/System.hpp>
 
-#ifdef USE_SFML_RENDERWINDOW
-#include <SFML/Graphics.hpp>
-#include <wx/control.h>
-#endif
-
 // Freeimage
 #define FREEIMAGE_LIB
 #include <FreeImage.h>

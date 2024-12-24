@@ -644,12 +644,8 @@ void Renderer::drawSelectionNumbers() const
 	drawing::enableTextStateReset(false);
 	drawing::setTextState(true);
 	view_.setOverlayCoords(true);
-#if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
-	drawing::setTextOutline(1.0f, ColRGBA::BLACK);
-#else
 	if (context_.selection().size() <= map_max_selection_numbers * 0.5)
 		drawing::setTextOutline(1.0f, ColRGBA::BLACK);
-#endif
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		if ((int)a > map_max_selection_numbers)
