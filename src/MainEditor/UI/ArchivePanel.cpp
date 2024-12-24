@@ -948,7 +948,7 @@ bool ArchivePanel::importFiles()
 
 	// Run open files dialog
 	filedialog::FDInfo info;
-	if (filedialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
+	if (filedialog::openFiles(info, "Choose files to import", "Any File (*.*)|*", this))
 	{
 		// Get the entry index of the last selected list item
 		auto dir   = entry_tree_->currentSelectedDir();
@@ -1753,7 +1753,7 @@ bool ArchivePanel::importEntry()
 	{
 		// Run open file dialog
 		filedialog::FDInfo info;
-		if (filedialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*.*", this))
+		if (filedialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*", this))
 		{
 			// Preserve gfx offset if needed
 			Vec2i offset;

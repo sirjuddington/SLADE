@@ -14,7 +14,7 @@ public:
 		const wxString& path,
 		bool            editable                = true,
 		const wxString& browse_caption          = "Browse File",
-		const wxString& browse_extensions       = "All Files|*.*",
+		const wxString& browse_extensions       = "All Files|*",
 		const wxString& browse_default_filename = "");
 
 	wxString location() const;

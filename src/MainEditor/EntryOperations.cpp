@@ -218,7 +218,7 @@ bool entryoperations::exportEntry(ArchiveEntry* entry)
 	if (filedialog::saveFile(
 			info,
 			"Export Entry \"" + entry->name() + "\"",
-			"Any File (*.*)|*.*",
+			"Any File (*.*)|*",
 			maineditor::windowWx(),
 			fn.GetFullName().ToStdString()))
 		entry->exportFile(info.filenames[0]); // Export entry if ok was clicked
@@ -234,7 +234,7 @@ bool entryoperations::exportEntries(const vector<ArchiveEntry*>& entries, const 
 	// Run save files dialog
 	filedialog::FDInfo info;
 	if (filedialog::saveFiles(
-			info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*.*", maineditor::windowWx()))
+			info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*", maineditor::windowWx()))
 	{
 		// Go through the selected entries
 		for (auto& entry : entries)

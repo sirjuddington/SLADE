@@ -1817,7 +1817,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	{
 		// Create extensions string
 		wxString extensions = app::archiveManager().getArchiveExtensionsString();
-		extensions += "|All Files (*.*)|*.*";
+		extensions += "|All Files (*.*)|*";
 
 		// Open a file browser dialog that allows multiple selection
 		// and filters by wad, zip and pk3 file extensions

@@ -387,7 +387,7 @@ void PatchTablePanel::addPatchFromFile()
 	auto etypes = EntryType::allTypes();
 
 	// Go through types
-	wxString ext_filter = "All files (*.*)|*.*|";
+	wxString ext_filter = "All files (*.*)|*|";
 	for (auto& etype : etypes)
 	{
 		// If the type is a valid image type, add its extension filter
