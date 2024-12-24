@@ -11,10 +11,6 @@ if(NOT APPLE)
 	OPTION(WX_GTK3 "Use GTK3 (if wx is built with it)" ON)
 endif(NOT APPLE)
 
-if (NOT NO_COTIRE)
-	include(cotire)
-endif()
-
 # wxWidgets libs
 if (WITH_WXPATH)
     set(ENV{PATH} ${WITH_WXPATH}:$ENV{PATH})
@@ -224,14 +220,5 @@ if(NOT TARGET uninstall)
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake COMMENT "Uninstall the project...")
 endif()
 
-if (NOT NO_COTIRE)
-	set_target_properties(slade PROPERTIES
-		COTIRE_CXX_PREFIX_HEADER_INIT "common.h"
-		# Enable multithreaded unity builds by default
-		# because otherwise probably no one would realize how
-		COTIRE_UNITY_SOURCE_MAXIMUM_NUMBER_OF_INCLUDES -j
-		# Fixes macro definition bleedout
-		COTIRE_UNITY_SOURCE_PRE_UNDEFS "Bool"
-		)
-	cotire(slade)
-endif()
+# Precompiled Header
+target_precompile_headers(slade PRIVATE "common.h")
