@@ -838,28 +838,32 @@ void ThingPropsPanel::applyChanges()
 	// Apply general properties
 	for (auto& object : objects_)
 	{
-		// Flags
-		if (udmf_flags_.empty())
+		if (!cb_flags_.empty())
 		{
-			for (int f = 0; f < game::configuration().nThingFlags(); f++)
+			// Flags
+			if (udmf_flags_.empty())
 			{
-				if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					game::configuration().setThingFlag(f, dynamic_cast<MapThing*>(object), cb_flags_[f]->GetValue());
+				for (int f = 0; f < game::configuration().nThingFlags(); f++)
+				{
+					if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
+						game::configuration().setThingFlag(
+							f, dynamic_cast<MapThing*>(object), cb_flags_[f]->GetValue());
+				}
 			}
-		}
 
-		// UDMF flags
-		else
-		{
-			for (unsigned f = 0; f < udmf_flags_.size(); f++)
+			// UDMF flags
+			else
 			{
-				if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					object->setBoolProperty(udmf_flags_[f].ToStdString(), cb_flags_[f]->GetValue());
+				for (unsigned f = 0; f < udmf_flags_.size(); f++)
+				{
+					if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
+						object->setBoolProperty(udmf_flags_[f].ToStdString(), cb_flags_[f]->GetValue());
+				}
 			}
 		}
 
 		// UDMF extra flags
-		if (!udmf_flags_extra_.empty())
+		if (!udmf_flags_extra_.empty() && !cb_flags_extra_.empty())
 		{
 			for (unsigned f = 0; f < udmf_flags_extra_.size(); f++)
 			{

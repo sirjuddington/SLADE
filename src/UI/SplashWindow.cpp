@@ -54,6 +54,12 @@ int      img_height = 204;
 bool     init_done  = false;
 } // namespace
 
+#ifdef __WXGTK__
+CVAR(Int, splash_refresh_ms, 100, CVar::Flag::Save)
+#else
+CVAR(Int, splash_refresh_ms, 20, CVar::Flag::Save)
+#endif
+
 
 // -----------------------------------------------------------------------------
 //
@@ -110,8 +116,8 @@ void SplashWindow::setProgress(float progress)
 {
 	progress_ = progress;
 
-	// Refresh if last redraw was > 20ms ago
-	if (timer_.Time() >= 20)
+	// Refresh if last redraw was > [splash_refresh_ms] ago
+	if (timer_.Time() >= splash_refresh_ms)
 		forceRedraw();
 }
 

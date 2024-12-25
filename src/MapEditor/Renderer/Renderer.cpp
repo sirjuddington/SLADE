@@ -1775,3 +1775,11 @@ void Renderer::addAnimation(unique_ptr<MCAnimation> animation)
 {
 	animations_.push_back(std::move(animation));
 }
+
+// -----------------------------------------------------------------------------
+// Clears all active animations
+// -----------------------------------------------------------------------------
+void Renderer::clearAnimations()
+{
+	animations_.clear();
+}

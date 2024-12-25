@@ -205,7 +205,7 @@ string Archive::fileExtensionString() const
 	}
 
 	// No extension (probably unknown type)
-	return "Any File|*.*";
+	return "Any File|*";
 }
 
 // -----------------------------------------------------------------------------

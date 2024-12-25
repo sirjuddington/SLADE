@@ -379,7 +379,7 @@ string filedialog::executableExtensionString()
 	if (app::platform() == app::Platform::Windows)
 		return "Executable Files (*.exe)|*.exe";
 	else
-		return "Executable Files|*.*";
+		return "Executable Files|*";
 }
 
 // -----------------------------------------------------------------------------

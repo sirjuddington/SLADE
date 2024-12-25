@@ -856,7 +856,7 @@ bool ArchivePanel::importFiles()
 
 	// Run open files dialog
 	filedialog::FDInfo info;
-	if (filedialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
+	if (filedialog::openFiles(info, "Choose files to import", "Any File (*.*)|*", this))
 	{
 		// Get the entry index of the last selected list item
 		auto dir   = entry_tree_->currentSelectedDir();
@@ -1386,7 +1386,7 @@ bool ArchivePanel::importEntry()
 	{
 		// Run open file dialog
 		filedialog::FDInfo info;
-		if (filedialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*.*", this))
+		if (filedialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*", this))
 		{
 			// Preserve gfx offset if needed
 			Vec2i offset;
@@ -3274,6 +3274,12 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 		else if (bind == "select_all")
 		{
 			entry_tree_->SelectAll();
+
+			// Trigger selection change event (since SelectAll doesn't trigger it)
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+			entry_tree_->ProcessWindowEvent(de);
+
 			return;
 		}
 
