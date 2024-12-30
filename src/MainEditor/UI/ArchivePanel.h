@@ -73,6 +73,7 @@ public:
 	bool reloadCurrentPanel();
 	bool musMidiConvert() const;
 	bool compileACS(bool hexen = false) const;
+	bool compileDECOHack() const;
 	bool convertTextures() const;
 	bool crc32() const;
 

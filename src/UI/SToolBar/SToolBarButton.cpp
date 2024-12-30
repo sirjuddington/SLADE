@@ -78,6 +78,8 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const w
 	icon_size_{ toolbar_size },
 	text_offset_{ parent->FromDIP(2) }
 {
+	action_name_.Replace("&", "");
+
 	setup(show_name, icon.IsEmpty() ? action_->iconName() : wxutil::strToView(icon));
 
 	// Add shortcut to help text if it exists
@@ -188,9 +190,7 @@ void SToolBarButton::setMenu(wxMenu* menu, bool delete_existing)
 void SToolBarButton::setFontSize(float scale)
 {
 	SetFont(GetFont().Scale(scale));
-	wxString name = action_name_;
-	name.Replace("&", "");
-	text_width_ = ToDIP(GetTextExtent(name).GetWidth()) + pad_inner_ * 2;
+	text_width_ = ToDIP(GetTextExtent(action_name_).GetWidth()) + pad_inner_ * 2;
 	updateSize();
 }
 
@@ -241,11 +241,7 @@ void SToolBarButton::setup(bool show_name, string_view icon)
 
 	// Determine width of name text if shown
 	if (show_name)
-	{
-		wxString name = action_name_;
-		name.Replace("&", "");
-		text_width_ = ToDIP(GetTextExtent(name).GetWidth()) + pad_inner_ * 2;
-	}
+		text_width_ = ToDIP(GetTextExtent(action_name_).GetWidth()) + pad_inner_ * 2;
 
 	// Set size
 	updateSize();
@@ -307,12 +303,10 @@ void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 	auto col_hilight    = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 
 	// Get width of name text if shown
-	int      name_height = 0;
-	wxString name        = action_name_;
+	int name_height = 0;
 	if (show_name_)
 	{
-		name.Replace("&", "");
-		auto name_size = GetTextExtent(name);
+		auto name_size = GetTextExtent(action_name_);
 		name_height    = name_size.y;
 	}
 
@@ -384,7 +378,7 @@ void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 	{
 		int top  = (static_cast<double>(GetSize().y) * 0.5) - (static_cast<double>(name_height) * 0.5);
 		int left = pad_outer_ + pad_inner_ * 2 + icon_size_ + text_offset_;
-		gc->DrawText(name, FromDIP(left), top);
+		gc->DrawText(action_name_, FromDIP(left), top);
 	}
 
 	if (menu_dropdown_)

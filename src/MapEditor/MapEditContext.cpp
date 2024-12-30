@@ -453,6 +453,7 @@ void MapEditContext::clearMap()
 	// Clear other data
 	updateTagged();
 	info_3d_->reset();
+	renderer_->clearAnimations();
 
 	// Clear map
 	map_->clearMap();

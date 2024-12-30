@@ -35,11 +35,21 @@ if (NOT NO_FLUIDSYNTH)
 	find_package(FluidSynth CONFIG REQUIRED)
 endif ()
 
+# SFML
+set(SFML_FIND_COMPONENTS System Audio Window Network)
+list(TRANSFORM SFML_FIND_COMPONENTS TOLOWER OUTPUT_VARIABLE SFML2_FIND_COMPONENTS)
+find_package(SFML 2 QUIET COMPONENTS ${SFML2_FIND_COMPONENTS})
+if(SFML_FOUND)
+	list(TRANSFORM SFML2_FIND_COMPONENTS PREPEND sfml- OUTPUT_VARIABLE SFML_LIBRARIES)
+else()
+	list(TRANSFORM SFML_FIND_COMPONENTS PREPEND SFML:: OUTPUT_VARIABLE SFML_LIBRARIES)
+	find_package(SFML 3 COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
+endif()
+
 # Other
 find_package(freeimage CONFIG REQUIRED)
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(SFML COMPONENTS system audio window network CONFIG REQUIRED)
 find_package(glm REQUIRED)
 
 
@@ -95,14 +105,11 @@ target_link_libraries(slade
 	${EXTERNAL_LIBRARIES}
 	${FREETYPE_LIBRARIES}
 	${OPENGL_LIBRARIES}
+	${SFML_LIBRARIES}
 	${WX_LIBS}
 	${ZLIB_LIBRARY}
 	freeimage::FreeImage
 	MPG123::libmpg123
-	sfml-audio
-	sfml-main
-	sfml-network
-	sfml-window
 	glm::glm
 )
 

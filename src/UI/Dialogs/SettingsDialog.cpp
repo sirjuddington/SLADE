@@ -299,13 +299,13 @@ wxPanel* SettingsDialog::createSectionsPanel()
 	createSectionButton(panel, SettingsPage::Text, "Text Editor", "text");
 	createSectionButton(panel, SettingsPage::Graphics, "Graphics", "gfx");
 	createSectionButton(panel, SettingsPage::Audio, "Audio", "sound");
-	createSectionButton(panel, SettingsPage::Scripting, "ACS Scripts", "script");
+	createSectionButton(panel, SettingsPage::Scripting, "Scripting & Compilers", "script");
 	createSectionButton(panel, SettingsPage::MapGeneral, "Map Editor", "mapeditor");
 	createSectionButton(panel, SettingsPage::MapDisplay, "Map Editor Display", "flat_t");
 	createSectionButton(panel, SettingsPage::Advanced, "Advanced", "settings");
 
-	// Set all to width of 'Keyboard Shortcuts' button since it's the widest
-	auto keybinds_button = sectionButton(SettingsPage::Keybinds);
+	// Set all to width of 'Scripting & Compilers' button since it's the widest
+	auto keybinds_button = sectionButton(SettingsPage::Scripting);
 	keybinds_button->setExactFit(true);
 	auto width = keybinds_button->GetMinSize().GetWidth();
 	for (auto* btn : section_buttons_)

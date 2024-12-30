@@ -243,6 +243,7 @@ void MapThing::copy(MapObject* c)
 	auto thing  = dynamic_cast<MapThing*>(c);
 	position_.x = thing->position_.x;
 	position_.y = thing->position_.y;
+	z_          = thing->z_;
 	type_       = thing->type_;
 	angle_      = thing->angle_;
 	flags_      = thing->flags_;

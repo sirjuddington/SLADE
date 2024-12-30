@@ -81,11 +81,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(String, path_acc, "", CVar::Flag::Save)
 CVAR(String, path_acc_libs, "", CVar::Flag::Save)
+CVAR(String, path_java, "", CVar::Flag::Save)
+CVAR(String, path_decohack, "", CVar::Flag::Save)
 CVAR(String, path_pngout, "", CVar::Flag::Save)
 CVAR(String, path_pngcrush, "", CVar::Flag::Save)
 CVAR(String, path_deflopt, "", CVar::Flag::Save)
 CVAR(String, path_db2, "", CVar::Flag::Save)
 CVAR(Bool, acc_always_show_output, false, CVar::Flag::Save)
+CVAR(Bool, decohack_always_show_output, false, CVar::Flag::Save)
 CVAR(String, last_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
 CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
 CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
@@ -330,7 +333,7 @@ bool entryoperations::exportEntry(ArchiveEntry* entry)
 	if (filedialog::saveFile(
 			info,
 			"Export Entry \"" + entry->name() + "\"",
-			"Any File (*.*)|*.*",
+			"Any File (*.*)|*",
 			maineditor::windowWx(),
 			fn.GetFullName().ToStdString()))
 		entry->exportFile(info.filenames[0]); // Export entry if ok was clicked
@@ -346,7 +349,7 @@ bool entryoperations::exportEntries(const vector<ArchiveEntry*>& entries, const 
 	// Run save files dialog
 	filedialog::FDInfo info;
 	if (filedialog::saveFiles(
-			info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*.*", maineditor::windowWx()))
+			info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*", maineditor::windowWx()))
 	{
 		// Go through the selected entries
 		for (auto& entry : entries)
@@ -1503,6 +1506,162 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		if (!errors.empty() || !success)
 		{
 			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
+			dlg.setMessage(
+				success ? "The following errors were encountered while compiling, please fix them and recompile:"
+						: "Compiler output shown below: ");
+			dlg.setExt(errors);
+			dlg.ShowModal();
+		}
+
+		return success;
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Attempts to compile [entry] as DECOHack.
+// -----------------------------------------------------------------------------
+bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target, wxFrame* parent)
+{
+	// Check entry was given
+	if (!entry)
+		return false;
+
+	// Check entry has a parent (this is useless otherwise)
+	auto* archive = entry->parent();
+	if (!target && !archive)
+		return false;
+
+	// Check entry is text
+	if (!EntryDataFormat::format("text")->isThisFormat(entry->data()))
+	{
+		wxMessageBox("Error: Entry does not appear to be text", "Error", wxOK | wxCENTRE | wxICON_ERROR);
+		return false;
+	}
+
+	// Check if the DoomTools path is set up
+	wxString decohackpath = path_decohack;
+	if (decohackpath.IsEmpty() || !wxFileExists(decohackpath))
+	{
+		wxMessageBox(
+			"Error: DoomTools path not defined, please configure in SLADE preferences",
+			"Error",
+			wxOK | wxCENTRE | wxICON_ERROR);
+		ui::SettingsDialog::popupSettingsPage(parent, ui::SettingsPage::Scripting);
+		return false;
+	}
+
+	// Check if the Java path is set up
+	wxString javapath = path_java;
+	if (javapath.IsEmpty() || !wxFileExists(javapath))
+	{
+		wxMessageBox(
+			"Error: Java path not defined, please configure in SLADE preferences",
+			"Error",
+			wxOK | wxCENTRE | wxICON_ERROR);
+		ui::SettingsDialog::popupSettingsPage(parent, ui::SettingsPage::Scripting);
+		return false;
+	}
+
+	// Setup some path strings
+	auto srcfile = app::path(fmt::format("{}.dh", entry->nameNoExt()), app::Dir::Temp);
+	auto dehfile = app::path(fmt::format("{}.deh", entry->nameNoExt()), app::Dir::Temp);
+
+	// Find/export any resource libraries
+	ArchiveSearchOptions sopt;
+	sopt.match_type       = EntryType::fromId("decohack");
+	sopt.search_subdirs   = true;
+	auto          entries = app::archiveManager().findAllResourceEntries(sopt);
+	wxArrayString lib_paths;
+	for (auto& res_entry : entries)
+	{
+		// Ignore entries from other archives
+		if (archive && (archive->filename(true) != res_entry->parent()->filename(true)))
+			continue;
+
+		auto path = app::path(fmt::format("{}.dh", res_entry->nameNoExt()), app::Dir::Temp);
+		res_entry->exportFile(path);
+		lib_paths.Add(path);
+		log::info(2, "Exporting DECOHack file {}", res_entry->name());
+	}
+
+	// Export script to file
+	entry->exportFile(srcfile);
+
+	// Execute DECOHack
+	wxString command = "\"" + path_java + "\" -cp \"" + path_decohack + "\""
+					   + " -Xms64M -Xmx4G net.mtrop.doom.tools.DecoHackMain \"" + srcfile + "\" -o \"" + dehfile + "\"";
+	wxArrayString output;
+	wxArrayString errout;
+	wxGetApp().SetTopWindow(parent);
+	wxExecute(command, output, errout, wxEXEC_SYNC);
+	wxGetApp().SetTopWindow(maineditor::windowWx());
+
+	// Log output
+	log::console("DECOHack compiler output:");
+	wxString output_log;
+	if (!output.IsEmpty())
+	{
+		const char* title1 = "=== Log: ===\n";
+		log::console(title1);
+		output_log += title1;
+		for (const auto& line : output)
+		{
+			log::console(line);
+			output_log += line;
+		}
+	}
+
+	if (!errout.IsEmpty())
+	{
+		const char* title2 = "\n=== Error log: ===\n";
+		log::console(title2);
+		output_log += title2;
+		for (const auto& line : errout)
+		{
+			log::console(line);
+			output_log += line + "\n";
+		}
+	}
+
+	// Delete source file
+	wxRemoveFile(srcfile);
+
+	// Delete library files
+	for (const auto& lib_path : lib_paths)
+		wxRemoveFile(lib_path);
+
+	// Check it compiled successfully
+	bool success = wxFileExists(dehfile);
+	if (success)
+	{
+		// If no target entry was given, find one
+		if (!target)
+		{
+			// Get entry before DECOHACK
+			auto prev = archive->entryAt(archive->entryIndex(entry) - 1);
+
+			// Create a new entry there
+			prev = archive->addNewEntry("DEHACKED", archive->entryIndex(entry)).get();
+
+			// Import compiled dehacked
+			prev->importFile(dehfile);
+		}
+		else
+			target->importFile(dehfile);
+
+		// Delete compiled script file
+		wxRemoveFile(dehfile);
+	}
+
+	if (!success || decohack_always_show_output)
+	{
+		wxString errors = output_log;
+
+		if (!errors.empty() || !success)
+		{
+			ExtMessageDialog dlg(nullptr, success ? "DECOHack Output" : "Error Compiling");
 			dlg.setMessage(
 				success ? "The following errors were encountered while compiling, please fix them and recompile:"
 						: "Compiler output shown below: ");
