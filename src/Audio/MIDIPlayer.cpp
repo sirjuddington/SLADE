@@ -90,15 +90,18 @@ public:
 		fs_initialised_ = false;
 		file_           = "";
 
-		// Set fluidsynth driver to alsa in linux (no idea why it defaults to jack)
+		// Set fluidsynth driver to pulseaudio in linux (no idea why it defaults to jack)
 		if (app::platform() == app::Platform::Linux && fs_driver.value.empty())
-			fs_driver = "alsa";
+			fs_driver = "pulseaudio";
 
 		// Init soundfont path
 		if (fs_soundfont_path.value.empty())
 		{
 			if (app::platform() == app::Platform::Linux)
-				fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
+				fs_soundfont_path =
+					"/usr/share/sounds/sf2/FluidR3_GM.sf2"
+					":/usr/share/sounds/sf2/FluidR3_GS.sf2"
+					":/usr/share/sounds/sf2/default-GM.sf2";
 			else
 				log::warning(1, "No FluidSynth soundfont set, MIDI playback will not work");
 		}
@@ -249,7 +252,10 @@ public:
 
 		elapsed_ms_ += timer_.getElapsedTime().asMilliseconds();
 
-		return fluid_player_stop(fs_player_) == FLUID_OK;
+		auto ok = fluid_player_stop(fs_player_) == FLUID_OK;
+		fluid_synth_all_notes_off(fs_synth_, -1);
+
+		return ok;
 	}
 
 	// -------------------------------------------------------------------------
@@ -257,9 +263,8 @@ public:
 	// -------------------------------------------------------------------------
 	bool stop() override
 	{
-		if (isPlaying())
-			fluid_player_stop(fs_player_);
-
+		fluid_player_stop(fs_player_);
+		fluid_synth_all_notes_off(fs_synth_, -1);
 		fluid_player_seek(fs_player_, 0);
 		elapsed_ms_ = 0;
 
