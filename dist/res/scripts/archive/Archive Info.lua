@@ -35,6 +35,25 @@ end
 function Execute(archive)
    -- Archive format info
    AddOutputLine("Format: " .. archive.format.name)
+
+   if archive.format.name == "VWad" then
+      local author = Archives.VWad.GetAuthor(archive)
+      local title = Archives.VWad.GetTitle(archive)
+      local comment = Archives.VWad.GetComment(archive)
+      if author == "" then author = "N/A" end
+      if title == "" then title = "N/A" end
+      if comment == "" then comment = "N/A" end
+	   AddOutputLine("Author: " .. author)
+	   AddOutputLine("Title: " .. title)
+	   AddOutputLine("Comment: " .. comment)
+	   if Archives.VWad.IsSigned(archive) then
+	     AddOutputLine("Signed: YES")
+		  AddOutputLine("Public Key: " .. Archives.VWad.GetPublicKey(archive))
+	   else
+	     AddOutputLine("Signed: NO")
+	   end
+   end
+
    AddOutputLine("Supports directories: " .. YesNo(archive.format.supportsDirs))
    AddOutputLine("Entry names have extensions: " .. YesNo(archive.format.hasExtensions))
    if archive.format.maxNameLength > 0 then
