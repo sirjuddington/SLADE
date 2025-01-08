@@ -6,51 +6,81 @@ jobs:
   build:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.config.shell }}
     strategy:
       fail-fast: false
       matrix:
         config:
-        - {
-            name: "macOS",
-            os: macos-latest,
-            deps_cmdline: "brew install fluidsynth freeimage ftgl lua mpg123 sfml wxwidgets"
-          }
-        - {
-            name: "Linux GCC",
-            os: ubuntu-24.04,
-            deps_cmdline: "sudo apt install \
-                           libfluidsynth-dev libfreeimage-dev libwebkit2gtk-4.1-dev \
-                           libftgl-dev liblua5.3-dev libmpg123-dev libsfml-dev \
-                           libwxgtk3.2-dev libwxgtk-webview3.2-dev"
-          }
-        - {
-            name: "Linux Clang",
-            os: ubuntu-24.04,
-            extra_options: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++",
-            deps_cmdline: "sudo apt install \
-                           libfluidsynth-dev libfreeimage-dev libwebkit2gtk-4.1-dev \
-                           libftgl-dev liblua5.3-dev libmpg123-dev libsfml-dev \
-                           libwxgtk3.2-dev libwxgtk-webview3.2-dev"
-          }
+          - name: "macOS arm64"
+            os: macos-latest
+            release: true
+            shell: bash
+            package_name: "mac_arm64"
+            artifact-path: build/*.dmg
+            
+          - name: "macOS x64"
+            os: macos-13
+            release: true
+            shell: bash
+            package_name: "mac_x64"
+            artifact-path: build/*.dmg
+
+          - name: "Linux GCC"
+            os: ubuntu-24.04
+            shell: bash
+
+          - name: "Linux Clang"
+            os: ubuntu-24.04
+            shell: bash
+            extra_options: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install Dependencies
-      shell: bash
+    - name: Install Dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: brew install fluidsynth freeimage ftgl lua mpg123 sfml wxwidgets dylibbundler create-dmg
+
+    - name: Install Dependencies (Linux)
+      if: runner.os == 'Linux'
       run: |
-        if [[ ! -z "${{ matrix.config.deps_cmdline }}" ]]; then
-          eval ${{ matrix.config.deps_cmdline }}
-        fi
+        sudo apt-get update
+        sudo apt-get upgrade
+        sudo apt-get install \
+        libfluidsynth-dev libfreeimage-dev libwebkit2gtk-4.1-dev \
+        libftgl-dev liblua5.3-dev libmpg123-dev libsfml-dev \
+        libwxgtk3.2-dev libwxgtk-webview3.2-dev
 
     - name: Configure
-      shell: bash
       run: |
         mkdir build
         cmake -B build ${{ matrix.config.extra_options }} .
 
     - name: Build
-      shell: bash
       run: |
         export MAKEFLAGS=--keep-going
         cmake --build build --parallel 3
+
+    - name: Package (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        cd build
+        dylibbundler -od -b -x slade.app/Contents/MacOS/slade -d slade.app/Contents/MacOS/libs -p @executable_path/libs
+        create-dmg --app-drop-link 10 10 ./slade_${{ matrix.config.package_name }}_${{ github.ref_name }}.dmg ./slade.app
+
+    - name: Upload Artifacts
+      if: ${{ matrix.config.package_name }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.config.package_name }}
+        path: ${{ matrix.config.artifact-path }}
+
+    - name: Release
+      if: ${{ contains(github.ref, 'tags') && matrix.config.release }}
+      uses: ncipollo/release-action@v1
+      with:
+        name: ${{ github.ref_name }}
+        allowUpdates: true
+        artifacts: ${{ matrix.config.artifact-path }}
