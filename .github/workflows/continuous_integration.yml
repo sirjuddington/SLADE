@@ -83,4 +83,5 @@ jobs:
       with:
         name: ${{ github.ref_name }}
         allowUpdates: true
+        omitBodyDuringUpdate: true
         artifacts: ${{ matrix.config.artifact-path }}
