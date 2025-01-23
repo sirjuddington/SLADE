@@ -37,6 +37,25 @@
 
 using namespace slade;
 
+
+// -----------------------------------------------------------------------------
+//
+// Types
+//
+// -----------------------------------------------------------------------------
+template<> struct luabridge::Stack<CTPatchEx::Type> : Enum<CTPatchEx::Type>
+{
+};
+template<> struct luabridge::Stack<CTPatchEx::BlendType> : Enum<CTPatchEx::BlendType>
+{
+};
+
+
+// -----------------------------------------------------------------------------
+//
+// Lua Namespace Functions
+//
+// -----------------------------------------------------------------------------
 namespace slade::lua
 {
 // -----------------------------------------------------------------------------
@@ -74,12 +93,12 @@ void registerCTexturePatchTypes(lua_State* lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	ADD_CLASS_CONSTANT(lua_ctpatch_ex, "TYPE_PATCH", CTPatchEx::Type::Patch);
-	ADD_CLASS_CONSTANT(lua_ctpatch_ex, "TYPE_GRAPHIC", CTPatchEx::Type::Graphic);
-	ADD_CLASS_CONSTANT(lua_ctpatch_ex, "BLENDTYPE_NONE", CTPatchEx::BlendType::None);
-	ADD_CLASS_CONSTANT(lua_ctpatch_ex, "BLENDTYPE_TRANSLATION", CTPatchEx::BlendType::Translation);
-	ADD_CLASS_CONSTANT(lua_ctpatch_ex, "BLENDTYPE_BLEND", CTPatchEx::BlendType::Blend);
-	ADD_CLASS_CONSTANT(lua_ctpatch_ex, "BLENDTYPE_TINT", CTPatchEx::BlendType::Tint);
+	lua_ctpatch_ex.addStaticProperty("TYPE_PATCH", +[] { return CTPatchEx::Type::Patch; });
+	lua_ctpatch_ex.addStaticProperty("TYPE_GRAPHIC", +[] { return CTPatchEx::Type::Graphic; });
+	lua_ctpatch_ex.addStaticProperty("BLENDTYPE_NONE", +[] { return CTPatchEx::BlendType::None; });
+	lua_ctpatch_ex.addStaticProperty("BLENDTYPE_TRANSLATION", +[] { return CTPatchEx::BlendType::Translation; });
+	lua_ctpatch_ex.addStaticProperty("BLENDTYPE_BLEND", +[] { return CTPatchEx::BlendType::Blend; });
+	lua_ctpatch_ex.addStaticProperty("BLENDTYPE_TINT", +[] { return CTPatchEx::BlendType::Tint; });
 
 	// Properties
 	// -------------------------------------------------------------------------

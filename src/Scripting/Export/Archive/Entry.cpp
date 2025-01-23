@@ -47,9 +47,44 @@ static std::tuple<bool, string> entryImportString(ArchiveEntry& self, const stri
 // -----------------------------------------------------------------------------
 // Imports data from [mc] into entry [self]
 // -----------------------------------------------------------------------------
-static std::tuple<bool, string> entryImportMC(ArchiveEntry& self, MemChunk& mc)
+static std::tuple<bool, string> entryImportMC(ArchiveEntry& self, const MemChunk& mc)
 {
 	return std::make_tuple(self.importMemChunk(mc), global::error);
+}
+
+static int entryImportDataLua(lua_State* L)
+{
+	try
+	{
+		auto entry = luabridge::get<ArchiveEntry*>(L, 1).value();
+
+		// Second parameter can be either string or MemChunk (DataBlock)
+		string_view     data_string;
+		const MemChunk* data_mc = nullptr;
+		try
+		{
+			data_string = luabridge::get<string_view>(L, 2).value();
+		}
+		catch (const std::exception&)
+		{
+			data_mc = luabridge::get<const MemChunk*>(L, 2).value();
+		}
+
+		bool result;
+		if (data_mc)
+			result = entry->importMemChunk(*data_mc);
+		else
+			result = entry->importMem(data_string.data(), data_string.size());
+
+		luabridge::push(L, result).throw_on_error();
+		luabridge::push(L, global::error).throw_on_error();
+
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in ArchiveEntry.ImportData: {}", e.what()));
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -64,6 +99,57 @@ static bool entryRename(ArchiveEntry& self, string_view new_name)
 		return self.rename(new_name);
 }
 
+static int entryImportFileLua(lua_State* L)
+{
+	try
+	{
+		auto entry  = luabridge::get<ArchiveEntry*>(L, 1).value();
+		auto file   = luabridge::get<string_view>(L, 2).value();
+		auto result = entry->importFile(file);
+		luabridge::push(L, result).throw_on_error();
+		luabridge::push(L, global::error).throw_on_error();
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in ArchiveEntry.ImportFile: {}", e.what()));
+	}
+}
+
+static int entryImportEntryLua(lua_State* L)
+{
+	try
+	{
+		auto entry  = luabridge::get<ArchiveEntry*>(L, 1).value();
+		auto entry2 = luabridge::get<ArchiveEntry*>(L, 2).value();
+		auto result = entry->importEntry(entry2);
+		luabridge::push(L, result).throw_on_error();
+		luabridge::push(L, global::error).throw_on_error();
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in ArchiveEntry.ImportEntry: {}", e.what()));
+	}
+}
+
+static int entryExportFileLua(lua_State* L)
+{
+	try
+	{
+		auto entry    = luabridge::get<ArchiveEntry*>(L, 1).value();
+		auto filename = luabridge::get<string_view>(L, 2).value();
+		auto result   = entry->exportFile(filename);
+		luabridge::push(L, result).throw_on_error();
+		luabridge::push(L, global::error).throw_on_error();
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in ArchiveEntry.ExportFile: {}", e.what()));
+	}
+}
+
 // -----------------------------------------------------------------------------
 // Registers the ArchiveEntry type with lua
 // -----------------------------------------------------------------------------
@@ -75,41 +161,32 @@ void registerArchiveEntry(lua_State* lua)
 	// Properties
 	// -------------------------------------------------------------------------
 	lua_entry.addProperty("name", &ArchiveEntry::name);
-	lua_entry.addProperty("path", [](ArchiveEntry& self) { return self.path(); });
+	lua_entry.addProperty("path", [](const ArchiveEntry& self) { return self.path(); });
 	lua_entry.addProperty("type", &ArchiveEntry::type);
 	lua_entry.addProperty("size", &ArchiveEntry::size);
 	lua_entry.addProperty("index", [](ArchiveEntry& self) { return self.index(); });
-	lua_entry.addProperty("crc32", [](ArchiveEntry& self) { return misc::crc(self.rawData(), self.size()); });
+	lua_entry.addProperty("crc32", [](const ArchiveEntry& self) { return misc::crc(self.rawData(), self.size()); });
 	lua_entry.addProperty("data", &ArchiveEntry::data);
 	lua_entry.addProperty(
-		"parentArchive", [](ArchiveEntry& self) { return app::archiveManager().shareArchive(self.parent()); });
+		"parentArchive", [](const ArchiveEntry& self) { return app::archiveManager().shareArchive(self.parent()); });
 	lua_entry.addProperty(
 		"parentDir",
-		[](ArchiveEntry& self) { return self.parentDir() ? ArchiveDir::getShared(self.parentDir()) : nullptr; });
+		[](const ArchiveEntry& self) { return self.parentDir() ? ArchiveDir::getShared(self.parentDir()) : nullptr; });
 
 	// Functions
 	// -------------------------------------------------------------------------
 	lua_entry.addFunction(
 		"FormattedName",
-		[](ArchiveEntry& self) { return formattedEntryName(self, true, true, false); },
-		[](ArchiveEntry& self, bool include_path) { return formattedEntryName(self, include_path, true, false); },
-		[](ArchiveEntry& self, bool include_path, bool include_extension)
+		[](const ArchiveEntry& self) { return formattedEntryName(self, true, true, false); },
+		[](const ArchiveEntry& self, bool include_path) { return formattedEntryName(self, include_path, true, false); },
+		[](const ArchiveEntry& self, bool include_path, bool include_extension)
 		{ return formattedEntryName(self, include_path, include_extension, false); },
 		&formattedEntryName);
 	lua_entry.addFunction("FormattedSize", &ArchiveEntry::sizeString);
-	lua_entry.addFunction(
-		"ImportFile",
-		[](ArchiveEntry& self, string_view filename)
-		{ return std::make_tuple(self.importFile(filename), global::error); });
-	lua_entry.addFunction(
-		"ImportEntry",
-		[](ArchiveEntry& self, ArchiveEntry* entry)
-		{ return std::make_tuple(self.importEntry(entry), global::error); });
-	lua_entry.addFunction("ImportData", &entryImportString, &entryImportMC);
-	lua_entry.addFunction(
-		"ExportFile",
-		[](ArchiveEntry& self, string_view filename)
-		{ return std::make_tuple(self.exportFile(filename), global::error); });
+	lua_entry.addFunction("ImportFile", &entryImportFileLua);
+	lua_entry.addFunction("ImportEntry", &entryImportEntryLua);
+	lua_entry.addFunction("ImportData", &entryImportDataLua); //, &entryImportMCLua);
+	lua_entry.addFunction("ExportFile", &entryExportFileLua);
 	lua_entry.addFunction("Rename", &entryRename);
 }
 
@@ -129,5 +206,7 @@ void registerEntryType(lua_State* lua)
 	lua_etype.addProperty("format", &EntryType::formatId);
 	lua_etype.addProperty("editor", &EntryType::editor);
 	lua_etype.addProperty("category", &EntryType::category);
+
+	// lua_etype.addStaticFunction("Get", &EntryType::fromId); // Maybe replace Archives.EntryType with this?
 }
 } // namespace slade::lua

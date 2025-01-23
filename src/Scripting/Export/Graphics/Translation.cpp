@@ -40,6 +40,16 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Types
+//
+// -----------------------------------------------------------------------------
+template<> struct luabridge::Stack<TransRange::Type> : Enum<TransRange::Type>
+{
+};
+
+
+// -----------------------------------------------------------------------------
+//
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
@@ -208,12 +218,12 @@ void registerTranslationType(lua_State* lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	ADD_CLASS_CONSTANT(lua_translation, "RANGE_PALETTE", TransRange::Type::Palette);
-	ADD_CLASS_CONSTANT(lua_translation, "RANGE_COLOUR", TransRange::Type::Colour);
-	ADD_CLASS_CONSTANT(lua_translation, "RANGE_DESAT", TransRange::Type::Desat);
-	ADD_CLASS_CONSTANT(lua_translation, "RANGE_BLEND", TransRange::Type::Blend);
-	ADD_CLASS_CONSTANT(lua_translation, "RANGE_TINT", TransRange::Type::Tint);
-	ADD_CLASS_CONSTANT(lua_translation, "RANGE_SPECIAL", TransRange::Type::Special);
+	lua_translation.addStaticProperty("RANGE_PALETTE", +[] { return TransRange::Type::Palette; });
+	lua_translation.addStaticProperty("RANGE_COLOUR", +[] { return TransRange::Type::Colour; });
+	lua_translation.addStaticProperty("RANGE_DESAT", +[] { return TransRange::Type::Desat; });
+	lua_translation.addStaticProperty("RANGE_BLEND", +[] { return TransRange::Type::Blend; });
+	lua_translation.addStaticProperty("RANGE_TINT", +[] { return TransRange::Type::Tint; });
+	lua_translation.addStaticProperty("RANGE_SPECIAL", +[] { return TransRange::Type::Special; });
 
 	// Functions
 	// -------------------------------------------------------------------------

@@ -176,7 +176,7 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, Archive* archive) :
 // -----------------------------------------------------------------------------
 void DirArchiveCheck::addChange(const DirEntryChange& change)
 {
-	if (!dynamic_cast<DirArchiveHandler*>(change_list_.archive)->shouldIgnoreEntryChange(change))
+	if (!dynamic_cast<DirArchiveHandler&>(change_list_.archive->formatHandler()).shouldIgnoreEntryChange(change))
 		change_list_.changes.push_back(change);
 }
 

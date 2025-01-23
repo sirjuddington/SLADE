@@ -116,8 +116,8 @@ public:
 			chunk.data().read(&ihdr, 13, 0);
 
 			// Set info from IHDR
-			inf.width  = ihdr.width;
-			inf.height = ihdr.height;
+			inf.width  = wxINT32_SWAP_ON_LE(ihdr.width);
+			inf.height = wxINT32_SWAP_ON_LE(ihdr.height);
 			bpp        = ihdr.bpp;
 			if (ihdr.coltype == 3 && ihdr.bpp == 8)
 			{

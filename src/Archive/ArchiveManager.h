@@ -102,7 +102,7 @@ private:
 	};
 
 	vector<OpenArchive>            open_archives_;
-	unique_ptr<Archive>            program_resource_archive_;
+	shared_ptr<Archive>            program_resource_archive_;
 	shared_ptr<Archive>            base_resource_archive_;
 	bool                           res_archive_open_ = false;
 	vector<string>                 base_resource_paths_;

@@ -12,6 +12,3 @@ extern "C" {
 #include "thirdparty/luabridge/Vector.h"
 
 // clang-format on
-
-#define ADD_CLASS_CONSTANT(type, name, value) type.addStaticProperty(name, [] { return static_cast<int>(value); })
-#define ADD_NS_CONSTANT(namespace, name, value) namespace.addProperty(name, [] { return static_cast<int>(value); })

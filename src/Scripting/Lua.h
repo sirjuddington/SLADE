@@ -7,8 +7,16 @@ namespace slade
 {
 namespace lua
 {
-	bool init();
-	void close();
+	class LuaException : public std::runtime_error
+	{
+	public:
+		LuaException(string_view type, const string& message) : std::runtime_error(message), error_type_{ type } {}
+
+		const string& errorType() const { return error_type_; }
+
+	private:
+		string error_type_;
+	};
 
 	struct Environment
 	{
@@ -26,11 +34,9 @@ namespace lua
 		string message;
 		int    line_no;
 	};
-	Error& error();
-	void   showErrorDialog(
-		  wxWindow*   parent  = nullptr,
-		  string_view title   = "Script Error",
-		  string_view message = "An error occurred running the script, see details below");
+
+	bool init();
+	void close();
 
 	bool run(const string& program);
 	bool runFile(const string& filename);
@@ -39,6 +45,12 @@ namespace lua
 	bool runMapScript(const string& script, SLADEMap* map);
 
 	lua_State* state();
+
+	Error& error();
+	void   showErrorDialog(
+		  wxWindow*   parent  = nullptr,
+		  string_view title   = "Script Error",
+		  string_view message = "An error occurred running the script, see details below");
 
 	wxWindow* currentWindow();
 	void      setCurrentWindow(wxWindow* window);

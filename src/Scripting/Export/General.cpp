@@ -202,20 +202,52 @@ static void registerMemChunkType(lua_State* lua)
 // -----------------------------------------------------------------------------
 // Returns the HSL components of the colour [self]
 // -----------------------------------------------------------------------------
-static std::tuple<double, double, double> colourAsHSL(ColRGBA& self)
+static int colourAsHSLLua(lua_State* L)
 {
-	auto hsl = colour::rgbToHsl(self);
-	return std::make_tuple(hsl.h, hsl.s, hsl.l);
+	try
+	{
+		auto self = luabridge::Stack<ColRGBA&>::get(L, 1).value();
+		auto hsl  = colour::rgbToHsl(self);
+		luabridge::push(L, hsl.h).throw_on_error();
+		luabridge::push(L, hsl.s).throw_on_error();
+		luabridge::push(L, hsl.l).throw_on_error();
+		return 3;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in Colour.AsHSL: {}", e.what()));
+	}
 }
+// static std::tuple<double, double, double> colourAsHSL(ColRGBA& self)
+//{
+//	auto hsl = colour::rgbToHsl(self);
+//	return std::make_tuple(hsl.h, hsl.s, hsl.l);
+// }
 
 // -----------------------------------------------------------------------------
 // Returns the LAB components of the colour [self]
 // -----------------------------------------------------------------------------
-static std::tuple<double, double, double> colourAsLAB(ColRGBA& self)
+static int colourAsLABLua(lua_State* L)
 {
-	auto lab = colour::rgbToLab(self);
-	return std::make_tuple(lab.l, lab.a, lab.b);
+	try
+	{
+		auto self = luabridge::Stack<ColRGBA&>::get(L, 1).value();
+		auto lab  = colour::rgbToLab(self);
+		luabridge::push(L, lab.l).throw_on_error();
+		luabridge::push(L, lab.a).throw_on_error();
+		luabridge::push(L, lab.b).throw_on_error();
+		return 3;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in Colour.AsLAB: {}", e.what()));
+	}
 }
+// static std::tuple<double, double, double> colourAsLAB(ColRGBA& self)
+//{
+//	auto lab = colour::rgbToLab(self);
+//	return std::make_tuple(lab.l, lab.a, lab.b);
+// }
 
 // -----------------------------------------------------------------------------
 // Registers the Colour (ColRGBA) type with lua
@@ -245,8 +277,8 @@ static void registerColourType(lua_State* lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_colour.addFunction("AsHSL", &colourAsHSL);
-	lua_colour.addFunction("AsLAB", &colourAsLAB);
+	lua_colour.addFunction("AsHSL", &colourAsHSLLua);
+	lua_colour.addFunction("AsLAB", &colourAsLABLua);
 	lua_colour.addFunction("AsString", [](ColRGBA& self, colour::StringFormat f) { return colour::toString(self, f); });
 	lua_colour.addFunction(
 		"FromHSL",

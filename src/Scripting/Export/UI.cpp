@@ -26,6 +26,11 @@ enum class MessageBoxIcon
 };
 }
 
+// Register MessageBoxIcon enum with luabridge
+template<> struct luabridge::Stack<MessageBoxIcon> : Enum<MessageBoxIcon>
+{
+};
+
 
 // -----------------------------------------------------------------------------
 //
@@ -126,14 +131,37 @@ static string saveFile(string_view title, string_view extensions, string_view fn
 // -----------------------------------------------------------------------------
 // Opens the file browser to save multiple files
 // -----------------------------------------------------------------------------
-static std::tuple<string, string> saveFiles(string_view title, string_view extensions)
+static int saveFilesLua(lua_State* L)
 {
-	filedialog::FDInfo inf;
-	if (filedialog::saveFiles(inf, title, extensions, currentWindow()))
-		return std::make_tuple(inf.path, inf.extension);
+	try
+	{
+		auto title      = luabridge::get<string_view>(L, 1).value();
+		auto extensions = luabridge::get<string_view>(L, 2).value();
 
-	return { {}, {} };
+		if (filedialog::FDInfo inf; filedialog::saveFiles(inf, title, extensions, currentWindow()))
+		{
+			luabridge::push(L, inf.path).throw_on_error();
+			luabridge::push(L, inf.extension).throw_on_error();
+			return 2;
+		}
+
+		luabridge::push(L, "").throw_on_error();
+		luabridge::push(L, "").throw_on_error();
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in PromptSaveFiles: {}", e.what()));
+	}
 }
+// static std::tuple<string, string> saveFiles(string_view title, string_view extensions)
+//{
+//	filedialog::FDInfo inf;
+//	if (filedialog::saveFiles(inf, title, extensions, currentWindow()))
+//		return std::make_tuple(inf.path, inf.extension);
+//
+//	return { {}, {} };
+// }
 
 // -----------------------------------------------------------------------------
 // Registers the UI namespace with lua
@@ -144,10 +172,10 @@ void registerUINamespace(lua_State* lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	ui.addProperty("MB_ICON_INFO", [] { return static_cast<int>(MessageBoxIcon::Info); });
-	ui.addProperty("MB_ICON_QUESTION", [] { return static_cast<int>(MessageBoxIcon::Question); });
-	ui.addProperty("MB_ICON_WARNING", [] { return static_cast<int>(MessageBoxIcon::Warning); });
-	ui.addProperty("MB_ICON_ERROR", [] { return static_cast<int>(MessageBoxIcon::Error); });
+	ui.addProperty("MB_ICON_INFO", +[] { return MessageBoxIcon::Info; });
+	ui.addProperty("MB_ICON_QUESTION", +[] { return MessageBoxIcon::Question; });
+	ui.addProperty("MB_ICON_WARNING", +[] { return MessageBoxIcon::Warning; });
+	ui.addProperty("MB_ICON_ERROR", +[] { return MessageBoxIcon::Error; });
 
 	// Functions
 	// -------------------------------------------------------------------------
@@ -163,7 +191,7 @@ void registerUINamespace(lua_State* lua)
 		"PromptSaveFile",
 		&saveFile,
 		[](string_view title, string_view extensions) { return saveFile(title, extensions); });
-	ui.addFunction("PromptSaveFiles", &saveFiles);
+	ui.addFunction("PromptSaveFiles", saveFilesLua);
 	ui.addFunction(
 		"ShowSplash",
 		[](const string& message) { ui::showSplash(message, false, currentWindow()); },

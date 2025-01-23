@@ -44,6 +44,15 @@ using namespace slade;
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
+
+// Register SImage enums with luabridge
+template<> struct luabridge::Stack<SImage::Type> : Enum<SImage::Type>
+{
+};
+template<> struct luabridge::Stack<SImage::AlphaSource> : Enum<SImage::AlphaSource>
+{
+};
+
 namespace slade::lua
 {
 // -----------------------------------------------------------------------------
@@ -92,11 +101,28 @@ static bool imageDrawImage(
 // -----------------------------------------------------------------------------
 // Loads data from [entry] into image [self]
 // -----------------------------------------------------------------------------
-static std::tuple<bool, string> imageLoadEntry(SImage& self, ArchiveEntry* entry, int index)
+static int imageLoadEntryLua(lua_State* L)
 {
-	bool ok = misc::loadImageFromEntry(&self, entry, index);
-	return std::make_tuple(ok, global::error);
+	try
+	{
+		auto self   = luabridge::get<SImage*>(L, 1).value();
+		auto entry  = luabridge::get<ArchiveEntry*>(L, 2).value();
+		auto index  = luabridge::get<int>(L, 3).valueOr(0);
+		auto result = misc::loadImageFromEntry(self, entry, index);
+		luabridge::push(L, result).throw_on_error();
+		luabridge::push(L, global::error).throw_on_error();
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in Image.LoadEntry: {}", e.what()));
+	}
 }
+// static std::tuple<bool, string> imageLoadEntry(SImage& self, ArchiveEntry* entry, int index)
+//{
+//	bool ok = misc::loadImageFromEntry(&self, entry, index);
+//	return std::make_tuple(ok, global::error);
+//}
 
 // -----------------------------------------------------------------------------
 // Registers the Image (SImage) type with lua
@@ -108,11 +134,11 @@ void registerImageType(lua_State* lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	ADD_CLASS_CONSTANT(lua_image, "TYPE_PALMASK", SImage::Type::PalMask);
-	ADD_CLASS_CONSTANT(lua_image, "TYPE_RGBA", SImage::Type::RGBA);
-	ADD_CLASS_CONSTANT(lua_image, "TYPE_ALPHAMAP", SImage::Type::AlphaMap);
-	ADD_CLASS_CONSTANT(lua_image, "SOURCE_BRIGHTNESS", SImage::AlphaSource::Brightness);
-	ADD_CLASS_CONSTANT(lua_image, "SOURCE_ALPHA", SImage::AlphaSource::Alpha);
+	lua_image.addStaticProperty("TYPE_PALMASK", +[] { return SImage::Type::PalMask; });
+	lua_image.addStaticProperty("TYPE_RGBA", +[] { return SImage::Type::RGBA; });
+	lua_image.addStaticProperty("TYPE_ALPHAMAP", +[] { return SImage::Type::AlphaMap; });
+	lua_image.addStaticProperty("SOURCE_BRIGHTNESS", +[] { return SImage::AlphaSource::Brightness; });
+	lua_image.addStaticProperty("SOURCE_ALPHA", +[] { return SImage::AlphaSource::Alpha; });
 
 	// Properties
 	// -------------------------------------------------------------------------
@@ -146,8 +172,7 @@ void registerImageType(lua_State* lua)
 		[](SImage& self, MemChunk& mc) { self.open(mc); },
 		[](SImage& self, MemChunk& mc, int index) { self.open(mc, index); },
 		&SImage::open);
-	lua_image.addFunction(
-		"LoadEntry", [](SImage& self, ArchiveEntry* entry) { return imageLoadEntry(self, entry, 0); }, &imageLoadEntry);
+	lua_image.addFunction("LoadEntry", &imageLoadEntryLua);
 	lua_image.addFunction(
 		"WriteRGBAData", &SImage::putRGBAData, [](SImage& self, MemChunk& mc) { return self.putRGBAData(mc); });
 	lua_image.addFunction(

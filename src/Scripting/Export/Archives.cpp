@@ -109,6 +109,46 @@ static void registerArchiveDir(lua_State* lua)
 	lua_dir.addProperty("subDirectories", &ArchiveDir::subdirs);
 }
 
+static int createArchiveLua(lua_State* L)
+{
+	try
+	{
+		auto format  = luabridge::get<string_view>(L, 1).value();
+		auto archive = app::archiveManager().newArchive(format);
+		luabridge::push(L, archive).throw_on_error();
+		luabridge::push(L, global::error).throw_on_error();
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in Archives.Create: {}", e.what()));
+	}
+}
+
+static int openFileLua(lua_State* L)
+{
+	try
+	{
+		auto filename = luabridge::get<string_view>(L, 1).value();
+		auto archive  = app::archiveManager().openArchive(filename);
+		luabridge::push(L, archive).throw_on_error();
+		luabridge::push(L, global::error).throw_on_error();
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in Archives.OpenFile: {}", e.what()));
+	}
+}
+
+static vector<ArchiveEntry*> bookmarks()
+{
+	vector<ArchiveEntry*> result;
+	for (auto& bookmark : app::archiveManager().bookmarks())
+		result.push_back(bookmark.lock().get());
+	return result;
+}
+
 // -----------------------------------------------------------------------------
 // Registers the Archives namespace with lua
 // -----------------------------------------------------------------------------
@@ -120,13 +160,8 @@ void registerArchivesNamespace(lua_State* lua)
 		"All",
 		[](bool res) { return app::archiveManager().allArchives(res); },
 		[] { return app::archiveManager().allArchives(false); });
-	archives.addFunction(
-		"Create",
-		[](string_view format) { return std::make_tuple(app::archiveManager().newArchive(format), global::error); });
-	archives.addFunction(
-		"OpenFile",
-		[](string_view filename)
-		{ return std::make_tuple(app::archiveManager().openArchive(filename), global::error); });
+	archives.addFunction("Create", createArchiveLua);
+	archives.addFunction("OpenFile", openFileLua);
 	archives.addFunction(
 		"Close",
 		[](Archive* archive) { return app::archiveManager().closeArchive(archive); },
@@ -138,7 +173,7 @@ void registerArchivesNamespace(lua_State* lua)
 	archives.addFunction("OpenBaseResource", [](int index) { return app::archiveManager().openBaseResource(index); });
 	archives.addFunction("ProgramResource", [] { return app::archiveManager().programResourceArchive(); });
 	archives.addFunction("RecentFiles", [] { return app::archiveManager().recentFiles(); });
-	archives.addFunction("Bookmarks", [] { return app::archiveManager().bookmarks(); });
+	archives.addFunction("Bookmarks", bookmarks);
 	archives.addFunction(
 		"AddBookmark", [](ArchiveEntry* entry) { app::archiveManager().addBookmark(entry->getShared()); });
 	archives.addFunction("RemoveBookmark", [](ArchiveEntry* entry) { app::archiveManager().deleteBookmark(entry); });

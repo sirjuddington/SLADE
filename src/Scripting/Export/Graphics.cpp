@@ -45,6 +45,28 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Types
+//
+// -----------------------------------------------------------------------------
+template<> struct luabridge::Stack<SIFormat::Mask> : Enum<SIFormat::Mask>
+{
+};
+template<> struct luabridge::Stack<SIFormat::Writable> : Enum<SIFormat::Writable>
+{
+};
+template<> struct luabridge::Stack<Palette::Format> : Enum<Palette::Format>
+{
+};
+template<> struct luabridge::Stack<Palette::ColourMatch> : Enum<Palette::ColourMatch>
+{
+};
+template<> struct luabridge::Stack<SImage::BlendType> : Enum<SImage::BlendType>
+{
+};
+
+
+// -----------------------------------------------------------------------------
+//
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
@@ -60,10 +82,10 @@ static void registerImageConvertOptionsType(lua_State* lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	ADD_CLASS_CONSTANT(lua_copt, "MASK_NONE", SIFormat::Mask::None);
-	ADD_CLASS_CONSTANT(lua_copt, "MASK_COLOUR", SIFormat::Mask::Colour);
-	ADD_CLASS_CONSTANT(lua_copt, "MASK_ALPHA", SIFormat::Mask::Alpha);
-	ADD_CLASS_CONSTANT(lua_copt, "MASK_BRIGHTNESS", SIFormat::Mask::Brightness);
+	lua_copt.addStaticProperty("MASK_NONE", +[] { return SIFormat::Mask::None; });
+	lua_copt.addStaticProperty("MASK_COLOUR", +[] { return SIFormat::Mask::Colour; });
+	lua_copt.addStaticProperty("MASK_ALPHA", +[] { return SIFormat::Mask::Alpha; });
+	lua_copt.addStaticProperty("MASK_BRIGHTNESS", +[] { return SIFormat::Mask::Brightness; });
 
 	// Properties
 	// -------------------------------------------------------------------------
@@ -86,9 +108,9 @@ static void registerImageFormatType(lua_State* lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	ADD_CLASS_CONSTANT(lua_iformat, "WRITABLE_NO", SIFormat::Writable::No);
-	ADD_CLASS_CONSTANT(lua_iformat, "WRITABLE_YES", SIFormat::Writable::Yes);
-	ADD_CLASS_CONSTANT(lua_iformat, "WRITABLE_NEEDS_CONVERSION", SIFormat::Writable::Convert);
+	lua_iformat.addStaticProperty("WRITABLE_NO", +[] { return SIFormat::Writable::No; });
+	lua_iformat.addStaticProperty("WRITABLE_YES", +[] { return SIFormat::Writable::Yes; });
+	lua_iformat.addStaticProperty("WRITABLE_NEEDS_CONVERSION", +[] { return SIFormat::Writable::Convert; });
 
 	// Properties
 	// -------------------------------------------------------------------------
@@ -160,18 +182,18 @@ static void registerPaletteType(lua_State* lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	ADD_CLASS_CONSTANT(lua_palette, "FORMAT_RAW", Palette::Format::Raw);
-	ADD_CLASS_CONSTANT(lua_palette, "FORMAT_IMAGE", Palette::Format::Image);
-	ADD_CLASS_CONSTANT(lua_palette, "FORMAT_CSV", Palette::Format::CSV);
-	ADD_CLASS_CONSTANT(lua_palette, "FORMAT_JASC", Palette::Format::JASC);
-	ADD_CLASS_CONSTANT(lua_palette, "FORMAT_GIMP", Palette::Format::GIMP);
-	ADD_CLASS_CONSTANT(lua_palette, "MATCH_DEFAULT", Palette::ColourMatch::Default);
-	ADD_CLASS_CONSTANT(lua_palette, "MATCH_OLD", Palette::ColourMatch::Old);
-	ADD_CLASS_CONSTANT(lua_palette, "MATCH_RGB", Palette::ColourMatch::RGB);
-	ADD_CLASS_CONSTANT(lua_palette, "MATCH_HSL", Palette::ColourMatch::HSL);
-	ADD_CLASS_CONSTANT(lua_palette, "MATCH_C76", Palette::ColourMatch::C76);
-	ADD_CLASS_CONSTANT(lua_palette, "MATCH_C94", Palette::ColourMatch::C94);
-	ADD_CLASS_CONSTANT(lua_palette, "MATCH_C2K", Palette::ColourMatch::C2K);
+	lua_palette.addStaticProperty("FORMAT_RAW", +[] { return Palette::Format::Raw; });
+	lua_palette.addStaticProperty("FORMAT_IMAGE", +[] { return Palette::Format::Image; });
+	lua_palette.addStaticProperty("FORMAT_CSV", +[] { return Palette::Format::CSV; });
+	lua_palette.addStaticProperty("FORMAT_JASC", +[] { return Palette::Format::JASC; });
+	lua_palette.addStaticProperty("FORMAT_GIMP", +[] { return Palette::Format::GIMP; });
+	lua_palette.addStaticProperty("MATCH_DEFAULT", +[] { return Palette::ColourMatch::Default; });
+	lua_palette.addStaticProperty("MATCH_OLD", +[] { return Palette::ColourMatch::Old; });
+	lua_palette.addStaticProperty("MATCH_RGB", +[] { return Palette::ColourMatch::RGB; });
+	lua_palette.addStaticProperty("MATCH_HSL", +[] { return Palette::ColourMatch::HSL; });
+	lua_palette.addStaticProperty("MATCH_C76", +[] { return Palette::ColourMatch::C76; });
+	lua_palette.addStaticProperty("MATCH_C94", +[] { return Palette::ColourMatch::C94; });
+	lua_palette.addStaticProperty("MATCH_C2K", +[] { return Palette::ColourMatch::C2K; });
 
 	// Functions
 	// -------------------------------------------------------------------------
@@ -234,7 +256,7 @@ static luabridge::LuaRef getImageInfo(MemChunk& data, int index)
 	auto table          = luabridge::newTable(state());
 	table["width"]      = info.width;
 	table["height"]     = info.height;
-	table["type"]       = info.colformat;
+	table["type"]       = static_cast<int>(info.colformat);
 	table["format"]     = info.format;
 	table["imageCount"] = info.numimages;
 	table["offsetX"]    = info.offset_x;
@@ -253,11 +275,11 @@ void registerGraphicsNamespace(lua_State* lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	ADD_NS_CONSTANT(gfx, "BLEND_NORMAL", SImage::BlendType::Normal);
-	ADD_NS_CONSTANT(gfx, "BLEND_ADD", SImage::BlendType::Add);
-	ADD_NS_CONSTANT(gfx, "BLEND_SUBTRACT", SImage::BlendType::Subtract);
-	ADD_NS_CONSTANT(gfx, "BLEND_REVERSESUBTRACT", SImage::BlendType::ReverseSubtract);
-	ADD_NS_CONSTANT(gfx, "BLEND_MODULATE", SImage::BlendType::Modulate);
+	gfx.addProperty("BLEND_NORMAL", +[] { return SImage::BlendType::Normal; });
+	gfx.addProperty("BLEND_ADD", +[] { return SImage::BlendType::Add; });
+	gfx.addProperty("BLEND_SUBTRACT", +[] { return SImage::BlendType::Subtract; });
+	gfx.addProperty("BLEND_REVERSESUBTRACT", +[] { return SImage::BlendType::ReverseSubtract; });
+	gfx.addProperty("BLEND_MODULATE", +[] { return SImage::BlendType::Modulate; });
 
 	// Functions
 	// -------------------------------------------------------------------------

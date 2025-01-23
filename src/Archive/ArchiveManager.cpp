@@ -116,7 +116,8 @@ bool ArchiveManager::validResDir(string_view dir) const
 // -----------------------------------------------------------------------------
 bool ArchiveManager::init()
 {
-	program_resource_archive_ = std::make_unique<Archive>(ArchiveFormat::Zip);
+	program_resource_archive_ = std::make_shared<Archive>(ArchiveFormat::Zip);
+	program_resource_archive_->setFilename(app::path("slade.pk3", app::Dir::Executable));
 
 #ifdef __WXOSX__
 	auto resdir = app::path("../Resources", app::Dir::Executable); // Use Resources dir within bundle on mac
@@ -132,6 +133,7 @@ bool ArchiveManager::init()
 		if (!initArchiveFormats())
 			log::error("An error occurred reading archive formats configuration");
 
+		program_resource_archive_->setReadOnly();
 		return res_archive_open_;
 	}
 
@@ -158,6 +160,7 @@ bool ArchiveManager::init()
 	if (!initArchiveFormats())
 		log::error("An error occurred reading archive formats configuration");
 
+	program_resource_archive_->setReadOnly();
 	return res_archive_open_;
 }
 
@@ -290,6 +293,13 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 			signals_.archive_opened(archiveIndex(new_archive.get()));
 
 		return new_archive;
+	}
+
+	// Check the file exists
+	if (!fileutil::fileExists(filename))
+	{
+		global::error = fmt::format("File \"{}\" does not exist", filename);
+		return nullptr;
 	}
 
 	// Determine file format
@@ -721,6 +731,9 @@ shared_ptr<Archive> ArchiveManager::shareArchive(const Archive* const archive)
 {
 	if (archive == base_resource_archive_.get())
 		return base_resource_archive_;
+
+	if (archive == program_resource_archive_.get())
+		return program_resource_archive_;
 
 	for (const auto& oa : open_archives_)
 		if (oa.archive.get() == archive)

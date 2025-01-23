@@ -62,26 +62,6 @@ time_t     script_start_time;
 
 // -----------------------------------------------------------------------------
 //
-// LuaException Class
-//
-// -----------------------------------------------------------------------------
-namespace slade::lua
-{
-class LuaException : public std::runtime_error
-{
-public:
-	LuaException(string_view type, const string& message) : std::runtime_error(message), error_type_{ type } {}
-
-	const string& errorType() const { return error_type_; }
-
-private:
-	string error_type_;
-};
-} // namespace slade::lua
-
-
-// -----------------------------------------------------------------------------
-//
 // Environment Struct Functions
 //
 // -----------------------------------------------------------------------------
@@ -427,11 +407,17 @@ bool lua::run(const string& program)
 	Environment env;
 	try
 	{
-		runLua(program, lua);
+		runLua(program, lua, &env);
 	}
 	catch (const LuaException& ex)
 	{
 		processError(ex.errorType(), ex.what());
+		logError(script_error);
+		success = false;
+	}
+	catch (const std::exception& ex)
+	{
+		processError("Runtime", ex.what());
 		logError(script_error);
 		success = false;
 	}
