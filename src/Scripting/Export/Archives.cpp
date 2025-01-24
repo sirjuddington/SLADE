@@ -39,8 +39,8 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Export.h"
-#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
+#include "Scripting/Scripting.h"
 
 using namespace slade;
 
@@ -49,10 +49,10 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Registers the ArchiveFormatInfo type with lua
@@ -194,4 +194,4 @@ void registerArchiveTypes(lua_State* lua)
 	registerArchiveDir(lua);
 }
 
-} // namespace slade::lua
+} // namespace slade::scripting

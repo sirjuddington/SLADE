@@ -35,8 +35,8 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
-#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
+#include "Scripting/Scripting.h"
 
 using namespace slade;
 
@@ -67,10 +67,10 @@ template<> struct luabridge::Stack<SImage::BlendType> : Enum<SImage::BlendType>
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Registers the ImageConvertOptions (SIFormat::ConvertOptions) type with lua
@@ -253,7 +253,7 @@ static luabridge::LuaRef getImageInfo(MemChunk& data, int index)
 	auto* format = SIFormat::determineFormat(data);
 	auto  info   = format->info(data, index);
 
-	auto table          = luabridge::newTable(state());
+	auto table          = luabridge::newTable(luaState());
 	table["width"]      = info.width;
 	table["height"]     = info.height;
 	table["type"]       = static_cast<int>(info.colformat);
@@ -295,4 +295,4 @@ void registerGraphicsNamespace(lua_State* lua)
 	gfx.addFunction("DetectImageFormat", [](MemChunk& mc) { return SIFormat::determineFormat(mc); });
 	gfx.addFunction("GetImageInfo", &getImageInfo, [](MemChunk& data) { return getImageInfo(data, 0); });
 }
-} // namespace slade::lua
+} // namespace slade::scripting

@@ -53,10 +53,10 @@ template<> struct luabridge::Stack<CTPatchEx::BlendType> : Enum<CTPatchEx::Blend
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Registers the CTPatch and CTPatchEx types with lua
@@ -178,4 +178,4 @@ void registerCTextureType(lua_State* lua)
 	lua_ctexture.addFunction("ConvertExtended", &CTexture::convertExtended);
 	lua_ctexture.addFunction("ConvertRegular", &CTexture::convertRegular);
 }
-} // namespace slade::lua
+} // namespace slade::scripting

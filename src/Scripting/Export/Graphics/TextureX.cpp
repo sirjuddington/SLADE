@@ -52,10 +52,10 @@ template<> struct luabridge::Stack<TextureXList::Format> : Enum<TextureXList::Fo
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Returns all the patches in PatchTable [self] as a vector of strings
@@ -151,4 +151,4 @@ void registerTextureXListType(lua_State* lua)
 	lua_txlist.addFunction("ConvertToTEXTURES", &TextureXList::convertToTEXTURES);
 	lua_txlist.addFunction("FindErrors", &TextureXList::findErrors);
 }
-} // namespace slade::lua
+} // namespace slade::scripting

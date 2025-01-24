@@ -50,10 +50,10 @@ template<> struct luabridge::Stack<TransRange::Type> : Enum<TransRange::Type>
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Registers the TransRange type (and TransRange* sub-types) with lua
@@ -270,4 +270,4 @@ void registerTranslationType(lua_State* lua)
 
 	registerTranslationRangeTypes(lua);
 }
-} // namespace slade::lua
+} // namespace slade::scripting

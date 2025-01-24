@@ -34,15 +34,15 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "Scripting/Export/Export.h"
-#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
+#include "Scripting/Scripting.h"
 
 using namespace slade;
 
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ template<> struct luabridge::Stack<SImage::AlphaSource> : Enum<SImage::AlphaSour
 {
 };
 
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Disambiguates the SImage::SetPixel function (colour version) for exporting to
@@ -228,4 +228,4 @@ void registerImageType(lua_State* lua)
 		[](SImage& self, ColRGBA& col, float amount) { self.tint(col, amount); });
 	lua_image.addFunction("Trim", &SImage::adjust);
 }
-} // namespace slade::lua
+} // namespace slade::scripting

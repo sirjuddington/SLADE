@@ -5,7 +5,7 @@ class wxWindow;
 
 namespace slade
 {
-namespace lua
+namespace scripting
 {
 	class LuaException : public std::runtime_error
 	{
@@ -44,7 +44,7 @@ namespace lua
 	bool runEntryScript(const string& script, vector<ArchiveEntry*>& entries);
 	bool runMapScript(const string& script, SLADEMap* map);
 
-	lua_State* state();
+	lua_State* luaState();
 
 	Error& error();
 	void   showErrorDialog(
@@ -54,5 +54,5 @@ namespace lua
 
 	wxWindow* currentWindow();
 	void      setCurrentWindow(wxWindow* window);
-} // namespace lua
+} // namespace scripting
 } // namespace slade

@@ -8,12 +8,12 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "Scripting/Export/Export.h"
-#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
+#include "Scripting/Scripting.h"
 
 using namespace slade;
 
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Returns the name of entry [self] with requested formatting:
@@ -210,4 +210,4 @@ void registerEntryType(lua_State* lua)
 
 	// lua_etype.addStaticFunction("Get", &EntryType::fromId); // Maybe replace Archives.EntryType with this?
 }
-} // namespace slade::lua
+} // namespace slade::scripting

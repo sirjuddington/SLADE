@@ -40,7 +40,7 @@
 
 using namespace slade;
 
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Returns a vector of all entries in the archive [self]
@@ -150,4 +150,4 @@ void registerArchive(lua_State* lua)
 	lua_archive.addFunction("FindLast", &archiveFindLast);
 	lua_archive.addFunction("FindAll", &archiveFindAll);
 }
-} // namespace slade::lua
+} // namespace slade::scripting

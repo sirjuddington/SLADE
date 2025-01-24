@@ -30,7 +30,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Lua.h"
+#include "Scripting.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Export/Export.h"
@@ -51,13 +51,13 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 lua_State* lua            = nullptr;
 wxWindow*  current_window = nullptr;
 Error      script_error;
 time_t     script_start_time;
-} // namespace slade::lua
+} // namespace slade::scripting
 
 
 // -----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ time_t     script_start_time;
 // -----------------------------------------------------------------------------
 // Environment constructor
 // -----------------------------------------------------------------------------
-lua::Environment::Environment(lua_State* state)
+scripting::Environment::Environment(lua_State* state)
 {
 	if (state)
 		apply(state);
@@ -78,7 +78,7 @@ lua::Environment::Environment(lua_State* state)
 // -----------------------------------------------------------------------------
 // Environment destructor
 // -----------------------------------------------------------------------------
-lua::Environment::~Environment()
+scripting::Environment::~Environment()
 {
 	if (state)
 	{
@@ -92,7 +92,7 @@ lua::Environment::~Environment()
 // Creates a new environment table inheriting from global and applies it to the
 // given lua [state_to_apply]
 // -----------------------------------------------------------------------------
-void lua::Environment::apply(lua_State* state_to_apply)
+void scripting::Environment::apply(lua_State* state_to_apply)
 {
 	if (state)
 		return; // Can't apply twice
@@ -106,10 +106,10 @@ void lua::Environment::apply(lua_State* state_to_apply)
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Resets error information
@@ -302,12 +302,12 @@ template<class T> static bool runEditorScript(const string& script, T param)
 
 	return success;
 }
-} // namespace slade::lua
+} // namespace slade::scripting
 
 // -----------------------------------------------------------------------------
 // Initialises lua and registers functions
 // -----------------------------------------------------------------------------
-bool lua::init()
+bool scripting::init()
 {
 	if (lua)
 	{
@@ -361,12 +361,12 @@ bool lua::init()
 // -----------------------------------------------------------------------------
 // Close the lua state
 // -----------------------------------------------------------------------------
-void lua::close() {}
+void scripting::close() {}
 
 // -----------------------------------------------------------------------------
 // Returns information about the last script error that occurred
 // -----------------------------------------------------------------------------
-lua::Error& lua::error()
+scripting::Error& scripting::error()
 {
 	return script_error;
 }
@@ -375,7 +375,7 @@ lua::Error& lua::error()
 // Shows an extended message dialog with details of the last script error that
 // occurred
 // -----------------------------------------------------------------------------
-void lua::showErrorDialog(wxWindow* parent, string_view title, string_view message)
+void scripting::showErrorDialog(wxWindow* parent, string_view title, string_view message)
 {
 	// Get script log messages since the last script was started
 	auto   log = log::since(script_start_time, log::MessageType::Script);
@@ -385,7 +385,7 @@ void lua::showErrorDialog(wxWindow* parent, string_view title, string_view messa
 
 	ExtMessageDialog dlg(parent ? parent : current_window, wxutil::strFromView(title));
 	dlg.setMessage(wxutil::strFromView(message));
-	const auto& [type, error_msg, line_no] = lua::error();
+	const auto& [type, error_msg, line_no] = scripting::error();
 	if (line_no >= 0)
 		dlg.setExt(wxString::Format("%s Error\nLine %d: %s\n\nScript Output:\n%s", type, line_no, error_msg, output));
 	else
@@ -398,7 +398,7 @@ void lua::showErrorDialog(wxWindow* parent, string_view title, string_view messa
 // -----------------------------------------------------------------------------
 // Runs a lua script [program]
 // -----------------------------------------------------------------------------
-bool lua::run(const string& program)
+bool scripting::run(const string& program)
 {
 	resetError();
 	script_start_time = wxDateTime::Now().GetTicks();
@@ -430,7 +430,7 @@ bool lua::run(const string& program)
 // -----------------------------------------------------------------------------
 // Runs a lua script from a text file [filename]
 // -----------------------------------------------------------------------------
-bool lua::runFile(const string& filename)
+bool scripting::runFile(const string& filename)
 {
 	string script;
 
@@ -444,7 +444,7 @@ bool lua::runFile(const string& filename)
 // Runs the function returned from the given [script], passing [archive]
 // as the parameter
 // -----------------------------------------------------------------------------
-bool lua::runArchiveScript(const string& script, Archive* archive)
+bool scripting::runArchiveScript(const string& script, Archive* archive)
 {
 	return runEditorScript<Archive*>(script, archive);
 }
@@ -453,7 +453,7 @@ bool lua::runArchiveScript(const string& script, Archive* archive)
 // Runs the function returned from the given [script], passing [entries]
 // as the parameter
 // -----------------------------------------------------------------------------
-bool lua::runEntryScript(const string& script, vector<ArchiveEntry*>& entries)
+bool scripting::runEntryScript(const string& script, vector<ArchiveEntry*>& entries)
 {
 	return runEditorScript<vector<ArchiveEntry*>&>(script, entries);
 }
@@ -462,7 +462,7 @@ bool lua::runEntryScript(const string& script, vector<ArchiveEntry*>& entries)
 // Runs the function returned from the given [script], passing [map] as the
 // parameter
 // -----------------------------------------------------------------------------
-bool lua::runMapScript(const string& script, SLADEMap* map)
+bool scripting::runMapScript(const string& script, SLADEMap* map)
 {
 	return runEditorScript<SLADEMap*>(script, map);
 }
@@ -470,7 +470,7 @@ bool lua::runMapScript(const string& script, SLADEMap* map)
 // -----------------------------------------------------------------------------
 // Returns the active lua state
 // -----------------------------------------------------------------------------
-lua_State* lua::state()
+lua_State* scripting::luaState()
 {
 	return lua;
 }
@@ -479,7 +479,7 @@ lua_State* lua::state()
 // Returns the current window (used as the parent window for UI-related
 // scripting functions such as messageBox)
 // -----------------------------------------------------------------------------
-wxWindow* lua::currentWindow()
+wxWindow* scripting::currentWindow()
 {
 	return current_window;
 }
@@ -488,7 +488,7 @@ wxWindow* lua::currentWindow()
 // Sets the current [window] (used as the parent window for UI-related scripting
 // functions such as messageBox)
 // -----------------------------------------------------------------------------
-void lua::setCurrentWindow(wxWindow* window)
+void scripting::setCurrentWindow(wxWindow* window)
 {
 	current_window = window;
 }
@@ -506,7 +506,7 @@ CONSOLE_COMMAND(script, 1, true)
 	for (unsigned a = 1; a < args.size(); a++)
 		script_text += " " + args[a];
 
-	lua::run(script_text);
+	scripting::run(script_text);
 }
 
 CONSOLE_COMMAND(script_file, 1, true)
@@ -517,13 +517,13 @@ CONSOLE_COMMAND(script_file, 1, true)
 		return;
 	}
 
-	if (!lua::runFile(args[0]))
+	if (!scripting::runFile(args[0]))
 		log::error("Error loading lua script file \"{}\"", args[0]);
 }
 
 CONSOLE_COMMAND(lua_mem, 0, false)
 {
-	auto mem = lua_gc(lua::state(), LUA_GCCOUNT, 0);
+	auto mem = lua_gc(scripting::luaState(), LUA_GCCOUNT, 0);
 	if (mem < 1024)
 		log::console(fmt::format("Lua state using {} bytes memory", mem));
 	else

@@ -53,10 +53,10 @@ using namespace mapeditor;
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Registers the Map type with lua
@@ -166,4 +166,4 @@ void registerMapEditorTypes(lua_State* lua)
 	registerMapThing(lua);
 }
 
-} // namespace slade::lua
+} // namespace slade::scripting

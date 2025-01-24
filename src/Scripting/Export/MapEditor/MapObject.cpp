@@ -9,12 +9,12 @@
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Scripting/Export/Export.h"
-#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
+#include "Scripting/Scripting.h"
 
 using namespace slade;
 
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Sets a boolean property [key] on the MapObject [self] to [value].
@@ -86,7 +86,7 @@ static luabridge::LuaRef lineVisibleTextures(MapLine& self)
 {
 	auto needs_tex = self.needsTexture();
 
-	auto table           = luabridge::newTable(lua::state());
+	auto table           = luabridge::newTable(luaState());
 	table["frontUpper"]  = (needs_tex & MapLine::Part::FrontUpper) != 0;
 	table["frontMiddle"] = (needs_tex & MapLine::Part::FrontMiddle) != 0;
 	table["frontLower"]  = (needs_tex & MapLine::Part::FrontLower) != 0;
@@ -252,4 +252,4 @@ void registerMapObject(lua_State* lua)
 	lua_mapobject.addFunction("SetFloatProperty", &objectSetFloatProperty);
 	lua_mapobject.addFunction("SetStringProperty", &objectSetStringProperty);
 }
-} // namespace slade::lua
+} // namespace slade::scripting

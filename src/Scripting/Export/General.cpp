@@ -36,8 +36,8 @@
 #include "Geometry/Plane.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditor.h"
-#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
+#include "Scripting/Scripting.h"
 #include "Utility/Colour.h"
 
 using namespace slade;
@@ -47,10 +47,10 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Writes a log [message] of [type]
@@ -339,4 +339,4 @@ void registerAppNamespace(lua_State* lua)
 	app.addFunction("MapEditor", &mapeditor::editContext);
 }
 
-} // namespace slade::lua
+} // namespace slade::scripting

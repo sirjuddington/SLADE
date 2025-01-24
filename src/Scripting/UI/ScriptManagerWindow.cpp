@@ -41,8 +41,8 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "ScriptPanel.h"
-#include "Scripting/Lua.h"
 #include "Scripting/ScriptManager.h"
+#include "Scripting/Scripting.h"
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
@@ -729,10 +729,10 @@ bool ScriptManagerWindow::handleAction(string_view id)
 	// Script->Run
 	if (id == "scrm_run")
 	{
-		lua::setCurrentWindow(this);
+		scripting::setCurrentWindow(this);
 
-		if (!lua::run(script_clicked_ ? script_clicked_->text : currentScriptText()))
-			lua::showErrorDialog();
+		if (!scripting::run(script_clicked_ ? script_clicked_->text : currentScriptText()))
+			scripting::showErrorDialog();
 
 		script_clicked_ = nullptr;
 

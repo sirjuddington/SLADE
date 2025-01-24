@@ -38,7 +38,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
-#include "Lua.h"
+#include "Scripting.h"
 #include "UI/ScriptManagerWindow.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -368,10 +368,10 @@ void scriptmanager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, stri
 void scriptmanager::runArchiveScript(Archive* archive, int index, wxWindow* parent)
 {
 	if (parent)
-		lua::setCurrentWindow(parent);
+		scripting::setCurrentWindow(parent);
 
-	if (!lua::runArchiveScript(scripts_editor[ScriptType::Archive][index]->text, archive))
-		lua::showErrorDialog(parent);
+	if (!scripting::runArchiveScript(scripts_editor[ScriptType::Archive][index]->text, archive))
+		scripting::showErrorDialog(parent);
 }
 
 // -----------------------------------------------------------------------------
@@ -380,10 +380,10 @@ void scriptmanager::runArchiveScript(Archive* archive, int index, wxWindow* pare
 void scriptmanager::runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent)
 {
 	if (parent)
-		lua::setCurrentWindow(parent);
+		scripting::setCurrentWindow(parent);
 
-	if (!lua::runEntryScript(scripts_editor[ScriptType::Entry][index]->text, entries))
-		lua::showErrorDialog(parent);
+	if (!scripting::runEntryScript(scripts_editor[ScriptType::Entry][index]->text, entries))
+		scripting::showErrorDialog(parent);
 }
 
 // -----------------------------------------------------------------------------
@@ -392,8 +392,8 @@ void scriptmanager::runEntryScript(vector<ArchiveEntry*> entries, int index, wxW
 void scriptmanager::runMapScript(SLADEMap* map, int index, wxWindow* parent)
 {
 	if (parent)
-		lua::setCurrentWindow(parent);
+		scripting::setCurrentWindow(parent);
 
-	if (!lua::runMapScript(scripts_editor[ScriptType::Map][index]->text, map))
-		lua::showErrorDialog(parent);
+	if (!scripting::runMapScript(scripts_editor[ScriptType::Map][index]->text, map))
+		scripting::showErrorDialog(parent);
 }

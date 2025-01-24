@@ -2,7 +2,7 @@
 
 struct lua_State;
 
-namespace slade::lua
+namespace slade::scripting
 {
 // Namespaces ------------------------------------------------------------------
 void registerAppNamespace(lua_State* lua);
@@ -39,4 +39,4 @@ void registerMapSide(lua_State* lua);
 void registerMapSector(lua_State* lua);
 void registerMapThing(lua_State* lua);
 void registerMapEditorTypes(lua_State* lua);
-} // namespace slade::lua
+} // namespace slade::scripting

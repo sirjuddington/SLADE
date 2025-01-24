@@ -2,8 +2,8 @@
 #include "Main.h"
 #include "UI/UI.h"
 #include "Export.h"
-#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
+#include "Scripting/Scripting.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "Utility/SFileDialog.h"
 
@@ -12,7 +12,7 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// Variables
+// Types
 //
 // -----------------------------------------------------------------------------
 namespace
@@ -34,10 +34,10 @@ template<> struct luabridge::Stack<MessageBoxIcon> : Enum<MessageBoxIcon>
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Shows a message box with a [title] and [message]
@@ -203,4 +203,4 @@ void registerUINamespace(lua_State* lua)
 	ui.addFunction("SetSplashProgressMessage", &ui::setSplashProgressMessage);
 	ui.addFunction("SetSplashProgress", luabridge::overload<float>(ui::setSplashProgress));
 }
-} // namespace slade::lua
+} // namespace slade::scripting

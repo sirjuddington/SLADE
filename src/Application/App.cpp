@@ -54,8 +54,8 @@
 #include "MapEditor/NodeBuilders.h"
 #include "OpenGL/GLTexture.h"
 #include "SLADEWxApp.h"
-#include "Scripting/Lua.h"
 #include "Scripting/ScriptManager.h"
+#include "Scripting/Scripting.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
@@ -522,7 +522,7 @@ bool app::init(const vector<string>& args)
 
 #ifndef NO_LUA
 	// Init lua
-	lua::init();
+	scripting::init();
 #endif
 
 	// Enable dark mode in Windows if requested and supported
@@ -757,7 +757,7 @@ void app::exit(bool save_config)
 
 #ifndef NO_LUA
 	// Close lua
-	lua::close();
+	scripting::close();
 #endif
 
 	// Close DUMB

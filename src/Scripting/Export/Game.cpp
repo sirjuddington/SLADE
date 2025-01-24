@@ -39,10 +39,10 @@
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Registers the ThingType type with lua
@@ -90,4 +90,4 @@ void registerGameTypes(lua_State* lua)
 	registerThingType(lua);
 }
 
-} // namespace slade::lua
+} // namespace slade::scripting
