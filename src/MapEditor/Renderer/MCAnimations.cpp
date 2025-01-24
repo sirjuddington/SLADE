@@ -37,7 +37,6 @@
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Item.h"
 #include "MapRenderer2D.h"
-#include "MapRenderer3D.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
@@ -611,5 +610,6 @@ bool MCAHilightFade3D::update(long time)
 // -----------------------------------------------------------------------------
 void MCAHilightFade3D::draw()
 {
-	renderer_->renderHilight({ item_index_, item_type_ }, fade_);
+	// TODO: 3dmode
+	// renderer_->renderHilight({ item_index_, item_type_ }, fade_);
 }

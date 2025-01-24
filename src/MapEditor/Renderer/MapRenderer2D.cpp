@@ -1639,6 +1639,8 @@ void MapRenderer2D::updateFlatsBuffer(bool ceilings)
 			flat_groups_.clear();
 	}
 
+	gl::bindVAO(0);
+
 	if (flat_groups_.empty())
 	{
 		vector<uint8_t> flats_processed(flats_.size());

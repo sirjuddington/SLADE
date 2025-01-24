@@ -1395,7 +1395,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	entry->exportFile(srcfile);
 
 	// Execute acc
-	wxString      command = "\"" + path_acc + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
+	wxString      command = "\"" + path_acc.value + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
 	wxGetApp().SetTopWindow(parent);
@@ -1590,7 +1590,7 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 	entry->exportFile(srcfile);
 
 	// Execute DECOHack
-	wxString command = "\"" + path_java + "\" -cp \"" + path_decohack + "\""
+	wxString command = "\"" + path_java.value + "\" -cp \"" + path_decohack.value + "\""
 					   + " -Xms64M -Xmx4G net.mtrop.doom.tools.DecoHackMain \"" + srcfile + "\" -o \"" + dehfile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
@@ -1757,7 +1757,7 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 		wxString optfile = fn.GetFullPath();
 		entry->exportFile(pngfile.ToStdString());
 
-		wxString command = path_pngcrush + " -brute \"" + pngfile + "\" \"" + optfile + "\"";
+		wxString command = path_pngcrush.value + " -brute \"" + pngfile + "\" \"" + optfile + "\"";
 		output.Empty();
 		errors.Empty();
 		wxExecute(command, output, errors, wxEXEC_SYNC);
@@ -1809,7 +1809,7 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 		wxString optfile = fn.GetFullPath();
 		entry->exportFile(pngfile.ToStdString());
 
-		wxString command = path_pngout + " /y \"" + pngfile + "\" \"" + optfile + "\"";
+		wxString command = path_pngout.value + " /y \"" + pngfile + "\" \"" + optfile + "\"";
 		output.Empty();
 		errors.Empty();
 		wxExecute(command, output, errors, wxEXEC_SYNC);
@@ -1860,7 +1860,7 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 		wxString pngfile = fn.GetFullPath();
 		entry->exportFile(pngfile.ToStdString());
 
-		wxString command = path_deflopt + " /sf \"" + pngfile + "\"";
+		wxString command = path_deflopt.value + " /sf \"" + pngfile + "\"";
 		output.Empty();
 		errors.Empty();
 		wxExecute(command, output, errors, wxEXEC_SYNC);

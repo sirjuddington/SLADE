@@ -316,7 +316,7 @@ wxRect SCallTip::drawArgs(
 		// Type
 		if (!arg.type.empty())
 		{
-			wxString arg_type = arg.type == "void" ? "void" : wxString::Format("%s ", arg.type);
+			wxString arg_type = arg.type == "void" ? wxString("void") : wxString::Format("%s ", arg.type);
 			if (a != arg_current_)
 				dc.SetTextForeground(wxcol_type);
 			left = drawText(dc, arg_type, left, top, &rect);

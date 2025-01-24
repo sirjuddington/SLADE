@@ -99,7 +99,7 @@ void MapVertex::move(double nx, double ny)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapVertex::intProperty(string_view key)
+int MapVertex::intProperty(string_view key) const
 {
 	if (key == PROP_X)
 		return static_cast<int>(position_.x);
@@ -112,7 +112,7 @@ int MapVertex::intProperty(string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapVertex::floatProperty(string_view key)
+double MapVertex::floatProperty(string_view key) const
 {
 	if (key == PROP_X)
 		return position_.x;
@@ -165,7 +165,7 @@ void MapVertex::setFloatProperty(string_view key, double value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapVertex::scriptCanModifyProp(string_view key)
+bool MapVertex::scriptCanModifyProp(string_view key) const
 {
 	if (key == PROP_X || key == PROP_Y)
 		return false;

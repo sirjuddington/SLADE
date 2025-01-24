@@ -380,7 +380,7 @@ wxString parseID3v1Tag(const MemChunk& mc, size_t start)
 	album   = wxString::FromAscii(tag.album, 30);
 	comment = wxString::FromAscii(tag.comment, 30);
 	year    = wxString::FromAscii(tag.year, 4);
-	genre   = (tag.genre < 192) ? wxString::FromAscii(ID3_V1_GENRES[tag.genre]) : "";
+	genre   = (tag.genre < 192) ? wxString::FromAscii(ID3_V1_GENRES[tag.genre]) : wxString{};
 	if (tag.comment[28] == 0 && tag.comment[29] != 0)
 	{
 		version = "ID3v1.1";

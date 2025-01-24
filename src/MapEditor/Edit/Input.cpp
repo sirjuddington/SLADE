@@ -41,7 +41,6 @@
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/Renderer/Camera.h"
 #include "MapEditor/Renderer/MCAnimations.h"
 #include "MapEditor/Renderer/MapRenderer3D.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
@@ -50,6 +49,7 @@
 #include "MapEditor/UI/ObjectEditPanel.h"
 #include "MoveObjects.h"
 #include "ObjectEdit.h"
+#include "OpenGL/Camera.h"
 #include "OpenGL/View.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "UI/UI.h"
@@ -244,9 +244,9 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 		if (context_->editMode() == Mode::Visual)
 		{
 			// If the mouse is unlocked, lock the mouse
-			if (!context_->mouseLocked())
-				context_->lockMouse(true);
-			else
+			// if (!context_->mouseLocked())
+			//	context_->lockMouse(true);
+			// else
 			{
 				// Shift down, select all matching adjacent structures
 				if (shift_down_)
@@ -1146,8 +1146,7 @@ bool Input::updateCamera3d(double mult) const
 	// --- Check for held-down keys ---
 	bool   moving = false;
 	double speed  = shift_down_ ? mult * 8 : mult * 4;
-	auto&  r3d    = context_->renderer().renderer3D();
-	auto&  camera = r3d.camera();
+	auto&  camera = context_->renderer().camera();
 
 	// Camera forward
 	if (KeyBind::isPressed("me3d_camera_forward"))
@@ -1206,8 +1205,9 @@ bool Input::updateCamera3d(double mult) const
 	}
 
 	// Apply gravity to camera if needed
-	if (camera_3d_gravity)
-		r3d.cameraApplyGravity(mult);
+	// TODO: 3dmode
+	// if (camera_3d_gravity)
+	//	r3d.cameraApplyGravity(mult);
 
 	return moving;
 }

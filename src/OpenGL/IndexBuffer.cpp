@@ -9,7 +9,7 @@ using namespace gl;
 IndexBuffer::~IndexBuffer()
 {
 	if (ebo_ > 0)
-		deleteBuffer(ebo_);
+		deleteEBO(ebo_);
 }
 
 bool IndexBuffer::bind()

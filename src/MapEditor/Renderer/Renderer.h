@@ -10,6 +10,7 @@ class MapRenderer3D;
 class MCOverlay;
 namespace gl
 {
+	class Camera;
 	class LineBuffer;
 	class VertexBuffer2D;
 	class View;
@@ -35,6 +36,7 @@ namespace mapeditor
 		MapRenderer3D& renderer3D() const { return *renderer_3d_; }
 		gl::View&      view() const { return *view_; }
 		float          uiScale() const { return ui_scale_; }
+		gl::Camera&    camera() const { return *camera_; }
 		void           setUIScale(float scale) { ui_scale_ = scale; }
 
 		void forceUpdate(bool update_2d = true, bool update_3d = true) const;
@@ -75,6 +77,7 @@ namespace mapeditor
 		unique_ptr<gl::View>      view_;
 		unique_ptr<gl::View>      view_screen_;
 		float                     ui_scale_ = 1.0f;
+		unique_ptr<gl::Camera>    camera_;
 
 		// OpenGL
 		unique_ptr<gl::VertexBuffer2D> vb_grid_;

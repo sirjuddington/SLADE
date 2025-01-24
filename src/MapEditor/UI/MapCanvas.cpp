@@ -38,10 +38,10 @@
 #include "MapEditor/Edit/Input.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/Renderer/Camera.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/SectorBuilder.h"
+#include "OpenGL/Camera.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/LineList.h"
@@ -101,7 +101,7 @@ MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
 	Bind(wxEVT_ENTER_WINDOW, &MapCanvas::onMouseEnter, this);
 	Bind(wxEVT_SET_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_KILL_FOCUS, &MapCanvas::onFocus, this);
-	Bind(wxEVT_TIMER, &MapCanvas::onRTimer, this);
+	timer_.Bind(wxEVT_TIMER, &MapCanvas::onRTimer, this);
 	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
 
 	timer_.Start(map_bg_ms);
@@ -141,6 +141,10 @@ void MapCanvas::lockMouse(bool lock)
 {
 	if (lock)
 	{
+		// Save current mouse position
+		mouse_locked_pos_.x = sf::Mouse::getPosition().x;
+		mouse_locked_pos_.y = sf::Mouse::getPosition().y;
+
 		// Center mouse
 		mouseToCenter();
 
@@ -149,11 +153,21 @@ void MapCanvas::lockMouse(bool lock)
 		img.SetMask(true);
 		img.SetMaskColour(0, 0, 0);
 		SetCursor(wxCursor(img));
+
+		log::info("Mouse locked, cursor was at ({}, {})", mouse_locked_pos_.x, mouse_locked_pos_.y);
 	}
 	else
 	{
 		// Show cursor
 		SetCursor(wxNullCursor);
+
+		// Move mouse back to original position (if it was initially moved to lock)
+		if (mouse_locked_pos_.x != -1 && mouse_locked_pos_.y != -1)
+		{
+			log::info("Mouse unlocked, moving cursor back to ({}, {})", mouse_locked_pos_.x, mouse_locked_pos_.y);
+			sf::Mouse::setPosition(sf::Vector2i(mouse_locked_pos_.x, mouse_locked_pos_.y));
+			mouse_locked_pos_ = { -1, -1 };
+		}
 	}
 }
 
@@ -163,33 +177,33 @@ void MapCanvas::lockMouse(bool lock)
 void MapCanvas::mouseLook3d()
 {
 	// Check for 3d mode
-	if (context_->editMode() == Mode::Visual && context_->mouseLocked())
+	if (context_->editMode() != Mode::Visual /* || !context_->mouseLocked()*/)
+		return;
+
+	auto overlay_current = context_->currentOverlay();
+	if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 	{
-		auto overlay_current = context_->currentOverlay();
-		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
+		// Get relative mouse movement (scale with dpi on macOS and Linux)
+		const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux);
+		const double scale          = useScaleFactor ? GetContentScaleFactor() : 1.;
+		const double threshold      = scale - 1.0;
+
+		wxRealPoint mouse_pos = wxGetMousePosition();
+		mouse_pos.x *= scale;
+		mouse_pos.y *= scale;
+
+		const wxRealPoint screen_pos = GetScreenPosition();
+		const double      xpos       = mouse_pos.x - screen_pos.x;
+		const double      ypos       = mouse_pos.y - screen_pos.y;
+
+		const wxSize size = GetSize();
+		const double xrel = xpos - floor(size.x * 0.5);
+		const double yrel = ypos - floor(size.y * 0.5);
+
+		if (fabs(xrel) > threshold || fabs(yrel) > threshold)
 		{
-			// Get relative mouse movement (scale with dpi on macOS and Linux)
-			const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux);
-			const double scale          = useScaleFactor ? GetContentScaleFactor() : 1.;
-			const double threshold      = scale - 1.0;
-
-			wxRealPoint mouse_pos = wxGetMousePosition();
-			mouse_pos.x *= scale;
-			mouse_pos.y *= scale;
-
-			const wxRealPoint screen_pos = GetScreenPosition();
-			const double      xpos       = mouse_pos.x - screen_pos.x;
-			const double      ypos       = mouse_pos.y - screen_pos.y;
-
-			const wxSize size = GetSize();
-			const double xrel = xpos - floor(size.x * 0.5);
-			const double yrel = ypos - floor(size.y * 0.5);
-
-			if (fabs(xrel) > threshold || fabs(yrel) > threshold)
-			{
-				context_->camera3d().look(xrel, yrel);
-				mouseToCenter();
-			}
+			context_->camera3d().look(xrel, yrel);
+			mouseToCenter();
 		}
 	}
 }
@@ -248,7 +262,8 @@ void MapCanvas::onKeyBindPress(string_view name)
 void MapCanvas::update()
 {
 	// Handle 3d mode mouselook
-	mouseLook3d();
+	if (mouse_looking_)
+		mouseLook3d();
 
 	// Get time since last redraw
 	auto frametime = sf_clock_->getElapsedTime().asSeconds() * 1000.0;
@@ -393,7 +408,11 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	else if (e.LeftDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Left, true);
 	else if (e.RightDown())
-		skip = context_->input().mouseDown(Input::MouseButton::Right);
+	{
+		lockMouse(true);
+		mouse_looking_ = true;
+	}
+	// skip = context_->input().mouseDown(Input::MouseButton::Right);
 	else if (e.RightDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Right, true);
 	else if (e.MiddleDown())
@@ -431,7 +450,11 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 	if (e.LeftUp())
 		skip = context_->input().mouseUp(Input::MouseButton::Left);
 	else if (e.RightUp())
-		skip = context_->input().mouseUp(Input::MouseButton::Right);
+	{
+		lockMouse(false);
+		mouse_looking_ = false;
+	}
+	// skip = context_->input().mouseUp(Input::MouseButton::Right);
 	else if (e.MiddleUp())
 		skip = context_->input().mouseUp(Input::MouseButton::Middle);
 	else if (e.Aux1Up())
@@ -495,6 +518,7 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 void MapCanvas::onMouseLeave(wxMouseEvent& e)
 {
 	context_->input().mouseLeave();
+	mouse_looking_ = false;
 
 	e.Skip();
 }
@@ -533,8 +557,8 @@ void MapCanvas::onFocus(wxFocusEvent& e)
 {
 	if (e.GetEventType() == wxEVT_SET_FOCUS)
 	{
-		if (context_->editMode() == Mode::Visual)
-			context_->lockMouse(true);
+		// if (context_->editMode() == Mode::Visual)
+		//	context_->lockMouse(true);
 	}
 	else if (e.GetEventType() == wxEVT_KILL_FOCUS)
 		context_->lockMouse(false);

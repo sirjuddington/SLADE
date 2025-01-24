@@ -124,7 +124,7 @@ Vec2d MapThing::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapThing::intProperty(string_view key)
+int MapThing::intProperty(string_view key) const
 {
 	if (key == PROP_TYPE)
 		return type_;
@@ -159,7 +159,7 @@ int MapThing::intProperty(string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapThing::floatProperty(string_view key)
+double MapThing::floatProperty(string_view key) const
 {
 	if (key == PROP_X)
 		return position_.x;

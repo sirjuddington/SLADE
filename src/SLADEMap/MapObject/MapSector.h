@@ -103,8 +103,8 @@ public:
 	short          tag() const { return id_; }
 	short          id() const { return id_; }
 
-	string stringProperty(string_view key) override;
-	int    intProperty(string_view key) override;
+	string stringProperty(string_view key) const override;
+	int    intProperty(string_view key) const override;
 
 	void setStringProperty(string_view key, string_view value) override;
 	void setFloatProperty(string_view key, double value) override;
@@ -129,7 +129,7 @@ public:
 	BBox                     boundingBox();
 	vector<MapSide*>&        connectedSides() { return connected_sides_; }
 	const vector<MapSide*>&  connectedSides() const { return connected_sides_; }
-	const vector<glm::vec2>& polygonVertices();
+	const vector<glm::vec2>& polygonVertices() const;
 	void                     resetPolygon() { poly_needsupdate_ = true; }
 	bool                     containsPoint(const Vec2d& point);
 	double                   distanceTo(const Vec2d& point, double maxdist = -1);
@@ -138,8 +138,8 @@ public:
 	bool                     putVertices(vector<MapObject*>& list) const;
 	uint8_t                  lightAt(int where = 0, int extra_floor_index = -1);
 	void                     changeLight(int amount, int where = 0);
-	ColRGBA                  colourAt(int where = 0, bool fullbright = false);
-	ColRGBA                  fogColour();
+	ColRGBA                  colourAt(int where = 0, bool fullbright = false) const;
+	ColRGBA                  fogColour() const;
 	long                     geometryUpdatedTime() const { return geometry_updated_; }
 	void                     findTextPoint();
 
@@ -170,15 +170,15 @@ private:
 	short   id_      = 0;
 
 	// Internal info
-	vector<MapSide*>   connected_sides_;
-	BBox               bbox_;
-	vector<glm::vec2>  polygon_triangles_;
-	bool               poly_needsupdate_ = true;
-	long               geometry_updated_ = 0;
-	Vec2d              text_point_       = {};
-	vector<ExtraFloor> extra_floors_;
+	vector<MapSide*>          connected_sides_;
+	BBox                      bbox_;
+	mutable vector<glm::vec2> polygon_triangles_;
+	mutable bool              poly_needsupdate_ = true;
+	mutable long              geometry_updated_ = 0;
+	Vec2d                     text_point_       = {};
+	vector<ExtraFloor>        extra_floors_;
 
-	void setGeometryUpdated();
+	void setGeometryUpdated() const;
 };
 
 // Note: these MUST be inline, or the linker will complain

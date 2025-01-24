@@ -235,7 +235,7 @@ bool MapLine::hasProp(string_view key) const
 // Can be prefixed with 'side1.' or 'side2.' to get bool properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-bool MapLine::boolProperty(string_view key)
+bool MapLine::boolProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->boolProperty(key.substr(6));
@@ -250,7 +250,7 @@ bool MapLine::boolProperty(string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get int properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-int MapLine::intProperty(string_view key)
+int MapLine::intProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->intProperty(key.substr(6));
@@ -290,7 +290,7 @@ int MapLine::intProperty(string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get float properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-double MapLine::floatProperty(string_view key)
+double MapLine::floatProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->floatProperty(key.substr(6));
@@ -305,7 +305,7 @@ double MapLine::floatProperty(string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get string properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-string MapLine::stringProperty(string_view key)
+string MapLine::stringProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->stringProperty(key.substr(6));
@@ -489,7 +489,7 @@ void MapLine::setStringProperty(string_view key, string_view value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapLine::scriptCanModifyProp(string_view key)
+bool MapLine::scriptCanModifyProp(string_view key) const
 {
 	return !(key == PROP_V1 || key == PROP_V2 || key == PROP_S1 || key == PROP_S2);
 }

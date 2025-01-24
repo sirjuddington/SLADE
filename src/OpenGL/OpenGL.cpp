@@ -388,7 +388,7 @@ unsigned gl::currentVBO()
 
 void gl::bindVBO(unsigned id)
 {
-	if (!initialised || vbo_current == id)
+	if (!initialised)
 		return;
 
 	glBindBuffer(GL_ARRAY_BUFFER, id);
@@ -419,7 +419,7 @@ unsigned gl::currentEBO()
 
 void gl::bindEBO(unsigned id)
 {
-	if (!initialised || ebo_current == id)
+	if (!initialised)
 		return;
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);

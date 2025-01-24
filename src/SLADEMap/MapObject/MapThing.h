@@ -54,8 +54,8 @@ public:
 
 	Vec2d getPoint(Point point) override;
 
-	int    intProperty(string_view key) override;
-	double floatProperty(string_view key) override;
+	int    intProperty(string_view key) const override;
+	double floatProperty(string_view key) const override;
 	void   setIntProperty(string_view key, int value) override;
 	void   setFloatProperty(string_view key, double value) override;
 

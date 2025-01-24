@@ -264,7 +264,7 @@ void MapSide::setSector(MapSector* sector)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSide::intProperty(string_view key)
+int MapSide::intProperty(string_view key) const
 {
 	if (key == PROP_SECTOR)
 	{
@@ -302,7 +302,7 @@ void MapSide::setIntProperty(string_view key, int value)
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-string MapSide::stringProperty(string_view key)
+string MapSide::stringProperty(string_view key) const
 {
 	if (key == PROP_TEXUPPER)
 		return tex_upper_;
@@ -335,7 +335,7 @@ void MapSide::setStringProperty(string_view key, string_view value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapSide::scriptCanModifyProp(string_view key)
+bool MapSide::scriptCanModifyProp(string_view key) const
 {
 	return key != PROP_SECTOR;
 }

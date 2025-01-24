@@ -18,16 +18,16 @@ unsigned initVAO(Buffer<Vertex3D>& buffer)
 	buffer.bind();
 
 	// Position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	// Texture Coordinates
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	// Normal
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	// glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+	// glEnableVertexAttribArray(2);
 
 	bindVAO(0);
 
@@ -51,13 +51,16 @@ void VertexBuffer3D::add(const vector<Vertex3D>& vertices)
 	vectorConcat(vertices_, vertices);
 }
 
-void VertexBuffer3D::add(const glm::vec3& position, const glm::vec2& uv, const glm::vec3& normal)
+void VertexBuffer3D::add(const glm::vec3& position, const glm::vec2& uv)
 {
-	vertices_.emplace_back(position, uv, normal);
+	vertices_.emplace_back(position, uv);
 }
 
 void VertexBuffer3D::push()
 {
+	if (!getContext())
+		return;
+
 	// Init VAO if needed
 	if (!vao_)
 		vao_ = initVAO(buffer_);
@@ -69,6 +72,9 @@ void VertexBuffer3D::push()
 void VertexBuffer3D::draw(Primitive primitive, const Shader* shader, const View* view, unsigned first, unsigned count)
 	const
 {
+	if (!getContext())
+		return;
+
 	// Check we have anything to draw
 	if (buffer_.empty())
 		return;

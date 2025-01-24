@@ -11,9 +11,9 @@ struct Vertex3D
 {
 	glm::vec3 position;
 	glm::vec2 uv;
-	glm::vec3 normal;
+	// glm::vec3 normal;
 
-	Vertex3D(glm::vec3 position, glm::vec2 uv, glm::vec3 normal) : position{ position }, uv{ uv }, normal{ normal } {}
+	Vertex3D(glm::vec3 position, glm::vec2 uv) : position{ position }, uv{ uv } {}
 };
 
 class VertexBuffer3D
@@ -29,10 +29,7 @@ public:
 
 	void add(const Vertex3D& vertex);
 	void add(const vector<Vertex3D>& vertices);
-	void add(
-		const glm::vec3& position,
-		const glm::vec2& uv     = glm::vec2{ 0.0f },
-		const glm::vec3& normal = glm::vec3{ 0.0f });
+	void add(const glm::vec3& position, const glm::vec2& uv = glm::vec2{ 0.0f });
 
 	void push();
 
@@ -46,6 +43,6 @@ public:
 private:
 	vector<Vertex3D> vertices_;
 	Buffer<Vertex3D> buffer_;
-	unsigned         vao_;
+	unsigned         vao_ = 0;
 };
 } // namespace slade::gl

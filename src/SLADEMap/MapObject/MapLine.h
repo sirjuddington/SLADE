@@ -75,15 +75,15 @@ public:
 	int s2Index() const;
 
 	bool   hasProp(string_view key) const override;
-	bool   boolProperty(string_view key) override;
-	int    intProperty(string_view key) override;
-	double floatProperty(string_view key) override;
-	string stringProperty(string_view key) override;
+	bool   boolProperty(string_view key) const override;
+	int    intProperty(string_view key) const override;
+	double floatProperty(string_view key) const override;
+	string stringProperty(string_view key) const override;
 	void   setBoolProperty(string_view key, bool value) override;
 	void   setIntProperty(string_view key, int value) override;
 	void   setFloatProperty(string_view key, double value) override;
 	void   setStringProperty(string_view key, string_view value) override;
-	bool   scriptCanModifyProp(string_view key) override;
+	bool   scriptCanModifyProp(string_view key) const override;
 
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);

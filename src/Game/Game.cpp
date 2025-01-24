@@ -428,7 +428,7 @@ void game::init()
 				if (!zscript_entry)
 				{
 					// Bail out if no entry is found.
-					log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path);
+					log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path.value);
 				}
 				else
 				{

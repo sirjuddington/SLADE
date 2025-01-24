@@ -33,9 +33,9 @@
 #include "Main.h"
 #include "Renderer.h"
 #include "App.h"
-#include "Camera.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
+#include "General/Misc.h"
 #include "Geometry/Geometry.h"
 #include "MCAnimations.h"
 #include "MapEditor/ClipboardItems.h"
@@ -48,6 +48,7 @@
 #include "MapEditor/MapEditor.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
+#include "OpenGL/Camera.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/OpenGL.h"
@@ -95,6 +96,7 @@ CVAR(Bool, map_show_help, true, CVar::Flag::Save)
 CVAR(Int, map_crosshair, 0, CVar::Flag::Save)
 CVAR(Bool, map_show_selection_numbers, true, CVar::Flag::Save)
 CVAR(Int, map_max_selection_numbers, 1000, CVar::Flag::Save)
+CVAR(Int, render_fov, 90, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -126,6 +128,7 @@ Renderer::Renderer(MapEditContext& context) : context_{ &context }
 	vb_grid_           = std::make_unique<VertexBuffer2D>();
 	lb_crosshair_      = std::make_unique<LineBuffer>();
 	lb_objectedit_box_ = std::make_unique<LineBuffer>();
+	camera_            = std::make_unique<gl::Camera>(Vec3f{ 0, 0, 1 });
 }
 
 // -----------------------------------------------------------------------------
@@ -140,6 +143,7 @@ void Renderer::forceUpdate(bool update_2d, bool update_3d) const
 {
 	if (update_2d)
 		renderer_2d_->forceUpdate(context_->sectorEditMode() == SectorMode::Ceiling);
+
 	if (update_3d)
 		renderer_3d_->clearData();
 }
@@ -337,7 +341,7 @@ void Renderer::setCameraThing(const MapThing* thing) const
 		pos.z += sector->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction
-	renderer_3d_->camera().set(pos, geometry::vectorAngle(geometry::degToRad(thing->angle())));
+	camera_->set(pos, geometry::vectorAngle(geometry::degToRad(thing->angle())));
 }
 
 // -----------------------------------------------------------------------------
@@ -345,7 +349,7 @@ void Renderer::setCameraThing(const MapThing* thing) const
 // -----------------------------------------------------------------------------
 Vec2d Renderer::cameraPos2D() const
 {
-	return renderer_3d_->camera().position().xy();
+	return camera_->position().xy();
 }
 
 // -----------------------------------------------------------------------------
@@ -353,7 +357,7 @@ Vec2d Renderer::cameraPos2D() const
 // -----------------------------------------------------------------------------
 Vec2d Renderer::cameraDir2D() const
 {
-	return renderer_3d_->camera().direction();
+	return camera_->direction();
 }
 
 // -----------------------------------------------------------------------------
@@ -1143,24 +1147,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 // -----------------------------------------------------------------------------
 void Renderer::drawMap3d() const
 {
-	// Setup 3d renderer view
-	renderer_3d_->setupView(view_->size().x, view_->size().y);
-
-	// Render 3d map
-	renderer_3d_->renderMap();
-
-	// Draw selection if any
-	auto selection = context_->selection();
-	renderer_3d_->renderFlatSelection(selection);
-	renderer_3d_->renderWallSelection(selection);
-	renderer_3d_->renderThingSelection(selection);
-
-	// Draw hilight if any
-	if (context_->selection().hasHilight())
-		renderer_3d_->renderHilight(context_->selection().hilight(), anim_flash_level_);
-
-	// Draw animations
-	// drawAnimations();
+	camera_->setProjection(view_->size().x, view_->size().y, 0.5f, 20000.0f, render_fov);
+	renderer_3d_->render(*camera_);
 }
 
 // -----------------------------------------------------------------------------
@@ -1179,7 +1167,7 @@ void Renderer::draw() const
 
 	// Draw 2d or 3d map depending on mode
 	if (context_->editMode() == Mode::Visual)
-		drawMap2d(dc); // drawMap3d();
+		drawMap3d();
 	else
 		drawMap2d(dc);
 
@@ -1291,6 +1279,31 @@ void Renderer::draw() const
 	dc.colour         = ColRGBA::WHITE;
 	dc.drawText(
 		fmt::format("{:1.2f}ms - {} draw calls", static_cast<double>(avg_frame) / 1000.0, draw_calls), { 0.0f, 0.0f });
+
+	// TESTING: Camera info
+	if (context_->editMode() == Mode::Visual)
+	{
+		dc.text_alignment = draw2d::Align::Right;
+		dc.drawText(
+			fmt::format(
+				"Position: {:1.2f},{:1.2f},{:1.2f} | Pitch: {:1.2f} | Direction: {:1.2f},{:1.2f},{:1.2f} | Up: "
+				"{:1.2f},{:1.2f},{:1.2f}",
+				camera_->position().x,
+				camera_->position().y,
+				camera_->position().z,
+				camera_->pitch(),
+				camera_->directionVector().x,
+				camera_->directionVector().y,
+				camera_->directionVector().z,
+				camera_->upVector().x,
+				camera_->upVector().y,
+				camera_->upVector().z),
+			{ view_->size().x, 0.0f });
+
+		dc.drawText(
+			fmt::format("Flats vertex buffer: {}", misc::sizeAsString(renderer_3d_->flatsBufferSize())),
+			{ view_->size().x, dc.textLineHeight() });
+	}
 }
 
 namespace
@@ -1530,22 +1543,10 @@ bool Renderer::update2dModeCrossfade(double mult)
 	}
 
 	// Clamp
-	if (fade_vertices_ < fa_vertices)
-		fade_vertices_ = fa_vertices;
-	if (fade_vertices_ > 1.0f)
-		fade_vertices_ = 1.0f;
-	if (fade_lines_ < fa_lines)
-		fade_lines_ = fa_lines;
-	if (fade_lines_ > 1.0f)
-		fade_lines_ = 1.0f;
-	if (fade_flats_ < fa_flats)
-		fade_flats_ = fa_flats;
-	if (fade_flats_ > 1.0f)
-		fade_flats_ = 1.0f;
-	if (fade_things_ < fa_things)
-		fade_things_ = fa_things;
-	if (fade_things_ > 1.0f)
-		fade_things_ = 1.0f;
+	fade_vertices_ = std::clamp(fade_vertices_, fa_vertices, 1.0f);
+	fade_lines_    = std::clamp(fade_lines_, fa_lines, 1.0f);
+	fade_flats_    = std::clamp(fade_flats_, fa_flats, 1.0f);
+	fade_things_   = std::clamp(fade_things_, fa_things, 1.0f);
 
 	return anim_mode_crossfade;
 }
@@ -1560,31 +1561,33 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 	// 3d mode wall
 	if (mapeditor::baseItemType(item.type) == ItemType::Side)
 	{
-		// Get quad
-		auto quad = renderer_3d_->getQuad(item);
+		// TODO: 3dmode
+		//// Get quad
+		// auto quad = renderer_3d_->getQuad(item);
 
-		if (quad)
-		{
-			// Get quad points
-			Vec3f points[4];
-			for (unsigned a = 0; a < 4; a++)
-				points[a] = { quad->points[a].x, quad->points[a].y, quad->points[a].z };
+		// if (quad)
+		//{
+		//	// Get quad points
+		//	Vec3f points[4];
+		//	for (unsigned a = 0; a < 4; a++)
+		//		points[a] = { quad->points[a].x, quad->points[a].y, quad->points[a].z };
 
-			// Start animation
-			animations_.push_back(std::make_unique<MCA3dWallSelection>(app::runTimer(), points, selected));
-		}
+		//	// Start animation
+		//	animations_.push_back(std::make_unique<MCA3dWallSelection>(app::runTimer(), points, selected));
+		//}
 	}
 
 	// 3d mode flat
 	else if (item.type == ItemType::Ceiling || item.type == ItemType::Floor)
 	{
-		// Get flat
-		auto flat = renderer_3d_->getFlat(item);
+		// TODO: 3dmode
+		//// Get flat
+		// auto flat = renderer_3d_->getFlat(item);
 
-		// Start animation
-		if (flat)
-			animations_.push_back(
-				std::make_unique<MCA3dFlatSelection>(app::runTimer(), flat->sector, flat->plane, selected));
+		//// Start animation
+		// if (flat)
+		//	animations_.push_back(
+		//		std::make_unique<MCA3dFlatSelection>(app::runTimer(), flat->sector, flat->plane, selected));
 	}
 
 	// 2d mode thing

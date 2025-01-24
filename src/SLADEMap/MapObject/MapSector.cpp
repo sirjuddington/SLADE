@@ -161,7 +161,7 @@ void MapSector::copy(MapObject* obj)
 // -----------------------------------------------------------------------------
 // Update the last time the sector geometry changed
 // -----------------------------------------------------------------------------
-void MapSector::setGeometryUpdated()
+void MapSector::setGeometryUpdated() const
 {
 	geometry_updated_ = app::runTimer();
 }
@@ -169,7 +169,7 @@ void MapSector::setGeometryUpdated()
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-string MapSector::stringProperty(string_view key)
+string MapSector::stringProperty(string_view key) const
 {
 	if (key == PROP_TEXFLOOR)
 		return floor_.texture;
@@ -182,7 +182,7 @@ string MapSector::stringProperty(string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSector::intProperty(string_view key)
+int MapSector::intProperty(string_view key) const
 {
 	if (key == PROP_HEIGHTFLOOR)
 		return floor_.height;
@@ -404,7 +404,7 @@ BBox MapSector::boundingBox()
 // -----------------------------------------------------------------------------
 // Returns the sector polygon vertices (as triangles), updating if necessary
 // -----------------------------------------------------------------------------
-const vector<glm::vec2>& MapSector::polygonVertices()
+const vector<glm::vec2>& MapSector::polygonVertices() const
 {
 	if (poly_needsupdate_)
 	{
@@ -667,7 +667,7 @@ void MapSector::changeLight(int amount, int where)
 // Returns the colour of the sector at [where] - 1 = floor, 2 = ceiling.
 // If [fullbright] is true, light level is ignored
 // -----------------------------------------------------------------------------
-ColRGBA MapSector::colourAt(int where, bool fullbright)
+ColRGBA MapSector::colourAt(int where, bool fullbright) const
 {
 	using game::UDMFFeature;
 
@@ -778,7 +778,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 // -----------------------------------------------------------------------------
 // Returns the fog colour of the sector
 // -----------------------------------------------------------------------------
-ColRGBA MapSector::fogColour()
+ColRGBA MapSector::fogColour() const
 {
 	ColRGBA color(0, 0, 0, 0);
 

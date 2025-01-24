@@ -58,8 +58,8 @@
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ShowItemDialog.h"
 #include "MapTextureManager.h"
+#include "OpenGL/Camera.h"
 #include "OpenGL/Draw2D.h"
-#include "Renderer/Camera.h"
 #include "Renderer/MapRenderer3D.h"
 #include "Renderer/Overlays/LineInfoOverlay.h"
 #include "Renderer/Overlays/SectorInfoOverlay.h"
@@ -166,7 +166,7 @@ void MapEditContext::setEditMode(Mode mode)
 	// Clear 3d mode undo manager etc on exiting 3d mode
 	if (edit_mode_ == Mode::Visual && mode != Mode::Visual)
 	{
-		info_3d_.reset();
+		info_3d_->reset();
 		undo_manager_->createMergedLevel(edit_3d_->undoManager(), "3D Mode Editing");
 		edit_3d_->undoManager()->clear();
 	}
@@ -248,8 +248,9 @@ void MapEditContext::setEditMode(Mode mode)
 	{
 		SAction::fromId("mapw_mode_3d")->setChecked();
 		KeyBind::releaseAll();
-		lockMouse(true);
-		renderer_->renderer3D().refresh();
+		// lockMouse(true);
+		//  TODO: 3dmode
+		//  renderer_->renderer3D().refresh();
 	}
 	mapeditor::window()->refreshToolBar();
 }
@@ -321,7 +322,7 @@ bool MapEditContext::update(double frametime)
 			next_frame_length_ = 2;
 
 		// Update status bar
-		auto pos = camera3d().position();
+		auto pos = renderer_->camera().position();
 		mapeditor::setStatusText(
 			fmt::format(
 				"Position: ({}, {}, {})", static_cast<int>(pos.x), static_cast<int>(pos.y), static_cast<int>(pos.z)),
@@ -332,7 +333,8 @@ bool MapEditContext::update(double frametime)
 		if (!selection_->hilightLocked())
 		{
 			auto old_hl = selection_->hilight();
-			hl          = renderer_->renderer3D().determineHilight();
+			// TODO: 3dmode
+			// hl          = renderer_->renderer3D().determineHilight();
 			if (selection_->setHilight(hl))
 			{
 				// Update 3d info overlay
@@ -547,8 +549,9 @@ void MapEditContext::forceRefreshRenderer() const
 	// Update 3d mode info overlay if needed
 	if (edit_mode_ == Mode::Visual)
 	{
-		auto hl = renderer_->renderer3D().determineHilight();
-		info_3d_->update({ hl.index, hl.type }, map_.get());
+		// TODO: 3dmode
+		// auto hl = renderer_->renderer3D().determineHilight();
+		// info_3d_->update({ hl.index, hl.type }, map_.get());
 	}
 
 	if (!canvas_->activateContext())
@@ -1596,9 +1599,9 @@ void MapEditContext::resetPlayerStart() const
 // -----------------------------------------------------------------------------
 // Returns the 3d renderer's camera
 // -----------------------------------------------------------------------------
-Camera& MapEditContext::camera3d() const
+gl::Camera& MapEditContext::camera3d() const
 {
-	return renderer_->renderer3D().camera();
+	return renderer_->camera();
 }
 
 // -----------------------------------------------------------------------------

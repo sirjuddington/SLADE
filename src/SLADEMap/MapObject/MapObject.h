@@ -52,15 +52,15 @@ public:
 	virtual bool  hasProp(string_view key) const { return properties_.contains(key); }
 
 	// Generic property modification
-	virtual bool   boolProperty(string_view key);
-	virtual int    intProperty(string_view key);
-	virtual double floatProperty(string_view key);
-	virtual string stringProperty(string_view key);
+	virtual bool   boolProperty(string_view key) const;
+	virtual int    intProperty(string_view key) const;
+	virtual double floatProperty(string_view key) const;
+	virtual string stringProperty(string_view key) const;
 	virtual void   setBoolProperty(string_view key, bool value);
 	virtual void   setIntProperty(string_view key, int value);
 	virtual void   setFloatProperty(string_view key, double value);
 	virtual void   setStringProperty(string_view key, string_view value);
-	virtual bool   scriptCanModifyProp(string_view key) { return true; }
+	virtual bool   scriptCanModifyProp(string_view key) const { return true; }
 
 	virtual Vec2d getPoint(Point point) { return { 0, 0 }; }
 

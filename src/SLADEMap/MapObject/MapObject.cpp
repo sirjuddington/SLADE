@@ -136,7 +136,7 @@ void MapObject::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 // Returns the value of the boolean property matching [key]
 // -----------------------------------------------------------------------------
-bool MapObject::boolProperty(string_view key)
+bool MapObject::boolProperty(string_view key) const
 {
 	// If the property exists already, return it
 	if (auto val = properties_.getIf<bool>(key))
@@ -152,7 +152,7 @@ bool MapObject::boolProperty(string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapObject::intProperty(string_view key)
+int MapObject::intProperty(string_view key) const
 {
 	// If the property exists already (as int or float), return it
 	if (auto ival = properties_.getIf<int>(key))
@@ -170,7 +170,7 @@ int MapObject::intProperty(string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapObject::floatProperty(string_view key)
+double MapObject::floatProperty(string_view key) const
 {
 	// If the property exists already (as float or int), return it
 	if (auto fval = properties_.getIf<double>(key))
@@ -188,7 +188,7 @@ double MapObject::floatProperty(string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-string MapObject::stringProperty(string_view key)
+string MapObject::stringProperty(string_view key) const
 {
 	// If the property exists already, return it
 	if (auto val = properties_.getIf<string>(key))

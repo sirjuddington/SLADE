@@ -40,6 +40,8 @@ private:
 	unique_ptr<sf::Clock>      sf_clock_;
 	wxTimer                    timer_;
 	long                       last_wheel_timestamp_ = -1;
+	bool                       mouse_looking_        = false;
+	Vec2i                      mouse_locked_pos_{ -1, -1 };
 
 	void update();
 

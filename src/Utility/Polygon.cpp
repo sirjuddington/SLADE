@@ -35,7 +35,6 @@
 #include "MathStuff.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/VertexBuffer2D.h"
-#include "OpenGL/VertexBuffer3D.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -775,32 +774,6 @@ bool generateTextureCoords(
 	// Calculate texture coords
 	for (auto& v : vertices)
 		v.tex_coord = calculateTexCoords(
-			v.position.x, v.position.y, width, height, scale_x, scale_y, offset_x, offset_y, rotation);
-
-	return true;
-}
-
-bool generateTextureCoords(
-	vector<gl::Vertex3D>& vertices,
-	unsigned              texture,
-	float                 scale_x,
-	float                 scale_y,
-	float                 offset_x,
-	float                 offset_y,
-	float                 rotation)
-{
-	// Can't do this if there is no texture
-	if (!texture)
-		return false;
-
-	// Get texture info
-	auto& tex_info = gl::Texture::info(texture);
-	auto  width    = static_cast<float>(tex_info.size.x);
-	auto  height   = static_cast<float>(tex_info.size.y);
-
-	// Calculate texture coords
-	for (auto& v : vertices)
-		v.uv = calculateTexCoords(
 			v.position.x, v.position.y, width, height, scale_x, scale_y, offset_x, offset_y, rotation);
 
 	return true;

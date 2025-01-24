@@ -53,11 +53,11 @@ public:
 	void setTexOffsetX(int offset);
 	void setTexOffsetY(int offset);
 
-	int    intProperty(string_view key) override;
+	int    intProperty(string_view key) const override;
 	void   setIntProperty(string_view key, int value) override;
-	string stringProperty(string_view key) override;
+	string stringProperty(string_view key) const override;
 	void   setStringProperty(string_view key, string_view value) override;
-	bool   scriptCanModifyProp(string_view key) override;
+	bool   scriptCanModifyProp(string_view key) const override;
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;

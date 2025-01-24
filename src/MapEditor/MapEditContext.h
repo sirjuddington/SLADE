@@ -6,7 +6,6 @@
 // Forward declarations
 namespace slade
 {
-class Camera;
 class InfoOverlay3D;
 class ItemSelection;
 class LineInfoOverlay;
@@ -17,10 +16,14 @@ class ThingInfoOverlay;
 class UndoManager;
 class UndoStep;
 class VertexInfoOverlay;
-namespace gl::draw2d
+namespace gl
 {
-	struct Context;
-}
+	class Camera;
+	namespace draw2d
+	{
+		struct Context;
+	}
+} // namespace gl
 namespace ui
 {
 	enum class MouseCursor;
@@ -150,7 +153,7 @@ public:
 	void resetPlayerStart() const;
 
 	// Renderer
-	Camera& camera3d() const;
+	gl::Camera& camera3d() const;
 
 	// Misc
 	string modeString(bool plural = true) const;
