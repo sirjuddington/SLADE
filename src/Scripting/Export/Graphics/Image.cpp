@@ -34,6 +34,7 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "Scripting/Export/Export.h"
+#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
 
 using namespace slade;

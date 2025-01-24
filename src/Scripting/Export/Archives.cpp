@@ -39,6 +39,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Export.h"
+#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
 
 using namespace slade;

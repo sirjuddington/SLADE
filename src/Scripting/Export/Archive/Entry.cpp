@@ -8,6 +8,7 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "Scripting/Export/Export.h"
+#include "Scripting/Lua.h"
 #include "Scripting/LuaBridge.h"
 
 using namespace slade;
