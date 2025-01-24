@@ -832,7 +832,11 @@ void MapObjectPropsPanel::setupTypeUDMF(map::ObjectType objtype)
 void MapObjectPropsPanel::updateGroupVisibility() const
 {
 	for (auto group : groups_)
+#if wxCHECK_VERSION(3, 3, 0)
 		group->Hide(!group->HasVisibleChildren(), wxPGPropertyValuesFlags::DontRecurse);
+#else
+		group->Hide(!group->HasVisibleChildren(), wxPG_DONT_RECURSE);
+#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -878,7 +882,11 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 
 	// Show all groups initially
 	for (auto group : groups_)
+#if wxCHECK_VERSION(3, 3, 0)
 		group->Hide(false, wxPGPropertyValuesFlags::DontRecurse);
+#else
+		group->Hide(false, wxPG_DONT_RECURSE);
+#endif
 
 	// Setup property grid for the object type
 	bool is_udmf      = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);

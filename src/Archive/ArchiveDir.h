@@ -4,7 +4,7 @@
 
 namespace slade
 {
-class ArchiveDir
+class ArchiveDir : public std::enable_shared_from_this<ArchiveDir>
 {
 	friend class Archive;
 	friend class ArchiveFormatHandler;

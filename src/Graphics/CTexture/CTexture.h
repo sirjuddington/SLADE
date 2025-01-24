@@ -72,6 +72,7 @@ public:
 	void setUseOffsets(bool use) { use_offsets_ = use; }
 	void setRotation(int16_t rot) { rotation_ = rot; }
 	void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { colour_.set(r, g, b, a); }
+	void setColour(const ColRGBA& colour) { colour_ = colour; }
 	void setAlpha(float a) { alpha_ = a; }
 	void setStyle(string_view style) { style_ = style; }
 	void setBlendType(BlendType type) { blendtype_ = type; }

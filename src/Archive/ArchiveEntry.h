@@ -17,7 +17,7 @@ enum class EntryEncryption
 	TXB,
 };
 
-class ArchiveEntry
+class ArchiveEntry : public std::enable_shared_from_this<ArchiveEntry>
 {
 	friend class ArchiveDir;
 	friend class Archive;

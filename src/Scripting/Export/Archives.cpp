@@ -39,7 +39,8 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Export.h"
-#include "thirdparty/sol/sol.hpp"
+#include "Scripting/LuaBridge.h"
+#include "Scripting/Scripting.h"
 
 using namespace slade;
 
@@ -48,108 +49,142 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Registers the ArchiveFormatInfo type with lua
 // -----------------------------------------------------------------------------
-void registerArchiveFormat(sol::state& lua)
+static void registerArchiveFormat(lua_State* lua)
 {
 	// Create ArchiveFormat type, no constructor
-	auto lua_archiveformat = lua.new_usertype<ArchiveFormatInfo>("ArchiveFormat", "new", sol::no_constructor);
+	auto lua_archiveformat = luabridge::getGlobalNamespace(lua).beginClass<ArchiveFormatInfo>("ArchiveFormat");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_archiveformat.set("id", sol::readonly(&ArchiveFormatInfo::id));
-	lua_archiveformat.set("name", sol::readonly(&ArchiveFormatInfo::name));
-	lua_archiveformat.set("supportsDirs", sol::readonly(&ArchiveFormatInfo::supports_dirs));
-	lua_archiveformat.set("hasExtensions", sol::readonly(&ArchiveFormatInfo::names_extensions));
-	lua_archiveformat.set("maxNameLength", sol::readonly(&ArchiveFormatInfo::max_name_length));
-	lua_archiveformat.set("entryFormat", sol::readonly(&ArchiveFormatInfo::entry_format));
+	lua_archiveformat.addProperty("id", &ArchiveFormatInfo::id);
+	lua_archiveformat.addProperty("name", &ArchiveFormatInfo::name);
+	lua_archiveformat.addProperty("supportsDirs", &ArchiveFormatInfo::supports_dirs);
+	lua_archiveformat.addProperty("hasExtensions", &ArchiveFormatInfo::names_extensions);
+	lua_archiveformat.addProperty("maxNameLength", &ArchiveFormatInfo::max_name_length);
+	lua_archiveformat.addProperty("entryFormat", &ArchiveFormatInfo::entry_format);
 	// TODO: extensions - need to export key_value_t or do something custom
 }
 
 // -----------------------------------------------------------------------------
 // Registers the ArchiveSearchOptions type with lua
 // -----------------------------------------------------------------------------
-void registerArchiveSearchOptions(sol::state& lua)
+static void registerArchiveSearchOptions(lua_State* lua)
 {
-	auto lua_search_opt = lua.new_usertype<ArchiveSearchOptions>(
-		"ArchiveSearchOptions", "new", sol::constructors<ArchiveSearchOptions()>());
+	auto lua_search_opt = luabridge::getGlobalNamespace(lua).beginClass<ArchiveSearchOptions>("ArchiveSearchOptions");
+	lua_search_opt.addConstructor<void()>();
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_search_opt.set("matchName", sol::property(&ArchiveSearchOptions::match_name));
-	lua_search_opt.set("matchType", sol::property(&ArchiveSearchOptions::match_type));
-	lua_search_opt.set("matchNamespace", sol::property(&ArchiveSearchOptions::match_namespace));
-	lua_search_opt.set("dir", sol::property(&ArchiveSearchOptions::dir));
-	lua_search_opt.set("ignoreExt", sol::property(&ArchiveSearchOptions::ignore_ext));
-	lua_search_opt.set("searchSubdirs", sol::property(&ArchiveSearchOptions::search_subdirs));
+	using ASO = ArchiveSearchOptions;
+	lua_search_opt.addProperty("matchName", &ASO::match_name, &ASO::match_name);
+	lua_search_opt.addProperty("matchType", &ASO::match_type, &ASO::match_type);
+	lua_search_opt.addProperty("matchNamespace", &ASO::match_namespace, &ASO::match_namespace);
+	lua_search_opt.addProperty("dir", &ASO::dir, &ASO::dir);
+	lua_search_opt.addProperty("ignoreExt", &ASO::ignore_ext, &ASO::ignore_ext);
+	lua_search_opt.addProperty("searchSubdirs", &ASO::search_subdirs, &ASO::search_subdirs);
 }
 
 // -----------------------------------------------------------------------------
 // Registers the ArchiveDir type with lua
 // -----------------------------------------------------------------------------
-void registerArchiveDir(sol::state& lua)
+static void registerArchiveDir(lua_State* lua)
 {
 	// Create ArchiveDir type, no constructor
-	auto lua_dir = lua.new_usertype<ArchiveDir>("ArchiveDir", "new", sol::no_constructor);
+	auto lua_dir = luabridge::getGlobalNamespace(lua).beginClass<ArchiveDir>("ArchiveDir");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_dir.set("name", sol::property(&ArchiveDir::name));
-	lua_dir.set("archive", sol::property(&ArchiveDir::archive));
-	lua_dir.set("entries", sol::property(&ArchiveDir::entries));
-	lua_dir.set("parent", sol::property(&ArchiveDir::parent));
-	lua_dir.set("path", sol::property(&ArchiveDir::path));
-	lua_dir.set("subDirectories", sol::property(&ArchiveDir::subdirs));
+	lua_dir.addProperty("name", &ArchiveDir::name);
+	lua_dir.addProperty("archive", &ArchiveDir::archive);
+	lua_dir.addProperty("entries", &ArchiveDir::entries);
+	lua_dir.addProperty("parent", &ArchiveDir::parent);
+	lua_dir.addProperty("path", [](const ArchiveDir& self) { return self.path(); });
+	lua_dir.addProperty("subDirectories", &ArchiveDir::subdirs);
+}
+
+static int createArchiveLua(lua_State* L)
+{
+	try
+	{
+		auto format  = luabridge::get<string_view>(L, 1).value();
+		auto archive = app::archiveManager().newArchive(format);
+		luabridge::push(L, archive).throw_on_error();
+		luabridge::push(L, global::error).throw_on_error();
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in Archives.Create: {}", e.what()));
+	}
+}
+
+static int openFileLua(lua_State* L)
+{
+	try
+	{
+		auto filename = luabridge::get<string_view>(L, 1).value();
+		auto archive  = app::archiveManager().openArchive(filename);
+		luabridge::push(L, archive).throw_on_error();
+		luabridge::push(L, global::error).throw_on_error();
+		return 2;
+	}
+	catch (const std::exception& e)
+	{
+		throw LuaException("Runtime", fmt::format("Error in Archives.OpenFile: {}", e.what()));
+	}
+}
+
+static vector<ArchiveEntry*> bookmarks()
+{
+	vector<ArchiveEntry*> result;
+	for (auto& bookmark : app::archiveManager().bookmarks())
+		result.push_back(bookmark.lock().get());
+	return result;
 }
 
 // -----------------------------------------------------------------------------
 // Registers the Archives namespace with lua
 // -----------------------------------------------------------------------------
-void registerArchivesNamespace(sol::state& lua)
+void registerArchivesNamespace(lua_State* lua)
 {
-	auto archives = lua.create_table("Archives");
+	auto archives = luabridge::getGlobalNamespace(lua).beginNamespace("Archives");
 
-	archives.set_function(
+	archives.addFunction(
 		"All",
-		sol::overload(
-			[](bool res) { return app::archiveManager().allArchives(res); },
-			[]() { return app::archiveManager().allArchives(false); }));
-	archives.set_function(
-		"Create",
-		[](string_view format) { return std::make_tuple(app::archiveManager().newArchive(format), global::error); });
-	archives.set_function(
-		"OpenFile",
-		[](string_view filename)
-		{ return std::make_tuple(app::archiveManager().openArchive(filename), global::error); });
-	archives.set_function(
+		[](bool res) { return app::archiveManager().allArchives(res); },
+		[] { return app::archiveManager().allArchives(false); });
+	archives.addFunction("Create", createArchiveLua);
+	archives.addFunction("OpenFile", openFileLua);
+	archives.addFunction(
 		"Close",
-		sol::overload(
-			[](Archive* archive) { return app::archiveManager().closeArchive(archive); },
-			[](int index) { return app::archiveManager().closeArchive(index); }));
-	archives.set_function("CloseAll", []() { app::archiveManager().closeAll(); });
-	archives.set_function("FileExtensionsString", []() { return app::archiveManager().getArchiveExtensionsString(); });
-	archives.set_function("BaseResource", []() { return app::archiveManager().baseResourceArchive(); });
-	archives.set_function("BaseResourcePaths", []() { return app::archiveManager().baseResourcePaths(); });
-	archives.set_function("OpenBaseResource", [](int index) { return app::archiveManager().openBaseResource(index); });
-	archives.set_function("ProgramResource", []() { return app::archiveManager().programResourceArchive(); });
-	archives.set_function("RecentFiles", []() { return app::archiveManager().recentFiles(); });
-	archives.set_function("Bookmarks", []() { return app::archiveManager().bookmarks(); });
-	archives.set_function(
+		[](Archive* archive) { return app::archiveManager().closeArchive(archive); },
+		[](int index) { return app::archiveManager().closeArchive(index); });
+	archives.addFunction("CloseAll", [] { app::archiveManager().closeAll(); });
+	archives.addFunction("FileExtensionsString", [] { return app::archiveManager().getArchiveExtensionsString(); });
+	archives.addFunction("BaseResource", [] { return app::archiveManager().baseResourceArchive(); });
+	archives.addFunction("BaseResourcePaths", [] { return app::archiveManager().baseResourcePaths(); });
+	archives.addFunction("OpenBaseResource", [](int index) { return app::archiveManager().openBaseResource(index); });
+	archives.addFunction("ProgramResource", [] { return app::archiveManager().programResourceArchive(); });
+	archives.addFunction("RecentFiles", [] { return app::archiveManager().recentFiles(); });
+	archives.addFunction("Bookmarks", bookmarks);
+	archives.addFunction(
 		"AddBookmark", [](ArchiveEntry* entry) { app::archiveManager().addBookmark(entry->getShared()); });
-	archives.set_function("RemoveBookmark", [](ArchiveEntry* entry) { app::archiveManager().deleteBookmark(entry); });
-	archives.set_function("EntryType", &EntryType::fromId);
+	archives.addFunction("RemoveBookmark", [](ArchiveEntry* entry) { app::archiveManager().deleteBookmark(entry); });
+	archives.addFunction("EntryType", &EntryType::fromId);
 }
 
 // -----------------------------------------------------------------------------
 // Registers various Archive-related types with lua
 // -----------------------------------------------------------------------------
-void registerArchiveTypes(sol::state& lua)
+void registerArchiveTypes(lua_State* lua)
 {
 	registerArchiveFormat(lua);
 	registerArchiveSearchOptions(lua);
@@ -159,4 +194,4 @@ void registerArchiveTypes(sol::state& lua)
 	registerArchiveDir(lua);
 }
 
-} // namespace slade::lua
+} // namespace slade::scripting

@@ -28,7 +28,7 @@ struct ArchiveSearchOptions
 	}
 };
 
-class Archive
+class Archive : public std::enable_shared_from_this<Archive>
 {
 	friend class ArchiveFormatHandler;
 
@@ -37,7 +37,7 @@ public:
 
 	Archive(string_view format = "");
 	Archive(ArchiveFormat format);
-	virtual ~Archive();
+	~Archive();
 
 	string                 filename(bool full = true) const;
 	ArchiveEntry*          parentEntry() const { return parent_.lock().get(); }
@@ -51,6 +51,7 @@ public:
 
 	void setModified(bool modified);
 	void setFilename(string_view filename) { filename_ = filename; }
+	void setReadOnly() { read_only_ = true; }
 
 	// Entry retrieval/info
 	bool                     checkEntry(const ArchiveEntry* entry) const;
@@ -149,21 +150,19 @@ public:
 	Signals& signals() { return signals_; }
 	void     blockModificationSignals(bool block = true);
 
-protected:
+private:
 	string                 filename_;
 	weak_ptr<ArchiveEntry> parent_;
 	bool   on_disk_       = false; // Specifies whether the archive exists on disk (as opposed to being newly created)
 	bool   read_only_     = false; // If true, the archive cannot be modified
 	time_t file_modified_ = 0;
-
-	// Helpers
-	void detectAllEntryTypes() const;
-
-private:
-	bool                             modified_ = true;
+	bool   modified_      = true;
 	shared_ptr<ArchiveDir>           dir_root_;
 	Signals                          signals_;
 	unique_ptr<ArchiveFormatHandler> format_handler_;
+
+	// Helpers
+	void detectAllEntryTypes() const;
 };
 
 // Simple class that will block and unblock modification signals for an archive via RAII

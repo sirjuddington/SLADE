@@ -35,8 +35,8 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
-#include "Scripting/Lua.h"
-#include "thirdparty/sol/sol.hpp"
+#include "Scripting/LuaBridge.h"
+#include "Scripting/Scripting.h"
 
 using namespace slade;
 
@@ -45,92 +45,116 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Types
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+template<> struct luabridge::Stack<SIFormat::Mask> : Enum<SIFormat::Mask>
+{
+};
+template<> struct luabridge::Stack<SIFormat::Writable> : Enum<SIFormat::Writable>
+{
+};
+template<> struct luabridge::Stack<Palette::Format> : Enum<Palette::Format>
+{
+};
+template<> struct luabridge::Stack<Palette::ColourMatch> : Enum<Palette::ColourMatch>
+{
+};
+template<> struct luabridge::Stack<SImage::BlendType> : Enum<SImage::BlendType>
+{
+};
+
+
+// -----------------------------------------------------------------------------
+//
+// Scripting Namespace Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Registers the ImageConvertOptions (SIFormat::ConvertOptions) type with lua
 // -----------------------------------------------------------------------------
-void registerImageConvertOptionsType(sol::state& lua)
+static void registerImageConvertOptionsType(lua_State* lua)
 {
-	auto lua_copt = lua.new_usertype<SIFormat::ConvertOptions>(
-		"ImageConvertOptions", "new", sol::constructors<SIFormat::ConvertOptions()>());
+	auto lua_copt = luabridge::getGlobalNamespace(lua).beginClass<SIFormat::ConvertOptions>("ImageConvertOptions");
+	lua_copt.addConstructor<void()>();
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_copt.set("MASK_NONE", sol::property([]() { return SIFormat::Mask::None; }));
-	lua_copt.set("MASK_COLOUR", sol::property([]() { return SIFormat::Mask::Colour; }));
-	lua_copt.set("MASK_ALPHA", sol::property([]() { return SIFormat::Mask::Alpha; }));
-	lua_copt.set("MASK_BRIGHTNESS", sol::property([]() { return SIFormat::Mask::Brightness; }));
+	lua_copt.addStaticProperty("MASK_NONE", +[] { return SIFormat::Mask::None; });
+	lua_copt.addStaticProperty("MASK_COLOUR", +[] { return SIFormat::Mask::Colour; });
+	lua_copt.addStaticProperty("MASK_ALPHA", +[] { return SIFormat::Mask::Alpha; });
+	lua_copt.addStaticProperty("MASK_BRIGHTNESS", +[] { return SIFormat::Mask::Brightness; });
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_copt.set("paletteCurrent", &SIFormat::ConvertOptions::pal_current);
-	lua_copt.set("paletteTarget", &SIFormat::ConvertOptions::pal_target);
-	lua_copt.set("maskSource", &SIFormat::ConvertOptions::mask_source);
-	lua_copt.set("maskColour", &SIFormat::ConvertOptions::mask_colour);
-	lua_copt.set("alphaThreshold", &SIFormat::ConvertOptions::alpha_threshold);
-	lua_copt.set("transparency", &SIFormat::ConvertOptions::transparency);
-	lua_copt.set("pixelFormat", &SIFormat::ConvertOptions::col_format);
+	using CO = SIFormat::ConvertOptions;
+	lua_copt.addProperty("paletteCurrent", &CO::pal_current, &CO::pal_current);
+	lua_copt.addProperty("paletteTarget", &CO::pal_target, &CO::pal_target);
+	lua_copt.addProperty("maskSource", &CO::mask_source, &CO::mask_source);
+	lua_copt.addProperty("maskColour", &CO::mask_colour, &CO::mask_colour);
+	lua_copt.addProperty("alphaThreshold", &CO::alpha_threshold, &CO::alpha_threshold);
+	lua_copt.addProperty("transparency", &CO::transparency, &CO::transparency);
+	lua_copt.addProperty("pixelFormat", &CO::col_format, &CO::col_format);
 }
 
 // -----------------------------------------------------------------------------
 // Registers the ImageFormat (SIFormat) type with lua
 // -----------------------------------------------------------------------------
-void registerImageFormatType(sol::state& lua)
+static void registerImageFormatType(lua_State* lua)
 {
-	auto lua_iformat = lua.new_usertype<SIFormat>("ImageFormat", "new", sol::no_constructor);
+	auto lua_iformat = luabridge::getGlobalNamespace(lua).beginClass<SIFormat>("ImageFormat");
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_iformat.set("WRITABLE_NO", sol::property([]() { return SIFormat::Writable::No; }));
-	lua_iformat.set("WRITABLE_YES", sol::property([]() { return SIFormat::Writable::Yes; }));
-	lua_iformat.set("WRITABLE_NEEDS_CONVERSION", sol::property([]() { return SIFormat::Writable::Convert; }));
+	lua_iformat.addStaticProperty("WRITABLE_NO", +[] { return SIFormat::Writable::No; });
+	lua_iformat.addStaticProperty("WRITABLE_YES", +[] { return SIFormat::Writable::Yes; });
+	lua_iformat.addStaticProperty("WRITABLE_NEEDS_CONVERSION", +[] { return SIFormat::Writable::Convert; });
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_iformat.set("id", sol::property(&SIFormat::id));
-	lua_iformat.set("name", sol::property(&SIFormat::name));
-	lua_iformat.set("extension", sol::property(&SIFormat::extension));
+	lua_iformat.addProperty("id", &SIFormat::id);
+	lua_iformat.addProperty("name", &SIFormat::name);
+	lua_iformat.addProperty("extension", &SIFormat::extension);
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_iformat.set_function("IsThisFormat", &SIFormat::isThisFormat);
-	lua_iformat.set_function("CanWrite", &SIFormat::canWrite);
-	lua_iformat.set_function("CanWritePixelFormat", &SIFormat::canWriteType);
-	lua_iformat.set_function("ConvertWritable", &SIFormat::convertWritable);
-	lua_iformat.set_function(
+	lua_iformat.addFunction("IsThisFormat", &SIFormat::isThisFormat);
+	lua_iformat.addFunction("CanWrite", &SIFormat::canWrite);
+	lua_iformat.addFunction("CanWritePixelFormat", &SIFormat::canWriteType);
+	lua_iformat.addFunction("ConvertWritable", &SIFormat::convertWritable);
+	lua_iformat.addFunction(
 		"LoadImage",
-		sol::overload(
-			&SIFormat::loadImage, [](SIFormat& self, SImage& image, MemChunk& data) { self.loadImage(image, data); }));
-	lua_iformat.set_function(
+		&SIFormat::loadImage,
+		[](SIFormat& self, SImage& image, MemChunk& data) { self.loadImage(image, data); });
+	lua_iformat.addFunction(
 		"SaveImage",
-		sol::overload(
-			&SIFormat::saveImage,
-			[](SIFormat& self, SImage& image, MemChunk& out) { self.saveImage(image, out); },
-			[](SIFormat& self, SImage& image, MemChunk& out, Palette* pal) { self.saveImage(image, out, pal); }));
+		&SIFormat::saveImage,
+		[](SIFormat& self, SImage& image, MemChunk& out) { self.saveImage(image, out); },
+		[](SIFormat& self, SImage& image, MemChunk& out, Palette* pal) { self.saveImage(image, out, pal); });
 }
 
 // -----------------------------------------------------------------------------
 // Registers the ImageDrawOptions (SImage::DrawProps) type with lua
 // -----------------------------------------------------------------------------
-void registerImageDrawOptionsType(sol::state& lua)
+static void registerImageDrawOptionsType(lua_State* lua)
 {
-	auto lua_idopt = lua.new_usertype<SImage::DrawProps>("ImageDrawOptions", sol::constructors<SImage::DrawProps()>());
+	auto lua_idopt = luabridge::getGlobalNamespace(lua).beginClass<SImage::DrawProps>("ImageDrawOptions");
+	lua_idopt.addConstructor<void()>();
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_idopt.set("blend", &SImage::DrawProps::blend);
-	lua_idopt.set("alpha", &SImage::DrawProps::alpha);
-	lua_idopt.set("keepSourceAlpha", &SImage::DrawProps::src_alpha);
+	using DP = SImage::DrawProps;
+	lua_idopt.addProperty("blend", &DP::blend, &DP::blend);
+	lua_idopt.addProperty("alpha", &DP::alpha, &DP::alpha);
+	lua_idopt.addProperty("keepSourceAlpha", &DP::src_alpha, &DP::src_alpha);
 }
 
 // -----------------------------------------------------------------------------
 // Loads raw rgb triplet [data] into palette [self]
 // -----------------------------------------------------------------------------
-bool paletteLoadData(Palette& self, string_view data)
+static bool paletteLoadData(Palette& self, string_view data)
 {
 	return self.loadMem(reinterpret_cast<const uint8_t*>(data.data()), data.size());
 }
@@ -138,7 +162,7 @@ bool paletteLoadData(Palette& self, string_view data)
 // -----------------------------------------------------------------------------
 // Loads [data] in [format] to palette [self]
 // -----------------------------------------------------------------------------
-bool paletteLoadDataFormatted(Palette& self, string_view data, Palette::Format format)
+static bool paletteLoadDataFormatted(Palette& self, string_view data, Palette::Format format)
 {
 	MemChunk mc{ reinterpret_cast<const uint8_t*>(data.data()), static_cast<uint32_t>(data.size()) };
 	return self.loadMem(mc, format);
@@ -147,59 +171,58 @@ bool paletteLoadDataFormatted(Palette& self, string_view data, Palette::Format f
 // -----------------------------------------------------------------------------
 // Registers the Palette type with lua
 // -----------------------------------------------------------------------------
-void registerPaletteType(sol::state& lua)
+static void registerPaletteType(lua_State* lua)
 {
-	auto lua_palette = lua.new_usertype<Palette>("Palette", "new", sol::constructors<Palette(), Palette(unsigned)>());
+	auto lua_palette = luabridge::getGlobalNamespace(lua).beginClass<Palette>("Palette");
+	lua_palette.addConstructor<void(), void(unsigned)>();
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_palette.set("colourCount", sol::property([](Palette& self) { return self.colours().size(); }));
+	lua_palette.addProperty("colourCount", [](Palette& self) { return self.colours().size(); });
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_palette.set("FORMAT_RAW", sol::property([]() { return Palette::Format::Raw; }));
-	lua_palette.set("FORMAT_IMAGE", sol::property([]() { return Palette::Format::Image; }));
-	lua_palette.set("FORMAT_CSV", sol::property([]() { return Palette::Format::CSV; }));
-	lua_palette.set("FORMAT_JASC", sol::property([]() { return Palette::Format::JASC; }));
-	lua_palette.set("FORMAT_GIMP", sol::property([]() { return Palette::Format::GIMP; }));
-	lua_palette.set("MATCH_DEFAULT", sol::property([]() { return Palette::ColourMatch::Default; }));
-	lua_palette.set("MATCH_OLD", sol::property([]() { return Palette::ColourMatch::Old; }));
-	lua_palette.set("MATCH_RGB", sol::property([]() { return Palette::ColourMatch::RGB; }));
-	lua_palette.set("MATCH_HSL", sol::property([]() { return Palette::ColourMatch::HSL; }));
-	lua_palette.set("MATCH_C76", sol::property([]() { return Palette::ColourMatch::C76; }));
-	lua_palette.set("MATCH_C94", sol::property([]() { return Palette::ColourMatch::C94; }));
-	lua_palette.set("MATCH_C2K", sol::property([]() { return Palette::ColourMatch::C2K; }));
+	lua_palette.addStaticProperty("FORMAT_RAW", +[] { return Palette::Format::Raw; });
+	lua_palette.addStaticProperty("FORMAT_IMAGE", +[] { return Palette::Format::Image; });
+	lua_palette.addStaticProperty("FORMAT_CSV", +[] { return Palette::Format::CSV; });
+	lua_palette.addStaticProperty("FORMAT_JASC", +[] { return Palette::Format::JASC; });
+	lua_palette.addStaticProperty("FORMAT_GIMP", +[] { return Palette::Format::GIMP; });
+	lua_palette.addStaticProperty("MATCH_DEFAULT", +[] { return Palette::ColourMatch::Default; });
+	lua_palette.addStaticProperty("MATCH_OLD", +[] { return Palette::ColourMatch::Old; });
+	lua_palette.addStaticProperty("MATCH_RGB", +[] { return Palette::ColourMatch::RGB; });
+	lua_palette.addStaticProperty("MATCH_HSL", +[] { return Palette::ColourMatch::HSL; });
+	lua_palette.addStaticProperty("MATCH_C76", +[] { return Palette::ColourMatch::C76; });
+	lua_palette.addStaticProperty("MATCH_C94", +[] { return Palette::ColourMatch::C94; });
+	lua_palette.addStaticProperty("MATCH_C2K", +[] { return Palette::ColourMatch::C2K; });
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_palette.set_function("Colour", &Palette::colour);
-	lua_palette.set_function("LoadData", sol::overload(&paletteLoadData, &paletteLoadDataFormatted));
-	lua_palette.set_function(
-		"LoadFile",
-		sol::overload(&Palette::loadFile, [](Palette& self, string_view file) { return self.loadFile(file); }));
-	lua_palette.set_function(
-		"SaveFile",
-		sol::overload(&Palette::saveFile, [](Palette& self, string_view file) { return self.saveFile(file); }));
-	lua_palette.set_function("SetColour", &Palette::setColour);
-	lua_palette.set_function("SetColourR", &Palette::setColourR);
-	lua_palette.set_function("SetColourG", &Palette::setColourG);
-	lua_palette.set_function("SetColourB", &Palette::setColourB);
-	lua_palette.set_function("SetColourA", &Palette::setColourA);
-	lua_palette.set_function("CopyColours", &Palette::copyPalette);
-	lua_palette.set_function("FindColour", &Palette::findColour);
-	lua_palette.set_function(
+	lua_palette.addFunction("Colour", &Palette::colour);
+	lua_palette.addFunction("LoadData", &paletteLoadData, &paletteLoadDataFormatted);
+	lua_palette.addFunction(
+		"LoadFile", &Palette::loadFile, [](Palette& self, string_view file) { return self.loadFile(file); });
+	lua_palette.addFunction(
+		"SaveFile", &Palette::saveFile, [](Palette& self, string_view file) { return self.saveFile(file); });
+	lua_palette.addFunction("SetColour", &Palette::setColour);
+	lua_palette.addFunction("SetColourR", &Palette::setColourR);
+	lua_palette.addFunction("SetColourG", &Palette::setColourG);
+	lua_palette.addFunction("SetColourB", &Palette::setColourB);
+	lua_palette.addFunction("SetColourA", &Palette::setColourA);
+	lua_palette.addFunction("CopyColours", &Palette::copyPalette);
+	lua_palette.addFunction("FindColour", &Palette::findColour);
+	lua_palette.addFunction(
 		"NearestColour",
-		sol::overload(
-			&Palette::nearestColour, [](Palette& self, const ColRGBA& col) { return self.nearestColour(col); }));
-	lua_palette.set_function("CountUniqueColours", &Palette::countColours);
-	lua_palette.set_function("ApplyTranslation", &Palette::applyTranslation);
-	lua_palette.set_function("Colourise", &Palette::colourise);
-	lua_palette.set_function("Tint", &Palette::tint);
-	lua_palette.set_function("Saturate", &Palette::saturate);
-	lua_palette.set_function("Illuminate", &Palette::illuminate);
-	lua_palette.set_function("Shift", &Palette::shift);
-	lua_palette.set_function("Invert", &Palette::invert);
-	lua_palette.set_function(
+		&Palette::nearestColour,
+		[](Palette& self, const ColRGBA& col) { return self.nearestColour(col); });
+	lua_palette.addFunction("CountUniqueColours", &Palette::countColours);
+	lua_palette.addFunction("ApplyTranslation", &Palette::applyTranslation);
+	lua_palette.addFunction("Colourise", &Palette::colourise);
+	lua_palette.addFunction("Tint", &Palette::tint);
+	lua_palette.addFunction("Saturate", &Palette::saturate);
+	lua_palette.addFunction("Illuminate", &Palette::illuminate);
+	lua_palette.addFunction("Shift", &Palette::shift);
+	lua_palette.addFunction("Invert", &Palette::invert);
+	lua_palette.addFunction(
 		"Gradient",
 		[](Palette& self, const ColRGBA& startC, const ColRGBA& endC, int startI, int endI)
 		{ self.setGradient(startI, endI, startC, endC); });
@@ -208,11 +231,12 @@ void registerPaletteType(sol::state& lua)
 // -----------------------------------------------------------------------------
 // Registers all graphics-related types with lua
 // -----------------------------------------------------------------------------
-void registerGraphicsTypes(sol::state& lua)
+void registerGraphicsTypes(lua_State* lua)
 {
 	registerImageConvertOptionsType(lua);
 	registerImageFormatType(lua);
 	registerImageDrawOptionsType(lua);
+	registerPaletteType(lua);
 	registerImageType(lua);
 	registerTranslationType(lua);
 	registerCTexturePatchTypes(lua);
@@ -224,59 +248,51 @@ void registerGraphicsTypes(sol::state& lua)
 // -----------------------------------------------------------------------------
 // Returns a table with info (SImage::Info struct) about the image in [data]
 // -----------------------------------------------------------------------------
-sol::table getImageInfo(MemChunk& data, int index)
+static luabridge::LuaRef getImageInfo(MemChunk& data, int index)
 {
 	auto* format = SIFormat::determineFormat(data);
 	auto  info   = format->info(data, index);
 
-	return lua::state().create_table_with(
-		"width",
-		info.width,
-		"height",
-		info.height,
-		"type",
-		info.colformat,
-		"format",
-		info.format,
-		"imageCount",
-		info.numimages,
-		"offsetX",
-		info.offset_x,
-		"offsetY",
-		info.offset_y,
-		"hasPalette",
-		info.has_palette);
+	auto table          = luabridge::newTable(luaState());
+	table["width"]      = info.width;
+	table["height"]     = info.height;
+	table["type"]       = static_cast<int>(info.colformat);
+	table["format"]     = info.format;
+	table["imageCount"] = info.numimages;
+	table["offsetX"]    = info.offset_x;
+	table["offsetY"]    = info.offset_y;
+	table["hasPalette"] = info.has_palette;
+
+	return table;
 }
 
 // -----------------------------------------------------------------------------
 // Registers the Graphics function namespace with lua
 // -----------------------------------------------------------------------------
-void registerGraphicsNamespace(sol::state& lua)
+void registerGraphicsNamespace(lua_State* lua)
 {
-	auto gfx = lua.create_named_table("Graphics");
+	auto gfx = luabridge::getGlobalNamespace(lua).beginNamespace("Graphics");
 
 	// Constants
 	// -------------------------------------------------------------------------
-	gfx.set("BLEND_NORMAL", sol::property([]() { return SImage::BlendType::Normal; }));
-	gfx.set("BLEND_ADD", sol::property([]() { return SImage::BlendType::Add; }));
-	gfx.set("BLEND_SUBTRACT", sol::property([]() { return SImage::BlendType::Subtract; }));
-	gfx.set("BLEND_REVERSESUBTRACT", sol::property([]() { return SImage::BlendType::ReverseSubtract; }));
-	gfx.set("BLEND_MODULATE", sol::property([]() { return SImage::BlendType::Modulate; }));
+	gfx.addProperty("BLEND_NORMAL", +[] { return SImage::BlendType::Normal; });
+	gfx.addProperty("BLEND_ADD", +[] { return SImage::BlendType::Add; });
+	gfx.addProperty("BLEND_SUBTRACT", +[] { return SImage::BlendType::Subtract; });
+	gfx.addProperty("BLEND_REVERSESUBTRACT", +[] { return SImage::BlendType::ReverseSubtract; });
+	gfx.addProperty("BLEND_MODULATE", +[] { return SImage::BlendType::Modulate; });
 
 	// Functions
 	// -------------------------------------------------------------------------
-	gfx.set_function("ImageFormat", [](string_view id) { return SIFormat::getFormat(id); });
-	gfx.set_function(
+	gfx.addFunction("ImageFormat", [](string_view id) { return SIFormat::getFormat(id); });
+	gfx.addFunction(
 		"AllImageFormats",
-		[]()
+		[]
 		{
 			vector<SIFormat*> formats;
 			SIFormat::putAllFormats(formats);
 			return formats;
 		});
-	gfx.set_function("DetectImageFormat", [](MemChunk& mc) { return SIFormat::determineFormat(mc); });
-	gfx.set_function(
-		"GetImageInfo", sol::overload(&getImageInfo, [](MemChunk& data) { return getImageInfo(data, 0); }));
+	gfx.addFunction("DetectImageFormat", [](MemChunk& mc) { return SIFormat::determineFormat(mc); });
+	gfx.addFunction("GetImageInfo", &getImageInfo, [](MemChunk& data) { return getImageInfo(data, 0); });
 }
-
-} // namespace slade::lua
+} // namespace slade::scripting
