@@ -422,7 +422,7 @@ bool lua::run(const string& program)
 		success = false;
 	}
 
-	lua_gc(lua, LUA_GCCOLLECT);
+	lua_gc(lua, LUA_GCCOLLECT, 0);
 
 	return success;
 }
@@ -523,7 +523,7 @@ CONSOLE_COMMAND(script_file, 1, true)
 
 CONSOLE_COMMAND(lua_mem, 0, false)
 {
-	auto mem = lua_gc(lua::state(), LUA_GCCOUNT);
+	auto mem = lua_gc(lua::state(), LUA_GCCOUNT, 0);
 	if (mem < 1024)
 		log::console(fmt::format("Lua state using {} bytes memory", mem));
 	else
