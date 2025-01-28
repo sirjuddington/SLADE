@@ -949,6 +949,13 @@ void Renderer::drawAnimations(gl::draw2d::Context& dc) const
 // -----------------------------------------------------------------------------
 void Renderer::drawMap2d(draw2d::Context& dc) const
 {
+	if (!context_->map().isOpen())
+	{
+		// Map isn't open, just draw the grid
+		drawGrid(dc);
+		return;
+	}
+
 	auto mouse_state = context_->input().mouseState();
 
 	// Draw flats if needed

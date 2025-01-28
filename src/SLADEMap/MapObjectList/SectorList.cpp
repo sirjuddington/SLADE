@@ -145,6 +145,7 @@ void SectorList::initPolygons() const
 	for (unsigned i = 0; i < count_; ++i)
 	{
 		ui::setSplashProgress(i, count_);
+		objects_[i]->resetPolygon();
 		objects_[i]->polygonVertices();
 	}
 	ui::setSplashProgress(1.0f);

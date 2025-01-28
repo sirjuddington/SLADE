@@ -37,6 +37,7 @@ public:
 	long                       geometryUpdated() const { return geometry_updated_; }
 	long                       thingsUpdated() const { return things_updated_; }
 	const MapObjectCollection& mapData() const { return data_; }
+	bool                       isOpen() const { return is_open_; }
 
 	void setGeometryUpdated();
 	void setThingsUpdated();
@@ -155,6 +156,7 @@ private:
 	MapFormat               current_format_;
 	long                    opened_time_ = 0;
 	unique_ptr<MapSpecials> map_specials_;
+	bool                    is_open_ = false;
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
 

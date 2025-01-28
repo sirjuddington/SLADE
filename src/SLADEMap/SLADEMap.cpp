@@ -257,6 +257,7 @@ bool SLADEMap::readMap(const MapDesc& map)
 	recomputeSpecials();
 
 	opened_time_ = app::runTimer() + 10;
+	is_open_     = true;
 
 	return ok;
 }
@@ -278,6 +279,8 @@ void SLADEMap::clearMap()
 	for (auto& entry : udmf_extra_entries_)
 		delete entry;
 	udmf_extra_entries_.clear();
+
+	is_open_ = false;
 }
 
 // -----------------------------------------------------------------------------
