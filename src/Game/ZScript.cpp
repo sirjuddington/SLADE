@@ -208,6 +208,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 	Tokenizer tz;
 	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.<>");
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
+	tz.enableEditorComments();
 	tz.openMem(entry->data(), "ZScript");
 
 	entry_stack.push_back(entry);
@@ -869,9 +870,16 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 		else if (strutil::equalCI(first_token, "states"))
 			states_.parse(statement);
 
-		// DB property comment
+		// DB property comment(s)
 		else if (strutil::startsWith(first_token, editor_comment_prefix))
+		{
 			db_properties_.emplace_back(Tokenizer::parseEditorComment(first_token));
+			for (auto i = 1; i < statement.tokens.size(); ++i)
+			{
+				if (strutil::startsWith(statement.tokens[i], editor_comment_prefix))
+					db_properties_.emplace_back(Tokenizer::parseEditorComment(statement.tokens[i]));
+			}
+		}
 
 		// Function
 		else if (Function::isFunction(statement))
