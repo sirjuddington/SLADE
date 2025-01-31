@@ -82,7 +82,7 @@ std::pair<string, string> Tokenizer::parseEditorComment(string_view token)
 	// strip whitespace, and drop the quotes if any.
 
 	// Find the first space
-	size_t spos = token.find(" \t");
+	size_t spos = token.find_first_of(" \t");
 	if (spos == string_view::npos)
 	{
 		string key(token.substr(3));
@@ -838,13 +838,12 @@ void Tokenizer::tokenizeToken()
 	}
 
 	// Check for end of token
-	if (isWhitespace(data_[state_.position]) ||       // Whitespace
-		isSpecialCharacter(data_[state_.position]) || // Special character
-		checkCommentBegin() > 0)                      // Comment
+	if (isEndOfToken())
 	{
 		// End token
-		state_.state = TokenizeState::State::Unknown;
-		state_.done  = true;
+		state_.state  = TokenizeState::State::Unknown;
+		state_.done   = true;
+		state_.to_eol = false;
 
 		return;
 	}
@@ -859,7 +858,7 @@ void Tokenizer::tokenizeToken()
 void Tokenizer::tokenizeComment()
 {
 	// Check for decorate //$
-	if (decorate_ && state_.comment_type == CPPStyle)
+	if (editor_comments_ && state_.comment_type == CPPStyle)
 	{
 		if (data_[state_.position] == '$' && data_[state_.position - 1] == '/' && data_[state_.position - 2] == '/')
 		{
@@ -868,6 +867,7 @@ void Tokenizer::tokenizeComment()
 			state_.current_token.quoted_string = false;
 			state_.current_token.pos_start     = state_.position - 2;
 			state_.state                       = TokenizeState::State::Token;
+			state_.to_eol                      = true;
 			return;
 		}
 	}
@@ -989,6 +989,18 @@ void Tokenizer::resetToLineStart()
 
 		--state_.position;
 	}
+}
+
+bool Tokenizer::isEndOfToken() const
+{
+	// Token is to end of line, only ends on newline
+	if (state_.to_eol)
+		return data_[state_.position] == '\n';
+
+	// Regular token
+	return isWhitespace(data_[state_.position]) ||       // Whitespace
+		   isSpecialCharacter(data_[state_.position]) || // Special character
+		   checkCommentBegin() > 0;                      // Comment
 }
 
 

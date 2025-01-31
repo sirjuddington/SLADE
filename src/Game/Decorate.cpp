@@ -286,8 +286,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			if (strutil::startsWith(token, "//$"))
 			{
 				// Doom Builder magic editor comment
-				editor_properties.emplace_back(Tokenizer::parseEditorComment(token));
-				tz.advToNextLine();
+				editor_properties.emplace_back(Tokenizer::parseEditorComment(tz.getLine(true)));
 				continue;
 			}
 
@@ -571,6 +570,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 	// Init tokenizer
 	Tokenizer tz;
 	tz.setSpecialCharacters(":,{}");
+	tz.enableEditorComments();
 	tz.openMem(entry->data(), entry->name());
 
 	// --- Parse ---
