@@ -269,17 +269,15 @@ that support C++20 `consteval`. On older compilers you can use the
 
 Unused arguments are allowed as in Python's `str.format` and ordinary functions.
 
-::: basic_format_string
+See [Type Erasure](#type-erasure) for an example of how to enable compile-time
+checks in your own functions with `fmt::format_string` while avoiding template
+bloat.
+
+::: fstring
 
 ::: format_string
 
 ::: runtime(string_view)
-
-### Named Arguments
-
-::: arg(const Char*, const T&)
-
-Named arguments are not supported in compile-time checks at the moment.
 
 ### Type Erasure
 
@@ -316,6 +314,12 @@ parameterized version.
 ::: format_args
 
 ::: basic_format_arg
+
+### Named Arguments
+
+::: arg(const Char*, const T&)
+
+Named arguments are not supported in compile-time checks at the moment.
 
 ### Compatibility
 
@@ -375,18 +379,17 @@ allocator:
     using custom_string =
       std::basic_string<char, std::char_traits<char>, custom_allocator>;
 
-    custom_string vformat(custom_allocator alloc, fmt::string_view format_str,
-                          fmt::format_args args) {
+    auto vformat(custom_allocator alloc, fmt::string_view fmt,
+                 fmt::format_args args) -> custom_string {
       auto buf = custom_memory_buffer(alloc);
-      fmt::vformat_to(std::back_inserter(buf), format_str, args);
+      fmt::vformat_to(std::back_inserter(buf), fmt, args);
       return custom_string(buf.data(), buf.size(), alloc);
     }
 
     template <typename ...Args>
-    inline custom_string format(custom_allocator alloc,
-                                fmt::string_view format_str,
-                                const Args& ... args) {
-      return vformat(alloc, format_str, fmt::make_format_args(args...));
+    auto format(custom_allocator alloc, fmt::string_view fmt,
+                const Args& ... args) -> custom_string {
+      return vformat(alloc, fmt, fmt::make_format_args(args...));
     }
 
 The allocator will be used for the output container only. Formatting
@@ -498,10 +501,13 @@ chrono-format-specifications).
 - [`std::atomic_flag`](https://en.cppreference.com/w/cpp/atomic/atomic_flag)
 - [`std::bitset`](https://en.cppreference.com/w/cpp/utility/bitset)
 - [`std::error_code`](https://en.cppreference.com/w/cpp/error/error_code)
+- [`std::exception`](https://en.cppreference.com/w/cpp/error/exception)
 - [`std::filesystem::path`](https://en.cppreference.com/w/cpp/filesystem/path)
-- [`std::monostate`](https://en.cppreference.com/w/cpp/utility/variant/monostate)
+- [`std::monostate`](
+  https://en.cppreference.com/w/cpp/utility/variant/monostate)
 - [`std::optional`](https://en.cppreference.com/w/cpp/utility/optional)
-- [`std::source_location`](https://en.cppreference.com/w/cpp/utility/source_location)
+- [`std::source_location`](
+  https://en.cppreference.com/w/cpp/utility/source_location)
 - [`std::thread::id`](https://en.cppreference.com/w/cpp/thread/thread/id)
 - [`std::variant`](https://en.cppreference.com/w/cpp/utility/variant/variant)
 
@@ -509,7 +515,7 @@ chrono-format-specifications).
 
 ::: ptr(const std::shared_ptr<T>&)
 
-### Formatting Variants
+### Variants
 
 A `std::variant` is only formattable if every variant alternative is
 formattable, and requires the `__cpp_lib_variant` [library
@@ -525,15 +531,32 @@ feature](https://en.cppreference.com/w/cpp/feature_test).
     fmt::print("{}", std::variant<std::monostate, char>());
     // Output: variant(monostate)
 
+## Bit-Fields and Packed Structs
+
+To format a bit-field or a field of a struct with `__attribute__((packed))`
+applied to it, you need to convert it to the underlying or compatible type via
+a cast or a unary `+` ([godbolt](https://www.godbolt.org/z/3qKKs6T5Y)):
+
+```c++
+struct smol {
+  int bit : 1;
+};
+
+auto s = smol();
+fmt::print("{}", +s.bit);
+```
+
+This is a known limitation of "perfect" forwarding in C++.
+
 <a id="compile-api"></a>
 ## Format String Compilation
 
-`fmt/compile.h` provides format string compilation enabled via the
-`FMT_COMPILE` macro or the `_cf` user-defined literal defined in
-namespace `fmt::literals`. Format strings marked with `FMT_COMPILE`
-or `_cf` are parsed, checked and converted into efficient formatting
-code at compile-time. This supports arguments of built-in and string
-types as well as user-defined types with `format` functions taking
+`fmt/compile.h` provides format string compilation and compile-time
+(`constexpr`) formatting enabled via the `FMT_COMPILE` macro or the `_cf`
+user-defined literal defined in namespace `fmt::literals`. Format strings
+marked with `FMT_COMPILE` or `_cf` are parsed, checked and converted into
+efficient formatting code at compile-time. This supports arguments of built-in
+and string types as well as user-defined types with `format` functions taking
 the format context type as a template parameter in their `formatter`
 specializations. For example:
 
