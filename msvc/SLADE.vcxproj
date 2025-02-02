@@ -311,6 +311,7 @@
     <ClCompile Include="..\src\Archive\Formats\RffArchive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\SiNArchive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\TarArchive.cpp" />
+    <ClCompile Include="..\src\Archive\Formats\VWadArchive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\Wad2Archive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\WadArchive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\WadJArchive.cpp" />
@@ -677,6 +678,7 @@
     <ClInclude Include="..\src\Archive\Formats\RffArchive.h" />
     <ClInclude Include="..\src\Archive\Formats\SiNArchive.h" />
     <ClInclude Include="..\src\Archive\Formats\TarArchive.h" />
+    <ClInclude Include="..\src\Archive\Formats\VWadArchive.h" />
     <ClInclude Include="..\src\Archive\Formats\Wad2Archive.h" />
     <ClInclude Include="..\src\Archive\Formats\WadArchive.h" />
     <ClInclude Include="..\src\Archive\Formats\WadJArchive.h" />
