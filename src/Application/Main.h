@@ -30,6 +30,7 @@ using std::string_view;
 using std::unique_ptr;
 using std::vector;
 using std::weak_ptr;
+using std::set;
 
 // A macro to check if a value exists in a vector
 #define VECTOR_EXISTS(vec, val) find((vec).begin(), (vec).end(), val) != (vec).end()

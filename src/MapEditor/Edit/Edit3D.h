@@ -78,7 +78,7 @@ private:
 		MapSide*                 side,
 		int                      offset,
 		string_view              tex,
-		vector<mapeditor::Item>& walls_done,
+		vector<mapeditor::Item>&    walls_done,
 		int                      tex_width);
 };
 } // namespace slade
