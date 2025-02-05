@@ -1585,7 +1585,11 @@ void Edit3D::doAlignX(MapSide* side, int offset, string_view tex, vector<mapedit
 			return;
 	}
 
-	// Add to 'done' list
+	// Skip if this wall does not have the desired texture
+	if (!(side->texUpper() == tex || side->texMiddle() == tex || side->texLower() == tex))
+		return;
+
+	// Add wall to 'done' list
 	walls_done.emplace_back((int)side->index(), ItemType::WallMiddle);
 
 	// Wrap offset
@@ -1593,41 +1597,64 @@ void Edit3D::doAlignX(MapSide* side, int offset, string_view tex, vector<mapedit
 	{
 		while (offset >= tex_width)
 			offset -= tex_width;
+		while (offset < 0)
+			offset += tex_width;
 	}
 
 	// Set offset
 	side->setIntProperty("offsetx", offset);
 
-	// Get 'next' vertex
+	// Get the line and determine which side we are on
 	auto line   = side->parentLine();
-	auto vertex = line->v2();
-	if (side == line->s2())
-		vertex = line->v1();
+	bool isFrontSide = (line->s1() == side);
+	auto startVertex = (isFrontSide ? line->v1() : line->v2());
+	auto endVertex = (isFrontSide ? line->v2() : line->v1());
 
 	// Get integral length of line
 	int intlen = math::round(line->length());
 
-	// Go through connected lines
-	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
+	// Each vertex is only once on a sector, so there
+	// are two sides connected to it that share the same
+	// sector.
+	// We go through all the lines and sides connected to the
+	// respective vertex and adjust the only other side connected to
+	// the same sector that is not this side.
+	// We expect to find two continuing sides:
+	// - One directed away from the end vertex of this side
+	// - One directed away from the start vertex of this side
+	// Thus, the first is side 1 of its line, the second is side 2 of its line.
+
+	// We start with the end vertex (the texture offset of which is offset
+	// by the length of our line)
+	for (unsigned a = 0; a < endVertex->nConnectedLines(); a++)
 	{
-		auto l = vertex->connectedLine(a);
+		auto l = endVertex->connectedLine(a);
+
+		// Check first side
+		auto s = l->s1();
+		if (s && s != side && s->sector()->index() == side->sector()->index())
+		{
+			// We found the other side, align it
+			doAlignX(s, offset+intlen, tex, walls_done, tex_width);
+			// No need to search further
+			break;
+		}
+	}
+	// We start with the end vertex (the texture offset of which is offset
+	// by the length of the other line)
+	for (unsigned a = 0; a < startVertex->nConnectedLines(); a++)
+	{
+		auto l = startVertex->connectedLine(a);
 
 		// First side
-		auto s = l->s1();
-		if (s)
+		auto s = l->s2();
+		if (s && s != side && s->sector()->index() == side->sector()->index())
 		{
-			// Check for matching texture
-			if (s->texUpper() == tex || s->texMiddle() == tex || s->texLower() == tex)
-				doAlignX(s, offset + intlen, tex, walls_done, tex_width);
-		}
-
-		// Second side
-		s = l->s2();
-		if (s)
-		{
-			// Check for matching texture
-			if (s->texUpper() == tex || s->texMiddle() == tex || s->texLower() == tex)
-				doAlignX(s, offset + intlen, tex, walls_done, tex_width);
+			// We found the other side, align it
+			int texoffset = (int)math::round(l->length());
+			doAlignX(s, offset-texoffset, tex, walls_done, tex_width);
+			// No need to search further
+			break;
 		}
 	}
 }
