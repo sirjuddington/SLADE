@@ -341,6 +341,9 @@ private:
 		if (!fs_driver_str.empty())
 			fluid_settings_setstr(fs_settings_, "audio.driver", fs_driver_str.c_str());
 
+		// Disable SysEx
+		fluid_settings_setint(fs_settings_, "synth.device-id", 0);
+
 		// Create fluidsynth objects
 		fs_synth_   = new_fluid_synth(fs_settings_);
 		fs_player_  = new_fluid_player(fs_synth_);
