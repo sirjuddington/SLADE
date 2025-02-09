@@ -1604,57 +1604,44 @@ void Edit3D::doAlignX(MapSide* side, int offset, string_view tex, vector<mapedit
 	// Set offset
 	side->setIntProperty("offsetx", offset);
 
-	// Get the line and determine which side we are on
-	auto line   = side->parentLine();
-	bool isFrontSide = (line->s1() == side);
-	auto startVertex = (isFrontSide ? line->v1() : line->v2());
-	auto endVertex = (isFrontSide ? line->v2() : line->v1());
-
-	// Get integral length of line
-	int intlen = math::round(line->length());
-
-	// Each vertex is only once on a sector, so there
-	// are two sides connected to it that share the same
-	// sector.
-	// We go through all the lines and sides connected to the
-	// respective vertex and adjust the only other side connected to
-	// the same sector that is not this side.
-	// We expect to find two continuing sides:
-	// - One directed away from the end vertex of this side
-	// - One directed away from the start vertex of this side
-	// Thus, the first is side 1 of its line, the second is side 2 of its line.
-
-	// We start with the end vertex (the texture offset of which is offset
-	// by the length of our line)
-	for (unsigned a = 0; a < endVertex->nConnectedLines(); a++)
+	// Align the next side on the sector, which is offset by the length of this line
+	auto nextSide = side->nextSide();
+	if (nextSide) // Be conservative for the time being
 	{
-		auto l = endVertex->connectedLine(a);
+		int sideLen = (int)math::round(side->parentLine()->length());
+		doAlignX(nextSide, offset + sideLen, tex, walls_done, tex_width);
 
-		// Check first side
-		auto s = l->s1();
-		if (s && s != side && s->sector()->index() == side->sector()->index())
+		if (nextSide->parentLine()->boolProperty("twosided"))
 		{
-			// We found the other side, align it
-			doAlignX(s, offset+intlen, tex, walls_done, tex_width);
-			// No need to search further
-			break;
+			// The line is two-sided, so we consider the sector on the other side
+			auto nextOpposite = nextSide->oppositeSide();
+			if (nextOpposite)
+			{
+				// The line is two-sided, so we need to process the successor of the opposite as well.
+				// That side starts of at our end vertex, so the texture is offset by sideLen.
+				doAlignX(nextOpposite->nextSide(), offset + sideLen, tex, walls_done, tex_width);
+			}
 		}
 	}
-	// We start with the end vertex (the texture offset of which is offset
-	// by the length of the other line)
-	for (unsigned a = 0; a < startVertex->nConnectedLines(); a++)
-	{
-		auto l = startVertex->connectedLine(a);
 
-		// First side
-		auto s = l->s2();
-		if (s && s != side && s->sector()->index() == side->sector()->index())
+	// Align the previous side on the sector, which is offset by the length of the previous line
+	auto prevSide = side->prevSide();
+	if (prevSide) // Be conservative for the time being
+	{
+		auto prevLine = prevSide->parentLine();
+		int prevLen = (int)math::round(prevLine->length());
+		doAlignX(nextSide, offset - prevLen, tex, walls_done, tex_width);
+
+		if (prevSide->parentLine()->boolProperty("twosided"))
 		{
-			// We found the other side, align it
-			int texoffset = (int)math::round(l->length());
-			doAlignX(s, offset-texoffset, tex, walls_done, tex_width);
-			// No need to search further
-			break;
+			// The line is two-sided, so we consider the sector on the other side
+			auto prevOpposite = prevSide->oppositeSide();
+			if (prevOpposite)
+			{
+				// The line is two-sided, so we need to process the predecessor of the opposite as well.
+				// That side starts at our start vertex, so the texture is not offset.
+				doAlignX(prevOpposite->prevSide(), offset, tex, walls_done, tex_width);
+			}
 		}
 	}
 }
