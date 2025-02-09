@@ -178,7 +178,7 @@ MapSide* MapSide::oppositeSide() const
 // -----------------------------------------------------------------------------
 // Returns the side sharing both our end vertex and the same sector
 // -----------------------------------------------------------------------------
-MapSide* MapSide::nextSide() const
+MapSide* MapSide::nextInSector() const
 {
 	for (MapLine* line: endVertex()->connectedLines())
 	{
@@ -200,7 +200,7 @@ MapSide* MapSide::nextSide() const
 // -----------------------------------------------------------------------------
 // Returns the side sharing both our start vertex and the same sector
 // -----------------------------------------------------------------------------
-MapSide* MapSide::prevSide() const
+MapSide* MapSide::prevInSector() const
 {
 	for (MapLine* line: startVertex()->connectedLines())
 	{
