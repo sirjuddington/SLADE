@@ -52,7 +52,7 @@ public:
 	void changeSectorLight(int amount) const;
 	void changeOffset(int amount, bool x) const;
 	void changeSectorHeight(int amount) const;
-	void autoAlignX(mapeditor::Item start) const;
+	void autoAlign(mapeditor::Item start, AlignType alignType = AlignType::AlignX) const;
 	void resetOffsets() const;
 	void toggleUnpegged(bool lower) const;
 	void copy(CopyType type);

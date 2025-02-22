@@ -408,10 +408,17 @@ void Edit3D::changeSectorHeight(int amount) const
 }
 
 // -----------------------------------------------------------------------------
-// Aligns X offsets beginning from the wall selection [start]
+// Aligns texture offsets beginning from the wall selection [start]
 // -----------------------------------------------------------------------------
-void Edit3D::autoAlignX(mapeditor::Item start) const
+void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 {
+	// Check align type
+	if (alignType!=AlignType::AlignX && alignType!=AlignType::AlignY && alignType!=AlignType::AlignXY)
+	{
+		log::error("Edit3d::autoAlign: alignType is invalid");
+		return;
+	}
+	
 	// Check start is a wall
 	if (start.type != ItemType::WallBottom && start.type != ItemType::WallMiddle && start.type != ItemType::WallTop)
 		return;
@@ -445,12 +452,20 @@ void Edit3D::autoAlignX(mapeditor::Item start) const
 	// Init aligned wall list
 	vector<mapeditor::Item> walls_done;
 
+	string axis_names;
+
+	switch (alignType)
+	{
+	case AlignType::AlignX:  axis_names = "X axis"; break;
+	case AlignType::AlignY:  axis_names = "Y axis"; break;
+	case AlignType::AlignXY: axis_names = "X and Y axis"; break;
+	}
 	// Begin undo level
-	context_.beginUndoRecord("Auto Align X", true, false, false);
+	context_.beginUndoRecord("Auto Align on "+axis_names, true, false, false);
 
 	// Do alignment
 	doAlign(side,
-		AlignType::AlignX,
+		alignType,
 		side->texOffsetX(),
 		side->texOffsetY(),
 		tex,
@@ -461,7 +476,7 @@ void Edit3D::autoAlignX(mapeditor::Item start) const
 	context_.endUndoRecord();
 
 	// Editor message
-	context_.addEditorMessage("Auto-aligned on X axis");
+	context_.addEditorMessage("Auto-aligned on "+axis_names);
 }
 
 // -----------------------------------------------------------------------------
@@ -1607,8 +1622,24 @@ void Edit3D::doAlign(MapSide* side, AlignType alignType, int offsetX, int offset
 			offsetX += tex_width;
 	}
 
-	// Set offset
-	side->setIntProperty("offsetx", offsetX);
+	switch (alignType)
+	{
+	case AlignType::AlignX:
+	case AlignType::AlignXY:
+		// Set X offset
+		side->setIntProperty("offsetx", offsetX);
+		break;
+	}
+
+	switch (alignType)
+	{
+	case AlignType::AlignY:
+	case AlignType::AlignXY:
+		// Set Y offset
+		// TODO: Adjust for unpeggedness
+		side->setIntProperty("offsety", offsetY);
+		break;
+	}
 
 	// Align the next side on the sector, which is offset by the length of this line
 	auto nextSide = side->nextInSector();
