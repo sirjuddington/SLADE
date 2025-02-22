@@ -19,6 +19,13 @@ public:
 		Scale
 	};
 
+	enum class AlignType
+	{
+		AlignX = 1,
+		AlignY = 2,
+		AlignXY = AlignX | AlignY
+	};
+
 	explicit Edit3D(MapEditContext& context);
 
 	UndoManager* undoManager() const { return undo_manager_.get(); }
@@ -73,10 +80,12 @@ private:
 	void        getAdjacentWalls(mapeditor::Item item, vector<mapeditor::Item>& list) const;
 	void        getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& list) const;
 
-	// Helper for autoAlignX3d
-	static void doAlignX(
+	// Helper for texture auto-alighment
+	static void doAlign(
 		MapSide*                 side,
-		int                      offset,
+		AlignType                alignType,
+		int                      offsetX,
+		int                      offsetY,
 		string_view              tex,
 		vector<mapeditor::Item>& walls_done,
 		int                      tex_width);

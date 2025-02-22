@@ -449,7 +449,13 @@ void Edit3D::autoAlignX(mapeditor::Item start) const
 	context_.beginUndoRecord("Auto Align X", true, false, false);
 
 	// Do alignment
-	doAlignX(side, side->texOffsetX(), tex, walls_done, tex_width);
+	doAlign(side,
+		AlignType::AlignX,
+		side->texOffsetX(),
+		side->texOffsetY(),
+		tex,
+		walls_done,
+		tex_width);
 
 	// End undo level
 	context_.endUndoRecord();
@@ -1576,7 +1582,7 @@ void Edit3D::getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& lis
 // -----------------------------------------------------------------------------
 // Recursive function to align textures on the x axis
 // -----------------------------------------------------------------------------
-void Edit3D::doAlignX(MapSide* side, int offset, string_view tex, vector<mapeditor::Item>& walls_done, int tex_width)
+void Edit3D::doAlign(MapSide* side, AlignType alignType, int offsetX, int offsetY, string_view tex, vector<mapeditor::Item>& walls_done, int tex_width)
 {
 	// Check if this wall has already been processed
 	for (auto& item : walls_done)
@@ -1595,21 +1601,21 @@ void Edit3D::doAlignX(MapSide* side, int offset, string_view tex, vector<mapedit
 	// Wrap offset
 	if (tex_width > 0)
 	{
-		while (offset >= tex_width)
-			offset -= tex_width;
-		while (offset < 0)
-			offset += tex_width;
+		while (offsetX >= tex_width)
+			offsetX -= tex_width;
+		while (offsetX < 0)
+			offsetX += tex_width;
 	}
 
 	// Set offset
-	side->setIntProperty("offsetx", offset);
+	side->setIntProperty("offsetx", offsetX);
 
 	// Align the next side on the sector, which is offset by the length of this line
 	auto nextSide = side->nextInSector();
 	if (nextSide) // Be conservative for the time being
 	{
 		int sideLen = (int)math::round(side->parentLine()->length());
-		doAlignX(nextSide, offset + sideLen, tex, walls_done, tex_width);
+		doAlign(nextSide, alignType, offsetX + sideLen, offsetY, tex, walls_done, tex_width);
 
 		if (nextSide->parentLine()->boolProperty("twosided"))
 		{
@@ -1619,7 +1625,7 @@ void Edit3D::doAlignX(MapSide* side, int offset, string_view tex, vector<mapedit
 			{
 				// The line is two-sided, so we need to process the successor of the opposite as well.
 				// That side starts of at our end vertex, so the texture is offset by sideLen.
-				doAlignX(nextOpposite->nextInSector(), offset + sideLen, tex, walls_done, tex_width);
+				doAlign(nextOpposite->nextInSector(), alignType, offsetX + sideLen, offsetY, tex, walls_done, tex_width);
 			}
 		}
 	}
@@ -1630,7 +1636,7 @@ void Edit3D::doAlignX(MapSide* side, int offset, string_view tex, vector<mapedit
 	{
 		auto prevLine = prevSide->parentLine();
 		int prevLen = (int)math::round(prevLine->length());
-		doAlignX(nextSide, offset - prevLen, tex, walls_done, tex_width);
+		doAlign(nextSide, alignType, offsetX - prevLen, offsetY, tex, walls_done, tex_width);
 
 		if (prevSide->parentLine()->boolProperty("twosided"))
 		{
@@ -1640,7 +1646,7 @@ void Edit3D::doAlignX(MapSide* side, int offset, string_view tex, vector<mapedit
 			{
 				// The line is two-sided, so we need to process the predecessor of the opposite as well.
 				// That side starts at our start vertex, so the texture is not offset.
-				doAlignX(prevOpposite->prevInSector(), offset, tex, walls_done, tex_width);
+				doAlign(prevOpposite->prevInSector(), alignType, offsetX, offsetY, tex, walls_done, tex_width);
 			}
 		}
 	}
