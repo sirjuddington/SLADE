@@ -623,7 +623,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 			nextSideJob.offsetX = job.offsetX + sideLen;
 			jobs.push(nextSideJob);
 
-			if (nextSide->parentLine()->boolProperty("twosided"))
+			if (game::configuration().lineBasicFlagSet("twosided", nextSide->parentLine(), context_.mapDesc().format))
 			{
 				// The line is two-sided, so we consider the sector on the other side
 				auto nextOpposite = nextSide->oppositeSide();
@@ -650,7 +650,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 			prevSideJob.offsetX = job.offsetX - prevLen;
 			jobs.push(prevSideJob);
 
-			if (prevSide->parentLine()->boolProperty("twosided"))
+			if (game::configuration().lineBasicFlagSet("twosided", prevLine, context_.mapDesc().format))
 			{
 				// The line is two-sided, so we consider the sector on the other side
 				auto prevOpposite = prevSide->oppositeSide();
