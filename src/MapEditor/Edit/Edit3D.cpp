@@ -539,19 +539,19 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		// Add side to set of processed sides
 		processedSides.insert(job.side->index());
 
-		// Wrap x-offset
-		if (tex_width > 0)
-		{
-			while (job.offsetX >= tex_width)
-				job.offsetX -= tex_width;
-			while (job.offsetX < 0)
-				job.offsetX += tex_width;
-		}
 
 		switch (alignType)
 		{
 		case AlignType::AlignX:
 		case AlignType::AlignXY:
+			// Wrap x-offset
+			if (tex_width > 0)
+			{
+				while (job.offsetX >= tex_width)
+					job.offsetX -= tex_width;
+				while (job.offsetX < 0)
+					job.offsetX += tex_width;
+			}
 			// Set X offset
 			job.side->setIntProperty("offsetx", job.offsetX);
 			break;
