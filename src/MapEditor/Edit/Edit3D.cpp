@@ -38,6 +38,9 @@
 #include "MapEditor/UndoSteps.h"
 #include "Utility/MathStuff.h"
 
+#include <queue>
+#include <set>
+
 using namespace slade;
 using mapeditor::ItemType;
 
@@ -424,18 +427,18 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		return;
 
 	// Get starting side
-	auto side = context_.map().side(start.index);
-	if (!side)
+	auto firstSide = context_.map().side(start.index);
+	if (!firstSide)
 		return;
 
 	// Get texture to match
 	string tex;
 	if (start.type == ItemType::WallBottom)
-		tex = side->texLower();
+		tex = firstSide->texLower();
 	else if (start.type == ItemType::WallMiddle)
-		tex = side->texMiddle();
+		tex = firstSide->texMiddle();
 	else if (start.type == ItemType::WallTop)
-		tex = side->texUpper();
+		tex = firstSide->texUpper();
 
 	// Don't try to auto-align a missing texture (every line on the map will probably match)
 	if (tex == "-")
@@ -449,9 +452,6 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 	if (gl_tex)
 		tex_width = gl::Texture::info(gl_tex).size.x;
 
-	// Init aligned wall list
-	vector<mapeditor::Item> walls_done;
-
 	string axis_names;
 
 	switch (alignType)
@@ -463,14 +463,131 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 	// Begin undo level
 	context_.beginUndoRecord("Auto Align on "+axis_names, true, false, false);
 
-	// Do alignment
-	doAlign(side,
-		alignType,
-		side->texOffsetX(),
-		side->texOffsetY(),
-		tex,
-		walls_done,
-		tex_width);
+	// Queue of jobs to process
+	std::queue<AlignmentJob> jobs;
+
+	// Set of sides already processed
+	std::set<unsigned int> processedSides;
+
+	// Enter the first job into the queue
+	AlignmentJob firstJob;
+	firstJob.side = firstSide;
+	firstJob.offsetX = firstSide->texOffsetX();
+	firstJob.offsetY = firstSide->texOffsetY();
+	jobs.push(firstJob);
+
+	while (!jobs.empty())
+	{
+		AlignmentJob job = jobs.front();
+		jobs.pop();
+
+		log::debug("Side is next {}",job.side->index());
+
+		// Skip if side has already been processed
+		if (processedSides.find(job.side->index()) != processedSides.end())
+		{
+			log::debug("Side {} has already been processed => skipping",job.side->index());
+			continue;
+		}
+
+		// Skip if this wall does not have the desired texture
+		if (!(job.side->texUpper() == tex || job.side->texMiddle() == tex || job.side->texLower() == tex))
+		{
+			log::debug("Side {} does not have proper texture => skipping",job.side->index());
+			continue;
+		}
+
+		// Add side to set of processed sides
+		processedSides.insert(job.side->index());
+
+		log::debug("Processing side {}",job.side->index());
+
+		// Wrap x-offset
+		if (tex_width > 0)
+		{
+			while (job.offsetX >= tex_width)
+				job.offsetX -= tex_width;
+			while (job.offsetX < 0)
+				job.offsetX += tex_width;
+		}
+
+		switch (alignType)
+		{
+		case AlignType::AlignX:
+		case AlignType::AlignXY:
+			// Set X offset
+			job.side->setIntProperty("offsetx", job.offsetX);
+			break;
+		}
+
+		switch (alignType)
+		{
+		case AlignType::AlignY:
+		case AlignType::AlignXY:
+			// Set Y offset
+			// TODO: Adjust for unpeggedness
+			job.side->setIntProperty("offsety", job.offsetY);
+			break;
+		}
+
+		// Align the next side on the sector, which is offset by the length of this line
+		auto nextSide = job.side->nextInSector();
+		if (nextSide) // Be conservative for the time being
+		{
+			int sideLen = (int)math::round(job.side->parentLine()->length());
+			AlignmentJob nextSideJob;
+			nextSideJob.side = nextSide;
+			nextSideJob.offsetX = job.offsetX + sideLen;
+			nextSideJob.offsetY = job.offsetY;
+			log::debug("Adding next side {}", nextSide->index());
+			jobs.push(nextSideJob);
+
+			if (nextSide->parentLine()->boolProperty("twosided"))
+			{
+				// The line is two-sided, so we consider the sector on the other side
+				auto nextOpposite = nextSide->oppositeSide();
+				if (nextOpposite)
+				{
+					// The line is two-sided, so we need to process the successor of the opposite as well.
+					// That side starts of at our end vertex, so the texture is offset by sideLen.
+					AlignmentJob nextOpposideSideJob;
+					nextOpposideSideJob.side = nextOpposite->nextInSector();
+					nextOpposideSideJob.offsetX = job.offsetX + sideLen;
+					nextOpposideSideJob.offsetY = job.offsetY;
+					jobs.push(nextOpposideSideJob);
+				}
+			}
+		}
+
+		// Align the previous side on the sector, which is offset by the length of the previous line
+		auto prevSide = job.side->prevInSector();
+		if (prevSide) // Be conservative for the time being
+		{
+			auto prevLine = prevSide->parentLine();
+			int prevLen = (int)math::round(prevLine->length());
+			AlignmentJob prevSideJob;
+			prevSideJob.side = prevSide;
+			prevSideJob.offsetX = job.offsetX - prevLen;
+			prevSideJob.offsetY = job.offsetY;
+			jobs.push(prevSideJob);
+
+			if (prevSide->parentLine()->boolProperty("twosided"))
+			{
+				// The line is two-sided, so we consider the sector on the other side
+				auto prevOpposite = prevSide->oppositeSide();
+				if (prevOpposite)
+				{
+					// The line is two-sided, so we need to process the predecessor of the opposite as well.
+					// That side starts at our start vertex, so the texture is not offset.
+					AlignmentJob prevOppositeJob;
+					prevOppositeJob.side = prevOpposite->prevInSector();
+					prevOppositeJob.offsetX = job.offsetX;
+					prevOppositeJob.offsetY = job.offsetY;
+					jobs.push(prevOppositeJob);
+				}
+			}
+		}
+	}
 
 	// End undo level
 	context_.endUndoRecord();
@@ -1590,95 +1707,6 @@ void Edit3D::getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& lis
 		{
 			list.push_back(item);
 			getAdjacentFlats({ (int)osector->index(), item.type }, list);
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Recursive function to align textures on the x axis
-// -----------------------------------------------------------------------------
-void Edit3D::doAlign(MapSide* side, AlignType alignType, int offsetX, int offsetY, string_view tex, vector<mapeditor::Item>& walls_done, int tex_width)
-{
-	// Check if this wall has already been processed
-	for (auto& item : walls_done)
-	{
-		if (item.index == (int)side->index())
-			return;
-	}
-
-	// Skip if this wall does not have the desired texture
-	if (!(side->texUpper() == tex || side->texMiddle() == tex || side->texLower() == tex))
-		return;
-
-	// Add wall to 'done' list
-	walls_done.emplace_back((int)side->index(), ItemType::WallMiddle);
-
-	// Wrap offset
-	if (tex_width > 0)
-	{
-		while (offsetX >= tex_width)
-			offsetX -= tex_width;
-		while (offsetX < 0)
-			offsetX += tex_width;
-	}
-
-	switch (alignType)
-	{
-	case AlignType::AlignX:
-	case AlignType::AlignXY:
-		// Set X offset
-		side->setIntProperty("offsetx", offsetX);
-		break;
-	}
-
-	switch (alignType)
-	{
-	case AlignType::AlignY:
-	case AlignType::AlignXY:
-		// Set Y offset
-		// TODO: Adjust for unpeggedness
-		side->setIntProperty("offsety", offsetY);
-		break;
-	}
-
-	// Align the next side on the sector, which is offset by the length of this line
-	auto nextSide = side->nextInSector();
-	if (nextSide) // Be conservative for the time being
-	{
-		int sideLen = (int)math::round(side->parentLine()->length());
-		doAlign(nextSide, alignType, offsetX + sideLen, offsetY, tex, walls_done, tex_width);
-
-		if (nextSide->parentLine()->boolProperty("twosided"))
-		{
-			// The line is two-sided, so we consider the sector on the other side
-			auto nextOpposite = nextSide->oppositeSide();
-			if (nextOpposite)
-			{
-				// The line is two-sided, so we need to process the successor of the opposite as well.
-				// That side starts of at our end vertex, so the texture is offset by sideLen.
-				doAlign(nextOpposite->nextInSector(), alignType, offsetX + sideLen, offsetY, tex, walls_done, tex_width);
-			}
-		}
-	}
-
-	// Align the previous side on the sector, which is offset by the length of the previous line
-	auto prevSide = side->prevInSector();
-	if (prevSide) // Be conservative for the time being
-	{
-		auto prevLine = prevSide->parentLine();
-		int prevLen = (int)math::round(prevLine->length());
-		doAlign(nextSide, alignType, offsetX - prevLen, offsetY, tex, walls_done, tex_width);
-
-		if (prevSide->parentLine()->boolProperty("twosided"))
-		{
-			// The line is two-sided, so we consider the sector on the other side
-			auto prevOpposite = prevSide->oppositeSide();
-			if (prevOpposite)
-			{
-				// The line is two-sided, so we need to process the predecessor of the opposite as well.
-				// That side starts at our start vertex, so the texture is not offset.
-				doAlign(prevOpposite->prevInSector(), alignType, offsetX, offsetY, tex, walls_done, tex_width);
-			}
 		}
 	}
 }

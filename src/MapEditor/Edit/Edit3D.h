@@ -80,14 +80,12 @@ private:
 	void        getAdjacentWalls(mapeditor::Item item, vector<mapeditor::Item>& list) const;
 	void        getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& list) const;
 
-	// Helper for texture auto-alighment
-	static void doAlign(
-		MapSide*                 side,
-		AlignType                alignType,
-		int                      offsetX,
-		int                      offsetY,
-		string_view              tex,
-		vector<mapeditor::Item>& walls_done,
-		int                      tex_width);
+	// Helper type for texture auto-alignment
+	struct AlignmentJob
+	{
+		MapSide* side;
+		int offsetX;
+		int offsetY;
+	};
 };
 } // namespace slade
