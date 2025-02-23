@@ -432,13 +432,6 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		return;
 
 	// Get texture to match
-	// We cannot guarantee all textures of bottom, middle and top to
-	// be aligned consistently. However, we assume that by selecting the
-	// top, middle or bottom section of a wall as initial element the user
-	// expresses the intent to align these sections of the walls.
-	// We therefore store the/a height at which the top of the texture
-	// on the respective wall portion would reside.
-	// We use that later to determine the proper y-offset.
 	string tex;
 	if (start.type == ItemType::WallBottom)
 		tex = firstSide->texLower();
@@ -462,7 +455,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		tex_width = gl::Texture::info(gl_tex).size.x;
 		tex_height = gl::Texture::info(gl_tex).size.y;
 	}
-	// TODO: If we don't have the height of the texture, we cannot convert anchors
+	// TODO: If we don't have the height of the texture, we cannot convert texture anchors
 
 	// Get vertical texture anchor
 	// We cannot guarantee all textures of bottom, middle and top to
@@ -535,26 +528,16 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		AlignmentJob job = jobs.front();
 		jobs.pop();
 
-		log::debug("Side is next {}",job.side->index());
-
 		// Skip if side has already been processed
 		if (processedSides.find(job.side->index()) != processedSides.end())
-		{
-			log::debug("Side {} has already been processed => skipping",job.side->index());
 			continue;
-		}
 
 		// Skip if this wall does not have the desired texture
 		if (!(job.side->texUpper() == tex || job.side->texMiddle() == tex || job.side->texLower() == tex))
-		{
-			log::debug("Side {} does not have proper texture => skipping",job.side->index());
 			continue;
-		}
 
 		// Add side to set of processed sides
 		processedSides.insert(job.side->index());
-
-		log::debug("Processing side {}",job.side->index());
 
 		// Wrap x-offset
 		if (tex_width > 0)
@@ -578,7 +561,6 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		{
 		case AlignType::AlignY:
 		case AlignType::AlignXY:
-			// Set Y offset
 			// First we need to determine the top height for the respective texture
 			int currentTexTopHeight = -1;
 			auto currentLine = job.side->parentLine();
@@ -626,6 +608,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 						currentOffsetY += tex_height;
 				}
 			}
+			// Set Y offset
 			job.side->setIntProperty("offsety", currentOffsetY);
 			break;
 		}
@@ -638,7 +621,6 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 			AlignmentJob nextSideJob;
 			nextSideJob.side = nextSide;
 			nextSideJob.offsetX = job.offsetX + sideLen;
-			log::debug("Adding next side {}", nextSide->index());
 			jobs.push(nextSideJob);
 
 			if (nextSide->parentLine()->boolProperty("twosided"))
