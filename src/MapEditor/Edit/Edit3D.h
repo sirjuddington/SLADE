@@ -85,7 +85,6 @@ private:
 	{
 		MapSide* side;
 		int offsetX;
-		int offsetY;
 	};
 };
 } // namespace slade

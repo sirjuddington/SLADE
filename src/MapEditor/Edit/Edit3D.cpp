@@ -432,6 +432,13 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		return;
 
 	// Get texture to match
+	// We cannot guarantee all textures of bottom, middle and top to
+	// be aligned consistently. However, we assume that by selecting the
+	// top, middle or bottom section of a wall as initial element the user
+	// expresses the intent to align these sections of the walls.
+	// We therefore store the/a height at which the top of the texture
+	// on the respective wall portion would reside.
+	// We use that later to determine the proper y-offset.
 	string tex;
 	if (start.type == ItemType::WallBottom)
 		tex = firstSide->texLower();
@@ -444,23 +451,71 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 	if (tex == "-")
 		return;
 
-	// Get texture width
+	// Get texture size
 	auto gl_tex = mapeditor::textureManager()
 					  .texture(tex, game::configuration().featureSupported(game::Feature::MixTexFlats))
 					  .gl_id;
 	int tex_width = -1;
+	int tex_height = -1;
 	if (gl_tex)
+	{
 		tex_width = gl::Texture::info(gl_tex).size.x;
+		tex_height = gl::Texture::info(gl_tex).size.y;
+	}
+	// TODO: If we don't have the height of the texture, we cannot convert anchors
 
+	// Get vertical texture anchor
+	// We cannot guarantee all textures of bottom, middle and top to
+	// be aligned consistently. However, we assume that by selecting the
+	// top, middle or bottom section of a wall as initial element the user
+	// expresses the intent to align these sections of the walls.
+	// We therefore store the/a height at which the top of the texture
+	// on the respective wall portion would reside.
+	// We use that later to determine the proper y-offset.
+	int firstTexTopHeight = -1;
+	auto firstLine = firstSide->parentLine();
+	if (start.type == ItemType::WallBottom)
+	{
+		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", firstLine, context_.mapDesc().format);
+		// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
+		// Otherwise: Top of texture is at the highest floor
+		if (unpegged)
+			firstTexTopHeight = firstLine->highestCeiling();
+		else
+			firstTexTopHeight = firstLine->highestFloor();
+	}
+	else if (start.type == ItemType::WallMiddle)
+	{
+		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", firstLine, context_.mapDesc().format);
+		// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
+		// Otherwise: Top of texture is at the lowest ceiling
+		if (unpegged)
+			firstTexTopHeight = firstLine->highestFloor() + tex_height;
+		else
+			firstTexTopHeight = firstLine->lowestCeiling();
+	}
+	else if (start.type == ItemType::WallTop)
+	{
+		// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
+		// Otherwise: Top of texture is at lowest ceiling plus texture height
+		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegtop", firstLine, context_.mapDesc().format);
+		if (unpegged)
+			firstTexTopHeight = firstLine->highestCeiling();
+		else
+			firstTexTopHeight = firstLine->lowestCeiling() + tex_height;
+	}
+	
+	// Adjust firstTexTopHeight with texture Y offset
+	firstTexTopHeight += firstSide->texOffsetY();
+
+	// Begin undo level
 	string axis_names;
-
 	switch (alignType)
 	{
 	case AlignType::AlignX:  axis_names = "X axis"; break;
 	case AlignType::AlignY:  axis_names = "Y axis"; break;
 	case AlignType::AlignXY: axis_names = "X and Y axis"; break;
 	}
-	// Begin undo level
 	context_.beginUndoRecord("Auto Align on "+axis_names, true, false, false);
 
 	// Queue of jobs to process
@@ -473,7 +528,6 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 	AlignmentJob firstJob;
 	firstJob.side = firstSide;
 	firstJob.offsetX = firstSide->texOffsetX();
-	firstJob.offsetY = firstSide->texOffsetY();
 	jobs.push(firstJob);
 
 	while (!jobs.empty())
@@ -525,8 +579,54 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		case AlignType::AlignY:
 		case AlignType::AlignXY:
 			// Set Y offset
-			// TODO: Adjust for unpeggedness
-			job.side->setIntProperty("offsety", job.offsetY);
+			// First we need to determine the top height for the respective texture
+			int currentTexTopHeight = -1;
+			auto currentLine = job.side->parentLine();
+			if (start.type == ItemType::WallBottom)
+			{
+				const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", currentLine, context_.mapDesc().format);
+				// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
+				// Otherwise: Top of texture is at the highest floor
+				if (unpegged)
+					currentTexTopHeight = currentLine->highestCeiling();
+				else
+					currentTexTopHeight = currentLine->highestFloor();
+			}
+			else if (start.type == ItemType::WallMiddle)
+			{
+				const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", currentLine, context_.mapDesc().format);
+				// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
+				// Otherwise: Top of texture is at the lowest ceiling
+				if (unpegged)
+					currentTexTopHeight = currentLine->highestFloor() + tex_height;
+				else
+					currentTexTopHeight = currentLine->lowestCeiling();
+			}
+			else if (start.type == ItemType::WallTop)
+			{
+				// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
+				// Otherwise: Top of texture is at lowest ceiling plus texture height
+				const bool unpegged = game::configuration().lineBasicFlagSet("dontpegtop", currentLine, context_.mapDesc().format);
+				if (unpegged)
+					currentTexTopHeight = currentLine->highestCeiling();
+				else
+					currentTexTopHeight = currentLine->lowestCeiling() + tex_height;
+			}
+
+			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
+			int currentOffsetY = firstTexTopHeight - currentTexTopHeight;
+
+			// Adjust the y-offset (but only, if we're not adjusting the middle part on a two-sided wall)
+			if (start.type != ItemType::WallMiddle || !game::configuration().lineBasicFlagSet("twosided", currentLine, context_.mapDesc().format))
+			{
+				if (tex_height > 0) {
+					while (currentOffsetY > tex_height)
+						currentOffsetY -= tex_height;
+					while (currentOffsetY < 0)
+						currentOffsetY += tex_height;
+				}
+			}
+			job.side->setIntProperty("offsety", currentOffsetY);
 			break;
 		}
 
@@ -538,7 +638,6 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 			AlignmentJob nextSideJob;
 			nextSideJob.side = nextSide;
 			nextSideJob.offsetX = job.offsetX + sideLen;
-			nextSideJob.offsetY = job.offsetY;
 			log::debug("Adding next side {}", nextSide->index());
 			jobs.push(nextSideJob);
 
@@ -553,7 +652,6 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 					AlignmentJob nextOpposideSideJob;
 					nextOpposideSideJob.side = nextOpposite->nextInSector();
 					nextOpposideSideJob.offsetX = job.offsetX + sideLen;
-					nextOpposideSideJob.offsetY = job.offsetY;
 					jobs.push(nextOpposideSideJob);
 				}
 			}
@@ -568,7 +666,6 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 			AlignmentJob prevSideJob;
 			prevSideJob.side = prevSide;
 			prevSideJob.offsetX = job.offsetX - prevLen;
-			prevSideJob.offsetY = job.offsetY;
 			jobs.push(prevSideJob);
 
 			if (prevSide->parentLine()->boolProperty("twosided"))
@@ -582,7 +679,6 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 					AlignmentJob prevOppositeJob;
 					prevOppositeJob.side = prevOpposite->prevInSector();
 					prevOppositeJob.offsetX = job.offsetX;
-					prevOppositeJob.offsetY = job.offsetY;
 					jobs.push(prevOppositeJob);
 				}
 			}
