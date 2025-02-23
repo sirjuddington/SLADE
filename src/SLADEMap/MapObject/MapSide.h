@@ -37,6 +37,12 @@ public:
 
 	MapSector*    sector() const { return sector_; }
 	MapLine*      parentLine() const { return parent_; }
+	bool          isFrontSide() const;
+	MapVertex*    startVertex() const;
+	MapVertex*    endVertex() const;
+	MapSide*      oppositeSide() const;
+	MapSide*      nextInSector() const;
+	MapSide*      prevInSector() const;
 	const string& texUpper() const { return tex_upper_; }
 	const string& texMiddle() const { return tex_middle_; }
 	const string& texLower() const { return tex_lower_; }
