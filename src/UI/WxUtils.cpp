@@ -356,10 +356,10 @@ wxRect wxutil::scaledRect(int x, int y, int width, int height)
 void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 {
 #if wxCHECK_VERSION(3, 1, 6)
-	auto wx_icon = icons::getIcon(icons::General, icon).GetIconFor(window);
+	auto wx_icon = icons::getIcon(icons::Any, icon).GetIconFor(window);
 #else
 	wxIcon wx_icon;
-	wx_icon.CopyFromBitmap(icons::getIcon(icons::General, icon));
+	wx_icon.CopyFromBitmap(icons::getIcon(icons::Any, icon));
 #endif
 
 	window->SetIcon(wx_icon);

@@ -54,7 +54,11 @@ string web::getHttp(const string& host, const string& uri)
 	// Setup connection & request
 	sf::Http          http(host);
 	sf::Http::Request request;
+	#if (SFML_VERSION_MAJOR > 2)
+	request.setMethod(sf::Http::Request::Method::Get);
+	#else
 	request.setMethod(sf::Http::Request::Get);
+	#endif
 	request.setUri(uri);
 
 	// Send HTTP request
@@ -62,7 +66,11 @@ string web::getHttp(const string& host, const string& uri)
 
 	switch (response.getStatus())
 	{
+	#if (SFML_VERSION_MAJOR > 2)
+	case sf::Http::Response::Status::Ok: return response.getBody();
+	#else
 	case sf::Http::Response::Ok: return response.getBody();
+	#endif
 	default: return "connect_failed";
 	}
 }

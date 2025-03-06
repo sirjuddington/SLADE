@@ -948,7 +948,7 @@ bool ArchivePanel::importFiles()
 
 	// Run open files dialog
 	filedialog::FDInfo info;
-	if (filedialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
+	if (filedialog::openFiles(info, "Choose files to import", "Any File (*.*)|*", this))
 	{
 		// Get the entry index of the last selected list item
 		auto dir   = entry_tree_->currentSelectedDir();
@@ -1753,7 +1753,7 @@ bool ArchivePanel::importEntry()
 	{
 		// Run open file dialog
 		filedialog::FDInfo info;
-		if (filedialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*.*", this))
+		if (filedialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*", this))
 		{
 			// Preserve gfx offset if needed
 			Vec2i offset;
@@ -2713,6 +2713,24 @@ bool ArchivePanel::compileACS(bool hexen) const
 }
 
 // -----------------------------------------------------------------------------
+// Compiles any selected text entries as DECOHack code
+// -----------------------------------------------------------------------------
+bool ArchivePanel::compileDECOHack() const
+{
+	// Get selected entries
+	auto selection = entry_tree_->selectedEntries();
+
+	// Go through selection
+	for (auto& entry : selection)
+	{
+		// Compile
+		entryoperations::compileDECOHack(entry, nullptr, theMainWindow);
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
 // Compiles any selected text entries as ACS scripts
 // -----------------------------------------------------------------------------
 bool ArchivePanel::optimizePNG() const
@@ -3384,6 +3402,8 @@ bool ArchivePanel::handleAction(string_view id)
 		musMidiConvert();
 	else if (id == "arch_voxel_convertvox")
 		voxelConvert();
+	else if (id == "arch_scripts_compileDECOHack")
+		compileDECOHack();
 	else if (id == "arch_scripts_compileacs")
 		compileACS();
 	else if (id == "arch_scripts_compilehacs")
@@ -4021,6 +4041,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		}
 		SAction::fromId("arch_scripts_compileacs")->addToMenu(scripts, true);
 		SAction::fromId("arch_scripts_compilehacs")->addToMenu(scripts, true);
+		SAction::fromId("arch_scripts_compiledecohack")->addToMenu(scripts, true);
 	}
 
 	if (voxel_selected)
@@ -4117,6 +4138,12 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 		else if (bind == "select_all")
 		{
 			entry_tree_->SelectAll();
+
+			// Trigger selection change event (since SelectAll doesn't trigger it)
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+			entry_tree_->ProcessWindowEvent(de);
+
 			return;
 		}
 

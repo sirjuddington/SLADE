@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#ifdef USE_SFML_RENDERWINDOW
+#if 0
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Drawing.h"

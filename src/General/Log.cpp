@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "App.h"
 #include <fmt/chrono.h>
-#include <fmt/format.h>
 #include <fstream>
 
 using namespace slade;
@@ -54,25 +53,23 @@ CVAR(Int, log_verbosity, 1, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // Formatter for fmt so that log::MessageType can be written to a string
 // -----------------------------------------------------------------------------
-namespace fmt
+template<> struct fmt::formatter<log::MessageType> : formatter<string_view>
 {
-template<> struct formatter<log::MessageType>
-{
-	template<typename ParseContext> constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-	template<typename FormatContext> auto          format(const log::MessageType& type, FormatContext& ctx)
+	auto format(const log::MessageType& type, format_context& ctx) const -> format_context::iterator
 	{
+		string_view prefix;
 		switch (type)
 		{
-		case log::MessageType::Info: return format_to(ctx.out(), " [Info]");
-		case log::MessageType::Warning: return format_to(ctx.out(), " [Warn]");
-		case log::MessageType::Error: return format_to(ctx.out(), "[Error]");
-		case log::MessageType::Debug: return format_to(ctx.out(), "[Debug]");
-		case log::MessageType::Script: return format_to(ctx.out(), "[Script]");
-		default: return format_to(ctx.out(), "  [Log]");
+		case log::MessageType::Info: prefix = " [Info]"; break;
+		case log::MessageType::Warning: prefix = " [Warn]"; break;
+		case log::MessageType::Error: prefix = "[Error]"; break;
+		case log::MessageType::Debug: prefix = "[Debug]"; break;
+		case log::MessageType::Script: prefix = "[Script]"; break;
+		default: prefix = "  [Log]"; break;
 		}
+		return formatter<string_view>::format(prefix, ctx);
 	}
-};
-} // namespace fmt
+}; // namespace fmt
 
 
 // -----------------------------------------------------------------------------

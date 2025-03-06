@@ -202,10 +202,11 @@ void registerArchive(sol::state& lua)
 	lua_archive["CreateEntryInNamespace"] = &archiveCreateEntryInNamespace;
 	lua_archive["CreateDir"]              = &archiveCreateDir;
 	lua_archive["RemoveEntry"]            = [](Archive& self, ArchiveEntry* entry) { return self.removeEntry(entry); };
-	lua_archive["RenameEntry"]            = &Archive::renameEntry;
-	lua_archive["Save"]                   = sol::overload(
-        [](Archive& self) { return std::make_tuple(self.save(), global::error); },
-        [](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), global::error); });
+	lua_archive["RenameEntry"]            = [](Archive& self, ArchiveEntry* entry, const string& name)
+	{ return self.renameEntry(entry, name); };
+	lua_archive["Save"] = sol::overload(
+		[](Archive& self) { return std::make_tuple(self.save(), global::error); },
+		[](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), global::error); });
 	lua_archive["FindFirst"] = &archiveFindFirst;
 	lua_archive["FindLast"]  = &archiveFindLast;
 	lua_archive["FindAll"]   = &archiveFindAll;

@@ -84,7 +84,7 @@ std::thread::id main_thread_id;
 bool            win_darkmode_enabled = false;
 
 // Version
-Version version_num{ 3, 2, 6, 0 };
+Version version_num{ 3, 2, 7, 0 };
 
 // Directory paths
 string dir_data;
@@ -782,15 +782,6 @@ app::Platform app::platform()
 bool app::useWebView()
 {
 #ifdef USE_WEBVIEW_STARTPAGE
-	return true;
-#else
-	return false;
-#endif
-}
-
-bool app::useSFMLRenderWindow()
-{
-#ifdef USE_SFML_RENDERWINDOW
 	return true;
 #else
 	return false;

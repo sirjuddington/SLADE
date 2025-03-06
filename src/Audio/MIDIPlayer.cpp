@@ -90,15 +90,18 @@ public:
 		fs_initialised_ = false;
 		file_           = "";
 
-		// Set fluidsynth driver to alsa in linux (no idea why it defaults to jack)
+		// Set fluidsynth driver to pulseaudio in linux (no idea why it defaults to jack)
 		if (app::platform() == app::Platform::Linux && fs_driver.value.empty())
-			fs_driver = "alsa";
+			fs_driver = "pulseaudio";
 
 		// Init soundfont path
 		if (fs_soundfont_path.value.empty())
 		{
 			if (app::platform() == app::Platform::Linux)
-				fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
+				fs_soundfont_path =
+					"/usr/share/sounds/sf2/FluidR3_GM.sf2"
+					":/usr/share/sounds/sf2/FluidR3_GS.sf2"
+					":/usr/share/sounds/sf2/default-GM.sf2";
 			else
 				log::warning(1, "No FluidSynth soundfont set, MIDI playback will not work");
 		}
@@ -114,7 +117,7 @@ public:
 	// -------------------------------------------------------------------------
 	// FluidSynthMIDIPlayer class destructor
 	// -------------------------------------------------------------------------
-	virtual ~FluidSynthMIDIPlayer()
+	~FluidSynthMIDIPlayer() override
 	{
 		FluidSynthMIDIPlayer::stop();
 		delete_fluid_audio_driver(fs_adriver_);
@@ -152,7 +155,7 @@ public:
 		bool retval = false;
 		for (int a = paths.size() - 1; a >= 0; --a)
 		{
-			auto path = paths[a];
+			const auto& path = paths[a];
 			if (!path.empty())
 			{
 				int fs_id = fluid_synth_sfload(fs_synth_, path.c_str(), 1);
@@ -184,6 +187,7 @@ public:
 		if (fs_player_)
 		{
 			fluid_player_add(fs_player_, filename.c_str());
+			elapsed_ms_ = 0;
 			return true;
 		}
 
@@ -210,8 +214,9 @@ public:
 
 		if (fs_player_)
 		{
-			// fluid_player_set_loop(fs_player, -1);
+			// fluid_player_set_loop(fs_player_, -1);
 			fluid_player_add_mem(fs_player_, mc.data(), mc.size());
+			elapsed_ms_ = 0;
 			return true;
 		}
 
@@ -229,13 +234,12 @@ public:
 	// -------------------------------------------------------------------------
 	bool play() override
 	{
-		stop();
-		timer_.restart();
-
-		if (!fs_initialised_)
+		if (!fs_initialised_ || isPlaying())
 			return false;
 
-		return (fluid_player_play(fs_player_) == FLUID_OK);
+		timer_.restart();
+
+		return fluid_player_play(fs_player_) == FLUID_OK;
 	}
 
 	// -------------------------------------------------------------------------
@@ -243,10 +247,15 @@ public:
 	// -------------------------------------------------------------------------
 	bool pause() override
 	{
-		if (!isReady())
+		if (!isPlaying())
 			return false;
 
-		return stop();
+		elapsed_ms_ += timer_.getElapsedTime().asMilliseconds();
+
+		auto ok = fluid_player_stop(fs_player_) == FLUID_OK;
+		fluid_synth_all_notes_off(fs_synth_, -1);
+
+		return ok;
 	}
 
 	// -------------------------------------------------------------------------
@@ -254,16 +263,12 @@ public:
 	// -------------------------------------------------------------------------
 	bool stop() override
 	{
-		bool stopped = false;
+		fluid_player_stop(fs_player_);
+		fluid_synth_all_notes_off(fs_synth_, -1);
+		fluid_player_seek(fs_player_, 0);
+		elapsed_ms_ = 0;
 
-		if (fs_initialised_)
-		{
-			fluid_player_stop(fs_player_);
-			// fluid_synth_system_reset(fs_synth_); // Breaks soundfont on play/pause/stop
-			stopped = true;
-		}
-
-		return stopped;
+		return true;
 	}
 
 	// -------------------------------------------------------------------------
@@ -283,7 +288,7 @@ public:
 	int position() override
 	{
 		// We cannot query this information from fluidsynth, so we cheat by querying our own timer
-		return timer_.getElapsedTime().asMilliseconds();
+		return elapsed_ms_ + timer_.getElapsedTime().asMilliseconds();
 	}
 
 	// -------------------------------------------------------------------------
@@ -291,7 +296,8 @@ public:
 	// -------------------------------------------------------------------------
 	bool setPosition(int pos) override
 	{
-		// Cannot currently seek in fluidsynth
+		// While we can seek in fluidsynth, it's only by ticks which makes it
+		// difficult to work with in case of tempo changes etc.
 		return false;
 	}
 
@@ -303,11 +309,7 @@ public:
 		if (!isReady())
 			return false;
 
-		// Clamp volume
-		if (volume > 100)
-			volume = 100;
-		if (volume < 0)
-			volume = 0;
+		volume = std::clamp(volume, 0, 100);
 
 		fluid_synth_set_gain(fs_synth_, volume * 0.01f);
 
@@ -322,6 +324,7 @@ private:
 
 	bool        fs_initialised_ = false;
 	vector<int> fs_soundfont_ids_;
+	int         elapsed_ms_ = 0; // Time elapsed before last pause
 
 	// -------------------------------------------------------------------------
 	// Initialises fluidsynth
@@ -376,7 +379,7 @@ public:
 	// -------------------------------------------------------------------------
 	// TimidityMIDIPlayer class destructor
 	// -------------------------------------------------------------------------
-	virtual ~TimidityMIDIPlayer() { stop(); }
+	~TimidityMIDIPlayer() override { stop(); }
 
 	// -------------------------------------------------------------------------
 	// Returns true if the MIDIPlayer has a soundfont loaded
@@ -427,7 +430,7 @@ public:
 		wxExecuteEnv env;
 		env.cwd          = string{ strutil::Path::pathOf(snd_timidity_path) };
 		auto commandline = fmt::format(
-			"\"{}\" \"{}\" {}", string(snd_timidity_path), file_, string(snd_timidity_options));
+			R"("{}" "{}" {})", string(snd_timidity_path), file_, string(snd_timidity_options));
 
 		// Execute program
 		pid_ = wxExecute(commandline, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, nullptr, &env);

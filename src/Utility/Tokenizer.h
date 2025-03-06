@@ -67,7 +67,8 @@ public:
 		unsigned current_line = 1;
 		unsigned comment_type = 0;
 		Token    current_token;
-		bool     done = false;
+		bool     done   = false;
+		bool     to_eol = false;
 	};
 
 	static std::pair<string, string> parseEditorComment(string_view token);
@@ -77,7 +78,7 @@ public:
 
 	// Accessors
 	const string& source() const { return source_; }
-	bool          decorate() const { return decorate_; }
+	bool          decorate() const { return editor_comments_; }
 	bool          readLowerCase() const { return read_lowercase_; }
 	const Token&  current() const { return token_current_; }
 	const Token&  peek() const;
@@ -90,8 +91,8 @@ public:
 	}
 	void setSource(const wxString& source) { source_ = source; }
 	void setReadLowerCase(bool lower) { read_lowercase_ = lower; }
-	void enableDecorate(bool enable) { decorate_ = enable; }
-	void enableDebug(bool enable) { debug_ = enable; }
+	void enableEditorComments(bool enable = true) { editor_comments_ = enable; }
+	void enableDebug(bool enable = true) { debug_ = enable; }
 
 	// Token Iterating
 	const Token&  next();
@@ -212,19 +213,19 @@ private:
 	TokenizeState state_         = {};
 
 	// Configuration
-	int          comment_types_;          // Types of comments to skip
-	vector<char> special_characters_;     // These will always be read as separate tokens
-	string       source_;                 // What file/entry/chunk is being tokenized
-	bool         decorate_       = false; // Special handling for //$ comments
-	bool         read_lowercase_ = false; // If true, tokens will all be read in lowercase
-										  // (except for quoted strings, obviously)
-	bool debug_ = false;                  // Log each token read
+	int          comment_types_;           // Types of comments to skip
+	vector<char> special_characters_;      // These will always be read as separate tokens
+	string       source_;                  // What file/entry/chunk is being tokenized
+	bool         editor_comments_ = false; // Special handling for //$ comments
+	bool         read_lowercase_  = false; // If true, tokens will all be read in lowercase
+										   // (except for quoted strings, obviously)
+	bool debug_ = false;                   // Log each token read
 
 	// Static
 	static Token invalid_token_;
 
 	// Tokenizing
-	unsigned checkCommentBegin();
+	unsigned checkCommentBegin() const;
 	void     tokenizeUnknown();
 	void     tokenizeToken();
 	void     tokenizeComment();
@@ -232,5 +233,6 @@ private:
 	bool     readNext(Token* target);
 	bool     readNext() { return readNext(&token_next_); }
 	void     resetToLineStart();
+	bool     isEndOfToken() const;
 };
 } // namespace slade

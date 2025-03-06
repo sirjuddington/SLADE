@@ -221,7 +221,7 @@ bool SToolBarButton::updateState(int mouse_event)
 	auto prev_state = state_;
 
 	if (mouse_event == 1) // Enter or motion
-		state_ = State::MouseOver;
+		state_ = wxGetMouseState().LeftIsDown() ? State::MouseDown : State::MouseOver;
 	else if (mouse_event == 2) // Leave
 		state_ = State::Normal;
 	else if (IsShownOnScreen() && IsEnabled())

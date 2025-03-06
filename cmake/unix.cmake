@@ -11,10 +11,6 @@ if(NOT APPLE)
 	OPTION(WX_GTK3 "Use GTK3 (if wx is built with it)" ON)
 endif(NOT APPLE)
 
-if (NOT NO_COTIRE)
-	include(cotire)
-endif()
-
 # wxWidgets libs
 if (WITH_WXPATH)
     set(ENV{PATH} ${WITH_WXPATH}:$ENV{PATH})
@@ -76,14 +72,18 @@ find_package(wxWidgets ${WX_VERSION} COMPONENTS ${WX_LIBS} REQUIRED)
 include(${wxWidgets_USE_FILE})
 
 # SFML
-if (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window graphics network)
-ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
-else (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window network)
+set(SFML_FIND_COMPONENTS System Audio Window Network)
+list(TRANSFORM SFML_FIND_COMPONENTS TOLOWER OUTPUT_VARIABLE SFML2_FIND_COMPONENTS)
+find_package(SFML 2 QUIET COMPONENTS ${SFML2_FIND_COMPONENTS})
+if(SFML_FOUND)
+	list(TRANSFORM SFML2_FIND_COMPONENTS PREPEND sfml- OUTPUT_VARIABLE SFML_LIBRARIES)
+else()
+	list(TRANSFORM SFML_FIND_COMPONENTS PREPEND SFML:: OUTPUT_VARIABLE SFML_LIBRARIES)
+	find_package(SFML 3 COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
+endif()
+
 find_package(Freetype REQUIRED)
 find_package(FTGL REQUIRED)
-endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
 if (NO_FLUIDSYNTH)
@@ -101,7 +101,6 @@ else(NO_FLUIDSYNTH)
 endif()
 
 find_package(FreeImage REQUIRED)
-find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 find_package(OpenGL REQUIRED)
 if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
@@ -109,7 +108,6 @@ endif()
 find_package(MPG123 REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
-	${SFML_INCLUDE_DIR}
 	${FREETYPE_INCLUDE_DIRS}
 	${FTGL_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
@@ -166,7 +164,7 @@ target_link_libraries(slade
 	${EXTERNAL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${FREEIMAGE_LIBRARIES}
-	${SFML_LIBRARY}
+	${SFML_LIBRARIES}
 	${FREETYPE_LIBRARIES}
 	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
@@ -229,14 +227,5 @@ if(NOT TARGET uninstall)
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake COMMENT "Uninstall the project...")
 endif()
 
-if (NOT NO_COTIRE)
-	set_target_properties(slade PROPERTIES
-		COTIRE_CXX_PREFIX_HEADER_INIT "common.h"
-		# Enable multithreaded unity builds by default
-		# because otherwise probably no one would realize how
-		COTIRE_UNITY_SOURCE_MAXIMUM_NUMBER_OF_INCLUDES -j
-		# Fixes macro definition bleedout
-		COTIRE_UNITY_SOURCE_PRE_UNDEFS "Bool"
-		)
-	cotire(slade)
-endif()
+# Precompiled Header
+target_precompile_headers(slade PRIVATE "common.h")
