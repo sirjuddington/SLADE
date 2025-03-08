@@ -470,38 +470,8 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 	// We therefore store the/a height at which the top of the texture
 	// on the respective wall portion would reside.
 	// We use that later to determine the proper y-offset.
-	int firstTexTopHeight = -1;
 	auto firstLine = firstSide->parentLine();
-	if (start.type == ItemType::WallBottom)
-	{
-		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", firstLine, context_.mapDesc().format);
-		// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
-		// Otherwise: Top of texture is at the highest floor
-		if (unpegged)
-			firstTexTopHeight = firstLine->highestCeiling();
-		else
-			firstTexTopHeight = firstLine->highestFloor();
-	}
-	else if (start.type == ItemType::WallMiddle)
-	{
-		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", firstLine, context_.mapDesc().format);
-		// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
-		// Otherwise: Top of texture is at the lowest ceiling
-		if (unpegged)
-			firstTexTopHeight = firstLine->highestFloor() + tex_height;
-		else
-			firstTexTopHeight = firstLine->lowestCeiling();
-	}
-	else if (start.type == ItemType::WallTop)
-	{
-		// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
-		// Otherwise: Top of texture is at lowest ceiling plus texture height
-		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegtop", firstLine, context_.mapDesc().format);
-		if (unpegged)
-			firstTexTopHeight = firstLine->highestCeiling();
-		else
-			firstTexTopHeight = firstLine->lowestCeiling() + tex_height;
-	}
+	int firstTexTopHeight = getTextureTopHeight(firstLine, start.type, tex_height);
 	
 	// Adjust firstTexTopHeight with texture Y offset
 	firstTexTopHeight += firstSide->texOffsetY();
@@ -569,38 +539,8 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 			// First we need to determine the top height for the respective texture
 			int currentTexTopHeight = -1;
 			auto currentLine = job.side->parentLine();
-			if (start.type == ItemType::WallBottom)
-			{
-				const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", currentLine, context_.mapDesc().format);
-				// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
-				// Otherwise: Top of texture is at the highest floor
-				if (unpegged)
-					currentTexTopHeight = currentLine->highestCeiling();
-				else
-					currentTexTopHeight = currentLine->highestFloor();
-			}
-			else if (start.type == ItemType::WallMiddle)
-			{
-				const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", currentLine, context_.mapDesc().format);
-				// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
-				// Otherwise: Top of texture is at the lowest ceiling
-				if (unpegged)
-					currentTexTopHeight = currentLine->highestFloor() + tex_height;
-				else
-					currentTexTopHeight = currentLine->lowestCeiling();
-			}
-			else if (start.type == ItemType::WallTop)
-			{
-				// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
-				// Otherwise: Top of texture is at lowest ceiling plus texture height
-				const bool unpegged = game::configuration().lineBasicFlagSet("dontpegtop", currentLine, context_.mapDesc().format);
-				if (unpegged)
-					currentTexTopHeight = currentLine->highestCeiling();
-				else
-					currentTexTopHeight = currentLine->lowestCeiling() + tex_height;
-			}
-
-			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
+			currentTexTopHeight = getTextureTopHeight(currentLine, start.type, tex_height);
+ 			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
 			int currentOffsetY = firstTexTopHeight - currentTexTopHeight;
 
 			// Adjust the y-offset (but only, if we're not adjusting the middle part on a two-sided wall)
@@ -1791,5 +1731,45 @@ void Edit3D::getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& lis
 			list.push_back(item);
 			getAdjacentFlats({ (int)osector->index(), item.type }, list);
 		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Determine the height of the top end of the texture on the respective wall part
+// of the given line using the given texture height.
+// -----------------------------------------------------------------------------
+int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_height) const
+{
+	assert(wallType == ItemType::WallBottom || wallType == ItemType::WallMiddle || wallType == ItemType::WallTop);
+	if (wallType == ItemType::WallBottom)
+	{
+		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", firstLine, context_.mapDesc().format);
+		// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
+		// Otherwise: Top of texture is at the highest floor
+		if (unpegged)
+			return firstLine->highestCeiling();
+		else
+			return firstLine->highestFloor();
+	}
+	else if (wallType == ItemType::WallMiddle)
+	{
+		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", firstLine, context_.mapDesc().format);
+		// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
+		// Otherwise: Top of texture is at the lowest ceiling
+		if (unpegged)
+			return firstLine->highestFloor() + tex_height;
+		else
+			return firstLine->lowestCeiling();
+	}
+	else
+	{
+		// wallType == ItemType::WallTop
+		// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
+		// Otherwise: Top of texture is at lowest ceiling plus texture height
+		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegtop", firstLine, context_.mapDesc().format);
+		if (unpegged)
+			return firstLine->highestCeiling();
+		else
+			return firstLine->lowestCeiling() + tex_height;
 	}
 }

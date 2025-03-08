@@ -86,5 +86,8 @@ private:
 		MapSide* side;
 		int offsetX;
 	};
+
+	// Helper function for texture auto-alignment
+	int getTextureTopHeight(MapLine* firstLine, mapeditor::ItemType wallType, int tex_height) const;
 };
 } // namespace slade
