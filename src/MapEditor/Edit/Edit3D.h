@@ -2,10 +2,12 @@
 
 #include "MapEditor/MapEditor.h"
 #include "SLADEMap/MapObject/MapThing.h"
+#include <queue>
 
 namespace slade
 {
 class MapEditContext;
+class MapVertex;
 class MapSide;
 class UndoManager;
 
@@ -87,7 +89,9 @@ private:
 		int offsetX;
 	};
 
-	// Helper function for texture auto-alignment
+	// Helper functions for texture auto-alignment
 	int getTextureTopHeight(MapLine* firstLine, mapeditor::ItemType wallType, int tex_height) const;
+	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* commonVertex, int textureOffset);
+	static void enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* commonVertex, int textureOffset);
 };
 } // namespace slade

@@ -514,7 +514,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		// Add side to set of processed sides
 		processedSides.insert(job.side->index());
 
-
+		// Perform X-Alignment
 		switch (alignType)
 		{
 		case AlignType::AlignX:
@@ -532,6 +532,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 			break;
 		}
 
+		// Perform Y-alignment
 		switch (alignType)
 		{
 		case AlignType::AlignY:
@@ -558,58 +559,13 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 			break;
 		}
 
-		// Align the next side on the sector, which is offset by the length of this line
-		auto nextSide = job.side->nextInSector();
-		if (nextSide) // Be conservative for the time being
-		{
-			int sideLen = (int)math::round(job.side->parentLine()->length());
-			AlignmentJob nextSideJob;
-			nextSideJob.side = nextSide;
-			nextSideJob.offsetX = job.offsetX + sideLen;
-			jobs.push(nextSideJob);
+		// Enqueue all sides connected to the start vertex of the current side
+		enqueueConnectedLines(jobs, job.side->startVertex(), job.offsetX);
 
-			if (game::configuration().lineBasicFlagSet("twosided", nextSide->parentLine(), context_.mapDesc().format))
-			{
-				// The line is two-sided, so we consider the sector on the other side
-				auto nextOpposite = nextSide->oppositeSide();
-				if (nextOpposite)
-				{
-					// The line is two-sided, so we need to process the successor of the opposite as well.
-					// That side starts of at our end vertex, so the texture is offset by sideLen.
-					AlignmentJob nextOpposideSideJob;
-					nextOpposideSideJob.side = nextOpposite->nextInSector();
-					nextOpposideSideJob.offsetX = job.offsetX + sideLen;
-					jobs.push(nextOpposideSideJob);
-				}
-			}
-		}
-
-		// Align the previous side on the sector, which is offset by the length of the previous line
-		auto prevSide = job.side->prevInSector();
-		if (prevSide) // Be conservative for the time being
-		{
-			auto prevLine = prevSide->parentLine();
-			int prevLen = (int)math::round(prevLine->length());
-			AlignmentJob prevSideJob;
-			prevSideJob.side = prevSide;
-			prevSideJob.offsetX = job.offsetX - prevLen;
-			jobs.push(prevSideJob);
-
-			if (game::configuration().lineBasicFlagSet("twosided", prevLine, context_.mapDesc().format))
-			{
-				// The line is two-sided, so we consider the sector on the other side
-				auto prevOpposite = prevSide->oppositeSide();
-				if (prevOpposite)
-				{
-					// The line is two-sided, so we need to process the predecessor of the opposite as well.
-					// That side starts at our start vertex, so the texture is not offset.
-					AlignmentJob prevOppositeJob;
-					prevOppositeJob.side = prevOpposite->prevInSector();
-					prevOppositeJob.offsetX = job.offsetX;
-					jobs.push(prevOppositeJob);
-				}
-			}
-		}
+		// Enqueue all sides connected to the end vertex of the current side
+		const int sideLen = (int)math::round(job.side->parentLine()->length());
+		const int endOffsetX = job.offsetX + sideLen;
+		enqueueConnectedLines(jobs, job.side->endVertex(), endOffsetX);
 	}
 
 	// End undo level
@@ -1772,4 +1728,43 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 		else
 			return firstLine->lowestCeiling() + tex_height;
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Add alignment jobs for all sides connected to the given common vertex.
+// Calculates the correct texture offset for the respective sides.
+// textureOffset gives the texture offset to be assumed for the common vertex.
+// -----------------------------------------------------------------------------
+void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* commonVertex, int textureOffset)
+{
+	for (MapLine* line: commonVertex->connectedLines())
+	{
+		auto s1 = line->s1();
+		if (s1)
+			enqueueSide(jobs, s1, commonVertex, textureOffset);
+		auto s2 = line->s2();
+		if (s2)
+			enqueueSide(jobs, s2, commonVertex, textureOffset);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Add alignment job for the given side.
+// Calculates the correct texture offset for the respective sides.
+// textureOffset gives the texture offset to be assumed for the common vertex.
+// -----------------------------------------------------------------------------
+void Edit3D::enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* commonVertex, int textureOffset)
+{
+	AlignmentJob job;
+	job.side = side;
+	job.offsetX = textureOffset;
+	if (side->endVertex() == commonVertex)
+	{
+		// The side starts opposite from the given vertex,
+		// so we need to adjust the texture offset by the length
+		// of the side;
+		job.offsetX -= (int)math::round(side->parentLine()->length());
+	}
+
+	jobs.push(job);
 }
