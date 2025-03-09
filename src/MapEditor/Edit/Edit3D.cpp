@@ -413,10 +413,10 @@ void Edit3D::changeSectorHeight(int amount) const
 // -----------------------------------------------------------------------------
 // Aligns texture offsets beginning from the wall selection [start]
 // -----------------------------------------------------------------------------
-void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
+void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 {
 	// Check align type
-	if (alignType!=AlignType::AlignX && alignType!=AlignType::AlignY && alignType!=AlignType::AlignXY)
+	if (align_type!=AlignType::AlignX && align_type!=AlignType::AlignY && align_type!=AlignType::AlignXY)
 	{
 		log::error("Edit3d::autoAlign: alignType is invalid");
 		return;
@@ -427,18 +427,18 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		return;
 
 	// Get starting side
-	auto firstSide = context_.map().side(start.index);
-	if (!firstSide)
+	auto first_side = context_.map().side(start.index);
+	if (!first_side)
 		return;
 
 	// Get texture to match
 	string tex;
 	if (start.type == ItemType::WallBottom)
-		tex = firstSide->texLower();
+		tex = first_side->texLower();
 	else if (start.type == ItemType::WallMiddle)
-		tex = firstSide->texMiddle();
+		tex = first_side->texMiddle();
 	else if (start.type == ItemType::WallTop)
-		tex = firstSide->texUpper();
+		tex = first_side->texUpper();
 
 	// Don't try to auto-align a missing texture (every line on the map will probably match)
 	if (tex == "-")
@@ -455,7 +455,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		tex_width = gl::Texture::info(gl_tex).size.x;
 		tex_height = gl::Texture::info(gl_tex).size.y;
 	}
-	else if (alignType == AlignType::AlignY || alignType == AlignType::AlignXY)
+	else if (align_type == AlignType::AlignY || align_type == AlignType::AlignXY)
 	{
 		// We need the height of the texture for vertical alignment to determine anchor points
 		log::warning("Cannot determine height of texture {}, but is required for y alignment", tex);
@@ -470,15 +470,15 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 	// We therefore store the/a height at which the top of the texture
 	// on the respective wall portion would reside.
 	// We use that later to determine the proper y-offset.
-	auto firstLine = firstSide->parentLine();
-	int firstTexTopHeight = getTextureTopHeight(firstLine, start.type, tex_height);
+	auto first_line = first_side->parentLine();
+	int first_tex_top_height = getTextureTopHeight(first_line, start.type, tex_height);
 	
 	// Adjust firstTexTopHeight with texture Y offset
-	firstTexTopHeight += firstSide->texOffsetY();
+	first_tex_top_height += first_side->texOffsetY();
 
 	// Begin undo level
 	string axis_names;
-	switch (alignType)
+	switch (align_type)
 	{
 	case AlignType::AlignX:  axis_names = "X axis"; break;
 	case AlignType::AlignY:  axis_names = "Y axis"; break;
@@ -490,13 +490,13 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 	std::queue<AlignmentJob> jobs;
 
 	// Set of sides already processed
-	std::set<unsigned int> processedSides;
+	std::set<unsigned int> processed_sides;
 
 	// Enter the first job into the queue
-	AlignmentJob firstJob;
-	firstJob.side = firstSide;
-	firstJob.offsetX = firstSide->texOffsetX();
-	jobs.push(firstJob);
+	AlignmentJob first_job;
+	first_job.side = first_side;
+	first_job.tex_offset_x = first_side->texOffsetX();
+	jobs.push(first_job);
 
 	while (!jobs.empty())
 	{
@@ -504,7 +504,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 		jobs.pop();
 
 		// Skip if side has already been processed
-		if (processedSides.find(job.side->index()) != processedSides.end())
+		if (processed_sides.find(job.side->index()) != processed_sides.end())
 			continue;
 
 		// Skip if this wall does not have the desired texture
@@ -512,60 +512,60 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 			continue;
 
 		// Add side to set of processed sides
-		processedSides.insert(job.side->index());
+		processed_sides.insert(job.side->index());
 
 		// Perform X-Alignment
-		switch (alignType)
+		switch (align_type)
 		{
 		case AlignType::AlignX:
 		case AlignType::AlignXY:
 			// Wrap x-offset
 			if (tex_width > 0)
 			{
-				while (job.offsetX >= tex_width)
-					job.offsetX -= tex_width;
-				while (job.offsetX < 0)
-					job.offsetX += tex_width;
+				while (job.tex_offset_x >= tex_width)
+					job.tex_offset_x -= tex_width;
+				while (job.tex_offset_x < 0)
+					job.tex_offset_x += tex_width;
 			}
 			// Set X offset
-			job.side->setIntProperty("offsetx", job.offsetX);
+			job.side->setIntProperty("offsetx", job.tex_offset_x);
 			break;
 		}
 
 		// Perform Y-alignment
-		switch (alignType)
+		switch (align_type)
 		{
 		case AlignType::AlignY:
 		case AlignType::AlignXY:
 			// First we need to determine the top height for the respective texture
-			int currentTexTopHeight = -1;
-			auto currentLine = job.side->parentLine();
-			currentTexTopHeight = getTextureTopHeight(currentLine, start.type, tex_height);
+			int current_tex_top_height = -1;
+			auto current_line = job.side->parentLine();
+			current_tex_top_height = getTextureTopHeight(current_line, start.type, tex_height);
  			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
-			int currentOffsetY = firstTexTopHeight - currentTexTopHeight;
+			int current_offset_y = first_tex_top_height - current_tex_top_height;
 
 			// Adjust the y-offset (but only, if we're not adjusting the middle part on a two-sided wall)
-			if (start.type != ItemType::WallMiddle || !game::configuration().lineBasicFlagSet("twosided", currentLine, context_.mapDesc().format))
+			if (start.type != ItemType::WallMiddle || !game::configuration().lineBasicFlagSet("twosided", current_line, context_.mapDesc().format))
 			{
 				if (tex_height > 0) {
-					while (currentOffsetY > tex_height)
-						currentOffsetY -= tex_height;
-					while (currentOffsetY < 0)
-						currentOffsetY += tex_height;
+					while (current_offset_y > tex_height)
+						current_offset_y -= tex_height;
+					while (current_offset_y < 0)
+						current_offset_y += tex_height;
 				}
 			}
 			// Set Y offset
-			job.side->setIntProperty("offsety", currentOffsetY);
+			job.side->setIntProperty("offsety", current_offset_y);
 			break;
 		}
 
 		// Enqueue all sides connected to the start vertex of the current side
-		enqueueConnectedLines(jobs, job.side->startVertex(), job.offsetX);
+		enqueueConnectedLines(jobs, job.side->startVertex(), job.tex_offset_x);
 
 		// Enqueue all sides connected to the end vertex of the current side
-		const int sideLen = (int)math::round(job.side->parentLine()->length());
-		const int endOffsetX = job.offsetX + sideLen;
-		enqueueConnectedLines(jobs, job.side->endVertex(), endOffsetX);
+		const int side_len = (int)math::round(job.side->parentLine()->length());
+		const int end_offset_x = job.tex_offset_x + side_len;
+		enqueueConnectedLines(jobs, job.side->endVertex(), end_offset_x);
 	}
 
 	// End undo level
@@ -1732,38 +1732,38 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 
 // -----------------------------------------------------------------------------
 // Add alignment jobs for all sides connected to the given common vertex.
-// Calculates the correct texture offset for the respective sides.
-// textureOffset gives the texture offset to be assumed for the common vertex.
+// Calculates the correct texture x-offset for the respective sides.
+// tex_offset_x gives the texture x-offset to be assumed for the common vertex.
 // -----------------------------------------------------------------------------
-void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* commonVertex, int textureOffset)
+void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x)
 {
-	for (MapLine* line: commonVertex->connectedLines())
+	for (MapLine* line: common_vertex->connectedLines())
 	{
 		auto s1 = line->s1();
 		if (s1)
-			enqueueSide(jobs, s1, commonVertex, textureOffset);
+			enqueueSide(jobs, s1, common_vertex, tex_offset_x);
 		auto s2 = line->s2();
 		if (s2)
-			enqueueSide(jobs, s2, commonVertex, textureOffset);
+			enqueueSide(jobs, s2, common_vertex, tex_offset_x);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Add alignment job for the given side.
-// Calculates the correct texture offset for the respective sides.
-// textureOffset gives the texture offset to be assumed for the common vertex.
+// Calculates the correct texture x-offset for the respective sides.
+// tex_offset_x gives the texture x-offset to be assumed for the common vertex.
 // -----------------------------------------------------------------------------
-void Edit3D::enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* commonVertex, int textureOffset)
+void Edit3D::enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x)
 {
 	AlignmentJob job;
 	job.side = side;
-	job.offsetX = textureOffset;
-	if (side->endVertex() == commonVertex)
+	job.tex_offset_x = tex_offset_x;
+	if (side->endVertex() == common_vertex)
 	{
 		// The side starts opposite from the given vertex,
 		// so we need to adjust the texture offset by the length
 		// of the side;
-		job.offsetX -= (int)math::round(side->parentLine()->length());
+		job.tex_offset_x -= (int)math::round(side->parentLine()->length());
 	}
 
 	jobs.push(job);

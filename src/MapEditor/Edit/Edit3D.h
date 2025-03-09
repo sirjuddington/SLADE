@@ -86,12 +86,12 @@ private:
 	struct AlignmentJob
 	{
 		MapSide* side;
-		int offsetX;
+		int tex_offset_x;
 	};
 
 	// Helper functions for texture auto-alignment
-	int getTextureTopHeight(MapLine* firstLine, mapeditor::ItemType wallType, int tex_height) const;
-	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* commonVertex, int textureOffset);
-	static void enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* commonVertex, int textureOffset);
+	int getTextureTopHeight(MapLine* firstLine, mapeditor::ItemType wall_type, int tex_height) const;
+	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x);
+	static void enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x);
 };
 } // namespace slade
