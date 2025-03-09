@@ -457,8 +457,8 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType alignType) const
 	}
 	else if (alignType == AlignType::AlignY || alignType == AlignType::AlignXY)
 	{
-		log::warning("Cannot determine height of texture {}, but is required for y alignment", tex);
 		// We need the height of the texture for vertical alignment to determine anchor points
+		log::warning("Cannot determine height of texture {}, but is required for y alignment", tex);
 		return;
 	}
 
