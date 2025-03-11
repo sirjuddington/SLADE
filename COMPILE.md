@@ -9,7 +9,7 @@
 * GTK 2.x/3.x
 * mpg123 library
 * OpenGL
-* SFML
+* SFML 2.x
 * wxWidgets 3.x
 * zlib
 
