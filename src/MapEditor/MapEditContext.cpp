@@ -1236,7 +1236,9 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 
 		// Auto-align
 		else if (key == "me3d_wall_autoalign_x")
-			edit_3d_.autoAlignX(selection_.hilight());
+			edit_3d_.autoAlign(selection_.hilight(), Edit3D::AlignType::AlignX);
+		else if (key == "me3d_wall_autoalign_y")
+			edit_3d_.autoAlign(selection_.hilight(), Edit3D::AlignType::AlignY);
 
 		// Reset wall offsets
 		else if (key == "me3d_wall_reset")

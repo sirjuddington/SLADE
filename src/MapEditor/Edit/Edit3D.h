@@ -2,10 +2,12 @@
 
 #include "MapEditor/MapEditor.h"
 #include "SLADEMap/MapObject/MapThing.h"
+#include <queue>
 
 namespace slade
 {
 class MapEditContext;
+class MapVertex;
 class MapSide;
 class UndoManager;
 
@@ -17,6 +19,13 @@ public:
 		TexType,
 		Offsets,
 		Scale
+	};
+
+	enum class AlignType
+	{
+		AlignX = 1,
+		AlignY = 2,
+		AlignXY = AlignX | AlignY
 	};
 
 	explicit Edit3D(MapEditContext& context);
@@ -45,7 +54,7 @@ public:
 	void changeSectorLight(int amount) const;
 	void changeOffset(int amount, bool x) const;
 	void changeSectorHeight(int amount) const;
-	void autoAlignX(mapeditor::Item start) const;
+	void autoAlign(mapeditor::Item start, AlignType alignType = AlignType::AlignX) const;
 	void resetOffsets() const;
 	void toggleUnpegged(bool lower) const;
 	void copy(CopyType type);
@@ -73,12 +82,16 @@ private:
 	void        getAdjacentWalls(mapeditor::Item item, vector<mapeditor::Item>& list) const;
 	void        getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& list) const;
 
-	// Helper for autoAlignX3d
-	static void doAlignX(
-		MapSide*                 side,
-		int                      offset,
-		string_view              tex,
-		vector<mapeditor::Item>& walls_done,
-		int                      tex_width);
+	// Helper type for texture auto-alignment
+	struct AlignmentJob
+	{
+		MapSide* side;
+		int tex_offset_x;
+	};
+
+	// Helper functions for texture auto-alignment
+	int getTextureTopHeight(MapLine* firstLine, mapeditor::ItemType wall_type, int tex_height) const;
+	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x);
+	static void enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x);
 };
 } // namespace slade
