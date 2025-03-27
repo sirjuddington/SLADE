@@ -52,6 +52,16 @@ if (UNIX OR MINGW)
         # Is the wx we are using built on gtk2 or 3?
         execute_process(COMMAND ${WX_TOOL} --selected_config OUTPUT_VARIABLE WX_GTK_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
         string(SUBSTRING "${WX_GTK_VERSION}" "3" "1" GTK_VERSION)
+        if (NOT NO_WAYLAND)
+           find_package(PkgConfig)
+           pkg_check_modules(GTK REQUIRED gtk+-3.0)
+           # Setup CMake to use GTK+, tell the compiler where to look for headers
+           # and to the linker where to look for libraries
+           include_directories(${GTK_INCLUDE_DIRS})
+           link_directories(${GTK_LIBRARY_DIRS})
+           # Add other flags to the compiler
+           add_definitions(${GTK_CFLAGS_OTHER})
+        endif()
         message("-- gtk version is: ${GTK_VERSION}")
     endif()
 	set(wxWidgets_CONFIG_EXECUTABLE "${WX_TOOL}")
@@ -84,6 +94,10 @@ endif()
 
 find_package(Freetype REQUIRED)
 find_package(FTGL REQUIRED)
+
+if(NOT NO_WAYLAND)
+    find_package(Wayland REQUIRED)
+endif()
 
 # Fluidsynth
 if (NO_FLUIDSYNTH)
@@ -157,6 +171,12 @@ add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_SOURCES}
 	${SLADE_HEADERS}
 )
+
+if(NOT NO_WAYLAND)
+    target_link_libraries(slade ${GTK_LIBRARIES} Wayland::Client)
+    add_library( wpointer STATIC ../src/MapEditor/UI/wayland-pointer-constraints-unstable-v1.c)
+    target_link_libraries(slade wpointer)
+endif()
 
 target_link_libraries(slade
 	${ZLIB_LIBRARY}

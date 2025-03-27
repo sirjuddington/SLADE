@@ -30,6 +30,8 @@ private:
 	sf::Clock       sf_clock_;
 	long            last_wheel_timestamp_ = -1;
 
+    wxPoint GetMousePosition();
+  
 	// Events
 	void onSize(wxSizeEvent& e);
 	void onKeyDown(wxKeyEvent& e);
