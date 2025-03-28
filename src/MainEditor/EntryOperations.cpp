@@ -1221,7 +1221,7 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 	entry->exportFile(srcfile);
 
 	// Execute DECOHack
-	wxString      command = "\"" + path_java + "\" -cp \"" + path_decohack + "\"" + " -Xms64M -Xmx4G net.mtrop.doom.tools.DecoHackMain \"" + srcfile + "\" -o \"" + dehfile + "\"";
+	wxString      command = "\"" + path_java + "\" -cp \"" + path_decohack + "\"" + " -Xms64M -Xmx1G net.mtrop.doom.tools.DecoHackMain \"" + srcfile + "\" -o \"" + dehfile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
 	wxGetApp().SetTopWindow(parent);
