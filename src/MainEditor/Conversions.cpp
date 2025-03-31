@@ -1443,12 +1443,13 @@ bool conversion::voxToKvx(MemChunk& in, MemChunk& out)
 	{
 		for (int y = 0; y < length + 1; y++)
 		{
-			log::console(wxString::Format(
-				"xyoffsets[%d][%d]: %d, total: %d",
-				x,
-				y,
-				xyoffsets[x * (length + 1) + y],
-				xoffsets[x] + xyoffsets[x * (length - 1) + y]));
+			log::console(
+				wxString::Format(
+					"xyoffsets[%d][%d]: %d, total: %d",
+					x,
+					y,
+					xyoffsets[x * (length + 1) + y],
+					xoffsets[x] + xyoffsets[x * (length - 1) + y]));
 		}
 	}
 

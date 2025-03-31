@@ -100,7 +100,7 @@ struct RFFLump
 	uint8_t  Flags;
 	char     Extension[3];
 	char     Name[8];
-	uint32_t IndexNum;  // Used by .sfx, possibly others
+	uint32_t IndexNum; // Used by .sfx, possibly others
 };
 
 void bloodCrypt(uint32_t key, void* buffer, size_t len)
@@ -164,11 +164,11 @@ bool RffArchive::open(MemChunk& mc)
 	mc.read(&magic, 4);
 	mc.read(&version, 2);
 	mc.seek(2, SEEK_CUR);
-	mc.read(&dir_offset, 4);  // Absolute offset to directory
+	mc.read(&dir_offset, 4); // Absolute offset to directory
 	mc.read(&num_lumps, 4);  // Number of lumps in rff
 
 	// Check the header
-	if (magic != wxUINT32_SWAP_ON_LE(0x5246461A))  // 'RFF\x1A'
+	if (magic != wxUINT32_SWAP_ON_LE(0x5246461A)) // 'RFF\x1A'
 	{
 		log::error("RffArchive::open: File {} has invalid header", filename_);
 		global::error = "Invalid rff header";
@@ -184,14 +184,14 @@ bool RffArchive::open(MemChunk& mc)
 	uint32_t key;
 	switch (version)
 	{
-		case 0x200: break;
-		case 0x300: key = dir_offset; break;
-		case 0x301: key = dir_offset << 1; break;
+	case 0x200: break;
+	case 0x300: key = dir_offset; break;
+	case 0x301: key = dir_offset << 1; break;
 
-		default:
-			log::error("RffArchive::open: File {} has unknown version {}", filename_, version);
-			global::error = "Unknown rff version";
-			return false;
+	default:
+		log::error("RffArchive::open: File {} has unknown version {}", filename_, version);
+		global::error = "Unknown rff version";
+		return false;
 	};
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
@@ -369,11 +369,11 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 	mc.read(&magic, 4);
 	mc.read(&version, 2);
 	mc.seek(2, SEEK_CUR);
-	mc.read(&dir_offset, 4);  // Absolute offset to directory
+	mc.read(&dir_offset, 4); // Absolute offset to directory
 	mc.read(&num_lumps, 4);  // Number of lumps in rff
 
 	// Check the header
-	if (magic != wxUINT32_SWAP_ON_LE(0x5246461A))  // 'RFF\x1A'
+	if (magic != wxUINT32_SWAP_ON_LE(0x5246461A)) // 'RFF\x1A'
 		return false;
 
 	// Byteswap values for big endian if needed
@@ -385,10 +385,10 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 	uint32_t key;
 	switch (version)
 	{
-		case 0x200: break;
-		case 0x300: key = dir_offset; break;
-		case 0x301: key = dir_offset << 1; break;
-		default: return false;
+	case 0x200: break;
+	case 0x300: key = dir_offset; break;
+	case 0x301: key = dir_offset << 1; break;
+	default: return false;
 	};
 
 	// Compute total size
@@ -437,11 +437,11 @@ bool RffArchive::isRffArchive(const string& filename)
 	file.Read(&magic, 4);
 	file.Read(&version, 2);
 	file.Seek(2, wxFromCurrent);
-	file.Read(&dir_offset, 4);  // Absolute offset to directory
+	file.Read(&dir_offset, 4); // Absolute offset to directory
 	file.Read(&num_lumps, 4);  // Number of lumps in rff
 
 	// Check the header
-	if (magic != wxUINT32_SWAP_ON_LE(0x5246461A))  // 'RFF\x1A'
+	if (magic != wxUINT32_SWAP_ON_LE(0x5246461A)) // 'RFF\x1A'
 		return false;
 
 	// Byteswap values for big endian if needed
@@ -453,10 +453,10 @@ bool RffArchive::isRffArchive(const string& filename)
 	uint32_t key;
 	switch (version)
 	{
-		case 0x200: break;
-		case 0x300: key = dir_offset; break;
-		case 0x301: key = dir_offset << 1; break;
-		default: return false;
+	case 0x200: break;
+	case 0x300: key = dir_offset; break;
+	case 0x301: key = dir_offset << 1; break;
+	default: return false;
 	};
 
 	// Compute total size

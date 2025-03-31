@@ -264,21 +264,23 @@ void LineDraw::begin(bool shape)
 	auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 	if (shape)
 	{
-		context_.setFeatureHelp({ "Shape Drawing",
-								  fmt::format("{} = Accept", key_accept),
-								  fmt::format("{} = Cancel", key_cancel),
-								  "Left Click = Draw point",
-								  "Right Click = Undo previous point" });
+		context_.setFeatureHelp(
+			{ "Shape Drawing",
+			  fmt::format("{} = Accept", key_accept),
+			  fmt::format("{} = Cancel", key_cancel),
+			  "Left Click = Draw point",
+			  "Right Click = Undo previous point" });
 		mapeditor::showShapeDrawPanel(true);
 	}
 	else
 	{
-		context_.setFeatureHelp({ "Line Drawing",
-								  fmt::format("{} = Accept", key_accept),
-								  fmt::format("{} = Cancel", key_cancel),
-								  "Left Click = Draw point",
-								  "Right Click = Undo previous point",
-								  "Shift = Snap to nearest vertex" });
+		context_.setFeatureHelp(
+			{ "Line Drawing",
+			  fmt::format("{} = Accept", key_accept),
+			  fmt::format("{} = Cancel", key_cancel),
+			  "Left Click = Draw point",
+			  "Right Click = Undo previous point",
+			  "Shift = Snap to nearest vertex" });
 	}
 }
 

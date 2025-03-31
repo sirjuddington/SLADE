@@ -808,7 +808,7 @@ int MapLine::lowestCeiling() const
 	if (side2_)
 	{
 		const int ceiling2 = side2_->sector()->ceiling().height;
-		if (ceiling2<lowestCeiling)
+		if (ceiling2 < lowestCeiling)
 			lowestCeiling = ceiling2;
 	}
 	return lowestCeiling;
@@ -823,7 +823,7 @@ int MapLine::highestCeiling() const
 	if (side2_)
 	{
 		const int ceiling2 = side2_->sector()->ceiling().height;
-		if (ceiling2>highestCeiling)
+		if (ceiling2 > highestCeiling)
 			highestCeiling = ceiling2;
 	}
 	return highestCeiling;
@@ -838,7 +838,7 @@ int MapLine::lowestFloor() const
 	if (side2_)
 	{
 		const int floor2 = side2_->sector()->floor().height;
-		if (floor2<lowestFloor)
+		if (floor2 < lowestFloor)
 			lowestFloor = floor2;
 	}
 	return lowestFloor;
@@ -853,7 +853,7 @@ int MapLine::highestFloor() const
 	if (side2_)
 	{
 		const int floor2 = side2_->sector()->floor().height;
-		if (floor2>highestFloor)
+		if (floor2 > highestFloor)
 			highestFloor = floor2;
 	}
 	return highestFloor;

@@ -271,8 +271,9 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
-		log::error(wxString::Format(
-			"Entry \"%s\" is of type \"%s\" which does not support offsets", entry.name(), type->name()));
+		log::error(
+			wxString::Format(
+				"Entry \"%s\" is of type \"%s\" which does not support offsets", entry.name(), type->name()));
 		return false;
 	}
 

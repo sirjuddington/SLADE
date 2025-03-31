@@ -69,18 +69,20 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	cp_colour1_     = new wxColourPickerCtrl(this, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, cp_flags);
 	cp_colour2_     = new wxColourPickerCtrl(this, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, cp_flags);
 	choice_presets_ = new wxChoice(this, -1);
-	choice_presets_->Append(wxutil::arrayString({ "Default",
-												  "Black",
-												  "Black (Checkered)",
-												  "Cyan",
-												  "Cyan (Checkered)",
-												  "Magenta",
-												  "Magenta (Checkered)",
-												  "White",
-												  "White (Checkered)",
-												  "Yellow",
-												  "Yellow (Checkered)",
-												  "Vintage Id Software" }));
+	choice_presets_->Append(
+		wxutil::arrayString(
+			{ "Default",
+			  "Black",
+			  "Black (Checkered)",
+			  "Cyan",
+			  "Cyan (Checkered)",
+			  "Magenta",
+			  "Magenta (Checkered)",
+			  "White",
+			  "White (Checkered)",
+			  "Yellow",
+			  "Yellow (Checkered)",
+			  "Vintage Id Software" }));
 	choice_browser_bg_ = new wxChoice(this, -1);
 	choice_browser_bg_->Append(
 		wxutil::arrayString({ "Transparent background (as above)", "System background", "Black background" }));

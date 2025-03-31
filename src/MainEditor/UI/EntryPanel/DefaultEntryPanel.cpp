@@ -193,8 +193,9 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 
 		entries_.push_back(entry);
 	}
-	label_index_->SetLabel(wxString::Format(
-		"Entry Indices: from %lu to %lu", static_cast<unsigned long>(min), static_cast<unsigned long>(max)));
+	label_index_->SetLabel(
+		wxString::Format(
+			"Entry Indices: from %lu to %lu", static_cast<unsigned long>(min), static_cast<unsigned long>(max)));
 	if (gfx)
 	{
 		frame_actions_->Show(true);

@@ -682,11 +682,12 @@ bool ObjectEdit::begin()
 	auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
 	auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 	auto key_toggle = KeyBind::bind("me2d_begin_object_edit").keysAsString();
-	context_.setFeatureHelp({ "Object Edit",
-							  fmt::format("{} = Accept", key_accept),
-							  fmt::format("{} or {} = Cancel", key_cancel, key_toggle),
-							  "Shift = Disable grid snapping",
-							  "Ctrl = Rotate" });
+	context_.setFeatureHelp(
+		{ "Object Edit",
+		  fmt::format("{} = Accept", key_accept),
+		  fmt::format("{} or {} = Cancel", key_cancel, key_toggle),
+		  "Shift = Disable grid snapping",
+		  "Ctrl = Rotate" });
 
 	return true;
 }

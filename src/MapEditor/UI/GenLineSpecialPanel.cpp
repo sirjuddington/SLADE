@@ -65,14 +65,16 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Trigger
 	label_props_[0]  = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
 	choice_props_[0] = new wxChoice(this, -1);
-	choice_props_[0]->Set(wxutil::arrayString({ "Cross (Once)",
-												"Cross (Repeatable)",
-												"Switch (Once)",
-												"Switch (Repeatable)",
-												"Shoot (Once)",
-												"Shoot (Repeatable)",
-												"Door (Once)",
-												"Door (Repeatable)" }));
+	choice_props_[0]->Set(
+		wxutil::arrayString(
+			{ "Cross (Once)",
+			  "Cross (Repeatable)",
+			  "Switch (Once)",
+			  "Switch (Repeatable)",
+			  "Shoot (Once)",
+			  "Shoot (Repeatable)",
+			  "Door (Once)",
+			  "Door (Repeatable)" }));
 	choice_props_[0]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
 
 	// Other properties

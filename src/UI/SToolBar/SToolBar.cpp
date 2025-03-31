@@ -447,7 +447,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 	SetDoubleBuffered(true);
 #endif
 
-		// Set background colour
+	// Set background colour
 #ifdef __WXMSW__
 	if (main_toolbar)
 	{

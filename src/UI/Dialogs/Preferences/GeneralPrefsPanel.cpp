@@ -64,19 +64,21 @@ EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create + Layout controls
-	SetSizer(wxutil::layoutVertically({
-		cb_archive_load_              = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
-		cb_archive_close_tab_         = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
-		cb_wads_root_                 = new wxCheckBox(this, -1, "Auto open nested wad archives"),
-		cb_backup_archives_           = new wxCheckBox(this, -1, "Back up archives"),
-		cb_archive_dir_ignore_hidden_ = new wxCheckBox(this, -1, "Ignore hidden files in directories"),
-		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL),
+	SetSizer(
+		wxutil::layoutVertically(
+			{
+				cb_archive_load_      = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
+				cb_archive_close_tab_ = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
+				cb_wads_root_         = new wxCheckBox(this, -1, "Auto open nested wad archives"),
+				cb_backup_archives_   = new wxCheckBox(this, -1, "Back up archives"),
+				cb_archive_dir_ignore_hidden_ = new wxCheckBox(this, -1, "Ignore hidden files in directories"),
+				new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL),
 #ifdef __WXMSW__
-		cb_update_check_      = new wxCheckBox(this, -1, "Check for updates on startup"),
-		cb_update_check_beta_ = new wxCheckBox(this, -1, "Include beta versions when checking for updates"),
+				cb_update_check_      = new wxCheckBox(this, -1, "Check for updates on startup"),
+				cb_update_check_beta_ = new wxCheckBox(this, -1, "Include beta versions when checking for updates"),
 #endif
-		cb_confirm_exit_ = new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
-	}));
+				cb_confirm_exit_ = new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
+			}));
 
 	cb_wads_root_->SetToolTip(
 		"When opening a zip or directory, automatically open all wad entries in the root directory");

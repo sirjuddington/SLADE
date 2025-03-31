@@ -23,8 +23,8 @@ public:
 
 	enum class AlignType
 	{
-		AlignX = 1,
-		AlignY = 2,
+		AlignX  = 1,
+		AlignY  = 2,
 		AlignXY = AlignX | AlignY
 	};
 
@@ -86,11 +86,11 @@ private:
 	struct AlignmentJob
 	{
 		MapSide* side;
-		int tex_offset_x;
+		int      tex_offset_x;
 	};
 
 	// Helper functions for texture auto-alignment
-	int getTextureTopHeight(MapLine* firstLine, mapeditor::ItemType wall_type, int tex_height) const;
+	int         getTextureTopHeight(MapLine* firstLine, mapeditor::ItemType wall_type, int tex_height) const;
 	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x);
 	static void enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x);
 };

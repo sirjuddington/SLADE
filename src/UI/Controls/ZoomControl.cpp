@@ -190,7 +190,7 @@ void ZoomControl::setup()
 	for (const auto& pct : zoom_percents)
 		values.Add(fmt::format("{}%", pct));
 
-		// Combobox size
+	// Combobox size
 #ifdef WIN32
 	wxSize cbsize(ui::scalePx(64), -1);
 #else

@@ -1949,10 +1949,11 @@ bool MapEditContext::handleAction(string_view id)
 			// Setup help text
 			auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
 			auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
-			setFeatureHelp({ "Tag Edit",
-							 fmt::format("{} = Accept", key_accept),
-							 fmt::format("{} = Cancel", key_cancel),
-							 "Left Click = Toggle tagged sector" });
+			setFeatureHelp(
+				{ "Tag Edit",
+				  fmt::format("{} = Accept", key_accept),
+				  fmt::format("{} = Cancel", key_cancel),
+				  "Left Click = Toggle tagged sector" });
 		}
 
 		return true;
@@ -2419,10 +2420,11 @@ CONSOLE_COMMAND(m_check, 0, true)
 
 		log::console("Available map checks:");
 		for (auto a = 0; a < MapCheck::NumStandardChecks; ++a)
-			log::console(fmt::format(
-				"{}: Check for {}",
-				MapCheck::standardCheckId(static_cast<MapCheck::StandardCheck>(a)),
-				MapCheck::standardCheckDesc(static_cast<MapCheck::StandardCheck>(a))));
+			log::console(
+				fmt::format(
+					"{}: Check for {}",
+					MapCheck::standardCheckId(static_cast<MapCheck::StandardCheck>(a)),
+					MapCheck::standardCheckDesc(static_cast<MapCheck::StandardCheck>(a))));
 
 		log::console("all: Run all checks");
 

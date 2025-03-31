@@ -88,7 +88,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	if (list_font_monospace)
 		item_attr_->SetFont(font_monospace_);
 
-		// Bind events
+	// Bind events
 #ifndef __WXMSW__
 	Bind(wxEVT_KEY_DOWN, &VirtualListView::onKeyDown, this);
 #endif

@@ -111,8 +111,9 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 
 		// --- Line/side info ---
 		if (item.real_index >= 0)
-			info_.push_back(fmt::format(
-				"3D floor line {} on Line #{}", line->index(), map->side(item.real_index)->parentLine()->index()));
+			info_.push_back(
+				fmt::format(
+					"3D floor line {} on Line #{}", line->index(), map->side(item.real_index)->parentLine()->index()));
 		else
 			info_.push_back(fmt::format("Line #{}", line->index()));
 		if (side == line->s1())

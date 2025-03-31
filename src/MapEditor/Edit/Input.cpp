@@ -932,10 +932,11 @@ void Input::handleKeyBind2d(string_view name)
 					// Setup help text
 					auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
 					auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
-					context_.setFeatureHelp({ "Tag Edit",
-											  fmt::format("{} = Accept", key_accept),
-											  fmt::format("{} = Cancel", key_cancel),
-											  "Left Click = Toggle tagged sector" });
+					context_.setFeatureHelp(
+						{ "Tag Edit",
+						  fmt::format("{} = Accept", key_accept),
+						  fmt::format("{} = Cancel", key_cancel),
+						  "Left Click = Toggle tagged sector" });
 				}
 			}
 		}

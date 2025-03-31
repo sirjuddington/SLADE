@@ -296,5 +296,3 @@ void drawing::setTextState(bool set) {}
 // is called and restored after (SFML only, does nothing for FTGL)
 // -----------------------------------------------------------------------------
 void drawing::enableTextStateReset(bool enable) {}
-
-

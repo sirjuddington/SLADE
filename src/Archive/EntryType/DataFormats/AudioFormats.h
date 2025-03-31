@@ -911,8 +911,11 @@ public:
 				if (comm_found && ssnd_found)
 					return MATCH_TRUE;
 				if (debugaiff)
-					log::info(wxString::Format(
-						"COMM was %sfound and SSND was %sfound", comm_found ? "" : "not ", ssnd_found ? "" : "not "));
+					log::info(
+						wxString::Format(
+							"COMM was %sfound and SSND was %sfound",
+							comm_found ? "" : "not ",
+							ssnd_found ? "" : "not "));
 			}
 		}
 		return MATCH_FALSE;

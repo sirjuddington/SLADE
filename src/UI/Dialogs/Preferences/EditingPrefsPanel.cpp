@@ -216,7 +216,8 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	// Bind events
 	choice_category_->Bind(
 		wxEVT_CHOICE,
-		[&](wxCommandEvent&) {
+		[&](wxCommandEvent&)
+		{
 			((ExternalEditorList*)lv_ext_editors_)
 				->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
 		});

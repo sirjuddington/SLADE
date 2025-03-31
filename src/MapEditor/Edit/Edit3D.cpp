@@ -416,12 +416,12 @@ void Edit3D::changeSectorHeight(int amount) const
 void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 {
 	// Check align type
-	if (align_type!=AlignType::AlignX && align_type!=AlignType::AlignY && align_type!=AlignType::AlignXY)
+	if (align_type != AlignType::AlignX && align_type != AlignType::AlignY && align_type != AlignType::AlignXY)
 	{
 		log::error("Edit3d::autoAlign: alignType is invalid");
 		return;
 	}
-	
+
 	// Check start is a wall
 	if (start.type != ItemType::WallBottom && start.type != ItemType::WallMiddle && start.type != ItemType::WallTop)
 		return;
@@ -448,11 +448,11 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 	auto gl_tex = mapeditor::textureManager()
 					  .texture(tex, game::configuration().featureSupported(game::Feature::MixTexFlats))
 					  .gl_id;
-	int tex_width = -1;
+	int tex_width  = -1;
 	int tex_height = -1;
 	if (gl_tex)
 	{
-		tex_width = gl::Texture::info(gl_tex).size.x;
+		tex_width  = gl::Texture::info(gl_tex).size.x;
 		tex_height = gl::Texture::info(gl_tex).size.y;
 	}
 	else if (align_type == AlignType::AlignY || align_type == AlignType::AlignXY)
@@ -470,9 +470,9 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 	// We therefore store the/a height at which the top of the texture
 	// on the respective wall portion would reside.
 	// We use that later to determine the proper y-offset.
-	auto first_line = first_side->parentLine();
-	int first_tex_top_height = getTextureTopHeight(first_line, start.type, tex_height);
-	
+	auto first_line           = first_side->parentLine();
+	int  first_tex_top_height = getTextureTopHeight(first_line, start.type, tex_height);
+
 	// Adjust firstTexTopHeight with texture Y offset
 	first_tex_top_height += first_side->texOffsetY();
 
@@ -480,11 +480,11 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 	string axis_names;
 	switch (align_type)
 	{
-	case AlignType::AlignX:  axis_names = "X axis"; break;
-	case AlignType::AlignY:  axis_names = "Y axis"; break;
+	case AlignType::AlignX: axis_names = "X axis"; break;
+	case AlignType::AlignY: axis_names = "Y axis"; break;
 	case AlignType::AlignXY: axis_names = "X and Y axis"; break;
 	}
-	context_.beginUndoRecord("Auto Align on "+axis_names, true, false, false);
+	context_.beginUndoRecord("Auto Align on " + axis_names, true, false, false);
 
 	// Queue of jobs to process
 	std::queue<AlignmentJob> jobs;
@@ -494,7 +494,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 
 	// Enter the first job into the queue
 	AlignmentJob first_job;
-	first_job.side = first_side;
+	first_job.side         = first_side;
 	first_job.tex_offset_x = first_side->texOffsetX();
 	jobs.push(first_job);
 
@@ -538,16 +538,18 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 		case AlignType::AlignY:
 		case AlignType::AlignXY:
 			// First we need to determine the top height for the respective texture
-			int current_tex_top_height = -1;
-			auto current_line = job.side->parentLine();
-			current_tex_top_height = getTextureTopHeight(current_line, start.type, tex_height);
- 			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
+			int  current_tex_top_height = -1;
+			auto current_line           = job.side->parentLine();
+			current_tex_top_height      = getTextureTopHeight(current_line, start.type, tex_height);
+			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
 			int current_offset_y = first_tex_top_height - current_tex_top_height;
 
 			// Adjust the y-offset (but only, if we're not adjusting the middle part on a two-sided wall)
-			if (start.type != ItemType::WallMiddle || !game::configuration().lineBasicFlagSet("twosided", current_line, context_.mapDesc().format))
+			if (start.type != ItemType::WallMiddle
+				|| !game::configuration().lineBasicFlagSet("twosided", current_line, context_.mapDesc().format))
 			{
-				if (tex_height > 0) {
+				if (tex_height > 0)
+				{
 					while (current_offset_y > tex_height)
 						current_offset_y -= tex_height;
 					while (current_offset_y < 0)
@@ -563,7 +565,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 		enqueueConnectedLines(jobs, job.side->startVertex(), job.tex_offset_x);
 
 		// Enqueue all sides connected to the end vertex of the current side
-		const int side_len = (int)math::round(job.side->parentLine()->length());
+		const int side_len     = (int)math::round(job.side->parentLine()->length());
 		const int end_offset_x = job.tex_offset_x + side_len;
 		enqueueConnectedLines(jobs, job.side->endVertex(), end_offset_x);
 	}
@@ -572,7 +574,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 	context_.endUndoRecord();
 
 	// Editor message
-	context_.addEditorMessage("Auto-aligned on "+axis_names);
+	context_.addEditorMessage("Auto-aligned on " + axis_names);
 }
 
 // -----------------------------------------------------------------------------
@@ -1699,7 +1701,8 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 	assert(wallType == ItemType::WallBottom || wallType == ItemType::WallMiddle || wallType == ItemType::WallTop);
 	if (wallType == ItemType::WallBottom)
 	{
-		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", firstLine, context_.mapDesc().format);
+		const bool unpegged = game::configuration().lineBasicFlagSet(
+			"dontpegbottom", firstLine, context_.mapDesc().format);
 		// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
 		// Otherwise: Top of texture is at the highest floor
 		if (unpegged)
@@ -1709,7 +1712,8 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 	}
 	else if (wallType == ItemType::WallMiddle)
 	{
-		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", firstLine, context_.mapDesc().format);
+		const bool unpegged = game::configuration().lineBasicFlagSet(
+			"dontpegbottom", firstLine, context_.mapDesc().format);
 		// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
 		// Otherwise: Top of texture is at the lowest ceiling
 		if (unpegged)
@@ -1722,7 +1726,8 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 		// wallType == ItemType::WallTop
 		// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
 		// Otherwise: Top of texture is at lowest ceiling plus texture height
-		const bool unpegged = game::configuration().lineBasicFlagSet("dontpegtop", firstLine, context_.mapDesc().format);
+		const bool unpegged = game::configuration().lineBasicFlagSet(
+			"dontpegtop", firstLine, context_.mapDesc().format);
 		if (unpegged)
 			return firstLine->highestCeiling();
 		else
@@ -1737,7 +1742,7 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 // -----------------------------------------------------------------------------
 void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x)
 {
-	for (MapLine* line: common_vertex->connectedLines())
+	for (MapLine* line : common_vertex->connectedLines())
 	{
 		auto s1 = line->s1();
 		if (s1)
@@ -1756,7 +1761,7 @@ void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* co
 void Edit3D::enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x)
 {
 	AlignmentJob job;
-	job.side = side;
+	job.side         = side;
 	job.tex_offset_x = tex_offset_x;
 	if (side->endVertex() == common_vertex)
 	{

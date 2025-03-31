@@ -187,7 +187,7 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	wxString darkmodes[]     = { "Off", "Use System Setting", "On" };
 	choice_windows_darkmode_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, darkmodes);
 	choice_windows_darkmode_->SetToolTip("Only supported on Windows 10 20H1 or later");
-	cb_web_dark_theme_       = new wxCheckBox(panel, -1, "Use dark theme for web content *");
+	cb_web_dark_theme_ = new wxCheckBox(panel, -1, "Use dark theme for web content *");
 	cb_web_dark_theme_->SetToolTip("Use a dark theme for web content eg. the Start Page and Online Documentation");
 	cb_file_browser_        = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
 	cb_list_monospace_      = new wxCheckBox(panel, -1, "Use monospaced font for lists");
@@ -206,7 +206,8 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	int row = 0;
 	gb_sizer->Add(cb_start_page_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 #if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
-	gb_sizer->Add(new wxStaticText(panel, -1, "Use dark UI theme if supported:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, "Use dark UI theme if supported:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_windows_darkmode_, { row, 1 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 #else

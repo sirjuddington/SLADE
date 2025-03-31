@@ -1660,8 +1660,9 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom())
 			radius = renderer_2d_.scaledRadius(radius);
-		animations_.push_back(std::make_unique<MCAThingSelection>(
-			app::runTimer(), t->xPos(), t->yPos(), radius, renderer_2d_.viewScaleInv(), selected));
+		animations_.push_back(
+			std::make_unique<MCAThingSelection>(
+				app::runTimer(), t->xPos(), t->yPos(), radius, renderer_2d_.viewScaleInv(), selected));
 	}
 
 	// 2d mode line
@@ -1733,8 +1734,9 @@ void Renderer::animateHilightChange(const mapeditor::Item& old_item, MapObject* 
 	else
 	{
 		// 3d mode
-		animations_.push_back(std::make_unique<MCAHilightFade3D>(
-			app::runTimer(), old_item.index, old_item.type, &renderer_3d_, anim_flash_level_));
+		animations_.push_back(
+			std::make_unique<MCAHilightFade3D>(
+				app::runTimer(), old_item.index, old_item.type, &renderer_3d_, anim_flash_level_));
 	}
 
 	// Reset hilight flash

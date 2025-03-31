@@ -351,8 +351,9 @@ protected:
 		// Check image size
 		if (!((image.width() == 4 && image.height() == 16) || (image.width() == 16 && image.height() == 23)))
 		{
-			log::error(wxString::Format(
-				"No point in converting to 4-bit format, image isn't a valid Hexen size (4x16 or 16x23)"));
+			log::error(
+				wxString::Format(
+					"No point in converting to 4-bit format, image isn't a valid Hexen size (4x16 or 16x23)"));
 			return false;
 		}
 

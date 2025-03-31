@@ -806,8 +806,9 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 			}
 			else
 			{
-				log::error(wxString::Format(
-					"Skipping cleaning TEXTUREx entry %s since this archive has no patch table.", entry->name()));
+				log::error(
+					wxString::Format(
+						"Skipping cleaning TEXTUREx entry %s since this archive has no patch table.", entry->name()));
 				// Skip cleaning this texturex entry if there is no patch table for us to load it with
 				continue;
 			}
@@ -1196,8 +1197,8 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 	}
 
 	// Setup some path strings
-	auto srcfile       = app::path(fmt::format("{}.dh", entry->nameNoExt()), app::Dir::Temp);
-	auto dehfile       = app::path(fmt::format("{}.deh", entry->nameNoExt()), app::Dir::Temp);
+	auto srcfile = app::path(fmt::format("{}.dh", entry->nameNoExt()), app::Dir::Temp);
+	auto dehfile = app::path(fmt::format("{}.deh", entry->nameNoExt()), app::Dir::Temp);
 
 	// Find/export any resource libraries
 	Archive::SearchOptions sopt;
@@ -1221,7 +1222,8 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 	entry->exportFile(srcfile);
 
 	// Execute DECOHack
-	wxString      command = "\"" + path_java + "\" -cp \"" + path_decohack + "\"" + " -Xms64M -Xmx1G net.mtrop.doom.tools.DecoHackMain \"" + srcfile + "\" -o \"" + dehfile + "\"";
+	wxString command = "\"" + path_java + "\" -cp \"" + path_decohack + "\""
+					   + " -Xms64M -Xmx1G net.mtrop.doom.tools.DecoHackMain \"" + srcfile + "\" -o \"" + dehfile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
 	wxGetApp().SetTopWindow(parent);
@@ -1680,14 +1682,16 @@ bool entryoperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, b
 				wxString first = tz.getToken();
 				if (last.length() > 8)
 				{
-					log::error(wxString::Format(
-						"String %s is too long for an animated %s name!", last, (texture ? "texture" : "flat")));
+					log::error(
+						wxString::Format(
+							"String %s is too long for an animated %s name!", last, (texture ? "texture" : "flat")));
 					return false;
 				}
 				if (first.length() > 8)
 				{
-					log::error(wxString::Format(
-						"String %s is too long for an animated %s name!", first, (texture ? "texture" : "flat")));
+					log::error(
+						wxString::Format(
+							"String %s is too long for an animated %s name!", first, (texture ? "texture" : "flat")));
 					return false;
 				}
 
@@ -1811,12 +1815,13 @@ void fixpngsrc(ArchiveEntry* entry)
 		uint32_t crc = misc::crc(data.data() + pointer + 4, 4 + chsz);
 		if (crc != memory::readB32(data.data(), pointer + 8 + chsz))
 		{
-			log::error(wxString::Format(
-				"Chunk %c%c%c%c has bad CRC",
-				data[pointer + 4],
-				data[pointer + 5],
-				data[pointer + 6],
-				data[pointer + 7]));
+			log::error(
+				wxString::Format(
+					"Chunk %c%c%c%c has bad CRC",
+					data[pointer + 4],
+					data[pointer + 5],
+					data[pointer + 6],
+					data[pointer + 7]));
 			neededchange              = true;
 			data[pointer + 8 + chsz]  = crc >> 24;
 			data[pointer + 9 + chsz]  = (crc & 0x00ffffff) >> 16;

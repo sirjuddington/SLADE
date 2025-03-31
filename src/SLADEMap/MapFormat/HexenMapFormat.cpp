@@ -162,14 +162,15 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 			args[i] = data.args[i];
 
 		// Create thing
-		map_data.addThing(std::make_unique<MapThing>(
-			Vec3d{ (double)data.x, (double)data.y, (double)data.z },
-			data.type,
-			data.angle,
-			data.flags,
-			args,
-			data.tid,
-			data.special));
+		map_data.addThing(
+			std::make_unique<MapThing>(
+				Vec3d{ (double)data.x, (double)data.y, (double)data.z },
+				data.type,
+				data.angle,
+				data.flags,
+				args,
+				data.tid,
+				data.special));
 	}
 
 	log::info(3, "Read {} things", map_data.things().size());

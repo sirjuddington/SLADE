@@ -1814,12 +1814,13 @@ bool ArchivePanel::importEntry()
 				}
 				// Warn if the offsets couldn't be written
 				if (ok && si.format() && !si.format()->writeOffset(si, entry, offset))
-					log::warning(wxString::Format(
-						"Old offset information [%d, %d] couldn't be "
-						"preserved in the new image format for image %s.",
-						offset.x,
-						offset.y,
-						entry->name()));
+					log::warning(
+						wxString::Format(
+							"Old offset information [%d, %d] couldn't be "
+							"preserved in the new image format for image %s.",
+							offset.x,
+							offset.y,
+							entry->name()));
 			}
 
 			// Check if the entry type changed
