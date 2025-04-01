@@ -13,6 +13,7 @@ endif()
 OPTION(NO_WEBVIEW "Disable wxWebview usage (for start page and documentation)" OFF)
 OPTION(NO_LUA "Disable Lua/Scripting features to reduce compile time" OFF)
 OPTION(NO_FLUIDSYNTH "Disable FluidSynth MIDI playback" OFF)
+OPTION(NO_WAYLAND "Disable experimental support for wayland" ON)
 OPTION(BUILD_PK3 "Build the SLADE pk3 file from dist/res" ON)
 OPTION(BUILD_WX "Download and build wxWidgets instead of using system-installed libs" OFF)
 
