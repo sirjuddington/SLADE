@@ -77,11 +77,11 @@ bool ModMusic::openFromFile(const string& filename)
 	dumb_module_ = dumb_load_any(filename.c_str(), 0, 0);
 	if (dumb_module_ != nullptr)
 	{
-		#if (SFML_VERSION_MAJOR > 2)
+#if (SFML_VERSION_MAJOR > 2)
 		initialize(2, 44100, getChannelMap());
-		#else
+#else
 		initialize(2, 44100);
-		#endif
+#endif
 		return true;
 	}
 	else
@@ -107,11 +107,11 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 	dumb_module_ = dumb_read_any(dumbfile_open_memory(reinterpret_cast<const char*>(data), size), 0, 0);
 	if (dumb_module_ != nullptr)
 	{
-		#if (SFML_VERSION_MAJOR > 2)
+#if (SFML_VERSION_MAJOR > 2)
 		initialize(2, 44100, getChannelMap());
-		#else
+#else
 		initialize(2, 44100);
-		#endif
+#endif
 		dumb_player_ = duh_start_sigrenderer(dumb_module_, 0, 2, 0);
 		return true;
 	}

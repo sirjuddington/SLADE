@@ -168,8 +168,9 @@ bool DoomMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_d
 	for (size_t a = 0; a < nv; a++)
 	{
 		ui::setSplashProgress(p + (static_cast<float>(a) / nv) * 0.2f);
-		map_data.addVertex(std::make_unique<MapVertex>(
-			Vec2d{ static_cast<double>(vert_data[a].x), static_cast<double>(vert_data[a].y) }));
+		map_data.addVertex(
+			std::make_unique<MapVertex>(
+				Vec2d{ static_cast<double>(vert_data[a].x), static_cast<double>(vert_data[a].y) }));
 	}
 
 	log::info(3, "Read {} vertices", map_data.vertices().size());
@@ -204,12 +205,13 @@ bool DoomMapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		ui::setSplashProgress(p + (static_cast<float>(a) / ns) * 0.2f);
 
 		// Add side
-		map_data.addSide(std::make_unique<MapSide>(
-			map_data.sectors().at(side_data[a].sector),
-			strutil::viewFromChars(side_data[a].tex_upper, 8),
-			strutil::viewFromChars(side_data[a].tex_middle, 8),
-			strutil::viewFromChars(side_data[a].tex_lower, 8),
-			Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
+		map_data.addSide(
+			std::make_unique<MapSide>(
+				map_data.sectors().at(side_data[a].sector),
+				strutil::viewFromChars(side_data[a].tex_upper, 8),
+				strutil::viewFromChars(side_data[a].tex_middle, 8),
+				strutil::viewFromChars(side_data[a].tex_lower, 8),
+				Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
 	}
 
 	log::info(3, "Read {} sides", map_data.sides().size());
@@ -317,14 +319,15 @@ bool DoomMapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_da
 		const auto& data = sect_data[a];
 
 		// Add sector
-		map_data.addSector(std::make_unique<MapSector>(
-			data.f_height,
-			strutil::viewFromChars(data.f_tex, 8),
-			data.c_height,
-			strutil::viewFromChars(data.c_tex, 8),
-			data.light,
-			data.special,
-			data.tag));
+		map_data.addSector(
+			std::make_unique<MapSector>(
+				data.f_height,
+				strutil::viewFromChars(data.f_tex, 8),
+				data.c_height,
+				strutil::viewFromChars(data.c_tex, 8),
+				data.light,
+				data.special,
+				data.tag));
 	}
 
 	log::info(3, "Read {} sectors", map_data.sectors().size());
@@ -357,11 +360,12 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 	for (size_t a = 0; a < nt; a++)
 	{
 		ui::setSplashProgress(p + (static_cast<float>(a) / nt) * 0.2f);
-		MapThing* thing = map_data.addThing(std::make_unique<MapThing>(
-			Vec3d{ static_cast<double>(thng_data[a].x), static_cast<double>(thng_data[a].y), 0. },
-			thng_data[a].type,
-			thng_data[a].angle,
-			thng_data[a].flags));
+		MapThing* thing = map_data.addThing(
+			std::make_unique<MapThing>(
+				Vec3d{ static_cast<double>(thng_data[a].x), static_cast<double>(thng_data[a].y), 0. },
+				thng_data[a].type,
+				thng_data[a].angle,
+				thng_data[a].flags));
 
 		if (game::configuration().currentGame() == "srb2") // Sonic robo blast 2
 		{

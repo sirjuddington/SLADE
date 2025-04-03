@@ -580,10 +580,11 @@ void MapRenderer2D::renderThingOverlays(
 			float       radius = tt.shrinkOnZoom() ? scaledRadius(tt.radius()) : tt.radius();
 
 			// Draw simple rect
-			dc.drawRect({ thing->xPos() + offset.x - radius,
-						  thing->yPos() + offset.y - radius,
-						  thing->xPos() + offset.x + radius,
-						  thing->yPos() + offset.y + radius });
+			dc.drawRect(
+				{ thing->xPos() + offset.x - radius,
+				  thing->yPos() + offset.y - radius,
+				  thing->xPos() + offset.x + radius,
+				  thing->yPos() + offset.y + radius });
 		}
 
 		dc.colour.a *= 2;

@@ -123,8 +123,9 @@ void PointSpriteBuffer::initVAO()
 	// Create+init square buffer
 	buffer_square_ = std::make_unique<Buffer<glm::vec2>>();
 	buffer_square_->bind();
-	buffer_square_->upload(vector<glm::vec2>{
-		{ -1.0f, -1.0f }, { -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, -1.0f }, { -1.0f, -1.0f } });
+	buffer_square_->upload(
+		vector<glm::vec2>{
+			{ -1.0f, -1.0f }, { -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, -1.0f }, { -1.0f, -1.0f } });
 
 	// Setup vertex attributes for square
 

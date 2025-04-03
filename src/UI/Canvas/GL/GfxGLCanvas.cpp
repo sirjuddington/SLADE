@@ -182,12 +182,13 @@ void GfxGLCanvas::drawCropRect(gl::draw2d::Context& dc) const
 	dc.line_thickness = 1.0f;
 	dc.colour.set(0, 0, 0, 255);
 	dc.texture = 0;
-	dc.drawLines(vector<Rectf>{
-		{ c_left, s_top, c_left, s_bottom },    // Left
-		{ s_left, c_top, s_right, c_top },      // Top
-		{ c_right, s_top, c_right, s_bottom },  // Right
-		{ s_left, c_bottom, s_right, c_bottom } // Bottom
-	});
+	dc.drawLines(
+		vector<Rectf>{
+			{ c_left, s_top, c_left, s_bottom },    // Left
+			{ s_left, c_top, s_right, c_top },      // Top
+			{ c_right, s_top, c_right, s_bottom },  // Right
+			{ s_left, c_bottom, s_right, c_bottom } // Bottom
+		});
 
 	// Shade cropped-out area
 	dc.colour.set(0, 0, 0, 100);

@@ -117,8 +117,9 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 
 		// --- Line/side info ---
 		if (item.real_index >= 0)
-			info_.push_back(fmt::format(
-				"3D floor line {} on Line #{}", line->index(), map->side(item.real_index)->parentLine()->index()));
+			info_.push_back(
+				fmt::format(
+					"3D floor line {} on Line #{}", line->index(), map->side(item.real_index)->parentLine()->index()));
 		else
 			info_.push_back(fmt::format("Line #{}", line->index()));
 		if (side == line->s1())
@@ -474,11 +475,12 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 		// Position
 		if (mapeditor::editContext().mapDesc().format == MapFormat::Hexen
 			|| mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
-			info_.push_back(fmt::format(
-				"Position: {}, {}, {}",
-				static_cast<int>(thing->xPos()),
-				static_cast<int>(thing->yPos()),
-				static_cast<int>(thing->zPos())));
+			info_.push_back(
+				fmt::format(
+					"Position: {}, {}, {}",
+					static_cast<int>(thing->xPos()),
+					static_cast<int>(thing->yPos()),
+					static_cast<int>(thing->zPos())));
 		else
 			info_.push_back(
 				fmt::format("Position: {}, {}", static_cast<int>(thing->xPos()), static_cast<int>(thing->yPos())));

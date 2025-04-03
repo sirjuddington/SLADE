@@ -35,6 +35,7 @@
 #include "App.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
 #include <fluidsynth.h>
 
 using namespace slade;

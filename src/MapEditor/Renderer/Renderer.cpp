@@ -66,6 +66,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
 #include <deque>
 #include <numeric>
 
@@ -1606,12 +1607,13 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 			return;
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCAThingSelection>(
-			app::runTimer(),
-			vector{ t },
-			1.0 / view_->scale(true).x,
-			thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
-			selected));
+		animations_.push_back(
+			std::make_unique<MCAThingSelection>(
+				app::runTimer(),
+				vector{ t },
+				1.0 / view_->scale(true).x,
+				thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+				selected));
 	}
 
 	// 2d mode line
@@ -1635,8 +1637,9 @@ void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected
 			return;
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCAVertexSelection>(
-			app::runTimer(), vector{ vertex }, renderer_2d_->vertexRadius(), selected));
+		animations_.push_back(
+			std::make_unique<MCAVertexSelection>(
+				app::runTimer(), vector{ vertex }, renderer_2d_->vertexRadius(), selected));
 	}
 
 	// 2d mode sector
@@ -1712,13 +1715,15 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 
 	// Animate selected vertices
 	if (!vertices_selected.empty())
-		animations_.push_back(std::make_unique<MCAVertexSelection>(
-			app::runTimer(), vertices_selected, renderer_2d_->vertexRadius(), true));
+		animations_.push_back(
+			std::make_unique<MCAVertexSelection>(
+				app::runTimer(), vertices_selected, renderer_2d_->vertexRadius(), true));
 
 	// Animate deselected vertices
 	if (!vertices_deselected.empty())
-		animations_.push_back(std::make_unique<MCAVertexSelection>(
-			app::runTimer(), vertices_deselected, renderer_2d_->vertexRadius(), false));
+		animations_.push_back(
+			std::make_unique<MCAVertexSelection>(
+				app::runTimer(), vertices_deselected, renderer_2d_->vertexRadius(), false));
 
 	// Animate selected lines
 	if (!lines_selected.empty())
@@ -1738,21 +1743,23 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 
 	// Animate selected things
 	if (!things_selected.empty())
-		animations_.push_back(std::make_unique<MCAThingSelection>(
-			app::runTimer(),
-			things_selected,
-			view_->scale(true).x,
-			thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
-			true));
+		animations_.push_back(
+			std::make_unique<MCAThingSelection>(
+				app::runTimer(),
+				things_selected,
+				view_->scale(true).x,
+				thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+				true));
 
 	// Animate deselected things
 	if (!things_deselected.empty())
-		animations_.push_back(std::make_unique<MCAThingSelection>(
-			app::runTimer(),
-			things_deselected,
-			view_->scale(true).x,
-			thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
-			false));
+		animations_.push_back(
+			std::make_unique<MCAThingSelection>(
+				app::runTimer(),
+				things_deselected,
+				view_->scale(true).x,
+				thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+				false));
 }
 
 // -----------------------------------------------------------------------------
@@ -1769,8 +1776,9 @@ void Renderer::animateHilightChange(const mapeditor::Item& old_item, MapObject* 
 	else
 	{
 		// 3d mode
-		animations_.push_back(std::make_unique<MCAHilightFade3D>(
-			app::runTimer(), old_item.index, old_item.type, renderer_3d_.get(), anim_flash_level_));
+		animations_.push_back(
+			std::make_unique<MCAHilightFade3D>(
+				app::runTimer(), old_item.index, old_item.type, renderer_3d_.get(), anim_flash_level_));
 	}
 
 	// Reset hilight flash

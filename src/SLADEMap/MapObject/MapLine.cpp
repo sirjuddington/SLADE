@@ -823,6 +823,66 @@ bool MapLine::intersects(const MapLine* other, Vec2d& intersect_point) const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the height of the lowest ceiling of any of the adjacent sectors
+// -----------------------------------------------------------------------------
+int MapLine::lowestCeiling() const
+{
+	int lowestCeiling = side1_->sector()->ceiling().height;
+	if (side2_)
+	{
+		const int ceiling2 = side2_->sector()->ceiling().height;
+		if (ceiling2 < lowestCeiling)
+			lowestCeiling = ceiling2;
+	}
+	return lowestCeiling;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the height of the highest ceiling of any of the adjacent sectors
+// -----------------------------------------------------------------------------
+int MapLine::highestCeiling() const
+{
+	int highestCeiling = side1_->sector()->ceiling().height;
+	if (side2_)
+	{
+		const int ceiling2 = side2_->sector()->ceiling().height;
+		if (ceiling2 > highestCeiling)
+			highestCeiling = ceiling2;
+	}
+	return highestCeiling;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the height of the lowest floor of any of the adjacent sectors
+// -----------------------------------------------------------------------------
+int MapLine::lowestFloor() const
+{
+	int lowestFloor = side1_->sector()->floor().height;
+	if (side2_)
+	{
+		const int floor2 = side2_->sector()->floor().height;
+		if (floor2 < lowestFloor)
+			lowestFloor = floor2;
+	}
+	return lowestFloor;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the height of the highest floor of any of the adjacent sectors
+// -----------------------------------------------------------------------------
+int MapLine::highestFloor() const
+{
+	int highestFloor = side1_->sector()->floor().height;
+	if (side2_)
+	{
+		const int floor2 = side2_->sector()->floor().height;
+		if (floor2 > highestFloor)
+			highestFloor = floor2;
+	}
+	return highestFloor;
+}
+
+// -----------------------------------------------------------------------------
 // Clears any textures not needed on the line
 // (eg. a front upper texture that would be invisible)
 // -----------------------------------------------------------------------------

@@ -143,14 +143,15 @@ void log::init()
 		info(fmt::format("{} Windows Build", app::isWin64Build() ? "64bit" : "32bit"));
 	info(fmt::format("Written by Simon Judd, 2008-{:%Y}", *tm));
 #ifdef SFML_VERSION_MAJOR
-	info(fmt::format(
-		"Compiled with wxWidgets {}.{}.{} and SFML {}.{}.{}",
-		wxMAJOR_VERSION,
-		wxMINOR_VERSION,
-		wxRELEASE_NUMBER,
-		SFML_VERSION_MAJOR,
-		SFML_VERSION_MINOR,
-		SFML_VERSION_PATCH));
+	info(
+		fmt::format(
+			"Compiled with wxWidgets {}.{}.{} and SFML {}.{}.{}",
+			wxMAJOR_VERSION,
+			wxMINOR_VERSION,
+			wxRELEASE_NUMBER,
+			SFML_VERSION_MAJOR,
+			SFML_VERSION_MINOR,
+			SFML_VERSION_PATCH));
 #else
 	info(fmt::format("Compiled with wxWidgets {}.{}.{}", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER));
 #endif

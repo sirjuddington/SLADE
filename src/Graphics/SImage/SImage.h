@@ -98,6 +98,7 @@ public:
 
 	void setXOffset(int offset);
 	void setYOffset(int offset);
+	void setOffsets(const Vec2i& offsets);
 	void setPalette(const Palette* pal);
 
 	void setWidth(int w);

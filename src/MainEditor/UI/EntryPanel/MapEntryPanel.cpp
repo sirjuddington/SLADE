@@ -164,15 +164,16 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	// Load map into preview canvas
 	if (map_data_->openMap(thismap))
 	{
-		label_stats_->SetLabel(wxString::Format(
-			"Vertices: %d, Sides: %d, Lines: %d, Sectors: %d, Things: %d, Total Size: %dx%d",
-			static_cast<int>(map_data_->vertices.size()),
-			map_data_->n_sides,
-			static_cast<int>(map_data_->lines.size()),
-			map_data_->n_sectors,
-			static_cast<int>(map_data_->things.size()),
-			static_cast<int>(map_data_->bounds.width()),
-			static_cast<int>(map_data_->bounds.height())));
+		label_stats_->SetLabel(
+			wxString::Format(
+				"Vertices: %d, Sides: %d, Lines: %d, Sectors: %d, Things: %d, Total Size: %dx%d",
+				static_cast<int>(map_data_->vertices.size()),
+				map_data_->n_sides,
+				static_cast<int>(map_data_->lines.size()),
+				map_data_->n_sectors,
+				static_cast<int>(map_data_->things.size()),
+				static_cast<int>(map_data_->bounds.width()),
+				static_cast<int>(map_data_->bounds.height())));
 		map_canvas_->Refresh();
 		return true;
 	}

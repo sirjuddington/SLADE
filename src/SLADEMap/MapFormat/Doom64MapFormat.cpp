@@ -157,8 +157,9 @@ bool Doom64MapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map
 	for (size_t a = 0; a < nv; a++)
 	{
 		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(nv) * 0.2f);
-		map_data.addVertex(std::make_unique<MapVertex>(
-			Vec2d{ static_cast<double>(vert_data[a].x) / 65536, static_cast<double>(vert_data[a].y) / 65536 }));
+		map_data.addVertex(
+			std::make_unique<MapVertex>(
+				Vec2d{ static_cast<double>(vert_data[a].x) / 65536, static_cast<double>(vert_data[a].y) / 65536 }));
 	}
 
 	log::info(3, "Read {} vertices", map_data.vertices().size());
@@ -193,12 +194,13 @@ bool Doom64MapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(ns) * 0.2f);
 
 		// Add side
-		map_data.addSide(std::make_unique<MapSide>(
-			map_data.sectors().at(side_data[a].sector),
-			ResourceManager::doom64TextureName(side_data[a].tex_upper),
-			ResourceManager::doom64TextureName(side_data[a].tex_middle),
-			ResourceManager::doom64TextureName(side_data[a].tex_lower),
-			Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
+		map_data.addSide(
+			std::make_unique<MapSide>(
+				map_data.sectors().at(side_data[a].sector),
+				ResourceManager::doom64TextureName(side_data[a].tex_upper),
+				ResourceManager::doom64TextureName(side_data[a].tex_middle),
+				ResourceManager::doom64TextureName(side_data[a].tex_lower),
+				Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
 	}
 
 	log::info(3, "Read {} sides", map_data.sides().size());
@@ -301,14 +303,15 @@ bool Doom64MapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_
 		const auto& data = sect_data[a];
 
 		// Add sector
-		auto sector = map_data.addSector(std::make_unique<MapSector>(
-			data.f_height,
-			ResourceManager::doom64TextureName(data.f_tex),
-			data.c_height,
-			ResourceManager::doom64TextureName(data.c_tex),
-			255,
-			data.special,
-			data.tag));
+		auto sector = map_data.addSector(
+			std::make_unique<MapSector>(
+				data.f_height,
+				ResourceManager::doom64TextureName(data.f_tex),
+				data.c_height,
+				ResourceManager::doom64TextureName(data.c_tex),
+				255,
+				data.special,
+				data.tag));
 
 		// Set properties
 		sector->setIntProperty("flags", data.flags);
@@ -353,13 +356,14 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 		const auto& data = thng_data[a];
 
 		// Create thing
-		map_data.addThing(std::make_unique<MapThing>(
-			Vec3d{ static_cast<double>(data.x), static_cast<double>(data.y), static_cast<double>(data.z) },
-			data.type,
-			data.angle,
-			data.flags,
-			args,
-			data.tid));
+		map_data.addThing(
+			std::make_unique<MapThing>(
+				Vec3d{ static_cast<double>(data.x), static_cast<double>(data.y), static_cast<double>(data.z) },
+				data.type,
+				data.angle,
+				data.flags,
+				args,
+				data.tid));
 	}
 
 	log::info(3, "Read {} things", map_data.things().size());

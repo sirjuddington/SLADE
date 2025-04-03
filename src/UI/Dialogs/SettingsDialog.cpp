@@ -174,8 +174,9 @@ SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 	int min_height = 0;
 	for (const auto* page : settings_pages_)
 		updateMinSize(page, min_width, min_height);
-	SetMinSize({ sections_panel->GetBestSize().x + min_width + FromDIP(100),
-				 min_height + button_sizer->CalcMin().y + title_panel->GetBestSize().y + FromDIP(100) });
+	SetMinSize(
+		{ sections_panel->GetBestSize().x + min_width + FromDIP(100),
+		  min_height + button_sizer->CalcMin().y + title_panel->GetBestSize().y + FromDIP(100) });
 }
 
 // -----------------------------------------------------------------------------

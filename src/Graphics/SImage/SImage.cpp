@@ -413,6 +413,19 @@ void SImage::setYOffset(int offset)
 }
 
 // -----------------------------------------------------------------------------
+// Changes the image offsets
+// -----------------------------------------------------------------------------
+void SImage::setOffsets(const Vec2i& offsets)
+{
+	// Change the offsets
+	offset_x_ = offsets.x;
+	offset_y_ = offsets.y;
+
+	// Announce change
+	signals_.offsets_changed(offset_x_, offset_y_);
+}
+
+// -----------------------------------------------------------------------------
 // Sets the image palette to [pal]
 // -----------------------------------------------------------------------------
 void SImage::setPalette(const Palette* pal)

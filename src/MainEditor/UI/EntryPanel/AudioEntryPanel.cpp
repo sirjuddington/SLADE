@@ -72,6 +72,7 @@ CVAR(Bool, snd_autoplay, false, CVar::Flag::Save)
 AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	EntryPanel(parent, "audio"),
 	timer_seek_{ new wxTimer(this) },
+	sound_buffer_{ new sf::SoundBuffer() },
 #if (SFML_VERSION_MAJOR > 2)
 	sound_{ new sf::Sound(*sound_buffer_) },
 #else

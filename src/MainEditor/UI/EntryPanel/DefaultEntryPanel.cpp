@@ -81,16 +81,16 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	sizer_main_->Add(framesizer, lh.sfWithBorder().Center());
 
 	// Add 'Convert Gfx' button
-	btn_gfx_convert_ = new wxButton(this, -1, "Convert Gfx To...");
+	btn_gfx_convert_ = new wxButton(frame_actions_, -1, "Convert Gfx To...");
 	framesizer->AddSpacer(lh.px(4));
 	framesizer->Add(btn_gfx_convert_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Modify Gfx Offsets' button
-	btn_gfx_modify_offsets_ = new wxButton(this, -1, "Modify Gfx Offsets");
+	btn_gfx_modify_offsets_ = new wxButton(frame_actions_, -1, "Modify Gfx Offsets");
 	framesizer->Add(btn_gfx_modify_offsets_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Edit Textures' button
-	btn_texture_edit_ = new wxButton(this, -1, "Edit Textures");
+	btn_texture_edit_ = new wxButton(frame_actions_, -1, "Edit Textures");
 	framesizer->Add(btn_texture_edit_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	sizer_main_->AddStretchSpacer(1);
@@ -198,8 +198,9 @@ bool DefaultEntryPanel::loadEntries(const vector<ArchiveEntry*>& entries)
 
 		entries_.push_back(entry);
 	}
-	label_index_->SetLabel(wxString::Format(
-		"Entry Indices: from %lu to %lu", static_cast<unsigned long>(min), static_cast<unsigned long>(max)));
+	label_index_->SetLabel(
+		wxString::Format(
+			"Entry Indices: from %lu to %lu", static_cast<unsigned long>(min), static_cast<unsigned long>(max)));
 	if (gfx)
 	{
 		frame_actions_->Show(true);

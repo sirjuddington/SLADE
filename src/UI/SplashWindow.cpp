@@ -170,7 +170,7 @@ void SplashWindow::show(const wxString& message, bool progress)
 	else
 		show_progress_ = false;
 
-		// Show & init window
+	// Show & init window
 #ifndef __WXGTK__
 	SetInitialSize({ img_width, rheight });
 #else

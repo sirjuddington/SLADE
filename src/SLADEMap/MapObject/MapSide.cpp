@@ -32,6 +32,7 @@
 #include "Main.h"
 
 #include "Game/Configuration.h"
+#include "MapLine.h"
 #include "MapSector.h"
 #include "MapSide.h"
 #include "SLADEMap/MapObjectList/SideList.h"
@@ -134,6 +135,38 @@ void MapSide::copy(MapObject* c)
 
 	MapObject::copy(c);
 }
+
+
+// -----------------------------------------------------------------------------
+// Determine whether this is the front side of the line
+// -----------------------------------------------------------------------------
+bool MapSide::isFrontSide() const
+{
+	return parentLine()->s1() == this;
+}
+
+// -----------------------------------------------------------------------------
+// Get the start vertex of this side
+// -----------------------------------------------------------------------------
+MapVertex* MapSide::startVertex() const
+{
+	if (isFrontSide())
+		return parentLine()->v1();
+	else
+		return parentLine()->v2();
+}
+
+// -----------------------------------------------------------------------------
+// Get the end vertex of this side
+// -----------------------------------------------------------------------------
+MapVertex* MapSide::endVertex() const
+{
+	if (isFrontSide())
+		return parentLine()->v2();
+	else
+		return parentLine()->v1();
+}
+
 
 // -----------------------------------------------------------------------------
 // Returns the light level of the given side

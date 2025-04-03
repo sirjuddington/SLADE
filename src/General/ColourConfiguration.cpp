@@ -401,14 +401,15 @@ CONSOLE_COMMAND(ccfg, 1, false)
 
 		// Print colour
 		auto def = colourconfig::colDef(args[0]);
-		log::console(fmt::format(
-			"Colour \"{}\" = {} {} {} {} {}",
-			args[0],
-			def.colour.r,
-			def.colour.g,
-			def.colour.b,
-			def.colour.a,
-			def.blend_additive));
+		log::console(
+			fmt::format(
+				"Colour \"{}\" = {} {} {} {} {}",
+				args[0],
+				def.colour.r,
+				def.colour.g,
+				def.colour.b,
+				def.colour.a,
+				def.blend_additive));
 	}
 }
 

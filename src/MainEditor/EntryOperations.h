@@ -46,6 +46,8 @@ namespace entryoperations
 	bool tintGfxEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager = nullptr);
 	bool modifyOffsets(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager = nullptr);
 	bool convertVoxelEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager = nullptr);
+	bool copyGfxOffsets(ArchiveEntry& entry);
+	bool pasteGfxOffsets(const vector<ArchiveEntry*>& entries);
 
 	// ANIMATED/SWITCHES
 	bool convertAnimated(const ArchiveEntry* entry, MemChunk* animdata, bool animdefs);

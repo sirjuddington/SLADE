@@ -109,6 +109,11 @@ public:
 	bool   overlaps(const MapLine* other) const;
 	bool   intersects(const MapLine* other, Vec2d& intersect_point) const;
 
+	int lowestCeiling() const;
+	int highestCeiling() const;
+	int lowestFloor() const;
+	int highestFloor() const;
+
 	void clearUnneededTextures() const;
 	void resetInternals();
 	void flip(bool sides = true);

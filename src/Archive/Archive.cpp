@@ -40,6 +40,7 @@
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
 #include <filesystem>
 
 using namespace slade;

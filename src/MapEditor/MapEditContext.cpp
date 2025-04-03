@@ -81,6 +81,7 @@
 #include "UndoSteps.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
 
 using namespace slade;
 using namespace mapeditor;
@@ -1270,7 +1271,9 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 
 		// Auto-align
 		else if (key == "me3d_wall_autoalign_x")
-			edit_3d_->autoAlignX(selection_->hilight());
+			edit_3d_->autoAlign(selection_->hilight(), Edit3D::AlignType::AlignX);
+		else if (key == "me3d_wall_autoalign_y")
+			edit_3d_->autoAlign(selection_->hilight(), Edit3D::AlignType::AlignY);
 
 		// Reset wall offsets
 		else if (key == "me3d_wall_reset")
@@ -1990,10 +1993,11 @@ bool MapEditContext::handleAction(string_view id)
 			// Setup help text
 			auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
 			auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
-			setFeatureHelp({ "Tag Edit",
-							 fmt::format("{} = Accept", key_accept),
-							 fmt::format("{} = Cancel", key_cancel),
-							 "Left Click = Toggle tagged sector" });
+			setFeatureHelp(
+				{ "Tag Edit",
+				  fmt::format("{} = Accept", key_accept),
+				  fmt::format("{} = Cancel", key_cancel),
+				  "Left Click = Toggle tagged sector" });
 		}
 
 		return true;
@@ -2109,10 +2113,11 @@ CONSOLE_COMMAND(m_check, 0, true)
 
 		log::console("Available map checks:");
 		for (auto a = 0; a < MapCheck::NumStandardChecks; ++a)
-			log::console(fmt::format(
-				"{}: Check for {}",
-				MapCheck::standardCheckId(static_cast<MapCheck::StandardCheck>(a)),
-				MapCheck::standardCheckDesc(static_cast<MapCheck::StandardCheck>(a))));
+			log::console(
+				fmt::format(
+					"{}: Check for {}",
+					MapCheck::standardCheckId(static_cast<MapCheck::StandardCheck>(a)),
+					MapCheck::standardCheckDesc(static_cast<MapCheck::StandardCheck>(a))));
 
 		log::console("all: Run all checks");
 

@@ -945,14 +945,16 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
 
 		if (this_texture_text == other_texture_text)
 		{
-			log::info(wxString::Format(
-				"DELETE Texture: %s. It's FOUND in the other list and IS identical.", this_texture->name()));
+			log::info(
+				wxString::Format(
+					"DELETE Texture: %s. It's FOUND in the other list and IS identical.", this_texture->name()));
 			indices_to_remove.push_back(a);
 		}
 		else
 		{
-			log::info(wxString::Format(
-				"KEEP Texture: %s. It's FOUND in the other list but IS NOT identical.", this_texture->name()));
+			log::info(
+				wxString::Format(
+					"KEEP Texture: %s. It's FOUND in the other list but IS NOT identical.", this_texture->name()));
 		}
 
 		log::info(this_texture_copy.asText());
@@ -1024,8 +1026,9 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 
 		if (!patch_entry)
 		{
-			log::info(wxString::Format(
-				"KEEP Texture: %s. Its single patch %s failed to load.", texture->name(), patch->name()));
+			log::info(
+				wxString::Format(
+					"KEEP Texture: %s. Its single patch %s failed to load.", texture->name(), patch->name()));
 			continue;
 		}
 
@@ -1049,10 +1052,11 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 
 				if (patch_parent_dir->dirEntry()->upperName() != "PATCHES")
 				{
-					log::info(wxString::Format(
-						"KEEP Texture: %s. Its single patch is not from the patches directory. Found in: \"%s\".",
-						texture->name(),
-						patch_parent_dir->dirEntry()->name()));
+					log::info(
+						wxString::Format(
+							"KEEP Texture: %s. Its single patch is not from the patches directory. Found in: \"%s\".",
+							texture->name(),
+							patch_parent_dir->dirEntry()->name()));
 					continue;
 				}
 			}
@@ -1062,11 +1066,12 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		auto other_texture_iter = single_patch_textures.find(patch_entry);
 		if (other_texture_iter != single_patch_textures.end())
 		{
-			log::info(wxString::Format(
-				"KEEP Textures: %s and %s. They are both using the same single patch %s.",
-				texture->name(),
-				textures_[other_texture_iter->second]->name(),
-				patch->name()));
+			log::info(
+				wxString::Format(
+					"KEEP Textures: %s and %s. They are both using the same single patch %s.",
+					texture->name(),
+					textures_[other_texture_iter->second]->name(),
+					patch->name()));
 			patch_entries_to_omit.insert(patch_entry);
 			continue;
 		}
@@ -1084,8 +1089,9 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		// Check if the single patch size matches the texture size
 		if (img.width() != texture->width() || img.height() != texture->height())
 		{
-			log::info(wxString::Format(
-				"KEEP Texture: %s. Its single patch has different dimensions from the texture.", texture->name()));
+			log::info(
+				wxString::Format(
+					"KEEP Texture: %s. Its single patch has different dimensions from the texture.", texture->name()));
 			continue;
 		}
 
@@ -1093,8 +1099,9 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		if (patch->flipX() || patch->flipY() || patch->useOffsets() || patch->rotation() != 0 || patch->alpha() < 1.0f
 			|| !(strutil::equalCI(patch->style(), "Copy")) || patch->blendType() != CTPatchEx::BlendType::None)
 		{
-			log::info(wxString::Format(
-				"KEEP Texture: %s. Its single patch has some special properties set.", texture->name()));
+			log::info(
+				wxString::Format(
+					"KEEP Texture: %s. Its single patch has some special properties set.", texture->name()));
 			continue;
 		}
 
@@ -1162,11 +1169,12 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 			// If we found a texture that isn't the texture the patch is associated to
 			if (iter != single_patch_textures.end() && textures_[iter->second]->name() != texture->name())
 			{
-				log::info(wxString::Format(
-					"KEEP Textures: %s and %s. They are both using patch %s.",
-					texture->name(),
-					textures_[iter->second]->name(),
-					texture->patches()[p]->name()));
+				log::info(
+					wxString::Format(
+						"KEEP Textures: %s and %s. They are both using patch %s.",
+						texture->name(),
+						textures_[iter->second]->name(),
+						texture->patches()[p]->name()));
 				patch_entries_to_omit.insert(patch_entry);
 				continue;
 			}

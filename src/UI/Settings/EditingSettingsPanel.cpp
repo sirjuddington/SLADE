@@ -143,12 +143,13 @@ wxPanel* EditingSettingsPanel::createArchiveEditorPanel(wxWindow* parent)
 	// Editor Behaviour
 	vbox->Add(wxutil::createSectionSeparator(panel, "Behaviour"), lh.sfWithBorder(0, wxBOTTOM).Expand());
 	vbox->Add(
-		lh.layoutVertically({ cb_auto_entry_replace_,
-							  cb_filter_dirs_,
-							  cb_confirm_entry_delete_,
-							  cb_confirm_entry_revert_,
-							  rbp_entry_mod_,
-							  rbp_dir_mod_ }),
+		lh.layoutVertically(
+			{ cb_auto_entry_replace_,
+			  cb_filter_dirs_,
+			  cb_confirm_entry_delete_,
+			  cb_confirm_entry_revert_,
+			  rbp_entry_mod_,
+			  rbp_dir_mod_ }),
 		lh.sfWithBorder(0, wxLEFT));
 
 	// Entry naming

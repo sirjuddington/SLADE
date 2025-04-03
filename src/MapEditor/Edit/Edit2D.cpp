@@ -866,8 +866,9 @@ void Edit2D::createVertex(Vec2d pos) const
 
 	// Editor message
 	if (vertex)
-		context_->addEditorMessage(fmt::format(
-			"Created vertex at ({}, {})", static_cast<int>(vertex->xPos()), static_cast<int>(vertex->yPos())));
+		context_->addEditorMessage(
+			fmt::format(
+				"Created vertex at ({}, {})", static_cast<int>(vertex->xPos()), static_cast<int>(vertex->yPos())));
 }
 
 // -----------------------------------------------------------------------------

@@ -719,7 +719,8 @@ void KeyBind::initBinds()
 	// Map Editor 3D Walls (me3d_wall*)
 	group = "Map Editor 3D Mode Walls";
 	addBind("me3d_wall_toggle_link_ofs", Keypress("O", KPM_CTRL), "Toggle linked wall offsets", group);
-	addBind("me3d_wall_autoalign_x", Keypress("A", KPM_CTRL), "Auto-align textures on X", group);
+	addBind("me3d_wall_autoalign_x", Keypress("A", KPM_CTRL), "Auto-align textures on X", group, false, 1);
+	addBind("me3d_wall_autoalign_y", Keypress("A", KPM_SHIFT), "Auto-align textures on Y", group, false, 1);
 	addBind("me3d_wall_unpeg_lower", Keypress("L"), "Toggle lower unpegged", group);
 	addBind("me3d_wall_unpeg_upper", Keypress("U"), "Toggle upper unpegged", group);
 

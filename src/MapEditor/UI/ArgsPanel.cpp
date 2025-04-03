@@ -458,12 +458,13 @@ protected:
 		else
 		{
 			slider_control_->SetValue(value);
-			speed_label_->SetLabel(wxString::Format(
-				"%s (%.1f units per tic, %.1f units per sec)",
-				arg_.speedLabel(value),
-				value / 8.0,
-				// A tic is 28ms, slightly less than 1/35 of a second
-				value / 8.0 * 1000.0 / 28.0));
+			speed_label_->SetLabel(
+				wxString::Format(
+					"%s (%.1f units per tic, %.1f units per sec)",
+					arg_.speedLabel(value),
+					value / 8.0,
+					// A tic is 28ms, slightly less than 1/35 of a second
+					value / 8.0 * 1000.0 / 28.0));
 		}
 	}
 };

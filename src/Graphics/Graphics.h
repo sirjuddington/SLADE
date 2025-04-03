@@ -25,7 +25,5 @@ enum class OffsetType
 Vec2i                calculateOffsets(int width, int height, OffsetType type);
 std::optional<Vec2i> getImageOffsets(const MemChunk& img_data);
 bool                 setImageOffsets(MemChunk& img_data, int xoff, int yoff);
-
-// wxWidgets Graphics/Drawing
-
+bool                 supportsOffsets(const ArchiveEntry& entry);
 } // namespace slade::gfx

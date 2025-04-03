@@ -1447,12 +1447,13 @@ bool ArchivePanel::importEntry()
 				}
 				// Warn if the offsets couldn't be written
 				if (ok && si.format() && !si.format()->writeOffset(si, entry, offset))
-					log::warning(wxString::Format(
-						"Old offset information [%d, %d] couldn't be "
-						"preserved in the new image format for image %s.",
-						offset.x,
-						offset.y,
-						entry->name()));
+					log::warning(
+						wxString::Format(
+							"Old offset information [%d, %d] couldn't be "
+							"preserved in the new image format for image %s.",
+							offset.x,
+							offset.y,
+							entry->name()));
 			}
 
 			// Check if the entry type changed
@@ -2518,6 +2519,8 @@ bool ArchivePanel::handleAction(string_view id)
 		entryoperations::exportEntriesAsPNG(entry_tree_->selectedEntries());
 	else if (id == "arch_gfx_pngopt")
 		entryoperations::optimizePNGEntries(entry_tree_->selectedEntries(), undo_manager_.get());
+	else if (id == "arch_gfx_offsetpaste")
+		entryoperations::pasteGfxOffsets(entry_tree_->selectedEntries());
 	else if (id == "arch_view_text")
 		openEntryAsText(entry_tree_->firstSelectedEntry());
 	else if (id == "arch_view_hex")
@@ -3132,6 +3135,8 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		SAction::fromId("arch_gfx_colourise")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_tint")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_offsets")->addToMenu(gfx, true);
+		if (app::clipboard().firstItem(ClipboardItem::Type::GfxOffsets) != nullptr)
+			SAction::fromId("arch_gfx_offsetpaste")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_addptable")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_addtexturex")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_exportpng")->addToMenu(gfx, true);

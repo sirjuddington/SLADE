@@ -85,12 +85,13 @@ void fixpngsrc(ArchiveEntry* entry)
 		uint32_t crc = misc::crc(data.data() + pointer + 4, 4 + chsz);
 		if (crc != memory::readB32(data.data(), pointer + 8 + chsz))
 		{
-			log::error(wxString::Format(
-				"Chunk %c%c%c%c has bad CRC",
-				data[pointer + 4],
-				data[pointer + 5],
-				data[pointer + 6],
-				data[pointer + 7]));
+			log::error(
+				wxString::Format(
+					"Chunk %c%c%c%c has bad CRC",
+					data[pointer + 4],
+					data[pointer + 5],
+					data[pointer + 6],
+					data[pointer + 7]));
 			neededchange              = true;
 			data[pointer + 8 + chsz]  = crc >> 24;
 			data[pointer + 9 + chsz]  = (crc & 0x00ffffff) >> 16;
