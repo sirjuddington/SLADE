@@ -36,8 +36,10 @@
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/Formats/WadArchive.h"
 #include "BinaryControlLump.h"
+#include "General/Clipboard.h"
 #include "General/Console.h"
 #include "General/Misc.h"
+#include "GfxOffsetsClipboardItem.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
@@ -1548,6 +1550,78 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 		dlg.ShowModal();
 
 		return false;
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Copies the offsets from the given entry to the clipboard
+// -----------------------------------------------------------------------------
+bool entryoperations::copyGfxOffsets(ArchiveEntry& entry)
+{
+	// Check entry type
+	if (!gfx::supportsOffsets(entry))
+	{
+		log::error(
+			wxString::Format(
+				"Entry \"%s\" is of type \"%s\" which does not support offsets", entry.name(), entry.type()->name()));
+		return false;
+	}
+
+	// Get offsets
+	auto offsets = gfx::getImageOffsets(entry.data());
+	if (!offsets)
+	{
+		log::error(wxString::Format("Entry \"%s\" has no offsets to copy", entry.name()));
+		return false;
+	}
+
+	// Add/update offsets on clipboard
+	GfxOffsetsClipboardItem* offset_item = nullptr;
+	for (auto i = 0; i < app::clipboard().size(); ++i)
+	{
+		auto item = app::clipboard().item(i);
+		if (item->type() == ClipboardItem::Type::GfxOffsets)
+		{
+			offset_item = dynamic_cast<GfxOffsetsClipboardItem*>(item);
+			break;
+		}
+	}
+	if (offset_item)
+		offset_item->setOffsets(*offsets);
+	else
+		app::clipboard().add(std::make_unique<GfxOffsetsClipboardItem>(*offsets));
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Pastes the offsets from the clipboard to the given entries
+// -----------------------------------------------------------------------------
+bool entryoperations::pasteGfxOffsets(const vector<ArchiveEntry*>& entries)
+{
+	// Check for copied offsets
+	auto offset_item = app::clipboard().firstItem(ClipboardItem::Type::GfxOffsets);
+	if (!offset_item)
+		return false;
+
+	auto offsets = dynamic_cast<GfxOffsetsClipboardItem*>(offset_item)->offsets();
+
+	for (auto entry : entries)
+	{
+		// Check entry is gfx that supports offsets
+		if (!gfx::supportsOffsets(*entry))
+		{
+			log::warning(
+				"Entry \"{}\" is of type \"{}\" which does not support offsets", entry->name(), entry->type()->name());
+			continue;
+		}
+
+		// Set offsets in gfx entry
+		MemChunk data(entry->rawData(), entry->size());
+		gfx::setImageOffsets(data, offsets.x, offsets.y);
+		entry->importMemChunk(data);
 	}
 
 	return true;

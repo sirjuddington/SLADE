@@ -3391,6 +3391,8 @@ bool ArchivePanel::handleAction(string_view id)
 		gfxExportPNG();
 	else if (id == "arch_gfx_pngopt")
 		optimizePNG();
+	else if (id == "arch_gfx_offsetpaste")
+		entryoperations::pasteGfxOffsets(entry_tree_->selectedEntries());
 	else if (id == "arch_view_text")
 		openEntryAsText(entry_tree_->firstSelectedEntry());
 	else if (id == "arch_view_hex")
@@ -3997,6 +3999,8 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		SAction::fromId("arch_gfx_colourise")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_tint")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_offsets")->addToMenu(gfx, true);
+		if (app::clipboard().firstItem(ClipboardItem::Type::GfxOffsets) != nullptr)
+			SAction::fromId("arch_gfx_offsetpaste")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_addptable")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_addtexturex")->addToMenu(gfx, true);
 		SAction::fromId("arch_gfx_exportpng")->addToMenu(gfx, true);

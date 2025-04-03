@@ -31,11 +31,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GfxEntryPanel.h"
+#include "App.h"
 #include "Archive/Archive.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/Graphics.h"
 #include "MainEditor/EntryOperations.h"
+#include "MainEditor/GfxOffsetsClipboardItem.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Controls/PaletteChooser.h"
@@ -495,6 +497,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 	const int menu_gfxep_extract     = SAction::fromId("pgfx_extract")->wxId();
 	const int menu_gfxep_translate   = SAction::fromId("pgfx_remap")->wxId();
 	const int menu_archgfx_exportpng = SAction::fromId("arch_gfx_exportpng")->wxId();
+	const int menu_gfxep_offsetpaste = SAction::fromId("pgfx_offsetpaste")->wxId();
 
 	// Set PNG check menus
 	if (entry->type() != nullptr && entry->type()->formatId() == "img_png")
@@ -536,6 +539,10 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 	text_imgoutof_->SetLabel(wxString::Format(" out of %d", image()->size()));
 	spin_curimg_->SetValue(cur_index_ + 1);
 	spin_curimg_->SetRange(1, image()->size());
+
+	// Disable paste offsets if nothing in clipboard
+	menu_custom_->Enable(
+		menu_gfxep_offsetpaste, app::clipboard().firstItem(ClipboardItem::Type::GfxOffsets) != nullptr);
 
 	// Update status bar in case image dimensions changed
 	updateStatus();
@@ -1003,6 +1010,25 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		}
 	}
 
+	// Copy offsets
+	else if (id == "pgfx_offsetcopy")
+		entryoperations::copyGfxOffsets(*entry_.lock());
+
+	// Paste offsets
+	else if (id == "pgfx_offsetpaste")
+	{
+		// Check for existing offsets in clipboard
+		if (auto item = app::clipboard().firstItem(ClipboardItem::Type::GfxOffsets))
+		{
+			auto offset_item = dynamic_cast<GfxOffsetsClipboardItem*>(item);
+			spin_xoffset_->SetValue(offset_item->offsets().x);
+			spin_yoffset_->SetValue(offset_item->offsets().y);
+			image()->setOffsets(offset_item->offsets());
+			setModified();
+			gfx_canvas_->Refresh();
+		}
+	}
+
 	// Unknown action
 	else
 		return false;
@@ -1028,6 +1054,9 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 	SAction::fromId("pgfx_colourise")->addToMenu(custom);
 	SAction::fromId("pgfx_tint")->addToMenu(custom);
 	SAction::fromId("pgfx_crop")->addToMenu(custom);
+	custom->AppendSeparator();
+	SAction::fromId("pgfx_offsetcopy")->addToMenu(custom);
+	SAction::fromId("pgfx_offsetpaste")->addToMenu(custom);
 	custom->AppendSeparator();
 	SAction::fromId("pgfx_alph")->addToMenu(custom);
 	SAction::fromId("pgfx_trns")->addToMenu(custom);

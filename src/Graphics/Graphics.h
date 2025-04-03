@@ -29,5 +29,6 @@ namespace gfx
 	Vec2i                calculateOffsets(int width, int height, OffsetType type);
 	std::optional<Vec2i> getImageOffsets(MemChunk& img_data);
 	bool                 setImageOffsets(MemChunk& img_data, int xoff, int yoff);
+	bool                 supportsOffsets(const ArchiveEntry& entry);
 } // namespace gfx
 } // namespace slade

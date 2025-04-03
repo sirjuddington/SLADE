@@ -262,20 +262,16 @@ Vec2i ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int h
 // -----------------------------------------------------------------------------
 bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 {
-	auto* type = entry.type();
-	if (type == nullptr)
-		return false;
-
 	// Check entry type
-	wxString entryformat = type->formatId();
-	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
-		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
+	if (!gfx::supportsOffsets(entry))
 	{
 		log::error(
 			wxString::Format(
-				"Entry \"%s\" is of type \"%s\" which does not support offsets", entry.name(), type->name()));
+				"Entry \"%s\" is of type \"%s\" which does not support offsets", entry.name(), entry.type()->name()));
 		return false;
 	}
+
+	const auto& entryformat = entry.type()->formatId();
 
 	// Doom gfx format, normal and beta version.
 	// Also arah format from alpha 0.2 because it uses the same header format.

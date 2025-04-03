@@ -12,6 +12,7 @@ public:
 		Patch,
 		MapArchitecture,
 		MapThings,
+		GfxOffsets,
 		Unknown
 	};
 
@@ -34,6 +35,15 @@ public:
 	bool     empty() const { return items_.empty(); }
 
 	ClipboardItem* item(unsigned index) const { return index < items_.size() ? items_[index].get() : nullptr; }
+
+	// Returns the first item of the given [type], or nullptr if none found
+	ClipboardItem* firstItem(ClipboardItem::Type type) const
+	{
+		for (auto& item : items_)
+			if (item->type() == type)
+				return item.get();
+		return nullptr;
+	}
 
 	void add(unique_ptr<ClipboardItem> item) { items_.push_back(std::move(item)); }
 	void add(vector<unique_ptr<ClipboardItem>>& items)

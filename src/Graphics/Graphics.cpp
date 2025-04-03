@@ -578,3 +578,18 @@ bool gfx::setImageOffsets(MemChunk& img_data, int xoff, int yoff)
 	else
 		return false;
 }
+
+// -----------------------------------------------------------------------------
+// Returns true if the given [entry] supports offsets
+// -----------------------------------------------------------------------------
+bool gfx::supportsOffsets(const ArchiveEntry& entry)
+{
+	const auto* type = entry.type();
+	if (type == nullptr)
+		return false;
+
+	// Check entry type
+	auto& entryformat = type->formatId();
+	return entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
+		   || entryformat == "img_doom_beta" || entryformat == "img_png";
+}

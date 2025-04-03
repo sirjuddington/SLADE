@@ -26,6 +26,8 @@ namespace entryoperations
 	bool compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
 	bool exportAsPNG(ArchiveEntry* entry, const wxString& filename);
 	bool optimizePNG(ArchiveEntry* entry);
+	bool copyGfxOffsets(ArchiveEntry& entry);
+	bool pasteGfxOffsets(const vector<ArchiveEntry*>& entries);
 
 	// ANIMATED/SWITCHES
 	bool convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool animdefs);

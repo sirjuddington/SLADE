@@ -344,6 +344,19 @@ void SImage::setYOffset(int offset)
 }
 
 // -----------------------------------------------------------------------------
+// Changes the image offsets
+// -----------------------------------------------------------------------------
+void SImage::setOffsets(const Vec2i& offsets)
+{
+	// Change the offsets
+	offset_x_ = offsets.x;
+	offset_y_ = offsets.y;
+
+	// Announce change
+	signals_.offsets_changed(offset_x_, offset_y_);
+}
+
+// -----------------------------------------------------------------------------
 // Deletes/clears any existing image data
 // -----------------------------------------------------------------------------
 void SImage::clearData(bool clear_mask)
