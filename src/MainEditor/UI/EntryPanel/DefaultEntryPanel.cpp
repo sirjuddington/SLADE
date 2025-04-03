@@ -76,16 +76,16 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	sizer_main_->Add(framesizer, 0, wxALL | wxALIGN_CENTER, ui::pad());
 
 	// Add 'Convert Gfx' button
-	btn_gfx_convert_ = new wxButton(this, -1, "Convert Gfx To...");
+	btn_gfx_convert_ = new wxButton(frame_actions_, -1, "Convert Gfx To...");
 	framesizer->AddSpacer(4);
 	framesizer->Add(btn_gfx_convert_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Add 'Modify Gfx Offsets' button
-	btn_gfx_modify_offsets_ = new wxButton(this, -1, "Modify Gfx Offsets");
+	btn_gfx_modify_offsets_ = new wxButton(frame_actions_, -1, "Modify Gfx Offsets");
 	framesizer->Add(btn_gfx_modify_offsets_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Add 'Edit Textures' button
-	btn_texture_edit_ = new wxButton(this, -1, "Edit Textures");
+	btn_texture_edit_ = new wxButton(frame_actions_, -1, "Edit Textures");
 	framesizer->Add(btn_texture_edit_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	sizer_main_->AddStretchSpacer(1);
