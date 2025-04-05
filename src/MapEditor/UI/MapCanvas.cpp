@@ -39,6 +39,13 @@
 #include "UI/WxUtils.h"
 #include "Utility/MathStuff.h"
 
+#if !defined( NO_WAYLAND )
+#include <gtk/gtk.h>
+#include <gdk/gdk.h>
+#include <gdk/gdkwayland.h>
+#include "wayland-pointer-constraints-unstable-v1.h"
+#endif
+
 using namespace slade;
 
 using mapeditor::Mode;
@@ -111,6 +118,181 @@ void MapCanvas::draw()
 	glFinish();
 }
 
+#if !defined( NO_WAYLAND )
+
+static bool wayland_warp_pointer( GtkWidget* aWidget, GdkDisplay* aDisplay, GdkWindow* aWindow,
+                                  GdkDevice* aPtrDev, int aX, int aY );
+
+// GDK doesn't know if we've moved the cursor using Wayland pointer constraints.
+// So emulate the actual position here
+static wxPoint s_warped_from;
+static wxPoint s_warped_to;
+
+wxPoint MapCanvas::GetMousePosition()
+{
+    wxPoint wx_pos = wxGetMousePosition();
+
+    if( wx_pos == s_warped_from )
+    {
+        return s_warped_to;
+    }
+    else
+    {
+        // Mouse has moved
+        s_warped_from = wxPoint();
+        s_warped_to = wxPoint();
+    }
+
+    return wx_pos;
+}
+
+static bool                               s_wl_initialized = false;
+static struct wl_compositor*              s_wl_compositor = NULL;
+static struct zwp_pointer_constraints_v1* s_wl_pointer_constraints = NULL;
+static struct zwp_confined_pointer_v1*    s_wl_confined_pointer = NULL;
+static struct wl_region*                  s_wl_confinement_region = NULL;
+static bool                               s_wl_locked_flag = false;
+
+static void handle_global( void* data, struct wl_registry* registry, uint32_t name,
+                           const char* interface, uint32_t version )
+{
+
+    if( strcmp( interface, wl_compositor_interface.name ) == 0 )
+    {
+        s_wl_compositor = static_cast<wl_compositor*>(
+                wl_registry_bind( registry, name, &wl_compositor_interface, version ) );
+    }
+    else if( strcmp( interface, zwp_pointer_constraints_v1_interface.name ) == 0 )
+    {
+        s_wl_pointer_constraints = static_cast<zwp_pointer_constraints_v1*>( wl_registry_bind(
+                registry, name, &zwp_pointer_constraints_v1_interface, version ) );
+    }
+}
+
+static void locked_handler( void* data, struct zwp_locked_pointer_v1* zwp_locked_pointer_v1 )
+{
+    s_wl_locked_flag = true;
+}
+
+static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
+    .locked = locked_handler,
+};
+
+
+static const struct wl_registry_listener registry_listener = {
+    .global = handle_global,
+};
+
+
+/**
+ * Initializes `compositor` and `pointer_constraints` global variables.
+ */
+static void initialize_wayland( wl_display* wldisp )
+{
+    if( s_wl_initialized )
+    {
+        return;
+    }
+
+    struct wl_registry* registry = wl_display_get_registry( wldisp );
+    wl_registry_add_listener( registry, &registry_listener, NULL );
+    wl_display_roundtrip( wldisp );
+    s_wl_initialized = true;
+}
+
+
+struct zwp_locked_pointer_v1* s_wl_locked_pointer = NULL;
+
+static int s_after_paint_handler_id = 0;
+
+static void on_frame_clock_after_paint( GdkFrameClock* clock, GtkWidget* widget )
+{
+    if( s_wl_locked_pointer )
+    {
+        zwp_locked_pointer_v1_destroy( s_wl_locked_pointer );
+        s_wl_locked_pointer = NULL;
+
+        g_signal_handler_disconnect( (gpointer) clock, s_after_paint_handler_id );
+        s_after_paint_handler_id = 0;
+
+        // restore confinement
+        if( s_wl_confinement_region != NULL )
+        {
+            GdkDisplay* disp = gtk_widget_get_display( widget );
+            GdkSeat*    seat = gdk_display_get_default_seat( disp );
+            GdkDevice*  ptrdev = gdk_seat_get_pointer( seat );
+            GdkWindow*  window = gtk_widget_get_window( widget );
+
+            wl_display* wldisp = gdk_wayland_display_get_wl_display( disp );
+            wl_surface* wlsurf = gdk_wayland_window_get_wl_surface( window );
+            wl_pointer* wlptr = gdk_wayland_device_get_wl_pointer( ptrdev );
+
+            s_wl_confined_pointer = zwp_pointer_constraints_v1_confine_pointer(
+                    s_wl_pointer_constraints, wlsurf, wlptr, s_wl_confinement_region,
+                    ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT );
+
+            wl_display_roundtrip( wldisp );
+        }
+    }
+}
+
+static bool wayland_warp_pointer( GtkWidget* aWidget, GdkDisplay* aDisplay, GdkWindow* aWindow,
+                                  GdkDevice* aPtrDev, int aX, int aY )
+{
+    wl_display* wldisp = gdk_wayland_display_get_wl_display( aDisplay );
+    wl_surface* wlsurf = gdk_wayland_window_get_wl_surface( aWindow );
+    wl_pointer* wlptr = gdk_wayland_device_get_wl_pointer( aPtrDev );
+
+    initialize_wayland( wldisp );
+
+    if( s_wl_locked_pointer )
+    {
+        // This shouldn't happen but let's be safe
+        zwp_locked_pointer_v1_destroy( s_wl_locked_pointer );
+        wl_display_roundtrip( wldisp );
+        s_wl_locked_pointer = NULL;
+    }
+
+    // wl_surface_commit causes an assert on GNOME, but has to be called on KDE
+    // before destroying the locked pointer, so wait until GDK commits the surface.
+    GdkFrameClock* frame_clock = gdk_window_get_frame_clock( aWindow );
+    s_after_paint_handler_id = g_signal_connect_after(
+            frame_clock, "after-paint", G_CALLBACK( on_frame_clock_after_paint ), aWidget );
+
+    // temporary disable confinement to allow pointer warping
+    if( s_wl_confinement_region && s_wl_confined_pointer )
+    {
+        zwp_confined_pointer_v1_destroy( s_wl_confined_pointer );
+        wl_display_roundtrip( wldisp );
+        s_wl_confined_pointer = NULL;
+    }
+
+    s_wl_locked_flag = false;
+
+    s_wl_locked_pointer =
+            zwp_pointer_constraints_v1_lock_pointer( s_wl_pointer_constraints, wlsurf, wlptr, NULL,
+                                                     ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT );
+
+    zwp_locked_pointer_v1_add_listener(s_wl_locked_pointer, &locked_pointer_listener, NULL);
+
+    gint wx, wy;
+    gtk_widget_translate_coordinates( aWidget, gtk_widget_get_toplevel( aWidget ), 0, 0, &wx, &wy );
+
+    zwp_locked_pointer_v1_set_cursor_position_hint( s_wl_locked_pointer, wl_fixed_from_int( aX + wx ),
+                                                    wl_fixed_from_int( aY + wy ) );
+
+    // Don't call wl_surface_commit, wait for GDK because of an assert on GNOME.
+    wl_display_roundtrip( wldisp ); // To receive "locked" event.
+    gtk_widget_queue_draw( aWidget ); // Needed on some GNOME environment to trigger
+                                      // the "after-paint" event handler.
+
+    return s_wl_locked_flag;
+}
+
+
+#endif
+
+
 // -----------------------------------------------------------------------------
 // Moves the mouse cursor to the center of the canvas
 // -----------------------------------------------------------------------------
@@ -118,6 +300,29 @@ void MapCanvas::mouseToCenter()
 {
 	auto rect   = GetScreenRect();
 	mouse_warp_ = true;
+
+#if !defined( NO_WAYLAND )
+    GtkWidget* widget = static_cast<GtkWidget*>( this->GetHandle() );
+
+    GdkWindow* wind = gtk_widget_get_window( widget );
+    GdkDisplay* disp = gdk_window_get_display( wind );
+    GdkSeat*    seat = gdk_display_get_default_seat( disp );
+    GdkDevice*  ptrdev = gdk_seat_get_pointer( seat );
+
+    if( GDK_IS_WAYLAND_DISPLAY( disp ) )
+      {
+        wxPoint    initialPos = wxGetMousePosition();
+        GdkWindow* win = this->GTKGetDrawingWindow();
+
+        if( wayland_warp_pointer( widget, disp, win, ptrdev, rect.width * 0.5, rect.height * 0.5 ) )
+          {
+            s_warped_from = initialPos;
+            s_warped_to = this->ClientToScreen( wxPoint( rect.width * 0.5, rect.height * 0.5 ) );
+
+          }
+      }
+#endif
+
 	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width * 0.5), rect.y + int(rect.height * 0.5)));
 }
 
