@@ -105,11 +105,13 @@ if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
 endif ()
 find_package(MPG123 REQUIRED)
+find_package(WebP REQUIRED)
 include_directories(
 	${FREETYPE_INCLUDE_DIRS}
 	${FTGL_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
 	${MPG123_INCLUDE_DIR}
+	${WebP_INCLUDE_DIRS}
 	.
 	..
 	../thirdparty/glad/include
@@ -167,6 +169,7 @@ target_link_libraries(slade
 	${OPENGL_LIBRARIES}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
+	${WebP_LIBRARIES}
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)

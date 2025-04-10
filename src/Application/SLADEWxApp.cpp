@@ -40,6 +40,7 @@
 #include "MainEditor/UI/StartPage.h"
 #include "OpenGL/OpenGL.h"
 #include "UI/WxUtils.h"
+#include "UI/WxWebpHandler.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include <wx/filefn.h>
@@ -455,6 +456,7 @@ bool SLADEWxApp::OnInit()
 
 	// Load image handlers
 	wxInitAllImageHandlers();
+	wxImage::AddHandler(new WxWebpHandler);
 
 #ifdef __APPLE__
 	// Should be constant, wxWidgets Cocoa backend scales everything under the hood

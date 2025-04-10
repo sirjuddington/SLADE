@@ -42,6 +42,7 @@ endif ()
 # Other
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(WebP CONFIG REQUIRED)
 
 set(SFML_FIND_COMPONENTS System Audio Window Network)
 list(TRANSFORM SFML_FIND_COMPONENTS TOLOWER OUTPUT_VARIABLE SFML2_FIND_COMPONENTS)
@@ -110,6 +111,9 @@ target_link_libraries(slade
 	${WX_LIBS}
 	${ZLIB_LIBRARY}
 	MPG123::libmpg123
+	WebP::webp
+	WebP::webpdecoder
+	WebP::webpdemux
 )
 
 if (NOT NO_LUA)
