@@ -4,7 +4,6 @@
 
 * C++17 compiler (e.g. g++ 8.x)
 * bzip2 library
-* FreeImage
 * ftgl, an OpenGL font managing library
 * GTK 2.x/3.x
 * mpg123 library
@@ -30,7 +29,6 @@ SLADE can be built on Windows using [Visual Studio](https://visualstudio.microso
 
 ### Required vcpkg libraries
 
-* freeimage
 * lua
 * mpg123
 * opengl

@@ -74,27 +74,6 @@ template<> struct fmt::formatter<log::MessageType> : formatter<string_view>
 
 // -----------------------------------------------------------------------------
 //
-// FreeImage Error Handler
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Allows us to catch FreeImage errors and log them
-// -----------------------------------------------------------------------------
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
-{
-	string error = "FreeImage: ";
-	if (fif != FIF_UNKNOWN)
-		error += fmt::format("[{}] ", FreeImage_GetFormatFromFIF(fif));
-	error += message;
-
-	log::error(error);
-}
-
-
-// -----------------------------------------------------------------------------
-//
 // log::Message Struct Functions
 //
 // -----------------------------------------------------------------------------
@@ -150,9 +129,6 @@ void log::init()
 	info(fmt::format("Compiled with wxWidgets {}.{}.{}", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER));
 #endif
 	info("--------------------------------");
-
-	// Set up FreeImage to use our log:
-	FreeImage_SetOutputMessage(FreeImageErrorHandler);
 }
 
 // -----------------------------------------------------------------------------

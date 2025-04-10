@@ -40,25 +40,23 @@ if (NOT NO_FLUIDSYNTH)
 endif ()
 
 # Other
-find_package(freeimage CONFIG REQUIRED)
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 
 set(SFML_FIND_COMPONENTS System Audio Window Network)
 list(TRANSFORM SFML_FIND_COMPONENTS TOLOWER OUTPUT_VARIABLE SFML2_FIND_COMPONENTS)
 find_package(SFML 2 QUIET COMPONENTS ${SFML2_FIND_COMPONENTS})
-if(SFML_FOUND)
+if (SFML_FOUND)
 	list(TRANSFORM SFML2_FIND_COMPONENTS PREPEND sfml- OUTPUT_VARIABLE SFML_LIBRARIES)
-else()
+else ()
 	list(TRANSFORM SFML_FIND_COMPONENTS PREPEND SFML:: OUTPUT_VARIABLE SFML_LIBRARIES)
 	find_package(SFML 3 COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
-endif()
+endif ()
 
 
 # Include Search Paths ---------------------------------------------------------
 
 include_directories(
-#	${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
 	.
 	..
 	../thirdparty/glad/include
@@ -82,13 +80,13 @@ add_executable(slade WIN32
 	${SLADE_HEADERS}
 )
 
-if(NOT SLADE_EXE_NAME)
-set(SLADE_EXE_NAME SLADE)
-endif()
+if (NOT SLADE_EXE_NAME)
+	set(SLADE_EXE_NAME SLADE)
+endif ()
 
-if(NOT SLADE_EXE_DIR)
-set(SLADE_EXE_DIR dist)
-endif()
+if (NOT SLADE_EXE_DIR)
+	set(SLADE_EXE_DIR dist)
+endif ()
 
 # Properties
 set_target_properties(slade
@@ -111,7 +109,6 @@ target_link_libraries(slade
 	${SFML_LIBRARIES}
 	${WX_LIBS}
 	${ZLIB_LIBRARY}
-	freeimage::FreeImage
 	MPG123::libmpg123
 )
 

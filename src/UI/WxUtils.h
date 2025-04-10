@@ -1,6 +1,7 @@
 #pragma once
 
 #include "General/UI.h"
+#include "Graphics/Palette/Palette.h"
 
 namespace slade::wxutil
 {
@@ -51,6 +52,8 @@ wxPoint scaledPoint(int x, int y);
 wxRect  scaledRect(int x, int y, int width, int height);
 
 // Misc
-void    setWindowIcon(wxTopLevelWindow* window, string_view icon);
-wxImage createImageFromSVG(const string& svg_text, int width, int height);
+void      setWindowIcon(wxTopLevelWindow* window, string_view icon);
+wxImage   createImageFromSVG(const string& svg_text, int width, int height);
+Palette   paletteFromWx(const wxPalette& palette);
+wxPalette paletteToWx(const Palette& palette);
 } // namespace slade::wxutil
