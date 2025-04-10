@@ -5,12 +5,12 @@
 * C++17 compiler (e.g. g++ 8.x)
 * bzip2 library
 * ftgl, an OpenGL font managing library
-* GTK 2.x/3.x
 * mpg123 library
 * OpenGL
 * SFML
 * wxWidgets 3.x
 * zlib
+* libwebp
 
 ### Optional build-time requirements
 
@@ -34,6 +34,7 @@ SLADE can be built on Windows using [Visual Studio](https://visualstudio.microso
 * opengl
 * sfml
 * wxwidgets
+* libwebp
 
 The above libraries are required for building SLADE on windows. Note that you'll most likely want to use the `x64-windows-static` triplet when installing them, eg.
 
