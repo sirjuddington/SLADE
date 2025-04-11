@@ -143,7 +143,7 @@ bool misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	if (format == "img_raw" && SIFormat::rawFormat()->isThisFormat(entry->data()))
 		return SIFormat::rawFormat()->loadImage(*image, entry->data());
 
-	// Lastly, try detecting/loading via FreeImage
+	// Lastly, try detecting/loading via wxWidgets
 	else if (SIFormat::generalFormat()->isThisFormat(entry->data()))
 		return SIFormat::generalFormat()->loadImage(*image, entry->data());
 

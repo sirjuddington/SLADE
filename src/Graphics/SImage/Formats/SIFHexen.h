@@ -72,25 +72,33 @@ protected:
 		int     width  = 640;
 		int     height = 480;
 
+		struct RGBQuad
+        {
+            uint8_t blue;
+            uint8_t green;
+            uint8_t red;
+            uint8_t reserved;
+        };
+
 		union
 		{
-			RGBQUAD  color;
+			RGBQuad  color;
 			uint32_t quad;
 		};
-		color.rgbReserved = 0;
+		color.reserved = 0;
 		ColRGBA colour(0, 0, 0, 0);
 
 		// Initialize the bitmap palette.
 		for (int i = 0; i < 16; ++i)
 		{
-			color.rgbRed   = data[i * 3 + 0];
-			color.rgbGreen = data[i * 3 + 1];
-			color.rgbBlue  = data[i * 3 + 2];
+			color.red   = data[i * 3 + 0];
+			color.green = data[i * 3 + 1];
+			color.blue  = data[i * 3 + 2];
 			// Convert from 6-bit per component to 8-bit per component.
 			quad     = (quad << 2) | ((quad >> 4) & 0x03030303);
-			colour.r = color.rgbRed;
-			colour.g = color.rgbGreen;
-			colour.b = color.rgbBlue;
+			colour.r = color.red;
+			colour.g = color.green;
+			colour.b = color.blue;
 			palette.setColour(i, colour);
 		}
 		// Fill the rest of the palette with clones of index 0

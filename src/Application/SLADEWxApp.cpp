@@ -42,6 +42,7 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "OpenGL/OpenGL.h"
 #include "UI/WxUtils.h"
+#include "UI/WxWebpHandler.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include <wx/filefn.h>
@@ -455,6 +456,7 @@ bool SLADEWxApp::OnInit()
 
 	// Load image handlers
 	wxInitAllImageHandlers();
+	wxImage::AddHandler(new WxWebpHandler);
 
 	// Get Windows version
 #ifdef __WXMSW__

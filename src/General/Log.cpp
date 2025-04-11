@@ -31,14 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include <FreeImage.h>
 #include <SFML/System/Err.hpp>
 #include <fmt/chrono.h>
 #include <fstream>
-
-#ifndef _WIN32
-#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
-#endif
 
 using namespace slade;
 
@@ -76,27 +71,6 @@ template<> struct fmt::formatter<log::MessageType> : formatter<string_view>
 		return formatter<string_view>::format(prefix, ctx);
 	}
 }; // namespace fmt
-
-
-// -----------------------------------------------------------------------------
-//
-// FreeImage Error Handler
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Allows us to catch FreeImage errors and log them
-// -----------------------------------------------------------------------------
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
-{
-	string error = "FreeImage: ";
-	if (fif != FIF_UNKNOWN)
-		error += fmt::format("[{}] ", FreeImage_GetFormatFromFIF(fif));
-	error += message;
-
-	log::error(error);
-}
 
 
 // -----------------------------------------------------------------------------
@@ -156,9 +130,6 @@ void log::init()
 	info(fmt::format("Compiled with wxWidgets {}.{}.{}", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER));
 #endif
 	info("--------------------------------");
-
-	// Set up FreeImage to use our log:
-	FreeImage_SetOutputMessage(FreeImageErrorHandler);
 }
 
 // -----------------------------------------------------------------------------

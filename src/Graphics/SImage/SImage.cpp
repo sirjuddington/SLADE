@@ -1094,9 +1094,7 @@ void SImage::setHeight(int h)
 }
 
 // -----------------------------------------------------------------------------
-// Rotates the image with an angle of 90°, 180° or 270°.
-// Why not use FreeImage_Rotate instead? So as not to bother converting to and
-// fro a FIBITMAP...
+// Rotates the image with an angle of 90°, 180° or 270°
 // -----------------------------------------------------------------------------
 bool SImage::rotate(int angle)
 {

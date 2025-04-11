@@ -1,4 +1,3 @@
-#include "App.h"
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
@@ -64,7 +63,6 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include <FreeImage.h>
 #include <dumb.h>
 #include <filesystem>
 #ifdef __WXOSX__
@@ -72,10 +70,6 @@
 #endif
 #if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
 #include <wx/msw/darkmode.h>
-#endif
-
-#ifndef _WIN32
-#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
 #endif
 
 using namespace slade;
@@ -485,9 +479,6 @@ bool app::init(const vector<string>& args)
 
 	// Init log
 	log::init();
-
-	// Init FreeImage
-	FreeImage_Initialise();
 
 	// Process the command line arguments
 	auto paths_to_open = processCommandLine(args);

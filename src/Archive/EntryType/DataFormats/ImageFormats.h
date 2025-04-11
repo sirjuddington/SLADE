@@ -278,7 +278,7 @@ public:
 		// Check size
 		if (mc.size() > 48)
 		{
-			// Check for ILBM header, we'll also accept ACBM and PBM files, hoping FreeImage handles them all.
+			// Check for ILBM header, we'll also accept ACBM and PBM files, hoping wxWidgets handles them all.
 			// There's more info and documentation on these by Sander van der Burg at
 			// https://github.com/svanderburg/libilbm
 			if ((mc[0] == 'F' && mc[1] == 'O' && mc[2] == 'R' && mc[3] == 'M')

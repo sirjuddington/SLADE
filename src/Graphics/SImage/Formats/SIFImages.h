@@ -1,4 +1,7 @@
 
+#include "UI/WxUtils.h"
+#include <wx/mstream.h>
+
 class PNGChunk
 {
 public:
@@ -232,24 +235,20 @@ public:
 protected:
 	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
-		// Create FreeImage bitmap from entry data
-		auto mem = FreeImage_OpenMemory(const_cast<BYTE*>(data.data()), data.size());
-		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
-		auto bm  = FreeImage_LoadFromMemory(fif, mem, 0);
-		FreeImage_CloseMemory(mem);
+		wxMemoryInputStream memstream(data.data(), data.size());
+		const wxImage       wx_image(memstream, wxBITMAP_TYPE_PNG);
 
 		// Check it created/read ok
-		if (!bm)
+		if (!wx_image.IsOk())
 		{
 			global::error = "Error reading PNG data";
 			return false;
 		}
 
 		// Get image info
-		int  width  = FreeImage_GetWidth(bm);
-		int  height = FreeImage_GetHeight(bm);
-		int  bpp    = FreeImage_GetBPP(bm);
-		auto type   = SImage::Type::RGBA;
+		int  width  = wx_image.GetWidth();
+		int  height = wx_image.GetHeight();
+		auto type   = wx_image.HasPalette() ? SImage::Type::PalMask : SImage::Type::RGBA;
 
 		// Read extra info from various PNG chunks
 		int32_t xoff       = 0;
@@ -287,27 +286,16 @@ protected:
 				break;
 		}
 
-		// Get image palette if it exists
-		auto    bm_pal = FreeImage_GetPalette(bm);
-		Palette palette;
-		if (bpp == 8 && bm_pal)
-		{
-			type  = SImage::Type::PalMask;
-			int a = 0;
-			int b = FreeImage_GetColorsUsed(bm);
-			if (b > 256)
-				b = 256;
-			for (; a < b; a++)
-				palette.setColour(a, ColRGBA(bm_pal[a].rgbRed, bm_pal[a].rgbGreen, bm_pal[a].rgbBlue, 255));
-		}
-
 		// If it's a ZDoom alpha map
-		if (alPh_chunk && bpp == 8)
+		if (alPh_chunk && type == SImage::Type::PalMask)
 			type = SImage::Type::AlphaMap;
 
 		// Create image
-		if (bm_pal)
+		if (type == SImage::Type::PalMask)
+		{
+			auto palette = wxutil::paletteFromWx(wx_image.GetPalette());
 			image.create(width, height, type, &palette);
+		}
 		else
 			image.create(width, height, type, nullptr);
 
@@ -315,204 +303,123 @@ protected:
 		auto img_data = imageData(image);
 		if (type == SImage::Type::PalMask || type == SImage::Type::AlphaMap)
 		{
-			// Flip vertically
-			FreeImage_FlipVertical(bm);
-
 			// Load indexed data
-			unsigned c = 0;
-			for (int row = 0; row < height; row++)
+			auto data_rgb = wx_image.GetData();
+			for (unsigned c = 0; c < width * height; c++)
 			{
-				auto scanline = FreeImage_GetScanLine(bm, row);
-				for (int x = 0; x < width; x++)
-					img_data[c++] = scanline[x];
+				// wxImage always loads as RGB, so we need to convert to palette index
+				img_data[c] = wx_image.GetPalette().GetPixel(data_rgb[c * 3], data_rgb[c * 3 + 1], data_rgb[c * 3 + 2]);
 			}
 
 			// Set mask
 			if (type == SImage::Type::PalMask)
 			{
-				auto mask       = imageMask(image);
-				auto alphatable = FreeImage_GetTransparencyTable(bm);
-				if (alphatable)
-				{
-					for (int a = 0; a < width * height; a++)
-						mask[a] = alphatable[img_data[a]];
-				}
+				auto mask = imageMask(image);
+				if (auto alpha = wx_image.GetAlpha())
+					memcpy(mask, alpha, width * height);
 				else
 					image.fillAlpha(255);
 			}
 		}
-		else if (type == SImage::Type::RGBA)
+		else
 		{
-			// Convert to 32bpp & flip vertically
-			auto rgb = FreeImage_ConvertTo32Bits(bm);
-			if (!rgb)
-			{
-				log::error("FreeImage_ConvertTo32Bits failed for PNG data");
-				global::error = "Error reading PNG data";
-				return false;
-			}
-			FreeImage_FlipVertical(rgb);
-
 			// Load raw RGBA data
-			auto bits_rgb = FreeImage_GetBits(rgb);
-			int  c        = 0;
-			for (int a = 0; a < width * height; a++)
+			const auto data_rgb = wx_image.GetData();
+			int        c        = 0;
+			if (wx_image.HasAlpha())
 			{
-				img_data[c++] = bits_rgb[a * 4 + 2]; // Red
-				img_data[c++] = bits_rgb[a * 4 + 1]; // Green
-				img_data[c++] = bits_rgb[a * 4];     // Blue
-				img_data[c++] = bits_rgb[a * 4 + 3]; // Alpha
+				// Image has alpha channel
+				const auto data_alpha = wx_image.GetAlpha();
+				for (int a = 0; a < width * height; a++)
+				{
+					img_data[c++] = data_rgb[a * 3];     // Red
+					img_data[c++] = data_rgb[a * 3 + 1]; // Green
+					img_data[c++] = data_rgb[a * 3 + 2]; // Blue
+					img_data[c++] = data_alpha[a];       // Alpha
+				}
 			}
-
-			FreeImage_Unload(rgb);
+			else
+			{
+				// No alpha channel
+				for (int a = 0; a < width * height; a++)
+				{
+					img_data[c++] = data_rgb[a * 3];     // Red
+					img_data[c++] = data_rgb[a * 3 + 1]; // Green
+					img_data[c++] = data_rgb[a * 3 + 2]; // Blue
+					img_data[c++] = 255;                 // Alpha
+				}
+			}
 		}
 
 		// Set offsets
 		image.setXOffset(xoff);
 		image.setYOffset(yoff);
 
-		// Clean up
-		FreeImage_Unload(bm);
-
 		return true;
 	}
 
 	bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) override
 	{
-		// Variables
-		FIBITMAP* bm       = nullptr;
-		auto      img_data = imageData(image);
-		auto      img_mask = imageMask(image);
-		auto      type     = image.type();
-		int       width    = image.width();
-		int       height   = image.height();
+		auto type   = image.type();
+		int  width  = image.width();
+		int  height = image.height();
 
-		if (type == SImage::Type::RGBA)
+		// First up, create the wxImage to be saved as png data
+		wxImage wx_image;
+		switch (type)
 		{
-			// Init 32bpp FIBITMAP
-			bm = FreeImage_Allocate(width, height, 32, 0x0000FF00, 0x00FF0000, 0x000000FF);
-			if (!bm)
-			{
-				log::error("FreeImage_Allocate failed for 32bit image");
-				return false;
-			}
-
-			// Write image data
-			uint8_t* bits = FreeImage_GetBits(bm);
-			uint32_t c    = 0;
-			for (int a = 0; a < width * height * 4; a += 4)
-			{
-				bits[c++] = img_data[a + 2];
-				bits[c++] = img_data[a + 1];
-				bits[c++] = img_data[a];
-				bits[c++] = img_data[a + 3];
-			}
-		}
-		else if (type == SImage::Type::PalMask)
+		case SImage::Type::RGBA:
 		{
-			// Init 8bpp FIBITMAP
-			bm = FreeImage_Allocate(width, height, 8);
-			if (!bm)
-			{
-				log::error("FreeImage_Allocate failed for 8bit image");
-				return false;
-			}
+			MemChunk data_rgb, data_alpha;
+			image.putRGBData(data_rgb);
+			image.putAlphaData(data_alpha);
 
-			// Get palette to use
-			Palette usepal;
-			if (image.hasPalette())
-				usepal.copyPalette(&imagePalette(image));
-			else if (pal)
-				usepal.copyPalette(pal);
+			wx_image.Create(width, height, data_rgb.data(), data_alpha.data());
+			wx_image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, wxPNG_TYPE_COLOUR);
 
-			// Set palette
-			auto bm_pal = FreeImage_GetPalette(bm);
-			for (int a = 0; a < 256; a++)
-			{
-				bm_pal[a].rgbRed   = usepal.colour(a).r;
-				bm_pal[a].rgbGreen = usepal.colour(a).g;
-				bm_pal[a].rgbBlue  = usepal.colour(a).b;
-			}
-
-			// Handle transparency if needed
-			if (img_mask)
-			{
-				if (usepal.transIndex() < 0)
-				{
-					// Find unused colour (for transparency)
-					short unused = image.findUnusedColour(255);
-
-					// Set any transparent pixels to this colour (if we found an unused colour)
-					bool has_trans = false;
-					if (unused >= 0)
-					{
-						for (int a = 0; a < width * height; a++)
-						{
-							if (img_mask[a] == 0)
-							{
-								img_data[a] = unused;
-								has_trans   = true;
-							}
-						}
-
-						// Set palette transparency
-						if (has_trans)
-							usepal.setTransIndex(unused);
-					}
-				}
-
-				// Set freeimage palette transparency if needed
-				if (usepal.transIndex() >= 0)
-					FreeImage_SetTransparentIndex(bm, usepal.transIndex());
-			}
-
-			// Write image data
-			for (int row = 0; row < height; row++)
-			{
-				uint8_t* scanline = FreeImage_GetScanLine(bm, row);
-				memcpy(scanline, img_data + (row * width), width);
-			}
+			break;
 		}
-		else if (type == SImage::Type::AlphaMap)
+
+		case SImage::Type::PalMask:
 		{
-			// Init 8bpp FIBITMAP
-			bm = FreeImage_Allocate(width, height, 8);
-			if (!bm)
-			{
-				log::error("FreeImage_Allocate failed for 8bit image");
-				return false;
-			}
+			MemChunk data_rgb, data_alpha;
+			image.putRGBData(data_rgb, pal);
+			image.putAlphaData(data_alpha);
 
-			// Set palette (greyscale)
-			auto bm_pal = FreeImage_GetPalette(bm);
-			for (int a = 0; a < 256; a++)
-			{
-				bm_pal[a].rgbRed   = a;
-				bm_pal[a].rgbGreen = a;
-				bm_pal[a].rgbBlue  = a;
-			}
+			wx_image.Create(width, height, data_rgb.data(), data_alpha.data());
+			wx_image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, wxPNG_TYPE_PALETTE);
+			wx_image.SetPalette(wxutil::paletteToWx(pal && !image.hasPalette() ? *pal : imagePalette(image)));
+			wx_image.ConvertAlphaToMask(1);
 
-			// Write image data
-			for (int row = 0; row < height; row++)
-			{
-				auto scanline = FreeImage_GetScanLine(bm, row);
-				memcpy(scanline, img_data + (row * width), width);
-			}
+			break;
 		}
-		else
+
+		case SImage::Type::AlphaMap:
+		{
+			MemChunk data_rgb;
+			image.putRGBData(data_rgb, pal);
+
+			static Palette pal_greyscale;
+
+			wx_image.Create(width, height, data_rgb.data());
+			wx_image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, wxPNG_TYPE_PALETTE);
+			wx_image.SetPalette(wxutil::paletteToWx(pal_greyscale));
+
+			break;
+		}
+
+		default: // Unknown type
+			log::error("Unknown image type for PNG write");
 			return false;
+		}
 
-		// Flip the image
-		FreeImage_FlipVertical(bm);
-
-		// Write the image to memory
-		auto fi_png = FreeImage_OpenMemory();
-		FreeImage_SaveToMemory(FIF_PNG, bm, fi_png);
+		// Write png data to memory
+		wxMemoryOutputStream stream;
+		wx_image.SaveFile(stream, wxBITMAP_TYPE_PNG);
 
 		// Write PNG header and IHDR
-		DWORD png_size;
-		BYTE* png_data;
-		FreeImage_AcquireMemory(fi_png, &png_data, &png_size);
+		auto png_size = stream.GetSize();
+		auto png_data = static_cast<uint8_t*>(stream.GetOutputStreamBuffer()->GetBufferStart());
 		data.clear();
 		data.write(png_data, 33);
 
@@ -535,9 +442,6 @@ protected:
 
 		// Write remaining PNG data
 		data.write(png_data + 33, png_size - 33);
-
-		// Clean up
-		FreeImage_CloseMemory(fi_png);
 
 		// Success
 		return true;

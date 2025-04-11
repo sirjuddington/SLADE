@@ -40,7 +40,10 @@ wxArrayString arrayString(const vector<wxString>& vector);
 wxArrayString arrayStringStd(const vector<string>& vector);
 
 // Misc
-void setWindowIcon(wxTopLevelWindow* window, string_view icon);
+void      setWindowIcon(wxTopLevelWindow* window, string_view icon);
+wxImage   createImageFromSVG(const string& svg_text, int width, int height);
+Palette   paletteFromWx(const wxPalette& palette);
+wxPalette paletteToWx(const Palette& palette);
 
 // From CodeLite
 wxColour systemPanelBGColour();

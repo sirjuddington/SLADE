@@ -33,6 +33,7 @@
 #include "UI/WxUtils.h"
 #include "App.h"
 #include "Graphics/Icons.h"
+#include "Graphics/Palette/Palette.h"
 #include "UI/UI.h"
 #include "Utility/Colour.h"
 #include <algorithm>
@@ -305,4 +306,41 @@ wxColour wxutil::darkColour(const wxColour& colour, float percent)
 
 	ColRGBA rgb = hsl.asRGB();
 	return { rgb.r, rgb.g, rgb.b };
+}
+
+// -----------------------------------------------------------------------------
+// Converts a wx [palette] to a SLADE Palette
+// -----------------------------------------------------------------------------
+Palette wxutil::paletteFromWx(const wxPalette& palette)
+{
+	Palette pal{ static_cast<unsigned>(palette.GetColoursCount()) };
+
+	ColRGBA col;
+	for (int a = 0; a < palette.GetColoursCount(); ++a)
+	{
+		palette.GetRGB(a, &col.r, &col.g, &col.b);
+		pal.setColour(a, col);
+	}
+
+	return pal;
+}
+
+// -----------------------------------------------------------------------------
+// Converts a SLADE [palette] to a wxPalette
+// -----------------------------------------------------------------------------
+wxPalette wxutil::paletteToWx(const Palette& palette)
+{
+	// wxPalette is weird and requires separate arrays for each colour channel
+	int  size   = palette.colours().size();
+	auto reds   = vector<uint8_t>(size);
+	auto greens = vector<uint8_t>(size);
+	auto blues  = vector<uint8_t>(size);
+	for (size_t a = 0; a < size; ++a)
+	{
+		reds[a]   = palette.colour(a).r;
+		greens[a] = palette.colour(a).g;
+		blues[a]  = palette.colour(a).b;
+	}
+
+	return { size, reds.data(), greens.data(), blues.data() };
 }

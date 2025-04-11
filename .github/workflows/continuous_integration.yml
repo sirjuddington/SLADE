@@ -41,7 +41,7 @@ jobs:
 
     - name: Install Dependencies (macOS)
       if: runner.os == 'macOS'
-      run: brew install fluidsynth freeimage ftgl glm lua mpg123 sfml wxwidgets dylibbundler create-dmg
+      run: brew install fluidsynth ftgl glm lua mpg123 sfml wxwidgets dylibbundler create-dmg webp
 
     - name: Install Dependencies (Linux)
       if: runner.os == 'Linux'
@@ -49,7 +49,7 @@ jobs:
         sudo apt-get update
         sudo apt-get upgrade
         sudo apt-get install \
-        libfluidsynth-dev libfreeimage-dev libglm-dev \
+        libfluidsynth-dev libwebp-dev libglm-dev \
         liblua5.4-dev libmpg123-dev libsfml-dev libwxgtk3.2-dev
         
 
