@@ -449,9 +449,6 @@ bool app::init(const vector<string>& args, double ui_scale)
 	// Init log
 	log::init();
 
-	// Init FreeImage
-	FreeImage_Initialise();
-
 	// Process the command line arguments
 	auto paths_to_open = processCommandLine(args);
 

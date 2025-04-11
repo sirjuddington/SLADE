@@ -217,6 +217,30 @@ bool SImage::putIndexedData(MemChunk& mc) const
 }
 
 // -----------------------------------------------------------------------------
+// Loads the image alpha channel into [mc].
+// Returns false if image is invalid, true otherwise
+// -----------------------------------------------------------------------------
+bool SImage::putAlphaData(MemChunk& mc) const
+{
+	// Check the image is valid
+	if (!isValid())
+		return false;
+
+	switch (type_)
+	{
+	case Type::PalMask:
+	case Type::AlphaMap: return mc.write(mask_.data(), mask_.size());
+	case Type::RGBA:
+	{
+		mc.reSize(width_ * height_, false);
+		for (int a = 0; a < width_ * height_ * 4; a += 4)
+			mc.write(&data_[a + 3], 1);
+	}
+	default: return false;
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Returns the number of bytes per image row
 // -----------------------------------------------------------------------------
 unsigned SImage::stride() const
@@ -1013,9 +1037,7 @@ void SImage::setHeight(int h)
 }
 
 // -----------------------------------------------------------------------------
-// Rotates the image with an angle of 90°, 180° or 270°.
-// Why not use FreeImage_Rotate instead? So as not to bother converting to and
-// fro a FIBITMAP...
+// Rotates the image with an angle of 90°, 180° or 270°
 // -----------------------------------------------------------------------------
 bool SImage::rotate(int angle)
 {
