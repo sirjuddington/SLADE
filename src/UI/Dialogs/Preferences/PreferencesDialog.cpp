@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -68,9 +67,9 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-wxString PreferencesDialog::last_page_ = "";
-int      PreferencesDialog::width_     = 0;
-int      PreferencesDialog::height_    = 0;
+string PreferencesDialog::last_page_;
+int    PreferencesDialog::width_  = 0;
+int    PreferencesDialog::height_ = 0;
 
 
 // -----------------------------------------------------------------------------
@@ -84,20 +83,20 @@ namespace
 // Creates a sizer with a settings page title, (optional) description and
 // separator line
 // -----------------------------------------------------------------------------
-wxSizer* createTitleSizer(wxWindow* parent, const wxString& title, const wxString& description)
+wxSizer* createTitleSizer(wxWindow* parent, const string& title, const string& description)
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 
 	// Title
-	auto title_label = new wxStaticText(parent, -1, title);
+	auto title_label = new wxStaticText(parent, -1, wxString::FromUTF8(title));
 	auto font        = title_label->GetFont();
 	title_label->SetFont(font.MakeLarger().MakeLarger().MakeBold());
-	title_label->SetMinSize(wxSize(-1, title_label->GetTextExtent("Wy").y));
+	title_label->SetMinSize(wxSize(-1, title_label->GetTextExtent(wxS("Wy")).y));
 	sizer->Add(title_label, 0, wxEXPAND);
 
 	// Description
 	if (!description.empty())
-		sizer->Add(new wxStaticText(parent, -1, description), 0, wxEXPAND);
+		sizer->Add(new wxStaticText(parent, -1, wxString::FromUTF8(description)), 0, wxEXPAND);
 
 	// Separator
 	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
@@ -148,14 +147,14 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 	addPrefsPage<ColorimetryPrefsPanel>("Colorimetry", true);
 	addPrefsPage<HudOffsetsPrefsPanel>("HUD Offsets View", true);
 	addPrefsPage<AudioPrefsPanel>("Audio");
-	tree_prefs_->AddPage(new wxPanel(tree_prefs_, -1), "Scripting");
+	tree_prefs_->AddPage(new wxPanel(tree_prefs_, -1), wxS("Scripting"));
 	addPrefsPage<ACSPrefsPanel>("ACS", true);
 	addPrefsPage<DECOHackPrefsPanel>("DECOHack", true);
 	addPrefsPage<MapEditorPrefsPanel>("Map Editor");
 	addPrefsPage<MapDisplayPrefsPanel>("Display", true);
 	addPrefsPage<Map3DPrefsPanel>("3D Mode", true);
 	addPrefsPage<NodesPrefsPanel>("Node Builder", true);
-	tree_prefs_->AddPage(setupAdvancedPanel(), "Advanced");
+	tree_prefs_->AddPage(setupAdvancedPanel(), wxS("Advanced"));
 
 	// Expand all tree nodes (so it gets sized properly)
 	for (unsigned page = 0; page < tree_prefs_->GetPageCount(); page++)
@@ -188,7 +187,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 // [sub_page] is true the page is added as a subpage of the previously added
 // (non-sub) page
 // -----------------------------------------------------------------------------
-void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const wxString& title, bool sub_page, bool select)
+void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const string& title, bool sub_page, bool select)
 {
 	// Create a panel to put the preferences page in
 	// (since we want some extra padding between the tree and the page)
@@ -210,9 +209,9 @@ void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const wxString& title
 
 	// Add panel to treebook
 	if (sub_page)
-		tree_prefs_->AddSubPage(panel, title, select);
+		tree_prefs_->AddSubPage(panel, wxString::FromUTF8(title), select);
 	else
-		tree_prefs_->AddPage(panel, title, select);
+		tree_prefs_->AddPage(panel, wxString::FromUTF8(title), select);
 
 	// Add page to map of prefs pages
 	prefs_pages_[title] = page;
@@ -270,12 +269,12 @@ wxPanel* PreferencesDialog::setupAdvancedPanel()
 // -----------------------------------------------------------------------------
 // Shows the preferences page matching [name]
 // -----------------------------------------------------------------------------
-void PreferencesDialog::showPage(const wxString& name, const wxString& subsection)
+void PreferencesDialog::showPage(const string& name, const string& subsection)
 {
 	// Go through all pages
 	for (unsigned a = 0; a < tree_prefs_->GetPageCount(); a++)
 	{
-		if (S_CMPNOCASE(tree_prefs_->GetPageText(a), name))
+		if (S_CMPNOCASE(tree_prefs_->GetPageText(a), wxString::FromUTF8(name)))
 		{
 			tree_prefs_->SetSelection(a);
 			tree_prefs_->ExpandNode(a);
@@ -289,12 +288,12 @@ void PreferencesDialog::showPage(const wxString& name, const wxString& subsectio
 // -----------------------------------------------------------------------------
 // Returns the name of the currently selected page
 // -----------------------------------------------------------------------------
-wxString PreferencesDialog::currentPage() const
+string PreferencesDialog::currentPage() const
 {
 	int sel = tree_prefs_->GetSelection();
 
 	if (sel >= 0)
-		return tree_prefs_->GetPageText(sel);
+		return tree_prefs_->GetPageText(sel).utf8_string();
 	else
 		return "";
 }
@@ -359,11 +358,11 @@ void PreferencesDialog::onButtonClicked(wxCommandEvent& e)
 // Opens a preferences dialog on top of [parent], showing either the last viewed
 // page or [initial_page] if it is specified
 // -----------------------------------------------------------------------------
-void PreferencesDialog::openPreferences(wxWindow* parent, wxString initial_page, const wxString& subsection)
+void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page, const string& subsection)
 {
 	// Setup dialog
 	PreferencesDialog dlg(parent);
-	if (initial_page.IsEmpty())
+	if (initial_page.empty())
 		initial_page = last_page_;
 	dlg.showPage(initial_page, subsection);
 	dlg.initPages();

@@ -13,13 +13,13 @@ public:
 	SideTexCanvas(wxWindow* parent);
 	~SideTexCanvas() = default;
 
-	wxString texName() const { return texname_; }
-	void     setTexture(const wxString& texture);
-	void     draw() override;
+	string texName() const { return texname_; }
+	void   setTexture(const string& texture);
+	void   draw() override;
 
 private:
 	unsigned texture_ = 0;
-	wxString texname_;
+	string   texname_;
 };
 
 class TextureComboBox : public wxComboBox

@@ -60,7 +60,7 @@ NodeBuildersWizardPage::NodeBuildersWizardPage(wxWindow* parent) : WizardPageBas
 // -----------------------------------------------------------------------------
 // Returns the description for the wizard page
 // -----------------------------------------------------------------------------
-wxString NodeBuildersWizardPage::description()
+string NodeBuildersWizardPage::description()
 {
 	return "If you plan to do any map editing, set up the paths to any node builders you have. "
 		   "You can also set up the build options for each node builder. "

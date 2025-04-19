@@ -37,6 +37,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Tokenizer.h"
 #include <wx/webrequest.h>
 
@@ -72,7 +73,7 @@ EXTERN_CVAR(String, iconset_entry_list)
 // -----------------------------------------------------------------------------
 SStartPage::SStartPage(wxWindow* parent) : wxPanel(parent, -1)
 {
-	wxPanel::SetName("startpage");
+	wxPanel::SetName(wxS("startpage"));
 
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -86,12 +87,19 @@ void SStartPage::init()
 	// wxWebView
 #ifdef USE_WEBVIEW_STARTPAGE
 	html_startpage_ = wxWebView::New(
-		this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxWebViewBackendDefault, wxBORDER_NONE);
+		this,
+		-1,
+		wxEmptyString,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxString::FromUTF8(wxWebViewBackendDefault),
+		wxBORDER_NONE);
 	html_startpage_->SetZoomType(app::platform() == app::MacOS ? wxWEBVIEW_ZOOM_TYPE_TEXT : wxWEBVIEW_ZOOM_TYPE_LAYOUT);
 
 	// wxHtmlWindow
 #else
-	html_startpage_ = new wxHtmlWindow(this, -1, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_NEVER, "startpage");
+	html_startpage_ = new wxHtmlWindow(
+		this, -1, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_NEVER, wxS("startpage"));
 #endif
 
 	// Add to sizer
@@ -103,7 +111,7 @@ void SStartPage::init()
 
 	html_startpage_->Bind(
 		wxEVT_WEBVIEW_ERROR,
-		[&](wxWebViewEvent& e) { log::error(wxString::Format("wxWebView Error: %s", e.GetString())); });
+		[&](wxWebViewEvent& e) { log::error("wxWebView Error: {}", e.GetString().utf8_string()); });
 
 	if (app::platform() == app::Platform::Windows)
 	{
@@ -122,7 +130,7 @@ void SStartPage::init()
 				load(false);
 				break;
 			case wxWebRequest::State_Completed:
-				latest_news_ = e.GetResponse().AsString().Trim();
+				latest_news_ = e.GetResponse().AsString().Trim().utf8_string();
 				load(false);
 				break;
 			default: break;
@@ -183,7 +191,8 @@ void SStartPage::load(bool new_tip)
 	// Get latest news post
 	if (latest_news_.empty())
 	{
-		auto request = wxWebSession::GetDefault().CreateRequest(this, "https://slade.mancubus.net/news-latest.php");
+		auto request = wxWebSession::GetDefault().CreateRequest(
+			this, wxS("https://slade.mancubus.net/news-latest.php"));
 		request.Start();
 	}
 
@@ -192,8 +201,8 @@ void SStartPage::load(bool new_tip)
 	{
 		log::error("No start page resource found");
 		html_startpage_->SetPage(
-			"<html><head><title>SLADE</title></head><body><center><h1>"
-			"Something is wrong with slade.pk3 :(</h1><center></body></html>",
+			wxS("<html><head><title>SLADE</title></head><body><center><h1>"
+				"Something is wrong with slade.pk3 :(</h1><center></body></html>"),
 			wxEmptyString);
 		return;
 	}
@@ -207,7 +216,7 @@ void SStartPage::load(bool new_tip)
 		css = wxString::FromAscii((const char*)(entry_css_->rawData()), entry_css_->size());
 
 	// Generate tip of the day string
-	wxString tip;
+	string tip;
 	if (tips_.size() < 2) // Needs at least two choices or it's kinda pointless.
 		tip = "Did you know? Something is wrong with the tips.txt file in your slade.pk3.";
 	else
@@ -227,7 +236,7 @@ void SStartPage::load(bool new_tip)
 	}
 
 	// Generate recent files string
-	wxString recent;
+	string recent;
 	if (app::archiveManager().numRecentFiles() > 0)
 	{
 		for (unsigned a = 0; a < 12; a++)
@@ -236,20 +245,21 @@ void SStartPage::load(bool new_tip)
 				break; // No more recent files
 
 			// Determine icon
-			wxString fn   = app::archiveManager().recentFile(a);
-			wxString icon = "archive";
-			if (fn.EndsWith(".wad"))
+			string fn   = app::archiveManager().recentFile(a);
+			string icon = "archive";
+			if (strutil::endsWithCI(fn, ".wad"))
 				icon = "wad";
-			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
+			else if (
+				strutil::endsWithCI(fn, ".zip") || strutil::endsWithCI(fn, ".pk3") || strutil::endsWithCI(fn, ".pke"))
 				icon = "zip";
-			else if (wxDirExists(fn))
+			else if (fileutil::dirExists(fn))
 				icon = "folder";
 
 			// Add recent file row
-			recent += wxString::Format(
+			recent += fmt::format(
 				"<div class=\"link\">"
-				"<img src=\"%s.svg\" class=\"link\" />"
-				"<a class=\"link\" href=\"recent://%d\">%s</a>"
+				"<img src=\"{}.svg\" class=\"link\" />"
+				"<a class=\"link\" href=\"recent://{}\">{}</a>"
 				"</div>",
 				icon,
 				a,
@@ -260,26 +270,26 @@ void SStartPage::load(bool new_tip)
 		recent = "No recently opened files";
 
 	// Replace placeholders in the html (theme css, recent files, tip, etc.)
-	html.Replace("/*#theme#*/", css);
-	html.Replace("#recent#", recent);
-	html.Replace("#totd#", tip);
-	html.Replace("#news#", latest_news_);
-	html.Replace("#version#", app::version().toString());
+	html.Replace(wxS("/*#theme#*/"), css);
+	html.Replace(wxS("#recent#"), wxString::FromUTF8(recent));
+	html.Replace(wxS("#totd#"), wxString::FromUTF8(tip));
+	html.Replace(wxS("#news#"), wxString::FromUTF8(latest_news_));
+	html.Replace(wxS("#version#"), wxString::FromUTF8(app::version().toString()));
 	if (update_version_.empty())
-		html.Replace("/*#hideupdate#*/", "#update { display: none; }");
+		html.Replace(wxS("/*#hideupdate#*/"), wxS("#update { display: none; }"));
 	else
-		html.Replace("#updateversion#", update_version_);
+		html.Replace(wxS("#updateversion#"), wxString::FromUTF8(update_version_));
 
 	// Write html and images to temp folder
 	for (auto& a : entry_export_)
 		a->exportFile(app::path(a->name(), app::Dir::Temp));
-	wxString html_file = app::path("startpage.htm", app::Dir::Temp);
+	wxString html_file = wxString::FromUTF8(app::path("startpage.htm", app::Dir::Temp));
 	wxFile   outfile(html_file, wxFile::write);
 	outfile.Write(html);
 	outfile.Close();
 
 	if (app::platform() == app::Linux)
-		html_file = "file://" + html_file;
+		html_file = wxS("file://") + html_file;
 
 	// Load page
 	html_startpage_->ClearHistory();
@@ -353,7 +363,7 @@ void SStartPage::load(bool new_tip)
 			recent += "<br/>\n";
 
 		// Add recent file link
-		recent += wxString::Format("<a href=\"recent://%d\">%s</a>", a, app::archiveManager().recentFile(a));
+		recent += WX_FMT("<a href=\"recent://{}\">{}</a>", a, app::archiveManager().recentFile(a));
 	}
 
 	// Insert tip and recent files into html
@@ -363,7 +373,7 @@ void SStartPage::load(bool new_tip)
 	// Write html and images to temp folder
 	if (entry_logo)
 		entry_logo->exportFile(app::path("logo.png", app::Dir::Temp));
-	string html_file = app::path("startpage_basic.htm", app::Dir::Temp);
+	auto   html_file = wxString::FromUTF8(app::path("startpage_basic.htm", app::Dir::Temp));
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);
 	outfile.Close();
@@ -391,7 +401,7 @@ void SStartPage::refresh() const
 // -----------------------------------------------------------------------------
 // Updates the start page to show that an update to [version_name] is available
 // -----------------------------------------------------------------------------
-void SStartPage::updateAvailable(const wxString& version_name)
+void SStartPage::updateAvailable(const string& version_name)
 {
 	update_version_ = version_name;
 	load(false);
@@ -410,19 +420,19 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 	wxString href = ev.GetURL();
 
 #ifdef __WXGTK__
-	if (!href.EndsWith("startpage.htm"))
-		href.Replace("file://", "");
+	if (!href.EndsWith(wxS("startpage.htm")))
+		href.Replace(wxS("file://"), wxEmptyString);
 #endif
 
-	if (href.EndsWith("/"))
+	if (href.EndsWith(wxS("/")))
 		href.RemoveLast(1);
 
-	if (href.StartsWith("http://") || href.StartsWith("https://"))
+	if (href.StartsWith(wxS("http://")) || href.StartsWith(wxS("https://")))
 	{
 		wxLaunchDefaultBrowser(ev.GetURL());
 		ev.Veto();
 	}
-	else if (href.StartsWith("recent://"))
+	else if (href.StartsWith(wxS("recent://")))
 	{
 		// Recent file
 		wxString      rs    = href.Mid(9);
@@ -433,30 +443,30 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 		load();
 		html_startpage_->Reload();
 	}
-	else if (href.StartsWith("action://"))
+	else if (href.StartsWith(wxS("action://")))
 	{
 		// Action
-		if (href.EndsWith("open"))
+		if (href.EndsWith(wxS("open")))
 			SActionHandler::doAction("aman_open");
-		else if (href.EndsWith("opendir"))
+		else if (href.EndsWith(wxS("opendir")))
 			SActionHandler::doAction("aman_opendir");
-		else if (href.EndsWith("newarchive"))
+		else if (href.EndsWith(wxS("newarchive")))
 			SActionHandler::doAction("aman_newarchive");
-		else if (href.EndsWith("newmap"))
+		else if (href.EndsWith(wxS("newmap")))
 		{
 			SActionHandler::doAction("aman_newmap");
 			return;
 		}
-		else if (href.EndsWith("reloadstartpage"))
+		else if (href.EndsWith(wxS("reloadstartpage")))
 			load();
-		else if (href.EndsWith("hide-update"))
+		else if (href.EndsWith(wxS("hide-update")))
 		{
 			update_version_ = "";
 			load(false);
 		}
-		else if (href.EndsWith("update"))
+		else if (href.EndsWith(wxS("update")))
 		{
-			if (wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads"))
+			if (wxLaunchDefaultBrowser(wxS("http://slade.mancubus.net/index.php?page=downloads")))
 			{
 				update_version_ = "";
 				load(false);
@@ -468,16 +478,16 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 	else if (wxFileExists(href))
 	{
 		// Navigating to file, open it
-		if (!href.EndsWith("startpage.htm"))
+		if (!href.EndsWith(wxS("startpage.htm")))
 		{
-			app::archiveManager().openArchive(href.ToStdString());
+			app::archiveManager().openArchive(href.utf8_string());
 			ev.Veto();
 		}
 	}
 	else if (wxDirExists(href))
 	{
 		// Navigating to folder, open it
-		app::archiveManager().openDirArchive(href.ToStdString());
+		app::archiveManager().openDirArchive(href.utf8_string());
 		ev.Veto();
 	}
 }
@@ -493,9 +503,9 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 	wxHtmlLinkEvent& ev   = (wxHtmlLinkEvent&)e;
 	wxString         href = ev.GetLinkInfo().GetHref();
 
-	if (href.StartsWith("http://") || href.StartsWith("https://"))
+	if (href.StartsWith(wxS("http://")) || href.StartsWith(wxS("https://")))
 		wxLaunchDefaultBrowser(ev.GetLinkInfo().GetHref());
-	else if (href.StartsWith("recent://"))
+	else if (href.StartsWith(wxS("recent://")))
 	{
 		// Recent file
 		wxString      rs    = href.Mid(9);
@@ -505,18 +515,18 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 		SActionHandler::doAction("aman_recent");
 		load();
 	}
-	else if (href.StartsWith("action://"))
+	else if (href.StartsWith(wxS("action://")))
 	{
 		// Action
-		if (href.EndsWith("open"))
+		if (href.EndsWith(wxS("open")))
 			SActionHandler::doAction("aman_open");
-		else if (href.EndsWith("newwad"))
+		else if (href.EndsWith(wxS("newwad")))
 			SActionHandler::doAction("aman_newwad");
-		else if (href.EndsWith("newzip"))
+		else if (href.EndsWith(wxS("newzip")))
 			SActionHandler::doAction("aman_newzip");
-		else if (href.EndsWith("newmap"))
+		else if (href.EndsWith(wxS("newmap")))
 			SActionHandler::doAction("aman_newmap");
-		else if (href.EndsWith("reloadstartpage"))
+		else if (href.EndsWith(wxS("reloadstartpage")))
 			load();
 	}
 	else

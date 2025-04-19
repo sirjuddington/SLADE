@@ -83,12 +83,12 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 	// Create controls
 	tex_canvas_      = new CTextureCanvas(this, -1);
 	zc_zoom_         = new ui::ZoomControl(this, tex_canvas_);
-	cb_tex_scale_    = new wxCheckBox(this, -1, "Apply Scale");
-	cb_tex_arc_      = new wxCheckBox(this, -1, "Aspect Ratio Correction");
-	cb_draw_outside_ = new wxCheckBox(this, -1, "Show Outside");
+	cb_tex_scale_    = new wxCheckBox(this, -1, wxS("Apply Scale"));
+	cb_tex_arc_      = new wxCheckBox(this, -1, wxS("Aspect Ratio Correction"));
+	cb_draw_outside_ = new wxCheckBox(this, -1, wxS("Show Outside"));
 	choice_viewtype_ = new wxChoice(this, -1);
-	label_viewtype_  = new wxStaticText(this, -1, "Offset Type:");
-	cb_blend_rgba_   = new wxCheckBox(this, -1, "Truecolour Preview");
+	label_viewtype_  = new wxStaticText(this, -1, wxS("Offset Type:"));
+	cb_blend_rgba_   = new wxCheckBox(this, -1, wxS("Truecolour Preview"));
 }
 
 // -----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ void TextureEditorPanel::setupLayout()
 	choice_viewtype_->SetSelection(0);
 	tex_canvas_->setViewType(CTextureCanvas::View::Normal);
 	cb_blend_rgba_->SetValue(false);
-	choice_viewtype_->Set(wxutil::arrayString({ "None", "Sprite", "HUD" }));
+	choice_viewtype_->Set(wxutil::arrayStringStd({ "None", "Sprite", "HUD" }));
 
 	// Only show these on ZTextureEditorPanel
 	cb_blend_rgba_->Show(false);
@@ -196,15 +196,15 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	spin_tex_height_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
 	spin_tex_scalex_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
 	spin_tex_scaley_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
-	label_scaled_size_ = new wxStaticText(panel, -1, "Scaled Size: N/A");
-	cb_tex_world_panning_ = new wxCheckBox(panel, -1, "World Panning");
+	label_scaled_size_ = new wxStaticText(panel, -1, wxS("Scaled Size: N/A"));
+	cb_tex_world_panning_ = new wxCheckBox(panel, -1, wxS("World Panning"));
 
 	// Setup tex controls panel sizer
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	panel->SetSizer(sizer);
 
 	// "Texture Properties" frame
-	auto frame      = new wxStaticBox(panel, -1, "Texture Properties");
+	auto frame      = new wxStaticBox(panel, -1, wxS("Texture Properties"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND);
 
@@ -212,12 +212,12 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	framesizer->Add(gb_sizer, 1, wxALL, ui::pad());
 
 	// Layout
-	gb_sizer->Add(new wxStaticText(panel, -1, "Name:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Name:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Size:"), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Size:")), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_width_, { 0, 3 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_height_, { 0, 4 }, { 1, 1 });
-	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Scale:")), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex_, { 1, 3 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_scaley_, { 1, 4 }, { 1, 1 });
 	gb_sizer->Add(label_scaled_size_, { 1, 5 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -242,7 +242,7 @@ void TextureEditorPanel::updateTextureControls()
 		return;
 
 	bool modified = tex_modified_;
-	text_tex_name_->SetValue(tex_current_->name());
+	text_tex_name_->SetValue(wxString::FromUTF8(tex_current_->name()));
 	spin_tex_width_->SetValue(tex_current_->width());
 	spin_tex_height_->SetValue(tex_current_->height());
 	spin_tex_scalex_->SetValue(tex_current_->scaleX() * 8);
@@ -273,7 +273,7 @@ void TextureEditorPanel::updateTextureScaleLabel()
 		scaled_y /= tex_current_->scaleY();
 
 	// Update the label
-	label_scaled_size_->SetLabel(wxString::Format("Scaled Size: %dx%d", scaled_x, scaled_y));
+	label_scaled_size_->SetLabel(WX_FMT("Scaled Size: {}x{}", scaled_x, scaled_y));
 }
 
 // -----------------------------------------------------------------------------
@@ -288,7 +288,7 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	panel->SetSizer(sizer);
 
 	// -- Texture Patches frame --
-	auto frame      = new wxStaticBox(panel, -1, "Patches");
+	auto frame      = new wxStaticBox(panel, -1, wxS("Patches"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
@@ -316,7 +316,7 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 
 
 	// -- Patch Properties frame --
-	frame      = new wxStaticBox(panel, -1, "Patch Properties");
+	frame      = new wxStaticBox(panel, -1, wxS("Patch Properties"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND);
 
@@ -325,15 +325,17 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
 	auto           hbox      = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
-	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, "X Position:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	spin_patch_left_ = new wxSpinCtrl(
+		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
+	hbox->Add(new wxStaticText(panel, -1, wxS("X Position:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	hbox->Add(spin_patch_left_, 1);
 
 	// Y Position
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
-	spin_patch_top_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, "Y Position:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	spin_patch_top_ = new wxSpinCtrl(
+		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
+	hbox->Add(new wxStaticText(panel, -1, wxS("Y Position:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	hbox->Add(spin_patch_top_, 1);
 
 	return panel;
@@ -349,7 +351,7 @@ void TextureEditorPanel::populatePatchList()
 	list_patches_->Show(false);
 
 	// Add columns
-	list_patches_->InsertColumn(0, "Name");
+	list_patches_->InsertColumn(0, wxS("Name"));
 
 	// Check a texture is currently opened for editing
 	if (!tex_current_)
@@ -410,9 +412,9 @@ void TextureEditorPanel::updatePatchControls()
 // ----------------------------------------------------------------------------
 // Updates the texture name textbox with [new_name]
 // ----------------------------------------------------------------------------
-void TextureEditorPanel::updateTextureName(const wxString& new_name) const
+void TextureEditorPanel::updateTextureName(const string& new_name) const
 {
-	text_tex_name_->SetValue(new_name);
+	text_tex_name_->SetValue(wxString::FromUTF8(new_name));
 }
 
 // ----------------------------------------------------------------------------
@@ -637,7 +639,7 @@ void TextureEditorPanel::replacePatch()
 		return;
 
 	// Get first selected patch name (for browser)
-	wxString pname = tex_canvas_->texture()->patch(selection[0])->name();
+	auto pname = tex_canvas_->texture()->patch(selection[0])->name();
 
 	// Browse for patch
 	tx_editor_->setFullPath(false);
@@ -1038,7 +1040,7 @@ void TextureEditorPanel::onTexNameChanged(wxCommandEvent& e)
 {
 	// Change texture name
 	if (tex_current_)
-		tex_current_->setName(wxutil::strToView(text_tex_name_->GetValue()));
+		tex_current_->setName(text_tex_name_->GetValue().utf8_string());
 
 	tex_modified_ = true;
 }

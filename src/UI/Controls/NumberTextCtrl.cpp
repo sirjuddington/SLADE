@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NumberTextCtrl.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -52,7 +53,7 @@ NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) :
 	wxTextCtrl(parent, -1),
 	allow_decimal_{ allow_decimal }
 {
-	SetToolTip("Use ++, --, *, / to make relative changes, e.g., ++16 to increase by 16");
+	SetToolTip(wxS("Use ++, --, *, / to make relative changes, e.g., ++16 to increase by 16"));
 
 	// Bind events
 	Bind(wxEVT_CHAR, &NumberTextCtrl::onChar, this);
@@ -66,17 +67,18 @@ NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) :
 // -----------------------------------------------------------------------------
 int NumberTextCtrl::number(int base) const
 {
-	wxString val = GetValue();
+	auto val = GetValue().utf8_string();
 
 	// Get integer value
-	long lval;
-	if (val.IsEmpty())
+	if (val.empty())
 		return 0;
-	else if (val.StartsWith("--") || val.StartsWith("++") || val.StartsWith("**") || val.StartsWith("//"))
-		val = val.Mid(2);
-	else if (val.StartsWith("+") || val.StartsWith("*") || val.StartsWith("/"))
-		val = val.Mid(1);
-	val.ToLong(&lval);
+	else if (
+		strutil::startsWith(val, "--") || strutil::startsWith(val, "++") || strutil::startsWith(val, "**")
+		|| strutil::startsWith(val, "//"))
+		val = val.substr(2);
+	else if (strutil::startsWith(val, "+") || strutil::startsWith(val, "*") || strutil::startsWith(val, "/"))
+		val = val.substr(1);
+	auto lval = strutil::asInt(val);
 
 	// Return it (incremented/decremented based on [base])
 	if (isIncrement())
@@ -102,17 +104,16 @@ double NumberTextCtrl::decNumber(double base) const
 	if (!allow_decimal_)
 		return number(base);
 
-	wxString val = GetValue();
+	auto val = GetValue().utf8_string();
 
 	// Get double value
-	double dval;
-	if (val.IsEmpty())
+	if (val.empty())
 		return 0;
-	else if (val.StartsWith("--") || val.StartsWith("++"))
-		val = val.Mid(2);
-	else if (val.StartsWith("+"))
-		val = val.Mid(1);
-	val.ToDouble(&dval);
+	else if (strutil::startsWith(val, "--") || strutil::startsWith(val, "++"))
+		val = val.substr(2);
+	else if (strutil::startsWith(val, "+"))
+		val = val.substr(1);
+	auto dval = strutil::asDouble(val);
 
 	// Return it (incremented/decremented based on [base])
 	if (isIncrement())
@@ -128,7 +129,7 @@ double NumberTextCtrl::decNumber(double base) const
 // -----------------------------------------------------------------------------
 bool NumberTextCtrl::isIncrement() const
 {
-	return GetValue().StartsWith("++");
+	return GetValue().StartsWith(wxS("++"));
 }
 
 // -----------------------------------------------------------------------------
@@ -136,7 +137,7 @@ bool NumberTextCtrl::isIncrement() const
 // -----------------------------------------------------------------------------
 bool NumberTextCtrl::isDecrement() const
 {
-	return GetValue().StartsWith("--");
+	return GetValue().StartsWith(wxS("--"));
 }
 
 // -----------------------------------------------------------------------------
@@ -144,7 +145,7 @@ bool NumberTextCtrl::isDecrement() const
 // -----------------------------------------------------------------------------
 bool NumberTextCtrl::isFactor() const
 {
-	return GetValue().StartsWith("*");
+	return GetValue().StartsWith(wxS("*"));
 }
 
 // -----------------------------------------------------------------------------
@@ -152,7 +153,7 @@ bool NumberTextCtrl::isFactor() const
 // -----------------------------------------------------------------------------
 bool NumberTextCtrl::isDivisor() const
 {
-	return GetValue().StartsWith("/");
+	return GetValue().StartsWith(wxS("/"));
 }
 
 // -----------------------------------------------------------------------------
@@ -160,7 +161,7 @@ bool NumberTextCtrl::isDivisor() const
 // -----------------------------------------------------------------------------
 void NumberTextCtrl::setNumber(int num)
 {
-	ChangeValue(wxString::Format("%d", num));
+	ChangeValue(WX_FMT("{}", num));
 }
 
 // -----------------------------------------------------------------------------
@@ -168,7 +169,7 @@ void NumberTextCtrl::setNumber(int num)
 // -----------------------------------------------------------------------------
 void NumberTextCtrl::setDecNumber(double num)
 {
-	ChangeValue(wxString::Format("%1.3f", num));
+	ChangeValue(WX_FMT("{:1.3f}", num));
 }
 
 
@@ -210,7 +211,7 @@ void NumberTextCtrl::onChar(wxKeyEvent& e)
 // -----------------------------------------------------------------------------
 void NumberTextCtrl::onChanged(wxCommandEvent& e)
 {
-	wxString new_value = GetValue();
+	auto new_value = GetValue().utf8_string();
 
 	// Check if valid
 	// Can begin with '+', '++', '-' or '--', rest has to be numeric
@@ -304,7 +305,7 @@ void NumberTextCtrl::onChanged(wxCommandEvent& e)
 	}
 	else
 	{
-		last_value_ = new_value;
+		last_value_ = wxString::FromUTF8(new_value);
 		last_point_ = GetInsertionPoint();
 		e.Skip();
 	}

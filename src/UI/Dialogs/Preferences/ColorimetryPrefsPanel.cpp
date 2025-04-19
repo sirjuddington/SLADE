@@ -71,10 +71,19 @@ namespace
 // -----------------------------------------------------------------------------
 // Creates a spin control with the given name and values
 // -----------------------------------------------------------------------------
-wxSpinCtrlDouble* createSpin(wxWindow* parent, const wxString& name, double min, double max, double initial, double inc)
+wxSpinCtrlDouble* createSpin(wxWindow* parent, const string& name, double min, double max, double initial, double inc)
 {
 	return new wxSpinCtrlDouble(
-		parent, -1, name, wxDefaultPosition, { -1, -1 }, wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, min, max, initial, inc);
+		parent,
+		-1,
+		wxString::FromUTF8(name),
+		wxDefaultPosition,
+		{ -1, -1 },
+		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
+		min,
+		max,
+		initial,
+		inc);
 }
 } // namespace
 
@@ -95,9 +104,10 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 	spin_grey_r_          = createSpin(this, "GreyscaleRed", 0.0, 1.0, 0.001, 0.001);
 	spin_grey_g_          = createSpin(this, "GreyscaleGreen", 0.0, 1.0, 0.001, 0.001);
 	spin_grey_b_          = createSpin(this, "GreyscaleBlue", 0.0, 1.0, 0.001, 0.001);
-	wxString rbgweights[] = { "Default / Standard", "Carmack's Typo", "Linear RGB" };
+	wxString rbgweights[] = { wxS("Default / Standard"), wxS("Carmack's Typo"), wxS("Linear RGB") };
 	choice_presets_grey_  = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, rbgweights);
-	wxString matchers[]   = { "RGB (integer)", "RGB (double)", "HSL", "CIE 76", "CIE 94", "CIEDE 2000" };
+	wxString matchers[]   = { wxS("RGB (integer)"), wxS("RGB (double)"), wxS("HSL"),
+							  wxS("CIE 76"),        wxS("CIE 94"),       wxS("CIEDE 2000") };
 	choice_colmatch_      = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 6, matchers);
 	spin_factor_r_        = createSpin(this, "RedFactor", 0.0, 10.0, 1.0, 0.1);
 	spin_factor_g_        = createSpin(this, "GreenFactor", 0.0, 10.0, 1.0, 0.1);
@@ -200,7 +210,7 @@ void ColorimetryPrefsPanel::setupLayout()
 	SetSizer(gbsizer);
 
 	// RGB weights for greyscale luminance
-	gbsizer->Add(new wxStaticText(this, -1, "RGB weights for greyscale luminance:"), { 0, 0 }, { 1, 3 });
+	gbsizer->Add(new wxStaticText(this, -1, wxS("RGB weights for greyscale luminance:")), { 0, 0 }, { 1, 3 });
 	gbsizer->Add(wxutil::createLabelHBox(this, "R:", spin_grey_r_), { 1, 0 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(wxutil::createLabelHBox(this, "G:", spin_grey_g_), { 1, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(wxutil::createLabelHBox(this, "B:", spin_grey_b_), { 1, 2 }, { 1, 1 }, wxALIGN_RIGHT);
@@ -223,7 +233,7 @@ void ColorimetryPrefsPanel::setupLayout()
 
 	// CIE Lab funkiness: tristimulus values for RGB->Lab conversion,
 	// and KL, KC, KH, K1 and K2 factors for CIE94 and CIEDE2000 equations
-	gbsizer->Add(new wxStaticText(this, -1, "CIE Lab Tristimulus:"), { 8, 0 }, { 1, 3 });
+	gbsizer->Add(new wxStaticText(this, -1, wxS("CIE Lab Tristimulus:")), { 8, 0 }, { 1, 3 });
 	gbsizer->Add(wxutil::createLabelHBox(this, "X:", spin_tristim_x_), { 9, 0 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(wxutil::createLabelHBox(this, "Z:", spin_tristim_z_), { 9, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(choice_presets_tristim_, { 9, 2 }, { 1, 1 }, wxEXPAND);
@@ -231,7 +241,7 @@ void ColorimetryPrefsPanel::setupLayout()
 	gbsizer->Add(new wxStaticLine(this, -1), { 10, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
 
 	// CIE equation factors
-	gbsizer->Add(new wxStaticText(this, -1, "CIE 94 and CIEDE 2000 Factors:"), { 11, 0 }, { 1, 3 }, wxEXPAND);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("CIE 94 and CIEDE 2000 Factors:")), { 11, 0 }, { 1, 3 }, wxEXPAND);
 	gbsizer->Add(wxutil::createLabelHBox(this, "KL:", spin_cie_kl_), { 12, 0 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(wxutil::createLabelHBox(this, "K1:", spin_cie_k1_), { 12, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(wxutil::createLabelHBox(this, "K2:", spin_cie_k2_), { 12, 2 }, { 1, 1 }, wxALIGN_RIGHT);

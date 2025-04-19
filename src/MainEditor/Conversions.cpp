@@ -431,8 +431,8 @@ bool conversion::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	if (wavbps > 1 || wavfmt != WAV_PCM || fmtchunk.channels == 2)
 	{
 		if (!(wxMessageBox(
-				  "Warning: conversion will result in loss of metadata and audio quality. Do you wish to proceed?",
-				  "Conversion warning",
+				  wxS("Warning: conversion will result in loss of metadata and audio quality. Do you wish to proceed?"),
+				  wxS("Conversion warning"),
 				  wxOK | wxCANCEL)
 			  == wxOK))
 		{
@@ -1384,7 +1384,7 @@ bool conversion::voxToKvx(MemChunk& in, MemChunk& out)
 	out.seek((width + 1) * sizeof(uint32_t) + width * (length + 1) * sizeof(uint16_t) + sizeof(KvxHeader), SEEK_SET);
 	xoffsets[0] = out.currentPos() - sizeof(KvxHeader);
 
-	log::console(wxString::Format("KVX: %d %d", xoffsets[0], out.currentPos()));
+	log::console(fmt::format("KVX: {} {}", xoffsets[0], out.currentPos()));
 
 	vector<uint8_t> post_colors;
 	post_colors.reserve(256);
@@ -1428,14 +1428,14 @@ bool conversion::voxToKvx(MemChunk& in, MemChunk& out)
 	}
 
 	uint32_t total_bytes = out.currentPos() - sizeof(uint32_t);
-	log::console(wxString::Format("Total size: %d", total_bytes));
+	log::console(fmt::format("Total size: {}", total_bytes));
 
 	out.write(palette, 768);
 
 	log::console("XOFFSETS");
 	for (int x = 0; x < width + 1; x++)
 	{
-		log::console(wxString::Format("xoffsets[%d]: %d", x, xoffsets[x]));
+		log::console(fmt::format("xoffsets[{}]: {}", x, xoffsets[x]));
 	}
 
 	log::console("XYOFFSETS");
@@ -1444,8 +1444,8 @@ bool conversion::voxToKvx(MemChunk& in, MemChunk& out)
 		for (int y = 0; y < length + 1; y++)
 		{
 			log::console(
-				wxString::Format(
-					"xyoffsets[%d][%d]: %d, total: %d",
+				fmt::format(
+					"xyoffsets[{}][{}]: {}, total: {}",
 					x,
 					y,
 					xyoffsets[x * (length + 1) + y],

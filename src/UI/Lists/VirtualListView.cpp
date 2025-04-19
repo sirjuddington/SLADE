@@ -36,6 +36,7 @@
 #include "Main.h"
 #include "VirtualListView.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 #ifdef __WXMSW__
 #include <CommCtrl.h>
 #endif
@@ -299,9 +300,8 @@ bool VirtualListView::defaultSort(long left, long right)
 	// Sort by column text > index
 	else
 	{
-		int result = lv_current_->itemText(left, lv_current_->sort_column_, left)
-						 .Lower()
-						 .compare(lv_current_->itemText(right, lv_current_->sort_column_, right).Lower());
+		auto result = strutil::lower(lv_current_->itemText(left, lv_current_->sort_column_, left))
+						  .compare(strutil::lower(lv_current_->itemText(right, lv_current_->sort_column_, right)));
 		if (result == 0)
 			return left < right;
 		else
@@ -397,7 +397,7 @@ bool VirtualListView::lookForSearchEntryFrom(long focus)
 	while ((!looped && index < GetItemCount()) || (looped && index < focus))
 	{
 		auto name = itemText(index, col_search_, items_[index]);
-		if (name.Upper().StartsWith(search_))
+		if (strutil::startsWithCI(name, search_))
 		{
 			// Matches, update selection+focus
 			focusOnIndex(index);
@@ -598,14 +598,12 @@ void VirtualListView::onKeyChar(wxKeyEvent& e)
 
 		// Build search string
 		search_ += e.GetKeyCode();
-		search_.MakeUpper();
 
 		// Search for match from the current focus, and if failed
 		// start a new search from after the current focus.
 		if (!lookForSearchEntryFrom(focus))
 		{
-			search_ = wxString::Format("%c", e.GetKeyCode());
-			search_.MakeUpper();
+			search_ = fmt::format("{:c}", e.GetKeyCode());
 			lookForSearchEntryFrom(focus + 1);
 		}
 	}
@@ -642,7 +640,7 @@ void VirtualListView::onLabelEditBegin(wxListEvent& e)
 void VirtualListView::onLabelEditEnd(wxListEvent& e)
 {
 	if (!e.IsEditCancelled())
-		labelEdited(e.GetColumn(), e.GetIndex(), e.GetLabel());
+		labelEdited(e.GetColumn(), e.GetIndex(), e.GetLabel().utf8_string());
 }
 
 // -----------------------------------------------------------------------------
@@ -678,7 +676,7 @@ void VirtualListView::onColumnLeftClick(wxListEvent& e)
 
 	if (sort_column_ >= 0)
 	{
-		log::info(2, wxString::Format("Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending"));
+		log::info(2, "Sort column {} ({})", sort_column_, sort_descend_ ? "descending" : "ascending");
 	}
 	else
 	{

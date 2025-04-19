@@ -70,7 +70,7 @@ void BaseResourceWizardPage::applyChanges()
 // -----------------------------------------------------------------------------
 // Returns the description for the wizard page
 // -----------------------------------------------------------------------------
-wxString BaseResourceWizardPage::description()
+string BaseResourceWizardPage::description()
 {
 	return "Add 'Base Resource' archives to the list. "
 		   "These can be selected from the dropdown in the toolbar, and will be used as a base (eg. IWAD) for editing. "

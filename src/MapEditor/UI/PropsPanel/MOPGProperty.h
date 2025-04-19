@@ -15,7 +15,7 @@ class MapObjectPropsPanel;
 class MOPGProperty
 {
 public:
-	MOPGProperty(const wxString& prop_name) : propname_{ prop_name } {}
+	MOPGProperty(const string& prop_name) : propname_{ prop_name } {}
 	virtual ~MOPGProperty() = default;
 
 	enum class Type
@@ -36,7 +36,7 @@ public:
 		Id,
 	};
 
-	wxString     propName() const { return propname_; }
+	string       propName() const { return propname_; }
 	void         setParent(MapObjectPropsPanel* parent) { parent_ = parent; }
 	virtual void setUDMFProp(game::UDMFProperty* prop) { udmf_prop_ = prop; }
 
@@ -51,7 +51,7 @@ protected:
 	MapObjectPropsPanel* parent_    = nullptr;
 	bool                 noupdate_  = false;
 	game::UDMFProperty*  udmf_prop_ = nullptr;
-	wxString             propname_;
+	string               propname_;
 };
 
 class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty

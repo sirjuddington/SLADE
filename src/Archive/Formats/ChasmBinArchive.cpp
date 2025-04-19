@@ -296,7 +296,7 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check it opened
 	if (!file.IsOpened())
@@ -355,7 +355,7 @@ bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 bool ChasmBinArchive::isChasmBinArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < HEADER_SIZE)

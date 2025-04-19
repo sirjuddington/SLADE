@@ -55,7 +55,8 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Special Type
 	choice_type_ = new wxChoice(this, -1);
-	choice_type_->Set(wxutil::arrayString({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
+	choice_type_->Set(
+		wxutil::arrayStringStd({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
 	choice_type_->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoiceTypeChanged, this);
 	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type_), 0, wxEXPAND | wxBOTTOM, ui::pad());
 
@@ -63,10 +64,10 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	sizer->Add(gb_sizer_, 1, wxEXPAND);
 
 	// Trigger
-	label_props_[0]  = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
+	label_props_[0]  = new wxStaticText(this, -1, wxS("Trigger:"), { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
 	choice_props_[0] = new wxChoice(this, -1);
 	choice_props_[0]->Set(
-		wxutil::arrayString(
+		wxutil::arrayStringStd(
 			{ "Cross (Once)",
 			  "Cross (Repeatable)",
 			  "Switch (Once)",
@@ -80,7 +81,7 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Other properties
 	for (unsigned a = 1; a < 7; a++)
 	{
-		label_props_[a] = new wxStaticText(this, -1, "");
+		label_props_[a] = new wxStaticText(this, -1, wxEmptyString);
 		label_props_[a]->Hide();
 		choice_props_[a] = new wxChoice(this, -1);
 		choice_props_[a]->Hide();
@@ -118,44 +119,44 @@ void GenLineSpecialPanel::setupForType(int type)
 	if (type == genlinespecial::SpecialType::Floor)
 	{
 		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+		label_props_[1]->SetLabel(wxS("Speed:"));
+		choice_props_[1]->AppendString(wxS("Slow"));
+		choice_props_[1]->AppendString(wxS("Normal"));
+		choice_props_[1]->AppendString(wxS("Fast"));
+		choice_props_[1]->AppendString(wxS("Turbo"));
 
 		// Model/Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+		label_props_[2]->SetLabel(wxS("Monsters Activate:"));
+		choice_props_[2]->AppendString(wxS("No"));
+		choice_props_[2]->AppendString(wxS("Yes"));
 
 		// Direction
-		label_props_[3]->SetLabel("Direction:");
-		choice_props_[3]->AppendString("Down");
-		choice_props_[3]->AppendString("Up");
+		label_props_[3]->SetLabel(wxS("Direction:"));
+		choice_props_[3]->AppendString(wxS("Down"));
+		choice_props_[3]->AppendString(wxS("Up"));
 
 		// Target
-		label_props_[4]->SetLabel("Target:");
-		choice_props_[4]->AppendString("Highest Neighbouring Floor");
-		choice_props_[4]->AppendString("Lowest Neighbouring Floor");
-		choice_props_[4]->AppendString("Next Neighbouring Floor");
-		choice_props_[4]->AppendString("Lowest Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Ceiling");
-		choice_props_[4]->AppendString("Move by Shortest Lower Texture");
-		choice_props_[4]->AppendString("Move 24 Units");
-		choice_props_[4]->AppendString("Move 32 Units");
+		label_props_[4]->SetLabel(wxS("Target:"));
+		choice_props_[4]->AppendString(wxS("Highest Neighbouring Floor"));
+		choice_props_[4]->AppendString(wxS("Lowest Neighbouring Floor"));
+		choice_props_[4]->AppendString(wxS("Next Neighbouring Floor"));
+		choice_props_[4]->AppendString(wxS("Lowest Neighbouring Ceiling"));
+		choice_props_[4]->AppendString(wxS("Ceiling"));
+		choice_props_[4]->AppendString(wxS("Move by Shortest Lower Texture"));
+		choice_props_[4]->AppendString(wxS("Move 24 Units"));
+		choice_props_[4]->AppendString(wxS("Move 32 Units"));
 
 		// Change
-		label_props_[5]->SetLabel("Change:");
-		choice_props_[5]->AppendString("No Change");
-		choice_props_[5]->AppendString("Zero Sector Type, Copy Texture");
-		choice_props_[5]->AppendString("Copy Texture Only");
-		choice_props_[5]->AppendString("Copy Type and Texture");
+		label_props_[5]->SetLabel(wxS("Change:"));
+		choice_props_[5]->AppendString(wxS("No Change"));
+		choice_props_[5]->AppendString(wxS("Zero Sector Type, Copy Texture"));
+		choice_props_[5]->AppendString(wxS("Copy Texture Only"));
+		choice_props_[5]->AppendString(wxS("Copy Type and Texture"));
 
 		// Crush
-		label_props_[6]->SetLabel("Crush:");
-		choice_props_[6]->AppendString("No");
-		choice_props_[6]->AppendString("Yes");
+		label_props_[6]->SetLabel(wxS("Crush:"));
+		choice_props_[6]->AppendString(wxS("No"));
+		choice_props_[6]->AppendString(wxS("Yes"));
 
 		n_props = 7;
 	}
@@ -164,44 +165,44 @@ void GenLineSpecialPanel::setupForType(int type)
 	else if (type == genlinespecial::SpecialType::Ceiling)
 	{
 		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+		label_props_[1]->SetLabel(wxS("Speed:"));
+		choice_props_[1]->AppendString(wxS("Slow"));
+		choice_props_[1]->AppendString(wxS("Normal"));
+		choice_props_[1]->AppendString(wxS("Fast"));
+		choice_props_[1]->AppendString(wxS("Turbo"));
 
 		// Model/Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+		label_props_[2]->SetLabel(wxS("Monsters Activate:"));
+		choice_props_[2]->AppendString(wxS("No"));
+		choice_props_[2]->AppendString(wxS("Yes"));
 
 		// Direction
-		label_props_[3]->SetLabel("Direction:");
-		choice_props_[3]->AppendString("Down");
-		choice_props_[3]->AppendString("Up");
+		label_props_[3]->SetLabel(wxS("Direction:"));
+		choice_props_[3]->AppendString(wxS("Down"));
+		choice_props_[3]->AppendString(wxS("Up"));
 
 		// Target
-		label_props_[4]->SetLabel("Target:");
-		choice_props_[4]->AppendString("Highest Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Lowest Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Next Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Highest Neighbouring Floor");
-		choice_props_[4]->AppendString("Floor");
-		choice_props_[4]->AppendString("Move by Shortest Upper Texture");
-		choice_props_[4]->AppendString("Move 24 Units");
-		choice_props_[4]->AppendString("Move 32 Units");
+		label_props_[4]->SetLabel(wxS("Target:"));
+		choice_props_[4]->AppendString(wxS("Highest Neighbouring Ceiling"));
+		choice_props_[4]->AppendString(wxS("Lowest Neighbouring Ceiling"));
+		choice_props_[4]->AppendString(wxS("Next Neighbouring Ceiling"));
+		choice_props_[4]->AppendString(wxS("Highest Neighbouring Floor"));
+		choice_props_[4]->AppendString(wxS("Floor"));
+		choice_props_[4]->AppendString(wxS("Move by Shortest Upper Texture"));
+		choice_props_[4]->AppendString(wxS("Move 24 Units"));
+		choice_props_[4]->AppendString(wxS("Move 32 Units"));
 
 		// Change
-		label_props_[5]->SetLabel("Change:");
-		choice_props_[5]->AppendString("No Change");
-		choice_props_[5]->AppendString("Zero Sector Type, Copy Texture");
-		choice_props_[5]->AppendString("Copy Texture Only");
-		choice_props_[5]->AppendString("Copy Type and Texture");
+		label_props_[5]->SetLabel(wxS("Change:"));
+		choice_props_[5]->AppendString(wxS("No Change"));
+		choice_props_[5]->AppendString(wxS("Zero Sector Type, Copy Texture"));
+		choice_props_[5]->AppendString(wxS("Copy Texture Only"));
+		choice_props_[5]->AppendString(wxS("Copy Type and Texture"));
 
 		// Crush
-		label_props_[6]->SetLabel("Crush:");
-		choice_props_[6]->AppendString("No");
-		choice_props_[6]->AppendString("Yes");
+		label_props_[6]->SetLabel(wxS("Crush:"));
+		choice_props_[6]->AppendString(wxS("No"));
+		choice_props_[6]->AppendString(wxS("Yes"));
 
 		n_props = 7;
 	}
@@ -210,30 +211,30 @@ void GenLineSpecialPanel::setupForType(int type)
 	else if (type == genlinespecial::SpecialType::Door)
 	{
 		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+		label_props_[1]->SetLabel(wxS("Speed:"));
+		choice_props_[1]->AppendString(wxS("Slow"));
+		choice_props_[1]->AppendString(wxS("Normal"));
+		choice_props_[1]->AppendString(wxS("Fast"));
+		choice_props_[1]->AppendString(wxS("Turbo"));
 
 		// Kind
-		label_props_[2]->SetLabel("Kind:");
-		choice_props_[2]->AppendString("Open, Wait, Close");
-		choice_props_[2]->AppendString("Open");
-		choice_props_[2]->AppendString("Close, Wait, Open");
-		choice_props_[2]->AppendString("Close");
+		label_props_[2]->SetLabel(wxS("Kind:"));
+		choice_props_[2]->AppendString(wxS("Open, Wait, Close"));
+		choice_props_[2]->AppendString(wxS("Open"));
+		choice_props_[2]->AppendString(wxS("Close, Wait, Open"));
+		choice_props_[2]->AppendString(wxS("Close"));
 
 		// Monsters
-		label_props_[3]->SetLabel("Monsters Activate:");
-		choice_props_[3]->AppendString("No");
-		choice_props_[3]->AppendString("Yes");
+		label_props_[3]->SetLabel(wxS("Monsters Activate:"));
+		choice_props_[3]->AppendString(wxS("No"));
+		choice_props_[3]->AppendString(wxS("Yes"));
 
 		// Delay
-		label_props_[4]->SetLabel("Wait Time:");
-		choice_props_[4]->AppendString("1 Second");
-		choice_props_[4]->AppendString("4 Seconds");
-		choice_props_[4]->AppendString("9 Seconds");
-		choice_props_[4]->AppendString("30 Seconds");
+		label_props_[4]->SetLabel(wxS("Wait Time:"));
+		choice_props_[4]->AppendString(wxS("1 Second"));
+		choice_props_[4]->AppendString(wxS("4 Seconds"));
+		choice_props_[4]->AppendString(wxS("9 Seconds"));
+		choice_props_[4]->AppendString(wxS("30 Seconds"));
 
 		n_props = 5;
 	}
@@ -242,34 +243,34 @@ void GenLineSpecialPanel::setupForType(int type)
 	else if (type == genlinespecial::SpecialType::LockedDoor)
 	{
 		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+		label_props_[1]->SetLabel(wxS("Speed:"));
+		choice_props_[1]->AppendString(wxS("Slow"));
+		choice_props_[1]->AppendString(wxS("Normal"));
+		choice_props_[1]->AppendString(wxS("Fast"));
+		choice_props_[1]->AppendString(wxS("Turbo"));
 
 		// Kind
-		label_props_[2]->SetLabel("Kind:");
-		choice_props_[2]->AppendString("Open, Wait, Close");
-		choice_props_[2]->AppendString("Open");
-		choice_props_[2]->AppendString("Close, Wait, Open");
-		choice_props_[2]->AppendString("Close");
+		label_props_[2]->SetLabel(wxS("Kind:"));
+		choice_props_[2]->AppendString(wxS("Open, Wait, Close"));
+		choice_props_[2]->AppendString(wxS("Open"));
+		choice_props_[2]->AppendString(wxS("Close, Wait, Open"));
+		choice_props_[2]->AppendString(wxS("Close"));
 
 		// Lock
-		label_props_[3]->SetLabel("Lock:");
-		choice_props_[3]->AppendString("Any Key");
-		choice_props_[3]->AppendString("Red Card");
-		choice_props_[3]->AppendString("Blue Card");
-		choice_props_[3]->AppendString("Yellow Card");
-		choice_props_[3]->AppendString("Red Skull");
-		choice_props_[3]->AppendString("Blue Skull");
-		choice_props_[3]->AppendString("Yellow Skull");
-		choice_props_[3]->AppendString("All Keys");
+		label_props_[3]->SetLabel(wxS("Lock:"));
+		choice_props_[3]->AppendString(wxS("Any Key"));
+		choice_props_[3]->AppendString(wxS("Red Card"));
+		choice_props_[3]->AppendString(wxS("Blue Card"));
+		choice_props_[3]->AppendString(wxS("Yellow Card"));
+		choice_props_[3]->AppendString(wxS("Red Skull"));
+		choice_props_[3]->AppendString(wxS("Blue Skull"));
+		choice_props_[3]->AppendString(wxS("Yellow Skull"));
+		choice_props_[3]->AppendString(wxS("All Keys"));
 
 		// Key Type
-		label_props_[4]->SetLabel("Key Type:");
-		choice_props_[4]->AppendString("Specific (Red Card <> Red Skull)");
-		choice_props_[4]->AppendString("Colour (Red Card = Red Skull)");
+		label_props_[4]->SetLabel(wxS("Key Type:"));
+		choice_props_[4]->AppendString(wxS("Specific (Red Card <> Red Skull)"));
+		choice_props_[4]->AppendString(wxS("Colour (Red Card = Red Skull)"));
 
 		n_props = 5;
 	}
@@ -278,30 +279,30 @@ void GenLineSpecialPanel::setupForType(int type)
 	else if (type == genlinespecial::SpecialType::Lift)
 	{
 		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+		label_props_[1]->SetLabel(wxS("Speed:"));
+		choice_props_[1]->AppendString(wxS("Slow"));
+		choice_props_[1]->AppendString(wxS("Normal"));
+		choice_props_[1]->AppendString(wxS("Fast"));
+		choice_props_[1]->AppendString(wxS("Turbo"));
 
 		// Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+		label_props_[2]->SetLabel(wxS("Monsters Activate:"));
+		choice_props_[2]->AppendString(wxS("No"));
+		choice_props_[2]->AppendString(wxS("Yes"));
 
 		// Delay
-		label_props_[3]->SetLabel("Wait Time:");
-		choice_props_[3]->AppendString("1 Second");
-		choice_props_[3]->AppendString("3 Seconds");
-		choice_props_[3]->AppendString("5 Seconds");
-		choice_props_[3]->AppendString("10 Seconds");
+		label_props_[3]->SetLabel(wxS("Wait Time:"));
+		choice_props_[3]->AppendString(wxS("1 Second"));
+		choice_props_[3]->AppendString(wxS("3 Seconds"));
+		choice_props_[3]->AppendString(wxS("5 Seconds"));
+		choice_props_[3]->AppendString(wxS("10 Seconds"));
 
 		// Target
-		label_props_[4]->SetLabel("Target:");
-		choice_props_[4]->AppendString("Lowest Neighbouring Floor");
-		choice_props_[4]->AppendString("Next Neighbouring Floor");
-		choice_props_[4]->AppendString("Lowest Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Perpetual");
+		label_props_[4]->SetLabel(wxS("Target:"));
+		choice_props_[4]->AppendString(wxS("Lowest Neighbouring Floor"));
+		choice_props_[4]->AppendString(wxS("Next Neighbouring Floor"));
+		choice_props_[4]->AppendString(wxS("Lowest Neighbouring Ceiling"));
+		choice_props_[4]->AppendString(wxS("Perpetual"));
 
 		n_props = 5;
 	}
@@ -310,33 +311,33 @@ void GenLineSpecialPanel::setupForType(int type)
 	else if (type == genlinespecial::SpecialType::Stairs)
 	{
 		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+		label_props_[1]->SetLabel(wxS("Speed:"));
+		choice_props_[1]->AppendString(wxS("Slow"));
+		choice_props_[1]->AppendString(wxS("Normal"));
+		choice_props_[1]->AppendString(wxS("Fast"));
+		choice_props_[1]->AppendString(wxS("Turbo"));
 
 		// Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+		label_props_[2]->SetLabel(wxS("Monsters Activate:"));
+		choice_props_[2]->AppendString(wxS("No"));
+		choice_props_[2]->AppendString(wxS("Yes"));
 
 		// Step Height
-		label_props_[3]->SetLabel("Step Height");
-		choice_props_[3]->AppendString("4 Units");
-		choice_props_[3]->AppendString("8 Units");
-		choice_props_[3]->AppendString("16 Units");
-		choice_props_[3]->AppendString("24 Units");
+		label_props_[3]->SetLabel(wxS("Step Height"));
+		choice_props_[3]->AppendString(wxS("4 Units"));
+		choice_props_[3]->AppendString(wxS("8 Units"));
+		choice_props_[3]->AppendString(wxS("16 Units"));
+		choice_props_[3]->AppendString(wxS("24 Units"));
 
 		// Direction
-		label_props_[4]->SetLabel("Direction:");
-		choice_props_[4]->AppendString("Down");
-		choice_props_[4]->AppendString("Up");
+		label_props_[4]->SetLabel(wxS("Direction:"));
+		choice_props_[4]->AppendString(wxS("Down"));
+		choice_props_[4]->AppendString(wxS("Up"));
 
 		// Ignore Texture
-		label_props_[5]->SetLabel("Ignore Texture:");
-		choice_props_[5]->AppendString("No: Stop building on diff. texture");
-		choice_props_[5]->AppendString("Yes");
+		label_props_[5]->SetLabel(wxS("Ignore Texture:"));
+		choice_props_[5]->AppendString(wxS("No: Stop building on diff. texture"));
+		choice_props_[5]->AppendString(wxS("Yes"));
 
 		n_props = 6;
 	}
@@ -345,21 +346,21 @@ void GenLineSpecialPanel::setupForType(int type)
 	else if (type == genlinespecial::SpecialType::Crusher)
 	{
 		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+		label_props_[1]->SetLabel(wxS("Speed:"));
+		choice_props_[1]->AppendString(wxS("Slow"));
+		choice_props_[1]->AppendString(wxS("Normal"));
+		choice_props_[1]->AppendString(wxS("Fast"));
+		choice_props_[1]->AppendString(wxS("Turbo"));
 
 		// Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+		label_props_[2]->SetLabel(wxS("Monsters Activate:"));
+		choice_props_[2]->AppendString(wxS("No"));
+		choice_props_[2]->AppendString(wxS("Yes"));
 
 		// Monsters
-		label_props_[3]->SetLabel("Silent:");
-		choice_props_[3]->AppendString("No");
-		choice_props_[3]->AppendString("Yes");
+		label_props_[3]->SetLabel(wxS("Silent:"));
+		choice_props_[3]->AppendString(wxS("No"));
+		choice_props_[3]->AppendString(wxS("Yes"));
 
 		n_props = 4;
 	}
@@ -397,20 +398,20 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 			// 0 (No Change), prop 2 is monster
 			if (value == 0)
 			{
-				label_props_[2]->SetLabel("Monsters Activate:");
+				label_props_[2]->SetLabel(wxS("Monsters Activate:"));
 				choice_props_[2]->Clear();
-				choice_props_[2]->AppendString("No");
-				choice_props_[2]->AppendString("Yes");
+				choice_props_[2]->AppendString(wxS("No"));
+				choice_props_[2]->AppendString(wxS("Yes"));
 				choice_props_[2]->Select(0);
 			}
 
 			// > 0, prop 2 is model
 			else
 			{
-				label_props_[2]->SetLabel("Model Sector:");
+				label_props_[2]->SetLabel(wxS("Model Sector:"));
 				choice_props_[2]->Clear();
-				choice_props_[2]->AppendString("Trigger: Front Side of Trigger Line");
-				choice_props_[2]->AppendString("Numeric: Sector at Target Height");
+				choice_props_[2]->AppendString(wxS("Trigger: Front Side of Trigger Line"));
+				choice_props_[2]->AppendString(wxS("Numeric: Sector at Target Height"));
 				choice_props_[2]->Select(0);
 			}
 
@@ -494,20 +495,20 @@ void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent& e)
 			// 0 (No Change), prop 2 is monster
 			if (choice_changed->GetSelection() == 0)
 			{
-				label_props_[2]->SetLabel("Monsters Activate:");
+				label_props_[2]->SetLabel(wxS("Monsters Activate:"));
 				choice_props_[2]->Clear();
-				choice_props_[2]->AppendString("No");
-				choice_props_[2]->AppendString("Yes");
+				choice_props_[2]->AppendString(wxS("No"));
+				choice_props_[2]->AppendString(wxS("Yes"));
 				choice_props_[2]->Select(0);
 			}
 
 			// > 0, prop 2 is model
 			else
 			{
-				label_props_[2]->SetLabel("Model Sector:");
+				label_props_[2]->SetLabel(wxS("Model Sector:"));
 				choice_props_[2]->Clear();
-				choice_props_[2]->AppendString("Trigger: Front Side of Trigger Line");
-				choice_props_[2]->AppendString("Numeric: Sector at Target Height");
+				choice_props_[2]->AppendString(wxS("Trigger: Front Side of Trigger Line"));
+				choice_props_[2]->AppendString(wxS("Numeric: Sector at Target Height"));
 				choice_props_[2]->Select(0);
 			}
 

@@ -393,7 +393,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	if (auto colour = props.getIf<string>("colour"))
 	{
 		// SLADE Colour
-		wxColour wxc(*colour);
+		wxColour wxc(wxString::FromUTF8(*colour));
 		if (wxc.IsOk())
 			colour_.set(wxc);
 	}

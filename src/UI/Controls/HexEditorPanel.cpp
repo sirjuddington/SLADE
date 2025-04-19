@@ -76,24 +76,24 @@ int HexTable::GetNumberCols()
 wxString HexTable::GetValue(int row, int col)
 {
 	if (unsigned(row * hex_grid_width + col) >= data_.size())
-		return "";
+		return wxEmptyString;
 	else
 	{
 		uint8_t val = data_[row * hex_grid_width + col];
 
 		// Hex
 		if (view_type_ == 0)
-			return wxString::Format("%02X", val);
+			return WX_FMT("{:02X}", val);
 
 		// Dec
 		else if (view_type_ == 1)
-			return wxString::Format("%d", val);
+			return WX_FMT("{}", val);
 
 		// ASCII
 		else if (view_type_ == 2)
 			return wxString::FromAscii((char)val);
 
-		return "";
+		return wxEmptyString;
 	}
 }
 
@@ -247,24 +247,24 @@ double HexTable::doubleValue(uint32_t offset)
 HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Create controls
-	rb_view_hex_   = new wxRadioButton(this, -1, "Hex", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	rb_view_dec_   = new wxRadioButton(this, -1, "Decimal");
-	rb_view_ascii_ = new wxRadioButton(this, -1, "ASCII");
+	rb_view_hex_   = new wxRadioButton(this, -1, wxS("Hex"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	rb_view_dec_   = new wxRadioButton(this, -1, wxS("Decimal"));
+	rb_view_ascii_ = new wxRadioButton(this, -1, wxS("ASCII"));
 	table_hex_     = new HexTable();
 	grid_hex_     = new wxGrid(this, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS | wxBORDER_SIMPLE | wxVSCROLL);
-	label_offset_ = new wxStaticText(this, -1, "Offset:");
-	label_byte_   = new wxStaticText(this, -1, "Signed Byte:");
-	label_ubyte_  = new wxStaticText(this, -1, "Unsigned Byte:");
-	label_ascii_  = new wxStaticText(this, -1, "ASCII:");
-	label_short_le_   = new wxStaticText(this, -1, "Signed Short:");
-	label_ushort_le_  = new wxStaticText(this, -1, "Unsigned Short:");
-	label_int32_le_   = new wxStaticText(this, -1, "Signed Integer (32bit):");
-	label_uint32_le_  = new wxStaticText(this, -1, "Unsigned Integer (32bit):");
-	label_short_be_   = new wxStaticText(this, -1, "Signed Short:");
-	label_ushort_be_  = new wxStaticText(this, -1, "Unsigned Short:");
-	label_int32_be_   = new wxStaticText(this, -1, "Signed Integer (32bit):");
-	label_uint32_be_  = new wxStaticText(this, -1, "Unsigned Integer (32bit):");
-	btn_go_to_offset_ = new wxButton(this, -1, "Go to Offset...");
+	label_offset_ = new wxStaticText(this, -1, wxS("Offset:"));
+	label_byte_   = new wxStaticText(this, -1, wxS("Signed Byte:"));
+	label_ubyte_  = new wxStaticText(this, -1, wxS("Unsigned Byte:"));
+	label_ascii_  = new wxStaticText(this, -1, wxS("ASCII:"));
+	label_short_le_   = new wxStaticText(this, -1, wxS("Signed Short:"));
+	label_ushort_le_  = new wxStaticText(this, -1, wxS("Unsigned Short:"));
+	label_int32_le_   = new wxStaticText(this, -1, wxS("Signed Integer (32bit):"));
+	label_uint32_le_  = new wxStaticText(this, -1, wxS("Unsigned Integer (32bit):"));
+	label_short_be_   = new wxStaticText(this, -1, wxS("Signed Short:"));
+	label_ushort_be_  = new wxStaticText(this, -1, wxS("Unsigned Short:"));
+	label_int32_be_   = new wxStaticText(this, -1, wxS("Signed Integer (32bit):"));
+	label_uint32_be_  = new wxStaticText(this, -1, wxS("Unsigned Integer (32bit):"));
+	btn_go_to_offset_ = new wxButton(this, -1, wxS("Go to Offset..."));
 
 	// Setup hex grid
 	auto cellsize      = ui::scalePx(28);
@@ -322,7 +322,7 @@ void HexEditorPanel::setupLayout()
 	// View type
 	wxutil::layoutHorizontally(
 		vbox,
-		vector<wxObject*>{ new wxStaticText(this, -1, "View As:"), rb_view_hex_, rb_view_dec_, rb_view_ascii_ },
+		vector<wxObject*>{ new wxStaticText(this, -1, wxS("View As:")), rb_view_hex_, rb_view_dec_, rb_view_ascii_ },
 		wxSizerFlags(0).Border(wxBOTTOM, ui::px(ui::Size::PadMinimum)));
 
 	// Hex grid
@@ -333,7 +333,7 @@ void HexEditorPanel::setupLayout()
 	GetSizer()->Add(vbox, 1, wxEXPAND | wxLEFT, ui::pad());
 
 	// Values
-	auto frame      = new wxStaticBox(this, -1, "Values (General)");
+	auto frame      = new wxStaticBox(this, -1, wxS("Values (General)"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	wxutil::layoutVertically(
 		framesizer,
@@ -342,7 +342,7 @@ void HexEditorPanel::setupLayout()
 	vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Little endian values
-	frame      = new wxStaticBox(this, -1, "Values (Little Endian)");
+	frame      = new wxStaticBox(this, -1, wxS("Values (Little Endian)"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	wxutil::layoutVertically(
 		framesizer,
@@ -351,7 +351,7 @@ void HexEditorPanel::setupLayout()
 	vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Big endian values
-	frame      = new wxStaticBox(this, -1, "Values (Big Endian)");
+	frame      = new wxStaticBox(this, -1, wxS("Values (Big Endian)"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	wxutil::layoutVertically(
 		framesizer,
@@ -387,26 +387,26 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 		return;
 
 	// Reset labels
-	label_offset_->SetLabel(wxString::Format("Offset: %d", offset));
-	label_byte_->SetLabel("Signed Byte:");
-	label_ubyte_->SetLabel("Unsigned Byte:");
-	label_ascii_->SetLabel("ASCII:");
-	label_short_le_->SetLabel("Signed Short:");
-	label_ushort_le_->SetLabel("Unsigned Short:");
-	label_int32_le_->SetLabel("Signed Int (32bit):");
-	label_uint32_le_->SetLabel("Unsigned Int (32bit):");
-	// label_int64_le->SetLabel("Signed Int (64bit):");
-	// label_uint64_le->SetLabel("Unsigned Int (64bit):");
-	// label_float_le->SetLabel("Float:");
-	// label_double_le->SetLabel("Double:");
-	label_short_be_->SetLabel("Signed Short:");
-	label_ushort_be_->SetLabel("Unsigned Short:");
-	label_int32_be_->SetLabel("Signed Int (32bit):");
-	label_uint32_be_->SetLabel("Unsigned Int (32bit):");
-	// label_int64_be->SetLabel("Signed Int (64bit):");
-	// label_uint64_be->SetLabel("Unsigned Int (64bit):");
-	// label_float_be->SetLabel("Float:");
-	// label_double_be->SetLabel("Double:");
+	label_offset_->SetLabel(WX_FMT("Offset: {}", offset));
+	label_byte_->SetLabel(wxS("Signed Byte:"));
+	label_ubyte_->SetLabel(wxS("Unsigned Byte:"));
+	label_ascii_->SetLabel(wxS("ASCII:"));
+	label_short_le_->SetLabel(wxS("Signed Short:"));
+	label_ushort_le_->SetLabel(wxS("Unsigned Short:"));
+	label_int32_le_->SetLabel(wxS("Signed Int (32bit):"));
+	label_uint32_le_->SetLabel(wxS("Unsigned Int (32bit):"));
+	// label_int64_le->SetLabel(wxS("Signed Int (64bit):"));
+	// label_uint64_le->SetLabel(wxS("Unsigned Int (64bit):"));
+	// label_float_le->SetLabel(wxS("Float:"));
+	// label_double_le->SetLabel(wxS("Double:"));
+	label_short_be_->SetLabel(wxS("Signed Short:"));
+	label_ushort_be_->SetLabel(wxS("Unsigned Short:"));
+	label_int32_be_->SetLabel(wxS("Signed Int (32bit):"));
+	label_uint32_be_->SetLabel(wxS("Unsigned Int (32bit):"));
+	// label_int64_be->SetLabel(wxS("Signed Int (64bit):"));
+	// label_uint64_be->SetLabel(wxS("Unsigned Int (64bit):"));
+	// label_float_be->SetLabel(wxS("Float:"));
+	// label_double_be->SetLabel(wxS("Double:"));
 
 	// Get values
 	uint32_t size    = table_hex_->getData().size() - offset;
@@ -426,10 +426,10 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 		vubyte = table_hex_->uByteValue(offset);
 		vbyte  = table_hex_->byteValue(offset);
 
-		label_byte_->SetLabel(wxString::Format("Signed Byte: %d", vbyte));
-		label_ubyte_->SetLabel(wxString::Format("Unsigned Byte: %u", vubyte));
+		label_byte_->SetLabel(WX_FMT("Signed Byte: {}", vbyte));
+		label_ubyte_->SetLabel(WX_FMT("Unsigned Byte: {}", vubyte));
 		if (vubyte <= 128)
-			label_ascii_->SetLabel(wxString::Format("ASCII: %s", codepages::fromASCII(vubyte)));
+			label_ascii_->SetLabel(WX_FMT("ASCII: {}", codepages::fromASCII(vubyte)));
 
 		if (size > 1)
 		{
@@ -437,10 +437,10 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 			vshort  = table_hex_->shortValue(offset);
 			vushort = table_hex_->uShortValue(offset);
 
-			label_short_le_->SetLabel(wxString::Format("Signed Short: %d", wxINT16_SWAP_ON_BE(vshort)));
-			label_ushort_le_->SetLabel(wxString::Format("Unsigned Short: %u", wxUINT16_SWAP_ON_BE(vushort)));
-			label_short_be_->SetLabel(wxString::Format("Signed Short: %d", wxINT16_SWAP_ON_LE(vshort)));
-			label_ushort_be_->SetLabel(wxString::Format("Unsigned Short: %u", wxUINT16_SWAP_ON_LE(vushort)));
+			label_short_le_->SetLabel(WX_FMT("Signed Short: {}", wxINT16_SWAP_ON_BE(vshort)));
+			label_ushort_le_->SetLabel(WX_FMT("Unsigned Short: {}", wxUINT16_SWAP_ON_BE(vushort)));
+			label_short_be_->SetLabel(WX_FMT("Signed Short: {}", wxINT16_SWAP_ON_LE(vshort)));
+			label_ushort_be_->SetLabel(WX_FMT("Unsigned Short: {}", wxUINT16_SWAP_ON_LE(vushort)));
 
 			if (size > 3)
 			{
@@ -449,10 +449,10 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 				vuint32 = table_hex_->uInt32Value(offset);
 				vfloat  = table_hex_->floatValue(offset);
 
-				label_int32_le_->SetLabel(wxString::Format("Signed Int (32bit): %d", wxINT32_SWAP_ON_BE(vint32)));
-				label_uint32_le_->SetLabel(wxString::Format("Unsigned Int (32bit): %u", wxUINT32_SWAP_ON_BE(vuint32)));
-				label_int32_be_->SetLabel(wxString::Format("Signed Int (32bit): %d", wxINT32_SWAP_ON_LE(vint32)));
-				label_uint32_be_->SetLabel(wxString::Format("Unsigned Int (32bit): %u", wxUINT32_SWAP_ON_LE(vuint32)));
+				label_int32_le_->SetLabel(WX_FMT("Signed Int (32bit): {}", wxINT32_SWAP_ON_BE(vint32)));
+				label_uint32_le_->SetLabel(WX_FMT("Unsigned Int (32bit): {}", wxUINT32_SWAP_ON_BE(vuint32)));
+				label_int32_be_->SetLabel(WX_FMT("Signed Int (32bit): {}", wxINT32_SWAP_ON_LE(vint32)));
+				label_uint32_be_->SetLabel(WX_FMT("Unsigned Int (32bit): {}", wxUINT32_SWAP_ON_LE(vuint32)));
 
 				if (size > 7)
 				{
@@ -484,7 +484,8 @@ void HexEditorPanel::onBtnGoToOffset(wxCommandEvent& e)
 		return;
 
 	// Pop up dialog to prompt user for an offset
-	int ofs = wxGetNumberFromUser("Enter Offset", "Offset", "Go to Offset", 0, 0, table_hex_->getData().size() - 1);
+	int ofs = wxGetNumberFromUser(
+		wxS("Enter Offset"), wxS("Offset"), wxS("Go to Offset"), 0, 0, table_hex_->getData().size() - 1);
 	if (ofs >= 0)
 	{
 		// Determine row/col of offset

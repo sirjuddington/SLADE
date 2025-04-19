@@ -121,7 +121,7 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 // -----------------------------------------------------------------------------
 // Called when the widget requests the text for [item] at [column]
 // -----------------------------------------------------------------------------
-wxString ArchiveEntryList::itemText(long item, long column, long index) const
+string ArchiveEntryList::itemText(long item, long column, long index) const
 {
 	// Get entry
 	auto entry = entryAt(index, false);
@@ -154,7 +154,7 @@ wxString ArchiveEntryList::itemText(long item, long column, long index) const
 				return "INVALID DIRECTORY";
 
 			// Return the number of items in the directory
-			return wxString::Format("%d entries", dir->numEntries() + dir->numSubdirs());
+			return fmt::format("{} entries", dir->numEntries() + dir->numSubdirs());
 		}
 		else
 			return entry->sizeString(); // Not a folder, just return the normal size string
@@ -167,7 +167,7 @@ wxString ArchiveEntryList::itemText(long item, long column, long index) const
 		if (entry->type() == EntryType::folderType())
 			return "";
 		else
-			return wxString::Format("%d", entry->index());
+			return fmt::format("{}", entry->index());
 	}
 	else
 		return "INVALID COLUMN"; // Invalid column
@@ -290,20 +290,20 @@ void ArchiveEntryList::setupColumns()
 	// Index
 	if (elist_colindex_show)
 	{
-		AppendColumn("#");
+		AppendColumn(wxS("#"));
 		SetColumnWidth(col_num, elist_colindex_width);
 		col_index_ = col_num++;
 	}
 
 	// Name (always)
-	AppendColumn("Name");
+	AppendColumn(wxS("Name"));
 	SetColumnWidth(col_num, elist_colname_width);
 	col_name_ = col_num++;
 
 	// Size
 	if (elist_colsize_show)
 	{
-		AppendColumn("Size");
+		AppendColumn(wxS("Size"));
 		SetColumnWidth(col_num, elist_colsize_width);
 		col_size_ = col_num++;
 	}
@@ -311,7 +311,7 @@ void ArchiveEntryList::setupColumns()
 	// Type
 	if (elist_coltype_show)
 	{
-		AppendColumn("Type");
+		AppendColumn(wxS("Type"));
 		SetColumnWidth(col_num, elist_coltype_width);
 		col_type_ = col_num++;
 	}
@@ -365,7 +365,7 @@ void ArchiveEntryList::updateList(bool clear)
 // Filters the list to only entries and directories with names matching
 // [filter], and with type categories matching [category].
 // -----------------------------------------------------------------------------
-void ArchiveEntryList::filterList(const wxString& filter, const wxString& category)
+void ArchiveEntryList::filterList(const string& filter, const string& category)
 {
 	// Update variables
 	filter_text_     = filter;
@@ -412,7 +412,7 @@ void ArchiveEntryList::applyFilter()
 	items_.clear();
 
 	// Check if any filters were given
-	if (filter_text_.IsEmpty() && filter_category_.IsEmpty())
+	if (filter_text_.empty() && filter_category_.empty())
 	{
 		// No filter, just refresh the list
 		unsigned count = dir->numEntries() + dir->numSubdirs();
@@ -428,12 +428,12 @@ void ArchiveEntryList::applyFilter()
 	auto     entry = entryAt(index, false);
 	while (entry)
 	{
-		if (filter_category_.IsEmpty() || entry->type() == EntryType::folderType())
+		if (filter_category_.empty() || entry->type() == EntryType::folderType())
 			items_.push_back(index); // If no category specified, just add all entries to the filter
 		else
 		{
 			// Check for category match
-			if (strutil::equalCI(entry->type()->category(), filter_category_.ToStdString()))
+			if (strutil::equalCI(entry->type()->category(), filter_category_))
 				items_.push_back(index);
 		}
 
@@ -441,10 +441,10 @@ void ArchiveEntryList::applyFilter()
 	}
 
 	// Now filter by name if needed
-	if (!filter_text_.IsEmpty())
+	if (!filter_text_.empty())
 	{
 		// Split filter by ,
-		auto terms = strutil::split(filter_text_.ToStdString(), ',');
+		auto terms = strutil::split(filter_text_, ',');
 
 		// Process filter strings
 		for (auto& term : terms)
@@ -779,7 +779,7 @@ vector<ArchiveDir*> ArchiveEntryList::selectedDirectories() const
 // -----------------------------------------------------------------------------
 // Called when a label has been edited
 // -----------------------------------------------------------------------------
-void ArchiveEntryList::labelEdited(int col, int index, const wxString& new_label)
+void ArchiveEntryList::labelEdited(int col, int index, const string& new_label)
 {
 	if (undo_manager_)
 		undo_manager_->beginRecord("Rename Entry");
@@ -787,9 +787,9 @@ void ArchiveEntryList::labelEdited(int col, int index, const wxString& new_label
 	// Rename the entry
 	auto entry = entryAt(index);
 	if (entry->parent())
-		entry->parent()->renameEntry(entry, new_label.ToStdString());
+		entry->parent()->renameEntry(entry, new_label);
 	else
-		entry->rename(new_label.ToStdString());
+		entry->rename(new_label);
 
 	if (undo_manager_)
 		undo_manager_->endRecord(true);

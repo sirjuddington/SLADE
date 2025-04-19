@@ -21,7 +21,7 @@ public:
 
 	ColRGBA colour() const;
 	float   amount() const;
-	void    setValues(const wxString& col, int val);
+	void    setValues(const string& col, int val);
 
 private:
 	GfxCanvas*    gfx_preview_ = nullptr;

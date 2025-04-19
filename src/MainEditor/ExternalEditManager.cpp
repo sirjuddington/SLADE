@@ -437,7 +437,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 
 	// Run external editor
 	auto command = fmt::format("\"{}\" \"{}\"", exe_path, monitor->filename());
-	long success = wxExecute(command, wxEXEC_ASYNC, monitor->process());
+	long success = wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC, monitor->process());
 	if (success == 0)
 	{
 		global::error = fmt::format("Failed to launch {}", editor);

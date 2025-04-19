@@ -32,9 +32,9 @@ public:
 	void clearGrid();
 	void hideFlags(bool hide) { hide_flags_ = hide; }
 	void hideTriggers(bool hide) { hide_triggers_ = hide; }
-	void hideProperty(wxString property) { hide_props_.push_back(property); }
+	void hideProperty(const string& property) { hide_props_.push_back(property); }
 	void clearHiddenProperties() { hide_props_.clear(); }
-	bool propHidden(wxString property) { return VECTOR_EXISTS(hide_props_, property); }
+	bool propHidden(const string& property) { return VECTOR_EXISTS(hide_props_, property); }
 
 private:
 	TabControl*           stc_sections_   = nullptr;
@@ -42,7 +42,7 @@ private:
 	wxPropertyGrid*       pg_props_side1_ = nullptr;
 	wxPropertyGrid*       pg_props_side2_ = nullptr;
 	MapObject::Type       last_type_      = MapObject::Type::Object;
-	wxString              last_config_;
+	string                last_config_;
 	wxStaticText*         label_item_ = nullptr;
 	vector<MOPGProperty*> properties_;
 	wxPGProperty*         args_[5]      = {};
@@ -55,9 +55,9 @@ private:
 	bool                  udmf_         = false;
 
 	// Hide properties
-	bool             hide_flags_    = false;
-	bool             hide_triggers_ = false;
-	vector<wxString> hide_props_;
+	bool           hide_flags_    = false;
+	bool           hide_triggers_ = false;
+	vector<string> hide_props_;
 
 	wxPropertyGrid* createPropGrid();
 
@@ -123,7 +123,7 @@ private:
 	void addUDMFProperty(
 		game::UDMFProperty& prop,
 		MapObject::Type     objtype,
-		const wxString&     basegroup = "",
+		const wxString&     basegroup = wxEmptyString,
 		wxPropertyGrid*     grid      = nullptr);
 
 	bool setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false) const;

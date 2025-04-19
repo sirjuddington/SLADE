@@ -27,9 +27,9 @@ public:
 	PaletteEntryPanel(wxWindow* parent);
 	~PaletteEntryPanel() override = default;
 
-	wxString statusString() override;
-	void     refreshPanel() override;
-	void     toolbarButtonClick(const wxString& action_id) override;
+	string statusString() override;
+	void   refreshPanel() override;
+	void   toolbarButtonClick(const string& action_id) override;
 
 	bool showPalette(uint32_t index);
 	bool addCustomPalette() const;

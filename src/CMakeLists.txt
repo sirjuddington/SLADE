@@ -1,7 +1,7 @@
 # wxWidgets version minimum 3.0
-if(NOT WX_VERSION)
+if (NOT WX_VERSION)
 	SET(WX_VERSION 3.0)
-endif(NOT WX_VERSION)
+endif (NOT WX_VERSION)
 
 # Sources
 file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
@@ -22,12 +22,14 @@ file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
 )
 
 # Lua/Scripting sources if not excluded
-if(NOT NO_LUA)
+if (NOT NO_LUA)
 	file(GLOB_RECURSE SLADE_SCRIPTING_SOURCES CONFIGURE_DEPENDS Scripting/*.cpp)
 	set(SLADE_SOURCES ${SLADE_SOURCES} ${SLADE_SCRIPTING_SOURCES})
-else()
+else ()
 	ADD_DEFINITIONS(-DNO_LUA)
-endif()
+endif ()
+
+ADD_DEFINITIONS(-DwxNO_IMPLICIT_WXSTRING_ENCODING)
 
 # Headers
 file(GLOB_RECURSE SLADE_HEADERS CONFIGURE_DEPENDS
@@ -36,8 +38,8 @@ file(GLOB_RECURSE SLADE_HEADERS CONFIGURE_DEPENDS
 )
 
 # Setup depending on platform
-if(WIN32 AND MSVC)
+if (WIN32 AND MSVC)
 	include("win_msvc") # Windows+MSVC
-else()
+else ()
 	include("unix") # Linux or MacOS
-endif()
+endif ()

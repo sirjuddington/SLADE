@@ -682,12 +682,12 @@ bool Archive::save(string_view filename)
 			// No filename is given, but the archive has a filename, so overwrite it (and make a backup)
 
 			// Create backup
-			if (backup_archives && wxFileName::FileExists(filename_) && save_backup)
+			if (backup_archives && wxFileName::FileExists(wxString::FromUTF8(filename_)) && save_backup)
 			{
 				// Copy current file contents to new backup file
 				const auto bakfile = filename_ + ".bak";
 				log::info("Creating backup {}", bakfile);
-				wxCopyFile(filename_, bakfile, true);
+				wxCopyFile(wxString::FromUTF8(filename_), wxString::FromUTF8(bakfile), true);
 			}
 
 			// Write it to the file
@@ -1717,15 +1717,15 @@ bool Archive::loadFormats(MemChunk& mc)
 				fmt.allow_duplicate_names = prop->boolValue();
 		}
 
-		log::info(3, wxString::Format("Read archive format %s: \"%s\"", fmt.id, fmt.name));
+		log::info(3, "Read archive format {}: \"{}\"", fmt.id, fmt.name);
 		if (fmt.supports_dirs)
 			log::info(3, "  Supports folders");
 		if (fmt.names_extensions)
 			log::info(3, "  Entry names have extensions");
 		if (fmt.max_name_length >= 0)
-			log::info(3, wxString::Format("  Max entry name length: %d", fmt.max_name_length));
+			log::info(3, "  Max entry name length: {}", fmt.max_name_length);
 		for (const auto& ext : fmt.extensions)
-			log::info(3, wxString::Format(R"(  Extension "%s" = "%s")", ext.first, ext.second));
+			log::info(3, R"(  Extension "{}" = "{}")", ext.first, ext.second);
 
 		formats_.push_back(fmt);
 	}

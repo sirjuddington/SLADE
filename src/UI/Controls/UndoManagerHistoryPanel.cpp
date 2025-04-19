@@ -62,7 +62,7 @@ UndoListView::UndoListView(wxWindow* parent, UndoManager* manager) : VirtualList
 // -----------------------------------------------------------------------------
 // Returns the list text for [item] at [column]
 // -----------------------------------------------------------------------------
-wxString UndoListView::itemText(long item, long column, long index) const
+string UndoListView::itemText(long item, long column, long index) const
 {
 	if (!manager_)
 		return "";
@@ -72,8 +72,8 @@ wxString UndoListView::itemText(long item, long column, long index) const
 	{
 		if (column == 0)
 		{
-			wxString name = manager_->undoLevel((unsigned)item)->name();
-			return wxString::Format("%lu. %s", item + 1, name);
+			auto name = manager_->undoLevel((unsigned)item)->name();
+			return fmt::format("{}. {}", item + 1, name);
 		}
 		else
 		{
@@ -180,8 +180,8 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 	list_levels_ = new UndoListView(this, manager);
 	sizer->Add(list_levels_, 1, wxEXPAND | wxALL, ui::pad());
 
-	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, ui::scalePx(160));
-	list_levels_->AppendColumn("Time", wxLIST_FORMAT_RIGHT);
+	list_levels_->AppendColumn(wxS("Action"), wxLIST_FORMAT_LEFT, ui::scalePx(160));
+	list_levels_->AppendColumn(wxS("Time"), wxLIST_FORMAT_RIGHT);
 	list_levels_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
 	Bind(wxEVT_MENU, &UndoManagerHistoryPanel::onMenu, this);
 }
@@ -212,13 +212,13 @@ void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e)
 
 	wxMenu context;
 	if (index == manager_->currentIndex())
-		context.Append(0, "Undo");
+		context.Append(0, wxS("Undo"));
 	else if (index < manager_->currentIndex())
-		context.Append(1, "Undo To Here");
+		context.Append(1, wxS("Undo To Here"));
 	else if (index == manager_->currentIndex() + 1)
-		context.Append(2, "Redo");
+		context.Append(2, wxS("Redo"));
 	else
-		context.Append(3, "Redo To Here");
+		context.Append(3, wxS("Redo To Here"));
 	PopupMenu(&context);
 }
 

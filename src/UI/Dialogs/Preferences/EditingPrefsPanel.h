@@ -14,7 +14,7 @@ public:
 
 	void init() override;
 	void applyPreferences() override;
-	void showSubSection(const wxString& subsection) override;
+	void showSubSection(const string& subsection) override;
 
 private:
 	TabControl* stc_tabs_ = nullptr;

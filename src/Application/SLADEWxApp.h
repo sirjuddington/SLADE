@@ -16,6 +16,7 @@ public:
 	bool OnInit() override;
 	int  OnExit() override;
 	void OnFatalException() override;
+	bool OnExceptionInMainLoop() override;
 
 #ifdef __APPLE__
 	virtual void MacOpenFile(const wxString& fileName) override;

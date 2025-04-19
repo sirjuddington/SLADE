@@ -19,8 +19,8 @@ namespace ui
 class PatchTableListView : public VirtualListView
 {
 protected:
-	wxString itemText(long item, long column, long index) const override;
-	void     updateItemAttr(long item, long column, long index) const override;
+	string itemText(long item, long column, long index) const override;
+	void   updateItemAttr(long item, long column, long index) const override;
 
 public:
 	PatchTableListView(wxWindow* parent, PatchTable* patch_table);

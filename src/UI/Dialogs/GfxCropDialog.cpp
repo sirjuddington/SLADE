@@ -144,7 +144,7 @@ void CropCanvas::draw()
 // GfxCropDialog class constructor
 // -----------------------------------------------------------------------------
 GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) :
-	wxDialog(parent, -1, "Crop", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+	wxDialog(parent, -1, wxS("Crop"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	// Set max crop size
 	if (image)
@@ -170,47 +170,50 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	sizer->Add(canvas_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Add crop controls
-	auto frame      = new wxStaticBox(this, -1, "Crop Borders");
+	auto frame      = new wxStaticBox(this, -1, wxS("Crop Borders"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::padLarge());
 
 	// Absolute
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
-	rb_absolute_ = new wxRadioButton(frame, -1, "Absolute");
+	rb_absolute_ = new wxRadioButton(frame, -1, wxS("Absolute"));
 	rb_absolute_->SetValue(true);
 	hbox->Add(rb_absolute_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Relative
-	rb_relative_ = new wxRadioButton(frame, -1, "Relative");
+	rb_relative_ = new wxRadioButton(frame, -1, wxS("Relative"));
 	hbox->Add(rb_relative_, 0, wxEXPAND);
 
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Left
-	gb_sizer->Add(new wxStaticText(frame, -1, "Left:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(frame, -1, wxS("Left:")), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_left_ = new NumberTextCtrl(frame);
 	text_left_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
 	text_left_->setNumber(0);
 	gb_sizer->Add(text_left_, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 	// Top
-	gb_sizer->Add(new wxStaticText(frame, -1, "Top:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Top:")), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_top_ = new NumberTextCtrl(frame);
 	text_top_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
 	text_top_->setNumber(0);
 	gb_sizer->Add(text_top_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
 	// Right
-	gb_sizer->Add(new wxStaticText(frame, -1, "Right:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(frame, -1, wxS("Right:")), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_right_ = new NumberTextCtrl(frame);
 	text_right_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
 	text_right_->setNumber(image->width());
 	gb_sizer->Add(text_right_, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
 
 	// Bottom
-	gb_sizer->Add(new wxStaticText(frame, -1, "Bottom:"), wxGBPosition(3, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(frame, -1, wxS("Bottom:")), wxGBPosition(3, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_bottom_ = new NumberTextCtrl(frame);
 	text_bottom_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
 	text_bottom_->setNumber(image->height());

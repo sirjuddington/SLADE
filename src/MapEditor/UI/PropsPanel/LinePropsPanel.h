@@ -40,7 +40,7 @@ private:
 	{
 		wxCheckBox* check_box;
 		int         index;
-		wxString    udmf;
+		string      udmf;
 	};
 	vector<FlagHolder> flags_;
 };

@@ -34,16 +34,16 @@ public:
 private:
 	struct EntryInfo
 	{
-		wxString entry_path;
-		wxString file_path;
-		bool     is_dir;
-		time_t   file_modified;
+		string entry_path;
+		string file_path;
+		bool   is_dir;
+		time_t file_modified;
 
 		EntryInfo(
-			const wxString& entry_path    = "",
-			const wxString& file_path     = "",
-			bool            is_dir        = false,
-			time_t          file_modified = 0) :
+			const string& entry_path    = "",
+			const string& file_path     = "",
+			bool          is_dir        = false,
+			time_t        file_modified = 0) :
 			entry_path{ entry_path },
 			file_path{ file_path },
 			is_dir{ is_dir },
@@ -53,7 +53,7 @@ private:
 	};
 
 	wxEvtHandler*        handler_;
-	wxString             dir_path_;
+	string               dir_path_;
 	vector<EntryInfo>    entry_info_;
 	vector<string>       removed_files_;
 	DirArchiveChangeList change_list_;
@@ -121,9 +121,9 @@ public:
 	void            openEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTabs(Archive* parent) const;
-	void            openFile(const wxString& filename) const;
+	void            openFile(const string& filename) const;
 	void            openFiles(const wxArrayString& files) const;
-	void            openDirAsArchive(const wxString& dir) const;
+	void            openDirAsArchive(string_view dir) const;
 	bool            redirectToTab(ArchiveEntry* entry) const;
 	bool            entryIsOpenInTab(ArchiveEntry* entry) const;
 	void            closeCurrentTab();
@@ -140,7 +140,7 @@ public:
 	bool beforeCloseArchive(Archive* archive);
 	bool closeArchive(Archive* archive);
 
-	void createNewArchive(const wxString& format) const;
+	void createNewArchive(const string& format) const;
 	bool closeAll();
 	void saveAll() const;
 	void checkDirArchives();

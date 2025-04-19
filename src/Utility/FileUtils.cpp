@@ -56,7 +56,7 @@ bool fileutil::fileExists(string_view path)
 {
 	try
 	{
-		auto fs_path = fs::path{ path };
+		auto fs_path = fs::u8path(path);
 		return fs::exists(fs_path) && fs::is_regular_file(fs_path);
 	}
 	catch (std::exception& ex)
@@ -73,7 +73,7 @@ bool fileutil::dirExists(string_view path)
 {
 	try
 	{
-		auto fs_path = fs::path{ path };
+		auto fs_path = fs::u8path(path);
 		return fs::exists(fs_path) && fs::is_directory(fs_path);
 	}
 	catch (std::exception& ex)
@@ -118,7 +118,7 @@ bool fileutil::validExecutable(string_view path)
 bool fileutil::removeFile(string_view path)
 {
 	static std::error_code ec;
-	if (!fs::remove(path, ec))
+	if (!fs::remove(fs::u8path(path), ec))
 	{
 		log::warning("Unable to remove file \"{}\": {}", path, ec.message());
 		return false;
@@ -135,7 +135,7 @@ bool fileutil::copyFile(string_view from, string_view to, bool overwrite)
 {
 	static std::error_code ec;
 	auto                   options = overwrite ? fs::copy_options::overwrite_existing : fs::copy_options::none;
-	if (!fs::copy_file(from, to, options, ec))
+	if (!fs::copy_file(fs::u8path(from), fs::u8path(to), options, ec))
 	{
 		log::warning("Unable to copy file from \"{}\" to \"{}\": {}", from, to, ec.message());
 		return false;
@@ -191,7 +191,7 @@ bool fileutil::writeStringToFile(const string& str, const string& path)
 bool fileutil::createDir(string_view path)
 {
 	static std::error_code ec;
-	if (!fs::create_directory(path, ec))
+	if (!fs::create_directory(fs::u8path(path), ec))
 	{
 		if (ec.value() != 0)
 			log::warning("Unable to create directory \"{}\": {}", path, ec.message());
@@ -209,7 +209,7 @@ bool fileutil::createDir(string_view path)
 bool fileutil::removeDir(string_view path)
 {
 	static std::error_code ec;
-	if (!fs::remove_all(path, ec))
+	if (!fs::remove_all(fs::u8path(path), ec))
 	{
 		log::warning("Unable to remove directory \"{}\": {}", path, ec.message());
 		return false;
@@ -229,17 +229,20 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 {
 	vector<string> paths;
 
+	if (!dirExists(path))
+		return paths;
+
 	if (include_subdirs)
 	{
-		for (const auto& item : fs::recursive_directory_iterator(path))
+		for (const auto& item : fs::recursive_directory_iterator(fs::u8path(path)))
 			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.push_back(item.path().string());
+				paths.push_back(item.path().u8string());
 	}
 	else
 	{
-		for (const auto& item : fs::directory_iterator(path))
+		for (const auto& item : fs::directory_iterator(fs::u8path(path)))
 			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.push_back(item.path().string());
+				paths.push_back(item.path().u8string());
 	}
 
 	return paths;
@@ -258,7 +261,7 @@ time_t fileutil::fileModifiedTime(string_view path)
 	return std::chrono::system_clock::to_time_t(sys_time);
 #endif
 
-	return wxFileModificationTime(wxString{ path.data(), path.length() });
+	return wxFileModificationTime(wxString::FromUTF8(path));
 }
 
 
@@ -295,6 +298,17 @@ bool SFile::open(const string& path, Mode mode)
 	if (handle_)
 		return false;
 
+#ifdef __WXMSW__
+	// Convert path to UTF-16 for Windows
+	auto wpath = wxString::FromUTF8(path);
+	switch (mode)
+	{
+	case Mode::ReadOnly: handle_ = _wfopen(wpath.wc_str(), L"rb"); break;
+	case Mode::Write: handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
+	case Mode::ReadWite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
+	case Mode::Append: handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
+	}
+#else
 	switch (mode)
 	{
 	case Mode::ReadOnly: handle_ = fopen(path.c_str(), "rb"); break;
@@ -302,6 +316,7 @@ bool SFile::open(const string& path, Mode mode)
 	case Mode::ReadWite: handle_ = fopen(path.c_str(), "r+b"); break;
 	case Mode::Append: handle_ = fopen(path.c_str(), "ab"); break;
 	}
+#endif
 
 	if (handle_)
 		stat(path.c_str(), &stat_);

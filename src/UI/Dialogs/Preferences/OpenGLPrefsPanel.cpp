@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -66,14 +65,14 @@ OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent), l
 
 	wxutil::layoutVertically(
 		sizer,
-		vector<wxObject*>{ cb_gl_point_sprite_ = new wxCheckBox(this, -1, "Enable point sprites if supported"),
-						   cb_gl_use_vbo_      = new wxCheckBox(this, -1, "Use Vertex Buffer Objects if supported"),
+		vector<wxObject*>{ cb_gl_point_sprite_ = new wxCheckBox(this, -1, wxS("Enable point sprites if supported")),
+						   cb_gl_use_vbo_ = new wxCheckBox(this, -1, wxS("Use Vertex Buffer Objects if supported")),
 						   wxutil::createLabelHBox(this, "Font Size:", ntc_font_size_ = new NumberTextCtrl(this)) },
 		wxSizerFlags(0).Expand());
 
 	cb_gl_point_sprite_->SetToolTip(
-		"Only disable this if you are experiencing graphical glitches like things disappearing");
-	ntc_font_size_->SetToolTip("The size of the font to use in OpenGL, eg. for info overlays in the map editor");
+		wxS("Only disable this if you are experiencing graphical glitches like things disappearing"));
+	ntc_font_size_->SetToolTip(wxS("The size of the font to use in OpenGL, eg. for info overlays in the map editor"));
 }
 
 // -----------------------------------------------------------------------------

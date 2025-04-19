@@ -35,6 +35,7 @@
 #include "Graphics/Icons.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -65,9 +66,9 @@ EXTERN_CVAR(Int, toolbar_size);
 // -----------------------------------------------------------------------------
 // SToolBarButton class constructor
 // -----------------------------------------------------------------------------
-SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const wxString& icon, bool show_name) :
-	wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton"),
-	action_{ SAction::fromId(action.ToStdString()) },
+SToolBarButton::SToolBarButton(wxWindow* parent, const string& action, const string& icon, bool show_name) :
+	wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, wxS("stbutton")),
+	action_{ SAction::fromId(action) },
 	show_name_{ show_name },
 	action_id_{ action_->id() },
 	action_name_{ action_->text() },
@@ -79,36 +80,34 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const w
 	// Determine width of name text if shown
 	if (show_name)
 	{
-		wxString name = action_->text();
-		name.Replace("&", "");
-		text_width_ = GetTextExtent(name).GetWidth() + pad_inner_ * 2;
+		auto name   = strutil::replace(action_->text(), "&", "");
+		text_width_ = GetTextExtent(wxString::FromUTF8(name)).GetWidth() + pad_inner_ * 2;
 	}
 
 	// Set size
 	updateSize();
 
 	// Load icon
-	if (icon.IsEmpty())
+	if (icon.empty())
 		icon_ = icons::getIcon(icons::Any, action_->iconName(), icon_size_);
 	else
-		icon_ = icons::getIcon(icons::Any, icon.ToStdString(), icon_size_);
+		icon_ = icons::getIcon(icons::Any, icon, icon_size_);
 
 	// Add shortcut to help text if it exists
-	wxString sc = action_->shortcutText();
-	if (!sc.IsEmpty())
-		help_text_ += wxString::Format(" (Shortcut: %s)", sc);
+	auto sc = action_->shortcutText();
+	if (!sc.empty())
+		help_text_ += fmt::format(" (Shortcut: {})", sc);
 
 	// Set tooltip
 	if (!show_name)
 	{
-		wxString tip = action_->text();
-		tip.Replace("&", "");
-		if (!sc.IsEmpty())
-			tip += wxString::Format(" (Shortcut: %s)", sc);
-		SetToolTip(tip);
+		auto tip = strutil::replace(action_->text(), "&", "");
+		if (!sc.empty())
+			tip += fmt::format(" (Shortcut: {})", sc);
+		SetToolTip(wxString::FromUTF8(tip));
 	}
-	else if (!sc.IsEmpty())
-		SetToolTip(wxString::Format("Shortcut: %s", sc));
+	else if (!sc.empty())
+		SetToolTip(WX_FMT("Shortcut: {}", sc));
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SToolBarButton::onPaint, this);
@@ -126,14 +125,14 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const w
 // SToolBarButton class constructor
 // -----------------------------------------------------------------------------
 SToolBarButton::SToolBarButton(
-	wxWindow*       parent,
-	const wxString& action_id,
-	const wxString& action_name,
-	const wxString& icon,
-	const wxString& help_text,
-	bool            show_name,
-	int             icon_size) :
-	wxControl{ parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton" },
+	wxWindow*     parent,
+	const string& action_id,
+	const string& action_name,
+	const string& icon,
+	const string& help_text,
+	bool          show_name,
+	int           icon_size) :
+	wxControl{ parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, wxS("stbutton") },
 	show_name_{ show_name },
 	action_id_{ action_id },
 	action_name_{ action_name },
@@ -143,17 +142,17 @@ SToolBarButton::SToolBarButton(
 	icon_size_{ ui::scalePx(icon_size < 0 ? toolbar_size : icon_size) }
 {
 	// Determine width of name text if shown
-	text_width_ = show_name ? GetTextExtent(action_name).GetWidth() + pad_inner_ * 2 : 0;
+	text_width_ = show_name ? GetTextExtent(wxString::FromUTF8(action_name)).GetWidth() + pad_inner_ * 2 : 0;
 
 	// Set size
 	updateSize();
 
 	// Load icon
-	icon_ = icons::getIcon(icons::Any, icon.ToStdString(), icon_size_);
+	icon_ = icons::getIcon(icons::Any, icon, icon_size_);
 
 	// Set tooltip
 	if (!show_name)
-		SetToolTip(action_name);
+		SetToolTip(wxString::FromUTF8(action_name));
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SToolBarButton::onPaint, this);
@@ -178,10 +177,10 @@ bool SToolBarButton::isChecked() const
 // -----------------------------------------------------------------------------
 // Allows to dynamically change the button's icon
 // -----------------------------------------------------------------------------
-void SToolBarButton::setIcon(const wxString& icon)
+void SToolBarButton::setIcon(const string& icon)
 {
-	if (!icon.IsEmpty())
-		icon_ = icons::getIcon(icons::Any, icon.ToStdString(), icon_size_);
+	if (!icon.empty())
+		icon_ = icons::getIcon(icons::Any, icon, icon_size_);
 }
 
 // -----------------------------------------------------------------------------
@@ -208,7 +207,7 @@ void SToolBarButton::setMenu(wxMenu* menu, bool delete_existing)
 		delete menu_dropdown_;
 
 	menu_dropdown_ = menu;
-	SetToolTip("");
+	SetToolTip(wxEmptyString);
 	updateSize();
 }
 
@@ -266,7 +265,7 @@ void SToolBarButton::sendClickedEvent()
 	// Generate event
 	wxCommandEvent ev(wxEVT_STOOLBAR_BUTTON_CLICKED, GetId());
 	ev.SetEventObject(this);
-	ev.SetString(action_id_);
+	ev.SetString(wxString::FromUTF8(action_id_));
 	ProcessWindowEvent(ev);
 }
 
@@ -314,12 +313,12 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		return;
 
 	// Get width of name text if shown
-	int      name_height = 0;
-	wxString name        = action_name_;
+	int  name_height = 0;
+	auto name        = action_name_;
 	if (show_name_)
 	{
-		name.Replace("&", "");
-		auto name_size = GetTextExtent(name);
+		strutil::replaceIP(name, "&", "");
+		auto name_size = GetTextExtent(wxString::FromUTF8(name));
 		name_height    = name_size.y;
 	}
 
@@ -396,7 +395,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	{
 		int top  = ((double)GetSize().y * 0.5) - ((double)name_height * 0.5);
 		int left = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
-		dc.DrawText(name, left, top);
+		dc.DrawText(wxString::FromUTF8(name), left, top);
 	}
 
 	if (menu_dropdown_)
@@ -440,7 +439,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	{
 		// Set status bar help text
 		if (parent_window && parent_window->GetStatusBar())
-			parent_window->SetStatusText(help_text_);
+			parent_window->SetStatusText(wxString::FromUTF8(help_text_));
 
 		mouse_event = 1;
 	}
@@ -450,7 +449,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	{
 		// Clear status bar help text
 		if (parent_window && parent_window->GetStatusBar())
-			parent_window->SetStatusText("");
+			parent_window->SetStatusText(wxEmptyString);
 
 		mouse_event = 2;
 	}
@@ -477,7 +476,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 
 		// Clear status bar help text
 		if (parent_window && parent_window->GetStatusBar())
-			parent_window->SetStatusText("");
+			parent_window->SetStatusText(wxEmptyString);
 	}
 
 	// Motion

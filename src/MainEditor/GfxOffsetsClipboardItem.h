@@ -15,4 +15,4 @@ public:
 private:
 	Vec2i offsets_;
 };
-}
+} // namespace slade

@@ -281,7 +281,7 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check it opened
 	if (!file.IsOpened())
@@ -348,7 +348,7 @@ bool PakArchive::isPakArchive(MemChunk& mc)
 bool PakArchive::isPakArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < 12)
