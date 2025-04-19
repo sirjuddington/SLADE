@@ -11,9 +11,9 @@ namespace ui
 	public:
 		NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveDir* current_dir, bool new_dir = false);
 
-		wxString entryName() const;
-		int      entryType() const;
-		wxString parentDirPath() const;
+		string entryName() const;
+		int    entryType() const;
+		string parentDirPath() const;
 
 	private:
 		wxComboBox* combo_parent_dir_  = nullptr;

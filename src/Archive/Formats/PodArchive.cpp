@@ -250,7 +250,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -320,7 +320,7 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 bool PodArchive::isPodArchive(const string& filename)
 {
 	wxFile file;
-	if (!file.Open(filename))
+	if (!file.Open(wxString::FromUTF8(filename)))
 		return false;
 
 	file.SeekEnd(0);

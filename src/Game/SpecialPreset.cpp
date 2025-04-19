@@ -151,7 +151,7 @@ bool game::loadCustomSpecialPresets()
 {
 	// Check file exists
 	auto file = app::path("special_presets.cfg", app::Dir::User);
-	if (!wxFileExists(file))
+	if (!wxFileExists(wxString::FromUTF8(file)))
 		return true;
 
 	// Load special presets file to memory
@@ -199,7 +199,7 @@ bool game::saveCustomSpecialPresets()
 
 	// Open file
 	wxFile file;
-	if (!file.Open(app::path("special_presets.cfg", app::Dir::User), wxFile::write))
+	if (!file.Open(wxString::FromUTF8(app::path("special_presets.cfg", app::Dir::User)), wxFile::write))
 	{
 		log::error("Unable to open special_presets.cfg file for writing");
 		return false;
@@ -214,7 +214,7 @@ bool game::saveCustomSpecialPresets()
 	// Write to file
 	string presets;
 	root.write(presets);
-	if (!file.Write(presets))
+	if (!file.Write(wxString::FromUTF8(presets)))
 	{
 		log::error("Writing to special_presets.cfg failed");
 		return false;

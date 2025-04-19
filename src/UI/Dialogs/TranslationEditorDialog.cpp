@@ -40,6 +40,7 @@
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -124,11 +125,11 @@ void GradientBox::draw()
 // TranslationEditorDialog class constructor
 // -----------------------------------------------------------------------------
 TranslationEditorDialog::TranslationEditorDialog(
-	wxWindow*       parent,
-	const Palette&  pal,
-	const wxString& title,
-	SImage*         preview_image) :
-	wxDialog(parent, -1, title),
+	wxWindow*      parent,
+	const Palette& pal,
+	const string&  title,
+	SImage*        preview_image) :
+	wxDialog(parent, -1, wxString::FromUTF8(title)),
 	palette_{ pal }
 {
 	// Setup preview image
@@ -152,7 +153,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	// --- Top half (translation origin) ---
 
 	// Translations list
-	auto frame      = new wxStaticBox(this, -1, "Translation Ranges");
+	auto frame      = new wxStaticBox(this, -1, wxS("Translation Ranges"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, wxGBPosition(0, 0), wxDefaultSpan, wxEXPAND);
 
@@ -181,7 +182,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 
 
 	// Origin range
-	frame      = new wxStaticBox(this, -1, "Origin Range");
+	frame      = new wxStaticBox(this, -1, wxS("Origin Range"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
@@ -197,32 +198,32 @@ TranslationEditorDialog::TranslationEditorDialog(
 	// --- Bottom half (translation target) ---
 
 	// Target type
-	frame      = new wxStaticBox(this, -1, "Target Range Type");
+	frame      = new wxStaticBox(this, -1, wxS("Target Range Type"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, wxGBPosition(1, 0), wxDefaultSpan, wxEXPAND);
 
 	// Palette range
-	rb_type_palette_ = new wxRadioButton(this, -1, "Palette Range", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	rb_type_palette_ = new wxRadioButton(this, -1, wxS("Palette Range"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	framesizer->Add(rb_type_palette_, 0, wxEXPAND | wxALL, ui::pad());
 
 	// Colour gradient
-	rb_type_colour_ = new wxRadioButton(this, -1, "Colour Gradient");
+	rb_type_colour_ = new wxRadioButton(this, -1, wxS("Colour Gradient"));
 	framesizer->Add(rb_type_colour_, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
 
 	// Desaturated colour gradient
-	rb_type_desaturate_ = new wxRadioButton(this, -1, "Desaturated Colour Gradient");
+	rb_type_desaturate_ = new wxRadioButton(this, -1, wxS("Desaturated Colour Gradient"));
 	framesizer->Add(rb_type_desaturate_, 0, wxEXPAND | wxALL, ui::pad());
 
 	// Colourise range
-	rb_type_colourise_ = new wxRadioButton(this, -1, "Colourise Range");
+	rb_type_colourise_ = new wxRadioButton(this, -1, wxS("Colourise Range"));
 	framesizer->Add(rb_type_colourise_, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
 
 	// Tint range
-	rb_type_tint_ = new wxRadioButton(this, -1, "Tint Range");
+	rb_type_tint_ = new wxRadioButton(this, -1, wxS("Tint Range"));
 	framesizer->Add(rb_type_tint_, 0, wxEXPAND | wxALL, ui::pad());
 
 	// Target range
-	frame      = new wxStaticBox(this, -1, "Target Range");
+	frame      = new wxStaticBox(this, -1, wxS("Target Range"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
@@ -241,7 +242,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	vbox->Add(pal_canvas_target_, 1, wxEXPAND);
 
 	// Reverse origin range
-	cb_target_reverse_ = new wxCheckBox(panel_target_palette_, -1, "Reverse Selection");
+	cb_target_reverse_ = new wxCheckBox(panel_target_palette_, -1, wxS("Reverse Selection"));
 	vbox->Add(cb_target_reverse_, 0, wxTOP, min_pad);
 
 
@@ -259,14 +260,14 @@ TranslationEditorDialog::TranslationEditorDialog(
 	cb_range_begin_->setColour(ColRGBA::BLACK);
 	cb_range_begin_->setPalette(&palette_);
 	hbox->Add(cb_range_begin_, 0, wxEXPAND | wxRIGHT, ui::pad());
-	hbox->Add(new wxStaticText(panel_target_gradient_, -1, "From"), 0, wxALIGN_CENTER_VERTICAL);
+	hbox->Add(new wxStaticText(panel_target_gradient_, -1, wxS("From")), 0, wxALIGN_CENTER_VERTICAL);
 
 	// End colour
 	cb_range_end_ = new ColourBox(panel_target_gradient_, -1, false, true);
 	cb_range_end_->setColour(ColRGBA::WHITE);
 	cb_range_end_->setPalette(&palette_);
 	hbox->AddStretchSpacer();
-	hbox->Add(new wxStaticText(panel_target_gradient_, -1, "To"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(new wxStaticText(panel_target_gradient_, -1, wxS("To")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	hbox->Add(cb_range_end_, 0, wxEXPAND);
 
 	// Gradient preview
@@ -288,12 +289,12 @@ TranslationEditorDialog::TranslationEditorDialog(
 	cb_target_tint_->setColour(ColRGBA::RED);
 	cb_target_tint_->setPalette(&palette_);
 	hbox->Add(cb_target_tint_, 0, wxEXPAND | wxRIGHT, ui::pad());
-	hbox->Add(new wxStaticText(panel_target_tint_, -1, "Colour"), 1, wxALIGN_CENTER_VERTICAL);
+	hbox->Add(new wxStaticText(panel_target_tint_, -1, wxS("Colour")), 1, wxALIGN_CENTER_VERTICAL);
 
 	// Add 'amount' slider
 	slider_tint_  = new wxSlider(panel_target_tint_, -1, 50, 0, 100);
-	label_tint_   = new wxStaticText(panel_target_tint_, -1, "50%");
-	label_amount_ = new wxStaticText(panel_target_tint_, -1, "Amount");
+	label_tint_   = new wxStaticText(panel_target_tint_, -1, wxS("50%"));
+	label_amount_ = new wxStaticText(panel_target_tint_, -1, wxS("Amount"));
 	hbox->Add(label_amount_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	hbox->Add(slider_tint_, 3, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->Add(label_tint_, 0, wxALIGN_CENTER_VERTICAL);
@@ -308,7 +309,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	sizer->Add(hbox, wxGBPosition(2, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Palette preview
-	frame      = new wxStaticBox(this, -1, "Resulting Palette");
+	frame      = new wxStaticBox(this, -1, wxS("Resulting Palette"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 0, wxEXPAND | wxRIGHT, ui::pad());
 
@@ -322,7 +323,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	framesizer->Add(pal_canvas_preview_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Image preview
-	frame      = new wxStaticBox(this, -1, "Preview");
+	frame      = new wxStaticBox(this, -1, wxS("Preview"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 1, wxEXPAND);
 
@@ -337,8 +338,8 @@ TranslationEditorDialog::TranslationEditorDialog(
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, wxGBPosition(3, 0), wxGBSpan(1, 2), wxEXPAND);
 
-	text_string_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-	hbox->Add(new wxStaticText(this, -1, "Translation String:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	text_string_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+	hbox->Add(new wxStaticText(this, -1, wxS("Translation String:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	hbox->Add(text_string_, 1, wxEXPAND);
 
 
@@ -347,20 +348,19 @@ TranslationEditorDialog::TranslationEditorDialog(
 	sizer->Add(buttonsizer, wxGBPosition(4, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Load button
-	btn_load_ = new wxButton(this, -1, "Load from File");
+	btn_load_ = new wxButton(this, -1, wxS("Load from File"));
 	buttonsizer->InsertStretchSpacer(0);
 	buttonsizer->Insert(0, btn_load_, 0, wxRIGHT, ui::pad());
-
 	// Save button
-	btn_save_ = new wxButton(this, -1, "Save to File");
+	btn_save_ = new wxButton(this, -1, wxS("Save to File"));
 	buttonsizer->Insert(1, btn_save_, 0, wxRIGHT, ui::pad());
 
 	// Truecolor checkbox
-	cb_truecolor_ = new wxCheckBox(this, -1, "Truecolor");
+	cb_truecolor_ = new wxCheckBox(this, -1, wxS("Truecolor"));
 	buttonsizer->Insert(2, cb_truecolor_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 
 	// Palette translation only
-	cb_paletteonly_ = new wxCheckBox(this, -1, "Palette Translation Only");
+	cb_paletteonly_ = new wxCheckBox(this, -1, wxS("Palette Translation Only"));
 	buttonsizer->Insert(3, cb_paletteonly_, 0, wxALIGN_CENTER_VERTICAL);
 
 	// Bind events
@@ -407,7 +407,7 @@ void TranslationEditorDialog::openTranslation(const Translation& trans)
 	// Update translation list
 	list_translations_->Clear();
 	for (unsigned a = 0; a < translation_.nRanges(); a++)
-		list_translations_->Append(translation_.range(a)->asText());
+		list_translations_->Append(wxString::FromUTF8(translation_.range(a)->asText()));
 
 	// Select+open first range if it exists
 	if (list_translations_->GetCount() > 0)
@@ -532,7 +532,7 @@ void TranslationEditorDialog::openRange(int index)
 
 		// Set amount
 		slider_tint_->SetValue(ttr->amount());
-		label_tint_->SetLabel(wxString::Format("%d%% ", ttr->amount()));
+		label_tint_->SetLabel(WX_FMT("{}% ", ttr->amount()));
 	}
 }
 
@@ -552,7 +552,7 @@ void TranslationEditorDialog::updateListItem(int index)
 	if (tr)
 	{
 		list_translations_->Delete(index);
-		list_translations_->Insert(tr->asText(), index);
+		list_translations_->Insert(wxString::FromUTF8(tr->asText()), index);
 		list_translations_->SetSelection(index);
 	}
 }
@@ -819,11 +819,11 @@ void TranslationEditorDialog::updatePreviews()
 		if (img.putIndexedData(mc))
 		{
 			newtrans.read(mc.data());
-			text_string_->SetValue(newtrans.asText());
+			text_string_->SetValue(wxString::FromUTF8(newtrans.asText()));
 		}
 	}
 	else
-		text_string_->SetValue(translation_.asText());
+		text_string_->SetValue(wxString::FromUTF8(translation_.asText()));
 }
 
 // -----------------------------------------------------------------------------
@@ -1069,7 +1069,7 @@ void TranslationEditorDialog::onTintColourChanged(wxEvent& e)
 void TranslationEditorDialog::onTintAmountChanged(wxCommandEvent& e)
 {
 	setTintAmount(slider_tint_->GetValue());
-	label_tint_->SetLabel(wxString::Format("%d%% ", slider_tint_->GetValue()));
+	label_tint_->SetLabel(WX_FMT("{}% ", slider_tint_->GetValue()));
 }
 
 // -----------------------------------------------------------------------------
@@ -1144,7 +1144,7 @@ void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e)
 		translation_.addRange(TransRange::Type::Tint, index);
 
 	// Add it to the list
-	list_translations_->Insert(translation_.range(index)->asText(), index);
+	list_translations_->Insert(wxString::FromUTF8(translation_.range(index)->asText()), index);
 
 	// Update UI
 	list_translations_->SetSelection(index);
@@ -1237,25 +1237,22 @@ void TranslationEditorDialog::onBtnDown(wxCommandEvent& e)
 void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 {
 	// Get user directory
-	wxString dir = app::path("translations", app::Dir::User);
+	auto dir = app::path("translations", app::Dir::User);
 
 	// Create open file dialog
 	wxFileDialog dialog_open(
 		this,
-		"Load Translation from File",
-		dir,
+		wxS("Load Translation from File"),
+		wxString::FromUTF8(dir),
 		wxEmptyString,
-		"Text Files (*.txt)|*.txt",
+		wxS("Text Files (*.txt)|*.txt"),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST,
 		wxDefaultPosition);
 
 	// Run the dialog & check that the user didn't cancel
 	if (dialog_open.ShowModal() == wxID_OK)
 	{
-		// Get the selected filename
-		wxString filename = dialog_open.GetPath();
-
-		// Load file to string
+		// Load selected file to string
 		wxFile   file;
 		wxString tstring;
 		if (file.Open(dialog_open.GetPath()))
@@ -1263,13 +1260,13 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 
 		// Parse as a translation
 		Translation trans;
-		trans.parse(tstring.ToStdString());
+		trans.parse(tstring.utf8_string());
 
 		// Open it if parsed ok
 		if (trans.nRanges() > 0)
 			openTranslation(trans);
 		else
-			wxMessageBox("Not a valid translation file", "Error", wxICON_ERROR);
+			wxMessageBox(wxS("Not a valid translation file"), wxS("Error"), wxICON_ERROR);
 	}
 }
 
@@ -1279,17 +1276,17 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
 {
 	// If the directory doesn't exist create it
-	wxString dir = app::path("translations", app::Dir::User);
-	if (!wxDirExists(dir))
-		wxMkdir(dir);
+	auto dir = app::path("translations", app::Dir::User);
+	if (!fileutil::dirExists(dir))
+		fileutil::createDir(dir);
 
 	// Create save file dialog
 	wxFileDialog dialog_save(
 		this,
-		"Save Translation to File",
-		dir,
+		wxS("Save Translation to File"),
+		wxString::FromUTF8(dir),
 		wxEmptyString,
-		"Text File (*.txt)|*.txt",
+		wxS("Text File (*.txt)|*.txt"),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
 		wxDefaultPosition);
 
@@ -1297,16 +1294,16 @@ void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
 	if (dialog_save.ShowModal() == wxID_OK)
 	{
 		// Get translation as text string
-		wxString str = translation_.asText();
+		auto str = translation_.asText();
 
 		// Open file for writing
-		wxFile file(dialog_save.GetPath(), wxFile::write);
+		SFile file(dialog_save.GetPath().utf8_string(), SFile::Mode::Write);
 
 		// Write string to file
-		file.Write(str);
+		file.writeStr(str);
 
 		// Close file
-		file.Close();
+		file.close();
 	}
 }
 

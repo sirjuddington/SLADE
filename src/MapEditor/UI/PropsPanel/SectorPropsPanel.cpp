@@ -69,14 +69,14 @@ FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 // -----------------------------------------------------------------------------
 // Sets the texture to display
 // -----------------------------------------------------------------------------
-void FlatTexCanvas::setTexture(const wxString& tex)
+void FlatTexCanvas::setTexture(const string& tex)
 {
 	texname_ = tex;
 	if (tex.empty() || tex == "-")
 		texture_ = 0;
 	else
 		texture_ = mapeditor::textureManager()
-					   .flat(tex.ToStdString(), game::configuration().featureSupported(game::Feature::MixTexFlats))
+					   .flat(tex, game::configuration().featureSupported(game::Feature::MixTexFlats))
 					   .gl_id;
 
 	Refresh();
@@ -145,7 +145,7 @@ FlatComboBox::FlatComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 {
 	// Init
 	wxArrayString list;
-	list.Add("-");
+	list.Add(wxS("-"));
 
 	// Bind events
 	Bind(wxEVT_COMBOBOX_DROPDOWN, &FlatComboBox::onDropDown, this);
@@ -169,28 +169,28 @@ FlatComboBox::FlatComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 void FlatComboBox::onDropDown(wxCommandEvent& e)
 {
 	// Get current value
-	wxString text = GetValue().Upper();
+	auto text = GetValue().Upper().utf8_string();
 
 	// Populate dropdown with matching flat names
 	auto&         textures = mapeditor::textureManager().allFlatsInfo();
 	wxArrayString list;
-	list.Add("-");
+	list.Add(wxS("-"));
 	for (auto& texture : textures)
 	{
-		if (strutil::startsWith(texture.short_name, text.ToStdString()))
+		if (strutil::startsWith(texture.short_name, text))
 		{
-			list.Add(texture.short_name);
+			list.Add(wxString::FromUTF8(texture.short_name));
 		}
 		if (game::configuration().featureSupported(game::Feature::LongNames))
 		{
-			if (strutil::startsWith(texture.long_name, text.ToStdString()))
+			if (strutil::startsWith(texture.long_name, text))
 			{
-				list.Add(texture.long_name);
+				list.Add(wxString::FromUTF8(texture.long_name));
 			}
 		}
 	}
 	Set(list); // Why does this clear the text box also?
-	SetValue(text);
+	SetValue(wxString::FromUTF8(text));
 
 	e.Skip();
 }
@@ -239,10 +239,10 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	sizer->Add(stc_tabs_, 1, wxEXPAND);
 
 	// General tab
-	stc_tabs_->AddPage(setupGeneralPanel(), "General");
+	stc_tabs_->AddPage(setupGeneralPanel(), wxS("General"));
 
 	// Special tab
-	stc_tabs_->AddPage(setupSpecialPanel(), "Special");
+	stc_tabs_->AddPage(setupSpecialPanel(), wxS("Special"));
 
 	// Other Properties tab
 
@@ -256,7 +256,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 		mopp_all_props_->hideProperty("lightlevel");
 		mopp_all_props_->hideProperty("id");
 		mopp_all_props_->hideProperty("special");
-		stc_tabs_->AddPage(mopp_all_props_, "Other Properties");
+		stc_tabs_->AddPage(mopp_all_props_, wxS("Other Properties"));
 	}
 	else
 		mopp_all_props_ = nullptr;
@@ -284,7 +284,7 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	// --- Floor ---
 	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(m_hbox, 0, wxEXPAND | wxALL, ui::pad());
-	auto frame      = new wxStaticBox(panel, -1, "Floor");
+	auto frame      = new wxStaticBox(panel, -1, wxS("Floor"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	m_hbox->Add(framesizer, 1, wxALIGN_CENTER | wxRIGHT, ui::pad());
 
@@ -292,18 +292,18 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 	gb_sizer->Add(gfx_floor_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Texture:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Texture:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_floor_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Height
-	gb_sizer->Add(new wxStaticText(panel, -1, "Height:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Height:")), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_height_floor_ = new NumberTextCtrl(panel), { 2, 1 }, { 1, 1 }, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1, 1);
 
 
 	// --- Ceiling ---
-	frame      = new wxStaticBox(panel, -1, "Ceiling");
+	frame      = new wxStaticBox(panel, -1, wxS("Ceiling"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	m_hbox->Add(framesizer, 1, wxALIGN_CENTER);
 
@@ -311,31 +311,31 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 	gb_sizer->Add(gfx_ceiling_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Texture:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Texture:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_ceiling_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Height
-	gb_sizer->Add(new wxStaticText(panel, -1, "Height:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Height:")), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_height_ceiling_ = new NumberTextCtrl(panel), { 2, 1 }, { 1, 1 }, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1, 1);
 
 
 	// -- General ---
-	frame      = new wxStaticBox(panel, -1, "General");
+	frame      = new wxStaticBox(panel, -1, wxS("General"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
 	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Light level
-	gb_sizer->Add(new wxStaticText(panel, -1, "Light Level:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Light Level:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_light_ = new NumberTextCtrl(panel), { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Tag
-	gb_sizer->Add(new wxStaticText(panel, -1, "Tag:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Tag:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_tag_ = new NumberTextCtrl(panel), { 1, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(btn_new_tag_ = new wxButton(panel, -1, "New Tag"), { 1, 2 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(btn_new_tag_ = new wxButton(panel, -1, wxS("New Tag")), { 1, 2 }, { 1, 1 }, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1, 1);
 
@@ -359,12 +359,12 @@ wxPanel* SectorPropsPanel::setupSpecialPanel()
 
 	// Add override checkbox
 	sizer->Add(
-		cb_override_special_ = new wxCheckBox(panel, -1, "Override Special"),
+		cb_override_special_ = new wxCheckBox(panel, -1, wxS("Override Special")),
 		0,
 		wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
 		ui::pad());
 	cb_override_special_->SetToolTip(
-		"Differing specials detected, tick this to set the special for all selected sectors");
+		wxS("Differing specials detected, tick this to set the special for all selected sectors"));
 
 	return panel;
 }
@@ -394,31 +394,31 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 	if (MapObject::multiStringProperty(objects, "texturefloor", sval))
 	{
 		gfx_floor_->setTexture(sval);
-		fcb_floor_->SetValue(sval);
+		fcb_floor_->SetValue(wxString::FromUTF8(sval));
 	}
 
 	// Ceiling texture
 	if (MapObject::multiStringProperty(objects, "textureceiling", sval))
 	{
 		gfx_ceiling_->setTexture(sval);
-		fcb_ceiling_->SetValue(sval);
+		fcb_ceiling_->SetValue(wxString::FromUTF8(sval));
 	}
 
 	// Floor height
 	if (MapObject::multiIntProperty(objects, "heightfloor", ival))
-		text_height_floor_->SetValue(wxString::Format("%d", ival));
+		text_height_floor_->SetValue(WX_FMT("{}", ival));
 
 	// Ceiling height
 	if (MapObject::multiIntProperty(objects, "heightceiling", ival))
-		text_height_ceiling_->SetValue(wxString::Format("%d", ival));
+		text_height_ceiling_->SetValue(WX_FMT("{}", ival));
 
 	// Light level
 	if (MapObject::multiIntProperty(objects, "lightlevel", ival))
-		text_light_->SetValue(wxString::Format("%d", ival));
+		text_light_->SetValue(WX_FMT("{}", ival));
 
 	// Tag
 	if (MapObject::multiIntProperty(objects, "id", ival))
-		text_tag_->SetValue(wxString::Format("%d", ival));
+		text_tag_->SetValue(WX_FMT("{}", ival));
 
 	// Load other properties
 	if (mopp_all_props_)
@@ -449,11 +449,11 @@ void SectorPropsPanel::applyChanges()
 
 		// Floor texture
 		if (!fcb_floor_->GetValue().IsEmpty())
-			sector->setFloorTexture(fcb_floor_->GetValue().ToStdString());
+			sector->setFloorTexture(fcb_floor_->GetValue().utf8_string());
 
 		// Ceiling texture
 		if (!fcb_ceiling_->GetValue().IsEmpty())
-			sector->setCeilingTexture(fcb_ceiling_->GetValue().ToStdString());
+			sector->setCeilingTexture(fcb_ceiling_->GetValue().utf8_string());
 
 		// Floor height
 		if (!text_height_floor_->GetValue().IsEmpty())
@@ -491,11 +491,11 @@ void SectorPropsPanel::onTextureChanged(wxCommandEvent& e)
 {
 	// Floor
 	if (e.GetEventObject() == fcb_floor_)
-		gfx_floor_->setTexture(fcb_floor_->GetValue());
+		gfx_floor_->setTexture(fcb_floor_->GetValue().utf8_string());
 
 	// Ceiling
 	else if (e.GetEventObject() == fcb_ceiling_)
-		gfx_ceiling_->setTexture(fcb_ceiling_->GetValue());
+		gfx_ceiling_->setTexture(fcb_ceiling_->GetValue().utf8_string());
 
 	e.Skip();
 }
@@ -528,7 +528,7 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 	// Browse
 	MapTextureBrowser browser(this, mapeditor::TextureType::Flat, tc->texName(), &mapeditor::editContext().map());
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
-		cb->SetValue(browser.selectedItem()->name());
+		cb->SetValue(wxString::FromUTF8(browser.selectedItem()->name()));
 }
 
 // -----------------------------------------------------------------------------
@@ -537,5 +537,5 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 void SectorPropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
 	int tag = mapeditor::editContext().map().sectors().firstFreeId();
-	text_tag_->SetValue(wxString::Format("%d", tag));
+	text_tag_->SetValue(WX_FMT("{}", tag));
 }

@@ -27,7 +27,7 @@ public:
 	bool handleAction(string_view name) override;
 
 private:
-	wxString                 script_text_;
+	string                   script_text_;
 	unique_ptr<ArchiveEntry> entry_script_;
 	unique_ptr<ArchiveEntry> entry_compiled_;
 

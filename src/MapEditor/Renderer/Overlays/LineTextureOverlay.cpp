@@ -474,7 +474,7 @@ void LineTextureOverlay::browseTexture(TexInfo& tex, string_view position)
 	// Open texture browser
 	MapTextureBrowser browser(
 		mapeditor::windowWx(), mapeditor::TextureType::Texture, texture, &(mapeditor::editContext().map()));
-	browser.SetTitle(fmt::format("Browse {} Texture", position));
+	browser.SetTitle(wxString::FromUTF8(fmt::format("Browse {} Texture", position)));
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 	{
 		// Set texture

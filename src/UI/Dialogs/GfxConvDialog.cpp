@@ -54,8 +54,8 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-wxString GfxConvDialog::current_palette_name_ = "";
-wxString GfxConvDialog::target_palette_name_  = "";
+string GfxConvDialog::current_palette_name_;
+string GfxConvDialog::target_palette_name_;
 CVAR(Bool, gfx_extraconv, false, CVar::Flag::Save)
 
 
@@ -83,8 +83,8 @@ GfxConvDialog::GfxConvDialog(wxWindow* parent) : SDialog(parent, "Graphic Format
 // -----------------------------------------------------------------------------
 GfxConvDialog::~GfxConvDialog()
 {
-	current_palette_name_ = pal_chooser_current_->GetStringSelection();
-	target_palette_name_  = pal_chooser_target_->GetStringSelection();
+	current_palette_name_ = pal_chooser_current_->GetStringSelection().utf8_string();
+	target_palette_name_  = pal_chooser_target_->GetStringSelection().utf8_string();
 }
 
 // -----------------------------------------------------------------------------
@@ -143,7 +143,7 @@ bool GfxConvDialog::nextItem()
 			{
 				// Add format
 				conv_formats_.emplace_back(format, SImage::Type::PalMask);
-				combo_target_format_->Append(format->name() + " (Paletted)");
+				combo_target_format_->Append(wxString::FromUTF8(format->name() + " (Paletted)"));
 
 				// Check for match with current format
 				if (current_format_.format == format && current_format_.coltype == SImage::Type::PalMask)
@@ -158,7 +158,7 @@ bool GfxConvDialog::nextItem()
 			{
 				// Add format
 				conv_formats_.emplace_back(format, SImage::Type::RGBA);
-				combo_target_format_->Append(format->name() + " (Truecolour)");
+				combo_target_format_->Append(wxString::FromUTF8(format->name() + " (Truecolour)"));
 
 				// Check for match with current format
 				if (current_format_.format == format && current_format_.coltype == SImage::Type::RGBA)
@@ -169,7 +169,7 @@ bool GfxConvDialog::nextItem()
 			{
 				// Add format
 				conv_formats_.emplace_back(format, SImage::Type::AlphaMap);
-				combo_target_format_->Append(format->name() + " (Alpha Map)");
+				combo_target_format_->Append(wxString::FromUTF8(format->name() + " (Alpha Map)"));
 
 				// Check for match with current format
 				if (current_format_.format == format && current_format_.coltype == SImage::Type::AlphaMap)
@@ -192,7 +192,7 @@ bool GfxConvDialog::nextItem()
 	current_format_ = conv_formats_[current_index];
 
 	// Setup current format string
-	wxString fmt_string = "Current Format: ";
+	string fmt_string = "Current Format: ";
 	if (items_[current_item_].texture == nullptr)
 	{
 		if (items_[current_item_].image.format())
@@ -214,7 +214,7 @@ bool GfxConvDialog::nextItem()
 	}
 	else if (items_[current_item_].image.type() == SImage::Type::AlphaMap)
 		fmt_string += " (Alpha Map)";
-	label_current_format_->SetLabel(fmt_string);
+	label_current_format_->SetLabel(wxString::FromUTF8(fmt_string));
 
 	// Update UI
 	updatePreviewGfx();
@@ -233,13 +233,13 @@ void GfxConvDialog::updateButtons() const
 	{
 		btn_convert_all_->Show();
 		btn_skip_all_->Show();
-		btn_skip_->SetLabelText("Skip");
+		btn_skip_->SetLabelText(wxS("Skip"));
 	}
 	else
 	{
 		btn_convert_all_->Hide();
 		btn_skip_all_->Hide();
-		btn_skip_->SetLabelText("Cancel");
+		btn_skip_->SetLabelText(wxS("Cancel"));
 	}
 }
 
@@ -260,19 +260,19 @@ void GfxConvDialog::setupLayout()
 	msizer->Add(m_vbox, 1, wxEXPAND | wxALL, px_outer);
 
 	// Add current format label
-	label_current_format_ = new wxStaticText(this, -1, "Current Format:");
+	label_current_format_ = new wxStaticText(this, -1, wxS("Current Format:"));
 	m_vbox->Add(label_current_format_, 0, wxBOTTOM, px_inner);
 
 	// Add 'Convert To' combo box
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, px_outer);
-	hbox->Add(new wxStaticText(this, -1, "Convert to:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, px_pad);
+	hbox->Add(new wxStaticText(this, -1, wxS("Convert to:")), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, px_pad);
 	combo_target_format_ = new wxChoice(this, -1);
 	hbox->Add(combo_target_format_, 1, wxEXPAND);
 
 
 	// Add Gfx previews
-	auto frame      = new wxStaticBox(this, -1, "Colour Options");
+	auto frame      = new wxStaticBox(this, -1, wxS("Colour Options"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	m_vbox->Add(framesizer, 1, wxEXPAND | wxBOTTOM, px_outer);
 
@@ -280,7 +280,7 @@ void GfxConvDialog::setupLayout()
 	framesizer->Add(gbsizer, 1, wxEXPAND | wxALL, px_inner);
 
 	// Current
-	gbsizer->Add(new wxStaticText(this, -1, "Current Graphic"), { 0, 0 }, { 1, 1 });
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Current Graphic")), { 0, 0 }, { 1, 1 });
 	gfx_current_ = new GfxCanvas(this, -1);
 	gfx_current_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
 	gfx_current_->setViewType(GfxCanvas::View::Centered);
@@ -290,7 +290,7 @@ void GfxConvDialog::setupLayout()
 	gbsizer->Add(pal_chooser_current_, { 2, 0 }, { 1, 1 }, wxEXPAND);
 
 	// Converted
-	gbsizer->Add(new wxStaticText(this, -1, "Converted Graphic"), { 0, 1 }, { 1, 2 });
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Converted Graphic")), { 0, 1 }, { 1, 2 });
 	gfx_target_ = new GfxCanvas(this, -1);
 	gfx_target_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
 	gfx_target_->setViewType(GfxCanvas::View::Centered);
@@ -300,7 +300,7 @@ void GfxConvDialog::setupLayout()
 	gbsizer->Add(pal_chooser_target_, { 2, 1 }, { 1, 1 }, wxEXPAND);
 	btn_colorimetry_settings_ = new wxBitmapButton(
 		this, -1, icons::getIcon(icons::General, "settings"), wxDefaultPosition, wxDefaultSize);
-	btn_colorimetry_settings_->SetToolTip("Adjust Colorimetry Settings...");
+	btn_colorimetry_settings_->SetToolTip(wxS("Adjust Colorimetry Settings..."));
 	gbsizer->Add(btn_colorimetry_settings_, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER);
 	gbsizer->AddGrowableCol(0, 1);
 	gbsizer->AddGrowableCol(1, 1);
@@ -308,7 +308,7 @@ void GfxConvDialog::setupLayout()
 
 
 	// Add transparency options
-	frame      = new wxStaticBox(this, -1, "Transparency Options");
+	frame      = new wxStaticBox(this, -1, wxS("Transparency Options"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	m_vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, px_outer);
 
@@ -316,14 +316,14 @@ void GfxConvDialog::setupLayout()
 	framesizer->Add(gbsizer, 1, wxEXPAND | wxALL, px_inner);
 
 	// 'Enable transparency' checkbox
-	cb_enable_transparency_ = new wxCheckBox(this, -1, "Enable Transparency");
+	cb_enable_transparency_ = new wxCheckBox(this, -1, wxS("Enable Transparency"));
 	cb_enable_transparency_->SetValue(true);
-	cb_enable_transparency_->SetToolTip("Uncheck this to remove any existing transparency from the graphic");
+	cb_enable_transparency_->SetToolTip(wxS("Uncheck this to remove any existing transparency from the graphic"));
 	gbsizer->Add(cb_enable_transparency_, { 0, 0 }, { 1, 2 });
 
 	// Keep existing transparency
 	rb_transparency_existing_ = new wxRadioButton(
-		this, 100, "Existing w/Threshold:", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+		this, 100, wxS("Existing w/Threshold:"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	rb_transparency_existing_->SetValue(true);
 	gbsizer->Add(rb_transparency_existing_, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
@@ -331,12 +331,13 @@ void GfxConvDialog::setupLayout()
 	slider_alpha_threshold_ = new wxSlider(
 		this, -1, 0, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 	slider_alpha_threshold_->SetToolTip(
-		"Specifies the 'cutoff' transparency level, anything above this will be fully opaque, "
-		"anything equal or below will be completely transparent");
+		wxS("Specifies the 'cutoff' transparency level, anything above this will be fully opaque, "
+			"anything equal or below will be completely transparent"));
 	gbsizer->Add(slider_alpha_threshold_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Transparent colour
-	rb_transparency_colour_ = new wxRadioButton(this, 101, "Transparent Colour:", wxDefaultPosition, wxDefaultSize, 0);
+	rb_transparency_colour_ = new wxRadioButton(
+		this, 101, wxS("Transparent Colour:"), wxDefaultPosition, wxDefaultSize, 0);
 	rb_transparency_colour_->SetValue(false);
 	gbsizer->Add(rb_transparency_colour_, { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
@@ -345,7 +346,7 @@ void GfxConvDialog::setupLayout()
 	gbsizer->Add(colbox_transparent_, { 2, 1 }, { 1, 1 });
 
 	// From brightness
-	rb_transparency_brightness_ = new wxRadioButton(this, 102, "Transparency from Brightness");
+	rb_transparency_brightness_ = new wxRadioButton(this, 102, wxS("Transparency from Brightness"));
 	rb_transparency_brightness_->SetValue(false);
 	gbsizer->Add(rb_transparency_brightness_, { 3, 0 }, { 1, 2 });
 	gbsizer->AddGrowableCol(1, 1);
@@ -354,10 +355,10 @@ void GfxConvDialog::setupLayout()
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	m_vbox->Add(hbox, 0, wxEXPAND);
 
-	btn_convert_     = new wxButton(this, -1, "Convert");
-	btn_convert_all_ = new wxButton(this, -1, "Convert All");
-	btn_skip_        = new wxButton(this, -1, "Skip");
-	btn_skip_all_    = new wxButton(this, -1, "Skip All");
+	btn_convert_     = new wxButton(this, -1, wxS("Convert"));
+	btn_convert_all_ = new wxButton(this, -1, wxS("Convert All"));
+	btn_skip_        = new wxButton(this, -1, wxS("Skip"));
+	btn_skip_all_    = new wxButton(this, -1, wxS("Skip All"));
 
 	hbox->AddStretchSpacer(1);
 	hbox->Add(btn_convert_, 0, wxEXPAND | wxRIGHT, px_inner);

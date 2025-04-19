@@ -178,7 +178,7 @@ ArchivePanel* maineditor::currentArchivePanel()
 {
 	auto* panel = main_window->archiveManagerPanel()->currentPanel();
 
-	if (panel && panel->GetName().CmpNoCase("archive") == 0)
+	if (panel && panel->GetName().CmpNoCase(wxS("archive")) == 0)
 		return dynamic_cast<ArchivePanel*>(panel);
 
 	return nullptr;
@@ -198,6 +198,6 @@ EntryPanel* maineditor::currentEntryPanel()
 #ifdef USE_WEBVIEW_STARTPAGE
 void maineditor::openDocs(string_view page_name)
 {
-	main_window->openDocs(wxutil::strFromView(page_name));
+	main_window->openDocs(page_name);
 }
 #endif

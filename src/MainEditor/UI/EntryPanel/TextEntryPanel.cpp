@@ -79,7 +79,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
 	auto languages      = wxutil::arrayStringStd(TextLanguage::languageNames());
 	languages.Sort();
-	languages.Insert("None", 0, 1);
+	languages.Insert(wxS("None"), 0, 1);
 	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
 	choice_text_language_->Select(0);
 	group_language->addCustomControl(choice_text_language_);
@@ -111,20 +111,20 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 
 	// 'Code Folding' submenu
 	auto menu_fold = new wxMenu();
-	menu_custom_->AppendSubMenu(menu_fold, "Code Folding");
+	menu_custom_->AppendSubMenu(menu_fold, wxS("Code Folding"));
 	SAction::fromId("ptxt_fold_foldall")->addToMenu(menu_fold);
 	SAction::fromId("ptxt_fold_unfoldall")->addToMenu(menu_fold);
 
 	// 'Compile' submenu
 	auto menu_scripts = new wxMenu();
-	menu_custom_->AppendSubMenu(menu_scripts, "Compile");
+	menu_custom_->AppendSubMenu(menu_scripts, wxS("Compile"));
 	SAction::fromId("arch_scripts_compileacs")->addToMenu(menu_scripts);
 	SAction::fromId("arch_scripts_compilehacs")->addToMenu(menu_scripts);
 	SAction::fromId("arch_scripts_compiledecohack")->addToMenu(menu_scripts);
 
 	// 'Colour Scheme' submenu
 	auto menu_colour = new wxMenu();
-	menu_custom_->AppendSubMenu(menu_colour, "Colour Scheme");
+	menu_custom_->AppendSubMenu(menu_colour, wxS("Colour Scheme"));
 	SAction::fromId("ptxt_theme_light")->addToMenu(menu_colour);
 	SAction::fromId("ptxt_theme_dark")->addToMenu(menu_colour);
 	SAction::fromId("ptxt_theme_other")->addToMenu(menu_colour);
@@ -176,7 +176,7 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	{
 		for (auto a = 0u; a < choice_text_language_->GetCount(); ++a)
 		{
-			if (strutil::equalCI(tl->name(), wxutil::strToView(choice_text_language_->GetString(a))))
+			if (strutil::equalCI(tl->name(), choice_text_language_->GetString(a).utf8_string()))
 			{
 				choice_text_language_->Select(a);
 				break;
@@ -256,15 +256,14 @@ void TextEntryPanel::closeEntry()
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-wxString TextEntryPanel::statusString()
+string TextEntryPanel::statusString()
 {
 	// Setup status string
-	int      line   = text_area_->GetCurrentLine() + 1;
-	int      pos    = text_area_->GetCurrentPos();
-	int      col    = text_area_->GetColumn(pos) + 1;
-	wxString status = wxString::Format("Ln %d, Col %d, Pos %d", line, col, pos);
+	int line = text_area_->GetCurrentLine() + 1;
+	int pos  = text_area_->GetCurrentPos();
+	int col  = text_area_->GetColumn(pos) + 1;
 
-	return status;
+	return fmt::format("Ln {}, Col {}, Pos {}", line, col, pos);
 }
 
 // -----------------------------------------------------------------------------
@@ -400,7 +399,7 @@ void TextEntryPanel::onTextModified(wxCommandEvent& e)
 void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 {
 	// Get selected language
-	auto tl = TextLanguage::fromName(wxutil::strToView(choice_text_language_->GetStringSelection()));
+	auto tl = TextLanguage::fromName(choice_text_language_->GetStringSelection().utf8_string());
 
 	// Set text editor language
 	text_area_->setLanguage(tl);

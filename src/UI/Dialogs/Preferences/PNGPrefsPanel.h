@@ -15,7 +15,7 @@ public:
 	void init() override;
 	void applyPreferences() override;
 
-	wxString pageTitle() override { return "PNG Optimization Tools"; }
+	string pageTitle() override { return "PNG Optimization Tools"; }
 
 private:
 	FileLocationPanel* flp_pngout_   = nullptr;

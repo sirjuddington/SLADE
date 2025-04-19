@@ -56,10 +56,10 @@ EXTERN_CVAR(Bool, web_dark_theme)
 // -----------------------------------------------------------------------------
 namespace
 {
-wxString docsUrl()
+string docsUrl()
 {
-	static const wxString docs_url      = "http://slade.mancubus.net/embedwiki.php";
-	static const wxString docs_url_dark = "http://slade.mancubus.net/embedwiki-dark.php";
+	static const string docs_url      = "http://slade.mancubus.net/embedwiki.php";
+	static const string docs_url_dark = "http://slade.mancubus.net/embedwiki-dark.php";
 
 	return web_dark_theme ? docs_url_dark : docs_url;
 }
@@ -109,7 +109,7 @@ DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Load initial docs page
 	wv_browser_->ClearHistory();
-	wv_browser_->LoadURL(docsUrl());
+	wv_browser_->LoadURL(wxString::FromUTF8(docsUrl()));
 
 	// Bind button events
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &DocsPage::onToolbarButton, this, toolbar_->GetId());
@@ -130,9 +130,9 @@ void DocsPage::updateNavButtons() const
 // -----------------------------------------------------------------------------
 // Loads the wiki page [page_name]
 // -----------------------------------------------------------------------------
-void DocsPage::openPage(const wxString& page_name) const
+void DocsPage::openPage(string_view page_name) const
 {
-	wv_browser_->LoadURL(docsUrl() + "?page=" + page_name);
+	wv_browser_->LoadURL(WX_FMT("{}?page={}", docsUrl(), page_name));
 }
 
 // -----------------------------------------------------------------------------
@@ -140,34 +140,34 @@ void DocsPage::openPage(const wxString& page_name) const
 // -----------------------------------------------------------------------------
 void DocsPage::onToolbarButton(wxCommandEvent& e)
 {
-	wxString button = e.GetString();
+	auto button = e.GetString();
 
 	// Back
-	if (button == "back" && wv_browser_->CanGoBack())
+	if (button == wxS("back") && wv_browser_->CanGoBack())
 		wv_browser_->GoBack();
 
 	// Forward
-	else if (button == "forward" && wv_browser_->CanGoForward())
+	else if (button == wxS("forward") && wv_browser_->CanGoForward())
 		wv_browser_->GoForward();
 
 	// Home
-	else if (button == "home")
-		wv_browser_->LoadURL(docsUrl());
+	else if (button == wxS("home"))
+		wv_browser_->LoadURL(wxString::FromUTF8(docsUrl()));
 
 	// Tutorials
-	else if (button == "tutorials")
-		wv_browser_->LoadURL(docsUrl() + "?page=Tutorials");
+	else if (button == wxS("tutorials"))
+		wv_browser_->LoadURL(wxString::FromUTF8(docsUrl() + "?page=Tutorials"));
 
 	// Index
-	else if (button == "index")
-		wv_browser_->LoadURL(docsUrl() + "?page=Wiki-Index");
+	else if (button == wxS("index"))
+		wv_browser_->LoadURL(wxString::FromUTF8(docsUrl() + "?page=Wiki-Index"));
 
 	// Edit
-	else if (button == "edit")
+	else if (button == wxS("edit"))
 	{
 		// Stuff
-		wxString page = wv_browser_->GetCurrentURL().AfterLast('=');
-		wxLaunchDefaultBrowser("https://github.com/sirjuddington/SLADE/wiki/" + page + "/_edit");
+		auto page = wv_browser_->GetCurrentURL().AfterLast('=');
+		wxLaunchDefaultBrowser(wxS("https://github.com/sirjuddington/SLADE/wiki/") + page + wxS("/_edit"));
 	}
 
 	// None
@@ -182,11 +182,11 @@ void DocsPage::onToolbarButton(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void DocsPage::onHTMLLinkClicked(wxEvent& e)
 {
-	auto&    ev   = dynamic_cast<wxWebViewEvent&>(e);
-	wxString href = ev.GetURL();
+	auto& ev   = dynamic_cast<wxWebViewEvent&>(e);
+	auto  href = ev.GetURL();
 
 	// Open external links externally
-	if (!href.StartsWith(docsUrl()))
+	if (!href.StartsWith(wxString::FromUTF8(docsUrl())))
 	{
 		wxLaunchDefaultBrowser(href);
 		ev.Veto();

@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -74,44 +73,45 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	psizer->Add(gbsizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Render distance
-	gbsizer->Add(new wxStaticText(this, -1, "Render distance:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Render distance:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_max_render_dist_ = new wxSlider(this, -1, 1, 1, 20, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	gbsizer->Add(slider_max_render_dist_, { 0, 1 }, { 1, 1 }, wxEXPAND);
-	label_render_dist_ = new wxStaticText(this, -1, "00000");
+	label_render_dist_ = new wxStaticText(this, -1, wxS("00000"));
 	label_render_dist_->SetInitialSize(wxSize(label_render_dist_->GetSize().x, -1));
 	gbsizer->Add(label_render_dist_, { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	cb_distance_unlimited_ = new wxCheckBox(this, -1, "Unlimited");
+	cb_distance_unlimited_ = new wxCheckBox(this, -1, wxS("Unlimited"));
 	gbsizer->Add(cb_distance_unlimited_, { 0, 3 }, { 1, 1 }, wxEXPAND);
 
 	// Thing Render distance
-	gbsizer->Add(new wxStaticText(this, -1, "Thing render distance:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(
+		new wxStaticText(this, -1, wxS("Thing render distance:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_max_thing_dist_ = new wxSlider(this, -1, 1, 1, 20, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	gbsizer->Add(slider_max_thing_dist_, { 1, 1 }, { 1, 1 }, wxEXPAND);
-	label_thing_dist_ = new wxStaticText(this, -1, "00000");
+	label_thing_dist_ = new wxStaticText(this, -1, wxS("00000"));
 	gbsizer->Add(label_thing_dist_, { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	cb_max_thing_dist_lock_ = new wxCheckBox(this, -1, "Lock");
+	cb_max_thing_dist_lock_ = new wxCheckBox(this, -1, wxS("Lock"));
 	gbsizer->Add(cb_max_thing_dist_lock_, { 1, 3 }, { 1, 1 }, wxEXPAND);
 	gbsizer->AddGrowableCol(1, 1);
 
 	// FOV
-	gbsizer->Add(new wxStaticText(this, -1, "FOV:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("FOV:")), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_fov_ = new wxSlider(this, -1, 1, 7, 12, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	gbsizer->Add(slider_fov_, { 2, 1 }, { 1, 1 }, wxEXPAND);
-	label_fov_ = new wxStaticText(this, -1, "00000");
+	label_fov_ = new wxStaticText(this, -1, wxS("00000"));
 	gbsizer->Add(label_fov_, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	psizer->Add(hbox, 0, wxEXPAND);
 
 	// Adaptive render distance
-	cb_render_dist_adaptive_ = new wxCheckBox(this, -1, "Adaptive render distance");
+	cb_render_dist_adaptive_ = new wxCheckBox(this, -1, wxS("Adaptive render distance"));
 	hbox->Add(cb_render_dist_adaptive_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
 
-	hbox->Add(new wxStaticText(this, -1, "Target framerate:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(new wxStaticText(this, -1, wxS("Target framerate:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	spin_adaptive_fps_ = new wxSpinCtrl(
 		this,
 		-1,
-		"30",
+		wxS("30"),
 		wxDefaultPosition,
 		{ ui::px(ui::Size::SpinCtrlWidth), -1 },
 		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
@@ -124,11 +124,11 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	wxutil::layoutVertically(
 		psizer,
-		{ cb_render_sky_       = new wxCheckBox(this, -1, "Render sky preview"),
-		  cb_show_distance_    = new wxCheckBox(this, -1, "Show distance under crosshair"),
-		  cb_invert_y_         = new wxCheckBox(this, -1, "Invert mouse Y axis"),
-		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, "Shade orthogonal lines"),
-		  cb_enable_3d_floors_ = new wxCheckBox(this, -1, "[EXPERIMENTAL] Enable 3d floors preview") },
+		{ cb_render_sky_       = new wxCheckBox(this, -1, wxS("Render sky preview")),
+		  cb_show_distance_    = new wxCheckBox(this, -1, wxS("Show distance under crosshair")),
+		  cb_invert_y_         = new wxCheckBox(this, -1, wxS("Invert mouse Y axis")),
+		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, wxS("Shade orthogonal lines")),
+		  cb_enable_3d_floors_ = new wxCheckBox(this, -1, wxS("[EXPERIMENTAL] Enable 3d floors preview")) },
 		wxSizerFlags(0).Expand());
 
 	// Bind events
@@ -150,9 +150,9 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 		{
 			if (cb_enable_3d_floors_->GetValue())
 				wxMessageBox(
-					"This feature is currently experimental and does not work correctly for all 3d floor types.\n\n"
-					"Any currently open map will need to be closed and reopened for the setting to take effect.",
-					"Experimental Feature Warning",
+					wxS("This feature is currently experimental and does not work correctly for all 3d floor types.\n\n"
+						"Any currently open map will need to be closed and reopened for the setting to take effect."),
+					wxS("Experimental Feature Warning"),
 					wxICON_WARNING);
 		});
 }
@@ -202,30 +202,30 @@ void Map3DPrefsPanel::updateDistanceControls() const
 	// Render distance
 	if (cb_distance_unlimited_->GetValue())
 	{
-		label_render_dist_->SetLabel("");
+		label_render_dist_->SetLabel(wxEmptyString);
 		slider_max_render_dist_->Enable(false);
 	}
 	else
 	{
-		label_render_dist_->SetLabel(wxString::Format("%d", slider_max_render_dist_->GetValue() * 500));
+		label_render_dist_->SetLabel(WX_FMT("{}", slider_max_render_dist_->GetValue() * 500));
 		slider_max_render_dist_->Enable();
 	}
 
 	// Thing distance
 	if (cb_max_thing_dist_lock_->GetValue())
 	{
-		label_thing_dist_->SetLabel("");
+		label_thing_dist_->SetLabel(wxEmptyString);
 		slider_max_thing_dist_->Enable(false);
 		slider_max_thing_dist_->SetValue(slider_max_render_dist_->GetValue());
 	}
 	else
 	{
-		label_thing_dist_->SetLabel(wxString::Format("%d", slider_max_thing_dist_->GetValue() * 500));
+		label_thing_dist_->SetLabel(WX_FMT("{}", slider_max_thing_dist_->GetValue() * 500));
 		slider_max_thing_dist_->Enable();
 	}
 
 	// FOV
-	label_fov_->SetLabel(wxString::Format("%d", slider_fov_->GetValue() * 10));
+	label_fov_->SetLabel(WX_FMT("{}", slider_fov_->GetValue() * 10));
 }
 
 // -----------------------------------------------------------------------------

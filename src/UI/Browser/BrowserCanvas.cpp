@@ -36,6 +36,7 @@
 #include "BrowserItem.h"
 #include "General/UI.h"
 #include "OpenGL/Drawing.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -441,7 +442,7 @@ void BrowserCanvas::selectItem(int index)
 // -----------------------------------------------------------------------------
 // Filters the visible items by [filter], by name
 // -----------------------------------------------------------------------------
-void BrowserCanvas::filterItems(wxString filter)
+void BrowserCanvas::filterItems(string_view filter)
 {
 	// Find the currently-viewed item before we change the item list
 	int viewed_index = getViewedIndex();
@@ -450,7 +451,7 @@ void BrowserCanvas::filterItems(wxString filter)
 	items_filter_.clear();
 
 	// If the filter is empty, just add all items to the filter
-	if (filter.IsEmpty())
+	if (filter.empty())
 	{
 		for (unsigned a = 0; a < items_.size(); a++)
 			items_filter_.push_back(a);
@@ -458,14 +459,13 @@ void BrowserCanvas::filterItems(wxString filter)
 	else
 	{
 		// Setup filter string
-		filter.MakeLower();
-		filter += "*";
+		auto filter_str = strutil::lower(filter) + "*";
 
 		// Go through items
 		for (unsigned a = 0; a < items_.size(); a++)
 		{
 			// Add to filter list if name matches
-			if (items_[a]->name().Lower().Matches(filter))
+			if (strutil::matchesCI(items_[a]->name(), filter_str))
 				items_filter_.push_back(a);
 		}
 	}
@@ -535,8 +535,8 @@ bool BrowserCanvas::searchItemFrom(int from)
 	bool looped = false;
 	while ((!looped && index < (int)items_filter_.size()) || (looped && index < from))
 	{
-		wxString name = items_[items_filter_[index]]->name();
-		if (name.Upper().StartsWith(search_))
+		auto name = items_[items_filter_[index]]->name();
+		if (strutil::startsWithCI(name, search_))
 		{
 			// Matches, update selection
 			selectItem(index);
@@ -799,14 +799,12 @@ void BrowserCanvas::onKeyChar(wxKeyEvent& e)
 
 		// Build search string
 		search_ += e.GetKeyCode();
-		search_.MakeUpper();
 
 		// Search for match from the current focus, and if failed
 		// start a new search from after the current focus.
 		if (!searchItemFrom(selected))
 		{
-			search_ = wxString::Format("%c", e.GetKeyCode());
-			search_.MakeUpper();
+			search_ = fmt::format("{:c}", e.GetKeyCode());
 			searchItemFrom(selected + 1);
 		}
 

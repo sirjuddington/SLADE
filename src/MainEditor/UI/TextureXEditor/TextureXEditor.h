@@ -34,10 +34,10 @@ public:
 	void redo();
 
 	// Editing
-	void     setFullPath(bool enabled = false) const { patch_browser_->setFullPath(enabled); }
-	bool     removePatch(unsigned index, bool delete_entry = false);
-	int      browsePatchTable(const wxString& first = "") const;
-	wxString browsePatchEntry(const wxString& first = "");
+	void   setFullPath(bool enabled = false) const { patch_browser_->setFullPath(enabled); }
+	bool   removePatch(unsigned index, bool delete_entry = false);
+	int    browsePatchTable(const string& first = "") const;
+	string browsePatchEntry(const string& first = "");
 
 	// Checks
 	bool checkTextures();

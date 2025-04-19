@@ -270,7 +270,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 			for (unsigned a = 0; a < context_->map().nSectors(); a++)
 			{
 				if (!poly.openSector(context_->map().sector(a)))
-					log::info(1, wxString::Format("Splitting failed for sector %d", a));
+					log::info(1, "Splitting failed for sector {}", a);
 			}
 			// int ms = clock.GetElapsedTime() * 1000;
 			// log::info(1, "Polygon generation took %dms", ms);

@@ -50,13 +50,13 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // STopWindow class constructor
 // -----------------------------------------------------------------------------
-STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, int width, int height)
+STopWindow::STopWindow(const string& title, const string& id, int x, int y, int width, int height)
 #ifndef __WXOSX__
 	:
-	wxFrame(nullptr, -1, title, wxPoint(x, y), wxSize(width, height)),
+	wxFrame(nullptr, -1, wxString::FromUTF8(title), wxPoint(x, y), wxSize(width, height)),
 #else
 	:
-	wxFrame(nullptr, -1, title, wxDefaultPosition, wxSize(width, height)),
+	wxFrame(nullptr, -1, wxString::FromUTF8(title), wxDefaultPosition, wxSize(width, height)),
 #endif
 	id_{ id }
 {
@@ -79,7 +79,7 @@ STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, 
 
 	// Init toolbar menu action(s)
 	action_toolbar_menu_ = new SAction(
-		fmt::format("{}_toolbar_menu", id.ToStdString()), "Toolbars", "", "", "", SAction::Type::Check, -1, 10);
+		fmt::format("{}_toolbar_menu", id), "Toolbars", "", "", "", SAction::Type::Check, -1, 10);
 	action_toolbar_menu_->initWxId();
 	SAction::add(action_toolbar_menu_);
 
@@ -99,7 +99,7 @@ STopWindow::~STopWindow()
 // -----------------------------------------------------------------------------
 // Adds [menu] to the menu bar after the 'Entry' menu
 // -----------------------------------------------------------------------------
-void STopWindow::addCustomMenu(wxMenu* menu, const wxString& title)
+void STopWindow::addCustomMenu(wxMenu* menu, const string& title)
 {
 	// Check menu doesn't already exist
 	for (auto& custom_menu : custom_menus_)
@@ -107,7 +107,7 @@ void STopWindow::addCustomMenu(wxMenu* menu, const wxString& title)
 			return;
 
 	// Insert custom menu after the last existing custom menu
-	GetMenuBar()->Insert(custom_menus_begin_ + custom_menus_.size(), menu, title);
+	GetMenuBar()->Insert(custom_menus_begin_ + custom_menus_.size(), menu, wxString::FromUTF8(title));
 	GetMenuBar()->Refresh();
 	custom_menus_.push_back(menu);
 }
@@ -143,7 +143,7 @@ void STopWindow::removeAllCustomMenus()
 // -----------------------------------------------------------------------------
 // Enables/disables the toolbar group matching [name]
 // -----------------------------------------------------------------------------
-void STopWindow::enableToolBar(const wxString& name, bool enable) const
+void STopWindow::enableToolBar(const string& name, bool enable) const
 {
 	toolbar_->enableGroup(name, enable);
 }
@@ -152,7 +152,7 @@ void STopWindow::enableToolBar(const wxString& name, bool enable) const
 // Adds a custom toolbar group to the toolbar, with buttons for each action in
 // [actions]
 // -----------------------------------------------------------------------------
-void STopWindow::addCustomToolBar(const wxString& name, const vector<wxString>& actions) const
+void STopWindow::addCustomToolBar(const string& name, const vector<string>& actions) const
 {
 	toolbar_->addActionGroup(name, actions);
 	populateToolbarsMenu();
@@ -161,7 +161,7 @@ void STopWindow::addCustomToolBar(const wxString& name, const vector<wxString>& 
 // -----------------------------------------------------------------------------
 // Removes the toolbar group matching [name]
 // -----------------------------------------------------------------------------
-void STopWindow::removeCustomToolBar(const wxString& name) const
+void STopWindow::removeCustomToolBar(const string& name) const
 {
 	toolbar_->deleteGroup(name);
 	populateToolbarsMenu();
@@ -188,7 +188,7 @@ void STopWindow::populateToolbarsMenu() const
 	{
 		auto group = toolbar_->groups()[a];
 
-		auto name = group->name().ToStdString();
+		auto name = group->name();
 		strutil::replaceIP(name, "_", "");
 
 		action_toolbar_menu_->addToMenu(toolbar_menu_, 0, name, "NO", a + 1);

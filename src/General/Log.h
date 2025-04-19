@@ -45,42 +45,42 @@ namespace log
 	// Message shortcuts by type
 	// -----------------------------------------------------------------------------
 
-	inline void info(int level, const wxString& text)
+	inline void info(int level, string_view text)
 	{
-		message(MessageType::Info, level, text.ToStdString());
+		message(MessageType::Info, level, text);
 	}
-	inline void info(const wxString& text)
+	inline void info(string_view text)
 	{
-		message(MessageType::Info, text.ToStdString());
-	}
-
-	inline void warning(int level, const wxString& text)
-	{
-		message(MessageType::Warning, level, text.ToStdString());
-	}
-	inline void warning(const wxString& text)
-	{
-		message(MessageType::Warning, text.ToStdString());
+		message(MessageType::Info, text);
 	}
 
-	inline void error(int level, const wxString& text)
+	inline void warning(int level, string_view text)
 	{
-		message(MessageType::Error, level, text.ToStdString());
+		message(MessageType::Warning, level, text);
 	}
-	inline void error(const wxString& text)
+	inline void warning(string_view text)
 	{
-		message(MessageType::Error, text.ToStdString());
+		message(MessageType::Warning, text);
+	}
+
+	inline void error(int level, string_view text)
+	{
+		message(MessageType::Error, level, text);
+	}
+	inline void error(string_view text)
+	{
+		message(MessageType::Error, text);
 	}
 
 	// These can't be inline, need access to Global::debug
-	void debug(int level, const wxString& text);
-	void debug(const wxString& text);
+	void debug(int level, string_view text);
+	void debug(string_view text);
 	void debug(int level, string_view text, fmt::format_args args);
 	void debug(string_view text, fmt::format_args args);
 
-	inline void console(const wxString& text)
+	inline void console(string_view text)
 	{
-		message(MessageType::Console, text.ToStdString());
+		message(MessageType::Console, text);
 	}
 
 
@@ -198,7 +198,7 @@ inline void LOG_DEBUG(
 	message << a11.get() << " ";
 	message << a12.get();
 	message.Trim();
-	log::message(log::MessageType::Debug, 0, message.ToStdString());
+	log::message(log::MessageType::Debug, 0, message.utf8_string());
 }
 
 #define LOG_DEBUG_VAR(name) LOG_DEBUG(#name ": ", name)

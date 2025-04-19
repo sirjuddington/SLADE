@@ -60,6 +60,7 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/Tokenizer.h"
 
@@ -110,8 +111,8 @@ MapEditorWindow::MapEditorWindow() : STopWindow{ "SLADE", "map" }
 	// Set icon
 	auto icon_filename = app::path(app::iconFile(), app::Dir::Temp);
 	app::archiveManager().programResourceArchive()->entry(app::iconFile())->exportFile(icon_filename);
-	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
-	wxRemoveFile(icon_filename);
+	SetIcon(wxIcon(wxString::FromUTF8(icon_filename), wxBITMAP_TYPE_ICO));
+	fileutil::removeFile(icon_filename);
 
 	// Bind events
 	Bind(wxEVT_CLOSE_WINDOW, &MapEditorWindow::onClose, this);
@@ -141,12 +142,12 @@ void MapEditorWindow::loadLayout()
 	while (true)
 	{
 		// Read component+layout pair
-		wxString component = tz.getToken();
-		wxString layout    = tz.getToken();
+		auto component = tz.getToken();
+		auto layout    = tz.getToken();
 
 		// Load layout to component
-		if (!component.IsEmpty() && !layout.IsEmpty())
-			m_mgr->LoadPaneInfo(layout, m_mgr->GetPane(component));
+		if (!component.empty() && !layout.empty())
+			m_mgr->LoadPaneInfo(wxString::FromUTF8(layout), m_mgr->GetPane(wxString::FromUTF8(component)));
 
 		// Check if we're done
 		if (tz.peekToken().empty())
@@ -160,35 +161,35 @@ void MapEditorWindow::loadLayout()
 void MapEditorWindow::saveLayout()
 {
 	// Open layout file
-	wxFile file(app::path("mapwindow.layout", app::Dir::User), wxFile::write);
+	wxFile file(wxString::FromUTF8(app::path("mapwindow.layout", app::Dir::User)), wxFile::write);
 
 	// Write component layout
 	auto m_mgr = wxAuiManager::GetManager(this);
 
 	// Console pane
-	file.Write("\"console\" ");
-	wxString pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
+	file.Write(wxS("\"console\" "));
+	auto pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("console")));
+	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
 
 	// Item info pane
-	file.Write("\"item_props\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("item_props"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
+	file.Write(wxS("\"item_props\" "));
+	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("item_props")));
+	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
 
 	// Script editor pane
-	file.Write("\"script_editor\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("script_editor"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
+	file.Write(wxS("\"script_editor\" "));
+	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("script_editor")));
+	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
 
 	// Map checks pane
-	file.Write("\"map_checks\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("map_checks"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
+	file.Write(wxS("\"map_checks\" "));
+	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("map_checks")));
+	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
 
 	// Undo history pane
-	file.Write("\"undo_history\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("undo_history"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
+	file.Write(wxS("\"undo_history\" "));
+	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("undo_history")));
+	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
 
 	// Close file
 	file.Close();
@@ -215,7 +216,7 @@ void MapEditorWindow::setupMenu()
 		menu = new wxMenuBar();
 
 	// Map menu
-	auto menu_map = new wxMenu("");
+	auto menu_map = new wxMenu();
 	SAction::fromId("mapw_save")->addToMenu(menu_map);
 	SAction::fromId("mapw_saveas")->addToMenu(menu_map);
 	// SAction::fromId("mapw_rename")->addToMenu(menu_map);
@@ -225,10 +226,10 @@ void MapEditorWindow::setupMenu()
 	SAction::fromId("mapw_quick_run_map")->addToMenu(menu_map);
 	menu_map->AppendSeparator();
 	SAction::fromId("mapw_close")->addToMenu(menu_map);
-	menu->Append(menu_map, "&Map");
+	menu->Append(menu_map, wxS("&Map"));
 
 	// Edit menu
-	auto menu_editor = new wxMenu("");
+	auto menu_editor = new wxMenu();
 	SAction::fromId("mapw_undo")->addToMenu(menu_editor);
 	SAction::fromId("mapw_redo")->addToMenu(menu_editor);
 	menu_editor->AppendSeparator();
@@ -242,39 +243,39 @@ void MapEditorWindow::setupMenu()
 	menu_editor->AppendSeparator();
 	SAction::fromId("mapw_preferences")->addToMenu(menu_editor);
 	SAction::fromId("mapw_setbra")->addToMenu(menu_editor);
-	menu->Append(menu_editor, "&Edit");
+	menu->Append(menu_editor, wxS("&Edit"));
 
 	// View menu
-	auto menu_view   = new wxMenu("");
+	auto menu_view   = new wxMenu();
 	auto menu_window = new wxMenu();
-	menu_view->AppendSubMenu(menu_window, "Windows");
+	menu_view->AppendSubMenu(menu_window, wxS("Windows"));
 	SAction::fromId("mapw_showproperties")->addToMenu(menu_window);
 	SAction::fromId("mapw_showconsole")->addToMenu(menu_window);
 	SAction::fromId("mapw_showundohistory")->addToMenu(menu_window);
 	SAction::fromId("mapw_showchecks")->addToMenu(menu_window);
 	SAction::fromId("mapw_showscripteditor")->addToMenu(menu_window);
 	toolbar_menu_ = new wxMenu();
-	menu_view->AppendSubMenu(toolbar_menu_, "Toolbars");
+	menu_view->AppendSubMenu(toolbar_menu_, wxS("Toolbars"));
 	menu_view->AppendSeparator();
 	SAction::fromId("mapw_show_fullmap")->addToMenu(menu_view);
 	SAction::fromId("mapw_show_item")->addToMenu(menu_view);
 	menu_view->AppendSeparator();
 	auto menu_grid = new wxMenu();
-	menu_view->AppendSubMenu(menu_grid, "Grid");
+	menu_view->AppendSubMenu(menu_grid, wxS("Grid"));
 	SAction::fromId("mapw_grid_increment")->addToMenu(menu_grid);
 	SAction::fromId("mapw_grid_decrement")->addToMenu(menu_grid);
 	SAction::fromId("mapw_grid_snap")->addToMenu(menu_grid);
-	menu->Append(menu_view, "View");
+	menu->Append(menu_view, wxS("View"));
 
 	// Tools menu
-	auto menu_tools = new wxMenu("");
+	auto menu_tools = new wxMenu();
 	menu_scripts_   = new wxMenu();
 #ifndef NO_LUA
 	scriptmanager::populateEditorScriptMenu(menu_scripts_, scriptmanager::ScriptType::Map, "mapw_script");
 #endif
-	menu_tools->AppendSubMenu(menu_scripts_, "Run Script");
+	menu_tools->AppendSubMenu(menu_scripts_, wxS("Run Script"));
 	SAction::fromId("mapw_runscript")->addToMenu(menu_tools);
-	menu->Append(menu_tools, "&Tools");
+	menu->Append(menu_tools, wxS("&Tools"));
 
 	SetMenuBar(menu);
 }
@@ -358,7 +359,7 @@ void MapEditorWindow::setupLayout()
 			.MinSize(-1, SToolBar::getBarHeight())
 			.Resizable(false)
 			.PaneBorder(false)
-			.Name("toolbar"));
+			.Name(wxS("toolbar")));
 
 	// Populate the 'View->Toolbars' menu
 	populateToolbarsMenu();
@@ -382,8 +383,8 @@ void MapEditorWindow::setupLayout()
 	p_inf.FloatingPosition(100, 100);
 	p_inf.MinSize(wxutil::scaledSize(-1, 192));
 	p_inf.Show(false);
-	p_inf.Caption("Console");
-	p_inf.Name("console");
+	p_inf.Caption(wxS("Console"));
+	p_inf.Name(wxS("console"));
 	m_mgr->AddPane(panel_console, p_inf);
 
 
@@ -397,8 +398,8 @@ void MapEditorWindow::setupLayout()
 	p_inf.FloatingPosition(120, 120);
 	p_inf.MinSize(wxutil::scaledSize(256, 256));
 	p_inf.Show(true);
-	p_inf.Caption("Item Properties");
-	p_inf.Name("item_props");
+	p_inf.Caption(wxS("Item Properties"));
+	p_inf.Name(wxS("item_props"));
 	m_mgr->AddPane(panel_obj_props_, p_inf);
 
 
@@ -412,8 +413,8 @@ void MapEditorWindow::setupLayout()
 	p_inf.FloatingPosition(150, 150);
 	p_inf.MinSize(wxutil::scaledSize(300, 300));
 	p_inf.Show(false);
-	p_inf.Caption("Script Editor");
-	p_inf.Name("script_editor");
+	p_inf.Caption(wxS("Script Editor"));
+	p_inf.Name(wxS("script_editor"));
 	m_mgr->AddPane(panel_script_editor_, p_inf);
 
 
@@ -434,8 +435,8 @@ void MapEditorWindow::setupLayout()
 	p_inf.FloatingPosition(140, 140);
 	p_inf.MinSize(msize.x, msize.y);
 	p_inf.Show(false);
-	p_inf.Caption("Shape Drawing");
-	p_inf.Name("shape_draw");
+	p_inf.Caption(wxS("Shape Drawing"));
+	p_inf.Name(wxS("shape_draw"));
 	m_mgr->AddPane(panel_shapedraw, p_inf);
 
 
@@ -455,8 +456,8 @@ void MapEditorWindow::setupLayout()
 	p_inf.FloatingPosition(140, 140);
 	p_inf.MinSize(msize.x, msize.y);
 	p_inf.Show(false);
-	p_inf.Caption("Object Edit");
-	p_inf.Name("object_edit");
+	p_inf.Caption(wxS("Object Edit"));
+	p_inf.Name(wxS("object_edit"));
 	m_mgr->AddPane(panel_obj_edit_, p_inf);
 
 
@@ -473,8 +474,8 @@ void MapEditorWindow::setupLayout()
 	p_inf.FloatingPosition(160, 160);
 	p_inf.MinSize(msize.x, msize.y);
 	p_inf.Show(false);
-	p_inf.Caption("Map Checks");
-	p_inf.Name("map_checks");
+	p_inf.Caption(wxS("Map Checks"));
+	p_inf.Name(wxS("map_checks"));
 	p_inf.Layer(0);
 	m_mgr->AddPane(panel_checks_, p_inf);
 
@@ -487,8 +488,8 @@ void MapEditorWindow::setupLayout()
 	p_inf.DefaultPane();
 	p_inf.Right();
 	p_inf.BestSize(wxutil::scaledSize(128, 480));
-	p_inf.Caption("Undo History");
-	p_inf.Name("undo_history");
+	p_inf.Caption(wxS("Undo History"));
+	p_inf.Name(wxS("undo_history"));
 	p_inf.Show(false);
 	p_inf.Dock();
 	m_mgr->AddPane(panel_undo_history_, p_inf);
@@ -562,12 +563,11 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 			return false;
 
 		// Attempt to load selected game configuration
-		if (!game::configuration().openConfig(
-				dlg.selectedGame().ToStdString(), dlg.selectedPort().ToStdString(), md.format))
+		if (!game::configuration().openConfig(dlg.selectedGame(), dlg.selectedPort(), md.format))
 		{
 			wxMessageBox(
-				"An error occurred loading the game configuration, see the console log for details",
-				"Error",
+				wxS("An error occurred loading the game configuration, see the console log for details"),
+				wxS("Error"),
 				wxICON_ERROR);
 			return false;
 		}
@@ -582,9 +582,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 		{
 			Hide();
 			wxMessageBox(
-				wxString::Format("Unable to open map %s: %s", md.name, global::error),
-				"Invalid map error",
-				wxICON_ERROR);
+				WX_FMT("Unable to open map {}: {}", md.name, global::error), wxS("Invalid map error"), wxICON_ERROR);
 			return false;
 		}
 		else
@@ -602,8 +600,8 @@ bool MapEditorWindow::openMap(const Archive::MapDesc& map)
 	if (mapeditor::editContext().map().isModified())
 	{
 		wxMessageDialog md{ this,
-							wxString::Format("Save changes to map %s?", mapeditor::editContext().mapDesc().name),
-							"Unsaved Changes",
+							WX_FMT("Save changes to map {}?", mapeditor::editContext().mapDesc().name),
+							wxS("Unsaved Changes"),
 							wxYES_NO | wxCANCEL };
 
 		int answer = md.ShowModal();
@@ -678,9 +676,9 @@ bool MapEditorWindow::openMap(const Archive::MapDesc& map)
 
 		// Set window title
 		if (archive)
-			SetTitle(wxString::Format("SLADE - %s of %s", map.name, archive->filename(false)));
+			SetTitle(WX_FMT("SLADE - {} of {}", map.name, archive->filename(false)));
 		else
-			SetTitle(wxString::Format("SLADE - %s (UNSAVED)", map.name));
+			SetTitle(WX_FMT("SLADE - {} (UNSAVED)", map.name));
 
 		// Create backup
 		auto head = map.head.lock();
@@ -703,7 +701,7 @@ void MapEditorWindow::loadMapScripts(const Archive::MapDesc& map)
 	{
 		// Hide script editor
 		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane("script_editor");
+		auto& p_inf = m_mgr->GetPane(wxS("script_editor"));
 		p_inf.Show(false);
 		m_mgr->Update();
 		return;
@@ -764,9 +762,9 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	wad->save(filename);
 
 	// Get current nodebuilder
-	auto     builder = nodebuilders::builder(nodebuilder_id);
-	wxString command = builder.command;
-	wxString options = nodebuilder_options;
+	auto   builder = nodebuilders::builder(nodebuilder_id);
+	string command = builder.command;
+	string options = nodebuilder_options;
 
 	// Don't build if none selected
 	if (builder.id == "none")
@@ -775,13 +773,13 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	// Switch to ZDBSP if UDMF
 	if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF && nodebuilder_id.value != "zdbsp")
 	{
-		wxMessageBox("Nodebuilder switched to ZDBSP for UDMF format", "Save Map", wxICON_INFORMATION);
+		wxMessageBox(wxS("Nodebuilder switched to ZDBSP for UDMF format"), wxS("Save Map"), wxICON_INFORMATION);
 		builder = nodebuilders::builder("zdbsp");
 		command = builder.command;
 	}
 
 	// Check for undefined path
-	if (!wxFileExists(builder.path) && !nb_warned)
+	if (!fileutil::fileExists(builder.path) && !nb_warned)
 	{
 		// Open nodebuilder preferences
 		PreferencesDialog::openPreferences(this, "Node Builders");
@@ -791,32 +789,34 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		command = builder.command;
 
 		// Check again
-		if (!wxFileExists(builder.path))
+		if (!fileutil::fileExists(builder.path))
 		{
 			wxMessageBox(
-				"No valid Node Builder is currently configured, nodes will not be built!", "Warning", wxICON_WARNING);
+				wxS("No valid Node Builder is currently configured, nodes will not be built!"),
+				wxS("Warning"),
+				wxICON_WARNING);
 			nb_warned = true;
 		}
 	}
 
 	// Build command line
-	command.Replace("$f", wxString::Format("\"%s\"", filename));
-	command.Replace("$o", wxString(options));
+	strutil::replaceIP(command, "$f", fmt::format("\"{}\"", filename));
+	strutil::replaceIP(command, "$o", options);
 
 	// Run nodebuilder
-	if (wxFileExists(builder.path))
+	if (fileutil::fileExists(builder.path))
 	{
 		wxArrayString out;
-		log::info(wxString::Format("execute \"%s %s\"", builder.path, command));
+		log::info("execute \"{} {}\"", builder.path, command);
 		wxGetApp().SetTopWindow(this);
 		auto focus = wxWindow::FindFocus();
-		wxExecute(wxString::Format("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
+		wxExecute(wxString::FromUTF8(fmt::format("\"{}\" {}", builder.path, command)), out, wxEXEC_HIDE_CONSOLE);
 		wxGetApp().SetTopWindow(maineditor::windowWx());
 		if (focus)
 			focus->SetFocusFromKbd();
 		log::info(1, "Nodebuilder output:");
 		for (const auto& line : out)
-			log::info(line);
+			log::info(line.utf8_string());
 
 		// Re-load wad
 		wad->close();
@@ -829,7 +829,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 // -----------------------------------------------------------------------------
 // Writes the current map as [name] to a wad archive and returns it
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::writeMap(WadArchive& wad, const wxString& name, bool nodes)
+bool MapEditorWindow::writeMap(WadArchive& wad, const string& name, bool nodes)
 {
 	auto& mdesc_current = mapeditor::editContext().mapDesc();
 	auto& map           = mapeditor::editContext().map();
@@ -853,11 +853,11 @@ bool MapEditorWindow::writeMap(WadArchive& wad, const wxString& name, bool nodes
 		dialogue = true;
 
 	// Add map data to temporary wad
-	wad.addNewEntry(name.ToStdString());
+	wad.addNewEntry(name);
 	// Handle fragglescript and similar content in the map header
 	auto head = mdesc_current.head.lock();
 	if (head && head->size() && !mdesc_current.archive)
-		wad.entry(name.ToStdString())->importMemChunk(head->data());
+		wad.entry(name)->importMemChunk(head->data());
 	for (auto& entry : new_map_data)
 		wad.addEntry(shared_ptr<ArchiveEntry>(entry));
 	if (acs) // BEHAVIOR
@@ -1007,7 +1007,7 @@ bool MapEditorWindow::saveMapAs()
 	}
 
 	// Set window title
-	SetTitle(wxString::Format("SLADE - %s of %s", mdesc_current.name, wad.filename(false)));
+	SetTitle(wxString::FromUTF8(fmt::format("SLADE - {} of {}", mdesc_current.name, wad.filename(false))));
 
 	return true;
 }
@@ -1058,8 +1058,8 @@ bool MapEditorWindow::tryClose()
 	if (mapeditor::editContext().map().isModified())
 	{
 		wxMessageDialog md{ this,
-							wxString::Format("Save changes to map %s?", mapeditor::editContext().mapDesc().name),
-							"Unsaved Changes",
+							WX_FMT("Save changes to map {}?", mapeditor::editContext().mapDesc().name),
+							wxS("Unsaved Changes"),
 							wxYES_NO | wxCANCEL };
 		int             answer = md.ShowModal();
 		if (answer == wxID_YES)
@@ -1111,7 +1111,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 {
 	// Get panel
 	auto  m_mgr = wxAuiManager::GetManager(this);
-	auto& p_inf = m_mgr->GetPane("object_edit");
+	auto& p_inf = m_mgr->GetPane(wxS("object_edit"));
 
 	// Save current y offset
 	double top = mapeditor::editContext().renderer().view().canvasY(0);
@@ -1138,7 +1138,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 {
 	// Get panel
 	auto  m_mgr = wxAuiManager::GetManager(this);
-	auto& p_inf = m_mgr->GetPane("shape_draw");
+	auto& p_inf = m_mgr->GetPane(wxS("shape_draw"));
 
 	// Save current y offset
 	double top = mapeditor::editContext().renderer().view().canvasY(0);
@@ -1185,7 +1185,9 @@ bool MapEditorWindow::handleAction(string_view id)
 					{
 						// Can't save archive, do Save As instead
 						if (maineditor::saveArchiveAs(a))
-							SetTitle(wxString::Format("SLADE - %s of %s", mdesc_current.name, a->filename(false)));
+							SetTitle(
+								wxString::FromUTF8(
+									fmt::format("SLADE - {} of {}", mdesc_current.name, a->filename(false))));
 					}
 				}
 			}
@@ -1265,7 +1267,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	if (id == "mapw_showproperties")
 	{
 		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane("item_props");
+		auto& p_inf = m_mgr->GetPane(wxS("item_props"));
 
 		// Toggle window and focus
 		p_inf.Show(!p_inf.IsShown());
@@ -1280,7 +1282,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	else if (id == "mapw_showconsole")
 	{
 		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane("console");
+		auto& p_inf = m_mgr->GetPane(wxS("console"));
 
 		// Toggle window and focus
 		if (p_inf.IsShown())
@@ -1304,7 +1306,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	else if (id == "mapw_showscripteditor")
 	{
 		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane("script_editor");
+		auto& p_inf = m_mgr->GetPane(wxS("script_editor"));
 
 		// Toggle window and focus
 		if (p_inf.IsShown())
@@ -1328,7 +1330,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	else if (id == "mapw_showchecks")
 	{
 		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane("map_checks");
+		auto& p_inf = m_mgr->GetPane(wxS("map_checks"));
 
 		// Toggle window and focus
 		if (p_inf.IsShown())
@@ -1351,7 +1353,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	else if (id == "mapw_showundohistory")
 	{
 		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane("undo_history");
+		auto& p_inf = m_mgr->GetPane(wxS("undo_history"));
 
 		// Toggle window
 		p_inf.Show(!p_inf.IsShown());
@@ -1385,15 +1387,15 @@ bool MapEditorWindow::handleAction(string_view id)
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
 				mapeditor::editContext().resetPlayerStart();
 
-			wxString command = dlg.selectedCommandLine(archive, mdesc_current.name, wad.filename());
-			if (!command.IsEmpty())
+			auto command = dlg.selectedCommandLine(archive, mdesc_current.name, wad.filename());
+			if (!command.empty())
 			{
 				// Set working directory
-				wxString wd = wxGetCwd();
-				wxSetWorkingDirectory(dlg.selectedExeDir());
+				auto wd = wxGetCwd();
+				wxSetWorkingDirectory(wxString::FromUTF8(dlg.selectedExeDir()));
 
 				// Run
-				wxExecute(command, wxEXEC_ASYNC);
+				wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC);
 
 				// Restore working directory
 				wxSetWorkingDirectory(wd);

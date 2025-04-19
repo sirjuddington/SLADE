@@ -17,7 +17,7 @@ public:
 	void init() override;
 	void applyPreferences() override;
 
-	wxString pageTitle() override { return "DECOHack Compiler Settings"; }
+	string pageTitle() override { return "DECOHack Compiler Settings"; }
 
 private:
 	FileLocationPanel* flp_decohack_path_     = nullptr;

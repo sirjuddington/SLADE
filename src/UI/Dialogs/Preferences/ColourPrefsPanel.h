@@ -12,10 +12,10 @@ public:
 	ColourPrefsPanel(wxWindow* parent);
 	~ColourPrefsPanel() = default;
 
-	void     init() override;
-	void     refreshPropGrid() const;
-	void     applyPreferences() override;
-	wxString pageTitle() override { return "Colours && Theme"; }
+	void   init() override;
+	void   refreshPropGrid() const;
+	void   applyPreferences() override;
+	string pageTitle() override { return "Colours && Theme"; }
 
 private:
 	wxChoice*       choice_configs_ = nullptr;

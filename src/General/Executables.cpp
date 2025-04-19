@@ -107,7 +107,7 @@ string executables::writePaths()
 	string ret;
 
 	for (auto& exe : game_exes)
-		ret += fmt::format("\t{} \"{}\"\n", exe.id, strutil::toUTF8(strutil::escapedString(exe.path, true)));
+		ret += fmt::format("\t{} \"{}\"\n", exe.id, strutil::escapedString(exe.path, true));
 
 	return ret;
 }
@@ -156,7 +156,7 @@ string executables::writeExecutables()
 		// Path
 		auto path = exe.path;
 		std::replace(path.begin(), path.end(), '\\', '/');
-		ret += fmt::format("\t\tpath = \"{}\";\n", strutil::toUTF8(path));
+		ret += fmt::format("\t\tpath = \"{}\";\n", path);
 
 		ret += "\t}\n\n";
 	}
@@ -469,7 +469,7 @@ void executables::parseExternalExe(ParseTreeNode* node)
 
 		// Path
 		else if (prop->nameIsCI("path"))
-			exe.path = strutil::fromUTF8(prop->stringValue());
+			exe.path = prop->stringValue();
 	}
 
 	external_exes.push_back(exe);

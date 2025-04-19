@@ -70,10 +70,10 @@ bool filedialog::openFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxutil::strFromView(caption),
+		wxString::FromUTF8(caption),
 		dir_last,
-		wxutil::strFromView(fn_default),
-		wxutil::strFromView(extensions),
+		wxString::FromUTF8(fn_default),
+		wxString::FromUTF8(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	// Select default extension
@@ -83,7 +83,7 @@ bool filedialog::openFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		// Set file dialog info
-		strutil::Path fn(fd.GetPath().ToStdString());
+		strutil::Path fn(fd.GetPath().utf8_string());
 		info.filenames.push_back(fn.fullPath());
 		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
@@ -113,10 +113,10 @@ string filedialog::openFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxutil::strFromView(caption),
+		wxString::FromUTF8(caption),
 		dir_last,
-		wxutil::strFromView(fn_default),
-		wxutil::strFromView(extensions),
+		wxString::FromUTF8(fn_default),
+		wxString::FromUTF8(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	// Select default extension
@@ -125,7 +125,7 @@ string filedialog::openFile(
 	// Run the dialog
 	if (fd.ShowModal() == wxID_OK)
 	{
-		auto filename = fd.GetPath().ToStdString();
+		auto filename = fd.GetPath().utf8_string();
 		dir_last      = strutil::Path::pathOf(filename);
 
 		return filename;
@@ -174,10 +174,10 @@ bool filedialog::openFiles(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxutil::strFromView(caption),
+		wxString::FromUTF8(caption),
 		dir_last,
-		wxutil::strFromView(fn_default),
-		wxutil::strFromView(extensions),
+		wxString::FromUTF8(fn_default),
+		wxString::FromUTF8(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
 
 	// Select default extension
@@ -191,7 +191,7 @@ bool filedialog::openFiles(
 
 		// Set file dialog info
 		for (const auto& path : paths)
-			info.filenames.emplace_back(path);
+			info.filenames.emplace_back(path.utf8_string());
 		strutil::Path fn(info.filenames[0]);
 		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
@@ -238,10 +238,10 @@ bool filedialog::saveFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxutil::strFromView(caption),
+		wxString::FromUTF8(caption),
 		dir_last,
-		wxutil::strFromView(fn_default),
-		wxutil::strFromView(extensions),
+		wxString::FromUTF8(fn_default),
+		wxString::FromUTF8(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
@@ -251,7 +251,7 @@ bool filedialog::saveFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		// Set file dialog info
-		strutil::Path fn(fd.GetPath().ToStdString());
+		strutil::Path fn(fd.GetPath().utf8_string());
 		info.filenames.push_back(fn.fullPath());
 		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
@@ -281,10 +281,10 @@ string filedialog::saveFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxutil::strFromView(caption),
+		wxString::FromUTF8(caption),
 		dir_last,
-		wxutil::strFromView(fn_default),
-		wxutil::strFromView(extensions),
+		wxString::FromUTF8(fn_default),
+		wxString::FromUTF8(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
@@ -293,7 +293,7 @@ string filedialog::saveFile(
 	// Run the dialog
 	if (fd.ShowModal() == wxID_OK)
 	{
-		auto filename = fd.GetPath().ToStdString();
+		auto filename = fd.GetPath().utf8_string();
 		dir_last      = strutil::Path::pathOf(filename);
 		return filename;
 	}
@@ -311,10 +311,10 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxutil::strFromView(caption),
+		wxString::FromUTF8(caption),
 		dir_last,
-		"ignored",
-		wxutil::strFromView(extensions),
+		wxS("ignored"),
+		wxString::FromUTF8(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
@@ -325,9 +325,9 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 	{
 		// Set file dialog info
 		info.filenames.clear();
-		info.extension = fd.GetWildcard().AfterLast('.');
+		info.extension = fd.GetWildcard().AfterLast('.').utf8_string();
 		info.ext_index = fd.GetFilterIndex();
-		info.path      = fd.GetDirectory();
+		info.path      = fd.GetDirectory().utf8_string();
 
 		// Set last dir
 		dir_last = info.path;
@@ -357,15 +357,15 @@ filedialog::FDInfo filedialog::saveFiles(string_view caption, string_view extens
 string filedialog::openDirectory(string_view caption, wxWindow* parent)
 {
 	// Open a directory browser dialog
-	wxDirDialog dialog_open(parent, wxutil::strFromView(caption), dir_last, wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
+	wxDirDialog dialog_open(parent, wxString::FromUTF8(caption), dir_last, wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
 
 	// Run the dialog
 	if (dialog_open.ShowModal() == wxID_OK)
 	{
 		// Set last dir
-		dir_last = wxutil::strToView(dialog_open.GetPath());
+		dir_last = dialog_open.GetPath().utf8_string();
 
-		return dialog_open.GetPath().ToStdString();
+		return dialog_open.GetPath().utf8_string();
 	}
 
 	return {};

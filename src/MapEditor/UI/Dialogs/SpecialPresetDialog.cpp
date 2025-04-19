@@ -121,13 +121,13 @@ private:
 
 	struct Group
 	{
-		wxString       name;
+		string         name;
 		wxDataViewItem item;
-		Group(wxDataViewItem item, const wxString& name) : name{ name }, item{ item } {}
+		Group(wxDataViewItem item, const string& name) : name{ name }, item{ item } {}
 	};
 	vector<Group> groups_;
 
-	wxDataViewItem getGroup(const wxString& group)
+	wxDataViewItem getGroup(const string& group)
 	{
 		// Check if group was already made
 		for (auto& g : groups_)
@@ -137,11 +137,11 @@ private:
 		}
 
 		// Split group into subgroups
-		auto path = wxSplit(group, '/');
+		auto path = strutil::splitV(group, '/');
 
 		// Create group needed
-		auto     current  = root_;
-		wxString fullpath = "";
+		auto   current = root_;
+		string fullpath;
 		for (unsigned p = 0; p < path.size(); p++)
 		{
 			if (p > 0)
@@ -161,7 +161,7 @@ private:
 
 			if (!found)
 			{
-				current = AppendContainer(current, path[p], -1, 1);
+				current = AppendContainer(current, wxString::FromUTF8(path[p]), -1, 1);
 				groups_.emplace_back(current, fullpath);
 			}
 		}
@@ -173,9 +173,9 @@ private:
 	{
 		for (auto& preset : presets)
 		{
-			auto item = AppendItem(getGroup(preset.group), preset.name);
+			auto item = AppendItem(getGroup(preset.group), wxString::FromUTF8(preset.name));
 			SetItemData(item, new SpecialPresetData(preset));
-			textsize.IncTo(dc.GetTextExtent(preset.name));
+			textsize.IncTo(dc.GetTextExtent(wxString::FromUTF8(preset.name)));
 		}
 	}
 };
@@ -206,12 +206,12 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "S
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 	hbox->AddStretchSpacer(1);
-	auto btn_ok = new wxButton(this, -1, "OK");
+	auto btn_ok = new wxButton(this, -1, wxS("OK"));
 	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad());
 	btn_ok->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_OK); });
 
 	// Cancel button
-	auto btn_cancel = new wxButton(this, -1, "Cancel");
+	auto btn_cancel = new wxButton(this, -1, wxS("Cancel"));
 	hbox->Add(btn_cancel, 0, wxEXPAND);
 	btn_cancel->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_CANCEL); });
 }

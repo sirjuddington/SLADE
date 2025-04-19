@@ -82,8 +82,8 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	// Add tabs
 	auto stc_tabs = STabCtrl::createControl(this);
 	psizer->Add(stc_tabs, 1, wxEXPAND);
-	stc_tabs->AddPage(setupGeneralTab(stc_tabs), "General");
-	stc_tabs->AddPage(setupEntryListTab(stc_tabs), "Entry List");
+	stc_tabs->AddPage(setupGeneralTab(stc_tabs), wxS("General"));
+	stc_tabs->AddPage(setupEntryListTab(stc_tabs), wxS("Entry List"));
 }
 
 // -----------------------------------------------------------------------------
@@ -160,8 +160,8 @@ void InterfacePrefsPanel::applyPreferences()
 	else
 		toolbar_size = 32;
 
-	iconset_general    = wxutil::strToView(choice_iconset_general_->GetString(choice_iconset_general_->GetSelection()));
-	iconset_entry_list = wxutil::strToView(choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()));
+	iconset_general    = choice_iconset_general_->GetString(choice_iconset_general_->GetSelection()).utf8_string();
+	iconset_entry_list = choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()).utf8_string();
 
 	if (choice_elist_icon_size_->GetSelection() == 0)
 		elist_icon_size = 16;
@@ -183,17 +183,17 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	auto panel = new wxPanel(stc_tabs, -1);
 
 	// Create controls
-	cb_start_page_           = new wxCheckBox(panel, -1, "Show Start Page on Startup");
-	wxString darkmodes[]     = { "Off", "Use System Setting", "On" };
-	choice_windows_darkmode_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, darkmodes);
-	choice_windows_darkmode_->SetToolTip("Only supported on Windows 10 20H1 or later");
-	cb_web_dark_theme_ = new wxCheckBox(panel, -1, "Use dark theme for web content *");
-	cb_web_dark_theme_->SetToolTip("Use a dark theme for web content eg. the Start Page and Online Documentation");
-	cb_file_browser_        = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
-	cb_list_monospace_      = new wxCheckBox(panel, -1, "Use monospaced font for lists");
-	cb_condensed_tabs_      = new wxCheckBox(panel, -1, "Condensed tabs *");
-	wxString sizes[]        = { "16x16", "24x24", "32x32" };
-	choice_toolbar_size_    = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
+	cb_start_page_           = new wxCheckBox(panel, -1, wxS("Show Start Page on Startup"));
+	auto darkmodes           = wxutil::arrayStringStd({ "Off", "Use System Setting", "On" });
+	choice_windows_darkmode_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, darkmodes);
+	choice_windows_darkmode_->SetToolTip(wxS("Only supported on Windows 10 20H1 or later"));
+	cb_web_dark_theme_ = new wxCheckBox(panel, -1, wxS("Use dark theme for web content *"));
+	cb_web_dark_theme_->SetToolTip(wxS("Use a dark theme for web content eg. the Start Page and Online Documentation"));
+	cb_file_browser_        = new wxCheckBox(panel, -1, wxS("Show File Browser tab in the Archive Manager panel *"));
+	cb_list_monospace_      = new wxCheckBox(panel, -1, wxS("Use monospaced font for lists"));
+	cb_condensed_tabs_      = new wxCheckBox(panel, -1, wxS("Condensed tabs *"));
+	auto sizes              = wxutil::arrayStringStd({ "16x16", "24x24", "32x32" });
+	choice_toolbar_size_    = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sizes);
 	auto sets               = wxutil::arrayStringStd(icons::iconSets(icons::General));
 	choice_iconset_general_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
 
@@ -207,9 +207,12 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	gb_sizer->Add(cb_start_page_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 #if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
 	gb_sizer->Add(
-		new wxStaticText(panel, -1, "Use dark UI theme if supported:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+		new wxStaticText(panel, -1, wxS("Use dark UI theme if supported:")),
+		{ row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_windows_darkmode_, { row, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("*")), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 #else
 	choice_windows_darkmode_->Show(false);
 #endif
@@ -217,15 +220,17 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	gb_sizer->Add(cb_file_browser_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 	gb_sizer->Add(cb_list_monospace_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 	gb_sizer->Add(cb_condensed_tabs_, { row++, 0 }, { 1, 2 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Toolbar icon size:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, wxS("Toolbar icon size:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_toolbar_size_, { row, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Icons:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("*")), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Icons:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_iconset_general_, { row, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("*")), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, ui::pad());
+	sizer->Add(
+		new wxStaticText(panel, -1, wxS("* requires restart to take effect")), 0, wxALL | wxALIGN_RIGHT, ui::pad());
 
 	return panel;
 }
@@ -238,27 +243,27 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	auto panel = new wxPanel(stc_tabs, -1);
 
 	// Create controls
-	cb_size_as_string_      = new wxCheckBox(panel, -1, "Show entry size as a string with units");
-	cb_filter_dirs_         = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
-	cb_elist_bgcol_         = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
-	cb_context_submenus_    = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
+	cb_size_as_string_      = new wxCheckBox(panel, -1, wxS("Show entry size as a string with units"));
+	cb_filter_dirs_         = new wxCheckBox(panel, -1, wxS("Ignore directories when filtering by name"));
+	cb_elist_bgcol_         = new wxCheckBox(panel, -1, wxS("Colour entry list item background by entry type"));
+	cb_context_submenus_    = new wxCheckBox(panel, -1, wxS("Group related entry context menu items into submenus"));
 	auto sets               = wxutil::arrayStringStd(icons::iconSets(icons::Entry));
 	choice_iconset_entry_   = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
-	wxString icon_sizes[]   = { "16x16", "24x24", "32x32" };
-	choice_elist_icon_size_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, icon_sizes);
+	auto icon_sizes         = wxutil::arrayStringStd({ "16x16", "24x24", "32x32" });
+	choice_elist_icon_size_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, icon_sizes);
 	spin_elist_icon_pad_    = new wxSpinCtrl(
         panel,
         -1,
-        "1",
+        wxS("1"),
         wxDefaultPosition,
         { ui::px(ui::Size::SpinCtrlWidth), -1 },
         wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
         0,
         4,
         1);
-	wxString tree_styles[]   = { "Tree", "Flat List" };
-	choice_elist_tree_style_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 2, tree_styles);
-	choice_elist_tree_style_->SetToolTip("The list style to use when the archive supports folders");
+	auto tree_styles         = wxutil::arrayStringStd({ "Tree", "Flat List" });
+	choice_elist_tree_style_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, tree_styles);
+	choice_elist_tree_style_->SetToolTip(wxS("The list style to use when the archive supports folders"));
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -271,20 +276,22 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	gb_sizer->Add(cb_filter_dirs_, { row++, 0 }, { 1, 4 }, wxEXPAND);
 	gb_sizer->Add(cb_context_submenus_, { row++, 0 }, { 1, 4 }, wxEXPAND);
 	gb_sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 4 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Folder List Style:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, wxS("Folder List Style:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_elist_tree_style_, { row, 1 }, { 1, 3 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Icon size:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("*")), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Icon size:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_elist_icon_size_, { row, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Padding:"), { row, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Padding:")), { row, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(spin_elist_icon_pad_, { row, 3 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Icons:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("*")), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Icons:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_iconset_entry_, { row, 1 }, { 1, 3 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("*")), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, ui::pad());
+	sizer->Add(
+		new wxStaticText(panel, -1, wxS("* requires restart to take effect")), 0, wxALL | wxALIGN_RIGHT, ui::pad());
 
 	return panel;
 }

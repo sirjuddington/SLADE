@@ -9,11 +9,11 @@ public:
 	~SplashWindow() = default;
 
 	float progress() const { return progress_; }
-	void  setMessage(const wxString& message);
-	void  setProgressMessage(const wxString& message);
+	void  setMessage(string_view message);
+	void  setProgressMessage(string_view message);
 	void  setProgress(float progress);
 
-	void show(const wxString& message, bool progress = false);
+	void show(string_view message, bool progress = false);
 	void hide();
 	void forceRedraw();
 
@@ -23,8 +23,8 @@ public:
 	void onPaint(wxPaintEvent& e);
 
 private:
-	wxString    message_;
-	wxString    message_progress_;
+	string      message_;
+	string      message_progress_;
 	float       progress_                 = 0.f;
 	float       progress_indefinite_anim_ = 0.f;
 	bool        show_progress_            = false;

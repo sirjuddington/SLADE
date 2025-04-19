@@ -49,7 +49,7 @@ public:
 				if (key == custom_value.first)
 					return custom_value.second;
 			}
-			return "Unknown";
+			return wxS("Unknown");
 		}
 	};
 

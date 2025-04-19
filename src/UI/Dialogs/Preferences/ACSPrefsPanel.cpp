@@ -35,6 +35,7 @@
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -70,9 +71,9 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 		filedialog::executableExtensionString(),
 		filedialog::executableFileName("acc") + ";" + filedialog::executableFileName("bcc"));
 	list_inc_paths_        = new wxListBox(this, -1, wxDefaultPosition, wxSize(-1, ui::scalePx(200)));
-	btn_incpath_add_       = new wxButton(this, -1, "Add");
-	btn_incpath_remove_    = new wxButton(this, -1, "Remove");
-	cb_always_show_output_ = new wxCheckBox(this, -1, "Always Show Compiler Output");
+	btn_incpath_add_       = new wxButton(this, -1, wxS("Add"));
+	btn_incpath_remove_    = new wxButton(this, -1, wxS("Remove"));
+	cb_always_show_output_ = new wxCheckBox(this, -1, wxS("Always Show Compiler Output"));
 
 	setupLayout();
 
@@ -98,17 +99,17 @@ void ACSPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void ACSPrefsPanel::applyPreferences()
 {
-	path_acc = wxutil::strToView(flp_acc_path_->location());
+	path_acc = flp_acc_path_->location();
 
 	// Build include paths string
-	wxString paths_string;
-	auto     lib_paths = list_inc_paths_->GetStrings();
+	string paths_string;
+	auto   lib_paths = list_inc_paths_->GetStrings();
 	for (const auto& lib_path : lib_paths)
-		paths_string += lib_path + ";";
-	if (paths_string.EndsWith(";"))
-		paths_string.RemoveLast(1);
+		paths_string += lib_path.utf8_string() + ";";
+	if (strutil::endsWith(paths_string, ";"))
+		paths_string.pop_back();
 
-	path_acc_libs          = wxutil::strToView(paths_string);
+	path_acc_libs          = paths_string;
 	acc_always_show_output = cb_always_show_output_->GetValue();
 }
 
@@ -126,7 +127,7 @@ void ACSPrefsPanel::setupLayout()
 		wxutil::createLabelVBox(this, "Location of acc executable:", flp_acc_path_), 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Include paths
-	sizer->Add(new wxStaticText(this, -1, "Include Paths:"), 0, wxEXPAND, ui::pad());
+	sizer->Add(new wxStaticText(this, -1, wxS("Include Paths:")), 0, wxEXPAND, ui::pad());
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 1, wxEXPAND | wxBOTTOM, ui::pad());
 	hbox->Add(list_inc_paths_, 1, wxEXPAND | wxRIGHT, ui::pad());
@@ -156,7 +157,7 @@ void ACSPrefsPanel::setupLayout()
 // -----------------------------------------------------------------------------
 void ACSPrefsPanel::onBtnAddIncPath(wxCommandEvent& e)
 {
-	wxDirDialog dlg(this, "Browse for ACC Include Path");
+	wxDirDialog dlg(this, wxS("Browse for ACC Include Path"));
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		list_inc_paths_->Append(dlg.GetPath());

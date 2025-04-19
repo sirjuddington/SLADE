@@ -101,7 +101,7 @@ public:
 	void    focusEntryList() const { entry_tree_->SetFocus(); }
 	void    refreshPanel();
 	void    closeCurrentEntry();
-	wxMenu* createEntryOpenMenu(const wxString& category);
+	wxMenu* createEntryOpenMenu(const string& category);
 	bool    switchToDefaultEntryPanel();
 
 	// SAction handler
@@ -196,7 +196,7 @@ public:
 
 private:
 	MemChunk data_;
-	wxString path_;
+	string   path_;
 	int      index_   = -1;
 	Archive* archive_ = nullptr;
 };

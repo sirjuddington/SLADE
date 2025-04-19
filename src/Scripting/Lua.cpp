@@ -37,6 +37,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "thirdparty/sol/sol.hpp"
 
@@ -227,13 +228,13 @@ void lua::showErrorDialog(wxWindow* parent, string_view title, string_view messa
 	for (auto msg : log)
 		output += msg->formattedMessageLine() + "\n";
 
-	ExtMessageDialog dlg(parent ? parent : current_window, wxutil::strFromView(title));
-	dlg.setMessage(wxutil::strFromView(message));
+	ExtMessageDialog dlg(parent ? parent : current_window, title);
+	dlg.setMessage(strutil::toString(message));
 	const auto& [type, error_msg, line_no] = lua::error();
 	if (line_no >= 0)
-		dlg.setExt(wxString::Format("%s Error\nLine %d: %s\n\nScript Output:\n%s", type, line_no, error_msg, output));
+		dlg.setExt(fmt::format("{} Error\nLine {}: {}\n\nScript Output:\n{}", type, line_no, error_msg, output));
 	else
-		dlg.setExt(wxString::Format("%s Error\n%s\n\nScript Output:\n%s", type, error_msg, output));
+		dlg.setExt(fmt::format("{} Error\n{}\n\nScript Output:\n{}", type, error_msg, output));
 
 	dlg.CenterOnParent();
 	dlg.ShowModal();
@@ -354,7 +355,7 @@ CONSOLE_COMMAND(script, 1, true)
 
 CONSOLE_COMMAND(script_file, 1, true)
 {
-	if (!wxFile::Exists(args[0]))
+	if (!fileutil::fileExists(args[0]))
 	{
 		log::error("File \"{}\" does not exist", args[0]);
 		return;

@@ -14,7 +14,7 @@ public:
 	void updateDistanceControls() const;
 	void applyPreferences() override;
 
-	wxString pageTitle() override { return "Map Editor 3D Mode Settings"; }
+	string pageTitle() override { return "Map Editor 3D Mode Settings"; }
 
 private:
 	wxSlider*     slider_max_render_dist_  = nullptr;

@@ -66,10 +66,10 @@ HudOffsetsPrefsPanel::HudOffsetsPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 
 	wxutil::layoutVertically(
 		sizer,
-		{ cb_hud_bob_       = new wxCheckBox(this, -1, "Show weapon bob outline"),
-		  cb_hud_center_    = new wxCheckBox(this, -1, "Show center line"),
-		  cb_hud_statusbar_ = new wxCheckBox(this, -1, "Show status bar lines"),
-		  cb_hud_wide_      = new wxCheckBox(this, -1, "Show widescreen borders") },
+		{ cb_hud_bob_       = new wxCheckBox(this, -1, wxS("Show weapon bob outline")),
+		  cb_hud_center_    = new wxCheckBox(this, -1, wxS("Show center line")),
+		  cb_hud_statusbar_ = new wxCheckBox(this, -1, wxS("Show status bar lines")),
+		  cb_hud_wide_      = new wxCheckBox(this, -1, wxS("Show widescreen borders")) },
 		wxSizerFlags(0).Expand());
 }
 

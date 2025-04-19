@@ -33,43 +33,43 @@
 */
 
 #if defined(__FreeBSD__)
-#include <stdlib.h>
 #include <malloc_np.h>
-#elif defined(__APPLE__)
 #include <stdlib.h>
+#elif defined(__APPLE__)
 #include <malloc/malloc.h>
+#include <stdlib.h>
 #else
 #include <malloc.h>
 #endif
 
 #include "Main.h"
-#define I_FatalError(...) slade::log::error(wxString::Format(__VA_ARGS__))
+#define I_FatalError(...) slade::log::error(__VA_ARGS__)
 
 namespace GC
 {
-	size_t AllocBytes;
+size_t AllocBytes;
 }
 
 #ifndef _MSC_VER
-#define _NORMAL_BLOCK			0
-#define _malloc_dbg(s,b,f,l)	malloc(s)
-#define _realloc_dbg(p,s,b,f,l)	realloc(p,s)
+#define _NORMAL_BLOCK 0
+#define _malloc_dbg(s, b, f, l) malloc(s)
+#define _realloc_dbg(p, s, b, f, l) realloc(p, s)
 #endif
 #if defined(__APPLE__)
-#define _msize(p)				malloc_size(p)
+#define _msize(p) malloc_size(p)
 #elif defined(__FreeBSD__) || defined(__linux__)
-#define _msize(p)				malloc_usable_size(p)	// from glibc/FreeBSD
+#define _msize(p) malloc_usable_size(p) // from glibc/FreeBSD
 #elif !defined(_WIN32)
 // For all other OS not handled above
-#define M_ALLOC_GENERIC  1
-#define _msize(p)                              (*((size_t*)(p)-1))
+#define M_ALLOC_GENERIC 1
+#define _msize(p) (*((size_t*)(p) - 1))
 #endif
 
 #ifndef _DEBUG
 #if !M_ALLOC_GENERIC
-void *M_Malloc(size_t size)
+void* M_Malloc(size_t size)
 {
-	void *block = malloc(size);
+	void* block = malloc(size);
 
 	if (block == NULL)
 		I_FatalError("Could not malloc %zu bytes", size);
@@ -78,13 +78,13 @@ void *M_Malloc(size_t size)
 	return block;
 }
 
-void *M_Realloc(void *memblock, size_t size)
+void* M_Realloc(void* memblock, size_t size)
 {
 	if (memblock != NULL)
 	{
 		GC::AllocBytes -= _msize(memblock);
 	}
-	void *block = realloc(memblock, size);
+	void* block = realloc(memblock, size);
 	if (block == NULL)
 	{
 		I_FatalError("Could not realloc %zu bytes", size);
@@ -93,39 +93,39 @@ void *M_Realloc(void *memblock, size_t size)
 	return block;
 }
 #else
-void *M_Malloc(size_t size)
+void* M_Malloc(size_t size)
 {
-	void *block = malloc(size+sizeof(size_t));
+	void* block = malloc(size + sizeof(size_t));
 
 	if (block == NULL)
 		I_FatalError("Could not malloc %zu bytes", size);
 
-	size_t *sizeStore = (size_t *) block;
-	*sizeStore = size;
-	block = sizeStore+1;
+	size_t* sizeStore = (size_t*)block;
+	*sizeStore        = size;
+	block             = sizeStore + 1;
 
 	GC::AllocBytes += _msize(block);
 	return block;
 }
 
-void *M_Realloc(void *memblock, size_t size)
+void* M_Realloc(void* memblock, size_t size)
 {
-	if(memblock == NULL)
+	if (memblock == NULL)
 		return M_Malloc(size);
 
 	if (memblock != NULL)
 	{
 		GC::AllocBytes -= _msize(memblock);
 	}
-	void *block = realloc(((size_t*) memblock)-1, size+sizeof(size_t));
+	void* block = realloc(((size_t*)memblock) - 1, size + sizeof(size_t));
 	if (block == NULL)
 	{
 		I_FatalError("Could not realloc %zu bytes", size);
 	}
 
-	size_t *sizeStore = (size_t *) block;
-	*sizeStore = size;
-	block = sizeStore+1;
+	size_t* sizeStore = (size_t*)block;
+	*sizeStore        = size;
+	block             = sizeStore + 1;
 
 	GC::AllocBytes += _msize(block);
 	return block;
@@ -137,66 +137,66 @@ void *M_Realloc(void *memblock, size_t size)
 #endif
 
 #if !M_ALLOC_GENERIC
-void *M_Malloc_Dbg(size_t size, const char *file, int lineno)
+void* M_Malloc_Dbg(size_t size, const char* file, int lineno)
 {
-	void *block = _malloc_dbg(size, _NORMAL_BLOCK, file, lineno);
+	void* block = _malloc_dbg(size, _NORMAL_BLOCK, file, lineno);
 
 	if (block == NULL)
-		I_FatalError("Could not malloc %zu bytes", size);
+		I_FatalError("Could not malloc {} bytes", size);
 
 	GC::AllocBytes += _msize(block);
 	return block;
 }
 
-void *M_Realloc_Dbg(void *memblock, size_t size, const char *file, int lineno)
+void* M_Realloc_Dbg(void* memblock, size_t size, const char* file, int lineno)
 {
 	if (memblock != NULL)
 	{
 		GC::AllocBytes -= _msize(memblock);
 	}
-	void *block = _realloc_dbg(memblock, size, _NORMAL_BLOCK, file, lineno);
+	void* block = _realloc_dbg(memblock, size, _NORMAL_BLOCK, file, lineno);
 	if (block == NULL)
 	{
-		I_FatalError("Could not realloc %zu bytes", size);
+		I_FatalError("Could not realloc {} bytes", size);
 	}
 	GC::AllocBytes += _msize(block);
 	return block;
 }
 #else
-void *M_Malloc_Dbg(size_t size, const char *file, int lineno)
+void* M_Malloc_Dbg(size_t size, const char* file, int lineno)
 {
-	void *block = _malloc_dbg(size+sizeof(size_t), _NORMAL_BLOCK, file, lineno);
+	void* block = _malloc_dbg(size + sizeof(size_t), _NORMAL_BLOCK, file, lineno);
 
 	if (block == NULL)
-		I_FatalError("Could not malloc %zu bytes", size);
+		I_FatalError("Could not malloc {} bytes", size);
 
-	size_t *sizeStore = (size_t *) block;
-	*sizeStore = size;
-	block = sizeStore+1;
+	size_t* sizeStore = (size_t*)block;
+	*sizeStore        = size;
+	block             = sizeStore + 1;
 
 	GC::AllocBytes += _msize(block);
 	return block;
 }
 
-void *M_Realloc_Dbg(void *memblock, size_t size, const char *file, int lineno)
+void* M_Realloc_Dbg(void* memblock, size_t size, const char* file, int lineno)
 {
-	if(memblock == NULL)
+	if (memblock == NULL)
 		return M_Malloc_Dbg(size, file, lineno);
 
 	if (memblock != NULL)
 	{
 		GC::AllocBytes -= _msize(memblock);
 	}
-	void *block = _realloc_dbg(((size_t*) memblock)-1, size+sizeof(size_t), _NORMAL_BLOCK, file, lineno);
+	void* block = _realloc_dbg(((size_t*)memblock) - 1, size + sizeof(size_t), _NORMAL_BLOCK, file, lineno);
 
 	if (block == NULL)
 	{
-		I_FatalError("Could not realloc %zu bytes", size);
+		I_FatalError("Could not realloc {} bytes", size);
 	}
 
-	size_t *sizeStore = (size_t *) block;
-	*sizeStore = size;
-	block = sizeStore+1;
+	size_t* sizeStore = (size_t*)block;
+	*sizeStore        = size;
+	block             = sizeStore + 1;
 
 	GC::AllocBytes += _msize(block);
 	return block;
@@ -205,7 +205,7 @@ void *M_Realloc_Dbg(void *memblock, size_t size, const char *file, int lineno)
 #endif
 
 #if !M_ALLOC_GENERIC
-void M_Free (void *block)
+void M_Free(void* block)
 {
 	if (block != NULL)
 	{
@@ -214,13 +214,12 @@ void M_Free (void *block)
 	}
 }
 #else
-void M_Free (void *block)
+void M_Free(void* block)
 {
-	if(block != NULL)
+	if (block != NULL)
 	{
 		GC::AllocBytes -= _msize(block);
-		free(((size_t*) block)-1);
+		free(((size_t*)block) - 1);
 	}
 }
 #endif
-

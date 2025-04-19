@@ -47,19 +47,19 @@ using namespace slade;
 // SIconButton class constructor
 // -----------------------------------------------------------------------------
 SIconButton::SIconButton(
-	wxWindow*       parent,
-	icons::Type     icon_type,
-	const wxString& icon,
-	const wxString& tooltip,
-	int             icon_size) :
+	wxWindow*     parent,
+	icons::Type   icon_type,
+	const string& icon,
+	const string& tooltip,
+	int           icon_size) :
 	wxBitmapButton{ parent, -1, wxNullBitmap }
 {
 #if wxCHECK_VERSION(3, 1, 6)
-	auto bmp = icons::getIcon(icon_type, icon.ToStdString(), icon_size);
+	auto bmp = icons::getIcon(icon_type, icon, icon_size);
 #else
 	// Create icon
 	auto size = ui::scalePx(icon_size);
-	auto bmp  = icons::getIcon(icon_type, icon.ToStdString(), size);
+	auto bmp  = icons::getIcon(icon_type, icon, size);
 
 	// Scale icon if required
 	if (bmp.GetWidth() != size)
@@ -73,5 +73,5 @@ SIconButton::SIconButton(
 	// Set button image and tooltip
 	SetBitmap(bmp);
 	if (!tooltip.empty())
-		SetToolTip(tooltip);
+		SetToolTip(wxString::FromUTF8(tooltip));
 }

@@ -91,9 +91,9 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent) : PrefsPa
 {
 	// Create controls
 	list_base_archive_paths_ = new wxListBox(this, -1);
-	btn_add_                 = new wxButton(this, -1, "Add Archive");
-	btn_remove_              = new wxButton(this, -1, "Remove Archive");
-	btn_detect_              = new wxButton(this, -1, "Detect Archives");
+	btn_add_                 = new wxButton(this, -1, wxS("Add Archive"));
+	btn_remove_              = new wxButton(this, -1, wxS("Remove Archive"));
+	btn_detect_              = new wxButton(this, -1, wxS("Detect Archives"));
 	flp_zdoom_pk3_ = new FileLocationPanel(this, zdoom_pk3_path, false, "Browse ZDoom PK3", "Pk3 Files (*.pk3)|*.pk3");
 
 	setupLayout();
@@ -152,17 +152,17 @@ void BaseResourceArchivesPanel::autodetect() const
 	// Find IWADs from DOOMWADDIR and DOOMWADPATH
 	// See http://doomwiki.org/wiki/Environment_variables
 	wxString doomwaddir, doomwadpath, envvar;
-	envvar = "DOOMWADDIR";
+	envvar = wxS("DOOMWADDIR");
 	wxGetEnv(envvar, &doomwaddir);
-	envvar = "DOOMWADPATH";
+	envvar = wxS("DOOMWADPATH");
 	wxGetEnv(envvar, &doomwadpath);
 
 	if (doomwaddir.length() || doomwadpath.length())
 	{
 #ifdef WIN32
 		char separator = ';';
-		doomwadpath.Replace("\\", "/", true);
-		doomwaddir.Replace("\\", "/", true);
+		doomwadpath.Replace(wxS("\\"), wxS("/"), true);
+		doomwaddir.Replace(wxS("\\"), wxS("/"), true);
 #else
 		char separator = ':';
 #endif
@@ -172,7 +172,7 @@ void BaseResourceArchivesPanel::autodetect() const
 		wxArrayString iwadnames;
 		auto          list = p.parseTreeRoot()->childPTN("iwads");
 		for (size_t i = 0; i < list->nChildren(); ++i)
-			iwadnames.Add(list->child(i)->name());
+			iwadnames.Add(wxString::FromUTF8(list->child(i)->name()));
 
 		// Look for every known IWAD in every known IWAD directory
 		for (auto folder : paths)
@@ -195,7 +195,7 @@ void BaseResourceArchivesPanel::autodetect() const
 					// Verify existence before adding it to the list
 					if (list_base_archive_paths_->FindString(iwad) == wxNOT_FOUND)
 					{
-						app::archiveManager().addBaseResourcePath(iwad.ToStdString());
+						app::archiveManager().addBaseResourcePath(iwad.utf8_string());
 						list_base_archive_paths_->Append(iwad);
 					}
 				}
@@ -218,15 +218,15 @@ void BaseResourceArchivesPanel::autodetect() const
 	// should be safe to use in all cases.
 	wxString gogregistrypath = "Software\\GOG.com";
 #endif
-	if (QueryPathKey(wxRegKey::HKLM, gogregistrypath, "DefaultPackPath", path))
+	if (QueryPathKey(wxRegKey::HKLM, wxString::FromUTF8(gogregistrypath), wxS("DefaultPackPath"), path))
 	{
 		auto list = p.parseTreeRoot()->childPTN("gog");
 		for (size_t i = 0; i < list->nChildren(); ++i)
 		{
 			auto child = list->childPTN(i);
-			gamepath   = gogregistrypath + (child->childPTN("id"))->stringValue();
-			if (QueryPathKey(wxRegKey::HKLM, gamepath, "Path", path))
-				paths.Add(path + (child->childPTN("path"))->stringValue());
+			gamepath   = wxString::FromUTF8(gogregistrypath + child->childPTN("id")->stringValue());
+			if (QueryPathKey(wxRegKey::HKLM, gamepath, wxS("Path"), path))
+				paths.Add(path + wxString::FromUTF8(child->childPTN("path")->stringValue()));
 		}
 	}
 #endif
@@ -234,13 +234,13 @@ void BaseResourceArchivesPanel::autodetect() const
 
 	// Now query Steam paths -- Windows only for now as well
 #ifdef __WXMSW__
-	if (QueryPathKey(wxRegKey::HKCU, "Software\\Valve\\Steam", "SteamPath", gamepath)
-		|| QueryPathKey(wxRegKey::HKLM, "Software\\Valve\\Steam", "InstallPath", gamepath))
+	if (QueryPathKey(wxRegKey::HKCU, wxS("Software\\Valve\\Steam"), wxS("SteamPath"), gamepath)
+		|| QueryPathKey(wxRegKey::HKLM, wxS("Software\\Valve\\Steam"), wxS("InstallPath"), gamepath))
 	{
-		gamepath += "/SteamApps/common/";
+		gamepath += wxS("/SteamApps/common/");
 		auto list = p.parseTreeRoot()->childPTN("steam");
 		for (size_t i = 0; i < list->nChildren(); ++i)
-			paths.Add(gamepath + (list->childPTN(i))->stringValue());
+			paths.Add(gamepath + wxString::FromUTF8(list->childPTN(i)->stringValue()));
 	}
 #else
 	// TODO: Querying Steam registry on Linux and OSX. This involves parsing Steam's config.vdf file, which is found in
@@ -253,13 +253,13 @@ void BaseResourceArchivesPanel::autodetect() const
 	// Add GOG & Steam paths
 	for (auto iwad : paths)
 	{
-		iwad.Replace("\\", "/", true);
+		iwad.Replace(wxS("\\"), wxS("/"), true);
 		if (wxFileExists(iwad))
 		{
 			// Verify existence before adding it to the list
 			if (list_base_archive_paths_->FindString(iwad) == wxNOT_FOUND)
 			{
-				app::archiveManager().addBaseResourcePath(iwad.ToStdString());
+				app::archiveManager().addBaseResourcePath(iwad.utf8_string());
 				list_base_archive_paths_->Append(iwad);
 			}
 		}
@@ -274,7 +274,7 @@ void BaseResourceArchivesPanel::init()
 	// Init paths list
 	list_base_archive_paths_->Clear();
 	for (size_t a = 0; a < app::archiveManager().numBaseResourcePaths(); a++)
-		list_base_archive_paths_->Append(app::archiveManager().getBaseResourcePath(a));
+		list_base_archive_paths_->Append(wxString::FromUTF8(app::archiveManager().getBaseResourcePath(a)));
 
 	// Select the currently open base archive if any
 	if (base_resource >= 0)
@@ -289,7 +289,7 @@ void BaseResourceArchivesPanel::init()
 void BaseResourceArchivesPanel::applyPreferences()
 {
 	app::archiveManager().openBaseResource(selectedPathIndex());
-	zdoom_pk3_path = wxutil::strToView(flp_zdoom_pk3_->location());
+	zdoom_pk3_path = flp_zdoom_pk3_->location();
 }
 
 
@@ -306,15 +306,15 @@ void BaseResourceArchivesPanel::applyPreferences()
 void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 {
 	// Create extensions string
-	wxString extensions = app::archiveManager().getArchiveExtensionsString();
+	auto extensions = app::archiveManager().getArchiveExtensionsString();
 
 	// Open a file browser dialog that allows multiple selection
 	wxFileDialog dialog_open(
 		this,
-		"Choose file(s) to open",
+		wxS("Choose file(s) to open"),
 		dir_last,
 		wxEmptyString,
-		extensions,
+		wxString::FromUTF8(extensions),
 		wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST,
 		wxDefaultPosition);
 
@@ -328,12 +328,12 @@ void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 		// Add each to the paths list
 		for (const auto& file : files)
 		{
-			if (app::archiveManager().addBaseResourcePath(file.ToStdString()))
+			if (app::archiveManager().addBaseResourcePath(file.utf8_string()))
 				list_base_archive_paths_->Append(file);
 		}
 
 		// Save 'dir_last'
-		dir_last = wxutil::strToView(dialog_open.GetDirectory());
+		dir_last = dialog_open.GetDirectory().utf8_string();
 	}
 }
 

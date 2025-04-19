@@ -358,12 +358,12 @@ void SectorTextureOverlay::browseFloorTexture()
 	// Open texture browser
 	MapTextureBrowser browser(
 		mapeditor::windowWx(), mapeditor::TextureType::Flat, texture, &(mapeditor::editContext().map()));
-	browser.SetTitle("Browse Floor Texture");
+	browser.SetTitle(wxS("Browse Floor Texture"));
 	if (browser.ShowModal() == wxID_OK)
 	{
 		// Set texture
 		tex_floor_.clear();
-		tex_floor_.push_back(browser.selectedItem()->name().ToStdString());
+		tex_floor_.push_back(browser.selectedItem()->name());
 		close(false);
 	}
 }
@@ -383,12 +383,12 @@ void SectorTextureOverlay::browseCeilingTexture()
 	// Open texture browser
 	MapTextureBrowser browser(
 		mapeditor::windowWx(), mapeditor::TextureType::Flat, texture, &(mapeditor::editContext().map()));
-	browser.SetTitle("Browse Ceiling Texture");
+	browser.SetTitle(wxS("Browse Ceiling Texture"));
 	if (browser.ShowModal() == wxID_OK)
 	{
 		// Set texture
 		tex_ceil_.clear();
-		tex_ceil_.push_back(browser.selectedItem()->name().ToStdString());
+		tex_ceil_.push_back(browser.selectedItem()->name());
 		close(false);
 	}
 }

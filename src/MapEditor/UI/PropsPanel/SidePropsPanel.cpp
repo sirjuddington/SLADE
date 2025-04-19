@@ -66,14 +66,14 @@ SideTexCanvas::SideTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 // -----------------------------------------------------------------------------
 // Sets the texture to display
 // -----------------------------------------------------------------------------
-void SideTexCanvas::setTexture(const wxString& tex)
+void SideTexCanvas::setTexture(const string& tex)
 {
 	texname_ = tex;
 	if (tex.empty() || tex == "-")
 		texture_ = 0;
 	else
 		texture_ = mapeditor::textureManager()
-					   .texture(tex.ToStdString(), game::configuration().featureSupported(game::Feature::MixTexFlats))
+					   .texture(tex, game::configuration().featureSupported(game::Feature::MixTexFlats))
 					   .gl_id;
 
 	Refresh();
@@ -143,7 +143,7 @@ TextureComboBox::TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 	// Init
 	SetInitialSize(wxutil::scaledSize(136, -1));
 	wxArrayString list;
-	list.Add("-");
+	list.Add(wxS("-"));
 
 	// Bind events
 	Bind(wxEVT_COMBOBOX_DROPDOWN, &TextureComboBox::onDropDown, this);
@@ -167,30 +167,30 @@ TextureComboBox::TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 void TextureComboBox::onDropDown(wxCommandEvent& e)
 {
 	// Get current value
-	wxString text = GetValue().Upper();
+	auto text = GetValue().Upper().utf8_string();
 	if (text == "-")
-		text = "";
+		text.clear();
 
 	// Populate dropdown with matching texture names
 	auto&         textures = mapeditor::textureManager().allTexturesInfo();
 	wxArrayString list;
-	list.Add("-");
+	list.Add(wxS("-"));
 	for (auto& texture : textures)
 	{
-		if (strutil::startsWith(texture.short_name, text.ToStdString()))
+		if (strutil::startsWith(texture.short_name, text))
 		{
-			list.Add(texture.short_name);
+			list.Add(wxString::FromUTF8(texture.short_name));
 		}
 		if (game::configuration().featureSupported(game::Feature::LongNames))
 		{
-			if (strutil::startsWith(texture.long_name, text.ToStdString()))
+			if (strutil::startsWith(texture.long_name, text))
 			{
-				list.Add(texture.long_name);
+				list.Add(wxString::FromUTF8(texture.long_name));
 			}
 		}
 	}
 	Set(list); // Why does this clear the text box also?
-	SetValue(text);
+	SetValue(wxString::FromUTF8(text));
 
 	e.Skip();
 }
@@ -237,7 +237,7 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	SetSizer(sizer);
 
 	// --- Textures ---
-	auto sizer_tex = new wxStaticBoxSizer(wxVERTICAL, this, "Textures");
+	auto sizer_tex = new wxStaticBoxSizer(wxVERTICAL, this, wxS("Textures"));
 	sizer->Add(sizer_tex, 0, wxEXPAND);
 
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
@@ -246,19 +246,19 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Upper
 	auto pad_min = ui::px(ui::Size::PadMinimum);
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Upper:"), 0, wxALIGN_CENTER | wxBOTTOM, pad_min);
+	vbox->Add(new wxStaticText(this, -1, wxS("Upper:")), 0, wxALIGN_CENTER | wxBOTTOM, pad_min);
 	vbox->Add(gfx_upper_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_upper_ = new TextureComboBox(this), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Middle
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 1 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Middle:"), 0, wxALIGN_CENTER | wxBOTTOM, pad_min);
+	vbox->Add(new wxStaticText(this, -1, wxS("Middle:")), 0, wxALIGN_CENTER | wxBOTTOM, pad_min);
 	vbox->Add(gfx_middle_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_middle_ = new TextureComboBox(this), { 1, 1 }, { 1, 1 }, wxALIGN_CENTER);
 
 	// Lower
 	gb_sizer->Add(vbox = new wxBoxSizer(wxVERTICAL), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER);
-	vbox->Add(new wxStaticText(this, -1, "Lower:"), 0, wxALIGN_CENTER | wxBOTTOM, pad_min);
+	vbox->Add(new wxStaticText(this, -1, wxS("Lower:")), 0, wxALIGN_CENTER | wxBOTTOM, pad_min);
 	vbox->Add(gfx_lower_ = new SideTexCanvas(this), 1, wxEXPAND);
 	gb_sizer->Add(tcb_lower_ = new TextureComboBox(this), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER);
 
@@ -299,7 +299,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 	// --- Textures ---
 
 	// Upper
-	wxString tex_upper = sides[0]->texUpper();
+	auto tex_upper = sides[0]->texUpper();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
 		if (sides[a]->texUpper() != tex_upper)
@@ -309,10 +309,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 		}
 	}
 	gfx_upper_->setTexture(tex_upper);
-	tcb_upper_->SetValue(tex_upper);
+	tcb_upper_->SetValue(wxString::FromUTF8(tex_upper));
 
 	// Middle
-	wxString tex_middle = sides[0]->texMiddle();
+	auto tex_middle = sides[0]->texMiddle();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
 		if (sides[a]->texMiddle() != tex_middle)
@@ -322,10 +322,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 		}
 	}
 	gfx_middle_->setTexture(tex_middle);
-	tcb_middle_->SetValue(tex_middle);
+	tcb_middle_->SetValue(wxString::FromUTF8(tex_middle));
 
 	// Lower
-	wxString tex_lower = sides[0]->texLower();
+	auto tex_lower = sides[0]->texLower();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
 		if (sides[a]->texLower() != tex_lower)
@@ -335,7 +335,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 		}
 	}
 	gfx_lower_->setTexture(tex_lower);
-	tcb_lower_->SetValue(tex_lower);
+	tcb_lower_->SetValue(wxString::FromUTF8(tex_lower));
 
 
 	// --- Offsets ---
@@ -352,7 +352,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 		}
 	}
 	if (!multi)
-		text_offsetx_->SetValue(wxString::Format("%d", ofs));
+		text_offsetx_->SetValue(WX_FMT("{}", ofs));
 
 	// Y
 	multi = false;
@@ -366,7 +366,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 		}
 	}
 	if (!multi)
-		text_offsety_->SetValue(wxString::Format("%d", ofs));
+		text_offsety_->SetValue(WX_FMT("{}", ofs));
 }
 
 // -----------------------------------------------------------------------------
@@ -375,9 +375,9 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 void SidePropsPanel::applyTo(vector<MapSide*>& sides) const
 {
 	// Get values
-	auto tex_upper  = tcb_upper_->GetValue().ToStdString();
-	auto tex_middle = tcb_middle_->GetValue().ToStdString();
-	auto tex_lower  = tcb_lower_->GetValue().ToStdString();
+	auto tex_upper  = tcb_upper_->GetValue().utf8_string();
+	auto tex_middle = tcb_middle_->GetValue().utf8_string();
+	auto tex_lower  = tcb_lower_->GetValue().utf8_string();
 
 	for (auto& side : sides)
 	{
@@ -418,15 +418,15 @@ void SidePropsPanel::onTextureChanged(wxCommandEvent& e)
 {
 	// Upper
 	if (e.GetEventObject() == tcb_upper_)
-		gfx_upper_->setTexture(tcb_upper_->GetValue());
+		gfx_upper_->setTexture(tcb_upper_->GetValue().utf8_string());
 
 	// Middle
 	else if (e.GetEventObject() == tcb_middle_)
-		gfx_middle_->setTexture(tcb_middle_->GetValue());
+		gfx_middle_->setTexture(tcb_middle_->GetValue().utf8_string());
 
 	// Lower
 	else if (e.GetEventObject() == tcb_lower_)
-		gfx_lower_->setTexture(tcb_lower_->GetValue());
+		gfx_lower_->setTexture(tcb_lower_->GetValue().utf8_string());
 
 	e.Skip();
 }
@@ -464,5 +464,5 @@ void SidePropsPanel::onTextureClicked(wxMouseEvent& e)
 	// Browse
 	MapTextureBrowser browser(this, mapeditor::TextureType::Texture, stc->texName(), &(mapeditor::editContext().map()));
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
-		tcb->SetValue(browser.selectedItem()->name());
+		tcb->SetValue(wxString::FromUTF8(browser.selectedItem()->name()));
 }

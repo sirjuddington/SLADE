@@ -129,8 +129,8 @@ namespace strutil
 	}
 
 	// Encoding
-	string toUTF8(string_view str);
-	string fromUTF8(string_view str);
+	// string toUTF8(string_view str);
+	// string fromUTF8(string_view str);
 
 	// Path class
 	class Path
@@ -171,7 +171,7 @@ namespace strutil
 		string str;
 
 		Transformer(string_view init) : str{ init } {}
-		Transformer(const wxString& init) : str{ init.data(), init.size() } {}
+		Transformer(const wxString& init) : str{ init.utf8_string() } {}
 
 		// Case
 		Transformer& upper()
@@ -254,19 +254,19 @@ namespace strutil
 namespace wxStringUtils
 {
 	// Static common strings
-	static wxString FULLSTOP             = ".";
-	static wxString COMMA                = ",";
-	static wxString COLON                = ":";
-	static wxString SEMICOLON            = ";";
-	static wxString SLASH_FORWARD        = "/";
-	static wxString SLASH_BACK           = "\\";
-	static wxString QUOTE_SINGLE         = "'";
-	static wxString QUOTE_DOUBLE         = "\"";
-	static wxString CARET                = "^";
-	static wxString ESCAPED_QUOTE_DOUBLE = "\\\"";
-	static wxString ESCAPED_SLASH_BACK   = "\\\\";
-	static wxString CURLYBRACE_OPEN      = "{";
-	static wxString CURLYBRACE_CLOSE     = "}";
+	static wxString FULLSTOP             = wxS(".");
+	static wxString COMMA                = wxS(",");
+	static wxString COLON                = wxS(":");
+	static wxString SEMICOLON            = wxS(";");
+	static wxString SLASH_FORWARD        = wxS("/");
+	static wxString SLASH_BACK           = wxS("\\");
+	static wxString QUOTE_SINGLE         = wxS("'");
+	static wxString QUOTE_DOUBLE         = wxS("\"");
+	static wxString CARET                = wxS("^");
+	static wxString ESCAPED_QUOTE_DOUBLE = wxS("\\\"");
+	static wxString ESCAPED_SLASH_BACK   = wxS("\\\\");
+	static wxString CURLYBRACE_OPEN      = wxS("{");
+	static wxString CURLYBRACE_CLOSE     = wxS("}");
 
 	wxString escapedString(const wxString& str, bool swap_backslash = false);
 

@@ -63,10 +63,10 @@ public:
 	// Find/Replace
 	void setFindReplacePanel(FindReplacePanel* panel) { panel_fr_ = panel; }
 	void showFindReplacePanel(bool show = true);
-	bool findNext(const wxString& find, int flags);
-	bool findPrev(const wxString& find, int flags);
-	bool replaceCurrent(const wxString& find, const wxString& replace, int flags);
-	int  replaceAll(const wxString& find, const wxString& replace, int flags);
+	bool findNext(string_view find, int flags);
+	bool findPrev(string_view find, int flags);
+	bool replaceCurrent(string_view find, string_view replace, int flags);
+	int  replaceAll(string_view find, string_view replace, int flags);
 	void selectNextOccurrence();
 	void selectAllOccurrences();
 
@@ -103,7 +103,7 @@ private:
 	JumpToCalculator* jump_to_calculator_ = nullptr;
 	unique_ptr<Lexer> lexer_;
 	wxString          prev_word_match_;
-	wxString          autocomp_list_;
+	string            autocomp_list_;
 	vector<int>       jump_to_lines_;
 	long              last_modified_ = 0;
 
@@ -125,9 +125,9 @@ private:
 	bool        ct_dwell_    = false;
 
 	// Default comment strings
-	const wxString default_line_comment_  = "//";
-	const wxString default_begin_comment_ = "/*";
-	const wxString default_end_comment_   = "*/";
+	const wxString default_line_comment_  = wxS("//");
+	const wxString default_begin_comment_ = wxS("/*");
+	const wxString default_end_comment_   = wxS("*/");
 
 	// Events
 	void onKeyDown(wxKeyEvent& e);

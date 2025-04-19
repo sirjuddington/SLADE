@@ -18,10 +18,10 @@ public:
 	};
 
 	PatchBrowserItem(
-		wxString name,
+		string   name,
 		Archive* archive = nullptr,
 		Type     type    = Type::Patch,
-		wxString nspace  = "",
+		string   nspace  = "",
 		unsigned index   = 0) :
 		BrowserItem{ name, index, "patch" },
 		archive_{ archive },
@@ -32,14 +32,14 @@ public:
 
 	~PatchBrowserItem();
 
-	bool     loadImage() override;
-	wxString itemInfo() override;
-	void     clearImage() override;
+	bool   loadImage() override;
+	string itemInfo() override;
+	void   clearImage() override;
 
 private:
 	Archive* archive_ = nullptr;
 	Type     type_    = Type::Patch;
-	wxString nspace_;
+	string   nspace_;
 };
 
 class PatchBrowser : public BrowserWindow
@@ -53,7 +53,7 @@ public:
 	bool openTextureXList(TextureXList* texturex, Archive* parent);
 	int  selectedPatch();
 	void selectPatch(int pt_index);
-	void selectPatch(const wxString& name);
+	void selectPatch(const string& name);
 	void setFullPath(bool enabled) { full_path_ = enabled; }
 
 private:

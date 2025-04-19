@@ -81,7 +81,7 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	panel->SetSizer(sizer);
 
 	// "Texture Properties" frame
-	auto frame      = new wxStaticBox(panel, -1, "Texture Properties");
+	auto frame      = new wxStaticBox(panel, -1, wxS("Texture Properties"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND);
 
@@ -91,7 +91,7 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	// Name
 	text_tex_name_ = new wxTextCtrl(panel, -1);
 	text_tex_name_->SetMaxLength(0);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Name:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Name:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Size
@@ -99,7 +99,7 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
 	spin_tex_width_  = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
 	spin_tex_height_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Size:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Size:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_width_, { 1, 1 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_height_, { 1, 2 }, { 1, 1 });
 
@@ -108,32 +108,32 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
 	spin_tex_scaley_ = new wxSpinCtrlDouble(
 		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Scale:")), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex_, { 2, 1 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_scaley_, { 2, 2 }, { 1, 1 });
 
 	// Scaled size
-	label_scaled_size_ = new wxStaticText(panel, -1, "Scaled Size: N/A");
+	label_scaled_size_ = new wxStaticText(panel, -1, wxS("Scaled Size: N/A"));
 	gb_sizer->Add(label_scaled_size_, { 3, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
 	// Type
-	wxString types[] = { "Texture", "Sprite", "Graphic", "WallTexture", "Flat" };
+	wxString types[] = { wxS("Texture"), wxS("Sprite"), wxS("Graphic"), wxS("WallTexture"), wxS("Flat") };
 	choice_type_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 5, types);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Type:"), { 0, 3 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Type:")), { 0, 3 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_type_, { 0, 4 }, { 1, 2 }, wxEXPAND);
 
 	// Offsets
-	spin_tex_offsetx_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, INT_MIN, INT_MAX);
-	spin_tex_offsety_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, INT_MIN, INT_MAX);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Offsets:"), { 1, 3 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	spin_tex_offsetx_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, INT_MIN, INT_MAX);
+	spin_tex_offsety_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, INT_MIN, INT_MAX);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Offsets:")), { 1, 3 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_offsetx_, { 1, 4 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_offsety_, { 1, 5 }, { 1, 1 });
 
 	// Flags
-	cb_optional_     = new wxCheckBox(panel, -1, "Optional");
-	cb_worldpanning_ = new wxCheckBox(panel, -1, "World Panning");
-	cb_nodecals_     = new wxCheckBox(panel, -1, "No Decals");
-	cb_nulltexture_  = new wxCheckBox(panel, -1, "Null Texture");
+	cb_optional_     = new wxCheckBox(panel, -1, wxS("Optional"));
+	cb_worldpanning_ = new wxCheckBox(panel, -1, wxS("World Panning"));
+	cb_nodecals_     = new wxCheckBox(panel, -1, wxS("No Decals"));
+	cb_nulltexture_  = new wxCheckBox(panel, -1, wxS("Null Texture"));
 	gb_sizer->Add(cb_optional_, { 2, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(cb_worldpanning_, { 2, 5 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(cb_nodecals_, { 3, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -177,7 +177,7 @@ void ZTextureEditorPanel::updateTextureControls()
 	if (!tex_current_)
 		return;
 
-	text_tex_name_->SetValue(tex_current_->name());
+	text_tex_name_->SetValue(wxString::FromUTF8(tex_current_->name()));
 	spin_tex_width_->SetValue(tex_current_->width());
 	spin_tex_height_->SetValue(tex_current_->height());
 	spin_tex_scalex_->SetValue(tex_current_->scaleX());
@@ -220,7 +220,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	panel->SetSizer(sizer);
 
 	// -- Texture Patches frame --
-	auto frame      = new wxStaticBox(panel, -1, "Patches");
+	auto frame      = new wxStaticBox(panel, -1, wxS("Patches"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, 0, wxEXPAND);
 
@@ -248,7 +248,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 
 
 	// -- Patch Properties frame --
-	frame      = new wxStaticBox(panel, -1, "Patch Properties");
+	frame      = new wxStaticBox(panel, -1, wxS("Patch Properties"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
 
@@ -258,48 +258,49 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	// X Position
 	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
 	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	gb_sizer->Add(new wxStaticText(panel, -1, "X Position:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	spin_patch_left_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("X Position:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_patch_left_, { 0, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Y Position
-	spin_patch_top_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Y Position:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	spin_patch_top_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Y Position:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_patch_top_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Use Offsets
-	cb_useofs_ = new wxCheckBox(panel, -1, "Use Source Gfx Offsets");
+	cb_useofs_ = new wxCheckBox(panel, -1, wxS("Use Source Gfx Offsets"));
 	gb_sizer->Add(cb_useofs_, { 2, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
 	// Flip X
-	cb_flipx_ = new wxCheckBox(panel, -1, "Flip X");
+	cb_flipx_ = new wxCheckBox(panel, -1, wxS("Flip X"));
 	gb_sizer->Add(cb_flipx_, { 3, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Flip Y
-	cb_flipy_ = new wxCheckBox(panel, -1, "Flip Y");
+	cb_flipy_ = new wxCheckBox(panel, -1, wxS("Flip Y"));
 	gb_sizer->Add(cb_flipy_, { 3, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Rotation
-	wxString rotval[] = { "0", "90", "180", "270" };
+	wxString rotval[] = { wxS("0"), wxS("90"), wxS("180"), wxS("270") };
 	choice_rotation_  = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, rotval);
 	choice_rotation_->SetSelection(0);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Rotation:"), { 4, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Rotation:")), { 4, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_rotation_, { 4, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Alpha
-	spin_alpha_ = new wxSpinCtrlDouble(panel, -1, "", wxDefaultPosition, spinsize, spinflags, 0, 1, 1, 0.1);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Alpha:"), { 5, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	spin_alpha_ = new wxSpinCtrlDouble(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, 1, 1, 0.1);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Alpha:")), { 5, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_alpha_, { 5, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Alpha Style
-	wxString styles[] = { "Copy",     "Translucent", "Add",          "Subtract", "ReverseSubtract",
-						  "Modulate", "CopyAlpha",   "CopyNewAlpha", "Overlay" };
+	wxString styles[] = { wxS("Copy"),      wxS("Translucent"),     wxS("Add"),
+						  wxS("Subtract"),  wxS("ReverseSubtract"), wxS("Modulate"),
+						  wxS("CopyAlpha"), wxS("CopyNewAlpha"),    wxS("Overlay") };
 	choice_style_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 9, styles);
 	choice_style_->SetSelection(0);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Alpha Style:"), { 6, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Alpha Style:")), { 6, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_style_, { 6, 1 }, { 1, 2 }, wxEXPAND);
 
-	frame      = new wxStaticBox(panel, -1, "Patch Colour");
+	frame      = new wxStaticBox(panel, -1, wxS("Patch Colour"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
 
@@ -307,43 +308,43 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// 'Normal' colour
-	rb_pc_normal_ = new wxRadioButton(panel, -1, "Normal", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	rb_pc_normal_ = new wxRadioButton(panel, -1, wxS("Normal"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	gb_sizer->Add(rb_pc_normal_, { 0, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
 	gb_sizer->Add(new wxStaticLine(panel, -1), { 1, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Blend
-	rb_pc_blend_ = new wxRadioButton(panel, -1, "Blend");
-	rb_pc_tint_  = new wxRadioButton(panel, -1, "Tint");
+	rb_pc_blend_ = new wxRadioButton(panel, -1, wxS("Blend"));
+	rb_pc_tint_  = new wxRadioButton(panel, -1, wxS("Tint"));
 	gb_sizer->Add(rb_pc_blend_, { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(rb_pc_tint_, { 2, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Blend/Tint colour
 	cb_blend_col_ = new ColourBox(panel, -1, false, true);
 	cb_blend_col_->setPalette(palette());
-	gb_sizer->Add(new wxStaticText(panel, -1, "Colour:"), { 3, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Colour:")), { 3, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(cb_blend_col_, { 3, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 
 	// Tint amount
-	spin_tint_amount_ = new wxSpinCtrlDouble(panel, 01, "", wxDefaultPosition, spinsize, spinflags, 0, 1, 0, 0.1);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Amount:"), { 4, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	spin_tint_amount_ = new wxSpinCtrlDouble(panel, 01, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, 1, 0, 0.1);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Amount:")), { 4, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tint_amount_, { 4, 1 }, { 1, 1 }, wxEXPAND);
 
 	gb_sizer->Add(new wxStaticLine(panel, -1), { 5, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Translation
-	rb_pc_translation_ = new wxRadioButton(panel, -1, "Translation");
+	rb_pc_translation_ = new wxRadioButton(panel, -1, wxS("Translation"));
 	gb_sizer->Add(rb_pc_translation_, { 6, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	gb_sizer->Add(hbox, { 7, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Translation text entry
-	text_translation_ = new wxTextCtrl(panel, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	text_translation_ = new wxTextCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	hbox->Add(text_translation_, 1, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Translation edit button
-	btn_edit_translation_ = new wxButton(panel, -1, "Edit", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+	btn_edit_translation_ = new wxButton(panel, -1, wxS("Edit"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
 	hbox->Add(btn_edit_translation_);
 
 
@@ -433,10 +434,10 @@ void ZTextureEditorPanel::updatePatchControls()
 			cb_flipy_->SetValue(patch->flipY());
 			cb_useofs_->SetValue(patch->useOffsets());
 			spin_alpha_->SetValue(patch->alpha());
-			choice_style_->SetStringSelection(patch->style());
+			choice_style_->SetStringSelection(wxString::FromUTF8(patch->style()));
 			cb_blend_col_->setColour(patch->colour());
 			spin_tint_amount_->SetValue((double)patch->colour().a / 255.0);
-			text_translation_->SetValue(patch->translation().asText());
+			text_translation_->SetValue(wxString::FromUTF8(patch->translation().asText()));
 
 			switch (patch->rotation())
 			{
@@ -493,7 +494,7 @@ void ZTextureEditorPanel::addPatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(true);
-	auto patch = tx_editor_->browsePatchEntry().ToStdString();
+	auto patch = tx_editor_->browsePatchEntry();
 	if (!patch.empty())
 	{
 		// Add new patch
@@ -522,7 +523,7 @@ void ZTextureEditorPanel::replacePatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(true);
-	auto patch = tx_editor_->browsePatchEntry().ToStdString();
+	auto patch = tx_editor_->browsePatchEntry();
 	if (!patch.empty())
 	{
 		// Go through selection and replace each patch
@@ -664,7 +665,7 @@ void ZTextureEditorPanel::onTexTypeChanged(wxCommandEvent& e)
 {
 	// Set texture's type
 	if (tex_current_)
-		tex_current_->setType(wxutil::strToView(choice_type_->GetStringSelection()));
+		tex_current_->setType(choice_type_->GetStringSelection().utf8_string());
 
 	tex_modified_ = true;
 }
@@ -852,7 +853,7 @@ void ZTextureEditorPanel::onPatchAlphaStyleChanged(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setStyle(wxutil::strToView(choice_style_->GetStringSelection()));
+			patch->setStyle(choice_style_->GetStringSelection().utf8_string());
 	}
 
 	// Update UI
@@ -1065,7 +1066,7 @@ void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 {
 	// Parse translation text line
 	Tokenizer tz;
-	tz.openString(text_translation_->GetValue().ToStdString());
+	tz.openString(text_translation_->GetValue().utf8_string());
 	Translation trans;
 
 	auto token = tz.getToken();

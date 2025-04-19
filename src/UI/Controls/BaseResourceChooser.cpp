@@ -97,14 +97,11 @@ void BaseResourceChooser::populateChoices()
 	Clear();
 
 	// Add <none> option
-	AppendString("<none>");
+	AppendString(wxS("<none>"));
 
 	// Populate with base resource paths
 	for (unsigned a = 0; a < app::archiveManager().numBaseResourcePaths(); a++)
-	{
-		wxFileName fn(app::archiveManager().getBaseResourcePath(a));
-		AppendString(fn.GetFullName());
-	}
+		AppendString(wxString::FromUTF8(strutil::Path::fileNameOf(app::archiveManager().getBaseResourcePath(a))));
 
 	// Select current base resource
 	SetSelection(base_resource + 1);

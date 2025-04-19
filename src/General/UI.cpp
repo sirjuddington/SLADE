@@ -131,7 +131,7 @@ void ui::showSplash(string_view message, bool progress, wxWindow* parent)
 		splash_window = std::make_unique<SplashWindow>(parent);
 	}
 
-	splash_window->show(wxString{ message.data(), message.size() }, progress);
+	splash_window->show(message, progress);
 }
 
 // -----------------------------------------------------------------------------
@@ -169,7 +169,7 @@ float ui::getSplashProgress()
 void ui::setSplashMessage(string_view message)
 {
 	if (splash_window && isMainThread())
-		splash_window->setMessage(wxString{ message.data(), message.size() });
+		splash_window->setMessage(message);
 }
 
 // -----------------------------------------------------------------------------
@@ -178,7 +178,7 @@ void ui::setSplashMessage(string_view message)
 void ui::setSplashProgressMessage(string_view message)
 {
 	if (splash_window && isMainThread())
-		splash_window->setProgressMessage(wxString{ message.data(), message.size() });
+		splash_window->setProgressMessage(message);
 }
 
 // -----------------------------------------------------------------------------

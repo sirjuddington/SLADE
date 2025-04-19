@@ -45,11 +45,11 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-wxString damage_types[]     = { "None", "5%", "10%", "20%" };
-wxString alt_damage_types[] = { "Instantly Kill Player w/o Radsuit or Invuln",
-								"Instantly Kill Player",
-								"Kill All Players, Exit Map (Normal Exit)",
-								"Kill All Players, Exit Map (Secret Exit)" };
+vector<string> damage_types     = { "None", "5%", "10%", "20%" };
+vector<string> alt_damage_types = { "Instantly Kill Player w/o Radsuit or Invuln",
+									"Instantly Kill Player",
+									"Kill All Players, Exit Map (Normal Exit)",
+									"Kill All Players, Exit Map (Secret Exit)" };
 } // namespace
 
 
@@ -70,21 +70,21 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	SetSizer(sizer);
 
 	// Special list
-	auto frame      = new wxStaticBox(this, -1, "Special");
+	auto frame      = new wxStaticBox(this, -1, wxS("Special"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	lv_specials_    = new ListView(this, -1);
 	framesizer->Add(lv_specials_, 1, wxEXPAND | wxALL, ui::pad());
 	sizer->Add(framesizer, 1, wxEXPAND);
 
 	lv_specials_->enableSizeUpdate(false);
-	lv_specials_->AppendColumn("#");
-	lv_specials_->AppendColumn("Name");
+	lv_specials_->AppendColumn(wxS("#"));
+	lv_specials_->AppendColumn(wxS("Name"));
 	auto& types = game::configuration().allSectorTypes();
 	for (auto& type : types)
 	{
-		wxArrayString item;
-		item.Add(wxString::Format("%d", type.first));
-		item.Add(type.second);
+		vector<string> item;
+		item.push_back(fmt::format("{}", type.first));
+		item.push_back(type.second);
 		lv_specials_->addItem(999999, item);
 	}
 	lv_specials_->enableSizeUpdate(true);
@@ -94,27 +94,27 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	int width = ui::scalePx(300);
 	if (game::configuration().supportsSectorFlags())
 	{
-		frame      = new wxStaticBox(this, -1, "Flags");
+		frame      = new wxStaticBox(this, -1, wxS("Flags"));
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 		sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
 
 		// Damage
-		choice_damage_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
+		choice_damage_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(damage_types));
 		choice_damage_->Select(0);
 		framesizer->Add(wxutil::createLabelHBox(this, "Damage:", choice_damage_), 0, wxEXPAND | wxALL, ui::pad());
 
 		// Secret | Friction | Pusher/Puller
-		cb_secret_   = new wxCheckBox(this, -1, "Secret");
-		cb_friction_ = new wxCheckBox(this, -1, "Friction Enabled");
-		cb_pushpull_ = new wxCheckBox(this, -1, "Pushers/Pullers Enabled");
+		cb_secret_   = new wxCheckBox(this, -1, wxS("Secret"));
+		cb_friction_ = new wxCheckBox(this, -1, wxS("Friction Enabled"));
+		cb_pushpull_ = new wxCheckBox(this, -1, wxS("Pushers/Pullers Enabled"));
 		wxutil::layoutHorizontally(
 			framesizer,
 			{ cb_secret_, cb_friction_, cb_pushpull_ },
 			wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, ui::pad()));
 
 		// MBF21 Flags: Alternative Damage Mode | Kill Grounded Monsters
-		cb_alt_damage_    = new wxCheckBox(this, -1, "Alternate Damage Mode");
-		cb_kill_grounded_ = new wxCheckBox(this, -1, "Kill Grounded Monsters");
+		cb_alt_damage_    = new wxCheckBox(this, -1, wxS("Alternate Damage Mode"));
+		cb_kill_grounded_ = new wxCheckBox(this, -1, wxS("Kill Grounded Monsters"));
 		if (game::configuration().featureSupported(game::Feature::MBF21))
 		{
 			wxutil::layoutHorizontally(
@@ -235,7 +235,8 @@ int SectorSpecialPanel::selectedSpecial() const
 void SectorSpecialPanel::updateDamageDropdown() const
 {
 	auto selection = choice_damage_->GetSelection();
-	choice_damage_->Set(4, cb_alt_damage_->GetValue() ? alt_damage_types : damage_types);
+	auto values    = wxutil::arrayStringStd(cb_alt_damage_->GetValue() ? alt_damage_types : damage_types);
+	choice_damage_->Set(values);
 	choice_damage_->Select(selection);
 }
 
@@ -250,7 +251,8 @@ void SectorSpecialPanel::updateDamageDropdown() const
 // -----------------------------------------------------------------------------
 // SectorSpecialDialog class constructor
 // -----------------------------------------------------------------------------
-SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent) : SDialog(parent, "Select Sector Special", "sectorspecial")
+SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent) :
+	SDialog(parent, "Select Sector Special", "sectorspecial")
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);

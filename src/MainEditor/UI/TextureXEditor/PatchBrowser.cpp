@@ -77,7 +77,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == Type::Patch)
 	{
 		// Find patch entry
-		auto entry = app::resources().getPatchEntry(name_.ToStdString(), nspace_.ToStdString(), archive_);
+		auto entry = app::resources().getPatchEntry(name_, nspace_, archive_);
 
 		// Load entry to image, if it exists
 		if (entry)
@@ -90,7 +90,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == Type::CTexture)
 	{
 		// Find texture
-		auto tex = app::resources().getTexture(name_.ToStdString(), "", archive_);
+		auto tex = app::resources().getTexture(name_, "", archive_);
 
 		// Load texture to image, if it exists
 		if (tex)
@@ -108,15 +108,15 @@ bool PatchBrowserItem::loadImage()
 // -----------------------------------------------------------------------------
 // Returns a string with extra information about the patch
 // -----------------------------------------------------------------------------
-wxString PatchBrowserItem::itemInfo()
+string PatchBrowserItem::itemInfo()
 {
-	wxString info;
+	string info;
 
 	// Add dimensions if known
 	if (image_tex_)
 	{
 		auto& tex_info = gl::Texture::info(image_tex_);
-		info += wxString::Format("%dx%d", tex_info.size.x, tex_info.size.y);
+		info += fmt::format("{}x{}", tex_info.size.x, tex_info.size.y);
 	}
 	else
 		info += "Unknown size";
@@ -128,10 +128,10 @@ wxString PatchBrowserItem::itemInfo()
 		info += ", Texture";
 
 	// Add namespace if it exists
-	if (!nspace_.IsEmpty())
+	if (!nspace_.empty())
 	{
 		info += ", ";
-		info += nspace_.Capitalize();
+		info += strutil::upper(nspace_);
 		info += " namespace";
 	}
 
@@ -178,7 +178,7 @@ PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 		});
 
 	// Set dialog title
-	wxTopLevelWindow::SetTitle("Browse Patches");
+	wxTopLevelWindow::SetTitle(wxS("Browse Patches"));
 }
 
 // -----------------------------------------------------------------------------
@@ -203,7 +203,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		auto& patch = table->patch(a);
 
 		// Init position to add
-		wxString whereis = "Unknown";
+		string whereis = "Unknown";
 
 		// Get patch entry
 		auto entry = app::resources().getPatchEntry(patch.name);
@@ -283,7 +283,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 			if (entry->parent()->isTreeless())
 				continue;
 
-			wxString ns = entry->parent()->detectNamespace(entry);
+			auto ns = entry->parent()->detectNamespace(entry);
 			if (ns == "patches")
 			{
 				if (bPatches)
@@ -325,7 +325,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 		}
 	}
 
-	vector<wxString> usednames;
+	vector<string> usednames;
 
 	// Go through the list
 	for (auto entry : patches)
@@ -335,8 +335,8 @@ bool PatchBrowser::openArchive(Archive* archive)
 			continue;
 
 		// Check entry namespace
-		wxString ns = entry->parent()->detectNamespace(entry);
-		wxString nspace;
+		auto   ns = entry->parent()->detectNamespace(entry);
+		string nspace;
 		if (ns == "patches")
 			nspace = "Patches";
 		else if (ns == "flats")
@@ -349,7 +349,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 			nspace = "Graphics";
 
 		// Check entry parent archive
-		wxString arch = "Unknown";
+		string arch = "Unknown";
 		if (entry->parent())
 			arch = entry->parent()->filename(false);
 
@@ -359,16 +359,16 @@ bool PatchBrowser::openArchive(Archive* archive)
 		if (full_path_ && !entry->parent()->isTreeless())
 		{
 			item = new PatchBrowserItem(entry->path(true).substr(1), archive, PatchBrowserItem::Type::Patch, ns);
-			wxString fnspace = nspace + " (Full Path)";
+			string fnspace = nspace + " (Full Path)";
 			addItem(item, fnspace + "/" + arch);
 		}
 
-		wxString name = strutil::truncate(entry->upperNameNoExt(), 8);
+		auto name = strutil::truncate(entry->upperNameNoExt(), 8);
 
 		bool duplicate = false;
 		for (auto& usedname : usednames)
 		{
-			if (usedname.Cmp(name) == 0)
+			if (usedname == name)
 			{
 				duplicate = true;
 				break;
@@ -431,7 +431,7 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 		auto item = new PatchBrowserItem(texturex->texture(a)->name(), parent, PatchBrowserItem::Type::CTexture);
 
 		// Set archive name
-		wxString arch = "Unknown";
+		string arch = "Unknown";
 		if (parent)
 			arch = parent->filename(false);
 
@@ -476,7 +476,7 @@ void PatchBrowser::selectPatch(int pt_index)
 // -----------------------------------------------------------------------------
 // Selects the patch matching [name]
 // -----------------------------------------------------------------------------
-void PatchBrowser::selectPatch(const wxString& name)
+void PatchBrowser::selectPatch(const string& name)
 {
 	selectItem(name);
 }

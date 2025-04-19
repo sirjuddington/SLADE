@@ -29,7 +29,7 @@ public:
 	void updateList(bool clear = false) override;
 	int  entriesBegin() const;
 
-	void filterList(const wxString& filter = "", const wxString& category = "");
+	void filterList(const string& filter = "", const string& category = "");
 	void applyFilter() override;
 	bool goUpDir();
 	bool setDir(const shared_ptr<ArchiveDir>& dir);
@@ -48,7 +48,7 @@ public:
 	vector<ArchiveDir*>   selectedDirectories() const;
 
 	// Label editing
-	void labelEdited(int col, int index, const wxString& new_label) override;
+	void labelEdited(int col, int index, const string& new_label) override;
 
 	// SAction handler
 	bool handleAction(string_view id) override;
@@ -60,13 +60,13 @@ public:
 
 protected:
 	// Virtual wxListCtrl overrides
-	wxString itemText(long item, long column, long index) const override;
-	int      itemIcon(long item, long column, long index) const override;
-	void     updateItemAttr(long item, long column, long index) const override;
+	string itemText(long item, long column, long index) const override;
+	int    itemIcon(long item, long column, long index) const override;
+	void   updateItemAttr(long item, long column, long index) const override;
 
 private:
 	weak_ptr<Archive>        archive_;
-	wxString                 filter_category_;
+	string                   filter_category_;
 	weak_ptr<ArchiveDir>     current_dir_;
 	unique_ptr<ArchiveEntry> entry_dir_back_;
 	bool                     show_dir_back_  = false;

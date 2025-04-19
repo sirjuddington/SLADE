@@ -86,7 +86,7 @@ namespace slade::drawing
 // -----------------------------------------------------------------------------
 FontPtr createFont(const wxString& res_path, int& counter)
 {
-	auto entry = app::archiveManager().programResourceArchive()->entryAtPath(res_path.ToStdString());
+	auto entry = app::archiveManager().programResourceArchive()->entryAtPath(res_path.utf8_string());
 	if (!entry)
 		return nullptr;
 

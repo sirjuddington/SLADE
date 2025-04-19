@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -114,7 +113,7 @@ void PNGPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void PNGPrefsPanel::applyPreferences()
 {
-	path_pngout   = wxutil::strToView(flp_pngout_->location());
-	path_pngcrush = wxutil::strToView(flp_pngcrush_->location());
-	path_deflopt  = wxutil::strToView(flp_deflopt_->location());
+	path_pngout   = flp_pngout_->location();
+	path_pngcrush = flp_pngcrush_->location();
+	path_deflopt  = flp_deflopt_->location();
 }

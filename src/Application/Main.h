@@ -22,6 +22,7 @@ typedef unsigned __int64 uint64_t;
 // String stuff
 #define S_CMP(s1, s2) s1.Cmp(s2) == 0
 #define S_CMPNOCASE(s1, s2) s1.CmpNoCase(s2) == 0
+#define WX_FMT(...) wxString::FromUTF8(fmt::format(__VA_ARGS__))
 
 // Usings for common std types, to avoid std:: spam
 using std::shared_ptr;

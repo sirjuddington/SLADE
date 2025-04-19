@@ -629,7 +629,7 @@ bool Tokenizer::checkNextNC(const char* check) const
 bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 {
 	// Open the file
-	wxFile file(string{ filename });
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check file opened
 	if (!file.IsOpened())

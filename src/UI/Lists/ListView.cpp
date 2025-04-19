@@ -80,7 +80,7 @@ ListView::ListView(wxWindow* parent, int id, long style) :
 // -----------------------------------------------------------------------------
 // Adds an item to the list at [index] with [text]
 // -----------------------------------------------------------------------------
-bool ListView::addItem(int index, const wxString& text)
+bool ListView::addItem(int index, const string& text)
 {
 	// Check index
 	if (index < 0)
@@ -92,7 +92,7 @@ bool ListView::addItem(int index, const wxString& text)
 	wxListItem li;
 	li.SetId(index);
 	li.SetColumn(0);
-	li.SetText(text);
+	li.SetText(wxString::FromUTF8(text));
 	InsertItem(li);
 
 	// Update list size
@@ -105,7 +105,7 @@ bool ListView::addItem(int index, const wxString& text)
 // Adds an item to the list at [index], with [text] in the columns;
 // text[0] goes in column 0, etc
 // -----------------------------------------------------------------------------
-bool ListView::addItem(int index, wxArrayString text)
+bool ListView::addItem(int index, const vector<string>& text)
 {
 	// Check index
 	if (index < 0)
@@ -199,7 +199,7 @@ bool ListView::setItemStatus(int item, ItemStatus status)
 // -----------------------------------------------------------------------------
 // Sets the text of [item] at [column] to [text]
 // -----------------------------------------------------------------------------
-bool ListView::setItemText(int item, int column, const wxString& text)
+bool ListView::setItemText(int item, int column, const string& text)
 {
 	// Check if column is in range
 	if (column < 0 || column >= GetColumnCount())
@@ -222,7 +222,7 @@ bool ListView::setItemText(int item, int column, const wxString& text)
 	wxListItem li;
 	li.SetId(item);
 	li.SetColumn(column);
-	li.SetText(text);
+	li.SetText(wxString::FromUTF8(text));
 	SetItem(li);
 
 	// Update widget size

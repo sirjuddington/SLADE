@@ -10,10 +10,10 @@ public:
 	TempFolderWizardPage(wxWindow* parent);
 	~TempFolderWizardPage() = default;
 
-	bool     canGoNext() override;
-	void     applyChanges() override;
-	wxString title() override { return "SLADE Temp Folder"; }
-	wxString description() override;
+	bool   canGoNext() override;
+	void   applyChanges() override;
+	string title() override { return "SLADE Temp Folder"; }
+	string description() override;
 
 private:
 	wxRadioButton* rb_use_system_     = nullptr;

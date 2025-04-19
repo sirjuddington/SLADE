@@ -195,5 +195,5 @@ void DB2MapFileMonitor::processTerminated()
 	}
 
 	// Remove the temp wadfile
-	wxRemoveFile(filename_);
+	fileutil::removeFile(filename_);
 }

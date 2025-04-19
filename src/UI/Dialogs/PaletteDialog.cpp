@@ -51,7 +51,7 @@ using namespace slade;
 // PaletteDialog class constructor
 // -----------------------------------------------------------------------------
 PaletteDialog::PaletteDialog(Palette* palette) :
-	wxDialog(nullptr, -1, "Palette", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+	wxDialog(nullptr, -1, wxS("Palette"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	int size = ui::scalePx(400);
 

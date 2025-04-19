@@ -15,7 +15,7 @@ public:
 	void init();
 	void load(bool new_tip = true);
 	void refresh() const;
-	void updateAvailable(const wxString& version_name);
+	void updateAvailable(const string& version_name);
 
 #ifdef USE_WEBVIEW_STARTPAGE
 	typedef wxWebView WebView;
@@ -26,10 +26,10 @@ public:
 private:
 	WebView* html_startpage_ = nullptr;
 
-	vector<wxString> tips_;
-	int              last_tip_index_ = -1;
-	wxString         latest_news_;
-	wxString         update_version_;
+	vector<string> tips_;
+	int            last_tip_index_ = -1;
+	string         latest_news_;
+	string         update_version_;
 
 	ArchiveEntry*         entry_base_html_ = nullptr;
 	ArchiveEntry*         entry_css_       = nullptr;

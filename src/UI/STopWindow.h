@@ -8,24 +8,18 @@ class SToolBar;
 class STopWindow : public wxFrame
 {
 public:
-	STopWindow(
-		const wxString& title,
-		const wxString& id,
-		int             xpos   = 0,
-		int             ypos   = 0,
-		int             width  = 1024,
-		int             height = 768);
+	STopWindow(const string& title, const string& id, int xpos = 0, int ypos = 0, int width = 1024, int height = 768);
 	~STopWindow();
 
 	// Custom menu
-	void addCustomMenu(wxMenu* menu, const wxString& title);
+	void addCustomMenu(wxMenu* menu, const string& title);
 	void removeCustomMenu(wxMenu* menu);
 	void removeAllCustomMenus();
 
 	// Toolbars
-	void enableToolBar(const wxString& name, bool enable = true) const;
-	void addCustomToolBar(const wxString& name, const vector<wxString>& actions) const;
-	void removeCustomToolBar(const wxString& name) const;
+	void enableToolBar(const string& name, bool enable = true) const;
+	void addCustomToolBar(const string& name, const vector<string>& actions) const;
+	void removeCustomToolBar(const string& name) const;
 	void removeAllCustomToolBars() const;
 	void populateToolbarsMenu() const;
 

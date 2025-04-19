@@ -104,7 +104,7 @@ ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
 void ZoomControl::setZoomPercent(int percent)
 {
 	zoom_ = percent;
-	cb_zoom_->SetValue(fmt::format("{}%", zoom_));
+	cb_zoom_->SetValue(WX_FMT("{}%", zoom_));
 	updateZoomButtons();
 
 	// Zoom gfx/texture canvas and update
@@ -188,7 +188,7 @@ void ZoomControl::setup()
 	// Dropdown values
 	wxArrayString values;
 	for (const auto& pct : zoom_percents)
-		values.Add(fmt::format("{}%", pct));
+		values.Add(WX_FMT("{}%", pct));
 
 	// Combobox size
 #ifdef WIN32
@@ -198,8 +198,7 @@ void ZoomControl::setup()
 #endif
 
 	// Create controls
-	cb_zoom_ = new wxComboBox(
-		this, -1, fmt::format("{}%", zoom_), wxDefaultPosition, cbsize, values, wxTE_PROCESS_ENTER);
+	cb_zoom_ = new wxComboBox(this, -1, WX_FMT("{}%", zoom_), wxDefaultPosition, cbsize, values, wxTE_PROCESS_ENTER);
 	btn_zoom_out_ = new SToolBarButton(this, "zoom_out", "Zoom Out", "zoom_out", "Zoom Out", false, 16);
 	btn_zoom_in_  = new SToolBarButton(this, "zoom_in", "Zoom In", "zoom_in", "Zoom In", false, 16);
 
@@ -213,7 +212,8 @@ void ZoomControl::setup()
 	// Layout
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(hbox);
-	hbox->Add(new wxStaticText(this, -1, "Zoom:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::px(ui::Size::PadMinimum));
+	hbox->Add(
+		new wxStaticText(this, -1, wxS("Zoom:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::px(ui::Size::PadMinimum));
 	hbox->Add(btn_zoom_out_, 0, wxALIGN_CENTER_VERTICAL);
 	hbox->Add(cb_zoom_, 1, wxEXPAND);
 	hbox->Add(btn_zoom_in_, 0, wxALIGN_CENTER_VERTICAL);
@@ -238,7 +238,7 @@ void ZoomControl::setup()
 		[this](wxCommandEvent& e)
 		{
 			auto val = e.GetString();
-			if (val.EndsWith("%"))
+			if (val.EndsWith(wxS("%")))
 				val.RemoveLast(1); // Remove % if entered
 			long val_percent;
 			if (val.ToLong(&val_percent))
@@ -252,9 +252,9 @@ void ZoomControl::setup()
 		wxEVT_STOOLBAR_BUTTON_CLICKED,
 		[this](wxCommandEvent& e)
 		{
-			if (e.GetString() == "zoom_in")
+			if (e.GetString() == wxS("zoom_in"))
 				zoomIn();
-			else if (e.GetString() == "zoom_out")
+			else if (e.GetString() == wxS("zoom_out"))
 				zoomOut();
 		});
 }

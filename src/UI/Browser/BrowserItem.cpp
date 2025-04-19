@@ -55,7 +55,7 @@ using ItemView = BrowserCanvas::ItemView;
 // -----------------------------------------------------------------------------
 // BrowserItem class constructor
 // -----------------------------------------------------------------------------
-BrowserItem::BrowserItem(const wxString& name, unsigned index, const wxString& type) :
+BrowserItem::BrowserItem(const string& name, unsigned index, const string& type) :
 	type_{ type },
 	name_{ name },
 	index_{ index }
@@ -126,7 +126,7 @@ void BrowserItem::draw(
 		// Create text box if needed
 		if (!text_box_)
 			text_box_ = std::make_unique<TextBox>(
-				fmt::format("{}\n{}", index_, name_.mb_str().data()), font, ui::scalePx(144), ui::scalePx(16));
+				fmt::format("{}\n{}", index_, name_), font, ui::scalePx(144), ui::scalePx(16));
 
 		int top = y;
 		top += ((size - text_box_->height()) * 0.5);

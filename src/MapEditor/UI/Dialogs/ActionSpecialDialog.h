@@ -48,13 +48,13 @@ private:
 
 	struct ASTVGroup
 	{
-		wxString       name;
+		string         name;
 		wxDataViewItem item;
-		ASTVGroup(wxDataViewItem i, const wxString& name) : name{ name }, item{ i } {}
+		ASTVGroup(wxDataViewItem i, const string& name) : name{ name }, item{ i } {}
 	};
 	vector<ASTVGroup> groups_;
 
-	wxDataViewItem getGroup(const wxString& group_name);
+	wxDataViewItem getGroup(const string& group_name);
 };
 
 class ArgsPanel : public wxScrolled<wxPanel>
@@ -85,7 +85,7 @@ public:
 	void setArgsPanel(ArgsPanel* panel) { panel_args_ = panel; }
 	void setSpecial(int special);
 	void setTrigger(int index);
-	void setTrigger(const wxString& trigger);
+	void setTrigger(const string& trigger);
 	void clearTrigger();
 	int  selectedSpecial() const;
 	void showGeneralised(bool show = true);
@@ -115,7 +115,7 @@ private:
 	{
 		wxCheckBox* check_box;
 		int         index;
-		wxString    udmf;
+		string      udmf;
 	};
 	vector<FlagHolder> flags_;
 };

@@ -24,6 +24,7 @@
 /dist/res/.vscode/*
 /docs/build/
 /ipch
+/src/build/
 /src/bzip2/Release
 /src/lzma/Release
 /src/zlib/Release

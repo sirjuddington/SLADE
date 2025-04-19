@@ -12,16 +12,16 @@ class Archive;
 class MapTexBrowserItem : public BrowserItem
 {
 public:
-	static const wxString TEXTURE;
-	static const wxString FLAT;
+	static const string TEXTURE;
+	static const string FLAT;
 
-	MapTexBrowserItem(const wxString& name, const wxString& type, unsigned index = 0);
+	MapTexBrowserItem(const string& name, const string& type, unsigned index = 0);
 	~MapTexBrowserItem() = default;
 
-	bool     loadImage() override;
-	wxString itemInfo() override;
-	int      usageCount() const { return usage_count_; }
-	void     setUsage(int count) { usage_count_ = count; }
+	bool   loadImage() override;
+	string itemInfo() override;
+	int    usageCount() const { return usage_count_; }
+	void   setUsage(int count) { usage_count_ = count; }
 
 private:
 	int   usage_count_ = 0;
@@ -34,15 +34,15 @@ public:
 	MapTextureBrowser(
 		wxWindow*              parent,
 		mapeditor::TextureType type    = mapeditor::TextureType::Texture,
-		const wxString&        texture = "",
+		string_view            texture = "",
 		SLADEMap*              map     = nullptr);
 	~MapTextureBrowser() = default;
 
-	wxString determineTexturePath(
+	string determineTexturePath(
 		Archive*                    archive,
 		MapTextureManager::Category category,
-		const wxString&             type,
-		const wxString&             path) const;
+		const string&               type,
+		const string&               path) const;
 	void doSort(unsigned sort_type) override;
 	void updateUsage() const;
 

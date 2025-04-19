@@ -65,11 +65,11 @@ UndoLevel::UndoLevel(string_view name) : name_{ name }, timestamp_{ wxDateTime::
 string UndoLevel::timeStamp(bool date, bool time) const
 {
 	if (date && !time)
-		return timestamp_.FormatISODate().ToStdString();
+		return timestamp_.FormatISODate().utf8_string();
 	else if (!date && time)
-		return timestamp_.FormatISOTime().ToStdString();
+		return timestamp_.FormatISOTime().utf8_string();
 	else
-		return timestamp_.FormatISOCombined().ToStdString();
+		return timestamp_.FormatISOCombined().utf8_string();
 }
 
 // -----------------------------------------------------------------------------

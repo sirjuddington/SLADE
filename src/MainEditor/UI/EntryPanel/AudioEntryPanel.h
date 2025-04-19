@@ -23,8 +23,8 @@ public:
 	AudioEntryPanel(wxWindow* parent);
 	~AudioEntryPanel() override;
 
-	wxString statusString() override;
-	void     setAudioDuration(int duration);
+	string statusString() override;
+	void   setAudioDuration(int duration);
 
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;
@@ -42,7 +42,7 @@ private:
 		OPL,
 	};
 
-	wxString  prevfile_;
+	string    prevfile_;
 	AudioType audio_type_  = Invalid;
 	int       num_tracks_  = 1;
 	int       subsong_     = 0;
@@ -69,8 +69,8 @@ private:
 	unique_ptr<audio::Mp3Music> mp3_;
 
 	bool open(ArchiveEntry* entry);
-	bool openAudio(MemChunk& audio, const wxString& filename);
-	bool openMidi(MemChunk& data, const wxString& filename);
+	bool openAudio(MemChunk& audio, string_view filename);
+	bool openMidi(MemChunk& data, string_view filename);
 	bool openMod(MemChunk& data);
 	bool openMp3(MemChunk& data);
 	bool updateInfo(ArchiveEntry& entry) const;

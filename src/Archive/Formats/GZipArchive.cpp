@@ -291,7 +291,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open gzip file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -476,7 +476,7 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 bool GZipArchive::isGZipArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Minimal metadata size is 18: 10 for header, 8 for footer
 	size_t mds = 18;

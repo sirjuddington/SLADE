@@ -39,6 +39,7 @@
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -230,15 +231,15 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 	entries.push_back(std::make_unique<ArchiveEntry>("TEXTMAP"));
 
 	// Open temp text file
-	wxFile tempfile(app::path("sladetemp.txt", app::Dir::Temp), wxFile::write);
+	SFile tempfile(app::path("sladetemp.txt", app::Dir::Temp), SFile::Mode::Write);
 
 	// Write map namespace
-	tempfile.Write("// Written by SLADE3\n");
-	tempfile.Write(fmt::format("namespace=\"{}\";\n", udmf_namespace_));
+	tempfile.writeStr("// Written by SLADE3\n");
+	tempfile.writeStr(fmt::format("namespace=\"{}\";\n", udmf_namespace_));
 
 	// Write map-scope props
-	tempfile.Write(map_extra_props.toString(true));
-	tempfile.Write("\n");
+	tempfile.writeStr(map_extra_props.toString(true));
+	tempfile.writeStr("\n");
 
 	// sf::Clock clock;
 
@@ -257,7 +258,7 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 		}
 
 		thing->writeUDMF(object_def);
-		tempfile.Write(object_def);
+		tempfile.writeStr(object_def);
 	}
 	// log::info(1, "Writing things took %dms", clock.getElapsedTime().asMilliseconds());
 
@@ -273,7 +274,7 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 		}
 
 		line->writeUDMF(object_def);
-		tempfile.Write(object_def);
+		tempfile.writeStr(object_def);
 	}
 	// log::info(1, "Writing lines took %dms", clock.getElapsedTime().asMilliseconds());
 
@@ -286,7 +287,7 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 			game::configuration().cleanObjectUDMFProps(side);
 
 		side->writeUDMF(object_def);
-		tempfile.Write(object_def);
+		tempfile.writeStr(object_def);
 	}
 	// log::info(1, "Writing sides took %dms", clock.getElapsedTime().asMilliseconds());
 
@@ -299,7 +300,7 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 			game::configuration().cleanObjectUDMFProps(vertex);
 
 		vertex->writeUDMF(object_def);
-		tempfile.Write(object_def);
+		tempfile.writeStr(object_def);
 	}
 	// log::info(1, "Writing vertices took %dms", clock.getElapsedTime().asMilliseconds());
 
@@ -312,12 +313,12 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 			game::configuration().cleanObjectUDMFProps(sector);
 
 		sector->writeUDMF(object_def);
-		tempfile.Write(object_def);
+		tempfile.writeStr(object_def);
 	}
 	// log::info(1, "Writing sectors took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Close file
-	tempfile.Close();
+	tempfile.close();
 
 	// Load file to entry
 	entries[0]->importFile(app::path("sladetemp.txt", app::Dir::Temp));
