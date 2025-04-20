@@ -170,7 +170,7 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, string_
 
 	// Not found, create child node
 	if (!child.IsOk())
-		child = tree->AppendItem(parent_node, wxString::FromUTF8(name), 1);
+		child = tree->AppendItem(parent_node, wxutil::strFromView(name), 1);
 
 	// Return it or go deeper into the tree
 	if (path_rest.empty())
