@@ -82,7 +82,8 @@ string getExecutablePath(const executables::GameExe* const exe)
 	if (NULL == VAR)       \
 		return exe->path;
 
-		const wxCFStringRef cf_path(CFStringCreateWithCString(kCFAllocatorDefault, exe->path, kCFStringEncodingUTF8));
+		const wxCFStringRef cf_path(
+			CFStringCreateWithCString(kCFAllocatorDefault, exe->path.c_str(), kCFStringEncodingUTF8));
 		CF_CHECK_NULL(cf_path);
 
 		typedef wxCFRef<CFURLRef> wxCFURLRef;
