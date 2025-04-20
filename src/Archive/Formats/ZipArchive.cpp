@@ -102,7 +102,7 @@ bool ZipArchive::open(string_view filename)
 	fileutil::copyFile(filename, temp_file_);
 
 	// Open the file
-	wxFFileInputStream in(wxString::FromUTF8(filename));
+	wxFFileInputStream in(wxutil::strFromView(filename));
 	if (!in.IsOk())
 	{
 		global::error = "Unable to open file";
@@ -267,7 +267,7 @@ bool ZipArchive::write(string_view filename, bool update)
 	}
 
 	// Open the file
-	wxFFileOutputStream out(wxString::FromUTF8(filename));
+	wxFFileOutputStream out(wxutil::strFromView(filename));
 	if (!out.IsOk())
 	{
 		global::error = "Unable to open file for saving. Make sure it isn't in use by another program.";

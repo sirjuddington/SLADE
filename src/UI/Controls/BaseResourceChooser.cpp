@@ -101,7 +101,7 @@ void BaseResourceChooser::populateChoices()
 
 	// Populate with base resource paths
 	for (unsigned a = 0; a < app::archiveManager().numBaseResourcePaths(); a++)
-		AppendString(wxString::FromUTF8(strutil::Path::fileNameOf(app::archiveManager().getBaseResourcePath(a))));
+		AppendString(wxutil::strFromView(strutil::Path::fileNameOf(app::archiveManager().getBaseResourcePath(a))));
 
 	// Select current base resource
 	SetSelection(base_resource + 1);

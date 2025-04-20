@@ -34,6 +34,7 @@
 #include "MemChunk.h"
 #include "FileUtils.h"
 #include "General/Misc.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -154,7 +155,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 bool MemChunk::importFile(string_view filename, uint32_t offset, uint32_t len)
 {
 	// Open the file
-	wxFile file(wxString::FromUTF8(filename));
+	wxFile file(wxutil::strFromView(filename));
 
 	// Return false if file open failed
 	if (!file.IsOpened())
@@ -318,7 +319,7 @@ bool MemChunk::exportFile(string_view filename, uint32_t start, uint32_t size) c
 		size = size_ - start;
 
 	// Open file for writing
-	wxFile file(wxString::FromUTF8(filename), wxFile::write);
+	wxFile file(wxutil::strFromView(filename), wxFile::write);
 	if (!file.IsOpened())
 	{
 		log::error("Unable to write to file {}", filename);

@@ -178,7 +178,7 @@ bool MapEntryPanel::createImage()
 		this,
 		WX_FMT("Save Map Preview \"{}\"", name),
 		dir_last,
-		wxString::FromUTF8(strutil::Path::fileNameOf(name)),
+		wxutil::strFromView(strutil::Path::fileNameOf(name)),
 		wxS("PNG (*.PNG)|*.png"),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
 		wxDefaultPosition);

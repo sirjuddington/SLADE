@@ -261,7 +261,7 @@ time_t fileutil::fileModifiedTime(string_view path)
 	return std::chrono::system_clock::to_time_t(sys_time);
 #endif
 
-	return wxFileModificationTime(wxString::FromUTF8(path));
+	return wxFileModificationTime(wxString::FromUTF8(path.data(), path.size()));
 }
 
 

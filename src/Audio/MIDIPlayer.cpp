@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MIDIPlayer.h"
 #include "App.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -428,7 +429,7 @@ public:
 
 		// Setup environment and command line to run
 		wxExecuteEnv env;
-		env.cwd          = wxString::FromUTF8(strutil::Path::pathOf(snd_timidity_path));
+		env.cwd          = wxutil::strFromView(strutil::Path::pathOf(snd_timidity_path));
 		auto commandline = fmt::format(R"("{}" "{}" {})", snd_timidity_path.value, file_, snd_timidity_options.value);
 
 		// Execute program

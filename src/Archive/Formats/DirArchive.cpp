@@ -92,7 +92,7 @@ bool DirArchive::open(string_view filename)
 	ui::setSplashProgress(0);
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs, ignore_hidden_);
-	const wxDir         dir(wxString::FromUTF8(filename));
+	const wxDir         dir(wxutil::strFromView(filename));
 	dir.Traverse(traverser, wxEmptyString, wxDIR_FILES | wxDIR_DIRS);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)

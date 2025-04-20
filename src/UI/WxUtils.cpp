@@ -328,6 +328,14 @@ wxArrayString wxutil::arrayStringStd(const vector<string>& vector)
 }
 
 // -----------------------------------------------------------------------------
+// Converts a string_view [str] to a wxString
+// -----------------------------------------------------------------------------
+wxString wxutil::strFromView(string_view str)
+{
+	return wxString::FromUTF8(str.data(), str.size());
+}
+
+// -----------------------------------------------------------------------------
 // Returns the size [x]x[y] as a wxSize, scaled by the DPI factor.
 // Will keep any -1 value
 // -----------------------------------------------------------------------------

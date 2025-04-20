@@ -584,13 +584,13 @@ bool TextEditorCtrl::findNext(string_view find, int flags)
 	// Search forwards from the end of the current selection
 	SetSelection(GetCurrentPos(), GetCurrentPos());
 	SearchAnchor();
-	int found = SearchNext(flags, wxString::FromUTF8(find));
+	int found = SearchNext(flags, wxutil::strFromView(find));
 	if (found < 0)
 	{
 		// Not found, loop back to start
 		SetSelection(0, 0);
 		SearchAnchor();
-		found = SearchNext(flags, wxString::FromUTF8(find));
+		found = SearchNext(flags, wxutil::strFromView(find));
 		if (found < 0)
 		{
 			// No match found in entire text, reset selection
@@ -627,13 +627,13 @@ bool TextEditorCtrl::findPrev(string_view find, int flags)
 	// Search back from the start of the current selection
 	SetSelection(sel_start, sel_start);
 	SearchAnchor();
-	int found = SearchPrev(flags, wxString::FromUTF8(find));
+	int found = SearchPrev(flags, wxutil::strFromView(find));
 	if (found < 0)
 	{
 		// Not found, loop back to end
 		SetSelection(GetTextLength() - 1, GetTextLength() - 1);
 		SearchAnchor();
-		found = SearchPrev(flags, wxString::FromUTF8(find));
+		found = SearchPrev(flags, wxutil::strFromView(find));
 		if (found < 0)
 		{
 			// No match found in entire text, reset selection
@@ -669,11 +669,11 @@ bool TextEditorCtrl::replaceCurrent(string_view find, string_view replace, int f
 		return false;
 	SetTargetStart(GetSelectionStart());
 	SetTargetEnd(GetSelectionEnd());
-	if (SearchInTarget(wxString::FromUTF8(find)) < 0)
+	if (SearchInTarget(wxutil::strFromView(find)) < 0)
 		return false;
 
 	// Do the replace
-	ReplaceTarget(wxString::FromUTF8(replace));
+	ReplaceTarget(wxutil::strFromView(replace));
 
 	// Update selection
 	SetSelection(GetTargetStart(), GetTargetEnd());
@@ -702,13 +702,13 @@ int TextEditorCtrl::replaceAll(string_view find, string_view replace, int flags)
 	while (true)
 	{
 		SearchAnchor();
-		int found = SearchNext(flags, wxString::FromUTF8(find));
+		int found = SearchNext(flags, wxutil::strFromView(find));
 		if (found < 0)
 			break; // No matches, finished
 		else
 		{
 			// Replace text & increment counter
-			Replace(found, found + find.length(), wxString::FromUTF8(replace));
+			Replace(found, found + find.length(), wxutil::strFromView(replace));
 			replaced++;
 
 			// Continue from end of replaced text

@@ -70,10 +70,10 @@ bool filedialog::openFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxString::FromUTF8(caption),
+		wxutil::strFromView(caption),
 		dir_last,
-		wxString::FromUTF8(fn_default),
-		wxString::FromUTF8(extensions),
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	// Select default extension
@@ -113,10 +113,10 @@ string filedialog::openFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxString::FromUTF8(caption),
+		wxutil::strFromView(caption),
 		dir_last,
-		wxString::FromUTF8(fn_default),
-		wxString::FromUTF8(extensions),
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	// Select default extension
@@ -174,10 +174,10 @@ bool filedialog::openFiles(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxString::FromUTF8(caption),
+		wxutil::strFromView(caption),
 		dir_last,
-		wxString::FromUTF8(fn_default),
-		wxString::FromUTF8(extensions),
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
 
 	// Select default extension
@@ -238,10 +238,10 @@ bool filedialog::saveFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxString::FromUTF8(caption),
+		wxutil::strFromView(caption),
 		dir_last,
-		wxString::FromUTF8(fn_default),
-		wxString::FromUTF8(extensions),
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
@@ -281,10 +281,10 @@ string filedialog::saveFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxString::FromUTF8(caption),
+		wxutil::strFromView(caption),
 		dir_last,
-		wxString::FromUTF8(fn_default),
-		wxString::FromUTF8(extensions),
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
@@ -311,10 +311,10 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		wxString::FromUTF8(caption),
+		wxutil::strFromView(caption),
 		dir_last,
 		wxS("ignored"),
-		wxString::FromUTF8(extensions),
+		wxutil::strFromView(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
@@ -357,7 +357,7 @@ filedialog::FDInfo filedialog::saveFiles(string_view caption, string_view extens
 string filedialog::openDirectory(string_view caption, wxWindow* parent)
 {
 	// Open a directory browser dialog
-	wxDirDialog dialog_open(parent, wxString::FromUTF8(caption), dir_last, wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
+	wxDirDialog dialog_open(parent, wxutil::strFromView(caption), dir_last, wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
 
 	// Run the dialog
 	if (dialog_open.ShowModal() == wxID_OK)

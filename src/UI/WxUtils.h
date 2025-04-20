@@ -29,6 +29,7 @@ void     layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlag
 // Strings
 wxArrayString arrayString(vector<wxString> vector);
 wxArrayString arrayStringStd(const vector<string>& vector);
+wxString      strFromView(string_view str);
 
 // Scaling
 wxSize  scaledSize(int x, int y);

@@ -161,7 +161,7 @@ private:
 
 			if (!found)
 			{
-				current = AppendContainer(current, wxString::FromUTF8(path[p]), -1, 1);
+				current = AppendContainer(current, wxutil::strFromView(path[p]), -1, 1);
 				groups_.emplace_back(current, fullpath);
 			}
 		}

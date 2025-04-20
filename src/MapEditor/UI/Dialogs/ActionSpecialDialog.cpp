@@ -292,7 +292,7 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const string& group_name)
 
 		if (!found)
 		{
-			current = AppendContainer(current, wxString::FromUTF8(path[p]));
+			current = AppendContainer(current, wxutil::strFromView(path[p]));
 			groups_.emplace_back(current, fullpath);
 		}
 	}

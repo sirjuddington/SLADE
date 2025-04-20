@@ -29,7 +29,11 @@ else ()
 	ADD_DEFINITIONS(-DNO_LUA)
 endif ()
 
-ADD_DEFINITIONS(-DwxNO_IMPLICIT_WXSTRING_ENCODING)
+# Disable implicit wxString encoding
+# (only when building wx 3.3 currently, as it causes build errors in wx 3.2)
+if (BUILD_WX)
+	ADD_DEFINITIONS(-DwxNO_IMPLICIT_WXSTRING_ENCODING)
+endif ()
 
 # Headers
 file(GLOB_RECURSE SLADE_HEADERS CONFIGURE_DEPENDS

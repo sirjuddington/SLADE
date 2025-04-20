@@ -31,8 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "WadArchive.h"
-#include "General/Misc.h"
 #include "General/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "WadJArchive.h"
@@ -612,7 +612,7 @@ bool WadArchive::write(string_view filename, bool update)
 
 	// Open file for writing
 	wxFile file;
-	file.Open(wxString::FromUTF8(filename), wxFile::write);
+	file.Open(wxutil::strFromView(filename), wxFile::write);
 	if (!file.IsOpened())
 	{
 		global::error = "Unable to open file for writing";

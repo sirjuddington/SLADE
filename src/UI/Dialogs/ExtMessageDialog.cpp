@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "ExtMessageDialog.h"
 #include "General/UI.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -52,7 +53,7 @@ ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string_view caption) :
 	wxDialog(
 		parent,
 		-1,
-		wxString::FromUTF8(caption),
+		wxutil::strFromView(caption),
 		wxDefaultPosition,
 		wxDefaultSize,
 		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)

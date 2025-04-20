@@ -72,7 +72,7 @@ string findFileCasing(const strutil::Path& filename)
 	bool     cont = dir.GetFirst(&found);
 	while (cont)
 	{
-		if (strutil::equalCI(wxutil::strToView(found), filename.fileName()))
+		if (strutil::equalCI(found.utf8_string(), filename.fileName()))
 			return (dir.GetNameWithSep() + found).utf8_string();
 		cont = dir.GetNext(&found);
 	}

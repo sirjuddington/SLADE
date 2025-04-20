@@ -98,7 +98,7 @@ void SCallTip::setFont(string_view face, int size)
 	}
 	else
 	{
-		font_.SetFaceName(wxString::FromUTF8(face));
+		font_.SetFaceName(wxutil::strFromView(face));
 		font_.SetPointSize(size);
 	}
 }

@@ -36,6 +36,7 @@
 #include "ArchiveEntry.h"
 #include "Archive.h"
 #include "General/Misc.h"
+#include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -469,7 +470,7 @@ bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t si
 	}
 
 	// Open the file
-	wxFile file(wxString::FromUTF8(filename));
+	wxFile file(wxutil::strFromView(filename));
 
 	// Check that it opened ok
 	if (!file.IsOpened())
@@ -569,7 +570,7 @@ bool ArchiveEntry::importEntry(ArchiveEntry* entry)
 bool ArchiveEntry::exportFile(string_view filename)
 {
 	// Attempt to open file
-	wxFile file(wxString::FromUTF8(filename), wxFile::write);
+	wxFile file(wxutil::strFromView(filename), wxFile::write);
 
 	// Check it opened ok
 	if (!file.IsOpened())

@@ -258,7 +258,7 @@ void mapeditor::setUndoManager(UndoManager* manager)
 // -----------------------------------------------------------------------------
 void ::mapeditor::setStatusText(string_view text, int column)
 {
-	map_window->CallAfter(&MapEditorWindow::SetStatusText, wxString::FromUTF8(text), column);
+	map_window->CallAfter(&MapEditorWindow::SetStatusText, wxutil::strFromView(text), column);
 }
 
 // -----------------------------------------------------------------------------
@@ -388,7 +388,7 @@ string mapeditor::browseTexture(string_view init_texture, TextureType tex_type, 
 
 	// Setup texture browser
 	MapTextureBrowser browser(map_window, tex_type, init_texture, &map);
-	browser.SetTitle(wxString::FromUTF8(title));
+	browser.SetTitle(wxutil::strFromView(title));
 
 	// Get selected texture
 	string tex{ init_texture };
