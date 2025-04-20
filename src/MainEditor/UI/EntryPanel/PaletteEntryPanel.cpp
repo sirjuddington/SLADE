@@ -724,7 +724,7 @@ string PaletteEntryPanel::statusString()
 	ColHSL  col2 = col.asHSL();
 
 	return fmt::format(
-		"Index {}\tR {}, G {}, B {}\tH {:1.3f}, S {1.3f}, L {1.3f}",
+		"Index {}\tR {}, G {}, B {}\tH {:1.3f}, S {:1.3f}, L {:1.3f}",
 		pal_canvas_->selectionStart(),
 		col.r,
 		col.g,

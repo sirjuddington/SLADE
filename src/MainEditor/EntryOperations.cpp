@@ -105,7 +105,7 @@ bool entryoperations::rename(const vector<ArchiveEntry*>& entries, Archive* arch
 			{
 				if (!archive->renameEntry(entry, new_name))
 					wxMessageBox(
-						WX_FMT("Unable to rename entry %s: %s", entry->name(), global::error),
+						WX_FMT("Unable to rename entry {}: {}", entry->name(), global::error),
 						wxS("Rename Entry"),
 						wxICON_EXCLAMATION | wxOK);
 			}
@@ -189,7 +189,7 @@ bool entryoperations::renameDir(const vector<ArchiveDir*>& dirs, Archive* archiv
 		// Prompt for a new name
 		auto new_name = wxGetTextFromUser(
 							wxS("Enter new directory name:"),
-							WX_FMT("Rename Directory %s", old_name),
+							WX_FMT("Rename Directory {}", old_name),
 							wxString::FromUTF8(old_name))
 							.utf8_string();
 
@@ -1001,7 +1001,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	if (!include_paths.empty())
 	{
 		for (const auto& include_path : include_paths)
-			opt += fmt::format(" -i \"%s\"", include_path);
+			opt += fmt::format(" -i \"{}\"", include_path);
 	}
 
 	// Find/export any resource libraries

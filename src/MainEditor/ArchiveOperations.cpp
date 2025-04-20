@@ -1872,7 +1872,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 			}
 		}
 
-		wxMessageBox(WX_FMT("Removed %d unused textures", n_removed));
+		wxMessageBox(WX_FMT("Removed {} unused textures", n_removed));
 
 		if (texture_list.size())
 		{

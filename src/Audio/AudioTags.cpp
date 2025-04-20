@@ -1273,10 +1273,10 @@ string audio::getSunInfo(MemChunk& mc)
 	case 2:
 	case 3:
 	case 4:
-	case 5: format += fmt::format("PCM (signed)"); break;
+	case 5: format += "PCM (signed)"; break;
 	case 6:
-	case 7: format += fmt::format("PCM (float)"); break;
-	case 27: format += fmt::format("a-Law"); break;
+	case 7: format += "PCM (float)"; break;
+	case 27: format += "a-Law"; break;
 	default: format += fmt::format("Unknown ({})", codec); break;
 	}
 	string ret = "Mono";
@@ -1503,7 +1503,7 @@ string audio::getWavInfo(MemChunk& mc)
 				channelstr += fmt::format("{}", speaker_pos[i]);
 				channelmask &= ~mask;
 				if (channelmask && i < 17)
-					channelstr += fmt::format(", ");
+					channelstr += ", ";
 			}
 		}
 		ret += fmt::format("{}\n", channelstr);
@@ -1594,7 +1594,7 @@ string audio::getAiffInfo(MemChunk& mc)
 	strutil::removeLast(chunksfound, 2);
 
 	if (comm == nullptr)
-		return fmt::format("Invalid AIFF file, no common chunk");
+		return "Invalid AIFF file, no common chunk";
 
 	size_t samplerate = 1;
 	// Frame rate calculations adapted from libsndfile
