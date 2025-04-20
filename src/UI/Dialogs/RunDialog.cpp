@@ -76,14 +76,13 @@ namespace
 string getExecutablePath(const executables::GameExe* const exe)
 {
 #ifdef __WXOSX_MAC__
-	if (exe_path.EndsWith(".app"))
+	if (strutil::endsWithCI(exe->path, ".app"))
 	{
 #define CF_CHECK_NULL(VAR) \
 	if (NULL == VAR)       \
-		return exe_path;
+		return exe->path;
 
-		const wxCFStringRef cf_path(
-			CFStringCreateWithCString(kCFAllocatorDefault, exe_path.utf8_str(), kCFStringEncodingUTF8));
+		const wxCFStringRef cf_path(CFStringCreateWithCString(kCFAllocatorDefault, exe->path, kCFStringEncodingUTF8));
 		CF_CHECK_NULL(cf_path);
 
 		typedef wxCFRef<CFURLRef> wxCFURLRef;

@@ -569,7 +569,7 @@ bool SLADEWxApp::OnExceptionInMainLoop()
 #ifdef __APPLE__
 void SLADEWxApp::MacOpenFile(const wxString& fileName)
 {
-	theMainWindow->archiveManagerPanel()->openFile(fileName);
+	theMainWindow->archiveManagerPanel()->openFile(fileName.utf8_string());
 }
 #endif // __APPLE__
 
