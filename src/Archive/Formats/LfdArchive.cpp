@@ -250,7 +250,7 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 		for (char& n : name)
 			n = 0;
 		size = wxINT32_SWAP_ON_BE(entry->size());
-		wxFileName fn(entry->name());
+		wxFileName fn(wxString::FromUTF8(entry->name()));
 
 		for (size_t c = 0; c < fn.GetName().length() && c < 9; c++)
 			name[c] = fn.GetName()[c];
@@ -271,7 +271,7 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 		for (char& n : name)
 			n = 0;
 		size = wxINT32_SWAP_ON_BE(entry->size());
-		wxFileName fn(entry->name());
+		wxFileName fn(wxString::FromUTF8(entry->name()));
 
 		for (size_t c = 0; c < fn.GetName().length() && c < 9; c++)
 			name[c] = fn.GetName()[c];
@@ -306,7 +306,7 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open lfdfile
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -384,7 +384,7 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 bool LfdArchive::isLfdArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

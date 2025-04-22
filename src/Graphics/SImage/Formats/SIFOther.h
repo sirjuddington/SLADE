@@ -54,7 +54,7 @@ protected:
 		size_t palsize = data.readL16(pal_offset);
 		if (palsize == 0 || palsize > 256 || data.size() < (pal_offset + 2 + (palsize * 3)))
 		{
-			log::error(wxString::Format("palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.size()));
+			log::error("palsize {}, paloffset {}, entry size {}", palsize, pal_offset, data.size());
 			global::error = "HLT file: invalid palette size";
 			return false;
 		}

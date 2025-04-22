@@ -281,7 +281,7 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check it opened
 	if (!file.IsOpened())
@@ -348,7 +348,7 @@ bool SiNArchive::isSiNArchive(MemChunk& mc)
 bool SiNArchive::isSiNArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < 12)

@@ -553,7 +553,7 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -648,7 +648,7 @@ bool DatArchive::isDatArchive(MemChunk& mc)
 bool DatArchive::isDatArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

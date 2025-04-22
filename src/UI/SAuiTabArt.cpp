@@ -242,7 +242,7 @@ void SAuiTabArt::DrawTab(
 		caption = wxT("Xj");
 
 	// Regular tab control titles require double ampersands to show a single one, emulate that here
-	caption.Replace("&&", "&");
+	caption.Replace(wxS("&&"), wxS("&"));
 
 	dc.SetFont(m_selectedFont);
 	dc.GetTextExtent(caption, &selected_textx, &selected_texty);
@@ -251,7 +251,7 @@ void SAuiTabArt::DrawTab(
 	dc.GetTextExtent(caption, &normal_textx, &normal_texty);
 
 	bool bluetab = false;
-	if (page.window->GetName() == "startpage")
+	if (page.window->GetName() == wxS("startpage"))
 		bluetab = true;
 
 	// figure out the size of the tab
@@ -339,7 +339,7 @@ void SAuiTabArt::DrawTab(
 		if (!bluetab)
 		{
 #ifdef __WXMSW__
-			auto col_hilight = wxColour(app::isDarkTheme() ? "#6696FF" : "#476DBD");
+			auto col_hilight = wxColour(app::isDarkTheme() ? wxS("#6696FF") : wxS("#476DBD"));
 #else
 			wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 #endif

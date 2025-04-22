@@ -44,7 +44,7 @@ using namespace slade;
 namespace
 {
 // clang-format off
-wxString asciitable[128] =
+string asciitable[128] =
 {
 	"NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS", "TAB", "LF", "VT", "FF", "CR", "SO", "SI",
 	"DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB", "CAN", "EM", "SUB", "ESC", "FS", "GS", "RS", "US",
@@ -156,7 +156,7 @@ uint8_t ansicolors[16][3] =
 //
 // -----------------------------------------------------------------------------
 
-wxString codepages::fromASCII(uint8_t val)
+string codepages::fromASCII(uint8_t val)
 {
 	if (val < 128)
 		return asciitable[val];

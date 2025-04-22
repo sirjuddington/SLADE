@@ -76,6 +76,7 @@
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/Lists/ArchiveEntryTree.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -92,7 +93,7 @@ namespace
 wxMenu* menu_archive = nullptr;
 wxMenu* menu_entry   = nullptr;
 
-const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry %s, unsupported format for writing";
+const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry {}, unsupported format for writing";
 } // namespace
 CVAR(Int, autosave_entry_changes, 2, CVar::Flag::Save) // 0=no, 1=yes, 2=ask
 CVAR(Bool, confirm_entry_delete, true, CVar::Flag::Save)
@@ -157,7 +158,7 @@ public:
 		}
 
 		bool     yes_to_all = false;
-		wxString caption    = (filenames.size() > 1) ? "Overwrite entries" : "Overwrite entry";
+		wxString caption    = (filenames.size() > 1) ? wxS("Overwrite entries") : wxS("Overwrite entry");
 
 		// Import all dragged files, inserting after the item they were dragged onto
 		list_->Freeze();
@@ -169,7 +170,7 @@ public:
 				// If the archive supports directories, create the directory and import its contents
 				if (archive->formatDesc().supports_dirs)
 				{
-					strutil::Path fn(filenames[a].ToStdString());
+					strutil::Path fn(filenames[a].utf8_string());
 					auto          ndir = archive->createDir(fn.fileName(false), ArchiveDir::getShared(dir));
 					archive->importDir(fn.fullPath(), true, ndir);
 				}
@@ -179,7 +180,7 @@ public:
 			}
 			else
 			{
-				strutil::Path fn(filenames[a].ToStdString());
+				strutil::Path fn(filenames[a].utf8_string());
 				ArchiveEntry* entry = nullptr;
 
 				// Find entry to replace if needed
@@ -189,11 +190,12 @@ public:
 					// An entry with that name is already present, so ask about replacing it
 					if (entry && !yes_to_all)
 					{
-						// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
-						// we will instead hack the Cancel button into being a "Yes to all" button. This is
+						// Since there is no standard "Yes/No to a" button or "Don't ask me again" checkbox,
+						// we will instead hack the Cancel button into being a "Yes to a" button. This is
 						// despite the existence of a wxID_YESTOALL return value...
 						auto message = fmt::format("Overwrite existing entry {}{}", dir->path(), fn.fileName());
-						wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
+						wxMessageDialog dlg(
+							parent_, wxString::FromUTF8(message), caption, wxCANCEL | wxYES_NO | wxCENTRE);
 						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
 						int result = dlg.ShowModal();
 
@@ -211,7 +213,7 @@ public:
 					entry = archive->addNewEntry(fn.fileName(), index, dir).get();
 
 				// Import the file to it
-				entry->importFile(filenames[a].ToStdString());
+				entry->importFile(filenames[a].utf8_string());
 				EntryType::detectEntryType(*entry);
 			}
 		}
@@ -238,7 +240,7 @@ public:
 	ChoosePaletteDialog(wxWindow* parent) :
 		wxDialog{ parent,
 				  -1,
-				  "Choose Base Palette",
+				  wxS("Choose Base Palette"),
 				  wxDefaultPosition,
 				  wxDefaultSize,
 				  wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER }
@@ -301,7 +303,7 @@ public:
 				entry->exportFile(filename);
 
 				// Add to clipboard
-				file->AddFile(filename);
+				file->AddFile(wxString::FromUTF8(filename));
 			}
 			wxTheClipboard->AddData(file);
 			wxTheClipboard->Close();
@@ -332,7 +334,7 @@ namespace
 // -----------------------------------------------------------------------------
 // Creates a vector of namespaces in a predefined order
 // -----------------------------------------------------------------------------
-void initNamespaceVector(vector<wxString>& ns, bool flathack)
+void initNamespaceVector(vector<string>& ns, bool flathack)
 {
 	ns.clear();
 	if (flathack)
@@ -385,7 +387,7 @@ int isInMap(size_t index, const vector<Archive::MapDesc>& maps)
 size_t getNamespaceNumber(
 	const ArchiveEntry*             entry,
 	size_t                          index,
-	vector<wxString>&               ns,
+	vector<string>&                 ns,
 	const vector<Archive::MapDesc>& maps)
 {
 	auto ens = entry->parent()->detectNamespace(index);
@@ -404,7 +406,7 @@ size_t getNamespaceNumber(
 		}
 	}
 	for (size_t n = 0; n < ns.size(); ++n)
-		if (S_CMPNOCASE(ns[n], ens))
+		if (strutil::equalCI(ns[n], ens))
 			return n;
 
 	ns.emplace_back(ens);
@@ -506,7 +508,7 @@ void ArchivePanel::bindEvents(Archive* archive)
 		[this](Archive& a)
 		{
 			auto parent = dynamic_cast<wxAuiNotebook*>(GetParent());
-			parent->SetPageText(parent->GetPageIndex(this), a.filename(false));
+			parent->SetPageText(parent->GetPageIndex(this), wxString::FromUTF8(a.filename(false)));
 		});
 
 	// Close current entry panel if it's entry was removed
@@ -596,22 +598,25 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 
 	// Create category selector
 	choice_category_ = new wxChoice(panel_filter_, -1);
-	choice_category_->Append("All");
+	choice_category_->Append(wxS("All"));
 	for (const auto& cat : EntryType::allCategories())
-		choice_category_->Append(cat);
+		choice_category_->Append(wxString::FromUTF8(cat));
 	choice_category_->SetSelection(0);
 	gbsizer->Add(
-		new wxStaticText(panel_filter_, -1, "Show:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(panel_filter_, -1, wxS("Show:")), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gbsizer->Add(choice_category_, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
 	gbsizer->AddGrowableCol(1, 1);
 
 	// Create filter
 	text_filter_ = new wxTextCtrl(panel_filter_, -1);
 	gbsizer->Add(
-		new wxStaticText(panel_filter_, -1, "Filter:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(panel_filter_, -1, wxS("Filter:")),
+		wxGBPosition(1, 0),
+		wxDefaultSpan,
+		wxALIGN_CENTER_VERTICAL);
 	gbsizer->Add(text_filter_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 	btn_clear_filter_ = new SIconButton(panel_filter_, "close");
-	btn_clear_filter_->SetToolTip("Clear Filter");
+	btn_clear_filter_->SetToolTip(wxS("Clear Filter"));
 	gbsizer->Add(btn_clear_filter_, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND);
 
 	// Show/hide filter controls depending on cvar
@@ -654,8 +659,8 @@ bool ArchivePanel::saveEntryChanges(bool force) const
 	if (!force && autosave_entry_changes > 1)
 	{
 		int result = wxMessageBox(
-			wxString::Format("Save changes to entry \"%s\"?", cur_area_->entry()->name()),
-			"Unsaved Changes",
+			WX_FMT("Save changes to entry \"{}\"?", cur_area_->entry()->name()),
+			wxS("Unsaved Changes"),
 			wxYES_NO | wxICON_QUESTION);
 
 		// Stop if user clicked no
@@ -688,7 +693,7 @@ void ArchivePanel::addMenus() const
 		SAction::fromId("arch_mapeditor")->addToMenu(menu_archive);
 		auto menu_clean = createMaintenanceMenu();
 
-		auto maintenance_item = new wxMenuItem(menu_archive, wxID_ANY, "&Maintenance");
+		auto maintenance_item = new wxMenuItem(menu_archive, wxID_ANY, wxS("&Maintenance"));
 		maintenance_item->SetSubMenu(menu_clean);
 		maintenance_item->SetBitmap(icons::getIcon(icons::Type::Any, "wrench"));
 		menu_archive->Append(maintenance_item);
@@ -696,7 +701,7 @@ void ArchivePanel::addMenus() const
 		auto menu_scripts = new wxMenu();
 #ifndef NO_LUA
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Archive, "arch_script");
-		menu_archive->AppendSubMenu(menu_scripts, "&Run Script");
+		menu_archive->AppendSubMenu(menu_scripts, wxS("&Run Script"));
 #endif
 
 		menu_archive->AppendSeparator();
@@ -725,7 +730,7 @@ void ArchivePanel::addMenus() const
 		menu_entry->AppendSeparator();
 		auto menu_scripts = new wxMenu();
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Entry, "arch_entry_script");
-		menu_entry->AppendSubMenu(menu_scripts, "&Run Script");
+		menu_entry->AppendSubMenu(menu_scripts, wxS("&Run Script"));
 #endif
 	}
 
@@ -803,7 +808,7 @@ bool ArchivePanel::newEntry()
 	auto* dir = archive->rootDir().get();
 	if (archive->formatDesc().supports_dirs)
 	{
-		auto dir_path = dlg->parentDirPath().ToStdString();
+		auto dir_path = dlg->parentDirPath();
 		strutil::replaceIP(dir_path, "\\", "/");
 
 		dir = archive->dirAtPath(dir_path);
@@ -820,7 +825,7 @@ bool ArchivePanel::newEntry()
 
 	// Create the new entry
 	undo_manager_->beginRecord("Add Entry");
-	auto new_entry = std::make_shared<ArchiveEntry>(dlg->entryName().ToStdString());
+	auto new_entry = std::make_shared<ArchiveEntry>(dlg->entryName());
 
 	// Deal with specific entry type that we may want created
 	using NewEntry = maineditor::NewEntryType;
@@ -912,7 +917,7 @@ bool ArchivePanel::newDirectory()
 	auto* parent_dir = archive->rootDir().get();
 	if (archive->formatDesc().supports_dirs)
 	{
-		auto dir_path = dlg->parentDirPath().ToStdString();
+		auto dir_path = dlg->parentDirPath();
 		strutil::replaceIP(dir_path, "\\", "/");
 
 		parent_dir = archive->dirAtPath(dir_path);
@@ -922,7 +927,7 @@ bool ArchivePanel::newDirectory()
 
 	// Add the directory to the archive
 	undo_manager_->beginRecord("Create Directory");
-	auto dir = archive->createDir(dlg->entryName().ToStdString(), ArchiveDir::getShared(parent_dir));
+	auto dir = archive->createDir(dlg->entryName(), ArchiveDir::getShared(parent_dir));
 	undo_manager_->endRecord(!!dir);
 
 	if (dir)
@@ -970,14 +975,14 @@ bool ArchivePanel::importFiles()
 		for (size_t a = 0; a < info.filenames.size(); a++)
 		{
 			// Get filename
-			wxString name = wxFileName(info.filenames[a]).GetFullName();
+			auto name = strutil::Path::fileNameOf(info.filenames[a]);
 
 			// Update splash window
 			ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(info.filenames.size()));
-			ui::setSplashProgressMessage(name.ToStdString());
+			ui::setSplashProgressMessage(name);
 
 			// Create new entry
-			auto new_entry = std::make_shared<ArchiveEntry>(name.ToStdString());
+			auto new_entry = std::make_shared<ArchiveEntry>(name);
 
 			// Import file to entry
 			if (new_entry->importFile(info.filenames[a]))
@@ -1049,7 +1054,7 @@ bool ArchivePanel::importDir()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::convertArchiveTo() const
 {
-	wxMessageBox("Not Implemented");
+	wxMessageBox(wxS("Not Implemented"));
 	return false;
 }
 
@@ -1058,7 +1063,7 @@ bool ArchivePanel::convertArchiveTo() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::cleanupArchive() const
 {
-	wxMessageBox("Not Implemented");
+	wxMessageBox(wxS("Not Implemented"));
 	return false;
 }
 
@@ -1074,7 +1079,7 @@ bool ArchivePanel::buildArchive()
 
 	if (archive->formatId() != "folder")
 	{
-		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
+		wxMessageBox(wxS("This function is only supported with directories"), wxS("Can't build archive"), wxICON_ERROR);
 		return false;
 	}
 
@@ -1089,8 +1094,8 @@ bool ArchivePanel::buildArchive()
 		ui::setSplashProgress(0.0f);
 
 		// prevent for "archive in archive" when saving in the current directory
-		if (wxFileExists(info.filenames[0]))
-			wxRemoveFile(info.filenames[0]);
+		if (fileutil::fileExists(info.filenames[0]))
+			fileutil::removeFile(info.filenames[0]);
 
 		// Log
 		ui::setSplashProgressMessage("Importing files...");
@@ -1108,7 +1113,7 @@ bool ArchivePanel::buildArchive()
 			ui::hideSplash();
 
 			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error:\n%s", global::error), "Error", wxICON_ERROR);
+			wxMessageBox(WX_FMT("Error:\n{}", global::error), wxS("Error"), wxICON_ERROR);
 			return false;
 		}
 	}
@@ -1168,8 +1173,8 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	// Confirmation dialog
 	if (confirm_entry_delete && confirm)
 	{
-		wxString item;
-		int      num = selected_entries.size() + selected_dirs.size();
+		string item;
+		int    num = selected_entries.size() + selected_dirs.size();
 		if (num == 1)
 		{
 			if (selected_entries.size() == 1)
@@ -1178,11 +1183,11 @@ bool ArchivePanel::deleteEntry(bool confirm)
 				item = selected_dirs[0]->name();
 		}
 		else if (num > 0)
-			item = wxString::Format("these %d items", num);
+			item = fmt::format("these {} items", num);
 
 		if (wxMessageBox(
-				wxString::Format("Are you sure you want to delete %s?", item),
-				"Delete Confirmation",
+				WX_FMT("Are you sure you want to delete {}?", item),
+				wxS("Delete Confirmation"),
 				wxYES_NO | wxICON_QUESTION)
 			!= wxYES)
 			return false;
@@ -1251,8 +1256,8 @@ bool ArchivePanel::revertEntry() const
 	// Prompt to revert if configured to
 	if (confirm_entry_revert)
 		if (wxMessageBox(
-				"Are you sure you want to revert changes made to the entry?",
-				"Revert Changes",
+				wxS("Are you sure you want to revert changes made to the entry?"),
+				wxS("Revert Changes"),
 				wxICON_QUESTION | wxYES_NO)
 			== wxNO)
 			return false;
@@ -1445,15 +1450,15 @@ bool ArchivePanel::sort() const
 	if (selection.size() < 2)
 		return false;
 
-	vector<wxString> nspaces;
+	vector<string> nspaces;
 	initNamespaceVector(nspaces, dir->archive()->hasFlatHack());
 	auto maps = dir->archive()->detectMaps();
 
-	wxString ns  = dir->archive()->detectNamespace(dir->entryAt(selection[0]));
-	size_t   nsn = 0, lnsn = 0;
+	auto   ns  = dir->archive()->detectNamespace(dir->entryAt(selection[0]));
+	size_t nsn = 0, lnsn = 0;
 
 	// Fill a map with <entry name, entry index> pairs
-	std::map<wxString, size_t> emap;
+	std::map<string, size_t> emap;
 	emap.clear();
 	for (size_t i = 0; i < selection.size(); ++i)
 	{
@@ -1468,16 +1473,16 @@ bool ArchivePanel::sort() const
 		// If not a WAD, do basic alphabetical sorting
 		if (archive->formatId() != "wad" && archive->formatId() != "wadj")
 		{
-			auto sortkey             = wxString::Format("%-64s%8d", entry->upperName(), selection[i]);
+			auto sortkey             = fmt::format("{:<64}{:8d}", entry->upperName(), selection[i]);
 			emap[sortkey]            = selection[i];
-			entry->exProp("sortkey") = sortkey.ToStdString();
+			entry->exProp("sortkey") = sortkey;
 
 			continue;
 		}
 
-		bool     ns_changed = false;
-		int      mapindex   = isInMap(selection[i], maps);
-		wxString mapname;
+		bool   ns_changed = false;
+		int    mapindex   = isInMap(selection[i], maps);
+		string mapname;
 
 		// If this is a map entry, deal with it
 		if (!maps.empty() && mapindex > -1)
@@ -1599,17 +1604,17 @@ bool ArchivePanel::sort() const
 		// All map lumps have the same sortkey name so they stay grouped
 		if (mapindex > -1)
 		{
-			name = wxString::Format("%08d%-64s%8d", lnsn, mapname, selection[i]);
+			name = fmt::format("{:08d}{:<64}{:8d}", lnsn, mapname, selection[i]);
 		}
 		// Yet another hack! Make sure namespace start markers are first
 		else if (ns_changed)
 		{
-			name = wxString::Format("%08d%-64s%8d", lnsn, wxEmptyString, selection[i]);
+			name = fmt::format("{:08d}{:<64}{:8d}", lnsn, "", selection[i]);
 		}
 		// Generic case: actually use the entry name to sort
 		else
 		{
-			name = wxString::Format("%08d%-64s%8d", lnsn, ename, selection[i]);
+			name = fmt::format("{:08d}{:<64}{:8d}", lnsn, ename, selection[i]);
 		}
 		// Let the entry remember how it was sorted this time
 		entry->exProp("sortkey") = name;
@@ -1714,14 +1719,14 @@ bool ArchivePanel::crc32() const
 	auto selection = entry_tree_->selectedEntries();
 
 	// Compute CRC-32 checksums for each
-	wxString checksums = "\nCRC-32:\n";
+	string checksums = "\nCRC-32:\n";
 	for (auto& entry : selection)
 	{
 		uint32_t crc = entry->data().crc();
-		checksums += wxString::Format("%s:\t%x\n", entry->name(), crc);
+		checksums += fmt::format("{}:\t{:x}\n", entry->name(), crc);
 	}
 	log::info(1, checksums);
-	wxMessageBox(checksums);
+	wxMessageBox(wxString::FromUTF8(checksums));
 
 	return true;
 }
@@ -1731,7 +1736,7 @@ bool ArchivePanel::crc32() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::convertEntryTo() const
 {
-	wxMessageBox("Not Implemented");
+	wxMessageBox(wxS("Not Implemented"));
 	return false;
 }
 
@@ -1775,7 +1780,7 @@ bool ArchivePanel::importEntry()
 			if (!entry->importFile(info.filenames[0]))
 			{
 				wxMessageBox(
-					wxString::Format("Failed to import file: %s", global::error), "Import Failed", wxICON_ERROR, this);
+					WX_FMT("Failed to import file: {}", global::error), wxS("Import Failed"), wxICON_ERROR, this);
 				return false;
 			}
 
@@ -1798,15 +1803,15 @@ bool ArchivePanel::importEntry()
 				{
 					wxMessageDialog md(
 						this,
-						wxString::Format(
-							"Image %s had offset [%d, %d], imported file has offset [%d, %d]. "
+						WX_FMT(
+							"Image {} had offset [{}, {}], imported file has offset [{}, {}]. "
 							"Do you want to keep the old offset and override the new?",
 							entry->name(),
 							offset.x,
 							offset.y,
 							noffset.x,
 							noffset.y),
-						"Conflicting Offsets",
+						wxS("Conflicting Offsets"),
 						wxYES_NO);
 					int result = md.ShowModal();
 					if (result != wxID_YES)
@@ -1815,12 +1820,11 @@ bool ArchivePanel::importEntry()
 				// Warn if the offsets couldn't be written
 				if (ok && si.format() && !si.format()->writeOffset(si, entry, offset))
 					log::warning(
-						wxString::Format(
-							"Old offset information [%d, %d] couldn't be "
-							"preserved in the new image format for image %s.",
-							offset.x,
-							offset.y,
-							entry->name()));
+						"Old offset information [{}, {}] couldn't be "
+						"preserved in the new image format for image %s.",
+						offset.x,
+						offset.y,
+						entry->name());
 			}
 
 			// Check if the entry type changed
@@ -1839,9 +1843,9 @@ bool ArchivePanel::importEntry()
 		auto multi_select = selection.size() > 1;
 
 		if (wxMessageBox(
-				multi_select ? "One or more entry types were changed. Update entry extensions?"
-							 : "The entry type has changed. Update it's extension?",
-				"Update Entry Extension(s)",
+				multi_select ? wxS("One or more entry types were changed. Update entry extensions?")
+							 : wxS("The entry type has changed. Update it's extension?"),
+				wxS("Update Entry Extension(s)"),
 				wxYES_NO | wxICON_QUESTION)
 			== wxYES)
 		{
@@ -1880,7 +1884,7 @@ bool ArchivePanel::exportEntry() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::exportEntryAs() const
 {
-	wxMessageBox("Not Implemented");
+	wxMessageBox(wxS("Not Implemented"));
 	return false;
 }
 
@@ -1993,8 +1997,8 @@ bool ArchivePanel::openEntryExternal() const
 		// Show error message if failed
 		if (!ok)
 			wxMessageBox(
-				wxString::Format("Failed opening %s in external editor: %s", entry->name(), global::error),
-				"External Edit Failed",
+				WX_FMT("Failed opening {} in external editor: {}", entry->name(), global::error),
+				wxS("External Edit Failed"),
 				wxOK | wxICON_ERROR);
 	}
 
@@ -2094,7 +2098,7 @@ bool ArchivePanel::gfxRemap()
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
-					log::error(1, wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+					log::error(1, ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2145,7 +2149,7 @@ bool ArchivePanel::gfxColourise()
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
-					log::error(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+					log::error(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2193,7 +2197,7 @@ bool ArchivePanel::gfxTint()
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
-					log::info(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+					log::info(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2251,11 +2255,11 @@ bool ArchivePanel::gfxExportPNG()
 	// If we're just exporting 1 entry
 	if (selection.size() == 1)
 	{
-		wxString   name = misc::lumpNameToFileName(selection[0]->name());
-		wxFileName fn(name);
+		auto          name = misc::lumpNameToFileName(selection[0]->name());
+		strutil::Path fn(name);
 
 		// Set extension
-		fn.SetExt("png");
+		fn.setExtension("png");
 
 		// Run save file dialog
 		filedialog::FDInfo info;
@@ -2264,12 +2268,12 @@ bool ArchivePanel::gfxExportPNG()
 				"Export Entry \"" + selection[0]->name() + "\" as PNG",
 				"PNG Files (*.png)|*.png",
 				this,
-				fn.GetFullName().ToStdString()))
+				fn.fileName()))
 		{
 			// If a filename was selected, export it
 			if (!entryoperations::exportAsPNG(selection[0], info.filenames[0]))
 			{
-				wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxOK | wxICON_ERROR);
+				wxMessageBox(WX_FMT("Error: {}", global::error), wxS("Error"), wxOK | wxICON_ERROR);
 				return false;
 			}
 		}
@@ -2287,12 +2291,12 @@ bool ArchivePanel::gfxExportPNG()
 			for (auto& entry : selection)
 			{
 				// Setup entry filename
-				wxFileName fn(entry->name());
-				fn.SetPath(info.path);
-				fn.SetExt("png");
+				strutil::Path fn(entry->name());
+				fn.setPath(info.path);
+				fn.setExtension("png");
 
 				// Do export
-				entryoperations::exportAsPNG(entry, fn.GetFullPath());
+				entryoperations::exportAsPNG(entry, fn.fullPath());
 			}
 		}
 	}
@@ -2318,7 +2322,7 @@ bool ArchivePanel::voxelConvert() const
 			// Attempt conversion
 			if (!conversion::voxToKvx(entry->data(), kvx))
 			{
-				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
+				log::error("Unable to convert entry {}: {}", entry->name(), global::error);
 				errors = true;
 				continue;
 			}
@@ -2334,7 +2338,8 @@ bool ArchivePanel::voxelConvert() const
 
 	// Show message if errors occurred
 	if (errors)
-		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
+		wxMessageBox(
+			wxS("Some entries could not be converted, see console log for details"), wxS("SLADE"), wxICON_INFORMATION);
 
 	return true;
 }
@@ -2499,11 +2504,11 @@ bool ArchivePanel::basConvert(bool animdefs)
 		string gentext;
 		if (animdefs)
 		{
-			gentext = "// ANIMDEFS lump generated by SLADE3\n// on " + wxNow() + "\n\n";
+			gentext = "// ANIMDEFS lump generated by SLADE3\n// on " + wxNow().utf8_string() + "\n\n";
 		}
 		else
 		{
-			gentext = "# SWANTBLS data generated by SLADE 3\n# on " + wxNow() + "\n#\n"
+			gentext = "# SWANTBLS data generated by SLADE 3\n# on " + wxNow().utf8_string() + "\n#\n"
 				"# This file is input for SWANTBLS.EXE, it specifies the switchnames\n"
 				"# and animated textures and flats usable with BOOM. The output of\n"
 				"# SWANTBLS is two lumps, SWITCHES.LMP and ANIMATED.LMP that should\n"
@@ -2576,7 +2581,7 @@ bool ArchivePanel::wavDSndConvert() const
 			// Attempt conversion
 			if (!conversion::wavToDoomSnd(entry->data(), dsnd))
 			{
-				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
+				log::error("Unable to convert entry {}: {}", entry->name(), global::error);
 				errors = true;
 				continue;
 			}
@@ -2592,7 +2597,8 @@ bool ArchivePanel::wavDSndConvert() const
 
 	// Show message if errors occurred
 	if (errors)
-		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
+		wxMessageBox(
+			wxS("Some entries could not be converted, see console log for details"), wxS("SLADE"), wxICON_INFORMATION);
 
 	return true;
 }
@@ -2642,7 +2648,7 @@ bool ArchivePanel::dSndWavConvert() const
 		}
 		else
 		{
-			log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
+			log::error("Unable to convert entry {}: {}", entry->name(), global::error);
 			errors = true;
 		}
 	}
@@ -2652,7 +2658,8 @@ bool ArchivePanel::dSndWavConvert() const
 
 	// Show message if errors occurred
 	if (errors)
-		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
+		wxMessageBox(
+			wxS("Some entries could not be converted, see console log for details"), wxS("SLADE"), wxICON_INFORMATION);
 
 	return true;
 }
@@ -2737,15 +2744,13 @@ bool ArchivePanel::compileDECOHack() const
 bool ArchivePanel::optimizePNG() const
 {
 	// Check if the PNG tools path are set up, at least one of them should be
-	wxString pngpathc = path_pngcrush;
-	wxString pngpatho = path_pngout;
-	wxString pngpathd = path_deflopt;
-	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) && (pngpatho.IsEmpty() || !wxFileExists(pngpatho))
-		&& (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
+	if ((path_pngcrush.empty() || !fileutil::fileExists(path_pngcrush))
+		&& (path_pngout.empty() || !fileutil::fileExists(path_pngout))
+		&& (path_deflopt.empty() || !fileutil::fileExists(path_deflopt)))
 	{
 		wxMessageBox(
-			"Error: PNG tool paths not defined or invalid, please configure in SLADE preferences",
-			"Error",
+			wxS("Error: PNG tool paths not defined or invalid, please configure in SLADE preferences"),
+			wxS("Error"),
 			wxOK | wxCENTRE | wxICON_ERROR);
 		return false;
 	}
@@ -2895,7 +2900,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		// Check it exists (really should)
 		if (!dir)
 		{
-			log::error(wxString::Format("Trying to open nonexistant directory %s", entry->path(true)));
+			log::error("Trying to open nonexistant directory {}", entry->path(true));
 			return false;
 		}
 
@@ -2930,12 +2935,11 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		else if (entry->type()->editor() == "default")
 			new_area = default_area_;
 		else
-			log::warning(
-				wxString::Format("Entry editor %s does not exist, using default editor", entry->type()->editor()));
+			log::warning("Entry editor {} does not exist, using default editor", entry->type()->editor());
 
 		// Load the entry into the panel
 		if (!new_area->openEntry(entry))
-			wxMessageBox(wxString::Format("Error loading entry:\n%s", global::error), "Error", wxOK | wxICON_ERROR);
+			wxMessageBox(WX_FMT("Error loading entry:\n{}", global::error), wxS("Error"), wxOK | wxICON_ERROR);
 
 		// Show the new entry panel
 		bool changed = (cur_area_ != new_area);
@@ -2963,7 +2967,7 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 
 	// Load the current entry into the panel
 	if (!textArea()->openEntry(entry))
-		wxMessageBox(wxString::Format("Error loading entry:\n%s", global::error), "Error", wxOK | wxICON_ERROR);
+		wxMessageBox(WX_FMT("Error loading entry:\n{}", global::error), wxS("Error"), wxOK | wxICON_ERROR);
 
 	// Show the text entry panel
 	return showEntryPanel(textArea());
@@ -2985,7 +2989,7 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 
 	// Load the current entry into the panel
 	if (!hexArea()->openEntry(entry))
-		wxMessageBox(wxString::Format("Error loading entry:\n%s", global::error), "Error", wxOK | wxICON_ERROR);
+		wxMessageBox(WX_FMT("Error loading entry:\n{}", global::error), wxS("Error"), wxOK | wxICON_ERROR);
 
 	// Show the text entry panel
 	return showEntryPanel(hexArea());
@@ -3093,7 +3097,7 @@ void ArchivePanel::refreshPanel()
 // Creates and returns the 'Open In' submenu for the entry context menu, adding
 // any external editors for entries of [category]
 // -----------------------------------------------------------------------------
-wxMenu* ArchivePanel::createEntryOpenMenu(const wxString& category)
+wxMenu* ArchivePanel::createEntryOpenMenu(const string& category)
 {
 	current_external_exe_category_ = category;
 	current_external_exes_.clear();
@@ -3104,7 +3108,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(const wxString& category)
 	menu_open->AppendSeparator();
 
 	// External editors
-	auto     external   = executables::externalExes(category.ToStdString());
+	auto     external   = executables::externalExes(category);
 	auto     a_open_ext = SAction::fromId("arch_entry_openext");
 	unsigned num        = std::min<unsigned>(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
@@ -3442,15 +3446,15 @@ bool ArchivePanel::handleAction(string_view id)
 		RunDialog dlg(this, archive.get());
 		if (dlg.ShowModal() == wxID_OK)
 		{
-			wxString command = dlg.selectedCommandLine(archive.get(), "");
-			if (!command.IsEmpty())
+			auto command = dlg.selectedCommandLine(archive.get(), "");
+			if (!command.empty())
 			{
 				// Set working directory
-				wxString wd = wxGetCwd();
-				wxSetWorkingDirectory(dlg.selectedExeDir());
+				auto wd = wxGetCwd();
+				wxSetWorkingDirectory(wxString::FromUTF8(dlg.selectedExeDir()));
 
 				// Run
-				wxExecute(command, wxEXEC_ASYNC);
+				wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC);
 
 				// Restore working directory
 				wxSetWorkingDirectory(wd);
@@ -3601,13 +3605,9 @@ void ArchivePanel::updateFilter() const
 {
 	if (elist_show_filter)
 	{
-		// Get category string to filter by
-		wxString category = "";
-		if (choice_category_->GetSelection() > 0)
-			category = choice_category_->GetStringSelection();
-
-		// Filter the entry list
-		entry_tree_->setFilter(wxutil::strToView(text_filter_->GetValue()), wxutil::strToView(category));
+		entry_tree_->setFilter(
+			text_filter_->GetValue().utf8_string(),
+			choice_category_->GetSelection() > 0 ? choice_category_->GetStringSelection().utf8_string() : "");
 	}
 	else
 		entry_tree_->setFilter({}, {});
@@ -3752,7 +3752,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 	bool swan_selected       = false;
 	bool voxel_selected      = false;
 	//	bool rle_selected = false;
-	wxString category = "";
+	string category;
 	for (auto& entry : selection)
 	{
 		// Check for gfx entry
@@ -3844,8 +3844,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 				category = entry->type()->category();
 			else
 			{
-				wxString ed = entry->type()->category();
-				if (category != ed)
+				if (category != entry->type()->category())
 					category = "diff";
 			}
 		}
@@ -3909,7 +3908,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 	// Add 'Open In' menu
 	if (!selection.empty())
 	{
-		auto open_item = new wxMenuItem(&context, wxID_ANY, "Open");
+		auto open_item = new wxMenuItem(&context, wxID_ANY, wxS("Open"));
 		open_item->SetSubMenu(createEntryOpenMenu(category));
 		open_item->SetBitmap(icons::getIcon(icons::General, "open"));
 		context.Append(open_item);
@@ -3927,7 +3926,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 	if (context_submenus)
 	{
 		if (ok)
-			context.AppendSubMenu(custom, cur_area_->customMenuName());
+			context.AppendSubMenu(custom, wxString::FromUTF8(cur_area_->customMenuName()));
 		else
 			delete custom;
 	}
@@ -3968,7 +3967,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		if (context_submenus)
 		{
 			auto viewas = new wxMenu();
-			context.AppendSubMenu(viewas, "View As");
+			context.AppendSubMenu(viewas, wxS("View As"));
 			SAction::fromId("arch_view_text")->addToMenu(viewas, 2, "Text");
 			SAction::fromId("arch_view_hex")->addToMenu(viewas, 2, "Hex");
 		}
@@ -3987,7 +3986,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		if (context_submenus)
 		{
 			gfx = new wxMenu();
-			context.AppendSubMenu(gfx, "Graphics");
+			context.AppendSubMenu(gfx, wxS("Graphics"));
 		}
 		else
 		{
@@ -4015,7 +4014,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		if (context_submenus)
 		{
 			audio = new wxMenu();
-			context.AppendSubMenu(audio, "Audio");
+			context.AppendSubMenu(audio, wxS("Audio"));
 		}
 		else
 		{
@@ -4037,7 +4036,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		if (context_submenus)
 		{
 			scripts = new wxMenu();
-			context.AppendSubMenu(scripts, "Script");
+			context.AppendSubMenu(scripts, wxS("Script"));
 		}
 		else
 		{
@@ -4055,7 +4054,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		if (context_submenus)
 		{
 			voxels = new wxMenu();
-			context.AppendSubMenu(voxels, "Voxels");
+			context.AppendSubMenu(voxels, wxS("Voxels"));
 		}
 		else
 		{
@@ -4081,7 +4080,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		auto menu_scripts = new wxMenu();
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Entry, "arch_entry_script");
 		context.AppendSeparator();
-		context.AppendSubMenu(menu_scripts, "Run &Script");
+		context.AppendSubMenu(menu_scripts, wxS("Run &Script"));
 	}
 #endif
 
@@ -4096,7 +4095,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		auto menu_new = new wxMenu();
 		SAction::fromId("arch_newentry")->addToMenu(menu_new, true, "Entry");
 		SAction::fromId("arch_newdir")->addToMenu(menu_new, true, "Directory");
-		context.AppendSubMenu(menu_new, "New");
+		context.AppendSubMenu(menu_new, wxS("New"));
 	}
 	else
 		SAction::fromId("arch_newentry")->addToMenu(&context, true);
@@ -4274,12 +4273,12 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 
 			// Check selected game configuration is ok
 			if (!dlg.configMatchesMap(info))
-				wxMessageBox("Selected Game Configuration does not match the map format", "Error", wxICON_ERROR);
+				wxMessageBox(
+					wxS("Selected Game Configuration does not match the map format"), wxS("Error"), wxICON_ERROR);
 			else
 			{
 				// Load game configuration
-				game::configuration().openConfig(
-					dlg.selectedGame().ToStdString(), dlg.selectedPort().ToStdString(), info.format);
+				game::configuration().openConfig(dlg.selectedGame(), dlg.selectedPort(), info.format);
 
 				// Attempt to open map
 				if (mapeditor::window()->openMap(info))
@@ -4288,8 +4287,8 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 				{
 					mapeditor::window()->Hide();
 					wxMessageBox(
-						wxString::Format("Unable to open map %s: %s", entry->name(), global::error),
-						"Invalid map error",
+						WX_FMT("Unable to open map {}: {}", entry->name(), global::error),
+						wxS("Invalid map error"),
 						wxICON_ERROR);
 				}
 			}
@@ -4365,7 +4364,7 @@ void ArchivePanel::onChoiceCategoryChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ArchivePanel::onBtnClearFilter(wxCommandEvent& e)
 {
-	text_filter_->SetValue("");
+	text_filter_->SetValue(wxEmptyString);
 }
 
 
@@ -4384,7 +4383,7 @@ bool EntryDataUS::swapData()
 	// log::info(1, "Entry data swap...");
 
 	// Get parent dir
-	auto dir = archive_->dirAtPath(path_.ToStdString());
+	auto dir = archive_->dirAtPath(path_);
 	if (dir)
 	{
 		// Get entry
@@ -4563,7 +4562,7 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 }
 
 
-vector<ArchiveEntry*> Console_SearchEntries(wxString name)
+vector<ArchiveEntry*> Console_SearchEntries(string name)
 {
 	vector<ArchiveEntry*> entries;
 	Archive*              archive = maineditor::currentArchive();
@@ -4587,8 +4586,8 @@ CONSOLE_COMMAND(find, 1, true)
 {
 	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
 
-	wxString message;
-	size_t   count = entries.size();
+	string message;
+	size_t count = entries.size();
 	if (count > 0)
 	{
 		for (size_t i = 0; i < count; ++i)
@@ -4596,7 +4595,7 @@ CONSOLE_COMMAND(find, 1, true)
 			message += entries[i]->path(true) + "\n";
 		}
 	}
-	log::info(wxString::Format("Found %i entr%s", count, count == 1 ? "y" : "ies\n") + message);
+	log::info("Found %i entr%s", count, count == 1 ? "y" : "ies\n" + message);
 }
 
 CONSOLE_COMMAND(ren, 2, true)
@@ -4609,7 +4608,7 @@ CONSOLE_COMMAND(ren, 2, true)
 		for (size_t i = 0; i < entries.size(); ++i)
 		{
 			// Rename filter logic
-			wxString newname = entries[i]->name();
+			auto newname = entries[i]->name();
 			for (unsigned c = 0; c < args[1].size(); c++)
 			{
 				// Check character
@@ -4630,10 +4629,10 @@ CONSOLE_COMMAND(ren, 2, true)
 				}
 			}
 
-			if (archive->renameEntry(entries[i], newname.ToStdString()))
+			if (archive->renameEntry(entries[i], newname))
 				++count;
 		}
-		log::info(wxString::Format("Renamed %i entr%s", count, count == 1 ? "y" : "ies"));
+		log::info("Renamed {} entr{}", count, count == 1 ? "y" : "ies");
 	}
 }
 
@@ -4660,7 +4659,7 @@ CONSOLE_COMMAND(cd, 1, true)
 		}
 		else
 		{
-			log::error(wxString::Format("Error: Trying to open nonexistant directory %s", args[0]));
+			log::error("Error: Trying to open nonexistant directory {}", args[0]);
 		}
 	}
 }

@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -69,31 +68,31 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 	GetSizer()->Add(gb_sizer, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Find
-	text_find_     = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	btn_find_next_ = new wxButton(this, -1, "Find Next");
-	btn_find_prev_ = new wxButton(this, -1, "Find Previous");
+	text_find_     = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	btn_find_next_ = new wxButton(this, -1, wxS("Find Next"));
+	btn_find_prev_ = new wxButton(this, -1, wxS("Find Previous"));
 	btn_close_     = new SIconButton(this, "close", "Close");
-	gb_sizer->Add(new wxStaticText(this, -1, "Find What:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(this, -1, wxS("Find What:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_find_, { 0, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxEXPAND);
 	gb_sizer->Add(btn_find_next_, { 0, 2 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(btn_find_prev_, { 0, 3 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(btn_close_, { 0, 4 }, { 1, 1 }, wxEXPAND);
 
 	// Replace
-	text_replace_    = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	btn_replace_     = new wxButton(this, -1, "Replace");
-	btn_replace_all_ = new wxButton(this, -1, "Replace All");
-	gb_sizer->Add(new wxStaticText(this, -1, "Replace With:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	text_replace_    = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	btn_replace_     = new wxButton(this, -1, wxS("Replace"));
+	btn_replace_all_ = new wxButton(this, -1, wxS("Replace All"));
+	gb_sizer->Add(new wxStaticText(this, -1, wxS("Replace With:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_replace_, { 1, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxEXPAND);
 	gb_sizer->Add(btn_replace_, { 1, 2 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(btn_replace_all_, { 1, 3 }, { 1, 1 }, wxEXPAND);
 
 	// Options
-	cb_match_case_       = new wxCheckBox(this, -1, "Match Case");
-	cb_match_word_whole_ = new wxCheckBox(this, -1, "Match Word (Whole)");
-	cb_match_word_start_ = new wxCheckBox(this, -1, "Match Word (Start)");
-	cb_search_regex_     = new wxCheckBox(this, -1, "Regular Expression");
-	cb_allow_escape_     = new wxCheckBox(this, -1, "Allow Backslash Expressions");
+	cb_match_case_       = new wxCheckBox(this, -1, wxS("Match Case"));
+	cb_match_word_whole_ = new wxCheckBox(this, -1, wxS("Match Word (Whole)"));
+	cb_match_word_start_ = new wxCheckBox(this, -1, wxS("Match Word (Start)"));
+	cb_search_regex_     = new wxCheckBox(this, -1, wxS("Regular Expression"));
+	cb_allow_escape_     = new wxCheckBox(this, -1, wxS("Allow Backslash Expressions"));
 	auto wsizer          = new wxWrapSizer(wxHORIZONTAL, wxREMOVE_LEADING_SPACES);
 	GetSizer()->Add(wsizer, 0, wxEXPAND);
 	wsizer->Add(cb_match_case_, 0, wxEXPAND);
@@ -134,7 +133,7 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 		[&](wxCommandEvent& e)
 		{
 			auto n_replaced = text_editor_.replaceAll(findText(), replaceText(), findFlags());
-			wxMessageBox(wxString::Format("Replaced %d occurrence(s)", n_replaced), "Replace All");
+			wxMessageBox(WX_FMT("Replaced {} occurrence(s)", n_replaced), wxS("Replace All"));
 		});
 
 	// Enter pressed in find text box
@@ -187,15 +186,15 @@ void FindReplacePanel::setFindText(const wxString& find) const
 // -----------------------------------------------------------------------------
 // Returns the current 'Find' text
 // -----------------------------------------------------------------------------
-wxString FindReplacePanel::findText() const
+string FindReplacePanel::findText() const
 {
-	wxString find = text_find_->GetValue();
+	auto find = text_find_->GetValue().utf8_string();
 
 	if (cb_allow_escape_->GetValue())
 	{
-		find.Replace("\\n", "\n");
-		find.Replace("\\r", "\r");
-		find.Replace("\\t", "\t");
+		strutil::replaceIP(find, "\\n", "\n");
+		strutil::replaceIP(find, "\\r", "\r");
+		strutil::replaceIP(find, "\\t", "\t");
 	}
 
 	return find;
@@ -222,15 +221,15 @@ int FindReplacePanel::findFlags() const
 // -----------------------------------------------------------------------------
 // Returns the current 'Replace' text
 // -----------------------------------------------------------------------------
-wxString FindReplacePanel::replaceText() const
+string FindReplacePanel::replaceText() const
 {
-	wxString replace = text_replace_->GetValue();
+	auto replace = text_replace_->GetValue().utf8_string();
 
 	if (cb_allow_escape_->GetValue())
 	{
-		replace.Replace("\\n", "\n");
-		replace.Replace("\\r", "\r");
-		replace.Replace("\\t", "\t");
+		strutil::replaceIP(replace, "\\n", "\n");
+		strutil::replaceIP(replace, "\\r", "\r");
+		strutil::replaceIP(replace, "\\t", "\t");
 	}
 
 	return replace;

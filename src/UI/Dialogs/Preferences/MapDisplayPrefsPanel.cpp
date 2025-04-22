@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -113,7 +112,7 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
-	stc_pages_->AddPage(panel, "General", true);
+	stc_pages_->AddPage(panel, wxS("General"), true);
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
@@ -122,54 +121,55 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 
 	// Crosshair
 	choice_crosshair_ = new wxChoice(panel, -1);
-	choice_crosshair_->Set(wxutil::arrayString({ "None", "Small", "Full" }));
-	gb_sizer->Add(new wxStaticText(panel, -1, "Cursor Crosshair:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	choice_crosshair_->Set(wxutil::arrayStringStd({ "None", "Small", "Full" }));
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Cursor Crosshair:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_crosshair_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Texture filter
 	choice_tex_filter_ = new wxChoice(panel, -1);
-	choice_tex_filter_->Set(wxutil::arrayString({ "None", "Linear", "Linear (Mipmapped)", "None (Mipmapped)" }));
-	gb_sizer->Add(new wxStaticText(panel, -1, "Texture Filtering:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	choice_tex_filter_->Set(wxutil::arrayStringStd({ "None", "Linear", "Linear (Mipmapped)", "None (Mipmapped)" }));
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, wxS("Texture Filtering:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_tex_filter_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 
 	// 64 grid
 	choice_grid_64_ = new wxChoice(panel, -1);
-	choice_grid_64_->Set(wxutil::arrayString({ "None", "Full", "Crosses" }));
-	gb_sizer->Add(new wxStaticText(panel, -1, "64 Grid:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	choice_grid_64_->Set(wxutil::arrayStringStd({ "None", "Full", "Crosses" }));
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("64 Grid:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_grid_64_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Dashed grid
-	cb_grid_dashed_ = new wxCheckBox(panel, -1, "Dashed grid");
+	cb_grid_dashed_ = new wxCheckBox(panel, -1, wxS("Dashed grid"));
 	gb_sizer->Add(cb_grid_dashed_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Hilight origin on grid
-	cb_grid_show_origin_ = new wxCheckBox(panel, -1, "Hilight origin (0,0) on grid");
+	cb_grid_show_origin_ = new wxCheckBox(panel, -1, wxS("Hilight origin (0,0) on grid"));
 	gb_sizer->Add(cb_grid_show_origin_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Always show line direction tabs
-	cb_line_tabs_always_ = new wxCheckBox(panel, -1, "Always show line direction tabs");
+	cb_line_tabs_always_ = new wxCheckBox(panel, -1, wxS("Always show line direction tabs"));
 	gb_sizer->Add(cb_line_tabs_always_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Animate hilighted object
-	cb_animate_hilight_ = new wxCheckBox(panel, -1, "Animated hilight");
+	cb_animate_hilight_ = new wxCheckBox(panel, -1, wxS("Animated hilight"));
 	gb_sizer->Add(cb_animate_hilight_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Animate selected objects
-	cb_animate_selection_ = new wxCheckBox(panel, -1, "Animated selection");
+	cb_animate_selection_ = new wxCheckBox(panel, -1, wxS("Animated selection"));
 	gb_sizer->Add(cb_animate_selection_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Animate tagged objects
-	cb_animate_tagged_ = new wxCheckBox(panel, -1, "Animated tag indicator");
+	cb_animate_tagged_ = new wxCheckBox(panel, -1, wxS("Animated tag indicator"));
 	gb_sizer->Add(cb_animate_tagged_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Show action lines
-	cb_action_lines_ = new wxCheckBox(panel, -1, "Show Action Lines");
+	cb_action_lines_ = new wxCheckBox(panel, -1, wxS("Show Action Lines"));
 	cb_action_lines_->SetToolTip(
-		"Show lines from an object with an action special to the tagged object(s) when highlighted");
+		wxS("Show lines from an object with an action special to the tagged object(s) when highlighted"));
 	gb_sizer->Add(cb_action_lines_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Show help text
-	cb_show_help_ = new wxCheckBox(panel, -1, "Show Help Text");
+	cb_show_help_ = new wxCheckBox(panel, -1, wxS("Show Help Text"));
 	gb_sizer->Add(cb_show_help_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1, 1);
@@ -182,7 +182,7 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
-	stc_pages_->AddPage(panel, "Vertices");
+	stc_pages_->AddPage(panel, wxS("Vertices"));
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -190,8 +190,8 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 
 	slider_vertex_size_ = new wxSlider(panel, -1, vertex_size, 2, 16, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	choice_vertices_always_ = new wxChoice(panel, -1);
-	choice_vertices_always_->Set(wxutil::arrayString({ "Hide", "Show", "Fade" }));
-	cb_vertex_round_ = new wxCheckBox(panel, -1, "Round vertices");
+	choice_vertices_always_->Set(wxutil::arrayStringStd({ "Hide", "Show", "Fade" }));
+	cb_vertex_round_ = new wxCheckBox(panel, -1, wxS("Round vertices"));
 
 	wxutil::layoutVertically(
 		sizer,
@@ -208,7 +208,7 @@ void MapDisplayPrefsPanel::setupLinesTab()
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
-	stc_pages_->AddPage(panel, "Lines");
+	stc_pages_->AddPage(panel, wxS("Lines"));
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -221,8 +221,8 @@ void MapDisplayPrefsPanel::setupLinesTab()
 			  "Line width:",
 			  slider_line_width_ = new wxSlider(
 				  panel, -1, line_width * 10, 10, 30, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS)),
-		  cb_line_smooth_ = new wxCheckBox(panel, -1, "Smooth lines"),
-		  cb_line_fade_   = new wxCheckBox(panel, -1, "Fade when not in lines mode") },
+		  cb_line_smooth_ = new wxCheckBox(panel, -1, wxS("Smooth lines")),
+		  cb_line_fade_   = new wxCheckBox(panel, -1, wxS("Fade when not in lines mode")) },
 		wxSizerFlags(0).Expand());
 }
 
@@ -233,7 +233,7 @@ void MapDisplayPrefsPanel::setupThingsTab()
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
-	stc_pages_->AddPage(panel, "Things");
+	stc_pages_->AddPage(panel, wxS("Things"));
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
@@ -241,57 +241,63 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	int row = 0;
 
 	// Thing style
-	gb_sizer->Add(new wxStaticText(panel, -1, "Thing style: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Thing style: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	choice_thing_drawtype_ = new wxChoice(panel, -1);
 	choice_thing_drawtype_->Set(
-		wxutil::arrayString({ "Square", "Round", "Sprite", "Square + Sprite", "Framed Sprite" }));
+		wxutil::arrayString(
+			{ wxS("Square"), wxS("Round"), wxS("Sprite"), wxS("Square + Sprite"), wxS("Framed Sprite") }));
 	gb_sizer->Add(choice_thing_drawtype_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// When not in things mode
 	gb_sizer->Add(
-		new wxStaticText(panel, -1, "When not in things mode: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(panel, -1, wxS("When not in things mode: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	choice_things_always_ = new wxChoice(panel, -1);
-	choice_things_always_->Set(wxutil::arrayString({ "Hide", "Show", "Fade" }));
+	choice_things_always_->Set(wxutil::arrayString({ wxS("Hide"), wxS("Show"), wxS("Fade") }));
 	gb_sizer->Add(choice_things_always_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Shadow opacity
 	auto dp = wxDefaultPosition;
 	auto ds = wxDefaultSize;
-	gb_sizer->Add(new wxStaticText(panel, -1, "Thing shadow opacity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, wxS("Thing shadow opacity: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_thing_shadow_ = new wxSlider(panel, -1, thing_shadow * 10, 0, 10, dp, ds, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_thing_shadow_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Arrow opacity
 	gb_sizer->Add(
-		new wxStaticText(panel, -1, "Thing angle arrow opacity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(panel, -1, wxS("Thing angle arrow opacity: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_thing_arrow_alpha_ = new wxSlider(panel, -1, thing_shadow * 10, 0, 10, dp, ds, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_thing_arrow_alpha_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Halo width
-	gb_sizer->Add(new wxStaticText(panel, -1, "Halo extra width: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, wxS("Halo extra width: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_halo_width_ = new wxSlider(panel, -1, halo_width, 0, 10, dp, ds, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_halo_width_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Point light preview intensity
 	gb_sizer->Add(
-		new wxStaticText(panel, -1, "Point light preview intensity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(panel, -1, wxS("Point light preview intensity: ")),
+		{ row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTER_VERTICAL);
 	slider_light_intensity_ = new wxSlider(panel, -1, thing_light_intensity * 10, 1, 10, dp, ds, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_light_intensity_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Always show angles
-	cb_thing_force_dir_ = new wxCheckBox(panel, -1, "Always show thing angles");
+	cb_thing_force_dir_ = new wxCheckBox(panel, -1, wxS("Always show thing angles"));
 	gb_sizer->Add(cb_thing_force_dir_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Colour angle arrows
-	cb_thing_arrow_colour_ = new wxCheckBox(panel, -1, "Colour thing angle arrows");
+	cb_thing_arrow_colour_ = new wxCheckBox(panel, -1, wxS("Colour thing angle arrows"));
 	gb_sizer->Add(cb_thing_arrow_colour_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Force square hilight/selection
-	cb_thing_overlay_square_ = new wxCheckBox(panel, -1, "Force square thing hilight/selection overlay");
+	cb_thing_overlay_square_ = new wxCheckBox(panel, -1, wxS("Force square thing hilight/selection overlay"));
 	gb_sizer->Add(cb_thing_overlay_square_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Use zeth icons
-	cb_use_zeth_icons_ = new wxCheckBox(panel, -1, "Use ZETH thing type icons");
+	cb_use_zeth_icons_ = new wxCheckBox(panel, -1, wxS("Use ZETH thing type icons"));
 	gb_sizer->Add(cb_use_zeth_icons_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1, 1);
@@ -304,7 +310,7 @@ void MapDisplayPrefsPanel::setupFlatsTab()
 {
 	// Add tab
 	auto panel = new wxPanel(stc_pages_, -1);
-	stc_pages_->AddPage(panel, "Sectors");
+	stc_pages_->AddPage(panel, wxS("Sectors"));
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -317,10 +323,10 @@ void MapDisplayPrefsPanel::setupFlatsTab()
 			  "Flat brightness:",
 			  slider_flat_brightness_ = new wxSlider(
 				  panel, -1, flat_brightness * 10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS)),
-		  cb_flat_ignore_light_    = new wxCheckBox(panel, -1, "Flats ignore sector brightness"),
-		  cb_sector_hilight_fill_  = new wxCheckBox(panel, -1, "Filled sector hilight"),
-		  cb_sector_selected_fill_ = new wxCheckBox(panel, -1, "Filled sector selection"),
-		  cb_flat_fade_            = new wxCheckBox(panel, -1, "Fade flats when not in sectors mode") },
+		  cb_flat_ignore_light_    = new wxCheckBox(panel, -1, wxS("Flats ignore sector brightness")),
+		  cb_sector_hilight_fill_  = new wxCheckBox(panel, -1, wxS("Filled sector hilight")),
+		  cb_sector_selected_fill_ = new wxCheckBox(panel, -1, wxS("Filled sector selection")),
+		  cb_flat_fade_            = new wxCheckBox(panel, -1, wxS("Fade flats when not in sectors mode")) },
 		wxSizerFlags(0).Expand());
 }
 

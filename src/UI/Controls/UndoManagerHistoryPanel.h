@@ -16,9 +16,9 @@ public:
 
 protected:
 	// Virtual wxListCtrl overrides
-	wxString itemText(long item, long column, long index) const override;
-	int      itemIcon(long item, long column, long index) const override;
-	void     updateItemAttr(long item, long column, long index) const override;
+	string itemText(long item, long column, long index) const override;
+	int    itemIcon(long item, long column, long index) const override;
+	void   updateItemAttr(long item, long column, long index) const override;
 
 private:
 	UndoManager* manager_ = nullptr;

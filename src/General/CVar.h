@@ -138,7 +138,7 @@ struct CStringCVar : CVar
 	operator string() const { return value; }
 	string operator*() const { return value; }
 	operator string_view() const { return value; }
-	operator wxString() const { return value; }
+	operator wxString() const { return wxString::FromUTF8(value); }
 
 	CStringCVar& operator=(string_view val)
 	{

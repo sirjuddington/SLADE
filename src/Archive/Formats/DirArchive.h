@@ -103,7 +103,7 @@ public:
 
 	wxDirTraverseResult OnFile(const wxString& filename) override
 	{
-		auto path_str = filename.ToStdString();
+		auto path_str = filename.utf8_string();
 
 		if (ignore_hidden_ && strutil::startsWith(strutil::Path::fileNameOf(path_str), '.'))
 			return wxDIR_CONTINUE;
@@ -116,14 +116,14 @@ public:
 	{
 		if (ignore_hidden_)
 		{
-			auto path_str = dirname.ToStdString();
+			auto path_str = dirname.utf8_string();
 			std::replace(path_str.begin(), path_str.end(), '\\', '/');
 			auto dir = strutil::afterLastV(path_str, '/');
 			if (strutil::startsWith(dir, '.'))
 				return wxDIR_IGNORE;
 		}
 
-		dirs_.push_back(dirname.ToStdString());
+		dirs_.push_back(dirname.utf8_string());
 		return wxDIR_CONTINUE;
 	}
 

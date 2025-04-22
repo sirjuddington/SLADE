@@ -103,10 +103,10 @@ bool ThingBrowserItem::loadImage()
 ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(parent)
 {
 	// Set window title
-	wxTopLevelWindow::SetTitle("Browse Thing Types");
+	wxTopLevelWindow::SetTitle(wxS("Browse Thing Types"));
 
 	// Add 'Details view' checkbox
-	cb_view_tiles_ = new wxCheckBox(this, -1, "Details view");
+	cb_view_tiles_ = new wxCheckBox(this, -1, wxS("Details view"));
 	cb_view_tiles_->SetValue(browser_thing_tiles);
 	sizer_bottom_->Add(cb_view_tiles_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
@@ -163,7 +163,7 @@ int ThingTypeBrowser::selectedType() const
 	auto selected = selectedItem();
 	if (selected)
 	{
-		log::info(wxString::Format("Selected item %d", selected->index()));
+		log::info("Selected item {}", selected->index());
 		return selected->index();
 	}
 	else

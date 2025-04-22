@@ -70,7 +70,7 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	cp_colour2_     = new wxColourPickerCtrl(this, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, cp_flags);
 	choice_presets_ = new wxChoice(this, -1);
 	choice_presets_->Append(
-		wxutil::arrayString(
+		wxutil::arrayStringStd(
 			{ "Default",
 			  "Black",
 			  "Black (Checkered)",
@@ -85,14 +85,14 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 			  "Vintage Id Software" }));
 	choice_browser_bg_ = new wxChoice(this, -1);
 	choice_browser_bg_->Append(
-		wxutil::arrayString({ "Transparent background (as above)", "System background", "Black background" }));
-	cb_show_border_          = new wxCheckBox(this, -1, "Show outline around graphics and textures");
-	cb_hilight_mouseover_    = new wxCheckBox(this, -1, "Hilight graphics on mouse hover");
-	cb_extra_gfxconv_        = new wxCheckBox(this, -1, "Offer additional conversion options");
-	cb_condensed_trans_edit_ = new wxCheckBox(this, -1, "Condensed Translation Editor layout");
-	cb_condensed_trans_edit_->SetToolTip(
+		wxutil::arrayStringStd({ "Transparent background (as above)", "System background", "Black background" }));
+	cb_show_border_          = new wxCheckBox(this, -1, wxS("Show outline around graphics and textures"));
+	cb_hilight_mouseover_    = new wxCheckBox(this, -1, wxS("Hilight graphics on mouse hover"));
+	cb_extra_gfxconv_        = new wxCheckBox(this, -1, wxS("Offer additional conversion options"));
+	cb_condensed_trans_edit_ = new wxCheckBox(this, -1, wxS("Condensed Translation Editor layout"));
+	cb_condensed_trans_edit_->SetToolTip(wxS(
 		"On some displays the translation editor dialog can be too large to fit on the screen vertically. Enable this "
-		"to reduce its vertical size.");
+		"to reduce its vertical size."));
 
 	setupLayout();
 
@@ -120,9 +120,9 @@ void GraphicsPrefsPanel::init()
 void GraphicsPrefsPanel::applyPreferences()
 {
 	wxColour wxc = cp_colour1_->GetColour();
-	bgtx_colour1 = wxutil::strToView(wxc.GetAsString(wxC2S_CSS_SYNTAX));
+	bgtx_colour1 = wxc.GetAsString(wxC2S_CSS_SYNTAX).utf8_string();
 	wxc          = cp_colour2_->GetColour();
-	bgtx_colour2 = wxutil::strToView(wxc.GetAsString(wxC2S_CSS_SYNTAX));
+	bgtx_colour2 = wxc.GetAsString(wxC2S_CSS_SYNTAX).utf8_string();
 	gl::Texture::resetBackgroundTexture();
 	gfx_show_border              = cb_show_border_->GetValue();
 	gfx_extraconv                = cb_extra_gfxconv_->GetValue();
@@ -144,7 +144,7 @@ void GraphicsPrefsPanel::setupLayout()
 	// Transparent background colours
 	wxutil::layoutVertically(
 		sizer,
-		{ new wxStaticText(this, -1, "Transparent background colours:"),
+		{ new wxStaticText(this, -1, wxS("Transparent background colours:")),
 		  cp_colour1_,
 		  cp_colour2_,
 		  wxutil::createLabelHBox(this, "Preset:", choice_presets_) },

@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -73,15 +72,19 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	wxutil::layoutVertically(
 		sizer,
 		vector<wxObject*>{
-			cb_scroll_smooth_         = new wxCheckBox(this, -1, "Enable smooth scrolling"),
-			cb_selection_clear_click_ = new wxCheckBox(this, -1, "Clear selection when nothing is clicked"),
-			cb_selection_clear_move_ = new wxCheckBox(this, -1, "Clear selection after moving (dragging) map elements"),
-			cb_property_edit_dclick_ = new wxCheckBox(this, -1, "Double-click to edit properties"),
-			cb_merge_undo_step_ = new wxCheckBox(this, -1, "Create a 'Merge' undo level on move/edit map architecture"),
-			cb_props_auto_apply_     = new wxCheckBox(this, -1, "Automatically apply property panel changes"),
-			cb_remove_invalid_lines_ = new wxCheckBox(this, -1, "Remove any resulting invalid lines on sector delete"),
-			cb_merge_lines_vertex_delete_ = new wxCheckBox(this, -1, "Merge connected lines when deleting a vertex"),
-			cb_split_auto_offset_         = new wxCheckBox(this, -1, "Automatic x-offset on line split"),
+			cb_scroll_smooth_         = new wxCheckBox(this, -1, wxS("Enable smooth scrolling")),
+			cb_selection_clear_click_ = new wxCheckBox(this, -1, wxS("Clear selection when nothing is clicked")),
+			cb_selection_clear_move_  = new wxCheckBox(
+                this, -1, wxS("Clear selection after moving (dragging) map elements")),
+			cb_property_edit_dclick_ = new wxCheckBox(this, -1, wxS("Double-click to edit properties")),
+			cb_merge_undo_step_      = new wxCheckBox(
+                this, -1, wxS("Create a 'Merge' undo level on move/edit map architecture")),
+			cb_props_auto_apply_     = new wxCheckBox(this, -1, wxS("Automatically apply property panel changes")),
+			cb_remove_invalid_lines_ = new wxCheckBox(
+				this, -1, wxS("Remove any resulting invalid lines on sector delete")),
+			cb_merge_lines_vertex_delete_ = new wxCheckBox(
+				this, -1, wxS("Merge connected lines when deleting a vertex")),
+			cb_split_auto_offset_ = new wxCheckBox(this, -1, wxS("Automatic x-offset on line split")),
 			wxutil::createLabelHBox(this, "Max backups to keep:", text_max_backups_ = new NumberTextCtrl(this)) },
 		wxSizerFlags(0).Expand());
 

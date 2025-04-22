@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -34,6 +33,7 @@
 #include "MapEditor/NodeBuilders.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -68,21 +68,21 @@ NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBa
 	unsigned      sel = 0;
 	for (unsigned a = 0; a < nodebuilders::nNodeBuilders(); a++)
 	{
-		builders.Add(nodebuilders::builder(a).name);
+		builders.Add(wxString::FromUTF8(nodebuilders::builder(a).name));
 		if (nodebuilder_id.value == nodebuilders::builder(a).id)
 			sel = a;
 	}
 	choice_nodebuilder_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, builders);
-	sizer->Add(new wxStaticText(this, -1, "Node Builder:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(new wxStaticText(this, -1, wxS("Node Builder:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_nodebuilder_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Nodebuilder path text
-	text_path_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-	sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	text_path_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+	sizer->Add(new wxStaticText(this, -1, wxS("Path:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(text_path_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Browse nodebuilder path button
-	btn_browse_path_ = new wxButton(this, -1, "Browse");
+	btn_browse_path_ = new wxButton(this, -1, wxS("Browse"));
 	sizer->Add(btn_browse_path_, { 1, 2 }, { 1, 1 }, wxEXPAND);
 
 	// Nodebuilder options
@@ -123,14 +123,14 @@ void NodesPrefsPanel::init()
 // Populates the options CheckListBox with options for the currently selected
 // node builder
 // -----------------------------------------------------------------------------
-void NodesPrefsPanel::populateOptions(const wxString& options) const
+void NodesPrefsPanel::populateOptions(const string& options) const
 {
 	// Get current builder
 	auto& builder = nodebuilders::builder(choice_nodebuilder_->GetSelection());
 	btn_browse_path_->Enable(builder.id != "none");
 
 	// Set builder path
-	text_path_->SetValue(builder.path);
+	text_path_->SetValue(wxString::FromUTF8(builder.path));
 
 	// Clear current options
 	clb_options_->Clear();
@@ -138,8 +138,8 @@ void NodesPrefsPanel::populateOptions(const wxString& options) const
 	// Add builder options
 	for (unsigned a = 0; a < builder.option_desc.size(); a++)
 	{
-		clb_options_->Append(builder.option_desc[a]);
-		if (!options.IsEmpty() && options.Contains(wxString::Format(" %s ", builder.options[a])))
+		clb_options_->Append(wxString::FromUTF8(builder.option_desc[a]));
+		if (!options.empty() && strutil::contains(options, fmt::format(" {} ", builder.options[a])))
 			clb_options_->Check(a);
 	}
 }
@@ -195,5 +195,5 @@ void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 
 	// Set builder path
 	builder.path = info.filenames[0];
-	text_path_->SetValue(info.filenames[0]);
+	text_path_->SetValue(wxString::FromUTF8(info.filenames[0]));
 }

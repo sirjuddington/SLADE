@@ -13,11 +13,11 @@ public:
 	TextEntryPanel(wxWindow* parent);
 	~TextEntryPanel() override = default;
 
-	void     refreshPanel() override;
-	void     closeEntry() override;
-	wxString statusString() override;
-	bool     undo() override;
-	bool     redo() override;
+	void   refreshPanel() override;
+	void   closeEntry() override;
+	string statusString() override;
+	bool   undo() override;
+	bool   redo() override;
 
 	// SAction Handler
 	bool handleEntryPanelAction(string_view id) override;

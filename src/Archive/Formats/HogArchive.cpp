@@ -327,7 +327,7 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open hogfile
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -432,7 +432,7 @@ bool HogArchive::isHogArchive(MemChunk& mc)
 bool HogArchive::isHogArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

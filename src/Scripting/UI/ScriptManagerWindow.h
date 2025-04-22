@@ -50,7 +50,7 @@ private:
 	void         populateScriptsTree();
 	ScriptPanel* currentPage() const;
 	void         closeScriptTab(scriptmanager::Script* script) const;
-	void         showDocs(const wxString& url = "");
+	void         showDocs(const string& url = "");
 
 	// SActionHandler
 	bool handleAction(string_view id) override;

@@ -34,6 +34,7 @@
 #include "NodeBuilders.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -139,16 +140,16 @@ void nodebuilders::addBuilderPath(string_view builder, string_view path)
 // -----------------------------------------------------------------------------
 // Writes builder paths to [file]
 // -----------------------------------------------------------------------------
-void nodebuilders::saveBuilderPaths(wxFile& file)
+void nodebuilders::saveBuilderPaths(SFile& file)
 {
-	file.Write("nodebuilder_paths\n{\n");
+	file.writeStr("nodebuilder_paths\n{\n");
 	for (auto& builder : builders)
 	{
 		auto path = builder.path;
 		std::replace(path.begin(), path.end(), '\\', '/');
-		file.Write(wxString::Format("\t%s \"%s\"\n", builder.id, path), wxConvUTF8);
+		file.writeStr(fmt::format("\t{} \"{}\"\n", builder.id, path));
 	}
-	file.Write("}\n");
+	file.writeStr("}\n");
 }
 
 // -----------------------------------------------------------------------------

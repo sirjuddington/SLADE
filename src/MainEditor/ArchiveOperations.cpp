@@ -60,9 +60,9 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-typedef std::map<wxString, int>                   StrIntMap;
-typedef std::map<wxString, vector<ArchiveEntry*>> PathMap;
-typedef std::map<int, vector<ArchiveEntry*>>      CRCMap;
+typedef std::map<string, int>                   StrIntMap;
+typedef std::map<string, vector<ArchiveEntry*>> PathMap;
+typedef std::map<int, vector<ArchiveEntry*>>    CRCMap;
 
 
 // -----------------------------------------------------------------------------
@@ -83,11 +83,11 @@ bool archiveoperations::save(Archive& archive)
 	if (archive.formatId() != "folder" && fileutil::fileModifiedTime(archive.filename()) > archive.fileModifiedTime())
 	{
 		if (wxMessageBox(
-				wxString::Format(
-					"The file %s has been modified on disk since the archive was last saved, are you sure you want "
+				WX_FMT(
+					"The file {} has been modified on disk since the archive was last saved, are you sure you want "
 					"to continue with saving?",
 					archive.filename(false)),
-				"File Modified",
+				wxS("File Modified"),
 				wxICON_WARNING | wxYES_NO)
 			== wxNO)
 			return false;
@@ -98,7 +98,7 @@ bool archiveoperations::save(Archive& archive)
 	if (!archive.save())
 	{
 		// If there was an error pop up a message box
-		wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxICON_ERROR);
+		wxMessageBox(WX_FMT("Error: {}", global::error), wxS("Error"), wxICON_ERROR);
 		return false;
 	}
 
@@ -140,7 +140,7 @@ bool archiveoperations::saveAs(Archive& archive)
 		if (!archive.save(filename))
 		{
 			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxICON_ERROR);
+			wxMessageBox(WX_FMT("Error: {}", global::error), wxS("Error"), wxICON_ERROR);
 			return false;
 		}
 
@@ -212,7 +212,7 @@ bool archiveoperations::removeUnusedPatches(Archive* archive)
 				tx_list->removePatch(p.name);
 
 			// Remove the patch from the patch table
-			log::info(wxString::Format("Removed patch %s", p.name));
+			log::info("Removed patch {}", p.name);
 			removed++;
 			ptable.removePatch(a--);
 		}
@@ -221,7 +221,7 @@ bool archiveoperations::removeUnusedPatches(Archive* archive)
 	// Remove unused patch entries
 	for (auto& a : to_remove)
 	{
-		log::info(wxString::Format("Removed entry %s", a->name()));
+		log::info("Removed entry {}", a->name());
 		archive->removeEntry(a);
 	}
 
@@ -238,8 +238,8 @@ bool archiveoperations::removeUnusedPatches(Archive* archive)
 
 	// Notify user
 	wxMessageBox(
-		wxString::Format("Removed %d patches and %lu entries. See console log for details.", removed, to_remove.size()),
-		"Removed Unused Patches",
+		WX_FMT("Removed %d patches and {} entries. See console log for details.", removed, to_remove.size()),
+		wxS("Removed Unused Patches"),
 		wxOK | wxICON_INFORMATION);
 
 	return true;
@@ -273,7 +273,7 @@ bool archiveoperations::checkDuplicateEntryNames(Archive* archive)
 	}
 
 	// Generate string of duplicate entry names
-	wxString dups;
+	string dups;
 	// Treeless archives such as WADs can just include a simple list of duplicated names and how often they appear
 	if (archive->isTreeless())
 	{
@@ -282,9 +282,9 @@ bool archiveoperations::checkDuplicateEntryNames(Archive* archive)
 		{
 			if (i->second > 1)
 			{
-				wxString name = i->first;
-				name.Remove(0, 1);
-				dups += wxString::Format("%s appears %d times\n", name, i->second);
+				auto name = i->first;
+				name.erase(0, 1);
+				dups += fmt::format("{} appears {} times\n", name, i->second);
 			}
 			++i;
 		}
@@ -299,14 +299,14 @@ bool archiveoperations::checkDuplicateEntryNames(Archive* archive)
 		{
 			if (i->second.size() > 1)
 			{
-				wxString name;
-				dups += wxString::Format("\n%i entries are named %s\t", i->second.size(), i->first);
+				string name;
+				dups += fmt::format("\n{} entries are named {}\t", i->second.size(), i->first);
 				auto j = i->second.begin();
 				while (j != i->second.end())
 				{
 					name = (*j)->path(true);
-					name.Remove(0, 1);
-					dups += wxString::Format("\t%s", name);
+					name.erase(0, 1);
+					dups += fmt::format("\t{}", name);
 					++j;
 				}
 			}
@@ -315,9 +315,9 @@ bool archiveoperations::checkDuplicateEntryNames(Archive* archive)
 	}
 
 	// If no duplicates exist, do nothing
-	if (dups.IsEmpty())
+	if (dups.empty())
 	{
-		wxMessageBox("No duplicated entry names exist");
+		wxMessageBox(wxS("No duplicated entry names exist"));
 		return false;
 	}
 
@@ -349,7 +349,7 @@ void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 	// Init search options
 	Archive::SearchOptions search;
 	ArchiveEntry*          other = nullptr;
-	wxString               dups  = "";
+	string                 dups;
 	size_t                 count = 0;
 
 	// Go through list
@@ -372,7 +372,7 @@ void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 		if (other != nullptr && (other->data().crc() == entry->data().crc()))
 		{
 			++count;
-			dups += wxString::Format("%s\n", search.match_name);
+			dups += fmt::format("{}\n", search.match_name);
 			archive->removeEntry(entry);
 			entry = nullptr;
 		}
@@ -382,12 +382,12 @@ void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 	// If no duplicates exist, do nothing
 	if (count == 0)
 	{
-		wxMessageBox("No duplicated entries exist");
+		wxMessageBox(wxS("No duplicated entries exist"));
 		return;
 	}
 
-	wxString message = wxString::Format(
-		"The following %ld entr%s duplicated from the base resource archive and deleted:",
+	auto message = fmt::format(
+		"The following {} entr{} duplicated from the base resource archive and deleted:",
 		count,
 		(count > 1) ? "ies were" : "y was");
 
@@ -416,9 +416,9 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 
 	// Init search options
 	Archive::SearchOptions search;
-	ArchiveEntry*          other     = nullptr;
-	wxString               overrides = "";
-	size_t                 count     = 0;
+	ArchiveEntry*          other = nullptr;
+	string                 overrides;
+	size_t                 count = 0;
 
 	// Go through list
 	for (auto& entry : entries)
@@ -440,18 +440,18 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 		if (other != nullptr)
 		{
 			++count;
-			overrides += wxString::Format("%s: %s\n", search.match_namespace, search.match_name);
+			overrides += fmt::format("{}: {}\n", search.match_namespace, search.match_name);
 		}
 	}
 
 	// If no overrides exist, do nothing
 	if (count == 0)
 	{
-		wxMessageBox("No overridden entries exist");
+		wxMessageBox(wxS("No overridden entries exist"));
 	}
 
-	wxString message = wxString::Format(
-		"The following %ld entr%s overridden from the base resource archive:",
+	auto message = fmt::format(
+		"The following {} entr{} overridden from the base resource archive:",
 		count,
 		(count > 1) ? "ies were" : "y was");
 
@@ -529,7 +529,7 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 				if (other_texture_index >= 0)
 				{
 					// Other texture with this name found
-					log::info(wxString::Format("Found Overridden Texture: %s.", this_texture->name()));
+					log::info("Found Overridden Texture: {}.", this_texture->name());
 					found_duplicate_textures.insert(this_texture->name());
 					duplicate_texture_entries.emplace(this_texture->name(), std::make_pair(textureEntry, iter.first));
 				}
@@ -556,11 +556,11 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 
 	if (found_duplicate_textures.size())
 	{
-		wxString dups = "";
+		string dups;
 
 		for (string duplicate_entry : found_duplicate_textures)
 		{
-			dups += wxString::Format("\n%s", duplicate_entry);
+			dups += fmt::format("\n{}", duplicate_entry);
 
 			auto duplicated_entries_range = duplicate_texture_entries.equal_range(duplicate_entry);
 
@@ -569,9 +569,9 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 			{
 				ArchiveEntry* duplicated_entry = entry_iter->second.first;
 				ArchiveEntry* bra_entry        = entry_iter->second.second;
-				dups += wxString::Format(
-					"\n\tThis Archive Asset Path: %s%s", duplicated_entry->path(), duplicated_entry->name());
-				dups += wxString::Format("\n\tIwad Asset Path: %s%s", bra_entry->path(), bra_entry->name());
+				dups += fmt::format(
+					"\n\tThis Archive Asset Path: {}{}", duplicated_entry->path(), duplicated_entry->name());
+				dups += fmt::format("\n\tIwad Asset Path: {}{}", bra_entry->path(), bra_entry->name());
 			}
 		}
 
@@ -584,8 +584,8 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 	else
 	{
 		wxMessageBox(
-			"Didn't find any textures overridden from the iwad",
-			"Overridden Texture Entries",
+			wxS("Didn't find any textures overridden from the iwad"),
+			wxS("Overridden Texture Entries"),
 			wxOK | wxCENTER | wxICON_INFORMATION);
 	}
 
@@ -832,15 +832,15 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	if (overiddenBraTexEntries.empty())
 	{
-		wxMessageBox("No overridden textures exist");
+		wxMessageBox(wxS("No overridden textures exist"));
 		return false;
 	}
 
-	wxString dups = "";
+	string dups;
 
 	for (string overriddenTexName : overiddenBraTexNames)
 	{
-		dups += wxString::Format("\n%s", overriddenTexName);
+		dups += fmt::format("\n{}", overriddenTexName);
 
 		{
 			auto entries_range = archiveTexEntries.equal_range(overriddenTexName);
@@ -855,7 +855,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 					continue;
 				}
 
-				dups += wxString::Format("\n\tThis Archive Asset Path: %s%s", entry->path(), entry->name());
+				dups += fmt::format("\n\tThis Archive Asset Path: {}{}", entry->path(), entry->name());
 			}
 		}
 
@@ -865,13 +865,13 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 			for (auto entry_iter = entries_range.first; entry_iter != entries_range.second; ++entry_iter)
 			{
 				ArchiveEntry* entry = entry_iter->second;
-				dups += wxString::Format("\n\tIwad Asset Path: %s%s", entry->path(), entry->name());
+				dups += fmt::format("\n\tIwad Asset Path: {}{}", entry->path(), entry->name());
 			}
 		}
 	}
 
 	// Display list of duplicate entry names
-	ExtMessageDialog msg(theMainWindow, "iWad Overridden Entries");
+	ExtMessageDialog msg(theMainWindow, "IWad Overridden Entries");
 	msg.setExt(dups);
 	msg.setMessage("The following entry data is overridden from the iWad:");
 	msg.ShowModal();
@@ -890,7 +890,7 @@ bool archiveoperations::checkDuplicateEntryContent(const Archive* archive)
 	// Get list of all entries in archive
 	vector<ArchiveEntry*> entries;
 	archive->putEntryTreeAsList(entries);
-	wxString dups = "";
+	string dups;
 
 	// Go through list
 	for (auto& entry : entries)
@@ -913,15 +913,15 @@ bool archiveoperations::checkDuplicateEntryContent(const Archive* archive)
 	{
 		if (i->second.size() > 1)
 		{
-			wxString name = i->second[0]->path(true);
-			name.Remove(0, 1);
-			dups += wxString::Format("\n%s\t(%8x) duplicated by", name, i->first);
+			string name = i->second[0]->path(true);
+			name.erase(0, 1);
+			dups += dups += fmt::format("\n{}\t({:8x}) duplicated by", name, i->first);
 			auto j = i->second.begin() + 1;
 			while (j != i->second.end())
 			{
 				name = (*j)->path(true);
-				name.Remove(0, 1);
-				dups += wxString::Format("\t%s", name);
+				name.erase(0, 1);
+				dups += fmt::format("\t{}", name);
 				++j;
 			}
 		}
@@ -929,9 +929,9 @@ bool archiveoperations::checkDuplicateEntryContent(const Archive* archive)
 	}
 
 	// If no duplicates exist, do nothing
-	if (dups.IsEmpty())
+	if (dups.empty())
 	{
-		wxMessageBox("No duplicated entry data exist");
+		wxMessageBox(wxS("No duplicated entry data exist"));
 		return false;
 	}
 
@@ -947,21 +947,21 @@ bool archiveoperations::checkDuplicateEntryContent(const Archive* archive)
 
 
 // Hardcoded doom defaults for now
-int      n_tex_anim       = 13;
-wxString tex_anim_start[] = {
+int    n_tex_anim       = 13;
+string tex_anim_start[] = {
 	"BLODGR1",  "SLADRIP1", "BLODRIP1", "FIREWALA", "GSTFONT1", "FIRELAV3", "FIREMAG1",
 	"FIREBLU1", "ROCKRED1", "BFALL1",   "SFALL1",   "WFALL1",   "DBRAIN1",
 };
-wxString tex_anim_end[] = {
+string tex_anim_end[] = {
 	"BLODGR4",  "SLADRIP3", "BLODRIP4", "FIREWALL", "GSTFONT3", "FIRELAVA", "FIREMAG3",
 	"FIREBLU2", "ROCKRED3", "BFALL4",   "SFALL4",   "WFALL4",   "DBRAIN4",
 };
 
-int      n_flat_anim       = 9;
-wxString flat_anim_start[] = {
+int    n_flat_anim       = 9;
+string flat_anim_start[] = {
 	"NUKAGE1", "FWATER1", "SWATER1", "LAVA1", "BLOOD1", "RROCK05", "SLIME01", "SLIME05", "SLIME09",
 };
-wxString flat_anim_end[] = {
+string flat_anim_end[] = {
 	"NUKAGE3", "FWATER4", "SWATER4", "LAVA4", "BLOOD3", "RROCK08", "SLIME04", "SLIME08", "SLIME12",
 };
 
@@ -970,7 +970,8 @@ struct TexUsed
 	bool used;
 	TexUsed() : used(false) {}
 };
-WX_DECLARE_STRING_HASH_MAP(TexUsed, TexUsedMap);
+using TexUsedMap = std::unordered_map<string, TexUsed>;
+// WX_DECLARE_STRING_HASH_MAP(TexUsed, TexUsedMap);
 void archiveoperations::removeUnusedTextures(Archive* archive)
 {
 	// Check archive was given
@@ -989,7 +990,7 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 
 	// Go through and add used textures to list
 	DoomMapFormat::SideDef sdef;
-	wxString               tex_lower, tex_middle, tex_upper;
+	string                 tex_lower, tex_middle, tex_upper;
 	for (auto& sidedef : sidedefs)
 	{
 		int nsides = sidedef->size() / 30;
@@ -1000,9 +1001,9 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 			sidedef->read(&sdef, 30);
 
 			// Get textures
-			tex_lower  = wxString::FromAscii(sdef.tex_lower, 8);
-			tex_middle = wxString::FromAscii(sdef.tex_middle, 8);
-			tex_upper  = wxString::FromAscii(sdef.tex_upper, 8);
+			tex_lower  = strutil::viewFromChars(sdef.tex_lower, 8);
+			tex_middle = strutil::viewFromChars(sdef.tex_middle, 8);
+			tex_upper  = strutil::viewFromChars(sdef.tex_upper, 8);
 
 			// Add to used textures list
 			used_textures[tex_lower].used  = true;
@@ -1026,8 +1027,8 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 		tz.openMem(udmfmap->data(), "UDMF TEXTMAP");
 
 		// Go through text tokens
-		wxString token = tz.getToken();
-		while (!token.IsEmpty())
+		auto token = tz.getToken();
+		while (!token.empty())
 		{
 			// Check for sidedef definition
 			if (token == "sidedef")
@@ -1063,8 +1064,8 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 	auto tx_entries = archive->findAll(opt);
 
 	// Go through texture lists
-	PatchTable    ptable; // Dummy patch table, patch info not needed here
-	wxArrayString unused_tex;
+	PatchTable     ptable; // Dummy patch table, patch info not needed here
+	vector<string> unused_tex;
 	for (auto& tx_entrie : tx_entries)
 	{
 		TextureXList txlist;
@@ -1074,7 +1075,7 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 		bool anim = false;
 		for (unsigned t = 1; t < txlist.size(); t++)
 		{
-			wxString texname = txlist.texture(t)->name();
+			auto texname = txlist.texture(t)->name();
 
 			// Check for animation start
 			for (int b = 0; b < n_tex_anim; b++)
@@ -1100,16 +1101,16 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 
 			// Mark if unused and not part of an animation
 			if (!used_textures[texname].used && !anim && !thisend)
-				unused_tex.Add(txlist.texture(t)->name());
+				unused_tex.push_back(txlist.texture(t)->name());
 		}
 	}
 
 	// Pop up a dialog with a checkbox list of unused textures
 	wxMultiChoiceDialog dialog(
 		theMainWindow,
-		"The following textures are not used in any map,\nselect which textures to delete",
-		"Delete Unused Textures",
-		unused_tex);
+		wxS("The following textures are not used in any map,\nselect which textures to delete"),
+		wxS("Delete Unused Textures"),
+		wxutil::arrayStringStd(unused_tex));
 
 	// Get base resource textures (if any)
 	auto                  base_resource = app::archiveManager().baseResourceArchive();
@@ -1120,7 +1121,7 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 	TextureXList tx;
 	for (auto& texturex : base_tx_entries)
 		tx.readTEXTUREXData(texturex, pt_temp, true);
-	vector<wxString> base_resource_textures;
+	vector<string> base_resource_textures;
 	for (unsigned a = 0; a < tx.size(); a++)
 		base_resource_textures.emplace_back(tx.texture(a)->name());
 
@@ -1131,21 +1132,21 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 		bool swtex = false;
 
 		// Check for switch texture
-		if (unused_tex[a].StartsWith("SW1"))
+		if (strutil::startsWith(unused_tex[a], "SW1"))
 		{
 			// Get counterpart switch name
-			wxString swname = unused_tex[a];
-			swname.Replace("SW1", "SW2", false);
+			auto swname = unused_tex[a];
+			strutil::replaceFirstIP(swname, "SW1", "SW2");
 
 			// Check if its counterpart is used
 			if (used_textures[swname].used)
 				swtex = true;
 		}
-		else if (unused_tex[a].StartsWith("SW2"))
+		else if (strutil::startsWith(unused_tex[a], "SW2"))
 		{
 			// Get counterpart switch name
-			wxString swname = unused_tex[a];
-			swname.Replace("SW2", "SW1", false);
+			auto swname = unused_tex[a];
+			strutil::replaceFirstIP(swname, "SW2", "SW1");
 
 			// Check if its counterpart is used
 			if (used_textures[swname].used)
@@ -1156,7 +1157,7 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 		bool br_tex = false;
 		for (auto& texture : base_resource_textures)
 		{
-			if (texture.CmpNoCase(unused_tex[a]) == 0)
+			if (strutil::equalCI(texture, unused_tex[a]))
 			{
 				log::info(3, "Texture " + texture + " is in base resource");
 				br_tex = true;
@@ -1185,7 +1186,7 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 			for (int i : selection)
 			{
 				// Get texture index
-				int index = txlist.textureIndex(wxutil::strToView(unused_tex[i]));
+				int index = txlist.textureIndex(unused_tex[i]);
 
 				// Delete it from the list (if found)
 				if (index >= 0)
@@ -1200,7 +1201,7 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 		}
 	}
 
-	wxMessageBox(wxString::Format("Removed %d unused textures", n_removed));
+	wxMessageBox(WX_FMT("Removed {} unused textures", n_removed));
 }
 
 void archiveoperations::removeUnusedFlats(Archive* archive)
@@ -1221,7 +1222,7 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 
 	// Go through and add used flats to list
 	DoomMapFormat::Sector sec;
-	wxString              tex_floor, tex_ceil;
+	string                tex_floor, tex_ceil;
 	for (auto& sector : sectors)
 	{
 		int nsec = sector->size() / 26;
@@ -1232,8 +1233,8 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 			sector->read(&sec, 26);
 
 			// Get textures
-			tex_floor = wxString::FromAscii(sec.f_tex, 8);
-			tex_ceil  = wxString::FromAscii(sec.c_tex, 8);
+			tex_floor = strutil::viewFromChars(sec.f_tex, 8);
+			tex_ceil  = strutil::viewFromChars(sec.c_tex, 8);
 
 			// Add to used textures list
 			used_textures[tex_floor].used = true;
@@ -1256,8 +1257,8 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 		tz.openMem(udmfmap->data(), "UDMF TEXTMAP");
 
 		// Go through text tokens
-		wxString token = tz.getToken();
-		while (!token.IsEmpty())
+		auto token = tz.getToken();
+		while (!token.empty())
 		{
 			// Check for sector definition
 			if (token == "sector")
@@ -1294,8 +1295,8 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 	auto flats          = archive->findAll(opt);
 
 	// Create list of all unused flats
-	wxArrayString unused_tex;
-	bool          anim = false;
+	vector<string> unused_tex;
+	bool           anim = false;
 	for (auto& flat : flats)
 	{
 		// Skip markers
@@ -1309,7 +1310,7 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 			if (flatname == flat_anim_start[b])
 			{
 				anim = true;
-				log::info(wxString::Format("%s anim start", flatname));
+				log::info("{} anim start", flatname);
 				break;
 			}
 		}
@@ -1322,22 +1323,22 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 			{
 				anim    = false;
 				thisend = true;
-				log::info(wxString::Format("%s anim end", flatname));
+				log::info("{} anim end", flatname);
 				break;
 			}
 		}
 
 		// Add if not animated
 		if (!used_textures[flatname].used && !anim && !thisend)
-			unused_tex.Add(flatname);
+			unused_tex.push_back(flatname);
 	}
 
 	// Pop up a dialog with a checkbox list of unused textures
 	wxMultiChoiceDialog dialog(
 		theMainWindow,
-		"The following textures are not used in any map,\nselect which textures to delete",
-		"Delete Unused Textures",
-		unused_tex);
+		wxS("The following textures are not used in any map,\nselect which textures to delete"),
+		wxS("Delete Unused Textures"),
+		wxutil::arrayStringStd(unused_tex));
 
 	// Select all flats initially
 	wxArrayInt selection;
@@ -1360,7 +1361,7 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 		}
 	}
 
-	wxMessageBox(wxString::Format("Removed %d unused flats", n_removed));
+	wxMessageBox(WX_FMT("Removed {} unused flats", n_removed));
 }
 
 void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
@@ -1374,13 +1375,14 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	// removedEntry signal is what takes long, but having the archive open in a minimal unmanaged state seems to help
 
 	int dialog_answer = wxMessageBox(
-		"This operation is extremely slow if the archive has many entries and is open in SLADE with a tab. This tool "
-		"will close the archive and reopen it in the background to process it, and save changes when done. You should "
-		"make sure to save any changes now if you have any. Also, keep in mind this tool won't find any textures you "
-		"reference in scripts. There is currently limited support for animated and switch textures so the tool will "
-		"deselect all such textures found in ANIMDEFS by default and you can manually choose to delete them later. The "
-		"ANIMDEFS parser itself is not quite reliable yet either and may not handle particularly complex syntax.",
-		"Clean Zdoom Texture Entries.",
+		wxS("This operation is extremely slow if the archive has many entries and is open in SLADE with a tab. This "
+			"tool will close the archive and reopen it in the background to process it, and save changes when done. "
+			"You should make sure to save any changes now if you have any. Also, keep in mind this tool won't find any "
+			"textures you reference in scripts. There is currently limited support for animated and switch textures so "
+			"the tool will deselect all such textures found in ANIMDEFS by default and you can manually choose to "
+			"delete them later. The ANIMDEFS parser itself is not quite reliable yet either and may not handle "
+			"particularly complex syntax."),
+		wxS("Clean ZDoom Texture Entries."),
 		wxOK | wxCANCEL | wxICON_WARNING);
 
 	if (dialog_answer != wxOK)
@@ -1411,7 +1413,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 		// Go through and add used textures to list
 		DoomMapFormat::SideDef sdef;
-		wxString               tex_lower, tex_middle, tex_upper;
+		string                 tex_lower, tex_middle, tex_upper;
 		for (auto& sidedef : sidedefs)
 		{
 			int nsides = sidedef->size() / 30;
@@ -1422,9 +1424,9 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 				sidedef->read(&sdef, 30);
 
 				// Get textures
-				tex_lower  = wxString::FromAscii(sdef.tex_lower, 8);
-				tex_middle = wxString::FromAscii(sdef.tex_middle, 8);
-				tex_upper  = wxString::FromAscii(sdef.tex_upper, 8);
+				tex_lower  = strutil::viewFromChars(sdef.tex_lower, 8);
+				tex_middle = strutil::viewFromChars(sdef.tex_middle, 8);
+				tex_upper  = strutil::viewFromChars(sdef.tex_upper, 8);
 
 				// Add to used textures list
 				used_textures[tex_lower].used  = true;
@@ -1441,7 +1443,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 		// Go through and add used flats to list
 		DoomMapFormat::Sector sec;
-		wxString              tex_floor, tex_ceil;
+		string                tex_floor, tex_ceil;
 		for (auto& sector : sectors)
 		{
 			int nsec = sector->size() / 26;
@@ -1452,8 +1454,8 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 				sector->read(&sec, 26);
 
 				// Get textures
-				tex_floor = wxString::FromAscii(sec.f_tex, 8);
-				tex_ceil  = wxString::FromAscii(sec.c_tex, 8);
+				tex_floor = strutil::viewFromChars(sec.f_tex, 8);
+				tex_ceil  = strutil::viewFromChars(sec.c_tex, 8);
 
 				// Add to used textures list
 				used_textures[tex_floor].used = true;
@@ -1477,8 +1479,8 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 			tz.openMem(udmfmap->data(), "UDMF TEXTMAP");
 
 			// Go through text tokens
-			wxString token = tz.getToken();
-			while (!token.IsEmpty())
+			auto token = tz.getToken();
+			while (!token.empty())
 			{
 				// Check for sidedef definition
 				if (token == "sidedef")
@@ -1540,7 +1542,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	// Check if any maps were found
 	if (total_maps == 0)
 	{
-		wxMessageBox(wxString::Format("Didn't find any maps, so doing no cleanup."));
+		wxMessageBox(wxS("Didn't find any maps, so doing no cleanup."));
 		return;
 	}
 
@@ -1554,7 +1556,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	// Extremely limited animdef parser to just find all PIC entries and parse all RANGE entries
 	for (auto& animdef : animdefs)
 	{
-		log::info(wxString::Format("Found animdef %s.", animdef->name()));
+		log::info("Found animdef {}.", animdef->name());
 
 		Tokenizer tz;
 		tz.setSpecialCharacters("");
@@ -1563,10 +1565,10 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		tz.openMem(animdef->data(), "ZDOOM ANIMDEF");
 
 		auto get_tex_name_and_range_num =
-			[](const wxString& tex_full_name, wxString& tex_name, long& range_number, int& number_digit_chars)
+			[](const string& tex_full_name, string& tex_name, int& range_number, int& number_digit_chars)
 		{
 			// If the full thing is a number
-			if (tex_full_name.ToLong(&range_number))
+			if (strutil::toInt(tex_full_name, range_number))
 			{
 				number_digit_chars = tex_full_name.length();
 				return true;
@@ -1589,16 +1591,16 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 				return false;
 			}
 
-			tex_name.assign(tex_full_name.SubString(0, tex_name_end_pos));
+			tex_name.assign(tex_full_name.substr(0, tex_name_end_pos));
 			number_digit_chars = tex_full_name.size() - tex_name_end_pos - 1;
-			return tex_full_name.Mid(tex_name_end_pos + 1).ToLong(&range_number);
+			return strutil::toInt(tex_full_name.substr(tex_name_end_pos + 1), range_number);
 		};
 
-		auto get_animated_tex_name = [](const wxString& tex_name_prefix, long tex_name_num, int number_digit_chars)
+		auto get_animated_tex_name = [](const string& tex_name_prefix, long tex_name_num, int number_digit_chars)
 		{
-			wxString animated_tex_name       = tex_name_prefix;
-			wxString animatex_tex_num_format = wxString::Format("%%0%dld", number_digit_chars);
-			wxString animated_tex_num        = wxString::Format(animatex_tex_num_format, tex_name_num);
+			string animated_tex_name       = tex_name_prefix;
+			string animatex_tex_num_format = fmt::format("{{:0{}d}}", number_digit_chars);
+			string animated_tex_num        = fmt::format(animatex_tex_num_format, tex_name_num);
 
 			animated_tex_name.append(animated_tex_num);
 
@@ -1606,15 +1608,15 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		};
 
 		// Go through text tokens
-		wxString token = tz.getToken();
-		wxString curr_full_tex_name;
-		wxString curr_tex_name;
-		long     curr_tex_num                = 0;
-		int      curr_tex_number_digit_chars = 0;
+		string token = tz.getToken();
+		string curr_full_tex_name;
+		string curr_tex_name;
+		int    curr_tex_num                = 0;
+		int    curr_tex_number_digit_chars = 0;
 
-		while (!token.IsEmpty())
+		while (!token.empty())
 		{
-			if (token.CmpNoCase("texture") == 0 || token.CmpNoCase("flat") == 0)
+			if (strutil::equalCI(token, "texture") || strutil::equalCI(token, "flat"))
 			{
 				curr_full_tex_name = tz.getToken();
 				get_tex_name_and_range_num(
@@ -1622,13 +1624,13 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 				exclude_tex[curr_full_tex_name].used = true;
 
-				log::info(wxString::Format("Found texture/flat animated texture definition %s.", curr_full_tex_name));
+				log::info("Found texture/flat animated texture definition {}.", curr_full_tex_name);
 			}
-			else if (token.CmpNoCase("range") == 0)
+			else if (strutil::equalCI(token, "range"))
 			{
-				wxString last_tex_name;
-				long     last_tex_num;
-				int      last_tex_number_digit_chars;
+				string last_tex_name;
+				int    last_tex_num;
+				int    last_tex_number_digit_chars;
 
 				token = tz.getToken();
 
@@ -1639,21 +1641,21 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 					// Get the range in between
 					for (int tex_range = curr_tex_num + 1; tex_range < last_tex_num; ++tex_range)
 					{
-						wxString animated_tex_name = get_animated_tex_name(
+						string animated_tex_name = get_animated_tex_name(
 							last_tex_name, tex_range, last_tex_number_digit_chars);
 						exclude_tex[animated_tex_name].used = true;
 
-						log::info(wxString::Format("Found range animated texture definition %s.", animated_tex_name));
+						log::info("Found range animated texture definition {}.", animated_tex_name);
 					}
 
-					log::info(wxString::Format("Found range animated texture definition %s.", token));
+					log::info("Found range animated texture definition {}.", token);
 				}
 			}
-			else if (token.CmpNoCase("pic") == 0)
+			else if (strutil::equalCI(token, "pic"))
 			{
-				wxString tex_name;
-				long     tex_num;
-				int      tex_number_digit_chars;
+				string tex_name;
+				int    tex_num;
+				int    tex_number_digit_chars;
 
 				token = tz.getToken();
 
@@ -1662,46 +1664,46 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 					// If the name part is empty, we just have a number
 					if (tex_name.empty())
 					{
-						wxString animated_tex_name = get_animated_tex_name(
+						string animated_tex_name = get_animated_tex_name(
 							curr_full_tex_name, tex_num, curr_tex_number_digit_chars);
 						exclude_tex[animated_tex_name].used = true;
 
-						log::info(wxString::Format("Found pic animated texture definition %s.", animated_tex_name));
+						log::info("Found pic animated texture definition {}.", animated_tex_name);
 					}
 					else
 					{
 						exclude_tex[token].used = true;
 
-						log::info(wxString::Format("Found pic animated texture definition %s.", token));
+						log::info("Found pic animated texture definition {}.", token);
 					}
 				}
 				else
 				{
 					exclude_tex[token].used = true;
 
-					log::info(wxString::Format("Found pic animated texture definition %s.", token));
+					log::info("Found pic animated texture definition {}.", token);
 				}
 			}
-			else if (token.CmpNoCase("cameratexture") == 0)
+			else if (strutil::equalCI(token, "cameratexture"))
 			{
 				token                   = tz.getToken();
 				exclude_tex[token].used = true;
 
-				log::info(wxString::Format("Found cameratexture animated texture definition %s.", token));
+				log::info("Found cameratexture animated texture definition {}.", token);
 			}
-			else if (token.CmpNoCase("switch") == 0)
+			else if (strutil::equalCI(token, "switch"))
 			{
 				token                   = tz.getToken();
 				exclude_tex[token].used = true;
 
-				log::info(wxString::Format("Found switch animated texture definition %s.", token));
+				log::info("Found switch animated texture definition {}.", token);
 			}
-			else if (token.CmpNoCase("animateddoor") == 0)
+			else if (strutil::equalCI(token, "animateddoor"))
 			{
 				token                   = tz.getToken();
 				exclude_tex[token].used = true;
 
-				log::info(wxString::Format("Found animated door animated texture definition %s.", token));
+				log::info("Found animated door animated texture definition {}.", token);
 			}
 
 			// Next token
@@ -1715,7 +1717,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	auto textures           = archive->findAll(tex_opt);
 
 	// Create list of all unused textures
-	wxArrayString         unused_tex;
+	vector<string>        unused_tex;
 	vector<ArchiveEntry*> unused_entries;
 	for (auto& texture : textures)
 	{
@@ -1728,7 +1730,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		// TODO: When animdefs parser is more reliable, exclude animated textures here
 		if (!used_textures[texture_name].used)
 		{
-			unused_tex.Add(texture_name);
+			unused_tex.push_back(texture_name);
 			unused_entries.push_back(texture);
 		}
 	}
@@ -1736,10 +1738,10 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	// Pop up a dialog with a checkbox list of unused flats
 	wxMultiChoiceDialog textures_dialog(
 		theMainWindow,
-		"The following textures are not used in any map,\nselect which textures to delete. Textures found in Animdefs "
-		"are unselected by default.",
-		"Delete Unused Textures",
-		unused_tex);
+		wxS("The following textures are not used in any map,\nselect which textures to delete. Textures found in "
+			"Animdefs are unselected by default."),
+		wxS("Delete Unused Textures"),
+		wxutil::arrayStringStd(unused_tex));
 
 	// Select all textures initially
 	wxArrayInt selection;
@@ -1762,7 +1764,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		}
 	}
 
-	wxMessageBox(wxString::Format("Removed %d unused textures", n_removed));
+	wxMessageBox(WX_FMT("Removed {} unused textures", n_removed));
 
 	// Find all flats
 	Archive::SearchOptions flat_opt;
@@ -1783,7 +1785,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		// TODO: When animdefs parser is more reliable, exclude animated textures here
 		if (!used_textures[flatname].used)
 		{
-			unused_tex.Add(flatname);
+			unused_tex.push_back(flatname);
 			unused_entries.push_back(flat);
 		}
 	}
@@ -1791,10 +1793,10 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	// Pop up a dialog with a checkbox list of unused flats
 	wxMultiChoiceDialog flats_dialog(
 		theMainWindow,
-		"The following flats are not used in any map,\nselect which flats to delete. Textures found in Animdefs are "
-		"unselected by default.",
-		"Delete Unused Flats",
-		unused_tex);
+		wxS("The following flats are not used in any map,\nselect which flats to delete. Textures found in Animdefs "
+			"are unselected by default."),
+		wxS("Delete Unused Flats"),
+		wxutil::arrayStringStd(unused_tex));
 
 	// Select all flats initially
 	selection.clear();
@@ -1817,7 +1819,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		}
 	}
 
-	wxMessageBox(wxString::Format("Removed %d unused flats", n_removed));
+	wxMessageBox(WX_FMT("Removed {} unused flats", n_removed));
 
 	auto process_texture_list = [archive, &used_textures, &exclude_tex, &unused_tex, &selection, &n_removed](
 									ArchiveEntry* texture_archive_entry, TextureXList& texture_list, PatchTable* ptable)
@@ -1836,18 +1838,18 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 			// TODO: When animdefs parser is more reliable, exclude animated textures here
 			if (!used_textures[texture->name()].used)
-				unused_tex.Add(texture->name());
+				unused_tex.push_back(texture->name());
 		}
 
 		// Pop up a dialog with a checkbox list of unused flats
 		wxMultiChoiceDialog textures_dialog(
 			theMainWindow,
-			wxString::Format(
-				"The following textures in entry %s are not used in any map,\nselect which textures to delete. "
+			WX_FMT(
+				"The following textures in entry {} are not used in any map,\nselect which textures to delete. "
 				"Textures found in Animdefs are unselected by default.",
 				texture_archive_entry->name()),
-			"Delete Unused Textures",
-			unused_tex);
+			wxS("Delete Unused Textures"),
+			wxutil::arrayStringStd(unused_tex));
 
 		// Select all textures initially
 		selection.clear();
@@ -1870,7 +1872,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 			}
 		}
 
-		wxMessageBox(wxString::Format("Removed %d unused textures", n_removed));
+		wxMessageBox(WX_FMT("Removed {} unused textures", n_removed));
 
 		if (texture_list.size())
 		{
@@ -1927,8 +1929,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 	archive->save();
 
-	wxMessageBox(
-		wxString::Format("Archive %s has been saved to disk. You can reopen it in SLADE now.", archive->filename()));
+	wxMessageBox(WX_FMT("Archive {} has been saved to disk. You can reopen it in SLADE now.", archive->filename()));
 	app::archiveManager().closeArchive(archive);
 }
 
@@ -2051,15 +2052,15 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 
 	if (found_duplicates.empty())
 	{
-		wxMessageBox("No duplicated textures exist");
+		wxMessageBox(wxS("No duplicated textures exist"));
 		return false;
 	}
 
-	wxString dups = "";
+	string dups;
 
 	for (string duplicate_entry : found_duplicates)
 	{
-		dups += wxString::Format("\n%s", duplicate_entry);
+		dups += fmt::format("\n{}", duplicate_entry);
 
 		auto duplicated_entries_range = found_entries.equal_range(duplicate_entry);
 
@@ -2067,7 +2068,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 			 ++entry_iter)
 		{
 			ArchiveEntry* duplicated_entry = entry_iter->second;
-			dups += wxString::Format("\n\t%s%s", duplicated_entry->path(), duplicated_entry->name());
+			dups += fmt::format("\n\t{}{}", duplicated_entry->path(), duplicated_entry->name());
 		}
 	}
 
@@ -2133,15 +2134,15 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 
 	if (found_duplicates.empty())
 	{
-		wxMessageBox("No duplicated patches exist");
+		wxMessageBox(wxS("No duplicated patches exist"));
 		return false;
 	}
 
-	wxString dups = "";
+	string dups;
 
 	for (string duplicate_entry : found_duplicates)
 	{
-		dups += wxString::Format("\n%s", duplicate_entry);
+		dups += fmt::format("\n{}", duplicate_entry);
 
 		auto duplicated_entries_range = found_entries.equal_range(duplicate_entry);
 
@@ -2149,7 +2150,7 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 			 ++entry_iter)
 		{
 			ArchiveEntry* duplicated_entry = entry_iter->second;
-			dups += wxString::Format("\n\t%s%s", duplicated_entry->path(), duplicated_entry->name());
+			dups += fmt::format("\n\t{}{}", duplicated_entry->path(), duplicated_entry->name());
 		}
 	}
 
@@ -2295,8 +2296,8 @@ size_t archiveoperations::replaceThings(Archive* archive, int oldtype, int newty
 		return changed;
 
 	// Get all maps
-	auto     maps   = archive->detectMaps();
-	wxString report = "";
+	auto   maps = archive->detectMaps();
+	string report;
 
 	for (auto& map : maps)
 	{
@@ -2369,7 +2370,7 @@ size_t archiveoperations::replaceThings(Archive* archive, int oldtype, int newty
 				}
 			}
 		}
-		report += wxString::Format("%s:\t%i things changed\n", m_head->name(), achanged);
+		report += fmt::format("{}:\t{} things changed\n", m_head->name(), achanged);
 		changed += achanged;
 	}
 	log::info(1, report);
@@ -2666,8 +2667,8 @@ size_t archiveoperations::replaceSpecials(
 		return changed;
 
 	// Get all maps
-	auto     maps   = archive->detectMaps();
-	wxString report = "";
+	auto   maps = archive->detectMaps();
+	string report;
 
 	for (auto& map : maps)
 	{
@@ -2822,7 +2823,7 @@ size_t archiveoperations::replaceSpecials(
 				}
 			}
 		}
-		report += wxString::Format("%s:\t%i specials changed\n", m_head->name(), achanged);
+		report += fmt::format("{}:\t{} specials changed\n", m_head->name(), achanged);
 		changed += achanged;
 	}
 	log::info(1, report);
@@ -2851,7 +2852,7 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 		case 6: arg1 = strutil::toInt(args[oldtail--], oldarg1) && strutil::toInt(args[newtail--], newarg1);
 		case 4: arg0 = strutil::toInt(args[oldtail--], oldarg0) && strutil::toInt(args[newtail--], newarg0);
 		case 2: run = strutil::toInt(args[oldtail--], oldtype) && strutil::toInt(args[newtail--], newtype); break;
-		default: log::warning(wxString::Format("Invalid number of arguments: %d", fullarg));
+		default: log::warning("Invalid number of arguments: {}", fullarg);
 		}
 	}
 
@@ -2881,10 +2882,10 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 	}
 }
 
-bool replaceTextureString(char* str, wxString oldtex, wxString newtex)
+bool replaceTextureString(char* str, string oldtex, string newtex)
 {
 	bool go = true;
-	for (unsigned c = 0; c < oldtex.Length(); ++c)
+	for (unsigned c = 0; c < oldtex.size(); ++c)
 	{
 		if (str[c] != oldtex[c] && oldtex[c] != '?' && oldtex[c] != '*')
 			go = false;
@@ -2895,7 +2896,7 @@ bool replaceTextureString(char* str, wxString oldtex, wxString newtex)
 	{
 		for (unsigned i = 0; i < 8; ++i)
 		{
-			if (i < newtex.Len())
+			if (i < newtex.size())
 			{
 				// Keep the rest of the name as-is?
 				if (newtex[i] == '*')
@@ -2912,12 +2913,7 @@ bool replaceTextureString(char* str, wxString oldtex, wxString newtex)
 	}
 	return go;
 }
-size_t replaceFlatsDoomHexen(
-	ArchiveEntry*   entry,
-	const wxString& oldtex,
-	const wxString& newtex,
-	bool            floor,
-	bool            ceiling)
+size_t replaceFlatsDoomHexen(ArchiveEntry* entry, const string& oldtex, const string& newtex, bool floor, bool ceiling)
 {
 	if (entry == nullptr)
 		return 0;
@@ -2949,12 +2945,12 @@ size_t replaceFlatsDoomHexen(
 	return changed;
 }
 size_t replaceWallsDoomHexen(
-	ArchiveEntry*   entry,
-	const wxString& oldtex,
-	const wxString& newtex,
-	bool            lower,
-	bool            middle,
-	bool            upper)
+	ArchiveEntry* entry,
+	const string& oldtex,
+	const string& newtex,
+	bool          lower,
+	bool          middle,
+	bool          upper)
 {
 	if (entry == nullptr)
 		return 0;
@@ -2989,7 +2985,7 @@ size_t replaceWallsDoomHexen(
 
 	return changed;
 }
-size_t replaceFlatsDoom64(ArchiveEntry* entry, const wxString& oldtex, const wxString& newtex, bool floor, bool ceiling)
+size_t replaceFlatsDoom64(ArchiveEntry* entry, const string& oldtex, const string& newtex, bool floor, bool ceiling)
 {
 	if (entry == nullptr)
 		return 0;
@@ -2999,8 +2995,8 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, const wxString& oldtex, const wxS
 	bool   fchanged, cchanged;
 	size_t changed = 0;
 
-	uint16_t oldhash = app::resources().getTextureHash(oldtex.ToStdString());
-	uint16_t newhash = app::resources().getTextureHash(newtex.ToStdString());
+	uint16_t oldhash = app::resources().getTextureHash(oldtex);
+	uint16_t newhash = app::resources().getTextureHash(newtex);
 
 	auto sectors = new Doom64MapFormat::Sector[numsectors];
 	memcpy(sectors, entry->rawData(), size);
@@ -3030,12 +3026,12 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, const wxString& oldtex, const wxS
 	return changed;
 }
 size_t replaceWallsDoom64(
-	ArchiveEntry*   entry,
-	const wxString& oldtex,
-	const wxString& newtex,
-	bool            lower,
-	bool            middle,
-	bool            upper)
+	ArchiveEntry* entry,
+	const string& oldtex,
+	const string& newtex,
+	bool          lower,
+	bool          middle,
+	bool          upper)
 {
 	if (entry == nullptr)
 		return 0;
@@ -3045,8 +3041,8 @@ size_t replaceWallsDoom64(
 	bool   lchanged, mchanged, uchanged;
 	size_t changed = 0;
 
-	uint16_t oldhash = app::resources().getTextureHash(oldtex.ToStdString());
-	uint16_t newhash = app::resources().getTextureHash(newtex.ToStdString());
+	uint16_t oldhash = app::resources().getTextureHash(oldtex);
+	uint16_t newhash = app::resources().getTextureHash(newtex);
 
 	auto sides = new Doom64MapFormat::SideDef[numsides];
 	memcpy(sides, entry->rawData(), size);
@@ -3081,14 +3077,14 @@ size_t replaceWallsDoom64(
 	return changed;
 }
 size_t replaceTexturesUDMF(
-	ArchiveEntry*   entry,
-	const wxString& oldtex,
-	const wxString& newtex,
-	bool            floor,
-	bool            ceiling,
-	bool            lower,
-	bool            middle,
-	bool            upper)
+	ArchiveEntry* entry,
+	const string& oldtex,
+	const string& newtex,
+	bool          floor,
+	bool          ceiling,
+	bool          lower,
+	bool          middle,
+	bool          upper)
 {
 	if (entry == nullptr)
 		return 0;
@@ -3103,14 +3099,14 @@ size_t replaceTexturesUDMF(
 	return changed;
 }
 size_t archiveoperations::replaceTextures(
-	Archive*        archive,
-	const wxString& oldtex,
-	const wxString& newtex,
-	bool            floor,
-	bool            ceiling,
-	bool            lower,
-	bool            middle,
-	bool            upper)
+	Archive*      archive,
+	const string& oldtex,
+	const string& newtex,
+	bool          floor,
+	bool          ceiling,
+	bool          lower,
+	bool          middle,
+	bool          upper)
 {
 	size_t changed = 0;
 	// Check archive was given
@@ -3118,8 +3114,8 @@ size_t archiveoperations::replaceTextures(
 		return changed;
 
 	// Get all maps
-	auto     maps   = archive->detectMaps();
-	wxString report = "";
+	auto   maps = archive->detectMaps();
+	string report;
 
 	for (auto& map : maps)
 	{
@@ -3218,7 +3214,7 @@ size_t archiveoperations::replaceTextures(
 				}
 			}
 		}
-		report += wxString::Format("%s:\t%i elements changed\n", m_head->name(), achanged);
+		report += fmt::format("{}:\t{} elements changed\n", m_head->name(), achanged);
 		changed += achanged;
 	}
 	log::info(1, report);

@@ -35,6 +35,7 @@
 #include "DirArchive.h"
 #include "App.h"
 #include "General/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "WadArchive.h"
@@ -91,8 +92,8 @@ bool DirArchive::open(string_view filename)
 	ui::setSplashProgress(0);
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs, ignore_hidden_);
-	const wxDir         dir(string{ filename });
-	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
+	const wxDir         dir(wxutil::strFromView(filename));
+	dir.Traverse(traverser, wxEmptyString, wxDIR_FILES | wxDIR_DIRS);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	const ArchiveModSignalBlocker sig_blocker{ *this };
@@ -228,8 +229,8 @@ bool DirArchive::save(string_view filename)
 	long                time = app::runTimer();
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs, archive_dir_ignore_hidden);
-	const wxDir         dir(filename_);
-	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
+	const wxDir         dir(wxString::FromUTF8(filename_));
+	dir.Traverse(traverser, wxEmptyString, wxDIR_FILES | wxDIR_DIRS);
 	log::info(2, "GetAllFiles took {}ms", app::runTimer() - time);
 
 	// Check for any files to remove

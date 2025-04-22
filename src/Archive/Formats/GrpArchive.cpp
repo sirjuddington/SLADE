@@ -260,7 +260,7 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open grpfile
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -329,7 +329,7 @@ bool GrpArchive::isGrpArchive(MemChunk& mc)
 bool GrpArchive::isGrpArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

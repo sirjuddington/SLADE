@@ -7,8 +7,8 @@
 # Static linking
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-# Enable big objects
-add_compile_options(/bigobj)
+# Enable big objects and utf8
+add_compile_options(/bigobj /utf-8)
 
 
 # Dependencies -----------------------------------------------------------------

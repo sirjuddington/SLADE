@@ -12,7 +12,7 @@ namespace game
 class ThingBrowserItem : public BrowserItem
 {
 public:
-	ThingBrowserItem(const wxString& name, const game::ThingType& type, unsigned index) :
+	ThingBrowserItem(const string& name, const game::ThingType& type, unsigned index) :
 		BrowserItem{ name, index },
 		type_{ type }
 	{

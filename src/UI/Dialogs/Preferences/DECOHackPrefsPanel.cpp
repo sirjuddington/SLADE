@@ -71,7 +71,7 @@ DECOHackPrefsPanel::DECOHackPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 		filedialog::executableFileName("java"));
 	flp_decohack_path_ = new FileLocationPanel(
 		this, path_decohack, true, "Browse For DoomTools Jar", "Jar Files|*.jar", "doomtools.jar");
-	cb_always_show_output_ = new wxCheckBox(this, -1, "Always Show Compiler Output");
+	cb_always_show_output_ = new wxCheckBox(this, -1, wxS("Always Show Compiler Output"));
 
 	setupLayout();
 }
@@ -91,8 +91,8 @@ void DECOHackPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void DECOHackPrefsPanel::applyPreferences()
 {
-	path_decohack = wxutil::strToView(flp_decohack_path_->location());
-	path_java     = wxutil::strToView(flp_java_path_->location());
+	path_decohack = flp_decohack_path_->location();
+	path_java     = flp_java_path_->location();
 
 	decohack_always_show_output = cb_always_show_output_->GetValue();
 }

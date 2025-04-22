@@ -276,7 +276,7 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open gobfile
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -339,7 +339,7 @@ bool GobArchive::isGobArchive(MemChunk& mc)
 bool GobArchive::isGobArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

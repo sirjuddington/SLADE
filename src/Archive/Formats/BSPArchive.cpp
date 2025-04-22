@@ -302,7 +302,7 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check it opened
 	if (!file.IsOpened())
@@ -450,7 +450,7 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 bool BSPArchive::isBSPArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

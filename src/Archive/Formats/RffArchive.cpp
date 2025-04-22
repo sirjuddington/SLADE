@@ -333,7 +333,7 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open rff file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -419,7 +419,7 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 bool RffArchive::isRffArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

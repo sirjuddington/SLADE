@@ -40,7 +40,7 @@ public:
 	SStartPage*              startPage() const { return start_page_; }
 
 #ifdef USE_WEBVIEW_STARTPAGE
-	void openDocs(const wxString& page_name = "");
+	void openDocs(string_view page_name = "");
 #endif
 
 private:

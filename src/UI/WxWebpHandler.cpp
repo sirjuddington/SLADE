@@ -51,7 +51,7 @@ bool DecodeWebPDataIntoImage(wxImage* image, WebPData* webp_data, bool verbose)
 	{
 		if (verbose)
 		{
-			wxLogError("WebP: GetFeatures not OK.");
+			slade::log::error("WebP: GetFeatures not OK.");
 		}
 		return false;
 	}
@@ -64,7 +64,7 @@ bool DecodeWebPDataIntoImage(wxImage* image, WebPData* webp_data, bool verbose)
 		{
 			if (verbose)
 			{
-				wxLogError("WebP: WebPDecodeRGBA failed.");
+				slade::log::error("WebP: WebPDecodeRGBA failed.");
 			}
 			return false;
 		}
@@ -92,7 +92,7 @@ bool DecodeWebPDataIntoImage(wxImage* image, WebPData* webp_data, bool verbose)
 		{
 			if (verbose)
 			{
-				wxLogError("WebP: WebPDecodeRGBInto failed.");
+				slade::log::error("WebP: WebPDecodeRGBInto failed.");
 			}
 			return false;
 		}
@@ -148,7 +148,7 @@ WebPDemuxerPtr CreateDemuxer(wxInputStream& stream, bool verbose = false)
 		delete mos;
 		if (verbose)
 		{
-			wxLogError("WebP: WebPDemux failed.");
+			slade::log::error("WebP: WebPDemux failed.");
 		}
 	}
 	return demux;

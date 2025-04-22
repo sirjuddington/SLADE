@@ -11,7 +11,7 @@ public:
 	~ResourceArchiveChooser() {}
 
 	vector<Archive*> selectedResourceArchives();
-	wxString         selectedResourceList();
+	string           selectedResourceList();
 
 private:
 	wxCheckListBox*  list_resources_    = nullptr;

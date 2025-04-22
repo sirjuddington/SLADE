@@ -5,11 +5,11 @@ namespace slade
 class ExtMessageDialog : public wxDialog
 {
 public:
-	ExtMessageDialog(wxWindow* parent, const wxString& caption);
+	ExtMessageDialog(wxWindow* parent, string_view caption);
 	~ExtMessageDialog() = default;
 
-	void setMessage(const wxString& message) const;
-	void setExt(const wxString& text) const;
+	void setMessage(const string& message) const;
+	void setExt(const string& text) const;
 
 private:
 	wxStaticText* label_message_ = nullptr;
