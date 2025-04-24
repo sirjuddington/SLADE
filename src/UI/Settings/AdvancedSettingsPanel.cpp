@@ -62,8 +62,8 @@ AdvancedSettingsPanel::AdvancedSettingsPanel(wxWindow* parent) : SettingsPanel(p
 		new wxStaticText(
 			this,
 			-1,
-			"Warning: Only modify these values if you know what you are doing!\n"
-			"Most of these settings can be changed more safely from the other sections."),
+			wxS("Warning: Only modify these values if you know what you are doing!\n"
+				"Most of these settings can be changed more safely from the other sections.")),
 		LayoutHelper(this).sfWithLargeBorder(0, wxBOTTOM).Expand());
 
 	// Add property grid
@@ -102,15 +102,16 @@ void AdvancedSettingsPanel::refreshPropGrid() const
 		auto cvar = CVar::get(name);
 
 		// Add to grid depending on type
+		auto name_wx = wxString::FromUTF8(name);
 		if (cvar->type == CVar::Type::Boolean)
-			pg_cvars_->Append(new wxBoolProperty(name, name, cvar->getValue().Bool));
+			pg_cvars_->Append(new wxBoolProperty(name_wx, name_wx, cvar->getValue().Bool));
 		else if (cvar->type == CVar::Type::Integer)
-			pg_cvars_->Append(new wxIntProperty(name, name, cvar->getValue().Int));
+			pg_cvars_->Append(new wxIntProperty(name_wx, name_wx, cvar->getValue().Int));
 		else if (cvar->type == CVar::Type::Float)
-			pg_cvars_->Append(new wxFloatProperty(name, name, cvar->getValue().Float));
+			pg_cvars_->Append(new wxFloatProperty(name_wx, name_wx, cvar->getValue().Float));
 		else if (cvar->type == CVar::Type::String)
 			pg_cvars_->Append(
-				new wxStringProperty(name, name, wxString::Format("%s", dynamic_cast<CStringCVar*>(cvar)->value)));
+				new wxStringProperty(name_wx, name_wx, wxString::FromUTF8(static_cast<CStringCVar*>(cvar)->value)));
 	}
 
 	// Set all bool properties to use checkboxes
@@ -132,24 +133,24 @@ void AdvancedSettingsPanel::applySettings()
 		auto cvar = CVar::get(name);
 
 		// Check if cvar value was even modified
-		if (!pg_cvars_->GetProperty(name)->HasFlag(wxPG_PROP_MODIFIED))
+		auto name_wx = wxString::FromUTF8(name);
+		if (!pg_cvars_->GetProperty(name_wx)->HasFlag(wxPG_PROP_MODIFIED))
 		{
 			// If unmodified, it might still have been changed in another panel, so refresh it
 			if (cvar->type == CVar::Type::Boolean)
-				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Bool);
+				pg_cvars_->SetPropertyValue(name_wx, cvar->getValue().Bool);
 			else if (cvar->type == CVar::Type::Integer)
-				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Int);
+				pg_cvars_->SetPropertyValue(name_wx, cvar->getValue().Int);
 			else if (cvar->type == CVar::Type::Float)
-				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Float);
+				pg_cvars_->SetPropertyValue(name_wx, cvar->getValue().Float);
 			else if (cvar->type == CVar::Type::String)
-				pg_cvars_->SetPropertyValue(
-					wxString(name), wxString::Format("%s", dynamic_cast<CStringCVar*>(cvar)->value));
+				pg_cvars_->SetPropertyValue(name_wx, wxString::FromUTF8(static_cast<CStringCVar*>(cvar)->value));
 
 			continue;
 		}
 
 		// Read value from grid depending on type
-		auto value = pg_cvars_->GetPropertyValue(wxString(name));
+		auto value = pg_cvars_->GetPropertyValue(name_wx);
 		if (cvar->type == CVar::Type::Integer)
 			*dynamic_cast<CIntCVar*>(cvar) = value.GetInteger();
 		else if (cvar->type == CVar::Type::Boolean)
@@ -157,9 +158,9 @@ void AdvancedSettingsPanel::applySettings()
 		else if (cvar->type == CVar::Type::Float)
 			*dynamic_cast<CFloatCVar*>(cvar) = value.GetDouble();
 		else if (cvar->type == CVar::Type::String)
-			*dynamic_cast<CStringCVar*>(cvar) = wxutil::strToView(value.GetString());
+			*((CStringCVar*)cvar) = value.GetString().utf8_string();
 
-		pg_cvars_->GetProperty(name)->SetModifiedStatus(false);
+		pg_cvars_->GetProperty(name_wx)->SetModifiedStatus(false);
 	}
 
 	pg_cvars_->Refresh();

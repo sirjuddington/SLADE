@@ -86,13 +86,13 @@ private:
 
 	struct ASTVGroup
 	{
-		wxString       name;
+		string         name;
 		wxDataViewItem item;
-		ASTVGroup(wxDataViewItem i, const wxString& name) : name{ name }, item{ i } {}
+		ASTVGroup(wxDataViewItem i, const string& name) : name{ name }, item{ i } {}
 	};
 	vector<ASTVGroup> groups_;
 
-	wxDataViewItem getGroup(const wxString& group_name);
+	wxDataViewItem getGroup(const string& group_name);
 };
 } // namespace slade
 
@@ -102,7 +102,7 @@ private:
 ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeCtrl{ parent, -1 }, root_{ nullptr }
 {
 	// Add 'None'
-	item_none_ = AppendItem(root_, "0: None");
+	item_none_ = AppendItem(root_, wxS("0: None"));
 
 	// Computing the minimum width of the tree is slightly complicated, since
 	// wx doesn't expose it to us directly
@@ -117,7 +117,7 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 		if (!i.second.defined())
 			continue;
 
-		wxString label = wxString::Format("%d: %s", i.second.number(), i.second.name());
+		wxString label = WX_FMT("{}: {}", i.second.number(), i.second.name());
 		textsize.IncTo(dc.GetTextExtent(label));
 		sorted_specials_.push_back({ &i.second, label, {} });
 	}
@@ -303,7 +303,7 @@ void ActionSpecialTreeView::filterSpecials(string filter)
 // -----------------------------------------------------------------------------
 // Returns the parent wxDataViewItem representing action special group [group]
 // -----------------------------------------------------------------------------
-wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
+wxDataViewItem ActionSpecialTreeView::getGroup(const string& group_name)
 {
 	// Check if group was already made
 	for (auto& group : groups_)
@@ -313,11 +313,11 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
 	}
 
 	// Split group into subgroups
-	auto path = wxSplit(group_name, '/');
+	auto path = strutil::splitV(group_name, '/');
 
 	// Create group needed
-	auto     current  = root_;
-	wxString fullpath = "";
+	auto   current = root_;
+	string fullpath;
 	for (unsigned p = 0; p < path.size(); p++)
 	{
 		if (p > 0)
@@ -337,7 +337,7 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
 
 		if (!found)
 		{
-			current = AppendContainer(current, path[p]);
+			current = AppendContainer(current, wxutil::strFromView(path[p]));
 			groups_.emplace_back(current, fullpath);
 		}
 	}
@@ -370,11 +370,11 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 		// Action Special radio button
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
-		rb_special_ = new wxRadioButton(this, -1, "Action Special", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+		rb_special_ = new wxRadioButton(this, -1, wxS("Action Special"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 		hbox->Add(rb_special_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 		// Generalised Special radio button
-		rb_generalised_ = new wxRadioButton(this, -1, "Generalised Special");
+		rb_generalised_ = new wxRadioButton(this, -1, wxS("Generalised Special"));
 		hbox->Add(rb_generalised_, wxSizerFlags().Expand());
 
 		// Boom generalised line special panel
@@ -419,7 +419,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 			// change, or we'll alter the text and recurse into it.  Disable the event while calling it
 			auto selection       = selectedSpecial();
 			ignore_select_event_ = true;
-			tree_specials_->filterSpecials(text_special_->GetValue().ToStdString());
+			tree_specials_->filterSpecials(text_special_->GetValue().utf8_string());
 			ignore_select_event_ = false;
 
 			if (selection != selectedSpecial())
@@ -442,17 +442,17 @@ void ActionSpecialPanel::setupSpecialPanel()
 			auto& props = game::configuration().allUDMFProperties(MapObject::Type::Line);
 
 			// Get all UDMF trigger properties
-			std::map<wxString, wxFlexGridSizer*> named_flexgrids;
+			std::map<string, wxFlexGridSizer*> named_flexgrids;
 			for (auto& i : props)
 			{
 				if (!i.second.isTrigger())
 					continue;
 
-				wxString group       = i.second.group();
-				auto     frame_sizer = named_flexgrids[group];
+				auto group       = i.second.group();
+				auto frame_sizer = named_flexgrids[group];
 				if (!frame_sizer)
 				{
-					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
+					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, wxString::FromUTF8(group));
 					auto sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
 					sizer->Add(sizer_triggers, lh.sfWithBorder(0, wxTOP).Expand());
 
@@ -466,7 +466,12 @@ void ActionSpecialPanel::setupSpecialPanel()
 				}
 
 				auto cb_trigger = new wxCheckBox(
-					panel_action_special_, -1, i.second.name(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+					panel_action_special_,
+					-1,
+					wxString::FromUTF8(i.second.name()),
+					wxDefaultPosition,
+					wxDefaultSize,
+					wxCHK_3STATE);
 				frame_sizer->Add(cb_trigger, wxSizerFlags().Expand());
 
 				flags_.push_back({ cb_trigger, -1, i.second.propName() });
@@ -476,7 +481,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 		// Hexen trigger
 		else if (mapeditor::editContext().mapDesc().format == MapFormat::Hexen)
 		{
-			auto frame_trigger = new wxStaticBox(panel_action_special_, -1, "Special Trigger");
+			auto frame_trigger = new wxStaticBox(panel_action_special_, -1, wxS("Special Trigger"));
 			auto sizer_trigger = new wxStaticBoxSizer(frame_trigger, wxVERTICAL);
 			sizer->Add(sizer_trigger, lh.sfWithBorder().Expand());
 
@@ -496,7 +501,8 @@ void ActionSpecialPanel::setupSpecialPanel()
 				if (game::configuration().lineFlag(a).activation)
 				{
 					flags_.push_back(
-						{ new wxCheckBox(panel_action_special_, -1, game::configuration().lineFlag(a).name),
+						{ new wxCheckBox(
+							  panel_action_special_, -1, wxString::FromUTF8(game::configuration().lineFlag(a).name)),
 						  static_cast<int>(a),
 						  game::configuration().lineFlag(a).udmf });
 					fg_sizer->Add(flags_.back().check_box, 0, wxEXPAND);
@@ -505,7 +511,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 		}
 
 		// Preset button
-		btn_preset_ = new wxButton(panel_action_special_, -1, "Preset...");
+		btn_preset_ = new wxButton(panel_action_special_, -1, wxS("Preset..."));
 		sizer->Add(btn_preset_, lh.sfWithBorder(0, wxTOP).Right());
 		btn_preset_->Bind(wxEVT_BUTTON, &ActionSpecialPanel::onSpecialPresetClicked, this);
 	}
@@ -535,7 +541,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	// Regular action special
 	showGeneralised(false);
 	tree_specials_->showSpecial(special, false);
-	text_special_->SetValue(wxString::Format("%d", special));
+	text_special_->SetValue(WX_FMT("{}", special));
 
 	updateArgsPanel();
 }
@@ -560,7 +566,7 @@ void ActionSpecialPanel::setTrigger(int index) const
 // -----------------------------------------------------------------------------
 // Sets the action special trigger from a udmf trigger name (hexen or udmf)
 // -----------------------------------------------------------------------------
-void ActionSpecialPanel::setTrigger(const wxString& trigger) const
+void ActionSpecialPanel::setTrigger(string_view trigger) const
 {
 	if (!show_trigger_)
 		return;
@@ -701,7 +707,7 @@ void ActionSpecialPanel::applyTo(const vector<MapObject*>& lines, bool apply_spe
 					game::configuration().setLineFlag(
 						flag.index, dynamic_cast<MapLine*>(line), flag.check_box->GetValue());
 				else
-					line->setBoolProperty(flag.udmf.ToStdString(), flag.check_box->GetValue());
+					line->setBoolProperty(flag.udmf, flag.check_box->GetValue());
 			}
 		}
 	}
@@ -779,7 +785,7 @@ void ActionSpecialPanel::openLines(const vector<MapObject*>& lines)
 			for (auto& flag : flags_)
 			{
 				bool set;
-				if (MapObject::multiBoolProperty(lines, flag.udmf.ToStdString(), set))
+				if (MapObject::multiBoolProperty(lines, flag.udmf, set))
 					flag.check_box->SetValue(set);
 				else
 					flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
@@ -832,7 +838,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 	}
 
 	// Set special # text box
-	text_special_->SetValue(wxString::Format("%d", selectedSpecial()));
+	text_special_->SetValue(WX_FMT("{}", selectedSpecial()));
 
 	updateArgsPanel();
 }

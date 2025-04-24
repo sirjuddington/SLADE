@@ -36,6 +36,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Graphics/SImage/SImage.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -61,21 +62,21 @@ vector<unique_ptr<SBrush>> brushes;
 // -----------------------------------------------------------------------------
 // SBrush class constructor
 // -----------------------------------------------------------------------------
-SBrush::SBrush(const wxString& name) : name_{ name }, icon_{ name.AfterFirst('_') }
+SBrush::SBrush(const string& name) : name_{ name }, icon_{ strutil::afterFirst(name, '_') }
 {
 	const auto res = app::archiveManager().programResourceArchive();
 	if (res == nullptr)
 		return;
-	auto file = res->entryAtPath(fmt::format("icons/general/16/{}.png", icon_.ToStdString()));
+	auto file = res->entryAtPath(fmt::format("icons/general/16/{}.png", icon_));
 	if (file == nullptr || file->size() == 0)
 	{
-		log::error(2, wxString::Format("error, no file at icons/general/16/%s.png", icon_));
+		log::error(2, "error, no file at icons/general/16/{}.png", icon_);
 		return;
 	}
 	image_ = std::make_unique<SImage>();
 	if (!image_->open(file->data(), 0, "png"))
 	{
-		log::error(2, wxString::Format("couldn't load image data for icons/general/16/%s.png", icon_));
+		log::error(2, "couldn't load image data for icons/general/16/{}.png", icon_);
 		return;
 	}
 	image_->convertAlphaMap(SImage::AlphaSource::Alpha);
@@ -107,10 +108,10 @@ uint8_t SBrush::pixel(int x, int y) const
 // -----------------------------------------------------------------------------
 // Get a brush from its name
 // -----------------------------------------------------------------------------
-SBrush* SBrush::get(const wxString& name)
+SBrush* SBrush::get(const string& name)
 {
 	for (auto& brush : brushes)
-		if (S_CMPNOCASE(name, brush->name()))
+		if (strutil::equalCI(name, brush->name()))
 			return brush.get();
 
 	return nullptr;

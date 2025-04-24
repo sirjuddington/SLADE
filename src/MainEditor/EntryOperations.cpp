@@ -43,7 +43,6 @@
 #include "BinaryControlLump.h"
 #include "Conversions.h"
 #include "General/Clipboard.h"
-#include "General/Console.h"
 #include "General/Misc.h"
 #include "General/UndoRedo.h"
 #include "General/UndoSteps/EntryDataUS.h"
@@ -70,6 +69,7 @@
 #include "UI/UI.h"
 #include "Utility/Colour.h"
 #include "Utility/FileMonitor.h"
+#include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -97,7 +97,7 @@ CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
 CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
 namespace
 {
-const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry %s, unsupported format for writing";
+const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry {}, unsupported format for writing";
 }
 
 
@@ -111,7 +111,7 @@ namespace
 // -----------------------------------------------------------------------------
 // Creates a vector of namespaces in a predefined order
 // -----------------------------------------------------------------------------
-void initNamespaceVector(vector<wxString>& ns, bool flathack)
+void initNamespaceVector(vector<string>& ns, bool flathack)
 {
 	ns.clear();
 	if (flathack)
@@ -161,7 +161,7 @@ int isInMap(size_t index, const vector<MapDesc>& maps)
 // namespace vector. Also hacks around a bit to put less entries in the global
 // namespace and allow sorting a bit by categories.
 // -----------------------------------------------------------------------------
-size_t getNamespaceNumber(const ArchiveEntry* entry, size_t index, vector<wxString>& ns, const vector<MapDesc>& maps)
+size_t getNamespaceNumber(const ArchiveEntry* entry, size_t index, vector<string>& ns, const vector<MapDesc>& maps)
 {
 	auto ens = entry->parent()->detectNamespace(index);
 	if (strutil::equalCI(ens, "global"))
@@ -179,7 +179,7 @@ size_t getNamespaceNumber(const ArchiveEntry* entry, size_t index, vector<wxStri
 		}
 	}
 	for (size_t n = 0; n < ns.size(); ++n)
-		if (S_CMPNOCASE(ns[n], ens))
+		if (strutil::equalCI(ns[n], ens))
 			return n;
 
 	ns.emplace_back(ens);
@@ -211,15 +211,17 @@ bool entryoperations::rename(const vector<ArchiveEntry*>& entries, Archive* arch
 		for (auto* entry : entries)
 		{
 			// Prompt for a new name
-			wxString new_name = wxGetTextFromUser("Enter new entry name:", "Rename", entry->name());
+			auto new_name = wxGetTextFromUser(
+								wxS("Enter new entry name:"), wxS("Rename"), wxString::FromUTF8(entry->name()))
+								.utf8_string();
 
 			// Rename entry (if needed)
-			if (!new_name.IsEmpty() && entry->name() != new_name)
+			if (!new_name.empty() && entry->name() != new_name)
 			{
-				if (!archive->renameEntry(entry, new_name.ToStdString()))
+				if (!archive->renameEntry(entry, new_name))
 					wxMessageBox(
-						wxString::Format("Unable to rename entry %s: %s", entry->name(), global::error),
-						"Rename Entry",
+						WX_FMT("Unable to rename entry {}: {}", entry->name(), global::error),
+						wxS("Rename Entry"),
 						wxICON_EXCLAMATION | wxOK);
 			}
 		}
@@ -236,12 +238,11 @@ bool entryoperations::rename(const vector<ArchiveEntry*>& entries, Archive* arch
 
 		// Prompt for a new name
 		auto new_name = wxGetTextFromUser(
-							"Enter new entry name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n% = alphabet "
-							"repeat number, "
-							"& = entry number, %% or && = n-1)",
-							"Rename",
-							filter)
-							.ToStdString();
+							wxS("Enter new entry name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n% = "
+								"alphabet repeat number, & = entry number, %% or && = n-1)"),
+							wxS("Rename"),
+							wxString::FromUTF8(filter))
+							.utf8_string();
 
 		// Apply mass rename to list of names
 		if (!new_name.empty())
@@ -277,8 +278,9 @@ bool entryoperations::rename(const vector<ArchiveEntry*>& entries, Archive* arch
 					// Rename in archive
 					if (!archive->renameEntry(entry, fn.fileName(), true))
 						wxMessageBox(
-							wxString::Format("Unable to rename entry %s: %s", entries[a]->name(), global::error),
-							"Rename Entry",
+							wxString::FromUTF8(
+								fmt::format("Unable to rename entry {}: {}", entries[a]->name(), global::error)),
+							wxS("Rename Entry"),
 							wxICON_EXCLAMATION | wxOK);
 				}
 			}
@@ -301,8 +303,10 @@ bool entryoperations::renameDir(const vector<ArchiveDir*>& dirs, Archive* archiv
 
 		// Prompt for a new name
 		auto new_name = wxGetTextFromUser(
-							"Enter new directory name:", wxString::Format("Rename Directory %s", old_name), old_name)
-							.ToStdString();
+							wxS("Enter new directory name:"),
+							WX_FMT("Rename Directory {}", old_name),
+							wxString::FromUTF8(old_name))
+							.utf8_string();
 
 		// Do nothing if no name was entered
 		if (new_name.empty())
@@ -324,21 +328,17 @@ bool entryoperations::renameDir(const vector<ArchiveDir*>& dirs, Archive* archiv
 // -----------------------------------------------------------------------------
 bool entryoperations::exportEntry(ArchiveEntry* entry)
 {
-	wxString   name = misc::lumpNameToFileName(entry->name());
-	wxFileName fn(name);
+	auto          name = misc::lumpNameToFileName(entry->name());
+	strutil::Path fn(name);
 
 	// Add appropriate extension if needed
-	if (fn.GetExt().Len() == 0)
-		fn.SetExt(entry->type()->extension());
+	if (!fn.hasExtension())
+		fn.setExtension(entry->type()->extension());
 
 	// Run save file dialog
 	filedialog::FDInfo info;
 	if (filedialog::saveFile(
-			info,
-			"Export Entry \"" + entry->name() + "\"",
-			"Any File (*.*)|*",
-			maineditor::windowWx(),
-			fn.GetFullName().ToStdString()))
+			info, "Export Entry \"" + entry->name() + "\"", "Any File (*.*)|*", maineditor::windowWx(), fn.fullPath()))
 		entry->exportFile(info.filenames[0]); // Export entry if ok was clicked
 
 	return true;
@@ -358,21 +358,21 @@ bool entryoperations::exportEntries(const vector<ArchiveEntry*>& entries, const 
 		for (auto& entry : entries)
 		{
 			// Setup entry filename
-			wxFileName fn(entry->name());
-			fn.SetPath(info.path);
+			strutil::Path fn(entry->name());
+			fn.setPath(info.path);
 
 			// Add file extension if it doesn't exist
-			if (!fn.HasExt())
+			if (!fn.hasExtension())
 			{
-				fn.SetExt(entry->type()->extension());
+				fn.setExtension(entry->type()->extension());
 
 				// ...unless a file already exists with said extension
-				if (wxFileExists(fn.GetFullPath()))
-					fn.SetEmptyExt();
+				if (fileutil::fileExists(fn.fullPath()))
+					fn.setExtension("");
 			}
 
 			// Do export
-			entry->exportFile(fn.GetFullPath().ToStdString());
+			entry->exportFile(fn.fullPath());
 		}
 
 		// Go through selected dirs
@@ -432,22 +432,22 @@ bool entryoperations::sortEntries(
 	if (indices.size() < 2)
 		return false;
 
-	vector<wxString> nspaces;
+	vector<string> nspaces;
 	initNamespaceVector(nspaces, dir.archive()->hasFlatHack());
 	auto maps = dir.archive()->detectMaps();
 
-	wxString ns  = dir.archive()->detectNamespace(dir.entryAt(indices[0]));
-	size_t   nsn = 0, lnsn = 0;
+	string ns  = dir.archive()->detectNamespace(dir.entryAt(indices[0]));
+	size_t nsn = 0, lnsn = 0;
 
 	// Fill a map with <entry name, entry index> pairs
-	std::map<wxString, size_t> emap;
+	std::map<string, size_t> emap;
 	emap.clear();
 	for (size_t i = 0; i < indices.size(); ++i)
 	{
-		bool     ns_changed = false;
-		int      mapindex   = isInMap(indices[i], maps);
-		wxString mapname;
-		auto     entry = dir.entryAt(indices[i]);
+		bool   ns_changed = false;
+		int    mapindex   = isInMap(indices[i], maps);
+		string mapname;
+		auto   entry = dir.entryAt(indices[i]);
 		if (!entry)
 			continue;
 
@@ -458,9 +458,9 @@ bool entryoperations::sortEntries(
 		// If not a WAD, do basic alphabetical sorting
 		if (archive.formatId() != "wad" && archive.formatId() != "wadj")
 		{
-			auto sortkey             = wxString::Format("%-64s%8d", entry->upperName(), indices[i]);
+			auto sortkey             = fmt::format("{:<64}{:8d}", entry->upperName(), indices[i]);
 			emap[sortkey]            = indices[i];
-			entry->exProp("sortkey") = sortkey.ToStdString();
+			entry->exProp("sortkey") = sortkey;
 
 			continue;
 		}
@@ -585,17 +585,17 @@ bool entryoperations::sortEntries(
 		// All map lumps have the same sortkey name so they stay grouped
 		if (mapindex > -1)
 		{
-			name = wxString::Format("%08d%-64s%8d", lnsn, mapname, indices[i]);
+			name = fmt::format("{:08d}{:<64}{:8d}", lnsn, mapname, indices[i]);
 		}
 		// Yet another hack! Make sure namespace start markers are first
 		else if (ns_changed)
 		{
-			name = wxString::Format("%08d%-64s%8d", lnsn, wxEmptyString, indices[i]);
+			name = fmt::format("{:08d}{:<64}{:8d}", lnsn, "", indices[i]);
 		}
 		// Generic case: actually use the entry name to sort
 		else
 		{
-			name = wxString::Format("%08d%-64s%8d", lnsn, ename, indices[i]);
+			name = fmt::format("{:08d}{:<64}{:8d}", lnsn, ename, indices[i]);
 		}
 		// Let the entry remember how it was sorted this time
 		entry->exProp("sortkey") = name;
@@ -648,25 +648,26 @@ bool entryoperations::openMapDB2(ArchiveEntry* entry)
 #ifdef __WXMSW__ // Windows only
 	wxString path = path_db2;
 
-	if (path.IsEmpty())
+	if (path.empty())
 	{
 		// Check for DB2 location registry key
-		wxRegKey key(wxRegKey::HKLM, "SOFTWARE\\CodeImp\\Doom Builder");
-		key.QueryValue("Location", path);
+		wxRegKey key(wxRegKey::HKLM, wxS("SOFTWARE\\CodeImp\\Doom Builder"));
+		key.QueryValue(wxS("Location"), path);
 
 		// Browse for executable if DB2 isn't installed
 		if (path.IsEmpty())
 		{
 			wxMessageBox(
-				"Could not find the installation directory of Doom Builder 2, please browse for the DB2 executable",
-				"Doom Builder 2 Not Found");
+				wxS("Could not find the installation directory of Doom Builder 2, please browse for the DB2 "
+					"executable"),
+				wxS("Doom Builder 2 Not Found"));
 
 			filedialog::FDInfo info;
 			if (filedialog::openFile(
 					info, "Browse for DB2 Executable", filedialog::executableExtensionString(), nullptr, "Builder.exe"))
 			{
 				path_db2 = info.filenames[0];
-				path     = info.filenames[0];
+				path     = wxString::FromUTF8(info.filenames[0]);
 			}
 			else
 				return false;
@@ -674,7 +675,7 @@ bool entryoperations::openMapDB2(ArchiveEntry* entry)
 		else
 		{
 			// Add default executable name
-			path += "\\Builder.exe";
+			path += wxS("\\Builder.exe");
 		}
 	}
 
@@ -721,16 +722,16 @@ bool entryoperations::openMapDB2(ArchiveEntry* entry)
 	}
 
 	// Generate Doom Builder command line
-	wxString cmd = wxString::Format("%s \"%s\" -map %s", path, filename, entry->name());
+	auto cmd = fmt::format("{} \"{}\" -map {}", path.utf8_string(), filename, entry->name());
 
 	// Add base resource archive to command line
 	auto base = app::archiveManager().baseResourceArchive();
 	if (base)
 	{
 		if (base->format() == ArchiveFormat::Wad)
-			cmd += wxString::Format(" -resource wad \"%s\"", base->filename());
+			cmd += fmt::format(" -resource wad \"{}\"", base->filename());
 		else if (base->format() == ArchiveFormat::Zip)
-			cmd += wxString::Format(" -resource pk3 \"%s\"", base->filename());
+			cmd += fmt::format(" -resource pk3 \"{}\"", base->filename());
 	}
 
 	// Add resource archives to command line
@@ -740,14 +741,14 @@ bool entryoperations::openMapDB2(ArchiveEntry* entry)
 
 		// Check archive type (only wad and zip supported by db2)
 		if (archive->format() == ArchiveFormat::Wad)
-			cmd += wxString::Format(" -resource wad \"%s\"", archive->filename());
+			cmd += fmt::format(" -resource wad \"{}\"", archive->filename());
 		else if (archive->format() == ArchiveFormat::Zip)
-			cmd += wxString::Format(" -resource pk3 \"%s\"", archive->filename());
+			cmd += fmt::format(" -resource pk3 \"{}\"", archive->filename());
 	}
 
 	// Run DB2
 	FileMonitor* fm = new DB2MapFileMonitor(filename, entry->parent(), string{ entry->nameNoExt() });
-	wxExecute(cmd, wxEXEC_ASYNC, fm->process());
+	wxExecute(wxString::FromUTF8(cmd), wxEXEC_ASYNC, fm->process());
 
 	return true;
 #else
@@ -801,12 +802,12 @@ bool entryoperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 	if (pnames->isLocked())
 	{
 		if (parent->isReadOnly())
-			wxMessageBox("Cannot perform this action on an IWAD", "Error", wxICON_ERROR);
+			wxMessageBox(wxS("Cannot perform this action on an IWAD"), wxS("Error"), wxICON_ERROR);
 		else
 			wxMessageBox(
-				"Cannot perform this action because one or more texture related entries is locked. Please close the "
-				"archive's texture editor if it is open.",
-				"Error",
+				wxS("Cannot perform this action because one or more texture related entries is locked. Please close "
+					"the archive's texture editor if it is open."),
+				wxS("Error"),
 				wxICON_ERROR);
 
 		return false;
@@ -893,12 +894,12 @@ bool entryoperations::createTexture(const vector<ArchiveEntry*>& entries)
 	if ((pnames && pnames->isLocked()) || texturex->isLocked())
 	{
 		if (parent->isReadOnly())
-			wxMessageBox("Cannot perform this action on an IWAD", "Error", wxICON_ERROR);
+			wxMessageBox(wxS("Cannot perform this action on an IWAD"), wxS("Error"), wxICON_ERROR);
 		else
 			wxMessageBox(
-				"Cannot perform this action because one or more texture related entries is locked. Please close the "
-				"archive's texture editor if it is open.",
-				"Error",
+				wxS("Cannot perform this action because one or more texture related entries is locked. Please close "
+					"the archive's texture editor if it is open."),
+				wxS("Error"),
 				wxICON_ERROR);
 
 		return false;
@@ -927,7 +928,7 @@ bool entryoperations::createTexture(const vector<ArchiveEntry*>& entries)
 		// Check entry type
 		if (!(entry->type()->extraProps().contains("image")))
 		{
-			log::error(wxString::Format("Entry %s is not a valid image", entry->name()));
+			log::error("Entry {} is not a valid image", entry->name());
 			continue;
 		}
 
@@ -1007,7 +1008,8 @@ bool entryoperations::convertTextures(const vector<ArchiveEntry*>& entries)
 	// Check it exists
 	if (!pnames)
 	{
-		wxMessageBox("Unable to convert - could not find PNAMES entry", "Convert to TEXTURES", wxICON_ERROR | wxOK);
+		wxMessageBox(
+			wxS("Unable to convert - could not find PNAMES entry"), wxS("Convert to TEXTURES"), wxICON_ERROR | wxOK);
 		return false;
 	}
 
@@ -1086,11 +1088,11 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 		return false;
 
 	int dialog_answer = wxMessageBox(
-		"Don't run this on TEXTURE entries unless your wad/archive is intended for newer more advanced source ports "
-		"like GZDoom. The newer source ports can still properly access iwad textures if you don't include their "
-		"entries in a pwad. However, older engines may rely on all of the iwad TEXTUREs being redefined in a pwad to "
-		"work correctly. You should have nothing to worry about for ZDoom Format TEXTURES files.",
-		"Remove duplicate texture entries.",
+		wxS("Don't run this on TEXTURE entries unless your wad/archive is intended for newer more advanced source "
+			"ports like GZDoom. The newer source ports can still properly access iwad textures if you don't include "
+			"their entries in a pwad. However, older engines may rely on all of the iwad TEXTUREs being redefined in a "
+			"pwad to work correctly. You should have nothing to worry about for ZDoom Format TEXTURES files."),
+		wxS("Remove duplicate texture entries."),
 		wxOK | wxCANCEL | wxICON_WARNING);
 
 	if (dialog_answer != wxOK)
@@ -1174,13 +1176,11 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 			{
 				tx.readTEXTUREXData(entry, ptable, true);
 				is_texturex = true;
-				log::info(wxString::Format("Cleaning duplicate entries from TEXTUREx entry %s.", entry->name()));
+				log::info("Cleaning duplicate entries from TEXTUREx entry {}.", entry->name());
 			}
 			else
 			{
-				log::error(
-					wxString::Format(
-						"Skipping cleaning TEXTUREx entry %s since this archive has no patch table.", entry->name()));
+				log::error("Skipping cleaning TEXTUREx entry {} since this archive has no patch table.", entry->name());
 				// Skip cleaning this texturex entry if there is no patch table for us to load it with
 				continue;
 			}
@@ -1188,12 +1188,12 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 		else if (entry->type()->id() == "zdtextures")
 		{
 			tx.readTEXTURESData(entry);
-			log::info(wxString::Format("Cleaning duplicate entries from ZDoom TEXTURES entry %s.", entry->name()));
+			log::info("Cleaning duplicate entries from ZDoom TEXTURES entry {}.", entry->name());
 		}
 
 		if (tx.removeDupesFoundIn(bra_tx_list))
 		{
-			log::info(wxString::Format("Cleaned entries from: %s.", entry->name()));
+			log::info("Cleaned entries from: {}.", entry->name());
 
 			if (tx.size())
 			{
@@ -1210,30 +1210,30 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 			{
 				// If we emptied out the entry, just delete it
 				parent->removeEntry(entry);
-				log::info(wxString::Format("%s no longer has any entries so deleting it.", entry->name()));
+				log::info("{} no longer has any entries so deleting it.", entry->name());
 			}
 
 			ret = true;
 		}
 		else
 		{
-			log::info(wxString::Format("Found no entries to clean from: %s.", entry->name()));
+			log::info("Found no entries to clean from: {}.", entry->name());
 		}
 	}
 
 	if (ret)
 	{
 		wxMessageBox(
-			"Found duplicate texture entries to remove. Check the console for output info. The PATCH table was left "
-			"untouched. You can either delete it or clean it using the Remove Unused Patches tool.",
-			"Remove duplicate texture entries.",
+			wxS("Found duplicate texture entries to remove. Check the console for output info. The PATCH table was "
+				"left untouched. You can either delete it or clean it using the Remove Unused Patches tool."),
+			wxS("Remove duplicate texture entries."),
 			wxOK | wxCENTER | wxICON_INFORMATION);
 	}
 	else
 	{
 		wxMessageBox(
-			"Didn't find any duplicate texture entries to remove. Check the console for output info.",
-			"Remove duplicate texture entries.",
+			wxS("Didn't find any duplicate texture entries to remove. Check the console for output info."),
+			wxS("Remove duplicate texture entries."),
 			wxOK | wxCENTER | wxICON_INFORMATION);
 	}
 
@@ -1259,9 +1259,10 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 	if (parent->formatInfo().supports_dirs)
 	{
 		int dialog_answer = wxMessageBox(
-			"This will remove all textures that are made out of a basic single patch from this textures entry. It will "
-			"also rename all of the patches to the texture name and move them from the patches to the textures folder.",
-			"Clean single patch texture entries.",
+			wxS("This will remove all textures that are made out of a basic single patch from this textures entry. It "
+				"will also rename all of the patches to the texture name and move them from the patches to the "
+				"textures folder."),
+			wxS("Clean single patch texture entries."),
 			wxOK | wxCANCEL | wxICON_WARNING);
 
 		if (dialog_answer != wxOK)
@@ -1273,8 +1274,8 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 	{
 		// Warn that patch to texture conversion only works archives that support folders
 		wxMessageBox(
-			"This currently only works with archives that support directories",
-			"Clean single patch texture entries.",
+			wxS("This currently only works with archives that support directories"),
+			wxS("Clean single patch texture entries."),
 			wxOK | wxICON_WARNING);
 		return false;
 	}
@@ -1287,7 +1288,7 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 		tx.readTEXTURESData(entry);
 		if (tx.cleanTEXTURESsinglePatch(parent))
 		{
-			log::info(wxString::Format("Cleaned entries from: %s.", entry->name()));
+			log::info("Cleaned entries from: {}.", entry->name());
 
 			if (tx.size())
 			{
@@ -1297,7 +1298,7 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 			{
 				// If we emptied out the entry, just delete it
 				parent->removeEntry(entry);
-				log::info(wxString::Format("%s no longer has any entries so deleting it.", entry->name()));
+				log::info("{} no longer has any entries so deleting it.", entry->name());
 			}
 
 			ret = true;
@@ -1307,15 +1308,15 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 	if (ret)
 	{
 		wxMessageBox(
-			"Found texture entries to clean. Check the console for output info.",
-			"Clean single patch texture entries.",
+			wxS("Found texture entries to clean. Check the console for output info."),
+			wxS("Clean single patch texture entries."),
 			wxOK | wxCENTER | wxICON_INFORMATION);
 	}
 	else
 	{
 		wxMessageBox(
-			"Didn't find any texture entries to clean. Check the console for output info.",
-			"Clean single patch texture entries.",
+			wxS("Didn't find any texture entries to clean. Check the console for output info."),
+			wxS("Clean single patch texture entries."),
 			wxOK | wxCENTER | wxICON_INFORMATION);
 	}
 
@@ -1342,17 +1343,16 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	// Check entry is text
 	if (!EntryDataFormat::format("text")->isThisFormat(entry->data()))
 	{
-		wxMessageBox("Error: Entry does not appear to be text", "Error", wxOK | wxCENTRE | wxICON_ERROR);
+		wxMessageBox(wxS("Error: Entry does not appear to be text"), wxS("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 		return false;
 	}
 
 	// Check if the ACC path is set up
-	wxString accpath = path_acc;
-	if (accpath.IsEmpty() || !wxFileExists(accpath))
+	if (path_acc.value.empty() || !fileutil::fileExists(path_acc))
 	{
 		wxMessageBox(
-			"Error: ACC path not defined, please configure in SLADE preferences",
-			"Error",
+			wxS("Error: ACC path not defined, please configure in SLADE preferences"),
+			wxS("Error"),
 			wxOK | wxCENTRE | wxICON_ERROR);
 		ui::SettingsDialog::popupSettingsPage(parent, ui::SettingsPage::Scripting);
 		return false;
@@ -1361,24 +1361,24 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	// Setup some path strings
 	auto srcfile       = app::path(fmt::format("{}.acs", entry->nameNoExt()), app::Dir::Temp);
 	auto ofile         = app::path(fmt::format("{}.o", entry->nameNoExt()), app::Dir::Temp);
-	auto include_paths = wxSplit(path_acc_libs, ';');
+	auto include_paths = strutil::splitV(path_acc_libs, ';');
 
 	// Setup command options
-	wxString opt;
+	string opt;
 	if (hexen)
 		opt += " -h";
-	if (!include_paths.IsEmpty())
+	if (!include_paths.empty())
 	{
 		for (const auto& include_path : include_paths)
-			opt += wxString::Format(" -i \"%s\"", include_path);
+			opt += fmt::format(" -i \"{}\"", include_path);
 	}
 
 	// Find/export any resource libraries
 	ArchiveSearchOptions sopt;
-	sopt.match_type       = EntryType::fromId("acs");
-	sopt.search_subdirs   = true;
-	auto          entries = app::archiveManager().findAllResourceEntries(sopt);
-	wxArrayString lib_paths;
+	sopt.match_type        = EntryType::fromId("acs");
+	sopt.search_subdirs    = true;
+	auto           entries = app::archiveManager().findAllResourceEntries(sopt);
+	vector<string> lib_paths;
 	for (auto& res_entry : entries)
 	{
 		// Ignore SCRIPTS
@@ -1391,7 +1391,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 		auto path = app::path(fmt::format("{}.acs", res_entry->nameNoExt()), app::Dir::Temp);
 		res_entry->exportFile(path);
-		lib_paths.Add(path);
+		lib_paths.push_back(path);
 		log::info(2, "Exporting ACS library {}", res_entry->name());
 	}
 
@@ -1399,16 +1399,16 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	entry->exportFile(srcfile);
 
 	// Execute acc
-	wxString      command = "\"" + path_acc.value + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
+	string        command = "\"" + path_acc.value + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
 	wxGetApp().SetTopWindow(parent);
-	wxExecute(command, output, errout, wxEXEC_SYNC);
+	wxExecute(wxString::FromUTF8(command), output, errout, wxEXEC_SYNC);
 	wxGetApp().SetTopWindow(maineditor::windowWx());
 
 	// Log output
 	log::console("ACS compiler output:");
-	wxString output_log;
+	string output_log;
 	if (!output.IsEmpty())
 	{
 		const char* title1 = "=== Log: ===\n";
@@ -1416,8 +1416,8 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		output_log += title1;
 		for (const auto& line : output)
 		{
-			log::console(line);
-			output_log += line;
+			log::console(line.utf8_string());
+			output_log += line.utf8_string();
 		}
 	}
 
@@ -1428,20 +1428,20 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		output_log += title2;
 		for (const auto& line : errout)
 		{
-			log::console(line);
-			output_log += line + "\n";
+			log::console(line.utf8_string());
+			output_log += line.utf8_string() + "\n";
 		}
 	}
 
 	// Delete source file
-	wxRemoveFile(srcfile);
+	fileutil::removeFile(srcfile);
 
 	// Delete library files
 	for (const auto& lib_path : lib_paths)
-		wxRemoveFile(lib_path);
+		fileutil::removeFile(lib_path);
 
 	// Check it compiled successfully
-	bool success = wxFileExists(ofile);
+	bool success = fileutil::fileExists(ofile);
 	if (success)
 	{
 		// If no target entry was given, find one
@@ -1490,19 +1490,18 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			target->importFile(ofile);
 
 		// Delete compiled script file
-		wxRemoveFile(ofile);
+		fileutil::removeFile(ofile);
 	}
 
 	if (!success || acc_always_show_output)
 	{
-		wxString errors;
-		if (wxFileExists(app::path("acs.err", app::Dir::Temp)))
+		string errors;
+		auto   path = app::path("acs.err", app::Dir::Temp);
+		if (fileutil::fileExists(path))
 		{
 			// Read acs.err to string
-			wxFile       file(app::path("acs.err", app::Dir::Temp));
-			vector<char> buf(file.Length());
-			file.Read(buf.data(), file.Length());
-			errors = wxString::From8BitData(buf.data(), file.Length());
+			SFile file(path);
+			file.read(errors, file.size());
 		}
 		else
 			errors = output_log;
@@ -1540,29 +1539,27 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 	// Check entry is text
 	if (!EntryDataFormat::format("text")->isThisFormat(entry->data()))
 	{
-		wxMessageBox("Error: Entry does not appear to be text", "Error", wxOK | wxCENTRE | wxICON_ERROR);
+		wxMessageBox(wxS("Error: Entry does not appear to be text"), wxS("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 		return false;
 	}
 
 	// Check if the DoomTools path is set up
-	wxString decohackpath = path_decohack;
-	if (decohackpath.IsEmpty() || !wxFileExists(decohackpath))
+	if (path_decohack.empty() || !fileutil::fileExists(path_decohack))
 	{
 		wxMessageBox(
-			"Error: DoomTools path not defined, please configure in SLADE preferences",
-			"Error",
+			wxS("Error: DoomTools path not defined, please configure in SLADE preferences"),
+			wxS("Error"),
 			wxOK | wxCENTRE | wxICON_ERROR);
 		ui::SettingsDialog::popupSettingsPage(parent, ui::SettingsPage::Scripting);
 		return false;
 	}
 
 	// Check if the Java path is set up
-	wxString javapath = path_java;
-	if (javapath.IsEmpty() || !wxFileExists(javapath))
+	if (path_java.empty() || !fileutil::fileExists(path_java))
 	{
 		wxMessageBox(
-			"Error: Java path not defined, please configure in SLADE preferences",
-			"Error",
+			wxS("Error: Java path not defined, please configure in SLADE preferences"),
+			wxS("Error"),
 			wxOK | wxCENTRE | wxICON_ERROR);
 		ui::SettingsDialog::popupSettingsPage(parent, ui::SettingsPage::Scripting);
 		return false;
@@ -1574,10 +1571,10 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 
 	// Find/export any resource libraries
 	ArchiveSearchOptions sopt;
-	sopt.match_type       = EntryType::fromId("decohack");
-	sopt.search_subdirs   = true;
-	auto          entries = app::archiveManager().findAllResourceEntries(sopt);
-	wxArrayString lib_paths;
+	sopt.match_type        = EntryType::fromId("decohack");
+	sopt.search_subdirs    = true;
+	auto           entries = app::archiveManager().findAllResourceEntries(sopt);
+	vector<string> lib_paths;
 	for (auto& res_entry : entries)
 	{
 		// Ignore entries from other archives
@@ -1586,7 +1583,7 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 
 		auto path = app::path(fmt::format("{}.dh", res_entry->nameNoExt()), app::Dir::Temp);
 		res_entry->exportFile(path);
-		lib_paths.Add(path);
+		lib_paths.push_back(path);
 		log::info(2, "Exporting DECOHack file {}", res_entry->name());
 	}
 
@@ -1594,17 +1591,21 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 	entry->exportFile(srcfile);
 
 	// Execute DECOHack
-	wxString command = "\"" + path_java.value + "\" -cp \"" + path_decohack.value + "\""
-					   + " -Xms64M -Xmx1G net.mtrop.doom.tools.DecoHackMain \"" + srcfile + "\" -o \"" + dehfile + "\"";
+	auto command = fmt::format(
+		R"("{}" -cp "{}" -Xms64M -Xmx1G net.mtrop.doom.tools.DecoHackMain "{}" -o "{}")",
+		path_java.value,
+		path_decohack.value,
+		srcfile,
+		dehfile);
 	wxArrayString output;
 	wxArrayString errout;
 	wxGetApp().SetTopWindow(parent);
-	wxExecute(command, output, errout, wxEXEC_SYNC);
+	wxExecute(wxString::FromUTF8(command), output, errout, wxEXEC_SYNC);
 	wxGetApp().SetTopWindow(maineditor::windowWx());
 
 	// Log output
 	log::console("DECOHack compiler output:");
-	wxString output_log;
+	string output_log;
 	if (!output.IsEmpty())
 	{
 		const char* title1 = "=== Log: ===\n";
@@ -1612,8 +1613,8 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 		output_log += title1;
 		for (const auto& line : output)
 		{
-			log::console(line);
-			output_log += line;
+			log::console(line.utf8_string());
+			output_log += line.utf8_string();
 		}
 	}
 
@@ -1624,20 +1625,20 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 		output_log += title2;
 		for (const auto& line : errout)
 		{
-			log::console(line);
-			output_log += line + "\n";
+			log::console(line.utf8_string());
+			output_log += line.utf8_string() + "\n";
 		}
 	}
 
 	// Delete source file
-	wxRemoveFile(srcfile);
+	fileutil::removeFile(srcfile);
 
 	// Delete library files
 	for (const auto& lib_path : lib_paths)
-		wxRemoveFile(lib_path);
+		fileutil::removeFile(lib_path);
 
 	// Check it compiled successfully
-	bool success = wxFileExists(dehfile);
+	bool success = fileutil::fileExists(dehfile);
 	if (success)
 	{
 		// If no target entry was given, find one
@@ -1656,12 +1657,12 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 			target->importFile(dehfile);
 
 		// Delete compiled script file
-		wxRemoveFile(dehfile);
+		fileutil::removeFile(dehfile);
 	}
 
 	if (!success || decohack_always_show_output)
 	{
-		wxString errors = output_log;
+		auto errors = output_log;
 
 		if (!errors.empty() || !success)
 		{
@@ -1683,7 +1684,7 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 // Converts [entry] to a PNG image (if possible) and saves the PNG data to a
 // file [filename]. Does not alter the entry data itself
 // -----------------------------------------------------------------------------
-bool entryoperations::exportAsPNG(ArchiveEntry* entry, const wxString& filename)
+bool entryoperations::exportAsPNG(ArchiveEntry* entry, const string& filename)
 {
 	// Check entry was given
 	if (!entry)
@@ -1693,7 +1694,7 @@ bool entryoperations::exportAsPNG(ArchiveEntry* entry, const wxString& filename)
 	SImage image;
 	if (!misc::loadImageFromEntry(&image, entry))
 	{
-		log::error(wxString::Format("Error converting %s: %s", entry->name(), global::error));
+		log::error("Error converting {}: {}", entry->name(), global::error);
 		return false;
 	}
 
@@ -1702,12 +1703,12 @@ bool entryoperations::exportAsPNG(ArchiveEntry* entry, const wxString& filename)
 	auto     fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, maineditor::currentPalette(entry)))
 	{
-		log::error(wxString::Format("Error converting %s", entry->name()));
+		log::error("Error converting {}", entry->name());
 		return false;
 	}
 
 	// Export file
-	return png.exportFile(filename.ToStdString());
+	return png.exportFile(filename);
 }
 
 // -----------------------------------------------------------------------------
@@ -1726,16 +1727,16 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Check entry is PNG
 	if (!EntryDataFormat::format("img_png")->isThisFormat(entry->data()))
 	{
-		wxMessageBox("Error: Entry does not appear to be PNG", "Error", wxOK | wxCENTRE | wxICON_ERROR);
+		wxMessageBox(wxS("Error: Entry does not appear to be PNG"), wxS("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 		return false;
 	}
 
 	// Check if the PNG tools path are set up, at least one of them should be
-	wxString pngpathc = path_pngcrush;
-	wxString pngpatho = path_pngout;
-	wxString pngpathd = path_deflopt;
-	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) && (pngpatho.IsEmpty() || !wxFileExists(pngpatho))
-		&& (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
+	string pngpathc = path_pngcrush;
+	string pngpatho = path_pngout;
+	string pngpathd = path_deflopt;
+	if ((pngpathc.empty() || !fileutil::fileExists(pngpathc)) && (pngpatho.empty() || !fileutil::fileExists(pngpatho))
+		&& (pngpathd.empty() || !fileutil::fileExists(pngpathd)))
 	{
 		log::error(1, "PNG tool paths not defined or invalid, no optimization done.");
 		return false;
@@ -1744,7 +1745,7 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Save special chunks
 	bool          alphchunk     = gfx::pngGetalPh(entry->data());
 	auto          grabchunk     = gfx::getImageOffsets(entry->data());
-	wxString      errormessages = "";
+	string        errormessages = "";
 	wxArrayString output;
 	wxArrayString errors;
 	size_t        oldsize   = entry->size();
@@ -1752,27 +1753,27 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	bool          crushed = false, outed = false;
 
 	// Run PNGCrush
-	if (!pngpathc.IsEmpty() && wxFileExists(pngpathc))
+	if (!pngpathc.empty() && fileutil::fileExists(pngpathc))
 	{
-		wxFileName fn(pngpathc);
-		fn.SetExt("opt");
-		wxString pngfile = fn.GetFullPath();
-		fn.SetExt("png");
-		wxString optfile = fn.GetFullPath();
-		entry->exportFile(pngfile.ToStdString());
+		strutil::Path fn(pngpathc);
+		fn.setExtension("opt");
+		string pngfile = fn.fullPath();
+		fn.setExtension("png");
+		string optfile = fn.fullPath();
+		entry->exportFile(pngfile);
 
-		wxString command = path_pngcrush.value + " -brute \"" + pngfile + "\" \"" + optfile + "\"";
+		string command = path_pngcrush.value + " -brute \"" + pngfile + "\" \"" + optfile + "\"";
 		output.Empty();
 		errors.Empty();
-		wxExecute(command, output, errors, wxEXEC_SYNC);
+		wxExecute(wxString::FromUTF8(command), output, errors, wxEXEC_SYNC);
 
-		if (wxFileExists(optfile))
+		if (fileutil::fileExists(optfile))
 		{
 			if (optfile.size() < oldsize)
 			{
-				entry->importFile(optfile.ToStdString());
-				wxRemoveFile(optfile);
-				wxRemoveFile(pngfile);
+				entry->importFile(optfile);
+				fileutil::removeFile(optfile);
+				fileutil::removeFile(pngfile);
 			}
 			else
 				errormessages += "PNGCrush failed to reduce file size further.\n";
@@ -1785,46 +1786,46 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 		// send app output to console if wanted
 		if (false)
 		{
-			wxString crushlog = "";
+			string crushlog;
 			if (errors.GetCount())
 			{
 				crushlog += "PNGCrush error messages:\n";
 				for (size_t i = 0; i < errors.GetCount(); ++i)
-					crushlog += errors[i] + "\n";
+					crushlog += errors[i].utf8_string() + "\n";
 				errormessages += crushlog;
 			}
 			if (output.GetCount())
 			{
 				crushlog += "PNGCrush output messages:\n";
 				for (size_t i = 0; i < output.GetCount(); ++i)
-					crushlog += output[i] + "\n";
+					crushlog += output[i].utf8_string() + "\n";
 			}
 			log::info(1, crushlog);
 		}
 	}
 
 	// Run PNGOut
-	if (!pngpatho.IsEmpty() && wxFileExists(pngpatho))
+	if (!pngpatho.empty() && fileutil::fileExists(pngpatho))
 	{
-		wxFileName fn(pngpatho);
-		fn.SetExt("opt");
-		wxString pngfile = fn.GetFullPath();
-		fn.SetExt("png");
-		wxString optfile = fn.GetFullPath();
-		entry->exportFile(pngfile.ToStdString());
+		strutil::Path fn(pngpatho);
+		fn.setExtension("opt");
+		string pngfile = fn.fullPath();
+		fn.setExtension("png");
+		string optfile = fn.fullPath();
+		entry->exportFile(pngfile);
 
-		wxString command = path_pngout.value + " /y \"" + pngfile + "\" \"" + optfile + "\"";
+		string command = path_pngout.value + " /y \"" + pngfile + "\" \"" + optfile + "\"";
 		output.Empty();
 		errors.Empty();
-		wxExecute(command, output, errors, wxEXEC_SYNC);
+		wxExecute(wxString::FromUTF8(command), output, errors, wxEXEC_SYNC);
 
-		if (wxFileExists(optfile))
+		if (fileutil::fileExists(optfile))
 		{
 			if (optfile.size() < oldsize)
 			{
-				entry->importFile(optfile.ToStdString());
-				wxRemoveFile(optfile);
-				wxRemoveFile(pngfile);
+				entry->importFile(optfile);
+				fileutil::removeFile(optfile);
+				fileutil::removeFile(pngfile);
 			}
 			else
 				errormessages += "PNGout failed to reduce file size further.\n";
@@ -1838,57 +1839,57 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 		// send app output to console if wanted
 		if (false)
 		{
-			wxString pngoutlog = "";
+			string pngoutlog;
 			if (errors.GetCount())
 			{
 				pngoutlog += "PNGOut error messages:\n";
 				for (size_t i = 0; i < errors.GetCount(); ++i)
-					pngoutlog += errors[i] + "\n";
+					pngoutlog += errors[i].utf8_string() + "\n";
 				errormessages += pngoutlog;
 			}
 			if (output.GetCount())
 			{
 				pngoutlog += "PNGOut output messages:\n";
 				for (size_t i = 0; i < output.GetCount(); ++i)
-					pngoutlog += output[i] + "\n";
+					pngoutlog += output[i].utf8_string() + "\n";
 			}
 			log::info(1, pngoutlog);
 		}
 	}
 
 	// Run deflopt
-	if (!pngpathd.IsEmpty() && wxFileExists(pngpathd))
+	if (!pngpathd.empty() && fileutil::fileExists(pngpathd))
 	{
-		wxFileName fn(pngpathd);
-		fn.SetExt("png");
-		wxString pngfile = fn.GetFullPath();
-		entry->exportFile(pngfile.ToStdString());
+		strutil::Path fn(pngpathd);
+		fn.setExtension("png");
+		string pngfile = fn.fullPath();
+		entry->exportFile(pngfile);
 
-		wxString command = path_deflopt.value + " /sf \"" + pngfile + "\"";
+		string command = path_deflopt.value + " /sf \"" + pngfile + "\"";
 		output.Empty();
 		errors.Empty();
-		wxExecute(command, output, errors, wxEXEC_SYNC);
+		wxExecute(wxString::FromUTF8(command), output, errors, wxEXEC_SYNC);
 
-		entry->importFile(pngfile.ToStdString());
-		wxRemoveFile(pngfile);
+		entry->importFile(pngfile);
+		fileutil::removeFile(pngfile);
 		deflsize = entry->size();
 
 		// send app output to console if wanted
 		if (false)
 		{
-			wxString defloptlog = "";
+			string defloptlog;
 			if (errors.GetCount())
 			{
 				defloptlog += "DeflOpt error messages:\n";
 				for (size_t i = 0; i < errors.GetCount(); ++i)
-					defloptlog += errors[i] + "\n";
+					defloptlog += errors[i].utf8_string() + "\n";
 				errormessages += defloptlog;
 			}
 			if (output.GetCount())
 			{
 				defloptlog += "DeflOpt output messages:\n";
 				for (size_t i = 0; i < output.GetCount(); ++i)
-					defloptlog += output[i] + "\n";
+					defloptlog += output[i].utf8_string() + "\n";
 			}
 			log::info(1, defloptlog);
 		}
@@ -1920,7 +1921,7 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 		entry->size());
 
 
-	if (!crushed && !outed && !errormessages.IsEmpty())
+	if (!crushed && !outed && !errormessages.empty())
 	{
 		ExtMessageDialog dlg(nullptr, "Optimizing Report");
 		dlg.setMessage("The following issues were encountered while optimizing:");
@@ -1941,9 +1942,7 @@ bool entryoperations::copyGfxOffsets(ArchiveEntry& entry)
 	// Check entry type
 	if (!gfx::supportsOffsets(entry))
 	{
-		log::error(
-			wxString::Format(
-				"Entry \"%s\" is of type \"%s\" which does not support offsets", entry.name(), entry.type()->name()));
+		log::error(R"(Entry "{}" is of type "{}" which does not support offsets)", entry.name(), entry.type()->name());
 		return false;
 	}
 
@@ -1951,7 +1950,7 @@ bool entryoperations::copyGfxOffsets(ArchiveEntry& entry)
 	auto offsets = gfx::getImageOffsets(entry.data());
 	if (!offsets)
 	{
-		log::error(wxString::Format("Entry \"%s\" has no offsets to copy", entry.name()));
+		log::error("Entry \"{}\" has no offsets to copy", entry.name());
 		return false;
 	}
 
@@ -1992,7 +1991,7 @@ bool entryoperations::pasteGfxOffsets(const vector<ArchiveEntry*>& entries)
 		if (!gfx::supportsOffsets(*entry))
 		{
 			log::warning(
-				"Entry \"{}\" is of type \"{}\" which does not support offsets", entry->name(), entry->type()->name());
+				R"(Entry "{}" is of type "{}" which does not support offsets)", entry->name(), entry->type()->name());
 			continue;
 		}
 
@@ -2013,11 +2012,11 @@ bool entryoperations::exportEntriesAsPNG(const vector<ArchiveEntry*>& entries)
 	// If we're just exporting 1 entry
 	if (entries.size() == 1)
 	{
-		wxString   name = misc::lumpNameToFileName(entries[0]->name());
-		wxFileName fn(name);
+		auto          name = misc::lumpNameToFileName(entries[0]->name());
+		strutil::Path fn(name);
 
 		// Set extension
-		fn.SetExt("png");
+		fn.setExtension("png");
 
 		// Run save file dialog
 		filedialog::FDInfo info;
@@ -2026,12 +2025,12 @@ bool entryoperations::exportEntriesAsPNG(const vector<ArchiveEntry*>& entries)
 				"Export Entry \"" + entries[0]->name() + "\" as PNG",
 				"PNG Files (*.png)|*.png",
 				maineditor::windowWx(),
-				fn.GetFullName().ToStdString()))
+				fn.fileName()))
 		{
 			// If a filename was selected, export it
 			if (!exportAsPNG(entries[0], info.filenames[0]))
 			{
-				wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxOK | wxICON_ERROR);
+				wxMessageBox(WX_FMT("Error: {}", global::error), wxS("Error"), wxOK | wxICON_ERROR);
 				return false;
 			}
 		}
@@ -2052,12 +2051,12 @@ bool entryoperations::exportEntriesAsPNG(const vector<ArchiveEntry*>& entries)
 			for (auto& entry : entries)
 			{
 				// Setup entry filename
-				wxFileName fn(entry->name());
-				fn.SetPath(info.path);
-				fn.SetExt("png");
+				strutil::Path fn(entry->name());
+				fn.setPath(info.path);
+				fn.setExtension("png");
 
 				// Do export
-				exportAsPNG(entry, fn.GetFullPath());
+				exportAsPNG(entry, fn.fullPath());
 			}
 		}
 	}
@@ -2071,15 +2070,15 @@ bool entryoperations::exportEntriesAsPNG(const vector<ArchiveEntry*>& entries)
 bool entryoperations::optimizePNGEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager)
 {
 	// Check if the PNG tools path are set up, at least one of them should be
-	wxString pngpathc = path_pngcrush;
-	wxString pngpatho = path_pngout;
-	wxString pngpathd = path_deflopt;
-	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) && (pngpatho.IsEmpty() || !wxFileExists(pngpatho))
-		&& (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
+	string pngpathc = path_pngcrush;
+	string pngpatho = path_pngout;
+	string pngpathd = path_deflopt;
+	if ((pngpathc.empty() || !fileutil::fileExists(pngpathc)) && (pngpatho.empty() || !fileutil::fileExists(pngpatho))
+		&& (pngpathd.empty() || !fileutil::fileExists(pngpathd)))
 	{
 		wxMessageBox(
-			"Error: PNG tool paths not defined or invalid, please configure in SLADE preferences",
-			"Error",
+			wxS("Error: PNG tool paths not defined or invalid, please configure in SLADE preferences"),
+			wxS("Error"),
 			wxOK | wxCENTRE | wxICON_ERROR);
 		return false;
 	}
@@ -2209,7 +2208,7 @@ bool entryoperations::remapGfxEntries(
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
-					log::error(1, wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+					log::error(1, ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2261,7 +2260,7 @@ bool entryoperations::colourizeGfxEntries(const vector<ArchiveEntry*>& entries, 
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
-					log::error(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+					log::error(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2310,7 +2309,7 @@ bool entryoperations::tintGfxEntries(const vector<ArchiveEntry*>& entries, UndoM
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
-					log::info(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+					log::error(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2382,7 +2381,7 @@ bool entryoperations::convertVoxelEntries(const vector<ArchiveEntry*>& entries, 
 			// Attempt conversion
 			if (!conversion::voxToKvx(entry->data(), kvx))
 			{
-				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
+				log::error("Unable to convert entry {}: {}", entry->name(), global::error);
 				errors = true;
 				continue;
 			}
@@ -2400,7 +2399,8 @@ bool entryoperations::convertVoxelEntries(const vector<ArchiveEntry*>& entries, 
 
 	// Show message if errors occurred
 	if (errors)
-		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
+		wxMessageBox(
+			wxS("Some entries could not be converted, see console log for details"), wxS("SLADE"), wxICON_INFORMATION);
 
 	return true;
 }
@@ -2413,7 +2413,7 @@ bool entryoperations::convertAnimated(const ArchiveEntry* entry, MemChunk* animd
 	auto                 cursor = entry->rawData();
 	auto                 eodata = cursor + entry->size();
 	const AnimatedEntry* animation;
-	wxString             conversion;
+	string               conversion;
 	int                  lasttype = -1;
 
 	while (cursor < eodata && *cursor != animtype::STOP)
@@ -2430,21 +2430,21 @@ bool entryoperations::convertAnimated(const ArchiveEntry* entry, MemChunk* animd
 		// Create animation string
 		if (animdefs)
 		{
-			conversion = wxString::Format(
-				"%s\tOptional\t%-8s\tRange\t%-8s\tTics %i%s",
-				(animation->type ? "Texture" : "Flat"),
+			conversion = fmt::format(
+				"{}\tOptional\t{:<8}\tRange\t{:<8}\tTics {}{}",
+				animation->type ? "Texture" : "Flat",
 				animation->first,
 				animation->last,
 				animation->speed,
-				(animation->type == animtype::DECALS ? " AllowDecals\n" : "\n"));
+				animation->type == animtype::DECALS ? " AllowDecals\n" : "\n");
 		}
 		else
 		{
 			if ((animation->type > 1 ? 1 : animation->type) != lasttype)
 			{
-				conversion = wxString::Format(
-					"#animated %s, spd is number of frames between changes\n"
-					"[%s]\n#spd    last        first\n",
+				conversion = fmt::format(
+					"#animated {}, spd is number of frames between changes\n"
+					"[{}]\n#spd    last        first\n",
 					animation->type ? "textures" : "flats",
 					animation->type ? "TEXTURES" : "FLATS");
 				lasttype = animation->type;
@@ -2453,7 +2453,7 @@ bool entryoperations::convertAnimated(const ArchiveEntry* entry, MemChunk* animd
 				animdata->reSize(animdata->size() + conversion.length(), true);
 				animdata->write(conversion.data(), conversion.length());
 			}
-			conversion = wxString::Format("%-8d%-12s%-12s\n", animation->speed, animation->last, animation->first);
+			conversion = fmt::format("{:<8d}{:<12}{:<12}\n", animation->speed, animation->last, animation->first);
 		}
 
 		// Write string to animdata
@@ -2471,7 +2471,7 @@ bool entryoperations::convertSwitches(const ArchiveEntry* entry, MemChunk* animd
 	auto                 cursor = entry->rawData();
 	auto                 eodata = cursor + entry->size();
 	const SwitchesEntry* switches;
-	wxString             conversion;
+	string               conversion;
 
 	if (!animdefs)
 	{
@@ -2496,12 +2496,12 @@ bool entryoperations::convertSwitches(const ArchiveEntry* entry, MemChunk* animd
 		// Create animation string
 		if (animdefs)
 		{
-			conversion = wxString::Format(
-				"Switch\tDoom %d\t\t%-8s\tOn Pic\t%-8s\tTics 0\n", switches->type, switches->off, switches->on);
+			conversion = fmt::format(
+				"Switch\tDoom {}\t\t{:<8}\tOn Pic\t{:<8}\tTics 0\n", switches->type, switches->off, switches->on);
 		}
 		else
 		{
-			conversion = wxString::Format("%-8d%-12s%-12s\n", switches->type, switches->off, switches->on);
+			conversion = fmt::format("{:<8}{:<12}{:<12}\n", switches->type, switches->off, switches->on);
 		}
 
 		// Write string to animdata
@@ -2519,8 +2519,8 @@ bool entryoperations::convertSwanTbls(const ArchiveEntry* entry, MemChunk* animd
 	Tokenizer tz(Tokenizer::Hash);
 	tz.openMem(entry->data(), entry->name());
 
-	wxString token;
-	char     buffer[23];
+	string token;
+	char   buffer[23];
 	while ((token = tz.getToken()).length())
 	{
 		// Animated flats or textures
@@ -2529,21 +2529,17 @@ bool entryoperations::convertSwanTbls(const ArchiveEntry* entry, MemChunk* animd
 			bool texture = token == "[TEXTURES]";
 			do
 			{
-				int      speed = tz.getInteger();
-				wxString last  = tz.getToken();
-				wxString first = tz.getToken();
+				int    speed = tz.getInteger();
+				string last  = tz.getToken();
+				string first = tz.getToken();
 				if (last.length() > 8)
 				{
-					log::error(
-						wxString::Format(
-							"String %s is too long for an animated %s name!", last, (texture ? "texture" : "flat")));
+					log::error("String {} is too long for an animated {} name!", last, texture ? "texture" : "flat");
 					return false;
 				}
 				if (first.length() > 8)
 				{
-					log::error(
-						wxString::Format(
-							"String %s is too long for an animated %s name!", first, (texture ? "texture" : "flat")));
+					log::error("String {} is too long for an animated {} name!", first, texture ? "texture" : "flat");
 					return false;
 				}
 
@@ -2586,17 +2582,17 @@ bool entryoperations::convertSwanTbls(const ArchiveEntry* entry, MemChunk* animd
 		{
 			do
 			{
-				int      type = tz.getInteger();
-				wxString off  = tz.getToken();
-				wxString on   = tz.getToken();
+				int    type = tz.getInteger();
+				string off  = tz.getToken();
+				string on   = tz.getToken();
 				if (off.length() > 8)
 				{
-					log::error(wxString::Format("String %s is too long for a switch name!", off));
+					log::error("String {} is too long for a switch name!", off);
 					return false;
 				}
 				if (on.length() > 8)
 				{
-					log::error(wxString::Format("String %s is too long for a switch name!", on));
+					log::error("String {} is too long for a switch name!", on);
 					return false;
 				}
 
@@ -2653,7 +2649,7 @@ bool entryoperations::convertWavToDSound(const vector<ArchiveEntry*>& entries, U
 			// Attempt conversion
 			if (!conversion::wavToDoomSnd(entry->data(), dsnd))
 			{
-				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
+				log::error("Unable to convert entry {}: {}", entry->name(), global::error);
 				errors = true;
 				continue;
 			}
@@ -2671,7 +2667,8 @@ bool entryoperations::convertWavToDSound(const vector<ArchiveEntry*>& entries, U
 
 	// Show message if errors occurred
 	if (errors)
-		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
+		wxMessageBox(
+			wxS("Some entries could not be converted, see console log for details"), wxS("SLADE"), wxICON_INFORMATION);
 
 	return true;
 }
@@ -2720,7 +2717,7 @@ bool entryoperations::convertSoundToWav(const vector<ArchiveEntry*>& entries, Un
 		}
 		else
 		{
-			log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
+			log::error("Unable to convert entry {}: {}", entry->name(), global::error);
 			errors = true;
 		}
 	}
@@ -2731,7 +2728,8 @@ bool entryoperations::convertSoundToWav(const vector<ArchiveEntry*>& entries, Un
 
 	// Show message if errors occurred
 	if (errors)
-		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
+		wxMessageBox(
+			wxS("Some entries could not be converted, see console log for details"), wxS("SLADE"), wxICON_INFORMATION);
 
 	return true;
 }

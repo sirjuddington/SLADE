@@ -162,7 +162,7 @@ void ColourBox::popAlphaSlider()
 		return;
 
 	// Popup a dialog with a slider control for alpha
-	wxDialog dlg(nullptr, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
+	wxDialog dlg(nullptr, -1, wxS("Set Alpha"), wxDefaultPosition, wxDefaultSize);
 	auto     lh  = ui::LayoutHelper(&dlg);
 	auto     box = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(box);

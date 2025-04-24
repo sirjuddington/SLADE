@@ -47,8 +47,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // SDialog class constructor
 // -----------------------------------------------------------------------------
-SDialog::SDialog(wxWindow* parent, const wxString& title, const wxString& id, int width, int height, int x, int y) :
-	wxDialog(parent, -1, title, wxPoint(x, y), wxSize(width, height), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+SDialog::SDialog(wxWindow* parent, const string& title, const string& id, int width, int height, int x, int y) :
+	wxDialog(
+		parent,
+		-1,
+		wxString::FromUTF8(title),
+		wxPoint(x, y),
+		wxSize(width, height),
+		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 	id_{ id }
 {
 	// Init size/pos

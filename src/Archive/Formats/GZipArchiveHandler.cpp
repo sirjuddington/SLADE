@@ -446,7 +446,7 @@ bool GZipArchiveHandler::isThisFormat(const MemChunk& mc)
 bool GZipArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Minimal metadata size is 18: 10 for header, 8 for footer
 	size_t mds = 18;

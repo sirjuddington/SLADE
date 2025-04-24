@@ -37,6 +37,7 @@
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
 #include "UI/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "WadJArchiveHandler.h"
@@ -564,7 +565,7 @@ bool WadArchiveHandler::write(Archive& archive, string_view filename)
 
 	// Open file for writing
 	wxFile file;
-	file.Open(wxString{ filename.data(), filename.size() }, wxFile::write);
+	file.Open(wxutil::strFromView(filename), wxFile::write);
 	if (!file.IsOpened())
 	{
 		global::error = "Unable to open file for writing";
@@ -1416,7 +1417,7 @@ bool WadArchiveHandler::isThisFormat(const MemChunk& mc)
 bool WadArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

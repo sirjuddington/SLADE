@@ -77,7 +77,7 @@ int DataEntryTable::GetNumberCols()
 wxString DataEntryTable::GetValue(int row, int col)
 {
 	if (!data_.seek(data_start_ + ((row * row_stride_) + columns_[col].row_offset), 0))
-		return "INVALID";
+		return wxS("INVALID");
 
 	// Signed integer column
 	if (columns_[col].type == ColType::IntSigned || columns_[col].type == ColType::IntBESigned)
@@ -88,7 +88,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 		{
 			int8_t val;
 			data_.read(&val, 1);
-			return wxString::Format("%hhd", val);
+			return wxString::Format(wxS("%hhd"), val);
 		}
 		if (columns_[col].size == 2)
 		{
@@ -96,7 +96,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 2);
 			if (be)
 				val = wxINT16_SWAP_ON_LE(val);
-			return wxString::Format("%hd", val);
+			return wxString::Format(wxS("%hd"), val);
 		}
 		if (columns_[col].size == 4)
 		{
@@ -104,7 +104,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 4);
 			if (be)
 				val = wxINT32_SWAP_ON_LE(val);
-			return wxString::Format("%d", val);
+			return wxString::Format(wxS("%d"), val);
 		}
 		if (columns_[col].size == 8)
 		{
@@ -112,10 +112,10 @@ wxString DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 8);
 			if (be)
 				val = wxINT64_SWAP_ON_LE(val);
-			return wxString::Format("%lld", val);
+			return wxString::Format(wxS("%lld"), val);
 		}
 
-		return "INVALID SIZE";
+		return wxS("INVALID SIZE");
 	}
 
 	// Unsigned integer column
@@ -127,7 +127,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 		{
 			uint8_t val;
 			data_.read(&val, 1);
-			return wxString::Format("%hhd", val);
+			return wxString::Format(wxS("%hhd"), val);
 		}
 		if (columns_[col].size == 2)
 		{
@@ -135,7 +135,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 2);
 			if (be)
 				val = wxINT16_SWAP_ON_LE(val);
-			return wxString::Format("%hd", val);
+			return wxString::Format(wxS("%hd"), val);
 		}
 		if (columns_[col].size == 4)
 		{
@@ -143,7 +143,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 4);
 			if (be)
 				val = wxINT32_SWAP_ON_LE(val);
-			return wxString::Format("%d", val);
+			return wxString::Format(wxS("%d"), val);
 		}
 		if (columns_[col].size == 8)
 		{
@@ -151,11 +151,10 @@ wxString DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 8);
 			if (be)
 				val = wxINT64_SWAP_ON_LE(val);
-			return wxString::Format("%lld", static_cast<long long>(val));
+			return wxString::Format(wxS("%lld"), static_cast<long long>(val));
 		}
-		return "INVALID SIZE";
+		return wxS("INVALID SIZE");
 	}
-
 	// Fixed-point float column
 	if (columns_[col].type == ColType::Fixed)
 	{
@@ -163,11 +162,10 @@ wxString DataEntryTable::GetValue(int row, int col)
 		{
 			int32_t val;
 			data_.read(&val, 4);
-			return wxString::Format("%1.3f", static_cast<double>(val) / 65536.0);
+			return wxString::Format(wxS("%1.3f"), static_cast<double>(val) / 65536.0);
 		}
-		return "INVALID SIZE";
+		return wxS("INVALID SIZE");
 	}
-
 	// String column
 	if (columns_[col].type == ColType::String)
 	{
@@ -202,10 +200,10 @@ wxString DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 8);
 			value = val;
 		}
-		return wxString::Format("%d: %s", value, columns_[col].customValue(value));
+		return wxString::Format(wxS("%d: %s"), value, columns_[col].customValue(value));
 	}
 
-	return "UNKNOWN TYPE";
+	return wxS("UNKNOWN TYPE");
 }
 
 // -----------------------------------------------------------------------------
@@ -310,7 +308,7 @@ wxString DataEntryTable::GetColLabelValue(int col)
 	if (static_cast<unsigned>(col) < columns_.size())
 		return columns_[col].name;
 
-	return wxString::Format("Column%d", col);
+	return wxString::Format(wxS("Column%d"), col);
 }
 
 // -----------------------------------------------------------------------------
@@ -318,7 +316,7 @@ wxString DataEntryTable::GetColLabelValue(int col)
 // -----------------------------------------------------------------------------
 wxString DataEntryTable::GetRowLabelValue(int row)
 {
-	return row_prefix_ + wxString::Format("%d", row_first_ + row);
+	return row_prefix_ + wxString::Format(wxS("%d"), row_first_ + row);
 }
 
 // -----------------------------------------------------------------------------
@@ -456,7 +454,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	data_start_ = 0;
 	data_stop_  = 0;
 	row_first_  = 0;
-	row_prefix_ = "";
+	row_prefix_.clear();
 
 	if (!entry)
 		return true;
@@ -472,20 +470,20 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	{
 		if (entry->exProp<string>("MapFormat") == "doom64")
 		{
-			columns_.emplace_back("X Position", ColType::Fixed, 4, 0);
-			columns_.emplace_back("Y Position", ColType::Fixed, 4, 4);
+			columns_.emplace_back(wxS("X Position"), ColType::Fixed, 4, 0);
+			columns_.emplace_back(wxS("Y Position"), ColType::Fixed, 4, 4);
 			row_stride_ = 8;
 		}
 		else if (entry->exProp<string>("MapFormat") == "doom32x")
 		{
-			columns_.emplace_back("X Position", ColType::IntBESigned, 2, 0);
-			columns_.emplace_back("Y Position", ColType::IntBESigned, 2, 4);
+			columns_.emplace_back(wxS("X Position"), ColType::IntBESigned, 2, 0);
+			columns_.emplace_back(wxS("Y Position"), ColType::IntBESigned, 2, 4);
 			row_stride_ = 8;
 		}
 		else
 		{
-			columns_.emplace_back("X Position", ColType::IntSigned, 2, 0);
-			columns_.emplace_back("Y Position", ColType::IntSigned, 2, 2);
+			columns_.emplace_back(wxS("X Position"), ColType::IntSigned, 2, 0);
+			columns_.emplace_back(wxS("Y Position"), ColType::IntSigned, 2, 2);
 			row_stride_ = 4;
 		}
 	}
@@ -496,43 +494,43 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		// Doom format
 		if (entry->exProp<string>("MapFormat") == "doom" || entry->exProp<string>("MapFormat") == "doom32x")
 		{
-			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
-			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
-			columns_.emplace_back("Flags", ColType::IntUnsigned, 2, 4);
-			columns_.emplace_back("Action Special", ColType::IntUnsigned, 2, 6);
-			columns_.emplace_back("Sector Tag", ColType::IntUnsigned, 2, 8);
-			columns_.emplace_back("Front Side", ColType::IntUnsigned, 2, 10);
-			columns_.emplace_back("Back Side", ColType::IntUnsigned, 2, 12);
+			columns_.emplace_back(wxS("Vertex 1"), ColType::IntUnsigned, 2, 0);
+			columns_.emplace_back(wxS("Vertex 2"), ColType::IntUnsigned, 2, 2);
+			columns_.emplace_back(wxS("Flags"), ColType::IntUnsigned, 2, 4);
+			columns_.emplace_back(wxS("Action Special"), ColType::IntUnsigned, 2, 6);
+			columns_.emplace_back(wxS("Sector Tag"), ColType::IntUnsigned, 2, 8);
+			columns_.emplace_back(wxS("Front Side"), ColType::IntUnsigned, 2, 10);
+			columns_.emplace_back(wxS("Back Side"), ColType::IntUnsigned, 2, 12);
 			row_stride_ = 14;
 		}
 
 		// Hexen format
 		else if (entry->exProp<string>("MapFormat") == "hexen")
 		{
-			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
-			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
-			columns_.emplace_back("Flags", ColType::IntUnsigned, 2, 4);
-			columns_.emplace_back("Action Special", ColType::IntUnsigned, 1, 6);
-			columns_.emplace_back("Arg 1", ColType::IntUnsigned, 1, 7);
-			columns_.emplace_back("Arg 2", ColType::IntUnsigned, 1, 8);
-			columns_.emplace_back("Arg 3", ColType::IntUnsigned, 1, 9);
-			columns_.emplace_back("Arg 4", ColType::IntUnsigned, 1, 10);
-			columns_.emplace_back("Arg 5", ColType::IntUnsigned, 1, 11);
-			columns_.emplace_back("Front Side", ColType::IntUnsigned, 2, 12);
-			columns_.emplace_back("Back Side", ColType::IntUnsigned, 2, 14);
+			columns_.emplace_back(wxS("Vertex 1"), ColType::IntUnsigned, 2, 0);
+			columns_.emplace_back(wxS("Vertex 2"), ColType::IntUnsigned, 2, 2);
+			columns_.emplace_back(wxS("Flags"), ColType::IntUnsigned, 2, 4);
+			columns_.emplace_back(wxS("Action Special"), ColType::IntUnsigned, 1, 6);
+			columns_.emplace_back(wxS("Arg 1"), ColType::IntUnsigned, 1, 7);
+			columns_.emplace_back(wxS("Arg 2"), ColType::IntUnsigned, 1, 8);
+			columns_.emplace_back(wxS("Arg 3"), ColType::IntUnsigned, 1, 9);
+			columns_.emplace_back(wxS("Arg 4"), ColType::IntUnsigned, 1, 10);
+			columns_.emplace_back(wxS("Arg 5"), ColType::IntUnsigned, 1, 11);
+			columns_.emplace_back(wxS("Front Side"), ColType::IntUnsigned, 2, 12);
+			columns_.emplace_back(wxS("Back Side"), ColType::IntUnsigned, 2, 14);
 			row_stride_ = 16;
 		}
 
 		// Doom 64 format
 		else if (entry->exProp<string>("MapFormat") == "doom64")
 		{
-			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
-			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
-			columns_.emplace_back("Flags", ColType::IntUnsigned, 4, 4);
-			columns_.emplace_back("Action Special", ColType::IntUnsigned, 2, 8);
-			columns_.emplace_back("Sector Tag", ColType::IntUnsigned, 2, 10);
-			columns_.emplace_back("Front Side", ColType::IntUnsigned, 2, 12);
-			columns_.emplace_back("Back Side", ColType::IntUnsigned, 2, 14);
+			columns_.emplace_back(wxS("Vertex 1"), ColType::IntUnsigned, 2, 0);
+			columns_.emplace_back(wxS("Vertex 2"), ColType::IntUnsigned, 2, 2);
+			columns_.emplace_back(wxS("Flags"), ColType::IntUnsigned, 4, 4);
+			columns_.emplace_back(wxS("Action Special"), ColType::IntUnsigned, 2, 8);
+			columns_.emplace_back(wxS("Sector Tag"), ColType::IntUnsigned, 2, 10);
+			columns_.emplace_back(wxS("Front Side"), ColType::IntUnsigned, 2, 12);
+			columns_.emplace_back(wxS("Back Side"), ColType::IntUnsigned, 2, 14);
 			row_stride_ = 16;
 		}
 	}
@@ -543,24 +541,24 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		// Doom 64 format
 		if (entry->exProp<string>("MapFormat") == "doom64")
 		{
-			columns_.emplace_back("X Offset", ColType::IntSigned, 2, 0);
-			columns_.emplace_back("Y Offset", ColType::IntSigned, 2, 2);
-			columns_.emplace_back("Upper Texture", ColType::IntUnsigned, 2, 4);
-			columns_.emplace_back("Lower Texture", ColType::IntUnsigned, 2, 6);
-			columns_.emplace_back("Middle Texture", ColType::IntUnsigned, 2, 8);
-			columns_.emplace_back("Sector", ColType::IntUnsigned, 2, 10);
+			columns_.emplace_back(wxS("X Offset"), ColType::IntSigned, 2, 0);
+			columns_.emplace_back(wxS("Y Offset"), ColType::IntSigned, 2, 2);
+			columns_.emplace_back(wxS("Upper Texture"), ColType::IntUnsigned, 2, 4);
+			columns_.emplace_back(wxS("Lower Texture"), ColType::IntUnsigned, 2, 6);
+			columns_.emplace_back(wxS("Middle Texture"), ColType::IntUnsigned, 2, 8);
+			columns_.emplace_back(wxS("Sector"), ColType::IntUnsigned, 2, 10);
 			row_stride_ = 12;
 		}
 
 		// Doom/Hexen format
 		else
 		{
-			columns_.emplace_back("X Offset", ColType::IntSigned, 2, 0);
-			columns_.emplace_back("Y Offset", ColType::IntSigned, 2, 2);
-			columns_.emplace_back("Upper Texture", ColType::String, 8, 4);
-			columns_.emplace_back("Lower Texture", ColType::String, 8, 12);
-			columns_.emplace_back("Middle Texture", ColType::String, 8, 20);
-			columns_.emplace_back("Sector", ColType::IntUnsigned, 2, 28);
+			columns_.emplace_back(wxS("X Offset"), ColType::IntSigned, 2, 0);
+			columns_.emplace_back(wxS("Y Offset"), ColType::IntSigned, 2, 2);
+			columns_.emplace_back(wxS("Upper Texture"), ColType::String, 8, 4);
+			columns_.emplace_back(wxS("Lower Texture"), ColType::String, 8, 12);
+			columns_.emplace_back(wxS("Middle Texture"), ColType::String, 8, 20);
+			columns_.emplace_back(wxS("Sector"), ColType::IntUnsigned, 2, 28);
 			row_stride_ = 30;
 		}
 	}
@@ -571,31 +569,31 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		// Doom 64 format
 		if (entry->exProp<string>("MapFormat") == "doom64")
 		{
-			columns_.emplace_back("Floor Height", ColType::IntSigned, 2, 0);
-			columns_.emplace_back("Ceiling Height", ColType::IntSigned, 2, 2);
-			columns_.emplace_back("Floor Texture", ColType::IntUnsigned, 2, 4);
-			columns_.emplace_back("Ceiling Texture", ColType::IntUnsigned, 2, 6);
-			columns_.emplace_back("Floor Colour", ColType::IntUnsigned, 2, 8);
-			columns_.emplace_back("Ceiling Colour", ColType::IntUnsigned, 2, 10);
-			columns_.emplace_back("Thing Colour", ColType::IntUnsigned, 2, 12);
-			columns_.emplace_back("Wall Top Colour", ColType::IntUnsigned, 2, 14);
-			columns_.emplace_back("Wall Bottom Colour", ColType::IntUnsigned, 2, 16);
-			columns_.emplace_back("Special", ColType::IntUnsigned, 2, 18);
-			columns_.emplace_back("Tag", ColType::IntUnsigned, 2, 20);
-			columns_.emplace_back("Flags", ColType::IntUnsigned, 2, 22);
+			columns_.emplace_back(wxS("Floor Height"), ColType::IntSigned, 2, 0);
+			columns_.emplace_back(wxS("Ceiling Height"), ColType::IntSigned, 2, 2);
+			columns_.emplace_back(wxS("Floor Texture"), ColType::IntUnsigned, 2, 4);
+			columns_.emplace_back(wxS("Ceiling Texture"), ColType::IntUnsigned, 2, 6);
+			columns_.emplace_back(wxS("Floor Colour"), ColType::IntUnsigned, 2, 8);
+			columns_.emplace_back(wxS("Ceiling Colour"), ColType::IntUnsigned, 2, 10);
+			columns_.emplace_back(wxS("Thing Colour"), ColType::IntUnsigned, 2, 12);
+			columns_.emplace_back(wxS("Wall Top Colour"), ColType::IntUnsigned, 2, 14);
+			columns_.emplace_back(wxS("Wall Bottom Colour"), ColType::IntUnsigned, 2, 16);
+			columns_.emplace_back(wxS("Special"), ColType::IntUnsigned, 2, 18);
+			columns_.emplace_back(wxS("Tag"), ColType::IntUnsigned, 2, 20);
+			columns_.emplace_back(wxS("Flags"), ColType::IntUnsigned, 2, 22);
 			row_stride_ = 24;
 		}
 
 		// Doom/Hexen format
 		else
 		{
-			columns_.emplace_back("Floor Height", ColType::IntSigned, 2, 0);
-			columns_.emplace_back("Ceiling Height", ColType::IntSigned, 2, 2);
-			columns_.emplace_back("Floor Texture", ColType::String, 8, 4);
-			columns_.emplace_back("Ceiling Texture", ColType::String, 8, 12);
-			columns_.emplace_back("Light Level", ColType::IntUnsigned, 2, 20);
-			columns_.emplace_back("Special", ColType::IntUnsigned, 2, 22);
-			columns_.emplace_back("Tag", ColType::IntUnsigned, 2, 24);
+			columns_.emplace_back(wxS("Floor Height"), ColType::IntSigned, 2, 0);
+			columns_.emplace_back(wxS("Ceiling Height"), ColType::IntSigned, 2, 2);
+			columns_.emplace_back(wxS("Floor Texture"), ColType::String, 8, 4);
+			columns_.emplace_back(wxS("Ceiling Texture"), ColType::String, 8, 12);
+			columns_.emplace_back(wxS("Light Level"), ColType::IntUnsigned, 2, 20);
+			columns_.emplace_back(wxS("Special"), ColType::IntUnsigned, 2, 22);
+			columns_.emplace_back(wxS("Tag"), ColType::IntUnsigned, 2, 24);
 			row_stride_ = 26;
 		}
 	}
@@ -606,43 +604,43 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		// Doom format
 		if (entry->exProp<string>("MapFormat") == "doom" || entry->exProp<string>("MapFormat") == "doom32x")
 		{
-			columns_.emplace_back("X Position", ColType::IntSigned, 2, 0);
-			columns_.emplace_back("Y Position", ColType::IntSigned, 2, 2);
-			columns_.emplace_back("Direction", ColType::IntSigned, 2, 4);
-			columns_.emplace_back("Type", ColType::IntUnsigned, 2, 6);
-			columns_.emplace_back("Flags", ColType::IntUnsigned, 2, 8);
+			columns_.emplace_back(wxS("X Position"), ColType::IntSigned, 2, 0);
+			columns_.emplace_back(wxS("Y Position"), ColType::IntSigned, 2, 2);
+			columns_.emplace_back(wxS("Direction"), ColType::IntSigned, 2, 4);
+			columns_.emplace_back(wxS("Type"), ColType::IntUnsigned, 2, 6);
+			columns_.emplace_back(wxS("Flags"), ColType::IntUnsigned, 2, 8);
 			row_stride_ = 10;
 		}
 
 		// Hexen format
 		else if (entry->exProp<string>("MapFormat") == "hexen")
 		{
-			columns_.emplace_back("ID", ColType::IntUnsigned, 2, 0);
-			columns_.emplace_back("X Position", ColType::IntSigned, 2, 2);
-			columns_.emplace_back("Y Position", ColType::IntSigned, 2, 4);
-			columns_.emplace_back("Z Height", ColType::IntSigned, 2, 6);
-			columns_.emplace_back("Direction", ColType::IntSigned, 2, 8);
-			columns_.emplace_back("Type", ColType::IntUnsigned, 2, 10);
-			columns_.emplace_back("Flags", ColType::IntUnsigned, 2, 12);
-			columns_.emplace_back("Special", ColType::IntUnsigned, 1, 14);
-			columns_.emplace_back("Arg 1", ColType::IntUnsigned, 1, 15);
-			columns_.emplace_back("Arg 2", ColType::IntUnsigned, 1, 16);
-			columns_.emplace_back("Arg 3", ColType::IntUnsigned, 1, 17);
-			columns_.emplace_back("Arg 4", ColType::IntUnsigned, 1, 18);
-			columns_.emplace_back("Arg 5", ColType::IntUnsigned, 1, 19);
+			columns_.emplace_back(wxS("ID"), ColType::IntUnsigned, 2, 0);
+			columns_.emplace_back(wxS("X Position"), ColType::IntSigned, 2, 2);
+			columns_.emplace_back(wxS("Y Position"), ColType::IntSigned, 2, 4);
+			columns_.emplace_back(wxS("Z Height"), ColType::IntSigned, 2, 6);
+			columns_.emplace_back(wxS("Direction"), ColType::IntSigned, 2, 8);
+			columns_.emplace_back(wxS("Type"), ColType::IntUnsigned, 2, 10);
+			columns_.emplace_back(wxS("Flags"), ColType::IntUnsigned, 2, 12);
+			columns_.emplace_back(wxS("Special"), ColType::IntUnsigned, 1, 14);
+			columns_.emplace_back(wxS("Arg 1"), ColType::IntUnsigned, 1, 15);
+			columns_.emplace_back(wxS("Arg 2"), ColType::IntUnsigned, 1, 16);
+			columns_.emplace_back(wxS("Arg 3"), ColType::IntUnsigned, 1, 17);
+			columns_.emplace_back(wxS("Arg 4"), ColType::IntUnsigned, 1, 18);
+			columns_.emplace_back(wxS("Arg 5"), ColType::IntUnsigned, 1, 19);
 			row_stride_ = 20;
 		}
 
 		// Doom64 format
 		else
 		{
-			columns_.emplace_back("X Position", ColType::IntSigned, 2, 0);
-			columns_.emplace_back("Y Position", ColType::IntSigned, 2, 2);
-			columns_.emplace_back("Z Height", ColType::IntSigned, 2, 4);
-			columns_.emplace_back("Direction", ColType::IntSigned, 2, 6);
-			columns_.emplace_back("Type", ColType::IntSigned, 2, 8);
-			columns_.emplace_back("Flags", ColType::IntSigned, 2, 10);
-			columns_.emplace_back("ID", ColType::IntSigned, 2, 12);
+			columns_.emplace_back(wxS("X Position"), ColType::IntSigned, 2, 0);
+			columns_.emplace_back(wxS("Y Position"), ColType::IntSigned, 2, 2);
+			columns_.emplace_back(wxS("Z Height"), ColType::IntSigned, 2, 4);
+			columns_.emplace_back(wxS("Direction"), ColType::IntSigned, 2, 6);
+			columns_.emplace_back(wxS("Type"), ColType::IntSigned, 2, 8);
+			columns_.emplace_back(wxS("Flags"), ColType::IntSigned, 2, 10);
+			columns_.emplace_back(wxS("ID"), ColType::IntSigned, 2, 12);
 			row_stride_ = 14;
 		}
 	}
@@ -650,22 +648,22 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// SEGS
 	else if (type == "map_segs")
 	{
-		columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
-		columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
-		columns_.emplace_back("Angle", ColType::IntSigned, 2, 4);
-		columns_.emplace_back("Line", ColType::IntUnsigned, 2, 6);
-		columns_.emplace_back("Side", ColType::CustomValue, 2, 8);
-		columns_.back().addCustomValue(0, "Front");
-		columns_.back().addCustomValue(1, "Back");
-		columns_.emplace_back("Offset", ColType::IntSigned, 2, 10);
+		columns_.emplace_back(wxS("Vertex 1"), ColType::IntUnsigned, 2, 0);
+		columns_.emplace_back(wxS("Vertex 2"), ColType::IntUnsigned, 2, 2);
+		columns_.emplace_back(wxS("Angle"), ColType::IntSigned, 2, 4);
+		columns_.emplace_back(wxS("Line"), ColType::IntUnsigned, 2, 6);
+		columns_.emplace_back(wxS("Side"), ColType::CustomValue, 2, 8);
+		columns_.back().addCustomValue(0, wxS("Front"));
+		columns_.back().addCustomValue(1, wxS("Back"));
+		columns_.emplace_back(wxS("Offset"), ColType::IntSigned, 2, 10);
 		row_stride_ = 12;
 	}
 
 	// SSECTORS
 	else if (type == "map_ssectors")
 	{
-		columns_.emplace_back("Seg Count", ColType::IntUnsigned, 2, 0);
-		columns_.emplace_back("First Seg", ColType::IntUnsigned, 2, 2);
+		columns_.emplace_back(wxS("Seg Count"), ColType::IntUnsigned, 2, 0);
+		columns_.emplace_back(wxS("First Seg"), ColType::IntUnsigned, 2, 2);
 		row_stride_ = 4;
 	}
 
@@ -674,38 +672,38 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	{
 		if (entry->exProp<string>("MapFormat") == "doom32x")
 		{
-			columns_.emplace_back("Partition X", ColType::IntBESigned, 2, 0);
-			columns_.emplace_back("Partition Y", ColType::IntBESigned, 2, 4);
-			columns_.emplace_back("Partition X Diff", ColType::IntBESigned, 2, 8);
-			columns_.emplace_back("Partition Y Diff", ColType::IntBESigned, 2, 12);
-			columns_.emplace_back("Right Box Top", ColType::IntBESigned, 2, 16);
-			columns_.emplace_back("Right Box Bottom", ColType::IntBESigned, 2, 20);
-			columns_.emplace_back("Right Box Left", ColType::IntBESigned, 2, 24);
-			columns_.emplace_back("Right Box Right", ColType::IntBESigned, 2, 28);
-			columns_.emplace_back("Left Box Top", ColType::IntBESigned, 2, 32);
-			columns_.emplace_back("Left Box Bottom", ColType::IntBESigned, 2, 36);
-			columns_.emplace_back("Left Box Left", ColType::IntBESigned, 2, 40);
-			columns_.emplace_back("Left Box Right", ColType::IntBESigned, 2, 44);
-			columns_.emplace_back("Right Child", ColType::IntBESigned, 2, 50);
-			columns_.emplace_back("Left Child", ColType::IntBESigned, 2, 54);
+			columns_.emplace_back(wxS("Partition X"), ColType::IntBESigned, 2, 0);
+			columns_.emplace_back(wxS("Partition Y"), ColType::IntBESigned, 2, 4);
+			columns_.emplace_back(wxS("Partition X Diff"), ColType::IntBESigned, 2, 8);
+			columns_.emplace_back(wxS("Partition Y Diff"), ColType::IntBESigned, 2, 12);
+			columns_.emplace_back(wxS("Right Box Top"), ColType::IntBESigned, 2, 16);
+			columns_.emplace_back(wxS("Right Box Bottom"), ColType::IntBESigned, 2, 20);
+			columns_.emplace_back(wxS("Right Box Left"), ColType::IntBESigned, 2, 24);
+			columns_.emplace_back(wxS("Right Box Right"), ColType::IntBESigned, 2, 28);
+			columns_.emplace_back(wxS("Left Box Top"), ColType::IntBESigned, 2, 32);
+			columns_.emplace_back(wxS("Left Box Bottom"), ColType::IntBESigned, 2, 36);
+			columns_.emplace_back(wxS("Left Box Left"), ColType::IntBESigned, 2, 40);
+			columns_.emplace_back(wxS("Left Box Right"), ColType::IntBESigned, 2, 44);
+			columns_.emplace_back(wxS("Right Child"), ColType::IntBESigned, 2, 50);
+			columns_.emplace_back(wxS("Left Child"), ColType::IntBESigned, 2, 54);
 			row_stride_ = 56;
 		}
 		else
 		{
-			columns_.emplace_back("Partition X", ColType::IntSigned, 2, 0);
-			columns_.emplace_back("Partition Y", ColType::IntSigned, 2, 2);
-			columns_.emplace_back("Partition X Diff", ColType::IntSigned, 2, 4);
-			columns_.emplace_back("Partition Y Diff", ColType::IntSigned, 2, 6);
-			columns_.emplace_back("Right Box Top", ColType::IntSigned, 2, 8);
-			columns_.emplace_back("Right Box Bottom", ColType::IntSigned, 2, 10);
-			columns_.emplace_back("Right Box Left", ColType::IntSigned, 2, 12);
-			columns_.emplace_back("Right Box Right", ColType::IntSigned, 2, 14);
-			columns_.emplace_back("Left Box Top", ColType::IntSigned, 2, 16);
-			columns_.emplace_back("Left Box Bottom", ColType::IntSigned, 2, 18);
-			columns_.emplace_back("Left Box Left", ColType::IntSigned, 2, 20);
-			columns_.emplace_back("Left Box Right", ColType::IntSigned, 2, 22);
-			columns_.emplace_back("Right Child", ColType::IntUnsigned, 2, 24);
-			columns_.emplace_back("Left Child", ColType::IntUnsigned, 2, 26);
+			columns_.emplace_back(wxS("Partition X"), ColType::IntSigned, 2, 0);
+			columns_.emplace_back(wxS("Partition Y"), ColType::IntSigned, 2, 2);
+			columns_.emplace_back(wxS("Partition X Diff"), ColType::IntSigned, 2, 4);
+			columns_.emplace_back(wxS("Partition Y Diff"), ColType::IntSigned, 2, 6);
+			columns_.emplace_back(wxS("Right Box Top"), ColType::IntSigned, 2, 8);
+			columns_.emplace_back(wxS("Right Box Bottom"), ColType::IntSigned, 2, 10);
+			columns_.emplace_back(wxS("Right Box Left"), ColType::IntSigned, 2, 12);
+			columns_.emplace_back(wxS("Right Box Right"), ColType::IntSigned, 2, 14);
+			columns_.emplace_back(wxS("Left Box Top"), ColType::IntSigned, 2, 16);
+			columns_.emplace_back(wxS("Left Box Bottom"), ColType::IntSigned, 2, 18);
+			columns_.emplace_back(wxS("Left Box Left"), ColType::IntSigned, 2, 20);
+			columns_.emplace_back(wxS("Left Box Right"), ColType::IntSigned, 2, 22);
+			columns_.emplace_back(wxS("Right Child"), ColType::IntUnsigned, 2, 24);
+			columns_.emplace_back(wxS("Left Child"), ColType::IntUnsigned, 2, 26);
 			row_stride_ = 28;
 		}
 	}
@@ -713,24 +711,24 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// LIGHTS
 	else if (type == "map_lights")
 	{
-		columns_.emplace_back("Red", ColType::IntUnsigned, 1, 0);
-		columns_.emplace_back("Green", ColType::IntUnsigned, 1, 1);
-		columns_.emplace_back("Blue", ColType::IntUnsigned, 1, 2);
-		columns_.emplace_back("Pad (Unused)", ColType::IntUnsigned, 1, 3);
-		columns_.emplace_back("Tag", ColType::IntUnsigned, 2, 4);
+		columns_.emplace_back(wxS("Red"), ColType::IntUnsigned, 1, 0);
+		columns_.emplace_back(wxS("Green"), ColType::IntUnsigned, 1, 1);
+		columns_.emplace_back(wxS("Blue"), ColType::IntUnsigned, 1, 2);
+		columns_.emplace_back(wxS("Pad (Unused)"), ColType::IntUnsigned, 1, 3);
+		columns_.emplace_back(wxS("Tag"), ColType::IntUnsigned, 2, 4);
 		row_stride_ = 6;
 	}
 
 	// SWITCHES
 	else if (type == "switches")
 	{
-		columns_.emplace_back("Off Texture", ColType::String, 8, 0);
-		columns_.emplace_back("On Texture", ColType::String, 8, 9);
+		columns_.emplace_back(wxS("Off Texture"), ColType::String, 8, 0);
+		columns_.emplace_back(wxS("On Texture"), ColType::String, 8, 9);
 
-		Column col_type("Type", ColType::CustomValue, 2, 18);
-		col_type.addCustomValue(switchtype::DEMO, "Shareware");
-		col_type.addCustomValue(switchtype::FULL, "Registered");
-		col_type.addCustomValue(switchtype::COMM, "Commercial");
+		Column col_type(wxS("Type"), ColType::CustomValue, 2, 18);
+		col_type.addCustomValue(switchtype::DEMO, wxS("Shareware"));
+		col_type.addCustomValue(switchtype::FULL, wxS("Registered"));
+		col_type.addCustomValue(switchtype::COMM, wxS("Commercial"));
 		columns_.push_back(col_type);
 
 		row_stride_ = 20;
@@ -739,23 +737,23 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// ANIMATED
 	else if (type == "animated")
 	{
-		Column col_type("Type", ColType::CustomValue, 1, 0);
-		col_type.addCustomValue(0, "Flat");
-		col_type.addCustomValue(1, "Texture");
-		col_type.addCustomValue(2, "Flat (Decals)");
-		col_type.addCustomValue(3, "Texture (Decals)");
+		Column col_type(wxS("Type"), ColType::CustomValue, 1, 0);
+		col_type.addCustomValue(0, wxS("Flat"));
+		col_type.addCustomValue(1, wxS("Texture"));
+		col_type.addCustomValue(2, wxS("Flat (Decals)"));
+		col_type.addCustomValue(3, wxS("Texture (Decals)"));
 
 		columns_.push_back(col_type);
-		columns_.emplace_back("Last Texture", ColType::String, 8, 1);
-		columns_.emplace_back("First Texture", ColType::String, 8, 10);
-		columns_.emplace_back("Speed (Tics)", ColType::IntUnsigned, 4, 19);
+		columns_.emplace_back(wxS("Last Texture"), ColType::String, 8, 1);
+		columns_.emplace_back(wxS("First Texture"), ColType::String, 8, 10);
+		columns_.emplace_back(wxS("Speed (Tics)"), ColType::IntUnsigned, 4, 19);
 		row_stride_ = 23;
 	}
 
 	// PNAMES
 	else if (type == "pnames" || type == "notpnames")
 	{
-		columns_.emplace_back("Patch Name", ColType::String, 8, 0);
+		columns_.emplace_back(wxS("Patch Name"), ColType::String, 8, 0);
 		row_stride_ = 8;
 		data_start_ = 4;
 	}
@@ -764,16 +762,16 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_dialog")
 	{
 		// Full version:
-		columns_.emplace_back("Speaker ID", ColType::IntUnsigned, 4, 0);
-		columns_.emplace_back("Drop Type", ColType::IntSigned, 4, 4);
-		columns_.emplace_back("Item Check 1", ColType::IntSigned, 4, 8);
-		columns_.emplace_back("Item Check 2", ColType::IntSigned, 4, 12);
-		columns_.emplace_back("Item Check 3", ColType::IntSigned, 4, 16);
-		columns_.emplace_back("Link", ColType::IntSigned, 4, 20);
-		columns_.emplace_back("Speaker Name", ColType::String, 16, 24);
-		columns_.emplace_back("Sound", ColType::String, 8, 40);
-		columns_.emplace_back("Backdrop", ColType::String, 8, 48);
-		columns_.emplace_back("Dialogue Text", ColType::String, 320, 56);
+		columns_.emplace_back(wxS("Speaker ID"), ColType::IntUnsigned, 4, 0);
+		columns_.emplace_back(wxS("Drop Type"), ColType::IntSigned, 4, 4);
+		columns_.emplace_back(wxS("Item Check 1"), ColType::IntSigned, 4, 8);
+		columns_.emplace_back(wxS("Item Check 2"), ColType::IntSigned, 4, 12);
+		columns_.emplace_back(wxS("Item Check 3"), ColType::IntSigned, 4, 16);
+		columns_.emplace_back(wxS("Link"), ColType::IntSigned, 4, 20);
+		columns_.emplace_back(wxS("Speaker Name"), ColType::String, 16, 24);
+		columns_.emplace_back(wxS("Sound"), ColType::String, 8, 40);
+		columns_.emplace_back(wxS("Backdrop"), ColType::String, 8, 48);
+		columns_.emplace_back(wxS("Dialogue Text"), ColType::String, 320, 56);
 		unsigned offset = 320 + 56;
 		row_stride_     = 1516;
 
@@ -789,18 +787,18 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		// Responses
 		for (unsigned a = 1; a <= 5; a++)
 		{
-			columns_.emplace_back(wxString::Format("Response %d: Give Type", a), ColType::IntSigned, 4, offset);
-			columns_.emplace_back(wxString::Format("Response %d: Item 1", a), ColType::IntSigned, 4, offset + 4);
-			columns_.emplace_back(wxString::Format("Response %d: Item 2", a), ColType::IntSigned, 4, offset + 8);
-			columns_.emplace_back(wxString::Format("Response %d: Item 3", a), ColType::IntSigned, 4, offset + 12);
-			columns_.emplace_back(wxString::Format("Response %d: Count 1", a), ColType::IntSigned, 4, offset + 16);
-			columns_.emplace_back(wxString::Format("Response %d: Count 2", a), ColType::IntSigned, 4, offset + 20);
-			columns_.emplace_back(wxString::Format("Response %d: Count 3", a), ColType::IntSigned, 4, offset + 24);
-			columns_.emplace_back(wxString::Format("Response %d: Choice Text", a), ColType::String, 32, offset + 28);
-			columns_.emplace_back(wxString::Format("Response %d: Success Text", a), ColType::String, 80, offset + 60);
-			columns_.emplace_back(wxString::Format("Response %d: Link", a), ColType::IntSigned, 4, offset + 140);
-			columns_.emplace_back(wxString::Format("Response %d: Log", a), ColType::IntUnsigned, 4, offset + 144);
-			columns_.emplace_back(wxString::Format("Response %d: Fail Text", a), ColType::String, 80, offset + 148);
+			columns_.emplace_back(WX_FMT("Response {}: Give Type", a), ColType::IntSigned, 4, offset);
+			columns_.emplace_back(WX_FMT("Response {}: Item 1", a), ColType::IntSigned, 4, offset + 4);
+			columns_.emplace_back(WX_FMT("Response {}: Item 2", a), ColType::IntSigned, 4, offset + 8);
+			columns_.emplace_back(WX_FMT("Response {}: Item 3", a), ColType::IntSigned, 4, offset + 12);
+			columns_.emplace_back(WX_FMT("Response {}: Count 1", a), ColType::IntSigned, 4, offset + 16);
+			columns_.emplace_back(WX_FMT("Response {}: Count 2", a), ColType::IntSigned, 4, offset + 20);
+			columns_.emplace_back(WX_FMT("Response {}: Count 3", a), ColType::IntSigned, 4, offset + 24);
+			columns_.emplace_back(WX_FMT("Response {}: Choice Text", a), ColType::String, 32, offset + 28);
+			columns_.emplace_back(WX_FMT("Response {}: Success Text", a), ColType::String, 80, offset + 60);
+			columns_.emplace_back(WX_FMT("Response {}: Link", a), ColType::IntSigned, 4, offset + 140);
+			columns_.emplace_back(WX_FMT("Response {}: Log", a), ColType::IntUnsigned, 4, offset + 144);
+			columns_.emplace_back(WX_FMT("Response {}: Fail Text", a), ColType::String, 80, offset + 148);
 			offset += 228;
 		}
 	}
@@ -808,28 +806,28 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// GENMIDI
 	else if (type == "genmidi")
 	{
-		columns_.emplace_back("Flags", ColType::IntUnsigned, 2, 0);
-		columns_.emplace_back("Second Tune", ColType::IntUnsigned, 1, 2);
-		columns_.emplace_back("Fixed Note", ColType::IntUnsigned, 1, 3);
+		columns_.emplace_back(wxS("Flags"), ColType::IntUnsigned, 2, 0);
+		columns_.emplace_back(wxS("Second Tune"), ColType::IntUnsigned, 1, 2);
+		columns_.emplace_back(wxS("Fixed Note"), ColType::IntUnsigned, 1, 3);
 
 		// Voice data
 		unsigned offset = 4;
 		for (int i = 1; i < 3; ++i)
 		{
-			columns_.emplace_back(wxString::Format("V%d: Mod Multi", i), ColType::IntUnsigned, 1, offset + 0);
-			columns_.emplace_back(wxString::Format("V%d: Mod Attack", i), ColType::IntUnsigned, 1, offset + 1);
-			columns_.emplace_back(wxString::Format("V%d: Mod Sustain", i), ColType::IntUnsigned, 1, offset + 2);
-			columns_.emplace_back(wxString::Format("V%d: Mod Waveform", i), ColType::IntUnsigned, 1, offset + 3);
-			columns_.emplace_back(wxString::Format("V%d: Mod Key Scale", i), ColType::IntUnsigned, 1, offset + 4);
-			columns_.emplace_back(wxString::Format("V%d: Mod Output", i), ColType::IntUnsigned, 1, offset + 5);
-			columns_.emplace_back(wxString::Format("V%d: Feedback", i), ColType::IntUnsigned, 1, offset + 6);
-			columns_.emplace_back(wxString::Format("V%d: Car Multi", i), ColType::IntUnsigned, 1, offset + 7);
-			columns_.emplace_back(wxString::Format("V%d: Car Attack", i), ColType::IntUnsigned, 1, offset + 8);
-			columns_.emplace_back(wxString::Format("V%d: Car Sustain", i), ColType::IntUnsigned, 1, offset + 9);
-			columns_.emplace_back(wxString::Format("V%d: Car Waveform", i), ColType::IntUnsigned, 1, offset + 10);
-			columns_.emplace_back(wxString::Format("V%d: Car Key Scale", i), ColType::IntUnsigned, 1, offset + 11);
-			columns_.emplace_back(wxString::Format("V%d: Car Output", i), ColType::IntUnsigned, 1, offset + 12);
-			columns_.emplace_back(wxString::Format("V%d: Note Offset", i), ColType::IntSigned, 2, offset + 14);
+			columns_.emplace_back(WX_FMT("V{}: Mod Multi", i), ColType::IntUnsigned, 1, offset + 0);
+			columns_.emplace_back(WX_FMT("V{}: Mod Attack", i), ColType::IntUnsigned, 1, offset + 1);
+			columns_.emplace_back(WX_FMT("V{}: Mod Sustain", i), ColType::IntUnsigned, 1, offset + 2);
+			columns_.emplace_back(WX_FMT("V{}: Mod Waveform", i), ColType::IntUnsigned, 1, offset + 3);
+			columns_.emplace_back(WX_FMT("V{}: Mod Key Scale", i), ColType::IntUnsigned, 1, offset + 4);
+			columns_.emplace_back(WX_FMT("V{}: Mod Output", i), ColType::IntUnsigned, 1, offset + 5);
+			columns_.emplace_back(WX_FMT("V{}: Feedback", i), ColType::IntUnsigned, 1, offset + 6);
+			columns_.emplace_back(WX_FMT("V{}: Car Multi", i), ColType::IntUnsigned, 1, offset + 7);
+			columns_.emplace_back(WX_FMT("V{}: Car Attack", i), ColType::IntUnsigned, 1, offset + 8);
+			columns_.emplace_back(WX_FMT("V{}: Car Sustain", i), ColType::IntUnsigned, 1, offset + 9);
+			columns_.emplace_back(WX_FMT("V{}: Car Waveform", i), ColType::IntUnsigned, 1, offset + 10);
+			columns_.emplace_back(WX_FMT("V{}: Car Key Scale", i), ColType::IntUnsigned, 1, offset + 11);
+			columns_.emplace_back(WX_FMT("V{}: Car Output", i), ColType::IntUnsigned, 1, offset + 12);
+			columns_.emplace_back(WX_FMT("V{}: Note Offset", i), ColType::IntSigned, 2, offset + 14);
 			offset += 16;
 		}
 		row_stride_ = 36;
@@ -921,7 +919,8 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), t
 	// Cell value combo box
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer_main_->Add(vbox, 1, wxEXPAND);
-	combo_cell_value_ = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxTE_PROCESS_ENTER);
+	combo_cell_value_ = new wxComboBox(
+		this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxTE_PROCESS_ENTER);
 	vbox->Add(combo_cell_value_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Create grid
@@ -974,10 +973,10 @@ bool DataEntryPanel::writeEntry(ArchiveEntry& entry)
 	{
 		// PNAMES
 		if (wxMessageBox(
-				"Modifying PNAMES directly can cause TEXTUREx errors if you don't know what you are doing. It "
-				"is highly recommended that you use the texture editor to modify PNAMES safely.\nAre you sure "
-				"you want to continue saving?",
-				"PNAMES Entry Modification Warning",
+				wxS("Modifying PNAMES directly can cause TEXTUREx errors if you don't know what you are doing. It "
+					"is highly recommended that you use the texture editor to modify PNAMES safely.\nAre you sure "
+					"you want to continue saving?"),
+				wxS("PNAMES Entry Modification Warning"),
 				wxYES_NO | wxICON_WARNING,
 				this)
 			== wxYES)
@@ -1122,18 +1121,18 @@ void DataEntryPanel::changeValue() const
 			initial_val = cell_value;
 		else if (initial_val != cell_value)
 		{
-			initial_val = "";
+			initial_val.clear();
 			break;
 		}
 	}
 
 	// Create dialog
-	wxDialog dlg(maineditor::windowWx(), -1, "Change Value");
+	wxDialog dlg(maineditor::windowWx(), -1, wxS("Change Value"));
 
 	auto          ci = table_data_->columnInfo(selection[0].y);
 	wxArrayString choices;
 	for (auto& custom_value : ci.custom_values)
-		choices.Add(wxString::Format("%d: %s", custom_value.first, custom_value.second));
+		choices.Add(WX_FMT("{}: {}", custom_value.first, custom_value.second.utf8_string()));
 	auto combo = new wxComboBox(&dlg, -1, initial_val, wxDefaultPosition, wxDefaultSize, choices);
 
 	auto vbox = new wxBoxSizer(wxVERTICAL);
@@ -1160,7 +1159,7 @@ void DataEntryPanel::changeValue() const
 
 		// Apply value to selected cells
 		for (auto& a : selection)
-			grid_data_->SetCellValue(a.x, a.y, wxString::Format("%ld", lval));
+			grid_data_->SetCellValue(a.x, a.y, WX_FMT("{}", lval));
 		grid_data_->ForceRefresh();
 	}
 }
@@ -1268,7 +1267,7 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 {
 	// Check if only one column is selected
 	int col = getColWithSelection();
-	log::info(2, wxString::Format("Column %d", col));
+	log::info(2, "Column {}", col);
 
 	wxMenu menu;
 	SAction::fromId("data_add_row")->addToMenu(&menu);
@@ -1293,7 +1292,7 @@ void DataEntryPanel::onGridCursorChanged(wxGridEvent& e)
 	combo_cell_value_->Clear();
 	auto col = table_data_->columnInfo(e.GetCol());
 	for (auto& custom_value : col.custom_values)
-		combo_cell_value_->AppendString(wxString::Format("%d: %s", custom_value.first, custom_value.second));
+		combo_cell_value_->AppendString(WX_FMT("{}: {}", custom_value.first, custom_value.second.utf8_string()));
 
 	combo_cell_value_->SetValue(grid_data_->GetCellValue(e.GetRow(), e.GetCol()));
 }

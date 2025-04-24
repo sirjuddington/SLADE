@@ -289,7 +289,7 @@ bool ADatArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* ent
 	}
 
 	// Open archive file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check it opened
 	if (!file.IsOpened())
@@ -362,7 +362,7 @@ bool ADatArchiveHandler::isThisFormat(const MemChunk& mc)
 bool ADatArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < 16)

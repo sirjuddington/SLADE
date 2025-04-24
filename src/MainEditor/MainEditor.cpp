@@ -176,7 +176,7 @@ ArchivePanel* maineditor::currentArchivePanel()
 {
 	auto* panel = main_window->archiveManagerPanel()->currentPanel();
 
-	if (panel && panel->GetName().CmpNoCase("archive") == 0)
+	if (panel && panel->GetName().CmpNoCase(wxS("archive")) == 0)
 		return dynamic_cast<ArchivePanel*>(panel);
 
 	return nullptr;

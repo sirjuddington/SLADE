@@ -55,7 +55,7 @@ using namespace slade;
 // GfxColouriseDialog class constructor
 // -----------------------------------------------------------------------------
 GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, const Palette& pal) :
-	wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+	wxDialog(parent, -1, wxS("Colourise"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 	entry_{ entry },
 	palette_{ new Palette(pal) }
 {
@@ -77,7 +77,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, co
 	cb_colour_ = new ColourBox(this, -1, false, true);
 	cb_colour_->setColour(ColRGBA::RED);
 	cb_colour_->setPalette(palette_.get());
-	hbox->Add(new wxStaticText(this, -1, "Colour:"), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, wxS("Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 	hbox->Add(cb_colour_, wxSizerFlags().Expand());
 
 	// Add preview
@@ -119,9 +119,9 @@ ColRGBA GfxColouriseDialog::colour() const
 // -----------------------------------------------------------------------------
 // Sets the colour to use
 // -----------------------------------------------------------------------------
-void GfxColouriseDialog::setColour(const wxString& col) const
+void GfxColouriseDialog::setColour(const string& col) const
 {
-	auto rgba = ColRGBA(wxColour(col));
+	auto rgba = ColRGBA(wxColour(wxString::FromUTF8(col)));
 	cb_colour_->setColour(rgba);
 	gfx_preview_->image().colourise(rgba, palette_.get());
 	gfx_preview_->window()->Refresh();

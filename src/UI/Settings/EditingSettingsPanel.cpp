@@ -74,8 +74,8 @@ EditingSettingsPanel::EditingSettingsPanel(wxWindow* parent) : SettingsPanel(par
 	ext_editors_panel_ = new ExternalEditorsSettingsPanel(this);
 
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createArchiveEditorPanel(tabs), "Archive Editor");
-	tabs->AddPage(wxutil::createPadPanel(tabs, ext_editors_panel_, padLarge()), "External Editors");
+	tabs->AddPage(createArchiveEditorPanel(tabs), wxS("Archive Editor"));
+	tabs->AddPage(wxutil::createPadPanel(tabs, ext_editors_panel_, padLarge()), wxS("External Editors"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 
@@ -122,14 +122,14 @@ wxPanel* EditingSettingsPanel::createArchiveEditorPanel(wxWindow* parent)
 	auto lh    = LayoutHelper(panel);
 
 	// Create controls
-	cb_wad_force_uppercase_  = new wxCheckBox(panel, wxID_ANY, "Force uppercase entry names in Wad Archives");
+	cb_wad_force_uppercase_  = new wxCheckBox(panel, wxID_ANY, wxS("Force uppercase entry names in Wad Archives"));
 	cb_zip_percent_encoding_ = new wxCheckBox(
-		panel, wxID_ANY, "Use percent encoding if needed outside of Wad Archives");
+		panel, wxID_ANY, wxS("Use percent encoding if needed outside of Wad Archives"));
 	cb_auto_entry_replace_ = new wxCheckBox(
-		panel, -1, "Automatically replace entries with same name as drag-and-dropped files");
-	cb_filter_dirs_          = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
-	cb_confirm_entry_delete_ = new wxCheckBox(panel, -1, "Show confirmation dialog on deleting an entry");
-	cb_confirm_entry_revert_ = new wxCheckBox(panel, -1, "Show confirmation dialog on reverting entry changes");
+		panel, -1, wxS("Automatically replace entries with same name as drag-and-dropped files"));
+	cb_filter_dirs_          = new wxCheckBox(panel, -1, wxS("Ignore directories when filtering by name"));
+	cb_confirm_entry_delete_ = new wxCheckBox(panel, -1, wxS("Show confirmation dialog on deleting an entry"));
+	cb_confirm_entry_revert_ = new wxCheckBox(panel, -1, wxS("Show confirmation dialog on reverting entry changes"));
 	rbp_entry_mod_ = new RadioButtonPanel(panel, { "Don't Save", "Save", "Ask" }, "Action on unsaved entry changes:");
 	rbp_dir_mod_   = new RadioButtonPanel(
         panel, { "Ignore Changes", "Apply Changes", "Ask" }, "Action on external directory changes");

@@ -69,9 +69,9 @@ public:
 	void            openEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTab(const ArchiveEntry* entry) const;
 	void            closeEntryTabs(const Archive* parent) const;
-	void            openFile(const wxString& filename) const;
+	void            openFile(const string& filename) const;
 	void            openFiles(const wxArrayString& files) const;
-	void            openDirAsArchive(const wxString& dir) const;
+	void            openDirAsArchive(string_view dir) const;
 	bool            redirectToTab(const ArchiveEntry* entry) const;
 	bool            entryIsOpenInTab(const ArchiveEntry* entry) const;
 	void            closeCurrentTab();
@@ -88,7 +88,7 @@ public:
 	bool beforeCloseArchive(Archive* archive);
 	bool closeArchive(Archive* archive);
 
-	void createNewArchive(const wxString& format) const;
+	void createNewArchive(const string& format) const;
 	bool closeAll();
 	void saveAll() const;
 	void checkDirArchives();

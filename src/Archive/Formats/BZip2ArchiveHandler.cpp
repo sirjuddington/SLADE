@@ -127,7 +127,7 @@ bool BZip2ArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* en
 	}
 
 	// Open archive file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -242,7 +242,7 @@ bool BZip2ArchiveHandler::isThisFormat(const MemChunk& mc)
 bool BZip2ArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < 14)

@@ -59,10 +59,10 @@ CVAR(Bool, debug_lexer, false, CVar::Flag::Secret)
 // -----------------------------------------------------------------------------
 Lexer::Lexer() :
 	whitespace_chars_{ { ' ', '\n', '\r', '\t' } },
-	re_int1_{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT | wxRE_NOSUB },
-	re_int2_{ "^0[0-9]+$", wxRE_DEFAULT | wxRE_NOSUB },
-	re_int3_{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT | wxRE_NOSUB },
-	re_float_{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE_NOSUB }
+	re_int1_{ wxS("^[+-]?[0-9]+[0-9]*$"), wxRE_DEFAULT | wxRE_NOSUB },
+	re_int2_{ wxS("^0[0-9]+$"), wxRE_DEFAULT | wxRE_NOSUB },
+	re_int3_{ wxS("^0x[0-9A-Fa-f]+$"), wxRE_DEFAULT | wxRE_NOSUB },
+	re_float_{ wxS("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$"), wxRE_DEFAULT | wxRE_NOSUB }
 {
 	// Default word characters
 	setWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
@@ -116,7 +116,7 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 	editor->StartStyling(start);
 
 	if (debug_lexer)
-		log::debug(wxString::Format("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
+		log::debug("START STYLING FROM {} TO {} (LINE {})", start, end, line + 1);
 
 	bool done = false;
 	while (!done)
@@ -397,7 +397,7 @@ bool Lexer::processUnknown(LexerState& state)
 	}
 
 	if (debug_lexer && u_length > 0)
-		log::debug(wxString::Format("unknown: %d", u_length));
+		log::debug("unknown: {}", u_length);
 	state.editor->SetStyling(u_length, Style::Default);
 
 	return end;
@@ -497,7 +497,7 @@ bool Lexer::processString(LexerState& state)
 	}
 
 	if (debug_lexer)
-		log::debug(wxString::Format("string: %lu", state.length));
+		log::debug("string: {}", state.length);
 
 	state.editor->SetStyling(state.length, Style::String);
 
@@ -536,7 +536,7 @@ bool Lexer::processChar(LexerState& state)
 	}
 
 	if (debug_lexer)
-		log::debug(wxString::Format("char: %lu", state.length));
+		log::debug("char: {}", state.length);
 
 	state.editor->SetStyling(state.length, Style::Char);
 
@@ -574,7 +574,7 @@ bool Lexer::processOperator(LexerState& state)
 	}
 
 	if (debug_lexer)
-		log::debug(wxString::Format("operator: %lu", state.length));
+		log::debug("operator: {}", state.length);
 
 	state.editor->SetStyling(state.length, Style::Operator);
 
@@ -612,7 +612,7 @@ bool Lexer::processWhitespace(LexerState& state)
 	}
 
 	if (debug_lexer)
-		log::debug(wxString::Format("whitespace: %lu", state.length));
+		log::debug("whitespace: {}", state.length);
 
 	state.editor->SetStyling(state.length, Style::Default);
 
@@ -717,7 +717,7 @@ void Lexer::updateFolding(TextEditorCtrl* editor, int line_start)
 // -----------------------------------------------------------------------------
 bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 {
-	auto word = editor->GetTextRange(start_pos, end_pos).ToStdString();
+	auto word = editor->GetTextRange(start_pos, end_pos).utf8_string();
 	if (!language_->caseSensitive())
 		strutil::lowerIP(word);
 	return word_list_[word].style == static_cast<int>(Style::Function);
@@ -804,7 +804,7 @@ bool ZScriptLexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos
 		return false;
 
 	// Check if word is a function name
-	auto word = editor->GetTextRange(start_pos, end_pos).ToStdString();
+	auto word = editor->GetTextRange(start_pos, end_pos).utf8_string();
 	if (!language_->caseSensitive())
 		strutil::lowerIP(word);
 	return VECTOR_EXISTS(functions_, word);

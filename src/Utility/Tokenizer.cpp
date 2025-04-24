@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Tokenizer.h"
+#include "FileUtils.h"
 #include "StringUtils.h"
 
 using namespace slade;
@@ -629,10 +630,10 @@ bool Tokenizer::checkNextNC(const char* check) const
 bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 {
 	// Open the file
-	wxFile file(string{ filename });
+	SFile file(filename);
 
 	// Check file opened
-	if (!file.IsOpened())
+	if (!file.isOpen())
 	{
 		log::error("Tokenizer::openFile: Unable to open file {}", filename);
 		return false;
@@ -643,13 +644,13 @@ bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
-	if (offset + length > file.Length() || length == 0)
-		length = static_cast<size_t>(file.Length()) - offset;
+	if (offset + length > file.size() || length == 0)
+		length = static_cast<size_t>(file.size()) - offset;
 
 	// Read the file portion
 	data_.resize((size_t)length, 0);
-	file.Seek(offset, wxFromStart);
-	file.Read(data_.data(), (size_t)length);
+	file.seekFromStart(offset);
+	file.read(data_.data(), (size_t)length);
 
 	reset();
 

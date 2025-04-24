@@ -70,16 +70,16 @@ EXTERN_CVAR(String, snd_midi_player)
 AudioSettingsPanel::AudioSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
 	// Create controls
-	cb_snd_autoplay_ = new wxCheckBox(this, -1, "Automatically play audio entries when opened");
-	cb_dmx_padding_  = new wxCheckBox(this, -1, "Use DMX padding when appropriate");
-	rb_fluidsynth_   = new wxRadioButton(this, -1, "Use Fluidsynth");
+	cb_snd_autoplay_ = new wxCheckBox(this, -1, wxS("Automatically play audio entries when opened"));
+	cb_dmx_padding_  = new wxCheckBox(this, -1, wxS("Use DMX padding when appropriate"));
+	rb_fluidsynth_   = new wxRadioButton(this, -1, wxS("Use Fluidsynth"));
 	flp_soundfont_   = new FileLocationPanel(
         this, "", true, "Browse for MIDI Soundfont", "Soundfont files (*.sf2)|*.sf2");
-	rb_timidity_  = new wxRadioButton(this, -1, "Use Timidity");
+	rb_timidity_  = new wxRadioButton(this, -1, wxS("Use Timidity"));
 	flp_timidity_ = new FileLocationPanel(
 		this, "", true, "Browse for Timidity Executable", filedialog::executableExtensionString());
 	text_timidity_options_ = new wxTextCtrl(this, -1);
-	btn_reset_player_      = new wxButton(this, -1, "Reset MIDI Player");
+	btn_reset_player_      = new wxButton(this, -1, wxS("Reset MIDI Player"));
 
 	setupLayout();
 
@@ -128,9 +128,9 @@ void AudioSettingsPanel::applySettings()
 	snd_autoplay         = cb_snd_autoplay_->GetValue();
 	dmx_padding          = cb_dmx_padding_->GetValue();
 	snd_midi_player      = rb_timidity_->GetValue() ? "timidity" : "fluidsynth";
-	fs_soundfont_path    = wxutil::strToView(flp_soundfont_->location());
-	snd_timidity_path    = wxutil::strToView(flp_timidity_->location());
-	snd_timidity_options = wxutil::strToView(text_timidity_options_->GetValue());
+	fs_soundfont_path    = flp_soundfont_->location();
+	snd_timidity_path    = flp_timidity_->location();
+	snd_timidity_options = text_timidity_options_->GetValue().utf8_string();
 
 	audio::resetMIDIPlayer();
 	audio::midiPlayer().setVolume(snd_volume);
@@ -159,12 +159,12 @@ void AudioSettingsPanel::setupLayout()
 	// MIDI Playback (fluidsynth/timidity)
 	auto gbsizer = new wxGridBagSizer(lh.padSmall(), lh.pad());
 	gbsizer->Add(rb_fluidsynth_, { 0, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, "Location of MIDI soundfont:"), { 1, 0 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Location of MIDI soundfont:")), { 1, 0 }, { 1, 1 }, wxEXPAND);
 	gbsizer->Add(flp_soundfont_, { 2, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
 	gbsizer->Add(rb_timidity_, { 0, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, "Location of Timidity executable:"), { 1, 1 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Location of Timidity executable:")), { 1, 1 }, { 1, 1 }, wxEXPAND);
 	gbsizer->Add(flp_timidity_, { 2, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, "Timidity command line options:"), { 3, 1 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Timidity command line options:")), { 3, 1 }, { 1, 1 }, wxEXPAND);
 	gbsizer->Add(text_timidity_options_, { 4, 1 }, { 1, 1 }, wxEXPAND);
 	gbsizer->AddGrowableCol(0, 1);
 	gbsizer->AddGrowableCol(1, 1);

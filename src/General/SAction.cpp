@@ -200,14 +200,14 @@ bool SAction::addToMenu(
 	if (!sc.empty())
 		help += fmt::format(" (Shortcut: {})", sc);
 	if (type_ == Type::Normal)
-		menu->Append(wxutil::createMenuItem(menu, wid, item_text, help, wxutil::strFromView(real_icon)));
+		menu->Append(wxutil::createMenuItem(menu, wid, item_text, help, real_icon));
 	else if (type_ == Type::Check)
 	{
-		auto item = menu->AppendCheckItem(wid, item_text, help);
+		auto item = menu->AppendCheckItem(wid, wxString::FromUTF8(item_text), wxString::FromUTF8(help));
 		item->Check(checked_);
 	}
 	else if (type_ == Type::Radio)
-		menu->AppendRadioItem(wid, item_text, help);
+		menu->AppendRadioItem(wid, wxString::FromUTF8(item_text), wxString::FromUTF8(help));
 
 	return true;
 }

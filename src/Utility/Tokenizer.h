@@ -89,7 +89,7 @@ public:
 	{
 		special_characters_.assign(characters.data(), characters.data() + characters.size());
 	}
-	void setSource(const wxString& source) { source_ = source; }
+	void setSource(string_view source) { source_ = source; }
 	void setReadLowerCase(bool lower) { read_lowercase_ = lower; }
 	void enableEditorComments(bool enable = true) { editor_comments_ = enable; }
 	void enableDebug(bool enable = true) { debug_ = enable; }

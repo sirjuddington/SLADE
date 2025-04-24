@@ -62,8 +62,8 @@ ArchiveListView::ArchiveListView(wxWindow* parent) : ListView(parent, -1)
 	ListView::SetImageList(list, wxIMAGE_LIST_SMALL);
 
 	// Add columns
-	InsertColumn(0, "Filename");
-	InsertColumn(1, "Path");
+	InsertColumn(0, wxS("Filename"));
+	InsertColumn(1, wxS("Path"));
 }
 
 // -----------------------------------------------------------------------------
@@ -150,8 +150,8 @@ void ArchiveListView::setItem(int index, const Archive* archive)
 {
 	if (!archive)
 	{
-		SetItem(index, 0, "INVALID");
-		SetItem(index, 1, "INVALID");
+		SetItem(index, 0, wxS("INVALID"));
+		SetItem(index, 1, wxS("INVALID"));
 		SetItemImage(index, 0);
 		return;
 	}

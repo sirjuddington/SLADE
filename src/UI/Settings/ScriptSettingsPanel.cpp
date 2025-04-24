@@ -70,8 +70,8 @@ ScriptSettingsPanel::ScriptSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 	SetSizer(sizer);
 
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createACSPanel(tabs), "ACS");
-	tabs->AddPage(createDECOHackPanel(tabs), "DECOHack");
+	tabs->AddPage(createACSPanel(tabs), wxS("ACS"));
+	tabs->AddPage(createDECOHackPanel(tabs), wxS("DECOHack"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
 	// Bind events
@@ -100,17 +100,17 @@ void ScriptSettingsPanel::loadSettings()
 void ScriptSettingsPanel::applySettings()
 {
 	// Build include paths string
-	wxString paths_string;
-	auto     lib_paths = list_inc_paths_->GetStrings();
+	string paths_string;
+	auto   lib_paths = list_inc_paths_->GetStrings();
 	for (const auto& lib_path : lib_paths)
-		paths_string += lib_path + ";";
-	if (paths_string.EndsWith(";"))
-		paths_string.RemoveLast(1);
+		paths_string += lib_path.utf8_string() + ";";
+	if (paths_string.back() == ';')
+		paths_string.pop_back();
 
-	path_acc      = wxutil::strToView(flp_acc_path_->location());
-	path_acc_libs = wxutil::strToView(paths_string);
-	path_decohack = wxutil::strToView(flp_decohack_path_->location());
-	path_java     = wxutil::strToView(flp_java_path_->location());
+	path_acc      = flp_acc_path_->location();
+	path_acc_libs = paths_string;
+	path_decohack = flp_decohack_path_->location();
+	path_java     = flp_java_path_->location();
 
 	acc_always_show_output      = cb_always_show_output_->GetValue();
 	decohack_always_show_output = cb_always_show_output_dh_->GetValue();
@@ -132,9 +132,9 @@ wxPanel* ScriptSettingsPanel::createACSPanel(wxWindow* parent)
 		filedialog::executableExtensionString(),
 		filedialog::executableFileName("acc") + ";" + filedialog::executableFileName("bcc"));
 	list_inc_paths_        = new wxListBox(panel, -1, wxDefaultPosition, wxSize(-1, FromDIP(200)));
-	btn_incpath_add_       = new wxButton(panel, -1, "Add");
-	btn_incpath_remove_    = new wxButton(panel, -1, "Remove");
-	cb_always_show_output_ = new wxCheckBox(panel, -1, "Always Show Compiler Output");
+	btn_incpath_add_       = new wxButton(panel, -1, wxS("Add"));
+	btn_incpath_remove_    = new wxButton(panel, -1, wxS("Remove"));
+	cb_always_show_output_ = new wxCheckBox(panel, -1, wxS("Always Show Compiler Output"));
 
 	// Create sizer
 	auto lh      = ui::LayoutHelper(panel);
@@ -149,7 +149,7 @@ wxPanel* ScriptSettingsPanel::createACSPanel(wxWindow* parent)
 		lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Include paths
-	sizer->Add(new wxStaticText(panel, -1, "Include Paths:"), wxSizerFlags().Expand());
+	sizer->Add(new wxStaticText(panel, -1, wxS("Include Paths:")), wxSizerFlags().Expand());
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, lh.sfWithBorder(1, wxBOTTOM).Expand());
 	hbox->Add(list_inc_paths_, lh.sfWithBorder(1, wxRIGHT).Expand());
@@ -185,7 +185,7 @@ wxPanel* ScriptSettingsPanel::createDECOHackPanel(wxWindow* parent)
 		filedialog::executableFileName("java"));
 	flp_decohack_path_ = new FileLocationPanel(
 		panel, path_decohack, true, "Browse For DoomTools Jar", "Jar Files|*.jar", "doomtools.jar");
-	cb_always_show_output_dh_ = new wxCheckBox(panel, -1, "Always Show Compiler Output");
+	cb_always_show_output_dh_ = new wxCheckBox(panel, -1, wxS("Always Show Compiler Output"));
 
 	// Create sizer
 	auto lh      = ui::LayoutHelper(panel);
@@ -225,7 +225,7 @@ wxPanel* ScriptSettingsPanel::createDECOHackPanel(wxWindow* parent)
 // -----------------------------------------------------------------------------
 void ScriptSettingsPanel::onBtnAddIncPath(wxCommandEvent& e)
 {
-	wxDirDialog dlg(this, "Browse for ACC Include Path");
+	wxDirDialog dlg(this, wxS("Browse for ACC Include Path"));
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		list_inc_paths_->Append(dlg.GetPath());

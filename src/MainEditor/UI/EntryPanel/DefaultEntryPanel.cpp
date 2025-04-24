@@ -64,33 +64,33 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	sizer_main_->AddStretchSpacer(1);
 
 	// Add index label
-	label_index_ = new wxStaticText(this, -1, "Index");
+	label_index_ = new wxStaticText(this, -1, wxS("Index"));
 	sizer_main_->Add(label_index_, lh.sfWithBorder().Center());
 
 	// Add type label
-	label_type_ = new wxStaticText(this, -1, "Type");
+	label_type_ = new wxStaticText(this, -1, wxS("Type"));
 	sizer_main_->Add(label_type_, lh.sfWithBorder().Center());
 
 	// Add size label
-	label_size_ = new wxStaticText(this, -1, "Size");
+	label_size_ = new wxStaticText(this, -1, wxS("Size"));
 	sizer_main_->Add(label_size_, lh.sfWithBorder().Center());
 
 	// Add actions frame
-	frame_actions_  = new wxStaticBox(this, -1, "Actions");
+	frame_actions_  = new wxStaticBox(this, -1, wxS("Actions"));
 	auto framesizer = new wxStaticBoxSizer(frame_actions_, wxVERTICAL);
 	sizer_main_->Add(framesizer, lh.sfWithBorder().Center());
 
 	// Add 'Convert Gfx' button
-	btn_gfx_convert_ = new wxButton(frame_actions_, -1, "Convert Gfx To...");
+	btn_gfx_convert_ = new wxButton(frame_actions_, -1, wxS("Convert Gfx To..."));
 	framesizer->AddSpacer(lh.px(4));
 	framesizer->Add(btn_gfx_convert_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Modify Gfx Offsets' button
-	btn_gfx_modify_offsets_ = new wxButton(frame_actions_, -1, "Modify Gfx Offsets");
+	btn_gfx_modify_offsets_ = new wxButton(frame_actions_, -1, wxS("Modify Gfx Offsets"));
 	framesizer->Add(btn_gfx_modify_offsets_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Edit Textures' button
-	btn_texture_edit_ = new wxButton(frame_actions_, -1, "Edit Textures");
+	btn_texture_edit_ = new wxButton(frame_actions_, -1, wxS("Edit Textures"));
 	framesizer->Add(btn_texture_edit_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	sizer_main_->AddStretchSpacer(1);
@@ -126,9 +126,9 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Update labels
-	label_index_->SetLabel(wxString::Format("Entry Index: %d", entry->index()));
-	label_type_->SetLabel(wxString::Format("Entry Type: %s", entry->typeString()));
-	label_size_->SetLabel(wxString::Format("Entry Size: %d bytes", entry->size()));
+	label_index_->SetLabel(WX_FMT("Entry Index: {}", entry->index()));
+	label_type_->SetLabel(WX_FMT("Entry Type: {}", entry->typeString()));
+	label_size_->SetLabel(WX_FMT("Entry Size: {} bytes", entry->size()));
 
 	// Setup actions frame
 	btn_gfx_convert_->Show(false);
@@ -163,11 +163,11 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 bool DefaultEntryPanel::loadEntries(const vector<ArchiveEntry*>& entries)
 {
 	// Update labels
-	label_type_->SetLabel(wxString::Format("%lu selected entries", static_cast<unsigned long>(entries.size())));
+	label_type_->SetLabel(WX_FMT("{} selected entries", static_cast<unsigned long>(entries.size())));
 	unsigned size = 0;
 	for (auto& entry : entries)
 		size += entry->size();
-	label_size_->SetLabel(wxString::Format("Total Size: %s", misc::sizeAsString(size)));
+	label_size_->SetLabel(WX_FMT("Total Size: {}", misc::sizeAsString(size)));
 
 	// Setup actions frame
 	btn_gfx_convert_->Show(false);
@@ -199,8 +199,7 @@ bool DefaultEntryPanel::loadEntries(const vector<ArchiveEntry*>& entries)
 		entries_.push_back(entry);
 	}
 	label_index_->SetLabel(
-		wxString::Format(
-			"Entry Indices: from %lu to %lu", static_cast<unsigned long>(min), static_cast<unsigned long>(max)));
+		WX_FMT("Entry Indices: from {} to {}", static_cast<unsigned long>(min), static_cast<unsigned long>(max)));
 	if (gfx)
 	{
 		frame_actions_->Show(true);

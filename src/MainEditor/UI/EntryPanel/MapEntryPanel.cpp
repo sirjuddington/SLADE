@@ -94,9 +94,9 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map"), map_
 	stb_revert_ = nullptr;
 
 	// Setup bottom panel
-	sizer_bottom_->Add(label_stats_ = new wxStaticText(this, -1, ""), wxSizerFlags().CenterVertical());
+	sizer_bottom_->Add(label_stats_ = new wxStaticText(this, -1, wxEmptyString), wxSizerFlags().CenterVertical());
 	sizer_bottom_->AddStretchSpacer();
-	sizer_bottom_->Add(cb_show_things_ = new wxCheckBox(this, -1, "Show Things"), wxSizerFlags().CenterVertical());
+	sizer_bottom_->Add(cb_show_things_ = new wxCheckBox(this, -1, wxS("Show Things")), wxSizerFlags().CenterVertical());
 	cb_show_things_->SetValue(map_view_things);
 
 	// Bind events
@@ -164,21 +164,20 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	// Load map into preview canvas
 	if (map_data_->openMap(thismap))
 	{
-		label_stats_->SetLabel(
-			wxString::Format(
-				"Vertices: %d, Sides: %d, Lines: %d, Sectors: %d, Things: %d, Total Size: %dx%d",
-				static_cast<int>(map_data_->vertices.size()),
-				map_data_->n_sides,
-				static_cast<int>(map_data_->lines.size()),
-				map_data_->n_sectors,
-				static_cast<int>(map_data_->things.size()),
-				static_cast<int>(map_data_->bounds.width()),
-				static_cast<int>(map_data_->bounds.height())));
+		label_stats_->SetLabel(WX_FMT(
+			"Vertices: {}, Sides: {}, Lines: {}, Sectors: {}, Things: {}, Total Size: {}x{}",
+			static_cast<int>(map_data_->vertices.size()),
+			map_data_->n_sides,
+			static_cast<int>(map_data_->lines.size()),
+			map_data_->n_sectors,
+			static_cast<int>(map_data_->things.size()),
+			static_cast<int>(map_data_->bounds.width()),
+			static_cast<int>(map_data_->bounds.height())));
 		map_canvas_->Refresh();
 		return true;
 	}
 
-	label_stats_->SetLabel("");
+	label_stats_->SetLabel(wxEmptyString);
 	map_canvas_->Refresh();
 	return false;
 }
@@ -198,7 +197,7 @@ bool MapEntryPanel::createImage()
 		if (createMapImage(*map_data_, inf.filenames[0], map_image_width, map_image_height))
 		{
 			// Open the saved image
-			wxLaunchDefaultApplication(inf.filenames[0]);
+			wxLaunchDefaultApplication(wxString::FromUTF8(inf.filenames[0]));
 			return true;
 		}
 	}
@@ -209,7 +208,7 @@ bool MapEntryPanel::createImage()
 // -----------------------------------------------------------------------------
 // Called when a (EntryPanel) toolbar button is clicked
 // -----------------------------------------------------------------------------
-void MapEntryPanel::toolbarButtonClick(const wxString& action_id)
+void MapEntryPanel::toolbarButtonClick(const string& action_id)
 {
 	// Save Map Image
 	if (action_id == "save_image")

@@ -70,7 +70,7 @@ CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // EntryPanel class constructor
 // -----------------------------------------------------------------------------
-EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) : wxPanel(parent, -1), id_{ id }
+EntryPanel::EntryPanel(wxWindow* parent, const string& id, bool left_toolbar) : wxPanel(parent, -1), id_{ id }
 {
 	auto lh = ui::LayoutHelper(this);
 
@@ -192,8 +192,8 @@ bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 	}
 	else
 	{
-		theMainWindow->SetStatusText("", 1);
-		theMainWindow->SetStatusText("", 2);
+		theMainWindow->SetStatusText(wxEmptyString, 1);
+		theMainWindow->SetStatusText(wxEmptyString, 2);
 		return false;
 	}
 }
@@ -254,8 +254,8 @@ bool EntryPanel::revertEntry(bool confirm)
 		// Prompt to revert if configured to
 		if (confirm_entry_revert && confirm)
 			if (wxMessageBox(
-					"Are you sure you want to revert changes made to the entry?",
-					"Revert Changes",
+					wxS("Are you sure you want to revert changes made to the entry?"),
+					wxS("Revert Changes"),
 					wxICON_QUESTION | wxYES_NO)
 				== wxNO)
 				ok = false;
@@ -314,20 +314,21 @@ void EntryPanel::updateStatus()
 	// Basic info
 	if (auto entry = entry_.lock())
 	{
-		wxString name = entry->name();
-		wxString type = entry->typeString();
-		wxString text = wxString::Format("%d: %s, %d bytes, %s", entry->index(), name, entry->size(), type);
-
-		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);
+		// Basic info
+		theMainWindow->CallAfter(
+			&MainWindow::SetStatusText,
+			wxString::FromUTF8(
+				fmt::format("{}: {}, {} bytes, {}", entry->index(), entry->name(), entry->size(), entry->typeString())),
+			1);
 
 		// Extended info
-		theMainWindow->CallAfter(&MainWindow::SetStatusText, statusString(), 2);
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, wxString::FromUTF8(statusString()), 2);
 	}
 	else
 	{
 		// Clear status
-		theMainWindow->CallAfter(&MainWindow::SetStatusText, "", 1);
-		theMainWindow->CallAfter(&MainWindow::SetStatusText, "", 2);
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, wxEmptyString, 1);
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, wxEmptyString, 2);
 	}
 }
 
@@ -445,7 +446,7 @@ bool EntryPanel::handleStandaloneAction(const string_view id)
 // -----------------------------------------------------------------------------
 void EntryPanel::onToolbarButton(wxCommandEvent& e)
 {
-	wxString button = e.GetString();
+	auto button = e.GetString().utf8_string();
 
 	// Revert
 	if (button == "revert")

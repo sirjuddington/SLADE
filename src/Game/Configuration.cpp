@@ -48,6 +48,7 @@
 #include "SpecialPreset.h"
 #include "ThingType.h"
 #include "UDMFProperty.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
@@ -929,7 +930,7 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		{
 			// Config is in user dir
 			auto filename = app::path("games/", app::Dir::User) + game_config.filename + ".cfg";
-			if (wxFileExists(filename))
+			if (fileutil::fileExists(filename))
 				strutil::processIncludes(filename, full_config);
 			else
 			{
@@ -961,7 +962,7 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 			{
 				// Config is in user dir
 				auto filename = app::path("ports/", app::Dir::User) + conf.filename + ".cfg";
-				if (wxFileExists(filename))
+				if (fileutil::fileExists(filename))
 					strutil::processIncludes(filename, full_config);
 				else
 				{
@@ -983,9 +984,9 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 
 	if (debug_configuration)
 	{
-		wxFile test("full.cfg", wxFile::write);
-		test.Write(full_config);
-		test.Close();
+		SFile test("full.cfg", SFile::Mode::Write);
+		test.writeStr(full_config);
+		test.close();
 	}
 
 	// Read fully built configuration

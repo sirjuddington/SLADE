@@ -51,12 +51,12 @@ wxDEFINE_EVENT(wxEVT_COMMAND_FLP_LOCATION_CHANGED, wxCommandEvent);
 // FileLocationPanel class constructor
 // -----------------------------------------------------------------------------
 FileLocationPanel::FileLocationPanel(
-	wxWindow*       parent,
-	const wxString& path,
-	bool            editable,
-	const wxString& browse_caption,
-	const wxString& browse_extensions,
-	const wxString& browse_default_filename) :
+	wxWindow*     parent,
+	const string& path,
+	bool          editable,
+	const string& browse_caption,
+	const string& browse_extensions,
+	const string& browse_default_filename) :
 	wxPanel(parent, -1),
 	browse_caption_{ browse_caption },
 	browse_extensions_{ browse_extensions },
@@ -64,7 +64,8 @@ FileLocationPanel::FileLocationPanel(
 {
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
-	text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxDefaultSize, editable ? 0 : wxTE_READONLY);
+	text_path_ = new wxTextCtrl(
+		this, -1, wxString::FromUTF8(path), wxDefaultPosition, wxDefaultSize, editable ? 0 : wxTE_READONLY);
 	sizer->Add(text_path_, wxSizerFlags(1).Expand());
 
 	btn_browse_ = new SIconButton(this, "open", browse_caption);
@@ -75,17 +76,13 @@ FileLocationPanel::FileLocationPanel(
 		[&](wxCommandEvent& e)
 		{
 			filedialog::FDInfo inf;
-			if (filedialog::openFile(
-					inf,
-					wxutil::strToView(browse_caption_),
-					wxutil::strToView(browse_extensions_),
-					this,
-					wxutil::strToView(browse_default_filename_)))
+			if (filedialog::openFile(inf, browse_caption_, browse_extensions_, this, browse_default_filename_))
 			{
-				text_path_->SetValue(inf.filenames[0]);
+				auto fn_wx = wxString::FromUTF8(inf.filenames[0]);
+				text_path_->SetValue(fn_wx);
 				wxCommandEvent event(wxEVT_COMMAND_FLP_LOCATION_CHANGED, GetId());
 				event.SetEventObject(this);
-				event.SetString(inf.filenames[0]);
+				event.SetString(fn_wx);
 				GetEventHandler()->ProcessEvent(event);
 			}
 		});
@@ -104,15 +101,15 @@ FileLocationPanel::FileLocationPanel(
 // -----------------------------------------------------------------------------
 // Returns the currently selected file path
 // -----------------------------------------------------------------------------
-wxString FileLocationPanel::location() const
+string FileLocationPanel::location() const
 {
-	return text_path_->GetValue();
+	return text_path_->GetValue().utf8_string();
 }
 
 // -----------------------------------------------------------------------------
 // Sets the selected file [path]
 // -----------------------------------------------------------------------------
-void FileLocationPanel::setLocation(const wxString& path) const
+void FileLocationPanel::setLocation(const string& path) const
 {
-	text_path_->SetValue(path);
+	text_path_->SetValue(wxString::FromUTF8(path));
 }

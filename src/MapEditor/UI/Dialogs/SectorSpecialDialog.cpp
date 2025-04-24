@@ -49,7 +49,8 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // SectorSpecialDialog class constructor
 // -----------------------------------------------------------------------------
-SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent) : SDialog(parent, "Select Sector Special", "sectorspecial")
+SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent) :
+	SDialog(parent, "Select Sector Special", "sectorspecial")
 {
 	auto lh = ui::LayoutHelper(this);
 

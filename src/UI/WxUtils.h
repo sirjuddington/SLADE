@@ -2,42 +2,27 @@
 
 namespace slade::wxutil
 {
-wxMenuItem* createMenuItem(
-	wxMenu*         menu,
-	int             id,
-	const wxString& label,
-	const wxString& help = wxEmptyString,
-	const wxString& icon = wxEmptyString);
-wxFont       monospaceFont(wxFont base);
+wxMenuItem* createMenuItem(wxMenu* menu, int id, const string& label, const string& help = "", const string& icon = "");
+wxFont      monospaceFont(wxFont base);
 wxImageList* createSmallImageList();
 int          addImageListIcon(wxImageList* list, int icon_type, string_view icon);
 wxPanel*     createPadPanel(wxWindow* parent, wxWindow* control, int pad = -1);
 wxSpinCtrl*  createSpinCtrl(wxWindow* parent, int value, int min, int max);
 
-wxSizer* createLabelHBox(wxWindow* parent, const wxString& label, wxWindow* widget);
-wxSizer* createLabelHBox(wxWindow* parent, const wxString& label, wxSizer* sizer);
-wxSizer* createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget);
-wxSizer* createLabelVBox(wxWindow* parent, const wxString& label, wxSizer* sizer);
+wxSizer* createLabelHBox(wxWindow* parent, const string& label, wxWindow* widget);
+wxSizer* createLabelHBox(wxWindow* parent, const string& label, wxSizer* sizer);
+wxSizer* createLabelVBox(wxWindow* parent, const string& label, wxWindow* widget);
+wxSizer* createLabelVBox(wxWindow* parent, const string& label, wxSizer* sizer);
 
 wxSizer* createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel);
-wxSizer* createDialogButtonBox(
-	wxWindow*       parent,
-	const wxString& text_ok     = "OK",
-	const wxString& text_cancel = "Cancel");
+wxSizer* createDialogButtonBox(wxWindow* parent, const string& text_ok = "OK", const string& text_cancel = "Cancel");
 
-wxSizer* createSectionSeparator(wxWindow* parent, const wxString& text);
+wxSizer* createSectionSeparator(wxWindow* parent, const string& text);
 
 // Strings
-inline string_view strToView(const wxString& str)
-{
-	return { str.data(), str.size() };
-}
-inline wxString strFromView(string_view view)
-{
-	return { view.data(), view.size() };
-}
 wxArrayString arrayString(const vector<wxString>& vector);
 wxArrayString arrayStringStd(const vector<string>& vector);
+wxString      strFromView(string_view str);
 
 // Misc
 void      setWindowIcon(wxTopLevelWindow* window, string_view icon);

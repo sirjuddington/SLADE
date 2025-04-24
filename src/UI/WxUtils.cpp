@@ -61,17 +61,12 @@ CVAR(Int, tab_style, 1, CVar::Flag::Save)
 // Creates a wxMenuItem from the given parameters, including giving it an icon
 // from slade.pk3 if specified
 // -----------------------------------------------------------------------------
-wxMenuItem* wxutil::createMenuItem(
-	wxMenu*         menu,
-	int             id,
-	const wxString& label,
-	const wxString& help,
-	const wxString& icon)
+wxMenuItem* wxutil::createMenuItem(wxMenu* menu, int id, const string& label, const string& help, const string& icon)
 {
-	auto item = new wxMenuItem(menu, id, label, help);
+	auto item = new wxMenuItem(menu, id, wxString::FromUTF8(label), wxString::FromUTF8(help));
 
-	if (!icon.IsEmpty())
-		item->SetBitmap(icons::getIcon(icons::Any, icon.ToStdString()));
+	if (!icon.empty())
+		item->SetBitmap(icons::getIcon(icons::Any, icon));
 
 	return item;
 }
@@ -136,7 +131,7 @@ wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max
 	return new wxSpinCtrl(
 		parent,
 		-1,
-		"",
+		wxEmptyString,
 		wxDefaultPosition,
 		parent->FromDIP(wxSize{ ui::sizePx(ui::Size::SpinCtrlWidth), -1 }),
 		wxSP_ARROW_KEYS,
@@ -149,18 +144,26 @@ wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max
 // Creates a simple horizontal box sizer with a [label] on the left and
 // [widget] on the right
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxWindow* widget)
+wxSizer* wxutil::createLabelHBox(wxWindow* parent, const string& label, wxWindow* widget)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, parent->FromDIP(ui::pad()));
+	hbox->Add(
+		new wxStaticText(parent, -1, wxString::FromUTF8(label)),
+		0,
+		wxALIGN_CENTER_VERTICAL | wxRIGHT,
+		parent->FromDIP(ui::pad()));
 	hbox->Add(widget, 1, wxEXPAND);
 	return hbox;
 }
 
-wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxSizer* sizer)
+wxSizer* wxutil::createLabelHBox(wxWindow* parent, const string& label, wxSizer* sizer)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, parent->FromDIP(ui::pad()));
+	hbox->Add(
+		new wxStaticText(parent, -1, wxString::FromUTF8(label)),
+		0,
+		wxALIGN_CENTER_VERTICAL | wxRIGHT,
+		parent->FromDIP(ui::pad()));
 	hbox->Add(sizer, 1, wxEXPAND);
 	return hbox;
 }
@@ -169,18 +172,18 @@ wxSizer* wxutil::createLabelHBox(wxWindow* parent, const wxString& label, wxSize
 // Creates a simple vertical box sizer with a [label] on the top and [widget]
 // on the bottom
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget)
+wxSizer* wxutil::createLabelVBox(wxWindow* parent, const string& label, wxWindow* widget)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
+	vbox->Add(new wxStaticText(parent, -1, wxString::FromUTF8(label)), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
 	vbox->Add(widget, 1, wxEXPAND);
 	return vbox;
 }
 
-wxSizer* wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxSizer* sizer)
+wxSizer* wxutil::createLabelVBox(wxWindow* parent, const string& label, wxSizer* sizer)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
+	vbox->Add(new wxStaticText(parent, -1, wxString::FromUTF8(label)), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
 	vbox->Add(sizer, 1, wxEXPAND);
 	return vbox;
 }
@@ -211,11 +214,11 @@ wxSizer* wxutil::createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel)
 // Shortcut function for createDialogButtonBox that creates ok/cancel buttons
 // with the given [text_ok] and [text_cancel]
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::createDialogButtonBox(wxWindow* parent, const wxString& text_ok, const wxString& text_cancel)
+wxSizer* wxutil::createDialogButtonBox(wxWindow* parent, const string& text_ok, const string& text_cancel)
 {
-	auto* btn_ok = new wxButton(parent, wxID_OK, text_ok);
+	auto* btn_ok = new wxButton(parent, wxID_OK, wxString::FromUTF8(text_ok));
 	btn_ok->SetDefault();
-	auto* btn_cancel = new wxButton(parent, wxID_CANCEL, text_cancel);
+	auto* btn_cancel = new wxButton(parent, wxID_CANCEL, wxString::FromUTF8(text_cancel));
 	return createDialogButtonBox(btn_ok, btn_cancel);
 }
 
@@ -223,10 +226,12 @@ wxSizer* wxutil::createDialogButtonBox(wxWindow* parent, const wxString& text_ok
 // Creates a section separator (a label on the left and a line on the right)
 // with the given [text]
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::createSectionSeparator(wxWindow* parent, const wxString& text)
+wxSizer* wxutil::createSectionSeparator(wxWindow* parent, const string& text)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(parent, -1, text), wxSizerFlags().CenterVertical().Border(wxRIGHT, ui::pad(parent)));
+	hbox->Add(
+		new wxStaticText(parent, -1, wxString::FromUTF8(text)),
+		wxSizerFlags().CenterVertical().Border(wxRIGHT, ui::pad(parent)));
 	hbox->Add(new wxStaticLine(parent), wxSizerFlags(1).CenterVertical());
 	return hbox;
 }
@@ -246,8 +251,16 @@ wxArrayString wxutil::arrayStringStd(const vector<string>& vector)
 {
 	wxArrayString list;
 	for (const auto& str : vector)
-		list.Add(str);
+		list.Add(wxString::FromUTF8(str));
 	return list;
+}
+
+// -----------------------------------------------------------------------------
+// Converts a string_view [str] to a wxString
+// -----------------------------------------------------------------------------
+wxString wxutil::strFromView(string_view str)
+{
+	return wxString::FromUTF8(str.data(), str.size());
 }
 
 // -----------------------------------------------------------------------------

@@ -141,7 +141,7 @@ bool ZipArchiveHandler::open(Archive& archive, string_view filename)
 		if (!zip_entry->IsDir())
 		{
 			// Get the entry name as a Path (so we can break it up)
-			strutil::Path fn(wxutil::strToView(zip_entry->GetName(wxPATH_UNIX)));
+			strutil::Path fn(zip_entry->GetName(wxPATH_UNIX).utf8_string());
 
 			// Create entry
 			auto new_entry = std::make_shared<ArchiveEntry>(
@@ -175,7 +175,7 @@ bool ZipArchiveHandler::open(Archive& archive, string_view filename)
 		else
 		{
 			// Zip entry is a directory, add it to the directory tree
-			strutil::Path fn(wxutil::strToView(zip_entry->GetName(wxPATH_UNIX)));
+			strutil::Path fn(zip_entry->GetName(wxPATH_UNIX).utf8_string());
 			createDir(archive, fn.path(true));
 		}
 
@@ -238,7 +238,7 @@ bool ZipArchiveHandler::write(Archive& archive, MemChunk& mc)
 	}
 
 	// Clean up
-	wxRemoveFile(tempfile);
+	fileutil::removeFile(tempfile);
 
 	return success;
 }
@@ -286,7 +286,7 @@ bool ZipArchiveHandler::write(Archive& archive, string_view filename)
 	vector<wxZipEntry*>            c_entries;
 	if (fileutil::fileExists(temp_file_))
 	{
-		in    = std::make_unique<wxFFileInputStream>(temp_file_);
+		in    = std::make_unique<wxFFileInputStream>(wxString::FromUTF8(temp_file_));
 		inzip = std::make_unique<wxZipInputStream>(*in);
 
 		if (inzip->IsOk())
@@ -326,7 +326,7 @@ bool ZipArchiveHandler::write(Archive& archive, string_view filename)
 		if (entries[a]->type() == EntryType::folderType())
 		{
 			// If the current entry is a folder, just write a directory entry and continue
-			zip.PutNextDirEntry(entries[a]->path(true));
+			zip.PutNextDirEntry(wxString::FromUTF8(entries[a]->path(true)));
 			entries[a]->setState(EntryState::Unmodified);
 			continue;
 		}
@@ -342,14 +342,14 @@ bool ZipArchiveHandler::write(Archive& archive, string_view filename)
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
-			const auto zipentry = new wxZipEntry(entries[a]->path() + saname);
+			const auto zipentry = new wxZipEntry(wxString::FromUTF8(entries[a]->path() + saname));
 			zip.PutNextEntry(zipentry);
 			zip.Write(entries[a]->rawData(), entries[a]->size());
 		}
 		else
 		{
 			// If the entry is unmodified and exists in the old zip, just copy it over
-			c_entries[index]->SetName(entries[a]->path() + saname);
+			c_entries[index]->SetName(wxString::FromUTF8(entries[a]->path() + saname));
 			zip.CopyEntry(c_entries[index], *inzip);
 			inzip->Reset();
 		}
@@ -399,7 +399,7 @@ bool ZipArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* entr
 	}
 
 	// Open the file
-	wxFFileInputStream in(archive.filename());
+	wxFFileInputStream in(wxString::FromUTF8(archive.filename()));
 	if (!in.IsOk())
 	{
 		log::error("ZipArchiveHandler::loadEntryData: Unable to open zip file \"{}\"!", archive.filename());
@@ -642,7 +642,7 @@ void ZipArchiveHandler::generateTempFileName(string_view filename)
 {
 	const strutil::Path tfn(filename);
 	temp_file_ = app::path(tfn.fileName(), app::Dir::Temp);
-	if (wxFileExists(temp_file_))
+	if (fileutil::fileExists(temp_file_))
 	{
 		// Make sure we don't overwrite an existing temp file
 		// (in case there are multiple zips open with the same name)
@@ -650,7 +650,7 @@ void ZipArchiveHandler::generateTempFileName(string_view filename)
 		while (true)
 		{
 			temp_file_ = app::path(fmt::format("{}.{}", tfn.fileName(), n), app::Dir::Temp);
-			if (!wxFileExists(temp_file_))
+			if (!fileutil::fileExists(temp_file_))
 				break;
 
 			n++;
@@ -695,7 +695,7 @@ bool ZipArchiveHandler::isThisFormat(const MemChunk& mc)
 bool ZipArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open the file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened
 	if (!file.IsOpened())

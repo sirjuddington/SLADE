@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -75,28 +74,29 @@ TextEditorStyleSettingsPanel::TextEditorStyleSettingsPanel(wxWindow* parent) :
 	SetSizer(gb_sizer);
 
 	// Styleset font override
-	cb_font_override_ = new wxCheckBox(this, -1, "Override Default Font:");
-	cb_font_override_->SetToolTip("Always use the selected font in the text editor, instead of the style's font below");
+	cb_font_override_ = new wxCheckBox(this, -1, wxS("Override Default Font:"));
+	cb_font_override_->SetToolTip(
+		wxS("Always use the selected font in the text editor, instead of the style's font below"));
 	fp_font_override_ = new wxFontPickerCtrl(this, -1);
 	gb_sizer->Add(lh.layoutHorizontally({ cb_font_override_, fp_font_override_ }, 1), { 0, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Styleset selector
 	choice_styleset_ = new wxChoice(this, -1);
 	for (unsigned a = 0; a < StyleSet::numSets(); a++)
-		choice_styleset_->Append(StyleSet::styleName(a));
-	btn_savestyleset_ = new wxButton(this, -1, "Save Set");
+		choice_styleset_->Append(wxString::FromUTF8(StyleSet::styleName(a)));
+	btn_savestyleset_ = new wxButton(this, -1, wxS("Save Set"));
 	auto hbox         = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(this, -1, "Style Set:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, wxS("Style Set:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(choice_styleset_, lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 	hbox->Add(btn_savestyleset_, wxSizerFlags().Expand());
 	gb_sizer->Add(hbox, { 1, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Style list
 	list_styles_ = new wxListBox(this, -1);
-	list_styles_->Append("Default");
-	list_styles_->Append("Selection");
+	list_styles_->Append(wxS("Default"));
+	list_styles_->Append(wxS("Selection"));
 	for (unsigned a = 0; a < ss_current_->nStyles(); a++)
-		list_styles_->Append(ss_current_->style(a)->description());
+		list_styles_->Append(wxString::FromUTF8(ss_current_->style(a)->description()));
 	gb_sizer->Add(list_styles_, { 2, 0 }, { 2, 1 }, wxEXPAND);
 
 	// Style properties
@@ -173,11 +173,11 @@ wxPanel* TextEditorStyleSettingsPanel::createStylePanel()
 
 	// Override properties
 	auto override_props_sizer = lh.layoutHorizontally(
-		vector<wxObject*>{ cb_override_font_face_       = new wxCheckBox(panel, -1, "Face"),
-						   cb_override_font_size_       = new wxCheckBox(panel, -1, "Size"),
-						   cb_override_font_bold_       = new wxCheckBox(panel, -1, "Bold"),
-						   cb_override_font_italic_     = new wxCheckBox(panel, -1, "Italic"),
-						   cb_override_font_underlined_ = new wxCheckBox(panel, -1, "Underlined") });
+		vector<wxObject*>{ cb_override_font_face_       = new wxCheckBox(panel, -1, wxS("Face")),
+						   cb_override_font_size_       = new wxCheckBox(panel, -1, wxS("Size")),
+						   cb_override_font_bold_       = new wxCheckBox(panel, -1, wxS("Bold")),
+						   cb_override_font_italic_     = new wxCheckBox(panel, -1, wxS("Italic")),
+						   cb_override_font_underlined_ = new wxCheckBox(panel, -1, wxS("Underlined")) });
 	sizer->Add(
 		wxutil::createLabelVBox(panel, "Override default font properties:", override_props_sizer),
 		{ 1, 0 },
@@ -185,14 +185,14 @@ wxPanel* TextEditorStyleSettingsPanel::createStylePanel()
 		wxEXPAND);
 
 	// Foreground colour
-	cb_override_foreground_ = new wxCheckBox(panel, -1, "Foreground Colour:");
+	cb_override_foreground_ = new wxCheckBox(panel, -1, wxS("Foreground Colour:"));
 	cp_foreground_          = new wxColourPickerCtrl(
         panel, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, wxCLRP_SHOW_LABEL | wxCLRP_USE_TEXTCTRL);
 	sizer->Add(cb_override_foreground_, { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(cp_foreground_, { 2, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Background colour
-	cb_override_background_ = new wxCheckBox(panel, -1, "Background Colour:");
+	cb_override_background_ = new wxCheckBox(panel, -1, wxS("Background Colour:"));
 	cp_background_          = new wxColourPickerCtrl(
         panel, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, wxCLRP_SHOW_LABEL | wxCLRP_USE_TEXTCTRL);
 	sizer->Add(cb_override_background_, { 3, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -209,24 +209,24 @@ wxPanel* TextEditorStyleSettingsPanel::createStylePanel()
 void TextEditorStyleSettingsPanel::loadSettings()
 {
 	te_preview_->SetText(
-		"#include \"include.txt\"\n"
-		"\n"
-		"string text = \"A string here\";\n"
-		"char c = \'c\';\n"
-		"\n"
-		"// Comment\n"
-		"void function(int x, int y)\n"
-		"{\n"
-		"\tx = (x + 10);\n"
-		"\ty = y - CONSTANT;\n\n"
-		"\tif (x > OTHER_CONSTANT)\n"
-		"\t{\n"
-		"\t\tx = CONSTANT;\n"
-		"\t\ty += 50;\n"
-		"\t\tobject.x_property = x;\n"
-		"\t\tobject.y_property = y;\n"
-		"\t}\n"
-		"}\n");
+		wxS("#include \"include.txt\"\n"
+			"\n"
+			"string text = \"A string here\";\n"
+			"char c = \'c\';\n"
+			"\n"
+			"// Comment\n"
+			"void function(int x, int y)\n"
+			"{\n"
+			"\tx = (x + 10);\n"
+			"\ty = y - CONSTANT;\n\n"
+			"\tif (x > OTHER_CONSTANT)\n"
+			"\t{\n"
+			"\t\tx = CONSTANT;\n"
+			"\t\ty += 50;\n"
+			"\t\tobject.x_property = x;\n"
+			"\t\tobject.y_property = y;\n"
+			"\t}\n"
+			"}\n"));
 
 	language_preview_->addWord(TextLanguage::WordType::Constant, "CONSTANT");
 	language_preview_->addWord(TextLanguage::WordType::Constant, "OTHER_CONSTANT");
@@ -281,13 +281,13 @@ void TextEditorStyleSettingsPanel::updateStyleControls() const
 	auto font = fp_font_->GetSelectedFont();
 
 	// Font face
-	wxString font_face = ts_current_->fontFace();
-	if (font_face.IsEmpty())
+	auto font_face = ts_current_->fontFace();
+	if (font_face.empty())
 	{
 		font_face = style_default->fontFace();
 		cb_override_font_face_->SetValue(false);
 	}
-	font.SetFaceName(font_face);
+	font.SetFaceName(wxString::FromUTF8(font_face));
 
 	// Font size
 	int font_size = ts_current_->fontSize();
@@ -370,7 +370,7 @@ void TextEditorStyleSettingsPanel::updateFontFace() const
 {
 	// Update current style
 	if (cb_override_font_face_->GetValue())
-		ts_current_->setFontFace(fp_font_->GetSelectedFont().GetFaceName().ToStdString());
+		ts_current_->setFontFace(fp_font_->GetSelectedFont().GetFaceName().utf8_string());
 	else
 		ts_current_->setFontFace("");
 }
@@ -481,7 +481,7 @@ void TextEditorStyleSettingsPanel::updatePreview() const
 	// Apply font override options (temporarily)
 	if (cb_font_override_->GetValue())
 	{
-		txed_override_font      = wxutil::strToView(fp_font_override_->GetSelectedFont().GetFaceName());
+		txed_override_font      = fp_font_override_->GetSelectedFont().GetFaceName().utf8_string();
 		txed_override_font_size = fp_font_override_->GetSelectedFont().GetPointSize();
 	}
 	else
@@ -505,7 +505,7 @@ void TextEditorStyleSettingsPanel::applySettings()
 {
 	if (cb_font_override_->GetValue())
 	{
-		txed_override_font      = wxutil::strToView(fp_font_override_->GetSelectedFont().GetFaceName());
+		txed_override_font      = fp_font_override_->GetSelectedFont().GetFaceName().utf8_string();
 		txed_override_font_size = fp_font_override_->GetSelectedFont().GetPointSize();
 	}
 	else
@@ -646,7 +646,7 @@ void TextEditorStyleSettingsPanel::onBackgroundChanged(wxColourPickerEvent& e)
 void TextEditorStyleSettingsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 {
 	// Get name for set
-	auto name = wxGetTextFromUser("Enter Style Set name:", "Save Style Set").ToStdString();
+	auto name = wxGetTextFromUser(wxS("Enter Style Set name:"), wxS("Save Style Set")).utf8_string();
 	if (name.empty())
 		return;
 
@@ -667,7 +667,7 @@ void TextEditorStyleSettingsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	// Refresh styles list
 	wxArrayString style_sets;
 	for (unsigned a = 0; a < StyleSet::numSets(); a++)
-		style_sets.Add(StyleSet::styleName(a));
+		style_sets.Add(wxString::FromUTF8(StyleSet::styleName(a)));
 	choice_styleset_->Set(style_sets);
 }
 

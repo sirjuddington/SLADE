@@ -50,10 +50,10 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::wxStringUtils
 {
-wxRegEx re_int1{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT | wxRE_NOSUB };
-wxRegEx re_int2{ "^0[0-9]+$", wxRE_DEFAULT | wxRE_NOSUB };
-wxRegEx re_int3{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT | wxRE_NOSUB };
-wxRegEx re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE_NOSUB };
+wxRegEx re_int1{ wxS("^[+-]?[0-9]+[0-9]*$"), wxRE_DEFAULT | wxRE_NOSUB };
+wxRegEx re_int2{ wxS("^0[0-9]+$"), wxRE_DEFAULT | wxRE_NOSUB };
+wxRegEx re_int3{ wxS("^0x[0-9A-Fa-f]+$"), wxRE_DEFAULT | wxRE_NOSUB };
+wxRegEx re_float{ wxS("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$"), wxRE_DEFAULT | wxRE_NOSUB };
 } // namespace slade::wxStringUtils
 
 namespace slade::strutil
@@ -918,8 +918,9 @@ bool strutil::Path::filePathsMatch(string_view left, string_view right)
 void strutil::processIncludes(const string& filename, string& out)
 {
 	// Open file
+	// TODO: Implement reading line to string in SFile
 	wxTextFile file;
-	if (!file.Open(filename))
+	if (!file.Open(wxString::FromUTF8(filename)))
 		return;
 
 	// Get file path
@@ -927,7 +928,7 @@ void strutil::processIncludes(const string& filename, string& out)
 	auto       path = fn.path(true);
 
 	// Go through line-by-line
-	string    line = file.GetNextLine().ToStdString();
+	string    line = file.GetNextLine().utf8_string();
 	Tokenizer tz;
 	tz.setSpecialCharacters("");
 	while (!file.Eof())
@@ -945,7 +946,7 @@ void strutil::processIncludes(const string& filename, string& out)
 		else
 			out.append(line + "\n");
 
-		line = file.GetNextLine();
+		line = file.GetNextLine().utf8_string();
 	}
 }
 
@@ -969,13 +970,13 @@ void strutil::processIncludes(const ArchiveEntry* entry, string& out, bool use_r
 
 	// Open file
 	wxTextFile file;
-	if (!file.Open(filename))
+	if (!file.Open(wxString::FromUTF8(filename)))
 		return;
 
 	// Go through line-by-line
 	Tokenizer tz;
 	tz.setSpecialCharacters("");
-	auto line = file.GetFirstLine().ToStdString();
+	auto line = file.GetFirstLine().utf8_string();
 	while (!file.Eof())
 	{
 		// Check for #include
@@ -1019,11 +1020,11 @@ void strutil::processIncludes(const ArchiveEntry* entry, string& out, bool use_r
 		else
 			out.append(line + "\n");
 
-		line = file.GetNextLine();
+		line = file.GetNextLine().utf8_string();
 	}
 
 	// Delete temp file
-	wxRemoveFile(filename);
+	wxRemoveFile(wxString::FromUTF8(filename));
 }
 
 int strutil::asInt(string_view str, int base)
@@ -1235,21 +1236,21 @@ string_view strutil::viewFromChars(const char* chars, unsigned max_length)
 	return { chars, size };
 }
 
-// -----------------------------------------------------------------------------
-// Encodes [str] to UTF8
-// -----------------------------------------------------------------------------
-string strutil::toUTF8(string_view str)
-{
-	return wxutil::strFromView(str).ToUTF8().data();
-}
-
-// -----------------------------------------------------------------------------
-// Decodes [str] from UTF8
-// -----------------------------------------------------------------------------
-string strutil::fromUTF8(string_view str)
-{
-	return wxString::FromUTF8(str.data(), str.length()).ToStdString();
-}
+// // -----------------------------------------------------------------------------
+// // Encodes [str] to UTF8
+// // -----------------------------------------------------------------------------
+// string strutil::toUTF8(string_view str)
+// {
+// 	return wxString(str.data(), str.size()).utf8_string();
+// }
+//
+// // -----------------------------------------------------------------------------
+// // Decodes [str] from UTF8
+// // -----------------------------------------------------------------------------
+// string strutil::fromUTF8(string_view str)
+// {
+// 	return wxString::FromUTF8(str.data(), str.length()).utf8_string();
+// }
 
 // -----------------------------------------------------------------------------
 // Splits [str] into tokens, using given [options]
@@ -1548,17 +1549,17 @@ void wxStringUtils::processIncludes(const wxString& filename, wxString& out)
 	while (!file.Eof())
 	{
 		// Check for #include
-		if (line.Lower().Trim().StartsWith("#include"))
+		if (line.Lower().Trim().StartsWith(wxS("#include")))
 		{
 			// Get filename to include
-			tz.openString(line.ToStdString());
+			tz.openString(line.utf8_string());
 			tz.adv(); // Skip #include
 
 			// Process the file
-			processIncludes(path + tz.next().text, out);
+			processIncludes(path + wxString::FromUTF8(tz.next().text), out);
 		}
 		else
-			out.Append(line + "\n");
+			out.Append(line + wxS("\n"));
 
 		line = file.GetNextLine();
 	}
@@ -1582,7 +1583,7 @@ void wxStringUtils::processIncludes(const ArchiveEntry* entry, wxString& out, bo
 
 	// Open file
 	wxTextFile file;
-	if (!file.Open(filename))
+	if (!file.Open(wxString::FromUTF8(filename)))
 		return;
 
 	// Go through line-by-line
@@ -1592,15 +1593,15 @@ void wxStringUtils::processIncludes(const ArchiveEntry* entry, wxString& out, bo
 	while (!file.Eof())
 	{
 		// Check for #include
-		if (line.Lower().Trim().StartsWith("#include"))
+		if (line.Lower().Trim().StartsWith(wxS("#include")))
 		{
 			// Get name of entry to include
-			tz.openString(line.ToStdString());
-			wxString name = entry->path() + tz.next().text;
+			tz.openString(line.utf8_string());
+			wxString name = wxString::FromUTF8(entry->path() + tz.next().text);
 
 			// Get the entry
 			bool done      = false;
-			auto entry_inc = entry->parent()->entryAtPath(name.ToStdString());
+			auto entry_inc = entry->parent()->entryAtPath(name.utf8_string());
 			// DECORATE paths start from the root, not from the #including entry's directory
 			if (!entry_inc)
 				entry_inc = entry->parent()->entryAtPath(tz.current().text);
@@ -1610,13 +1611,13 @@ void wxStringUtils::processIncludes(const ArchiveEntry* entry, wxString& out, bo
 				done = true;
 			}
 			else
-				log::info(2, wxString::Format("Couldn't find entry to #include: %s", name));
+				log::info(2, "Couldn't find entry to #include: {}", name.utf8_string());
 
 			// Look in resource pack
 			if (use_res && !done && app::archiveManager().programResourceArchive())
 			{
-				name      = "config/games/" + tz.current().text;
-				entry_inc = app::archiveManager().programResourceArchive()->entryAtPath(name.ToStdString());
+				name      = wxString::FromUTF8("config/games/" + tz.current().text);
+				entry_inc = app::archiveManager().programResourceArchive()->entryAtPath(name.utf8_string());
 				if (entry_inc)
 				{
 					processIncludes(entry_inc, out);
@@ -1627,18 +1628,18 @@ void wxStringUtils::processIncludes(const ArchiveEntry* entry, wxString& out, bo
 			// Okay, we've exhausted all possibilities
 			if (!done)
 				log::info(
-					1,
-					wxString::Format(
-						"Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->name()));
+					"Error: Attempting to #include nonexistant entry \"{}\" from entry {}",
+					name.utf8_string(),
+					entry->name());
 		}
 		else
-			out.Append(line + "\n");
+			out.Append(line + wxS("\n"));
 
 		line = file.GetNextLine();
 	}
 
 	// Delete temp file
-	wxRemoveFile(filename);
+	wxRemoveFile(wxString::FromUTF8(filename));
 }
 
 // -----------------------------------------------------------------------------
@@ -1675,7 +1676,7 @@ int wxStringUtils::toInt(const wxString& str)
 	if (str.ToLong(&tmp))
 		return tmp;
 
-	log::error(wxString::Format("Can't convert \"%s\" to an integer", str));
+	log::error("Can't convert \"{}\" to an integer", str.utf8_string());
 	return 0;
 }
 
@@ -1688,7 +1689,7 @@ float wxStringUtils::toFloat(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return static_cast<float>(tmp);
 
-	log::error(wxString::Format("Can't convert \"%s\" to a float", str));
+	log::error("Can't convert \"{}\" to a float", str.utf8_string());
 	return 0.f;
 }
 
@@ -1701,6 +1702,6 @@ double wxStringUtils::toDouble(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return tmp;
 
-	log::error(wxString::Format("Can't convert \"%s\" to a double", str));
+	log::error("Can't convert \"{}\" to a double", str.utf8_string());
 	return 0.;
 }

@@ -67,7 +67,7 @@ NumberSlider::NumberSlider(wxWindow* parent, int min, int max, int interval, boo
 		spin_double_      = new wxSpinCtrlDouble(
             this,
             -1,
-            "0",
+            wxS("0"),
             wxDefaultPosition,
             lh.spinSize(),
             wxSP_ARROW_KEYS,
@@ -79,7 +79,7 @@ NumberSlider::NumberSlider(wxWindow* parent, int min, int max, int interval, boo
 	}
 	else
 	{
-		spin_ = new wxSpinCtrl(this, -1, "0", wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS, min, max);
+		spin_ = new wxSpinCtrl(this, -1, wxS("0"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS, min, max);
 		spin_->SetIncrement(interval);
 		sizer->Add(spin_, wxSizerFlags().CenterVertical());
 	}

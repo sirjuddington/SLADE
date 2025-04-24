@@ -13,15 +13,15 @@ public:
 	MapTextureBrowser(
 		wxWindow*              parent,
 		mapeditor::TextureType type    = mapeditor::TextureType::Texture,
-		const wxString&        texture = "",
+		string_view            texture = "",
 		SLADEMap*              map     = nullptr);
 	~MapTextureBrowser() override = default;
 
-	wxString determineTexturePath(
+	string determineTexturePath(
 		const Archive*     archive,
 		MapTextureCategory category,
-		const wxString&    type,
-		const wxString&    path) const;
+		const string&    type,
+		const string&    path) const;
 	void doSort(unsigned sort_type) override;
 	void updateUsage() const;
 

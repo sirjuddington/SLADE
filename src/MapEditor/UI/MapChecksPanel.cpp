@@ -40,6 +40,7 @@
 #include "UI/Layout.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 
 using namespace slade;
@@ -52,7 +53,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-vector<std::pair<MapCheck::StandardCheck, wxString>> std_checks = {
+vector<std::pair<MapCheck::StandardCheck, string>> std_checks = {
 	{ MapCheck::MissingTexture, "Check for missing textures" },
 	{ MapCheck::SpecialTag, "Check for missing tags" },
 	{ MapCheck::IntersectingLine, "Check for intersecting lines" },
@@ -87,16 +88,16 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : DockPanel{ par
 	// Create controls
 	clb_active_checks_ = new wxCheckListBox(this, -1);
 	lb_errors_         = new wxListBox(this, -1);
-	btn_edit_object_   = new wxButton(this, -1, "Edit Object Properties");
-	btn_fix1_          = new wxButton(this, -1, "(Fix1)");
-	btn_fix2_          = new wxButton(this, -1, "(Fix2)");
-	label_status_      = new wxStaticText(this, -1, "Click Check to begin");
-	btn_export_        = new wxButton(this, -1, "Export Results");
-	btn_check_         = new wxButton(this, -1, "Check");
+	btn_edit_object_   = new wxButton(this, -1, wxS("Edit Object Properties"));
+	btn_fix1_          = new wxButton(this, -1, wxS("(Fix1)"));
+	btn_fix2_          = new wxButton(this, -1, wxS("(Fix2)"));
+	label_status_      = new wxStaticText(this, -1, wxS("Click Check to begin"));
+	btn_export_        = new wxButton(this, -1, wxS("Export Results"));
+	btn_check_         = new wxButton(this, -1, wxS("Check"));
 
 	// Populate checks list
 	for (auto& check : std_checks)
-		clb_active_checks_->Append(check.second);
+		clb_active_checks_->Append(wxString::FromUTF8(check.second));
 
 	// Bind events
 	btn_check_->Bind(wxEVT_BUTTON, &MapChecksPanel::onBtnCheck, this);
@@ -127,9 +128,9 @@ MapChecksPanel::~MapChecksPanel() = default;
 // -----------------------------------------------------------------------------
 // Updates the check status label text
 // -----------------------------------------------------------------------------
-void MapChecksPanel::updateStatusText(const wxString& text)
+void MapChecksPanel::updateStatusText(const string& text)
 {
-	label_status_->SetLabel(text);
+	label_status_->SetLabel(wxString::FromUTF8(text));
 	Update();
 	Refresh();
 }
@@ -158,21 +159,21 @@ void MapChecksPanel::showCheckItem(unsigned index)
 		// Update UI
 		btn_edit_object_->Enable(true);
 
-		wxString fix1 = check_items_[index].check->fixText(0, check_items_[index].index);
+		auto fix1 = check_items_[index].check->fixText(0, check_items_[index].index);
 		if (!fix1.empty())
 		{
 			// Show first fix button
-			btn_fix1_->SetLabel(fix1);
+			btn_fix1_->SetLabel(wxString::FromUTF8(fix1));
 			btn_fix1_->Show(true);
 		}
 		else
 			btn_fix1_->Show(false);
 
-		wxString fix2 = check_items_[index].check->fixText(1, check_items_[index].index);
+		auto fix2 = check_items_[index].check->fixText(1, check_items_[index].index);
 		if (!fix2.empty())
 		{
 			// Show second fix button
-			btn_fix2_->SetLabel(fix2);
+			btn_fix2_->SetLabel(wxString::FromUTF8(fix2));
 			btn_fix2_->Show(true);
 		}
 		else
@@ -201,7 +202,7 @@ void MapChecksPanel::refreshList()
 	{
 		for (unsigned b = 0; b < check->nProblems(); b++)
 		{
-			lb_errors_->Append(check->problemDesc(b));
+			lb_errors_->Append(wxString::FromUTF8(check->problemDesc(b)));
 			check_items_.emplace_back(check.get(), b);
 		}
 	}
@@ -288,7 +289,7 @@ void MapChecksPanel::layoutHorizontal()
 	GetSizer()->Add(sizer, lh.sfWithBorder(1).Expand());
 
 	// Checks
-	sizer->Add(new wxStaticText(this, -1, "Check for:"), { 0, 0 }, { 1, 1 }, wxEXPAND);
+	sizer->Add(new wxStaticText(this, -1, wxS("Check for:")), { 0, 0 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(clb_active_checks_, { 1, 0 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(btn_check_, { 2, 0 }, { 1, 1 }, wxALIGN_RIGHT);
 
@@ -351,7 +352,7 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 		// Add results to list
 		for (unsigned b = 0; b < check->nProblems(); b++)
 		{
-			lb_errors_->Append(check->problemDesc(b));
+			lb_errors_->Append(wxString::FromUTF8(check->problemDesc(b)));
 			check_items_.emplace_back(check.get(), b);
 		}
 	}
@@ -360,7 +361,7 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 
 	if (lb_errors_->GetCount() > 0)
 	{
-		updateStatusText(wxString::Format("%d problems found", lb_errors_->GetCount()));
+		updateStatusText(fmt::format("{} problems found", lb_errors_->GetCount()));
 		btn_export_->Enable(true);
 	}
 	else
@@ -385,7 +386,7 @@ void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
 	int selected = lb_errors_->GetSelection();
 	if (selected >= 0 && selected < static_cast<int>(check_items_.size()))
 	{
-		mapeditor::editContext().beginUndoRecord(wxutil::strToView(btn_fix1_->GetLabel()));
+		mapeditor::editContext().beginUndoRecord(btn_fix1_->GetLabel().utf8_string());
 		mapeditor::editContext().clearSelection();
 		bool fixed = check_items_[selected].check->fixProblem(
 			check_items_[selected].index, 0, &mapeditor::editContext());
@@ -406,7 +407,7 @@ void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 	int selected = lb_errors_->GetSelection();
 	if (selected >= 0 && selected < static_cast<int>(check_items_.size()))
 	{
-		mapeditor::editContext().beginUndoRecord(wxutil::strToView(btn_fix2_->GetLabel()));
+		mapeditor::editContext().beginUndoRecord(btn_fix2_->GetLabel().utf8_string());
 		mapeditor::editContext().clearSelection();
 		bool fixed = check_items_[selected].check->fixProblem(
 			check_items_[selected].index, 1, &mapeditor::editContext());
@@ -450,10 +451,10 @@ void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 		auto text = fmt::format("{} problems found in map {}:\n\n", check_items_.size(), map_name);
 		for (auto& item : check_items_)
 			text += item.check->problemDesc(item.index) + "\n";
-		wxFile file;
-		file.Open(info.filenames[0], wxFile::write);
-		if (file.IsOpened())
-			file.Write(text);
-		file.Close();
+		SFile file;
+		file.open(info.filenames[0], SFile::Mode::Write);
+		if (file.isOpen())
+			file.writeStr(text);
+		file.close();
 	}
 }

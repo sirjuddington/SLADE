@@ -16,10 +16,10 @@ class BrowserItem
 	friend class BrowserWindow;
 
 public:
-	BrowserItem(const wxString& name, unsigned index = 0, const wxString& type = "item");
+	BrowserItem(const string& name, unsigned index = 0, const string& type = "item");
 	virtual ~BrowserItem();
 
-	wxString name() const { return name_; }
+	string   name() const { return name_; }
 	unsigned index() const { return index_; }
 
 	virtual bool loadImage();
@@ -28,12 +28,12 @@ public:
 				gl::draw2d::Context& dc,
 				browser::NameType    nametype = browser::NameType::Normal,
 				browser::ItemView    viewtype = browser::ItemView::Normal);
-	virtual void     clearImage() {}
-	virtual wxString itemInfo() { return ""; }
+	virtual void   clearImage() {}
+	virtual string itemInfo() { return ""; }
 
 protected:
-	wxString       type_;
-	wxString       name_;
+	string       type_;
+	string       name_;
 	unsigned       index_     = 0;
 	unsigned       image_tex_ = 0;
 	BrowserWindow* parent_    = nullptr;

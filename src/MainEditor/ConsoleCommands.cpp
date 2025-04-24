@@ -73,25 +73,24 @@ void fixpngsrc(ArchiveEntry* entry)
 	{
 		if (pointer + 12 > entry->size())
 		{
-			log::error(wxString::Format("Entry %s cannot be repaired.", entry->name()));
+			log::error("Entry {} cannot be repaired.", entry->name());
 			return;
 		}
 		uint32_t chsz = memory::readB32(data.data(), pointer);
 		if (pointer + 12 + chsz > entry->size())
 		{
-			log::error(wxString::Format("Entry %s cannot be repaired.", entry->name()));
+			log::error("Entry {} cannot be repaired.", entry->name());
 			return;
 		}
 		uint32_t crc = misc::crc(data.data() + pointer + 4, 4 + chsz);
 		if (crc != memory::readB32(data.data(), pointer + 8 + chsz))
 		{
 			log::error(
-				wxString::Format(
-					"Chunk %c%c%c%c has bad CRC",
-					data[pointer + 4],
-					data[pointer + 5],
-					data[pointer + 6],
-					data[pointer + 7]));
+				"Chunk {:c}{:c}{:c}{:c} has bad CRC",
+				data[pointer + 4],
+				data[pointer + 5],
+				data[pointer + 6],
+				data[pointer + 7]);
 			neededchange              = true;
 			data[pointer + 8 + chsz]  = crc >> 24;
 			data[pointer + 9 + chsz]  = (crc & 0x00ffffff) >> 16;
@@ -107,7 +106,7 @@ void fixpngsrc(ArchiveEntry* entry)
 	}
 }
 
-vector<ArchiveEntry*> searchEntries(const wxString& name)
+vector<ArchiveEntry*> searchEntries(string_view name)
 {
 	vector<ArchiveEntry*> entries;
 	Archive*              archive = maineditor::currentArchive();
@@ -268,8 +267,8 @@ CONSOLE_COMMAND(find, 1, true)
 {
 	vector<ArchiveEntry*> entries = searchEntries(args[0]);
 
-	wxString message;
-	size_t   count = entries.size();
+	string message;
+	size_t count = entries.size();
 	if (count > 0)
 	{
 		for (size_t i = 0; i < count; ++i)
@@ -277,7 +276,7 @@ CONSOLE_COMMAND(find, 1, true)
 			message += entries[i]->path(true) + "\n";
 		}
 	}
-	log::info(wxString::Format("Found %i entr%s", count, count == 1 ? "y" : "ies\n") + message);
+	log::info("Found {} entr{}", count, count == 1 ? "y" : "ies\n" + message);
 }
 
 CONSOLE_COMMAND(ren, 2, true)
@@ -290,7 +289,7 @@ CONSOLE_COMMAND(ren, 2, true)
 		for (auto& entry : entries)
 		{
 			// Rename filter logic
-			wxString newname = entry->name();
+			string newname = entry->name();
 			for (unsigned c = 0; c < args[1].size(); c++)
 			{
 				// Check character
@@ -311,10 +310,10 @@ CONSOLE_COMMAND(ren, 2, true)
 				}
 			}
 
-			if (archive->renameEntry(entry, newname.ToStdString()))
+			if (archive->renameEntry(entry, newname))
 				++count;
 		}
-		log::info(wxString::Format("Renamed %i entr%s", count, count == 1 ? "y" : "ies"));
+		log::info("Renamed {} entr{}", count, count == 1 ? "y" : "ies");
 	}
 }
 
@@ -341,7 +340,7 @@ CONSOLE_COMMAND(cd, 1, true)
 		}
 		else
 		{
-			log::error(wxString::Format("Error: Trying to open nonexistant directory %s", args[0]));
+			log::error("Error: Trying to open nonexistant directory {}", args[0]);
 		}
 	}
 }

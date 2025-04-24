@@ -73,8 +73,8 @@ GeneralSettingsPanel::GeneralSettingsPanel(wxWindow* parent) : SettingsPanel(par
 	base_resource_panel_ = new BaseResourceArchiveSettingsPanel(this);
 
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createProgramSettingsPanel(tabs), "Program");
-	tabs->AddPage(wxutil::createPadPanel(tabs, base_resource_panel_, padLarge()), "Base Resource Archive");
+	tabs->AddPage(createProgramSettingsPanel(tabs), wxS("Program"));
+	tabs->AddPage(wxutil::createPadPanel(tabs, base_resource_panel_, padLarge()), wxS("Base Resource Archive"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
 	base_resource_panel_->Show();
@@ -123,14 +123,14 @@ wxPanel* GeneralSettingsPanel::createProgramSettingsPanel(wxWindow* parent)
 	auto lh    = LayoutHelper(panel);
 
 	// Create controls
-	cb_show_start_page_           = new wxCheckBox(panel, -1, "Show the Start Page on startup");
-	cb_confirm_exit_              = new wxCheckBox(panel, -1, "Show confirmation dialog on exit");
-	cb_update_check_              = new wxCheckBox(panel, -1, "Check for updates on startup");
-	cb_update_check_beta_         = new wxCheckBox(panel, -1, "Include beta versions when checking for updates");
-	cb_close_archive_with_tab_    = new wxCheckBox(panel, -1, "Close archive when its tab is closed");
-	cb_auto_open_wads_root_       = new wxCheckBox(panel, -1, "Automatically open nested Wad Archives");
-	cb_backup_archives_           = new wxCheckBox(panel, -1, "Backup archives before saving");
-	cb_archive_dir_ignore_hidden_ = new wxCheckBox(panel, -1, "Ignore hidden files in directories");
+	cb_show_start_page_           = new wxCheckBox(panel, -1, wxS("Show the Start Page on startup"));
+	cb_confirm_exit_              = new wxCheckBox(panel, -1, wxS("Show confirmation dialog on exit"));
+	cb_update_check_              = new wxCheckBox(panel, -1, wxS("Check for updates on startup"));
+	cb_update_check_beta_         = new wxCheckBox(panel, -1, wxS("Include beta versions when checking for updates"));
+	cb_close_archive_with_tab_    = new wxCheckBox(panel, -1, wxS("Close archive when its tab is closed"));
+	cb_auto_open_wads_root_       = new wxCheckBox(panel, -1, wxS("Automatically open nested Wad Archives"));
+	cb_backup_archives_           = new wxCheckBox(panel, -1, wxS("Backup archives before saving"));
+	cb_archive_dir_ignore_hidden_ = new wxCheckBox(panel, -1, wxS("Ignore hidden files in directories"));
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);

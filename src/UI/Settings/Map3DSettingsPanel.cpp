@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -76,22 +75,23 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	psizer->Add(gbsizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Render distance
-	gbsizer->Add(new wxStaticText(this, -1, "Render distance:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Render distance:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_max_render_dist_ = new NumberSlider(this, 500, 20 * 500, 500);
 	gbsizer->Add(slider_max_render_dist_, { 0, 1 }, { 1, 2 }, wxEXPAND);
-	cb_distance_unlimited_ = new wxCheckBox(this, -1, "Unlimited");
+	cb_distance_unlimited_ = new wxCheckBox(this, -1, wxS("Unlimited"));
 	gbsizer->Add(cb_distance_unlimited_, { 0, 3 }, { 1, 1 }, wxEXPAND);
 
 	// Thing Render distance
-	gbsizer->Add(new wxStaticText(this, -1, "Thing render distance:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(
+		new wxStaticText(this, -1, wxS("Thing render distance:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_max_thing_dist_ = new NumberSlider(this, 500, 20 * 500, 500);
 	gbsizer->Add(slider_max_thing_dist_, { 1, 1 }, { 1, 2 }, wxEXPAND);
-	cb_max_thing_dist_lock_ = new wxCheckBox(this, -1, "Lock");
+	cb_max_thing_dist_lock_ = new wxCheckBox(this, -1, wxS("Lock"));
 	gbsizer->Add(cb_max_thing_dist_lock_, { 1, 3 }, { 1, 1 }, wxEXPAND);
 	gbsizer->AddGrowableCol(1, 1);
 
 	// FOV
-	gbsizer->Add(new wxStaticText(this, -1, "FOV:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("FOV:")), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_fov_ = new NumberSlider(this, 70, 120, 5);
 	gbsizer->Add(slider_fov_, { 2, 1 }, { 1, 2 }, wxEXPAND);
 
@@ -99,23 +99,23 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	psizer->Add(hbox, wxSizerFlags().Expand());
 
 	// Adaptive render distance
-	cb_render_dist_adaptive_ = new wxCheckBox(this, -1, "Adaptive render distance");
+	cb_render_dist_adaptive_ = new wxCheckBox(this, -1, wxS("Adaptive render distance"));
 	hbox->Add(cb_render_dist_adaptive_, lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
-	hbox->Add(new wxStaticText(this, -1, "Target framerate:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, wxS("Target framerate:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	spin_adaptive_fps_ = new wxSpinCtrl(
-		this, -1, "30", wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 10, 100, 30);
+		this, -1, wxS("30"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 10, 100, 30);
 	hbox->Add(spin_adaptive_fps_, wxSizerFlags().Expand());
 
 	psizer->Add(new wxStaticLine(this, -1), lh.sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
 
 	lh.layoutVertically(
 		psizer,
-		{ cb_render_sky_       = new wxCheckBox(this, -1, "Render sky preview"),
-		  cb_show_distance_    = new wxCheckBox(this, -1, "Show distance under crosshair"),
-		  cb_invert_y_         = new wxCheckBox(this, -1, "Invert mouse Y axis"),
-		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, "Shade orthogonal lines"),
-		  cb_enable_3d_floors_ = new wxCheckBox(this, -1, "[EXPERIMENTAL] Enable 3d floors preview") },
+		{ cb_render_sky_       = new wxCheckBox(this, -1, wxS("Render sky preview")),
+		  cb_show_distance_    = new wxCheckBox(this, -1, wxS("Show distance under crosshair")),
+		  cb_invert_y_         = new wxCheckBox(this, -1, wxS("Invert mouse Y axis")),
+		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, wxS("Shade orthogonal lines")),
+		  cb_enable_3d_floors_ = new wxCheckBox(this, -1, wxS("[EXPERIMENTAL] Enable 3d floors preview")) },
 		wxSizerFlags(0).Expand());
 
 	// Bind events
@@ -150,9 +150,9 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 		{
 			if (cb_enable_3d_floors_->GetValue())
 				wxMessageBox(
-					"This feature is currently experimental and does not work correctly for all 3d floor types.\n\n"
-					"Any currently open map will need to be closed and reopened for the setting to take effect.",
-					"Experimental Feature Warning",
+					wxS("This feature is currently experimental and does not work correctly for all 3d floor types.\n\n"
+						"Any currently open map will need to be closed and reopened for the setting to take effect."),
+					wxS("Experimental Feature Warning"),
 					wxICON_WARNING);
 		});
 }

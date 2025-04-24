@@ -10,7 +10,7 @@ public:
 	InputSettingsPanel(wxWindow* parent);
 	~InputSettingsPanel() override = default;
 
-	wxTreeListItem getListGroupItem(const wxString& group) const;
+	wxTreeListItem getListGroupItem(const string& group) const;
 	void           initBindsList() const;
 	void           updateBindsList() const;
 	void           changeKey(wxTreeListItem item);

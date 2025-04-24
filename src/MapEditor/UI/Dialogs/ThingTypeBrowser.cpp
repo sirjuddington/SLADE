@@ -63,7 +63,7 @@ namespace slade
 class ThingBrowserItem : public BrowserItem
 {
 public:
-	ThingBrowserItem(const wxString& name, const game::ThingType& type, unsigned index) :
+	ThingBrowserItem(const string& name, const game::ThingType& type, unsigned index) :
 		BrowserItem{ name, index },
 		thing_type_{ &type }
 	{
@@ -123,11 +123,11 @@ private:
 ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(parent)
 {
 	// Set window title
-	wxTopLevelWindow::SetTitle("Browse Thing Types");
+	wxTopLevelWindow::SetTitle(wxS("Browse Thing Types"));
 
 	// Add 'Details view' checkbox
 	auto lh        = ui::LayoutHelper(this);
-	cb_view_tiles_ = new wxCheckBox(this, -1, "Details view");
+	cb_view_tiles_ = new wxCheckBox(this, -1, wxS("Details view"));
 	cb_view_tiles_->SetValue(browser_thing_tiles);
 	sizer_bottom_->Add(cb_view_tiles_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
@@ -184,7 +184,7 @@ int ThingTypeBrowser::selectedType() const
 	auto selected = selectedItem();
 	if (selected)
 	{
-		log::info(wxString::Format("Selected item %d", selected->index()));
+		log::info("Selected item {}", selected->index());
 		return selected->index();
 	}
 	else

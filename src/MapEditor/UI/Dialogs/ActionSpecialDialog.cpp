@@ -39,6 +39,8 @@
 #include "MapEditor/UI/ActionSpecialPanel.h"
 #include "MapEditor/UI/ArgsPanel.h"
 #include "UI/Layout.h"
+#include "MapEditor/UI/GenLineSpecialPanel.h"
+#include "SpecialPresetDialog.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -77,11 +79,11 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 
 		// Special panel
 		panel_special_ = new ActionSpecialPanel(this);
-		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_special_), "Special");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_special_), wxS("Special"));
 
 		// Args panel
 		panel_args_ = new ArgsPanel(this);
-		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), "Args");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), wxS("Args"));
 		panel_special_->setArgsPanel(panel_args_);
 	}
 

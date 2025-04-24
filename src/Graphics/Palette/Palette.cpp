@@ -34,6 +34,7 @@
 #include "Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/Translation.h"
+#include "UI/WxUtils.h"
 #include "Utility/CIEDeltaEquations.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
@@ -457,7 +458,7 @@ bool Palette::saveFile(string_view filename, Format format)
 bool Palette::loadFile(string_view filename, Format format)
 {
 	// Open the file
-	wxFile file(string{ filename });
+	wxFile file(wxutil::strFromView(filename));
 
 	// Check that it opened ok
 	if (!file.IsOpened())

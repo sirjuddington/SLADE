@@ -54,7 +54,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 	wxDialog(
 		parent,
 		-1,
-		"First Time SLADE Setup",
+		wxS("First Time SLADE Setup"),
 		wxDefaultPosition,
 		wxDefaultSize,
 		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
@@ -101,12 +101,12 @@ void SetupWizardDialog::setupLayout()
 
 	// Page title
 	label_page_title_ = new wxStaticText(
-		this, -1, pages_[0]->title(), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
+		this, -1, wxString::FromUTF8(pages_[0]->title()), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
 	label_page_title_->SetFont(label_page_title_->GetFont().MakeLarger().MakeBold());
 	sizer->Add(label_page_title_, lh.sfWithXLargeBorder().Expand());
 
 	// Page description
-	label_page_description_ = new wxStaticText(this, -1, "");
+	label_page_description_ = new wxStaticText(this, -1, wxEmptyString);
 	sizer->Add(label_page_description_, lh.sfWithXLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Main page area
@@ -118,11 +118,11 @@ void SetupWizardDialog::setupLayout()
 	sizer->Add(hbox, lh.sfWithXLargeBorder().Expand());
 
 	// Previous button
-	btn_prev_ = new wxButton(this, -1, "Previous");
+	btn_prev_ = new wxButton(this, -1, wxS("Previous"));
 	hbox->Add(btn_prev_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Next button
-	btn_next_ = new wxButton(this, -1, "Next");
+	btn_next_ = new wxButton(this, -1, wxS("Next"));
 	hbox->Add(btn_next_, wxSizerFlags().Expand());
 
 	btn_prev_->Enable(false);
@@ -145,9 +145,9 @@ void SetupWizardDialog::showPage(unsigned index)
 
 	// Check for last page
 	if (index == pages_.size() - 1)
-		btn_next_->SetLabel("Finish");
+		btn_next_->SetLabel(wxS("Finish"));
 	else
-		btn_next_->SetLabel("Next");
+		btn_next_->SetLabel(wxS("Next"));
 
 	// Check for first page
 	if (index == 0)
@@ -156,10 +156,10 @@ void SetupWizardDialog::showPage(unsigned index)
 		btn_prev_->Enable(true);
 
 	// Update title
-	label_page_title_->SetLabel(pages_[index]->title());
+	label_page_title_->SetLabel(wxString::FromUTF8(pages_[index]->title()));
 
 	// Update description
-	label_page_description_->SetLabel(pages_[index]->description());
+	label_page_description_->SetLabel(wxString::FromUTF8(pages_[index]->description()));
 	label_page_description_->Wrap(label_page_title_->GetSize().x);
 
 	Layout();

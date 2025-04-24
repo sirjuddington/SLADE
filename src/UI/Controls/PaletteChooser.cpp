@@ -58,14 +58,14 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id),
 	pal_global_->copyPalette(app::paletteManager()->globalPalette());
 
 	// Add first 'existing' item
-	Append("Existing/Global");
+	Append(wxS("Existing/Global"));
 
 	// Add palette names from palette manager
 	for (int a = 0; a < app::paletteManager()->numPalettes(); a++)
-		Append(app::paletteManager()->palName(a));
+		Append(wxString::FromUTF8(app::paletteManager()->palName(a)));
 
 	// Add greyscale palette
-	Append("Greyscale");
+	Append(wxS("Greyscale"));
 
 	// Select first item
 	wxChoice::SetSelection(0);
@@ -124,12 +124,12 @@ bool PaletteChooser::globalSelected() const
 // Selects the palette matching [name], or the default palette if no match was
 // found
 // -----------------------------------------------------------------------------
-void PaletteChooser::selectPalette(const wxString& name)
+void PaletteChooser::selectPalette(const string& name)
 {
 	// Go through palettes list
 	for (unsigned a = 0; a < GetCount(); a++)
 	{
-		if (S_CMPNOCASE(GetString(a), name))
+		if (strutil::equalCI(GetString(a).utf8_string(), name))
 		{
 			SetSelection(a);
 			return;
@@ -147,9 +147,9 @@ void PaletteChooser::selectPalette(const wxString& name)
 // without this function, requires exiting and restarting the app to appear in
 // the list.
 // -----------------------------------------------------------------------------
-void PaletteChooser::addPalette(const wxString& name)
+void PaletteChooser::addPalette(const string& name)
 {
 	// We want it to be just before the "Greyscale" choice
 	if (GetCount() > 2)
-		Insert(name, GetCount() - 1);
+		Insert(wxString::FromUTF8(name), GetCount() - 1);
 }

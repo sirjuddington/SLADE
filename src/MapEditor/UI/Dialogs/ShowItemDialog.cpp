@@ -35,6 +35,7 @@
 #include "ShowItemDialog.h"
 #include "SLADEMap/Types.h"
 #include "UI/Layout.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -64,7 +65,7 @@ vector obj_types{ map::ObjectType::Vertex,
 // -----------------------------------------------------------------------------
 // ShowItemDialog class constructor
 // -----------------------------------------------------------------------------
-ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show Item")
+ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, wxS("Show Item"))
 {
 	auto lh = ui::LayoutHelper(this);
 
@@ -75,14 +76,15 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 	sizer->Add(gb_sizer, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Object type
-	wxString types[] = { "Vertex", "Line", "Side", "Sector", "Thing" };
-	gb_sizer->Add(new wxStaticText(this, -1, "Type:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	choice_type_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 5, types);
+	vector<string> types = { "Vertex", "Line", "Side", "Sector", "Thing" };
+	gb_sizer->Add(new wxStaticText(this, -1, wxS("Type:")), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	choice_type_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(types));
 	gb_sizer->Add(choice_type_, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 	// Index
-	gb_sizer->Add(new wxStaticText(this, -1, "Index:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	text_index_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+	gb_sizer->Add(
+		new wxStaticText(this, -1, wxS("Index:")), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	text_index_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
 	gb_sizer->Add(text_index_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
 	// Dialog buttons

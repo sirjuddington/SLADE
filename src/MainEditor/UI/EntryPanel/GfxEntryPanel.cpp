@@ -61,6 +61,7 @@
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/UI.h"
 #include "Utility/Colour.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
 
@@ -135,13 +136,14 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 		0);
 	spin_xoffset_->SetMinSize(lh.spinSize());
 	spin_yoffset_->SetMinSize(lh.spinSize());
-	sizer_bottom_->Add(new wxStaticText(this, -1, "Offsets:"), wxSizerFlags().CenterVertical());
+	sizer_bottom_->Add(new wxStaticText(this, -1, wxS("Offsets:")), wxSizerFlags().CenterVertical());
 	sizer_bottom_->Add(spin_xoffset_, lh.sfWithBorder(0, wxLEFT | wxRIGHT).CenterVertical());
 	sizer_bottom_->Add(spin_yoffset_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 
 	// Gfx (offset) type
-	wxString offset_types[] = { "Auto", "Graphic", "Sprite", "HUD" };
-	choice_offset_type_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
+	vector<string> offset_types = { "Auto", "Graphic", "Sprite", "HUD" };
+	choice_offset_type_         = new wxChoice(
+        this, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(offset_types));
 	choice_offset_type_->SetSelection(0);
 	sizer_bottom_->Add(choice_offset_type_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 
@@ -152,8 +154,8 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 	sizer_bottom_->AddStretchSpacer();
 
 	// Image selection controls
-	text_imgnum_   = new wxStaticText(this, -1, "Image: ");
-	text_imgoutof_ = new wxStaticText(this, -1, " out of XX");
+	text_imgnum_   = new wxStaticText(this, -1, wxS("Image: "));
+	text_imgoutof_ = new wxStaticText(this, -1, wxS(" out of XX"));
 	spin_curimg_   = new wxSpinCtrl(
         this,
         -1,
@@ -277,13 +279,13 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 	{
 		auto* format = image->format();
 
-		wxString error      = "";
+		string error;
 		ok                  = false;
 		const auto writable = format ? format->canWrite(*image) : SIFormat::Writable::No;
 		if (!format || format == SIFormat::unknownFormat())
 			error = "Image is of unknown format";
 		else if (writable == SIFormat::Writable::No)
-			error = wxString::Format("Writing unsupported for format \"%s\"", format->name());
+			error = fmt::format("Writing unsupported for format \"{}\"", format->name());
 		else
 		{
 			// Convert image if necessary (using default options)
@@ -313,7 +315,7 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 				entry.setExtensionByType();
 		}
 		else
-			wxMessageBox(wxString("Cannot save changes to image: ") + error, "Error", wxICON_ERROR);
+			wxMessageBox(wxString::FromUTF8("Cannot save changes to image: " + error), wxS("Error"), wxICON_ERROR);
 	}
 
 	// Otherwise just set offsets
@@ -370,7 +372,7 @@ void GfxEntryPanel::setupToolbars()
 	button_brush_ = g_brush->addActionButton("pgfx_setbrush");
 	cb_colour_    = new ColourBox(g_brush, -1, ColRGBA::BLACK, false, true, SToolBar::scaledButtonSize(this));
 	cb_colour_->setPalette(gfx_canvas_->palette());
-	cb_colour_->SetToolTip("Set brush colour");
+	cb_colour_->SetToolTip(wxS("Set brush colour"));
 	g_brush->addCustomControl(cb_colour_);
 	g_brush->addActionButton("pgfx_settrans", "");
 	toolbar_->addGroup(g_brush);
@@ -454,7 +456,7 @@ void GfxEntryPanel::fillBrushMenu(wxMenu* bm) const
 	SAction::fromId("pgfx_brush_pa_m")->addToMenu(pa);
 	SAction::fromId("pgfx_brush_pa_n")->addToMenu(pa);
 	SAction::fromId("pgfx_brush_pa_o")->addToMenu(pa);
-	bm->AppendSubMenu(pa, "Dither Patterns");
+	bm->AppendSubMenu(pa, wxS("Dither Patterns"));
 }
 
 // -----------------------------------------------------------------------------
@@ -476,14 +478,14 @@ bool GfxEntryPanel::extractAll() const
 	if (parent == nullptr)
 		return false;
 
-	const int      index = parent->entryIndex(entry.get(), entry->parentDir());
-	const wxString name  = wxFileName(entry->name()).GetName();
+	const int index = parent->entryIndex(entry.get(), entry->parentDir());
+	auto      name  = entry->nameNoExt();
 
 	// Loop through subimages and get things done
 	int pos = 0;
 	for (int i = 0; i < image()->size(); ++i)
 	{
-		wxString newname = wxString::Format("%s_%i.png", name, i);
+		auto newname = fmt::format("{}_{}.png", name, i);
 		misc::loadImageFromEntry(image(), entry.get(), i);
 
 		// Only process images that actually contain some pixels
@@ -492,7 +494,7 @@ bool GfxEntryPanel::extractAll() const
 			MemChunk img_data;
 			SIFormat::getFormat("png")->saveImage(*image(), img_data, gfx_canvas_->palette());
 
-			auto newimg = parent->addNewEntry(newname.ToStdString(), index + pos + 1, entry->parentDir());
+			auto newimg = parent->addNewEntry(newname, index + pos + 1, entry->parentDir());
 			if (newimg == nullptr)
 				return false;
 
@@ -574,7 +576,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 		menu_custom_->Enable(menu_gfxep_extract, true);
 	else
 		menu_custom_->Enable(menu_gfxep_extract, false);
-	text_imgoutof_->SetLabel(wxString::Format(" out of %d", image()->size()));
+	text_imgoutof_->SetLabel(WX_FMT(" out of {}", image()->size()));
 	spin_curimg_->SetValue(cur_index_ + 1);
 	spin_curimg_->SetRange(1, image()->size());
 
@@ -605,11 +607,11 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-wxString GfxEntryPanel::statusString()
+string GfxEntryPanel::statusString()
 {
 	// Setup status string
-	auto*    image  = this->image();
-	wxString status = wxString::Format("%dx%d", image->width(), image->height());
+	auto* image  = this->image();
+	auto  status = fmt::format("{}x{}", image->width(), image->height());
 
 	// Colour format
 	if (image->type() == SImage::Type::RGBA)
@@ -823,8 +825,9 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	else if (id == "pgfx_rotate")
 	{
 		// Prompt for rotation angle
-		wxString  angles[] = { "90", "180", "270" };
-		const int choice   = wxGetSingleChoiceIndex("Select rotation angle", "Rotate", 3, angles, 0);
+		vector<string> angles = { "90", "180", "270" };
+		const int      choice = wxGetSingleChoiceIndex(
+            wxS("Select rotation angle"), wxS("Rotate"), wxutil::arrayStringStd(angles), 0);
 
 		// Rotate image
 		switch (choice)
@@ -933,9 +936,9 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			if (crop.tl.x > 0 || crop.tl.y > 0)
 			{
 				if (wxMessageBox(
-						"Do you want to adjust the offsets? This will keep the graphic in the same relative "
-						"position it was before cropping.",
-						"Adjust Offsets?",
+						wxS("Do you want to adjust the offsets? This will keep the graphic in the same relative "
+							"position it was before cropping."),
+						wxS("Adjust Offsets?"),
 						wxYES_NO)
 					== wxYES)
 				{
@@ -975,8 +978,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			setModified(false);
 		else
 			wxMessageBox(
-				"Warning: Couldn't optimize this image, check console log for info",
-				"Warning",
+				wxS("Warning: Couldn't optimize this image, check console log for info"),
+				wxS("Warning"),
 				wxOK | wxCENTRE | wxICON_WARNING);
 		Refresh();
 	}
@@ -1116,7 +1119,7 @@ SImage* GfxEntryPanel::image() const
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void GfxEntryPanel::toolbarButtonClick(const wxString& action_id)
+void GfxEntryPanel::toolbarButtonClick(const string& action_id)
 {
 	if (action_id == "toggle_arc")
 	{
@@ -1275,7 +1278,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 	toolbar_left_->group("Tool")->setAllButtonsChecked(false);
 
 	// Editing - drag mode
-	if (id == "tool_drag")
+	if (id == wxS("tool_drag"))
 	{
 		editing_ = false;
 		gfx_canvas_->setEditingMode(GfxEditMode::None);
@@ -1285,7 +1288,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 	}
 
 	// Editing - draw mode
-	else if (id == "tool_draw")
+	else if (id == wxS("tool_draw"))
 	{
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
@@ -1296,7 +1299,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 	}
 
 	// Editing - erase mode
-	else if (id == "tool_erase")
+	else if (id == wxS("tool_erase"))
 	{
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
@@ -1306,7 +1309,7 @@ void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 	}
 
 	// Editing - translate mode
-	else if (id == "tool_translate")
+	else if (id == wxS("tool_translate"))
 	{
 		editing_ = true;
 		toolbar_->group("Brush")->hide(false);
@@ -1335,7 +1338,7 @@ GfxEntryPanel* getCurrentGfxPanel()
 	auto* panel = maineditor::currentEntryPanel();
 	if (panel)
 	{
-		if (!(panel->name().CmpNoCase("gfx")))
+		if (strutil::equalCI(panel->name(), "gfx"))
 		{
 			return dynamic_cast<GfxEntryPanel*>(panel);
 		}
@@ -1347,25 +1350,25 @@ GfxEntryPanel* getCurrentGfxPanel()
 CONSOLE_COMMAND(rotate, 1, true)
 {
 	double         val;
-	const wxString bluh = args[0];
+	const wxString bluh = wxString::FromUTF8(args[0]);
 	if (!bluh.ToDouble(&val))
 	{
-		if (!bluh.CmpNoCase("l") || !bluh.CmpNoCase("left"))
+		if (!bluh.CmpNoCase(wxS("l")) || !bluh.CmpNoCase(wxS("left")))
 			val = 90.;
-		else if (!bluh.CmpNoCase("f") || !bluh.CmpNoCase("flip"))
+		else if (!bluh.CmpNoCase(wxS("f")) || !bluh.CmpNoCase(wxS("flip")))
 			val = 180.;
-		else if (!bluh.CmpNoCase("r") || !bluh.CmpNoCase("right"))
+		else if (!bluh.CmpNoCase(wxS("r")) || !bluh.CmpNoCase(wxS("right")))
 			val = 270.;
 		else
 		{
-			log::error(wxString::Format("Invalid parameter: %s is not a number.", bluh.mb_str()));
+			log::error("Invalid parameter: {} is not a number.", bluh.utf8_string());
 			return;
 		}
 	}
 	const int angle = static_cast<int>(val);
 	if (angle % 90)
 	{
-		log::error(wxString::Format("Invalid parameter: %i is not a multiple of 90.", angle));
+		log::error("Invalid parameter: {} is not a multiple of 90.", angle);
 		return;
 	}
 
@@ -1403,15 +1406,18 @@ CONSOLE_COMMAND(rotate, 1, true)
 
 CONSOLE_COMMAND(mirror, 1, true)
 {
-	bool           vertical;
-	const wxString bluh = args[0];
-	if (!bluh.CmpNoCase("y") || !bluh.CmpNoCase("v") || !bluh.CmpNoCase("vert") || !bluh.CmpNoCase("vertical"))
+	bool       vertical;
+	const auto bluh = args[0];
+	if (strutil::equalCI(bluh, "y") || strutil::equalCI(bluh, "v") || strutil::equalCI(bluh, "vert")
+		|| strutil::equalCI(bluh, "vertical"))
 		vertical = true;
-	else if (!bluh.CmpNoCase("x") || !bluh.CmpNoCase("h") || !bluh.CmpNoCase("horz") || !bluh.CmpNoCase("horizontal"))
+	else if (
+		strutil::equalCI(bluh, "x") || strutil::equalCI(bluh, "h") || strutil::equalCI(bluh, "horz")
+		|| strutil::equalCI(bluh, "horizontal"))
 		vertical = false;
 	else
 	{
-		log::error(wxString::Format("Invalid parameter: %s is not a known value.", bluh.mb_str()));
+		log::error("Invalid parameter: {}{ is not a known value.", bluh);
 		return;
 	}
 	auto* foo = maineditor::currentArchivePanel();

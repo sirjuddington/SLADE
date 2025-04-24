@@ -43,6 +43,7 @@
 #include "SpecialPreset.h"
 #include "TextEditor/TextLanguage.h"
 #include "ThingType.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"
@@ -325,38 +326,36 @@ void game::init()
 	ActionSpecial::initGlobal();
 
 	// Add game configurations from user dir
-	wxArrayString allfiles;
-	wxDir::GetAllFiles(app::path("games", app::Dir::User), &allfiles);
-	for (const auto& filename : allfiles)
+	auto game_configs = fileutil::allFilesInDir(app::path("games", app::Dir::User), false, true);
+	for (const auto& filename : game_configs)
 	{
 		// Read config info
 		MemChunk mc;
-		mc.importFile(filename.ToStdString());
+		mc.importFile(filename);
 
 		// Add to list if valid
 		GameDef gdef;
 		if (gdef.parse(mc))
 		{
-			gdef.filename        = wxFileName(filename).GetName();
+			gdef.filename        = strutil::Path::fileNameOf(filename);
 			gdef.user            = true;
 			game_defs[gdef.name] = gdef;
 		}
 	}
 
 	// Add port configurations from user dir
-	allfiles.clear();
-	wxDir::GetAllFiles(app::path("ports", app::Dir::User), &allfiles);
-	for (const auto& filename : allfiles)
+	auto port_configs = fileutil::allFilesInDir(app::path("ports", app::Dir::User), false, true);
+	for (const auto& filename : game_configs)
 	{
 		// Read config info
 		MemChunk mc;
-		mc.importFile(filename.ToStdString());
+		mc.importFile(filename);
 
 		// Add to list if valid
 		PortDef pdef;
 		if (pdef.parse(mc))
 		{
-			pdef.filename        = wxFileName(filename).GetName();
+			pdef.filename        = strutil::Path::fileNameOf(filename);
 			pdef.user            = true;
 			port_defs[pdef.name] = pdef;
 		}
@@ -428,7 +427,7 @@ void game::init()
 				if (!zscript_entry)
 				{
 					// Bail out if no entry is found.
-					log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path.value);
+					log::warning(1, "Could not find \'zscript.txt\' in {}", zdoom_pk3_path.value);
 				}
 				else
 				{

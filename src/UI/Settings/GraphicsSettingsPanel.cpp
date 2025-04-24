@@ -54,7 +54,7 @@ namespace
 {
 struct BackgroundPreset
 {
-	wxString name;
+	string   name;
 	wxColour colour1;
 	wxColour colour2;
 };
@@ -117,9 +117,9 @@ GraphicsSettingsPanel::GraphicsSettingsPanel(wxWindow* parent) : SettingsPanel(p
 
 	// Create tabs
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createGeneralPanel(tabs), "General");
-	tabs->AddPage(createPngPanel(tabs), "PNG Tools");
-	tabs->AddPage(wxutil::createPadPanel(tabs, colorimetry_panel_, padLarge()), "Colorimetry");
+	tabs->AddPage(createGeneralPanel(tabs), wxS("General"));
+	tabs->AddPage(createPngPanel(tabs), wxS("PNG Tools"));
+	tabs->AddPage(wxutil::createPadPanel(tabs, colorimetry_panel_, padLarge()), wxS("Colorimetry"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
 	// Bind events
@@ -171,9 +171,9 @@ void GraphicsSettingsPanel::applySettings()
 {
 	// General
 	wxColour wxc = cp_colour1_->GetColour();
-	bgtx_colour1 = wxutil::strToView(wxc.GetAsString(wxC2S_CSS_SYNTAX));
+	bgtx_colour1 = wxc.GetAsString(wxC2S_CSS_SYNTAX).utf8_string();
 	wxc          = cp_colour2_->GetColour();
-	bgtx_colour2 = wxutil::strToView(wxc.GetAsString(wxC2S_CSS_SYNTAX));
+	bgtx_colour2 = wxc.GetAsString(wxC2S_CSS_SYNTAX).utf8_string();
 	gl::Texture::resetBackgroundTexture();
 	gfx_show_border              = cb_show_border_->GetValue();
 	gfx_extraconv                = cb_extra_gfxconv_->GetValue();
@@ -183,9 +183,9 @@ void GraphicsSettingsPanel::applySettings()
 	maineditor::windowWx()->Refresh();
 
 	// PNG
-	path_pngout   = wxutil::strToView(flp_pngout_->location());
-	path_pngcrush = wxutil::strToView(flp_pngcrush_->location());
-	path_deflopt  = wxutil::strToView(flp_deflopt_->location());
+	path_pngout   = flp_pngout_->location();
+	path_pngcrush = flp_pngcrush_->location();
+	path_deflopt  = flp_deflopt_->location();
 
 	// Hud Offsets View
 	hud_bob       = cb_hud_bob_->GetValue();
@@ -210,22 +210,22 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 	cp_colour2_     = new wxColourPickerCtrl(panel, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, cp_flags);
 	choice_presets_ = new wxChoice(panel, -1);
 	for (auto& preset : bg_presets)
-		choice_presets_->Append(preset.name);
+		choice_presets_->Append(wxString::FromUTF8(preset.name));
 	choice_browser_bg_ = new wxChoice(panel, -1);
 	choice_browser_bg_->Append(
-		wxutil::arrayString({ "Transparent background (as above)", "System background", "Black background" }));
-	cb_show_border_          = new wxCheckBox(panel, -1, "Show outline around graphics and textures");
-	cb_hilight_mouseover_    = new wxCheckBox(panel, -1, "Hilight graphics on mouse hover");
-	cb_extra_gfxconv_        = new wxCheckBox(panel, -1, "Offer additional conversion options");
-	cb_condensed_trans_edit_ = new wxCheckBox(panel, -1, "Condensed Translation Editor layout");
-	cb_condensed_trans_edit_->SetToolTip(
+		wxutil::arrayStringStd({ "Transparent background (as above)", "System background", "Black background" }));
+	cb_show_border_          = new wxCheckBox(panel, -1, wxS("Show outline around graphics and textures"));
+	cb_hilight_mouseover_    = new wxCheckBox(panel, -1, wxS("Hilight graphics on mouse hover"));
+	cb_extra_gfxconv_        = new wxCheckBox(panel, -1, wxS("Offer additional conversion options"));
+	cb_condensed_trans_edit_ = new wxCheckBox(panel, -1, wxS("Condensed Translation Editor layout"));
+	cb_condensed_trans_edit_->SetToolTip(wxS(
 		"On some displays the translation editor dialog can be too large to fit on the screen vertically. Enable this "
-		"to reduce its vertical size.");
+		"to reduce its vertical size."));
 
-	cb_hud_bob_       = new wxCheckBox(panel, -1, "Show weapon bob outline");
-	cb_hud_center_    = new wxCheckBox(panel, -1, "Show center line");
-	cb_hud_statusbar_ = new wxCheckBox(panel, -1, "Show status bar lines");
-	cb_hud_wide_      = new wxCheckBox(panel, -1, "Show widescreen borders");
+	cb_hud_bob_       = new wxCheckBox(panel, -1, wxS("Show weapon bob outline"));
+	cb_hud_center_    = new wxCheckBox(panel, -1, wxS("Show center line"));
+	cb_hud_statusbar_ = new wxCheckBox(panel, -1, wxS("Show status bar lines"));
+	cb_hud_wide_      = new wxCheckBox(panel, -1, wxS("Show widescreen borders"));
 
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -247,11 +247,12 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.padLarge());
 	vbox->Add(gb_sizer, lh.sfWithBorder(0, wxLEFT));
 	auto row = 0;
-	gb_sizer->Add(new wxStaticText(panel, -1, "Preset:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Preset:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_presets_, { row++, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Colours:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Colours:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(lh.layoutHorizontally({ cp_colour1_, cp_colour2_ }), { row++, 1 }, { 1, 2 });
-	gb_sizer->Add(new wxStaticText(panel, -1, "Browser Background:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, wxS("Browser Background:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_browser_bg_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Hud Offsets View

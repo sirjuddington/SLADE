@@ -64,7 +64,7 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 	colourconfig::putConfigurationNames(cnames);
 	choice_configs_ = new wxChoice(this, -1);
 	for (const auto& cname : cnames)
-		choice_configs_->Append(cname);
+		choice_configs_->Append(wxString::FromUTF8(cname));
 	sizer->Add(wxutil::createLabelHBox(this, "Preset:", choice_configs_), wxSizerFlags().Expand());
 	sizer->AddSpacer(lh.pad());
 
@@ -85,7 +85,7 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 		wxEVT_CHOICE,
 		[&](wxCommandEvent&)
 		{
-			auto config = choice_configs_->GetStringSelection().ToStdString();
+			auto config = choice_configs_->GetStringSelection().utf8_string();
 			colourconfig::readConfiguration(config);
 			refreshPropGrid();
 			mapeditor::forceRefresh(true);
@@ -122,33 +122,36 @@ void ColourSettingsPanel::refreshPropGrid() const
 		auto cdef = colourconfig::colDef(name);
 
 		// Get/create group
-		auto group = pg_colours_->GetProperty(cdef.group);
+		auto group = pg_colours_->GetProperty(wxString::FromUTF8(cdef.group));
 		if (!group)
-			group = pg_colours_->Append(new wxPropertyCategory(cdef.group));
+			group = pg_colours_->Append(new wxPropertyCategory(wxString::FromUTF8(cdef.group)));
 
 		// Add colour
-		auto colour = pg_colours_->AppendIn(group, new wxColourProperty(cdef.name, name, cdef.colour));
+		auto colour = pg_colours_->AppendIn(
+			group, new wxColourProperty(wxString::FromUTF8(cdef.name), wxString::FromUTF8(name), cdef.colour));
 
 		// Add extra colour properties
-		auto opacity = pg_colours_->AppendIn(colour, new wxIntProperty("Opacity (0-255)", "alpha", cdef.colour.a));
-		pg_colours_->AppendIn(colour, new wxBoolProperty("Additive", "additive", cdef.blend_additive));
+		auto opacity = pg_colours_->AppendIn(
+			colour, new wxIntProperty(wxS("Opacity (0-255)"), wxS("alpha"), cdef.colour.a));
+		pg_colours_->AppendIn(colour, new wxBoolProperty(wxS("Additive"), wxS("additive"), cdef.blend_additive));
 		pg_colours_->Collapse(colour);
 
 		// Set opacity limits
-		opacity->SetAttribute("Max", 255);
-		opacity->SetAttribute("Min", 0);
+		opacity->SetAttribute(wxS("Max"), 255);
+		opacity->SetAttribute(wxS("Min"), 0);
 	}
 
 	// Add theme options to property grid
-	auto g_theme = pg_colours_->Append(new wxPropertyCategory("Map Editor Theme"));
-	pg_colours_->AppendIn(
-		g_theme,
-		new wxFloatProperty("Line Hilight Width Multiplier", "line_hilight_width", colourconfig::lineHilightWidth()));
+	auto g_theme = pg_colours_->Append(new wxPropertyCategory(wxS("Map Editor Theme")));
 	pg_colours_->AppendIn(
 		g_theme,
 		new wxFloatProperty(
-			"Line Selection Width Multiplier", "line_selection_width", colourconfig::lineSelectionWidth()));
-	pg_colours_->AppendIn(g_theme, new wxFloatProperty("Flat Fade", "flat_alpha", colourconfig::flatAlpha()));
+			wxS("Line Hilight Width Multiplier"), wxS("line_hilight_width"), colourconfig::lineHilightWidth()));
+	pg_colours_->AppendIn(
+		g_theme,
+		new wxFloatProperty(
+			wxS("Line Selection Width Multiplier"), wxS("line_selection_width"), colourconfig::lineSelectionWidth()));
+	pg_colours_->AppendIn(g_theme, new wxFloatProperty(wxS("Flat Fade"), wxS("flat_alpha"), colourconfig::flatAlpha()));
 
 	// Set all bool properties to use checkboxes
 	pg_colours_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
@@ -168,18 +171,19 @@ void ColourSettingsPanel::applySettings()
 		// Get colour definition
 		auto cdef = colourconfig::colDef(colours[a]);
 
-		wxString cdef_path = cdef.group;
+		auto cdef_path = cdef.group;
 		cdef_path += ".";
 		cdef_path += colours[a];
 
 		// Get properties from grid
-		auto p_alpha = dynamic_cast<wxIntProperty*>(pg_colours_->GetProperty(cdef_path + ".alpha"));
-		auto p_add   = dynamic_cast<wxBoolProperty*>(pg_colours_->GetProperty(cdef_path + ".additive"));
+		auto p_alpha = dynamic_cast<wxIntProperty*>(pg_colours_->GetProperty(wxString::FromUTF8(cdef_path + ".alpha")));
+		auto p_add   = dynamic_cast<wxBoolProperty*>(
+            pg_colours_->GetProperty(wxString::FromUTF8(cdef_path + ".additive")));
 
 		if (p_alpha && p_add)
 		{
 			// Getting the colour out of a wxColourProperty is retarded
-			auto     v = pg_colours_->GetPropertyValue(cdef_path);
+			auto     v = pg_colours_->GetPropertyValue(wxString::FromUTF8(cdef_path));
 			wxColour col;
 			col << v; // wut?
 
@@ -199,18 +203,18 @@ void ColourSettingsPanel::applySettings()
 			colourconfig::setColour(colours[a], col.Red(), col.Green(), col.Blue(), alpha, blend);
 
 			// Clear modified status
-			pg_colours_->GetProperty(cdef_path)->SetModifiedStatus(false);
+			pg_colours_->GetProperty(wxString::FromUTF8(cdef_path))->SetModifiedStatus(false);
 			p_alpha->SetModifiedStatus(false);
 			p_add->SetModifiedStatus(false);
 		}
 	}
 
-	colourconfig::setLineHilightWidth(pg_colours_->GetProperty("line_hilight_width")->GetValue());
-	pg_colours_->GetProperty("line_hilight_width")->SetModifiedStatus(false);
-	colourconfig::setLineSelectionWidth(pg_colours_->GetProperty("line_selection_width")->GetValue());
-	pg_colours_->GetProperty("line_selection_width")->SetModifiedStatus(false);
-	colourconfig::setFlatAlpha(pg_colours_->GetProperty("flat_alpha")->GetValue());
-	pg_colours_->GetProperty("flat_alpha")->SetModifiedStatus(false);
+	colourconfig::setLineHilightWidth(pg_colours_->GetProperty(wxS("line_hilight_width"))->GetValue());
+	pg_colours_->GetProperty(wxS("line_hilight_width"))->SetModifiedStatus(false);
+	colourconfig::setLineSelectionWidth(pg_colours_->GetProperty(wxS("line_selection_width"))->GetValue());
+	pg_colours_->GetProperty(wxS("line_selection_width"))->SetModifiedStatus(false);
+	colourconfig::setFlatAlpha(pg_colours_->GetProperty(wxS("flat_alpha"))->GetValue());
+	pg_colours_->GetProperty(wxS("flat_alpha"))->SetModifiedStatus(false);
 
 	pg_colours_->Refresh();
 	pg_colours_->RefreshEditor();

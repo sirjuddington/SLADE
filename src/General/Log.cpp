@@ -70,7 +70,7 @@ template<> struct fmt::formatter<log::MessageType> : formatter<string_view>
 		}
 		return formatter<string_view>::format(prefix, ctx);
 	}
-}; // namespace fmt
+};
 
 
 // -----------------------------------------------------------------------------
@@ -199,19 +199,19 @@ vector<log::Message*> log::since(time_t time, MessageType type)
 // -----------------------------------------------------------------------------
 // Logs a debug message [text] at verbosity [level] only if debug mode is on
 // -----------------------------------------------------------------------------
-void log::debug(int level, const wxString& text)
+void log::debug(int level, string_view text)
 {
 	if (global::debug)
-		message(MessageType::Debug, level, text.ToStdString());
+		message(MessageType::Debug, level, text);
 }
 
 // -----------------------------------------------------------------------------
 // Logs a debug message [text] only if debug mode is on
 // -----------------------------------------------------------------------------
-void log::debug(const wxString& text)
+void log::debug(string_view text)
 {
 	if (global::debug)
-		message(MessageType::Debug, text.ToStdString());
+		message(MessageType::Debug, text);
 }
 
 void log::debug(int level, string_view text, fmt::format_args args)

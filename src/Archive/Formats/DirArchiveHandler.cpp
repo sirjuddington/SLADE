@@ -40,6 +40,7 @@
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
 #include "UI/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -94,8 +95,8 @@ bool DirArchiveHandler::open(Archive& archive, string_view filename)
 	ui::setSplashProgress(0);
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs, ignore_hidden_);
-	const wxDir         dir(string{ filename });
-	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
+	const wxDir         dir(wxutil::strFromView(filename));
+	dir.Traverse(traverser, wxEmptyString, wxDIR_FILES | wxDIR_DIRS);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	const ArchiveModSignalBlocker sig_blocker{ archive };
@@ -223,8 +224,8 @@ bool DirArchiveHandler::save(Archive& archive, string_view filename)
 	long                time = app::runTimer();
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs, archive_dir_ignore_hidden);
-	const wxDir         dir(archive.filename());
-	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
+	const wxDir         dir(wxString::FromUTF8(archive.filename()));
+	dir.Traverse(traverser, wxEmptyString, wxDIR_FILES | wxDIR_DIRS);
 	log::info(2, "GetAllFiles took {}ms", app::runTimer() - time);
 
 	// Check for any files to remove
@@ -761,7 +762,7 @@ DirArchiveTraverser::DirArchiveTraverser(vector<string>& pathlist, vector<string
 // -----------------------------------------------------------------------------
 wxDirTraverseResult DirArchiveTraverser::OnFile(const wxString& filename)
 {
-	auto path_str = filename.ToStdString();
+	auto path_str = filename.utf8_string();
 
 	if (ignore_hidden_ && strutil::startsWith(strutil::Path::fileNameOf(path_str), '.'))
 		return wxDIR_CONTINUE;
@@ -777,13 +778,13 @@ wxDirTraverseResult DirArchiveTraverser::OnDir(const wxString& dirname)
 {
 	if (ignore_hidden_)
 	{
-		auto path_str = dirname.ToStdString();
+		auto path_str = dirname.utf8_string();
 		std::replace(path_str.begin(), path_str.end(), '\\', '/');
 		auto dir = strutil::afterLastV(path_str, '/');
 		if (strutil::startsWith(dir, '.'))
 			return wxDIR_IGNORE;
 	}
 
-	dirs_.push_back(dirname.ToStdString());
+	dirs_.push_back(dirname.utf8_string());
 	return wxDIR_CONTINUE;
 }

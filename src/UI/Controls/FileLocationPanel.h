@@ -8,21 +8,21 @@ class FileLocationPanel : public wxPanel
 {
 public:
 	FileLocationPanel(
-		wxWindow*       parent,
-		const wxString& path,
-		bool            editable                = true,
-		const wxString& browse_caption          = "Browse File",
-		const wxString& browse_extensions       = "All Files|*",
-		const wxString& browse_default_filename = "");
+		wxWindow*     parent,
+		const string& path,
+		bool          editable                = true,
+		const string& browse_caption          = "Browse File",
+		const string& browse_extensions       = "All Files|*",
+		const string& browse_default_filename = "");
 
-	wxString location() const;
-	void     setLocation(const wxString& path) const;
+	string location() const;
+	void   setLocation(const string& path) const;
 
 private:
 	wxTextCtrl* text_path_  = nullptr;
 	wxButton*   btn_browse_ = nullptr;
-	wxString    browse_caption_;
-	wxString    browse_extensions_;
-	wxString    browse_default_filename_;
+	string      browse_caption_;
+	string      browse_extensions_;
+	string      browse_default_filename_;
 };
 } // namespace slade

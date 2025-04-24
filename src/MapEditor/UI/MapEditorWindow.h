@@ -34,7 +34,7 @@ public:
 	bool chooseMap(Archive* archive = nullptr);
 	bool openMap(const MapDesc& map);
 	void loadMapScripts(const MapDesc& map);
-	bool writeMap(Archive& wad, const wxString& name = "MAP01", bool nodes = true);
+	bool writeMap(Archive& wad, const string& name = "MAP01", bool nodes = true);
 	bool saveMap();
 	bool saveMapAs();
 	void closeMap() const;

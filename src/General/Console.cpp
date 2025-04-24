@@ -284,8 +284,8 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	{
 		if (strutil::equalCI(app::console()->command(a).name(), args[0]))
 		{
-			wxString url = wxString::Format("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
-			wxLaunchDefaultBrowser(url);
+			auto url = fmt::format("https://github.com/sirjuddington/SLADE/wiki/{}-Console-Command", args[0]);
+			wxLaunchDefaultBrowser(wxString::FromUTF8(url));
 			return;
 		}
 	}

@@ -65,23 +65,24 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(
 	SetSizer(sizer);
 
 	// Message
-	wxString message = wxString::Format(
-		"Contents of the directory \"%s\" have been modified outside of SLADE,\n", archive->filename());
-	message += "please tick the changes below that you wish to apply.";
+	wxString message = WX_FMT(
+		"Contents of the directory \"{}\" have been modified outside of SLADE,\n", archive->filename());
+	message += wxS("please tick the changes below that you wish to apply.");
 	sizer->Add(new wxStaticText(this, -1, message), lh.sfWithLargeBorder().Expand());
-	message = "Note that any unticked changes will be overwritten on disk when the directory is saved.";
+	message = wxS("Note that any unticked changes will be overwritten on disk when the directory is saved.");
 	sizer->Add(new wxStaticText(this, -1, message), lh.sfWithLargeBorder().Expand());
 
 	// Changes list
 	list_changes_ = new wxDataViewListCtrl(this, -1);
-	list_changes_->AppendToggleColumn("", wxDATAVIEW_CELL_ACTIVATABLE, wxDVC_DEFAULT_MINWIDTH, wxALIGN_CENTER);
-	list_changes_->AppendTextColumn("Change");
-	list_changes_->AppendTextColumn("Filename", wxDATAVIEW_CELL_INERT, -2);
+	list_changes_->AppendToggleColumn(
+		wxEmptyString, wxDATAVIEW_CELL_ACTIVATABLE, wxDVC_DEFAULT_MINWIDTH, wxALIGN_CENTER);
+	list_changes_->AppendTextColumn(wxS("Change"));
+	list_changes_->AppendTextColumn(wxS("Filename"), wxDATAVIEW_CELL_INERT, -2);
 	list_changes_->SetMinSize(lh.size(0, 200));
 	sizer->Add(list_changes_, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT).Expand());
 
 	// OK button
-	auto btn_ok = new wxButton(this, wxID_OK, "Apply Selected Changes");
+	auto btn_ok = new wxButton(this, wxID_OK, wxS("Apply Selected Changes"));
 	btn_ok->SetDefault();
 	sizer->AddSpacer(lh.pad());
 	sizer->Add(btn_ok, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Right());

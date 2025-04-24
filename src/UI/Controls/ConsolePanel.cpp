@@ -92,7 +92,7 @@ void ConsolePanel::initLayout()
 	vbox->Add(text_log_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Create and add the command entry textbox
-	text_command_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	text_command_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	vbox->AddSpacer(lh.padSmall());
 	vbox->Add(text_command_, lh.sfWithBorder(0, wxBOTTOM | wxLEFT | wxRIGHT).Expand());
 
@@ -114,7 +114,7 @@ void ConsolePanel::setupTextArea() const
 	StyleSet::currentSet()->applyToWx(text_log_);
 
 	// Margins
-	text_log_->SetMarginWidth(0, text_log_->TextWidth(wxSTC_STYLE_DEFAULT, "00:00:00"));
+	text_log_->SetMarginWidth(0, text_log_->TextWidth(wxSTC_STYLE_DEFAULT, wxS("00:00:00")));
 	text_log_->SetMarginType(0, wxSTC_MARGIN_TEXT);
 	text_log_->SetMarginWidth(1, 8);
 
@@ -152,10 +152,10 @@ void ConsolePanel::update()
 	for (auto a = next_message_index_; a < log.size(); ++a)
 	{
 		if (a > 0)
-			text_log_->AppendText("\n");
+			text_log_->AppendText(wxS("\n"));
 
 		// Add message line + timestamp margin
-		text_log_->AppendText(log[a].message);
+		text_log_->AppendText(wxString::FromUTF8(log[a].message));
 		text_log_->MarginSetText(line_no, wxDateTime(log[a].timestamp).FormatISOTime());
 		text_log_->MarginSetStyle(line_no, wxSTC_STYLE_LINENUMBER);
 
@@ -205,7 +205,7 @@ void ConsolePanel::focusInput() const
 // -----------------------------------------------------------------------------
 void ConsolePanel::onCommandEnter(wxCommandEvent& e)
 {
-	app::console()->execute(wxutil::strToView(e.GetString()));
+	app::console()->execute(e.GetString().utf8_string());
 	update();
 	text_command_->Clear();
 	cmd_log_index_ = 0;
@@ -218,7 +218,7 @@ void ConsolePanel::onCommandKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
 	{
-		text_command_->SetValue(app::console()->prevCommand(cmd_log_index_));
+		text_command_->SetValue(wxString::FromUTF8(app::console()->prevCommand(cmd_log_index_)));
 		text_command_->SetInsertionPointEnd();
 		if (cmd_log_index_ < app::console()->numPrevCommands() - 1)
 			cmd_log_index_++;
@@ -226,7 +226,7 @@ void ConsolePanel::onCommandKeyDown(wxKeyEvent& e)
 	else if (e.GetKeyCode() == WXK_DOWN)
 	{
 		cmd_log_index_--;
-		text_command_->SetValue(app::console()->prevCommand(cmd_log_index_));
+		text_command_->SetValue(wxString::FromUTF8(app::console()->prevCommand(cmd_log_index_)));
 		text_command_->SetInsertionPointEnd();
 		if (cmd_log_index_ < 0)
 			cmd_log_index_ = 0;

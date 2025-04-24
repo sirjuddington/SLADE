@@ -53,7 +53,7 @@ using namespace browser;
 // -----------------------------------------------------------------------------
 // BrowserItem class constructor
 // -----------------------------------------------------------------------------
-BrowserItem::BrowserItem(const wxString& name, unsigned index, const wxString& type) :
+BrowserItem::BrowserItem(const string& name, unsigned index, const string& type) :
 	type_{ type },
 	name_{ name },
 	index_{ index }
@@ -121,7 +121,7 @@ void BrowserItem::draw(int size, gl::draw2d::Context& dc, NameType nametype, Ite
 		// Create text box if needed
 		if (!text_box_)
 			text_box_ = std::make_unique<gl::draw2d::TextBox>(
-				fmt::format("{}\n{}", index_, name_.mb_str().data()), 144, dc.font, 16);
+				fmt::format("{}\n{}", index_, name_), 144, dc.font, 16);
 
 		Vec2f pos;
 		pos.x = sizef + 8.0f;

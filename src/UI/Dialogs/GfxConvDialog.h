@@ -128,8 +128,8 @@ private:
 	void updateButtons() const;
 
 	// Static
-	static wxString current_palette_name_;
-	static wxString target_palette_name_;
+	static string current_palette_name_;
+	static string target_palette_name_;
 
 	// Events
 	void onResize(wxSizeEvent& e);

@@ -53,7 +53,7 @@ static void messageBox(const string& title, const string& message, MessageBoxIco
 	case MessageBoxIcon::Error:    style |= wxICON_ERROR; break;
 	}
 
-	wxMessageBox(message, title, style, currentWindow());
+	wxMessageBox(wxString::FromUTF8(message), wxString::FromUTF8(title), style, currentWindow());
 }
 
 // -----------------------------------------------------------------------------
@@ -74,7 +74,12 @@ static void messageBoxExtended(const string& title, const string& message, const
 // -----------------------------------------------------------------------------
 static string promptString(const string& title, const string& message, const string& default_value)
 {
-	return wxGetTextFromUser(message, title, default_value, currentWindow()).ToStdString();
+	return wxGetTextFromUser(
+			   wxString::FromUTF8(message),
+			   wxString::FromUTF8(title),
+			   wxString::FromUTF8(default_value),
+			   currentWindow())
+		.utf8_string();
 }
 
 // -----------------------------------------------------------------------------
@@ -82,7 +87,8 @@ static string promptString(const string& title, const string& message, const str
 // -----------------------------------------------------------------------------
 static int promptNumber(const string& title, const string& message, int default_value, int min, int max)
 {
-	return static_cast<int>(wxGetNumberFromUser(message, "", title, default_value, min, max));
+	return static_cast<int>(wxGetNumberFromUser(
+		wxString::FromUTF8(message), wxEmptyString, wxString::FromUTF8(title), default_value, min, max));
 }
 
 // -----------------------------------------------------------------------------
@@ -90,7 +96,7 @@ static int promptNumber(const string& title, const string& message, int default_
 // -----------------------------------------------------------------------------
 static bool promptYesNo(const string& title, const string& message)
 {
-	return (wxMessageBox(message, title, wxYES_NO | wxICON_QUESTION) == wxYES);
+	return (wxMessageBox(wxString::FromUTF8(message), wxString::FromUTF8(title), wxYES_NO | wxICON_QUESTION) == wxYES);
 }
 
 // -----------------------------------------------------------------------------

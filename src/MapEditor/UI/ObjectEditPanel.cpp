@@ -62,19 +62,19 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	auto                             tb_size = FromDIP(wxSize(64, -1));
 
 	// Create controls
-	text_xoff_      = new wxTextCtrl(this, -1, "", wxDefaultPosition, tb_size, 0, val_int);
-	text_yoff_      = new wxTextCtrl(this, -1, "", wxDefaultPosition, tb_size, 0, val_int);
-	text_scalex_    = new wxTextCtrl(this, -1, "", wxDefaultPosition, tb_size, 0, val_uint);
-	text_scaley_    = new wxTextCtrl(this, -1, "", wxDefaultPosition, tb_size, 0, val_uint);
-	combo_rotation_ = new wxComboBox(this, -1, "", wxDefaultPosition, tb_size);
-	cb_mirror_x_    = new wxCheckBox(this, -1, "Mirror X");
-	cb_mirror_y_    = new wxCheckBox(this, -1, "Mirror Y");
+	text_xoff_      = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, tb_size, 0, val_int);
+	text_yoff_      = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, tb_size, 0, val_int);
+	text_scalex_    = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, tb_size, 0, val_uint);
+	text_scaley_    = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, tb_size, 0, val_uint);
+	combo_rotation_ = new wxComboBox(this, -1, wxEmptyString, wxDefaultPosition, tb_size);
+	cb_mirror_x_    = new wxCheckBox(this, -1, wxS("Mirror X"));
+	cb_mirror_y_    = new wxCheckBox(this, -1, wxS("Mirror Y"));
 	btn_preview_    = new SIconButton(this, "eye", "Preview");
 	btn_cancel_     = new SIconButton(this, "close", "Cancel");
 	btn_apply_      = new SIconButton(this, "tick", "Apply");
 
 	// Init controls
-	combo_rotation_->Set(wxutil::arrayString({ "0", "45", "90", "135", "180", "225", "270", "315" }));
+	combo_rotation_->Set(wxutil::arrayStringStd({ "0", "45", "90", "135", "180", "225", "270", "315" }));
 	combo_rotation_->SetValidator(val_double);
 	btn_preview_->SetDefault();
 
@@ -109,10 +109,10 @@ void ObjectEditPanel::init(const ObjectEditGroup* group)
 	old_height_ = bbox.height();
 
 	// Init UI values
-	text_xoff_->SetValue(wxString::Format("%d", 0));
-	text_yoff_->SetValue(wxString::Format("%d", 0));
-	text_scalex_->SetValue(wxString::Format("%d", 100));
-	text_scaley_->SetValue(wxString::Format("%d", 100));
+	text_xoff_->SetValue(WX_FMT("{}", 0));
+	text_yoff_->SetValue(WX_FMT("{}", 0));
+	text_scalex_->SetValue(WX_FMT("{}", 100));
+	text_scaley_->SetValue(WX_FMT("{}", 100));
 	combo_rotation_->Select(0);
 	cb_mirror_x_->SetValue(false);
 	cb_mirror_y_->SetValue(false);
@@ -129,11 +129,11 @@ void ObjectEditPanel::update(const ObjectEditGroup* group, bool lock_rotation) c
 	double xscale = bbox.width() / old_width_;
 	double yscale = bbox.height() / old_height_;
 
-	text_xoff_->SetValue(wxString::Format("%d", xoff));
-	text_yoff_->SetValue(wxString::Format("%d", yoff));
-	text_scalex_->SetValue(wxString::Format("%d", static_cast<int>(100 * xscale)));
-	text_scaley_->SetValue(wxString::Format("%d", static_cast<int>(100 * yscale)));
-	combo_rotation_->SetValue(wxString::Format("%1.2f", group->rotation()));
+	text_xoff_->SetValue(WX_FMT("{}", xoff));
+	text_yoff_->SetValue(WX_FMT("{}", yoff));
+	text_scalex_->SetValue(WX_FMT("{}", static_cast<int>(100 * xscale)));
+	text_scaley_->SetValue(WX_FMT("{}", static_cast<int>(100 * yscale)));
+	combo_rotation_->SetValue(WX_FMT("{:1.2f}", group->rotation()));
 }
 
 // -----------------------------------------------------------------------------
@@ -159,12 +159,12 @@ void ObjectEditPanel::setupLayout()
 	// X scale
 	sizer->Add(
 		wxutil::createLabelHBox(this, "X Scale:", text_scalex_), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
-	sizer->Add(new wxStaticText(this, -1, "%"), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(new wxStaticText(this, -1, wxS("%")), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Y scale
 	sizer->Add(
 		wxutil::createLabelHBox(this, "Y Scale:", text_scaley_), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
-	sizer->Add(new wxStaticText(this, -1, "%"), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	sizer->Add(new wxStaticText(this, -1, wxS("%")), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
 
 	// Rotation
 	sizer->Add(

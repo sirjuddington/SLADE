@@ -102,11 +102,11 @@ MapDisplaySettingsPanel::MapDisplaySettingsPanel(wxWindow* parent) : SettingsPan
 
 	// Setup tabs
 	auto lh = LayoutHelper(this);
-	tabs->AddPage(createGeneralPanel(tabs, lh), "General");
-	tabs->AddPage(createVerticesPanel(tabs, lh), "Vertices");
-	tabs->AddPage(createLinesPanel(tabs, lh), "Lines");
-	tabs->AddPage(createThingsPanel(tabs, lh), "Things");
-	tabs->AddPage(createSectorsPanel(tabs, lh), "Sectors");
+	tabs->AddPage(createGeneralPanel(tabs, lh), wxS("General"));
+	tabs->AddPage(createVerticesPanel(tabs, lh), wxS("Vertices"));
+	tabs->AddPage(createLinesPanel(tabs, lh), wxS("Lines"));
+	tabs->AddPage(createThingsPanel(tabs, lh), wxS("Things"));
+	tabs->AddPage(createSectorsPanel(tabs, lh), wxS("Sectors"));
 
 	wxWindowBase::Layout();
 }
@@ -125,17 +125,17 @@ wxPanel* MapDisplaySettingsPanel::createGeneralPanel(wxWindow* parent, const Lay
 	// Create controls
 	rbp_crosshair_        = new RadioButtonPanel(panel, { "None", "Small", "Full" }, "Cursor crosshair:");
 	rbp_grid_64_          = new RadioButtonPanel(panel, { "None", "Full", "Crosses" }, "64x64 grid:");
-	cb_grid_dashed_       = new wxCheckBox(panel, -1, "Dashed grid");
-	cb_grid_show_origin_  = new wxCheckBox(panel, -1, "Hilight origin (0,0) on grid");
-	cb_animate_hilight_   = new wxCheckBox(panel, -1, "Animated hilight");
-	cb_animate_selection_ = new wxCheckBox(panel, -1, "Animated selection");
-	cb_animate_tagged_    = new wxCheckBox(panel, -1, "Animated tag indicator");
-	cb_action_lines_      = new wxCheckBox(panel, -1, "Show action lines");
-	cb_show_help_         = new wxCheckBox(panel, -1, "Show help text");
+	cb_grid_dashed_       = new wxCheckBox(panel, -1, wxS("Dashed grid"));
+	cb_grid_show_origin_  = new wxCheckBox(panel, -1, wxS("Hilight origin (0,0) on grid"));
+	cb_animate_hilight_   = new wxCheckBox(panel, -1, wxS("Animated hilight"));
+	cb_animate_selection_ = new wxCheckBox(panel, -1, wxS("Animated selection"));
+	cb_animate_tagged_    = new wxCheckBox(panel, -1, wxS("Animated tag indicator"));
+	cb_action_lines_      = new wxCheckBox(panel, -1, wxS("Show action lines"));
+	cb_show_help_         = new wxCheckBox(panel, -1, wxS("Show help text"));
 	rbp_tex_filter_       = new RadioButtonPanel(panel, { "None", "Linear", "Mipmapped" }, "Texture filter:");
 
 	cb_action_lines_->SetToolTip(
-		"Show lines from an object with an action special to the tagged object(s) when highlighted");
+		wxS("Show lines from an object with an action special to the tagged object(s) when highlighted"));
 
 	// General
 	lh.layoutVertically(
@@ -169,7 +169,7 @@ wxPanel* MapDisplaySettingsPanel::createVerticesPanel(wxWindow* parent, const La
 
 	slider_vertex_size_  = new NumberSlider(panel, 2, 16, 1);
 	rbp_vertices_always_ = new RadioButtonPanel(panel, { "Hide", "Show", "Fade" }, "When not in vertices mode:");
-	cb_vertex_round_     = new wxCheckBox(panel, -1, "Round vertices");
+	cb_vertex_round_     = new wxCheckBox(panel, -1, wxS("Round vertices"));
 
 	lh.layoutVertically(
 		sizer,
@@ -194,9 +194,9 @@ wxPanel* MapDisplaySettingsPanel::createLinesPanel(wxWindow* parent, const Layou
 		sizer,
 		{ wxutil::createLabelHBox(
 			  panel, "Line thickness:", slider_line_width_ = new NumberSlider(panel, 10, 30, 1, true, 10)),
-		  cb_line_smooth_      = new wxCheckBox(panel, -1, "Smooth lines"),
-		  cb_line_tabs_always_ = new wxCheckBox(panel, -1, "Always show line direction tabs"),
-		  cb_line_fade_        = new wxCheckBox(panel, -1, "Fade when not in lines mode") },
+		  cb_line_smooth_      = new wxCheckBox(panel, -1, wxS("Smooth lines")),
+		  cb_line_tabs_always_ = new wxCheckBox(panel, -1, wxS("Always show line direction tabs")),
+		  cb_line_fade_        = new wxCheckBox(panel, -1, wxS("Fade when not in lines mode")) },
 		wxSizerFlags());
 
 	return panel;
@@ -215,22 +215,26 @@ wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const Layo
 
 	// Create controls
 	rbp_thing_shape_         = new RadioButtonPanel(panel, { "Round", "Square" });
-	cb_thing_sprites_        = new wxCheckBox(panel, -1, "Show Sprites");
+	cb_thing_sprites_        = new wxCheckBox(panel, -1, wxS("Show Sprites"));
 	slider_thing_shadow_     = new NumberSlider(panel, 0, 10, 1, true, 10);
-	cb_thing_force_dir_      = new wxCheckBox(panel, -1, "Always show direction arrows");
-	cb_thing_overlay_square_ = new wxCheckBox(panel, -1, "Force square hilight/selection overlay");
-	cb_use_zeth_icons_       = new wxCheckBox(panel, -1, "Use ZETH thing type icons");
+	cb_thing_force_dir_      = new wxCheckBox(panel, -1, wxS("Always show direction arrows"));
+	cb_thing_overlay_square_ = new wxCheckBox(panel, -1, wxS("Force square hilight/selection overlay"));
+	cb_use_zeth_icons_       = new wxCheckBox(panel, -1, wxS("Use ZETH thing type icons"));
 	slider_light_intensity_  = new NumberSlider(panel, 1, 10, 1, true, 10);
 	rbp_things_always_       = new RadioButtonPanel(panel, { "Hide", "Show", "Fade" }, "When not in things mode:");
 
 	int row = 0;
-	sizer->Add(new wxStaticText(panel, -1, "Thing shape: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(new wxStaticText(panel, -1, wxS("Thing shape: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(rbp_thing_shape_, { row, 1 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(cb_thing_sprites_, { row++, 2 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(new wxStaticText(panel, -1, "Thing shadow opacity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(
+		new wxStaticText(panel, -1, wxS("Thing shadow opacity: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(slider_thing_shadow_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 	sizer->Add(
-		new wxStaticText(panel, -1, "Point light preview intensity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(panel, -1, wxS("Point light preview intensity: ")),
+		{ row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTER_VERTICAL);
 	sizer->Add(slider_light_intensity_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 	sizer->Add(cb_thing_force_dir_, { row++, 0 }, { 1, 3 }, wxEXPAND);
 	sizer->Add(cb_thing_overlay_square_, { row++, 0 }, { 1, 3 }, wxEXPAND);
@@ -256,10 +260,10 @@ wxPanel* MapDisplaySettingsPanel::createSectorsPanel(wxWindow* parent, const Lay
 		sizer,
 		{ wxutil::createLabelHBox(
 			  panel, "Flat brightness:", slider_flat_brightness_ = new NumberSlider(panel, 0, 10, 1, true, 10)),
-		  cb_flat_ignore_light_    = new wxCheckBox(panel, -1, "Flats ignore sector brightness"),
-		  cb_sector_hilight_fill_  = new wxCheckBox(panel, -1, "Filled sector hilight"),
-		  cb_sector_selected_fill_ = new wxCheckBox(panel, -1, "Filled sector selection"),
-		  cb_flat_fade_            = new wxCheckBox(panel, -1, "Fade flats when not in sectors mode") },
+		  cb_flat_ignore_light_    = new wxCheckBox(panel, -1, wxS("Flats ignore sector brightness")),
+		  cb_sector_hilight_fill_  = new wxCheckBox(panel, -1, wxS("Filled sector hilight")),
+		  cb_sector_selected_fill_ = new wxCheckBox(panel, -1, wxS("Filled sector selection")),
+		  cb_flat_fade_            = new wxCheckBox(panel, -1, wxS("Fade flats when not in sectors mode")) },
 		wxSizerFlags());
 
 	return panel;

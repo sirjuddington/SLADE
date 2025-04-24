@@ -13,7 +13,7 @@ public:
 
 	Archive* selectedMapData() const { return archive_mapdata_.get(); }
 
-	bool loadBackups(wxString archive_name, const wxString& map_name);
+	bool loadBackups(string archive_name, string_view map_name);
 	void updateMapPreview();
 
 private:

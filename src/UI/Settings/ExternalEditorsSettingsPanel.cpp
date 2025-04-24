@@ -53,8 +53,8 @@ class ExternalEditorList : public VirtualListView
 public:
 	ExternalEditorList(wxWindow* parent) : VirtualListView(parent)
 	{
-		AppendColumn("Name");
-		AppendColumn("Path");
+		AppendColumn(wxS("Name"));
+		AppendColumn(wxS("Path"));
 	}
 
 	~ExternalEditorList() override = default;
@@ -65,7 +65,7 @@ public:
 		SetItemCount(exes_.size());
 	}
 
-	wxString itemText(long item, long column, long index) const override
+	string itemText(long item, long column, long index) const override
 	{
 		if (item < 0 || item >= static_cast<long>(exes_.size()))
 			return "";
@@ -91,8 +91,8 @@ private:
 class ExternalEditorDialog : public wxDialog
 {
 public:
-	ExternalEditorDialog(wxWindow* parent, bool browse_on_open, const wxString& name = "", const wxString& path = "") :
-		wxDialog(parent, -1, "External Editor"),
+	ExternalEditorDialog(wxWindow* parent, bool browse_on_open, const string& name = "", const string& path = "") :
+		wxDialog(parent, -1, wxS("External Editor")),
 		browse_on_open_(browse_on_open)
 	{
 		auto lh    = LayoutHelper(this);
@@ -102,13 +102,13 @@ public:
 		// Name
 		auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 		sizer->Add(gb_sizer, lh.sfWithLargeBorder(1).Expand());
-		gb_sizer->Add(new wxStaticText(this, -1, "Name:"), { 0, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-		text_name_ = new wxTextCtrl(this, -1, name);
+		gb_sizer->Add(new wxStaticText(this, -1, wxS("Name:")), { 0, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+		text_name_ = new wxTextCtrl(this, -1, wxString::FromUTF8(name));
 		gb_sizer->Add(text_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 		// Path
-		gb_sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, lh.size(300, -1));
+		gb_sizer->Add(new wxStaticText(this, -1, wxS("Path:")), { 1, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+		text_path_ = new wxTextCtrl(this, -1, wxString::FromUTF8(path), wxDefaultPosition, lh.size(300, -1));
 		gb_sizer->Add(text_path_, { 1, 1 }, wxDefaultSpan, wxEXPAND);
 		btn_browse_ = new SIconButton(this, icons::General, "open");
 		gb_sizer->Add(btn_browse_, { 1, 2 }, wxDefaultSpan);
@@ -117,9 +117,9 @@ public:
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
 		gb_sizer->Add(hbox, { 2, 0 }, { 1, 3 }, wxEXPAND);
 		hbox->AddStretchSpacer();
-		btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
+		btn_cancel_ = new wxButton(this, wxID_CANCEL, wxS("Cancel"));
 		hbox->Add(btn_cancel_, lh.sfWithBorder(0, wxRIGHT).Expand());
-		btn_ok_ = new wxButton(this, wxID_OK, "OK");
+		btn_ok_ = new wxButton(this, wxID_OK, wxS("OK"));
 		hbox->Add(btn_ok_, wxSizerFlags().Expand());
 
 		gb_sizer->AddGrowableCol(1);
@@ -142,8 +142,8 @@ public:
 
 	~ExternalEditorDialog() override = default;
 
-	wxString getName() const { return text_name_->GetValue(); }
-	wxString getPath() const { return text_path_->GetValue(); }
+	string getName() const { return text_name_->GetValue().utf8_string(); }
+	string getPath() const { return text_path_->GetValue().utf8_string(); }
 
 private:
 	wxTextCtrl*     text_name_;
@@ -162,11 +162,11 @@ private:
 		if (filedialog::openFile(info, "Browse for External Editor", wxFileSelectorDefaultWildcardStr, this))
 #endif
 		{
-			text_path_->SetValue(info.filenames[0]);
+			text_path_->SetValue(wxString::FromUTF8(info.filenames[0]));
 
 			if (text_name_->GetValue().IsEmpty())
 			{
-				wxFileName fn(info.filenames[0]);
+				wxFileName fn(wxString::FromUTF8(info.filenames[0]));
 				text_name_->SetValue(fn.GetName().Capitalize());
 			}
 		}
@@ -192,15 +192,15 @@ ExternalEditorsSettingsPanel::ExternalEditorsSettingsPanel(wxWindow* parent) : S
 	choice_category_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, categories);
 	lv_ext_editors_  = new ExternalEditorList(this);
 	btn_add_exe_     = new SIconButton(this, icons::General, "plus");
-	btn_add_exe_->SetToolTip("Add External Editor");
+	btn_add_exe_->SetToolTip(wxS("Add External Editor"));
 	btn_remove_exe_ = new SIconButton(this, icons::General, "minus");
-	btn_remove_exe_->SetToolTip("Remove Selected External Editors");
+	btn_remove_exe_->SetToolTip(wxS("Remove Selected External Editors"));
 
 	// Layout
 	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	SetSizer(sizer);
 
-	sizer->Add(new wxStaticText(this, -1, "Category: "), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(new wxStaticText(this, -1, wxS("Category: ")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_category_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 	sizer->Add(lv_ext_editors_, { 1, 0 }, { 3, 2 }, wxEXPAND);
 	sizer->Add(btn_add_exe_, { 1, 2 }, { 1, 1 });
@@ -215,7 +215,7 @@ ExternalEditorsSettingsPanel::ExternalEditorsSettingsPanel(wxWindow* parent) : S
 		[&](wxCommandEvent&)
 		{
 			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)
-				->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
+				->setCategory(choice_category_->GetStringSelection().utf8_string());
 		});
 	btn_add_exe_->Bind(wxEVT_BUTTON, &ExternalEditorsSettingsPanel::onBtnAddClicked, this);
 	btn_remove_exe_->Bind(wxEVT_BUTTON, &ExternalEditorsSettingsPanel::onBtnRemoveClicked, this);
@@ -229,7 +229,7 @@ void ExternalEditorsSettingsPanel::loadSettings()
 {
 	choice_category_->SetSelection(0);
 	dynamic_cast<ExternalEditorList*>(lv_ext_editors_)
-		->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
+		->setCategory(choice_category_->GetStringSelection().utf8_string());
 }
 
 // -----------------------------------------------------------------------------
@@ -256,14 +256,14 @@ void ExternalEditorsSettingsPanel::onBtnAddClicked(wxCommandEvent& e)
 	while (dlg.ShowModal() == wxID_OK)
 	{
 		if (dlg.getName().empty())
-			wxMessageBox("Please enter a name for the editor", "Name Required");
+			wxMessageBox(wxS("Please enter a name for the editor"), wxS("Name Required"));
 		else if (dlg.getPath().empty())
-			wxMessageBox("Please enter or select an executable", "Path Required");
+			wxMessageBox(wxS("Please enter or select an executable"), wxS("Path Required"));
 		else
 		{
 			// Add executable
-			auto category = choice_category_->GetStringSelection().ToStdString();
-			executables::addExternalExe(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
+			auto category = choice_category_->GetStringSelection().utf8_string();
+			executables::addExternalExe(dlg.getName(), dlg.getPath(), category);
 
 			// Refresh list
 			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
@@ -279,13 +279,13 @@ void ExternalEditorsSettingsPanel::onBtnAddClicked(wxCommandEvent& e)
 void ExternalEditorsSettingsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 {
 	auto selection = lv_ext_editors_->selection();
-	auto category  = choice_category_->GetStringSelection().ToStdString();
+	auto category  = choice_category_->GetStringSelection().utf8_string();
 
 	// Remove selected editors
 	for (long item : selection)
 	{
-		wxString name = lv_ext_editors_->GetItemText(item);
-		executables::removeExternalExe(wxutil::strToView(name), category);
+		auto name = lv_ext_editors_->GetItemText(item);
+		executables::removeExternalExe(name.utf8_string(), category);
 	}
 
 	// Refresh list
@@ -297,22 +297,22 @@ void ExternalEditorsSettingsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ExternalEditorsSettingsPanel::onExternalExeActivated(wxListEvent& e)
 {
-	auto name     = lv_ext_editors_->GetItemText(e.GetIndex()).ToStdString();
-	auto category = choice_category_->GetStringSelection().ToStdString();
+	auto name     = lv_ext_editors_->GetItemText(e.GetIndex()).utf8_string();
+	auto category = choice_category_->GetStringSelection().utf8_string();
 	auto exe      = executables::externalExe(name, category);
 
 	ExternalEditorDialog dlg(this, false, name, exe.path);
 	while (dlg.ShowModal() == wxID_OK)
 	{
 		if (dlg.getName().empty())
-			wxMessageBox("Please enter a name for the editor", "Name Required");
+			wxMessageBox(wxS("Please enter a name for the editor"), wxS("Name Required"));
 		else if (dlg.getPath().empty())
-			wxMessageBox("Please enter or select an executable", "Path Required");
+			wxMessageBox(wxS("Please enter or select an executable"), wxS("Path Required"));
 		else
 		{
 			// Update executable
-			executables::setExternalExeName(name, dlg.getName().ToStdString(), category);
-			executables::setExternalExePath(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
+			executables::setExternalExeName(name, dlg.getName(), category);
+			executables::setExternalExePath(dlg.getName(), dlg.getPath(), category);
 
 			// Refresh list
 			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);

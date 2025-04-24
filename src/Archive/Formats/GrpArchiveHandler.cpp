@@ -238,7 +238,7 @@ bool GrpArchiveHandler::isThisFormat(const MemChunk& mc)
 bool GrpArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

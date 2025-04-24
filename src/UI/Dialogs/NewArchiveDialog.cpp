@@ -60,7 +60,7 @@ CVAR(String, archive_last_created_format, "wad", CVar::Save)
 // -----------------------------------------------------------------------------
 // NewArchiveDialog class constructor
 // -----------------------------------------------------------------------------
-NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Create New Archive")
+NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, wxS("Create New Archive"))
 {
 	auto lh = LayoutHelper(this);
 
@@ -69,8 +69,8 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 
 	// Create controls
 	auto* choice_type = new wxChoice(this, -1);
-	auto* btn_create  = new wxButton(this, wxID_OK, "Create");
-	auto* btn_cancel  = new wxButton(this, wxID_CANCEL, "Cancel");
+	auto* btn_create  = new wxButton(this, wxID_OK, wxS("Create"));
+	auto* btn_cancel  = new wxButton(this, wxID_CANCEL, wxS("Cancel"));
 
 	// Fill formats list
 	long selected_index = 0;
@@ -80,7 +80,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 			if (format.id == archive_last_created_format.value)
 				selected_index = choice_type->GetCount();
 
-			choice_type->AppendString(format.name + " Archive");
+			choice_type->AppendString(wxString::FromUTF8(format.name + " Archive"));
 		}
 
 	// Setup controls
@@ -100,7 +100,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 		[this, choice_type](wxCommandEvent&)
 		{
 			for (const auto& format : archive::allFormatsInfo())
-				if (choice_type->GetString(choice_type->GetSelection()) == (format.name + " Archive"))
+				if (choice_type->GetString(choice_type->GetSelection()) == wxString::FromUTF8(format.name + " Archive"))
 				{
 					archive_created_            = app::archiveManager().newArchive(format.id).get();
 					archive_last_created_format = format.id;

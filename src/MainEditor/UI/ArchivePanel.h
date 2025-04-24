@@ -93,7 +93,7 @@ public:
 	void    focusEntryList() const;
 	void    refreshPanel();
 	void    closeCurrentEntry();
-	wxMenu* createEntryOpenMenu(const wxString& category);
+	wxMenu* createEntryOpenMenu(const string& category);
 	bool    switchToDefaultEntryPanel();
 
 	// SAction handler

@@ -34,6 +34,7 @@
 #include "App.h"
 #include "UI/Layout.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 
 using namespace slade;
 
@@ -68,20 +69,20 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 	sizer->AddStretchSpacer();
 
 	rb_use_system_ = new wxRadioButton(
-		this, -1, "Use system temp folder (Recommended)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+		this, -1, wxS("Use system temp folder (Recommended)"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	sizer->Add(rb_use_system_, lh.sfWithXLargeBorder(0, wxBOTTOM).Expand());
 
-	rb_use_slade_dir_ = new wxRadioButton(this, -1, "Use SLADE installation folder");
+	rb_use_slade_dir_ = new wxRadioButton(this, -1, wxS("Use SLADE installation folder"));
 	sizer->Add(rb_use_slade_dir_, lh.sfWithXLargeBorder(0, wxBOTTOM).Expand());
 
-	rb_use_custom_dir_ = new wxRadioButton(this, -1, "Use custom folder:");
+	rb_use_custom_dir_ = new wxRadioButton(this, -1, wxS("Use custom folder:"));
 	sizer->Add(rb_use_custom_dir_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, wxSizerFlags().Expand());
-	text_custom_dir_ = new wxTextCtrl(this, -1, "");
+	text_custom_dir_ = new wxTextCtrl(this, -1, wxEmptyString);
 	hbox->Add(text_custom_dir_, lh.sfWithBorder(1, wxRIGHT).CenterVertical());
-	btn_browse_dir_ = new wxButton(this, -1, "Browse...");
+	btn_browse_dir_ = new wxButton(this, -1, wxS("Browse..."));
 	hbox->Add(btn_browse_dir_, wxSizerFlags().Expand());
 	text_custom_dir_->Enable(false);
 	btn_browse_dir_->Enable(false);
@@ -100,30 +101,38 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 bool TempFolderWizardPage::canGoNext()
 {
 #ifdef WIN32
-	wxString sep = "\\";
+	string sep = "\\";
 #else
-	wxString sep = "/";
+	string sep = "/";
 #endif
 
-	wxString testfilename;
+	string testfilename;
 	if (rb_use_system_->GetValue())
-		testfilename = wxStandardPaths::Get().GetTempDir().Append(sep).Append("SLADE3").Append(sep).Append("test.txt");
+		testfilename = wxStandardPaths::Get()
+						   .GetTempDir()
+						   .Append(wxString::FromUTF8(sep))
+						   .Append(wxS("SLADE3"))
+						   .Append(wxString::FromUTF8(sep))
+						   .Append(wxS("test.txt"))
+						   .utf8_string();
 	else if (rb_use_slade_dir_->GetValue())
 		testfilename = app::path("test.txt", app::Dir::Executable);
 	else
-		testfilename = text_custom_dir_->GetValue() + sep + "test.txt";
+		testfilename = text_custom_dir_->GetValue().utf8_string() + sep + "test.txt";
 
-	wxFile test;
-	if (test.Open(testfilename, wxFile::write))
+	SFile test;
+	if (test.open(testfilename, SFile::Mode::Write))
 	{
-		test.Close();
+		test.close();
 
-		if (wxRemoveFile(testfilename))
+		if (fileutil::removeFile(testfilename))
 			return true;
 	}
 
 	wxMessageBox(
-		"The selected folder cannot be written to. Please select a different folder to use.", "", wxICON_ERROR);
+		wxS("The selected folder cannot be written to. Please select a different folder to use."),
+		wxEmptyString,
+		wxICON_ERROR);
 
 	return false;
 }
@@ -140,14 +149,14 @@ void TempFolderWizardPage::applyChanges()
 	else
 	{
 		temp_location        = 2;
-		temp_location_custom = wxutil::strToView(text_custom_dir_->GetValue());
+		temp_location_custom = text_custom_dir_->GetValue().utf8_string();
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Returns the description for the wizard page
 // -----------------------------------------------------------------------------
-wxString TempFolderWizardPage::description()
+string TempFolderWizardPage::description()
 {
 	return "Select the temp folder for SLADE to use during various operations. "
 		   "Usually the system temp folder will be fine to use, however sometimes "
@@ -186,7 +195,7 @@ void TempFolderWizardPage::onRadioButtonChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void TempFolderWizardPage::onBtnBrowse(wxCommandEvent& e)
 {
-	wxDirDialog dlg(this, "Select a folder to write temp files to");
+	wxDirDialog dlg(this, wxS("Select a folder to write temp files to"));
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		// Check directory is empty
@@ -197,10 +206,10 @@ void TempFolderWizardPage::onBtnBrowse(wxCommandEvent& e)
 			if (dir.HasFiles() || dir.HasSubDirs())
 			{
 				if (wxMessageBox(
-						"The selected folder is not empty.\r\n\r\n"
-						"All files in this folder will be DELETED when SLADE exits.\r\n"
-						"Please make sure there are no important files in the folder.",
-						"Warning",
+						wxS("The selected folder is not empty.\r\n\r\n"
+							"All files in this folder will be DELETED when SLADE exits.\r\n"
+							"Please make sure there are no important files in the folder."),
+						wxS("Warning"),
 						wxOK | wxCANCEL | wxICON_WARNING)
 					!= wxID_OK)
 					return;

@@ -56,14 +56,14 @@ public:
 	Palette* palette() const { return palette_.get(); }
 	void     setPalette(const Palette* pal) const;
 
-	bool         addItem(BrowserItem* item, const wxString& where = "");
+	bool         addItem(BrowserItem* item, const string& where = "");
 	void         addGlobalItem(BrowserItem* item);
 	void         clearItems(BrowserTreeNode* node = nullptr) const;
 	void         reloadItems(const BrowserTreeNode* node = nullptr) const;
 	BrowserItem* selectedItem() const;
-	bool         selectItem(const wxString& name, const BrowserTreeNode* node = nullptr);
+	bool         selectItem(string_view name, const BrowserTreeNode* node = nullptr);
 
-	unsigned     addSortType(const wxString& name) const;
+	unsigned     addSortType(const string& name) const;
 	virtual void doSort(unsigned sort_type = 0);
 	void         setSortType(int type);
 

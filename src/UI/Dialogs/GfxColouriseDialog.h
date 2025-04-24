@@ -11,7 +11,7 @@ public:
 	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, const Palette& pal);
 
 	ColRGBA colour() const;
-	void    setColour(const wxString& col) const;
+	void    setColour(const string& col) const;
 
 private:
 	GfxCanvasBase*      gfx_preview_ = nullptr;

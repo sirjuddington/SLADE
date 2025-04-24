@@ -252,7 +252,7 @@ bool PodArchiveHandler::isThisFormat(const MemChunk& mc)
 bool PodArchiveHandler::isThisFormat(const string& filename)
 {
 	wxFile file;
-	if (!file.Open(filename))
+	if (!file.Open(wxString::FromUTF8(filename)))
 		return false;
 
 	file.SeekEnd(0);

@@ -61,6 +61,7 @@
 #include "UI/SBrush.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include <dumb.h>
@@ -132,7 +133,7 @@ public:
 	{
 		switch (index)
 		{
-		case wxSYS_COLOUR_HIGHLIGHT: return { "#374F80" };
+		case wxSYS_COLOUR_HIGHLIGHT: return { wxS("#374F80") };
 		default:                     return wxDarkModeSettings::GetColour(index);
 		}
 	}
@@ -214,10 +215,10 @@ bool initDirectories()
 #endif // defined(__UNIX__) && defined(INSTALL_PREFIX)
 
 	// Setup app dir
-	dir_app = strutil::Path::pathOf(wxStandardPaths::Get().GetExecutablePath().ToStdString(), false);
+	dir_app = strutil::Path::pathOf(wxStandardPaths::Get().GetExecutablePath().utf8_string(), false);
 
 	// Check for portable install
-	if (wxFileExists(path("portable", Dir::Executable)))
+	if (fileutil::fileExists(path("portable", Dir::Executable)))
 	{
 		// Setup portable user/data dirs
 		dir_data = dir_app;
@@ -227,38 +228,38 @@ bool initDirectories()
 	else
 	{
 		// Setup standard user/data dirs
-		dir_user = wxStandardPaths::Get().GetUserDataDir();
-		dir_data = wxStandardPaths::Get().GetDataDir();
-		dir_res  = wxStandardPaths::Get().GetResourcesDir();
+		dir_user = wxStandardPaths::Get().GetUserDataDir().utf8_string();
+		dir_data = wxStandardPaths::Get().GetDataDir().utf8_string();
+		dir_res  = wxStandardPaths::Get().GetResourcesDir().utf8_string();
 	}
 
 	// Create user dir if necessary
-	if (!wxDirExists(dir_user))
+	if (!fileutil::dirExists(dir_user))
 	{
-		if (!wxMkdir(dir_user))
+		if (!fileutil::createDir(dir_user))
 		{
-			wxMessageBox(wxString::Format("Unable to create user directory \"%s\"", dir_user), "Error", wxICON_ERROR);
+			wxMessageBox(WX_FMT("Unable to create user directory \"{}\"", dir_user), wxS("Error"), wxICON_ERROR);
 			return false;
 		}
 	}
 
 	// Create temp dir if necessary
 	dir_temp = dir_user + dir_separator + "temp";
-	if (!wxDirExists(dir_temp))
+	if (!fileutil::dirExists(dir_temp))
 	{
-		if (!wxMkdir(dir_temp))
+		if (!fileutil::createDir(dir_temp))
 		{
-			wxMessageBox(wxString::Format("Unable to create temp directory \"%s\"", dir_temp), "Error", wxICON_ERROR);
+			wxMessageBox(WX_FMT("Unable to create temp directory \"{}\"", dir_temp), wxS("Error"), wxICON_ERROR);
 			return false;
 		}
 	}
 
 	// Check data dir
-	if (!wxDirExists(dir_data))
+	if (!fileutil::dirExists(dir_data))
 		dir_data = dir_app; // Use app dir if data dir doesn't exist
 
 	// Check res dir
-	if (!wxDirExists(dir_res))
+	if (!fileutil::dirExists(dir_res))
 		dir_res = dir_app; // Use app dir if res dir doesn't exist
 
 	return true;
@@ -287,7 +288,7 @@ void readConfigFile()
 				{
 					// String CVar values are written in UTF8
 					auto val = wxString::FromUTF8(tz.peek().text.c_str());
-					CVar::set(tz.current().text, val.ToStdString());
+					CVar::set(tz.current().text, val.utf8_string());
 				}
 				else
 					CVar::set(tz.current().text, tz.peek().text);
@@ -303,8 +304,7 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				auto path = wxString::FromUTF8(tz.current().text.c_str());
-				archive_manager.addBaseResourcePath(wxutil::strToView(path));
+				archive_manager.addBaseResourcePath(tz.current().text);
 				tz.adv();
 			}
 
@@ -316,8 +316,7 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				auto path = wxString::FromUTF8(tz.current().text.c_str());
-				archive_manager.addRecentFile(wxutil::strToView(path));
+				archive_manager.addRecentFile(tz.current().text);
 				tz.adv();
 			}
 
@@ -333,8 +332,7 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				auto path = wxString::FromUTF8(tz.peek().text.c_str());
-				nodebuilders::addBuilderPath(tz.current().text, wxutil::strToView(path));
+				nodebuilders::addBuilderPath(tz.current().text, tz.peek().text);
 				tz.adv(2);
 			}
 
@@ -346,8 +344,7 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				auto path = wxString::FromUTF8(tz.peek().text.c_str());
-				executables::setGameExePath(tz.current().text, wxutil::strToView(path));
+				executables::setGameExePath(tz.current().text, tz.peek().text);
 				tz.adv(2);
 			}
 
@@ -500,9 +497,9 @@ bool app::init(const vector<string>& args)
 	if (!archive_manager.resArchiveOK())
 	{
 		wxMessageBox(
-			"Unable to find slade.pk3, make sure it exists in the same directory as the "
-			"SLADE executable",
-			"Error",
+			wxS("Unable to find slade.pk3, make sure it exists in the same directory as the "
+				"SLADE executable"),
+			wxS("Error"),
 			wxICON_ERROR);
 		return false;
 	}
@@ -634,63 +631,67 @@ bool app::init(const vector<string>& args)
 // -----------------------------------------------------------------------------
 void app::saveConfigFile()
 {
+	// ReSharper disable CppExpressionWithoutSideEffects
+
 	// Open SLADE.cfg for writing text
-	wxFile file(app::path("slade3.cfg", app::Dir::User), wxFile::write);
+	SFile file(app::path("slade3.cfg", app::Dir::User), SFile::Mode::Write);
 
 	// Do nothing if it didn't open correctly
-	if (!file.IsOpened())
+	if (!file.isOpen())
 		return;
 
 	// Write cfg header
-	file.Write("/*****************************************************\n");
-	file.Write(" * SLADE Configuration File\n");
-	file.Write(" * Don't edit this unless you know what you're doing\n");
-	file.Write(" *****************************************************/\n\n");
+	file.writeStr("/*****************************************************\n");
+	file.writeStr(" * SLADE Configuration File\n");
+	file.writeStr(" * Don't edit this unless you know what you're doing\n");
+	file.writeStr(" *****************************************************/\n\n");
 
 	// Write cvars
-	file.Write(CVar::writeAll(), wxConvUTF8);
+	file.writeStr(CVar::writeAll());
 
 	// Write base resource archive paths
-	file.Write("\nbase_resource_paths\n{\n");
+	file.writeStr("\nbase_resource_paths\n{\n");
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
 		auto path = archive_manager.getBaseResourcePath(a);
 		std::replace(path.begin(), path.end(), '\\', '/');
-		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
+		file.writeStr(fmt::format("\t\"{}\"\n", path));
 	}
-	file.Write("}\n");
+	file.writeStr("}\n");
 
 	// Write recent files list (in reverse to keep proper order when reading back)
-	file.Write("\nrecent_files\n{\n");
+	file.writeStr("\nrecent_files\n{\n");
 	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
 	{
 		auto path = archive_manager.recentFile(a);
 		std::replace(path.begin(), path.end(), '\\', '/');
-		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
+		file.writeStr(fmt::format("\t\"{}\"\n", path));
 	}
-	file.Write("}\n");
+	file.writeStr("}\n");
 
 	// Write keybinds
-	file.Write("\nkeys\n{\n");
-	file.Write(KeyBind::writeBinds());
-	file.Write("}\n");
+	file.writeStr("\nkeys\n{\n");
+	file.writeStr(KeyBind::writeBinds());
+	file.writeStr("}\n");
 
 	// Write nodebuilder paths
-	file.Write("\n");
+	file.writeStr("\n");
 	nodebuilders::saveBuilderPaths(file);
 
 	// Write game exe paths
-	file.Write("\nexecutable_paths\n{\n");
-	file.Write(executables::writePaths());
-	file.Write("}\n");
+	file.writeStr("\nexecutable_paths\n{\n");
+	file.writeStr(executables::writePaths());
+	file.writeStr("}\n");
 
 	// Write window info
-	file.Write("\nwindow_info\n{\n");
+	file.writeStr("\nwindow_info\n{\n");
 	misc::writeWindowInfo(file);
-	file.Write("}\n");
+	file.writeStr("}\n");
 
 	// Close configuration file
-	file.Write("\n// End Configuration File\n\n");
+	file.writeStr("\n// End Configuration File\n\n");
+
+	// ReSharper enable CppExpressionWithoutSideEffects
 }
 
 // -----------------------------------------------------------------------------
@@ -715,10 +716,10 @@ void app::exit(bool save_config)
 		ccfg.exportFile(app::path("colours.cfg", app::Dir::User));
 
 		// Save game exes
-		wxFile f;
-		f.Open(app::path("executables.cfg", app::Dir::User), wxFile::write);
-		f.Write(executables::writeExecutables());
-		f.Close();
+		SFile f;
+		if (f.open(app::path("executables.cfg", app::Dir::User), SFile::Mode::Write))
+			f.writeStr(executables::writeExecutables());
+		f.close();
 
 		// Save custom special presets
 		game::saveCustomSpecialPresets();

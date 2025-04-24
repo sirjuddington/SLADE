@@ -111,14 +111,14 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	vbox->Add(text_editor_, lh.sfWithBorder(1).Expand());
 
 	// Set language
-	wxString lang = game::configuration().scriptLanguage();
-	if (S_CMPNOCASE(lang, "acs_hexen"))
+	auto lang = game::configuration().scriptLanguage();
+	if (strutil::equalCI(lang, "acs_hexen"))
 	{
 		text_editor_->setLanguage(TextLanguage::fromId("acs"));
 		entry_script_->setName("SCRIPTS");
 		entry_compiled_->setName("BEHAVIOR");
 	}
-	else if (S_CMPNOCASE(lang, "acs_zdoom"))
+	else if (strutil::equalCI(lang, "acs_zdoom"))
 	{
 		text_editor_->setLanguage(TextLanguage::fromId("acs_z"));
 		entry_script_->setName("SCRIPTS");
@@ -161,7 +161,7 @@ bool ScriptEditorPanel::openScripts(const ArchiveEntry* script, const ArchiveEnt
 		entry_compiled_->importEntry(compiled);
 
 	// Process ACS open scripts
-	wxString lang = game::configuration().scriptLanguage();
+	auto lang = game::configuration().scriptLanguage();
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto& map = mapeditor::editContext().map();
@@ -189,7 +189,7 @@ void ScriptEditorPanel::populateWordList() const
 	// Clear/refresh list
 	list_words_->DeleteAllItems();
 	list_words_->ClearColumns();
-	list_words_->AppendColumn("Language");
+	list_words_->AppendColumn(wxS("Language"));
 
 	// Get functions and constants
 	auto tl        = TextLanguage::fromId("acs_z");
@@ -197,14 +197,14 @@ void ScriptEditorPanel::populateWordList() const
 	auto constants = tl->wordListSorted(TextLanguage::WordType::Constant);
 
 	// Add functions to list
-	auto item = list_words_->AppendItem(list_words_->GetRootItem(), "Functions");
+	auto item = list_words_->AppendItem(list_words_->GetRootItem(), wxS("Functions"));
 	for (unsigned a = 0; a < functions.size() - 1; a++)
-		list_words_->AppendItem(item, functions[a]);
+		list_words_->AppendItem(item, wxString::FromUTF8(functions[a]));
 
 	// Add constants to list
-	item = list_words_->AppendItem(list_words_->GetRootItem(), "Constants");
+	item = list_words_->AppendItem(list_words_->GetRootItem(), wxS("Constants"));
 	for (unsigned a = 0; a < constants.size() - 1; a++)
-		list_words_->AppendItem(item, constants[a]);
+		list_words_->AppendItem(item, wxString::FromUTF8(constants[a]));
 }
 
 // -----------------------------------------------------------------------------
@@ -217,11 +217,11 @@ void ScriptEditorPanel::saveScripts() const
 		text_editor_->trimWhitespace();
 
 	// Write text to entry
-	wxCharBuffer buf = text_editor_->GetText().mb_str();
+	auto buf = text_editor_->GetText().ToUTF8();
 	entry_script_->importMem(buf, buf.length());
 
 	// Process ACS open scripts
-	wxString lang = game::configuration().scriptLanguage();
+	auto lang = game::configuration().scriptLanguage();
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto map = &(mapeditor::editContext().map());
@@ -251,7 +251,7 @@ bool ScriptEditorPanel::handleAction(string_view name)
 		saveScripts();
 
 		// Compile depending on language
-		wxString lang = game::configuration().scriptLanguage();
+		auto lang = game::configuration().scriptLanguage();
 		if (lang == "acs_hexen")
 			entryoperations::compileACS(
 				entry_script_.get(), true, entry_compiled_.get(), dynamic_cast<wxFrame*>(mapeditor::windowWx()));
@@ -293,7 +293,7 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 {
 	// Get word
 	auto item = list_words_->GetSelection();
-	auto word = list_words_->GetItemText(item).ToStdString();
+	auto word = list_words_->GetItemText(item).utf8_string();
 
 	// Get language
 	auto language = text_editor_->language();
@@ -304,7 +304,7 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 	if (text_editor_->GetSelectionStart() < text_editor_->GetSelectionEnd())
 	{
 		// Replace selection with word
-		text_editor_->ReplaceSelection(word);
+		text_editor_->ReplaceSelection(wxString::FromUTF8(word));
 		text_editor_->SetFocus();
 		return;
 	}
@@ -315,7 +315,7 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 	{
 		// Add function + ()
 		word += "()";
-		text_editor_->InsertText(pos, word);
+		text_editor_->InsertText(pos, wxString::FromUTF8(word));
 
 		// Move caret inside braces and show calltip
 		pos += word.length() - 1;
@@ -328,7 +328,7 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 	else
 	{
 		// Not a function, just add it & move caret position
-		text_editor_->InsertText(pos, word);
+		text_editor_->InsertText(pos, wxString::FromUTF8(word));
 		pos += word.length();
 		text_editor_->SetCurrentPos(pos);
 		text_editor_->SetSelection(pos, pos);

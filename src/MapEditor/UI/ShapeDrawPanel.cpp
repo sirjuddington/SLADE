@@ -68,18 +68,18 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 	SetSizer(sizer);
 
 	// Shape
-	wxString shapes[] = { "Rectangle", "Ellipse" };
-	choice_shape_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 2, shapes);
-	sizer_main_       = new wxBoxSizer(wxHORIZONTAL);
+	vector<string> shapes = { "Rectangle", "Ellipse" };
+	choice_shape_         = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(shapes));
+	sizer_main_           = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(sizer_main_, lh.sfWithBorder().Expand());
 	sizer_main_->Add(wxutil::createLabelHBox(this, "Shape:", choice_shape_), lh.sfWithLargeBorder(0, wxRIGHT).Expand());
 
 	// Centered
-	cb_centered_ = new wxCheckBox(this, -1, "Centered");
+	cb_centered_ = new wxCheckBox(this, -1, wxS("Centered"));
 	sizer_main_->Add(cb_centered_, lh.sfWithLargeBorder(0, wxRIGHT).Expand());
 
 	// Lock ratio (1:1)
-	cb_lockratio_ = new wxCheckBox(this, -1, "1:1 Size");
+	cb_lockratio_ = new wxCheckBox(this, -1, wxS("1:1 Size"));
 	sizer_main_->Add(cb_lockratio_, lh.sfWithLargeBorder(0, wxRIGHT).Expand());
 
 	// Sides

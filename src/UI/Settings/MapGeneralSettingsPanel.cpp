@@ -78,9 +78,9 @@ MapGeneralSettingsPanel::MapGeneralSettingsPanel(wxWindow* parent) : SettingsPan
 	map3d_panel_        = new Map3DSettingsPanel(this);
 
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createGeneralPanel(tabs), "General");
-	tabs->AddPage(wxutil::createPadPanel(tabs, map3d_panel_, padLarge()), "3D Mode");
-	tabs->AddPage(wxutil::createPadPanel(tabs, nodebuilders_panel_, padLarge()), "Node Builders");
+	tabs->AddPage(createGeneralPanel(tabs), wxS("General"));
+	tabs->AddPage(wxutil::createPadPanel(tabs, map3d_panel_, padLarge()), wxS("3D Mode"));
+	tabs->AddPage(wxutil::createPadPanel(tabs, nodebuilders_panel_, padLarge()), wxS("Node Builders"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 
@@ -135,15 +135,15 @@ wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 	panel->SetSizer(sz_border);
 
 	// Create controls
-	cb_save_archive_with_map_ = new wxCheckBox(panel, -1, "When saving a map, also save its parent archive");
-	cb_selection_clear_click_ = new wxCheckBox(panel, -1, "Clear selection when nothing is clicked");
-	cb_selection_clear_move_  = new wxCheckBox(panel, -1, "Clear selection after moving (dragging) map elements");
-	cb_property_edit_dclick_  = new wxCheckBox(panel, -1, "Double-click to edit properties");
-	cb_merge_undo_step_       = new wxCheckBox(panel, -1, "Create a 'Merge' undo level on move/edit map architecture");
-	cb_props_auto_apply_      = new wxCheckBox(panel, -1, "Automatically apply property panel changes");
-	cb_remove_invalid_lines_  = new wxCheckBox(panel, -1, "Remove any resulting invalid lines on sector delete");
-	cb_merge_lines_vertex_delete_ = new wxCheckBox(panel, -1, "Merge lines when deleting a vertex");
-	cb_split_auto_offset_         = new wxCheckBox(panel, -1, "Automatically offset split lines");
+	cb_save_archive_with_map_ = new wxCheckBox(panel, -1, wxS("When saving a map, also save its parent archive"));
+	cb_selection_clear_click_ = new wxCheckBox(panel, -1, wxS("Clear selection when nothing is clicked"));
+	cb_selection_clear_move_  = new wxCheckBox(panel, -1, wxS("Clear selection after moving (dragging) map elements"));
+	cb_property_edit_dclick_  = new wxCheckBox(panel, -1, wxS("Double-click to edit properties"));
+	cb_merge_undo_step_  = new wxCheckBox(panel, -1, wxS("Create a 'Merge' undo level on move/edit map architecture"));
+	cb_props_auto_apply_ = new wxCheckBox(panel, -1, wxS("Automatically apply property panel changes"));
+	cb_remove_invalid_lines_ = new wxCheckBox(panel, -1, wxS("Remove any resulting invalid lines on sector delete"));
+	cb_merge_lines_vertex_delete_ = new wxCheckBox(panel, -1, wxS("Merge lines when deleting a vertex"));
+	cb_split_auto_offset_         = new wxCheckBox(panel, -1, wxS("Automatically offset split lines"));
 	text_max_backups_             = new NumberTextCtrl(panel);
 
 	// Layout

@@ -39,6 +39,7 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
 #include "Utility/PropertyList.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -328,7 +329,7 @@ string misc::lumpNameToFileName(string_view lump)
 			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9') && chr != '-'
 				&& chr != '.' && chr != '_' && chr != '~')
 			{
-				file += wxString::Format("%%%02X", chr);
+				file += fmt::format("%{:02X}", static_cast<unsigned char>(chr));
 			}
 			else
 				file += fmt::format("{}", chr);
@@ -616,8 +617,8 @@ void misc::readWindowInfo(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 // Writes all saved window info to [file]
 // -----------------------------------------------------------------------------
-void misc::writeWindowInfo(wxFile& file)
+void misc::writeWindowInfo(SFile& file)
 {
 	for (auto& a : window_info)
-		file.Write(wxString::Format("\t%s %d %d %d %d\n", a.id, a.width, a.height, a.left, a.top));
+		file.writeStr(fmt::format("\t{} {} {} {} {}\n", a.id, a.width, a.height, a.left, a.top));
 }

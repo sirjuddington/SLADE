@@ -7,24 +7,24 @@ class SAction;
 class SToolBarButton : public wxControl
 {
 public:
-	SToolBarButton(wxWindow* parent, const wxString& action, const wxString& icon = "", bool show_name = false);
+	SToolBarButton(wxWindow* parent, const string& action, const string& icon = "", bool show_name = false);
 	SToolBarButton(
-		wxWindow*       parent,
-		const wxString& action_id,
-		const wxString& action_name,
-		const wxString& icon,
-		const wxString& help_text,
-		bool            show_name = false,
-		int             icon_size = -1);
+		wxWindow*     parent,
+		const string& action_id,
+		const string& action_name,
+		const string& icon,
+		const string& help_text,
+		bool          show_name = false,
+		int           icon_size = -1);
 	~SToolBarButton() override = default;
 
-	SAction*        action() const { return action_; }
-	const wxString& actionId() const { return action_id_; }
-	const wxString& actionName() const { return action_name_; }
-	bool            isChecked() const;
-	wxMenu*         menu() const { return menu_dropdown_; }
+	SAction*      action() const { return action_; }
+	const string& actionId() const { return action_id_; }
+	const string& actionName() const { return action_name_; }
+	bool          isChecked() const;
+	wxMenu*       menu() const { return menu_dropdown_; }
 
-	void setIcon(const wxString& icon);
+	void setIcon(const string& icon);
 	void setChecked(bool checked);
 	void setMenu(wxMenu* menu, bool delete_existing = false);
 	void setFontSize(float scale);
@@ -46,10 +46,10 @@ protected:
 	bool           fill_checked_        = false;
 
 	// For non-SAction buttons
-	wxString action_id_;
-	wxString action_name_;
-	wxString help_text_;
-	bool     checked_ = false;
+	string action_id_;
+	string action_name_;
+	string help_text_;
+	bool   checked_ = false;
 
 	// Layout
 	int  pad_outer_   = 3;

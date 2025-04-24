@@ -328,7 +328,7 @@ bool ResArchiveHandler::isResArchive(const MemChunk& mc, size_t& dir_offset, siz
 bool ResArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

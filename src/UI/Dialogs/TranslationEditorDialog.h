@@ -34,9 +34,9 @@ class TranslationEditorDialog : public wxDialog
 {
 public:
 	TranslationEditorDialog(
-		wxWindow*       parent,
-		const Palette&  pal,
-		const wxString& title         = "Edit Translation",
+		wxWindow*      parent,
+		const Palette& pal,
+		const string&  title         = "Edit Translation",
 		const SImage*   preview_image = nullptr);
 	~TranslationEditorDialog() override;
 

@@ -425,7 +425,7 @@ bool MapPreviewData::openMap(MapDesc map)
 					{
 						if (!tz.checkNext("="))
 						{
-							log::error(wxString::Format("Bad syntax for vertex %i in UDMF map data", vertcounter));
+							log::error("Bad syntax for vertex {} in UDMF map data", vertcounter);
 							return false;
 						}
 
@@ -451,7 +451,7 @@ bool MapPreviewData::openMap(MapDesc map)
 					addVertex(*this, x, y);
 				else
 				{
-					log::error(wxString::Format("Wrong vertex %i in UDMF map data", vertcounter));
+					log::error("Wrong vertex {} in UDMF map data", vertcounter);
 					return false;
 				}
 
@@ -475,7 +475,7 @@ bool MapPreviewData::openMap(MapDesc map)
 					{
 						if (!tz.checkNext("="))
 						{
-							log::error(wxString::Format("Bad syntax for thing %i in UDMF map data", thingcounter));
+							log::error("Bad syntax for thing {} in UDMF map data", thingcounter);
 							return false;
 						}
 
@@ -501,7 +501,7 @@ bool MapPreviewData::openMap(MapDesc map)
 					addThing(*this, x, y);
 				else
 				{
-					log::error(wxString::Format("Wrong thing %i in UDMF map data", thingcounter));
+					log::error("Wrong thing {} in UDMF map data", thingcounter);
 					return false;
 				}
 
@@ -524,7 +524,7 @@ bool MapPreviewData::openMap(MapDesc map)
 					{
 						if (!tz.checkNext("="))
 						{
-							log::error(wxString::Format("Bad syntax for linedef %i in UDMF map data", linecounter));
+							log::error("Bad syntax for linedef {} in UDMF map data", linecounter);
 							return false;
 						}
 
@@ -554,7 +554,7 @@ bool MapPreviewData::openMap(MapDesc map)
 					lines.emplace_back(v1, v2, twosided, special);
 				else
 				{
-					log::error(wxString::Format("Wrong line %i in UDMF map data", linecounter));
+					log::error("Wrong line {} in UDMF map data", linecounter);
 					return false;
 				}
 
@@ -759,5 +759,5 @@ bool slade::createMapImage(const MapPreviewData& data, const string& filename, i
 	}
 
 	gc->Flush();
-	return image.SaveFile(filename, wxBITMAP_TYPE_PNG);
+	return image.SaveFile(wxString::FromUTF8(filename), wxBITMAP_TYPE_PNG);
 }

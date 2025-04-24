@@ -11,9 +11,9 @@ public:
 	void     setGlobalFromArchive(Archive* archive, int lump = 0);
 	Palette* selectedPalette(const ArchiveEntry* entry = nullptr) const;
 	bool     globalSelected() const;
-	void     selectPalette(const wxString& name);
+	void     selectPalette(const string& name);
 	void     onPaletteChanged(wxCommandEvent& e);
-	void     addPalette(const wxString& name);
+	void     addPalette(const string& name);
 
 	// Signals
 	struct Signals

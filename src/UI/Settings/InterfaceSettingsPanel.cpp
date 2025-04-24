@@ -78,8 +78,8 @@ InterfaceSettingsPanel::InterfaceSettingsPanel(wxWindow* parent) : SettingsPanel
 	colour_panel_ = new ColourSettingsPanel(this);
 
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createInterfacePanel(tabs), "Interface");
-	tabs->AddPage(wxutil::createPadPanel(tabs, colour_panel_, padLarge()), "Colours && Theme");
+	tabs->AddPage(createInterfacePanel(tabs), wxS("Interface"));
+	tabs->AddPage(wxutil::createPadPanel(tabs, colour_panel_, padLarge()), wxS("Colours && Theme"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 
@@ -140,7 +140,7 @@ void InterfaceSettingsPanel::applySettings()
 	tabs_condensed      = cb_condensed_tabs_->GetValue();
 
 	// Toolbar icons
-	iconset_general = wxutil::strToView(choice_toolbar_iconset_->GetString(choice_toolbar_iconset_->GetSelection()));
+	iconset_general = choice_toolbar_iconset_->GetString(choice_toolbar_iconset_->GetSelection()).utf8_string();
 	if (choice_toolbar_size_->GetSelection() == 0)
 		toolbar_size = 16;
 	else if (choice_toolbar_size_->GetSelection() == 1)
@@ -149,7 +149,7 @@ void InterfaceSettingsPanel::applySettings()
 		toolbar_size = 32;
 
 	// Entry List
-	iconset_entry_list = wxutil::strToView(choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()));
+	iconset_entry_list = choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()).utf8_string();
 	elist_icon_padding = spin_elist_icon_pad_->GetValue();
 	if (choice_elist_icon_size_->GetSelection() == 0)
 		elist_icon_size = 16;
@@ -174,25 +174,26 @@ wxPanel* InterfaceSettingsPanel::createInterfacePanel(wxWindow* parent)
 	// Create controls
 
 	// Appearance
-	vector<wxString> darkmodes = { "Off", "Use System Setting", "On" };
-	rbp_windows_darkmode_      = new RadioButtonPanel(panel, darkmodes, "Use dark UI theme if supported:");
-	cb_monospace_list_         = new wxCheckBox(panel, -1, "Use monospace font in lists");
-	cb_condensed_tabs_         = new wxCheckBox(panel, -1, "Condensed tabs");
-	wxString sizes[]           = { "16x16", "24x24", "32x32" };
-	choice_toolbar_size_       = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
-	auto sets_toolbar          = wxutil::arrayStringStd(icons::iconSets(icons::General));
-	choice_toolbar_iconset_    = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets_toolbar);
+	vector<string> darkmodes = { "Off", "Use System Setting", "On" };
+	rbp_windows_darkmode_    = new RadioButtonPanel(panel, darkmodes, "Use dark UI theme if supported:");
+	cb_monospace_list_       = new wxCheckBox(panel, -1, wxS("Use monospace font in lists"));
+	cb_condensed_tabs_       = new wxCheckBox(panel, -1, wxS("Condensed tabs"));
+	vector<string> sizes     = { "16x16", "24x24", "32x32" };
+	choice_toolbar_size_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(sizes));
+	auto sets_toolbar        = wxutil::arrayStringStd(icons::iconSets(icons::General));
+	choice_toolbar_iconset_  = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets_toolbar);
 
 	// Entry List
-	cb_elist_bgcol_         = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
-	auto sets_entry         = wxutil::arrayStringStd(icons::iconSets(icons::Entry));
-	choice_iconset_entry_   = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets_entry);
-	wxString icon_sizes[]   = { "16x16", "24x24", "32x32" };
-	choice_elist_icon_size_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, icon_sizes);
-	spin_elist_icon_pad_    = new wxSpinCtrl(
-        panel, -1, "1", wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 1);
-	vector<wxString> tree_styles = { "Tree", "Flat List" };
-	rbp_elist_tree_style_        = new RadioButtonPanel(
+	cb_elist_bgcol_           = new wxCheckBox(panel, -1, wxS("Colour entry list item background by entry type"));
+	auto sets_entry           = wxutil::arrayStringStd(icons::iconSets(icons::Entry));
+	choice_iconset_entry_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets_entry);
+	vector<string> icon_sizes = { "16x16", "24x24", "32x32" };
+	choice_elist_icon_size_   = new wxChoice(
+        panel, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(icon_sizes));
+	spin_elist_icon_pad_ = new wxSpinCtrl(
+		panel, -1, wxS("1"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 1);
+	vector<string> tree_styles = { "Tree", "Flat List" };
+	rbp_elist_tree_style_      = new RadioButtonPanel(
         panel, tree_styles, "Entry list layout for archives that allow folders:");
 
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -226,7 +227,7 @@ wxSizer* InterfaceSettingsPanel::layoutAppearanceSettings(wxWindow* panel) const
 #else
 	rbp_windows_darkmode_->Hide();
 #endif
-	sizer->Add(new wxStaticText(panel, -1, "Toolbar icon set:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(new wxStaticText(panel, -1, wxS("Toolbar icon set:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_toolbar_iconset_, { row, 1 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(choice_toolbar_size_, { row++, 2 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(cb_monospace_list_, { row++, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);
@@ -246,10 +247,10 @@ wxSizer* InterfaceSettingsPanel::layoutEntryListSettings(wxWindow* panel) const
 	auto sizer = new wxGridBagSizer(pad(panel), padLarge(panel));
 
 	auto row = 0;
-	sizer->Add(new wxStaticText(panel, -1, "Icon set:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(new wxStaticText(panel, -1, wxS("Icon set:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_iconset_entry_, { row, 1 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(choice_elist_icon_size_, { row++, 2 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(new wxStaticText(panel, -1, "Row spacing:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(new wxStaticText(panel, -1, wxS("Row spacing:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(spin_elist_icon_pad_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 	sizer->Add(rbp_elist_tree_style_, { row++, 0 }, { 1, 3 }, wxEXPAND);
 	sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);

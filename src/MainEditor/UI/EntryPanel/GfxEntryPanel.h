@@ -30,7 +30,7 @@ public:
 	void     applyViewType(ArchiveEntry* entry) const;
 	void     refresh(ArchiveEntry* entry = nullptr);
 	void     refreshPanel() override;
-	wxString statusString() override;
+	string statusString() override;
 	bool     extractAll() const;
 
 	// SAction handler
@@ -69,7 +69,7 @@ private:
 	ui::ZoomControl* zc_zoom_            = nullptr;
 
 	// Toolbar
-	void toolbarButtonClick(const wxString& action_id) override;
+	void toolbarButtonClick(const string& action_id) override;
 
 	// Signal connections
 	sigslot::scoped_connection sc_palette_changed_;

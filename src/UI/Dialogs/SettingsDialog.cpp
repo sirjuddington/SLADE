@@ -114,7 +114,7 @@ SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 	auto title_panel = new wxPanel(this);
 	auto title_sizer = new wxBoxSizer(wxHORIZONTAL);
 	title_panel->SetSizer(title_sizer);
-	title_text_ = new wxStaticText(title_panel, -1, "Title");
+	title_text_ = new wxStaticText(title_panel, -1, wxS("Title"));
 	title_text_->SetFont(GetFont().MakeLarger().MakeLarger().Bold());
 	title_sizer->Add(title_text_, lh.sfWithLargeBorder(1, wxLEFT | wxTOP).Expand());
 	content_sizer_->Add(title_panel, wxSizerFlags().Expand());
@@ -143,7 +143,7 @@ SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 	content_sizer_->Add(init_panel, lh.sfWithLargeBorder(1).Expand());
 	init_panel->Show();
 	current_page_ = init_panel;
-	title_text_->SetLabel(init_panel->title());
+	title_text_->SetLabel(wxString::FromUTF8(init_panel->title()));
 
 	// Load settings
 	for (auto* page : settings_pages_)
@@ -151,10 +151,10 @@ SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 
 	// Dialog Buttons
 	auto button_sizer = new wxBoxSizer(wxHORIZONTAL);
-	button_sizer->Add(btn_apply_ = new wxButton(this, -1, "Apply"), wxSizerFlags(0).Expand());
+	button_sizer->Add(btn_apply_ = new wxButton(this, -1, wxS("Apply")), wxSizerFlags(0).Expand());
 	button_sizer->AddStretchSpacer();
-	button_sizer->Add(btn_ok_ = new wxButton(this, -1, "OK"), lh.sfWithBorder(0, wxRIGHT).Expand());
-	button_sizer->Add(btn_cancel_ = new wxButton(this, -1, "Cancel"), wxSizerFlags(0).Expand());
+	button_sizer->Add(btn_ok_ = new wxButton(this, -1, wxS("OK")), lh.sfWithBorder(0, wxRIGHT).Expand());
+	button_sizer->Add(btn_cancel_ = new wxButton(this, -1, wxS("Cancel")), wxSizerFlags(0).Expand());
 	content_sizer_->Add(button_sizer, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Bind events
@@ -230,7 +230,7 @@ bool SettingsDialog::popupSettingsPage(wxWindow* parent, SettingsPage page)
 	case SettingsPage::ExternalEditors: settings_panel = new ExternalEditorsSettingsPanel(&dlg); break;
 	default:                            return false;
 	}
-	dlg.SetTitle(settings_panel->title());
+	dlg.SetTitle(wxString::FromUTF8(settings_panel->title()));
 
 	// Layout dialog
 	auto lh    = LayoutHelper(&dlg);
@@ -386,7 +386,7 @@ void SettingsDialog::onSectionButtonClicked(wxCommandEvent& e)
 	auto           index = std::distance(
         section_buttons_.begin(), std::find(section_buttons_.begin(), section_buttons_.end(), btn));
 	new_page = settings_pages_[index];
-	title_text_->SetLabel(new_page->title());
+	title_text_->SetLabel(wxString::FromUTF8(new_page->title()));
 
 	new_page->Hide();
 	content_sizer_->Replace(current_page_, new_page);

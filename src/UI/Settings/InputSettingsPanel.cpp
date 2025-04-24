@@ -85,7 +85,7 @@ InputKeyCtrl::InputKeyCtrl(wxWindow* parent, const Keypress& init) :
 	key_{ new Keypress(init) }
 {
 	// Set initial value
-	wxTextCtrl::SetValue(init.asString());
+	wxTextCtrl::SetValue(wxString::FromUTF8(init.asString()));
 
 	// Bind events
 	Bind(wxEVT_KEY_DOWN, &InputKeyCtrl::onKeyDown, this);
@@ -116,7 +116,7 @@ void InputKeyCtrl::onKeyDown(wxKeyEvent& e)
 	}
 
 	*key_ = KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers());
-	SetValue(key_->asString());
+	SetValue(wxString::FromUTF8(key_->asString()));
 }
 
 // -----------------------------------------------------------------------------
@@ -148,7 +148,7 @@ void InputKeyCtrl::onMouseDown(wxMouseEvent& e)
 	key_->alt   = e.AltDown();
 	key_->ctrl  = e.CmdDown();
 	key_->shift = e.ShiftDown();
-	SetValue(key_->asString());
+	SetValue(wxString::FromUTF8(key_->asString()));
 }
 
 // -----------------------------------------------------------------------------
@@ -157,7 +157,7 @@ void InputKeyCtrl::onMouseDown(wxMouseEvent& e)
 void InputKeyCtrl::onEnter(wxCommandEvent& e)
 {
 	key_->key = "return";
-	SetValue(key_->asString());
+	SetValue(wxString::FromUTF8(key_->asString()));
 }
 
 
@@ -186,10 +186,10 @@ InputSettingsPanel::InputSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	// Buttons
 	lh.layoutHorizontally(
 		sizer,
-		{ btn_change_   = new wxButton(this, -1, "Set Key"),
-		  btn_add_      = new wxButton(this, -1, "Add Key"),
-		  btn_remove_   = new wxButton(this, -1, "Remove Key"),
-		  btn_defaults_ = new wxButton(this, -1, "Reset to Default") },
+		{ btn_change_   = new wxButton(this, -1, wxS("Set Key")),
+		  btn_add_      = new wxButton(this, -1, wxS("Add Key")),
+		  btn_remove_   = new wxButton(this, -1, wxS("Remove Key")),
+		  btn_defaults_ = new wxButton(this, -1, wxS("Reset to Default")) },
 		wxSizerFlags(0).Expand());
 
 	// Disable buttons initially
@@ -214,20 +214,20 @@ InputSettingsPanel::InputSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 // -----------------------------------------------------------------------------
 // Returns the wxTreeListItem for keybind group [group]
 // -----------------------------------------------------------------------------
-wxTreeListItem InputSettingsPanel::getListGroupItem(const wxString& group) const
+wxTreeListItem InputSettingsPanel::getListGroupItem(const string& group) const
 {
 	// Go through items
 	wxTreeListItem item = list_binds_->GetFirstChild(list_binds_->GetRootItem());
 	while (item.IsOk())
 	{
-		if (list_binds_->GetItemText(item) == group)
+		if (list_binds_->GetItemText(item).utf8_string() == group)
 			return item;
 
 		item = list_binds_->GetNextSibling(item);
 	}
 
 	// Not found, create group
-	return list_binds_->AppendItem(list_binds_->GetRootItem(), group);
+	return list_binds_->AppendItem(list_binds_->GetRootItem(), wxString::FromUTF8(group));
 }
 
 // -----------------------------------------------------------------------------
@@ -240,8 +240,8 @@ void InputSettingsPanel::initBindsList() const
 	KeyBind::allKeyBinds(binds);
 
 	// Create columns
-	list_binds_->AppendColumn("Control", wxCOL_WIDTH_AUTOSIZE);
-	list_binds_->AppendColumn("Bound Keys", FromDIP(150));
+	list_binds_->AppendColumn(wxS("Control"), wxCOL_WIDTH_AUTOSIZE);
+	list_binds_->AppendColumn(wxS("Bound Keys"), FromDIP(150));
 
 	// Add binds to list
 	for (auto& bind : binds)
@@ -253,11 +253,11 @@ void InputSettingsPanel::initBindsList() const
 		// Add to list
 		auto group = getListGroupItem(bind->group());
 		auto item  = list_binds_->AppendItem(
-            group, bind->description(), -1, -1, new BindListItemData(bind->key(0), bind));
+            group, wxString::FromUTF8(bind->description()), -1, -1, new BindListItemData(bind->key(0), bind));
 
 		// Add any extra key binds
 		for (int b = 1; b < bind->nKeys(); b++)
-			list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->key(b)));
+			list_binds_->AppendItem(item, wxEmptyString, -1, -1, new BindListItemData(bind->key(b)));
 	}
 }
 
@@ -274,7 +274,7 @@ void InputSettingsPanel::updateBindsList() const
 	{
 		// Set item text if key data exists
 		if (auto bind = dynamic_cast<BindListItemData*>(list_binds_->GetItemData(item)))
-			list_binds_->SetItemText(item, 1, bind->key.asString());
+			list_binds_->SetItemText(item, 1, wxString::FromUTF8(bind->key.asString()));
 
 		// Next item
 		item = list_binds_->GetNextItem(item);
@@ -294,7 +294,7 @@ void InputSettingsPanel::changeKey(wxTreeListItem item)
 		return;
 
 	// Create a dialog
-	wxDialog dlg(this, -1, "Set Key");
+	wxDialog dlg(this, -1, wxS("Set Key"));
 	auto     sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 
@@ -320,7 +320,7 @@ void InputSettingsPanel::changeKey(wxTreeListItem item)
 	{
 		// Set keybind if not cancelled
 		bind->key = key_ctrl->key();
-		list_binds_->SetItemText(item, 1, bind->key.asString());
+		list_binds_->SetItemText(item, 1, wxString::FromUTF8(bind->key.asString()));
 	}
 }
 
@@ -342,7 +342,7 @@ void InputSettingsPanel::addKey()
 		item = list_binds_->GetItemParent(item);
 
 	// Add new keybind item
-	auto n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(Keypress()));
+	auto n = list_binds_->AppendItem(item, wxEmptyString, -1, -1, new BindListItemData(Keypress()));
 	changeKey(n);
 
 	// Delete item if no key was chosen (or dialog cancelled)
@@ -352,7 +352,7 @@ void InputSettingsPanel::addKey()
 	else
 	{
 		// Otherwise update the new keybind text
-		list_binds_->SetItemText(n, 1, bind->key.asString());
+		list_binds_->SetItemText(n, 1, wxString::FromUTF8(bind->key.asString()));
 	}
 }
 
@@ -548,7 +548,7 @@ void InputSettingsPanel::onBtnDefaults(wxCommandEvent& e)
 
 	// Go through default keys for the bind
 	for (int a = 1; a < bind->bind->nDefaults(); a++)
-		list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->bind->defaultKey(a)));
+		list_binds_->AppendItem(item, wxEmptyString, -1, -1, new BindListItemData(bind->bind->defaultKey(a)));
 
 	// Refresh list
 	updateBindsList();

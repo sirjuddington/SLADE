@@ -32,10 +32,10 @@ public:
 	void redo() const;
 
 	// Editing
-	void     setFullPath(bool enabled = false) const;
-	bool     removePatch(unsigned index, bool delete_entry = false) const;
-	int      browsePatchTable(const wxString& first = "") const;
-	wxString browsePatchEntry(const wxString& first = "");
+	void   setFullPath(bool enabled = false) const;
+	bool   removePatch(unsigned index, bool delete_entry = false) const;
+	int    browsePatchTable(const string& first = "") const;
+	string browsePatchEntry(const string& first = "");
 
 	// Checks
 	bool checkTextures();

@@ -33,7 +33,7 @@ namespace entryoperations
 	bool cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& entries);
 
 	// Graphics
-	bool exportAsPNG(ArchiveEntry* entry, const wxString& filename);
+	bool exportAsPNG(ArchiveEntry* entry, const string& filename);
 	bool optimizePNG(ArchiveEntry* entry);
 	bool exportEntriesAsPNG(const vector<ArchiveEntry*>& entries);
 	bool optimizePNGEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager = nullptr);

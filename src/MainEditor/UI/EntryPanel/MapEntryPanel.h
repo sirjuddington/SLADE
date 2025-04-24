@@ -13,7 +13,7 @@ public:
 	~MapEntryPanel() override = default;
 
 	bool createImage();
-	void toolbarButtonClick(const wxString& action_id) override;
+	void toolbarButtonClick(const string& action_id) override;
 
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;

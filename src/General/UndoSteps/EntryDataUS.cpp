@@ -64,7 +64,7 @@ bool EntryDataUS::swapData()
 	// log::info(1, "Entry data swap...");
 
 	// Get parent dir
-	auto dir = archive_->dirAtPath(path_.ToStdString());
+	auto dir = archive_->dirAtPath(path_);
 	if (dir)
 	{
 		// Get entry

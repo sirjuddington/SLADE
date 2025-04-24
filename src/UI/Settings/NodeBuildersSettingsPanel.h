@@ -23,7 +23,7 @@ private:
 	wxTextCtrl*     text_path_          = nullptr;
 	wxCheckListBox* clb_options_        = nullptr;
 
-	void populateOptions(const wxString& options) const;
+	void populateOptions(const string& options) const;
 
 	// Events
 	void onBtnBrowse(wxCommandEvent& e);

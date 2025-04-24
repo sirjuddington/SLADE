@@ -435,12 +435,12 @@ bool ArchiveFormatHandler::save(Archive& archive, string_view filename)
 			// No filename is given, but the archive has a filename, so overwrite it (and make a backup)
 
 			// Create backup
-			if (backup_archives && wxFileName::FileExists(archive.filename_) && Archive::save_backup)
+			if (backup_archives && fileutil::fileExists(archive.filename_) && Archive::save_backup)
 			{
 				// Copy current file contents to new backup file
 				const auto bakfile = archive.filename_ + ".bak";
 				log::info("Creating backup {}", bakfile);
-				wxCopyFile(archive.filename_, bakfile, true);
+				fileutil::copyFile(archive.filename_, bakfile, true);
 			}
 
 			// Write it to the file
@@ -479,18 +479,18 @@ bool ArchiveFormatHandler::loadEntryData(Archive& archive, const ArchiveEntry* e
 		return false;
 
 	// Open archive file
-	wxFile file(archive.filename_);
+	SFile file(archive.filename_);
 
 	// Check it opened
-	if (!file.IsOpened())
+	if (!file.isOpen())
 	{
 		log::error("loadEntryData: Unable to open archive file {}", archive.filename_);
 		return false;
 	}
 
 	// Seek to entry offset in file and read it in
-	file.Seek(offset, wxFromStart);
-	out.importFileStreamWx(file, size);
+	file.seekFromStart(offset);
+	out.importFileStream(file, size);
 
 	return true;
 }

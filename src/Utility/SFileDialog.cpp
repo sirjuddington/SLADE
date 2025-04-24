@@ -83,7 +83,7 @@ bool filedialog::openFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		// Set file dialog info
-		strutil::Path fn(fd.GetPath().ToStdString());
+		strutil::Path fn(fd.GetPath().utf8_string());
 		info.filenames.push_back(fn.fullPath());
 		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
@@ -125,7 +125,7 @@ string filedialog::openFile(
 	// Run the dialog
 	if (fd.ShowModal() == wxID_OK)
 	{
-		auto filename = fd.GetPath().ToStdString();
+		auto filename = fd.GetPath().utf8_string();
 		dir_last      = strutil::Path::pathOf(filename);
 
 		return filename;
@@ -191,7 +191,7 @@ bool filedialog::openFiles(
 
 		// Set file dialog info
 		for (const auto& path : paths)
-			info.filenames.emplace_back(path);
+			info.filenames.emplace_back(path.utf8_string());
 		strutil::Path fn(info.filenames[0]);
 		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
@@ -251,7 +251,7 @@ bool filedialog::saveFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		// Set file dialog info
-		strutil::Path fn(fd.GetPath().ToStdString());
+		strutil::Path fn(fd.GetPath().utf8_string());
 		info.filenames.push_back(fn.fullPath());
 		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
@@ -293,7 +293,7 @@ string filedialog::saveFile(
 	// Run the dialog
 	if (fd.ShowModal() == wxID_OK)
 	{
-		auto filename = fd.GetPath().ToStdString();
+		auto filename = fd.GetPath().utf8_string();
 		dir_last      = strutil::Path::pathOf(filename);
 		return filename;
 	}
@@ -313,7 +313,7 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 		parent,
 		wxutil::strFromView(caption),
 		dir_last,
-		"ignored",
+		wxS("ignored"),
 		wxutil::strFromView(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
@@ -325,9 +325,9 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 	{
 		// Set file dialog info
 		info.filenames.clear();
-		info.extension = fd.GetWildcard().AfterLast('.');
+		info.extension = fd.GetWildcard().AfterLast('.').utf8_string();
 		info.ext_index = fd.GetFilterIndex();
-		info.path      = fd.GetDirectory();
+		info.path      = fd.GetDirectory().utf8_string();
 
 		// Set last dir
 		dir_last = info.path;
@@ -363,9 +363,9 @@ string filedialog::openDirectory(string_view caption, wxWindow* parent)
 	if (dialog_open.ShowModal() == wxID_OK)
 	{
 		// Set last dir
-		dir_last = wxutil::strToView(dialog_open.GetPath());
+		dir_last = dialog_open.GetPath().utf8_string();
 
-		return dialog_open.GetPath().ToStdString();
+		return dialog_open.GetPath().utf8_string();
 	}
 
 	return {};

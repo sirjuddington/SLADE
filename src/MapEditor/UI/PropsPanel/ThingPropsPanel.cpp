@@ -103,7 +103,7 @@ public:
 
 	~SpriteTexCanvas() override = default;
 
-	wxString texName() const { return texname_; }
+	string texName() const { return texname_; }
 
 	// Sets the texture to display
 	void setSprite(const game::ThingType& type)
@@ -113,7 +113,7 @@ public:
 		colour_  = ColRGBA::WHITE;
 
 		// Sprite
-		texture_ = mapeditor::textureManager().sprite(texname_.ToStdString(), type.translation(), type.palette()).gl_id;
+		texture_ = mapeditor::textureManager().sprite(texname_, type.translation(), type.palette()).gl_id;
 
 		// Icon
 		if (!texture_)
@@ -149,7 +149,7 @@ public:
 
 private:
 	unsigned texture_ = 0;
-	wxString texname_;
+	string   texname_;
 	ColRGBA  colour_ = ColRGBA::WHITE;
 	bool     icon_   = false;
 };
@@ -488,30 +488,30 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	sizer->Add(stc_tabs_, lh.sfWithBorder(1).Expand());
 
 	// General tab
-	stc_tabs_->AddPage(setupGeneralTab(), "General");
+	stc_tabs_->AddPage(setupGeneralTab(), wxS("General"));
 
 	// Extra Flags tab
 	if (!udmf_flags_extra_.empty())
-		stc_tabs_->AddPage(setupExtraFlagsTab(), "Extra Flags");
+		stc_tabs_->AddPage(setupExtraFlagsTab(), wxS("Extra Flags"));
 
 	// Special tab
 	if (mapeditor::editContext().mapDesc().format != MapFormat::Doom)
 	{
 		panel_special_ = new ActionSpecialPanel(this, false);
-		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_special_), "Special");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_special_), wxS("Special"));
 	}
 
 	// Args tab
 	if (mapeditor::editContext().mapDesc().format != MapFormat::Doom)
 	{
 		panel_args_ = new ArgsPanel(this);
-		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), "Args");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), wxS("Args"));
 		if (panel_special_)
 			panel_special_->setArgsPanel(panel_args_);
 	}
 
 	// Other Properties tab
-	stc_tabs_->AddPage(mopp_other_props_ = new MapObjectPropsPanel(stc_tabs_, true), "Other Properties");
+	stc_tabs_->AddPage(mopp_other_props_ = new MapObjectPropsPanel(stc_tabs_, true), wxS("Other Properties"));
 	mopp_other_props_->hideFlags(true);
 	mopp_other_props_->hideProperty("height");
 	mopp_other_props_->hideProperty("angle");
@@ -546,7 +546,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	panel->SetSizer(sizer);
 
 	// --- Flags ---
-	auto frame      = new wxStaticBox(panel, -1, "Flags");
+	auto frame      = new wxStaticBox(panel, -1, wxS("Flags"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, lh.sfWithBorder().Expand());
 
@@ -563,7 +563,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	if (map_format == MapFormat::UDMF)
 	{
 		// Get all udmf flag properties
-		vector<wxString> flags;
+		vector<string> flags;
 		for (auto& i : props)
 		{
 			if (i.second.isFlag())
@@ -584,7 +584,8 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 			flag_mid--;
 		for (const auto& flag : flags)
 		{
-			auto cb_flag = new wxCheckBox(panel, -1, flag, wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+			auto cb_flag = new wxCheckBox(
+				panel, -1, wxString::FromUTF8(flag), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 			gb_sizer->Add(cb_flag, { row++, col }, { 1, 1 }, wxEXPAND);
 			cb_flags_.push_back(cb_flag);
 
@@ -606,7 +607,12 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 		for (int a = 0; a < game::configuration().nThingFlags(); a++)
 		{
 			auto cb_flag = new wxCheckBox(
-				panel, -1, game::configuration().thingFlag(a), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+				panel,
+				-1,
+				wxString::FromUTF8(game::configuration().thingFlag(a)),
+				wxDefaultPosition,
+				wxDefaultSize,
+				wxCHK_3STATE);
 			gb_sizer->Add(cb_flag, { row++, col }, { 1, 1 }, wxEXPAND);
 			cb_flags_.push_back(cb_flag);
 
@@ -625,15 +631,16 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	// Type
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, lh.sfWithBorder().Expand());
-	frame      = new wxStaticBox(panel, -1, "Type");
+	frame      = new wxStaticBox(panel, -1, wxS("Type"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, lh.sfWithBorder(1, wxRIGHT).Expand());
 	framesizer->Add(gfx_sprite_ = new SpriteTexCanvas(panel), lh.sfWithBorder(1).Expand());
 	framesizer->Add(
-		label_type_ = new wxStaticText(panel, -1, ""), lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		label_type_ = new wxStaticText(panel, -1, wxEmptyString),
+		lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Direction
-	frame      = new wxStaticBox(panel, -1, "Direction");
+	frame      = new wxStaticBox(panel, -1, wxS("Direction"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 0, wxEXPAND);
 	framesizer->Add(ac_direction_ = new AngleControl(panel), wxSizerFlags(1).Expand());
@@ -643,12 +650,12 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 		// Id
 		gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 		sizer->Add(gb_sizer, lh.sfWithBorder().Expand());
-		gb_sizer->Add(new wxStaticText(panel, -1, "TID:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		gb_sizer->Add(new wxStaticText(panel, -1, wxS("TID:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(text_id_ = new NumberTextCtrl(panel), { 0, 1 }, { 1, 1 }, wxEXPAND | wxALIGN_CENTER_VERTICAL);
-		gb_sizer->Add(btn_new_id_ = new wxButton(panel, -1, "New TID"), { 0, 2 }, { 1, 1 });
+		gb_sizer->Add(btn_new_id_ = new wxButton(panel, -1, wxS("New TID")), { 0, 2 }, { 1, 1 });
 
 		// Z Height
-		gb_sizer->Add(new wxStaticText(panel, -1, "Z Height:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		gb_sizer->Add(new wxStaticText(panel, -1, wxS("Z Height:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(text_height_ = new NumberTextCtrl(panel), { 1, 1 }, { 1, 2 }, wxEXPAND);
 		if (map_format == MapFormat::UDMF)
 			text_height_->allowDecimal(true);
@@ -684,10 +691,10 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	int col = 0;
 
 	// Get all extra flag names
-	vector<wxString> flags;
+	vector<string> flags;
 	for (const auto& a : udmf_flags_extra_)
 	{
-		auto prop = game::configuration().getUDMFProperty(a.ToStdString(), MapObject::Type::Thing);
+		auto prop = game::configuration().getUDMFProperty(a, MapObject::Type::Thing);
 		flags.emplace_back(prop->name());
 	}
 
@@ -697,7 +704,8 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 		flag_mid--;
 	for (const auto& flag : flags)
 	{
-		auto cb_flag = new wxCheckBox(panel, -1, flag, wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+		auto cb_flag = new wxCheckBox(
+			panel, -1, wxString::FromUTF8(flag), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 		gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
 		cb_flags_extra_.push_back(cb_flag);
 
@@ -733,7 +741,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		bool val = false;
 		for (unsigned a = 0; a < udmf_flags_.size(); a++)
 		{
-			if (MapObject::multiBoolProperty(objects, udmf_flags_[a].ToStdString(), val))
+			if (MapObject::multiBoolProperty(objects, udmf_flags_[a], val))
 				cb_flags_[a]->SetValue(val);
 			else
 				cb_flags_[a]->Set3StateValue(wxCHK_UNDETERMINED);
@@ -767,7 +775,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	{
 		auto& tt = game::configuration().thingType(type_current_);
 		gfx_sprite_->setSprite(tt);
-		label_type_->SetLabel(wxString::Format("%d: %s", type_current_, tt.name()));
+		label_type_->SetLabel(WX_FMT("{}: {}", type_current_, tt.name()));
 		label_type_->Wrap(136);
 	}
 
@@ -857,7 +865,7 @@ void ThingPropsPanel::applyChanges()
 				for (unsigned f = 0; f < udmf_flags_.size(); f++)
 				{
 					if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-						object->setBoolProperty(udmf_flags_[f].ToStdString(), cb_flags_[f]->GetValue());
+						object->setBoolProperty(udmf_flags_[f], cb_flags_[f]->GetValue());
 				}
 			}
 		}
@@ -868,7 +876,7 @@ void ThingPropsPanel::applyChanges()
 			for (unsigned f = 0; f < udmf_flags_extra_.size(); f++)
 			{
 				if (cb_flags_extra_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					object->setBoolProperty(udmf_flags_extra_[f].ToStdString(), cb_flags_extra_[f]->GetValue());
+					object->setBoolProperty(udmf_flags_extra_[f], cb_flags_extra_[f]->GetValue());
 			}
 		}
 
@@ -926,7 +934,7 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 
 		// Update sprite
 		gfx_sprite_->setSprite(tt);
-		label_type_->SetLabel(tt.name());
+		label_type_->SetLabel(wxString::FromUTF8(tt.name()));
 
 		// Update args
 		if (panel_args_)

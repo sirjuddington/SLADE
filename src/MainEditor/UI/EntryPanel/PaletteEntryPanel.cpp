@@ -71,11 +71,11 @@ string extensions =
 	"JASC Palette (*.pal)|*.pal|"
 	"GIMP Palette (*.gpl)|*.gpl";
 
-vector<Palette::Format> pal_formats = { Palette::Format::Raw,
-										Palette::Format::Image,
-										Palette::Format::CSV,
-										Palette::Format::JASC,
-										Palette::Format::GIMP };
+vector pal_formats = { Palette::Format::Raw,
+					   Palette::Format::Image,
+					   Palette::Format::CSV,
+					   Palette::Format::JASC,
+					   Palette::Format::GIMP };
 } // namespace
 
 
@@ -89,7 +89,13 @@ class PaletteColouriseDialog : public wxDialog
 {
 public:
 	PaletteColouriseDialog(wxWindow* parent, Palette* pal) :
-		wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+		wxDialog(
+			parent,
+			-1,
+			wxS("Colourise"),
+			wxDefaultPosition,
+			wxDefaultSize,
+			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
 		auto lh = ui::LayoutHelper(this);
@@ -108,7 +114,7 @@ public:
 		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		cp_colour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Colour:"), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(new wxStaticText(this, -1, wxS("Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 		hbox->Add(cp_colour_, wxSizerFlags().Expand());
 
 		// Add preview
@@ -166,7 +172,7 @@ class PaletteTintDialog : public wxDialog
 {
 public:
 	PaletteTintDialog(wxWindow* parent, Palette* pal) :
-		wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+		wxDialog(parent, -1, wxS("Tint"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
 		auto lh = ui::LayoutHelper(this);
@@ -185,7 +191,7 @@ public:
 		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		cp_colour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Colour:"), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(new wxStaticText(this, -1, wxS("Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 		hbox->Add(cp_colour_, wxSizerFlags().CenterVertical());
 
 		// Add 'amount' slider
@@ -193,8 +199,8 @@ public:
 		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		slider_amount_ = new wxSlider(this, -1, 50, 0, 100);
-		label_amount_  = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Amount:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		label_amount_  = new wxStaticText(this, -1, wxS("100%"));
+		hbox->Add(new wxStaticText(this, -1, wxS("Amount:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 		hbox->Add(slider_amount_, lh.sfWithBorder(1, wxRIGHT).Expand());
 		hbox->Add(label_amount_, wxSizerFlags().CenterVertical());
 
@@ -220,7 +226,7 @@ public:
 			[&](wxCommandEvent&)
 			{
 				redraw();
-				label_amount_->SetLabel(wxString::Format("%d%% ", slider_amount_->GetValue()));
+				label_amount_->SetLabel(WX_FMT("{}% ", slider_amount_->GetValue()));
 			});
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
 
@@ -230,7 +236,7 @@ public:
 		CenterOnParent();
 
 		// Set values
-		label_amount_->SetLabel("50% ");
+		label_amount_->SetLabel(wxS("50% "));
 	}
 
 	const Palette* finalPalette() const { return pal_preview_->palette(); }
@@ -275,7 +281,7 @@ public:
 		wxDialog(
 			parent,
 			-1,
-			"Tweak Colours",
+			wxS("Tweak Colours"),
 			wxDefaultPosition,
 			wxDefaultSize,
 			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
@@ -297,8 +303,8 @@ public:
 		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		slider_hue_ = new wxSlider(this, -1, 0, 0, 500);
-		label_hue_  = new wxStaticText(this, -1, "0.000");
-		hbox->Add(new wxStaticText(this, -1, "Hue Shift:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		label_hue_  = new wxStaticText(this, -1, wxS("0.000"));
+		hbox->Add(new wxStaticText(this, -1, wxS("Hue Shift:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 		hbox->Add(slider_hue_, lh.sfWithBorder(1, wxRIGHT).Expand());
 		hbox->Add(label_hue_, wxSizerFlags().CenterVertical());
 
@@ -307,8 +313,8 @@ public:
 		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		slider_sat_ = new wxSlider(this, -1, 100, 0, 200);
-		label_sat_  = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Saturation:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		label_sat_  = new wxStaticText(this, -1, wxS("100%"));
+		hbox->Add(new wxStaticText(this, -1, wxS("Saturation:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 		hbox->Add(slider_sat_, lh.sfWithBorder(1, wxRIGHT).Expand());
 		hbox->Add(label_sat_, wxSizerFlags().CenterVertical());
 
@@ -317,8 +323,8 @@ public:
 		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		slider_lum_ = new wxSlider(this, -1, 100, 0, 200);
-		label_lum_  = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Luminosity:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		label_lum_  = new wxStaticText(this, -1, wxS("100%"));
+		hbox->Add(new wxStaticText(this, -1, wxS("Luminosity:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 		hbox->Add(slider_lum_, lh.sfWithBorder(1, wxRIGHT).Expand());
 		hbox->Add(label_lum_, wxSizerFlags().CenterVertical());
 
@@ -343,21 +349,21 @@ public:
 			[&](wxCommandEvent&)
 			{
 				redraw();
-				label_hue_->SetLabel(wxString::Format("%1.3f", hue()));
+				label_hue_->SetLabel(WX_FMT("{:1.3f}", hue()));
 			});
 		slider_sat_->Bind(
 			wxEVT_SLIDER,
 			[&](wxCommandEvent&)
 			{
 				redraw();
-				label_sat_->SetLabel(wxString::Format("%d%%", slider_sat_->GetValue()));
+				label_sat_->SetLabel(WX_FMT("{}%", slider_sat_->GetValue()));
 			});
 		slider_lum_->Bind(
 			wxEVT_SLIDER,
 			[&](wxCommandEvent&)
 			{
 				redraw();
-				label_lum_->SetLabel(wxString::Format("%d%%", slider_lum_->GetValue()));
+				label_lum_->SetLabel(WX_FMT("{}%", slider_lum_->GetValue()));
 			});
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
 
@@ -367,9 +373,9 @@ public:
 		CenterOnParent();
 
 		// Set values
-		label_hue_->SetLabel("0.000 ");
-		label_sat_->SetLabel("100% ");
-		label_lum_->SetLabel("100% ");
+		label_hue_->SetLabel(wxS("0.000 "));
+		label_sat_->SetLabel(wxS("100% "));
+		label_lum_->SetLabel(wxS("100% "));
 	}
 
 	const Palette* finalPalette() const { return pal_preview_->palette(); }
@@ -411,7 +417,7 @@ class PaletteInvertDialog : public wxDialog
 {
 public:
 	PaletteInvertDialog(wxWindow* parent, Palette* pal) :
-		wxDialog(parent, -1, "Invert", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+		wxDialog(parent, -1, wxS("Invert"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
 		auto lh = ui::LayoutHelper(this);
@@ -480,7 +486,7 @@ public:
 		wxDialog(
 			parent,
 			-1,
-			"Generate Palettes",
+			wxS("Generate Palettes"),
 			wxDefaultPosition,
 			wxDefaultSize,
 			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
@@ -497,9 +503,9 @@ public:
 		msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 		// Add buttons
-		rb_doom_ = new wxRadioButton(this, -1, "Doom (14 Palettes)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+		rb_doom_ = new wxRadioButton(this, -1, wxS("Doom (14 Palettes)"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 		sizer->Add(rb_doom_, lh.sfWithBorder(0, wxBOTTOM).Expand());
-		rb_hexen_ = new wxRadioButton(this, -1, "Hexen (28 Palettes)");
+		rb_hexen_ = new wxRadioButton(this, -1, wxS("Hexen (28 Palettes)"));
 		sizer->Add(rb_hexen_, wxSizerFlags().Expand());
 
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
@@ -539,7 +545,13 @@ class PaletteGradientDialog : public wxDialog
 {
 public:
 	PaletteGradientDialog(wxWindow* parent, Palette* pal) :
-		wxDialog(parent, -1, "Gradient", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+		wxDialog(
+			parent,
+			-1,
+			wxS("Gradient"),
+			wxDefaultPosition,
+			wxDefaultSize,
+			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
 		auto lh = ui::LayoutHelper(this);
@@ -558,11 +570,11 @@ public:
 		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		cp_startcolour_ = new wxColourPickerCtrl(this, -1, wxColour(0, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Start Colour:"), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(new wxStaticText(this, -1, wxS("Start Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 		hbox->Add(cp_startcolour_, wxSizerFlags().Expand());
 
 		cp_endcolour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 255, 255));
-		hbox->Add(new wxStaticText(this, -1, "End Colour:"), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(new wxStaticText(this, -1, wxS("End Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 		hbox->Add(cp_endcolour_, wxSizerFlags().Expand());
 
 		// Add preview
@@ -637,7 +649,7 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	// Palette Selector
 	auto group_palette = new SToolBarGroup(toolbar_, "Palette", true);
 	group_palette->addActionButton("pal_prev", "Previous Palette", "left", "");
-	text_curpal_ = new wxStaticText(group_palette, -1, "XX/XX");
+	text_curpal_ = new wxStaticText(group_palette, -1, wxS("XX/XX"));
 	group_palette->addCustomControl(text_curpal_);
 	group_palette->addActionButton("pal_next", "Next Palette", "right", "");
 	toolbar_->addGroup(group_palette);
@@ -727,14 +739,14 @@ bool PaletteEntryPanel::writeEntry(ArchiveEntry& entry)
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-wxString PaletteEntryPanel::statusString()
+string PaletteEntryPanel::statusString()
 {
 	// Get current colour
 	ColRGBA col  = pal_canvas_->selectedColour();
 	ColHSL  col2 = colour::rgbToHsl(col);
 
-	return wxString::Format(
-		"Index %i\tR %d, G %d, B %d\tH %1.3f, S %1.3f, L %1.3f",
+	return fmt::format(
+		"Index {}\tR {}, G {}, B {}\tH {:1.3f}, S {:1.3f}, L {:1.3f}",
 		pal_canvas_->selectionStart(),
 		col.r,
 		col.g,
@@ -758,7 +770,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 	pal_canvas_->setPalette(palettes_[index].get());
 
 	// Set current palette text
-	text_curpal_->SetLabel(fmt::format("{}/{}", index + 1, palettes_.size()));
+	text_curpal_->SetLabel(wxString::FromUTF8(fmt::format("{}/{}", index + 1, palettes_.size())));
 
 	// Refresh
 	Layout();
@@ -787,7 +799,7 @@ void PaletteEntryPanel::refreshPanel()
 // -----------------------------------------------------------------------------
 // Called when a (EntryPanel) toolbar button is clicked
 // -----------------------------------------------------------------------------
-void PaletteEntryPanel::toolbarButtonClick(const wxString& action_id)
+void PaletteEntryPanel::toolbarButtonClick(const string& action_id)
 {
 	// Prev. palette
 	if (action_id == "pal_prev")
@@ -815,7 +827,7 @@ void PaletteEntryPanel::toolbarButtonClick(const wxString& action_id)
 bool PaletteEntryPanel::addCustomPalette() const
 {
 	// Get name to export as
-	auto name = wxGetTextFromUser("Enter name for Palette:", "Add to Palettes").ToStdString();
+	auto name = wxGetTextFromUser(wxS("Enter name for Palette:"), wxS("Add to Palettes")).utf8_string();
 	if (name.empty())
 		return false;
 
@@ -838,11 +850,11 @@ bool PaletteEntryPanel::addCustomPalette() const
 bool PaletteEntryPanel::testPalette() const
 {
 	// Get name to export as
-	wxString name = "Test: " + wxGetTextFromUser("Enter name for Palette:", "Test Palettes");
+	auto name = "Test: " + wxGetTextFromUser(wxS("Enter name for Palette:"), wxS("Test Palettes")).utf8_string();
 
 	// Add to palette manager and main palette chooser
 	auto pal = std::make_unique<Palette>(*palettes_[cur_palette_]);
-	app::paletteManager()->addPalette(std::move(pal), name.ToStdString());
+	app::paletteManager()->addPalette(std::move(pal), name);
 	theMainWindow->paletteChooser()->addPalette(name);
 	theMainWindow->paletteChooser()->selectPalette(name);
 
@@ -881,7 +893,7 @@ bool PaletteEntryPanel::importFrom()
 			showPalette(cur_palette_);
 		}
 		else
-			wxMessageBox(global::error, "Import Failed", wxICON_ERROR | wxOK);
+			wxMessageBox(wxString::FromUTF8(global::error), wxS("Import Failed"), wxICON_ERROR | wxOK);
 	}
 	return ret;
 }
@@ -1489,12 +1501,12 @@ void PaletteEntryPanel::analysePalettes() const
 	unsigned int greens[256];
 	unsigned int blues[256];
 #endif
-	wxString report = "\n";
+	wxString report = wxS("\n");
 #ifdef GPALCOMPANALYSIS
 	int i = PALETTECHECK;
 	if (i)
 	{
-		report += wxString::Format("Deviation between palettes 0 and %i:\n\n", i);
+		report += wxString::Format(wxS("Deviation between palettes 0 and %i:\n\n"), i);
 		devR = devG = devB = 0;
 		maxR = maxG = maxB = -1;
 		minR = minG = minB = 256;
@@ -1506,7 +1518,7 @@ void PaletteEntryPanel::analysePalettes() const
 		for (int j = 0; j < 256; ++j)
 			reds[j] = blues[j] = greens[j] = 999;
 #endif
-		report += wxString::Format("\n==============\n= Palette %02u =\n==============\n", i);
+		report += wxString::Format(wxS("\n==============\n= Palette %02u =\n==============\n"), i);
 		for (size_t c = 0; c < 256; ++c)
 		{
 			ColRGBA ref1 = palettes_[0]->colour(c);
@@ -1541,8 +1553,8 @@ void PaletteEntryPanel::analysePalettes() const
 			{
 				++wrongcount;
 				report += wxString::Format(
-					"Index %003u: [%003i %003i %003i | %1.3f %1.3f %1.3f]->[%003i %003i %003i | %1.3f %1.3f "
-					"%1.3f]\t\tR %+003i\tG %+003i\tB %+003i\t\t\tH %+1.3f\tS %+1.3f\tL %+1.3f\n",
+					wxS("Index %003u: [%003i %003i %003i | %1.3f %1.3f %1.3f]->[%003i %003i %003i | %1.3f %1.3f "
+						"%1.3f]\t\tR %+003i\tG %+003i\tB %+003i\t\t\tH %+1.3f\tS %+1.3f\tL %+1.3f\n"),
 					c,
 					ref1.r,
 					ref1.g,
@@ -1592,9 +1604,13 @@ void PaletteEntryPanel::analysePalettes() const
 		}
 #ifdef GPALCOMPANALYSIS
 		report += wxString::Format(
-			"Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_.lock()->name());
+			wxS("Deviation sigma: R %+003i G %+003i B %+003i\t%s\n"),
+			devR,
+			devG,
+			devB,
+			wxString::FromUTF8(entry_.lock()->name()));
 		report += wxString::Format(
-			"Min R %+003i Min G %+003i Min B %+003i Max R %+003i Max G %+003i Max B %+003i \nError count: %i\n",
+			wxS("Min R %+003i Min G %+003i Min B %+003i Max R %+003i Max G %+003i Max B %+003i \nError count: %i\n"),
 			minR,
 			minG,
 			minB,
@@ -1613,5 +1629,5 @@ void PaletteEntryPanel::analysePalettes() const
 #endif
 	}
 
-	log::info(1, report);
+	log::info(1, report.utf8_string());
 }

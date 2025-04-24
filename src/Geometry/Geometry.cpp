@@ -540,5 +540,5 @@ CONSOLE_COMMAND(angle2d, 6, false)
 		vals[a] = strutil::asDouble(args[a]);
 
 	double ang = angle2DRad(Vec2d(vals[0], vals[1]), Vec2d(vals[2], vals[3]), Vec2d(vals[4], vals[5]));
-	log::info(wxString::Format("Angle = %1.4f", ang));
+	log::info("Angle = {:1.4f}", ang);
 }

@@ -31,14 +31,14 @@ public:
 	void updateTextureList() const;
 
 	// Texture operations
-	unique_ptr<CTexture> newTextureFromPatch(const wxString& name, const wxString& patch);
+	unique_ptr<CTexture> newTextureFromPatch(string_view name, string_view patch);
 	void                 newTexture();
 	void                 newTextureFromPatch();
 	void                 newTextureFromFile();
 	void                 removeTexture();
 	void                 renameTexture(bool each = false);
 	void                 exportTexture();
-	bool                 exportAsPNG(CTexture* texture, const wxString& filename, bool force_rgba) const;
+	bool                 exportAsPNG(CTexture* texture, const string& filename, bool force_rgba) const;
 	void                 extractTexture();
 	bool                 modifyOffsets();
 	void                 moveUp();
@@ -48,8 +48,8 @@ public:
 	void                 paste();
 
 	// Undo/Redo
-	void onUndo(const wxString& undo_action) const;
-	void onRedo(const wxString& undo_action) const;
+	void onUndo(const string& undo_action) const;
+	void onRedo(const string& undo_action) const;
 
 	// SAction handler
 	bool handleAction(string_view id) override;

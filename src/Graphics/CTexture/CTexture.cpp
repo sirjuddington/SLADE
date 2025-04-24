@@ -254,7 +254,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				// If no second value, it's just a colour string
 				if (!tz.checkNext(","))
 				{
-					col.Set(first);
+					col.Set(wxString::FromUTF8(first));
 					colour_.set(col);
 				}
 				else
@@ -266,7 +266,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 					// If no third value, it's an alpha value
 					if (!tz.checkNext(","))
 					{
-						col.Set(first);
+						col.Set(wxString::FromUTF8(first));
 						colour_.set(col);
 						colour_.a  = static_cast<uint8_t>(second * 255.0);
 						blendtype_ = BlendType::Tint;
@@ -344,7 +344,7 @@ string CTPatchEx::asText()
 	if (blendtype_ == BlendType::Blend || blendtype_ == BlendType::Tint)
 	{
 		wxColour col(colour_.r, colour_.g, colour_.b);
-		text += fmt::format("\t\tBlend \"{}\"", col.GetAsString(wxC2S_HTML_SYNTAX).ToStdString());
+		text += fmt::format("\t\tBlend \"{}\"", col.GetAsString(wxC2S_HTML_SYNTAX).utf8_string());
 
 		if (blendtype_ == BlendType::Tint)
 			text += fmt::format(", {:1.1f}\n", static_cast<double>(colour_.a) / 255.0);

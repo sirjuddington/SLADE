@@ -115,7 +115,7 @@ ArchivePathPanel::ArchivePathPanel(wxWindow* parent) : wxPanel{ parent }
 	GetSizer()->Add(btn_home_, 0, wxEXPAND);
 
 	text_path_ = new wxStaticText(
-		this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
+		this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
 	GetSizer()->Add(text_path_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad(this));
 
 	btn_updir_ = new SToolBarButton(this, "arch_elist_updir");
@@ -129,7 +129,7 @@ void ArchivePathPanel::setCurrentPath(const ArchiveDir* dir) const
 {
 	if (dir == nullptr)
 	{
-		text_path_->SetLabel("");
+		text_path_->SetLabel(wxEmptyString);
 		text_path_->UnsetToolTip();
 		return;
 	}
@@ -144,11 +144,11 @@ void ArchivePathPanel::setCurrentPath(const ArchiveDir* dir) const
 	strutil::trimIP(path);
 
 	// Update UI
-	text_path_->SetLabel(path);
+	text_path_->SetLabel(wxString::FromUTF8(path));
 	if (is_root)
 		text_path_->UnsetToolTip();
 	else
-		text_path_->SetToolTip(path);
+		text_path_->SetToolTip(wxString::FromUTF8(path));
 	// text_path_->Refresh();
 	btn_updir_->Enable(!is_root);
 	btn_updir_->Refresh();
@@ -354,11 +354,11 @@ wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 {
 	switch (col)
 	{
-	case 0:  return "wxDataViewIconText";
-	case 1:  return "string";
-	case 2:  return "string";
-	case 3:  return "string"; // Index is a number technically, but will need to be blank for folders
-	default: return "string";
+	case 0: return wxS("wxDataViewIconText");
+	case 1: return wxS("string");
+	case 2: return wxS("string");
+	case 3: return wxS("string"); // Index is a number technically, but will need to be blank for folders
+	default: return wxS("string");
 	}
 }
 
@@ -384,11 +384,11 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 			icon_cache[entry->type()->icon()] = bundle;
 		}
 
-		wxString name = entry->name();
+		auto name = wxString::FromUTF8(entry->name());
 		if (modified_indicator_ && entry->state() != EntryState::Unmodified)
-			variant << wxDataViewIconText(entry->name() + " *", icon_cache[entry->type()->icon()]);
+			variant << wxDataViewIconText(name + wxS(" *"), icon_cache[entry->type()->icon()]);
 		else
-			variant << wxDataViewIconText(entry->name(), icon_cache[entry->type()->icon()]);
+			variant << wxDataViewIconText(name, icon_cache[entry->type()->icon()]);
 	}
 
 	// Size column
@@ -399,7 +399,7 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 			if (view_type_ == ViewType::List)
 			{
 				if (auto dir = ArchiveDir::findDirByDirEntry(root_dir_.lock(), *entry))
-					variant = fmt::format("{}", dir->numEntries(true));
+					variant = WX_FMT("{}", dir->numEntries(true));
 				else
 					variant = "";
 			}
@@ -407,16 +407,17 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 				variant = "";
 		}
 		else
-			variant = entry->sizeString();
+			variant = wxString::FromUTF8(entry->sizeString());
 	}
 
 	// Type column
 	else if (col == 2)
-		variant = entry->type() == EntryType::folderType() ? "Folder" : entry->typeString();
+		variant = wxString::FromUTF8(entry->type() == EntryType::folderType() ? "Folder" : entry->typeString());
 
 	// Index column
 	else if (col == 3)
-		variant = entry->type() == EntryType::folderType() ? " " : fmt::format("{}", entry->index());
+		variant = wxString::FromUTF8(
+			entry->type() == EntryType::folderType() ? " " : fmt::format("{}", entry->index()));
 
 	// Invalid
 	else
@@ -524,11 +525,11 @@ bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 		wxDataViewIconText value;
 		value << variant;
 		auto new_name = value.GetText();
-		if (new_name.EndsWith(" *"))
+		if (new_name.EndsWith(wxS(" *")))
 			new_name.RemoveLast(2);
 
 		// Ignore if no change
-		if (new_name.ToStdString() == entry->name())
+		if (new_name.utf8_string() == entry->name())
 			return true;
 
 		// Directory
@@ -540,7 +541,7 @@ bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 			// Rename the entry
 			const auto dir = ArchiveDir::findDirByDirEntry(archive->rootDir(), *entry);
 			if (dir)
-				ok = archive->renameDir(dir.get(), wxutil::strToView(new_name));
+				ok = archive->renameDir(dir.get(), new_name.utf8_string());
 			else
 				ok = false;
 		}
@@ -553,9 +554,9 @@ bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 
 			// Rename the entry
 			if (entry->parent())
-				ok = entry->parent()->renameEntry(entry, new_name.ToStdString());
+				ok = entry->parent()->renameEntry(entry, new_name.utf8_string());
 			else
-				ok = entry->rename(new_name.ToStdString());
+				ok = entry->rename(new_name.utf8_string());
 		}
 
 		if (undo_manager_ && undo_manager_->currentlyRecording())
@@ -945,11 +946,11 @@ ArchiveEntryTree::ArchiveEntryTree(
 		{
 			// Popup context menu
 			wxMenu context;
-			context.Append(0, "Reset Sorting");
+			context.Append(0, wxS("Reset Sorting"));
 			context.AppendSeparator();
-			context.AppendCheckItem(1, "Index", "Show the Index column")->Check(elist_colindex_show);
-			context.AppendCheckItem(2, "Size", "Show the Size column")->Check(elist_colsize_show);
-			context.AppendCheckItem(3, "Type", "Show the Type column")->Check(elist_coltype_show);
+			context.AppendCheckItem(1, wxS("Index"), wxS("Show the Index column"))->Check(elist_colindex_show);
+			context.AppendCheckItem(2, wxS("Size"), wxS("Show the Size column"))->Check(elist_colsize_show);
+			context.AppendCheckItem(3, wxS("Type"), wxS("Show the Type column"))->Check(elist_coltype_show);
 			PopupMenu(&context);
 			e.Skip();
 		});
@@ -1075,7 +1076,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 				multi_select_base_index_ = GetRowByItem(GetSelection());
 
 			// Clear search string if selection change wasn't a result of searching
-			if (e.GetString().Cmp("search"))
+			if (e.GetString().Cmp(wxS("search")))
 				search_.clear();
 
 			e.Skip();
@@ -1493,14 +1494,14 @@ void ArchiveEntryTree::setupColumns()
 
 	// Add Columns
 	col_index_ = AppendTextColumn(
-		"#",
+		wxS("#"),
 		3,
 		wxDATAVIEW_CELL_INERT,
 		FromDIP(elist_colsize_index),
 		wxALIGN_NOT,
 		elist_colindex_show ? colstyle_visible : colstyle_hidden);
 	col_name_ = AppendIconTextColumn(
-		"Name",
+		wxS("Name"),
 		0,
 		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
 		FromDIP(
@@ -1508,14 +1509,14 @@ void ArchiveEntryTree::setupColumns()
 		wxALIGN_NOT,
 		colstyle_visible);
 	col_size_ = AppendTextColumn(
-		"Size",
+		wxS("Size"),
 		1,
 		wxDATAVIEW_CELL_INERT,
 		FromDIP(elist_colsize_size),
 		wxALIGN_NOT,
 		elist_colsize_show ? colstyle_visible : colstyle_hidden);
 	col_type_ = AppendTextColumn(
-		"Type",
+		wxS("Type"),
 		2,
 		wxDATAVIEW_CELL_INERT,
 		FromDIP(elist_colsize_type),
@@ -1686,7 +1687,7 @@ bool ArchiveEntryTree::searchChar(int key_code)
 		// Trigger selection change event
 		wxDataViewEvent de;
 		de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
-		de.SetString("search");
+		de.SetString(wxS("search"));
 		ProcessWindowEvent(de);
 	}
 

@@ -89,9 +89,9 @@ TextEditorSettingsPanel::TextEditorSettingsPanel(wxWindow* parent) : SettingsPan
 	style_panel_ = new TextEditorStyleSettingsPanel(this);
 
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createSettingsPanel(tabs), "General");
-	tabs->AddPage(createCodePanel(tabs), "Code && Language");
-	tabs->AddPage(wxutil::createPadPanel(tabs, style_panel_, padLarge()), "Fonts && Colours");
+	tabs->AddPage(createSettingsPanel(tabs), wxS("General"));
+	tabs->AddPage(createCodePanel(tabs), wxS("Code && Language"));
+	tabs->AddPage(wxutil::createPadPanel(tabs, style_panel_, padLarge()), wxS("Fonts && Colours"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 
@@ -105,14 +105,14 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 
 	// Create controls
 	spin_tab_width_       = wxutil::createSpinCtrl(panel, txed_tab_width, 1, 100);
-	cb_tab_spaces_        = new wxCheckBox(panel, -1, "Indent with spaces");
-	cb_auto_indent_       = new wxCheckBox(panel, -1, "Enable auto-indent");
-	cb_trim_whitespace_   = new wxCheckBox(panel, -1, "Trim whitespace on save");
-	cb_brace_match_       = new wxCheckBox(panel, -1, "Hilight matching braces");
+	cb_tab_spaces_        = new wxCheckBox(panel, -1, wxS("Indent with spaces"));
+	cb_auto_indent_       = new wxCheckBox(panel, -1, wxS("Enable auto-indent"));
+	cb_trim_whitespace_   = new wxCheckBox(panel, -1, wxS("Trim whitespace on save"));
+	cb_brace_match_       = new wxCheckBox(panel, -1, wxS("Hilight matching braces"));
 	spin_right_margin_    = wxutil::createSpinCtrl(panel, txed_edge_column, 0, 1000);
 	spin_line_spacing_    = wxutil::createSpinCtrl(panel, txed_line_extra_height, 0, 10);
-	cb_indent_guides_     = new wxCheckBox(panel, -1, "Show indentation guides");
-	cb_match_cursor_word_ = new wxCheckBox(panel, -1, "Hilight matching words");
+	cb_indent_guides_     = new wxCheckBox(panel, -1, wxS("Show indentation guides"));
+	cb_match_cursor_word_ = new wxCheckBox(panel, -1, wxS("Hilight matching words"));
 	rbp_line_hilight_     = new RadioButtonPanel(
         panel, { "Off", "Background", "Background+Underline" }, "Current line hilight:");
 	rbp_show_whitespace_ = new RadioButtonPanel(
@@ -149,9 +149,10 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 	gb_sizer->Add(cb_brace_match_, { row++, 0 }, { 1, 3 });
 	gb_sizer->Add(cb_match_cursor_word_, { row++, 0 }, { 1, 3 });
 	gb_sizer->Add(
-		new wxStaticText(panel, -1, "Right margin at column:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(panel, -1, wxS("Right margin at column:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_right_margin_, { row++, 1 }, { 1, 1 });
-	gb_sizer->Add(new wxStaticText(panel, -1, "Extra line spacing:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, wxS("Extra line spacing:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_line_spacing_, { row++, 1 }, { 1, 1 });
 	gb_sizer->Add(rbp_line_hilight_, { row++, 0 }, { 1, 3 });
 	gb_sizer->Add(rbp_show_whitespace_, { row++, 0 }, { 1, 3 });
@@ -170,18 +171,18 @@ wxPanel* TextEditorSettingsPanel::createCodePanel(wxWindow* parent)
 	panel->SetSizer(sizer);
 
 	// Create controls
-	cb_syntax_hilight_        = new wxCheckBox(panel, -1, "Enable syntax hilighting");
-	cb_calltips_mouse_        = new wxCheckBox(panel, -1, "Show calltips on mouse hover");
-	cb_calltips_parenthesis_  = new wxCheckBox(panel, -1, "Show calltips on opening parenthesis");
-	cb_calltips_colourise_    = new wxCheckBox(panel, -1, "Colourise calltip text");
-	cb_calltips_dim_optional_ = new wxCheckBox(panel, -1, "Dim optional function parameters");
-	cb_calltips_use_font_     = new wxCheckBox(panel, -1, "Use the text editor font in calltips");
-	cb_calltips_argset_kb_    = new wxCheckBox(panel, -1, "Use up/down keys to cycle function signatures");
-	cb_fold_enable_           = new wxCheckBox(panel, -1, "Enable code folding");
-	cb_fold_comments_         = new wxCheckBox(panel, -1, "Fold comment blocks");
-	cb_fold_preprocessor_     = new wxCheckBox(panel, -1, "Fold preprocessor regions");
-	cb_fold_lines_            = new wxCheckBox(panel, -1, "Show lines at contracted code folding regions");
-	cb_calltips_dim_optional_->SetToolTip("If disabled, optional parameters will be shown between [] brackets");
+	cb_syntax_hilight_        = new wxCheckBox(panel, -1, wxS("Enable syntax hilighting"));
+	cb_calltips_mouse_        = new wxCheckBox(panel, -1, wxS("Show calltips on mouse hover"));
+	cb_calltips_parenthesis_  = new wxCheckBox(panel, -1, wxS("Show calltips on opening parenthesis"));
+	cb_calltips_colourise_    = new wxCheckBox(panel, -1, wxS("Colourise calltip text"));
+	cb_calltips_dim_optional_ = new wxCheckBox(panel, -1, wxS("Dim optional function parameters"));
+	cb_calltips_use_font_     = new wxCheckBox(panel, -1, wxS("Use the text editor font in calltips"));
+	cb_calltips_argset_kb_    = new wxCheckBox(panel, -1, wxS("Use up/down keys to cycle function signatures"));
+	cb_fold_enable_           = new wxCheckBox(panel, -1, wxS("Enable code folding"));
+	cb_fold_comments_         = new wxCheckBox(panel, -1, wxS("Fold comment blocks"));
+	cb_fold_preprocessor_     = new wxCheckBox(panel, -1, wxS("Fold preprocessor regions"));
+	cb_fold_lines_            = new wxCheckBox(panel, -1, wxS("Show lines at contracted code folding regions"));
+	cb_calltips_dim_optional_->SetToolTip(wxS("If disabled, optional parameters will be shown between [] brackets"));
 
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());

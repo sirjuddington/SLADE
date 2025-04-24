@@ -73,12 +73,12 @@ namespace
 // -----------------------------------------------------------------------------
 // Creates a spin control with the given name and values
 // -----------------------------------------------------------------------------
-wxSpinCtrlDouble* createSpin(wxWindow* parent, const wxString& name, double min, double max, double initial, double inc)
+wxSpinCtrlDouble* createSpin(wxWindow* parent, const string& name, double min, double max, double initial, double inc)
 {
 	return new wxSpinCtrlDouble(
 		parent,
 		-1,
-		name,
+		wxString::FromUTF8(name),
 		wxDefaultPosition,
 		LayoutHelper(parent).spinSize(),
 		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
@@ -103,47 +103,60 @@ wxSpinCtrlDouble* createSpin(wxWindow* parent, const wxString& name, double min,
 ColorimetrySettingsPanel::ColorimetrySettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
 	// Create controls
-	spin_grey_r_          = createSpin(this, "GreyscaleRed", 0.0, 1.0, 0.001, 0.001);
-	spin_grey_g_          = createSpin(this, "GreyscaleGreen", 0.0, 1.0, 0.001, 0.001);
-	spin_grey_b_          = createSpin(this, "GreyscaleBlue", 0.0, 1.0, 0.001, 0.001);
-	wxString rbgweights[] = { "Default / Standard", "Carmack's Typo", "Linear RGB" };
-	choice_presets_grey_  = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, rbgweights);
-	wxString matchers[]   = { "RGB (integer)", "RGB (double)", "HSL", "CIE 76", "CIE 94", "CIEDE 2000" };
-	choice_colmatch_      = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 6, matchers);
-	spin_factor_r_        = createSpin(this, "RedFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_g_        = createSpin(this, "GreenFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_b_        = createSpin(this, "BlueFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_h_        = createSpin(this, "HueFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_s_        = createSpin(this, "SatFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_l_        = createSpin(this, "LumFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_tristim_x_       = createSpin(this, "TriStimX", 0.0, 200.0, 100.0, 0.1);
-	spin_tristim_z_       = createSpin(this, "TriStimZ", 0.0, 200.0, 100.0, 0.1);
-	wxString tristimuli[] = {
-		wxString::FromUTF8("Illuminant A, 2\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant A, 10\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant C, 2\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant C, 10\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant D50, 2\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant D50, 10\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant D60, 2\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant D60, 10\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant D65, 2\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant D65, 10\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant D75, 2\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant D75, 10\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant F2, 2\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant F2, 10\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant TL4, 2\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant TL4, 10\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant UL3000, 2\xc2\xb0 Observer"),
-		wxString::FromUTF8("Illuminant UL3000, 10\xc2\xb0 Observer"),
-	};
-	choice_presets_tristim_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 18, tristimuli);
-	spin_cie_kl_            = createSpin(this, "KL", 0.0, 10.0, 1.0, 0.1);
-	spin_cie_k1_            = createSpin(this, "K1", 0.0, 10.0, 1.0, 0.1);
-	spin_cie_k2_            = createSpin(this, "K2", 0.0, 10.0, 1.0, 0.1);
-	spin_cie_kc_            = createSpin(this, "KC", 0.0, 10.0, 1.0, 0.1);
-	spin_cie_kh_            = createSpin(this, "KH", 0.0, 10.0, 1.0, 0.1);
+	spin_grey_r_         = createSpin(this, "GreyscaleRed", 0.0, 1.0, 0.001, 0.001);
+	spin_grey_g_         = createSpin(this, "GreyscaleGreen", 0.0, 1.0, 0.001, 0.001);
+	spin_grey_b_         = createSpin(this, "GreyscaleBlue", 0.0, 1.0, 0.001, 0.001);
+	choice_presets_grey_ = new wxChoice(
+		this,
+		-1,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxutil::arrayStringStd({ "Default / Standard", "Carmack's Typo", "Linear RGB" }));
+	choice_colmatch_ = new wxChoice(
+		this,
+		-1,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxutil::arrayStringStd({ "RGB (integer)", "RGB (double)", "HSL", "CIE 76", "CIE 94", "CIEDE 2000" }));
+	spin_factor_r_          = createSpin(this, "RedFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_g_          = createSpin(this, "GreenFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_b_          = createSpin(this, "BlueFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_h_          = createSpin(this, "HueFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_s_          = createSpin(this, "SatFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_l_          = createSpin(this, "LumFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_tristim_x_         = createSpin(this, "TriStimX", 0.0, 200.0, 100.0, 0.1);
+	spin_tristim_z_         = createSpin(this, "TriStimZ", 0.0, 200.0, 100.0, 0.1);
+	choice_presets_tristim_ = new wxChoice(
+		this,
+		-1,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxutil::arrayStringStd(
+			{
+				"Illuminant A, 2\xc2\xb0 Observer",
+				"Illuminant A, 10\xc2\xb0 Observer",
+				"Illuminant C, 2\xc2\xb0 Observer",
+				"Illuminant C, 10\xc2\xb0 Observer",
+				"Illuminant D50, 2\xc2\xb0 Observer",
+				"Illuminant D50, 10\xc2\xb0 Observer",
+				"Illuminant D60, 2\xc2\xb0 Observer",
+				"Illuminant D60, 10\xc2\xb0 Observer",
+				"Illuminant D65, 2\xc2\xb0 Observer",
+				"Illuminant D65, 10\xc2\xb0 Observer",
+				"Illuminant D75, 2\xc2\xb0 Observer",
+				"Illuminant D75, 10\xc2\xb0 Observer",
+				"Illuminant F2, 2\xc2\xb0 Observer",
+				"Illuminant F2, 10\xc2\xb0 Observer",
+				"Illuminant TL4, 2\xc2\xb0 Observer",
+				"Illuminant TL4, 10\xc2\xb0 Observer",
+				"Illuminant UL3000, 2\xc2\xb0 Observer",
+				"Illuminant UL3000, 10\xc2\xb0 Observer",
+			}));
+	spin_cie_kl_ = createSpin(this, "KL", 0.0, 10.0, 1.0, 0.1);
+	spin_cie_k1_ = createSpin(this, "K1", 0.0, 10.0, 1.0, 0.1);
+	spin_cie_k2_ = createSpin(this, "K2", 0.0, 10.0, 1.0, 0.1);
+	spin_cie_kc_ = createSpin(this, "KC", 0.0, 10.0, 1.0, 0.1);
+	spin_cie_kh_ = createSpin(this, "KH", 0.0, 10.0, 1.0, 0.1);
 
 	setupLayout();
 
@@ -221,11 +234,11 @@ void ColorimetrySettingsPanel::setupLayout()
 		{ row++, 0 },
 		{ 1, cols },
 		wxEXPAND);
-	gbsizer->Add(new wxStaticText(this, -1, "R:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("R:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_grey_r_, { row, 1 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "G:"), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("G:")), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_grey_g_, { row, 3 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "B:"), { row, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("B:")), { row, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_grey_b_, { row, 5 }, { 1, 1 });
 	gbsizer->Add(wxutil::createLabelHBox(this, "Presets:", choice_presets_grey_), { row++, 6 }, { 1, 1 });
 
@@ -242,17 +255,17 @@ void ColorimetrySettingsPanel::setupLayout()
 		{ 1, 6 },
 		wxEXPAND | wxLEFT,
 		lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, "R:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("R:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_factor_r_, { row, 1 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "G:"), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("G:")), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_factor_g_, { row, 3 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "B:"), { row, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("B:")), { row, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_factor_b_, { row++, 5 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "H:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("H:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_factor_h_, { row, 1 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "S:"), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("S:")), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_factor_s_, { row, 3 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "L:"), { row, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("L:")), { row, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_factor_l_, { row++, 5 }, { 1, 1 });
 
 	// CIE Lab funkiness: tristimulus values for RGB->Lab conversion,
@@ -263,9 +276,9 @@ void ColorimetrySettingsPanel::setupLayout()
 		{ 1, cols },
 		wxEXPAND | wxTOP,
 		lh.padLarge());
-	gbsizer->Add(new wxStaticText(this, -1, "X:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("X:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_tristim_x_, { row, 1 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "Z:"), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Z:")), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_tristim_z_, { row, 3 }, { 1, 1 });
 	gbsizer->Add(wxutil::createLabelHBox(this, "Presets:", choice_presets_tristim_), { row++, 4 }, { 1, 3 });
 
@@ -276,24 +289,24 @@ void ColorimetrySettingsPanel::setupLayout()
 		wxEXPAND | wxTOP,
 		lh.padLarge());
 	gbsizer->Add(
-		new wxStaticText(this, -1, "KL:"),
+		new wxStaticText(this, -1, wxS("KL:")),
 		{ row, 0 },
 		{ 1, 1 },
 		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT | wxLEFT,
 		lh.pad());
 	gbsizer->Add(spin_cie_kl_, { row, 1 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "K1:"), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("K1:")), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_cie_k1_, { row, 3 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "K2:"), { row, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("K2:")), { row, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_cie_k2_, { row++, 5 }, { 1, 1 });
 	gbsizer->Add(
-		new wxStaticText(this, -1, "KC:"),
+		new wxStaticText(this, -1, wxS("KC:")),
 		{ row, 0 },
 		{ 1, 1 },
 		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT | wxLEFT,
 		lh.pad());
 	gbsizer->Add(spin_cie_kc_, { row, 1 }, { 1, 1 });
-	gbsizer->Add(new wxStaticText(this, -1, "KH:"), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("KH:")), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gbsizer->Add(spin_cie_kh_, { row, 3 }, { 1, 1 });
 
 	gbsizer->AddGrowableCol(6);

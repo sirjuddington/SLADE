@@ -211,7 +211,7 @@ public:
 				editor->beginUndoRecord("Change Texture", true, false, false);
 
 				// Set texture if one selected
-				auto texture = browser.selectedItem()->name().ToStdString();
+				auto texture = browser.selectedItem()->name();
 				switch (parts_[index])
 				{
 				case MapLine::Part::FrontUpper: lines_[index]->setStringProperty("side1.texturetop", texture); break;
@@ -1115,7 +1115,7 @@ public:
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
-				auto texture = browser.selectedItem()->name().ToStdString();
+				auto texture = browser.selectedItem()->name();
 				editor->beginUndoRecord("Change Texture", true, false, false);
 				switch (parts_[index])
 				{
@@ -1229,7 +1229,7 @@ public:
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
-				auto texture = browser.selectedItem()->name().ToStdString();
+				auto texture = browser.selectedItem()->name();
 				editor->beginUndoRecord("Change Texture");
 				if (floor_[index])
 					sectors_[index]->setFloorTexture(texture);

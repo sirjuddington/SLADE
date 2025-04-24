@@ -43,6 +43,7 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Layout.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -119,7 +120,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	sizer_gb->Add(txt_info_, wxGBPosition(4, 0), wxGBSpan(1, 9), wxEXPAND | wxHORIZONTAL);
 
 	// Add track number
-	txt_track_ = new wxStaticText(this, -1, "1/1");
+	txt_track_ = new wxStaticText(this, -1, wxS("1/1"));
 	sizer_gb->Add(txt_track_, wxGBPosition(1, 5), wxDefaultSpan, wxALIGN_CENTER);
 
 	// Separator
@@ -130,7 +131,8 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 		wxEXPAND);
 
 	// Add volume slider
-	sizer_gb->Add(new wxStaticText(this, -1, "Volume:"), wxGBPosition(1, 7), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	sizer_gb->Add(
+		new wxStaticText(this, -1, wxS("Volume:")), wxGBPosition(1, 7), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, lh.size(128, -1));
 	slider_volume_->SetValue(snd_volume);
 	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8), { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -198,8 +200,8 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	slider_seek_->SetValue(0);
 
 	// Delete previous temp file
-	if (wxFileExists(prevfile_))
-		wxRemoveFile(prevfile_);
+	if (fileutil::fileExists(prevfile_))
+		fileutil::removeFile(prevfile_);
 
 	// Open new data
 	if (!open(entry))
@@ -219,19 +221,19 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-wxString AudioEntryPanel::statusString()
+string AudioEntryPanel::statusString()
 {
 	int hours, minutes, seconds, milliseconds = song_length_ % 1000;
-	seconds      = (song_length_ / 1000) % 60;
-	minutes      = (song_length_ / 60000) % 60;
-	hours        = (song_length_ / 3600000);
-	wxString ret = wxEmptyString;
+	seconds = (song_length_ / 1000) % 60;
+	minutes = (song_length_ / 60000) % 60;
+	hours   = (song_length_ / 3600000);
+	string ret;
 	if (hours)
-		ret = wxString::Format("%d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
+		ret = fmt::format("{}:{:02d}:{:02d}.{:03d}", hours, minutes, seconds, milliseconds);
 	else if (minutes)
-		ret = wxString::Format("%d:%02d.%03d", minutes, seconds, milliseconds);
+		ret = fmt::format("{}:{:02d}.{:03d}", minutes, seconds, milliseconds);
 	else
-		ret = wxString::Format("%d.%03d", seconds, milliseconds);
+		ret = fmt::format("{}.{:03d}", seconds, milliseconds);
 
 	return ret;
 }
@@ -275,10 +277,10 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 	auto& mcdata = entry->data();
 
 	// Setup temp filename
-	wxFileName path(app::path(entry->name(), app::Dir::Temp));
+	strutil::Path path(app::path(entry->name(), app::Dir::Temp));
 	// Add extension if missing
-	if (path.GetExt().IsEmpty())
-		path.SetExt(entry->type()->extension());
+	if (!path.hasExtension())
+		path.setExtension(entry->type()->extension());
 
 	// Convert if necessary, then write to file
 	data_.clear();
@@ -300,26 +302,26 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 	else if (entry->type()->formatId() == "midi_mus") // MUS -> MIDI
 	{
 		conversion::musToMidi(mcdata, data_);
-		path.SetExt("mid");
+		path.setExtension("mid");
 	}
 	else if (
 		entry->type()->formatId() == "midi_xmi" || // HMI/HMP/XMI -> MIDI
 		entry->type()->formatId() == "midi_hmi" || entry->type()->formatId() == "midi_hmp")
 	{
 		conversion::zmusToMidi(mcdata, data_, 0, &num_tracks_);
-		path.SetExt("mid");
+		path.setExtension("mid");
 	}
 	else if (entry->type()->formatId() == "midi_gmid") // GMID -> MIDI
 	{
 		conversion::gmidToMidi(mcdata, data_);
-		path.SetExt("mid");
+		path.setExtension("mid");
 	}
 	else
 		data_.importMem(mcdata.data(), mcdata.size());
 
 	// MIDI format
 	if (strutil::startsWith(entry->type()->formatId(), "midi_"))
-		openMidi(data_, path.GetFullPath());
+		openMidi(data_, path.fullPath());
 
 	// MOD format
 	else if (strutil::startsWith(entry->type()->formatId(), "mod_"))
@@ -331,13 +333,13 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 
 	// Other format
 	else
-		openAudio(data_, path.GetFullPath());
+		openAudio(data_, path.fullPath());
 
 	// Keep filename so we can delete it later
-	prevfile_ = path.GetFullPath();
+	prevfile_ = path.fullPath();
 
-	txt_title_->SetLabel(entry->path(true));
-	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
+	txt_title_->SetLabel(wxString::FromUTF8(entry->path(true)));
+	txt_track_->SetLabel(WX_FMT("{}/{}", subsong_ + 1, num_tracks_));
 	updateInfo(*entry);
 
 	// Disable prev/next track buttons if only one track is available
@@ -355,7 +357,7 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Opens an audio file for playback (SFML 2.x+)
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
+bool AudioEntryPanel::openAudio(MemChunk& audio, string_view filename)
 {
 	// Stop if sound currently playing
 	resetStream();
@@ -406,7 +408,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
 // -----------------------------------------------------------------------------
 // Opens a MIDI file for playback
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openMidi(MemChunk& data, const wxString& filename)
+bool AudioEntryPanel::openMidi(MemChunk& data, string_view filename)
 {
 	audio_type_ = MIDI;
 
@@ -555,8 +557,8 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 {
 	txt_info_->Clear();
 
-	wxString info = entry.typeString() + "\n";
-	auto&    mc   = entry.data();
+	string info = entry.typeString() + "\n";
+	auto&  mc   = entry.data();
 	switch (audio_type_)
 	{
 	case Sound:
@@ -566,18 +568,17 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 		{
 			size_t samplerate = mc.readL16(2);
 			size_t samples    = mc.readL16(4);
-			info += wxString::Format(
-				"%lu samples at %lu Hz", static_cast<unsigned long>(samples), static_cast<unsigned long>(samplerate));
+			info += fmt::format("{} samples at {} Hz", static_cast<unsigned long>(samples), static_cast<unsigned long>(samplerate));
 		}
 		else if (entry.type() == EntryType::fromId("snd_speaker"))
 		{
 			size_t samples = mc.readL16(2);
-			info += wxString::Format("%lu samples", static_cast<unsigned long>(samples));
+			info += fmt::format("{} samples", static_cast<unsigned long>(samples));
 		}
 		else if (entry.type() == EntryType::fromId("snd_audiot"))
 		{
 			size_t samples = mc.readL16(0);
-			info += wxString::Format("%lu samples", static_cast<unsigned long>(samples));
+			info += fmt::format("{} samples", static_cast<unsigned long>(samples));
 		}
 		else if (entry.type() == EntryType::fromId("snd_sun"))
 			info += audio::getSunInfo(mc);
@@ -611,7 +612,7 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 		break;
 	default: break;
 	}
-	txt_info_->SetValue(info);
+	txt_info_->SetValue(wxString::FromUTF8(info));
 	if (info.length())
 		return true;
 	return false;
@@ -677,7 +678,7 @@ void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
 		updateInfo(*entry);
 	}
 
-	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
+	txt_track_->SetLabel(WX_FMT("{}/{}", subsong_ + 1, num_tracks_));
 }
 
 // -----------------------------------------------------------------------------
@@ -696,7 +697,7 @@ void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
 		updateInfo(*entry);
 	}
 
-	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
+	txt_track_->SetLabel(WX_FMT("{}/{}", subsong_ + 1, num_tracks_));
 }
 
 // -----------------------------------------------------------------------------

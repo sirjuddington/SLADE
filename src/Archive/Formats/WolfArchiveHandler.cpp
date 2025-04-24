@@ -78,8 +78,8 @@ string findFileCasing(const strutil::Path& filename)
 	bool     cont = dir.GetFirst(&found);
 	while (cont)
 	{
-		if (strutil::equalCI(wxutil::strToView(found), filename.fileName()))
-			return (dir.GetNameWithSep() + found).ToStdString();
+		if (strutil::equalCI(found.utf8_string(), filename.fileName()))
+			return (dir.GetNameWithSep() + found).utf8_string();
 		cont = dir.GetNext(&found);
 	}
 
@@ -1021,7 +1021,7 @@ bool WolfArchiveHandler::isThisFormat(const string& filename)
 	// else we have to deal with a VSWAP archive, which is the only self-contained type
 
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

@@ -17,7 +17,7 @@ public:
 	void setArgsPanel(ArgsPanel* panel) { panel_args_ = panel; }
 	void setSpecial(int special);
 	void setTrigger(int index) const;
-	void setTrigger(const wxString& trigger) const;
+	void setTrigger(string_view trigger) const;
 	void clearTrigger() const;
 	int  selectedSpecial() const;
 	void showGeneralised(bool show = true);
@@ -47,7 +47,7 @@ private:
 	{
 		wxCheckBox* check_box;
 		int         index;
-		wxString    udmf;
+		string      udmf;
 	};
 	vector<FlagHolder> flags_;
 };

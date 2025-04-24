@@ -72,21 +72,21 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	sizer->Add(stc_tabs_, 1, wxEXPAND);
 
 	// General tab
-	stc_tabs_->AddPage(setupGeneralTab(), "General");
+	stc_tabs_->AddPage(setupGeneralTab(), wxS("General"));
 
 	// Special tab
-	stc_tabs_->AddPage(setupSpecialTab(), "Special");
+	stc_tabs_->AddPage(setupSpecialTab(), wxS("Special"));
 
 	// Args tab
 	if (mapeditor::editContext().mapDesc().format != MapFormat::Doom)
 	{
 		panel_args_ = new ArgsPanel(this);
-		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), "Args");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), wxS("Args"));
 		panel_special_->setArgsPanel(panel_args_);
 	}
 
 	// Textures tab
-	stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, setupTexturesTab()), "Textures");
+	stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, setupTexturesTab()), wxS("Textures"));
 
 	// All properties tab
 	mopp_all_props_ = new MapObjectPropsPanel(stc_tabs_, true);
@@ -104,7 +104,7 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	mopp_all_props_->hideProperty("offsetx");
 	mopp_all_props_->hideProperty("offsety");
 	mopp_all_props_->hideProperty("id");
-	stc_tabs_->AddPage(mopp_all_props_, "Other Properties");
+	stc_tabs_->AddPage(mopp_all_props_, wxS("Other Properties"));
 
 	// Bind events
 	cb_override_special_->Bind(
@@ -135,7 +135,7 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 		bool val = false;
 		for (auto& flag : flags_)
 		{
-			if (MapObject::multiBoolProperty(lines, flag.udmf.ToStdString(), val))
+			if (MapObject::multiBoolProperty(lines, flag.udmf, val))
 				flag.check_box->SetValue(val);
 			else
 				flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
@@ -258,7 +258,7 @@ void LinePropsPanel::applyChanges()
 			// UDMF
 			for (auto& flag : flags_)
 				if (flag.check_box->Get3StateValue() != wxCHK_UNDETERMINED)
-					object->setBoolProperty(flag.udmf.ToStdString(), flag.check_box->GetValue());
+					object->setBoolProperty(flag.udmf, flag.check_box->GetValue());
 		}
 		else
 		{
@@ -320,7 +320,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	panel_flags->SetSizer(sizer);
 
 	// Flags
-	auto sizer_flags = new wxStaticBoxSizer(wxVERTICAL, panel_flags, "Flags");
+	auto sizer_flags = new wxStaticBoxSizer(wxVERTICAL, panel_flags, wxS("Flags"));
 	sizer->Add(sizer_flags, lh.sfWithBorder().Expand());
 
 	// Init flags
@@ -348,7 +348,12 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		for (unsigned a = 0; a < flags_udmf.size(); a++)
 		{
 			auto cb_flag = new wxCheckBox(
-				panel_flags, -1, flags_udmf[a].name(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+				panel_flags,
+				-1,
+				wxString::FromUTF8(flags_udmf[a].name()),
+				wxDefaultPosition,
+				wxDefaultSize,
+				wxCHK_3STATE);
 			gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
 			flags_.push_back({ cb_flag, static_cast<int>(a), flags_udmf[a].propName() });
 
@@ -375,12 +380,12 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 			auto cb_flag = new wxCheckBox(
 				panel_flags,
 				-1,
-				game::configuration().lineFlag(a).name,
+				wxString::FromUTF8(game::configuration().lineFlag(a).name),
 				wxDefaultPosition,
 				wxDefaultSize,
 				wxCHK_3STATE);
 			gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
-			flags_.push_back({ cb_flag, static_cast<int>(a), wxEmptyString });
+			flags_.push_back({ cb_flag, static_cast<int>(a), "" });
 
 			if (row > flag_mid)
 			{
@@ -400,9 +405,9 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
-		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		hbox->Add(new wxStaticText(panel_flags, -1, wxS("Sector Tag:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 		hbox->Add(text_tag_ = new NumberTextCtrl(panel_flags), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
-		btn_new_tag_ = new wxButton(panel_flags, -1, "New Tag");
+		btn_new_tag_ = new wxButton(panel_flags, -1, wxS("New Tag"));
 		hbox->Add(btn_new_tag_, wxSizerFlags().Expand());
 
 		// Bind event
@@ -417,9 +422,9 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
-		hbox->Add(new wxStaticText(panel_flags, -1, "Line ID:"), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		hbox->Add(new wxStaticText(panel_flags, -1, wxS("Line ID:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 		hbox->Add(text_id_ = new NumberTextCtrl(panel_flags), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
-		hbox->Add(btn_new_id_ = new wxButton(panel_flags, -1, "New ID"), wxSizerFlags().Expand());
+		hbox->Add(btn_new_id_ = new wxButton(panel_flags, -1, wxS("New ID")), wxSizerFlags().Expand());
 
 		// Bind event
 		btn_new_id_->Bind(
@@ -451,9 +456,9 @@ wxPanel* LinePropsPanel::setupSpecialTab()
 	sizer->Add(panel_special_, lh.sfWithBorder(1).Expand());
 
 	// 'Override Special' checkbox
-	cb_override_special_ = new wxCheckBox(panel, -1, "Override Action Special");
+	cb_override_special_ = new wxCheckBox(panel, -1, wxS("Override Action Special"));
 	cb_override_special_->SetToolTip(
-		"Differing action specials detected, tick this to set the action special for all selected lines");
+		wxS("Differing action specials detected, tick this to set the action special for all selected lines"));
 	sizer->Add(cb_override_special_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	return panel;
@@ -471,13 +476,13 @@ wxPanel* LinePropsPanel::setupTexturesTab()
 	panel->SetSizer(sizer);
 
 	// Front side
-	auto sbs_front = new wxStaticBoxSizer(wxVERTICAL, panel, "Front Side");
+	auto sbs_front = new wxStaticBoxSizer(wxVERTICAL, panel, wxS("Front Side"));
 	sbs_front->AddSpacer(lh.padSmall());
 	sbs_front->Add(panel_side1_ = new SidePropsPanel(panel), wxSizerFlags(1).Expand());
 	sizer->Add(sbs_front, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Back side
-	auto sbs_back = new wxStaticBoxSizer(wxVERTICAL, panel, "Back Side");
+	auto sbs_back = new wxStaticBoxSizer(wxVERTICAL, panel, wxS("Back Side"));
 	sbs_back->AddSpacer(lh.padSmall());
 	sbs_back->Add(panel_side2_ = new SidePropsPanel(panel), wxSizerFlags(1).Expand());
 	sizer->Add(sbs_back, lh.sfWithBorder(0, wxBOTTOM).Expand());

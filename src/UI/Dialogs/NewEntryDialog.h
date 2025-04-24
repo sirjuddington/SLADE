@@ -7,9 +7,9 @@ class NewEntryDialog : public wxDialog
 public:
 	NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveDir* current_dir, bool new_dir = false);
 
-	wxString entryName() const;
+	string entryName() const;
 	int      entryType() const;
-	wxString parentDirPath() const;
+	string parentDirPath() const;
 
 private:
 	wxComboBox* combo_parent_dir_  = nullptr;

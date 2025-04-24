@@ -78,7 +78,7 @@ void SZoomSlider::setup()
 	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, lh.size(150, -1));
 	slider_zoom_->SetLineSize(10);
 	slider_zoom_->SetPageSize(100);
-	label_zoom_amount_ = new wxStaticText(this, -1, "100%");
+	label_zoom_amount_ = new wxStaticText(this, -1, wxS("100%"));
 
 	// Layout
 	SetSizer(new wxBoxSizer(wxHORIZONTAL));
@@ -91,7 +91,7 @@ void SZoomSlider::setup()
 		[&](wxCommandEvent&)
 		{
 			// Update zoom label
-			label_zoom_amount_->SetLabel(wxString::Format("%d%%", zoomPercent()));
+			label_zoom_amount_->SetLabel(WX_FMT("{}%", zoomPercent()));
 
 			// Zoom gfx/texture canvas and update
 			if (linked_gfx_canvas_)

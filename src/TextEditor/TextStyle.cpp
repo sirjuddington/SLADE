@@ -159,7 +159,7 @@ void TextStyle::applyTo(wxStyledTextCtrl* stc) const
 		if (!txed_override_font.value.empty())
 			stc->StyleSetFaceName(wx_style, txed_override_font);
 		else if (!font_.empty())
-			stc->StyleSetFaceName(wx_style, font_);
+			stc->StyleSetFaceName(wx_style, wxString::FromUTF8(font_));
 
 		// Set font size
 		if (txed_override_font_size > 0)
@@ -274,7 +274,7 @@ StyleSet::StyleSet(string_view name) :
 {
 	// Init default style
 	wxFont f(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-	ts_default_.font_ = f.GetFaceName();
+	ts_default_.font_ = f.GetFaceName().utf8_string();
 	ts_default_.size_ = 10;
 	ts_default_.foreground_.set(0, 0, 0, 255);
 	ts_default_.fg_defined_ = true;
@@ -409,13 +409,13 @@ void StyleSet::applyToWx(wxStyledTextCtrl* stc)
 	if (ts_selection_.hasBackground())
 		stc->SetSelBackground(true, ts_selection_.background_);
 	else
-		stc->SetSelBackground(false, wxColour("red"));
+		stc->SetSelBackground(false, wxColour(wxS("red")));
 
 	// Set selection foreground if customised
 	if (ts_selection_.hasForeground())
 		stc->SetSelForeground(true, ts_selection_.foreground_);
 	else
-		stc->SetSelForeground(false, wxColour("red"));
+		stc->SetSelForeground(false, wxColour(wxS("red")));
 
 	// Set caret colour to text foreground colour
 	stc->SetCaretForeground(ts_default_.foreground_);
@@ -493,40 +493,40 @@ TextStyle* StyleSet::style(unsigned index)
 bool StyleSet::writeFile(string_view filename) const
 {
 	// Open file for writing
-	wxFile file(wxString{ filename.data(), filename.size() }, wxFile::write);
+	SFile file(filename, SFile::Mode::Write);
 
-	if (!file.IsOpened())
+	if (!file.isOpen())
 		return false;
 
 	// Write opening
-	file.Write("styleset {\n");
+	file.writeStr("styleset {\n");
 
 	// Name
-	file.Write(wxString::Format("\tname = \"%s\";\n\n", name_));
+	file.writeStr(fmt::format("\tname = \"{}\";\n\n", name_));
 
 	// Default style
-	file.Write("\tdefault {\n");
-	file.Write(ts_default_.textDefinition(2));
-	file.Write("\t}\n\n");
+	file.writeStr("\tdefault {\n");
+	file.writeStr(ts_default_.textDefinition(2));
+	file.writeStr("\t}\n\n");
 
 	// Selection style
-	file.Write("\tselection {\n");
-	file.Write(ts_selection_.textDefinition(2));
-	file.Write("\t}\n\n");
+	file.writeStr("\tselection {\n");
+	file.writeStr(ts_selection_.textDefinition(2));
+	file.writeStr("\t}\n\n");
 
 	// Other styles
 	for (auto& style : styles_)
 	{
-		file.Write(wxString::Format("\t%s {\n", style.name_));
-		file.Write(style.textDefinition(2));
-		file.Write("\t}\n\n");
+		file.writeStr(fmt::format("\t{} {{\n", style.name_));
+		file.writeStr(style.textDefinition(2));
+		file.writeStr("\t}\n\n");
 	}
 
 	// Write end
-	file.Write("}\n");
+	file.writeStr("}}\n");
 
 	// Close file
-	file.Close();
+	file.close();
 
 	return true;
 }

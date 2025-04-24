@@ -47,11 +47,11 @@ using namespace ui;
 // RadioButtonPanel class constructor
 // -----------------------------------------------------------------------------
 RadioButtonPanel::RadioButtonPanel(
-	wxWindow*               parent,
-	const vector<wxString>& choices,
-	const wxString&         label,
-	int                     selected,
-	int                     orientation) :
+	wxWindow*             parent,
+	const vector<string>& choices,
+	const string&         label,
+	int                   selected,
+	int                   orientation) :
 	wxPanel(parent)
 {
 	auto lh    = LayoutHelper(this);
@@ -60,7 +60,7 @@ RadioButtonPanel::RadioButtonPanel(
 	// Check if we need to add a label
 	if (!label.empty())
 	{
-		auto text       = new wxStaticText(this, wxID_ANY, label);
+		auto text       = new wxStaticText(this, wxID_ANY, wxString::FromUTF8(label));
 		auto main_sizer = new wxBoxSizer(wxVERTICAL);
 		main_sizer->Add(text, lh.sfWithSmallBorder(0, wxBOTTOM));
 		main_sizer->Add(sizer, lh.sfWithXLargeBorder(1, wxLEFT).Expand());
@@ -75,7 +75,7 @@ RadioButtonPanel::RadioButtonPanel(
 		if (i > 0)
 			sizer->AddSpacer(lh.pad());
 
-		auto rb = new wxRadioButton(this, wxID_ANY, choices[i]);
+		auto rb = new wxRadioButton(this, wxID_ANY, wxString::FromUTF8(choices[i]));
 		sizer->Add(rb, wxSizerFlags());
 		radio_buttons_.push_back(rb);
 

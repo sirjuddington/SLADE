@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MIDIPlayer.h"
 #include "App.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
@@ -431,12 +432,11 @@ public:
 
 		// Setup environment and command line to run
 		wxExecuteEnv env;
-		env.cwd          = string{ strutil::Path::pathOf(snd_timidity_path) };
-		auto commandline = fmt::format(
-			R"("{}" "{}" {})", string(snd_timidity_path), file_, string(snd_timidity_options));
+		env.cwd          = wxutil::strFromView(strutil::Path::pathOf(snd_timidity_path));
+		auto commandline = fmt::format(R"("{}" "{}" {})", snd_timidity_path.value, file_, snd_timidity_options.value);
 
 		// Execute program
-		pid_ = wxExecute(commandline, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, nullptr, &env);
+		pid_ = wxExecute(wxString::FromUTF8(commandline), wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, nullptr, &env);
 
 		return pid_ > 0 && wxProcess::Exists(pid_);
 	}
