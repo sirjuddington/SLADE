@@ -22,13 +22,13 @@ public:
 		bool      creating     = false);
 	~MapEditorConfigDialog() override;
 
-	void     populateGameList();
-	void     populatePortList();
-	void     populateMapList();
-	MapDesc  selectedMap();
-	bool     configMatchesMap(const MapDesc& map) const;
-	string selectedGame();
-	string selectedPort();
+	void    populateGameList();
+	void    populatePortList();
+	void    populateMapList();
+	MapDesc selectedMap();
+	bool    configMatchesMap(const MapDesc& map) const;
+	string  selectedGame();
+	string  selectedPort();
 
 private:
 	wxChoice*                  choice_game_config_   = nullptr;
@@ -42,14 +42,14 @@ private:
 	wxImageList*               img_list_       = nullptr;
 	wxButton*                  btn_ok_         = nullptr;
 	wxButton*                  btn_cancel_     = nullptr;
-	string                   game_current_;
-	string                   port_current_;
+	string                     game_current_;
+	string                     port_current_;
 	bool                       creating_ = false;
 
-	Archive*         archive_ = nullptr;
-	vector<MapDesc>  maps_;
-	vector<string> games_list_;
-	vector<string> ports_list_;
+	Archive*        archive_ = nullptr;
+	vector<MapDesc> maps_;
+	vector<string>  games_list_;
+	vector<string>  ports_list_;
 
 	// Events
 	void onChoiceGameConfigChanged(wxCommandEvent& e);

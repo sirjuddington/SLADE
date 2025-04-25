@@ -155,7 +155,7 @@ public:
 				{
 					auto sp = strutil::splitV(block, ':');
 					skip    = strutil::asInt(sp.back());
-					block = sp[0];
+					block   = sp[0];
 				}
 
 				if (strutil::equalCI(token, block))

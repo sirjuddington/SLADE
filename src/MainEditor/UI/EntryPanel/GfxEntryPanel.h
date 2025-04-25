@@ -23,15 +23,15 @@ public:
 
 	Translation& prevTranslation() const { return *prev_translation_; }
 
-	void     setupToolbars();
-	void     fillBrushMenu(wxMenu* bm) const;
-	void     updateImagePalette() const;
-	GfxView  detectOffsetType(ArchiveEntry* entry) const;
-	void     applyViewType(ArchiveEntry* entry) const;
-	void     refresh(ArchiveEntry* entry = nullptr);
-	void     refreshPanel() override;
-	string statusString() override;
-	bool     extractAll() const;
+	void    setupToolbars();
+	void    fillBrushMenu(wxMenu* bm) const;
+	void    updateImagePalette() const;
+	GfxView detectOffsetType(ArchiveEntry* entry) const;
+	void    applyViewType(ArchiveEntry* entry) const;
+	void    refresh(ArchiveEntry* entry = nullptr);
+	void    refreshPanel() override;
+	string  statusString() override;
+	bool    extractAll() const;
 
 	// SAction handler
 	bool handleEntryPanelAction(string_view id) override;

@@ -83,8 +83,8 @@ class NewMapDialog : public wxDialog
 public:
 	NewMapDialog(
 		wxWindow*              parent,
-		const string&        game,
-		const string&        port,
+		const string&          game,
+		const string&          port,
 		const vector<MapDesc>& maps,
 		const Archive*         archive) :
 		wxDialog(parent, -1, wxS("New Map"))

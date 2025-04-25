@@ -32,8 +32,8 @@ public:
 	virtual string itemInfo() { return ""; }
 
 protected:
-	string       type_;
-	string       name_;
+	string         type_;
+	string         name_;
 	unsigned       index_     = 0;
 	unsigned       image_tex_ = 0;
 	BrowserWindow* parent_    = nullptr;

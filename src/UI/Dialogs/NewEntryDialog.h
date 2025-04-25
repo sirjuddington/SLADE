@@ -8,7 +8,7 @@ public:
 	NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveDir* current_dir, bool new_dir = false);
 
 	string entryName() const;
-	int      entryType() const;
+	int    entryType() const;
 	string parentDirPath() const;
 
 private:

@@ -60,8 +60,8 @@
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/UI.h"
-#include "Utility/Colour.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 
 

@@ -38,9 +38,9 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/ActionSpecialPanel.h"
 #include "MapEditor/UI/ArgsPanel.h"
-#include "UI/Layout.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
 #include "SpecialPresetDialog.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;

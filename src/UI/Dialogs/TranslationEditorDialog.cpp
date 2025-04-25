@@ -100,7 +100,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	wxWindow*      parent,
 	const Palette& pal,
 	const string&  title,
-	const SImage*   preview_image) :
+	const SImage*  preview_image) :
 	wxDialog(parent, -1, wxString::FromUTF8(title)),
 	palette_{ new Palette(pal) },
 	translation_{ new Translation },

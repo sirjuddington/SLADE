@@ -38,8 +38,8 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
-#include "Utility/PropertyList.h"
 #include "Utility/FileUtils.h"
+#include "Utility/PropertyList.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 

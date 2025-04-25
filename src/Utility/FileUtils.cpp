@@ -304,9 +304,9 @@ bool SFile::open(const string& path, Mode mode)
 	switch (mode)
 	{
 	case Mode::ReadOnly: handle_ = _wfopen(wpath.wc_str(), L"rb"); break;
-	case Mode::Write: handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
+	case Mode::Write:    handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
 	case Mode::ReadWite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
-	case Mode::Append: handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
+	case Mode::Append:   handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
 	}
 #else
 	switch (mode)

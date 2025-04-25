@@ -568,7 +568,8 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 		{
 			size_t samplerate = mc.readL16(2);
 			size_t samples    = mc.readL16(4);
-			info += fmt::format("{} samples at {} Hz", static_cast<unsigned long>(samples), static_cast<unsigned long>(samplerate));
+			info += fmt::format(
+				"{} samples at {} Hz", static_cast<unsigned long>(samples), static_cast<unsigned long>(samplerate));
 		}
 		else if (entry.type() == EntryType::fromId("snd_speaker"))
 		{

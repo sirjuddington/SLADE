@@ -354,10 +354,10 @@ wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 {
 	switch (col)
 	{
-	case 0: return wxS("wxDataViewIconText");
-	case 1: return wxS("string");
-	case 2: return wxS("string");
-	case 3: return wxS("string"); // Index is a number technically, but will need to be blank for folders
+	case 0:  return wxS("wxDataViewIconText");
+	case 1:  return wxS("string");
+	case 2:  return wxS("string");
+	case 3:  return wxS("string"); // Index is a number technically, but will need to be blank for folders
 	default: return wxS("string");
 	}
 }

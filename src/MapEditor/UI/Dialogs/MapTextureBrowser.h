@@ -20,8 +20,8 @@ public:
 	string determineTexturePath(
 		const Archive*     archive,
 		MapTextureCategory category,
-		const string&    type,
-		const string&    path) const;
+		const string&      type,
+		const string&      path) const;
 	void doSort(unsigned sort_type) override;
 	void updateUsage() const;
 

@@ -212,8 +212,7 @@ void ZoomControl::setup()
 	auto  lh   = LayoutHelper(this);
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(hbox);
-	hbox->Add(
-		new wxStaticText(this, -1, wxS("Zoom:")), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(new wxStaticText(this, -1, wxS("Zoom:")), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(btn_zoom_out_, wxSizerFlags().CenterVertical());
 	hbox->Add(cb_zoom_, wxSizerFlags(1).Expand());
 	hbox->Add(btn_zoom_in_, wxSizerFlags().CenterVertical());

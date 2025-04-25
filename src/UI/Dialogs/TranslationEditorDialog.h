@@ -37,7 +37,7 @@ public:
 		wxWindow*      parent,
 		const Palette& pal,
 		const string&  title         = "Edit Translation",
-		const SImage*   preview_image = nullptr);
+		const SImage*  preview_image = nullptr);
 	~TranslationEditorDialog() override;
 
 	Translation& getTranslation() const { return *translation_; }
