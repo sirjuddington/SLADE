@@ -345,7 +345,7 @@ string misc::lumpNameToFileName(string_view lump)
 // -----------------------------------------------------------------------------
 // Turns a file name into a lump name
 // -----------------------------------------------------------------------------
-string misc::fileNameToLumpName(string_view file)
+string misc::fileNameToLumpName(string_view file, bool percent_encoding_only)
 {
 	if (percent_encoding)
 	{
@@ -367,6 +367,9 @@ string misc::fileNameToLumpName(string_view file)
 
 		return lump;
 	}
+
+	if (percent_encoding_only)
+		return string{ file };
 
 	// ZDoom
 	string lump{ file };

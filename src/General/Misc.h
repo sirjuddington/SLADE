@@ -32,7 +32,7 @@ namespace misc
 
 	string   sizeAsString(uint32_t size);
 	string   lumpNameToFileName(string_view lump);
-	string   fileNameToLumpName(string_view file);
+	string   fileNameToLumpName(string_view file, bool percent_encoding_only = false);
 	uint32_t crc(const uint8_t* buf, uint32_t len);
 	Vec2i    findJaguarTextureDimensions(ArchiveEntry* entry, string_view name);
 
