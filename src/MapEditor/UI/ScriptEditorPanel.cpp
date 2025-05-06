@@ -217,8 +217,8 @@ void ScriptEditorPanel::saveScripts() const
 		text_editor_->trimWhitespace();
 
 	// Write text to entry
-	auto buf = text_editor_->GetText().ToUTF8();
-	entry_script_->importMem(buf, buf.length());
+	auto buf = text_editor_->GetText().utf8_string();
+	entry_script_->importMem(buf.data(), buf.length());
 
 	// Process ACS open scripts
 	auto lang = game::configuration().scriptLanguage();

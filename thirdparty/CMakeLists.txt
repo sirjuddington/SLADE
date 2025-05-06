@@ -8,6 +8,7 @@ set(BZIP2_LIBRARIES ${BZIP2_LIBRARIES} PARENT_SCOPE)
 
 option(USE_SYSTEM_DUMB "Use system DUMB library" OFF)
 if(USE_SYSTEM_DUMB)
+	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(DUMB REQUIRED IMPORTED_TARGET dumb>=1.0)
 else()
 	file(GLOB_RECURSE DUMB_SOURCES dumb/*.c)

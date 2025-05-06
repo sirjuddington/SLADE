@@ -362,6 +362,23 @@ TranslationEditorDialog::TranslationEditorDialog(
 	cb_truecolor_->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBTruecolor, this);
 	cb_paletteonly_->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBPaletteOnly, this);
 
+	// If the mouse leaves a palette canvas while dragging, act as if dragging was stopped
+	pal_canvas_original_->Bind(
+		wxEVT_LEAVE_WINDOW,
+		[&](wxMouseEvent& e)
+		{
+			if (e.LeftIsDown())
+				onPalOriginLeftUp(e);
+		});
+	pal_canvas_target_->Bind(
+		wxEVT_LEAVE_WINDOW,
+		[&](wxMouseEvent& e)
+		{
+			if (e.LeftIsDown())
+				onPalTargetLeftUp(e);
+		});
+
+
 	// Setup layout
 	wxWindowBase::Layout();
 	SetInitialSize(wxSize(-1, -1));

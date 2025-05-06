@@ -258,7 +258,7 @@ void ArchiveEntry::unlock()
 void ArchiveEntry::formatName(const ArchiveFormatInfo& format)
 {
 	// Perform character substitution if needed
-	name_ = misc::fileNameToLumpName(name_);
+	name_ = misc::fileNameToLumpName(name_, true);
 
 	// Max length
 	if (format.max_name_length > 0 && static_cast<int>(name_.size()) > format.max_name_length)
