@@ -494,7 +494,7 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 void TextEditorCtrl::getRawText(MemChunk& mc) const
 {
 	mc.clear();
-	auto text = GetText().ToUTF8();
+	auto text = GetText().utf8_string();
 	mc.importMem(reinterpret_cast<const uint8_t*>(text.data()), text.length());
 }
 
