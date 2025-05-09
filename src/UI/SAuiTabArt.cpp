@@ -440,6 +440,7 @@ void SAuiTabArt::DrawTab(
 	dc.DestroyClippingRegion();
 }
 
+#if wxCHECK_VERSION(3, 3, 0)
 int SAuiTabArt::DrawPageTab(wxDC& dc, wxWindow* wnd, wxAuiNotebookPage& page, const wxRect& rect)
 {
 	wxCoord normal_textx, normal_texty;
@@ -659,8 +660,6 @@ int SAuiTabArt::DrawPageTab(wxDC& dc, wxWindow* wnd, wxAuiNotebookPage& page, co
 	return x_extent;
 }
 
-
-#if wxCHECK_VERSION(3, 3, 0)
 wxSize SAuiTabArt::GetPageTabSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiNotebookPage& page, int* xExtent)
 {
 	wxCoord measured_textx, measured_texty, tmp;
