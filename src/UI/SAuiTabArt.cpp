@@ -441,14 +441,265 @@ void SAuiTabArt::DrawTab(
 }
 
 #if wxCHECK_VERSION(3, 3, 0)
-wxSize SAuiTabArt::GetTabSize(
-	wxReadOnlyDC&         dc,
-	wxWindow*             wnd,
-	const wxString&       caption,
-	const wxBitmapBundle& bitmap,
-	bool                  WXUNUSED(active),
-	int                   close_button_state,
-	int*                  x_extent)
+int SAuiTabArt::DrawPageTab(wxDC& dc, wxWindow* wnd, wxAuiNotebookPage& page, const wxRect& rect)
+{
+	wxCoord normal_textx, normal_texty;
+	wxCoord selected_textx, selected_texty;
+	wxCoord texty;
+
+	// if the caption is empty, measure some temporary text
+	wxString caption = page.caption;
+	if (caption.empty())
+		caption = wxT("Xj");
+
+	// Regular tab control titles require double ampersands to show a single one, emulate that here
+	caption.Replace(wxS("&&"), wxS("&"));
+
+	dc.SetFont(m_selectedFont);
+	dc.GetTextExtent(caption, &selected_textx, &selected_texty);
+
+	dc.SetFont(m_normalFont);
+	dc.GetTextExtent(caption, &normal_textx, &normal_texty);
+
+	bool bluetab = false;
+	if (page.window->GetName() == wxS("startpage"))
+		bluetab = true;
+
+	// figure out the size of the tab
+	int    x_extent = 0;
+	wxSize tab_size = GetPageTabSize(dc, wnd, page, &x_extent);
+
+	// I know :P This stuff should probably be completely rewritten,
+	// but this will do for now
+	auto px2 = wnd->FromDIP(2);
+	auto px3 = wnd->FromDIP(3);
+	auto px4 = wnd->FromDIP(4);
+
+	wxCoord tab_height = m_tabCtrlHeight + px2;
+	wxCoord tab_width  = tab_size.x;
+	wxCoord tab_x      = rect.x;
+	wxCoord tab_y      = rect.y + rect.height - tab_height + px3;
+
+
+	if (!page.active)
+	{
+		tab_height -= px2;
+		tab_y += px2;
+	}
+
+	if (page.caption.empty())
+		caption = page.caption;
+
+
+	// select pen, brush and font for the tab to be drawn
+	if (page.active)
+	{
+		dc.SetFont(m_selectedFont);
+		texty = selected_texty;
+	}
+	else
+	{
+		dc.SetFont(m_normalFont);
+		texty = normal_texty;
+	}
+
+
+	// create points that will make the tab outline
+	int clip_width = tab_width;
+	if (tab_x + clip_width > rect.x + rect.width)
+		clip_width = rect.x + rect.width - tab_x;
+	dc.SetClippingRegion(tab_x, tab_y, clip_width + 1, tab_height - px3);
+
+	wxPoint border_points[6];
+	if (m_flags & wxAUI_NB_BOTTOM)
+	{
+		border_points[0] = wxPoint(tab_x, tab_y);
+		border_points[1] = wxPoint(tab_x, tab_y + tab_height - px4);
+		border_points[2] = wxPoint(tab_x, tab_y + tab_height - px4);
+		border_points[3] = wxPoint(tab_x + tab_width, tab_y + tab_height - px4);
+		border_points[4] = wxPoint(tab_x + tab_width, tab_y + tab_height - px4);
+		border_points[5] = wxPoint(tab_x + tab_width, tab_y);
+	}
+	else
+	{
+		border_points[0] = wxPoint(tab_x, tab_y + tab_height - px4);
+		border_points[1] = wxPoint(tab_x, tab_y);
+		border_points[2] = wxPoint(tab_x + px2, tab_y);
+		border_points[3] = wxPoint(tab_x + tab_width - px2, tab_y);
+		border_points[4] = wxPoint(tab_x + tab_width, tab_y);
+		border_points[5] = wxPoint(tab_x + tab_width, tab_y + tab_height - px4);
+	}
+
+	int drawn_tab_yoff   = border_points[1].y + 1;
+	int drawn_tab_height = border_points[0].y - border_points[1].y;
+
+
+	wxColour bgcol;
+	wxColour bluetab_colour(116, 135, 175);
+	if (page.active)
+	{
+		// draw active tab
+		bgcol = bluetab ? bluetab_colour : m_activeColour;
+
+		// draw base background color
+		wxRect r(tab_x, tab_y, tab_width, tab_height);
+		dc.SetPen(wxPen(bluetab ? bluetab_colour : m_activeColour));
+		dc.SetBrush(wxBrush(bluetab ? bluetab_colour : m_activeColour));
+		dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, r.height - 5);
+
+		// highlight top of tab
+		if (!bluetab)
+		{
+#ifdef __WXMSW__
+			auto col_hilight = wxColour(app::isDarkTheme() ? wxS("#6696FF") : wxS("#476DBD"));
+#else
+			wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
+#endif
+			dc.SetPen(*wxTRANSPARENT_PEN);
+			dc.SetBrush(wxBrush(col_hilight));
+			dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, px3);
+		}
+	}
+	else
+	{
+		bgcol = inactive_tab_colour_;
+
+		wxRect r(tab_x, tab_y, tab_width, tab_height);
+		dc.SetPen(wxPen(inactive_tab_colour_));
+		dc.SetBrush(wxBrush(page.hover ? m_baseColour : inactive_tab_colour_));
+		dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, r.height - px4);
+	}
+
+	// draw tab outline
+	dc.SetPen(m_borderPen);
+	dc.SetBrush(*wxTRANSPARENT_BRUSH);
+	dc.DrawPolygon(std::size(border_points), border_points);
+
+	// there are two horizontal grey lines at the bottom of the tab control,
+	// this gets rid of the top one of those lines in the tab control
+	if (page.active)
+	{
+		if (m_flags & wxAUI_NB_BOTTOM)
+			dc.SetPen(wxPen(m_baseColour.ChangeLightness(170)));
+		else
+			dc.SetPen(wxPen(bluetab ? bluetab_colour : m_activeColour));
+		dc.DrawLine(border_points[0].x + 1, border_points[0].y, border_points[5].x, border_points[5].y);
+	}
+
+	// draw icon if set
+	if (page.bitmap.IsOk())
+	{
+		const auto& bmp = page.bitmap.GetBitmapFor(wnd);
+		dc.DrawBitmap(bmp, tab_x + padding_, drawn_tab_yoff + drawn_tab_height / 2 - bmp.GetLogicalSize().y / 2, true);
+	}
+
+	// draw tab text
+	dc.SetTextForeground(
+		page.active && bluetab ? wxColor(255, 255, 255) : wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
+	dc.DrawText(
+		caption,
+		tab_x + static_cast<float>(tab_width) * 0.5f - static_cast<float>(selected_textx) * 0.5f,
+		drawn_tab_yoff + drawn_tab_height / 2 - texty / 2);
+
+	for (auto& button : page.buttons)
+	{
+		if (button.curState & wxAUI_BUTTON_STATE_HIDDEN)
+			continue;
+
+		switch (button.id)
+		{
+		case wxAUI_BUTTON_CLOSE:
+			int offsetY = tab_y;
+			if (m_flags & wxAUI_NB_BOTTOM)
+				offsetY = 1;
+
+			int close_button_width  = m_activeCloseBmp.GetPreferredLogicalSizeFor(wnd).x;
+			int close_button_height = m_activeCloseBmp.GetPreferredLogicalSizeFor(wnd).y;
+
+			button.rect = wxRect(
+				tab_x + tab_width - close_button_width - padding_,
+				offsetY + tab_height / 2 - close_button_height / 2,
+				close_button_width,
+				tab_height);
+
+			IndentPressedBitmap(&button.rect, button.curState);
+
+			bool close_white = bluetab && page.active || app::isDarkTheme();
+
+			if (button.curState == wxAUI_BUTTON_STATE_HOVER || button.curState == wxAUI_BUTTON_STATE_PRESSED)
+			{
+				if (close_white)
+				{
+					dc.SetPen(wxPen(bgcol.ChangeLightness(160)));
+					dc.SetBrush(wxBrush(bgcol.ChangeLightness(125)));
+				}
+				else
+				{
+					dc.SetPen(wxPen(bgcol.ChangeLightness(60)));
+					dc.SetBrush(wxBrush(bgcol.ChangeLightness(90)));
+				}
+				dc.DrawRoundedRectangle(
+					button.rect.x, button.rect.y, button.rect.width, button.rect.width, wnd->FromDIP(1));
+
+				const auto& bmp = close_white ? close_bitmap_white_ : m_activeCloseBmp;
+				dc.DrawBitmap(bmp.GetBitmapFor(wnd), button.rect.x, button.rect.y);
+			}
+			else
+			{
+				const auto& bmp = close_white ? close_bitmap_white_ : m_disabledCloseBmp;
+				dc.DrawBitmap(bmp.GetBitmapFor(wnd).ConvertToDisabled(), button.rect.x, button.rect.y);
+			}
+			break;
+		}
+	}
+
+	page.rect = wxRect(tab_x, tab_y, tab_width, tab_height);
+
+	dc.DestroyClippingRegion();
+
+	return x_extent;
+}
+
+wxSize SAuiTabArt::GetPageTabSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiNotebookPage& page, int* xExtent)
+{
+	wxCoord measured_textx, measured_texty, tmp;
+
+	dc.SetFont(m_measuringFont);
+	dc.GetTextExtent(page.caption, &measured_textx, &measured_texty);
+
+	dc.GetTextExtent(wxT("ABCDEFXj"), &tmp, &measured_texty);
+
+	// add padding around the text
+	wxCoord tab_width  = measured_textx;
+	wxCoord tab_height = measured_texty;
+
+	// if close buttons are enabled, add space for one
+	if (close_buttons_)
+		tab_width += wnd->FromPhys(m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).x) + padding_;
+
+	// if there's a bitmap, add space for it
+	if (page.bitmap.IsOk())
+	{
+		tab_width += wnd->FromPhys(page.bitmap.GetPreferredBitmapSizeFor(wnd).x);
+		tab_width += padding_; // right side bitmap padding
+		tab_height = wxMax(tab_height, wnd->FromPhys(page.bitmap.GetPreferredBitmapSizeFor(wnd).y));
+	}
+	else if (tabs_condensed)
+		tab_width += padding_ * 2; // a bit extra padding if there isn't an icon in condensed mode
+
+	// add padding
+	tab_width += padding_ * 2;
+	tab_height += 10;
+
+	// minimum width
+	int min_width = tabs_condensed ? 48 : 64;
+	if (tab_width < min_width)
+		tab_width = min_width;
+
+	*xExtent = tab_width;
+
+	return { tab_width, tab_height };
+}
 #else
 wxSize SAuiTabArt::GetTabSize(
 	wxDC&                 dc,
@@ -458,7 +709,6 @@ wxSize SAuiTabArt::GetTabSize(
 	bool                  WXUNUSED(active),
 	int                   close_button_state,
 	int*                  x_extent)
-#endif
 {
 	wxCoord measured_textx, measured_texty, tmp;
 
@@ -498,6 +748,7 @@ wxSize SAuiTabArt::GetTabSize(
 
 	return { tab_width, tab_height };
 }
+#endif
 
 void SAuiTabArt::SetSelectedFont(const wxFont& font)
 {
