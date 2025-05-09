@@ -26,14 +26,10 @@ public:
 		int*                     xExtent) override;
 
 #if wxCHECK_VERSION(3, 3, 0)
-	wxSize GetTabSize(
-		wxReadOnlyDC&         dc,
-		wxWindow*             wnd,
-		const wxString&       caption,
-		const wxBitmapBundle& bitmap,
-		bool                  active,
-		int                   closeButtonState,
-		int*                  xExtent) override;
+	int DrawPageTab(wxDC& dc, wxWindow* wnd, wxAuiNotebookPage& page, const wxRect& rect) override;
+
+	wxSize GetPageTabSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiNotebookPage& page, int* xExtent = nullptr)
+		override;
 #else
 	wxSize GetTabSize(
 		wxDC&                 dc,

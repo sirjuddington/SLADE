@@ -7,7 +7,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # Release build by default
 if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
-endif()
+endif ()
 
 # Build options
 OPTION(NO_WEBVIEW "Disable wxWebview usage (for start page and documentation)" OFF)
@@ -20,7 +20,7 @@ OPTION(BUILD_WX "Download and build wxWidgets instead of using system-installed 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-if(BUILD_WX)
+if (BUILD_WX)
 	set(wxWidgets_USE_STATIC 1)
 	set(wxBUILD_SHARED OFF)
 	set(wxBUILD_USE_STATIC_RUNTIME ON)
@@ -29,16 +29,16 @@ if(BUILD_WX)
 
 	include(FetchContent)
 	FetchContent_Declare(
-	   wxWidgets
-	   GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-	   GIT_TAG 12b29979d3ba9a5a08b2b3e44ad775ebe3ea18af # master (3.3.0) as of 2025-04-01
+		wxWidgets
+		GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
+		GIT_TAG 1652d9882a7e8650d1c14c98c558dbbf7624b10b # master (3.3.0) as of 2025-05-09
 	)
 	FetchContent_GetProperties(wxwidgets)
-	if(NOT wxwidgets_POPULATED)
-	   FetchContent_Populate(wxwidgets)
-	   add_subdirectory(${wxwidgets_SOURCE_DIR} ${wxwidgets_BUILD_DIR})
-	endif()
-endif()
+	if (NOT wxwidgets_POPULATED)
+		FetchContent_Populate(wxwidgets)
+		add_subdirectory(${wxwidgets_SOURCE_DIR} ${wxwidgets_BUILD_DIR})
+	endif ()
+endif ()
 
 add_subdirectory(src)
 
