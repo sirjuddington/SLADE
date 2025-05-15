@@ -706,6 +706,8 @@ void ArchivePanel::addMenus() const
 
 		menu_archive->AppendSeparator();
 		SAction::fromId("arch_run")->addToMenu(menu_archive, true, "Run");
+		SAction::fromId("arch_quick_run")->addToMenu(menu_archive, true,
+ "Quick Run");
 	}
 	if (!menu_entry)
 	{
@@ -3441,10 +3443,10 @@ bool ArchivePanel::handleAction(string_view id)
 	}
 
 	// Run archive
-	else if (id == "arch_run")
+	else if (id == "arch_run" || id == "arch_quick_run")
 	{
 		RunDialog dlg(this, archive.get());
-		if (dlg.ShowModal() == wxID_OK)
+		if (id == "arch_quick_run" || dlg.ShowModal() == wxID_OK)
 		{
 			auto command = dlg.selectedCommandLine(archive.get(), "");
 			if (!command.empty())
