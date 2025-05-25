@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -100,8 +100,8 @@ std::pair<string, string> Tokenizer::parseEditorComment(string_view token)
 	// Strip quotes, if present
 	if (value.front() == '"' && value.back() == '"')
 	{
-		value.erase(value.back());
-		value.erase(value.front());
+		value.erase(value.begin());
+		value.pop_back();
 	}
 	return std::pair{ key, value };
 }
