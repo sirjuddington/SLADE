@@ -481,7 +481,7 @@ MapDesc ZipArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 		return map;
 
 	// Check entry directory
-	if (maphead->parentDir()->parent() != archive.rootDir() || maphead->parentDir()->name() != "maps")
+	if (maphead->parentDir()->parent() != archive.rootDir() || !strutil::equalCI(maphead->parentDir()->name(), "maps"))
 		return map;
 
 	// Setup map info
