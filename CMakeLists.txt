@@ -34,10 +34,7 @@ if (BUILD_WX)
 		GIT_TAG dd745f1e3797b5e91a01d4548ae301c9b2d293fd # master (3.3.0) as of 2025-05-28
 	)
 	FetchContent_GetProperties(wxwidgets)
-	if (NOT wxwidgets_POPULATED)
-		FetchContent_Populate(wxwidgets)
-		add_subdirectory(${wxwidgets_SOURCE_DIR} ${wxwidgets_BUILD_DIR})
-	endif ()
+	FetchContent_MakeAvailable(wxwidgets)
 endif ()
 
 add_subdirectory(src)
