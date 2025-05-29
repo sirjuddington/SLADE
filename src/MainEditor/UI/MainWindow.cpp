@@ -347,6 +347,7 @@ void MainWindow::setupLayout()
 	tbg_archive->addActionButton("arch_texeditor");
 	tbg_archive->addActionButton("arch_mapeditor");
 	tbg_archive->addActionButton("arch_run");
+	tbg_archive->addActionButton("arch_quick_run");
 	auto* b_maint = tbg_archive->addActionButton(
 		"arch_maintenance", "Maintenance", "wrench", "Archive maintenance/cleanup tools");
 	b_maint->setMenu(ArchivePanel::createMaintenanceMenu());
