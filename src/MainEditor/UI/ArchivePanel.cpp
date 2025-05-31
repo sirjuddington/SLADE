@@ -706,8 +706,7 @@ void ArchivePanel::addMenus() const
 
 		menu_archive->AppendSeparator();
 		SAction::fromId("arch_run")->addToMenu(menu_archive, true, "Run");
-		SAction::fromId("arch_quick_run")->addToMenu(menu_archive, true,
- "Quick Run");
+		SAction::fromId("arch_quick_run")->addToMenu(menu_archive, true, "Quick Run");
 	}
 	if (!menu_entry)
 	{

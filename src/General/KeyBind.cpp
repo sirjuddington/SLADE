@@ -508,8 +508,7 @@ void KeyBind::initBinds()
 	addBind("el_delete", Keypress("delete"), "Delete Entry", group);
 	addBind("el_move_up", Keypress("U", KPM_CTRL), "Move Entry up", group);
 	addBind("el_move_down", Keypress("D", KPM_CTRL), "Move Entry down", group);
-	addBind("el_rename", Keypress("R", KPM_CTRL), "Rename Entry", group);
-	addBind("el_rename", Keypress("f2"));
+	addBind("el_rename", Keypress("f2"), "Rename Entry", group);
 	addBind("el_import", Keypress("I", KPM_CTRL), "Import to Entry", group);
 	addBind("el_import_files", Keypress("I", KPM_CTRL | KPM_SHIFT), "Import Files", group);
 	addBind("el_import_dir", Keypress("I", KPM_CTRL | KPM_ALT), "Import Directory", group);
