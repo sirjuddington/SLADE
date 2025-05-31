@@ -221,33 +221,13 @@ ScriptManagerWindow::ScriptManagerWindow() : STopWindow("SLADE Script Manager", 
 // -----------------------------------------------------------------------------
 void ScriptManagerWindow::loadLayout()
 {
-	// Open layout file
-	wxFile file(wxString::FromUTF8(app::path("scriptmanager.layout", app::Dir::User)), wxFile::read);
+	auto* aui_mgr = wxAuiManager::GetManager(this);
+	auto  layout  = ui::getWindowLayout(id_.c_str());
 
-	// Read component layout
-	if (file.IsOpened())
-	{
-		wxString text, layout;
-		file.ReadAll(&text);
-
-		// Get layout version
-		wxString version = text.BeforeFirst('\n', &layout);
-
-		// Check version
-		long val;
-		if (version.ToLong(&val))
-		{
-			// Load layout only if correct version
-			if (val == layout_version)
-				wxAuiManager::GetManager(this)->LoadPerspective(layout);
-		}
-	}
-
-	// Close file
-	file.Close();
-
-	// Force calculated toolbar size
-	wxAuiManager::GetManager(this)->GetPane(wxS("toolbar")).MinSize(-1, SToolBar::getBarHeight());
+	for (const auto& component : layout)
+		if (!component.first.empty() && !component.second.empty())
+			aui_mgr->LoadPaneInfo(
+				wxString::FromUTF8(component.second), aui_mgr->GetPane(wxString::FromUTF8(component.first)));
 }
 
 // -----------------------------------------------------------------------------
@@ -255,15 +235,13 @@ void ScriptManagerWindow::loadLayout()
 // -----------------------------------------------------------------------------
 void ScriptManagerWindow::saveLayout()
 {
-	// Open layout file
-	wxFile file(wxString::FromUTF8(app::path("scriptmanager.layout", app::Dir::User)), wxFile::write);
+	vector<StringPair> layout;
+	auto*              aui_mgr = wxAuiManager::GetManager(this);
 
-	// Write component layout
-	file.Write(WX_FMT("{}\n", layout_version));
-	file.Write(wxAuiManager::GetManager(this)->SavePerspective());
+	layout.emplace_back("console", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("console"))).utf8_string());
+	layout.emplace_back("scripts_area", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("scripts_area"))).utf8_string());
 
-	// Close file
-	file.Close();
+	ui::setWindowLayout(id_.c_str(), layout);
 }
 
 // -----------------------------------------------------------------------------

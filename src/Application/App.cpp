@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Database.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
@@ -411,6 +412,14 @@ ResourceManager& app::resources()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the program resource archive (ie. slade.pk3)
+// -----------------------------------------------------------------------------
+Archive* app::programResource()
+{
+	return archive_manager.programResourceArchive();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the number of ms elapsed since the application was started
 // -----------------------------------------------------------------------------
 long app::runTimer()
@@ -471,6 +480,10 @@ bool app::init(const vector<string>& args, double ui_scale)
 			wxICON_ERROR);
 		return false;
 	}
+
+	// Init database
+	if (!database::init())
+		return false;
 
 	// Init SActions
 	SAction::setBaseWxId(26000);
@@ -728,6 +741,9 @@ void app::exit(bool save_config)
 
 	// Close DUMB
 	dumb_exit();
+
+	// Close program database
+	database::close();
 
 	// Exit wx Application
 	wxGetApp().Exit();

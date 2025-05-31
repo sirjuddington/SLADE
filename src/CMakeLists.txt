@@ -8,6 +8,7 @@ file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
 	Application/*.cpp
 	Archive/*.cpp
 	Audio/*.cpp
+	Database/*.cpp
 	Game/*.cpp
 	General/*.cpp
 	Graphics/*.cpp

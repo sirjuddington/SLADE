@@ -132,27 +132,13 @@ MapEditorWindow::~MapEditorWindow()
 // -----------------------------------------------------------------------------
 void MapEditorWindow::loadLayout()
 {
-	// Open layout file
-	Tokenizer tz;
-	if (!tz.openFile(app::path("mapwindow.layout", app::Dir::User)))
-		return;
+	auto* aui_mgr = wxAuiManager::GetManager(this);
+	auto  layout  = ui::getWindowLayout(id_.c_str());
 
-	// Parse layout
-	auto m_mgr = wxAuiManager::GetManager(this);
-	while (true)
-	{
-		// Read component+layout pair
-		auto component = tz.getToken();
-		auto layout    = tz.getToken();
-
-		// Load layout to component
-		if (!component.empty() && !layout.empty())
-			m_mgr->LoadPaneInfo(wxString::FromUTF8(layout), m_mgr->GetPane(wxString::FromUTF8(component)));
-
-		// Check if we're done
-		if (tz.peekToken().empty())
-			break;
-	}
+	for (const auto& component : layout)
+		if (!component.first.empty() && !component.second.empty())
+			aui_mgr->LoadPaneInfo(
+				wxString::FromUTF8(component.second), aui_mgr->GetPane(wxString::FromUTF8(component.first)));
 }
 
 // -----------------------------------------------------------------------------
@@ -160,39 +146,16 @@ void MapEditorWindow::loadLayout()
 // -----------------------------------------------------------------------------
 void MapEditorWindow::saveLayout()
 {
-	// Open layout file
-	wxFile file(wxString::FromUTF8(app::path("mapwindow.layout", app::Dir::User)), wxFile::write);
+	vector<StringPair> layout;
+	auto*              aui_mgr = wxAuiManager::GetManager(this);
 
-	// Write component layout
-	auto m_mgr = wxAuiManager::GetManager(this);
+	layout.emplace_back("console", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("console"))).utf8_string());
+	layout.emplace_back("item_props", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("item_props"))).utf8_string());
+	layout.emplace_back("script_editor", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("script_editor"))).utf8_string());
+	layout.emplace_back("map_checks", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("map_checks"))).utf8_string());
+	layout.emplace_back("undo_history", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("undo_history"))).utf8_string());
 
-	// Console pane
-	file.Write(wxS("\"console\" "));
-	auto pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("console")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Item info pane
-	file.Write(wxS("\"item_props\" "));
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("item_props")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Script editor pane
-	file.Write(wxS("\"script_editor\" "));
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("script_editor")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Map checks pane
-	file.Write(wxS("\"map_checks\" "));
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("map_checks")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Undo history pane
-	file.Write(wxS("\"undo_history\" "));
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane(wxS("undo_history")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Close file
-	file.Close();
+	ui::setWindowLayout(id_.c_str(), layout);
 }
 
 // -----------------------------------------------------------------------------

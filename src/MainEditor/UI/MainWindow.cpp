@@ -137,26 +137,12 @@ MainWindow::~MainWindow()
 // -----------------------------------------------------------------------------
 void MainWindow::loadLayout() const
 {
-	// Open layout file
-	Tokenizer tz;
-	if (!tz.openFile(app::path("mainwindow.layout", app::Dir::User)))
-		return;
+	auto layout = ui::getWindowLayout(id_.c_str());
 
-	// Parse layout
-	while (true)
-	{
-		// Read component+layout pair
-		auto component = tz.getToken();
-		auto layout    = tz.getToken();
-
-		// Load layout to component
-		if (!component.empty() && !layout.empty())
-			aui_mgr_->LoadPaneInfo(wxString::FromUTF8(layout), aui_mgr_->GetPane(wxString::FromUTF8(component)));
-
-		// Check if we're done
-		if (tz.peekToken().empty())
-			break;
-	}
+	for (const auto& component : layout)
+		if (!component.first.empty() && !component.second.empty())
+			aui_mgr_->LoadPaneInfo(
+				wxString::FromUTF8(component.second), aui_mgr_->GetPane(wxString::FromUTF8(component.first)));
 }
 
 // -----------------------------------------------------------------------------
@@ -164,28 +150,14 @@ void MainWindow::loadLayout() const
 // -----------------------------------------------------------------------------
 void MainWindow::saveLayout() const
 {
-	// Open layout file
-	wxFile file(wxString::FromUTF8(app::path("mainwindow.layout", app::Dir::User)), wxFile::write);
+	vector<StringPair> layout;
 
-	// Write component layout
+	layout.emplace_back("console", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("console"))).utf8_string());
+	layout.emplace_back(
+		"archive_manager", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("archive_manager"))).utf8_string());
+	layout.emplace_back("undo_history", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("undo_history"))).utf8_string());
 
-	// Console pane
-	file.Write(wxS("\"console\" "));
-	wxString pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("console")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Archive Manager pane
-	file.Write(wxS("\"archive_manager\" "));
-	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("archive_manager")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Undo History pane
-	file.Write(wxS("\"undo_history\" "));
-	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("undo_history")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Close file
-	file.Close();
+	ui::setWindowLayout(id_.c_str(), layout);
 }
 
 // -----------------------------------------------------------------------------
