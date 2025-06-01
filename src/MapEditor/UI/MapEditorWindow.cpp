@@ -59,6 +59,7 @@
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
@@ -76,7 +77,6 @@ namespace
 {
 bool nb_warned = false;
 }
-CVAR(Bool, mew_maximized, true, CVar::Flag::Save);
 CVAR(String, nodebuilder_id, "zdbsp", CVar::Flag::Save);
 CVAR(String, nodebuilder_options, "", CVar::Flag::Save);
 CVAR(Bool, save_archive_with_map, true, CVar::Flag::Save);
@@ -102,7 +102,7 @@ EXTERN_CVAR(Int, flat_drawtype);
 // -----------------------------------------------------------------------------
 MapEditorWindow::MapEditorWindow() : STopWindow{ "SLADE", "map" }
 {
-	if (mew_maximized)
+	if (ui::getStateBool("MapEditorWindowMaximized"))
 		wxTopLevelWindow::Maximize();
 	setupLayout();
 	wxTopLevelWindow::Show(false);
@@ -1429,8 +1429,8 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 // -----------------------------------------------------------------------------
 void MapEditorWindow::onSize(wxSizeEvent& e)
 {
-	// Update maximized cvar
-	mew_maximized = IsMaximized();
+	// Update maximized state
+	ui::saveStateBool("MapEditorWindowMaximized", IsMaximized());
 
 	e.Skip();
 }

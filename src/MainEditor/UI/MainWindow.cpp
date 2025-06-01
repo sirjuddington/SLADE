@@ -51,6 +51,7 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -69,7 +70,6 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(Bool, show_start_page, true, CVar::Flag::Save);
 CVAR(String, global_palette, "", CVar::Flag::Save);
-CVAR(Bool, mw_maximized, true, CVar::Flag::Save);
 CVAR(Bool, confirm_exit, true, CVar::Flag::Save);
 
 
@@ -116,7 +116,7 @@ MainWindow::MainWindow() : STopWindow("SLADE", "main")
 {
 	custom_menus_begin_ = 2;
 
-	if (mw_maximized)
+	if (ui::getStateBool("MainWindowMaximized"))
 		wxTopLevelWindow::Maximize();
 
 	setupLayout();
@@ -442,7 +442,7 @@ bool MainWindow::exitProgram()
 	// Save current layout
 	// main_window_layout = aui_mgr_->SavePerspective();
 	saveLayout();
-	mw_maximized      = IsMaximized();
+	ui::saveStateBool("MainWindowMaximized", IsMaximized());
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
 		misc::setWindowInfo(
@@ -727,8 +727,8 @@ void MainWindow::onSize(wxSizeEvent& e)
 	aui_mgr_->Update();
 #endif
 
-	// Update maximized cvar
-	mw_maximized = IsMaximized();
+	// Update maximized state
+	ui::saveStateBool("MainWindowMaximized", IsMaximized());
 
 	e.Skip();
 }

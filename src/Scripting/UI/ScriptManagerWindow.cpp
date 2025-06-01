@@ -45,6 +45,7 @@
 #include "UI/Controls/STabCtrl.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -61,8 +62,6 @@ namespace
 string docs_url       = "https://slade.readthedocs.io/en/latest";
 int    layout_version = 1;
 } // namespace
-
-CVAR(Bool, sm_maximized, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -250,7 +249,7 @@ void ScriptManagerWindow::saveLayout()
 void ScriptManagerWindow::setupLayout()
 {
 	// Maximize if it was last time
-	if (sm_maximized)
+	if (ui::getStateBool("ScriptManagerWindowMaximized"))
 		Maximize();
 
 	// Create the wxAUI manager & related things
@@ -434,7 +433,7 @@ void ScriptManagerWindow::bindEvents()
 		{
 			// Save Layout
 			saveLayout();
-			sm_maximized      = IsMaximized();
+			ui::saveStateBool("ScriptManagerWindowMaximized", IsMaximized());
 			const wxSize size = GetSize() * GetContentScaleFactor();
 			if (!IsMaximized())
 				misc::setWindowInfo(

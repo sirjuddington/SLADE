@@ -39,9 +39,9 @@
 #include "Context.h"
 #include "General/Console.h"
 #include "General/UI.h"
-// #include "UI/State.h"
 // #include "Utility/DateTime.h"
 #include "Statement.h"
+#include "UI/State.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -289,7 +289,6 @@ void database::migrateConfigs()
 		return;
 	while (!tz.atEnd())
 	{
-#if 0
 		// Migrate old CVars to UI state table
 		if (tz.advIf("cvars", 2))
 		{
@@ -338,7 +337,6 @@ void database::migrateConfigs()
 
 			tz.adv(); // Skip ending }
 		}
-#endif
 
 		// Migrate window size/position info
 		if (tz.advIf("window_info", 2))

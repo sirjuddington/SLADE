@@ -41,6 +41,7 @@
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include <wx/headerctrl.h>
 
@@ -68,11 +69,6 @@ vector<int> elist_chars = {
 };
 } // namespace slade::ui
 
-CVAR(Int, elist_colsize_name_tree, 150, CVar::Save)
-CVAR(Int, elist_colsize_name_list, 150, CVar::Save)
-CVAR(Int, elist_colsize_size, 80, CVar::Save)
-CVAR(Int, elist_colsize_type, 150, CVar::Save)
-CVAR(Int, elist_colsize_index, 50, CVar::Save)
 #ifdef __WXGTK__
 // Disable by default in GTK because double-click seems to trigger it, which interferes
 // with double-click to expand folders or open entries
@@ -90,9 +86,6 @@ CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
 EXTERN_CVAR(Bool, elist_filter_dirs)
-EXTERN_CVAR(Bool, elist_colsize_show)
-EXTERN_CVAR(Bool, elist_coltype_show)
-EXTERN_CVAR(Bool, elist_colindex_show)
 EXTERN_CVAR(Bool, list_font_monospace)
 EXTERN_CVAR(Bool, elist_type_bgcol)
 EXTERN_CVAR(Float, elist_type_bgcol_intensity)
@@ -961,9 +954,9 @@ ArchiveEntryTree::ArchiveEntryTree(
 			wxMenu context;
 			context.Append(0, wxS("Reset Sorting"));
 			context.AppendSeparator();
-			context.AppendCheckItem(1, wxS("Index"), wxS("Show the Index column"))->Check(elist_colindex_show);
-			context.AppendCheckItem(2, wxS("Size"), wxS("Show the Size column"))->Check(elist_colsize_show);
-			context.AppendCheckItem(3, wxS("Type"), wxS("Show the Type column"))->Check(elist_coltype_show);
+			context.AppendCheckItem(1, wxS("Index"), wxS("Show the Index column"))->Check(!col_index_->IsHidden());
+			context.AppendCheckItem(2, wxS("Size"), wxS("Show the Size column"))->Check(!col_size_->IsHidden());
+			context.AppendCheckItem(3, wxS("Type"), wxS("Show the Type column"))->Check(!col_type_->IsHidden());
 			PopupMenu(&context);
 			e.Skip();
 		});
@@ -996,22 +989,22 @@ ArchiveEntryTree::ArchiveEntryTree(
 			else if (e.GetId() == 1)
 			{
 				// Toggle index column
-				elist_colindex_show = !elist_colindex_show;
-				col_index_->SetHidden(!elist_colindex_show);
+				col_index_->SetHidden(!col_index_->IsHidden());
+				ui::saveStateBool("EntryListIndexVisible", !col_index_->IsHidden());
 				updateColumnWidths();
 			}
 			else if (e.GetId() == 2)
 			{
 				// Toggle size column
-				elist_colsize_show = !elist_colsize_show;
-				col_size_->SetHidden(!elist_colsize_show);
+				col_size_->SetHidden(!col_size_->IsHidden());
+				ui::saveStateBool("EntryListSizeVisible", !col_size_->IsHidden());
 				updateColumnWidths();
 			}
 			else if (e.GetId() == 3)
 			{
 				// Toggle type column
-				elist_coltype_show = !elist_coltype_show;
-				col_type_->SetHidden(!elist_coltype_show);
+				col_type_->SetHidden(!col_type_->IsHidden());
+				ui::saveStateBool("EntryListTypeVisible", !col_type_->IsHidden());
 				updateColumnWidths();
 			}
 			else
@@ -1510,30 +1503,31 @@ void ArchiveEntryTree::setupColumns()
 		wxS("#"),
 		3,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_index,
+		ui::getStateInt("EntryListIndexWidth"),
 		wxALIGN_NOT,
-		elist_colindex_show ? colstyle_visible : colstyle_hidden);
+		ui::getStateBool("EntryListIndexVisible") ? colstyle_visible : colstyle_hidden);
 	col_name_ = AppendIconTextColumn(
 		wxS("Name"),
 		0,
 		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
-		model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree : elist_colsize_name_list,
+		model_->viewType() == ArchiveViewModel::ViewType::Tree ? ui::getStateInt("EntryListNameWidthTree")
+															   : ui::getStateInt("EntryListNameWidthList"),
 		wxALIGN_NOT,
 		colstyle_visible);
 	col_size_ = AppendTextColumn(
 		wxS("Size"),
 		1,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_size,
+		ui::getStateInt("EntryListSizeWidth"),
 		wxALIGN_NOT,
-		elist_colsize_show ? colstyle_visible : colstyle_hidden);
+		ui::getStateBool("EntryListSizeVisible") ? colstyle_visible : colstyle_hidden);
 	col_type_ = AppendTextColumn(
 		wxS("Type"),
 		2,
 		wxDATAVIEW_CELL_INERT,
-		elist_colsize_type,
+		ui::getStateInt("EntryListTypeWidth"),
 		wxALIGN_NOT,
-		elist_coltype_show ? colstyle_visible : colstyle_hidden);
+		ui::getStateBool("EntryListTypeVisible") ? colstyle_visible : colstyle_hidden);
 	SetExpanderColumn(col_name_);
 
 	// Last column will expand anyway, this ensures we don't get unnecessary horizontal scrollbars
@@ -1557,19 +1551,19 @@ void ArchiveEntryTree::saveColumnWidths() const
 	if (last_col != col_name_)
 	{
 		if (model_->viewType() == ArchiveViewModel::ViewType::Tree)
-			elist_colsize_name_tree = col_name_->GetWidth();
+			ui::saveStateInt("EntryListNameWidthTree", col_name_->GetWidth());
 		else
-			elist_colsize_name_list = col_name_->GetWidth();
+			ui::saveStateInt("EntryListNameWidthList", col_name_->GetWidth());
 	}
 
 	if (last_col != col_size_ && !col_size_->IsHidden())
-		elist_colsize_size = col_size_->GetWidth();
+		ui::saveStateInt("EntryListSizeWidth", col_size_->GetWidth());
 
 	if (last_col != col_type_ && !col_type_->IsHidden())
-		elist_colsize_type = col_type_->GetWidth();
+		ui::saveStateInt("EntryListTypeWidth", col_type_->GetWidth());
 
 	if (!col_index_->IsHidden())
-		elist_colsize_index = col_index_->GetWidth();
+		ui::saveStateInt("EntryListIndexWidth", col_index_->GetWidth());
 }
 
 // -----------------------------------------------------------------------------
@@ -1591,11 +1585,12 @@ void ArchiveEntryTree::updateColumnWidths()
 		}
 
 	Freeze();
-	col_index_->SetWidth(elist_colsize_index);
+	col_index_->SetWidth(ui::getStateInt("EntryListIndexWidth"));
 	col_name_->SetWidth(
-		model_->viewType() == ArchiveViewModel::ViewType::Tree ? elist_colsize_name_tree : elist_colsize_name_list);
-	col_size_->SetWidth(col_size_ == last_col ? 0 : elist_colsize_size);
-	col_type_->SetWidth(col_type_ == last_col ? 0 : elist_colsize_type);
+		model_->viewType() == ArchiveViewModel::ViewType::Tree ? ui::getStateInt("EntryListNameWidthTree")
+															   : ui::getStateInt("EntryListNameWidthList"));
+	col_size_->SetWidth(col_size_ == last_col ? 0 : ui::getStateInt("EntryListSizeWidth"));
+	col_type_->SetWidth(col_type_ == last_col ? 0 : ui::getStateInt("EntryListTypeWidth"));
 	Thaw();
 }
 
