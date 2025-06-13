@@ -37,6 +37,7 @@
 #include "Database/Transaction.h"
 #include "General/Console.h"
 #include "UI/SplashWindow.h"
+#include "UI/State.h"
 #include "Utility/StringUtils.h"
 #include <SQLiteCpp/Column.h>
 
@@ -102,6 +103,9 @@ void ui::init(double scale)
 		px_spin_width = 64 * scale;
 
 	SplashWindow::init();
+
+	// Init saved state props
+	initStateProps();
 }
 
 // -----------------------------------------------------------------------------
@@ -201,14 +205,14 @@ void ui::setCursor(wxWindow* window, MouseCursor cursor)
 {
 	switch (cursor)
 	{
-	case MouseCursor::Hand: window->SetCursor(wxCursor(wxCURSOR_HAND)); break;
-	case MouseCursor::Move: window->SetCursor(wxCursor(wxCURSOR_SIZING)); break;
-	case MouseCursor::Cross: window->SetCursor(wxCursor(wxCURSOR_CROSS)); break;
-	case MouseCursor::SizeNS: window->SetCursor(wxCursor(wxCURSOR_SIZENS)); break;
-	case MouseCursor::SizeWE: window->SetCursor(wxCursor(wxCURSOR_SIZEWE)); break;
+	case MouseCursor::Hand:     window->SetCursor(wxCursor(wxCURSOR_HAND)); break;
+	case MouseCursor::Move:     window->SetCursor(wxCursor(wxCURSOR_SIZING)); break;
+	case MouseCursor::Cross:    window->SetCursor(wxCursor(wxCURSOR_CROSS)); break;
+	case MouseCursor::SizeNS:   window->SetCursor(wxCursor(wxCURSOR_SIZENS)); break;
+	case MouseCursor::SizeWE:   window->SetCursor(wxCursor(wxCURSOR_SIZEWE)); break;
 	case MouseCursor::SizeNESW: window->SetCursor(wxCursor(wxCURSOR_SIZENESW)); break;
 	case MouseCursor::SizeNWSE: window->SetCursor(wxCursor(wxCURSOR_SIZENWSE)); break;
-	default: window->SetCursor(wxNullCursor);
+	default:                    window->SetCursor(wxNullCursor);
 	}
 }
 
@@ -229,12 +233,12 @@ int ui::px(Size size)
 {
 	switch (size)
 	{
-	case Size::PadLarge: return px_pad;
-	case Size::Pad: return px_pad_small;
-	case Size::PadMinimum: return px_pad_min;
-	case Size::Splitter: return px_splitter;
+	case Size::PadLarge:      return px_pad;
+	case Size::Pad:           return px_pad_small;
+	case Size::PadMinimum:    return px_pad_min;
+	case Size::Splitter:      return px_splitter;
 	case Size::SpinCtrlWidth: return px_spin_width;
-	default: return 0;
+	default:                  return 0;
 	}
 }
 
@@ -275,26 +279,23 @@ int ui::padLarge()
 // -----------------------------------------------------------------------------
 // Returns the saved window info for window/dialog [id]
 // -----------------------------------------------------------------------------
-ui::WindowInfo ui::getWindowInfo(const char* id)
+ui::WindowInfo ui::getWindowInfo(string_view id)
 {
 	WindowInfo inf{ {}, 0, 0, 0, 0 };
 
 	try
 	{
-		if (auto* sql = database::context().cacheQuery(
-				"get_window_info", "SELECT left, top, width, height FROM window_info WHERE window_id = ?"))
-		{
-			sql->bind(1, id);
-			if (sql->executeStep())
-			{
-				inf.id     = id;
-				inf.left   = sql->getColumn(0).getInt();
-				inf.top    = sql->getColumn(1).getInt();
-				inf.width  = sql->getColumn(2).getInt();
-				inf.height = sql->getColumn(3).getInt();
-			}
+		auto ps = database::context().preparedStatement(
+			"get_window_info", "SELECT left, top, width, height FROM window_info WHERE window_id = ?");
 
-			sql->reset();
+		ps.bind(1, id);
+		if (ps.executeStep())
+		{
+			inf.id     = id;
+			inf.left   = ps.getColumn(0).getInt();
+			inf.top    = ps.getColumn(1).getInt();
+			inf.width  = ps.getColumn(2).getInt();
+			inf.height = ps.getColumn(3).getInt();
 		}
 	}
 	catch (const SQLite::Exception& ex)
@@ -308,26 +309,23 @@ ui::WindowInfo ui::getWindowInfo(const char* id)
 // -----------------------------------------------------------------------------
 // Saves the window info for window/dialog [id]
 // -----------------------------------------------------------------------------
-void ui::setWindowInfo(const char* id, int width, int height, int left, int top)
+void ui::setWindowInfo(string_view id, int width, int height, int left, int top)
 {
 	try
 	{
-		if (auto sql = database::context().cacheQuery(
-				"set_window_info",
-				"REPLACE INTO window_info (window_id, left, top, width, height) "
-				"VALUES (?,?,?,?,?)",
-				true))
-		{
-			sql->clearBindings();
-			sql->bind(1, id);
-			sql->bind(2, left);
-			sql->bind(3, top);
-			sql->bind(4, width);
-			sql->bind(5, height);
+		auto ps = database::context().preparedStatement(
+			"set_window_info",
+			"REPLACE INTO window_info (window_id, left, top, width, height) "
+			"VALUES (?,?,?,?,?)",
+			true);
 
-			sql->exec();
-			sql->reset();
-		}
+		ps.bind(1, id);
+		ps.bind(2, left);
+		ps.bind(3, top);
+		ps.bind(4, width);
+		ps.bind(5, height);
+
+		ps.exec();
 	}
 	catch (const SQLite::Exception& ex)
 	{
@@ -338,20 +336,19 @@ void ui::setWindowInfo(const char* id, int width, int height, int left, int top)
 // -----------------------------------------------------------------------------
 // Returns the saved window AUI layout for window [id]
 // -----------------------------------------------------------------------------
-vector<StringPair> ui::getWindowLayout(const char* id)
+vector<StringPair> ui::getWindowLayout(string_view id)
 {
 	vector<StringPair> layout;
 
 	try
 	{
-		if (auto sql = database::context().cacheQuery(
-				"get_window_layout", "SELECT component, layout FROM window_layout WHERE window_id = ?"))
-		{
-			sql->bind(1, id);
-			while (sql->executeStep())
-				layout.emplace_back(sql->getColumn(0).getString(), sql->getColumn(1).getString());
-			sql->reset();
-		}
+		auto ps = database::context().preparedStatement(
+			"get_window_layout", "SELECT component, layout FROM window_layout WHERE window_id = ?");
+
+		ps.bind(1, id);
+
+		while (ps.executeStep())
+			layout.emplace_back(ps.getColumn(0).getString(), ps.getColumn(1).getString());
 	}
 	catch (const SQLite::Exception& ex)
 	{
@@ -364,24 +361,22 @@ vector<StringPair> ui::getWindowLayout(const char* id)
 // -----------------------------------------------------------------------------
 // Saves the AUI layout for window [id]
 // -----------------------------------------------------------------------------
-void ui::setWindowLayout(const char* id, const vector<StringPair>& layout)
+void ui::setWindowLayout(string_view id, const vector<StringPair>& layout)
 {
 	try
 	{
 		auto& db          = database::context();
 		auto  transaction = db.beginTransaction(true);
 
-		if (auto sql = db.cacheQuery("set_window_layout", "REPLACE INTO window_layout VALUES (?, ?, ?)", true))
+		auto ps = db.preparedStatement("set_window_layout", "REPLACE INTO window_layout VALUES (?, ?, ?)", true);
+
+		ps.bind(1, id);
+		for (const auto& row : layout)
 		{
-			sql->clearBindings();
-			sql->bind(1, id);
-			for (const auto& row : layout)
-			{
-				sql->bind(2, row.first);
-				sql->bind(3, row.second);
-				sql->exec();
-				sql->reset();
-			}
+			ps.bind(2, row.first);
+			ps.bind(3, row.second);
+			ps.exec();
+			ps.reset();
 		}
 
 		transaction.commit();

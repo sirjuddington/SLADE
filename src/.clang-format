@@ -62,3 +62,8 @@ TabWidth: 4
 UseTab: ForContinuationAndIndentation
 PenaltyReturnTypeOnItsOwnLine: 1000
 PenaltyBreakAssignment: 1000
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCaseColons: false

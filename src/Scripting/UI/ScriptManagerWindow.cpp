@@ -32,8 +32,6 @@
 #include "Main.h"
 #include "ScriptManagerWindow.h"
 #include "App.h"
-#include "Archive/ArchiveManager.h"
-#include "General/Misc.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
@@ -112,9 +110,9 @@ public:
 	{
 		switch (choice_type_->GetCurrentSelection())
 		{
-		case 1: return scriptmanager::ScriptType::Archive;
-		case 2: return scriptmanager::ScriptType::Entry;
-		case 3: return scriptmanager::ScriptType::Map;
+		case 1:  return scriptmanager::ScriptType::Archive;
+		case 2:  return scriptmanager::ScriptType::Entry;
+		case 3:  return scriptmanager::ScriptType::Map;
 		default: return scriptmanager::ScriptType::Custom;
 		}
 	}
@@ -436,7 +434,7 @@ void ScriptManagerWindow::bindEvents()
 			ui::saveStateBool("ScriptManagerWindowMaximized", IsMaximized());
 			const wxSize size = GetSize() * GetContentScaleFactor();
 			if (!IsMaximized())
-				misc::setWindowInfo(
+				ui::setWindowInfo(
 					id_,
 					size.x,
 					size.y,

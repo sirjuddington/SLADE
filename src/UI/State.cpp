@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "State.h"
 #include "Database/Context.h"
-#include "Database/DbUtils.h"
 #include "Database/Statement.h"
 #include "General/UI.h"
 #include "Utility/Property.h"
@@ -59,6 +58,17 @@ string put_ui_state = "INSERT OR REPLACE INTO ui_state (name, value) VALUES (?,?
 // UI Namespace Functions
 //
 // -----------------------------------------------------------------------------
+namespace slade::ui
+{
+template<typename T> void saveState(string_view name, T value)
+{
+	auto ps = database::context().preparedStatement("put_ui_state", put_ui_state, true);
+	ps.bind(1, name);
+	ps.bind(2, value);
+	ps.exec();
+}
+} // namespace slade::ui
+
 
 // -----------------------------------------------------------------------------
 // Initializes UI state values to defaults in the database
@@ -89,34 +99,35 @@ void ui::initStateProps()
 									  { "ScriptManagerWindowMaximized", false },
 									  { "SetupWizardRun", false } };
 
-	auto& db = database::context();
-	if (auto sql = db.cacheQuery("init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?)", true))
-	{
-		for (const auto& prop : props)
-		{
-			sql->bind(1, prop.name);
-			switch (prop.value.index())
-			{
-			case 0: sql->bind(2, std::get<bool>(prop.value)); break;
-			case 1: sql->bind(2, std::get<int>(prop.value)); break;
-			case 2: sql->bind(2, std::get<unsigned>(prop.value)); break;
-			case 3: sql->bind(2, std::get<double>(prop.value)); break;
-			case 4: sql->bind(2, std::get<string>(prop.value)); break;
-			default: sql->clearBindings(); continue;
-			}
+	auto ps = database::context().preparedStatement(
+		"init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?)", true);
 
-			sql->exec();
-			sql->reset();
+	for (const auto& prop : props)
+	{
+		ps.bind(1, prop.name);
+		switch (prop.value.index())
+		{
+		case 0:  ps.bind(2, std::get<bool>(prop.value)); break;
+		case 1:  ps.bind(2, std::get<int>(prop.value)); break;
+		case 2:  ps.bind(2, std::get<unsigned>(prop.value)); break;
+		case 3:  ps.bind(2, std::get<double>(prop.value)); break;
+		case 4:  ps.bind(2, std::get<string>(prop.value)); break;
+		default: continue;
 		}
+
+		ps.exec();
+		ps.reset();
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if saved state [name] exists in the database
 // -----------------------------------------------------------------------------
-bool ui::hasSavedState(string_view name)
+bool ui::hasSavedState(const char* name)
 {
-	return database::rowExists<string_view>(database::context(), "ui_state", "name", name);
+	auto ps = database::context().preparedStatement("ui_has_saved_state", "SELECT * FROM ui_state WHERE name = ?");
+	ps.bind(1, name);
+	return ps.executeStep();
 }
 
 // -----------------------------------------------------------------------------
@@ -124,16 +135,12 @@ bool ui::hasSavedState(string_view name)
 // -----------------------------------------------------------------------------
 bool ui::getStateBool(string_view name)
 {
-	auto  val = false;
-	auto& db  = database::context();
+	auto val = false;
 
-	if (auto sql = db.cacheQuery("get_ui_state", get_ui_state))
-	{
-		sql->bind(1, name);
-		if (sql->executeStep())
-			val = sql->getColumn(0).getInt() > 0;
-		sql->reset();
-	}
+	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
+	ps.bind(1, name);
+	if (ps.executeStep())
+		val = ps.getColumn(0).getInt() > 0;
 
 	return val;
 }
@@ -143,16 +150,12 @@ bool ui::getStateBool(string_view name)
 // -----------------------------------------------------------------------------
 int ui::getStateInt(string_view name)
 {
-	auto  val = 0;
-	auto& db  = database::context();
+	auto val = 0;
 
-	if (auto sql = db.cacheQuery("get_ui_state", get_ui_state))
-	{
-		sql->bind(1, name);
-		if (sql->executeStep())
-			val = sql->getColumn(0).getInt();
-		sql->reset();
-	}
+	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
+	ps.bind(1, name);
+	if (ps.executeStep())
+		val = ps.getColumn(0).getInt();
 
 	return val;
 }
@@ -162,16 +165,12 @@ int ui::getStateInt(string_view name)
 // -----------------------------------------------------------------------------
 double ui::getStateFloat(string_view name)
 {
-	auto  val = 0.;
-	auto& db  = database::context();
+	auto val = 0.;
 
-	if (auto sql = db.cacheQuery("get_ui_state", get_ui_state))
-	{
-		sql->bind(1, name);
-		if (sql->executeStep())
-			val = sql->getColumn(0).getDouble();
-		sql->reset();
-	}
+	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
+	ps.bind(1, name);
+	if (ps.executeStep())
+		val = ps.getColumn(0).getDouble();
 
 	return val;
 }
@@ -182,15 +181,11 @@ double ui::getStateFloat(string_view name)
 string ui::getStateString(string_view name)
 {
 	string val;
-	auto&  db = database::context();
 
-	if (auto sql = db.cacheQuery("get_ui_state", get_ui_state))
-	{
-		sql->bind(1, name);
-		if (sql->executeStep())
-			val = sql->getColumn(0).getString();
-		sql->reset();
-	}
+	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
+	ps.bind(1, name);
+	if (ps.executeStep())
+		val = ps.getColumn(0).getString();
 
 	return val;
 }
@@ -200,15 +195,7 @@ string ui::getStateString(string_view name)
 // -----------------------------------------------------------------------------
 void ui::saveStateBool(string_view name, bool value)
 {
-	auto& db = database::context();
-
-	if (auto sql = db.cacheQuery("put_ui_state", put_ui_state, true))
-	{
-		sql->bind(1, name);
-		sql->bind(2, value);
-		sql->exec();
-		sql->reset();
-	}
+	return saveState<bool>(name, value);
 }
 
 // -----------------------------------------------------------------------------
@@ -216,15 +203,7 @@ void ui::saveStateBool(string_view name, bool value)
 // -----------------------------------------------------------------------------
 void ui::saveStateInt(string_view name, int value)
 {
-	auto& db = database::context();
-
-	if (auto sql = db.cacheQuery("put_ui_state", put_ui_state, true))
-	{
-		sql->bind(1, name);
-		sql->bind(2, value);
-		sql->exec();
-		sql->reset();
-	}
+	return saveState<int>(name, value);
 }
 
 // -----------------------------------------------------------------------------
@@ -232,15 +211,7 @@ void ui::saveStateInt(string_view name, int value)
 // -----------------------------------------------------------------------------
 void ui::saveStateFloat(string_view name, double value)
 {
-	auto& db = database::context();
-
-	if (auto sql = db.cacheQuery("put_ui_state", put_ui_state, true))
-	{
-		sql->bind(1, name);
-		sql->bind(2, value);
-		sql->exec();
-		sql->reset();
-	}
+	return saveState<double>(name, value);
 }
 
 // -----------------------------------------------------------------------------
@@ -248,15 +219,7 @@ void ui::saveStateFloat(string_view name, double value)
 // -----------------------------------------------------------------------------
 void ui::saveStateString(string_view name, string_view value)
 {
-	auto& db = database::context();
-
-	if (auto sql = db.cacheQuery("put_ui_state", put_ui_state, true))
-	{
-		sql->bind(1, name);
-		sql->bind(2, value);
-		sql->exec();
-		sql->reset();
-	}
+	return saveState<string_view>(name, value);
 }
 
 // -----------------------------------------------------------------------------
@@ -264,15 +227,10 @@ void ui::saveStateString(string_view name, string_view value)
 // -----------------------------------------------------------------------------
 void ui::toggleStateBool(string_view name)
 {
-	auto& db = database::context();
-
-	if (auto sql = db.cacheQuery(
-			"toggle_ui_state_bool",
-			"UPDATE ui_state SET value = CASE value WHEN 0 THEN 1 ELSE 0 END WHERE name = ?",
-			true))
+	auto ps = database::context().preparedStatement(
+		"toggle_ui_state_bool", "UPDATE ui_state SET value = CASE value WHEN 0 THEN 1 ELSE 0 END WHERE name = ?", true);
 	{
-		sql->bind(1, name);
-		sql->exec();
-		sql->reset();
+		ps.bind(1, name);
+		ps.exec();
 	}
 }

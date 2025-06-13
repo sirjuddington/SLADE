@@ -35,6 +35,7 @@
 #include "FileUtils.h"
 #include "General/Misc.h"
 #include "UI/WxUtils.h"
+#include "thirdparty/xxhash/xxhash.h"
 
 using namespace slade;
 
@@ -443,7 +444,7 @@ bool MemChunk::write(const void* data, uint32_t size, uint32_t start)
 // Reads [count] bytes of data from the current position into [buffer].
 // Returns false if attempting to read data outside of the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::read(void* buffer, unsigned count)
+bool MemChunk::read(void* buffer, unsigned count) const
 {
 	// Check pointers
 	if (!data_ || !buffer)
@@ -465,7 +466,7 @@ bool MemChunk::read(void* buffer, unsigned count)
 // Reads [size] bytes of data from [start] into [buf].
 // Returns false if attempting to read data outside of the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::read(void* buf, uint32_t size, uint32_t start)
+bool MemChunk::read(void* buf, uint32_t size, uint32_t start) const
 {
 	// Check options
 	if (start + size > size_)
@@ -479,7 +480,7 @@ bool MemChunk::read(void* buf, uint32_t size, uint32_t start)
 // -----------------------------------------------------------------------------
 // Moves the current position, works the same as fseek() etc.
 // -----------------------------------------------------------------------------
-bool MemChunk::seek(uint32_t offset, uint32_t start)
+bool MemChunk::seek(uint32_t offset, uint32_t start) const
 {
 	if (start == SEEK_CUR)
 	{
@@ -550,6 +551,19 @@ bool MemChunk::fillData(uint8_t val) const
 uint32_t MemChunk::crc() const
 {
 	return hasData() ? misc::crc(data_, size_) : 0;
+}
+
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the data using xxHash (XXH128).
+// Returns the hash as a hex string or empty if no data is present
+// -----------------------------------------------------------------------------
+string MemChunk::hash() const
+{
+	if (!hasData())
+		return {};
+
+	auto hash = XXH3_128bits(data_, size_);
+	return fmt::format("{:x}{:x}", hash.high64, hash.low64);
 }
 
 // -----------------------------------------------------------------------------

@@ -17,6 +17,7 @@ namespace fileutil
 	bool           removeDir(string_view path);
 	vector<string> allFilesInDir(string_view path, bool include_subdirs = false, bool include_dir_paths = false);
 	time_t         fileModifiedTime(string_view path);
+	string         fileHash(string_view path);
 } // namespace fileutil
 
 class SFile : public SeekableData
@@ -42,16 +43,18 @@ public:
 	bool open(const string& path, Mode mode = Mode::ReadOnly);
 	void close();
 
-	bool seek(unsigned offset) override;
-	bool seekFromStart(unsigned offset) override;
-	bool seekFromEnd(unsigned offset) override;
+	bool seek(unsigned offset) const override;
+	bool seekFromStart(unsigned offset) const override;
+	bool seekFromEnd(unsigned offset) const override;
 
-	bool read(void* buffer, unsigned count) override;
+	bool read(void* buffer, unsigned count) const override;
 	bool read(MemChunk& mc, unsigned count);
 	bool read(string& str, unsigned count) const;
 
 	bool write(const void* buffer, unsigned count) override;
 	bool writeStr(string_view str) const;
+
+	string calculateHash() const;
 
 private:
 	FILE*       handle_ = nullptr;

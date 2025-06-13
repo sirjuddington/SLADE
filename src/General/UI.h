@@ -51,9 +51,9 @@ struct WindowInfo
 	string id;
 	int    left, top, width, height;
 };
-WindowInfo         getWindowInfo(const char* id);
-void               setWindowInfo(const char* id, int width, int height, int left, int top);
-vector<StringPair> getWindowLayout(const char* id);
-void               setWindowLayout(const char* id, const vector<StringPair>& layout);
+WindowInfo         getWindowInfo(string_view id);
+void               setWindowInfo(string_view id, int width, int height, int left, int top);
+vector<StringPair> getWindowLayout(string_view id);
+void               setWindowLayout(string_view id, const vector<StringPair>& layout);
 
 } // namespace slade::ui

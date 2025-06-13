@@ -39,7 +39,7 @@
 #include "Context.h"
 #include "General/Console.h"
 #include "General/UI.h"
-// #include "Utility/DateTime.h"
+#include "Models/ArchiveFile.h"
 #include "Statement.h"
 #include "UI/State.h"
 #include "Utility/FileUtils.h"
@@ -95,20 +95,17 @@ void migrateWindowLayout(string_view filename, const char* window_id)
 // -----------------------------------------------------------------------------
 // Creates any missing tables/views in the SLADE database [db]
 // -----------------------------------------------------------------------------
-bool createMissingTables(Context& db)
+void createMissingTables(Context& db)
 {
 	// Get slade.pk3 dir with table definition scripts
 	auto tables_dir = app::programResource()->dirAtPath("database/tables");
 	if (!tables_dir)
-	{
-		global::error = "Unable to initialize SLADE database: no table definitions in slade.pk3";
-		return false;
-	}
+		throw std::runtime_error("Unable to initialize SLADE database: no table definitions in slade.pk3");
 
 	for (const auto& entry : tables_dir->entries())
 	{
 		// Check table exists
-		auto table_name = strutil::Path::fileNameOf(entry->name(), false);
+		string table_name{ strutil::Path::fileNameOf(entry->name(), false) };
 		if (db.tableExists(table_name))
 			continue;
 
@@ -121,8 +118,7 @@ bool createMissingTables(Context& db)
 		}
 		catch (const SQLite::Exception& ex)
 		{
-			global::error = fmt::format("Failed to create database table {}: {}", table_name, ex.what());
-			return false;
+			throw std::runtime_error(fmt::format("Failed to create database table {}: {}", table_name, ex.what()));
 		}
 	}
 
@@ -145,61 +141,51 @@ bool createMissingTables(Context& db)
 			}
 			catch (const SQLite::Exception& ex)
 			{
-				global::error = fmt::format("Failed to create database view {}: {}", view_name, ex.what());
-				return false;
+				throw std::runtime_error(fmt::format("Failed to create database view {}: {}", view_name, ex.what()));
 			}
 		}
 	}
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
 // Creates and initializes a new program database file at [file_path]
 // -----------------------------------------------------------------------------
-bool createDatabase(const string& file_path)
+void createDatabase(const string& file_path)
 {
 	auto db = Context(file_path, true);
 
 	// Create tables
-	if (!createMissingTables(db))
-		return false;
+	createMissingTables(db);
 
 	// Init db_info table
 	try
 	{
-		Statement sql{ *db.connectionRW(), "INSERT INTO db_info (version) VALUES (?)" };
+		SQLite::Statement sql{ *db.connectionRW(), "INSERT INTO db_info (version) VALUES (?)" };
 		sql.bind(1, db_version);
 		sql.exec();
 	}
 	catch (const SQLite::Exception& ex)
 	{
-		global::error = fmt::format("Failed to initialize database: {}", ex.what());
-		log::error(global::error);
-		return false;
+		throw std::runtime_error(fmt::format("Failed to initialize database: {}", ex.what()));
 	}
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
 // Updates the program database tables
 // -----------------------------------------------------------------------------
-bool updateDatabase(int prev_version)
+void updateDatabase(int prev_version)
 {
 	log::info("Updating database from v{} to v{}...", prev_version, db_version);
 
 	// Create missing tables
 	auto& db = context();
-	if (!createMissingTables(db))
-		return false;
+	createMissingTables(db);
 
 	// Update db_info.version
 	db.exec(fmt::format("UPDATE db_info SET version = {}", db_version));
 
 	// Done
 	log::info("Database updated to v{} successfully", db_version);
-	return true;
 }
 } // namespace slade::database
 
@@ -227,34 +213,36 @@ string database::programDatabasePath()
 // -----------------------------------------------------------------------------
 bool database::init()
 {
-	auto db_path = app::path("slade.sqlite", app::Dir::User);
-
-	// Create database if needed
-	bool created = false;
-	if (!fileutil::fileExists(db_path))
+	try
 	{
-		if (!createDatabase(db_path))
-			return false;
+		auto db_path = app::path("slade.sqlite", app::Dir::User);
 
-		created = true;
+		// Create database if needed
+		bool created = false;
+		if (!fileutil::fileExists(db_path))
+		{
+			createDatabase(db_path);
+			created = true;
+		}
+
+		// Open global connections to database (for main thread usage only)
+		auto& db = context();
+		db.open(db_path);
+
+		// Migrate pre-3.3.0 config stuff to database
+		if (created)
+			migrateConfigs();
+
+		// Update the database if needed
+		auto existing_version = db.connectionRO()->execAndGet("SELECT version FROM db_info").getInt();
+		if (existing_version < db_version)
+			updateDatabase(existing_version);
 	}
-
-	// Open global connections to database (for main thread usage only)
-	auto& db = context();
-	if (!db.open(db_path))
+	catch (const std::exception& ex)
 	{
-		global::error = "Unable to open global database connections";
+		log::error("Failed to initialize database: {}", ex.what());
 		return false;
 	}
-
-	// Migrate pre-3.3.0 config stuff to database
-	if (created)
-		migrateConfigs();
-
-	// Update the database if needed
-	auto existing_version = db.connectionRO()->execAndGet("SELECT version FROM db_info").getInt();
-	if (existing_version < db_version)
-		return updateDatabase(existing_version);
 
 	return true;
 }
@@ -269,8 +257,8 @@ void database::close()
 }
 
 // -----------------------------------------------------------------------------
-// Migrates various configurations from text/cfg files (pre-3.3.0) to the
-// SLADE program database
+// Migrates various configurations from text/cfg files to the SLADE program
+// database
 // -----------------------------------------------------------------------------
 void database::migrateConfigs()
 {
@@ -360,6 +348,121 @@ void database::migrateConfigs()
 #undef MIGRATE_CVAR_BOOL
 #undef MIGRATE_CVAR_INT
 #undef MIGRATE_CVAR_STRING
+}
+
+// -----------------------------------------------------------------------------
+// Returns the archive_file row id for [path] (in [parent_id] if given),
+// or -1 if it does not exist in the database
+// -----------------------------------------------------------------------------
+i64 database::archiveFileId(Context& db, const string& path, i64 parent_id)
+{
+	i64 archive_id = -1;
+
+	auto ps = db.preparedStatement("get_archive_id", "SELECT id FROM archive_file WHERE path = ? AND parent_id = ?");
+
+	ps.bind(1, path);
+	ps.bind(2, parent_id);
+
+	if (ps.executeStep())
+		archive_id = ps.getColumn(0);
+
+	return archive_id;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the archive_file row id for [archive], or -1 if it does not exist in
+// the database
+// -----------------------------------------------------------------------------
+i64 database::archiveFileId(Context& db, const Archive& archive)
+{
+	auto path      = strutil::replace(archive.filename(), "\\", "/");
+	auto parent_id = -1;
+
+	if (auto* parent = archive.parentArchive())
+	{
+		path      = parent->filename() + "/" + archive.parentEntry()->name();
+		parent_id = app::archiveManager().archiveDbId(*parent);
+	}
+
+	return archiveFileId(db, path, parent_id);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the last opened time for the archive_file row with [id].
+// Returns 0 if it does not exist in the database or has never been opened
+// -----------------------------------------------------------------------------
+time_t database::archiveFileLastOpened(Context& db, i64 id)
+{
+	time_t last_opened = 0;
+
+	auto ps = db.preparedStatement("get_archive_file_last_opened", "SELECT last_opened FROM archive_file WHERE id = ?");
+	ps.bind(1, id);
+
+	if (ps.executeStep())
+		last_opened = ps.getColumn(0).getInt64();
+
+	return last_opened;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the [last_opened] time for the archive_file row with [archive_id]
+// -----------------------------------------------------------------------------
+void database::setArchiveFileLastOpened(Context& db, int64_t archive_id, time_t last_opened)
+{
+	auto ps = db.preparedStatement(
+		"set_archive_file_last_opened", "UPDATE archive_file SET last_opened = ? WHERE id = ?", true);
+	ps.bindDateTime(1, last_opened);
+	ps.bind(2, archive_id);
+
+	if (ps.exec() == 0)
+		log::error("Failed to set last opened time for archive with id {}", archive_id);
+}
+
+// -----------------------------------------------------------------------------
+// Writes [archive] info to the archive_file table in the database.
+// Returns the archive_file row id for the archive, or -1 if an error occurred.
+// -----------------------------------------------------------------------------
+i64 database::writeArchiveFile(Context& db, const Archive& archive)
+{
+	ArchiveFile archive_file;
+
+	archive_file.id        = app::archiveManager().archiveDbId(archive);
+	archive_file.path      = strutil::replace(archive.filename(), "\\", "/");
+	archive_file.format_id = archive.formatId();
+
+	// Keep existing last opened time
+	if (archive_file.id >= 0)
+		archive_file.last_opened = archiveFileLastOpened(db, archive_file.id);
+
+	if (auto* parent = archive.parentArchive())
+	{
+		// Embedded archive
+		auto entry             = archive.parentEntry();
+		archive_file.parent_id = app::archiveManager().archiveDbId(*parent);
+		archive_file.path      = parent->filename() + "/" + entry->name();
+		archive_file.size      = entry->size();
+		archive_file.hash      = entry->data().hash();
+	}
+	else
+	{
+		// Archive file/dir on disk
+		archive_file.parent_id = -1;
+		if (fileutil::fileExists(archive.filename()))
+		{
+			SFile file{ archive.filename() };
+			archive_file.size          = file.size();
+			archive_file.hash          = file.calculateHash();
+			archive_file.last_modified = fileutil::fileModifiedTime(archive.filename());
+		}
+	}
+
+	// Write to database
+	if (archive_file.id < 0)
+		archive_file.insert(db);
+	else
+		archive_file.update(db);
+
+	return archive_file.id;
 }
 
 

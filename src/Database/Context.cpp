@@ -97,84 +97,65 @@ bool Context::isForThisThread() const
 // Opens connections to the database file at [file_path].
 // Returns false if any existing connections couldn't be closed, true otherwise
 // -----------------------------------------------------------------------------
-bool Context::open(string_view file_path, bool create)
+void Context::open(string_view file_path, bool create)
 {
-	if (!close())
-		return false;
+	close();
 
 	file_path_     = file_path;
 	connection_rw_ = std::make_unique<SQLite::Database>(
-		file_path_, create ? SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE : SQLite::OPEN_READWRITE, 100);
-	connection_ro_ = std::make_unique<SQLite::Database>(file_path_, SQLite::OPEN_READONLY, 100);
-
-	return true;
+		file_path_, create ? SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE : SQLite::OPEN_READWRITE, 1000);
+	connection_ro_ = std::make_unique<SQLite::Database>(file_path_, SQLite::OPEN_READONLY, 1000);
 }
 
 // -----------------------------------------------------------------------------
 // Closes the context's connections to its database
 // -----------------------------------------------------------------------------
-bool Context::close()
+void Context::close()
 {
 	if (!connection_ro_)
-		return true;
+		return;
 
-	try
-	{
-		cached_queries_.clear();
-		connection_ro_ = nullptr;
-		connection_rw_ = nullptr;
-	}
-	catch (std::exception& ex)
-	{
-		log::error("Error closing connections for database {}: {}", file_path_, ex.what());
-		return false;
-	}
-
+	prepared_statements_.clear();
 	file_path_.clear();
-	return true;
+	connection_ro_ = nullptr;
+	connection_rw_ = nullptr;
 }
 
 // -----------------------------------------------------------------------------
-// Returns the cached query [id] or nullptr if not found
+// Returns the prepared statement [id] or nullptr if not found.
 // -----------------------------------------------------------------------------
-Statement* Context::cachedQuery(string_view id)
+Statement Context::preparedStatement(string_view id)
 {
-	auto i = cached_queries_.find(id);
-	if (i != cached_queries_.end())
-	{
-		i->second->tryReset();
-		return i->second.get();
-	}
+	auto i = prepared_statements_.find(id);
+	if (i != prepared_statements_.end())
+		return { *i->second };
 
-	return nullptr;
+	throw std::runtime_error(fmt::format("Prepared statement with id \"{}\" does not exist"));
 }
 
 // -----------------------------------------------------------------------------
-// Returns the cached query [id] if it exists, otherwise creates a new cached
-// query from the given [sql] string and returns it.
+// Returns the prepared statement [id] if it exists, otherwise creates prepared
+// statement from the given [sql] string and returns it.
 // If [writes] is true, the created query will use the read+write connection.
 // -----------------------------------------------------------------------------
-Statement* Context::cacheQuery(string_view id, string_view sql, bool writes)
+Statement Context::preparedStatement(string_view id, string_view sql, bool writes)
 {
-	// Check for existing cached query [id]
-	auto i = cached_queries_.find(id);
-	if (i != cached_queries_.end())
-	{
-		i->second->tryReset();
-		return i->second.get();
-	}
+	// Check for existing prepared statement [id]
+	auto i = prepared_statements_.find(id);
+	if (i != prepared_statements_.end())
+		return { *i->second };
 
 	// Check connection
 	if (!connection_ro_)
-		return nullptr;
+		throw std::runtime_error("Database Context is not open");
 
-	// Create & add cached query
+	// Create & add prepared statement
 	auto& db        = writes ? *connection_rw_ : *connection_ro_;
-	auto  statement = std::make_unique<Statement>(db, sql);
-	auto  ptr       = statement.get();
-	cached_queries_.emplace(id, std::move(statement));
-
-	return ptr;
+	auto  statement = std::make_unique<SQLite::Statement>(db, string{ sql });
+	if (auto [it, success] = prepared_statements_.emplace(id, std::move(statement)); success)
+		return { *it->second };
+	else
+		throw std::runtime_error("Failed to insert prepared statement");
 }
 
 // -----------------------------------------------------------------------------
@@ -204,17 +185,17 @@ bool Context::rowIdExists(string_view table_name, int64_t id, string_view id_col
 // -----------------------------------------------------------------------------
 // Returns true if a table with the name [table_name] exists in the database
 // -----------------------------------------------------------------------------
-bool Context::tableExists(string_view table_name) const
+bool Context::tableExists(const string& table_name) const
 {
-	return connection_ro_->tableExists(string{ table_name });
+	return connection_ro_->tableExists(table_name);
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if a view with [view_name] exists in the database
 // -----------------------------------------------------------------------------
-bool Context::viewExists(string_view view_name) const
+bool Context::viewExists(const string& view_name) const
 {
-	Statement query(*connection_ro_, "SELECT count(*) FROM sqlite_master WHERE type='view' AND name=?");
+	SQLite::Statement query(*connection_ro_, "SELECT count(*) FROM sqlite_master WHERE type='view' AND name=?");
 	query.bind(1, view_name);
 	query.executeStep(); // Cannot return false, as the above query always returns a result
 	return query.getColumn(0).getInt() == 1;

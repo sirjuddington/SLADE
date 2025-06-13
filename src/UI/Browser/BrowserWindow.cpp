@@ -34,7 +34,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BrowserWindow.h"
-#include "General/Misc.h"
 #include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
@@ -173,14 +172,14 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	truncate_names_{ truncate_names }
 {
 	// Init size/pos
-	auto info = misc::getWindowInfo("browser");
+	auto info = ui::getWindowInfo("browser");
 	if (!info.id.empty())
 	{
 		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		misc::setWindowInfo("browser", 768, 600, 0, 0);
+		ui::setWindowInfo("browser", 768, 600, 0, 0);
 
 	// Init variables
 	items_root_ = new BrowserTreeNode();
@@ -277,7 +276,7 @@ BrowserWindow::~BrowserWindow()
 	ui::saveStateBool("BrowserWindowMaximized", wxTopLevelWindow::IsMaximized());
 	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
 	if (!wxTopLevelWindow::IsMaximized())
-		misc::setWindowInfo(
+		ui::setWindowInfo(
 			"browser",
 			ClientSize.x,
 			ClientSize.y,

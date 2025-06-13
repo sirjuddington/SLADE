@@ -35,7 +35,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Game/Configuration.h"
-#include "General/Misc.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapBackupManager.h"
@@ -54,7 +53,6 @@
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/MapEditorConfigDialog.h"
-#include "UI/Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/SAuiTabArt.h"
@@ -63,7 +61,6 @@
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
-#include "Utility/Tokenizer.h"
 
 using namespace slade;
 
@@ -1417,7 +1414,7 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 	saveLayout();
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(
+		ui::setWindowInfo(
 			id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
 
 	Show(false);

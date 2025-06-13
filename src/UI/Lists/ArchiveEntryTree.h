@@ -142,6 +142,7 @@ namespace ui
 		wxDataViewColumn* col_index_               = nullptr;
 		int               multi_select_base_index_ = -1;
 		string            search_;
+		wxTimer           timer_;
 
 		void setupColumns();
 		void saveColumnWidths() const;

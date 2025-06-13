@@ -320,10 +320,6 @@ void readConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
-		// Read window size/position info
-		if (tz.advIf("window_info", 2))
-			misc::readWindowInfo(tz);
-
 		// Next token
 		tz.adv();
 	}
@@ -669,11 +665,6 @@ void app::saveConfigFile()
 	file.writeStr(executables::writePaths());
 	file.writeStr("}\n");
 
-	// Write window info
-	file.writeStr("\nwindow_info\n{\n");
-	misc::writeWindowInfo(file);
-	file.writeStr("}\n");
-
 	// Close configuration file
 	file.writeStr("\n// End Configuration File\n\n");
 
@@ -770,12 +761,12 @@ string app::path(string_view filename, Dir dir)
 {
 	switch (dir)
 	{
-	case Dir::User: return fmt::format("{}{}{}", dir_user, dir_separator, filename);
-	case Dir::Data: return fmt::format("{}{}{}", dir_data, dir_separator, filename);
+	case Dir::User:       return fmt::format("{}{}{}", dir_user, dir_separator, filename);
+	case Dir::Data:       return fmt::format("{}{}{}", dir_data, dir_separator, filename);
 	case Dir::Executable: return fmt::format("{}{}{}", dir_app, dir_separator, filename);
-	case Dir::Resources: return fmt::format("{}{}{}", dir_res, dir_separator, filename);
-	case Dir::Temp: return fmt::format("{}{}{}", dir_temp, dir_separator, filename);
-	default: return string{ filename };
+	case Dir::Resources:  return fmt::format("{}{}{}", dir_res, dir_separator, filename);
+	case Dir::Temp:       return fmt::format("{}{}{}", dir_temp, dir_separator, filename);
+	default:              return string{ filename };
 	}
 }
 

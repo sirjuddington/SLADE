@@ -36,7 +36,6 @@
 #include "Archive/ArchiveManager.h"
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
-#include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
 #include "SLADEWxApp.h"
@@ -55,7 +54,6 @@
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
-#include "Utility/Tokenizer.h"
 #ifdef USE_WEBVIEW_STARTPAGE
 #include "DocsPage.h"
 #endif
@@ -445,7 +443,7 @@ bool MainWindow::exitProgram()
 	ui::saveStateBool("MainWindowMaximized", IsMaximized());
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(
+		ui::setWindowInfo(
 			id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
 
 	// Save selected palette

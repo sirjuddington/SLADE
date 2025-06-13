@@ -341,10 +341,10 @@ wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 {
 	switch (col)
 	{
-	case 0: return wxS("wxDataViewIconText");
-	case 1: return wxS("string");
-	case 2: return wxS("string");
-	case 3: return wxS("string"); // Index is a number technically, but will need to be blank for folders
+	case 0:  return wxS("wxDataViewIconText");
+	case 1:  return wxS("string");
+	case 2:  return wxS("string");
+	case 3:  return wxS("string"); // Index is a number technically, but will need to be blank for folders
 	default: return wxS("string");
 	}
 }
@@ -825,7 +825,7 @@ bool ArchiveViewModel::dirIsInList(const ArchiveDir& dir) const
 	switch (view_type_)
 	{
 	case ViewType::List: return dir.parent() == root_dir_.lock();
-	default: return true;
+	default:             return true;
 	}
 }
 
@@ -860,7 +860,8 @@ ArchiveEntryTree::ArchiveEntryTree(
 	UndoManager*        undo_manager,
 	bool                force_list) :
 	wxDataViewCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE),
-	archive_{ archive }
+	archive_{ archive },
+	timer_{ this }
 {
 	// Init settings
 	SetRowHeight(ui::scalePx(elist_icon_size + (elist_icon_padding * 2) + 2));
@@ -919,8 +920,16 @@ ArchiveEntryTree::ArchiveEntryTree(
 				e.Skip();
 		});
 
-	// Update column width cvars when we can
-	Bind(wxEVT_IDLE, [this](wxIdleEvent&) { saveColumnWidths(); });
+	// Update column width UI state vars when possible/needed
+#ifdef __WXMSW__
+	// On Windows we can get the header control and handle the column size event
+	GenericGetHeader()->Bind(wxEVT_HEADER_END_RESIZE, [this](wxHeaderCtrlEvent&) { saveColumnWidths(); });
+#else
+	// On Linux/Mac we don't have any way to know if a column is resized so just update every 1 sec
+	// TODO: See if there is a better way to do this
+	Bind(wxEVT_TIMER, [this](wxTimerEvent&) { saveColumnWidths(); });
+	timer_.Start(1000);
+#endif
 
 	// Disable modified indicator (" *" after name) when in-place editing entry names
 	Bind(
@@ -1028,7 +1037,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 				switch (e.GetKeyCode())
 				{
 				case WXK_DOWN: to_row = GetRowByItem(GetCurrentItem()) + 1; break;
-				case WXK_UP: to_row = GetRowByItem(GetCurrentItem()) - 1; break;
+				case WXK_UP:   to_row = GetRowByItem(GetCurrentItem()) - 1; break;
 				default:
 					// Not up or down arrow, do default handling
 					e.Skip();

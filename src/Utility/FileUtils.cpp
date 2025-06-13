@@ -35,6 +35,7 @@
 #include "FileUtils.h"
 #include "App.h"
 #include "StringUtils.h"
+#include "thirdparty/xxhash/xxhash.h"
 #include <filesystem>
 #include <fstream>
 
@@ -264,6 +265,17 @@ time_t fileutil::fileModifiedTime(string_view path)
 	return wxFileModificationTime(wxString::FromUTF8(path.data(), path.size()));
 }
 
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the file at [path] using xxHash (XXH128).
+// Returns the hash as a hex string or empty if the file doesn't exist or can't
+// be acessed
+// -----------------------------------------------------------------------------
+string fileutil::fileHash(string_view path)
+{
+	SFile file(path);
+	return file.calculateHash();
+}
+
 
 
 // -----------------------------------------------------------------------------
@@ -304,22 +316,29 @@ bool SFile::open(const string& path, Mode mode)
 	switch (mode)
 	{
 	case Mode::ReadOnly: handle_ = _wfopen(wpath.wc_str(), L"rb"); break;
-	case Mode::Write: handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
+	case Mode::Write:    handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
 	case Mode::ReadWite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
-	case Mode::Append: handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
+	case Mode::Append:   handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
+	}
+
+	if (handle_)
+	{
+		struct _stat win_stat;
+		_wstat(wpath.wc_str(), &win_stat);
+		stat_.st_size = win_stat.st_size;
 	}
 #else
 	switch (mode)
 	{
 	case Mode::ReadOnly: handle_ = fopen(path.c_str(), "rb"); break;
-	case Mode::Write: handle_ = fopen(path.c_str(), "wb"); break;
+	case Mode::Write:    handle_ = fopen(path.c_str(), "wb"); break;
 	case Mode::ReadWite: handle_ = fopen(path.c_str(), "r+b"); break;
-	case Mode::Append: handle_ = fopen(path.c_str(), "ab"); break;
+	case Mode::Append:   handle_ = fopen(path.c_str(), "ab"); break;
 	}
-#endif
 
 	if (handle_)
 		stat(path.c_str(), &stat_);
+#endif
 
 	return handle_ != nullptr;
 }
@@ -339,7 +358,7 @@ void SFile::close()
 // -----------------------------------------------------------------------------
 // Seeks ahead by [offset] bytes from the current position
 // -----------------------------------------------------------------------------
-bool SFile::seek(unsigned offset)
+bool SFile::seek(unsigned offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_CUR) == 0 : false;
 }
@@ -347,7 +366,7 @@ bool SFile::seek(unsigned offset)
 // -----------------------------------------------------------------------------
 // Seeks to [offset] bytes from the beginning of the file
 // -----------------------------------------------------------------------------
-bool SFile::seekFromStart(unsigned offset)
+bool SFile::seekFromStart(unsigned offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_SET) == 0 : false;
 }
@@ -355,7 +374,7 @@ bool SFile::seekFromStart(unsigned offset)
 // -----------------------------------------------------------------------------
 // Seeks to [offset] bytes back from the end of the file
 // -----------------------------------------------------------------------------
-bool SFile::seekFromEnd(unsigned offset)
+bool SFile::seekFromEnd(unsigned offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_END) == 0 : false;
 }
@@ -363,7 +382,7 @@ bool SFile::seekFromEnd(unsigned offset)
 // -----------------------------------------------------------------------------
 // Reads [count] bytes from the file into [buffer]
 // -----------------------------------------------------------------------------
-bool SFile::read(void* buffer, unsigned count)
+bool SFile::read(void* buffer, unsigned count) const
 {
 	if (handle_)
 		return fread(buffer, count, 1, handle_) > 0;
@@ -417,4 +436,43 @@ bool SFile::writeStr(string_view str) const
 		return fwrite(str.data(), 1, str.size(), handle_);
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the file using xxHash (XXH128).
+// Returns the hash as a hex string or empty if the file is not open
+// -----------------------------------------------------------------------------
+string SFile::calculateHash() const
+{
+	if (!isOpen())
+		return {};
+
+	auto current_pos = currentPos();
+	auto size        = this->size();
+
+	seekFromStart(0);
+	unsigned pos = 0;
+
+	auto* state = XXH3_createState();
+	XXH3_128bits_reset(state);
+
+	// Read in 1mb chunks
+	unsigned chunk_size = 1024;
+	char     buffer[1024];
+	while (pos < size)
+	{
+		if (size - pos < chunk_size)
+			chunk_size = size - pos;
+
+		read(buffer, chunk_size);
+		XXH3_128bits_update(state, buffer, chunk_size);
+
+		pos += chunk_size;
+	}
+
+	auto hash = XXH3_128bits_digest(state);
+	XXH3_freeState(state);
+	seekFromStart(current_pos);
+
+	return fmt::format("{:x}{:x}", hash.high64, hash.low64);
 }

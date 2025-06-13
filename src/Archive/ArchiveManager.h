@@ -72,6 +72,9 @@ public:
 	unsigned      numBookmarks() const { return bookmarks_.size(); }
 	bool          isBookmarked(ArchiveEntry* entry);
 
+	// Database
+	i64 archiveDbId(const Archive& archive) const;
+
 	// Signals
 	struct Signals
 	{
@@ -97,6 +100,7 @@ private:
 		shared_ptr<Archive>       archive;
 		vector<weak_ptr<Archive>> open_children; // A list of currently open archives that are within this archive
 		bool                      resource;
+		i64                       db_id;
 	};
 
 	vector<OpenArchive>            open_archives_;
@@ -112,5 +116,7 @@ private:
 
 	bool initArchiveFormats() const;
 	void getDependentArchivesInternal(Archive* archive, vector<shared_ptr<Archive>>& vec);
+	void setArchiveDbId(const Archive& archive, i64 db_id);
+	void openWadsInRoot(const Archive& archive);
 };
 } // namespace slade

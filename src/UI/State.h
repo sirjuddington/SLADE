@@ -3,7 +3,7 @@
 namespace slade::ui
 {
 void initStateProps();
-bool hasSavedState(string_view name);
+bool hasSavedState(const char* name);
 
 bool   getStateBool(string_view name);
 int    getStateInt(string_view name);

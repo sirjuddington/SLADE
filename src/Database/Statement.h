@@ -1,33 +1,46 @@
 #pragma once
 
-#include <SQLiteCpp/Statement.h>
+namespace SQLite
+{
+class Statement;
+class Column;
+} // namespace SQLite
 
 namespace slade::database
 {
-// Wrapper of SQLiteCpp Statement to handle string_view
-class Statement : public SQLite::Statement
+// A wrapper around an SQLite::Statement that supports binding string_view,
+// clears bindings when constructed and resets the statement when destroyed
+class Statement
 {
 public:
-	Statement(const SQLite::Database& db, string_view query) :
-		SQLite::Statement(db, string{ query.data(), query.size() })
-	{
-	}
+	Statement(SQLite::Statement& statement);
+	~Statement();
 
-	void bind(int index, int32_t value) { SQLite::Statement::bind(index, value); }
-	void bind(int index, uint32_t value) { SQLite::Statement::bind(index, value); }
-	void bind(int index, int64_t value) { SQLite::Statement::bind(index, value); }
-	void bind(int index, double value) { SQLite::Statement::bind(index, value); }
-	void bind(int index, const string& value) { SQLite::Statement::bind(index, value); }
-	void bind(int index, const char* value) { SQLite::Statement::bind(index, value); }
-	void bind(int index, string_view value) { SQLite::Statement::bind(index, string{ value.data(), value.size() }); }
-	void bind(int index, const void* value, int size) { SQLite::Statement::bind(index, value, size); }
-	void bind(int index) { SQLite::Statement::bind(index); }
+	SQLite::Statement& statement() const { return *statement_; }
 
-	// Needed to avoid ambiguous call error on some systems for time_t
-	void bindDateTime(int index, time_t value) { SQLite::Statement::bind(index, static_cast<int64_t>(value)); }
+	void bind(int index, int32_t value) const;
+	void bind(int index, uint32_t value) const;
+	void bind(int index, int64_t value) const;
+	void bind(int index, double value) const;
+	void bind(int index, const string& value) const;
+	void bind(int index, const char* value) const;
+	void bind(int index, string_view value) const;
+	void bind(int index, const void* value, int size) const;
+	void bind(int index) const;
+	void bindDateTime(int index, time_t value) const;
+	void bindNoCopy(int index, const string& value) const;
+	void bindNoCopy(int index, const char* value) const;
+	void bindNoCopy(int index, const void* value, int size) const;
 
-	void bindNoCopy(int index, const string& value) { SQLite::Statement::bindNoCopy(index, value); }
-	void bindNoCopy(int index, const char* value) { SQLite::Statement::bindNoCopy(index, value); }
-	void bindNoCopy(int index, const void* value, int size) { SQLite::Statement::bindNoCopy(index, value, size); }
+	int  exec() const;
+	bool executeStep() const;
+	void reset() const;
+
+	SQLite::Column getColumn(int index) const;
+	SQLite::Column getColumn(const string& name) const;
+	SQLite::Column getColumn(string_view name) const;
+
+private:
+	SQLite::Statement* statement_ = nullptr;
 };
 } // namespace slade::database

@@ -23,10 +23,10 @@ public:
 	// SeekableData
 	unsigned size() const override { return size_; }
 	unsigned currentPos() const override { return cur_ptr_; }
-	bool     seek(unsigned offset) override { return seek(offset, SEEK_CUR); }
-	bool     seekFromStart(unsigned offset) override { return seek(offset, SEEK_SET); }
-	bool     seekFromEnd(unsigned offset) override { return seek(offset, SEEK_END); }
-	bool     read(void* buffer, unsigned count) override;
+	bool     seek(unsigned offset) const override { return seek(offset, SEEK_CUR); }
+	bool     seekFromStart(unsigned offset) const override { return seek(offset, SEEK_SET); }
+	bool     seekFromEnd(unsigned offset) const override { return seek(offset, SEEK_END); }
+	bool     read(void* buffer, unsigned count) const override;
 	bool     write(const void* buffer, unsigned count) override;
 
 	bool hasData() const;
@@ -51,8 +51,8 @@ public:
 
 	// C-style reading/writing
 	bool write(const void* data, uint32_t size, uint32_t start);
-	bool read(void* buf, uint32_t size, uint32_t start);
-	bool seek(uint32_t offset, uint32_t start);
+	bool read(void* buf, uint32_t size, uint32_t start) const;
+	bool seek(uint32_t offset, uint32_t start) const;
 
 	// Extended C-style reading/writing
 	bool readMC(MemChunk& mc, uint32_t size);
@@ -60,6 +60,7 @@ public:
 	// Misc
 	bool     fillData(uint8_t val) const;
 	uint32_t crc() const;
+	string   hash() const;
 	string   asString(uint32_t offset = 0, uint32_t length = 0) const;
 
 	// Platform-independent functions to read values in little (L##) or big (B##) endian
@@ -77,9 +78,9 @@ public:
 	}
 
 protected:
-	uint8_t* data_    = nullptr;
-	uint32_t cur_ptr_ = 0;
-	uint32_t size_    = 0;
+	uint8_t*         data_    = nullptr;
+	mutable uint32_t cur_ptr_ = 0;
+	uint32_t         size_    = 0;
 
 	uint8_t* allocData(uint32_t size, bool set_data = true);
 };

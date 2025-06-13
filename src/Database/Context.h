@@ -5,6 +5,7 @@
 namespace SQLite
 {
 class Database;
+class Statement;
 } // namespace SQLite
 
 namespace slade::database
@@ -25,18 +26,18 @@ public:
 	bool isOpen() const { return connection_ro_.get(); }
 	bool isForThisThread() const;
 
-	bool open(string_view file_path, bool create = false);
-	bool close();
+	void open(string_view file_path, bool create = false);
+	void close();
 
-	Statement* cachedQuery(string_view id);
-	Statement* cacheQuery(string_view id, string_view sql, bool writes = false);
+	Statement preparedStatement(string_view id);
+	Statement preparedStatement(string_view id, string_view sql, bool writes = false);
 
 	int exec(const string& query) const;
 	int exec(const char* query) const;
 
 	bool rowIdExists(string_view table_name, int64_t id, string_view id_col = "id") const;
-	bool tableExists(string_view table_name) const;
-	bool viewExists(string_view view_name) const;
+	bool tableExists(const string& table_name) const;
+	bool viewExists(const string& view_name) const;
 
 	Transaction beginTransaction(bool write = false) const;
 
@@ -49,7 +50,7 @@ private:
 	unique_ptr<SQLite::Database> connection_ro_;
 	unique_ptr<SQLite::Database> connection_rw_;
 
-	std::map<string, unique_ptr<Statement>, std::less<>> cached_queries_;
+	std::map<string, unique_ptr<SQLite::Statement>, std::less<>> prepared_statements_;
 };
 
 Context& context();

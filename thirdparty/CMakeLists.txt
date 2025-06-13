@@ -22,6 +22,7 @@ file(GLOB_RECURSE EXTERNAL_SOURCES
 	glad/src/*.c
 	${DUMB_SOURCES}
 	${SLADE_HEADERS}
+	xxhash/*.c
 )
 
 # Add fmt
