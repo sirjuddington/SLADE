@@ -57,10 +57,10 @@ private:
 	wxBitmapButton* btn_prev_      = nullptr;
 	wxSlider*       slider_seek_   = nullptr;
 	wxSlider*       slider_volume_ = nullptr;
-	wxTimer*        timer_seek_    = nullptr;
 	wxStaticText*   txt_title_     = nullptr;
 	wxStaticText*   txt_track_     = nullptr;
 	wxTextCtrl*     txt_info_      = nullptr;
+	wxTimer         timer_seek_;
 
 	unique_ptr<sf::SoundBuffer> sound_buffer_;
 	unique_ptr<sf::Sound>       sound_;
