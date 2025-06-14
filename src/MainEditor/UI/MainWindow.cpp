@@ -117,7 +117,7 @@ MainWindow::MainWindow() : STopWindow("SLADE", "main")
 	custom_menus_begin_ = 2;
 
 	if (mw_maximized)
-		wxTopLevelWindow::Maximize();
+		CallAfter(&MainWindow::Maximize, this);
 
 	setupLayout();
 
