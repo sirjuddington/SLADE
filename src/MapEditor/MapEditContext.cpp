@@ -286,6 +286,18 @@ void MapEditContext::lockMouse(bool lock)
 }
 
 // -----------------------------------------------------------------------------
+// Moves the 3d mode camera to the current mouse cursor position on the map
+// -----------------------------------------------------------------------------
+void MapEditContext::move3dCameraToCursor()
+{
+	Vec3d pos    = input().mousePosMap();
+	auto  sector = map_.sectors().atPos(input_.mousePosMap());
+	if (sector)
+		pos.z = sector->floor().plane.heightAt(pos.x, pos.y) + 40;
+	renderer_.renderer3D().cameraSetPosition(pos);
+}
+
+// -----------------------------------------------------------------------------
 // Updates the current map editor state (hilight, animations, etc.)
 // -----------------------------------------------------------------------------
 bool MapEditContext::update(long frametime)
@@ -1886,11 +1898,15 @@ bool MapEditContext::handleAction(string_view id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		Vec3d pos    = input().mousePosMap();
-		auto  sector = map_.sectors().atPos(input_.mousePosMap());
-		if (sector)
-			pos.z = sector->floor().plane.heightAt(pos.x, pos.y) + 40;
-		renderer_.renderer3D().cameraSetPosition(pos);
+		move3dCameraToCursor();
+		return true;
+	}
+
+	// Enter 3d mode at mouse
+	else if (id == "mapw_mode_3d_at_mouse")
+	{
+		move3dCameraToCursor();
+		setEditMode(Mode::Visual);
 		return true;
 	}
 

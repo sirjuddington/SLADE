@@ -593,6 +593,7 @@ void KeyBind::initBinds()
 	addBind("me2d_mode_lines", Keypress("L"), "Lines mode", group);
 	addBind("me2d_mode_sectors", Keypress("S"), "Sectors mode", group);
 	addBind("me2d_mode_things", Keypress("T"), "Things mode", group);
+	addBind("me2d_mode_3d_at_mouse", Keypress("Q", KPM_SHIFT), "Enter 3d mode at the mouse cursor position", group);
 	addBind("me2d_flat_type", Keypress("F", KPM_CTRL), "Cycle flat type", group);
 	addBind("me2d_split_line", Keypress("S", KPM_SHIFT), "Split nearest line", group);
 	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock hilight", group);

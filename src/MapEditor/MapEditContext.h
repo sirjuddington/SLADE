@@ -71,6 +71,7 @@ public:
 	void cycleSectorEditMode();
 	void setCanvas(MapCanvas* canvas) { canvas_ = canvas; }
 	void lockMouse(bool lock);
+	void move3dCameraToCursor();
 
 	// General
 	bool update(long frametime);
