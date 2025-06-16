@@ -15,7 +15,7 @@ public:
 
 	void show(string_view message, bool progress = false);
 	void hide();
-	void forceRedraw();
+	void forceRedraw(bool yield_for_ui = true);
 
 	static void init();
 

@@ -791,9 +791,12 @@ void Input::handleKeyBind2d(string_view name)
 		else if (name == "me2d_mode_things")
 			context_.setEditMode(Mode::Things);
 
-		// 3d mode
-		else if (name == "me2d_mode_3d")
+		// 3d mode at mouse cursor
+		else if (name == "me2d_mode_3d_at_mouse")
+		{
+			context_.move3dCameraToCursor();
 			context_.setEditMode(Mode::Visual);
+		}
 
 		// Cycle flat type
 		if (name == "me2d_flat_type")
