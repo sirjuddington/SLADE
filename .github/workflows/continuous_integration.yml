@@ -30,11 +30,15 @@ jobs:
           - name: "Linux GCC"
             os: ubuntu-24.04
             shell: bash
+            package_name: "linux_gcc"
+            artifact-path: build/*
 
           - name: "Linux Clang"
             os: ubuntu-24.04
             shell: bash
             extra_options: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
+            package_name: "linux_clang"
+            artifact-path: build/*
 
     steps:
     - uses: actions/checkout@v2
