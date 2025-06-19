@@ -35,6 +35,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Database/Context.h"
 #include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"

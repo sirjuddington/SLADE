@@ -8,7 +8,7 @@
 // Filename:    Context.cpp
 // Description: Database Context class - keeps connections open to a database,
 //              since opening a new connection is expensive. It can also keep
-//              cached sql queries (for frequent reuse)
+//              prepared sql statements (for frequent reuse)
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -50,7 +50,6 @@ using namespace database;
 // -----------------------------------------------------------------------------
 namespace slade::database
 {
-Context           db_global;
 vector<Context*>  thread_contexts;
 std::shared_mutex mutex_thread_contexts;
 } // namespace slade::database
@@ -246,10 +245,12 @@ Context& database::context()
 
 		// No context available for this thread, warn and use main thread context
 		// (should this throw an exception?)
-		log::warning("A non-main thread is requesting the global database connection context");
+		log::warning("A non-main thread is requesting the main thread's database connection context");
 	}
 
-	return db_global;
+	static Context main_thread_context;
+
+	return main_thread_context;
 }
 
 // -----------------------------------------------------------------------------

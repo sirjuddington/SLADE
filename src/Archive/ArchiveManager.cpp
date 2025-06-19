@@ -34,7 +34,7 @@
 #include "ArchiveManager.h"
 #include "App.h"
 #include "Database/Context.h"
-#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "Formats/All.h"
 #include "Formats/DirArchive.h"
 #include "General/Console.h"

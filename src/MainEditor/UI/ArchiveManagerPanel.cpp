@@ -39,6 +39,7 @@
 #include "ArchivePanel.h"
 #include "Database/Context.h"
 #include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "EntryPanel/EntryPanel.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"

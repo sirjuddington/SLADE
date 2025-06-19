@@ -37,7 +37,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Database/Context.h"
-#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "General/SAction.h"
 #include "Utility/FileUtils.h"
 #include "Utility/Tokenizer.h"

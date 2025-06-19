@@ -35,7 +35,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Database/Context.h"
-#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"

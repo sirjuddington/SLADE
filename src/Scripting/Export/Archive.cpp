@@ -36,7 +36,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
 #include "Database/Context.h"
-#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
 #include "thirdparty/sol/sol.hpp"
