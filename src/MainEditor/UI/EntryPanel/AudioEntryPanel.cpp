@@ -518,10 +518,10 @@ void AudioEntryPanel::startStream()
 	{
 	case Sound: sound_->play(); break;
 	case Music: music_->play(); break;
-	case Mod: mod_->play(); break;
-	case MIDI: audio::midiPlayer().play(); break;
-	case Mp3: mp3_->play(); break;
-	default: break;
+	case Mod:   mod_->play(); break;
+	case MIDI:  audio::midiPlayer().play(); break;
+	case Mp3:   mp3_->play(); break;
+	default:    break;
 	}
 }
 
@@ -534,10 +534,10 @@ void AudioEntryPanel::stopStream() const
 	{
 	case Sound: sound_->pause(); break;
 	case Music: music_->pause(); break;
-	case Mod: mod_->pause(); break;
-	case MIDI: audio::midiPlayer().pause(); break;
-	case Mp3: mp3_->pause(); break;
-	default: break;
+	case Mod:   mod_->pause(); break;
+	case MIDI:  audio::midiPlayer().pause(); break;
+	case Mp3:   mp3_->pause(); break;
+	default:    break;
 	}
 }
 
@@ -550,10 +550,10 @@ void AudioEntryPanel::resetStream() const
 	{
 	case Sound: sound_->stop(); break;
 	case Music: music_->stop(); break;
-	case Mod: mod_->stop(); break;
-	case MIDI: audio::midiPlayer().stop(); break;
-	case Mp3: mp3_->stop(); break;
-	default: break;
+	case Mod:   mod_->stop(); break;
+	case MIDI:  audio::midiPlayer().stop(); break;
+	case Mp3:   mp3_->stop(); break;
+	default:    break;
 	}
 }
 
@@ -719,10 +719,10 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	{
 	case Sound: pos = sound_->getPlayingOffset().asMilliseconds(); break;
 	case Music: pos = music_->getPlayingOffset().asMilliseconds(); break;
-	case Mod: pos = mod_->getPlayingOffset().asMilliseconds(); break;
-	case MIDI: pos = audio::midiPlayer().position(); break;
-	case Mp3: pos = mp3_->getPlayingOffset().asMilliseconds(); break;
-	default: break;
+	case Mod:   pos = mod_->getPlayingOffset().asMilliseconds(); break;
+	case MIDI:  pos = audio::midiPlayer().position(); break;
+	case Mp3:   pos = mp3_->getPlayingOffset().asMilliseconds(); break;
+	default:    break;
 	}
 
 	// Set slider
@@ -757,10 +757,10 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 	{
 	case Sound: sound_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
 	case Music: music_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	case Mod: mod_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	case MIDI: audio::midiPlayer().setPosition(slider_seek_->GetValue()); break;
-	case Mp3: mp3_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	default: break;
+	case Mod:   mod_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
+	case MIDI:  audio::midiPlayer().setPosition(slider_seek_->GetValue()); break;
+	case Mp3:   mp3_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
+	default:    break;
 	}
 }
 
@@ -775,9 +775,9 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 	{
 	case Sound: sound_->setVolume(snd_volume); break;
 	case Music: music_->setVolume(snd_volume); break;
-	case MIDI: audio::midiPlayer().setVolume(snd_volume); break;
-	case Mp3: mp3_->setVolume(snd_volume); break;
-	case Mod: mod_->setVolume(snd_volume); break;
-	default: break;
+	case MIDI:  audio::midiPlayer().setVolume(snd_volume); break;
+	case Mp3:   mp3_->setVolume(snd_volume); break;
+	case Mod:   mod_->setVolume(snd_volume); break;
+	default:    break;
 	}
 }

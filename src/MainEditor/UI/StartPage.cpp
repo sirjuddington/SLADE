@@ -36,6 +36,8 @@
 #include "StartPage.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Context.h"
+#include "Database/Database.h"
 #include "General/SAction.h"
 #include "Utility/FileUtils.h"
 #include "Utility/Tokenizer.h"
@@ -237,15 +239,16 @@ void SStartPage::load(bool new_tip)
 
 	// Generate recent files string
 	string recent;
-	if (app::archiveManager().numRecentFiles() > 0)
+	auto   recent_files = database::recentFiles(database::context());
+	if (!recent_files.empty())
 	{
 		for (unsigned a = 0; a < 12; a++)
 		{
-			if (a >= app::archiveManager().numRecentFiles())
+			if (a >= recent_files.size())
 				break; // No more recent files
 
 			// Determine icon
-			string fn   = app::archiveManager().recentFile(a);
+			string fn   = recent_files[a];
 			string icon = "archive";
 			if (strutil::endsWithCI(fn, ".wad"))
 				icon = "wad";

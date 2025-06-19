@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Context.h"
 #include "Database/Database.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
@@ -40,7 +41,6 @@
 #include "General/Console.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
-#include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/SAction.h"
 #include "General/UI.h"
@@ -274,18 +274,6 @@ void readConfigFile()
 			while (!tz.checkOrEnd("}"))
 			{
 				archive_manager.addBaseResourcePath(tz.current().text);
-				tz.adv();
-			}
-
-			tz.adv(); // Skip ending }
-		}
-
-		// Read recent files list
-		if (tz.advIf("recent_files", 2))
-		{
-			while (!tz.checkOrEnd("}"))
-			{
-				archive_manager.addRecentFile(tz.current().text);
 				tz.adv();
 			}
 
@@ -642,10 +630,13 @@ void app::saveConfigFile()
 	file.writeStr("}\n");
 
 	// Write recent files list (in reverse to keep proper order when reading back)
+	// This is only here in case the user reverts to a pre-database SLADE version
+	// TODO: Remove this in 3.3.0
 	file.writeStr("\nrecent_files\n{\n");
-	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
+	auto recent_files = database::recentFiles(database::context());
+	for (int a = recent_files.size() - 1; a >= 0; a--)
 	{
-		auto path = archive_manager.recentFile(a);
+		auto path = recent_files[a];
 		std::replace(path.begin(), path.end(), '\\', '/');
 		file.writeStr(fmt::format("\t\"{}\"\n", path));
 	}

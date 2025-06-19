@@ -90,7 +90,7 @@ public:
 
 	void        disableArchiveListUpdate() const;
 	void        refreshArchiveList() const;
-	void        refreshRecentFileList() const;
+	void        refreshRecentFileList();
 	void        refreshBookmarkList() const;
 	void        refreshAllTabs() const;
 	void        updateOpenListItem(int index) const;
@@ -150,7 +150,7 @@ public:
 	void saveSelectionAs() const;
 	bool closeSelection();
 	void openSelection() const;
-	void removeSelection() const;
+	void removeSelection();
 
 	// Bookmark functions
 	void deleteSelectedBookmarks() const;
@@ -192,6 +192,7 @@ private:
 	bool             asked_save_unchanged_        = false;
 	bool             checked_dir_archive_changes_ = false;
 	vector<Archive*> checking_archives_;
+	vector<string>   recent_files_;
 
 	// Signal connections
 	ScopedConnectionList signal_connections;

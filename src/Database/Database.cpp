@@ -42,6 +42,7 @@
 #include "Models/ArchiveFile.h"
 #include "Statement.h"
 #include "UI/State.h"
+#include "Utility/DateTime.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -59,6 +60,7 @@ namespace slade::database
 {
 int db_version = 1;
 } // namespace slade::database
+CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -229,7 +231,7 @@ bool database::init()
 		auto& db = context();
 		db.open(db_path);
 
-		// Migrate pre-3.3.0 config stuff to database
+		// Migrate old config stuff to database
 		if (created)
 			migrateConfigs();
 
@@ -342,6 +344,57 @@ void database::migrateConfigs()
 			}
 		}
 
+		// Migrate recent files
+		if (tz.advIf("recent_files", 2))
+		{
+			auto  now = datetime::now();
+			auto& db  = context();
+
+			while (!tz.checkOrEnd("}"))
+			{
+				auto path = tz.current().text;
+
+				if (archiveFileId(db, path) < 0)
+				{
+					// Recent file entry isn't already in the database, get archive info
+					ArchiveFile archive_file;
+					archive_file.path        = path;
+					archive_file.last_opened = now++; // To keep the correct order as recent files in the config are
+													  // from least to most recent
+
+					if (fileutil::fileExists(path))
+					{
+						// File
+						SFile file(path);
+						if (!file.isOpen())
+							continue;
+
+						archive_file.size          = file.size();
+						archive_file.hash          = file.calculateHash();
+						archive_file.format_id     = app::archiveManager().detectArchiveFormat(path);
+						archive_file.last_modified = fileutil::fileModifiedTime(path);
+					}
+					else if (fileutil::dirExists(path))
+					{
+						// Directory
+						archive_file.format_id = "folder";
+					}
+					else
+					{
+						// Recent file no longer exists, don't add it
+						tz.adv();
+						continue;
+					}
+
+					archive_file.insert(db);
+				}
+
+				tz.adv();
+			}
+
+			tz.adv(); // Skip ending }
+		}
+
 		// Next token
 		tz.adv();
 	}
@@ -416,6 +469,8 @@ void database::setArchiveFileLastOpened(Context& db, int64_t archive_id, time_t 
 
 	if (ps.exec() == 0)
 		log::error("Failed to set last opened time for archive with id {}", archive_id);
+	else
+		signals().archive_file_updated();
 }
 
 // -----------------------------------------------------------------------------
@@ -462,7 +517,42 @@ i64 database::writeArchiveFile(Context& db, const Archive& archive)
 	else
 		archive_file.update(db);
 
+	signals().archive_file_updated();
+
 	return archive_file.id;
+}
+
+// -----------------------------------------------------------------------------
+// Returns a list of the most recently opened archives, up to [count] max, or
+// max_recent_files cvar if [count] is 0
+// -----------------------------------------------------------------------------
+vector<string> database::recentFiles(Context& db, unsigned count)
+{
+	vector<string> paths;
+
+	if (count == 0)
+		count = max_recent_files;
+
+	auto ps = db.preparedStatement(
+		"recent_files",
+		"SELECT path FROM archive_file "
+		"WHERE last_opened > 0 AND parent_id < 0 "
+		"ORDER BY last_opened DESC LIMIT ?");
+	ps.bind(1, count);
+
+	while (ps.executeStep())
+		paths.push_back(ps.getColumn(0).getString());
+
+	return paths;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the struct containing all database signals
+// -----------------------------------------------------------------------------
+database::Signals& database::signals()
+{
+	static Signals signals;
+	return signals;
 }
 
 

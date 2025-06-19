@@ -144,9 +144,6 @@ bool archiveoperations::saveAs(Archive& archive)
 			return false;
 		}
 
-		// Add recent file
-		app::archiveManager().addRecentFile(filename);
-
 		return true;
 	}
 
@@ -2362,11 +2359,11 @@ size_t archiveoperations::replaceThings(Archive* archive, int oldtype, int newty
 			{
 				switch (map.format)
 				{
-				case MapFormat::Doom: achanged = replaceThingsDoom(things, oldtype, newtype); break;
-				case MapFormat::Hexen: achanged = replaceThingsHexen(things, oldtype, newtype); break;
+				case MapFormat::Doom:   achanged = replaceThingsDoom(things, oldtype, newtype); break;
+				case MapFormat::Hexen:  achanged = replaceThingsHexen(things, oldtype, newtype); break;
 				case MapFormat::Doom64: achanged = replaceThingsDoom64(things, oldtype, newtype); break;
-				case MapFormat::UDMF: achanged = replaceThingsUDMF(things, oldtype, newtype); break;
-				default: log::warning("Unknown map format for " + m_head->name()); break;
+				case MapFormat::UDMF:   achanged = replaceThingsUDMF(things, oldtype, newtype); break;
+				default:                log::warning("Unknown map format for " + m_head->name()); break;
 				}
 			}
 		}
@@ -2848,10 +2845,10 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 		{
 		case 12: arg4 = strutil::toInt(args[oldtail--], oldarg4) && strutil::toInt(args[newtail--], newarg4);
 		case 10: arg3 = strutil::toInt(args[oldtail--], oldarg3) && strutil::toInt(args[newtail--], newarg3);
-		case 8: arg2 = strutil::toInt(args[oldtail--], oldarg2) && strutil::toInt(args[newtail--], newarg2);
-		case 6: arg1 = strutil::toInt(args[oldtail--], oldarg1) && strutil::toInt(args[newtail--], newarg1);
-		case 4: arg0 = strutil::toInt(args[oldtail--], oldarg0) && strutil::toInt(args[newtail--], newarg0);
-		case 2: run = strutil::toInt(args[oldtail--], oldtype) && strutil::toInt(args[newtail--], newtype); break;
+		case 8:  arg2 = strutil::toInt(args[oldtail--], oldarg2) && strutil::toInt(args[newtail--], newarg2);
+		case 6:  arg1 = strutil::toInt(args[oldtail--], oldarg1) && strutil::toInt(args[newtail--], newarg1);
+		case 4:  arg0 = strutil::toInt(args[oldtail--], oldarg0) && strutil::toInt(args[newtail--], newarg0);
+		case 2:  run = strutil::toInt(args[oldtail--], oldtype) && strutil::toInt(args[newtail--], newtype); break;
 		default: log::warning("Invalid number of arguments: {}", fullarg);
 		}
 	}

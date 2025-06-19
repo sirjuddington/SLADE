@@ -37,6 +37,8 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/DirArchive.h"
 #include "ArchivePanel.h"
+#include "Database/Context.h"
+#include "Database/Database.h"
 #include "EntryPanel/EntryPanel.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
@@ -409,7 +411,7 @@ void ArchiveManagerPanel::layoutHorizontal()
 // -----------------------------------------------------------------------------
 // Clears and rebuilds the recent file list in the menu and the tab
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::refreshRecentFileList() const
+void ArchiveManagerPanel::refreshRecentFileList()
 {
 	// Clear the list
 	list_recent_->ClearAll();
@@ -429,7 +431,8 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 
 	// Add each recent archive (same logic as the recent files submenu)
 	list_recent_->enableSizeUpdate(false);
-	for (unsigned a = 0; a < app::archiveManager().numRecentFiles(); a++)
+	recent_files_ = database::recentFiles(database::context());
+	for (unsigned a = 0; a < recent_files_.size(); a++)
 	{
 		list_recent_->addItem(a, "");
 		updateRecentListItem(a);
@@ -437,7 +440,7 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 		if (a < 8)
 		{
 			// Get path and determine icon
-			auto   fn   = app::archiveManager().recentFile(a);
+			auto   fn   = recent_files_[a];
 			string icon = "archive";
 			if (strutil::endsWith(fn, ".wad"))
 				icon = "wad";
@@ -448,9 +451,6 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 
 			// Create and add menu item
 			a_recent->addToMenu(menu_recent_, 0, fn, icon, a);
-			// wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
-			// mi->SetBitmap(Icons::getIcon(Icons::ENTRY, icon));
-			// menu_recent->Append(mi);
 		}
 	}
 
@@ -545,7 +545,7 @@ void ArchiveManagerPanel::updateOpenListItem(int index) const
 void ArchiveManagerPanel::updateRecentListItem(int index) const
 {
 	// Get path as wxFileName for processing
-	auto          path = app::archiveManager().recentFile(index);
+	auto          path = recent_files_[index];
 	strutil::Path fn(path);
 
 	// Set item name
@@ -1761,7 +1761,7 @@ void ArchiveManagerPanel::openSelection() const
 	// Get the list of selected archives
 	vector<string> selected_archives;
 	for (int index : selection)
-		selected_archives.emplace_back(app::archiveManager().recentFile(index));
+		selected_archives.emplace_back(recent_files_[index]);
 
 	// Open all selected archives
 	for (const auto& selected_archive : selected_archives)
@@ -1771,7 +1771,7 @@ void ArchiveManagerPanel::openSelection() const
 // -----------------------------------------------------------------------------
 // Remove the currently selected archive(s) from the recent file list
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::removeSelection() const
+void ArchiveManagerPanel::removeSelection()
 {
 	// Get the list of selected list items
 	auto selection = selectedFiles();
@@ -1780,10 +1780,21 @@ void ArchiveManagerPanel::removeSelection() const
 	if (selection.empty())
 		return;
 
-	// Remove selected recent files (starting from the last and going backward,
-	// because the list reorders itself whenever an item is removed)
-	for (unsigned a = selection.size(); a > 0; --a)
-		app::archiveManager().removeRecentFile(app::archiveManager().recentFile(selection[a - 1]));
+	// Don't want to trigger this signal multiple times
+	database::signals().archive_file_updated.block();
+
+	// Reset last opened times for each selected recent file
+	auto& db = database::context();
+	for (unsigned a = 0; a < selection.size(); ++a)
+	{
+		auto path  = recent_files_[selection[a]];
+		auto db_id = database::archiveFileId(db, path);
+		database::setArchiveFileLastOpened(db, db_id, 0);
+	}
+
+	// Signal change to refresh the list
+	database::signals().archive_file_updated.unblock();
+	database::signals().archive_file_updated();
 }
 
 // -----------------------------------------------------------------------------
@@ -1878,7 +1889,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 		unsigned index = wx_id_offset_;
 
 		// Open it
-		openFile(app::archiveManager().recentFile(index));
+		openFile(recent_files_[index]);
 	}
 
 	// File->Save
@@ -1962,9 +1973,9 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 		switch (entry->state())
 		{
 		case ArchiveEntry::State::Unmodified: list_bookmarks_->setItemStatus(index, ItemStatus::Normal); break;
-		case ArchiveEntry::State::Modified: list_bookmarks_->setItemStatus(index, ItemStatus::Modified); break;
-		case ArchiveEntry::State::New: list_bookmarks_->setItemStatus(index, ItemStatus::New); break;
-		default: list_bookmarks_->setItemStatus(index, ItemStatus::Error); break;
+		case ArchiveEntry::State::Modified:   list_bookmarks_->setItemStatus(index, ItemStatus::Modified); break;
+		case ArchiveEntry::State::New:        list_bookmarks_->setItemStatus(index, ItemStatus::New); break;
+		default:                              list_bookmarks_->setItemStatus(index, ItemStatus::Error); break;
 		}
 }
 
@@ -2132,7 +2143,7 @@ void ArchiveManagerPanel::onListArchivesRightClick(wxListEvent& e)
 void ArchiveManagerPanel::onListRecentActivated(wxListEvent& e)
 {
 	// Open the archive
-	openFile(app::archiveManager().recentFile(e.GetIndex()));
+	openFile(recent_files_[e.GetIndex()]);
 	// Refresh the list
 	refreshRecentFileList();
 }
@@ -2325,7 +2336,7 @@ void ArchiveManagerPanel::connectSignals()
 	signal_connections += signals.archive_opened.connect([this](int index) { openTab(index); });
 
 	// Refresh recent files list when changed
-	signal_connections += signals.recent_files_changed.connect([this]() { refreshRecentFileList(); });
+	signal_connections += database::signals().archive_file_updated.connect([this] { refreshRecentFileList(); });
 
 	// Refresh bookmarks list when changed
 	signal_connections += signals.bookmark_added.connect([this](ArchiveEntry*) { refreshBookmarkList(); });

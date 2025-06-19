@@ -54,7 +54,6 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Int, base_resource, -1, CVar::Flag::Save)
-CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
 CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
 
 
@@ -389,9 +388,6 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 			// Announce open
 			if (!silent)
 				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(filename);
 		}
 
 		// Return the opened archive
@@ -561,9 +557,6 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 			// Announce open
 			if (!silent)
 				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(dir);
 		}
 
 		// Return the opened archive
@@ -890,6 +883,66 @@ shared_ptr<Archive> ArchiveManager::shareArchive(Archive* const archive)
 }
 
 // -----------------------------------------------------------------------------
+// Detects the archive format of the file at [filename].
+// Returns the format ID if it is a known type, or an empty string if not
+// (this stuff is much nicer in 3.3.0 with the archive rework)
+// -----------------------------------------------------------------------------
+string ArchiveManager::detectArchiveFormat(const string& filename)
+{
+	unique_ptr<Archive> archive;
+	if (WadArchive::isWadArchive(filename))
+		archive = std::make_unique<WadArchive>();
+	else if (ZipArchive::isZipArchive(filename))
+		archive = std::make_unique<ZipArchive>();
+	else if (ResArchive::isResArchive(filename))
+		archive = std::make_unique<ResArchive>();
+	else if (DatArchive::isDatArchive(filename))
+		archive = std::make_unique<DatArchive>();
+	else if (LibArchive::isLibArchive(filename))
+		archive = std::make_unique<LibArchive>();
+	else if (PakArchive::isPakArchive(filename))
+		archive = std::make_unique<PakArchive>();
+	else if (BSPArchive::isBSPArchive(filename))
+		archive = std::make_unique<BSPArchive>();
+	else if (GrpArchive::isGrpArchive(filename))
+		archive = std::make_unique<GrpArchive>();
+	else if (RffArchive::isRffArchive(filename))
+		archive = std::make_unique<RffArchive>();
+	else if (GobArchive::isGobArchive(filename))
+		archive = std::make_unique<GobArchive>();
+	else if (LfdArchive::isLfdArchive(filename))
+		archive = std::make_unique<LfdArchive>();
+	else if (HogArchive::isHogArchive(filename))
+		archive = std::make_unique<HogArchive>();
+	else if (ADatArchive::isADatArchive(filename))
+		archive = std::make_unique<ADatArchive>();
+	else if (Wad2Archive::isWad2Archive(filename))
+		archive = std::make_unique<Wad2Archive>();
+	else if (WadJArchive::isWadJArchive(filename))
+		archive = std::make_unique<WadJArchive>();
+	else if (WolfArchive::isWolfArchive(filename))
+		archive = std::make_unique<WolfArchive>();
+	else if (GZipArchive::isGZipArchive(filename))
+		archive = std::make_unique<GZipArchive>();
+	else if (BZip2Archive::isBZip2Archive(filename))
+		archive = std::make_unique<BZip2Archive>();
+	else if (TarArchive::isTarArchive(filename))
+		archive = std::make_unique<TarArchive>();
+	else if (DiskArchive::isDiskArchive(filename))
+		archive = std::make_unique<DiskArchive>();
+	else if (PodArchive::isPodArchive(filename))
+		archive = std::make_unique<PodArchive>();
+	else if (ChasmBinArchive::isChasmBinArchive(filename))
+		archive = std::make_unique<ChasmBinArchive>();
+	else if (SiNArchive::isSiNArchive(filename))
+		archive = std::make_unique<SiNArchive>();
+	else
+		return "";
+
+	return archive->formatId();
+}
+
+// -----------------------------------------------------------------------------
 // Adds [path] to the list of base resource paths
 // -----------------------------------------------------------------------------
 bool ArchiveManager::addBaseResourcePath(string_view path)
@@ -1093,94 +1146,6 @@ vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOpti
 	}
 
 	return ret;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the recent file path at [index]
-// -----------------------------------------------------------------------------
-string ArchiveManager::recentFile(unsigned index)
-{
-	// Check index
-	if (index >= recent_files_.size())
-		return "";
-
-	return recent_files_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Adds a recent file to the list, if it doesn't exist already
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFile(string_view path)
-{
-	// Check the path is valid
-	if (!(fileutil::fileExists(path) || fileutil::dirExists(path)))
-		return;
-
-	// Replace \ with /
-	auto file_path = string{ path };
-	std::replace(file_path.begin(), file_path.end(), '\\', '/');
-
-	// Check if the file is already in the list
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == file_path)
-		{
-			// Move this file to the top of the list
-			recent_files_.erase(recent_files_.begin() + a);
-			recent_files_.insert(recent_files_.begin(), file_path);
-
-			// Announce
-			signals_.recent_files_changed();
-
-			return;
-		}
-	}
-
-	// Add the file to the top of the list
-	recent_files_.insert(recent_files_.begin(), file_path);
-
-	// Keep it trimmed
-	while (recent_files_.size() > (unsigned)max_recent_files)
-		recent_files_.pop_back();
-
-	// Announce
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Adds a list of recent file paths to the recent file list
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFiles(const vector<string>& paths)
-{
-	// Mute annoucements
-	signals_.recent_files_changed.block();
-
-	// Clear existing list
-	recent_files_.clear();
-
-	// Add the files
-	for (const auto& path : paths)
-		addRecentFile(path);
-
-	// Announce
-	signals_.recent_files_changed.unblock();
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Removes the recent file matching [path]
-// -----------------------------------------------------------------------------
-void ArchiveManager::removeRecentFile(string_view path)
-{
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == path)
-		{
-			recent_files_.erase(recent_files_.begin() + a);
-			signals_.recent_files_changed();
-			return;
-		}
-	}
 }
 
 // -----------------------------------------------------------------------------

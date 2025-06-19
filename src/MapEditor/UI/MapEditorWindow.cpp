@@ -955,7 +955,6 @@ bool MapEditorWindow::saveMapAs()
 	// Write wad to file
 	wad.save(info.filenames[0]);
 	auto archive = app::archiveManager().openArchive(info.filenames[0], true, true);
-	app::archiveManager().addRecentFile(info.filenames[0]);
 
 	// Update current map description
 	auto maps = archive->detectMaps();

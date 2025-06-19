@@ -112,11 +112,11 @@ protected:
 
 		const auto msg_str = msg.utf8_string();
 		if (msg.Lower().Contains(wxS("error")))
-			log::error(wx_prefix + msg_str.substr(msg_str.size() - 10));
+			log::error(wx_prefix + msg_str.substr(10));
 		else if (msg.Lower().Contains(wxS("warning")))
-			log::warning(wx_prefix + msg_str.substr(msg_str.size() - 10));
+			log::warning(wx_prefix + msg_str.substr(10));
 		else
-			log::info(wx_prefix + msg_str.substr(msg_str.size() - 10));
+			log::info(wx_prefix + msg_str.substr(10));
 	}
 
 public:
