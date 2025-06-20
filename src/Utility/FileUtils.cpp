@@ -88,25 +88,26 @@ bool fileutil::dirExists(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::validExecutable(string_view path)
 {
-	// Special handling for MacOS .app dir
+	// Special handling for macOS .app dir
 	if (app::platform() == app::Platform::MacOS)
 	{
 		if (strutil::endsWithCI(path, ".app") && dirExists(path))
 			return true;
 	}
 
-	// Invalid if file doesn't exist
-	if (!fileExists(path))
-		return false;
-
 	// Check for .exe or .bat extension on Windows
 	if (app::platform() == app::Platform::Windows)
 	{
 		if (!strutil::endsWithCI(path, ".exe") && !strutil::endsWithCI(path, ".bat"))
 			return false;
+
+		// Invalid if file doesn't exist
+		if (!fileExists(path))
+			return false;
 	}
 
-	// TODO: Check for executable permission on Linux/MacOS
+	// TODO: Check if file OR command exists on Linux/macOS
+	// TODO: Check for executable permission on Linux/macOS
 
 	// Passed all checks, is valid executable
 	return true;
