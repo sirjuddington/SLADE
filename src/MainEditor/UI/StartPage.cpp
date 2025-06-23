@@ -36,7 +36,6 @@
 #include "StartPage.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Database/Context.h"
 #include "Database/Tables/ArchiveFile.h"
 #include "General/SAction.h"
 #include "Utility/FileUtils.h"
@@ -239,7 +238,7 @@ void SStartPage::load(bool new_tip)
 
 	// Generate recent files string
 	string recent;
-	auto   recent_files = database::recentFiles(database::context());
+	auto   recent_files = database::recentFiles();
 	if (!recent_files.empty())
 	{
 		for (unsigned a = 0; a < 12; a++)

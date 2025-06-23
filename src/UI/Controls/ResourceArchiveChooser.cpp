@@ -34,7 +34,6 @@
 #include "ResourceArchiveChooser.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Database/Context.h"
 #include "Database/Tables/ArchiveFile.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/WxUtils.h"
@@ -156,7 +155,7 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 {
 	// Build list of recent wad filename strings
-	auto recent_files = database::recentFiles(database::context());
+	auto recent_files = database::recentFiles();
 	auto recent_wx    = wxutil::arrayStringStd(recent_files);
 
 	// Show dialog

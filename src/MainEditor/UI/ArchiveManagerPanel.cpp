@@ -37,7 +37,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/DirArchive.h"
 #include "ArchivePanel.h"
-#include "Database/Context.h"
 #include "Database/Database.h"
 #include "Database/Tables/ArchiveFile.h"
 #include "EntryPanel/EntryPanel.h"
@@ -432,7 +431,7 @@ void ArchiveManagerPanel::refreshRecentFileList()
 
 	// Add each recent archive (same logic as the recent files submenu)
 	list_recent_->enableSizeUpdate(false);
-	recent_files_ = database::recentFiles(database::context());
+	recent_files_ = database::recentFiles();
 	for (unsigned a = 0; a < recent_files_.size(); a++)
 	{
 		list_recent_->addItem(a, "");
@@ -1785,12 +1784,11 @@ void ArchiveManagerPanel::removeSelection()
 	database::signals().archive_file_updated.block();
 
 	// Reset last opened times for each selected recent file
-	auto& db = database::context();
 	for (unsigned a = 0; a < selection.size(); ++a)
 	{
 		auto path  = recent_files_[selection[a]];
-		auto db_id = database::archiveFileId(db, path);
-		database::setArchiveFileLastOpened(db, db_id, 0);
+		auto db_id = database::archiveFileId(path);
+		database::setArchiveFileLastOpened(db_id, 0);
 	}
 
 	// Signal change to refresh the list

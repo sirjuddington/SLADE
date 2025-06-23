@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Database/Context.h"
 #include "Database/Database.h"
 #include "Database/Tables/ArchiveFile.h"
 #include "Game/Configuration.h"
@@ -634,7 +633,7 @@ void app::saveConfigFile()
 	// This is only here in case the user reverts to a pre-database SLADE version
 	// TODO: Remove this in 3.3.0
 	file.writeStr("\nrecent_files\n{\n");
-	auto recent_files = database::recentFiles(database::context());
+	auto recent_files = database::recentFiles();
 	for (int a = recent_files.size() - 1; a >= 0; a--)
 	{
 		auto path = recent_files[a];

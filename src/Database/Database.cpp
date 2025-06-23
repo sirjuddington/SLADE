@@ -345,14 +345,13 @@ void database::migrateConfigs()
 		// Migrate recent files
 		if (tz.advIf("recent_files", 2))
 		{
-			auto  now = datetime::now();
-			auto& db  = context();
+			auto now = datetime::now();
 
 			while (!tz.checkOrEnd("}"))
 			{
 				auto path = tz.current().text;
 
-				if (archiveFileId(db, path) < 0)
+				if (archiveFileId(path) < 0)
 				{
 					// Recent file entry isn't already in the database, get archive info
 					ArchiveFile archive_file;
@@ -384,7 +383,7 @@ void database::migrateConfigs()
 						continue;
 					}
 
-					archive_file.insert(db);
+					archive_file.insert();
 				}
 
 				tz.adv();

@@ -35,7 +35,6 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
-#include "Database/Context.h"
 #include "Database/Tables/ArchiveFile.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
@@ -387,7 +386,7 @@ void registerArchivesNamespace(sol::state& lua)
 	archives["BaseResourcePaths"]    = []() { return app::archiveManager().baseResourcePaths(); };
 	archives["OpenBaseResource"]     = [](int index) { return app::archiveManager().openBaseResource(index); };
 	archives["ProgramResource"]      = []() { return app::archiveManager().programResourceArchive(); };
-	archives["RecentFiles"]          = []() { return database::recentFiles(database::context()); };
+	archives["RecentFiles"]          = []() { return database::recentFiles(); };
 	archives["Bookmarks"]            = []() { return app::archiveManager().bookmarks(); };
 	archives["AddBookmark"]    = [](ArchiveEntry* entry) { app::archiveManager().addBookmark(entry->getShared()); };
 	archives["RemoveBookmark"] = [](ArchiveEntry* entry) { app::archiveManager().deleteBookmark(entry); };

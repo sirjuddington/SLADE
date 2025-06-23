@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "ArchiveManager.h"
 #include "App.h"
-#include "Database/Context.h"
 #include "Database/Tables/ArchiveFile.h"
 #include "Formats/All.h"
 #include "Formats/DirArchive.h"
@@ -70,14 +69,12 @@ namespace
 // -----------------------------------------------------------------------------
 i64 updateArchiveInDatabase(Archive& archive, bool update_last_opened)
 {
-	auto& db = database::context();
-
-	auto db_id = database::archiveFileId(db, archive);
+	auto db_id = database::archiveFileId(archive);
 	if (db_id < 0)
-		db_id = database::writeArchiveFile(db, archive);
+		db_id = database::writeArchiveFile(archive);
 
 	if (update_last_opened)
-		database::setArchiveFileLastOpened(db, db_id, datetime::now());
+		database::setArchiveFileLastOpened(db_id, datetime::now());
 
 	return db_id;
 }
@@ -226,7 +223,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 			{
 				// Update in database
 				if (archive.isOnDisk())
-					setArchiveDbId(archive, database::writeArchiveFile(database::context(), archive));
+					setArchiveDbId(archive, database::writeArchiveFile(archive));
 
 				signals_.archive_saved(archiveIndex(&archive));
 			});

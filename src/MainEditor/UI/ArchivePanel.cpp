@@ -37,6 +37,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "ArchiveManagerPanel.h"
+#include "Database/Tables/ArchiveUIConfig.h"
 #include "EntryPanel/ANSIEntryPanel.h"
 #include "EntryPanel/AudioEntryPanel.h"
 #include "EntryPanel/DataEntryPanel.h"
@@ -99,13 +100,8 @@ const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry 
 CVAR(Int, autosave_entry_changes, 2, CVar::Flag::Save) // 0=no, 1=yes, 2=ask
 CVAR(Bool, confirm_entry_delete, true, CVar::Flag::Save)
 CVAR(Bool, context_submenus, true, CVar::Flag::Save)
-// CVAR(String, last_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
-// CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
-// CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
 CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
-// CVAR(Int, ap_splitter_position_tree, 300, CVar::Flag::Save)
-// CVAR(Int, ap_splitter_position_list, 300, CVar::Flag::Save)
 CVAR(Bool, elist_no_tree, false, CVar::Flag::Save)
 
 
@@ -460,8 +456,10 @@ void ArchivePanel::setup(Archive* archive)
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(ui::scalePx(300));
 	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	auto split_pos = ui::getStateInt(
-		archive->formatDesc().supports_dirs ? "ArchivePanelSplitPosTree" : "ArchivePanelSplitPosList");
+	auto split_pos = database::archiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive));
+	if (split_pos < 0)
+		split_pos = ui::getStateInt(
+			archive->formatDesc().supports_dirs ? "ArchivePanelSplitPosTree" : "ArchivePanelSplitPosList");
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
 	// Update size+layout
@@ -495,6 +493,9 @@ void ArchivePanel::bindEvents(Archive* archive)
 					ui::saveStateInt("ArchivePanelSplitPosTree", e.GetSashPosition());
 				else
 					ui::saveStateInt("ArchivePanelSplitPosList", e.GetSashPosition());
+
+				database::saveArchiveUIConfigSplitterPos(
+					app::archiveManager().archiveDbId(*archive), e.GetSashPosition());
 			}
 		});
 

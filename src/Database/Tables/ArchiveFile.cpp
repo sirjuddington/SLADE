@@ -61,7 +61,6 @@ string insert_archive_file =
 	"REPLACE INTO archive_file (path, size, hash, format_id, last_opened, last_modified, parent_id) "
 	"VALUES (?,?,?,?,?,?,?)";
 string delete_archive_file = "DELETE FROM archive_file WHERE id = ?";
-string get_archive_file    = "SELECT * FROM archive_file WHERE id = ?";
 } // namespace
 
 CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
@@ -75,38 +74,40 @@ CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
-// ArchiveFile constructor
-// Reads existing data from the database. If row [id] doesn't exist in the
-// database, the row id will be set to -1
+// Reads in the current archive_file row from [ps]
 // -----------------------------------------------------------------------------
-ArchiveFile::ArchiveFile(Context& db, i64 id) : id{ id }
+void ArchiveFile::read(Statement& ps)
 {
-	auto ps = db.preparedStatement("get_archive_file", get_archive_file);
+	if (!ps.statement().hasRow())
+		return;
 
-	ps.bind(1, id);
+	id            = ps.getColumn(0).getInt64();
+	path          = ps.getColumn(1).getString();
+	size          = ps.getColumn(2).getUInt();
+	hash          = ps.getColumn(3).getString();
+	format_id     = ps.getColumn(4).getString();
+	last_opened   = ps.getColumn(5).getInt64();
+	last_modified = ps.getColumn(6).getInt64();
+	parent_id     = ps.getColumn(7).getInt64();
+}
 
-	if (ps.executeStep())
-	{
-		path          = ps.getColumn(1).getString();
-		size          = ps.getColumn(2).getUInt();
-		hash          = ps.getColumn(3).getString();
-		format_id     = ps.getColumn(4).getString();
-		last_opened   = ps.getColumn(5).getInt64();
-		last_modified = ps.getColumn(6).getInt64();
-		parent_id     = ps.getColumn(7).getInt64();
-	}
+// -----------------------------------------------------------------------------
+// Writes this archive_file row to the database
+// If id < 0, it will be inserted, otherwise it will be updated
+// -----------------------------------------------------------------------------
+void ArchiveFile::write()
+{
+	if (id < 0)
+		insert();
 	else
-	{
-		log::warning("archive_file row with id {} does not exist in the database", id);
-		this->id = -1;
-	}
+		update();
 }
 
 // -----------------------------------------------------------------------------
 // Inserts this row into the database.
 // If successful, id will be updated and returned, otherwise returns -1
 // -----------------------------------------------------------------------------
-i64 ArchiveFile::insert(Context& db)
+i64 ArchiveFile::insert()
 {
 	if (id >= 0)
 	{
@@ -114,7 +115,8 @@ i64 ArchiveFile::insert(Context& db)
 		return id;
 	}
 
-	auto ps = db.preparedStatement("insert_archive_file", insert_archive_file, true);
+	auto& db = context();
+	auto  ps = db.preparedStatement("insert_archive_file", insert_archive_file, true);
 
 	ps.bind(1, path);
 	ps.bind(2, size);
@@ -133,7 +135,7 @@ i64 ArchiveFile::insert(Context& db)
 // -----------------------------------------------------------------------------
 // Updates this row in the database
 // -----------------------------------------------------------------------------
-void ArchiveFile::update(Context& db) const
+void ArchiveFile::update() const
 {
 	// Ignore invalid id
 	if (id < 0)
@@ -142,7 +144,7 @@ void ArchiveFile::update(Context& db) const
 		return;
 	}
 
-	auto ps = db.preparedStatement("update_archive_file", update_archive_file, true);
+	auto ps = context().preparedStatement("update_archive_file", update_archive_file, true);
 
 	ps.bind(1, path);
 	ps.bind(2, size);
@@ -161,7 +163,7 @@ void ArchiveFile::update(Context& db) const
 // Removes this row from the database.
 // If successful, id will be set to -1
 // -----------------------------------------------------------------------------
-void ArchiveFile::remove(Context& db)
+void ArchiveFile::remove()
 {
 	// Ignore invalid id
 	if (id < 0)
@@ -170,7 +172,7 @@ void ArchiveFile::remove(Context& db)
 		return;
 	}
 
-	auto ps = db.preparedStatement("delete_archive_file", delete_archive_file);
+	auto ps = context().preparedStatement("delete_archive_file", delete_archive_file);
 
 	ps.bind(1, id);
 
@@ -192,11 +194,12 @@ void ArchiveFile::remove(Context& db)
 // Returns the archive_file row id for [path] (in [parent_id] if given),
 // or -1 if it does not exist in the database
 // -----------------------------------------------------------------------------
-i64 database::archiveFileId(Context& db, const string& path, i64 parent_id)
+i64 database::archiveFileId(const string& path, i64 parent_id)
 {
 	i64 archive_id = -1;
 
-	auto ps = db.preparedStatement("get_archive_id", "SELECT id FROM archive_file WHERE path = ? AND parent_id = ?");
+	auto ps = context().preparedStatement(
+		"get_archive_id", "SELECT id FROM archive_file WHERE path = ? AND parent_id = ?");
 
 	ps.bind(1, path);
 	ps.bind(2, parent_id);
@@ -211,7 +214,7 @@ i64 database::archiveFileId(Context& db, const string& path, i64 parent_id)
 // Returns the archive_file row id for [archive], or -1 if it does not exist in
 // the database
 // -----------------------------------------------------------------------------
-i64 database::archiveFileId(Context& db, const Archive& archive)
+i64 database::archiveFileId(const Archive& archive)
 {
 	auto path      = strutil::replace(archive.filename(), "\\", "/");
 	auto parent_id = -1;
@@ -222,18 +225,19 @@ i64 database::archiveFileId(Context& db, const Archive& archive)
 		parent_id = app::archiveManager().archiveDbId(*parent);
 	}
 
-	return archiveFileId(db, path, parent_id);
+	return archiveFileId(path, parent_id);
 }
 
 // -----------------------------------------------------------------------------
 // Returns the last opened time for the archive_file row with [id].
 // Returns 0 if it does not exist in the database or has never been opened
 // -----------------------------------------------------------------------------
-time_t database::archiveFileLastOpened(Context& db, i64 id)
+time_t database::archiveFileLastOpened(i64 id)
 {
 	time_t last_opened = 0;
 
-	auto ps = db.preparedStatement("get_archive_file_last_opened", "SELECT last_opened FROM archive_file WHERE id = ?");
+	auto ps = context().preparedStatement(
+		"get_archive_file_last_opened", "SELECT last_opened FROM archive_file WHERE id = ?");
 	ps.bind(1, id);
 
 	if (ps.executeStep())
@@ -245,9 +249,9 @@ time_t database::archiveFileLastOpened(Context& db, i64 id)
 // -----------------------------------------------------------------------------
 // Sets the [last_opened] time for the archive_file row with [archive_id]
 // -----------------------------------------------------------------------------
-void database::setArchiveFileLastOpened(Context& db, int64_t archive_id, time_t last_opened)
+void database::setArchiveFileLastOpened(int64_t archive_id, time_t last_opened)
 {
-	auto ps = db.preparedStatement(
+	auto ps = context().preparedStatement(
 		"set_archive_file_last_opened", "UPDATE archive_file SET last_opened = ? WHERE id = ?", true);
 	ps.bindDateTime(1, last_opened);
 	ps.bind(2, archive_id);
@@ -262,7 +266,7 @@ void database::setArchiveFileLastOpened(Context& db, int64_t archive_id, time_t 
 // Writes [archive] info to the archive_file table in the database.
 // Returns the archive_file row id for the archive, or -1 if an error occurred.
 // -----------------------------------------------------------------------------
-i64 database::writeArchiveFile(Context& db, const Archive& archive)
+i64 database::writeArchiveFile(const Archive& archive)
 {
 	ArchiveFile archive_file;
 
@@ -272,7 +276,7 @@ i64 database::writeArchiveFile(Context& db, const Archive& archive)
 
 	// Keep existing last opened time
 	if (archive_file.id >= 0)
-		archive_file.last_opened = archiveFileLastOpened(db, archive_file.id);
+		archive_file.last_opened = archiveFileLastOpened(archive_file.id);
 
 	if (auto* parent = archive.parentArchive())
 	{
@@ -298,9 +302,9 @@ i64 database::writeArchiveFile(Context& db, const Archive& archive)
 
 	// Write to database
 	if (archive_file.id < 0)
-		archive_file.insert(db);
+		archive_file.insert();
 	else
-		archive_file.update(db);
+		archive_file.update();
 
 	signals().archive_file_updated();
 
@@ -311,14 +315,14 @@ i64 database::writeArchiveFile(Context& db, const Archive& archive)
 // Returns a list of the most recently opened archives, up to [count] max, or
 // max_recent_files cvar if [count] is 0
 // -----------------------------------------------------------------------------
-vector<string> database::recentFiles(Context& db, unsigned count)
+vector<string> database::recentFiles(unsigned count)
 {
 	vector<string> paths;
 
 	if (count == 0)
 		count = max_recent_files;
 
-	auto ps = db.preparedStatement(
+	auto ps = context().preparedStatement(
 		"recent_files",
 		"SELECT path FROM archive_file "
 		"WHERE last_opened > 0 AND parent_id < 0 "
