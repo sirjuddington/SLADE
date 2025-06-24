@@ -85,15 +85,13 @@ STopWindow::STopWindow(const string& title, const string& id, int x, int y, int 
 
 	// Bind events
 	Bind(wxEVT_MENU, &STopWindow::onMenu, this);
-}
-
-// -----------------------------------------------------------------------------
-// STopWindow class destructor
-// -----------------------------------------------------------------------------
-STopWindow::~STopWindow()
-{
-	if (!wxFrame::IsMaximized() && !wxFrame::IsFullScreen())
-		ui::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+	Bind(
+		wxEVT_CLOSE_WINDOW,
+		[this](wxCloseEvent&)
+		{
+			if (!wxFrame::IsMaximized() && !wxFrame::IsFullScreen())
+				ui::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		});
 }
 
 // -----------------------------------------------------------------------------

@@ -1426,8 +1426,7 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 void MapEditorWindow::onSize(wxSizeEvent& e)
 {
 	// Update maximized state
-	if (!app::isExiting())
-		ui::saveStateBool("MapEditorWindowMaximized", IsMaximized());
+	ui::saveStateBool("MapEditorWindowMaximized", IsMaximized());
 
 	e.Skip();
 }

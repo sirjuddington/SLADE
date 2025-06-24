@@ -298,7 +298,7 @@ ui::WindowInfo ui::getWindowInfo(string_view id)
 			inf.height = ps.getColumn(3).getInt();
 		}
 	}
-	catch (const SQLite::Exception& ex)
+	catch (const std::exception& ex)
 	{
 		log::error("Error getting window info for \"{}\": {}", id, ex.what());
 	}
@@ -327,7 +327,7 @@ void ui::setWindowInfo(string_view id, int width, int height, int left, int top)
 
 		ps.exec();
 	}
-	catch (const SQLite::Exception& ex)
+	catch (const std::exception& ex)
 	{
 		log::error("Error writing window info for \"{}\": {}", id, ex.what());
 	}
@@ -350,7 +350,7 @@ vector<StringPair> ui::getWindowLayout(string_view id)
 		while (ps.executeStep())
 			layout.emplace_back(ps.getColumn(0).getString(), ps.getColumn(1).getString());
 	}
-	catch (const SQLite::Exception& ex)
+	catch (const std::exception& ex)
 	{
 		log::error("Error getting window layout for \"{}\": {}", id, ex.what());
 	}
@@ -381,7 +381,7 @@ void ui::setWindowLayout(string_view id, const vector<StringPair>& layout)
 
 		transaction.commit();
 	}
-	catch (const SQLite::Exception& ex)
+	catch (const std::exception& ex)
 	{
 		log::error("Error writing window layout for \"{}\": {}", id, ex.what());
 	}

@@ -724,9 +724,6 @@ void app::exit(bool save_config)
 	// Close DUMB
 	dumb_exit();
 
-	// Close program database
-	database::close();
-
 	// Exit wx Application
 	wxGetApp().Exit();
 }

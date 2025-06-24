@@ -116,7 +116,7 @@ void createMissingTables(Context& db)
 			db.exec(sql);
 			log::info("Created database table {}", table_name);
 		}
-		catch (const SQLite::Exception& ex)
+		catch (const std::exception& ex)
 		{
 			throw std::runtime_error(fmt::format("Failed to create database table {}: {}", table_name, ex.what()));
 		}
@@ -139,7 +139,7 @@ void createMissingTables(Context& db)
 				db.exec(sql);
 				log::info("Created database view {}", view_name);
 			}
-			catch (const SQLite::Exception& ex)
+			catch (const std::exception& ex)
 			{
 				throw std::runtime_error(fmt::format("Failed to create database view {}: {}", view_name, ex.what()));
 			}
@@ -164,7 +164,7 @@ void createDatabase(const string& file_path)
 		sql.bind(1, db_version);
 		sql.exec();
 	}
-	catch (const SQLite::Exception& ex)
+	catch (const std::exception& ex)
 	{
 		throw std::runtime_error(fmt::format("Failed to initialize database: {}", ex.what()));
 	}
@@ -482,7 +482,7 @@ void           c_db(const vector<string>& args)
 			}
 		}
 	}
-	catch (const SQLite::Exception& ex)
+	catch (const std::exception& ex)
 	{
 		log::error(ex.what());
 	}

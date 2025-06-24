@@ -33,6 +33,7 @@
 #include "SLADEWxApp.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Database.h"
 #include "General/Console.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
@@ -530,7 +531,12 @@ int SLADEWxApp::OnExit()
 	delete single_instance_checker_;
 	delete file_listener_;
 
-	return 0;
+	// Close program database
+	// Do this here instead of app::exit() as we want to keep the database
+	// connection open until all windows are closed etc.
+	database::close();
+
+	return wxApp::OnExit();
 }
 
 // -----------------------------------------------------------------------------
