@@ -569,11 +569,11 @@ bool app::init(const vector<string>& args, double ui_scale)
 	log::info("SLADE Initialisation OK");
 
 	// Show Setup Wizard if needed
-	if (!ui::getStateBool("SetupWizardRun"))
+	if (!ui::getStateBool(ui::SETUP_WIZARD_RUN))
 	{
 		SetupWizardDialog dlg(maineditor::windowWx());
 		dlg.ShowModal();
-		ui::saveStateBool("SetupWizardRun", true);
+		ui::saveStateBool(ui::SETUP_WIZARD_RUN, true);
 		maineditor::windowWx()->Update();
 		maineditor::windowWx()->Refresh();
 	}

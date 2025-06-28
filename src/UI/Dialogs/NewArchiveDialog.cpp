@@ -64,7 +64,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, wxS(
 
 	// Fill formats list
 	long selected_index = 0;
-	auto last_format    = ui::getStateString("ArchiveLastCreatedFormat");
+	auto last_format    = getStateString(ARCHIVE_LAST_CREATED_FORMAT);
 	for (const auto& format : Archive::allFormats())
 		if (format.create)
 		{
@@ -94,7 +94,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, wxS(
 				if (choice_type->GetString(choice_type->GetSelection()) == wxString::FromUTF8(format.name + " Archive"))
 				{
 					archive_created_ = app::archiveManager().newArchive(format.id).get();
-					ui::saveStateString("ArchiveLastCreatedFormat", format.id);
+					saveStateString(ARCHIVE_LAST_CREATED_FORMAT, format.id);
 					EndModal(wxID_OK);
 				}
 		});

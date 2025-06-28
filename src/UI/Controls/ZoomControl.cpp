@@ -78,7 +78,7 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
 	wxPanel(parent, -1),
 	linked_gfx_canvas_{ linked_canvas }
 {
-	zoom_ = getStateInt("ZoomGfxCanvas");
+	zoom_ = getStateInt(ZOOM_GFXCANVAS);
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
@@ -91,7 +91,7 @@ ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
 	wxPanel(parent, -1),
 	linked_texture_canvas_{ linked_canvas }
 {
-	zoom_ = getStateInt("ZoomCTextureCanvas");
+	zoom_ = getStateInt(ZOOM_CTEXTURECANVAS);
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
@@ -111,13 +111,13 @@ void ZoomControl::setZoomPercent(int percent)
 	{
 		linked_gfx_canvas_->setScale(zoomScale());
 		linked_gfx_canvas_->Refresh();
-		saveStateInt("ZoomGfxCanvas", zoom_);
+		saveStateInt(ZOOM_GFXCANVAS, zoom_);
 	}
 	if (linked_texture_canvas_)
 	{
 		linked_texture_canvas_->setScale(zoomScale());
 		linked_texture_canvas_->redraw(false);
-		saveStateInt("ZoomCTextureCanvas", zoom_);
+		saveStateInt(ZOOM_CTEXTURECANVAS, zoom_);
 	}
 }
 

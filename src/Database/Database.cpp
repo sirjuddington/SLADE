@@ -262,9 +262,9 @@ void database::close()
 // -----------------------------------------------------------------------------
 void database::migrateConfigs()
 {
-#define MIGRATE_CVAR_BOOL(cvar, state) else if (tz.check(#cvar)) ui::saveStateBool(#state, tz.peek().asBool())
-#define MIGRATE_CVAR_INT(cvar, state) else if (tz.check(#cvar)) ui::saveStateInt(#state, tz.peek().asInt())
-#define MIGRATE_CVAR_STRING(cvar, state) else if (tz.check(#cvar)) ui::saveStateString(#state, tz.peek().text)
+#define MIGRATE_CVAR_BOOL(cvar, state) else if (tz.check(#cvar)) ui::saveStateBool(ui::state, tz.peek().asBool())
+#define MIGRATE_CVAR_INT(cvar, state) else if (tz.check(#cvar)) ui::saveStateInt(ui::state, tz.peek().asInt())
+#define MIGRATE_CVAR_STRING(cvar, state) else if (tz.check(#cvar)) ui::saveStateString(ui::state, tz.peek().text)
 
 	// Migrate window layouts from .layout files
 	// (except script manager which has a different format)
@@ -284,41 +284,47 @@ void database::migrateConfigs()
 			{
 				// Last archive format
 				if (tz.check("archive_last_created_format"))
-					ui::saveStateString("ArchiveLastCreatedFormat", tz.peek().text);
+					ui::saveStateString(ui::ARCHIVE_LAST_CREATED_FORMAT, tz.peek().text);
 
 				// Window maximized flags
-				MIGRATE_CVAR_BOOL(browser_maximised, BrowserWindowMaximized);
-				MIGRATE_CVAR_BOOL(mw_maximized, MainWindowMaximized);
-				MIGRATE_CVAR_BOOL(mew_maximized, MapEditorWindowMaximized);
-				MIGRATE_CVAR_BOOL(sm_maximized, ScriptManagerWindowMaximized);
+				MIGRATE_CVAR_BOOL(browser_maximised, BROWSERWINDOW_MAXIMIZED);
+				MIGRATE_CVAR_BOOL(mw_maximized, MAINWINDOW_MAXIMIZED);
+				MIGRATE_CVAR_BOOL(mew_maximized, MAPEDITORWINDOW_MAXIMIZED);
+				MIGRATE_CVAR_BOOL(sm_maximized, SCRIPTMANAGERWINDOW_MAXIMIZED);
 
 				// Entry list column widths
-				MIGRATE_CVAR_INT(elist_colsize_index, EntryListIndexWidth);
-				MIGRATE_CVAR_INT(elist_colsize_size, EntryListSizeWidth);
-				MIGRATE_CVAR_INT(elist_colsize_type, EntryListTypeWidth);
-				MIGRATE_CVAR_INT(elist_colsize_name_list, EntryListNameWidthList);
-				MIGRATE_CVAR_INT(elist_colsize_name_tree, EntryListNameWidthTree);
+				MIGRATE_CVAR_INT(elist_colsize_index, ENTRYLIST_INDEX_WIDTH);
+				MIGRATE_CVAR_INT(elist_colsize_size, ENTRYLIST_SIZE_WIDTH);
+				MIGRATE_CVAR_INT(elist_colsize_type, ENTRYLIST_SIZE_WIDTH);
+				MIGRATE_CVAR_INT(elist_colsize_name_list, ENTRYLIST_NAME_WIDTH_LIST);
+				MIGRATE_CVAR_INT(elist_colsize_name_tree, ENTRYLIST_NAME_WIDTH_TREE);
 
 				// Entry list column visibility
-				MIGRATE_CVAR_BOOL(elist_colindex_show, EntryListIndexVisible);
-				MIGRATE_CVAR_BOOL(elist_colsize_show, EntryListSizeVisible);
-				MIGRATE_CVAR_BOOL(elist_coltype_show, EntryListTypeVisible);
+				MIGRATE_CVAR_BOOL(elist_colindex_show, ENTRYLIST_INDEX_VISIBLE);
+				MIGRATE_CVAR_BOOL(elist_colsize_show, ENTRYLIST_SIZE_VISIBLE);
+				MIGRATE_CVAR_BOOL(elist_coltype_show, ENTRYLIST_TYPE_VISIBLE);
 
 				// Splitter position
-				MIGRATE_CVAR_INT(ap_splitter_position_list, ArchivePanelSplitPosList);
-				MIGRATE_CVAR_INT(ap_splitter_position_tree, ArchivePanelSplitPosTree);
+				MIGRATE_CVAR_INT(ap_splitter_position_list, ARCHIVEPANEL_SPLIT_POS_LIST);
+				MIGRATE_CVAR_INT(ap_splitter_position_tree, ARCHIVEPANEL_SPLIT_POS_TREE);
 
 				// Colourize/Tint Dialogs
-				MIGRATE_CVAR_STRING(last_colour, ColouriseDialogLastColour);
-				MIGRATE_CVAR_STRING(last_tint_colour, TintDialogLastColour);
-				MIGRATE_CVAR_INT(last_tint_amount, TintDialogLastAmount);
+				MIGRATE_CVAR_STRING(last_colour, COLOURISEDIALOG_LAST_COLOUR);
+				MIGRATE_CVAR_STRING(last_tint_colour, TINTDIALOG_LAST_COLOUR);
+				MIGRATE_CVAR_INT(last_tint_amount, TINTDIALOG_LAST_AMOUNT);
 
 				// Zoom sliders
-				MIGRATE_CVAR_INT(zoom_gfx, ZoomGfxCanvas);
-				MIGRATE_CVAR_INT(zoom_ctex, ZoomCTextureCanvas);
+				MIGRATE_CVAR_INT(zoom_gfx, ZOOM_GFXCANVAS);
+				MIGRATE_CVAR_INT(zoom_ctex, ZOOM_CTEXTURECANVAS);
 
 				// Misc.
-				MIGRATE_CVAR_BOOL(setup_wizard_run, SetupWizardRun);
+				MIGRATE_CVAR_BOOL(setup_wizard_run, SETUP_WIZARD_RUN);
+
+				// Run Dialog
+				MIGRATE_CVAR_STRING(run_last_exe, RUNDIALOG_LAST_EXE);
+				MIGRATE_CVAR_INT(run_last_config, RUNDIALOG_LAST_CONFIG);
+				MIGRATE_CVAR_STRING(run_last_extra, RUNDIALOG_LAST_EXTRA);
+				MIGRATE_CVAR_BOOL(run_start_3d, RUNDIALOG_START_3D);
 
 				tz.adv(2);
 			}

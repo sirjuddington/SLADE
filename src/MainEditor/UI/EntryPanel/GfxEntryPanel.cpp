@@ -696,10 +696,10 @@ void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 		const int sel = choice_offset_type_->GetSelection();
 		switch (sel)
 		{
-		case 0: gfx_canvas_->setViewType(detectOffsetType(entry)); break;
-		case 1: gfx_canvas_->setViewType(GfxCanvas::View::Default); break;
-		case 2: gfx_canvas_->setViewType(GfxCanvas::View::Sprite); break;
-		case 3: gfx_canvas_->setViewType(GfxCanvas::View::HUD); break;
+		case 0:  gfx_canvas_->setViewType(detectOffsetType(entry)); break;
+		case 1:  gfx_canvas_->setViewType(GfxCanvas::View::Default); break;
+		case 2:  gfx_canvas_->setViewType(GfxCanvas::View::Sprite); break;
+		case 3:  gfx_canvas_->setViewType(GfxCanvas::View::HUD); break;
 		default: break;
 		}
 	}
@@ -795,9 +795,9 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		// Rotate image
 		switch (choice)
 		{
-		case 0: image()->rotate(90); break;
-		case 1: image()->rotate(180); break;
-		case 2: image()->rotate(270); break;
+		case 0:  image()->rotate(90); break;
+		case 1:  image()->rotate(180); break;
+		case 2:  image()->rotate(270); break;
 		default: break;
 		}
 
@@ -841,7 +841,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	{
 		auto*              pal = maineditor::currentPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry.get(), *pal);
-		gcd.setColour(ui::getStateString("ColouriseDialogLastColour"));
+		gcd.setColour(ui::getStateString(ui::COLOURISEDIALOG_LAST_COLOUR));
 
 		// Show colourise dialog
 		if (gcd.ShowModal() == wxID_OK)
@@ -858,7 +858,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		ui::saveStateString("ColouriseDialogLastColour", gcd.colour().toString(ColRGBA::StringFormat::RGB));
+		ui::saveStateString(ui::COLOURISEDIALOG_LAST_COLOUR, gcd.colour().toString(ColRGBA::StringFormat::RGB));
 	}
 
 	// Tint
@@ -866,7 +866,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	{
 		auto*         pal = maineditor::currentPalette();
 		GfxTintDialog gtd(theMainWindow, entry.get(), *pal);
-		gtd.setValues(ui::getStateString("TintDialogLastColour"), ui::getStateInt("TintDialogLastAmount"));
+		gtd.setValues(ui::getStateString(ui::TINTDIALOG_LAST_COLOUR), ui::getStateInt(ui::TINTDIALOG_LAST_AMOUNT));
 
 		// Show tint dialog
 		if (gtd.ShowModal() == wxID_OK)
@@ -883,8 +883,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		ui::saveStateString("TintDialogLastColour", gtd.colour().toString(ColRGBA::StringFormat::RGB));
-		ui::saveStateInt("TintDialogLastAmount", static_cast<int>(gtd.amount() * 100.0f));
+		ui::saveStateString(ui::TINTDIALOG_LAST_COLOUR, gtd.colour().toString(ColRGBA::StringFormat::RGB));
+		ui::saveStateInt(ui::TINTDIALOG_LAST_AMOUNT, static_cast<int>(gtd.amount() * 100.0f));
 	}
 
 	// Crop

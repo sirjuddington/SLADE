@@ -82,14 +82,16 @@ void database::ArchiveUIConfig::write()
 
 // -----------------------------------------------------------------------------
 // Inserts this row into the database.
-// If successful, id will be updated and returned, otherwise returns -1
+// If successful, the inserted row id is returned, otherwise returns -1
 // -----------------------------------------------------------------------------
 i64 database::ArchiveUIConfig::insert()
 {
+	i64 row_id = -1;
+
 	if (archive_id < 0)
 	{
 		log::warning("Trying to insert archive_ui_config row with no archive_id");
-		return archive_id;
+		return row_id;
 	}
 
 	auto ps = context().preparedStatement(
@@ -113,9 +115,9 @@ i64 database::ArchiveUIConfig::insert()
 	ps.bind(11, splitter_position);
 
 	if (ps.exec() > 0)
-		archive_id = context().connectionRW()->getLastInsertRowid();
+		row_id = context().connectionRW()->getLastInsertRowid();
 
-	return archive_id;
+	return row_id;
 }
 
 // -----------------------------------------------------------------------------
@@ -125,7 +127,7 @@ void database::ArchiveUIConfig::update() const
 {
 	if (archive_id < 0)
 	{
-		log::warning("Trying to update archive_ui_config row with no id");
+		log::warning("Trying to update archive_ui_config row with no archive_id");
 		return;
 	}
 
@@ -183,14 +185,14 @@ void database::ArchiveUIConfig::remove()
 
 void database::ArchiveUIConfig::setDefaults(bool tree_view)
 {
-	elist_index_visible = ui::getStateBool("EntryListIndexVisible");
-	elist_index_width   = ui::getStateInt("EntryListIndexWidth");
-	elist_name_width    = ui::getStateInt(tree_view ? "EntryListNameWidthTree" : "EntryListNameWidthList");
-	elist_size_visible  = ui::getStateBool("EntryListSizeVisible");
-	elist_size_width    = ui::getStateInt("EntryListSizeWidth");
-	elist_type_visible  = ui::getStateBool("EntryListTypeVisible");
-	elist_type_width    = ui::getStateInt("EntryListTypeWidth");
-	splitter_position   = ui::getStateInt(tree_view ? "ArchivePanelSplitPosTree" : "ArchivePanelSplitPosList");
+	elist_index_visible = ui::getStateBool(ui::ENTRYLIST_INDEX_VISIBLE);
+	elist_index_width   = ui::getStateInt(ui::ENTRYLIST_INDEX_WIDTH);
+	elist_name_width    = ui::getStateInt(tree_view ? ui::ENTRYLIST_NAME_WIDTH_TREE : ui::ENTRYLIST_NAME_WIDTH_LIST);
+	elist_size_visible  = ui::getStateBool(ui::ENTRYLIST_SIZE_VISIBLE);
+	elist_size_width    = ui::getStateInt(ui::ENTRYLIST_SIZE_WIDTH);
+	elist_type_visible  = ui::getStateBool(ui::ENTRYLIST_TYPE_VISIBLE);
+	elist_type_width    = ui::getStateInt(ui::ENTRYLIST_TYPE_WIDTH);
+	splitter_position = ui::getStateInt(tree_view ? ui::ARCHIVEPANEL_SPLIT_POS_TREE : ui::ARCHIVEPANEL_SPLIT_POS_LIST);
 }
 
 

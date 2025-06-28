@@ -459,7 +459,7 @@ void ArchivePanel::setup(Archive* archive)
 	auto split_pos = database::archiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive));
 	if (split_pos < 0)
 		split_pos = ui::getStateInt(
-			archive->formatDesc().supports_dirs ? "ArchivePanelSplitPosTree" : "ArchivePanelSplitPosList");
+			archive->formatDesc().supports_dirs ? ui::ARCHIVEPANEL_SPLIT_POS_TREE : ui::ARCHIVEPANEL_SPLIT_POS_LIST);
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
 	// Update size+layout
@@ -490,9 +490,9 @@ void ArchivePanel::bindEvents(Archive* archive)
 			if (auto archive = archive_.lock().get())
 			{
 				if (archive->formatDesc().supports_dirs)
-					ui::saveStateInt("ArchivePanelSplitPosTree", e.GetSashPosition());
+					ui::saveStateInt(ui::ARCHIVEPANEL_SPLIT_POS_TREE, e.GetSashPosition());
 				else
-					ui::saveStateInt("ArchivePanelSplitPosList", e.GetSashPosition());
+					ui::saveStateInt(ui::ARCHIVEPANEL_SPLIT_POS_LIST, e.GetSashPosition());
 
 				database::saveArchiveUIConfigSplitterPos(
 					app::archiveManager().archiveDbId(*archive), e.GetSashPosition());
@@ -2128,7 +2128,7 @@ bool ArchivePanel::gfxColourise()
 	// Create colourise dialog
 	auto               pal = theMainWindow->paletteChooser()->selectedPalette();
 	GfxColouriseDialog gcd(this, selection[0], *pal);
-	gcd.setColour(ui::getStateString("ColouriseDialogLastColour"));
+	gcd.setColour(ui::getStateString(ui::COLOURISEDIALOG_LAST_COLOUR));
 
 	// Run dialog
 	if (gcd.ShowModal() == wxID_OK)
@@ -2159,7 +2159,7 @@ bool ArchivePanel::gfxColourise()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	ui::saveStateString("ColouriseDialogLastColour", gcd.colour().toString(ColRGBA::StringFormat::RGB));
+	ui::saveStateString(ui::COLOURISEDIALOG_LAST_COLOUR, gcd.colour().toString(ColRGBA::StringFormat::RGB));
 	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
@@ -2176,7 +2176,7 @@ bool ArchivePanel::gfxTint()
 	// Create colourise dialog
 	auto          pal = theMainWindow->paletteChooser()->selectedPalette();
 	GfxTintDialog gtd(this, selection[0], *pal);
-	gtd.setValues(ui::getStateString("TintDialogLastColour"), ui::getStateInt("TintDialogLastAmount"));
+	gtd.setValues(ui::getStateString(ui::TINTDIALOG_LAST_COLOUR), ui::getStateInt(ui::TINTDIALOG_LAST_AMOUNT));
 
 	// Run dialog
 	if (gtd.ShowModal() == wxID_OK)
@@ -2208,8 +2208,8 @@ bool ArchivePanel::gfxTint()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	ui::saveStateString("TintDialogLastColour", gtd.colour().toString(ColRGBA::StringFormat::RGB));
-	ui::saveStateInt("TintDialogLastAmount", static_cast<int>(gtd.amount() * 100.0f));
+	ui::saveStateString(ui::TINTDIALOG_LAST_COLOUR, gtd.colour().toString(ColRGBA::StringFormat::RGB));
+	ui::saveStateInt(ui::TINTDIALOG_LAST_AMOUNT, static_cast<int>(gtd.amount() * 100.0f));
 	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
@@ -3447,21 +3447,7 @@ bool ArchivePanel::handleAction(string_view id)
 	{
 		RunDialog dlg(this, archive.get());
 		if (id == "arch_quick_run" || dlg.ShowModal() == wxID_OK)
-		{
-			auto command = dlg.selectedCommandLine(archive.get(), "");
-			if (!command.empty())
-			{
-				// Set working directory
-				auto wd = wxGetCwd();
-				wxSetWorkingDirectory(wxString::FromUTF8(dlg.selectedExeDir()));
-
-				// Run
-				wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC);
-
-				// Restore working directory
-				wxSetWorkingDirectory(wd);
-			}
-		}
+			dlg.run(RunDialog::Config{ archive->filename() }, app::archiveManager().archiveDbId(*archive));
 
 		return true;
 	}

@@ -77,27 +77,27 @@ template<typename T> void saveState(string_view name, T value)
 void ui::initStateProps()
 {
 	// Set default values
-	vector<Named<Property>> props = { { "EntryListIndexVisible", false },
-									  { "EntryListIndexWidth", scalePx(50) },
-									  { "EntryListSizeVisible", true },
-									  { "EntryListSizeWidth", scalePx(80) },
-									  { "EntryListTypeVisible", true },
-									  { "EntryListTypeWidth", scalePx(150) },
-									  { "EntryListNameWidthList", scalePx(150) },
-									  { "EntryListNameWidthTree", scalePx(180) },
-									  { "ArchivePanelSplitPosList", scalePx(300) },
-									  { "ArchivePanelSplitPosTree", scalePx(300) },
-									  { "ArchiveLastCreatedFormat", "wad" },
-									  { "ColouriseDialogLastColour", "RGB(255, 0, 0)" },
-									  { "TintDialogLastColour", "RGB(255, 0, 0)" },
-									  { "TintDialogLastAmount", 50 },
-									  { "ZoomGfxCanvas", 100 },
-									  { "ZoomCTextureCanvas", 100 },
-									  { "BrowserWindowMaximized", false },
-									  { "MainWindowMaximized", true },
-									  { "MapEditorWindowMaximized", true },
-									  { "ScriptManagerWindowMaximized", false },
-									  { "SetupWizardRun", false } };
+	vector<Named<Property>> props = { { ENTRYLIST_INDEX_VISIBLE, false },
+									  { ENTRYLIST_INDEX_WIDTH, scalePx(50) },
+									  { ENTRYLIST_SIZE_VISIBLE, true },
+									  { ENTRYLIST_SIZE_WIDTH, scalePx(80) },
+									  { ENTRYLIST_TYPE_VISIBLE, true },
+									  { ENTRYLIST_TYPE_WIDTH, scalePx(150) },
+									  { ENTRYLIST_NAME_WIDTH_LIST, scalePx(150) },
+									  { ENTRYLIST_NAME_WIDTH_TREE, scalePx(180) },
+									  { ARCHIVEPANEL_SPLIT_POS_LIST, scalePx(300) },
+									  { ARCHIVEPANEL_SPLIT_POS_TREE, scalePx(300) },
+									  { ARCHIVE_LAST_CREATED_FORMAT, "wad" },
+									  { COLOURISEDIALOG_LAST_COLOUR, "RGB(255, 0, 0)" },
+									  { TINTDIALOG_LAST_COLOUR, "RGB(255, 0, 0)" },
+									  { TINTDIALOG_LAST_AMOUNT, 50 },
+									  { ZOOM_GFXCANVAS, 100 },
+									  { ZOOM_CTEXTURECANVAS, 100 },
+									  { BROWSERWINDOW_MAXIMIZED, false },
+									  { MAINWINDOW_MAXIMIZED, true },
+									  { MAPEDITORWINDOW_MAXIMIZED, true },
+									  { SCRIPTMANAGERWINDOW_MAXIMIZED, false },
+									  { SETUP_WIZARD_RUN, false } };
 
 	auto ps = database::context().preparedStatement(
 		"init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?)", true);

@@ -35,10 +35,12 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Tables/ArchiveRunConfig.h"
 #include "General/Executables.h"
 #include "General/UI.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
@@ -49,17 +51,6 @@
 #endif // __WXOSX_MAC__
 
 using namespace slade;
-
-
-// -----------------------------------------------------------------------------
-//
-// Variables
-//
-// -----------------------------------------------------------------------------
-CVAR(String, run_last_exe, "", CVar::Flag::Save)
-CVAR(Int, run_last_config, 0, CVar::Flag::Save)
-CVAR(String, run_last_extra, "", CVar::Flag::Save)
-CVAR(Bool, run_start_3d, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -177,6 +168,50 @@ private:
 
 
 // -----------------------------------------------------------------------------
+// IwadSelectionPanel Class
+//
+// A control to select an IWAD path, with dropdown options showing configured
+// base resource archive paths and a button to browse for one
+// -----------------------------------------------------------------------------
+class IwadSelectionPanel : public wxPanel
+{
+public:
+	IwadSelectionPanel(wxWindow* parent, const string& iwad_path) : wxPanel(parent, -1)
+	{
+		auto sizer = new wxBoxSizer(wxHORIZONTAL);
+		SetSizer(sizer);
+		combo_iwad_path_ = new wxComboBox(this, -1, wxString::FromUTF8(iwad_path));
+		sizer->Add(combo_iwad_path_, wxSizerFlags(1).Expand());
+
+		// Add base resource paths to dropdown
+		for (const auto& br_path : app::archiveManager().baseResourcePaths())
+			combo_iwad_path_->AppendString(wxString::FromUTF8(br_path));
+
+		btn_browse_ = new SIconButton(this, "open", "Browse IWAD path");
+		sizer->Add(btn_browse_, wxSizerFlags(0).Expand().Border(wxLEFT, ui::pad()));
+
+		btn_browse_->Bind(
+			wxEVT_BUTTON,
+			[&](wxCommandEvent& e)
+			{
+				filedialog::FDInfo inf;
+				if (filedialog::openFile(
+						inf, "Browse IWAD path", app::archiveManager().getArchiveExtensionsString(), this))
+				{
+					combo_iwad_path_->SetValue(wxString::FromUTF8(inf.filenames[0]));
+				}
+			});
+	}
+
+	string selectedIwadPath() const { return combo_iwad_path_->GetValue().utf8_string(); }
+
+private:
+	wxComboBox*  combo_iwad_path_ = nullptr;
+	SIconButton* btn_browse_      = nullptr;
+};
+
+
+// -----------------------------------------------------------------------------
 //
 // RunDialog Class Functions
 //
@@ -196,6 +231,24 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 		SetTitle(wxS("Run Map"));
 	if (archive)
 		SetTitle(WX_FMT("Run Archive - {}", archive->filename(false)));
+
+	// Get initial values
+	auto run_last_extra = ui::getStateString("RunDialogLastExtra");
+	auto run_last_exe   = ui::getStateString("RunDialogLastExe");
+	auto run_last_cfg   = ui::getStateInt("RunDialogLastConfig");
+	auto iwad_path      = app::archiveManager().currentBaseResourcePath();
+	auto db_id          = archive ? app::archiveManager().archiveDbId(*archive) : -1;
+	if (db_id >= 0)
+	{
+		auto run_cfg = database::getArchiveRunConfig(db_id);
+		if (run_cfg.archive_id >= 0)
+		{
+			run_last_exe   = run_cfg.executable_id;
+			run_last_cfg   = run_cfg.run_config;
+			run_last_extra = run_cfg.run_extra;
+			iwad_path      = run_cfg.iwad_path;
+		}
+	}
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -249,7 +302,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 		wxGBPosition(3, 0),
 		wxDefaultSpan,
 		wxALIGN_CENTER_VERTICAL);
-	text_extra_params_ = new wxTextCtrl(this, -1, run_last_extra);
+	text_extra_params_ = new wxTextCtrl(this, -1, wxString::FromUTF8(run_last_extra));
 	gb_sizer->Add(text_extra_params_, wxGBPosition(3, 1), wxGBSpan(1, 4), wxEXPAND);
 
 	// Resources
@@ -257,6 +310,9 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->AddSpacer(ui::padLarge());
 	sizer->Add(framesizer, 1, wxEXPAND | wxLEFT | wxRIGHT, ui::padLarge());
+	isp_iwad_ = new IwadSelectionPanel(this, iwad_path);
+	framesizer->Add(
+		wxutil::createLabelHBox(this, "IWAD:", isp_iwad_), 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, ui::pad());
 	rac_resources_ = new ResourceArchiveChooser(this, archive);
 	framesizer->Add(rac_resources_, 1, wxEXPAND | wxALL, ui::pad());
 
@@ -265,7 +321,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	sizer->AddSpacer(ui::padLarge());
 	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 	cb_start_3d_ = new wxCheckBox(this, -1, wxS("Start from 3D mode camera position"));
-	cb_start_3d_->SetValue(run_start_3d);
+	cb_start_3d_->SetValue(ui::getStateBool(ui::RUNDIALOG_START_3D));
 	if (show_start_3d_cb)
 		hbox->Add(cb_start_3d_, 0, wxALIGN_CENTER_VERTICAL);
 	else
@@ -284,14 +340,14 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 		auto exe = executables::gameExe(a);
 		choice_game_exes_->AppendString(wxString::FromUTF8(exe->name));
 
-		if (exe->id == run_last_exe.value)
+		if (exe->id == run_last_exe)
 			last_index = choice_game_exes_->GetCount() - 1;
 	}
 	if ((int)choice_game_exes_->GetCount() > last_index)
 	{
 		choice_game_exes_->Select(last_index);
 		openGameExe(last_index);
-		choice_config_->Select(run_last_config);
+		choice_config_->Select(run_last_cfg);
 	}
 
 	// Bind Events
@@ -318,7 +374,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 // -----------------------------------------------------------------------------
 RunDialog::~RunDialog()
 {
-	run_start_3d = cb_start_3d_->GetValue();
+	ui::saveStateBool(ui::RUNDIALOG_START_3D, cb_start_3d_->GetValue());
 }
 
 // -----------------------------------------------------------------------------
@@ -357,7 +413,7 @@ void RunDialog::openGameExe(unsigned index) const
 // Returns a command line based on the currently selected run configuration and
 // resources
 // -----------------------------------------------------------------------------
-string RunDialog::selectedCommandLine(Archive* archive, string_view map_name, string_view map_file) const
+string RunDialog::selectedCommandLine(const Config& cfg) const
 {
 	auto exe = executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
@@ -370,34 +426,36 @@ string RunDialog::selectedCommandLine(Archive* archive, string_view map_name, st
 
 		auto path = fmt::format("\"{}\"", exe_path);
 
-		unsigned    cfg     = choice_config_->GetSelection();
-		const auto& configs = run_map_ ? exe->map_configs : exe->run_configs;
-		if (cfg < configs.size())
+		unsigned    cfg_index = choice_config_->GetSelection();
+		const auto& configs   = run_map_ ? exe->map_configs : exe->run_configs;
+		if (cfg_index < configs.size())
 		{
 			path += " ";
-			path += configs[cfg].second;
+			path += configs[cfg_index].second;
 		}
 
 		// IWAD
-		auto bra = app::archiveManager().baseResourceArchive();
-		strutil::replaceIP(path, "%i", fmt::format("\"{}\"", bra ? bra->filename() : ""));
+		auto iwad_path = cfg.iwad_path;
+		if (iwad_path.empty())
+			iwad_path = dynamic_cast<IwadSelectionPanel*>(isp_iwad_)->selectedIwadPath();
+		strutil::replaceIP(path, "%i", fmt::format("\"{}\"", iwad_path));
 
 		// Resources
 		strutil::replaceIP(path, "%r", selectedResourceList());
 
 		// Archive (+ temp map if specified)
-		if (map_file.empty() && archive)
-			strutil::replaceIP(path, "%a", fmt::format("\"{}\"", archive->filename()));
+		if (cfg.map_file.empty() && !cfg.archive_path.empty())
+			strutil::replaceIP(path, "%a", fmt::format("\"{}\"", cfg.archive_path));
 		else
 		{
-			if (archive)
-				strutil::replaceIP(path, "%a", fmt::format(R"("{}" "{}")", archive->filename(), map_file));
+			if (!cfg.archive_path.empty())
+				strutil::replaceIP(path, "%a", fmt::format(R"("{}" "{}")", cfg.archive_path, cfg.map_file));
 			else
-				strutil::replaceIP(path, "%a", fmt::format("\"{}\"", map_file));
+				strutil::replaceIP(path, "%a", fmt::format("\"{}\"", cfg.map_file));
 		}
 
 		// Running an archive yields no map name, so don't try to warp
-		if (map_name.empty())
+		if (cfg.map_name.empty())
 		{
 			strutil::replaceIP(path, "-warp ", "");
 			strutil::replaceIP(path, "+map ", "");
@@ -407,12 +465,12 @@ string RunDialog::selectedCommandLine(Archive* archive, string_view map_name, st
 		// Map name
 		else
 		{
-			strutil::replaceIP(path, "%mn", map_name);
+			strutil::replaceIP(path, "%mn", cfg.map_name);
 
 			// Map warp
 			if (strutil::contains(path, "%mw"))
 			{
-				auto mn = strutil::lower(map_name);
+				auto mn = strutil::lower(cfg.map_name);
 
 				// MAPxx
 				if (strutil::startsWith(mn, "map"))
@@ -479,6 +537,38 @@ string RunDialog::selectedExeId() const
 bool RunDialog::start3dModeChecked() const
 {
 	return cb_start_3d_->GetValue();
+}
+
+// -----------------------------------------------------------------------------
+// Runs the archive+iwad+map defined in [cfg] with the currently selected
+// executable+run configuration
+// -----------------------------------------------------------------------------
+void RunDialog::run(const Config& cfg, i64 archive_db_id) const
+{
+	auto command = selectedCommandLine(cfg);
+	if (!command.empty())
+	{
+		// Save run config for archive
+		if (archive_db_id >= 0)
+		{
+			database::ArchiveRunConfig run_cfg{ archive_db_id };
+			run_cfg.executable_id = selectedExeId();
+			run_cfg.run_config    = choice_config_->GetSelection();
+			run_cfg.run_extra     = text_extra_params_->GetValue().utf8_string();
+			run_cfg.iwad_path     = dynamic_cast<IwadSelectionPanel*>(isp_iwad_)->selectedIwadPath();
+			run_cfg.write();
+		}
+
+		// Set working directory
+		wxString wd = wxGetCwd();
+		wxSetWorkingDirectory(wxString::FromUTF8(selectedExeDir()));
+
+		// Run
+		wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC);
+
+		// Restore working directory
+		wxSetWorkingDirectory(wd);
+	}
 }
 
 
@@ -597,9 +687,9 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 	exe->path = exe_path;
 
 	// Update cvars
-	run_last_extra  = text_extra_params_->GetValue().utf8_string();
-	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = selectedExeId();
+	ui::saveStateString(ui::RUNDIALOG_LAST_EXTRA, text_extra_params_->GetValue().utf8_string());
+	ui::saveStateInt(ui::RUNDIALOG_LAST_CONFIG, choice_config_->GetSelection());
+	ui::saveStateString(ui::RUNDIALOG_LAST_EXE, selectedExeId());
 
 	EndModal(wxID_OK);
 }
@@ -610,9 +700,9 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 void RunDialog::onBtnCancel(wxCommandEvent& e)
 {
 	// Update cvars
-	run_last_extra  = text_extra_params_->GetValue().utf8_string();
-	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = selectedExeId();
+	ui::saveStateString(ui::RUNDIALOG_LAST_EXTRA, text_extra_params_->GetValue().utf8_string());
+	ui::saveStateInt(ui::RUNDIALOG_LAST_CONFIG, choice_config_->GetSelection());
+	ui::saveStateString(ui::RUNDIALOG_LAST_EXE, selectedExeId());
 
 	EndModal(wxID_CANCEL);
 }
@@ -623,7 +713,7 @@ void RunDialog::onBtnCancel(wxCommandEvent& e)
 void RunDialog::onChoiceGameExe(wxCommandEvent& e)
 {
 	openGameExe(e.GetSelection());
-	run_last_exe = selectedExeId();
+	ui::saveStateString(ui::RUNDIALOG_LAST_EXE, selectedExeId());
 }
 
 // -----------------------------------------------------------------------------
@@ -631,7 +721,7 @@ void RunDialog::onChoiceGameExe(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void RunDialog::onChoiceConfig(wxCommandEvent& e)
 {
-	run_last_config = choice_config_->GetSelection();
+	ui::saveStateInt(ui::RUNDIALOG_LAST_CONFIG, choice_config_->GetSelection());
 	btn_edit_config_->Enable(true);
 	auto        exe            = executables::gameExe(choice_game_exes_->GetSelection());
 	const auto& configs_custom = run_map_ ? exe->map_configs_custom : exe->run_configs_custom;

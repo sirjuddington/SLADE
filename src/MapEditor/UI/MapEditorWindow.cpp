@@ -99,7 +99,7 @@ EXTERN_CVAR(Int, flat_drawtype);
 // -----------------------------------------------------------------------------
 MapEditorWindow::MapEditorWindow() : STopWindow{ "SLADE", "map" }
 {
-	if (ui::getStateBool("MapEditorWindowMaximized"))
+	if (ui::getStateBool(ui::MAPEDITORWINDOW_MAXIMIZED))
 		CallAfter(&MapEditorWindow::Maximize, this);
 	setupLayout();
 	wxTopLevelWindow::Show(false);
@@ -1331,6 +1331,7 @@ bool MapEditorWindow::handleAction(string_view id)
 		if (id == "mapw_quick_run_map" || dlg.ShowModal() == wxID_OK)
 		{
 			auto& edit_context = mapeditor::editContext();
+
 			// Move player 1 start if needed
 			if (id == "mapw_run_map_here")
 				edit_context.swapPlayerStart2d(edit_context.input().mouseDownPosMap());
@@ -1346,19 +1347,10 @@ bool MapEditorWindow::handleAction(string_view id)
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
 				mapeditor::editContext().resetPlayerStart();
 
-			auto command = dlg.selectedCommandLine(archive, mdesc_current.name, wad.filename());
-			if (!command.empty())
-			{
-				// Set working directory
-				auto wd = wxGetCwd();
-				wxSetWorkingDirectory(wxString::FromUTF8(dlg.selectedExeDir()));
-
-				// Run
-				wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC);
-
-				// Restore working directory
-				wxSetWorkingDirectory(wd);
-			}
+			RunDialog::Config cfg{ archive ? archive->filename() : "" };
+			cfg.map_name = mdesc_current.name;
+			cfg.map_file = wad.filename();
+			dlg.run(cfg, archive ? app::archiveManager().archiveDbId(*archive) : -1);
 		}
 
 		return true;
@@ -1426,7 +1418,7 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 void MapEditorWindow::onSize(wxSizeEvent& e)
 {
 	// Update maximized state
-	ui::saveStateBool("MapEditorWindowMaximized", IsMaximized());
+	ui::saveStateBool(ui::MAPEDITORWINDOW_MAXIMIZED, IsMaximized());
 
 	e.Skip();
 }

@@ -259,7 +259,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	wxWindowBase::Layout();
 	wxTopLevelWindowBase::SetMinSize(wxutil::scaledSize(540, 400));
 
-	if (ui::getStateBool("BrowserWindowMaximized"))
+	if (ui::getStateBool(ui::BROWSERWINDOW_MAXIMIZED))
 		wxTopLevelWindow::Maximize();
 	else
 		CenterOnParent();
@@ -273,7 +273,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 // -----------------------------------------------------------------------------
 BrowserWindow::~BrowserWindow()
 {
-	ui::saveStateBool("BrowserWindowMaximized", wxTopLevelWindow::IsMaximized());
+	ui::saveStateBool(ui::BROWSERWINDOW_MAXIMIZED, wxTopLevelWindow::IsMaximized());
 	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
 	if (!wxTopLevelWindow::IsMaximized())
 		ui::setWindowInfo(

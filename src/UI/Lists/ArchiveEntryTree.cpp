@@ -999,7 +999,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 			{
 				// Toggle index column
 				col_index_->SetHidden(!col_index_->IsHidden());
-				ui::saveStateBool("EntryListIndexVisible", !col_index_->IsHidden());
+				saveStateBool(ENTRYLIST_INDEX_VISIBLE, !col_index_->IsHidden());
 				updateColumnWidths();
 				saveColumnConfig();
 			}
@@ -1007,7 +1007,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 			{
 				// Toggle size column
 				col_size_->SetHidden(!col_size_->IsHidden());
-				ui::saveStateBool("EntryListSizeVisible", !col_size_->IsHidden());
+				saveStateBool(ENTRYLIST_SIZE_VISIBLE, !col_size_->IsHidden());
 				updateColumnWidths();
 				saveColumnConfig();
 			}
@@ -1015,7 +1015,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 			{
 				// Toggle type column
 				col_type_->SetHidden(!col_type_->IsHidden());
-				ui::saveStateBool("EntryListTypeVisible", !col_type_->IsHidden());
+				saveStateBool(ENTRYLIST_TYPE_VISIBLE, !col_type_->IsHidden());
 				updateColumnWidths();
 				saveColumnConfig();
 			}
@@ -1509,19 +1509,19 @@ void ArchiveEntryTree::saveColumnWidths() const
 	if (last_col != col_name_)
 	{
 		if (model_->viewType() == ArchiveViewModel::ViewType::Tree)
-			ui::saveStateInt("EntryListNameWidthTree", col_name_->GetWidth());
+			saveStateInt(ENTRYLIST_NAME_WIDTH_TREE, col_name_->GetWidth());
 		else
-			ui::saveStateInt("EntryListNameWidthList", col_name_->GetWidth());
+			saveStateInt(ENTRYLIST_NAME_WIDTH_LIST, col_name_->GetWidth());
 	}
 
 	if (last_col != col_size_ && !col_size_->IsHidden())
-		ui::saveStateInt("EntryListSizeWidth", col_size_->GetWidth());
+		saveStateInt(ENTRYLIST_SIZE_WIDTH, col_size_->GetWidth());
 
 	if (last_col != col_type_ && !col_type_->IsHidden())
-		ui::saveStateInt("EntryListTypeWidth", col_type_->GetWidth());
+		saveStateInt(ENTRYLIST_TYPE_WIDTH, col_type_->GetWidth());
 
 	if (!col_index_->IsHidden())
-		ui::saveStateInt("EntryListIndexWidth", col_index_->GetWidth());
+		saveStateInt(ENTRYLIST_INDEX_WIDTH, col_index_->GetWidth());
 }
 
 // -----------------------------------------------------------------------------
@@ -1543,12 +1543,12 @@ void ArchiveEntryTree::updateColumnWidths()
 		}
 
 	Freeze();
-	col_index_->SetWidth(ui::getStateInt("EntryListIndexWidth"));
+	col_index_->SetWidth(getStateInt(ENTRYLIST_INDEX_WIDTH));
 	col_name_->SetWidth(
-		model_->viewType() == ArchiveViewModel::ViewType::Tree ? ui::getStateInt("EntryListNameWidthTree")
-															   : ui::getStateInt("EntryListNameWidthList"));
-	col_size_->SetWidth(col_size_ == last_col ? 0 : ui::getStateInt("EntryListSizeWidth"));
-	col_type_->SetWidth(col_type_ == last_col ? 0 : ui::getStateInt("EntryListTypeWidth"));
+		model_->viewType() == ArchiveViewModel::ViewType::Tree ? getStateInt(ENTRYLIST_NAME_WIDTH_TREE)
+															   : getStateInt(ENTRYLIST_NAME_WIDTH_LIST));
+	col_size_->SetWidth(col_size_ == last_col ? 0 : getStateInt(ENTRYLIST_SIZE_WIDTH));
+	col_type_->SetWidth(col_type_ == last_col ? 0 : getStateInt(ENTRYLIST_TYPE_WIDTH));
 	Thaw();
 }
 
@@ -1612,7 +1612,7 @@ void ArchiveEntryTree::onAnyColumnResized()
 	if (col_index_->IsShown())
 	{
 		config.elist_index_width = col_index_->GetWidth();
-		saveStateInt("EntryListIndexWidth", config.elist_index_width);
+		saveStateInt(ENTRYLIST_INDEX_WIDTH, config.elist_index_width);
 	}
 
 	// Name
@@ -1620,7 +1620,7 @@ void ArchiveEntryTree::onAnyColumnResized()
 	{
 		config.elist_name_width = col_name_->GetWidth();
 		saveStateInt(
-			archive->formatDesc().supports_dirs ? "EntryListNameWidthTree" : "EntryListNameWidthList",
+			archive->formatDesc().supports_dirs ? ENTRYLIST_NAME_WIDTH_TREE : ENTRYLIST_NAME_WIDTH_LIST,
 			config.elist_name_width);
 	}
 
@@ -1628,14 +1628,14 @@ void ArchiveEntryTree::onAnyColumnResized()
 	if (col_size_ != last_col && col_size_->IsShown())
 	{
 		config.elist_size_width = col_size_->GetWidth();
-		saveStateInt("EntryListSizeWidth", config.elist_size_width);
+		saveStateInt(ENTRYLIST_SIZE_WIDTH, config.elist_size_width);
 	}
 
 	// Type
 	if (col_type_ != last_col && col_type_->IsShown())
 	{
 		config.elist_type_width = col_type_->GetWidth();
-		saveStateInt("EntryListTypeWidth", config.elist_type_width);
+		saveStateInt(ENTRYLIST_TYPE_WIDTH, config.elist_type_width);
 	}
 
 	config.write();

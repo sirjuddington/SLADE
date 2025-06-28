@@ -114,7 +114,7 @@ MainWindow::MainWindow() : STopWindow("SLADE", "main")
 {
 	custom_menus_begin_ = 2;
 
-	if (ui::getStateBool("MainWindowMaximized"))
+	if (ui::getStateBool(ui::MAINWINDOW_MAXIMIZED))
 #ifdef __WXGTK__
 		CallAfter(&MainWindow::Maximize, this);
 #else
@@ -444,7 +444,7 @@ bool MainWindow::exitProgram()
 	// Save current layout
 	// main_window_layout = aui_mgr_->SavePerspective();
 	saveLayout();
-	ui::saveStateBool("MainWindowMaximized", IsMaximized());
+	ui::saveStateBool(ui::MAINWINDOW_MAXIMIZED, IsMaximized());
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
 		ui::setWindowInfo(
@@ -730,7 +730,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 #endif
 
 	// Update maximized state
-	ui::saveStateBool("MainWindowMaximized", IsMaximized());
+	ui::saveStateBool(ui::MAINWINDOW_MAXIMIZED, IsMaximized());
 
 	e.Skip();
 }

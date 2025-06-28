@@ -247,7 +247,7 @@ void ScriptManagerWindow::saveLayout()
 void ScriptManagerWindow::setupLayout()
 {
 	// Maximize if it was last time
-	if (ui::getStateBool("ScriptManagerWindowMaximized"))
+	if (ui::getStateBool(ui::SCRIPTMANAGERWINDOW_MAXIMIZED))
 		CallAfter(&ScriptManagerWindow::Maximize, this);
 
 	// Create the wxAUI manager & related things
@@ -431,7 +431,7 @@ void ScriptManagerWindow::bindEvents()
 		{
 			// Save Layout
 			saveLayout();
-			ui::saveStateBool("ScriptManagerWindowMaximized", IsMaximized());
+			ui::saveStateBool(ui::SCRIPTMANAGERWINDOW_MAXIMIZED, IsMaximized());
 			const wxSize size = GetSize() * GetContentScaleFactor();
 			if (!IsMaximized())
 				ui::setWindowInfo(

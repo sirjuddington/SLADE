@@ -13,12 +13,23 @@ public:
 	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false, bool run_map = false);
 	~RunDialog();
 
+	struct Config
+	{
+		string archive_path;
+		string iwad_path;
+		string map_name;
+		string map_file;
+
+		Config(const string& archive_path) : archive_path{ archive_path } {}
+	};
+
 	void   openGameExe(unsigned index) const;
-	string selectedCommandLine(Archive* archive, string_view map_name, string_view map_file = "") const;
+	string selectedCommandLine(const Config& cfg) const;
 	string selectedResourceList() const;
 	string selectedExeDir() const;
 	string selectedExeId() const;
 	bool   start3dModeChecked() const;
+	void   run(const Config& cfg, i64 archive_db_id = -1) const;
 
 private:
 	wxChoice*               choice_game_exes_  = nullptr;
@@ -35,6 +46,7 @@ private:
 	ResourceArchiveChooser* rac_resources_     = nullptr;
 	wxTextCtrl*             text_extra_params_ = nullptr;
 	wxCheckBox*             cb_start_3d_       = nullptr;
+	wxWindow*               isp_iwad_          = nullptr;
 	bool                    run_map_           = false;
 
 	// Events
