@@ -196,6 +196,9 @@ void mapeditor::openContextMenu()
 	// Set 3d camera
 	SAction::fromId("mapw_camera_set")->addToMenu(&menu_context, true);
 
+	// 3d mode at mouse cursor
+	SAction::fromId("mapw_mode_3d_at_mouse")->addToMenu(&menu_context, true);
+
 	// Run from here
 	SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
 

@@ -54,11 +54,11 @@ int      img_height = 204;
 bool     init_done  = false;
 } // namespace
 
-#ifdef __WXGTK__
-CVAR(Int, splash_refresh_ms, 100, CVar::Flag::Save)
-#else
+//#ifdef __WXGTK__
+//CVAR(Int, splash_refresh_ms, 100, CVar::Flag::Save)
+//#else
 CVAR(Int, splash_refresh_ms, 20, CVar::Flag::Save)
-#endif
+//#endif
 
 
 // -----------------------------------------------------------------------------
@@ -118,7 +118,7 @@ void SplashWindow::setProgress(float progress)
 
 	// Refresh if last redraw was > [splash_refresh_ms] ago
 	if (timer_.Time() >= splash_refresh_ms)
-		forceRedraw();
+		forceRedraw(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -195,13 +195,14 @@ void SplashWindow::hide()
 // -----------------------------------------------------------------------------
 // Forces the splash window to redraw itself
 // -----------------------------------------------------------------------------
-void SplashWindow::forceRedraw()
+void SplashWindow::forceRedraw(bool yield_for_ui)
 {
 	Refresh();
 	Update();
 
 	// Spin the event loop once, to ensure we get our paint events.
-	wxTheApp->SafeYieldFor(nullptr, wxEVT_CATEGORY_UI);
+	if (yield_for_ui)
+		wxTheApp->SafeYieldFor(nullptr, wxEVT_CATEGORY_UI);
 }
 
 

@@ -72,7 +72,7 @@ CVAR(Bool, snd_autoplay, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	EntryPanel(parent, "audio"),
-	timer_seek_{ new wxTimer(this) },
+	timer_seek_{ this },
 	sound_buffer_{ new sf::SoundBuffer() },
 #if (SFML_VERSION_MAJOR > 2)
 	sound_{ new sf::Sound(*sound_buffer_) },
@@ -166,7 +166,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 AudioEntryPanel::~AudioEntryPanel()
 {
 	// Stop the timer to avoid crashes
-	timer_seek_->Stop();
+	timer_seek_.Stop();
 	resetStream();
 }
 
@@ -211,7 +211,7 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	if (snd_autoplay)
 	{
 		startStream();
-		timer_seek_->Start(10);
+		timer_seek_.Start(10);
 	}
 
 	Refresh();
@@ -633,7 +633,7 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 void AudioEntryPanel::onBtnPlay(wxCommandEvent& e)
 {
 	startStream();
-	timer_seek_->Start(10);
+	timer_seek_.Start(10);
 }
 
 // -----------------------------------------------------------------------------
@@ -643,7 +643,7 @@ void AudioEntryPanel::onBtnPause(wxCommandEvent& e)
 {
 	// Stop playing (no reset)
 	stopStream();
-	timer_seek_->Stop();
+	timer_seek_.Stop();
 }
 
 // -----------------------------------------------------------------------------
@@ -653,7 +653,7 @@ void AudioEntryPanel::onBtnStop(wxCommandEvent& e)
 {
 	// Stop playing
 	stopStream();
-	timer_seek_->Stop();
+	timer_seek_.Stop();
 
 	// Reset
 	resetStream();
@@ -737,7 +737,7 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 		|| (audio_type_ == MIDI && !audio::midiPlayer().isPlaying()))
 #endif
 	{
-		timer_seek_->Stop();
+		timer_seek_.Stop();
 		slider_seek_->SetValue(0);
 	}
 }
