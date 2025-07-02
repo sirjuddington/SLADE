@@ -478,6 +478,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	{
 		if (pressed_)
 		{
+			auto click_can_delete = click_can_delete_;
 			if (action_)
 			{
 				if (action_->isRadio())
@@ -489,7 +490,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 			else
 				sendClickedEvent();
 
-			if (click_can_delete_)
+			if (click_can_delete)
 				return;
 
 			pressed_ = false;

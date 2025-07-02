@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/EntryType/EntryType.h"
@@ -60,7 +59,6 @@
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
 #include "UI/UI.h"
-#include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -634,7 +632,7 @@ void app::saveConfigFile()
 	// ReSharper disable CppExpressionWithoutSideEffects
 
 	// Open SLADE.cfg for writing text
-	SFile file(app::path("slade3.cfg", app::Dir::User), SFile::Mode::Write);
+	SFile file(path("slade3.cfg", Dir::User), SFile::Mode::Write);
 
 	// Do nothing if it didn't open correctly
 	if (!file.isOpen())
@@ -713,11 +711,11 @@ void app::exit(bool save_config)
 		// Save colour configuration
 		MemChunk ccfg;
 		colourconfig::writeConfiguration(ccfg);
-		ccfg.exportFile(app::path("colours.cfg", app::Dir::User));
+		ccfg.exportFile(path("colours.cfg", Dir::User));
 
 		// Save game exes
 		SFile f;
-		if (f.open(app::path("executables.cfg", app::Dir::User), SFile::Mode::Write))
+		if (f.open(path("executables.cfg", Dir::User), SFile::Mode::Write))
 			f.writeStr(executables::writeExecutables());
 		f.close();
 
@@ -738,7 +736,7 @@ void app::exit(bool save_config)
 
 	// Clear temp folder
 	std::error_code error;
-	for (auto& item : std::filesystem::directory_iterator{ app::path("", app::Dir::Temp) })
+	for (auto& item : std::filesystem::directory_iterator{ path("", Dir::Temp) })
 	{
 		if (!item.is_regular_file())
 			continue;
@@ -792,7 +790,7 @@ string app::path(string_view filename, Dir dir)
 app::Platform app::platform()
 {
 #ifdef __WXMSW__
-	return Platform::Windows;
+	return Windows;
 #elif __WXGTK__
 	return Platform::Linux;
 #elif __WXOSX__

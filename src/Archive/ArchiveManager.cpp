@@ -116,9 +116,6 @@ bool ArchiveManager::validResDir(string_view dir) const
 // -----------------------------------------------------------------------------
 bool ArchiveManager::init()
 {
-	program_resource_archive_ = std::make_shared<Archive>(ArchiveFormat::Zip);
-	program_resource_archive_->setFilename(app::path("slade.pk3", app::Dir::Executable));
-
 #ifdef __WXOSX__
 	auto resdir = app::path("../Resources", app::Dir::Executable); // Use Resources dir within bundle on mac
 #else
@@ -127,6 +124,8 @@ bool ArchiveManager::init()
 
 	if (fileutil::dirExists(resdir) && validResDir(resdir))
 	{
+		program_resource_archive_ = std::make_shared<Archive>(ArchiveFormat::Dir);
+		program_resource_archive_->setFilename(app::path("slade.pk3", app::Dir::Executable));
 		program_resource_archive_->importDir(resdir);
 		res_archive_open_ = (program_resource_archive_->numEntries() > 0);
 
@@ -136,6 +135,9 @@ bool ArchiveManager::init()
 		program_resource_archive_->setReadOnly();
 		return res_archive_open_;
 	}
+
+	program_resource_archive_ = std::make_shared<Archive>(ArchiveFormat::Zip);
+	program_resource_archive_->setFilename(app::path("slade.pk3", app::Dir::Executable));
 
 	// Find slade3.pk3 directory
 	auto dir_slade_pk3 = app::path("slade.pk3", app::Dir::Resources);
