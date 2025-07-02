@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Args.h"
 #include "General/Defs.h"
@@ -9,7 +9,7 @@ namespace slade
 {
 namespace map
 {
-	enum class ObjectType;
+	enum class ObjectType : u8;
 }
 namespace zscript
 {

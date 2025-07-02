@@ -192,6 +192,14 @@ long SLADEMap::typeLastUpdated(map::ObjectType type) const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the last time any object of [type] was modified in the map
+// -----------------------------------------------------------------------------
+long SLADEMap::typeLastUpdated(map::ObjectType type) const
+{
+	return type_modified_times_[static_cast<int>(type)];
+}
+
+// -----------------------------------------------------------------------------
 // Sets the geometry last updated time to now
 // -----------------------------------------------------------------------------
 void SLADEMap::setGeometryUpdated()

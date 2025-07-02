@@ -1288,9 +1288,10 @@ void Renderer::draw() const
 	dc.drawText(
 		fmt::format("{:1.2f}ms - {} draw calls", static_cast<double>(avg_frame) / 1000.0, draw_calls), { 0.0f, 0.0f });
 
-	// TESTING: Camera info
+	// TESTING: 3d mode misc info
 	if (context_->editMode() == Mode::Visual)
 	{
+		auto y            = 0.0f;
 		dc.text_alignment = draw2d::Align::Right;
 		dc.drawText(
 			fmt::format(
@@ -1306,11 +1307,17 @@ void Renderer::draw() const
 				camera_->upVector().x,
 				camera_->upVector().y,
 				camera_->upVector().z),
-			{ view_->size().x, 0.0f });
+			{ view_->size().x, y });
 
+		y += dc.textLineHeight();
 		dc.drawText(
 			fmt::format("Flats vertex buffer: {}", misc::sizeAsString(renderer_3d_->flatsBufferSize())),
-			{ view_->size().x, dc.textLineHeight() });
+			{ view_->size().x, y });
+
+		y += dc.textLineHeight();
+		dc.drawText(
+			fmt::format("Quads vertex buffer: {}", misc::sizeAsString(renderer_3d_->quadsBufferSize())),
+			{ view_->size().x, y });
 	}
 }
 

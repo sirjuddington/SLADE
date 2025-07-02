@@ -410,10 +410,14 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		skip = context_->input().mouseDown(Input::MouseButton::Left, true);
 	else if (e.RightDown())
 	{
-		lockMouse(true);
-		mouse_looking_ = true;
+		if (context_->editMode() == Mode::Visual)
+		{
+			lockMouse(true);
+			mouse_looking_ = true;
+		}
+		else
+			skip = context_->input().mouseDown(Input::MouseButton::Right);
 	}
-	// skip = context_->input().mouseDown(Input::MouseButton::Right);
 	else if (e.RightDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Right, true);
 	else if (e.MiddleDown())

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "PropsPanelBase.h"
 #include "UI/Controls/STabCtrl.h"
@@ -13,7 +13,7 @@ class MOPGIntWithArgsProperty;
 
 namespace map
 {
-	enum class ObjectType;
+	enum class ObjectType : u8;
 }
 namespace mapeditor
 {

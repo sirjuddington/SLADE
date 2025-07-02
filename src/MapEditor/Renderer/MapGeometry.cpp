@@ -31,17 +31,19 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-
+#include "MapGeometry.h"
 #include "App.h"
 #include "Flat3D.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapGeometry.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/VertexBuffer3D.h"
+#include "Quad3D.h"
+#include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
 #include "Utility/Polygon.h"
 
 using namespace slade;
@@ -53,7 +55,7 @@ namespace slade::mapeditor
 // -----------------------------------------------------------------------------
 // Get texture scaling/offset/rotation info for a sector texture
 // -----------------------------------------------------------------------------
-TexTransformInfo getTextureTransformInfo(const MapSector& sector, bool ceiling, Vec2d tex_scale)
+TexTransformInfo getSectorTextureTransformInfo(const MapSector& sector, bool ceiling, Vec2d tex_scale)
 {
 	using namespace game;
 
@@ -115,7 +117,7 @@ static void generateFlatVertices(
 {
 	auto& sector   = *flat.sector;
 	auto& tex_info = gl::Texture::info(flat.texture);
-	auto  ttf      = getTextureTransformInfo(sector, flat.ceiling, tex.scale);
+	auto  ttf      = getSectorTextureTransformInfo(sector, flat.ceiling, tex.scale);
 
 	if (flat.ceiling)
 	{
@@ -124,7 +126,8 @@ static void generateFlatVertices(
 			vertices.emplace_back(
 				glm::vec3(vertex, sector.ceiling().plane.heightAt(vertex)),
 				polygon::calculateTexCoords(
-					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot));
+					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot),
+				flat.colour);
 		}
 	}
 	else
@@ -135,7 +138,8 @@ static void generateFlatVertices(
 			vertices.emplace_back(
 				glm::vec3(vertex, sector.floor().plane.heightAt(vertex)),
 				polygon::calculateTexCoords(
-					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot));
+					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot),
+				flat.colour);
 		}
 	}
 }
@@ -170,6 +174,27 @@ static Flat3D generateFlat3D(
 	flat.updated_time = app::runTimer();
 
 	return flat;
+}
+
+static void addQuad(
+	vector<gl::Vertex3D>& vertices,
+	const MapLine&        line,
+	const Plane&          plane_top,
+	const Plane&          plane_bottom,
+	const glm::vec4&      colour)
+{
+	auto tl = glm::vec3{ line.x1(), line.y1(), plane_top.heightAt(line.x1(), line.y1()) };
+	auto tr = glm::vec3{ line.x2(), line.y2(), plane_top.heightAt(line.x2(), line.y2()) };
+	auto bl = glm::vec3{ line.x1(), line.y1(), plane_bottom.heightAt(line.x1(), line.y1()) };
+	auto br = glm::vec3{ line.x2(), line.y2(), plane_bottom.heightAt(line.x2(), line.y2()) };
+
+	vertices.emplace_back(tl, glm::vec2{ 0.0f, 0.0f }, colour);
+	vertices.emplace_back(bl, glm::vec2{ 0.0f, 1.0f }, colour);
+	vertices.emplace_back(br, glm::vec2{ 1.0f, 1.0f }, colour);
+
+	vertices.emplace_back(tl, glm::vec2{ 0.0f, 0.0f }, colour);
+	vertices.emplace_back(br, glm::vec2{ 1.0f, 1.0f }, colour);
+	vertices.emplace_back(tr, glm::vec2{ 1.0f, 0.0f }, colour);
 }
 
 // -----------------------------------------------------------------------------
@@ -208,6 +233,42 @@ void updateFlat(Flat3D& flat, vector<gl::Vertex3D>& vertices)
 	generateFlatVertices(flat, texture, vertices);
 
 	flat.updated_time = app::runTimer();
+}
+
+std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine& line, unsigned vertex_index)
+{
+	// Check line is valid
+	if (!line.s1())
+		return { {}, {} };
+
+	vector<Quad3D>       rects;
+	vector<gl::Vertex3D> vertices;
+
+	auto& sector1 = *line.frontSector();
+	auto& sector2 = *line.backSector();
+
+	// One-sided line
+	if (!line.s2())
+	{
+		auto  light   = line.s1()->light() / 255.0f;
+		auto& texture = textureManager().texture(line.s1()->texMiddle(), true);
+
+		// Add quad
+		Quad3D mid;
+		mid.side          = line.s1();
+		mid.colour        = { light, light, light, 1.0f };
+		mid.texture       = texture.gl_id;
+		mid.vertex_offset = vertex_index;
+		rects.push_back(mid);
+
+		// Add quad vertices
+		addQuad(vertices, line, sector1.ceiling().plane, sector1.floor().plane, mid.colour);
+	}
+
+	// Two-sided line
+	else {}
+
+	return { rects, vertices };
 }
 
 } // namespace slade::mapeditor
