@@ -37,7 +37,6 @@
 #include "Archive/ArchiveManager.h"
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
-#include "General/Misc.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
@@ -54,10 +53,10 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
-#include "UI/WxUtils.h"
+#include "UI/State.h"
+#include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
-#include "Utility/Tokenizer.h"
 
 using namespace slade;
 
@@ -69,7 +68,6 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(Bool, show_start_page, true, CVar::Flag::Save);
 CVAR(String, global_palette, "", CVar::Flag::Save);
-CVAR(Bool, mw_maximized, true, CVar::Flag::Save);
 CVAR(Bool, confirm_exit, true, CVar::Flag::Save);
 
 
@@ -116,8 +114,12 @@ MainWindow::MainWindow() : STopWindow("SLADE", "main")
 {
 	custom_menus_begin_ = 2;
 
-	if (mw_maximized)
+	if (ui::getStateBool(ui::MAINWINDOW_MAXIMIZED))
+#ifdef __WXGTK__
 		CallAfter(&MainWindow::Maximize, this);
+#else
+		MainWindow::Maximize();
+#endif
 
 	setupLayout();
 
@@ -137,26 +139,12 @@ MainWindow::~MainWindow()
 // -----------------------------------------------------------------------------
 void MainWindow::loadLayout() const
 {
-	// Open layout file
-	Tokenizer tz;
-	if (!tz.openFile(app::path("mainwindow.layout", app::Dir::User)))
-		return;
+	auto layout = ui::getWindowLayout(id_.c_str());
 
-	// Parse layout
-	while (true)
-	{
-		// Read component+layout pair
-		auto component = tz.getToken();
-		auto layout    = tz.getToken();
-
-		// Load layout to component
-		if (!component.empty() && !layout.empty())
-			aui_mgr_->LoadPaneInfo(wxString::FromUTF8(layout), aui_mgr_->GetPane(wxString::FromUTF8(component)));
-
-		// Check if we're done
-		if (tz.peekToken().empty())
-			break;
-	}
+	for (const auto& component : layout)
+		if (!component.first.empty() && !component.second.empty())
+			aui_mgr_->LoadPaneInfo(
+				wxString::FromUTF8(component.second), aui_mgr_->GetPane(wxString::FromUTF8(component.first)));
 }
 
 // -----------------------------------------------------------------------------
@@ -164,28 +152,14 @@ void MainWindow::loadLayout() const
 // -----------------------------------------------------------------------------
 void MainWindow::saveLayout() const
 {
-	// Open layout file
-	wxFile file(wxString::FromUTF8(app::path("mainwindow.layout", app::Dir::User)), wxFile::write);
+	vector<StringPair> layout;
 
-	// Write component layout
+	layout.emplace_back("console", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("console"))).utf8_string());
+	layout.emplace_back(
+		"archive_manager", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("archive_manager"))).utf8_string());
+	layout.emplace_back("undo_history", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("undo_history"))).utf8_string());
 
-	// Console pane
-	file.Write(wxS("\"console\" "));
-	wxString pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("console")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Archive Manager pane
-	file.Write(wxS("\"archive_manager\" "));
-	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("archive_manager")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Undo History pane
-	file.Write(wxS("\"undo_history\" "));
-	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("undo_history")));
-	file.Write(wxString::Format(wxS("\"%s\"\n"), pinf));
-
-	// Close file
-	file.Close();
+	ui::setWindowLayout(id_.c_str(), layout);
 }
 
 // -----------------------------------------------------------------------------
@@ -449,10 +423,10 @@ bool MainWindow::exitProgram()
 	// Save current layout
 	// main_window_layout = aui_mgr_->SavePerspective();
 	saveLayout();
-	mw_maximized      = IsMaximized();
+	ui::saveStateBool(ui::MAINWINDOW_MAXIMIZED, IsMaximized());
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(
+		ui::setWindowInfo(
 			id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
 
 	// Save selected palette
@@ -693,8 +667,8 @@ void MainWindow::onSize(wxSizeEvent& e)
 	aui_mgr_->Update();
 #endif
 
-	// Update maximized cvar
-	mw_maximized = IsMaximized();
+	// Update maximized state
+	ui::saveStateBool(ui::MAINWINDOW_MAXIMIZED, IsMaximized());
 
 	// Test creation of OpenGL context
 	if (!opengl_test_done && e.GetSize().x > 20 && e.GetSize().y > 20)

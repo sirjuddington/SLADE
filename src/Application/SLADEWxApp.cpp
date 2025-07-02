@@ -35,6 +35,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Database.h"
 #include "General/Console.h"
 #include "General/SAction.h"
 #include "MainEditor/MainEditor.h"
@@ -114,11 +115,11 @@ protected:
 
 		const auto msg_str = msg.utf8_string();
 		if (msg.Lower().Contains(wxS("error")))
-			log::error(wx_prefix + msg_str.substr(msg_str.size() - 10));
+			log::error(wx_prefix + msg_str.substr(10));
 		else if (msg.Lower().Contains(wxS("warning")))
-			log::warning(wx_prefix + msg_str.substr(msg_str.size() - 10));
+			log::warning(wx_prefix + msg_str.substr(10));
 		else
-			log::info(wx_prefix + msg_str.substr(msg_str.size() - 10));
+			log::info(wx_prefix + msg_str.substr(10));
 	}
 
 public:
@@ -519,7 +520,12 @@ int SLADEWxApp::OnExit()
 	delete single_instance_checker_;
 	delete file_listener_;
 
-	return 0;
+	// Close program database
+	// Do this here instead of app::exit() as we want to keep the database
+	// connection open until all windows are closed etc.
+	database::close();
+
+	return wxApp::OnExit();
 }
 
 // -----------------------------------------------------------------------------

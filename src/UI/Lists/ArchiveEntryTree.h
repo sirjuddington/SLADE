@@ -1,7 +1,7 @@
 #pragma once
 
 #include "General/Sigslot.h"
-#include <wx/dataview.h>
+#include "SDataViewCtrl.h"
 
 namespace slade
 {
@@ -84,7 +84,7 @@ namespace ui
 		bool dirIsInList(const ArchiveDir& dir) const;
 	};
 
-	class ArchiveEntryTree : public wxDataViewCtrl
+	class ArchiveEntryTree : public SDataViewCtrl
 	{
 	public:
 		ArchiveEntryTree(
@@ -143,11 +143,8 @@ namespace ui
 		void setupColumns();
 		void saveColumnWidths() const;
 		void updateColumnWidths();
-
-#ifdef __WXMSW__
-		bool lookForSearchEntryFrom(int index_start);
-		bool searchChar(int key_code);
-#endif
+		void saveColumnConfig();
+		void onAnyColumnResized() override;
 	};
 
 } // namespace ui

@@ -32,9 +32,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "STopWindow.h"
-#include "General/Misc.h"
 #include "General/SAction.h"
 #include "SToolBar/SToolBar.h"
+#include "UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -67,14 +67,14 @@ STopWindow::STopWindow(const string& title, const string& id, int x, int y, int 
 
 #ifndef __WXOSX__
 	// Init size/pos
-	auto info = misc::getWindowInfo(id_);
+	auto info = ui::getWindowInfo(id_);
 	if (!info.id.empty())
 	{
 		SetSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		misc::setWindowInfo(id_, width, height, x, y);
+		ui::setWindowInfo(id_, width, height, x, y);
 #endif
 
 	// Init toolbar menu action(s)
@@ -85,15 +85,13 @@ STopWindow::STopWindow(const string& title, const string& id, int x, int y, int 
 
 	// Bind events
 	Bind(wxEVT_MENU, &STopWindow::onMenu, this);
-}
-
-// -----------------------------------------------------------------------------
-// STopWindow class destructor
-// -----------------------------------------------------------------------------
-STopWindow::~STopWindow()
-{
-	if (!wxFrame::IsMaximized() && !wxFrame::IsFullScreen())
-		misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+	Bind(
+		wxEVT_CLOSE_WINDOW,
+		[this](wxCloseEvent&)
+		{
+			if (!wxFrame::IsMaximized() && !wxFrame::IsFullScreen())
+				ui::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		});
 }
 
 // -----------------------------------------------------------------------------

@@ -55,10 +55,6 @@ CVAR(Bool, size_as_string, true, CVar::Flag::Save)
 CVAR(Bool, percent_encoding, false, CVar::Flag::Save)
 EXTERN_CVAR(Float, col_cie_tristim_x)
 EXTERN_CVAR(Float, col_cie_tristim_z)
-namespace slade::misc
-{
-vector<WindowInfo> window_info;
-}
 
 
 // -----------------------------------------------------------------------------
@@ -555,73 +551,4 @@ Vec2i misc::findJaguarTextureDimensions(const ArchiveEntry* entry, string_view n
 	}
 	// We didn't find the texture
 	return dimensions;
-}
-
-// -----------------------------------------------------------------------------
-// Gets the saved window info for [id]
-// -----------------------------------------------------------------------------
-misc::WindowInfo misc::getWindowInfo(string_view id)
-{
-	for (auto& a : window_info)
-	{
-		if (a.id == id)
-			return a;
-	}
-
-	return WindowInfo("", -1, -1, -1, -1);
-}
-
-// -----------------------------------------------------------------------------
-// Sets the saved window info for [id]
-// -----------------------------------------------------------------------------
-void misc::setWindowInfo(string_view id, int width, int height, int left, int top)
-{
-	if (id.empty())
-		return;
-
-	for (auto& a : window_info)
-	{
-		if (a.id == id)
-		{
-			if (width >= -1)
-				a.width = width;
-			if (height >= -1)
-				a.height = height;
-			if (left >= -1)
-				a.left = left;
-			if (top >= -1)
-				a.top = top;
-			return;
-		}
-	}
-
-	window_info.emplace_back(id, width, height, left, top);
-}
-
-// -----------------------------------------------------------------------------
-// Reads saved window info from tokenizer [tz]
-// -----------------------------------------------------------------------------
-void misc::readWindowInfo(Tokenizer& tz)
-{
-	// Read definitions
-	tz.advIf("{");
-	while (!tz.check("}") && !tz.atEnd())
-	{
-		auto id     = tz.current().text;
-		int  width  = tz.next().asInt();
-		int  height = tz.next().asInt();
-		int  left   = tz.next().asInt();
-		int  top    = tz.next().asInt();
-		setWindowInfo(id, width, height, left, top);
-		tz.adv();
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Writes all saved window info to [file]
-// -----------------------------------------------------------------------------
-void misc::writeWindowInfo(SFile& file)
-{
-	for (auto& a : window_info)
-		file.writeStr(fmt::format("\t{} {} {} {} {}\n", a.id, a.width, a.height, a.left, a.top));
 }

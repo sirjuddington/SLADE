@@ -42,6 +42,7 @@
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
 #include "ArchiveManagerPanel.h"
+#include "Database/Tables/ArchiveUIConfig.h"
 #include "EntryPanel/ANSIEntryPanel.h"
 #include "EntryPanel/AudioEntryPanel.h"
 #include "EntryPanel/DataEntryPanel.h"
@@ -81,6 +82,7 @@
 #include "UI/Lists/ArchiveEntryTree.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
@@ -105,8 +107,6 @@ CVAR(Bool, confirm_entry_delete, true, CVar::Flag::Save)
 CVAR(Bool, context_submenus, true, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
 CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
-CVAR(Int, ap_splitter_position_tree, 300, CVar::Flag::Save)
-CVAR(Int, ap_splitter_position_list, 300, CVar::Flag::Save)
 CVAR(Bool, elist_no_tree, false, CVar::Flag::Save)
 
 
@@ -366,10 +366,12 @@ void ArchivePanel::setup(const Archive* archive)
 
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(FromDIP(300));
-	m_hbox->Add(splitter_, ui::LayoutHelper(this).sfWithBorder(1).Expand());
-	int split_pos = FromDIP(ap_splitter_position_list);
-	if (archive && archive->formatInfo().supports_dirs)
-		split_pos = FromDIP(ap_splitter_position_tree);
+	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
+	auto split_pos = database::archiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive));
+	if (split_pos < 0)
+		split_pos = FromDIP(
+			ui::getStateInt(
+				archive->formatInfo().supports_dirs ? ui::ARCHIVEPANEL_SPLIT_POS_TREE : ui::ARCHIVEPANEL_SPLIT_POS_LIST));
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
 	// Update size+layout
@@ -399,10 +401,13 @@ void ArchivePanel::bindEvents(Archive* archive)
 		{
 			if (auto archive = archive_.lock().get())
 			{
+				auto pos = ToDIP(e.GetSashPosition());
 				if (archive->formatInfo().supports_dirs)
-					ap_splitter_position_tree = ToDIP(e.GetSashPosition());
+					ui::saveStateInt(ui::ARCHIVEPANEL_SPLIT_POS_TREE, pos);
 				else
-					ap_splitter_position_list = ToDIP(e.GetSashPosition());
+					ui::saveStateInt(ui::ARCHIVEPANEL_SPLIT_POS_LIST, pos);
+
+				database::saveArchiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive), pos);
 			}
 		});
 
@@ -2579,21 +2584,7 @@ bool ArchivePanel::handleAction(string_view id)
 	{
 		RunDialog dlg(this, archive.get());
 		if (id == "arch_quick_run" || dlg.ShowModal() == wxID_OK)
-		{
-			auto command = dlg.selectedCommandLine(archive.get(), "");
-			if (!command.empty())
-			{
-				// Set working directory
-				auto wd = wxGetCwd();
-				wxSetWorkingDirectory(wxString::FromUTF8(dlg.selectedExeDir()));
-
-				// Run
-				wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC);
-
-				// Restore working directory
-				wxSetWorkingDirectory(wd);
-			}
-		}
+			dlg.run(RunDialog::Config{ archive->filename() }, app::archiveManager().archiveDbId(*archive));
 
 		return true;
 	}

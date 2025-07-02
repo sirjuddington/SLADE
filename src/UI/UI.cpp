@@ -32,10 +32,14 @@
 #include "Main.h"
 #include "UI.h"
 #include "App.h"
+#include "Database/Context.h"
+#include "Database/Statement.h"
+#include "Database/Transaction.h"
 #include "General/Console.h"
-#include "MainEditor/MainEditor.h"
 #include "UI/SplashWindow.h"
+#include "UI/State.h"
 #include "Utility/StringUtils.h"
+#include <SQLiteCpp/Column.h>
 
 using namespace slade;
 
@@ -91,6 +95,9 @@ void ui::init()
 		px_spin_width = 64;
 
 	splash_window->init();
+
+	// Init saved state props
+	initStateProps();
 }
 
 // -----------------------------------------------------------------------------
@@ -270,6 +277,117 @@ int ui::padXLarge(const wxWindow* window)
 int ui::padSmall(const wxWindow* window)
 {
 	return window ? window->FromDIP(px_pad_small) : px_pad_small;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the saved window info for window/dialog [id]
+// -----------------------------------------------------------------------------
+ui::WindowInfo ui::getWindowInfo(string_view id)
+{
+	WindowInfo inf{ {}, 0, 0, 0, 0 };
+
+	try
+	{
+		auto ps = database::context().preparedStatement(
+			"get_window_info", "SELECT left, top, width, height FROM window_info WHERE window_id = ?");
+
+		ps.bind(1, id);
+		if (ps.executeStep())
+		{
+			inf.id     = id;
+			inf.left   = ps.getColumn(0).getInt();
+			inf.top    = ps.getColumn(1).getInt();
+			inf.width  = ps.getColumn(2).getInt();
+			inf.height = ps.getColumn(3).getInt();
+		}
+	}
+	catch (const std::exception& ex)
+	{
+		log::error("Error getting window info for \"{}\": {}", id, ex.what());
+	}
+
+	return inf;
+}
+
+// -----------------------------------------------------------------------------
+// Saves the window info for window/dialog [id]
+// -----------------------------------------------------------------------------
+void ui::setWindowInfo(string_view id, int width, int height, int left, int top)
+{
+	try
+	{
+		auto ps = database::context().preparedStatement(
+			"set_window_info",
+			"REPLACE INTO window_info (window_id, left, top, width, height) "
+			"VALUES (?,?,?,?,?)",
+			true);
+
+		ps.bind(1, id);
+		ps.bind(2, left);
+		ps.bind(3, top);
+		ps.bind(4, width);
+		ps.bind(5, height);
+
+		ps.exec();
+	}
+	catch (const std::exception& ex)
+	{
+		log::error("Error writing window info for \"{}\": {}", id, ex.what());
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns the saved window AUI layout for window [id]
+// -----------------------------------------------------------------------------
+vector<StringPair> ui::getWindowLayout(string_view id)
+{
+	vector<StringPair> layout;
+
+	try
+	{
+		auto ps = database::context().preparedStatement(
+			"get_window_layout", "SELECT component, layout FROM window_layout WHERE window_id = ?");
+
+		ps.bind(1, id);
+
+		while (ps.executeStep())
+			layout.emplace_back(ps.getColumn(0).getString(), ps.getColumn(1).getString());
+	}
+	catch (const std::exception& ex)
+	{
+		log::error("Error getting window layout for \"{}\": {}", id, ex.what());
+	}
+
+	return layout;
+}
+
+// -----------------------------------------------------------------------------
+// Saves the AUI layout for window [id]
+// -----------------------------------------------------------------------------
+void ui::setWindowLayout(string_view id, const vector<StringPair>& layout)
+{
+	try
+	{
+		auto& db          = database::context();
+		auto  transaction = db.beginTransaction(true);
+
+		auto ps = db.preparedStatement("set_window_layout", "REPLACE INTO window_layout VALUES (?, ?, ?)", true);
+
+		ps.bind(1, id);
+		for (const auto& row : layout)
+		{
+			ps.bind(2, row.first);
+			ps.bind(3, row.second);
+			ps.exec();
+			ps.reset();
+		}
+
+		transaction.commit();
+	}
+	catch (const std::exception& ex)
+	{
+		log::error("Error writing window layout for \"{}\": {}", id, ex.what());
+	}
 }
 
 

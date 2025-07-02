@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Game/Game.h"
@@ -42,7 +44,6 @@
 #include "General/Console.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
-#include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
@@ -58,6 +59,7 @@
 #include "TextEditor/TextStyle.h"
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
+#include "UI/State.h"
 #include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -112,7 +114,6 @@ ResourceManager resource_manager;
 
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
 CVAR(String, temp_location_custom, "", CVar::Flag::Save)
-CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 CVAR(Int, win_darkmode, 1, CVar::Flag::Save)
 
 
@@ -309,18 +310,6 @@ void readConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
-		// Read recent files list
-		if (tz.advIf("recent_files", 2))
-		{
-			while (!tz.checkOrEnd("}"))
-			{
-				archive_manager.addRecentFile(tz.current().text);
-				tz.adv();
-			}
-
-			tz.adv(); // Skip ending }
-		}
-
 		// Read keybinds
 		if (tz.advIf("keys", 2))
 			KeyBind::readBinds(tz);
@@ -348,10 +337,6 @@ void readConfigFile()
 
 			tz.adv(); // Skip ending }
 		}
-
-		// Read window size/position info
-		if (tz.advIf("window_info", 2))
-			misc::readWindowInfo(tz);
 
 		// Next token
 		tz.adv();
@@ -441,6 +426,14 @@ ResourceManager& app::resources()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the program resource archive (ie. slade.pk3)
+// -----------------------------------------------------------------------------
+Archive* app::programResource()
+{
+	return archive_manager.programResourceArchive();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the number of ms elapsed since the application was started
 // -----------------------------------------------------------------------------
 long app::runTimer()
@@ -501,6 +494,10 @@ bool app::init(const vector<string>& args)
 			wxICON_ERROR);
 		return false;
 	}
+
+	// Init database
+	if (!database::init())
+		return false;
 
 	// Init SActions
 	SAction::setBaseWxId(26000);
@@ -597,11 +594,11 @@ bool app::init(const vector<string>& args)
 	log::info("SLADE Initialisation OK");
 
 	// Show Setup Wizard if needed
-	if (!setup_wizard_run)
+	if (!ui::getStateBool(ui::SETUP_WIZARD_RUN))
 	{
 		SetupWizardDialog dlg(maineditor::windowWx());
 		dlg.ShowModal();
-		setup_wizard_run = true;
+		ui::saveStateBool(ui::SETUP_WIZARD_RUN, true);
 		maineditor::windowWx()->Update();
 		maineditor::windowWx()->Refresh();
 	}
@@ -658,10 +655,13 @@ void app::saveConfigFile()
 	file.writeStr("}\n");
 
 	// Write recent files list (in reverse to keep proper order when reading back)
+	// This is only here in case the user reverts to a pre-database SLADE version
+	// TODO: Remove this in 3.3.0
 	file.writeStr("\nrecent_files\n{\n");
-	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
+	auto recent_files = database::recentFiles();
+	for (int a = recent_files.size() - 1; a >= 0; a--)
 	{
-		auto path = archive_manager.recentFile(a);
+		auto path = recent_files[a];
 		std::replace(path.begin(), path.end(), '\\', '/');
 		file.writeStr(fmt::format("\t\"{}\"\n", path));
 	}
@@ -679,11 +679,6 @@ void app::saveConfigFile()
 	// Write game exe paths
 	file.writeStr("\nexecutable_paths\n{\n");
 	file.writeStr(executables::writePaths());
-	file.writeStr("}\n");
-
-	// Write window info
-	file.writeStr("\nwindow_info\n{\n");
-	misc::writeWindowInfo(file);
 	file.writeStr("}\n");
 
 	// Close configuration file

@@ -37,11 +37,13 @@
 #include "ArchiveDir.h"
 #include "ArchiveEntry.h"
 #include "ArchiveFormatHandler.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "EntryType/EntryType.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/UI.h"
+#include "Utility/DateTime.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -54,8 +56,32 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Int, base_resource, -1, CVar::Flag::Save)
-CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
 CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Updates/Adds [archive] in/to the database and updates last opened time if
+// requested.
+// -----------------------------------------------------------------------------
+i64 updateArchiveInDatabase(Archive& archive, bool update_last_opened)
+{
+	auto db_id = database::archiveFileId(archive);
+	if (db_id < 0)
+		db_id = database::writeArchiveFile(archive);
+
+	if (update_last_opened)
+		database::setArchiveFileLastOpened(db_id, datetime::now());
+
+	return db_id;
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -194,33 +220,27 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		OpenArchive n_archive;
 		n_archive.archive  = archive;
 		n_archive.resource = true;
+		n_archive.db_id    = -1;
 		open_archives_.push_back(n_archive);
 
 		// Emit archive changed/saved signal when received from the archive
 		archive->signals().modified.connect([this](Archive& archive, bool modified)
 											{ signals_.archive_modified(archiveIndex(&archive), modified); });
-		archive->signals().saved.connect([this](Archive& archive) { signals_.archive_saved(archiveIndex(&archive)); });
+		archive->signals().saved.connect(
+			[this](Archive& archive)
+			{
+				// Update in database
+				if (archive.isOnDisk())
+					setArchiveDbId(archive, database::writeArchiveFile(archive));
+
+				signals_.archive_saved(archiveIndex(&archive));
+			});
 
 		// Announce the addition
 		signals_.archive_added(open_archives_.size() - 1);
 
 		// Add to resource manager
 		app::resources().addArchive(archive.get());
-
-		// ZDoom also loads any WADs found in the root of a PK3 or directory
-		if ((archive->format() == ArchiveFormat::Zip || archive->format() == ArchiveFormat::Dir) && auto_open_wads_root)
-		{
-			for (const auto& entry : archive->rootDir()->entries())
-			{
-				if (entry->type() == EntryType::unknownType())
-					EntryType::detectEntryType(*entry);
-
-				if (entry->type()->id() == "wad")
-					// First true: yes, manage this
-					// Second true: open silently, don't open a tab for it
-					openArchive(entry.get(), true, true);
-			}
-		}
 
 		return true;
 	}
@@ -327,12 +347,17 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// Update in database
+			auto db_id = updateArchiveInDatabase(*new_archive, true);
+			setArchiveDbId(*new_archive, db_id);
+
+			// ZDoom also loads any WADs found in the root of a PK3
+			if (auto_open_wads_root && new_archive->formatId() == "zip")
+				openWadsInRoot(*new_archive);
+
 			// Announce open
 			if (!silent)
 				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(filename);
 		}
 
 		// Return the opened archive
@@ -396,6 +421,10 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// Update in database
+			auto db_id = updateArchiveInDatabase(*new_archive, true);
+			setArchiveDbId(*new_archive, db_id);
+
 			// Announce open
 			if (!silent)
 				signals_.archive_opened(index);
@@ -444,12 +473,17 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// Update in database
+			auto db_id = updateArchiveInDatabase(*new_archive, true);
+			setArchiveDbId(*new_archive, db_id);
+
+			// ZDoom also loads any WADs found in the root of a directory
+			if (auto_open_wads_root)
+				openWadsInRoot(*new_archive);
+
 			// Announce open
 			if (!silent)
 				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(dir);
 		}
 
 		// Return the opened archive
@@ -648,6 +682,34 @@ vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(const Archive* 
 }
 
 // -----------------------------------------------------------------------------
+// Sets [archive]'s database ID to [db_id]
+// (in the ArchiveManager, not the database itself)
+// -----------------------------------------------------------------------------
+void ArchiveManager::setArchiveDbId(const Archive& archive, i64 db_id)
+{
+	for (auto& oa : open_archives_)
+		if (oa.archive.get() == &archive)
+			oa.db_id = db_id;
+}
+
+// -----------------------------------------------------------------------------
+// Opens all wad archives in the root directory of [archive]
+// -----------------------------------------------------------------------------
+void ArchiveManager::openWadsInRoot(const Archive& archive)
+{
+	for (const auto& entry : archive.rootDir()->entries())
+	{
+		if (entry->type() == EntryType::unknownType())
+			EntryType::detectEntryType(*entry);
+
+		if (entry->type()->id() == "wad")
+			// First true: yes, manage this
+			// Second true: open silently, don't open a tab for it
+			openArchive(entry.get(), true, true);
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Returns a string containing the extensions of all supported archive formats,
 // that can be used for wxWidgets file dialogs
 // -----------------------------------------------------------------------------
@@ -806,6 +868,14 @@ string ArchiveManager::getBaseResourcePath(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the currently selected base resource path
+// -----------------------------------------------------------------------------
+string ArchiveManager::currentBaseResourcePath()
+{
+	return getBaseResourcePath(base_resource);
+}
+
+// -----------------------------------------------------------------------------
 // Opens the base resource archive [index]
 // -----------------------------------------------------------------------------
 bool ArchiveManager::openBaseResource(int index)
@@ -842,6 +912,10 @@ bool ArchiveManager::openBaseResource(int index)
 	ui::showSplash(fmt::format("Opening {}...", filename), true, maineditor::windowWx());
 	if (base_resource_archive_->open(filename))
 	{
+		// Update in database
+		auto db_id = updateArchiveInDatabase(*base_resource_archive_, false);
+		setArchiveDbId(*base_resource_archive_, db_id);
+
 		base_resource = index;
 		ui::hideSplash();
 		app::resources().addArchive(base_resource_archive_.get());
@@ -942,94 +1016,6 @@ vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(ArchiveSearchOption
 	}
 
 	return ret;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the recent file path at [index]
-// -----------------------------------------------------------------------------
-string ArchiveManager::recentFile(unsigned index)
-{
-	// Check index
-	if (index >= recent_files_.size())
-		return "";
-
-	return recent_files_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Adds a recent file to the list, if it doesn't exist already
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFile(string_view path)
-{
-	// Check the path is valid
-	if (!(fileutil::fileExists(path) || fileutil::dirExists(path)))
-		return;
-
-	// Replace \ with /
-	auto file_path = string{ path };
-	std::replace(file_path.begin(), file_path.end(), '\\', '/');
-
-	// Check if the file is already in the list
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == file_path)
-		{
-			// Move this file to the top of the list
-			recent_files_.erase(recent_files_.begin() + a);
-			recent_files_.insert(recent_files_.begin(), file_path);
-
-			// Announce
-			signals_.recent_files_changed();
-
-			return;
-		}
-	}
-
-	// Add the file to the top of the list
-	recent_files_.insert(recent_files_.begin(), file_path);
-
-	// Keep it trimmed
-	while (recent_files_.size() > static_cast<unsigned>(max_recent_files))
-		recent_files_.pop_back();
-
-	// Announce
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Adds a list of recent file paths to the recent file list
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFiles(const vector<string>& paths)
-{
-	// Mute annoucements
-	signals_.recent_files_changed.block();
-
-	// Clear existing list
-	recent_files_.clear();
-
-	// Add the files
-	for (const auto& path : paths)
-		addRecentFile(path);
-
-	// Announce
-	signals_.recent_files_changed.unblock();
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Removes the recent file matching [path]
-// -----------------------------------------------------------------------------
-void ArchiveManager::removeRecentFile(string_view path)
-{
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == path)
-		{
-			recent_files_.erase(recent_files_.begin() + a);
-			signals_.recent_files_changed();
-			return;
-		}
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1215,13 +1201,25 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index) const
 // -----------------------------------------------------------------------------
 // Returns true if [entry] exists in the bookmarks list
 // -----------------------------------------------------------------------------
-bool slade::ArchiveManager::isBookmarked(const ArchiveEntry* entry) const
+bool ArchiveManager::isBookmarked(const ArchiveEntry* entry) const
 {
 	for (const auto& bm : bookmarks_)
 		if (bm.lock().get() == entry)
 			return true;
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the database ID of the given [archive], or -1 if it doesn't have one
+// -----------------------------------------------------------------------------
+i64 ArchiveManager::archiveDbId(const Archive& archive) const
+{
+	for (const auto& oa : open_archives_)
+		if (oa.archive.get() == &archive)
+			return oa.db_id;
+
+	return -1;
 }
 
 
