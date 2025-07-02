@@ -2,7 +2,7 @@
 
 namespace slade::map
 {
-enum class ObjectType
+enum class ObjectType : u8
 {
 	Object = 0,
 	Vertex,

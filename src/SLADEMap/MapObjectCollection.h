@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace slade
 {
@@ -9,7 +9,7 @@ class SideList;
 class VertexList;
 namespace map
 {
-	enum class ObjectType;
+	enum class ObjectType : u8;
 }
 
 class MapObjectCollection

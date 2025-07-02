@@ -186,6 +186,14 @@ size_t SLADEMap::nThings() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the last time any object of [type] was modified in the map
+// -----------------------------------------------------------------------------
+long SLADEMap::typeLastUpdated(map::ObjectType type) const
+{
+	return type_modified_times_[static_cast<int>(type)];
+}
+
+// -----------------------------------------------------------------------------
 // Sets the geometry last updated time to now
 // -----------------------------------------------------------------------------
 void SLADEMap::setGeometryUpdated()
@@ -199,6 +207,14 @@ void SLADEMap::setGeometryUpdated()
 void SLADEMap::setThingsUpdated()
 {
 	things_updated_ = app::runTimer();
+}
+
+// -----------------------------------------------------------------------------
+// Sets the last modified time for [type] to now
+// -----------------------------------------------------------------------------
+void SLADEMap::setTypeUpdated(map::ObjectType type)
+{
+	type_modified_times_[static_cast<int>(type)] = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
