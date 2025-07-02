@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Geometry/BBox.h"
 #include "MapObjectCollection.h"
@@ -6,7 +6,7 @@
 
 namespace slade
 {
-class MapSpecials;
+class MapSpecialsNew;
 struct MapDesc;
 enum class MapFormat;
 namespace Game
@@ -36,11 +36,13 @@ public:
 	MapFormat                  currentFormat() const { return current_format_; }
 	long                       geometryUpdated() const { return geometry_updated_; }
 	long                       thingsUpdated() const { return things_updated_; }
+	long                       typeLastUpdated(map::ObjectType type) const;
 	const MapObjectCollection& mapData() const { return data_; }
 	bool                       isOpen() const { return is_open_; }
 
 	void setGeometryUpdated();
 	void setThingsUpdated();
+	void setTypeUpdated(map::ObjectType type);
 
 	// MapObject access
 	MapVertex*        vertex(unsigned index) const;
@@ -65,8 +67,8 @@ public:
 	bool readMap(const MapDesc& map);
 	void clearMap();
 
-	MapSpecials* mapSpecials() const { return map_specials_.get(); }
-	void         recomputeSpecials();
+	MapSpecialsNew& mapSpecials() const { return *map_specials_.get(); }
+	void            recomputeSpecials() const;
 
 	// Map saving
 	bool writeMap(vector<ArchiveEntry*>& map_entries) const;
@@ -149,19 +151,20 @@ public:
 	int  thingTypeUsageCount(int type);
 
 private:
-	MapObjectCollection     data_;
-	string                  udmf_namespace_;
-	PropertyList            udmf_props_;
-	string                  name_;
-	MapFormat               current_format_;
-	long                    opened_time_ = 0;
-	unique_ptr<MapSpecials> map_specials_;
-	bool                    is_open_ = false;
+	MapObjectCollection        data_;
+	string                     udmf_namespace_;
+	PropertyList               udmf_props_;
+	string                     name_;
+	MapFormat                  current_format_;
+	long                       opened_time_ = 0;
+	unique_ptr<MapSpecialsNew> map_specials_;
+	bool                       is_open_ = false;
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
 
-	long geometry_updated_ = 0; // The last time the map geometry was updated
-	long things_updated_   = 0; // The last time the thing list was modified
+	std::array<long, 6> type_modified_times_;  // The last modified time of each object type
+	long                geometry_updated_ = 0; // The last time the map geometry was updated
+	long                things_updated_   = 0; // The last time the thing list was modified
 
 	// Usage counts
 	std::map<int, int> usage_thing_type_;

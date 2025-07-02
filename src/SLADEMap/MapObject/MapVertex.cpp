@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -74,7 +74,7 @@ MapVertex::MapVertex(const Vec2d& pos, const ParseTreeNode* udmf_def) : MapObjec
 // Returns the object point [point].
 // Currently for vertices this is always the vertex position
 // -----------------------------------------------------------------------------
-Vec2d MapVertex::getPoint(Point point)
+Vec2d MapVertex::getPoint(Point point) const
 {
 	return position_;
 }

@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -165,8 +165,9 @@ bool ScriptEditorPanel::openScripts(const ArchiveEntry* script, const ArchiveEnt
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto& map = mapeditor::editContext().map();
-		map.mapSpecials()->processACSScripts(entry_script_.get());
-		map.mapSpecials()->updateTaggedSectors(&map);
+		// TODO: MapSpecials script processing
+		// map.mapSpecials()->processACSScripts(entry_script_.get());
+		// map.mapSpecials()->updateTaggedSectors(&map);
 	}
 
 	// Load script text
@@ -225,8 +226,9 @@ void ScriptEditorPanel::saveScripts() const
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto map = &(mapeditor::editContext().map());
-		map->mapSpecials()->processACSScripts(entry_script_.get());
-		map->mapSpecials()->updateTaggedSectors(map);
+		// TODO: MapSpecials script processing
+		// map->mapSpecials()->processACSScripts(entry_script_.get());
+		// map->mapSpecials()->updateTaggedSectors(map);
 	}
 }
 

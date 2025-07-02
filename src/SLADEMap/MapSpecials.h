@@ -1,9 +1,12 @@
-#pragma once
+﻿#pragma once
 
-#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/Types.h"
 
 namespace slade
 {
+class MapSpecial;
+class PlaneAlignSpecial;
+
 class MapSpecials
 {
 public:
@@ -48,21 +51,20 @@ private:
 
 	vector<TranslucentLine> translucent_lines_;
 
-	void processZDoomSlopes(SLADEMap* map) const;
+	void processZDoomSlopes(SLADEMap* map);
 	void processEternitySlopes(const SLADEMap* map) const;
 	void processSRB2Slopes(const SLADEMap* map) const;
 	void processSRB2FOFs(const SLADEMap* map) const;
 	void processEDGEClassicSlopes(const SLADEMap* map) const;
 
-	template<MapSector::SurfaceType>
-	void applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model_sector) const;
-	template<MapSector::SurfaceType> void   applyLineSlopeThing(SLADEMap* map, MapThing* thing) const;
-	template<MapSector::SurfaceType> void   applySectorTiltThing(SLADEMap* map, MapThing* thing) const;
-	template<MapSector::SurfaceType> void   applyVavoomSlopeThing(SLADEMap* map, MapThing* thing) const;
-	template<MapSector::SurfaceType> double vertexHeight(MapVertex* vertex, MapSector* sector) const;
-	template<MapSector::SurfaceType>
+	template<SectorSurfaceType> void   applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model_sector) const;
+	template<SectorSurfaceType> void   applyLineSlopeThing(SLADEMap* map, MapThing* thing) const;
+	template<SectorSurfaceType> void   applySectorTiltThing(SLADEMap* map, MapThing* thing) const;
+	template<SectorSurfaceType> void   applyVavoomSlopeThing(SLADEMap* map, MapThing* thing) const;
+	template<SectorSurfaceType> double vertexHeight(MapVertex* vertex, MapSector* sector) const;
+	template<SectorSurfaceType>
 	void applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights) const;
-	template<MapSector::SurfaceType>
+	template<SectorSurfaceType>
 	void applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 		const;
 };

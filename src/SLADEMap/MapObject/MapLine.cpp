@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -609,7 +609,7 @@ void MapLine::setArg(unsigned index, int value)
 // Returns the object point [point].
 // Currently for lines this is always the mid point
 // -----------------------------------------------------------------------------
-Vec2d MapLine::getPoint(Point point)
+Vec2d MapLine::getPoint(Point point) const
 {
 	// if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
 	return start() + (end() - start()) * 0.5;

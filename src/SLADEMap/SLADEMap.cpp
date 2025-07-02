@@ -41,6 +41,7 @@
 #include "MapEditor/SectorBuilder.h"
 #include "MapFormat/MapFormatHandler.h"
 #include "MapObject/MapLine.h"
+#include "MapObject/MapSector.h"
 #include "MapObject/MapSide.h"
 #include "MapObject/MapThing.h"
 #include "MapObject/MapVertex.h"
@@ -49,7 +50,7 @@
 #include "MapObjectList/SideList.h"
 #include "MapObjectList/ThingList.h"
 #include "MapObjectList/VertexList.h"
-#include "MapSpecials.h"
+#include "MapSpecialsNew.h"
 #include "Utility/Debuggable.h"
 #include "Utility/MathStuff.h"
 
@@ -75,7 +76,7 @@ static constexpr double MERGE_ARCH_SPLIT_DIST = 0.1;
 // -----------------------------------------------------------------------------
 // SLADEMap class constructor
 // -----------------------------------------------------------------------------
-SLADEMap::SLADEMap() : data_{ this }, current_format_{ MapFormat::Unknown }, map_specials_{ new MapSpecials() }
+SLADEMap::SLADEMap() : data_{ this }, current_format_{ MapFormat::Unknown }, map_specials_{ new MapSpecialsNew(*this) }
 {
 	// Init opened time so it's not random leftover garbage values
 	setOpenedTime();
@@ -185,6 +186,11 @@ size_t SLADEMap::nThings() const
 	return data_.things().size();
 }
 
+long SLADEMap::typeLastUpdated(map::ObjectType type) const
+{
+	return type_modified_times_[static_cast<int>(type)];
+}
+
 // -----------------------------------------------------------------------------
 // Sets the geometry last updated time to now
 // -----------------------------------------------------------------------------
@@ -199,6 +205,14 @@ void SLADEMap::setGeometryUpdated()
 void SLADEMap::setThingsUpdated()
 {
 	things_updated_ = app::runTimer();
+}
+
+// -----------------------------------------------------------------------------
+// Sets the last modified time for [type] to now
+// -----------------------------------------------------------------------------
+void SLADEMap::setTypeUpdated(map::ObjectType type)
+{
+	type_modified_times_[static_cast<int>(type)] = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -267,7 +281,7 @@ bool SLADEMap::readMap(const MapDesc& map)
 // -----------------------------------------------------------------------------
 void SLADEMap::clearMap()
 {
-	map_specials_->reset();
+	// map_specials_->reset();
 
 	// Clear map objects
 	data_.clear();
@@ -592,9 +606,9 @@ void SLADEMap::setOpenedTime()
 // Since this needs to be done anytime the map changes, it's called whenever a
 // map is read, an undo record ends, or an undo/redo is performed.
 // -----------------------------------------------------------------------------
-void SLADEMap::recomputeSpecials()
+void SLADEMap::recomputeSpecials() const
 {
-	map_specials_->processMapSpecials(this);
+	map_specials_->processAllSpecials();
 }
 
 // -----------------------------------------------------------------------------
