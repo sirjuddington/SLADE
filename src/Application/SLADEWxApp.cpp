@@ -520,12 +520,12 @@ int SLADEWxApp::OnExit()
 	delete single_instance_checker_;
 	delete file_listener_;
 
-	// Close program database
-	// Do this here instead of app::exit() as we want to keep the database
+	// Close program database after wx cleanup/exit as we want to keep the database
 	// connection open until all windows are closed etc.
+	auto retcode = wxApp::OnExit();
 	database::close();
 
-	return wxApp::OnExit();
+	return retcode;
 }
 
 // -----------------------------------------------------------------------------
