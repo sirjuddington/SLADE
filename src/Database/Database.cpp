@@ -268,6 +268,8 @@ void database::migrateConfigs()
 {
 #define MIGRATE_CVAR_BOOL(cvar, state) else if (tz.check(#cvar)) ui::saveStateBool(ui::state, tz.peek().asBool())
 #define MIGRATE_CVAR_INT(cvar, state) else if (tz.check(#cvar)) ui::saveStateInt(ui::state, tz.peek().asInt())
+#define MIGRATE_CVAR_INT_DIP(cvar, state) \
+	else if (tz.check(#cvar)) ui::saveStateInt(ui::state, wxWindow::ToDIP(tz.peek().asInt(), nullptr))
 #define MIGRATE_CVAR_STRING(cvar, state) else if (tz.check(#cvar)) ui::saveStateString(ui::state, tz.peek().text)
 
 	// Migrate window layouts from .layout files
@@ -297,11 +299,11 @@ void database::migrateConfigs()
 				MIGRATE_CVAR_BOOL(sm_maximized, SCRIPTMANAGERWINDOW_MAXIMIZED);
 
 				// Entry list column widths
-				MIGRATE_CVAR_INT(elist_colsize_index, ENTRYLIST_INDEX_WIDTH);
-				MIGRATE_CVAR_INT(elist_colsize_size, ENTRYLIST_SIZE_WIDTH);
-				MIGRATE_CVAR_INT(elist_colsize_type, ENTRYLIST_SIZE_WIDTH);
-				MIGRATE_CVAR_INT(elist_colsize_name_list, ENTRYLIST_NAME_WIDTH_LIST);
-				MIGRATE_CVAR_INT(elist_colsize_name_tree, ENTRYLIST_NAME_WIDTH_TREE);
+				MIGRATE_CVAR_INT_DIP(elist_colsize_index, ENTRYLIST_INDEX_WIDTH);
+				MIGRATE_CVAR_INT_DIP(elist_colsize_size, ENTRYLIST_SIZE_WIDTH);
+				MIGRATE_CVAR_INT_DIP(elist_colsize_type, ENTRYLIST_TYPE_WIDTH);
+				MIGRATE_CVAR_INT_DIP(elist_colsize_name_list, ENTRYLIST_NAME_WIDTH_LIST);
+				MIGRATE_CVAR_INT_DIP(elist_colsize_name_tree, ENTRYLIST_NAME_WIDTH_TREE);
 
 				// Entry list column visibility
 				MIGRATE_CVAR_BOOL(elist_colindex_show, ENTRYLIST_INDEX_VISIBLE);
@@ -309,8 +311,8 @@ void database::migrateConfigs()
 				MIGRATE_CVAR_BOOL(elist_coltype_show, ENTRYLIST_TYPE_VISIBLE);
 
 				// Splitter position
-				MIGRATE_CVAR_INT(ap_splitter_position_list, ARCHIVEPANEL_SPLIT_POS_LIST);
-				MIGRATE_CVAR_INT(ap_splitter_position_tree, ARCHIVEPANEL_SPLIT_POS_TREE);
+				MIGRATE_CVAR_INT_DIP(ap_splitter_position_list, ARCHIVEPANEL_SPLIT_POS_LIST);
+				MIGRATE_CVAR_INT_DIP(ap_splitter_position_tree, ARCHIVEPANEL_SPLIT_POS_TREE);
 
 				// Colourize/Tint Dialogs
 				MIGRATE_CVAR_STRING(last_colour, COLOURISEDIALOG_LAST_COLOUR);
@@ -409,6 +411,7 @@ void database::migrateConfigs()
 	}
 #undef MIGRATE_CVAR_BOOL
 #undef MIGRATE_CVAR_INT
+#undef MIGRATE_CVAR_INT_DIP
 #undef MIGRATE_CVAR_STRING
 }
 
