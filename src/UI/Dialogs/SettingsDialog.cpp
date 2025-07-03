@@ -177,6 +177,7 @@ SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 	SetMinSize(
 		{ sections_panel->GetBestSize().x + min_width + FromDIP(100),
 		  min_height + button_sizer->CalcMin().y + title_panel->GetBestSize().y + FromDIP(100) });
+	CenterOnParent();
 }
 
 // -----------------------------------------------------------------------------

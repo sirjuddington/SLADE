@@ -200,14 +200,14 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	auto lh = ui::LayoutHelper(this);
 
 	// Init size/pos
-	auto info = ui::getWindowInfo("browser");
+	auto info = ui::getWindowInfo(this, "browser");
 	if (!info.id.empty())
 	{
 		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		ui::setWindowInfo("browser", FromDIP(768), FromDIP(600), 0, 0);
+		ui::setWindowInfo(this, "browser", FromDIP(768), FromDIP(600), 0, 0);
 
 	// Init variables
 	items_root_ = new BrowserTreeNode();
@@ -305,7 +305,8 @@ BrowserWindow::~BrowserWindow()
 	ui::saveStateBool(ui::BROWSERWINDOW_MAXIMIZED, wxTopLevelWindow::IsMaximized());
 	const wxSize ClientSize = GetClientSize() * scale;
 	if (!wxTopLevelWindow::IsMaximized())
-		ui::setWindowInfo("browser", ClientSize.x, ClientSize.y, GetPosition().x * scale, GetPosition().y * scale);
+		ui::setWindowInfo(
+			this, "browser", ClientSize.x, ClientSize.y, GetPosition().x * scale, GetPosition().y * scale);
 }
 
 // -----------------------------------------------------------------------------

@@ -55,8 +55,8 @@ struct WindowInfo
 	string id;
 	int    left, top, width, height;
 };
-WindowInfo         getWindowInfo(string_view id);
-void               setWindowInfo(string_view id, int width, int height, int left, int top);
+WindowInfo         getWindowInfo(const wxWindow* window, string_view id);
+void               setWindowInfo(const wxWindow* window, string_view id, int width, int height, int left, int top);
 vector<StringPair> getWindowLayout(string_view id);
 void               setWindowLayout(string_view id, const vector<StringPair>& layout);
 

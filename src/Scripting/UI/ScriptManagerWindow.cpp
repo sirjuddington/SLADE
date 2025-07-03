@@ -448,14 +448,9 @@ void ScriptManagerWindow::bindEvents()
 			// Save Layout
 			saveLayout();
 			ui::saveStateBool(ui::SCRIPTMANAGERWINDOW_MAXIMIZED, IsMaximized());
-			const wxSize size = GetSize() * GetContentScaleFactor();
+			const wxSize size = GetSize();
 			if (!IsMaximized())
-				ui::setWindowInfo(
-					id_,
-					size.x,
-					size.y,
-					GetPosition().x * GetContentScaleFactor(),
-					GetPosition().y * GetContentScaleFactor());
+				ui::setWindowInfo(this, id_, size.x, size.y, GetPosition().x, GetPosition().y);
 
 			// Hide
 			Show(false);

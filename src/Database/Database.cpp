@@ -345,11 +345,11 @@ void database::migrateConfigs()
 			while (!tz.check("}") && !tz.atEnd())
 			{
 				auto id     = tz.current().text;
-				int  width  = tz.next().asInt();
-				int  height = tz.next().asInt();
-				int  left   = tz.next().asInt();
-				int  top    = tz.next().asInt();
-				ui::setWindowInfo(id.c_str(), width, height, left, top);
+				int  width  = wxWindow::ToDIP(tz.next().asInt(), nullptr);
+				int  height = wxWindow::ToDIP(tz.next().asInt(), nullptr);
+				int  left   = wxWindow::ToDIP(tz.next().asInt(), nullptr);
+				int  top    = wxWindow::ToDIP(tz.next().asInt(), nullptr);
+				ui::setWindowInfo(nullptr, id.c_str(), width, height, left, top);
 				tz.adv();
 			}
 		}

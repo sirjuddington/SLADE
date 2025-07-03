@@ -424,10 +424,9 @@ bool MainWindow::exitProgram()
 	// main_window_layout = aui_mgr_->SavePerspective();
 	saveLayout();
 	ui::saveStateBool(ui::MAINWINDOW_MAXIMIZED, IsMaximized());
-	const wxSize size = GetSize() * GetContentScaleFactor();
+	const wxSize size = GetSize();
 	if (!IsMaximized())
-		ui::setWindowInfo(
-			id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
+		ui::setWindowInfo(this, id_, size.x, size.y, GetPosition().x, GetPosition().y);
 
 	// Save selected palette
 	global_palette = palette_chooser_->GetStringSelection().utf8_string();

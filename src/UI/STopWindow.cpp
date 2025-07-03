@@ -67,14 +67,14 @@ STopWindow::STopWindow(const string& title, const string& id, int x, int y, int 
 
 #ifndef __WXOSX__
 	// Init size/pos
-	auto info = ui::getWindowInfo(id_);
+	auto info = ui::getWindowInfo(this, id_);
 	if (!info.id.empty())
 	{
 		SetSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		ui::setWindowInfo(id_, width, height, x, y);
+		ui::setWindowInfo(this, id_, width, height, x, y);
 #endif
 
 	// Init toolbar menu action(s)
@@ -90,7 +90,7 @@ STopWindow::STopWindow(const string& title, const string& id, int x, int y, int 
 		[this](wxCloseEvent&)
 		{
 			if (!wxFrame::IsMaximized() && !wxFrame::IsFullScreen())
-				ui::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+				ui::setWindowInfo(this, id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 		});
 }
 

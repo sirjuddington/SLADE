@@ -104,7 +104,7 @@ void ScriptSettingsPanel::applySettings()
 	auto   lib_paths = list_inc_paths_->GetStrings();
 	for (const auto& lib_path : lib_paths)
 		paths_string += lib_path.utf8_string() + ";";
-	if (paths_string.back() == ';')
+	if (!paths_string.empty() && paths_string.back() == ';')
 		paths_string.pop_back();
 
 	path_acc      = flp_acc_path_->location();

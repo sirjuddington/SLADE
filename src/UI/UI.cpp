@@ -282,7 +282,7 @@ int ui::padSmall(const wxWindow* window)
 // -----------------------------------------------------------------------------
 // Returns the saved window info for window/dialog [id]
 // -----------------------------------------------------------------------------
-ui::WindowInfo ui::getWindowInfo(string_view id)
+ui::WindowInfo ui::getWindowInfo(const wxWindow* window, string_view id)
 {
 	WindowInfo inf{ {}, 0, 0, 0, 0 };
 
@@ -295,10 +295,10 @@ ui::WindowInfo ui::getWindowInfo(string_view id)
 		if (ps.executeStep())
 		{
 			inf.id     = id;
-			inf.left   = ps.getColumn(0).getInt();
-			inf.top    = ps.getColumn(1).getInt();
-			inf.width  = ps.getColumn(2).getInt();
-			inf.height = ps.getColumn(3).getInt();
+			inf.left   = wxWindow::FromDIP(ps.getColumn(0).getInt(), window);
+			inf.top    = wxWindow::FromDIP(ps.getColumn(1).getInt(), window);
+			inf.width  = wxWindow::FromDIP(ps.getColumn(2).getInt(), window);
+			inf.height = wxWindow::FromDIP(ps.getColumn(3).getInt(), window);
 		}
 	}
 	catch (const std::exception& ex)
@@ -312,7 +312,7 @@ ui::WindowInfo ui::getWindowInfo(string_view id)
 // -----------------------------------------------------------------------------
 // Saves the window info for window/dialog [id]
 // -----------------------------------------------------------------------------
-void ui::setWindowInfo(string_view id, int width, int height, int left, int top)
+void ui::setWindowInfo(const wxWindow* window, string_view id, int width, int height, int left, int top)
 {
 	try
 	{
@@ -323,10 +323,10 @@ void ui::setWindowInfo(string_view id, int width, int height, int left, int top)
 			true);
 
 		ps.bind(1, id);
-		ps.bind(2, left);
-		ps.bind(3, top);
-		ps.bind(4, width);
-		ps.bind(5, height);
+		ps.bind(2, wxWindow::ToDIP(left, window));
+		ps.bind(3, wxWindow::ToDIP(top, window));
+		ps.bind(4, wxWindow::ToDIP(width, window));
+		ps.bind(5, wxWindow::ToDIP(height, window));
 
 		ps.exec();
 	}
