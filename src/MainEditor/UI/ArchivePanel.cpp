@@ -367,11 +367,12 @@ void ArchivePanel::setup(const Archive* archive)
 	// Setup splitter
 	splitter_->SetMinimumPaneSize(FromDIP(300));
 	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	auto split_pos = database::archiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive));
+	auto split_pos = FromDIP(database::archiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive)));
 	if (split_pos < 0)
 		split_pos = FromDIP(
 			ui::getStateInt(
-				archive->formatInfo().supports_dirs ? ui::ARCHIVEPANEL_SPLIT_POS_TREE : ui::ARCHIVEPANEL_SPLIT_POS_LIST));
+				archive->formatInfo().supports_dirs ? ui::ARCHIVEPANEL_SPLIT_POS_TREE
+													: ui::ARCHIVEPANEL_SPLIT_POS_LIST));
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
 	// Update size+layout
