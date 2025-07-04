@@ -183,10 +183,7 @@ void MainWindow::setupLayout()
 	stc_tabs_ = new STabCtrl(this, true, true, tabs_condensed ? 27 : 31, true, true);
 
 	// Setup panel info & add panel
-	p_inf.CenterPane();
-	p_inf.Name(wxS("editor_area"));
-	p_inf.PaneBorder(false);
-	aui_mgr_->AddPane(stc_tabs_, p_inf);
+	aui_mgr_->AddPane(stc_tabs_, wxAuiPaneInfo().CenterPane().Name(wxS("editor_area")).PaneBorder(false));
 
 	// Create Start Page
 	if (show_start_page)
@@ -197,43 +194,52 @@ void MainWindow::setupLayout()
 	auto panel_console = new ConsolePanel(this, -1);
 
 	// Setup panel info & add panel
-	p_inf.DefaultPane();
-	p_inf.Float();
-	p_inf.FloatingSize(FromDIP(wxSize(600, 400)));
-	p_inf.FloatingPosition(FromDIP(wxPoint(100, 100)));
-	p_inf.MinSize(FromDIP(wxSize(-1, 192)));
-	p_inf.Show(false);
-	p_inf.Caption(wxS("Console"));
-	p_inf.Name(wxS("console"));
-	aui_mgr_->AddPane(panel_console, p_inf);
+	aui_mgr_->AddPane(
+		panel_console,
+		wxAuiPaneInfo()
+			.DefaultPane()
+			.Bottom()
+			.FloatingSize(FromDIP(wxSize(600, 400)))
+			.FloatingPosition(FromDIP(wxPoint(100, 100)))
+			.MinSize(FromDIP(wxSize(-1, 192)))
+			.Show(false)
+			.Caption(wxS("Console"))
+			.Name(wxS("console")));
 
 
 	// -- Archive Manager Panel --
 	panel_archivemanager_ = new ArchiveManagerPanel(this, stc_tabs_);
 
 	// Setup panel info & add panel
-	p_inf.DefaultPane();
-	p_inf.Left();
-	p_inf.BestSize(FromDIP(wxSize(192, 480)));
-	p_inf.Caption(wxS("Archive Manager"));
-	p_inf.Name(wxS("archive_manager"));
-	p_inf.Show(true);
-	p_inf.Dock();
-	aui_mgr_->AddPane(panel_archivemanager_, p_inf);
-
+	aui_mgr_->AddPane(
+		panel_archivemanager_,
+		wxAuiPaneInfo()
+			.DefaultPane()
+			.Right()
+			.Row(0)
+			.Position(0)
+			.BestSize(FromDIP(wxSize(240, 480)))
+			.Caption(wxS("Archive Manager"))
+			.Name(wxS("archive_manager"))
+			.Show(true)
+			.Dock());
 
 	// -- Undo History Panel --
 	panel_undo_history_ = new UndoManagerHistoryPanel(this, nullptr);
 
 	// Setup panel info & add panel
-	p_inf.DefaultPane();
-	p_inf.Right();
-	p_inf.BestSize(FromDIP(wxSize(128, 480)));
-	p_inf.Caption(wxS("Undo History"));
-	p_inf.Name(wxS("undo_history"));
-	p_inf.Show(false);
-	p_inf.Dock();
-	aui_mgr_->AddPane(panel_undo_history_, p_inf);
+	aui_mgr_->AddPane(
+		panel_undo_history_,
+		wxAuiPaneInfo()
+			.DefaultPane()
+			.Right()
+			.Row(0)
+			.Position(1)
+			.BestSize(FromDIP(wxSize(128, 480)))
+			.Caption(wxS("Undo History"))
+			.Name(wxS("undo_history"))
+			.Show(false)
+			.Dock());
 
 
 	// -- Menu bar --
