@@ -96,10 +96,10 @@ public:
 	static void     releaseAll();
 	static void     pressBind(string_view name);
 
-	static void   initBinds();
-	static string writeBinds();
-	static bool   readBinds(Tokenizer& tz);
-	static void   updateSortedBindsList();
+	static void initBinds();
+	static void saveBinds();
+	static bool readOldBinds(Tokenizer& tz);
+	static void updateSortedBindsList();
 
 private:
 	string           name_;

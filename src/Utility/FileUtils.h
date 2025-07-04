@@ -39,6 +39,7 @@ public:
 	unsigned currentPos() const override;
 	unsigned length() const { return handle_ ? stat_.st_size : 0; }
 	unsigned size() const override { return handle_ ? stat_.st_size : 0; }
+	FILE*    handle() const { return handle_; }
 
 	bool open(const string& path, Mode mode = Mode::ReadOnly);
 	void close();

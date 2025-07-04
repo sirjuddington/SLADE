@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "Utility/StringUtils.h"
 #include <fmt/format.h>
+#include <nlohmann/json.hpp>
 
 using namespace slade;
 
@@ -148,60 +149,26 @@ void CVar::putList(vector<string>& list)
 }
 
 // -----------------------------------------------------------------------------
-// Saves cvars to a config file
+// Writes all CVars to the given [json] object
 // -----------------------------------------------------------------------------
-string CVar::writeAll()
+void CVar::writeAll(nlohmann::json& json)
 {
-	vector<CVar*> all_cvars;
-	for (unsigned i = 0; i < n_cvars; ++i)
-		all_cvars.push_back(cvars[i]);
-
-	std::sort(
-		all_cvars.begin(),
-		all_cvars.end(),
-		[](const CVar* left, const CVar* right) { return left->name < right->name; });
-
-	uint32_t max_size = 0;
-	for (auto* cvar : all_cvars)
+	for (auto i = 0; i < n_cvars; ++i)
 	{
-		if (cvar->name.size() > max_size)
-			max_size = cvar->name.size();
-	}
+		auto cvar = cvars[i];
 
-	fmt::memory_buffer mem_buf;
-	auto               buf = fmt::appender(mem_buf);
-	format_to(buf, "cvars\n{{\n");
-
-	for (auto* cvar : all_cvars)
-	{
 		if (cvar->flags & Flag::Save)
 		{
-			format_to(buf, "\t{} ", cvar->name);
-
-			int spaces = max_size - cvar->name.size();
-			for (int a = 0; a < spaces; a++)
-				mem_buf.push_back(' ');
-
-			if (cvar->type == Type::Integer)
-				format_to(buf, "{}\n", cvar->getValue().Int);
-
-			if (cvar->type == Type::Boolean)
-				format_to(buf, "{}\n", cvar->getValue().Bool);
-
-			if (cvar->type == Type::Float)
-				format_to(buf, "{:1.5f}\n", cvar->getValue().Float);
-
-			if (cvar->type == Type::String)
+			switch (cvar->type)
 			{
-				auto value = strutil::escapedString(dynamic_cast<CStringCVar*>(cvar)->value, true);
-				format_to(buf, "\"{}\"\n", value);
+			case Type::Integer: json[cvar->name] = cvar->getValue().Int; break;
+			case Type::Boolean: json[cvar->name] = cvar->getValue().Bool; break;
+			case Type::Float:   json[cvar->name] = cvar->getValue().Float; break;
+			case Type::String:  json[cvar->name] = dynamic_cast<CStringCVar*>(cvar)->value; break;
+			default:            break;
 			}
 		}
 	}
-
-	format_to(buf, "}}\n\n");
-
-	return to_string(mem_buf);
 }
 
 // -----------------------------------------------------------------------------

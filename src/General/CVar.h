@@ -47,10 +47,10 @@ struct CVar
 	}
 
 	// Static functions
-	static string writeAll();
-	static void   set(const string& cvar_name, const string& value);
-	static CVar*  get(const string& cvar_name);
-	static void   putList(vector<string>& list);
+	static void  writeAll(nlohmann::json& json);
+	static void  set(const string& cvar_name, const string& value);
+	static CVar* get(const string& cvar_name);
+	static void  putList(vector<string>& list);
 };
 
 struct CIntCVar : CVar

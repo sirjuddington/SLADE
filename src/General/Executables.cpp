@@ -38,6 +38,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
+#include <nlohmann/json.hpp>
 
 using namespace slade;
 
@@ -102,16 +103,12 @@ void executables::setGameExePath(string_view id, string_view path)
 }
 
 // -----------------------------------------------------------------------------
-// Writes all game executable paths as a string (for slade3.cfg)
+// Writes all game executable paths to json object [j]
 // -----------------------------------------------------------------------------
-string executables::writePaths()
+void executables::writePaths(nlohmann::json& j)
 {
-	string ret;
-
 	for (auto& exe : game_exes)
-		ret += fmt::format("\t{} \"{}\"\n", exe.id, strutil::escapedString(exe.path, true));
-
-	return ret;
+		j["executable_paths"][exe.id] = strutil::escapedString(exe.path, true);
 }
 
 // -----------------------------------------------------------------------------

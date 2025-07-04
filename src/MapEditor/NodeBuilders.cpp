@@ -39,6 +39,7 @@
 #include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
+#include <nlohmann/json.hpp>
 
 using namespace slade;
 
@@ -140,18 +141,16 @@ void nodebuilders::addBuilderPath(string_view builder, string_view path)
 }
 
 // -----------------------------------------------------------------------------
-// Writes builder paths to [file]
+// Writes builder paths to [json]
 // -----------------------------------------------------------------------------
-void nodebuilders::saveBuilderPaths(SFile& file)
+void nodebuilders::writeBuilderPaths(nlohmann::json& json)
 {
-	file.writeStr("nodebuilder_paths\n{\n");
 	for (auto& builder : builders)
 	{
 		auto path = builder.path;
 		std::replace(path.begin(), path.end(), '\\', '/');
-		file.writeStr(fmt::format("\t{} \"{}\"\n", builder.id, path));
+		json["nodebuilder_paths"][builder.id] = path;
 	}
-	file.writeStr("}\n");
 }
 
 // -----------------------------------------------------------------------------

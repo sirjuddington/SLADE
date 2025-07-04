@@ -15,7 +15,7 @@ struct Builder
 
 void     init();
 void     addBuilderPath(string_view builder, string_view path);
-void     saveBuilderPaths(SFile& file);
+void     writeBuilderPaths(nlohmann::json& json);
 unsigned nNodeBuilders();
 Builder& builder(string_view id);
 Builder& builder(unsigned index);

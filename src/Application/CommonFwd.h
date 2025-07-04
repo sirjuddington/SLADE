@@ -25,3 +25,6 @@ class SLADEMap;
 class ParseTreeNode;
 struct ColRGBA;
 } // namespace slade
+
+// nlohmann::json
+#include <nlohmann/json_fwd.hpp>

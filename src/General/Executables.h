@@ -30,7 +30,7 @@ namespace executables
 		string path;
 	};
 
-	string writePaths();
+	void   writePaths(nlohmann::json& j);
 	string writeExecutables();
 	void   init();
 	void   parse(const Parser* p, bool custom);

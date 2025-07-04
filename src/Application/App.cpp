@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -33,10 +33,9 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Database/Database.h"
-#include "Database/Tables/ArchiveFile.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/EntryType/EntryType.h"
+#include "Database/Database.h"
 #include "Game/Game.h"
 #include "Game/SpecialPreset.h"
 #include "General/Clipboard.h"
@@ -66,6 +65,7 @@
 #include "Utility/Tokenizer.h"
 #include <dumb.h>
 #include <filesystem>
+#include <nlohmann/json.hpp>
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
 #endif
@@ -265,11 +265,10 @@ bool initDirectories()
 }
 
 // -----------------------------------------------------------------------------
-// Reads and parses the SLADE configuration file
+// Reads the pre-3.3.0 configuration file (slade3.cfg), for migration purposes
 // -----------------------------------------------------------------------------
-void readConfigFile()
+void readOldConfigFile()
 {
-	// Open SLADE.cfg
 	Tokenizer tz;
 	if (!tz.openFile(path("slade3.cfg", Dir::User)))
 		return;
@@ -312,7 +311,7 @@ void readConfigFile()
 
 		// Read keybinds
 		if (tz.advIf("keys", 2))
-			KeyBind::readBinds(tz);
+			KeyBind::readOldBinds(tz);
 
 		// Read nodebuilder paths
 		if (tz.advIf("nodebuilder_paths", 2))
@@ -341,6 +340,52 @@ void readConfigFile()
 		// Next token
 		tz.adv();
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads and parses the SLADE configuration file
+// -----------------------------------------------------------------------------
+void readConfigFile()
+{
+	using namespace nlohmann;
+
+	// Open config JSON file
+	SFile file(path("config.json", Dir::User));
+	if (!file.isOpen())
+	{
+		// If it doesn't exist, try reading the old pre-3.3.0 config file
+		readOldConfigFile();
+		return;
+	}
+
+	auto j = json::parse(file.handle());
+
+	// CVars
+	if (j.contains("cvars"))
+	{
+		for (auto& [key, value] : j["cvars"].items())
+		{
+			if (value.is_string())
+				CVar::set(key, value);
+			else
+				CVar::set(key, to_string(value));
+		}
+	}
+
+	// Base resource archive paths
+	if (j.contains("base_resource_paths"))
+		for (const auto& path : j["base_resource_paths"])
+			archive_manager.addBaseResourcePath(path);
+
+	// Nodebuilder paths
+	if (j.contains("nodebuilder_paths"))
+		for (auto& [builder, path] : j["nodebuilder_paths"].items())
+			nodebuilders::addBuilderPath(builder, path);
+
+	// Game executable paths
+	if (j.contains("executable_paths"))
+		for (const auto& [exe, path] : j["executable_paths"].items())
+			executables::setGameExePath(exe, path);
 }
 
 // -----------------------------------------------------------------------------
@@ -626,65 +671,34 @@ bool app::init(const vector<string>& args)
 // -----------------------------------------------------------------------------
 void app::saveConfigFile()
 {
-	// ReSharper disable CppExpressionWithoutSideEffects
-
-	// Open SLADE.cfg for writing text
-	SFile file(path("slade3.cfg", Dir::User), SFile::Mode::Write);
-
-	// Do nothing if it didn't open correctly
-	if (!file.isOpen())
+	// Open config file for writing
+	SFile config_json(path("config.json", Dir::User), SFile::Mode::Write);
+	if (!config_json.isOpen())
 		return;
 
-	// Write cfg header
-	file.writeStr("/*****************************************************\n");
-	file.writeStr(" * SLADE Configuration File\n");
-	file.writeStr(" * Don't edit this unless you know what you're doing\n");
-	file.writeStr(" *****************************************************/\n\n");
+	// Build JSON object
+	nlohmann::json json;
 
-	// Write cvars
-	file.writeStr(CVar::writeAll());
+	// CVars
+	CVar::writeAll(json["cvars"]);
 
-	// Write base resource archive paths
-	file.writeStr("\nbase_resource_paths\n{\n");
+	// Base resource archive paths
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
 		auto path = archive_manager.getBaseResourcePath(a);
 		std::replace(path.begin(), path.end(), '\\', '/');
-		file.writeStr(fmt::format("\t\"{}\"\n", path));
+		json["base_resource_paths"].push_back(path);
 	}
-	file.writeStr("}\n");
 
-	// Write recent files list (in reverse to keep proper order when reading back)
-	// This is only here in case the user reverts to a pre-database SLADE version
-	// TODO: Remove this in 3.3.0
-	file.writeStr("\nrecent_files\n{\n");
-	auto recent_files = database::recentFiles();
-	for (int a = recent_files.size() - 1; a >= 0; a--)
-	{
-		auto path = recent_files[a];
-		std::replace(path.begin(), path.end(), '\\', '/');
-		file.writeStr(fmt::format("\t\"{}\"\n", path));
-	}
-	file.writeStr("}\n");
+	// Nodebuilder paths
+	nodebuilders::writeBuilderPaths(json);
 
-	// Write keybinds
-	file.writeStr("\nkeys\n{\n");
-	file.writeStr(KeyBind::writeBinds());
-	file.writeStr("}\n");
+	// Game exe paths
+	executables::writePaths(json);
 
-	// Write nodebuilder paths
-	file.writeStr("\n");
-	nodebuilders::saveBuilderPaths(file);
 
-	// Write game exe paths
-	file.writeStr("\nexecutable_paths\n{\n");
-	file.writeStr(executables::writePaths());
-	file.writeStr("}\n");
-
-	// Close configuration file
-	file.writeStr("\n// End Configuration File\n\n");
-
-	// ReSharper enable CppExpressionWithoutSideEffects
+	// Write JSON to file
+	config_json.writeStr(json.dump(2));
 }
 
 // -----------------------------------------------------------------------------
@@ -699,6 +713,9 @@ void app::exit(bool save_config)
 	{
 		// Save configuration
 		saveConfigFile();
+
+		// Save keybinds
+		KeyBind::saveBinds();
 
 		// Save text style configuration
 		StyleSet::saveCurrent();

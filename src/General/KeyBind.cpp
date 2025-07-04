@@ -31,8 +31,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "KeyBind.h"
+#include "App.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+#include <nlohmann/json.hpp>
 
 using namespace slade;
 
@@ -49,6 +52,48 @@ vector<KeyBind>         keybinds_sorted;
 KeyBind                 kb_none("-none-");
 vector<KeyBindHandler*> kb_handlers;
 } // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade
+{
+// -----------------------------------------------------------------------------
+// Converts a Keypress struct to a JSON object
+// -----------------------------------------------------------------------------
+void to_json(nlohmann::json& j, const Keypress& kp)
+{
+	j = nlohmann::json{ { "key", kp.key } };
+	if (kp.alt)
+		j["alt"] = true;
+	if (kp.ctrl)
+		j["ctrl"] = true;
+	if (kp.shift)
+		j["shift"] = true;
+}
+
+// -----------------------------------------------------------------------------
+// Converts a JSON object to a Keypress struct
+// -----------------------------------------------------------------------------
+void from_json(const nlohmann::json& j, Keypress& kp)
+{
+	j.at("key").get_to(kp.key);
+	kp.alt   = j.value("alt", false);
+	kp.ctrl  = j.value("ctrl", false);
+	kp.shift = j.value("shift", false);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the path to the keybinds config JSON file
+// -----------------------------------------------------------------------------
+string keybindConfigPath()
+{
+	return app::path("keybinds.json", app::Dir::User);
+}
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -750,65 +795,55 @@ void KeyBind::initBinds()
 			keybind.defaults_.push_back(keybind.keys_[k]);
 	}
 
-	// Create sorted list
-	keybinds_sorted = keybinds;
-	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
+	// Load keybind user configuration
+	SFile file(keybindConfigPath());
+	if (file.isOpen())
+	{
+		auto j = nlohmann::json::parse(file.handle());
+
+		for (auto& [name, keys] : j.items())
+		{
+			// Clear any current binds for the key
+			bind(name).keys_.clear();
+
+			// Add keybinds
+			for (auto& kb : keys)
+				addBind(name, kb);
+		}
+	}
+
+	updateSortedBindsList();
 }
 
 // -----------------------------------------------------------------------------
-// Writes all keybind definitions as a string
+// Saves all keybind definitions to keybinds.json in the user config directory
+// TODO: Only save non-default keybinds
 // -----------------------------------------------------------------------------
-string KeyBind::writeBinds()
+void KeyBind::saveBinds()
 {
-	// Init string
-	string ret;
+	using namespace nlohmann;
 
-	// Go through all keybinds
+	SFile file(keybindConfigPath(), SFile::Mode::Write);
+
+	json j;
 	for (auto& kb : keybinds)
 	{
-		// Add keybind line
-		ret += "\t";
-		ret += kb.name_;
+		auto kb_json = json::array();
 
-		// 'unbound' indicates no binds
-		if (kb.keys_.empty())
-			ret += " unbound";
+		for (auto& key : kb.keys_)
+			kb_json.push_back(key);
 
-		// Go through all bound keys
-		for (unsigned a = 0; a < kb.keys_.size(); a++)
-		{
-			auto& kp = kb.keys_[a];
-			ret += " \"";
-
-			// Add modifiers (if any)
-			if (kp.alt)
-				ret += "a";
-			if (kp.ctrl)
-				ret += "c";
-			if (kp.shift)
-				ret += "s";
-			if (kp.alt || kp.ctrl || kp.shift)
-				ret += "|";
-
-			// Add key
-			ret += kp.key;
-			ret += "\"";
-
-			// Add comma if there are any more keys
-			if (a < kb.keys_.size() - 1)
-				ret += ",";
-		}
-
-		ret += "\n";
+		j[kb.name_] = kb_json;
 	}
 
-	return ret;
+	file.writeStr(j.dump(2));
 }
 
 // -----------------------------------------------------------------------------
 // Reads keybind defeinitions from tokenizer [tz]
+// (in old format from pre-3.3.0 slade3.cfg)
 // -----------------------------------------------------------------------------
-bool KeyBind::readBinds(Tokenizer& tz)
+bool KeyBind::readOldBinds(Tokenizer& tz)
 {
 	// Parse until ending }
 	while (!tz.checkOrEnd("}"))
@@ -854,9 +889,7 @@ bool KeyBind::readBinds(Tokenizer& tz)
 		tz.adv();
 	}
 
-	// Create sorted list
-	keybinds_sorted = keybinds;
-	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
+	updateSortedBindsList();
 
 	return true;
 }
