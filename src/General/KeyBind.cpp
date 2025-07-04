@@ -68,11 +68,11 @@ void to_json(nlohmann::json& j, const Keypress& kp)
 {
 	j = nlohmann::json{ { "key", kp.key } };
 	if (kp.alt)
-		j["alt"] = true;
+		j["mod_alt"] = true;
 	if (kp.ctrl)
-		j["ctrl"] = true;
+		j["mod_ctrl"] = true;
 	if (kp.shift)
-		j["shift"] = true;
+		j["mod_shift"] = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -81,9 +81,9 @@ void to_json(nlohmann::json& j, const Keypress& kp)
 void from_json(const nlohmann::json& j, Keypress& kp)
 {
 	j.at("key").get_to(kp.key);
-	kp.alt   = j.value("alt", false);
-	kp.ctrl  = j.value("ctrl", false);
-	kp.shift = j.value("shift", false);
+	kp.alt   = j.value("mod_alt", false);
+	kp.ctrl  = j.value("mod_ctrl", false);
+	kp.shift = j.value("mod_shift", false);
 }
 
 // -----------------------------------------------------------------------------
@@ -92,6 +92,17 @@ void from_json(const nlohmann::json& j, Keypress& kp)
 string keybindConfigPath()
 {
 	return app::path("keybinds.json", app::Dir::User);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if two Keypress structs are equal
+// -----------------------------------------------------------------------------
+bool kpEqual(const Keypress& kp1, const Keypress& kp2)
+{
+	if (!strutil::equalCI(kp1.key, kp2.key))
+		return false;
+
+	return kp1.alt == kp2.alt && kp1.ctrl == kp2.ctrl && kp1.shift == kp2.shift;
 }
 } // namespace slade
 
@@ -172,6 +183,21 @@ string KeyBind::keysAsString() const
 		return "None";
 	else
 		return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if this keybind has default keys
+// -----------------------------------------------------------------------------
+bool KeyBind::isDefault() const
+{
+	if (keys_.size() != defaults_.size())
+		return false;
+
+	for (unsigned a = 0; a < keys_.size(); a++)
+		if (!kpEqual(keys_[a], defaults_[a]))
+			return false;
+
+	return true;
 }
 
 
@@ -639,7 +665,7 @@ void KeyBind::initBinds()
 	addBind("me2d_mode_things", Keypress("T"), "Things mode", group);
 	addBind("me2d_mode_3d_at_mouse", Keypress("Q", KPM_SHIFT), "Enter 3d mode at the mouse cursor position", group);
 	addBind("me2d_flat_type", Keypress("F", KPM_CTRL), "Cycle flat type", group);
-	addBind("me2d_split_line", Keypress("S", KPM_SHIFT), "Split nearest line", group);
+	addBind("me2d_split_line", Keypress("S", KPM_CTRL | KPM_SHIFT), "Split nearest line", group);
 	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock hilight", group);
 	addBind("me2d_begin_linedraw", Keypress("space"), "Begin line drawing", group);
 	addBind("me2d_begin_shapedraw", Keypress("space", KPM_SHIFT), "Begin shape drawing", group);
@@ -816,8 +842,7 @@ void KeyBind::initBinds()
 }
 
 // -----------------------------------------------------------------------------
-// Saves all keybind definitions to keybinds.json in the user config directory
-// TODO: Only save non-default keybinds
+// Saves non-default keybind definitions to keybinds.json in the user config dir
 // -----------------------------------------------------------------------------
 void KeyBind::saveBinds()
 {
@@ -828,6 +853,9 @@ void KeyBind::saveBinds()
 	json j;
 	for (auto& kb : keybinds)
 	{
+		if (kb.isDefault())
+			continue;
+
 		auto kb_json = json::array();
 
 		for (auto& key : kb.keys_)

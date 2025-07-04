@@ -75,6 +75,7 @@ public:
 	}
 	int      nDefaults() const { return defaults_.size(); }
 	Keypress defaultKey(unsigned index) { return defaults_[index]; }
+	bool     isDefault() const;
 
 	// Static functions
 	static KeyBind&       bind(string_view name);
