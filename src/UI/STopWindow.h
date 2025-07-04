@@ -9,7 +9,7 @@ class STopWindow : public wxFrame
 {
 public:
 	STopWindow(const string& title, const string& id, int xpos = 0, int ypos = 0, int width = 1024, int height = 768);
-	~STopWindow() override;
+	~STopWindow() override = default;
 
 	// Custom menu
 	void addCustomMenu(wxMenu* menu, const string& title);

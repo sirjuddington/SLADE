@@ -39,7 +39,6 @@ public:
 	shared_ptr<Archive>         shareArchive(const Archive* archive);
 
 	// General access
-	const vector<string>&                 recentFiles() const { return recent_files_; }
 	const vector<string>&                 baseResourcePaths() const { return base_resource_paths_; }
 	const vector<weak_ptr<ArchiveEntry>>& bookmarks() const { return bookmarks_; }
 
@@ -49,19 +48,13 @@ public:
 	void     removeBaseResourcePath(unsigned index);
 	unsigned numBaseResourcePaths() const { return base_resource_paths_.size(); }
 	string   getBaseResourcePath(unsigned index);
+	string   currentBaseResourcePath();
 	bool     openBaseResource(int index);
 
 	// Resource entry get/search
 	ArchiveEntry*         getResourceEntry(string_view name, const Archive* ignore = nullptr) const;
 	ArchiveEntry*         findResourceEntry(ArchiveSearchOptions& options, const Archive* ignore = nullptr) const;
 	vector<ArchiveEntry*> findAllResourceEntries(ArchiveSearchOptions& options, const Archive* ignore = nullptr) const;
-
-	// Recent files
-	string   recentFile(unsigned index);
-	unsigned numRecentFiles() const { return recent_files_.size(); }
-	void     addRecentFile(string_view path);
-	void     addRecentFiles(const vector<string>& paths);
-	void     removeRecentFile(string_view path);
 
 	// Bookmarks
 	void          addBookmark(const shared_ptr<ArchiveEntry>& entry);
@@ -73,6 +66,9 @@ public:
 	ArchiveEntry* getBookmark(unsigned index) const;
 	unsigned      numBookmarks() const { return bookmarks_.size(); }
 	bool          isBookmarked(const ArchiveEntry* entry) const;
+
+	// Database
+	i64 archiveDbId(const Archive& archive) const;
 
 	// Signals
 	struct Signals
@@ -87,7 +83,6 @@ public:
 		sigslot::signal<unsigned>                     base_res_path_removed;
 		sigslot::signal<unsigned>                     base_res_current_changed;
 		sigslot::signal<>                             base_res_current_cleared;
-		sigslot::signal<>                             recent_files_changed;
 		sigslot::signal<ArchiveEntry*>                bookmark_added;
 		sigslot::signal<const vector<ArchiveEntry*>&> bookmarks_removed;
 	};
@@ -99,6 +94,7 @@ private:
 		shared_ptr<Archive>       archive;
 		vector<weak_ptr<Archive>> open_children; // A list of currently open archives that are within this archive
 		bool                      resource;
+		i64                       db_id;
 	};
 
 	vector<OpenArchive>            open_archives_;
@@ -106,7 +102,6 @@ private:
 	shared_ptr<Archive>            base_resource_archive_;
 	bool                           res_archive_open_ = false;
 	vector<string>                 base_resource_paths_;
-	vector<string>                 recent_files_;
 	vector<weak_ptr<ArchiveEntry>> bookmarks_;
 
 	// Signals
@@ -114,5 +109,7 @@ private:
 
 	bool initArchiveFormats() const;
 	void getDependentArchivesInternal(const Archive* archive, vector<shared_ptr<Archive>>& vec);
+	void setArchiveDbId(const Archive& archive, i64 db_id);
+	void openWadsInRoot(const Archive& archive);
 };
 } // namespace slade

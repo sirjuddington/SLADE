@@ -38,6 +38,7 @@
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "Export.h"
 #include "Scripting/LuaBridge.h"
 #include "Scripting/Scripting.h"
@@ -173,7 +174,7 @@ void registerArchivesNamespace(lua_State* lua)
 	archives.addFunction("BaseResourcePaths", [] { return app::archiveManager().baseResourcePaths(); });
 	archives.addFunction("OpenBaseResource", [](int index) { return app::archiveManager().openBaseResource(index); });
 	archives.addFunction("ProgramResource", [] { return app::archiveManager().programResourceArchive(); });
-	archives.addFunction("RecentFiles", [] { return app::archiveManager().recentFiles(); });
+	archives.addFunction("RecentFiles", [] { return database::recentFiles(); });
 	archives.addFunction("Bookmarks", bookmarks);
 	archives.addFunction(
 		"AddBookmark", [](ArchiveEntry* entry) { app::archiveManager().addBookmark(entry->getShared()); });

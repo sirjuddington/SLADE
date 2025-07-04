@@ -157,9 +157,6 @@ bool archiveoperations::saveAs(Archive& archive)
 			return false;
 		}
 
-		// Add recent file
-		app::archiveManager().addRecentFile(filename);
-
 		return true;
 	}
 

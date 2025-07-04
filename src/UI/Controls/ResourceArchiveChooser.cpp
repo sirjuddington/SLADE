@@ -35,9 +35,11 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/Layout.h"
 #include "UI/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
 using namespace slade;
@@ -160,15 +162,14 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 {
 	// Build list of recent wad filename strings
-	wxArrayString recent;
-	for (unsigned a = 0; a < app::archiveManager().numRecentFiles(); a++)
-		recent.Add(wxString::FromUTF8(app::archiveManager().recentFile(a)));
+	auto recent_files = database::recentFiles();
+	auto recent_wx    = wxutil::arrayStringStd(recent_files);
 
 	// Show dialog
-	wxSingleChoiceDialog dlg(this, wxS("Select a recent Archive to open"), wxS("Open Recent"), recent);
+	wxSingleChoiceDialog dlg(this, wxS("Select a recent Archive to open"), wxS("Open Recent"), recent_wx);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		auto na = app::archiveManager().openArchive(app::archiveManager().recentFile(dlg.GetSelection()), true, true);
+		auto na = app::archiveManager().openArchive(recent_files[dlg.GetSelection()], true, true);
 		if (na)
 		{
 			list_resources_->Append(wxString::FromUTF8(na->filename(false)));

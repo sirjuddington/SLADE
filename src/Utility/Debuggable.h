@@ -37,7 +37,7 @@ public:
 		repr += "{";
 		for (unsigned int a = 0; a < v.size(); a++)
 		{
-			repr << Debuggable(v[a]).get();
+			repr += Debuggable(v[a]).get();
 			if (a < v.size() - 1)
 				repr += ", ";
 		}

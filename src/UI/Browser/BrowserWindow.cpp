@@ -36,9 +36,10 @@
 #include "BrowserWindow.h"
 #include "BrowserCanvas.h"
 #include "BrowserItem.h"
-#include "General/Misc.h"
 #include "Graphics/Palette/Palette.h"
 #include "UI/Layout.h"
+#include "UI/State.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -49,7 +50,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, browser_maximised, false, CVar::Flag::Save)
 namespace
 {
 int bw_chars[] = {
@@ -200,14 +200,14 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	auto lh = ui::LayoutHelper(this);
 
 	// Init size/pos
-	auto info = misc::getWindowInfo("browser");
+	auto info = ui::getWindowInfo(this, "browser");
 	if (!info.id.empty())
 	{
 		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		misc::setWindowInfo("browser", FromDIP(768), FromDIP(600), 0, 0);
+		ui::setWindowInfo(this, "browser", FromDIP(768), FromDIP(600), 0, 0);
 
 	// Init variables
 	items_root_ = new BrowserTreeNode();
@@ -287,7 +287,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	wxWindowBase::Layout();
 	wxTopLevelWindowBase::SetMinSize(lh.size(540, 400));
 
-	if (browser_maximised)
+	if (ui::getStateBool(ui::BROWSERWINDOW_MAXIMIZED))
 		wxTopLevelWindow::Maximize();
 	else
 		CenterOnParent();
@@ -301,11 +301,12 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 // -----------------------------------------------------------------------------
 BrowserWindow::~BrowserWindow()
 {
-	auto scale              = wxWindowBase::GetContentScaleFactor();
-	browser_maximised       = wxTopLevelWindow::IsMaximized();
+	auto scale = wxWindowBase::GetContentScaleFactor();
+	ui::saveStateBool(ui::BROWSERWINDOW_MAXIMIZED, wxTopLevelWindow::IsMaximized());
 	const wxSize ClientSize = GetClientSize() * scale;
 	if (!wxTopLevelWindow::IsMaximized())
-		misc::setWindowInfo("browser", ClientSize.x, ClientSize.y, GetPosition().x * scale, GetPosition().y * scale);
+		ui::setWindowInfo(
+			this, "browser", ClientSize.x, ClientSize.y, GetPosition().x * scale, GetPosition().y * scale);
 }
 
 // -----------------------------------------------------------------------------

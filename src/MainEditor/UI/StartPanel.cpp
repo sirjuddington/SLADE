@@ -38,6 +38,8 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "General/SActionHandler.h"
 #include "UI/Layout.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -282,7 +284,7 @@ StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Setup Recent Files panel
 	recent_files_panel_      = new wxPanel(this);
-	sc_recent_files_updated_ = app::archiveManager().signals().recent_files_changed.connect_scoped(
+	sc_recent_files_updated_ = database::signals().archive_file_updated.connect_scoped(
 		[this] { updateRecentFilesPanel(); }); // Update panel when recent files list changes
 	recent_files_panel_->SetBackgroundColour(backgroundColour());
 	recent_files_panel_->SetForegroundColour(wxColour(app::isDarkTheme() ? FOREGROUND_COLOUR_DARK : wxS("#000000")));
@@ -339,7 +341,7 @@ void StartPanel::updateRecentFilesPanel()
 	title_label->SetFont(title_label->GetFont().Bold().Scale(1.25f));
 	sizer->Add(title_label, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
-	auto recent_files = app::archiveManager().recentFiles();
+	auto recent_files = database::recentFiles();
 	if (recent_files.empty())
 	{
 		auto no_recent_label = new wxStaticText(recent_files_panel_, -1, wxS("No recently opened files"));

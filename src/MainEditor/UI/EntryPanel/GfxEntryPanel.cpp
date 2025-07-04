@@ -59,6 +59,7 @@
 #include "UI/SBrush.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
@@ -70,13 +71,10 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// Variables
+// External Variables
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, gfx_arc)
-EXTERN_CVAR(String, last_colour)
-EXTERN_CVAR(String, last_tint_colour)
-EXTERN_CVAR(Int, last_tint_amount)
 
 
 // -----------------------------------------------------------------------------
@@ -877,7 +875,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	{
 		auto*              pal = maineditor::currentPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry.get(), *pal);
-		gcd.setColour(last_colour);
+		gcd.setColour(ui::getStateString(ui::COLOURISEDIALOG_LAST_COLOUR));
 
 		// Show colourise dialog
 		if (gcd.ShowModal() == wxID_OK)
@@ -893,7 +891,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		last_colour = colour::toString(gcd.colour(), colour::StringFormat::RGB);
+		ui::saveStateString(ui::COLOURISEDIALOG_LAST_COLOUR, colour::toString(gcd.colour(), colour::StringFormat::RGB));
 	}
 
 	// Tint
@@ -901,7 +899,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	{
 		auto*         pal = maineditor::currentPalette();
 		GfxTintDialog gtd(theMainWindow, entry.get(), *pal);
-		gtd.setValues(last_tint_colour, last_tint_amount);
+		gtd.setValues(ui::getStateString(ui::TINTDIALOG_LAST_COLOUR), ui::getStateInt(ui::TINTDIALOG_LAST_AMOUNT));
 
 		// Show tint dialog
 		if (gtd.ShowModal() == wxID_OK)
@@ -917,8 +915,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			Refresh();
 			setModified();
 		}
-		last_tint_colour = colour::toString(gtd.colour(), colour::StringFormat::RGB);
-		last_tint_amount = static_cast<int>(gtd.amount() * 100.0);
+		ui::saveStateString(ui::TINTDIALOG_LAST_COLOUR, colour::toString(gtd.colour(), colour::StringFormat::RGB));
+		ui::saveStateInt(ui::TINTDIALOG_LAST_AMOUNT, static_cast<int>(gtd.amount() * 100.0f));
 	}
 
 	// Crop
