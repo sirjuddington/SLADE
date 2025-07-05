@@ -447,6 +447,22 @@ string strutil::trim(string_view str)
 	return s;
 }
 
+string_view strutil::ltrimV(string_view str)
+{
+	return str.substr(str.find_first_not_of(WHITESPACE_CHARACTERS));
+}
+
+string_view strutil::rtrimV(string_view str)
+{
+	return str.substr(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
+}
+
+string_view strutil::trimV(string_view str)
+{
+	str = str.substr(str.find_first_not_of(WHITESPACE_CHARACTERS));        // left
+	return str.substr(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
+}
+
 string& strutil::capitalizeIP(string& str)
 {
 	if (str.empty())

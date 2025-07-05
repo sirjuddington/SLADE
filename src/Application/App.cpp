@@ -61,11 +61,11 @@
 #include "UI/State.h"
 #include "UI/UI.h"
 #include "Utility/FileUtils.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include <dumb.h>
 #include <filesystem>
-#include <nlohmann/json.hpp>
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
 #endif
@@ -347,8 +347,6 @@ void readOldConfigFile()
 // -----------------------------------------------------------------------------
 void readConfigFile()
 {
-	using namespace nlohmann;
-
 	// Open config JSON file
 	SFile file(path("config.json", Dir::User));
 	if (!file.isOpen())
@@ -358,7 +356,9 @@ void readConfigFile()
 		return;
 	}
 
-	auto j = json::parse(file.handle());
+	auto j = jsonutil::parseFile(file);
+	if (j.is_discarded())
+		return;
 
 	// CVars
 	if (j.contains("cvars"))
@@ -677,28 +677,28 @@ void app::saveConfigFile()
 		return;
 
 	// Build JSON object
-	nlohmann::json json;
+	json j;
 
 	// CVars
-	CVar::writeAll(json["cvars"]);
+	CVar::writeAll(j["cvars"]);
 
 	// Base resource archive paths
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
 		auto path = archive_manager.getBaseResourcePath(a);
 		std::replace(path.begin(), path.end(), '\\', '/');
-		json["base_resource_paths"].push_back(path);
+		j["base_resource_paths"].push_back(path);
 	}
 
 	// Nodebuilder paths
-	nodebuilders::writeBuilderPaths(json);
+	nodebuilders::writeBuilderPaths(j);
 
 	// Game exe paths
-	executables::writePaths(json);
+	executables::writePaths(j);
 
 
 	// Write JSON to file
-	config_json.writeStr(json.dump(2));
+	config_json.writeStr(j.dump(2));
 }
 
 // -----------------------------------------------------------------------------
@@ -721,9 +721,7 @@ void app::exit(bool save_config)
 		StyleSet::saveCurrent();
 
 		// Save colour configuration
-		MemChunk ccfg;
-		colourconfig::writeConfiguration(ccfg);
-		ccfg.exportFile(path("colours.cfg", Dir::User));
+		colourconfig::writeConfiguration(path("colours.json", Dir::User));
 
 		// Save game exes
 		SFile f;

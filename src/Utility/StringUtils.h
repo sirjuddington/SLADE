@@ -54,26 +54,29 @@ namespace strutil
 
 	// String transformations
 	// IP = In-Place
-	string  escapedString(string_view str, bool swap_backslash = false, bool escape_backslash = true);
-	string& replaceIP(string& str, string_view from, string_view to);
-	string  replace(string_view str, string_view from, string_view to);
-	string& replaceFirstIP(string& str, string_view from, string_view to);
-	string  replaceFirst(string_view str, string_view from, string_view to);
-	string& lowerIP(string& str);
-	string& upperIP(string& str);
-	string  lower(string_view str);
-	string  upper(string_view str);
-	string& ltrimIP(string& str);
-	string& rtrimIP(string& str);
-	string& trimIP(string& str);
-	string  ltrim(string_view str);
-	string  rtrim(string_view str);
-	string  trim(string_view str);
-	string& capitalizeIP(string& str);
-	string  capitalize(string_view str);
-	string  wildcardToRegex(string_view str);
-	string  prepend(string_view str, string_view prefix);
-	string& prependIP(string& str, string_view prefix);
+	string      escapedString(string_view str, bool swap_backslash = false, bool escape_backslash = true);
+	string&     replaceIP(string& str, string_view from, string_view to);
+	string      replace(string_view str, string_view from, string_view to);
+	string&     replaceFirstIP(string& str, string_view from, string_view to);
+	string      replaceFirst(string_view str, string_view from, string_view to);
+	string&     lowerIP(string& str);
+	string&     upperIP(string& str);
+	string      lower(string_view str);
+	string      upper(string_view str);
+	string&     ltrimIP(string& str);
+	string&     rtrimIP(string& str);
+	string&     trimIP(string& str);
+	string      ltrim(string_view str);
+	string      rtrim(string_view str);
+	string      trim(string_view str);
+	string_view ltrimV(string_view str);
+	string_view rtrimV(string_view str);
+	string_view trimV(string_view str);
+	string&     capitalizeIP(string& str);
+	string      capitalize(string_view str);
+	string      wildcardToRegex(string_view str);
+	string      prepend(string_view str, string_view prefix);
+	string&     prependIP(string& str, string_view prefix);
 
 	// Substrings
 	string              left(string_view str, unsigned n);

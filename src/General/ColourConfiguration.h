@@ -33,8 +33,8 @@ void   setLineHilightWidth(double mult);
 void   setLineSelectionWidth(double mult);
 void   setFlatAlpha(double alpha);
 
-bool readConfiguration(const MemChunk& mc);
-bool writeConfiguration(MemChunk& mc);
+void readConfiguration(nlohmann::json& j);
+void writeConfiguration(string_view json_file);
 bool init();
 void loadDefaults();
 

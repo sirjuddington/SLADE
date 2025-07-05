@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Colour.h"
+#include "StringUtils.h"
 
 using namespace slade;
 
@@ -455,9 +456,10 @@ string colour::toString(const ColRGBA& colour, StringFormat format)
 {
 	switch (format)
 	{
-	case StringFormat::RGB:   return fmt::format("RGB({}, {}, {})", colour.r, colour.g, colour.b);
-	case StringFormat::RGBA:  return fmt::format("RGBA({}, {}, {}, {})", colour.r, colour.g, colour.b, colour.a);
+	case StringFormat::RGB:   return fmt::format("rgb({}, {}, {})", colour.r, colour.g, colour.b);
+	case StringFormat::RGBA:  return fmt::format("rgba({}, {}, {}, {})", colour.r, colour.g, colour.b, colour.a);
 	case StringFormat::HEX:   return fmt::format("#{:X}{:X}{:X}", colour.r, colour.g, colour.b);
+	case StringFormat::HEXA:  return fmt::format("#{:X}{:X}{:X}{:X}", colour.r, colour.g, colour.b, colour.a);
 	case StringFormat::ZDoom: return fmt::format("\"{:X} {:X} {:X}\"", colour.r, colour.g, colour.b);
 	default:                  return {};
 	}
@@ -469,4 +471,100 @@ string colour::toString(const ColRGBA& colour, StringFormat format)
 wxColour colour::toWx(const ColRGBA& colour)
 {
 	return { colour.r, colour.g, colour.b, colour.a };
+}
+
+// -----------------------------------------------------------------------------
+// Converts a string [str] to a ColRGBA colour
+// If the string format is unrecognized or invalid, returns #00000000
+// -----------------------------------------------------------------------------
+ColRGBA colour::fromString(string_view str)
+{
+	using namespace strutil;
+
+	ColRGBA colour;
+	bool    ok = false;
+
+	// Hex (#RRGGBB(AA))
+	if (!str.empty() && str[0] == '#')
+	{
+		str.remove_prefix(1);
+
+		if (str.length() == 6)
+		{
+			// #RRGGBB
+			colour.r = asInt(str.substr(0, 2), 16);
+			colour.g = asInt(str.substr(2, 2), 16);
+			colour.b = asInt(str.substr(4, 2), 16);
+			colour.a = 255;
+			ok       = true;
+		}
+		else if (str.length() == 8)
+		{
+			// #RRGGBBAA
+			colour.r = asInt(str.substr(0, 2), 16);
+			colour.g = asInt(str.substr(2, 2), 16);
+			colour.b = asInt(str.substr(4, 2), 16);
+			colour.a = asInt(str.substr(6, 2), 16);
+			ok       = true;
+		}
+	}
+
+	// ZDoom ("RR GG BB")
+	else if (str.length() == 10 && str[0] == '"' && str[3] == ' ' && str[6] == ' ' && str[9] == '"')
+	{
+		colour.r = asInt(str.substr(1, 2), 16);
+		colour.g = asInt(str.substr(4, 2), 16);
+		colour.b = asInt(str.substr(7, 2), 16);
+		colour.a = 255;
+		ok       = true;
+	}
+
+	// RGB(r, g, b)
+	else if (startsWithCI(str, "rgb(") && str.back() == ')')
+	{
+		str.remove_prefix(4);
+		str.remove_suffix(1);
+
+		auto components = splitV(str, ',');
+		if (components.size() == 3)
+		{
+			colour.r = std::clamp<uint8_t>(asInt(trimV(components[0])), 0, 255);
+			colour.g = std::clamp<uint8_t>(asInt(trimV(components[1])), 0, 255);
+			colour.b = std::clamp<uint8_t>(asInt(trimV(components[2])), 0, 255);
+			colour.a = 255;
+			ok       = true;
+		}
+	}
+
+	// RGBA(r, g, b, a)
+	else if (startsWithCI(str, "rgba(") && str.back() == ')')
+	{
+		str.remove_prefix(5);
+		str.remove_suffix(1);
+
+		auto components = splitV(str, ',');
+		if (components.size() == 4)
+		{
+			colour.r = std::clamp<uint8_t>(asInt(trimV(components[0])), 0, 255);
+			colour.g = std::clamp<uint8_t>(asInt(trimV(components[1])), 0, 255);
+			colour.b = std::clamp<uint8_t>(asInt(trimV(components[2])), 0, 255);
+			colour.a = std::clamp<uint8_t>(asInt(trimV(components[3])), 0, 255);
+			ok       = true;
+		}
+	}
+
+	// Unknown, try using wx
+	else
+	{
+		if (wxColour wxc; wxc.Set(wxString::FromUTF8(str.data(), str.size())))
+		{
+			colour.set(wxc);
+			ok = true;
+		}
+	}
+
+	if (!ok)
+		log::warning("Invalid or unsupported colour string format: {}", str);
+
+	return colour;
 }

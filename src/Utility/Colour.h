@@ -36,12 +36,14 @@ namespace colour
 	// String conversion
 	enum class StringFormat
 	{
-		RGB,  // RGB(r, g, b)
-		RGBA, // RGBA(r, g, b, a)
-		HEX,  // #rrggbb
-		ZDoom // "rr gg bb"
+		RGB,  // rgb(r, g, b)
+		RGBA, // rgba(r, g, b, a)
+		HEX,  // #RRGGBB
+		HEXA, // #RRGGBBAA
+		ZDoom // "RR GG BB"
 	};
 	string   toString(const ColRGBA& colour, StringFormat format = StringFormat::HEX);
 	wxColour toWx(const ColRGBA& colour);
+	ColRGBA  fromString(string_view str);
 } // namespace colour
 } // namespace slade

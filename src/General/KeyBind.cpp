@@ -32,10 +32,9 @@
 #include "Main.h"
 #include "KeyBind.h"
 #include "App.h"
-#include "Utility/FileUtils.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include <nlohmann/json.hpp>
 
 using namespace slade;
 
@@ -62,31 +61,6 @@ vector<KeyBindHandler*> kb_handlers;
 namespace slade
 {
 // -----------------------------------------------------------------------------
-// Converts a Keypress struct to a JSON object
-// -----------------------------------------------------------------------------
-void to_json(nlohmann::json& j, const Keypress& kp)
-{
-	j = nlohmann::json{ { "key", kp.key } };
-	if (kp.alt)
-		j["mod_alt"] = true;
-	if (kp.ctrl)
-		j["mod_ctrl"] = true;
-	if (kp.shift)
-		j["mod_shift"] = true;
-}
-
-// -----------------------------------------------------------------------------
-// Converts a JSON object to a Keypress struct
-// -----------------------------------------------------------------------------
-void from_json(const nlohmann::json& j, Keypress& kp)
-{
-	j.at("key").get_to(kp.key);
-	kp.alt   = j.value("mod_alt", false);
-	kp.ctrl  = j.value("mod_ctrl", false);
-	kp.shift = j.value("mod_shift", false);
-}
-
-// -----------------------------------------------------------------------------
 // Returns the path to the keybinds config JSON file
 // -----------------------------------------------------------------------------
 string keybindConfigPath()
@@ -103,6 +77,34 @@ bool kpEqual(const Keypress& kp1, const Keypress& kp2)
 		return false;
 
 	return kp1.alt == kp2.alt && kp1.ctrl == kp2.ctrl && kp1.shift == kp2.shift;
+}
+} // namespace slade
+
+
+// -----------------------------------------------------------------------------
+//
+// Keypress Struct <-> JSON Object Conversion Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade
+{
+void to_json(json& j, const Keypress& kp)
+{
+	j = json{ { "key", kp.key } };
+	if (kp.alt)
+		j["mod_alt"] = true;
+	if (kp.ctrl)
+		j["mod_ctrl"] = true;
+	if (kp.shift)
+		j["mod_shift"] = true;
+}
+
+void from_json(const json& j, Keypress& kp)
+{
+	j.at("key").get_to(kp.key);
+	kp.alt   = j.value("mod_alt", false);
+	kp.ctrl  = j.value("mod_ctrl", false);
+	kp.shift = j.value("mod_shift", false);
 }
 } // namespace slade
 
@@ -822,11 +824,8 @@ void KeyBind::initBinds()
 	}
 
 	// Load keybind user configuration
-	SFile file(keybindConfigPath());
-	if (file.isOpen())
+	if (auto j = jsonutil::parseFile(keybindConfigPath()); !j.is_discarded())
 	{
-		auto j = nlohmann::json::parse(file.handle());
-
 		for (auto& [name, keys] : j.items())
 		{
 			// Clear any current binds for the key
@@ -846,10 +845,6 @@ void KeyBind::initBinds()
 // -----------------------------------------------------------------------------
 void KeyBind::saveBinds()
 {
-	using namespace nlohmann;
-
-	SFile file(keybindConfigPath(), SFile::Mode::Write);
-
 	json j;
 	for (auto& kb : keybinds)
 	{
@@ -864,7 +859,7 @@ void KeyBind::saveBinds()
 		j[kb.name_] = kb_json;
 	}
 
-	file.writeStr(j.dump(2));
+	jsonutil::writeFile(j, keybindConfigPath());
 }
 
 // -----------------------------------------------------------------------------
