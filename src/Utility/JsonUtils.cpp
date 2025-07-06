@@ -116,3 +116,11 @@ bool jsonutil::writeFile(const json& j, string_view path)
 
 	return file.writeStr(j.dump(2));
 }
+bool jsonutil::writeFile(const ordered_json& j, string_view path)
+{
+	SFile file(path, SFile::Mode::Write);
+	if (!file.isOpen())
+		return false;
+
+	return file.writeStr(j.dump(2));
+}

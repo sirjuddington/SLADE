@@ -1,0 +1,72 @@
+{
+  "name": "Old SLADE Default",
+  "default": {
+    "background": "rgb(255, 255, 255)",
+    "bold": false,
+    "font": "Courier New",
+    "foreground": "rgb(0, 0, 0)",
+    "italic": false,
+    "size": 10,
+    "underlined": false
+  },
+  "selection": {
+    "background": "rgb(200, 200, 200)"
+  },
+  "preprocessor": {
+    "foreground": "rgb(0, 150, 200)"
+  },
+  "comment": {
+    "foreground": "rgb(0, 150, 60)"
+  },
+  "comment_doc": {
+    "foreground": "rgb(0, 150, 60)"
+  },
+  "string": {
+    "foreground": "rgb(0, 120, 130)"
+  },
+  "character": {
+    "foreground": "rgb(0, 120, 130)"
+  },
+  "keyword": {
+    "foreground": "rgb(0, 30, 200)"
+  },
+  "constant": {
+    "foreground": "rgb(180, 30, 200)"
+  },
+  "type": {
+    "foreground": "rgb(0, 30, 200)"
+  },
+  "property": {
+    "foreground": "rgb(0, 30, 200)"
+  },
+  "function": {
+    "foreground": "rgb(200, 100, 30)"
+  },
+  "bracematch": {
+    "background": "rgb(170, 255, 170)"
+  },
+  "bracebad": {
+    "background": "rgb(255, 170, 170)"
+  },
+  "linenum": {
+    "background": "rgb(240, 240, 240)"
+  },
+  "calltip": {
+    "background": "rgb(255, 255, 180)",
+    "foreground": "rgb(0, 0, 0)"
+  },
+  "calltip_hl": {
+    "foreground": "rgb(0, 0, 200)"
+  },
+  "foldmargin": {
+    "background": "rgb(240, 240, 240)",
+    "foreground": "rgb(100, 170, 170)"
+  },
+  "guides": {
+    "foreground": "rgb(180, 210, 210)"
+  },
+  "current_line": {
+    "background": "rgb(245, 245, 245)",
+    "foreground": "rgb(235, 235, 235)"
+  }
+}
