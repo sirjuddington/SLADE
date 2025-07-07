@@ -197,7 +197,7 @@ bool ArchiveManager::init()
 // -----------------------------------------------------------------------------
 bool ArchiveManager::initArchiveFormats() const
 {
-	return archive::loadFormatInfo(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->data());
+	return archive::loadFormatInfo(program_resource_archive_->entryAtPath("config/archive_formats.json")->data());
 }
 
 // -----------------------------------------------------------------------------
