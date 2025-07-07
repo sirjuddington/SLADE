@@ -724,10 +724,7 @@ void app::exit(bool save_config)
 		colourconfig::writeConfiguration(path("colours.json", Dir::User));
 
 		// Save game exes
-		SFile f;
-		if (f.open(path("executables.cfg", Dir::User), SFile::Mode::Write))
-			f.writeStr(executables::writeExecutables());
-		f.close();
+		executables::writeExecutables(path("executables.json", Dir::User));
 
 		// Save custom special presets
 		game::saveCustomSpecialPresets();

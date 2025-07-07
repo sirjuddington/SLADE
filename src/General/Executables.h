@@ -30,10 +30,11 @@ namespace executables
 		string path;
 	};
 
-	void   writePaths(nlohmann::json& j);
-	string writeExecutables();
-	void   init();
-	void   parse(const Parser* p, bool custom);
+	void writePaths(nlohmann::json& j);
+	bool writeExecutables(string_view path);
+	void readExecutables(nlohmann::json& j, bool custom);
+	void init();
+	void parse(const Parser* p, bool custom);
 
 	// Game executables
 	GameExe* gameExe(string_view id);

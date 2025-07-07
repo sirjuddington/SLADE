@@ -36,9 +36,9 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
-#include <nlohmann/json.hpp>
 
 using namespace slade;
 
@@ -112,57 +112,145 @@ void executables::writePaths(nlohmann::json& j)
 }
 
 // -----------------------------------------------------------------------------
-// Writes all executable definitions as text
+// Writes all executable definitions as JSON to a file at [path]
 // -----------------------------------------------------------------------------
-string executables::writeExecutables()
+bool executables::writeExecutables(string_view path)
 {
-	string ret = "executables\n{\n";
+	ordered_json j;
 
-	// Write game exes
+	// Game executables
 	for (auto& exe : game_exes)
 	{
-		// ID
-		ret += fmt::format("\tgame_exe {}\n\t{{\n", exe.id);
+		auto j_gameexe = ordered_json{ { "name", exe.name }, { "file_name", exe.exe_name } };
 
-		// Name
-		ret += fmt::format("\t\tname = \"{}\";\n", exe.name);
+		// Run configs
+		auto configs = ordered_json::array();
+		for (auto& [name, command] : exe.run_configs)
+			configs.push_back(ordered_json{ { "name", name }, { "command", command } });
+		j_gameexe["configs"] = configs;
 
-		// Exe name
-		ret += fmt::format("\t\texe_name = \"{}\";\n\n", exe.exe_name);
+		// Map run configs
+		auto map_configs = ordered_json::array();
+		for (auto& [name, command] : exe.map_configs)
+			map_configs.push_back(ordered_json{ { "name", name }, { "command", command } });
+		j_gameexe["map_configs"] = map_configs;
 
-		// Configs
-		for (auto& config : exe.run_configs)
-			ret += fmt::format("\t\tconfig \"{}\" = \"{}\";\n", config.first, strutil::escapedString(config.second));
-
-		// Map Run Configs
-		ret += "\n";
-		for (auto& config : exe.map_configs)
-			ret += fmt::format(
-				"\t\tmap_config \"{}\" = \"{}\";\n", config.first, strutil::escapedString(config.second));
-
-		ret += "\t}\n\n";
+		j["game_executables"][exe.id] = j_gameexe;
 	}
 
-	// Write external exes
+	// External executables
+	auto j_externalexes = ordered_json::array();
 	for (auto& exe : external_exes)
 	{
-		// Name
-		ret += fmt::format("\texternal_exe \"{}\"\n\t{{\n", exe.name);
-
-		// Entry Category
-		ret += fmt::format("\t\tcategory = \"{}\";\n", exe.category);
-
-		// Path
+		j_externalexes.push_back(ordered_json{ { "name", exe.name }, { "category", exe.category } });
 		auto path = exe.path;
 		std::replace(path.begin(), path.end(), '\\', '/');
-		ret += fmt::format("\t\tpath = \"{}\";\n", path);
+		j_externalexes.back()["path"] = path;
+	}
+	j["external_executables"] = j_externalexes;
 
-		ret += "\t}\n\n";
+	// Write to file
+	return jsonutil::writeFile(j, path);
+}
+
+// -----------------------------------------------------------------------------
+// Reads all executable definitions from json object [j]
+// If [custom] is true, the executables are considered user-defined/custom
+// (and will be saved to the user executables config file)
+// -----------------------------------------------------------------------------
+void executables::readExecutables(nlohmann::json& j, bool custom)
+{
+	// Read game executables
+	if (j.contains("game_executables"))
+	{
+		for (auto& [id, j_game_exe] : j["game_executables"].items())
+		{
+			// Get GameExe being parsed
+			auto exe = gameExe(strutil::lower(id));
+			if (!exe)
+			{
+				// Create if new
+				GameExe nexe;
+				nexe.id     = strutil::lower(id);
+				nexe.custom = custom;
+				game_exes.push_back(nexe);
+				exe = &(game_exes.back());
+			}
+
+			// Basic info
+			exe->name = j_game_exe["name"];
+			if (j_game_exe.contains("file_name"))
+				exe->exe_name = j_game_exe["file_name"];
+
+			// Run configs
+			if (j_game_exe.contains("configs") && j_game_exe["configs"].is_array())
+			{
+				for (auto& j_config : j_game_exe["configs"])
+				{
+					// Update if exists
+					bool found = false;
+					for (auto& config : exe->run_configs)
+					{
+						if (config.first == j_config["name"])
+						{
+							config.second = j_config["command"];
+							found         = true;
+						}
+					}
+
+					// Create if new
+					if (!found)
+					{
+						exe->run_configs.emplace_back(j_config["name"], j_config["command"]);
+						exe->run_configs_custom.push_back(custom);
+					}
+				}
+			}
+
+			// Map Run configs
+			if (j_game_exe.contains("map_configs") && j_game_exe["map_configs"].is_array())
+			{
+				for (auto& j_config : j_game_exe["map_configs"])
+				{
+					// Update if exists
+					bool found = false;
+					for (auto& config : exe->map_configs)
+					{
+						if (config.first == j_config["name"])
+						{
+							config.second = j_config["command"];
+							found         = true;
+						}
+					}
+
+					// Create if new
+					if (!found)
+					{
+						exe->map_configs.emplace_back(j_config["name"], j_config["command"]);
+						exe->map_configs_custom.push_back(custom);
+					}
+				}
+			}
+
+			// Set path if loaded
+			for (auto& path : exe_paths)
+				if (path.first == exe->id)
+					exe->path = path.second;
+		}
 	}
 
-	ret += "}\n";
-
-	return ret;
+	// Read external executables
+	if (j.contains("external_executables"))
+	{
+		for (auto& j_ext_exe : j["external_executables"])
+		{
+			ExternalExe exe;
+			exe.name     = j_ext_exe["name"];
+			exe.category = j_ext_exe["category"];
+			exe.path     = j_ext_exe["path"];
+			external_exes.push_back(exe);
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -172,22 +260,26 @@ void executables::init()
 {
 	// Load from pk3
 	auto res_archive = app::archiveManager().programResourceArchive();
-	auto entry       = res_archive->entryAtPath("config/executables.cfg");
+	auto entry       = res_archive->entryAtPath("config/executables.json");
 	if (!entry)
 		return;
 
 	// Parse base executables config
-	Parser p;
-	p.parseText(entry->data(), "slade.pk3 - executables.cfg");
-	parse(&p, false);
+	if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
+		readExecutables(j, false);
 
 	// Parse user executables config
-	Parser   p2;
-	MemChunk mc;
-	if (mc.importFile(app::path("executables.cfg", app::Dir::User)))
+	if (auto j = jsonutil::parseFile(app::path("executables.json", app::Dir::User)); !j.is_discarded())
+		readExecutables(j, true);
+	else
 	{
-		p2.parseText(mc, "user execuatbles.cfg");
-		parse(&p2, true);
+		// No json config found, try pre-3.3.0 executables.cfg
+		if (MemChunk mc; mc.importFile(app::path("executables.cfg", app::Dir::User)))
+		{
+			Parser p;
+			p.parseText(mc, "user execuatbles.cfg");
+			parse(&p, true);
+		}
 	}
 }
 

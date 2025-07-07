@@ -104,7 +104,7 @@ bool ArchiveManager::validResDir(string_view dir) const
 	// too, so the res folder cannot be used.
 	static string paths[] = {
 		"animated.lmp",
-		"config/executables.cfg",
+		"config/executables.json",
 		"config/nodebuilders.cfg",
 		"fonts/dejavu_sans.ttf",
 		"html/box-title-back.png",
