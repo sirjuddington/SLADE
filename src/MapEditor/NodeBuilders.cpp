@@ -36,10 +36,8 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "Utility/FileUtils.h"
-#include "Utility/Parser.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
-#include <nlohmann/json.hpp>
 
 using namespace slade;
 
@@ -79,51 +77,32 @@ void nodebuilders::init()
 
 	// Get nodebuilders configuration from slade.pk3
 	auto archive = app::archiveManager().programResourceArchive();
-	auto config  = archive->entryAtPath("config/nodebuilders.cfg");
+	auto config  = archive->entryAtPath("config/nodebuilders.json");
 	if (!config)
 		return;
 
 	// Parse it
-	Parser parser;
-	parser.parseText(config->data(), "nodebuilders.cfg");
-
-	// Get 'nodebuilders' block
-	auto root = parser.parseTreeRoot()->childPTN("nodebuilders");
-	if (!root)
-		return;
-
-	// Go through child block
-	for (unsigned a = 0; a < root->nChildren(); a++)
+	if (auto j = jsonutil::parse(config->data()); !j.is_discarded())
 	{
-		auto n_builder = root->childPTN(a);
-
-		// Parse builder block
-		Builder builder;
-		builder.id = n_builder->name();
-		for (unsigned b = 0; b < n_builder->nChildren(); b++)
+		for (auto& [id, j_builder] : j.items())
 		{
-			auto node = n_builder->childPTN(b);
+			Builder builder;
+			builder.id      = id;
+			builder.name    = j_builder["name"];
+			builder.command = j_builder["command"];
+			builder.exe     = j_builder["executable"];
 
-			// Option
-			if (strutil::equalCI(node->type(), "option"))
+			if (j_builder.contains("options"))
 			{
-				builder.options.push_back(node->name());
-				builder.option_desc.push_back(node->stringValue());
+				for (auto& option : j_builder["options"])
+				{
+					builder.options.push_back(option["parameter"]);
+					builder.option_desc.push_back(option["description"]);
+				}
 			}
 
-			// Builder name
-			else if (strutil::equalCI(node->name(), "name"))
-				builder.name = node->stringValue();
-
-			// Builder command
-			else if (strutil::equalCI(node->name(), "command"))
-				builder.command = node->stringValue();
-
-			// Builder executable
-			else if (strutil::equalCI(node->name(), "executable"))
-				builder.exe = node->stringValue();
+			builders.push_back(builder);
 		}
-		builders.push_back(builder);
 	}
 
 	// Set builder paths

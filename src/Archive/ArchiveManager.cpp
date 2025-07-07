@@ -105,7 +105,7 @@ bool ArchiveManager::validResDir(string_view dir) const
 	static string paths[] = {
 		"animated.lmp",
 		"config/executables.json",
-		"config/nodebuilders.cfg",
+		"config/nodebuilders.json",
 		"fonts/dejavu_sans.ttf",
 		"html/box-title-back.png",
 		"html/startpage.htm",
