@@ -59,7 +59,8 @@ json jsonutil::parse(string_view json)
 	}
 	catch (const json::parse_error& ex)
 	{
-		log::error("Error parsing JSON: {}", ex.what());
+		auto msg = string{ ex.what() };
+		log::error("Error parsing JSON: {}", msg);
 		return nlohmann::detail::value_t::discarded;
 	}
 }

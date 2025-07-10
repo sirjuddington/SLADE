@@ -1632,7 +1632,7 @@ bool ArchivePanel::openEntryExternal() const
 	{
 		// Open entry in selected external editor
 		bool ok = ee_manager_->openEntryExternal(
-			*entry, current_external_exes_[wx_id_offset_], current_external_exe_category_);
+			*entry, current_external_exes_[wxIdOffset()], current_external_exe_category_);
 
 		// Show error message if failed
 		if (!ok)
@@ -2409,7 +2409,7 @@ bool ArchivePanel::handleAction(string_view id)
 #ifndef NO_LUA
 	// Archive->Scripts->...
 	else if (id == "arch_script")
-		scriptmanager::runArchiveScript(archive.get(), wx_id_offset_);
+		scriptmanager::runArchiveScript(archive.get(), wxIdOffset());
 #endif
 
 
@@ -2495,7 +2495,7 @@ bool ArchivePanel::handleAction(string_view id)
 #ifndef NO_LUA
 	// Entry->Run Script
 	else if (id == "arch_entry_script")
-		scriptmanager::runEntryScript(entry_tree_->selectedEntries(), wx_id_offset_, maineditor::windowWx());
+		scriptmanager::runEntryScript(entry_tree_->selectedEntries(), wxIdOffset(), maineditor::windowWx());
 #endif
 
 
