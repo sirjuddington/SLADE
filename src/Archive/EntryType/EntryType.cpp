@@ -33,6 +33,7 @@
 #include "EntryType.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
@@ -40,7 +41,7 @@
 #include "General/Console.h"
 #include "MainEditor/MainEditor.h"
 #include "Utility/Colour.h"
-#include "Utility/Parser.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
 
@@ -323,7 +324,7 @@ int EntryType::isThisType(ArchiveEntry& entry) const
 // -----------------------------------------------------------------------------
 // Initialises built-in entry types (ie. types not defined in configs)
 // -----------------------------------------------------------------------------
-void slade::EntryType::initTypes()
+void EntryType::initTypes()
 {
 	const auto fmt_any = EntryDataFormat::anyFormat();
 
@@ -372,174 +373,110 @@ void slade::EntryType::initTypes()
 }
 
 // -----------------------------------------------------------------------------
-// Reads in a block of entry type definitions. Returns false if there was a
-// parsing error, true otherwise
+// Reads entry type definitions from a json object [j]
 // -----------------------------------------------------------------------------
-bool EntryType::readEntryTypeDefinitions(string_view definitions, string_view source)
+void EntryType::readEntryTypes(nlohmann::ordered_json& j)
 {
-	// Parse the definition
-	const Parser p;
-	p.parseText(definitions, source);
-
-	// Get entry_types tree
-	auto pt_etypes = p.parseTreeRoot()->childPTN("entry_types");
-
-	// Check it exists
-	if (!pt_etypes)
-		return false;
-
-	// Go through all parsed types
-	for (unsigned a = 0; a < pt_etypes->nChildren(); a++)
+	for (auto& [id, j_etype] : j.items())
 	{
-		// Get child as ParseTreeNode
-		auto typenode = pt_etypes->childPTN(a);
-
 		// Create new entry type
-		auto ntype = std::make_unique<EntryType>(strutil::lower(typenode->name()));
+		auto ntype = std::make_unique<EntryType>(strutil::lower(id));
 
 		// Copy from existing type if inherited
-		if (!typenode->inherit().empty())
+		if (j_etype.contains("inherits"))
 		{
-			auto parent_type = fromId(strutil::lower(typenode->inherit()));
+			auto inherits    = j_etype["inherits"].get<string>();
+			auto parent_type = fromId(strutil::lower(inherits));
 
 			if (parent_type != etype_unknown)
 				parent_type->copyToType(*ntype);
 			else
-				log::info("Warning: Entry type {} inherits from unknown type {}", ntype->id(), typenode->inherit());
+				log::info("Warning: Entry type {} inherits from unknown type {}", ntype->id(), inherits);
 		}
 
-		// Go through all parsed fields
-		for (unsigned b = 0; b < typenode->nChildren(); b++)
+		// Read fields from json object
+		ntype->name_              = j_etype.value("name", ntype->name_);
+		ntype->detectable_        = j_etype.value("detectable", ntype->detectable_);
+		ntype->extension_         = j_etype.value("export_ext", ntype->extension_);
+		ntype->editor_            = j_etype.value("editor", ntype->editor_);
+		ntype->reliability_       = j_etype.value("reliability", ntype->reliability_);
+		ntype->section_           = j_etype.value("section", ntype->section_);
+		ntype->match_ext_or_name_ = j_etype.value("match_extorname", ntype->match_ext_or_name_);
+		ntype->match_name_        = j_etype.value("match_name", ntype->match_name_);
+		ntype->match_extension_   = j_etype.value("match_ext", ntype->match_extension_);
+		ntype->match_archive_     = j_etype.value("match_archive", ntype->match_archive_);
+		ntype->match_size_        = j_etype.value("size", ntype->match_size_);
+		ntype->size_limit_[0]     = j_etype.value("min_size", ntype->size_limit_[0]);
+		ntype->size_limit_[1]     = j_etype.value("max_size", ntype->size_limit_[1]);
+		ntype->size_multiple_     = j_etype.value("size_multiple", ntype->size_multiple_);
+
+		// Format
+		if (j_etype.contains("format"))
 		{
-			// Get child as ParseTreeNode
-			auto fieldnode = typenode->childPTN(b);
-			auto fn_name   = strutil::lower(fieldnode->name());
+			auto format_string = j_etype["format"].get<string>();
+			ntype->format_     = EntryDataFormat::format(format_string);
 
-			// Process it
-			if (fn_name == "name") // Name field
-			{
-				ntype->name_ = fieldnode->stringValue();
-			}
-			else if (fn_name == "detectable") // Detectable field
-			{
-				ntype->detectable_ = fieldnode->boolValue();
-			}
-			else if (fn_name == "export_ext") // Export Extension field
-			{
-				ntype->extension_ = fieldnode->stringValue();
-			}
-			else if (fn_name == "format") // Format field
-			{
-				auto format_string = fieldnode->stringValue();
-				ntype->format_     = EntryDataFormat::format(format_string);
-
-				// Warn if undefined format
-				if (ntype->format_ == EntryDataFormat::anyFormat())
-					log::warning("Entry type {} requires undefined format {}", ntype->id(), format_string);
-			}
-			else if (fn_name == "icon") // Icon field
-			{
-				ntype->icon_ = fieldnode->stringValue();
-				if (strutil::startsWith(ntype->icon_, "e_"))
-					ntype->icon_ = ntype->icon_.substr(2);
-			}
-			else if (fn_name == "editor") // Editor field (to be removed)
-			{
-				ntype->editor_ = fieldnode->stringValue();
-			}
-			else if (fn_name == "section") // Section field
-			{
-				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->section_.emplace_back(strutil::lower(fieldnode->stringValue(v)));
-			}
-			else if (fn_name == "match_ext") // Match Extension field
-			{
-				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_extension_.emplace_back(strutil::upper(fieldnode->stringValue(v)));
-			}
-			else if (fn_name == "match_name") // Match Name field
-			{
-				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_name_.emplace_back(strutil::upper(fieldnode->stringValue(v)));
-			}
-			else if (fn_name == "match_extorname") // Match name or extension
-			{
-				ntype->match_ext_or_name_ = fieldnode->boolValue();
-			}
-			else if (fn_name == "size") // Size field
-			{
-				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_size_.push_back(fieldnode->intValue(v));
-			}
-			else if (fn_name == "min_size") // Min Size field
-			{
-				ntype->size_limit_[0] = fieldnode->intValue();
-			}
-			else if (fn_name == "max_size") // Max Size field
-			{
-				ntype->size_limit_[1] = fieldnode->intValue();
-			}
-			else if (fn_name == "size_multiple") // Size Multiple field
-			{
-				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->size_multiple_.push_back(fieldnode->intValue(v));
-			}
-			else if (fn_name == "reliability") // Reliability field
-			{
-				ntype->reliability_ = static_cast<uint8_t>(fieldnode->intValue());
-			}
-			else if (fn_name == "match_archive") // Archive field
-			{
-				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_archive_.emplace_back(strutil::lower(fieldnode->stringValue(v)));
-			}
-			else if (fn_name == "extra") // Extra properties
-			{
-				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->extra_[fieldnode->stringValue(v)] = true;
-			}
-			else if (fn_name == "category") // Type category
-			{
-				ntype->category_ = fieldnode->stringValue();
-
-				// Add to category list if needed
-				bool exists = false;
-				for (auto& category : entry_categories)
-				{
-					if (strutil::equalCI(category, ntype->category_))
-					{
-						exists = true;
-						break;
-					}
-				}
-				if (!exists)
-					entry_categories.push_back(ntype->category_);
-			}
-			else if (fn_name == "image_format") // Image format hint
-				ntype->extra_["image_format"] = fieldnode->stringValue(0);
-			else if (fn_name == "colour") // Colour
-			{
-				if (fieldnode->nValues() >= 3)
-					ntype->colour_ = ColRGBA(
-						static_cast<uint8_t>(fieldnode->intValue(0)),
-						static_cast<uint8_t>(fieldnode->intValue(1)),
-						static_cast<uint8_t>(fieldnode->intValue(2)));
-				else
-					log::warning("Not enough colour components defined for entry type {}", ntype->id());
-			}
-			else
-			{
-				// Unhandled properties can go into 'extra', only their first value is kept
-				ntype->extra_[fieldnode->name()] = fieldnode->stringValue();
-			}
+			// Warn if undefined format
+			if (ntype->format_ == EntryDataFormat::anyFormat())
+				log::warning("Entry type {} requires undefined format {}", ntype->id(), format_string);
 		}
 
-		// ntype->dump();
-		ntype->index_ = static_cast<int>(entry_types.size());
+		// Icon
+		if (j_etype.contains("icon"))
+		{
+			ntype->icon_ = j_etype["icon"].get<string>();
+			if (strutil::startsWith(ntype->icon_, "e_"))
+				ntype->icon_ = ntype->icon_.substr(2);
+		}
+
+		// Colour
+		if (j_etype.contains("colour"))
+			ntype->colour_ = colour::fromString(j_etype["colour"]);
+
+		// Category
+		if (j_etype.contains("category"))
+		{
+			ntype->category_ = j_etype["category"].get<string>();
+
+			// Add to category list if needed
+			bool exists = false;
+			for (auto& category : entry_categories)
+			{
+				if (strutil::equalCI(category, ntype->category_))
+				{
+					exists = true;
+					break;
+				}
+			}
+			if (!exists)
+				entry_categories.push_back(ntype->category_);
+		}
+
+		// Extra
+		if (j_etype.contains("extra"))
+			for (auto extra : j_etype["extra"])
+				ntype->extra_[extra.get<string>()] = true;
+
+		// Image format hint
+		if (j_etype.contains("image_format"))
+			ntype->extra_["image_format"] = j_etype["image_format"].get<string>();
+
+		// Text editor language hint
+		if (j_etype.contains("text_language"))
+			ntype->extra_["text_language"] = j_etype["text_language"].get<string>();
+
+		// Ensure correct casing
+		for (auto& match_name : ntype->match_name_)
+			strutil::upperIP(match_name);
+		for (auto& match_ext : ntype->match_extension_)
+			strutil::upperIP(match_ext);
+		for (auto& match_archive : ntype->match_archive_)
+			strutil::lowerIP(match_archive);
+		for (auto& section : ntype->section_)
+			strutil::lowerIP(section);
+
 		entry_types.push_back(std::move(ntype));
 	}
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -557,26 +494,15 @@ bool EntryType::loadEntryTypes()
 		return false;
 	}
 
-	// Get entry types config
-	auto etypes_cfg = res_archive->entryAtPath("config/entry_types.cfg");
-
-	// Check it exists
-	if (!etypes_cfg)
-	{
-		log::error("config/entry_types.cfg does not exist in slade.pk3");
+	// Get entry types config dir
+	auto etypes_cfg_dir = res_archive->dirAtPath("config/entry_types");
+	if (!etypes_cfg_dir)
 		return false;
-	}
 
-	// Get full config as string (process #includes)
-	string full_config;
-	strutil::processIncludes(etypes_cfg, full_config);
-
-	// Parse config
-	auto etypes_read = readEntryTypeDefinitions(full_config, "entry_types.cfg");
-
-	// Warn if no types were read (this shouldn't happen unless the resource archive is corrupted)
-	if (!etypes_read)
-		log::warning("No built-in entry types could be loaded from slade.pk3");
+	// Parse each json file in the config dir
+	for (auto entry : etypes_cfg_dir->entries())
+		if (auto j = jsonutil::parseOrdered(entry->data()); !j.is_discarded())
+			readEntryTypes(j);
 
 	// -------- READ CUSTOM TYPES ---------
 
@@ -591,13 +517,16 @@ bool EntryType::loadEntryTypes()
 		if (!item.is_regular_file())
 			continue;
 
-		// Load file data
-		MemChunk mc;
-		auto     path = item.path().string();
-		mc.importFile(path);
-
 		// Parse file
-		readEntryTypeDefinitions(mc.asString(), path);
+		try
+		{
+			if (auto j = jsonutil::parseFileOrdered(item.path().string()); !j.is_discarded())
+				readEntryTypes(j);
+		}
+		catch (const std::exception& e)
+		{
+			log::error("Error parsing entry type file {}: {}", item.path().string(), e.what());
+		}
 	}
 
 	return true;

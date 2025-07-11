@@ -75,6 +75,33 @@ json jsonutil::parse(const MemChunk& mc)
 }
 
 // -----------------------------------------------------------------------------
+// Parses a JSON string [json] and returns the resulting ordered_json object.
+// If parsing fails, logs an error and returns value_t::discarded
+// -----------------------------------------------------------------------------
+ordered_json jsonutil::parseOrdered(string_view json)
+{
+	try
+	{
+		return ordered_json::parse(json, nullptr, true, true);
+	}
+	catch (const json::parse_error& ex)
+	{
+		auto msg = string{ ex.what() };
+		log::error("Error parsing JSON: {}", msg);
+		return nlohmann::detail::value_t::discarded;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Parses [mc] as a JSON string and returns the resulting ordered_json object.
+// If parsing fails, logs an error and returns value_t::discarded
+// -----------------------------------------------------------------------------
+ordered_json jsonutil::parseOrdered(const MemChunk& mc)
+{
+	return parseOrdered(mc.asString());
+}
+
+// -----------------------------------------------------------------------------
 // Parses a JSON file at [path] and returns the resulting json object.
 // If parsing fails or the file cannot be opened or read, logs an error and
 // returns value_t::discarded
@@ -89,7 +116,7 @@ json jsonutil::parseFile(string_view path)
 }
 
 // -----------------------------------------------------------------------------
-// Parses a JSON file [file] and returns the resulting json object.
+// Parses a JSON [file] and returns the resulting json object.
 // If parsing fails, logs an error and returns value_t::discarded
 // -----------------------------------------------------------------------------
 json jsonutil::parseFile(const SFile& file)
@@ -97,6 +124,37 @@ json jsonutil::parseFile(const SFile& file)
 	try
 	{
 		return json::parse(file.handle(), nullptr, true, true);
+	}
+	catch (const json::parse_error& ex)
+	{
+		log::error("Error parsing JSON file {}: {}", file.path(), ex.what());
+		return nlohmann::detail::value_t::discarded;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Parses a JSON file at [path] and returns the resulting ordered_json object.
+// If parsing fails or the file cannot be opened or read, logs an error and
+// returns value_t::discarded
+// -----------------------------------------------------------------------------
+ordered_json jsonutil::parseFileOrdered(string_view path)
+{
+	if (SFile file(path); file.isOpen())
+		return parseFileOrdered(file);
+
+	log::error("Unable to open or read JSON file {}", path);
+	return nlohmann::detail::value_t::discarded;
+}
+
+// -----------------------------------------------------------------------------
+// Parses a JSON [file] and returns the resulting ordered_json object.
+// If parsing fails, logs an error and returns value_t::discarded
+// -----------------------------------------------------------------------------
+ordered_json jsonutil::parseFileOrdered(const SFile& file)
+{
+	try
+	{
+		return ordered_json::parse(file.handle(), nullptr, true, true);
 	}
 	catch (const json::parse_error& ex)
 	{

@@ -1,0 +1,613 @@
+// Text entry types
+{
+  // The base type for text entries (won't be detected)
+  "text": {
+    "name": "Text",
+    "format": "text",
+    "export_ext": "txt",
+    "editor": "text",
+    "icon": "e_text",
+    "detectable": false,
+    "category": "Text"
+  },
+  "sladecfg": {
+    "inherits": "text",
+    "name": "SLADE Configuration",
+    "match_name": [ "sladecfg" ]
+  },
+  "xnmsg": {
+    "inherits": "text",
+    "name": "Messages",
+    "match_name": [ "clus?msg", "win?msg" ]
+  },
+  "strflog": {
+    "inherits": "text",
+    "name": "Log",
+    "match_name": [ "log?", "log??", "log???", "log????" ]
+  },
+  "strftext": {
+    "inherits": "text",
+    "name": "Endgame text",
+    "match_name": [ "t1text", "c1text" ]
+  },
+  "althudcf": {
+    "inherits": "text",
+    "name": "HUD config",
+    "match_name": [ "althudcf" ]
+  },
+  "animdefs": {
+    "inherits": "text",
+    "name": "Animations",
+    "match_name": [ "animdefs" ],
+    "text_language": "z_animdefs"
+  },
+  "complvl": {
+    "inherits": "text",
+    "name": "Compatibility level",
+    "match_name": [ "complvl" ]
+  },
+  "cvarinfo": {
+    "inherits": "text",
+    "name": "Console var defs",
+    "match_name": [ "cvarinfo" ],
+    "text_language": "z_cvarinfo"
+  },
+  "decaldef": {
+    "inherits": "text",
+    "name": "Decals",
+    "match_name": [ "decaldef" ],
+    "text_language": "z_decaldef"
+  },
+  "decohack": {
+    "inherits": "text",
+    "name": "DECOHack",
+    "match_name": [ "decohack" ],
+    "match_ext": [ "dh" ],
+    "match_extorname": true,
+    "text_language": "decohack",
+    "icon": "code"
+  },
+  "decorate": {
+    "inherits": "text",
+    "name": "Decorate",
+    "match_name": [ "decorate" ],
+    "match_ext": [ "dec" ],
+    "match_extorname": true,
+    "text_language": "decorate",
+    "icon": "code"
+  },
+  "decorate_ns": {
+    "inherits": "text",
+    "name": "Decorate",
+    "section": [ "actors", "decorate" ],
+    "text_language": "decorate",
+    "icon": "code"
+  },
+  "dehacked": {
+    "inherits": "text",
+    "name": "DeHackEd",
+    "match_name": [ "dehacked" ],
+    "match_ext": [ "deh", "bex" ],
+    "match_extorname": true,
+    "text_language": "dehacked"
+  },
+  "dehsupp": {
+    "inherits": "text",
+    "name": "Dehsupp",
+    "match_name": [ "dehsupp" ]
+  },
+  "dmxgus": {
+    "inherits": "text",
+    "name": "Dmxgus",
+    "match_name": [ "dmxgus", "dmxgusc", "gusmidi" ]
+  },
+  "fsglobal": {
+    "inherits": "text",
+    "name": "FraggleScript",
+    "match_name": [ "fsglobal" ],
+    "icon": "code"
+  },
+  "fontdefs": {
+    "inherits": "text",
+    "name": "Fontdefs",
+    "match_name": [ "fontdefs" ],
+    "text_language": "z_fontdefs"
+  },
+  "gameinfo": {
+    "inherits": "text",
+    "name": "Game info",
+    "match_name": [ "gameinfo" ],
+    "text_language": "z_gameinfo"
+  },
+  "gldefslump": {
+    "inherits": "text",
+    "name": "OpenGL defs",
+    "match_extorname": true,
+    "match_name": [ "gldefs", "doomdefs", "hticdefs", "hexndefs", "strfdefs", "glbdefs" ],
+    "match_ext": [ "gl", "bm" ],
+    "text_language": "z_gldefs"
+  },
+  "hehacked": {
+    "inherits": "text",
+    "name": "HeHackEd",
+    "match_ext": [ "hhe" ]
+  },
+  "keyconf": {
+    "inherits": "text",
+    "name": "Key conf",
+    "match_name": [ "keyconf" ],
+    "text_language": "z_keyconf"
+  },
+  "language": {
+    "inherits": "text",
+    "name": "Language",
+    "match_name": [ "language" ],
+    "text_language": "z_language"
+  },
+  "loadacs": {
+    "inherits": "text",
+    "name": "ACS loader",
+    "match_name": [ "loadacs" ]
+  },
+  "lockdefs": {
+    "inherits": "text",
+    "name": "Lock defs",
+    "match_name": [ "lockdefs" ],
+    "text_language": "z_lockdefs"
+  },
+  "mapinfo": {
+    "inherits": "text",
+    "name": "Mapinfo",
+    "match_name": [ "mapinfo" ],
+    "text_language": "z_mapinfo"
+  },
+  "zmapinfo": {
+    "inherits": "text",
+    "name": "Mapinfo (ZDoom)",
+    "match_name": [ "zmapinfo" ],
+    "text_language": "z_mapinfo"
+  },
+  "mapinfo_ns": {
+    "inherits": "text",
+    "name": "Mapinfo",
+    "section": [ "mapinfo" ],
+    "text_language": "z_mapinfo"
+  },
+  "xlat": {
+    "inherits": "text",
+    "name": "Map Translator (ZDoom)",
+    "match_name": [ "xlat*" ],
+    "text_language": "z_xlat"
+  },
+  "menudef": {
+    "inherits": "text",
+    "name": "Menu Definition",
+    "match_name": [ "menudef" ],
+    "text_language": "z_menudef"
+  },
+  "modeldefs": {
+    "inherits": "text",
+    "name": "3D model defs",
+    "match_name": [ "modeldef" ],
+    "text_language": "z_modeldef"
+  },
+  "modeldefs_ns": {
+    "inherits": "text",
+    "name": "3D model defs",
+    "section": [ "modeldefs" ],
+    "text_language": "z_modeldef"
+  },
+  "voxeldefs": {
+    "inherits": "text",
+    "name": "Voxel defs",
+    "match_name": [ "voxeldef" ],
+    "text_language": "z_voxeldef"
+  },
+  "reverbs": {
+    "inherits": "text",
+    "name": "Reverbs",
+    "match_name": [ "reverbs" ],
+    "text_language": "z_reverbs"
+  },
+  "secrets": {
+    "inherits": "text",
+    "name": "ZDoom secret list",
+    "match_name": [ "secrets" ]
+  },
+  "rscript": {
+    "inherits": "text",
+    "name": "EDGE RTS",
+    "match_name": [ "rscript" ],
+    "icon": "code"
+  },
+  "skininfo": {
+    "inherits": "text",
+    "name": "Skin defs",
+    "match_name": [ "s_skin", "skininfo" ],
+    "text_language": "z_s_skin"
+  },
+  "sbarinfo": {
+    "inherits": "text",
+    "name": "Status bar",
+    "match_name": [ "sbarinfo" ],
+    "text_language": "z_sbarinfo"
+  },
+  "acs": {
+    "inherits": "text",
+    "name": "ACS source",
+    "match_extorname": true,
+    "match_name": [ "scripts" ],
+    "match_ext": [ "acs" ],
+    "text_language": "acs_z",
+    "icon": "code"
+  },
+  "zsdf": {
+    "inherits": "text",
+    "name": "Strife dialogue",
+    "match_name": [ "dialogue", "script??" ],
+    "match_ext": [ "dlg" ],
+    "match_extorname": true,
+    "text_language": "zsdf"
+  },
+  "sndinfo": {
+    "inherits": "text",
+    "name": "Sound info",
+    "match_name": [ "sndinfo" ],
+    "text_language": "z_sndinfo"
+  },
+  "sndseq": {
+    "inherits": "text",
+    "name": "Sound sequence",
+    "match_name": [ "sndseq" ],
+    "text_language": "z_sndseq"
+  },
+  "teaminfo": {
+    "inherits": "text",
+    "name": "Team defs",
+    "match_name": [ "teaminfo" ],
+    "text_language": "z_teaminfo"
+  },
+  "terrain": {
+    "inherits": "text",
+    "name": "Terrain defs",
+    "match_name": [ "terrain" ],
+    "text_language": "z_terrain"
+  },
+  "textcolo": {
+    "inherits": "text",
+    "name": "Text colors",
+    "match_name": [ "textcolo", "textcolors" ],
+    "text_language": "z_textcolors"
+  },
+  "zdtextures": {
+    "inherits": "text",
+    "name": "Texture definitions",
+    "match_name": [ "textures", "hirestex" ],
+    "icon": "e_texturex",
+    "text_language": "z_textures"
+  },
+  "zdtextures_ns": {
+    "inherits": "text",
+    "name": "Texture definitions",
+    "section": [ "texturedefs" ],
+    "icon": "e_texturex",
+    "text_language": "z_textures"
+  },
+  "trnslate": {
+    "inherits": "text",
+    "name": "Translation defs",
+    "match_name": [ "trnslate" ]
+  },
+  "palvers": {
+    "inherits": "text",
+    "name": "Paletted replacements",
+    "match_name": [ "palvers" ]
+  },
+  "udmf_textmap": {
+    "inherits": "text",
+    "name": "UDMF Map Data",
+    "match_name": [ "textmap" ],
+    "colour": "rgb(60,255,100)"
+  },
+  "xhairs": {
+    "inherits": "text",
+    "name": "Crosshairs",
+    "match_name": [ "xhairs" ]
+  },
+  // Boom swantbls.dat files
+  "swantbls": {
+    "inherits": "text",
+    "name": "Boom Swan Tables",
+    "match_name": [ "swantbls", "defswani" ],
+    "export_ext": "dat"
+  },
+  // Doomsday DED lumps and files
+  "ded": {
+    "inherits": "text",
+    "name": "Doomsday Engine Defs",
+    "match_extorname": true,
+    "match_name": [ "dd_defns" ],
+    "match_ext": [ "ded" ],
+    "icon": "code"
+  },
+  // EDGE COAL lumps and files
+  "coal": {
+    "inherits": "text",
+    "name": "EDGE COAL",
+    "match_extorname": true,
+    "match_name": [ "coal*" ],
+    "match_ext": [ "ec" ],
+    "icon": "code"
+  },
+  // EDGE DDF lumps and files
+  "ddf": {
+    "inherits": "text",
+    "name": "EDGE DDF",
+    "match_extorname": true,
+    "match_name": [ "ddf*", "wadfixes" ],
+    "match_ext": [ "ddf", "ldf" ],
+    "icon": "code"
+  },
+  // EDGE versioning lump
+  "edgever": {
+    "inherits": "text",
+    "name": "EDGE VERSION",
+    "match_name": [ "edgever" ],
+    "icon": "e_text"
+  },
+  // Eternity text lumps
+  "options": {
+    "inherits": "text",
+    "name": "Forced Options",
+    "match_name": [ "options" ]
+  },
+  "edf": {
+    "inherits": "text",
+    "name": "Eternity EDF",
+    "text_language": "edf",
+    "match_extorname": true,
+    "match_ext": [ "edf" ],
+    "match_name": [
+      "edfroot", "estrings", "eterrain", "emenus", "esndseq",
+      "esndinfo", "efonts", "edf*"
+    ],
+    "icon": "code"
+  },
+  "emapinfo": {
+    "inherits": "text",
+    "name": "MAPINFO (Eternity)",
+    "text_language": "emapinfo",
+    "match_name": [ "emapinfo" ]
+  },
+  "extradata": {
+    "inherits": "text",
+    "name": "Eternity ExtraData",
+    "text_language": "edf",
+    "detectable": false
+  },
+  // PrBoom+ lumps
+  "prbhud": {
+    "inherits": "text",
+    "name": "PrBoom+ HUDs",
+    "match_name": [ "-prbhud-" ]
+  },
+  // SRB2 text lumps
+  "soc": {
+    "inherits": "text",
+    "name": "Main Configuration",
+    "match_name": [ "soc_*", "maincfg", "objctcfg" ]
+  },
+  "srb2lua": {
+    "inherits": "text",
+    "name": "Lua Script",
+    "icon": "lua",
+    "match_extorname": true,
+    "match_ext": [ "lua" ],
+    "match_name": [ "lua_*" ],
+    "text_language": "srb2lua"
+  },
+  // ZDaemon text lumps
+  "patchinf": {
+    "inherits": "text",
+    "name": "Patchinfo",
+    "match_name": [ "patchinf" ],
+    "text_language": "zd_patchinf"
+  },
+  // Catchall for various misc text lumps
+  "misctext": {
+    "inherits": "text",
+    "name": "Text",
+    "match_name": [ "extended", "copyrite", "serial", "license", "credits", "hacx-e" ]
+  },
+  "shaders": {
+    "inherits": "text",
+    "name": "Shaders",
+    "match_ext": [ "fp", "fs", "ps", "vp", "shader", "inc", "compute" ],
+    "icon": "code"
+  },
+  // Not actually text!
+  "compshaders": {
+    "name": "Compiled Shaders",
+    "match_ext": [ "pso" ]
+  },
+  "batch": {
+    "inherits": "text",
+    "name": "DOS Batch",
+    "match_ext": [ "bat" ]
+  },
+  "logfile": {
+    "inherits": "text",
+    "name": "Log",
+    "match_ext": [ "log" ]
+  },
+  "configfile": {
+    "inherits": "text",
+    "name": "Configuration",
+    "match_ext": [ "cfg", "ini", "inf" ]
+  },
+  "html": {
+    "inherits": "text",
+    "name": "HTML",
+    "match_ext": [ "htm", "html" ],
+    "icon": "code"
+  },
+  "qrc": {
+    "inherits": "text",
+    "name": "Quake Resources",
+    "match_ext": [ "rc" ]
+  },
+  "con": {
+    "inherits": "text",
+    "name": "DN3D Content",
+    "match_ext": [ "con" ]
+  },
+  "msg": {
+    "inherits": "text",
+    "name": "Messages",
+    "match_ext": [ "msg" ]
+  },
+  "lst": {
+    "inherits": "text",
+    "name": "List",
+    "match_ext": [ "lst" ]
+  },
+  "jedi_level": {
+    "inherits": "text",
+    "name": "DF/TV Level",
+    "match_ext": [ "lev", "lvl" ]
+  },
+  "jedi_model": {
+    "inherits": "text",
+    "name": "DF Model",
+    "match_ext": [ "3do" ]
+  },
+  "jedi_vue": {
+    "inherits": "text",
+    "name": "DF Scene",
+    "match_ext": [ "vue" ]
+  },
+  "jedi_inf": {
+    "inherits": "text",
+    "name": "DF Script",
+    "match_ext": [ "inf" ]
+  },
+  "jedi_objects": {
+    "inherits": "text",
+    "name": "DF Objects",
+    "match_ext": [ "o" ]
+  },
+  "jedi_goal": {
+    "inherits": "text",
+    "name": "DF Goals",
+    "match_ext": [ "gol" ]
+  },
+  "rottscript": {
+    "inherits": "text",
+    "name": "Intro Script",
+    "match_name": [ "shartit?" ]
+  },
+  "descent_briefing": {
+    "inherits": "text",
+    "name": "Descent Briefing",
+    "match_ext": [ "txb", "ctb" ]
+  },
+  "sourcecode_c": {
+    "inherits": "text",
+    "name": "Source Code (C Based)",
+    "match_ext": [ "c", "cpp", "cxx", "h", "hpp", "hxx", "java", "cs", "js" ],
+    "text_language": "cstyle",
+    "icon": "code"
+  },
+  "sourcecode_other": {
+    "inherits": "text",
+    "name": "Source Code (Other)",
+    "match_ext": [ "bas", "py", "pl", "pm", "php", "pas", "p", "pp", "vb", "rb", "l", "m", "d", "e" ],
+    "icon": "code"
+  },
+  "tv_texdef": {
+    "inherits": "text",
+    "name": "TV Texture Definition",
+    "match_ext": [ "tex" ]
+  },
+  "playlist": {
+    "inherits": "text",
+    "name": "Playlist",
+    "match_ext": [ "m3u" ]
+  },
+  "zscript": {
+    "inherits": "text",
+    "name": "ZScript",
+    "match_name": [ "zscript" ],
+    "match_ext": [ "zs", "zsc", "zc" ],
+    "match_extorname": true,
+    "text_language": "zscript",
+    "icon": "code"
+  },
+  "zscript_ns": {
+    "inherits": "text",
+    "name": "ZScript",
+    "section": [ "zscript" ],
+    "text_language": "zscript",
+    "icon": "code"
+  },
+  "iwadinfo": {
+    "inherits": "text",
+    "name": "IWAD Info",
+    "match_name": [ "iwadinfo" ],
+    "text_language": "z_iwadinfo"
+  },
+  "umapinfo": {
+    "inherits": "text",
+    "name": "Universal MapInfo",
+    "match_name": [ "umapinfo" ],
+    "text_language": "umapinfo"
+  },
+  "json": {
+    "inherits": "text",
+    "name": "JSON",
+    "match_ext": [ "json" ],
+    "text_language": "json"
+  },
+  "gameconf": {
+    "inherits": "text",
+    "name": "Game Configuration",
+    "match_name": [ "gameconf" ],
+    "text_language": "json"
+  },
+  "sbardef": {
+    "inherits": "text",
+    "name": "Statusbar Definition",
+    "match_name": [ "sbardef" ],
+    "text_language": "json"
+  },
+  "intermission": {
+    "inherits": "text",
+    "name": "Interlevel Definition",
+    "match_name": [ "xwinter0", "xwinter1" ],
+    "text_language": "json"
+  },
+  "finale": {
+    "inherits": "text",
+    "name": "Finale Definition",
+    "match_name": [ "xfinale1" ],
+    "text_language": "json"
+  },
+  "trakinfo": {
+    "inherits": "text",
+    "name": "Music Track Info",
+    "match_name": [ "trakinfo" ],
+    "text_language": "json"
+  },
+  "kfont": {
+    "inherits": "text",
+    "name": "KEX Font",
+    "match_ext": [ "kfont" ]
+  },
+  "txt": {
+    "inherits": "text",
+    "name": "Text",
+    "match_extorname": true,
+    "match_ext": [ "txt", "diz", "1st", "doc", "nfo" ],
+    "match_name": [ "readme", "*info", "*defs" ]
+  }
+}

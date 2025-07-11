@@ -35,7 +35,7 @@ public:
 
 	// Static functions
 	static void               initTypes();
-	static bool               readEntryTypeDefinitions(string_view definitions, string_view source);
+	static void               readEntryTypes(nlohmann::ordered_json& j);
 	static bool               loadEntryTypes();
 	static bool               detectEntryType(ArchiveEntry& entry);
 	static EntryType*         fromId(string_view id);
