@@ -328,6 +328,6 @@ decohack : cstyle {
 		A_RemoveFlags = "flags flags, mbf21flags mbf21flags";
 
 		// not functions but here for the arguments in syntax highlighting
-		transmap = "lump tranmap";
+		tranmap = "lump tranmap";
 	}
 }
