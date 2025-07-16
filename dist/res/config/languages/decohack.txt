@@ -15,14 +15,18 @@ decohack : cstyle {
 	properties = {
 		$override, ednum, health, speed, infightinggroup, projectilegroup, radius, height, damage, reactiontime, painchance, mass,
 		seesound, attacksound, painsound, deathsound, activesound, dropitem, fastspeed, meleerange, splashgroup, ripsound, state, states, flags,
+		id24flags, minrespawntics, respawndice, pickupammotype, pickupammocategory, pickupweapontype, pickupitemtype, pickupbonuscount,
+		pickupmessage, pickupsound, translation, selfdamagefactor,
 		// states
-		spritename, frame, duration, bright, notbright, fast, notfast, nextstate,
+		spritename, frame, duration, bright, notbright, fast, notfast, nextstate, tranmap,
 		// weapons
-		ammotype, ammopershot, offset,
+		ammotype, ammopershot, offset, slot, slotpriority, switchpriority, initialowned, initialraised, carouselicon, allowswitchwithownedweapon,
+		noswitchwithownedweapon, allowswitchwithowneditem, noswitchwithowneditem,
 		// sounds
 		priority, singular,
 		// ammo
-		max, pickup,
+		max, pickup, initialammo, maxupgradeammo, boxammo, backpackammo, weaponammo, droppedammo, droppedboxammo, droppedbackpackammo, droppedweaponammo,
+		deathmatchweaponammo, skill1multiplier, skill2multiplier, skill3multiplier, skill4multiplier, skill5multiplier,
 		// misc
 		monstersfightownspecies, initialbullets, initialhealth, greenarmorclass, bluearmorclass, soulspherehealth, maxsoulspherehealth, megaspherehealth,
 		godmodehealth, idfaarmor, idfaarmorclass, idkfaarmor, idkfaarmorclass, bfgcellspershot, maxhealth, maxarmor
