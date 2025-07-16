@@ -15,17 +15,21 @@ decohack : cstyle {
 	properties = {
 		$override, ednum, health, speed, infightinggroup, projectilegroup, radius, height, damage, reactiontime, painchance, mass,
 		seesound, attacksound, painsound, deathsound, activesound, dropitem, fastspeed, meleerange, splashgroup, ripsound, state, states, flags,
+		id24flags, minrespawntics, respawndice, pickupammotype, pickupammocategory, pickupweapontype, pickupitemtype, pickupbonuscount,
+		pickupmessage, pickupsound, translation, selfdamagefactor,
 		// states
-		spritename, frame, duration, bright, notbright, fast, notfast, nextstate,
+		spritename, frame, duration, bright, notbright, fast, notfast, nextstate, tranmap,
 		// weapons
-		ammotype, ammopershot, offset,
+		ammotype, ammopershot, offset, slot, slotpriority, switchpriority, initialowned, initialraised, carouselicon, allowswitchwithownedweapon,
+		noswitchwithownedweapon, allowswitchwithowneditem, noswitchwithowneditem,
 		// sounds
 		priority, singular,
 		// ammo
-		max, pickup,
+		max, pickup, initialammo, maxupgradeammo, boxammo, backpackammo, weaponammo, droppedammo, droppedboxammo, droppedbackpackammo, droppedweaponammo,
+		deathmatchweaponammo, skill1multiplier, skill2multiplier, skill3multiplier, skill4multiplier, skill5multiplier,
 		// misc
 		monstersfightownspecies, initialbullets, initialhealth, greenarmorclass, bluearmorclass, soulspherehealth, maxsoulspherehealth, megaspherehealth,
-		godmodehealth, idfaarmor, idfaarmorclass, idkfaarmo, idkfaarmorclass, bfgcellspershot, maxhealth, maxarmor
+		godmodehealth, idfaarmor, idfaarmorclass, idkfaarmor, idkfaarmorclass, bfgcellspershot, maxhealth, maxarmor
 	}
 
 	constants = {
@@ -62,6 +66,16 @@ decohack : cstyle {
 		MTF_EXTRA70, MTF_EXTRA71, MTF_EXTRA72, MTF_EXTRA73, MTF_EXTRA74, MTF_EXTRA75, MTF_EXTRA76, MTF_EXTRA77, MTF_EXTRA78, MTF_EXTRA79, MTF_EXTRA80, MTF_EXTRA81, MTF_EXTRA82,
 		MTF_EXTRA83, MTF_EXTRA84, MTF_EXTRA85, MTF_EXTRA86, MTF_EXTRA87, MTF_EXTRA88, MTF_EXTRA89, MTF_EXTRA90, MTF_EXTRA91, MTF_EXTRA92, MTF_EXTRA93, MTF_EXTRA94, MTF_EXTRA95,
 		MTF_EXTRA96, MTF_EXTRA97, MTF_EXTRA98, MTF_EXTRA99,
+		MTF_GHOUL, MTF_BANSHEE, MTF_MINDWEAVER, MTF_SHOCKTROOPER, MTF_VASSAGO, MTF_TYRANT, MTF_TYRANT_BOSS_1, MTF_TYRANT_BOSS_2, MTF_INCINERATOR_FLAME, MTF_HEATWAVE_SPAWNER,
+		MTF_HEATWAVE_RIPPER, MTF_GHOUL_BALL, MTF_SHOCKTROOPER_HEAD, MTF_SHOCKTROOPER_TORSO, MTF_VASSAGO_FLAME, MTF_STALAGMITE_GRAY, MTF_LARGE_CORPSE_PILE, MTF_HUMAN_BBQ_1,
+		MTF_HUMAN_BBQ_2, MTF_HANGING_VICTIM_BOTH_LEGS, MTF_HANGING_VICTIM_BOTH_LEGS_BLOCKING, MTF_HANGING_VICTIM_CRUCIFIED, MTF_HANGING_VICTIM_CRUCIFIED_BLOCKING,
+		MTF_HANGING_VICTIM_ARMS_BOUND, MTF_HANGING_VICTIM_ARMS_BOUND_BLOCKING, MTF_HANGING_BARON_OF_HELL, MTF_HANGING_BARON_OF_HELL_BLOCKING, MTF_HANGING_VICTIM_CHAINED,
+		MTF_HANGING_VICTIM_CHAINED_BLOCKING, MTF_HANGING_TORSO_CHAINED, MTF_HANGING_TORSO_CHAINED_BLOCKING, MTF_SKULL_POLE_TRIO, MTF_SKULL_GIBS, MTF_BUSH_SHORT, MTF_BUSH_SHORT_BURNED_1,
+		MTF_BUSH_SHORT_BURNED_2, MTF_BUSH_TALL, MTF_BUSH_TALL_BURNED_1, MTF_BUSH_TALL_BURNED_2, MTF_CAVE_ROCK_COLUMN, MTF_CAVE_STALAGMITE_LARGE, MTF_CAVE_STALAGMITE_MEDIUM,
+		MTF_CAVE_STALAGMITE_SMALL, MTF_CAVE_STALACTITE_LARGE, MTF_CAVE_STALACTITE_LARGE_BLOCKING, MTF_CAVE_STALACTITE_MEDIUM, MTF_CAVE_STALACTITE_MEDIUM_BLOCKING,
+		MTF_CAVE_STALACTITE_SMALL, MTF_CAVE_STALACTITE_SMALL_BLOCKING, MTF_OFFICE_CHAIR, MTF_OFFICE_LAMP_BREAKABLE, MTF_CEILING_LAMP, MTF_CANDELABRA_SHORT, MTF_AMBIENT_KLAXON,
+		MTF_AMBIENT_PORTAL_OPEN, MTF_AMBIENT_PORTAL_LOOP, MTF_AMBIENT_PORTAL_CLOSE, MTF_FUEL_CAN, MTF_FUEL_TANK, MTF_CALAMITY_BLADE, MTF_INCINERATOR,
+
 		MT_NULL, MT_PLAYER, MT_POSSESSED, MT_SHOTGUY, MT_VILE, MT_FIRE, MT_UNDEAD, MT_TRACER, MT_SMOKE, MT_FATSO, MT_FATSHOT, MT_CHAINGUY, MT_TROOP, MT_SERGEANT,
 		MT_SHADOWS, MT_HEAD, MT_BRUISER, MT_BRUISERSHOT, MT_KNIGHT, MT_SKULL, MT_SPIDER, MT_BABY, MT_CYBORG, MT_PAIN, MT_WOLFSS, MT_KEEN, MT_BOSSBRAIN, MT_BOSSSPIT,
 		MT_BOSSTARGET, MT_SPAWNSHOT, MT_SPAWNFIRE, MT_BARREL, MT_TROOPSHOT, MT_HEADSHOT, MT_ROCKET, MT_PLASMA, MT_BFG, MT_ARACHPLAZ, MT_PUFF, MT_BLOOD, MT_TFOG,
@@ -93,11 +107,19 @@ decohack : cstyle {
 		DeadShotgunGuy, GibbedMarine, GibbedMarineExtra, HeadsOnAStick, Gibs, HeadOnAStick, HeadCandles, DeadStick, LiveStick, BigTree, BurningBarrel,
 		HangNoGuts, HangBNoBrain, HangTLookingDown, HangTSkull, HangTLookingUp, HangTNoBrain, ColonGibs, SmallBloodPool, BrainStem, PointPusher, PointPuller,
 		MBFHelperDog, PlasmaBall1, PlasmaBall2, EvilSceptre, UnholyBible,
+		Ghoul, Banshee, Mindweaver, Shocktrooper, Vassago, Tyrant, TyrantBoss1, TyrantBoss2, IncineratorFlame, HeatwaveSpawner, HeatwaveRipper, GhoulBall,
+		ShocktrooperHead, ShocktrooperTorso, VassagoFlame, StalagmiteGray, LargeCorpsePile, HumanBbq1, HumanBbq2, HangingVictimBothLegs,
+		HangingVictimBothLegsBlocking, HangingVictimCrucified, HangingVictimCrucifiedBlocking, HangingVictimArmsBound, HangingVictimArmsBoundBlocking,
+		HangingBaronOfHell, HangingBaronOfHellBlocking, HangingVictimChained, HangingVictimChainedBlocking, HangingTorsoChained, HangingTorsoChainedBlocking,
+		SkullPoleTrio, SkullGibs, BushShort, BushShortBurned1, BushShortBurned2, BushTall, BushTallBurned1, BushTallBurned2, CaveRockColumn, CaveStalagmiteLarge,
+		CaveStalagmiteMedium, CaveStalagmiteSmall, CaveStalactiteLarge, CaveStalactiteLargeBlocking, CaveStalactiteMedium, CaveStalactiteMediumBlocking, CaveStalactiteSmall,
+		CaveStalactiteSmallBlocking, OfficeChair, OfficeLampBreakable, CeilingLamp, CandelabraShort, AmbientKlaxon, AmbientPortalOpen, AmbientPortalLoop, AmbientPortalClose,
+		FuelCan, FuelTank, CalamityBlade, Incinerator,
 		// ammo
-		AM_CLIP, AM_SHELL, AM_CELL, AM_MISL, AM_NOAMMO,
+		AM_CLIP, AM_SHELL, AM_CELL, AM_MISL, AM_NOAMMO, AM_FUEL, AM_NONE, AM_FREE_START,
 		// weapons
-		WP_FIST, WP_PISTOL, WP_SHOTGUN, WP_CHAINGUN, WP_MISSILE, WP_PLASMA, WP_BFG, WP_CHAINSAW, WP_SUPERSHOTGUN,
-		Fist, Pistol, Shotgun, Chaingun, RocketLauncher, PlasmaRifle, BFG9000, Chainsaw, SuperShotgun,
+		WP_FIST, WP_PISTOL, WP_SHOTGUN, WP_CHAINGUN, WP_MISSILE, WP_PLASMA, WP_BFG, WP_CHAINSAW, WP_SUPERSHOTGUN, WP_INCINERATOR, WP_CALAMITYBLADE, WP_FREE_START,
+		Fist, Pistol, Shotgun, Chaingun, RocketLauncher, PlasmaRifle, BFG9000, Chainsaw, SuperShotgun, Incinerator, CalamityBlade,
 		// states
 		S_NULL, S_LIGHTDONE, S_PUNCH, S_PUNCHDOWN, S_PUNCHUP, S_PUNCH1, S_PUNCH2, S_PUNCH3, S_PUNCH4, S_PUNCH5, S_PISTOL, S_PISTOLDOWN, S_PISTOLUP, S_PISTOL1,
 		S_PISTOL2, S_PISTOL3, S_PISTOL4, S_PISTOLFLASH, S_SGUN, S_SGUNDOWN, S_SGUNUP, S_SGUN1, S_SGUN2, S_SGUN3, S_SGUN4, S_SGUN5, S_SGUN6, S_SGUN7, S_SGUN8, S_SGUN9,
@@ -237,7 +259,9 @@ decohack : cstyle {
 		STR_THUSTR_22, STR_THUSTR_23, STR_THUSTR_24, STR_THUSTR_25, STR_THUSTR_26, STR_THUSTR_27, STR_THUSTR_28, STR_THUSTR_29, STR_THUSTR_30, STR_THUSTR_31, STR_THUSTR_32,
 		STR_PHUSTR_1, STR_PHUSTR_2, STR_PHUSTR_3, STR_PHUSTR_4, STR_PHUSTR_5, STR_PHUSTR_6, STR_PHUSTR_7, STR_PHUSTR_8, STR_PHUSTR_9, STR_PHUSTR_10, STR_PHUSTR_11, STR_PHUSTR_12,
 		STR_PHUSTR_13, STR_PHUSTR_14, STR_PHUSTR_15, STR_PHUSTR_16, STR_PHUSTR_17, STR_PHUSTR_18, STR_PHUSTR_19, STR_PHUSTR_20, STR_PHUSTR_21, STR_PHUSTR_22, STR_PHUSTR_23,
-		STR_PHUSTR_24, STR_PHUSTR_25, STR_PHUSTR_26, STR_PHUSTR_27, STR_PHUSTR_28, STR_PHUSTR_29, STR_PHUSTR_30, STR_PHUSTR_31, STR_PHUSTR_32
+		STR_PHUSTR_24, STR_PHUSTR_25, STR_PHUSTR_26, STR_PHUSTR_27, STR_PHUSTR_28, STR_PHUSTR_29, STR_PHUSTR_30, STR_PHUSTR_31, STR_PHUSTR_32,
+		// table limits
+		THINGS_MAX, STATES_MAX, WEAPONS_MAX, AMMO_MAX
 	}
 
 	functions {
@@ -306,5 +330,8 @@ decohack : cstyle {
 		A_JumpIfFlagsSet = "state state, flags flags, mbf21flags mbf21flags";
 		A_AddFlags = "flags flags, mbf21flags mbf21flags";
 		A_RemoveFlags = "flags flags, mbf21flags mbf21flags";
+
+		// not functions but here for the arguments in syntax highlighting
+		tranmap = "lump tranmap";
 	}
 }
