@@ -84,13 +84,21 @@ namespace strutil
 	string              right(string_view str, unsigned n);
 	string_view         rightV(string_view str, unsigned n);
 	string              afterLast(string_view str, char chr);
+	string              afterLast(string_view str, string_view token);
 	string_view         afterLastV(string_view str, char chr);
+	string_view         afterLastV(string_view str, string_view token);
 	string              afterFirst(string_view str, char chr);
+	string              afterFirst(string_view str, string_view token);
 	string_view         afterFirstV(string_view str, char chr);
+	string_view         afterFirstV(string_view str, string_view token);
 	string              beforeLast(string_view str, char chr);
+	string              beforeLast(string_view str, string_view token);
 	string_view         beforeLastV(string_view str, char chr);
+	string_view         beforeLastV(string_view str, string_view token);
 	string              beforeFirst(string_view str, char chr);
+	string              beforeFirst(string_view str, string_view token);
 	string_view         beforeFirstV(string_view str, char chr);
+	string_view         beforeFirstV(string_view str, string_view token);
 	vector<string>      split(string_view str, char separator, bool skip_duplicates = false);
 	vector<string_view> splitV(string_view str, char separator, bool skip_duplicates = false);
 	string              truncate(string_view str, unsigned length);
@@ -103,8 +111,9 @@ namespace strutil
 	string&             removeSuffixIP(string& str, char suffix);
 
 	// Misc
-	void processIncludes(const string& filename, string& out);
-	void processIncludes(const ArchiveEntry* entry, string& out, bool use_res = true);
+	void   processIncludes(const string& filename, string& out);
+	void   processIncludes(const ArchiveEntry* entry, string& out, bool use_res = true);
+	string join(const vector<string>& strings, string_view separator);
 
 	// Conversion
 	int         asInt(string_view str, int base = 10);
@@ -118,16 +127,6 @@ namespace strutil
 	bool        toDouble(string_view str, double& target);
 	string      toString(string_view str);
 	string_view viewFromChars(const char* chars, unsigned max_length);
-
-	// Joins all given args into a single string
-	template<typename... Args> string join(const Args&... args)
-	{
-		std::ostringstream stream;
-
-		int a[] = { 0, ((void)(stream << args), 0)... };
-
-		return stream.str();
-	}
 
 	// Encoding
 	// string toUTF8(string_view str);

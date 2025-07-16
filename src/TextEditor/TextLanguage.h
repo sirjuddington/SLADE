@@ -147,6 +147,7 @@ public:
 		string_view deprecated  = "",
 		bool        replace     = false,
 		string_view return_type = "");
+	void addFunction(string_view name, const nlohmann::ordered_json& j, bool has_void = false);
 	void loadZScript(const zscript::Definitions& defs, bool custom = false);
 
 	string wordList(WordType type, bool include_custom = true) const;
@@ -168,8 +169,9 @@ public:
 	void clearFunctions() { functions_.clear(); }
 	void clearCustomDefs();
 
+	void fromJson(const nlohmann::ordered_json& j);
+
 	// Static functions
-	static bool           readLanguageDefinition(const MemChunk& mc, string_view source);
 	static bool           loadLanguages();
 	static TextLanguage*  fromId(string_view id);
 	static TextLanguage*  fromIndex(unsigned index);

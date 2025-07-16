@@ -167,19 +167,19 @@ ordered_json jsonutil::parseFileOrdered(const SFile& file)
 // Writes the given json object [j] to a file at [path].
 // Returns true if the file was successfully written, false otherwise
 // -----------------------------------------------------------------------------
-bool jsonutil::writeFile(const json& j, string_view path)
+bool jsonutil::writeFile(const json& j, string_view path, int indent)
 {
 	SFile file(path, SFile::Mode::Write);
 	if (!file.isOpen())
 		return false;
 
-	return file.writeStr(j.dump(2));
+	return file.writeStr(j.dump(indent));
 }
-bool jsonutil::writeFile(const ordered_json& j, string_view path)
+bool jsonutil::writeFile(const ordered_json& j, string_view path, int indent)
 {
 	SFile file(path, SFile::Mode::Write);
 	if (!file.isOpen())
 		return false;
 
-	return file.writeStr(j.dump(2));
+	return file.writeStr(j.dump(indent));
 }
