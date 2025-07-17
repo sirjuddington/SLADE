@@ -105,7 +105,7 @@ void executables::setGameExePath(string_view id, string_view path)
 // -----------------------------------------------------------------------------
 // Writes all game executable paths to json object [j]
 // -----------------------------------------------------------------------------
-void executables::writePaths(nlohmann::json& j)
+void executables::writePaths(Json& j)
 {
 	for (auto& exe : game_exes)
 		j["executable_paths"][exe.id] = strutil::escapedString(exe.path, true);
@@ -158,7 +158,7 @@ bool executables::writeExecutables(string_view path)
 // If [custom] is true, the executables are considered user-defined/custom
 // (and will be saved to the user executables config file)
 // -----------------------------------------------------------------------------
-void executables::readExecutables(nlohmann::json& j, bool custom)
+void executables::readExecutables(Json& j, bool custom)
 {
 	// Read game executables
 	if (j.contains("game_executables"))

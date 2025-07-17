@@ -33,7 +33,7 @@ void   setLineHilightWidth(double mult);
 void   setLineSelectionWidth(double mult);
 void   setFlatAlpha(double alpha);
 
-void readConfiguration(nlohmann::json& j);
+void readConfiguration(Json& j);
 void writeConfiguration(string_view json_file);
 bool init();
 void loadDefaults();

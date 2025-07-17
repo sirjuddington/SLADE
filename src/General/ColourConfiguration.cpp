@@ -271,7 +271,7 @@ void colourconfig::setFlatAlpha(double alpha)
 // -----------------------------------------------------------------------------
 // Reads a colour configuration from JSON [j]
 // -----------------------------------------------------------------------------
-void colourconfig::readConfiguration(json& j)
+void colourconfig::readConfiguration(Json& j)
 {
 	// Colours
 	if (j.contains("colours"))

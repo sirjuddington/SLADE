@@ -81,7 +81,7 @@ private:
 	bool       custom_wx_id_ = false;
 
 	// Internal functions
-	void fromJson(const nlohmann::json& j);
+	void fromJson(const Json& j);
 
 	// Static functions
 	static SAction* invalidAction();

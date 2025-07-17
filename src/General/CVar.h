@@ -47,7 +47,7 @@ struct CVar
 	}
 
 	// Static functions
-	static void  writeAll(nlohmann::json& json);
+	static void  writeAll(Json& json);
 	static void  set(const string& cvar_name, const string& value);
 	static CVar* get(const string& cvar_name);
 	static void  putList(vector<string>& list);

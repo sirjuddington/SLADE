@@ -226,7 +226,7 @@ void SAction::setBaseWxId(int id)
 // -----------------------------------------------------------------------------
 // Loads SAction properties from a JSON object [j]
 // -----------------------------------------------------------------------------
-void SAction::fromJson(const json& j)
+void SAction::fromJson(const Json& j)
 {
 	text_         = j.value("text", id_);
 	icon_         = j.value("icon", icon_);

@@ -30,9 +30,9 @@ namespace executables
 		string path;
 	};
 
-	void writePaths(nlohmann::json& j);
+	void writePaths(Json& j);
 	bool writeExecutables(string_view path);
-	void readExecutables(nlohmann::json& j, bool custom);
+	void readExecutables(Json& j, bool custom);
 	void init();
 	void parse(const Parser* p, bool custom);
 

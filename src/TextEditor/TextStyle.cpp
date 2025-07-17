@@ -221,7 +221,7 @@ bool TextStyle::copyStyle(const TextStyle* copy)
 // -----------------------------------------------------------------------------
 // Reads text style information from a JSON object [j]
 // -----------------------------------------------------------------------------
-void TextStyle::fromJson(const json& j)
+void TextStyle::fromJson(const Json& j)
 {
 	if (j.contains("font"))
 		font_ = j["font"].get<string>();
@@ -248,7 +248,7 @@ void TextStyle::fromJson(const json& j)
 // -----------------------------------------------------------------------------
 // Converts the text style to a JSON object
 // -----------------------------------------------------------------------------
-json TextStyle::toJson() const
+Json TextStyle::toJson() const
 {
 	json j;
 	if (!font_.empty())
@@ -395,7 +395,7 @@ bool StyleSet::parseOldSet(const ParseTreeNode* root)
 // -----------------------------------------------------------------------------
 // Reads style set info from a JSON object [j]
 // -----------------------------------------------------------------------------
-void StyleSet::readSet(const nlohmann::json& j)
+void StyleSet::readSet(const Json& j)
 {
 	// Get name
 	j["name"].get_to(name_);

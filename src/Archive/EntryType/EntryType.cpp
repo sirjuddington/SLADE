@@ -375,7 +375,7 @@ void EntryType::initTypes()
 // -----------------------------------------------------------------------------
 // Reads entry type definitions from a json object [j]
 // -----------------------------------------------------------------------------
-void EntryType::readEntryTypes(nlohmann::ordered_json& j)
+void EntryType::readEntryTypes(Json& j)
 {
 	for (auto& [id, j_etype] : j.items())
 	{
@@ -501,7 +501,7 @@ bool EntryType::loadEntryTypes()
 
 	// Parse each json file in the config dir
 	for (auto entry : etypes_cfg_dir->entries())
-		if (auto j = jsonutil::parseOrdered(entry->data()); !j.is_discarded())
+		if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
 			readEntryTypes(j);
 
 	// -------- READ CUSTOM TYPES ---------
@@ -520,7 +520,7 @@ bool EntryType::loadEntryTypes()
 		// Parse file
 		try
 		{
-			if (auto j = jsonutil::parseFileOrdered(item.path().string()); !j.is_discarded())
+			if (auto j = jsonutil::parseFile(item.path().string()); !j.is_discarded())
 				readEntryTypes(j);
 		}
 		catch (const std::exception& e)

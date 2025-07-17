@@ -122,7 +122,7 @@ void nodebuilders::addBuilderPath(string_view builder, string_view path)
 // -----------------------------------------------------------------------------
 // Writes builder paths to [json]
 // -----------------------------------------------------------------------------
-void nodebuilders::writeBuilderPaths(nlohmann::json& json)
+void nodebuilders::writeBuilderPaths(Json& json)
 {
 	for (auto& builder : builders)
 	{

@@ -677,7 +677,7 @@ void app::saveConfigFile()
 		return;
 
 	// Build JSON object
-	json j;
+	Json j;
 
 	// CVars
 	CVar::writeAll(j["cvars"]);

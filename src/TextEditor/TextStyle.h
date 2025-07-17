@@ -47,8 +47,8 @@ public:
 	void applyTo(wxStyledTextCtrl* stc) const;
 	bool copyStyle(const TextStyle* copy);
 
-	void           fromJson(const nlohmann::json& j);
-	nlohmann::json toJson() const;
+	void fromJson(const Json& j);
+	Json toJson() const;
 
 private:
 	string      name_;
@@ -76,7 +76,7 @@ public:
 	unsigned      nStyles() const { return styles_.size(); }
 
 	bool       parseOldSet(const ParseTreeNode* root);
-	void       readSet(const nlohmann::json& j);
+	void       readSet(const Json& j);
 	void       applyTo(TextEditorCtrl* stc);
 	void       applyToWx(wxStyledTextCtrl* stc);
 	bool       copySet(const StyleSet* copy);

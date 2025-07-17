@@ -346,7 +346,7 @@ void TextLanguage::addFunction(
 // Adds a function [name] to the language, parsed from a JSON object [j].
 // If [has_void] is true, empty args/return_type will be set to 'void'
 // -----------------------------------------------------------------------------
-void TextLanguage::addFunction(string_view name, const nlohmann::ordered_json& j, bool has_void)
+void TextLanguage::addFunction(string_view name, const Json& j, bool has_void)
 {
 	// If the function has no context, replace any existing function with the
 	// same name (unless... see below)
@@ -626,7 +626,7 @@ void TextLanguage::clearCustomDefs()
 // -----------------------------------------------------------------------------
 // Reads a language definition from a JSON object [j]
 // -----------------------------------------------------------------------------
-void TextLanguage::fromJson(const nlohmann::ordered_json& j)
+void TextLanguage::fromJson(const Json& j)
 {
 	// Copy from base language, if defined
 	if (j.contains("base"))
@@ -744,7 +744,7 @@ bool TextLanguage::loadLanguages()
 			// Read all (sorted) entries in this dir
 			for (auto* entry : defs)
 			{
-				if (auto j = jsonutil::parseOrdered(entry->data()); !j.is_discarded())
+				if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
 				{
 					for (auto& [id, j_lang] : j.items())
 					{

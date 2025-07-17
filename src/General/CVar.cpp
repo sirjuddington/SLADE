@@ -31,9 +31,8 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
-#include <fmt/format.h>
-#include <nlohmann/json.hpp>
 
 using namespace slade;
 
@@ -151,7 +150,7 @@ void CVar::putList(vector<string>& list)
 // -----------------------------------------------------------------------------
 // Writes all CVars to the given [json] object
 // -----------------------------------------------------------------------------
-void CVar::writeAll(nlohmann::json& json)
+void CVar::writeAll(Json& json)
 {
 	for (auto i = 0; i < n_cvars; ++i)
 	{

@@ -249,7 +249,7 @@ wxBitmap loadPNGIcon(const IconDef& icon, int size, Point2i padding)
 // Reads an icon set from the given JSON object [j] using the resources in
 // [res_archive]
 // -----------------------------------------------------------------------------
-IconSet readIconSet(const nlohmann::json& j, const Archive& res_archive)
+IconSet readIconSet(const Json& j, const Archive& res_archive)
 {
 	IconSet set{ j["name"] };
 	for (auto& [id, j_icon] : j["icons"].items())
