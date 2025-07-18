@@ -1,5 +1,6 @@
 #pragma once
 
+#include "General/JsonFwd.h"
 #include "Utility/PropertyList.h"
 
 namespace slade

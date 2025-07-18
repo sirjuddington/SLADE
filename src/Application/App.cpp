@@ -680,7 +680,21 @@ void app::saveConfigFile()
 	Json j;
 
 	// CVars
-	CVar::writeAll(j["cvars"]);
+	auto& j_cvars = j["cvars"];
+	for (auto cvar : CVar::allCvars())
+	{
+		if (cvar->flags & CVar::Flag::Save)
+		{
+			switch (cvar->type)
+			{
+			case CVar::Type::Integer: j_cvars[cvar->name] = cvar->getValue().Int; break;
+			case CVar::Type::Boolean: j_cvars[cvar->name] = cvar->getValue().Bool; break;
+			case CVar::Type::Float:   j_cvars[cvar->name] = cvar->getValue().Float; break;
+			case CVar::Type::String:  j_cvars[cvar->name] = dynamic_cast<CStringCVar*>(cvar)->value; break;
+			default:                  break;
+			}
+		}
+	}
 
 	// Base resource archive paths
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)

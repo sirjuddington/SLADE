@@ -1,5 +1,7 @@
 #pragma once
 
+#include "General/JsonFwd.h"
+
 namespace slade
 {
 namespace zscript

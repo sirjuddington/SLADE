@@ -1,5 +1,6 @@
 #pragma once
 
+#include "JsonFwd.h"
 #include "Utility/StringPair.h"
 
 class wxMenu;

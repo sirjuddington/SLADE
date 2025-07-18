@@ -148,26 +148,19 @@ void CVar::putList(vector<string>& list)
 }
 
 // -----------------------------------------------------------------------------
-// Writes all CVars to the given [json] object
+// Returns a vector of all CVars, optionally [sorted] by name
 // -----------------------------------------------------------------------------
-void CVar::writeAll(Json& json)
+vector<CVar*> CVar::allCvars(bool sorted)
 {
-	for (auto i = 0; i < n_cvars; ++i)
-	{
-		auto cvar = cvars[i];
+	vector<CVar*> cvarlist;
 
-		if (cvar->flags & Flag::Save)
-		{
-			switch (cvar->type)
-			{
-			case Type::Integer: json[cvar->name] = cvar->getValue().Int; break;
-			case Type::Boolean: json[cvar->name] = cvar->getValue().Bool; break;
-			case Type::Float:   json[cvar->name] = cvar->getValue().Float; break;
-			case Type::String:  json[cvar->name] = dynamic_cast<CStringCVar*>(cvar)->value; break;
-			default:            break;
-			}
-		}
-	}
+	for (unsigned i = 0; i < n_cvars; ++i)
+		cvarlist.push_back(cvars[i]);
+
+	if (sorted)
+		std::sort(cvarlist.begin(), cvarlist.end(), [](CVar* a, CVar* b) { return a->name < b->name; });
+
+	return cvarlist;
 }
 
 // -----------------------------------------------------------------------------

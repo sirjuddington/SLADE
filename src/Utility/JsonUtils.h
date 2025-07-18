@@ -4,6 +4,11 @@
 using json         = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
 
+namespace slade
+{
+using Json = ordered_json;
+}
+
 namespace slade::jsonutil
 {
 Json parse(string_view json);

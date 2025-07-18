@@ -1,5 +1,6 @@
 #pragma once
 
+#include "JsonFwd.h"
 #include "OpenGL/OpenGL.h"
 
 namespace slade::colourconfig

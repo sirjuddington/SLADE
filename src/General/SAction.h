@@ -1,5 +1,7 @@
 #pragma once
 
+#include "JsonFwd.h"
+
 class wxMenu;
 class wxAuiToolBar;
 class wxToolBar;
