@@ -1,0 +1,129 @@
+{
+  "game": {
+    "id": "doom2",
+    "name": "Doom 2",
+
+    // IWAD filename
+    "iwad": "doom2.wad",
+
+    // Supported map formats
+    "map_formats": [ "doom" ],
+
+    // DECORATE filters
+    "filters": [ "doom", "any" ],
+
+    // Sky flat for 3d mode
+    "sky_flat": "F_SKY1",
+
+    // Light levels
+    "light_level_interval": 16,
+
+    // Maps
+    "maps": [
+      // 'Episode' 1
+      { "mapname": "MAP01", "sky": "SKY1" },
+      { "mapname": "MAP02", "sky": "SKY1" },
+      { "mapname": "MAP03", "sky": "SKY1" },
+      { "mapname": "MAP04", "sky": "SKY1" },
+      { "mapname": "MAP05", "sky": "SKY1" },
+      { "mapname": "MAP06", "sky": "SKY1" },
+      { "mapname": "MAP07", "sky": "SKY1" },
+      { "mapname": "MAP08", "sky": "SKY1" },
+      { "mapname": "MAP09", "sky": "SKY1" },
+      { "mapname": "MAP10", "sky": "SKY1" },
+      { "mapname": "MAP11", "sky": "SKY1" },
+
+      // 'Episode' 2
+      { "mapname": "MAP12", "sky": "SKY2" },
+      { "mapname": "MAP13", "sky": "SKY2" },
+      { "mapname": "MAP14", "sky": "SKY2" },
+      { "mapname": "MAP15", "sky": "SKY2" },
+      { "mapname": "MAP16", "sky": "SKY2" },
+      { "mapname": "MAP17", "sky": "SKY2" },
+      { "mapname": "MAP18", "sky": "SKY2" },
+      { "mapname": "MAP19", "sky": "SKY2" },
+      { "mapname": "MAP20", "sky": "SKY2" },
+
+      // 'Episode' 3
+      { "mapname": "MAP21", "sky": "SKY3" },
+      { "mapname": "MAP22", "sky": "SKY3" },
+      { "mapname": "MAP23", "sky": "SKY3" },
+      { "mapname": "MAP24", "sky": "SKY3" },
+      { "mapname": "MAP25", "sky": "SKY3" },
+      { "mapname": "MAP26", "sky": "SKY3" },
+      { "mapname": "MAP27", "sky": "SKY3" },
+      { "mapname": "MAP28", "sky": "SKY3" },
+      { "mapname": "MAP29", "sky": "SKY3" },
+      { "mapname": "MAP30", "sky": "SKY3" },
+      { "mapname": "MAP31", "sky": "SKY3" },
+      { "mapname": "MAP32", "sky": "SKY3" }
+    ],
+
+    // Defaults
+    "defaults": {
+      "sector": {
+        "texturefloor": "MFLR8_1",
+        "textureceiling": "MFLR8_1",
+        "heightfloor": 0,
+        "heightceiling": 128,
+        "lightlevel": 160
+      },
+      "sidedef": {
+        "texturetop": "STONE2",
+        "texturemiddle": "STONE2",
+        "texturebottom": "STONE2"
+      },
+      "thing": {
+        "type": 1,
+        "flags": 7,
+        "udmf": {
+          "skill1": true,
+          "skill2": true,
+          "skill3": true,
+          "skill4": true,
+          "skill5": true,
+          "single": true,
+          "dm": true,
+          "coop": true
+        }
+      }
+    },
+
+    // Action specials
+    "action_specials": {
+      "import": [
+        "include/action_specials/doom1.json",
+        "include/action_specials/doom2.json"
+      ]
+    },
+
+    // Thing types
+    "thing_types": {
+      "import": [
+        "include/thing_types/common.json",
+        "include/thing_types/doom1.json",
+        "include/thing_types/doom2.json"
+      ]
+    },
+
+    // Thing flags
+    "thing_flags": {
+      "import": [ "include/thing_flags/doom.json" ]
+    },
+
+    // Line flags
+    "line_flags": {
+      "import": [ "include/line_flags/doom.json" ]
+    },
+
+    // Sector types
+    "sector_types": {
+      "import": [ "include/sector_types/doom.json" ]
+    },
+
+    // UDMF properties
+    "udmf_properties": {
+      "import": [ "include/udmf_properties/base.json" ]
+    }
+  }
+}

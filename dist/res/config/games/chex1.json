@@ -1,0 +1,96 @@
+{
+  "game": {
+    "id": "chex1",
+    "name": "Chex Quest",
+
+    // IWAD filename
+    "iwad": "chex.wad",
+
+    // Supported map formats
+    "map_formats": [ "doom" ],
+
+    // DECORATE filters
+    "filters": [ "chex", "any" ],
+
+    // Sky flat for 3d mode
+    "sky_flat": "F_SKY1",
+
+    // Light levels
+    "light_level_interval": 16,
+
+    // Maps
+    "maps": [
+      { "mapname": "E1M1", "sky": "SKY1" },
+      { "mapname": "E1M2", "sky": "SKY1" },
+      { "mapname": "E1M3", "sky": "SKY1" },
+      { "mapname": "E1M4", "sky": "SKY1" },
+      { "mapname": "E1M5", "sky": "SKY1" }
+    ],
+
+    // Defaults
+    "defaults": {
+      "sector": {
+        "texturefloor": "FLAT1",
+        "textureceiling": "FLAT14",
+        "heightfloor": 0,
+        "heightceiling": 128,
+        "lightlevel": 160
+      },
+      "sidedef": {
+        "texturetop": "CEMENT2",
+        "texturemiddle": "CEMENT2",
+        "texturebottom": "CEMENT2"
+      },
+      "thing": {
+        "type": 1,
+        "flags": 7,
+        "udmf": {
+          "skill1": true,
+          "skill2": true,
+          "skill3": true,
+          "skill4": true,
+          "skill5": true,
+          "single": true,
+          "dm": true,
+          "coop": true
+        }
+      }
+    },
+
+    // Action specials
+    "action_specials": {
+      "import": [
+        "include/action_specials/doom1.json",
+        "include/action_specials/doom2.json"
+      ]
+    },
+
+    // Thing types
+    "thing_types": {
+      "import": [
+        "include/thing_types/common.json",
+        "include/thing_types/chex1.json"
+      ]
+    },
+
+    // Thing flags
+    "thing_flags": {
+      "import": [ "include/thing_flags/doom.json" ]
+    },
+
+    // Line flags
+    "line_flags": {
+      "import": [ "include/line_flags/doom.json" ]
+    },
+
+    // Sector types
+    "sector_types": {
+      "import": [ "include/sector_types/doom.json" ]
+    },
+
+    // UDMF properties
+    "udmf_properties": {
+      "import": [ "include/udmf_properties/base.json" ]
+    }
+  }
+}

@@ -44,6 +44,7 @@
 #include "TextEditor/TextLanguage.h"
 #include "ThingType.h"
 #include "Utility/FileUtils.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"
@@ -85,6 +86,40 @@ CVAR(String, zdoom_pk3_path, "", CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 bool GameDef::parse(const MemChunk& mc)
 {
+	auto j = jsonutil::parse(mc);
+	if (j.is_discarded() || !j.contains("game"))
+		return false;
+
+	auto& j_game = j.at("game");
+	jsonutil::getIf(j_game, "id", name);
+	jsonutil::getIf(j_game, "name", title);
+
+	// Supported map formats
+	if (j_game.contains("map_formats"))
+	{
+		for (const auto& str_val : j_game.at("map_formats").get<std::vector<std::string>>())
+		{
+			if (strutil::equalCI(str_val, "doom"))
+				supported_formats[MapFormat::Doom] = true;
+			else if (strutil::equalCI(str_val, "hexen"))
+				supported_formats[MapFormat::Hexen] = true;
+			else if (strutil::equalCI(str_val, "doom64"))
+				supported_formats[MapFormat::Doom64] = true;
+			else if (strutil::equalCI(str_val, "doom32x"))
+				supported_formats[MapFormat::Doom32X] = true;
+			else if (strutil::equalCI(str_val, "udmf"))
+				supported_formats[MapFormat::UDMF] = true;
+		}
+	}
+
+	// Filters
+	if (j_game.contains("filters"))
+		for (const auto& str_val : j_game.at("filters").get<std::vector<std::string>>())
+			filters.push_back(strutil::lower(str_val));
+
+	return true;
+
+
 	// Parse configuration
 	Parser parser;
 	parser.parseText(mc, "");
@@ -280,7 +315,7 @@ void game::updateCustomDefinitions()
 // -----------------------------------------------------------------------------
 // Returns the tagged type of the parsed tree node [tagged]
 // -----------------------------------------------------------------------------
-TagType game::parseTagged(const ParseTreeNode* tagged)
+TagType game::parseTagged(string_view tagged)
 {
 	static std::map<string, TagType> tag_type_map{
 		{ "no", TagType::None },
@@ -311,7 +346,7 @@ TagType game::parseTagged(const ParseTreeNode* tagged)
 		{ "interpolation", TagType::Interpolation }
 	};
 
-	return tag_type_map[strutil::lower(tagged->stringValue())];
+	return tag_type_map[strutil::lower(tagged)];
 }
 
 // -----------------------------------------------------------------------------

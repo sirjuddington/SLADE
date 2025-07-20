@@ -1,0 +1,255 @@
+{
+  "game": {
+    "id": "hexen",
+    "name": "Hexen",
+
+    // IWAD filename
+    "iwad": "hexen.wad",
+
+    // Supported map formats
+    "map_formats": [ "hexen" ],
+
+    // DECORATE filters
+    "filters": [ "hexen", "raven", "any" ],
+
+    // Scripting
+    "script_language": "acs_hexen",
+
+    // Sky flat for 3d mode
+    "sky_flat": "F_SKY",
+
+    // Light levels
+    "light_level_interval": 16,
+
+    // Maps
+    "maps": [
+      // Values taken from MAPINFO in hexen.wad
+
+      // Cluster 1
+      { "mapname": "MAP01", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP02", "sky": "SKY4" },
+      { "mapname": "MAP03", "sky": "SKY4" },
+      { "mapname": "MAP04", "sky": "SKY4" },
+      { "mapname": "MAP05", "sky": "SKY4" },
+      { "mapname": "MAP06", "sky": "SKY4" },
+
+      // Cluster 2
+      { "mapname": "MAP08", "sky": [ "SKYFOG2", "SKYFOG" ] },
+      { "mapname": "MAP09", "sky": [ "SKYWALL", "SKY1" ] },
+      { "mapname": "MAP10", "sky": [ "SKYWALL", "SKY1" ] },
+      { "mapname": "MAP11", "sky": [ "SKYFOG2", "SKYFOG" ] },
+      { "mapname": "MAP12", "sky": [ "SKYWALL", "SKY1" ] },
+      { "mapname": "MAP13", "sky": [ "SKYWALL", "SKY1" ] },
+
+      // Cluster 4
+      { "mapname": "MAP21", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP22", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP23", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP24", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP25", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP26", "sky": [ "SKY2", "SKY3" ] },
+
+      // Cluster 3
+      { "mapname": "MAP27", "sky": [ "SKYWALL2", "SKY4" ] },
+      { "mapname": "MAP28", "sky": [ "SKYWALL2", "SKY4" ] },
+      { "mapname": "MAP30", "sky": [ "SKYWALL2", "SKY4" ] },
+      { "mapname": "MAP31", "sky": [ "SKYWALL2", "SKY4" ] },
+      { "mapname": "MAP32", "sky": [ "SKYFOG2", "SKYFOG" ] },
+      { "mapname": "MAP33", "sky": [ "SKYWALL2", "SKY4" ] },
+      { "mapname": "MAP34", "sky": [ "SKYWALL2", "SKY4" ] },
+
+      // Cluster 5
+      { "mapname": "MAP35", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP36", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP37", "sky": [ "SKY4", "SKY4" ] },
+      { "mapname": "MAP38", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP39", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP40", "sky": [ "SKY4", "SKY4" ] },
+
+      // Misc
+      { "mapname": "MAP07", "sky": [ "SKYWALL", "SKY1" ] },
+      { "mapname": "MAP14", "sky": [ "SKYFOG2", "SKYFOG" ] },
+      { "mapname": "MAP29", "sky": [ "SKYWALL2", "SKY4" ] },
+      // Commented out, conflicts with expansion
+      //{ "mapname": "MAP42", "sky": ["SKY2", "SKY3"] }
+      //{ "mapname": "MAP43", "sky": ["SKY4", "SKY4"] }
+      //{ "mapname": "MAP50", "sky": ["SKYWALL", "SKY4"] }
+      //{ "mapname": "MAP51", "sky": ["SKYWALL", "SKY4"] }
+      //{ "mapname": "MAP52", "sky": ["SKYWALL", "SKY4"] }
+      //{ "mapname": "MAP53", "sky": ["SKY4"] }
+      //{ "mapname": "MAP54", "sky": ["SKYWALL", "SKY4"] }
+      //{ "mapname": "MAP55", "sky": ["SKYWALL", "SKY4"] }
+      //{ "mapname": "MAP56", "sky": ["SKYWALL", "SKY4"] }
+
+      // Values taken from MAPINFO in hexdd.wad
+
+      // Cluster 1
+      { "mapname": "MAP41", "sky": [ "SKYWALL", "SKY1" ] },
+      { "mapname": "MAP42", "sky": [ "SKYWALL", "SKY1" ] },
+      { "mapname": "MAP43", "sky": [ "SKYFOG2", "SKYFOG" ] },
+      { "mapname": "MAP44", "sky": [ "SKYWALL", "SKY1" ] },
+      { "mapname": "MAP45", "sky": [ "SKYWALL", "SKY1" ] },
+      { "mapname": "MAP46", "sky": [ "SKYWALL", "SKY1" ] },
+      { "mapname": "MAP47", "sky": [ "SKYWALL", "SKY1" ] },
+
+      // Cluster 2
+      { "mapname": "MAP48", "sky": [ "SKYWALL2", "SKY2" ] },
+      { "mapname": "MAP49", "sky": [ "SKYWALL2", "SKY2" ] },
+      { "mapname": "MAP50", "sky": [ "SKYWALL2", "SKY2" ] },
+      { "mapname": "MAP51", "sky": [ "SKY2", "SKY3" ] },
+      { "mapname": "MAP52", "sky": [ "SKYWALL2", "SKY2" ] },
+      { "mapname": "MAP53", "sky": [ "SKYWALL2", "SKY2" ] },
+
+      // Cluster 3
+      { "mapname": "MAP54", "sky": [ "SKY4", "SKY4" ] },
+      { "mapname": "MAP55", "sky": [ "SKY4", "SKY4" ] },
+      { "mapname": "MAP56", "sky": [ "SKY4", "SKY4" ] },
+      { "mapname": "MAP57", "sky": [ "SKY4", "SKY4" ] },
+      { "mapname": "MAP58", "sky": [ "SKY4", "SKY4" ] },
+      { "mapname": "MAP59", "sky": [ "SKY4", "SKY4" ] },
+      { "mapname": "MAP60", "sky": [ "SKY4", "SKY4" ] },
+
+      // Cluster 4 -- commented out, conflicts with main IWAD
+      //{ "mapname": "MAP33", "sky": [ "SKY1", "SKY4" ] },
+      //{ "mapname": "MAP34", "sky": [ "SKY1", "SKY4" ] },
+      //{ "mapname": "MAP35", "sky": [ "SKYFOG2", "SKYFOG" ] },
+      //{ "mapname": "MAP36", "sky": [ "SKY4", "SKY4" ] },
+      //{ "mapname": "MAP37", "sky": [ "SKY4", "SKY4" ] },
+      //{ "mapname": "MAP38", "sky": [ "SKY1", "SKY4" ] },
+
+      // Misc
+      { "mapname": "MAP83", "sky": [ "SKY1", "SKY4" ] },
+
+      // Undefined
+      { "mapname": "MAP15", "sky": "SKY1" },
+      { "mapname": "MAP16", "sky": "SKY1" },
+      { "mapname": "MAP17", "sky": "SKY1" },
+      { "mapname": "MAP18", "sky": "SKY1" },
+      { "mapname": "MAP19", "sky": "SKY1" },
+      { "mapname": "MAP20", "sky": "SKY1" },
+      { "mapname": "MAP41", "sky": "SKY1" },
+      { "mapname": "MAP44", "sky": "SKY1" },
+      { "mapname": "MAP45", "sky": "SKY1" },
+      { "mapname": "MAP46", "sky": "SKY1" },
+      { "mapname": "MAP47", "sky": "SKY1" },
+      { "mapname": "MAP48", "sky": "SKY1" },
+      { "mapname": "MAP49", "sky": "SKY1" },
+      { "mapname": "MAP57", "sky": "SKY1" },
+      { "mapname": "MAP58", "sky": "SKY1" },
+      { "mapname": "MAP59", "sky": "SKY1" },
+      { "mapname": "MAP60", "sky": "SKY1" },
+      { "mapname": "MAP61", "sky": "SKY1" },
+      { "mapname": "MAP62", "sky": "SKY1" },
+      { "mapname": "MAP63", "sky": "SKY1" },
+      { "mapname": "MAP64", "sky": "SKY1" },
+      { "mapname": "MAP65", "sky": "SKY1" },
+      { "mapname": "MAP66", "sky": "SKY1" },
+      { "mapname": "MAP67", "sky": "SKY1" },
+      { "mapname": "MAP68", "sky": "SKY1" },
+      { "mapname": "MAP69", "sky": "SKY1" },
+      { "mapname": "MAP70", "sky": "SKY1" },
+      { "mapname": "MAP71", "sky": "SKY1" },
+      { "mapname": "MAP72", "sky": "SKY1" },
+      { "mapname": "MAP73", "sky": "SKY1" },
+      { "mapname": "MAP74", "sky": "SKY1" },
+      { "mapname": "MAP75", "sky": "SKY1" },
+      { "mapname": "MAP76", "sky": "SKY1" },
+      { "mapname": "MAP77", "sky": "SKY1" },
+      { "mapname": "MAP78", "sky": "SKY1" },
+      { "mapname": "MAP79", "sky": "SKY1" },
+      { "mapname": "MAP80", "sky": "SKY1" },
+      { "mapname": "MAP81", "sky": "SKY1" },
+      { "mapname": "MAP82", "sky": "SKY1" },
+      { "mapname": "MAP84", "sky": "SKY1" },
+      { "mapname": "MAP85", "sky": "SKY1" },
+      { "mapname": "MAP86", "sky": "SKY1" },
+      { "mapname": "MAP87", "sky": "SKY1" },
+      { "mapname": "MAP88", "sky": "SKY1" },
+      { "mapname": "MAP89", "sky": "SKY1" },
+      { "mapname": "MAP90", "sky": "SKY1" },
+      { "mapname": "MAP91", "sky": "SKY1" },
+      { "mapname": "MAP92", "sky": "SKY1" },
+      { "mapname": "MAP93", "sky": "SKY1" },
+      { "mapname": "MAP94", "sky": "SKY1" },
+      { "mapname": "MAP95", "sky": "SKY1" },
+      { "mapname": "MAP96", "sky": "SKY1" },
+      { "mapname": "MAP97", "sky": "SKY1" },
+      { "mapname": "MAP98", "sky": "SKY1" },
+      { "mapname": "MAP99", "sky": "SKY1" }
+    ],
+
+    // Defaults
+    "defaults": {
+      "sector": {
+        "texturefloor": "F_022",
+        "textureceiling": "F_011",
+        "heightfloor": 0,
+        "heightceiling": 128,
+        "lightlevel": 160
+      },
+      "sidedef": {
+        "texturetop": "FOREST01",
+        "texturemiddle": "FOREST01",
+        "texturebottom": "FOREST01"
+      },
+      "thing": {
+        "type": 1,
+        "flags": 2023,
+        "udmf": {
+          "skill1": true,
+          "skill2": true,
+          "skill3": true,
+          "skill4": true,
+          "skill5": true,
+          "single": true,
+          "dm": true,
+          "coop": true,
+          "class1": true,
+          "class2": true,
+          "class3": true
+        }
+      }
+    },
+
+    // Action specials
+    "action_specials": {
+      "import": [ "include/action_specials/hexen.json" ]
+    },
+
+    // Thing types
+    "thing_types": {
+      "import": [
+        "include/thing_types/common.json",
+        "include/thing_types/hexen.json"
+      ]
+    },
+
+    // Thing flags
+    "thing_flags": {
+      "import": [ "include/thing_flags/hexen.json" ]
+    },
+
+    // Line flags
+    "line_flags": {
+      "import": [ "include/line_flags/hexen.json" ]
+    },
+
+    // Line triggers
+    "line_triggers": {
+      "import": [ "include/line_triggers/hexen.json" ]
+    },
+
+    // Sector types
+    "sector_types": {
+      "import": [ "include/sector_types/hexen.json" ]
+    },
+
+    // UDMF properties
+    "udmf_properties": {
+      "import": [
+        "include/udmf_properties/base.json",
+        "include/udmf_properties/hexen.json"
+      ]
+    }
+  }
+}

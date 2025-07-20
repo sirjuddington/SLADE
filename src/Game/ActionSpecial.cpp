@@ -33,6 +33,7 @@
 #include "ActionSpecial.h"
 #include "Configuration.h"
 #include "Game.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -134,7 +135,7 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 
 		// Tagged
 		else if (strutil::equalCI(name, "tagged"))
-			tagged_ = parseTagged(child);
+			tagged_ = parseTagged(child->stringValue());
 
 		// Parse arg definition if it was one
 		if (argn >= 0)
@@ -146,6 +147,45 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 			args_[argn].parse(child, shared_args);
 		}
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads an action special definition from JSON [j], using [shared_args] for
+// predeclared args if it is given
+// -----------------------------------------------------------------------------
+void ActionSpecial::fromJson(const Json& j, Arg::SpecialMap& shared_args)
+{
+	jsonutil::getIf(j, "name", name_);
+
+	// Args
+	if (j.contains("arg1"))
+	{
+		args_[0].fromJson(j.at("arg1"), &shared_args);
+		args_.count = 1;
+	}
+	if (j.contains("arg2"))
+	{
+		args_[1].fromJson(j.at("arg2"), &shared_args);
+		args_.count = 2;
+	}
+	if (j.contains("arg3"))
+	{
+		args_[2].fromJson(j.at("arg3"), &shared_args);
+		args_.count = 3;
+	}
+	if (j.contains("arg4"))
+	{
+		args_[3].fromJson(j.at("arg4"), &shared_args);
+		args_.count = 4;
+	}
+	if (j.contains("arg5"))
+	{
+		args_[4].fromJson(j.at("arg5"), &shared_args);
+		args_.count = 5;
+	}
+
+	if (j.contains("tagged"))
+		tagged_ = parseTagged(j.at("tagged").get<string>());
 }
 
 // -----------------------------------------------------------------------------

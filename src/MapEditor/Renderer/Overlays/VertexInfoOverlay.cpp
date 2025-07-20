@@ -33,7 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "VertexInfoOverlay.h"
-#include "General/Defs.h"
+#include "General/MapFormat.h"
 #include "Geometry/Rect.h"
 #include "OpenGL/Draw2D.h"
 #include "SLADEMap/MapObject/MapVertex.h"

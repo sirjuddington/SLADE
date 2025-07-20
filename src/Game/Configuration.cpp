@@ -49,6 +49,7 @@
 #include "ThingType.h"
 #include "UDMFProperty.h"
 #include "Utility/FileUtils.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
@@ -77,6 +78,17 @@ Configuration config_current;
 // Game Namespace Functions
 //
 // -----------------------------------------------------------------------------
+namespace slade::game
+{
+inline int featureId(Feature feature)
+{
+	return static_cast<int>(feature);
+}
+inline int udmfFeatureId(UDMFFeature feature)
+{
+	return static_cast<int>(feature);
+}
+} // namespace slade::game
 
 // -----------------------------------------------------------------------------
 // Returns the currently loaded game configuration
@@ -920,10 +932,39 @@ bool Configuration::readConfiguration(
 // -----------------------------------------------------------------------------
 bool Configuration::openConfig(const string& game, const string& port, MapFormat format)
 {
+	auto& game_config = gameDef(game);
+	if (game_config.name != game)
+		return false;
+
+	if (game_config.user)
+	{
+		// Config is in user dir
+	}
+	else
+	{
+		// Config is in program resource
+		auto epath   = fmt::format("config/games/{}.json", game_config.filename);
+		auto archive = app::archiveManager().programResourceArchive();
+		auto entry   = archive->entryAtPath(epath);
+		if (entry)
+		{
+			if (auto j = jsonutil::parse(entry->data()); !j.is_discarded() && j.contains("game"))
+				readGameConfiguration(j.at("game"), ConfigDesc{ game, port, mapFormatId(format) }, entry);
+		}
+	}
+
+	return true;
+
+
+
+
+
+	// OLD CONFIG LOADING
+
 	string full_config;
 
 	// Get game configuration as string
-	auto& game_config = gameDef(game);
+	// auto& game_config = gameDef(game);
 	if (game_config.name == game)
 	{
 		if (game_config.user)
@@ -1023,6 +1064,455 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 	}
 
 	return ok;
+}
+
+bool Configuration::readGameConfiguration(const Json& j, ConfigDesc cfg, ArchiveEntry* entry)
+{
+	// Features
+	jsonutil::getIf(j, "boom", supported_features_[featureId(Feature::Boom)]);
+	jsonutil::getIf(j, "mbf21", supported_features_[featureId(Feature::MBF21)]);
+	jsonutil::getIf(j, "map_name_any", supported_features_[featureId(Feature::AnyMapName)]);
+	jsonutil::getIf(j, "mix_tex_flats", supported_features_[featureId(Feature::MixTexFlats)]);
+	jsonutil::getIf(j, "tx_textures", supported_features_[featureId(Feature::TxTextures)]);
+	jsonutil::getIf(j, "long_names", supported_features_[featureId(Feature::LongNames)]);
+
+	// UDMF features
+	jsonutil::getIf(j, "udmf_slopes", udmf_features_[udmfFeatureId(UDMFFeature::Slopes)]);
+	jsonutil::getIf(j, "udmf_flat_lighting", udmf_features_[udmfFeatureId(UDMFFeature::FlatLighting)]);
+	jsonutil::getIf(j, "udmf_flat_panning", udmf_features_[udmfFeatureId(UDMFFeature::FlatPanning)]);
+	jsonutil::getIf(j, "udmf_flat_rotation", udmf_features_[udmfFeatureId(UDMFFeature::FlatRotation)]);
+	jsonutil::getIf(j, "udmf_flat_scaling", udmf_features_[udmfFeatureId(UDMFFeature::FlatScaling)]);
+	jsonutil::getIf(j, "udmf_line_transparency", udmf_features_[udmfFeatureId(UDMFFeature::LineTransparency)]);
+	jsonutil::getIf(j, "udmf_sector_color", udmf_features_[udmfFeatureId(UDMFFeature::SectorColor)]);
+	jsonutil::getIf(j, "udmf_sector_fog", udmf_features_[udmfFeatureId(UDMFFeature::SectorFog)]);
+	jsonutil::getIf(j, "udmf_side_lighting", udmf_features_[udmfFeatureId(UDMFFeature::SideLighting)]);
+	jsonutil::getIf(j, "udmf_side_midtex_wrapping", udmf_features_[udmfFeatureId(UDMFFeature::SideMidtexWrapping)]);
+	jsonutil::getIf(j, "udmf_side_scaling", udmf_features_[udmfFeatureId(UDMFFeature::SideScaling)]);
+	jsonutil::getIf(j, "udmf_texture_scaling", udmf_features_[udmfFeatureId(UDMFFeature::TextureScaling)]);
+	jsonutil::getIf(j, "udmf_texture_offsets", udmf_features_[udmfFeatureId(UDMFFeature::TextureOffsets)]);
+	jsonutil::getIf(j, "udmf_thing_scaling", udmf_features_[udmfFeatureId(UDMFFeature::ThingScaling)]);
+	jsonutil::getIf(j, "udmf_thing_rotation", udmf_features_[udmfFeatureId(UDMFFeature::ThingRotation)]);
+
+	// Map formats
+	if (j.contains("map_formats"))
+	{
+		map_formats_.clear();
+		for (const auto& mf : j.at("map_formats"))
+			map_formats_[mapFormatFromId(mf)] = true;
+	}
+
+	// General properties
+	jsonutil::getIf(j, "boom_sector_flag_start", boom_sector_flag_start_);
+	jsonutil::getIf(j, "udmf_namespace", udmf_namespace_);
+	jsonutil::getIf(j, "sky_flat", sky_flat_);
+	jsonutil::getIf(j, "script_language", script_language_);
+	jsonutil::getIf(j, "player_eye_height", player_eye_height_);
+
+	// Light levels interval
+	if (j.contains("light_level_interval"))
+		setLightLevelInterval(j.at("light_level_interval"));
+
+	// Defaults section
+	if (j.contains("defaults"))
+	{
+		auto& defaults = j.at("defaults");
+
+		// Linedef defaults
+		if (defaults.contains("linedef"))
+		{
+			for (const auto& [prop, value] : defaults.at("linedef").items())
+			{
+				if (prop == "udmf")
+					for (const auto& [u_prop, u_value] : value.items())
+						defaults_line_udmf_[u_prop] = jsonutil::toProp(u_value);
+				else
+					defaults_line_[prop] = jsonutil::toProp(value);
+			}
+		}
+
+		// Sidedef defaults
+		if (defaults.contains("sidedef"))
+		{
+			for (const auto& [prop, value] : defaults.at("sidedef").items())
+			{
+				if (prop == "udmf")
+					for (const auto& [u_prop, u_value] : value.items())
+						defaults_side_udmf_[u_prop] = jsonutil::toProp(u_value);
+				else
+					defaults_side_[prop] = jsonutil::toProp(value);
+			}
+		}
+
+		// Sector defaults
+		if (defaults.contains("sector"))
+		{
+			for (const auto& [prop, value] : defaults.at("sector").items())
+			{
+				if (prop == "udmf")
+					for (const auto& [u_prop, u_value] : value.items())
+						defaults_sector_udmf_[u_prop] = jsonutil::toProp(u_value);
+				else
+					defaults_sector_[prop] = jsonutil::toProp(value);
+			}
+		}
+
+		// Thing defaults
+		if (defaults.contains("thing"))
+		{
+			for (const auto& [prop, value] : defaults.at("thing").items())
+			{
+				if (prop == "udmf")
+					for (const auto& [u_prop, u_value] : value.items())
+						defaults_thing_udmf_[u_prop] = jsonutil::toProp(u_value);
+				else
+					defaults_thing_[prop] = jsonutil::toProp(value);
+			}
+		}
+	}
+
+	// Maps
+	if (j.contains("maps"))
+	{
+		for (const auto& j_map : j.at("maps"))
+		{
+			MapConf map;
+			map.mapname = j_map.at("mapname");
+			if (j_map.contains("sky"))
+			{
+				// Sky texture
+				auto& j_sky = j_map.at("sky");
+				if (j_sky.is_string())
+					map.sky1 = j_sky;
+				else if (j_sky.is_array() && j_sky.size() > 1)
+				{
+					map.sky1 = j_sky.at(0);
+					map.sky2 = j_sky.at(1);
+				}
+				else
+					log::warning("Invalid map sky definition for {}", map.mapname);
+			}
+			maps_.push_back(map);
+		}
+	}
+
+	// Action specials
+	if (j.contains("action_specials"))
+		readActionSpecials(j.at("action_specials"), cfg, entry);
+
+	// Thing types
+	if (j.contains("thing_types"))
+		readThingTypes(j.at("thing_types"), cfg, entry);
+
+	// Thing flags
+	if (j.contains("thing_flags"))
+		readFlags(j.at("thing_flags"), flags_thing_, cfg, entry);
+
+	// Line flags
+	if (j.contains("line_flags"))
+		readFlags(j.at("line_flags"), flags_line_, cfg, entry);
+
+	// Line triggers
+	if (j.contains("line_triggers"))
+		readFlags(j.at("line_triggers"), triggers_line_, cfg, entry);
+
+	// Sector types
+	if (j.contains("sector_types"))
+		readSectorTypes(j.at("sector_types"), cfg, entry);
+
+	// UDMF properties
+	if (j.contains("udmf_properties"))
+		readUDMFProperties(j.at("udmf_properties"), cfg, entry);
+
+	return true;
+}
+
+Json getImport(const Json& j, const Configuration::ConfigDesc& cfg, const ArchiveEntry& entry)
+{
+	string file;
+
+	if (j.is_string())
+		file = j.get<string>();
+
+	// Will handle this stuff a different way
+	// else if (j.is_object())
+	// {
+	// 	if (!j.contains("file"))
+	// 	{
+	// 		log::error("Error: Import missing \"file\" key");
+	// 		return nlohmann::detail::value_t::discarded;
+	// 	}
+	//
+	// 	// Check import is valid for given map format
+	// 	bool ignore = false;
+	// 	if (j.contains("map_formats") && j.at("map_formats").is_array())
+	// 	{
+	// 		auto& j_map_formats = j.at("map_formats");
+	// 		if (std::find(j_map_formats.begin(), j_map_formats.end(), cfg.map_format) == j_map_formats.end())
+	// 			ignore = true;
+	// 	}
+	//
+	// 	if (ignore)
+	// 		return nlohmann::detail::value_t::discarded;
+	//
+	// 	file = j.at("file").get<string>();
+	// }
+
+	// Get target entry to import
+	auto import_entry_path = entry.path() + file;
+	if (auto import_entry = entry.parent()->entryAtPath(import_entry_path))
+	{
+		auto imported = jsonutil::parse(import_entry->data());
+		if (imported.is_discarded())
+			log::error("Error: Failed to parse imported entry \"{}\"", import_entry_path);
+		return imported;
+	}
+
+	// Target entry not found
+	log::error("Error: Entry \"{}\" not found to import", import_entry_path);
+	return nlohmann::detail::value_t::discarded;
+}
+
+void Configuration::readActionSpecials(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+				readActionSpecials(j_import, config, entry);
+	}
+
+	// Read any shared args
+	Arg::SpecialMap shared_args;
+	if (j.contains("args"))
+	{
+		for (auto& [name, j_arg] : j.at("args").items())
+			shared_args[name].fromJson(j_arg, nullptr);
+	}
+
+	// Check if any groups are present
+	if (!j.contains("groups"))
+		return;
+
+	// Go through all groups
+	for (auto& j_group : j.at("groups"))
+	{
+		auto group = j_group.value("name", "");
+		if (group.empty())
+			continue;
+
+		if (!j_group.contains("specials") || !j_group.at("specials").is_array())
+		{
+			log::warning("Action specials group \"{}\" does not contain specials key", group);
+			continue;
+		}
+
+		// Setup group defaults
+		ActionSpecial defaults;
+		if (j_group.contains("defaults"))
+			defaults.fromJson(j_group.at("defaults"), shared_args);
+
+		// Go through all specials in group
+		for (auto& j_special : j_group.at("specials"))
+		{
+			if (!j_special.contains("id"))
+				continue; // Must have id
+
+			int   special_id     = j_special.at("id");
+			auto& action_special = action_specials_[special_id];
+
+			// Apply defaults
+			action_special = defaults;
+			action_special.setGroup(group);
+
+			// Parse it
+			action_special.setNumber(special_id);
+			action_special.fromJson(j_special, shared_args);
+		}
+	}
+}
+
+void Configuration::readThingTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+				readThingTypes(j_import, config, entry);
+	}
+
+	// Check if any groups are present
+	if (!j.contains("groups"))
+		return;
+
+	// Go through all groups
+	for (auto& j_group : j.at("groups"))
+	{
+		auto group = j_group.value("name", "");
+		if (group.empty())
+			continue;
+
+		if (!j_group.contains("things") || !j_group.at("things").is_array())
+		{
+			log::warning("Thing types group \"{}\" does not contain things key", group);
+			continue;
+		}
+
+		// Setup group defaults
+		auto& defaults = tt_group_defaults_[group];
+		defaults.define(-1, "", group);
+		if (j_group.contains("defaults"))
+			defaults.fromJson(j_group.at("defaults"));
+
+		// Go through all things in group
+		for (auto& j_thing : j_group.at("things"))
+		{
+			if (!j_thing.contains("type"))
+				continue; // Must have type no.
+
+			int   type       = j_thing.at("type");
+			auto& thing_type = thing_types_[type];
+
+			// Reset the thing type (in case it's being redefined for whatever reason)
+			thing_type.reset();
+
+			// Apply group defaults
+			thing_type.copy(defaults);
+
+			// Parse thing type
+			thing_type.define(type, "", group);
+			thing_type.fromJson(j_thing);
+		}
+	}
+}
+
+void Configuration::readFlags(const Json& j, vector<Flag>& flags, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+				readFlags(j_import, flags, config, entry);
+	}
+
+	// Go through flags (if any)
+	if (j.contains("flags") && j.at("flags").is_array())
+	{
+		for (const auto& j_flag : j.at("flags"))
+		{
+			// Parse flag details
+			Flag flag;
+			flag.flag       = j_flag.value("value", 0);
+			flag.name       = j_flag.value("name", "");
+			flag.activation = j_flag.value("activation", false);
+			if (j_flag.contains("udmf"))
+			{
+				if (j_flag.at("udmf").is_string())
+					flag.udmf = j_flag.at("udmf").get<string>();
+				else if (j_flag.at("udmf").is_array())
+				{
+					for (const auto& udmf_flag : j_flag.at("udmf"))
+						flag.udmf += udmf_flag.get<string>() + " ";
+					flag.udmf.pop_back();
+				}
+			}
+
+			// Check if the flag value already exists
+			bool exists = false;
+			for (auto& f : flags)
+				if (f.flag == flag.flag)
+				{
+					f      = flag;
+					exists = true;
+					break;
+				}
+
+			// Add flag otherwise
+			if (!exists)
+				flags.push_back(flag);
+		}
+	}
+}
+
+void Configuration::readSectorTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+				readSectorTypes(j_import, config, entry);
+	}
+
+	// Check if any types are present
+	if (!j.contains("types") || !j.at("types").is_array())
+		return;
+
+	for (const auto& j_type : j.at("types"))
+		if (j_type.contains("type"))
+			sector_types_[j_type.at("type").get<int>()] = j_type.value("name", "Unknown");
+}
+
+void Configuration::readUDMFProperties(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+				readUDMFProperties(j_import, config, entry);
+	}
+
+	// Check if any blocks are present
+	if (!j.contains("blocks") || !j.at("blocks").is_array())
+		return;
+
+	// Go through blocks
+	for (auto& j_block : j.at("blocks"))
+	{
+		if (!j_block.contains("block") || !j_block.contains("groups"))
+			continue;
+
+		auto         block    = j_block.value("block", "");
+		UDMFPropMap* prop_map = nullptr;
+		if (block == "vertex")
+			prop_map = &udmf_vertex_props_;
+		else if (block == "linedef")
+			prop_map = &udmf_linedef_props_;
+		else if (block == "sidedef")
+			prop_map = &udmf_sidedef_props_;
+		else if (block == "sector")
+			prop_map = &udmf_sector_props_;
+		else if (block == "thing")
+			prop_map = &udmf_thing_props_;
+		else
+			continue;
+
+		// Go through groups
+		for (auto& j_group : j_block.at("groups"))
+		{
+			auto group = j_group.value("name", "");
+			if (group.empty() || !j_group.contains("properties"))
+				continue;
+
+			auto has_default = j_group.contains("defaults");
+			for (auto& j_prop : j_group.at("properties"))
+			{
+				auto udmf = j_prop.value("udmf", "");
+				if (udmf.empty())
+					continue;
+
+				// Apply defaults if set
+				if (has_default)
+					(*prop_map)[udmf].fromJson(j_group.at("defaults"), group);
+
+				// Read property
+				(*prop_map)[udmf].fromJson(j_prop, group);
+			}
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------

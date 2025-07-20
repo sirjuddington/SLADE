@@ -1,8 +1,5 @@
 #pragma once
 
-// General definitions that don't really fit in one specific place,
-// but also don't need to be included *everywhere* (Main.h)
-
 namespace slade
 {
 enum class MapFormat
@@ -14,4 +11,7 @@ enum class MapFormat
 	Doom32X,
 	Unknown, // Needed for maps in zip archives
 };
-}
+
+MapFormat mapFormatFromId(string_view id);
+string    mapFormatId(MapFormat format);
+} // namespace slade

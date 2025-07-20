@@ -117,3 +117,31 @@ bool jsonutil::writeFile(const Json& j, string_view path, int indent)
 
 	return file.writeStr(j.dump(indent));
 }
+
+Json jsonutil::fromProp(const Property& prop)
+{
+	switch (prop.index())
+	{
+	case 0:  return std::get<bool>(prop);
+	case 1:  return std::get<int>(prop);
+	case 2:  return std::get<unsigned int>(prop);
+	case 3:  return std::get<double>(prop);
+	case 4:  return std::get<string>(prop);
+	default: return nlohmann::detail::value_t::null;
+	}
+}
+
+Property jsonutil::toProp(const Json& j)
+{
+	switch (j.type())
+	{
+	case json::value_t::boolean:         return j.get<bool>();
+	case json::value_t::number_integer:  return j.get<int>();
+	case json::value_t::number_unsigned: return j.get<unsigned int>();
+	case json::value_t::number_float:    return j.get<double>();
+	case json::value_t::string:          return j.get<string>();
+	default:
+		log::error("Unable to convert JSON type '{}' to Property, defaulting to string", j.type_name());
+		return to_string(j);
+	}
+}

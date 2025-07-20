@@ -90,7 +90,7 @@ namespace game
 	bool mapFormatSupported(MapFormat format, const string& game, const string& port = "");
 
 	// Tagging
-	TagType parseTagged(const ParseTreeNode* tagged);
+	TagType parseTagged(string_view tagged);
 
 	// Custom definitions (ZScript, DECORATE, EDF, etc.)
 	void updateCustomDefinitions();

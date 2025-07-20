@@ -77,6 +77,7 @@ namespace strutil
 	string      wildcardToRegex(string_view str);
 	string      prepend(string_view str, string_view prefix);
 	string&     prependIP(string& str, string_view prefix);
+	string      surround(string_view str, string_view with);
 
 	// Substrings
 	string              left(string_view str, unsigned n);

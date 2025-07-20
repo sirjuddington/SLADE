@@ -1,0 +1,121 @@
+// Doom 2 action specials
+{
+  "groups": [
+    {
+      "name": "Doors/Local",
+      "defaults": {
+        "tagged": "sector_back"
+      },
+      "specials": [
+        { "id": 117, "name": "DR Door Fast" },
+        { "id": 118, "name": "D1 Door Stay Open Fast" }
+      ]
+    },
+
+    {
+      "name": "Doors/Remote",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 111, "name": "S1 Door Fast" },
+        { "id": 114, "name": "SR Door Fast" },
+        { "id": 108, "name": "W1 Door Fast" },
+        { "id": 105, "name": "WR Door Fast" },
+        { "id": 112, "name": "S1 Door Stay Open Fast" },
+        { "id": 115, "name": "SR Door Stay Open Fast" },
+        { "id": 109, "name": "W1 Door Stay Open Fast" },
+        { "id": 106, "name": "WR Door Stay Open Fast" },
+        { "id": 113, "name": "S1 Door Close Fast" },
+        { "id": 116, "name": "SR Door Close Fast" },
+        { "id": 110, "name": "W1 Door Close Fast" },
+        { "id": 107, "name": "WR Door Close Fast" },
+        { "id": 135, "name": "S1 Door Red Key Fast" },
+        { "id": 134, "name": "SR Door Red Key Fast" },
+        { "id": 133, "name": "S1 Door Blue Key Fast" },
+        { "id": 99, "name": "SR Door Blue Key Fast" },
+        { "id": 137, "name": "S1 Door Yellow Key Fast" },
+        { "id": 136, "name": "SR Door Yellow Key Fast" }
+      ]
+    },
+
+    {
+      "name": "Lifts",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 122, "name": "S1 Lift Fast" },
+        { "id": 123, "name": "SR Lift Fast" },
+        { "id": 121, "name": "W1 Lift Fast" },
+        { "id": 120, "name": "WR Lift Fast" }
+      ]
+    },
+
+    {
+      "name": "Floors/Move Up",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 119, "name": "W1 Floor To Higher Adjacent Floor" },
+        { "id": 128, "name": "WR Floor To Higher Adjacent Floor" },
+        { "id": 131, "name": "S1 Floor To Higher Floor Fast" },
+        { "id": 132, "name": "SR Floor To Higher Floor Fast" },
+        { "id": 130, "name": "W1 Floor To Higher Floor Fast" },
+        { "id": 129, "name": "WR Floor To Higher Floor Fast" },
+        { "id": 140, "name": "S1 Floor Up 512" }
+      ]
+    },
+
+    {
+      "name": "Stair Builders",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 127, "name": "S1 Build Stairs 16 + Crush" },
+        { "id": 100, "name": "W1 Build Stairs 16 + Crush" }
+      ]
+    },
+
+    {
+      "name": "Crushers",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 141, "name": "W1 Start Crusher, Silent" }
+      ]
+    },
+
+    {
+      "name": "Exits",
+      "specials": [
+        { "id": 124, "name": "W1 Exit (Secret)" }
+      ]
+    },
+
+    {
+      "name": "Teleports",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 126, "name": "WR Teleport Monsters Only" },
+        { "id": 125, "name": "W1 Teleport Monsters Only" }
+      ]
+    },
+
+    {
+      "name": "Light Effects",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 139, "name": "SR Light To 35" },
+        { "id": 138, "name": "SR Light To 255" }
+      ]
+    }
+  ]
+}

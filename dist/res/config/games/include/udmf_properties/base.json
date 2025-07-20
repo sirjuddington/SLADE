@@ -1,0 +1,294 @@
+{
+  "blocks": [
+    // Vertex block
+    {
+      "block": "vertex",
+      "groups": [
+        {
+          "name": "Basic",
+          "defaults": {
+            "type": "float",
+            "show_always": true
+          },
+          "properties": [
+            { "udmf": "x", "name": "X Position" },
+            { "udmf": "y", "name": "Y Position" }
+          ]
+        }
+      ]
+    },
+
+    // Linedef block
+    {
+      "block": "linedef",
+      "groups": [
+        {
+          "name": "Basic",
+          "defaults": {
+            "type": "int",
+            "show_always": true
+          },
+          "properties": [
+            {
+              "udmf": "id",
+              "name": "Line ID",
+              "type": "id",
+              "default": -1,
+              "show_always": false
+            },
+            { "udmf": "v1", "name": "Start Vertex" },
+            { "udmf": "v2", "name": "End Vertex" },
+            { "udmf": "sidefront", "name": "Front Side" },
+            {
+              "udmf": "sideback",
+              "name": "Back Side",
+              "default": -1
+            },
+            {
+              "udmf": "comment",
+              "name": "Comment",
+              "type": "string",
+              "default": "",
+              "show_always": false
+            }
+          ]
+        },
+
+        {
+          "name": "Flags",
+          "defaults": {
+            "flag": true,
+            "type": "bool",
+            "default": false,
+            "show_always": true
+          },
+          "properties": [
+            { "udmf": "blocking", "name": "Impassable" },
+            { "udmf": "blockmonsters", "name": "Blocks Monsters" },
+            { "udmf": "twosided", "name": "Two Sided" },
+            { "udmf": "dontpegtop", "name": "Upper Unpegged" },
+            { "udmf": "dontpegbottom", "name": "Lower Unpegged" },
+            { "udmf": "secret", "name": "Secret" },
+            { "udmf": "blocksound", "name": "Blocks Sound" },
+            { "udmf": "dontdraw", "name": "Not On Map" },
+            { "udmf": "mapped", "name": "Starts On Map" }
+          ]
+        },
+
+        {
+          "name": "Special",
+          "defaults": {
+            "type": "int",
+            "default": 0,
+            "show_always": true
+          },
+          "properties": [
+            {
+              "udmf": "special",
+              "name": "Special",
+              "type": "actionspecial"
+            },
+            { "udmf": "arg0", "name": "Arg 0" },
+            { "udmf": "arg1", "name": "Arg 1" },
+            { "udmf": "arg2", "name": "Arg 2" },
+            { "udmf": "arg3", "name": "Arg 3" },
+            { "udmf": "arg4", "name": "Arg 4" }
+          ]
+        }
+      ]
+    },
+
+    // Sidedef block
+    {
+      "block": "sidedef",
+      "groups": [
+        {
+          "name": "Basic",
+          "properties": [
+            {
+              "udmf": "sector",
+              "name": "Sector",
+              "type": "int",
+              "show_always": true
+            },
+            {
+              "udmf": "comment",
+              "name": "Comment",
+              "type": "string",
+              "default": "",
+              "show_always": false
+            }
+          ]
+        },
+
+        {
+          "name": "Textures",
+          "defaults": {
+            "type": "texture_wall",
+            "default": "-",
+            "show_always": true
+          },
+          "properties": [
+            { "udmf": "texturetop", "name": "Upper Texture" },
+            { "udmf": "texturemiddle", "name": "Middle Texture" },
+            { "udmf": "texturebottom", "name": "Lower Texture" }
+          ]
+        },
+
+        {
+          "name": "Offsets",
+          "defaults": {
+            "type": "int",
+            "default": 0,
+            "show_always": true
+          },
+          "properties": [
+            { "udmf": "offsetx", "name": "X Offset" },
+            { "udmf": "offsety", "name": "Y Offset" }
+          ]
+        }
+      ]
+    },
+
+    // Sector block
+    {
+      "block": "sector",
+      "groups": [
+        {
+          "name": "Basic",
+          "defaults": {
+            "type": "int",
+            "default": 0,
+            "show_always": true
+          },
+          "properties": [
+            { "udmf": "heightfloor", "name": "Floor Height" },
+            { "udmf": "heightceiling", "name": "Ceiling Height" },
+            {
+              "udmf": "id",
+              "name": "Tag/ID",
+              "type": "id"
+            },
+            {
+              "udmf": "comment",
+              "name": "Comment",
+              "type": "string",
+              "default": "",
+              "show_always": false
+            }
+          ]
+        },
+
+        {
+          "name": "Lighting",
+          "defaults": {
+            "type": "int",
+            "default": 0,
+            "show_always": true
+          },
+          "properties": [
+            {
+              "udmf": "lightlevel",
+              "name": "Light Level",
+              "default": 160
+            }
+          ]
+        },
+
+        {
+          "name": "Textures",
+          "defaults": {
+            "type": "texture_flat",
+            "show_always": true
+          },
+          "properties": [
+            { "udmf": "texturefloor", "name": "Floor Texture" },
+            { "udmf": "textureceiling", "name": "Ceiling Texture" }
+          ]
+        },
+
+        {
+          "name": "Special",
+          "defaults": {
+            "type": "sectorspecial",
+            "default": 0,
+            "show_always": true
+          },
+          "properties": [
+            { "udmf": "special", "name": "Special" }
+          ]
+        }
+      ]
+    },
+
+    // Thing block
+    {
+      "block": "thing",
+      "groups": [
+        {
+          "name": "Basic",
+          "defaults": {
+            "type": "float",
+            "show_always": true
+          },
+          "properties": [
+            { "udmf": "x", "name": "X Position" },
+            { "udmf": "y", "name": "Y Position" },
+            {
+              "udmf": "height",
+              "name": "Z Height",
+              "default": 0,
+              "show_always": false
+            },
+            {
+              "udmf": "angle",
+              "name": "Angle",
+              "default": 0,
+              "type": "angle"
+            },
+            {
+              "udmf": "type",
+              "name": "Type",
+              "type": "thingtype"
+            },
+            {
+              "udmf": "id",
+              "name": "ID",
+              "type": "id",
+              "default": 0,
+              "show_always": false
+            },
+            {
+              "udmf": "comment",
+              "name": "Comment",
+              "type": "string",
+              "default": "",
+              "show_always": false
+            }
+          ]
+        },
+
+        {
+          "name": "Flags",
+          "defaults": {
+            "type": "bool",
+            "default": false,
+            "flag": true,
+            "show_always": true
+          },
+          "properties": [
+            { "udmf": "skill1", "name": "Skill 1" },
+            { "udmf": "skill2", "name": "Skill 2" },
+            { "udmf": "skill3", "name": "Skill 3" },
+            { "udmf": "skill4", "name": "Skill 4" },
+            { "udmf": "skill5", "name": "Skill 5" },
+            { "udmf": "ambush", "name": "Ambush" },
+            { "udmf": "single", "name": "Single Player" },
+            { "udmf": "dm", "name": "Deathmatch" },
+            { "udmf": "coop", "name": "Cooperative" }
+          ]
+        }
+      ]
+    }
+  ]
+}

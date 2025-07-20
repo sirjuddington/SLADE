@@ -1,0 +1,117 @@
+{
+  "game": {
+    "id": "urbanbrawl",
+    "name": "Urban Brawl",
+
+    // IWAD filename
+    "iwad": "action2.wad",
+
+    // Supported map formats
+    "map_formats": [ "hexen", "udmf" ],
+
+    // DECORATE filters
+    "filters": [ "any" ],
+
+    // Enable mixed textures and flats
+    "mix_tex_flats": true,
+
+    // Enable TX_ namespace
+    "tx_textures": true,
+
+    // Scripting
+    "script_language": "acs_zdoom",
+
+    // Sky flat for 3d mode
+    "sky_flat": "F_SKY1",
+
+    // Light levels
+    "light_level_interval": 8,
+
+    // Maps
+    "maps": [
+      // Episode 1
+      { "mapname": "E1M1", "sky": "SKY1" },
+      { "mapname": "E1M2", "sky": "SKY1" },
+      { "mapname": "E1M3", "sky": "SKY1" },
+      { "mapname": "E1M4", "sky": "SKY1" },
+      { "mapname": "E1M5", "sky": "SKY1" },
+
+      // Episode 2
+      { "mapname": "E2M1", "sky": "SKY2" },
+      { "mapname": "E2M2", "sky": "SKY2" },
+      { "mapname": "E2M3", "sky": "SKY2" },
+      { "mapname": "E2M4", "sky": "SKY2" },
+      { "mapname": "E2M5", "sky": "SKY2" },
+
+      // Episode 3
+      { "mapname": "E3M1", "sky": "CJSKY3A" },
+      { "mapname": "E3M2", "sky": "CJSKY3A" },
+      { "mapname": "E3M3", "sky": "CJSKY3A" },
+      { "mapname": "E3M4", "sky": "CJSKY3A" },
+      { "mapname": "E3M5", "sky": "CJSKY3A" }
+    ],
+
+    // Defaults
+    "defaults": {
+      "sector": {
+        "texturefloor": "FLAT1",
+        "textureceiling": "FLAT14",
+        "heightfloor": 0,
+        "heightceiling": 128,
+        "lightlevel": 160
+      },
+      "sidedef": {
+        "texturetop": "CEMENT2",
+        "texturemiddle": "CEMENT2",
+        "texturebottom": "CEMENT2"
+      },
+      "thing": {
+        "type": 1,
+        "flags": 7,
+        "udmf": {
+          "skill1": true,
+          "skill2": true,
+          "skill3": true,
+          "skill4": true,
+          "skill5": true,
+          "single": true,
+          "dm": true,
+          "coop": true
+        }
+      }
+    },
+
+    // Action specials
+    "action_specials": {
+      "import": [ "include/action_specials/hexen.json" ]
+    },
+
+    // Thing types
+    "thing_types": {
+      "import": [
+        "include/thing_types/common.json",
+        "include/thing_types/action2.json"
+      ]
+    },
+
+    // Thing flags
+    "thing_flags": {
+      "import": [ "include/thing_flags/hexen.json" ]
+    },
+
+    // Line flags
+    "line_flags": {
+      "import": [ "include/line_flags/hexen.json" ]
+    },
+
+    // Sector types
+    "sector_types": {
+      "import": [ "include/sector_types/hexen.json" ]
+    },
+
+    // UDMF properties
+    "udmf_properties": {
+      "import": [ "include/udmf_properties/base.json" ]
+    }
+  }
+}

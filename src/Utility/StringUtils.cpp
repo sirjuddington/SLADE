@@ -551,6 +551,24 @@ string& strutil::prependIP(string& str, string_view prefix)
 	return str;
 }
 
+string strutil::surround(string_view str, string_view with)
+{
+	// Handle some special cases
+	if (with.size() < 2)
+	{
+		switch (with[0])
+		{
+		case '(': return fmt::format("({})", str);
+		case '[': return fmt::format("[{}]", str);
+		case '{': return fmt::format("{{{}}}", str);
+		case '<': return fmt::format("<{}>", str);
+		default:  break;
+		}
+	}
+
+	return fmt::format("{0}{1}{0}", with, str);
+}
+
 string strutil::left(string_view str, unsigned n)
 {
 	return string{ str.substr(0, n) };

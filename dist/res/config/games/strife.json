@@ -1,0 +1,126 @@
+{
+  "game": {
+    "id": "strife",
+    "name": "Strife",
+
+    // IWAD filename
+    "iwad": "strife1.wad",
+
+    // Supported map formats
+    "map_formats": [ "doom" ],
+
+    // DECORATE filters
+    "filters": [ "strife", "any" ],
+
+    // Sky flat for 3d mode
+    "sky_flat": "F_SKY001",
+
+    // Light levels
+    "light_level_interval": 16,
+
+    // Maps
+    "maps": [
+      { "mapname": "MAP01", "sky": "SKYMNT02" },
+      { "mapname": "MAP02", "sky": "SKYMNT02" },
+      { "mapname": "MAP03", "sky": "SKYMNT02" },
+      { "mapname": "MAP04", "sky": "SKYMNT02" },
+      { "mapname": "MAP05", "sky": "SKYMNT02" },
+      { "mapname": "MAP06", "sky": "SKYMNT02" },
+      { "mapname": "MAP07", "sky": "SKYMNT02" },
+      { "mapname": "MAP08", "sky": "SKYMNT02" },
+      { "mapname": "MAP09", "sky": "SKYMNT02" },
+
+      { "mapname": "MAP10", "sky": "SKYMNT01" },
+      { "mapname": "MAP11", "sky": "SKYMNT01" },
+      { "mapname": "MAP12", "sky": "SKYMNT01" },
+      { "mapname": "MAP13", "sky": "SKYMNT01" },
+      { "mapname": "MAP14", "sky": "SKYMNT01" },
+      { "mapname": "MAP15", "sky": "SKYMNT01" },
+      { "mapname": "MAP16", "sky": "SKYMNT01" },
+      { "mapname": "MAP17", "sky": "SKYMNT01" },
+      { "mapname": "MAP18", "sky": "SKYMNT01" },
+      { "mapname": "MAP19", "sky": "SKYMNT01" },
+      { "mapname": "MAP20", "sky": "SKYMNT01" },
+      { "mapname": "MAP21", "sky": "SKYMNT01" },
+      { "mapname": "MAP22", "sky": "SKYMNT01" },
+      { "mapname": "MAP23", "sky": "SKYMNT01" },
+      { "mapname": "MAP24", "sky": "SKYMNT01" },
+      { "mapname": "MAP25", "sky": "SKYMNT01" },
+      { "mapname": "MAP26", "sky": "SKYMNT01" },
+      { "mapname": "MAP27", "sky": "SKYMNT01" },
+      { "mapname": "MAP28", "sky": "SKYMNT01" },
+      { "mapname": "MAP29", "sky": "SKYMNT01" },
+      { "mapname": "MAP30", "sky": "SKYMNT01" },
+      { "mapname": "MAP31", "sky": "SKYMNT01" },
+
+      { "mapname": "MAP32", "sky": "SKYMNT02" },
+      { "mapname": "MAP33", "sky": "SKYMNT02" },
+      { "mapname": "MAP34", "sky": "SKYMNT02" }
+    ],
+
+    // Defaults
+    "defaults": {
+      "sector": {
+        "texturefloor": "F_TECH01",
+        "textureceiling": "F_CONCRP",
+        "heightfloor": 0,
+        "heightceiling": 128,
+        "lightlevel": 160
+      },
+      "sidedef": {
+        "texturetop": "PLASTR01",
+        "texturemiddle": "PLASTR01",
+        "texturebottom": "PLASTR01"
+      },
+      "thing": {
+        "type": 1,
+        "flags": 7,
+        "udmf": {
+          "skill1": true,
+          "skill2": true,
+          "skill3": true,
+          "skill4": true,
+          "skill5": true,
+          "single": true,
+          "dm": true,
+          "coop": true
+        }
+      }
+    },
+
+    // Action specials
+    "action_specials": {
+      "import": [
+        "include/action_specials/strife.json"
+      ]
+    },
+
+    // Thing types
+    "thing_types": {
+      "import": [
+        "include/thing_types/common.json",
+        "include/thing_types/strife.json"
+      ]
+    },
+
+    // Thing flags
+    "thing_flags": {
+      "import": [ "include/thing_flags/strife.json" ]
+    },
+
+    // Line flags
+    "line_flags": {
+      "import": [ "include/line_flags/strife.json" ]
+    },
+
+    // Sector types
+    "sector_types": {
+      "import": [ "include/sector_types/strife.json" ]
+    },
+
+    // UDMF properties
+    "udmf_properties": {
+      "import": [ "include/udmf_properties/base.json" ]
+    }
+  }
+}

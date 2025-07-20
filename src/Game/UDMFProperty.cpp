@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UDMFProperty.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
@@ -185,6 +186,72 @@ void UDMFProperty::parse(const ParseTreeNode* node, string_view group)
 		else if (pn_lower == "show_always")
 			show_always_ = prop->boolValue();
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads a UDMF property definition from a JSON object [j], with [group] as the
+// group name
+// -----------------------------------------------------------------------------
+void UDMFProperty::fromJson(const Json& j, string_view group)
+{
+	// Set group and property name
+	group_    = group;
+	property_ = j.value("udmf", "");
+
+	// Property type
+	if (j.contains("type"))
+	{
+		auto val_lower = strutil::lower(j.at("type").get<string>());
+
+		if (val_lower == "bool")
+			type_ = Type::Boolean;
+		else if (val_lower == "int")
+			type_ = Type::Int;
+		else if (val_lower == "float")
+			type_ = Type::Float;
+		else if (val_lower == "string")
+			type_ = Type::String;
+		else if (val_lower == "colour")
+			type_ = Type::Colour;
+		else if (val_lower == "actionspecial")
+			type_ = Type::ActionSpecial;
+		else if (val_lower == "sectorspecial")
+			type_ = Type::SectorSpecial;
+		else if (val_lower == "thingtype")
+			type_ = Type::ThingType;
+		else if (val_lower == "angle")
+			type_ = Type::Angle;
+		else if (val_lower == "texture_wall")
+			type_ = Type::TextureWall;
+		else if (val_lower == "texture_flat")
+			type_ = Type::TextureFlat;
+		else if (val_lower == "id")
+			type_ = Type::ID;
+	}
+
+	// Property name
+	jsonutil::getIf(j, "name", name_);
+
+	// Default value
+	if (j.contains("default"))
+	{
+		default_value_ = jsonutil::toProp(j.at("default"));
+		has_default_   = true;
+	}
+
+	// Property is a flag
+	jsonutil::getIf(j, "flag", flag_);
+
+	// Property is a SPAC trigger
+	jsonutil::getIf(j, "trigger", trigger_);
+
+	// Possible values
+	if (j.contains("values"))
+		for (auto& v : j.at("values"))
+			values_.emplace_back(jsonutil::toProp(v));
+
+	// Show always
+	jsonutil::getIf(j, "show_always", show_always_);
 }
 
 // -----------------------------------------------------------------------------
