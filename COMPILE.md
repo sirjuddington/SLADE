@@ -7,7 +7,7 @@
 * ftgl, an OpenGL font managing library
 * mpg123 library
 * OpenGL
-* SFML
+* SFML 2.x
 * wxWidgets 3.x
 * zlib
 * libwebp
