@@ -375,17 +375,17 @@ void readConfigFile()
 	// Base resource archive paths
 	if (j.contains("base_resource_paths"))
 		for (const auto& path : j["base_resource_paths"])
-			archive_manager.addBaseResourcePath(path);
+			archive_manager.addBaseResourcePath(path.get<string>());
 
 	// Nodebuilder paths
 	if (j.contains("nodebuilder_paths"))
 		for (auto& [builder, path] : j["nodebuilder_paths"].items())
-			nodebuilders::addBuilderPath(builder, path);
+			nodebuilders::addBuilderPath(builder, path.get<string>());
 
 	// Game executable paths
 	if (j.contains("executable_paths"))
 		for (const auto& [exe, path] : j["executable_paths"].items())
-			executables::setGameExePath(exe, path);
+			executables::setGameExePath(exe, path.get<string>());
 }
 
 // -----------------------------------------------------------------------------

@@ -251,7 +251,7 @@ wxBitmap loadPNGIcon(const IconDef& icon, int size, Point2i padding)
 // -----------------------------------------------------------------------------
 IconSet readIconSet(const Json& j, const Archive& res_archive)
 {
-	IconSet set{ j["name"] };
+	IconSet set{ j.at("name").get<string>() };
 	for (auto& [id, j_icon] : j["icons"].items())
 	{
 		IconDef idef;

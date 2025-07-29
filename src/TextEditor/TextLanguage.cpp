@@ -631,10 +631,11 @@ void TextLanguage::fromJson(const Json& j)
 	// Copy from base language, if defined
 	if (j.contains("base"))
 	{
-		if (auto* base = fromId(j["base"]))
+		auto base_id = j["base"].get<string>();
+		if (auto* base = fromId(base_id))
 			base->copyTo(this);
 		else
-			log::warning("Warning: Language {} is based on undefined language {}", id_, j["base"].get<string>());
+			log::warning("Warning: Language {} is based on undefined language {}", id_, base_id);
 	}
 
 	// Language info
@@ -661,28 +662,28 @@ void TextLanguage::fromJson(const Json& j)
 	if (j.value("override_keywords", false))
 		clearWordList(Keyword);
 	if (j.contains("keywords"))
-		for (auto& a : j["keywords"])
+		for (auto& a : j["keywords"].get<vector<string>>())
 			addWord(Keyword, a);
 
 	// Constants
 	if (j.value("override_constants", false))
 		clearWordList(Constant);
 	if (j.contains("constants"))
-		for (auto& a : j["constants"])
+		for (auto& a : j["constants"].get<vector<string>>())
 			addWord(Constant, a);
 
 	// Types
 	if (j.value("override_types", false))
 		clearWordList(Type);
 	if (j.contains("types"))
-		for (auto& a : j["types"])
+		for (auto& a : j["types"].get<vector<string>>())
 			addWord(Type, a);
 
 	// Properties
 	if (j.value("override_properties", false))
 		clearWordList(Property);
 	if (j.contains("properties"))
-		for (auto& a : j["properties"])
+		for (auto& a : j["properties"].get<vector<string>>())
 			addWord(Property, a);
 
 	// Functions

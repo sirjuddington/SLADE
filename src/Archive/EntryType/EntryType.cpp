@@ -431,7 +431,7 @@ void EntryType::readEntryTypes(Json& j)
 
 		// Colour
 		if (j_etype.contains("colour"))
-			ntype->colour_ = colour::fromString(j_etype["colour"]);
+			ntype->colour_ = colour::fromString(j_etype.at("colour").get<string>());
 
 		// Category
 		if (j_etype.contains("category"))

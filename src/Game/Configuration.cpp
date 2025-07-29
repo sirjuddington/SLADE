@@ -1098,7 +1098,7 @@ bool Configuration::readGameConfiguration(const Json& j, ConfigDesc cfg, Archive
 	{
 		map_formats_.clear();
 		for (const auto& mf : j.at("map_formats"))
-			map_formats_[mapFormatFromId(mf)] = true;
+			map_formats_[mapFormatFromId(mf.get<string>())] = true;
 	}
 
 	// General properties

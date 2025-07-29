@@ -243,7 +243,7 @@ void SAction::fromJson(const Json& j)
 
 	if (j.contains("type"))
 	{
-		if (auto lc_type = strutil::lower(j["type"]); lc_type == "check")
+		if (auto lc_type = strutil::lower(j["type"].get<string>()); lc_type == "check")
 			type_ = Type::Check;
 		else if (lc_type == "radio")
 			type_ = Type::Radio;
