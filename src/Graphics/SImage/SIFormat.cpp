@@ -227,7 +227,7 @@ uint32_t valid_flat_size[][3] = {
 	{ 2048, 2048, 1 }, // super hires flat size (SRB2)
 	{ 4096, 4096, 1 }, // |
 };
-uint32_t n_valid_flat_sizes = 22;
+uint32_t n_valid_flat_sizes = 23;
 
 
 // -----------------------------------------------------------------------------
