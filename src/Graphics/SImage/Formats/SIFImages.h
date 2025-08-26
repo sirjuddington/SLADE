@@ -366,15 +366,15 @@ protected:
 
 		// First up, create the wxImage to be saved as png data
 		wxImage wx_image;
+		MemChunk data_rgb, data_alpha;
 		switch (type)
 		{
 		case SImage::Type::RGBA:
 		{
-			MemChunk data_rgb, data_alpha;
 			image.putRGBData(data_rgb);
 			image.putAlphaData(data_alpha);
 
-			wx_image.Create(width, height, data_rgb.data(), data_alpha.data());
+			wx_image.Create(width, height, data_rgb.data(), data_alpha.data(), true);
 			wx_image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, wxPNG_TYPE_COLOUR);
 
 			break;
@@ -382,11 +382,10 @@ protected:
 
 		case SImage::Type::PalMask:
 		{
-			MemChunk data_rgb, data_alpha;
 			image.putRGBData(data_rgb, pal);
 			image.putAlphaData(data_alpha);
 
-			wx_image.Create(width, height, data_rgb.data(), data_alpha.data());
+			wx_image.Create(width, height, data_rgb.data(), data_alpha.data(), true);
 			wx_image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, wxPNG_TYPE_PALETTE);
 			wx_image.SetPalette(wxutil::paletteToWx(pal && !image.hasPalette() ? *pal : imagePalette(image)));
 			wx_image.ConvertAlphaToMask(1);
@@ -396,12 +395,11 @@ protected:
 
 		case SImage::Type::AlphaMap:
 		{
-			MemChunk data_rgb;
 			image.putRGBData(data_rgb, pal);
 
 			static Palette pal_greyscale;
 
-			wx_image.Create(width, height, data_rgb.data());
+			wx_image.Create(width, height, data_rgb.data(), true);
 			wx_image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, wxPNG_TYPE_PALETTE);
 			wx_image.SetPalette(wxutil::paletteToWx(pal_greyscale));
 

@@ -320,7 +320,7 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	isp_iwad_ = new IwadSelectionPanel(this, iwad_path);
 	framesizer->Add(
 		wxutil::createLabelHBox(this, "IWAD:", isp_iwad_), lh.sfWithBorder(0, wxTOP | wxLEFT | wxRIGHT).Expand());
-	rac_resources_ = new ResourceArchiveChooser(this, archive);
+	rac_resources_ = new ResourceArchiveChooser(frame, archive);
 	framesizer->Add(rac_resources_, lh.sfWithBorder(1).Expand());
 
 	// Start from 3d mode camera
