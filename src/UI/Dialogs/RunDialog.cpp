@@ -257,7 +257,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->AddSpacer(ui::padLarge());
 	sizer->Add(framesizer, 1, wxEXPAND | wxLEFT | wxRIGHT, ui::padLarge());
-	rac_resources_ = new ResourceArchiveChooser(this, archive);
+	rac_resources_ = new ResourceArchiveChooser(frame, archive);
 	framesizer->Add(rac_resources_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Start from 3d mode camera

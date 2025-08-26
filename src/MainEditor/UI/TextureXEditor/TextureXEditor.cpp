@@ -69,9 +69,9 @@ public:
 
 		// Doom format
 		rb_format_doom_ = new wxRadioButton(
-			this, -1, wxS("Doom (TEXTURE1 + PNAMES)"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		rb_format_strife_   = new wxRadioButton(this, -1, wxS("Strife (TEXTURE1 + PNAMES)"));
-		rb_format_textures_ = new wxRadioButton(this, -1, wxS("ZDoom (TEXTURES)"));
+			frame, -1, wxS("Doom (TEXTURE1 + PNAMES)"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+		rb_format_strife_   = new wxRadioButton(frame, -1, wxS("Strife (TEXTURE1 + PNAMES)"));
+		rb_format_textures_ = new wxRadioButton(frame, -1, wxS("ZDoom (TEXTURES)"));
 		wxutil::layoutVertically(
 			framesizer,
 			{ rb_format_doom_, rb_format_strife_, rb_format_textures_ },
@@ -84,11 +84,11 @@ public:
 		m_vbox->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
 
 		// New list
-		rb_new_ = new wxRadioButton(this, -1, wxS("Create New (Empty)"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+		rb_new_ = new wxRadioButton(frame, -1, wxS("Create New (Empty)"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 		framesizer->Add(rb_new_, 0, wxEXPAND | wxALL, ui::pad());
 
 		// Import from Base Resource Archive
-		rb_import_bra_ = new wxRadioButton(this, -1, wxS("Import from Base Resource Archive:"));
+		rb_import_bra_ = new wxRadioButton(frame, -1, wxS("Import from Base Resource Archive:"));
 		framesizer->Add(rb_import_bra_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 		// Add buttons

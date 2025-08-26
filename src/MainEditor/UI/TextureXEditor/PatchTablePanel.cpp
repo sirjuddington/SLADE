@@ -203,21 +203,6 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	patch_table_{ patch_table },
 	parent_{ tx_editor }
 {
-	// Create controls
-	list_patches_ = new PatchTableListView(this, patch_table);
-	list_patches_->setSearchColumn(1); // Want to search by patch name not index
-	toolbar_ = new SToolBar(this, false, wxVERTICAL);
-	toolbar_->addActionGroup(
-		"_New", { "txed_pnames_add", "txed_pnames_addfile", "txed_pnames_delete", "txed_pnames_change" });
-	label_dimensions_ = new wxStaticText(this, -1, wxS("Size: N/A"));
-	label_textures_   = new wxStaticText(
-        this, -1, wxS("In Textures: -"), wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
-	patch_canvas_ = new GfxCanvas(this, -1);
-	patch_canvas_->setViewType(GfxCanvas::View::Centered);
-	patch_canvas_->allowDrag(true);
-	patch_canvas_->allowScroll(true);
-	zc_zoom_ = new ui::ZoomControl(this, patch_canvas_);
-
 	setupLayout();
 
 	// Bind events
@@ -237,7 +222,12 @@ void PatchTablePanel::setupLayout()
 	SetSizer(sizer);
 
 	// Patches List + actions
-	auto frame      = new wxStaticBox(this, -1, wxS("Patch List (PNAMES)"));
+	auto frame    = new wxStaticBox(this, -1, wxS("Patch List (PNAMES)"));
+	list_patches_ = new PatchTableListView(frame, patch_table_);
+	list_patches_->setSearchColumn(1); // Want to search by patch name not index
+	toolbar_ = new SToolBar(frame, false, wxVERTICAL);
+	toolbar_->addActionGroup(
+		"_New", { "txed_pnames_add", "txed_pnames_addfile", "txed_pnames_delete", "txed_pnames_change" });
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
 	framesizer->Add(toolbar_, 0, wxEXPAND | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
@@ -245,7 +235,15 @@ void PatchTablePanel::setupLayout()
 	framesizer->Add(list_patches_, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Patch preview & info
-	frame      = new wxStaticBox(this, -1, wxS("Patch Preview && Info"));
+	frame             = new wxStaticBox(this, -1, wxS("Patch Preview && Info"));
+	label_dimensions_ = new wxStaticText(frame, -1, wxS("Size: N/A"));
+	label_textures_   = new wxStaticText(
+        frame, -1, wxS("In Textures: -"), wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
+	patch_canvas_ = new GfxCanvas(frame, -1);
+	patch_canvas_->setViewType(GfxCanvas::View::Centered);
+	patch_canvas_->allowDrag(true);
+	patch_canvas_->allowScroll(true);
+	zc_zoom_   = new ui::ZoomControl(frame, patch_canvas_);
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
 	framesizer->Add(zc_zoom_, 0, wxALL, ui::pad());
