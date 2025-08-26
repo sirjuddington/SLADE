@@ -1753,7 +1753,8 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Run PNGCrush
 	if (!pngpathc.empty() && fileutil::fileExists(pngpathc))
 	{
-		strutil::Path fn(pngpathc);
+		string tmppath = app::path("", app::Dir::Temp) += "opt";
+		strutil::Path fn(tmppath);
 		fn.setExtension("opt");
 		string pngfile = fn.fullPath();
 		fn.setExtension("png");
@@ -1805,7 +1806,8 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Run PNGOut
 	if (!pngpatho.empty() && fileutil::fileExists(pngpatho))
 	{
-		strutil::Path fn(pngpatho);
+		string tmppath = app::path("", app::Dir::Temp) += "opt";
+		strutil::Path fn(tmppath);
 		fn.setExtension("opt");
 		string pngfile = fn.fullPath();
 		fn.setExtension("png");
@@ -1858,7 +1860,8 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Run deflopt
 	if (!pngpathd.empty() && fileutil::fileExists(pngpathd))
 	{
-		strutil::Path fn(pngpathd);
+		string tmppath = app::path("", app::Dir::Temp) += "opt";
+		strutil::Path fn(tmppath);
 		fn.setExtension("png");
 		string pngfile = fn.fullPath();
 		entry->exportFile(pngfile);
