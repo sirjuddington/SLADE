@@ -415,7 +415,7 @@ void ScriptManagerWindow::bindEvents()
 	// Tree item activate
 	tree_scripts_->Bind(
 		wxEVT_TREE_ITEM_ACTIVATED,
-		[=](wxTreeEvent& e)
+		[this](wxTreeEvent& e)
 		{
 			auto data = dynamic_cast<ScriptTreeItemData*>(tree_scripts_->GetItemData(e.GetItem()));
 			if (data && data->script)
@@ -443,7 +443,7 @@ void ScriptManagerWindow::bindEvents()
 	// Window close
 	Bind(
 		wxEVT_CLOSE_WINDOW,
-		[=](wxCloseEvent&)
+		[this](wxCloseEvent&)
 		{
 			// Save Layout
 			saveLayout();

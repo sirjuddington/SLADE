@@ -36,6 +36,7 @@
 #include "App.h"
 #include "StringUtils.h"
 #include "thirdparty/xxhash/xxhash.h"
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 
