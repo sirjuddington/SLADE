@@ -238,13 +238,13 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 	{
 		for (const auto& item : fs::recursive_directory_iterator(fs::u8path(path)))
 			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.push_back(item.path().u8string());
+				paths.emplace_back(reinterpret_cast<const char*>(item.path().u8string().c_str()));
 	}
 	else
 	{
 		for (const auto& item : fs::directory_iterator(fs::u8path(path)))
 			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.push_back(item.path().u8string());
+				paths.emplace_back(reinterpret_cast<const char*>(item.path().u8string().c_str()));
 	}
 
 	return paths;
@@ -256,14 +256,9 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 // -----------------------------------------------------------------------------
 time_t fileutil::fileModifiedTime(string_view path)
 {
-#if 0
-	// Use this whenever we update to C++20
 	const auto file_time = std::filesystem::last_write_time(path);
 	const auto sys_time  = std::chrono::clock_cast<std::chrono::system_clock>(file_time);
 	return std::chrono::system_clock::to_time_t(sys_time);
-#endif
-
-	return wxFileModificationTime(wxString::FromUTF8(path.data(), path.size()));
 }
 
 // -----------------------------------------------------------------------------

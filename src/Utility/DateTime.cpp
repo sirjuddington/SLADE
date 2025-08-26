@@ -81,7 +81,7 @@ string datetime::toString(time_t time, Format format, string_view custom_format)
 	{
 	case Format::ISO:    return fmt::format("{:%F %T}", as_tm);
 	case Format::Local:  return fmt::format("{:%c}", as_tm);
-	case Format::Custom: return fmt::format(fmt::format("{{:{}}}", custom_format), as_tm);
+	case Format::Custom: return fmt::format(fmt::runtime(fmt::format("{{:{}}}", custom_format)), as_tm);
 	}
 
 	return {};
