@@ -905,11 +905,9 @@ void strutil::Path::setPath(string_view path)
 	if (filename_start_ == string::npos)
 		return;
 
-	// Ensure given path doesn't begin or end with a separator
+	// Ensure given path doesn't end with a separator
 	if (path.back() == '/' || path.back() == '\\')
 		path.remove_suffix(1);
-	if (path[0] == '/' || path[0] == '\\')
-		path.remove_prefix(1);
 
 	if (filename_start_ == 0)
 	{

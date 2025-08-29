@@ -129,7 +129,7 @@ Statement Context::preparedStatement(string_view id)
 	if (i != prepared_statements_.end())
 		return { *i->second };
 
-	throw std::runtime_error(fmt::format("Prepared statement with id \"{}\" does not exist"));
+	throw std::runtime_error(fmt::format("Prepared statement with id \"{}\" does not exist", id));
 }
 
 // -----------------------------------------------------------------------------

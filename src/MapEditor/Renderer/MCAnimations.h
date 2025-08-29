@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Geometry/Plane.h"
-#include "Geometry/RectFwd.h"
+#include "Geometry/Rect.h"
 
 namespace slade
 {

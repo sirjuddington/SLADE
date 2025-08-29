@@ -225,12 +225,12 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	framesizer->Add(gb_sizer, lh.sfWithBorder(1));
 
 	// Layout
-	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Name:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Name:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Size:")), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Size:")), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_width_, { 0, 3 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_height_, { 0, 4 }, { 1, 1 });
-	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Scale:")), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Scale:")), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex_, { 1, 3 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_scaley_, { 1, 4 }, { 1, 1 });
 	gb_sizer->Add(label_scaled_size_, { 1, 5 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -308,11 +308,11 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	sizer->Add(framesizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Create patches list
-	list_patches_ = new ListView(panel, -1);
+	list_patches_ = new ListView(frame, -1);
 	list_patches_->enableSizeUpdate(false);
 
 	// Create patches toolbar
-	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
+	tb_patches_ = new SToolBar(frame, false, wxVERTICAL);
 	tb_patches_->addActionGroup(
 		"_Patch",
 		{ "txed_patch_add",
@@ -340,16 +340,16 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	auto           hbox      = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, lh.sfWithBorder().Expand());
 	spin_patch_left_ = new wxSpinCtrl(
-		panel, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, wxS("X Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
+	hbox->Add(new wxStaticText(frame, -1, wxS("X Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(spin_patch_left_, 1);
 
 	// Y Position
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	spin_patch_top_ = new wxSpinCtrl(
-		panel, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, wxS("Y Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
+	hbox->Add(new wxStaticText(frame, -1, wxS("Y Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(spin_patch_top_, 1);
 
 	return panel;

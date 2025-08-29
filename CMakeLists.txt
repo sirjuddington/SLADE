@@ -15,8 +15,8 @@ OPTION(NO_FLUIDSYNTH "Disable FluidSynth MIDI playback" OFF)
 OPTION(BUILD_PK3 "Build the SLADE pk3 file from dist/res" ON)
 OPTION(BUILD_WX "Download and build wxWidgets instead of using system-installed libs" OFF)
 
-# c++17 is required to compile
-set(CMAKE_CXX_STANDARD 17)
+# c++20 is required to compile
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 if (BUILD_WX)

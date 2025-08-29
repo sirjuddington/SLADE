@@ -29,7 +29,7 @@ public:
 		repr = fmt::format("({:0.6f}, {:0.6f} to {:0.6f}, {:0.6f})", v.x1(), v.y1(), v.x2(), v.y2());
 	}
 
-	Debuggable(const void* v) { repr = fmt::format("{:08p}", v); }
+	Debuggable(const void* v) { repr = fmt::format(fmt::runtime("{:08p}"), v); }
 	template<typename T> Debuggable(T* v) { repr = Debuggable(*v).repr; }
 
 	template<typename T> Debuggable(const vector<T>& v)

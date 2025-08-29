@@ -649,7 +649,7 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	sizer->Add(framesizer, lh.sfWithBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
 	// Toolbar
-	toolbar_ = new SToolBar(this, false, wxVERTICAL);
+	toolbar_ = new SToolBar(frame_textures_, false, wxVERTICAL);
 	toolbar_->addActionGroup("_Save", { "txed_savelist" });
 	toolbar_->addActionGroup("_New", { "txed_new", "txed_new_file" });
 	toolbar_->addActionGroup("_Texture", { "txed_rename", "txed_rename_each", "txed_delete" });
@@ -660,15 +660,16 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	framesizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxTOP | wxBOTTOM).Expand());
 
 	// Textures list + filter
-	list_textures_    = new TextureXListView(this, texturex_.get());
-	text_filter_      = new wxTextCtrl(this, -1);
+	list_textures_    = new TextureXListView(frame_textures_, texturex_.get());
+	text_filter_      = new wxTextCtrl(frame_textures_, -1);
 	btn_clear_filter_ = new SIconButton(this, "close", "Clear Filter");
 	auto* vbox        = new wxBoxSizer(wxVERTICAL);
 	framesizer->AddSpacer(lh.padSmall());
 	framesizer->Add(vbox, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 	vbox->Add(list_textures_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 	vbox->Add(
-		lh.layoutHorizontally({ wxutil::createLabelHBox(this, "Filter:", text_filter_), btn_clear_filter_ }, 0),
+		lh.layoutHorizontally(
+			{ wxutil::createLabelHBox(frame_textures_, "Filter:", text_filter_), btn_clear_filter_ }, 0),
 		wxSizerFlags().Expand());
 
 	// Bind events

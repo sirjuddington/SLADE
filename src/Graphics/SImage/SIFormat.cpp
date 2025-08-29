@@ -220,12 +220,13 @@ uint32_t valid_flat_size[][3] = {
 	{ 256, 256, 1 },   // hires flat size
 	{ 320, 200, 0 },   // full screen format
 	{ 512, 512, 1 },   // hires flat size
+	{ 560, 200, 0 },   // Heretic + Hexen widescreen
 	{ 640, 400, 1 },   // SRB2 fade mask size 4
 	{ 1024, 1024, 1 }, // hires flat size
 	{ 2048, 2048, 1 }, // super hires flat size (SRB2)
 	{ 4096, 4096, 1 }, // |
 };
-uint32_t n_valid_flat_sizes = 22;
+uint32_t n_valid_flat_sizes = 23;
 
 
 // -----------------------------------------------------------------------------

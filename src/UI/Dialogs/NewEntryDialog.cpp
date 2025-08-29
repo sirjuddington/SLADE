@@ -103,7 +103,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	combo_parent_dir_  = new wxComboBox(
         this,
         -1,
-        current_dir ? wxString::FromUTF8(current_dir->path()) : wxS("/"),
+        current_dir ? wxString::FromUTF8(current_dir->path()) : wxString(wxS("/")),
         wxDefaultPosition,
         wxDefaultSize,
         all_dirs);

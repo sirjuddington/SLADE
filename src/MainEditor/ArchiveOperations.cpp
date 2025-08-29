@@ -1655,7 +1655,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		{
 			string animated_tex_name       = tex_name_prefix;
 			string animatex_tex_num_format = fmt::format("{{:0{}d}}", number_digit_chars);
-			string animated_tex_num        = fmt::format(animatex_tex_num_format, tex_name_num);
+			string animated_tex_num        = fmt::format(fmt::runtime(animatex_tex_num_format), tex_name_num);
 
 			animated_tex_name.append(animated_tex_num);
 
