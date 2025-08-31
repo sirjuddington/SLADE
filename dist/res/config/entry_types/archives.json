@@ -1,0 +1,178 @@
+// Archive entry types
+{
+  "zip": {
+    "name": "Zip Archive",
+    "format": "archive_zip",
+    "export_ext": "zip",
+    "icon": "e_zip",
+    "category": "Archives"
+  },
+  "gzip": {
+    "name": "GZip Archive",
+    "format": "archive_gzip",
+    "export_ext": "gz",
+    "icon": "e_zip",
+    "category": "Archives"
+  },
+  "bzip2": {
+    "name": "BZip2 Archive",
+    "format": "archive_bz2",
+    "export_ext": "bz2",
+    "icon": "e_zip",
+    "category": "Archives"
+  },
+  "tar": {
+    "name": "Tar Archive",
+    "format": "archive_tar",
+    "size_multiple": [ 512 ],
+    "export_ext": "tar",
+    "icon": "e_zip",
+    "category": "Archives"
+  },
+  "wad": {
+    "name": "Wad Archive",
+    "format": "archive_wad",
+    "export_ext": "wad",
+    "icon": "e_wad",
+    "category": "Archives"
+  },
+  "lib": {
+    "name": "Lib Archive",
+    "format": "archive_lib",
+    "export_ext": "lib",
+    "icon": "e_archive",
+    "reliability": 110,
+    "category": "Archives"
+  },
+  "dat": {
+    "name": "Dat Archive",
+    "format": "archive_dat",
+    "export_ext": "dat",
+    "icon": "e_archive",
+    "reliability": 55,
+    "category": "Archives"
+  },
+  "res": {
+    "name": "Res Archive",
+    "format": "archive_res",
+    "export_ext": "res",
+    "icon": "e_archive",
+    "reliability": 200,
+    "category": "Archives"
+  },
+  "pak": {
+    "name": "Pak Archive",
+    "format": "archive_pak",
+    "export_ext": "pak",
+    "icon": "e_archive",
+    "reliability": 200,
+    "category": "Archives"
+  },
+  "bsp": {
+    "name": "Quake 1 BSP Level",
+    "format": "archive_bsp",
+    "export_ext": "bsp",
+    "icon": "e_archive",
+    "reliability": 100,
+    "category": "Archives"
+  },
+  "grp": {
+    "name": "Grp Archive",
+    "format": "archive_grp",
+    "export_ext": "grp",
+    "icon": "e_archive",
+    "reliability": 50,
+    "category": "Archives"
+  },
+  "rff": {
+    "name": "Rff Archive",
+    "format": "archive_rff",
+    "export_ext": "rff",
+    "icon": "e_archive",
+    "reliability": 45,
+    "category": "Archives"
+  },
+  "gob": {
+    "name": "Gob Archive",
+    "format": "archive_gob",
+    "export_ext": "gob",
+    "icon": "e_archive",
+    "reliability": 60,
+    "category": "Archives"
+  },
+  "lfd": {
+    "name": "Lfd Archive",
+    "format": "archive_lfd",
+    "export_ext": "lfd",
+    "icon": "e_archive",
+    "reliability": 40,
+    "category": "Archives"
+  },
+  "hog": {
+    "name": "Hog Archive",
+    "format": "archive_hog",
+    "export_ext": "hog",
+    "icon": "e_archive",
+    "reliability": 45,
+    "category": "Archives"
+  },
+  "wad2": {
+    "name": "Wad2 Archive",
+    "format": "archive_wad2",
+    "export_ext": "wad",
+    "icon": "e_wad",
+    "category": "Archives"
+  },
+  "wadj": {
+    "name": "WadJ Archive",
+    "format": "archive_wadj",
+    "export_ext": "wad",
+    "icon": "e_wad",
+    "category": "Archives"
+  },
+  "adat": {
+    "name": "Anachronox Archive",
+    "format": "archive_adat",
+    "export_ext": "dat",
+    "icon": "e_archive",
+    "category": "Archives"
+  },
+  "wolf": {
+    "name": "Wolf3D Archive",
+    "match_name": [ "vswap", "gamemaps", "maphead", "audiot", "audiohead", "vgagraph", "vgahead", "vgadict" ],
+    "format": "archive_wolf",
+    "export_ext": "wlf",
+    "icon": "e_archive",
+    "category": "Archives"
+  },
+  "disk": {
+    "name": "Disk Archive",
+    "format": "archive_disk",
+    "export_ext": "disk",
+    "icon": "e_archive",
+    "reliability": 175,
+    "category": "Archives"
+  },
+  "pod": {
+    "name": "Pod Archive",
+    "format": "archive_pod",
+    "export_ext": "pod",
+    "icon": "e_archive",
+    "category": "Archives",
+    "reliability": 100
+  },
+  "chasm_bin": {
+    "name": "Chasm Archive",
+    "format": "archive_chasm_bin",
+    "export_ext": "bin",
+    "icon": "e_archive",
+    "category": "Archives"
+  },
+  "sin": {
+    "name": "SiN Archive",
+    "format": "archive_sin",
+    "export_ext": "sin",
+    "icon": "e_archive",
+    "category": "Archives"
+  }
+}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "General/JsonFwd.h"
 #include "Utility/PropertyList.h"
 
 namespace slade
@@ -35,7 +36,7 @@ public:
 
 	// Static functions
 	static void               initTypes();
-	static bool               readEntryTypeDefinitions(string_view definitions, string_view source);
+	static void               readEntryTypes(Json& j);
 	static bool               loadEntryTypes();
 	static bool               detectEntryType(ArchiveEntry& entry);
 	static EntryType*         fromId(string_view id);

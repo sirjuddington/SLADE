@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -334,13 +334,17 @@ void MapEditorConfigDialog::populateGameList()
 	choice_game_config_->Clear();
 	games_list_.clear();
 
+	// Default to doom 2
+	if (game_current_.empty())
+		game_current_ = "doom2";
+
 	// Populate list
 	int selection = 0;
 	for (auto& i : game::gameDefs())
 	{
-		games_list_.emplace_back(i.second.name);
-		choice_game_config_->Append(wxString::FromUTF8(i.second.title));
-		if (game_current_ == i.second.name)
+		games_list_.emplace_back(i.name);
+		choice_game_config_->Append(wxString::FromUTF8(i.title));
+		if (game_current_ == i.name)
 			selection = games_list_.size() - 1;
 	}
 
@@ -366,11 +370,11 @@ void MapEditorConfigDialog::populatePortList()
 	choice_port_config_->Append(wxS("None"));
 	for (auto& i : game::portDefs())
 	{
-		if (i.second.supportsGame(game.name))
+		if (i.supportsGame(game.name))
 		{
-			ports_list_.emplace_back(i.second.name);
-			choice_port_config_->Append(wxString::FromUTF8(i.second.title));
-			if (port_current_ == i.second.name)
+			ports_list_.emplace_back(i.name);
+			choice_port_config_->Append(wxString::FromUTF8(i.title));
+			if (port_current_ == i.name)
 				selection = ports_list_.size();
 		}
 	}

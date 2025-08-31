@@ -44,8 +44,23 @@ endif ()
 # Add SQLiteCpp
 add_subdirectory(sqlitecpp)
 
+# Add JSON (nlohmann)
+include(FetchContent)
+FetchContent_Declare(json
+	URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+	DOWNLOAD_EXTRACT_TIMESTAMP true
+)
+FetchContent_MakeAvailable(json)
+
 add_library(external STATIC ${EXTERNAL_SOURCES})
-target_link_libraries(external ${ZLIB_LIBRARY} fmt::fmt ${CMAKE_DL_LIBS} SQLiteCpp sqlite3)
+target_link_libraries(external
+	${ZLIB_LIBRARY}
+	fmt::fmt
+	${CMAKE_DL_LIBS}
+	SQLiteCpp
+	sqlite3
+	nlohmann_json::nlohmann_json
+)
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
 
 if (USE_SYSTEM_DUMB)

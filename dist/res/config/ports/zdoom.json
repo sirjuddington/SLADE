@@ -1,0 +1,200 @@
+{
+  "id": "zdoom",
+  "name": "ZDoom",
+
+  // Supported games
+  "games": [ "doom", "doom2", "heretic", "hexen", "strife", "chex1", "chex3", "urbanbrawl" ],
+
+  // Supported map formats
+  "map_formats": [ "doom", "hexen", "udmf" ],
+
+  "configuration": [
+    // Base configuration
+    {
+      "map_name_any": true,
+      "long_names": true,
+      "mix_tex_flats": true,
+      "tx_textures": true,
+      "script_language": "acs_zdoom",
+      "light_level_interval": 8,
+
+      // Thing types are common among all map formats
+      "thing_types": {
+        "import": [
+          "include/thing_types/boom.json",
+          "include/thing_types/mbf.json",
+          "include/thing_types/zdoom.json",
+          {
+            // Doom-only things
+            "filter": { "game": [ "doom", "doom2", "urbanbrawl" ] },
+            "file": "include/thing_types/zdoom.json",
+            "key": "doom"
+          },
+          {
+            // Heretic-only things
+            "filter": { "game": "heretic" },
+            "file": "include/thing_types/zdoom.json",
+            "key": "heretic"
+          },
+          {
+            // Hexen-only things
+            "filter": { "game": "hexen" },
+            "file": "include/thing_types/zdoom.json",
+            "key": "hexen"
+          },
+          {
+            // Strife-only things
+            "filter": { "game": "strife" },
+            "file": "include/thing_types/zdoom.json",
+            "key": "strife"
+          }
+        ]
+      }
+    },
+
+    // Doom map format configuration
+    {
+      "filter": { "map_format": "doom" },
+
+      // Enable boom extensions
+      "boom": true,
+      "boom_sector_flag_start": 32,
+
+      // Action specials
+      "action_specials": {
+        "import": [
+          "include/action_specials/boom.json",
+          "include/action_specials/mbf.json",
+          "include/action_specials/zdoom/doom.json"
+        ]
+      },
+
+      // Thing flags
+      "thing_flags": {
+        "import": [
+          { "file": "include/thing_flags/zdoom.json", "key": "doom" }
+        ]
+      },
+
+      // Line flags
+      "line_flags": {
+        "import": [
+          { "file": "include/line_flags/zdoom.json", "key": "doom" },
+          {
+            // Strife has a 'Railing' flag instead of 'Pass Use'
+            "filter": { "game": "strife" },
+            "file": "include/line_flags/zdoom.json",
+            "key": "strife"
+          }
+        ]
+      },
+
+      // Sector types
+      "sector_types": {
+        "import": [
+          {
+            // Couple extra types ZDoom exposes to other games in Doom format
+            "file": "include/sector_types/zdoom.json",
+            "key": "doom"
+          },
+          {
+            // These are already used in Heretic, so aren't exposed there
+            "filter": { "not_game": "heretic" },
+            "file": "include/sector_types/zdoom.json",
+            "key": "doom_not_heretic"
+          }
+        ]
+      }
+    },
+
+    // Hexen/UDMF map formats configuration
+    {
+      "filter": { "map_format": [ "hexen", "udmf" ] },
+
+      "boom_sector_flag_start": 256, // Not sure what this is used for if boom extensions aren't enabled?
+
+      // Action specials
+      "action_specials": {
+        "clear_existing": true,
+        "import": [
+          // ZDoom has a *lot* of action specials, so I've split them up over multiple files
+          "include/action_specials/zdoom/hexen_udmf.json",
+          "include/action_specials/zdoom/doors_polyobjs.json",
+          "include/action_specials/zdoom/floors_ceilings.json",
+          "include/action_specials/zdoom/scripting.json",
+          "include/action_specials/zdoom/sectors.json",
+          "include/action_specials/zdoom/things.json",
+          {
+            // Special cases for hexen format maps only
+            "filter": { "map_format": "hexen" },
+            "file": "include/action_specials/zdoom/hexen_udmf.json",
+            "key": "hexen"
+          }
+        ]
+      },
+
+      // Special presets
+      "special_presets": {
+        "import": [ "include/special_presets/zdoom.json" ]
+      },
+
+      // Thing flags
+      "thing_flags": {
+        "import": [ { "file": "include/thing_flags/zdoom.json", "key": "hexen_udmf" } ]
+      },
+
+      // Line flags
+      "line_flags": {
+        "import": [ { "file": "include/line_flags/zdoom.json", "key": "hexen_udmf" } ]
+      },
+
+      // Line triggers
+      "line_triggers": {
+        "import": [ { "file": "include/line_flags/zdoom.json", "key": "triggers" } ]
+      },
+
+      // Sector types
+      "sector_types": {
+        "import": [ { "file": "include/sector_types/zdoom.json", "key": "hexen_udmf" } ]
+      }
+    },
+
+    // UDMF map format configuration
+    {
+      "filter": { "map_format": "udmf" },
+
+      // UDMF namespace
+      "udmf_namespace": "ZDoom",
+
+      // UDMF features
+      "udmf_slopes": true,
+      "udmf_flat_lighting": true,
+      "udmf_flat_panning": true,
+      "udmf_flat_rotation": true,
+      "udmf_flat_scaling": true,
+      "udmf_line_transparency": true,
+      "udmf_sector_color": true,
+      "udmf_sector_fog": true,
+      "udmf_side_lighting": true,
+      "udmf_side_midtex_wrapping": true,
+      "udmf_side_scaling": false,
+      "udmf_texture_scaling": true,
+      "udmf_texture_offsets": true,
+      "udmf_thing_scaling": true,
+      "udmf_thing_rotation": true,
+
+      // UDMF properties
+      "udmf_properties": {
+        "import": [
+          "include/udmf_properties/zdoom.json",
+          {
+            // Some prop name overrides for Hexen
+            "filter": { "game": "hexen" },
+            "file": "include/udmf_properties/zdoom.json",
+            "key": "hexen"
+          }
+        ]
+      }
+    }
+  ]
+}

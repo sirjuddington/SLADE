@@ -1927,7 +1927,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	else if (id == "aman_recent")
 	{
 		// Get recent file index
-		unsigned index = wx_id_offset_;
+		unsigned index = wxIdOffset();
 
 		// Open it
 		openFile(recent_files_[index]);
@@ -1975,7 +1975,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 
 	// Bookmarks dropdown menu
 	else if (id == "aman_bookmark_menu")
-		goToBookmark(wx_id_offset_);
+		goToBookmark(wxIdOffset());
 	else if (id == "aman_bookmark_removeall")
 		app::archiveManager().deleteAllBookmarks();
 

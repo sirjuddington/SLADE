@@ -1,0 +1,484 @@
+{
+  "game_executables": {
+    "chocolate_doom": {
+      "name": "Chocolate Doom",
+      "file_name": "chocolate-doom",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -merge %r -file %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -merge %r -file %a -warp %mw"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -nomonsters"
+        }
+      ]
+    },
+    "chocolate_heretic": {
+      "name": "Chocolate Heretic",
+      "file_name": "chocolate-heretic",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -merge %r -file %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -merge %r -file %a -warp %mw"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -nomonsters"
+        }
+      ]
+    },
+    "chocolate_hexen": {
+      "name": "Chocolate Hexen",
+      "file_name": "chocolate-hexen",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -merge %r -file %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -merge %r -file %a -warp %mw"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -nomonsters"
+        }
+      ]
+    },
+    "chocolate_strife": {
+      "name": "Chocolate Strife",
+      "file_name": "chocolate-strife",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -merge %r -file %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -merge %r -file %a -warp %mw"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -merge %r -file %a -warp %mw -nomonsters"
+        }
+      ]
+    },
+    "dsda-doom": {
+      "name": "DSDA-Doom",
+      "file_name": "dsda-doom",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a -warp %mw"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -file %r %a -warp %mw -nomonsters"
+        }
+      ]
+    },
+    "edge-classic": {
+      "name": "EDGE-Classic",
+      "file_name": "edge-classic",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a -warp %mw"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -file %r %a -warp %mw -nomonsters"
+        }
+      ]
+    },
+    "eternity": {
+      "name": "Eternity",
+      "file_name": "eternity",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a -warp %mw"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -file %r %a -warp %mw -nomonsters"
+        }
+      ]
+    },
+    "glboom": {
+      "name": "GLBoom",
+      "file_name": "glboom",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a -warp %mw"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -file %r %a -warp %mw -nomonsters"
+        }
+      ]
+    },
+    "gzdoom": {
+      "name": "GZDoom",
+      "file_name": "gzdoom",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a +map %mn"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -file %r %a +map %mn -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -file %r %a +map %mn -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -file %r %a +map %mn -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -file %r %a +map %mn -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -file %r %a +map %mn -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -file %r %a +map %mn -nomonsters"
+        }
+      ]
+    },
+    "prboom": {
+      "name": "PrBoom",
+      "file_name": "prboom",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a -warp %mw"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -file %r %a -warp %mw -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -file %r %a -warp %mw -nomonsters"
+        }
+      ]
+    },
+    "zandronum": {
+      "name": "Zandronum",
+      "file_name": "zandronum",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a +map %mn"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -file %r %a +map %mn -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -file %r %a +map %mn -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -file %r %a +map %mn -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -file %r %a +map %mn -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -file %r %a +map %mn -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -file %r %a +map %mn -nomonsters"
+        }
+      ]
+    },
+    "zdoom": {
+      "name": "ZDoom",
+      "file_name": "zdoom",
+      "configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a"
+        }
+      ],
+      "map_configs": [
+        {
+          "name": "Run",
+          "command": "-iwad %i -file %r %a +map %mn"
+        },
+        {
+          "name": "Skill 1",
+          "command": "-iwad %i -file %r %a +map %mn -skill 1"
+        },
+        {
+          "name": "Skill 2",
+          "command": "-iwad %i -file %r %a +map %mn -skill 2"
+        },
+        {
+          "name": "Skill 3",
+          "command": "-iwad %i -file %r %a +map %mn -skill 3"
+        },
+        {
+          "name": "Skill 4",
+          "command": "-iwad %i -file %r %a +map %mn -skill 4"
+        },
+        {
+          "name": "Skill 5",
+          "command": "-iwad %i -file %r %a +map %mn -skill 5"
+        },
+        {
+          "name": "No Monsters",
+          "command": "-iwad %i -file %r %a +map %mn -nomonsters"
+        }
+      ]
+    }
+  }
+}

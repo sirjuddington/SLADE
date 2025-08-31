@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "KeyBind.h"
+#include "App.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -49,6 +51,62 @@ vector<KeyBind>         keybinds_sorted;
 KeyBind                 kb_none("-none-");
 vector<KeyBindHandler*> kb_handlers;
 } // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade
+{
+// -----------------------------------------------------------------------------
+// Returns the path to the keybinds config JSON file
+// -----------------------------------------------------------------------------
+string keybindConfigPath()
+{
+	return app::path("keybinds.json", app::Dir::User);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if two Keypress structs are equal
+// -----------------------------------------------------------------------------
+bool kpEqual(const Keypress& kp1, const Keypress& kp2)
+{
+	if (!strutil::equalCI(kp1.key, kp2.key))
+		return false;
+
+	return kp1.alt == kp2.alt && kp1.ctrl == kp2.ctrl && kp1.shift == kp2.shift;
+}
+} // namespace slade
+
+
+// -----------------------------------------------------------------------------
+//
+// Keypress Struct <-> JSON Object Conversion Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade
+{
+void to_json(json& j, const Keypress& kp)
+{
+	j = json{ { "key", kp.key } };
+	if (kp.alt)
+		j["mod_alt"] = true;
+	if (kp.ctrl)
+		j["mod_ctrl"] = true;
+	if (kp.shift)
+		j["mod_shift"] = true;
+}
+
+void from_json(const json& j, Keypress& kp)
+{
+	j.at("key").get_to(kp.key);
+	kp.alt   = j.value("mod_alt", false);
+	kp.ctrl  = j.value("mod_ctrl", false);
+	kp.shift = j.value("mod_shift", false);
+}
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -127,6 +185,21 @@ string KeyBind::keysAsString() const
 		return "None";
 	else
 		return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if this keybind has default keys
+// -----------------------------------------------------------------------------
+bool KeyBind::isDefault() const
+{
+	if (keys_.size() != defaults_.size())
+		return false;
+
+	for (unsigned a = 0; a < keys_.size(); a++)
+		if (!kpEqual(keys_[a], defaults_[a]))
+			return false;
+
+	return true;
 }
 
 
@@ -594,7 +667,7 @@ void KeyBind::initBinds()
 	addBind("me2d_mode_things", Keypress("T"), "Things mode", group);
 	addBind("me2d_mode_3d_at_mouse", Keypress("Q", KPM_SHIFT), "Enter 3d mode at the mouse cursor position", group);
 	addBind("me2d_flat_type", Keypress("F", KPM_CTRL), "Cycle flat type", group);
-	addBind("me2d_split_line", Keypress("S", KPM_SHIFT), "Split nearest line", group);
+	addBind("me2d_split_line", Keypress("S", KPM_CTRL | KPM_SHIFT), "Split nearest line", group);
 	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock hilight", group);
 	addBind("me2d_begin_linedraw", Keypress("space"), "Begin line drawing", group);
 	addBind("me2d_begin_shapedraw", Keypress("space", KPM_SHIFT), "Begin shape drawing", group);
@@ -750,65 +823,50 @@ void KeyBind::initBinds()
 			keybind.defaults_.push_back(keybind.keys_[k]);
 	}
 
-	// Create sorted list
-	keybinds_sorted = keybinds;
-	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
+	// Load keybind user configuration
+	if (auto j = jsonutil::parseFile(keybindConfigPath()); !j.is_discarded())
+	{
+		for (auto& [name, keys] : j.items())
+		{
+			// Clear any current binds for the key
+			bind(name).keys_.clear();
+
+			// Add keybinds
+			for (auto& kb : keys)
+				addBind(name, kb);
+		}
+	}
+
+	updateSortedBindsList();
 }
 
 // -----------------------------------------------------------------------------
-// Writes all keybind definitions as a string
+// Saves non-default keybind definitions to keybinds.json in the user config dir
 // -----------------------------------------------------------------------------
-string KeyBind::writeBinds()
+void KeyBind::saveBinds()
 {
-	// Init string
-	string ret;
-
-	// Go through all keybinds
+	json j;
 	for (auto& kb : keybinds)
 	{
-		// Add keybind line
-		ret += "\t";
-		ret += kb.name_;
+		if (kb.isDefault())
+			continue;
 
-		// 'unbound' indicates no binds
-		if (kb.keys_.empty())
-			ret += " unbound";
+		auto kb_json = json::array();
 
-		// Go through all bound keys
-		for (unsigned a = 0; a < kb.keys_.size(); a++)
-		{
-			auto& kp = kb.keys_[a];
-			ret += " \"";
+		for (auto& key : kb.keys_)
+			kb_json.push_back(key);
 
-			// Add modifiers (if any)
-			if (kp.alt)
-				ret += "a";
-			if (kp.ctrl)
-				ret += "c";
-			if (kp.shift)
-				ret += "s";
-			if (kp.alt || kp.ctrl || kp.shift)
-				ret += "|";
-
-			// Add key
-			ret += kp.key;
-			ret += "\"";
-
-			// Add comma if there are any more keys
-			if (a < kb.keys_.size() - 1)
-				ret += ",";
-		}
-
-		ret += "\n";
+		j[kb.name_] = kb_json;
 	}
 
-	return ret;
+	jsonutil::writeFile(j, keybindConfigPath());
 }
 
 // -----------------------------------------------------------------------------
 // Reads keybind defeinitions from tokenizer [tz]
+// (in old format from pre-3.3.0 slade3.cfg)
 // -----------------------------------------------------------------------------
-bool KeyBind::readBinds(Tokenizer& tz)
+bool KeyBind::readOldBinds(Tokenizer& tz)
 {
 	// Parse until ending }
 	while (!tz.checkOrEnd("}"))
@@ -854,9 +912,7 @@ bool KeyBind::readBinds(Tokenizer& tz)
 		tz.adv();
 	}
 
-	// Create sorted list
-	keybinds_sorted = keybinds;
-	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
+	updateSortedBindsList();
 
 	return true;
 }

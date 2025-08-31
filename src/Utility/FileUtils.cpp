@@ -346,7 +346,13 @@ bool SFile::open(const string& path, Mode mode)
 		stat(path.c_str(), &stat_);
 #endif
 
-	return handle_ != nullptr;
+	if (handle_)
+	{
+		path_ = path;
+		return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -358,6 +364,7 @@ void SFile::close()
 	{
 		fclose(handle_);
 		handle_ = nullptr;
+		path_.clear();
 	}
 }
 

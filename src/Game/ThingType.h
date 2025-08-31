@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Args.h"
+#include "General/JsonFwd.h"
 
 namespace slade
 {
@@ -67,6 +68,7 @@ namespace game
 		void   parse(const ParseTreeNode* node);
 		string stringDesc() const;
 		void   loadProps(PropertyList& props, bool decorate = true, bool zscript = false);
+		void   fromJson(const Json& j);
 
 		static const ThingType& unknown() { return unknown_; }
 		static void             initGlobal();

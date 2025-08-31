@@ -1,0 +1,307 @@
+// ZDoom action specials for hexen/udmf map formats
+// General sector related specials
+{
+  "groups": [
+    {
+      "name": "Sector",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "name": "Plane_Align",
+          "id": 181,
+          "arg1": {
+            "name": "Floor",
+            "type": "choice",
+            "custom_values": [
+              { "name": "don't align", "value": 0 },
+              { "name": "align front to back", "value": 1 },
+              { "name": "align back to front", "value": 2 }
+            ]
+          },
+          "arg2": {
+            "name": "Ceiling",
+            "type": "choice",
+            "custom_values": [
+              { "name": "don't align", "value": 0 },
+              { "name": "align front to back", "value": 1 },
+              { "name": "align back to front", "value": 2 }
+            ]
+          },
+          "arg3": "Line ID",
+          "tagged": "ex_3lineid"
+        },
+        {
+          "name": "Plane_Copy",
+          "id": 118,
+          "arg1": "Front Floor Tag",
+          "arg2": "Front Ceiling Tag",
+          "arg3": "Back Floor Tag",
+          "arg4": "Back Ceiling Tag",
+          "arg5": {
+            "name": "Share Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "copy floor front to back", "value": 1 },
+              { "name": "copy floor back to front", "value": 2 },
+              { "name": "copy ceiling front to back", "value": 4 },
+              { "name": "copy ceiling back to front", "value": 8 }
+            ]
+          },
+          "tagged": "ex_1sector_2sector_3sector_4sector"
+        },
+        {
+          "name": "Sector_Set3DFloor",
+          "id": 160,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Type",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "Vavoom", "value": 0 },
+              { "name": "solid", "value": 1 },
+              { "name": "swimmable", "value": 2 },
+              { "name": "non-solid", "value": 3 },
+              { "name": "draw inside of floor (don't use with Vavoom)", "value": 4 },
+              { "name": "arg 5 is LineID (don't use in UDMF)", "value": 8 },
+              { "name": "invert visibility", "value": 16 },
+              { "name": "invert shootability", "value": 32 }
+            ]
+          },
+          "arg3": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "disable lighting effects", "value": 1 },
+              { "name": "restrict lighting to inside of floor", "value": 2 },
+              { "name": "pseudo-fog", "value": 4 },
+              { "name": "flat floor at ceiling height", "value": 8 },
+              { "name": "use upper texture", "value": 16 },
+              { "name": "use lower texture", "value": 32 },
+              { "name": "use additive translucency", "value": 64 }
+            ]
+          },
+          "arg4": { "name": "Opacity", "description": "On a 0--255 scale from fully transparent to fully opaque" },
+          "arg5": { "name": "Hi-Tag/Line ID", "description": "Don't use this one in UDMF" }
+        },
+        {
+          "name": "Sector_SetLink",
+          "id": 51,
+          "arg1": "Control Tag",
+          "arg2": "Sector Tag",
+          "arg3": {
+            "name": "Plane",
+            "type": "choice",
+            "custom_values": [
+              { "name": "floor", "value": 0 },
+              { "name": "ceiling", "value": 1 }
+            ]
+          },
+          "arg4": {
+            "name": "Link flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "floor to surface", "value": 1 },
+              { "name": "ceiling to surface", "value": 2 },
+              { "name": "invert floor movement", "value": 4 },
+              { "name": "invert ceiling movement", "value": 8 }
+            ]
+          },
+          "tagged": "ex_1sector_2sector"
+        },
+        {
+          "name": "Static_Init",
+          "id": 190,
+          "arg1": "Sector Tag/Line ID",
+          "arg2": {
+            "name": "Property",
+            "type": "choice",
+            "custom_values": [
+              { "name": "set gravity", "value": 0 },
+              { "name": "set light or fog color from upper/lower texture", "value": 1 },
+              { "name": "set damage from linedef length", "value": 2 },
+              { "name": "sector link", "value": 3 },
+              { "name": "set sky from upper texture", "value": 255 }
+            ]
+          },
+          "arg3": {
+            "name": "Ceiling/Flip?",
+            "description": "Property 3: use ceiling instead of floor as control surface; Property 255: flip sky texture horizontally"
+          },
+          "arg4": {
+            "name": "Move Type",
+            "desc": "Only used when Property is 3",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "floor to surface", "value": 1 },
+              { "name": "ceiling to surface", "value": 2 },
+              { "name": "invert floor movement", "value": 4 },
+              { "name": "invert ceiling movement", "value": 8 }
+            ]
+          },
+          "tagged": "ex_sector_2is3_line"
+        },
+        {
+          "name": "Sector_ChangeFlags",
+          "id": 54,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Set flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "silent", "value": 1 },
+              { "name": "nofallingdamage", "value": 2 },
+              { "name": "dropactors", "value": 4 },
+              { "name": "norespawn", "value": 8 }
+            ]
+          },
+          "arg3": {
+            "name": "Clear flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "silent", "value": 1 },
+              { "name": "nofallingdamage", "value": 2 },
+              { "name": "dropactors", "value": 4 },
+              { "name": "norespawn", "value": 8 }
+            ]
+          }
+        },
+        {
+          "name": "Sector_ChangeSound",
+          "id": 140,
+          "arg1": "Sector Tag",
+          "arg2": { "name": "Sound Sequence", "description": "Index of sequence in SNDSEQ" }
+        },
+        {
+          "name": "Sector_SetRotation",
+          "id": 185,
+          "arg1": "Sector Tag",
+          "arg2": "Floor Angle",
+          "arg3": "Ceiling Angle"
+        },
+        {
+          "name": "Sector_SetFloorPanning",
+          "id": 187,
+          "arg1": "Sector Tag",
+          "arg2": "U Offset",
+          "arg3": "V Offset",
+          "arg4": { "name": "U Frac", "description": "One hundredth of this value is added to U offset" },
+          "arg5": { "name": "V Frac", "description": "One hundredth of this value is added to V offset" }
+        },
+        {
+          "name": "Sector_SetCeilingPanning",
+          "id": 186,
+          "arg1": "Sector Tag",
+          "arg2": "U Offset",
+          "arg3": "V Offset",
+          "arg4": { "name": "U Frac", "description": "One hundredth of this value is added to U offset" },
+          "arg5": { "name": "V Frac", "description": "One hundredth of this value is added to V offset" }
+        },
+        {
+          "name": "Sector_SetFloorScale",
+          "id": 189,
+          "arg1": "Sector Tag",
+          "arg2": "U Offset",
+          "arg3": { "name": "U Frac", "description": "One hundredth of this value is added to U offset" },
+          "arg4": "V Offset",
+          "arg5": { "name": "V Frac", "description": "One hundredth of this value is added to V offset" }
+        },
+        {
+          "name": "Sector_SetCeilingScale",
+          "id": 188,
+          "arg1": "Sector Tag",
+          "arg2": "U Offset",
+          "arg3": { "name": "U Frac", "description": "One hundredth of this value is added to U offset" },
+          "arg4": "V Offset",
+          "arg5": { "name": "V Frac", "description": "One hundredth of this value is added to V offset" }
+        },
+        {
+          "name": "Sector_SetGravity",
+          "id": 216,
+          "arg1": "Sector Tag",
+          "arg2": { "name": "Gravity Multiplier", "description": "Integral part of the gravity multiplier" },
+          "arg3": { "name": "Fraction", "description": "Fractional part of the gravity multiplier" }
+        },
+        {
+          "name": "Sector_SetWind",
+          "id": 218,
+          "arg1": {
+            "name": "Sector Tag",
+            "description": "Remember that the sector needs to have the 'pusher/puller/wind enabled' flag"
+          },
+          "arg2": "Strength",
+          "arg3": "Angle",
+          "arg4": {
+            "name": "Use Line?",
+            "description": "If 1, wind strength and angle are derived from the length and orientation of the linedef itself, instead of previous args."
+          }
+        },
+        {
+          "name": "Sector_SetFriction",
+          "id": 219,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Amount",
+            "description": "0: value taken from linedef length; 1-127: increased friction (sludgy), 128: normal friction, 129-255: decreased friction (icy)"
+          }
+        },
+        {
+          "name": "Sector_SetCurrent",
+          "id": 220,
+          "arg1": {
+            "name": "Sector Tag",
+            "description": "Remember that the sector needs to have the 'pusher/puller/wind enabled' flag"
+          },
+          "arg2": "Strength",
+          "arg3": "Angle",
+          "arg4": {
+            "name": "Use Line?",
+            "description": "If 1, current strength and angle are derived from the length and orientation of the linedef itself, instead of previous args."
+          }
+        },
+        {
+          "name": "PointPush_SetForce",
+          "id": 227,
+          "arg1": "Sector Tag",
+          "arg2": { "name": "Thing ID", "description": "TID of the pusher or puller" },
+          "arg3": "Strength",
+          "arg4": {
+            "name": "Use Line?",
+            "description": "If 1, pusher/puller strength is derived from the length of the linedef itself, instead of previous arg."
+          },
+          "tagged": "ex_1sector_2thing"
+        },
+        {
+          "name": "Sector_SetContents (OpenGL)",
+          "id": 161,
+          "arg1": {
+            "name": "Content Type",
+            "type": "choice",
+            "custom_values": [
+              { "name": "empty", "value": 0 },
+              { "name": "water", "value": 1 },
+              { "name": "lava", "value": 2 },
+              { "name": "nukage", "value": 3 },
+              { "name": "slime", "value": 4 },
+              { "name": "hellslime", "value": 5 },
+              { "name": "blood", "value": 6 },
+              { "name": "sludge", "value": 7 },
+              { "name": "hazard", "value": 8 },
+              { "name": "Boom water", "value": 9 }
+            ]
+          },
+          "arg2": { "name": "Translucency %", "description": "0 is fully opaque, 100 is invisible" },
+          "arg3": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "don't block movement", "value": 1 },
+              { "name": "don't block sight", "value": 2 },
+              { "name": "don't block shooting", "value": 4 },
+              { "name": "use additive translucency", "value": 8 }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

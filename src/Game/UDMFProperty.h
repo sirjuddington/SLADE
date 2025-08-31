@@ -1,5 +1,6 @@
 #pragma once
 
+#include "General/JsonFwd.h"
 #include "Utility/Property.h"
 
 namespace slade::game
@@ -43,6 +44,7 @@ public:
 	template<typename T> bool isDefault(T value) const;
 
 	void parse(const ParseTreeNode* node, string_view group);
+	void fromJson(const Json& j, string_view group);
 
 	string getStringRep();
 

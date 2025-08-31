@@ -1,0 +1,73 @@
+{
+  "name": "Visual Studio Light",
+  "default": {
+    "background": "rgb(255, 255, 255)",
+    "bold": false,
+    "font": "Courier New",
+    "foreground": "rgb(0, 0, 0)",
+    "italic": false,
+    "size": 10,
+    "underlined": false
+  },
+  "selection": {
+    "background": "rgb(170, 210, 255)"
+  },
+  "preprocessor": {
+    "foreground": "rgb(0, 0, 255)"
+  },
+  "comment": {
+    "foreground": "rgb(0, 128, 0)"
+  },
+  "comment_doc": {
+    "foreground": "rgb(0, 128, 0)"
+  },
+  "string": {
+    "foreground": "rgb(163, 21, 21)"
+  },
+  "character": {
+    "foreground": "rgb(163, 21, 21)"
+  },
+  "keyword": {
+    "foreground": "rgb(0, 0, 255)"
+  },
+  "constant": {
+    "foreground": "rgb(111, 0, 138)"
+  },
+  "type": {
+    "foreground": "rgb(0, 0, 255)"
+  },
+  "property": {
+    "foreground": "rgb(0, 0, 255)"
+  },
+  "function": {
+    "foreground": "rgb(43, 145, 175)"
+  },
+  "bracematch": {
+    "background": "rgb(170, 255, 170)"
+  },
+  "bracebad": {
+    "background": "rgb(255, 170, 170)"
+  },
+  "linenum": {
+    "background": "rgb(255, 255, 255)",
+    "foreground": "rgb(43, 145, 175)"
+  },
+  "calltip": {
+    "background": "rgb(240, 240, 240)",
+    "foreground": "rgb(0, 0, 0)"
+  },
+  "calltip_hl": {
+    "foreground": "rgb(10, 70, 120)"
+  },
+  "foldmargin": {
+    "background": "rgb(255, 255, 255)",
+    "foreground": "rgb(170, 170, 170)"
+  },
+  "guides": {
+    "foreground": "rgb(190, 190, 190)"
+  },
+  "current_line": {
+    "background": "rgb(245, 245, 245)",
+    "foreground": "rgb(235, 235, 235)"
+  }
+}

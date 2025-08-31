@@ -78,10 +78,10 @@ STopWindow::STopWindow(const string& title, const string& id, int x, int y, int 
 #endif
 
 	// Init toolbar menu action(s)
-	action_toolbar_menu_ = new SAction(
-		fmt::format("{}_toolbar_menu", id), "Toolbars", "", "", "", SAction::Type::Check, -1, 10);
-	action_toolbar_menu_->initWxId();
-	SAction::add(action_toolbar_menu_);
+	auto action_tb_menu = std::make_unique<SAction>(
+		fmt::format("{}_toolbar_menu", id), "Toolbars", "", "", "", SAction::Type::Check, "", 10);
+	action_tb_menu->initWxId();
+	action_toolbar_menu_ = SAction::add(std::move(action_tb_menu));
 
 	// Bind events
 	Bind(wxEVT_MENU, &STopWindow::onMenu, this);

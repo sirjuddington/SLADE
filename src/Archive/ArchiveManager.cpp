@@ -104,8 +104,8 @@ bool ArchiveManager::validResDir(string_view dir) const
 	// too, so the res folder cannot be used.
 	static string paths[] = {
 		"animated.lmp",
-		"config/executables.cfg",
-		"config/nodebuilders.cfg",
+		"config/executables.json",
+		"config/nodebuilders.json",
 		"fonts/dejavu_sans.ttf",
 		"html/box-title-back.png",
 		"html/startpage.htm",
@@ -197,7 +197,7 @@ bool ArchiveManager::init()
 // -----------------------------------------------------------------------------
 bool ArchiveManager::initArchiveFormats() const
 {
-	return archive::loadFormatInfo(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->data());
+	return archive::loadFormatInfo(program_resource_archive_->entryAtPath("config/archive_formats.json")->data());
 }
 
 // -----------------------------------------------------------------------------

@@ -1,0 +1,6 @@
+{
+  "flags": [
+    { "value": 4096, "name": "Block Land Monsters" },
+    { "value": 8192, "name": "Block Players" }
+  ]
+}
