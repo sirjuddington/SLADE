@@ -1,0 +1,23 @@
+{
+  "blocks": [
+    // Linedef block
+    {
+      "block": "linedef",
+      "groups": [
+        {
+          "name": "Flags",
+          "properties": [
+            {
+              "udmf": "passuse",
+              "name": "Pass Use",
+              "type": "bool",
+              "default": false,
+              "flag": true,
+              "show_always": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,17 +1,17 @@
 {
-  "game": {
-    "id": "doom",
-    "name": "Doom (Ultimate)",
+  "id": "doom",
+  "name": "Doom (Ultimate)",
 
-    // IWAD filename
-    "iwad": "doom.wad",
+  // IWAD filename
+  "iwad": "doom.wad",
 
-    // Supported map formats
-    "map_formats": [ "doom" ],
+  // Supported map formats
+  "map_formats": [ "doom" ],
 
-    // DECORATE filters
-    "filters": [ "doom", "any" ],
+  // DECORATE filters
+  "filters": [ "doom", "any" ],
 
+  "configuration": {
     // Sky flat for 3d mode
     "sky_flat": "F_SKY1",
 

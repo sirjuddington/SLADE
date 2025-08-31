@@ -273,56 +273,63 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 void Arg::fromJson(const Json& j, SpecialMap* shared_args)
 {
-	if (j.is_string())
+	try
 	{
-		auto arg_name = j.get<string>();
-
-		// Names beginning with a dollar sign are references to predeclared args
-		if (shared_args && strutil::startsWith(arg_name, '$'))
+		if (j.is_string())
 		{
-			auto it = shared_args->find(arg_name.substr(1));
-			if (it == shared_args->end())
-				// Totally bogus reference; silently ignore this arg
-				return;
+			auto arg_name = j.get<string>();
 
-			*this = it->second;
+			// Names beginning with a dollar sign are references to predeclared args
+			if (shared_args && strutil::startsWith(arg_name, '$'))
+			{
+				auto it = shared_args->find(arg_name.substr(1));
+				if (it == shared_args->end())
+					// Totally bogus reference; silently ignore this arg
+					return;
+
+				*this = it->second;
+			}
+			else
+				name = arg_name;
 		}
-		else
-			name = arg_name;
+		else if (j.is_object())
+		{
+			jsonutil::getIf(j, "name", name);
+			jsonutil::getIf(j, "description", desc);
+
+			// Type
+			auto atype = j.value("type", "");
+			if (strutil::equalCI(atype, "yesno"))
+				type = YesNo;
+			else if (strutil::equalCI(atype, "noyes"))
+				type = NoYes;
+			else if (strutil::equalCI(atype, "angle"))
+				type = Angle;
+			else if (strutil::equalCI(atype, "choice"))
+				type = Choice;
+			else if (strutil::equalCI(atype, "flags"))
+				type = Flags;
+			else if (strutil::equalCI(atype, "speed"))
+				type = Speed;
+			else if (strutil::equalCI(atype, "tics"))
+				type = Tics;
+			else if (strutil::equalCI(atype, "octics"))
+				type = Octics;
+			else
+				type = Number;
+
+			// Customs
+			if (j.contains("custom_values"))
+				for (auto& j_cv : j.at("custom_values"))
+					custom_values.push_back({ j_cv.at("name").get<string>(), j_cv.at("value").get<int>() });
+			if (j.contains("custom_flags"))
+				for (auto& j_cf : j.at("custom_flags"))
+					custom_flags.push_back({ j_cf.at("name").get<string>(), j_cf.at("value").get<int>() });
+		}
 	}
-	else if (j.is_object())
+	catch (const std::exception& e)
 	{
-		jsonutil::getIf(j, "name", name);
-		jsonutil::getIf(j, "description", desc);
-
-		// Type
-		auto atype = j.value("type", "");
-		if (strutil::equalCI(atype, "yesno"))
-			type = YesNo;
-		else if (strutil::equalCI(atype, "noyes"))
-			type = NoYes;
-		else if (strutil::equalCI(atype, "angle"))
-			type = Angle;
-		else if (strutil::equalCI(atype, "choice"))
-			type = Choice;
-		else if (strutil::equalCI(atype, "flags"))
-			type = Flags;
-		else if (strutil::equalCI(atype, "speed"))
-			type = Speed;
-		else if (strutil::equalCI(atype, "tics"))
-			type = Tics;
-		else if (strutil::equalCI(atype, "octics"))
-			type = Octics;
-		else
-			type = Number;
-
-		// Customs
-		if (j.contains("custom_values"))
-			for (auto& j_cv : j.at("custom_values"))
-				custom_values.push_back({ j_cv.at("name").get<string>(), j_cv.at("value").get<int>() });
-		if (j.contains("custom_flags"))
-			for (auto& j_cf : j.at("custom_flags"))
-				custom_flags.push_back({ j_cf.at("name").get<string>(), j_cf.at("value").get<int>() });
+		log::error("Error parsing arg definition '{}': {}", name, e.what());
 	}
 }
 

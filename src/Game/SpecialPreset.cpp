@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "SpecialPreset.h"
 #include "App.h"
+#include "Utility/FileUtils.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
@@ -127,6 +129,50 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent) const
 	return node;
 }
 
+// -----------------------------------------------------------------------------
+// Reads a special preset definition from a JSON object [j]
+// -----------------------------------------------------------------------------
+void SpecialPreset::fromJson(const Json& j)
+{
+	try
+	{
+		jsonutil::getIf(j, "name", name);
+		jsonutil::getIf(j, "group", group);
+		jsonutil::getIf(j, "special", special);
+
+		if (j.contains("flags") && j.at("flags").is_array())
+			for (const auto& flag : j.at("flags"))
+				flags.push_back(flag.get<string>());
+
+		for (unsigned a = 0; a < 5; a++)
+			jsonutil::getIf(j, fmt::format("arg{}", a + 1), args[a]);
+	}
+	catch (const std::exception& ex)
+	{
+		log::error("Error parsing special preset '{}': {}", name, ex.what());
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Converts the special preset to a JSON object
+// -----------------------------------------------------------------------------
+Json SpecialPreset::toJson() const
+{
+	Json j;
+	j["name"]    = name;
+	j["group"]   = group;
+	j["special"] = special;
+
+	if (!flags.empty())
+		j["flags"] = flags;
+
+	for (unsigned a = 0; a < 5; a++)
+		if (args[a] != 0)
+			j[fmt::format("arg{}", a + 1)] = args[a];
+
+	return j;
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -144,20 +190,48 @@ const vector<SpecialPreset>& game::customSpecialPresets()
 }
 
 // -----------------------------------------------------------------------------
-// Loads user defined (custom) special presets from special_presets.cfg in the
+// Loads user defined (custom) special presets from special_presets.json in the
 // user data directory.
 // Returns true on success or false if loading failed
 // -----------------------------------------------------------------------------
 bool game::loadCustomSpecialPresets()
 {
 	// Check file exists
-	auto file = app::path("special_presets.cfg", app::Dir::User);
-	if (!wxFileExists(wxString::FromUTF8(file)))
+	auto json_file = app::path("special_presets.json", app::Dir::User);
+	if (fileutil::fileExists(json_file))
+	{
+		// Parse the file
+		if (auto j = jsonutil::parseFile(json_file); !j.is_discarded() && j.contains("special_presets"))
+		{
+			for (const auto& j_preset : j.at("special_presets"))
+			{
+				custom_presets.emplace_back();
+				custom_presets.back().fromJson(j_preset);
+
+				// Add 'Custom' to preset group
+				if (!custom_presets.back().group.empty())
+					custom_presets.back().group = fmt::format("Custom/{}", custom_presets.back().group);
+				else
+					custom_presets.back().group = "Custom";
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+
+	// JSON special presets file not found - look for pre-3.3.0 config file
+
+	// Check file exists
+	auto cfg_file = app::path("special_presets.cfg", app::Dir::User);
+	if (!wxFileExists(wxString::FromUTF8(cfg_file)))
 		return true;
 
 	// Load special presets file to memory
 	MemChunk mc;
-	if (!mc.importFile(file))
+	if (!mc.importFile(cfg_file))
 		return false;
 
 	// Parse the file
@@ -198,26 +272,15 @@ bool game::saveCustomSpecialPresets()
 	if (custom_presets.empty())
 		return true;
 
-	// Open file
-	wxFile file;
-	if (!file.Open(wxString::FromUTF8(app::path("special_presets.cfg", app::Dir::User)), wxFile::write))
-	{
-		log::error("Unable to open special_presets.cfg file for writing");
-		return false;
-	}
-
-	// Build presets tree
-	ParseTreeNode root;
-	root.setName("special_presets");
-	for (auto& preset : custom_presets)
-		preset.write(&root);
+	// Build presets JSON object
+	Json j;
+	for (const auto& preset : custom_presets)
+		j["special_presets"].push_back(preset.toJson());
 
 	// Write to file
-	string presets;
-	root.write(presets);
-	if (!file.Write(wxString::FromUTF8(presets)))
+	if (!jsonutil::writeFile(j, app::path("special_presets.json", app::Dir::User)))
 	{
-		log::error("Writing to special_presets.cfg failed");
+		log::error("Writing to special_presets.json failed");
 		return false;
 	}
 

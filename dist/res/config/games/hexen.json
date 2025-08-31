@@ -1,17 +1,17 @@
 {
-  "game": {
-    "id": "hexen",
-    "name": "Hexen",
+  "id": "hexen",
+  "name": "Hexen",
 
-    // IWAD filename
-    "iwad": "hexen.wad",
+  // IWAD filename
+  "iwad": "hexen.wad",
 
-    // Supported map formats
-    "map_formats": [ "hexen" ],
+  // Supported map formats
+  "map_formats": [ "hexen" ],
 
-    // DECORATE filters
-    "filters": [ "hexen", "raven", "any" ],
+  // DECORATE filters
+  "filters": [ "hexen", "raven", "any" ],
 
+  "configuration": {
     // Scripting
     "script_language": "acs_hexen",
 

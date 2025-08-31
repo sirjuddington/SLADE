@@ -1,17 +1,17 @@
 {
-  "game": {
-    "id": "strife",
-    "name": "Strife",
+  "id": "strife",
+  "name": "Strife",
 
-    // IWAD filename
-    "iwad": "strife1.wad",
+  // IWAD filename
+  "iwad": "strife1.wad",
 
-    // Supported map formats
-    "map_formats": [ "doom" ],
+  // Supported map formats
+  "map_formats": [ "doom" ],
 
-    // DECORATE filters
-    "filters": [ "strife", "any" ],
+  // DECORATE filters
+  "filters": [ "strife", "any" ],
 
+  "configuration": {
     // Sky flat for 3d mode
     "sky_flat": "F_SKY001",
 

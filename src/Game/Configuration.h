@@ -128,11 +128,13 @@ public:
 
 	// JSON Configuration reading
 	bool readGameConfiguration(const Json& j, ConfigDesc desc, ArchiveEntry* entry = nullptr);
+	void readConfigurationSection(const Json& j, ConfigDesc cfg, ArchiveEntry* entry = nullptr);
 	void readActionSpecials(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
 	void readThingTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
 	void readFlags(const Json& j, vector<Flag>& flags, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
 	void readSectorTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
 	void readUDMFProperties(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
+	void readSpecialPresets(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
 
 	// Action specials
 	const ActionSpecial& actionSpecial(unsigned id);

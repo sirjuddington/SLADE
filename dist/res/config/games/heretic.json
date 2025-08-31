@@ -1,17 +1,17 @@
 {
-  "game": {
-    "id": "heretic",
-    "name": "Heretic",
+  "id": "heretic",
+  "name": "Heretic",
 
-    // IWAD filename
-    "iwad": "heretic.wad",
+  // IWAD filename
+  "iwad": "heretic.wad",
 
-    // Supported map formats
-    "map_formats": [ "doom" ],
+  // Supported map formats
+  "map_formats": [ "doom" ],
 
-    // DECORATE filters
-    "filters": [ "heretic", "raven", "any" ],
+  // DECORATE filters
+  "filters": [ "heretic", "raven", "any" ],
 
+  "configuration": {
     // Sky flat for 3d mode
     "sky_flat": "F_SKY1",
 

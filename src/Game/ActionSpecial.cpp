@@ -155,37 +155,44 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 void ActionSpecial::fromJson(const Json& j, Arg::SpecialMap& shared_args)
 {
-	jsonutil::getIf(j, "name", name_);
+	try
+	{
+		jsonutil::getIf(j, "name", name_);
 
-	// Args
-	if (j.contains("arg1"))
-	{
-		args_[0].fromJson(j.at("arg1"), &shared_args);
-		args_.count = 1;
-	}
-	if (j.contains("arg2"))
-	{
-		args_[1].fromJson(j.at("arg2"), &shared_args);
-		args_.count = 2;
-	}
-	if (j.contains("arg3"))
-	{
-		args_[2].fromJson(j.at("arg3"), &shared_args);
-		args_.count = 3;
-	}
-	if (j.contains("arg4"))
-	{
-		args_[3].fromJson(j.at("arg4"), &shared_args);
-		args_.count = 4;
-	}
-	if (j.contains("arg5"))
-	{
-		args_[4].fromJson(j.at("arg5"), &shared_args);
-		args_.count = 5;
-	}
+		// Args
+		if (j.contains("arg1"))
+		{
+			args_[0].fromJson(j.at("arg1"), &shared_args);
+			args_.count = 1;
+		}
+		if (j.contains("arg2"))
+		{
+			args_[1].fromJson(j.at("arg2"), &shared_args);
+			args_.count = 2;
+		}
+		if (j.contains("arg3"))
+		{
+			args_[2].fromJson(j.at("arg3"), &shared_args);
+			args_.count = 3;
+		}
+		if (j.contains("arg4"))
+		{
+			args_[3].fromJson(j.at("arg4"), &shared_args);
+			args_.count = 4;
+		}
+		if (j.contains("arg5"))
+		{
+			args_[4].fromJson(j.at("arg5"), &shared_args);
+			args_.count = 5;
+		}
 
-	if (j.contains("tagged"))
-		tagged_ = parseTagged(j.at("tagged").get<string>());
+		if (j.contains("tagged"))
+			tagged_ = parseTagged(j.at("tagged").get<string>());
+	}
+	catch (const std::exception& e)
+	{
+		log::error("Error parsing action special '{}': {}", name_, e.what());
+	}
 }
 
 // -----------------------------------------------------------------------------

@@ -1,25 +1,25 @@
 {
-  "game": {
-    "id": "srb2",
-    "name": "Sonic Robo Blast 2",
+  "id": "srb2",
+  "name": "Sonic Robo Blast 2",
 
-    // IWAD filename
-    "iwad": "srb2.pk3",
+  // IWAD filename
+  "iwad": "srb2.pk3",
 
-    // Supported map formats
-    "map_formats": [ "doom", "udmf" ],
+  // Supported map formats
+  "map_formats": [ "doom", "udmf" ],
+
+  // DECORATE filters
+  "filters": [ "doom", "any" ],
+
+  "configuration": {
+    // Sky flat for 3d mode
+    "sky_flat": "F_SKY1",
 
     // Mix textures and flats
     "mix_tex_flats": true,
 
     // TX textures
     "tx_textures": true,
-
-    // DECORATE filters
-    "filters": [ "doom", "any" ],
-
-    // Sky flat for 3d mode
-    "sky_flat": "F_SKY1",
 
     // Light levels
     "light_level_interval": 16,

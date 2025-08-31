@@ -568,3 +568,11 @@ ColRGBA colour::fromString(string_view str)
 
 	return colour;
 }
+
+// -----------------------------------------------------------------------------
+// Converts a ColRGBA colour to an int (0xRRGGBB)
+// -----------------------------------------------------------------------------
+int colour::toInt(const ColRGBA& colour)
+{
+	return (colour.r << 16) | (colour.g << 8) | colour.b;
+}

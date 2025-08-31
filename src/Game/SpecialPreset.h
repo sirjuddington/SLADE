@@ -1,5 +1,7 @@
 #pragma once
 
+#include "General/JsonFwd.h"
+
 namespace slade
 {
 namespace game
@@ -14,6 +16,9 @@ namespace game
 
 		void           parse(const ParseTreeNode* node);
 		ParseTreeNode* write(ParseTreeNode* parent) const;
+
+		void fromJson(const Json& j);
+		Json toJson() const;
 	};
 
 	const vector<SpecialPreset>& customSpecialPresets();

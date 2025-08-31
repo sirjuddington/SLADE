@@ -1,17 +1,17 @@
 {
-  "game": {
-    "id": "chex1",
-    "name": "Chex Quest",
+  "id": "chex1",
+  "name": "Chex Quest",
 
-    // IWAD filename
-    "iwad": "chex.wad",
+  // IWAD filename
+  "iwad": "chex.wad",
 
-    // Supported map formats
-    "map_formats": [ "doom" ],
+  // Supported map formats
+  "map_formats": [ "doom" ],
 
-    // DECORATE filters
-    "filters": [ "chex", "any" ],
+  // DECORATE filters
+  "filters": [ "chex", "any" ],
 
+  "configuration": {
     // Sky flat for 3d mode
     "sky_flat": "F_SKY1",
 

@@ -1,17 +1,17 @@
 {
-  "game": {
-    "id": "doom64",
-    "name": "Doom 64",
+  "id": "doom64",
+  "name": "Doom 64",
 
-    // IWAD filename
-    "iwad": "doom64.wad",
+  // IWAD filename
+  "iwad": "doom64.wad",
 
-    // Supported map formats
-    "map_formats": [ "doom64" ],
+  // Supported map formats
+  "map_formats": [ "doom64" ],
 
-    // DECORATE filters
-    "filters": [ "doom64", "any" ],
+  // DECORATE filters
+  "filters": [ "doom64", "any" ],
 
+  "configuration": {
     // Valid map names -- Doom64 EX supports MAPINFO so actually
     // any map name is a valid name.
     "map_name_any": true,

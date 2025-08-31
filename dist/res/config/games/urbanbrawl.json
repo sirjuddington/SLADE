@@ -1,17 +1,17 @@
 {
-  "game": {
-    "id": "urbanbrawl",
-    "name": "Urban Brawl",
+  "id": "urbanbrawl",
+  "name": "Urban Brawl",
 
-    // IWAD filename
-    "iwad": "action2.wad",
+  // IWAD filename
+  "iwad": "action2.wad",
 
-    // Supported map formats
-    "map_formats": [ "hexen", "udmf" ],
+  // Supported map formats
+  "map_formats": [ "hexen", "udmf" ],
 
-    // DECORATE filters
-    "filters": [ "any" ],
+  // DECORATE filters
+  "filters": [ "any" ],
 
+  "configuration": {
     // Enable mixed textures and flats
     "mix_tex_flats": true,
 

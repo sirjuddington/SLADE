@@ -70,7 +70,18 @@ CVAR(Bool, debug_configuration, false, CVar::Flag::Save)
 namespace slade::game
 {
 Configuration config_current;
-}
+
+// Cache parsed JSON entries to avoid re-parsing anything imported multiple
+// times
+struct ParsedJsonEntry
+{
+	const ArchiveEntry* entry;
+	Json                parsed_json;
+
+	ParsedJsonEntry(const ArchiveEntry& entry) : entry(&entry) { parsed_json = jsonutil::parse(entry.data()); }
+};
+vector<ParsedJsonEntry> parsed_json_entries;
+} // namespace slade::game
 
 
 // -----------------------------------------------------------------------------
@@ -87,6 +98,131 @@ inline int featureId(Feature feature)
 inline int udmfFeatureId(UDMFFeature feature)
 {
 	return static_cast<int>(feature);
+}
+
+// -----------------------------------------------------------------------------
+// Checks if a filter item [j_filter] allows the value [value]
+// -----------------------------------------------------------------------------
+inline bool checkFilterItem(const Json& j_filter, string_view value)
+{
+	bool pass = true;
+
+	if (j_filter.is_string())
+		pass = strutil::equalCI(j_filter, value);
+	else if (j_filter.is_array())
+	{
+		pass = false;
+		for (auto& format : j_filter)
+			if (strutil::equalCI(format, value))
+			{
+				pass = true;
+				break;
+			}
+	}
+
+	return pass;
+}
+
+// -----------------------------------------------------------------------------
+// Checks if the filter object in [j] allows the game+mapformat combo in [cfg].
+// If no filter exists in [j], always pass
+// -----------------------------------------------------------------------------
+bool checkFilter(const Json& j, const Configuration::ConfigDesc& cfg)
+{
+	if (j.contains("filter"))
+	{
+		const auto& j_filter = j.at("filter");
+
+		// Map format filter
+		if (j_filter.contains("map_format"))
+			if (!checkFilterItem(j_filter.at("map_format"), cfg.map_format))
+				return false; // Map format not listed in filter, fail
+
+		// Not map format filter
+		if (j_filter.contains("not_map_format"))
+			if (checkFilterItem(j_filter.at("not_map_format"), cfg.map_format))
+				return false; // Map format *is* listed in filter, fail
+
+		// Game filter
+		if (j_filter.contains("game"))
+			if (!checkFilterItem(j_filter.at("game"), cfg.game))
+				return false; // Game not listed in filter, fail
+
+		// Not game filter
+		if (j_filter.contains("not_game"))
+			if (checkFilterItem(j_filter.at("not_game"), cfg.game))
+				return false; // Game *is* listed in filter, fail
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Handles an 'import' JSON object [j], returning a parsed JSON object from the
+// import target entry (relative to the given base [entry]).
+// If the import objects contains a filter, it will be checked against [cfg] and
+// a discarded value will be returned if it doesn't match
+// -----------------------------------------------------------------------------
+Json getImport(const Json& j, const Configuration::ConfigDesc& cfg, const ArchiveEntry& entry)
+{
+	string file, key;
+
+	// Check for simple or filtered import
+	if (j.is_string())
+		file = j.get<string>();
+	else if (j.is_object())
+	{
+		// Check filter
+		if (!checkFilter(j, cfg))
+			return nlohmann::detail::value_t::discarded;
+
+		jsonutil::getIf(j, "file", file); // Json file to import
+		jsonutil::getIf(j, "key", key);   // Key within Json object to import
+	}
+
+	// Get target entry to import
+	auto import_entry_path = entry.path() + file;
+	if (auto import_entry = entry.parent()->entryAtPath(import_entry_path))
+	{
+		// Check if the entry was previously parsed
+		Json* imported = nullptr;
+		for (auto& parsed : parsed_json_entries)
+			if (parsed.entry == import_entry)
+			{
+				imported = &parsed.parsed_json;
+				break;
+			}
+
+		// Parse entry as JSON if it wasn't previously
+		if (!imported)
+		{
+			parsed_json_entries.emplace_back(*import_entry);
+			imported = &parsed_json_entries.back().parsed_json;
+		}
+
+		// Check parsing was successful
+		if (imported->is_discarded())
+		{
+			log::error("Failed to parse imported entry \"{}\"", import_entry_path);
+			return nlohmann::detail::value_t::discarded;
+		}
+
+		// If key specified, return the object at said key instead of the base object
+		if (!key.empty())
+		{
+			if (imported->contains(key))
+				return imported->at(key);
+
+			log::error("Key {} does not exist in imported JSON entry \"{}\"", key, import_entry_path);
+			return nlohmann::detail::value_t::discarded;
+		}
+
+		return *imported;
+	}
+
+	// Target entry not found
+	log::error("Entry \"{}\" not found to import", import_entry_path);
+	return nlohmann::detail::value_t::discarded;
 }
 } // namespace slade::game
 
@@ -936,9 +1072,11 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 	if (game_config.name != game)
 		return false;
 
+	// Load base game configuration
+	bool game_ok = false;
 	if (game_config.user)
 	{
-		// Config is in user dir
+		// TODO: Config is in user dir
 	}
 	else
 	{
@@ -948,52 +1086,19 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		auto entry   = archive->entryAtPath(epath);
 		if (entry)
 		{
-			if (auto j = jsonutil::parse(entry->data()); !j.is_discarded() && j.contains("game"))
-				readGameConfiguration(j.at("game"), ConfigDesc{ game, port, mapFormatId(format) }, entry);
+			if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
+				game_ok = readGameConfiguration(j, ConfigDesc{ game, port, mapFormatId(format) }, entry);
 		}
 	}
 
-	return true;
-
-
-
-
-
-	// OLD CONFIG LOADING
-
-	string full_config;
-
-	// Get game configuration as string
-	// auto& game_config = gameDef(game);
-	if (game_config.name == game)
-	{
-		if (game_config.user)
-		{
-			// Config is in user dir
-			auto filename = app::path("games/", app::Dir::User) + game_config.filename + ".cfg";
-			if (fileutil::fileExists(filename))
-				strutil::processIncludes(filename, full_config);
-			else
-			{
-				log::error("Error: Game configuration file \"{}\" not found", filename);
-				return false;
-			}
-		}
-		else
-		{
-			// Config is in program resource
-			auto epath   = fmt::format("config/games/{}.cfg", game_config.filename);
-			auto archive = app::archiveManager().programResourceArchive();
-			auto entry   = archive->entryAtPath(epath);
-			if (entry)
-				strutil::processIncludes(entry, full_config);
-		}
-	}
+	if (!game_ok)
+		return false;
 
 	// Append port configuration (if specified)
+	bool port_ok = true;
 	if (!port.empty())
 	{
-		full_config += "\n\n";
+		port_ok = false;
 
 		// Check the port supports this game
 		auto& conf = portDef(port);
@@ -1001,52 +1106,34 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		{
 			if (conf.user)
 			{
-				// Config is in user dir
-				auto filename = app::path("ports/", app::Dir::User) + conf.filename + ".cfg";
-				if (fileutil::fileExists(filename))
-					strutil::processIncludes(filename, full_config);
-				else
-				{
-					log::error("Error: Port configuration file \"{}\" not found", filename);
-					return false;
-				}
+				// TODO: Config is in user dir
 			}
 			else
 			{
 				// Config is in program resource
-				auto epath   = fmt::format("config/ports/{}.cfg", conf.filename);
+				auto epath   = fmt::format("config/ports/{}.json", conf.filename);
 				auto archive = app::archiveManager().programResourceArchive();
 				auto entry   = archive->entryAtPath(epath);
 				if (entry)
-					strutil::processIncludes(entry, full_config);
+				{
+					if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
+						port_ok = readGameConfiguration(j, ConfigDesc{ game, port, mapFormatId(format) }, entry);
+				}
 			}
 		}
 	}
 
-	if (debug_configuration)
-	{
-		SFile test("full.cfg", SFile::Mode::Write);
-		test.writeStr(full_config);
-		test.close();
-	}
+	if (!port_ok)
+		return false;
 
-	// Read fully built configuration
-	bool ok = true;
-	if (readConfiguration(full_config, "full.cfg", format))
-	{
-		current_game_      = game;
-		current_port_      = port;
-		game_configuration = game;
-		port_configuration = port;
-		log::info(2, R"(Read game configuration "{}" + "{}")", current_game_, current_port_);
-	}
-	else
-	{
-		log::error("Error reading game configuration, not loaded");
-		ok = false;
-	}
+	// Update current game/port selection
+	current_game_      = game;
+	current_port_      = port;
+	game_configuration = game;
+	port_configuration = port;
 
-	// Read any embedded configurations in resource archives
+#if 0
+	// TODO: Read any embedded configurations in resource archives
 	ArchiveSearchOptions opt;
 	opt.match_name   = "sladecfg";
 	auto cfg_entries = app::archiveManager().findAllResourceEntries(opt);
@@ -1062,12 +1149,60 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		if (!readConfiguration(config, cfg_entry->name(), format, true, false))
 			log::error("Error reading embedded game configuration, not loaded");
 	}
+#endif
 
-	return ok;
+	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Reads a game configuration from parsed JSON [j], using [cfg] to filter
+// sub-sections
+// -----------------------------------------------------------------------------
 bool Configuration::readGameConfiguration(const Json& j, ConfigDesc cfg, ArchiveEntry* entry)
 {
+	parsed_json_entries.clear();
+
+	// Map formats
+	if (j.contains("map_formats"))
+	{
+		map_formats_.clear();
+		for (const auto& mf : j.at("map_formats"))
+			map_formats_[mapFormatFromId(mf)] = true;
+	}
+
+	// Configuration section(s)
+	if (j.contains("configuration"))
+	{
+		const auto& j_configuration = j.at("configuration");
+
+		// Single configuration section
+		if (j_configuration.is_object() && checkFilter(j_configuration, cfg))
+			readConfigurationSection(j_configuration, cfg, entry);
+
+		// Multiple configuration sections
+		else if (j_configuration.is_array())
+			for (const auto& j_cfg_section : j_configuration)
+				if (checkFilter(j_cfg_section, cfg))
+					readConfigurationSection(j_cfg_section, cfg, entry);
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Reads a game configuration section from JSON object [j].
+// If the section contains a filter, it will be ignored if the filter does not
+// match [cfg]
+// -----------------------------------------------------------------------------
+void Configuration::readConfigurationSection(const Json& j, ConfigDesc cfg, ArchiveEntry* entry)
+{
+	// General properties
+	jsonutil::getIf(j, "boom_sector_flag_start", boom_sector_flag_start_);
+	jsonutil::getIf(j, "udmf_namespace", udmf_namespace_);
+	jsonutil::getIf(j, "sky_flat", sky_flat_);
+	jsonutil::getIf(j, "script_language", script_language_);
+	jsonutil::getIf(j, "player_eye_height", player_eye_height_);
+
 	// Features
 	jsonutil::getIf(j, "boom", supported_features_[featureId(Feature::Boom)]);
 	jsonutil::getIf(j, "mbf21", supported_features_[featureId(Feature::MBF21)]);
@@ -1092,21 +1227,6 @@ bool Configuration::readGameConfiguration(const Json& j, ConfigDesc cfg, Archive
 	jsonutil::getIf(j, "udmf_texture_offsets", udmf_features_[udmfFeatureId(UDMFFeature::TextureOffsets)]);
 	jsonutil::getIf(j, "udmf_thing_scaling", udmf_features_[udmfFeatureId(UDMFFeature::ThingScaling)]);
 	jsonutil::getIf(j, "udmf_thing_rotation", udmf_features_[udmfFeatureId(UDMFFeature::ThingRotation)]);
-
-	// Map formats
-	if (j.contains("map_formats"))
-	{
-		map_formats_.clear();
-		for (const auto& mf : j.at("map_formats"))
-			map_formats_[mapFormatFromId(mf.get<string>())] = true;
-	}
-
-	// General properties
-	jsonutil::getIf(j, "boom_sector_flag_start", boom_sector_flag_start_);
-	jsonutil::getIf(j, "udmf_namespace", udmf_namespace_);
-	jsonutil::getIf(j, "sky_flat", sky_flat_);
-	jsonutil::getIf(j, "script_language", script_language_);
-	jsonutil::getIf(j, "player_eye_height", player_eye_height_);
 
 	// Light levels interval
 	if (j.contains("light_level_interval"))
@@ -1199,6 +1319,10 @@ bool Configuration::readGameConfiguration(const Json& j, ConfigDesc cfg, Archive
 	if (j.contains("action_specials"))
 		readActionSpecials(j.at("action_specials"), cfg, entry);
 
+	// Special presets
+	if (j.contains("special_presets"))
+		readSpecialPresets(j.at("special_presets"), cfg, entry);
+
 	// Thing types
 	if (j.contains("thing_types"))
 		readThingTypes(j.at("thing_types"), cfg, entry);
@@ -1222,71 +1346,30 @@ bool Configuration::readGameConfiguration(const Json& j, ConfigDesc cfg, Archive
 	// UDMF properties
 	if (j.contains("udmf_properties"))
 		readUDMFProperties(j.at("udmf_properties"), cfg, entry);
-
-	return true;
 }
 
-Json getImport(const Json& j, const Configuration::ConfigDesc& cfg, const ArchiveEntry& entry)
-{
-	string file;
-
-	if (j.is_string())
-		file = j.get<string>();
-
-	// Will handle this stuff a different way
-	// else if (j.is_object())
-	// {
-	// 	if (!j.contains("file"))
-	// 	{
-	// 		log::error("Error: Import missing \"file\" key");
-	// 		return nlohmann::detail::value_t::discarded;
-	// 	}
-	//
-	// 	// Check import is valid for given map format
-	// 	bool ignore = false;
-	// 	if (j.contains("map_formats") && j.at("map_formats").is_array())
-	// 	{
-	// 		auto& j_map_formats = j.at("map_formats");
-	// 		if (std::find(j_map_formats.begin(), j_map_formats.end(), cfg.map_format) == j_map_formats.end())
-	// 			ignore = true;
-	// 	}
-	//
-	// 	if (ignore)
-	// 		return nlohmann::detail::value_t::discarded;
-	//
-	// 	file = j.at("file").get<string>();
-	// }
-
-	// Get target entry to import
-	auto import_entry_path = entry.path() + file;
-	if (auto import_entry = entry.parent()->entryAtPath(import_entry_path))
-	{
-		auto imported = jsonutil::parse(import_entry->data());
-		if (imported.is_discarded())
-			log::error("Error: Failed to parse imported entry \"{}\"", import_entry_path);
-		return imported;
-	}
-
-	// Target entry not found
-	log::error("Error: Entry \"{}\" not found to import", import_entry_path);
-	return nlohmann::detail::value_t::discarded;
-}
-
+// -----------------------------------------------------------------------------
+// Reads an action_specials section from JSON object [j]
+// -----------------------------------------------------------------------------
 void Configuration::readActionSpecials(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
 {
+	// Check if we are clearing existing action specials
+	if (j.value("clear_existing", false))
+		action_specials_.clear();
+
 	// Handle imports
 	if (entry && j.contains("import"))
 	{
 		for (auto& i : j["import"])
-			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
 				readActionSpecials(j_import, config, entry);
 	}
 
 	// Read any shared args
 	Arg::SpecialMap shared_args;
-	if (j.contains("args"))
+	if (j.contains("arg_presets"))
 	{
-		for (auto& [name, j_arg] : j.at("args").items())
+		for (auto& [name, j_arg] : j.at("arg_presets").items())
 			shared_args[name].fromJson(j_arg, nullptr);
 	}
 
@@ -1332,13 +1415,16 @@ void Configuration::readActionSpecials(const Json& j, const ConfigDesc& config, 
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Reads a thing_types section from JSON object [j]
+// -----------------------------------------------------------------------------
 void Configuration::readThingTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
 {
 	// Handle imports
 	if (entry && j.contains("import"))
 	{
 		for (auto& i : j["import"])
-			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
 				readThingTypes(j_import, config, entry);
 	}
 
@@ -1387,13 +1473,16 @@ void Configuration::readThingTypes(const Json& j, const ConfigDesc& config, cons
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Reads flags from JSON object [j] and appends them to [flags]
+// -----------------------------------------------------------------------------
 void Configuration::readFlags(const Json& j, vector<Flag>& flags, const ConfigDesc& config, const ArchiveEntry* entry)
 {
 	// Handle imports
 	if (entry && j.contains("import"))
 	{
 		for (auto& i : j["import"])
-			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
 				readFlags(j_import, flags, config, entry);
 	}
 
@@ -1436,13 +1525,16 @@ void Configuration::readFlags(const Json& j, vector<Flag>& flags, const ConfigDe
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Reads a sector_types section from JSON object [j]
+// -----------------------------------------------------------------------------
 void Configuration::readSectorTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
 {
 	// Handle imports
 	if (entry && j.contains("import"))
 	{
 		for (auto& i : j["import"])
-			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
 				readSectorTypes(j_import, config, entry);
 	}
 
@@ -1455,13 +1547,16 @@ void Configuration::readSectorTypes(const Json& j, const ConfigDesc& config, con
 			sector_types_[j_type.at("type").get<int>()] = j_type.value("name", "Unknown");
 }
 
+// -----------------------------------------------------------------------------
+// Reads a udmf_properties section from JSON object [j]
+// -----------------------------------------------------------------------------
 void Configuration::readUDMFProperties(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
 {
 	// Handle imports
 	if (entry && j.contains("import"))
 	{
 		for (auto& i : j["import"])
-			if (auto j_import = getImport(i, config, *entry); !j.is_discarded())
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
 				readUDMFProperties(j_import, config, entry);
 	}
 
@@ -1512,6 +1607,31 @@ void Configuration::readUDMFProperties(const Json& j, const ConfigDesc& config, 
 				(*prop_map)[udmf].fromJson(j_prop, group);
 			}
 		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads a special_presets section from JSON object [j]
+// -----------------------------------------------------------------------------
+void Configuration::readSpecialPresets(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
+				readSpecialPresets(j_import, config, entry);
+	}
+
+	// Check if any presets are present
+	if (!j.contains("presets") || !j.at("presets").is_array())
+		return;
+
+	// Go through presets
+	for (const auto& j_preset : j.at("presets"))
+	{
+		special_presets_.emplace_back();
+		special_presets_.back().fromJson(j_preset);
 	}
 }
 

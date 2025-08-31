@@ -1,17 +1,17 @@
 {
-  "game": {
-    "id": "chex3",
-    "name": "Chex Quest 3",
+  "id": "chex3",
+  "name": "Chex Quest 3",
 
-    // IWAD filename
-    "iwad": "chex3.wad",
+  // IWAD filename
+  "iwad": "chex3.wad",
 
-    // Supported map formats
-    "map_formats": [ "hexen", "udmf" ],
+  // Supported map formats
+  "map_formats": [ "hexen", "udmf" ],
 
-    // DECORATE filters
-    "filters": [ "chex", "any" ],
+  // DECORATE filters
+  "filters": [ "chex", "any" ],
 
+  "configuration": {
     // Enable mixed textures and flats
     "mix_tex_flats": true,
 
