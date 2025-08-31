@@ -191,7 +191,7 @@ void executables::readExecutables(Json& j, bool custom)
 					bool found = false;
 					for (auto& config : exe->run_configs)
 					{
-						if (config.first == j_config["name"])
+						if (config.first == j_config["name"].get<string>())
 						{
 							config.second = j_config["command"];
 							found         = true;
@@ -216,7 +216,7 @@ void executables::readExecutables(Json& j, bool custom)
 					bool found = false;
 					for (auto& config : exe->map_configs)
 					{
-						if (config.first == j_config["name"])
+						if (config.first == j_config["name"].get<string>())
 						{
 							config.second = j_config["command"];
 							found         = true;

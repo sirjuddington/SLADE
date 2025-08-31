@@ -266,8 +266,12 @@ bool Archive::open(string_view filename)
 	if (format_handler_->open(*this, filename))
 	{
 		log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
-		file_modified_ = fileutil::fileModifiedTime(filename);
-		on_disk_       = true;
+
+		if (format_handler_->format() != ArchiveFormat::Dir)
+			file_modified_ = fileutil::fileModifiedTime(filename);
+
+		on_disk_ = true;
+
 		return true;
 	}
 	else
