@@ -108,11 +108,11 @@ inline bool checkFilterItem(const Json& j_filter, string_view value)
 	bool pass = true;
 
 	if (j_filter.is_string())
-		pass = strutil::equalCI(j_filter, value);
+		pass = strutil::equalCI(j_filter.get<string>(), value);
 	else if (j_filter.is_array())
 	{
 		pass = false;
-		for (auto& format : j_filter)
+		for (auto& format : j_filter.get<vector<string>>())
 			if (strutil::equalCI(format, value))
 			{
 				pass = true;
@@ -1166,7 +1166,7 @@ bool Configuration::readGameConfiguration(const Json& j, ConfigDesc cfg, Archive
 	if (j.contains("map_formats"))
 	{
 		map_formats_.clear();
-		for (const auto& mf : j.at("map_formats"))
+		for (const auto& mf : j.at("map_formats").get<vector<string>>())
 			map_formats_[mapFormatFromId(mf)] = true;
 	}
 
