@@ -12,7 +12,7 @@ class SAuiToolBar : public wxAuiToolBar
 
 public:
 	SAuiToolBar(wxWindow* parent, bool vertical = false, bool main_toolbar = false, wxAuiManager* aui_mgr = nullptr);
-	~SAuiToolBar() override = default;
+	~SAuiToolBar() override;
 
 	wxAuiToolBarItem* addAction(string_view action_id, bool show_name = false, string_view icon = {});
 	wxAuiToolBarItem* addButton(

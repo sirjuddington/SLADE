@@ -4,7 +4,6 @@ namespace slade
 {
 class GfxCanvasBase;
 class SIconButton;
-class SToolBarButton;
 class CTextureCanvasBase;
 
 namespace ui

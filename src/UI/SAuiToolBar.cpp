@@ -134,6 +134,8 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 		});
 }
 
+SAuiToolBar::~SAuiToolBar() {}
+
 wxAuiToolBarItem* SAuiToolBar::addAction(string_view action_id, bool show_name, string_view icon)
 {
 	// Get SAction to add

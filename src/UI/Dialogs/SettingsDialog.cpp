@@ -33,8 +33,8 @@
 #include "SettingsDialog.h"
 #include "App.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/Controls/SToolButton.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/Settings/AdvancedSettingsPanel.h"
 #include "UI/Settings/AudioSettingsPanel.h"
 #include "UI/Settings/BaseResourceArchiveSettingsPanel.h"
@@ -269,7 +269,7 @@ void SettingsDialog::reloadSettings() const
 // -----------------------------------------------------------------------------
 void SettingsDialog::createSectionButton(wxWindow* parent, SettingsPage page, const string& text, const string& icon)
 {
-	auto btn = new SToolBarButton(parent, pageId(page), text, icon, text, true, 24);
+	auto btn = new SToolButton(parent, pageId(page), text, icon, text, true, 24);
 	btn->setPadding(4, 1);
 	btn->setTextOffset(8);
 	btn->setExactFit(false);
@@ -371,7 +371,7 @@ string SettingsDialog::pageId(SettingsPage page)
 // -----------------------------------------------------------------------------
 void SettingsDialog::onSectionButtonClicked(wxCommandEvent& e)
 {
-	auto btn = dynamic_cast<SToolBarButton*>(e.GetEventObject());
+	auto btn = dynamic_cast<SToolButton*>(e.GetEventObject());
 	if (!btn)
 		return;
 

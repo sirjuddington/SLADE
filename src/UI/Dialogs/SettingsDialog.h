@@ -4,7 +4,7 @@
 
 namespace slade
 {
-class SToolBarButton;
+class SToolButton;
 namespace ui
 {
 	class SettingsPanel;
@@ -47,7 +47,7 @@ public:
 	static bool popupSettingsPage(wxWindow* parent, SettingsPage page = SettingsPage::General);
 
 private:
-	std::array<SToolBarButton*, SETTINGS_PAGE_COUNT> section_buttons_;
+	std::array<SToolButton*, SETTINGS_PAGE_COUNT> section_buttons_;
 	std::array<SettingsPanel*, SETTINGS_PAGE_COUNT>  settings_pages_;
 
 	wxSizer*      content_sizer_ = nullptr;
@@ -59,7 +59,7 @@ private:
 
 	void reloadSettings() const;
 
-	SToolBarButton* sectionButton(SettingsPage page) const { return section_buttons_[static_cast<size_t>(page)]; }
+	SToolButton* sectionButton(SettingsPage page) const { return section_buttons_[static_cast<size_t>(page)]; }
 	SettingsPanel*  settingsPanel(SettingsPage page) const { return settings_pages_[static_cast<size_t>(page)]; }
 
 	void     createSectionButton(wxWindow* parent, SettingsPage page, const string& text, const string& icon);

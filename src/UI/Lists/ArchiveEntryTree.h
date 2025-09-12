@@ -2,25 +2,25 @@
 
 #include "General/Sigslot.h"
 #include "SDataViewCtrl.h"
+#include "UI/SAuiToolBar.h"
 
 namespace slade
 {
 class UndoManager;
-class SToolBarButton;
+class SToolButton;
 
 namespace ui
 {
-	class ArchivePathPanel : public wxPanel
+	class ArchivePathPanel : public SAuiToolBar
 	{
 	public:
 		ArchivePathPanel(wxWindow* parent);
+		~ArchivePathPanel() override;
 
-		void setCurrentPath(const ArchiveDir* dir) const;
+		void setCurrentPath(const ArchiveDir* dir);
 
 	private:
-		SToolBarButton* btn_home_  = nullptr;
-		SToolBarButton* btn_updir_ = nullptr;
-		wxStaticText*   text_path_ = nullptr;
+		wxStaticText* text_path_ = nullptr;
 	};
 
 	class ArchiveViewModel : public wxDataViewModel

@@ -5,9 +5,9 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    SToolBarButton.cpp
-// Description: SToolBarButton class - a simple toolbar button for use on an
-//              SToolBar, can be displayed as an icon or icon + text
+// Filename:    SToolButton.cpp
+// Description: SToolButton class - a simple toolbar-like button.
+//              Can be displayed as an icon or icon + text.
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -31,7 +31,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "SToolBarButton.h"
+#include "SToolButton.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/UI/MainWindow.h"
@@ -59,15 +59,15 @@ EXTERN_CVAR(Int, toolbar_size);
 
 // -----------------------------------------------------------------------------
 //
-// SToolBarButton Class Functions
+// SToolButton Class Functions
 //
 // -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
-// SToolBarButton class constructor
+// SToolButton class constructor
 // -----------------------------------------------------------------------------
-SToolBarButton::SToolBarButton(wxWindow* parent, const string& action, const string& icon, bool show_name) :
+SToolButton::SToolButton(wxWindow* parent, const string& action, const string& icon, bool show_name) :
 	wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, wxS("stbutton")),
 	action_{ SAction::fromId(action) },
 	show_name_{ show_name },
@@ -101,9 +101,9 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const string& action, const str
 }
 
 // -----------------------------------------------------------------------------
-// SToolBarButton class constructor
+// SToolButton class constructor
 // -----------------------------------------------------------------------------
-SToolBarButton::SToolBarButton(
+SToolButton::SToolButton(
 	wxWindow*     parent,
 	const string& action_id,
 	const string& action_name,
@@ -131,7 +131,7 @@ SToolBarButton::SToolBarButton(
 // -----------------------------------------------------------------------------
 // Returns whether this button is checked
 // -----------------------------------------------------------------------------
-bool SToolBarButton::isChecked() const
+bool SToolButton::isChecked() const
 {
 	return action_ ? action_->isChecked() : checked_;
 }
@@ -139,7 +139,7 @@ bool SToolBarButton::isChecked() const
 // -----------------------------------------------------------------------------
 // Allows to dynamically change the button's icon
 // -----------------------------------------------------------------------------
-void SToolBarButton::setIcon(const string& icon)
+void SToolButton::setIcon(const string& icon)
 {
 	if (!icon.empty())
 		icon_ = icons::getIcon(icons::Any, icon, icon_size_);
@@ -148,7 +148,7 @@ void SToolBarButton::setIcon(const string& icon)
 // -----------------------------------------------------------------------------
 // Sets the button's checked state (in the associated SAction if any)
 // -----------------------------------------------------------------------------
-void SToolBarButton::setChecked(bool checked)
+void SToolButton::setChecked(bool checked)
 {
 	if (action_)
 		action_->setChecked(checked);
@@ -163,7 +163,7 @@ void SToolBarButton::setChecked(bool checked)
 // -----------------------------------------------------------------------------
 // Sets dropdown menu for the button
 // -----------------------------------------------------------------------------
-void SToolBarButton::setMenu(wxMenu* menu, bool delete_existing)
+void SToolButton::setMenu(wxMenu* menu, bool delete_existing)
 {
 	if (menu_dropdown_ && delete_existing)
 		delete menu_dropdown_;
@@ -187,7 +187,7 @@ void SToolBarButton::setMenu(wxMenu* menu, bool delete_existing)
 // -----------------------------------------------------------------------------
 // Sets the font size (scale) for the button text
 // -----------------------------------------------------------------------------
-void SToolBarButton::setFontSize(float scale)
+void SToolButton::setFontSize(float scale)
 {
 	SetFont(GetFont().Scale(scale));
 	text_width_ = ToDIP(GetTextExtent(wxString::FromUTF8(action_name_)).GetWidth()) + pad_inner_ * 2;
@@ -197,7 +197,7 @@ void SToolBarButton::setFontSize(float scale)
 // -----------------------------------------------------------------------------
 // Sets the button padding
 // -----------------------------------------------------------------------------
-void SToolBarButton::setPadding(int inner, int outer)
+void SToolButton::setPadding(int inner, int outer)
 {
 	pad_inner_ = inner;
 	pad_outer_ = outer;
@@ -208,7 +208,7 @@ void SToolBarButton::setPadding(int inner, int outer)
 // Sets 'exact fit' mode.
 // If [fit] is true the button will automatically size to fit its contents
 // -----------------------------------------------------------------------------
-void SToolBarButton::setExactFit(bool fit)
+void SToolButton::setExactFit(bool fit)
 {
 	exact_fit_ = fit;
 	updateSize();
@@ -217,7 +217,7 @@ void SToolBarButton::setExactFit(bool fit)
 // -----------------------------------------------------------------------------
 // Sets the text offset (space between icon and text)
 // -----------------------------------------------------------------------------
-void SToolBarButton::setTextOffset(int offset)
+void SToolButton::setTextOffset(int offset)
 {
 	text_offset_ = offset;
 	updateSize();
@@ -226,15 +226,15 @@ void SToolBarButton::setTextOffset(int offset)
 // -----------------------------------------------------------------------------
 // Returns the pixel height of all SToolBarButtons
 // -----------------------------------------------------------------------------
-int SToolBarButton::pixelHeight()
+int SToolButton::pixelHeight()
 {
 	return toolbar_size + 8;
 }
 
 // -----------------------------------------------------------------------------
-// Setup the SToolBarButton (icon, text, size and events)
+// Setup the SToolButton (icon, text, size and events)
 // -----------------------------------------------------------------------------
-void SToolBarButton::setup(bool show_name, string_view icon)
+void SToolButton::setup(bool show_name, string_view icon)
 {
 	// Double buffer to avoid flicker
 	SetDoubleBuffered(true);
@@ -250,19 +250,19 @@ void SToolBarButton::setup(bool show_name, string_view icon)
 	icon_ = icons::getIcon(icons::Any, icon, icon_size_);
 
 	// Bind events
-	Bind(wxEVT_PAINT, &SToolBarButton::onPaint, this);
-	Bind(wxEVT_ENTER_WINDOW, &SToolBarButton::onMouseEvent, this);
-	Bind(wxEVT_LEAVE_WINDOW, &SToolBarButton::onMouseEvent, this);
-	Bind(wxEVT_LEFT_DOWN, &SToolBarButton::onMouseEvent, this);
-	Bind(wxEVT_LEFT_UP, &SToolBarButton::onMouseEvent, this);
-	Bind(wxEVT_LEFT_DCLICK, &SToolBarButton::onMouseEvent, this);
-	Bind(wxEVT_ERASE_BACKGROUND, &SToolBarButton::onEraseBackground, this);
+	Bind(wxEVT_PAINT, &SToolButton::onPaint, this);
+	Bind(wxEVT_ENTER_WINDOW, &SToolButton::onMouseEvent, this);
+	Bind(wxEVT_LEAVE_WINDOW, &SToolButton::onMouseEvent, this);
+	Bind(wxEVT_LEFT_DOWN, &SToolButton::onMouseEvent, this);
+	Bind(wxEVT_LEFT_UP, &SToolButton::onMouseEvent, this);
+	Bind(wxEVT_LEFT_DCLICK, &SToolButton::onMouseEvent, this);
+	Bind(wxEVT_ERASE_BACKGROUND, &SToolButton::onEraseBackground, this);
 }
 
 // -----------------------------------------------------------------------------
 // Sends a button clicked event
 // -----------------------------------------------------------------------------
-void SToolBarButton::sendClickedEvent()
+void SToolButton::sendClickedEvent()
 {
 	// Generate event
 	wxCommandEvent ev(wxEVT_STOOLBAR_BUTTON_CLICKED, GetId());
@@ -274,7 +274,7 @@ void SToolBarButton::sendClickedEvent()
 // -----------------------------------------------------------------------------
 // Updates the buttons size
 // -----------------------------------------------------------------------------
-void SToolBarButton::updateSize()
+void SToolButton::updateSize()
 {
 	int height    = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
 	int min_width = height + text_width_;
@@ -296,7 +296,7 @@ void SToolBarButton::updateSize()
 // Draws the button content using [gc].
 // If [mouse_over] is true, the button is being hovered over
 // -----------------------------------------------------------------------------
-void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
+void SToolButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 {
 	// Get system colours needed
 	auto col_background = GetBackgroundColour();
@@ -395,7 +395,7 @@ void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 
 // -----------------------------------------------------------------------------
 //
-// SToolBarButton Class Events
+// SToolButton Class Events
 //
 // -----------------------------------------------------------------------------
 
@@ -405,7 +405,7 @@ void SToolBarButton::drawContent(wxGraphicsContext* gc, bool mouse_over)
 // -----------------------------------------------------------------------------
 // Called when the button needs to be (re)drawn
 // -----------------------------------------------------------------------------
-void SToolBarButton::onPaint(wxPaintEvent& e)
+void SToolButton::onPaint(wxPaintEvent& e)
 {
 	wxPaintDC dc(this);
 
@@ -432,7 +432,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 // -----------------------------------------------------------------------------
 // Called when a mouse event happens within the control
 // -----------------------------------------------------------------------------
-void SToolBarButton::onMouseEvent(wxMouseEvent& e)
+void SToolButton::onMouseEvent(wxMouseEvent& e)
 {
 	auto parent_window = dynamic_cast<wxFrame*>(wxGetTopLevelParent(this));
 	bool refresh       = false;
@@ -512,4 +512,4 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the background needs erasing
 // -----------------------------------------------------------------------------
-void SToolBarButton::onEraseBackground(wxEraseEvent& e) {}
+void SToolButton::onEraseBackground(wxEraseEvent& e) {}

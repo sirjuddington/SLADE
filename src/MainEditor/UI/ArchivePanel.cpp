@@ -363,8 +363,10 @@ void ArchivePanel::setup(const Archive* archive)
 	cur_area_->setUndoManager(undo_manager_.get());
 
 	// Setup splitter
+	auto lh = ui::LayoutHelper(this);
 	splitter_->SetMinimumPaneSize(FromDIP(300));
-	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
+	m_hbox->AddSpacer(lh.padSmall());
+	m_hbox->Add(splitter_, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 	auto split_pos = FromDIP(database::archiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive)));
 	if (split_pos < 0)
 		split_pos = FromDIP(

@@ -44,9 +44,7 @@
 #include "Database/Tables/ArchiveUIConfig.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
-#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/State.h"
-#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include <wx/headerctrl.h>
@@ -105,25 +103,27 @@ EXTERN_CVAR(Bool, list_font_monospace)
 // -----------------------------------------------------------------------------
 // ArchivePathPanel constructor
 // -----------------------------------------------------------------------------
-ArchivePathPanel::ArchivePathPanel(wxWindow* parent) : wxPanel{ parent }
+ArchivePathPanel::ArchivePathPanel(wxWindow* parent) : SAuiToolBar{ parent }
 {
-	SetSizer(new wxBoxSizer(wxHORIZONTAL));
-
-	btn_home_ = new SToolBarButton(this, "arch_elist_homedir");
-	GetSizer()->Add(btn_home_, 0, wxEXPAND);
-
 	text_path_ = new wxStaticText(
 		this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
-	GetSizer()->Add(text_path_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad(this));
 
-	btn_updir_ = new SToolBarButton(this, "arch_elist_updir");
-	GetSizer()->Add(btn_updir_, 0, wxEXPAND);
+	addAction("arch_elist_homedir");
+	AddControl(text_path_)->SetProportion(1);
+	addAction("arch_elist_updir");
+
+	Realize();
 }
+
+// -----------------------------------------------------------------------------
+// ArchivePathPanel destructor
+// -----------------------------------------------------------------------------
+ArchivePathPanel::~ArchivePathPanel() {}
 
 // -----------------------------------------------------------------------------
 // Sets the current path to where [dir] is in its Archive
 // -----------------------------------------------------------------------------
-void ArchivePathPanel::setCurrentPath(const ArchiveDir* dir) const
+void ArchivePathPanel::setCurrentPath(const ArchiveDir* dir)
 {
 	if (dir == nullptr)
 	{
@@ -147,9 +147,8 @@ void ArchivePathPanel::setCurrentPath(const ArchiveDir* dir) const
 		text_path_->UnsetToolTip();
 	else
 		text_path_->SetToolTip(wxString::FromUTF8(path));
-	// text_path_->Refresh();
-	btn_updir_->Enable(!is_root);
-	btn_updir_->Refresh();
+	enableItem("arch_elist_updir", !is_root);
+	Refresh();
 }
 
 
