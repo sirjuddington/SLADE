@@ -6,7 +6,8 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    SAuiToolBarArt.cpp
-// Description:
+// Description: Custom toolbar art provider for SAuiToolBar, based on
+//              wxAuiGenericToolBarArt.
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -39,6 +40,11 @@
 using namespace slade;
 
 
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 wxBitmap disabledBitmap(const wxBitmap& bmp, const wxColour& background)
@@ -58,6 +64,9 @@ wxBitmap disabledBitmap(const wxBitmap& bmp, const wxColour& background)
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// Override of wxAuiGenericToolBarArt::GetElementSize() to remove the gripper
+// -----------------------------------------------------------------------------
 int SAuiToolBarArt::GetElementSize(int elementId)
 {
 	switch (elementId)
@@ -67,6 +76,13 @@ int SAuiToolBarArt::GetElementSize(int elementId)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Override of wxAuiGenericToolBarArt::GetToolSize() to allow text to be shown
+// alongside icons when the item's 'show_text' property is true.
+//
+// Regular wxAuiToolBar only supports showing text for all items (or none), so
+// we have to override this function to allow per-item text display.
+// -----------------------------------------------------------------------------
 wxSize SAuiToolBarArt::GetToolSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiToolBarItem& item)
 {
 	auto s_item = toolbar_ ? toolbar_->itemByWxId(item.GetId()) : nullptr;
@@ -114,6 +130,10 @@ wxSize SAuiToolBarArt::GetToolSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiT
 	return wxAuiGenericToolBarArt::GetToolSize(dc, wnd, item);
 }
 
+// -----------------------------------------------------------------------------
+// Override of wxAuiGenericToolBarArt::DrawPlainBackground() to set the
+// toolbar background colour to the parent window's background colour
+// -----------------------------------------------------------------------------
 void SAuiToolBarArt::DrawPlainBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 {
 #ifdef __WXMSW__
@@ -137,6 +157,10 @@ void SAuiToolBarArt::DrawPlainBackground(wxDC& dc, wxWindow* wnd, const wxRect& 
 #endif
 }
 
+// -----------------------------------------------------------------------------
+// Override of wxAuiGenericToolBarArt::DrawButton() for SAuiToolBar's custom
+// button style
+// -----------------------------------------------------------------------------
 void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem& item, const wxRect& rect)
 {
 	auto s_item         = toolbar_ ? toolbar_->itemByWxId(item.GetId()) : nullptr;
@@ -236,6 +260,10 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 		dc.DrawText(item.GetLabel(), text_x, text_y);
 }
 
+// -----------------------------------------------------------------------------
+// Override of wxAuiGenericToolBarArt::DrawDropDownButton() for SAuiToolBar's
+// custom button style
+// -----------------------------------------------------------------------------
 void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem& item, const wxRect& rect)
 {
 	auto s_item         = toolbar_ ? toolbar_->itemByWxId(item.GetId()) : nullptr;

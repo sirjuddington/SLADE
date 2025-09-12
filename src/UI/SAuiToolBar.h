@@ -14,14 +14,14 @@ public:
 	SAuiToolBar(wxWindow* parent, bool vertical = false, bool main_toolbar = false, wxAuiManager* aui_mgr = nullptr);
 	~SAuiToolBar() override;
 
-	wxAuiToolBarItem* addAction(string_view action_id, bool show_name = false, string_view icon = {});
+	wxAuiToolBarItem* addAction(const string& action_id, bool show_name = false, string_view icon = {});
 	wxAuiToolBarItem* addButton(
-		string_view button_id,
-		string_view text,
-		string_view icon,
-		string_view help_text,
-		wxMenu*     menu      = nullptr,
-		bool        show_name = false);
+		const string& button_id,
+		string_view   text,
+		string_view   icon,
+		string_view   help_text,
+		wxMenu*       menu      = nullptr,
+		bool          show_name = false);
 
 	void groupItems(string_view group_name, const vector<string>& item_ids);
 

@@ -6,7 +6,9 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    SAuiToolBar.cpp
-// Description:
+// Description: A custom wxAuiToolBar with various extra functionality including
+//              the ability to hide items, load layout from a JSON definition,
+//              handle SActions, etc.
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -134,9 +136,18 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 		});
 }
 
+// -----------------------------------------------------------------------------
+// SAuiToolBar class destructor
+// -----------------------------------------------------------------------------
 SAuiToolBar::~SAuiToolBar() {}
 
-wxAuiToolBarItem* SAuiToolBar::addAction(string_view action_id, bool show_name, string_view icon)
+// -----------------------------------------------------------------------------
+// Adds an SAction [action_id] to the toolbar.
+// If [show_name] is true, the action's name will be shown beside the icon.
+// If [icon] is non-empty, it will be used as the icon instead of the action's
+// default icon.
+// -----------------------------------------------------------------------------
+wxAuiToolBarItem* SAuiToolBar::addAction(const string& action_id, bool show_name, string_view icon)
 {
 	// Get SAction to add
 	auto sa = SAction::fromId(action_id);
@@ -180,18 +191,27 @@ wxAuiToolBarItem* SAuiToolBar::addAction(string_view action_id, bool show_name, 
 
 	setItemChecked(tool, sa->isChecked());
 
-	items_.push_back({ .id{ action_id }, .action = sa, .aui_item = tool, .wx_id = sa->wxId(), .show_text = show_name });
+	items_.push_back({ .id = action_id, .action = sa, .aui_item = tool, .wx_id = sa->wxId(), .show_text = show_name });
 
 	return tool;
 }
 
+// -----------------------------------------------------------------------------
+// Adds a (non-SAction) button to the toolbar:
+// [button_id] is an identifier for the button, used in other functions.
+// [text] is the button text/tooltip.
+// [icon] is the button icon name (see icons::getIcon).
+// [help_text] is shown in the status bar when the button is hovered.
+// [menu] is an optional dropdown menu for the button.
+// If [show_name] is true, the button [text] will be shown beside the icon.
+// -----------------------------------------------------------------------------
 wxAuiToolBarItem* SAuiToolBar::addButton(
-	string_view button_id,
-	string_view text,
-	string_view icon,
-	string_view help_text,
-	wxMenu*     menu,
-	bool        show_name)
+	const string& button_id,
+	string_view   text,
+	string_view   icon,
+	string_view   help_text,
+	wxMenu*       menu,
+	bool          show_name)
 {
 	auto id       = SAction::nextWxId();
 	auto icon_bmp = icons::getIcon(icons::Type::Any, icon, toolbar_size);
@@ -208,11 +228,17 @@ wxAuiToolBarItem* SAuiToolBar::addButton(
 	if (menu)
 		tool->SetHasDropDown(true);
 
-	items_.push_back({ .id{ button_id }, .aui_item = tool, .menu = menu, .wx_id = id, .show_text = show_name });
+	items_.push_back({ .id = button_id, .aui_item = tool, .menu = menu, .wx_id = id, .show_text = show_name });
 
 	return tool;
 }
 
+// -----------------------------------------------------------------------------
+// Creates a 'group' named [group_name] containing the items with IDs in
+// [item_ids].
+// A group can be shown/hidden as a whole using showGroup() and enabled/disabled
+// using enableGroup().
+// -----------------------------------------------------------------------------
 void SAuiToolBar::groupItems(string_view group_name, const vector<string>& item_ids)
 {
 	Group* group = nullptr;
@@ -233,6 +259,9 @@ void SAuiToolBar::groupItems(string_view group_name, const vector<string>& item_
 	group->items = item_ids;
 }
 
+// -----------------------------------------------------------------------------
+// Sets the associated dropdown [menu] for the button with ID [button_id].
+// -----------------------------------------------------------------------------
 void SAuiToolBar::setButtonDropdownMenu(string_view button_id, wxMenu* menu)
 {
 	for (auto& dm : dropdown_menus_)
@@ -246,6 +275,9 @@ void SAuiToolBar::setButtonDropdownMenu(string_view button_id, wxMenu* menu)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Sets the icon for the button with ID [button_id] to [icon].
+// -----------------------------------------------------------------------------
 void SAuiToolBar::setButtonIcon(string_view button_id, string_view icon)
 {
 	if (auto item = itemById(button_id); item && item->aui_item)
@@ -255,6 +287,11 @@ void SAuiToolBar::setButtonIcon(string_view button_id, string_view icon)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Enables/disables the toolbar item with ID [id].
+// If [refresh] is true, the toolbar will be refreshed after enabling/disabling
+// the item.
+// -----------------------------------------------------------------------------
 void SAuiToolBar::enableItem(string_view id, bool enable, bool refresh)
 {
 	if (auto item = itemById(id); item)
@@ -271,6 +308,11 @@ void SAuiToolBar::enableItem(string_view id, bool enable, bool refresh)
 		Refresh();
 }
 
+// -----------------------------------------------------------------------------
+// Enables/disables all items in the toolbar group named [group].
+// If [refresh] is true, the toolbar will be refreshed after enabling/disabling
+// the items.
+// -----------------------------------------------------------------------------
 void SAuiToolBar::enableGroup(string_view group, bool enable, bool refresh)
 {
 	auto g = groupByName(group);
@@ -284,6 +326,11 @@ void SAuiToolBar::enableGroup(string_view group, bool enable, bool refresh)
 		Refresh();
 }
 
+// -----------------------------------------------------------------------------
+// Shows/hides the toolbar item with ID [id].
+// If [refresh] is true, the toolbar will be recreated after showing/hiding the
+// item.
+// -----------------------------------------------------------------------------
 void SAuiToolBar::showItem(string_view id, bool show, bool refresh)
 {
 	if (!layout_)
@@ -297,6 +344,11 @@ void SAuiToolBar::showItem(string_view id, bool show, bool refresh)
 		createFromLayout();
 }
 
+// -----------------------------------------------------------------------------
+// Shows/hides all items in the toolbar group named [group].
+// If [refresh] is true, the toolbar will be recreated after showing/hiding the
+// items.
+// -----------------------------------------------------------------------------
 void SAuiToolBar::showGroup(string_view group, bool show, bool refresh)
 {
 	if (!layout_)
@@ -317,6 +369,9 @@ void SAuiToolBar::showGroup(string_view group, bool show, bool refresh)
 		createFromLayout();
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the toolbar item with ID [id] is checked.
+// -----------------------------------------------------------------------------
 bool SAuiToolBar::itemChecked(string_view id) const
 {
 	if (auto item = itemById(id); item && item->aui_item)
@@ -325,12 +380,19 @@ bool SAuiToolBar::itemChecked(string_view id) const
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Sets the checked state of the toolbar item with ID [id] to [checked].
+// -----------------------------------------------------------------------------
 void SAuiToolBar::setItemChecked(string_view id, bool checked)
 {
 	if (auto item = itemById(id); item && item->aui_item)
 		setItemChecked(item->aui_item, checked);
 }
 
+// -----------------------------------------------------------------------------
+// Toggles the checked state of the toolbar item with ID [id].
+// Returns the new checked state.
+// -----------------------------------------------------------------------------
 bool SAuiToolBar::toggleItemChecked(string_view id)
 {
 	if (auto item = itemById(id); item && item->aui_item)
@@ -343,6 +405,10 @@ bool SAuiToolBar::toggleItemChecked(string_view id)
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Registers a custom control with identifier [id].
+// The control will then be available to be added from a JSON layout definition.
+// -----------------------------------------------------------------------------
 void SAuiToolBar::registerCustomControl(const string& id, wxControl* control)
 {
 	for (auto& custom_control : custom_controls_)
@@ -355,6 +421,10 @@ void SAuiToolBar::registerCustomControl(const string& id, wxControl* control)
 	custom_controls_.emplace_back(id, control);
 }
 
+// -----------------------------------------------------------------------------
+// Registers a dropdown [menu] for the button with ID [button_id].
+// The menu will then be available to be added from a JSON layout definition.
+// -----------------------------------------------------------------------------
 void SAuiToolBar::registerDropdownMenu(const string& button_id, wxMenu* menu)
 {
 	for (auto& m : dropdown_menus_)
@@ -367,6 +437,11 @@ void SAuiToolBar::registerDropdownMenu(const string& button_id, wxMenu* menu)
 	dropdown_menus_.emplace_back(button_id, menu);
 }
 
+// -----------------------------------------------------------------------------
+// Loads a toolbar layout from a JSON string [json].
+// If [create] is true, the toolbar will be (re)created from the layout after
+// loading.
+// -----------------------------------------------------------------------------
 void SAuiToolBar::loadLayout(string_view json, bool create)
 {
 	auto j = jsonutil::parse(json);
@@ -393,6 +468,12 @@ void SAuiToolBar::loadLayout(string_view json, bool create)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Loads a toolbar layout from the program resources.
+// [entry_name] is the name of the resource entry (without path or extension).
+// If [create] is true, the toolbar will be (re)created from the layout after
+// loading.
+// -----------------------------------------------------------------------------
 void SAuiToolBar::loadLayoutFromResource(string_view entry_name, bool create)
 {
 	auto entry_path    = fmt::format("toolbars/{}.json", entry_name);
@@ -403,6 +484,9 @@ void SAuiToolBar::loadLayoutFromResource(string_view entry_name, bool create)
 		log::error("SAuiToolBar::loadLayoutFromResource: Toolbar resource '{}' not found", entry_path);
 }
 
+// -----------------------------------------------------------------------------
+// (Re)creates the toolbar from the currently loaded layout.
+// -----------------------------------------------------------------------------
 void SAuiToolBar::createFromLayout()
 {
 	if (!layout_)
@@ -535,6 +619,9 @@ void SAuiToolBar::createFromLayout()
 		GetParent()->Layout();
 }
 
+// -----------------------------------------------------------------------------
+// Returns the button/SAction ID of the toolbar item with wx id [wx_id].
+// -----------------------------------------------------------------------------
 string SAuiToolBar::actionFromWxId(int wx_id)
 {
 	if (auto item = itemByWxId(wx_id); item)
@@ -543,6 +630,10 @@ string SAuiToolBar::actionFromWxId(int wx_id)
 	return "";
 }
 
+// -----------------------------------------------------------------------------
+// Returns a pointer to the toolbar item with wx id [wx_id], or nullptr if not
+// found.
+// -----------------------------------------------------------------------------
 const SAuiToolBar::Item* SAuiToolBar::itemByWxId(int wx_id) const
 {
 	for (auto& item : items_)
@@ -551,7 +642,6 @@ const SAuiToolBar::Item* SAuiToolBar::itemByWxId(int wx_id) const
 
 	return nullptr;
 }
-
 SAuiToolBar::Item* SAuiToolBar::itemByWxId(int wx_id)
 {
 	for (auto& item : items_)
@@ -561,6 +651,10 @@ SAuiToolBar::Item* SAuiToolBar::itemByWxId(int wx_id)
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a pointer to the toolbar item with button/SAction ID [id], or nullptr
+// if not found.
+// -----------------------------------------------------------------------------
 const SAuiToolBar::Item* SAuiToolBar::itemById(string_view id) const
 {
 	for (auto& item : items_)
@@ -569,7 +663,6 @@ const SAuiToolBar::Item* SAuiToolBar::itemById(string_view id) const
 
 	return nullptr;
 }
-
 SAuiToolBar::Item* SAuiToolBar::itemById(string_view id)
 {
 	for (auto& item : items_)
@@ -579,6 +672,9 @@ SAuiToolBar::Item* SAuiToolBar::itemById(string_view id)
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a pointer to the toolbar group [name], or nullptr if not found.
+// -----------------------------------------------------------------------------
 SAuiToolBar::Group* SAuiToolBar::groupByName(string_view name)
 {
 	for (auto& group : groups_)
@@ -588,6 +684,9 @@ SAuiToolBar::Group* SAuiToolBar::groupByName(string_view name)
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Sets the checked state of [item] to [checked].
+// -----------------------------------------------------------------------------
 void SAuiToolBar::setItemChecked(wxAuiToolBarItem* item, bool checked)
 {
 	if (!item)
