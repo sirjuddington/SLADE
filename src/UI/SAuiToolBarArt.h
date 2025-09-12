@@ -2,6 +2,10 @@
 
 #include <wx/aui/auibar.h>
 
+#if !wxCHECK_VERSION(3, 3, 0)
+typedef wxDC wxReadOnlyDC;
+#endif
+
 namespace slade
 {
 class SAuiToolBar;

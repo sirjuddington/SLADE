@@ -100,7 +100,11 @@ wxSize SAuiToolBarArt::GetToolSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiT
 		// and add some extra space in front of the drop down button
 		if (item.HasDropDown())
 		{
+#if wxCHECK_VERSION(3, 3, 0)
 			int dropdownWidth = GetElementSizeForWindow(wxAUI_TBART_DROPDOWN_SIZE, wnd);
+#else
+			int dropdownWidth = GetElementSize(wxAUI_TBART_DROPDOWN_SIZE);
+#endif
 			width += dropdownWidth + wnd->FromDIP(4);
 		}
 
