@@ -63,13 +63,12 @@
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/Dialogs/SettingsDialog.h"
 #include "UI/SAuiTabArt.h"
-#include "UI/SToolBar/SToolBar.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/State.h"
 #include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
-#include "Utility/Tokenizer.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -224,8 +223,6 @@ void MapEditorWindow::setupMenu()
 	SAction::fromId("mapw_showundohistory")->addToMenu(menu_window);
 	SAction::fromId("mapw_showchecks")->addToMenu(menu_window);
 	SAction::fromId("mapw_showscripteditor")->addToMenu(menu_window);
-	toolbar_menu_ = new wxMenu();
-	menu_view->AppendSubMenu(toolbar_menu_, wxS("Toolbars"));
 	menu_view->AppendSeparator();
 	SAction::fromId("mapw_show_fullmap")->addToMenu(menu_view);
 	SAction::fromId("mapw_show_item")->addToMenu(menu_view);
@@ -270,32 +267,16 @@ void MapEditorWindow::setupLayout()
 
 
 	// --- Toolbars ---
-	toolbar_ = new SToolBar(this, true);
+	toolbar_ = new SAuiToolBar(this, false, true, m_mgr);
 
-	// Map toolbar
-	auto tbg_map = new SToolBarGroup(toolbar_, "_Map");
-	tbg_map->addActionButton("mapw_save");
-	tbg_map->addActionButton("mapw_saveas");
-	// tbg_map->addActionButton("mapw_rename"); // TODO: Actually implement this one
-	tbg_map->addActionButton("mapw_preferences");
-	toolbar_->addGroup(tbg_map);
+	// Load toolbar layout from JSON definition
+	auto toolbar_entry = app::programResource()->entryAtPath("toolbars/map_window.json");
+	toolbar_->loadLayout(toolbar_entry->data().asString(), false);
 
-	// Mode toolbar
-	auto tbg_mode = new SToolBarGroup(toolbar_, "_Mode");
-	tbg_mode->addActionButton("mapw_mode_vertices");
-	tbg_mode->addActionButton("mapw_mode_lines");
-	tbg_mode->addActionButton("mapw_mode_sectors");
-	tbg_mode->addActionButton("mapw_mode_things");
-	tbg_mode->addActionButton("mapw_mode_3d");
+	// Init toolbar state
 	SAction::fromId("mapw_mode_lines")->setChecked(); // Lines mode by default
-	toolbar_->addGroup(tbg_mode);
-
-	// Flat type toolbar
-	auto tbg_flats = new SToolBarGroup(toolbar_, "_Flats Type");
-	tbg_flats->addActionButton("mapw_flat_none");
-	tbg_flats->addActionButton("mapw_flat_untextured");
-	tbg_flats->addActionButton("mapw_flat_textured");
-	toolbar_->addGroup(tbg_flats);
+	toolbar_->showGroup("Sectors Mode", false);
+	toolbar_->showGroup("Things Mode", false);
 
 	// Toggle current flat type
 	if (flat_drawtype == 0)
@@ -305,35 +286,22 @@ void MapEditorWindow::setupLayout()
 	else
 		SAction::fromId("mapw_flat_textured")->setChecked();
 
-	// Edit toolbar
-	auto tbg_edit = new SToolBarGroup(toolbar_, "_Edit");
-	tbg_edit->addActionButton("mapw_draw_lines");
-	tbg_edit->addActionButton("mapw_draw_shape");
-	tbg_edit->addActionButton("mapw_edit_objects");
-	tbg_edit->addActionButton("mapw_mirror_x");
-	tbg_edit->addActionButton("mapw_mirror_y");
-	toolbar_->addGroup(tbg_edit);
+	// Create toolbar
+	toolbar_->createFromLayout();
 
-	// Extra toolbar
-	auto tbg_misc = new SToolBarGroup(toolbar_, "_Misc");
-	tbg_misc->addActionButton("mapw_run_map");
-	tbg_misc->addActionButton("mapw_quick_run_map");
-	toolbar_->addGroup(tbg_misc);
-
-	// Add toolbar
+	// Add toolbar to aui
 	m_mgr->AddPane(
 		toolbar_,
 		wxAuiPaneInfo()
+			.ToolbarPane()
 			.Top()
 			.CaptionVisible(false)
-			.MinSize(-1, SToolBar::getBarHeight(this))
+			.MinSize(-1, toolbar_->GetMinSize().y)
 			.Resizable(false)
 			.PaneBorder(false)
+			.Movable(false)
+			.Floatable(false)
 			.Name(wxS("toolbar")));
-
-	// Populate the 'View->Toolbars' menu
-	populateToolbarsMenu();
-	toolbar_->enableContextMenu();
 
 
 	// Status bar
@@ -1005,14 +973,6 @@ void MapEditorWindow::forceRefresh(bool renderer) const
 	if (renderer)
 		mapeditor::editContext().forceRefreshRenderer();
 	map_canvas_->Refresh();
-}
-
-// -----------------------------------------------------------------------------
-// Refreshes the toolbar
-// -----------------------------------------------------------------------------
-void MapEditorWindow::refreshToolBar() const
-{
-	toolbar_->Refresh();
 }
 
 // -----------------------------------------------------------------------------

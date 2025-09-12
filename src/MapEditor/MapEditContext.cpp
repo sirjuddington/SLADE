@@ -213,7 +213,10 @@ void MapEditContext::setEditMode(Mode mode)
 
 	// Update toolbar
 	if (mode != edit_mode_prev_)
-		mapeditor::window()->removeAllCustomToolBars();
+	{
+		mapeditor::window()->showToolbarGroup("Sectors Mode", false);
+		mapeditor::window()->showToolbarGroup("Things Mode", false);
+	}
 	if (mode == Mode::Vertices)
 		SAction::fromId("mapw_mode_vertices")->setChecked();
 	else if (mode == Mode::Lines)
@@ -224,10 +227,7 @@ void MapEditContext::setEditMode(Mode mode)
 
 		// Sector mode toolbar
 		if (edit_mode_prev_ != Mode::Sectors)
-		{
-			mapeditor::window()->addCustomToolBar(
-				"Sector Mode", { "mapw_sectormode_normal", "mapw_sectormode_floor", "mapw_sectormode_ceiling" });
-		}
+			mapeditor::window()->showToolbarGroup("Sectors Mode");
 
 		// Toggle current sector mode
 		if (sector_mode_ == SectorMode::Both)
@@ -241,7 +241,7 @@ void MapEditContext::setEditMode(Mode mode)
 	{
 		SAction::fromId("mapw_mode_things")->setChecked();
 
-		mapeditor::window()->addCustomToolBar("Things Mode", { "mapw_thing_light_previews" });
+		mapeditor::window()->showToolbarGroup("Things Mode");
 
 		SAction::fromId("mapw_thing_light_previews")->setChecked(thing_preview_lights);
 	}
@@ -253,7 +253,6 @@ void MapEditContext::setEditMode(Mode mode)
 		//  TODO: 3dmode
 		//  renderer_->renderer3D().refresh();
 	}
-	mapeditor::window()->refreshToolBar();
 }
 
 // -----------------------------------------------------------------------------

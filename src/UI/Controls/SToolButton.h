@@ -4,11 +4,11 @@ namespace slade
 {
 class SAction;
 
-class SToolBarButton : public wxControl
+class SToolButton : public wxControl
 {
 public:
-	SToolBarButton(wxWindow* parent, const string& action, const string& icon = "", bool show_name = false);
-	SToolBarButton(
+	SToolButton(wxWindow* parent, const string& action, const string& icon = "", bool show_name = false);
+	SToolButton(
 		wxWindow*     parent,
 		const string& action_id,
 		const string& action_name,
@@ -16,7 +16,7 @@ public:
 		const string& help_text,
 		bool          show_name = false,
 		int           icon_size = -1);
-	~SToolBarButton() override = default;
+	~SToolButton() override = default;
 
 	SAction*      action() const { return action_; }
 	const string& actionId() const { return action_id_; }

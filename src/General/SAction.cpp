@@ -139,6 +139,9 @@ void SAction::setChecked(bool checked)
 	else
 		checked_ = checked; // Otherwise just set toggled state
 
+	// Signal
+	signals().checked_changed(*this);
+
 	// Update linked CVar
 	if (linked_cvar_)
 		*linked_cvar_ = checked_;
@@ -230,7 +233,7 @@ void SAction::fromJson(const Json& j)
 {
 	text_         = j.value("text", id_);
 	icon_         = j.value("icon", icon_);
-	helptext_     = j.value("help", helptext_);
+	helptext_     = j.value("help_text", helptext_);
 	wx_id_        = j.value("wx_id", wx_id_);
 	reserved_ids_ = j.value("reserved_ids", reserved_ids_);
 	group_        = j.value("group", group_);
@@ -349,6 +352,15 @@ int SAction::nextWxId()
 	int id = cur_id;
 	++cur_id;
 	return id;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the SAction signals struct
+// -----------------------------------------------------------------------------
+SAction::Signals& SAction::signals()
+{
+	static Signals signals;
+	return signals;
 }
 
 // -----------------------------------------------------------------------------

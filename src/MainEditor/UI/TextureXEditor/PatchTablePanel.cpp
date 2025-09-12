@@ -49,8 +49,7 @@
 #include "UI/Controls/ZoomControl.h"
 #include "UI/Layout.h"
 #include "UI/Lists/VirtualListView.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 
@@ -231,9 +230,11 @@ void PatchTablePanel::setupLayout()
 	auto frame    = new wxStaticBox(this, -1, wxS("Patch List (PNAMES)"));
 	list_patches_ = new PatchTableListView(frame, patch_table_);
 	list_patches_->setSearchColumn(1); // Want to search by patch name not index
-	toolbar_ = new SToolBar(frame, false, wxVERTICAL);
-	toolbar_->addActionGroup(
-		"_New", { "txed_pnames_add", "txed_pnames_addfile", "txed_pnames_delete", "txed_pnames_change" });
+	toolbar_ = new SAuiToolBar(frame, true);
+	toolbar_->loadLayoutFromResource("texturex_patch_table");
+	// toolbar_ = new SToolBar(frame, false, wxVERTICAL);
+	// toolbar_->addActionGroup(
+	// 	"_New", { "txed_pnames_add", "txed_pnames_addfile", "txed_pnames_delete", "txed_pnames_change" });
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, lh.sfWithBorder().Expand());
 	framesizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxTOP | wxBOTTOM).Expand());

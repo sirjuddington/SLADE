@@ -8,7 +8,7 @@ namespace scriptmanager
 }
 class TextEditorCtrl;
 class FindReplacePanel;
-class SToolBar;
+class SAuiToolBar;
 
 class ScriptPanel : public wxPanel
 {
@@ -31,6 +31,6 @@ private:
 	FindReplacePanel*      find_replace_panel_ = nullptr;
 	long                   last_saved_         = 0;
 
-	SToolBar* setupToolbar();
+	SAuiToolBar* setupToolbar();
 };
 } // namespace slade

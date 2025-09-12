@@ -1,0 +1,26 @@
+{
+  "items": [
+    { "type": "action", "id": "arch_entry_save", "show_text": true },
+    {
+      "type": "button",
+      "id": "revert",
+      "text": "Revert",
+      "icon": "revert",
+      "help_text": "Revert any changes made to the entry",
+      "show_text": true
+    },
+
+    { "type": "separator" },
+
+    { "type": "custom_control", "id": "text_language", "label": "Text Language:" },
+
+    { "type": "separator" },
+
+    { "type": "custom_control", "id": "jump_to", "label": "Jump To:" },
+
+    { "type": "stretch_spacer" },
+
+    { "type": "action", "id": "arch_scripts_compileacs" },
+    { "type": "action", "id": "arch_scripts_compiledecohack" }
+  ]
+}

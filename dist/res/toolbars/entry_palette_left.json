@@ -1,0 +1,9 @@
+{
+  "items": [
+    { "type": "action", "id": "ppal_colourise" },
+    { "type": "action", "id": "ppal_tint" },
+    { "type": "action", "id": "ppal_invert" },
+    { "type": "action", "id": "ppal_tweak" },
+    { "type": "action", "id": "ppal_gradient" }
+  ]
+}

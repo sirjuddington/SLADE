@@ -80,12 +80,10 @@
 #include "UI/Dialogs/SettingsDialog.h"
 #include "UI/Layout.h"
 #include "UI/Lists/ArchiveEntryTree.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/State.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
-#include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -365,8 +363,10 @@ void ArchivePanel::setup(const Archive* archive)
 	cur_area_->setUndoManager(undo_manager_.get());
 
 	// Setup splitter
+	auto lh = ui::LayoutHelper(this);
 	splitter_->SetMinimumPaneSize(FromDIP(300));
-	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
+	m_hbox->AddSpacer(lh.padSmall());
+	m_hbox->Add(splitter_, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 	auto split_pos = FromDIP(database::archiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive)));
 	if (split_pos < 0)
 		split_pos = FromDIP(
@@ -415,7 +415,7 @@ void ArchivePanel::bindEvents(Archive* archive)
 	// Update entry moving toolbar if sorting changed
 	entry_tree_->Bind(
 		wxEVT_DATAVIEW_COLUMN_SORTED,
-		[this](wxDataViewEvent& e) { toolbar_elist_->enableGroup("_Moving", canMoveEntries()); });
+		[this](wxDataViewEvent& e) { toolbar_elist_->enableGroup("Moving", canMoveEntries()); });
 
 	// Update this tab's name in the parent notebook when the archive is saved
 	sc_archive_saved_ = archive->signals().saved.connect(
@@ -465,45 +465,23 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	}
 
 	// Entry list toolbar
-	toolbar_elist_ = new SToolBar(panel, false, wxVERTICAL);
-	if (has_dirs && !elist_no_tree)
-	{
-		auto* tbg_folder = new SToolBarGroup(toolbar_elist_, "_Folder");
-		tbg_folder->addActionButton("arch_elist_collapseall");
-		toolbar_elist_->addGroup(tbg_folder);
-	}
-	auto* tbg_create = new SToolBarGroup(toolbar_elist_, "_Create");
-	tbg_create->addActionButton("arch_newentry");
-	if (has_dirs)
-		tbg_create->addActionButton("arch_newdir");
-	tbg_create->addActionButton("arch_importfiles");
-	tbg_create->addActionButton("arch_importdir");
-	toolbar_elist_->addGroup(tbg_create);
-	auto* tbg_entry = new SToolBarGroup(toolbar_elist_, "_Entry");
-	tbg_entry->addActionButton("arch_entry_rename");
-	tbg_entry->addActionButton("arch_entry_rename_each");
-	tbg_entry->addActionButton("arch_entry_delete");
-	tbg_entry->addSeparator();
-	tbg_entry->addActionButton("arch_entry_import");
-	tbg_entry->addActionButton("arch_entry_export");
-	tbg_entry->setAllButtonsEnabled(false);
-	toolbar_elist_->addGroup(tbg_entry);
-	if (archive->format() != ArchiveFormat::Dir)
-	{
-		auto* tbg_moving = new SToolBarGroup(toolbar_elist_, "_Moving");
-		tbg_moving->addActionButton("arch_entry_moveup");
-		tbg_moving->addActionButton("arch_entry_movedown");
-		tbg_moving->addActionButton("arch_entry_sort");
-		tbg_moving->Enable(false);
-		toolbar_elist_->addGroup(tbg_moving);
-	}
-	auto* tbg_bookmark = new SToolBarGroup(toolbar_elist_, "_Bookmark");
-	tbg_bookmark->addActionButton("arch_entry_bookmark");
-	tbg_bookmark->setAllButtonsEnabled(false);
-	toolbar_elist_->addGroup(tbg_bookmark);
-	auto* tbg_filter = new SToolBarGroup(toolbar_elist_, "_Filter");
-	tbg_filter->addActionButton("arch_elist_togglefilter")->action()->setChecked(elist_show_filter);
-	toolbar_elist_->addGroup(tbg_filter, true);
+	toolbar_elist_ = new SAuiToolBar(panel, true);
+
+	// Load toolbar layout from JSON definition
+	toolbar_elist_->loadLayoutFromResource("entry_list", false);
+
+	// Setup toolbar item visibility
+	toolbar_elist_->showItem("arch_elist_collapseall", has_dirs && !elist_no_tree, false);
+	toolbar_elist_->showItem("arch_newdir", has_dirs, false);
+	toolbar_elist_->showGroup("Moving", archive->format() != ArchiveFormat::Dir, false);
+
+	// Create toolbar
+	toolbar_elist_->createFromLayout();
+
+	// Disable items that require an entry selection
+	toolbar_elist_->enableGroup("Entry", false);
+	toolbar_elist_->enableGroup("Moving", false);
+	toolbar_elist_->enableItem("arch_entry_bookmark", false);
 
 	// Entry List filter controls
 	panel_filter_ = new wxPanel(panel, -1);
@@ -655,8 +633,7 @@ void ArchivePanel::addMenus() const
 	cur_area_->addCustomMenu();
 
 	// Also enable the related toolbars
-	maineditor::window()->enableToolBar("_archive");
-	maineditor::window()->enableToolBar("_entry");
+	maineditor::window()->enableToolBarGroup("Archive");
 }
 
 // -----------------------------------------------------------------------------
@@ -670,8 +647,7 @@ void ArchivePanel::removeMenus() const
 	cur_area_->removeCustomMenu();
 
 	// Also disable the related toolbars
-	maineditor::window()->enableToolBar("_archive", false);
-	maineditor::window()->enableToolBar("_entry", false);
+	maineditor::window()->enableToolBarGroup("Archive", false);
 }
 
 // -----------------------------------------------------------------------------
@@ -2066,8 +2042,6 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		bool changed = (cur_area_ != new_area);
 		if (!showEntryPanel(new_area, false))
 			return false;
-		else if (changed)
-			new_area->updateToolbar();
 	}
 	return true;
 }
@@ -2209,7 +2183,6 @@ void ArchivePanel::refreshPanel()
 
 	// Refresh entire panel
 	Freeze();
-	toolbar_elist_->updateLayout();
 	splitter_->GetWindow1()->Layout();
 	splitter_->GetWindow1()->Update();
 	splitter_->GetWindow1()->Refresh();
@@ -2685,25 +2658,25 @@ void ArchivePanel::selectionChanged()
 
 	if (selection.empty())
 	{
-		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(false);
-		toolbar_elist_->enableGroup("_Moving", false);
+		toolbar_elist_->enableGroup("Entry", false);
+		toolbar_elist_->enableGroup("Moving", false);
 	}
 	else if (selection.size() == 1)
 	{
 		// If one entry is selected, open it in the entry area
-		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
-		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(false);
-		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
-		toolbar_elist_->enableGroup("_Moving", canMoveEntries());
+		toolbar_elist_->enableGroup("Entry", true);
+		toolbar_elist_->enableItem("arch_entry_rename_each", false);
+		toolbar_elist_->enableItem("arch_entry_bookmark", true);
+		toolbar_elist_->enableGroup("Moving", canMoveEntries());
 		openEntry(selection[0]);
 	}
 	else
 	{
 		// If multiple entries are selected, show/update the multi entry area
-		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
-		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(true);
-		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(false);
-		toolbar_elist_->enableGroup("_Moving", canMoveEntries());
+		toolbar_elist_->enableGroup("Entry", true);
+		toolbar_elist_->enableItem("arch_entry_rename_each", true);
+		toolbar_elist_->enableItem("arch_entry_bookmark", false);
+		toolbar_elist_->enableGroup("Moving", canMoveEntries());
 		showEntryPanel(default_area_);
 		dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
 	}
@@ -2713,12 +2686,12 @@ void ArchivePanel::selectionChanged()
 
 	if (selection.empty() && !sel_dirs.empty())
 	{
-		toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
-		toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
-		toolbar_elist_->findActionButton("arch_entry_export")->Enable(true);
+		toolbar_elist_->enableItem("arch_entry_rename", true);
+		toolbar_elist_->enableItem("arch_entry_delete", true);
+		toolbar_elist_->enableItem("arch_entry_export", true);
 
 		if (sel_dirs.size() == 1)
-			toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
+			toolbar_elist_->enableItem("arch_entry_bookmark", true);
 	}
 
 	toolbar_elist_->Refresh();

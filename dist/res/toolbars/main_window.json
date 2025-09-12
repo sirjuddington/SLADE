@@ -1,0 +1,68 @@
+{
+  "items": [
+    // File
+    { "type": "action", "id": "aman_newarchive" },
+    { "type": "action", "id": "aman_open" },
+    { "type": "action", "id": "aman_opendir" },
+    { "type": "action", "id": "aman_save" },
+    { "type": "action", "id": "aman_saveas" },
+    { "type": "action", "id": "aman_saveall" },
+    { "type": "action", "id": "aman_close" },
+    { "type": "action", "id": "aman_closeall" },
+
+    { "type": "separator" },
+
+    // Archive
+    { "type": "action", "id": "arch_texeditor" },
+    { "type": "action", "id": "arch_mapeditor" },
+    { "type": "action", "id": "arch_run" },
+    {
+      "type": "button",
+      "id": "maintenance",
+      "text": "Maintenance",
+      "icon": "wrench",
+      "help_text": "Archive maintenance/cleanup tools"
+    },
+
+    { "type": "separator" },
+
+    // Bookmarks
+    {
+      "type": "button",
+      "id": "bookmarks",
+      "text": "Bookmarks",
+      "icon": "bookmark",
+      "help_text": "Go to a bookmarked entry"
+    },
+
+    { "type": "stretch_spacer" },
+
+    // Base resource
+    { "type": "custom_control", "id": "base_resource_chooser", "label": "Base Resource:" },
+
+    { "type": "separator" },
+
+    // Palette
+    { "type": "custom_control", "id": "palette_chooser", "label": "Palette:" }
+  ],
+
+  "groups": [
+    {
+      "name": "File",
+      "item_ids": [
+        "aman_newarchive",
+        "aman_open",
+        "aman_opendir",
+        "aman_save",
+        "aman_saveas",
+        "aman_saveall",
+        "aman_close",
+        "aman_closeall"
+      ]
+    },
+    {
+      "name": "Archive",
+      "item_ids": [ "arch_texeditor", "arch_mapeditor", "arch_run", "maintenance" ]
+    }
+  ]
+}

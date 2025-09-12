@@ -41,8 +41,8 @@
 #include "Database/Database.h"
 #include "Database/Tables/ArchiveFile.h"
 #include "General/SActionHandler.h"
+#include "UI/Controls/SToolButton.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include <wx/statbmp.h>
@@ -93,11 +93,11 @@ wxBitmapBundle getIconBitmapBundle(string_view icon, int size)
 }
 
 // -----------------------------------------------------------------------------
-// Creates a custom button (SToolBarButton) for an action with [text] and [icon]
+// Creates a custom button (SToolButton) for an action with [text] and [icon]
 // -----------------------------------------------------------------------------
-SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, const string& text, const string& icon)
+SToolButton* createActionButton(wxWindow* parent, const string& action_id, const string& text, const string& icon)
 {
-	auto button = new SToolBarButton(parent, action_id, text, icon, "", true, 24);
+	auto button = new SToolButton(parent, action_id, text, icon, "", true, 24);
 	button->SetBackgroundColour(backgroundColour());
 	button->setExactFit(false);
 	button->setFontSize(1.1f);
@@ -199,16 +199,16 @@ string getArchiveIcon(const strutil::Path& path)
 // -----------------------------------------------------------------------------
 // RecentFileButton Class
 //
-// A custom SToolBarButton for recent files, will underline text on mouse over
+// A custom SToolButton for recent files, will underline text on mouse over
 // instead of changing the background colour
 // -----------------------------------------------------------------------------
 namespace
 {
-class RecentFileButton : public SToolBarButton
+class RecentFileButton : public SToolButton
 {
 public:
 	RecentFileButton(wxWindow* parent, const strutil::Path& path, int index) :
-		SToolBarButton(parent, "aman_recent", getArchiveIcon(path), true),
+		SToolButton(parent, "aman_recent", getArchiveIcon(path), true),
 		filename_{ path.fileName() }
 	{
 		action_wx_id_offset_ = index;

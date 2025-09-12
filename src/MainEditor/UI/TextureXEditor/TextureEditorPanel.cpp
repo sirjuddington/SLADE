@@ -42,8 +42,7 @@
 #include "UI/Controls/ZoomControl.h"
 #include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -312,20 +311,13 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	list_patches_->enableSizeUpdate(false);
 
 	// Create patches toolbar
-	tb_patches_ = new SToolBar(frame, false, wxVERTICAL);
-	tb_patches_->addActionGroup(
-		"_Patch",
-		{ "txed_patch_add",
-		  "txed_patch_remove",
-		  "txed_patch_back",
-		  "txed_patch_forward",
-		  "txed_patch_replace",
-		  "txed_patch_duplicate" });
-	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
-	tb_patches_->findActionButton("txed_patch_add")->Enable();
+	tb_patches_ = new SAuiToolBar(frame, true);
+	tb_patches_->loadLayoutFromResource("texturex_patches");
+	tb_patches_->enableGroup("Patch", false);
+	tb_patches_->enableItem("txed_patch_add", true);
 
 	// Layout
-	list_patches_->SetInitialSize({ FromDIP(100), tb_patches_->group("_Patch")->GetBestSize().y });
+	list_patches_->SetInitialSize({ FromDIP(100), tb_patches_->GetBestSize().y });
 	framesizer->Add(list_patches_, lh.sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
 	framesizer->Add(tb_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
@@ -1141,7 +1133,7 @@ void TextureEditorPanel::onTexWorldPanningChanged(wxCommandEvent& e)
 void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 {
 	if (list_patches_->GetSelectedItemCount() > 0)
-		tb_patches_->group("_Patch")->setAllButtonsEnabled(true);
+		tb_patches_->enableGroup("Patch", true);
 
 	// Select the patch on the texture canvas
 	tex_canvas_->selectPatch(e.GetIndex());
@@ -1158,8 +1150,8 @@ void TextureEditorPanel::onPatchListDeSelect(wxListEvent& e)
 {
 	if (list_patches_->GetSelectedItemCount() == 0)
 	{
-		tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
-		tb_patches_->findActionButton("txed_patch_add")->Enable();
+		tb_patches_->enableGroup("Patch", false);
+		tb_patches_->enableItem("txed_patch_add", true);
 	}
 
 	// Deselect the patch on the texture canvas

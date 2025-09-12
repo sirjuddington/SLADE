@@ -51,8 +51,7 @@
 #include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/SettingsDialog.h"
 #include "UI/SAuiTabArt.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/State.h"
 #include "UI/UI.h"
 #include "Utility/FileUtils.h"
@@ -281,8 +280,6 @@ void MainWindow::setupLayout()
 	SAction::fromId("main_showconsole")->addToMenu(view_menu);
 	SAction::fromId("main_showundohistory")->addToMenu(view_menu);
 	SAction::fromId("main_showstartpage")->addToMenu(view_menu);
-	toolbar_menu_ = new wxMenu();
-	view_menu->AppendSubMenu(toolbar_menu_, wxS("Toolbars"));
 	menu->Append(view_menu, wxS("&View"));
 
 	// Tools menu
@@ -306,72 +303,37 @@ void MainWindow::setupLayout()
 	SetMenuBar(menu);
 
 
+	// -- Toolbar --
+	toolbar_ = new SAuiToolBar(this, false, true, aui_mgr_);
 
-	// -- Toolbars --
-	toolbar_ = new SToolBar(this, true);
+	// Register custom controls and dropdown menus for toolbar
+	toolbar_->registerCustomControl("base_resource_chooser", new BaseResourceChooser(toolbar_));
+	palette_chooser_ = new PaletteChooser(toolbar_, -1);
+	toolbar_->registerCustomControl("palette_chooser", palette_chooser_);
+	toolbar_->registerDropdownMenu("maintenance", ArchivePanel::createMaintenanceMenu());
+	toolbar_->registerDropdownMenu("bookmarks", panel_archivemanager_->bookmarksMenu());
 
-	// Create File toolbar
-	auto tbg_file = new SToolBarGroup(toolbar_, "_File");
-	tbg_file->addActionButton("aman_newarchive");
-	tbg_file->addActionButton("aman_open");
-	tbg_file->addActionButton("aman_opendir");
-	tbg_file->addActionButton("aman_save");
-	tbg_file->addActionButton("aman_saveas");
-	tbg_file->addActionButton("aman_saveall");
-	tbg_file->addActionButton("aman_close");
-	tbg_file->addActionButton("aman_closeall");
-	toolbar_->addGroup(tbg_file);
+	// Create toolbar from JSON definition
+	auto toolbar_entry = app::programResource()->entryAtPath("toolbars/main_window.json");
+	toolbar_->loadLayout(toolbar_entry->data().asString());
 
-	// Create Archive toolbar
-	auto tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
-	tbg_archive->addActionButton("arch_texeditor");
-	tbg_archive->addActionButton("arch_mapeditor");
-	tbg_archive->addActionButton("arch_run");
-	tbg_archive->addActionButton("arch_quick_run");
-	auto* b_maint = tbg_archive->addActionButton(
-		"arch_maintenance", "Maintenance", "wrench", "Archive maintenance/cleanup tools");
-	b_maint->setMenu(ArchivePanel::createMaintenanceMenu());
-	toolbar_->addGroup(tbg_archive);
+	// Archive toolbar is initially disabled
+	toolbar_->enableGroup("Archive", false);
 
-	// Create Boomkarks toolbar
-	auto* tbg_bookmarks = new SToolBarGroup(toolbar_, "_Bookmarks");
-	auto* b_bookmarks   = tbg_bookmarks->addActionButton(
-        "bookmarks", "Bookmarks", "bookmark", "Go to a bookmarked entry");
-	b_bookmarks->setMenu(panel_archivemanager_->bookmarksMenu());
-	toolbar_->addGroup(tbg_bookmarks);
-
-	// Create Base Resource Archive toolbar
-	auto tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
-	auto brc     = new BaseResourceChooser(tbg_bra);
-	tbg_bra->addCustomControl(brc);
-	tbg_bra->addActionButton("main_setbra", "settings");
-	toolbar_->addGroup(tbg_bra, true);
-
-	// Create Palette Chooser toolbar
-	auto tbg_palette = new SToolBarGroup(toolbar_, "_Palette", true);
-	palette_chooser_ = new PaletteChooser(tbg_palette, -1);
-	palette_chooser_->selectPalette(global_palette);
-	tbg_palette->addCustomControl(palette_chooser_);
-	toolbar_->addGroup(tbg_palette, true);
-
-	// Archive and Entry toolbars are initially disabled
-	toolbar_->enableGroup("_archive", false);
-	toolbar_->enableGroup("_entry", false);
-
-	// Add toolbar
+	// Add toolbar to aui
 	aui_mgr_->AddPane(
 		toolbar_,
 		wxAuiPaneInfo()
+			.ToolbarPane()
 			.Top()
 			.CaptionVisible(false)
-			.MinSize(-1, SToolBar::getBarHeight(this))
+			.MinSize(-1, toolbar_->GetMinSize().y)
 			.Resizable(false)
 			.PaneBorder(false)
+			.Movable(false)
+			.Floatable(false)
 			.Name(wxS("toolbar")));
 
-	// Populate the 'View->Toolbars' menu
-	populateToolbarsMenu();
-	toolbar_->enableContextMenu();
 
 	// -- Status Bar --
 	CreateStatusBar(3);
@@ -388,7 +350,6 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_SIZE, &MainWindow::onSize, this);
 	Bind(wxEVT_CLOSE_WINDOW, &MainWindow::onClose, this);
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
-	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar_->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
 	Bind(
 		wxEVT_AUINOTEBOOK_PAGE_CLOSED,
@@ -665,13 +626,6 @@ void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 // -----------------------------------------------------------------------------
 void MainWindow::onSize(wxSizeEvent& e)
 {
-	// Update toolbar layout (if needed)
-	toolbar_->updateLayout();
-#ifndef __WXMSW__
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight(this));
-	aui_mgr_->Update();
-#endif
-
 	// Update maximized state
 	ui::saveStateBool(ui::MAINWINDOW_MAXIMIZED, IsMaximized());
 
@@ -692,16 +646,6 @@ void MainWindow::onSize(wxSizeEvent& e)
 	}
 
 	e.Skip();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the toolbar layout is changed
-// -----------------------------------------------------------------------------
-void MainWindow::onToolBarLayoutChanged(wxEvent& e)
-{
-	// Update toolbar size
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, SToolBar::getBarHeight(this));
-	aui_mgr_->Update();
 }
 
 // -----------------------------------------------------------------------------

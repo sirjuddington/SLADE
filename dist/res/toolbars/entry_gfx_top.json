@@ -1,0 +1,73 @@
+{
+  "items": [
+    { "type": "action", "id": "arch_entry_save", "show_text": true },
+    {
+      "type": "button",
+      "id": "revert",
+      "text": "Revert",
+      "icon": "revert",
+      "help_text": "Revert any changes made to the entry",
+      "show_text": true
+    },
+
+    { "type": "separator" },
+
+    // Brush
+    {
+      "type": "button",
+      "id": "pgfx_setbrush",
+      "text": "Set brush shape",
+      "icon": "brush_sq_1",
+      "help_text": "Choose which brush shape to use when drawing",
+      "label": "Brush:"
+    },
+    { "type": "custom_control", "id": "brush_colour" },
+    { "type": "action", "id": "pgfx_settrans" },
+
+    { "type": "separator" },
+
+    // Image operations
+    { "type": "action", "id": "pgfx_mirror" },
+    { "type": "action", "id": "pgfx_flip" },
+    { "type": "action", "id": "pgfx_rotate" },
+    { "type": "action", "id": "pgfx_crop" },
+
+    { "type": "separator" },
+
+    // Colour operations
+    { "type": "action", "id": "pgfx_remap" },
+    { "type": "action", "id": "pgfx_colourise" },
+    { "type": "action", "id": "pgfx_tint" },
+
+    { "type": "separator" },
+
+    // File operations
+    { "type": "action", "id": "pgfx_convert" },
+    { "type": "action", "id": "pgfx_pngopt" },
+
+    { "type": "stretch_spacer" },
+
+    // View
+    {
+      "type": "button",
+      "id": "toggle_arc",
+      "text": "Aspect Ratio Correction",
+      "icon": "aspectratio",
+      "help_text": "Toggle aspect ratio correction"
+    },
+    {
+      "type": "button",
+      "id": "toggle_tile",
+      "text": "Tile",
+      "icon": "tile",
+      "help_text": "Toggle image tiling"
+    }
+  ],
+
+  "groups": [
+    {
+      "name": "Brush",
+      "item_ids": [ "pgfx_setbrush", "brush_colour", "pgfx_settrans" ]
+    }
+  ]
+}
