@@ -75,6 +75,7 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 	SetArtProvider(new SAuiToolBarArt(this, main_toolbar));
 	SetToolBitmapSize({ toolbar_size, toolbar_size });
 	SetToolSeparation(FromDIP(12));
+	wxAuiToolBar::SetDoubleBuffered(true);
 
 	if (main_toolbar)
 		SetMargins(FromDIP(wxSize(5, 4)));
@@ -252,7 +253,7 @@ void SAuiToolBar::setButtonIcon(string_view button_id, string_view icon)
 	}
 }
 
-void SAuiToolBar::enableItem(string_view id, bool enable)
+void SAuiToolBar::enableItem(string_view id, bool enable, bool refresh)
 {
 	if (auto item = itemById(id); item)
 		EnableTool(item->wx_id, enable);
@@ -262,16 +263,22 @@ void SAuiToolBar::enableItem(string_view id, bool enable)
 	for (auto& j_item : *layout_)
 		if (j_item.value("id", "") == id)
 			j_item["enabled"] = enable;
+
+	if (refresh)
+		Refresh();
 }
 
-void SAuiToolBar::enableGroup(string_view group, bool enable)
+void SAuiToolBar::enableGroup(string_view group, bool enable, bool refresh)
 {
 	auto g = groupByName(group);
 	if (!g)
 		return;
 
 	for (const auto& item_id : g->items)
-		enableItem(item_id, enable);
+		enableItem(item_id, enable, false);
+
+	if (refresh)
+		Refresh();
 }
 
 void SAuiToolBar::showItem(string_view id, bool show, bool refresh)
@@ -584,4 +591,6 @@ void SAuiToolBar::setItemChecked(wxAuiToolBarItem* item, bool checked)
 		item->SetState(item->GetState() | wxAUI_BUTTON_STATE_CHECKED);
 	else
 		item->SetState(item->GetState() & ~wxAUI_BUTTON_STATE_CHECKED);
+
+	Refresh();
 }

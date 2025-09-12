@@ -1,0 +1,33 @@
+{
+  "items": [
+    { "type": "action", "id": "txed_savelist" },
+
+    { "type": "separator" },
+
+    { "type": "action", "id": "txed_new" },
+    { "type": "action", "id": "txed_new_file" },
+
+    { "type": "separator" },
+
+    { "type": "action", "id": "txed_rename" },
+    { "type": "action", "id": "txed_rename_each" },
+    { "type": "action", "id": "txed_delete" },
+
+    { "type": "separator" },
+
+    { "type": "action", "id": "txed_up" },
+    { "type": "action", "id": "txed_down" },
+    { "type": "action", "id": "txed_sort" }
+  ],
+
+  "groups": [
+    {
+      "name": "Texture",
+      "item_ids": [ "txed_rename", "txed_rename_each", "txed_delete" ]
+    },
+    {
+      "name": "Sorting",
+      "item_ids": [ "txed_up", "txed_down", "txed_sort" ]
+    }
+  ]
+}

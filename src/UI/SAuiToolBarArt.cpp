@@ -34,7 +34,7 @@
 #include "App.h"
 #include "Graphics/Icons.h"
 #include "SAuiToolBar.h"
-#include "UI/UI.h"
+#include <wx/dcgraph.h>
 
 using namespace slade;
 
@@ -185,31 +185,39 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 	bool pressed = item.GetState() & wxAUI_BUTTON_STATE_PRESSED;
 	if (!(item.GetState() & wxAUI_BUTTON_STATE_DISABLED))
 	{
-		// Draw checked outline
-		if (checked)
-		{
-			dc.SetBrush(*wxTRANSPARENT_BRUSH);
-			dc.SetPen(wxPen(col_hilight, 1));
-			dc.DrawRoundedRectangle(rect.x, rect.y, rect.width, rect.height, wnd->FromDIP(2));
-		}
+		// Create buffer bitmap for background since we want to use a
+		// wxGraphicsContext to draw it for better looking round edges
+		wxBitmap bmp_buffer;
+		bmp_buffer.Create(rect.width, rect.height);
+		bmp_buffer.UseAlpha(true);
+		wxGCDC gcdc{ bmp_buffer };
+		auto   gc = gcdc.GetGraphicsContext();
 
 		// Draw background on mouseover
 		if (hover || pressed)
 		{
-			// Determine transparency level
-			auto trans = pressed ? 0.9 : 0.7;
-
-			// Create 'semitransparent' hilight colour
-			wxColour col(
-				wxColour::AlphaBlend(col_hilight.Red(), col_background.Red(), trans),
-				wxColour::AlphaBlend(col_hilight.Green(), col_background.Green(), trans),
-				wxColour::AlphaBlend(col_hilight.Blue(), col_background.Blue(), trans));
+			// Determine background colour
+			auto col = app::isDarkTheme() ? col_background.ChangeLightness(pressed ? 125 : 115)
+										  : col_background.ChangeLightness(pressed ? 70 : 80);
 
 			// Draw background
-			dc.SetBrush(col);
-			dc.SetPen(*wxTRANSPARENT_PEN);
-			dc.DrawRoundedRectangle(rect.x, rect.y, rect.width, rect.height, wnd->FromDIP(2));
+			gcdc.SetBrush(col);
+			gcdc.SetPen(*wxTRANSPARENT_PEN);
+			gcdc.DrawRoundedRectangle(0, 0, rect.width, rect.height, 3.0 * wnd->GetDPIScaleFactor());
 		}
+
+		// Draw checked outline
+		if (checked)
+		{
+			gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
+			gcdc.SetPen(wxPen(col_hilight, 2));
+			auto px = wnd->FromDIP(1);
+			gcdc.DrawRoundedRectangle(px, px, rect.width - px, rect.height - px, 3.0 * wnd->GetDPIScaleFactor());
+		}
+
+		// Draw buffer contents
+		gc->Flush();
+		dc.DrawBitmap(bmp_buffer, rect.x, rect.y, true);
 	}
 
 	// Draw icon
@@ -276,31 +284,39 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 	bool pressed = item.GetState() & wxAUI_BUTTON_STATE_PRESSED;
 	if (!(item.GetState() & wxAUI_BUTTON_STATE_DISABLED))
 	{
-		// Draw checked outline
-		if (checked)
-		{
-			dc.SetBrush(*wxTRANSPARENT_BRUSH);
-			dc.SetPen(wxPen(col_hilight, 1.5));
-			dc.DrawRoundedRectangle(rect.x, rect.y, rect.width, rect.height, wnd->FromDIP(2));
-		}
+		// Create buffer bitmap for background since we want to use a
+		// wxGraphicsContext to draw it for better looking round edges
+		wxBitmap bmp_buffer;
+		bmp_buffer.Create(rect.width, rect.height);
+		bmp_buffer.UseAlpha(true);
+		wxGCDC gcdc{ bmp_buffer };
+		auto   gc = gcdc.GetGraphicsContext();
 
 		// Draw background on mouseover
 		if (hover || pressed)
 		{
-			// Determine transparency level
-			auto trans = pressed ? 0.9 : 0.7;
-
-			// Create 'semitransparent' hilight colour
-			wxColour col(
-				wxColour::AlphaBlend(col_hilight.Red(), col_background.Red(), trans),
-				wxColour::AlphaBlend(col_hilight.Green(), col_background.Green(), trans),
-				wxColour::AlphaBlend(col_hilight.Blue(), col_background.Blue(), trans));
+			// Determine background colour
+			auto col = app::isDarkTheme() ? col_background.ChangeLightness(pressed ? 125 : 115)
+										  : col_background.ChangeLightness(pressed ? 70 : 80);
 
 			// Draw background
-			dc.SetBrush(col);
-			dc.SetPen(*wxTRANSPARENT_PEN);
-			dc.DrawRoundedRectangle(rect.x, rect.y, rect.width, rect.height, wnd->FromDIP(2));
+			gcdc.SetBrush(col);
+			gcdc.SetPen(*wxTRANSPARENT_PEN);
+			gcdc.DrawRoundedRectangle(0, 0, rect.width, rect.height, 3.0 * wnd->GetDPIScaleFactor());
 		}
+
+		// Draw checked outline
+		if (checked)
+		{
+			gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
+			gcdc.SetPen(wxPen(col_hilight, 2));
+			auto px = wnd->FromDIP(1);
+			gcdc.DrawRoundedRectangle(px, px, rect.width - px, rect.height - px, 3.0 * wnd->GetDPIScaleFactor());
+		}
+
+		// Draw buffer contents
+		gc->Flush();
+		dc.DrawBitmap(bmp_buffer, rect.x, rect.y, true);
 	}
 
 	// Draw icon

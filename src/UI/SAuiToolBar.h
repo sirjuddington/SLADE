@@ -28,8 +28,8 @@ public:
 	void setButtonDropdownMenu(string_view button_id, wxMenu* menu);
 	void setButtonIcon(string_view button_id, string_view icon);
 
-	void enableItem(string_view id, bool enable = true);
-	void enableGroup(string_view group, bool enable = true);
+	void enableItem(string_view id, bool enable = true, bool refresh = true);
+	void enableGroup(string_view group, bool enable = true, bool refresh = true);
 
 	void showItem(string_view id, bool show = true, bool refresh = true);
 	void showGroup(string_view group, bool show = true, bool refresh = true);

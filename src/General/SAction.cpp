@@ -38,7 +38,6 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "General/KeyBind.h"
-#include "Graphics/Icons.h"
 #include "SActionHandler.h"
 #include "UI/WxUtils.h"
 #include "Utility/JsonUtils.h"
@@ -234,7 +233,7 @@ void SAction::fromJson(const Json& j)
 {
 	text_         = j.value("text", id_);
 	icon_         = j.value("icon", icon_);
-	helptext_     = j.value("help", helptext_);
+	helptext_     = j.value("help_text", helptext_);
 	wx_id_        = j.value("wx_id", wx_id_);
 	reserved_ids_ = j.value("reserved_ids", reserved_ids_);
 	group_        = j.value("group", group_);
