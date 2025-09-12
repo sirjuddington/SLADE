@@ -43,8 +43,6 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
 
 using namespace slade;
 

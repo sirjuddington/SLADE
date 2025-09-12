@@ -43,8 +43,6 @@
 #include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SAuiToolBar.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;

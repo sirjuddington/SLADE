@@ -47,10 +47,10 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
+// Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Int, toolbar_size)
+CVAR(Int, toolbar_size, 16, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -73,7 +73,6 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 	aui_mgr_{ aui_mgr }
 {
 	SetArtProvider(new SAuiToolBarArt(this, main_toolbar));
-	SetToolBitmapSize({ toolbar_size, toolbar_size });
 	SetToolSeparation(FromDIP(12));
 	wxAuiToolBar::SetDoubleBuffered(true);
 
@@ -153,9 +152,10 @@ wxAuiToolBarItem* SAuiToolBar::addAction(string_view action_id, bool show_name, 
 
 	// Tooltip text
 	wxString tooltip;
+	auto     sa_text = strutil::replace(sa->text(), "&", "");
 	if (!show_name)
 	{
-		auto tip = strutil::replace(sa->text(), "&", "");
+		auto tip = sa_text;
 		if (!sc.empty())
 			tip += fmt::format(" (Shortcut: {})", sc);
 		tooltip = wxString::FromUTF8(tip);
@@ -164,11 +164,11 @@ wxAuiToolBarItem* SAuiToolBar::addAction(string_view action_id, bool show_name, 
 		tooltip = WX_FMT("Shortcut: {}", sc);
 
 	// Get icon
-	auto icon_bmp = icons::getIcon(icons::Type::Any, icon.empty() ? sa->iconName() : icon);
+	auto icon_bmp = icons::getIcon(icons::Type::Any, icon.empty() ? sa->iconName() : icon, toolbar_size);
 
 	auto tool = AddTool(
 		sa->wxId(),
-		wxString::FromUTF8(sa->text()),
+		wxString::FromUTF8(sa_text),
 		icon_bmp,
 		icon_bmp,
 		wxITEM_NORMAL,
@@ -191,17 +191,17 @@ wxAuiToolBarItem* SAuiToolBar::addButton(
 	wxMenu*     menu,
 	bool        show_name)
 {
-	auto id = SAction::nextWxId();
-
-	auto tool = AddTool(
-		id,
-		wxutil::strFromView(text),
-		icons::getIcon(icons::Type::General, icon),
-		icons::getIcon(icons::Type::General, icon),
-		wxITEM_NORMAL,
-		wxutil::strFromView(text),
-		wxutil::strFromView(help_text),
-		nullptr);
+	auto id       = SAction::nextWxId();
+	auto icon_bmp = icons::getIcon(icons::Type::Any, icon, toolbar_size);
+	auto tool     = AddTool(
+        id,
+        wxutil::strFromView(text),
+        icon_bmp,
+        icon_bmp,
+        wxITEM_NORMAL,
+        wxutil::strFromView(text),
+        wxutil::strFromView(help_text),
+        nullptr);
 
 	if (menu)
 		tool->SetHasDropDown(true);
@@ -260,9 +260,10 @@ void SAuiToolBar::enableItem(string_view id, bool enable, bool refresh)
 	else
 		return;
 
-	for (auto& j_item : *layout_)
-		if (j_item.value("id", "") == id)
-			j_item["enabled"] = enable;
+	if (layout_)
+		for (auto& j_item : *layout_)
+			if (j_item.value("id", "") == id)
+				j_item["enabled"] = enable;
 
 	if (refresh)
 		Refresh();
@@ -283,6 +284,9 @@ void SAuiToolBar::enableGroup(string_view group, bool enable, bool refresh)
 
 void SAuiToolBar::showItem(string_view id, bool show, bool refresh)
 {
+	if (!layout_)
+		return;
+
 	for (auto& j_item : *layout_)
 		if (j_item.value("id", "") == id)
 			j_item["hidden"] = !show;

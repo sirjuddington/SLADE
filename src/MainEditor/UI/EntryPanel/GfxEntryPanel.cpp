@@ -58,7 +58,6 @@
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
 #include "UI/SBrush.h"
-#include "UI/SToolBar/SToolBar.h"
 #include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
@@ -365,7 +364,7 @@ void GfxEntryPanel::setupToolbars()
 	// --- Top Toolbar ---
 
 	// Brush colour box
-	cb_colour_ = new ColourBox(toolbar_, -1, ColRGBA::BLACK, false, true, SToolBar::scaledButtonSize(this));
+	cb_colour_ = new ColourBox(toolbar_, -1, ColRGBA::BLACK, false, true);
 	cb_colour_->setPalette(gfx_canvas_->palette());
 	cb_colour_->SetToolTip(wxS("Set brush colour"));
 

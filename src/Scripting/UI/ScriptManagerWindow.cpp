@@ -48,7 +48,6 @@
 #include "UI/Layout.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SAuiToolBar.h"
-#include "UI/SToolBar/SToolBar.h"
 #include "UI/State.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"

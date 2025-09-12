@@ -52,8 +52,6 @@
 #include "UI/Dialogs/SettingsDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SAuiToolBar.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/State.h"
 #include "UI/UI.h"
 #include "Utility/FileUtils.h"

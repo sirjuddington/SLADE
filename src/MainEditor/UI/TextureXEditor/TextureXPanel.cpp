@@ -54,8 +54,6 @@
 #include "UI/Layout.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/SAuiToolBar.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"

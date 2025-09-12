@@ -50,8 +50,6 @@
 #include "UI/Layout.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/SAuiToolBar.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
 
 using namespace slade;
 
