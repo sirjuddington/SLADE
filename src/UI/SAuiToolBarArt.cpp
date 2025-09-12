@@ -188,7 +188,7 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 		// Create buffer bitmap for background since we want to use a
 		// wxGraphicsContext to draw it for better looking round edges
 		wxBitmap bmp_buffer;
-		bmp_buffer.Create(rect.width, rect.height);
+		bmp_buffer.Create(rect.width, rect.height, 32);
 		bmp_buffer.UseAlpha(true);
 		wxGCDC gcdc{ bmp_buffer };
 		auto   gc = gcdc.GetGraphicsContext();
@@ -287,7 +287,7 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 		// Create buffer bitmap for background since we want to use a
 		// wxGraphicsContext to draw it for better looking round edges
 		wxBitmap bmp_buffer;
-		bmp_buffer.Create(rect.width, rect.height);
+		bmp_buffer.Create(rect.width, rect.height, 32);
 		bmp_buffer.UseAlpha(true);
 		wxGCDC gcdc{ bmp_buffer };
 		auto   gc = gcdc.GetGraphicsContext();
