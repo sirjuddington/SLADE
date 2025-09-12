@@ -21,6 +21,12 @@ public:
 		Radio,
 	};
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<SAction&> checked_changed;
+	};
+
 	SAction(
 		string_view id,
 		string_view text,
@@ -63,6 +69,7 @@ public:
 	static SAction* fromWxId(int wx_id);
 	static SAction* add(unique_ptr<SAction> action);
 	static int      nextWxId();
+	static Signals& signals();
 
 private:
 	// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,

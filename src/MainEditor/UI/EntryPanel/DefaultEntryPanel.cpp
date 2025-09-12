@@ -42,7 +42,7 @@
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBar.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 
@@ -106,16 +106,8 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 				maineditor::openTextureEditor(entry->parent(), entry.get());
 		});
 
-	// Hide save/revert toolbar
-	toolbar_->deleteGroup("Entry");
-	stb_save_   = nullptr;
-	stb_revert_ = nullptr;
-
 	// Setup toolbar
-	auto group = new SToolBarGroup(toolbar_, "View As");
-	group->addActionButton("arch_view_text", "", true);
-	group->addActionButton("arch_view_hex", "", true);
-	toolbar_->addGroup(group);
+	toolbar_->loadLayoutFromResource("entry_default_top");
 
 	wxWindowBase::Layout();
 }

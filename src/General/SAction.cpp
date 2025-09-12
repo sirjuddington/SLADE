@@ -38,6 +38,7 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "General/KeyBind.h"
+#include "Graphics/Icons.h"
 #include "SActionHandler.h"
 #include "UI/WxUtils.h"
 #include "Utility/JsonUtils.h"
@@ -138,6 +139,9 @@ void SAction::setChecked(bool checked)
 	}
 	else
 		checked_ = checked; // Otherwise just set toggled state
+
+	// Signal
+	signals().checked_changed(*this);
 
 	// Update linked CVar
 	if (linked_cvar_)
@@ -349,6 +353,15 @@ int SAction::nextWxId()
 	int id = cur_id;
 	++cur_id;
 	return id;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the SAction signals struct
+// -----------------------------------------------------------------------------
+SAction::Signals& SAction::signals()
+{
+	static Signals signals;
+	return signals;
 }
 
 // -----------------------------------------------------------------------------

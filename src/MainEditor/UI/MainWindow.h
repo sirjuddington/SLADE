@@ -48,7 +48,6 @@ private:
 	void onClose(wxCloseEvent& e);
 	void onTabChanged(wxAuiNotebookEvent& e);
 	void onSize(wxSizeEvent& e);
-	void onToolBarLayoutChanged(wxEvent& e);
 	void onActivate(wxActivateEvent& e);
 };
 } // namespace slade

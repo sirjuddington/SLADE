@@ -1,0 +1,21 @@
+{
+  "items": [
+    { "type": "action", "id": "arch_entry_save", "show_text": true },
+    {
+      "type": "button",
+      "id": "revert",
+      "text": "Revert",
+      "icon": "revert",
+      "help_text": "Revert any changes made to the entry",
+      "show_text": true
+    },
+
+    { "type": "separator" },
+    
+    { "type": "action", "id": "data_add_row" },
+    { "type": "action", "id": "data_delete_row" },
+    { "type": "action", "id": "data_cut_row" },
+    { "type": "action", "id": "data_copy_row" },
+    { "type": "action", "id": "data_paste_row" }
+  ]
+}

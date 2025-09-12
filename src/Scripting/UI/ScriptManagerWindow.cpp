@@ -47,6 +47,7 @@
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
 #include "UI/SAuiTabArt.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/State.h"
 #include "UI/UI.h"
@@ -388,22 +389,25 @@ void ScriptManagerWindow::setupMenu()
 // -----------------------------------------------------------------------------
 void ScriptManagerWindow::setupToolbar()
 {
-	toolbar_ = new SToolBar(this, true);
+	auto aui_mgr = wxAuiManager::GetManager(this);
+	toolbar_     = new SAuiToolBar(this, false, true, aui_mgr);
 
-	// Create File toolbar
-	auto tbg_file = new SToolBarGroup(toolbar_, "_File");
-	tbg_file->addActionButton("scrm_newscript_editor");
-	toolbar_->addGroup(tbg_file);
+	// Create toolbar from JSON definition
+	auto toolbar_entry = app::programResource()->entryAtPath("toolbars/script_window.json");
+	toolbar_->loadLayout(toolbar_entry->data().asString());
 
-	// Add toolbar
-	wxAuiManager::GetManager(this)->AddPane(
+	// Add toolbar to aui
+	aui_mgr->AddPane(
 		toolbar_,
 		wxAuiPaneInfo()
+			.ToolbarPane()
 			.Top()
 			.CaptionVisible(false)
-			.MinSize(-1, SToolBar::getBarHeight(this))
+			.MinSize(-1, toolbar_->GetMinSize().y)
 			.Resizable(false)
 			.PaneBorder(false)
+			.Movable(false)
+			.Floatable(false)
 			.Name(wxS("toolbar")));
 }
 

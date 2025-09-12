@@ -1164,7 +1164,6 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 		if (stc_archives_->GetPage(a) == ep)
 		{
 			stc_archives_->SetSelection(a);
-			ep->updateToolbar();
 			return;
 		}
 	}
@@ -2231,9 +2230,7 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	// Remove any current custom menus/toolbars
 	theMainWindow->Freeze();
 	theMainWindow->removeAllCustomMenus();
-	theMainWindow->removeAllCustomToolBars();
-	theMainWindow->enableToolBar("_archive", false);
-	theMainWindow->enableToolBar("_entry", false);
+	theMainWindow->enableToolBarGroup("Archive", false);
 
 	// ArchivePanel
 	if (isArchiveTab(selection))

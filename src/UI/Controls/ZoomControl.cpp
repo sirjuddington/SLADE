@@ -33,10 +33,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZoomControl.h"
+#include "SIconButton.h"
 #include "UI/Canvas/CTextureCanvasBase.h"
 #include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/State.h"
 #include <array>
 
@@ -198,8 +198,8 @@ void ZoomControl::setup()
 
 	// Create controls
 	cb_zoom_ = new wxComboBox(this, -1, WX_FMT("{}%", zoom_), wxDefaultPosition, cbsize, values, wxTE_PROCESS_ENTER);
-	btn_zoom_out_ = new SToolBarButton(this, "zoom_out", "Zoom Out", "zoom_out", "Zoom Out", false, 16);
-	btn_zoom_in_  = new SToolBarButton(this, "zoom_in", "Zoom In", "zoom_in", "Zoom In", false, 16);
+	btn_zoom_out_ = new SIconButton(this, "zoom_out", "Zoom Out", 16);
+	btn_zoom_in_  = new SIconButton(this, "zoom_in", "Zoom In", 16);
 
 #ifdef __WXGTK__
 	// wxWidgets doesn't leave space for the dropdown arrow in gtk3 for whatever reason
@@ -250,15 +250,8 @@ void ZoomControl::setup()
 		});
 
 	// Zoom in/out button clicked
-	Bind(
-		wxEVT_STOOLBAR_BUTTON_CLICKED,
-		[this](wxCommandEvent& e)
-		{
-			if (e.GetString() == wxS("zoom_in"))
-				zoomIn();
-			else if (e.GetString() == wxS("zoom_out"))
-				zoomOut();
-		});
+	btn_zoom_in_->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) { zoomIn(); });
+	btn_zoom_out_->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) { zoomOut(); });
 }
 
 // -----------------------------------------------------------------------------

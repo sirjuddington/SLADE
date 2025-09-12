@@ -39,7 +39,6 @@ public:
 	bool saveMapAs();
 	void closeMap() const;
 	void forceRefresh(bool renderer = false) const;
-	void refreshToolBar() const;
 	void setUndoManager(UndoManager* manager) const;
 	bool tryClose();
 	bool hasMapOpen(const Archive* archive) const;
