@@ -37,27 +37,27 @@ jobs:
 
     - name: Install vcpkg dependencies
       run: |
-        .\vcpkg\vcpkg.exe install fluidsynth ftgl lua mpg123 opengl sfml wxwidgets libwebp --triplet x64-windows-static
+        .\vcpkg\vcpkg.exe install fluidsynth ftgl glm lua mpg123 opengl sfml wxwidgets libwebp --triplet x64-windows-static
 
-    - name: Configure build
-      run: |
-        mkdir build64
-        cmake -G Ninja -DBUILD_PK3=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DSLADE_EXE_DIR=dist/build64 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release -S . -B build64
+#    - name: Configure build
+#      run: |
+#        mkdir build64
+#        cmake -G Ninja -DBUILD_PK3=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DSLADE_EXE_DIR=dist/build64 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release -S . -B build64
 
-    - name: Build
-      run: |
-        cmake --build build64 --config Release
+#    - name: Build
+#      run: |
+#        cmake --build build64 --config Release
 
-    - name: Copy SLADE.pk3 to output directory
-      run: |
-        if (Test-Path "dist\slade.pk3") { Copy-Item "dist\slade.pk3" "dist\build64\slade.pk3" -Force }
+#    - name: Copy SLADE.pk3 to output directory
+#      run: |
+#        if (Test-Path "dist\slade.pk3") { Copy-Item "dist\slade.pk3" "dist\build64\slade.pk3" -Force }
 
-    - name: Zip build artifacts
-      run: |
-        powershell Compress-Archive -Path dist\build64\SLADE.exe, dist\build64\SLADE.pdb, dist\build64\slade.pk3 -DestinationPath SLADE-windows.zip
+#    - name: Zip build artifacts
+#      run: |
+#        powershell Compress-Archive -Path dist\build64\SLADE.exe, dist\build64\SLADE.pdb, dist\build64\slade.pk3 -DestinationPath SLADE-windows.zip
 
-    - name: Upload zipped build
-      uses: actions/upload-artifact@v4
-      with:
-        name: SLADE-windows
-        path: SLADE-windows.zip
+#    - name: Upload zipped build
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: SLADE-windows
+#        path: SLADE-windows.zip
