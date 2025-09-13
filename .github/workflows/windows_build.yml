@@ -25,6 +25,16 @@ jobs:
         git clone https://github.com/Microsoft/vcpkg.git
         .\vcpkg\bootstrap-vcpkg.bat
 
+    - name: Cache vcpkg artifacts
+      uses: actions/cache@v3
+      with:
+        path: |
+          vcpkg/installed
+          vcpkg/buildtrees
+        key: vcpkg-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-deps-fluidsynth-ftgl-lua-mpg123-opengl-sfml-wxwidgets-libwebp
+        restore-keys: |
+          vcpkg-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-deps-
+
     - name: Install vcpkg dependencies
       run: |
         .\vcpkg\vcpkg.exe install fluidsynth ftgl lua mpg123 opengl sfml wxwidgets libwebp --triplet x64-windows-static
