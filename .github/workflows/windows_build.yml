@@ -57,7 +57,7 @@ jobs:
     - name: Configure build
       run: |
         mkdir build64
-        cmake -G "Ninja" -DBUILD_PK3=ON -DBUILD_WX:BOOL=OFF -DVCPKG_TARGET_TRIPLET:STRING=x64-windows-static -DSLADE_EXE_DIR=dist/build64 -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -S . -B build64
+        cmake -G "Ninja" -DBUILD_PK3=ON -DBUILD_WX:BOOL=OFF -DVCPKG_TARGET_TRIPLET:STRING="x64-windows-static" -DSLADE_EXE_DIR=dist/build64 -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -S . -B build64
 
     - name: Build
       run: |
