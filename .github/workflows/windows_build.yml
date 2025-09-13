@@ -47,7 +47,7 @@ jobs:
         powershell Compress-Archive -Path dist\build64\SLADE.exe, dist\build64\SLADE.pdb, dist\build64\slade.pk3 -DestinationPath SLADE-windows.zip
 
     - name: Upload zipped build
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: SLADE-windows
         path: SLADE-windows.zip
