@@ -40,7 +40,7 @@ jobs:
 
     - name: Install vcpkg dependencies
       run: |
-        .\vcpkg\vcpkg.exe install fluidsynth ftgl glm lua mpg123 opengl sfml wxwidgets wxwidgets[webview] libwebp --triplet x64-windows-static
+        .\vcpkg\vcpkg.exe install fluidsynth ftgl glm lua mpg123 opengl sfml wxwidgets wxwidgets[webview] libwebp --triplet x64-windows-static --recurse
 
     - name: Vcpkg integrate install
       run: .\vcpkg\vcpkg.exe integrate install
