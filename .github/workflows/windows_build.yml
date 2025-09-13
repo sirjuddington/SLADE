@@ -40,7 +40,7 @@ jobs:
 
     - name: Install vcpkg dependencies
       run: |
-        .\vcpkg\vcpkg.exe install fluidsynth ftgl glm lua mpg123 opengl sfml wxwidgets libwebp --triplet x64-windows-static
+        .\vcpkg\vcpkg.exe install fluidsynth ftgl glm lua mpg123 opengl sfml wxwidgets wxwidgets[webview] libwebp --triplet x64-windows-static
 
     - name: Vcpkg integrate install
       run: .\vcpkg\vcpkg.exe integrate install
@@ -57,7 +57,7 @@ jobs:
     - name: Configure build
       run: |
         mkdir build64
-        cmake -G "Ninja" -DBUILD_PK3=ON -DBUILD_WX:BOOL=ON -DVCPKG_TARGET_TRIPLET:STRING=x64-windows-static -DSLADE_EXE_DIR=dist/build64 -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -S . -B build64
+        cmake -G "Ninja" -DBUILD_PK3=ON -DBUILD_WX:BOOL=OFF -DVCPKG_TARGET_TRIPLET:STRING=x64-windows-static -DSLADE_EXE_DIR=dist/build64 -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -S . -B build64
 
     - name: Build
       run: |
