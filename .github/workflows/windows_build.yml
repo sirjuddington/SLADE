@@ -39,10 +39,19 @@ jobs:
       run: |
         .\vcpkg\vcpkg.exe install fluidsynth ftgl glm lua mpg123 opengl sfml wxwidgets libwebp --triplet x64-windows-static
 
+    - name: Clean previous CMake cache
+      run: |
+        if (Test-Path build64) { Remove-Item build64 -Recurse -Force }
+
+    - name: Unset CC/CXX (force MSVC)
+      run: |
+        Remove-Item Env:CC -ErrorAction SilentlyContinue
+        Remove-Item Env:CXX -ErrorAction SilentlyContinue
+
     - name: Configure build
       run: |
         mkdir build64
-        cmake -G Ninja -DBUILD_PK3=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DSLADE_EXE_DIR=dist/build64 -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -S . -B build64
+        cmake -G "Ninja" -A x64 -DBUILD_PK3=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DSLADE_EXE_DIR=dist/build64 -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release [...]
 
     - name: Build
       run: |
