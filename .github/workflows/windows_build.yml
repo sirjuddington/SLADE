@@ -20,6 +20,9 @@ jobs:
     - name: Install Ninja
       uses: seanmiddleditch/gha-setup-ninja@v4
 
+    - name: Setup msvc environment
+      uses: ilammy/msvc-dev-cmd@v1.4.1
+
     - name: Set up vcpkg
       run: |
         git clone https://github.com/Microsoft/vcpkg.git
