@@ -42,14 +42,17 @@ jobs:
       run: |
         .\vcpkg\vcpkg.exe install fluidsynth ftgl glm lua mpg123 opengl sfml wxwidgets libwebp --triplet x64-windows-static
 
-    - name: Clean previous CMake cache
-      run: |
-        if (Test-Path build64) { Remove-Item build64 -Recurse -Force }
+    - name: Vcpkg integrate install
+      run: .\vcpkg\vcpkg.exe integrate install
 
-    - name: Unset CC/CXX (force MSVC)
-      run: |
-        Remove-Item Env:CC -ErrorAction SilentlyContinue
-        Remove-Item Env:CXX -ErrorAction SilentlyContinue
+#    - name: Clean previous CMake cache
+#      run: |
+#        if (Test-Path build64) { Remove-Item build64 -Recurse -Force }
+
+#    - name: Unset CC/CXX (force MSVC)
+#      run: |
+#        Remove-Item Env:CC -ErrorAction SilentlyContinue
+#        Remove-Item Env:CXX -ErrorAction SilentlyContinue
 
     - name: Configure build
       run: |
