@@ -1,0 +1,53 @@
+name: Windows Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows-static
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install Ninja
+      uses: seanmiddleditch/gha-setup-ninja@v4
+
+    - name: Set up vcpkg
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git
+        .\vcpkg\bootstrap-vcpkg.bat
+
+    - name: Install vcpkg dependencies
+      run: |
+        .\vcpkg\vcpkg.exe install fluidsynth ftgl lua mpg123 opengl sfml wxwidgets libwebp --triplet x64-windows-static
+
+    - name: Configure build
+      run: |
+        mkdir build64
+        cmake -G Ninja -DBUILD_PK3=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DSLADE_EXE_DIR=dist/build64 -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -S . -B build64
+
+    - name: Build
+      run: |
+        cmake --build build64 --config Release
+
+    - name: Copy SLADE.pk3 to output directory
+      run: |
+        if (Test-Path "dist\slade.pk3") { Copy-Item "dist\slade.pk3" "dist\build64\slade.pk3" -Force }
+
+    - name: Zip build artifacts
+      run: |
+        powershell Compress-Archive -Path dist\build64\SLADE.exe, dist\build64\SLADE.pdb, dist\build64\slade.pk3 -DestinationPath SLADE-windows.zip
+
+    - name: Upload zipped build
+      uses: actions/upload-artifact@v3
+      with:
+        name: SLADE-windows
+        path: SLADE-windows.zip
