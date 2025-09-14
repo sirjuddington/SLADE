@@ -317,9 +317,9 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->AddSpacer(lh.padLarge());
 	sizer->Add(framesizer, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT).Expand());
-	isp_iwad_ = new IwadSelectionPanel(this, iwad_path);
+	isp_iwad_ = new IwadSelectionPanel(frame, iwad_path);
 	framesizer->Add(
-		wxutil::createLabelHBox(this, "IWAD:", isp_iwad_), lh.sfWithBorder(0, wxTOP | wxLEFT | wxRIGHT).Expand());
+		wxutil::createLabelHBox(frame, "IWAD:", isp_iwad_), lh.sfWithBorder(0, wxTOP | wxLEFT | wxRIGHT).Expand());
 	rac_resources_ = new ResourceArchiveChooser(frame, archive);
 	framesizer->Add(rac_resources_, lh.sfWithBorder(1).Expand());
 
