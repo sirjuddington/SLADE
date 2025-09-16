@@ -288,15 +288,35 @@ void SAuiToolBar::setButtonIcon(string_view button_id, string_view icon)
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the toolbar item with ID [id] is enabled,
+// false if disabled or not found.
+// -----------------------------------------------------------------------------
+bool SAuiToolBar::itemEnabled(string_view id)
+{
+	if (auto item = itemById(id); item && item->aui_item)
+		return itemEnabled(item->aui_item);
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Enables/disables the toolbar item with ID [id].
 // If [refresh] is true, the toolbar will be refreshed after enabling/disabling
 // the item.
 // -----------------------------------------------------------------------------
 void SAuiToolBar::enableItem(string_view id, bool enable, bool refresh)
 {
+	bool changed = false;
+
 	if (auto item = itemById(id); item)
+	{
+		changed = itemEnabled(item->aui_item) != enable;
 		EnableTool(item->wx_id, enable);
+	}
 	else
+		return;
+
+	if (!changed)
 		return;
 
 	if (layout_)
@@ -698,4 +718,15 @@ void SAuiToolBar::setItemChecked(wxAuiToolBarItem* item, bool checked)
 		item->SetState(item->GetState() & ~wxAUI_BUTTON_STATE_CHECKED);
 
 	Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [item] is enabled, false if disabled or null.
+// -----------------------------------------------------------------------------
+bool SAuiToolBar::itemEnabled(wxAuiToolBarItem* item) const
+{
+	if (!item)
+		return false;
+
+	return (item->GetState() & wxAUI_BUTTON_STATE_DISABLED) == 0;
 }

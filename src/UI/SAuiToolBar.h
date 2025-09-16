@@ -28,6 +28,7 @@ public:
 	void setButtonDropdownMenu(string_view button_id, wxMenu* menu);
 	void setButtonIcon(string_view button_id, string_view icon);
 
+	bool itemEnabled(string_view id);
 	void enableItem(string_view id, bool enable = true, bool refresh = true);
 	void enableGroup(string_view group, bool enable = true, bool refresh = true);
 
@@ -90,5 +91,6 @@ private:
 	Group*      groupByName(string_view name);
 
 	void setItemChecked(wxAuiToolBarItem* item, bool checked);
+	bool itemEnabled(wxAuiToolBarItem* item) const;
 };
 } // namespace slade
