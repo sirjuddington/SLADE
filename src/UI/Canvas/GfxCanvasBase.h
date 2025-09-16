@@ -85,6 +85,14 @@ public:
 	void setCropRect(const Recti& rect);
 	void clearCropRect();
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<> view_changed;
+		sigslot::signal<> view_reset;
+	};
+	Signals& signals() { return signals_; }
+
 protected:
 	unique_ptr<SImage> image_;
 	View               view_type_    = View::Default;
@@ -108,7 +116,8 @@ protected:
 	Vec2i              zoom_point_          = { -1, -1 };
 	unique_ptr<Recti>  crop_rect_;
 
-	// Signal connections
+	// Signals/connections
+	Signals                    signals_;
 	sigslot::scoped_connection sc_image_changed_;
 
 	void endOffsetDrag();
@@ -119,7 +128,7 @@ protected:
 	virtual void generateBrushShadow() {}
 	void         generateBrushShadowImage(SImage& img);
 
-	// Wx Events
+	// Wx event handlers
 	void onMouseLeftDown(wxMouseEvent& e);
 	void onMouseRightDown(wxMouseEvent& e);
 	void onMouseLeftUp(wxMouseEvent& e);

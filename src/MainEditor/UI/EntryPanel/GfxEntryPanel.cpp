@@ -207,6 +207,10 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 	spin_curimg_->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onCurImgChanged, this);
 	btn_auto_offset_->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnAutoOffset, this);
 
+	// Enable/disable reset view button whne view changes/resets
+	gfx_canvas_->signals().view_changed.connect([this] { toolbar_->enableItem("reset_view", true); });
+	gfx_canvas_->signals().view_reset.connect([this] { toolbar_->enableItem("reset_view", false); });
+
 	// Apply layout
 	wxWindowBase::Layout();
 }
@@ -373,6 +377,7 @@ void GfxEntryPanel::setupToolbars()
 	toolbar_->registerDropdownMenu("pgfx_setbrush", menu_brushes_);
 	toolbar_->loadLayoutFromResource("entry_gfx_top", false);
 	toolbar_->showGroup("Brush", false);
+	toolbar_->enableItem("reset_view", false);
 
 
 	// --- Left Toolbar ---
@@ -1083,6 +1088,12 @@ void GfxEntryPanel::toolbarButtonClick(const string& action_id)
 		auto checked = toolbar_->toggleItemChecked("toggle_tile");
 		choice_offset_type_->Enable(!checked);
 		applyViewType(entry_.lock().get());
+	}
+
+	else if (action_id == "reset_view")
+	{
+		gfx_canvas_->resetViewOffsets();
+		gfx_canvas_->window()->Refresh();
 	}
 
 	else if (action_id == "tool_drag")

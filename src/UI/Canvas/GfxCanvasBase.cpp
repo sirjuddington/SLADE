@@ -134,6 +134,8 @@ void GfxCanvasBase::resetViewOffsets()
 		view().setOffset(image_->width() / 2., image_->height() / 2.);
 	else
 		view().setOffset(0, 0);
+
+	signals_.view_reset();
 }
 
 // -----------------------------------------------------------------------------
@@ -459,6 +461,7 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 		auto cpos_prev    = view().canvasPos(mouse_prev_);
 
 		view().pan(cpos_prev.x - cpos_current.x, cpos_prev.y - cpos_current.y);
+		signals_.view_changed();
 
 		refresh = true;
 	}
@@ -497,6 +500,7 @@ void GfxCanvasBase::onMouseWheel(wxMouseEvent& e)
 				view().pan(-scroll_amount / view().scale().x, 0);
 
 			window()->Refresh();
+			signals_.view_changed();
 		}
 		else if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 		{
@@ -506,6 +510,7 @@ void GfxCanvasBase::onMouseWheel(wxMouseEvent& e)
 				view().pan(0, -scroll_amount / view().scale().y);
 
 			window()->Refresh();
+			signals_.view_changed();
 		}
 	}
 
@@ -532,24 +537,28 @@ void GfxCanvasBase::onKeyDown(wxKeyEvent& e)
 	{
 		view().pan(0, 8 * view().scale().y);
 		window()->Refresh();
+		signals_.view_changed();
 	}
 
 	else if (e.GetKeyCode() == WXK_DOWN)
 	{
 		view().pan(0, -8 * view().scale().y);
 		window()->Refresh();
+		signals_.view_changed();
 	}
 
 	else if (e.GetKeyCode() == WXK_LEFT)
 	{
 		view().pan(8 * view().scale().x, 0);
 		window()->Refresh();
+		signals_.view_changed();
 	}
 
 	else if (e.GetKeyCode() == WXK_RIGHT)
 	{
 		view().pan(-8 * view().scale().x, 0);
 		window()->Refresh();
+		signals_.view_changed();
 	}
 
 	else

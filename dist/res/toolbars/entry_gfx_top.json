@@ -50,6 +50,13 @@
     // View
     {
       "type": "button",
+      "id": "reset_view",
+      "text": "Reset View",
+      "icon": "reset",
+      "help_text": "Reset the view to the default position"
+    },
+    {
+      "type": "button",
       "id": "toggle_arc",
       "text": "Aspect Ratio Correction",
       "icon": "aspectratio",

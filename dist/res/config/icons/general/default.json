@@ -405,6 +405,10 @@
     "replace": {
       "svg": "icons/general/replace.svg"
     },
+    "reset": {
+      "svg_light": "icons/general/reset.svg",
+      "svg_dark": "icons/general/dark/reset.svg"
+    },
     "revert": {
       "svg_light": "icons/general/revert.svg",
       "svg_dark": "icons/general/dark/revert.svg"
