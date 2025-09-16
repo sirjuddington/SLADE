@@ -525,6 +525,8 @@ void GfxCanvasBase::onMouseWheel(wxMouseEvent& e)
 			linked_zoom_control_->zoomOut(true);
 
 		zoom_point_ = { -1, -1 };
+
+		signals_.view_changed();
 	}
 }
 

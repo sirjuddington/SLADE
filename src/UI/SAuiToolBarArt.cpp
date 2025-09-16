@@ -163,6 +163,9 @@ void SAuiToolBarArt::DrawPlainBackground(wxDC& dc, wxWindow* wnd, const wxRect& 
 // -----------------------------------------------------------------------------
 void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem& item, const wxRect& rect)
 {
+	if (rect.width <= 0 || rect.height <= 0)
+		return;
+
 	auto s_item         = toolbar_ ? toolbar_->itemByWxId(item.GetId()) : nullptr;
 	auto item_show_text = s_item && s_item->show_text;
 	int  text_width = 0, text_height = 0;

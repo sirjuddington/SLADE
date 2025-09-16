@@ -77,12 +77,13 @@ private:
 		wxMenu* menu = nullptr;
 	};
 
-	vector<Item>          items_;
-	vector<Group>         groups_;
-	vector<CustomControl> custom_controls_;
-	vector<DropdownMenu>  dropdown_menus_;
-	unique_ptr<Json>      layout_;
-	wxAuiManager*         aui_mgr_ = nullptr;
+	vector<Item>               items_;
+	vector<Group>              groups_;
+	vector<CustomControl>      custom_controls_;
+	vector<DropdownMenu>       dropdown_menus_;
+	unique_ptr<Json>           layout_;
+	wxAuiManager*              aui_mgr_ = nullptr;
+	sigslot::scoped_connection sc_saction_checked_;
 
 	const Item* itemByWxId(int wx_id) const;
 	Item*       itemByWxId(int wx_id);

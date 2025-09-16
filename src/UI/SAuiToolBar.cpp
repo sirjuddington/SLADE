@@ -122,7 +122,7 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 		});
 
 	// Update relevant checked items when an SAction is checked/unchecked
-	SAction::signals().checked_changed.connect(
+	sc_saction_checked_ = SAction::signals().checked_changed.connect(
 		[this](SAction& action)
 		{
 			if (auto item = itemById(action.id()); item && item->aui_item)
