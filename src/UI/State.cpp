@@ -85,6 +85,7 @@ void ui::initStateProps()
 									  { ENTRYLIST_TYPE_WIDTH, 180 },
 									  { ENTRYLIST_NAME_WIDTH_LIST, 110 },
 									  { ENTRYLIST_NAME_WIDTH_TREE, 190 },
+									  { ENTRYLIST_VIEW_TYPE, 1 },
 									  { ARCHIVEPANEL_SPLIT_POS_LIST, 370 },
 									  { ARCHIVEPANEL_SPLIT_POS_TREE, 450 },
 									  { ARCHIVE_LAST_CREATED_FORMAT, "wad" },

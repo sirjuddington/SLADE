@@ -310,6 +310,10 @@ void database::migrateConfigs()
 				MIGRATE_CVAR_BOOL(elist_colsize_show, ENTRYLIST_SIZE_VISIBLE);
 				MIGRATE_CVAR_BOOL(elist_coltype_show, ENTRYLIST_TYPE_VISIBLE);
 
+				// Entry list type (tree/list)
+				else if (tz.check("elist_no_tree"))
+					ui::saveStateInt(ui::ENTRYLIST_VIEW_TYPE, tz.peek().asBool() ? 0 : 1);
+
 				// Splitter position
 				MIGRATE_CVAR_INT_DIP(ap_splitter_position_list, ARCHIVEPANEL_SPLIT_POS_LIST);
 				MIGRATE_CVAR_INT_DIP(ap_splitter_position_tree, ARCHIVEPANEL_SPLIT_POS_TREE);

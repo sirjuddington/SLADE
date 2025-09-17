@@ -52,6 +52,8 @@ namespace ui
 		ArchiveDir*    dirForDirItem(const wxDataViewItem& item) const;
 		wxDataViewItem createItemForDirectory(const ArchiveDir& dir) const;
 
+		void reload(ViewType view_type);
+
 	private:
 		weak_ptr<Archive>    archive_;
 		weak_ptr<ArchiveDir> root_dir_;
@@ -126,6 +128,7 @@ namespace ui
 		void upDir();
 		void homeDir();
 		void goToDir(const shared_ptr<ArchiveDir>& dir, bool expand = false);
+		void reloadModel(bool tree = true);
 
 		// Overrides
 		void EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column = nullptr) override;

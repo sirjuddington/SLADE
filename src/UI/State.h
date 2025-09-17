@@ -11,6 +11,7 @@ static string ENTRYLIST_TYPE_VISIBLE        = "EntryListTypeVisible";
 static string ENTRYLIST_TYPE_WIDTH          = "EntryListTypeWidth";
 static string ENTRYLIST_NAME_WIDTH_LIST     = "EntryListNameWidthList";
 static string ENTRYLIST_NAME_WIDTH_TREE     = "EntryListNameWidthTree";
+static string ENTRYLIST_VIEW_TYPE           = "EntryListViewType";
 static string ARCHIVEPANEL_SPLIT_POS_LIST   = "ArchivePanelSplitPosList";
 static string ARCHIVEPANEL_SPLIT_POS_TREE   = "ArchivePanelSplitPosTree";
 static string ARCHIVE_LAST_CREATED_FORMAT   = "ArchiveLastCreatedFormat";

@@ -105,7 +105,6 @@ CVAR(Bool, confirm_entry_delete, true, CVar::Flag::Save)
 CVAR(Bool, context_submenus, true, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
 CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
-CVAR(Bool, elist_no_tree, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -395,6 +394,18 @@ void ArchivePanel::bindEvents(Archive* archive)
 	choice_category_->Bind(wxEVT_CHOICE, &ArchivePanel::onChoiceCategoryChanged, this);
 	btn_clear_filter_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
 
+	// Handle misc. entry list toolbar buttons
+	Bind(
+		wxEVT_MENU,
+		[this](wxCommandEvent& e)
+		{
+			auto action = toolbar_elist_->actionFromWxId(e.GetId());
+			if (action == "elist_view_list")
+				setEntryListViewType(false);
+			else if (action == "elist_view_tree")
+				setEntryListViewType(true);
+		});
+
 	// Update splitter position cvar when moved
 	splitter_->Bind(
 		wxEVT_SPLITTER_SASH_POS_CHANGED,
@@ -452,16 +463,19 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
 	panel->SetSizer(hbox);
 
+	bool tree_view = ui::getStateInt(ui::ENTRYLIST_VIEW_TYPE) != 0;
+
 	// Create entry list
-	entry_tree_ = new ui::ArchiveEntryTree(panel, archive, undo_manager_.get(), elist_no_tree);
+	entry_tree_ = new ui::ArchiveEntryTree(panel, archive, undo_manager_.get(), !tree_view);
 	entry_tree_->SetInitialSize(lh.size(400, -1));
 	entry_tree_->SetDropTarget(new APEntryListDropTarget(this, entry_tree_));
 
 	// Create path controls if needed
-	if (has_dirs && elist_no_tree)
+	if (has_dirs)
 	{
 		etree_path_ = new ui::ArchivePathPanel(panel);
 		entry_tree_->setPathPanel(etree_path_);
+		etree_path_->Show(!tree_view);
 	}
 
 	// Entry list toolbar
@@ -471,7 +485,9 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	toolbar_elist_->loadLayoutFromResource("entry_list", false);
 
 	// Setup toolbar item visibility
-	toolbar_elist_->showItem("arch_elist_collapseall", has_dirs && !elist_no_tree, false);
+	toolbar_elist_->showItem("elist_view_list", has_dirs && tree_view, false);
+	toolbar_elist_->showItem("elist_view_tree", has_dirs && !tree_view, false);
+	toolbar_elist_->showItem("arch_elist_collapseall", has_dirs && tree_view, false);
 	toolbar_elist_->showItem("arch_newdir", has_dirs, false);
 	toolbar_elist_->showGroup("Moving", archive->format() != ArchiveFormat::Dir, false);
 
@@ -521,8 +537,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	hbox->Add(vbox, lh.sfWithSmallBorder(1, wxRIGHT).Expand());
 	if (etree_path_)
 	{
-		vbox->Add(etree_path_, wxSizerFlags().Expand());
-		vbox->AddSpacer(lh.padSmall());
+		vbox->Add(etree_path_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
 		vbox->Add(entry_tree_, wxSizerFlags(1).Expand());
 	}
 	else
@@ -530,6 +545,40 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	vbox->Add(panel_filter_, lh.sfWithBorder(0, wxTOP).Expand());
 
 	return panel;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the entry list view type ([tree] or flat list)
+// -----------------------------------------------------------------------------
+void ArchivePanel::setEntryListViewType(bool tree) const
+{
+	auto current_entry = currentEntry();
+	auto archive       = archive_.lock().get();
+	if (!archive)
+		return;
+
+	ui::saveStateInt(ui::ENTRYLIST_VIEW_TYPE, tree ? 1 : 0);
+
+	if (!archive->formatInfo().supports_dirs)
+		tree = false;
+
+	if (etree_path_)
+		etree_path_->Show(!tree);
+	toolbar_elist_->showItem("elist_view_list", tree, false);
+	toolbar_elist_->showItem("elist_view_tree", !tree, false);
+	toolbar_elist_->showItem("arch_elist_collapseall", tree);
+	entry_tree_->reloadModel(tree);
+
+	splitter_->GetWindow1()->Layout();
+	splitter_->GetWindow1()->Update();
+	splitter_->GetWindow1()->Refresh();
+
+	if (current_entry)
+	{
+		auto item = wxDataViewItem(current_entry);
+		entry_tree_->EnsureVisible(item);
+		entry_tree_->Select(item);
+	}
 }
 
 // -----------------------------------------------------------------------------

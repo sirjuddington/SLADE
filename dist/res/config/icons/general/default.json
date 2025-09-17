@@ -252,6 +252,14 @@
     "lines": {
       "svg": "icons/general/lines.svg"
     },
+    "list_flat": {
+      "svg_light": "icons/general/list_flat.svg",
+      "svg_dark": "icons/general/dark/list_flat.svg"
+    },
+    "list_tree": {
+      "svg_light": "icons/general/list_tree.svg",
+      "svg_dark": "icons/general/dark/list_tree.svg"
+    },
     "logo": {
       "svg": "icons/general/logo.svg"
     },

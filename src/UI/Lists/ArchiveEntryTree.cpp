@@ -751,6 +751,24 @@ wxDataViewItem ArchiveViewModel::createItemForDirectory(const ArchiveDir& dir) c
 }
 
 // -----------------------------------------------------------------------------
+// Reloads the model with the specified [view_type] (if supported by the
+// associated archive)
+// -----------------------------------------------------------------------------
+void ArchiveViewModel::reload(ViewType view_type)
+{
+	auto archive = archive_.lock().get();
+	if (!archive)
+		return;
+
+	if (!archive->formatInfo().supports_dirs)
+		view_type = ViewType::List;
+
+	view_type_ = view_type;
+	root_dir_  = archive->rootDir();
+	Cleared();
+}
+
+// -----------------------------------------------------------------------------
 // Returns true if [entry] matches the current filter
 // -----------------------------------------------------------------------------
 bool ArchiveViewModel::matchesFilter(const ArchiveEntry& entry) const
@@ -1686,4 +1704,12 @@ void ArchiveEntryTree::goToDir(const shared_ptr<ArchiveDir>& dir, bool expand)
 				Expand(dir_item);
 		}
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Reloads the list model, in [tree] or list view
+// -----------------------------------------------------------------------------
+void ArchiveEntryTree::reloadModel(bool tree)
+{
+	model_->reload(tree ? ArchiveViewModel::ViewType::Tree : ArchiveViewModel::ViewType::List);
 }

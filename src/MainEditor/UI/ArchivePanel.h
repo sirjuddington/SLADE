@@ -172,5 +172,6 @@ private:
 	void     setup(const Archive* archive);
 	void     bindEvents(Archive* archive);
 	wxPanel* createEntryListPanel(wxWindow* parent);
+	void     setEntryListViewType(bool tree) const;
 };
 } // namespace slade

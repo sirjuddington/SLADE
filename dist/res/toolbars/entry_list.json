@@ -1,6 +1,20 @@
 {
   "items": [
     // Folder
+    {
+      "type": "button",
+      "id": "elist_view_list",
+      "text": "List View",
+      "icon": "list_flat",
+      "help_text": "Switch the entry list to a flat list view"
+    },
+    {
+      "type": "button",
+      "id": "elist_view_tree",
+      "text": "Tree View",
+      "icon": "list_tree",
+      "help_text": "Switch the entry list to a tree view"
+    },
     { "type": "action", "id": "arch_elist_collapseall" },
 
     { "type": "separator" },
