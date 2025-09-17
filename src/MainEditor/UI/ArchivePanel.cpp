@@ -42,7 +42,6 @@
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
 #include "ArchiveManagerPanel.h"
-#include "Database/Tables/ArchiveUIConfig.h"
 #include "EntryPanel/ANSIEntryPanel.h"
 #include "EntryPanel/AudioEntryPanel.h"
 #include "EntryPanel/DataEntryPanel.h"
@@ -366,13 +365,13 @@ void ArchivePanel::setup(const Archive* archive)
 	splitter_->SetMinimumPaneSize(FromDIP(300));
 	m_hbox->AddSpacer(lh.padSmall());
 	m_hbox->Add(splitter_, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
-	auto split_pos = FromDIP(database::archiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive)));
-	if (split_pos < 0)
-		split_pos = FromDIP(
-			ui::getStateInt(
-				archive->formatInfo().supports_dirs ? ui::ARCHIVEPANEL_SPLIT_POS_TREE
-													: ui::ARCHIVEPANEL_SPLIT_POS_LIST));
-	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
+	int split_pos;
+	if (ui::hasSavedState(ui::ARCHIVEPANEL_SPLIT_POS, archive))
+		split_pos = ui::getStateInt(ui::ARCHIVEPANEL_SPLIT_POS, archive);
+	else
+		split_pos = ui::getStateInt(
+			archive->formatInfo().supports_dirs ? ui::ARCHIVEPANEL_SPLIT_POS_TREE : ui::ARCHIVEPANEL_SPLIT_POS_LIST);
+	splitter_->SplitVertically(elist_panel, cur_area_, FromDIP(split_pos));
 
 	// Update size+layout
 	Layout();
@@ -419,7 +418,7 @@ void ArchivePanel::bindEvents(Archive* archive)
 				else
 					ui::saveStateInt(ui::ARCHIVEPANEL_SPLIT_POS_LIST, pos);
 
-				database::saveArchiveUIConfigSplitterPos(app::archiveManager().archiveDbId(*archive), pos);
+				ui::saveStateInt(ui::ARCHIVEPANEL_SPLIT_POS, pos, archive);
 			}
 		});
 

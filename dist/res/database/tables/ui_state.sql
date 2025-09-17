@@ -2,8 +2,13 @@ BEGIN;
 
 CREATE TABLE ui_state
 (
-    name  TEXT PRIMARY KEY,
-    value NONE
+    name       TEXT,
+    value      NONE,
+    archive_id INTEGER REFERENCES archive_file (id) ON DELETE CASCADE,
+    UNIQUE (
+            name,
+            archive_id
+        )
 );
 
 COMMIT;

@@ -144,7 +144,6 @@ namespace ui
 		string            search_;
 
 		void setupColumns();
-		void saveColumnWidths() const;
 		void updateColumnWidths();
 		void saveColumnConfig();
 		void onAnyColumnResized() override;

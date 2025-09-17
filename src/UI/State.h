@@ -9,9 +9,13 @@ static string ENTRYLIST_SIZE_VISIBLE        = "EntryListSizeVisible";
 static string ENTRYLIST_SIZE_WIDTH          = "EntryListSizeWidth";
 static string ENTRYLIST_TYPE_VISIBLE        = "EntryListTypeVisible";
 static string ENTRYLIST_TYPE_WIDTH          = "EntryListTypeWidth";
+static string ENTRYLIST_NAME_WIDTH          = "EntryListNameWidth";
 static string ENTRYLIST_NAME_WIDTH_LIST     = "EntryListNameWidthList";
 static string ENTRYLIST_NAME_WIDTH_TREE     = "EntryListNameWidthTree";
 static string ENTRYLIST_VIEW_TYPE           = "EntryListViewType";
+static string ENTRYLIST_SORT_COLUMN         = "EntryListSortColumn";
+static string ENTRYLIST_SORT_DESCENDING     = "EntryListSortDescending";
+static string ARCHIVEPANEL_SPLIT_POS        = "ArchivePanelSplitPos";
 static string ARCHIVEPANEL_SPLIT_POS_LIST   = "ArchivePanelSplitPosList";
 static string ARCHIVEPANEL_SPLIT_POS_TREE   = "ArchivePanelSplitPosTree";
 static string ARCHIVE_LAST_CREATED_FORMAT   = "ArchiveLastCreatedFormat";
@@ -31,16 +35,16 @@ static string RUNDIALOG_LAST_EXTRA          = "RunDialogLastExtra";
 static string RUNDIALOG_START_3D            = "RunDialogStart3d";
 
 void initStateProps();
-bool hasSavedState(const char* name);
+bool hasSavedState(string_view name, const Archive* archive = nullptr);
 
-bool   getStateBool(string_view name);
-int    getStateInt(string_view name);
-double getStateFloat(string_view name);
-string getStateString(string_view name);
+bool   getStateBool(string_view name, const Archive* archive = nullptr);
+int    getStateInt(string_view name, const Archive* archive = nullptr);
+double getStateFloat(string_view name, const Archive* archive = nullptr);
+string getStateString(string_view name, const Archive* archive = nullptr);
 
-void saveStateBool(string_view name, bool value);
-void saveStateInt(string_view name, int value);
-void saveStateFloat(string_view name, double value);
-void saveStateString(string_view name, string_view value);
-void toggleStateBool(string_view name);
+void saveStateBool(string_view name, bool value, const Archive* archive = nullptr);
+void saveStateInt(string_view name, int value, const Archive* archive = nullptr);
+void saveStateFloat(string_view name, double value, const Archive* archive = nullptr);
+void saveStateString(string_view name, string_view value, const Archive* archive = nullptr);
+void toggleStateBool(string_view name, const Archive* archive = nullptr);
 } // namespace slade::ui

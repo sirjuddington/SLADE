@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "State.h"
+#include "App.h"
+#include "Archive/ArchiveManager.h"
 #include "Database/Context.h"
 #include "Database/Statement.h"
 #include "Utility/Named.h"
@@ -48,8 +50,8 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace
 {
-string get_ui_state = "SELECT value FROM ui_state WHERE name = ?";
-string put_ui_state = "INSERT OR REPLACE INTO ui_state (name, value) VALUES (?,?)";
+string get_ui_state = "SELECT value FROM ui_state WHERE name = ? AND archive_id = ?";
+string put_ui_state = "INSERT OR REPLACE INTO ui_state (name, value, archive_id) VALUES (?,?,?)";
 } // namespace
 
 
@@ -60,12 +62,18 @@ string put_ui_state = "INSERT OR REPLACE INTO ui_state (name, value) VALUES (?,?
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-template<typename T> void saveState(string_view name, T value)
+template<typename T> void saveState(string_view name, T value, int64_t archive_id)
 {
 	auto ps = database::context().preparedStatement("put_ui_state", put_ui_state, true);
 	ps.bind(1, name);
 	ps.bind(2, value);
+	ps.bind(3, archive_id);
 	ps.exec();
+}
+
+inline int64_t archiveDbId(const Archive* archive)
+{
+	return archive ? app::archiveManager().archiveDbId(*archive) : 0;
 }
 } // namespace slade::ui
 
@@ -101,7 +109,7 @@ void ui::initStateProps()
 									  { SETUP_WIZARD_RUN, false } };
 
 	auto ps = database::context().preparedStatement(
-		"init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?)", true);
+		"init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?,?)", true);
 
 	for (const auto& prop : props)
 	{
@@ -115,6 +123,7 @@ void ui::initStateProps()
 		case 4:  ps.bind(2, std::get<string>(prop.value)); break;
 		default: continue;
 		}
+		ps.bind(3, 0);
 
 		ps.exec();
 		ps.reset();
@@ -122,116 +131,171 @@ void ui::initStateProps()
 }
 
 // -----------------------------------------------------------------------------
-// Returns true if saved state [name] exists in the database
+// Returns true if saved state [name] exists in the database for [archive].
+// If no archive is given the global saved state is checked
 // -----------------------------------------------------------------------------
-bool ui::hasSavedState(const char* name)
+bool ui::hasSavedState(string_view name, const Archive* archive)
 {
-	auto ps = database::context().preparedStatement("ui_has_saved_state", "SELECT * FROM ui_state WHERE name = ?");
+	auto ps = database::context().preparedStatement(
+		"ui_has_saved_state", "SELECT * FROM ui_state WHERE name = ? AND archive_id = ?");
 	ps.bind(1, name);
+	ps.bind(2, archiveDbId(archive));
 	return ps.executeStep();
 }
 
 // -----------------------------------------------------------------------------
-// Returns boolean UI state value [name]
+// Returns boolean UI state value [name] for [archive].
+// If no archive is given or the value is not set for the archive, the global
+// value is returned
 // -----------------------------------------------------------------------------
-bool ui::getStateBool(string_view name)
+bool ui::getStateBool(string_view name, const Archive* archive)
 {
 	auto val = false;
 
 	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
 	ps.bind(1, name);
+	ps.bind(2, archiveDbId(archive));
 	if (ps.executeStep())
 		val = ps.getColumn(0).getInt() > 0;
+	else if (archive)
+	{
+		// No value for the archive, get global value
+		ps.reset();
+		ps.bind(2, 0);
+		if (ps.executeStep())
+			val = ps.getColumn(0).getInt() > 0;
+	}
 
 	return val;
 }
 
 // -----------------------------------------------------------------------------
-// Returns int UI state value [name]
+// Returns int UI state value [name] for [archive].
+// If no archive is given or the value is not set for the archive, the global
+// value is returned
 // -----------------------------------------------------------------------------
-int ui::getStateInt(string_view name)
+int ui::getStateInt(string_view name, const Archive* archive)
 {
 	auto val = 0;
 
 	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
 	ps.bind(1, name);
+	ps.bind(2, archiveDbId(archive));
 	if (ps.executeStep())
 		val = ps.getColumn(0).getInt();
+	else if (archive)
+	{
+		// No value for the archive, get global value
+		ps.reset();
+		ps.bind(2, 0);
+		if (ps.executeStep())
+			val = ps.getColumn(0).getInt();
+	}
 
 	return val;
 }
 
 // -----------------------------------------------------------------------------
-// Returns float UI state value [name]
+// Returns float UI state value [name] for [archive].
+// If no archive is given or the value is not set for the archive, the global
+// value is returned
 // -----------------------------------------------------------------------------
-double ui::getStateFloat(string_view name)
+double ui::getStateFloat(string_view name, const Archive* archive)
 {
 	auto val = 0.;
 
 	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
 	ps.bind(1, name);
+	ps.bind(2, archiveDbId(archive));
 	if (ps.executeStep())
 		val = ps.getColumn(0).getDouble();
+	else if (archive)
+	{
+		// No value for the archive, get global value
+		ps.reset();
+		ps.bind(2, 0);
+		if (ps.executeStep())
+			val = ps.getColumn(0).getDouble();
+	}
 
 	return val;
 }
 
 // -----------------------------------------------------------------------------
-// Returns string UI state value [name]
+// Returns string UI state value [name] for [archive].
+// If no archive is given or the value is not set for the archive, the global
+// value is returned
 // -----------------------------------------------------------------------------
-string ui::getStateString(string_view name)
+string ui::getStateString(string_view name, const Archive* archive)
 {
 	string val;
 
 	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
 	ps.bind(1, name);
+	ps.bind(2, archiveDbId(archive));
 	if (ps.executeStep())
 		val = ps.getColumn(0).getString();
+	else if (archive)
+	{
+		// No value for the archive, get global value
+		ps.reset();
+		ps.bind(2, 0);
+		if (ps.executeStep())
+			val = ps.getColumn(0).getString();
+	}
 
 	return val;
 }
 
 // -----------------------------------------------------------------------------
-// Sets UI boolean state [name] to [value] in the database
+// Sets UI boolean state [name] for [archive] to [value] in the database.
+// If no archive is given, the global value is set
 // -----------------------------------------------------------------------------
-void ui::saveStateBool(string_view name, bool value)
+void ui::saveStateBool(string_view name, bool value, const Archive* archive)
 {
-	return saveState<bool>(name, value);
+	return saveState<bool>(name, value, archiveDbId(archive));
 }
 
 // -----------------------------------------------------------------------------
-// Sets UI int state [name] to [value] in the database
+// Sets UI int state [name] for [archive] to [value] in the database.
+// If no archive is given, the global value is set
 // -----------------------------------------------------------------------------
-void ui::saveStateInt(string_view name, int value)
+void ui::saveStateInt(string_view name, int value, const Archive* archive)
 {
-	return saveState<int>(name, value);
+	return saveState<int>(name, value, archiveDbId(archive));
 }
 
 // -----------------------------------------------------------------------------
-// Sets UI float state [name] to [value] in the database
+// Sets UI float state [name] for [archive] to [value] in the database.
+// If no archive is given, the global value is set
 // -----------------------------------------------------------------------------
-void ui::saveStateFloat(string_view name, double value)
+void ui::saveStateFloat(string_view name, double value, const Archive* archive)
 {
-	return saveState<double>(name, value);
+	return saveState<double>(name, value, archiveDbId(archive));
 }
 
 // -----------------------------------------------------------------------------
-// Sets UI string state [name] to [value] in the database
+// Sets UI string state [name] for [archive] to [value] in the database.
+// If no archive is given, the global value is set
 // -----------------------------------------------------------------------------
-void ui::saveStateString(string_view name, string_view value)
+void ui::saveStateString(string_view name, string_view value, const Archive* archive)
 {
-	return saveState<string_view>(name, value);
+	return saveState<string_view>(name, value, archiveDbId(archive));
 }
 
 // -----------------------------------------------------------------------------
-// Toggles UI boolean state [name]
+// Toggles UI boolean state [name] for [archive].
+// If no archive is given, the global value is toggled
 // -----------------------------------------------------------------------------
-void ui::toggleStateBool(string_view name)
+void ui::toggleStateBool(string_view name, const Archive* archive)
 {
 	auto ps = database::context().preparedStatement(
-		"toggle_ui_state_bool", "UPDATE ui_state SET value = CASE value WHEN 0 THEN 1 ELSE 0 END WHERE name = ?", true);
+		"toggle_ui_state_bool",
+		"UPDATE ui_state SET value = CASE value WHEN 0 THEN 1 ELSE 0 END WHERE name = ? AND archive_id = ?",
+		true);
 	{
 		ps.bind(1, name);
+		ps.bind(2, archiveDbId(archive));
 		ps.exec();
 	}
 }
