@@ -89,7 +89,7 @@ void ArchiveFile::read(Statement& ps)
 	format_id     = ps.getColumn(4).getString();
 	last_opened   = ps.getColumn(5).getInt64();
 	last_modified = ps.getColumn(6).getInt64();
-	parent_id     = ps.getColumn(7).getInt64();
+	parent_id     = ps.getInt64(7);
 }
 
 // -----------------------------------------------------------------------------
@@ -195,12 +195,12 @@ void ArchiveFile::remove()
 // Returns the archive_file row id for [path] (in [parent_id] if given),
 // or -1 if it does not exist in the database
 // -----------------------------------------------------------------------------
-i64 database::archiveFileId(const string& path, i64 parent_id)
+i64 database::archiveFileId(const string& path, optional<i64> parent_id)
 {
 	i64 archive_id = -1;
 
 	auto ps = context().preparedStatement(
-		"get_archive_id", "SELECT id FROM archive_file WHERE path = ? AND parent_id = ?");
+		"get_archive_id", "SELECT id FROM archive_file WHERE path = ? AND parent_id IS ?");
 
 	ps.bind(1, path);
 	ps.bind(2, parent_id);
@@ -291,7 +291,6 @@ i64 database::writeArchiveFile(const Archive& archive)
 	else
 	{
 		// Archive file/dir on disk
-		archive_file.parent_id = -1;
 		if (fileutil::fileExists(archive.filename()))
 		{
 			SFile file{ archive.filename() };
@@ -326,7 +325,7 @@ vector<string> database::recentFiles(unsigned count)
 	auto ps = context().preparedStatement(
 		"recent_files",
 		"SELECT path FROM archive_file "
-		"WHERE last_opened > 0 AND parent_id < 0 "
+		"WHERE last_opened > 0 AND parent_id IS NULL "
 		"ORDER BY last_opened DESC LIMIT ?");
 	ps.bind(1, count);
 

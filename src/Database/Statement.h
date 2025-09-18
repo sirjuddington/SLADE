@@ -18,9 +18,10 @@ public:
 
 	SQLite::Statement& statement() const { return *statement_; }
 
-	void bind(int index, int32_t value) const;
-	void bind(int index, uint32_t value) const;
-	void bind(int index, int64_t value) const;
+	void bind(int index, i32 value) const;
+	void bind(int index, u32 value) const;
+	void bind(int index, i64 value) const;
+	void bind(int index, optional<i64> value) const;
 	void bind(int index, double value) const;
 	void bind(int index, const string& value) const;
 	void bind(int index, const char* value) const;
@@ -39,6 +40,12 @@ public:
 	SQLite::Column getColumn(int index) const;
 	SQLite::Column getColumn(const string& name) const;
 	SQLite::Column getColumn(string_view name) const;
+
+	optional<i32>    getInt32(int index) const;
+	optional<u32>    getUInt32(int index) const;
+	optional<i64>    getInt64(int index) const;
+	optional<double> getDouble(int index) const;
+	optional<string> getString(int index) const;
 
 private:
 	SQLite::Statement* statement_ = nullptr;

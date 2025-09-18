@@ -50,8 +50,9 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace
 {
-string get_ui_state = "SELECT value FROM ui_state WHERE name = ? AND archive_id = ?";
-string put_ui_state = "INSERT OR REPLACE INTO ui_state (name, value, archive_id) VALUES (?,?,?)";
+string get_ui_state    = "SELECT value FROM ui_state WHERE name = ? AND archive_id IS ?";
+string insert_ui_state = "INSERT INTO ui_state (name, value, archive_id) VALUES (?,?,?)";
+string update_ui_state = "UPDATE ui_state SET value = ? WHERE name = ? AND archive_id IS ?";
 } // namespace
 
 
@@ -62,18 +63,40 @@ string put_ui_state = "INSERT OR REPLACE INTO ui_state (name, value, archive_id)
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-template<typename T> void saveState(string_view name, T value, int64_t archive_id)
+bool hasSavedState(string_view name, optional<i64> archive_id)
 {
-	auto ps = database::context().preparedStatement("put_ui_state", put_ui_state, true);
+	auto ps = database::context().preparedStatement(
+		"ui_has_saved_state", "SELECT archive_id FROM ui_state WHERE name = ? AND archive_id IS ?");
 	ps.bind(1, name);
-	ps.bind(2, value);
-	ps.bind(3, archive_id);
-	ps.exec();
+	ps.bind(2, archive_id);
+	return ps.executeStep();
 }
 
-inline int64_t archiveDbId(const Archive* archive)
+template<typename T> void saveState(string_view name, T value, optional<i64> archive_id)
 {
-	return archive ? app::archiveManager().archiveDbId(*archive) : 0;
+	if (hasSavedState(name, archive_id))
+	{
+		auto ps = database::context().preparedStatement("update_ui_state", update_ui_state, true);
+		ps.bind(1, value);
+		ps.bind(2, name);
+		ps.bind(3, archive_id);
+		ps.exec();
+	}
+	else
+	{
+		auto ps = database::context().preparedStatement("insert_ui_state", insert_ui_state, true);
+		ps.bind(1, name);
+		ps.bind(2, value);
+		ps.bind(3, archive_id);
+		ps.exec();
+	}
+}
+
+inline optional<i64> archiveDbId(const Archive* archive)
+{
+	if (archive)
+		return app::archiveManager().archiveDbId(*archive);
+	return {};
 }
 } // namespace slade::ui
 
@@ -108,11 +131,13 @@ void ui::initStateProps()
 									  { SCRIPTMANAGERWINDOW_MAXIMIZED, false },
 									  { SETUP_WIZARD_RUN, false } };
 
-	auto ps = database::context().preparedStatement(
-		"init_ui_state", "INSERT OR IGNORE INTO ui_state VALUES (?,?,?)", true);
+	auto ps = database::context().preparedStatement("init_ui_state", "INSERT INTO ui_state VALUES (?,?,?)", true);
 
 	for (const auto& prop : props)
 	{
+		if (hasSavedState(prop.name, std::nullopt))
+			continue;
+
 		ps.bind(1, prop.name);
 		switch (prop.value.index())
 		{
@@ -123,7 +148,7 @@ void ui::initStateProps()
 		case 4:  ps.bind(2, std::get<string>(prop.value)); break;
 		default: continue;
 		}
-		ps.bind(3, 0);
+		ps.bind(3);
 
 		ps.exec();
 		ps.reset();
@@ -136,11 +161,7 @@ void ui::initStateProps()
 // -----------------------------------------------------------------------------
 bool ui::hasSavedState(string_view name, const Archive* archive)
 {
-	auto ps = database::context().preparedStatement(
-		"ui_has_saved_state", "SELECT * FROM ui_state WHERE name = ? AND archive_id = ?");
-	ps.bind(1, name);
-	ps.bind(2, archiveDbId(archive));
-	return ps.executeStep();
+	return hasSavedState(name, archiveDbId(archive));
 }
 
 // -----------------------------------------------------------------------------
@@ -161,7 +182,7 @@ bool ui::getStateBool(string_view name, const Archive* archive)
 	{
 		// No value for the archive, get global value
 		ps.reset();
-		ps.bind(2, 0);
+		ps.bind(2);
 		if (ps.executeStep())
 			val = ps.getColumn(0).getInt() > 0;
 	}
@@ -187,7 +208,7 @@ int ui::getStateInt(string_view name, const Archive* archive)
 	{
 		// No value for the archive, get global value
 		ps.reset();
-		ps.bind(2, 0);
+		ps.bind(2);
 		if (ps.executeStep())
 			val = ps.getColumn(0).getInt();
 	}
@@ -213,7 +234,7 @@ double ui::getStateFloat(string_view name, const Archive* archive)
 	{
 		// No value for the archive, get global value
 		ps.reset();
-		ps.bind(2, 0);
+		ps.bind(2);
 		if (ps.executeStep())
 			val = ps.getColumn(0).getDouble();
 	}
@@ -239,7 +260,7 @@ string ui::getStateString(string_view name, const Archive* archive)
 	{
 		// No value for the archive, get global value
 		ps.reset();
-		ps.bind(2, 0);
+		ps.bind(2);
 		if (ps.executeStep())
 			val = ps.getColumn(0).getString();
 	}
@@ -256,10 +277,10 @@ string ui::getStateString(string_view name, const Archive* archive)
 void ui::saveStateBool(string_view name, bool value, const Archive* archive, bool save_global)
 {
 	auto db_id = archiveDbId(archive);
-	if (db_id > 0)
+	if (db_id.has_value())
 		saveState<bool>(name, value, db_id);
-	if (db_id == 0 || save_global)
-		saveState<bool>(name, value, 0);
+	if (!db_id.has_value() || save_global)
+		saveState<bool>(name, value, std::nullopt);
 }
 
 // -----------------------------------------------------------------------------
@@ -271,10 +292,10 @@ void ui::saveStateBool(string_view name, bool value, const Archive* archive, boo
 void ui::saveStateInt(string_view name, int value, const Archive* archive, bool save_global)
 {
 	auto db_id = archiveDbId(archive);
-	if (db_id > 0)
+	if (db_id.has_value())
 		saveState<int>(name, value, db_id);
-	if (db_id == 0 || save_global)
-		saveState<int>(name, value, 0);
+	if (!db_id.has_value() || save_global)
+		saveState<int>(name, value, std::nullopt);
 }
 
 // -----------------------------------------------------------------------------
@@ -286,10 +307,10 @@ void ui::saveStateInt(string_view name, int value, const Archive* archive, bool 
 void ui::saveStateFloat(string_view name, double value, const Archive* archive, bool save_global)
 {
 	auto db_id = archiveDbId(archive);
-	if (db_id > 0)
+	if (db_id.has_value())
 		saveState<double>(name, value, db_id);
-	if (db_id == 0 || save_global)
-		saveState<double>(name, value, 0);
+	if (!db_id.has_value() || save_global)
+		saveState<double>(name, value, std::nullopt);
 }
 
 // -----------------------------------------------------------------------------
@@ -301,10 +322,10 @@ void ui::saveStateFloat(string_view name, double value, const Archive* archive, 
 void ui::saveStateString(string_view name, string_view value, const Archive* archive, bool save_global)
 {
 	auto db_id = archiveDbId(archive);
-	if (db_id > 0)
+	if (db_id.has_value())
 		saveState<string_view>(name, value, db_id);
-	if (db_id == 0 || save_global)
-		saveState<string_view>(name, value, 0);
+	if (!db_id.has_value() || save_global)
+		saveState<string_view>(name, value, std::nullopt);
 }
 
 // -----------------------------------------------------------------------------
@@ -315,7 +336,7 @@ void ui::toggleStateBool(string_view name, const Archive* archive)
 {
 	auto ps = database::context().preparedStatement(
 		"toggle_ui_state_bool",
-		"UPDATE ui_state SET value = CASE value WHEN 0 THEN 1 ELSE 0 END WHERE name = ? AND archive_id = ?",
+		"UPDATE ui_state SET value = CASE value WHEN 0 THEN 1 ELSE 0 END WHERE name = ? AND archive_id IS ?",
 		true);
 	{
 		ps.bind(1, name);

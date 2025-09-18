@@ -25,6 +25,7 @@ typedef unsigned __int64 uint64_t;
 #define WX_FMT(...) wxString::FromUTF8(fmt::format(__VA_ARGS__))
 
 // Usings for common std types, to avoid std:: spam
+using std::optional;
 using std::shared_ptr;
 using std::string;
 using std::string_view;

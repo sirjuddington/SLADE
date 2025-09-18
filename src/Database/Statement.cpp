@@ -66,7 +66,7 @@ Statement::~Statement()
 // -----------------------------------------------------------------------------
 // Binds an int [value] to the statement at the given [index]
 // -----------------------------------------------------------------------------
-void Statement::bind(int index, int32_t value) const
+void Statement::bind(int index, i32 value) const
 {
 	statement_->bind(index, value);
 }
@@ -74,7 +74,7 @@ void Statement::bind(int index, int32_t value) const
 // -----------------------------------------------------------------------------
 // Binds an unsigned int [value] to the statement at the given [index]
 // -----------------------------------------------------------------------------
-void Statement::bind(int index, uint32_t value) const
+void Statement::bind(int index, u32 value) const
 {
 	statement_->bind(index, value);
 }
@@ -82,9 +82,21 @@ void Statement::bind(int index, uint32_t value) const
 // -----------------------------------------------------------------------------
 // Binds a 64-bit int [value] to the statement at the given [index]
 // -----------------------------------------------------------------------------
-void Statement::bind(int index, int64_t value) const
+void Statement::bind(int index, i64 value) const
 {
 	statement_->bind(index, value);
+}
+
+// -----------------------------------------------------------------------------
+// Binds an optional 64-bit int [value] to the statement at the given [index].
+// If [value] is empty, binds a NULL instead
+// -----------------------------------------------------------------------------
+void Statement::bind(int index, optional<i64> value) const
+{
+	if (value)
+		statement_->bind(index, *value);
+	else
+		statement_->bind(index);
 }
 
 // -----------------------------------------------------------------------------
@@ -142,7 +154,7 @@ void Statement::bind(int index) const
 // ---------------------------------------------------------------------------
 void Statement::bindDateTime(int index, time_t value) const
 {
-	statement_->bind(index, static_cast<int64_t>(value));
+	statement_->bind(index, static_cast<i64>(value));
 }
 
 // -----------------------------------------------------------------------------
@@ -220,4 +232,64 @@ SQLite::Column Statement::getColumn(const string& name) const
 SQLite::Column Statement::getColumn(string_view name) const
 {
 	return statement_->getColumn(string{ name }.c_str());
+}
+
+// -----------------------------------------------------------------------------
+// Returns the int32 value of the column at the given [index] in the current row
+// of results, or empty if the column is NULL
+// -----------------------------------------------------------------------------
+optional<i32> Statement::getInt32(int index) const
+{
+	auto col = statement_->getColumn(index);
+	if (col.isNull())
+		return {};
+	return col.getInt();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the uint32 value of the column at the given [index] in the current
+// row of results, or empty if the column is NULL
+// -----------------------------------------------------------------------------
+optional<u32> Statement::getUInt32(int index) const
+{
+	auto col = statement_->getColumn(index);
+	if (col.isNull())
+		return {};
+	return col.getUInt();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the int64 value of the column at the given [index] in the current row
+// of results, or empty if the column is NULL
+// -----------------------------------------------------------------------------
+optional<i64> Statement::getInt64(int index) const
+{
+	auto col = statement_->getColumn(index);
+	if (col.isNull())
+		return {};
+	return col.getInt64();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the double value of the column at the given [index] in the current
+// row of results, or empty if the column is NULL
+// -----------------------------------------------------------------------------
+optional<double> Statement::getDouble(int index) const
+{
+	auto col = statement_->getColumn(index);
+	if (col.isNull())
+		return {};
+	return col.getDouble();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the string value of the column at the given [index] in the current
+// row of results, or empty if the column is NULL
+// -----------------------------------------------------------------------------
+optional<string> Statement::getString(int index) const
+{
+	auto col = statement_->getColumn(index);
+	if (col.isNull())
+		return {};
+	return col.getString();
 }
