@@ -249,38 +249,62 @@ string ui::getStateString(string_view name, const Archive* archive)
 
 // -----------------------------------------------------------------------------
 // Sets UI boolean state [name] for [archive] to [value] in the database.
-// If no archive is given, the global value is set
+// If no archive is given, the global value is set.
+// If an archive is given and [save_global] is true, the value will also be
+// saved as the global value
 // -----------------------------------------------------------------------------
-void ui::saveStateBool(string_view name, bool value, const Archive* archive)
+void ui::saveStateBool(string_view name, bool value, const Archive* archive, bool save_global)
 {
-	return saveState<bool>(name, value, archiveDbId(archive));
+	auto db_id = archiveDbId(archive);
+	if (db_id > 0)
+		saveState<bool>(name, value, db_id);
+	if (db_id == 0 || save_global)
+		saveState<bool>(name, value, 0);
 }
 
 // -----------------------------------------------------------------------------
 // Sets UI int state [name] for [archive] to [value] in the database.
-// If no archive is given, the global value is set
+// If no archive is given, the global value is set.
+// If an archive is given and [save_global] is true, the value will also be
+// saved as the global value
 // -----------------------------------------------------------------------------
-void ui::saveStateInt(string_view name, int value, const Archive* archive)
+void ui::saveStateInt(string_view name, int value, const Archive* archive, bool save_global)
 {
-	return saveState<int>(name, value, archiveDbId(archive));
+	auto db_id = archiveDbId(archive);
+	if (db_id > 0)
+		saveState<int>(name, value, db_id);
+	if (db_id == 0 || save_global)
+		saveState<int>(name, value, 0);
 }
 
 // -----------------------------------------------------------------------------
 // Sets UI float state [name] for [archive] to [value] in the database.
-// If no archive is given, the global value is set
+// If no archive is given, the global value is set.
+// If an archive is given and [save_global] is true, the value will also be
+// saved as the global value
 // -----------------------------------------------------------------------------
-void ui::saveStateFloat(string_view name, double value, const Archive* archive)
+void ui::saveStateFloat(string_view name, double value, const Archive* archive, bool save_global)
 {
-	return saveState<double>(name, value, archiveDbId(archive));
+	auto db_id = archiveDbId(archive);
+	if (db_id > 0)
+		saveState<double>(name, value, db_id);
+	if (db_id == 0 || save_global)
+		saveState<double>(name, value, 0);
 }
 
 // -----------------------------------------------------------------------------
 // Sets UI string state [name] for [archive] to [value] in the database.
-// If no archive is given, the global value is set
+// If no archive is given, the global value is set.
+// If an archive is given and [save_global] is true, the value will also be
+// saved as the global value
 // -----------------------------------------------------------------------------
-void ui::saveStateString(string_view name, string_view value, const Archive* archive)
+void ui::saveStateString(string_view name, string_view value, const Archive* archive, bool save_global)
 {
-	return saveState<string_view>(name, value, archiveDbId(archive));
+	auto db_id = archiveDbId(archive);
+	if (db_id > 0)
+		saveState<string_view>(name, value, db_id);
+	if (db_id == 0 || save_global)
+		saveState<string_view>(name, value, 0);
 }
 
 // -----------------------------------------------------------------------------

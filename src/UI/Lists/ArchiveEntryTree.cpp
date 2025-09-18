@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -1604,8 +1604,7 @@ void ArchiveEntryTree::onAnyColumnResized()
 	if (col_index_->IsShown())
 	{
 		auto width = ToDIP(col_index_->GetWidth());
-		saveStateInt(ENTRYLIST_INDEX_WIDTH, width);
-		saveStateInt(ENTRYLIST_INDEX_WIDTH, width, archive);
+		saveStateInt(ENTRYLIST_INDEX_WIDTH, width, archive, true);
 	}
 
 	// Name
@@ -1621,16 +1620,14 @@ void ArchiveEntryTree::onAnyColumnResized()
 	if (col_size_ != last_col && col_size_->IsShown())
 	{
 		auto width = ToDIP(col_size_->GetWidth());
-		saveStateInt(ENTRYLIST_SIZE_WIDTH, width);
-		saveStateInt(ENTRYLIST_SIZE_WIDTH, width, archive);
+		saveStateInt(ENTRYLIST_SIZE_WIDTH, width, archive, true);
 	}
 
 	// Type
 	if (col_type_ != last_col && col_type_->IsShown())
 	{
 		auto width = ToDIP(col_type_->GetWidth());
-		saveStateInt(ENTRYLIST_TYPE_WIDTH, width);
-		saveStateInt(ENTRYLIST_TYPE_WIDTH, width, archive);
+		saveStateInt(ENTRYLIST_TYPE_WIDTH, width, archive, true);
 	}
 }
 

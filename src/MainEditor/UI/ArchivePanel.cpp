@@ -462,7 +462,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
 	panel->SetSizer(hbox);
 
-	bool tree_view = ui::getStateInt(ui::ENTRYLIST_VIEW_TYPE) != 0;
+	bool tree_view = ui::getStateInt(ui::ENTRYLIST_VIEW_TYPE, archive.get()) != 0;
 
 	// Create entry list
 	entry_tree_ = new ui::ArchiveEntryTree(panel, archive, undo_manager_.get(), !tree_view);
@@ -556,7 +556,7 @@ void ArchivePanel::setEntryListViewType(bool tree) const
 	if (!archive)
 		return;
 
-	ui::saveStateInt(ui::ENTRYLIST_VIEW_TYPE, tree ? 1 : 0);
+	ui::saveStateInt(ui::ENTRYLIST_VIEW_TYPE, tree ? 1 : 0, archive, true);
 
 	if (!archive->formatInfo().supports_dirs)
 		tree = false;

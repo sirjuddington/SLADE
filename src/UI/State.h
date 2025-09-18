@@ -42,9 +42,9 @@ int    getStateInt(string_view name, const Archive* archive = nullptr);
 double getStateFloat(string_view name, const Archive* archive = nullptr);
 string getStateString(string_view name, const Archive* archive = nullptr);
 
-void saveStateBool(string_view name, bool value, const Archive* archive = nullptr);
-void saveStateInt(string_view name, int value, const Archive* archive = nullptr);
-void saveStateFloat(string_view name, double value, const Archive* archive = nullptr);
-void saveStateString(string_view name, string_view value, const Archive* archive = nullptr);
+void saveStateBool(string_view name, bool value, const Archive* archive = nullptr, bool save_global = false);
+void saveStateInt(string_view name, int value, const Archive* archive = nullptr, bool save_global = false);
+void saveStateFloat(string_view name, double value, const Archive* archive = nullptr, bool save_global = false);
+void saveStateString(string_view name, string_view value, const Archive* archive = nullptr, bool save_global = false);
 void toggleStateBool(string_view name, const Archive* archive = nullptr);
 } // namespace slade::ui
