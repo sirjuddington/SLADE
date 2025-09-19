@@ -3,7 +3,7 @@
 namespace slade
 {
 class GfxCanvasBase;
-class SToolBarButton;
+class SIconButton;
 class CTextureCanvasBase;
 
 namespace ui
@@ -25,8 +25,8 @@ namespace ui
 
 	private:
 		wxComboBox*         cb_zoom_               = nullptr;
-		SToolBarButton*     btn_zoom_out_          = nullptr;
-		SToolBarButton*     btn_zoom_in_           = nullptr;
+		SIconButton*        btn_zoom_out_          = nullptr;
+		SIconButton*        btn_zoom_in_           = nullptr;
 		GfxCanvasBase*      linked_gfx_canvas_     = nullptr;
 		CTextureCanvasBase* linked_texture_canvas_ = nullptr;
 

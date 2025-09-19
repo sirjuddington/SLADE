@@ -61,6 +61,7 @@ public:
 	// Misc
 	bool     fillData(uint8_t val) const;
 	uint32_t crc() const;
+	string   hash() const;
 	string   asString(uint32_t offset = 0, uint32_t length = 0) const;
 	uint8_t* releaseData();
 

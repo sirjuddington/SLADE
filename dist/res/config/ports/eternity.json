@@ -1,0 +1,89 @@
+{
+  "id": "eternity",
+  "name": "Eternity",
+
+  // Supported games
+  "games": [ "doom", "doom2", "chex1" ],
+
+  // Supported map formats
+  "map_formats": [ "doom", "udmf" ],
+
+  "configuration": [
+    // Base configuration
+    {
+      "map_name_any": true,
+      "mix_tex_flats": true,
+      "tx_textures": true,
+      "light_level_interval": 8,
+
+      // Thing types
+      "thing_types": {
+        "import": [
+          "include/thing_types/boom.json",
+          "include/thing_types/mbf.json",
+          "include/thing_types/eternity.json"
+        ]
+      },
+
+      // Thing flags
+      "thing_flags": {
+        "import": [ "include/thing_flags/eternity.json" ]
+      },
+
+      // Line flags
+      "line_flags": {
+        "import": [ "include/line_flags/eternity.json" ]
+      }
+    },
+
+    // Doom map format configuration
+    {
+      // Enable boom extensions
+      "boom": true,
+      "boom_sector_flag_start": 32,
+
+      // Action specials
+      "action_specials": {
+        "import": [
+          "include/action_specials/boom.json",
+          "include/action_specials/mbf.json",
+          "include/action_specials/eternity/doom.json"
+        ]
+      }
+    },
+
+    // UDMF map format configuration
+    {
+      "boom_sector_flag_start": 0,
+
+      // UDMF namespace
+      "udmf_namespace": "Eternity",
+
+      // UDMF features
+      "udmf_slopes": false, // Only supports slopes via lines
+      "udmf_flat_lighting": true,
+      "udmf_flat_panning": true,
+      "udmf_flat_rotation": true,
+      "udmf_flat_scaling": true,
+      "udmf_line_transparency": true,
+      "udmf_sector_color": false,
+      "udmf_sector_fog": false,
+      "udmf_side_lighting": true,
+      "udmf_side_midtex_wrapping": false,
+      "udmf_side_scaling": false,
+      "udmf_texture_scaling": false,
+      "udmf_texture_offsets": true,
+
+      // Action specials
+      "action_specials": {
+        "clear_existing": true,
+        "import": [ "include/action_specials/eternity/udmf.json" ]
+      },
+
+      // UDMF properties
+      "udmf_properties": {
+        "import": [ "include/udmf_properties/eternity.json" ]
+      }
+    }
+  ]
+}

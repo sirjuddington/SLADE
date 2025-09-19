@@ -8,8 +8,7 @@ class PatchTable;
 class PatchTableListView;
 class GfxCanvasBase;
 class TextureXEditor;
-class SToolBar;
-
+class SAuiToolBar;
 namespace ui
 {
 	class ZoomControl;
@@ -29,7 +28,7 @@ private:
 	wxStaticText*       label_dimensions_ = nullptr;
 	wxStaticText*       label_textures_   = nullptr;
 	ui::ZoomControl*    zc_zoom_          = nullptr;
-	SToolBar*           toolbar_          = nullptr;
+	SAuiToolBar*        toolbar_          = nullptr;
 
 	void setupLayout();
 	void updateDisplay();

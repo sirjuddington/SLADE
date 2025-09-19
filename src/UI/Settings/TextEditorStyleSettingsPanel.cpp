@@ -658,7 +658,7 @@ void TextEditorStyleSettingsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	std::replace(name.begin(), name.end(), ' ', '_');
 
 	// Write set to file
-	auto filename = app::path(fmt::format("text_styles/{}.sss", name), app::Dir::User);
+	auto filename = app::path(fmt::format("text_styles/{}.json", name), app::Dir::User);
 	ss_temp.writeFile(filename);
 
 	// Add new set to list

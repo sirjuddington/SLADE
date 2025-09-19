@@ -43,8 +43,7 @@
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 
@@ -88,17 +87,11 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	SetSizer(sizer);
 
 	// Toolbar
-	auto toolbar = new SToolBar(this);
+	auto toolbar = new SAuiToolBar(this);
 	sizer->Add(toolbar, wxSizerFlags().Expand());
-
-	wxArrayString actions;
-	toolbar->addActionGroup("Scripts", { "mapw_script_save", "mapw_script_compile", "mapw_script_togglelanguage" });
-
-	// Jump To toolbar group
-	auto group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, lh.size(200, -1));
-	group_jump_to->addCustomControl(choice_jump_to_);
-	toolbar->addGroup(group_jump_to);
+	choice_jump_to_ = new wxChoice(toolbar, -1, wxDefaultPosition, lh.size(200, -1));
+	toolbar->registerCustomControl("jump_to", choice_jump_to_);
+	toolbar->loadLayoutFromResource("map_script_editor");
 
 	// Add text editor
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);

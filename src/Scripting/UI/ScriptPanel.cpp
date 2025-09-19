@@ -39,8 +39,7 @@
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 
@@ -182,15 +181,14 @@ bool ScriptPanel::handleAction(string_view id)
 // -----------------------------------------------------------------------------
 // Creates and returns the toolbar for this script panel
 // -----------------------------------------------------------------------------
-SToolBar* ScriptPanel::setupToolbar()
+SAuiToolBar* ScriptPanel::setupToolbar()
 {
-	auto toolbar = new SToolBar(this);
+	auto toolbar = new SAuiToolBar(this);
 
-	// Create Script toolbar
-	auto tbg_script = new SToolBarGroup(toolbar, "_Script");
-	tbg_script->addActionButton("scrm_run", "", true);
-	tbg_script->addActionButton("scrm_save", "", true)->Enable(!script_->read_only);
-	toolbar->addGroup(tbg_script);
+	toolbar->addAction("scrm_run", true);
+	toolbar->addAction("scrm_save", true);
+	toolbar->enableItem("scrm_save", !script_->read_only);
+	toolbar->Realize();
 
 	return toolbar;
 }

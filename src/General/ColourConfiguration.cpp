@@ -35,9 +35,9 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/ArchiveManager.h"
 #include "Console.h"
-#include "Utility/FileUtils.h"
+#include "Utility/Colour.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -62,10 +62,124 @@ ColourHashMap cc_colours;
 
 // -----------------------------------------------------------------------------
 //
-// ColourConfiguration Namespace Functions
+// Colour struct <=> JSON Object Conversion Functions
 //
 // -----------------------------------------------------------------------------
+namespace slade::colourconfig
+{
+void to_json(json& j, const Colour& c)
+{
+	auto col_string = colour::toString(
+		c.colour, c.colour.a == 255 ? colour::StringFormat::RGB : colour::StringFormat::RGBA);
 
+	j = json{ { "name", c.name }, { "group", c.group }, { "colour", col_string } };
+
+	if (c.blend_additive)
+		j["blend_additive"] = true;
+}
+
+void from_json(const json& j, Colour& c)
+{
+	j.at("name").get_to(c.name);
+	j.at("group").get_to(c.group);
+
+	auto col = j.at("colour");
+	if (col.is_array() && col.size() == 4)
+		c.colour.set(col[0].get<int>(), col[1].get<int>(), col[2].get<int>(), col[3].get<int>());
+	else if (col.is_array() && col.size() == 3)
+		c.colour.set(col[0].get<int>(), col[1].get<int>(), col[2].get<int>());
+	else if (col.is_string())
+		c.colour = colour::fromString(col.get<string>());
+
+	if (j.contains("blend_additive"))
+		j.at("blend_additive").get_to(c.blend_additive);
+}
+} // namespace slade::colourconfig
+
+
+// -----------------------------------------------------------------------------
+//
+// colourconfig Namespace Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade::colourconfig
+{
+// -----------------------------------------------------------------------------
+// Reads a pre-3.3.0 format colour configuration from text data [mc]
+// -----------------------------------------------------------------------------
+bool readOldConfiguration(const MemChunk& mc)
+{
+	// Parse text
+	Parser parser;
+	if (!parser.parseText(mc))
+		return false;
+
+	// Get 'colours' block
+	if (auto colours = parser.parseTreeRoot()->childPTN("colours"))
+	{
+		// Read all colour definitions
+		for (unsigned a = 0; a < colours->nChildren(); a++)
+		{
+			auto def = colours->childPTN(a);
+
+			// Read properties
+			for (unsigned b = 0; b < def->nChildren(); b++)
+			{
+				auto  prop = def->childPTN(b);
+				auto& col  = cc_colours[def->name()];
+				col.exists = true;
+
+				// Colour name
+				if (prop->name() == "name")
+					col.name = prop->stringValue();
+
+				// Colour group (for config ui)
+				else if (prop->name() == "group")
+					col.group = prop->stringValue();
+
+				// Colour
+				else if (prop->name() == "rgb")
+					col.colour.set(prop->intValue(0), prop->intValue(1), prop->intValue(2));
+
+				// Alpha
+				else if (prop->name() == "alpha")
+					col.colour.a = prop->intValue();
+
+				// Additive
+				else if (prop->name() == "additive")
+					col.blend_additive = prop->boolValue();
+
+				else
+					log::warning(fmt::format("Unknown colour definition property \"{}\"", prop->name()));
+			}
+		}
+	}
+
+	// Get 'theme' block
+	if (auto theme = parser.parseTreeRoot()->childPTN("theme"))
+	{
+		// Read all theme definitions
+		for (unsigned a = 0; a < theme->nChildren(); a++)
+		{
+			auto prop = theme->childPTN(a);
+
+			if (prop->name() == "line_hilight_width")
+				line_hilight_width = prop->floatValue();
+
+			else if (prop->name() == "line_selection_width")
+				line_selection_width = prop->floatValue();
+
+			else if (prop->name() == "flat_alpha")
+				flat_alpha = prop->floatValue();
+
+			else
+				log::warning(fmt::format("Unknown theme property \"{}\"", prop->name()));
+		}
+	}
+
+	return true;
+}
+} // namespace slade::colourconfig
 
 // -----------------------------------------------------------------------------
 // Returns the colour [name]
@@ -155,130 +269,56 @@ void colourconfig::setFlatAlpha(double alpha)
 }
 
 // -----------------------------------------------------------------------------
-// Reads a colour configuration from text data [mc]
+// Reads a colour configuration from JSON [j]
 // -----------------------------------------------------------------------------
-bool colourconfig::readConfiguration(const MemChunk& mc)
+void colourconfig::readConfiguration(Json& j)
 {
-	// Parse text
-	Parser parser;
-	parser.parseText(mc);
-
-	// Get 'colours' block
-	auto colours = parser.parseTreeRoot()->childPTN("colours");
-	if (colours)
+	// Colours
+	if (j.contains("colours"))
 	{
-		// Read all colour definitions
-		for (unsigned a = 0; a < colours->nChildren(); a++)
+		for (auto& [id, colour] : j["colours"].items())
 		{
-			auto def = colours->childPTN(a);
-
-			// Read properties
-			for (unsigned b = 0; b < def->nChildren(); b++)
-			{
-				auto  prop = def->childPTN(b);
-				auto& col  = cc_colours[def->name()];
-				col.exists = true;
-
-				// Colour name
-				if (prop->name() == "name")
-					col.name = prop->stringValue();
-
-				// Colour group (for config ui)
-				else if (prop->name() == "group")
-					col.group = prop->stringValue();
-
-				// Colour
-				else if (prop->name() == "rgb")
-					col.colour.set(prop->intValue(0), prop->intValue(1), prop->intValue(2));
-
-				// Alpha
-				else if (prop->name() == "alpha")
-					col.colour.a = prop->intValue();
-
-				// Additive
-				else if (prop->name() == "additive")
-					col.blend_additive = prop->boolValue();
-
-				else
-					log::warning(fmt::format("Unknown colour definition property \"{}\"", prop->name()));
-			}
+			auto& col = cc_colours[id];
+			from_json(colour, col);
+			col.exists = true;
 		}
 	}
 
-	// Get 'theme' block
-	auto theme = parser.parseTreeRoot()->childPTN("theme");
-	if (theme)
+	// Theme
+	if (j.contains("theme"))
 	{
-		// Read all theme definitions
-		for (unsigned a = 0; a < theme->nChildren(); a++)
-		{
-			auto prop = theme->childPTN(a);
-
-			if (prop->name() == "line_hilight_width")
-				line_hilight_width = prop->floatValue();
-
-			else if (prop->name() == "line_selection_width")
-				line_selection_width = prop->floatValue();
-
-			else if (prop->name() == "flat_alpha")
-				flat_alpha = prop->floatValue();
-
-			else
-				log::warning(fmt::format("Unknown theme property \"{}\"", prop->name()));
-		}
+		if (j["theme"].contains("line_hilight_width"))
+			j["theme"]["line_hilight_width"].get_to(line_hilight_width);
+		if (j["theme"].contains("line_selection_width"))
+			j["theme"]["line_selection_width"].get_to(line_selection_width);
+		if (j["theme"].contains("flat_alpha"))
+			j["theme"]["flat_alpha"].get_to(flat_alpha);
 	}
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
-// Writes the current colour configuration to text data [mc]
+// Writes the current colour configuration to [json_file]
 // -----------------------------------------------------------------------------
-bool colourconfig::writeConfiguration(MemChunk& mc)
+void colourconfig::writeConfiguration(string_view json_file)
 {
-	string cfgstring = "colours\n{\n";
+	json j;
 
-	// Go through all properties
+	// Colours
 	for (const auto& i : cc_colours)
 	{
-		// Skip if it doesn't 'exist'
 		const auto& cc = i.second;
 		if (!cc.exists)
 			continue;
 
-		// Colour definition name
-		cfgstring += fmt::format("\t{}\n\t{{\n", i.first);
-
-		// Full name
-		cfgstring += fmt::format("\t\tname = \"{}\";\n", cc.name);
-
-		// Group
-		cfgstring += fmt::format("\t\tgroup = \"{}\";\n", cc.group);
-
-		// Colour values
-		cfgstring += fmt::format("\t\trgb = {}, {}, {};\n", cc.colour.r, cc.colour.g, cc.colour.b);
-
-		// Alpha
-		if (cc.colour.a < 255)
-			cfgstring += fmt::format("\t\talpha = {};\n", cc.colour.a);
-
-		// Additive
-		if (cc.blend_additive)
-			cfgstring += "\t\tadditive = true;\n";
-
-		cfgstring += "\t}\n\n";
+		j["colours"][i.first] = cc;
 	}
 
-	cfgstring += "}\n\ntheme\n{\n";
+	// Theme
+	j["theme"]["line_hilight_width"]   = line_hilight_width;
+	j["theme"]["line_selection_width"] = line_selection_width;
+	j["theme"]["flat_alpha"]           = flat_alpha;
 
-	cfgstring += fmt::format("\tline_hilight_width = {:1.3f};\n", line_hilight_width);
-	cfgstring += fmt::format("\tline_selection_width = {:1.3f};\n", line_selection_width);
-	cfgstring += fmt::format("\tflat_alpha = {:1.3f};\n", flat_alpha);
-	cfgstring += "}\n";
-
-	mc.write(cfgstring.data(), cfgstring.size());
-
-	return true;
+	jsonutil::writeFile(j, json_file);
 }
 
 // -----------------------------------------------------------------------------
@@ -290,13 +330,12 @@ bool colourconfig::init()
 	loadDefaults();
 
 	// Check for saved colour configuration
-	const auto cfg_path = app::path("colours.cfg", app::Dir::User);
-	if (fileutil::fileExists(cfg_path))
-	{
-		MemChunk ccfg;
-		ccfg.importFile(cfg_path);
-		readConfiguration(ccfg);
-	}
+	if (auto j = jsonutil::parseFile(app::path("colours.json", app::Dir::User)); !j.is_discarded())
+		readConfiguration(j);
+
+	// Check for pre-3.3.0 configuration
+	else if (MemChunk mc; mc.importFile(app::path("colours.cfg", app::Dir::User)))
+		readOldConfiguration(mc);
 
 	return true;
 }
@@ -307,10 +346,13 @@ bool colourconfig::init()
 void colourconfig::loadDefaults()
 {
 	// Read default colours
-	auto pres             = app::archiveManager().programResourceArchive();
-	auto entry_default_cc = pres->entryAtPath("config/colours/default.txt");
+	auto pres             = app::programResource();
+	auto entry_default_cc = pres->entryAtPath("config/colours/default.json");
 	if (entry_default_cc)
-		readConfiguration(entry_default_cc->data());
+	{
+		if (auto j = jsonutil::parse(entry_default_cc->data()); !j.is_discarded())
+			readConfiguration(j);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -318,15 +360,17 @@ void colourconfig::loadDefaults()
 // -----------------------------------------------------------------------------
 bool colourconfig::readConfiguration(string_view name)
 {
-	// TODO: search custom folder
-
 	// Search resource pk3
-	auto res = app::archiveManager().programResourceArchive();
+	auto res = app::programResource();
 	auto dir = res->dirAtPath("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
 		if (strutil::equalCI(dir->entryAt(a)->nameNoExt(), name))
-			return readConfiguration(dir->entryAt(a)->data());
+		{
+			if (auto j = jsonutil::parse(dir->entryAt(a)->data()); !j.is_discarded())
+				readConfiguration(j);
+			return true;
+		}
 	}
 
 	return false;
@@ -337,10 +381,8 @@ bool colourconfig::readConfiguration(string_view name)
 // -----------------------------------------------------------------------------
 void colourconfig::putConfigurationNames(vector<string>& names)
 {
-	// TODO: search custom folder
-
 	// Search resource pk3
-	auto res = app::archiveManager().programResourceArchive();
+	auto res = app::programResource();
 	auto dir = res->dirAtPath("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		names.emplace_back(dir->entryAt(a)->nameNoExt());

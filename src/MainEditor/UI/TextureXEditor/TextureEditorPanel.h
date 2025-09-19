@@ -5,7 +5,7 @@ namespace slade
 class CTexture;
 class CTextureCanvasBase;
 class ListView;
-class SToolBar;
+class SAuiToolBar;
 class TextureXEditor;
 class TextureXList;
 namespace ui
@@ -93,8 +93,8 @@ protected:
 	wxCheckBox*   cb_tex_world_panning_ = nullptr;
 
 	// Texture patches list + related controls
-	ListView* list_patches_ = nullptr;
-	SToolBar* tb_patches_   = nullptr;
+	ListView*    list_patches_ = nullptr;
+	SAuiToolBar* tb_patches_   = nullptr;
 
 	// Patch controls
 	wxSpinCtrl* spin_patch_left_ = nullptr;

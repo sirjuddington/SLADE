@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -32,10 +32,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/EntryType/EntryType.h"
+#include "Database/Database.h"
 #include "Game/Game.h"
 #include "Game/SpecialPreset.h"
 #include "General/Clipboard.h"
@@ -43,7 +43,6 @@
 #include "General/Console.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
-#include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
@@ -59,9 +58,10 @@
 #include "TextEditor/TextStyle.h"
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
+#include "UI/State.h"
 #include "UI/UI.h"
-#include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include <dumb.h>
@@ -114,7 +114,6 @@ ResourceManager resource_manager;
 
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
 CVAR(String, temp_location_custom, "", CVar::Flag::Save)
-CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 CVAR(Int, win_darkmode, 1, CVar::Flag::Save)
 
 
@@ -266,11 +265,10 @@ bool initDirectories()
 }
 
 // -----------------------------------------------------------------------------
-// Reads and parses the SLADE configuration file
+// Reads the pre-3.3.0 configuration file (slade3.cfg), for migration purposes
 // -----------------------------------------------------------------------------
-void readConfigFile()
+void readOldConfigFile()
 {
-	// Open SLADE.cfg
 	Tokenizer tz;
 	if (!tz.openFile(path("slade3.cfg", Dir::User)))
 		return;
@@ -311,21 +309,9 @@ void readConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
-		// Read recent files list
-		if (tz.advIf("recent_files", 2))
-		{
-			while (!tz.checkOrEnd("}"))
-			{
-				archive_manager.addRecentFile(tz.current().text);
-				tz.adv();
-			}
-
-			tz.adv(); // Skip ending }
-		}
-
 		// Read keybinds
 		if (tz.advIf("keys", 2))
-			KeyBind::readBinds(tz);
+			KeyBind::readOldBinds(tz);
 
 		// Read nodebuilder paths
 		if (tz.advIf("nodebuilder_paths", 2))
@@ -351,13 +337,55 @@ void readConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
-		// Read window size/position info
-		if (tz.advIf("window_info", 2))
-			misc::readWindowInfo(tz);
-
 		// Next token
 		tz.adv();
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads and parses the SLADE configuration file
+// -----------------------------------------------------------------------------
+void readConfigFile()
+{
+	// Open config JSON file
+	SFile file(path("config.json", Dir::User));
+	if (!file.isOpen())
+	{
+		// If it doesn't exist, try reading the old pre-3.3.0 config file
+		readOldConfigFile();
+		return;
+	}
+
+	auto j = jsonutil::parseFile(file);
+	if (j.is_discarded())
+		return;
+
+	// CVars
+	if (j.contains("cvars"))
+	{
+		for (auto& [key, value] : j["cvars"].items())
+		{
+			if (value.is_string())
+				CVar::set(key, value);
+			else
+				CVar::set(key, to_string(value));
+		}
+	}
+
+	// Base resource archive paths
+	if (j.contains("base_resource_paths"))
+		for (const auto& path : j["base_resource_paths"])
+			archive_manager.addBaseResourcePath(path.get<string>());
+
+	// Nodebuilder paths
+	if (j.contains("nodebuilder_paths"))
+		for (auto& [builder, path] : j["nodebuilder_paths"].items())
+			nodebuilders::addBuilderPath(builder, path.get<string>());
+
+	// Game executable paths
+	if (j.contains("executable_paths"))
+		for (const auto& [exe, path] : j["executable_paths"].items())
+			executables::setGameExePath(exe, path.get<string>());
 }
 
 // -----------------------------------------------------------------------------
@@ -443,6 +471,14 @@ ResourceManager& app::resources()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the program resource archive (ie. slade.pk3)
+// -----------------------------------------------------------------------------
+Archive* app::programResource()
+{
+	return archive_manager.programResourceArchive();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the number of ms elapsed since the application was started
 // -----------------------------------------------------------------------------
 long app::runTimer()
@@ -503,6 +539,10 @@ bool app::init(const vector<string>& args)
 			wxICON_ERROR);
 		return false;
 	}
+
+	// Init database
+	if (!database::init())
+		return false;
 
 	// Init SActions
 	SAction::setBaseWxId(26000);
@@ -599,11 +639,11 @@ bool app::init(const vector<string>& args)
 	log::info("SLADE Initialisation OK");
 
 	// Show Setup Wizard if needed
-	if (!setup_wizard_run)
+	if (!ui::getStateBool(ui::SETUP_WIZARD_RUN))
 	{
 		SetupWizardDialog dlg(maineditor::windowWx());
 		dlg.ShowModal();
-		setup_wizard_run = true;
+		ui::saveStateBool(ui::SETUP_WIZARD_RUN, true);
 		maineditor::windowWx()->Update();
 		maineditor::windowWx()->Refresh();
 	}
@@ -631,67 +671,48 @@ bool app::init(const vector<string>& args)
 // -----------------------------------------------------------------------------
 void app::saveConfigFile()
 {
-	// ReSharper disable CppExpressionWithoutSideEffects
-
-	// Open SLADE.cfg for writing text
-	SFile file(app::path("slade3.cfg", app::Dir::User), SFile::Mode::Write);
-
-	// Do nothing if it didn't open correctly
-	if (!file.isOpen())
+	// Open config file for writing
+	SFile config_json(path("config.json", Dir::User), SFile::Mode::Write);
+	if (!config_json.isOpen())
 		return;
 
-	// Write cfg header
-	file.writeStr("/*****************************************************\n");
-	file.writeStr(" * SLADE Configuration File\n");
-	file.writeStr(" * Don't edit this unless you know what you're doing\n");
-	file.writeStr(" *****************************************************/\n\n");
+	// Build JSON object
+	Json j;
 
-	// Write cvars
-	file.writeStr(CVar::writeAll());
+	// CVars
+	auto& j_cvars = j["cvars"];
+	for (auto cvar : CVar::allCvars())
+	{
+		if (cvar->flags & CVar::Flag::Save)
+		{
+			switch (cvar->type)
+			{
+			case CVar::Type::Integer: j_cvars[cvar->name] = cvar->getValue().Int; break;
+			case CVar::Type::Boolean: j_cvars[cvar->name] = cvar->getValue().Bool; break;
+			case CVar::Type::Float:   j_cvars[cvar->name] = cvar->getValue().Float; break;
+			case CVar::Type::String:  j_cvars[cvar->name] = dynamic_cast<CStringCVar*>(cvar)->value; break;
+			default:                  break;
+			}
+		}
+	}
 
-	// Write base resource archive paths
-	file.writeStr("\nbase_resource_paths\n{\n");
+	// Base resource archive paths
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
 		auto path = archive_manager.getBaseResourcePath(a);
 		std::replace(path.begin(), path.end(), '\\', '/');
-		file.writeStr(fmt::format("\t\"{}\"\n", path));
+		j["base_resource_paths"].push_back(path);
 	}
-	file.writeStr("}\n");
 
-	// Write recent files list (in reverse to keep proper order when reading back)
-	file.writeStr("\nrecent_files\n{\n");
-	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
-	{
-		auto path = archive_manager.recentFile(a);
-		std::replace(path.begin(), path.end(), '\\', '/');
-		file.writeStr(fmt::format("\t\"{}\"\n", path));
-	}
-	file.writeStr("}\n");
+	// Nodebuilder paths
+	nodebuilders::writeBuilderPaths(j);
 
-	// Write keybinds
-	file.writeStr("\nkeys\n{\n");
-	file.writeStr(KeyBind::writeBinds());
-	file.writeStr("}\n");
+	// Game exe paths
+	executables::writePaths(j);
 
-	// Write nodebuilder paths
-	file.writeStr("\n");
-	nodebuilders::saveBuilderPaths(file);
 
-	// Write game exe paths
-	file.writeStr("\nexecutable_paths\n{\n");
-	file.writeStr(executables::writePaths());
-	file.writeStr("}\n");
-
-	// Write window info
-	file.writeStr("\nwindow_info\n{\n");
-	misc::writeWindowInfo(file);
-	file.writeStr("}\n");
-
-	// Close configuration file
-	file.writeStr("\n// End Configuration File\n\n");
-
-	// ReSharper enable CppExpressionWithoutSideEffects
+	// Write JSON to file
+	config_json.writeStr(j.dump(2));
 }
 
 // -----------------------------------------------------------------------------
@@ -707,19 +728,17 @@ void app::exit(bool save_config)
 		// Save configuration
 		saveConfigFile();
 
+		// Save keybinds
+		KeyBind::saveBinds();
+
 		// Save text style configuration
 		StyleSet::saveCurrent();
 
 		// Save colour configuration
-		MemChunk ccfg;
-		colourconfig::writeConfiguration(ccfg);
-		ccfg.exportFile(app::path("colours.cfg", app::Dir::User));
+		colourconfig::writeConfiguration(path("colours.json", Dir::User));
 
 		// Save game exes
-		SFile f;
-		if (f.open(app::path("executables.cfg", app::Dir::User), SFile::Mode::Write))
-			f.writeStr(executables::writeExecutables());
-		f.close();
+		executables::writeExecutables(path("executables.json", Dir::User));
 
 		// Save custom special presets
 		game::saveCustomSpecialPresets();
@@ -738,7 +757,7 @@ void app::exit(bool save_config)
 
 	// Clear temp folder
 	std::error_code error;
-	for (auto& item : std::filesystem::directory_iterator{ app::path("", app::Dir::Temp) })
+	for (auto& item : std::filesystem::directory_iterator{ path("", Dir::Temp) })
 	{
 		if (!item.is_regular_file())
 			continue;
@@ -792,7 +811,7 @@ string app::path(string_view filename, Dir dir)
 app::Platform app::platform()
 {
 #ifdef __WXMSW__
-	return Platform::Windows;
+	return Windows;
 #elif __WXGTK__
 	return Platform::Linux;
 #elif __WXOSX__

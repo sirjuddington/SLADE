@@ -1,0 +1,367 @@
+// Heretic thing types
+{
+  "groups": [
+    {
+      "name": "Player Starts",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)",
+        "radius": 16,
+        "solid": true
+      },
+      "things": [
+        { "type": 1, "name": "Player 1 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 2, "name": "Player 2 Start", "sprite": "PLAYB?", "translation": "heretic0", "player_coop": true },
+        { "type": 3, "name": "Player 3 Start", "sprite": "PLAYC?", "translation": "heretic1", "player_coop": true },
+        { "type": 4, "name": "Player 4 Start", "sprite": "PLAYD?", "translation": "heretic2", "player_coop": true },
+        { "type": 11, "name": "Deathmatch Start", "sprite": "PLAYF?", "player_dm": true }
+      ]
+    },
+
+    {
+      "name": "Teleports",
+      "things": [
+        {
+          "type": 14,
+          "name": "Teleport Destination",
+          "colour": "rgb(255, 255, 0)",
+          "sprite": "TELEA0"
+        },
+        {
+          "type": 52,
+          "name": "Teleport Glitter (Blue: Exit)",
+          "angle": false,
+          "colour": "rgb(105, 88, 183)",
+          "sprite": "TGLTF0"
+        },
+        {
+          "type": 74,
+          "name": "Teleport Glitter (Red)",
+          "angle": false,
+          "colour": "rgb(255, 95, 95)",
+          "sprite": "TGLTA0"
+        }
+      ]
+    },
+
+    {
+      "name": "Monsters",
+      "defaults": {
+        "colour": "rgb(200, 0, 0)",
+        "solid": true
+      },
+      "things": [
+        {
+          "type": 66,
+          "name": "Gargoyle",
+          "sprite": "IMPXA?",
+          "height": 36
+        },
+        {
+          "type": 5,
+          "name": "Fire Gargoyle",
+          "sprite": "IMPXF?",
+          "height": 36
+        },
+        {
+          "type": 68,
+          "name": "Golem",
+          "sprite": "MUMMA?",
+          "radius": 22,
+          "height": 62
+        },
+        {
+          "type": 69,
+          "name": "Golem Ghost",
+          "sprite": "MUMMA?",
+          "radius": 22,
+          "height": 62
+        },
+        {
+          "type": 45,
+          "name": "Nitrogolem",
+          "sprite": "MUMMY?",
+          "radius": 22,
+          "height": 62
+        },
+        {
+          "type": 46,
+          "name": "Nitrogolem Ghost",
+          "sprite": "MUMMY?",
+          "radius": 22,
+          "height": 62
+        },
+        {
+          "type": 15,
+          "name": "Disciple Of D'Sparil",
+          "sprite": "WZRDA?",
+          "height": 68
+        },
+        {
+          "type": 6,
+          "name": "Iron Lich",
+          "sprite": "HEADA?",
+          "radius": 40,
+          "height": 72
+        },
+        {
+          "type": 7,
+          "name": "D'Sparil",
+          "sprite": "SRCRA?",
+          "radius": 28,
+          "height": 100
+        },
+        {
+          "type": 56,
+          "name": "D'Sparil Teleport Location",
+          "sprite": "SOR2I?"
+        },
+        {
+          "type": 9,
+          "name": "Maulotaur",
+          "sprite": "MNTRA?",
+          "radius": 28,
+          "height": 100
+        },
+        {
+          "type": 64,
+          "name": "Undead Warrior",
+          "sprite": "KNIGA?",
+          "radius": 24,
+          "height": 48
+        },
+        {
+          "type": 65,
+          "name": "Undead Warrior Ghost",
+          "sprite": "KNIGA?",
+          "radius": 24,
+          "height": 78
+        },
+        {
+          "type": 70,
+          "name": "Weredragon",
+          "sprite": "BEASA?",
+          "radius": 32,
+          "height": 74
+        },
+        {
+          "type": 90,
+          "name": "Sabreclaw",
+          "sprite": "CLNKA?",
+          "radius": 20,
+          "height": 64
+        },
+        {
+          "type": 92,
+          "name": "Ophidian",
+          "sprite": "SNKEA?",
+          "radius": 22,
+          "height": 70
+        }
+      ]
+    },
+
+    {
+      "name": "Health And Armour",
+      "defaults": {
+        "angle": false,
+        "colour": "rgb(0, 0, 200)"
+      },
+      "things": [
+        { "type": 81, "name": "Crystal Vial", "sprite": "PTN1A?", "colour": "rgb(100, 100, 200)" },
+        { "type": 85, "name": "Silver Shield", "sprite": "SHLDA?" },
+        { "type": 31, "name": "Enchanted Shield", "sprite": "SHD2A?" }
+      ]
+    },
+
+    {
+      "name": "Weapons",
+      "defaults": {
+        "colour": "rgb(220, 180, 100)",
+        "radius": 20,
+        "height": 16,
+        "angle": false,
+        "icon": "weapon"
+      },
+      "things": [
+        { "type": 53, "name": "Dragon Claw", "sprite": "WBLSA?" },
+        { "type": 2001, "name": "Ethereal Crossbow", "sprite": "WBOWA?" },
+        { "type": 2002, "name": "Firemace", "sprite": "WMCEA?" },
+        { "type": 2003, "name": "Phoenix Rod", "sprite": "WPHXA?" },
+        { "type": 2004, "name": "Hellstaff", "sprite": "WSKLA?" },
+        { "type": 2005, "name": "Gauntlets of the Necromancer", "sprite": "WGNTA?" }
+      ]
+    },
+
+    {
+      "name": "Ammunition",
+      "defaults": {
+        "colour": "rgb(180, 150, 50)",
+        "angle": false,
+        "radius": 20,
+        "height": 16
+      },
+      "things": [
+        { "type": 10, "name": "Wand Crystal", "sprite": "AMG1A?" },
+        { "type": 12, "name": "Crystal Geode", "sprite": "AMG2A?" },
+        { "type": 13, "name": "Mace Spheres", "sprite": "AMM1A?" },
+        { "type": 16, "name": "Pile Of Mace Spheres", "sprite": "AMM2A?" },
+        { "type": 18, "name": "Ethereal Arrows", "sprite": "AMC1A?" },
+        { "type": 19, "name": "Quiver Of Ethereal Arrows", "sprite": "AMC2A?" },
+        { "type": 20, "name": "Lesser Runes", "sprite": "AMS1A?" },
+        { "type": 21, "name": "Greater Runes", "sprite": "AMS2A?" },
+        { "type": 22, "name": "Flame Orb", "sprite": "AMP1A?" },
+        { "type": 23, "name": "Inferno Orb", "sprite": "AMP2A?" },
+        { "type": 54, "name": "Claw Orb", "sprite": "AMB1A?" },
+        { "type": 55, "name": "Energy Orb", "sprite": "AMB2A?" },
+        { "type": 8, "name": "Bag Of Holding", "sprite": "BAGHA?" }
+      ]
+    },
+
+    {
+      "name": "Powerups",
+      "defaults": {
+        "colour": "rgb(220, 100, 220)",
+        "radius": 20,
+        "height": 20,
+        "angle": false
+      },
+      "things": [
+        { "type": 30, "name": "Morph Ovum", "sprite": "ARTIEGGC" },
+        { "type": 32, "name": "Mystic Urn", "sprite": "ARTISPHL" },
+        { "type": 33, "name": "Torch", "sprite": "ARTITRCH" },
+        { "type": 34, "name": "Time Bomb Of The Ancients", "sprite": "ARTIFBMB" },
+        { "type": 35, "name": "Map Scroll", "sprite": "SPMPA?" },
+        { "type": 36, "name": "Chaos Device", "sprite": "ARTIATLP" },
+        { "type": 75, "name": "Shadowsphere", "sprite": "ARTIINVS" },
+        { "type": 82, "name": "Quartz Flask", "sprite": "ARTIPTN2" },
+        { "type": 83, "name": "Wings Of Wrath", "sprite": "ARTISOAR" },
+        { "type": 84, "name": "Ring of Invulnerability", "sprite": "ARTIINVU" },
+        { "type": 86, "name": "Tome of Power", "sprite": "ARTIPWBK" }
+      ]
+    },
+
+    {
+      "name": "Keys",
+      "defaults": {
+        "radius": 20,
+        "angle": false
+      },
+      "things": [
+        { "type": 73, "name": "Green Key", "colour": "rgb(0, 255, 0)", "sprite": "AKYYA0" },
+        { "type": 79, "name": "Blue Key", "colour": "rgb(0, 0, 255)", "sprite": "BKYYA0" },
+        { "type": 80, "name": "Yellow Key", "colour": "rgb(255, 255, 0)", "sprite": "CKYYA0" }
+      ]
+    },
+
+    {
+      "name": "Gore/Hanging Skulls & Bodies",
+      "defaults": {
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "colour": "rgb(120, 0, 0)",
+        "hanging": true
+      },
+      "things": [
+        { "type": 51, "name": "Hanging Corpse", "sprite": "HCORA?", "height": 104 },
+        { "type": 17, "name": "Hanging Skull (Long Rope)", "sprite": "SKH1A?", "height": 70 },
+        { "type": 24, "name": "Hanging Skull (Medium Rope)", "sprite": "SKH2A?", "height": 60 },
+        { "type": 25, "name": "Hanging Skull (Short Rope)", "sprite": "SKH3A?", "height": 45 },
+        { "type": 26, "name": "Hanging Skull (Shortest Rope)", "sprite": "SKH4A?", "height": 35 }
+      ]
+    },
+
+    {
+      "name": "Lighting",
+      "defaults": {
+        "colour": "rgb(220, 220, 200)",
+        "radius": 16,
+        "angle": false,
+        "fullbright": true,
+        "decoration": true
+      },
+      "things": [
+        { "type": 27, "name": "Serpent Torch", "sprite": "SRTCA?", "height": 54, "solid": true },
+        { "type": 28, "name": "Chandelier", "sprite": "CHDLA?", "hanging": true, "height": 62 },
+        { "type": 50, "name": "Wall Torch", "sprite": "WTRHA?", "height": 64 },
+        { "type": 76, "name": "Fire Brazier", "sprite": "KFR1A?", "height": 44, "solid": true }
+      ]
+    },
+
+    {
+      "name": "Decorations/Castle",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 94, "name": "Blue Key Marker", "sprite": "KGZBA?", "height": 50 },
+        { "type": 95, "name": "Green Key Marker", "sprite": "KGZGA?", "height": 50 },
+        { "type": 96, "name": "Yellow Key Marker", "sprite": "KGZYA?", "height": 50 },
+        { "type": 44, "name": "Barrel", "sprite": "BARLA?", "height": 32 },
+        { "type": 47, "name": "Brown Pillar", "sprite": "BRPLA?", "height": 128 },
+        { "type": 29, "name": "Small Pillar", "sprite": "SMPLA?", "height": 34 }
+      ]
+    },
+
+    {
+      "name": "Decorations/Plants",
+      "defaults": {
+        "colour": "rgb(80, 160, 80)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true
+      },
+      "things": [
+        { "type": 48, "name": "Moss 1", "sprite": "MOS1A?", "hanging": true, "height": 23 },
+        { "type": 49, "name": "Moss 2", "sprite": "MOS2A?", "hanging": true, "height": 27 },
+        { "type": 2035, "name": "Gas Pod", "sprite": "PPODA?", "height": 54, "solid": true },
+        { "type": 43, "name": "Gas Pod Generator", "sprite": "PPODA?", "height": 16 }
+      ]
+    },
+
+    {
+      "name": "Decorations/Rocks",
+      "defaults": {
+        "colour": "rgb(80, 160, 80)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true
+      },
+      "things": [
+        { "type": 37, "name": "Stalagmite (Small)", "sprite": "STGSA?", "height": 32 },
+        { "type": 38, "name": "Stalagmite (Large)", "sprite": "STGLA?", "height": 64 },
+        { "type": 39, "name": "Stalactite (Small)", "sprite": "STCSA?", "hanging": true, "height": 36 },
+        { "type": 40, "name": "Stalactite (Large)", "sprite": "STCLA?", "hanging": true, "height": 68 },
+        { "type": 87, "name": "Volcano", "sprite": "VLCOE?", "height": 20 }
+      ]
+    },
+
+    {
+      "name": "Sounds",
+      "defaults": {
+        "icon": "sound",
+        "colour": "rgb(200, 0, 200)",
+        "angle": false
+      },
+      "things": [
+        { "type": 41, "name": "Waterfall" },
+        { "type": 42, "name": "Wind" },
+        { "type": 1200, "name": "Scream" },
+        { "type": 1201, "name": "Squish" },
+        { "type": 1202, "name": "Drops" },
+        { "type": 1203, "name": "Slow Footsteps" },
+        { "type": 1204, "name": "Heartbeat" },
+        { "type": 1205, "name": "Bells" },
+        { "type": 1206, "name": "Growl" },
+        { "type": 1207, "name": "Magic" },
+        { "type": 1208, "name": "Laughter" },
+        { "type": 1209, "name": "Fast Footsteps" }
+      ]
+    }
+  ]
+}
+

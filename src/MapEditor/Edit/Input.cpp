@@ -827,8 +827,6 @@ void Input::handleKeyBind2d(string_view name)
 			case 2:  SAction::fromId("mapw_flat_textured")->setChecked(); break;
 			default: break;
 			}
-
-			mapeditor::window()->refreshToolBar();
 		}
 
 		// Move items (toggle)

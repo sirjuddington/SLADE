@@ -172,6 +172,11 @@ void log::message(MessageType type, string_view text)
 		sf::err() << log.back().formattedMessageLine() << "\n";
 		sf::err().flush();
 	}
+
+	// Log to debugger in windows+debug
+#if defined(__WXMSW__) && defined(SLADE_DEBUG)
+	OutputDebugStringA(fmt::format("{}\r\n", log.back().formattedMessageLine()).c_str());
+#endif
 }
 
 void log::message(MessageType type, int level, string_view text, fmt::format_args args)

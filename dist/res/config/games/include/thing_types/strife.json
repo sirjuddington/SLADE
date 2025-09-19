@@ -1,0 +1,538 @@
+{
+  "groups": [
+    {
+      "name": "Player Starts",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)",
+        "radius": 16,
+        "solid": true
+      },
+      "things": [
+        { "type": 1, "name": "Player 1 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 2, "name": "Player 2 Start", "sprite": "PLAYB?", "translation": "strife0", "player_coop": true },
+        { "type": 3, "name": "Player 3 Start", "sprite": "PLAYC?", "translation": "strife1", "player_coop": true },
+        { "type": 4, "name": "Player 4 Start", "sprite": "PLAYD?", "translation": "strife2", "player_coop": true },
+        { "type": 5, "name": "Player 5 Start", "sprite": "PLAYA?", "translation": "strife3", "player_coop": true },
+        { "type": 6, "name": "Player 6 Start", "sprite": "PLAYB?", "translation": "strife4", "player_coop": true },
+        { "type": 7, "name": "Player 7 Start", "sprite": "PLAYC?", "translation": "strife5", "player_coop": true },
+        { "type": 8, "name": "Player 8 Start", "sprite": "PLAYD?", "translation": "strife6", "player_coop": true },
+        { "type": 11, "name": "Deathmatch Start", "sprite": "PLAYF?", "player_dm": true }
+      ]
+    },
+
+    {
+      "name": "Teleports",
+      "defaults": {
+        "colour": "rgb(255, 255, 0)"
+      },
+      "things": [
+        { "type": 14, "name": "Teleport Destination", "sprite": "TFOGA?" },
+        { "type": 23, "name": "Teleport Swirl", "sprite": "TELPA?" },
+        { "type": 118, "name": "Teleport New Map Spot 1", "sprite": "TFOGB?" },
+        { "type": 119, "name": "Teleport New Map Spot 2", "sprite": "TFOGC?" },
+        { "type": 120, "name": "Teleport New Map Spot 3", "sprite": "TFOGD?" },
+        { "type": 121, "name": "Teleport New Map Spot 4", "sprite": "TFOGE?" },
+        { "type": 122, "name": "Teleport New Map Spot 5", "sprite": "TFOGF?" },
+        { "type": 123, "name": "Teleport New Map Spot 6", "sprite": "TFOGB?" },
+        { "type": 124, "name": "Teleport New Map Spot 7", "sprite": "TFOGC?" },
+        { "type": 125, "name": "Teleport New Map Spot 8", "sprite": "TFOGD?" },
+        { "type": 126, "name": "Teleport New Map Spot 9", "sprite": "TFOGE?" },
+        { "type": 127, "name": "Teleport New Map Spot 10", "sprite": "TFOGF?" }
+      ]
+    },
+
+    {
+      "name": "Rebels",
+      "defaults": {
+        "colour": "rgb(30, 220, 30)",
+        "height": 56,
+        "solid": true
+      },
+      "things": [
+        { "type": 9, "name": "Rebel 1 (Beacon)", "sprite": "HMN1P?" },
+        { "type": 144, "name": "Rebel 2", "sprite": "HMN1A?" },
+        { "type": 145, "name": "Rebel 3", "sprite": "HMN1B?" },
+        { "type": 149, "name": "Rebel 4", "sprite": "HMN1C?" },
+        { "type": 150, "name": "Rebel 5", "sprite": "HMN1D?" },
+        { "type": 151, "name": "Rebel 6", "sprite": "HMN1Q?" },
+        { "type": 64, "name": "Macil 1 Invincible", "sprite": "LEDRA?" },
+        { "type": 200, "name": "Macil 2 Spectre", "sprite": "LEADF?" }
+      ]
+    },
+
+    {
+      "name": "Civilians",
+      "defaults": {
+        "colour": "rgb(50, 180, 50)",
+        "height": 56,
+        "solid": true
+      },
+      "things": [
+        { "type": 65, "sprite": "PEASA?", "translation": "strife0", "name": "Peasant Red 1 (2,33 Harris/23 Tevick)" },
+        {
+          "type": 66,
+          "sprite": "PEASA?",
+          "translation": "strife2",
+          "name": "Peasant Gray 1 (4 Ketrick/5 Warden/17 Medic)"
+        },
+        { "type": 67, "sprite": "PEASA?", "translation": "strife1", "name": "Peasant Rust 1 (2 Rowan)" },
+        { "type": 72, "sprite": "MRBDB?", "translation": "strife4", "name": "Bar Keep" },
+        { "type": 73, "sprite": "MRYSA?", "translation": "strife5", "name": "Armorer" },
+        { "type": 74, "sprite": "MRNOC?", "translation": "strife6", "name": "Medic" },
+        { "type": 85, "sprite": "RATTA?", "name": "Rat", "radius": 10, "height": 16 },
+        { "type": 116, "sprite": "MRGTA?", "name": "Weapon Smith" },
+        { "type": 130, "sprite": "PEASB?", "name": "Peasant Tan 2" },
+        { "type": 131, "sprite": "PEASC?", "name": "Peasant Tan 3" },
+        { "type": 132, "sprite": "PEASB?", "translation": "strife0", "name": "Peasant Red 2 (4 Derwin/33 Harris)" },
+        { "type": 133, "sprite": "PEASC?", "translation": "strife0", "name": "Peasant Red 3 (4 Worner)" },
+        { "type": 134, "sprite": "PEASB?", "translation": "strife2", "name": "Peasant Gray 2 (4 Sammis/5 Judge)" },
+        { "type": 135, "sprite": "PEASC?", "translation": "strife2", "name": "Peasant Gray 3 (1 Beldin)" },
+        { "type": 136, "sprite": "PEASB?", "translation": "strife1", "name": "Peasant Rust 2 (2 Geoff)" },
+        { "type": 137, "sprite": "PEASC?", "translation": "strife1", "name": "Peasant Rust 3 (4 Technician)" },
+        { "type": 141, "sprite": "BEGRA?", "name": "Beggar 1 (Map01 MacGuffin/32 Prisoner)" },
+        { "type": 155, "sprite": "BEGRB?", "name": "Beggar 2" },
+        { "type": 156, "sprite": "BEGRC?", "name": "Beggar 3" },
+        { "type": 157, "sprite": "BEGRD?", "name": "Beggar 4" },
+        { "type": 158, "sprite": "BEGRE?", "name": "Beggar 5" },
+        { "type": 169, "sprite": "PEASA?", "translation": "strife0", "name": "Zombie" },
+        { "type": 170, "sprite": "AGRDA?", "translation": "strife0", "name": "Zombie Spawner" },
+        { "type": 172, "sprite": "PEASA?", "translation": "strife3", "name": "Peasant DGreen 1 (2 Irale/23 Richter)" },
+        {
+          "type": 173,
+          "sprite": "PEASB?",
+          "translation": "strife3",
+          "name": "Peasant DGreen 2 (6 Weran the Rat King)"
+        },
+        { "type": 174, "sprite": "PEASC?", "translation": "strife3", "name": "Peasant DGreen 3 (4 Computer Tech)" },
+        { "type": 175, "sprite": "PEASA?", "translation": "strife5", "name": "Peasant BGreen 1 (7 False Programmer)" },
+        { "type": 176, "sprite": "PEASB?", "translation": "strife5", "name": "Peasant BGreen 2" },
+        { "type": 177, "sprite": "PEASC?", "translation": "strife5", "name": "Peasant BGreen 3" },
+        {
+          "type": 178,
+          "sprite": "PEASA?",
+          "translation": "strife4",
+          "name": "Peasant Gold 1 (11 Key Master/31 False Prg)"
+        },
+        { "type": 179, "sprite": "PEASB?", "translation": "strife4", "name": "Peasant Gold 2" },
+        { "type": 180, "sprite": "PEASC?", "translation": "strife4", "name": "Peasant Gold 3" },
+        {
+          "type": 181,
+          "sprite": "PEASA?",
+          "translation": "strife6",
+          "name": "Peasant Blue (2,33 Governor/8 False Prgr)"
+        },
+        { "type": 199, "sprite": "ORCLA?", "radius": 16, "name": "Oracle (Map12)" },
+        { "type": 201, "sprite": "ARMRA?", "name": "Becoming Acolyte" },
+        { "type": 204, "sprite": "NEALA?", "radius": 6, "name": "Kneeling Guy" },
+        { "type": 3004, "sprite": "PEASA?", "name": "Peasant Tan 1" }
+      ]
+    },
+
+    {
+      "name": "Monsters",
+      "defaults": {
+        "colour": "rgb(200, 0, 0)",
+        "height": 64,
+        "radius": 24,
+        "solid": true
+      },
+      "things": [
+        { "type": 12, "name": "Loremaster", "height": 56, "radius": 15, "sprite": "PRSTA?" },
+        { "type": 16, "name": "Inquisitor", "radius": 40, "height": 110, "sprite": "ROB3A?" },
+        { "type": 26, "name": "Entity Nest", "radius": 84, "height": 47, "sprite": "NESTA?" },
+        { "type": 27, "name": "Ceiling Turret", "radius": 20, "height": 16, "sprite": "TURTA?" },
+        { "type": 58, "name": "Shadow Acolyte", "sprite": "AGRDE?" },
+        { "type": 71, "name": "Programmer", "radius": 45, "height": 60, "sprite": "PRGRE?" },
+        { "type": 75, "name": "Spectre of the Bishop", "radius": 24, "sprite": "ALN1B0" },
+        { "type": 76, "name": "Spectre of the Oracle", "radius": 24, "sprite": "ALN1C?" },
+        { "type": 128, "name": "Entity", "radius": 130, "height": 200, "sprite": "MNALA?" },
+        { "type": 129, "name": "Spectre of the Programmer", "radius": 64, "sprite": "ALN1A0" },
+        { "type": 142, "name": "Acolyte 2 Red", "sprite": "AGRDA1", "translation": "strife0" },
+        { "type": 143, "name": "Acolyte 3 Rust", "sprite": "AGRDA1", "translation": "strife1" },
+        { "type": 146, "name": "Acolyte 4 Gray", "sprite": "AGRDA1", "translation": "strife2" },
+        { "type": 147, "name": "Acolyte 5 Dark Green", "sprite": "AGRDA1", "translation": "strife3" },
+        { "type": 148, "name": "Acolyte 6 Gold", "sprite": "AGRDA1", "translation": "strife4" },
+        { "type": 167, "name": "Spectre of Macil", "radius": 24, "sprite": "ALN1D?" },
+        { "type": 168, "name": "Spectre of the Loremaster", "radius": 24, "sprite": "ALN1E?" },
+        { "type": 186, "name": "Stalker", "radius": 31, "height": 25, "sprite": "SPIDB?", "hanging": true },
+        { "type": 187, "name": "Bishop", "radius": 40, "height": 56, "sprite": "MLDRA?" },
+        { "type": 198, "name": "Entity Pod", "radius": 25, "height": 91, "sprite": "PODDA?" },
+        { "type": 231, "name": "Acolyte 8 Blue", "sprite": "AGRDA1", "translation": "strife6" },
+        { "type": 232, "name": "Acolyte 7 Light Green", "sprite": "AGRDA1", "translation": "strife5" },
+        { "type": 3001, "name": "Reaver", "radius": 20, "height": 60, "sprite": "ROB1A?" },
+        { "type": 3002, "name": "Acolyte 1 Tan", "sprite": "AGRDA1" },
+        { "type": 3003, "name": "Templar", "radius": 20, "height": 60, "sprite": "PGRDA?" },
+        { "type": 3005, "name": "Crusader", "radius": 40, "height": 56, "sprite": "ROB2A?" },
+        { "type": 3006, "name": "Sentinel", "radius": 31, "height": 53, "sprite": "SEWRC?" }
+      ]
+    },
+
+    {
+      "name": "Health And Armour",
+      "defaults": {
+        "angle": false
+      },
+      "things": [
+        { "type": 83, "name": "Surgery Kit", "colour": "rgb(100, 100, 200)", "sprite": "FULLA?" },
+        { "type": 2011, "name": "Med Patch", "colour": "rgb(100, 100, 200)", "sprite": "STMPA?" },
+        { "type": 2012, "name": "Medical Kit", "colour": "rgb(100, 100, 200)", "sprite": "MDKTA?" },
+        { "type": 2018, "name": "Leather Armor", "colour": "rgb(100, 200, 100)", "sprite": "ARM2A?" },
+        { "type": 2019, "name": "Metal Armour", "colour": "rgb(100, 100, 200)", "sprite": "ARM1A?" }
+      ]
+    },
+
+    {
+      "name": "Weapons",
+      "defaults": {
+        "colour": "rgb(220, 180, 100)",
+        "angle": false,
+        "icon": "weapon"
+      },
+      "things": [
+        { "type": 77, "name": "Sigil 1 (Lightning)", "sprite": "I_SGL1" },
+        { "type": 78, "name": "Sigil 2 (Rail)", "sprite": "I_SGL2" },
+        { "type": 79, "name": "Sigil 3 (Spread)", "sprite": "I_SGL3" },
+        { "type": 80, "name": "Sigil 4 (Column)", "sprite": "I_SGL4" },
+        { "type": 81, "name": "Sigil 5 (Blast)", "sprite": "I_SGL5" },
+        { "type": 154, "name": "Grenade Launcher", "sprite": "GRNDA?" },
+        { "type": 2001, "name": "Crossbow", "sprite": "CBOWA?" },
+        { "type": 2002, "name": "Assault Gun", "sprite": "RIFLA?" },
+        { "type": 2003, "name": "Mini-Missile Launcher", "sprite": "MMSLA?" },
+        { "type": 2004, "name": "Mauler", "sprite": "TRPDA?" },
+        { "type": 2005, "name": "Flame Thrower", "sprite": "FLAMA?" },
+        { "type": 2006, "name": "Assault Gun Standing", "sprite": "RIFLB?" }
+      ]
+    },
+
+    {
+      "name": "Ammunition",
+      "defaults": {
+        "colour": "rgb(180, 150, 50)",
+        "angle": false
+      },
+      "things": [
+        { "type": 17, "name": "Energy Pack", "sprite": "CPACA?" },
+        { "type": 84, "name": "Gas Grenade (Teaser only)", "sprite": "GASGA?" },
+        { "type": 114, "name": "Electric Bolts", "sprite": "XQRLA?" },
+        { "type": 115, "name": "Poison Arrows", "sprite": "PQRLA?" },
+        { "type": 152, "name": "HE Grenades", "sprite": "GRN1A?" },
+        { "type": 153, "name": "Phosphorous Grenades", "sprite": "GRN2A?" },
+        { "type": 183, "name": "Ammo Satchel", "sprite": "BKPKA?" },
+        { "type": 2007, "name": "Clip of Bullets", "sprite": "BLITA?" },
+        { "type": 2010, "name": "Missiles", "sprite": "MSSLA?" },
+        { "type": 2046, "name": "Crate of Missiles", "sprite": "ROKTA?" },
+        { "type": 2047, "name": "Energy Pod", "sprite": "BRY1A?" },
+        { "type": 2048, "name": "Box of Bullets", "sprite": "BBOXA?" }
+      ]
+    },
+
+    {
+      "name": "Powerups",
+      "defaults": {
+        "colour": "rgb(220, 100, 220)",
+        "angle": false
+      },
+      "things": [
+        { "type": 10, "name": "Teleport Beacon", "sprite": "BEACA?", "radius": 16 },
+        { "type": 59, "name": "Degnin Ore", "sprite": "XPRKA?", "radius": 16 },
+        { "type": 207, "name": "Targeter", "sprite": "TARGA?" },
+        { "type": 2024, "name": "Shadow Armor", "sprite": "SHD1A?" },
+        { "type": 2025, "name": "Environmental Suit", "sprite": "MASKA?" },
+        { "type": 2026, "name": "Map", "sprite": "PMAPA?" },
+        { "type": 2027, "name": "Scanner", "sprite": "PMUPA?" }
+      ]
+    },
+
+    {
+      "name": "Keys",
+      "defaults": {
+        "angle": false,
+        "colour": "rgb(150, 150, 150)"
+      },
+      "things": [
+        { "type": 13, "name": "ID Card", "colour": "rgb(200, 0, 0)", "sprite": "CRD2A?" },
+        { "type": 38, "name": "Silver Key", "sprite": "KY2SA?" },
+        { "type": 39, "name": "Brass Key", "colour": "rgb(150, 75, 0)", "sprite": "KY3BA?" },
+        { "type": 40, "name": "Gold Key", "colour": "rgb(255, 200, 0)", "sprite": "KY1GA?" },
+        { "type": 61, "name": "Oracle Key", "sprite": "ORACA?" },
+        { "type": 86, "name": "Order Key", "sprite": "FUBRA?" },
+        { "type": 91, "name": "Severed Hand", "colour": "rgb(255, 151, 100)", "sprite": "HANDA?" },
+        { "type": 166, "name": "Warehouse Key", "sprite": "WAREA?" },
+        { "type": 184, "name": "ID Badge", "colour": "rgb(255, 128, 0)", "sprite": "CRD1A?" },
+        { "type": 185, "name": "Passcard", "colour": "rgb(128, 166, 150)", "sprite": "TPASA?" },
+        { "type": 192, "name": "Red Crystal Key", "colour": "rgb(255, 150, 150)", "sprite": "RCRYA?" },
+        { "type": 193, "name": "Blue Crystal Key", "colour": "rgb(150, 150, 255)", "sprite": "BCRYA?" },
+        { "type": 195, "name": "Chapel Key", "sprite": "CHAPA?" },
+        { "type": 230, "name": "Base Key (Front)", "sprite": "FUSLA?" },
+        { "type": 233, "name": "Mauler Key", "sprite": "BLTKA?" },
+        { "type": 234, "name": "Factory Key", "sprite": "PROCA?" },
+        { "type": 235, "name": "Mine Key", "sprite": "MINEA?" },
+        { "type": 236, "name": "Core Key", "sprite": "GOIDA?" }
+      ]
+    },
+
+    {
+      "name": "Quest Items",
+      "defaults": {
+        "angle": false,
+        "colour": "rgb(114, 54, 0)"
+      },
+      "things": [
+        { "type": 25, "name": "Force Field Guard", "sprite": "BNG2I?", "width": 2, "height": 1 },
+        { "type": 45, "name": "Gate Piston", "sprite": "PSTNA?", "height": 76 },
+        { "type": 52, "name": "Officer Uniform", "sprite": "OFICA?" },
+        { "type": 90, "name": "Guard Uniform", "sprite": "UNIFA?" },
+        { "type": 92, "name": "Power Crystal", "sprite": "CRYSA?", "height": 14 },
+        { "type": 93, "name": "Gold Coin", "sprite": "COINA?" },
+        { "type": 138, "name": "10 Gold", "sprite": "CREDA?" },
+        { "type": 139, "name": "25 Gold", "sprite": "SACKA?" },
+        { "type": 140, "name": "50 Gold", "sprite": "CHSTA?" },
+        { "type": 182, "name": "Computer", "sprite": "SECRA?", "radius": 26, "height": 128 },
+        { "type": 205, "name": "Offering Chalice", "sprite": "RELCA?", "radius": 10 },
+        { "type": 206, "name": "Communicator", "sprite": "COMMA?" },
+        { "type": 220, "name": "Power Coupling", "sprite": "COUPA?", "radius": 17, "height": 64 },
+        { "type": 226, "name": "Broken Power Coupling", "sprite": "COUPC?", "radius": 16, "height": 16 },
+        { "type": 9001, "name": "Unimplemented Spot 0", "sprite": "POW1A?", "radius": 1, "height": 1 },
+        { "type": 9002, "name": "Unimplemented Spot 1", "sprite": "POW1A?", "radius": 1, "height": 1 },
+        { "type": 9003, "name": "Unimplemented Spot 2", "sprite": "POW1A?", "radius": 1, "height": 1 },
+        { "type": 9004, "name": "Unimplemented Spot 3", "sprite": "POW1A?", "radius": 1, "height": 1 },
+        { "type": 9005, "name": "Unimplemented Spot 4", "sprite": "POW1A?", "radius": 1, "height": 1 },
+        { "type": 9006, "name": "Unimplemented Spot 5", "sprite": "POW1A?", "radius": 1, "height": 1 },
+        { "type": 9007, "name": "Unimplemented Spot 6", "sprite": "POW1A?", "radius": 1, "height": 1 },
+        { "type": 9008, "name": "Unimplemented Spot 7", "sprite": "POW1A?", "radius": 1, "height": 1 },
+        { "type": 9009, "name": "Unimplemented Spot 8", "sprite": "POW1A?", "radius": 1, "height": 1 },
+        { "type": 9010, "name": "Unimplemented Spot 9", "sprite": "POW1A?", "radius": 1, "height": 1 }
+      ]
+    },
+
+    {
+      "name": "Gore/Dead Things",
+      "defaults": {
+        "colour": "rgb(90, 0, 0)",
+        "radius": 20,
+        "angle": false,
+        "decoration": true
+      },
+      "things": [
+        { "type": 15, "name": "Dead Player, disappears", "sprite": "PLAYP?" },
+        { "type": 18, "name": "Dead Peasant, disappears", "sprite": "PEASN?" },
+        { "type": 19, "name": "Dead Rebel", "sprite": "HMN1N?" },
+        { "type": 20, "name": "Dead Reaver", "sprite": "ROB1R?" },
+        { "type": 21, "name": "Dead Acolyte, disappears", "sprite": "AGRDN?" },
+        { "type": 22, "name": "Dead Crusader", "sprite": "ROB2P?" },
+        { "type": 212, "name": "Sacrificed Guy", "sprite": "SACRA?" }
+      ]
+    },
+
+    {
+      "name": "Gore/Bodies in Tanks",
+      "defaults": {
+        "colour": "rgb(120, 0, 0)",
+        "radius": 16,
+        "height": 56,
+        "angle": false,
+        "hanging": true,
+        "solid": true,
+        "decoration": true
+      },
+      "things": [
+        { "type": 113, "name": "Hearts in Tank", "sprite": "HERTA?" },
+        { "type": 209, "name": "Huge Tank 1 has skeleton", "sprite": "TNK1C?", "height": 192 },
+        { "type": 210, "name": "Huge Tank 2", "sprite": "TNK2C?", "height": 192 },
+        { "type": 211, "name": "Huge Tank 3", "sprite": "TNK3C?", "height": 192 },
+        { "type": 213, "name": "Tank 4 spine with organs", "sprite": "TNK4C?" },
+        { "type": 214, "name": "Tank 5 Stumpy the Acolyte", "sprite": "TNK5C?" },
+        { "type": 229, "name": "Tank 6 Spectre", "sprite": "TNK6C?" }
+      ]
+    },
+
+    {
+      "name": "Lighting",
+      "defaults": {
+        "colour": "rgb(220, 220, 200)",
+        "angle": false,
+        "fullbright": true,
+        "decoration": true
+      },
+      "things": [
+        { "type": 24, "name": "Klaxon Warning", "sprite": "KLAXB?", "radius": 5 },
+        { "type": 28, "name": "Cage Light", "sprite": "CAGEA?", "height": 3, "hanging": true },
+        { "type": 34, "name": "Candle", "sprite": "CNDLA?" },
+        { "type": 35, "name": "Candelabra", "sprite": "CLBRA?", "radius": 16, "height": 40, "solid": true },
+        { "type": 43, "name": "Outside Lamp", "sprite": "LAMPA?", "radius": 3, "height": 80, "solid": true },
+        { "type": 46, "name": "Pole Lantern", "sprite": "LANTA?", "radius": 3, "height": 80, "solid": true },
+        { "type": 47, "name": "Large Torch", "sprite": "LMPCA?", "radius": 10, "height": 72, "solid": true },
+        { "type": 50, "name": "Huge Torch", "sprite": "LOGSA?", "radius": 10, "height": 80, "solid": true },
+        { "type": 70, "name": "Burning Barrel", "sprite": "BARLA?", "radius": 16, "height": 48, "solid": true },
+        { "type": 95, "name": "Silver Fluorescent Light", "sprite": "LITSA?", "radius": 3 },
+        { "type": 96, "name": "Brass Fluorescent Light", "sprite": "LITBA?", "radius": 3 },
+        { "type": 97, "name": "Gold Fluorescent Light", "sprite": "LITGA?", "radius": 3 },
+        { "type": 105, "name": "Burning Bowl", "sprite": "BOWLA?", "radius": 16 },
+        { "type": 106, "name": "Burning Brazier", "sprite": "BRAZA?", "radius": 10, "height": 32, "solid": true },
+        { "type": 107, "name": "Small Burning Torch", "sprite": "TRCHA?", "radius": 3 },
+        { "type": 108, "name": "Small Unlit Torch", "sprite": "TRHOA?", "radius": 3 },
+        { "type": 111, "name": "Medium Torch", "sprite": "LTRHA?", "radius": 4, "height": 72, "solid": true },
+        { "type": 196, "name": "Silver Tech Lamp", "sprite": "TLMPA?", "radius": 11, "height": 64, "solid": true },
+        { "type": 197, "name": "Brass Tech Lamp", "sprite": "TLMPB?", "radius": 8, "height": 64, "solid": true },
+        { "type": 225, "name": "Alien Spider Light", "sprite": "SPDLA?", "radius": 32, "height": 56, "solid": true },
+        { "type": 2028, "name": "Globe Light", "sprite": "LITEA?", "radius": 16, "solid": true }
+      ]
+    },
+
+    {
+      "name": "Decorations/Ruins",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 54, "name": "Aztec Pillar", "sprite": "STELA?", "height": 128 },
+        { "type": 55, "name": "Damaged Aztec Pillar", "sprite": "STLAA?", "height": 80 },
+        { "type": 56, "name": "Ruined Aztec Pillar", "sprite": "STLEA?", "height": 40 }
+      ]
+    },
+
+    {
+      "name": "Decorations/Base & Town",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 44, "name": "Ruined Statue", "sprite": "DSTAA?", "radius": 20, "height": 56 },
+        { "type": 48, "name": "Tech pillar", "sprite": "MONIA?", "radius": 20, "height": 128 },
+        { "type": 57, "name": "Huge Tech Pillar", "sprite": "HUGEA?", "radius": 24, "height": 192 },
+        { "type": 69, "name": "Barricade Column", "sprite": "BAR1A?", "height": 128 },
+        { "type": 63, "name": "Chimneystack", "sprite": "STAKA?", "radius": 20, "height": 64 },
+        { "type": 68, "name": "Tray", "sprite": "TRAYA?", "radius": 24, "height": 40 },
+        { "type": 82, "name": "Wooden Barrel", "sprite": "BARWA?", "radius": 10, "height": 32 },
+        { "type": 94, "name": "Explosive Barrel", "sprite": "BARTA?", "radius": 10, "height": 32 },
+        {
+          "type": 109,
+          "name": "Ceiling Chain",
+          "sprite": "CHANA?",
+          "radius": 20,
+          "height": 93,
+          "hanging": true,
+          "solid": false
+        },
+        { "type": 110, "name": "Statue", "sprite": "STATA?", "radius": 20, "height": 64 },
+        { "type": 117, "name": "Surgery Crab", "sprite": "CRABA?", "radius": 20, "hanging": true, "solid": false },
+        { "type": 164, "name": "Mug", "sprite": "MUGGA?", "radius": 20, "solid": false },
+        { "type": 165, "name": "Pot", "sprite": "VASEA?", "radius": 12, "height": 24 },
+        { "type": 188, "name": "Pitcher", "sprite": "VASEB?", "radius": 12, "height": 32 },
+        { "type": 189, "name": "Stool", "sprite": "STOLA?", "radius": 6, "height": 24 },
+        { "type": 190, "name": "Metal Pot", "sprite": "POT1A?", "radius": 20 },
+        { "type": 191, "name": "Tub", "sprite": "TUB1A?", "radius": 20 },
+        { "type": 194, "name": "Anvil", "sprite": "ANVLA?", "height": 32, "solid": false },
+        { "type": 208, "name": "Practice Target", "sprite": "HOGNA?", "radius": 10, "height": 72 },
+        { "type": 216, "name": "Sigil Banner", "sprite": "SBANA?", "radius": 24, "height": 96 },
+        { "type": 217, "name": "Rebel Boots", "sprite": "BOTRA?", "radius": 20, "solid": false },
+        { "type": 218, "name": "Rebel Helmet", "sprite": "HATRA?", "radius": 20, "solid": false },
+        { "type": 219, "name": "Rebel Shirt", "sprite": "TOPRA?", "radius": 20, "solid": false },
+        { "type": 228, "name": "Ammo Filler", "sprite": "AFEDA?", "radius": 12, "height": 24 },
+        { "type": 2014, "name": "Water Bottle", "sprite": "WATRA?", "radius": 20, "solid": false }
+      ]
+    },
+
+    {
+      "name": "Decorations/Alien",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 221, "name": "Alien Bubble Column", "sprite": "BUBBA?", "height": 128 },
+        { "type": 222, "name": "Alien Floor Bubble", "sprite": "BUBFA?", "height": 72 },
+        { "type": 223, "name": "Alien Ceiling Bubble", "sprite": "BUBCA?", "height": 72, "hanging": true },
+        { "type": 224, "name": "Alien Asp Climber", "sprite": "ASPRA?", "height": 128 },
+        { "type": 227, "name": "Huge Alien Pillar", "sprite": "APOWA?", "radius": 24, "height": 192 }
+      ]
+    },
+
+    {
+      "name": "Decorations/Water",
+      "defaults": {
+        "colour": "rgb(80, 160, 80)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 53, "name": "Water Drip", "sprite": "CDRPA?", "height": 1, "hanging": true },
+        { "type": 103, "name": "Floor Water Drip", "sprite": "DRIPA?" },
+        { "type": 104, "name": "Waterfall Splash", "sprite": "SPLHA?" },
+        { "type": 215, "name": "Stick in Water", "sprite": "LOGGA?" }
+      ]
+    },
+
+    {
+      "name": "Decorations/Plants",
+      "defaults": {
+        "colour": "rgb(80, 160, 80)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 33, "name": "Tree Stub", "sprite": "TRE1A?", "radius": 15, "height": 80, "solid": true },
+        { "type": 51, "name": "Palm Tree", "sprite": "TREEA?", "radius": 15, "height": 109, "solid": true },
+        { "type": 60, "name": "Short Bush", "sprite": "BUSHA?", "radius": 15, "height": 40, "solid": true },
+        { "type": 62, "name": "Tall Bush", "sprite": "SHRBA?", "height": 64, "solid": true },
+        { "type": 112, "name": "Fountain", "sprite": "WTFTA?", "radius": 20 },
+        { "type": 202, "name": "Big Tree", "sprite": "TREEB?", "radius": 15, "height": 109, "solid": true },
+        { "type": 203, "name": "Potted Tree", "sprite": "TREEC?", "radius": 15, "height": 64 }
+      ]
+    },
+
+    {
+      "name": "Decorations/Rocks",
+      "defaults": {
+        "colour": "rgb(80, 160, 80)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 29, "name": "Rubble 1", "sprite": "RUB1A?" },
+        { "type": 30, "name": "Rubble 2", "sprite": "RUB2A?" },
+        { "type": 31, "name": "Rubble 3", "sprite": "RUB3A?" },
+        { "type": 32, "name": "Rubble 4", "sprite": "RUB4A?" },
+        { "type": 36, "name": "Rubble 5", "sprite": "RUB5A?" },
+        { "type": 37, "name": "Rubble 6", "sprite": "RUB6A?" },
+        { "type": 41, "name": "Rubble 7", "sprite": "RUB7A?" },
+        { "type": 42, "name": "Rubble 8", "sprite": "RUB8A?" },
+        { "type": 99, "name": "Rock 1", "sprite": "ROK1A?" },
+        { "type": 100, "name": "Rock 2", "sprite": "ROK2A?" },
+        { "type": 101, "name": "Rock 3", "sprite": "ROK3A?" },
+        { "type": 102, "name": "Rock 4", "sprite": "ROK4A?" },
+        { "type": 98, "name": "Stalactite", "sprite": "STLGC?", "height": 54, "hanging": true, "solid": true },
+        {
+          "type": 159,
+          "name": "Cave Pillar Top",
+          "sprite": "STLGD?",
+          "radius": 16,
+          "height": 128,
+          "hanging": true,
+          "solid": true
+        },
+        { "type": 160, "name": "Stalagmite", "sprite": "STLGB?", "radius": 16, "height": 40, "solid": true },
+        { "type": 161, "name": "Small Stalactite", "sprite": "STLGA?", "radius": 16, "height": 40, "hanging": true },
+        { "type": 162, "name": "Cave Pillar Bottom", "sprite": "STLGE?", "radius": 16, "height": 128, "solid": true },
+        { "type": 163, "name": "Stalagmite Small", "sprite": "STLGF?", "radius": 16, "height": 25, "solid": true }
+      ]
+    }
+  ]
+}

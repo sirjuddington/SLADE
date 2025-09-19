@@ -4,8 +4,7 @@
 
 namespace slade
 {
-class SToolBarButton;
-class SToolBar;
+class SAuiToolBar;
 class UndoManager;
 
 class EntryPanel : public wxPanel, protected SActionHandler
@@ -38,7 +37,6 @@ public:
 	void           nullEntry() { entry_.reset(); }
 	virtual bool   undo() { return false; }
 	virtual bool   redo() { return false; }
-	void           updateToolbar();
 	virtual void   toolbarButtonClick(const string& action_id) {}
 
 protected:
@@ -46,16 +44,14 @@ protected:
 	weak_ptr<ArchiveEntry> entry_;
 	UndoManager*           undo_manager_ = nullptr;
 
-	wxSizer*        sizer_main_   = nullptr;
-	wxSizer*        sizer_bottom_ = nullptr;
-	SToolBarButton* stb_save_     = nullptr;
-	SToolBarButton* stb_revert_   = nullptr;
+	wxSizer* sizer_main_   = nullptr;
+	wxSizer* sizer_bottom_ = nullptr;
 
-	wxMenu*   menu_custom_ = nullptr;
-	string    custom_menu_name_;
-	string    custom_toolbar_actions_;
-	SToolBar* toolbar_      = nullptr;
-	SToolBar* toolbar_left_ = nullptr;
+	wxMenu*      menu_custom_ = nullptr;
+	string       custom_menu_name_;
+	string       custom_toolbar_actions_;
+	SAuiToolBar* toolbar_      = nullptr;
+	SAuiToolBar* toolbar_left_ = nullptr;
 
 	void         setModified(bool c = true);
 	virtual bool loadEntry(ArchiveEntry* entry);

@@ -1,0 +1,13 @@
+{
+  "groups": [
+    {
+      "name": "Scrollers",
+      "defaults": { "tagged": "line" },
+      "specials": [
+        { "id": 1024, "name": "-- Scroll Wall w/ Offsets, Share w/ Similar Tag (Standard)" },
+        { "id": 1025, "name": "-- Scroll Wall w/ Offsets, Share w/ Similar Tag (Displacement)" },
+        { "id": 1026, "name": "-- Scroll Wall w/ Offsets, Share w/ Similar Tag (Accelerative)" }
+      ]
+    }
+  ]
+}

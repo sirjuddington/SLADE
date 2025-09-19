@@ -57,7 +57,6 @@ EXTERN_CVAR(String, iconset_entry_list)
 EXTERN_CVAR(Bool, tabs_condensed)
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
-EXTERN_CVAR(Bool, elist_no_tree)
 EXTERN_CVAR(Int, win_darkmode)
 
 
@@ -123,8 +122,6 @@ void InterfaceSettingsPanel::loadSettings()
 	else
 		choice_elist_icon_size_->Select(2);
 
-	rbp_elist_tree_style_->setSelection(elist_no_tree ? 1 : 0);
-
 	rbp_windows_darkmode_->setSelection(win_darkmode);
 
 	colour_panel_->loadSettings();
@@ -158,7 +155,6 @@ void InterfaceSettingsPanel::applySettings()
 	else
 		elist_icon_size = 32;
 	elist_type_bgcol = cb_elist_bgcol_->GetValue();
-	elist_no_tree    = rbp_elist_tree_style_->getSelection() == 1;
 
 	colour_panel_->applySettings();
 }
@@ -193,8 +189,6 @@ wxPanel* InterfaceSettingsPanel::createInterfacePanel(wxWindow* parent)
 	spin_elist_icon_pad_ = new wxSpinCtrl(
 		panel, -1, wxS("1"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 1);
 	vector<string> tree_styles = { "Tree", "Flat List" };
-	rbp_elist_tree_style_      = new RadioButtonPanel(
-        panel, tree_styles, "Entry list layout for archives that allow folders:");
 
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
@@ -252,7 +246,6 @@ wxSizer* InterfaceSettingsPanel::layoutEntryListSettings(wxWindow* panel) const
 	sizer->Add(choice_elist_icon_size_, { row++, 2 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(new wxStaticText(panel, -1, wxS("Row spacing:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(spin_elist_icon_pad_, { row++, 1 }, { 1, 2 }, wxEXPAND);
-	sizer->Add(rbp_elist_tree_style_, { row++, 0 }, { 1, 3 }, wxEXPAND);
 	sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);
 
 	sizer->AddGrowableCol(1);

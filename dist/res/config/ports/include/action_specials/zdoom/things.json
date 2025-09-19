@@ -1,0 +1,276 @@
+// ZDoom action specials for hexen/udmf map formats
+// Thing related specials
+{
+  "arg_presets": {
+    "means_of_death": {
+      "name": "Means of death",
+      "type": "choice",
+      "custom_values": [
+        { "name": "generic damage", "value": 0 },
+        { "name": "rocket", "value": 5 },
+        { "name": "rocket splash damage", "value": 6 },
+        { "name": "plasma", "value": 7 },
+        { "name": "BFG ball", "value": 8 },
+        { "name": "BFG tracer", "value": 9 },
+        { "name": "chainsaw", "value": 10 },
+        { "name": "shotgun", "value": 11 },
+        { "name": "drowning", "value": 12 },
+        { "name": "slime - Doom's damaging floors", "value": 13 },
+        { "name": "lava/fire", "value": 14 },
+        { "name": "crusher", "value": 15 },
+        { "name": "telefrag", "value": 16 },
+        { "name": "falling", "value": 17 },
+        { "name": "suicide", "value": 18 },
+        { "name": "barrel", "value": 19 },
+        { "name": "exit - used in deathmatch", "value": 20 },
+        { "name": "generic splash damage", "value": 21 },
+        { "name": "generic melee damage", "value": 22 },
+        { "name": "railgun", "value": 23 },
+        { "name": "ice", "value": 24 },
+        { "name": "disintegration", "value": 25 },
+        { "name": "poison", "value": 26 },
+        { "name": "electricity", "value": 27 },
+        { "name": "massacre - console cheat", "value": 1000 }
+      ]
+    },
+    "projectile_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "value": 80, "name": "imp fireball" },
+        { "value": 120, "name": "Baron slimeball" },
+        { "value": 160, "name": "rocket" },
+        { "value": 200, "name": "plasma cell" }
+      ]
+    },
+    "projectile_h_speed": {
+      "name": "H Speed",
+      "type": "speed",
+      "custom_values": [
+        { "value": 80, "name": "imp fireball" },
+        { "value": 120, "name": "Baron slimeball" },
+        { "value": 160, "name": "rocket" },
+        { "value": 200, "name": "plasma cell" }
+      ]
+    },
+    "projectile_v_speed": {
+      "name": "V Speed",
+      "type": "speed"
+    }
+  },
+
+  "groups": [
+    {
+      "name": "Things",
+      "defaults": { "tagged": "thing" },
+      "specials": [
+        {
+          "name": "Thing_Activate",
+          "id": 130,
+          "arg1": "Thing ID"
+        },
+        {
+          "name": "Thing_Deactivate",
+          "id": 131,
+          "arg1": "Thing ID"
+        },
+        {
+          "name": "HealThing",
+          "id": 248,
+          "arg1": "Thing ID",
+          "arg2": "Amount"
+        },
+        {
+          "name": "Thing_Raise",
+          "id": 17,
+          "arg1": "Thing ID"
+        },
+        {
+          "name": "Thing_Spawn",
+          "id": 135,
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": { "name": "Angle", "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South" },
+          "arg4": { "name": "New TID", "description": "TID to give spawned thing" }
+        },
+        {
+          "name": "Thing_SpawnNoFog",
+          "id": 137,
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": { "name": "Angle", "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South" },
+          "arg4": { "name": "New TID", "description": "TID to give spawned thing" }
+        },
+        {
+          "name": "Thing_SpawnFacing",
+          "id": 139,
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": "No Fog?",
+          "arg4": { "name": "New TID", "description": "TID to give spawned thing" }
+        },
+        {
+          "name": "Thing_Projectile",
+          "id": 134,
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": {
+            "name": "Angle",
+            "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South",
+            "type": "angle"
+          },
+          "arg4": "$projectile_h_speed",
+          "arg5": "$projectile_v_speed"
+        },
+        {
+          "name": "Thing_ProjectileGravity",
+          "id": 136,
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": { "name": "Angle", "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South" },
+          "arg4": "$projectile_h_speed",
+          "arg5": "$projectile_v_speed"
+        },
+        {
+          "name": "Thing_ProjectileAimed",
+          "id": 178,
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": "$projectile_speed",
+          "arg4": "Target TID",
+          "arg5": { "name": "New TID", "description": "TID to give spawned thing" },
+          "tagged": "ex_1thing_4thing"
+        },
+        {
+          "name": "Thing_ProjectileIntercept",
+          "id": 175,
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": "$projectile_speed",
+          "arg4": "Target TID",
+          "arg5": { "name": "New TID", "description": "TID to give spawned thing" },
+          "tagged": "ex_1thing_4thing"
+        },
+        {
+          "name": "DamageThing",
+          "id": 73,
+          "arg1": { "name": "Amount", "description": "0 is a guaranteed kill" },
+          "arg2": "$means_of_death",
+          "tagged": "no"
+        },
+        {
+          "name": "Thing_Damage",
+          "id": 119,
+          "arg1": "Thing ID",
+          "arg2": "Amount",
+          "arg3": "$means_of_death"
+        },
+        {
+          "name": "Thing_Destroy",
+          "id": 133,
+          "arg1": "Thing ID",
+          "arg2": "Extreme?",
+          "arg3": "Sector Tag",
+          "tagged": "ex_1thing_3sector"
+        },
+        {
+          "name": "Thing_Remove",
+          "id": 132,
+          "arg1": "Thing ID"
+        },
+        {
+          "name": "Thing_Move",
+          "id": 125,
+          "arg1": "Thing ID",
+          "arg2": "Destination TID",
+          "arg3": "No Fog?",
+          "tagged": "ex_1thing_2thing"
+        },
+        {
+          "name": "ThrustThing",
+          "id": 72,
+          "arg1": {
+            "name": "Angle",
+            "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South",
+            "type": "angle"
+          },
+          "arg2": { "name": "Force", "description": "In map unit per tics" },
+          "arg3": { "name": "No limit", "description": "Should be set to 1 for forces above 30" },
+          "arg4": "Thing ID",
+          "tagged": "ex_4thing"
+        },
+        {
+          "name": "ThrustThingZ",
+          "id": 128,
+          "arg1": "Thing ID",
+          "arg2": { "name": "Force", "description": "Vertical movement in quarter of unit per tic" },
+          "arg3": { "name": "Down?", "description": "Default is up" },
+          "arg4": { "name": "Add?", "description": "Default is to ignore existing vertical velocity" }
+        },
+        {
+          "name": "Thing_Stop",
+          "id": 19,
+          "arg1": "Thing ID"
+        },
+        {
+          "name": "Thing_SetConversation",
+          "id": 79,
+          "arg1": "Thing ID",
+          "arg2": { "name": "Conversation ID", "description": "0 = remove all conversation from tagged actors" }
+        },
+        {
+          "name": "Thing_SetSpecial",
+          "id": 127,
+          "arg1": "Thing ID",
+          "arg2": "Special",
+          "arg3": "First Special Arg",
+          "arg4": "Second Special Arg",
+          "arg5": "Third Special Arg"
+        },
+        {
+          "name": "Thing_ChangeTID",
+          "id": 176,
+          "arg1": "Thing ID",
+          "arg2": "New TID"
+        },
+        {
+          "name": "Thing_Hate",
+          "id": 177,
+          "arg1": "Hater TID",
+          "arg2": "Hated TID",
+          "arg3": {
+            "name": "Hate Type",
+            "type": "choice",
+            "custom_values": [
+              { "value": 0, "name": "hate once" },
+              { "value": 1, "name": "retaliate against players" },
+              { "value": 2, "name": "also hunt enemies" },
+              { "value": 3, "name": "also hunt players" },
+              { "value": 4, "name": "also hunt monsters" },
+              { "value": 5, "name": "ignore player attacks" },
+              { "value": 6, "name": "ignore attacks but hunt enemies" }
+            ]
+          }
+        },
+        {
+          "name": "Thing_SetTranslation",
+          "id": 180,
+          "arg1": "Thing ID",
+          "arg2": "Translation number"
+        },
+        {
+          "name": "Thing_SetGoal",
+          "id": 229,
+          "arg1": "Thing ID",
+          "arg2": "Goal TID",
+          "arg3": { "name": "Delay", "description": "Seconds before starting patrol" },
+          "arg4": {
+            "name": "Don't Chase Target?",
+            "description": "If 1, the monster will attack enemies on its way but still go towards the goal instead of any other target"
+          },
+          "tagged": "ex_1thing_2thing"
+        }
+      ]
+    }
+  ]
+}

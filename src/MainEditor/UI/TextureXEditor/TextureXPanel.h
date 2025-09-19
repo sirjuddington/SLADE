@@ -5,7 +5,7 @@
 namespace slade
 {
 class CTexture;
-class SToolBar;
+class SAuiToolBar;
 class TextureEditorPanel;
 class TextureXEditor;
 class TextureXList;
@@ -68,7 +68,7 @@ private:
 	wxStaticBox*        frame_textures_   = nullptr;
 	wxTextCtrl*         text_filter_      = nullptr;
 	wxButton*           btn_clear_filter_ = nullptr;
-	SToolBar*           toolbar_          = nullptr;
+	SAuiToolBar*        toolbar_          = nullptr;
 
 	// Events
 	void onTextureListSelect(wxListEvent& e);

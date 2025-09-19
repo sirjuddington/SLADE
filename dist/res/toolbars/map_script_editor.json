@@ -1,0 +1,11 @@
+{
+  "items": [
+    { "type": "action", "id": "mapw_script_save" },
+    { "type": "action", "id": "mapw_script_compile" },
+    { "type": "action", "id": "mapw_script_togglelanguage" },
+
+    { "type": "separator" },
+
+    { "type": "custom_control", "id": "jump_to", "label": "Jump To:" }
+  ]
+}

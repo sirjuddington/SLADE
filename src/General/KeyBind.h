@@ -75,6 +75,7 @@ public:
 	}
 	int      nDefaults() const { return defaults_.size(); }
 	Keypress defaultKey(unsigned index) { return defaults_[index]; }
+	bool     isDefault() const;
 
 	// Static functions
 	static KeyBind&       bind(string_view name);
@@ -96,10 +97,10 @@ public:
 	static void     releaseAll();
 	static void     pressBind(string_view name);
 
-	static void   initBinds();
-	static string writeBinds();
-	static bool   readBinds(Tokenizer& tz);
-	static void   updateSortedBindsList();
+	static void initBinds();
+	static void saveBinds();
+	static bool readOldBinds(Tokenizer& tz);
+	static void updateSortedBindsList();
 
 private:
 	string           name_;

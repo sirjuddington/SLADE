@@ -40,7 +40,7 @@
 #include "UI/Lists/ArchiveListView.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
-#include "Utility/Parser.h"
+#include "Utility/JsonUtils.h"
 
 using namespace slade;
 using namespace ui;
@@ -151,11 +151,12 @@ void BaseResourceArchiveSettingsPanel::autodetect() const
 	vector<string> found_paths;
 
 	// List of known IWADs and common aliases
-	auto iwadlist = app::archiveManager().programResourceArchive()->entryAtPath("config/iwads.cfg");
+	auto iwadlist = app::archiveManager().programResourceArchive()->entryAtPath("config/iwads.json");
 	if (!iwadlist)
 		return;
-	Parser p;
-	p.parseText(iwadlist->data(), "slade.pk3:config/iwads.cfg");
+	auto j = jsonutil::parse(iwadlist->data());
+	if (j.is_discarded())
+		return;
 
 
 	// Find IWADs from DOOMWADDIR and DOOMWADPATH
@@ -179,9 +180,8 @@ void BaseResourceArchiveSettingsPanel::autodetect() const
 		auto paths = wxSplit(doomwadpath, separator);
 		paths.Add(doomwaddir);
 		wxArrayString iwadnames;
-		auto          list = p.parseTreeRoot()->childPTN("iwads");
-		for (size_t i = 0; i < list->nChildren(); ++i)
-			iwadnames.Add(wxString::FromUTF8(list->child(i)->name()));
+		for (auto& path : j["iwads"])
+			iwadnames.Add(wxString::FromUTF8(path.get<string>()));
 
 		// Look for every known IWAD in every known IWAD directory
 		for (auto folder : paths)
@@ -229,13 +229,11 @@ void BaseResourceArchiveSettingsPanel::autodetect() const
 #endif
 	if (queryPathKey(wxRegKey::HKLM, wxString::FromUTF8(gogregistrypath), wxS("DefaultPackPath"), path))
 	{
-		auto list = p.parseTreeRoot()->childPTN("gog");
-		for (size_t i = 0; i < list->nChildren(); ++i)
+		for (auto& [game, j_gog] : j["gog"].items())
 		{
-			auto child = list->childPTN(i);
-			gamepath   = wxString::FromUTF8(gogregistrypath + child->childPTN("id")->stringValue());
+			gamepath = wxString::FromUTF8(j_gog["id"].get<string>());
 			if (queryPathKey(wxRegKey::HKLM, gamepath, wxS("Path"), path))
-				paths.Add(path + wxString::FromUTF8(child->childPTN("path")->stringValue()));
+				paths.Add(path + wxString::FromUTF8(j_gog["path"].get<string>()));
 		}
 	}
 #endif
@@ -247,9 +245,8 @@ void BaseResourceArchiveSettingsPanel::autodetect() const
 		|| queryPathKey(wxRegKey::HKLM, wxS("Software\\Valve\\Steam"), wxS("InstallPath"), gamepath))
 	{
 		gamepath += wxS("/SteamApps/common/");
-		auto list = p.parseTreeRoot()->childPTN("steam");
-		for (size_t i = 0; i < list->nChildren(); ++i)
-			paths.Add(gamepath + wxString::FromUTF8(list->childPTN(i)->stringValue()));
+		for (auto& [game, path] : j["steam"].items())
+			paths.Add(gamepath + wxString::FromUTF8(path.get<string>()));
 	}
 #else
 	// TODO: Querying Steam registry on Linux and OSX. This involves parsing Steam's config.vdf file, which is found in

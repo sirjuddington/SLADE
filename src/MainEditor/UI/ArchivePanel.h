@@ -10,7 +10,7 @@ namespace slade
 {
 class EntryPanel;
 class ExternalEditManager;
-class SToolBar;
+class SAuiToolBar;
 class UndoManager;
 namespace ui
 {
@@ -119,7 +119,7 @@ protected:
 	wxTextCtrl*           text_filter_      = nullptr;
 	wxButton*             btn_clear_filter_ = nullptr;
 	wxChoice*             choice_category_  = nullptr;
-	SToolBar*             toolbar_elist_    = nullptr;
+	SAuiToolBar*          toolbar_elist_    = nullptr;
 	wxPanel*              panel_filter_     = nullptr;
 	wxSplitterWindow*     splitter_         = nullptr;
 
@@ -172,5 +172,6 @@ private:
 	void     setup(const Archive* archive);
 	void     bindEvents(Archive* archive);
 	wxPanel* createEntryListPanel(wxWindow* parent);
+	void     setEntryListViewType(bool tree) const;
 };
 } // namespace slade

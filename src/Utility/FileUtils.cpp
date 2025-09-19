@@ -35,6 +35,7 @@
 #include "FileUtils.h"
 #include "App.h"
 #include "StringUtils.h"
+#include "thirdparty/xxhash/xxhash.h"
 #include <filesystem>
 #include <fstream>
 
@@ -47,7 +48,19 @@ namespace fs = std::filesystem;
 // FileUtil Namespace Functions
 //
 // -----------------------------------------------------------------------------
-
+namespace slade::fileutil
+{
+// -----------------------------------------------------------------------------
+// Returns a std::filesystem path from a UTF-8 encoded [path]
+//
+// Since filesystem::u8path is deprecated but we need to use it, just wrap it
+// here so we only get 1 warning
+// -----------------------------------------------------------------------------
+inline fs::path u8path(string_view path)
+{
+	return fs::u8path(path);
+}
+}
 
 // -----------------------------------------------------------------------------
 // Returns true if a file at [path] exists
@@ -56,7 +69,7 @@ bool fileutil::fileExists(string_view path)
 {
 	try
 	{
-		auto fs_path = fs::u8path(path);
+		auto fs_path = u8path(path);
 		return fs::exists(fs_path) && fs::is_regular_file(fs_path);
 	}
 	catch (std::exception& ex)
@@ -73,7 +86,7 @@ bool fileutil::dirExists(string_view path)
 {
 	try
 	{
-		auto fs_path = fs::u8path(path);
+		auto fs_path = u8path(path);
 		return fs::exists(fs_path) && fs::is_directory(fs_path);
 	}
 	catch (std::exception& ex)
@@ -119,7 +132,7 @@ bool fileutil::validExecutable(string_view path)
 bool fileutil::removeFile(string_view path)
 {
 	static std::error_code ec;
-	if (!fs::remove(fs::u8path(path), ec))
+	if (!fs::remove(u8path(path), ec))
 	{
 		log::warning("Unable to remove file \"{}\": {}", path, ec.message());
 		return false;
@@ -136,7 +149,7 @@ bool fileutil::copyFile(string_view from, string_view to, bool overwrite)
 {
 	static std::error_code ec;
 	auto                   options = overwrite ? fs::copy_options::overwrite_existing : fs::copy_options::none;
-	if (!fs::copy_file(fs::u8path(from), fs::u8path(to), options, ec))
+	if (!fs::copy_file(u8path(from), u8path(to), options, ec))
 	{
 		log::warning(R"(Unable to copy file from "{}" to "{}": {})", from, to, ec.message());
 		return false;
@@ -192,7 +205,7 @@ bool fileutil::writeStringToFile(const string& str, const string& path)
 bool fileutil::createDir(string_view path)
 {
 	static std::error_code ec;
-	if (!fs::create_directory(fs::u8path(path), ec))
+	if (!fs::create_directory(u8path(path), ec))
 	{
 		if (ec.value() != 0)
 			log::warning("Unable to create directory \"{}\": {}", path, ec.message());
@@ -210,7 +223,7 @@ bool fileutil::createDir(string_view path)
 bool fileutil::removeDir(string_view path)
 {
 	static std::error_code ec;
-	if (!fs::remove_all(fs::u8path(path), ec))
+	if (!fs::remove_all(u8path(path), ec))
 	{
 		log::warning("Unable to remove directory \"{}\": {}", path, ec.message());
 		return false;
@@ -235,15 +248,15 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 
 	if (include_subdirs)
 	{
-		for (const auto& item : fs::recursive_directory_iterator(fs::u8path(path)))
+		for (const auto& item : fs::recursive_directory_iterator(u8path(path)))
 			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.push_back(item.path().u8string());
+				paths.emplace_back(reinterpret_cast<const char*>(item.path().u8string().c_str()));
 	}
 	else
 	{
-		for (const auto& item : fs::directory_iterator(fs::u8path(path)))
+		for (const auto& item : fs::directory_iterator(u8path(path)))
 			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.push_back(item.path().u8string());
+				paths.emplace_back(reinterpret_cast<const char*>(item.path().u8string().c_str()));
 	}
 
 	return paths;
@@ -251,18 +264,22 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 
 // -----------------------------------------------------------------------------
 // Returns the modification time of the file at [path], or 0 if the file doesn't
-// exist or can't be acessed
+// exist or can't be accessed
 // -----------------------------------------------------------------------------
 time_t fileutil::fileModifiedTime(string_view path)
 {
-#if 0
-	// Use this whenever we update to C++20
-	const auto file_time = std::filesystem::last_write_time(path);
-	const auto sys_time  = std::chrono::clock_cast<std::chrono::system_clock>(file_time);
-	return std::chrono::system_clock::to_time_t(sys_time);
-#endif
-
 	return wxFileModificationTime(wxString::FromUTF8(path.data(), path.size()));
+}
+
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the file at [path] using xxHash (XXH128).
+// Returns the hash as a hex string or empty if the file doesn't exist or can't
+// be accessed
+// -----------------------------------------------------------------------------
+string fileutil::fileHash(string_view path)
+{
+	SFile file(path);
+	return file.calculateHash();
 }
 
 
@@ -309,6 +326,13 @@ bool SFile::open(const string& path, Mode mode)
 	case Mode::ReadWite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
 	case Mode::Append:   handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
 	}
+
+	if (handle_)
+	{
+		struct _stat win_stat;
+		_wstat(wpath.wc_str(), &win_stat);
+		stat_.st_size = win_stat.st_size;
+	}
 #else
 	switch (mode)
 	{
@@ -317,12 +341,18 @@ bool SFile::open(const string& path, Mode mode)
 	case Mode::ReadWite: handle_ = fopen(path.c_str(), "r+b"); break;
 	case Mode::Append:   handle_ = fopen(path.c_str(), "ab"); break;
 	}
-#endif
 
 	if (handle_)
 		stat(path.c_str(), &stat_);
+#endif
 
-	return handle_ != nullptr;
+	if (handle_)
+	{
+		path_ = path;
+		return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -334,6 +364,7 @@ void SFile::close()
 	{
 		fclose(handle_);
 		handle_ = nullptr;
+		path_.clear();
 	}
 }
 
@@ -418,4 +449,43 @@ bool SFile::writeStr(string_view str) const
 		return fwrite(str.data(), 1, str.size(), handle_);
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the file using xxHash (XXH128).
+// Returns the hash as a hex string or empty if the file is not open
+// -----------------------------------------------------------------------------
+string SFile::calculateHash() const
+{
+	if (!isOpen())
+		return {};
+
+	auto current_pos = currentPos();
+	auto size        = this->size();
+
+	seekFromStart(0);
+	unsigned pos = 0;
+
+	auto* state = XXH3_createState();
+	XXH3_128bits_reset(state);
+
+	// Read in 1mb chunks
+	unsigned chunk_size = 1024;
+	char     buffer[1024];
+	while (pos < size)
+	{
+		if (size - pos < chunk_size)
+			chunk_size = size - pos;
+
+		read(buffer, chunk_size);
+		XXH3_128bits_update(state, buffer, chunk_size);
+
+		pos += chunk_size;
+	}
+
+	auto hash = XXH3_128bits_digest(state);
+	XXH3_freeState(state);
+	seekFromStart(current_pos);
+
+	return fmt::format("{:x}{:x}", hash.high64, hash.low64);
 }

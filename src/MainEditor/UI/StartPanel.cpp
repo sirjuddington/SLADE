@@ -38,9 +38,11 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "General/SActionHandler.h"
+#include "UI/Controls/SToolButton.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include <wx/statbmp.h>
@@ -91,11 +93,11 @@ wxBitmapBundle getIconBitmapBundle(string_view icon, int size)
 }
 
 // -----------------------------------------------------------------------------
-// Creates a custom button (SToolBarButton) for an action with [text] and [icon]
+// Creates a custom button (SToolButton) for an action with [text] and [icon]
 // -----------------------------------------------------------------------------
-SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, const string& text, const string& icon)
+SToolButton* createActionButton(wxWindow* parent, const string& action_id, const string& text, const string& icon)
 {
-	auto button = new SToolBarButton(parent, action_id, text, icon, "", true, 24);
+	auto button = new SToolButton(parent, action_id, text, icon, "", true, 24);
 	button->SetBackgroundColour(backgroundColour());
 	button->setExactFit(false);
 	button->setFontSize(1.1f);
@@ -197,16 +199,16 @@ string getArchiveIcon(const strutil::Path& path)
 // -----------------------------------------------------------------------------
 // RecentFileButton Class
 //
-// A custom SToolBarButton for recent files, will underline text on mouse over
+// A custom SToolButton for recent files, will underline text on mouse over
 // instead of changing the background colour
 // -----------------------------------------------------------------------------
 namespace
 {
-class RecentFileButton : public SToolBarButton
+class RecentFileButton : public SToolButton
 {
 public:
 	RecentFileButton(wxWindow* parent, const strutil::Path& path, int index) :
-		SToolBarButton(parent, "aman_recent", getArchiveIcon(path), true),
+		SToolButton(parent, "aman_recent", getArchiveIcon(path), true),
 		filename_{ path.fileName() }
 	{
 		action_wx_id_offset_ = index;
@@ -274,18 +276,20 @@ private:
 // -----------------------------------------------------------------------------
 StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
+	const wxString wxs_black = wxS("#000000");
+
 	wxPanel::SetName(wxS("startpage"));
 
 	wxWindow::SetDoubleBuffered(true);
 	wxWindowBase::SetBackgroundColour(backgroundColour());
-	wxWindowBase::SetForegroundColour(wxColour(app::isDarkTheme() ? FOREGROUND_COLOUR_DARK : wxS("#000000")));
+	wxWindowBase::SetForegroundColour(wxColour(app::isDarkTheme() ? FOREGROUND_COLOUR_DARK : wxs_black));
 
 	// Setup Recent Files panel
 	recent_files_panel_      = new wxPanel(this);
-	sc_recent_files_updated_ = app::archiveManager().signals().recent_files_changed.connect_scoped(
+	sc_recent_files_updated_ = database::signals().archive_file_updated.connect_scoped(
 		[this] { updateRecentFilesPanel(); }); // Update panel when recent files list changes
 	recent_files_panel_->SetBackgroundColour(backgroundColour());
-	recent_files_panel_->SetForegroundColour(wxColour(app::isDarkTheme() ? FOREGROUND_COLOUR_DARK : wxS("#000000")));
+	recent_files_panel_->SetForegroundColour(wxColour(app::isDarkTheme() ? FOREGROUND_COLOUR_DARK : wxs_black));
 	updateRecentFilesPanel();
 
 	setupLayout();
@@ -339,7 +343,7 @@ void StartPanel::updateRecentFilesPanel()
 	title_label->SetFont(title_label->GetFont().Bold().Scale(1.25f));
 	sizer->Add(title_label, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
-	auto recent_files = app::archiveManager().recentFiles();
+	auto recent_files = database::recentFiles();
 	if (recent_files.empty())
 	{
 		auto no_recent_label = new wxStaticText(recent_files_panel_, -1, wxS("No recently opened files"));

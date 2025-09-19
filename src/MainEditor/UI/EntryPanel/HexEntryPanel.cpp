@@ -34,7 +34,7 @@
 #include "HexEntryPanel.h"
 #include "Archive/ArchiveEntry.h"
 #include "UI/Controls/HexEditorPanel.h"
-#include "UI/SToolBar/SToolBar.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 

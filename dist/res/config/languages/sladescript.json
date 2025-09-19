@@ -1,0 +1,369 @@
+{
+  "sladescript": {
+    "base": "lua",
+    "name": "SLADE Lua Script",
+    "case_sensitive": true,
+
+    "properties": [
+      // Namespaces
+      "App", "Archives", "Game", "Graphics", "UI"
+    ],
+
+    "constants": [
+      // Graphics namespace
+      "BLEND_NORMAL", "BLEND_ADD", "BLEND_SUBTRACT", "BLEND_REVERSESUBTRACT", "BLEND_MODULATE",
+
+      // UI namespace
+      "MB_ICON_INFO", "MB_ICON_QUESTION", "MB_ICON_WARNING", "MB_ICON_ERROR",
+
+      // CTPatchEx type
+      "TYPE_PATCH", "TYPE_GRAPHIC", "BLENDTYPE_NONE", "BLENDTYPE_TRANSLATION", "BLENDTYPE_BLEND", "BLENDTYPE_TINT",
+
+      // TextureXList type
+      "FORMAT_NORMAL", "FORMAT_STRIFE11", "FORMAT_NAMELESS", "FORMAT_TEXTURES", "FORMAT_JAGUAR",
+
+      // Colour type
+      "FORMAT_RGB", "FORMAT_RGBA", "FORMAT_HEX", "FORMAT_ZDOOM",
+
+      // TransRange type
+      "TYPE_PALETTE", "TYPE_COLOUR", "TYPE_DESAT", "TYPE_BLEND", "TYPE_TINT", "TYPE_SPECIAL",
+
+      // Image type
+      "PIXELFORMAT_INDEXED", "PIXELFORMAT_RGBA", "PIXELFORMAT_ALPHA", "SOURCE_BRIGHTNESS", "SOURCE_ALPHA",
+
+      // ImageConvertOptions type
+      "MASK_NONE", "MASK_COLOUR", "MASK_ALPHA", "MASK_BRIGHTNESS",
+
+      // ImageFormat type
+      "WRITABLE_NO", "WRITABLE_YES", "WRITABLE_NEEDS_CONVERSION",
+
+      // Palette type
+      "FORMAT_RAW", "FORMAT_IMAGE", "FORMAT_CSV", "FORMAT_JASC", "FORMAT_GIMP", "MATCH_DEFAULT", "MATCH_OLD",
+      "MATCH_RGB", "MATCH_HSL", "MATCH_C76", "MATCH_C94", "MATCH_C2K",
+
+      // MapEditor type
+      "MODE_VERTICES", "MODE_LINES", "MODE_SECTORS", "MODE_THINGS", "MODE_VISUAL", "SECTORMODE_BOTH",
+      "SECTORMODE_FLOOR", "SECTORMODE_CEILING",
+
+      // MapObject type
+      "TYPE_OBJECT", "TYPE_VERTEX", "TYPE_LINE", "TYPE_SIDE", "TYPE_SECTOR", "TYPE_THING"
+    ],
+
+    "types": [
+      // Archives
+      "Archive", "ArchiveDir", "ArchiveEntry", "ArchiveFormat", "ArchiveSearchOptions", "EntryType",
+
+      // Composite Texture
+      "CTexture", "CTPatch", "CTPatchEx", "PatchTable", "TextureXList",
+
+      // Game
+      "ThingType",
+
+      // Graphics
+      "Image", "ImageConvertOptions", "ImageDrawOptions", "ImageFormat", "Palette",
+
+      // Maps
+      "Map", "MapEditor", "MapLine", "MapObject", "MapSector", "MapSide", "MapThing", "MapVertex",
+
+      // Colour Translation
+      "Translation", "TransRange", "TransRangeBlend", "TransRangeColour", "TransRangeDesat", "TransRangePalette",
+      "TransRangeSpecial", "TransRangeTint",
+
+      // Misc
+      "Colour", "Plane", "DataBlock", "Point"
+    ],
+
+    "functions": {
+      // App namespace
+      "App.LogMessage": "string message",
+      "App.LogWarning": "string message",
+      "App.LogError": "string message",
+      "App.CurrentArchive": "-> Archive",
+      "App.CurrentEntry": "-> ArchiveEntry",
+      "App.CurrentEntrySelection": "-> ArchiveEntry[]",
+      "App.CurrentPalette": "[ArchiveEntry entryFor] -> Palette",
+      "App.ShowArchive": "Archive archive",
+      "App.ShowEntry": "ArchiveEntry entry",
+      "App.MapEditor": "-> MapEditor",
+
+      // Archives namespace
+      "Archives.All": "-> Archive[]",
+      "Archives.Create": "string format_id -> Archive, string",
+      "Archives.OpenFile": "string path -> Archive, string",
+      "Archives.Close": "Archive archive -> boolean",
+      "Archives.Close:1": "integer index",
+      "Archives.CloseAll": "",
+      "Archives.FileExtensionsString": "-> string",
+      "Archives.BaseResource": "-> Archive",
+      "Archives.BaseResourcePaths": "-> string[]",
+      "Archives.OpenBaseResource": "integer index -> boolean",
+      "Archives.ProgramResource": "-> Archive",
+      "Archives.RecentFiles": "-> string[]",
+      "Archives.Bookmarks": "-> ArchiveEntry[]",
+      "Archives.AddBookmark": "ArchiveEntry entry",
+      "Archives.RemoveBookmark": "ArchiveEntry entry -> boolean",
+      "Archives.EntryType": "string id -> EntryType",
+
+      // Game namespace
+      "Game.ThingType": "integer doomednum -> ThingType",
+
+      // Graphics namespace
+      "Graphics.ImageFormat": "string formatId -> ImageFormat",
+      "Graphics.AllImageFormats": "-> ImageFormat[]",
+      "Graphics.DetectImageFormat": "DataBlock data -> ImageFormat",
+
+      // UI namespace
+      "UI.MessageBox": "string title, string message, [integer icon]",
+      "UI.MessageBoxExt": "string title, string message, string detail",
+      "UI.PromptString": "string title, string message, string default_value -> string",
+      "UI.PromptNumber": "string title, string message, integer default_value, integer min, integer max -> integer",
+      "UI.PromptYesNo": "string title, string message -> boolean",
+      "UI.PromptOpenFile": "string title, string extensions, string filename -> string",
+      "UI.PromptOpenFiles": "string title, string extensions -> string[]",
+      "UI.PromptSaveFile": "string title, string extensions, [string defaultFilename] -> string",
+      "UI.PromptSaveFiles": "string title, string extensions -> string, string",
+      "UI.ShowSplash": "string message, [boolean progress]",
+      "UI.HideSplash": "",
+      "UI.UpdateSplash": "",
+      "UI.SplashProgress": "-> float",
+      "UI.SetSplashMessage": "string message",
+      "UI.SetSplashProgressMessage": "string message",
+      "UI.SetSplashProgress": "float progress",
+
+      // Archive type
+      "Archive.DirAtPath": "string path -> ArchiveDir",
+      "Archive.EntryAtPath": "string path -> ArchiveEntry",
+      "Archive.FilenameNoPath": "-> string",
+      "Archive.CreateDir": "string path -> ArchiveDir",
+      "Archive.CreateEntry": "string fullPath, integer index -> ArchiveEntry",
+      "Archive.CreateEntryInNamespace": "string name, string namespace -> ArchiveEntry",
+      "Archive.RemoveEntry": "ArchiveEntry entry -> boolean",
+      "Archive.RenameEntry": "ArchiveEntry entry, string name -> boolean",
+      "Archive.Save": "[string path] -> boolean",
+      "Archive.FindFirst": "ArchiveSearchOptions options -> ArchiveEntry",
+      "Archive.FindLast": "ArchiveSearchOptions options -> ArchiveEntry",
+      "Archive.FindAll": "ArchiveSearchOptions options -> ArchiveEntry[]",
+
+      // ArchiveEntry type
+      "ArchiveEntry.FormattedName": "[boolean includePath], [boolean includeExtension], [boolean upperCase] -> string",
+      "ArchiveEntry.FormattedSize": "-> string",
+      "ArchiveEntry.Rename": "string newName",
+      "ArchiveEntry.ImportFile": "string path -> boolean, string",
+      "ArchiveEntry.ImportEntry": "ArchiveEntry entry -> boolean, string",
+      "ArchiveEntry.ImportData": "string dataString -> boolean, string",
+      "ArchiveEntry.ImportData:1": "DataBlock data",
+      "ArchiveEntry.ExportFile": "string path -> boolean, string",
+
+      // MapEditor type
+      "MapEditor.SelectedVertices": "[boolean tryHighlight] -> MapVertex[]",
+      "MapEditor.SelectedLines": "[boolean tryHighlight] -> MapLine[]",
+      "MapEditor.SelectedSectors": "[boolean tryHighlight] -> MapSector[]",
+      "MapEditor.SelectedThings": "[boolean tryHighlight] -> MapThing[]",
+      "MapEditor.ClearSelection": "",
+      "MapEditor.Select": "MapObject object, [boolean add]",
+      "MapEditor.SetEditMode": "integer mode, [integer sectorMode]",
+
+      // MapLine type
+      "MapLine.Flag": "string flagName -> boolean",
+      "MapLine.Flip": "[boolean swapSides]",
+      "MapLine.VisibleTextures": "-> table",
+
+      // MapObject type
+      "MapObject.HasProperty": "string name -> boolean",
+      "MapObject.BoolProperty": "string name -> boolean",
+      "MapObject.IntProperty": "string name -> integer",
+      "MapObject.FloatProperty": "string name -> float",
+      "MapObject.StringProperty": "string name -> string",
+      "MapObject.SetBoolProperty": "string name, boolean value",
+      "MapObject.SetIntProperty": "string name, integer value",
+      "MapObject.SetFloatProperty": "string name, float value",
+      "MapObject.SetStringProperty": "string name, string value",
+
+      // MapSector type
+      "MapSector.ContainsPoint": "Point position -> boolean",
+
+      // MapThing type
+      "MapThing.Flag": "string flagName -> boolean",
+      "MapThing.SetAnglePoint": "Point position",
+
+      // Plane type
+      "Plane.HeightAt": "Point position -> float",
+
+      // CTexture type
+      "CTexture.AsText": "-> string",
+      "CTexture.Clear": "",
+      "CTexture.ConvertExtended": "",
+      "CTexture.ConvertRegular": "",
+      "CTexture.CopyTexture": "CTexture other, [boolean keepFormat]",
+      "CTexture.AddPatch": "string patch, [integer x], [integer y], [integer index]",
+      "CTexture.DuplicatePatch": "integer index, [integer offsetX], [integer offsetY]",
+      "CTexture.RemovePatch": "integer index -> boolean",
+      "CTexture.ReplacePatch": "integer index, string newPatch -> boolean",
+      "CTexture.SwapPatches": "integer index1, integer index2 -> boolean",
+
+      // CTPatch type
+      "CTPatch.PatchEntry": "Archive parent -> ArchiveEntry",
+      "CTPatch.AsExtended": "-> CTPatchEx",
+
+      // CTPatchEx type
+      "CTPatchEx.AsText": "-> string",
+
+      // PatchTable type
+      "PatchTable.Patch": "integer index -> string",
+      "PatchTable.PatchEntry": "integer index -> ArchiveEntry",
+      "PatchTable.PatchEntry:1": "string name",
+      "PatchTable.RemovePatch": "integer index -> boolean",
+      "PatchTable.ReplacePatch": "integer index, string name -> boolean",
+      "PatchTable.AddPatch": "string name, boolean allowDuplicate -> boolean",
+      "PatchTable.LoadPNAMES": "ArchiveEntry pnames -> boolean",
+      "PatchTable.WritePNAMES": "ArchiveEntry pnames -> boolean",
+
+      // TextureXList type
+      "TextureXList.Texture": "string name -> CTexture",
+      "TextureXList.TextureIndex": "string name -> integer",
+      "TextureXList.ConvertToTEXTURES": "-> boolean",
+      "TextureXList.FindErrors": "-> boolean",
+      "TextureXList.AddTexture": "string name, [boolean extended], [integer index] -> CTexture",
+      "TextureXList.RemoveTexture": "integer index",
+      "TextureXList.SwapTextures": "integer index1, integer index2",
+      "TextureXList.Clear": "",
+      "TextureXList.RemovePatch": "string patch",
+      "TextureXList.ReadTEXTUREXData": "ArchiveEntry entry, PatchTable patchTable, boolean additive -> boolean",
+      "TextureXList.WriteTEXTUREXData": "ArchiveEntry entry, PatchTable patchTable -> boolean",
+      "TextureXList.ReadTEXTURESData": "ArchiveEntry entry -> boolean",
+      "TextureXList.WriteTEXTURESData": "ArchiveEntry entry -> boolean",
+
+      // Palette type
+      "Palette.Colour": "integer index -> Colour",
+      "Palette.CopyColours": "Palette other",
+      "Palette.CountUniqueColours": "-> integer",
+      "Palette.FindColour": "Colour colour -> integer",
+      "Palette.NearestColour": "Colour colour, [integer matchMode] -> integer",
+      "Palette.LoadData": "string data, [integer format] -> boolean",
+      "Palette.LoadFile": "string path, [integer format] -> boolean",
+      "Palette.SaveFile": "string path, [integer format] -> boolean",
+      "Palette.SetColour": "integer index, Colour colour",
+      "Palette.SetColourR": "integer index, integer r",
+      "Palette.SetColourG": "integer index, integer g",
+      "Palette.SetColourB": "integer index, integer b",
+      "Palette.SetColourA": "integer index, integer a",
+      "Palette.ApplyTranslation": "Translation translation",
+      "Palette.Colourise": "Colour colour, integer firstIndex, integer lastIndex",
+      "Palette.Tint": "Colour colour, float amount, integer firstIndex, integer lastIndex",
+      "Palette.Saturate": "float amount, integer firstIndex, integer lastIndex",
+      "Palette.Illuminate": "float amount, integer firstIndex, integer lastIndex",
+      "Palette.Shift": "float amount, integer firstIndex, integer lastIndex",
+      "Palette.Invert": "integer firstIndex, integer lastIndex",
+      "Palette.Gradient": "Colour startColour, Colour endColour, integer firstIndex, integer lastIndex",
+
+      // Translation type
+      "Translation.AsText": "-> string",
+      "Translation.Clear": "",
+      "Translation.Copy": "Translation other",
+      "Translation.IsEmpty": "-> boolean",
+      "Translation.Parse": "string definition",
+      "Translation.Translate": "Colour colour, [Palette palette] -> Colour",
+      "Translation.Range": "integer index -> TransRange",
+      "Translation.AddRange": "string definition -> TransRange",
+      "Translation.AddPaletteRange": "integer rangeStart, integer rangeEnd -> TransRangePalette",
+      "Translation.AddColourRange": "integer rangeStart, integer rangeEnd -> TransRangeColour",
+      "Translation.AddDesatRange": "integer rangeStart, integer rangeEnd -> TransRangeDesat",
+      "Translation.AddBlendRange": "integer rangeStart, integer rangeEnd -> TransRangeBlend",
+      "Translation.AddTintRange": "integer rangeStart, integer rangeEnd -> TransRangeTint",
+      "Translation.AddSpecialRange": "integer rangeStart, integer rangeEnd -> TransRangeSpecial",
+      "Translation.ReadTable": "string data",
+      "Translation.RemoveRange": "integer index",
+      "Translation.SwapRanges": "integer index1, integer index2",
+
+      // TransRange type
+      "TransRange.AsText": "-> string",
+      "TransRange.AsPaletteRange": "-> TransRangePalette",
+      "TransRange.AsColourRange": "-> TransRangeColour",
+      "TransRange.AsDesatRange": "-> TransRangeDesat",
+      "TransRange.AsBlendRange": "-> TransRangeBlend",
+      "TransRange.AsTintRange": "-> TransRangeTint",
+      "TransRange.AsSpecialRange": "-> TransRangeSpecial",
+
+      // TransRangeDesat type
+      "TransRangeDesat.SetStartRGB": "float r, float g, float b",
+      "TransRangeDesat.SetEndRGB": "float r, float g, float b",
+
+      // Image type
+      "Image.Clear": "",
+      "Image.Copy": "Image other",
+      "Image.Create": "integer width, integer height, integer type, [Palette palette]",
+      "Image.CountUniqueColours": "-> integer",
+      "Image.FindUnusedColour": "-> integer",
+      "Image.IsValid": "-> boolean",
+      "Image.PixelAt": "integer x, integer y, [Palette palette] -> Colour",
+      "Image.PixelIndexAt": "integer x, integer y -> integer",
+      "Image.LoadData": "DataBlock data, [integer index], [string typeHint] -> boolean",
+      "Image.LoadEntry": "ArchiveEntry entry, [integer index] -> boolean, string",
+      "Image.WriteIndexedData": "DataBlock block -> boolean",
+      "Image.WriteRGBData": "DataBlock block, [Palette palette] -> boolean",
+      "Image.WriteRGBAData": "DataBlock block, [Palette palette] -> boolean",
+      "Image.ConvertAlphaMap": "integer alphaSource, [Palette palette] -> boolean",
+      "Image.ConvertIndexed": "Palette newPalette, [Palette currentPalette] -> boolean",
+      "Image.ConvertRGBA": "[Palette palette] -> boolean",
+      "Image.Crop": "integer left, integer top, integer right, integer bottom -> boolean",
+      "Image.MirrorHorizontal": "-> boolean",
+      "Image.MirrorVertical": "-> boolean",
+      "Image.Resize": "integer newWidth, integer newHeight -> boolean",
+      "Image.Rotate": "integer angle -> boolean",
+      "Image.Trim": "",
+      "Image.ApplyTranslation": "Translation translation, [Palette palette], [boolean trueColour] -> boolean",
+      "Image.Colourise": "Colour colour, [Palette palette] -> boolean",
+      "Image.SetPixelColour": "integer x, integer y, Colour colour, [Palette palette] -> boolean",
+      "Image.SetPixelIndex": "integer x, integer y, integer index, [integer alpha] -> boolean",
+      "Image.Tint": "Colour colour, float amount, [Palette palette] -> boolean",
+      "Image.FillAlpha": "integer alpha",
+      "Image.MaskFromBrightness": "[Palette palette] -> boolean",
+      "Image.MaskFromColour": "Colour colour, [Palette palette] -> boolean",
+      "Image.DrawImage": "integer x, integer y, Image srcImage, ImageDrawOptions drawOptions, [Palette srcPalette], [Palette destPalette] -> boolean",
+      "Image.DrawPixel": "integer x, integer y, Colour colour, ImageDrawOptions drawOptions, [Palette palette] -> boolean",
+
+      // ImageFormat type
+      "ImageFormat.IsThisFormat": "DataBlock data -> boolean",
+      "ImageFormat.LoadImage": "Image image, DataBlock data, [integer index] -> boolean",
+      "ImageFormat.SaveImage": "Image image, DataBlock dataOut, [Palette palette], [integer index] -> boolean",
+      "ImageFormat.CanWrite": "Image image -> integer",
+      "ImageFormat.CanWritePixelFormat": "integer pixelFormat -> boolean",
+      "ImageFormat.ConvertWritable": "Image image, ImageConvertOptions convertOptions -> boolean",
+
+      // Colour type
+      "Colour.AsHSL": "-> float, float, float",
+      "Colour.AsLAB": "-> float, float, float",
+      "Colour.AsString": "integer format -> string",
+      "Colour.FromHSL": "float hue, float saturation, float lightness",
+
+      // DataBlock type
+      "DataBlock.AsString": "-> string",
+      "DataBlock.SetData": "string data",
+      "DataBlock.Clear": "",
+      "DataBlock.Resize": "integer newSize, boolean preserveData -> boolean",
+      "DataBlock.Copy": "DataBlock other -> boolean",
+      "DataBlock.CopyTo": "DataBlock other, [integer offset], [integer length] -> boolean",
+      "DataBlock.ImportFile": "string path, [integer offset], [integer length] -> boolean",
+      "DataBlock.ExportFile": "string path, [integer offset], [integer length] -> boolean",
+      "DataBlock.FillData": "integer value -> boolean",
+      "DataBlock.ReadInt8": "integer offset -> integer",
+      "DataBlock.ReadUInt8": "integer offset -> integer",
+      "DataBlock.ReadInt16": "integer offset -> integer",
+      "DataBlock.ReadUInt16": "integer offset -> integer",
+      "DataBlock.ReadInt32": "integer offset -> integer",
+      "DataBlock.ReadUInt32": "integer offset -> integer",
+      "DataBlock.ReadInt64": "integer offset -> integer",
+      "DataBlock.ReadUInt64": "integer offset -> integer",
+      "DataBlock.ReadString": "integer offset, integer length, [boolean nullTerminated] -> string",
+      "DataBlock.WriteInt8": "integer offset, integer value, boolean allowExpand -> boolean",
+      "DataBlock.WriteUInt8": "integer offset, integer value, boolean allowExpand -> boolean",
+      "DataBlock.WriteInt16": "integer offset, integer value, boolean allowExpand -> boolean",
+      "DataBlock.WriteUInt16": "integer offset, integer value, boolean allowExpand -> boolean",
+      "DataBlock.WriteInt32": "integer offset, integer value, boolean allowExpand -> boolean",
+      "DataBlock.WriteUInt32": "integer offset, integer value, boolean allowExpand -> boolean",
+      "DataBlock.WriteInt64": "integer offset, integer value, boolean allowExpand -> boolean",
+      "DataBlock.WriteUInt64": "integer offset, integer value, boolean allowExpand -> boolean",
+      "DataBlock.WriteString": "integer offset, string value, boolean allowExpand -> boolean"
+    }
+  }
+}

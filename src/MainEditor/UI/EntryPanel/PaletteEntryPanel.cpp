@@ -43,8 +43,9 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
+#include "UI/Controls/SIconButton.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBar.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
 #include "Utility/SFileDialog.h"
@@ -644,32 +645,13 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	PaletteEntryPanel::fillCustomMenu(menu_custom_);
 	custom_menu_name_ = "Palette";
 
-	// --- Top toolbar ---
+	// Toolbars
+	text_curpal_ = new wxStaticText(toolbar_, -1, wxS("XX/XX"));
+	toolbar_->registerCustomControl("current_palette", text_curpal_);
+	toolbar_->loadLayoutFromResource("entry_palette_top");
+	toolbar_left_->loadLayoutFromResource("entry_palette_left");
 
-	// Palette Selector
-	auto group_palette = new SToolBarGroup(toolbar_, "Palette", true);
-	group_palette->addActionButton("pal_prev", "Previous Palette", "left", "");
-	text_curpal_ = new wxStaticText(group_palette, -1, wxS("XX/XX"));
-	group_palette->addCustomControl(text_curpal_);
-	group_palette->addActionButton("pal_next", "Next Palette", "right", "");
-	toolbar_->addGroup(group_palette);
-
-	// Current Palette
-	toolbar_->addActionGroup(
-		"Palette Organisation",
-		{ "ppal_moveup", "ppal_movedown", "ppal_duplicate", "ppal_remove", "ppal_removeothers" });
-
-	// Palette Entry Operations
-	toolbar_->addActionGroup(
-		"Palette Operations", { "ppal_addcustom", "ppal_exportas", "ppal_importfrom", "ppal_test", "ppal_generate" });
-
-	// --- Left toolbar ---
-
-	// Colour Operations
-	toolbar_left_->addActionGroup(
-		"Colours", { "ppal_colourise", "ppal_tint", "ppal_invert", "ppal_tweak", "ppal_gradient" });
-
-	// --- Palette canvas ---
+	// Palette canvas
 	pal_canvas_ = new PaletteCanvas(this);
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
 	sizer_main_->Add(pal_canvas_, wxSizerFlags(1).Expand());
@@ -770,7 +752,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 	pal_canvas_->setPalette(palettes_[index].get());
 
 	// Set current palette text
-	text_curpal_->SetLabel(wxString::FromUTF8(fmt::format("{}/{}", index + 1, palettes_.size())));
+	text_curpal_->SetLabel(wxString::FromUTF8(fmt::format("{:02d}/{:02d}", index + 1, palettes_.size())));
 
 	// Refresh
 	Layout();

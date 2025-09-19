@@ -36,7 +36,6 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Tokenizer.h"
-#include "UI/WxUtils.h"
 #include <charconv>
 #include <regex>
 
@@ -101,6 +100,9 @@ bool strutil::isFloat(const string& str)
 	return std::regex_search(str, re_float);
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [left] and [right] are equal, ignoring case
+// -----------------------------------------------------------------------------
 bool strutil::equalCI(string_view left, string_view right)
 {
 	const auto sz = left.size();
@@ -134,16 +136,22 @@ bool strutil::equalCI(string_view left, string_view right)
 //	return true;
 //}
 
+
+// -----------------------------------------------------------------------------
+// Returns true if [str] begins with [check]
+// -----------------------------------------------------------------------------
 bool strutil::startsWith(string_view str, string_view check)
 {
 	return check.size() <= str.size() && str.compare(0, check.size(), check) == 0;
 }
-
 bool strutil::startsWith(string_view str, char check)
 {
 	return !str.empty() && str[0] == check;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] begins with [check], ignoring case
+// -----------------------------------------------------------------------------
 bool strutil::startsWithCI(string_view str, string_view check)
 {
 	const auto c_size = check.size();
@@ -156,22 +164,26 @@ bool strutil::startsWithCI(string_view str, string_view check)
 
 	return true;
 }
-
 bool strutil::startsWithCI(string_view str, char check)
 {
 	return !str.empty() && tolower(str[0]) == tolower(check);
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] ends with [check]
+// -----------------------------------------------------------------------------
 bool strutil::endsWith(string_view str, string_view check)
 {
 	return check.size() <= str.size() && str.compare(str.size() - check.size(), check.size(), check) == 0;
 }
-
 bool strutil::endsWith(string_view str, char check)
 {
 	return !str.empty() && str.back() == check;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] ends with [check], ignoring case
+// -----------------------------------------------------------------------------
 bool strutil::endsWithCI(string_view str, string_view check)
 {
 	const auto c_size = check.size();
@@ -185,17 +197,26 @@ bool strutil::endsWithCI(string_view str, string_view check)
 
 	return true;
 }
-
-bool endsWithCI(string_view str, char check)
+bool strutil::endsWithCI(string_view str, char check)
 {
 	return !str.empty() && tolower(str.back()) == tolower(check);
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] contains [check]
+// -----------------------------------------------------------------------------
 bool strutil::contains(string_view str, char check)
 {
 	return str.find(check) != string::npos;
 }
+bool strutil::contains(string_view str, string_view check)
+{
+	return str.find(check) != string::npos;
+}
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] contains [check], ignoring case
+// -----------------------------------------------------------------------------
 bool strutil::containsCI(string_view str, char check)
 {
 	const auto lc = tolower(check);
@@ -205,12 +226,6 @@ bool strutil::containsCI(string_view str, char check)
 
 	return false;
 }
-
-bool strutil::contains(string_view str, string_view check)
-{
-	return str.find(check) != string::npos;
-}
-
 bool strutil::containsCI(string_view str, string_view check)
 {
 	if (str.size() < check.size())
@@ -220,6 +235,9 @@ bool strutil::containsCI(string_view str, string_view check)
 	return lower(str).find(lower(check)) != string::npos;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] matches [match], which can contain wildcards (* and ?)
+// -----------------------------------------------------------------------------
 bool strutil::matches(string_view str, string_view match)
 {
 	// Empty [match] only matches empty [str]
@@ -274,6 +292,10 @@ bool strutil::matches(string_view str, string_view match)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] matches [match], which can contain wildcards (* and ?),
+// ignoring case
+// -----------------------------------------------------------------------------
 bool strutil::matchesCI(string_view str, string_view match)
 {
 	// Empty [match] only matches empty [str]
@@ -347,6 +369,9 @@ string strutil::escapedString(string_view str, bool swap_backslash, bool escape_
 	return escaped;
 }
 
+// -----------------------------------------------------------------------------
+// Replaces all occurrences of [from] with [to] in [str]
+// -----------------------------------------------------------------------------
 string& strutil::replaceIP(string& str, string_view from, string_view to)
 {
 	size_t start_pos = 0;
@@ -358,6 +383,9 @@ string& strutil::replaceIP(string& str, string_view from, string_view to)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with all occurrences of [from] changed to [to]
+// -----------------------------------------------------------------------------
 string strutil::replace(string_view str, string_view from, string_view to)
 {
 	auto s = string{ str };
@@ -365,6 +393,9 @@ string strutil::replace(string_view str, string_view from, string_view to)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Replaces the first occurrence of [from] with [to] in [str]
+// -----------------------------------------------------------------------------
 string& strutil::replaceFirstIP(string& str, string_view from, string_view to)
 {
 	const auto pos = str.find(from.data(), 0);
@@ -373,6 +404,9 @@ string& strutil::replaceFirstIP(string& str, string_view from, string_view to)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with the first occurrence of [from] changed to [to]
+// -----------------------------------------------------------------------------
 string strutil::replaceFirst(string_view str, string_view from, string_view to)
 {
 	auto s = string{ str };
@@ -447,6 +481,22 @@ string strutil::trim(string_view str)
 	return s;
 }
 
+string_view strutil::ltrimV(string_view str)
+{
+	return str.substr(str.find_first_not_of(WHITESPACE_CHARACTERS));
+}
+
+string_view strutil::rtrimV(string_view str)
+{
+	return str.substr(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
+}
+
+string_view strutil::trimV(string_view str)
+{
+	str = str.substr(str.find_first_not_of(WHITESPACE_CHARACTERS));        // left
+	return str.substr(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
+}
+
 string& strutil::capitalizeIP(string& str)
 {
 	if (str.empty())
@@ -501,6 +551,24 @@ string& strutil::prependIP(string& str, string_view prefix)
 	return str;
 }
 
+string strutil::surround(string_view str, string_view with)
+{
+	// Handle some special cases
+	if (with.size() < 2)
+	{
+		switch (with[0])
+		{
+		case '(': return fmt::format("({})", str);
+		case '[': return fmt::format("[{}]", str);
+		case '{': return fmt::format("{{{}}}", str);
+		case '<': return fmt::format("<{}>", str);
+		default:  break;
+		}
+	}
+
+	return fmt::format("{0}{1}{0}", with, str);
+}
+
 string strutil::left(string_view str, unsigned n)
 {
 	return string{ str.substr(0, n) };
@@ -536,6 +604,14 @@ string strutil::afterLast(string_view str, char chr)
 	return string{ str };
 }
 
+string strutil::afterLast(string_view str, string_view token)
+{
+	auto pos = str.rfind(token);
+	if (pos == string::npos)
+		return string{ str };
+	return string{ str.substr(pos + token.size()) };
+}
+
 string_view strutil::afterLastV(string_view str, char chr)
 {
 	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
@@ -543,6 +619,14 @@ string_view strutil::afterLastV(string_view str, char chr)
 			return str.substr(i + 1);
 
 	return str;
+}
+
+string_view strutil::afterLastV(string_view str, string_view token)
+{
+	auto pos = str.rfind(token);
+	if (pos == string::npos)
+		return str;
+	return str.substr(pos + token.size());
 }
 
 string strutil::afterFirst(string_view str, char chr)
@@ -554,6 +638,14 @@ string strutil::afterFirst(string_view str, char chr)
 	return string{ str };
 }
 
+string strutil::afterFirst(string_view str, string_view token)
+{
+	auto pos = str.find(token);
+	if (pos == string::npos)
+		return string{ str };
+	return string{ str.substr(pos + token.size()) };
+}
+
 string_view strutil::afterFirstV(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); ++i)
@@ -561,6 +653,14 @@ string_view strutil::afterFirstV(string_view str, char chr)
 			return str.substr(i + 1);
 
 	return str;
+}
+
+string_view strutil::afterFirstV(string_view str, string_view token)
+{
+	auto pos = str.find(token);
+	if (pos == string::npos)
+		return str;
+	return str.substr(pos + token.size());
 }
 
 string strutil::beforeLast(string_view str, char chr)
@@ -572,6 +672,14 @@ string strutil::beforeLast(string_view str, char chr)
 	return string{ str };
 }
 
+string strutil::beforeLast(string_view str, string_view token)
+{
+	auto pos = str.rfind(token);
+	if (pos == string::npos)
+		return string{ str };
+	return string{ str.substr(0, pos) };
+}
+
 string_view strutil::beforeLastV(string_view str, char chr)
 {
 	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
@@ -579,6 +687,14 @@ string_view strutil::beforeLastV(string_view str, char chr)
 			return str.substr(0, i);
 
 	return str;
+}
+
+string_view strutil::beforeLastV(string_view str, string_view token)
+{
+	auto pos = str.rfind(token);
+	if (pos == string::npos)
+		return str;
+	return str.substr(0, pos);
 }
 
 string strutil::beforeFirst(string_view str, char chr)
@@ -590,6 +706,14 @@ string strutil::beforeFirst(string_view str, char chr)
 	return string{ str };
 }
 
+string strutil::beforeFirst(string_view str, string_view token)
+{
+	auto pos = str.find(token);
+	if (pos == string::npos)
+		return string{ str };
+	return string{ str.substr(0, pos) };
+}
+
 string_view strutil::beforeFirstV(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); i++)
@@ -597,6 +721,14 @@ string_view strutil::beforeFirstV(string_view str, char chr)
 			return str.substr(0, i);
 
 	return str;
+}
+
+string_view strutil::beforeFirstV(string_view str, string_view token)
+{
+	auto pos = str.find(token);
+	if (pos == string::npos)
+		return str;
+	return str.substr(0, pos);
 }
 
 vector<string> strutil::split(string_view str, char separator, bool skip_duplicates)
@@ -773,11 +905,9 @@ void strutil::Path::setPath(string_view path)
 	if (filename_start_ == string::npos)
 		return;
 
-	// Ensure given path doesn't begin or end with a separator
+	// Ensure given path doesn't end with a separator
 	if (path.back() == '/' || path.back() == '\\')
 		path.remove_suffix(1);
-	if (path[0] == '/' || path[0] == '\\')
-		path.remove_prefix(1);
 
 	if (filename_start_ == 0)
 	{
@@ -1025,6 +1155,18 @@ void strutil::processIncludes(const ArchiveEntry* entry, string& out, bool use_r
 
 	// Delete temp file
 	wxRemoveFile(wxString::FromUTF8(filename));
+}
+
+string strutil::join(const vector<string>& strings, string_view separator)
+{
+	string out;
+	for (auto i = 0u; i < strings.size(); ++i)
+	{
+		if (i > 0)
+			out.append(separator);
+		out.append(strings[i]);
+	}
+	return out;
 }
 
 int strutil::asInt(string_view str, int base)

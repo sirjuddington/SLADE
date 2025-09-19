@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -44,7 +44,7 @@
 #include "TextEditor/TextLanguage.h"
 #include "ThingType.h"
 #include "Utility/FileUtils.h"
-#include "Utility/Parser.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"
 #include <thread>
@@ -60,15 +60,13 @@ using namespace game;
 // -----------------------------------------------------------------------------
 namespace slade::game
 {
-std::map<string, GameDef> game_defs;
-GameDef                   game_def_unknown;
-std::map<string, PortDef> port_defs;
-PortDef                   port_def_unknown;
-zscript::Definitions      zscript_base;
-zscript::Definitions      zscript_custom;
-unique_ptr<std::thread>   zscript_parse_thread;
+vector<GameDef>         game_defs;
+vector<PortDef>         port_defs;
+zscript::Definitions    zscript_base;
+zscript::Definitions    zscript_custom;
+unique_ptr<std::thread> zscript_parse_thread;
 } // namespace slade::game
-CVAR(String, game_configuration, "", CVar::Flag::Save)
+CVAR(String, game_configuration, "doom2", CVar::Flag::Save)
 CVAR(String, port_configuration, "", CVar::Flag::Save)
 CVAR(String, zdoom_pk3_path, "", CVar::Flag::Save)
 
@@ -85,36 +83,20 @@ CVAR(String, zdoom_pk3_path, "", CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 bool GameDef::parse(const MemChunk& mc)
 {
-	// Parse configuration
-	Parser parser;
-	parser.parseText(mc, "");
+	auto j = jsonutil::parse(mc);
+	if (j.is_discarded())
+		return false;
 
-	// Check for game section
-	ParseTreeNode* node_game = nullptr;
-	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
+	try
 	{
-		auto child = parser.parseTreeRoot()->childPTN(a);
-		if (child->type() == "game")
-		{
-			node_game = child;
-			break;
-		}
-	}
-	if (node_game)
-	{
-		// Game id
-		name = node_game->name();
-
-		// Game name
-		auto node_name = node_game->childPTN("name");
-		if (node_name)
-			title = node_name->stringValue();
+		jsonutil::getIf(j, "id", name);
+		jsonutil::getIf(j, "name", title);
+		jsonutil::getIf(j, "iwad", iwad);
 
 		// Supported map formats
-		auto node_maps = node_game->childPTN("map_formats");
-		if (node_maps)
+		if (j.contains("map_formats"))
 		{
-			for (const auto& str_val : node_maps->stringValues())
+			for (const auto& str_val : j.at("map_formats").get<vector<string>>())
 			{
 				if (strutil::equalCI(str_val, "doom"))
 					supported_formats[MapFormat::Doom] = true;
@@ -128,16 +110,19 @@ bool GameDef::parse(const MemChunk& mc)
 					supported_formats[MapFormat::UDMF] = true;
 			}
 		}
-		// Filters
-		auto node_filters = node_game->childPTN("filters");
-		if (node_filters)
-		{
-			for (unsigned a = 0; a < node_filters->nValues(); a++)
-				filters.push_back(strutil::lower(node_filters->stringValue(a)));
-		}
-	}
 
-	return (node_game != nullptr);
+		// Filters
+		if (j.contains("filters"))
+			for (const auto& str_val : j.at("filters").get<vector<string>>())
+				filters.push_back(strutil::lower(str_val));
+
+		return true;
+	}
+	catch (const std::exception& e)
+	{
+		log::error("Error parsing game definition '{}': {}", name, e.what());
+		return false;
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -165,44 +150,23 @@ bool GameDef::supportsFilter(string_view filter) const
 // -----------------------------------------------------------------------------
 bool PortDef::parse(const MemChunk& mc)
 {
-	// Parse configuration
-	Parser parser;
-	parser.parseText(mc, "");
+	auto j = jsonutil::parse(mc);
+	if (j.is_discarded())
+		return false;
 
-	// Check for port section
-	ParseTreeNode* node_port = nullptr;
-	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
+	try
 	{
-		auto child = parser.parseTreeRoot()->childPTN(a);
-		if (child->type() == "port")
-		{
-			node_port = child;
-			break;
-		}
-	}
-	if (node_port)
-	{
-		// Port id
-		name = node_port->name();
-
-		// Port name
-		auto node_name = node_port->childPTN("name");
-		if (node_name)
-			title = node_name->stringValue();
+		jsonutil::getIf(j, "id", name);
+		jsonutil::getIf(j, "name", title);
 
 		// Supported games
-		auto node_games = node_port->childPTN("games");
-		if (node_games)
-		{
-			for (unsigned a = 0; a < node_games->nValues(); a++)
-				supported_games.emplace_back(node_games->stringValue(a));
-		}
+		if (j.contains("games") && j.at("games").is_array())
+			supported_games = j.at("games").get<vector<string>>();
 
 		// Supported map formats
-		auto node_maps = node_port->childPTN("map_formats");
-		if (node_maps)
+		if (j.contains("map_formats"))
 		{
-			for (const auto& str_val : node_maps->stringValues())
+			for (const auto& str_val : j.at("map_formats").get<vector<string>>())
 			{
 				if (strutil::equalCI(str_val, "doom"))
 					supported_formats[MapFormat::Doom] = true;
@@ -216,9 +180,14 @@ bool PortDef::parse(const MemChunk& mc)
 					supported_formats[MapFormat::UDMF] = true;
 			}
 		}
-	}
 
-	return (node_port != nullptr);
+		return true;
+	}
+	catch (const std::exception& e)
+	{
+		log::error("Error parsing port definition '{}': {}", name, e.what());
+		return false;
+	}
 }
 
 
@@ -280,7 +249,7 @@ void game::updateCustomDefinitions()
 // -----------------------------------------------------------------------------
 // Returns the tagged type of the parsed tree node [tagged]
 // -----------------------------------------------------------------------------
-TagType game::parseTagged(const ParseTreeNode* tagged)
+TagType game::parseTagged(string_view tagged)
 {
 	static std::map<string, TagType> tag_type_map{
 		{ "no", TagType::None },
@@ -311,7 +280,7 @@ TagType game::parseTagged(const ParseTreeNode* tagged)
 		{ "interpolation", TagType::Interpolation }
 	};
 
-	return tag_type_map[strutil::lower(tagged->stringValue())];
+	return tag_type_map[strutil::lower(tagged)];
 }
 
 // -----------------------------------------------------------------------------
@@ -337,9 +306,9 @@ void game::init()
 		GameDef gdef;
 		if (gdef.parse(mc))
 		{
-			gdef.filename        = strutil::Path::fileNameOf(filename);
-			gdef.user            = true;
-			game_defs[gdef.name] = gdef;
+			gdef.filename = strutil::Path::fileNameOf(filename);
+			gdef.user     = true;
+			game_defs.push_back(gdef);
 		}
 	}
 
@@ -355,9 +324,9 @@ void game::init()
 		PortDef pdef;
 		if (pdef.parse(mc))
 		{
-			pdef.filename        = strutil::Path::fileNameOf(filename);
-			pdef.user            = true;
-			port_defs[pdef.name] = pdef;
+			pdef.filename = strutil::Path::fileNameOf(filename);
+			pdef.user     = true;
+			port_defs.push_back(pdef);
 		}
 	}
 
@@ -373,11 +342,11 @@ void game::init()
 				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
-			if (game_defs.find(conf.name) == game_defs.end())
+			if (gameDef(conf.name).name == "Unknown")
 			{
-				conf.filename        = entry->nameNoExt();
-				conf.user            = false;
-				game_defs[conf.name] = conf;
+				conf.filename = entry->nameNoExt();
+				conf.user     = false;
+				game_defs.push_back(conf);
 			}
 		}
 	}
@@ -394,11 +363,11 @@ void game::init()
 				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
-			if (port_defs.find(conf.name) == port_defs.end())
+			if (portDef(conf.name).name == "Unknown")
 			{
-				conf.filename        = entry->nameNoExt();
-				conf.user            = false;
-				port_defs[conf.name] = conf;
+				conf.filename = entry->nameNoExt();
+				conf.user     = false;
+				port_defs.push_back(conf);
 			}
 		}
 	}
@@ -452,7 +421,7 @@ void game::init()
 // -----------------------------------------------------------------------------
 // Returns a vector of all basic game definitions
 // -----------------------------------------------------------------------------
-const std::map<string, GameDef>& game::gameDefs()
+const vector<GameDef>& game::gameDefs()
 {
 	return game_defs;
 }
@@ -462,13 +431,18 @@ const std::map<string, GameDef>& game::gameDefs()
 // -----------------------------------------------------------------------------
 const GameDef& game::gameDef(const string& id)
 {
-	return game_defs.empty() ? game_def_unknown : game_defs[id];
+	for (const auto& game_def : game_defs)
+		if (strutil::equalCI(game_def.name, id))
+			return game_def;
+
+	static GameDef game_def_unknown;
+	return game_def_unknown;
 }
 
 // -----------------------------------------------------------------------------
 // Returns a vector of all basic port definitions
 // -----------------------------------------------------------------------------
-const std::map<string, PortDef>& game::portDefs()
+const vector<PortDef>& game::portDefs()
 {
 	return port_defs;
 }
@@ -478,7 +452,12 @@ const std::map<string, PortDef>& game::portDefs()
 // -----------------------------------------------------------------------------
 const PortDef& game::portDef(const string& id)
 {
-	return port_defs.empty() ? port_def_unknown : port_defs[id];
+	for (const auto& port_def : port_defs)
+		if (strutil::equalCI(port_def.name, id))
+			return port_def;
+
+	static PortDef port_def_unknown;
+	return port_def_unknown;
 }
 
 // -----------------------------------------------------------------------------
@@ -490,10 +469,14 @@ bool game::mapFormatSupported(MapFormat format, const string& game, const string
 		return false;
 
 	if (!port.empty())
-		return port_defs[port].supported_formats[format];
+		for (auto& port_def : port_defs)
+			if (strutil::equalCI(port_def.name, port))
+				return port_def.supported_formats[format];
 
 	if (!game.empty())
-		return game_defs[game].supported_formats[format];
+		for (auto& game_def : game_defs)
+			if (strutil::equalCI(game_def.name, game))
+				return game_def.supported_formats[format];
 
 	return false;
 }

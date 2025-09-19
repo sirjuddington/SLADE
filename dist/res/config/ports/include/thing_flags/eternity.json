@@ -1,0 +1,13 @@
+{
+  "flags": [
+    { "name": "Easy Skill", "value": 1, "udmf": [ "skill1", "skill2" ] },
+    { "name": "Medium Skill", "value": 2, "udmf": [ "skill3" ] },
+    { "name": "Hard Skill", "value": 4, "udmf": [ "skill4", "skill5" ] },
+    { "name": "Ambush", "value": 8, "udmf": [ "ambush" ] },
+    { "name": "Multiplayer Only", "value": 16, "udmf": [ "!single" ] },
+    { "name": "Not in DM", "value": 32, "udmf": [ "!dm" ] },
+    { "name": "Not in Coop", "value": 64, "udmf": [ "!coop" ] },
+    { "name": "Friendly", "value": 128, "udmf": [ "friend" ] },
+    { "name": "Dormant", "value": 512, "udmf": [ "dormant" ] }
+  ]
+}

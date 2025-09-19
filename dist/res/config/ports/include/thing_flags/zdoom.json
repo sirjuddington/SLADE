@@ -1,0 +1,38 @@
+{
+  // Doom map format
+  "doom": {
+    "flags": [
+      { "value": 1, "name": "Easy Skill", "udmf": [ "skill1", "skill2" ] },
+      { "value": 2, "name": "Medium Skill", "udmf": [ "skill3" ] },
+      { "value": 4, "name": "Hard Skill", "udmf": [ "skill4", "skill5" ] },
+      { "value": 8, "name": "Ambush", "udmf": [ "ambush" ] },
+      { "value": 16, "name": "Multiplayer Only", "udmf": [ "!single", "dm", "coop" ] },
+      { "value": 32, "name": "Not in DM", "udmf": [ "!dm" ] },
+      { "value": 64, "name": "Not in Coop", "udmf": [ "!coop" ] },
+      { "value": 128, "name": "Friendly", "udmf": [ "friendly" ] }
+    ]
+  },
+
+  // Hexen/UDMF map format
+  "hexen_udmf": {
+    "flags": [
+      { "value": 1, "name": "Easy Skill", "udmf": [ "skill1", "skill2" ] },
+      { "value": 2, "name": "Medium Skill", "udmf": [ "skill3" ] },
+      { "value": 4, "name": "Hard Skill", "udmf": [ "skill4", "skill5" ] },
+      { "value": 8, "name": "Ambush", "udmf": [ "ambush" ] },
+      { "value": 16, "name": "Dormant", "udmf": [ "dormant" ] },
+      { "value": 32, "name": "Fighter", "udmf": [ "class1" ] },
+      { "value": 64, "name": "Cleric", "udmf": [ "class2" ] },
+      { "value": 128, "name": "Mage", "udmf": [ "class3" ] },
+      { "value": 256, "name": "Single Player", "udmf": [ "single" ] },
+      { "value": 512, "name": "Coop", "udmf": [ "coop" ] },
+      { "value": 1024, "name": "Deathmatch", "udmf": [ "dm" ] },
+      { "value": 2048, "name": "Translucent", "udmf": [ "translucent" ] },
+      { "value": 4096, "name": "Invisible", "udmf": [ "invisible" ] },
+      { "value": 8192, "name": "Ally", "udmf": [ "strifeally" ] },
+      { "value": 16384, "name": "Stand Still", "udmf": [ "standing" ] },
+      { "value": 524288, "name": "Count as Secret", "udmf": [ "countsecret" ] },
+      { "value": 2097152, "name": "Does Not Count", "udmf": [ "nocount" ] }
+    ]
+  }
+}

@@ -1417,6 +1417,9 @@ void Edit3D::changeTexture() const
 // -----------------------------------------------------------------------------
 void Edit3D::deleteTexture() const
 {
+	// Begin undo level
+	context_->beginUndoRecord("Delete Texture", true, false, false);
+
 	auto& map = context_->map();
 	for (auto& item : context_->selection().selectionOrHilight())
 	{
@@ -1431,6 +1434,9 @@ void Edit3D::deleteTexture() const
 		else if (item.type == ItemType::WallTop)
 			map.side(item.index)->setStringProperty("texturetop", "-");
 	}
+
+	// End undo level
+	context_->endUndoRecord();
 }
 
 // -----------------------------------------------------------------------------

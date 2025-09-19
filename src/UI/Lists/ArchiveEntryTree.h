@@ -1,26 +1,26 @@
 #pragma once
 
 #include "General/Sigslot.h"
-#include <wx/dataview.h>
+#include "SDataViewCtrl.h"
+#include "UI/SAuiToolBar.h"
 
 namespace slade
 {
 class UndoManager;
-class SToolBarButton;
+class SToolButton;
 
 namespace ui
 {
-	class ArchivePathPanel : public wxPanel
+	class ArchivePathPanel : public SAuiToolBar
 	{
 	public:
 		ArchivePathPanel(wxWindow* parent);
+		~ArchivePathPanel() override;
 
-		void setCurrentPath(const ArchiveDir* dir) const;
+		void setCurrentPath(const ArchiveDir* dir);
 
 	private:
-		SToolBarButton* btn_home_  = nullptr;
-		SToolBarButton* btn_updir_ = nullptr;
-		wxStaticText*   text_path_ = nullptr;
+		wxStaticText* text_path_ = nullptr;
 	};
 
 	class ArchiveViewModel : public wxDataViewModel
@@ -51,6 +51,8 @@ namespace ui
 		}
 		ArchiveDir*    dirForDirItem(const wxDataViewItem& item) const;
 		wxDataViewItem createItemForDirectory(const ArchiveDir& dir) const;
+
+		void reload(ViewType view_type);
 
 	private:
 		weak_ptr<Archive>    archive_;
@@ -84,7 +86,7 @@ namespace ui
 		bool dirIsInList(const ArchiveDir& dir) const;
 	};
 
-	class ArchiveEntryTree : public wxDataViewCtrl
+	class ArchiveEntryTree : public SDataViewCtrl
 	{
 	public:
 		ArchiveEntryTree(
@@ -126,6 +128,7 @@ namespace ui
 		void upDir();
 		void homeDir();
 		void goToDir(const shared_ptr<ArchiveDir>& dir, bool expand = false);
+		void reloadModel(bool tree = true);
 
 		// Overrides
 		void EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column = nullptr) override;
@@ -141,13 +144,9 @@ namespace ui
 		string            search_;
 
 		void setupColumns();
-		void saveColumnWidths() const;
 		void updateColumnWidths();
-
-#ifdef __WXMSW__
-		bool lookForSearchEntryFrom(int index_start);
-		bool searchChar(int key_code);
-#endif
+		void saveColumnConfig();
+		void onAnyColumnResized() override;
 	};
 
 } // namespace ui

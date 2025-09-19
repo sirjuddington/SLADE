@@ -35,6 +35,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Database.h"
 #include "General/Console.h"
 #include "General/SAction.h"
 #include "MainEditor/MainEditor.h"
@@ -114,11 +115,11 @@ protected:
 
 		const auto msg_str = msg.utf8_string();
 		if (msg.Lower().Contains(wxS("error")))
-			log::error(wx_prefix + msg_str.substr(msg_str.size() - 10));
+			log::error(wx_prefix + msg_str.substr(10));
 		else if (msg.Lower().Contains(wxS("warning")))
-			log::warning(wx_prefix + msg_str.substr(msg_str.size() - 10));
+			log::warning(wx_prefix + msg_str.substr(10));
 		else
-			log::info(wx_prefix + msg_str.substr(msg_str.size() - 10));
+			log::info(wx_prefix + msg_str.substr(10));
 	}
 
 public:
@@ -482,7 +483,9 @@ bool SLADEWxApp::OnInit()
 	}
 	catch (const std::exception& ex)
 	{
-		log::error("Exception during SLADE initialization: {}", ex.what());
+		string error = ex.what();
+		log::error("Exception during SLADE initialization: {}", error);
+		wxTrap();
 		throw;
 	}
 
@@ -519,7 +522,12 @@ int SLADEWxApp::OnExit()
 	delete single_instance_checker_;
 	delete file_listener_;
 
-	return 0;
+	// Close program database after wx cleanup/exit as we want to keep the database
+	// connection open until all windows are closed etc.
+	auto retcode = wxApp::OnExit();
+	database::close();
+
+	return retcode;
 }
 
 // -----------------------------------------------------------------------------
@@ -549,7 +557,9 @@ bool SLADEWxApp::OnExceptionInMainLoop()
 	}
 	catch (const std::exception& ex)
 	{
-		log::error("Unhandled exception: {}", ex.what());
+		string error = ex.what();
+		log::error("Unhandled exception: {}", error);
+		wxTrap();
 	}
 
 	return wxApp::OnExceptionInMainLoop();
@@ -602,9 +612,9 @@ void SLADEWxApp::onMenu(wxCommandEvent& e)
 		SActionHandler::setWxIdOffset(e.GetId() - s_action->wxId());
 		handled = SActionHandler::doAction(action);
 
-		// Check if triggering object is a menu item
-		if (s_action && s_action->type() == SAction::Type::Check)
+		if (s_action->type() == SAction::Type::Check)
 		{
+			// Check if triggering object is a menu item
 			if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
 			{
 				auto item = static_cast<wxMenuItem*>(e.GetEventObject());

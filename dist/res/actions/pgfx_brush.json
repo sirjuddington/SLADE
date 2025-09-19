@@ -1,0 +1,110 @@
+{
+  "pgfx_brush_sq_1": {
+    "text": "Square 1x1",
+    "icon": "brush_sq_1"
+  },
+  "pgfx_brush_sq_3": {
+    "text": "Square 3x3",
+    "icon": "brush_sq_3"
+  },
+  "pgfx_brush_sq_5": {
+    "text": "Square 5x5",
+    "icon": "brush_sq_5"
+  },
+  "pgfx_brush_sq_7": {
+    "text": "Square 7x7",
+    "icon": "brush_sq_7"
+  },
+  "pgfx_brush_sq_9": {
+    "text": "Square 9x9",
+    "icon": "brush_sq_9"
+  },
+  "pgfx_brush_ci_5": {
+    "text": "Circle 5x5",
+    "icon": "brush_ci_5"
+  },
+  "pgfx_brush_ci_7": {
+    "text": "Circle 7x7",
+    "icon": "brush_ci_7"
+  },
+  "pgfx_brush_ci_9": {
+    "text": "Circle 9x9",
+    "icon": "brush_ci_9"
+  },
+  "pgfx_brush_di_3": {
+    "text": "Diamond 3x3",
+    "icon": "brush_di_3"
+  },
+  "pgfx_brush_di_5": {
+    "text": "Diamond 5x5",
+    "icon": "brush_di_5"
+  },
+  "pgfx_brush_di_7": {
+    "text": "Diamond 7x7",
+    "icon": "brush_di_7"
+  },
+  "pgfx_brush_di_9": {
+    "text": "Diamond 9x9",
+    "icon": "brush_di_9"
+  },
+  "pgfx_brush_pa_a": {
+    "text": "Dither Pattern A",
+    "icon": "brush_pa_a"
+  },
+  "pgfx_brush_pa_b": {
+    "text": "Dither Pattern B",
+    "icon": "brush_pa_b"
+  },
+  "pgfx_brush_pa_c": {
+    "text": "Dither Pattern C",
+    "icon": "brush_pa_c"
+  },
+  "pgfx_brush_pa_d": {
+    "text": "Dither Pattern D",
+    "icon": "brush_pa_d"
+  },
+  "pgfx_brush_pa_e": {
+    "text": "Dither Pattern E",
+    "icon": "brush_pa_e"
+  },
+  "pgfx_brush_pa_f": {
+    "text": "Dither Pattern F",
+    "icon": "brush_pa_f"
+  },
+  "pgfx_brush_pa_g": {
+    "text": "Dither Pattern G",
+    "icon": "brush_pa_g"
+  },
+  "pgfx_brush_pa_h": {
+    "text": "Dither Pattern H",
+    "icon": "brush_pa_h"
+  },
+  "pgfx_brush_pa_i": {
+    "text": "Dither Pattern I",
+    "icon": "brush_pa_i"
+  },
+  "pgfx_brush_pa_j": {
+    "text": "Dither Pattern J",
+    "icon": "brush_pa_j"
+  },
+  "pgfx_brush_pa_k": {
+    "text": "Dither Pattern K",
+    "icon": "brush_pa_k"
+  },
+  "pgfx_brush_pa_l": {
+    "text": "Dither Pattern L",
+    "icon": "brush_pa_l"
+  },
+  "pgfx_brush_pa_m": {
+    "text": "Dither Pattern M",
+    "icon": "brush_pa_m"
+  },
+  "pgfx_brush_pa_n": {
+    "text": "Dither Pattern N",
+    "icon": "brush_pa_n"
+  },
+  "pgfx_brush_pa_o": {
+    "text": "Dither Pattern O",
+    "icon": "brush_pa_o"
+  }
+}

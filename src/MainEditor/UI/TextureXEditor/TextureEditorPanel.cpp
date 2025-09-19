@@ -42,8 +42,7 @@
 #include "UI/Controls/ZoomControl.h"
 #include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -225,12 +224,12 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	framesizer->Add(gb_sizer, lh.sfWithBorder(1));
 
 	// Layout
-	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Name:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Name:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Size:")), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Size:")), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_width_, { 0, 3 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_height_, { 0, 4 }, { 1, 1 });
-	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Scale:")), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Scale:")), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex_, { 1, 3 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_scaley_, { 1, 4 }, { 1, 1 });
 	gb_sizer->Add(label_scaled_size_, { 1, 5 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -308,24 +307,17 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	sizer->Add(framesizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Create patches list
-	list_patches_ = new ListView(panel, -1);
+	list_patches_ = new ListView(frame, -1);
 	list_patches_->enableSizeUpdate(false);
 
 	// Create patches toolbar
-	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
-	tb_patches_->addActionGroup(
-		"_Patch",
-		{ "txed_patch_add",
-		  "txed_patch_remove",
-		  "txed_patch_back",
-		  "txed_patch_forward",
-		  "txed_patch_replace",
-		  "txed_patch_duplicate" });
-	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
-	tb_patches_->findActionButton("txed_patch_add")->Enable();
+	tb_patches_ = new SAuiToolBar(frame, true);
+	tb_patches_->loadLayoutFromResource("texturex_patches");
+	tb_patches_->enableGroup("Patch", false);
+	tb_patches_->enableItem("txed_patch_add", true);
 
 	// Layout
-	list_patches_->SetInitialSize({ FromDIP(100), tb_patches_->group("_Patch")->GetBestSize().y });
+	list_patches_->SetInitialSize({ FromDIP(100), tb_patches_->GetBestSize().y });
 	framesizer->Add(list_patches_, lh.sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
 	framesizer->Add(tb_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
@@ -340,16 +332,16 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	auto           hbox      = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, lh.sfWithBorder().Expand());
 	spin_patch_left_ = new wxSpinCtrl(
-		panel, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, wxS("X Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
+	hbox->Add(new wxStaticText(frame, -1, wxS("X Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(spin_patch_left_, 1);
 
 	// Y Position
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	spin_patch_top_ = new wxSpinCtrl(
-		panel, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, wxS("Y Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
+	hbox->Add(new wxStaticText(frame, -1, wxS("Y Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(spin_patch_top_, 1);
 
 	return panel;
@@ -1141,7 +1133,7 @@ void TextureEditorPanel::onTexWorldPanningChanged(wxCommandEvent& e)
 void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 {
 	if (list_patches_->GetSelectedItemCount() > 0)
-		tb_patches_->group("_Patch")->setAllButtonsEnabled(true);
+		tb_patches_->enableGroup("Patch", true);
 
 	// Select the patch on the texture canvas
 	tex_canvas_->selectPatch(e.GetIndex());
@@ -1158,8 +1150,8 @@ void TextureEditorPanel::onPatchListDeSelect(wxListEvent& e)
 {
 	if (list_patches_->GetSelectedItemCount() == 0)
 	{
-		tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
-		tb_patches_->findActionButton("txed_patch_add")->Enable();
+		tb_patches_->enableGroup("Patch", false);
+		tb_patches_->enableItem("txed_patch_add", true);
 	}
 
 	// Deselect the patch on the texture canvas

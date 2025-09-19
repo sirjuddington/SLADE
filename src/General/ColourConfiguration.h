@@ -1,5 +1,6 @@
 #pragma once
 
+#include "JsonFwd.h"
 #include "OpenGL/OpenGL.h"
 
 namespace slade::colourconfig
@@ -33,8 +34,8 @@ void   setLineHilightWidth(double mult);
 void   setLineSelectionWidth(double mult);
 void   setFlatAlpha(double alpha);
 
-bool readConfiguration(const MemChunk& mc);
-bool writeConfiguration(MemChunk& mc);
+void readConfiguration(Json& j);
+void writeConfiguration(string_view json_file);
 bool init();
 void loadDefaults();
 

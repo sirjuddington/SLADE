@@ -65,6 +65,7 @@
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/EntryPanel/EntryPanel.h"
 #include "UI/MainWindow.h"
+#include "UI/State.h"
 #include "UI/TextureXEditor/TextureXEditor.h"
 #include "UI/UI.h"
 #include "Utility/Colour.h"
@@ -92,9 +93,6 @@ CVAR(String, path_deflopt, "", CVar::Flag::Save)
 CVAR(String, path_db2, "", CVar::Flag::Save)
 CVAR(Bool, acc_always_show_output, false, CVar::Flag::Save)
 CVAR(Bool, decohack_always_show_output, false, CVar::Flag::Save)
-CVAR(String, last_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
-CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
-CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
 namespace
 {
 const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry {}, unsupported format for writing";
@@ -1755,7 +1753,8 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Run PNGCrush
 	if (!pngpathc.empty() && fileutil::fileExists(pngpathc))
 	{
-		strutil::Path fn(pngpathc);
+		string tmppath = app::path("", app::Dir::Temp) += "opt";
+		strutil::Path fn(tmppath);
 		fn.setExtension("opt");
 		string pngfile = fn.fullPath();
 		fn.setExtension("png");
@@ -1807,7 +1806,8 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Run PNGOut
 	if (!pngpatho.empty() && fileutil::fileExists(pngpatho))
 	{
-		strutil::Path fn(pngpatho);
+		string tmppath = app::path("", app::Dir::Temp) += "opt";
+		strutil::Path fn(tmppath);
 		fn.setExtension("opt");
 		string pngfile = fn.fullPath();
 		fn.setExtension("png");
@@ -1860,7 +1860,8 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Run deflopt
 	if (!pngpathd.empty() && fileutil::fileExists(pngpathd))
 	{
-		strutil::Path fn(pngpathd);
+		string tmppath = app::path("", app::Dir::Temp) += "opt";
+		strutil::Path fn(tmppath);
 		fn.setExtension("png");
 		string pngfile = fn.fullPath();
 		entry->exportFile(pngfile);
@@ -2235,7 +2236,7 @@ bool entryoperations::colourizeGfxEntries(const vector<ArchiveEntry*>& entries, 
 	// Create colourise dialog
 	auto               pal = theMainWindow->paletteChooser()->selectedPalette();
 	GfxColouriseDialog gcd(maineditor::windowWx(), entries[0], *pal);
-	gcd.setColour(last_colour);
+	gcd.setColour(ui::getStateString(ui::COLOURISEDIALOG_LAST_COLOUR));
 
 	// Run dialog
 	if (gcd.ShowModal() == wxID_OK)
@@ -2270,7 +2271,7 @@ bool entryoperations::colourizeGfxEntries(const vector<ArchiveEntry*>& entries, 
 		if (undo_manager)
 			undo_manager->endRecord(true);
 	}
-	last_colour = colour::toString(gcd.colour(), colour::StringFormat::RGB);
+	ui::saveStateString(ui::COLOURISEDIALOG_LAST_COLOUR, colour::toString(gcd.colour(), colour::StringFormat::RGB));
 	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
@@ -2284,7 +2285,7 @@ bool entryoperations::tintGfxEntries(const vector<ArchiveEntry*>& entries, UndoM
 	// Create colourise dialog
 	auto          pal = theMainWindow->paletteChooser()->selectedPalette();
 	GfxTintDialog gtd(maineditor::windowWx(), entries[0], *pal);
-	gtd.setValues(last_tint_colour, last_tint_amount);
+	gtd.setValues(ui::getStateString(ui::TINTDIALOG_LAST_COLOUR), ui::getStateInt(ui::TINTDIALOG_LAST_AMOUNT));
 
 	// Run dialog
 	if (gtd.ShowModal() == wxID_OK)
@@ -2320,8 +2321,8 @@ bool entryoperations::tintGfxEntries(const vector<ArchiveEntry*>& entries, UndoM
 			undo_manager->endRecord(true);
 	}
 
-	last_tint_colour = colour::toString(gtd.colour(), colour::StringFormat::RGB);
-	last_tint_amount = static_cast<int>(gtd.amount() * 100.0f);
+	ui::saveStateString(ui::TINTDIALOG_LAST_COLOUR, colour::toString(gtd.colour(), colour::StringFormat::RGB));
+	ui::saveStateInt(ui::TINTDIALOG_LAST_AMOUNT, static_cast<int>(gtd.amount() * 100.0f));
 
 	maineditor::currentEntryPanel()->callRefresh();
 

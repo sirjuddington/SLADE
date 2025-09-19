@@ -1,0 +1,657 @@
+// Instead of outright deleting lines, features that aren't yet implemented
+// have their respective lines/blocks commented out.
+{
+  "blocks": [
+    {
+      "block": "linedef",
+      "groups": [
+        {
+          "name": "Flags",
+          "defaults": {
+            "flag": true,
+            "type": "bool",
+            "default": false,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "midtex3d", "name": "3D Middle Texture" },
+            // { "udmf": "blockplayers", "name": "Blocks Players" },
+            // { "udmf": "blockprojectiles", "name": "Blocks Projectiles" },
+            { "udmf": "blockeverything", "name": "Blocks Everything" },
+            { "udmf": "blockfloaters", "name": "Blocks Floaters" },
+            // { "udmf": "blockuse", "name": "Blocks Use" },
+            // { "udmf": "blocksight", "name": "Blocks Monster Sight" },
+            { "udmf": "zoneboundary", "name": "Reverb Zone Boundary" },
+            { "udmf": "clipmidtex", "name": "Clip MidTex" },
+            // { "udmf": "wrapmidtex", "name": "Wrap MidTex" },
+            { "udmf": "midtex3dimpassible", "name": "3D Midtex Allows Projectiles Through" }
+          ]
+        },
+        {
+          "name": "Special Activation",
+          "defaults": {
+            "trigger": true,
+            "type": "bool",
+            "default": false,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "repeatspecial", "name": "Repeatable" },
+            // { "udmf": "monsteractivate", "name": "Monsters Activate" },
+            // { "udmf": "checkswitchrange", "name": "Check Switch Range" },
+            // { "udmf": "playeruseback", "name": "Usable From Back" },
+            { "udmf": "firstsideonly", "name": "Activate Front Only" }
+          ]
+        },
+        {
+          "name": "Special Triggers",
+          "defaults": {
+            "trigger": true,
+            "type": "bool",
+            "default": false,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "playeruse", "name": "Player Use" },
+            // { "udmf": "playerpush", "name": "Player Bump" },
+            { "udmf": "playercross", "name": "Player Cross" },
+            { "udmf": "monsteruse", "name": "Monster Use" },
+            // { "udmf": "monsterpush", "name": "Monster Bump" },
+            { "udmf": "monstercross", "name": "Monster Cross" },
+            { "udmf": "missilecross", "name": "Missile Cross" },
+            // { "udmf": "anycross", "name": "Anything Cross" },
+            { "udmf": "impact", "name": "Attack Hit" },
+            { "udmf": "polycross", "name": "Polyobj Cross" }
+          ]
+        },
+        {
+          "name": "Rendering",
+          "defaults": {
+            "show_always": false
+          },
+          "properties": [
+            {
+              "udmf": "portal",
+              "name": "Portal ID",
+              "type": "int",
+              "default": 0
+            },
+            {
+              "udmf": "alpha",
+              "name": "Alpha",
+              "type": "float",
+              "default": 1
+            },
+            {
+              "udmf": "renderstyle",
+              "name": "Render Style",
+              "type": "string",
+              "default": "translucent",
+              "values": [ "translucent", "add" ]
+            },
+            {
+              "udmf": "tranmap",
+              "name": "Translucency Filter",
+              "type": "string",
+              "default": "TRANMAP"
+            }
+          ]
+        },
+        {
+          "name": "Portals",
+          "defaults": {
+            "show_always": false
+          },
+          "properties": [
+            {
+              "udmf": "portal",
+              "name": "Portal ID",
+              "type": "int",
+              "default": 0
+            },
+            {
+              "udmf": "lowerportal",
+              "name": "Lower Portal",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "udmf": "upperportal",
+              "name": "Upper Portal",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+
+        // {
+        //   "name": "Special",
+        //   "properties": [
+        //     {
+        //       "udmf": "arg0str",
+        //       "name": "Arg 0 String",
+        //       "type": "string",
+        //       "default": ""
+        //     }
+        //   ]
+        // }
+      ]
+    },
+
+    {
+      "block": "sidedef",
+      "groups": [
+        {
+          "name": "Offsets",
+          "defaults": {
+            "type": "float",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "offsetx", "name": "X Offset" },
+            { "udmf": "offsety", "name": "Y Offset" },
+            { "udmf": "offsetx_top", "name": "Upper X Offset" },
+            { "udmf": "offsety_top", "name": "Upper Y Offset" },
+            { "udmf": "offsetx_mid", "name": "Middle X Offset" },
+            { "udmf": "offsety_mid", "name": "Middle Y Offset" },
+            { "udmf": "offsetx_bottom", "name": "Lower X Offset" },
+            { "udmf": "offsety_bottom", "name": "Lower Y Offset" }
+          ]
+        },
+        {
+          "name": "Skew",
+          "defaults": {
+            "type": "string",
+            "default": "none",
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "skew_top_type", "name": "Upper Skew Type" },
+            { "udmf": "skew_middle_type", "name": "Middle Skew Type" },
+            { "udmf": "skew_bottom_type", "name": "Bottom Skew Type" }
+          ]
+        },
+
+        // {
+        //   "name": "Scaling",
+        //   "defaults": {
+        //     "type": "float",
+        //     "default": 1,
+        //     "show_always": false
+        //   },
+        //   "properties": [
+        //     { "udmf": "scalex", "name": "X Scale" },
+        //     { "udmf": "scaley", "name": "Y Scale" }
+        //   ]
+        // },
+
+        {
+          "name": "Lighting",
+          "defaults": {
+            "type": "bool",
+            "default": false,
+            "show_always": false
+          },
+          "properties": [
+            {
+              "udmf": "light",
+              "name": "Light Level",
+              "type": "int",
+              "default": 0
+            },
+            { "udmf": "lightabsolute", "name": "Absolute Light Level" },
+            {
+              "udmf": "light_top",
+              "name": "Top Light Level",
+              "type": "int",
+              "default": 0
+            },
+            { "udmf": "lightabsolute_top", "name": "Top Absolute Light Level" },
+            {
+              "udmf": "light_mid",
+              "name": "Mid Light Level",
+              "type": "int",
+              "default": 0
+            },
+            { "udmf": "lightabsolute_mid", "name": "Mid Absolute Light Level" },
+            {
+              "udmf": "light_bottom",
+              "name": "Bottom Light Level",
+              "type": "int",
+              "default": 0
+            },
+            { "udmf": "lightabsolute_bottom", "name": "Bottom Absolute Light Level" }
+          ]
+        }
+
+        // {
+        //   "name": "Rendering",
+        //   "defaults": {
+        //     "type": "bool",
+        //     "default": false,
+        //     "show_always": false
+        //   },
+        //   "properties": [
+        //     { "udmf": "clipmidtex", "name": "Clip MidTex" },
+        //     { "udmf": "wrapmidtex", "name": "Wrap MidTex" },
+        //     { "udmf": "nodecals", "name": "No Decals" }
+        //   ]
+        // }
+      ]
+    },
+
+    {
+      "block": "sector",
+      "groups": [
+        {
+          "name": "Flags",
+          "defaults": {
+            "type": "bool",
+            "default": false,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "secret", "name": "Secret" }
+          ]
+        },
+        {
+          "name": "Lighting",
+          "defaults": {
+            "type": "int",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "lightfloor", "name": "Floor Light Level" },
+            { "udmf": "lightceiling", "name": "Ceiling Light Level" },
+            {
+              "udmf": "lightfloorabsolute",
+              "name": "Floor Light Absolute",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "udmf": "lightceilingabsolute",
+              "name": "Ceiling Light Absolute",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        {
+          "name": "Offsets",
+          "defaults": {
+            "type": "float",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "xpanningfloor", "name": "Floor X Offset" },
+            { "udmf": "ypanningfloor", "name": "Floor Y Offset" },
+            { "udmf": "xpanningceiling", "name": "Ceiling X Offset" },
+            { "udmf": "ypanningceiling", "name": "Ceiling Y Offset" }
+          ]
+        },
+        {
+          "name": "Scaling & Rotation",
+          "defaults": {
+            "type": "float",
+            "default": 1,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "xscalefloor", "name": "Floor X Scale" },
+            { "udmf": "yscalefloor", "name": "Floor Y Scale" },
+            { "udmf": "xscaleceiling", "name": "Ceiling X Scale" },
+            { "udmf": "yscaleceiling", "name": "Ceiling Y Scale" },
+            {
+              "udmf": "rotationfloor",
+              "name": "Floor Rotation",
+              "default": 0
+            },
+            {
+              "udmf": "rotationceiling",
+              "name": "Ceiling Rotation",
+              "default": 0
+            }
+          ]
+        },
+        {
+          "name": "Scrollers",
+          "defaults": {
+            "type": "float",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            {
+              "udmf": "scroll_floor_type",
+              "name": "Floor Scroller Type",
+              "type": "string",
+              "default": "none",
+              "values": [ "none", "visual", "physical", "both" ]
+            },
+            { "udmf": "scroll_floor_x", "name": "Floor Scroller Horizontal Speed" },
+            { "udmf": "scroll_floor_y", "name": "Floor Scroller Vertical Speed" },
+            {
+              "udmf": "scroll_ceil_type",
+              "name": "Ceiling Scroller Type",
+              "type": "string",
+              "default": "none",
+              "values": [ "none", "visual" ]
+            },
+            { "udmf": "scroll_ceil_x", "name": "Ceiling Scroller Horizontal Speed" },
+            { "udmf": "scroll_ceil_y", "name": "Ceiling Scroller Vertical Speed" }
+          ]
+        },
+        {
+          "name": "Terrain",
+          "defaults": {
+            "type": "string",
+            "default": "@flat",
+            "show_always": false
+          },
+          "properties": [
+            {
+              "udmf": "friction",
+              "name": "Friction",
+              "type": "int",
+              "default": -1
+            },
+            { "udmf": "floorterrain", "name": "Floor Terrain" },
+            { "udmf": "ceilingterrain", "name": "Ceiling Terrain" },
+            {
+              "udmf": "damageterraineffect",
+              "name": "Damage Terrain Effect",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        {
+          "name": "Sector Damage",
+          "defaults": {
+            "type": "int",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "damageamount", "name": "Damage Amount" },
+            { "udmf": "damageinterval", "name": "Damage Interval" },
+            { "udmf": "leakiness", "name": "Leakiness (0 never, 256 always)" },
+            {
+              "udmf": "damage_endgodmode",
+              "name": "Damage End God Mode",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "udmf": "damage_exitlevel",
+              "name": "Damage Exit Level",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "udmf": "damagetype",
+              "name": "Damage Type",
+              "type": "string",
+              "default": "Unknown"
+            }
+          ]
+        },
+        {
+          "name": "Portals",
+          "defaults": {
+            "show_always": false
+          },
+          "properties": [
+            {
+              "udmf": "portalfloor",
+              "name": "Floor Portal ID",
+              "type": "int",
+              "default": 0
+            },
+            {
+              "udmf": "portalceiling",
+              "name": "Ceiling Portal ID",
+              "type": "int",
+              "default": 0
+            },
+            {
+              "udmf": "alphafloor",
+              "name": "Floor Alpha",
+              "type": "float",
+              "default": 1.0
+            },
+            {
+              "udmf": "alphaceiling",
+              "name": "Ceiling Alpha",
+              "type": "float",
+              "default": 1.0
+            },
+            {
+              "udmf": "portal_floor_overlaytype",
+              "name": "Floor Overlay Type",
+              "type": "string",
+              "default": "none",
+              "values": [ "none", "translucent", "add" ]
+            },
+            {
+              "udmf": "portal_ceil_overlaytype",
+              "name": "Ceiling Overlay Type",
+              "type": "string",
+              "default": "none",
+              "values": [ "none", "translucent", "add" ]
+            }
+          ]
+        },
+        {
+          "name": "Portal Settings",
+          "defaults": {
+            "type": "bool",
+            "default": false,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "portal_floor_disabled", "name": "Floor Portal Disabled" },
+            { "udmf": "portal_floor_norender", "name": "Floor Portal Rendering Disabled" },
+            { "udmf": "portal_floor_nopass", "name": "Floor Portal Nopass" },
+            { "udmf": "portal_floor_blocksound", "name": "Floor Portal Block Sound" },
+            { "udmf": "portal_floor_useglobaltex", "name": "Floor Use Global Tex" },
+            { "udmf": "portal_ceil_disabled", "name": "Ceiling Portal Disabled" },
+            { "udmf": "portal_ceil_norender", "name": "Ceiling Portal Rendering Disabled" },
+            { "udmf": "portal_ceil_nopass", "name": "Ceiling Portal Nopass" },
+            { "udmf": "portal_ceil_blocksound", "name": "Ceiling Portal Block Sound" },
+            { "udmf": "portal_ceil_useglobaltex", "name": "Ceiling Use Global Tex" }
+          ]
+        },
+        {
+          "name": "Colour",
+          "defaults": {
+            "show_always": false
+          },
+          "properties": [
+            {
+              "udmf": "colormaptop",
+              "name": "Colormap Top",
+              "type": "string",
+              "default": "@default"
+            },
+            {
+              "udmf": "colormapmid",
+              "name": "Colormap Middle",
+              "type": "string",
+              "default": "@default"
+            },
+            {
+              "udmf": "colormapbottom",
+              "name": "Colormap Bottom",
+              "type": "string",
+              "default": "@default"
+            }
+
+            // This is currently ZDoom stuff
+            // {
+            //   "udmf": "lightcolor",
+            //   "name": "Light Colour",
+            //   "type": "colour",
+            //   "default": 0xFFFFFF
+            // },
+            // {
+            //   "udmf": "fadecolor",
+            //   "name": "Fog Colour",
+            //   "type": "colour",
+            //   "default": 0x000000
+            // },
+            // {
+            //   "udmf": "desaturation",
+            //   "name": "Desaturation",
+            //   "type": "float",
+            //   "default": 0
+            // }
+          ]
+        },
+        {
+          "name": "Attached Sectors",
+          "defaults": {
+            "type": "int",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "floorid", "name": "Floor ID" },
+            { "udmf": "ceilingid", "name": "Ceiling ID" },
+            { "udmf": "attachfloor", "name": "Attached Floor ID" },
+            { "udmf": "attachceiling", "name": "Attached Ceiling ID" }
+          ]
+        },
+        {
+          "name": "Eternity Misc",
+          "defaults": {
+            "type": "bool",
+            "default": false,
+            "show_always": false
+          },
+          "properties": [
+            {
+              "udmf": "soundsequence",
+              "name": "Sound Sequence",
+              "type": "string",
+              "default": ""
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "block": "thing",
+      "groups": [
+        {
+          "name": "Args",
+          "defaults": {
+            "type": "int",
+            "default": 0
+          },
+          "properties": [
+            { "udmf": "arg0", "name": "Arg 0" },
+            { "udmf": "arg1", "name": "Arg 1" },
+            { "udmf": "arg2", "name": "Arg 2" },
+            { "udmf": "arg3", "name": "Arg 3" },
+            { "udmf": "arg4", "name": "Arg 4" }
+          ]
+        },
+        {
+          "name": "Flags",
+          "defaults": {
+            "type": "bool",
+            "default": false,
+            "flag": true,
+            "show_always": false
+          },
+          "properties": [
+            // Eternity
+            { "udmf": "dormant", "name": "Dormant", "show_always": true },
+            // { "udmf": "countsecret", "name": "Count As Secret", "show_always": true },
+            // { "udmf": "skill6", "name": "Skill 6" },
+            // { "udmf": "skill7", "name": "Skill 7" },
+            // { "udmf": "skill8", "name": "Skill 8" },
+            // { "udmf": "skill9", "name": "Skill 9" },
+            // { "udmf": "skill10", "name": "Skill 10" },
+            // { "udmf": "skill11", "name": "Skill 11" },
+            // { "udmf": "skill12", "name": "Skill 12" },
+            // { "udmf": "skill13", "name": "Skill 13" },
+            // { "udmf": "skill14", "name": "Skill 14" },
+            // { "udmf": "skill15", "name": "Skill 15" },
+            // { "udmf": "skill16", "name": "Skill 16" },
+            { "udmf": "class1", "name": "Class 1", "show_always": true },
+            { "udmf": "class2", "name": "Class 2", "show_always": true },
+            { "udmf": "class3", "name": "Class 3", "show_always": true }
+            // { "udmf": "class4", "name": "Class 4" },
+            // { "udmf": "class5", "name": "Class 5" },
+            // { "udmf": "class6", "name": "Class 6" },
+            // { "udmf": "class7", "name": "Class 7" },
+            // { "udmf": "class8", "name": "Class 8" },
+            // { "udmf": "class9", "name": "Class 9" },
+            // { "udmf": "class10", "name": "Class 10" },
+            // { "udmf": "class11", "name": "Class 11" },
+            // { "udmf": "class12", "name": "Class 12" },
+            // { "udmf": "class13", "name": "Class 13" },
+            // { "udmf": "class14", "name": "Class 14" },
+            // { "udmf": "class15", "name": "Class 15" },
+            // { "udmf": "class16", "name": "Class 16" }
+          ]
+        },
+        {
+          "name": "Scripting Special",
+          "defaults": {
+            "type": "actionspecial",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "special", "name": "Special" }
+            // {
+            //   "udmf": "arg0str",
+            //   "name": "Arg 0 String",
+            //   "type": "string",
+            //   "default": ""
+            // }
+          ]
+        },
+
+        // {
+        //   "name": "Conversations",
+        //   "defaults": {
+        //     "show_always": false
+        //   },
+        //   "properties": [
+        //     {
+        //       "udmf": "conversation",
+        //       "name": "Conversation #",
+        //       "type": "int",
+        //       "default": 0
+        //     }
+        //   ]
+        // },
+
+        {
+          "name": "Miscellaneous",
+          "defaults": {
+            "show_always": false,
+            "type": "int"
+          },
+          "properties": [
+            {
+              "udmf": "health",
+              "name": "Health Multiplier",
+              "type": "float",
+              "default": 1.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
