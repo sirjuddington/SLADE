@@ -250,7 +250,6 @@ void MapEditContext::setEditMode(Mode mode)
 	{
 		SAction::fromId("mapw_mode_3d")->setChecked();
 	}
-	mapeditor::window()->refreshToolBar();
 
 	// Setup for 3d mode if switching to it
 	if (mode == Mode::Visual)

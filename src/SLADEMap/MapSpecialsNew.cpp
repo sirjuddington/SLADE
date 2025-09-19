@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "MapSpecialsNew.h"
 #include "Game/Configuration.h"
-#include "General/Defs.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/Plane.h"
 #include "MapObject/MapLine.h"

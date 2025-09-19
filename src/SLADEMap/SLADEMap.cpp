@@ -186,11 +186,6 @@ size_t SLADEMap::nThings() const
 	return data_.things().size();
 }
 
-long SLADEMap::typeLastUpdated(map::ObjectType type) const
-{
-	return type_modified_times_[static_cast<int>(type)];
-}
-
 // -----------------------------------------------------------------------------
 // Returns the last time any object of [type] was modified in the map
 // -----------------------------------------------------------------------------
