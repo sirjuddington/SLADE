@@ -92,11 +92,7 @@ void SStartPage::init()
 		wxEmptyString,
 		wxDefaultPosition,
 		wxDefaultSize,
-#ifdef __WXMSW__
-		wxString::FromUTF8(wxWebViewBackendIE),
-#else
 		wxString::FromUTF8(wxWebViewBackendDefault),
-#endif
 		wxBORDER_NONE);
 	html_startpage_->SetZoomType(app::platform() == app::MacOS ? wxWEBVIEW_ZOOM_TYPE_TEXT : wxWEBVIEW_ZOOM_TYPE_LAYOUT);
 
@@ -115,12 +111,19 @@ void SStartPage::init()
 
 	html_startpage_->Bind(
 		wxEVT_WEBVIEW_ERROR,
-		[&](wxWebViewEvent& e) { log::error("wxWebView Error: {}", e.GetString().utf8_string()); });
+		[&](wxWebViewEvent& e)
+		{
+			auto message = e.GetString().utf8_string();
+			if (!strutil::endsWith(message, "CONNECTION_ABORTED"))
+				log::error("wxWebView Error: {}", e.GetString().utf8_string());
+		});
 
+#if !wxCHECK_VERSION(3, 3, 0)
 	if (app::platform() == app::Platform::Windows)
 	{
 		html_startpage_->Bind(wxEVT_WEBVIEW_LOADED, [&](wxWebViewEvent& e) { html_startpage_->Reload(); });
 	}
+#endif
 
 	Bind(
 		wxEVT_WEBREQUEST_STATE,
