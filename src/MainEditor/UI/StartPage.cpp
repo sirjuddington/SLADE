@@ -92,7 +92,11 @@ void SStartPage::init()
 		wxEmptyString,
 		wxDefaultPosition,
 		wxDefaultSize,
+#ifdef __WXMSW__
+		wxString::FromUTF8(wxWebViewBackendIE),
+#else
 		wxString::FromUTF8(wxWebViewBackendDefault),
+#endif
 		wxBORDER_NONE);
 	html_startpage_->SetZoomType(app::platform() == app::MacOS ? wxWEBVIEW_ZOOM_TYPE_TEXT : wxWEBVIEW_ZOOM_TYPE_LAYOUT);
 
