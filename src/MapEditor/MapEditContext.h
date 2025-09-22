@@ -10,7 +10,7 @@ class InfoOverlay3D;
 class ItemSelection;
 class LineInfoOverlay;
 class MapCanvas;
-class MapSpecialsNew;
+class MapSpecials;
 class MCOverlay;
 class SectorInfoOverlay;
 class ThingInfoOverlay;

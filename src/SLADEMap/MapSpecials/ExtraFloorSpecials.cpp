@@ -1,10 +1,11 @@
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2025 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    CopySlopeThing.cpp
+// Filename:    ExtraFloorSpecials.cpp
 // Description:
 //
 // This program is free software; you can redistribute it and/or modify it
@@ -29,22 +30,54 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "CopySlopeThing.h"
-#include "SLADEMap/MapObject/MapSector.h"
-#include "SLADEMap/Types.h"
+#include "ExtraFloorSpecials.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/SLADEMap.h"
 
 using namespace slade;
 
 
-CopySlopeThing::CopySlopeThing(SectorSurfaceType surface_type) : SlopeSpecialThing{ Type::Copy, surface_type } {}
 
-void CopySlopeThing::apply()
+ExtraFloorSpecials::ExtraFloorSpecials(SLADEMap& map) : map_(&map) {}
+
+bool ExtraFloorSpecials::hasExtraFloors(const MapSector* sector) const
 {
-	bool floor = surface_type == SectorSurfaceType::Floor;
+	return std::any_of(
+		sector_extra_floors_.begin(),
+		sector_extra_floors_.end(),
+		[sector](const auto& sef) { return sef.sector == sector; });
+}
 
-	// Copy the plane from the model sector
-	if (floor)
-		target->setFloorPlane(model->floor().plane);
-	else
-		target->setCeilingPlane(model->ceiling().plane);
+const vector<ExtraFloorSpecials::ExtraFloor>& ExtraFloorSpecials::extraFloors(const MapSector* sector) const
+{
+	const auto it = std::find_if(
+		sector_extra_floors_.begin(),
+		sector_extra_floors_.end(),
+		[sector](const auto& sef) { return sef.sector == sector; });
+
+	if (it != sector_extra_floors_.end())
+		return it->extra_floors;
+
+	static vector<ExtraFloor> empty;
+	return empty;
+}
+
+void ExtraFloorSpecials::processLineSpecial(const MapLine& line)
+{
+	// Sector_Set3dFloor
+	// TODO: game/port check
+	if (line.special() == 160)
+	{
+		// Get all tagged sectors
+		vector<MapSector*> target_sectors;
+		map_->sectors().putAllWithId(line.arg(0), target_sectors);
+
+		for (auto sector : target_sectors)
+		{
+			Set3dFloorSpecial s3fs;
+			s3fs.control_sector = sector;
+			s3fs.line           = &line;
+		}
+	}
 }

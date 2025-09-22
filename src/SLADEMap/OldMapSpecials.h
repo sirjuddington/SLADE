@@ -7,7 +7,7 @@ namespace slade
 class MapSpecial;
 class PlaneAlignSpecial;
 
-class MapSpecials
+class OldMapSpecials
 {
 public:
 	void reset();

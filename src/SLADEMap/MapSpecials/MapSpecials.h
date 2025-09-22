@@ -4,11 +4,11 @@ namespace slade
 {
 class SlopeSpecials;
 
-class MapSpecialsNew
+class MapSpecials
 {
 public:
-	explicit MapSpecialsNew(SLADEMap& map);
-	~MapSpecialsNew();
+	explicit MapSpecials(SLADEMap& map);
+	~MapSpecials();
 
 	void processAllSpecials();
 	void processLineSpecial(const MapLine& line);

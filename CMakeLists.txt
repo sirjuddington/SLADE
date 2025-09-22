@@ -25,13 +25,15 @@ if (BUILD_WX)
 	set(wxBUILD_USE_STATIC_RUNTIME ON)
 	set(wxUSE_LIBJPEG sys)
 	set(wxUSE_LIBPNG sys)
+	set(wxUSE_NANOSVG_EXTERNAL OFF)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 	include(FetchContent)
 	FetchContent_Declare(
 		wxWidgets
-		GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-		GIT_TAG v3.3.1
+		GIT_REPOSITORY https://github.com/vadz/wxWidgets.git
+		GIT_TAG msw-drop-compositing
+		#GIT_TAG v3.3.1
 	)
 	FetchContent_GetProperties(wxwidgets)
 	FetchContent_MakeAvailable(wxwidgets)

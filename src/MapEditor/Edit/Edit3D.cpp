@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Edit3D.h"
+#include "../../SLADEMap/MapSpecials/MapSpecials.h"
 #include "Game/Configuration.h"
 #include "General/UndoRedo.h"
 #include "MapEditor/ItemSelection.h"
@@ -45,7 +46,6 @@
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
-#include "SLADEMap/MapSpecialsNew.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 #include <queue>

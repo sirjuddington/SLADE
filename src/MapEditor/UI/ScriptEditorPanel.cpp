@@ -37,7 +37,7 @@
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "SLADEMap/MapSpecials.h"
+#include "SLADEMap/OldMapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"

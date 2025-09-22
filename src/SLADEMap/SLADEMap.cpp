@@ -50,7 +50,7 @@
 #include "MapObjectList/SideList.h"
 #include "MapObjectList/ThingList.h"
 #include "MapObjectList/VertexList.h"
-#include "MapSpecialsNew.h"
+#include "MapSpecials/MapSpecials.h"
 #include "Utility/Debuggable.h"
 #include "Utility/MathStuff.h"
 
@@ -76,7 +76,7 @@ static constexpr double MERGE_ARCH_SPLIT_DIST = 0.1;
 // -----------------------------------------------------------------------------
 // SLADEMap class constructor
 // -----------------------------------------------------------------------------
-SLADEMap::SLADEMap() : data_{ this }, current_format_{ MapFormat::Unknown }, map_specials_{ new MapSpecialsNew(*this) }
+SLADEMap::SLADEMap() : data_{ this }, current_format_{ MapFormat::Unknown }, map_specials_{ new MapSpecials(*this) }
 {
 	// Init opened time so it's not random leftover garbage values
 	setOpenedTime();

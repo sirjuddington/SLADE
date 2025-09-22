@@ -4,7 +4,6 @@
 
 namespace slade
 {
-struct Set3dFloorSpecial;
 enum class SectorSurfaceType : u8;
 
 class ExtraFloorSpecials
@@ -33,6 +32,23 @@ private:
 		vector<ExtraFloor> extra_floors;
 	};
 	vector<SectorExtraFloors> sector_extra_floors_;
+
+	struct Set3dFloorSpecial
+	{
+		enum class Type
+		{
+			Vavoom    = 0,
+			Solid     = 1,
+			Swimmable = 2,
+			NonSolid  = 3,
+		};
+
+		const MapLine* line;
+		MapSector*     target;
+		MapSector*     control_sector;
+		Type           type;
+		bool           render_inside;
+	};
 
 	vector<unique_ptr<Set3dFloorSpecial>> set_3d_floor_specials_;
 };

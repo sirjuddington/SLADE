@@ -38,7 +38,7 @@
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
-#include "SLADEMap/MapSpecials.h"
+#include "SLADEMap/OldMapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Debuggable.h"
 #include "Utility/Parser.h"

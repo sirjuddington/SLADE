@@ -6,7 +6,7 @@
 
 namespace slade
 {
-class MapSpecialsNew;
+class MapSpecials;
 struct MapDesc;
 enum class MapFormat;
 namespace Game
@@ -67,7 +67,7 @@ public:
 	bool readMap(const MapDesc& map);
 	void clearMap();
 
-	MapSpecialsNew& mapSpecials() const { return *map_specials_.get(); }
+	MapSpecials& mapSpecials() const { return *map_specials_.get(); }
 	void            recomputeSpecials() const;
 
 	// Map saving
@@ -157,7 +157,7 @@ private:
 	string                     name_;
 	MapFormat                  current_format_;
 	long                       opened_time_ = 0;
-	unique_ptr<MapSpecialsNew> map_specials_;
+	unique_ptr<MapSpecials> map_specials_;
 	bool                       is_open_ = false;
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras

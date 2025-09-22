@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapEditContext.h"
+#include "../SLADEMap/MapSpecials/MapSpecials.h"
 #include "App.h"
 #include "Edit/Edit2D.h"
 #include "Edit/Edit3D.h"
@@ -74,7 +75,6 @@
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
-#include "SLADEMap/MapSpecialsNew.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"

@@ -31,106 +31,18 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "MapSpecialsNew.h"
+#include "MapSpecials.h"
 #include "Game/Configuration.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/Plane.h"
-#include "MapObject/MapLine.h"
-#include "MapObject/MapSector.h"
-#include "MapObject/MapSide.h"
-#include "MapObject/MapThing.h"
-#include "MapObject/MapVertex.h"
-#include "MapObjectList/LineList.h"
-#include "MapObjectList/SectorList.h"
-#include "MapObjectList/ThingList.h"
-#include "MapObjectList/VertexList.h"
-#include "SLADEMap.h"
-#include "SlopeSpecials/CopySlopeThing.h"
-#include "SlopeSpecials/LineSlopeThing.h"
-#include "SlopeSpecials/PlaneAlignSpecial.h"
-#include "SlopeSpecials/PlaneCopySpecial.h"
-#include "SlopeSpecials/SRB2VertexSlopeSpecial.h"
-#include "SlopeSpecials/SectorTiltThing.h"
-#include "SlopeSpecials/SlopeSpecials.h"
-#include "SlopeSpecials/VavoomSlopeThing.h"
-#include "Utility/Vector.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/SLADEMap.h"
+#include "SlopeSpecials.h"
 
 using namespace slade;
-
-
-// -----------------------------------------------------------------------------
-//
-// Functions
-//
-// -----------------------------------------------------------------------------
-namespace
-{
-void applyUDMFPlanes(MapSector& sector)
-{
-	double a{}, b{}, c{}, d{};
-
-	// Floor -------------------------------------------------------------------
-	bool has_floorplane = true;
-
-	// A
-	if (sector.hasProp("floorplane_a"))
-		a = -sector.floatProperty("floorplane_a");
-	else
-		has_floorplane = false;
-
-	// B
-	if (has_floorplane && sector.hasProp("floorplane_b"))
-		b = -sector.floatProperty("floorplane_b");
-	else
-		has_floorplane = false;
-
-	// C
-	if (has_floorplane && sector.hasProp("floorplane_c"))
-		c = -sector.floatProperty("floorplane_c");
-	else
-		has_floorplane = false;
-
-	// D
-	if (sector.hasProp("floorplane_d"))
-		d = sector.floatProperty("floorplane_d");
-	else
-		has_floorplane = false;
-
-	if (has_floorplane)
-		sector.setFloorPlane({ a, b, c, d });
-
-
-	// Ceiling -----------------------------------------------------------------
-	bool has_ceilingplane = true;
-
-	// A
-	if (sector.hasProp("ceilingplane_a"))
-		a = -sector.floatProperty("ceilingplane_a");
-	else
-		has_ceilingplane = false;
-
-	// B
-	if (has_ceilingplane && sector.hasProp("ceilingplane_b"))
-		b = -sector.floatProperty("ceilingplane_b");
-	else
-		has_ceilingplane = false;
-
-	// C
-	if (has_ceilingplane && sector.hasProp("ceilingplane_c"))
-		c = -sector.floatProperty("ceilingplane_c");
-	else
-		has_ceilingplane = false;
-
-	// D
-	if (sector.hasProp("ceilingplane_d"))
-		d = sector.floatProperty("ceilingplane_d");
-	else
-		has_ceilingplane = false;
-
-	if (has_ceilingplane)
-		sector.setCeilingPlane({ a, b, c, d });
-}
-} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -142,7 +54,7 @@ void applyUDMFPlanes(MapSector& sector)
 // -----------------------------------------------------------------------------
 // MapSpecials constructor
 // -----------------------------------------------------------------------------
-MapSpecialsNew::MapSpecialsNew(SLADEMap& map) : map_{ &map }
+MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 {
 	slope_specials_ = std::make_unique<SlopeSpecials>(map);
 }
@@ -150,12 +62,12 @@ MapSpecialsNew::MapSpecialsNew(SLADEMap& map) : map_{ &map }
 // -----------------------------------------------------------------------------
 // MapSpecials destructor
 // -----------------------------------------------------------------------------
-MapSpecialsNew::~MapSpecialsNew() = default;
+MapSpecials::~MapSpecials() = default;
 
 // -----------------------------------------------------------------------------
 // (Re-)Process all specials in the map
 // -----------------------------------------------------------------------------
-void MapSpecialsNew::processAllSpecials()
+void MapSpecials::processAllSpecials()
 {
 	// Clear existing specials
 	slope_specials_->clearSpecials();
@@ -179,11 +91,17 @@ void MapSpecialsNew::processAllSpecials()
 		slope_specials_->updateSectorPlanes(*sector);
 }
 
-void MapSpecialsNew::processLineSpecial(const MapLine& line) {}
+void MapSpecials::processLineSpecial(const MapLine& line)
+{
+	slope_specials_->processLineSpecial(line);
+}
 
-void MapSpecialsNew::processThing(const MapThing& thing) {}
+void MapSpecials::processThing(const MapThing& thing)
+{
+	slope_specials_->processThing(thing);
+}
 
-void MapSpecialsNew::lineUpdated(const MapLine& line)
+void MapSpecials::lineUpdated(const MapLine& line)
 {
 	// Update slope specials
 	slope_specials_->lineUpdated(line, !bulk_update_);
@@ -192,13 +110,13 @@ void MapSpecialsNew::lineUpdated(const MapLine& line)
 	processLineSpecial(line);
 }
 
-void MapSpecialsNew::sectorUpdated(MapSector& sector)
+void MapSpecials::sectorUpdated(MapSector& sector)
 {
 	// Update slope specials
 	slope_specials_->sectorUpdated(sector, !bulk_update_);
 }
 
-void MapSpecialsNew::thingUpdated(const MapThing& thing)
+void MapSpecials::thingUpdated(const MapThing& thing)
 {
 	// Update slope specials
 	slope_specials_->thingUpdated(thing, !bulk_update_);
@@ -207,7 +125,7 @@ void MapSpecialsNew::thingUpdated(const MapThing& thing)
 	processThing(thing);
 }
 
-void MapSpecialsNew::objectUpdated(MapObject& object)
+void MapSpecials::objectUpdated(MapObject& object)
 {
 	switch (object.objType())
 	{
@@ -220,7 +138,7 @@ void MapSpecialsNew::objectUpdated(MapObject& object)
 	}
 }
 
-void MapSpecialsNew::objectsUpdated(const vector<MapObject*>& objects)
+void MapSpecials::objectsUpdated(const vector<MapObject*>& objects)
 {
 	// Update specials for all given objects
 	bulk_update_ = true;
