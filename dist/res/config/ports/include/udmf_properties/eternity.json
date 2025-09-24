@@ -1,4 +1,4 @@
-// Instead of outright deleting lines, features that aren't yet implemented
+﻿// Instead of outright deleting lines, features that aren't yet implemented
 // have their respective lines/blocks commented out.
 {
   "blocks": [
@@ -80,7 +80,7 @@
               "udmf": "alpha",
               "name": "Alpha",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             {
               "udmf": "renderstyle",
@@ -145,7 +145,7 @@
           "name": "Offsets",
           "defaults": {
             "type": "float",
-            "default": 0,
+            "default": 0.0,
             "show_always": false
           },
           "properties": [
@@ -177,7 +177,7 @@
         //   "name": "Scaling",
         //   "defaults": {
         //     "type": "float",
-        //     "default": 1,
+        //     "default": 1.0,
         //     "show_always": false
         //   },
         //   "properties": [
@@ -283,7 +283,7 @@
           "name": "Offsets",
           "defaults": {
             "type": "float",
-            "default": 0,
+            "default": 0.0,
             "show_always": false
           },
           "properties": [
@@ -297,7 +297,7 @@
           "name": "Scaling & Rotation",
           "defaults": {
             "type": "float",
-            "default": 1,
+            "default": 1.0,
             "show_always": false
           },
           "properties": [
@@ -321,7 +321,7 @@
           "name": "Scrollers",
           "defaults": {
             "type": "float",
-            "default": 0,
+            "default": 0.0,
             "show_always": false
           },
           "properties": [
@@ -508,7 +508,7 @@
             //   "udmf": "desaturation",
             //   "name": "Desaturation",
             //   "type": "float",
-            //   "default": 0
+            //   "default": 0.0
             // }
           ]
         },

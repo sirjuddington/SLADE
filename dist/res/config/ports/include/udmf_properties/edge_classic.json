@@ -1,4 +1,4 @@
-{
+﻿{
   "blocks": [
     {
       "block": "vertex",
@@ -8,7 +8,7 @@
           "defaults": {
             "type": "float",
             "show_always": false,
-            "default": 1
+            "default": 1.0
           },
           "properties": [
             { "udmf": "zfloor", "name": "Floor Height" },
@@ -44,7 +44,7 @@
           "name": "Offsets",
           "defaults": {
             "type": "float",
-            "default": 0,
+            "default": 0.0,
             "show_always": false
           },
           "properties": [
@@ -60,7 +60,7 @@
           "name": "Scaling",
           "defaults": {
             "type": "float",
-            "default": 1,
+            "default": 1.0,
             "show_always": false
           },
           "properties": [
@@ -82,7 +82,7 @@
           "name": "Offsets",
           "defaults": {
             "type": "float",
-            "default": 0,
+            "default": 0.0,
             "show_always": false
           },
           "properties": [
@@ -96,7 +96,7 @@
           "name": "Scaling & Rotation",
           "defaults": {
             "type": "float",
-            "default": 1,
+            "default": 1.0,
             "show_always": false
           },
           "properties": [
@@ -146,7 +146,7 @@
               "udmf": "gravity",
               "name": "Gravity",
               "type": "float",
-              "default": 1
+              "default": 1.0
             }
           ]
         }
@@ -197,7 +197,7 @@
               "udmf": "health",
               "name": "Health Multiplier",
               "type": "float",
-              "default": 1
+              "default": 1.0
             }
           ]
         }
