@@ -1,4 +1,4 @@
-{
+﻿{
   "blocks": [
     // Vertex block
     {
@@ -237,7 +237,7 @@
             {
               "udmf": "height",
               "name": "Z Height",
-              "default": 0,
+              "default": 0.0,
               "show_always": false
             },
             {

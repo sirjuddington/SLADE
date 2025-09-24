@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.15) # Minimum CMake 3.15 for precompiled header support
+cmake_minimum_required(VERSION 3.15) # Minimum CMake 3.15 for precompiled header support
 project(SLADE VERSION 3.2.0)
 
 # Additional cmake modules
@@ -31,9 +31,9 @@ if (BUILD_WX)
 	include(FetchContent)
 	FetchContent_Declare(
 		wxWidgets
-		GIT_REPOSITORY https://github.com/vadz/wxWidgets.git
-		GIT_TAG msw-drop-compositing
-		#GIT_TAG v3.3.1
+		GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
+		GIT_TAG b5a9fa3847fb0386e32550d1485cad62e056e134
+		#GIT_TAG v3.3.2
 	)
 	FetchContent_GetProperties(wxwidgets)
 	FetchContent_MakeAvailable(wxwidgets)

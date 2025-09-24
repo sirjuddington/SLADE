@@ -1,4 +1,4 @@
-{
+﻿{
   "blocks": [
     // Vertex properties
     {
@@ -9,7 +9,7 @@
           "defaults": {
             "type": "float",
             "show_always": false,
-            "default": 1
+            "default": 1.0
           },
           "properties": [
             { "udmf": "zfloor", "name": "Floor Height" },
@@ -91,7 +91,7 @@
               "udmf": "alpha",
               "name": "Translucency",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             {
               "udmf": "renderstyle",
@@ -182,13 +182,13 @@
               "udmf": "lightintensity",
               "name": "Light intensity",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             {
               "udmf": "lightdistance",
               "name": "Light distance",
               "type": "float",
-              "default": 0
+              "default": 0.0
             }
           ]
         },
@@ -232,7 +232,7 @@
           "name": "Offsets",
           "defaults": {
             "type": "float",
-            "default": 0,
+            "default": 0.0,
             "show_always": false
           },
           "properties": [
@@ -248,7 +248,7 @@
           "name": "Scaling",
           "defaults": {
             "type": "float",
-            "default": 1,
+            "default": 1.0,
             "show_always": false
           },
           "properties": [
@@ -335,7 +335,7 @@
               "udmf": "colorscalefactor_top",
               "name": "Upper color scale factor",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             { "udmf": "useowncoloradd_top", "name": "Additive upper colorization" },
             {
@@ -367,7 +367,7 @@
               "udmf": "colorscalefactor_mid",
               "name": "Middle color scale factor",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             { "udmf": "useowncoloradd_mid", "name": "Additive middle colorization" },
             {
@@ -399,7 +399,7 @@
               "udmf": "colorscalefactor_bottom",
               "name": "Lower color scale factor",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             { "udmf": "useowncoloradd_bottom", "name": "Additive lower colorization" },
             {
@@ -464,7 +464,7 @@
           "name": "Offsets",
           "defaults": {
             "type": "float",
-            "default": 0,
+            "default": 0.0,
             "show_always": false
           },
           "properties": [
@@ -478,7 +478,7 @@
           "name": "Scaling & Rotation",
           "defaults": {
             "type": "float",
-            "default": 1,
+            "default": 1.0,
             "show_always": false
           },
           "properties": [
@@ -502,7 +502,7 @@
           "name": "Slopes",
           "defaults": {
             "type": "float",
-            "default": 0,
+            "default": 0.0,
             "show_always": false
           },
           "properties": [
@@ -534,13 +534,13 @@
               "udmf": "alphafloor",
               "name": "Floor Translucency",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             {
               "udmf": "alphaceiling",
               "name": "Ceiling Translucency",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             {
               "udmf": "renderstylefloor",
@@ -625,7 +625,7 @@
           "defaults": {
             "show_always": false,
             "type": "float",
-            "default": 0
+            "default": 0.0
           },
           "properties": [
             { "udmf": "floor_reflect", "name": "Floor Reflectiveness" },
@@ -654,7 +654,7 @@
               "udmf": "desaturation",
               "name": "Desaturation",
               "type": "float",
-              "default": 0
+              "default": 0.0
             },
             {
               "udmf": "fogdensity",
@@ -810,7 +810,7 @@
               "udmf": "gravity",
               "name": "Gravity",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             { "udmf": "silent", "name": "Silent" },
             {
@@ -868,13 +868,13 @@
               "udmf": "lightintensityfloor",
               "name": "Floor light intensity",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             {
               "udmf": "lightdistancefloor",
               "name": "Floor light distance",
               "type": "float",
-              "default": 0
+              "default": 0.0
             },
             {
               "udmf": "lightcolorceiling",
@@ -886,13 +886,13 @@
               "udmf": "lightintensityceiling",
               "name": "Ceiling light intensity",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             {
               "udmf": "lightdistanceceiling",
               "name": "Ceiling light distance",
               "type": "float",
-              "default": 0
+              "default": 0.0
             }
           ]
         },
@@ -1112,25 +1112,25 @@
               "udmf": "lightintensity",
               "name": "Light intensity",
               "type": "float",
-              "default": 1
+              "default": 1.0
             },
             {
               "udmf": "lightdistance",
               "name": "Light distance",
               "type": "float",
-              "default": 0
+              "default": 0.0
             },
             {
               "udmf": "lightinnerangle",
               "name": "Light inner angle",
               "type": "float",
-              "default": 180
+              "default": 180.0
             },
             {
               "udmf": "lightouterangle",
               "name": "Light outer angle",
               "type": "float",
-              "default": 180
+              "default": 180.0
             }
           ]
         }
