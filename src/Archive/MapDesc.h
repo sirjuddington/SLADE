@@ -1,6 +1,6 @@
 #pragma once
 
-#include "General/Defs.h"
+#include "General/MapFormat.h"
 
 namespace slade
 {

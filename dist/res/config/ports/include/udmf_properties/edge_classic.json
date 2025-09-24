@@ -1,0 +1,207 @@
+{
+  "blocks": [
+    {
+      "block": "vertex",
+      "groups": [
+        {
+          "name": "Slope",
+          "defaults": {
+            "type": "float",
+            "show_always": false,
+            "default": 1
+          },
+          "properties": [
+            { "udmf": "zfloor", "name": "Floor Height" },
+            { "udmf": "zceiling", "name": "Ceiling Height" }
+          ]
+        }
+      ]
+    },
+
+    {
+      "block": "linedef",
+      "groups": [
+        {
+          "name": "Flags",
+          "defaults": {
+            "flag": true,
+            "type": "bool",
+            "default": false,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "blockplayers", "name": "Blocks Players" },
+            { "udmf": "blocksight", "name": "Blocks Monster Sight" }
+          ]
+        }
+      ]
+    },
+
+    {
+      "block": "sidedef",
+      "groups": [
+        {
+          "name": "Offsets",
+          "defaults": {
+            "type": "float",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "offsetx_top", "name": "Upper X Offset" },
+            { "udmf": "offsety_top", "name": "Upper Y Offset" },
+            { "udmf": "offsetx_mid", "name": "Middle X Offset" },
+            { "udmf": "offsety_mid", "name": "Middle Y Offset" },
+            { "udmf": "offsetx_bottom", "name": "Lower X Offset" },
+            { "udmf": "offsety_bottom", "name": "Lower Y Offset" }
+          ]
+        },
+        {
+          "name": "Scaling",
+          "defaults": {
+            "type": "float",
+            "default": 1,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "scalex_top", "name": "Upper X Scale" },
+            { "udmf": "scaley_top", "name": "Upper Y Scale" },
+            { "udmf": "scalex_mid", "name": "Middle X Scale" },
+            { "udmf": "scaley_mid", "name": "Middle Y Scale" },
+            { "udmf": "scalex_bottom", "name": "Lower X Scale" },
+            { "udmf": "scaley_bottom", "name": "Lower Y Scale" }
+          ]
+        }
+      ]
+    },
+
+    {
+      "block": "sector",
+      "groups": [
+        {
+          "name": "Offsets",
+          "defaults": {
+            "type": "float",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "xpanningfloor", "name": "Floor X Offset" },
+            { "udmf": "ypanningfloor", "name": "Floor Y Offset" },
+            { "udmf": "xpanningceiling", "name": "Ceiling X Offset" },
+            { "udmf": "ypanningceiling", "name": "Ceiling Y Offset" }
+          ]
+        },
+        {
+          "name": "Scaling & Rotation",
+          "defaults": {
+            "type": "float",
+            "default": 1,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "xscalefloor", "name": "Floor X Scale" },
+            { "udmf": "yscalefloor", "name": "Floor Y Scale" },
+            { "udmf": "xscaleceiling", "name": "Ceiling X Scale" },
+            { "udmf": "yscaleceiling", "name": "Ceiling Y Scale" },
+            {
+              "udmf": "rotationfloor",
+              "name": "Floor Rotation",
+              "default": 0
+            },
+            {
+              "udmf": "rotationceiling",
+              "name": "Ceiling Rotation",
+              "default": 0
+            }
+          ]
+        },
+        {
+          "name": "Colour",
+          "properties": [
+            {
+              "udmf": "lightcolor",
+              "name": "Light Colour",
+              "type": "colour",
+              "default": "#FFFFFF"
+            },
+            {
+              "udmf": "fadecolor",
+              "name": "Fog Colour",
+              "type": "colour",
+              "default": 0
+            },
+            {
+              "udmf": "fogdensity",
+              "name": "Fog Density",
+              "type": "int",
+              "default": 0
+            }
+          ]
+        },
+        {
+          "name": "EDGE-Classic Misc",
+          "properties": [
+            {
+              "udmf": "gravity",
+              "name": "Gravity",
+              "type": "float",
+              "default": 1
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "block": "thing",
+      "groups": [
+        {
+          "name": "Advanced",
+          "properties": [
+            {
+              "udmf": "scale",
+              "name": "Scale",
+              "type": "float",
+              "default": 1.0
+            },
+            {
+              "udmf": "scalex",
+              "name": "Horizontal Scale",
+              "type": "float",
+              "default": 1.0
+            },
+            {
+              "udmf": "scaley",
+              "name": "Vertical Scale",
+              "type": "float",
+              "default": 1.0
+            }
+          ]
+        },
+        {
+          "name": "Appearance",
+          "properties": [
+            {
+              "udmf": "alpha",
+              "name": "Alpha",
+              "type": "float",
+              "default": 1.0
+            }
+          ]
+        },
+        {
+          "name": "Miscellaneous",
+          "properties": [
+            {
+              "udmf": "health",
+              "name": "Health Multiplier",
+              "type": "float",
+              "default": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

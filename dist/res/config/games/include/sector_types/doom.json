@@ -1,0 +1,21 @@
+// Vanilla Doom sector types
+{
+  "types": [
+    { "type": 0, "name": "Normal" },
+    { "type": 1, "name": "Light On+Off Randomly" },
+    { "type": 2, "name": "Light Strobe 0.5 Sec" },
+    { "type": 3, "name": "Light Strobe 1 Sec" },
+    { "type": 4, "name": "20% Damage + Strobe 0.5 Sec" },
+    { "type": 5, "name": "10% Damage" },
+    { "type": 7, "name": "5% Damage" },
+    { "type": 8, "name": "Light Glow" },
+    { "type": 9, "name": "Secret" },
+    { "type": 10, "name": "Door Close After 30 Sec" },
+    { "type": 11, "name": "20% Damage + Exit < 10" },
+    { "type": 12, "name": "Light Strobe 1.0 Sec In Sync" },
+    { "type": 13, "name": "Light Strobe 0.5 Sec In Sync" },
+    { "type": 14, "name": "Door Open After 5 Min" },
+    { "type": 16, "name": "20% Damage" },
+    { "type": 17, "name": "Light Flicker" }
+  ]
+}

@@ -40,7 +40,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/ZScript.h"
-#include "Utility/Parser.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -343,6 +343,66 @@ void TextLanguage::addFunction(
 }
 
 // -----------------------------------------------------------------------------
+// Adds a function [name] to the language, parsed from a JSON object [j].
+// If [has_void] is true, empty args/return_type will be set to 'void'
+// -----------------------------------------------------------------------------
+void TextLanguage::addFunction(string_view name, const Json& j, bool has_void)
+{
+	// If the function has no context, replace any existing function with the
+	// same name (unless... see below)
+	bool replace = !strutil::contains(name, '.');
+
+	// If the function name contains ':', it's an additional arg set, so don't
+	// replace the function and ignore anything after the colon.
+	if (strutil::contains(name, ':'))
+	{
+		name    = strutil::beforeFirst(name, ':');
+		replace = false;
+	}
+
+	string return_type, args, description, deprecated;
+
+	// Simple definition (string)
+	if (j.is_string())
+	{
+		args = j.get<string>();
+
+		// Check for return type (after "->")
+		if (strutil::contains(args, "->"))
+		{
+			return_type = strutil::trim(strutil::afterFirstV(args, "->"));
+			args        = strutil::trim(strutil::beforeFirstV(args, "->"));
+		}
+	}
+
+	// Full definition (object)
+	else if (j.is_object())
+	{
+		jsonutil::getIf(j, "return_type", return_type);
+		jsonutil::getIf(j, "args", args);
+		jsonutil::getIf(j, "description", description);
+		jsonutil::getIf(j, "deprecated_f", deprecated);
+	}
+
+	// Unexpected format
+	else
+	{
+		log::error("Unexpected function definition format for {}", name);
+		return;
+	}
+
+	if (has_void)
+	{
+		if (args.empty())
+			args = "void";
+		if (return_type.empty())
+			return_type = "void";
+	}
+
+	addFunction(name, args, description, deprecated, replace, return_type);
+}
+
+// -----------------------------------------------------------------------------
 // Loads types (classes) and functions from parsed ZScript definitions [defs]
 // -----------------------------------------------------------------------------
 void TextLanguage::loadZScript(const zscript::Definitions& defs, bool custom)
@@ -563,6 +623,90 @@ void TextLanguage::clearCustomDefs()
 		a.list.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Reads a language definition from a JSON object [j]
+// -----------------------------------------------------------------------------
+void TextLanguage::fromJson(const Json& j)
+{
+	// Copy from base language, if defined
+	if (j.contains("base"))
+	{
+		auto base_id = j["base"].get<string>();
+		if (auto* base = fromId(base_id))
+			base->copyTo(this);
+		else
+			log::warning("Warning: Language {} is based on undefined language {}", id_, base_id);
+	}
+
+	// Language info
+	name_ = j.value("name", id_);
+	jsonutil::getIf(j, "comment_begin", comment_begin_l_);
+	jsonutil::getIf(j, "comment_end", comment_end_l_);
+	jsonutil::getIf(j, "comment_line", line_comment_l_);
+	jsonutil::getIf(j, "comment_doc", doc_comment_);
+	jsonutil::getIf(j, "case_sensitive", case_sensitive_);
+	jsonutil::getIf(j, "preprocessor", preprocessor_);
+	jsonutil::getIf(j, "block_begin", block_begin_);
+	jsonutil::getIf(j, "block_end", block_end_);
+	jsonutil::getIf(j, "pp_block_begin", pp_block_begin_);
+	jsonutil::getIf(j, "pp_block_end", pp_block_end_);
+	jsonutil::getIf(j, "word_block_begin", word_block_begin_);
+	jsonutil::getIf(j, "word_block_end", word_block_end_);
+	jsonutil::getIf(j, "keyword_link", word_lists_[Keyword].lookup_url);
+	jsonutil::getIf(j, "constant_link", word_lists_[Constant].lookup_url);
+	jsonutil::getIf(j, "function_link", f_lookup_url_);
+	jsonutil::getIf(j, "blocks", jump_blocks_);
+	jsonutil::getIf(j, "blocks_ignore", jb_ignore_);
+
+	// Keywords
+	if (j.value("override_keywords", false))
+		clearWordList(Keyword);
+	if (j.contains("keywords"))
+		for (auto& a : j["keywords"].get<vector<string>>())
+			addWord(Keyword, a);
+
+	// Constants
+	if (j.value("override_constants", false))
+		clearWordList(Constant);
+	if (j.contains("constants"))
+		for (auto& a : j["constants"].get<vector<string>>())
+			addWord(Constant, a);
+
+	// Types
+	if (j.value("override_types", false))
+		clearWordList(Type);
+	if (j.contains("types"))
+		for (auto& a : j["types"].get<vector<string>>())
+			addWord(Type, a);
+
+	// Properties
+	if (j.value("override_properties", false))
+		clearWordList(Property);
+	if (j.contains("properties"))
+		for (auto& a : j["properties"].get<vector<string>>())
+			addWord(Property, a);
+
+	// Functions
+	if (j.contains("functions"))
+	{
+		bool has_void = isWord(Keyword, "void") || isWord(Type, "void");
+		for (auto& [name, j_func] : j["functions"].items())
+			addFunction(name, j_func, has_void);
+	}
+
+	// Function info (for ZScript function info that can't be parsed from (g)zdoom.pk3)
+	if (j.contains("function_info"))
+		for (auto& [name, j_func_info] : j["function_info"].items())
+		{
+			ZFuncExProp ex_prop;
+			if (j_func_info.contains("description"))
+				ex_prop.description = j_func_info["description"].get<string>();
+			if (j_func_info.contains("deprecated_f"))
+				ex_prop.deprecated_f = j_func_info["deprecated_f"].get<string>();
+			zfuncs_ex_props_.emplace(name, ex_prop);
+		}
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -570,323 +714,6 @@ void TextLanguage::clearCustomDefs()
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// Reads in a text definition of a language. See slade.pk3 for
-// formatting examples
-// -----------------------------------------------------------------------------
-bool TextLanguage::readLanguageDefinition(const MemChunk& mc, string_view source)
-{
-	Tokenizer tz;
-
-	// Open the given text data
-	if (!tz.openMem(mc, source))
-	{
-		log::warning("Unable to open language definition {}", source);
-		return false;
-	}
-
-	// Parse the definition text
-	ParseTreeNode root;
-	if (!root.parse(tz))
-		return false;
-
-	// Get parsed data
-	for (unsigned a = 0; a < root.nChildren(); a++)
-	{
-		auto* node = root.childPTN(a);
-
-		// Create language
-		auto* lang = new TextLanguage(node->name());
-
-		// Check for inheritance
-		if (!node->inherit().empty())
-		{
-			auto* inherit = fromId(node->inherit());
-			if (inherit)
-				inherit->copyTo(lang);
-			else
-				log::warning("Warning: Language {} inherits from undefined language {}", node->name(), node->inherit());
-		}
-
-		// Parse language info
-		for (unsigned c = 0; c < node->nChildren(); c++)
-		{
-			auto* child    = node->childPTN(c);
-			auto  pn_lower = strutil::lower(child->name());
-
-			// Language name
-			if (pn_lower == "name")
-				lang->setName(child->stringValue());
-
-			// Comment begin
-			else if (pn_lower == "comment_begin")
-			{
-				lang->setCommentBeginList(child->stringValues());
-			}
-
-			// Comment end
-			else if (pn_lower == "comment_end")
-			{
-				lang->setCommentEndList(child->stringValues());
-			}
-
-			// Line comment
-			else if (pn_lower == "comment_line")
-			{
-				lang->setLineCommentList(child->stringValues());
-			}
-
-			// Preprocessor
-			else if (pn_lower == "preprocessor")
-				lang->setPreprocessor(child->stringValue());
-
-			// Case sensitive
-			else if (pn_lower == "case_sensitive")
-				lang->setCaseSensitive(child->boolValue());
-
-			// Doc comment
-			else if (pn_lower == "comment_doc")
-				lang->setDocComment(child->stringValue());
-
-			// Keyword lookup link
-			else if (pn_lower == "keyword_link")
-				lang->word_lists_[WordType::Keyword].lookup_url = child->stringValue();
-
-			// Constant lookup link
-			else if (pn_lower == "constant_link")
-				lang->word_lists_[WordType::Constant].lookup_url = child->stringValue();
-
-			// Function lookup link
-			else if (pn_lower == "function_link")
-				lang->f_lookup_url_ = child->stringValue();
-
-			// Jump blocks
-			else if (pn_lower == "blocks")
-			{
-				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->jump_blocks_.push_back(child->stringValue(v));
-			}
-			else if (pn_lower == "blocks_ignore")
-			{
-				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->jb_ignore_.push_back(child->stringValue(v));
-			}
-
-			// Block begin
-			else if (pn_lower == "block_begin")
-				lang->block_begin_ = child->stringValue();
-
-			// Block end
-			else if (pn_lower == "block_end")
-				lang->block_end_ = child->stringValue();
-
-			// Preprocessor block begin
-			else if (pn_lower == "pp_block_begin")
-			{
-				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->pp_block_begin_.push_back(child->stringValue(v));
-			}
-
-			// Preprocessor block end
-			else if (pn_lower == "pp_block_end")
-			{
-				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->pp_block_end_.push_back(child->stringValue(v));
-			}
-
-			// Word block begin
-			else if (pn_lower == "word_block_begin")
-			{
-				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->word_block_begin_.push_back(child->stringValue(v));
-			}
-
-			// Word block end
-			else if (pn_lower == "word_block_end")
-			{
-				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->word_block_end_.push_back(child->stringValue(v));
-			}
-
-			// Keywords
-			else if (pn_lower == "keywords")
-			{
-				// Go through values
-				for (unsigned v = 0; v < child->nValues(); v++)
-				{
-					auto val = child->stringValue(v);
-
-					// Check for '$override'
-					if (strutil::equalCI(val, "$override"))
-					{
-						// Clear any inherited keywords
-						lang->clearWordList(WordType::Keyword);
-					}
-
-					// Not a special symbol, add as keyword
-					else
-						lang->addWord(WordType::Keyword, val);
-				}
-			}
-
-			// Constants
-			else if (pn_lower == "constants")
-			{
-				// Go through values
-				for (unsigned v = 0; v < child->nValues(); v++)
-				{
-					auto val = child->stringValue(v);
-
-					// Check for '$override'
-					if (strutil::equalCI(val, "$override"))
-					{
-						// Clear any inherited constants
-						lang->clearWordList(WordType::Constant);
-					}
-
-					// Not a special symbol, add as constant
-					else
-						lang->addWord(WordType::Constant, val);
-				}
-			}
-
-			// Types
-			else if (pn_lower == "types")
-			{
-				// Go through values
-				for (unsigned v = 0; v < child->nValues(); v++)
-				{
-					auto val = child->stringValue(v);
-
-					// Check for '$override'
-					if (strutil::equalCI(val, "$override"))
-					{
-						// Clear any inherited constants
-						lang->clearWordList(WordType::Type);
-					}
-
-					// Not a special symbol, add as constant
-					else
-						lang->addWord(WordType::Type, val);
-				}
-			}
-
-			// Properties
-			else if (pn_lower == "properties")
-			{
-				// Go through values
-				for (unsigned v = 0; v < child->nValues(); v++)
-				{
-					auto val = child->stringValue(v);
-
-					// Check for '$override'
-					if (strutil::equalCI(val, "$override"))
-					{
-						// Clear any inherited constants
-						lang->clearWordList(WordType::Property);
-					}
-
-					// Not a special symbol, add as constant
-					else
-						lang->addWord(WordType::Property, val);
-				}
-			}
-
-			// Functions
-			else if (pn_lower == "functions")
-			{
-				bool lang_has_void = lang->isWord(Keyword, "void") || lang->isWord(Type, "void");
-				if (lang->id_ != "zscript")
-				{
-					// Go through children (functions)
-					for (unsigned f = 0; f < child->nChildren(); f++)
-					{
-						auto*  child_func = child->childPTN(f);
-						string params;
-
-						// Simple definition
-						if (child_func->nChildren() == 0)
-						{
-							if (child_func->stringValue(0).empty())
-							{
-								if (lang_has_void)
-									params = "void";
-								else
-									params = "";
-							}
-							else
-							{
-								params = child_func->stringValue(0);
-							}
-
-							// Add function
-							lang->addFunction(
-								child_func->name(),
-								params,
-								"",
-								"",
-								!strutil::contains(child_func->name(), '.'),
-								child_func->type());
-
-							// Add args
-							for (unsigned v = 1; v < child_func->nValues(); v++)
-								lang->addFunction(child_func->name(), child_func->stringValue(v));
-						}
-
-						// Full definition
-						else
-						{
-							string         name = child_func->name();
-							vector<string> args;
-							string         desc;
-							string         deprecated;
-							for (unsigned p = 0; p < child_func->nChildren(); p++)
-							{
-								auto* child_prop = child_func->childPTN(p);
-								if (child_prop->name() == "args")
-								{
-									for (unsigned v = 0; v < child_prop->nValues(); v++)
-										args.push_back(child_prop->stringValue(v));
-								}
-								else if (child_prop->name() == "description")
-									desc = child_prop->stringValue();
-								else if (child_prop->name() == "deprecated")
-									deprecated = child_prop->stringValue();
-							}
-
-							if (args.empty() && lang_has_void)
-								args.emplace_back("void");
-
-							for (unsigned as = 0; as < args.size(); as++)
-								lang->addFunction(name, args[as], desc, deprecated, as == 0, child_func->type());
-						}
-					}
-				}
-				// ZScript function info which cannot be parsed from (g)zdoom.pk3
-				else
-				{
-					for (unsigned f = 0; f < child->nChildren(); f++)
-					{
-						ZFuncExProp ex_prop;
-						auto*       child_func = child->childPTN(f);
-						for (unsigned p = 0; p < child_func->nChildren(); ++p)
-						{
-							auto* child_prop = child_func->childPTN(p);
-							if (child_prop->name() == "description")
-								ex_prop.description = child_prop->stringValue();
-							else if (child_prop->name() == "deprecated_f")
-								ex_prop.deprecated_f = child_prop->stringValue();
-						}
-						lang->zfuncs_ex_props_.emplace(child_func->name(), ex_prop);
-					}
-				}
-			}
-		}
-	}
-
-	return true;
-}
 
 // -----------------------------------------------------------------------------
 // Loads all text language definitions from slade.pk3
@@ -917,7 +744,17 @@ bool TextLanguage::loadLanguages()
 
 			// Read all (sorted) entries in this dir
 			for (auto* entry : defs)
-				readLanguageDefinition(entry->data(), entry->name());
+			{
+				if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
+				{
+					for (auto& [id, j_lang] : j.items())
+					{
+						// Create language
+						auto* lang = new TextLanguage(id);
+						lang->fromJson(j_lang);
+					}
+				}
+			}
 		}
 		else
 			log::warning(

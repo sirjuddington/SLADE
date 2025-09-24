@@ -31,8 +31,8 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
-#include <fmt/format.h>
 
 using namespace slade;
 
@@ -148,60 +148,19 @@ void CVar::putList(vector<string>& list)
 }
 
 // -----------------------------------------------------------------------------
-// Saves cvars to a config file
+// Returns a vector of all CVars, optionally [sorted] by name
 // -----------------------------------------------------------------------------
-string CVar::writeAll()
+vector<CVar*> CVar::allCvars(bool sorted)
 {
-	vector<CVar*> all_cvars;
+	vector<CVar*> cvarlist;
+
 	for (unsigned i = 0; i < n_cvars; ++i)
-		all_cvars.push_back(cvars[i]);
+		cvarlist.push_back(cvars[i]);
 
-	std::sort(
-		all_cvars.begin(),
-		all_cvars.end(),
-		[](const CVar* left, const CVar* right) { return left->name < right->name; });
+	if (sorted)
+		std::sort(cvarlist.begin(), cvarlist.end(), [](CVar* a, CVar* b) { return a->name < b->name; });
 
-	uint32_t max_size = 0;
-	for (auto* cvar : all_cvars)
-	{
-		if (cvar->name.size() > max_size)
-			max_size = cvar->name.size();
-	}
-
-	fmt::memory_buffer mem_buf;
-	auto               buf = fmt::appender(mem_buf);
-	format_to(buf, "cvars\n{{\n");
-
-	for (auto* cvar : all_cvars)
-	{
-		if (cvar->flags & Flag::Save)
-		{
-			format_to(buf, "\t{} ", cvar->name);
-
-			int spaces = max_size - cvar->name.size();
-			for (int a = 0; a < spaces; a++)
-				mem_buf.push_back(' ');
-
-			if (cvar->type == Type::Integer)
-				format_to(buf, "{}\n", cvar->getValue().Int);
-
-			if (cvar->type == Type::Boolean)
-				format_to(buf, "{}\n", cvar->getValue().Bool);
-
-			if (cvar->type == Type::Float)
-				format_to(buf, "{:1.5f}\n", cvar->getValue().Float);
-
-			if (cvar->type == Type::String)
-			{
-				auto value = strutil::escapedString(dynamic_cast<CStringCVar*>(cvar)->value, true);
-				format_to(buf, "\"{}\"\n", value);
-			}
-		}
-	}
-
-	format_to(buf, "}}\n\n");
-
-	return to_string(mem_buf);
+	return cvarlist;
 }
 
 // -----------------------------------------------------------------------------

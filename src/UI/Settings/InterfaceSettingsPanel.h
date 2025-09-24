@@ -27,7 +27,6 @@ private:
 	wxChoice*            choice_iconset_entry_   = nullptr;
 	wxChoice*            choice_elist_icon_size_ = nullptr;
 	wxSpinCtrl*          spin_elist_icon_pad_    = nullptr;
-	RadioButtonPanel*    rbp_elist_tree_style_   = nullptr;
 	ColourSettingsPanel* colour_panel_           = nullptr;
 
 	wxPanel* createInterfacePanel(wxWindow* parent);

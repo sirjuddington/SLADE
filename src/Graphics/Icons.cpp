@@ -35,8 +35,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/ArchiveManager.h"
-#include "Utility/Parser.h"
+#include "Utility/JsonUtils.h"
 #include "WxGfx.h"
 #include <wx/mstream.h>
 
@@ -156,162 +155,6 @@ const IconDef* iconDef(Type type, string_view name)
 }
 
 // -----------------------------------------------------------------------------
-// Parses an icon definition from icons.cfg
-// -----------------------------------------------------------------------------
-IconDef parseIconDefinition(const ParseTreeNode& node, const Archive& res_archive)
-{
-	IconDef idef;
-
-	// SVG icon
-	if (node.typeIs("icon_svg"))
-	{
-		if (node.nChildren() > 0)
-		{
-			// Light and dark theme definitions
-
-			if (auto* c_light = node.childPTN("light"))
-			{
-				auto* entry = res_archive.entryAtPath(c_light->stringValue());
-				if (entry)
-					idef.svg_data = entry->data().asString();
-				else
-					log::error("Icon entry \"{}\" does not exist in slade.pk3", c_light->stringValue());
-			}
-
-			if (auto* c_dark = node.childPTN("dark"))
-			{
-				auto* entry = res_archive.entryAtPath(c_dark->stringValue());
-				if (entry)
-					idef.svg_data_dark = entry->data().asString();
-				else
-					log::error("Icon entry \"{}\" does not exist in slade.pk3", c_dark->stringValue());
-			}
-		}
-		else
-		{
-			// Simple definition
-			auto* entry = res_archive.entryAtPath(node.stringValue());
-			if (entry)
-				idef.svg_data = entry->data().asString();
-			else
-				log::error("Icon entry \"{}\" does not exist in slade.pk3", node.stringValue());
-		}
-
-		// If only one svg entry is provided, use it for both light and dark
-		if (idef.svg_data.empty() && !idef.svg_data_dark.empty())
-			idef.svg_data = idef.svg_data_dark;
-		if (idef.svg_data_dark.empty() && !idef.svg_data.empty())
-			idef.svg_data_dark = idef.svg_data;
-	}
-
-	// PNG icon
-	else if (node.typeIs("icon_png"))
-	{
-		for (auto i = 0u; i < node.nChildren(); ++i)
-		{
-			auto* child = node.childPTN(i);
-
-			if (child->nameIs("s16"))
-			{
-				idef.entry_png16 = res_archive.entryAtPath(child->stringValue());
-				if (!idef.entry_png16)
-					log::error("Icon entry \"{}\" does not exist in slade.pk3", child->stringValue());
-			}
-			else if (child->nameIs("s32"))
-			{
-				idef.entry_png32 = res_archive.entryAtPath(child->stringValue());
-				if (!idef.entry_png32)
-					log::error("Icon entry \"{}\" does not exist in slade.pk3", child->stringValue());
-			}
-		}
-	}
-
-	return idef;
-}
-
-// -----------------------------------------------------------------------------
-// Parses an icon set from icons.cfg
-// -----------------------------------------------------------------------------
-void parseIconSet(const ParseTreeNode& node, IconSet& icon_set, const Archive& res_archive)
-{
-	for (auto i = 0u; i < node.nChildren(); ++i)
-	{
-		auto* child = node.childPTN(i);
-
-		if (child->typeIs("icon_svg") || child->typeIs("icon_png"))
-			icon_set.icons[child->name()] = parseIconDefinition(*child, res_archive);
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Parses an entry_list block from icons.cfg
-// -----------------------------------------------------------------------------
-void parseEntryListBlock(const ParseTreeNode& node, const Archive& res_archive)
-{
-	// Find default block
-	auto* ptn_default = node.childPTN("default");
-	if (!ptn_default)
-	{
-		log::error("No default entry list icons found in icons.cfg");
-		return;
-	}
-
-	// Parse default block
-	iconsets_entry.clear(); // Default set should always be first
-	iconsets_entry.emplace_back("Default");
-	parseIconSet(*ptn_default, iconsets_entry.back(), res_archive);
-
-	// Parse other sets
-	for (auto i = 0u; i < node.nChildren(); ++i)
-	{
-		auto* child = node.childPTN(i);
-
-		if (child->nameIs("default"))
-			continue;
-
-		if (child->typeIs("set"))
-		{
-			iconsets_entry.emplace_back(child->name());
-			parseIconSet(*child, iconsets_entry.back(), res_archive);
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Parses a general block from icons.cfg
-// -----------------------------------------------------------------------------
-void parseGeneralBlock(const ParseTreeNode& node, const Archive& res_archive)
-{
-	// Find default block
-	auto* ptn_default = node.childPTN("default");
-	if (!ptn_default)
-	{
-		log::error("No default general icons found in icons.cfg");
-		return;
-	}
-
-	// Parse default block
-	iconsets_general.clear(); // Default set should always be first
-	iconsets_general.emplace_back("Default");
-	parseIconSet(*ptn_default, iconsets_general.back(), res_archive);
-
-	// Parse other sets
-	for (auto i = 0u; i < node.nChildren(); ++i)
-	{
-		auto* child = node.childPTN(i);
-
-		if (child->nameIs("default"))
-			continue;
-
-		if (child->typeIs("set"))
-		{
-			iconsets_general.emplace_back(child->name());
-			parseIconSet(*child, iconsets_general.back(), res_archive);
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Loads an SVG [svg_data] of [size] into a wxBitmap, with optional [padding]
 // -----------------------------------------------------------------------------
 wxBitmap loadSVGIcon(const string& svg_data, int size, const Point2i& padding)
@@ -401,6 +244,80 @@ wxBitmap loadPNGIcon(const IconDef& icon, int size, Point2i padding)
 
 	return { image };
 }
+
+// -----------------------------------------------------------------------------
+// Reads an icon set from the given JSON object [j] using the resources in
+// [res_archive]
+// -----------------------------------------------------------------------------
+IconSet readIconSet(const Json& j, const Archive& res_archive)
+{
+	IconSet set{ j.at("name").get<string>() };
+	for (auto& [id, j_icon] : j["icons"].items())
+	{
+		IconDef idef;
+
+		// SVG
+		if (j_icon.contains("svg") || j_icon.contains("svg_light") || j_icon.contains("svg_dark"))
+		{
+			if (j_icon.contains("svg"))
+			{
+				// Single SVG
+				auto* entry = res_archive.entryAtPath(j_icon["svg"].get<string>());
+				if (entry)
+					idef.svg_data = entry->data().asString();
+				else
+					log::error("Icon entry \"{}\" does not exist in slade.pk3", j_icon["svg"].get<string>());
+			}
+			else
+			{
+				// Light/Dark SVGs
+				if (j_icon.contains("svg_light"))
+				{
+					auto* entry = res_archive.entryAtPath(j_icon["svg_light"].get<string>());
+					if (entry)
+						idef.svg_data = entry->data().asString();
+					else
+						log::error("Icon entry \"{}\" does not exist in slade.pk3", j_icon["svg_light"].get<string>());
+				}
+				if (j_icon.contains("svg_dark"))
+				{
+					auto* entry = res_archive.entryAtPath(j_icon["svg_dark"].get<string>());
+					if (entry)
+						idef.svg_data_dark = entry->data().asString();
+					else
+						log::error("Icon entry \"{}\" does not exist in slade.pk3", j_icon["svg_dark"].get<string>());
+				}
+			}
+
+			// If only one svg entry is provided, use it for both light and dark
+			if (idef.svg_data.empty() && !idef.svg_data_dark.empty())
+				idef.svg_data = idef.svg_data_dark;
+			if (idef.svg_data_dark.empty() && !idef.svg_data.empty())
+				idef.svg_data_dark = idef.svg_data;
+		}
+
+		// PNG
+		else if (j_icon.contains("png16") || j_icon.contains("png32"))
+		{
+			if (j_icon.contains("png16"))
+			{
+				idef.entry_png16 = res_archive.entryAtPath(j_icon["png16"].get<string>());
+				if (!idef.entry_png16)
+					log::error("Icon entry \"{}\" does not exist in slade.pk3", j_icon["png16"].get<string>());
+			}
+			if (j_icon.contains("png32"))
+			{
+				idef.entry_png32 = res_archive.entryAtPath(j_icon["png32"].get<string>());
+				if (!idef.entry_png32)
+					log::error("Icon entry \"{}\" does not exist in slade.pk3", j_icon["png32"].get<string>());
+			}
+		}
+
+		set.icons[id] = idef;
+	}
+
+	return set;
+}
 } // namespace slade::icons
 
 // -----------------------------------------------------------------------------
@@ -429,39 +346,30 @@ bool icons::loadIcons()
 #endif
 
 	// Get slade.pk3
-	auto* res_archive = app::archiveManager().programResourceArchive();
+	auto* res_archive = app::programResource();
 	if (!res_archive)
 		return false;
 
-	// Get icons.cfg
-	auto* icons_entry = res_archive->entryAtPath("icons.cfg");
-	if (!icons_entry)
+	// Load General sets
+	auto dir_general = res_archive->dirAtPath("config/icons/general");
+	for (auto entry : dir_general->entries())
 	{
-		log::error("Could not find icons.cfg in slade.pk3");
-		return false;
+		if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
+			iconsets_general.push_back(readIconSet(j, *res_archive));
 	}
 
-	// Parse
-	Parser p;
-	if (!p.parseText(icons_entry->data().asString(), "icons.cfg"))
+	// Load Entry List sets
+	auto dir_elist = res_archive->dirAtPath("config/icons/entry_list");
+	for (auto entry : dir_elist->entries())
 	{
-		log::error("Error parsing icons.cfg");
-		return false;
+		if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
+			iconsets_entry.push_back(readIconSet(j, *res_archive));
 	}
 
-	for (auto i = 0u; i < p.parseTreeRoot()->nChildren(); ++i)
-	{
-		auto* node = p.parseTreeRoot()->childPTN(i);
-
-		if (node->nameIs("general"))
-			parseGeneralBlock(*node, *res_archive);
-
-		else if (node->nameIs("entry_list"))
-			parseEntryListBlock(*node, *res_archive);
-
-		else if (node->nameIs("text_editor"))
-			parseIconSet(*node, iconset_text_editor, *res_archive);
-	}
+	// Load Text Editor icons
+	auto dir_txed_icons = res_archive->dirAtPath("icons/text_editor");
+	for (auto entry : dir_txed_icons->entries())
+		iconset_text_editor.icons[string{ entry->nameNoExt() }].svg_data = entry->data().asString();
 
 	// Load UI icons (light)
 	auto* dir_ui_icons_light = res_archive->dirAtPath("icons/ui/light");

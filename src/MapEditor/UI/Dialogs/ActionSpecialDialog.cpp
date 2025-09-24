@@ -33,7 +33,7 @@
 #include "ActionSpecialDialog.h"
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
-#include "General/Defs.h"
+#include "General/MapFormat.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/ActionSpecialPanel.h"

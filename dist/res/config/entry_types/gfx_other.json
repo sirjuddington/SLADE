@@ -1,0 +1,266 @@
+// Gfx entry types, other game formats
+{
+  "gfx_other_base": {
+    "icon": "e_gfx",
+    "category": "Graphics",
+    "colour": "rgb(0, 0, 255)",
+    "detectable": false
+  },
+  "quakegfx": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Quake Gfx)",
+    "format": "img_quake",
+    "editor": "gfx",
+    "extra": [ "image" ],
+    "export_ext": "lmp",
+    "image_format": "quake"
+  },
+  "quakespr": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Quake Sprite)",
+    "format": "img_qspr",
+    "editor": "gfx",
+    "extra": [ "image" ],
+    "export_ext": "lmp",
+    "image_format": "qspr"
+  },
+  "quaketex": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Quake Texture)",
+    "format": "img_quaketex",
+    "editor": "gfx",
+    "reliability": 11,
+    "extra": [ "image" ],
+    "export_ext": "lmp",
+    "image_format": "quaketex"
+  },
+  "quake2wal": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Quake II)",
+    "format": "img_quake2wal",
+    "editor": "gfx",
+    "reliability": 21,
+    "extra": [ "image" ],
+    "export_ext": "lmp",
+    "image_format": "quake2wal"
+  },
+  "scsprite": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (SC Sprite)",
+    "format": "img_scsprite",
+    "editor": "gfx",
+    "reliability": 110,
+    "extra": [ "image" ],
+    "match_archive": [ "archive_dat" ],
+    "image_format": "scsprite"
+  },
+  "scwall": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (SC Wall)",
+    "format": "img_scwall",
+    "editor": "gfx",
+    "reliability": 101,
+    "extra": [ "image" ],
+    "match_archive": [ "archive_dat" ],
+    "image_format": "scwall",
+    "section": [ "textures" ],
+    // Corresponds to 64x64
+    "min_size": 4226,
+    // Corresponds to 64x200
+    "max_size": 12930
+  },
+  "scgfx": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (SC Gfx)",
+    "editor": "gfx",
+    "reliability": 105,
+    "extra": [ "image" ],
+    "match_archive": [ "archive_dat" ],
+    "image_format": "scgfx",
+    "format": "img_scgfx"
+  },
+  "anamip": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (A&A)",
+    "format": "img_mipimage",
+    "editor": "gfx",
+    "reliability": 100,
+    "extra": [ "image" ],
+    "match_archive": [ "archive_res" ],
+    "image_format": "mipimage"
+  },
+  "arttile": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Build)",
+    "format": "img_arttile",
+    "export_ext": "art",
+    "editor": "gfx",
+    "reliability": 180,
+    "extra": [ "image" ],
+    "image_format": "arttile"
+  },
+  "heretic2m8": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Heretic II P)",
+    "format": "img_m8",
+    "export_ext": "m8",
+    "editor": "gfx",
+    "reliability": 80,
+    "extra": [ "image" ],
+    "image_format": "m8"
+  },
+  "heretic2m32": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Heretic II C)",
+    "format": "img_m32",
+    "export_ext": "m32",
+    "editor": "gfx",
+    "reliability": 80,
+    "extra": [ "image" ],
+    "image_format": "m32"
+  },
+  "halflifetex": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Half-Life)",
+    "format": "img_hlt",
+    "export_ext": "hlt",
+    "editor": "gfx",
+    "reliability": 20,
+    "extra": [ "image" ],
+    "image_format": "hlt"
+  },
+  "gfx_rott": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (ROTT Patch)",
+    "format": "img_rott",
+    "section": [ "rott" ],
+    "editor": "gfx",
+    "reliability": 121,
+    "extra": [ "image" ],
+    "image_format": "rott"
+  },
+  "gfx_rottmask": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (ROTT Mask)",
+    "format": "img_rottmask",
+    "section": [ "rott" ],
+    "editor": "gfx",
+    "reliability": 120,
+    "extra": [ "image" ],
+    "image_format": "rottmask"
+  },
+  "gfx_rottwall": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (ROTT Flat)",
+    "format": "img_rottwall",
+    "size": [ 4096, 51200 ],
+    "section": [ "rott" ],
+    "editor": "gfx",
+    "reliability": 119,
+    "extra": [ "image" ],
+    "image_format": "rottwall"
+  },
+  "gfx_rottlbm": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (ROTT LBM)",
+    "format": "img_rottlbm",
+    "editor": "gfx",
+    "section": [ "rott" ],
+    "reliability": 80,
+    "extra": [ "image" ],
+    "image_format": "rottlbm"
+  },
+  "gfx_rott_raw": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (ROTT Raw)",
+    "format": "img_rottraw",
+    "editor": "gfx",
+    "section": [ "rott" ],
+    "extra": [ "image" ],
+    "reliability": 101,
+    "export_ext": "lmp",
+    "image_format": "rottraw"
+  },
+  "gfx_rott_pic": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (ROTT Pic)",
+    "format": "img_rottpic",
+    "editor": "gfx",
+    "section": [ "rott" ],
+    "extra": [ "image" ],
+    "reliability": 60,
+    "export_ext": "lmp",
+    "image_format": "rottpic"
+  },
+  "gfx_wolfwall": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Wolf3D Wall)",
+    "format": "img_rottwall",
+    "size": [ 4096 ],
+    "editor": "gfx",
+    "match_name": [ "wal0*" ],
+    "match_archive": [ "archive_wolf" ],
+    "reliability": 240,
+    "extra": [ "image" ],
+    "image_format": "rottwall"
+  },
+  "gfx_wolfpic": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Wolf3D Pic)",
+    "format": "img_wolfpic",
+    "editor": "gfx",
+    "match_name": [ "pic0*", "tit0*", "end0*", "idg0*" ],
+    "match_archive": [ "archive_wolf" ],
+    "reliability": 200,
+    "extra": [ "image" ],
+    "image_format": "wolfpic"
+  },
+  "gfx_wolfsprite": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Wolf3D Sprite)",
+    "format": "img_wolfsprite",
+    "editor": "gfx",
+    "match_name": [ "spr0*" ],
+    "match_archive": [ "archive_wolf" ],
+    "reliability": 200,
+    "extra": [ "image" ],
+    "image_format": "wolfsprite"
+  },
+  "gfx_jedi_bm": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Jedi BM)",
+    "format": "img_jedi_bm",
+    "export_ext": "bm",
+    "reliability": 80,
+    "extra": [ "image" ],
+    "image_format": "jedi_bm"
+  },
+  "gfx_jedi_fme": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Jedi FME)",
+    "format": "img_jedi_fme",
+    "export_ext": "fme",
+    "reliability": 80,
+    "extra": [ "image" ],
+    "image_format": "jedi_fme"
+  },
+  "gfx_jedi_wax": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (Jedi WAX)",
+    "format": "img_jedi_wax",
+    "export_ext": "wax",
+    "reliability": 60,
+    "extra": [ "image" ],
+    "image_format": "jedi_wax"
+  },
+  "gfx_tv_raw": {
+    "inherits": "gfx_other_base",
+    "name": "Graphic (TV RAW)",
+    "editor": "gfx",
+    "match_ext": [ "raw" ],
+    "match_archive": [ "archive_pod" ],
+    "extra": [ "image" ],
+    "image_format": "raw_flat"
+  }
+}
+

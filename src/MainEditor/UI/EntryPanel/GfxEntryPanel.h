@@ -62,10 +62,7 @@ private:
 	wxSpinCtrl*      spin_curimg_        = nullptr;
 	wxStaticText*    text_imgnum_        = nullptr;
 	wxStaticText*    text_imgoutof_      = nullptr;
-	SToolBarButton*  button_brush_       = nullptr;
 	wxMenu*          menu_brushes_       = nullptr;
-	SToolBarButton*  btn_arc_            = nullptr;
-	SToolBarButton*  btn_tile_           = nullptr;
 	ui::ZoomControl* zc_zoom_            = nullptr;
 
 	// Toolbar
@@ -84,6 +81,5 @@ private:
 	void onCurImgChanged(wxCommandEvent& e);
 	void onBtnAutoOffset(wxCommandEvent& e);
 	void onColourPicked(wxEvent& e);
-	void onToolSelected(wxCommandEvent& e);
 };
 } // namespace slade

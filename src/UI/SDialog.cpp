@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SDialog.h"
-#include "General/Misc.h"
+#include "UI.h"
 
 using namespace slade;
 
@@ -58,14 +58,14 @@ SDialog::SDialog(wxWindow* parent, const string& title, const string& id, int wi
 	id_{ id }
 {
 	// Init size/pos
-	auto info = misc::getWindowInfo(id_);
+	auto info = ui::getWindowInfo(this, id_);
 	if (!info.id.empty())
 	{
 		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		misc::setWindowInfo(id_, width, height, x, y);
+		ui::setWindowInfo(this, id_, width, height, x, y);
 
 	// Bind events
 	if (!id.empty())
@@ -82,12 +82,7 @@ SDialog::SDialog(wxWindow* parent, const string& title, const string& id, int wi
 SDialog::~SDialog()
 {
 	if (!id_.empty())
-		misc::setWindowInfo(
-			id_,
-			GetClientSize().x * GetContentScaleFactor(),
-			GetClientSize().y * GetContentScaleFactor(),
-			GetPosition().x * GetContentScaleFactor(),
-			GetPosition().y * GetContentScaleFactor());
+		ui::setWindowInfo(this, id_, GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
 }
 
 // -----------------------------------------------------------------------------
@@ -95,7 +90,7 @@ SDialog::~SDialog()
 // -----------------------------------------------------------------------------
 void SDialog::setSavedSize(int def_width, int def_height)
 {
-	auto info = misc::getWindowInfo(id_);
+	auto info = ui::getWindowInfo(this, id_);
 	if (!info.id.empty())
 	{
 		SetInitialSize(wxSize(info.width, info.height));
@@ -124,8 +119,8 @@ void SDialog::setSavedSize(int def_width, int def_height)
 void SDialog::onSize(wxSizeEvent& e)
 {
 	// Update window size settings
-	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
-	misc::setWindowInfo(id_, ClientSize.x, ClientSize.y, -2, -2);
+	const wxSize client_size = GetClientSize();
+	ui::setWindowInfo(this, id_, client_size.x, client_size.y, -2, -2);
 	e.Skip();
 }
 
@@ -135,7 +130,7 @@ void SDialog::onSize(wxSizeEvent& e)
 void SDialog::onMove(wxMoveEvent& e)
 {
 	// Update window position settings
-	misc::setWindowInfo(id_, -2, -2, GetPosition().x, GetPosition().y);
+	ui::setWindowInfo(this, id_, -2, -2, GetPosition().x, GetPosition().y);
 	e.Skip();
 }
 

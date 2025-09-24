@@ -1,0 +1,229 @@
+{
+  "colours": {
+    "error": {
+      "colour": "rgb(230, 30, 0)",
+      "group": "General",
+      "name": "Error"
+    },
+    "locked": {
+      "colour": "rgb(180, 50, 0)",
+      "group": "General",
+      "name": "Locked"
+    },
+    "map_3d_crosshair": {
+      "blend_additive": true,
+      "colour": "rgb(180, 190, 255)",
+      "group": "Map Editor",
+      "name": "3D Crosshair"
+    },
+    "map_3d_hilight": {
+      "colour": "rgba(0, 180, 255, 180)",
+      "group": "Map Editor",
+      "name": "3D Hilight"
+    },
+    "map_3d_overlay_background": {
+      "colour": "rgba(40, 40, 40, 180)",
+      "group": "Map Editor",
+      "name": "3D Info Overlay Background"
+    },
+    "map_3d_overlay_foreground": {
+      "colour": "rgb(255, 200, 100)",
+      "group": "Map Editor",
+      "name": "3D Info Overlay Foreground"
+    },
+    "map_3d_selection": {
+      "colour": "rgba(50, 200, 100, 180)",
+      "group": "Map Editor",
+      "name": "3D Selection"
+    },
+    "map_64grid": {
+      "blend_additive": true,
+      "colour": "rgba(255, 255, 255, 10)",
+      "group": "Map Editor",
+      "name": "64 Grid"
+    },
+    "map_background": {
+      "colour": "rgb(25, 25, 25)",
+      "group": "Map Editor",
+      "name": "Background"
+    },
+    "map_editor_message": {
+      "colour": "rgb(255, 200, 100)",
+      "group": "Map Editor",
+      "name": "Editor Message"
+    },
+    "map_editor_message_outline": {
+      "colour": "rgb(0, 0, 0)",
+      "group": "Map Editor",
+      "name": "Editor Message Outline"
+    },
+    "map_grid": {
+      "colour": "rgba(70, 70, 70, 60)",
+      "group": "Map Editor",
+      "name": "Grid"
+    },
+    "map_hilight": {
+      "blend_additive": true,
+      "colour": "rgba(0, 180, 255, 180)",
+      "group": "Map Editor",
+      "name": "Hilighted Item"
+    },
+    "map_image_background": {
+      "colour": "rgba(255, 255, 255, 0)",
+      "group": "Map Image Export",
+      "name": "Background"
+    },
+    "map_image_line_1s": {
+      "colour": "rgb(0, 0, 0)",
+      "group": "Map Image Export",
+      "name": "Line (1-Sided)"
+    },
+    "map_image_line_2s": {
+      "colour": "rgb(144, 144, 144)",
+      "group": "Map Image Export",
+      "name": "Line (2-Sided)"
+    },
+    "map_image_line_macro": {
+      "colour": "rgb(50, 130, 220)",
+      "group": "Map Image Export",
+      "name": "Line (Macro)"
+    },
+    "map_image_line_special": {
+      "colour": "rgb(220, 130, 50)",
+      "group": "Map Image Export",
+      "name": "Line (Special)"
+    },
+    "map_line_invalid": {
+      "colour": "rgb(255, 0, 0)",
+      "group": "Map Editor",
+      "name": "Line: Invalid"
+    },
+    "map_line_normal": {
+      "colour": "rgb(255, 255, 255)",
+      "group": "Map Editor",
+      "name": "Line: Normal"
+    },
+    "map_line_special": {
+      "colour": "rgb(180, 255, 30)",
+      "group": "Map Editor",
+      "name": "Line: Special"
+    },
+    "map_linedraw": {
+      "colour": "rgb(0, 150, 50)",
+      "group": "Map Editor",
+      "name": "Line Drawing"
+    },
+    "map_moving": {
+      "blend_additive": true,
+      "colour": "rgba(200, 50, 50, 180)",
+      "group": "Map Editor",
+      "name": "Moving Item(s)"
+    },
+    "map_object_edit": {
+      "blend_additive": true,
+      "colour": "rgba(220, 140, 0, 170)",
+      "group": "Map Editor",
+      "name": "Object Edit"
+    },
+    "map_overlay_background": {
+      "colour": "rgba(40, 40, 40, 180)",
+      "group": "Map Editor",
+      "name": "Info Overlay Background"
+    },
+    "map_overlay_foreground": {
+      "colour": "rgb(255, 200, 100)",
+      "group": "Map Editor",
+      "name": "Info Overlay Foreground"
+    },
+    "map_selbox_fill": {
+      "blend_additive": true,
+      "colour": "rgba(50, 200, 100, 80)",
+      "group": "Map Editor",
+      "name": "Selection Box Fill"
+    },
+    "map_selbox_outline": {
+      "blend_additive": true,
+      "colour": "rgba(50, 200, 100, 200)",
+      "group": "Map Editor",
+      "name": "Selection Box Outline"
+    },
+    "map_selection": {
+      "blend_additive": true,
+      "colour": "rgba(50, 200, 100, 180)",
+      "group": "Map Editor",
+      "name": "Selected Item"
+    },
+    "map_tagged": {
+      "blend_additive": true,
+      "colour": "rgba(180, 255, 30, 80)",
+      "group": "Map Editor",
+      "name": "Tagged Item(s)"
+    },
+    "map_tagging": {
+      "blend_additive": true,
+      "colour": "rgba(180, 255, 30, 80)",
+      "group": "Map Editor",
+      "name": "Tagging Item(s)"
+    },
+    "map_thing_path": {
+      "colour": "rgb(34, 255, 255)",
+      "group": "Map Editor",
+      "name": "Pathed Thing Line"
+    },
+    "map_thing_path_dragon": {
+      "colour": "rgb(255, 34, 34)",
+      "group": "Map Editor",
+      "name": "Pathed Thing Line (Dragon)"
+    },
+    "map_vertex": {
+      "colour": "rgb(220, 160, 80)",
+      "group": "Map Editor",
+      "name": "Vertex"
+    },
+    "map_view_background": {
+      "colour": "rgb(0, 0, 0)",
+      "group": "Map Preview",
+      "name": "Background"
+    },
+    "map_view_line_1s": {
+      "colour": "rgb(255, 255, 255)",
+      "group": "Map Preview",
+      "name": "Line (1-Sided)"
+    },
+    "map_view_line_2s": {
+      "colour": "rgb(170, 170, 170)",
+      "group": "Map Preview",
+      "name": "Line (2-Sided)"
+    },
+    "map_view_line_macro": {
+      "colour": "rgb(255, 170, 130)",
+      "group": "Map Preview",
+      "name": "Line (Macro)"
+    },
+    "map_view_line_special": {
+      "colour": "rgb(130, 140, 255)",
+      "group": "Map Preview",
+      "name": "Line (Special)"
+    },
+    "map_view_thing": {
+      "colour": "rgb(200, 200, 200)",
+      "group": "Map Preview",
+      "name": "Thing"
+    },
+    "modified": {
+      "colour": "rgb(0, 80, 180)",
+      "group": "General",
+      "name": "Modified"
+    },
+    "new": {
+      "colour": "rgb(0, 150, 0)",
+      "group": "General",
+      "name": "New"
+    }
+  },
+  "theme": {
+    "flat_alpha": 1.0,
+    "line_hilight_width": 3.0,
+    "line_selection_width": 3.0
+  }
+}

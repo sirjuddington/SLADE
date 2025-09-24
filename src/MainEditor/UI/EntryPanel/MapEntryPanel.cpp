@@ -39,8 +39,7 @@
 #include "Archive/MapDesc.h"
 #include "General/MapPreviewData.h"
 #include "UI/Canvas/Canvas.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/SAuiToolBar.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -81,17 +80,8 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map"), map_
 	map_canvas_ = ui::createMapPreviewCanvas(this, map_data_.get(), true, true);
 	sizer_main_->Add(map_canvas_, wxSizerFlags(1).Expand());
 
-	// Setup map toolbar buttons
-	auto group = new SToolBarGroup(toolbar_, "Map");
-	group->addActionButton("save_image", "Save Map Image", "export", "Save map overview to an image", true);
-	group->addActionButton("pmap_open_text", "", true);
-	tbb_open_archive_ = group->addActionButton("pmap_open_archive", "", true);
-	toolbar_->addGroup(group);
-
-	// Remove save/revert buttons
-	toolbar_->deleteGroup("Entry");
-	stb_save_   = nullptr;
-	stb_revert_ = nullptr;
+	// Setup toolbar
+	toolbar_->loadLayoutFromResource("entry_map_top");
 
 	// Setup bottom panel
 	sizer_bottom_->Add(label_stats_ = new wxStaticText(this, -1, wxEmptyString), wxSizerFlags().CenterVertical());
@@ -130,7 +120,7 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 			thismap = maps[0];
 			found   = true;
 		}
-		tbb_open_archive_->Show(true);
+		toolbar_->showItem("pmap_open_archive", true);
 	}
 	else // Normal map entry
 	{
@@ -145,7 +135,7 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 				break;
 			}
 		}
-		tbb_open_archive_->Show(false);
+		toolbar_->showItem("pmap_open_archive", false);
 	}
 
 	// All errors = invalid map

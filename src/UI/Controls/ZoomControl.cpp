@@ -33,10 +33,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZoomControl.h"
+#include "SIconButton.h"
 #include "UI/Canvas/CTextureCanvasBase.h"
 #include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/State.h"
+#include <array>
 
 using namespace slade;
 using namespace ui;
@@ -47,8 +49,6 @@ using namespace ui;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, zoom_gfx, 100, CVar::Save)
-CVAR(Int, zoom_ctex, 100, CVar::Save)
 namespace slade::ui
 {
 std::array<int, 8>  zoom_percents      = { 25, 50, 75, 100, 150, 200, 400, 800 };
@@ -76,9 +76,9 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 	wxPanel(parent, -1),
-	linked_gfx_canvas_{ linked_canvas },
-	zoom_(zoom_gfx)
+	linked_gfx_canvas_{ linked_canvas }
 {
+	zoom_ = getStateInt(ZOOM_GFXCANVAS);
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
@@ -89,9 +89,9 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 // -----------------------------------------------------------------------------
 ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvasBase* linked_canvas) :
 	wxPanel(parent, -1),
-	linked_texture_canvas_{ linked_canvas },
-	zoom_(zoom_ctex)
+	linked_texture_canvas_{ linked_canvas }
 {
+	zoom_ = getStateInt(ZOOM_CTEXTURECANVAS);
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
@@ -111,13 +111,13 @@ void ZoomControl::setZoomPercent(int percent)
 	{
 		linked_gfx_canvas_->setScale(zoomScale());
 		linked_gfx_canvas_->window()->Refresh();
-		zoom_gfx = zoom_;
+		saveStateInt(ZOOM_GFXCANVAS, zoom_);
 	}
 	if (linked_texture_canvas_)
 	{
 		linked_texture_canvas_->setScale(zoomScale());
 		linked_texture_canvas_->redraw(false);
-		zoom_ctex = zoom_;
+		saveStateInt(ZOOM_CTEXTURECANVAS, zoom_);
 	}
 }
 
@@ -198,8 +198,8 @@ void ZoomControl::setup()
 
 	// Create controls
 	cb_zoom_ = new wxComboBox(this, -1, WX_FMT("{}%", zoom_), wxDefaultPosition, cbsize, values, wxTE_PROCESS_ENTER);
-	btn_zoom_out_ = new SToolBarButton(this, "zoom_out", "Zoom Out", "zoom_out", "Zoom Out", false, 16);
-	btn_zoom_in_  = new SToolBarButton(this, "zoom_in", "Zoom In", "zoom_in", "Zoom In", false, 16);
+	btn_zoom_out_ = new SIconButton(this, "zoom_out", "Zoom Out", 16);
+	btn_zoom_in_  = new SIconButton(this, "zoom_in", "Zoom In", 16);
 
 #ifdef __WXGTK__
 	// wxWidgets doesn't leave space for the dropdown arrow in gtk3 for whatever reason
@@ -250,15 +250,8 @@ void ZoomControl::setup()
 		});
 
 	// Zoom in/out button clicked
-	Bind(
-		wxEVT_STOOLBAR_BUTTON_CLICKED,
-		[this](wxCommandEvent& e)
-		{
-			if (e.GetString() == wxS("zoom_in"))
-				zoomIn();
-			else if (e.GetString() == wxS("zoom_out"))
-				zoomOut();
-		});
+	btn_zoom_in_->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) { zoomIn(); });
+	btn_zoom_out_->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) { zoomOut(); });
 }
 
 // -----------------------------------------------------------------------------

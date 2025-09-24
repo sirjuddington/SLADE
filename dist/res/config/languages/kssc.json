@@ -1,0 +1,19 @@
+{
+  "kssclump": {
+    "name": "KSSC Strife Dialog",
+    "case_sensitive": false,
+    "keyword_link": "https://zdoom.org/wiki/KSSC",
+    "constant_link": "https://zdoom.org/wiki/KSSC",
+    "function_link": "https://zdoom.org/wiki/KSSC",
+    "keywords": [ "$MOBJ", "DROP", "IF_ITEM", "GOTO", "NAME", "VOICE", "PANEL", "DIALOG" ],
+    "functions": {
+      "TEXT": "",
+      "GIVEMOBJ": "",
+      "IF_HAS": "",
+      "YESTEXT": "",
+      "LINK": "",
+      "LOG": "",
+      "NOTEXT": ""
+    }
+  }
+}

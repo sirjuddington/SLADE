@@ -39,8 +39,7 @@
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 
@@ -927,10 +926,8 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), t
 	grid_data_ = new wxGrid(this, -1);
 	vbox->Add(grid_data_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
-	// Add actions to toolbar
-	wxArrayString actions;
-	toolbar_->addActionGroup(
-		"Data", { "data_add_row", "data_delete_row", "data_cut_row", "data_copy_row", "data_paste_row" });
+	// Setup toolbar
+	toolbar_->loadLayoutFromResource("entry_data_top");
 
 	// Bind events
 	Bind(wxEVT_KEY_DOWN, &DataEntryPanel::onKeyDown, this);

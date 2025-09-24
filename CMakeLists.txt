@@ -15,8 +15,8 @@ OPTION(NO_FLUIDSYNTH "Disable FluidSynth MIDI playback" OFF)
 OPTION(BUILD_PK3 "Build the SLADE pk3 file from dist/res" ON)
 OPTION(BUILD_WX "Download and build wxWidgets instead of using system-installed libs" OFF)
 
-# c++17 is required to compile
-set(CMAKE_CXX_STANDARD 17)
+# c++20 is required to compile
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 if (BUILD_WX)
@@ -24,13 +24,14 @@ if (BUILD_WX)
 	set(wxBUILD_SHARED OFF)
 	set(wxBUILD_USE_STATIC_RUNTIME ON)
 	set(wxUSE_LIBJPEG sys)
+	set(wxUSE_LIBPNG sys)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 	include(FetchContent)
 	FetchContent_Declare(
 		wxWidgets
 		GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-		GIT_TAG v3.3.0
+		GIT_TAG v3.3.1
 	)
 	FetchContent_GetProperties(wxwidgets)
 	FetchContent_MakeAvailable(wxwidgets)

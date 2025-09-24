@@ -53,8 +53,7 @@
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Layout.h"
 #include "UI/Lists/VirtualListView.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
@@ -649,26 +648,24 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	sizer->Add(framesizer, lh.sfWithBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
 	// Toolbar
-	toolbar_ = new SToolBar(this, false, wxVERTICAL);
-	toolbar_->addActionGroup("_Save", { "txed_savelist" });
-	toolbar_->addActionGroup("_New", { "txed_new", "txed_new_file" });
-	toolbar_->addActionGroup("_Texture", { "txed_rename", "txed_rename_each", "txed_delete" });
-	toolbar_->addActionGroup("_Sorting", { "txed_up", "txed_down", "txed_sort" });
-	toolbar_->group("_Texture")->setAllButtonsEnabled(false);
-	toolbar_->group("_Sorting")->setAllButtonsEnabled(false);
-	toolbar_->findActionButton("txed_sort")->Enable();
+	toolbar_ = new SAuiToolBar(frame_textures_, true);
+	toolbar_->loadLayoutFromResource("texturex_list");
+	toolbar_->enableGroup("Texture", false);
+	toolbar_->enableGroup("Sorting", false);
+
 	framesizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxTOP | wxBOTTOM).Expand());
 
 	// Textures list + filter
-	list_textures_    = new TextureXListView(this, texturex_.get());
-	text_filter_      = new wxTextCtrl(this, -1);
-	btn_clear_filter_ = new SIconButton(this, "close", "Clear Filter");
+	list_textures_    = new TextureXListView(frame_textures_, texturex_.get());
+	text_filter_      = new wxTextCtrl(frame_textures_, -1);
+	btn_clear_filter_ = new SIconButton(frame_textures_, "close", "Clear Filter");
 	auto* vbox        = new wxBoxSizer(wxVERTICAL);
 	framesizer->AddSpacer(lh.padSmall());
 	framesizer->Add(vbox, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 	vbox->Add(list_textures_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 	vbox->Add(
-		lh.layoutHorizontally({ wxutil::createLabelHBox(this, "Filter:", text_filter_), btn_clear_filter_ }, 0),
+		lh.layoutHorizontally(
+			{ wxutil::createLabelHBox(frame_textures_, "Filter:", text_filter_), btn_clear_filter_ }, 0),
 		wxSizerFlags().Expand());
 
 	// Bind events
@@ -1802,17 +1799,17 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	auto selcount = list_textures_->GetSelectedItemCount();
 	if (selcount == 0)
 	{
-		toolbar_->group("_Texture")->setAllButtonsEnabled(false);
-		toolbar_->group("_Sorting")->setAllButtonsEnabled(false);
-		toolbar_->findActionButton("txed_sort")->Enable();
+		toolbar_->enableGroup("Texture", false);
+		toolbar_->enableGroup("Sorting", false);
+		toolbar_->enableItem("txed_sort", true);
 	}
 	if (selcount >= 1)
 	{
-		toolbar_->group("_Texture")->setAllButtonsEnabled(true);
-		toolbar_->group("_Sorting")->setAllButtonsEnabled(true);
+		toolbar_->enableGroup("Texture", true);
+		toolbar_->enableGroup("Sorting", true);
 	}
 	if (selcount == 1)
-		toolbar_->findActionButton("txed_rename_each")->Enable(false);
+		toolbar_->enableItem("txed_rename_each", false);
 
 
 	// Do nothing if multiple textures are selected

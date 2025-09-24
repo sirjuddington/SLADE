@@ -2,7 +2,7 @@
 
 namespace slade
 {
-class ColourBox : public wxPanel
+class ColourBox : public wxControl
 {
 public:
 	ColourBox(wxWindow* parent, int id = -1, bool enable_alpha = false, bool mode = false);

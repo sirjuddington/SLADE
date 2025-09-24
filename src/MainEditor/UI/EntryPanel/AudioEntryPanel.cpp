@@ -42,7 +42,7 @@
 #include "MainEditor/Conversions.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBar.h"
+#include "UI/SAuiToolBar.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 

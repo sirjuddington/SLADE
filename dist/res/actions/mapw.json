@@ -1,0 +1,248 @@
+{
+  "mapw_save": {
+    "text": "&Save Map Changes",
+    "icon": "save",
+    "help_text": "Save any changes to the current map",
+    "shortcut": "Ctrl+S"
+  },
+  "mapw_saveas": {
+    "text": "Save Map &As...",
+    "icon": "saveas",
+    "help_text": "Save the map to a new wad archive",
+    "shortcut": "Ctrl+Shift+S"
+  },
+  "mapw_close": {
+    "text": "&Close",
+    "icon": "close",
+    "help_text": "Close the current map",
+    "shortcut": "Ctrl+W"
+  },
+  "mapw_rename": {
+    "text": "&Rename Map",
+    "icon": "rename",
+    "help_text": "Rename the current map"
+  },
+  "mapw_convert": {
+    "text": "Con&vert Map...",
+    "icon": "convert",
+    "help_text": "Convert the current map to a different format"
+  },
+  "mapw_backup": {
+    "text": "Restore Backup...",
+    "icon": "undo",
+    "help_text": "Restore a previous backup of the current map"
+  },
+  "mapw_undo": {
+    "text": "Undo",
+    "icon": "undo",
+    "help_text": "Undo",
+    "shortcut": "Ctrl+Z"
+  },
+  "mapw_redo": {
+    "text": "Redo",
+    "icon": "redo",
+    "help_text": "Redo",
+    "shortcut": "Ctrl+Y"
+  },
+  "mapw_setbra": {
+    "text": "Set &Base Resource Archive",
+    "icon": "archive",
+    "help_text": "Set the Base Resource Archive, to act as the program 'IWAD'"
+  },
+  "mapw_preferences": {
+    "text": "&Preferences...",
+    "icon": "settings",
+    "help_text": "Setup SLADE options and preferences"
+  },
+  "mapw_mode_vertices": {
+    "text": "Vertices Mode",
+    "icon": "verts",
+    "help_text": "Change to vertices editing mode",
+    "shortcut": "kb:me2d_mode_vertices",
+    "type": "radio",
+    "group": "map_edit_mode"
+  },
+  "mapw_mode_lines": {
+    "text": "Lines Mode",
+    "icon": "lines",
+    "help_text": "Change to lines editing mode",
+    "shortcut": "kb:me2d_mode_lines",
+    "type": "radio",
+    "group": "map_edit_mode"
+  },
+  "mapw_mode_sectors": {
+    "text": "Sectors Mode",
+    "icon": "sectors",
+    "help_text": "Change to sectors editing mode",
+    "shortcut": "kb:me2d_mode_sectors",
+    "type": "radio",
+    "group": "map_edit_mode"
+  },
+  "mapw_mode_things": {
+    "text": "Things Mode",
+    "icon": "things",
+    "help_text": "Change to things editing mode",
+    "shortcut": "kb:me2d_mode_things",
+    "type": "radio",
+    "group": "map_edit_mode"
+  },
+  "mapw_mode_3d": {
+    "text": "3d Mode",
+    "icon": "3d",
+    "help_text": "Change to 3d editing mode",
+    "shortcut": "kb:map_toggle_3d",
+    "type": "radio",
+    "group": "map_edit_mode"
+  },
+  "mapw_flat_none": {
+    "text": "Wireframe",
+    "icon": "flat_w",
+    "help_text": "Don't show flats (wireframe)",
+    "type": "radio",
+    "group": "map_flat_style"
+  },
+  "mapw_flat_untextured": {
+    "text": "Untextured",
+    "icon": "flat_u",
+    "help_text": "Show untextured flats",
+    "type": "radio",
+    "group": "map_flat_style"
+  },
+  "mapw_flat_textured": {
+    "text": "Textured",
+    "icon": "flat_t",
+    "help_text": "Show textured flats",
+    "type": "radio",
+    "group": "map_flat_style"
+  },
+  "mapw_sectormode_normal": {
+    "text": "Normal (Both)",
+    "icon": "sector_both",
+    "help_text": "Edit sector floors and ceilings",
+    "type": "radio",
+    "group": "map_sector_mode"
+  },
+  "mapw_sectormode_floor": {
+    "text": "Floors",
+    "icon": "sector_floor",
+    "help_text": "Edit sector floors",
+    "type": "radio",
+    "group": "map_sector_mode"
+  },
+  "mapw_sectormode_ceiling": {
+    "text": "Ceilings",
+    "icon": "sector_ceiling",
+    "help_text": "Edit sector ceilings",
+    "type": "radio",
+    "group": "map_sector_mode"
+  },
+  "mapw_run_map": {
+    "text": "Run Map",
+    "icon": "run",
+    "help_text": "Run the current map",
+    "shortcut": "Ctrl+Shift+R"
+  },
+  "mapw_quick_run_map": {
+    "text": "Quick Run Map",
+    "icon": "run_quick",
+    "help_text": "Run the current map without opening the configuration dialog",
+    "shortcut": "Ctrl+R"
+  },
+  "mapw_draw_lines": {
+    "text": "Draw Lines",
+    "icon": "linedraw",
+    "help_text": "Begin line drawing",
+    "shortcut": "kb:me2d_begin_linedraw"
+  },
+  "mapw_draw_shape": {
+    "text": "Draw Shape",
+    "icon": "shapedraw",
+    "help_text": "Begin shape drawing",
+    "shortcut": "kb:me2d_begin_shapedraw"
+  },
+  "mapw_edit_objects": {
+    "text": "Edit Object(s)",
+    "icon": "objectedit",
+    "help_text": "Edit currently selected object(s)",
+    "shortcut": "kb:me2d_begin_object_edit"
+  },
+  "mapw_vertex_create": {
+    "text": "Create Vertex Here",
+    "help_text": "Create a new vertex at the cursor position"
+  },
+  "mapw_thing_changetype": {
+    "text": "Change Type",
+    "help_text": "Change the currently selected or hilighted thing type(s)",
+    "shortcut": "kb:me2d_thing_change_type"
+  },
+  "mapw_thing_create": {
+    "text": "Create Thing Here",
+    "help_text": "Create a new thing at the cursor position"
+  },
+  "mapw_item_properties": {
+    "text": "Properties",
+    "icon": "properties",
+    "help_text": "Edit the currently selected item's properties"
+  },
+  "mapw_camera_set": {
+    "text": "Move 3d Camera Here",
+    "help_text": "Set the current position of the 3d mode camera to the cursor position"
+  },
+  "mapw_mode_3d_at_mouse": {
+    "text": "Enter 3d Mode at Mouse Cursor",
+    "help_text": "Enters 3d mode with the camera at the current mouse cursor position",
+    "shortcut": "kb:me2d_mode_3d_at_mouse"
+  },
+  "mapw_clear_selection": {
+    "text": "Clear Selection",
+    "help_text": "Clear the current selection, if any",
+    "shortcut": "kb:me2d_clear_selection"
+  },
+  "mapw_mirror_y": {
+    "text": "Mirror Vertically",
+    "icon": "flip",
+    "help_text": "Mirror the selected objects vertically",
+    "shortcut": "kb:me2d_mirror_y"
+  },
+  "mapw_mirror_x": {
+    "text": "Mirror Horizontally",
+    "icon": "mirror",
+    "help_text": "Mirror the selected objects horizontally",
+    "shortcut": "kb:me2d_mirror_x"
+  },
+  "mapw_run_map_here": {
+    "text": "Run Map from Here",
+    "icon": "run",
+    "help_text": "Run the current map, starting at the current cursor position"
+  },
+  "mapw_runscript": {
+    "text": "Script Manager",
+    "icon": "text",
+    "help_text": "Open the Script Manager to write/run a SLADE script"
+  },
+  "mapw_script": {
+    "reserved_ids": 100
+  },
+  "mapw_grid_increment": {
+    "text": "Increase Grid Size",
+    "help_text": "Increase the size of the grid",
+    "shortcut": "kb:me2d_grid_inc"
+  },
+  "mapw_grid_decrement": {
+    "text": "Decrease Grid Size",
+    "help_text": "Decrease the size of the grid",
+    "shortcut": "kb:me2d_grid_dec"
+  },
+  "mapw_grid_snap": {
+    "text": "Toggle Grid Snapping",
+    "help_text": "When enabled, all editing operations are snapped to the grid (eg. placing vertices, etc.)",
+    "shortcut": "kb:me2d_grid_toggle_snap"
+  },
+  "mapw_thing_light_previews": {
+    "text": "Toggle Light Previews",
+    "icon": "lightbulb",
+    "help_text": "Enable colour & radius previews for point light things",
+    "type": "check",
+    "linked_cvar": "thing_preview_lights"
+  }
+}

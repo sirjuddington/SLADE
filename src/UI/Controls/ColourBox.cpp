@@ -62,7 +62,7 @@ DEFINE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED)
 // ColourBox class constructor
 // -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
-	wxPanel{ parent, id, wxDefaultPosition, parent->FromDIP(wxSize(32, 22)), wxNO_BORDER },
+	wxControl{ parent, id, wxDefaultPosition, parent->FromDIP(wxSize(32, 22)), wxNO_BORDER },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
 {
@@ -76,7 +76,7 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
 // Alternate ColourBox class constructor
 // -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, bool mode, int size) :
-	wxPanel{ parent, id, wxDefaultPosition, wxDefaultSize, wxNO_BORDER },
+	wxControl{ parent, id, wxDefaultPosition, wxDefaultSize, wxNO_BORDER },
 	colour_{ col },
 	alpha_{ enable_alpha },
 	altmode_{ mode }

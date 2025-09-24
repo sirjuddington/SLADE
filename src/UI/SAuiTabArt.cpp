@@ -35,7 +35,6 @@
 #include "SAuiTabArt.h"
 #include "App.h"
 #include "Graphics/Icons.h"
-#include "Utility/Colour.h"
 #include "WxUtils.h"
 
 using namespace slade;
@@ -801,18 +800,13 @@ SAuiDockArt::~SAuiDockArt() = default;
 
 void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, const wxRect& rect, wxAuiPaneInfo& pane)
 {
-	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.SetFont(m_captionFont);
 
+#ifdef __WXMSW__
+	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.SetBrush(wxBrush(caption_back_colour_));
 	dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
-
-	wxColor sepCol;
-	int     l = colour::greyscale(ColRGBA(caption_back_colour_)).r;
-	if (l < 100)
-		sepCol = wxutil::lightColour(caption_back_colour_, 2.0f);
-	else
-		sepCol = wxutil::darkColour(caption_back_colour_, 2.0f);
+#endif
 
 	auto px2 = window->FromDIP(2);
 	auto px3 = window->FromDIP(3);

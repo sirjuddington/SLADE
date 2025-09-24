@@ -35,7 +35,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "UI/SToolBar/SToolBar.h"
+#include "UI/SAuiToolBar.h"
 #include "Utility/CodePages.h"
 
 using namespace slade;

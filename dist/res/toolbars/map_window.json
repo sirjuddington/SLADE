@@ -1,0 +1,62 @@
+{
+  "items": [
+    // Map
+    { "type": "action", "id": "mapw_save" },
+    { "type": "action", "id": "mapw_saveas" },
+    { "type": "action", "id": "mapw_preferences" },
+
+    { "type": "separator" },
+
+    // Mode
+    { "type": "action", "id": "mapw_mode_vertices" },
+    { "type": "action", "id": "mapw_mode_lines" },
+    { "type": "action", "id": "mapw_mode_sectors" },
+    { "type": "action", "id": "mapw_mode_things" },
+    { "type": "action", "id": "mapw_mode_3d" },
+
+    { "type": "separator" },
+
+    // Flats Type
+    { "type": "action", "id": "mapw_flat_none" },
+    { "type": "action", "id": "mapw_flat_untextured" },
+    { "type": "action", "id": "mapw_flat_textured" },
+
+    { "type": "separator" },
+
+    // Edit
+    { "type": "action", "id": "mapw_draw_lines" },
+    { "type": "action", "id": "mapw_draw_shape" },
+    { "type": "action", "id": "mapw_edit_objects" },
+    { "type": "action", "id": "mapw_mirror_x" },
+    { "type": "action", "id": "mapw_mirror_y" },
+
+    { "type": "separator" },
+
+    // Sectors Mode
+    { "type": "action", "id": "mapw_sectormode_normal" },
+    { "type": "action", "id": "mapw_sectormode_floor" },
+    { "type": "action", "id": "mapw_sectormode_ceiling" },
+
+    { "type": "separator" },
+
+    // Things Mode
+    { "type": "action", "id": "mapw_thing_light_previews" },
+
+    { "type": "separator" },
+
+    // Misc
+    { "type": "action", "id": "mapw_run_map" },
+    { "type": "action", "id": "mapw_quick_run_map" }
+  ],
+
+  "groups": [
+    {
+      "name": "Sectors Mode",
+      "item_ids": [ "mapw_sectormode_normal", "mapw_sectormode_floor", "mapw_sectormode_ceiling" ]
+    },
+    {
+      "name": "Things Mode",
+      "item_ids": [ "mapw_thing_light_previews" ]
+    }
+  ]
+}

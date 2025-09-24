@@ -32,9 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "STopWindow.h"
-#include "General/Misc.h"
-#include "General/SAction.h"
-#include "SToolBar/SToolBar.h"
+#include "SAuiToolBar.h"
+#include "UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -67,33 +66,24 @@ STopWindow::STopWindow(const string& title, const string& id, int x, int y, int 
 
 #ifndef __WXOSX__
 	// Init size/pos
-	auto info = misc::getWindowInfo(id_);
+	auto info = ui::getWindowInfo(this, id_);
 	if (!info.id.empty())
 	{
 		SetSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		misc::setWindowInfo(id_, width, height, x, y);
+		ui::setWindowInfo(this, id_, width, height, x, y);
 #endif
 
-	// Init toolbar menu action(s)
-	action_toolbar_menu_ = new SAction(
-		fmt::format("{}_toolbar_menu", id), "Toolbars", "", "", "", SAction::Type::Check, -1, 10);
-	action_toolbar_menu_->initWxId();
-	SAction::add(action_toolbar_menu_);
-
 	// Bind events
-	Bind(wxEVT_MENU, &STopWindow::onMenu, this);
-}
-
-// -----------------------------------------------------------------------------
-// STopWindow class destructor
-// -----------------------------------------------------------------------------
-STopWindow::~STopWindow()
-{
-	if (!wxFrame::IsMaximized() && !wxFrame::IsFullScreen())
-		misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+	Bind(
+		wxEVT_CLOSE_WINDOW,
+		[this](wxCloseEvent&)
+		{
+			if (!wxFrame::IsMaximized() && !wxFrame::IsFullScreen())
+				ui::setWindowInfo(this, id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -141,89 +131,17 @@ void STopWindow::removeAllCustomMenus()
 }
 
 // -----------------------------------------------------------------------------
+// Shows/hides the toolbar group matching [name]
+// -----------------------------------------------------------------------------
+void STopWindow::showToolbarGroup(string_view name, bool show) const
+{
+	toolbar_->showGroup(name, show);
+}
+
+// -----------------------------------------------------------------------------
 // Enables/disables the toolbar group matching [name]
 // -----------------------------------------------------------------------------
-void STopWindow::enableToolBar(const string& name, bool enable) const
+void STopWindow::enableToolBarGroup(const string& name, bool enable) const
 {
 	toolbar_->enableGroup(name, enable);
-}
-
-// -----------------------------------------------------------------------------
-// Adds a custom toolbar group to the toolbar, with buttons for each action in
-// [actions]
-// -----------------------------------------------------------------------------
-void STopWindow::addCustomToolBar(const string& name, const vector<string>& actions) const
-{
-	toolbar_->addActionGroup(name, actions);
-	populateToolbarsMenu();
-}
-
-// -----------------------------------------------------------------------------
-// Removes the toolbar group matching [name]
-// -----------------------------------------------------------------------------
-void STopWindow::removeCustomToolBar(const string& name) const
-{
-	toolbar_->deleteGroup(name);
-	populateToolbarsMenu();
-}
-
-// -----------------------------------------------------------------------------
-// Removes all custom toolbar groups
-// -----------------------------------------------------------------------------
-void STopWindow::removeAllCustomToolBars() const
-{
-	toolbar_->deleteCustomGroups();
-	populateToolbarsMenu();
-}
-
-// -----------------------------------------------------------------------------
-// Populates the toolbars menu with options to toggle each toolbar group
-// -----------------------------------------------------------------------------
-void STopWindow::populateToolbarsMenu() const
-{
-	while (toolbar_menu_->GetMenuItemCount() > 0)
-		toolbar_menu_->Delete(toolbar_menu_->FindItemByPosition(0));
-
-	for (auto a = 0u; a < toolbar_->groups().size(); ++a)
-	{
-		auto group = toolbar_->groups()[a];
-
-		auto name = group->name();
-		strutil::replaceIP(name, "_", "");
-
-		action_toolbar_menu_->addToMenu(toolbar_menu_, 0, name, "NO", a + 1);
-		toolbar_menu_->GetMenuItems()[toolbar_menu_->GetMenuItemCount() - 1]->Check(!group->hidden());
-	}
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// STopWindow Class Events
-//
-// -----------------------------------------------------------------------------
-
-// ReSharper disable CppMemberFunctionMayBeConst
-// ReSharper disable CppParameterMayBeConstPtrOrRef
-
-// -----------------------------------------------------------------------------
-// Called when a menu item is selected
-// -----------------------------------------------------------------------------
-void STopWindow::onMenu(wxCommandEvent& e)
-{
-	if (action_toolbar_menu_->isWxId(e.GetId()))
-	{
-		int  offset = e.GetId() - action_toolbar_menu_->wxId() - 1;
-		auto group  = toolbar_->groups()[offset];
-
-		group->hide(!group->hidden());
-		toolbar_->updateLayout(true);
-
-		auto item = toolbar_menu_->FindItem(e.GetId());
-		item->Check(!group->hidden());
-
-		return;
-	}
-
-	e.Skip();
 }

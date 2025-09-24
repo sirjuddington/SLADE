@@ -35,6 +35,7 @@
 #include "FileUtils.h"
 #include "General/Misc.h"
 #include "UI/WxUtils.h"
+#include "thirdparty/xxhash/xxhash.h"
 
 using namespace slade;
 
@@ -566,6 +567,19 @@ bool MemChunk::fillData(uint8_t val) const
 uint32_t MemChunk::crc() const
 {
 	return hasData() ? misc::crc(data_, size_) : 0;
+}
+
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the data using xxHash (XXH128).
+// Returns the hash as a hex string or empty if no data is present
+// -----------------------------------------------------------------------------
+string MemChunk::hash() const
+{
+	if (!hasData())
+		return {};
+
+	auto hash = XXH3_128bits(data_, size_);
+	return fmt::format("{:x}{:x}", hash.high64, hash.low64);
 }
 
 // -----------------------------------------------------------------------------

@@ -1,0 +1,692 @@
+{
+  "groups": [
+    {
+      "name": "PolyObjects",
+      "specials": [
+        {
+          "id": 1,
+          "name": "PolyObject Start Line",
+          "arg1": "PolyObject ID",
+          "arg2": "Mirror",
+          "arg3": "Sound Sequence"
+        },
+        {
+          "id": 2,
+          "name": "Polyobj_RotateLeft",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "id": 3,
+          "name": "Polyobj_RotateRight",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "id": 4,
+          "name": "Polyobj_Move",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle",
+          "arg4": "Distance"
+        },
+        {
+          "id": 5,
+          "name": "Polyobj_ExplicitLine",
+          "arg1": "PolyObject ID",
+          "arg2": "Rendering Order",
+          "arg3": "Mirror PolyObject ID",
+          "arg4": "Sound Sequence"
+        },
+        {
+          "id": 6,
+          "name": "Polyobj_MoveTimes8",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle",
+          "arg4": "Eighth of Distance"
+        },
+        {
+          "id": 7,
+          "name": "Polyobj_DoorSwing",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle",
+          "arg4": "Close Delay"
+        },
+        {
+          "id": 8,
+          "name": "Polyobj_DoorSlide",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle",
+          "arg4": "Distance",
+          "arg5": "Close Delay"
+        },
+        {
+          "id": 90,
+          "name": "Polyobj_OR_RotateLeft",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "id": 91,
+          "name": "Polyobj_OR_RotateRight",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "id": 92,
+          "name": "Polyobj_OR_Move",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle",
+          "arg4": "Distance"
+        },
+        {
+          "id": 93,
+          "name": "Polyobj_OR_MoveTimes8",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle",
+          "arg4": "Eighth of Distance"
+        }
+      ]
+    },
+    {
+      "name": "Doors",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        {
+          "id": 10,
+          "name": "Door_Close",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "tagged": "sector"
+        },
+        {
+          "id": 11,
+          "name": "Door_Open",
+          "arg1": "Sector Tag",
+          "arg2": "Speed"
+        },
+        {
+          "id": 12,
+          "name": "Door_Raise",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Delay"
+        },
+        {
+          "id": 13,
+          "name": "Door_LockedRaise",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Delay",
+          "arg4": "Lock"
+        }
+      ]
+    },
+    {
+      "name": "Ceilings",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "id": 40,
+          "name": "Ceiling_LowerByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Value"
+        },
+        {
+          "id": 41,
+          "name": "Ceiling_RaiseByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Value"
+        },
+        {
+          "id": 42,
+          "name": "Ceiling_CrushAndRaise",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Crush Damage"
+        },
+        {
+          "id": 43,
+          "name": "Ceiling_LowerAndCrush",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Crush Damage"
+        },
+        {
+          "id": 44,
+          "name": "Ceiling_CrushStop",
+          "arg1": "Sector Tag"
+        },
+        {
+          "id": 45,
+          "name": "Ceiling_CrushRaiseAndStay",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Crush Damage"
+        },
+        {
+          "id": 69,
+          "name": "Ceiling_MoveToValueTimes8",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Eighth of Value",
+          "arg4": "Negative?"
+        }
+      ]
+    },
+    {
+      "name": "Platforms & Lifts",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "id": 60,
+          "name": "Plat_PerpetualRaise",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Delay (in tics)"
+        },
+        {
+          "id": 61,
+          "name": "Plat_Stop",
+          "arg1": "Sector Tag"
+        },
+        {
+          "id": 62,
+          "name": "Plat_DownWaitUpStay",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Delay (in tics)"
+        },
+        {
+          "id": 63,
+          "name": "Plat_DownByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Delay (in tics)",
+          "arg4": "Eighth of Value"
+        },
+        {
+          "id": 64,
+          "name": "Plat_UpWaitDownStay",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Delay (in tics)"
+        },
+        {
+          "id": 65,
+          "name": "Plat_UpByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Delay (in tics)",
+          "arg4": "Eighth of Value"
+        }
+      ]
+    },
+    {
+      "name": "Floors",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "id": 20,
+          "name": "Floor_LowerByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Value"
+        },
+        {
+          "id": 21,
+          "name": "Floor_LowerToLowest",
+          "arg1": "Sector Tag",
+          "arg2": "Speed"
+        },
+        {
+          "id": 22,
+          "name": "Floor_LowerToNearest",
+          "arg1": "Sector Tag",
+          "arg2": "Speed"
+        },
+        {
+          "id": 23,
+          "name": "Floor_RaiseByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Value"
+        },
+        {
+          "id": 24,
+          "name": "Floor_RaiseToHighest",
+          "arg1": "Sector Tag",
+          "arg2": "Speed"
+        },
+        {
+          "id": 25,
+          "name": "Floor_RaiseToNearest",
+          "arg1": "Sector Tag",
+          "arg2": "Speed"
+        },
+        {
+          "id": 28,
+          "name": "Floor_RaiseAndCrush",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Crush Damage"
+        },
+        {
+          "id": 35,
+          "name": "Floor_RaiseByValueTimes8",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "id": 36,
+          "name": "Floor_LowerByValueTimes8",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "id": 46,
+          "name": "Floor_CrushStop",
+          "arg1": "Sector Tag"
+        },
+        {
+          "id": 66,
+          "name": "Floor_LowerInstant",
+          "arg1": "Sector Tag",
+          "arg2": "Unused",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "id": 67,
+          "name": "Floor_RaiseInstant",
+          "arg1": "Sector Tag",
+          "arg2": "Unused",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "id": 68,
+          "name": "Floor_MoveToValueTimes8",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Eighth of Value",
+          "arg4": "Negative?"
+        },
+        {
+          "id": 138,
+          "name": "Floor_Waggle",
+          "arg1": "Sector Tag",
+          "arg2": "Amplitude",
+          "arg3": "Speed",
+          "arg4": "Phase Offset",
+          "arg5": "Duration (in seconds)"
+        }
+      ]
+    },
+    {
+      "name": "Stair Builders",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "id": 26,
+          "name": "Stairs_BuildDown",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Step Height",
+          "arg4": "Step Delay (in tics)",
+          "arg5": "Reset Delay (in tics)"
+        },
+        {
+          "id": 27,
+          "name": "Stairs_BuildUp",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Step Height",
+          "arg4": "Step Delay (in tics)",
+          "arg5": "Reset Delay (in tics)"
+        },
+        {
+          "id": 31,
+          "name": "Stairs_BuildDownSync",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Step Height",
+          "arg4": "Reset Delay (in tics)"
+        },
+        {
+          "id": 32,
+          "name": "Stairs_BuildUpSync",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Step Height",
+          "arg4": "Reset Delay (in tics)"
+        }
+      ]
+    },
+    {
+      "name": "Floors & Ceilings",
+      "specials": [
+        {
+          "id": 29,
+          "name": "Pillar_Build",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": { "name": "Floor Height", "description": "0 = Halfway Point" }
+        },
+        {
+          "id": 30,
+          "name": "Pillar_Open",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": { "name": "Floor Lower Value", "description": "0 = Lowest Adjacent Floor" },
+          "arg4": { "name": "Ceiling Raise Value", "description": "0 = Highest Adjacent Ceiling" }
+        },
+        {
+          "id": 94,
+          "name": "Pillar_BuildAndCrush",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": { "name": "Floor Height", "description": "0 = Halfway Point" },
+          "arg4": "Crushing Damage"
+        },
+        {
+          "id": 95,
+          "name": "FloorAndCeiling_LowerByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Value"
+        },
+        {
+          "id": 96,
+          "name": "FloorAndCeiling_RaiseByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Speed",
+          "arg3": "Value"
+        }
+      ]
+    },
+    {
+      "name": "Exits",
+      "specials": [
+        {
+          "id": 74,
+          "name": "Teleport_NewMap",
+          "arg1": "Map Levelnum",
+          "arg2": { "name": "Player Start", "description": "Value of first argument of player start" },
+          "arg3": "Keep Facing"
+        },
+        {
+          "id": 75,
+          "name": "Teleport_EndGame"
+        }
+      ]
+    },
+    {
+      "name": "Teleporters",
+      "defaults": { "tagged": "thing" },
+      "specials": [
+        {
+          "id": 70,
+          "name": "Teleport",
+          "arg1": "Dest Thing ID"
+        },
+        {
+          "id": 71,
+          "name": "Teleport_NoFog",
+          "arg1": "Dest Thing ID"
+        }
+      ]
+    },
+    {
+      "name": "Lighting",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "id": 109,
+          "name": "Light_ForceLightning"
+        },
+        {
+          "id": 110,
+          "name": "Light_RaiseByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Value"
+        },
+        {
+          "id": 111,
+          "name": "Light_LowerByValue",
+          "arg1": "Sector Tag",
+          "arg2": "Value"
+        },
+        {
+          "id": 112,
+          "name": "Light_ChangeToValue",
+          "arg1": "Sector Tag",
+          "arg2": "Value"
+        },
+        {
+          "id": 113,
+          "name": "Light_Fade",
+          "arg1": "Sector Tag",
+          "arg2": "Value",
+          "arg3": { "name": "Fade Length", "description": "Number of tics to reach the new value" }
+        },
+        {
+          "id": 114,
+          "name": "Light_Glow",
+          "arg1": "Sector Tag",
+          "arg2": "Upper Light Level",
+          "arg3": "Lower Light Level",
+          "arg4": { "name": "Fade Length", "description": "Number of tics to alternate between both values" }
+        },
+        {
+          "id": 115,
+          "name": "Light_Flicker",
+          "arg1": "Sector Tag",
+          "arg2": "Upper Light Level",
+          "arg3": "Lower Light Level"
+        },
+        {
+          "id": 116,
+          "name": "Light_Strobe",
+          "arg1": "Sector Tag",
+          "arg2": "Upper Light Level",
+          "arg3": "Lower Light Level",
+          "arg4": { "name": "Upper Length", "description": "Number of tics to stay at upper level" },
+          "arg5": { "name": "Lower Length", "description": "Number of tics to stay at lower level" }
+        }
+      ]
+    },
+    {
+      "name": "Scrollers",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        {
+          "id": 100,
+          "name": "Scroll_Texture_Left",
+          "arg1": "Speed"
+        },
+        {
+          "id": 101,
+          "name": "Scroll_Texture_Right",
+          "arg1": "Speed"
+        },
+        {
+          "id": 102,
+          "name": "Scroll_Texture_Up",
+          "arg1": "Speed"
+        },
+        {
+          "id": 103,
+          "name": "Scroll_Texture_Down",
+          "arg1": "Speed"
+        }
+      ]
+    },
+    {
+      "name": "Scripting",
+      "specials": [
+        {
+          "id": 80,
+          "name": "ACS_Execute",
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" },
+          "arg3": { "name": "First Arg", "description": "First argument passed to the script" },
+          "arg4": { "name": "Second Arg", "description": "Second argument passed to the script" },
+          "arg5": { "name": "Third Arg", "description": "Third argument passed to the script" }
+        },
+        {
+          "id": 81,
+          "name": "ACS_Suspend",
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" }
+        },
+        {
+          "id": 82,
+          "name": "ACS_Terminate",
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" }
+        },
+        {
+          "id": 83,
+          "name": "ACS_LockedExecute",
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" },
+          "arg3": { "name": "First Arg", "description": "First argument passed to the script" },
+          "arg4": { "name": "Second Arg", "description": "Second argument passed to the script" },
+          "arg5": { "name": "Lock Number", "description": "Lock value" }
+        },
+        {
+          "id": 120,
+          "name": "Radius_Quake",
+          "arg1": { "name": "Intensity", "description": "Tremor intensity on a 1--9 scale" },
+          "arg2": { "name": "Duration", "description": "In tics" },
+          "arg3": { "name": "Damage Radius", "description": "Radius of damage in 64x64 cells" },
+          "arg4": { "name": "Tremor Radius", "description": "Radius of tremor in 64x64 cells" },
+          "arg5": { "name": "Thing ID", "description": "TID of the focus (0 = activator)" },
+          "tagged": "ex_5thing"
+        },
+        {
+          "id": 129,
+          "name": "UsePuzzleItem",
+          "arg1": { "name": "Puzzle Number", "description": "Value of the the item's PuzzleItem.Number property" },
+          "arg2": { "name": "Script Number", "description": "Script to run if item successfully used" },
+          "arg3": { "name": "First Arg", "description": "First argument passed to the script" },
+          "arg4": { "name": "Second Arg", "description": "Second argument passed to the script" },
+          "arg5": { "name": "Third Arg", "description": "Third argument passed to the script" }
+        }
+      ]
+    },
+    {
+      "name": "Sector",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "id": 140,
+          "name": "Sector_ChangeSound",
+          "arg1": "Sector Tag",
+          "arg2": { "name": "Sound Sequence", "description": "Index of sequence in SNDSEQ" }
+        }
+      ]
+    },
+    {
+      "name": "Things",
+      "defaults": { "tagged": "thing" },
+      "specials": [
+        {
+          "id": 72,
+          "name": "ThrustThing",
+          "arg1": { "name": "Angle", "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South" },
+          "arg2": { "name": "Force", "description": "In map unit per tics" },
+          "tagged": "no"
+        },
+        {
+          "id": 73,
+          "name": "DamageThing",
+          "arg1": { "name": "Amount", "description": "0 is a guaranteed kill" },
+          "tagged": "no"
+        },
+        {
+          "id": 130,
+          "name": "Thing_Activate",
+          "arg1": "Thing ID"
+        },
+        {
+          "id": 131,
+          "name": "Thing_Deactivate",
+          "arg1": "Thing ID"
+        },
+        {
+          "id": 132,
+          "name": "Thing_Remove",
+          "arg1": "Thing ID"
+        },
+        {
+          "id": 133,
+          "name": "Thing_Destroy",
+          "arg1": "Thing ID"
+        },
+        {
+          "id": 134,
+          "name": "Thing_Projectile",
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": { "name": "Angle", "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South" },
+          "arg4": { "name": "H Speed", "description": "Horizontal speed of the projectile in units per 8 tics" },
+          "arg5": {
+            "name": "V Speed",
+            "description": "Vertical speed of the projectile in units per 8 tics (up is positive)"
+          }
+        },
+        {
+          "id": 135,
+          "name": "Thing_Spawn",
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": { "name": "Angle", "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South" }
+        },
+        {
+          "id": 136,
+          "name": "Thing_ProjectileGravity",
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": { "name": "Angle", "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South" },
+          "arg4": { "name": "H Speed", "description": "Horizontal speed of the projectile in units per 8 tics" },
+          "arg5": {
+            "name": "V Speed",
+            "description": "Vertical speed of the projectile in units per 8 tics (up is positive)"
+          }
+        },
+        {
+          "id": 137,
+          "name": "Thing_SpawnNoFog",
+          "arg1": "Thing ID",
+          "arg2": { "name": "Type", "description": "Spawn ID of the projectile" },
+          "arg3": { "name": "Angle", "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South" }
+        }
+      ]
+    },
+    {
+      "name": "Lines",
+      "defaults": { "tagged": "line" },
+      "specials": [
+        {
+          "id": 121,
+          "name": "Line_SetIdentification",
+          "arg1": "Line ID"
+        }
+      ]
+    }
+  ]
+}
+

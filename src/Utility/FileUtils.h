@@ -17,6 +17,7 @@ namespace fileutil
 	bool           removeDir(string_view path);
 	vector<string> allFilesInDir(string_view path, bool include_subdirs = false, bool include_dir_paths = false);
 	time_t         fileModifiedTime(string_view path);
+	string         fileHash(string_view path);
 } // namespace fileutil
 
 class SFile : public SeekableData
@@ -34,10 +35,12 @@ public:
 	SFile(string_view path, Mode mode = Mode::ReadOnly);
 	~SFile() override { close(); }
 
-	bool     isOpen() const { return handle_ != nullptr; }
-	unsigned currentPos() const override;
-	unsigned length() const { return handle_ ? stat_.st_size : 0; }
-	unsigned size() const override { return handle_ ? stat_.st_size : 0; }
+	bool          isOpen() const { return handle_ != nullptr; }
+	unsigned      currentPos() const override;
+	unsigned      length() const { return handle_ ? stat_.st_size : 0; }
+	unsigned      size() const override { return handle_ ? stat_.st_size : 0; }
+	FILE*         handle() const { return handle_; }
+	const string& path() const { return path_; }
 
 	bool open(const string& path, Mode mode = Mode::ReadOnly);
 	void close();
@@ -53,8 +56,11 @@ public:
 	bool write(const void* buffer, unsigned count) override;
 	bool writeStr(string_view str) const;
 
+	string calculateHash() const;
+
 private:
 	FILE*       handle_ = nullptr;
 	struct stat stat_;
+	string      path_;
 };
 } // namespace slade

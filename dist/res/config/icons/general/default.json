@@ -1,0 +1,556 @@
+{
+  "name": "Default",
+  "icons": {
+    "3d": {
+      "svg": "icons/general/3d.svg"
+    },
+    "aspectratio": {
+      "svg_light": "icons/general/aspectratio.svg",
+      "svg_dark": "icons/general/dark/aspectratio.svg"
+    },
+    "bookmark": {
+      "svg": "icons/general/bookmark.svg"
+    },
+    "bookmark_add": {
+      "svg": "icons/general/bookmark_add.svg"
+    },
+    "bookmark_remove": {
+      "svg": "icons/general/bookmark_remove.svg"
+    },
+    "brush_ci_5": {
+      "png16": "icons/general/16/brush_ci_5.png",
+      "png32": "icons/general/32/brush_ci_5.png"
+    },
+    "brush_ci_7": {
+      "png16": "icons/general/16/brush_ci_7.png",
+      "png32": "icons/general/32/brush_ci_7.png"
+    },
+    "brush_ci_9": {
+      "png16": "icons/general/16/brush_ci_9.png",
+      "png32": "icons/general/32/brush_ci_9.png"
+    },
+    "brush_di_3": {
+      "png16": "icons/general/16/brush_di_3.png",
+      "png32": "icons/general/32/brush_di_3.png"
+    },
+    "brush_di_5": {
+      "png16": "icons/general/16/brush_di_5.png",
+      "png32": "icons/general/32/brush_di_7.png"
+    },
+    "brush_di_7": {
+      "png16": "icons/general/16/brush_di_7.png",
+      "png32": "icons/general/32/brush_di_7.png"
+    },
+    "brush_di_9": {
+      "png16": "icons/general/16/brush_di_9.png",
+      "png32": "icons/general/32/brush_di_9.png"
+    },
+    "brush_pa_a": {
+      "png16": "icons/general/16/brush_pa_a.png",
+      "png32": "icons/general/32/brush_pa_a.png"
+    },
+    "brush_pa_b": {
+      "png16": "icons/general/16/brush_pa_b.png",
+      "png32": "icons/general/32/brush_pa_b.png"
+    },
+    "brush_pa_c": {
+      "png16": "icons/general/16/brush_pa_c.png",
+      "png32": "icons/general/32/brush_pa_c.png"
+    },
+    "brush_pa_d": {
+      "png16": "icons/general/16/brush_pa_d.png",
+      "png32": "icons/general/32/brush_pa_d.png"
+    },
+    "brush_pa_e": {
+      "png16": "icons/general/16/brush_pa_e.png",
+      "png32": "icons/general/32/brush_pa_e.png"
+    },
+    "brush_pa_f": {
+      "png16": "icons/general/16/brush_pa_f.png",
+      "png32": "icons/general/32/brush_pa_f.png"
+    },
+    "brush_pa_g": {
+      "png16": "icons/general/16/brush_pa_g.png",
+      "png32": "icons/general/32/brush_pa_g.png"
+    },
+    "brush_pa_h": {
+      "png16": "icons/general/16/brush_pa_h.png",
+      "png32": "icons/general/32/brush_pa_h.png"
+    },
+    "brush_pa_i": {
+      "png16": "icons/general/16/brush_pa_i.png",
+      "png32": "icons/general/32/brush_pa_i.png"
+    },
+    "brush_pa_j": {
+      "png16": "icons/general/16/brush_pa_j.png",
+      "png32": "icons/general/32/brush_pa_j.png"
+    },
+    "brush_pa_k": {
+      "png16": "icons/general/16/brush_pa_k.png",
+      "png32": "icons/general/32/brush_pa_k.png"
+    },
+    "brush_pa_l": {
+      "png16": "icons/general/16/brush_pa_l.png",
+      "png32": "icons/general/32/brush_pa_l.png"
+    },
+    "brush_pa_m": {
+      "png16": "icons/general/16/brush_pa_m.png",
+      "png32": "icons/general/32/brush_pa_m.png"
+    },
+    "brush_pa_n": {
+      "png16": "icons/general/16/brush_pa_n.png",
+      "png32": "icons/general/32/brush_pa_n.png"
+    },
+    "brush_pa_o": {
+      "png16": "icons/general/16/brush_pa_o.png",
+      "png32": "icons/general/32/brush_pa_o.png"
+    },
+    "brush_sq_1": {
+      "png16": "icons/general/16/brush_sq_1.png",
+      "png32": "icons/general/32/brush_sq_1.png"
+    },
+    "brush_sq_3": {
+      "png16": "icons/general/16/brush_sq_3.png",
+      "png32": "icons/general/32/brush_sq_3.png"
+    },
+    "brush_sq_5": {
+      "png16": "icons/general/16/brush_sq_5.png",
+      "png32": "icons/general/32/brush_sq_5.png"
+    },
+    "brush_sq_7": {
+      "png16": "icons/general/16/brush_sq_7.png",
+      "png32": "icons/general/32/brush_sq_7.png"
+    },
+    "brush_sq_9": {
+      "png16": "icons/general/16/brush_sq_9.png",
+      "png32": "icons/general/32/brush_sq_9.png"
+    },
+    "buildarchive": {
+      "svg": "icons/general/buildarchive.svg"
+    },
+    "close": {
+      "svg": "icons/general/close.svg"
+    },
+    "closeall": {
+      "svg": "icons/general/closeall.svg"
+    },
+    "collapseall": {
+      "svg_light": "icons/general/collapseall.svg",
+      "svg_dark": "icons/general/dark/collapseall.svg"
+    },
+    "colourise": {
+      "svg_light": "icons/general/colourise.svg",
+      "svg_dark": "icons/general/dark/colourise.svg"
+    },
+    "compile": {
+      "svg_light": "icons/general/compile.svg",
+      "svg_dark": "icons/general/dark/compile.svg"
+    },
+    "console": {
+      "svg": "icons/general/console.svg"
+    },
+    "convert": {
+      "svg_light": "icons/general/convert.svg",
+      "svg_dark": "icons/general/dark/convert.svg"
+    },
+    "copy": {
+      "svg_light": "icons/general/copy.svg",
+      "svg_dark": "icons/general/dark/copy.svg"
+    },
+    "crop": {
+      "svg": "icons/general/crop.svg"
+    },
+    "cut": {
+      "svg": "icons/general/cut.svg"
+    },
+    "delete": {
+      "svg": "icons/general/delete.svg"
+    },
+    "down": {
+      "svg_light": "icons/general/down.svg",
+      "svg_dark": "icons/general/dark/down.svg"
+    },
+    "duplicate": {
+      "svg": "icons/general/duplicate.svg"
+    },
+    "exit": {
+      "svg": "icons/general/exit.svg"
+    },
+    "export": {
+      "svg_light": "icons/general/export.svg",
+      "svg_dark": "icons/general/dark/export.svg"
+    },
+    "eye": {
+      "svg_light": "icons/general/eye.svg",
+      "svg_dark": "icons/general/dark/eye.svg"
+    },
+    "filter": {
+      "svg_light": "icons/general/filter.svg",
+      "svg_dark": "icons/general/dark/filter.svg"
+    },
+    "flat_t": {
+      "svg": "icons/general/flat_t.svg"
+    },
+    "flat_u": {
+      "svg": "icons/general/flat_u.svg"
+    },
+    "flat_w": {
+      "svg": "icons/general/flat_w.svg"
+    },
+    "flip": {
+      "svg": "icons/general/flip.svg"
+    },
+    "gfx_drag": {
+      "svg_light": "icons/general/gfx_drag.svg",
+      "svg_dark": "icons/general/dark/gfx_drag.svg"
+    },
+    "gfx_draw": {
+      "svg_light": "icons/general/gfx_draw.svg",
+      "svg_dark": "icons/general/dark/gfx_draw.svg"
+    },
+    "gfx_erase": {
+      "svg_light": "icons/general/gfx_erase.svg",
+      "svg_dark": "icons/general/dark/gfx_erase.svg"
+    },
+    "gfx_translate": {
+      "svg_light": "icons/general/gfx_translate.svg",
+      "svg_dark": "icons/general/dark/gfx_translate.svg"
+    },
+    "gfx_translation": {
+      "svg_light": "icons/general/gfx_translation.svg",
+      "svg_dark": "icons/general/dark/gfx_translation.svg"
+    },
+    "gradient": {
+      "svg": "icons/general/gradient.svg"
+    },
+    "homefolder": {
+      "svg": "icons/general/homefolder.svg"
+    },
+    "import": {
+      "svg": "icons/general/import.svg"
+    },
+    "importdir": {
+      "svg": "icons/general/importdir.svg"
+    },
+    "importfiles": {
+      "svg": "icons/general/importfiles.svg"
+    },
+    "keyboard": {
+      "svg_light": "icons/general/keyboard.svg",
+      "svg_dark": "icons/general/dark/keyboard.svg"
+    },
+    "left": {
+      "svg_light": "icons/general/left.svg",
+      "svg_dark": "icons/general/dark/left.svg"
+    },
+    "lightbulb": {
+      "svg": "icons/general/lightbulb.svg"
+    },
+    "linedraw": {
+      "svg": "icons/general/linedraw.svg"
+    },
+    "lines": {
+      "svg": "icons/general/lines.svg"
+    },
+    "list_flat": {
+      "svg_light": "icons/general/list_flat.svg",
+      "svg_dark": "icons/general/dark/list_flat.svg"
+    },
+    "list_tree": {
+      "svg_light": "icons/general/list_tree.svg",
+      "svg_dark": "icons/general/dark/list_tree.svg"
+    },
+    "logo": {
+      "svg": "icons/general/logo.svg"
+    },
+    "mapeditor": {
+      "svg_light": "icons/general/mapeditor.svg",
+      "svg_dark": "icons/general/dark/mapeditor.svg"
+    },
+    "minus": {
+      "svg_light": "icons/general/minus.svg",
+      "svg_dark": "icons/general/dark/minus.svg"
+    },
+    "mirror": {
+      "svg": "icons/general/mirror.svg"
+    },
+    "newarchive": {
+      "svg": "icons/general/newarchive.svg"
+    },
+    "newentry": {
+      "svg": "icons/general/newentry.svg"
+    },
+    "newfolder": {
+      "svg": "icons/general/newfolder.svg"
+    },
+    "next": {
+      "svg_light": "icons/general/next.svg",
+      "svg_dark": "icons/general/dark/next.svg"
+    },
+    "objectedit": {
+      "svg": "icons/general/objectedit.svg"
+    },
+    "offset": {
+      "svg": "icons/general/offset.svg"
+    },
+    "open": {
+      "svg": "icons/general/open.svg"
+    },
+    "opendir": {
+      "svg": "icons/general/opendir.svg"
+    },
+    "overflow_menu": {
+      "svg_light": "icons/general/overflow_menu.svg",
+      "svg_dark": "icons/general/dark/overflow_menu.svg"
+    },
+    "palette_colourise": {
+      "svg_light": "icons/general/colourise.svg",
+      "svg_dark": "icons/general/dark/colourise.svg"
+    },
+    "palette_delete": {
+      "svg": "icons/general/delete.svg"
+    },
+    "palette_deleteothers": {
+      "svg": "icons/general/palette_deleteothers.svg"
+    },
+    "palette_duplicate": {
+      "svg": "icons/general/duplicate.svg"
+    },
+    "palette_generate": {
+      "svg": "icons/general/palette_generate.svg"
+    },
+    "palette_gradient": {
+      "svg": "icons/general/gradient.svg"
+    },
+    "palette_invert": {
+      "svg_light": "icons/general/palette_invert.svg",
+      "svg_dark": "icons/general/dark/palette_invert.svg"
+    },
+    "palette_pull": {
+      "svg_light": "icons/general/pull.svg",
+      "svg_dark": "icons/general/dark/pull.svg"
+    },
+    "palette_push": {
+      "svg_light": "icons/general/push.svg",
+      "svg_dark": "icons/general/dark/push.svg"
+    },
+    "palette_test": {
+      "svg": "icons/general/palette_test.svg"
+    },
+    "palette_tint": {
+      "svg_light": "icons/general/tint.svg",
+      "svg_dark": "icons/general/dark/tint.svg"
+    },
+    "palette_tweak": {
+      "svg_light": "icons/general/sliders.svg",
+      "svg_dark": "icons/general/dark/sliders.svg"
+    },
+    "paste": {
+      "svg": "icons/general/paste.svg"
+    },
+    "patch_add": {
+      "svg": "icons/general/patch_add.svg"
+    },
+    "patch_back": {
+      "svg": "icons/general/up.svg"
+    },
+    "patch_duplicate": {
+      "svg": "icons/general/duplicate.svg"
+    },
+    "patch_forward": {
+      "svg": "icons/general/down.svg"
+    },
+    "patch_remove": {
+      "svg": "icons/general/delete.svg"
+    },
+    "patch_replace": {
+      "svg": "icons/general/replace.svg"
+    },
+    "pause": {
+      "svg": "icons/general/pause.svg"
+    },
+    "play": {
+      "svg": "icons/general/play.svg"
+    },
+    "plus": {
+      "svg_light": "icons/general/plus.svg",
+      "svg_dark": "icons/general/dark/plus.svg"
+    },
+    "pngopt": {
+      "svg_light": "icons/general/pngopt.svg",
+      "svg_dark": "icons/general/dark/pngopt.svg"
+    },
+    "prev": {
+      "svg_light": "icons/general/prev.svg",
+      "svg_dark": "icons/general/dark/prev.svg"
+    },
+    "properties": {
+      "svg_light": "icons/general/properties.svg",
+      "svg_dark": "icons/general/dark/properties.svg"
+    },
+    "pull": {
+      "svg_light": "icons/general/pull.svg",
+      "svg_dark": "icons/general/dark/pull.svg"
+    },
+    "push": {
+      "svg_light": "icons/general/push.svg",
+      "svg_dark": "icons/general/dark/push.svg"
+    },
+    "redo": {
+      "svg_light": "icons/general/redo.svg",
+      "svg_dark": "icons/general/dark/redo.svg"
+    },
+    "remap": {
+      "svg_light": "icons/general/remap.svg",
+      "svg_dark": "icons/general/dark/remap.svg"
+    },
+    "rename": {
+      "svg": "icons/general/rename.svg"
+    },
+    "renameeach": {
+      "svg": "icons/general/renameeach.svg"
+    },
+    "replace": {
+      "svg": "icons/general/replace.svg"
+    },
+    "reset": {
+      "svg_light": "icons/general/reset.svg",
+      "svg_dark": "icons/general/dark/reset.svg"
+    },
+    "revert": {
+      "svg_light": "icons/general/revert.svg",
+      "svg_dark": "icons/general/dark/revert.svg"
+    },
+    "right": {
+      "svg_light": "icons/general/right.svg",
+      "svg_dark": "icons/general/dark/right.svg"
+    },
+    "rotate": {
+      "svg": "icons/general/rotate.svg"
+    },
+    "run": {
+      "svg": "icons/general/run.svg"
+    },
+    "run_quick": {
+      "svg": "icons/general/run_quick.svg"
+    },
+    "save": {
+      "svg": "icons/general/save.svg"
+    },
+    "saveall": {
+      "svg": "icons/general/saveall.svg"
+    },
+    "saveas": {
+      "svg": "icons/general/saveas.svg"
+    },
+    "script": {
+      "svg_light": "icons/general/script.svg",
+      "svg_dark": "icons/general/dark/script.svg"
+    },
+    "sector_both": {
+      "svg": "icons/general/sector_both.svg"
+    },
+    "sector_ceiling": {
+      "svg": "icons/general/sector_ceiling.svg"
+    },
+    "sector_floor": {
+      "svg": "icons/general/sector_floor.svg"
+    },
+    "sectors": {
+      "svg": "icons/general/sectors.svg"
+    },
+    "settings": {
+      "svg_light": "icons/general/settings.svg",
+      "svg_dark": "icons/general/dark/settings.svg"
+    },
+    "shapedraw": {
+      "svg": "icons/general/shapedraw.svg"
+    },
+    "sliders": {
+      "svg_light": "icons/general/sliders.svg",
+      "svg_dark": "icons/general/dark/sliders.svg"
+    },
+    "sort": {
+      "svg_light": "icons/general/sort.svg",
+      "svg_dark": "icons/general/dark/sort.svg"
+    },
+    "stop": {
+      "svg": "icons/general/stop.svg"
+    },
+    "tex_delete": {
+      "svg": "icons/general/delete.svg"
+    },
+    "tex_export": {
+      "svg": "icons/entry_list/archive.svg"
+    },
+    "tex_extract": {
+      "svg_light": "icons/general/export.svg",
+      "svg_dark": "icons/general/dark/export.svg"
+    },
+    "tex_new": {
+      "svg": "icons/general/tex_new.svg"
+    },
+    "tex_newfile": {
+      "svg": "icons/general/importfiles.svg"
+    },
+    "tex_newpatch": {
+      "svg": "icons/general/patch_add.svg"
+    },
+    "tex_offset": {
+      "svg": "icons/general/offset.svg"
+    },
+    "tex_rename": {
+      "svg": "icons/general/rename.svg"
+    },
+    "tex_renameeach": {
+      "svg": "icons/general/renameeach.svg"
+    },
+    "texeditor": {
+      "svg": "icons/general/texeditor.svg"
+    },
+    "things": {
+      "svg": "icons/general/things.svg"
+    },
+    "tick": {
+      "svg": "icons/general/tick.svg"
+    },
+    "tile": {
+      "svg_light": "icons/general/tile.svg",
+      "svg_dark": "icons/general/dark/tile.svg"
+    },
+    "tint": {
+      "svg_light": "icons/general/tint.svg",
+      "svg_dark": "icons/general/dark/tint.svg"
+    },
+    "undo": {
+      "svg_light": "icons/general/undo.svg",
+      "svg_dark": "icons/general/dark/undo.svg"
+    },
+    "up": {
+      "svg_light": "icons/general/up.svg",
+      "svg_dark": "icons/general/dark/up.svg"
+    },
+    "upfolder": {
+      "svg": "icons/general/upfolder.svg"
+    },
+    "verts": {
+      "svg": "icons/general/verts.svg"
+    },
+    "wiki": {
+      "svg_light": "icons/general/wiki.svg",
+      "svg_dark": "icons/general/dark/wiki.svg"
+    },
+    "wrench": {
+      "svg_light": "icons/general/wrench.svg",
+      "svg_dark": "icons/general/dark/wrench.svg"
+    },
+    "zoom_in": {
+      "svg_light": "icons/general/zoom_in.svg",
+      "svg_dark": "icons/general/dark/zoom_in.svg"
+    },
+    "zoom_out": {
+      "svg_light": "icons/general/zoom_out.svg",
+      "svg_dark": "icons/general/dark/zoom_out.svg"
+    }
+  }
+}

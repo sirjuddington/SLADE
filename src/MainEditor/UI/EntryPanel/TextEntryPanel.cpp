@@ -43,7 +43,7 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Dialogs/SettingsDialog.h"
 #include "UI/Layout.h"
-#include "UI/SToolBar/SToolBar.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -80,28 +80,21 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	panel_fr_->Hide();
 	sizer_main_->Add(panel_fr_, ui::LayoutHelper(this).sfWithLargeBorder(0, wxTOP).Expand());
 
-	// Add 'Text Language' choice to toolbar
-	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
-	auto languages      = wxutil::arrayStringStd(TextLanguage::languageNames());
+	// Text Language dropdown
+	auto languages = wxutil::arrayStringStd(TextLanguage::languageNames());
 	languages.Sort();
 	languages.Insert(wxS("None"), 0, 1);
-	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
+	choice_text_language_ = new wxChoice(toolbar_, -1, wxDefaultPosition, wxDefaultSize, languages);
 	choice_text_language_->Select(0);
-	group_language->addCustomControl(choice_text_language_);
-	toolbar_->addGroup(group_language);
 
-	// Add 'Jump To' choice to toolbar
-	auto group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(FromDIP(200), -1));
-	group_jump_to->addCustomControl(choice_jump_to_);
-	toolbar_->addGroup(group_jump_to);
+	// Jump To dropdown
+	choice_jump_to_ = new wxChoice(toolbar_, -1, wxDefaultPosition, wxSize(FromDIP(200), -1));
 	text_area_->setJumpToControl(choice_jump_to_);
 
-	// Add 'Compile ACS' to end of toolbar
-	toolbar_->addActionGroup("Compile ACS", { "arch_scripts_compileacs" }, true);
-
-	// Add 'Compile DECOHack' to end of toolbar
-	toolbar_->addActionGroup("Compile DECOHack", { "arch_scripts_compiledecohack" }, true);
+	// Setup toolbar
+	toolbar_->registerCustomControl("text_language", choice_text_language_);
+	toolbar_->registerCustomControl("jump_to", choice_jump_to_);
+	toolbar_->loadLayoutFromResource("entry_text_top");
 
 	// Bind events
 	choice_text_language_->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);

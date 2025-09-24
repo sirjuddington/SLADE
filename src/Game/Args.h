@@ -1,5 +1,7 @@
 #pragma once
 
+#include "General/JsonFwd.h"
+
 namespace slade
 {
 namespace game
@@ -39,6 +41,7 @@ namespace game
 		string valueString(int value) const;
 		string speedLabel(int value) const;
 		void   parse(ParseTreeNode* node, SpecialMap* shared_args);
+		void   fromJson(const Json& j, SpecialMap* shared_args);
 	};
 
 	struct ArgSpec

@@ -1,0 +1,8 @@
+{
+  "items": [
+    { "type": "action", "id": "txed_pnames_add" },
+    { "type": "action", "id": "txed_pnames_addfile" },
+    { "type": "action", "id": "txed_pnames_delete" },
+    { "type": "action", "id": "txed_pnames_change" }
+  ]
+}
