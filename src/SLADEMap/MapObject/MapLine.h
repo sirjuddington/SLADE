@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Geometry/Rect.h"
 #include "MapObject.h"
@@ -96,7 +96,7 @@ public:
 	void clearFlag(int flag);
 	void setArg(unsigned index, int value);
 
-	Vec2d  getPoint(Point point) override;
+	Vec2d  getPoint(Point point) const override;
 	Vec2d  start() const;
 	Vec2d  end() const;
 	Seg2d  seg() const;

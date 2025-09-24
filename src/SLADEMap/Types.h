@@ -1,23 +1,33 @@
 #pragma once
 
-namespace slade::map
+namespace slade
 {
-enum class ObjectType : u8
+// TODO: Move to map namespace
+enum class SectorSurfaceType : u8
 {
-	Object = 0,
-	Vertex,
-	Line,
-	Side,
-	Sector,
-	Thing
+	Floor = 1,
+	Ceiling
 };
 
-enum class ObjectPoint
+namespace map
 {
-	Mid = 0,
-	Within,
-	Text
-};
+	enum class ObjectType : u8
+	{
+		Object = 0,
+		Vertex,
+		Line,
+		Side,
+		Sector,
+		Thing
+	};
 
-typedef std::array<int, 5> ArgSet;
-} // namespace slade::map
+	enum class ObjectPoint : u8
+	{
+		Mid = 0,
+		Within,
+		Text
+	};
+
+	typedef std::array<int, 5> ArgSet;
+} // namespace map
+} // namespace slade

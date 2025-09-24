@@ -409,6 +409,10 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	else if (e.LeftDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Left, true);
 	else if (e.RightDown())
+		skip = context_->input().mouseDown(Input::MouseButton::Right);
+	else if (e.RightDClick())
+		skip = context_->input().mouseDown(Input::MouseButton::Right, true);
+	else if (e.MiddleDown())
 	{
 		if (context_->editMode() == Mode::Visual)
 		{
@@ -416,12 +420,8 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			mouse_looking_ = true;
 		}
 		else
-			skip = context_->input().mouseDown(Input::MouseButton::Right);
+			skip = context_->input().mouseDown(Input::MouseButton::Middle);
 	}
-	else if (e.RightDClick())
-		skip = context_->input().mouseDown(Input::MouseButton::Right, true);
-	else if (e.MiddleDown())
-		skip = context_->input().mouseDown(Input::MouseButton::Middle);
 	else if (e.MiddleDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Middle, true);
 	else if (e.Aux1Down())
@@ -455,13 +455,17 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 	if (e.LeftUp())
 		skip = context_->input().mouseUp(Input::MouseButton::Left);
 	else if (e.RightUp())
-	{
-		lockMouse(false);
-		mouse_looking_ = false;
-	}
-	// skip = context_->input().mouseUp(Input::MouseButton::Right);
+		skip = context_->input().mouseUp(Input::MouseButton::Right);
 	else if (e.MiddleUp())
-		skip = context_->input().mouseUp(Input::MouseButton::Middle);
+	{
+		if (context_->editMode() == Mode::Visual)
+		{
+			lockMouse(false);
+			mouse_looking_ = false;
+		}
+		else
+			skip = context_->input().mouseUp(Input::MouseButton::Middle);
+	}
 	else if (e.Aux1Up())
 		skip = context_->input().mouseUp(Input::MouseButton::Mouse4);
 	else if (e.Aux2Up())

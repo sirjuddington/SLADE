@@ -1,8 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include "Geometry/BBox.h"
 #include "Geometry/Plane.h"
 #include "MapObject.h"
+#include "SLADEMap/Types.h"
 
 namespace slade
 {
@@ -14,12 +15,6 @@ class MapSector : public MapObject
 	friend class MapSide;
 
 public:
-	enum SurfaceType
-	{
-		Floor = 1,
-		Ceiling
-	};
-
 	struct Surface
 	{
 		string texture;
@@ -34,45 +29,45 @@ public:
 		}
 	};
 
-	struct ExtraFloor
-	{
-		// TODO merge with surface?
-		enum
-		{
-			// TODO how does vavoom work?  their wiki is always broken
-			// VAVOOM,
-			SOLID     = 1,
-			SWIMMABLE = 2,
-			NONSOLID  = 3,
+	// struct ExtraFloor
+	//{
+	//	// TODO merge with surface?
+	//	enum
+	//	{
+	//		// TODO how does vavoom work?  their wiki is always broken
+	//		// VAVOOM,
+	//		SOLID     = 1,
+	//		SWIMMABLE = 2,
+	//		NONSOLID  = 3,
 
-			DISABLE_LIGHTING      = 1,
-			LIGHTING_INSIDE_ONLY  = 2,
-			INNER_FOG_EFFECT      = 4,
-			FLAT_AT_CEILING       = 8,
-			USE_UPPER_TEXTURE     = 16,
-			USE_LOWER_TEXTURE     = 32,
-			ADDITIVE_TRANSPARENCY = 64,
-		};
+	//		DISABLE_LIGHTING      = 1,
+	//		LIGHTING_INSIDE_ONLY  = 2,
+	//		INNER_FOG_EFFECT      = 4,
+	//		FLAT_AT_CEILING       = 8,
+	//		USE_UPPER_TEXTURE     = 16,
+	//		USE_LOWER_TEXTURE     = 32,
+	//		ADDITIVE_TRANSPARENCY = 64,
+	//	};
 
-		Plane         floor_plane;
-		Plane         ceiling_plane;
-		short         effective_height;
-		short         floor_light;
-		short         ceiling_light;
-		unsigned      control_sector_index;
-		unsigned      control_line_index;
-		int           floor_type;
-		float         alpha;
-		bool          draw_inside;
-		unsigned char flags;
+	//	Plane         floor_plane;
+	//	Plane         ceiling_plane;
+	//	short         effective_height;
+	//	short         floor_light;
+	//	short         ceiling_light;
+	//	unsigned      control_sector_index;
+	//	unsigned      control_line_index;
+	//	int           floor_type;
+	//	float         alpha;
+	//	bool          draw_inside;
+	//	unsigned char flags;
 
-		bool disableLighting() const { return flags & ExtraFloor::DISABLE_LIGHTING; }
-		bool lightingInsideOnly() const { return flags & ExtraFloor::LIGHTING_INSIDE_ONLY; }
-		bool ceilingOnly() const { return flags & ExtraFloor::FLAT_AT_CEILING; }
-		bool useUpperTexture() const { return flags & ExtraFloor::USE_UPPER_TEXTURE; }
-		bool useLowerTexture() const { return flags & ExtraFloor::USE_LOWER_TEXTURE; }
-		bool additiveTransparency() const { return flags & ExtraFloor::ADDITIVE_TRANSPARENCY; }
-	};
+	//	bool disableLighting() const { return flags & ExtraFloor::DISABLE_LIGHTING; }
+	//	bool lightingInsideOnly() const { return flags & ExtraFloor::LIGHTING_INSIDE_ONLY; }
+	//	bool ceilingOnly() const { return flags & ExtraFloor::FLAT_AT_CEILING; }
+	//	bool useUpperTexture() const { return flags & ExtraFloor::USE_UPPER_TEXTURE; }
+	//	bool useLowerTexture() const { return flags & ExtraFloor::USE_LOWER_TEXTURE; }
+	//	bool additiveTransparency() const { return flags & ExtraFloor::ADDITIVE_TRANSPARENCY; }
+	//};
 
 	// UDMF properties
 	inline static const string PROP_TEXFLOOR      = "texturefloor";
@@ -120,18 +115,18 @@ public:
 	void setSpecial(int special);
 	void setTag(int tag);
 
-	template<SurfaceType p> short planeHeight();
-	template<SurfaceType p> Plane plane();
-	template<SurfaceType p> void  setPlane(const Plane& plane);
+	template<SectorSurfaceType p> short planeHeight() const;
+	template<SectorSurfaceType p> Plane plane() const;
+	template<SectorSurfaceType p> void  setPlane(const Plane& plane);
 
-	Vec2d                    getPoint(Point point) override;
+	Vec2d                    getPoint(Point point) const override;
 	void                     resetBBox() { bbox_.reset(); }
-	BBox                     boundingBox();
+	BBox                     boundingBox() const;
 	vector<MapSide*>&        connectedSides() { return connected_sides_; }
 	const vector<MapSide*>&  connectedSides() const { return connected_sides_; }
 	const vector<glm::vec2>& polygonVertices() const;
 	void                     resetPolygon() { poly_needsupdate_ = true; }
-	bool                     containsPoint(const Vec2d& point);
+	bool                     containsPoint(const Vec2d& point) const;
 	double                   distanceTo(const Vec2d& point, double maxdist = -1);
 	bool                     putLines(vector<MapLine*>& list) const;
 	bool                     putVertices(vector<MapVertex*>& list) const;
@@ -141,18 +136,18 @@ public:
 	ColRGBA                  colourAt(int where = 0, bool fullbright = false) const;
 	ColRGBA                  fogColour() const;
 	long                     geometryUpdatedTime() const { return geometry_updated_; }
-	void                     findTextPoint();
+	void                     findTextPoint() const;
 
 	void connectSide(MapSide* side);
 	void disconnectSide(const MapSide* side);
 	void clearConnectedSides() { connected_sides_.clear(); }
 
-	void updateBBox();
+	void updateBBox() const;
 
-	// Extra floors
-	const vector<ExtraFloor>& extraFloors() const { return extra_floors_; }
-	void                      clearExtraFloors() { extra_floors_.clear(); }
-	void                      addExtraFloor(const ExtraFloor& extra_floor, const MapSector& control_sector);
+	//// Extra floors
+	// const vector<ExtraFloor>& extraFloors() const { return extra_floors_; }
+	// void                      clearExtraFloors() { extra_floors_.clear(); }
+	// void                      addExtraFloor(const ExtraFloor& extra_floor, const MapSector& control_sector);
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
@@ -171,38 +166,38 @@ private:
 
 	// Internal info
 	vector<MapSide*>          connected_sides_;
-	BBox                      bbox_;
+	mutable BBox              bbox_;
 	mutable vector<glm::vec2> polygon_triangles_;
 	mutable bool              poly_needsupdate_ = true;
 	mutable long              geometry_updated_ = 0;
-	Vec2d                     text_point_       = {};
-	vector<ExtraFloor>        extra_floors_;
+	mutable Vec2d             text_point_       = {};
+	vector<Surface>           extra_floors_;
 
 	void setGeometryUpdated() const;
 };
 
 // Note: these MUST be inline, or the linker will complain
-template<> inline short MapSector::planeHeight<MapSector::Floor>()
+template<> inline short MapSector::planeHeight<SectorSurfaceType::Floor>() const
 {
 	return floor_.height;
 }
-template<> inline short MapSector::planeHeight<MapSector::Ceiling>()
+template<> inline short MapSector::planeHeight<SectorSurfaceType::Ceiling>() const
 {
 	return ceiling_.height;
 }
-template<> inline Plane MapSector::plane<MapSector::Floor>()
+template<> inline Plane MapSector::plane<SectorSurfaceType::Floor>() const
 {
 	return floor_.plane;
 }
-template<> inline Plane MapSector::plane<MapSector::Ceiling>()
+template<> inline Plane MapSector::plane<SectorSurfaceType::Ceiling>() const
 {
 	return ceiling_.plane;
 }
-template<> inline void MapSector::setPlane<MapSector::Floor>(const Plane& plane)
+template<> inline void MapSector::setPlane<SectorSurfaceType::Floor>(const Plane& plane)
 {
 	setFloorPlane(plane);
 }
-template<> inline void MapSector::setPlane<MapSector::Ceiling>(const Plane& plane)
+template<> inline void MapSector::setPlane<SectorSurfaceType::Ceiling>(const Plane& plane)
 {
 	setCeilingPlane(plane);
 }

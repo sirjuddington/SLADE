@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "MapObject.h"
 #include "SLADEMap/Types.h"
@@ -52,7 +52,7 @@ public:
 	int                id() const { return id_; }
 	int                special() const { return special_; }
 
-	Vec2d getPoint(Point point) override;
+	Vec2d getPoint(Point point) const override;
 
 	int    intProperty(string_view key) const override;
 	double floatProperty(string_view key) const override;

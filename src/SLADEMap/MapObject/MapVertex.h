@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "MapObject.h"
 
@@ -24,7 +24,7 @@ public:
 	double yPos() const { return position_.y; }
 	Vec2d  position() const { return position_; }
 
-	Vec2d getPoint(Point point) override;
+	Vec2d getPoint(Point point) const override;
 
 	void move(double nx, double ny);
 

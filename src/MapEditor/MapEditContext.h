@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Archive/MapDesc.h"
 #include "General/SActionHandler.h"
@@ -10,6 +10,7 @@ class InfoOverlay3D;
 class ItemSelection;
 class LineInfoOverlay;
 class MapCanvas;
+class MapSpecials;
 class MCOverlay;
 class SectorInfoOverlay;
 class ThingInfoOverlay;

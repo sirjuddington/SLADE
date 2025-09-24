@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Edit3D.h"
+#include "../../SLADEMap/MapSpecials/MapSpecials.h"
 #include "Game/Configuration.h"
 #include "General/UndoRedo.h"
 #include "MapEditor/ItemSelection.h"
@@ -373,6 +374,7 @@ void Edit3D::changeSectorHeight(int amount) const
 
 			// Change height
 			sector->setCeilingHeight(sector->ceiling().height + amount);
+			context_->map().mapSpecials().sectorUpdated(*sector);
 
 			// Set to changed
 			ceilings.push_back(index);
@@ -404,6 +406,8 @@ void Edit3D::changeSectorHeight(int amount) const
 				// Set to changed
 				ceilings.push_back(sector->index());
 			}
+
+			context_->map().mapSpecials().sectorUpdated(*sector);
 		}
 	}
 
@@ -1115,7 +1119,6 @@ void Edit3D::changeThingZ(int amount) const
 
 	// Go through 3d selection
 	auto& selection_3d = context_->selection();
-	bool  changed      = false;
 	for (auto& item : selection_3d)
 	{
 		// Check if thing
@@ -1126,12 +1129,9 @@ void Edit3D::changeThingZ(int amount) const
 			double z = thing->zPos();
 			z += amount;
 			thing->setZ(z);
-			changed = true;
+			context_->map().mapSpecials().thingUpdated(*thing);
 		}
 	}
-
-	if (changed)
-		context_->map().recomputeSpecials();
 }
 
 // -----------------------------------------------------------------------------
@@ -1279,6 +1279,7 @@ void Edit3D::changeHeight(int amount) const
 			double z = thing->zPos();
 			z += amount;
 			thing->setZ(z);
+			context_->map().mapSpecials().thingUpdated(*thing);
 		}
 
 		// Wall
@@ -1313,6 +1314,7 @@ void Edit3D::changeHeight(int amount) const
 				sector->setFloorHeight(sector->floor().height + amount);
 			else if (type == ItemType::Ceiling)
 				sector->setCeilingHeight(sector->ceiling().height + amount);
+			context_->map().mapSpecials().sectorUpdated(*sector);
 		}
 	}
 
