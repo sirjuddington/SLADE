@@ -1155,6 +1155,8 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 // -----------------------------------------------------------------------------
 // Attempts to compile [entry] as DECOHack.
+// If no [target] DEHACKED entry is given, it will try to find one in the same
+// archive, or create one if it doesn't exist
 // -----------------------------------------------------------------------------
 bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target, wxFrame* parent)
 {
@@ -1272,20 +1274,21 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 	bool success = fileutil::fileExists(dehfile);
 	if (success)
 	{
-		// If no target entry was given, find one
+		// If no target DEHACKED entry was given, find or create one
 		if (!target)
 		{
-			// Get entry before DECOHACK
-			auto prev = archive->entryAt(archive->entryIndex(entry) - 1);
+			// Try to find existing DEHACKED entry
+			Archive::SearchOptions opt;
+			opt.match_name = "DEHACKED";
+			target         = archive->findLast(opt);
 
-			// Create a new entry there
-			prev = archive->addNewEntry("DEHACKED", archive->entryIndex(entry)).get();
-
-			// Import compiled dehacked
-			prev->importFile(dehfile);
+			// Create a new DEHACKED entry if it doesn't exist
+			if (!target)
+				target = archive->addNewEntry("DEHACKED", archive->entryIndex(entry)).get();
 		}
-		else
-			target->importFile(dehfile);
+
+		// Import compiled DEHACKED
+		target->importFile(dehfile);
 
 		// Delete compiled script file
 		fileutil::removeFile(dehfile);
@@ -1386,7 +1389,7 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Run PNGCrush
 	if (!pngpathc.empty() && fileutil::fileExists(pngpathc))
 	{
-		string tmppath = app::path("", app::Dir::Temp) += "opt";
+		string        tmppath = app::path("", app::Dir::Temp) += "opt";
 		strutil::Path fn(tmppath);
 		fn.setExtension("opt");
 		string pngfile = fn.fullPath();
@@ -1439,7 +1442,7 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Run PNGOut
 	if (!pngpatho.empty() && fileutil::fileExists(pngpatho))
 	{
-		string tmppath = app::path("", app::Dir::Temp) += "opt";
+		string        tmppath = app::path("", app::Dir::Temp) += "opt";
 		strutil::Path fn(tmppath);
 		fn.setExtension("opt");
 		string pngfile = fn.fullPath();
@@ -1493,7 +1496,7 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	// Run deflopt
 	if (!pngpathd.empty() && fileutil::fileExists(pngpathd))
 	{
-		string tmppath = app::path("", app::Dir::Temp) += "opt";
+		string        tmppath = app::path("", app::Dir::Temp) += "opt";
 		strutil::Path fn(tmppath);
 		fn.setExtension("png");
 		string pngfile = fn.fullPath();
