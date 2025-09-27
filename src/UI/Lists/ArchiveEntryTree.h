@@ -83,8 +83,8 @@ namespace ui
 
 		bool matchesFilter(const ArchiveEntry& entry) const;
 		void getDirChildItems(wxDataViewItemArray& items, const ArchiveDir& dir, bool filter = true) const;
-		bool entryIsInList(const ArchiveEntry& entry) const;
-		bool dirIsInList(const ArchiveDir& dir) const;
+		bool entryIsInList(const ArchiveEntry& entry, bool filter = true) const;
+		bool dirIsInList(const ArchiveDir& dir, bool filter = true) const;
 	};
 
 	class ArchiveEntryTree : public wxDataViewCtrl
