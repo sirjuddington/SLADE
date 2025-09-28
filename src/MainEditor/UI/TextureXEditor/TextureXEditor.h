@@ -23,12 +23,13 @@ public:
 	UndoManager* undoManager() const { return undo_manager_.get(); }
 
 	bool openArchive(Archive* archive);
+	bool openEntry(ArchiveEntry* tx_entry);
 	void updateTexturePalette();
 	void saveChanges();
 	bool close();
 	void showTextureMenu(bool show = true) const;
-	void setSelection(size_t index) const;
-	void setSelection(ArchiveEntry* entry) const;
+	bool setSelection(size_t index) const;
+	bool setSelection(ArchiveEntry* entry) const;
 	void updateMenuStatus() const;
 	void undo();
 	void redo();
@@ -54,8 +55,9 @@ private:
 	unique_ptr<UndoManager> undo_manager_  = nullptr;
 
 	// UI Stuff
-	TabControl* tabs_         = nullptr;
-	wxMenu*     menu_texture_ = nullptr;
+	TabControl* tabs_             = nullptr;
+	wxMenu*     menu_texture_     = nullptr;
+	int         pnames_tab_index_ = -1;
 
 	bool pb_update_       = true;
 	bool pnames_modified_ = false;

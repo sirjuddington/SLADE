@@ -909,7 +909,12 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 			{
 				// Selected archive already has its texture editor open, so show that tab
 				stc_archives_->SetSelection(a);
-				txed->setSelection(entry);
+				if (entry && !txed->setSelection(entry))
+				{
+					// Texture entry isn't open in the editor, open it
+					txed->openEntry(entry);
+					txed->setSelection(entry);
+				}
 				return;
 			}
 		}
@@ -918,7 +923,12 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 		maineditor::window()->Freeze();
 		auto txed = new TextureXEditor(stc_archives_);
 		txed->Show(false);
-		if (!txed->openArchive(archive.get()))
+		bool ok = false;
+		if (entry)
+			ok = txed->openEntry(entry);
+		else
+			ok = txed->openArchive(archive.get());
+		if (!ok)
 		{
 			delete txed;
 			maineditor::window()->Thaw();
