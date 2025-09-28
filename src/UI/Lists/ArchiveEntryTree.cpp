@@ -195,7 +195,7 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 	connections_ += archive->signals().entry_removed.connect(
 		[this](Archive& archive, ArchiveDir& dir, ArchiveEntry& entry)
 		{
-			if (entryIsInList(entry))
+			if (entryIsInList(entry, true, &archive, &dir))
 			{
 				if (view_type_ == ViewType::Tree)
 					ItemDeleted(createItemForDirectory(dir), wxDataViewItem(&entry));
@@ -229,7 +229,7 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 	connections_ += archive->signals().dir_removed.connect(
 		[this](Archive& archive, ArchiveDir& parent, ArchiveDir& dir)
 		{
-			if (dirIsInList(dir))
+			if (dirIsInList(dir, true, &parent))
 			{
 				if (view_type_ == ViewType::Tree)
 					ItemDeleted(createItemForDirectory(parent), wxDataViewItem(dir.dirEntry()));
@@ -811,14 +811,25 @@ void ArchiveViewModel::getDirChildItems(wxDataViewItemArray& items, const Archiv
 
 // -----------------------------------------------------------------------------
 // Returns true if [entry] is contained within the current list.
-// If [filter] is true, also checks if the entry matches the current filter
+// If [filter] is true, also checks if the entry matches the current filter.
+// [parent_archive] and [parent_dir] are used in the case where [entry] has
+// been deleted and removed from its parent archive/dir
 // -----------------------------------------------------------------------------
-bool ArchiveViewModel::entryIsInList(const ArchiveEntry& entry, bool filter) const
+bool ArchiveViewModel::entryIsInList(
+	const ArchiveEntry& entry,
+	bool                filter,
+	const Archive*      parent_archive,
+	const ArchiveDir*   parent_dir) const
 {
+	if (!parent_archive)
+		parent_archive = entry.parent();
+	if (!parent_dir)
+		parent_dir = entry.parentDir();
+
 	if (auto archive = archive_.lock())
 	{
 		// Check entry is in archive
-		if (entry.parent() != archive.get())
+		if (parent_archive != archive.get())
 			return false;
 
 		// Check filter
@@ -826,7 +837,7 @@ bool ArchiveViewModel::entryIsInList(const ArchiveEntry& entry, bool filter) con
 			return false;
 
 		// For list view, check if entry is in current dir
-		if (view_type_ == ViewType::List && entry.parentDir() != root_dir_.lock().get())
+		if (view_type_ == ViewType::List && parent_dir != root_dir_.lock().get())
 			return false;
 
 		return true;
@@ -837,16 +848,21 @@ bool ArchiveViewModel::entryIsInList(const ArchiveEntry& entry, bool filter) con
 
 // -----------------------------------------------------------------------------
 // Returns true if [dir] is contained within the current list.
-// If [filter] is true, also checks if the dir matches the current filter
+// If [filter] is true, also checks if the dir matches the current filter.
+// [parent_dir] is used in the case where [dir] has been deleted and removed
+// from its parent dir
 // -----------------------------------------------------------------------------
-bool ArchiveViewModel::dirIsInList(const ArchiveDir& dir, bool filter) const
+bool ArchiveViewModel::dirIsInList(const ArchiveDir& dir, bool filter, const ArchiveDir* parent_dir) const
 {
 	if (elist_filter_dirs && filter && !matchesFilter(*dir.dirEntry()))
 		return false;
 
+	if (!parent_dir)
+		parent_dir = dir.parent().get();
+
 	switch (view_type_)
 	{
-	case ViewType::List: return dir.parent() == root_dir_.lock();
+	case ViewType::List: return parent_dir == root_dir_.lock().get();
 	default: return true;
 	}
 }
