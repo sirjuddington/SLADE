@@ -458,7 +458,9 @@ bool SLADEWxApp::OnInit()
 
 	// Load image handlers
 	wxInitAllImageHandlers();
+#if !wxCHECK_VERSION(3, 3, 0)
 	wxImage::AddHandler(new WxWebpHandler);
+#endif
 
 #ifdef __APPLE__
 	// Should be constant, wxWidgets Cocoa backend scales everything under the hood
