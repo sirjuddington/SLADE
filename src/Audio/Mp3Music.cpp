@@ -15,13 +15,13 @@ struct Mp3MemoryData
 	off_t  offset;
 };
 
-ssize_t memoryDataRead(void* raw_mp3_data, void* buffer, size_t nbyte)
+mpg123_ssize_t memoryDataRead(void* raw_mp3_data, void* buffer, size_t nbyte)
 {
 	auto mp3_data = static_cast<Mp3MemoryData*>(raw_mp3_data);
 	if (mp3_data->offset >= (ssize_t)mp3_data->size)
 	{
 		memset(buffer, 0, nbyte);
-		return (ssize_t)0;
+		return (mpg123_ssize_t)0;
 	}
 	else if (mp3_data->offset + (ssize_t)nbyte > (ssize_t)mp3_data->size)
 	{
@@ -30,13 +30,13 @@ ssize_t memoryDataRead(void* raw_mp3_data, void* buffer, size_t nbyte)
 		memcpy(buffer, (unsigned char*)mp3_data->data + mp3_data->offset, read_size);
 		memset(buffer, 0, mem_set_size);
 		mp3_data->offset += read_size;
-		return (ssize_t)read_size;
+		return (mpg123_ssize_t)read_size;
 	}
 	else
 	{
 		memcpy(buffer, (unsigned char*)mp3_data->data + mp3_data->offset, nbyte);
 		mp3_data->offset += nbyte;
-		return (ssize_t)nbyte;
+		return (mpg123_ssize_t)nbyte;
 	}
 }
 
