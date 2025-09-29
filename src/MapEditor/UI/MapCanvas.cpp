@@ -355,27 +355,29 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 
 	// Send to editor context
 	bool skip = true;
+	auto x    = e.GetX() * GetContentScaleFactor();
+	auto y    = e.GetY() * GetContentScaleFactor();
 	context_->input().updateKeyModifiersWx(e.GetModifiers());
 	if (e.LeftDown())
-		skip = context_->input().mouseDown(Input::MouseButton::Left);
+		skip = context_->input().mouseDown(Input::MouseButton::Left, x, y);
 	else if (e.LeftDClick())
-		skip = context_->input().mouseDown(Input::MouseButton::Left, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Left, x, y, true);
 	else if (e.RightDown())
-		skip = context_->input().mouseDown(Input::MouseButton::Right);
+		skip = context_->input().mouseDown(Input::MouseButton::Right, x, y);
 	else if (e.RightDClick())
-		skip = context_->input().mouseDown(Input::MouseButton::Right, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Right, x, y, true);
 	else if (e.MiddleDown())
-		skip = context_->input().mouseDown(Input::MouseButton::Middle);
+		skip = context_->input().mouseDown(Input::MouseButton::Middle, x, y);
 	else if (e.MiddleDClick())
-		skip = context_->input().mouseDown(Input::MouseButton::Middle, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Middle, x, y, true);
 	else if (e.Aux1Down())
-		skip = context_->input().mouseDown(Input::MouseButton::Mouse4);
+		skip = context_->input().mouseDown(Input::MouseButton::Mouse4, x, y);
 	else if (e.Aux1DClick())
-		skip = context_->input().mouseDown(Input::MouseButton::Mouse4, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Mouse4, x, y, true);
 	else if (e.Aux2Down())
-		skip = context_->input().mouseDown(Input::MouseButton::Mouse5);
+		skip = context_->input().mouseDown(Input::MouseButton::Mouse5, x, y);
 	else if (e.Aux2DClick())
-		skip = context_->input().mouseDown(Input::MouseButton::Mouse5, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Mouse5, x, y, true);
 
 	if (skip)
 	{

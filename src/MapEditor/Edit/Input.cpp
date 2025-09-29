@@ -194,16 +194,18 @@ bool Input::mouseMove(int new_x, int new_y)
 }
 
 // -----------------------------------------------------------------------------
-// Handles mouse [button] press on the map editor view.
+// Handles mouse [button] press at [x,y] on the map editor view.
 // If [double_click] is true, this is a double-click event
 // -----------------------------------------------------------------------------
-bool Input::mouseDown(MouseButton button, bool double_click)
+bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 {
 	// Update hilight
 	if (mouse_state_ == MouseState::Normal)
 		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
 
 	// Update mouse variables
+	mouse_pos_                 = { x, y };
+	mouse_pos_map_             = context_.renderer().view().canvasPos(mouse_pos_);
 	mouse_down_pos_            = mouse_pos_;
 	mouse_down_pos_map_        = mouse_pos_map_;
 	mouse_button_down_[button] = true;

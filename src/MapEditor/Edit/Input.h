@@ -58,7 +58,7 @@ namespace mapeditor
 		// Mouse handling
 		void setMouseState(MouseState state) { mouse_state_ = state; }
 		bool mouseMove(int new_x, int new_y);
-		bool mouseDown(MouseButton button, bool double_click = false);
+		bool mouseDown(MouseButton button, int x, int y, bool double_click = false);
 		bool mouseUp(MouseButton button);
 		void mouseWheel(bool up, double amount);
 		void mouseLeave();
