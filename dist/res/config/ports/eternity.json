@@ -38,6 +38,8 @@
 
     // Doom map format configuration
     {
+      "filter": { "map_format": "doom" },
+
       // Enable boom extensions
       "boom": true,
       "boom_sector_flag_start": 32,
@@ -54,6 +56,8 @@
 
     // UDMF map format configuration
     {
+      "filter": { "map_format": "udmf" },
+
       "boom_sector_flag_start": 0,
 
       // UDMF namespace
