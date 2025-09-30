@@ -1,3 +1,4 @@
+#if !wxCHECK_VERSION(3, 3, 0)
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
@@ -228,3 +229,5 @@ bool WxWebpHandler::DoCanRead(wxInputStream& stream)
 	}
 	return std::string(buffer, 4) == riff && std::string(&buffer[8], 4) == webp;
 }
+
+#endif

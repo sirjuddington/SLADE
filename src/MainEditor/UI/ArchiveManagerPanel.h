@@ -63,7 +63,7 @@ public:
 	ArchivePanel*   tabForArchive(const Archive* archive) const;
 	void            openTab(const Archive* archive) const;
 	void            closeTab(int archive_index) const;
-	void            openTextureTab(int archive_index, const ArchiveEntry* entry = nullptr) const;
+	void            openTextureTab(int archive_index, ArchiveEntry* entry = nullptr) const;
 	TextureXEditor* textureTabForArchive(int archive_index) const;
 	void            closeTextureTab(int archive_index) const;
 	void            openEntryTab(ArchiveEntry* entry) const;
@@ -140,7 +140,7 @@ private:
 	bool                 asked_save_unchanged_        = false;
 	bool                 checked_dir_archive_changes_ = false;
 	vector<Archive*>     checking_archives_;
-	vector<string>   recent_files_;
+	vector<string>       recent_files_;
 
 	// Signal connections
 	ScopedConnectionList signal_connections;

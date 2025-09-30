@@ -113,7 +113,7 @@ vector<ArchiveEntry*> maineditor::currentEntrySelection()
 // -----------------------------------------------------------------------------
 // Opens the texture editor for the current archive tab
 // -----------------------------------------------------------------------------
-void maineditor::openTextureEditor(const Archive* archive, const ArchiveEntry* entry)
+void maineditor::openTextureEditor(const Archive* archive, ArchiveEntry* entry)
 {
 	main_window->archiveManagerPanel()->openTextureTab(app::archiveManager().archiveIndex(archive), entry);
 }

@@ -30,7 +30,13 @@
       { "value": 2048, "name": "Translucent", "udmf": [ "translucent" ] },
       { "value": 4096, "name": "Invisible", "udmf": [ "invisible" ] },
       { "value": 8192, "name": "Ally", "udmf": [ "strifeally" ] },
-      { "value": 16384, "name": "Stand Still", "udmf": [ "standing" ] },
+      { "value": 16384, "name": "Stand Still", "udmf": [ "standing" ] }
+    ]
+  },
+
+  // UDMF map format only
+  "udmf": {
+    "flags": [
       { "value": 524288, "name": "Count as Secret", "udmf": [ "countsecret" ] },
       { "value": 2097152, "name": "Does Not Count", "udmf": [ "nocount" ] }
     ]

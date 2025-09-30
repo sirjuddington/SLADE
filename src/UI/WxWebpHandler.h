@@ -1,7 +1,8 @@
 #pragma once
 
-// Adapted from https://github.com/hoehermann/wxWEBPHandler
+#if !wxCHECK_VERSION(3, 3, 0) // WebP support is built in to wx in 3.3.0+
 
+// Adapted from https://github.com/hoehermann/wxWEBPHandler
 class WxWebpHandler : public wxImageHandler
 {
 public:
@@ -23,3 +24,5 @@ protected:
 private:
 	wxDECLARE_DYNAMIC_CLASS(WxWebpHandler);
 };
+
+#endif
