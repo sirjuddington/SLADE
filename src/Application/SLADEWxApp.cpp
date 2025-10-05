@@ -459,7 +459,9 @@ bool SLADEWxApp::OnInit()
 
 	// Load image handlers
 	wxInitAllImageHandlers();
+#if !wxCHECK_VERSION(3, 3, 0)
 	wxImage::AddHandler(new WxWebpHandler);
+#endif
 
 	// Get Windows version
 #ifdef __WXMSW__

@@ -194,6 +194,11 @@
             "key": "hexen"
           }
         ]
+      },
+
+      // Thing flags
+      "thing_flags": {
+        "import": [ { "file": "include/thing_flags/zdoom.json", "key": "udmf" } ]
       }
     }
   ]

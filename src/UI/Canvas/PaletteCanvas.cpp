@@ -92,14 +92,22 @@ ColRGBA PaletteCanvas::selectedColour() const
 // -----------------------------------------------------------------------------
 void PaletteCanvas::setSelection(int begin, int end)
 {
+	auto prev_begin = sel_begin_;
+	auto prev_end   = sel_end_;
+
 	sel_begin_ = begin;
 	if (end == -1)
 		sel_end_ = begin;
 	else
 		sel_end_ = end;
 
-	updateBuffer(true);
-	Refresh();
+	// Refresh if the selection was changed
+	if (sel_begin_ != prev_begin || sel_end_ != prev_end)
+	{
+		updateBuffer(true);
+		Update();
+		Refresh();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -361,9 +369,6 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 			int sel = y * cols + x;
 			if (sel > sel_begin_)
 				setSelection(sel_begin_, sel);
-
-			updateBuffer(true);
-			Refresh();
 		}
 	}
 }

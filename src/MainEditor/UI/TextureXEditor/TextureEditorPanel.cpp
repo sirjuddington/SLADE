@@ -649,7 +649,8 @@ void TextureEditorPanel::replacePatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(false);
-	int patch = tx_editor_->browsePatchTable(pname);
+	hack_nodrag = true;
+	int patch   = tx_editor_->browsePatchTable(pname);
 	if (patch >= 0)
 	{
 		// Go through selection and replace each patch

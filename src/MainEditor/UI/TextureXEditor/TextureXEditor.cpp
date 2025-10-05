@@ -303,8 +303,19 @@ bool TextureXEditor::openArchive(Archive* archive)
 	}
 
 	// Open texture editor tabs
+	auto count = 0;
 	for (auto& tx_entry : tx_entries)
 	{
+		if (count++ == 6)
+		{
+			wxMessageBox(
+				wxS("Too many TEXTURE1/2 entries exist in the archive, to open any past the first 5, double click the "
+					"entry individually"),
+				wxS("Warning"),
+				wxICON_WARNING);
+			break;
+		}
+
 		auto tx_panel = new TextureXPanel(tabs_, *this);
 
 		// Init texture panel
@@ -333,6 +344,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 		auto ptp = new PatchTablePanel(tabs_, patch_table_.get(), this);
 		tabs_->AddPage(ptp, wxS("Patch Table (PNAMES)"));
 		ptp->SetName(wxS("pnames"));
+		pnames_tab_index_ = tabs_->GetPageCount() - 1;
 	}
 
 	// Search archive for TEXTURES entries
@@ -340,7 +352,146 @@ bool TextureXEditor::openArchive(Archive* archive)
 	auto ztx_entries   = archive->findAll(options);
 
 	// Open texture editor tabs
-	for (auto& ztx_entrie : ztx_entries)
+	count = 0;
+	for (auto& ztx_entry : ztx_entries)
+	{
+		if (count++ == 6)
+		{
+			wxMessageBox(
+				wxS("Too many TEXTURES entries exist in the archive, to open any past the first 5, double click the "
+					"entry individually"),
+				wxS("Warning"),
+				wxICON_WARNING);
+			break;
+		}
+
+		auto tx_panel = new TextureXPanel(tabs_, *this);
+
+		// Init texture panel
+		tx_panel->Show(false);
+
+		// Open TEXTURES entry
+		if (tx_panel->openTEXTUREX(ztx_entry))
+		{
+			// Set palette
+			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
+			// Lock entry
+			ztx_entry->lock();
+
+			// Add it to the list of editors, and a tab
+			tx_panel->SetName(wxS("textures"));
+			texture_editors_.push_back(tx_panel);
+			tabs_->AddPage(tx_panel, wxString::FromUTF8(ztx_entry->name()));
+		}
+
+		tx_panel->Show(true);
+	}
+
+	// Update layout
+	Layout();
+	tabs_->Refresh();
+
+	// Update variables
+	archive_         = archive;
+	pnames_modified_ = false;
+
+	// Lock pnames entry if it exists
+	if (pnames_)
+		pnames_->lock();
+
+	// Set global palette
+	theMainWindow->paletteChooser()->setGlobalFromArchive(archive);
+
+	// Setup patch browser
+	if (patch_table_->nPatches() > 0)
+		patch_browser_->openPatchTable(patch_table_.get());
+	else
+		patch_browser_->openArchive(archive);
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Opens a single texture entry (TEXTUREx or TEXTURES) in the editor
+// -----------------------------------------------------------------------------
+bool TextureXEditor::openEntry(ArchiveEntry* tx_entry)
+{
+	// Check entry archive
+	auto archive = tx_entry->parent();
+	if (!archive)
+		return false;
+
+	// Check entry type
+	auto type = tx_entry->type()->id();
+	if (type != "texturex" && type != "zdtextures")
+		return false;
+
+	// If any TEXTURE1/2 entries were found, setup patch table stuff
+	bool pnames_loaded = false;
+	if (type == "texturex" && !pnames_)
+	{
+		// Search archive for PNAMES entry
+		ArchiveSearchOptions options;
+		options.match_type = EntryType::fromId("pnames");
+		auto entry_pnames  = archive->findLast(options); // Find last PNAMES entry
+
+		// Todo: Jaguar textures don't use PNAMES, so skip following checks if all texture entries are in Jaguar mode
+		// TODO: Probably a better idea here to get the user to select an archive to import the patch table from
+		// If no PNAMES entry was found, search resource archives
+		if (!entry_pnames)
+		{
+			ArchiveSearchOptions opt;
+			opt.match_type = EntryType::fromId("pnames");
+			entry_pnames   = app::archiveManager().findResourceEntry(opt, archive);
+		}
+		else
+			pnames_ = entry_pnames; // If PNAMES was found in the archive,
+		// set the class variable so it is written to if modified
+
+		// If no PNAMES entry is found at all, show an error and abort
+		// TODO: ask user to select appropriate base resource archive
+		if (!entry_pnames)
+		{
+			wxMessageBox(wxS("PNAMES entry not found!"), wxS("Error"), wxICON_ERROR);
+			return false;
+		}
+
+		// Load patch table
+		patch_table_->loadPNAMES(entry_pnames, archive);
+
+		pnames_loaded = true;
+	}
+
+	// Open TEXTUREx
+	if (type == "texturex")
+	{
+		auto tx_panel = new TextureXPanel(tabs_, *this);
+
+		// Init texture panel
+		tx_panel->Show(false);
+
+		// Open TEXTUREX entry
+		if (tx_panel->openTEXTUREX(tx_entry))
+		{
+			// Set palette
+			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
+			// Lock entry
+			tx_entry->lock();
+
+			// Add it to the list of editors, and a tab
+			tx_panel->SetName(wxS("textures"));
+			texture_editors_.push_back(tx_panel);
+			if (pnames_tab_index_ < 0)
+				tabs_->AddPage(tx_panel, wxString::FromUTF8(tx_entry->name()));
+			else
+				tabs_->InsertPage(pnames_tab_index_, tx_panel, wxString::FromUTF8(tx_entry->name()));
+		}
+
+		tx_panel->Show(true);
+	}
+
+	// Open TEXTURES
+	else if (type == "zdtextures")
 	{
 		auto tx_panel = new TextureXPanel(tabs_, *this);
 
@@ -348,20 +499,32 @@ bool TextureXEditor::openArchive(Archive* archive)
 		tx_panel->Show(false);
 
 		// Open TEXTURES entry
-		if (tx_panel->openTEXTUREX(ztx_entrie))
+		if (tx_panel->openTEXTUREX(tx_entry))
 		{
 			// Set palette
 			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 			// Lock entry
-			ztx_entrie->lock();
+			tx_entry->lock();
 
 			// Add it to the list of editors, and a tab
 			tx_panel->SetName(wxS("textures"));
 			texture_editors_.push_back(tx_panel);
-			tabs_->AddPage(tx_panel, wxString::FromUTF8(ztx_entrie->name()));
+			if (pnames_tab_index_ < 0)
+				tabs_->AddPage(tx_panel, wxString::FromUTF8(tx_entry->name()));
+			else
+				tabs_->InsertPage(pnames_tab_index_, tx_panel, wxString::FromUTF8(tx_entry->name()));
 		}
 
 		tx_panel->Show(true);
+	}
+
+	// Open patch table tab if needed
+	if (pnames_loaded)
+	{
+		auto ptp = new PatchTablePanel(tabs_, patch_table_.get(), this);
+		tabs_->AddPage(ptp, wxS("Patch Table (PNAMES)"));
+		ptp->SetName(wxS("pnames"));
+		pnames_tab_index_ = tabs_->GetPageCount() - 1;
 	}
 
 	// Update layout
@@ -638,19 +801,23 @@ bool TextureXEditor::checkTextures()
 // Sets the active tab to be the one corresponding to the given entry index or
 // entry.
 // -----------------------------------------------------------------------------
-void TextureXEditor::setSelection(size_t index) const
+bool TextureXEditor::setSelection(size_t index) const
 {
 	if (index < tabs_->GetPageCount() && index != tabs_->GetSelection())
+	{
 		tabs_->SetSelection(index);
+		return true;
+	}
+	return false;
 }
-void TextureXEditor::setSelection(const ArchiveEntry* entry) const
+bool TextureXEditor::setSelection(const ArchiveEntry* entry) const
 {
 	for (size_t a = 0; a < tabs_->GetPageCount(); a++)
 	{
 		if (S_CMPNOCASE(tabs_->GetPage(a)->GetName(), wxS("pnames")) && (entry == pnames_))
 		{
 			tabs_->SetSelection(a);
-			return;
+			return true;
 		}
 		else if (S_CMPNOCASE(tabs_->GetPage(a)->GetName(), wxS("textures")))
 		{
@@ -658,10 +825,12 @@ void TextureXEditor::setSelection(const ArchiveEntry* entry) const
 			if (txp->txEntry() == entry)
 			{
 				tabs_->SetSelection(a);
-				return;
+				return true;
 			}
 		}
 	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

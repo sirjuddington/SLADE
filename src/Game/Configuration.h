@@ -110,23 +110,8 @@ public:
 	bool featureSupported(Feature feature) const { return supported_features_[static_cast<int>(feature)]; }
 	bool featureSupported(UDMFFeature feature) const { return udmf_features_[static_cast<int>(feature)]; }
 
-	// Configuration reading
-	void readActionSpecials(
-		ParseTreeNode*       node,
-		Arg::SpecialMap&     shared_args,
-		const ActionSpecial* group_defaults = nullptr);
-	void readThingTypes(const ParseTreeNode* node, const ThingType* group_defaults = nullptr);
-	void readUDMFProperties(const ParseTreeNode* block, UDMFPropMap& plist) const;
-	void readGameSection(const ParseTreeNode* node_game, bool port_section = false);
-	bool readConfiguration(
-		string_view cfg,
-		string_view source      = "",
-		MapFormat   format      = MapFormat::Unknown,
-		bool        ignore_game = false,
-		bool        clear       = true);
-	bool openConfig(const string& game, const string& port = "", MapFormat format = MapFormat::Unknown);
-
 	// JSON Configuration reading
+	bool openConfig(const string& game, const string& port = "", MapFormat format = MapFormat::Unknown);
 	bool readGameConfiguration(const Json& j, ConfigDesc desc, ArchiveEntry* entry = nullptr);
 	void readConfigurationSection(const Json& j, ConfigDesc cfg, ArchiveEntry* entry = nullptr);
 	void readActionSpecials(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
