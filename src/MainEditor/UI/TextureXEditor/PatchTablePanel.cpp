@@ -203,11 +203,6 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	patch_table_{ patch_table },
 	parent_{ tx_editor }
 {
-	setupLayout();
-
-	// Bind events
-	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
-
 	// Update when main palette changed
 	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]()
 																							 { updateDisplay(); });
@@ -250,6 +245,9 @@ void PatchTablePanel::setupLayout()
 	framesizer->Add(patch_canvas_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	framesizer->Add(label_dimensions_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	framesizer->Add(label_textures_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+
+	// Bind events
+	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
 }
 
 // -----------------------------------------------------------------------------
