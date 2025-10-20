@@ -50,6 +50,7 @@ public:
 	TextureEditorPanel* textureEditor() const { return texture_editor_; }
 
 	bool openTEXTUREX(ArchiveEntry* entry);
+	void setupUI(); // Call after successful openTEXTUREX
 	bool saveTEXTUREX();
 	void setPalette(Palette* pal) const;
 	void applyChanges();

@@ -314,8 +314,6 @@ bool TextureXEditor::openArchive(Archive* archive)
 		// Open TEXTUREX entry
 		if (tx_panel->openTEXTUREX(tx_entry))
 		{
-			// Set palette
-			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 			// Lock entry
 			tx_entry->lock();
 
@@ -323,6 +321,9 @@ bool TextureXEditor::openArchive(Archive* archive)
 			tx_panel->SetName(wxS("textures"));
 			texture_editors_.push_back(tx_panel);
 			tabs_->AddPage(tx_panel, wxString::FromUTF8(tx_entry->name()));
+
+			tx_panel->setupUI();
+			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 		}
 
 		tx_panel->Show(true);
@@ -335,6 +336,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 		tabs_->AddPage(ptp, wxS("Patch Table (PNAMES)"));
 		ptp->SetName(wxS("pnames"));
 		pnames_tab_index_ = tabs_->GetPageCount() - 1;
+		ptp->setupLayout();
 	}
 
 	// Search archive for TEXTURES entries
@@ -363,8 +365,6 @@ bool TextureXEditor::openArchive(Archive* archive)
 		// Open TEXTURES entry
 		if (tx_panel->openTEXTUREX(ztx_entry))
 		{
-			// Set palette
-			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 			// Lock entry
 			ztx_entry->lock();
 
@@ -372,6 +372,9 @@ bool TextureXEditor::openArchive(Archive* archive)
 			tx_panel->SetName(wxS("textures"));
 			texture_editors_.push_back(tx_panel);
 			tabs_->AddPage(tx_panel, wxString::FromUTF8(ztx_entry->name()));
+
+			tx_panel->setupUI();
+			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 		}
 
 		tx_panel->Show(true);
@@ -463,8 +466,6 @@ bool TextureXEditor::openEntry(ArchiveEntry* tx_entry)
 		// Open TEXTUREX entry
 		if (tx_panel->openTEXTUREX(tx_entry))
 		{
-			// Set palette
-			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 			// Lock entry
 			tx_entry->lock();
 
@@ -475,6 +476,9 @@ bool TextureXEditor::openEntry(ArchiveEntry* tx_entry)
 				tabs_->AddPage(tx_panel, wxString::FromUTF8(tx_entry->name()));
 			else
 				tabs_->InsertPage(pnames_tab_index_, tx_panel, wxString::FromUTF8(tx_entry->name()));
+
+			tx_panel->setupUI();
+			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 		}
 
 		tx_panel->Show(true);
@@ -491,8 +495,6 @@ bool TextureXEditor::openEntry(ArchiveEntry* tx_entry)
 		// Open TEXTURES entry
 		if (tx_panel->openTEXTUREX(tx_entry))
 		{
-			// Set palette
-			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 			// Lock entry
 			tx_entry->lock();
 
@@ -503,6 +505,9 @@ bool TextureXEditor::openEntry(ArchiveEntry* tx_entry)
 				tabs_->AddPage(tx_panel, wxString::FromUTF8(tx_entry->name()));
 			else
 				tabs_->InsertPage(pnames_tab_index_, tx_panel, wxString::FromUTF8(tx_entry->name()));
+
+			tx_panel->setupUI();
+			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 		}
 
 		tx_panel->Show(true);
@@ -515,6 +520,7 @@ bool TextureXEditor::openEntry(ArchiveEntry* tx_entry)
 		tabs_->AddPage(ptp, wxS("Patch Table (PNAMES)"));
 		ptp->SetName(wxS("pnames"));
 		pnames_tab_index_ = tabs_->GetPageCount() - 1;
+		ptp->setupLayout();
 	}
 
 	// Update layout

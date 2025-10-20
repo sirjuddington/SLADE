@@ -679,7 +679,10 @@ TextureXPanel::~TextureXPanel()
 }
 
 // -----------------------------------------------------------------------------
-// Loads a TEXTUREx or TEXTURES format texture list into the editor
+// Loads a TEXTUREx or TEXTURES format texture list into the editor.
+// If [entry] is a valid format returns truc.
+//
+// Call setupUI() after this if it succeeds
 // -----------------------------------------------------------------------------
 bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 {
@@ -689,7 +692,37 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 		// TEXTURE1/2 format
 		if (!texturex_.readTEXTUREXData(entry, tx_editor_->patchTable()))
 			return false;
+	}
+	else
+	{
+		// TEXTURES format
+		if (!texturex_.readTEXTURESData(entry))
+			return false;
+	}
 
+	tx_entry_ = entry;
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Sets up the UI after loading a TEXTUREx list
+// -----------------------------------------------------------------------------
+void TextureXPanel::setupUI()
+{
+	// TEXTURES format
+	if (texturex_.format() == TextureXList::Format::Textures)
+	{
+		// Create extended texture editor
+		texture_editor_ = new ZTextureEditorPanel(this, tx_editor_);
+
+		// Add 'type' column
+		list_textures_->InsertColumn(2, wxS("Type"));
+	}
+
+	// Any other TEXTUREx format
+	else
+	{
 		// Create default texture editor
 		texture_editor_ = new TextureEditorPanel(this, tx_editor_);
 
@@ -703,20 +736,6 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 				tx_editor_->patchTable().patch(tex->patch(p)->name()).used_in.push_back(tex->name());
 		}
 	}
-	else
-	{
-		// TEXTURES format
-		if (!texturex_.readTEXTURESData(entry))
-			return false;
-
-		// Create extended texture editor
-		texture_editor_ = new ZTextureEditorPanel(this, tx_editor_);
-
-		// Add 'type' column
-		list_textures_->InsertColumn(2, wxS("Type"));
-	}
-
-	tx_entry_ = entry;
 
 	// Add texture editor area
 	GetSizer()->Add(texture_editor_, 1, wxEXPAND | wxALL, ui::pad());
@@ -730,8 +749,6 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 	list_textures_->updateList();
 	Layout();
 	Update();
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
