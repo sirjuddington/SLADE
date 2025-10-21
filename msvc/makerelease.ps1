@@ -1,4 +1,4 @@
-$version = "3.2.7"
+$version = "3.2.8"
 $rev_short = Invoke-Expression "git.exe rev-parse --short HEAD"
 
 # Check for 7-zip install
