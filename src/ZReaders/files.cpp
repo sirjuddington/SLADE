@@ -242,7 +242,8 @@ FileReaderZ::FileReaderZ(FileReader& file, int windowbits) : File(file), SawEOF(
 
 	if (Status != Z_OK)
 	{
-		Message = fmt::format("FileReaderZ: inflateInit failed: {}\n", Stream.msg);
+		Message = Stream.msg == nullptr ? "FileReaderZ: inflateInit failed"
+										: fmt::format("FileReaderZ: inflateInit failed: {}\n", Stream.msg);
 	}
 }
 
@@ -267,13 +268,14 @@ long FileReaderZ::Read(void* buffer, long len)
 
 	if (Status != Z_OK && Status != Z_STREAM_END)
 	{
-		Message = fmt::format("Corrupt zlib stream: {}", Stream.msg);
+		Message = Stream.msg == nullptr ? "Corrupt zlib stream" : fmt::format("Corrupt zlib stream: {}", Stream.msg);
 	}
 
 	// Is this really a problem?
 	if (Stream.avail_out != 0)
 	{
-		Message = fmt::format("Ran out of data in zlib stream: {}", Stream.msg);
+		Message = Stream.msg == nullptr ? "Ran out of data in zlib stream"
+										: fmt::format("Ran out of data in zlib stream: {}", Stream.msg);
 	}
 
 	return len - Stream.avail_out;
