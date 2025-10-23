@@ -188,12 +188,14 @@ bool PaletteManager::loadResourcePalettes()
 // -----------------------------------------------------------------------------
 bool PaletteManager::loadCustomPalettes()
 {
+	namespace fs = std::filesystem;
+
 	// If the directory doesn't exist create it
 	auto custom_path = app::path("palettes", app::Dir::User);
 	if (!fileutil::dirExists(custom_path))
 		fileutil::createDir(custom_path);
 
-	for (const auto& item : std::filesystem::directory_iterator{ custom_path })
+	for (const auto& item : fs::directory_iterator{ fs::u8path(custom_path) })
 	{
 		if (!item.is_regular_file())
 			continue;

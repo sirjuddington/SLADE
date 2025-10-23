@@ -1254,9 +1254,11 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 // -----------------------------------------------------------------------------
 bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<ArchiveDir> base)
 {
+	namespace fs = std::filesystem;
+
 	// Get a list of all files in the directory
 	vector<string> files;
-	for (const auto& item : std::filesystem::recursive_directory_iterator{ directory })
+	for (const auto& item : fs::recursive_directory_iterator{ fs::u8path(directory) })
 		if (item.is_regular_file())
 			files.push_back(item.path().string());
 

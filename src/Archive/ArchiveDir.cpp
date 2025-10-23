@@ -486,9 +486,11 @@ shared_ptr<ArchiveDir> ArchiveDir::clone(shared_ptr<ArchiveDir> parent)
 // -----------------------------------------------------------------------------
 bool ArchiveDir::exportTo(string_view path) const
 {
+	namespace fs = std::filesystem;
+
 	// Create directory if needed
-	if (!std::filesystem::exists(path))
-		std::filesystem::create_directory(path);
+	if (!fs::exists(fs::u8path(path)))
+		fs::create_directory(fs::u8path(path));
 
 	// Export entries as files
 	for (auto& entry : entries_)
