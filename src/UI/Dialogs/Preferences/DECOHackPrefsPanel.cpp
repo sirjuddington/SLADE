@@ -34,6 +34,7 @@
 #include "General/UI.h"
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 
 using namespace slade;
@@ -81,6 +82,16 @@ DECOHackPrefsPanel::DECOHackPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 // -----------------------------------------------------------------------------
 void DECOHackPrefsPanel::init()
 {
+	// Try to find acc executable if path is not set
+	static string detected_java_path;
+	if (path_java.value.empty())
+	{
+		if (detected_java_path.empty())
+			detected_java_path = fileutil::findExecutable("java");
+
+		path_java = detected_java_path;
+	}
+
 	flp_decohack_path_->setLocation(path_decohack);
 	flp_java_path_->setLocation(path_java);
 	cb_always_show_output_->SetValue(decohack_always_show_output);

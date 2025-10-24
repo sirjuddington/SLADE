@@ -978,6 +978,10 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		return false;
 	}
 
+	// Try to find acc executable if path is not set
+	if (path_acc.value.empty())
+		path_acc = fileutil::findExecutable("acc");
+
 	// Check if the ACC path is set up
 	if (path_acc.value.empty() || !fileutil::fileExists(path_acc))
 	{
@@ -1175,6 +1179,10 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 		wxMessageBox(wxS("Error: Entry does not appear to be text"), wxS("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 		return false;
 	}
+
+	// Try to find java executable if path is not set
+	if (path_decohack.value.empty())
+		path_decohack = fileutil::findExecutable("java");
 
 	// Check if the DoomTools path is set up
 	if (path_decohack.empty() || !fileutil::fileExists(path_decohack))

@@ -265,6 +265,61 @@ time_t fileutil::fileModifiedTime(string_view path)
 	return wxFileModificationTime(wxString::FromUTF8(path.data(), path.size()));
 }
 
+// -----------------------------------------------------------------------------
+// Searches the system PATH for an executable named [exe_name].
+// Returns the full path to the executable if found, or an empty string if not
+// -----------------------------------------------------------------------------
+string fileutil::findExecutable(string_view exe_name)
+{
+	// Get system PATH environment variable
+	auto path_env = std::getenv("PATH");
+	if (!path_env)
+		return {};
+
+	// Remove * suffix or prefix from exe_name
+	if (strutil::startsWith(exe_name, '*'))
+		exe_name.remove_prefix(1);
+	if (strutil::endsWith(exe_name, '*'))
+		exe_name.remove_suffix(1);
+
+	// Split PATH into individual paths
+	auto path_str = string{ path_env };
+	auto paths    = strutil::split(path_str, (app::platform() == app::Platform::Windows) ? ';' : ':');
+
+	// Check each path for the executable
+	for (const auto& p : paths)
+	{
+		auto path = fs::u8path(p);
+		path /= fs::u8path(exe_name);
+
+		// Append .exe on Windows if not present
+		if (app::platform() == app::Platform::Windows && !strutil::endsWithCI(path.u8string(), ".exe"))
+			path += ".exe";
+
+		try
+		{
+			if (fs::exists(path) && fs::is_regular_file(path))
+			{
+				// On Windows, just return the path
+				if (app::platform() == app::Platform::Windows)
+					return path.u8string();
+
+				// Non-Windows, check for executable permission
+				auto perms = fs::status(path).permissions();
+				if ((perms & fs::perms::owner_exec) != fs::perms::none
+					|| (perms & fs::perms::group_exec) != fs::perms::none
+					|| (perms & fs::perms::others_exec) != fs::perms::none)
+					return path.u8string();
+			}
+		}
+		catch (std::exception& ex)
+		{
+			log::warning("Error checking executable \"{}\": {}", path.u8string(), ex.what());
+		}
+	}
+
+	return {};
+}
 
 
 // -----------------------------------------------------------------------------
