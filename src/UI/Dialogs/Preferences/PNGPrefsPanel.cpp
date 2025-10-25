@@ -32,6 +32,7 @@
 #include "PNGPrefsPanel.h"
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 
 using namespace slade;
 
@@ -103,6 +104,27 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 // -----------------------------------------------------------------------------
 void PNGPrefsPanel::init()
 {
+	// Try to find PNG tools' executables if paths not already set
+	static string detected_pngcrush, detected_pngout, detected_deflopt;
+	if (path_pngcrush.value.empty())
+	{
+		if (detected_pngcrush.empty())
+			detected_pngcrush = fileutil::findExecutable("pngcrush", "png");
+		path_pngcrush = detected_pngcrush;
+	}
+	if (path_pngout.value.empty())
+	{
+		if (detected_pngout.empty())
+			detected_pngout = fileutil::findExecutable("pngout", "png");
+		path_pngout = detected_pngout;
+	}
+	if (path_deflopt.value.empty())
+	{
+		if (detected_deflopt.empty())
+			detected_deflopt = fileutil::findExecutable("deflopt", "png");
+		path_deflopt = detected_deflopt;
+	}
+
 	flp_pngout_->setLocation(path_pngout);
 	flp_pngcrush_->setLocation(path_pngcrush);
 	flp_deflopt_->setLocation(path_deflopt);

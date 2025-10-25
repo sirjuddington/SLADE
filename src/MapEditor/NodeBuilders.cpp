@@ -132,7 +132,7 @@ void nodebuilders::init()
 	{
 		if (builder.path.empty())
 		{
-			auto found_path = fileutil::findExecutable(builder.exe);
+			auto found_path = fileutil::findExecutable(builder.exe, "nodebuilders");
 			if (!found_path.empty())
 				builder.path = found_path;
 		}

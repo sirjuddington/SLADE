@@ -93,7 +93,7 @@ void ACSPrefsPanel::init()
 	if (path_acc.value.empty())
 	{
 		if (detected_acc_path.empty())
-			detected_acc_path = fileutil::findExecutable("acc");
+			detected_acc_path = fileutil::findExecutable("acc", "acs/acc");
 
 		path_acc = detected_acc_path;
 	}

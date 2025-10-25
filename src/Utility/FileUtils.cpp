@@ -269,8 +269,23 @@ time_t fileutil::fileModifiedTime(string_view path)
 // Searches the system PATH for an executable named [exe_name].
 // Returns the full path to the executable if found, or an empty string if not
 // -----------------------------------------------------------------------------
-string fileutil::findExecutable(string_view exe_name)
+string fileutil::findExecutable(string_view exe_name, string_view bundle_dir)
 {
+	// Check for bundled tool executable
+	if (!bundle_dir.empty() && app::platform() == app::Platform::Windows)
+	{
+		auto exe_path = app::path(fmt::format("tools/{}/{}", bundle_dir, exe_name), app::Dir::Executable);
+
+		// Append .exe if not present
+		if (!strutil::endsWithCI(exe_path, ".exe"))
+			exe_path += ".exe";
+
+		// Check if it exists
+		auto path = fs::u8path(exe_path);
+		if (fs::exists(path) && fs::is_regular_file(path))
+			return path.u8string();
+	}
+
 	// Get system PATH environment variable
 	auto path_env = std::getenv("PATH");
 	if (!path_env)
