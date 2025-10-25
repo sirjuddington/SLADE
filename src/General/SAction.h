@@ -56,13 +56,14 @@ public:
 		int         wx_id_offset  = 0);
 
 	// Static functions
-	static void     setBaseWxId(int id) { cur_id_ = id; }
-	static bool     initActions();
-	static int      newGroup();
-	static SAction* fromId(string_view id);
-	static SAction* fromWxId(int wx_id);
-	static void     add(SAction* action);
-	static int      nextWxId();
+	static void                  setBaseWxId(int id) { cur_id_ = id; }
+	static bool                  initActions();
+	static int                   newGroup();
+	static SAction*              fromId(string_view id);
+	static SAction*              fromWxId(int wx_id);
+	static void                  add(SAction* action);
+	static int                   nextWxId();
+	static const vector<string>& history();
 
 private:
 	// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,
