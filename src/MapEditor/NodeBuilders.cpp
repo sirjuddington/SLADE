@@ -126,6 +126,17 @@ void nodebuilders::init()
 	// Set builder paths
 	for (unsigned a = 0; a < builder_paths.size(); a += 2)
 		builder(builder_paths[a]).path = builder_paths[a + 1];
+
+	// Try to find any builder executables not already set
+	for (auto& builder : builders)
+	{
+		if (builder.path.empty())
+		{
+			auto found_path = fileutil::findExecutable(builder.exe, "nodebuilders");
+			if (!found_path.empty())
+				builder.path = found_path;
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------

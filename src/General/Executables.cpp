@@ -34,6 +34,7 @@
 #include "Executables.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -294,6 +295,14 @@ void executables::parseGameExe(ParseTreeNode* node, bool custom)
 	for (auto& path : exe_paths)
 		if (path.first == exe->id)
 			exe->path = path.second;
+
+	// Try to find executable if path not set
+	if (exe->path.empty() && !exe->exe_name.empty())
+	{
+		auto found_path = fileutil::findExecutable(exe->exe_name);
+		if (!found_path.empty())
+			exe->path = found_path;
+	}
 }
 
 // -----------------------------------------------------------------------------
