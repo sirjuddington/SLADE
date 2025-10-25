@@ -54,6 +54,10 @@ vector<SAction*>        SAction::actions_;
 SAction*                SAction::action_invalid_ = nullptr;
 vector<SActionHandler*> SActionHandler::action_handlers_;
 int                     SActionHandler::wx_id_offset_ = 0;
+namespace
+{
+vector<string> action_history;
+}
 
 
 // -----------------------------------------------------------------------------
@@ -410,6 +414,14 @@ int SAction::nextWxId()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the history of actions that have been handled
+// -----------------------------------------------------------------------------
+const vector<string>& SAction::history()
+{
+	return action_history;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the global 'invalid' SAction, creating it if necessary
 // -----------------------------------------------------------------------------
 SAction* SAction::invalidAction()
@@ -477,11 +489,8 @@ bool SActionHandler::doAction(string_view id)
 	if (!handled)
 		log::warning(fmt::format("Warning: Action \"{}\" not handled", id));
 
-	// Log action (to log file only)
-	// TODO: this
-	// exiting = true;
-	// log::info(1, "**** Action \"%s\"", id);
-	// exiting = false;
+	// Log action
+	action_history.emplace_back(id);
 
 	// Return true if handled
 	return handled;
