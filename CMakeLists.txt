@@ -24,7 +24,6 @@ if (BUILD_WX)
 	set(wxWidgets_USE_STATIC 1)
 	set(wxBUILD_SHARED OFF)
 	set(wxBUILD_USE_STATIC_RUNTIME ON)
-	set(wxUSE_LIBJPEG sys)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 	include(FetchContent)
