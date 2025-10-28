@@ -34,6 +34,7 @@
 #include "General/UI.h"
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -87,6 +88,16 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 // -----------------------------------------------------------------------------
 void ACSPrefsPanel::init()
 {
+	// Try to find acc executable if path is not set
+	static string detected_acc_path;
+	if (path_acc.value.empty())
+	{
+		if (detected_acc_path.empty())
+			detected_acc_path = fileutil::findExecutable("acc", "acs/acc");
+
+		path_acc = detected_acc_path;
+	}
+
 	flp_acc_path_->setLocation(path_acc);
 	cb_always_show_output_->SetValue(acc_always_show_output);
 

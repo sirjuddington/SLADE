@@ -978,6 +978,10 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		return false;
 	}
 
+	// Try to find acc executable if path is not set
+	if (path_acc.value.empty())
+		path_acc = fileutil::findExecutable("acc", "acs/acc");
+
 	// Check if the ACC path is set up
 	if (path_acc.value.empty() || !fileutil::fileExists(path_acc))
 	{
@@ -992,7 +996,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	// Setup some path strings
 	auto srcfile       = app::path(fmt::format("{}.acs", entry->nameNoExt()), app::Dir::Temp);
 	auto ofile         = app::path(fmt::format("{}.o", entry->nameNoExt()), app::Dir::Temp);
-	auto include_paths = strutil::splitV(path_acc_libs, ';');
+	auto include_paths = strutil::split(path_acc_libs, ';');
 
 	// Setup command options
 	string opt;
@@ -1175,6 +1179,10 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 		wxMessageBox(wxS("Error: Entry does not appear to be text"), wxS("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 		return false;
 	}
+
+	// Try to find java executable if path is not set
+	if (path_decohack.value.empty())
+		path_decohack = fileutil::findExecutable("java");
 
 	// Check if the DoomTools path is set up
 	if (path_decohack.empty() || !fileutil::fileExists(path_decohack))
@@ -1364,6 +1372,14 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 		wxMessageBox(wxS("Error: Entry does not appear to be PNG"), wxS("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 		return false;
 	}
+
+	// Try to find PNG tools' executables if paths not already set
+	if (path_pngcrush.value.empty())
+		path_pngcrush = fileutil::findExecutable("pngcrush", "png");
+	if (path_pngout.value.empty())
+		path_pngout = fileutil::findExecutable("pngout", "png");
+	if (path_deflopt.value.empty())
+		path_deflopt = fileutil::findExecutable("deflopt", "png");
 
 	// Check if the PNG tools path are set up, at least one of them should be
 	string pngpathc = path_pngcrush;
