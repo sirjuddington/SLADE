@@ -158,7 +158,7 @@ void AudioPrefsPanel::setupLayout()
 	auto gbsizer = new wxGridBagSizer(ui::px(ui::Size::PadMinimum), ui::pad());
 	gbsizer->Add(new wxStaticText(this, -1, wxS("MIDI Playback:")), { 0, 0 }, { 1, 2 }, wxEXPAND | wxBOTTOM, ui::pad());
 	gbsizer->Add(rb_fluidsynth_, { 1, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, ui::pad());
-	gbsizer->Add(new wxStaticText(this, -1, wxS("Location of MIDI soundfont:")), { 2, 0 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Use custom MIDI soundfont:")), { 2, 0 }, { 1, 1 }, wxEXPAND);
 	gbsizer->Add(flp_soundfont_, { 3, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, ui::pad());
 	gbsizer->Add(rb_timidity_, { 1, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, ui::pad());
 	gbsizer->Add(new wxStaticText(this, -1, wxS("Location of Timidity executable:")), { 2, 1 }, { 1, 1 }, wxEXPAND);
