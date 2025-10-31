@@ -186,20 +186,8 @@ void TextureEditorPanel::setupLayout()
 // -----------------------------------------------------------------------------
 wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 {
-	// Create controls
-	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
-	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	auto           panel     = new wxPanel(parent, -1);
-	text_tex_name_           = new wxTextCtrl(panel, -1);
-	text_tex_name_->SetMaxLength(8);
-	spin_tex_width_    = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
-	spin_tex_height_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
-	spin_tex_scalex_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
-	spin_tex_scaley_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
-	label_scaled_size_ = new wxStaticText(panel, -1, wxS("Scaled Size: N/A"));
-	cb_tex_world_panning_ = new wxCheckBox(panel, -1, wxS("World Panning"));
-
 	// Setup tex controls panel sizer
+	auto panel = new wxPanel(parent, -1);
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	panel->SetSizer(sizer);
 
@@ -208,6 +196,18 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND);
 
+	// Create controls
+	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
+	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
+	text_tex_name_           = new wxTextCtrl(frame, -1);
+	text_tex_name_->SetMaxLength(8);
+	spin_tex_width_    = new wxSpinCtrl(frame, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
+	spin_tex_height_   = new wxSpinCtrl(frame, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
+	spin_tex_scalex_   = new wxSpinCtrl(frame, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
+	spin_tex_scaley_   = new wxSpinCtrl(frame, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
+	label_scaled_size_ = new wxStaticText(frame, -1, wxS("Scaled Size: N/A"));
+	cb_tex_world_panning_ = new wxCheckBox(frame, -1, wxS("World Panning"));
+
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	framesizer->Add(gb_sizer, 1, wxALL, ui::pad());
 
@@ -215,11 +215,11 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Name:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Size:")), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(spin_tex_width_, { 0, 3 }, { 1, 1 });
-	gb_sizer->Add(spin_tex_height_, { 0, 4 }, { 1, 1 });
+	gb_sizer->Add(spin_tex_width_, { 0, 3 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(spin_tex_height_, { 0, 4 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Scale:")), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(spin_tex_scalex_, { 1, 3 }, { 1, 1 });
-	gb_sizer->Add(spin_tex_scaley_, { 1, 4 }, { 1, 1 });
+	gb_sizer->Add(spin_tex_scalex_, { 1, 3 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(spin_tex_scaley_, { 1, 4 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(label_scaled_size_, { 1, 5 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(cb_tex_world_panning_, { 1, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
