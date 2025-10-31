@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MIDIPlayer.h"
 #include "App.h"
+#include "Archive/ArchiveManager.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -103,8 +104,6 @@ public:
 					"/usr/share/sounds/sf2/FluidR3_GM.sf2"
 					":/usr/share/sounds/sf2/FluidR3_GS.sf2"
 					":/usr/share/sounds/sf2/default-GM.sf2";
-			else
-				log::warning(1, "No FluidSynth soundfont set, MIDI playback will not work");
 		}
 
 		// Setup fluidsynth
@@ -159,6 +158,23 @@ public:
 			const auto& path = paths[a];
 			if (!path.empty())
 			{
+				int fs_id = fluid_synth_sfload(fs_synth_, path.c_str(), 1);
+				fs_soundfont_ids_.push_back(fs_id);
+				if (fs_id != FLUID_FAILED)
+					retval = true;
+			}
+		}
+
+		// If no soundfont was loaded, use the internal soundfont in the program resource
+		if (!retval)
+		{
+			auto sf_entry = app::archiveManager().programResourceArchive()->entryAtPath("soundfont/default.sf2");
+			if (sf_entry)
+			{
+				// Export to temp file
+				auto path = app::path("default.sf2", app::Dir::Temp);
+				sf_entry->exportFile(path);
+
 				int fs_id = fluid_synth_sfload(fs_synth_, path.c_str(), 1);
 				fs_soundfont_ids_.push_back(fs_id);
 				if (fs_id != FLUID_FAILED)
