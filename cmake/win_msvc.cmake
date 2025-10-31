@@ -46,11 +46,15 @@ else ()
 	find_package(SFML 3 COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 endif ()
 
+# WebP
+if (NOT BUILD_WX)
+	find_package(WebP CONFIG REQUIRED)
+endif ()
+
 # Other
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glm REQUIRED)
-find_package(WebP CONFIG REQUIRED)
 
 
 # Include Search Paths ---------------------------------------------------------
@@ -110,9 +114,6 @@ target_link_libraries(slade
 	${ZLIB_LIBRARY}
 	MPG123::libmpg123
 	glm::glm
-	WebP::webp
-	WebP::webpdecoder
-	WebP::webpdemux
 )
 
 if (NOT NO_LUA)
@@ -121,4 +122,12 @@ endif ()
 
 if (NOT NO_FLUIDSYNTH)
 	target_link_libraries(slade FluidSynth::libfluidsynth)
+endif ()
+
+if (NOT BUILD_WX)
+	target_link_libraries(slade
+		WebP::webp
+		WebP::webpdecoder
+		WebP::webpdemux
+	)
 endif ()

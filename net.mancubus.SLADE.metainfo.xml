@@ -16,13 +16,18 @@
 	<launchable type="desktop-id">net.mancubus.SLADE.desktop</launchable>
 	<description>
 		<p>
-			SLADE3 is a modern editor for Doom-engine based games and source ports. It has the ability to view, modify, and write many different game-specific formats, and even convert between some of them, or from/to other generic formats such as PNG.
+			SLADE3 is a modern editor for Doom-engine based games and source ports. It has the ability to view, modify,
+			and write many different game-specific formats, and even convert between some of them, or from/to other
+			generic formats such as PNG.
 		</p>
 		<p>
-			SLADE3 can be considered a successor to both SLumpEd and SLADE - it combines the features of both, to create an all-in-one editor. Why does it keep the name of what was previously just a map editor? Because it fits :)
+			SLADE3 can be considered a successor to both SLumpEd and SLADE - it combines the features of both, to create
+			an all-in-one editor. Why does it keep the name of what was previously just a map editor? Because it fits :)
 		</p>
 		<p>
-			As with SLumpEd and previous versions of SLADE, SLADE3 is fully cross-platform. It can be run on various operating systems, including Windows, Linux and macOS. So no matter your preferred OS, SLADE3 is available for you.
+			As with SLumpEd and previous versions of SLADE, SLADE3 is fully cross-platform. It can be run on various
+			operating systems, including Windows, Linux and macOS. So no matter your preferred OS, SLADE3 is available
+			for you.
 		</p>
 	</description>
 	<screenshots>
@@ -54,7 +59,7 @@
 			<image>https://slade.mancubus.net/shots/map.png</image>
 			<caption>The map editor</caption>
 		</screenshot>
-		<screenshot  type="default">
+		<screenshot type="default">
 			<image>https://slade.mancubus.net/shots/map3d.png</image>
 			<caption>Map editor 3d mode</caption>
 		</screenshot>
@@ -64,6 +69,7 @@
 		</screenshot>
 	</screenshots>
 	<releases>
+		<release date="2025-10-21" version="3.2.8"/>
 		<release date="2024-12-25" version="3.2.7"/>
 		<release date="2024-05-28" version="3.2.6"/>
 		<release date="2023-12-19" version="3.2.5"/>
@@ -83,5 +89,5 @@
 		<release date="2019-05-17" version="3.1.5"/>
 		<release date="2018-12-26" version="3.1.4"/>
 	</releases>
-	<content_rating type="oars-1.1" />
+	<content_rating type="oars-1.1"/>
 </component>

@@ -60,7 +60,18 @@ inline fs::path u8path(string_view path)
 {
 	return fs::u8path(path);
 }
+
+// -----------------------------------------------------------------------------
+// Returns a UTF-8 encoded string from a std::filesystem [path]
+//
+// We need this because in c++20, path::u8string() returns a std::u8string,
+// which isn't compatible with std::string
+// -----------------------------------------------------------------------------
+inline string u8string(const fs::path& path)
+{
+	return reinterpret_cast<const char*>(path.u8string().c_str());
 }
+} // namespace slade::fileutil
 
 // -----------------------------------------------------------------------------
 // Returns true if a file at [path] exists
@@ -250,13 +261,13 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 	{
 		for (const auto& item : fs::recursive_directory_iterator(u8path(path)))
 			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.emplace_back(reinterpret_cast<const char*>(item.path().u8string().c_str()));
+				paths.emplace_back(u8string(item.path()));
 	}
 	else
 	{
 		for (const auto& item : fs::directory_iterator(u8path(path)))
 			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.emplace_back(reinterpret_cast<const char*>(item.path().u8string().c_str()));
+				paths.emplace_back(u8string(item.path()));
 	}
 
 	return paths;
@@ -282,6 +293,76 @@ string fileutil::fileHash(string_view path)
 	return file.calculateHash();
 }
 
+// -----------------------------------------------------------------------------
+// Searches the system PATH for an executable named [exe_name].
+// Returns the full path to the executable if found, or an empty string if not
+// -----------------------------------------------------------------------------
+string fileutil::findExecutable(string_view exe_name, string_view bundle_dir)
+{
+	// Check for bundled tool executable
+	if (!bundle_dir.empty() && app::platform() == app::Platform::Windows)
+	{
+		auto exe_path = app::path(fmt::format("tools/{}/{}", bundle_dir, exe_name), app::Dir::Executable);
+
+		// Append .exe if not present
+		if (!strutil::endsWithCI(exe_path, ".exe"))
+			exe_path += ".exe";
+
+		// Check if it exists
+		auto path = u8path(exe_path);
+		if (fs::exists(path) && fs::is_regular_file(path))
+			return u8string(path);
+	}
+
+	// Get system PATH environment variable
+	auto path_env = std::getenv("PATH");
+	if (!path_env)
+		return {};
+
+	// Remove * suffix or prefix from exe_name
+	if (strutil::startsWith(exe_name, '*'))
+		exe_name.remove_prefix(1);
+	if (strutil::endsWith(exe_name, '*'))
+		exe_name.remove_suffix(1);
+
+	// Split PATH into individual paths
+	auto path_str = string{ path_env };
+	auto paths    = strutil::split(path_str, (app::platform() == app::Platform::Windows) ? ';' : ':');
+
+	// Check each path for the executable
+	for (const auto& p : paths)
+	{
+		auto path = u8path(p);
+		path /= u8path(exe_name);
+
+		// Append .exe on Windows if not present
+		if (app::platform() == app::Platform::Windows && !strutil::endsWithCI(u8string(path), ".exe"))
+			path += ".exe";
+
+		try
+		{
+			if (fs::exists(path) && fs::is_regular_file(path))
+			{
+				// On Windows, just return the path
+				if (app::platform() == app::Platform::Windows)
+					return u8string(path);
+
+				// Non-Windows, check for executable permission
+				auto perms = fs::status(path).permissions();
+				if ((perms & fs::perms::owner_exec) != fs::perms::none
+					|| (perms & fs::perms::group_exec) != fs::perms::none
+					|| (perms & fs::perms::others_exec) != fs::perms::none)
+					return u8string(path);
+			}
+		}
+		catch (std::exception& ex)
+		{
+			log::warning("Error checking executable \"{}\": {}", u8string(path), ex.what());
+		}
+	}
+
+	return {};
+}
 
 
 // -----------------------------------------------------------------------------

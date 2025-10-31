@@ -329,6 +329,7 @@ Palette wxutil::paletteFromWx(const wxPalette& palette)
 	Palette pal{ static_cast<unsigned>(palette.GetColoursCount()) };
 
 	ColRGBA col;
+	col.a = 255;
 	for (int a = 0; a < palette.GetColoursCount(); ++a)
 	{
 		palette.GetRGB(a, &col.r, &col.g, &col.b);

@@ -279,6 +279,16 @@ public:
 		for (auto a = log.size() - 10; a < log.size(); a++)
 			trace_ += log[a].message + "\n";
 
+		// Last 5 actions
+		auto& actions = SAction::history();
+		if (actions.size() > 0)
+		{
+			trace_ += "\nLast Actions:\n";
+			auto num = actions.size() < 5 ? 0 : actions.size() - 5;
+			for (auto a = num; a < actions.size(); a++)
+				trace_ += fmt::format("{}\n", actions[a]);
+		}
+
 		// Set stack trace text
 		text_stack_->SetValue(wxString::FromUTF8(trace_));
 

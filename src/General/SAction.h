@@ -63,13 +63,14 @@ public:
 		int         wx_id_offset  = 0);
 
 	// Static functions
-	static void     setBaseWxId(int id);
-	static bool     initActions();
-	static SAction* fromId(string_view id);
-	static SAction* fromWxId(int wx_id);
-	static SAction* add(unique_ptr<SAction> action);
-	static int      nextWxId();
-	static Signals& signals();
+	static void                  setBaseWxId(int id);
+	static bool                  initActions();
+	static SAction*              fromId(string_view id);
+	static SAction*              fromWxId(int wx_id);
+	static SAction*              add(unique_ptr<SAction> action);
+	static int                   nextWxId();
+	static Signals&              signals();
+	static const vector<string>& history();
 
 private:
 	// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,

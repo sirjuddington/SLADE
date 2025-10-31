@@ -159,7 +159,7 @@ void AudioSettingsPanel::setupLayout()
 	// MIDI Playback (fluidsynth/timidity)
 	auto gbsizer = new wxGridBagSizer(lh.padSmall(), lh.pad());
 	gbsizer->Add(rb_fluidsynth_, { 0, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, wxS("Location of MIDI soundfont:")), { 1, 0 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Use custom MIDI soundfont:")), { 1, 0 }, { 1, 1 }, wxEXPAND);
 	gbsizer->Add(flp_soundfont_, { 2, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
 	gbsizer->Add(rb_timidity_, { 0, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
 	gbsizer->Add(new wxStaticText(this, -1, wxS("Location of Timidity executable:")), { 1, 1 }, { 1, 1 }, wxEXPAND);

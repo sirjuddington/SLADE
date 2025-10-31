@@ -23,16 +23,14 @@ if (BUILD_WX)
 	set(wxWidgets_USE_STATIC 1)
 	set(wxBUILD_SHARED OFF)
 	set(wxBUILD_USE_STATIC_RUNTIME ON)
-	set(wxUSE_LIBJPEG sys)
-	set(wxUSE_LIBPNG sys)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 	include(FetchContent)
 	FetchContent_Declare(
 		wxWidgets
 		GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-		GIT_TAG b5a9fa3847fb0386e32550d1485cad62e056e134
-		#GIT_TAG v3.3.2
+		GIT_TAG 5550862651146739cf43e07b95d3963241506715 # master as of 2025-10-21
+		#GIT_TAG v3.3.1
 	)
 	FetchContent_GetProperties(wxwidgets)
 	FetchContent_MakeAvailable(wxwidgets)
