@@ -287,7 +287,7 @@ protected:
 		}
 
 		// If it's a ZDoom alpha map
-		if (alPh_chunk && type == SImage::Type::PalMask)
+		if (alPh_chunk)
 			type = SImage::Type::AlphaMap;
 
 		// Create image
@@ -301,7 +301,7 @@ protected:
 
 		// Load image data
 		auto img_data = imageData(image);
-		if (type == SImage::Type::PalMask || type == SImage::Type::AlphaMap)
+		if (type == SImage::Type::PalMask)
 		{
 			// Load indexed data
 			auto data_rgb = wx_image.GetData();
@@ -312,14 +312,18 @@ protected:
 			}
 
 			// Set mask
-			if (type == SImage::Type::PalMask)
-			{
-				auto mask = imageMask(image);
-				if (auto alpha = wx_image.GetAlpha())
-					memcpy(mask, alpha, width * height);
-				else
-					image.fillAlpha(255);
-			}
+			auto mask = imageMask(image);
+			if (auto alpha = wx_image.GetAlpha())
+				memcpy(mask, alpha, width * height);
+			else
+				image.fillAlpha(255);
+		}
+		else if (type == SImage::Type::AlphaMap)
+		{
+			// Load greyscale alpha map data
+			auto data_rgb = wx_image.GetData();
+			for (unsigned c = 0; c < width * height; c++)
+				img_data[c] = data_rgb[c * 3];
 		}
 		else
 		{
@@ -365,7 +369,7 @@ protected:
 		int  height = image.height();
 
 		// First up, create the wxImage to be saved as png data
-		wxImage wx_image;
+		wxImage  wx_image;
 		MemChunk data_rgb, data_alpha;
 		switch (type)
 		{
