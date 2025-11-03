@@ -59,7 +59,7 @@ EXTERN_CVAR(Int, gl_depth_buffer_size)
 // OGLCanvas class constructor, wxGLCanvas implementation
 // -----------------------------------------------------------------------------
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
-	wxGLCanvas(parent, id, gl::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
+	wxGLCanvas(parent, gl::getWxGLAttribs(), id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
 	timer_{ this },
 	last_time_{ app::runTimer() }
 {
@@ -104,7 +104,7 @@ void OGLCanvas::init()
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glCullFace(GL_NONE);
+	glCullFace(GL_BACK);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_FOG);
