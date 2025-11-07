@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -91,7 +91,7 @@ GfxConvDialog::~GfxConvDialog()
 // Opens the next item to be converted.
 // Returns true if the selected format was valid for the next image
 // -----------------------------------------------------------------------------
-bool GfxConvDialog::nextItem()
+bool GfxConvDialog::nextItem(bool update_ui)
 {
 	// Go to next image
 	current_item_++;
@@ -108,7 +108,7 @@ bool GfxConvDialog::nextItem()
 		if (items_[current_item_].entry != nullptr)
 		{
 			if (!misc::loadImageFromEntry(&(items_[current_item_].image), items_[current_item_].entry))
-				return nextItem(); // Skip if not a valid image entry
+				return nextItem(update_ui); // Skip if not a valid image entry
 		}
 		// If loading images from textures
 		else if (items_[current_item_].texture != nullptr)
@@ -120,15 +120,18 @@ bool GfxConvDialog::nextItem()
 					items_[current_item_].archive,
 					items_[current_item_].palette,
 					items_[current_item_].force_rgba))
-				return nextItem(); // Skip if not a valid image entry
+				return nextItem(update_ui); // Skip if not a valid image entry
 		}
 		else
-			return nextItem(); // Skip if not a valid image entry
+			return nextItem(update_ui); // Skip if not a valid image entry
 	}
 
 	// Update valid formats
-	combo_target_format_->Clear();
-	conv_formats_.clear();
+	if (update_ui)
+	{
+		combo_target_format_->Clear();
+		conv_formats_.clear();
+	}
 	vector<SIFormat*> all_formats;
 	SIFormat::putAllFormats(all_formats);
 	int current_index = -1;
@@ -143,7 +146,8 @@ bool GfxConvDialog::nextItem()
 			{
 				// Add format
 				conv_formats_.emplace_back(format, SImage::Type::PalMask);
-				combo_target_format_->Append(wxString::FromUTF8(format->name() + " (Paletted)"));
+				if (update_ui)
+					combo_target_format_->Append(wxString::FromUTF8(format->name() + " (Paletted)"));
 
 				// Check for match with current format
 				if (current_format_.format == format && current_format_.coltype == SImage::Type::PalMask)
@@ -158,7 +162,8 @@ bool GfxConvDialog::nextItem()
 			{
 				// Add format
 				conv_formats_.emplace_back(format, SImage::Type::RGBA);
-				combo_target_format_->Append(wxString::FromUTF8(format->name() + " (Truecolour)"));
+				if (update_ui)
+					combo_target_format_->Append(wxString::FromUTF8(format->name() + " (Truecolour)"));
 
 				// Check for match with current format
 				if (current_format_.format == format && current_format_.coltype == SImage::Type::RGBA)
@@ -169,7 +174,8 @@ bool GfxConvDialog::nextItem()
 			{
 				// Add format
 				conv_formats_.emplace_back(format, SImage::Type::AlphaMap);
-				combo_target_format_->Append(wxString::FromUTF8(format->name() + " (Alpha Map)"));
+				if (update_ui)
+					combo_target_format_->Append(wxString::FromUTF8(format->name() + " (Alpha Map)"));
 
 				// Check for match with current format
 				if (current_format_.format == format && current_format_.coltype == SImage::Type::AlphaMap)
@@ -188,7 +194,8 @@ bool GfxConvDialog::nextItem()
 	}
 
 	// Set current format
-	combo_target_format_->SetSelection(current_index);
+	if (update_ui)
+		combo_target_format_->SetSelection(current_index);
 	current_format_ = conv_formats_[current_index];
 
 	// Setup current format string
@@ -214,10 +221,11 @@ bool GfxConvDialog::nextItem()
 	}
 	else if (items_[current_item_].image.type() == SImage::Type::AlphaMap)
 		fmt_string += " (Alpha Map)";
-	label_current_format_->SetLabel(wxString::FromUTF8(fmt_string));
+	if (update_ui)
+		label_current_format_->SetLabel(wxString::FromUTF8(fmt_string));
 
 	// Update UI
-	updatePreviewGfx();
+	updatePreviewGfx(update_ui);
 	ui::setSplashProgressMessage(fmt::format("{} of {}", current_item_, items_.size()));
 	ui::setSplashProgress((float)current_item_ / (float)items_.size());
 
@@ -437,7 +445,7 @@ void GfxConvDialog::openTextures(const vector<CTexture*>& textures, Palette* pal
 // -----------------------------------------------------------------------------
 // Updates the current and target preview windows
 // -----------------------------------------------------------------------------
-void GfxConvDialog::updatePreviewGfx()
+void GfxConvDialog::updatePreviewGfx(bool update_ui)
 {
 	// Check current item is valid
 	if (items_.size() <= current_item_)
@@ -447,21 +455,26 @@ void GfxConvDialog::updatePreviewGfx()
 	auto& item = items_[current_item_];
 
 	// Set palettes
-	if (item.image.hasPalette() && pal_chooser_current_->globalSelected())
-		gfx_current_->setPalette(item.image.palette());
-	else
-		gfx_current_->setPalette(pal_chooser_current_->selectedPalette(item.entry));
+	if (update_ui)
+	{
+		if (item.image.hasPalette() && pal_chooser_current_->globalSelected())
+			gfx_current_->setPalette(item.image.palette());
+		else
+			gfx_current_->setPalette(pal_chooser_current_->selectedPalette(item.entry));
+	}
 	if (pal_chooser_target_->globalSelected())
 		gfx_target_->setPalette(&gfx_current_->palette());
 	else
 		gfx_target_->setPalette(pal_chooser_target_->selectedPalette(item.entry));
 
 	// Load the image to both gfx canvases
-	gfx_current_->image().copyImage(&item.image);
+	if (update_ui)
+		gfx_current_->image().copyImage(&item.image);
 	gfx_target_->image().copyImage(&item.image);
 
 	// Update controls
-	updateControls();
+	if (update_ui)
+		updateControls();
 
 
 	// --- Apply image conversion to target preview ---
@@ -475,10 +488,13 @@ void GfxConvDialog::updatePreviewGfx()
 
 
 	// Refresh
-	gfx_current_->zoomToFit(true, 0.05);
-	gfx_current_->Refresh();
-	gfx_target_->zoomToFit(true, 0.05);
-	gfx_target_->Refresh();
+	if (update_ui)
+	{
+		gfx_current_->zoomToFit(true, 0.05);
+		gfx_current_->Refresh();
+		gfx_target_->zoomToFit(true, 0.05);
+		gfx_target_->Refresh();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -650,12 +666,23 @@ void GfxConvDialog::onBtnConvertAll(wxCommandEvent& e)
 	// Show splash window
 	ui::showSplash("Converting Gfx...", true, maineditor::windowWx());
 
+	// Hide dialog to avoid redrawing each image
+	Hide();
+
 	// Convert all images
 	for (size_t a = current_item_; a < items_.size(); a++)
 	{
 		applyConversion();
-		if (!nextItem())
+		if (!nextItem(false))
 			break;
+	}
+
+	// Show dialog again if we didn't convert everything
+	if (current_item_ < items_.size())
+	{
+		current_item_--;
+		nextItem();
+		Show();
 	}
 
 	// Hide splash window
