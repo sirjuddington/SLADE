@@ -147,6 +147,10 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 					// Context creation failed
 					delete context;
 					context = nullptr;
+					log::error(
+						"Failed to create OpenGL context with requested version {}.{}",
+						gl_version_major.value,
+						gl_version_minor.value);
 				}
 			}
 
@@ -157,7 +161,7 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			// Check created context is valid
 			if (!context || !context->IsOK())
 			{
-				log::error("Failed to setup the OpenGL context");
+				log::error("Failed to create a valid OpenGL context");
 				delete context;
 				context = nullptr;
 				return nullptr;
@@ -166,7 +170,7 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			// Make current
 			if (!context->SetCurrent(*canvas))
 			{
-				log::error("Failed to setup the OpenGL context");
+				log::error("Failed to set the global OpenGL context as current");
 				delete context;
 				context = nullptr;
 				return nullptr;
@@ -175,6 +179,7 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			// Initialize OpenGL
 			if (!init())
 			{
+				log::error("Failed to initialize OpenGL");
 				delete context;
 				context = nullptr;
 				return nullptr;
@@ -195,7 +200,7 @@ bool gl::init()
 	if (initialised)
 		return true;
 
-	log::info(1, "Initialising OpenGL...");
+	log::info(1, "Initializing OpenGL...");
 
 	// Initialise GLAD
 	if (!gladLoadGL())
