@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -45,20 +45,23 @@ using namespace slade;
 CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
 CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
 CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
-CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
+CVAR(Int, gl_version_major, 0, CVar::Flag::Save)
+CVAR(Int, gl_version_minor, 0, CVar::Flag::Save)
+CVAR(Int, gl_debug, 1, CVar::Flag::Save) // 0 = off, 1 = errors only, 2 = all messages
 
 namespace slade::gl
 {
-wxGLContext* context        = NULL;
-int          wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
-bool         initialised    = false;
-double       version        = 0;
-unsigned     max_tex_size   = 128;
-unsigned     pow_two[]      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
-uint8_t      n_pow_two      = 16;
-float        max_point_size = -1.0f;
-Blend        last_blend     = Blend::Normal;
-Info         info;
+wxGLContext*              context      = NULL;
+bool                      initialised  = false;
+double                    version      = 0;
+unsigned                  max_tex_size = 128;
+unsigned                  pow_two[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
+uint8_t                   n_pow_two = 16;
+float                     max_point_size = -1.0f;
+Blend                     last_blend     = Blend::Normal;
+Info                      info;
+vector<std::pair<u8, u8>> opengl_versions = { { 4, 6 }, { 4, 5 }, { 4, 4 }, { 4, 3 }, { 4, 2 }, { 4, 1 }, { 4, 0 },
+											  { 3, 3 }, { 3, 2 }, { 3, 1 }, { 3, 0 }, { 2, 1 }, { 2, 0 } };
 } // namespace slade::gl
 
 
@@ -67,6 +70,59 @@ Info         info;
 // OpenGL Namespace Functions
 //
 // -----------------------------------------------------------------------------
+namespace slade::gl
+{
+// -----------------------------------------------------------------------------
+// Builds a wxGLAttributes object with common attributes and the given [depth]
+// buffer precision
+// -----------------------------------------------------------------------------
+wxGLAttributes& buildGlAttr(wxGLAttributes& attr, int depth)
+{
+	attr.Reset();
+	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(depth).Stencil(8);
+	attr.EndList();
+	return attr;
+}
+
+// -----------------------------------------------------------------------------
+// OpenGL debug message callback
+// -----------------------------------------------------------------------------
+void GLAPIENTRY glMessageCallback(
+	GLenum        source,
+	GLenum        type,
+	GLuint        id,
+	GLenum        severity,
+	GLsizei       length,
+	const GLchar* message,
+	const void*   userParam)
+{
+	if (type == GL_DEBUG_TYPE_ERROR)
+		log::error("OpenGL Error: {}", message);
+	else if (gl_debug > 1)
+		log::info("OpenGL: {}", message);
+}
+
+// -----------------------------------------------------------------------------
+// Tries to create the best possible compatibility profile OpenGL context
+// -----------------------------------------------------------------------------
+wxGLContext* createBestContext(wxGLCanvas* canvas)
+{
+	// Try each supported OpenGL version in descending order
+	for (const auto& ver : opengl_versions)
+	{
+		wxGLContextAttrs attr;
+		attr.PlatformDefaults().CompatibilityProfile().OGLVersion(ver.first, ver.second).EndList();
+		auto ctx = new wxGLContext(canvas, nullptr, &attr);
+		if (ctx->IsOK())
+			return ctx;
+		else
+			delete ctx;
+	}
+
+	// Unable to create compatibility context
+	return nullptr;
+}
+} // namespace slade::gl
 
 
 // -----------------------------------------------------------------------------
@@ -74,21 +130,58 @@ Info         info;
 // -----------------------------------------------------------------------------
 wxGLContext* gl::getContext(wxGLCanvas* canvas)
 {
-	if (!context)
+	if (!context && canvas)
 	{
 		if (canvas->IsShown())
 		{
 			log::info("Setting up the OpenGL context");
-			context = new wxGLContext(canvas);
-			if (!context->SetCurrent(*canvas))
+
+			// Create context with requested gl version first (if any)
+			if (gl_version_major > 0)
 			{
-				log::error("Failed to setup the OpenGL context");
+				wxGLContextAttrs attr;
+				attr.PlatformDefaults().CompatibilityProfile().OGLVersion(gl_version_major, gl_version_minor).EndList();
+				context = new wxGLContext(canvas, nullptr, &attr);
+				if (!context->IsOK())
+				{
+					// Context creation failed
+					delete context;
+					context = nullptr;
+					log::error(
+						"Failed to create OpenGL context with requested version {}.{}",
+						gl_version_major.value,
+						gl_version_minor.value);
+				}
+			}
+
+			// Create core profile context with max supported GL version
+			if (!context)
+				context = createBestContext(canvas);
+
+			// Check created context is valid
+			if (!context || !context->IsOK())
+			{
+				log::error("Failed to create a valid OpenGL context");
 				delete context;
+				context = nullptr;
 				return nullptr;
 			}
+
+			// Make current
+			if (!context->SetCurrent(*canvas))
+			{
+				log::error("Failed to set the global OpenGL context as current");
+				delete context;
+				context = nullptr;
+				return nullptr;
+			}
+
+			// Initialize OpenGL
 			if (!init())
 			{
+				log::error("Failed to initialize OpenGL");
 				delete context;
+				context = nullptr;
 				return nullptr;
 			}
 		}
@@ -107,7 +200,7 @@ bool gl::init()
 	if (initialised)
 		return true;
 
-	log::info(1, "Initialising OpenGL...");
+	log::info(1, "Initializing OpenGL...");
 
 	// Initialise GLAD
 	if (!gladLoadGL())
@@ -146,6 +239,13 @@ bool gl::init()
 		log::info("Framebuffer Objects supported");
 	else
 		log::info("Framebuffer Objects not supported");
+
+	// Log GL messages
+	if (gl_debug > 0 && glDebugMessageCallback)
+	{
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(glMessageCallback, nullptr);
+	}
 
 	initialised = true;
 	return true;
@@ -253,12 +353,32 @@ bool gl::accuracyTweak()
 // -----------------------------------------------------------------------------
 // Returns the GL attributes array for use with wxGLCanvas
 // -----------------------------------------------------------------------------
-int* gl::getWxGLAttribs()
+wxGLAttributes gl::getWxGLAttribs()
 {
-	// Set specified depth buffer size
-	wx_gl_attrib[3] = gl_depth_buffer_size;
+	wxGLAttributes attr;
 
-	return wx_gl_attrib;
+	// Try 32bit depth buffer first
+	buildGlAttr(attr, 32);
+	if (wxGLCanvas::IsDisplaySupported(attr))
+		return attr;
+
+	// Then 24 bit depth buffer if not supported
+	buildGlAttr(attr, 24);
+	if (wxGLCanvas::IsDisplaySupported(attr))
+		return attr;
+
+	// Then 16bit depth buffer if not supported
+	buildGlAttr(attr, 16);
+	if (wxGLCanvas::IsDisplaySupported(attr))
+		return attr;
+
+	// Last resort - try wx default attributes
+	attr.Reset();
+	attr.Defaults();
+	if (!wxGLCanvas::IsDisplaySupported(attr))
+		log::error("Failed to get valid wxGLAttributes for OpenGL canvas");
+
+	return attr;
 }
 
 // -----------------------------------------------------------------------------
