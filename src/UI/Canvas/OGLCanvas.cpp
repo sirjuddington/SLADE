@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -33,19 +33,10 @@
 #include "Main.h"
 #include "OGLCanvas.h"
 #include "App.h"
-#include "General/UI.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 
 using namespace slade;
-
-
-// -----------------------------------------------------------------------------
-//
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Int, gl_depth_buffer_size)
 
 
 // -----------------------------------------------------------------------------

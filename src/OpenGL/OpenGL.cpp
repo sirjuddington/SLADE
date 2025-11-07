@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -236,7 +236,7 @@ bool gl::init()
 		log::info("Framebuffer Objects not supported");
 
 	// Log GL messages
-	if (gl_debug > 0)
+	if (gl_debug > 0 && glDebugMessageCallback)
 	{
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(glMessageCallback, nullptr);
