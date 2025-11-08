@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -173,18 +173,18 @@ string searchIMFName(const MemChunk& mc)
 		// Shareware stubs
 		if (nameOffset == 4)
 		{
-			memcpy(tmp, &mc[2], 16);
+			memcpy(tmp, mc.data() + 2, 16);
 			ret = tmp;
 
-			memcpy(tmp2, &mc[18], 64);
+			memcpy(tmp2, mc.data() + 18, 64);
 			fullname = tmp2;
 		}
 		else if (mc.size() > nameOffset + 80u)
 		{
-			memcpy(tmp, &mc[nameOffset], 16);
+			memcpy(tmp, mc.data() + nameOffset, 16);
 			ret = tmp;
 
-			memcpy(tmp2, &mc[nameOffset + 16], 64);
+			memcpy(tmp2, mc.data() + nameOffset + 16, 64);
 			fullname = tmp2;
 		}
 

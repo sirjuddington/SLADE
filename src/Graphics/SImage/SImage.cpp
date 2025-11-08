@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -629,7 +629,7 @@ size_t SImage::countColours() const
 // -----------------------------------------------------------------------------
 // Shifts all the used colours to the beginning of the palette
 // -----------------------------------------------------------------------------
-void SImage::shrinkPalette(Palette* pal) const
+void SImage::shrinkPalette(Palette* pal)
 {
 	// If the picture is not paletted, stop.
 	if (type_ != Type::PalMask)

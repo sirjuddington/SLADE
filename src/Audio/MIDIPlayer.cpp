@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -799,7 +799,7 @@ string midiInfo(const MemChunk& data)
 
 					string tmp;
 					if (evtype > 0 && evtype < 8 && evsize)
-						tmp.append(reinterpret_cast<const char*>(&data[tpos]), evsize);
+						tmp.append(reinterpret_cast<const char*>(data.data() + tpos), evsize);
 
 					switch (evtype)
 					{
