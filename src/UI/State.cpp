@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2025 Simon Judd
@@ -74,21 +74,28 @@ bool hasSavedState(string_view name, optional<i64> archive_id)
 
 template<typename T> void saveState(string_view name, T value, optional<i64> archive_id)
 {
-	if (hasSavedState(name, archive_id))
+	try
 	{
-		auto ps = database::context().preparedStatement("update_ui_state", update_ui_state, true);
-		ps.bind(1, value);
-		ps.bind(2, name);
-		ps.bind(3, archive_id);
-		ps.exec();
+		if (hasSavedState(name, archive_id))
+		{
+			auto ps = database::context().preparedStatement("update_ui_state", update_ui_state, true);
+			ps.bind(1, value);
+			ps.bind(2, name);
+			ps.bind(3, archive_id);
+			ps.exec();
+		}
+		else
+		{
+			auto ps = database::context().preparedStatement("insert_ui_state", insert_ui_state, true);
+			ps.bind(1, name);
+			ps.bind(2, value);
+			ps.bind(3, archive_id);
+			ps.exec();
+		}
 	}
-	else
+	catch (const std::exception& e)
 	{
-		auto ps = database::context().preparedStatement("insert_ui_state", insert_ui_state, true);
-		ps.bind(1, name);
-		ps.bind(2, value);
-		ps.bind(3, archive_id);
-		ps.exec();
+		log::error("ui::saveState: Failed to save state '{}': {}", name, e.what());
 	}
 }
 
@@ -96,7 +103,8 @@ inline optional<i64> archiveDbId(const Archive* archive)
 {
 	if (archive)
 		return app::archiveManager().archiveDbId(*archive);
-	return {};
+
+	return std::nullopt;
 }
 } // namespace slade::ui
 
