@@ -31,7 +31,6 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "MemChunk.h"
 #include "FileUtils.h"
 #include "General/Misc.h"
 #include "UI/WxUtils.h"
