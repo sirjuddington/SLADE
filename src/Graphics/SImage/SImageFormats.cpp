@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -761,7 +761,7 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size)
 			mask_[i] = 0;
 
 	// Convert from column-major to row-major
-	rotate(90);
+	rotate(270);
 
 	// Announce change and return success
 	signals_.image_changed();
