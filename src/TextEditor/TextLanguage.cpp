@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -356,7 +356,7 @@ void TextLanguage::addFunction(string_view name, const Json& j, bool has_void)
 	// replace the function and ignore anything after the colon.
 	if (strutil::contains(name, ':'))
 	{
-		name    = strutil::beforeFirst(name, ':');
+		name    = strutil::beforeFirstV(name, ':');
 		replace = false;
 	}
 

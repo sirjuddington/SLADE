@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -89,7 +89,8 @@ wxColour backgroundColour()
 wxBitmapBundle getIconBitmapBundle(string_view icon, int size)
 {
 	auto svg_entry = app::archiveManager().programResourceArchive()->entryAtPath(fmt::format("icons/{}", icon));
-	return wxBitmapBundle::FromSVG(reinterpret_cast<const char*>(svg_entry->rawData()), { size, size });
+	return wxBitmapBundle::FromSVG(
+		reinterpret_cast<const wxByte*>(svg_entry->rawData()), svg_entry->size(), { size, size });
 }
 
 // -----------------------------------------------------------------------------
