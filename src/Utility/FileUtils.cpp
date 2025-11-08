@@ -503,7 +503,6 @@ bool SFile::read(string& str, unsigned count) const
 	{
 		str.resize(count);
 		auto c = fread(str.data(), 1, count, handle_);
-		str.push_back('\0');
 		return c > 0;
 	}
 

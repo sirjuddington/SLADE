@@ -18,6 +18,7 @@
 /.vscode/*
 /release
 /build
+/.cache
 /dist/*.log
 /dist/*.map
 /dist/portable

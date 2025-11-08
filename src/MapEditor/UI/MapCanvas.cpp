@@ -127,10 +127,9 @@ void MapCanvas::draw()
 // -----------------------------------------------------------------------------
 void MapCanvas::mouseToCenter()
 {
-	auto rect   = GetScreenRect();
 	mouse_warp_ = true;
-	sf::Mouse::setPosition(
-		sf::Vector2i(rect.x + static_cast<int>(rect.width * 0.5), rect.y + static_cast<int>(rect.height * 0.5)));
+	const wxSize size = GetSize();
+	WarpPointer(int(size.x * 0.5), int(size.y * 0.5));
 }
 
 // -----------------------------------------------------------------------------

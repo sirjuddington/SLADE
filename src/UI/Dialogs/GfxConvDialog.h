@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
@@ -46,7 +46,7 @@ public:
 		const Palette*           palette    = nullptr,
 		Archive*                 archive    = nullptr,
 		bool                     force_rgba = false);
-	void updatePreviewGfx() const;
+	void updatePreviewGfx(bool update_ui = true) const;
 	void updateControls() const;
 	void convertOptions(SIFormat::ConvertOptions& opt) const;
 
@@ -124,7 +124,7 @@ private:
 	Palette target_pal_;
 	ColRGBA colour_trans_;
 
-	bool nextItem();
+	bool nextItem(bool update_ui = true);
 	void updateButtons() const;
 
 	// Static

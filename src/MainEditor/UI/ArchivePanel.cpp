@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -2531,10 +2531,12 @@ bool ArchivePanel::handleAction(string_view id)
 		entryoperations::convertGfxEntries(entry_tree_->selectedEntries(), undo_manager_.get());
 	else if (id == "arch_gfx_translate")
 	{
+		entry_tree_->Freeze();
 		entryoperations::remapGfxEntries(
 			entry_tree_->selectedEntries(),
 			dynamic_cast<GfxEntryPanel*>(gfxArea())->prevTranslation(),
 			undo_manager_.get());
+		entry_tree_->Thaw();
 	}
 	else if (id == "arch_gfx_colourise")
 		entryoperations::colourizeGfxEntries(entry_tree_->selectedEntries(), undo_manager_.get());

@@ -379,6 +379,7 @@ private:
 
 			// Driver creation unsuccessful
 			delete_fluid_synth(fs_synth_);
+			fs_synth_ = nullptr;
 			return false;
 		}
 
