@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "AudioPrefsPanel.h"
+#include "App.h"
 #include "Audio/MIDIPlayer.h"
 #include "General/UI.h"
 #include "UI/Controls/FileLocationPanel.h"
@@ -71,10 +72,14 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_dmx_padding_  = new wxCheckBox(this, -1, wxS("Use DMX padding when appropriate"));
 	rb_fluidsynth_   = new wxRadioButton(this, -1, wxS("Use Fluidsynth"));
 	flp_soundfont_   = new FileLocationPanel(
-        this, "", true, "Browse for MIDI Soundfont", "Soundfont files (*.sf2)|*.sf2");
+        this, "", app::platform() != app::Windows, "Browse for MIDI Soundfont", "Soundfont files (*.sf2)|*.sf2");
 	rb_timidity_  = new wxRadioButton(this, -1, wxS("Use Timidity"));
 	flp_timidity_ = new FileLocationPanel(
-		this, "", true, "Browse for Timidity Executable", filedialog::executableExtensionString());
+		this,
+		"",
+		app::platform() != app::Windows,
+		"Browse for Timidity Executable",
+		filedialog::executableExtensionString());
 	text_timidity_options_ = new wxTextCtrl(this, -1);
 	btn_reset_player_      = new wxButton(this, -1, wxS("Reset MIDI Player"));
 
