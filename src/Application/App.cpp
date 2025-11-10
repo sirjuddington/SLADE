@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2022 Simon Judd
@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Audio/MIDIPlayer.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
@@ -711,6 +712,7 @@ void app::exit(bool save_config)
 	// Clean up
 	drawing::cleanupFonts();
 	gl::Texture::clearAll();
+	audio::resetMIDIPlayer();
 
 	// Clear temp folder
 	std::error_code error;
