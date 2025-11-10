@@ -35,6 +35,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/EntryType/EntryType.h"
+#include "Audio/MIDIPlayer.h"
 #include "Database/Database.h"
 #include "Game/Game.h"
 #include "Game/SpecialPreset.h"
@@ -756,6 +757,7 @@ void app::exit(bool save_config)
 
 	// Clean up
 	gl::Texture::clearAll();
+	audio::resetMIDIPlayer();
 
 	// Clear temp folder
 	std::error_code error;

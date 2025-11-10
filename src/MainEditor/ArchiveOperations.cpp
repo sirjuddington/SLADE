@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -33,6 +33,7 @@
 #include "ArchiveOperations.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
@@ -44,7 +45,6 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
@@ -82,6 +82,65 @@ EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 // ArchiveOperations Namespace Functions
 //
 // -----------------------------------------------------------------------------
+namespace slade::archiveoperations
+{
+// -----------------------------------------------------------------------------
+// Checks [archive] for duplicate entry names and prompts to resolve them if any
+// are found (unless the archive format allows duplicate names).
+// Returns true on success or if no duplicates found, false if the operation was
+// cancelled
+// -----------------------------------------------------------------------------
+bool resolveDuplicateEntryNames(const Archive& archive)
+{
+	// Ignore if duplicate names are allowed
+	auto fmt = archive.formatInfo();
+	if (fmt.allow_duplicate_names)
+		return true;
+
+	// Get all directories in the archive with duplicates
+	vector<ArchiveDir*> dirs_with_dups;
+	if (archive.rootDir()->findDuplicateEntryName())
+		dirs_with_dups.push_back(archive.rootDir().get());
+	auto all_dirs = archive.rootDir()->allDirectories();
+	for (auto& dir : all_dirs)
+		if (dir->findDuplicateEntryName())
+			dirs_with_dups.push_back(dir.get());
+
+	if (dirs_with_dups.empty())
+		return true; // No duplicates
+
+	// Prompt to rename duplicates
+	if (wxMessageBox(
+			WX_FMT(
+				"The directory '{}' contains multiple entries with the same name ({}).\n\nThis is disallowed as it "
+				"will cause issues when loading the archive in game.\nClick OK to automatically rename the "
+				"duplicates by appending numbers, or Cancel to abort saving.",
+				dirs_with_dups[0]->path(),
+				dirs_with_dups[0]->findDuplicateEntryName()->name()),
+			wxS("Duplicate Entry Names Found"),
+			wxICON_WARNING | wxOK | wxCANCEL,
+			maineditor::windowWx())
+		== wxCANCEL)
+		return false; // User cancelled
+
+	// Resolve duplicate names in each affected directory
+	string log;
+	for (auto dir : dirs_with_dups)
+		dir->resolveDuplicateEntryNames(log);
+
+	// Show log
+	if (!log.empty())
+	{
+		ExtMessageDialog dlg(maineditor::windowWx(), "Duplicate Entry Names Resolved");
+		dlg.CenterOnParent();
+		dlg.setMessage("Details of entries renamed below:");
+		dlg.setExt(log);
+		dlg.ShowModal();
+	}
+
+	return true;
+}
+} // namespace slade::archiveoperations
 
 // -----------------------------------------------------------------------------
 // Saves [archive] to disk, returns true on success
@@ -105,6 +164,10 @@ bool archiveoperations::save(Archive& archive)
 			== wxNO)
 			return false;
 	}
+
+	// Check for duplicate entry names and resolve if necessary
+	if (!resolveDuplicateEntryNames(archive))
+		return false;
 
 	// Save the archive if possible
 	auto time = wxDateTime::GetTimeNow();
@@ -149,6 +212,10 @@ bool archiveoperations::saveAs(Archive& archive)
 			"Save Archive " + archive.filename(false) + " As", archive.fileExtensionString(), maineditor::windowWx());
 		!filename.empty())
 	{
+		// Check for duplicate entry names and resolve if necessary
+		if (!resolveDuplicateEntryNames(archive))
+			return false;
+
 		// Save the archive
 		if (!archive.save(filename))
 		{
@@ -1810,7 +1877,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	int n_removed = 0;
 	if (textures_dialog.ShowModal() == wxID_OK)
 	{
-		// Go through selected flats
+		// Go through selected textures
 		selection = textures_dialog.GetSelections();
 		for (int i : selection)
 		{

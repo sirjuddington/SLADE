@@ -1,4 +1,4 @@
-// Gfx entry types, other game formats
+﻿// Gfx entry types, other game formats
 {
   "gfx_other_base": {
     "icon": "e_gfx",
@@ -230,6 +230,7 @@
     "inherits": "gfx_other_base",
     "name": "Graphic (Jedi BM)",
     "format": "img_jedi_bm",
+    "editor": "gfx",
     "export_ext": "bm",
     "reliability": 80,
     "extra": [ "image" ],
@@ -239,6 +240,7 @@
     "inherits": "gfx_other_base",
     "name": "Graphic (Jedi FME)",
     "format": "img_jedi_fme",
+    "editor": "gfx",
     "export_ext": "fme",
     "reliability": 80,
     "extra": [ "image" ],
@@ -248,6 +250,7 @@
     "inherits": "gfx_other_base",
     "name": "Graphic (Jedi WAX)",
     "format": "img_jedi_wax",
+    "editor": "gfx",
     "export_ext": "wax",
     "reliability": 60,
     "extra": [ "image" ],
@@ -263,4 +266,3 @@
     "image_format": "raw_flat"
   }
 }
-

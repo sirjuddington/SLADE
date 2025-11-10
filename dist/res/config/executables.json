@@ -1,4 +1,4 @@
-{
+﻿{
   "game_executables": {
     "chocolate_doom": {
       "name": "Chocolate Doom",
@@ -440,9 +440,9 @@
         }
       ]
     },
-    "zdoom": {
-      "name": "ZDoom",
-      "file_name": "zdoom",
+    "uzdoom": {
+      "name": "UZDoom",
+      "file_name": "uzdoom",
       "configs": [
         {
           "name": "Run",
