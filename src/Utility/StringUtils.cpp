@@ -37,7 +37,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Tokenizer.h"
 #include <charconv>
-#include <regex>
 
 using namespace slade;
 
@@ -55,14 +54,6 @@ wxRegEx re_int3{ wxS("^0x[0-9A-Fa-f]+$"), wxRE_DEFAULT | wxRE_NOSUB };
 wxRegEx re_float{ wxS("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$"), wxRE_DEFAULT | wxRE_NOSUB };
 } // namespace slade::wxStringUtils
 
-namespace slade::strutil
-{
-std::regex re_int1{ "^[+-]?[0-9]+[0-9]*$" };
-std::regex re_int2{ "^0[0-9]+$" };
-std::regex re_int3{ "^0x[0-9A-Fa-f]+$" };
-std::regex re_float{ "^[+-]?[0-9]+[.][0-9]*([eE][+-]?[0-9]+)?$" };
-} // namespace slade::strutil
-
 
 // -----------------------------------------------------------------------------
 //
@@ -77,8 +68,42 @@ std::regex re_float{ "^[+-]?[0-9]+[.][0-9]*([eE][+-]?[0-9]+)?$" };
 // -----------------------------------------------------------------------------
 bool strutil::isInteger(const string& str, bool allow_hex)
 {
-	return std::regex_search(str, re_int1) || std::regex_search(str, re_int2)
-		   || (allow_hex && std::regex_search(str, re_int3));
+    if (str.empty())
+        return false;
+
+    // If hex is allowed, check for starting 0x
+    if (allow_hex)
+    {
+        if (str.size() >= 3 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+        {
+			// Check all remaining characters are valid hex digits
+            for (size_t i = 2; i < str.size(); ++i)
+            {
+				if (const auto c = str[i];
+					!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))
+                    return false;
+            }
+            return true;
+        }
+    }
+
+    // Check for optional leading + or -...
+    size_t i = 0;
+    if (str[0] == '+' || str[0] == '-')
+    {
+        if (str.size() == 1) 
+            return false;
+        i = 1;
+    }
+
+	// ...then one or more digits
+    if (i >= str.size())
+        return false;
+    for (; i < str.size(); ++i)
+		if (!isdigit(static_cast<unsigned char>(str[i])))
+            return false;
+
+    return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -86,7 +111,19 @@ bool strutil::isInteger(const string& str, bool allow_hex)
 // -----------------------------------------------------------------------------
 bool strutil::isHex(const string& str)
 {
-	return std::regex_search(str, re_int3);
+    if (str.size() < 3)
+        return false;
+
+	// Check for starting 0x
+    if (str[0] != '0' || !(str[1] == 'x' || str[1] == 'X'))
+        return false;
+
+	// Check all remaining characters are valid hex digits
+    for (size_t i = 2; i < str.size(); ++i)
+		if (const auto c = str[i]; !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))
+            return false;
+
+    return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -94,10 +131,57 @@ bool strutil::isHex(const string& str)
 // -----------------------------------------------------------------------------
 bool strutil::isFloat(const string& str)
 {
-	if (str.empty() || str[0] == '$')
-		return false;
+    if (str.empty())
+        return false;
 
-	return std::regex_search(str, re_float);
+    // Check for optional leading + or -
+	size_t pos = 0;
+    if (str[pos] == '+' || str[pos] == '-')
+    {
+        ++pos;
+        if (pos >= str.size())
+            return false;
+    }
+
+    // At least one digit before '.'
+    size_t digits_before = 0;
+    while (pos < str.size() && isdigit(static_cast<unsigned char>(str[pos])))
+    {
+        ++pos;
+        ++digits_before;
+    }
+    if (digits_before == 0)
+        return false;
+
+    // Must have a decimal point
+    if (pos >= str.size() || str[pos] != '.')
+        return false;
+    ++pos; // Skip '.'
+
+    // Zero or more digits after decimal
+    while (pos < str.size() && isdigit(static_cast<unsigned char>(str[pos])))
+        ++pos;
+
+    // Optional exponent
+    if (pos < str.size() && (str[pos] == 'e' || str[pos] == 'E'))
+    {
+        ++pos;
+        if (pos < str.size() && (str[pos] == '+' || str[pos] == '-'))
+            ++pos;
+
+        // Must have at least one digit in exponent
+        size_t exp_digits = 0;
+        while (pos < str.size() && isdigit(static_cast<unsigned char>(str[pos])))
+        {
+            ++pos;
+            ++exp_digits;
+        }
+        if (exp_digits == 0)
+            return false;
+    }
+
+    // Invalid if we haven't reached the end of the string
+    return pos == str.size();
 }
 
 // -----------------------------------------------------------------------------
