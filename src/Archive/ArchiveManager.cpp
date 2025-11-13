@@ -37,6 +37,7 @@
 #include "ArchiveDir.h"
 #include "ArchiveEntry.h"
 #include "ArchiveFormatHandler.h"
+#include "Database/Database.h"
 #include "Database/Tables/ArchiveFile.h"
 #include "EntryType/EntryType.h"
 #include "General/Console.h"
@@ -697,6 +698,9 @@ void ArchiveManager::setArchiveDbId(const Archive& archive, i64 db_id)
 // -----------------------------------------------------------------------------
 void ArchiveManager::openWadsInRoot(const Archive& archive)
 {
+	// Don't want to trigger this signal for embedded wads
+	database::signals().archive_file_updated.block();
+
 	for (const auto& entry : archive.rootDir()->entries())
 	{
 		if (entry->type() == EntryType::unknownType())
@@ -707,6 +711,8 @@ void ArchiveManager::openWadsInRoot(const Archive& archive)
 			// Second true: open silently, don't open a tab for it
 			openArchive(entry.get(), true, true);
 	}
+
+	database::signals().archive_file_updated.unblock();
 }
 
 // -----------------------------------------------------------------------------
