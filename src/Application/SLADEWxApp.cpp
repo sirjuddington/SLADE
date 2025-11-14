@@ -49,7 +49,6 @@
 #include <wx/statbmp.h>
 #include <wx/url.h>
 #include <wx/webrequest.h>
-#undef BOOL
 #ifdef UPDATEREVISION
 #include "gitinfo.h"
 #endif
@@ -82,8 +81,15 @@ int win_version_major = 0;
 int win_version_minor = 0;
 } // namespace slade::global
 
-string current_action;
-bool   update_check_message_box = false;
+namespace
+{
+string       current_action;
+bool         update_check_message_box = false;
+const string update_check_url{
+	"https://raw.githubusercontent.com/sirjuddington/SLADE-aux/refs/heads/main/version_win.txt"
+};
+} // namespace
+
 CVAR(String, dir_last, "", CVar::Flag::Save)
 CVAR(Bool, update_check, true, CVar::Flag::Save)
 CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
@@ -593,7 +599,7 @@ void SLADEWxApp::checkForUpdates(bool message_box)
 #ifdef __WXMSW__
 	update_check_message_box = message_box;
 	log::info(1, "Checking for updates...");
-	auto request = wxWebSession::GetDefault().CreateRequest(this, wxS("https://slade.mancubus.net/version_win.txt"));
+	auto request = wxWebSession::GetDefault().CreateRequest(this, wxString::FromUTF8(update_check_url));
 	request.Start();
 #endif
 }
@@ -650,7 +656,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxWebRequestEvent& e)
 	// Check failed
 	if (e.GetState() == wxWebRequest::State_Failed || e.GetState() == wxWebRequest::State_Unauthorized)
 	{
-		log::error("Version check failed, unable to connect");
+		log::error("Update check failed, unable to connect");
 		if (update_check_message_box)
 			wxMessageBox(
 				wxS("Update check failed: unable to connect to internet. "
@@ -715,7 +721,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxWebRequestEvent& e)
 	// Check for correct info
 	if (stable.major == 0 || beta.major == 0)
 	{
-		log::warning("Version check failed, received invalid version info");
+		log::warning("Update check failed, received invalid version info");
 		log::debug("Received version text:\n\n{}", response_string.utf8_string());
 		if (update_check_message_box)
 			wxMessageBox(wxS("Update check failed: received invalid version info."), wxS("Check for Updates"));
