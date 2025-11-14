@@ -35,6 +35,7 @@
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 
 using namespace slade;
@@ -84,6 +85,26 @@ ScriptSettingsPanel::ScriptSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 // -----------------------------------------------------------------------------
 void ScriptSettingsPanel::loadSettings()
 {
+	// Try to find acc executable if path is not set
+	static string detected_acc_path;
+	if (path_acc.value.empty())
+	{
+		if (detected_acc_path.empty())
+			detected_acc_path = fileutil::findExecutable("acc", "acs/acc");
+
+		path_acc = detected_acc_path;
+	}
+
+	// Try to find java executable if path is not set
+	static string detected_java_path;
+	if (path_java.value.empty())
+	{
+		if (detected_java_path.empty())
+			detected_java_path = fileutil::findExecutable("java");
+
+		path_java = detected_java_path;
+	}
+
 	flp_acc_path_->setLocation(path_acc);
 	cb_always_show_output_->SetValue(acc_always_show_output);
 	flp_decohack_path_->setLocation(path_decohack);

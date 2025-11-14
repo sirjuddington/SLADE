@@ -39,6 +39,7 @@
 #include "UI/Layout.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
 
 using namespace slade;
@@ -148,6 +149,27 @@ void GraphicsSettingsPanel::loadSettings()
 			choice_presets_->SetSelection(i);
 			break;
 		}
+	}
+
+	// Try to find PNG tools' executables if paths not already set
+	static string detected_pngcrush, detected_pngout, detected_deflopt;
+	if (path_pngcrush.value.empty())
+	{
+		if (detected_pngcrush.empty())
+			detected_pngcrush = fileutil::findExecutable("pngcrush", "png");
+		path_pngcrush = detected_pngcrush;
+	}
+	if (path_pngout.value.empty())
+	{
+		if (detected_pngout.empty())
+			detected_pngout = fileutil::findExecutable("pngout", "png");
+		path_pngout = detected_pngout;
+	}
+	if (path_deflopt.value.empty())
+	{
+		if (detected_deflopt.empty())
+			detected_deflopt = fileutil::findExecutable("deflopt", "png");
+		path_deflopt = detected_deflopt;
 	}
 
 	// PNG

@@ -35,6 +35,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/EntryType/EntryType.h"
+#include "Audio/MIDIPlayer.h"
 #include "Database/Database.h"
 #include "Game/Game.h"
 #include "Game/SpecialPreset.h"
@@ -721,6 +722,8 @@ void app::saveConfigFile()
 // -----------------------------------------------------------------------------
 void app::exit(bool save_config)
 {
+	namespace fs = std::filesystem;
+
 	exiting = true;
 
 	if (save_config)
@@ -754,15 +757,16 @@ void app::exit(bool save_config)
 
 	// Clean up
 	gl::Texture::clearAll();
+	audio::resetMIDIPlayer();
 
 	// Clear temp folder
 	std::error_code error;
-	for (auto& item : std::filesystem::directory_iterator{ path("", Dir::Temp) })
+	for (auto& item : fs::directory_iterator{ fs::u8path(path("", Dir::Temp)) })
 	{
 		if (!item.is_regular_file())
 			continue;
 
-		if (!std::filesystem::remove(item, error))
+		if (!fs::remove(item, error))
 			log::warning("Could not clean up temporary file \"{}\": {}", item.path().string(), error.message());
 	}
 

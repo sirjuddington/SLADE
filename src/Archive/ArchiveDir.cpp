@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -496,9 +496,11 @@ shared_ptr<ArchiveDir> ArchiveDir::clone(shared_ptr<ArchiveDir> parent)
 // -----------------------------------------------------------------------------
 bool ArchiveDir::exportTo(string_view path) const
 {
+	namespace fs = std::filesystem;
+
 	// Create directory if needed
-	if (!std::filesystem::exists(path))
-		std::filesystem::create_directory(path);
+	if (!fs::exists(fs::u8path(path)))
+		fs::create_directory(fs::u8path(path));
 
 	// Export entries as files
 	for (auto& entry : entries_)
@@ -556,10 +558,11 @@ void ArchiveDir::ensureUniqueName(ArchiveEntry* entry) const
 }
 
 // -----------------------------------------------------------------------------
-// Returns the first entry in the directory that has the same name as another,
-// or nullptr if all names are unique
+// Returns the first* entry in the directory that has the same name as another,
+// or nullptr if all names are unique.
+// *If [ignore_first] is true, returns the second of any duplicates found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveDir::findDuplicateEntryName() const
+ArchiveEntry* ArchiveDir::findDuplicateEntryName(bool ignore_first) const
 {
 	unsigned   i1        = 0;
 	const auto n_entries = entries_.size();
@@ -571,7 +574,7 @@ ArchiveEntry* ArchiveDir::findDuplicateEntryName() const
 		while (i2 < n_entries)
 		{
 			if (strutil::equalCI(name, entries_[i2]->name()))
-				return entries_[i1].get();
+				return entries_[ignore_first ? i2 : i1].get();
 
 			++i2;
 		}
@@ -582,12 +585,29 @@ ArchiveEntry* ArchiveDir::findDuplicateEntryName() const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Ensures all entries in this directory have unique names by renaming any
+// duplicates.
+// Writes a log of any renames to [log]
+// -----------------------------------------------------------------------------
+void ArchiveDir::resolveDuplicateEntryNames(string& log) const
+{
+	ArchiveEntry* dup_entry;
+	while ((dup_entry = findDuplicateEntryName(true)) != nullptr)
+	{
+		string prev_name = dup_entry->name();
+		ensureUniqueName(dup_entry);
+		log += fmt::format("In \"{}\", renamed entry \"{}\" to \"{}\"\n", path(), prev_name, dup_entry->name());
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //
 // ArchiveDir Class Static Functions
 //
 // -----------------------------------------------------------------------------
+
 
 // -----------------------------------------------------------------------------
 // Returns the subdir at [path] within the directory [root].

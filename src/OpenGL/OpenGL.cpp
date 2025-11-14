@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -45,7 +45,7 @@ CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
 CVAR(Int, gl_version_major, 0, CVar::Flag::Save)
 CVAR(Int, gl_version_minor, 0, CVar::Flag::Save)
 CVAR(Int, gl_msaa, 2, CVar::Flag::Save)
-CVAR(Bool, gl_debug, false, CVar::Flag::Save)
+CVAR(Int, gl_debug, 1, CVar::Flag::Save)
 
 namespace slade::gl
 {
@@ -72,6 +72,10 @@ unsigned         drawcall_count = 0;
 // -----------------------------------------------------------------------------
 namespace slade::gl
 {
+// -----------------------------------------------------------------------------
+// Builds a wxGLAttributes object with common attributes and the given [depth]
+// buffer precision
+// -----------------------------------------------------------------------------
 wxGLAttributes& buildGlAttr(wxGLAttributes& attr, int depth)
 {
 	if (msaa < 0)
@@ -87,6 +91,9 @@ wxGLAttributes& buildGlAttr(wxGLAttributes& attr, int depth)
 	return attr;
 }
 
+// -----------------------------------------------------------------------------
+// OpenGL debug message callback
+// -----------------------------------------------------------------------------
 void GLAPIENTRY glMessageCallback(
 	GLenum        source,
 	GLenum        type,
@@ -102,6 +109,9 @@ void GLAPIENTRY glMessageCallback(
 	//	log::info("OpenGL: {}", message);
 }
 
+// -----------------------------------------------------------------------------
+// Tries to create the best possible compatibility profile OpenGL context
+// -----------------------------------------------------------------------------
 wxGLContext* createBestContext(wxGLCanvas* canvas)
 {
 	// Try OpenGL 4.6 -> 4.0
@@ -144,13 +154,17 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			if (gl_version_major > 0)
 			{
 				wxGLContextAttrs attr;
-				attr.PlatformDefaults().CoreProfile().OGLVersion(gl_version_major, gl_version_minor).EndList();
+				attr.PlatformDefaults().CompatibilityProfile().OGLVersion(gl_version_major, gl_version_minor).EndList();
 				context = new wxGLContext(canvas, nullptr, &attr);
 				if (!context->IsOK())
 				{
 					// Context creation failed
 					delete context;
 					context = nullptr;
+					log::error(
+						"Failed to create OpenGL context with requested version {}.{}",
+						gl_version_major.value,
+						gl_version_minor.value);
 				}
 			}
 
@@ -159,19 +173,18 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 				context = createBestContext(canvas);
 
 			// Check created context is valid
-			if (!context->IsOK())
+			if (!context || !context->IsOK())
 			{
-				log::error("Failed to setup the OpenGL context");
+				log::error("Failed to create a valid OpenGL context");
 				delete context;
-				context        = nullptr;
-				context_failed = true;
+				context = nullptr;
 				return nullptr;
 			}
 
 			// Make current
 			if (!context->SetCurrent(*canvas))
 			{
-				log::error("Failed to setup the OpenGL context");
+				log::error("Failed to set the global OpenGL context as current");
 				delete context;
 				context        = nullptr;
 				context_failed = true;
@@ -181,6 +194,7 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			// Initialize OpenGL
 			if (!init())
 			{
+				log::error("Failed to initialize OpenGL");
 				delete context;
 				context        = nullptr;
 				context_failed = true;
@@ -202,7 +216,7 @@ bool gl::init()
 	if (initialised)
 		return true;
 
-	log::info(1, "Initialising OpenGL...");
+	log::info(1, "Initializing OpenGL...");
 
 	// Initialise GLAD
 	if (!gladLoadGL())
@@ -235,7 +249,7 @@ bool gl::init()
 		log::info("Framebuffer Objects not supported");
 
 	// Log GL messages
-	if (gl_debug)
+	if (gl_debug > 0 && glDebugMessageCallback)
 	{
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(glMessageCallback, nullptr);
@@ -324,8 +338,14 @@ wxGLAttributes gl::getWxGLAttribs()
 	if (wxGLCanvas::IsDisplaySupported(attr))
 		return attr;
 
-	// Then 16bit depth buffer (if this isn't supported then it's something else)
+	// Then 16bit depth buffer if not supported
 	buildGlAttr(attr, 16);
+
+	// Last resort - try wx default attributes
+	attr.Reset();
+	attr.Defaults();
+	if (!wxGLCanvas::IsDisplaySupported(attr))
+		log::error("Failed to get valid wxGLAttributes for OpenGL canvas");
 
 	return attr;
 }

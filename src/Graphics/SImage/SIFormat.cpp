@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -30,11 +30,11 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#undef BOOL
+#include "SIFormat.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Graphics/Palette/Palette.h"
-#include "SIFormat.h"
+#include "Utility/Memory.h"
 
 using namespace slade;
 
@@ -537,11 +537,9 @@ void SIFormat::initFormats()
 	new SIFRottWall();
 
 	// Jedi Engine (Dark Forces) formats
-#if 0
 	new SIFJediBM();
 	new SIFJediFME();
 	new SIFJediWAX();
-#endif
 
 	// Other game formats
 	new SIFHalfLifeTex();

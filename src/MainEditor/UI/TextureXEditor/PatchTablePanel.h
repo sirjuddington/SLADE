@@ -20,6 +20,8 @@ public:
 	PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor = nullptr);
 	~PatchTablePanel() override = default;
 
+	void setupLayout();
+
 private:
 	PatchTable*         patch_table_      = nullptr;
 	PatchTableListView* list_patches_     = nullptr;
@@ -30,7 +32,6 @@ private:
 	ui::ZoomControl*    zc_zoom_          = nullptr;
 	SAuiToolBar*        toolbar_          = nullptr;
 
-	void setupLayout();
 	void updateDisplay();
 
 	void addPatch();

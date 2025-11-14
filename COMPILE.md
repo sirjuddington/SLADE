@@ -2,13 +2,14 @@
 
 ### Mandatory build-time requirements
 
-* C++17 compiler (e.g. g++ 8.x)
+* C++17 compiler (e.g. g++ >= 8.x)
 * bzip2 library
 * glm
-* mpg123 library
+* mpg123 library >= 1.28.1
 * OpenGL
 * SFML
-* wxWidgets 3.2+
+* wxWidgets >= 3.3.1 (it may build with lesser, but that is not recommended due
+  to known bugs)
 * zlib
 * libwebp
 

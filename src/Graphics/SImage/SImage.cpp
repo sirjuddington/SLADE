@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -481,12 +481,21 @@ void SImage::create(int width, int height, Type type, const Palette* pal, int in
 		palette_.reset();
 
 	// Create blank image
-	data_.reSize(width * height * bpp(), false);
-	data_.fillData(0);
-	if (type == Type::PalMask)
+	if (width > 0 && height > 0)
 	{
-		mask_.reSize(width * height, false);
-		mask_.fillData(0);
+		data_.reSize(width * height * bpp(), false);
+		data_.fillData(0);
+		if (type == Type::PalMask)
+		{
+			mask_.reSize(width * height, false);
+			mask_.fillData(0);
+		}
+	}
+	else
+	{
+		data_.clear();
+		if (type == Type::PalMask)
+			mask_.clear();
 	}
 }
 
@@ -620,7 +629,7 @@ size_t SImage::countColours() const
 // -----------------------------------------------------------------------------
 // Shifts all the used colours to the beginning of the palette
 // -----------------------------------------------------------------------------
-void SImage::shrinkPalette(Palette* pal) const
+void SImage::shrinkPalette(Palette* pal)
 {
 	// If the picture is not paletted, stop.
 	if (type_ != Type::PalMask)

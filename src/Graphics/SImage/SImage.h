@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace slade
 {
@@ -112,7 +112,7 @@ public:
 	void   fillAlpha(uint8_t alpha = 0);
 	short  findUnusedColour(short preferred = -1) const;
 	size_t countColours() const;
-	void   shrinkPalette(Palette* pal = nullptr) const;
+	void   shrinkPalette(Palette* pal = nullptr);
 	bool   copyImage(const SImage* image);
 
 	// Image format reading

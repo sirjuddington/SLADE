@@ -17,6 +17,7 @@ namespace fileutil
 	bool           removeDir(string_view path);
 	vector<string> allFilesInDir(string_view path, bool include_subdirs = false, bool include_dir_paths = false);
 	time_t         fileModifiedTime(string_view path);
+	string         findExecutable(string_view exe_name, string_view bundle_dir = {});
 	string         fileHash(string_view path);
 } // namespace fileutil
 

@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -127,10 +127,9 @@ void MapCanvas::draw()
 // -----------------------------------------------------------------------------
 void MapCanvas::mouseToCenter()
 {
-	auto rect   = GetScreenRect();
-	mouse_warp_ = true;
-	sf::Mouse::setPosition(
-		sf::Vector2i(rect.x + static_cast<int>(rect.width * 0.5), rect.y + static_cast<int>(rect.height * 0.5)));
+	mouse_warp_       = true;
+	const wxSize size = GetSize();
+	WarpPointer(int(size.x * 0.5), int(size.y * 0.5));
 }
 
 // -----------------------------------------------------------------------------
@@ -178,33 +177,29 @@ void MapCanvas::lockMouse(bool lock)
 void MapCanvas::mouseLook3d()
 {
 	// Check for 3d mode
-	if (context_->editMode() != Mode::Visual /* || !context_->mouseLocked()*/)
-		return;
-
-	auto overlay_current = context_->currentOverlay();
-	if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
+	if (context_->editMode() == Mode::Visual && context_->mouseLocked())
 	{
-		// Get relative mouse movement (scale with dpi on macOS and Linux)
-		const bool   useScaleFactor = (app::platform() == app::MacOS || app::platform() == app::Linux);
-		const double scale          = useScaleFactor ? GetContentScaleFactor() : 1.;
-		const double threshold      = scale - 1.0;
-
-		wxRealPoint mouse_pos = wxGetMousePosition();
-		mouse_pos.x *= scale;
-		mouse_pos.y *= scale;
-
-		const wxRealPoint screen_pos = GetScreenPosition();
-		const double      xpos       = mouse_pos.x - screen_pos.x;
-		const double      ypos       = mouse_pos.y - screen_pos.y;
-
-		const wxSize size = GetSize();
-		const double xrel = xpos - floor(size.x * 0.5);
-		const double yrel = ypos - floor(size.y * 0.5);
-
-		if (fabs(xrel) > threshold || fabs(yrel) > threshold)
+		auto overlay_current = context_->currentOverlay();
+		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
-			context_->camera3d().look(xrel, yrel);
-			mouseToCenter();
+			// Get relative mouse movement
+			const wxPoint mouse_screen_pos = wxGetMousePosition();
+			const wxPoint mouse_client_pos = ScreenToClient(mouse_screen_pos);
+
+			const wxSize size = GetSize();
+			double       xrel = mouse_client_pos.x - floor(size.x * 0.5);
+			double       yrel = mouse_client_pos.y - floor(size.y * 0.5);
+
+			// Scale from logical to physical pixels for consistent movement on HiDPI displays
+			const double scale = GetContentScaleFactor();
+			xrel *= scale;
+			yrel *= scale;
+
+			if (fabs(xrel) > 0 || fabs(yrel) > 0)
+			{
+				context_->camera3d().look(xrel, yrel);
+				mouseToCenter();
+			}
 		}
 	}
 }

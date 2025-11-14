@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -30,8 +30,10 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "AudioSettingsPanel.h"
+
+#include "App.h"
 #include "Audio/MIDIPlayer.h"
+#include "AudioSettingsPanel.h"
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/Layout.h"
 #include "UI/WxUtils.h"
@@ -74,10 +76,14 @@ AudioSettingsPanel::AudioSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	cb_dmx_padding_  = new wxCheckBox(this, -1, wxS("Use DMX padding when appropriate"));
 	rb_fluidsynth_   = new wxRadioButton(this, -1, wxS("Use Fluidsynth"));
 	flp_soundfont_   = new FileLocationPanel(
-        this, "", true, "Browse for MIDI Soundfont", "Soundfont files (*.sf2)|*.sf2");
+        this, "", app::platform() != app::Windows, "Browse for MIDI Soundfont", "Soundfont files (*.sf2)|*.sf2");
 	rb_timidity_  = new wxRadioButton(this, -1, wxS("Use Timidity"));
 	flp_timidity_ = new FileLocationPanel(
-		this, "", true, "Browse for Timidity Executable", filedialog::executableExtensionString());
+		this,
+		"",
+		app::platform() != app::Windows,
+		"Browse for Timidity Executable",
+		filedialog::executableExtensionString());
 	text_timidity_options_ = new wxTextCtrl(this, -1);
 	btn_reset_player_      = new wxButton(this, -1, wxS("Reset MIDI Player"));
 
@@ -159,7 +165,7 @@ void AudioSettingsPanel::setupLayout()
 	// MIDI Playback (fluidsynth/timidity)
 	auto gbsizer = new wxGridBagSizer(lh.padSmall(), lh.pad());
 	gbsizer->Add(rb_fluidsynth_, { 0, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
-	gbsizer->Add(new wxStaticText(this, -1, wxS("Location of MIDI soundfont:")), { 1, 0 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Use custom MIDI soundfont:")), { 1, 0 }, { 1, 1 }, wxEXPAND);
 	gbsizer->Add(flp_soundfont_, { 2, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
 	gbsizer->Add(rb_timidity_, { 0, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, lh.pad());
 	gbsizer->Add(new wxStaticText(this, -1, wxS("Location of Timidity executable:")), { 1, 1 }, { 1, 1 }, wxEXPAND);

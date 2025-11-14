@@ -508,11 +508,12 @@ bool EntryType::loadEntryTypes()
 
 	// If the directory doesn't exist create it
 	namespace fs = std::filesystem;
-	if (!fs::exists(app::path("entry_types", app::Dir::User)))
-		fs::create_directory(app::path("entry_types", app::Dir::User));
+	auto path    = fs::u8path(app::path("entry_types", app::Dir::User));
+	if (!fs::exists(path))
+		fs::create_directory(path);
 
 	// Go through each file in the custom types directory
-	for (const auto& item : fs::directory_iterator{ app::path("entry_types", app::Dir::User) })
+	for (const auto& item : fs::directory_iterator{ path })
 	{
 		if (!item.is_regular_file())
 			continue;

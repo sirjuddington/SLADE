@@ -58,6 +58,8 @@ vector<unique_ptr<SAction>> actions;
 
 vector<SActionHandler*> action_handlers;
 int                     wx_id_offset = 0;
+
+vector<string> action_history;
 } // namespace
 
 
@@ -355,6 +357,14 @@ int SAction::nextWxId()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the history of actions that have been handled
+// -----------------------------------------------------------------------------
+const vector<string>& SAction::history()
+{
+	return action_history;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the SAction signals struct
 // -----------------------------------------------------------------------------
 SAction::Signals& SAction::signals()
@@ -445,11 +455,8 @@ bool SActionHandler::doAction(string_view id)
 	if (!handled)
 		log::warning(fmt::format("Warning: Action \"{}\" not handled", id));
 
-	// Log action (to log file only)
-	// TODO: this
-	// exiting = true;
-	// log::info(1, "**** Action \"%s\"", id);
-	// exiting = false;
+	// Log action
+	action_history.emplace_back(id);
 
 	// Return true if handled
 	return handled;

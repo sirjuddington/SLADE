@@ -1,7 +1,6 @@
-#ifndef FILES_H
+﻿#ifndef FILES_H
 #define FILES_H
 
-#include "Utility/MemChunk.h"
 #include "templates.h"
 #include "tarray.h"
 #include <stdio.h>
