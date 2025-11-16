@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15) # Minimum CMake 3.15 for precompiled header support
+﻿cmake_minimum_required(VERSION 3.15) # Minimum CMake 3.15 for precompiled header support
 project(SLADE VERSION 3.2.0)
 
 # Additional cmake modules
@@ -38,7 +38,7 @@ if (BUILD_WX)
 	FetchContent_Declare(
 		wxWidgets
 		GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-		GIT_TAG 5550862651146739cf43e07b95d3963241506715 # master as of 2025-10-21
+		GIT_TAG 08b10e373e8de34ec3f7439615e16a2288df0b35 # master as of 2025-11-10
 		#GIT_TAG v3.3.1
 	)
 	FetchContent_GetProperties(wxwidgets)

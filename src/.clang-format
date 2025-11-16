@@ -7,7 +7,7 @@ AlignEscapedNewlines: Left
 AlignOperands: true
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false
-AllowShortBlocksOnASingleLine: true
+AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
@@ -38,7 +38,8 @@ Language: Cpp
 MaxEmptyLinesToKeep: 10
 NamespaceIndentation: Inner
 PointerAlignment: Left
-ReflowComments: true
+ReferenceAlignment: Left
+ReflowComments: Always
 SortIncludes: true
 IncludeCategories:
   - Regex: 'Main.h'
@@ -57,7 +58,7 @@ SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-Standard: Cpp11
+Standard: Latest
 TabWidth: 4
 UseTab: ForContinuationAndIndentation
 PenaltyReturnTypeOnItsOwnLine: 1000
