@@ -78,7 +78,7 @@ inline string pathSeparator()
 // -----------------------------------------------------------------------------
 bool fileutil::fileExists(string_view path)
 {
-	return wxFileExists(fromUtf8(path));
+	return !path.empty() && wxFileExists(fromUtf8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -86,7 +86,7 @@ bool fileutil::fileExists(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::dirExists(string_view path)
 {
-	return wxDirExists(fromUtf8(path));
+	return !path.empty() && wxDirExists(fromUtf8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -94,6 +94,9 @@ bool fileutil::dirExists(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::validExecutable(string_view path)
 {
+	if (path.empty())
+		return false;
+
 	// Special handling for macOS .app dir
 	if (app::platform() == app::Platform::MacOS)
 	{
@@ -124,7 +127,7 @@ bool fileutil::validExecutable(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::removeFile(string_view path)
 {
-	return wxRemoveFile(fromUtf8(path));
+	return !path.empty() && wxRemoveFile(fromUtf8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -133,6 +136,9 @@ bool fileutil::removeFile(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::copyFile(string_view from, string_view to, bool overwrite)
 {
+	if (from.empty() || to.empty())
+		return false;
+
 	return wxCopyFile(fromUtf8(from), fromUtf8(to), overwrite);
 }
 
@@ -182,7 +188,7 @@ bool fileutil::writeStringToFile(const string& str, const string& path)
 // -----------------------------------------------------------------------------
 bool fileutil::createDir(string_view path)
 {
-	return wxMkdir(fromUtf8(path));
+	return !path.empty() && wxMkdir(fromUtf8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -191,7 +197,7 @@ bool fileutil::createDir(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::removeDir(string_view path)
 {
-	return wxRmdir(fromUtf8(path));
+	return !path.empty() && wxRmdir(fromUtf8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -204,6 +210,9 @@ bool fileutil::removeDir(string_view path)
 vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, bool include_dir_paths)
 {
 	vector<string> paths;
+
+	if (path.empty())
+		return paths;
 
 	wxArrayString all_files;
 	wxDir::GetAllFiles(
@@ -226,6 +235,9 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 // -----------------------------------------------------------------------------
 time_t fileutil::fileModifiedTime(string_view path)
 {
+	if (path.empty())
+		return 0;
+
 	return wxFileModificationTime(fromUtf8(path));
 }
 
@@ -235,6 +247,9 @@ time_t fileutil::fileModifiedTime(string_view path)
 // -----------------------------------------------------------------------------
 string fileutil::findExecutable(string_view exe_name, string_view bundle_dir)
 {
+	if (exe_name.empty())
+		return {};
+
 	// Check for bundled tool executable
 	if (!bundle_dir.empty() && app::platform() == app::Platform::Windows)
 	{

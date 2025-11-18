@@ -135,7 +135,7 @@ void loadCustomScripts()
 		fileutil::createDir(user_scripts_dir);
 
 	// Go through each file in the custom_scripts directory
-	auto files = fileutil::allFilesInDir(user_scripts_dir);
+	auto files = fileutil::allFilesInDir(user_scripts_dir, true, true);
 	for (const auto& filename : files)
 		addEditorScriptFromFile(filename, ScriptType::Custom);
 }
