@@ -197,7 +197,7 @@ bool fileutil::createDir(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::removeDir(string_view path)
 {
-	return !path.empty() && wxRmdir(fromUtf8(path));
+	return !path.empty() && wxDir::Remove(fromUtf8(path), wxPATH_RMDIR_RECURSIVE);
 }
 
 // -----------------------------------------------------------------------------
