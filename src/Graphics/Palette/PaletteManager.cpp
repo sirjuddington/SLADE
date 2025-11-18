@@ -38,7 +38,6 @@
 #include "General/Misc.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
-#include <filesystem>
 
 using namespace slade;
 
@@ -188,27 +187,21 @@ bool PaletteManager::loadResourcePalettes()
 // -----------------------------------------------------------------------------
 bool PaletteManager::loadCustomPalettes()
 {
-	namespace fs = std::filesystem;
-
 	// If the directory doesn't exist create it
 	auto custom_path = app::path("palettes", app::Dir::User);
 	if (!fileutil::dirExists(custom_path))
 		fileutil::createDir(custom_path);
 
-	for (const auto& item : fs::directory_iterator{ fs::u8path(custom_path) })
+	for (const auto& file : fileutil::allFilesInDir(custom_path, true, true))
 	{
-		if (!item.is_regular_file())
-			continue;
-
 		// Load palette data
-		auto     pal       = std::make_unique<Palette>();
-		auto     file_path = item.path().string();
+		auto     pal = std::make_unique<Palette>();
 		MemChunk mc;
-		mc.importFile(file_path);
+		mc.importFile(file);
 		pal->loadMem(mc);
 
 		// Add the palette
-		addPalette(std::move(pal), strutil::Path::fileNameOf(file_path, false));
+		addPalette(std::move(pal), strutil::Path::fileNameOf(file, false));
 	}
 
 	return true;

@@ -36,9 +36,9 @@
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Console.h"
 #include "MainEditor/MainEditor.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
-#include <filesystem>
 
 using namespace slade;
 
@@ -564,24 +564,19 @@ bool EntryType::loadEntryTypes()
 	// -------- READ CUSTOM TYPES ---------
 
 	// If the directory doesn't exist create it
-	namespace fs = std::filesystem;
-	auto path    = fs::u8path(app::path("entry_types", app::Dir::User));
-	if (!fs::exists(path))
-		fs::create_directory(path);
+	auto path = app::path("entry_types", app::Dir::User);
+	if (!fileutil::dirExists(path))
+		fileutil::createDir(path);
 
 	// Go through each file in the custom types directory
-	for (const auto& item : fs::directory_iterator{ path })
+	for (const auto& file : fileutil::allFilesInDir(path, true, true))
 	{
-		if (!item.is_regular_file())
-			continue;
-
 		// Load file data
 		MemChunk mc;
-		auto     path = item.path().string();
-		mc.importFile(path);
+		mc.importFile(file);
 
 		// Parse file
-		readEntryTypeDefinitions(mc.asString(), path);
+		readEntryTypeDefinitions(mc.asString(), file);
 	}
 
 	return true;
