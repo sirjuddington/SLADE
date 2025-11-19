@@ -871,7 +871,8 @@ bool StyleSet::loadCustomStyles()
 {
 	// If the custom stylesets directory doesn't exist, create it
 	auto custom_dir = app::path("text_styles", app::Dir::User);
-	fileutil::createDir(custom_dir);
+	if (!fileutil::dirExists(custom_dir))
+		fileutil::createDir(custom_dir);
 
 	// Go through each file in the directory, get list of json and sss files
 	vector<string> json_files;

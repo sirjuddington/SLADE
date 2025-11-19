@@ -42,7 +42,6 @@
 #include "UI/ScriptManagerWindow.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
-#include <filesystem>
 #include <fstream>
 
 using namespace slade;
@@ -140,7 +139,7 @@ void loadCustomScripts()
 		fileutil::createDir(user_scripts_dir);
 
 	// Go through each file in the custom_scripts directory
-	auto files = fileutil::allFilesInDir(user_scripts_dir);
+	auto files = fileutil::allFilesInDir(user_scripts_dir, true, true);
 	for (const auto& filename : files)
 		addEditorScriptFromFile(filename, ScriptType::Custom);
 }
@@ -183,16 +182,14 @@ void loadEditorScripts(ScriptType type, string_view dir)
 // -----------------------------------------------------------------------------
 void exportUserScripts(string_view path, const ScriptList& list)
 {
-	namespace fs = std::filesystem;
-
 	// Check dir exists
 	auto scripts_dir = app::path(path, app::Dir::User);
 	if (fileutil::dirExists(scripts_dir))
 	{
 		// Exists, clear lua files in directory
-		for (const auto& item : fs::directory_iterator{ fs::u8path(scripts_dir) })
-			if (item.is_regular_file() && item.path().extension() == "lua")
-				fs::remove(item);
+		for (const auto& file : fileutil::allFilesInDir(scripts_dir, true, true))
+			if (strutil::Path::extensionOf(file) == "lua")
+				fileutil::removeFile(file);
 	}
 	else
 	{

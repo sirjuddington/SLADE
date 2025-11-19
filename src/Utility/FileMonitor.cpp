@@ -38,7 +38,7 @@
 #include "Archive/ArchiveFormat.h"
 #include "Archive/MapDesc.h"
 #include "FileUtils.h"
-#include <filesystem>
+#include "StringUtils.h"
 
 using namespace slade;
 

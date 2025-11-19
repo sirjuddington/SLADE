@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -66,7 +66,6 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include <dumb.h>
-#include <filesystem>
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
 #endif
@@ -722,8 +721,6 @@ void app::saveConfigFile()
 // -----------------------------------------------------------------------------
 void app::exit(bool save_config)
 {
-	namespace fs = std::filesystem;
-
 	exiting = true;
 
 	if (save_config)
@@ -760,14 +757,11 @@ void app::exit(bool save_config)
 	audio::resetMIDIPlayer();
 
 	// Clear temp folder
-	std::error_code error;
-	for (auto& item : fs::directory_iterator{ fs::u8path(path("", Dir::Temp)) })
+	auto temp_files = fileutil::allFilesInDir(path("", Dir::Temp), true, true);
+	for (const auto& file : temp_files)
 	{
-		if (!item.is_regular_file())
-			continue;
-
-		if (!fs::remove(item, error))
-			log::warning("Could not clean up temporary file \"{}\": {}", item.path().string(), error.message());
+		if (!fileutil::removeFile(file))
+			log::warning("Could not clean up temporary file \"{}\"", file);
 	}
 
 #ifndef NO_LUA

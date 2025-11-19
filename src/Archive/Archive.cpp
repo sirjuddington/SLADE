@@ -41,7 +41,6 @@
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
-#include <filesystem>
 
 using namespace slade;
 
@@ -833,13 +832,8 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 // -----------------------------------------------------------------------------
 bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<ArchiveDir> base)
 {
-	namespace fs = std::filesystem;
-
 	// Get a list of all files in the directory
-	vector<string> files;
-	for (const auto& item : fs::recursive_directory_iterator{ fs::u8path(directory) })
-		if (item.is_regular_file())
-			files.push_back(item.path().string());
+	auto files = fileutil::allFilesInDir(directory, true, true);
 
 	// Go through files
 	for (const auto& file : files)
