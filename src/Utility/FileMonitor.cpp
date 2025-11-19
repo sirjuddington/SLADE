@@ -37,7 +37,6 @@
 #include "Archive/Formats/WadArchive.h"
 #include "FileUtils.h"
 #include "StringUtils.h"
-#include <filesystem>
 
 using namespace slade;
 
