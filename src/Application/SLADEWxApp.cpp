@@ -43,8 +43,11 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "OpenGL/OpenGL.h"
 #include "UI/WxWebpHandler.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
-#include "Utility/StringUtils.h"
+#include <cpptrace/cpptrace.hpp>
+#include <cpptrace/formatting.hpp>
+#include <cpptrace/from_current.hpp>
 #include <wx/filefn.h>
 #include <wx/statbmp.h>
 #include <wx/url.h>
@@ -131,48 +134,6 @@ protected:
 public:
 	SLADELog()           = default;
 	~SLADELog() override = default;
-};
-
-
-// -----------------------------------------------------------------------------
-// SLADEStackTrace class
-//
-// Extension of the wxStackWalker class that formats stack trace
-// information to a multi-line string, that can be retrieved via
-// getTraceString(). wxStackWalker is currently unimplemented on some
-// platforms, so unfortunately it has to be disabled there
-// -----------------------------------------------------------------------------
-#if wxUSE_STACKWALKER
-class SLADEStackTrace : public wxStackWalker
-{
-public:
-	SLADEStackTrace()           = default;
-	~SLADEStackTrace() override = default;
-
-	const string& traceString() const { return stack_trace_; }
-	const string& topLevel() const { return top_level_; }
-
-	void OnStackFrame(const wxStackFrame& frame) override
-	{
-		string location = "[unknown location] ";
-		if (frame.HasSourceLocation())
-			location = fmt::format("({}:{}) ", frame.GetFileName().utf8_string(), frame.GetLine());
-
-		wxUIntPtr address   = wxPtrToUInt(frame.GetAddress());
-		string    func_name = frame.GetName().utf8_string();
-		if (func_name.empty())
-			func_name = fmt::format("[unknown:{}]", address);
-
-		string line = fmt::format("{}{}", location, func_name);
-		stack_trace_ += fmt::format("{}: {}\n", frame.GetLevel(), line);
-
-		if (frame.GetLevel() == 0)
-			top_level_ = line;
-	}
-
-private:
-	string stack_trace_;
-	string top_level_;
 };
 
 
@@ -284,16 +245,13 @@ public:
 
 	~SLADECrashDialog() override = default;
 
-	void loadStackTrace(const SLADEStackTrace& st)
+	void loadFromCppTrace(const cpptrace::stacktrace& trace)
 	{
-		top_level_ = st.topLevel();
-
 		// SLADE info
-		version_ = app::version().toString();
 		if (global::sc_rev.empty())
-			trace_ = fmt::format("Version: {}", version_);
+			trace_ = fmt::format("Version: {}", app::version().toString());
 		else
-			trace_ = fmt::format("Version: {} ({})", version_, global::sc_rev);
+			trace_ = fmt::format("Version: {} ({})", app::version().toString(), global::sc_rev);
 		if (app::platform() == app::Platform::Windows)
 			trace_ += fmt::format(" ({})\n", app::isWin64Build() ? "x64" : "x86");
 		else
@@ -304,43 +262,77 @@ public:
 			trace_ += fmt::format("Current action: {}", current_action);
 		trace_ += "\n";
 
+		j_info_["slade-version"] = global::sc_rev.empty()
+									   ? app::version().toString()
+									   : fmt::format("{} ({})", app::version().toString(), global::sc_rev);
+
 		// System info
-		sys_info_        = fmt::format("Operating System: {}\n", wxGetOsDescription().utf8_string());
 		gl::Info gl_info = gl::sysInfo();
-		sys_info_ += fmt::format("Graphics Vendor: {}\n", gl_info.vendor);
-		sys_info_ += fmt::format("Graphics Hardware: {}\n", gl_info.renderer);
-		sys_info_ += fmt::format("OpenGL Version: {}\n", gl_info.version);
-		trace_ += sys_info_;
+		string   sys_info;
+		sys_info += fmt::format("Operating System: {}\n", wxGetOsDescription().utf8_string());
+		sys_info += fmt::format("Graphics Vendor: {}\n", gl_info.vendor);
+		sys_info += fmt::format("Graphics Hardware: {}\n", gl_info.renderer);
+		sys_info += fmt::format("OpenGL Version: {}\n", gl_info.version);
+		trace_ += sys_info;
 
-		// Stack trace
-		stack_trace_ = st.traceString();
-		trace_ += "\nStack Trace:\n";
-		trace_ += stack_trace_;
+		j_info_["system-info"] = sys_info;
+		switch (app::platform())
+		{
+		case app::Platform::Windows: j_info_["platform"] = "Windows"; break;
+		case app::Platform::Linux:   j_info_["platform"] = "Linux"; break;
+		case app::Platform::MacOS:   j_info_["platform"] = "MacOS"; break;
+		default:                     j_info_["platform"] = "Unknown"; break;
+		}
 
-		// Last 10 log lines (500 for log_history_)
+		// Stack trace (via cpptrace)
+		auto formatter_short = cpptrace::formatter{}
+								   .header("Stack Trace:")
+								   .addresses(cpptrace::formatter::address_mode::none)
+								   .paths(cpptrace::formatter::path_mode::basename)
+								   .symbols(cpptrace::formatter::symbol_mode::pruned);
+		trace_ += "\n";
+		trace_ += formatter_short.format(trace);
+		trace_ += "\n";
+
+		// Detailed stack trace for report
+		auto formatter_detailed = cpptrace::formatter{}
+									  .header("")
+									  .addresses(cpptrace::formatter::address_mode::raw)
+									  .paths(cpptrace::formatter::path_mode::full)
+									  .symbols(cpptrace::formatter::symbol_mode::pretty)
+									  .snippets(true)
+									  .snippet_context(2);
+		j_info_["stack-trace"] = formatter_detailed.format(trace);
+
+		// Last 10 log lines (500 for report)
 		trace_ += "\nLast Log Messages:\n";
-		auto& log = log::history();
-		log_history_.clear();
-		auto num = log.size() < 500 ? 0 : log.size() - 500;
+		auto&  log = log::history();
+		auto   num = log.size() < 500 ? 0 : log.size() - 500;
+		string log_long;
 		for (auto a = num; a < log.size(); a++)
 		{
 			if (a >= log.size() - 10)
 				trace_ += log[a].message + "\n";
-			log_history_ += log[a].message + "\n";
+			log_long += log[a].message + "\n";
 		}
 
-		// Last 5 actions (all for action_history_)
+		j_info_["log"] = log_long;
+
+		// Last 5 actions (all for report)
 		auto& actions = SAction::history();
 		if (!actions.empty())
 		{
 			trace_ += "\nLast Actions:\n";
-			auto num = actions.size() < 5 ? 0 : actions.size() - 5;
+			num = actions.size() < 5 ? 0 : actions.size() - 5;
+			string action_history;
 			for (auto a = 0; a < actions.size(); a++)
 			{
 				if (a >= num)
 					trace_ += fmt::format("{}\n", actions[a]);
-				action_history_ += fmt::format("{}\n", actions[a]);
+				action_history += fmt::format("{}\n", actions[a]);
 			}
+
+			j_info_["action-log"] = action_history;
 		}
 
 		// Set stack trace text
@@ -351,8 +343,8 @@ public:
 		file.Write(wxString::FromUTF8(trace_));
 		file.Close();
 
-		// Also dump stack trace to console
-		std::cerr << trace_;
+		// Print trace to console
+		trace.print(std::cerr);
 	}
 
 	void onBtnCopyTrace(wxCommandEvent& e)
@@ -384,35 +376,17 @@ public:
 
 	void onBtnSendAndExit(wxCommandEvent& e)
 	{
-		// Build JSON for request
-		string json = "{";
-		string platform;
-		switch (app::platform())
-		{
-		case app::Platform::Windows: platform = "Windows"; break;
-		case app::Platform::Linux:   platform = "Linux"; break;
-		case app::Platform::MacOS:   platform = "MacOS"; break;
-		default:                     platform = "Unknown"; break;
-		}
-		json += fmt::format(R"("slade-version":"{}",)", version_);
-		json += fmt::format(R"("platform":"{}",)", platform);
-		json += fmt::format(R"("system-info":"{}",)", strutil::escapedString(sys_info_));
-		json += fmt::format(R"("stack-trace":"{}",)", strutil::escapedString(stack_trace_));
-		json += fmt::format(R"("log":"{}",)", strutil::escapedString(log_history_));
-		json += fmt::format(R"("action-log":"{}")", strutil::escapedString(action_history_));
-		json += "}";
-		json = strutil::replace(json, "\n", "\\n");
-
-		// wxMessageBox(wxString::FromUTF8(json));
-
-		// Send request to crash report worker
 		auto request = wxWebSession::GetDefault().CreateRequest(
 			this, wxS("https://slade-crash-report.sirjuddington.workers.dev/"));
+
 		request.SetMethod(wxS("POST"));
-		request.SetData(wxString::FromUTF8(json), wxS("application/json"));
+		request.SetData(wxString::FromUTF8(j_info_.dump()), wxS("application/json"));
+
 		send_report_request_id_ = request.GetId();
+
 		btn_send_exit_->SetLabel(wxS("Sending..."));
 		btn_send_exit_->Enable(false);
+
 		request.Start();
 	}
 
@@ -426,14 +400,9 @@ private:
 	wxButton*   btn_github_issue_;
 	string      trace_;
 	string      top_level_;
-	string      version_;
-	string      stack_trace_;
-	string      sys_info_;
-	string      log_history_;
-	string      action_history_;
+	Json        j_info_;
 	int         send_report_request_id_ = 0;
 };
-#endif // wxUSE_STACKWALKER
 
 
 // -----------------------------------------------------------------------------
@@ -643,14 +612,10 @@ int SLADEWxApp::OnExit()
 // -----------------------------------------------------------------------------
 void SLADEWxApp::OnFatalException()
 {
-#if wxUSE_STACKWALKER
 #ifndef _DEBUG
-	SLADEStackTrace st;
-	st.WalkFromException();
-	crash_dialog_->loadStackTrace(st);
+	crash_dialog_->loadFromCppTrace(cpptrace::generate_trace());
 	crash_dialog_->ShowModal();
 #endif //_DEBUG
-#endif // wxUSE_STACKWALKER
 }
 
 // -----------------------------------------------------------------------------

@@ -55,6 +55,7 @@ endif ()
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glm REQUIRED)
+find_package(cpptrace CONFIG REQUIRED)
 
 
 # Include Search Paths ---------------------------------------------------------
@@ -114,6 +115,7 @@ target_link_libraries(slade
 	${ZLIB_LIBRARY}
 	MPG123::libmpg123
 	glm::glm
+	cpptrace::cpptrace
 )
 
 if (NOT NO_LUA)
