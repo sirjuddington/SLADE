@@ -59,6 +59,7 @@ vector<unique_ptr<SAction>> actions;
 vector<SActionHandler*> action_handlers;
 int                     wx_id_offset = 0;
 
+string         current_action;
 vector<string> action_history;
 } // namespace
 
@@ -357,11 +358,20 @@ int SAction::nextWxId()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the history of actions that have been handled
+// Returns the history of actions that have been performed
 // -----------------------------------------------------------------------------
 const vector<string>& SAction::history()
 {
 	return action_history;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the id of the action currently being performed, or an empty string if
+// none
+// -----------------------------------------------------------------------------
+string SAction::current()
+{
+	return current_action;
 }
 
 // -----------------------------------------------------------------------------
@@ -428,7 +438,8 @@ void SActionHandler::setWxIdOffset(int offset)
 // -----------------------------------------------------------------------------
 bool SActionHandler::doAction(string_view id)
 {
-	bool handled = false;
+	bool handled   = false;
+	current_action = id;
 
 	// Toggle action if necessary
 	if (auto* action = SAction::fromId(id))
@@ -459,5 +470,6 @@ bool SActionHandler::doAction(string_view id)
 	action_history.emplace_back(id);
 
 	// Return true if handled
+	current_action.clear();
 	return handled;
 }

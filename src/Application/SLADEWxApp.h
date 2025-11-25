@@ -3,7 +3,6 @@
 class wxWebRequestEvent;
 class wxSingleInstanceChecker;
 class MainAppFileListener;
-class SLADECrashDialog;
 
 class SLADEWxApp : public wxApp
 {
@@ -33,7 +32,7 @@ public:
 private:
 	wxSingleInstanceChecker* single_instance_checker_  = nullptr;
 	MainAppFileListener*     file_listener_            = nullptr;
-	SLADECrashDialog*        crash_dialog_             = nullptr;
+	wxDialog*                crash_dialog_             = nullptr;
 	bool                     session_ending_           = false;
 	int                      version_check_request_id_ = 0;
 };
