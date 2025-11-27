@@ -340,6 +340,7 @@ void SLADEWxApp::OnFatalException()
 {
 #ifndef _DEBUG
 	dynamic_cast<ui::CrashReportDialog*>(crash_dialog_)->loadFromCpptrace(cpptrace::generate_trace());
+	crash_dialog_->CenterOnParent();
 	crash_dialog_->ShowModal();
 #endif //_DEBUG
 }
