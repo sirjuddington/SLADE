@@ -26,6 +26,7 @@ namespace app
 	bool init(const vector<string>& args);
 	void saveConfigFile();
 	void exit(bool save_config);
+	void handleException();
 
 	// Version
 	struct Version

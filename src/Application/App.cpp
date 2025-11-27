@@ -57,6 +57,7 @@
 #include "Scripting/Scripting.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
+#include "UI/Dialogs/ExceptionDialog.h"
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
 #include "UI/State.h"
@@ -65,6 +66,7 @@
 #include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+#include <cpptrace/formatting.hpp>
 #include <dumb.h>
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
@@ -774,6 +776,35 @@ void app::exit(bool save_config)
 
 	// Exit wx Application
 	wxGetApp().Exit();
+}
+
+void app::handleException()
+{
+	static auto formatter = cpptrace::formatter{}
+								.header("")
+								.addresses(cpptrace::formatter::address_mode::none)
+								.paths(cpptrace::formatter::path_mode::basename)
+								.symbols(cpptrace::formatter::symbol_mode::pretty);
+
+	CPPTRACE_TRY
+	{
+		cpptrace::rethrow();
+	}
+	CPPTRACE_CATCH(const std::exception& ex)
+	{
+		const auto& trace = cpptrace::from_current_exception();
+		string      stack_trace;
+		if (!trace.empty())
+			stack_trace = formatter.format(trace);
+
+		ui::ExceptionDialog dlg(wxTheApp->GetTopWindow(), ex.what(), stack_trace, "");
+		dlg.CenterOnParent();
+		dlg.ShowModal();
+
+		log::error("Unhandled exception: {}", ex.what());
+		if (!stack_trace.empty())
+			log::error(stack_trace);
+	}
 }
 
 

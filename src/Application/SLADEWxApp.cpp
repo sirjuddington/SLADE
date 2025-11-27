@@ -349,18 +349,22 @@ void SLADEWxApp::OnFatalException()
 // -----------------------------------------------------------------------------
 bool SLADEWxApp::OnExceptionInMainLoop()
 {
-	try
+	CPPTRACE_TRY
 	{
-		throw;
+		cpptrace::rethrow();
 	}
-	catch (const std::exception& ex)
+	CPPTRACE_CATCH(const std::exception& ex)
 	{
 		string error = ex.what();
-		log::error("Unhandled exception: {}", error);
+
+#ifdef _DEBUG
 		wxTrap();
+#endif
+
+		app::handleException();
 	}
 
-	return wxApp::OnExceptionInMainLoop();
+	return true;
 }
 
 #ifdef __APPLE__
@@ -600,6 +604,12 @@ CONSOLE_COMMAND(crash, 0, false)
 		uint8_t* test = nullptr;
 		*test         = 5;
 	}
+}
+
+CONSOLE_COMMAND(exception, 0, false)
+{
+	string test;
+	auto   c = test.at(100);
 }
 
 CONSOLE_COMMAND(quit, 0, true)
