@@ -155,8 +155,8 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
 		trace_ += fmt::format("Current action: {}", current_action);
 	trace_ += "\n";
 
-	auto& j_info = *j_info_;
-
+	auto& j_info            = *j_info_;
+	j_info["type"]          = 0;
 	j_info["slade-version"] = global::sc_rev.empty()
 								  ? app::version().toString()
 								  : fmt::format("{} ({})", app::version().toString(), global::sc_rev);
@@ -192,48 +192,43 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
 	// Detailed stack trace for report
 	auto formatter_detailed = cpptrace::formatter{}
 								  .header("")
-								  .addresses(cpptrace::formatter::address_mode::raw)
+								  .addresses(cpptrace::formatter::address_mode::object)
 								  .paths(cpptrace::formatter::path_mode::full)
 								  .symbols(cpptrace::formatter::symbol_mode::pretty)
 								  .snippets(true)
 								  .snippet_context(2);
 	j_info["stack-trace"] = formatter_detailed.format(trace);
 
-	// Last 10 log lines (500 for report)
+	// Last 10 log lines
 	trace_ += "\nLast Log Messages:\n";
-	auto&  log = log::history();
-	auto   num = log.size() < 500 ? 0 : log.size() - 500;
-	string log_long;
-	for (auto a = num; a < log.size(); a++)
-	{
-		if (a >= log.size() - 10)
-			trace_ += log[a].message + "\n";
-		log_long += log[a].message + "\n";
-	}
+	for (auto l : log::last(10))
+		trace_ += l->message + "\n";
 
+	// Last 500 log lines for report
+	string log_long;
+	for (auto l : log::last(500))
+		log_long += l->message + "\n";
 	j_info["log"] = log_long;
 
 	// Last 5 actions (all for report)
-	auto& actions = SAction::history();
-	if (!actions.empty())
+	auto last_actions = SAction::lastPerformed(5);
+	if (!last_actions.empty())
 	{
 		trace_ += "\nLast Actions:\n";
-		num = actions.size() < 5 ? 0 : actions.size() - 5;
-		string action_history;
-		for (auto a = 0; a < actions.size(); a++)
-		{
-			if (a >= num)
-				trace_ += fmt::format("{}\n", actions[a]);
-			action_history += fmt::format("{}\n", actions[a]);
-		}
+		for (auto& a : last_actions)
+			trace_ += a + "\n";
 
+		// Full action history for report
+		string action_history;
+		for (auto& a : SAction::history())
+			action_history += a + "\n";
 		j_info["action-log"] = action_history;
 	}
 
 	// Set stack trace text
 	text_stack_->SetValue(wxString::FromUTF8(trace_));
 
-	// Dump stack trace to a file (just in case)
+	// Dump crash details to a file (just in case)
 	wxFile file(wxString::FromUTF8(app::path("slade3_crash.log", app::Dir::User)), wxFile::write);
 	file.Write(wxString::FromUTF8(trace_));
 	file.Close();
@@ -301,6 +296,7 @@ void CrashReportDialog::onBtnSendAndExit(wxCommandEvent& e)
 
 	btn_send_exit_->SetLabel(wxS("Sending..."));
 	btn_send_exit_->Enable(false);
+	btn_exit_->Enable(false);
 
 	request.Start();
 }

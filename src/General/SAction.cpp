@@ -366,6 +366,17 @@ const vector<string>& SAction::history()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the last [n] actions that were performed
+// -----------------------------------------------------------------------------
+vector<string> SAction::lastPerformed(int n)
+{
+	if (n < 0 || n > action_history.size())
+		n = action_history.size();
+
+	return { action_history.end() - n, action_history.end() };
+}
+
+// -----------------------------------------------------------------------------
 // Returns the id of the action currently being performed, or an empty string if
 // none
 // -----------------------------------------------------------------------------

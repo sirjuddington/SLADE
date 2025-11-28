@@ -71,6 +71,7 @@ public:
 	static int                   nextWxId();
 	static Signals&              signals();
 	static const vector<string>& history();
+	static vector<string>        lastPerformed(int n);
 	static string                current();
 
 private:

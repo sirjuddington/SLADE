@@ -786,6 +786,14 @@ void app::handleException()
 								.paths(cpptrace::formatter::path_mode::basename)
 								.symbols(cpptrace::formatter::symbol_mode::pretty);
 
+	static auto formatter_full = cpptrace::formatter{}
+									 .header("")
+									 .addresses(cpptrace::formatter::address_mode::object)
+									 .paths(cpptrace::formatter::path_mode::basename)
+									 .symbols(cpptrace::formatter::symbol_mode::pretty)
+									 .snippets(true)
+									 .snippet_context(2);
+
 	CPPTRACE_TRY
 	{
 		cpptrace::rethrow();
@@ -793,11 +801,14 @@ void app::handleException()
 	CPPTRACE_CATCH(const std::exception& ex)
 	{
 		const auto& trace = cpptrace::from_current_exception();
-		string      stack_trace;
+		string      stack_trace, stack_trace_full;
 		if (!trace.empty())
-			stack_trace = formatter.format(trace);
+		{
+			stack_trace      = formatter.format(trace);
+			stack_trace_full = formatter_full.format(trace);
+		}
 
-		ui::ExceptionDialog dlg(wxTheApp->GetTopWindow(), ex.what(), stack_trace, "");
+		ui::ExceptionDialog dlg(wxTheApp->GetTopWindow(), ex.what(), stack_trace, stack_trace_full);
 		dlg.CenterOnParent();
 		dlg.ShowModal();
 
