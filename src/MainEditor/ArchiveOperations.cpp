@@ -981,7 +981,7 @@ bool archiveoperations::checkDuplicateEntryContent(const Archive* archive)
 		{
 			string name = i->second[0]->path(true);
 			name.erase(0, 1);
-			dups += dups += fmt::format("\n{}\t({:8x}) duplicated by", name, i->first);
+			dups += fmt::format("\n{}\t({:8x}) duplicated by", name, i->first);
 			auto j = i->second.begin() + 1;
 			while (j != i->second.end())
 			{
