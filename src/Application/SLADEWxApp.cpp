@@ -154,7 +154,26 @@ public:
 	{
 		string location = "[unknown location] ";
 		if (frame.HasSourceLocation())
-			location = fmt::format("({}:{}) ", frame.GetFileName().utf8_string(), frame.GetLine());
+		{
+			strutil::Path fn(frame.GetFileName().utf8_string());
+
+			// Limit path to 3 directories max
+			auto parts = fn.pathParts();
+			if (parts.size() > 3)
+			{
+				string path_short;
+				path_short = ".../";
+				for (auto a = parts.size() - 3; a < parts.size(); ++a)
+				{
+					path_short += parts[a];
+					if (a < parts.size() - 1)
+						path_short += "/";
+				}
+				location = fmt::format("({}/{}:{}) ", path_short, fn.fileName(), frame.GetLine());
+			}
+			else
+				location = fmt::format("({}:{}) ", fn.fullPath(), frame.GetLine());
+		}
 
 		wxUIntPtr address   = wxPtrToUInt(frame.GetAddress());
 		string    func_name = frame.GetName().utf8_string();
