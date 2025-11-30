@@ -280,18 +280,18 @@ bool SLADEWxApp::OnInit()
 		args.push_back(argv[a].utf8_string());
 
 	// Init application
-	try
+	bool init_ok = false;
+	CPPTRACE_TRY
 	{
-		if (!app::init(args))
-			return false;
+		init_ok = app::init(args);
 	}
-	catch (const std::exception& ex)
+	CPPTRACE_CATCH(const std::exception& ex)
 	{
-		string error = ex.what();
-		log::error("Exception during SLADE initialization: {}", error);
-		wxTrap();
-		throw;
+		log::error("Exception during SLADE initialization: {}", ex.what());
+		app::handleException();
 	}
+	if (!init_ok)
+		return false;
 
 	// Init crash dialog
 	// Do it now rather than after a crash happens, since it may fail depending on the type of crash

@@ -353,7 +353,7 @@ void database::migrateConfigs()
 				int  height = wxWindow::ToDIP(tz.next().asInt(), nullptr);
 				int  left   = wxWindow::ToDIP(tz.next().asInt(), nullptr);
 				int  top    = wxWindow::ToDIP(tz.next().asInt(), nullptr);
-				ui::setWindowInfo(nullptr, id.c_str(), width, height, left, top);
+				ui::setWindowInfo(nullptr, id, width, height, left, top);
 				tz.adv();
 			}
 		}
