@@ -54,13 +54,13 @@ jobs:
           sudo apt-get upgrade
           sudo apt-get install \
           libfluidsynth-dev libwebp-dev libglm-dev libfreetype-dev \
-          liblua5.4-dev libmpg123-dev libsfml-dev libwxgtk3.2-dev
+          liblua5.4-dev libmpg123-dev libsfml-dev libwxgtk3.2-dev ninja-build
 
 
       - name: Configure
         run: |
           mkdir build
-          cmake -B build ${{ matrix.config.extra_options }} .
+          cmake -G Ninja -B build ${{ matrix.config.extra_options }} .
 
       - name: Build
         run: |
