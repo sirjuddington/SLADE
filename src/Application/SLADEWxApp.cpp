@@ -274,8 +274,9 @@ public:
 
 		// Setup layout
 		wxDialog::Layout();
-		SetInitialSize(wxSize(ui::scalePx(600), ui::scalePx(600)));
-		label->Wrap(ui::scalePx(540) - picture->GetSize().x);
+		auto width = hbox->CalcMin().GetWidth() + ui::scalePx(30);
+		label->Wrap(width - ui::scalePx(50) - picture->GetSize().x);
+		SetInitialSize(wxSize(width, ui::scalePx(600)));
 		CenterOnParent();
 		Show(false);
 	}
