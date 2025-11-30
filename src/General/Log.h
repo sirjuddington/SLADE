@@ -30,6 +30,7 @@ struct Message
 };
 
 const vector<Message>& history();
+vector<Message*>       last(int n);
 int                    verbosity();
 void                   setVerbosity(int verbosity);
 void                   init();

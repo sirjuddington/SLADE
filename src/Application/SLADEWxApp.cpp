@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "SLADEWxApp.h"
 #include "App.h"
-#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Database/Database.h"
@@ -41,10 +40,11 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "OpenGL/OpenGL.h"
+#include "UI/Dialogs/CrashReportDialog.h"
 #include "UI/WxWebpHandler.h"
+#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
-#include "Utility/StringUtils.h"
+#include <cpptrace/from_current.hpp>
 #include <wx/filefn.h>
 #include <wx/statbmp.h>
 #include <wx/url.h>
@@ -83,7 +83,6 @@ int win_version_minor = 0;
 
 namespace
 {
-string       current_action;
 bool         update_check_message_box = false;
 const string update_check_url{
 	"https://raw.githubusercontent.com/sirjuddington/SLADE-aux/refs/heads/main/version_win.txt"
@@ -132,308 +131,6 @@ public:
 	SLADELog()           = default;
 	~SLADELog() override = default;
 };
-
-
-// -----------------------------------------------------------------------------
-// SLADEStackTrace class
-//
-// Extension of the wxStackWalker class that formats stack trace
-// information to a multi-line string, that can be retrieved via
-// getTraceString(). wxStackWalker is currently unimplemented on some
-// platforms, so unfortunately it has to be disabled there
-// -----------------------------------------------------------------------------
-#if wxUSE_STACKWALKER
-class SLADEStackTrace : public wxStackWalker
-{
-public:
-	SLADEStackTrace()           = default;
-	~SLADEStackTrace() override = default;
-
-	const string& traceString() const { return stack_trace_; }
-	const string& topLevel() const { return top_level_; }
-
-	void OnStackFrame(const wxStackFrame& frame) override
-	{
-		string location = "[unknown location] ";
-		if (frame.HasSourceLocation())
-			location = fmt::format("({}:{}) ", frame.GetFileName().utf8_string(), frame.GetLine());
-
-		wxUIntPtr address   = wxPtrToUInt(frame.GetAddress());
-		string    func_name = frame.GetName().utf8_string();
-		if (func_name.empty())
-			func_name = fmt::format("[unknown:{}]", address);
-
-		string line = fmt::format("{}{}", location, func_name);
-		stack_trace_ += fmt::format("{}: {}\n", frame.GetLevel(), line);
-
-		if (frame.GetLevel() == 0)
-			top_level_ = line;
-	}
-
-private:
-	string stack_trace_;
-	string top_level_;
-};
-
-
-// -----------------------------------------------------------------------------
-// SLADECrashDialog class
-//
-// A simple dialog that displays a crash message and a scrollable,
-// multi-line textbox with a stack trace
-// -----------------------------------------------------------------------------
-class SLADECrashDialog : public wxDialog
-{
-public:
-	SLADECrashDialog() : wxDialog(wxGetApp().GetTopWindow(), -1, wxS("SLADE Application Crash"))
-	{
-		auto px10 = FromDIP(10);
-		auto px6  = FromDIP(6);
-		auto px4  = FromDIP(4);
-
-		// Setup sizer
-		auto sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
-
-		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND);
-
-		// Add dead doomguy picture
-		app::archiveManager()
-			.programResourceArchive()
-			->entryAtPath("images/STFDEAD0.png")
-			->exportFile(app::path("STFDEAD0.png", app::Dir::Temp));
-		wxImage img;
-		img.LoadFile(wxString::FromUTF8(app::path("STFDEAD0.png", app::Dir::Temp)));
-		img.Rescale(img.GetWidth() * 2, img.GetHeight() * 2, wxIMAGE_QUALITY_NEAREST);
-		auto picture = new wxStaticBitmap(this, -1, wxBitmap(img));
-		hbox->Add(picture, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxTOP | wxBOTTOM, px10);
-
-		// Add general crash message
-		wxString message = wxS(
-			"SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
-			"please click 'Send and Exit' to send the crash report. If the issue is recurring often, "
-			"please click 'Create GitHub Issue' below and complete the issue details on GitHub.");
-		auto label = new wxStaticText(this, -1, message);
-		hbox->Add(label, 1, wxEXPAND | wxALL, px10);
-
-		// Add stack trace text area
-		text_stack_ = new wxTextCtrl(
-			this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxHSCROLL);
-		text_stack_->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-		sizer->Add(new wxStaticText(this, -1, wxS("Crash Information:")), 0, wxLEFT | wxRIGHT, px10);
-		sizer->AddSpacer(2);
-		sizer->Add(text_stack_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, px10);
-
-		// Add 'Copy Stack Trace' button
-		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, px6);
-		btn_copy_trace_ = new wxButton(this, -1, wxS("Copy Stack Trace"));
-		hbox->AddStretchSpacer();
-		hbox->Add(btn_copy_trace_, 0, wxLEFT | wxRIGHT | wxBOTTOM, px4);
-		btn_copy_trace_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnCopyTrace, this);
-
-		// Add 'Create GitHub Issue' button
-		btn_github_issue_ = new wxButton(this, -1, wxS("Create GitHub Issue"));
-		hbox->Add(btn_github_issue_, 0, wxLEFT | wxRIGHT | wxBOTTOM, px4);
-		btn_github_issue_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnPostReport, this);
-
-		// Add 'Exit Without Sending' button
-		btn_exit_ = new wxButton(this, -1, wxS("Exit Without Sending"));
-		hbox->Add(btn_exit_, 0, wxLEFT | wxRIGHT | wxBOTTOM, px4);
-		btn_exit_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
-
-		// Add 'Send and Exit' button
-		btn_send_exit_ = new wxButton(this, -1, wxS("Send and Exit"));
-		hbox->Add(btn_send_exit_, 0, wxLEFT | wxRIGHT | wxBOTTOM, px4);
-		btn_send_exit_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnSendAndExit, this);
-
-		Bind(
-			wxEVT_WEBREQUEST_STATE,
-			[this](wxWebRequestEvent& e)
-			{
-				if (e.GetId() == send_report_request_id_)
-				{
-					if (e.GetState() == wxWebRequest::State::State_Active
-						|| e.GetState() == wxWebRequest::State::State_Idle)
-						return;
-
-					if (e.GetState() == wxWebRequest::State::State_Failed
-						|| e.GetState() == wxWebRequest::State::State_Unauthorized
-						|| e.GetState() == wxWebRequest::State::State_Cancelled)
-					{
-						wxMessageBox(
-							WX_FMT(
-								"Failed to send crash report:\n{}\n\nSLADE will now exit.",
-								e.GetErrorDescription().utf8_string()),
-							wxS("Report Failed"),
-							wxICON_ERROR);
-					}
-
-					EndModal(wxID_OK);
-				}
-			});
-
-		// Setup layout
-		wxDialog::Layout();
-		SetInitialSize(FromDIP(wxSize(600, 600)));
-		label->Wrap(FromDIP(540) - picture->GetSize().x);
-		CenterOnParent();
-		wxDialog::Show(false);
-	}
-
-	~SLADECrashDialog() override = default;
-
-	void loadStackTrace(const SLADEStackTrace& st)
-	{
-		top_level_ = st.topLevel();
-
-		// SLADE info
-		version_ = app::version().toString();
-		if (global::sc_rev.empty())
-			trace_ = fmt::format("Version: {}", version_);
-		else
-			trace_ = fmt::format("Version: {} ({})", version_, global::sc_rev);
-		if (app::platform() == app::Platform::Windows)
-			trace_ += fmt::format(" ({})\n", app::isWin64Build() ? "x64" : "x86");
-		else
-			trace_ += "\n";
-		if (current_action.empty())
-			trace_ += "No current action\n";
-		else
-			trace_ += fmt::format("Current action: {}", current_action);
-		trace_ += "\n";
-
-		// System info
-		sys_info_        = fmt::format("Operating System: {}\n", wxGetOsDescription().utf8_string());
-		gl::Info gl_info = gl::sysInfo();
-		sys_info_ += fmt::format("Graphics Vendor: {}\n", gl_info.vendor);
-		sys_info_ += fmt::format("Graphics Hardware: {}\n", gl_info.renderer);
-		sys_info_ += fmt::format("OpenGL Version: {}\n", gl_info.version);
-		trace_ += sys_info_;
-
-		// Stack trace
-		stack_trace_ = st.traceString();
-		trace_ += "\nStack Trace:\n";
-		trace_ += stack_trace_;
-
-		// Last 10 log lines (500 for log_history_)
-		trace_ += "\nLast Log Messages:\n";
-		auto& log = log::history();
-		log_history_.clear();
-		auto num = log.size() < 500 ? 0 : log.size() - 500;
-		for (auto a = num; a < log.size(); a++)
-		{
-			if (a >= log.size() - 10)
-				trace_ += log[a].message + "\n";
-			log_history_ += log[a].message + "\n";
-		}
-
-		// Last 5 actions (all for action_history_)
-		auto& actions = SAction::history();
-		if (!actions.empty())
-		{
-			trace_ += "\nLast Actions:\n";
-			auto num = actions.size() < 5 ? 0 : actions.size() - 5;
-			for (auto a = 0; a < actions.size(); a++)
-			{
-				if (a >= num)
-					trace_ += fmt::format("{}\n", actions[a]);
-				action_history_ += fmt::format("{}\n", actions[a]);
-			}
-		}
-
-		// Set stack trace text
-		text_stack_->SetValue(wxString::FromUTF8(trace_));
-
-		// Dump stack trace to a file (just in case)
-		wxFile file(wxString::FromUTF8(app::path("slade3_crash.log", app::Dir::User)), wxFile::write);
-		file.Write(wxString::FromUTF8(trace_));
-		file.Close();
-
-		// Also dump stack trace to console
-		std::cerr << trace_;
-	}
-
-	void onBtnCopyTrace(wxCommandEvent& e)
-	{
-		if (wxTheClipboard->Open())
-		{
-			wxTheClipboard->SetData(new wxTextDataObject(wxString::FromUTF8(trace_)));
-			wxTheClipboard->Flush();
-			wxTheClipboard->Close();
-			wxMessageBox(wxS("Stack trace successfully copied to clipboard"));
-		}
-		else
-			wxMessageBox(
-				wxS("Unable to access the system clipboard, please select+copy the text above manually"),
-				wxS("Error"),
-				wxICON_EXCLAMATION);
-	}
-
-	void onBtnPostReport(wxCommandEvent& e)
-	{
-		auto url_base = "https://github.com/sirjuddington/SLADE/issues/new?labels=crash+bug&template=crash.yml";
-		auto version  = global::sc_rev.empty() ? app::version().toString()
-											   : app::version().toString() + " " + global::sc_rev;
-
-		wxURL url(wxString::FromUTF8(fmt::format("{}&version={}&crashinfo={}", url_base, version, trace_)));
-
-		wxLaunchDefaultBrowser(url.BuildURI());
-	}
-
-	void onBtnSendAndExit(wxCommandEvent& e)
-	{
-		// Build JSON for request
-		string json = "{";
-		string platform;
-		switch (app::platform())
-		{
-		case app::Platform::Windows: platform = "Windows"; break;
-		case app::Platform::Linux:   platform = "Linux"; break;
-		case app::Platform::MacOS:   platform = "MacOS"; break;
-		default:                     platform = "Unknown"; break;
-		}
-		json += fmt::format(R"("slade-version":"{}",)", version_);
-		json += fmt::format(R"("platform":"{}",)", platform);
-		json += fmt::format(R"("system-info":"{}",)", strutil::escapedString(sys_info_));
-		json += fmt::format(R"("stack-trace":"{}",)", strutil::escapedString(stack_trace_));
-		json += fmt::format(R"("log":"{}",)", strutil::escapedString(log_history_));
-		json += fmt::format(R"("action-log":"{}")", strutil::escapedString(action_history_));
-		json += "}";
-		json = strutil::replace(json, "\n", "\\n");
-
-		// wxMessageBox(wxString::FromUTF8(json));
-
-		// Send request to crash report worker
-		auto request = wxWebSession::GetDefault().CreateRequest(
-			this, wxS("https://slade-crash-report.sirjuddington.workers.dev/"));
-		request.SetMethod(wxS("POST"));
-		request.SetData(wxString::FromUTF8(json), wxS("application/json"));
-		send_report_request_id_ = request.GetId();
-		btn_send_exit_->SetLabel(wxS("Sending..."));
-		btn_send_exit_->Enable(false);
-		request.Start();
-	}
-
-	void onBtnExit(wxCommandEvent& e) { EndModal(wxID_OK); }
-
-private:
-	wxTextCtrl* text_stack_;
-	wxButton*   btn_copy_trace_;
-	wxButton*   btn_exit_;
-	wxButton*   btn_send_exit_;
-	wxButton*   btn_github_issue_;
-	string      trace_;
-	string      top_level_;
-	string      version_;
-	string      stack_trace_;
-	string      sys_info_;
-	string      log_history_;
-	string      action_history_;
-	int         send_report_request_id_ = 0;
-};
-#endif // wxUSE_STACKWALKER
 
 
 // -----------------------------------------------------------------------------
@@ -583,26 +280,24 @@ bool SLADEWxApp::OnInit()
 		args.push_back(argv[a].utf8_string());
 
 	// Init application
-	try
+	bool init_ok = false;
+	CPPTRACE_TRY
 	{
-		if (!app::init(args))
-			return false;
+		init_ok = app::init(args);
 	}
-	catch (const std::exception& ex)
+	CPPTRACE_CATCH(const std::exception& ex)
 	{
-		string error = ex.what();
-		log::error("Exception during SLADE initialization: {}", error);
-		wxTrap();
-		throw;
+		log::error("Exception during SLADE initialization: {}", ex.what());
+		app::handleException();
 	}
+	if (!init_ok)
+		return false;
 
 	// Init crash dialog
 	// Do it now rather than after a crash happens, since it may fail depending on the type of crash
-#if wxUSE_STACKWALKER
 #ifndef _DEBUG
-	crash_dialog_ = new SLADECrashDialog();
+	crash_dialog_ = new ui::CrashReportDialog(GetMainTopWindow());
 #endif //_DEBUG
-#endif // wxUSE_STACKWALKER
 
 	// Check for updates
 #ifdef __WXMSW__
@@ -643,14 +338,11 @@ int SLADEWxApp::OnExit()
 // -----------------------------------------------------------------------------
 void SLADEWxApp::OnFatalException()
 {
-#if wxUSE_STACKWALKER
 #ifndef _DEBUG
-	SLADEStackTrace st;
-	st.WalkFromException();
-	crash_dialog_->loadStackTrace(st);
+	dynamic_cast<ui::CrashReportDialog*>(crash_dialog_)->loadFromCpptrace(cpptrace::generate_trace());
+	crash_dialog_->CenterOnParent();
 	crash_dialog_->ShowModal();
 #endif //_DEBUG
-#endif // wxUSE_STACKWALKER
 }
 
 // -----------------------------------------------------------------------------
@@ -658,18 +350,22 @@ void SLADEWxApp::OnFatalException()
 // -----------------------------------------------------------------------------
 bool SLADEWxApp::OnExceptionInMainLoop()
 {
-	try
+	CPPTRACE_TRY
 	{
-		throw;
+		cpptrace::rethrow();
 	}
-	catch (const std::exception& ex)
+	CPPTRACE_CATCH(const std::exception& ex)
 	{
 		string error = ex.what();
-		log::error("Unhandled exception: {}", error);
+
+#ifdef _DEBUG
 		wxTrap();
+#endif
+
+		app::handleException();
 	}
 
-	return wxApp::OnExceptionInMainLoop();
+	return true;
 }
 
 #ifdef __APPLE__
@@ -716,7 +412,6 @@ void SLADEWxApp::onMenu(wxCommandEvent& e)
 	// Handle action if valid
 	if (action != "invalid")
 	{
-		current_action = action;
 		SActionHandler::setWxIdOffset(e.GetId() - s_action->wxId());
 		handled = SActionHandler::doAction(action);
 
@@ -725,12 +420,10 @@ void SLADEWxApp::onMenu(wxCommandEvent& e)
 			// Check if triggering object is a menu item
 			if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
 			{
-				auto item = static_cast<wxMenuItem*>(e.GetEventObject());
+				auto item = dynamic_cast<wxMenuItem*>(e.GetEventObject());
 				item->Check(s_action->isChecked());
 			}
 		}
-
-		current_action = "";
 	}
 
 	// If not handled, let something else handle it
@@ -912,6 +605,12 @@ CONSOLE_COMMAND(crash, 0, false)
 		uint8_t* test = nullptr;
 		*test         = 5;
 	}
+}
+
+CONSOLE_COMMAND(exception, 0, false)
+{
+	string test;
+	auto   c = test.at(100);
 }
 
 CONSOLE_COMMAND(quit, 0, true)

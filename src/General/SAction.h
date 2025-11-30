@@ -71,6 +71,8 @@ public:
 	static int                   nextWxId();
 	static Signals&              signals();
 	static const vector<string>& history();
+	static vector<string>        lastPerformed(int n);
+	static string                current();
 
 private:
 	// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,

@@ -141,6 +141,22 @@ const vector<log::Message>& log::history()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the last [n] log messages (as pointers)
+// -----------------------------------------------------------------------------
+vector<log::Message*> log::last(int n)
+{
+	vector<Message*> list;
+
+	if (n < 0 || n > log.size())
+		n = log.size();
+
+	for (auto i = log.size() - n; i < log.size(); i++)
+		list.push_back(&log[i]);
+
+	return list;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the current log verbosity level, log messages with a higher level
 // than the current verbosity will not be logged
 // -----------------------------------------------------------------------------
