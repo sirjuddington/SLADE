@@ -2045,6 +2045,7 @@ bool ArchivePanel::gfxConvert() const
 
 		// Write converted image back to entry
 		MemChunk mc;
+		image->setPalette(gcd.itemPalette(a));
 		format->saveImage(*image, mc, gcd.itemPalette(a));
 		selection[a]->importMemChunk(mc);
 		EntryType::detectEntryType(*selection[a]);

@@ -106,6 +106,7 @@ if (NOT NO_LUA)
 endif ()
 find_package(MPG123 REQUIRED)
 find_package(WebP REQUIRED)
+find_package(PNG REQUIRED)
 include_directories(
 	${FREETYPE_INCLUDE_DIRS}
 	${FTGL_INCLUDE_DIR}
@@ -170,6 +171,7 @@ target_link_libraries(slade
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
 	${WebP_LIBRARIES}
+	PNG::PNG
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)
