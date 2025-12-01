@@ -898,6 +898,7 @@ bool MapEditorWindow::saveMap()
 bool MapEditorWindow::saveMapAs()
 {
 	auto& mdesc_current = mapeditor::editContext().mapDesc();
+	auto  previous_desc = mdesc_current;
 
 	// Show dialog
 	filedialog::FDInfo info;
@@ -926,20 +927,47 @@ bool MapEditorWindow::saveMapAs()
 	mdesc_current.head    = head;
 	mdesc_current.archive = false;
 	mdesc_current.end     = end;
-	saveMap();
+	if (!saveMap())
+	{
+		mdesc_current = previous_desc;
+		return false;
+	}
 
 	// Write wad to file
-	wad.save(info.filenames[0]);
+	if (!wad.save(info.filenames[0]))
+	{
+		wxMessageBox(
+			WX_FMT("Unable to save map to {}: {}", info.filenames[0], global::error),
+			wxS("Save Map As"),
+			wxOK | wxICON_ERROR);
+		mdesc_current = previous_desc;
+		return false;
+	}
+
 	auto archive = app::archiveManager().openArchive(info.filenames[0], true, true);
+	if (!archive)
+	{
+		wxMessageBox(
+			WX_FMT("Unable to open saved map {}: {}", info.filenames[0], global::error),
+			wxS("Save Map As"),
+			wxOK | wxICON_ERROR);
+		mdesc_current = previous_desc;
+		return false;
+	}
 
 	// Update current map description
 	auto maps = archive->detectMaps();
-	if (!maps.empty())
+	if (maps.empty())
 	{
-		mdesc_current.head    = maps[0].head;
-		mdesc_current.archive = false;
-		mdesc_current.end     = maps[0].end;
+		wxMessageBox(
+			WX_FMT("Saved archive {} contains no maps", info.filenames[0]), wxS("Save Map As"), wxOK | wxICON_ERROR);
+		mdesc_current = previous_desc;
+		return false;
 	}
+
+	mdesc_current.head    = maps[0].head;
+	mdesc_current.archive = false;
+	mdesc_current.end     = maps[0].end;
 
 	// Set window title
 	SetTitle(WX_FMT("SLADE - {} of {}", mdesc_current.name, wad.filename(false)));

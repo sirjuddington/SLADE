@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -35,6 +35,7 @@
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Graphics/Palette/Palette.h"
 #include "Utility/Memory.h"
+#include <wx/mstream.h>
 
 using namespace slade;
 

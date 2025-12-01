@@ -128,8 +128,9 @@ CrashReportDialog::CrashReportDialog(wxWindow* parent) :
 
 	// Setup layout
 	wxDialog::Layout();
-	SetInitialSize(FromDIP(wxSize(600, 600)));
-	label->Wrap(FromDIP(540) - picture->GetSize().x);
+	auto width = hbox->CalcMin().GetWidth() + FromDIP(30);
+	label->Wrap(width - FromDIP(50) - picture->GetSize().x);
+	SetInitialSize(wxSize(width, FromDIP(600)));
 	CenterOnParent();
 	wxDialog::Show(false);
 }

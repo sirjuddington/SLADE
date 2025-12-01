@@ -97,6 +97,7 @@ if (NOT NO_LUA)
 endif ()
 find_package(MPG123 REQUIRED)
 find_package(WebP REQUIRED)
+find_package(PNG REQUIRED)
 find_package(glm REQUIRED)
 find_package(Freetype REQUIRED)
 
@@ -173,6 +174,7 @@ target_link_libraries(slade
 	${WebP_LIBRARIES}
 	glm::glm
 	cpptrace::cpptrace
+	PNG::PNG
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)

@@ -1,6 +1,8 @@
 
 #include "UI/WxUtils.h"
-#include <wx/mstream.h>
+#include <algorithm>
+#include <array>
+#include <png.h>
 
 class PNGChunk
 {
@@ -235,125 +237,165 @@ public:
 protected:
 	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
-		wxMemoryInputStream memstream(data.data(), data.size());
-		const wxImage       wx_image(memstream, wxBITMAP_TYPE_PNG);
-
-		// Check it created/read ok
-		if (!wx_image.IsOk())
+		// Check for grAb (offsets) and alPh chunks
+		int32_t xoff = 0, yoff = 0;
+		bool    alPh = false;
 		{
+			MemChunk scan;
+			scan.importMem(data);
+			scan.seek(8, SEEK_SET);
+			PNGChunk chunk;
+			while (true)
+			{
+				chunk.read(scan);
+				if (chunk.name() == "grAb")
+				{
+					chunk.data().read(&xoff, 4, 0);
+					chunk.data().read(&yoff, 4);
+					xoff = wxINT32_SWAP_ON_LE(xoff);
+					yoff = wxINT32_SWAP_ON_LE(yoff);
+				}
+				else if (chunk.name() == "alPh")
+					alPh = true;
+				if (chunk.name() == "IDAT")
+					break;
+			}
+		}
+
+		// Setup libpng for reading from memory
+		png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+		if (!png_ptr)
+		{
+			global::error = "Error initialising libpng";
+			return false;
+		}
+		png_infop info_ptr = png_create_info_struct(png_ptr);
+		if (!info_ptr)
+		{
+			png_destroy_read_struct(&png_ptr, nullptr, nullptr);
+			global::error = "Error initialising libpng info";
+			return false;
+		}
+		if (setjmp(png_jmpbuf(png_ptr)))
+		{
+			png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 			global::error = "Error reading PNG data";
 			return false;
 		}
 
-		// Get image info
-		int  width  = wx_image.GetWidth();
-		int  height = wx_image.GetHeight();
-		auto type   = wx_image.HasPalette() ? SImage::Type::PalMask : SImage::Type::RGBA;
+		PngReadContext ctx{ data.data(), data.size(), 0 };
+		png_set_read_fn(png_ptr, &ctx, pngReadData);
 
-		// Read extra info from various PNG chunks
-		int32_t xoff       = 0;
-		int32_t yoff       = 0;
-		bool    alPh_chunk = false;
-		bool    grAb_chunk = false;
-		data.seek(8, SEEK_SET); // Start after PNG header
-		PNGChunk chunk;
-		while (true)
+		// Read header
+		png_read_info(png_ptr, info_ptr);
+		png_uint_32 width = 0, height = 0;
+		int         bit_depth = 0, color_type = 0, interlace = 0, comp = 0, filter = 0;
+		png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace, &comp, &filter);
+
+		// Determine image type
+		SImage::Type type = SImage::Type::RGBA;
+		if (alPh)
+			type = SImage::Type::AlphaMap;
+		else if (color_type == PNG_COLOR_TYPE_PALETTE && bit_depth == 8)
+			type = SImage::Type::PalMask;
+
+		// Setup png options based on type
+		if (type == SImage::Type::PalMask)
 		{
-			// Read next PNG chunk
-			chunk.read(data);
-
-			// Check for 'grAb' chunk
-			if (!grAb_chunk && chunk.name() == "grAb")
-			{
-				// Read offsets
-				chunk.data().read(&xoff, 4, 0);
-				chunk.data().read(&yoff, 4);
-				xoff       = wxINT32_SWAP_ON_LE(xoff);
-				yoff       = wxINT32_SWAP_ON_LE(yoff);
-				grAb_chunk = true;
-			}
-
-			// Check for 'alPh' chunk
-			if (!alPh_chunk && chunk.name() == "alPh")
-				alPh_chunk = true;
-
-			// If both chunks are found no need to search further
-			if (grAb_chunk && alPh_chunk)
-				break;
-
-			// Stop searching when we get to IDAT chunk
-			if (chunk.name() == "IDAT")
-				break;
+			if (bit_depth < 8)
+				png_set_packing(png_ptr);
+		}
+		else if (type == SImage::Type::AlphaMap)
+		{
+			// Convert everything to 8-bit RGB so we can use red channel as alpha map
+			if (color_type == PNG_COLOR_TYPE_PALETTE)
+				png_set_palette_to_rgb(png_ptr);
+			if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+				png_set_expand_gray_1_2_4_to_8(png_ptr);
+			if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+				png_set_tRNS_to_alpha(png_ptr);
+		}
+		else
+		{
+			// RGBA
+			if (color_type == PNG_COLOR_TYPE_PALETTE)
+				png_set_palette_to_rgb(png_ptr);
+			if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+				png_set_gray_to_rgb(png_ptr);
+			if (bit_depth < 8)
+				png_set_expand(png_ptr);
+			if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+				png_set_tRNS_to_alpha(png_ptr);
+			if (!(color_type & PNG_COLOR_MASK_ALPHA))
+				png_set_add_alpha(png_ptr, 0xFF, PNG_FILLER_AFTER);
 		}
 
-		// If it's a ZDoom alpha map
-		if (alPh_chunk)
-			type = SImage::Type::AlphaMap;
+		png_read_update_info(png_ptr, info_ptr);
 
 		// Create image
 		if (type == SImage::Type::PalMask)
 		{
-			auto palette = wxutil::paletteFromWx(wx_image.GetPalette());
-			image.create(width, height, type, &palette);
-		}
-		else
-			image.create(width, height, type, nullptr);
-
-		// Load image data
-		auto img_data = imageData(image);
-		if (type == SImage::Type::PalMask)
-		{
-			// Load indexed data
-			auto data_rgb = wx_image.GetData();
-			for (unsigned c = 0; c < width * height; c++)
+			Palette    pal(256);
+			png_colorp plte = nullptr;
+			int        num  = 0;
+			if (png_get_PLTE(png_ptr, info_ptr, &plte, &num) & PNG_INFO_PLTE)
 			{
-				// wxImage always loads as RGB, so we need to convert to palette index
-				img_data[c] = wx_image.GetPalette().GetPixel(data_rgb[c * 3], data_rgb[c * 3 + 1], data_rgb[c * 3 + 2]);
+				for (int i = 0; i < num && i < 256; ++i)
+				{
+					ColRGBA c{ plte[i].red, plte[i].green, plte[i].blue, 255 };
+					pal.setColour(i, c);
+				}
 			}
+			image.create(static_cast<int>(width), static_cast<int>(height), SImage::Type::PalMask, &pal);
 
-			// Set mask
-			auto mask = imageMask(image);
-			if (auto alpha = wx_image.GetAlpha())
-				memcpy(mask, alpha, width * height);
+			// Read indexed data
+			vector<png_bytep> rows(height);
+			for (png_uint_32 y = 0; y < height; ++y)
+				rows[y] = imageData(image) + y * width;
+			png_read_image(png_ptr, rows.data());
+
+			// Build mask from tRNS if present
+			png_bytep trans_alpha = nullptr;
+			int       num_trans   = 0;
+			if (png_get_tRNS(png_ptr, info_ptr, &trans_alpha, &num_trans, nullptr) & PNG_INFO_tRNS)
+			{
+				auto mask = imageMask(image);
+				for (png_uint_32 y = 0; y < height; ++y)
+				{
+					for (png_uint_32 x = 0; x < width; ++x)
+					{
+						uint8_t idx         = rows[y][x];
+						mask[y * width + x] = (idx < num_trans) ? trans_alpha[idx] : 255;
+					}
+				}
+			}
 			else
 				image.fillAlpha(255);
 		}
 		else if (type == SImage::Type::AlphaMap)
 		{
-			// Load greyscale alpha map data
-			auto data_rgb = wx_image.GetData();
-			for (unsigned c = 0; c < width * height; c++)
-				img_data[c] = data_rgb[c * 3];
+			image.create(static_cast<int>(width), static_cast<int>(height), SImage::Type::AlphaMap, nullptr);
+			const auto      rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+			vector<uint8_t> row(rowbytes);
+			for (png_uint_32 y = 0; y < height; ++y)
+			{
+				png_read_row(png_ptr, row.data(), nullptr);
+				const int bpp = static_cast<int>(rowbytes / width);
+				for (png_uint_32 x = 0; x < width; ++x)
+					imageData(image)[y * width + x] = row[x * bpp];
+			}
 		}
-		else
+		else // RGBA
 		{
-			// Load raw RGBA data
-			const auto data_rgb = wx_image.GetData();
-			int        c        = 0;
-			if (wx_image.HasAlpha())
-			{
-				// Image has alpha channel
-				const auto data_alpha = wx_image.GetAlpha();
-				for (int a = 0; a < width * height; a++)
-				{
-					img_data[c++] = data_rgb[a * 3];     // Red
-					img_data[c++] = data_rgb[a * 3 + 1]; // Green
-					img_data[c++] = data_rgb[a * 3 + 2]; // Blue
-					img_data[c++] = data_alpha[a];       // Alpha
-				}
-			}
-			else
-			{
-				// No alpha channel
-				for (int a = 0; a < width * height; a++)
-				{
-					img_data[c++] = data_rgb[a * 3];     // Red
-					img_data[c++] = data_rgb[a * 3 + 1]; // Green
-					img_data[c++] = data_rgb[a * 3 + 2]; // Blue
-					img_data[c++] = 255;                 // Alpha
-				}
-			}
+			image.create(static_cast<int>(width), static_cast<int>(height), SImage::Type::RGBA, nullptr);
+			vector<png_bytep> rows(height);
+			for (png_uint_32 y = 0; y < height; ++y)
+				rows[y] = imageData(image) + y * width * 4;
+			png_read_image(png_ptr, rows.data());
 		}
+
+		png_read_end(png_ptr, nullptr);
+		png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
 		// Set offsets
 		image.setXOffset(xoff);
@@ -364,88 +406,128 @@ protected:
 
 	bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) override
 	{
+		// Setup libpng for writing to memory
+		png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+		if (!png_ptr)
+			return false;
+		png_infop info_ptr = png_create_info_struct(png_ptr);
+		if (!info_ptr)
+		{
+			png_destroy_write_struct(&png_ptr, nullptr);
+			return false;
+		}
+		if (setjmp(png_jmpbuf(png_ptr)))
+		{
+			png_destroy_write_struct(&png_ptr, &info_ptr);
+			return false;
+		}
+
+		data.clear();
+		PngWriteContext wctx{ &data };
+		png_set_write_fn(png_ptr, &wctx, pngWriteData, pngFlush);
+
 		auto type   = image.type();
 		int  width  = image.width();
 		int  height = image.height();
 
-		// First up, create the wxImage to be saved as png data
-		wxImage  wx_image;
-		MemChunk data_rgb, data_alpha;
-		switch (type)
-		{
-		case SImage::Type::RGBA:
-		{
-			image.putRGBData(data_rgb);
-			image.putAlphaData(data_alpha);
+		// IHDR
+		int color_type = PNG_COLOR_TYPE_RGBA;
+		int bit_depth  = 8;
+		if (type == SImage::Type::PalMask)
+			color_type = PNG_COLOR_TYPE_PALETTE;
+		else if (type == SImage::Type::AlphaMap)
+			color_type = PNG_COLOR_TYPE_GRAY;
+		png_set_IHDR(
+			png_ptr,
+			info_ptr,
+			width,
+			height,
+			bit_depth,
+			color_type,
+			PNG_INTERLACE_NONE,
+			PNG_COMPRESSION_TYPE_DEFAULT,
+			PNG_FILTER_TYPE_DEFAULT);
 
-			wx_image.Create(width, height, data_rgb.data(), data_alpha.data(), true);
-			wx_image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, wxPNG_TYPE_COLOUR);
+		// Palette
+		if (type == SImage::Type::PalMask)
+		{
+			const auto used_pal = (pal && !image.hasPalette()) ? pal : image.palette();
+			png_color  palette_plte[256]{};
+			for (int i = 0; i < 256; ++i)
+			{
+				const auto c    = used_pal->colour(i);
+				palette_plte[i] = { c.r, c.g, c.b };
+			}
+			png_set_PLTE(png_ptr, info_ptr, palette_plte, 256);
 
-			break;
+			// Build per-index transparency (tRNS) from mask: take minimum alpha across all pixels of an index
+			std::array<uint8_t, 256> trans;
+			trans.fill(255);
+			bool       any_trans   = false;
+			int        max_used_ix = -1;
+			const auto data        = imageData(image);
+			if (const auto mask = imageMask(image))
+			{
+				for (int i = 0; i < width * height; ++i)
+				{
+					const uint8_t pi = data[i];
+					const uint8_t a  = mask[i];
+					trans[pi]        = std::min(a, trans[pi]);
+					max_used_ix      = std::max<int>(pi, max_used_ix);
+				}
+				for (int i = 0; i <= max_used_ix; ++i)
+				{
+					if (trans[i] != 255)
+					{
+						any_trans = true;
+						break;
+					}
+				}
+			}
+			if (any_trans)
+			{
+				int count = (max_used_ix >= 0) ? (max_used_ix + 1) : 0;
+				if (count < 1)
+					count = 256; // fallback
+				png_set_tRNS(png_ptr, info_ptr, trans.data(), count, nullptr);
+			}
 		}
 
-		case SImage::Type::PalMask:
-		{
-			image.putRGBData(data_rgb, pal);
-			image.putAlphaData(data_alpha);
+		png_write_info(png_ptr, info_ptr);
 
-			wx_image.Create(width, height, data_rgb.data(), data_alpha.data(), true);
-			wx_image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, wxPNG_TYPE_PALETTE);
-			wx_image.SetPalette(wxutil::paletteToWx(pal && !image.hasPalette() ? *pal : imagePalette(image)));
-			wx_image.ConvertAlphaToMask(1);
-
-			break;
-		}
-
-		case SImage::Type::AlphaMap:
-		{
-			image.putRGBData(data_rgb, pal);
-
-			static Palette pal_greyscale;
-
-			wx_image.Create(width, height, data_rgb.data(), true);
-			wx_image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, wxPNG_TYPE_PALETTE);
-			wx_image.SetPalette(wxutil::paletteToWx(pal_greyscale));
-
-			break;
-		}
-
-		default: // Unknown type
-			log::error("Unknown image type for PNG write");
-			return false;
-		}
-
-		// Write png data to memory
-		wxMemoryOutputStream stream;
-		wx_image.SaveFile(stream, wxBITMAP_TYPE_PNG);
-
-		// Write PNG header and IHDR
-		auto png_size = stream.GetSize();
-		auto png_data = static_cast<uint8_t*>(stream.GetOutputStreamBuffer()->GetBufferStart());
-		data.clear();
-		data.write(png_data, 33);
-
-		// Create grAb chunk with offsets (only if offsets exist)
+		// Write grAb/alPh chunks before IDAT
 		if (image.offset().x != 0 || image.offset().y != 0)
 		{
-			PNGChunk  grAb("grAb");
-			GrabChunk gc = { wxINT32_SWAP_ON_LE((int32_t)image.offset().x),
-							 wxINT32_SWAP_ON_LE((int32_t)image.offset().y) };
-			grAb.setData(reinterpret_cast<const uint8_t*>(&gc), 8);
-			grAb.write(data);
+			uint8_t grab[8];
+			int32_t x = wxINT32_SWAP_ON_LE((int32_t)image.offset().x);
+			int32_t y = wxINT32_SWAP_ON_LE((int32_t)image.offset().y);
+			memcpy(grab + 0, &x, 4);
+			memcpy(grab + 4, &y, 4);
+			png_write_chunk(png_ptr, reinterpret_cast<png_const_bytep>("grAb"), grab, 8);
 		}
-
-		// Create alPh chunk if it's an alpha map
 		if (type == SImage::Type::AlphaMap)
 		{
-			PNGChunk alPh("alPh");
-			alPh.write(data);
+			png_write_chunk(png_ptr, reinterpret_cast<png_const_bytep>("alPh"), nullptr, 0);
 		}
 
-		// Write remaining PNG data
-		data.write(png_data + 33, png_size - 33);
+		// Write rows
+		if (type == SImage::Type::RGBA)
+		{
+			vector<png_bytep> rows(height);
+			for (int y = 0; y < height; ++y)
+				rows[y] = imageData(image) + y * width * 4;
+			png_write_image(png_ptr, rows.data());
+		}
+		else // PalMask or AlphaMap (both 1 byte per pixel)
+		{
+			vector<png_bytep> rows(height);
+			for (int y = 0; y < height; ++y)
+				rows[y] = imageData(image) + y * width;
+			png_write_image(png_ptr, rows.data());
+		}
 
-		// Success
+		png_write_end(png_ptr, info_ptr);
+		png_destroy_write_struct(&png_ptr, &info_ptr);
 		return true;
 	}
 
@@ -468,4 +550,39 @@ private:
 		uint8_t  filter;
 		uint8_t  interlace;
 	};
+
+	// libpng IO helpers
+	struct PngReadContext
+	{
+		const uint8_t* data;
+		size_t         size;
+		size_t         offset;
+	};
+
+	struct PngWriteContext
+	{
+		MemChunk* out;
+	};
+
+	static void pngReadData(png_structp png_ptr, png_bytep outBytes, png_size_t byteCount)
+	{
+		auto* ctx = static_cast<PngReadContext*>(png_get_io_ptr(png_ptr));
+		if (!ctx || ctx->offset + byteCount > ctx->size)
+			png_error(png_ptr, "png read beyond end of buffer");
+		memcpy(outBytes, ctx->data + ctx->offset, byteCount);
+		ctx->offset += byteCount;
+	}
+
+	static void pngWriteData(png_structp png_ptr, png_bytep inBytes, png_size_t byteCount)
+	{
+		auto* ctx = static_cast<PngWriteContext*>(png_get_io_ptr(png_ptr));
+		if (!ctx || !ctx->out)
+			png_error(png_ptr, "png write invalid context");
+		ctx->out->write(inBytes, static_cast<uint32_t>(byteCount));
+	}
+
+	static void pngFlush(png_structp)
+	{
+		// Not needed for MemChunk
+	}
 };
