@@ -10,6 +10,11 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 # Enable big objects and utf8
 add_compile_options(/bigobj /utf-8)
 
+# NO_FLUIDSYNTH preprocessor definition
+if (NO_FLUIDSYNTH)
+	add_definitions(-DNO_FLUIDSYNTH)
+endif ()
+
 
 # Dependencies -----------------------------------------------------------------
 
@@ -39,9 +44,10 @@ if (NOT NO_FLUIDSYNTH)
 	find_package(FluidSynth CONFIG REQUIRED)
 endif ()
 
-# WebP
+# WebP/Png
 if (NOT BUILD_WX)
 	find_package(WebP CONFIG REQUIRED)
+	find_package(PNG REQUIRED)
 endif ()
 
 # Other
@@ -130,5 +136,6 @@ if (NOT BUILD_WX)
 		WebP::webp
 		WebP::webpdecoder
 		WebP::webpdemux
+		PNG::PNG
 	)
 endif ()
