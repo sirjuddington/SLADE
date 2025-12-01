@@ -503,11 +503,11 @@ protected:
 			int32_t y = wxINT32_SWAP_ON_LE((int32_t)image.offset().y);
 			memcpy(grab + 0, &x, 4);
 			memcpy(grab + 4, &y, 4);
-			png_write_chunk(png_ptr, reinterpret_cast<png_bytep>("grAb"), grab, 8);
+			png_write_chunk(png_ptr, reinterpret_cast<png_const_bytep>("grAb"), grab, 8);
 		}
 		if (type == SImage::Type::AlphaMap)
 		{
-			png_write_chunk(png_ptr, reinterpret_cast<png_bytep>("alPh"), nullptr, 0);
+			png_write_chunk(png_ptr, reinterpret_cast<png_const_bytep>("alPh"), nullptr, 0);
 		}
 
 		// Write rows
