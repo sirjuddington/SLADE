@@ -48,6 +48,7 @@ CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
 CVAR(Int, gl_version_major, 0, CVar::Flag::Save)
 CVAR(Int, gl_version_minor, 0, CVar::Flag::Save)
 CVAR(Int, gl_debug, 1, CVar::Flag::Save) // 0 = off, 1 = errors only, 2 = all messages
+CVAR(Int, gl_config, 0, CVar::Flag::Save)
 
 namespace slade::gl
 {
@@ -79,7 +80,16 @@ namespace slade::gl
 wxGLAttributes& buildGlAttr(wxGLAttributes& attr, int depth)
 {
 	attr.Reset();
-	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(depth).Stencil(8);
+
+	switch (gl_config)
+	{
+	case 1: attr.PlatformDefaults().Defaults(); break;
+	case 2: attr.PlatformDefaults().RGBA().DoubleBuffer().Depth(depth).Stencil(8); break;
+	case 3: attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(depth); break;
+	case 4: attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer(); break;
+	default: attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(depth).Stencil(8); break;
+	}
+
 	attr.EndList();
 	return attr;
 }
