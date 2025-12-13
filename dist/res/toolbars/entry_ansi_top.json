@@ -1,0 +1,18 @@
+{
+  "items": [
+    { "type": "action", "id": "arch_entry_save", "show_text": true },
+    {
+      "type": "button",
+      "id": "revert",
+      "text": "Revert",
+      "icon": "revert",
+      "help_text": "Revert any changes made to the entry",
+      "show_text": true
+    },
+
+    { "type": "separator" },
+
+    { "type": "label", "text": "Scale:" },
+    { "type": "custom_control", "id": "scale" }
+  ]
+}
