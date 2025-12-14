@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -57,6 +57,7 @@
 #include "Scripting/Scripting.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
+#include "UI/Dialogs/ExceptionDialog.h"
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
 #include "UI/State.h"
@@ -65,8 +66,8 @@
 #include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+#include <cpptrace/formatting.hpp>
 #include <dumb.h>
-#include <filesystem>
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
 #endif
@@ -722,8 +723,6 @@ void app::saveConfigFile()
 // -----------------------------------------------------------------------------
 void app::exit(bool save_config)
 {
-	namespace fs = std::filesystem;
-
 	exiting = true;
 
 	if (save_config)
@@ -760,14 +759,11 @@ void app::exit(bool save_config)
 	audio::resetMIDIPlayer();
 
 	// Clear temp folder
-	std::error_code error;
-	for (auto& item : fs::directory_iterator{ fs::u8path(path("", Dir::Temp)) })
+	auto temp_files = fileutil::allFilesInDir(path("", Dir::Temp), true, true);
+	for (const auto& file : temp_files)
 	{
-		if (!item.is_regular_file())
-			continue;
-
-		if (!fs::remove(item, error))
-			log::warning("Could not clean up temporary file \"{}\": {}", item.path().string(), error.message());
+		if (!fileutil::removeFile(file))
+			log::warning("Could not clean up temporary file \"{}\"", file);
 	}
 
 #ifndef NO_LUA
@@ -780,6 +776,46 @@ void app::exit(bool save_config)
 
 	// Exit wx Application
 	wxGetApp().Exit();
+}
+
+void app::handleException()
+{
+	static auto formatter = cpptrace::formatter{}
+								.header("")
+								.addresses(cpptrace::formatter::address_mode::none)
+								.paths(cpptrace::formatter::path_mode::basename)
+								.symbols(cpptrace::formatter::symbol_mode::pretty);
+
+	static auto formatter_full = cpptrace::formatter{}
+									 .header("")
+									 .addresses(cpptrace::formatter::address_mode::object)
+									 .paths(cpptrace::formatter::path_mode::basename)
+									 .symbols(cpptrace::formatter::symbol_mode::pretty)
+									 .snippets(true)
+									 .snippet_context(2);
+
+	CPPTRACE_TRY
+	{
+		cpptrace::rethrow();
+	}
+	CPPTRACE_CATCH(const std::exception& ex)
+	{
+		const auto& trace = cpptrace::from_current_exception();
+		string      stack_trace, stack_trace_full;
+		if (!trace.empty())
+		{
+			stack_trace      = formatter.format(trace);
+			stack_trace_full = formatter_full.format(trace);
+		}
+
+		ui::ExceptionDialog dlg(wxTheApp->GetTopWindow(), ex.what(), stack_trace, stack_trace_full);
+		dlg.CenterOnParent();
+		dlg.ShowModal();
+
+		log::error("Unhandled exception: {}", ex.what());
+		if (!stack_trace.empty())
+			log::error(stack_trace);
+	}
 }
 
 

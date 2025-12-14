@@ -111,6 +111,9 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
+// Cpptrace
+#include <cpptrace/from_current.hpp>
+
 
 // C++ -------------------------------------------------------------------------
 

@@ -59,6 +59,7 @@ vector<unique_ptr<SAction>> actions;
 vector<SActionHandler*> action_handlers;
 int                     wx_id_offset = 0;
 
+string         current_action;
 vector<string> action_history;
 } // namespace
 
@@ -357,11 +358,31 @@ int SAction::nextWxId()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the history of actions that have been handled
+// Returns the history of actions that have been performed
 // -----------------------------------------------------------------------------
 const vector<string>& SAction::history()
 {
 	return action_history;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the last [n] actions that were performed
+// -----------------------------------------------------------------------------
+vector<string> SAction::lastPerformed(int n)
+{
+	if (n < 0 || n > action_history.size())
+		n = action_history.size();
+
+	return { action_history.end() - n, action_history.end() };
+}
+
+// -----------------------------------------------------------------------------
+// Returns the id of the action currently being performed, or an empty string if
+// none
+// -----------------------------------------------------------------------------
+string SAction::current()
+{
+	return current_action;
 }
 
 // -----------------------------------------------------------------------------
@@ -428,36 +449,45 @@ void SActionHandler::setWxIdOffset(int offset)
 // -----------------------------------------------------------------------------
 bool SActionHandler::doAction(string_view id)
 {
-	bool handled = false;
+	bool handled   = false;
+	current_action = id;
 
-	// Toggle action if necessary
-	if (auto* action = SAction::fromId(id))
-		if (action->type() != SAction::Type::Normal)
-		{
-			action->toggle();
-
-			// Action is technically 'handled' already if there was a linked cvar (don't log warning)
-			if (action->linkedCVar())
-				handled = true;
-		}
-
-	// Send action to all handlers
-	for (auto& action_handler : action_handlers)
+	CPPTRACE_TRY
 	{
-		if (action_handler->handleAction(id))
+		// Toggle action if necessary
+		if (auto* action = SAction::fromId(id))
+			if (action->type() != SAction::Type::Normal)
+			{
+				action->toggle();
+
+				// Action is technically 'handled' already if there was a linked cvar (don't log warning)
+				if (action->linkedCVar())
+					handled = true;
+			}
+
+		// Send action to all handlers
+		for (auto& action_handler : action_handlers)
 		{
-			handled = true;
-			break;
+			if (action_handler->handleAction(id))
+			{
+				handled = true;
+				break;
+			}
 		}
+
+		// Warn if nothing handled it
+		if (!handled)
+			log::warning(fmt::format("Warning: Action \"{}\" not handled", id));
+
+		// Log action
+		action_history.emplace_back(id);
+	}
+	CPPTRACE_CATCH(...)
+	{
+		app::handleException();
 	}
 
-	// Warn if nothing handled it
-	if (!handled)
-		log::warning(fmt::format("Warning: Action \"{}\" not handled", id));
-
-	// Log action
-	action_history.emplace_back(id);
-
 	// Return true if handled
+	current_action.clear();
 	return handled;
 }

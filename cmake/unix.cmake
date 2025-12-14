@@ -97,8 +97,19 @@ if (NOT NO_LUA)
 endif ()
 find_package(MPG123 REQUIRED)
 find_package(WebP REQUIRED)
+find_package(PNG REQUIRED)
 find_package(glm REQUIRED)
 find_package(Freetype REQUIRED)
+
+# Cpptrace
+include(FetchContent)
+FetchContent_Declare(
+	cpptrace
+	GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
+	GIT_TAG v1.0.4
+)
+FetchContent_MakeAvailable(cpptrace)
+
 include_directories(
 	${FREETYPE_INCLUDE_DIRS}
 	${LUA_INCLUDE_DIR}
@@ -160,8 +171,10 @@ target_link_libraries(slade
 	${OPENGL_LIBRARIES}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
-    ${WebP_LIBRARIES}
+	${WebP_LIBRARIES}
 	glm::glm
+	cpptrace::cpptrace
+	PNG::PNG
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)

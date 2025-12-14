@@ -218,11 +218,18 @@ ConsoleCommand::ConsoleCommand(
 // -----------------------------------------------------------------------------
 void ConsoleCommand::execute(const vector<string>& args) const
 {
-	// Only execute if we have the minimum args specified
-	if (args.size() >= min_args_)
-		command_func_(args);
-	else
-		log::console(fmt::format("Missing command arguments, type \"cmdhelp {}\" for more information", name_));
+	CPPTRACE_TRY
+	{
+		// Only execute if we have the minimum args specified
+		if (args.size() >= min_args_)
+			command_func_(args);
+		else
+			log::console(fmt::format("Missing command arguments, type \"cmdhelp {}\" for more information", name_));
+	}
+	CPPTRACE_CATCH(...)
+	{
+		app::handleException();
+	}
 }
 
 

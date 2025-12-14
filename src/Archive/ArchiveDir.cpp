@@ -35,8 +35,8 @@
 #include "Archive.h"
 #include "ArchiveEntry.h"
 #include "EntryType/EntryType.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
-#include <filesystem>
 
 using namespace slade;
 
@@ -496,11 +496,9 @@ shared_ptr<ArchiveDir> ArchiveDir::clone(shared_ptr<ArchiveDir> parent)
 // -----------------------------------------------------------------------------
 bool ArchiveDir::exportTo(string_view path) const
 {
-	namespace fs = std::filesystem;
-
 	// Create directory if needed
-	if (!fs::exists(fs::u8path(path)))
-		fs::create_directory(fs::u8path(path));
+	if (!fileutil::dirExists(path))
+		fileutil::createDir(path);
 
 	// Export entries as files
 	for (auto& entry : entries_)
