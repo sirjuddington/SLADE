@@ -1,5 +1,10 @@
-# appimage-builder recipe see https://appimage-builder.readthedocs.io for details
 version: 1
+
+# Needed to fix CI (build-appimage-action)
+# Comment this out if manually building the AppImage on a non-apt distro
+script:
+  apt-get update && apt-get install -y --no-install-recommends squashfs-tools
+
 AppDir:
   app_info:
     id: net.mancubus.SLADE
