@@ -67,6 +67,9 @@ jobs:
         export MAKEFLAGS=--keep-going
         cmake --build build --parallel 3
 
+    - name: Install (Linux, for AppImage)
+      run: cmake --install build --prefix AppDir/usr
+
     - name: Package (macOS)
       if: runner.os == 'macOS'
       run: |
@@ -84,12 +87,25 @@ jobs:
           fi
         done
 
+    - name: Build AppImage (Linux)
+      if: runner.os == 'Linux'
+      uses: AppImageCrafters/build-appimage-action@master
+      with:
+        recipe: 'AppImageBuilder.yml'
+
     - name: Upload Artifacts
       if: ${{ matrix.config.package_name }}
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.config.package_name }}
         path: ${{ matrix.config.artifact-path }}
+
+    - name: Upload AppImage
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v4
+      with:
+        name: AppImage
+        path: './*.AppImage*'
 
     - name: Release
       if: ${{ contains(github.ref, 'tags') && matrix.config.release }}
