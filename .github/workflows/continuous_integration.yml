@@ -21,7 +21,7 @@ jobs:
             artifact-path: build/*.dmg
             
           - name: "macOS x64"
-            os: macos-13
+            os: macos-15-intel
             release: true
             shell: bash
             package_name: "mac_x64"
@@ -55,7 +55,7 @@ jobs:
         sudo apt-get install \
         libfluidsynth-dev libwebkit2gtk-4.1-dev libwebp-dev \
         libftgl-dev liblua5.3-dev libmpg123-dev libsfml-dev \
-        libwxgtk3.2-dev libwxgtk-webview3.2-dev
+        libwxgtk3.2-dev libwxgtk-webview3.2-dev squashfs-tools
 
     - name: Configure
       run: |
