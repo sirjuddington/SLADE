@@ -87,11 +87,16 @@ jobs:
           fi
         done
 
+    - name: Install LinuxDeploy
+      if: runner.os == 'Linux'
+      id: install-linuxdeploy
+      uses: miurahr/install-linuxdeploy-action@v1.8.0
+
     - name: Build AppImage (Linux)
       if: runner.os == 'Linux'
-      uses: AppImageCrafters/build-appimage-action@master
-      with:
-        recipe: 'AppImageBuilder.yml'
+      run: |
+        export LDAI_OUTPUT="SLADE.AppImage"
+        ${{ steps.install-linuxdeploy.outputs.linuxdeploy }} --output=appimage --appdir AppDir
 
     - name: Upload Artifacts
       if: ${{ matrix.config.package_name }}
