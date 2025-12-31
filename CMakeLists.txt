@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.15) # Minimum CMake 3.15 for precompiled header support
+cmake_minimum_required(VERSION 3.15) # Minimum CMake 3.15 for precompiled header support
 project(SLADE VERSION 3.2.0)
 
 # Additional cmake modules
@@ -6,7 +6,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Release build by default
 if (NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE "Release")
+	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 endif ()
 
 # Build options

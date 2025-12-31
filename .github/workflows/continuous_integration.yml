@@ -21,7 +21,7 @@ jobs:
             artifact-path: build/*.dmg
             
           - name: "macOS x64"
-            os: macos-13
+            os: macos-15-intel
             release: true
             shell: bash
             package_name: "mac_x64"
@@ -67,6 +67,9 @@ jobs:
         export MAKEFLAGS=--keep-going
         cmake --build build --parallel 3
 
+    - name: Install (Linux, for AppImage)
+      run: cmake --install build --prefix AppDir/usr
+
     - name: Package (macOS)
       if: runner.os == 'macOS'
       run: |
@@ -84,12 +87,30 @@ jobs:
           fi
         done
 
+    - name: Install LinuxDeploy
+      if: runner.os == 'Linux'
+      id: install-linuxdeploy
+      uses: miurahr/install-linuxdeploy-action@v1.8.0
+
+    - name: Build AppImage (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        export LDAI_OUTPUT="SLADE.AppImage"
+        ${{ steps.install-linuxdeploy.outputs.linuxdeploy }} --output=appimage --appdir AppDir
+
     - name: Upload Artifacts
       if: ${{ matrix.config.package_name }}
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.config.package_name }}
         path: ${{ matrix.config.artifact-path }}
+
+    - name: Upload AppImage
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v4
+      with:
+        name: AppImage-${{ matrix.config.package_name }}
+        path: './*.AppImage*'
 
     - name: Release
       if: ${{ contains(github.ref, 'tags') && matrix.config.release }}

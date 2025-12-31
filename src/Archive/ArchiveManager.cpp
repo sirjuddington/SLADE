@@ -143,6 +143,16 @@ bool ArchiveManager::init()
 	if (!fileutil::fileExists(dir_slade_pk3))
 		dir_slade_pk3 = "slade.pk3";
 
+	// If still not found, try $APPDIR/usr/share/slade3/slade.pk3
+	// (will be here if we're running an AppImage)
+	if (!fileutil::fileExists(dir_slade_pk3))
+	{
+		wxString appdir;
+		wxGetEnv(wxS("APPDIR"), &appdir);
+		if (!appdir.empty())
+			dir_slade_pk3 = appdir.utf8_string() + "/usr/share/slade3/slade.pk3";
+	}
+
 	// Open slade.pk3
 	if (!program_resource_archive_->open(dir_slade_pk3))
 	{
