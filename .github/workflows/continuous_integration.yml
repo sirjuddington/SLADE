@@ -103,6 +103,7 @@ jobs:
       uses: miurahr/install-linuxdeploy-action@v1.8.0
 
     - name: Build AppImage
+      if: runner.os == 'Linux'
       run: |
         export LDAI_OUTPUT="SLADE.AppImage"
         export LDAI_UPDATE_INFORMATION="gh-releases-zsync|sirjuddington|SLADE|latest|SLADE.AppImage.zsync"
