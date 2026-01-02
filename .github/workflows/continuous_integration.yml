@@ -73,7 +73,7 @@ jobs:
       if: runner.os == 'Linux'
       run: cmake --install build --prefix AppDir/usr
 
-	# For whatever reason linuxdeploy only accepts the legacy filename (appdata) for metainfo
+    # For whatever reason linuxdeploy only accepts the legacy filename (appdata) for metainfo
     - name: Rename metainfo to appdata
       if: runner.os == 'Linux'
       run: |
