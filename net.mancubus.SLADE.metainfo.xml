@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component type="desktop">
+<component type="desktop-application">
 	<id>net.mancubus.SLADE</id>
 	<name>SLADE</name>
 	<summary>It's a Doom editor</summary>
