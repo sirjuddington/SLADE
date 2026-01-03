@@ -19,7 +19,7 @@ jobs:
             shell: bash
             package_name: "mac_arm64"
             artifact_path: build/*.dmg
-            
+
           - name: "macOS x64"
             os: macos-15-intel
             release: true
@@ -63,6 +63,11 @@ jobs:
           mkdir build
           cmake -G Ninja -B build ${{ matrix.config.extra_options }} .
 
+      - name: Build
+        run: |
+          export MAKEFLAGS=--keep-going
+          cmake --build build
+
       - name: Install (Linux, for AppImage)
         if: runner.os == 'Linux'
         run: cmake --install build --prefix AppDir/usr
@@ -79,7 +84,7 @@ jobs:
         run: |
           cd build
           dylibbundler -od -b -x slade.app/Contents/MacOS/slade -d slade.app/Contents/MacOS/libs -p @executable_path/libs
-          
+
           for i in {1..10};
           do
             if create-dmg --app-drop-link 10 10 ./slade_${{ matrix.config.package_name }}_${{ github.ref_name }}.dmg ./slade.app;
@@ -115,7 +120,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AppImage-${{ matrix.config.package_name }}
-          path: './*.AppImage*'
+          path: "./*.AppImage*"
 
       - name: Release
         if: ${{ contains(github.ref, 'tags') && matrix.config.release }}
@@ -135,4 +140,4 @@ jobs:
           allowUpdates: true
           omitBodyDuringUpdate: true
           omitNameDuringUpdate: true
-          artifacts: './*.AppImage*'
+          artifacts: "./*.AppImage*"
