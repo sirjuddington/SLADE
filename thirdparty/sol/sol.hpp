@@ -2758,9 +2758,9 @@ COMPAT53_API void luaL_requiref(lua_State *L, const char *modname,
 #endif /* Lua 5.2 only */
 
 /* other Lua versions */
-#if !defined(LUA_VERSION_NUM) || LUA_VERSION_NUM < 501 || LUA_VERSION_NUM > 504
+#if !defined(LUA_VERSION_NUM) || LUA_VERSION_NUM < 501 || LUA_VERSION_NUM > 505
 
-#  error "unsupported Lua version (i.e. not Lua 5.1, 5.2, 5.3, or 5.4)"
+#  error "unsupported Lua version (i.e. not Lua 5.1, 5.2, 5.3, 5.4, or 5.5)"
 
 #endif /* other Lua versions except 5.1, 5.2, 5.3, and 5.4 */
 
@@ -3638,16 +3638,16 @@ extern "C" {
 }
 #endif
 
-#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM == 504
+#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 504
 
 #if !defined(LUA_ERRGCMM)
-/* So Lua 5.4 actually removes this, which breaks sol2...
+/* So Lua 5.4+ actually removes this, which breaks sol2...
  man, this API is quite unstable...!
 */
 #  define LUA_ERRGCMM (LUA_ERRERR + 2)
 #endif /* LUA_ERRGCMM define */
 
-#endif // Lua 5.4 only
+#endif // Lua 5.4 or later
 
 #endif // NOT_KEPLER_PROJECT_COMPAT54_H_// end of sol/compatibility/compat-5.4.h
 
@@ -25678,6 +25678,12 @@ namespace sol {
 
 // end of sol/thread.hpp
 
+#if LUA_VERSION_NUM >= 505
+#  define sol_lua_newstate(f, ud) lua_newstate(f, ud, 0)
+#else
+#  define sol_lua_newstate(f, ud) lua_newstate(f, ud)
+#endif
+
 namespace sol {
 
 	class state : private std::unique_ptr<lua_State, detail::state_deleter>, public state_view {
@@ -25691,7 +25697,7 @@ namespace sol {
 		}
 
 		state(lua_CFunction panic, lua_Alloc alfunc, void* alpointer = nullptr)
-		: unique_base(lua_newstate(alfunc, alpointer)), state_view(unique_base::get()) {
+		: unique_base(sol_lua_newstate(alfunc, alpointer)), state_view(unique_base::get()) {
 			set_default_state(unique_base::get(), panic);
 		}
 
