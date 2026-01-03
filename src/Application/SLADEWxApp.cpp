@@ -670,6 +670,7 @@ bool SLADEWxApp::OnInit()
 // -----------------------------------------------------------------------------
 int SLADEWxApp::OnExit()
 {
+	wxTheClipboard->Flush(); // Need to do this so the clipboard isn't cleared when SLADE exits
 	wxSocketBase::Shutdown();
 	delete single_instance_checker_;
 	delete file_listener_;
