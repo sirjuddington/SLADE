@@ -31,14 +31,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # Don't upgrade Firefox here as it's unnecessary and takes a long time
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get upgrade
-          sudo apt-get install \
-          libfluidsynth-dev libwebkit2gtk-4.1-dev libwebp-dev \
-          libftgl-dev liblua5.3-dev libmpg123-dev libsfml-dev \
-          libwxgtk3.2-dev libwxgtk-webview3.2-dev
+          sudo apt-mark hold firefox
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
+          sudo apt-get install -y \
+            libfluidsynth-dev libwebkit2gtk-4.1-dev libwebp-dev \
+            libftgl-dev liblua5.3-dev libmpg123-dev libsfml-dev \
+            libwxgtk3.2-dev libwxgtk-webview3.2-dev
+          sudo apt-mark unhold firefox
 
       - name: Configure
         run: |
