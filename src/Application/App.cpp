@@ -84,7 +84,7 @@ std::thread::id main_thread_id;
 bool            win_darkmode_enabled = false;
 
 // Version
-Version version_num{ 3, 2, 9, 0 };
+Version version_num{ 3, 2, 10, 0 };
 
 // Directory paths
 string dir_data;
