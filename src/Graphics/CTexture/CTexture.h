@@ -182,7 +182,12 @@ public:
 		Archive*       parent     = nullptr,
 		const Palette* pal        = nullptr,
 		bool           force_rgba = false) const;
-	bool toImage(SImage& image, Archive* parent = nullptr, const Palette* pal = nullptr, bool force_rgba = false);
+	bool toImage(
+		SImage&        image,
+		Archive*       parent     = nullptr,
+		const Palette* pal        = nullptr,
+		bool           force_rgba = false,
+		bool           offsets    = true);
 
 	// Signals
 	struct Signals

@@ -1546,6 +1546,10 @@ void TextureXPanel::exportTexture()
 		auto image  = gcd.itemImage(a);
 		auto format = gcd.itemFormat(a);
 
+		// Apply offsets if texture has them
+		if (selection[a]->isExtended())
+			image->setOffsets({ selection[a]->offsetX(), selection[a]->offsetY() });
+
 		// Write converted image back to entry
 		MemChunk mc;
 		format->saveImage(*image, mc, force_rgba ? nullptr : gcd.itemPalette(a));

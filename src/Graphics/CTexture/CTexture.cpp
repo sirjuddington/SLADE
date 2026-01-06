@@ -874,7 +874,7 @@ bool CTexture::convertRegular()
 // Generates a SImage representation of this texture, using patches from
 // [parent] primarily, and the palette [pal]
 // -----------------------------------------------------------------------------
-bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool force_rgba)
+bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool force_rgba, bool offsets)
 {
 	// Init image
 	image.clear();
@@ -988,6 +988,10 @@ bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool 
 				image.drawImage(p_img, patch->xOffset(), patch->yOffset(), dp, pal, pal);
 		}
 	}
+
+	// Apply offsets if needed
+	if (offsets && extended_)
+		image.setOffsets({ offset_.x, offset_.y });
 
 	return true;
 }
