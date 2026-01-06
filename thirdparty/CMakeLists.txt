@@ -6,14 +6,6 @@ find_package(BZip2 REQUIRED)
 set(ZLIB_LIBRARY ${ZLIB_LIBRARY} PARENT_SCOPE)
 set(BZIP2_LIBRARIES ${BZIP2_LIBRARIES} PARENT_SCOPE)
 
-option(USE_SYSTEM_DUMB "Use system DUMB library" OFF)
-if (USE_SYSTEM_DUMB)
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(DUMB REQUIRED IMPORTED_TARGET dumb>=1.0)
-else ()
-	file(GLOB_RECURSE DUMB_SOURCES dumb/*.c)
-endif ()
-
 # Roll the rest up into a big ball and compile it by itself
 set(EXTERNAL_SOURCES
 )
@@ -21,7 +13,6 @@ file(GLOB_RECURSE EXTERNAL_SOURCES
 	lzma/C/LzmaDec.c
 	glad/src/*.c
 	libdrawtext/*.c
-	${DUMB_SOURCES}
 	${SLADE_HEADERS}
 	xxhash/*.c
 )
@@ -62,9 +53,3 @@ target_link_libraries(external
 	nlohmann_json::nlohmann_json
 )
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
-
-if (USE_SYSTEM_DUMB)
-	target_link_libraries(external PkgConfig::DUMB)
-else ()
-	target_include_directories(external PUBLIC ${CMAKE_CURRENT_LIST_DIR}/dumb)
-endif ()
