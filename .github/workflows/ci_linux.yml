@@ -15,7 +15,6 @@ jobs:
         config:
           - name: "Linux GCC"
             os: ubuntu-24.04
-            release_appimage: true
             shell: bash
             extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
             package_name: "linux_gcc"
@@ -26,6 +25,15 @@ jobs:
             shell: bash
             extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
             package_name: "linux_clang"
+            artifact_path: build/*
+
+          - name: "Linux Clang (No WebView)"
+            os: ubuntu-24.04
+            release_appimage: true
+            shell: bash
+            extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+                            -DNO_WEBVIEW=ON"
+            package_name: "linux_clang_nowebview"
             artifact_path: build/*
 
     steps:
