@@ -1,17 +1,17 @@
 # Setup -----------------------------------------------------------------------
 
 # Find MSVC base path (community or professional)
-$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional"
+$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\18\Professional"
 if (-not (Test-Path $msvcpath))
 {
-	$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community"
+	$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\18\Community"
 }
 if (-not (Test-Path $msvcpath))
 {
-	Write-Host "`nCould not find Visual Studio 2022 path" -ForegroundColor Red
+	Write-Host "`nCould not find Visual Studio 2026 path" -ForegroundColor Red
 	Exit-PSSession
 }
-Write-Host "`nFound VS2022 at ${msvcpath}" -foregroundcolor blue
+Write-Host "`nFound VS2026 at ${msvcpath}" -foregroundcolor blue
 
 # Cmake config line vars
 $buildtype = "-DCMAKE_BUILD_TYPE:STRING=`"RelWithDebInfo`""

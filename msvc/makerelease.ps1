@@ -1,4 +1,4 @@
-$version = "3.3.0_alpha"
+$version = "3.3.0-alpha"
 $rev_short = Invoke-Expression "git.exe rev-parse --short HEAD"
 
 # Check for 7-zip install
@@ -82,14 +82,14 @@ if ($buildbinaries.ToLower() -eq "y")
 	}
 
 	Write-Host "`nBuiling win32 binaries 7z..." -foregroundcolor blue
-	& $7zpath a -t7z "$releasedir\slade_${version}${timestamp}.7z" `
+	& $7zpath a -t7z "$releasedir\SLADE_${version}${timestamp}_win_x86.7z" `
 	"$releasedir32\SLADE.exe" `
 	"$releasedir32\SLADE.pdb" `
 	"$releasedir\slade.pk3"
 	Write-Host "Done" -foregroundcolor green
 
 	Write-Host "`nBuiling x64 binaries 7z..." -foregroundcolor blue
-	& $7zpath a -t7z "$releasedir\slade_${version}_x64${timestamp}.7z" `
+	& $7zpath a -t7z "$releasedir\SLADE_${version}${timestamp}_win_x64.7z" `
 	"$releasedir64\SLADE.exe" `
 	"$releasedir64\SLADE.pdb" `
 	"$releasedir\slade.pk3"

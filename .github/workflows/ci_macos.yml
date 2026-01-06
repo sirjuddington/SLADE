@@ -16,13 +16,13 @@ jobs:
           - name: "macOS arm64"
             os: macos-latest
             shell: bash
-            package_name: "mac_arm64"
+            package_name: "macos_arm64"
             artifact_path: build/*.dmg
 
           - name: "macOS x64"
             os: macos-15-intel
             shell: bash
-            package_name: "mac_x64"
+            package_name: "macos_x64"
             artifact_path: build/*.dmg
 
     steps:
@@ -48,9 +48,9 @@ jobs:
           
           for i in {1..10};
           do
-            if create-dmg --app-drop-link 10 10 ./slade_${{ matrix.config.package_name }}_${{ github.ref_name }}.dmg ./slade.app;
+            if create-dmg --app-drop-link 10 10 ./SLADE_${{ github.ref_name }}_${{ matrix.config.package_name }}.dmg ./slade.app;
             then
-              echo "slade_${{ matrix.config.package_name }}_${{ github.ref_name }}.dmg created"
+              echo "SLADE_${{ github.ref_name }}_${{ matrix.config.package_name }}.dmg created"
               break
             else
               echo "create-dmg failed $i"
