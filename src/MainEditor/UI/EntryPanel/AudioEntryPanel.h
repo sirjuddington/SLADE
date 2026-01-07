@@ -43,15 +43,15 @@ private:
 	};
 
 	string    prevfile_;
-	AudioType audio_type_  = Invalid;
-	int       num_tracks_  = 1;
-	int       subsong_     = 0;
-	int       song_length_ = 0;
-	bool      opened_      = false;
+	AudioType audio_type_   = Invalid;
+	int       num_tracks_   = 1;
+	int       subsong_      = 0;
+	int       audio_length_ = 0;
+	bool      opened_       = false;
 	MemChunk  data_;
+	bool      seeking_ = false;
 
 	wxBitmapButton* btn_play_      = nullptr;
-	wxBitmapButton* btn_pause_     = nullptr;
 	wxBitmapButton* btn_stop_      = nullptr;
 	wxBitmapButton* btn_next_      = nullptr;
 	wxBitmapButton* btn_prev_      = nullptr;
@@ -59,6 +59,8 @@ private:
 	wxSlider*       slider_volume_ = nullptr;
 	wxStaticText*   txt_title_     = nullptr;
 	wxStaticText*   txt_track_     = nullptr;
+	wxStaticText*   txt_time_      = nullptr;
+	wxStaticText*   txt_volume_    = nullptr;
 	wxTextCtrl*     txt_info_      = nullptr;
 	wxTimer         timer_seek_;
 
@@ -77,10 +79,12 @@ private:
 	void startStream();
 	void stopStream() const;
 	void resetStream() const;
+	bool isPlaying() const;
+	void updatePlayButton() const;
+	void updateTimeText(int ms = -1) const;
 
 	// Events
 	void onBtnPlay(wxCommandEvent& e);
-	void onBtnPause(wxCommandEvent& e);
 	void onBtnStop(wxCommandEvent& e);
 	void onBtnPrev(wxCommandEvent& e);
 	void onBtnNext(wxCommandEvent& e);
