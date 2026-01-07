@@ -100,6 +100,7 @@ find_package(WebP REQUIRED)
 find_package(PNG REQUIRED)
 find_package(glm REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(libxmp CONFIG REQUIRED)
 
 # Cpptrace
 include(FetchContent)
@@ -175,6 +176,7 @@ target_link_libraries(slade
 	glm::glm
 	cpptrace::cpptrace
 	PNG::PNG
+	libxmp::xmp_shared
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)
