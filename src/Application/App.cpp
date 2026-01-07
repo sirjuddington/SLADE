@@ -67,7 +67,6 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include <cpptrace/formatting.hpp>
-#include <dumb.h>
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
 #endif
@@ -770,9 +769,6 @@ void app::exit(bool save_config)
 	// Close lua
 	scripting::close();
 #endif
-
-	// Close DUMB
-	dumb_exit();
 
 	// Exit wx Application
 	wxGetApp().Exit();

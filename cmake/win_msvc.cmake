@@ -47,6 +47,7 @@ if (NOT BUILD_WX)
 endif ()
 
 # Other
+find_package(libxmp CONFIG)
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 
@@ -131,6 +132,7 @@ target_link_libraries(slade
 	MPG123::libmpg123
 	glm::glm
 	cpptrace::cpptrace
+	libxmp::xmp_static
 )
 
 if (NOT NO_LUA)
