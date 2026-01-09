@@ -293,11 +293,15 @@ protected:
 		png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace, &comp, &filter);
 
 		// Determine image type
-		SImage::Type type = SImage::Type::RGBA;
+		auto type = SImage::Type::RGBA;
 		if (alPh)
 			type = SImage::Type::AlphaMap;
 		else if (color_type == PNG_COLOR_TYPE_PALETTE && bit_depth == 8)
 			type = SImage::Type::PalMask;
+
+		// Limit to 8-bit depth (SImage/Palette doesn't support higher, currently)
+		if (bit_depth == 16)
+			png_set_strip_16(png_ptr);
 
 		// Setup png options based on type
 		if (type == SImage::Type::PalMask)
