@@ -192,8 +192,8 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 AudioEntryPanel::~AudioEntryPanel()
 {
-	// Stop the timer to avoid crashes
-	timer_seek_.Stop();
+	timer_seek_.Stop();       // Stop the timer to avoid crashes
+	music_->allowSeek(false); // Needed to avoid a crash in SFML with ogg files
 	resetStream();
 }
 
@@ -616,9 +616,9 @@ void AudioEntryPanel::updateTimeText(int ms) const
 	int elapsed_ms      = ms % 1000;
 	int elapsed_seconds = (ms / 1000) % 60;
 	int elapsed_minutes = ms / 60000;
-	int total_ms      = audio_length_ % 1000;
-	int total_seconds = (audio_length_ / 1000) % 60;
-	int total_minutes = audio_length_ / 60000;
+	int total_ms        = audio_length_ % 1000;
+	int total_seconds   = (audio_length_ / 1000) % 60;
+	int total_minutes   = audio_length_ / 60000;
 
 	txt_time_->SetLabel(
 		wxString::Format(
