@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -166,6 +166,23 @@ public:
 	~MainAppFileListener() override = default;
 
 	wxConnectionBase* OnAcceptConnection(const wxString& topic) override { return new MainAppFLConnection(); }
+
+	static wxString serverName()
+	{
+#ifdef __WXGTK__
+		// Use $XDG_RUNTIME_DIR or /tmp for the server name on Linux/Unix
+		wxString server;
+		wxGetEnv(wxS("XDG_RUNTIME_DIR"), &server);
+		if (server.IsEmpty())
+			wxGetEnv(wxS("TMPDIR"), &server);
+		if (server.IsEmpty())
+			server = wxS("/tmp");
+		server += wxS("/SLADE_MAFL");
+		return server;
+#else
+		return wxS("SLADE_MAFL");
+#endif
+	}
 };
 
 class MainAppFLClient : public wxClient
@@ -210,7 +227,7 @@ bool SLADEWxApp::singleInstanceCheck()
 
 		// Connect to the file listener of the existing SLADE process
 		auto client = std::make_unique<MainAppFLClient>();
-		if (auto connection = client->MakeConnection(wxGetHostName(), wxS("SLADE_MAFL"), wxS("files")))
+		if (auto connection = client->MakeConnection(wxGetHostName(), MainAppFileListener::serverName(), wxS("files")))
 		{
 			// Send args as archives to open
 			for (int a = 1; a < argc; a++)
@@ -242,7 +259,7 @@ bool SLADEWxApp::OnInit()
 
 	// Start up file listener
 	file_listener_ = new MainAppFileListener();
-	file_listener_->Create(wxS("SLADE_MAFL"));
+	file_listener_->Create(MainAppFileListener::serverName());
 
 	// Setup system options
 	wxSystemOptions::SetOption(wxS("mac.listctrl.always_use_generic"), 1);
@@ -320,6 +337,7 @@ bool SLADEWxApp::OnInit()
 // -----------------------------------------------------------------------------
 int SLADEWxApp::OnExit()
 {
+	wxTheClipboard->Flush(); // Need to do this so the clipboard isn't cleared when SLADE exits
 	wxSocketBase::Shutdown();
 	delete single_instance_checker_;
 	delete file_listener_;

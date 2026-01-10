@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component type="desktop">
+<component type="desktop-application">
 	<id>net.mancubus.SLADE</id>
 	<name>SLADE</name>
 	<summary>It's a Doom editor</summary>
@@ -69,6 +69,7 @@
 		</screenshot>
 	</screenshots>
 	<releases>
+		<release date="2026-01-05" version="3.2.10"/>
 		<release date="2025-11-16" version="3.2.9"/>
 		<release date="2025-10-21" version="3.2.8"/>
 		<release date="2024-12-25" version="3.2.7"/>

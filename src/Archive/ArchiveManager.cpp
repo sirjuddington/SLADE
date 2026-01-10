@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -176,6 +176,16 @@ bool ArchiveManager::init()
 		dir_slade_pk3 = app::path("slade.pk3", app::Dir::User);
 	if (!fileutil::fileExists(dir_slade_pk3))
 		dir_slade_pk3 = "slade.pk3";
+
+	// If still not found, try $APPDIR/usr/share/slade3/slade.pk3
+	// (will be here if we're running an AppImage)
+	if (!fileutil::fileExists(dir_slade_pk3))
+	{
+		wxString appdir;
+		wxGetEnv(wxS("APPDIR"), &appdir);
+		if (!appdir.empty())
+			dir_slade_pk3 = appdir.utf8_string() + "/usr/share/slade3/slade.pk3";
+	}
 
 	// Open slade.pk3
 	if (!program_resource_archive_->open(dir_slade_pk3))

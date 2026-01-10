@@ -1,0 +1,75 @@
+name: Continuous Integration (macOS)
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.config.shell }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: "macOS arm64"
+            os: macos-latest
+            shell: bash
+            package_name: "macos_arm64"
+            artifact_path: build/*.dmg
+
+          - name: "macOS x64"
+            os: macos-15-intel
+            shell: bash
+            package_name: "macos_x64"
+            artifact_path: build/*.dmg
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: brew install fluidsynth freetype glm libxmp lua mpg123 sfml webp wxwidgets dylibbundler create-dmg
+
+      - name: Configure
+        run: |
+          mkdir build
+          cmake -G Ninja -B build ${{ matrix.config.extra_options }} .
+
+      - name: Build
+        run: |
+          export MAKEFLAGS=--keep-going
+          cmake --build build
+
+      - name: Package DMG
+        run: |
+          cd build
+          dylibbundler -od -b -x slade.app/Contents/MacOS/slade -d slade.app/Contents/MacOS/libs -p @executable_path/libs
+          
+          for i in {1..10};
+          do
+            if create-dmg --app-drop-link 10 10 ./SLADE_${{ github.ref_name }}_${{ matrix.config.package_name }}.dmg ./slade.app;
+            then
+              echo "SLADE_${{ github.ref_name }}_${{ matrix.config.package_name }}.dmg created"
+              break
+            else
+              echo "create-dmg failed $i"
+            fi
+          done
+
+      - name: Upload Artifacts
+        if: ${{ matrix.config.package_name }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.config.package_name }}
+          path: ${{ matrix.config.artifact_path }}
+
+      - name: Release
+        if: ${{ contains(github.ref, 'tags') }}
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ github.ref_name }}
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          artifacts: ${{ matrix.config.artifact_path }}

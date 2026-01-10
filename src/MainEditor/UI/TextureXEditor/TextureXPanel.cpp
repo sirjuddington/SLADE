@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -1545,6 +1545,10 @@ void TextureXPanel::exportTexture()
 		// Get image and conversion info
 		auto image  = gcd.itemImage(a);
 		auto format = gcd.itemFormat(a);
+
+		// Apply offsets if texture has them
+		if (selection[a]->isExtended())
+			image->setOffsets({ selection[a]->offsetX(), selection[a]->offsetY() });
 
 		// Write converted image back to entry
 		MemChunk mc;

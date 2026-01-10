@@ -49,7 +49,7 @@
   "gfx_raw_screen": {
     "inherits": "gfx_raw",
     "name": "Graphic (Raw Screen)",
-    "size": [ 64000 ],
+    "size": [ 64000, 112000 ],
     "match_name": [
       "title", "help1", "help2", "credit", "interpic", "finale1", "finale2", "finale3", "e2end", "final1", "final2",
       "startup0"
