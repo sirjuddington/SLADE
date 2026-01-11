@@ -165,8 +165,8 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 AudioEntryPanel::~AudioEntryPanel()
 {
-	// Stop the timer to avoid crashes
-	timer_seek_.Stop();
+	timer_seek_.Stop();       // Stop the timer to avoid crashes
+	music_->allowSeek(false); // Needed to avoid a crash in SFML with ogg files
 	resetStream();
 }
 
