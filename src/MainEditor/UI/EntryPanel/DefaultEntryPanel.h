@@ -10,13 +10,13 @@ public:
 	DefaultEntryPanel(wxWindow* parent);
 	~DefaultEntryPanel() override = default;
 
-	bool loadEntries(vector<ArchiveEntry*>& entries);
+	bool loadEntries(const vector<ArchiveEntry*>& entries);
 
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;
 
 private:
-	vector<ArchiveEntry*> entries_;
+	vector<weak_ptr<ArchiveEntry>> entries_;
 
 	wxStaticText* label_type_  = nullptr;
 	wxStaticText* label_size_  = nullptr;
