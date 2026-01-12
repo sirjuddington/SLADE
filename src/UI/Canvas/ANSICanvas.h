@@ -13,7 +13,7 @@ public:
 	void draw() override;
 	void drawImage();
 	void writeRGBAData(uint8_t* dest) const;
-	void loadData(uint8_t* data) { ansidata_ = data; }
+	void loadData(uint8_t* data);
 	void drawCharacter(size_t index) const;
 
 private:

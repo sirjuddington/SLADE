@@ -111,6 +111,18 @@ void ANSICanvas::writeRGBAData(uint8_t* dest) const
 }
 
 // -----------------------------------------------------------------------------
+// Loads ANSI [data]
+// -----------------------------------------------------------------------------
+void ANSICanvas::loadData(uint8_t* data)
+{
+	ansidata_ = data;
+
+	// Clear texture
+	gl::Texture::clear(tex_image_);
+	tex_image_ = 0;
+}
+
+// -----------------------------------------------------------------------------
 // Draws the image
 // -----------------------------------------------------------------------------
 void ANSICanvas::draw()
