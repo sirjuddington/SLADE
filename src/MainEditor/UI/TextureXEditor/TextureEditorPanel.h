@@ -72,6 +72,7 @@ protected:
 	TextureXEditor*      tx_editor_ = nullptr;
 	unique_ptr<CTexture> tex_current_;
 	bool                 tex_modified_ = false;
+	bool                 ignore_drag_  = false;
 
 	// View controls
 	ui::ZoomControl*    zc_zoom_         = nullptr;

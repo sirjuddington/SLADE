@@ -1,6 +1,5 @@
 
 #include "UI/WxUtils.h"
-#include <algorithm>
 #include <array>
 #include <png.h>
 
@@ -430,9 +429,11 @@ protected:
 		PngWriteContext wctx{ &data };
 		png_set_write_fn(png_ptr, &wctx, pngWriteData, pngFlush);
 
-		auto type   = image.type();
-		int  width  = image.width();
-		int  height = image.height();
+		auto type     = image.type();
+		int  width    = image.width();
+		int  height   = image.height();
+		auto img_mask = imageMask(image);
+		auto img_data = imageData(image);
 
 		// IHDR
 		int color_type = PNG_COLOR_TYPE_RGBA;
@@ -455,8 +456,8 @@ protected:
 		// Palette
 		if (type == SImage::Type::PalMask)
 		{
-			const auto used_pal = (pal && !image.hasPalette()) ? pal : image.palette();
-			png_color  palette_plte[256]{};
+			auto      used_pal = (pal && !image.hasPalette()) ? const_cast<Palette*>(pal) : image.palette();
+			png_color palette_plte[256]{};
 			for (int i = 0; i < 256; ++i)
 			{
 				const auto c    = used_pal->colour(i);
@@ -464,36 +465,42 @@ protected:
 			}
 			png_set_PLTE(png_ptr, info_ptr, palette_plte, 256);
 
-			// Build per-index transparency (tRNS) from mask: take minimum alpha across all pixels of an index
-			std::array<uint8_t, 256> trans;
-			trans.fill(255);
-			bool       any_trans   = false;
-			int        max_used_ix = -1;
-			const auto data        = imageData(image);
-			if (const auto mask = imageMask(image))
+			// Build transparency info (if there is a mask)
+			if (img_mask)
 			{
-				for (int i = 0; i < width * height; ++i)
+				// Find palette index to use for transparent pixels
+				if (used_pal->transIndex() < 0)
 				{
-					const uint8_t pi = data[i];
-					const uint8_t a  = mask[i];
-					trans[pi]        = std::min(a, trans[pi]);
-					max_used_ix      = std::max<int>(pi, max_used_ix);
-				}
-				for (int i = 0; i <= max_used_ix; ++i)
-				{
-					if (trans[i] != 255)
+					// No existing transparent index, find first unused colour
+					auto unused = image.findUnusedColour(255);
+
+					// Set any transparent pixels to this colour (if we found an unused colour)
+					bool has_trans = false;
+					if (unused >= 0)
 					{
-						any_trans = true;
-						break;
+						for (int a = 0; a < width * height; a++)
+						{
+							if (img_mask[a] == 0)
+							{
+								img_data[a] = unused;
+								has_trans   = true;
+							}
+						}
+
+						// Set palette transparency
+						if (has_trans)
+							used_pal->setTransIndex(unused);
 					}
 				}
-			}
-			if (any_trans)
-			{
-				int count = (max_used_ix >= 0) ? (max_used_ix + 1) : 0;
-				if (count < 1)
-					count = 256; // fallback
-				png_set_tRNS(png_ptr, info_ptr, trans.data(), count, nullptr);
+
+				// Set tRNS chunk if there is a transparent index
+				if (used_pal->transIndex() >= 0)
+				{
+					std::array<uint8_t, 256> trans;
+					trans.fill(255);
+					trans[used_pal->transIndex()] = 0;
+					png_set_tRNS(png_ptr, info_ptr, trans.data(), trans.size(), nullptr);
+				}
 			}
 		}
 
@@ -519,14 +526,14 @@ protected:
 		{
 			vector<png_bytep> rows(height);
 			for (int y = 0; y < height; ++y)
-				rows[y] = imageData(image) + y * width * 4;
+				rows[y] = img_data + y * width * 4;
 			png_write_image(png_ptr, rows.data());
 		}
 		else // PalMask or AlphaMap (both 1 byte per pixel)
 		{
 			vector<png_bytep> rows(height);
 			for (int y = 0; y < height; ++y)
-				rows[y] = imageData(image) + y * width;
+				rows[y] = img_data + y * width;
 			png_write_image(png_ptr, rows.data());
 		}
 

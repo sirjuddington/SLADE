@@ -530,6 +530,7 @@ void ZTextureEditorPanel::replacePatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(true);
+	ignore_drag_ = true;
 	auto patch = tx_editor_->browsePatchEntry();
 	if (!patch.empty())
 	{

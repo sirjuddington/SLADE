@@ -117,6 +117,8 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 // -----------------------------------------------------------------------------
 bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 {
+	entries_.clear();
+
 	// Update labels
 	label_index_->SetLabel(WX_FMT("Entry Index: {}", entry->index()));
 	label_type_->SetLabel(WX_FMT("Entry Type: {}", entry->typeString()));
@@ -173,12 +175,14 @@ bool DefaultEntryPanel::loadEntries(const vector<ArchiveEntry*>& entries)
 	size_t max = 0, min = entries[0]->index();
 	for (auto& entry : entries)
 	{
+		auto e_shared = entry->getShared();
+		if (!e_shared)
+			continue;
+
 		// Get index
 		size_t index = entry->index();
-		if (index < min)
-			min = index;
-		if (index > max)
-			max = index;
+		min          = std::min(index, min);
+		max          = std::max(index, max);
 
 		// Check for gfx entry
 		if (entry->type()->extraProps().contains("image"))
@@ -188,7 +192,7 @@ bool DefaultEntryPanel::loadEntries(const vector<ArchiveEntry*>& entries)
 		if (entry->type()->id() == "texturex" || entry->type()->id() == "pnames")
 			texture = true;
 
-		entries_.push_back(entry);
+		entries_.emplace_back(e_shared);
 	}
 	label_index_->SetLabel(
 		WX_FMT("Entry Indices: from {} to {}", static_cast<unsigned long>(min), static_cast<unsigned long>(max)));
@@ -234,8 +238,11 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
 	// Go through selected entries
 	for (auto& entry : entries_)
 	{
-		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
-		mod.apply(*entry);
+		if (entry.expired())
+			continue;
+
+		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry.lock().get()));
+		mod.apply(*entry.lock());
 	}
 	maineditor::currentEntryPanel()->callRefresh();
 

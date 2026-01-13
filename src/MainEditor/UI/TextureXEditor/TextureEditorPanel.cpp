@@ -53,12 +53,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace
-{
-// Hack to stop the drag event being erroneously triggered when
-// double-clicking a patch in the patch browser to select it
-bool hack_nodrag = false;
-} // namespace
 CVAR(Bool, tx_apply_scale, true, CVar::Flag::Save)
 CVAR(Bool, tx_show_outside, true, CVar::Flag::Save)
 
@@ -649,7 +643,7 @@ void TextureEditorPanel::replacePatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(false);
-	hack_nodrag = true;
+	ignore_drag_ = true;
 	int patch   = tx_editor_->browsePatchTable(pname);
 	if (patch >= 0)
 	{
@@ -846,7 +840,7 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 		SAction::fromId("txed_patch_forward")->addToMenu(&popup, true);
 		SAction::fromId("txed_patch_duplicate")->addToMenu(&popup, true);
 
-		hack_nodrag = true;
+		ignore_drag_ = true;
 		PopupMenu(&popup);
 	}
 
@@ -854,8 +848,8 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 	else if (e.Dragging())
 	{
 		// Drag selected patches if left button is down and any patch is selected
-		if (hack_nodrag)
-			hack_nodrag = false;
+		if (ignore_drag_)
+			ignore_drag_ = false;
 		else if (e.LeftIsDown())
 		{
 			if (list_patches_->GetSelectedItemCount() > 0)
@@ -966,7 +960,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		// Add patch
 		else if (name == "txed_patch_add")
 		{
-			hack_nodrag = true;
+			ignore_drag_ = true;
 			addPatch();
 			handled = true;
 		}
@@ -981,7 +975,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		// Replace patch
 		else if (name == "txed_patch_replace")
 		{
-			hack_nodrag = true;
+			ignore_drag_ = true;
 			replacePatch();
 			handled = true;
 		}

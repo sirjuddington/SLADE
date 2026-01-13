@@ -37,7 +37,7 @@ public:
 	uint32_t                 size() const { return data_.size(); }
 	const MemChunk&          data() const { return data_; }
 	const uint8_t*           rawData() const { return data_.data(); }
-	ArchiveDir*              parentDir() const { return parent_; }
+	ArchiveDir*              parentDir() const { return parent_.lock().get(); }
 	Archive*                 parent() const;
 	Archive*                 topParent() const;
 	string                   path(bool name = false) const;
@@ -112,12 +112,12 @@ public:
 
 private:
 	// Entry Info
-	string       name_;
-	string       upper_name_;
-	MemChunk     data_;
-	EntryType*   type_   = nullptr;
-	ArchiveDir*  parent_ = nullptr;
-	PropertyList ex_props_;
+	string               name_;
+	string               upper_name_;
+	MemChunk             data_;
+	EntryType*           type_ = nullptr;
+	weak_ptr<ArchiveDir> parent_;
+	PropertyList         ex_props_;
 
 	// Entry status
 	EntryState      state_        = EntryState::New;

@@ -79,7 +79,7 @@ ArchiveDir::ArchiveDir(string_view name, const shared_ptr<ArchiveDir>& parent, A
 	// Init dir entry
 	dir_entry_          = std::make_unique<ArchiveEntry>(name);
 	dir_entry_->type_   = EntryType::folderType();
-	dir_entry_->parent_ = parent.get();
+	dir_entry_->parent_ = parent;
 
 	if (parent)
 		allow_duplicate_names_ = parent->allow_duplicate_names_;
@@ -312,9 +312,9 @@ bool ArchiveDir::addEntry(shared_ptr<ArchiveEntry> entry, bool ignore_requiremen
 		return false;
 
 	// Set entry's parent to this dir
-	if (entry->parent_)
-		entry->parent_->removeEntry(entry->index());
-	entry->parent_ = this;
+	if (!entry->parent_.expired())
+		entry->parent_.lock()->removeEntry(entry->index());
+	entry->parent_ = getShared(this);
 
 	// Check index
 	if (index >= entries_.size())
@@ -340,7 +340,7 @@ bool ArchiveDir::removeEntry(unsigned index)
 		return false;
 
 	// De-parent entry
-	entries_[index]->parent_ = nullptr;
+	entries_[index]->parent_.reset();
 
 	// Remove it from the entry list
 	entries_.erase(entries_.begin() + index);
