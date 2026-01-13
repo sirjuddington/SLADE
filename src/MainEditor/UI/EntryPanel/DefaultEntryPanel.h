@@ -16,7 +16,7 @@ protected:
 	bool loadEntry(ArchiveEntry* entry) override;
 
 private:
-	vector<ArchiveEntry*> entries_;
+	vector<weak_ptr<ArchiveEntry>> entries_;
 
 	wxStaticText* label_type_  = nullptr;
 	wxStaticText* label_size_  = nullptr;

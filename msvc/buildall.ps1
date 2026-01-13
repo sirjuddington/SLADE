@@ -13,9 +13,16 @@ if (-not (Test-Path $msvcpath))
 }
 Write-Host "`nFound VS2026 at ${msvcpath}" -foregroundcolor blue
 
+# Check VCPKG_ROOT env var
+if (-not $env:VCPKG_ROOT)
+{
+	Write-Host "`nVCPKG_ROOT environment variable not set!" -ForegroundColor Red
+	Exit-PSSession
+}
+
 # Cmake config line vars
 $buildtype = "-DCMAKE_BUILD_TYPE:STRING=`"RelWithDebInfo`""
-$toolchainfile = "-DCMAKE_TOOLCHAIN_FILE=`"H:/Dev/vcpkg/scripts/buildsystems/vcpkg.cmake`""
+$toolchainfile = "-DCMAKE_TOOLCHAIN_FILE=`"${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake`""
 
 
 # 32bit build -----------------------------------------------------------------

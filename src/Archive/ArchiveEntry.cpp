@@ -40,7 +40,6 @@
 #include "EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "UI/WxUtils.h"
-#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -136,7 +135,7 @@ string_view ArchiveEntry::upperNameNoExt() const
 // -----------------------------------------------------------------------------
 Archive* ArchiveEntry::parent() const
 {
-	return parent_ ? parent_->archive() : nullptr;
+	return parent_.expired() ? nullptr : parent_.lock()->archive();
 }
 
 // -----------------------------------------------------------------------------
@@ -144,12 +143,13 @@ Archive* ArchiveEntry::parent() const
 // -----------------------------------------------------------------------------
 Archive* ArchiveEntry::topParent() const
 {
-	if (parent_)
+	if (!parent_.expired())
 	{
-		if (!parent_->archive()->parentEntry())
-			return parent_->archive();
+		auto parent = parent_.lock();
+		if (!parent->archive()->parentEntry())
+			return parent->archive();
 
-		return parent_->archive()->parentEntry()->topParent();
+		return parent->archive()->parentEntry()->topParent();
 	}
 
 	return nullptr;
@@ -160,7 +160,7 @@ Archive* ArchiveEntry::topParent() const
 // -----------------------------------------------------------------------------
 string ArchiveEntry::path(bool include_name) const
 {
-	auto path = parent_ ? parent_->path() : "";
+	auto path = parent_.expired() ? "" : parent_.lock()->path();
 	return include_name ? path + name() : path;
 }
 
@@ -170,7 +170,7 @@ string ArchiveEntry::path(bool include_name) const
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveEntry::nextEntry()
 {
-	return parent_ ? parent_->entryAt(parent_->entryIndex(this) + 1) : nullptr;
+	return parent_.expired() ? nullptr : parent_.lock()->entryAt(parent_.lock()->entryIndex(this) + 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -179,7 +179,7 @@ ArchiveEntry* ArchiveEntry::nextEntry()
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveEntry::prevEntry()
 {
-	return parent_ ? parent_->entryAt(parent_->entryIndex(this) - 1) : nullptr;
+	return parent_.expired() ? nullptr : parent_.lock()->entryAt(parent_.lock()->entryIndex(this) - 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -188,7 +188,7 @@ ArchiveEntry* ArchiveEntry::prevEntry()
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> ArchiveEntry::getShared() const
 {
-	return parent_ ? parent_->sharedEntry(this) : nullptr;
+	return parent_.expired() ? nullptr : parent_.lock()->sharedEntry(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -197,7 +197,7 @@ shared_ptr<ArchiveEntry> ArchiveEntry::getShared() const
 // -----------------------------------------------------------------------------
 int ArchiveEntry::index()
 {
-	return parent_ ? parent_->entryIndex(this) : -1;
+	return parent_.expired() ? -1 : parent_.lock()->entryIndex(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -661,15 +661,15 @@ bool ArchiveEntry::isInNamespace(string_view ns)
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveEntry::relativeEntry(string_view at_path, bool allow_absolute_path) const
 {
-	if (!parent_)
+	if (parent_.expired())
 		return nullptr;
 
 	// Try relative to this entry
-	auto include = parent_->archive()->entryAtPath(path().append(at_path));
+	auto include = parent_.lock()->archive()->entryAtPath(path().append(at_path));
 
 	// Try absolute path
 	if (!include && allow_absolute_path)
-		include = parent_->archive()->entryAtPath(at_path);
+		include = parent_.lock()->archive()->entryAtPath(at_path);
 
 	return include;
 }
