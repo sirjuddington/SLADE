@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Geometry/Plane.h"
+#include "ExtraFloor.h"
 
 namespace slade
 {
@@ -9,12 +9,6 @@ enum class SectorSurfaceType : u8;
 class ExtraFloorSpecials
 {
 public:
-	struct ExtraFloor
-	{
-		Plane             plane;
-		SectorSurfaceType surface_type;
-	};
-
 	ExtraFloorSpecials(SLADEMap& map);
 	~ExtraFloorSpecials() = default;
 
@@ -24,14 +18,11 @@ public:
 	void processLineSpecial(const MapLine& line);
 
 private:
-	SLADEMap* map_ = nullptr;
-
 	struct SectorExtraFloors
 	{
 		const MapSector*   sector;
 		vector<ExtraFloor> extra_floors;
 	};
-	vector<SectorExtraFloors> sector_extra_floors_;
 
 	struct Set3dFloorSpecial
 	{
@@ -50,9 +41,13 @@ private:
 		bool           render_inside;
 	};
 
+	SLADEMap*                             map_ = nullptr;
+	vector<SectorExtraFloors>             sector_extra_floors_;
 	vector<unique_ptr<Set3dFloorSpecial>> set_3d_floor_specials_;
 
-	// Set3dFloorSpecial
+	void addExtraFloor(const MapSector* sector, const ExtraFloor& extra_floor);
+	void clearExtraFloors(const MapSector* sector);
+
 	void addSet3dFloorSpecial(const MapLine& line);
 };
 } // namespace slade

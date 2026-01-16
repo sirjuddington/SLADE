@@ -29,38 +29,6 @@ public:
 		}
 	};
 
-	struct ExtraFloor
-	{
-		enum class Flags : u16
-		{
-			DisableLighting      = 1 << 0,
-			LightingInsideOnly   = 1 << 1,
-			InnerFogEffect       = 1 << 2,
-			FlatAtCeiling        = 1 << 3,
-			UseUpperTexture      = 1 << 4,
-			UseLowerTexture      = 1 << 5,
-			AdditiveTransparency = 1 << 6,
-			Solid                = 1 << 7,
-			DrawInside           = 1 << 8,
-
-			// Normal ExtraFloors use the control sector's ceiling for the top
-			// and floor for the bottom. This flag reverses that (eg. for Vavoom
-			// 3d floors)
-			Flipped = 1 << 9,
-		};
-
-		int        height         = 0;
-		Plane      plane_top      = { 0., 0., 1., 0. };
-		Plane      plane_bottom   = { 0., 0., 1., 0. };
-		MapSector* control_sector = nullptr;
-		MapLine*   control_line   = nullptr;
-		u8         flags          = 0;
-		float      alpha          = 1.0f;
-
-		bool hasFlag(Flags flag) const { return flags & static_cast<u16>(flag); }
-		void setFlag(Flags flag) { flags |= static_cast<u16>(flag); }
-	};
-
 	// UDMF properties
 	inline static const string PROP_TEXFLOOR      = "texturefloor";
 	inline static const string PROP_TEXCEILING    = "textureceiling";
@@ -136,12 +104,6 @@ public:
 
 	void updateBBox() const;
 
-	// Extra floors
-	bool                      hasExtraFloors() const { return !extra_floors_.empty(); }
-	const vector<ExtraFloor>& extraFloors() const { return extra_floors_; }
-	void                      clearExtraFloors() { extra_floors_.clear(); }
-	void                      addExtraFloor(const ExtraFloor& extra_floor);
-
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
@@ -164,7 +126,6 @@ private:
 	mutable bool              poly_needsupdate_ = true;
 	mutable long              geometry_updated_ = 0;
 	mutable Vec2d             text_point_       = {};
-	vector<ExtraFloor>        extra_floors_;
 
 	void setGeometryUpdated() const;
 };

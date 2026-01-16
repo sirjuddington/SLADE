@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapSpecials.h"
+#include "ExtraFloorSpecials.h"
 #include "Game/Configuration.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
@@ -57,12 +58,21 @@ using namespace slade;
 MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 {
 	slope_specials_ = std::make_unique<SlopeSpecials>(map);
+	extrafloor_specials_ = std::make_unique<ExtraFloorSpecials>(map);
 }
 
 // -----------------------------------------------------------------------------
 // MapSpecials destructor
 // -----------------------------------------------------------------------------
 MapSpecials::~MapSpecials() = default;
+
+// -----------------------------------------------------------------------------
+// Returns the ExtraFloors for the given [sector]
+// -----------------------------------------------------------------------------
+const vector<ExtraFloor>& MapSpecials::sectorExtraFloors(const MapSector* sector) const
+{
+	return extrafloor_specials_->extraFloors(sector);
+}
 
 // -----------------------------------------------------------------------------
 // (Re-)Process all specials in the map

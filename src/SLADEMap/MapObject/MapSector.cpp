@@ -38,7 +38,6 @@
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
-#include "SLADEMap/OldMapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
@@ -890,19 +889,6 @@ void MapSector::disconnectSide(const MapSide* side)
 	poly_needsupdate_ = true;
 	bbox_.reset();
 	setGeometryUpdated();
-}
-
-// -----------------------------------------------------------------------------
-// Adds an [extra_floor] to the sector, keeping the list sorted by height (top-
-// down)
-// -----------------------------------------------------------------------------
-void MapSector::addExtraFloor(const ExtraFloor& extra_floor)
-{
-	extra_floors_.emplace_back(extra_floor);
-
-	// Sort extra floors from top down
-	std::ranges::sort(extra_floors_,
-		[](const ExtraFloor& a, const ExtraFloor& b) { return b.height < a.height; });
 }
 
 // -----------------------------------------------------------------------------

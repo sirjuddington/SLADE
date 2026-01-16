@@ -44,6 +44,9 @@
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapSpecials/ExtraFloor.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/Polygon.h"
 
 using namespace slade;
@@ -214,7 +217,7 @@ std::tuple<vector<Flat3D>, vector<gl::Vertex3D>> generateSectorFlats(const MapSe
 	vertex_index += sector_vertex_count;
 
 	// 3d floors
-	for (auto& extrafloor : sector.extraFloors())
+	for (auto& extrafloor : sector.parentMap()->mapSpecials().sectorExtraFloors(&sector))
 	{
 		// Top
 		auto& flat_top = flats.emplace_back(
@@ -231,8 +234,8 @@ std::tuple<vector<Flat3D>, vector<gl::Vertex3D>> generateSectorFlats(const MapSe
 			&sector,
 			SectorSurfaceType::Ceiling,
 			extrafloor.control_sector,
-			extrafloor.hasFlag(MapSector::ExtraFloor::Flags::FlatAtCeiling) ? SectorSurfaceType::Ceiling
-																			: SectorSurfaceType::Floor,
+			extrafloor.hasFlag(ExtraFloor::Flags::FlatAtCeiling) ? SectorSurfaceType::Ceiling
+																 : SectorSurfaceType::Floor,
 			SectorSurfaceType::Floor);
 		setupFlat3D(flat_bottom, vertex_index, vertices);
 	}
@@ -272,6 +275,7 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 	vector<Quad3D>       rects;
 	vector<gl::Vertex3D> vertices;
 
+	auto map     = line.parentMap();
 	auto sector1 = line.frontSector();
 	auto sector2 = line.backSector();
 
@@ -283,7 +287,7 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 
 		// Add quads for extra floors, if any
 		auto plane_top = sector1->ceiling().plane; // Start at sector ceiling
-		for (auto& extrafloor : sector1->extraFloors())
+		for (auto& extrafloor : map->mapSpecials().sectorExtraFloors(sector1))
 		{
 			// Add quad from current top to extra floor top
 			rects.push_back(
@@ -295,7 +299,7 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 			vertex_index += 6;
 
 			// Add internal extrafloor quad if drawing inside
-			if (extrafloor.hasFlag(MapSector::ExtraFloor::Flags::DrawInside))
+			if (extrafloor.hasFlag(ExtraFloor::Flags::DrawInside))
 			{
 				rects.push_back(
 					{ .side          = line.s1(),

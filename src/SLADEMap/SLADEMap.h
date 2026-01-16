@@ -68,7 +68,7 @@ public:
 	void clearMap();
 
 	MapSpecials& mapSpecials() const { return *map_specials_.get(); }
-	void            recomputeSpecials() const;
+	void         recomputeSpecials() const;
 
 	// Map saving
 	bool writeMap(vector<ArchiveEntry*>& map_entries) const;
@@ -151,14 +151,14 @@ public:
 	int  thingTypeUsageCount(int type);
 
 private:
-	MapObjectCollection        data_;
-	string                     udmf_namespace_;
-	PropertyList               udmf_props_;
-	string                     name_;
-	MapFormat                  current_format_;
-	long                       opened_time_ = 0;
+	MapObjectCollection     data_;
+	string                  udmf_namespace_;
+	PropertyList            udmf_props_;
+	string                  name_;
+	MapFormat               current_format_;
+	long                    opened_time_ = 0;
 	unique_ptr<MapSpecials> map_specials_;
-	bool                       is_open_ = false;
+	bool                    is_open_ = false;
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
 
