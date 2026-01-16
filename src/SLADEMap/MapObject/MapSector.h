@@ -29,45 +29,37 @@ public:
 		}
 	};
 
-	// struct ExtraFloor
-	//{
-	//	// TODO merge with surface?
-	//	enum
-	//	{
-	//		// TODO how does vavoom work?  their wiki is always broken
-	//		// VAVOOM,
-	//		SOLID     = 1,
-	//		SWIMMABLE = 2,
-	//		NONSOLID  = 3,
+	struct ExtraFloor
+	{
+		enum class Flags : u16
+		{
+			DisableLighting      = 1 << 0,
+			LightingInsideOnly   = 1 << 1,
+			InnerFogEffect       = 1 << 2,
+			FlatAtCeiling        = 1 << 3,
+			UseUpperTexture      = 1 << 4,
+			UseLowerTexture      = 1 << 5,
+			AdditiveTransparency = 1 << 6,
+			Solid                = 1 << 7,
+			DrawInside           = 1 << 8,
 
-	//		DISABLE_LIGHTING      = 1,
-	//		LIGHTING_INSIDE_ONLY  = 2,
-	//		INNER_FOG_EFFECT      = 4,
-	//		FLAT_AT_CEILING       = 8,
-	//		USE_UPPER_TEXTURE     = 16,
-	//		USE_LOWER_TEXTURE     = 32,
-	//		ADDITIVE_TRANSPARENCY = 64,
-	//	};
+			// Normal ExtraFloors use the control sector's ceiling for the top
+			// and floor for the bottom. This flag reverses that (eg. for Vavoom
+			// 3d floors)
+			Flipped = 1 << 9,
+		};
 
-	//	Plane         floor_plane;
-	//	Plane         ceiling_plane;
-	//	short         effective_height;
-	//	short         floor_light;
-	//	short         ceiling_light;
-	//	unsigned      control_sector_index;
-	//	unsigned      control_line_index;
-	//	int           floor_type;
-	//	float         alpha;
-	//	bool          draw_inside;
-	//	unsigned char flags;
+		int        height         = 0;
+		Plane      plane_top      = { 0., 0., 1., 0. };
+		Plane      plane_bottom   = { 0., 0., 1., 0. };
+		MapSector* control_sector = nullptr;
+		MapLine*   control_line   = nullptr;
+		u8         flags          = 0;
+		float      alpha          = 1.0f;
 
-	//	bool disableLighting() const { return flags & ExtraFloor::DISABLE_LIGHTING; }
-	//	bool lightingInsideOnly() const { return flags & ExtraFloor::LIGHTING_INSIDE_ONLY; }
-	//	bool ceilingOnly() const { return flags & ExtraFloor::FLAT_AT_CEILING; }
-	//	bool useUpperTexture() const { return flags & ExtraFloor::USE_UPPER_TEXTURE; }
-	//	bool useLowerTexture() const { return flags & ExtraFloor::USE_LOWER_TEXTURE; }
-	//	bool additiveTransparency() const { return flags & ExtraFloor::ADDITIVE_TRANSPARENCY; }
-	//};
+		bool hasFlag(Flags flag) const { return flags & static_cast<u16>(flag); }
+		void setFlag(Flags flag) { flags |= static_cast<u16>(flag); }
+	};
 
 	// UDMF properties
 	inline static const string PROP_TEXFLOOR      = "texturefloor";
@@ -120,12 +112,12 @@ public:
 	template<SectorSurfaceType p> void  setPlane(const Plane& plane);
 
 	Vec2d                    getPoint(Point point) const override;
-	void                     resetBBox() { bbox_.reset(); }
+	void                     resetBBox() const { bbox_.reset(); }
 	BBox                     boundingBox() const;
 	vector<MapSide*>&        connectedSides() { return connected_sides_; }
 	const vector<MapSide*>&  connectedSides() const { return connected_sides_; }
 	const vector<glm::vec2>& polygonVertices() const;
-	void                     resetPolygon() { poly_needsupdate_ = true; }
+	void                     resetPolygon() const { poly_needsupdate_ = true; }
 	bool                     containsPoint(const Vec2d& point) const;
 	double                   distanceTo(const Vec2d& point, double maxdist = -1);
 	bool                     putLines(vector<MapLine*>& list) const;
@@ -144,10 +136,11 @@ public:
 
 	void updateBBox() const;
 
-	//// Extra floors
-	// const vector<ExtraFloor>& extraFloors() const { return extra_floors_; }
-	// void                      clearExtraFloors() { extra_floors_.clear(); }
-	// void                      addExtraFloor(const ExtraFloor& extra_floor, const MapSector& control_sector);
+	// Extra floors
+	bool                      hasExtraFloors() const { return !extra_floors_.empty(); }
+	const vector<ExtraFloor>& extraFloors() const { return extra_floors_; }
+	void                      clearExtraFloors() { extra_floors_.clear(); }
+	void                      addExtraFloor(const ExtraFloor& extra_floor);
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
@@ -171,7 +164,7 @@ private:
 	mutable bool              poly_needsupdate_ = true;
 	mutable long              geometry_updated_ = 0;
 	mutable Vec2d             text_point_       = {};
-	vector<Surface>           extra_floors_;
+	vector<ExtraFloor>        extra_floors_;
 
 	void setGeometryUpdated() const;
 };

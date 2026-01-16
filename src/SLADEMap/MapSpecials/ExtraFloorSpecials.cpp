@@ -43,17 +43,14 @@ ExtraFloorSpecials::ExtraFloorSpecials(SLADEMap& map) : map_(&map) {}
 
 bool ExtraFloorSpecials::hasExtraFloors(const MapSector* sector) const
 {
-	return std::any_of(
-		sector_extra_floors_.begin(),
-		sector_extra_floors_.end(),
+	return std::ranges::any_of(sector_extra_floors_,
 		[sector](const auto& sef) { return sef.sector == sector; });
 }
 
 const vector<ExtraFloorSpecials::ExtraFloor>& ExtraFloorSpecials::extraFloors(const MapSector* sector) const
 {
-	const auto it = std::find_if(
-		sector_extra_floors_.begin(),
-		sector_extra_floors_.end(),
+	const auto it = std::ranges::find_if(
+		sector_extra_floors_,
 		[sector](const auto& sef) { return sef.sector == sector; });
 
 	if (it != sector_extra_floors_.end())
@@ -79,5 +76,28 @@ void ExtraFloorSpecials::processLineSpecial(const MapLine& line)
 			s3fs.control_sector = sector;
 			s3fs.line           = &line;
 		}
+	}
+}
+
+void ExtraFloorSpecials::addSet3dFloorSpecial(const MapLine& line)
+{
+	// Line must have front sector
+	auto control_sector = line.frontSector();
+	if (!control_sector)
+	{
+		log::warning("Invalid Sector_Set3dFloor special on line {}: Line has no front sector", line.index());
+		return;
+	}
+
+	// Get all tagged sectors
+	vector<MapSector*> target_sectors;
+	map_->sectors().putAllWithId(line.arg(0), target_sectors);
+
+	for (auto sector : target_sectors)
+	{
+		Set3dFloorSpecial s3fs;
+		s3fs.target         = sector;
+		s3fs.control_sector = control_sector;
+		s3fs.line           = &line;
 	}
 }

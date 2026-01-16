@@ -892,22 +892,18 @@ void MapSector::disconnectSide(const MapSide* side)
 	setGeometryUpdated();
 }
 
-// void MapSector::addExtraFloor(const ExtraFloor& extra_floor, const MapSector& control_sector)
-//{
-//	extra_floors_.emplace_back(extra_floor);
-//
-//	// Sort extra floors from top down
-//	std::sort(
-//		extra_floors_.begin(),
-//		extra_floors_.end(),
-//		[](const ExtraFloor& a, const ExtraFloor& b) { return b.effective_height < a.effective_height; });
-//
-//	// Mark the sector as updated if the control sector has been; this is a sort of very rudimentary dependency graph
-//	if (control_sector.geometry_updated_ > geometry_updated_)
-//		setGeometryUpdated();
-//	if (control_sector.modifiedTime() > modifiedTime())
-//		setModified();
-// }
+// -----------------------------------------------------------------------------
+// Adds an [extra_floor] to the sector, keeping the list sorted by height (top-
+// down)
+// -----------------------------------------------------------------------------
+void MapSector::addExtraFloor(const ExtraFloor& extra_floor)
+{
+	extra_floors_.emplace_back(extra_floor);
+
+	// Sort extra floors from top down
+	std::ranges::sort(extra_floors_,
+		[](const ExtraFloor& a, const ExtraFloor& b) { return b.height < a.height; });
+}
 
 // -----------------------------------------------------------------------------
 // Write all sector info to a Backup struct

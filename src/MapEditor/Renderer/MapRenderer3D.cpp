@@ -185,7 +185,7 @@ void MapRenderer3D::renderFlats()
 
 				// Add indices
 				auto vi = flat.vertex_offset;
-				while (vi < flat.vertex_offset + flat.vertex_count)
+				while (vi < flat.vertex_offset + flat.sector->polygonVertices().size())
 					indices.push_back(vi++);
 
 				flats_processed[f] = 1;

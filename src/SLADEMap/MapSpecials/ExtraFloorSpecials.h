@@ -35,7 +35,7 @@ private:
 
 	struct Set3dFloorSpecial
 	{
-		enum class Type
+		enum class Type : u8
 		{
 			Vavoom    = 0,
 			Solid     = 1,
@@ -51,5 +51,8 @@ private:
 	};
 
 	vector<unique_ptr<Set3dFloorSpecial>> set_3d_floor_specials_;
+
+	// Set3dFloorSpecial
+	void addSet3dFloorSpecial(const MapLine& line);
 };
 } // namespace slade
