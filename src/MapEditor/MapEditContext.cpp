@@ -681,11 +681,11 @@ void MapEditContext::updateTagged()
 			}
 
 			// Thing ID
-			else if (needs_tag == TagType::Thing)
+			else if (needs_tag == TagType::Thing && tag > 0)
 				map_->things().putAllWithId(tag, tagged_things_);
 
 			// Line ID
-			else if (needs_tag == TagType::Line)
+			else if (needs_tag == TagType::Line && tag > 0)
 				map_->lines().putAllWithId(tag, tagged_lines_);
 
 			// ZDoom quirkiness
