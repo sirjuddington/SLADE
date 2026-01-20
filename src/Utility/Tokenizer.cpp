@@ -542,7 +542,7 @@ string Tokenizer::getLine(bool from_start)
 	}
 
 	string line;
-	while (data_[state_.position] != '\n' && data_[state_.position] != '\r')
+	while (state_.position < state_.size && data_[state_.position] != '\n' && data_[state_.position] != '\r')
 		line += data_[state_.position++];
 
 	readNext(&token_current_);
