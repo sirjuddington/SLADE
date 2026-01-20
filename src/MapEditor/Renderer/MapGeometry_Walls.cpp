@@ -79,9 +79,9 @@ struct QuadInfo
 	const MapTexture* texture = nullptr;
 	gl::Vertex3D      tl, tr, bl, br;
 	Vec2i             offsets;
-	int               line_length      = 0;
-	bool              tex_align_bottom = false; // If true, align texture to bottom of quad
-	bool              back_side        = false;
+	int               line_length  = 0;
+	int               tex_y_origin = 0; // Absolute height to align texture y origin to
+	bool              back_side    = false;
 };
 } // namespace
 
@@ -101,26 +101,23 @@ static void setupQuadTexCoords(QuadInfo& info)
 	// Calculate texture coordinates
 	int x1 = info.offsets.x;
 	int x2 = info.line_length + info.offsets.x;
-	int y1 = info.offsets.y;
-	int y2 = info.height_top - info.height_bottom + info.offsets.y;
+	int y1 = info.tex_y_origin - info.height_top + info.offsets.y;
+	int y2 = y1 + (info.height_top - info.height_bottom);
 
-	// Adjust for bottom alignment
-	if (info.tex_align_bottom)
-	{
-		int adjust = tex_info.size.y - y2;
-		y1 += adjust;
-		y2 += adjust;
-	}
+	float tl_diff = info.height_top - info.tl.position.z;
+	float tr_diff = info.height_top - info.tr.position.z;
+	float bl_diff = info.height_bottom - info.bl.position.z;
+	float br_diff = info.height_bottom - info.br.position.z;
 
 	// Set uv tex coords
 	info.tl.uv.x = static_cast<float>(x1) / static_cast<float>(tex_info.size.x);
-	info.tl.uv.y = static_cast<float>(y1) / static_cast<float>(tex_info.size.y);
+	info.tl.uv.y = (static_cast<float>(y1) + tl_diff) / static_cast<float>(tex_info.size.y);
 	info.tr.uv.x = static_cast<float>(x2) / static_cast<float>(tex_info.size.x);
-	info.tr.uv.y = static_cast<float>(y1) / static_cast<float>(tex_info.size.y);
+	info.tr.uv.y = (static_cast<float>(y1) + tr_diff) / static_cast<float>(tex_info.size.y);
 	info.bl.uv.x = static_cast<float>(x1) / static_cast<float>(tex_info.size.x);
-	info.bl.uv.y = static_cast<float>(y2) / static_cast<float>(tex_info.size.y);
+	info.bl.uv.y = (static_cast<float>(y2) + bl_diff) / static_cast<float>(tex_info.size.y);
 	info.br.uv.x = static_cast<float>(x2) / static_cast<float>(tex_info.size.x);
-	info.br.uv.y = static_cast<float>(y2) / static_cast<float>(tex_info.size.y);
+	info.br.uv.y = (static_cast<float>(y2) + br_diff) / static_cast<float>(tex_info.size.y);
 }
 
 static void addQuad(vector<gl::Vertex3D>& vertices, QuadInfo& info, const glm::vec4& colour)
@@ -184,55 +181,54 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 	}
 
 	// Get heights, texture and alignment info depending on wall part
-	int    height_top, height_bottom;
+	int    height_top, height_bottom, tex_y_origin;
 	Plane  plane_top, plane_bottom;
 	string tex_name;
-	bool   tex_align_bottom = false;
 	switch (part)
 	{
 	case MapLine::FrontMiddle:
 	case MapLine::BackMiddle:
-		tex_name         = side->texMiddle();
-		height_top       = side->sector()->ceiling().height;
-		height_bottom    = side->sector()->floor().height;
-		plane_top        = side->sector()->ceiling().plane;
-		plane_bottom     = side->sector()->floor().plane;
-		tex_align_bottom = context.lower_unpegged;
+		tex_name      = side->texMiddle();
+		height_top    = side->sector()->ceiling().height;
+		height_bottom = side->sector()->floor().height;
+		plane_top     = side->sector()->ceiling().plane;
+		plane_bottom  = side->sector()->floor().plane;
+		tex_y_origin  = context.lower_unpegged ? height_bottom : height_top;
 		break;
 
 	case MapLine::FrontUpper:
 	case MapLine::BackUpper:
-		tex_name         = side->texUpper();
-		height_top       = side->sector()->ceiling().height;
-		height_bottom    = side_back->sector()->ceiling().height;
-		plane_top        = side->sector()->ceiling().plane;
-		plane_bottom     = side_back->sector()->ceiling().plane;
-		tex_align_bottom = !context.upper_unpegged;
+		tex_name      = side->texUpper();
+		height_top    = side->sector()->ceiling().height;
+		height_bottom = side_back->sector()->ceiling().height;
+		plane_top     = side->sector()->ceiling().plane;
+		plane_bottom  = side_back->sector()->ceiling().plane;
+		tex_y_origin  = context.upper_unpegged ? height_top : height_bottom;
 		break;
 
 	case MapLine::FrontLower:
 	case MapLine::BackLower:
-		tex_name         = side->texLower();
-		height_top       = side_back->sector()->floor().height;
-		height_bottom    = side->sector()->floor().height;
-		plane_top        = side_back->sector()->floor().plane;
-		plane_bottom     = side->sector()->floor().plane;
-		tex_align_bottom = !context.lower_unpegged;
+		tex_name      = side->texLower();
+		height_top    = side_back->sector()->floor().height;
+		height_bottom = side->sector()->floor().height;
+		plane_top     = side_back->sector()->floor().plane;
+		plane_bottom  = side->sector()->floor().plane;
+		tex_y_origin  = context.lower_unpegged ? side->sector()->ceiling().height : height_top;
 		break;
 	}
 
 	// Setup base quad info
 	QuadInfo quad_info{
-		.line             = line,
-		.height_top       = height_top,
-		.plane_top        = plane_top,
-		.height_bottom    = height_bottom,
-		.plane_bottom     = plane_bottom,
-		.texture          = &textureManager().texture(tex_name, context.mix_tex_flats),
-		.offsets          = side->texOffset(),
-		.line_length      = static_cast<int>(line->length()),
-		.tex_align_bottom = tex_align_bottom,
-		.back_side        = (side == line->s2()),
+		.line          = line,
+		.height_top    = height_top,
+		.plane_top     = plane_top,
+		.height_bottom = height_bottom,
+		.plane_bottom  = plane_bottom,
+		.texture       = &textureManager().texture(tex_name, context.mix_tex_flats),
+		.offsets       = side->texOffset(),
+		.line_length   = static_cast<int>(line->length()),
+		.tex_y_origin  = tex_y_origin,
+		.back_side     = (side == line->s2()),
 	};
 
 	if (line->parentMap()->mapSpecials().sectorHasExtraFloors(side->sector()))
@@ -280,7 +276,9 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 		auto sector1 = s1->sector();
 		auto sector2 = s2->sector();
 
-		// TODO: Middle textures require special handling and need to be drawn last
+		// TODO:
+		//  - Middle textures require special handling and need a flag to be drawn last
+		//  - Need extra checks for upper/lower quads if either sector is sloped
 
 		// Front middle
 		// if (s1->texMiddle() != MapSide::TEX_NONE && sector1->floor().height < sector1->ceiling().height)
