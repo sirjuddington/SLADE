@@ -56,6 +56,12 @@ void SlopeSpecials::addPlaneAlign(const MapLine& line)
 
 void SlopeSpecials::addPlaneAlign(const MapLine& line, SectorSurfaceType surface_type, int where)
 {
+	if (!line.frontSector() || !line.backSector())
+	{
+		log::warning("Ignoring Plane_Align special on line {}: line is one-sided", line.index());
+		return;
+	}
+
 	PlaneAlign pa{ surface_type };
 	pa.line = &line;
 
