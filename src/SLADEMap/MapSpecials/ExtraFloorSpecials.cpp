@@ -67,13 +67,11 @@ void ExtraFloorSpecials::processLineSpecial(const MapLine& line)
 		addSet3dFloorSpecial(line);
 }
 
-#define FIND_SECTOR_EXTRAFLOORS(sec_var) \
-	std::ranges::find_if(sector_extra_floors_, [##sec_var](const auto& sef) { return sef.sector == ##sec_var; })
-
 void ExtraFloorSpecials::addExtraFloor(const MapSector* sector, const ExtraFloor& extra_floor)
 {
-	auto it = FIND_SECTOR_EXTRAFLOORS(sector);
-	if (it == sector_extra_floors_.end())
+	if (auto it = std::ranges::find_if(
+			sector_extra_floors_, [sector](const auto& sef) { return sef.sector == sector; });
+		it == sector_extra_floors_.end())
 	{
 		SectorExtraFloors sef;
 		sef.sector       = sector;
@@ -92,7 +90,9 @@ void ExtraFloorSpecials::addExtraFloor(const MapSector* sector, const ExtraFloor
 
 void ExtraFloorSpecials::clearExtraFloors(const MapSector* sector)
 {
-	if (auto it = FIND_SECTOR_EXTRAFLOORS(sector); it != sector_extra_floors_.end())
+	if (auto it = std::ranges::find_if(
+			sector_extra_floors_, [sector](const auto& sef) { return sef.sector == sector; });
+		it != sector_extra_floors_.end())
 		sector_extra_floors_.erase(it);
 }
 
