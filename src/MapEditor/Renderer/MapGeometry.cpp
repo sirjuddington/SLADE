@@ -31,17 +31,20 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-
+#include "MapGeometry.h"
 #include "App.h"
 #include "Flat3D.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapGeometry.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/VertexBuffer3D.h"
+#include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapSpecials/ExtraFloor.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/Polygon.h"
 
 using namespace slade;
@@ -53,7 +56,7 @@ namespace slade::mapeditor
 // -----------------------------------------------------------------------------
 // Get texture scaling/offset/rotation info for a sector texture
 // -----------------------------------------------------------------------------
-TexTransformInfo getTextureTransformInfo(const MapSector& sector, bool ceiling, Vec2d tex_scale)
+TexTransformInfo getSectorTextureTransformInfo(const MapSector& sector, bool ceiling, Vec2d tex_scale)
 {
 	using namespace game;
 
@@ -113,50 +116,49 @@ static void generateFlatVertices(
 	const MapTextureManager::Texture& tex,
 	vector<gl::Vertex3D>&             vertices)
 {
-	auto& sector   = *flat.sector;
-	auto& tex_info = gl::Texture::info(flat.texture);
-	auto  ttf      = getTextureTransformInfo(sector, flat.ceiling, tex.scale);
+	auto& sector         = *flat.sector;
+	auto& control_sector = *flat.controlSector();
+	auto& tex_info       = gl::Texture::info(flat.texture);
+	auto  ttf = getSectorTextureTransformInfo(control_sector, flat.source_tex == SectorSurfaceType::Ceiling, tex.scale);
+	auto& plane = (flat.source_surface == SectorSurfaceType::Ceiling) ? control_sector.ceiling().plane
+																	  : control_sector.floor().plane;
 
-	if (flat.ceiling)
+	if (flat.surface_type == SectorSurfaceType::Ceiling)
 	{
 		for (auto& vertex : sector.polygonVertices())
 		{
 			vertices.emplace_back(
-				glm::vec3(vertex, sector.ceiling().plane.heightAt(vertex)),
+				glm::vec3(vertex, plane.heightAt(vertex)),
 				polygon::calculateTexCoords(
-					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot));
+					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot),
+				flat.colour);
 		}
 	}
 	else
 	{
-		for (auto i = flat.vertex_count; i > 0; --i) // Floor polygons need to be flipped
+		for (int i = sector.polygonVertices().size(); i > 0; --i) // Floor polygons need to be flipped
 		{
 			auto& vertex = sector.polygonVertices()[i - 1];
 			vertices.emplace_back(
-				glm::vec3(vertex, sector.floor().plane.heightAt(vertex)),
+				glm::vec3(vertex, plane.heightAt(vertex)),
 				polygon::calculateTexCoords(
-					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot));
+					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot),
+				flat.colour);
 		}
 	}
 }
 
-static Flat3D generateFlat3D(
-	const MapSector&      sector,
-	bool                  ceiling,
-	unsigned              vertex_index,
-	vector<gl::Vertex3D>& vertices)
+static void setupFlat3D(Flat3D& flat, unsigned vertex_index, vector<gl::Vertex3D>& vertices)
 {
-	Flat3D flat;
-	flat.sector        = &sector;
-	flat.ceiling       = ceiling;
-	flat.vertex_offset = vertex_index;
-	flat.vertex_count  = sector.polygonVertices().size();
+	auto& sector = *flat.controlSector();
 
 	// Colour
-	flat.colour = sector.colourAt(ceiling ? 2 : 1);
+	bool ceiling = flat.source_tex == SectorSurfaceType::Ceiling;
+	flat.colour  = sector.colourAt(ceiling ? 2 : 1);
 
 	// Normal
-	flat.normal = ceiling ? sector.ceiling().plane.normal() : sector.floor().plane.normal();
+	flat.normal = flat.source_surface == SectorSurfaceType::Ceiling ? sector.ceiling().plane.normal()
+																	: sector.floor().plane.normal();
 
 	// Texture
 	bool  mix_tex_flats = game::configuration().featureSupported(game::Feature::MixTexFlats);
@@ -165,11 +167,10 @@ static Flat3D generateFlat3D(
 	flat.texture        = texture.gl_id;
 
 	// Vertices
+	flat.vertex_offset = vertex_index;
 	generateFlatVertices(flat, texture, vertices);
 
 	flat.updated_time = app::runTimer();
-
-	return flat;
 }
 
 // -----------------------------------------------------------------------------
@@ -180,14 +181,41 @@ std::tuple<vector<Flat3D>, vector<gl::Vertex3D>> generateSectorFlats(const MapSe
 	vector<Flat3D>       flats;
 	vector<gl::Vertex3D> vertices;
 
+	auto sector_vertex_count = static_cast<unsigned>(sector.polygonVertices().size());
+
 	// Floor
-	flats.push_back(generateFlat3D(sector, false, vertex_index, vertices));
-	vertex_index += sector.polygonVertices().size();
+	auto& flat_floor = flats.emplace_back(&sector, SectorSurfaceType::Floor);
+	setupFlat3D(flat_floor, vertex_index, vertices);
+	vertex_index += sector_vertex_count;
 
 	// Ceiling
-	flats.push_back(generateFlat3D(sector, true, vertex_index, vertices));
+	auto& flat_ceiling = flats.emplace_back(&sector, SectorSurfaceType::Ceiling);
+	setupFlat3D(flat_ceiling, vertex_index, vertices);
+	vertex_index += sector_vertex_count;
 
-	// TODO: 3d floors
+	// 3d floors
+	for (auto& extrafloor : sector.parentMap()->mapSpecials().sectorExtraFloors(&sector))
+	{
+		// Top
+		auto& flat_top = flats.emplace_back(
+			&sector,
+			SectorSurfaceType::Floor,
+			extrafloor.control_sector,
+			SectorSurfaceType::Ceiling,
+			SectorSurfaceType::Ceiling);
+		setupFlat3D(flat_top, vertex_index, vertices);
+		vertex_index += sector_vertex_count;
+
+		// Bottom
+		auto& flat_bottom = flats.emplace_back(
+			&sector,
+			SectorSurfaceType::Ceiling,
+			extrafloor.control_sector,
+			extrafloor.hasFlag(ExtraFloor::Flags::FlatAtCeiling) ? SectorSurfaceType::Ceiling
+																 : SectorSurfaceType::Floor,
+			SectorSurfaceType::Floor);
+		setupFlat3D(flat_bottom, vertex_index, vertices);
+	}
 
 	return { flats, vertices };
 }
@@ -198,11 +226,12 @@ std::tuple<vector<Flat3D>, vector<gl::Vertex3D>> generateSectorFlats(const MapSe
 void updateFlat(Flat3D& flat, vector<gl::Vertex3D>& vertices)
 {
 	// Update flat
-	auto& sector  = *flat.sector;
-	auto& texture = flat.ceiling ? textureManager().flat(sector.ceiling().texture, true)
-								 : textureManager().flat(sector.floor().texture, true);
+	auto& sector  = *flat.controlSector();
+	auto& texture = flat.source_tex == SectorSurfaceType::Ceiling
+						? textureManager().flat(sector.ceiling().texture, true)
+						: textureManager().flat(sector.floor().texture, true);
 	flat.texture  = texture.gl_id;
-	flat.colour   = sector.colourAt(flat.ceiling ? 2 : 1);
+	flat.colour   = sector.colourAt(flat.source_tex == SectorSurfaceType::Ceiling ? 2 : 1);
 
 	// Generate new vertices
 	generateFlatVertices(flat, texture, vertices);

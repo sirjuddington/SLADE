@@ -11,9 +11,19 @@ struct Vertex3D
 {
 	glm::vec3 position;
 	glm::vec2 uv;
-	// glm::vec3 normal;
+	glm::vec4 colour;
+	glm::vec3 normal;
 
+	Vertex3D() = default;
 	Vertex3D(glm::vec3 position, glm::vec2 uv) : position{ position }, uv{ uv } {}
+	Vertex3D(glm::vec3 position, glm::vec2 uv, glm::vec4 colour) : position{ position }, uv{ uv }, colour{ colour } {}
+	Vertex3D(glm::vec3 position, glm::vec2 uv, glm::vec4 colour, glm::vec3 normal) :
+		position{ position },
+		uv{ uv },
+		colour{ colour },
+		normal{ normal }
+	{
+	}
 };
 
 class VertexBuffer3D
@@ -22,6 +32,7 @@ public:
 	VertexBuffer3D() = default;
 	~VertexBuffer3D();
 
+	unsigned                vao() const { return vao_; }
 	const Buffer<Vertex3D>& buffer() const { return buffer_; }
 	Buffer<Vertex3D>&       buffer() { return buffer_; }
 

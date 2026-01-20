@@ -1,16 +1,18 @@
 
 #include "Main.h"
-
+#include "MapRenderer3D.h"
 #include "App.h"
 #include "Flat3D.h"
 #include "MapGeometry.h"
-#include "MapRenderer3D.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/IndexBuffer.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer3D.h"
 #include "OpenGL/View.h"
+#include "Quad3D.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Vector.h"
@@ -45,7 +47,12 @@ CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
 //
 // -----------------------------------------------------------------------------
 
-MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }, vb_flats_{ new gl::VertexBuffer3D } {}
+MapRenderer3D::MapRenderer3D(SLADEMap* map) :
+	map_{ map },
+	vb_flats_{ new gl::VertexBuffer3D },
+	vb_quads_{ new gl::VertexBuffer3D }
+{
+}
 MapRenderer3D::~MapRenderer3D() = default;
 
 bool MapRenderer3D::fogEnabled() const
@@ -84,6 +91,7 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	glAlphaFunc(GL_GREATER, 0.0f);
 
 	renderFlats();
+	renderWalls();
 
 	// Cleanup gl state
 	glDisable(GL_ALPHA_TEST);
@@ -99,7 +107,12 @@ void MapRenderer3D::clearData()
 
 unsigned MapRenderer3D::flatsBufferSize() const
 {
-	return vb_flats_->buffer().size() * (sizeof(gl::Vertex3D) + sizeof(glm::vec4));
+	return vb_flats_->buffer().size() * sizeof(gl::Vertex3D);
+}
+
+unsigned MapRenderer3D::quadsBufferSize() const
+{
+	return vb_quads_->buffer().size() * sizeof(gl::Vertex3D);
 }
 
 void MapRenderer3D::renderFlats()
@@ -109,6 +122,7 @@ void MapRenderer3D::renderFlats()
 	{
 		vb_flats_->buffer().clear();
 		flats_.clear();
+		flat_groups_.clear();
 	}
 
 	// Generate flats if needed
@@ -127,19 +141,148 @@ void MapRenderer3D::renderFlats()
 		vb_flats_->push();
 		flats_updated_ = app::runTimer();
 	}
-
-	// Render flats
-	for (auto& flat : flats_)
+	else if (flats_updated_ < map_->typeLastUpdated(map::ObjectType::Sector))
 	{
-		if (flat.updated_time < flat.sector->modifiedTime())
+		// Check for flats that need an update
+		bool updated = false;
+		for (auto& flat : flats_)
 		{
-			vector<gl::Vertex3D> vertices;
-			mapeditor::updateFlat(flat, vertices);
-			vb_flats_->buffer().update(flat.vertex_offset, vertices);
+			if (flat.updated_time < flat.sector->modifiedTime())
+			{
+				vector<gl::Vertex3D> vertices;
+				updateFlat(flat, vertices);
+				vb_flats_->buffer().update(flat.vertex_offset, vertices);
+				updated = true;
+			}
 		}
 
-		gl::Texture::bind(flat.texture);
-		shader_3d_->setUniform("colour", flat.colour);
-		vb_flats_->draw(gl::Primitive::Triangles, nullptr, nullptr, flat.vertex_offset, flat.vertex_count);
+		// Rebuild flat groups if any flats were updated
+		if (updated)
+		{
+			flats_updated_ = app::runTimer();
+			flat_groups_.clear();
+		}
 	}
+
+	// Generate flat groups if needed
+	if (flat_groups_.empty())
+	{
+		vector<uint8_t> flats_processed(flats_.size());
+
+		for (unsigned i = 0; i < flats_.size(); ++i)
+		{
+			if (flats_processed[i])
+				continue;
+
+			// Build list of vertex indices for flats using this texture
+			vector<GLuint> indices;
+			for (unsigned f = i; f < flats_.size(); ++f)
+			{
+				// Check texture match
+				auto& flat = flats_[f];
+				if (flats_processed[f] || flat.texture != flats_[i].texture)
+					continue;
+
+				// Add indices
+				auto vi = flat.vertex_offset;
+				while (vi < flat.vertex_offset + flat.sector->polygonVertices().size())
+					indices.push_back(vi++);
+
+				flats_processed[f] = 1;
+			}
+
+			// Add flat group for texture
+			flat_groups_.emplace_back();
+			flat_groups_.back().texture      = flats_[i].texture;
+			flat_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
+			flat_groups_.back().index_buffer->upload(indices);
+
+			flats_processed[i] = 1;
+		}
+	}
+
+	// Render flats
+	gl::bindVAO(vb_flats_->vao());
+	for (auto& group : flat_groups_)
+	{
+		gl::Texture::bind(group.texture);
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+	gl::bindEBO(0);
+	gl::bindVAO(0);
+}
+
+void MapRenderer3D::renderWalls()
+{
+	// Clear walls to be rebuilt if map geometry has been updated
+	if (map_->geometryUpdated() > quads_updated_)
+	{
+		vb_quads_->buffer().clear();
+		quads_.clear();
+		quad_groups_.clear();
+	}
+
+	// Generate walls if needed
+	if (quads_.empty())
+	{
+		unsigned vertex_index = 0;
+		for (auto* line : map_->lines())
+		{
+			auto [quads, vertices] = mapeditor::generateLineQuads(*line, vertex_index);
+			vectorConcat(quads_, quads);
+			vb_quads_->add(vertices);
+			vertex_index += vertices.size();
+		}
+		vb_quads_->push();
+		quads_updated_ = app::runTimer();
+	}
+
+	// Generate quad groups if needed
+	if (quad_groups_.empty())
+	{
+		vector<uint8_t> quads_processed(quads_.size());
+
+		for (unsigned i = 0; i < quads_.size(); ++i)
+		{
+			if (quads_processed[i])
+				continue;
+
+			// Build list of vertex indices for quads using this texture
+			vector<GLuint> indices;
+			for (unsigned f = i; f < quads_.size(); ++f)
+			{
+				// Check texture match
+				auto& quad = quads_[f];
+				if (quads_processed[f] || quad.texture != quads_[i].texture)
+					continue;
+
+				// Add indices
+				auto vi = quad.vertex_offset;
+				while (vi < quad.vertex_offset + 6)
+					indices.push_back(vi++);
+
+				quads_processed[f] = 1;
+			}
+
+			// Add quad group for texture
+			quad_groups_.emplace_back();
+			quad_groups_.back().texture      = quads_[i].texture;
+			quad_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
+			quad_groups_.back().index_buffer->upload(indices);
+
+			quads_processed[i] = 1;
+		}
+	}
+
+	// Render wall quads
+	gl::bindVAO(vb_quads_->vao());
+	for (auto& group : quad_groups_)
+	{
+		gl::Texture::bind(group.texture);
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+	gl::bindEBO(0);
+	gl::bindVAO(0);
 }

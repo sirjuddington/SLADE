@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -37,7 +37,7 @@
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "SLADEMap/MapSpecials.h"
+#include "SLADEMap/OldMapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"
@@ -158,8 +158,9 @@ bool ScriptEditorPanel::openScripts(const ArchiveEntry* script, const ArchiveEnt
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto& map = mapeditor::editContext().map();
-		map.mapSpecials()->processACSScripts(entry_script_.get());
-		map.mapSpecials()->updateTaggedSectors(&map);
+		// TODO: MapSpecials script processing
+		// map.mapSpecials()->processACSScripts(entry_script_.get());
+		// map.mapSpecials()->updateTaggedSectors(&map);
 	}
 
 	// Load script text
@@ -218,8 +219,9 @@ void ScriptEditorPanel::saveScripts() const
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto map = &(mapeditor::editContext().map());
-		map->mapSpecials()->processACSScripts(entry_script_.get());
-		map->mapSpecials()->updateTaggedSectors(map);
+		// TODO: MapSpecials script processing
+		// map->mapSpecials()->processACSScripts(entry_script_.get());
+		// map->mapSpecials()->updateTaggedSectors(map);
 	}
 }
 

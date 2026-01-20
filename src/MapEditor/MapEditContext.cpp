@@ -67,13 +67,14 @@
 #include "Renderer/Overlays/VertexInfoOverlay.h"
 #include "Renderer/Renderer.h"
 #include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
-#include "SLADEMap/MapSpecials.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
@@ -248,10 +249,14 @@ void MapEditContext::setEditMode(Mode mode)
 	else if (mode == Mode::Visual)
 	{
 		SAction::fromId("mapw_mode_3d")->setChecked();
+	}
+
+	// Setup for 3d mode if switching to it
+	if (mode == Mode::Visual)
+	{
 		KeyBind::releaseAll();
-		// lockMouse(true);
-		//  TODO: 3dmode
-		//  renderer_->renderer3D().refresh();
+		map_->mapSpecials().processAllSpecials(); // Refresh all slopes/3dfloors etc.
+		renderer_->forceUpdate(false, true);
 	}
 }
 
@@ -439,9 +444,6 @@ bool MapEditContext::openMap(const MapDesc& map)
 
 	updateStatusText();
 	updateThingLists();
-
-	// Process specials
-	map_->mapSpecials()->processMapSpecials(map_.get());
 
 	return true;
 }
@@ -1450,7 +1452,6 @@ void MapEditContext::endUndoRecord(bool success)
 	}
 	updateThingLists();
 	us_create_delete_.reset(nullptr);
-	map_->recomputeSpecials();
 }
 
 // -----------------------------------------------------------------------------

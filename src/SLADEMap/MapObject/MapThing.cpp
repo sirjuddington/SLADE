@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -116,7 +116,7 @@ MapThing::MapThing(const Vec3d& pos, short type, const ParseTreeNode* def) :
 // Returns the object point [point].
 // Currently for things this is always the thing position
 // -----------------------------------------------------------------------------
-Vec2d MapThing::getPoint(Point point)
+Vec2d MapThing::getPoint(Point point) const
 {
 	return position_;
 }

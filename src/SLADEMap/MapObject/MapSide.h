@@ -46,7 +46,7 @@ public:
 	short         texOffsetX() const { return tex_offset_.x; }
 	short         texOffsetY() const { return tex_offset_.y; }
 	Vec2i         texOffset() const { return tex_offset_; }
-	uint8_t       light();
+	uint8_t       light() const;
 
 	void setSector(MapSector* sector);
 	void changeLight(int amount);

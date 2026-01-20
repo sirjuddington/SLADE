@@ -992,7 +992,6 @@ void MapRenderer2D::renderFlats(bool ceilings, float alpha)
 
 	if (texture)
 	{
-		vector<uint8_t> flats_rendered(flats_.size());
 		gl::bindVAO(flats_buffer_->vao());
 
 		for (const auto& fg : flat_groups_)

@@ -944,16 +944,6 @@ ArchiveEntryTree::ArchiveEntryTree(
 	if (list_font_monospace)
 		SetFont(wxutil::monospaceFont(GetFont()));
 
-	// Disable compositing on Windows + wx3.3.0+, as it causes the control to
-	// redraw very slowly, resulting in 'lag' while scrolling.
-	// Unfortunately doing this also causes it to flicker, but it's better than
-	// the slow scrolling IMO.
-	// No idea why it has to be one drawback or the other, as it was working
-	// perfectly fine in wx3.2.x...
-#if wxCHECK_VERSION(3, 3, 0) && defined(__WXMSW__)
-	MSWDisableComposited();
-#endif
-
 	// Create & associate model
 	model_ = new ArchiveViewModel();
 	model_->openArchive(archive, undo_manager, force_list);

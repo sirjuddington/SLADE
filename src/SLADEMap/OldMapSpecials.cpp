@@ -31,11 +31,12 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "MapSpecials.h"
+#include "OldMapSpecials.h"
 #include "Archive/ArchiveEntry.h"
 #include "Game/Configuration.h"
 #include "Geometry/Geometry.h"
 #include "MapObject/MapLine.h"
+#include "MapObject/MapSector.h"
 #include "MapObject/MapSide.h"
 #include "MapObject/MapThing.h"
 #include "MapObject/MapVertex.h"
@@ -48,8 +49,7 @@
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
-using SurfaceType = MapSector::SurfaceType;
-using ExtraFloor  = MapSector::ExtraFloor;
+// using ExtraFloor  = MapSector::ExtraFloor;
 
 
 // -----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ CVAR(Bool, map_process_3d_floors, false, CVar::Save)
 // -----------------------------------------------------------------------------
 // Clear out all internal state
 // -----------------------------------------------------------------------------
-void MapSpecials::reset()
+void OldMapSpecials::reset()
 {
 	sector_colours_.clear();
 	sector_fadecolours_.clear();
@@ -85,12 +85,12 @@ void MapSpecials::reset()
 // -----------------------------------------------------------------------------
 // Process map specials, depending on the current game/port
 // -----------------------------------------------------------------------------
-void MapSpecials::processMapSpecials(SLADEMap* map)
+void OldMapSpecials::processMapSpecials(SLADEMap* map)
 {
-	// Clear out all 3D floors, or every call to this function will create duplicates!
-	// TODO this isn't a very good solution, but we don't have incremental updates yet
-	for (unsigned a = 0; a < map->nSectors(); a++)
-		map->sector(a)->clearExtraFloors();
+	//// Clear out all 3D floors, or every call to this function will create duplicates!
+	//// TODO this isn't a very good solution, but we don't have incremental updates yet
+	// for (unsigned a = 0; a < map->nSectors(); a++)
+	//	map->sector(a)->clearExtraFloors();
 
 	// ZDoom
 	if (game::configuration().currentPort() == "zdoom")
@@ -113,7 +113,7 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 // -----------------------------------------------------------------------------
 // Process a line's special, depending on the current game/port
 // -----------------------------------------------------------------------------
-void MapSpecials::processLineSpecial(MapLine* line)
+void OldMapSpecials::processLineSpecial(MapLine* line)
 {
 	if (game::configuration().currentPort() == "zdoom")
 		processZDoomLineSpecial(line);
@@ -123,7 +123,7 @@ void MapSpecials::processLineSpecial(MapLine* line)
 // Sets [colour] to the parsed colour for [tag].
 // Returns true if the tag has a colour, false otherwise
 // -----------------------------------------------------------------------------
-bool MapSpecials::tagColour(int tag, ColRGBA* colour) const
+bool OldMapSpecials::tagColour(int tag, ColRGBA* colour) const
 {
 	unsigned a;
 	// scripts
@@ -146,7 +146,7 @@ bool MapSpecials::tagColour(int tag, ColRGBA* colour) const
 // Sets [colour] to the parsed fade colour for [tag].
 // Returns true if the tag has a colour, false otherwise
 // -----------------------------------------------------------------------------
-bool MapSpecials::tagFadeColour(int tag, ColRGBA* colour) const
+bool OldMapSpecials::tagFadeColour(int tag, ColRGBA* colour) const
 {
 	unsigned a;
 	// scripts
@@ -168,7 +168,7 @@ bool MapSpecials::tagFadeColour(int tag, ColRGBA* colour) const
 // -----------------------------------------------------------------------------
 // Returns true if any sector tags should be coloured
 // -----------------------------------------------------------------------------
-bool MapSpecials::tagColoursSet() const
+bool OldMapSpecials::tagColoursSet() const
 {
 	return !(sector_colours_.empty());
 }
@@ -176,7 +176,7 @@ bool MapSpecials::tagColoursSet() const
 // -----------------------------------------------------------------------------
 // Returns true if any sector tags should be coloured by fog
 // -----------------------------------------------------------------------------
-bool MapSpecials::tagFadeColoursSet() const
+bool OldMapSpecials::tagFadeColoursSet() const
 {
 	return !(sector_fadecolours_.empty());
 }
@@ -184,7 +184,7 @@ bool MapSpecials::tagFadeColoursSet() const
 // -----------------------------------------------------------------------------
 // Modify sector with [tag]
 // -----------------------------------------------------------------------------
-void MapSpecials::setModified(const SLADEMap* map, int tag) const
+void OldMapSpecials::setModified(const SLADEMap* map, int tag) const
 {
 	for (auto& sector : map->sectors().allWithId(tag))
 		sector->setModified();
@@ -193,7 +193,7 @@ void MapSpecials::setModified(const SLADEMap* map, int tag) const
 // -----------------------------------------------------------------------------
 // Returns true if [line] is translucent (via TranslucentLine special)
 // -----------------------------------------------------------------------------
-bool MapSpecials::lineIsTranslucent(const MapLine* line) const
+bool OldMapSpecials::lineIsTranslucent(const MapLine* line) const
 {
 	for (const auto& tl : translucent_lines_)
 		if (tl.line == line)
@@ -205,7 +205,7 @@ bool MapSpecials::lineIsTranslucent(const MapLine* line) const
 // -----------------------------------------------------------------------------
 // Returns TranslucentLine special alpha for [line]
 // -----------------------------------------------------------------------------
-double MapSpecials::translucentLineAlpha(const MapLine* line) const
+double OldMapSpecials::translucentLineAlpha(const MapLine* line) const
 {
 	for (const auto& tl : translucent_lines_)
 		if (tl.line == line)
@@ -217,7 +217,7 @@ double MapSpecials::translucentLineAlpha(const MapLine* line) const
 // -----------------------------------------------------------------------------
 // Returns TranslucentLine special additive flag for [line]
 // -----------------------------------------------------------------------------
-bool MapSpecials::translucentLineAdditive(const MapLine* line) const
+bool OldMapSpecials::translucentLineAdditive(const MapLine* line) const
 {
 	for (const auto& tl : translucent_lines_)
 		if (tl.line == line)
@@ -230,7 +230,7 @@ bool MapSpecials::translucentLineAdditive(const MapLine* line) const
 // Updates any sectors with tags that are affected by any processed
 // specials/scripts
 // -----------------------------------------------------------------------------
-void MapSpecials::updateTaggedSectors(const SLADEMap* map) const
+void OldMapSpecials::updateTaggedSectors(const SLADEMap* map) const
 {
 	// scripts
 	unsigned a;
@@ -245,7 +245,7 @@ void MapSpecials::updateTaggedSectors(const SLADEMap* map) const
 // Process ZDoom map specials, mostly to convert hexen specials to UDMF
 // counterparts
 // -----------------------------------------------------------------------------
-void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
+void OldMapSpecials::processZDoomMapSpecials(SLADEMap* map)
 {
 	// All slope specials, which must be done in a particular order
 	processZDoomSlopes(map);
@@ -259,7 +259,7 @@ void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 // -----------------------------------------------------------------------------
 // Process ZDoom line special
 // -----------------------------------------------------------------------------
-void MapSpecials::processZDoomLineSpecial(MapLine* line)
+void OldMapSpecials::processZDoomLineSpecial(MapLine* line)
 {
 	// Get special
 	int special = line->special();
@@ -275,6 +275,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 		args[arg] = line->arg(arg);
 
 	// --- Sector_Set3dFloor
+#if 0
 	if (special == 160 && map_process_3d_floors)
 	{
 		MapSector* control_sector = line->frontSector();
@@ -326,9 +327,10 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 		log::info(
 			4, "Adding a 3d floor controlled by sector {} to {} sectors", extra_floor.control_sector_index, count);
 	}
+#endif
 
 	// --- TranslucentLine ---
-	else if (special == 208)
+	if (special == 208)
 	{
 		// Get tagged lines
 		vector<MapLine*> tagged;
@@ -354,7 +356,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 // -----------------------------------------------------------------------------
 // Process 'OPEN' ACS scripts for various specials - sector colours, slopes, etc
 // -----------------------------------------------------------------------------
-void MapSpecials::processACSScripts(const ArchiveEntry* entry)
+void OldMapSpecials::processACSScripts(const ArchiveEntry* entry)
 {
 	sector_colours_.clear();
 	sector_fadecolours_.clear();
@@ -483,7 +485,7 @@ void MapSpecials::processACSScripts(const ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Process SRB2 slope specials
 // -----------------------------------------------------------------------------
-void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
+void OldMapSpecials::processSRB2Slopes(const SLADEMap* map) const
 {
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
@@ -499,40 +501,40 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 			//
 
 		case 700: // Front sector floor
-			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, front, back);
 			break;
 
 		case 701: // Front sector ceiling
-			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, front, back);
 			break;
 
 		case 702: // Front sector floor and ceiling
-			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
-			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, front, back);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, front, back);
 			break;
 
 		case 703: // Front sector floor and back sector ceiling
-			applyPlaneAlign<SurfaceType::Floor>(line, front, back);
-			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, front, back);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, back, front);
 			break;
 
 
 		case 710: // Back sector floor
-			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, back, front);
 			break;
 
 		case 711: // Back sector ceiling
-			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, back, front);
 			break;
 
 		case 712: // Back sector floor and ceiling
-			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
-			applyPlaneAlign<SurfaceType::Ceiling>(line, back, front);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, back, front);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, back, front);
 			break;
 
 		case 713: // Back sector floor and front sector ceiling
-			applyPlaneAlign<SurfaceType::Floor>(line, back, front);
-			applyPlaneAlign<SurfaceType::Ceiling>(line, front, back);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, back, front);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, front, back);
 			break;
 
 
@@ -588,10 +590,10 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 			}
 
 			if (line->special() == 704 || line->special() == 714)
-				target->setPlane<SurfaceType::Floor>(
+				target->setPlane<SectorSurfaceType::Floor>(
 					geometry::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
 			else
-				target->setPlane<SurfaceType::Ceiling>(
+				target->setPlane<SectorSurfaceType::Ceiling>(
 					geometry::planeFromTriangle(vertices[0], vertices[1], vertices[2]));
 		}
 		break;
@@ -650,8 +652,9 @@ void MapSpecials::processSRB2Slopes(const SLADEMap* map) const
 // -----------------------------------------------------------------------------
 // Process SRB2 Floor Over Floor specials
 // -----------------------------------------------------------------------------
-void MapSpecials::processSRB2FOFs(const SLADEMap* map) const
+void OldMapSpecials::processSRB2FOFs(const SLADEMap* map) const
 {
+#if 0
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine*   line           = map->line(a);
@@ -798,19 +801,20 @@ void MapSpecials::processSRB2FOFs(const SLADEMap* map) const
 				sector->addExtraFloor(extra_floor, *control_sector);
 		}
 	}
+#endif
 }
 
 // -----------------------------------------------------------------------------
 // Process EDGE-Classic slope specials
 // -----------------------------------------------------------------------------
-void MapSpecials::processEDGEClassicSlopes(const SLADEMap* map) const
+void OldMapSpecials::processEDGEClassicSlopes(const SLADEMap* map) const
 {
 	// First things first: reset every sector to flat planes
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
 		auto target = map->sector(a);
-		target->setPlane<SurfaceType::Floor>(Plane::flat(target->planeHeight<SurfaceType::Floor>()));
-		target->setPlane<SurfaceType::Ceiling>(Plane::flat(target->planeHeight<SurfaceType::Ceiling>()));
+		target->setPlane<SectorSurfaceType::Floor>(Plane::flat(target->planeHeight<SectorSurfaceType::Floor>()));
+		target->setPlane<SectorSurfaceType::Ceiling>(Plane::flat(target->planeHeight<SectorSurfaceType::Ceiling>()));
 	}
 
 	VertexHeightMap vertex_floor_heights;
@@ -826,13 +830,13 @@ void MapSpecials::processEDGEClassicSlopes(const SLADEMap* map) const
 		target->putVertices(vertices);
 		if (vertices.size() == 4)
 		{
-			applyRectangularVertexHeightSlope<SurfaceType::Floor>(target, vertices, vertex_floor_heights);
-			applyRectangularVertexHeightSlope<SurfaceType::Ceiling>(target, vertices, vertex_ceiling_heights);
+			applyRectangularVertexHeightSlope<SectorSurfaceType::Floor>(target, vertices, vertex_floor_heights);
+			applyRectangularVertexHeightSlope<SectorSurfaceType::Ceiling>(target, vertices, vertex_ceiling_heights);
 		}
 		else if (vertices.size() == 3)
 		{
-			applyVertexHeightSlope<SurfaceType::Floor>(target, vertices, vertex_floor_heights);
-			applyVertexHeightSlope<SurfaceType::Ceiling>(target, vertices, vertex_ceiling_heights);
+			applyVertexHeightSlope<SectorSurfaceType::Floor>(target, vertices, vertex_floor_heights);
+			applyVertexHeightSlope<SectorSurfaceType::Ceiling>(target, vertices, vertex_ceiling_heights);
 		}
 		else
 			continue;
@@ -842,7 +846,7 @@ void MapSpecials::processEDGEClassicSlopes(const SLADEMap* map) const
 // -----------------------------------------------------------------------------
 // Process ZDoom slope specials
 // -----------------------------------------------------------------------------
-void MapSpecials::processZDoomSlopes(SLADEMap* map) const
+void OldMapSpecials::processZDoomSlopes(SLADEMap* map)
 {
 	// ZDoom has a variety of slope mechanisms, which must be evaluated in a
 	// specific order.
@@ -858,8 +862,8 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
 		auto target = map->sector(a);
-		target->setPlane<SurfaceType::Floor>(Plane::flat(target->planeHeight<SurfaceType::Floor>()));
-		target->setPlane<SurfaceType::Ceiling>(Plane::flat(target->planeHeight<SurfaceType::Ceiling>()));
+		target->setPlane<SectorSurfaceType::Floor>(Plane::flat(target->planeHeight<SectorSurfaceType::Floor>()));
+		target->setPlane<SectorSurfaceType::Ceiling>(Plane::flat(target->planeHeight<SectorSurfaceType::Ceiling>()));
 	}
 
 	// Floor/ceiling plane properties
@@ -949,15 +953,15 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 
 		int floor_arg = line->arg(0);
 		if (floor_arg == 1)
-			applyPlaneAlign<SurfaceType::Floor>(line, sector1, sector2);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, sector1, sector2);
 		else if (floor_arg == 2)
-			applyPlaneAlign<SurfaceType::Floor>(line, sector2, sector1);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, sector2, sector1);
 
 		int ceiling_arg = line->arg(1);
 		if (ceiling_arg == 1)
-			applyPlaneAlign<SurfaceType::Ceiling>(line, sector1, sector2);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, sector1, sector2);
 		else if (ceiling_arg == 2)
-			applyPlaneAlign<SurfaceType::Ceiling>(line, sector2, sector1);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, sector2, sector1);
 	}
 
 	// Line slope things (9500/9501), sector tilt things (9502/9503), and
@@ -968,19 +972,19 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 
 		// Line slope things
 		if (thing->type() == 9500)
-			applyLineSlopeThing<SurfaceType::Floor>(map, thing);
+			applyLineSlopeThing<SectorSurfaceType::Floor>(map, thing);
 		else if (thing->type() == 9501)
-			applyLineSlopeThing<SurfaceType::Ceiling>(map, thing);
+			applyLineSlopeThing<SectorSurfaceType::Ceiling>(map, thing);
 		// Sector tilt things
 		else if (thing->type() == 9502)
-			applySectorTiltThing<SurfaceType::Floor>(map, thing);
+			applySectorTiltThing<SectorSurfaceType::Floor>(map, thing);
 		else if (thing->type() == 9503)
-			applySectorTiltThing<SurfaceType::Ceiling>(map, thing);
+			applySectorTiltThing<SectorSurfaceType::Ceiling>(map, thing);
 		// Vavoom things
 		else if (thing->type() == 1500)
-			applyVavoomSlopeThing<SurfaceType::Floor>(map, thing);
+			applyVavoomSlopeThing<SectorSurfaceType::Floor>(map, thing);
 		else if (thing->type() == 1501)
-			applyVavoomSlopeThing<SurfaceType::Ceiling>(map, thing);
+			applyVavoomSlopeThing<SectorSurfaceType::Ceiling>(map, thing);
 	}
 
 	// Slope copy things (9510/9511)
@@ -1052,8 +1056,8 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 		if (vertices.size() != 3)
 			continue;
 
-		applyVertexHeightSlope<SurfaceType::Floor>(target, vertices, vertex_floor_heights);
-		applyVertexHeightSlope<SurfaceType::Ceiling>(target, vertices, vertex_ceiling_heights);
+		applyVertexHeightSlope<SectorSurfaceType::Floor>(target, vertices, vertex_floor_heights);
+		applyVertexHeightSlope<SectorSurfaceType::Ceiling>(target, vertices, vertex_ceiling_heights);
 	}
 
 	// Plane_Copy
@@ -1109,7 +1113,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 // -----------------------------------------------------------------------------
 // Process Eternity slope specials
 // -----------------------------------------------------------------------------
-void MapSpecials::processEternitySlopes(const SLADEMap* map) const
+void OldMapSpecials::processEternitySlopes(const SLADEMap* map) const
 {
 	// Eternity plans on having a few slope mechanisms,
 	// which must be evaluated in a specific order.
@@ -1121,8 +1125,8 @@ void MapSpecials::processEternitySlopes(const SLADEMap* map) const
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
 		auto target = map->sector(a);
-		target->setPlane<SurfaceType::Floor>(Plane::flat(target->planeHeight<SurfaceType::Floor>()));
-		target->setPlane<SurfaceType::Ceiling>(Plane::flat(target->planeHeight<SurfaceType::Ceiling>()));
+		target->setPlane<SectorSurfaceType::Floor>(Plane::flat(target->planeHeight<SectorSurfaceType::Floor>()));
+		target->setPlane<SectorSurfaceType::Ceiling>(Plane::flat(target->planeHeight<SectorSurfaceType::Ceiling>()));
 	}
 
 	// Plane_Align (line special 181)
@@ -1147,15 +1151,15 @@ void MapSpecials::processEternitySlopes(const SLADEMap* map) const
 
 		int floor_arg = line->arg(0);
 		if (floor_arg == 1)
-			applyPlaneAlign<SurfaceType::Floor>(line, sector1, sector2);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, sector1, sector2);
 		else if (floor_arg == 2)
-			applyPlaneAlign<SurfaceType::Floor>(line, sector2, sector1);
+			applyPlaneAlign<SectorSurfaceType::Floor>(line, sector2, sector1);
 
 		int ceiling_arg = line->arg(1);
 		if (ceiling_arg == 1)
-			applyPlaneAlign<SurfaceType::Ceiling>(line, sector1, sector2);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, sector1, sector2);
 		else if (ceiling_arg == 2)
-			applyPlaneAlign<SurfaceType::Ceiling>(line, sector2, sector1);
+			applyPlaneAlign<SectorSurfaceType::Ceiling>(line, sector2, sector1);
 	}
 
 	// Plane_Copy
@@ -1212,7 +1216,8 @@ void MapSpecials::processEternitySlopes(const SLADEMap* map) const
 // -----------------------------------------------------------------------------
 // Applies a Plane_Align special on [line], to [target] from [model]
 // -----------------------------------------------------------------------------
-template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model) const
+template<SectorSurfaceType T>
+void OldMapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model) const
 {
 	if (!model || !target) // Do nothing, ignore
 	{
@@ -1288,7 +1293,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 // -----------------------------------------------------------------------------
 // Applies a line slope special on [thing], to its containing sector in [map]
 // -----------------------------------------------------------------------------
-template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing) const
+template<SectorSurfaceType T> void OldMapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing) const
 {
 	int lineid = thing->arg(0);
 	if (!lineid)
@@ -1335,7 +1340,7 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 // -----------------------------------------------------------------------------
 // Applies a tilt slope special on [thing], to its containing sector in [map]
 // -----------------------------------------------------------------------------
-template<SurfaceType T> void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing) const
+template<SectorSurfaceType T> void OldMapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing) const
 {
 	// TODO should this apply to /all/ sectors at this point, in the case of an
 	// intersection?
@@ -1380,7 +1385,7 @@ template<SurfaceType T> void MapSpecials::applySectorTiltThing(SLADEMap* map, Ma
 // -----------------------------------------------------------------------------
 // Applies a vavoom slope special on [thing], to its containing sector in [map]
 // -----------------------------------------------------------------------------
-template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing) const
+template<SectorSurfaceType T> void OldMapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing) const
 {
 	auto target = map->sectors().atPos(thing->position());
 	if (!target)
@@ -1421,10 +1426,10 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 // -----------------------------------------------------------------------------
 // Returns the floor/ceiling height of [vertex] in [sector]
 // -----------------------------------------------------------------------------
-template<SurfaceType T> double MapSpecials::vertexHeight(MapVertex* vertex, MapSector* sector) const
+template<SectorSurfaceType T> double OldMapSpecials::vertexHeight(MapVertex* vertex, MapSector* sector) const
 {
 	// Return vertex height if set via UDMF property
-	string prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	string prop = (T == SectorSurfaceType::Floor ? "zfloor" : "zceiling");
 	if (vertex->hasProp(prop))
 		return vertex->floatProperty(prop);
 
@@ -1436,11 +1441,11 @@ template<SurfaceType T> double MapSpecials::vertexHeight(MapVertex* vertex, MapS
 // Applies a slope to sector [target] based on the heights of its vertices
 // (triangular sectors only)
 // -----------------------------------------------------------------------------
-template<SurfaceType T>
-void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
+template<SectorSurfaceType T>
+void OldMapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 	const
 {
-	string prop         = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	string prop         = (T == SectorSurfaceType::Floor ? "zfloor" : "zceiling");
 	auto   v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
 	auto   v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
 	auto   v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);
@@ -1463,14 +1468,14 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 // Applies a slope to sector [target] based on the heights of its vertices
 // (EDGE-Classic rectangular sectors only; performs additional validation)
 // -----------------------------------------------------------------------------
-template<SurfaceType T>
-void MapSpecials::applyRectangularVertexHeightSlope(
+template<SectorSurfaceType T>
+void OldMapSpecials::applyRectangularVertexHeightSlope(
 	MapSector*          target,
 	vector<MapVertex*>& vertices,
 	VertexHeightMap&    heights) const
 {
 	std::vector<int> height_verts;
-	string           prop         = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	string           prop         = (T == SectorSurfaceType::Floor ? "zfloor" : "zceiling");
 	auto             v1_hasheight = heights.count(vertices[0]) || vertices[0]->hasProp(prop);
 	auto             v2_hasheight = heights.count(vertices[1]) || vertices[1]->hasProp(prop);
 	auto             v3_hasheight = heights.count(vertices[2]) || vertices[2]->hasProp(prop);

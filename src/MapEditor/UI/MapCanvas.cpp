@@ -129,7 +129,7 @@ void MapCanvas::mouseToCenter()
 {
 	mouse_warp_       = true;
 	const wxSize size = GetSize();
-	WarpPointer(int(size.x * 0.5), int(size.y * 0.5));
+	WarpPointer(static_cast<int>(size.x * 0.5), static_cast<int>(size.y * 0.5));
 }
 
 // -----------------------------------------------------------------------------
@@ -177,29 +177,29 @@ void MapCanvas::lockMouse(bool lock)
 void MapCanvas::mouseLook3d()
 {
 	// Check for 3d mode
-	if (context_->editMode() == Mode::Visual && context_->mouseLocked())
+	if (context_->editMode() != Mode::Visual /* || !context_->mouseLocked()*/)
+		return;
+
+	auto overlay_current = context_->currentOverlay();
+	if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 	{
-		auto overlay_current = context_->currentOverlay();
-		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
+		// Get relative mouse movement
+		const wxPoint mouse_screen_pos = wxGetMousePosition();
+		const wxPoint mouse_client_pos = ScreenToClient(mouse_screen_pos);
+
+		const wxSize size = GetSize();
+		double       xrel = mouse_client_pos.x - floor(size.x * 0.5);
+		double       yrel = mouse_client_pos.y - floor(size.y * 0.5);
+
+		// Scale from logical to physical pixels for consistent movement on HiDPI displays
+		const double scale = GetContentScaleFactor();
+		xrel *= scale;
+		yrel *= scale;
+
+		if (fabs(xrel) > 0 || fabs(yrel) > 0)
 		{
-			// Get relative mouse movement
-			const wxPoint mouse_screen_pos = wxGetMousePosition();
-			const wxPoint mouse_client_pos = ScreenToClient(mouse_screen_pos);
-
-			const wxSize size = GetSize();
-			double       xrel = mouse_client_pos.x - floor(size.x * 0.5);
-			double       yrel = mouse_client_pos.y - floor(size.y * 0.5);
-
-			// Scale from logical to physical pixels for consistent movement on HiDPI displays
-			const double scale = GetContentScaleFactor();
-			xrel *= scale;
-			yrel *= scale;
-
-			if (fabs(xrel) > 0 || fabs(yrel) > 0)
-			{
-				context_->camera3d().look(xrel, yrel);
-				mouseToCenter();
-			}
+			context_->camera3d().look(xrel, yrel);
+			mouseToCenter();
 		}
 	}
 }
@@ -406,15 +406,19 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	else if (e.LeftDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Left, x, y, true);
 	else if (e.RightDown())
-	{
-		lockMouse(true);
-		mouse_looking_ = true;
-	}
-	// skip = context_->input().mouseDown(Input::MouseButton::Right, x, y);
+		skip = context_->input().mouseDown(Input::MouseButton::Right, x, y);
 	else if (e.RightDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Right, x, y, true);
 	else if (e.MiddleDown())
-		skip = context_->input().mouseDown(Input::MouseButton::Middle, x, y);
+	{
+		if (context_->editMode() == Mode::Visual)
+		{
+			lockMouse(true);
+			mouse_looking_ = true;
+		}
+		else
+			skip = context_->input().mouseDown(Input::MouseButton::Middle, x, y);
+	}
 	else if (e.MiddleDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Middle, x, y, true);
 	else if (e.Aux1Down())
@@ -448,13 +452,17 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 	if (e.LeftUp())
 		skip = context_->input().mouseUp(Input::MouseButton::Left);
 	else if (e.RightUp())
-	{
-		lockMouse(false);
-		mouse_looking_ = false;
-	}
-	// skip = context_->input().mouseUp(Input::MouseButton::Right);
+		skip = context_->input().mouseUp(Input::MouseButton::Right);
 	else if (e.MiddleUp())
-		skip = context_->input().mouseUp(Input::MouseButton::Middle);
+	{
+		if (context_->editMode() == Mode::Visual)
+		{
+			lockMouse(false);
+			mouse_looking_ = false;
+		}
+		else
+			skip = context_->input().mouseUp(Input::MouseButton::Middle);
+	}
 	else if (e.Aux1Up())
 		skip = context_->input().mouseUp(Input::MouseButton::Mouse4);
 	else if (e.Aux2Up())

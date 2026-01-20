@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wundefined-bool-conversion"
@@ -62,7 +62,7 @@ public:
 	virtual void   setStringProperty(string_view key, string_view value);
 	virtual bool   scriptCanModifyProp(string_view key) const { return true; }
 
-	virtual Vec2d getPoint(Point point) { return { 0, 0 }; }
+	virtual Vec2d getPoint(Point point) const { return { 0, 0 }; }
 
 	void filter(bool f = true) { filtered_ = f; }
 

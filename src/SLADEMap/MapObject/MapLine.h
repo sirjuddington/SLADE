@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Geometry/Rect.h"
 #include "MapObject.h"
@@ -96,15 +96,15 @@ public:
 	void clearFlag(int flag);
 	void setArg(unsigned index, int value);
 
-	Vec2d  getPoint(Point point) override;
+	Vec2d  getPoint(Point point) const override;
 	Vec2d  start() const;
 	Vec2d  end() const;
 	Seg2d  seg() const;
-	double length();
+	double length() const;
 	bool   doubleSector() const;
 	Vec2d  frontVector();
 	Vec2d  dirTabPoint(double tab_length = 0.);
-	double distanceTo(const Vec2d& point);
+	double distanceTo(const Vec2d& point) const;
 	int    needsTexture() const;
 	bool   overlaps(const MapLine* other) const;
 	bool   intersects(const MapLine* other, Vec2d& intersect_point) const;
@@ -138,9 +138,9 @@ private:
 	map::ArgSet args_    = {};
 
 	// Internally used info
-	double length_ = -1.;
-	double ca_     = 0.; // Used for intersection calculations
-	double sa_     = 0.; // ^^
-	Vec2d  front_vec_;
+	mutable double length_ = -1.;
+	mutable double ca_     = 0.; // Used for intersection calculations
+	mutable double sa_     = 0.; // ^^
+	Vec2d          front_vec_;
 };
 } // namespace slade

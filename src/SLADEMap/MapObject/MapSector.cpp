@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -38,7 +38,6 @@
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
-#include "SLADEMap/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
@@ -353,7 +352,7 @@ void MapSector::setTag(int tag)
 // Mid = the absolute mid point of the sector,
 // Within/Text = a calculated point that is within the actual sector
 // -----------------------------------------------------------------------------
-Vec2d MapSector::getPoint(Point point)
+Vec2d MapSector::getPoint(Point point) const
 {
 	if (point == Point::Mid)
 	{
@@ -371,7 +370,7 @@ Vec2d MapSector::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Calculates the sector's bounding box
 // -----------------------------------------------------------------------------
-void MapSector::updateBBox()
+void MapSector::updateBBox() const
 {
 	// Reset bounding box
 	bbox_.reset();
@@ -392,7 +391,7 @@ void MapSector::updateBBox()
 // -----------------------------------------------------------------------------
 // Returns the sector bounding box
 // -----------------------------------------------------------------------------
-BBox MapSector::boundingBox()
+BBox MapSector::boundingBox() const
 {
 	// Update bbox if needed
 	if (!bbox_.isValid())
@@ -418,7 +417,7 @@ const vector<glm::vec2>& MapSector::polygonVertices() const
 // -----------------------------------------------------------------------------
 // Returns true if the given [point] is inside the sector
 // -----------------------------------------------------------------------------
-bool MapSector::containsPoint(const Vec2d& point)
+bool MapSector::containsPoint(const Vec2d& point) const
 {
 	// Check with bbox first
 	if (!boundingBox().contains(point))
@@ -570,7 +569,7 @@ uint8_t MapSector::lightAt(int where, int extra_floor_index)
 		// necessary -- unless we're being asked for the light of the sector
 		// itself, which is below the bottommost floor.
 		// Ceilings are below the next 3D floor up, so subtract 1.
-		int floor_gap = extra_floor_index;
+		/*int floor_gap = extra_floor_index;
 		if (where == 2)
 			floor_gap--;
 		else if (where == 1 && floor_gap < 0)
@@ -580,10 +579,10 @@ uint8_t MapSector::lightAt(int where, int extra_floor_index)
 			&& !extra_floors_[floor_gap].lightingInsideOnly())
 		{
 			control_sector = parent_map_->sector(extra_floors_[floor_gap].control_sector_index);
-		}
+		}*/
 
 		// Get general light level
-		int l = control_sector->lightLevel();
+		int l = /*control_sector*/ this->lightLevel();
 
 		// Get specific light level
 		// TODO unclear how 3D floors work here -- what wins? what sector does it come from?
@@ -667,34 +666,35 @@ void MapSector::changeLight(int amount, int where)
 // Returns the colour of the sector at [where] - 1 = floor, 2 = ceiling.
 // If [fullbright] is true, light level is ignored
 // -----------------------------------------------------------------------------
+// TODO: Move out to MapSpecials
 ColRGBA MapSector::colourAt(int where, bool fullbright) const
 {
 	using game::UDMFFeature;
 
 	// Check for sector colour set in open script
 	// TODO: Test if this is correct behaviour
-	if (parent_map_->mapSpecials()->tagColoursSet())
-	{
-		ColRGBA col;
-		if (parent_map_->mapSpecials()->tagColour(id_, &col))
-		{
-			if (fullbright)
-				return col;
+	// if (parent_map_->mapSpecials()->tagColoursSet())
+	//{
+	//	ColRGBA col;
+	//	if (parent_map_->mapSpecials()->tagColour(id_, &col))
+	//	{
+	//		if (fullbright)
+	//			return col;
 
-			// Get sector light level
-			int ll = light_;
+	//		// Get sector light level
+	//		int ll = light_;
 
-			// Clamp light level
-			if (ll > 255)
-				ll = 255;
-			if (ll < 0)
-				ll = 0;
+	//		// Clamp light level
+	//		if (ll > 255)
+	//			ll = 255;
+	//		if (ll < 0)
+	//			ll = 0;
 
-			// Calculate and return the colour
-			float lightmult = static_cast<float>(ll) / 255.0f;
-			return col.ampf(lightmult, lightmult, lightmult, 1.0f);
-		}
-	}
+	//		// Calculate and return the colour
+	//		float lightmult = static_cast<float>(ll) / 255.0f;
+	//		return col.ampf(lightmult, lightmult, lightmult, 1.0f);
+	//	}
+	//}
 
 	// Check for UDMF
 	if (parent_map_->currentFormat() == MapFormat::UDMF
@@ -778,16 +778,17 @@ ColRGBA MapSector::colourAt(int where, bool fullbright) const
 // -----------------------------------------------------------------------------
 // Returns the fog colour of the sector
 // -----------------------------------------------------------------------------
+// TODO: Move out to MapSpecials
 ColRGBA MapSector::fogColour() const
 {
 	ColRGBA color(0, 0, 0, 0);
 
 	// Map specials/scripts
-	if (parent_map_->mapSpecials()->tagFadeColoursSet())
+	/*if (parent_map_->mapSpecials()->tagFadeColoursSet())
 	{
 		if (parent_map_->mapSpecials()->tagFadeColour(id_, &color))
 			return color;
-	}
+	}*/
 
 	// UDMF
 	if (parent_map_->currentFormat() == MapFormat::UDMF
@@ -806,7 +807,7 @@ ColRGBA MapSector::fogColour() const
 // is reasonably close to the middle of the sector bbox while still being within
 // the sector itself
 // -----------------------------------------------------------------------------
-void MapSector::findTextPoint()
+void MapSector::findTextPoint() const
 {
 	// Check if actual sector midpoint can be used
 	text_point_ = getPoint(Point::Mid);
@@ -888,23 +889,6 @@ void MapSector::disconnectSide(const MapSide* side)
 	poly_needsupdate_ = true;
 	bbox_.reset();
 	setGeometryUpdated();
-}
-
-void MapSector::addExtraFloor(const ExtraFloor& extra_floor, const MapSector& control_sector)
-{
-	extra_floors_.emplace_back(extra_floor);
-
-	// Sort extra floors from top down
-	std::sort(
-		extra_floors_.begin(),
-		extra_floors_.end(),
-		[](const ExtraFloor& a, const ExtraFloor& b) { return b.effective_height < a.effective_height; });
-
-	// Mark the sector as updated if the control sector has been; this is a sort of very rudimentary dependency graph
-	if (control_sector.geometry_updated_ > geometry_updated_)
-		setGeometryUpdated();
-	if (control_sector.modifiedTime() > modifiedTime())
-		setModified();
 }
 
 // -----------------------------------------------------------------------------

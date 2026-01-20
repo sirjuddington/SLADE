@@ -1373,7 +1373,7 @@ bool Configuration::lineFlagSet(unsigned flag_index, const MapLine* line) const
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] (UDMF name) is set for [line]
 // -----------------------------------------------------------------------------
-bool Configuration::lineFlagSet(string_view udmf_name, MapLine* line, MapFormat map_format) const
+bool Configuration::lineFlagSet(string_view udmf_name, const MapLine* line, MapFormat map_format) const
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1397,7 +1397,7 @@ bool Configuration::lineFlagSet(string_view udmf_name, MapLine* line, MapFormat 
 // 'Basic' flags are flags that are available in some way or another in all
 // game configurations
 // -----------------------------------------------------------------------------
-bool Configuration::lineBasicFlagSet(string_view flag, MapLine* line, MapFormat map_format) const
+bool Configuration::lineBasicFlagSet(string_view flag, const MapLine* line, MapFormat map_format) const
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)

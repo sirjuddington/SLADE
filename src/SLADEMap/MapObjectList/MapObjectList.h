@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace slade
 {
@@ -32,6 +32,12 @@ public:
 	const vector<T*>& all() const { return objects_; }
 	T*                first() const { return objects_.empty() ? nullptr : objects_[0]; }
 	T*                last() const { return objects_.empty() ? nullptr : objects_.back(); }
+
+	// Info
+	bool contains(const T* object) const
+	{
+		return std::find(objects_.begin(), objects_.end(), object) != objects_.end();
+	}
 
 
 	// Modification ------------------------------------------------------------

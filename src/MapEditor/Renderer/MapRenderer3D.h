@@ -5,6 +5,7 @@ namespace slade
 {
 namespace gl
 {
+	class IndexBuffer;
 	struct Vertex3D;
 	class Camera;
 	class View;
@@ -14,7 +15,8 @@ namespace gl
 namespace mapeditor
 {
 	struct Flat3D;
-}
+	struct Quad3D;
+} // namespace mapeditor
 } // namespace slade
 
 
@@ -41,6 +43,7 @@ public:
 
 	// Testing
 	unsigned flatsBufferSize() const;
+	unsigned quadsBufferSize() const;
 
 private:
 	SLADEMap*              map_ = nullptr;
@@ -50,7 +53,20 @@ private:
 	unique_ptr<gl::VertexBuffer3D> vb_flats_; // Vertex buffer for all flats
 	long                           flats_updated_ = 0;
 
+	vector<mapeditor::Quad3D>      quads_;
+	unique_ptr<gl::VertexBuffer3D> vb_quads_; // Vertex buffer for all wall quads
+	long                           quads_updated_ = 0;
+
+	// Used to organise quads/flats into groups for rendering
+	struct RenderGroup
+	{
+		unsigned                    texture;
+		unique_ptr<gl::IndexBuffer> index_buffer;
+	};
+	vector<RenderGroup> quad_groups_;
+	vector<RenderGroup> flat_groups_;
 
 	void renderFlats();
+	void renderWalls();
 };
 } // namespace slade
