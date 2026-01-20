@@ -15,6 +15,7 @@ public:
 	SlopeSpecials&            slopeSpecials() const { return *slope_specials_; }
 	ExtraFloorSpecials&       extraFloorSpecials() const { return *extrafloor_specials_; }
 	const vector<ExtraFloor>& sectorExtraFloors(const MapSector* sector) const;
+	bool                      sectorHasExtraFloors(const MapSector* sector) const;
 
 	void processAllSpecials();
 	void processLineSpecial(const MapLine& line);

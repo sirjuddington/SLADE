@@ -40,10 +40,8 @@
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/VertexBuffer3D.h"
-#include "Quad3D.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
-#include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapSpecials/ExtraFloor.h"
 #include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
@@ -175,27 +173,6 @@ static void setupFlat3D(Flat3D& flat, unsigned vertex_index, vector<gl::Vertex3D
 	flat.updated_time = app::runTimer();
 }
 
-static void addQuad(
-	vector<gl::Vertex3D>& vertices,
-	const MapLine&        line,
-	const Plane&          plane_top,
-	const Plane&          plane_bottom,
-	const glm::vec4&      colour)
-{
-	auto tl = glm::vec3{ line.x1(), line.y1(), plane_top.heightAt(line.x1(), line.y1()) };
-	auto tr = glm::vec3{ line.x2(), line.y2(), plane_top.heightAt(line.x2(), line.y2()) };
-	auto bl = glm::vec3{ line.x1(), line.y1(), plane_bottom.heightAt(line.x1(), line.y1()) };
-	auto br = glm::vec3{ line.x2(), line.y2(), plane_bottom.heightAt(line.x2(), line.y2()) };
-
-	vertices.emplace_back(tl, glm::vec2{ 0.0f, 0.0f }, colour);
-	vertices.emplace_back(bl, glm::vec2{ 0.0f, 1.0f }, colour);
-	vertices.emplace_back(br, glm::vec2{ 1.0f, 1.0f }, colour);
-
-	vertices.emplace_back(tl, glm::vec2{ 0.0f, 0.0f }, colour);
-	vertices.emplace_back(br, glm::vec2{ 1.0f, 1.0f }, colour);
-	vertices.emplace_back(tr, glm::vec2{ 1.0f, 0.0f }, colour);
-}
-
 // -----------------------------------------------------------------------------
 // Generates 3D flats and vertices for [sector]
 // -----------------------------------------------------------------------------
@@ -260,75 +237,6 @@ void updateFlat(Flat3D& flat, vector<gl::Vertex3D>& vertices)
 	generateFlatVertices(flat, texture, vertices);
 
 	flat.updated_time = app::runTimer();
-}
-
-std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine& line, unsigned vertex_index)
-{
-	// TODO:
-	// - ExtraFloor lighting (currently just using sector light)
-	// - ExtraFloor line textures (currently just using line textures)
-
-	// Check line is valid
-	if (!line.s1())
-		return { {}, {} };
-
-	vector<Quad3D>       rects;
-	vector<gl::Vertex3D> vertices;
-
-	auto map     = line.parentMap();
-	auto sector1 = line.frontSector();
-	auto sector2 = line.backSector();
-
-	// One-sided line
-	if (!sector2)
-	{
-		auto& texture = textureManager().texture(line.s1()->texMiddle(), true);
-		auto  light   = line.s1()->light() / 255.0f;
-
-		// Add quads for extra floors, if any
-		auto plane_top = sector1->ceiling().plane; // Start at sector ceiling
-		for (auto& extrafloor : map->mapSpecials().sectorExtraFloors(sector1))
-		{
-			// Add quad from current top to extra floor top
-			rects.push_back(
-				{ .side          = line.s1(),
-				  .vertex_offset = vertex_index,
-				  .colour        = { light, light, light, 1.0f },
-				  .texture       = texture.gl_id });
-			addQuad(vertices, line, plane_top, extrafloor.plane_top, rects.back().colour);
-			vertex_index += 6;
-
-			// Add internal extrafloor quad if drawing inside
-			if (extrafloor.hasFlag(ExtraFloor::Flags::DrawInside))
-			{
-				rects.push_back(
-					{ .side          = line.s1(),
-					  .vertex_offset = vertex_index,
-					  .colour        = { light, light, light, 1.0f },
-					  .texture       = texture.gl_id });
-				addQuad(vertices, line, extrafloor.plane_top, extrafloor.plane_bottom, rects.back().colour);
-				vertex_index += 6;
-			}
-
-			plane_top = extrafloor.plane_bottom;
-		}
-
-		// Add bottom quad (will be full wall if no extra floors)
-		rects.push_back(
-			{ .side          = line.s1(),
-			  .vertex_offset = vertex_index,
-			  .colour        = { light, light, light, 1.0f },
-			  .texture       = texture.gl_id });
-		addQuad(vertices, line, plane_top, sector1->floor().plane, rects.back().colour);
-	}
-
-	// Two-sided line
-	else
-	{
-		// TODO
-	}
-
-	return { rects, vertices };
 }
 
 } // namespace slade::mapeditor

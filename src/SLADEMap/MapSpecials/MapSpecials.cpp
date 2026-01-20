@@ -57,7 +57,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 {
-	slope_specials_ = std::make_unique<SlopeSpecials>(map);
+	slope_specials_      = std::make_unique<SlopeSpecials>(map);
 	extrafloor_specials_ = std::make_unique<ExtraFloorSpecials>(map);
 }
 
@@ -72,6 +72,14 @@ MapSpecials::~MapSpecials() = default;
 const vector<ExtraFloor>& MapSpecials::sectorExtraFloors(const MapSector* sector) const
 {
 	return extrafloor_specials_->extraFloors(sector);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the given [sector] has any ExtraFloors
+// -----------------------------------------------------------------------------
+bool MapSpecials::sectorHasExtraFloors(const MapSector* sector) const
+{
+	return extrafloor_specials_->hasExtraFloors(sector);
 }
 
 // -----------------------------------------------------------------------------

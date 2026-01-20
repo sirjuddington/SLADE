@@ -171,7 +171,7 @@ MapVertex* MapSide::endVertex() const
 // -----------------------------------------------------------------------------
 // Returns the light level of the given side
 // -----------------------------------------------------------------------------
-uint8_t MapSide::light()
+uint8_t MapSide::light() const
 {
 	int  light          = 0;
 	bool include_sector = true;

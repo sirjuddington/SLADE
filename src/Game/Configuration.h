@@ -156,8 +156,8 @@ public:
 	unsigned    nLineFlags() const { return flags_line_.size(); }
 	const Flag& lineFlag(unsigned flag_index);
 	bool        lineFlagSet(unsigned flag_index, const MapLine* line) const;
-	bool        lineFlagSet(string_view udmf_name, MapLine* line, MapFormat map_format) const;
-	bool        lineBasicFlagSet(string_view flag, MapLine* line, MapFormat map_format) const;
+	bool        lineFlagSet(string_view udmf_name, const MapLine* line, MapFormat map_format) const;
+	bool        lineBasicFlagSet(string_view flag, const MapLine* line, MapFormat map_format) const;
 	string      lineFlagsString(const MapLine* line) const;
 	void        setLineFlag(unsigned flag_index, MapLine* line, bool set = true) const;
 	void        setLineFlag(string_view udmf_name, MapLine* line, MapFormat map_format, bool set = true) const;

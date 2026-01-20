@@ -14,6 +14,7 @@ struct Vertex3D
 	glm::vec4 colour;
 	glm::vec3 normal;
 
+	Vertex3D() = default;
 	Vertex3D(glm::vec3 position, glm::vec2 uv) : position{ position }, uv{ uv } {}
 	Vertex3D(glm::vec3 position, glm::vec2 uv, glm::vec4 colour) : position{ position }, uv{ uv }, colour{ colour } {}
 	Vertex3D(glm::vec3 position, glm::vec2 uv, glm::vec4 colour, glm::vec3 normal) :

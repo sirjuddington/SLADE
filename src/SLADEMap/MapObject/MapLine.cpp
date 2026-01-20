@@ -642,7 +642,7 @@ Seg2d MapLine::seg() const
 // -----------------------------------------------------------------------------
 // Returns the length of the line
 // -----------------------------------------------------------------------------
-double MapLine::length()
+double MapLine::length() const
 {
 	if (!vertex1_ || !vertex2_)
 		return -1;
@@ -712,7 +712,7 @@ Vec2d MapLine::dirTabPoint(double tab_length)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the line
 // -----------------------------------------------------------------------------
-double MapLine::distanceTo(const Vec2d& point)
+double MapLine::distanceTo(const Vec2d& point) const
 {
 	// Update length data if needed
 	if (length_ < 0)
