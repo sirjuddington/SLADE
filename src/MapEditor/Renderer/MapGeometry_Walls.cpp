@@ -71,17 +71,19 @@ struct LineQuadsContext
 // Helper struct for building wall quads
 struct QuadInfo
 {
-	const MapLine*    line       = nullptr;
-	int               height_top = 0;
-	Plane             plane_top;
-	int               height_bottom = 0;
-	Plane             plane_bottom;
-	const MapTexture* texture = nullptr;
-	gl::Vertex3D      tl, tr, bl, br;
-	Vec2i             offsets;
-	int               line_length  = 0;
-	int               tex_y_origin = 0; // Absolute height to align texture y origin to
-	bool              back_side    = false;
+	const MapLine*     line       = nullptr;
+	int                height_top = 0;
+	Plane              plane_top;
+	int                height_bottom = 0;
+	Plane              plane_bottom;
+	const MapTexture*  texture    = nullptr;
+	const gl::Texture* gl_texture = nullptr;
+	gl::Vertex3D       tl, tr, bl, br;
+	Vec2i              offsets;
+	int                line_length  = 0;
+	int                tex_y_origin = 0; // Absolute height to align texture y origin to
+	bool               back_side    = false;
+	bool               midtex       = false; // If true, the quad is clipped to the height of the texture
 };
 } // namespace
 
@@ -95,13 +97,12 @@ namespace slade::mapeditor
 {
 static void setupQuadTexCoords(QuadInfo& info)
 {
-	// Get texture info
-	auto& tex_info = gl::Texture::info(info.texture->gl_id);
-
 	// Calculate texture coordinates
 	int x1 = info.offsets.x;
 	int x2 = info.line_length + info.offsets.x;
-	int y1 = info.tex_y_origin - info.height_top + info.offsets.y;
+	int y1 = info.tex_y_origin - info.height_top;
+	if (!info.midtex)
+		y1 += info.offsets.y;
 	int y2 = y1 + (info.height_top - info.height_bottom);
 
 	float tl_diff = info.height_top - info.tl.position.z;
@@ -110,18 +111,27 @@ static void setupQuadTexCoords(QuadInfo& info)
 	float br_diff = info.height_bottom - info.br.position.z;
 
 	// Set uv tex coords
-	info.tl.uv.x = static_cast<float>(x1) / static_cast<float>(tex_info.size.x);
-	info.tl.uv.y = (static_cast<float>(y1) + tl_diff) / static_cast<float>(tex_info.size.y);
-	info.tr.uv.x = static_cast<float>(x2) / static_cast<float>(tex_info.size.x);
-	info.tr.uv.y = (static_cast<float>(y1) + tr_diff) / static_cast<float>(tex_info.size.y);
-	info.bl.uv.x = static_cast<float>(x1) / static_cast<float>(tex_info.size.x);
-	info.bl.uv.y = (static_cast<float>(y2) + bl_diff) / static_cast<float>(tex_info.size.y);
-	info.br.uv.x = static_cast<float>(x2) / static_cast<float>(tex_info.size.x);
-	info.br.uv.y = (static_cast<float>(y2) + br_diff) / static_cast<float>(tex_info.size.y);
+	info.tl.uv.x = static_cast<float>(x1) / static_cast<float>(info.gl_texture->size.x);
+	info.tl.uv.y = (static_cast<float>(y1) + tl_diff) / static_cast<float>(info.gl_texture->size.y);
+	info.tr.uv.x = static_cast<float>(x2) / static_cast<float>(info.gl_texture->size.x);
+	info.tr.uv.y = (static_cast<float>(y1) + tr_diff) / static_cast<float>(info.gl_texture->size.y);
+	info.bl.uv.x = static_cast<float>(x1) / static_cast<float>(info.gl_texture->size.x);
+	info.bl.uv.y = (static_cast<float>(y2) + bl_diff) / static_cast<float>(info.gl_texture->size.y);
+	info.br.uv.x = static_cast<float>(x2) / static_cast<float>(info.gl_texture->size.x);
+	info.br.uv.y = (static_cast<float>(y2) + br_diff) / static_cast<float>(info.gl_texture->size.y);
 }
 
-static void addQuad(vector<gl::Vertex3D>& vertices, QuadInfo& info, const glm::vec4& colour)
+static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* side, const glm::vec4& colour)
 {
+	// Setup & add quad
+	Quad3D quad{
+		.side = side, .vertex_offset = context.vertex_index, .colour = colour, .texture = info.texture->gl_id
+	};
+	if (info.midtex)
+		quad.setFlag(Quad3D::Flags::MidTexture);
+	context.quads.push_back(quad);
+
+	// Determine vertex positions
 	float x1, y1, x2, y2;
 	if (info.back_side)
 	{
@@ -137,22 +147,32 @@ static void addQuad(vector<gl::Vertex3D>& vertices, QuadInfo& info, const glm::v
 		x2 = info.line->x2();
 		y2 = info.line->y2();
 	}
-
-	info.tl = gl::Vertex3D{ glm::vec3{ x1, y1, info.plane_top.heightAt(x1, y1) }, {}, colour };
-	info.tr = gl::Vertex3D{ glm::vec3{ x2, y2, info.plane_top.heightAt(x2, y2) }, {}, colour };
-	info.bl = gl::Vertex3D{ glm::vec3{ x1, y1, info.plane_bottom.heightAt(x1, y1) }, {}, colour };
-	info.br = gl::Vertex3D{ glm::vec3{ x2, y2, info.plane_bottom.heightAt(x2, y2) }, {}, colour };
+	if (info.midtex)
+	{
+		// Midtextures ignore slopes
+		info.tl = gl::Vertex3D{ glm::vec3{ x1, y1, info.height_top }, {}, colour };
+		info.tr = gl::Vertex3D{ glm::vec3{ x2, y2, info.height_top }, {}, colour };
+		info.bl = gl::Vertex3D{ glm::vec3{ x1, y1, info.height_bottom }, {}, colour };
+		info.br = gl::Vertex3D{ glm::vec3{ x2, y2, info.height_bottom }, {}, colour };
+	}
+	else
+	{
+		info.tl = gl::Vertex3D{ glm::vec3{ x1, y1, info.plane_top.heightAt(x1, y1) }, {}, colour };
+		info.tr = gl::Vertex3D{ glm::vec3{ x2, y2, info.plane_top.heightAt(x2, y2) }, {}, colour };
+		info.bl = gl::Vertex3D{ glm::vec3{ x1, y1, info.plane_bottom.heightAt(x1, y1) }, {}, colour };
+		info.br = gl::Vertex3D{ glm::vec3{ x2, y2, info.plane_bottom.heightAt(x2, y2) }, {}, colour };
+	}
 
 	setupQuadTexCoords(info);
 
 	// Add vertices (two triangles)
-	vertices.emplace_back(info.tl);
-	vertices.emplace_back(info.bl);
-	vertices.emplace_back(info.br);
-
-	vertices.emplace_back(info.tl);
-	vertices.emplace_back(info.br);
-	vertices.emplace_back(info.tr);
+	context.vertices.emplace_back(info.tl);
+	context.vertices.emplace_back(info.bl);
+	context.vertices.emplace_back(info.br);
+	context.vertices.emplace_back(info.tl);
+	context.vertices.emplace_back(info.br);
+	context.vertices.emplace_back(info.tr);
+	context.vertex_index += 6;
 }
 
 void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
@@ -222,13 +242,16 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 	}
 
 	// Setup base quad info
+	auto&    texture = textureManager().texture(tex_name, context.mix_tex_flats);
+	auto&    gl_tex  = gl::Texture::info(texture.gl_id);
 	QuadInfo quad_info{
 		.line          = line,
 		.height_top    = height_top,
 		.plane_top     = plane_top,
 		.height_bottom = height_bottom,
 		.plane_bottom  = plane_bottom,
-		.texture       = &textureManager().texture(tex_name, context.mix_tex_flats),
+		.texture       = &texture,
+		.gl_texture    = &gl_tex,
 		.offsets       = side->texOffset(),
 		.line_length   = static_cast<int>(line->length()),
 		.tex_y_origin  = tex_y_origin,
@@ -258,6 +281,21 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 		}
 	}
 
+	// Handle 2-sided midtextures
+	if ((part == MapLine::FrontMiddle || part == MapLine::BackMiddle) && line->s2())
+	{
+		// Set tex_y_origin to where the top of the mid texture would be
+		if (context.lower_unpegged)
+			quad_info.tex_y_origin = quad_info.height_bottom + gl_tex.size.y;
+		quad_info.tex_y_origin += quad_info.offsets.y;
+
+		// Clip to sector heights
+		quad_info.height_top    = std::min(quad_info.tex_y_origin, quad_info.height_top);
+		quad_info.height_bottom = std::max(quad_info.tex_y_origin - gl_tex.size.y, quad_info.height_bottom);
+
+		quad_info.midtex = true;
+	}
+
 	if (line->parentMap()->mapSpecials().sectorHasExtraFloors(side->sector()))
 	{
 		// TODO: Split quad by extrafloors
@@ -265,14 +303,7 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 	else
 	{
 		auto light = side->light() / 255.0f;
-
-		context.quads.push_back(
-			{ .side          = side,
-			  .vertex_offset = context.vertex_index,
-			  .colour        = { light, light, light, 1.0f },
-			  .texture       = quad_info.texture->gl_id });
-		addQuad(context.vertices, quad_info, context.quads.back().colour);
-		context.vertex_index += 6;
+		addQuad(context, quad_info, side, { light, light, light, 1.0f });
 	}
 }
 
@@ -303,12 +334,9 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 		auto sector1 = s1->sector();
 		auto sector2 = s2->sector();
 
-		// TODO:
-		//  - Middle textures require special handling and need a flag to be drawn last
-
 		// Front middle
-		// if (s1->texMiddle() != MapSide::TEX_NONE && sector1->floor().height < sector1->ceiling().height)
-		//	buildWallPartQuads(context, MapLine::FrontMiddle);
+		if (s1->texMiddle() != MapSide::TEX_NONE && sector1->floor().height < sector1->ceiling().height)
+			buildWallPartQuads(context, MapLine::FrontMiddle);
 
 		// Front upper
 		if (sector1->ceiling().height > sector2->ceiling().height)
@@ -337,8 +365,8 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 		}
 
 		// Back middle
-		// if (s2->texMiddle() != MapSide::TEX_NONE && sector2->floor().height < sector2->ceiling().height)
-		//	buildWallPartQuads(context, MapLine::BackMiddle);
+		if (s2->texMiddle() != MapSide::TEX_NONE && sector2->floor().height < sector2->ceiling().height)
+			buildWallPartQuads(context, MapLine::BackMiddle);
 
 		// Back upper
 		if (sector2->ceiling().height > sector1->ceiling().height)

@@ -239,6 +239,9 @@ void MapRenderer3D::renderWalls()
 	}
 
 	// Generate quad groups if needed
+	// TODO: Create separate groups for quads with the midtex flag,
+	//       change default3d shader to conditionally discard at alpha 0,
+	//       only enable for those groups
 	if (quad_groups_.empty())
 	{
 		vector<uint8_t> quads_processed(quads_.size());
