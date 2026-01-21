@@ -78,6 +78,8 @@ public:
 	template<SectorSurfaceType p> short planeHeight() const;
 	template<SectorSurfaceType p> Plane plane() const;
 	template<SectorSurfaceType p> void  setPlane(const Plane& plane);
+	bool                                ceilingHasSlope() const;
+	bool                                floorHasSlope() const;
 
 	Vec2d                    getPoint(Point point) const override;
 	void                     resetBBox() const { bbox_.reset(); }

@@ -348,6 +348,22 @@ void MapSector::setTag(int tag)
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the ceiling has a slope
+// -----------------------------------------------------------------------------
+bool MapSector::ceilingHasSlope() const
+{
+	return ceiling_.plane.a != 0 || ceiling_.plane.b != 0 || ceiling_.plane.c != 1;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the floor has a slope
+// -----------------------------------------------------------------------------
+bool MapSector::floorHasSlope() const
+{
+	return floor_.plane.a != 0 || floor_.plane.b != 0 || floor_.plane.c != 1;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the object point [point]:
 // Mid = the absolute mid point of the sector,
 // Within/Text = a calculated point that is within the actual sector
