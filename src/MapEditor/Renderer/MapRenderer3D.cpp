@@ -72,15 +72,23 @@ void MapRenderer3D::enableFullbright(bool enable) {}
 
 void MapRenderer3D::render(const gl::Camera& camera)
 {
-	// Create default 3d shader if needed
+	// Create shaders if needed
 	if (!shader_3d_)
 	{
 		shader_3d_ = std::make_unique<gl::Shader>("map_3d");
 		shader_3d_->loadResourceEntries("default3d.vert", "default3d.frag");
 	}
+	if (!shader_3d_alphatest_)
+	{
+		shader_3d_alphatest_ = std::make_unique<gl::Shader>("map_3d_alphatest");
+		shader_3d_alphatest_->define("ALPHA_TEST");
+		shader_3d_alphatest_->loadResourceEntries("default3d.vert", "default3d.frag");
+	}
 
 	// Set ModelViewProjection matrix uniform from camera
-	shader_3d_->setUniform("mvp", camera.projectionMatrix() * camera.viewMatrix());
+	auto mvp = camera.projectionMatrix() * camera.viewMatrix();
+	shader_3d_->setUniform("mvp", mvp);
+	shader_3d_alphatest_->setUniform("mvp", mvp);
 
 	// Setup GL stuff
 	glEnable(GL_DEPTH_TEST);
@@ -90,6 +98,7 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	glDepthMask(GL_TRUE);
 	glAlphaFunc(GL_GREATER, 0.0f);
 
+	shader_3d_->bind();
 	renderFlats();
 	renderWalls();
 
@@ -215,6 +224,8 @@ void MapRenderer3D::renderFlats()
 
 void MapRenderer3D::renderWalls()
 {
+	using QuadFlags = mapeditor::Quad3D::Flags;
+
 	// Clear walls to be rebuilt if map geometry has been updated
 	if (map_->geometryUpdated() > quads_updated_)
 	{
@@ -239,9 +250,6 @@ void MapRenderer3D::renderWalls()
 	}
 
 	// Generate quad groups if needed
-	// TODO: Create separate groups for quads with the midtex flag,
-	//       change default3d shader to conditionally discard at alpha 0,
-	//       only enable for those groups
 	if (quad_groups_.empty())
 	{
 		vector<uint8_t> quads_processed(quads_.size());
@@ -251,13 +259,17 @@ void MapRenderer3D::renderWalls()
 			if (quads_processed[i])
 				continue;
 
-			// Build list of vertex indices for quads using this texture
+			// Build list of vertex indices for quads with this texture+flags
 			vector<GLuint> indices;
 			for (unsigned f = i; f < quads_.size(); ++f)
 			{
 				// Check texture match
 				auto& quad = quads_[f];
 				if (quads_processed[f] || quad.texture != quads_[i].texture)
+					continue;
+
+				// Check flags
+				if (quad.flags != quads_[i].flags)
 					continue;
 
 				// Add indices
@@ -273,6 +285,8 @@ void MapRenderer3D::renderWalls()
 			quad_groups_.back().texture      = quads_[i].texture;
 			quad_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
 			quad_groups_.back().index_buffer->upload(indices);
+			if (quads_[i].hasFlag(QuadFlags::MidTexture))
+				quad_groups_.back().alpha_test = true;
 
 			quads_processed[i] = 1;
 		}
@@ -280,12 +294,31 @@ void MapRenderer3D::renderWalls()
 
 	// Render wall quads
 	gl::bindVAO(vb_quads_->vao());
+
+	// First render non-alpha-tested quads
+	shader_3d_->bind();
 	for (auto& group : quad_groups_)
 	{
+		if (group.alpha_test)
+			continue;
+
 		gl::Texture::bind(group.texture);
 		group.index_buffer->bind();
 		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
 	}
+
+	// Then render alpha-tested quads
+	shader_3d_alphatest_->bind();
+	for (auto& group : quad_groups_)
+	{
+		if (!group.alpha_test)
+			continue;
+
+		gl::Texture::bind(group.texture);
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+
 	gl::bindEBO(0);
 	gl::bindVAO(0);
 }
