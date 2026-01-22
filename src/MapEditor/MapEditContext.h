@@ -164,7 +164,7 @@ public:
 	void   updateStatusText() const;
 	void   updateThingLists();
 	void   setCursor(ui::MouseCursor cursor) const;
-	void   forceRefreshRenderer() const;
+	void   forceRefreshRenderer(bool r2d, bool r3d) const;
 
 
 	// SAction handler

@@ -216,10 +216,10 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 	case MapLine::FrontMiddle:
 	case MapLine::BackMiddle:
 		tex_name      = side->texMiddle();
-		height_top    = side->sector()->ceiling().height;
-		height_bottom = side->sector()->floor().height;
-		plane_top     = side->sector()->ceiling().plane;
-		plane_bottom  = side->sector()->floor().plane;
+		height_top    = std::min(side->sector()->ceiling().height, side_back->sector()->ceiling().height);
+		height_bottom = std::max(side->sector()->floor().height, side_back->sector()->floor().height);
+		plane_top     = side_back->sector()->ceiling().plane;
+		plane_bottom  = side_back->sector()->floor().plane;
 		tex_y_origin  = context.lower_unpegged ? height_bottom : height_top;
 		break;
 

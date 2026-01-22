@@ -999,7 +999,7 @@ void MapEditorWindow::forceRefresh(bool renderer) const
 		return;
 
 	if (renderer)
-		mapeditor::editContext().forceRefreshRenderer();
+		mapeditor::editContext().forceRefreshRenderer(true, true);
 	map_canvas_->Refresh();
 }
 

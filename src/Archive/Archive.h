@@ -86,6 +86,7 @@ public:
 	unsigned numEntries() const;
 	void     close();
 	void     entryStateChanged(ArchiveEntry* entry);
+	void     entryDataChanged(ArchiveEntry* entry);
 	void     putEntryTreeAsList(vector<ArchiveEntry*>& list, const ArchiveDir* start = nullptr) const;
 	void     putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, const ArchiveDir* start = nullptr) const;
 	bool     canSave() const { return parent_.lock() || on_disk_; }
@@ -142,6 +143,7 @@ public:
 		sigslot::signal<Archive&, ArchiveEntry&>                   entry_added;
 		sigslot::signal<Archive&, ArchiveDir&, ArchiveEntry&>      entry_removed; // Archive, Parent Dir, Removed Entry
 		sigslot::signal<Archive&, ArchiveEntry&>                   entry_state_changed;
+		sigslot::signal<Archive&, ArchiveEntry&>                   entry_data_changed;
 		sigslot::signal<Archive&, ArchiveEntry&, string_view>      entry_renamed;
 		sigslot::signal<Archive&, ArchiveDir&, unsigned, unsigned> entries_swapped; // Archive, Dir, Index 1, Index 2
 		sigslot::signal<Archive&, ArchiveDir&>                     dir_added;

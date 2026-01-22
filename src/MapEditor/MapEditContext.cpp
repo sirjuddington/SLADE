@@ -277,7 +277,7 @@ void MapEditContext::setSectorEditMode(SectorMode mode)
 		addEditorMessage("Sectors mode (Ceilings)");
 
 	updateStatusText();
-	forceRefreshRenderer();
+	forceRefreshRenderer(true, false);
 }
 
 // -----------------------------------------------------------------------------
@@ -436,8 +436,12 @@ bool MapEditContext::openMap(const MapDesc& map)
 		else if (pstart)
 			renderer_->setCameraThing(pstart);
 
+		// Set sky texture for 3d renderer
+		auto minf = game::configuration().mapInfo(map_->mapName());
+		renderer_->renderer3D().setSkyTexture(minf.sky1, minf.sky2);
+
 		// Reset rendering data
-		forceRefreshRenderer();
+		forceRefreshRenderer(true, true);
 	}
 
 	edit_3d_->setLinked(true, true);
@@ -558,7 +562,7 @@ void MapEditContext::setCursor(ui::MouseCursor cursor) const
 // -----------------------------------------------------------------------------
 // Forces a full refresh of the 2d/3d renderers
 // -----------------------------------------------------------------------------
-void MapEditContext::forceRefreshRenderer() const
+void MapEditContext::forceRefreshRenderer(bool r2d, bool r3d) const
 {
 	// Update 3d mode info overlay if needed
 	if (edit_mode_ == Mode::Visual)
@@ -571,7 +575,7 @@ void MapEditContext::forceRefreshRenderer() const
 	if (!canvas_->activateContext())
 		return;
 
-	renderer_->forceUpdate();
+	renderer_->forceUpdate(r2d, r3d);
 }
 
 // -----------------------------------------------------------------------------
@@ -1760,7 +1764,7 @@ bool MapEditContext::handleAction(string_view id)
 		flat_drawtype = 0;
 		addEditorMessage("Flats: None");
 		updateStatusText();
-		forceRefreshRenderer();
+		forceRefreshRenderer(true, false);
 		return true;
 	}
 
@@ -1770,7 +1774,7 @@ bool MapEditContext::handleAction(string_view id)
 		flat_drawtype = 1;
 		addEditorMessage("Flats: Untextured");
 		updateStatusText();
-		forceRefreshRenderer();
+		forceRefreshRenderer(true, false);
 		return true;
 	}
 
@@ -1780,7 +1784,7 @@ bool MapEditContext::handleAction(string_view id)
 		flat_drawtype = 2;
 		addEditorMessage("Flats: Textured");
 		updateStatusText();
-		forceRefreshRenderer();
+		forceRefreshRenderer(true, false);
 		return true;
 	}
 

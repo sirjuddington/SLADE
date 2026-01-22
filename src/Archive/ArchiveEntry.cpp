@@ -322,6 +322,7 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 
 	// Update attributes
 	setState(EntryState::Modified);
+	dataChanged();
 
 	return data_.reSize(new_size, preserve_data);
 }
@@ -329,7 +330,7 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 // -----------------------------------------------------------------------------
 // Clears entry data and resets its size to zero
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::clearData()
+bool ArchiveEntry::clearData(bool silent)
 {
 	// Check if locked
 	if (locked_)
@@ -340,6 +341,9 @@ bool ArchiveEntry::clearData()
 
 	// Delete the data
 	data_.clear();
+
+	if (!silent)
+		dataChanged();
 
 	return true;
 }
@@ -370,7 +374,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	}
 
 	// Clear any current data
-	clearData();
+	clearData(true);
 
 	// Copy data into the entry
 	data_.importMem(static_cast<const uint8_t*>(data), size);
@@ -378,6 +382,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	// Update attributes
 	setType(EntryType::unknownType());
 	setState(EntryState::Modified);
+	dataChanged();
 
 	return true;
 }
@@ -493,6 +498,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 		// Update attributes
 		setType(EntryType::unknownType());
 		setState(EntryState::Modified);
+		dataChanged();
 
 		return true;
 	}
@@ -564,6 +570,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 	{
 		// Update attributes
 		setState(EntryState::Modified);
+		dataChanged();
 
 		return true;
 	}
@@ -596,14 +603,21 @@ string ArchiveEntry::typeString() const
 }
 
 // -----------------------------------------------------------------------------
-// ArchiveEntry::stateChanged
-//
 // Notifies the entry's parent archive that the entry has been modified
 // -----------------------------------------------------------------------------
 void ArchiveEntry::stateChanged()
 {
 	if (auto parent_archive = parent())
 		parent_archive->entryStateChanged(this);
+}
+
+// -----------------------------------------------------------------------------
+// Notifies the entry's parent archive that the entry's data has changed
+// -----------------------------------------------------------------------------
+void ArchiveEntry::dataChanged()
+{
+	if (auto parent_archive = parent())
+		parent_archive->entryDataChanged(this);
 }
 
 // -----------------------------------------------------------------------------

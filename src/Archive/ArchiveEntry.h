@@ -74,7 +74,7 @@ public:
 	bool resize(uint32_t new_size, bool preserve_data);
 
 	// Data modification
-	bool clearData();
+	bool clearData(bool silent = false);
 
 	// Data import
 	bool importMem(const void* data, uint32_t size);
@@ -103,6 +103,7 @@ public:
 	string        sizeString() const;
 	string        typeString() const;
 	void          stateChanged();
+	void          dataChanged();
 	void          setExtensionByType();
 	int           typeReliability() const;
 	bool          isInNamespace(string_view ns);

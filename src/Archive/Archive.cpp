@@ -496,6 +496,19 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
+// Notifies that an [entry]'s data has changed
+// -----------------------------------------------------------------------------
+void Archive::entryDataChanged(ArchiveEntry* entry)
+{
+	// Check the entry is valid and part of this archive
+	if (!checkEntry(entry))
+		return;
+
+	// Signal entry data change
+	signals_.entry_data_changed(*this, *entry);
+}
+
+// -----------------------------------------------------------------------------
 // Adds the directory structure starting from [start] to [list]
 // -----------------------------------------------------------------------------
 void Archive::putEntryTreeAsList(vector<ArchiveEntry*>& list, const ArchiveDir* start) const

@@ -71,6 +71,11 @@ void MapRenderer3D::enableSelection(bool enable) {}
 void MapRenderer3D::enableFog(bool enable) {}
 void MapRenderer3D::enableFullbright(bool enable) {}
 
+void MapRenderer3D::setSkyTexture(string_view tex1, string_view tex2)
+{
+	skybox_->setSkyTextures(tex1, tex2);
+}
+
 void MapRenderer3D::render(const gl::Camera& camera)
 {
 	// Create shaders if needed

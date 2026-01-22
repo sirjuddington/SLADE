@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    Skybox.cpp
-// Description:
+// Description: The 3d mode 'skybox' renderer (more of a sky-cylinder really)
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -50,6 +50,10 @@ using namespace mapeditor;
 //
 // -----------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// Skybox class constructor
+// -----------------------------------------------------------------------------
 Skybox::Skybox()
 {
 	vertex_buffer_ = std::make_unique<gl::VertexBuffer3D>();
@@ -64,6 +68,9 @@ Skybox::Skybox()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Sets the skybox textures to [tex1] and (optionally) [tex2]
+// -----------------------------------------------------------------------------
 void Skybox::setSkyTextures(string_view tex1, string_view tex2)
 {
 	skytex1_ = tex1;
@@ -73,6 +80,10 @@ void Skybox::setSkyTextures(string_view tex1, string_view tex2)
 	vertex_buffer_->buffer().clear();
 }
 
+// -----------------------------------------------------------------------------
+// Renders the skybox around [camera] using [shader].
+// Note that this will change the shader's MVP matrix uniform
+// -----------------------------------------------------------------------------
 void Skybox::render(const gl::Camera& camera, const gl::Shader& shader)
 {
 	// Build vertex buffer if needed
@@ -114,6 +125,10 @@ void Skybox::render(const gl::Camera& camera, const gl::Shader& shader)
 	glEnable(GL_ALPHA_TEST);
 }
 
+// -----------------------------------------------------------------------------
+// Builds a 'slice' of the sky cylinder from [top] to [bottom] with given alpha
+// values, size and texture coordinates
+// -----------------------------------------------------------------------------
 void Skybox::buildSkySlice(float top, float bottom, float alpha_top, float alpha_bottom, float size, float tx, float ty)
 {
 	auto tc_x  = 0.0f;
@@ -149,6 +164,9 @@ void Skybox::buildSkySlice(float top, float bottom, float alpha_top, float alpha
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Builds the skybox vertex buffer
+// -----------------------------------------------------------------------------
 void Skybox::buildVertexBuffer()
 {
 	vertex_buffer_->buffer().clear();

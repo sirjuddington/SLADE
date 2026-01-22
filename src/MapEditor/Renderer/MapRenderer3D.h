@@ -36,6 +36,7 @@ public:
 	void enableSelection(bool enable = true);
 	void enableFog(bool enable = true);
 	void enableFullbright(bool enable = true);
+	void setSkyTexture(string_view tex1, string_view tex2 = "");
 
 	void render(const gl::Camera& camera);
 
