@@ -16,6 +16,7 @@ namespace mapeditor
 {
 	struct Flat3D;
 	struct Quad3D;
+	class Skybox;
 } // namespace mapeditor
 } // namespace slade
 
@@ -46,9 +47,10 @@ public:
 	unsigned quadsBufferSize() const;
 
 private:
-	SLADEMap*              map_ = nullptr;
-	unique_ptr<gl::Shader> shader_3d_;
-	unique_ptr<gl::Shader> shader_3d_alphatest_;
+	SLADEMap*                     map_ = nullptr;
+	unique_ptr<gl::Shader>        shader_3d_;
+	unique_ptr<gl::Shader>        shader_3d_alphatest_;
+	unique_ptr<mapeditor::Skybox> skybox_;
 
 	vector<mapeditor::Flat3D>      flats_;
 	unique_ptr<gl::VertexBuffer3D> vb_flats_; // Vertex buffer for all flats
@@ -64,11 +66,16 @@ private:
 		unsigned                    texture;
 		unique_ptr<gl::IndexBuffer> index_buffer;
 		bool                        alpha_test = false;
+		bool                        sky        = false;
 	};
 	vector<RenderGroup> quad_groups_;
 	vector<RenderGroup> flat_groups_;
 
-	void renderFlats();
-	void renderWalls();
+	void updateFlats();
+	void updateWalls();
+
+	void renderSkyFlatsQuads() const;
+	void renderFlats() const;
+	void renderWalls() const;
 };
 } // namespace slade

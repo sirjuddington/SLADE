@@ -21,6 +21,7 @@ struct Flat3D
 	glm::vec4 colour  = glm::vec4{ 1.0f };
 	glm::vec3 normal  = glm::vec3{ 0.0f, 0.0f, 1.0f };
 	unsigned  texture = 0;
+	bool      sky     = false;
 
 	long updated_time = 0;
 

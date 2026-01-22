@@ -41,6 +41,7 @@ public:
 	void add(const Vertex3D& vertex);
 	void add(const vector<Vertex3D>& vertices);
 	void add(const glm::vec3& position, const glm::vec2& uv = glm::vec2{ 0.0f });
+	void addQuad(const Vertex3D& tl, const Vertex3D& tr, const Vertex3D& bl, const Vertex3D& br);
 
 	void push();
 
@@ -50,6 +51,16 @@ public:
 		const View*   view      = nullptr,
 		unsigned      first     = 0,
 		unsigned      count     = 0) const;
+
+	void drawPartial(
+		unsigned      first,
+		unsigned      count,
+		Primitive     primitive = Primitive::Triangles,
+		const Shader* shader    = nullptr,
+		const View*   view      = nullptr) const
+	{
+		draw(primitive, shader, view, first, count);
+	}
 
 private:
 	vector<Vertex3D> vertices_;

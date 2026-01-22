@@ -12,8 +12,12 @@ uniform vec4 colour = vec4(1.0);
 uniform float alpha_threshold = 0.0;
 #endif
 
+#ifdef TEXTURED
 uniform sampler2D tex_unit;
+#endif
 
+// Textured
+#ifdef TEXTURED
 void main()
 {
 	vec4 tex_col = texture(tex_unit, vertex_in.tex_coord);
@@ -24,3 +28,16 @@ void main()
 
 	f_colour = vertex_in.colour * colour * tex_col;
 }
+
+// Untextured
+#else
+void main()
+{
+	f_colour = vertex_in.colour * colour;
+
+#ifdef ALPHA_TEST
+	if (f_colour.a <= alpha_threshold) discard;
+#endif
+}
+
+#endif

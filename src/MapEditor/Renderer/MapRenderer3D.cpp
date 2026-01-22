@@ -9,12 +9,12 @@
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer3D.h"
-#include "OpenGL/View.h"
 #include "Quad3D.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Skybox.h"
 #include "Utility/Vector.h"
 
 using namespace slade;
@@ -47,12 +47,13 @@ CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
 //
 // -----------------------------------------------------------------------------
 
-MapRenderer3D::MapRenderer3D(SLADEMap* map) :
-	map_{ map },
-	vb_flats_{ new gl::VertexBuffer3D },
-	vb_quads_{ new gl::VertexBuffer3D }
+MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
 {
+	vb_flats_ = std::make_unique<gl::VertexBuffer3D>();
+	vb_quads_ = std::make_unique<gl::VertexBuffer3D>();
+	skybox_   = std::make_unique<mapeditor::Skybox>();
 }
+
 MapRenderer3D::~MapRenderer3D() = default;
 
 bool MapRenderer3D::fogEnabled() const
@@ -76,19 +77,16 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	if (!shader_3d_)
 	{
 		shader_3d_ = std::make_unique<gl::Shader>("map_3d");
+		shader_3d_->define("TEXTURED");
 		shader_3d_->loadResourceEntries("default3d.vert", "default3d.frag");
 	}
 	if (!shader_3d_alphatest_)
 	{
 		shader_3d_alphatest_ = std::make_unique<gl::Shader>("map_3d_alphatest");
+		shader_3d_alphatest_->define("TEXTURED");
 		shader_3d_alphatest_->define("ALPHA_TEST");
 		shader_3d_alphatest_->loadResourceEntries("default3d.vert", "default3d.frag");
 	}
-
-	// Set ModelViewProjection matrix uniform from camera
-	auto mvp = camera.projectionMatrix() * camera.viewMatrix();
-	shader_3d_->setUniform("mvp", mvp);
-	shader_3d_alphatest_->setUniform("mvp", mvp);
 
 	// Setup GL stuff
 	glEnable(GL_DEPTH_TEST);
@@ -98,7 +96,23 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	glDepthMask(GL_TRUE);
 	glAlphaFunc(GL_GREATER, 0.0f);
 
+	// Render skybox first (before depth buffer is populated)
+	if (render_3d_sky)
+		skybox_->render(camera, *shader_3d_);
+
+	// Set ModelViewProjection matrix uniform from camera
+	auto mvp = camera.projectionMatrix() * camera.viewMatrix();
+	shader_3d_->setUniform("mvp", mvp);
+	shader_3d_alphatest_->setUniform("mvp", mvp);
+
+	// Update flats and walls
+	updateFlats();
+	updateWalls();
+
+	// Render flats and walls
 	shader_3d_->bind();
+	if (render_3d_sky)
+		renderSkyFlatsQuads(); // Render sky flats and quads first
 	renderFlats();
 	renderWalls();
 
@@ -124,7 +138,7 @@ unsigned MapRenderer3D::quadsBufferSize() const
 	return vb_quads_->buffer().size() * sizeof(gl::Vertex3D);
 }
 
-void MapRenderer3D::renderFlats()
+void MapRenderer3D::updateFlats()
 {
 	// Clear flats to be rebuilt if map geometry has been updated
 	if (map_->geometryUpdated() > flats_updated_)
@@ -203,26 +217,16 @@ void MapRenderer3D::renderFlats()
 			// Add flat group for texture
 			flat_groups_.emplace_back();
 			flat_groups_.back().texture      = flats_[i].texture;
+			flat_groups_.back().sky          = flats_[i].sky;
 			flat_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
 			flat_groups_.back().index_buffer->upload(indices);
 
 			flats_processed[i] = 1;
 		}
 	}
-
-	// Render flats
-	gl::bindVAO(vb_flats_->vao());
-	for (auto& group : flat_groups_)
-	{
-		gl::Texture::bind(group.texture);
-		group.index_buffer->bind();
-		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
-	}
-	gl::bindEBO(0);
-	gl::bindVAO(0);
 }
 
-void MapRenderer3D::renderWalls()
+void MapRenderer3D::updateWalls()
 {
 	using QuadFlags = mapeditor::Quad3D::Flags;
 
@@ -234,7 +238,7 @@ void MapRenderer3D::renderWalls()
 		quad_groups_.clear();
 	}
 
-	// Generate walls if needed
+	// Generate wall quads if needed
 	if (quads_.empty())
 	{
 		unsigned vertex_index = 0;
@@ -287,19 +291,79 @@ void MapRenderer3D::renderWalls()
 			quad_groups_.back().index_buffer->upload(indices);
 			if (quads_[i].hasFlag(QuadFlags::MidTexture))
 				quad_groups_.back().alpha_test = true;
+			if (quads_[i].hasFlag(QuadFlags::Sky))
+				quad_groups_.back().sky = true;
 
 			quads_processed[i] = 1;
 		}
 	}
+}
 
-	// Render wall quads
+void MapRenderer3D::renderSkyFlatsQuads() const
+{
+	gl::Texture::bind(gl::Texture::whiteTexture());
+	shader_3d_->setUniform("colour", glm::vec4(0.0f));
+
+	// Render sky flats
+	gl::bindVAO(vb_flats_->vao());
+	for (auto& group : flat_groups_)
+	{
+		if (!group.sky)
+			continue;
+
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+
+	// Render sky quads
+	gl::bindVAO(vb_quads_->vao());
+	for (auto& group : quad_groups_)
+	{
+		if (!group.sky)
+			continue;
+
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+
+	shader_3d_->setUniform("colour", glm::vec4(1.0f));
+
+	gl::bindEBO(0);
+	gl::bindVAO(0);
+}
+
+void MapRenderer3D::renderFlats() const
+{
+	gl::bindVAO(vb_flats_->vao());
+
+	// Render non-sky flats
+	for (auto& group : flat_groups_)
+	{
+		// Ignore sky quads if sky rendering is enabled
+		if (render_3d_sky && group.sky)
+			continue;
+
+		gl::Texture::bind(group.texture);
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+
+	gl::bindEBO(0);
+	gl::bindVAO(0);
+}
+
+void MapRenderer3D::renderWalls() const
+{
 	gl::bindVAO(vb_quads_->vao());
 
 	// First render non-alpha-tested quads
-	shader_3d_->bind();
 	for (auto& group : quad_groups_)
 	{
 		if (group.alpha_test)
+			continue;
+
+		// Ignore sky quads if sky rendering is enabled
+		if (render_3d_sky && group.sky)
 			continue;
 
 		gl::Texture::bind(group.texture);
@@ -312,6 +376,10 @@ void MapRenderer3D::renderWalls()
 	for (auto& group : quad_groups_)
 	{
 		if (!group.alpha_test)
+			continue;
+
+		// Ignore sky quads if sky rendering is enabled
+		if (render_3d_sky && group.sky)
 			continue;
 
 		gl::Texture::bind(group.texture);

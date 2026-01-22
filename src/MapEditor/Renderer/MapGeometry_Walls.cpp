@@ -84,6 +84,7 @@ struct QuadInfo
 	int                tex_y_origin = 0; // Absolute height to align texture y origin to
 	bool               back_side    = false;
 	bool               midtex       = false; // If true, the quad is clipped to the height of the texture
+	bool               sky          = false;
 };
 } // namespace
 
@@ -129,6 +130,8 @@ static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* si
 	};
 	if (info.midtex)
 		quad.setFlag(Quad3D::Flags::MidTexture);
+	if (info.sky)
+		quad.setFlag(Quad3D::Flags::Sky);
 	context.quads.push_back(quad);
 
 	// Determine vertex positions
@@ -294,6 +297,18 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 		quad_info.height_bottom = std::max(quad_info.tex_y_origin - gl_tex.size.y, quad_info.height_bottom);
 
 		quad_info.midtex = true;
+	}
+
+	// Check for sky quad
+	if (part == MapLine::FrontUpper || part == MapLine::BackUpper)
+	{
+		if (strutil::equalCI(side_back->sector()->ceiling().texture, game::configuration().skyFlat()))
+			quad_info.sky = true;
+	}
+	else if (part == MapLine::FrontLower || part == MapLine::BackLower)
+	{
+		if (strutil::equalCI(side_back->sector()->floor().texture, game::configuration().skyFlat()))
+			quad_info.sky = true;
 	}
 
 	if (line->parentMap()->mapSpecials().sectorHasExtraFloors(side->sector()))

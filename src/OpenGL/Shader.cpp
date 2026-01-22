@@ -559,3 +559,18 @@ void Shader::unbind()
 	glUseProgram(0);
 	current_shader_ = 0;
 }
+
+// -----------------------------------------------------------------------------
+// Returns the currently bound shader (or nullptr if none)
+// -----------------------------------------------------------------------------
+const Shader* Shader::currentShader()
+{
+	if (current_shader_ == 0)
+		return nullptr;
+
+	for (const auto& ls : loaded_shaders)
+		if (ls.shader->id_ == current_shader_)
+			return ls.shader;
+
+	return nullptr;
+}

@@ -162,9 +162,13 @@ static void setupFlat3D(Flat3D& flat, unsigned vertex_index, vector<gl::Vertex3D
 
 	// Texture
 	bool  mix_tex_flats = game::configuration().featureSupported(game::Feature::MixTexFlats);
-	auto& texture       = ceiling ? textureManager().flat(sector.ceiling().texture, mix_tex_flats)
-								  : textureManager().flat(sector.floor().texture, mix_tex_flats);
+	auto  tex_name      = ceiling ? sector.ceiling().texture : sector.floor().texture;
+	auto& texture       = textureManager().flat(tex_name, mix_tex_flats);
 	flat.texture        = texture.gl_id;
+
+	// Sky
+	if (strutil::equalCI(tex_name, game::configuration().skyFlat()))
+		flat.sky = true;
 
 	// Vertices
 	flat.vertex_offset = vertex_index;

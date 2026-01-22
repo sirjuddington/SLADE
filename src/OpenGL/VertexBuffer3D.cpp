@@ -60,6 +60,16 @@ void VertexBuffer3D::add(const glm::vec3& position, const glm::vec2& uv)
 	vertices_.emplace_back(position, uv);
 }
 
+void VertexBuffer3D::addQuad(const Vertex3D& tl, const Vertex3D& tr, const Vertex3D& bl, const Vertex3D& br)
+{
+	vertices_.push_back(tl);
+	vertices_.push_back(bl);
+	vertices_.push_back(br);
+	vertices_.push_back(tl);
+	vertices_.push_back(br);
+	vertices_.push_back(tr);
+}
+
 void VertexBuffer3D::push()
 {
 	if (!getContext())
