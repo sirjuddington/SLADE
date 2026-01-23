@@ -48,8 +48,6 @@
 #include "SLADEMap/SLADEMap.h"
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Window/Mouse.hpp>
 
 using namespace slade;
 using namespace mapeditor;
@@ -142,8 +140,9 @@ void MapCanvas::lockMouse(bool lock)
 	if (lock)
 	{
 		// Save current mouse position
-		mouse_locked_pos_.x = sf::Mouse::getPosition().x;
-		mouse_locked_pos_.y = sf::Mouse::getPosition().y;
+		auto mouse_pos      = ScreenToClient(wxGetMousePosition());
+		mouse_locked_pos_.x = mouse_pos.x;
+		mouse_locked_pos_.y = mouse_pos.y;
 
 		// Center mouse
 		mouseToCenter();
@@ -153,8 +152,6 @@ void MapCanvas::lockMouse(bool lock)
 		img.SetMask(true);
 		img.SetMaskColour(0, 0, 0);
 		SetCursor(wxCursor(img));
-
-		log::info("Mouse locked, cursor was at ({}, {})", mouse_locked_pos_.x, mouse_locked_pos_.y);
 	}
 	else
 	{
@@ -164,8 +161,7 @@ void MapCanvas::lockMouse(bool lock)
 		// Move mouse back to original position (if it was initially moved to lock)
 		if (mouse_locked_pos_.x != -1 && mouse_locked_pos_.y != -1)
 		{
-			log::info("Mouse unlocked, moving cursor back to ({}, {})", mouse_locked_pos_.x, mouse_locked_pos_.y);
-			sf::Mouse::setPosition(sf::Vector2i(mouse_locked_pos_.x, mouse_locked_pos_.y));
+			WarpPointer(mouse_locked_pos_.x, mouse_locked_pos_.y);
 			mouse_locked_pos_ = { -1, -1 };
 		}
 	}
@@ -177,7 +173,7 @@ void MapCanvas::lockMouse(bool lock)
 void MapCanvas::mouseLook3d()
 {
 	// Check for 3d mode
-	if (context_->editMode() != Mode::Visual /* || !context_->mouseLocked()*/)
+	if (context_->editMode() != Mode::Visual)
 		return;
 
 	auto overlay_current = context_->currentOverlay();
@@ -258,7 +254,7 @@ void MapCanvas::onKeyBindPress(string_view name)
 void MapCanvas::update()
 {
 	// Handle 3d mode mouselook
-	if (mouse_looking_)
+	if (context_->input().mouseState() == Input::MouseState::MouseLook)
 		mouseLook3d();
 
 	// Get time since last redraw
@@ -410,15 +406,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	else if (e.RightDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Right, x, y, true);
 	else if (e.MiddleDown())
-	{
-		if (context_->editMode() == Mode::Visual)
-		{
-			lockMouse(true);
-			mouse_looking_ = true;
-		}
-		else
-			skip = context_->input().mouseDown(Input::MouseButton::Middle, x, y);
-	}
+		skip = context_->input().mouseDown(Input::MouseButton::Middle, x, y);
 	else if (e.MiddleDClick())
 		skip = context_->input().mouseDown(Input::MouseButton::Middle, x, y, true);
 	else if (e.Aux1Down())
@@ -454,15 +442,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 	else if (e.RightUp())
 		skip = context_->input().mouseUp(Input::MouseButton::Right);
 	else if (e.MiddleUp())
-	{
-		if (context_->editMode() == Mode::Visual)
-		{
-			lockMouse(false);
-			mouse_looking_ = false;
-		}
-		else
-			skip = context_->input().mouseUp(Input::MouseButton::Middle);
-	}
+		skip = context_->input().mouseUp(Input::MouseButton::Middle);
 	else if (e.Aux1Up())
 		skip = context_->input().mouseUp(Input::MouseButton::Mouse4);
 	else if (e.Aux2Up())
@@ -561,11 +541,6 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 // -----------------------------------------------------------------------------
 void MapCanvas::onFocus(wxFocusEvent& e)
 {
-	if (e.GetEventType() == wxEVT_SET_FOCUS)
-	{
-		// if (context_->editMode() == Mode::Visual)
-		//	context_->lockMouse(true);
-	}
-	else if (e.GetEventType() == wxEVT_KILL_FOCUS)
+	if (e.GetEventType() == wxEVT_KILL_FOCUS)
 		context_->lockMouse(false);
 }

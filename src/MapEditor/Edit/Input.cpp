@@ -45,6 +45,7 @@
 #include "MapEditor/Renderer/MapRenderer3D.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/Renderer/Renderer.h"
+#include "MapEditor/UI/MapCanvas.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/UI/ObjectEditPanel.h"
 #include "MoveObjects.h"
@@ -196,6 +197,15 @@ bool Input::mouseMove(int new_x, int new_y)
 		context_->renderer().forceUpdate(true, false);
 	}
 
+	// Check if we want to start mouselook
+	if (mouse_drag_ == DragType::MouseLook
+		&& glm::length(Vec2d(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y)) > 4)
+	{
+		mouse_state_ = MouseState::MouseLook;
+		mouse_drag_  = DragType::None;
+		context_->canvas()->lockMouse(true);
+	}
+
 	// Check if we are in thing quick angle state
 	if (mouse_state_ == MouseState::ThingAngle)
 		context_->edit2D().thingQuickAngle(mouse_pos_map_);
@@ -339,16 +349,8 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 		// 3d mode
 		if (context_->editMode() == Mode::Visual)
 		{
-			// Get selection or hilight
-			auto sel = context_->selection().selectionOrHilight();
-			if (!sel.empty())
-			{
-				// Check type
-				if (sel[0].type == ItemType::Thing)
-					context_->edit2D().changeThingType();
-				else
-					context_->edit3D().changeTexture();
-			}
+			// Begin mouselook on drag
+			mouse_drag_ = DragType::MouseLook;
 		}
 
 		// Remove line draw point if in line drawing state
@@ -438,6 +440,13 @@ bool Input::mouseUp(MouseButton button)
 		// Paste state, cancel paste
 		else if (mouse_state_ == MouseState::Paste)
 			mouse_state_ = MouseState::Normal;
+
+		// Mouselook state, unlock mouse cursor
+		else if (mouse_state_ == MouseState::MouseLook)
+		{
+			context_->canvas()->lockMouse(false);
+			mouse_state_ = MouseState::Normal;
+		}
 
 		else if (mouse_state_ == MouseState::Normal)
 			mapeditor::openContextMenu();

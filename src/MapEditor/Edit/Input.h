@@ -26,14 +26,16 @@ public:
 		ObjectEdit,
 		Paste,
 		TagSectors,
-		TagThings
+		TagThings,
+		MouseLook
 	};
 
 	enum class DragType
 	{
 		None,
 		Selection,
-		Move
+		Move,
+		MouseLook
 	};
 
 	enum MouseButton
