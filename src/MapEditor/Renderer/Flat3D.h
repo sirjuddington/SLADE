@@ -6,6 +6,13 @@ namespace slade::mapeditor
 {
 struct Flat3D
 {
+	enum class Flags : u8
+	{
+		None       = 0,
+		Sky        = 1 << 0,
+		ExtraFloor = 1 << 1,
+	};
+
 	// Origin
 	const MapSector*  sector         = nullptr; // For sector geometry (vertices/polygon)
 	const MapSector*  control_sector = nullptr; // For height, texture and colour info (if nullptr use sector)
@@ -21,7 +28,7 @@ struct Flat3D
 	glm::vec4 colour  = glm::vec4{ 1.0f };
 	glm::vec3 normal  = glm::vec3{ 0.0f, 0.0f, 1.0f };
 	unsigned  texture = 0;
-	bool      sky     = false;
+	u8        flags   = 0;
 
 	long updated_time = 0;
 
@@ -48,5 +55,7 @@ struct Flat3D
 	}
 
 	const MapSector* controlSector() const { return control_sector ? control_sector : sector; }
+	bool             hasFlag(Flags flag) const { return flags & static_cast<u8>(flag); }
+	void             setFlag(Flags flag) { flags |= static_cast<u8>(flag); }
 };
 } // namespace slade::mapeditor

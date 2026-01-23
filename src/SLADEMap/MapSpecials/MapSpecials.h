@@ -18,13 +18,13 @@ public:
 	bool                      sectorHasExtraFloors(const MapSector* sector) const;
 
 	void processAllSpecials();
-	void processLineSpecial(const MapLine& line);
-	void processThing(const MapThing& thing);
+	void processLineSpecial(const MapLine& line) const;
+	void processThing(const MapThing& thing) const;
 
-	void lineUpdated(const MapLine& line);
-	void sectorUpdated(MapSector& sector);
-	void thingUpdated(const MapThing& thing);
-	void objectUpdated(MapObject& object);
+	void lineUpdated(const MapLine& line) const;
+	void sectorUpdated(MapSector& sector) const;
+	void thingUpdated(const MapThing& thing) const;
+	void objectUpdated(MapObject& object) const;
 	void objectsUpdated(const vector<MapObject*>& objects);
 
 private:

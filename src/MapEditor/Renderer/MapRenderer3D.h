@@ -76,7 +76,7 @@ private:
 	void updateWalls();
 
 	void renderSkyFlatsQuads() const;
-	void renderFlats() const;
-	void renderWalls() const;
+	void renderFlats(bool alpha_tested = false) const;
+	void renderWalls(bool alpha_tested = false) const;
 };
 } // namespace slade

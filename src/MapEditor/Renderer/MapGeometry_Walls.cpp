@@ -41,6 +41,7 @@
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapSpecials/ExtraFloor.h"
 #include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 
@@ -176,6 +177,45 @@ static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* si
 	context.vertices.emplace_back(info.br);
 	context.vertices.emplace_back(info.tr);
 	context.vertex_index += 6;
+}
+
+void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, bool front)
+{
+	// Setup base quad info
+	auto&    texture = textureManager().texture(ef.control_line->s1()->texMiddle(), context.mix_tex_flats);
+	auto&    gl_tex  = gl::Texture::info(texture.gl_id);
+	QuadInfo quad_info{
+		.line          = context.line,
+		.height_top    = ef.height,
+		.plane_top     = ef.plane_top,
+		.height_bottom = ef.control_sector->floor().height, // TODO: Vavoom
+		.plane_bottom  = ef.plane_bottom,
+		.texture       = &texture,
+		.gl_texture    = &gl_tex,
+		.offsets       = { 0, 0 },
+		.line_length   = static_cast<int>(context.line->length()),
+		.tex_y_origin  = ef.height,
+		.back_side     = front, // Show on back side of line if extrafloor is on front
+	};
+
+	auto side = front ? context.line->s2() : context.line->s1();
+
+	// Skip if the quad is completely below the floor
+	if (quad_info.plane_top.heightAt(context.line->start())
+			<= side->sector()->floor().plane.heightAt(context.line->start())
+		&& quad_info.plane_top.heightAt(context.line->end())
+			   <= side->sector()->floor().plane.heightAt(context.line->end()))
+		return;
+
+	// Skip if the quad is completely above the ceiling
+	if (quad_info.plane_bottom.heightAt(context.line->start())
+			>= side->sector()->ceiling().plane.heightAt(context.line->start())
+		&& quad_info.plane_bottom.heightAt(context.line->end())
+			   >= side->sector()->ceiling().plane.heightAt(context.line->end()))
+		return;
+
+	// Add quad
+	addQuad(context, quad_info, nullptr, glm::vec4{ 1.0f });
 }
 
 void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
@@ -314,6 +354,8 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 	if (line->parentMap()->mapSpecials().sectorHasExtraFloors(side->sector()))
 	{
 		// TODO: Split quad by extrafloors
+		auto light = side->light() / 255.0f;
+		addQuad(context, quad_info, side, { light, light, light, 1.0f });
 	}
 	else
 	{
@@ -329,7 +371,8 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 		return { {}, {} };
 
 	// Setup context for generating line quads
-	auto             map_format = line.parentMap()->currentFormat();
+	auto             map        = line.parentMap();
+	auto             map_format = map->currentFormat();
 	auto&            game_cfg   = game::configuration();
 	LineQuadsContext context{ .line           = &line,
 							  .vertex_index   = vertex_index,
@@ -358,10 +401,10 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 			buildWallPartQuads(context, MapLine::FrontUpper);
 		else if (sector1->ceilingHasSlope() || sector2->ceilingHasSlope())
 		{
-			auto height_s1_start = sector1->ceiling().plane.heightAt(line.x1(), line.y1());
-			auto height_s1_end   = sector1->ceiling().plane.heightAt(line.x2(), line.y2());
-			auto height_s2_start = sector2->ceiling().plane.heightAt(line.x1(), line.y1());
-			auto height_s2_end   = sector2->ceiling().plane.heightAt(line.x2(), line.y2());
+			auto height_s1_start = sector1->ceiling().plane.heightAt(line.start());
+			auto height_s1_end   = sector1->ceiling().plane.heightAt(line.end());
+			auto height_s2_start = sector2->ceiling().plane.heightAt(line.start());
+			auto height_s2_end   = sector2->ceiling().plane.heightAt(line.end());
 			if (height_s1_start > height_s2_start || height_s1_end > height_s2_end)
 				buildWallPartQuads(context, MapLine::FrontUpper);
 		}
@@ -371,10 +414,10 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 			buildWallPartQuads(context, MapLine::FrontLower);
 		else if (sector1->floorHasSlope() || sector2->floorHasSlope())
 		{
-			auto height_s1_start = sector1->floor().plane.heightAt(line.x1(), line.y1());
-			auto height_s1_end   = sector1->floor().plane.heightAt(line.x2(), line.y2());
-			auto height_s2_start = sector2->floor().plane.heightAt(line.x1(), line.y1());
-			auto height_s2_end   = sector2->floor().plane.heightAt(line.x2(), line.y2());
+			auto height_s1_start = sector1->floor().plane.heightAt(line.start());
+			auto height_s1_end   = sector1->floor().plane.heightAt(line.end());
+			auto height_s2_start = sector2->floor().plane.heightAt(line.start());
+			auto height_s2_end   = sector2->floor().plane.heightAt(line.end());
 			if (height_s1_start < height_s2_start || height_s1_end < height_s2_end)
 				buildWallPartQuads(context, MapLine::FrontLower);
 		}
@@ -388,10 +431,10 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 			buildWallPartQuads(context, MapLine::BackUpper);
 		else if (sector1->ceilingHasSlope() || sector2->ceilingHasSlope())
 		{
-			auto height_s1_start = sector1->ceiling().plane.heightAt(line.x1(), line.y1());
-			auto height_s1_end   = sector1->ceiling().plane.heightAt(line.x2(), line.y2());
-			auto height_s2_start = sector2->ceiling().plane.heightAt(line.x1(), line.y1());
-			auto height_s2_end   = sector2->ceiling().plane.heightAt(line.x2(), line.y2());
+			auto height_s1_start = sector1->ceiling().plane.heightAt(line.start());
+			auto height_s1_end   = sector1->ceiling().plane.heightAt(line.end());
+			auto height_s2_start = sector2->ceiling().plane.heightAt(line.start());
+			auto height_s2_end   = sector2->ceiling().plane.heightAt(line.end());
 			if (height_s2_start > height_s1_start || height_s2_end > height_s1_end)
 				buildWallPartQuads(context, MapLine::BackUpper);
 		}
@@ -401,12 +444,60 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 			buildWallPartQuads(context, MapLine::BackLower);
 		else if (sector1->floorHasSlope() || sector2->floorHasSlope())
 		{
-			auto height_s1_start = sector1->floor().plane.heightAt(line.x1(), line.y1());
-			auto height_s1_end   = sector1->floor().plane.heightAt(line.x2(), line.y2());
-			auto height_s2_start = sector2->floor().plane.heightAt(line.x1(), line.y1());
-			auto height_s2_end   = sector2->floor().plane.heightAt(line.x2(), line.y2());
+			auto height_s1_start = sector1->floor().plane.heightAt(line.start());
+			auto height_s1_end   = sector1->floor().plane.heightAt(line.end());
+			auto height_s2_start = sector2->floor().plane.heightAt(line.start());
+			auto height_s2_end   = sector2->floor().plane.heightAt(line.end());
 			if (height_s2_start < height_s1_start || height_s2_end < height_s1_end)
 				buildWallPartQuads(context, MapLine::BackLower);
+		}
+
+		// ExtraFloor sides
+		auto& ef_front = map->mapSpecials().sectorExtraFloors(sector1);
+		auto& ef_back  = map->mapSpecials().sectorExtraFloors(sector2);
+		if (!ef_front.empty() || !ef_back.empty())
+		{
+			// Front side ExtraFloors
+			for (auto& ef : ef_front)
+			{
+				// Ignore flat ExtraFloors
+				if (ef.hasFlag(ExtraFloor::Flags::FlatAtCeiling))
+					continue;
+
+				// Ignore if the same ExtraFloor exists on back side
+				bool found = false;
+				for (auto& efb : ef_back)
+					if (efb.control_sector == ef.control_sector)
+					{
+						found = true;
+						break;
+					}
+				if (found)
+					continue;
+
+				buildWallExtraFloorQuads(context, ef, true);
+			}
+
+			// Back side ExtraFloors
+			for (auto& ef : ef_back)
+			{
+				// Ignore flat ExtraFloors
+				if (ef.hasFlag(ExtraFloor::Flags::FlatAtCeiling))
+					continue;
+
+				// Ignore if the same ExtraFloor exists on front side
+				bool found = false;
+				for (auto& eff : ef_front)
+					if (eff.control_sector == ef.control_sector)
+					{
+						found = true;
+						break;
+					}
+				if (found)
+					continue;
+
+				buildWallExtraFloorQuads(context, ef, false);
+			}
 		}
 	}
 

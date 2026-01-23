@@ -114,12 +114,17 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	updateFlats();
 	updateWalls();
 
-	// Render flats and walls
+	// Render sky flats/quads first if needed
 	shader_3d_->bind();
 	if (render_3d_sky)
-		renderSkyFlatsQuads(); // Render sky flats and quads first
-	renderFlats();
-	renderWalls();
+		renderSkyFlatsQuads();
+
+	// Render flats and walls (normal first, then alpha-tested)
+	renderFlats(false);
+	renderWalls(false);
+	shader_3d_alphatest_->bind();
+	renderFlats(true);
+	renderWalls(true);
 
 	// Cleanup gl state
 	glDisable(GL_ALPHA_TEST);
@@ -202,13 +207,17 @@ void MapRenderer3D::updateFlats()
 			if (flats_processed[i])
 				continue;
 
-			// Build list of vertex indices for flats using this texture
+			// Build list of vertex indices for flats with this texture+flags
 			vector<GLuint> indices;
 			for (unsigned f = i; f < flats_.size(); ++f)
 			{
 				// Check texture match
 				auto& flat = flats_[f];
 				if (flats_processed[f] || flat.texture != flats_[i].texture)
+					continue;
+
+				// Check flags
+				if (flat.flags != flats_[i].flags)
 					continue;
 
 				// Add indices
@@ -222,7 +231,8 @@ void MapRenderer3D::updateFlats()
 			// Add flat group for texture
 			flat_groups_.emplace_back();
 			flat_groups_.back().texture      = flats_[i].texture;
-			flat_groups_.back().sky          = flats_[i].sky;
+			flat_groups_.back().sky          = flats_[i].hasFlag(mapeditor::Flat3D::Flags::Sky);
+			flat_groups_.back().alpha_test   = flats_[i].hasFlag(mapeditor::Flat3D::Flags::ExtraFloor);
 			flat_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
 			flat_groups_.back().index_buffer->upload(indices);
 
@@ -292,12 +302,10 @@ void MapRenderer3D::updateWalls()
 			// Add quad group for texture
 			quad_groups_.emplace_back();
 			quad_groups_.back().texture      = quads_[i].texture;
+			quad_groups_.back().alpha_test   = quads_[i].hasFlag(QuadFlags::MidTexture);
+			quad_groups_.back().sky          = quads_[i].hasFlag(QuadFlags::Sky);
 			quad_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
 			quad_groups_.back().index_buffer->upload(indices);
-			if (quads_[i].hasFlag(QuadFlags::MidTexture))
-				quad_groups_.back().alpha_test = true;
-			if (quads_[i].hasFlag(QuadFlags::Sky))
-				quad_groups_.back().sky = true;
 
 			quads_processed[i] = 1;
 		}
@@ -337,14 +345,16 @@ void MapRenderer3D::renderSkyFlatsQuads() const
 	gl::bindVAO(0);
 }
 
-void MapRenderer3D::renderFlats() const
+void MapRenderer3D::renderFlats(bool alpha_tested) const
 {
 	gl::bindVAO(vb_flats_->vao());
 
-	// Render non-sky flats
 	for (auto& group : flat_groups_)
 	{
-		// Ignore sky quads if sky rendering is enabled
+		if (group.alpha_test != alpha_tested)
+			continue;
+
+		// Ignore sky flats if sky rendering is enabled
 		if (render_3d_sky && group.sky)
 			continue;
 
@@ -357,30 +367,14 @@ void MapRenderer3D::renderFlats() const
 	gl::bindVAO(0);
 }
 
-void MapRenderer3D::renderWalls() const
+void MapRenderer3D::renderWalls(bool alpha_tested) const
 {
 	gl::bindVAO(vb_quads_->vao());
 
 	// First render non-alpha-tested quads
 	for (auto& group : quad_groups_)
 	{
-		if (group.alpha_test)
-			continue;
-
-		// Ignore sky quads if sky rendering is enabled
-		if (render_3d_sky && group.sky)
-			continue;
-
-		gl::Texture::bind(group.texture);
-		group.index_buffer->bind();
-		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
-	}
-
-	// Then render alpha-tested quads
-	shader_3d_alphatest_->bind();
-	for (auto& group : quad_groups_)
-	{
-		if (!group.alpha_test)
+		if (group.alpha_test != alpha_tested)
 			continue;
 
 		// Ignore sky quads if sky rendering is enabled

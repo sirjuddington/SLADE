@@ -89,37 +89,36 @@ void MapSpecials::processAllSpecials()
 {
 	// Clear existing specials
 	slope_specials_->clearSpecials();
+	extrafloor_specials_->clearSpecials();
 
 	// Process all line specials
 	for (const auto line : map_->lines())
-	{
 		processLineSpecial(*line);
-		slope_specials_->processLineSpecial(*line);
-	}
 
 	// Process all things
 	for (const auto thing : map_->things())
-	{
 		processThing(*thing);
-		slope_specials_->processThing(*thing);
-	}
 
 	// Update planes for all sectors
 	for (const auto sector : map_->sectors())
+	{
 		slope_specials_->updateSectorPlanes(*sector);
+		extrafloor_specials_->updateSectorExtraFloors(sector);
+	}
 }
 
-void MapSpecials::processLineSpecial(const MapLine& line)
+void MapSpecials::processLineSpecial(const MapLine& line) const
 {
 	slope_specials_->processLineSpecial(line);
+	extrafloor_specials_->processLineSpecial(line);
 }
 
-void MapSpecials::processThing(const MapThing& thing)
+void MapSpecials::processThing(const MapThing& thing) const
 {
 	slope_specials_->processThing(thing);
 }
 
-void MapSpecials::lineUpdated(const MapLine& line)
+void MapSpecials::lineUpdated(const MapLine& line) const
 {
 	// Update slope specials
 	slope_specials_->lineUpdated(line, !bulk_update_);
@@ -128,13 +127,13 @@ void MapSpecials::lineUpdated(const MapLine& line)
 	processLineSpecial(line);
 }
 
-void MapSpecials::sectorUpdated(MapSector& sector)
+void MapSpecials::sectorUpdated(MapSector& sector) const
 {
 	// Update slope specials
 	slope_specials_->sectorUpdated(sector, !bulk_update_);
 }
 
-void MapSpecials::thingUpdated(const MapThing& thing)
+void MapSpecials::thingUpdated(const MapThing& thing) const
 {
 	// Update slope specials
 	slope_specials_->thingUpdated(thing, !bulk_update_);
@@ -143,7 +142,7 @@ void MapSpecials::thingUpdated(const MapThing& thing)
 	processThing(thing);
 }
 
-void MapSpecials::objectUpdated(MapObject& object)
+void MapSpecials::objectUpdated(MapObject& object) const
 {
 	switch (object.objType())
 	{

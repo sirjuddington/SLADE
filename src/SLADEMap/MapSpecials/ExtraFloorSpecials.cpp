@@ -32,7 +32,9 @@
 #include "Main.h"
 #include "ExtraFloorSpecials.h"
 #include "ExtraFloor.h"
+#include "Game/Configuration.h"
 #include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"
 
@@ -61,31 +63,57 @@ const vector<ExtraFloor>& ExtraFloorSpecials::extraFloors(const MapSector* secto
 
 void ExtraFloorSpecials::processLineSpecial(const MapLine& line)
 {
-	// Sector_Set3dFloor
-	// TODO: game/port check
-	if (line.special() == 160)
-		addSet3dFloorSpecial(line);
+	// ZDoom
+	if (game::configuration().currentPort() == "zdoom")
+	{
+		// Sector_Set3dFloor
+		if (line.special() == 160)
+			addSet3dFloorSpecial(line);
+	}
 }
 
-void ExtraFloorSpecials::addExtraFloor(const MapSector* sector, const ExtraFloor& extra_floor)
+void ExtraFloorSpecials::clearSpecials()
 {
+	sector_extra_floors_.clear();
+	set_3d_floor_specials_.clear();
+}
+
+void ExtraFloorSpecials::updateSectorExtraFloors(const MapSector* sector)
+{
+	clearExtraFloors(sector);
+
+	SectorExtraFloors sef{ .sector = sector };
+
+	for (const auto& special : set_3d_floor_specials_)
+		if (special.target == sector)
+			applySet3dFloorSpecial(special, sef);
+
+	if (!sef.extra_floors.empty())
+		sector_extra_floors_.push_back(sef);
+}
+
+ExtraFloorSpecials::SectorExtraFloors* ExtraFloorSpecials::getSectorExtraFloors(const MapSector* sector)
+{
+	// Find existing extra floors for this sector
 	if (auto it = std::ranges::find_if(
 			sector_extra_floors_, [sector](const auto& sef) { return sef.sector == sector; });
 		it == sector_extra_floors_.end())
 	{
-		SectorExtraFloors sef;
-		sef.sector       = sector;
-		sef.extra_floors = { extra_floor };
-		sector_extra_floors_.push_back(sef);
+		// No existing extra floors, create new entry
+		sector_extra_floors_.emplace_back(sector);
+		return &sector_extra_floors_.back();
 	}
 	else
-	{
-		it->extra_floors.push_back(extra_floor);
+		return &(*it);
+}
 
-		// Sort extra floors by height (top-down)
-		std::ranges::sort(
-			it->extra_floors, [](const ExtraFloor& a, const ExtraFloor& b) { return a.height > b.height; });
-	}
+void ExtraFloorSpecials::addExtraFloor(const MapSector* sector, const ExtraFloor& extra_floor)
+{
+	auto sef = getSectorExtraFloors(sector);
+	sef->extra_floors.push_back(extra_floor);
+
+	// Sort extra floors by height (top-down)
+	std::ranges::sort(sef->extra_floors, [](const ExtraFloor& a, const ExtraFloor& b) { return a.height > b.height; });
 }
 
 void ExtraFloorSpecials::clearExtraFloors(const MapSector* sector)
@@ -93,7 +121,7 @@ void ExtraFloorSpecials::clearExtraFloors(const MapSector* sector)
 	if (auto it = std::ranges::find_if(
 			sector_extra_floors_, [sector](const auto& sef) { return sef.sector == sector; });
 		it != sector_extra_floors_.end())
-		sector_extra_floors_.erase(it);
+		it->extra_floors.clear();
 }
 
 void ExtraFloorSpecials::addSet3dFloorSpecial(const MapLine& line)
@@ -106,15 +134,72 @@ void ExtraFloorSpecials::addSet3dFloorSpecial(const MapLine& line)
 		return;
 	}
 
+	auto tag          = line.arg(0);
+	auto type         = line.arg(1);
+	auto flags        = line.arg(2);
+	auto alpha        = line.arg(3);
+	auto tag_highbyte = line.arg(4); // TODO: Apply to tag if needed
+
 	// Get all tagged sectors
 	vector<MapSector*> target_sectors;
-	map_->sectors().putAllWithId(line.arg(0), target_sectors);
+	map_->sectors().putAllWithId(tag, target_sectors);
 
 	for (auto sector : target_sectors)
 	{
-		Set3dFloorSpecial s3fs;
-		s3fs.target         = sector;
-		s3fs.control_sector = control_sector;
-		s3fs.line           = &line;
+		set_3d_floor_specials_.push_back(
+			{ .line           = &line,
+			  .target         = sector,
+			  .control_sector = control_sector,
+			  .type           = static_cast<Set3dFloorSpecial::Type>(type & 0x3),
+			  .render_inside  = type & 0x4 || (type & 0x3) == 2,
+			  .flags          = static_cast<u16>(flags),
+			  .alpha          = alpha / 255.0f });
 	}
+}
+
+void ExtraFloorSpecials::applySet3dFloorSpecial(
+	const Set3dFloorSpecial& special,
+	SectorExtraFloors&       sector_extra_floors)
+{
+	ExtraFloor ef;
+	ef.control_line   = special.line;
+	ef.control_sector = special.control_sector;
+	// ef.render_inside  = special.render_inside;
+	// ef.flags          = special.flags;
+	ef.alpha = special.alpha;
+
+	if (special.type == Set3dFloorSpecial::Type::Vavoom)
+	{
+		ef.plane_top    = special.control_sector->floor().plane;
+		ef.plane_bottom = special.control_sector->ceiling().plane;
+		ef.height       = special.control_sector->floor().height;
+		ef.setFlag(ExtraFloor::Flags::Flipped);
+	}
+	else
+	{
+		ef.plane_top    = special.control_sector->ceiling().plane;
+		ef.plane_bottom = special.control_sector->floor().plane;
+		ef.height       = special.control_sector->ceiling().height;
+	}
+
+	if (special.hasFlag(Set3dFloorSpecial::Flags::DisableLighting))
+		ef.setFlag(ExtraFloor::Flags::DisableLighting);
+	if (special.hasFlag(Set3dFloorSpecial::Flags::LightingInsideOnly))
+		ef.setFlag(ExtraFloor::Flags::LightingInsideOnly);
+	if (special.hasFlag(Set3dFloorSpecial::Flags::Fog))
+		ef.setFlag(ExtraFloor::Flags::InnerFogEffect);
+	if (special.hasFlag(Set3dFloorSpecial::Flags::FloorAtCeiling))
+		ef.setFlag(ExtraFloor::Flags::FlatAtCeiling);
+	if (special.hasFlag(Set3dFloorSpecial::Flags::UseUpperTexture))
+		ef.setFlag(ExtraFloor::Flags::UseUpperTexture);
+	if (special.hasFlag(Set3dFloorSpecial::Flags::UseLowerTexture))
+		ef.setFlag(ExtraFloor::Flags::UseLowerTexture);
+	if (special.hasFlag(Set3dFloorSpecial::Flags::TransAdd))
+		ef.setFlag(ExtraFloor::Flags::AdditiveTransparency);
+	if (special.render_inside)
+		ef.setFlag(ExtraFloor::Flags::DrawInside);
+	// if (special.type == Set3dFloorSpecial::Type::Solid || special.type == Set3dFloorSpecial::Type::Vavoom)
+	//	ef.setFlag(ExtraFloor::Flags::Solid);
+
+	sector_extra_floors.extra_floors.push_back(ef);
 }

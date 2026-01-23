@@ -24,13 +24,13 @@ struct ExtraFloor
 		Flipped = 1 << 9,
 	};
 
-	int        height         = 0; // Ceiling height of the control sector, used for sorting
-	Plane      plane_top      = { 0., 0., 1., 0. };
-	Plane      plane_bottom   = { 0., 0., 1., 0. };
-	MapSector* control_sector = nullptr;
-	MapLine*   control_line   = nullptr;
-	u8         flags          = 0;
-	float      alpha          = 1.0f;
+	int              height         = 0; // Ceiling height of the control sector, used for sorting
+	Plane            plane_top      = { 0., 0., 1., 0. };
+	Plane            plane_bottom   = { 0., 0., 1., 0. };
+	const MapSector* control_sector = nullptr;
+	const MapLine*   control_line   = nullptr;
+	u16              flags          = 0;
+	float            alpha          = 1.0f;
 
 	bool hasFlag(Flags flag) const { return flags & static_cast<u16>(flag); }
 	void setFlag(Flags flag) { flags |= static_cast<u16>(flag); }
