@@ -2,6 +2,8 @@
 
 namespace slade::map
 {
+enum class SidePart : u8;
+enum class SectorPart : u8;
 class SlopeSpecials;
 class ExtraFloorSpecials;
 struct ExtraFloor;
@@ -14,12 +16,14 @@ public:
 
 	SlopeSpecials&            slopeSpecials() const { return *slope_specials_; }
 	ExtraFloorSpecials&       extraFloorSpecials() const { return *extrafloor_specials_; }
+
 	const vector<ExtraFloor>& sectorExtraFloors(const MapSector* sector) const;
 	bool                      sectorHasExtraFloors(const MapSector* sector) const;
+	ColRGBA                   sectorColour(const MapSector& sector, SectorPart where, bool fullbright = false) const;
 
-	void processAllSpecials();
-	void processLineSpecial(const MapLine& line) const;
-	void processThing(const MapThing& thing) const;
+	ColRGBA sideColour(const MapSide& side, SidePart where, bool fullbright = false) const;
+
+	void processAllSpecials() const;
 
 	void lineUpdated(const MapLine& line) const;
 	void sectorUpdated(MapSector& sector) const;
@@ -32,5 +36,8 @@ private:
 	bool                           bulk_update_ = false;
 	unique_ptr<SlopeSpecials>      slope_specials_;
 	unique_ptr<ExtraFloorSpecials> extrafloor_specials_;
+
+	void processLineSpecial(const MapLine& line) const;
+	void processThing(const MapThing& thing) const;
 };
 } // namespace slade::map

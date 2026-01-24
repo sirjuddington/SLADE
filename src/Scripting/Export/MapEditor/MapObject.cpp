@@ -7,6 +7,7 @@
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Scripting/Export/Export.h"
 #include "Scripting/LuaBridge.h"
@@ -173,7 +174,9 @@ void registerMapSector(lua_State* lua)
 	lua_sector.addProperty("special", &MapSector::special);
 	lua_sector.addProperty("id", &MapSector::id);
 	lua_sector.addProperty("connectedSides", [](MapSector& self) { return self.connectedSides(); });
-	lua_sector.addProperty("colour", [](MapSector& self) { return self.colourAt(); });
+	lua_sector.addProperty(
+		"colour",
+		[](MapSector& self) { return self.parentMap()->mapSpecials().sectorColour(self, map::SectorPart::Interior); });
 	lua_sector.addProperty("fogColour", [](MapSector& self) { return self.fogColour(); });
 	lua_sector.addProperty("planeFloor", [](MapSector& self) { return self.floor().plane; });
 	lua_sector.addProperty("planeCeiling", [](MapSector& self) { return self.ceiling().plane; });

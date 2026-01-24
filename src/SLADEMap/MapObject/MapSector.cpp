@@ -590,77 +590,47 @@ bool MapSector::putVertices(vector<MapObject*>& list) const
 }
 
 // -----------------------------------------------------------------------------
-// Returns the light level of the sector at [where] - 1 = floor, 2 = ceiling
+// Returns the light level of the sector at [where]
 // -----------------------------------------------------------------------------
-uint8_t MapSector::lightAt(int where, int extra_floor_index) const
+uint8_t MapSector::lightAt(SectorPart where) const
 {
+	int light = light_;
+
 	// Check for UDMF + flat lighting
-	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting))
+	if (parent_map_->currentFormat() == MapFormat::UDMF)
 	{
-		// 3D floors cast their light downwards to the next floor down, so we
-		// need to know which floor this plane is below.
-		// The floor plane is on the bottom of the 3D floor, so no change is
-		// necessary -- unless we're being asked for the light of the sector
-		// itself, which is below the bottommost floor.
-		// Ceilings are below the next 3D floor up, so subtract 1.
-		/*int floor_gap = extra_floor_index;
-		if (where == 2)
-			floor_gap--;
-		else if (where == 1 && floor_gap < 0)
-			floor_gap = extra_floors_.size() - 1;
-		auto* control_sector = this;
-		if (floor_gap >= 0 && floor_gap < extra_floors_.size() && !extra_floors_[floor_gap].disableLighting()
-			&& !extra_floors_[floor_gap].lightingInsideOnly())
-		{
-			control_sector = parent_map_->sector(extra_floors_[floor_gap].control_sector_index);
-		}*/
-
-		// Get general light level
-		int l = /*control_sector*/ this->lightLevel();
-
-		// Get specific light level
-		// TODO unclear how 3D floors work here -- what wins? what sector does it come from?
-		if (where == 1)
+		// Apply flat lighting (if supported and specified)
+		if (game::configuration().featureSupported(game::UDMFFeature::FlatLighting))
 		{
 			// Floor
-			int fl = intProperty("lightfloor");
-			if (boolProperty("lightfloorabsolute"))
-				l = fl;
-			else
-				l += fl;
-		}
-		else if (where == 2)
-		{
+			if (where == SectorPart::Floor && hasProp("lightfloor"))
+			{
+				int fl = intProperty("lightfloor");
+				if (boolProperty("lightfloorabsolute"))
+					light = fl;
+				else
+					light += fl;
+			}
 			// Ceiling
-			int cl = intProperty("lightceiling");
-			if (boolProperty("lightceilingabsolute"))
-				l = cl;
-			else
-				l += cl;
+			else if (where == SectorPart::Ceiling && hasProp("lightceiling"))
+			{
+				int cl = intProperty("lightceiling");
+				if (boolProperty("lightceilingabsolute"))
+					light = cl;
+				else
+					light += cl;
+			}
 		}
-
-		// Clamp light level
-		l = std::min(l, 255);
-		l = std::max(l, 0);
-
-		return l;
 	}
-	else
-	{
-		// Clamp light level
-		int l = light_;
-		l     = std::min(l, 255);
-		l     = std::max(l, 0);
 
-		return l;
-	}
+	// Clamp light level
+	return std::clamp<u8>(light, 0, 255);
 }
 
 // -----------------------------------------------------------------------------
 // Changes the sector light level by [amount]
 // -----------------------------------------------------------------------------
-void MapSector::changeLight(int amount, int where)
+void MapSector::changeLight(int amount, SectorPart where)
 {
 	// Get current light level
 	int ll = lightAt(where);
@@ -676,12 +646,12 @@ void MapSector::changeLight(int amount, int where)
 					&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting);
 
 	// Change light level by amount
-	if (where == 1 && separate)
+	if (where == SectorPart::Floor && separate)
 	{
 		int cur = intProperty("lightfloor");
 		setIntProperty("lightfloor", cur + amount);
 	}
-	else if (where == 2 && separate)
+	else if (where == SectorPart::Ceiling && separate)
 	{
 		int cur = intProperty("lightceiling");
 		setIntProperty("lightceiling", cur + amount);
@@ -690,115 +660,6 @@ void MapSector::changeLight(int amount, int where)
 	{
 		setModified();
 		light_ = ll + amount;
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Returns the colour of the sector at [where] - 1 = floor, 2 = ceiling.
-// If [fullbright] is true, light level is ignored
-// -----------------------------------------------------------------------------
-// TODO: Move out to MapSpecials
-ColRGBA MapSector::colourAt(int where, bool fullbright) const
-{
-	using game::UDMFFeature;
-
-	// Check for sector colour set in open script
-	// TODO: Test if this is correct behaviour
-	// if (parent_map_->mapSpecials()->tagColoursSet())
-	//{
-	//	ColRGBA col;
-	//	if (parent_map_->mapSpecials()->tagColour(id_, &col))
-	//	{
-	//		if (fullbright)
-	//			return col;
-
-	//		// Get sector light level
-	//		int ll = light_;
-
-	//		// Clamp light level
-	//		if (ll > 255)
-	//			ll = 255;
-	//		if (ll < 0)
-	//			ll = 0;
-
-	//		// Calculate and return the colour
-	//		float lightmult = static_cast<float>(ll) / 255.0f;
-	//		return col.ampf(lightmult, lightmult, lightmult, 1.0f);
-	//	}
-	//}
-
-	// Check for UDMF
-	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& (game::configuration().featureSupported(UDMFFeature::SectorColor)
-			|| game::configuration().featureSupported(UDMFFeature::FlatLighting)))
-	{
-		// Get sector light colour
-		wxColour wxcol;
-		if (game::configuration().featureSupported(UDMFFeature::SectorColor))
-		{
-			int intcol = MapObject::intProperty("lightcolor");
-			wxcol      = wxColour(intcol);
-		}
-		else
-			wxcol = wxColour(255, 255, 255, 255);
-
-
-		// Ignore light level if fullbright
-		if (fullbright)
-			return { wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255 };
-
-		// Get sector light level
-		int ll = light_;
-
-		if (game::configuration().featureSupported(UDMFFeature::FlatLighting))
-		{
-			// Get specific light level
-			if (where == 1)
-			{
-				// Floor
-				int fl = MapObject::intProperty("lightfloor");
-				if (boolProperty("lightfloorabsolute"))
-					ll = fl;
-				else
-					ll += fl;
-			}
-			else if (where == 2)
-			{
-				// Ceiling
-				int cl = MapObject::intProperty("lightceiling");
-				if (boolProperty("lightceilingabsolute"))
-					ll = cl;
-				else
-					ll += cl;
-			}
-		}
-
-		// Clamp light level
-		ll = std::min(ll, 255);
-		ll = std::max(ll, 0);
-
-		// Calculate and return the colour
-		float lightmult = static_cast<float>(ll) / 255.0f;
-		return { static_cast<uint8_t>(wxcol.Blue() * lightmult),
-				 static_cast<uint8_t>(wxcol.Green() * lightmult),
-				 static_cast<uint8_t>(wxcol.Red() * lightmult),
-				 255 };
-	}
-
-	// Other format, simply return the light level
-	if (fullbright)
-		return { 255, 255, 255, 255 };
-	else
-	{
-		int l = light_;
-
-		// Clamp light level
-		l = std::min(l, 255);
-		l = std::max(l, 0);
-
-		auto l8 = static_cast<uint8_t>(l);
-
-		return { l8, l8, l8, 255 };
 	}
 }
 

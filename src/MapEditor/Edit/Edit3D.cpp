@@ -157,11 +157,11 @@ void Edit3D::changeSectorLight(int amount) const
 		{
 			// Get sector
 			auto s     = context_->map().sector(item.index);
-			int  where = 0;
+			auto where = map::SectorPart::Interior;
 			if (item.type == ItemType::Floor && !link_light_)
-				where = 1;
+				where = map::SectorPart::Floor;
 			else if (item.type == ItemType::Ceiling && !link_light_)
-				where = 2;
+				where = map::SectorPart::Ceiling;
 
 			// Check for decrease when light = 255
 			if (s->lightAt(where) == 255 && amount < -1)
@@ -170,7 +170,7 @@ void Edit3D::changeSectorLight(int amount) const
 			// Ignore if sector already processed
 			if (link_light_)
 			{
-				if (processed.count(s))
+				if (processed.contains(s))
 					continue;
 				processed.insert(s);
 			}

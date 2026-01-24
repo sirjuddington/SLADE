@@ -58,6 +58,7 @@
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "ThingBuffer2D.h"
 #include "Utility/Polygon.h"
@@ -188,9 +189,12 @@ const MapTextureManager::Texture& sectorTexture(const MapSector* sector, bool ce
 // -----------------------------------------------------------------------------
 // Returns the colour for [sector]
 // -----------------------------------------------------------------------------
-glm::vec4 sectorColour(MapSector* sector, bool ceiling)
+glm::vec4 sectorColour(const MapSector& sector, bool ceiling)
 {
-	return sector->colourAt(ceiling ? 2 : 1).ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
+	auto& map_specials = sector.parentMap()->mapSpecials();
+	return map_specials.sectorColour(sector, ceiling ? map::SectorPart::Ceiling : map::SectorPart::Floor)
+		.ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
+	// return sector->colourAt(ceiling ? 2 : 1).ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -1588,7 +1592,7 @@ void MapRenderer2D::updateFlatsBuffer(bool ceilings)
 		{
 			auto  sector  = map_->sector(i);
 			auto& texture = sectorTexture(sector, ceilings);
-			auto  colour  = sectorColour(sector, ceilings);
+			auto  colour  = sectorColour(*sector, ceilings);
 
 			flats_[i].texture       = texture.gl_id;
 			flats_[i].buffer_offset = flats_buffer_->queueSize();
@@ -1625,7 +1629,7 @@ void MapRenderer2D::updateFlatsBuffer(bool ceilings)
 				}
 
 				// Update sector polygon triangle vertices in buffer
-				auto                 colour = sectorColour(sector, ceilings);
+				auto                 colour = sectorColour(*sector, ceilings);
 				vector<gl::Vertex2D> vertices;
 				for (const auto& pv : sector->polygonVertices())
 					vertices.emplace_back(pv, colour, glm::vec2{ 0.0f });

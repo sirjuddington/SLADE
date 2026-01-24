@@ -576,3 +576,14 @@ int colour::toInt(const ColRGBA& colour)
 {
 	return (colour.r << 16) | (colour.g << 8) | colour.b;
 }
+
+// -----------------------------------------------------------------------------
+// Converts an int (0xRRGGBB) to a ColRGBA colour
+// -----------------------------------------------------------------------------
+ColRGBA colour::fromInt(int rgb)
+{
+	return { static_cast<uint8_t>((rgb >> 16) & 0xFF),
+			 static_cast<uint8_t>((rgb >> 8) & 0xFF),
+			 static_cast<uint8_t>(rgb & 0xFF),
+			 255 };
+}

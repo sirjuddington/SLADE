@@ -10,6 +10,20 @@ namespace map
 		Ceiling
 	};
 
+	enum class SectorPart : u8
+	{
+		Interior = 0,
+		Floor    = 1,
+		Ceiling  = 2
+	};
+
+	enum class SidePart : u8
+	{
+		Upper  = 0,
+		Middle = 1,
+		Lower  = 2
+	};
+
 	enum class ObjectType : u8
 	{
 		Object = 0,

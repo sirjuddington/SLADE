@@ -47,6 +47,7 @@ namespace colour
 	ColRGBA  fromString(string_view str);
 
 	// Other conversion
-	int toInt(const ColRGBA& colour);
+	int     toInt(const ColRGBA& colour);
+	ColRGBA fromInt(int rgb);
 } // namespace colour
 } // namespace slade

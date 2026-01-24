@@ -36,12 +36,14 @@
 #include "Game/Configuration.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "SlopeSpecials.h"
+#include "Utility/Colour.h"
 
 using namespace slade;
 using namespace map;
@@ -84,9 +86,49 @@ bool MapSpecials::sectorHasExtraFloors(const MapSector* sector) const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the colour for the given [sector] at [where]
+// -----------------------------------------------------------------------------
+ColRGBA MapSpecials::sectorColour(const MapSector& sector, SectorPart where, bool fullbright) const
+{
+	auto colour = ColRGBA::WHITE;
+	u8   light  = fullbright ? 255 : sector.lightAt(where);
+
+	// Check for UDMF
+	if (map_->currentFormat() == MapFormat::UDMF)
+	{
+		// Get sector light colour (if supported and specified)
+		if (game::configuration().featureSupported(game::UDMFFeature::SectorColor) && sector.hasProp("lightcolor"))
+			colour = colour::fromInt(sector.intProperty("lightcolor"));
+	}
+
+	// If fullbright, just return the colour
+	if (fullbright)
+		return colour;
+
+	// Otherwise, apply light level
+	auto mult = static_cast<float>(light) / 255.0f;
+	return colour.ampf(mult, mult, mult, 1.0f);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the colour for the given [side] at [where]
+// -----------------------------------------------------------------------------
+ColRGBA MapSpecials::sideColour(const MapSide& side, SidePart where, bool fullbright) const
+{
+	auto colour = sectorColour(*side.sector(), SectorPart::Interior, true);
+
+	if (fullbright)
+		return colour;
+
+	auto light = side.light();
+	auto mult  = static_cast<float>(light) / 255.0f;
+	return colour.ampf(mult, mult, mult, 1.0f);
+}
+
+// -----------------------------------------------------------------------------
 // (Re-)Process all specials in the map
 // -----------------------------------------------------------------------------
-void MapSpecials::processAllSpecials()
+void MapSpecials::processAllSpecials() const
 {
 	// Clear existing specials
 	slope_specials_->clearSpecials();
@@ -106,17 +148,6 @@ void MapSpecials::processAllSpecials()
 		slope_specials_->updateSectorPlanes(*sector);
 		extrafloor_specials_->updateSectorExtraFloors(sector);
 	}
-}
-
-void MapSpecials::processLineSpecial(const MapLine& line) const
-{
-	slope_specials_->processLineSpecial(line);
-	extrafloor_specials_->processLineSpecial(line);
-}
-
-void MapSpecials::processThing(const MapThing& thing) const
-{
-	slope_specials_->processThing(thing);
 }
 
 void MapSpecials::lineUpdated(const MapLine& line) const
@@ -166,4 +197,15 @@ void MapSpecials::objectsUpdated(const vector<MapObject*>& objects)
 
 	// Update planes for sectors that need updating
 	slope_specials_->updateOutdatedSectorPlanes();
+}
+
+void MapSpecials::processLineSpecial(const MapLine& line) const
+{
+	slope_specials_->processLineSpecial(line);
+	extrafloor_specials_->processLineSpecial(line);
+}
+
+void MapSpecials::processThing(const MapThing& thing) const
+{
+	slope_specials_->processThing(thing);
 }

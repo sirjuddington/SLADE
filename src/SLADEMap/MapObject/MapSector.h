@@ -12,6 +12,7 @@ class Debuggable;
 class MapSector : public MapObject
 {
 	using SurfaceType = map::SectorSurfaceType;
+	using SectorPart  = map::SectorPart;
 
 	friend class SLADEMap;
 	friend class MapSide;
@@ -95,9 +96,8 @@ public:
 	bool                     putLines(vector<MapLine*>& list) const;
 	bool                     putVertices(vector<MapVertex*>& list) const;
 	bool                     putVertices(vector<MapObject*>& list) const;
-	uint8_t                  lightAt(int where = 0, int extra_floor_index = -1) const;
-	void                     changeLight(int amount, int where = 0);
-	ColRGBA                  colourAt(int where = 0, bool fullbright = false) const;
+	uint8_t                  lightAt(SectorPart where = SectorPart::Interior) const;
+	void                     changeLight(int amount, SectorPart where = SectorPart::Interior);
 	ColRGBA                  fogColour() const;
 	long                     geometryUpdatedTime() const { return geometry_updated_; }
 	void                     findTextPoint() const;

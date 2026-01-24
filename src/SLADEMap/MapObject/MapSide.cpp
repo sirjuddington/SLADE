@@ -170,6 +170,7 @@ MapVertex* MapSide::endVertex() const
 
 // -----------------------------------------------------------------------------
 // Returns the light level of the given side
+// TODO: Upper/Mid/Lower light levels (UDMF)
 // -----------------------------------------------------------------------------
 uint8_t MapSide::light() const
 {
@@ -185,7 +186,7 @@ uint8_t MapSide::light() const
 	}
 
 	if (include_sector && sector_)
-		light += sector_->lightAt(0);
+		light += sector_->lightAt(map::SectorPart::Interior);
 
 	// Clamp range
 	if (light > 255)

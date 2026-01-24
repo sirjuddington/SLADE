@@ -246,12 +246,15 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 		return;
 
 	// Add quad
-	auto control_side = ef.control_line->s1();
-	addQuad(context, quad_info, control_side, side->sector()->colourAt());
+	auto  control_side = ef.control_line->s1();
+	auto& map_specials = control_side->parentMap()->mapSpecials();
+	addQuad(context, quad_info, control_side, map_specials.sideColour(*side, map::SidePart::Middle));
 }
 
 void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 {
+	using SidePart = map::SidePart;
+
 	// TODO:
 	//  - Handle 3D floors splitting wall quads
 	//  - Handle quads that are split (or not full-line length) due to slopes
@@ -280,9 +283,10 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 	}
 
 	// Get heights, texture and alignment info depending on wall part
-	int    height_top, height_bottom, tex_y_origin;
-	Plane  plane_top, plane_bottom;
-	string tex_name;
+	int      height_top, height_bottom, tex_y_origin;
+	Plane    plane_top, plane_bottom;
+	string   tex_name;
+	SidePart side_part;
 	switch (part)
 	{
 	case MapLine::FrontMiddle:
@@ -293,6 +297,7 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 		plane_top     = side_back->sector()->ceiling().plane;
 		plane_bottom  = side_back->sector()->floor().plane;
 		tex_y_origin  = context.lower_unpegged ? height_bottom : height_top;
+		side_part     = SidePart::Middle;
 		break;
 
 	case MapLine::FrontUpper:
@@ -303,6 +308,7 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 		plane_top     = side->sector()->ceiling().plane;
 		plane_bottom  = side_back->sector()->ceiling().plane;
 		tex_y_origin  = context.upper_unpegged ? height_top : height_bottom;
+		side_part     = SidePart::Upper;
 		break;
 
 	case MapLine::FrontLower:
@@ -313,6 +319,7 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 		plane_top     = side_back->sector()->floor().plane;
 		plane_bottom  = side->sector()->floor().plane;
 		tex_y_origin  = context.lower_unpegged ? side->sector()->ceiling().height : height_top;
+		side_part     = SidePart::Lower;
 		break;
 	}
 
@@ -383,7 +390,8 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 			quad_info.sky = true;
 	}
 
-	glm::vec4 colour = side->sector()->colourAt();
+	auto&     map_specials = line->parentMap()->mapSpecials();
+	glm::vec4 colour       = map_specials.sideColour(*side, side_part);
 	if (!quad_info.sky && !quad_info.midtex && line->parentMap()->mapSpecials().sectorHasExtraFloors(side->sector()))
 	{
 		// Split quad by extrafloors
@@ -405,12 +413,17 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 					quad_info.plane_top     = ef.plane_top;
 					quad_info.height_bottom = ef.control_sector->floor().height; // TODO: Vavoom
 					quad_info.plane_bottom  = ef.plane_bottom;
-					addQuad(context, quad_info, side, ef.control_sector->colourAt());
+					addQuad(
+						context,
+						quad_info,
+						side,
+						map_specials.sectorColour(*ef.control_sector, map::SectorPart::Interior));
 				}
 
 				// Propogate lighting down if needed
+				// TODO: Does side lighting (UDMF) override/affect this?
 				if (!ef.hasFlag(ExtraFloor::Flags::DisableLighting))
-					colour = ef.control_sector->colourAt();
+					colour = map_specials.sectorColour(*ef.control_sector, map::SectorPart::Interior);
 
 				// Setup for next quad below
 				quad_info.height_top    = ef.height;
