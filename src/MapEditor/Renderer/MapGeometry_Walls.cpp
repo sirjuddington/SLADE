@@ -97,6 +97,35 @@ struct QuadInfo
 // -----------------------------------------------------------------------------
 namespace slade::mapeditor
 {
+static bool planeIntersectsQuad(
+	const Plane& plane,
+	const Plane& quad_top,
+	const Plane& quad_bottom,
+	Vec2d        line_start,
+	Vec2d        line_end)
+{
+	// Check heights at line start
+	float plane_height_start       = plane.heightAt(line_start.x, line_start.y);
+	float quad_top_height_start    = quad_top.heightAt(line_start.x, line_start.y);
+	float quad_bottom_height_start = quad_bottom.heightAt(line_start.x, line_start.y);
+	bool  above_start              = plane_height_start > quad_top_height_start;
+	bool  below_start              = plane_height_start < quad_bottom_height_start;
+
+	// Check heights at line end
+	float plane_height_end       = plane.heightAt(line_end.x, line_end.y);
+	float quad_top_height_end    = quad_top.heightAt(line_end.x, line_end.y);
+	float quad_bottom_height_end = quad_bottom.heightAt(line_end.x, line_end.y);
+	bool  above_end              = plane_height_end > quad_top_height_end;
+	bool  below_end              = plane_height_end < quad_bottom_height_end;
+
+	// If both ends are above or below the quad, no intersection
+	if ((above_start && above_end) || (below_start && below_end))
+		return false;
+
+	// Otherwise, we have an intersection
+	return true;
+}
+
 static void setupQuadTexCoords(QuadInfo& info)
 {
 	// Calculate texture coordinates
@@ -215,7 +244,8 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 		return;
 
 	// Add quad
-	addQuad(context, quad_info, nullptr, glm::vec4{ 1.0f });
+	auto control_side = ef.control_line->s1();
+	addQuad(context, quad_info, control_side, side->sector()->colourAt());
 }
 
 void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
@@ -351,16 +381,48 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 			quad_info.sky = true;
 	}
 
-	if (line->parentMap()->mapSpecials().sectorHasExtraFloors(side->sector()))
+	glm::vec4 colour = side->sector()->colourAt();
+	if (!quad_info.sky && !quad_info.midtex && line->parentMap()->mapSpecials().sectorHasExtraFloors(side->sector()))
 	{
-		// TODO: Split quad by extrafloors
-		auto light = side->light() / 255.0f;
-		addQuad(context, quad_info, side, { light, light, light, 1.0f });
+		// Split quad by extrafloors
+		for (auto& ef : line->parentMap()->mapSpecials().sectorExtraFloors(side->sector()))
+		{
+			// Check if top of extrafloor splits the quad
+			if (planeIntersectsQuad(
+					ef.plane_top, quad_info.plane_top, quad_info.plane_bottom, line->start(), line->end()))
+			{
+				// Add quad down to extrafloor
+				quad_info.height_bottom = ef.height;
+				quad_info.plane_bottom  = ef.plane_top;
+				addQuad(context, quad_info, side, colour);
+
+				// Add inner quad if needed
+				if (ef.hasFlag(ExtraFloor::Flags::DrawInside))
+				{
+					quad_info.height_top    = ef.height;
+					quad_info.plane_top     = ef.plane_top;
+					quad_info.height_bottom = ef.control_sector->floor().height; // TODO: Vavoom
+					quad_info.plane_bottom  = ef.plane_bottom;
+					addQuad(context, quad_info, side, ef.control_sector->colourAt());
+				}
+
+				// Propogate lighting down if needed
+				if (!ef.hasFlag(ExtraFloor::Flags::DisableLighting))
+					colour = ef.control_sector->colourAt();
+
+				// Setup for next quad below
+				quad_info.height_top    = ef.height;
+				quad_info.plane_top     = ef.hasFlag(ExtraFloor::Flags::FlatAtCeiling) ? ef.plane_top : ef.plane_bottom;
+				quad_info.height_bottom = height_bottom;
+				quad_info.plane_bottom  = plane_bottom;
+			}
+		}
+
+		addQuad(context, quad_info, side, colour);
 	}
 	else
 	{
-		auto light = side->light() / 255.0f;
-		addQuad(context, quad_info, side, { light, light, light, 1.0f });
+		addQuad(context, quad_info, side, colour);
 	}
 }
 

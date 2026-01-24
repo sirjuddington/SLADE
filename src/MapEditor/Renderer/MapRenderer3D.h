@@ -36,7 +36,7 @@ public:
 	void enableSelection(bool enable = true);
 	void enableFog(bool enable = true);
 	void enableFullbright(bool enable = true);
-	void setSkyTexture(string_view tex1, string_view tex2 = "");
+	void setSkyTexture(string_view tex1, string_view tex2 = "") const;
 
 	void render(const gl::Camera& camera);
 
@@ -66,8 +66,9 @@ private:
 	{
 		unsigned                    texture;
 		unique_ptr<gl::IndexBuffer> index_buffer;
-		bool                        alpha_test = false;
-		bool                        sky        = false;
+		bool                        alpha_test  = false;
+		bool                        sky         = false;
+		bool                        transparent = false;
 	};
 	vector<RenderGroup> quad_groups_;
 	vector<RenderGroup> flat_groups_;
@@ -76,7 +77,7 @@ private:
 	void updateWalls();
 
 	void renderSkyFlatsQuads() const;
-	void renderFlats(bool alpha_tested = false) const;
-	void renderWalls(bool alpha_tested = false) const;
+	void renderFlats(int pass = 0) const;
+	void renderWalls(int pass = 0) const;
 };
 } // namespace slade

@@ -71,7 +71,7 @@ void MapRenderer3D::enableSelection(bool enable) {}
 void MapRenderer3D::enableFog(bool enable) {}
 void MapRenderer3D::enableFullbright(bool enable) {}
 
-void MapRenderer3D::setSkyTexture(string_view tex1, string_view tex2)
+void MapRenderer3D::setSkyTexture(string_view tex1, string_view tex2) const
 {
 	skybox_->setSkyTextures(tex1, tex2);
 }
@@ -119,14 +119,23 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	if (render_3d_sky)
 		renderSkyFlatsQuads();
 
-	// Render flats and walls (normal first, then alpha-tested)
-	renderFlats(false);
-	renderWalls(false);
+	// First pass, render solid flats/walls
+	renderFlats(0);
+	renderWalls(0);
+
+	// Second pass, render alpha-tested flats/walls
 	shader_3d_alphatest_->bind();
-	renderFlats(true);
-	renderWalls(true);
+	renderFlats(1);
+	renderWalls(1);
+
+	// Third pass, render transparent flats/walls
+	shader_3d_->bind();
+	glDepthMask(GL_FALSE);
+	renderFlats(2);
+	renderWalls(2);
 
 	// Cleanup gl state
+	glDepthMask(GL_TRUE);
 	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
@@ -233,6 +242,7 @@ void MapRenderer3D::updateFlats()
 			flat_groups_.back().texture      = flats_[i].texture;
 			flat_groups_.back().sky          = flats_[i].hasFlag(mapeditor::Flat3D::Flags::Sky);
 			flat_groups_.back().alpha_test   = flats_[i].hasFlag(mapeditor::Flat3D::Flags::ExtraFloor);
+			flat_groups_.back().transparent  = flats_[i].hasFlag(mapeditor::Flat3D::Flags::Transparent);
 			flat_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
 			flat_groups_.back().index_buffer->upload(indices);
 
@@ -345,13 +355,16 @@ void MapRenderer3D::renderSkyFlatsQuads() const
 	gl::bindVAO(0);
 }
 
-void MapRenderer3D::renderFlats(bool alpha_tested) const
+void MapRenderer3D::renderFlats(int pass) const
 {
 	gl::bindVAO(vb_flats_->vao());
 
 	for (auto& group : flat_groups_)
 	{
-		if (group.alpha_test != alpha_tested)
+		// Ensure group is part of the correct render pass
+		if (group.transparent && pass != 2)
+			continue;
+		if (group.alpha_test && pass == 0)
 			continue;
 
 		// Ignore sky flats if sky rendering is enabled
@@ -367,14 +380,17 @@ void MapRenderer3D::renderFlats(bool alpha_tested) const
 	gl::bindVAO(0);
 }
 
-void MapRenderer3D::renderWalls(bool alpha_tested) const
+void MapRenderer3D::renderWalls(int pass) const
 {
 	gl::bindVAO(vb_quads_->vao());
 
 	// First render non-alpha-tested quads
 	for (auto& group : quad_groups_)
 	{
-		if (group.alpha_test != alpha_tested)
+		// Ensure group is part of the correct render pass
+		if (group.transparent && pass != 2)
+			continue;
+		if (group.alpha_test && pass == 0)
 			continue;
 
 		// Ignore sky quads if sky rendering is enabled

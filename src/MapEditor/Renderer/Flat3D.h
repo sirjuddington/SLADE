@@ -8,9 +8,10 @@ struct Flat3D
 {
 	enum class Flags : u8
 	{
-		None       = 0,
-		Sky        = 1 << 0,
-		ExtraFloor = 1 << 1,
+		None        = 0,
+		Sky         = 1 << 0,
+		ExtraFloor  = 1 << 1,
+		Transparent = 1 << 2,
 	};
 
 	// Origin
@@ -25,10 +26,9 @@ struct Flat3D
 	unsigned vertex_offset = 0;
 
 	// Render info
-	glm::vec4 colour  = glm::vec4{ 1.0f };
-	glm::vec3 normal  = glm::vec3{ 0.0f, 0.0f, 1.0f };
 	unsigned  texture = 0;
 	u8        flags   = 0;
+	glm::vec4 colour{ 1.0f };
 
 	long updated_time = 0;
 
