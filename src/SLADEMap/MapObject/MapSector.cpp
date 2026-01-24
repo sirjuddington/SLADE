@@ -42,6 +42,8 @@
 #include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
 #include "Utility/Polygon.h"
+#include "Utility/StringUtils.h"
+#include <algorithm>
 
 using namespace slade;
 
@@ -163,6 +165,28 @@ void MapSector::copy(MapObject* obj)
 void MapSector::setGeometryUpdated() const
 {
 	geometry_updated_ = app::runTimer();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the sector has the specified [id]
+// (including UDMF moreids if applicable)
+// -----------------------------------------------------------------------------
+bool MapSector::hasId(int id) const
+{
+	if (id_ == id)
+		return true;
+
+	// Check moreids property (UDMF only)
+	if (parent_map_->currentFormat() == MapFormat::UDMF && hasProp("moreids"))
+	{
+		auto moreids = stringProperty("moreids");
+		auto ids_vec = strutil::split(moreids, ' ');
+		for (const auto& extra_id : ids_vec)
+			if (strutil::asInt(extra_id) == id)
+				return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -473,7 +497,7 @@ bool MapSector::containsPoint(const Vec2d& point) const
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the closest line in the sector
 // -----------------------------------------------------------------------------
-double MapSector::distanceTo(const Vec2d& point, double maxdist)
+double MapSector::distanceTo(const Vec2d& point, double maxdist) const
 {
 	// Init
 	if (maxdist < 0)
@@ -484,17 +508,13 @@ double MapSector::distanceTo(const Vec2d& point, double maxdist)
 		updateBBox();
 	double min_dist = 9999999;
 	double dist     = geometry::distanceToLine(point, bbox_.leftSide());
-	if (dist < min_dist)
-		min_dist = dist;
-	dist = geometry::distanceToLine(point, bbox_.topSide());
-	if (dist < min_dist)
-		min_dist = dist;
-	dist = geometry::distanceToLine(point, bbox_.rightSide());
-	if (dist < min_dist)
-		min_dist = dist;
-	dist = geometry::distanceToLine(point, bbox_.bottomSide());
-	if (dist < min_dist)
-		min_dist = dist;
+	min_dist        = std::min(dist, min_dist);
+	dist            = geometry::distanceToLine(point, bbox_.topSide());
+	min_dist        = std::min(dist, min_dist);
+	dist            = geometry::distanceToLine(point, bbox_.rightSide());
+	min_dist        = std::min(dist, min_dist);
+	dist            = geometry::distanceToLine(point, bbox_.bottomSide());
+	min_dist        = std::min(dist, min_dist);
 
 	if (min_dist > maxdist && !bbox_.contains(point))
 		return -1;
@@ -508,9 +528,8 @@ double MapSector::distanceTo(const Vec2d& point, double maxdist)
 			continue;
 
 		// Check distance
-		dist = line->distanceTo(point);
-		if (dist < min_dist)
-			min_dist = dist;
+		dist     = line->distanceTo(point);
+		min_dist = std::min(dist, min_dist);
 	}
 
 	return min_dist;
@@ -525,7 +544,7 @@ bool MapSector::putLines(vector<MapLine*>& list) const
 	for (auto& connected_side : connected_sides_)
 	{
 		// Add the side's parent line to the list if it doesn't already exist
-		if (std::find(list.begin(), list.end(), connected_side->parentLine()) == list.end())
+		if (std::ranges::find(list, connected_side->parentLine()) == list.end())
 			list.push_back(connected_side->parentLine());
 	}
 
@@ -542,9 +561,9 @@ bool MapSector::putVertices(vector<MapVertex*>& list) const
 		auto line = connected_side->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
-		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
+		if (line->v1() && std::ranges::find(list, line->v1()) == list.end())
 			list.push_back(line->v1());
-		if (line->v2() && std::find(list.begin(), list.end(), line->v2()) == list.end())
+		if (line->v2() && std::ranges::find(list, line->v2()) == list.end())
 			list.push_back(line->v2());
 	}
 
@@ -561,9 +580,9 @@ bool MapSector::putVertices(vector<MapObject*>& list) const
 		auto line = connected_side->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
-		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
+		if (line->v1() && std::ranges::find(list, line->v1()) == list.end())
 			list.push_back(line->v1());
-		if (line->v2() && std::find(list.begin(), list.end(), line->v2()) == list.end())
+		if (line->v2() && std::ranges::find(list, line->v2()) == list.end())
 			list.push_back(line->v2());
 	}
 
@@ -573,7 +592,7 @@ bool MapSector::putVertices(vector<MapObject*>& list) const
 // -----------------------------------------------------------------------------
 // Returns the light level of the sector at [where] - 1 = floor, 2 = ceiling
 // -----------------------------------------------------------------------------
-uint8_t MapSector::lightAt(int where, int extra_floor_index)
+uint8_t MapSector::lightAt(int where, int extra_floor_index) const
 {
 	// Check for UDMF + flat lighting
 	if (parent_map_->currentFormat() == MapFormat::UDMF
@@ -622,10 +641,8 @@ uint8_t MapSector::lightAt(int where, int extra_floor_index)
 		}
 
 		// Clamp light level
-		if (l > 255)
-			l = 255;
-		if (l < 0)
-			l = 0;
+		l = std::min(l, 255);
+		l = std::max(l, 0);
 
 		return l;
 	}
@@ -633,10 +650,8 @@ uint8_t MapSector::lightAt(int where, int extra_floor_index)
 	{
 		// Clamp light level
 		int l = light_;
-		if (l > 255)
-			l = 255;
-		if (l < 0)
-			l = 0;
+		l     = std::min(l, 255);
+		l     = std::max(l, 0);
 
 		return l;
 	}
@@ -759,10 +774,8 @@ ColRGBA MapSector::colourAt(int where, bool fullbright) const
 		}
 
 		// Clamp light level
-		if (ll > 255)
-			ll = 255;
-		if (ll < 0)
-			ll = 0;
+		ll = std::min(ll, 255);
+		ll = std::max(ll, 0);
 
 		// Calculate and return the colour
 		float lightmult = static_cast<float>(ll) / 255.0f;
@@ -780,10 +793,8 @@ ColRGBA MapSector::colourAt(int where, bool fullbright) const
 		int l = light_;
 
 		// Clamp light level
-		if (l > 255)
-			l = 255;
-		if (l < 0)
-			l = 0;
+		l = std::min(l, 255);
+		l = std::max(l, 0);
 
 		auto l8 = static_cast<uint8_t>(l);
 

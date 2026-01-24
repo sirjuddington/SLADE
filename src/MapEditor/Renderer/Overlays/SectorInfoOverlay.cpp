@@ -90,7 +90,7 @@ void SectorInfoOverlay::update(const MapSector* sector)
 	info_text += fmt::format("Brightness: {}\n", sector->lightLevel());
 
 	// Tag
-	info_text += fmt::format("Tag: {}", sector->tag());
+	info_text += fmt::format("Tag: {}", sector->id());
 
 	// Textures
 	ftex_ = sector->floor().texture;

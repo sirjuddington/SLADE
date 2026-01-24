@@ -171,7 +171,7 @@ void registerMapSector(lua_State* lua)
 	lua_sector.addProperty("heightCeiling", [](MapSector& self) { return self.ceiling().height; });
 	lua_sector.addProperty("lightLevel", &MapSector::lightLevel);
 	lua_sector.addProperty("special", &MapSector::special);
-	lua_sector.addProperty("id", &MapSector::tag);
+	lua_sector.addProperty("id", &MapSector::id);
 	lua_sector.addProperty("connectedSides", [](MapSector& self) { return self.connectedSides(); });
 	lua_sector.addProperty("colour", [](MapSector& self) { return self.colourAt(); });
 	lua_sector.addProperty("fogColour", [](MapSector& self) { return self.fogColour(); });

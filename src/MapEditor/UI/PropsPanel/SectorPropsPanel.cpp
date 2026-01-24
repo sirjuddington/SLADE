@@ -450,7 +450,7 @@ void SectorPropsPanel::applyChanges()
 
 		// Tag
 		if (!text_tag_->GetValue().IsEmpty())
-			sector->setTag(text_tag_->number(sector->tag()));
+			sector->setTag(text_tag_->number(sector->id()));
 	}
 
 	if (mopp_all_props_)

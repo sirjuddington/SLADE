@@ -131,28 +131,20 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 	{
 		// Sort points along x axis
 		if (xdif >= 0)
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.x < right.x; });
 		else
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.x > right.x; });
 	}
 	else
 	{
 		// Sort points along y axis
 		if (ydif >= 0)
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.y < right.y; });
 		else
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.y > right.y; });
 	}
 
@@ -165,7 +157,7 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 MapLine* LineList::firstWithId(int id) const
 {
 	for (auto& line : objects_)
-		if (line->id() == id)
+		if (line->hasId(id))
 			return line;
 
 	return nullptr;
@@ -177,7 +169,7 @@ MapLine* LineList::firstWithId(int id) const
 void LineList::putAllWithId(int id, vector<MapLine*>& list) const
 {
 	for (auto& line : objects_)
-		if (line->id() == id)
+		if (line->hasId(id))
 			list.push_back(line);
 }
 

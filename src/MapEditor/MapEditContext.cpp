@@ -613,7 +613,7 @@ void MapEditContext::updateTagged()
 		else if (edit_mode_ == Mode::Sectors)
 		{
 			type = SLADEMap::SECTORS;
-			tag  = map_->sector(hilight_item)->tag();
+			tag  = map_->sector(hilight_item)->id();
 		}
 		if (tag)
 		{
@@ -912,7 +912,7 @@ int MapEditContext::beginTagEdit()
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		auto sector = map_->sector(a);
-		if (sector->tag() == current_tag_)
+		if (sector->id() == current_tag_)
 			tagged_sectors_.push_back(sector);
 	}
 	return 1;
@@ -963,7 +963,7 @@ void MapEditContext::endTagEdit(bool accept)
 		for (unsigned a = 0; a < map_->nSectors(); a++)
 		{
 			auto sector = map_->sector(a);
-			if (sector->tag() == current_tag_)
+			if (sector->id() == current_tag_)
 				sector->setTag(0);
 		}
 

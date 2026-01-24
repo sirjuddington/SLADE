@@ -55,8 +55,8 @@ public:
 	const Surface& ceiling() const { return ceiling_; }
 	short          lightLevel() const { return light_; }
 	short          special() const { return special_; }
-	short          tag() const { return id_; }
 	short          id() const { return id_; }
+	bool           hasId(int id) const;
 
 	string stringProperty(string_view key) const override;
 	int    intProperty(string_view key) const override;
@@ -89,11 +89,11 @@ public:
 	const vector<glm::vec2>& polygonVertices() const;
 	void                     resetPolygon() const { poly_needsupdate_ = true; }
 	bool                     containsPoint(const Vec2d& point) const;
-	double                   distanceTo(const Vec2d& point, double maxdist = -1);
+	double                   distanceTo(const Vec2d& point, double maxdist = -1) const;
 	bool                     putLines(vector<MapLine*>& list) const;
 	bool                     putVertices(vector<MapVertex*>& list) const;
 	bool                     putVertices(vector<MapObject*>& list) const;
-	uint8_t                  lightAt(int where = 0, int extra_floor_index = -1);
+	uint8_t                  lightAt(int where = 0, int extra_floor_index = -1) const;
 	void                     changeLight(int amount, int where = 0);
 	ColRGBA                  colourAt(int where = 0, bool fullbright = false) const;
 	ColRGBA                  fogColour() const;

@@ -56,6 +56,7 @@ public:
 	MapSide*           s2() const { return side2_; }
 	int                special() const { return special_; }
 	int                id() const { return id_; }
+	bool               hasId(int id) const;
 	int                flags() const { return flags_; }
 	bool               flagSet(int flag) const { return (flags_ & flag) != 0; }
 	int                arg(unsigned index) const { return index < 5 ? args_[index] : 0; }

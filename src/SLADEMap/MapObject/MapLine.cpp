@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapLine.h"
+#include "General/MapFormat.h"
 #include "Geometry/Geometry.h"
 #include "MapSector.h"
 #include "MapSide.h"
@@ -134,6 +135,28 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, const P
 		else
 			properties_[prop->name()] = prop->value();
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the line has the specified [id]
+// (including UDMF moreids if applicable)
+// -----------------------------------------------------------------------------
+bool MapLine::hasId(int id) const
+{
+	if (id_ == id)
+		return true;
+
+	// Check moreids property (UDMF only)
+	if (parent_map_->currentFormat() == MapFormat::UDMF && hasProp("moreids"))
+	{
+		auto moreids = stringProperty("moreids");
+		auto ids_vec = strutil::split(moreids, ' ');
+		for (const auto& extra_id : ids_vec)
+			if (strutil::asInt(extra_id) == id)
+				return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

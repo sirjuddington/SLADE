@@ -33,9 +33,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SectorList.h"
+
 #include "SLADEMap/MapObject/MapSector.h"
 #include "UI/UI.h"
 #include "Utility/StringUtils.h"
+#include <algorithm>
 
 using namespace slade;
 
@@ -122,14 +124,10 @@ BBox SectorList::allSectorBounds() const
 	for (unsigned i = 1; i < count_; ++i)
 	{
 		auto sbb = objects_[i]->boundingBox();
-		if (sbb.min.x < bbox.min.x)
-			bbox.min.x = sbb.min.x;
-		if (sbb.min.y < bbox.min.y)
-			bbox.min.y = sbb.min.y;
-		if (sbb.max.x > bbox.max.x)
-			bbox.max.x = sbb.max.x;
-		if (sbb.max.y > bbox.max.y)
-			bbox.max.y = sbb.max.y;
+		bbox.min.x = std::min(sbb.min.x, bbox.min.x);
+		bbox.min.y = std::min(sbb.min.y, bbox.min.y);
+		bbox.max.x = std::max(sbb.max.x, bbox.max.x);
+		bbox.max.y = std::max(sbb.max.y, bbox.max.y);
 	}
 
 	return bbox;
@@ -166,7 +164,7 @@ void SectorList::initBBoxes() const
 void SectorList::putAllWithId(int id, vector<MapSector*>& list) const
 {
 	for (auto& sector : objects_)
-		if (sector->tag() == id)
+		if (sector->hasId(id))
 			list.push_back(sector);
 }
 
@@ -186,7 +184,7 @@ vector<MapSector*> SectorList::allWithId(int id) const
 MapSector* SectorList::firstWithId(int id) const
 {
 	for (auto& sector : objects_)
-		if (sector->tag() == id)
+		if (sector->hasId(id))
 			return sector;
 
 	return nullptr;
@@ -200,7 +198,7 @@ int SectorList::firstFreeId() const
 	int id = 1;
 	for (unsigned i = 0; i < count_; ++i)
 	{
-		if (objects_[i]->tag() == id)
+		if (objects_[i]->hasId(id))
 		{
 			id++;
 			i = 0;

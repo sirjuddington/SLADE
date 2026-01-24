@@ -505,7 +505,7 @@ unique_ptr<ArchiveEntry> DoomMapFormat::writeSECTORS(const SectorList& sectors) 
 		// Properties
 		data.light   = sector->lightLevel();
 		data.special = sector->special();
-		data.tag     = sector->tag();
+		data.tag     = sector->id();
 
 		entry->write(&data, 26);
 	}
