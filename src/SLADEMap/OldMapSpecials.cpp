@@ -49,7 +49,7 @@
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
-// using ExtraFloor  = MapSector::ExtraFloor;
+using SectorSurfaceType = map::SectorSurfaceType;
 
 
 // -----------------------------------------------------------------------------

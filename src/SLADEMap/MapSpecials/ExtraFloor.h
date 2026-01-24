@@ -2,7 +2,7 @@
 
 #include "Geometry/Plane.h"
 
-namespace slade
+namespace slade::map
 {
 struct ExtraFloor
 {
@@ -35,4 +35,4 @@ struct ExtraFloor
 	bool hasFlag(Flags flag) const { return flags & static_cast<u16>(flag); }
 	void setFlag(Flags flag) { flags |= static_cast<u16>(flag); }
 };
-} // namespace slade
+} // namespace slade::map

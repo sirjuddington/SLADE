@@ -44,6 +44,7 @@
 #include "SlopeSpecials.h"
 
 using namespace slade;
+using namespace map;
 
 
 // -----------------------------------------------------------------------------

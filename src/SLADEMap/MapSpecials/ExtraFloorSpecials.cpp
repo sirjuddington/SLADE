@@ -39,6 +39,7 @@
 #include "SLADEMap/SLADEMap.h"
 
 using namespace slade;
+using namespace map;
 
 
 

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace slade
+namespace slade::map
 {
 class SlopeSpecials;
 class ExtraFloorSpecials;
@@ -33,4 +33,4 @@ private:
 	unique_ptr<SlopeSpecials>      slope_specials_;
 	unique_ptr<ExtraFloorSpecials> extrafloor_specials_;
 };
-} // namespace slade
+} // namespace slade::map

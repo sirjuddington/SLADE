@@ -50,6 +50,8 @@
 using namespace slade;
 using namespace mapeditor;
 
+using SurfaceType = map::SectorSurfaceType;
+
 
 namespace slade::mapeditor
 {
@@ -119,11 +121,11 @@ static void generateFlatVertices(
 	auto& sector         = *flat.sector;
 	auto& control_sector = *flat.controlSector();
 	auto& tex_info       = gl::Texture::info(flat.texture);
-	auto  ttf = getSectorTextureTransformInfo(control_sector, flat.source_tex == SectorSurfaceType::Ceiling, tex.scale);
-	auto& plane = (flat.source_surface == SectorSurfaceType::Ceiling) ? control_sector.ceiling().plane
-																	  : control_sector.floor().plane;
+	auto  ttf   = getSectorTextureTransformInfo(control_sector, flat.source_tex == SurfaceType::Ceiling, tex.scale);
+	auto& plane = (flat.source_surface == SurfaceType::Ceiling) ? control_sector.ceiling().plane
+																: control_sector.floor().plane;
 
-	if (flat.surface_type == SectorSurfaceType::Ceiling)
+	if (flat.surface_type == SurfaceType::Ceiling)
 	{
 		for (auto& vertex : sector.polygonVertices())
 		{
@@ -157,7 +159,7 @@ static void setupFlat3D(
 	auto& sector = *flat.controlSector();
 
 	// Colour
-	bool ceiling = flat.source_tex == SectorSurfaceType::Ceiling;
+	bool ceiling = flat.source_tex == SurfaceType::Ceiling;
 	if (colour.has_value())
 		flat.colour = colour.value();
 	else
@@ -187,13 +189,15 @@ static void setupFlat3D(
 // -----------------------------------------------------------------------------
 std::tuple<vector<Flat3D>, vector<gl::Vertex3D>> generateSectorFlats(const MapSector& sector, unsigned vertex_index)
 {
+	using ExtraFloor = map::ExtraFloor;
+
 	vector<Flat3D>       flats;
 	vector<gl::Vertex3D> vertices;
 
 	auto sector_vertex_count = static_cast<unsigned>(sector.polygonVertices().size());
 
 	// Ceiling
-	auto& flat_ceiling = flats.emplace_back(&sector, SectorSurfaceType::Ceiling);
+	auto&     flat_ceiling = flats.emplace_back(&sector, SurfaceType::Ceiling);
 	glm::vec4 colour       = sector.colourAt(2);
 	setupFlat3D(flat_ceiling, vertex_index, vertices, colour);
 	vertex_index += sector_vertex_count;
@@ -205,11 +209,7 @@ std::tuple<vector<Flat3D>, vector<gl::Vertex3D>> generateSectorFlats(const MapSe
 
 		// Top
 		auto& flat_top = flats.emplace_back(
-			&sector,
-			SectorSurfaceType::Floor,
-			extrafloor.control_sector,
-			SectorSurfaceType::Ceiling,
-			SectorSurfaceType::Ceiling);
+			&sector, SurfaceType::Floor, extrafloor.control_sector, SurfaceType::Ceiling, SurfaceType::Ceiling);
 		flat_top.setFlag(Flat3D::Flags::ExtraFloor);
 		setupFlat3D(flat_top, vertex_index, vertices, colour);
 		vertex_index += sector_vertex_count;
@@ -224,10 +224,10 @@ std::tuple<vector<Flat3D>, vector<gl::Vertex3D>> generateSectorFlats(const MapSe
 			{
 				auto& flat_inner_top = flats.emplace_back(
 					&sector,
-					SectorSurfaceType::Ceiling,
+					SurfaceType::Ceiling,
 					extrafloor.control_sector,
-					SectorSurfaceType::Ceiling,
-					SectorSurfaceType::Ceiling);
+					SurfaceType::Ceiling,
+					SurfaceType::Ceiling);
 				flat_inner_top.setFlag(Flat3D::Flags::ExtraFloor);
 				setupFlat3D(flat_inner_top, vertex_index, vertices, colour);
 				vertex_index += sector_vertex_count;
@@ -237,11 +237,7 @@ std::tuple<vector<Flat3D>, vector<gl::Vertex3D>> generateSectorFlats(const MapSe
 			if (extrafloor.control_sector->floor().height > sector.floor().height)
 			{
 				auto& flat_inner_bottom = flats.emplace_back(
-					&sector,
-					SectorSurfaceType::Floor,
-					extrafloor.control_sector,
-					SectorSurfaceType::Floor,
-					SectorSurfaceType::Floor);
+					&sector, SurfaceType::Floor, extrafloor.control_sector, SurfaceType::Floor, SurfaceType::Floor);
 				flat_inner_bottom.setFlag(Flat3D::Flags::ExtraFloor);
 				colour   = extrafloor.control_sector->colourAt(1);
 				colour.a = extrafloor.alpha;
@@ -253,18 +249,17 @@ std::tuple<vector<Flat3D>, vector<gl::Vertex3D>> generateSectorFlats(const MapSe
 		// Bottom
 		auto& flat_bottom = flats.emplace_back(
 			&sector,
-			SectorSurfaceType::Ceiling,
+			SurfaceType::Ceiling,
 			extrafloor.control_sector,
-			extrafloor.hasFlag(ExtraFloor::Flags::FlatAtCeiling) ? SectorSurfaceType::Ceiling
-																 : SectorSurfaceType::Floor,
-			SectorSurfaceType::Floor);
+			extrafloor.hasFlag(ExtraFloor::Flags::FlatAtCeiling) ? SurfaceType::Ceiling : SurfaceType::Floor,
+			SurfaceType::Floor);
 		flat_bottom.setFlag(Flat3D::Flags::ExtraFloor);
 		setupFlat3D(flat_bottom, vertex_index, vertices, colour);
 		vertex_index += sector_vertex_count;
 	}
 
 	// Floor
-	auto& flat_floor = flats.emplace_back(&sector, SectorSurfaceType::Floor);
+	auto& flat_floor = flats.emplace_back(&sector, SurfaceType::Floor);
 	colour.a         = 1.0f;
 	setupFlat3D(flat_floor, vertex_index, vertices, colour);
 
@@ -278,11 +273,10 @@ void updateFlat(Flat3D& flat, vector<gl::Vertex3D>& vertices)
 {
 	// Update flat
 	auto& sector  = *flat.controlSector();
-	auto& texture = flat.source_tex == SectorSurfaceType::Ceiling
-						? textureManager().flat(sector.ceiling().texture, true)
-						: textureManager().flat(sector.floor().texture, true);
+	auto& texture = flat.source_tex == SurfaceType::Ceiling ? textureManager().flat(sector.ceiling().texture, true)
+															: textureManager().flat(sector.floor().texture, true);
 	flat.texture  = texture.gl_id;
-	flat.colour   = sector.colourAt(flat.source_tex == SectorSurfaceType::Ceiling ? 2 : 1);
+	flat.colour   = sector.colourAt(flat.source_tex == SurfaceType::Ceiling ? 2 : 1);
 
 	// Generate new vertices
 	generateFlatVertices(flat, texture, vertices);

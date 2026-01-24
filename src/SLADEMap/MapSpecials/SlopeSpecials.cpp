@@ -43,6 +43,7 @@
 #include "Utility/Vector.h"
 
 using namespace slade;
+using namespace map;
 
 
 // -----------------------------------------------------------------------------

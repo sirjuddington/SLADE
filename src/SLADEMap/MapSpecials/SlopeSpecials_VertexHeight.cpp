@@ -43,6 +43,7 @@
 #include "SlopeSpecials.h"
 
 using namespace slade;
+using namespace map;
 
 
 std::optional<double> SlopeSpecials::vertexHeight(const MapVertex& vertex, SectorSurfaceType surface_type) const

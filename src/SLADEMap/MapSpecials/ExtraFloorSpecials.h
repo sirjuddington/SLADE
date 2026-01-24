@@ -2,7 +2,7 @@
 
 #include "ExtraFloor.h"
 
-namespace slade
+namespace slade::map
 {
 enum class SectorSurfaceType : u8;
 
@@ -74,4 +74,4 @@ private:
 	void addSet3dFloorSpecial(const MapLine& line);
 	void applySet3dFloorSpecial(const Set3dFloorSpecial& special, SectorExtraFloors& sector_extra_floors);
 };
-} // namespace slade
+} // namespace slade::map

@@ -6,12 +6,15 @@
 
 namespace slade
 {
-class MapSpecials;
 struct MapDesc;
 enum class MapFormat;
-namespace Game
+namespace game
 {
 	enum class TagType;
+}
+namespace map
+{
+	class MapSpecials;
 }
 
 class SLADEMap
@@ -67,8 +70,8 @@ public:
 	bool readMap(const MapDesc& map);
 	void clearMap();
 
-	MapSpecials& mapSpecials() const { return *map_specials_.get(); }
-	void         recomputeSpecials() const;
+	map::MapSpecials& mapSpecials() const { return *map_specials_; }
+	void              recomputeSpecials() const;
 
 	// Map saving
 	bool writeMap(vector<ArchiveEntry*>& map_entries) const;
@@ -134,8 +137,8 @@ public:
 	void mapOpenChecks();
 
 	// Misc. map data access
-	void rebuildConnectedLines() { data_.rebuildConnectedLines(); }
-	void rebuildConnectedSides() { data_.rebuildConnectedSides(); }
+	void rebuildConnectedLines() const { data_.rebuildConnectedLines(); }
+	void rebuildConnectedSides() const { data_.rebuildConnectedSides(); }
 	void restoreObjectIdList(map::ObjectType type, const vector<unsigned>& list)
 	{
 		data_.restoreObjectIdList(type, list);
@@ -151,14 +154,14 @@ public:
 	int  thingTypeUsageCount(int type);
 
 private:
-	MapObjectCollection     data_;
-	string                  udmf_namespace_;
-	PropertyList            udmf_props_;
-	string                  name_;
-	MapFormat               current_format_;
-	long                    opened_time_ = 0;
-	unique_ptr<MapSpecials> map_specials_;
-	bool                    is_open_ = false;
+	MapObjectCollection          data_;
+	string                       udmf_namespace_;
+	PropertyList                 udmf_props_;
+	string                       name_;
+	MapFormat                    current_format_;
+	long                         opened_time_ = 0;
+	unique_ptr<map::MapSpecials> map_specials_;
+	bool                         is_open_ = false;
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
 

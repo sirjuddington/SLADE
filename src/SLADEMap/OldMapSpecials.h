@@ -57,14 +57,15 @@ private:
 	void processSRB2FOFs(const SLADEMap* map) const;
 	void processEDGEClassicSlopes(const SLADEMap* map) const;
 
-	template<SectorSurfaceType> void   applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model_sector) const;
-	template<SectorSurfaceType> void   applyLineSlopeThing(SLADEMap* map, MapThing* thing) const;
-	template<SectorSurfaceType> void   applySectorTiltThing(SLADEMap* map, MapThing* thing) const;
-	template<SectorSurfaceType> void   applyVavoomSlopeThing(SLADEMap* map, MapThing* thing) const;
-	template<SectorSurfaceType> double vertexHeight(MapVertex* vertex, MapSector* sector) const;
-	template<SectorSurfaceType>
+	template<map::SectorSurfaceType>
+	void applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model_sector) const;
+	template<map::SectorSurfaceType> void   applyLineSlopeThing(SLADEMap* map, MapThing* thing) const;
+	template<map::SectorSurfaceType> void   applySectorTiltThing(SLADEMap* map, MapThing* thing) const;
+	template<map::SectorSurfaceType> void   applyVavoomSlopeThing(SLADEMap* map, MapThing* thing) const;
+	template<map::SectorSurfaceType> double vertexHeight(MapVertex* vertex, MapSector* sector) const;
+	template<map::SectorSurfaceType>
 	void applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights) const;
-	template<SectorSurfaceType>
+	template<map::SectorSurfaceType>
 	void applyRectangularVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 		const;
 };

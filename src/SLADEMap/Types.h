@@ -2,15 +2,14 @@
 
 namespace slade
 {
-// TODO: Move to map namespace
-enum class SectorSurfaceType : u8
-{
-	Floor = 1,
-	Ceiling
-};
-
 namespace map
 {
+	enum class SectorSurfaceType : u8
+	{
+		Floor = 1,
+		Ceiling
+	};
+
 	enum class ObjectType : u8
 	{
 		Object = 0,

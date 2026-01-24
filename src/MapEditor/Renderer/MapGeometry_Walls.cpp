@@ -48,6 +48,8 @@
 using namespace slade;
 using namespace mapeditor;
 
+using ExtraFloor = map::ExtraFloor;
+
 
 // -----------------------------------------------------------------------------
 //

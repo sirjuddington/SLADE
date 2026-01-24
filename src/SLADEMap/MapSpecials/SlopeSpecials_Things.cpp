@@ -42,6 +42,7 @@
 #include "Utility/Vector.h"
 
 using namespace slade;
+using namespace map;
 
 
 void SlopeSpecials::addLineSlopeThing(const MapThing& thing, SectorSurfaceType surface_type)

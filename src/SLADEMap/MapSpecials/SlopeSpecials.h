@@ -1,6 +1,6 @@
 #pragma once
 
-namespace slade
+namespace slade::map
 {
 enum class SectorSurfaceType : u8;
 
@@ -164,4 +164,4 @@ private:
 	void removeSRB2VertexSlope(const MapLine& line);
 	void applySRB2VertexSlopeSpecials(const MapSector& sector);
 };
-} // namespace slade
+} // namespace slade::map

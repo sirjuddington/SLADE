@@ -39,6 +39,7 @@
 #include "Utility/Vector.h"
 
 using namespace slade;
+using namespace map;
 
 
 void SlopeSpecials::addPlaneAlign(const MapLine& line)

@@ -76,7 +76,10 @@ static constexpr double MERGE_ARCH_SPLIT_DIST = 0.1;
 // -----------------------------------------------------------------------------
 // SLADEMap class constructor
 // -----------------------------------------------------------------------------
-SLADEMap::SLADEMap() : data_{ this }, current_format_{ MapFormat::Unknown }, map_specials_{ new MapSpecials(*this) }
+SLADEMap::SLADEMap() :
+	data_{ this },
+	current_format_{ MapFormat::Unknown },
+	map_specials_{ new map::MapSpecials(*this) }
 {
 	// Init opened time so it's not random leftover garbage values
 	setOpenedTime();

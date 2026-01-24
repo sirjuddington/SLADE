@@ -11,6 +11,8 @@ class Debuggable;
 
 class MapSector : public MapObject
 {
+	using SurfaceType = map::SectorSurfaceType;
+
 	friend class SLADEMap;
 	friend class MapSide;
 
@@ -75,9 +77,9 @@ public:
 	void setSpecial(int special);
 	void setTag(int tag);
 
-	template<SectorSurfaceType p> short planeHeight() const;
-	template<SectorSurfaceType p> Plane plane() const;
-	template<SectorSurfaceType p> void  setPlane(const Plane& plane);
+	template<SurfaceType p> short       planeHeight() const;
+	template<SurfaceType p> Plane       plane() const;
+	template<SurfaceType p> void        setPlane(const Plane& plane);
 	bool                                ceilingHasSlope() const;
 	bool                                floorHasSlope() const;
 
@@ -133,27 +135,27 @@ private:
 };
 
 // Note: these MUST be inline, or the linker will complain
-template<> inline short MapSector::planeHeight<SectorSurfaceType::Floor>() const
+template<> inline short MapSector::planeHeight<map::SectorSurfaceType::Floor>() const
 {
 	return floor_.height;
 }
-template<> inline short MapSector::planeHeight<SectorSurfaceType::Ceiling>() const
+template<> inline short MapSector::planeHeight<map::SectorSurfaceType::Ceiling>() const
 {
 	return ceiling_.height;
 }
-template<> inline Plane MapSector::plane<SectorSurfaceType::Floor>() const
+template<> inline Plane MapSector::plane<map::SectorSurfaceType::Floor>() const
 {
 	return floor_.plane;
 }
-template<> inline Plane MapSector::plane<SectorSurfaceType::Ceiling>() const
+template<> inline Plane MapSector::plane<map::SectorSurfaceType::Ceiling>() const
 {
 	return ceiling_.plane;
 }
-template<> inline void MapSector::setPlane<SectorSurfaceType::Floor>(const Plane& plane)
+template<> inline void MapSector::setPlane<map::SectorSurfaceType::Floor>(const Plane& plane)
 {
 	setFloorPlane(plane);
 }
-template<> inline void MapSector::setPlane<SectorSurfaceType::Ceiling>(const Plane& plane)
+template<> inline void MapSector::setPlane<map::SectorSurfaceType::Ceiling>(const Plane& plane)
 {
 	setCeilingPlane(plane);
 }

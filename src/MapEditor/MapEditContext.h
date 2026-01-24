@@ -10,7 +10,6 @@ class InfoOverlay3D;
 class ItemSelection;
 class LineInfoOverlay;
 class MapCanvas;
-class MapSpecials;
 class MCOverlay;
 class SectorInfoOverlay;
 class ThingInfoOverlay;
@@ -28,6 +27,10 @@ namespace gl
 namespace ui
 {
 	enum class MouseCursor;
+}
+namespace map
+{
+	class MapSpecials;
 }
 namespace mapeditor
 {
