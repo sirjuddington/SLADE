@@ -232,7 +232,7 @@ void SlopeSpecials::clearSpecials()
 	line_slope_things_.clear();
 	sector_tilt_things_.clear();
 	vavoom_things_.clear();
-	slope_things_.clear();
+	sorted_slope_things_.clear();
 	copy_slope_things_.clear();
 	vertex_height_things_.clear();
 	plane_copy_specials_.clear();

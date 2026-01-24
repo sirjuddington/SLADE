@@ -82,10 +82,9 @@ void SlopeSpecials::addLineSlopeThing(const MapThing& thing, SectorSurfaceType s
 			continue;
 
 		line_slope_things_.push_back(lst);
-		slope_things_.push_back(&line_slope_things_.back());
 	}
 
-	slope_things_sorted_ = false;
+	sorted_slope_things_.clear();
 }
 
 void SlopeSpecials::applyLineSlopeThing(const LineSlopeThing& special)
@@ -126,7 +125,7 @@ void SlopeSpecials::addSectorTiltThing(const MapThing& thing, SectorSurfaceType 
 	}
 
 	sector_tilt_things_.push_back(stt);
-	slope_things_.push_back(&sector_tilt_things_.back());
+	sorted_slope_things_.clear();
 }
 
 void SlopeSpecials::applySectorTiltThing(const SectorTiltThing& special)
@@ -203,7 +202,7 @@ void SlopeSpecials::addVavoomSlopeThing(const MapThing& thing, SectorSurfaceType
 
 		vst.line = lines[a];
 		vavoom_things_.push_back(vst);
-		slope_things_.push_back(&vavoom_things_.back());
+		sorted_slope_things_.clear();
 
 		return;
 	}
@@ -233,12 +232,12 @@ void SlopeSpecials::removeSlopeThing(const MapThing& thing)
 {
 	// Remove from combined slope things list
 	unsigned i = 0;
-	while (i < slope_things_.size())
+	while (i < sorted_slope_things_.size())
 	{
-		if (slope_things_[i]->thing == &thing)
+		if (sorted_slope_things_[i]->thing == &thing)
 		{
-			vectorAddUnique(sectors_to_update_, slope_things_[i]->target);
-			slope_things_.erase(slope_things_.begin() + i);
+			vectorAddUnique(sectors_to_update_, sorted_slope_things_[i]->target);
+			sorted_slope_things_.erase(sorted_slope_things_.begin() + i);
 			continue;
 		}
 		i++;
@@ -266,19 +265,26 @@ void SlopeSpecials::removeSlopeThing(const MapThing& thing)
 
 void SlopeSpecials::applySlopeThingSpecials(const MapSector& sector)
 {
-	// Sort by thing index if needed
-	if (!slope_things_sorted_)
+	// Rebuild sorted list of slope thing specials if needed
+	if (sorted_slope_things_.empty())
 	{
-		std::sort(
-			slope_things_.begin(),
-			slope_things_.end(),
-			[](const auto& a, const auto& b) { return a->thing->index() < b->thing->index(); });
+		// Combine all slope thing specials into one list
+		sorted_slope_things_.reserve(line_slope_things_.size() + sector_tilt_things_.size() + vavoom_things_.size());
+		for (auto& lst : line_slope_things_)
+			sorted_slope_things_.push_back(&lst);
+		for (auto& stt : sector_tilt_things_)
+			sorted_slope_things_.push_back(&stt);
+		for (auto& vst : vavoom_things_)
+			sorted_slope_things_.push_back(&vst);
 
-		slope_things_sorted_ = true;
+		// Sort by thing index
+		std::ranges::sort(
+			sorted_slope_things_,
+			[](const auto& a, const auto& b) { return a->thing->index() < b->thing->index(); });
 	}
 
 	// Apply each SlopeThingSpecial in order
-	for (auto st : slope_things_)
+	for (auto st : sorted_slope_things_)
 	{
 		if (st->target == &sector)
 		{

@@ -110,8 +110,7 @@ private:
 	vector<LineSlopeThing>     line_slope_things_;
 	vector<SectorTiltThing>    sector_tilt_things_;
 	vector<VavoomSlopeThing>   vavoom_things_;
-	vector<SlopeSpecialThing*> slope_things_;
-	bool                       slope_things_sorted_ = false;
+	vector<SlopeSpecialThing*> sorted_slope_things_;
 	vector<CopySlopeThing>     copy_slope_things_;
 	bool                       copy_slope_things_sorted_ = false;
 	vector<PlaneCopy>          plane_copy_specials_;
