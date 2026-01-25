@@ -111,7 +111,10 @@ void ConsolePanel::initLayout()
 void ConsolePanel::setupTextArea() const
 {
 	// Style
-	StyleSet::currentSet()->applyToWx(text_log_);
+	if (app::isDarkTheme())
+		StyleSet::set("SLADE (Dark)")->applyToWx(text_log_);
+	else
+		StyleSet::set("SLADE (Light)")->applyToWx(text_log_);
 
 	// Margins
 	text_log_->SetMarginWidth(0, text_log_->TextWidth(wxSTC_STYLE_DEFAULT, wxS("00:00:00")));
@@ -120,10 +123,7 @@ void ConsolePanel::setupTextArea() const
 
 	// Message type colours
 	auto hsl = colour::rgbToHsl(StyleSet::currentSet()->styleForeground("default"));
-	if (hsl.l > 0.8)
-		hsl.l = 0.8;
-	if (hsl.l < 0.2)
-		hsl.l = 0.2;
+	hsl.l    = std::clamp(hsl.l, 0.2, 0.8);
 	text_log_->StyleSetForeground(200, ColHSL(0.99, 1., hsl.l).asRGB());
 	text_log_->StyleSetForeground(201, ColHSL(0.1, 1., hsl.l).asRGB());
 	text_log_->StyleSetForeground(202, ColHSL(0.5, 0.8, hsl.l).asRGB());
@@ -135,8 +135,6 @@ void ConsolePanel::setupTextArea() const
 // -----------------------------------------------------------------------------
 void ConsolePanel::update()
 {
-	setupTextArea();
-
 	// Check if any new log messages were added since the last update
 	auto& log = log::history();
 	if (log.size() <= next_message_index_)

@@ -673,9 +673,20 @@ bool app::init(const vector<string>& args)
 void app::saveConfigFile()
 {
 	// Open config file for writing
-	SFile config_json(path("config.json", Dir::User), SFile::Mode::Write);
+	auto  cfg_path = path("config.json", Dir::User);
+	SFile config_json(cfg_path, SFile::Mode::Write);
+
+	// Show error message if it didn't open correctly
 	if (!config_json.isOpen())
+	{
+		log::error("Failed to open slade3.cfg for writing");
+		wxMessageBox(
+			WX_FMT(
+				"Failed to open the SLADE configuration file ({}) for writing, settings will not be saved!", cfg_path),
+			wxS("Error"),
+			wxICON_ERROR);
 		return;
+	}
 
 	// Build JSON object
 	Json j;

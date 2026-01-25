@@ -1476,10 +1476,14 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 		opt.match_namespace = "flats";
 		for (int i : selection)
 		{
-			opt.match_name      = unused_tex[i];
-			ArchiveEntry* entry = archive->findFirst(opt);
-			archive->removeEntry(entry);
-			n_removed++;
+			opt.match_name = unused_tex[i];
+			if (ArchiveEntry* entry = archive->findFirst(opt))
+			{
+				archive->removeEntry(entry);
+				n_removed++;
+			}
+			else
+				log::warning("Failed to find entry for flat {}, it will not be removed", unused_tex[i]);
 		}
 	}
 

@@ -405,20 +405,22 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	// Name column
 	if (col == 0)
 	{
+		string icon = entry->type() ? entry->type()->icon() : "default";
+
 		// Find icon in cache
-		if (icon_cache.find(entry->type()->icon()) == icon_cache.end())
+		if (!icon_cache.contains(icon))
 		{
 			// Not found, add to cache
 			const auto pad    = Point2i{ 1, elist_icon_padding };
 			const auto bundle = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
-			icon_cache[entry->type()->icon()] = bundle;
+			icon_cache[icon]  = bundle;
 		}
 
 		auto name = wxString::FromUTF8(entry->name());
 		if (modified_indicator_ && entry->state() != EntryState::Unmodified)
-			variant << wxDataViewIconText(name + wxS(" *"), icon_cache[entry->type()->icon()]);
+			variant << wxDataViewIconText(name + wxS(" *"), icon_cache[icon]);
 		else
-			variant << wxDataViewIconText(name, icon_cache[entry->type()->icon()]);
+			variant << wxDataViewIconText(name, icon_cache[icon]);
 	}
 
 	// Size column

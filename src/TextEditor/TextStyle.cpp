@@ -877,7 +877,7 @@ bool StyleSet::loadCustomStyles()
 	// Go through each file in the directory, get list of json and sss files
 	vector<string> json_files;
 	vector<string> sss_files;
-	for (const auto& path : fileutil::allFilesInDir(custom_dir))
+	for (const auto& path : fileutil::allFilesInDir(custom_dir, true, true))
 	{
 		if (strutil::Path::extensionOf(path) == "json")
 			json_files.push_back(path);
