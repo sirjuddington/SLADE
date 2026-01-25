@@ -846,7 +846,7 @@ bool StyleSet::loadCustomStyles()
 		fileutil::createDir(custom_dir);
 
 	// Go through each file in the directory
-	for (const auto& path : fileutil::allFilesInDir(custom_dir))
+	for (const auto& path : fileutil::allFilesInDir(custom_dir, true, true))
 	{
 		// Read file into tokenizer
 		Tokenizer tz;
