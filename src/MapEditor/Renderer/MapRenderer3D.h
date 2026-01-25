@@ -64,11 +64,18 @@ private:
 	// Used to organise quads/flats into groups for rendering
 	struct RenderGroup
 	{
+		enum class Transparency : u8
+		{
+			None     = 0,
+			Normal   = 1,
+			Additive = 2
+		};
+
 		unsigned                    texture;
 		unique_ptr<gl::IndexBuffer> index_buffer;
 		bool                        alpha_test  = false;
 		bool                        sky         = false;
-		bool                        transparent = false;
+		Transparency                transparent = Transparency::None;
 	};
 	vector<RenderGroup> quad_groups_;
 	vector<RenderGroup> flat_groups_;

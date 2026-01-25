@@ -34,6 +34,8 @@
 #include "MapSpecials.h"
 #include "ExtraFloorSpecials.h"
 #include "Game/Configuration.h"
+#include "LineTranslucency.h"
+#include "RenderSpecials.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -62,6 +64,7 @@ MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 {
 	slope_specials_      = std::make_unique<SlopeSpecials>(map);
 	extrafloor_specials_ = std::make_unique<ExtraFloorSpecials>(map);
+	render_specials_     = std::make_unique<RenderSpecials>(map);
 }
 
 // -----------------------------------------------------------------------------
@@ -110,6 +113,34 @@ ColRGBA MapSpecials::sectorColour(const MapSector& sector, SectorPart where, boo
 	return colour.ampf(mult, mult, mult, 1.0f);
 }
 
+optional<LineTranslucency> MapSpecials::lineTranslucency(const MapLine& line) const
+{
+	// First, check for UDMF alpha/renderstyle properties (this will override specials)
+	// TODO: Does it override? Can alpha/renderstyle be mixed and matched with translucency line specials?
+	if (map_->currentFormat() == MapFormat::UDMF
+		&& game::configuration().featureSupported(game::UDMFFeature::LineTransparency)
+		&& (line.hasProp("translucency") || line.hasProp("alpha")))
+	{
+		LineTranslucency translucency;
+
+		// Check for alpha property
+		if (line.hasProp("alpha"))
+		{
+			float alpha        = line.floatProperty("alpha");
+			translucency.alpha = std::clamp(alpha, 0.0f, 1.0f);
+		}
+
+		// Check for "add" renderstyle property
+		if (line.hasProp("renderstyle") && strutil::equalCI(line.stringProperty("renderstyle"), "additive"))
+			translucency.additive = true;
+
+		return translucency;
+	}
+
+	// Otherwise check with render specials
+	return render_specials_->lineTranslucency(line);
+}
+
 // -----------------------------------------------------------------------------
 // Returns the colour for the given [side] at [where]
 // -----------------------------------------------------------------------------
@@ -133,6 +164,7 @@ void MapSpecials::processAllSpecials() const
 	// Clear existing specials
 	slope_specials_->clearSpecials();
 	extrafloor_specials_->clearSpecials();
+	render_specials_->clearSpecials();
 
 	// Process all line specials
 	for (const auto line : map_->lines())
@@ -142,7 +174,7 @@ void MapSpecials::processAllSpecials() const
 	for (const auto thing : map_->things())
 		processThing(*thing);
 
-	// Update planes for all sectors
+	// Update all sector info
 	for (const auto sector : map_->sectors())
 	{
 		slope_specials_->updateSectorPlanes(*sector);
@@ -152,38 +184,30 @@ void MapSpecials::processAllSpecials() const
 
 void MapSpecials::lineUpdated(const MapLine& line) const
 {
-	// Update slope specials
 	slope_specials_->lineUpdated(line, !bulk_update_);
-
-	// Re-process
-	processLineSpecial(line);
+	render_specials_->lineUpdated(line);
 }
 
 void MapSpecials::sectorUpdated(MapSector& sector) const
 {
-	// Update slope specials
 	slope_specials_->sectorUpdated(sector, !bulk_update_);
 }
 
 void MapSpecials::thingUpdated(const MapThing& thing) const
 {
-	// Update slope specials
 	slope_specials_->thingUpdated(thing, !bulk_update_);
-
-	// Re-process
-	processThing(thing);
 }
 
 void MapSpecials::objectUpdated(MapObject& object) const
 {
 	switch (object.objType())
 	{
-	case map::ObjectType::Object: break;
-	case map::ObjectType::Vertex: break;
-	case map::ObjectType::Line:   lineUpdated(dynamic_cast<MapLine&>(object)); break;
-	case map::ObjectType::Side:   break;
-	case map::ObjectType::Sector: sectorUpdated(dynamic_cast<MapSector&>(object)); break;
-	case map::ObjectType::Thing:  thingUpdated(dynamic_cast<MapThing&>(object)); break;
+	case ObjectType::Object: break;
+	case ObjectType::Vertex: break;
+	case ObjectType::Line:   lineUpdated(dynamic_cast<MapLine&>(object)); break;
+	case ObjectType::Side:   break;
+	case ObjectType::Sector: sectorUpdated(dynamic_cast<MapSector&>(object)); break;
+	case ObjectType::Thing:  thingUpdated(dynamic_cast<MapThing&>(object)); break;
 	}
 }
 
@@ -203,6 +227,7 @@ void MapSpecials::processLineSpecial(const MapLine& line) const
 {
 	slope_specials_->processLineSpecial(line);
 	extrafloor_specials_->processLineSpecial(line);
+	render_specials_->processLineSpecial(line);
 }
 
 void MapSpecials::processThing(const MapThing& thing) const

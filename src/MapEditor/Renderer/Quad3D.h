@@ -9,6 +9,7 @@ struct Quad3D
 		None       = 0,
 		MidTexture = 1 << 0,
 		Sky        = 1 << 1,
+		Additive   = 1 << 2,
 	};
 
 	// Origin

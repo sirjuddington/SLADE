@@ -10,10 +10,10 @@ struct Flat3D
 
 	enum class Flags : u8
 	{
-		None        = 0,
-		Sky         = 1 << 0,
-		ExtraFloor  = 1 << 1,
-		Transparent = 1 << 2,
+		None       = 0,
+		Sky        = 1 << 0,
+		ExtraFloor = 1 << 1,
+		Additive   = 1 << 2,
 	};
 
 	// Origin

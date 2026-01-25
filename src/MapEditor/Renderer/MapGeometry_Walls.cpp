@@ -42,6 +42,7 @@
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapSpecials/ExtraFloor.h"
+#include "SLADEMap/MapSpecials/LineTranslucency.h"
 #include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 
@@ -62,13 +63,14 @@ using MapTexture = MapTextureManager::Texture;
 
 struct LineQuadsContext
 {
-	const MapLine*       line;
-	vector<Quad3D>       quads;
-	vector<gl::Vertex3D> vertices;
-	unsigned             vertex_index   = 0;
-	bool                 mix_tex_flats  = false;
-	bool                 upper_unpegged = false;
-	bool                 lower_unpegged = false;
+	const MapLine*                  line;
+	vector<Quad3D>                  quads;
+	vector<gl::Vertex3D>            vertices;
+	unsigned                        vertex_index   = 0;
+	bool                            mix_tex_flats  = false;
+	bool                            upper_unpegged = false;
+	bool                            lower_unpegged = false;
+	optional<map::LineTranslucency> translucency;
 };
 
 // Helper struct for building wall quads
@@ -161,7 +163,17 @@ static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* si
 		.side = side, .vertex_offset = context.vertex_index, .colour = colour, .texture = info.texture->gl_id
 	};
 	if (info.midtex)
+	{
 		quad.setFlag(Quad3D::Flags::MidTexture);
+
+		// Transparency (only applies to mid textures)
+		if (context.translucency.has_value())
+		{
+			if (context.translucency->additive)
+				quad.setFlag(Quad3D::Flags::Additive);
+			quad.colour.a *= context.translucency->alpha;
+		}
+	}
 	if (info.sky)
 		quad.setFlag(Quad3D::Flags::Sky);
 	context.quads.push_back(quad);
@@ -185,17 +197,17 @@ static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* si
 	if (info.midtex)
 	{
 		// Midtextures ignore slopes
-		info.tl = gl::Vertex3D{ glm::vec3{ x1, y1, info.height_top }, {}, colour };
-		info.tr = gl::Vertex3D{ glm::vec3{ x2, y2, info.height_top }, {}, colour };
-		info.bl = gl::Vertex3D{ glm::vec3{ x1, y1, info.height_bottom }, {}, colour };
-		info.br = gl::Vertex3D{ glm::vec3{ x2, y2, info.height_bottom }, {}, colour };
+		info.tl = gl::Vertex3D{ glm::vec3{ x1, y1, info.height_top }, {}, quad.colour };
+		info.tr = gl::Vertex3D{ glm::vec3{ x2, y2, info.height_top }, {}, quad.colour };
+		info.bl = gl::Vertex3D{ glm::vec3{ x1, y1, info.height_bottom }, {}, quad.colour };
+		info.br = gl::Vertex3D{ glm::vec3{ x2, y2, info.height_bottom }, {}, quad.colour };
 	}
 	else
 	{
-		info.tl = gl::Vertex3D{ glm::vec3{ x1, y1, info.plane_top.heightAt(x1, y1) }, {}, colour };
-		info.tr = gl::Vertex3D{ glm::vec3{ x2, y2, info.plane_top.heightAt(x2, y2) }, {}, colour };
-		info.bl = gl::Vertex3D{ glm::vec3{ x1, y1, info.plane_bottom.heightAt(x1, y1) }, {}, colour };
-		info.br = gl::Vertex3D{ glm::vec3{ x2, y2, info.plane_bottom.heightAt(x2, y2) }, {}, colour };
+		info.tl = gl::Vertex3D{ glm::vec3{ x1, y1, info.plane_top.heightAt(x1, y1) }, {}, quad.colour };
+		info.tr = gl::Vertex3D{ glm::vec3{ x2, y2, info.plane_top.heightAt(x2, y2) }, {}, quad.colour };
+		info.bl = gl::Vertex3D{ glm::vec3{ x1, y1, info.plane_bottom.heightAt(x1, y1) }, {}, quad.colour };
+		info.br = gl::Vertex3D{ glm::vec3{ x2, y2, info.plane_bottom.heightAt(x2, y2) }, {}, quad.colour };
 	}
 
 	setupQuadTexCoords(info);
@@ -256,7 +268,6 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 	using SidePart = map::SidePart;
 
 	// TODO:
-	//  - Handle 3D floors splitting wall quads
 	//  - Handle quads that are split (or not full-line length) due to slopes
 
 	// Get relative sides depending on wall part
@@ -455,7 +466,8 @@ std::tuple<vector<Quad3D>, vector<gl::Vertex3D>> generateLineQuads(const MapLine
 							  .vertex_index   = vertex_index,
 							  .mix_tex_flats  = game_cfg.featureSupported(game::Feature::MixTexFlats),
 							  .upper_unpegged = game_cfg.lineBasicFlagSet("dontpegtop", &line, map_format),
-							  .lower_unpegged = game_cfg.lineBasicFlagSet("dontpegbottom", &line, map_format) };
+							  .lower_unpegged = game_cfg.lineBasicFlagSet("dontpegbottom", &line, map_format),
+							  .translucency   = map->mapSpecials().lineTranslucency(line) };
 
 	// One-sided line
 	if (!line.s2())

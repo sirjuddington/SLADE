@@ -166,8 +166,6 @@ static void setupFlat3D(
 		flat.colour = colour.value();
 	else
 		flat.colour = map->mapSpecials().sectorColour(sector, ceiling ? SectorPart::Ceiling : SectorPart::Floor);
-	if (flat.colour.a < 1.0f)
-		flat.setFlag(Flat3D::Flags::Transparent);
 
 	// Texture
 	bool  mix_tex_flats = game::configuration().featureSupported(game::Feature::MixTexFlats);

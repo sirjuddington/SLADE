@@ -159,6 +159,8 @@ unsigned MapRenderer3D::quadsBufferSize() const
 
 void MapRenderer3D::updateFlats()
 {
+	using FlatFlags = mapeditor::Flat3D::Flags;
+
 	// Clear flats to be rebuilt if map geometry has been updated
 	if (map_->geometryUpdated() > flats_updated_)
 	{
@@ -237,13 +239,21 @@ void MapRenderer3D::updateFlats()
 				flats_processed[f] = 1;
 			}
 
+			// Determine transparency type
+			auto transparency = RenderGroup::Transparency::None;
+			if (flats_[i].hasFlag(FlatFlags::Additive))
+				transparency = RenderGroup::Transparency::Additive;
+			else if (flats_[i].colour.a < 1.0f)
+				transparency = RenderGroup::Transparency::Normal;
+
 			// Add flat group for texture
-			flat_groups_.emplace_back();
-			flat_groups_.back().texture      = flats_[i].texture;
-			flat_groups_.back().sky          = flats_[i].hasFlag(mapeditor::Flat3D::Flags::Sky);
-			flat_groups_.back().alpha_test   = flats_[i].hasFlag(mapeditor::Flat3D::Flags::ExtraFloor);
-			flat_groups_.back().transparent  = flats_[i].hasFlag(mapeditor::Flat3D::Flags::Transparent);
-			flat_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
+			flat_groups_.push_back(
+				{ .texture      = flats_[i].texture,
+				  .index_buffer = std::make_unique<gl::IndexBuffer>(),
+				  .alpha_test   = transparency == RenderGroup::Transparency::None
+								&& flats_[i].hasFlag(FlatFlags::ExtraFloor),
+				  .sky          = flats_[i].hasFlag(FlatFlags::Sky),
+				  .transparent  = transparency });
 			flat_groups_.back().index_buffer->upload(indices);
 
 			flats_processed[i] = 1;
@@ -309,12 +319,21 @@ void MapRenderer3D::updateWalls()
 				quads_processed[f] = 1;
 			}
 
+			// Determine transparency type
+			auto transparency = RenderGroup::Transparency::None;
+			if (quads_[i].hasFlag(QuadFlags::Additive))
+				transparency = RenderGroup::Transparency::Additive;
+			else if (quads_[i].colour.a < 1.0f)
+				transparency = RenderGroup::Transparency::Normal;
+
 			// Add quad group for texture
-			quad_groups_.emplace_back();
-			quad_groups_.back().texture      = quads_[i].texture;
-			quad_groups_.back().alpha_test   = quads_[i].hasFlag(QuadFlags::MidTexture);
-			quad_groups_.back().sky          = quads_[i].hasFlag(QuadFlags::Sky);
-			quad_groups_.back().index_buffer = std::make_unique<gl::IndexBuffer>();
+			quad_groups_.push_back(
+				{ .texture      = quads_[i].texture,
+				  .index_buffer = std::make_unique<gl::IndexBuffer>(),
+				  .alpha_test   = transparency == RenderGroup::Transparency::None
+								&& quads_[i].hasFlag(QuadFlags::MidTexture),
+				  .sky         = quads_[i].hasFlag(QuadFlags::Sky),
+				  .transparent = transparency });
 			quad_groups_.back().index_buffer->upload(indices);
 
 			quads_processed[i] = 1;
@@ -362,7 +381,7 @@ void MapRenderer3D::renderFlats(int pass) const
 	for (auto& group : flat_groups_)
 	{
 		// Ensure group is part of the correct render pass
-		if (group.transparent && pass != 2)
+		if (group.transparent != RenderGroup::Transparency::None && pass != 2)
 			continue;
 		if (group.alpha_test && pass == 0)
 			continue;
@@ -370,6 +389,15 @@ void MapRenderer3D::renderFlats(int pass) const
 		// Ignore sky flats if sky rendering is enabled
 		if (render_3d_sky && group.sky)
 			continue;
+
+		// Setup blending if needed
+		if (pass == 2)
+		{
+			if (group.transparent == RenderGroup::Transparency::Additive)
+				gl::setBlend(gl::Blend::Additive);
+			else
+				gl::setBlend(gl::Blend::Normal);
+		}
 
 		gl::Texture::bind(group.texture);
 		group.index_buffer->bind();
@@ -388,7 +416,7 @@ void MapRenderer3D::renderWalls(int pass) const
 	for (auto& group : quad_groups_)
 	{
 		// Ensure group is part of the correct render pass
-		if (group.transparent && pass != 2)
+		if (group.transparent != RenderGroup::Transparency::None && pass != 2)
 			continue;
 		if (group.alpha_test && pass == 0)
 			continue;
@@ -396,6 +424,15 @@ void MapRenderer3D::renderWalls(int pass) const
 		// Ignore sky quads if sky rendering is enabled
 		if (render_3d_sky && group.sky)
 			continue;
+
+		// Setup blending if needed
+		if (pass == 2)
+		{
+			if (group.transparent == RenderGroup::Transparency::Additive)
+				gl::setBlend(gl::Blend::Additive);
+			else
+				gl::setBlend(gl::Blend::Normal);
+		}
 
 		gl::Texture::bind(group.texture);
 		group.index_buffer->bind();
