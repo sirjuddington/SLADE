@@ -70,14 +70,18 @@ string UndoListView::itemText(long item, long column, long index) const
 	int max = manager_->nUndoLevels();
 	if (item < max)
 	{
+		auto* level = manager_->undoLevel(static_cast<unsigned>(item));
+		if (!level)
+			return "";
+
 		if (column == 0)
 		{
-			auto name = manager_->undoLevel((unsigned)item)->name();
+			auto name = level->name();
 			return fmt::format("{}. {}", item + 1, name);
 		}
 		else
 		{
-			return manager_->undoLevel((unsigned)item)->timeStamp(false, true);
+			return level->timeStamp(false, true);
 		}
 	}
 	else
@@ -98,6 +102,9 @@ int UndoListView::itemIcon(long item, long column, long index) const
 void UndoListView::updateItemAttr(long item, long column, long index) const
 {
 	if (!manager_)
+		return;
+
+	if (item >= manager_->nUndoLevels())
 		return;
 
 	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
