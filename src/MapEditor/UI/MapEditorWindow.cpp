@@ -258,7 +258,7 @@ void MapEditorWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Map canvas
-	map_canvas_ = new MapCanvas(this, &mapeditor::editContext());
+	map_canvas_ = new MapCanvas(this, &editContext());
 	p_inf.CenterPane();
 	m_mgr->AddPane(map_canvas_, p_inf);
 
@@ -400,7 +400,7 @@ void MapEditorWindow::setupLayout()
 
 
 	// --- Map Checks Panel ---
-	panel_checks_ = new MapChecksPanel(this, &(mapeditor::editContext().map()));
+	panel_checks_ = new MapChecksPanel(this, &(editContext().map()));
 
 	// Setup panel info & add panel
 	msize = panel_checks_->GetBestSize();
@@ -420,7 +420,7 @@ void MapEditorWindow::setupLayout()
 
 	// -- Undo History Panel --
 	panel_undo_history_ = new UndoManagerHistoryPanel(this, nullptr);
-	panel_undo_history_->setManager(mapeditor::editContext().undoManager());
+	panel_undo_history_->setManager(editContext().undoManager());
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -449,7 +449,7 @@ void MapEditorWindow::setupLayout()
 void MapEditorWindow::lockMapEntries(bool lock) const
 {
 	// Don't bother if no map is open
-	auto& map_desc = mapeditor::editContext().mapDesc();
+	auto& map_desc = editContext().mapDesc();
 	auto  head     = map_desc.head.lock();
 	if (!head)
 		return;
@@ -535,10 +535,10 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 bool MapEditorWindow::openMap(const MapDesc& map)
 {
 	// If a map is currently open and modified, prompt to save changes
-	if (mapeditor::editContext().map().isModified())
+	if (editContext().map().isModified())
 	{
 		wxMessageDialog md{ this,
-							WX_FMT("Save changes to map {}?", mapeditor::editContext().mapDesc().name),
+							WX_FMT("Save changes to map {}?", editContext().mapDesc().name),
 							wxS("Unsaved Changes"),
 							wxYES_NO | wxCANCEL };
 
@@ -582,20 +582,20 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 	}
 
 	// Set texture manager archive
-	mapeditor::textureManager().setArchive(app::archiveManager().shareArchive(archive));
+	textureManager().setArchive(app::archiveManager().shareArchive(archive));
 
 	// Clear current map
 	closeMap();
 
 	// Attempt to open map
 	ui::showSplash("Loading Map", true, this);
-	bool ok = mapeditor::editContext().openMap(map);
+	bool ok = editContext().openMap(map);
 	ui::hideSplash();
 
 	// Show window if opened ok
 	if (ok)
 	{
-		mapeditor::editContext().mapDesc() = map;
+		editContext().mapDesc() = map;
 
 		// Update DECORATE and *MAPINFO definitions
 		game::updateCustomDefinitions();
@@ -609,7 +609,9 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 		// Reset map checks panel
 		panel_checks_->reset();
 
-		mapeditor::editContext().renderer().viewFitToMap(true);
+		// Refresh/update renderer
+		editContext().renderer().viewFitToMap(true);
+		editContext().forceRefreshRenderer(true, true);
 		map_canvas_->Refresh();
 
 		// Set window title
@@ -620,9 +622,7 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 
 		// Create backup
 		auto head = map.head.lock();
-		if (head
-			&& !mapeditor::backupManager().writeBackup(
-				map_data_, head->topParent()->filename(false), head->nameNoExt()))
+		if (head && !backupManager().writeBackup(map_data_, head->topParent()->filename(false), head->nameNoExt()))
 			log::warning("Failed to backup map data");
 	}
 
@@ -707,7 +707,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		return;
 
 	// Switch to ZDBSP if UDMF
-	if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF && nodebuilder_id.value != "zdbsp")
+	if (editContext().mapDesc().format == MapFormat::UDMF && nodebuilder_id.value != "zdbsp")
 	{
 		wxMessageBox(wxS("Nodebuilder switched to ZDBSP for UDMF format"), wxS("Save Map"), wxICON_INFORMATION);
 		builder = nodebuilders::builder("zdbsp");
@@ -745,7 +745,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		wxArrayString out;
 		log::info("execute \"{} {}\"", builder.path, command);
 		wxGetApp().SetTopWindow(this);
-		auto focus = wxWindow::FindFocus();
+		auto focus = FindFocus();
 		wxExecute(WX_FMT("\"{}\" {}", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
 		wxGetApp().SetTopWindow(maineditor::windowWx());
 		if (focus)
@@ -767,8 +767,8 @@ void MapEditorWindow::buildNodes(Archive* wad)
 // -----------------------------------------------------------------------------
 bool MapEditorWindow::writeMap(Archive& wad, const string& name, bool nodes)
 {
-	auto& mdesc_current = mapeditor::editContext().mapDesc();
-	auto& map           = mapeditor::editContext().map();
+	auto& mdesc_current = editContext().mapDesc();
+	auto& map           = editContext().map();
 
 	// Get map data entries
 	vector<ArchiveEntry*> new_map_data;
@@ -829,7 +829,7 @@ bool MapEditorWindow::writeMap(Archive& wad, const string& name, bool nodes)
 // -----------------------------------------------------------------------------
 bool MapEditorWindow::saveMap()
 {
-	auto& mdesc_current = mapeditor::editContext().mapDesc();
+	auto& mdesc_current = editContext().mapDesc();
 
 	// Check for newly created map
 	auto current_head = mdesc_current.head.lock();
@@ -866,7 +866,7 @@ bool MapEditorWindow::saveMap()
 		archive->removeEntry(entry);
 
 	// Create backup
-	if (!mapeditor::backupManager().writeBackup(map_data_, m_head->topParent()->filename(false), m_head->nameNoExt()))
+	if (!backupManager().writeBackup(map_data_, m_head->topParent()->filename(false), m_head->nameNoExt()))
 		log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
@@ -887,7 +887,7 @@ bool MapEditorWindow::saveMap()
 	// Finish
 	mdesc_current.updateMapFormatHints();
 	lockMapEntries();
-	mapeditor::editContext().map().setOpenedTime();
+	editContext().map().setOpenedTime();
 
 	return true;
 }
@@ -897,7 +897,7 @@ bool MapEditorWindow::saveMap()
 // -----------------------------------------------------------------------------
 bool MapEditorWindow::saveMapAs()
 {
-	auto& mdesc_current = mapeditor::editContext().mapDesc();
+	auto& mdesc_current = editContext().mapDesc();
 	auto  previous_desc = mdesc_current;
 
 	// Show dialog
@@ -981,13 +981,13 @@ bool MapEditorWindow::saveMapAs()
 void MapEditorWindow::closeMap() const
 {
 	// Close map in editor
-	mapeditor::editContext().clearMap();
+	editContext().clearMap();
 
 	// Unlock current map entries
 	lockMapEntries(false);
 
 	// Clear map info
-	mapeditor::editContext().mapDesc().head.reset();
+	editContext().mapDesc().head.reset();
 }
 
 // -----------------------------------------------------------------------------
@@ -999,7 +999,7 @@ void MapEditorWindow::forceRefresh(bool renderer) const
 		return;
 
 	if (renderer)
-		mapeditor::editContext().forceRefreshRenderer(true, true);
+		editContext().forceRefreshRenderer(true, true);
 	map_canvas_->Refresh();
 }
 
@@ -1010,7 +1010,7 @@ void MapEditorWindow::forceRefresh(bool renderer) const
 // -----------------------------------------------------------------------------
 bool MapEditorWindow::tryClose()
 {
-	if (mapeditor::editContext().map().isModified())
+	if (editContext().map().isModified())
 	{
 		wxMessageDialog md{ this,
 							WX_FMT("Save changes to map {}?", mapeditor::editContext().mapDesc().name),
@@ -1031,7 +1031,7 @@ bool MapEditorWindow::tryClose()
 // -----------------------------------------------------------------------------
 bool MapEditorWindow::hasMapOpen(const Archive* archive) const
 {
-	auto& mdesc = mapeditor::editContext().mapDesc();
+	auto& mdesc = editContext().mapDesc();
 	if (auto head = mdesc.head.lock())
 		return head->parent() == archive;
 
@@ -1069,7 +1069,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	auto& p_inf = m_mgr->GetPane(wxS("object_edit"));
 
 	// Save current y offset
-	double top = mapeditor::editContext().renderer().view().canvasY(0);
+	double top = editContext().renderer().view().canvasY(0);
 
 	// Enable/disable panel
 	if (show)
@@ -1081,7 +1081,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	m_mgr->Update();
 
 	// Restore y offset
-	mapeditor::editContext().renderer().setTopY(top);
+	editContext().renderer().setTopY(top);
 	map_canvas_->Enable(true);
 	map_canvas_->SetFocus();
 }
@@ -1096,7 +1096,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 	auto& p_inf = m_mgr->GetPane(wxS("shape_draw"));
 
 	// Save current y offset
-	double top = mapeditor::editContext().renderer().view().canvasY(0);
+	double top = editContext().renderer().view().canvasY(0);
 
 	// Enable/disable panel
 	p_inf.Show(show);
@@ -1106,7 +1106,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 	m_mgr->Update();
 
 	// Restore y offset
-	mapeditor::editContext().renderer().setTopY(top);
+	editContext().renderer().setTopY(top);
 	map_canvas_->Enable(true);
 	map_canvas_->SetFocus();
 }
@@ -1117,7 +1117,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 // -----------------------------------------------------------------------------
 bool MapEditorWindow::handleAction(string_view id)
 {
-	auto& mdesc_current = mapeditor::editContext().mapDesc();
+	auto& mdesc_current = editContext().mapDesc();
 
 	// Don't handle actions if hidden
 	if (!IsShown())
@@ -1145,7 +1145,7 @@ bool MapEditorWindow::handleAction(string_view id)
 				}
 			}
 		}
-		mapeditor::editContext().renderer().forceUpdate();
+		editContext().renderer().forceUpdate();
 		return true;
 	}
 
@@ -1153,7 +1153,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	if (id == "mapw_saveas")
 	{
 		saveMapAs();
-		mapeditor::editContext().renderer().forceUpdate();
+		editContext().renderer().forceUpdate();
 		return true;
 	}
 
@@ -1162,15 +1162,16 @@ bool MapEditorWindow::handleAction(string_view id)
 	{
 		if (auto head = mdesc_current.head.lock())
 		{
-			auto data = mapeditor::backupManager().openBackup(head->topParent()->filename(false), mdesc_current.name);
+			auto data = backupManager().openBackup(head->topParent()->filename(false), mdesc_current.name);
 
 			if (data)
 			{
 				auto maps = data->detectMaps();
 				if (!maps.empty())
 				{
-					mapeditor::editContext().clearMap();
-					mapeditor::editContext().openMap(maps[0]);
+					editContext().clearMap();
+					editContext().openMap(maps[0]);
+					editContext().forceRefreshRenderer(true, true);
 					loadMapScripts(maps[0]);
 				}
 			}
@@ -1182,21 +1183,21 @@ bool MapEditorWindow::handleAction(string_view id)
 	// Map->Close
 	if (id == "mapw_close")
 	{
-		wxWindow::Close();
+		Close();
 		return true;
 	}
 
 	// Edit->Undo
 	if (id == "mapw_undo")
 	{
-		mapeditor::editContext().doUndo();
+		editContext().doUndo();
 		return true;
 	}
 
 	// Edit->Redo
 	if (id == "mapw_redo")
 	{
-		mapeditor::editContext().doRedo();
+		editContext().doRedo();
 		return true;
 	}
 
@@ -1326,13 +1327,11 @@ bool MapEditorWindow::handleAction(string_view id)
 		RunDialog dlg(this, archive, id == "mapw_run_map", true);
 		if (id == "mapw_quick_run_map" || dlg.ShowModal() == wxID_OK)
 		{
-			auto& edit_context = mapeditor::editContext();
-
 			// Move player 1 start if needed
 			if (id == "mapw_run_map_here")
-				edit_context.swapPlayerStart2d(edit_context.input().mouseDownPosMap());
+				editContext().swapPlayerStart2d(editContext().input().mouseDownPosMap());
 			else if (dlg.start3dModeChecked())
-				edit_context.swapPlayerStart3d();
+				editContext().swapPlayerStart3d();
 
 			// Write temp wad
 			Archive wad(ArchiveFormat::Wad);
@@ -1341,7 +1340,7 @@ bool MapEditorWindow::handleAction(string_view id)
 
 			// Reset player 1 start if moved
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
-				mapeditor::editContext().resetPlayerStart();
+				editContext().resetPlayerStart();
 
 			RunDialog::Config cfg{ archive ? archive->filename() : "" };
 			cfg.map_name = mdesc_current.name;
@@ -1356,7 +1355,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	// Tools->Run Script
 	else if (id == "mapw_script")
 	{
-		scriptmanager::runMapScript(&mapeditor::editContext().map(), wxIdOffset(), this);
+		scriptmanager::runMapScript(&editContext().map(), wxIdOffset(), this);
 		return true;
 	}
 
@@ -1385,13 +1384,13 @@ bool MapEditorWindow::handleAction(string_view id)
 void MapEditorWindow::onClose(wxCloseEvent& e)
 {
 	// Unlock mouse cursor
-	bool locked = mapeditor::editContext().mouseLocked();
-	mapeditor::editContext().lockMouse(false);
+	bool locked = editContext().mouseLocked();
+	editContext().lockMouse(false);
 
 	if (!tryClose())
 	{
 		// Restore mouse cursor lock
-		mapeditor::editContext().lockMouse(locked);
+		editContext().lockMouse(locked);
 
 		e.Veto();
 		return;

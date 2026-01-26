@@ -439,9 +439,6 @@ bool MapEditContext::openMap(const MapDesc& map)
 		// Set sky texture for 3d renderer
 		auto minf = game::configuration().mapInfo(map_->mapName());
 		renderer_->renderer3D().setSkyTexture(minf.sky1, minf.sky2);
-
-		// Reset rendering data
-		forceRefreshRenderer(true, true);
 	}
 
 	edit_3d_->setLinked(true, true);
