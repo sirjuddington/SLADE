@@ -163,7 +163,9 @@ private:
 	void updateThingBuffers();
 
 	// Misc.
-	void   updateThingPaths(const vector<MapThing*>& things);
-	double scaledRadius(int radius) const;
+	void    updateThingPaths(const vector<MapThing*>& things);
+	void    setupThingBuffer(gl::ThingBuffer2D& buffer, const game::ThingType& tt) const;
+	double  scaledRadius(int radius) const;
+	ColRGBA lineColour(const MapLine* line, bool ignore_filter = false) const;
 };
 } // namespace slade
