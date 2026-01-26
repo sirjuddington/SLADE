@@ -370,6 +370,13 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 			if (side->hasProp("offsety_bottom"))
 				quad_info.offsets.y += side->intProperty("offsety_bottom");
 			break;
+		case MapLine::FrontMiddle:
+		case MapLine::BackMiddle:
+			if (side->hasProp("offsetx_mid"))
+				quad_info.offsets.x += side->intProperty("offsetx_mid");
+			if (side->hasProp("offsety_mid"))
+				quad_info.offsets.y += side->intProperty("offsety_mid");
+			break;
 		default: break;
 		}
 	}
