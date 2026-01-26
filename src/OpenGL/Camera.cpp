@@ -203,25 +203,35 @@ void Camera::look(float xrel, float yrel)
 }
 
 // -----------------------------------------------------------------------------
-// Applies gravity to the camera, with the 'floor' at [floor_height]
+// Applies gravity to the camera, with the 'floor' at [floor_height], adjusting
+// to be [view_hight] above the floor.
+// Returns true if the camera position was changed
 // -----------------------------------------------------------------------------
-void Camera::applyGravity(float floor_height, float mult)
+bool Camera::applyGravity(float floor_height, float view_height, float mult)
 {
-	if (position_.z > floor_height)
+	bool changed = false;
+	auto feet_z  = position_.z - view_height; // Camera 'feet' position
+	if (feet_z > floor_height)
 	{
-		auto diff = position_.z - floor_height;
-		position_.z -= diff * 0.3f * mult;
-		position_.z = glm::max(position_.z, floor_height);
+		auto diff = feet_z - floor_height;
+		position_.z -= diff * 0.2f * mult;
+		if (position_.z - view_height < floor_height)
+			position_.z = floor_height + view_height;
+		changed = true;
 	}
 
-	else if (position_.z < floor_height)
+	else if (feet_z < floor_height)
 	{
-		auto diff = floor_height - position_.z;
+		auto diff = floor_height - feet_z;
 		position_.z += diff * 0.5f * mult;
-		position_.z = glm::min(position_.z, floor_height);
+		if (position_.z - view_height > floor_height)
+			position_.z = floor_height + view_height;
+		changed = true;
 	}
 
 	updateView();
+
+	return changed;
 }
 
 // -----------------------------------------------------------------------------

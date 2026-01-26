@@ -165,9 +165,7 @@ void ExtraFloorSpecials::applySet3dFloorSpecial(
 	ExtraFloor ef;
 	ef.control_line   = special.line;
 	ef.control_sector = special.control_sector;
-	// ef.render_inside  = special.render_inside;
-	// ef.flags          = special.flags;
-	ef.alpha = special.alpha;
+	ef.alpha          = special.alpha;
 
 	if (special.type == Set3dFloorSpecial::Type::Vavoom)
 	{
@@ -199,8 +197,8 @@ void ExtraFloorSpecials::applySet3dFloorSpecial(
 		ef.setFlag(ExtraFloor::Flags::AdditiveTransparency);
 	if (special.render_inside)
 		ef.setFlag(ExtraFloor::Flags::DrawInside);
-	// if (special.type == Set3dFloorSpecial::Type::Solid || special.type == Set3dFloorSpecial::Type::Vavoom)
-	//	ef.setFlag(ExtraFloor::Flags::Solid);
+	if (special.type == Set3dFloorSpecial::Type::Solid || special.type == Set3dFloorSpecial::Type::Vavoom)
+		ef.setFlag(ExtraFloor::Flags::Solid);
 
 	sector_extra_floors.extra_floors.push_back(ef);
 }

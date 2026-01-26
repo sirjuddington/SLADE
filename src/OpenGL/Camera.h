@@ -43,7 +43,7 @@ public:
 	void strafe(float distance);
 	void pitch(float amount);
 	void look(float xrel, float yrel);
-	void applyGravity(float floor_height, float mult);
+	bool applyGravity(float floor_height, float view_height, float mult);
 
 private:
 	// View

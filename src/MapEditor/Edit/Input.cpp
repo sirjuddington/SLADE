@@ -34,6 +34,7 @@
 #include "App.h"
 #include "Edit2D.h"
 #include "Edit3D.h"
+#include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/KeyBind.h"
 #include "General/SAction.h"
@@ -52,7 +53,11 @@
 #include "ObjectEdit.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/View.h"
+#include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
+#include "SLADEMap/SLADEMap.h"
 #include "UI/UI.h"
 
 using namespace slade;
@@ -1160,18 +1165,19 @@ bool Input::updateCamera3d(double mult) const
 	bool   moving = false;
 	double speed  = shift_down_ ? mult * 8 : mult * 4;
 	auto&  camera = context_->renderer().camera();
+	auto   sector = context_->map().sectors().atPos({ camera.position().x, camera.position().y });
 
 	// Camera forward
 	if (KeyBind::isPressed("me3d_camera_forward"))
 	{
-		camera.move(speed, !camera_3d_gravity);
+		camera.move(speed, !camera_3d_gravity || !sector);
 		moving = true;
 	}
 
 	// Camera backward
 	if (KeyBind::isPressed("me3d_camera_back"))
 	{
-		camera.move(-speed, !camera_3d_gravity);
+		camera.move(-speed, !camera_3d_gravity || !sector);
 		moving = true;
 	}
 
@@ -1218,9 +1224,12 @@ bool Input::updateCamera3d(double mult) const
 	}
 
 	// Apply gravity to camera if needed
-	// TODO: 3dmode
-	// if (camera_3d_gravity)
-	//	r3d.cameraApplyGravity(mult);
+	if (camera_3d_gravity && sector)
+	{
+		auto height = context_->map().mapSpecials().sectorFloorHeightAt(*sector, camera.position());
+		if (camera.applyGravity(height, game::configuration().playerEyeHeight(), mult))
+			moving = true;
+	}
 
 	return moving;
 }

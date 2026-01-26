@@ -113,6 +113,31 @@ ColRGBA MapSpecials::sectorColour(const MapSector& sector, SectorPart where, boo
 	return colour.ampf(mult, mult, mult, 1.0f);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the floor height at [pos] in the given [sector], taking into account
+// any ExtraFloors
+// -----------------------------------------------------------------------------
+float MapSpecials::sectorFloorHeightAt(const MapSector& sector, Vec3d pos) const
+{
+	float height = sector.floor().plane.heightAt(pos.xy);
+
+	for (const auto& ef : extrafloor_specials_->extraFloors(&sector))
+	{
+		if (ef.hasFlag(ExtraFloor::Flags::Solid))
+		{
+			auto ef_height = ef.plane_top.heightAt(pos);
+			if (ef_height > height && pos.z >= ef_height)
+				height = ef_height;
+		}
+	}
+
+	return height;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the translucency info for the given [line], if any is set via UDMF
+// or line specials
+// -----------------------------------------------------------------------------
 optional<LineTranslucency> MapSpecials::lineTranslucency(const MapLine& line) const
 {
 	// First, check for UDMF alpha/renderstyle properties (this will override specials)
