@@ -119,7 +119,7 @@ ColRGBA MapSpecials::sectorColour(const MapSector& sector, SectorPart where, boo
 // -----------------------------------------------------------------------------
 float MapSpecials::sectorFloorHeightAt(const MapSector& sector, Vec3d pos) const
 {
-	float height = sector.floor().plane.heightAt(pos.xy);
+	float height = sector.floor().plane.heightAt(pos.xy());
 
 	for (const auto& ef : extrafloor_specials_->extraFloors(&sector))
 	{
