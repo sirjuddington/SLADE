@@ -28,7 +28,6 @@ using namespace slade;
 CVAR(Float, render_max_dist, 2000, CVar::Flag::Save)
 CVAR(Float, render_max_thing_dist, 2000, CVar::Flag::Save)
 CVAR(Int, render_thing_icon_size, 16, CVar::Flag::Save)
-CVAR(Bool, render_fog_quality, true, CVar::Flag::Save)
 CVAR(Bool, render_max_dist_adaptive, false, CVar::Flag::Save)
 CVAR(Int, render_adaptive_ms, 15, CVar::Flag::Save)
 CVAR(Bool, render_3d_sky, true, CVar::Flag::Save)
@@ -36,8 +35,7 @@ CVAR(Int, render_3d_things, 1, CVar::Flag::Save)
 CVAR(Int, render_3d_things_style, 1, CVar::Flag::Save)
 CVAR(Int, render_3d_hilight, 1, CVar::Flag::Save)
 CVAR(Float, render_3d_brightness, 1, CVar::Flag::Save)
-CVAR(Float, render_fog_distance, 1500, CVar::Flag::Save)
-CVAR(Bool, render_fog_new_formula, true, CVar::Flag::Save)
+CVAR(Float, render_fog_density, 1, CVar::Flag::Save)
 CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
 
 
@@ -56,14 +54,8 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
 
 MapRenderer3D::~MapRenderer3D() = default;
 
-bool MapRenderer3D::fogEnabled() const
-{
-	return false;
-}
-
 void MapRenderer3D::enableHilight(bool enable) {}
 void MapRenderer3D::enableSelection(bool enable) {}
-void MapRenderer3D::enableFog(bool enable) {}
 
 void MapRenderer3D::setSkyTexture(string_view tex1, string_view tex2) const
 {
@@ -97,14 +89,17 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	if (render_3d_sky)
 		skybox_->render(camera);
 
-	// Set ModelViewProjection matrix uniform from camera
-	auto mvp = camera.projectionMatrix() * camera.viewMatrix();
-	shader_3d_->setUniform("mvp", mvp);
-	shader_3d_alphatest_->setUniform("mvp", mvp);
+	// Set ModelView/Projection matrix uniforms from camera
+	shader_3d_->setUniform("modelview", camera.viewMatrix());
+	shader_3d_->setUniform("projection", camera.projectionMatrix());
+	shader_3d_alphatest_->setUniform("modelview", camera.viewMatrix());
+	shader_3d_alphatest_->setUniform("projection", camera.projectionMatrix());
 
 	// Setup shader uniforms
 	shader_3d_->setUniform("fullbright", fullbright_);
+	shader_3d_->setUniform("fog_density", fog_ ? render_fog_density : 0.0f);
 	shader_3d_alphatest_->setUniform("fullbright", fullbright_);
+	shader_3d_alphatest_->setUniform("fog_density", fog_ ? render_fog_density : 0.0f);
 
 	// Update flats and walls
 	updateFlats();

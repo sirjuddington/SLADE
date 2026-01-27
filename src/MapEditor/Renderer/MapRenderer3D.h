@@ -29,12 +29,12 @@ public:
 	MapRenderer3D(SLADEMap* map);
 	~MapRenderer3D();
 
-	bool fogEnabled() const;
+	bool fogEnabled() const { return fog_; }
 	bool fullbrightEnabled() const { return fullbright_; }
 
 	void enableHilight(bool enable = true);
 	void enableSelection(bool enable = true);
-	void enableFog(bool enable = true);
+	void enableFog(bool enable = true) { fog_ = enable; }
 	void enableFullbright(bool enable = true) { fullbright_ = enable; }
 	void setSkyTexture(string_view tex1, string_view tex2 = "") const;
 
@@ -53,6 +53,7 @@ private:
 	unique_ptr<gl::Shader>        shader_3d_alphatest_;
 	unique_ptr<mapeditor::Skybox> skybox_;
 	bool                          fullbright_ = false;
+	bool                          fog_        = true;
 
 	vector<mapeditor::Flat3D>                  flats_;
 	unique_ptr<mapeditor::MapGeometryBuffer3D> vb_flats_; // Vertex buffer for all flats

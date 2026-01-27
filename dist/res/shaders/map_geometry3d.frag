@@ -3,11 +3,14 @@ in VertexData
 	vec2  tex_coord;
 	float brightness;
 	vec3  normal;
+	vec3  view_pos;
 } vertex_in;
 
 out vec4 f_colour;
 
-uniform vec4 colour = vec4(1.0);
+uniform vec4  colour      = vec4(1.0);
+uniform vec3  fog_colour  = vec3(0.0);
+uniform float fog_density = 1.0;
 
 #ifdef ALPHA_TEST
 uniform float alpha_threshold = 0.0;
@@ -15,13 +18,29 @@ uniform float alpha_threshold = 0.0;
 
 uniform sampler2D tex_unit;
 
+float fogFactor()
+{
+	float inv_brightness = 1.0 - vertex_in.brightness;
+
+	float depth   = length(vertex_in.view_pos);
+	float density = inv_brightness * fog_density;
+	float factor  = exp(-(density * density * density) * depth * 0.01);
+	
+	return clamp(factor, vertex_in.brightness * vertex_in.brightness, 1.0);
+}
+
 void main()
 {
-	vec4 tex_col = texture(tex_unit, vertex_in.tex_coord);
+	// Start with texture colour
+	vec4 frag_colour = texture(tex_unit, vertex_in.tex_coord);
 
 #ifdef ALPHA_TEST
-	if (tex_col.a <= alpha_threshold) discard;
+	if (frag_colour.a <= alpha_threshold) discard;
 #endif
 
-	f_colour = tex_col * colour * vec4(vec3(vertex_in.brightness), 1.0);
+	// Apply brightness and overall colour
+	frag_colour = frag_colour * colour * vec4(vec3(vertex_in.brightness), 1.0);
+
+	// Apply fog
+	f_colour = vec4(mix(fog_colour, frag_colour.rgb, fogFactor()), frag_colour.a);
 }

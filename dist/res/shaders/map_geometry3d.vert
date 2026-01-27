@@ -8,10 +8,13 @@ out VertexData
 	vec2  tex_coord;
 	float brightness;
 	vec3  normal;
+	vec3  view_pos;
 } vertex_out;
 
-uniform mat4 mvp;
+uniform mat4 projection;
+uniform mat4 modelview;
 uniform bool fullbright;
+uniform vec3 fog_colour = vec3(0.0);
 
 void main()
 {
@@ -23,5 +26,8 @@ void main()
 	else
 		vertex_out.brightness = in_brightness;
 
-	gl_Position = mvp * vec4(in_position, 1.0);
+	vec4 view_position = modelview * vec4(in_position, 1.0);
+	vertex_out.view_pos = view_position.xyz;
+
+	gl_Position = projection * view_position;
 }
