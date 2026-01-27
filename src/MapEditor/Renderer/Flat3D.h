@@ -31,6 +31,7 @@ struct Flat3D
 	unsigned  texture = 0;
 	u8        flags   = 0;
 	glm::vec4 colour{ 1.0f };
+	float     brightness = 1.0f;
 
 	long updated_time = 0;
 

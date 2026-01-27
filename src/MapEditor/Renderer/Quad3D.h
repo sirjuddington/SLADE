@@ -19,6 +19,7 @@ struct Quad3D
 	unsigned vertex_offset = 0;
 
 	// Render info
+	float     brightness   = 1.0f;
 	glm::vec4 colour       = glm::vec4{ 1.0f };
 	glm::vec3 normal       = glm::vec3{ 0.0f, 0.0f, 1.0f };
 	unsigned  texture      = 0;

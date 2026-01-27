@@ -69,6 +69,11 @@ Skybox::Skybox()
 }
 
 // -----------------------------------------------------------------------------
+// Skybox class destructor
+// -----------------------------------------------------------------------------
+Skybox::~Skybox() = default;
+
+// -----------------------------------------------------------------------------
 // Sets the skybox textures to [tex1] and (optionally) [tex2]
 // -----------------------------------------------------------------------------
 void Skybox::setSkyTextures(string_view tex1, string_view tex2)
@@ -84,8 +89,16 @@ void Skybox::setSkyTextures(string_view tex1, string_view tex2)
 // Renders the skybox around [camera] using [shader].
 // Note that this will change the shader's MVP matrix uniform
 // -----------------------------------------------------------------------------
-void Skybox::render(const gl::Camera& camera, const gl::Shader& shader)
+void Skybox::render(const gl::Camera& camera)
 {
+	// Load shader if needed
+	if (!shader_)
+	{
+		shader_ = std::make_unique<gl::Shader>("map_skybox");
+		shader_->define("TEXTURED");
+		shader_->loadResourceEntries("default3d.vert", "default3d.frag");
+	}
+
 	// Build vertex buffer if needed
 	if (vertex_buffer_->buffer().empty())
 		buildVertexBuffer();
@@ -102,19 +115,19 @@ void Skybox::render(const gl::Camera& camera, const gl::Shader& shader)
 	auto cam_pos = camera.position();
 	auto model   = glm::translate(glm::mat4(1.0f), glm::vec3(cam_pos.x, cam_pos.y, cam_pos.z - 10.0f));
 	auto mvp     = camera.projectionMatrix() * camera.viewMatrix() * model;
-	shader.setUniform("mvp", mvp);
+	shader_->setUniform("mvp", mvp);
 
 	// Render top cap
 	gl::Texture::bind(gl::Texture::whiteTexture());
-	shader.setUniform("colour", skycol_top_);
+	shader_->setUniform("colour", skycol_top_);
 	vertex_buffer_->drawPartial(vertex_index_caps_, 6);
 
 	// Render bottom cap
-	shader.setUniform("colour", skycol_bottom_);
+	shader_->setUniform("colour", skycol_bottom_);
 	vertex_buffer_->drawPartial(vertex_index_caps_ + 6, 6);
 
 	// Render skybox sides
-	shader.setUniform("colour", glm::vec4(1.0f));
+	shader_->setUniform("colour", glm::vec4(1.0f));
 	gl::Texture::bind(sky_tex_id_);
 	vertex_buffer_->draw(gl::Primitive::Triangles, nullptr, nullptr, 0, vertex_index_caps_);
 

@@ -17,14 +17,15 @@ class Skybox
 {
 public:
 	Skybox();
-	~Skybox() = default;
+	~Skybox();
 
 	void setSkyTextures(string_view tex1, string_view tex2 = "");
 
-	void render(const gl::Camera& camera, const gl::Shader& shader);
+	void render(const gl::Camera& camera);
 
 private:
 	unique_ptr<gl::VertexBuffer3D> vertex_buffer_;
+	unique_ptr<gl::Shader>         shader_;
 	unsigned                       vertex_index_caps_ = 0; // Vertex index where skybox cap quads start
 	string                         skytex1_           = "SKY1";
 	string                         skytex2_;

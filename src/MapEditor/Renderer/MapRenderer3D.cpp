@@ -4,11 +4,11 @@
 #include "App.h"
 #include "Flat3D.h"
 #include "MapGeometry.h"
+#include "MapGeometryBuffer3D.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/Shader.h"
-#include "OpenGL/VertexBuffer3D.h"
 #include "Quad3D.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/LineList.h"
@@ -49,8 +49,8 @@ CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
 
 MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
 {
-	vb_flats_ = std::make_unique<gl::VertexBuffer3D>();
-	vb_quads_ = std::make_unique<gl::VertexBuffer3D>();
+	vb_flats_ = std::make_unique<mapeditor::MapGeometryBuffer3D>();
+	vb_quads_ = std::make_unique<mapeditor::MapGeometryBuffer3D>();
 	skybox_   = std::make_unique<mapeditor::Skybox>();
 }
 
@@ -61,15 +61,9 @@ bool MapRenderer3D::fogEnabled() const
 	return false;
 }
 
-bool MapRenderer3D::fullbrightEnabled() const
-{
-	return false;
-}
-
 void MapRenderer3D::enableHilight(bool enable) {}
 void MapRenderer3D::enableSelection(bool enable) {}
 void MapRenderer3D::enableFog(bool enable) {}
-void MapRenderer3D::enableFullbright(bool enable) {}
 
 void MapRenderer3D::setSkyTexture(string_view tex1, string_view tex2) const
 {
@@ -82,15 +76,13 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	if (!shader_3d_)
 	{
 		shader_3d_ = std::make_unique<gl::Shader>("map_3d");
-		shader_3d_->define("TEXTURED");
-		shader_3d_->loadResourceEntries("default3d.vert", "default3d.frag");
+		shader_3d_->loadResourceEntries("map_geometry3d.vert", "map_geometry3d.frag");
 	}
 	if (!shader_3d_alphatest_)
 	{
 		shader_3d_alphatest_ = std::make_unique<gl::Shader>("map_3d_alphatest");
-		shader_3d_alphatest_->define("TEXTURED");
 		shader_3d_alphatest_->define("ALPHA_TEST");
-		shader_3d_alphatest_->loadResourceEntries("default3d.vert", "default3d.frag");
+		shader_3d_alphatest_->loadResourceEntries("map_geometry3d.vert", "map_geometry3d.frag");
 	}
 
 	// Setup GL stuff
@@ -103,12 +95,16 @@ void MapRenderer3D::render(const gl::Camera& camera)
 
 	// Render skybox first (before depth buffer is populated)
 	if (render_3d_sky)
-		skybox_->render(camera, *shader_3d_);
+		skybox_->render(camera);
 
 	// Set ModelViewProjection matrix uniform from camera
 	auto mvp = camera.projectionMatrix() * camera.viewMatrix();
 	shader_3d_->setUniform("mvp", mvp);
 	shader_3d_alphatest_->setUniform("mvp", mvp);
+
+	// Setup shader uniforms
+	shader_3d_->setUniform("fullbright", fullbright_);
+	shader_3d_alphatest_->setUniform("fullbright", fullbright_);
 
 	// Update flats and walls
 	updateFlats();
@@ -120,19 +116,19 @@ void MapRenderer3D::render(const gl::Camera& camera)
 		renderSkyFlatsQuads();
 
 	// First pass, render solid flats/walls
-	renderFlats(0);
-	renderWalls(0);
+	renderFlats(*shader_3d_, 0);
+	renderWalls(*shader_3d_, 0);
 
 	// Second pass, render alpha-tested flats/walls
 	shader_3d_alphatest_->bind();
-	renderFlats(1);
-	renderWalls(1);
+	renderFlats(*shader_3d_alphatest_, 1);
+	renderWalls(*shader_3d_alphatest_, 1);
 
 	// Third pass, render transparent flats/walls
 	shader_3d_->bind();
 	glDepthMask(GL_FALSE);
-	renderFlats(2);
-	renderWalls(2);
+	renderFlats(*shader_3d_, 2);
+	renderWalls(*shader_3d_, 2);
 
 	// Cleanup gl state
 	glDepthMask(GL_TRUE);
@@ -149,12 +145,12 @@ void MapRenderer3D::clearData()
 
 unsigned MapRenderer3D::flatsBufferSize() const
 {
-	return vb_flats_->buffer().size() * sizeof(gl::Vertex3D);
+	return vb_flats_->buffer().size() * sizeof(mapeditor::MGVertex);
 }
 
 unsigned MapRenderer3D::quadsBufferSize() const
 {
-	return vb_quads_->buffer().size() * sizeof(gl::Vertex3D);
+	return vb_quads_->buffer().size() * sizeof(mapeditor::MGVertex);
 }
 
 void MapRenderer3D::updateFlats()
@@ -178,7 +174,7 @@ void MapRenderer3D::updateFlats()
 			auto [flats, vertices] = mapeditor::generateSectorFlats(*sector, vertex_index);
 
 			vectorConcat(flats_, flats);
-			vb_flats_->add(vertices);
+			vb_flats_->addVertices(vertices);
 			vertex_index += vertices.size();
 		}
 
@@ -193,7 +189,7 @@ void MapRenderer3D::updateFlats()
 		{
 			if (flat.updated_time < flat.sector->modifiedTime())
 			{
-				vector<gl::Vertex3D> vertices;
+				vector<mapeditor::MGVertex> vertices;
 				updateFlat(flat, vertices);
 				vb_flats_->buffer().update(flat.vertex_offset, vertices);
 				updated = true;
@@ -227,6 +223,10 @@ void MapRenderer3D::updateFlats()
 				if (flats_processed[f] || flat.texture != flats_[i].texture)
 					continue;
 
+				// Check colour match
+				if (flat.colour != flats_[i].colour)
+					continue;
+
 				// Check flags
 				if (flat.flags != flats_[i].flags)
 					continue;
@@ -249,11 +249,12 @@ void MapRenderer3D::updateFlats()
 			// Add flat group for texture
 			flat_groups_.push_back(
 				{ .texture      = flats_[i].texture,
+				  .colour       = flats_[i].colour,
 				  .index_buffer = std::make_unique<gl::IndexBuffer>(),
 				  .alpha_test   = transparency == RenderGroup::Transparency::None
 								&& flats_[i].hasFlag(FlatFlags::ExtraFloor),
-				  .sky          = flats_[i].hasFlag(FlatFlags::Sky),
-				  .transparent  = transparency });
+				  .sky         = flats_[i].hasFlag(FlatFlags::Sky),
+				  .transparent = transparency });
 			flat_groups_.back().index_buffer->upload(indices);
 
 			flats_processed[i] = 1;
@@ -281,7 +282,7 @@ void MapRenderer3D::updateWalls()
 		{
 			auto [quads, vertices] = mapeditor::generateLineQuads(*line, vertex_index);
 			vectorConcat(quads_, quads);
-			vb_quads_->add(vertices);
+			vb_quads_->addVertices(vertices);
 			vertex_index += vertices.size();
 		}
 		vb_quads_->push();
@@ -298,13 +299,17 @@ void MapRenderer3D::updateWalls()
 			if (quads_processed[i])
 				continue;
 
-			// Build list of vertex indices for quads with this texture+flags
+			// Build list of vertex indices for quads with this texture+colour+flags
 			vector<GLuint> indices;
 			for (unsigned f = i; f < quads_.size(); ++f)
 			{
 				// Check texture match
 				auto& quad = quads_[f];
 				if (quads_processed[f] || quad.texture != quads_[i].texture)
+					continue;
+
+				// Check colour match
+				if (quad.colour != quads_[i].colour)
 					continue;
 
 				// Check flags
@@ -329,6 +334,7 @@ void MapRenderer3D::updateWalls()
 			// Add quad group for texture
 			quad_groups_.push_back(
 				{ .texture      = quads_[i].texture,
+				  .colour       = quads_[i].colour,
 				  .index_buffer = std::make_unique<gl::IndexBuffer>(),
 				  .alpha_test   = transparency == RenderGroup::Transparency::None
 								&& quads_[i].hasFlag(QuadFlags::MidTexture),
@@ -374,7 +380,7 @@ void MapRenderer3D::renderSkyFlatsQuads() const
 	gl::bindVAO(0);
 }
 
-void MapRenderer3D::renderFlats(int pass) const
+void MapRenderer3D::renderFlats(gl::Shader& shader, int pass) const
 {
 	gl::bindVAO(vb_flats_->vao());
 
@@ -399,6 +405,7 @@ void MapRenderer3D::renderFlats(int pass) const
 				gl::setBlend(gl::Blend::Normal);
 		}
 
+		shader.setUniform("colour", group.colour);
 		gl::Texture::bind(group.texture);
 		group.index_buffer->bind();
 		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
@@ -408,7 +415,7 @@ void MapRenderer3D::renderFlats(int pass) const
 	gl::bindVAO(0);
 }
 
-void MapRenderer3D::renderWalls(int pass) const
+void MapRenderer3D::renderWalls(gl::Shader& shader, int pass) const
 {
 	gl::bindVAO(vb_quads_->vao());
 
@@ -434,6 +441,7 @@ void MapRenderer3D::renderWalls(int pass) const
 				gl::setBlend(gl::Blend::Normal);
 		}
 
+		shader.setUniform("colour", group.colour);
 		gl::Texture::bind(group.texture);
 		group.index_buffer->bind();
 		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);

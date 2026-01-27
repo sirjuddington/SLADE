@@ -1280,13 +1280,15 @@ void Renderer::draw() const
 	// TESTING: Render performance info
 	auto avg_frame = std::accumulate(render_times.begin(), render_times.end(), static_cast<int64_t>(0))
 					 / render_times.size();
+	auto fps          = (avg_frame > 0) ? static_cast<int>(1000000 / avg_frame) : 0;
 	dc.text_alignment = draw2d::Align::Left;
 	dc.text_size      = 18;
 	dc.text_style     = draw2d::TextStyle::Normal;
 	dc.font           = draw2d::Font::Monospace;
 	dc.colour         = ColRGBA::WHITE;
 	dc.drawText(
-		fmt::format("{:1.2f}ms - {} draw calls", static_cast<double>(avg_frame) / 1000.0, draw_calls), { 0.0f, 0.0f });
+		fmt::format("{:1.2f}ms ({}fps) - {} draw calls", static_cast<double>(avg_frame) / 1000.0, fps, draw_calls),
+		{ 0.0f, 0.0f });
 
 	// TESTING: 3d mode misc info
 	if (context_->editMode() == Mode::Visual)
