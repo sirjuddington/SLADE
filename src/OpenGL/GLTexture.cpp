@@ -45,6 +45,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(String, bgtx_colour1, "#404050", CVar::Flag::Save)
 CVAR(String, bgtx_colour2, "#505060", CVar::Flag::Save)
+CVAR(Int, gl_texture_anisotropy, 16, CVar::Flag::Save)
 namespace
 {
 std::map<unsigned, gl::Texture> textures;
@@ -248,6 +249,21 @@ bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, uns
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	}
 
+	// Anisotropic filtering
+	if (gl_texture_anisotropy > 1)
+	{
+		// Check max supported level
+		static float max_anisotropy = 0.0f;
+		if (max_anisotropy == 0.0f)
+			glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_anisotropy);
+
+		// Set anisotropic level
+		float anisotrpoic_level = gl_texture_anisotropy;
+		if (anisotrpoic_level > max_anisotropy)
+			anisotrpoic_level = max_anisotropy;
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotrpoic_level);
+	}
+
 	// Generate the texture
 	if (tex_info.filter == TexFilter::Linear)
 	{
@@ -257,25 +273,17 @@ bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, uns
 	}
 	else if (tex_info.filter == TexFilter::Mipmap || tex_info.filter == TexFilter::LinearMipmap)
 	{
-		/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);*/
-
-		// No mipmaps for now, just do linear
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else if (tex_info.filter == TexFilter::NearestMipmap)
 	{
-		/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);*/
-
-		// No mipmaps for now, just do nearest
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else if (tex_info.filter == TexFilter::NearestLinearMin)
 	{
